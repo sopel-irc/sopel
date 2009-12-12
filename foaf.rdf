@@ -1,0 +1,54 @@
+
+<!-- Processed by Id: cwm.py,v 1.164 2004/10/28 17:41:59 timbl Exp -->
+
+
+<rdf:RDF xmlns="http://xmlns.com/foaf/0.1/"
+    xmlns:dc="http://purl.org/dc/elements/1.1/"
+    xmlns:foaf="http://xmlns.com/foaf/0.1/"
+    xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+    xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#">
+
+    <PersonalProfileDocument rdf:about="http://inamidst.com/phenny/foaf">
+        <dc:title>Information about phenny</dc:title>
+        <maker rdf:resource="http://inamidst.com/phenny/foaf#sbp"/>
+    </PersonalProfileDocument>
+
+    <Agent rdf:about="http://inamidst.com/phenny/foaf#phenny">
+        <homepage rdf:resource="http://inamidst.com/phenny/"/>
+        <name>Phenny P. Palmersbot</name>
+        <nick>phenny</nick>
+        <title>Ms.</title>
+    </Agent>
+
+    <Person rdf:about="http://inamidst.com/phenny/foaf#sbp">
+        <rdfs:seeAlso rdf:resource="http://inamidst.com/sbp/foaf"/>
+        <homepage rdf:resource="http://inamidst.com/sbp/"/>
+        <name>Sean B. Palmer</name>
+    </Person>
+</rdf:RDF>
+
+<!-- Notation3 Source: 
+
+@prefix : <http://inamidst.com/phenny/foaf#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix dc: <http://purl.org/dc/elements/1.1/> .
+@keywords a .
+
+<http://inamidst.com/phenny/foaf> a foaf:PersonalProfileDocument; 
+   foaf:maker sbp; 
+   dc:title "Information about phenny" .
+
+phenny a foaf:Agent; 
+   foaf:name "Phenny P. Palmersbot"; 
+   foaf:title "Ms."; 
+   foaf:homepage <http://inamidst.com/phenny/>; 
+   # foaf:knows sbp; 
+   foaf:nick "phenny" .
+
+sbp a foaf:Person; 
+   foaf:name "Sean B. Palmer"; 
+   foaf:homepage <http://inamidst.com/sbp/>; 
+   rdfs:seeAlso <http://inamidst.com/sbp/foaf> .
+
+-->
