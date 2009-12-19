@@ -42,6 +42,7 @@ def xkcd(phenny, input):
    website = "http://xkcd.com/%d/" % random.randint(0,673)
    phenny.say(website)
 xkcd.commands = ['xkcd']
+xkcd.priority = [medium]
 
 if __name__ == '__main__': 
    print __doc__.strip()
