@@ -29,21 +29,23 @@ def create_default_config(fn):
    host = 'irc.example.net'
    channels = ['#example', '#test']
    owner = 'yournickname'
+   logged_channels = ["#example"]
 
-   # This isn't implemented yet:
-   # serverpass = 'yourserverpassword'
+   # password = 'yourserverpassword'
 
    # These are people who will be able to use admin.py's functions...
    admins = [owner, 'someoneyoutrust']
    # But admin.py is disabled by default, as follows:
-   exclude = ['admin']
+   # The log is also disabled by default.
+   exclude = ['admin', 'log']
 
    # If you want to enumerate a list of modules rather than disabling
    # some, use "enable = ['example']", which takes precedent over exclude
    # 
    # enable = []
 
-   # Directories to load opt modules from
+   # Directories to load user modules from
+   # e.g. /path/to/my/modules
    extra = []
 
    # Services to load: maps channel names to white or black lists
@@ -135,6 +137,9 @@ def main(argv=None):
       if not hasattr(module, 'port'): 
          module.port = 6667
 
+      if not hasattr(module, 'password'): 
+         module.password = None
+
       if module.host == 'irc.example.net': 
          error = ('Error: you must edit the config file first!\n' + 
                   "You're currently using %s" % module.filename)
@@ -160,3 +165,4 @@ def main(argv=None):
 
 if __name__ == '__main__': 
    main()
+

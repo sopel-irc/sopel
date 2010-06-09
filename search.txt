@@ -1,0 +1,824 @@
+(dp0
+S'PIZZATIME'
+p1
+(lp2
+VPIZZATIME
+p3
+aVc-c-combo breaker!
+p4
+asS'dmglouis_'
+p5
+(lp6
+VI dont add the _, I just use "dmglouis"
+p7
+aVshould I try in empathy "dmglouis_"?
+p8
+aVhaha, yea im back to using the web version
+p9
+asS'wut'
+p10
+(lp11
+Vintriguing
+p12
+asS'excellent'
+p13
+(lp14
+VEXCELLENT
+p15
+aV3 frags left!
+p16
+aVEXCELLENT!
+p17
+asS'OSUbot'
+p18
+(lp19
+Vgoosemo 1
+p20
+aVop me go bucks!
+p21
+aVop me go bucks!
+p22
+asS'elliotta'
+p23
+(lp24
+Vhallo
+p25
+asS'meinwald5'
+p26
+(lp27
+VAren't there other ones?
+p28
+aVyano went crazy, filled a whole board with haiku, paradigm's typing
+p29
+aVhttp://opensource.osu.edu/~paradigm/haiku.txt
+p30
+asS'[plstr]paradigm'
+p31
+(lp32
+Vcheeeeeese
+p33
+aVyou returning?
+p34
+aVaww
+p35
+asS'TrustedHypotheti'
+p36
+(lp37
+Varg
+p38
+aVdoesn't fit
+p39
+asS'y4n0'
+p40
+(lp41
+Vi can ssh into misc but i think that's not on the webserver
+p42
+aVat least phenny_osu and OSUbot weren't affected
+p43
+aVthe funny thing is that he issue happened because stallman accidently got "suspended"
+p44
+asS'DirtNasty'
+p45
+(lp46
+VI'm on cocaine
+p47
+aVI got a gold chain
+p48
+aVI'm on cocaine
+p49
+asS'sifi|home'
+p50
+(lp51
+Val3k: this is non-free version of VB?
+p52
+aVACTION cse581 lab2 is about 500 lines
+p53
+aVI always heard it calld the beachball
+p54
+asS'jacobeiting'
+p55
+(lp56
+Vi win
+p57
+aVbest friday ever
+p58
+aVnice plugin
+p59
+asS'yessir'
+p60
+(lp61
+Vhm
+p62
+asS'tubbs'
+p63
+(lp64
+Vfile system
+p65
+aVanyway exam time
+p66
+aVlater
+p67
+asS'OMG_rainbows'
+p68
+(lp69
+VNOTASPAMMER: what's the address?
+p70
+aVsometimes I ask myself, what direction is this country is heading...
+p71
+aVand it comforts me giving you money NOTASPAMMER 
+p72
+asS'Guest72732'
+p73
+(lp74
+Vxilinx does suck
+p75
+asS'jacob'
+p76
+(lp77
+Vso I'm in DL 305.. and there are haikus all over the boards
+p78
+aVall signed with "yano..."  suspicious? :P
+p79
+aVlol, so that was you :P
+p80
+asS'goosemo'
+p81
+(lp82
+Vbut now anything that will do apache auth is good
+p83
+aVheh and out i go for the evening
+p84
+aVgood thing i wait for the rain
+p85
+asS'int80h'
+p86
+(lp87
+Vsweet thanks
+p88
+aV:)
+p89
+aVi'm probably going to head that way now :P
+p90
+asS'FugitiveXXX'
+p91
+(lp92
+VACTION is actually on android right now
+p93
+aVA custom build
+p94
+aVOn a g1
+p95
+asS'digitallo'
+p96
+(lp97
+VDoes it really matter what color we are?
+p98
+aVI'm using pidgin for IRC.....It's good with the colors.
+p99
+aVDo they require any design courses for a comp sci major or whatever they call it at OSU?
+p100
+asS'FrisJanson'
+p101
+(lp102
+VSo white!
+p103
+aVregardless we are all pink on the inside
+p104
+aVexcept for me I'm pink on the outside and black on the inside
+p105
+asS'Bonesaw'
+p106
+(lp107
+VI forgot how much I like being on my desktop computer
+p108
+asS'nine0four'
+p109
+(lp110
+Vubuntu 9.04 rocks!
+p111
+asS'IPWNn00bs'
+p112
+(lp113
+VACTION pwn sifi|work
+p114
+aVal3k: you can't ban osuwireless
+p115
+aVACTION 0SUbot
+p116
+asS'rickastl3y'
+p117
+(lp118
+VI just wanna tell you how I'm feeling
+p119
+aVGotta make you understand
+p120
+aVyou've been rick rolled! 
+p121
+asS'whtvrrob'
+p122
+(lp123
+VIf all else fails run a linux VM?
+p124
+aVyano: Screw that, it works great, we're deploying win7 in Physics, and have been for a couple months, haven't had any problems yet, and that includes working with experimental systems and data cards and such.
+p125
+aVyano: did you really write all those on 0305??
+p126
+asS'holbert26'
+p127
+(lp128
+VOkay sounds good, will bring 25 ft ethernet.
+p129
+aVI may be able to snag a few from work for the day, will see. Need 25's? Or are 10's okay?
+p130
+aVOkay I'll see what I can do.
+p131
+asS'GleasonGrails'
+p132
+(lp133
+Vthats what I was tryin to think of OSX=z/OS in my previous post
+p134
+aVAnyone with any 2 monitor NVidia experiance (ubuntu 10.04)? My windows all keep popping up underneath my task bar
+p135
+aVI am about 2 seconds away from removing it but I kinda like having one taskbar
+p136
+asS'sighs'
+p137
+(lp138
+Vi wish I had op *sighs
+p139
+aVI don't like getting rick rolled *sighs
+p140
+aV*sighs
+p141
+asS'NOTASPAMMER'
+p142
+(lp143
+VI am far less annoying than phenny
+p144
+aVin conclusion send me a check with your social security number written on the back
+p145
+aV123 Fake street
+p146
+asS'al1ngo'
+p147
+(lp148
+Vhe cannot read :(
+p149
+aVyeah, i just use click -b left -pos=145,246 for clicking.
+p150
+aVdisplays use more bandwidth than line feed printers...
+p151
+asS'nineohfour'
+p152
+(lp153
+Vnever upgrade!
+p154
+asS'sifi'
+p155
+(lp156
+Vgoosemo: PING
+p157
+aVis there a way to search the logs?
+p158
+aVwell I found what I was looking for
+p159
+asS'meinwald'
+p160
+(lp161
+VSo is there a mod_python vs python via cgi?
+p162
+aV(Never done/hosted a web app with python)
+p163
+aVSo I can just do something like a2enmod python and I magically have support?
+p164
+asS'sifi|going_to_ki'
+p165
+(lp166
+Vdammit why isn't my username here ?????
+p167
+asS'webchat_ftw'
+p168
+(lp169
+Vhehe
+p170
+asS'alingo'
+p171
+(lp172
+VMaybe she's stuck in Keanu mode.
+p173
+aVPhenny: "Excellent!"
+p174
+aVlater, digs
+p175
+asS'tubbs2'
+p176
+(lp177
+Vyeah
+p178
+asS'dhruvasagar'
+p179
+(lp180
+Vall the best guys
+p181
+aVhey guys
+p182
+aVwassup
+p183
+asS'wherest3hb33f'
+p184
+(lp185
+Vwhere's the beef?
+p186
+aVi'll show you the beef
+p187
+aVwe could always make only registered nicks join the room
+p188
+asS'tubbs1'
+p189
+(lp190
+Vdude unicode causes all kinds of problems cause nothing supports it
+p191
+aVI stole your name yo
+p192
+aVwut?
+p193
+asS'al3k'
+p194
+(lp195
+Vbut to answer your question
+p196
+aVyes
+p197
+aVi got your email
+p198
+asS'frigg'
+p199
+(lp200
+VVERSION
+p201
+aVVERSION
+p202
+aVVERSION
+p203
+asS'xxtrixiezzz'
+p204
+(lp205
+VFrisJanson: or if you have british blood, 'grey'
+p206
+aVFrisJanson: so where are you from in ohio?
+p207
+aVACTION *winks* at FrisJanson
+p208
+asS'RickAstley'
+p209
+(lp210
+Vlet you down
+p211
+aVrun around
+p212
+aVor desert you
+p213
+asS'nine04'
+p214
+(lp215
+V:)
+p216
+asS'a1ingo'
+p217
+(lp218
+VYeah, you're welcome to join.
+p219
+aVyes?
+p220
+aVstill there?
+p221
+asS'goosemo_'
+p222
+(lp223
+Vand i think the maintainer complained it made the package *bloat* 2MB
+p224
+aVi just think its sill you make someone recompile.
+p225
+aVThere was a good sized one in cincy about 2001 or 2002
+p226
+asS'AJoseph|Desktop'
+p227
+(lp228
+Vthis stupid code jam round needs to hurry up and end sp I can see the problems
+p229
+aVoh, I guess I've been able to see them all along
+p230
+aVI just didn't see the link to them
+p231
+asS'Lavagolemking'
+p232
+(lp233
+VDoes phenny_osu REALLY need to alias local links?
+p234
+aVCan't you just remember "opensource.osu.edu" + '/' + URL_ALIAS?
+p235
+aVI'd have an easier time with that than with copying those random bit.ly characters.
+p236
+asS'digimbot'
+p237
+(lp238
+Vbeep bop
+p239
+aVI think we just sang mmmmbop
+p240
+aVhahaha
+p241
+asS'DarinV'
+p242
+(lp243
+Van 8gb flash drive will not hold this...it has to be on a 16gb
+p244
+aVwell I am going to get and build the kernel and see how much additional space is required with that to what I have on here now...
+p245
+aVthanks for the help and ideas
+p246
+asS'mgoose'
+p247
+(lp248
+Vbecause you can just have it do any needed cleanup or rotating in there
+p249
+aVor message/email you that the server rebooted
+p250
+aV(if that sort of thing is important)
+p251
+asS'whoa'
+p252
+(lp253
+Vwhoa
+p254
+aVwhoa
+p255
+asS'BOOMHEADSHOT'
+p256
+(lp257
+VBOOM HEADSHOT
+p258
+aVBOOM HEADSHOT
+p259
+aVBOOM HEADSHOT
+p260
+asS'elisa87'
+p261
+(lp262
+Vare you software student>
+p263
+aV?
+p264
+aVi am a hardware student
+p265
+asS'RickNasty'
+p266
+(lp267
+VPlease....
+p268
+aVI <3 your Ricky
+p269
+aVyou*
+p270
+asS'roinator'
+p271
+(lp272
+V...or if the entire world was made of iron.
+p273
+aV...*shot*
+p274
+aVDANCE PARTY!?
+p275
+asS'someoneyoutrust'
+p276
+(lp277
+Vi want power!
+p278
+aVyou should
+p279
+asS'BANHAMMER'
+p280
+(lp281
+VPOLISHBANHAMMER: you should polish me...
+p282
+aVhehe
+p283
+aVPOLISHBANHAMMER: ur ghey
+p284
+asS'bbecker'
+p285
+(lp286
+Vyano: its mostly projects of my own creation. an htpc and, if the funds can be had, a server backend.
+p287
+aValright, well, uno tonight. Gotta bail for work. Later
+p288
+aVhi, Ajoseph
+p289
+asS'hm'
+p290
+(lp291
+Vhm
+p292
+asS'epitaph'
+p293
+(lp294
+Vparadigm: paradigm paradigm 
+p295
+aVparadigm: paradigm paradigm 
+p296
+aVyano: don't you guys have a java/web chat?
+p297
+asS'Guest3426'
+p298
+(lp299
+Vmade it
+p300
+asS'digibot'
+p301
+(lp302
+Vbeep
+p303
+aVboop
+p304
+aVbeep
+p305
+asS'sifi|club_meetin'
+p306
+(lp307
+Vparadigm: is this true?
+p308
+aVI feel flattered 
+p309
+aVohhh fuck
+p310
+asS'paradigm|vp'
+p311
+(lp312
+Vif you have a question that's not answered by the man page, #tmux is great
+p313
+aVI really feel there should be a more, uhh, approachable tmux guide
+p314
+aVbut the dev seems pretty happy with the man page
+p315
+asS'dmglouis'
+p316
+(lp317
+Vso its not a one off thing that i managed to join today?
+p318
+aVi wonder why I get recognized as a zombie
+p319
+aVoh okay
+p320
+asS'sifi_'
+p321
+(lp322
+VLol
+p323
+aVOkay.  I am getting on
+p324
+aVirc on haiku!!!!
+p325
+asS'[PLSTR]Minos'
+p326
+(lp327
+VYano, join team Plaster Wall!
+p328
+aVWait, I hate you, go Glass Wall.
+p329
+asS'RickAstl3y'
+p330
+(lp331
+Vnever gonna say goodbye!
+p332
+aVnever gonna tell a lie and hurt you!
+p333
+aVyou've just been rick-rolled
+p334
+asS'SILASGOTOWNED'
+p335
+(lp336
+VSILAS GOT OWNED
+p337
+aVSILAS GOT OWNED
+p338
+asS'zeke1'
+p339
+(lp340
+Vsup
+p341
+asS'intel_outside'
+p342
+(lp343
+Vinteresting
+p344
+asS'Guest35069'
+p345
+(lp346
+VWHAT
+p347
+aVWHAT!
+p348
+aVWHAT!!!
+p349
+asS'bobdolesuperstar'
+p350
+(lp351
+Val3k: Thanks
+p352
+aVIt's an IM gateway for the Openfire XMPP server
+p353
+aVTrue.
+p354
+asS'AJoseph|back_of_'
+p355
+(lp356
+Vyeah
+p357
+asS'yano|phone'
+p358
+(lp359
+Vill have to try that
+p360
+asS'juiz'
+p361
+(lp362
+Vactually I like eclair more
+p363
+aVif server key doens't change, sig shouldn't change
+p364
+aVyano: it seems that openssh client does not remember the port number in known_hosts
+p365
+asS'suckitosubot'
+p366
+(lp367
+Vsdlkf
+p368
+asS'ajoseph'
+p369
+(lp370
+Vnow it's just a poor text editor
+p371
+aVyano: why not what?
+p372
+aVgood question
+p373
+asS'POLISHBANHAMMER'
+p374
+(lp375
+Vwhich half?
+p376
+aVPOLISH BANHAMMER
+p377
+aVgay
+p378
+asS'slkdj'
+p379
+(lp380
+Vyano: sldkfj
+p381
+aVyano: sldkjd
+p382
+aV.back
+p383
+asS'testing-uno'
+p384
+(lp385
+V.draw
+p386
+aV.play r 6
+p387
+aV.pass
+p388
+asS'sifI|haiku'
+p389
+(lp390
+Vthat email?
+p391
+aVisn't it jonathan tubb?
+p392
+aVanswers it's own questions?
+p393
+asS'MPSimmons'
+p394
+(lp395
+VHave a good night, and thanks for talking with me
+p396
+aV:)
+p397
+aVanytime. Drop me a line at standalone.sysadmin@gmail.com if you need anything, and feel free to stop by the blog (http://www.standalone-sysadmin.com) 
+p398
+asS'Will'
+p399
+(lp400
+VSC2 anyone?
+p401
+aVstarcraft or sc2, either way
+p402
+aVbah, SC2 would be down
+p403
+asS'BluEnigma'
+p404
+(lp405
+VIs there a better way to get QuakeLive, rather than going through their javascript... thing?
+p406
+aV=(
+p407
+aV'ello
+p408
+asS'__Minos'
+p409
+(lp410
+VI will not respond to "Alex" or "Lingo", only "__Minos". Even IRL. Don't forget the two underscores.
+p411
+aV"[click][click] Minos"
+p412
+aVyeah, dub-sub!
+p413
+asS'jackie_'
+p414
+(lp415
+VI saved the wrong values in my xorg.conf and hosed my install
+p416
+aVbut because I use manual partitions everything came back SO quick and easy
+p417
+aVIs there any settings file or anything that I can configure on my home directory to have it auto download all the programs I want it to?
+p418
+asS'PeterDietz_'
+p419
+(lp420
+Vhmm, you have powers beyond mine, whats stdlogin?
+p421
+aVWhat is it running hopefully a recent version of something?
+p422
+aVawesome wow, now I can finally do something usefull, like du -chs /home/8/dietzp == 926M
+p423
+asS'digmbot'
+p424
+(lp425
+Vboop boop beep boop ...?
+p426
+aVbeep boop beep beep boop ...?
+p427
+aVbeep boop paradigm!!
+p428
+asS'a'
+p429
+(lp430
+Vand you cant
+p431
+asS'paradigm'
+p432
+(lp433
+Vyeah I think he was used as a template
+p434
+aValas I've exhausted the alloted time for not studying, and I must be off to cram for yet another zam
+p435
+aVglhf, alingo
+p436
+asS'bluedevils9109'
+p437
+(lp438
+V!help
+p439
+asS'alingo2'
+p440
+(lp441
+Vhello
+p442
+asS'blahblah2'
+p443
+(lp444
+V.play r 3
+p445
+aV.play g 3
+p446
+aV.play y 3
+p447
+asS'AJoseph'
+p448
+(lp449
+Vyeah, really
+p450
+aVthat "yeah, really" was in response to al3k's comment
+p451
+aVACTION hears crickets chirping in this room
+p452
+asS'yano'
+p453
+(lp454
+Vok
+p455
+aVsweet
+p456
+aVooooh ipv6
+p457
+asS'sifi|work'
+p458
+(lp459
+V.no
+p460
+aVkthxbye
+p461
+aVBOT LOVERS
+p462
+as.
