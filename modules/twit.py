@@ -80,5 +80,10 @@ def f_reply(phenny, input):
 #f_reply.commands = ['reply']
 f_reply.priority = 'medium'
 f_reply.example = '.reply 892379487 I like that idea!'
+
+def twat(phenny,input):
+    f_info(phenny,input)
+twat.commands = ['twatinfo']
+
 if __name__ == '__main__':
 	print __doc__.strip()

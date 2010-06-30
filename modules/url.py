@@ -116,7 +116,7 @@ def short(phenny, input):
                 if (len(b) >= 40):
                     #page_title = find_title(phenny, input, b)
                     #display = "[ " + str(page_title) + " ] " + str(short1)
-                    if rand < 0.001:
+                    if rand < 0.02:
                         phenny.say("http://bit.ly/bq1P4T")
                     else:
                         phenny.say(str(short1))
@@ -148,7 +148,10 @@ def show_title(phenny,input):
             page_title = title2(phenny, input, url)
     except:
         return
-    display = "[ " + str(page_title) + " ]"
+    if page_title == None or page_title == "None":
+        return
+    else:
+        display = "[ " + str(page_title) + " ]"
     phenny.say(display)
 #show_title.rule = r'.*(?:(?:ht|f)tp(?:s?)\:\/\/|~\/|\/)(?:\w+:\w+@)?((?:(?:[-\w\d{1-3}]+\.)+(?:com|org|net|gov|mil|biz|info|mobi|name|aero|jobs|edu|co\.uk|ac\.uk|it|fr|tv|museum|asia|local|travel|[a-z]{2})?))(?::[\d]{1,5})?(?:(?:(?:\/(?:[-\w~!$+|.,=]|%[a-f\d]{2})+)+|\/)+|\?|#)?(?:(?:\?(?:[-\w~!$+|.,*:]|%[a-f\d{2}])+=?(?:[-\w~!$+|.,*:=]|%[a-f\d]{2})*)(?:&(?:[-\w~!$+|.,*:]|%[a-f\d{2}])+=?(?:[-\w~!$+|.,*:=]|%[a-f\d]{2})*)*)*(?:#(?:[-\w~!$ |/.,*:;=]|%[a-f\d]{2})*)?\b'
 show_title.rule = '.*((http|https|ftp)(://\S+)).*'

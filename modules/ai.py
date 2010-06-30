@@ -12,6 +12,7 @@ conversation = False
 low = 0
 high = 1
 owner_gone = True
+greet_user = ""
 
 greeting = ['Hello', 'Hallo', 'Hi', 'Welcome']
 
@@ -60,7 +61,7 @@ def hello_join(phenny, input):
             punctuation = random.choice(('!', ' '))
             phenny.say(random_greeting + ' ' + input.nick + punctuation)
 hello_join.event = 'JOIN'
-hello_join.rule = '(.*)'
+hello_join.rule = '.*'
 hello_join.priority = 'medium'
 
 def goodbye(phenny, input):
@@ -75,52 +76,59 @@ goodbye.thread = False
 def hau(phenny, input):
     global aistate
     global conversation
-    if aistate == True:
+    global greet_user
+    greet_user = input.nick
+    if aistate == True and greet_user == input.nick:
+        time.sleep(random.randint(0,1))
         phenny.reply("How are you?")
         conversation = True
-hau.rule = '(hey|hi|hello).*(phenny|$nickname).*$'
+hau.rule = '(?i)(hey|hi|hello).*(phenny|$nickname).*$'
 
 def hau2(phenny, input):
     hau(phenny,input)
-hau2.rule = '(phenny|$nickname).*(hey|hi|hello).*$'
+hau2.rule = '(?i)(phenny|$nickname).*(hey|hi|hello).*$'
 
 def gau(phenny, input):
     global aistate
     global conversation
-    if aistate == True and conversation == True:
+    global greet_user
+    if aistate == True and conversation == True and greet_user == input.nick:
         randmsg = random.choice(["That's good to hear!", "That's great to hear!"])
+        time.sleep(random.randint(0,1))
         phenny.reply(randmsg)
         conversation = False
-gau.rule = '.*([Gg]ood).*'
+gau.rule = '(?i).*(good).*'
 
 def bad(phenny, input):
     global aistate
     global conversation
-    if aistate == True and conversation == True:
+    global greet_user
+    if aistate == True and conversation == True and greet_user == input.nick:
         randmsg = random.choice(["Sorry to hear about that."])
+        time.sleep(random.randint(0,1))
         phenny.reply(randmsg)
         conversation = False
-bad.rule = '.*([bB]ad|[hH]orrible|[aA]wful|[Tt]errible).*$'
+bad.rule = '(?i).*(bad|horrible|awful|terrible).*$'
 
 ## ADDED Functions that do not rely on "AISTATE"
 
 def ty(phenny, input):
-    human = random.uniform(low,high)	
+    human = random.uniform(0,9)
     time.sleep(human)
     mystr = input.group()
     mystr = str(mystr)
     if (mystr.find(" no ") == -1) and (mystr.find("no ") == -1) and (mystr.find(" no") == -1):	
         phenny.reply("You're welcome.")
-ty.rule = '.*([tT]hank).*([yY]ou).*(phenny|$nickname).*$'
+ty.rule = '(?i).*(thank).*(you).*(phenny|$nickname).*$'
 ty.priority = 'high'
 
 def ty2(phenny, input):
     ty(phenny,input)
-ty2.rule = '(?i)$nickname\:\s+([Tt]hank).*([Yy]ou).*'
+ty2.rule = '(?i)$nickname\:\s+(thank).*(you).*'
 
 def ty4(phenny, input):
     ty(phenny, input)
-ty4.rule = '.*([Tt]hanks).*(phenny|$nickname).*'
+ty4.rule = '(?i).*(thanks).*(phenny|$nickname).*'
 
 def random_resp(phenny, input):
     # This randomly takes what someone says in the form of "phenny: <message>" and just spits it back out at the user that said it.
@@ -153,9 +161,11 @@ def wat2(phenny,input):
 wat2.rule = '(?i).*(we)\s(are)\s(not)\s(team).*'
 
 def yesno(phenny,input):
+    rand = random.uniform(0,5)
     text = input.group()
     text = text.split(":")
     text = text[1].split()
+    time.sleep(rand)
     if text[0] == 'yes':
         phenny.reply("no")
     elif text[0] == 'no':
@@ -165,7 +175,7 @@ yesno.rule = '(phenny|$nickname)\:\s+(yes|no)$'
 def rand_whoa (phenny,input):
     text = input.group()
     rand = random.random()
-    if 0 < rand < 0.004:
+    if 0 < rand < 0.0013:
         phenny.say('whoa!')
 rand_whoa.rule = '.*'
 rand_whoa.priority = 'low'

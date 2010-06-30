@@ -118,8 +118,8 @@ def classes(phenny, input):
     if uni == "osu":
         phenny.say("Offered: " + str(req))
 
-    classes.commands = ['class']
-    classes.priority = 'high'
+classes.commands = ['class']
+classes.priority = 'high'
 
 if __name__ == '__main__': 
     print __doc__.strip()
