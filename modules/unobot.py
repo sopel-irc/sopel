@@ -37,7 +37,7 @@ import random
 from datetime import datetime, timedelta
 
 CHANNEL = '#osu-uno'
-SCOREFILE = "/home/yanovich/phenny/unoscores.txt"
+SCOREFILE = "/home/yanovich/phenny_osu/unoscores.txt"
 
 STRINGS = {
     'ALREADY_STARTED' : '\x0300,01Game already started by %s! Type join to join!',
@@ -327,7 +327,20 @@ class UnoBot:
             self.incPlayer ()
         elif card[1] == 'R' and card[0] != 'W':
             phenny.msg (CHANNEL, STRINGS['REVERSED'])
-            self.way = -self.way
+            ## ORIGINAL
+            #self.way = -self.way
+            #self.incPlayer ()
+            #self.incPlayer ()
+            ## END OF ORIGINAL
+
+            ## NEW
+            if len(self.players) > 2:
+                self.way = -self.way
+                self.incPlayer ()
+                self.incPlayer ()
+            else:
+                self.incPlayer ()
+            ## END OF NEW
             self.incPlayer ()
             self.incPlayer ()
         self.topCard = card
