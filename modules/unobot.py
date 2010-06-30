@@ -341,8 +341,6 @@ class UnoBot:
             else:
                 self.incPlayer ()
             ## END OF NEW
-            self.incPlayer ()
-            self.incPlayer ()
         self.topCard = card
     
     def gameEnded (self, phenny, winner):
