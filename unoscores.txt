@@ -1,4 +1,0 @@
-bbecker 1 0 0 1604
-yano 42 22 844 36941
-meinwald 4 1 43 2263
-AJoseph 40 20 643 34665
