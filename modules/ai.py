@@ -82,11 +82,11 @@ def hau(phenny, input):
         time.sleep(random.randint(0,1))
         phenny.reply("How are you?")
         conversation = True
-hau.rule = '(?i)(hey|hi|hello).*(phenny|$nickname).*$'
+hau.rule = '(?i)(hey|hi|hello)\b.*(phenny|$nickname)\b.*$'
 
 def hau2(phenny, input):
     hau(phenny,input)
-hau2.rule = '(?i)(phenny|$nickname).*(hey|hi|hello).*$'
+hau2.rule = '(?i)(phenny|$nickname).*(hey|hi|hello)\b.*$'
 
 def gau(phenny, input):
     global aistate

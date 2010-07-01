@@ -29,9 +29,13 @@ def create_default_config(fn):
    host = 'irc.example.net'
    channels = ['#example', '#test']
    owner = 'yournickname'
-   logged_channels = ["#example"]
-
    # password = 'yourserverpassword'
+
+   twitter_username = ""
+   twitter_password = ""
+   bitly_api = ""
+   bitly_user = ""
+   github_api_key = ""
 
    # These are people who will be able to use admin.py's functions...
    admins = [owner, 'someoneyoutrust']

@@ -181,6 +181,7 @@ class Phenny(irc.Bot):
 				s.twitter_password = self.config.twitter_password
 				s.bitly_api = self.config.bitly_api
 				s.bitly_user = self.config.bitly_user
+				s.github_api_key = self.config.github_api_key
 				return s
 
 		return CommandInput(text, origin, bytes, match, event, args)
