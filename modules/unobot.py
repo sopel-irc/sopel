@@ -234,10 +234,12 @@ class UnoBot:
         except: pass
         prescores = sorted (prescores, lambda x, y: cmp ((y[1] != '0') and (float (y[3]) / int (y[1])) or 0, (x[1] != '0') and (float (x[3]) / int (x[1])) or 0))
         if not prescores:
-            phenny.msg (CHANNEL, STRINGS['NO_SCORES'])
+            #phenny.msg (CHANNEL, STRINGS['NO_SCORES'])
+            phenny.say(STRINGS['NO_SCORES'])
         i = 1
         for z in prescores[:10]:
-            phenny.msg (CHANNEL, STRINGS['SCORE_ROW'] % (i, z[0], z[3], z[1], z[2], timedelta (seconds = int (z[4]))))
+            #phenny.msg (CHANNEL, STRINGS['SCORE_ROW'] % (i, z[0], z[3], z[1], z[2], timedelta (seconds = int (z[4]))))
+            phenny.say(STRINGS['SCORE_ROW'] % (i, z[0], z[3], z[1], z[2], timedelta (seconds = int (z[4]))))
             i += 1
 
     
