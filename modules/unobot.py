@@ -280,7 +280,10 @@ class UnoBot:
                 tmp = len (self.players) - 1
         msg += ' - '.join (arr)
         phenny.notice (self.playerOrder[self.currentPlayer], msg)
-        
+    
+    def showCards (self, phenny, user):
+        phenny.notice (user, STRINGS['YOUR_CARDS'] % self.renderCards (self.players[user]))
+
     def renderCards (self, cards):
         ret = [ ]
         for c in sorted (cards):
@@ -433,6 +436,11 @@ def unotop10 (phenny, input):
     unobot.top10 (phenny)
 unotop10.commands = ['unotop10']
 unotop10.priority = 'low'
+
+def show_user_cards (phenny, input):
+    unobot.showCards (phenny, input.nick)
+show_user_cards.commands = ['cards']
+show_user_cards.priority = 'low'
 
 if __name__ == '__main__':
        print __doc__.strip()
