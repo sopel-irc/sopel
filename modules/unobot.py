@@ -78,9 +78,9 @@ STRINGS = {
 class UnoBot:
     def __init__ (self):
         self.colored_card_nums = [ '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'R', 'S', 'D2' ]
-        self.special_scores = { 'R' : 20, 'S' : 20, 'D2' : 20, 'W' : 50, 'WD4' : 50} # originally had the point values for W and WD4 (both were 50 respectively)
+        self.special_scores = { 'R' : 20, 'S' : 20, 'D2' : 20, 'W' : 50, 'WD4' : 50}
         self.colors = 'RGBY'
-        self.special_cards = [ 'W', 'WD4' ] # commented out by yano
+        self.special_cards = [ 'W', 'WD4' ]
         self.players = { }
         self.playerOrder = [ ]
         self.game_on = False
@@ -161,8 +161,8 @@ class UnoBot:
         if len (tok) != 3:
             return
         searchcard = ''
-        if tok[1] in self.special_cards: # commented out by yano
-            searchcard = tok[1] # commented out by yano
+        if tok[1] in self.special_cards:
+            searchcard = tok[1]
         else:
             searchcard = (tok[1] + tok[2])
         if searchcard not in self.players[self.playerOrder[self.currentPlayer]]:
@@ -234,11 +234,9 @@ class UnoBot:
         except: pass
         prescores = sorted (prescores, lambda x, y: cmp ((y[1] != '0') and (float (y[3]) / int (y[1])) or 0, (x[1] != '0') and (float (x[3]) / int (x[1])) or 0))
         if not prescores:
-            #phenny.msg (CHANNEL, STRINGS['NO_SCORES'])
             phenny.say(STRINGS['NO_SCORES'])
         i = 1
         for z in prescores[:10]:
-            #phenny.msg (CHANNEL, STRINGS['SCORE_ROW'] % (i, z[0], z[3], z[1], z[2], timedelta (seconds = int (z[4]))))
             phenny.say(STRINGS['SCORE_ROW'] % (i, z[0], z[3], z[1], z[2], timedelta (seconds = int (z[4]))))
             i += 1
 
@@ -248,7 +246,7 @@ class UnoBot:
         for a in self.colored_card_nums:
             for b in self.colors:
                 ret.append (b + a)
-        for a in self.special_cards: # commented out by yano
+        for a in self.special_cards: 
             ret.append (a)
             ret.append (a)
         
@@ -329,20 +327,12 @@ class UnoBot:
             self.incPlayer ()
         elif card[1] == 'R' and card[0] != 'W':
             phenny.msg (CHANNEL, STRINGS['REVERSED'])
-            ## ORIGINAL
-            #self.way = -self.way
-            #self.incPlayer ()
-            #self.incPlayer ()
-            ## END OF ORIGINAL
-
-            ## NEW
             if len(self.players) > 2:
                 self.way = -self.way
                 self.incPlayer ()
                 self.incPlayer ()
             else:
                 self.incPlayer ()
-            ## END OF NEW
         self.topCard = card
     
     def gameEnded (self, phenny, winner):
