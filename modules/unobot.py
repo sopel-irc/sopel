@@ -28,9 +28,6 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 [18:03] [Notice] -unobot- Next: hatcher (5 cards) - Lako (2 cards)
 [18:03] <TopMobil> :O
 [18:03] <Lako> :O
-
-# Modified by Michael Yanovich: I changed the priorities of the commands to low.
-
 """
 
 import random
