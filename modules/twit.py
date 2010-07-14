@@ -51,7 +51,7 @@ def f_update(phenny, input):
 		update = str(input.group(2)) + " ^" + input.nick
 		if len(update) <= 140:
 			api2.PostUpdates(update)
-			phenny.reply("Successfully posted to twitter.com/phenny_osu")
+			phenny.reply("Successfully posted to twitter.com/" + input.twitter_username)
 		else:
 			toofar = len(update) - 140
 			phenny.reply("Please shorten the length of your message by: " + str(toofar) + " characters.")
