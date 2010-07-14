@@ -40,8 +40,7 @@ def create_default_config(fn):
    # These are people who will be able to use admin.py's functions...
    admins = [owner, 'someoneyoutrust']
    # But admin.py is disabled by default, as follows:
-   # The log is also disabled by default.
-   exclude = ['admin', 'log']
+   exclude = ['admin', 'ai', 'github', 'resp', 'school', 'twit']
 
    # If you want to enumerate a list of modules rather than disabling
    # some, use "enable = ['example']", which takes precedent over exclude
