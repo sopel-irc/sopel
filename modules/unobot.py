@@ -279,6 +279,8 @@ class UnoBot:
         phenny.notice (self.playerOrder[self.currentPlayer], msg)
     
     def showCards (self, phenny, user):
+        if not self.game_on or not self.deck:
+            return
         phenny.notice (user, STRINGS['YOUR_CARDS'] % self.renderCards (self.players[user]))
 
     def renderCards (self, cards):
