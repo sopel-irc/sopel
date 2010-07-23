@@ -176,7 +176,6 @@ class Phenny(irc.Bot):
 				s.args = args
 				s.admin = origin.nick in self.config.admins
 				s.owner = origin.nick == self.config.owner
-				s.logchans = self.config.logged_channels
 				s.twitter_username = self.config.twitter_username
 				s.twitter_password = self.config.twitter_password
 				s.bitly_api = self.config.bitly_api
