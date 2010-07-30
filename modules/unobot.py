@@ -246,9 +246,12 @@ class UnoBot:
         for a in self.special_cards: 
             ret.append (a)
             ret.append (a)
+
+        ret *= 4
         
-        ret *= 2
         random.shuffle (ret)
+        random.shuffle (ret)
+
         return ret
     
     def getCard(self):
