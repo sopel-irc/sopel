@@ -35,8 +35,8 @@ f_lol.priority = 'high'
 def f_bye(phenny, input):
 	respond = ['bye!', 'bye', 'see ya', 'see ya!']
 	phenny.say(random.choice(respond))
-#f_bye.rule = '(g2g!?|bye!?)$'
-#f_bye.priority = 'high'
+f_bye.rule = '(g2g!?|bye!?)$'
+f_bye.priority = 'high'
 
 def f_argh(phenny, input):
 	randnum = random.random()
