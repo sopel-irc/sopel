@@ -13,6 +13,8 @@ Forked by Michael S. Yanovich, http://opensource.osu.edu/~yanovich/
 """
 
 import re
+import time
+import sched
 
 auth_list = []
 admins = []
@@ -196,10 +198,26 @@ def auth_check(phenny, nick, target):
     """
     global auth_list
     if target == phenny.config.nick:
-	return 0
+	    return 0
     elif nick in auth_list:
         return 1
 
+def time_topic (phenny, input):
+    if not input.sender == '#pyohio' or not input.nick == 'yano':
+        return
+
+    def four (phenny, input):
+        phenny.write(['TOPIC', '#pyohio', 'PyOhio 2010 | 4:30PM - "Faster" (Cartoon 1 + 2) | http://pyohio.org/'])
+
+    s = sched.scheduler(time.time, time.sleep)
+
+    timediff = 1280691900.0 - time.time() # 3:45 PM EDT
+
+    s.enter(timediff, 1, four, (phenny, input))
+    s.run()
+
+time_topic.commands = ['topic']
+time_topic.priority = 'low'
 if __name__ == '__main__': 
    print __doc__.strip()
 

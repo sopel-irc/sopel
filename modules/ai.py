@@ -51,15 +51,12 @@ state.priority = 'high'
 
 def hello_join(phenny, input):
     well = random.random()
-    if input.sender == "#osuoss":
-        return
-    else:
-        if 0 < well < 0.02:
-            if input.nick == "$nickname": 
-                return
-            random_greeting = random.choice(greeting)
-            punctuation = random.choice(('!', ' '))
-            phenny.say(random_greeting + ' ' + input.nick + punctuation)
+    if 0 < well < 0.02:
+        if input.nick == phenny.config.nick: 
+            return
+        random_greeting = random.choice(greeting)
+        punctuation = random.choice(('!', ' '))
+        phenny.say(random_greeting + ' ' + input.nick + punctuation)
 hello_join.event = 'JOIN'
 hello_join.rule = '.*'
 hello_join.priority = 'medium'
@@ -103,6 +100,8 @@ def bad(phenny, input):
     global aistate
     global conversation
     global greet_user
+    if input.sender == "#pyohio":
+        return
     if aistate == True and conversation == True and greet_user == input.nick:
         randmsg = random.choice(["Sorry to hear about that."])
         time.sleep(random.randint(0,1))
@@ -177,8 +176,8 @@ def rand_whoa (phenny,input):
     rand = random.random()
     if 0 < rand < 0.0013:
         phenny.say('whoa!')
-rand_whoa.rule = '.*'
-rand_whoa.priority = 'low'
+#rand_whoa.rule = '.*'
+#rand_whoa.priority = 'low'
 
 if __name__ == '__main__': 
     print __doc__.strip()
