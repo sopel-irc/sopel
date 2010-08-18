@@ -246,9 +246,7 @@ class UnoBot:
         for a in self.special_cards: 
             ret.append (a)
             ret.append (a)
-
         ret *= 3
-        
         random.shuffle (ret)
 
         return ret
@@ -420,17 +418,17 @@ deal.priority = 'low'
 
 def play(phenny, input):
     unobot.play (phenny, input)
-play.commands = ['play']
+play.commands = ['play', 'p']
 play.priority = 'low'
 
 def draw(phenny, input):
     unobot.draw (phenny, input)
-draw.commands = ['draw']
+draw.commands = ['draw', 'd']
 draw.priority = 'low'
 
 def passs(phenny, input):
     unobot.passs (phenny, input)
-passs.commands = ['pass']
+passs.commands = ['pass', 'pa']
 passs.priority = 'low'
 
 def unotop10 (phenny, input):

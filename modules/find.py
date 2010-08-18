@@ -29,7 +29,7 @@ def collectlines(phenny, input):
         return
     else:    
         list.append(line)
-    del list[:-3]
+    del list[:-5]
     search_dict[input.nick] = list
     search_file = open("search.txt","w")
     pickle.dump(search_dict, search_file)
@@ -51,13 +51,18 @@ def findandreplace(phenny, input):
     current_list = search_dict[input.nick]
     phrase = unicode(current_list[-1])
     if text.endswith("/g"):
-        new_phrase = unicode(re.sub(pattern, replacement, phrase)) 
+        #new_phrase = unicode(re.sub(pattern, replacement, phrase))
+        new_phrase = replace_wg(current_list, pattern, replacement, phrase)
     else:
-        new_phrase = unicode(re.sub(pattern, replacement, phrase, 1))
+        #new_phrase = unicode(re.sub(pattern, replacement, phrase, 1))
+        new_phrase = replace_wog(current_list, pattern, replacement, phrase)
+    
     # Prevents abuse; apparently there is an RFC spec about how servers handle
     # messages that contain more than 512 characters.
-    if len(new_phrase) > 512:
-        new_phrase[511:]    
+    if new_phrase:
+        if len(new_phrase) > 512:
+            new_phrase[511:]
+
     # Save the new "edited" message.
     list = search_dict[input.nick]
     list.append(new_phrase)
@@ -68,10 +73,87 @@ def findandreplace(phenny, input):
 
     # output
     phrase = str(input.nick) + " meant to say: " + new_phrase
-    if list[-2] != new_phrase:
-       phenny.say(phrase) 
+    phenny.say(phrase)
 findandreplace.rule = '(s)/.*'
 findandreplace.priority = 'high'
 
+def replace_wg(list, pattern, replacement, phrase):
+    i = 0
+    while i <= len(list):
+        i += 1
+        k = -i
+        if len(list) > i:
+            phrase_new = unicode(list[k])
+            sample = unicode(re.sub(pattern, replacement, phrase_new))
+            if sample != phrase_new:
+                return sample
+                break
+
+def replace_wog(list, pattern, replacement, phrase):
+    i = 0
+    while i <= len(list):
+        i += 1
+        k = -i
+        if len(list) > i:
+            phrase_new = unicode(list[k])
+            sample = unicode(re.sub(pattern, replacement, phrase_new, 1))
+            if sample != phrase_new:
+                return sample
+                break
+
+def meant (phenny, input):
+    global search_dict
+    global search_file
+    global exp
+
+    text = unicode(input.group())
+    text = text.split(" ~= ")
+    user = text[0]
+    matching = text[1]
+
+    list_pattern = exp.split(matching)
+    pattern = list_pattern[1]
+
+    # Make sure the list exists
+    try:
+        replacement = list_pattern[2]
+    except:
+        return
+
+    # If someone does it for a user that hasn't said anything
+    try:
+        current_list = search_dict[user]
+    except:
+        return
+    phrase = unicode(current_list[-1])
+    if matching.endswith("/g"):
+        #new_phrase = unicode(re.sub(pattern, replacement, phrase))
+        new_phrase = replace_wg(current_list, pattern, replacement, phrase)
+    else:
+        #new_phrase = unicode(re.sub(pattern, replacement, phrase, 1))
+        new_phrase = replace_wog(current_list, pattern, replacement, phrase)
+
+    # Prevents abuse; apparently there is an RFC spec about how servers handle
+    # messages that contain more than 512 characters.
+    if new_phrase:
+        if len(new_phrase) > 512:
+            new_phrase[511:]
+
+    # Save the new "edited" message.
+    list = search_dict[input.nick]
+    list.append(new_phrase)
+    search_dict[input.nick] = list
+    search_file = open("search.txt","w")
+    pickle.dump(search_dict, search_file)
+    search_file.close()
+
+    # output
+    if new_phrase:
+        phrase = str(input.nick) + " thinks " + str(user) + " meant: " + str(new_phrase)
+        phenny.say(phrase)
+
+meant.rule = r'.*\s\~\=\s.*'
+meant.priority = 'high'
+    
 if __name__ == '__main__':
     print __doc__.strip()
