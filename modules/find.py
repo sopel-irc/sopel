@@ -112,7 +112,10 @@ def meant (phenny, input):
     matching = text[1]
 
     list_pattern = exp.split(matching)
-    pattern = list_pattern[1]
+    try:
+        pattern = list_pattern[1]
+    except:
+        return
 
     # Make sure the list exists
     try:
