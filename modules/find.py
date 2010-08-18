@@ -107,7 +107,7 @@ def meant (phenny, input):
     global exp
 
     text = unicode(input.group())
-    text = text.split(" ~= ")
+    text = text.split(" =~ ")
     user = text[0]
     matching = text[1]
 
@@ -155,7 +155,7 @@ def meant (phenny, input):
         phrase = str(input.nick) + " thinks " + str(user) + " meant: " + str(new_phrase)
         phenny.say(phrase)
 
-meant.rule = r'.*\s\~\=\s.*'
+meant.rule = r'.*\s\=\~\s.*'
 meant.priority = 'high'
     
 if __name__ == '__main__':
