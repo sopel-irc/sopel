@@ -107,9 +107,11 @@ def meant (phenny, input):
     global exp
 
     text = unicode(input.group())
-    text = text.split(": ")
+    #text = text.split(": ")
+    text = text.split(":",1)
+    
     user = text[0]
-    matching = text[1]
+    matching = text[1][1:]
 
     list_pattern = exp.split(matching)
     try:
