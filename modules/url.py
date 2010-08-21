@@ -113,7 +113,7 @@ def short(phenny, input):
             b = str(a[k-1][0])
             if not b.startswith("http://bit.ly"):
                 short1=api.shorten(b,{'history':1})
-                if (len(b) >= 40):
+                if (len(b) >= 35):
                     #page_title = find_title(phenny, input, b)
                     #display = "[ " + str(page_title) + " ] " + str(short1)
                     if rand < 0.02:
