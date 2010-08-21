@@ -109,8 +109,9 @@ def short(phenny, input):
         text = input.group()
         a = re.findall(url_finder, text)
         k = len(a)
-        while k > 0:
-            b = str(a[k-1][0])
+        i = 0
+        while i < k:
+            b = str(a[i][0])
             if not b.startswith("http://bit.ly"):
                 short1=api.shorten(b,{'history':1})
                 if (len(b) >= 35):
@@ -120,7 +121,7 @@ def short(phenny, input):
                         phenny.say("http://bit.ly/bq1P4T")
                     else:
                         phenny.say(str(short1))
-            k-=1
+            i += 1
     except:
         return
 #short.rule = r'.*(?:(?:ht|f)tp(?:s?)\:\/\/|~\/|\/)(?:\w+:\w+@)?((?:(?:[-\w\d{1-3}]+\.)+(?:com|org|net|gov|mil|biz|info|mobi|name|aero|jobs|edu|co\.uk|ac\.uk|it|fr|tv|museum|asia|local|travel|[a-z]{2})?))(?::[\d]{1,5})?(?:(?:(?:\/(?:[-\w~!$+|.,=]|%[a-f\d]{2})+)+|\/)+|\?|#)?(?:(?:\?(?:[-\w~!$+|.,*:]|%[a-f\d{2}])+=?(?:[-\w~!$+|.,*:=]|%[a-f\d]{2})*)(?:&(?:[-\w~!$+|.,*:]|%[a-f\d{2}])+=?(?:[-\w~!$+|.,*:=]|%[a-f\d]{2})*)*)*(?:#(?:[-\w~!$ |/.,*:;=]|%[a-f\d]{2})*)?\b'
