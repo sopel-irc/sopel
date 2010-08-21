@@ -141,8 +141,9 @@ def show_title(phenny,input):
     text = input.group()
     a = re.findall(url_finder, text)
     k = len(a)
-    while k > 0:
-        url = str(a[k-1][0])
+    i = 0
+    while i < k:
+        url = str(a[i][0])
         try:
             try: 
                 page_title = find_title(phenny, input, url)
@@ -155,7 +156,7 @@ def show_title(phenny,input):
         else:
             display = "[ " + str(page_title) + " ]"
         phenny.say(display)
-        k -= 1
+        i += 1
 #show_title.rule = r'.*(?:(?:ht|f)tp(?:s?)\:\/\/|~\/|\/)(?:\w+:\w+@)?((?:(?:[-\w\d{1-3}]+\.)+(?:com|org|net|gov|mil|biz|info|mobi|name|aero|jobs|edu|co\.uk|ac\.uk|it|fr|tv|museum|asia|local|travel|[a-z]{2})?))(?::[\d]{1,5})?(?:(?:(?:\/(?:[-\w~!$+|.,=]|%[a-f\d]{2})+)+|\/)+|\?|#)?(?:(?:\?(?:[-\w~!$+|.,*:]|%[a-f\d{2}])+=?(?:[-\w~!$+|.,*:=]|%[a-f\d]{2})*)(?:&(?:[-\w~!$+|.,*:]|%[a-f\d{2}])+=?(?:[-\w~!$+|.,*:=]|%[a-f\d]{2})*)*)*(?:#(?:[-\w~!$ |/.,*:;=]|%[a-f\d]{2})*)?\b'
 show_title.rule = '.*((http|https|ftp)(://\S+)).*'
 show_title.priority = 'high'
