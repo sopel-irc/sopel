@@ -33,7 +33,7 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 import random
 from datetime import datetime, timedelta
 
-CHANNEL = '#osu-uno'
+CHANNEL = '##uno'
 SCOREFILE = "/home/yanovich/phenny_osu/unoscores.txt"
 
 STRINGS = {
