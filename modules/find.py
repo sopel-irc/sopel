@@ -113,7 +113,7 @@ def meant (phenny, input):
     user = text[0]
     matching = text[1][1:]
 
-    if str(matching).startswith("http://"):
+    if not str(matching).startswith("s/"):
         return
 
     list_pattern = exp.split(matching)

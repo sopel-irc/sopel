@@ -179,5 +179,11 @@ def rand_whoa (phenny,input):
 #rand_whoa.rule = '.*'
 #rand_whoa.priority = 'low'
 
+def ping_reply (phenny,input):
+    text = input.group().split(": ")
+    if text[1] == 'PING' or text[1] == 'ping':
+        phenny.reply("PONG")
+ping_reply.rule = '(?i)($nickname|phenny)\:.*'
+
 if __name__ == '__main__': 
     print __doc__.strip()
