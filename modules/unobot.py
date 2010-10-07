@@ -229,13 +229,13 @@ class UnoBot:
                 if len (t) == 4: t.append (0)
             f.close ()
         except: pass
-        phenny.say(str(prescores))
         prescores = sorted (prescores, lambda x, y: cmp ((y[1] != '0') and (float (y[3]) / int (y[1])) or 0, (x[1] != '0') and (float (x[3]) / int (x[1])) or 0))
         if not prescores:
             phenny.say(STRINGS['NO_SCORES'])
         i = 1
         for z in prescores[:10]:
             phenny.say(STRINGS['SCORE_ROW'] % (i, z[0], z[3], z[1], z[2], timedelta (seconds = int (z[4]))))
+            #phenny.say("additional info: " + mystr) 
             i += 1
 
     
@@ -260,6 +260,7 @@ class UnoBot:
         return ret
     
     def showOnTurn (self, phenny):
+        phenny.msg (CHANNEL, STRINGS['TOP_CARD'] % (self.playerOrder[self.currentPlayer], self.renderCards ([self.topCard])))
         phenny.msg (CHANNEL, STRINGS['TOP_CARD'] % (self.playerOrder[self.currentPlayer], self.renderCards ([self.topCard])))
         phenny.notice (self.playerOrder[self.currentPlayer], STRINGS['YOUR_CARDS'] % self.renderCards (self.players[self.playerOrder[self.currentPlayer]]))
         msg = STRINGS['NEXT_START']
@@ -349,7 +350,6 @@ class UnoBot:
                         score += self.special_scores[c[1:]]
                     else:
                         score += int (c[1])
-            phenny.msg (CHANNEL, STRINGS['GAINS'] % (winner, score))
             self.saveScores (self.players.keys (), winner, score, (datetime.now () - self.startTime).seconds)
         except Exception, e:
             print 'Score error: %s' % e

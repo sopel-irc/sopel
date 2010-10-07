@@ -72,8 +72,9 @@ def findandreplace(phenny, input):
     search_file.close()
 
     # output
-    phrase = str(input.nick) + " meant to say: " + new_phrase
-    phenny.say(phrase)
+    if new_phrase:
+        phrase = str(input.nick) + " meant to say: " + str(new_phrase)
+        phenny.say(phrase)
 findandreplace.rule = '(s)/.*'
 findandreplace.priority = 'high'
 

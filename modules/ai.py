@@ -139,18 +139,6 @@ def random_resp(phenny, input):
         phenny.reply(strinput[1][1:])
 random_resp.rule = r'(?i)$nickname\:\s+(.*)'
 
-def random_yesno(phenny, input):
-    # phenny will randomly answer a yes/no answer
-    human = random.random()
-    wait = random.uniform(0,7)
-    if 0 <= human <= .025:
-        time.sleep(wait)
-        choices = ["yes", "no"]
-        response = random.choice(choices)
-        phenny.reply(response)
-random_yesno.rule = r'(?i)^(do|are|is|will|has)\b.*(\?)$'
-random_yesno.priority = 'low'
-
 def wat(phenny, input):
     phenny.say("we are team!")
 wat.rule = r'(?i)(.*)\bwe\s+are\s+team\b(.*)'
@@ -171,19 +159,23 @@ def yesno(phenny,input):
         phenny.reply("yes")
 yesno.rule = '(phenny|$nickname)\:\s+(yes|no)$'
 
-def rand_whoa (phenny,input):
-    text = input.group()
-    rand = random.random()
-    if 0 < rand < 0.0013:
-        phenny.say('whoa!')
-#rand_whoa.rule = '.*'
-#rand_whoa.priority = 'low'
-
 def ping_reply (phenny,input):
     text = input.group().split(": ")
     if text[1] == 'PING' or text[1] == 'ping':
         phenny.reply("PONG")
 ping_reply.rule = '(?i)($nickname|phenny)\:.*'
+
+def love (phenny, input):
+    phenny.reply("I love you too.")
+love.rule = '(?i)i.*love.*(phenny|$nickname).*'
+
+def love2 (phenny, input):
+    phenny.reply("I love you too.")
+love2.rule = '(?i)(phenny|$nickname)\:\si.*love.*'
+
+def love3 (phenny, input):
+    phenny.reply("I love you too.")
+love3.rule = '(?i)(phenny|$nickname)\,\si.*love.*'
 
 if __name__ == '__main__': 
     print __doc__.strip()

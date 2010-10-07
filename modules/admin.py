@@ -202,22 +202,23 @@ def auth_check(phenny, nick, target):
     elif nick in auth_list:
         return 1
 
-def time_topic (phenny, input):
-    if not input.sender == '#pyohio' or not input.nick == 'yano':
+
+def topic(m5, input):
+    """
+    This gives admins the ability to change the topic.
+    Note: One does *NOT* have to be an OP, one just has to be on the list of
+    admins.
+    """
+    if not input.admin:
         return
+    #topic = input.group().split("!topic ")
+    #verify = auth_check(m5, input.nick)
+    #if verify:
+    channel = input.sender
+    m5.write(['TOPIC', channel, 'please show more'])
+topic.commands = ['topic']
+topic.priority = 'low'
 
-    def four (phenny, input):
-        phenny.write(['TOPIC', '#pyohio', 'PyOhio 2010 | 4:30PM - "Faster" (Cartoon 1 + 2) | http://pyohio.org/'])
-
-    s = sched.scheduler(time.time, time.sleep)
-
-    timediff = 1280691900.0 - time.time() # 3:45 PM EDT
-
-    s.enter(timediff, 1, four, (phenny, input))
-    s.run()
-
-time_topic.commands = ['topic']
-time_topic.priority = 'low'
 if __name__ == '__main__': 
    print __doc__.strip()
 
