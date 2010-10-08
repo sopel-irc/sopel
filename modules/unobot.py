@@ -261,7 +261,6 @@ class UnoBot:
     
     def showOnTurn (self, phenny):
         phenny.msg (CHANNEL, STRINGS['TOP_CARD'] % (self.playerOrder[self.currentPlayer], self.renderCards ([self.topCard])))
-        phenny.msg (CHANNEL, STRINGS['TOP_CARD'] % (self.playerOrder[self.currentPlayer], self.renderCards ([self.topCard])))
         phenny.notice (self.playerOrder[self.currentPlayer], STRINGS['YOUR_CARDS'] % self.renderCards (self.players[self.playerOrder[self.currentPlayer]]))
         msg = STRINGS['NEXT_START']
         tmp = self.currentPlayer + self.way
@@ -350,6 +349,7 @@ class UnoBot:
                         score += self.special_scores[c[1:]]
                     else:
                         score += int (c[1])
+            phenny.msg(CHANNEL, STRINGS['GAINS'] % (winner, score))
             self.saveScores (self.players.keys (), winner, score, (datetime.now () - self.startTime).seconds)
         except Exception, e:
             print 'Score error: %s' % e
