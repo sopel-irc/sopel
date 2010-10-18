@@ -229,7 +229,8 @@ class UnoBot:
                 if len (t) == 4: t.append (0)
             f.close ()
         except: pass
-        prescores = sorted (prescores, lambda x, y: cmp ((y[1] != '0') and (float (y[3]) / int (y[1])) or 0, (x[1] != '0') and (float (x[3]) / int (x[1])) or 0))
+        #prescores = sorted (prescores, lambda x, y: cmp ((y[1] != '0') and (float (y[3]) / int (y[1])) or 0, (x[1] != '0') and (float (x[3]) / int (x[1])) or 0))
+        prescores = sorted(prescores, lambda x, y: cmp ((y[1] != '0') and (float(y[3]) / int(y[1])) and (float(y[2]) / int(y[1])) or 0, (x[1] != '0') and (float(x[3]) / int(x[1])) and (float(x[2]) / int(x[1])) or 0))
         if not prescores:
             phenny.say(STRINGS['NO_SCORES'])
         i = 1
