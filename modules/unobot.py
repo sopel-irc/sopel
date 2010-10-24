@@ -59,7 +59,7 @@ STRINGS = {
     'DRAW_FIRST' : '\x0300,01%s, you need to draw first!',
     'PASSED' : '\x0300,01%s passed!',
     'NO_SCORES' : '\x0300,01No scores yet',
-    'SCORE_ROW' : '\x0300,01#%s %s (%s points %s games, %s won, %s wasted)',
+    'SCORE_ROW' : '\x0300,01#%s %s (%s points, %s games, %s won, %.2f points per game)',
     'TOP_CARD' : '\x0300,01%s\'s turn. Top Card: %s',
     'YOUR_CARDS' : '\x0300,01Your cards: %s',
     'NEXT_START' : '\x0300,01Next: ',
@@ -229,13 +229,13 @@ class UnoBot:
                 if len (t) == 4: t.append (0)
             f.close ()
         except: pass
-        #prescores = sorted (prescores, lambda x, y: cmp ((y[1] != '0') and (float (y[3]) / int (y[1])) or 0, (x[1] != '0') and (float (x[3]) / int (x[1])) or 0))
-        prescores = sorted(prescores, lambda x, y: cmp ((y[1] != '0') and (float(y[3]) / int(y[1])) and (float(y[2]) / int(y[1])) or 0, (x[1] != '0') and (float(x[3]) / int(x[1])) and (float(x[2]) / int(x[1])) or 0))
+        prescores = sorted (prescores, lambda x, y: cmp ((y[1] != '0') and (float (y[3]) / int (y[1])) or 0, (x[1] != '0') and (float (x[3]) / int (x[1])) or 0))
+        #prescores = sorted(prescores, lambda x, y: cmp ((y[1] != '0') and (float(y[3]) / int(y[1])) and (float(y[2]) / int(y[1])) or 0, (x[1] != '0') and (float(x[3]) / int(x[1])) and (float(x[2]) / int(x[1])) or 0))
         if not prescores:
             phenny.say(STRINGS['NO_SCORES'])
         i = 1
         for z in prescores[:10]:
-            phenny.say(STRINGS['SCORE_ROW'] % (i, z[0], z[3], z[1], z[2], timedelta (seconds = int (z[4]))))
+            phenny.say(STRINGS['SCORE_ROW'] % (i, z[0], z[3], z[1], z[2], float(z[3])/float(z[1])))
             #phenny.say("additional info: " + mystr) 
             i += 1
 
