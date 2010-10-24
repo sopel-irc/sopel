@@ -283,7 +283,27 @@ class UnoBot:
     def showCards (self, phenny, user):
         if not self.game_on or not self.deck:
             return
-        phenny.notice (user, STRINGS['YOUR_CARDS'] % self.renderCards (self.players[user]))
+        if user not in self.players:
+            msg = STRINGS['NEXT_START']
+            tmp = self.currentPlayer + self.way
+            if tmp == len (self.players):
+                tmp = 0
+            if tmp < 0:
+                tmp = len (self.players) - 1
+            arr = [ ]
+            k = len(self.players)
+            while k > 0:
+                arr.append (STRINGS['NEXT_PLAYER'] % (self.playerOrder[tmp], len (self.players[self.playerOrder[tmp]])))
+                tmp = tmp + self.way
+                if tmp == len (self.players):
+                    tmp = 0
+                if tmp < 0:
+                    tmp = len (self.players) - 1
+                k-=1
+            msg += ' - '.join (arr)
+            phenny.notice (user, msg) 
+        else:
+            phenny.notice (user, STRINGS['YOUR_CARDS'] % self.renderCards (self.players[user]))
 
     def renderCards (self, cards):
         ret = [ ]
@@ -395,6 +415,10 @@ class UnoBot:
             f.close ()
         except Exception, e:
             print 'Failed to write score file %s' % e
+    def showTopCard_demand (self):
+        if not self.game_on or not self.deck:
+            return
+        phenny.msg (CHANNEL, STRINGS['TOP_CARD'] % (self.playerOrder[self.currentPlayer], self.renderCards ([self.topCard])))
 
 unobot = UnoBot ()
 
@@ -443,6 +467,17 @@ def show_user_cards (phenny, input):
 show_user_cards.commands = ['cards']
 show_user_cards.priority = 'low'
 
+def help_uno (phenny, input):
+    phenny.reply("To start a game, type '.uno'. | Type 'join' to join a game. | To play the syntax is '.play <first letter of colour> <face card>' | If you can't make a move you can '.draw' | If you still can't make a move then '.pass' | For example, to play a blue 9, type '.play b 9'")
+    phenny.reply("To play a wild-card and make the next colour blue, it's '.play w b' | To play a wild draw 4 and make next colour green it's '.play wd4 g'")
+help_uno.commands = ['help-uno']
+help_uno.priority = 'low'
+
+def top_card (phenny, input):
+    unobot.showTopCard_demand()
+top_card.commands = ['top']
+top_card.priority = 'low'
+
 if __name__ == '__main__':
-       print __doc__.strip()
+    print __doc__.strip()
 
