@@ -200,7 +200,7 @@ class UnoBot:
         phenny.msg (CHANNEL, STRINGS['DRAWS'] % self.playerOrder[self.currentPlayer])
         c = self.getCard ()
         self.players[self.playerOrder[self.currentPlayer]].append (c)
-        phenny.notice (input.nick, STRINGS['DRAWN_CARD'] % self.renderCards ([c]))
+        phenny.msg (input.nick, STRINGS['DRAWN_CARD'] % self.renderCards ([c]))
 
     # this is not a typo, avoiding collision with Python's pass keyword
     def passs (self, phenny, input):
@@ -267,7 +267,7 @@ class UnoBot:
     
     def showOnTurn (self, phenny):
         phenny.msg (CHANNEL, STRINGS['TOP_CARD'] % (self.playerOrder[self.currentPlayer], self.renderCards ([self.topCard])))
-        phenny.notice (self.playerOrder[self.currentPlayer], STRINGS['YOUR_CARDS'] % self.renderCards (self.players[self.playerOrder[self.currentPlayer]]))
+        phenny.msg (self.playerOrder[self.currentPlayer], STRINGS['YOUR_CARDS'] % self.renderCards (self.players[self.playerOrder[self.currentPlayer]]))
         msg = STRINGS['NEXT_START']
         tmp = self.currentPlayer + self.way
         if tmp == len (self.players):
@@ -283,7 +283,7 @@ class UnoBot:
             if tmp < 0:
                 tmp = len (self.players) - 1
         msg += ' - '.join (arr)
-        phenny.notice (self.playerOrder[self.currentPlayer], msg)
+        phenny.msg (self.playerOrder[self.currentPlayer], msg)
     
     def showCards (self, phenny, user):
         if not self.game_on or not self.deck:
@@ -306,9 +306,9 @@ class UnoBot:
                     tmp = len (self.players) - 1
                 k-=1
             msg += ' - '.join (arr)
-            phenny.notice (user, msg) 
+            phenny.msg (user, msg) 
         else:
-            phenny.notice (user, STRINGS['YOUR_CARDS'] % self.renderCards (self.players[user]))
+            phenny.msg (user, STRINGS['YOUR_CARDS'] % self.renderCards (self.players[user]))
 
     def renderCards (self, cards):
         ret = [ ]
@@ -342,13 +342,13 @@ class UnoBot:
         if card[1:] == 'D2':
             phenny.msg (CHANNEL, STRINGS['D2'] % self.playerOrder[self.currentPlayer])
             z = [self.getCard (), self.getCard ()]
-            phenny.notice(self.playerOrder[self.currentPlayer], STRINGS['CARDS'] % self.renderCards (z))
+            phenny.msg(self.playerOrder[self.currentPlayer], STRINGS['CARDS'] % self.renderCards (z))
             self.players[self.playerOrder[self.currentPlayer]].extend (z)
             self.incPlayer ()
         elif card[:2] == 'WD':
             phenny.msg (CHANNEL, STRINGS['WD4'] % self.playerOrder[self.currentPlayer])
             z = [self.getCard (), self.getCard (), self.getCard (), self.getCard ()]
-            phenny.notice(self.playerOrder[self.currentPlayer], STRINGS['CARDS'] % self.renderCards (z))
+            phenny.msg(self.playerOrder[self.currentPlayer], STRINGS['CARDS'] % self.renderCards (z))
             self.players[self.playerOrder[self.currentPlayer]].extend (z)
             self.incPlayer ()
         elif card[1] == 'S':
