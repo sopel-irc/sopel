@@ -217,7 +217,7 @@ class UnoBot:
         self.incPlayer ()
         self.showOnTurn (phenny)
     
-    def top10 (self, phenny):
+    def top10 (self, phenny, input):
         from copy import copy
         prescores = [ ]
         try:
@@ -232,11 +232,16 @@ class UnoBot:
         prescores = sorted (prescores, lambda x, y: cmp ((y[1] != '0') and (float (y[3]) / int (y[1])) or 0, (x[1] != '0') and (float (x[3]) / int (x[1])) or 0))
         #prescores = sorted(prescores, lambda x, y: cmp ((y[1] != '0') and (float(y[3]) / int(y[1])) and (float(y[2]) / int(y[1])) or 0, (x[1] != '0') and (float(x[3]) / int(x[1])) and (float(x[2]) / int(x[1])) or 0))
         if not prescores:
-            phenny.say(STRINGS['NO_SCORES'])
+            if self.game_on or self.deck:
+                phenny.msg(input.nick, STRINGS['NO_SCORES'])
+            else:
+                phenny.say(STRINGS['NO_SCORES'])
         i = 1
         for z in prescores[:10]:
-            phenny.say(STRINGS['SCORE_ROW'] % (i, z[0], z[3], z[1], z[2], float(z[3])/float(z[1])))
-            #phenny.say("additional info: " + mystr) 
+            if self.game_on or self.deck:
+                phenny.msg(input.nick, STRINGS['SCORE_ROW'] % (i, z[0], z[3], z[1], z[2], float(z[3])/float(z[1])))
+            else:
+                phenny.say(STRINGS['SCORE_ROW'] % (i, z[0], z[3], z[1], z[2], float(z[3])/float(z[1])))
             i += 1
 
     
@@ -248,7 +253,7 @@ class UnoBot:
         for a in self.special_cards: 
             ret.append (a)
             ret.append (a)
-        ret *= 3
+        ret *= 4
         random.shuffle (ret)
 
         return ret
@@ -458,7 +463,7 @@ passs.commands = ['pass', 'pa']
 passs.priority = 'low'
 
 def unotop10 (phenny, input):
-    unobot.top10 (phenny)
+    unobot.top10 (phenny,input)
 unotop10.commands = ['unotop10']
 unotop10.priority = 'low'
 
