@@ -415,7 +415,7 @@ class UnoBot:
             f.close ()
         except Exception, e:
             print 'Failed to write score file %s' % e
-    def showTopCard_demand (self):
+    def showTopCard_demand (self, phenny):
         if not self.game_on or not self.deck:
             return
         phenny.msg (CHANNEL, STRINGS['TOP_CARD'] % (self.playerOrder[self.currentPlayer], self.renderCards ([self.topCard])))
@@ -474,7 +474,7 @@ help_uno.commands = ['help-uno']
 help_uno.priority = 'low'
 
 def top_card (phenny, input):
-    unobot.showTopCard_demand()
+    unobot.showTopCard_demand(phenny)
 top_card.commands = ['top']
 top_card.priority = 'low'
 
