@@ -31,10 +31,6 @@ def commands(phenny, input):
 commands.commands = ['commands']
 commands.priority = 'low'
 
-#def commandsf(phenny, input):
-#	commands(phenny, input)
-#commandsf.commands = ['commands']
-
 def help(phenny, input): 
 	response = (
 		'Hi, I\'m a bot. Say ".commands" to me in private for a list ' + 
