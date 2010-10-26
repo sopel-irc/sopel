@@ -70,6 +70,7 @@ STRINGS = {
     'SKIPPED' : '\x0300,01%s is skipped!',
     'REVERSED' : '\x0300,01Order reversed!',
     'GAINS' : '\x0300,01%s gains %s points!',
+    'SCORE_ROW2' : '\x0300,01#%s %s (%s points, %s games, %s won, %.2f points per game, %.5f percent wins)'
 }
 
 class UnoBot:
@@ -350,13 +351,13 @@ class UnoBot:
         if card[1:] == 'D2':
             phenny.msg (CHANNEL, STRINGS['D2'] % self.playerOrder[self.currentPlayer])
             z = [self.getCard (), self.getCard ()]
-            phenny.msg(self.playerOrder[self.currentPlayer], STRINGS['CARDS'] % self.renderCards (z))
+            phenny.notice(self.playerOrder[self.currentPlayer], STRINGS['CARDS'] % self.renderCards (z))
             self.players[self.playerOrder[self.currentPlayer]].extend (z)
             self.incPlayer ()
         elif card[:2] == 'WD':
             phenny.msg (CHANNEL, STRINGS['WD4'] % self.playerOrder[self.currentPlayer])
             z = [self.getCard (), self.getCard (), self.getCard (), self.getCard ()]
-            phenny.msg(self.playerOrder[self.currentPlayer], STRINGS['CARDS'] % self.renderCards (z))
+            phenny.notice(self.playerOrder[self.currentPlayer], STRINGS['CARDS'] % self.renderCards (z))
             self.players[self.playerOrder[self.currentPlayer]].extend (z)
             self.incPlayer ()
         elif card[1] == 'S':
@@ -471,6 +472,40 @@ class UnoBot:
         phenny.say(input.nick + " you have been removed from the game.")
         self.showOnTurn (phenny)
         phenny.say("list after: " + str(self.playerOrder))
+
+    def stats (self, phenny, input):
+        # self.rankings()
+        text = input.group().split()
+        if len(text) > 1:
+            user = text[1]
+        from copy import copy
+        prescores = [ ]
+        try:
+            f = open (self.scoreFile, 'r')
+            for l in f:
+                t = l.replace ('\n', '').split (' ')
+                if len (t) < 4: continue
+                prescores.append (copy (t))
+                if len (t) == 4: t.append (0)
+            f.close ()
+        except: pass
+        prescores = sorted (prescores, lambda x, y: cmp ((y[1] != '0') and (float (y[2]) / int (y[1])) or 0, (x[1] != '0') and (float (x[2]) / int (x[1])) or 0))
+        if not prescores:
+            phenny.say(STRINGS['NO_SCORES'])
+        i = 1
+
+        if len(text) == 1:
+            for z in prescores:
+                phenny.msg(input.nick, STRINGS['SCORE_ROW2'] % (i, z[0], z[3], z[1], z[2], float(z[3])/float(z[1]), float(z[2])/float(z[1])*100))
+                i += 1
+        elif len(text) == 2:
+            k = 1
+            for z in prescores:
+                if z[0] == user:
+                    phenny.say(STRINGS['SCORE_ROW2'] % (k, z[0], z[3], z[1], z[2], float(z[3])/float(z[1]), float(z[2])/float(z[1])*100))
+                k+=1
+
+
 unobot = UnoBot ()
 
 def uno(phenny, input):
@@ -538,6 +573,11 @@ def show_all (phenny, input):
     unobot.all(phenny, input)
 show_all.commands = ['unotopall']
 show_all.priority = 'low'
+
+def stats (phenny, input):
+    unobot.stats(phenny, input)
+stats.commands = ['stats']
+
 
 if __name__ == '__main__':
     print __doc__.strip()
