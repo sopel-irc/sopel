@@ -200,7 +200,7 @@ class UnoBot:
         phenny.msg (CHANNEL, STRINGS['DRAWS'] % self.playerOrder[self.currentPlayer])
         c = self.getCard ()
         self.players[self.playerOrder[self.currentPlayer]].append (c)
-        phenny.msg (input.nick, STRINGS['DRAWN_CARD'] % self.renderCards ([c]))
+        phenny.notice (input.nick, STRINGS['DRAWN_CARD'] % self.renderCards ([c]))
 
     # this is not a typo, avoiding collision with Python's pass keyword
     def passs (self, phenny, input):
@@ -267,7 +267,7 @@ class UnoBot:
     
     def showOnTurn (self, phenny):
         phenny.msg (CHANNEL, STRINGS['TOP_CARD'] % (self.playerOrder[self.currentPlayer], self.renderCards ([self.topCard])))
-        phenny.msg (self.playerOrder[self.currentPlayer], STRINGS['YOUR_CARDS'] % self.renderCards (self.players[self.playerOrder[self.currentPlayer]]))
+        phenny.notice (self.playerOrder[self.currentPlayer], STRINGS['YOUR_CARDS'] % self.renderCards (self.players[self.playerOrder[self.currentPlayer]]))
         msg = STRINGS['NEXT_START']
         tmp = self.currentPlayer + self.way
         if tmp == len (self.players):
@@ -283,32 +283,33 @@ class UnoBot:
             if tmp < 0:
                 tmp = len (self.players) - 1
         msg += ' - '.join (arr)
-        phenny.msg (self.playerOrder[self.currentPlayer], msg)
+        phenny.notice (self.playerOrder[self.currentPlayer], msg)
     
     def showCards (self, phenny, user):
         if not self.game_on or not self.deck:
             return
-        if user not in self.players:
-            msg = STRINGS['NEXT_START']
-            tmp = self.currentPlayer + self.way
+        msg = STRINGS['NEXT_START']
+        tmp = self.currentPlayer + self.way
+        if tmp == len (self.players):
+            tmp = 0
+        if tmp < 0:
+            tmp = len (self.players) - 1
+        arr = [ ]
+        k = len(self.players)
+        while k > 0:
+            arr.append (STRINGS['NEXT_PLAYER'] % (self.playerOrder[tmp], len (self.players[self.playerOrder[tmp]])))
+            tmp = tmp + self.way
             if tmp == len (self.players):
                 tmp = 0
             if tmp < 0:
                 tmp = len (self.players) - 1
-            arr = [ ]
-            k = len(self.players)
-            while k > 0:
-                arr.append (STRINGS['NEXT_PLAYER'] % (self.playerOrder[tmp], len (self.players[self.playerOrder[tmp]])))
-                tmp = tmp + self.way
-                if tmp == len (self.players):
-                    tmp = 0
-                if tmp < 0:
-                    tmp = len (self.players) - 1
-                k-=1
-            msg += ' - '.join (arr)
-            phenny.msg (user, msg) 
+            k-=1
+        msg += ' - '.join (arr)
+        if user not in self.players:
+            phenny.notice (user, msg) 
         else:
-            phenny.msg (user, STRINGS['YOUR_CARDS'] % self.renderCards (self.players[user]))
+            phenny.notice (user, STRINGS['YOUR_CARDS'] % self.renderCards (self.players[user]))
+            phenny.notice (user, msg)
 
     def renderCards (self, cards):
         ret = [ ]
@@ -425,6 +426,44 @@ class UnoBot:
             return
         phenny.msg (CHANNEL, STRINGS['TOP_CARD'] % (self.playerOrder[self.currentPlayer], self.renderCards ([self.topCard])))
 
+    def leave (self, phenny, input):
+        phenny.say("list before: " + str(self.playerOrder))
+        if not self.game_on or not self.deck:
+            return
+        if input.nick not in self.players:
+            return
+        if len(self.playerOrder) < 3:
+            phenny.reply("You can't leave a 2 player game.")
+            return
+        
+        temp = self.playerOrder[self.currentPlayer]
+
+        del self.players[input.nick]
+        a = self.playerOrder
+        b = a[:]
+        a.remove(input.nick)
+        self.playerorder = a
+
+        #if input.nick == self.playerOrder[self.currentPlayer]:
+        phenny.say("before changing, self.currentPlayer: " + str(self.currentPlayer))
+        #if input.nick != self.playerOrder[self.currentPlayer]:
+        #    self.currentPlayer = self.currentPlayer - self.way
+
+        if b.index(input.nick) < b.index(temp):
+            self.currentPlayer = self.currentPlayer - 1 
+
+
+
+        if self.currentPlayer >= len (self.players):
+            self.currentPlayer = 0
+        if self.currentPlayer < 0:
+            self.currentPlayer = len (self.players) - 1
+
+        phenny.say("after changing, self.currentPlayer: " + str(self.currentPlayer))
+
+        phenny.say(input.nick + " you have been removed from the game.")
+        self.showOnTurn (phenny)
+        phenny.say("list after: " + str(self.playerOrder))
 unobot = UnoBot ()
 
 def uno(phenny, input):
@@ -482,6 +521,11 @@ def top_card (phenny, input):
     unobot.showTopCard_demand(phenny)
 top_card.commands = ['top']
 top_card.priority = 'low'
+
+def leave (phenny, input):
+    unobot.leave(phenny, input)
+leave.commands = ['leave']
+leave.priority = 'low'
 
 if __name__ == '__main__':
     print __doc__.strip()
