@@ -50,6 +50,7 @@ def findandreplace(phenny, input):
         return
     current_list = search_dict[input.nick]
     phrase = unicode(current_list[-1])
+    
     if text.endswith("/g"):
         #new_phrase = unicode(re.sub(pattern, replacement, phrase))
         new_phrase = replace_wg(current_list, pattern, replacement, phrase)
@@ -62,8 +63,7 @@ def findandreplace(phenny, input):
     if new_phrase:
         if len(new_phrase) > 512:
             new_phrase[511:]
-        new_phrase = re.escape(new_phrase)
-
+    
     # Save the new "edited" message.
     list = search_dict[input.nick]
     list.append(new_phrase)
@@ -74,9 +74,10 @@ def findandreplace(phenny, input):
 
     # output
     if new_phrase:
-        phrase = str(input.nick) + " meant to say: " + str(new_phrase)
+        phrase = str(str(input.nick) + " meant to say: " + str(new_phrase))
+        phrase = printable(phrase)
         phenny.say(phrase)
-findandreplace.rule = '(s)/.*'
+findandreplace.rule = r'(s)/.*'
 findandreplace.priority = 'high'
 
 def replace_wg(list, pattern, replacement, phrase):
@@ -136,6 +137,7 @@ def meant (phenny, input):
     except:
         return
     phrase = unicode(current_list[-1])
+
     if matching.endswith("/g"):
         #new_phrase = unicode(re.sub(pattern, replacement, phrase))
         new_phrase = replace_wg(current_list, pattern, replacement, phrase)
@@ -148,7 +150,6 @@ def meant (phenny, input):
     if new_phrase:
         if len(new_phrase) > 512:
             new_phrase[511:]
-        new_phrase = re.escape(new_phrase)
 
     # Save the new "edited" message.
     list = search_dict[input.nick]
@@ -160,11 +161,16 @@ def meant (phenny, input):
 
     # output
     if new_phrase:
-        phrase = str(input.nick) + " thinks " + str(user) + " meant: " + str(new_phrase)
+        phrase = str(str(input.nick) + " thinks " + str(user) + " meant: " + str(new_phrase))
+        phrase = printable(phrase)
         phenny.say(phrase)
 
 meant.rule = r'.*\:\s.*'
 meant.priority = 'high'
+
+def printable (str):
+    from curses.ascii import isprint
+    return ''.join([char for char in str if isprint(char)])
     
 if __name__ == '__main__':
     print __doc__.strip()
