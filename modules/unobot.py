@@ -474,10 +474,11 @@ class UnoBot:
         phenny.say("list after: " + str(self.playerOrder))
 
     def stats (self, phenny, input):
-        # self.rankings()
+        self.rankings()
         text = input.group().split()
         if len(text) > 1:
             user = text[1]
+        '''
         from copy import copy
         prescores = [ ]
         try:
@@ -490,20 +491,41 @@ class UnoBot:
             f.close ()
         except: pass
         prescores = sorted (prescores, lambda x, y: cmp ((y[1] != '0') and (float (y[2]) / int (y[1])) or 0, (x[1] != '0') and (float (x[2]) / int (x[1])) or 0))
-        if not prescores:
+        '''
+        if not self.prescores:
             phenny.say(STRINGS['NO_SCORES'])
         i = 1
 
         if len(text) == 1:
-            for z in prescores:
+            phenny.msg(input.nick, "Top 10 based on percent win.")
+            for z in self.prescores[:10]:
                 phenny.msg(input.nick, STRINGS['SCORE_ROW2'] % (i, z[0], z[3], z[1], z[2], float(z[3])/float(z[1]), float(z[2])/float(z[1])*100))
                 i += 1
         elif len(text) == 2:
-            k = 1
-            for z in prescores:
-                if z[0] == user:
-                    phenny.say(STRINGS['SCORE_ROW2'] % (k, z[0], z[3], z[1], z[2], float(z[3])/float(z[1]), float(z[2])/float(z[1])*100))
-                k+=1
+            if text[1] == "pw":
+                phenny.msg(input.nick, "Top 10 based on points per game.")
+                from copy import copy
+                prescores = [ ]
+                try:
+                    f = open (self.scoreFile, 'r')
+                    for l in f:
+                        t = l.replace ('\n', '').split (' ')
+                        if len (t) < 4: continue
+                        prescores.append (copy (t))
+                        if len (t) == 4: t.append (0)
+                    f.close ()
+                except: pass
+                prescores = sorted (prescores, lambda x, y: cmp ((y[1] != '0') and (float (y[2]) / int (y[1])) or 0, (x[1] != '0') and (float (x[2]) / int (x[1])) or 0))
+                for z in prescores[:10]:
+                    phenny.msg(input.nick, STRINGS['SCORE_ROW2'] % (i, z[0], z[3], z[1], z[2], float(z[3])/float(z[1]), float(z[2])/float(z[1])*100))
+                    i += 1
+
+            else:
+                k = 1
+                for z in self.prescores:
+                    if z[0] == user:
+                        phenny.say(STRINGS['SCORE_ROW2'] % (k, z[0], z[3], z[1], z[2], float(z[3])/float(z[1]), float(z[2])/float(z[1])*100))
+                    k+=1
 
 
 unobot = UnoBot ()
