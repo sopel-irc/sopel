@@ -62,6 +62,7 @@ def findandreplace(phenny, input):
     if new_phrase:
         if len(new_phrase) > 512:
             new_phrase[511:]
+        new_phrase = re.escape(new_phrase)
 
     # Save the new "edited" message.
     list = search_dict[input.nick]
@@ -147,6 +148,7 @@ def meant (phenny, input):
     if new_phrase:
         if len(new_phrase) > 512:
             new_phrase[511:]
+        new_phrase = re.escape(new_phrase)
 
     # Save the new "edited" message.
     list = search_dict[input.nick]
