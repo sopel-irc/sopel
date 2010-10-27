@@ -23,7 +23,7 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
 [18:03] <Lako> .play w 3
-[18:03] <unobot> TopMobil's turn. Top Card: *]
+[18:03] <unobot> TopMobil's turn. Top Card: [*]
 [18:03] [Notice] -unobot- Your cards: [4][9][4][8][D2][D2]
 [18:03] [Notice] -unobot- Next: hatcher (5 cards) - Lako (2 cards)
 [18:03] <TopMobil> :O
@@ -33,6 +33,7 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 import random
 from datetime import datetime, timedelta
 
+# Remember to change these 2 lines or nothing will work
 CHANNEL = '##uno'
 SCOREFILE = "/home/yanovich/phenny_osu/unoscores.txt"
 
@@ -59,7 +60,6 @@ STRINGS = {
     'DRAW_FIRST' : '\x0300,01%s, you need to draw first!',
     'PASSED' : '\x0300,01%s passed!',
     'NO_SCORES' : '\x0300,01No scores yet',
-    'SCORE_ROW' : '\x0300,01#%s %s (%s points, %s games, %s won, %.2f points per game)',
     'TOP_CARD' : '\x0300,01%s\'s turn. Top Card: %s',
     'YOUR_CARDS' : '\x0300,01Your cards: %s',
     'NEXT_START' : '\x0300,01Next: ',
@@ -70,7 +70,8 @@ STRINGS = {
     'SKIPPED' : '\x0300,01%s is skipped!',
     'REVERSED' : '\x0300,01Order reversed!',
     'GAINS' : '\x0300,01%s gains %s points!',
-    'SCORE_ROW2' : '\x0300,01#%s %s (%s points, %s games, %s won, %.2f points per game, %.5f percent wins)'
+    'SCORE_ROW_PW' : '\x0300,01#%s %s (%s points, %s games, %s won, %.2f points per game, %.3f percent wins)',
+    'SCORE_ROW_PPG': '\x0300,01#%s %s (%s points, %s games, %s won, %.3f percent wins, %.2f points per game)'
 }
 
 class UnoBot:
@@ -88,7 +89,7 @@ class UnoBot:
         self.drawn = False
         self.scoreFile = SCOREFILE
         self.deck = [ ]
-        self.dealt = False
+        self.prescores = [ ]
  
     def start(self, phenny, owner):
         if self.game_on:
@@ -219,42 +220,17 @@ class UnoBot:
         phenny.msg (CHANNEL, STRINGS['PASSED'] % self.playerOrder[self.currentPlayer])
         self.incPlayer ()
         self.showOnTurn (phenny)
-    
-    def rankings (self):
-        from copy import copy
-        self.prescores = [ ]
-        try:
-            f = open (self.scoreFile, 'r')
-            for l in f:
-                t = l.replace ('\n', '').split (' ')
-                if len (t) < 4: continue
-                self.prescores.append (copy (t))
-                if len (t) == 4: t.append (0)
-            f.close ()
-        except: pass
-        self.prescores = sorted (self.prescores, lambda x, y: cmp ((y[1] != '0') and (float (y[3]) / int (y[1])) or 0, (x[1] != '0') and (float (x[3]) / int (x[1])) or 0))
 
     def top10 (self, phenny, input):
-        self.rankings()
-        if not self.prescores:
-            phenny.say(STRINGS['NO_SCORES'])
+        self.rankings("ppg")
         i = 1
         for z in self.prescores[:10]:
             if self.game_on or self.deck:
-                phenny.msg(input.nick, STRINGS['SCORE_ROW'] % (i, z[0], z[3], z[1], z[2], float(z[3])/float(z[1])))
+                phenny.msg(input.nick, STRINGS['SCORE_ROW_PPG'] % (i, z[0], z[3], z[1], z[2], float(z[2])/float(z[1]), float(z[3])/float(z[1])))
             else:
-                phenny.say(STRINGS['SCORE_ROW'] % (i, z[0], z[3], z[1], z[2], float(z[3])/float(z[1])))
+                phenny.msg(input.nick, STRINGS['SCORE_ROW_PPG'] % (i, z[0], z[3], z[1], z[2], float(z[2])/float(z[1]), float(z[3])/float(z[1])))
             i += 1
 
-    def all (self, phenny, input):
-        self.rankings()
-        if not self.prescores:
-            phenny.say(input.nick, STRINGS['NO_SCORES'])
-        i = 1
-        for z in self.prescores:
-            phenny.msg(input.nick, STRINGS['SCORE_ROW'] % (i, z[0], z[3], z[1], z[2], float(z[3])/float(z[1])))
-            i += 1
- 
     def createnewdeck (self):
         ret = [ ]
         for a in self.colored_card_nums:
@@ -431,6 +407,28 @@ class UnoBot:
             f.close ()
         except Exception, e:
             print 'Failed to write score file %s' % e
+     
+    # My added functions ============================================== #
+    def rankings (self, rank_type):
+        from copy import copy
+        self.prescores = [ ]
+        try:
+            f = open (self.scoreFile, 'r')
+            for l in f:
+                t = l.replace ('\n', '').split (' ')
+                if len (t) < 4: continue
+                self.prescores.append (copy (t))
+                if len (t) == 4: t.append (0)
+            f.close ()
+        except: pass
+        if rank_type == "ppg":
+            self.prescores = sorted (self.prescores, lambda x, y: cmp ((y[1] != '0') and (float (y[3]) / int (y[1])) or 0, (x[1] != '0') and (float (x[3]) / int (x[1])) or 0))
+        elif rank_type == "pw":
+            self.prescores = sorted (self.prescores, lambda x, y: cmp ((y[1] != '0') and (float (y[2]) / int (y[1])) or 0, (x[1] != '0') and (float (x[2]) / int (x[1])) or 0))
+        
+        if not self.prescores:
+            phenny.say(STRINGS['NO_SCORES'])
+            
     def showTopCard_demand (self, phenny):
         if not self.game_on or not self.deck:
             return
@@ -462,8 +460,6 @@ class UnoBot:
         if b.index(input.nick) < b.index(temp):
             self.currentPlayer = self.currentPlayer - 1 
 
-
-
         if self.currentPlayer >= len (self.players):
             self.currentPlayer = 0
         if self.currentPlayer < 0:
@@ -473,31 +469,44 @@ class UnoBot:
 
         #phenny.say(input.nick + " you have been removed from the game.")
         self.showOnTurn (phenny)
-        phenny.say("list after: " + str(self.playerOrder))
+        #phenny.say("list after: " + str(self.playerOrder))
 
-    def stats (self, phenny, input):
-        self.rankings()
+    def unostat (self, phenny, input):
         text = input.group().split()
-        if len(text) > 1:
-            user = text[1]
-        '''
-        from copy import copy
-        prescores = [ ]
-        try:
-            f = open (self.scoreFile, 'r')
-            for l in f:
-                t = l.replace ('\n', '').split (' ')
-                if len (t) < 4: continue
-                prescores.append (copy (t))
-                if len (t) == 4: t.append (0)
-            f.close ()
-        except: pass
-        prescores = sorted (prescores, lambda x, y: cmp ((y[1] != '0') and (float (y[2]) / int (y[1])) or 0, (x[1] != '0') and (float (x[2]) / int (x[1])) or 0))
-        '''
+        
+        if len(text) != 3:
+            phenny.say("Invalid input for stats command. Try '.unostats pw 3' for example.")
+            return
+
+        if text[1] == "pw":
+            self.rankings(text[1])
+            self.rank_assist(phenny, input, text[2], "SCORE_ROW_PW")
+        elif text[1] == "ppg":
+            self.rankings(text[1])
+            self.rank_assist(phenny, input, text[2], "SCORE_ROW_PPG")
+        
         if not self.prescores:
             phenny.say(STRINGS['NO_SCORES'])
-        i = 1
 
+    def rank_assist (self, phenny, input, nicknum, ranktype):
+        if nicknum.isdigit():
+            i = 1
+            s = int(nicknum)
+            for z in self.prescores[:s]:
+                phenny.msg(input.nick, STRINGS[ranktype] % (i, z[0], z[3], z[1], z[2], float(z[3])/float(z[1]), float(z[2])/float(z[1])*100))
+                i += 1
+        elif nicknum.isalpha():
+            j = 1
+            t = str(nicknum)
+            for y in self.prescores:
+                if y[0] == t:
+                    phenny.say(STRINGS[ranktype] % (j, y[0], y[3], y[1], y[2], float(y[3])/float(y[1]), float(y[2])/float(y[1])*100))
+                j += 1
+        else:
+            phenny.say("nicknum: " + str(nicknum))
+            
+        '''
+        # =========================================
         if len(text) == 1:
             phenny.msg(input.nick, "Top 10 based on points per game.")
             for z in self.prescores[:10]:
@@ -522,13 +531,17 @@ class UnoBot:
                     phenny.msg(input.nick, STRINGS['SCORE_ROW2'] % (i, z[0], z[3], z[1], z[2], float(z[3])/float(z[1]), float(z[2])/float(z[1])*100))
                     i += 1
 
+            
+            elif text[1].isdigit():
+                k = int(text[1])
+                
             else:
                 k = 1
                 for z in self.prescores:
                     if z[0] == user:
                         phenny.say(STRINGS['SCORE_ROW2'] % (k, z[0], z[3], z[1], z[2], float(z[3])/float(z[1]), float(z[2])/float(z[1])*100))
                     k+=1
-
+        '''
 
 unobot = UnoBot ()
 
@@ -568,7 +581,7 @@ passs.commands = ['pass', 'pa']
 passs.priority = 'low'
 
 def unotop10 (phenny, input):
-    unobot.top10 (phenny,input)
+    unobot.top10 (phenny, input)
 unotop10.commands = ['unotop10']
 unotop10.priority = 'low'
 
@@ -576,12 +589,6 @@ def show_user_cards (phenny, input):
     unobot.showCards (phenny, input.nick)
 show_user_cards.commands = ['cards']
 show_user_cards.priority = 'low'
-
-def help_uno (phenny, input):
-    phenny.reply("To start a game, type '.uno'. | Type 'join' to join a game. | To play the syntax is '.play <first letter of colour> <face card>' | If you can't make a move you can '.draw' | If you still can't make a move then '.pass' | For example, to play a blue 9, type '.play b 9'")
-    phenny.reply("To play a wild-card and make the next colour blue, it's '.play w b' | To play a wild draw 4 and make next colour green it's '.play wd4 g'")
-help_uno.commands = ['help-uno']
-help_uno.priority = 'low'
 
 def top_card (phenny, input):
     unobot.showTopCard_demand(phenny)
@@ -593,15 +600,10 @@ def leave (phenny, input):
 leave.commands = ['leave']
 leave.priority = 'low'
 
-def show_all (phenny, input):
-    unobot.all(phenny, input)
-show_all.commands = ['unotopall']
-show_all.priority = 'low'
-
-def stats (phenny, input):
-    unobot.stats(phenny, input)
-stats.commands = ['stat']
-stats.priority = 'low'
+def unostats (phenny, input):
+    unobot.unostat (phenny, input)
+unostats.commands = ['unostats']
+unostats.priority = 'low'
 
 
 if __name__ == '__main__':
