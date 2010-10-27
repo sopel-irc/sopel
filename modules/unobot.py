@@ -437,7 +437,7 @@ class UnoBot:
         phenny.msg (CHANNEL, STRINGS['TOP_CARD'] % (self.playerOrder[self.currentPlayer], self.renderCards ([self.topCard])))
 
     def leave (self, phenny, input):
-        phenny.say("list before: " + str(self.playerOrder))
+        #phenny.say("list before: " + str(self.playerOrder))
         if not self.game_on or not self.deck:
             return
         if input.nick not in self.players:
@@ -455,7 +455,7 @@ class UnoBot:
         self.playerorder = a
 
         #if input.nick == self.playerOrder[self.currentPlayer]:
-        phenny.say("before changing, self.currentPlayer: " + str(self.currentPlayer))
+        #phenny.say("before changing, self.currentPlayer: " + str(self.currentPlayer))
         #if input.nick != self.playerOrder[self.currentPlayer]:
         #    self.currentPlayer = self.currentPlayer - self.way
 
@@ -469,9 +469,9 @@ class UnoBot:
         if self.currentPlayer < 0:
             self.currentPlayer = len (self.players) - 1
 
-        phenny.say("after changing, self.currentPlayer: " + str(self.currentPlayer))
+        #phenny.say("after changing, self.currentPlayer: " + str(self.currentPlayer))
 
-        phenny.say(input.nick + " you have been removed from the game.")
+        #phenny.say(input.nick + " you have been removed from the game.")
         self.showOnTurn (phenny)
         phenny.say("list after: " + str(self.playerOrder))
 

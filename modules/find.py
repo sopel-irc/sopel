@@ -106,9 +106,9 @@ def meant (phenny, input):
     text = text.split(":",1)
     
     user = text[0]
-    matching = text[1][1:]
+    matching = unicode(text[1][1:])
 
-    if not str(matching).startswith("s/"):
+    if not matching.startswith("s/"):
         return
 
     list_pattern = exp.split(matching)
