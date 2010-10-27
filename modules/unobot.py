@@ -497,13 +497,13 @@ class UnoBot:
         i = 1
 
         if len(text) == 1:
-            phenny.msg(input.nick, "Top 10 based on percent win.")
+            phenny.msg(input.nick, "Top 10 based on points per game.")
             for z in self.prescores[:10]:
                 phenny.msg(input.nick, STRINGS['SCORE_ROW2'] % (i, z[0], z[3], z[1], z[2], float(z[3])/float(z[1]), float(z[2])/float(z[1])*100))
                 i += 1
         elif len(text) == 2:
             if text[1] == "pw":
-                phenny.msg(input.nick, "Top 10 based on points per game.")
+                phenny.msg(input.nick, "Top 10 based on percent win.")
                 from copy import copy
                 prescores = [ ]
                 try:

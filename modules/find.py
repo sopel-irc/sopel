@@ -48,15 +48,16 @@ def findandreplace(phenny, input):
         replacement = list_pattern[2]
     except:
         return
+    replacement = replacement.replace("\\", "\\\\")
     current_list = search_dict[input.nick]
     phrase = unicode(current_list[-1])
     
     if text.endswith("/g"):
         #new_phrase = unicode(re.sub(pattern, replacement, phrase))
-        new_phrase = replace_wg(current_list, pattern, replacement, phrase)
+        new_phrase = freplace(current_list, pattern, replacement, phrase, 1)
     else:
         #new_phrase = unicode(re.sub(pattern, replacement, phrase, 1))
-        new_phrase = replace_wog(current_list, pattern, replacement, phrase)
+        new_phrase = freplace(current_list, pattern, replacement, phrase, 0)
     
     # Prevents abuse; apparently there is an RFC spec about how servers handle
     # messages that contain more than 512 characters.
@@ -75,31 +76,22 @@ def findandreplace(phenny, input):
     # output
     if new_phrase:
         phrase = str(str(input.nick) + " meant to say: " + str(new_phrase))
-        phrase = printable(phrase)
         phenny.say(phrase)
 findandreplace.rule = r'(s)/.*'
 findandreplace.priority = 'high'
 
-def replace_wg(list, pattern, replacement, phrase):
+def freplace(list, pattern, replacement, phrase, flag):
     i = 0
     while i <= len(list):
         i += 1
         k = -i
         if len(list) > i:
             phrase_new = unicode(list[k])
-            sample = unicode(re.sub(pattern, replacement, phrase_new))
-            if sample != phrase_new:
-                return sample
-                break
+            if flag == 0:
+                sample = unicode(re.sub(pattern, replacement, phrase_new))
+            elif flag == 1:
+                sample = unicode(re.sub(pattern, replacement, phrase_new, 1))
 
-def replace_wog(list, pattern, replacement, phrase):
-    i = 0
-    while i <= len(list):
-        i += 1
-        k = -i
-        if len(list) > i:
-            phrase_new = unicode(list[k])
-            sample = unicode(re.sub(pattern, replacement, phrase_new, 1))
             if sample != phrase_new:
                 return sample
                 break
@@ -136,14 +128,13 @@ def meant (phenny, input):
         current_list = search_dict[user]
     except:
         return
+    replacement = replacement.replace("\\", "\\\\")
     phrase = unicode(current_list[-1])
 
     if matching.endswith("/g"):
-        #new_phrase = unicode(re.sub(pattern, replacement, phrase))
-        new_phrase = replace_wg(current_list, pattern, replacement, phrase)
+        new_phrase = freplace(current_list, pattern, replacement, phrase, 0)
     else:
-        #new_phrase = unicode(re.sub(pattern, replacement, phrase, 1))
-        new_phrase = replace_wog(current_list, pattern, replacement, phrase)
+        new_phrase = freplace(current_list, pattern, replacement, phrase, 1)
 
     # Prevents abuse; apparently there is an RFC spec about how servers handle
     # messages that contain more than 512 characters.
@@ -162,7 +153,6 @@ def meant (phenny, input):
     # output
     if new_phrase:
         phrase = str(str(input.nick) + " thinks " + str(user) + " meant: " + str(new_phrase))
-        phrase = printable(phrase)
         phenny.say(phrase)
 
 meant.rule = r'.*\:\s.*'
