@@ -225,9 +225,9 @@ class UnoBot:
         i = 1
         for z in self.prescores[:10]:
             if self.game_on or self.deck:
-                phenny.msg(input.nick, STRINGS['SCORE_ROW_PPG'] % (i, z[0], z[3], z[1], z[2], float(z[2])/float(z[1]), float(z[3])/float(z[1])))
+                phenny.msg(input.nick, STRINGS['SCORE_ROW'] % (i, z[0], z[3], z[1], z[2], float([3])/float(z[1]), float(z[2])/float(z[1])*100))
             else:
-                phenny.msg(input.nick, STRINGS['SCORE_ROW_PPG'] % (i, z[0], z[3], z[1], z[2], float(z[2])/float(z[1]), float(z[3])/float(z[1])))
+                phenny.msg(input.nick, STRINGS['SCORE_ROW'] % (i, z[0], z[3], z[1], z[2], float(z[3])/float(z[1]), float(z[2])/float(z[1])*100))
             i += 1
 
     def createnewdeck (self):
