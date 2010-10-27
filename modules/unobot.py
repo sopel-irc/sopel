@@ -88,6 +88,7 @@ class UnoBot:
         self.drawn = False
         self.scoreFile = SCOREFILE
         self.deck = [ ]
+        self.dealt = False
  
     def start(self, phenny, owner):
         if self.game_on:
@@ -120,12 +121,13 @@ class UnoBot:
                     phenny.msg (CHANNEL, STRINGS['DEALING_IN'] % (input.nick, self.playerOrder.index (input.nick) + 1))
                 else:
                     phenny.msg (CHANNEL, STRINGS['JOINED'] % (input.nick, self.playerOrder.index (input.nick) + 1))
-                    if len (self.players) > 1:
+                    if len (self.players) == 2:
                         phenny.msg (CHANNEL, STRINGS['ENOUGH'])
         else:
             phenny.msg (CHANNEL, STRINGS['NOT_STARTED'])
     
     def deal (self, phenny, input):
+        self.dealt = True
         if not self.game_on:
             phenny.msg (CHANNEL, STRINGS['NOT_STARTED'])
             return
@@ -598,7 +600,8 @@ show_all.priority = 'low'
 
 def stats (phenny, input):
     unobot.stats(phenny, input)
-stats.commands = ['stats']
+stats.commands = ['stat']
+stats.priority = 'low'
 
 
 if __name__ == '__main__':
