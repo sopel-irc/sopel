@@ -601,6 +601,11 @@ def unostats (phenny, input):
 unostats.commands = ['unostats']
 unostats.priority = 'low'
 
+def uno_help (phenny, input):
+    phenny.reply("For rules, examples, and getting started: http://j.mp/9ZAeXR")
+uno_help.commands = ['uno-help']
+uno_help.priority = 'low'
+
 
 if __name__ == '__main__':
     print __doc__.strip()
