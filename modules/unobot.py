@@ -70,8 +70,7 @@ STRINGS = {
     'SKIPPED' : '\x0300,01%s is skipped!',
     'REVERSED' : '\x0300,01Order reversed!',
     'GAINS' : '\x0300,01%s gains %s points!',
-    'SCORE_ROW_PW' : '\x0300,01#%s %s (%s points, %s games, %s won, %.2f points per game, %.3f percent wins)',
-    'SCORE_ROW_PPG': '\x0300,01#%s %s (%s points, %s games, %s won, %.3f percent wins, %.2f points per game)'
+    'SCORE_ROW' : '\x0300,01#%s %s (%s points, %s games, %s won, %.2f points per game, %.2f percent wins)',
 }
 
 class UnoBot:
@@ -478,12 +477,9 @@ class UnoBot:
             phenny.say("Invalid input for stats command. Try '.unostats pw 3' for example.")
             return
 
-        if text[1] == "pw":
+        if text[1] == "pw" or text[1] == "ppg":
             self.rankings(text[1])
-            self.rank_assist(phenny, input, text[2], "SCORE_ROW_PW")
-        elif text[1] == "ppg":
-            self.rankings(text[1])
-            self.rank_assist(phenny, input, text[2], "SCORE_ROW_PPG")
+            self.rank_assist(phenny, input, text[2], "SCORE_ROW")
         
         if not self.prescores:
             phenny.say(STRINGS['NO_SCORES'])
