@@ -94,7 +94,7 @@ def gau(phenny, input):
         time.sleep(random.randint(0,1))
         phenny.reply(randmsg)
         conversation = False
-gau.rule = '(?i).*(good).*'
+#gau.rule = '(?i).*(good).*'
 
 def bad(phenny, input):
     global aistate
