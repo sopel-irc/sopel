@@ -491,15 +491,14 @@ class UnoBot:
             for z in self.prescores[:s]:
                 phenny.msg(input.nick, STRINGS[ranktype] % (i, z[0], z[3], z[1], z[2], float(z[3])/float(z[1]), float(z[2])/float(z[1])*100))
                 i += 1
-        elif nicknum.isalpha():
+        #elif nicknum.isalpha():
+        else:
             j = 1
             t = str(nicknum)
             for y in self.prescores:
                 if y[0] == t:
                     phenny.say(STRINGS[ranktype] % (j, y[0], y[3], y[1], y[2], float(y[3])/float(y[1]), float(y[2])/float(y[1])*100))
                 j += 1
-        else:
-            phenny.say("nicknum: " + str(nicknum))
             
         '''
         # =========================================
