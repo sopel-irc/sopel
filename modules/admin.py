@@ -192,7 +192,7 @@ auth_verify.event = 'NOTICE'
 auth_verify.rule = r'(\S+) (ACC) ([0-3])'
 auth_verify.priority = 'high'
 
-def auth_check(phenny, nick, target):
+def auth_check(phenny, nick, target=None):
     """
     Checks if nick is on the auth list and returns true if so
     """
@@ -202,8 +202,18 @@ def auth_check(phenny, nick, target):
     elif nick in auth_list:
         return 1
 
+def kick(phenny, input):
+    if not input.admin: 
+        return
+    text = input.group().split()
+    nick = text[2]
+    if nick != phenny.config.nick:
+        tmp = text[1] + " " + nick
+        phenny.write(['KICK', tmp])
+kick.commands = ['kick']
+kick.priority = 'high'
 
-def topic(m5, input):
+def topic(phenny, input):
     """
     This gives admins the ability to change the topic.
     Note: One does *NOT* have to be an OP, one just has to be on the list of
@@ -211,11 +221,16 @@ def topic(m5, input):
     """
     if not input.admin:
         return
-    #topic = input.group().split("!topic ")
-    #verify = auth_check(m5, input.nick)
-    #if verify:
+    try:
+        topic = input.group().split(".topic ")[1]
+    except:
+        return
+
+    verify = auth_check(phenny, input.nick)
     channel = input.sender
-    m5.write(['TOPIC', channel, 'please show more'])
+    if verify:
+        text = "topic " + str(channel) + " " + str(topic)
+        phenny.write(('PRIVMSG', 'chanserv'), text)
 topic.commands = ['topic']
 topic.priority = 'low'
 

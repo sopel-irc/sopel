@@ -33,6 +33,8 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 import random
 from datetime import datetime, timedelta
 
+random.seed("phenny_osu")
+
 # Remember to change these 2 lines or nothing will work
 CHANNEL = '##uno'
 SCOREFILE = "/home/yanovich/phenny_osu/unoscores.txt"
@@ -89,6 +91,7 @@ class UnoBot:
         self.scoreFile = SCOREFILE
         self.deck = [ ]
         self.prescores = [ ]
+        self.dealt = False
  
     def start(self, phenny, owner):
         if self.game_on:
@@ -105,6 +108,7 @@ class UnoBot:
         if input.nick == self.game_on:
             phenny.msg (CHANNEL, STRINGS['GAME_STOPPED'])
             self.game_on = False
+            self.dealt = False
         elif self.game_on:
             phenny.msg (CHANNEL, STRINGS['CANT_STOP'] % self.game_on)
             
@@ -238,7 +242,12 @@ class UnoBot:
         for a in self.special_cards: 
             ret.append (a)
             ret.append (a)
-        ret *= 4
+
+        if len(self.playerOrder) <= 4:
+            ret *= 2
+        elif len(self.playerOrder) > 4:
+            ret *= 4
+
         random.shuffle (ret)
 
         return ret

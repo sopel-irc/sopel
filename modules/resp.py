@@ -90,17 +90,17 @@ def wb(phenny, input):
 wb.rule = '(wb).*(phenny|phenny_osu)$'
 
 def bru (phenny, input):
-    if input.sender != "#osu_osc":
+    if input.sender != "osu_osc":
         return
     text = input.group()
     words = { "color" : "colour", "favor" : "favour", "behavior" : "behaviour", "flavor" : "flavour", "favorite" : "favourite", "honor" : "honour", "neighbor" : "neighbour", "rumor" : "rumour", "labor" : "labour"}
     reply = ""
     for k in words:
         if k in text:
-            reply += (words[k] + " ")
+            reply += (words[k] + "! ")
     phenny.reply(reply)
 
-bru.rule = '.*(color|favor|behavior|flavor).*'
+bru.rule = '.*(color|favor|behavior|flavor|honor|labor|rumor|neighbor|favorite).*'
 
 if __name__ == '__main__': 
 	print __doc__.strip()
