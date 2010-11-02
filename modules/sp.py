@@ -28,8 +28,8 @@ def sp (phenny, input):
     #phenny.say("date: " + date)
     #phenny.say("time: " + timee)
     p = datetime.datetime(int(g[0]), int(g[1]), int(g[2]), int(timee[:2]), int(timee[2:]))
-    q = datetime.datetime.now() - p
-    phenny.say("Next episode of South Park in " + str(q)[1:])
+    q = p - datetime.datetime.now()
+    phenny.say("Next episode of South Park in " + str(q))
 sp.commands = ['sp']
 
 if __name__ == '__main__':
