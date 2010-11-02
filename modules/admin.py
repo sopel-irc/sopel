@@ -1,4 +1,4 @@
-#!/usrbin/env python
+#!/usr/bin/env python
 """
 mod.py - Channel Module
 Author: Alek Rollyson, http://opensource.osu.edu/
