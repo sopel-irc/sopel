@@ -54,10 +54,10 @@ def findandreplace(phenny, input):
     
     if text.endswith("/g"):
         #new_phrase = unicode(re.sub(pattern, replacement, phrase))
-        new_phrase = freplace(current_list, pattern, replacement, phrase, 1)
+        new_phrase = freplace(current_list, pattern, replacement, phrase, 0)
     else:
         #new_phrase = unicode(re.sub(pattern, replacement, phrase, 1))
-        new_phrase = freplace(current_list, pattern, replacement, phrase, 0)
+        new_phrase = freplace(current_list, pattern, replacement, phrase, 1)
     
     # Prevents abuse; apparently there is an RFC spec about how servers handle
     # messages that contain more than 512 characters.
@@ -88,9 +88,9 @@ def freplace(list, pattern, replacement, phrase, flag):
         if len(list) > i:
             phrase_new = unicode(list[k])
             if flag == 0:
-                sample = unicode(re.sub(pattern, replacement, phrase_new, 1))
-            elif flag == 1:
                 sample = unicode(re.sub(pattern, replacement, phrase_new))
+            elif flag == 1:
+                sample = unicode(re.sub(pattern, replacement, phrase_new, 1))
 
             if sample != phrase_new:
                 return sample
