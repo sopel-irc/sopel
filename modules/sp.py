@@ -15,6 +15,8 @@ def sp (phenny, input):
     html = web.get("http://www.imdb.com/title/tt0121955/episodes")
     soup = BeautifulSoup(html)
     b = soup.findAll(attrs={"class":"odd"})
+    
+    # if it's less than 7 days 
     c = str(b[-1])
     soup2 = BeautifulSoup(c)
     find_date = re.compile(r'<a href="/tvgrid/.*/.*">')
@@ -22,13 +24,20 @@ def sp (phenny, input):
     date = d[0][17:27]
     timee = d[0][28:32]
     g = date.split('-')
-    h = str(date) + " " + str(timee) 
-    j = time.mktime(time.strptime(h, '%Y-%m-%d %H%M'))
-    k = time.time() - j
+    #h = str(date) + " " + str(timee) 
+    #j = time.mktime(time.strptime(h, '%Y-%m-%d %H%M'))
+    #k = time.time() - j
     #phenny.say("date: " + date)
     #phenny.say("time: " + timee)
     p = datetime.datetime(int(g[0]), int(g[1]), int(g[2]), int(timee[:2]), int(timee[2:]))
     q = p - datetime.datetime.now()
+    r = str(q)
+    '''
+    try:
+        r.split("days")
+    except:
+    '''
+
     phenny.say("Next episode of South Park in " + str(q))
 sp.commands = ['sp']
 

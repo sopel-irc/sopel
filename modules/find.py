@@ -88,9 +88,9 @@ def freplace(list, pattern, replacement, phrase, flag):
         if len(list) > i:
             phrase_new = unicode(list[k])
             if flag == 0:
-                sample = unicode(re.sub(pattern, replacement, phrase_new))
-            elif flag == 1:
                 sample = unicode(re.sub(pattern, replacement, phrase_new, 1))
+            elif flag == 1:
+                sample = unicode(re.sub(pattern, replacement, phrase_new))
 
             if sample != phrase_new:
                 return sample

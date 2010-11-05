@@ -90,8 +90,8 @@ def wb(phenny, input):
 wb.rule = '(wb).*(phenny|phenny_osu)$'
 
 def bru (phenny, input):
-    if input.sender != "osu_osc":
-        return
+    #if input.sender != "osu_osc":
+    #    return
     text = input.group()
     words = { "color" : "colour", "favor" : "favour", "behavior" : "behaviour", "flavor" : "flavour", "favorite" : "favourite", "honor" : "honour", "neighbor" : "neighbour", "rumor" : "rumour", "labor" : "labour"}
     reply = ""
