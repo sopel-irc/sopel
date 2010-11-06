@@ -33,6 +33,8 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 import random
 from datetime import datetime, timedelta
 
+random.seed()
+
 # Remember to change these 2 lines or nothing will work
 CHANNEL = '##uno'
 SCOREFILE = "/home/yanovich/phenny_osu/unoscores.txt"
@@ -486,7 +488,7 @@ class UnoBot:
         text = input.group().split()
         
         if len(text) != 3:
-            phenny.say("Invalid input for stats command. Try '.unostats pw 3' for example.")
+            phenny.say("Invalid input for stats command. Try '.unostats ppg 10' to show the top 10 ranked by points per game. You can also show rankings by percent-wins 'pw'.")
             return
 
         if text[1] == "pw" or text[1] == "ppg":
