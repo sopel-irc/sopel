@@ -87,9 +87,14 @@ o.commands = ['o']
 o.example = '.o servicename arg1 arg2 arg3'
 o.services = {}
 
-def py(phenny, input): 
-    service(phenny, input, 'py', input.group(2))
-py.commands = ['py']
+def snippet(phenny, input): 
+    py = "BeautifulSoup.BeautifulSoup(re.sub('<.*?>|(?<= ) +', '', " + \
+          "eval(urllib.urlopen('http://ajax.googleapis.com/ajax/serv" + \
+          "ices/search/web?v=1.0&q=" + urllib.quote(input.group(2)) + \
+          "').read().replace('null', 'None'))['responseData']['resul" + \
+          "ts'][0]['content'].decode('unicode-escape')), convertEntities=True)"
+    service(phenny, input, 'py', py)
+snippet.commands = ['snippet']
 
 if __name__ == '__main__': 
     print __doc__.strip()
