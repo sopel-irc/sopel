@@ -33,8 +33,6 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 import random
 from datetime import datetime, timedelta
 
-random.seed("phenny_osu")
-
 # Remember to change these 2 lines or nothing will work
 CHANNEL = '##uno'
 SCOREFILE = "/home/yanovich/phenny_osu/unoscores.txt"
@@ -245,8 +243,13 @@ class UnoBot:
 
         if len(self.playerOrder) <= 4:
             ret *= 2
+            random.shuffle (ret)
         elif len(self.playerOrder) > 4:
+            ret *= 3
+            random.shuffle (ret)
+        elif len(self.playerOrder) > 6:
             ret *= 4
+            random.shuffle (ret)
 
         random.shuffle (ret)
 
