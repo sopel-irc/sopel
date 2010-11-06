@@ -63,8 +63,28 @@ def calc(phenny, input):
 
         phenny.say(q + ' = ' + result[:350])
     else: phenny.reply("Sorry, can't calculate that.")
+    phenny.say('Note that .calc is deprecated, consider using .c')
 calc.commands = ['calc']
 calc.example = '.calc 5 + 3'
+
+def c(phenny, input): 
+    """Google calculator."""
+    q = input.group(2).encode('utf-8')
+    q = q.replace('\xcf\x86', 'phi') # utf-8 U+03C6
+    q = q.replace('\xcf\x80', 'pi') # utf-8 U+03C0
+    uri = 'http://www.google.com/ig/calculator?q='
+    bytes = web.get(uri + web.urllib.quote(q))
+    parts = bytes.split('",')
+    answer = [p for p in parts if p.startswith('rhs: "')][0][6:]
+    if answer: 
+        answer = answer.decode('unicode-escape')
+        answer = answer.replace('<sup>', '^(')
+        answer = answer.replace('</sup>', ')')
+        answer = web.decode(answer)
+        phenny.say(answer)
+    else: phenny.say('Sorry, no result.')
+c.commands = ['c']
+c.example = '.c 5 + 3'
 
 if __name__ == '__main__': 
     print __doc__.strip()
