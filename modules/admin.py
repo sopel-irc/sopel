@@ -234,6 +234,19 @@ def topic(phenny, input):
 topic.commands = ['topic']
 topic.priority = 'low'
 
+def defend_ground (phenny, input):
+    """
+    This function monitors all kicks across all channels phenny is in. If she
+    detects that she is the one kicked she'll automatically join that channel.
+    """
+    channel = input.sender
+    text = input.group()
+    if text == phenny.config.nick:
+        phenny.write(['JOIN'], channel)                
+defend_ground.event = 'KICK'
+defend_ground.rule = '.*'
+defend_ground.priority = 'low'
+
 if __name__ == '__main__': 
    print __doc__.strip()
 

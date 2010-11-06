@@ -100,7 +100,7 @@ def bru (phenny, input):
             reply += (words[k] + "! ")
     phenny.reply(reply)
 
-bru.rule = '.*(color|favor|behavior|flavor|honor|labor|rumor|neighbor|favorite).*'
+#bru.rule = '.*(color|favor|behavior|flavor|honor|labor|rumor|neighbor|favorite).*'
 
 if __name__ == '__main__': 
 	print __doc__.strip()
