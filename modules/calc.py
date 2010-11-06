@@ -43,7 +43,7 @@ def calc(phenny, input):
         precision = 2
     query = web.urllib.quote(query.encode('utf-8'))
 
-    uri = 'http://futureboy.homeip.net/fsp/frink.fsp?fromVal='
+    uri = 'http://futureboy.us/fsp/frink.fsp?fromVal='
     bytes = web.get(uri + query)
     m = r_result.search(bytes)
     if m: 

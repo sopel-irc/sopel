@@ -10,7 +10,7 @@ http://inamidst.com/phenny/
 import re, urllib
 import web
 
-definitions = 'http://github.com/nslater/oblique/wiki'
+definitions = 'https://github.com/nslater/oblique/wiki'
 
 r_item = re.compile(r'(?i)<li>(.*?)</li>')
 r_tag = re.compile(r'<[^>]+>')
