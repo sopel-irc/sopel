@@ -70,7 +70,7 @@ calc.example = '.calc 5 + 3'
 def c(phenny, input): 
     """Google calculator."""
     q = input.group(2).encode('utf-8')
-    q = q.replace('\xcf\x86', 'phi') # utf-8 U+03C6
+    q = q.replace('\xcf\x95', 'phi') # utf-8 U+03D5
     q = q.replace('\xcf\x80', 'pi') # utf-8 U+03C0
     uri = 'http://www.google.com/ig/calculator?q='
     bytes = web.get(uri + web.urllib.quote(q))
@@ -78,6 +78,7 @@ def c(phenny, input):
     answer = [p for p in parts if p.startswith('rhs: "')][0][6:]
     if answer: 
         answer = answer.decode('unicode-escape')
+        answer = answer.replace(u'\xc2\xa0', ',')
         answer = answer.replace('<sup>', '^(')
         answer = answer.replace('</sup>', ')')
         answer = web.decode(answer)
@@ -85,6 +86,24 @@ def c(phenny, input):
     else: phenny.say('Sorry, no result.')
 c.commands = ['c']
 c.example = '.c 5 + 3'
+
+def py(phenny, input): 
+    query = input.group(2)
+    uri = 'http://tumbolia.appspot.com/py/'
+    answer = web.get(uri + web.urllib.quote(query))
+    if answer: 
+        phenny.say(answer)
+    else: phenny.reply('Sorry, no result.')
+py.commands = ['py']
+
+def wa(phenny, input): 
+    query = input.group(2)
+    uri = 'http://tumbolia.appspot.com/wa/'
+    answer = web.get(uri + web.urllib.quote(query))
+    if answer: 
+        phenny.say(answer)
+    else: phenny.reply('Sorry, no result.')
+wa.commands = ['wa']
 
 if __name__ == '__main__': 
     print __doc__.strip()
