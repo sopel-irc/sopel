@@ -73,6 +73,7 @@ STRINGS = {
     'REVERSED' : '\x0300,01Order reversed!',
     'GAINS' : '\x0300,01%s gains %s points!',
     'SCORE_ROW' : '\x0300,01#%s %s (%s points, %s games, %s won, %.2f points per game, %.2f percent wins)',
+    'GAME_ALREADY_DEALT' : '\x0300,01Game has already been dealt, please wait until game is over or stopped.'
 }
 
 class UnoBot:
@@ -116,17 +117,20 @@ class UnoBot:
         #print dir (phenny.bot)
         #print dir (input)
         if self.game_on:
-            if input.nick not in self.players:
-                self.players[input.nick] = [ ]
-                self.playerOrder.append (input.nick)
-                if self.deck:
-                    for i in xrange (0, 7):
-                        self.players[input.nick].append (self.getCard ())
-                    phenny.msg (CHANNEL, STRINGS['DEALING_IN'] % (input.nick, self.playerOrder.index (input.nick) + 1))
-                else:
-                    phenny.msg (CHANNEL, STRINGS['JOINED'] % (input.nick, self.playerOrder.index (input.nick) + 1))
-                    if len (self.players) == 2:
-                        phenny.msg (CHANNEL, STRINGS['ENOUGH'])
+            if not self.dealt:
+                if input.nick not in self.players:
+                    self.players[input.nick] = [ ]
+                    self.playerOrder.append (input.nick)
+                    if self.deck:
+                        for i in xrange (0, 7):
+                            self.players[input.nick].append (self.getCard ())
+                        phenny.msg (CHANNEL, STRINGS['DEALING_IN'] % (input.nick, self.playerOrder.index (input.nick) + 1))
+                    else:
+                        phenny.msg (CHANNEL, STRINGS['JOINED'] % (input.nick, self.playerOrder.index (input.nick) + 1))
+                        if len (self.players) == 2:
+                            phenny.msg (CHANNEL, STRINGS['ENOUGH'])
+            else:
+                phenny.msg (CHANNEL, STRINGS['GAME_ALREADY_DEALT'])
         else:
             phenny.msg (CHANNEL, STRINGS['NOT_STARTED'])
     
@@ -365,6 +369,7 @@ class UnoBot:
         self.topCard = card
     
     def gameEnded (self, phenny, winner):
+        dealt = False
         try:
             score = 0
             for p in self.players:
