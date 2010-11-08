@@ -152,7 +152,8 @@ def meant (phenny, input):
 
     # output
     if new_phrase:
-        phrase = str(str(input.nick) + " thinks " + str(user) + " meant: " + str(new_phrase))
+        # phrase = str(input.nick) + " thinks %s \x0300,01meant: " + str(new_phrase)
+        phrase = "%s thinks %s \x0300,01meant:\x03 %s" % (input.nick, user, new_phrase)
         phenny.say(phrase)
 
 meant.rule = r'.*\:\s.*'
