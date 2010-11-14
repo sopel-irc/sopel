@@ -40,26 +40,31 @@ def service(phenny, input, command, args):
         return phenny.reply('Sorry, the service is broken.')
     phenny.say(lines[0][:350])
 
-def o(phenny, input): 
-    """Call a webservice."""
-    text = input.group(2)
+def refresh(phenny): 
     if hasattr(phenny.config, 'services'): 
         services = phenny.config.services
     else: services = definitions
 
+    old = o.services
+    o.serviceURI = services
+    o.services = mappings(o.serviceURI)
+    return len(o.services), set(o.services) - set(old)
+
+def o(phenny, input): 
+    """Call a webservice."""
+    text = input.group(2)
+
     if (not o.services) or (text == 'refresh'): 
-        old = o.services
-        o.services = mappings(services)
+        length, added = refresh(phenny)
         if text == 'refresh': 
-            msg = 'Okay, found %s services.' % len(o.services)
-            added = set(o.services) - set(old)
+            msg = 'Okay, found %s services.' % length
             if added: 
                 msg += ' Added: ' + ', '.join(sorted(added)[:5])
                 if len(added) > 5: msg += ', &c.'
             return phenny.reply(msg)
 
     if not text: 
-        return phenny.reply('Try %s for details.' % services)
+        return phenny.reply('Try %s for details.' % o.serviceURI)
 
     if ' ' in text: 
         command, args = text.split(' ', 1)
@@ -71,7 +76,7 @@ def o(phenny, input):
         return phenny.reply(msg)
 
     if not o.services.has_key(command): 
-        return phenny.reply('Sorry, no such service. See %s' % services)
+        return phenny.reply('Sorry, no such service. See %s' % o.serviceURI)
 
     if hasattr(phenny.config, 'external'): 
         default = phenny.config.external.get('*')
@@ -86,13 +91,20 @@ def o(phenny, input):
 o.commands = ['o']
 o.example = '.o servicename arg1 arg2 arg3'
 o.services = {}
+o.serviceURI = None
 
 def snippet(phenny, input): 
+    if not o.services: 
+        refresh(phenny)
+
+    search = urllib.quote(input.group(2).encode('utf-8'))
     py = "BeautifulSoup.BeautifulSoup(re.sub('<.*?>|(?<= ) +', '', " + \
+          "''.join(chr(ord(c)) for c in " + \
           "eval(urllib.urlopen('http://ajax.googleapis.com/ajax/serv" + \
-          "ices/search/web?v=1.0&q=" + urllib.quote(input.group(2)) + \
-          "').read().replace('null', 'None'))['responseData']['resul" + \
-          "ts'][0]['content'].decode('unicode-escape')), convertEntities=True)"
+          "ices/search/web?v=1.0&q=" + search + "').read()" + \
+          ".replace('null', 'None'))['responseData']['resul" + \
+          "ts'][0]['content'].decode('unicode-escape')).replace(" + \
+          "'&quot;', '\x22')), convertEntities=True)"
     service(phenny, input, 'py', py)
 snippet.commands = ['snippet']
 
