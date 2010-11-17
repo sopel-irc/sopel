@@ -76,13 +76,14 @@ def c(phenny, input):
     bytes = web.get(uri + web.urllib.quote(q))
     parts = bytes.split('",')
     answer = [p for p in parts if p.startswith('rhs: "')][0][6:]
+    lhs = unicode(parts[0][7:])
     if answer: 
         answer = answer.decode('unicode-escape')
         answer = answer.replace(u'\xc2\xa0', ',')
         answer = answer.replace('<sup>', '^(')
         answer = answer.replace('</sup>', ')')
         answer = web.decode(answer)
-        phenny.say(answer)
+        phenny.say(lhs + " = " + answer)
     else: phenny.say('Sorry, no result.')
 c.commands = ['c']
 c.example = '.c 5 + 3'
