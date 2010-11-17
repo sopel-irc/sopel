@@ -135,7 +135,6 @@ class UnoBot:
             phenny.msg (CHANNEL, STRINGS['NOT_STARTED'])
     
     def deal (self, phenny, input):
-        self.dealt = True
         if not self.game_on:
             phenny.msg (CHANNEL, STRINGS['NOT_STARTED'])
             return
@@ -158,6 +157,7 @@ class UnoBot:
         self.currentPlayer = 1
         self.cardPlayed (phenny, self.topCard)
         self.showOnTurn (phenny)
+        self.dealt = True
     
     def play (self, phenny, input):
         if not self.game_on or not self.deck:
@@ -369,7 +369,6 @@ class UnoBot:
         self.topCard = card
     
     def gameEnded (self, phenny, winner):
-        dealt = False
         try:
             score = 0
             for p in self.players:
@@ -390,6 +389,7 @@ class UnoBot:
         self.currentPlayer = 0
         self.topCard = None
         self.way = 1
+        self.dealt = False
         
     
     def incPlayer (self):
@@ -450,7 +450,7 @@ class UnoBot:
     def showTopCard_demand (self, phenny):
         if not self.game_on or not self.deck:
             return
-        phenny.msg (CHANNEL, STRINGS['TOP_CARD'] % (self.playerOrder[self.currentPlayer], self.renderCards ([self.topCard])))
+        phenny.reply(STRINGS['TOP_CARD'] % (self.playerOrder[self.currentPlayer], self.renderCards ([self.topCard])))
 
     def leave (self, phenny, input):
         #phenny.say("list before: " + str(self.playerOrder))
@@ -519,7 +519,7 @@ class UnoBot:
                     phenny.say(STRINGS[ranktype] % (j, y[0], y[3], y[1], y[2], float(y[3])/float(y[1]), float(y[2])/float(y[1])*100))
                 j += 1
             
-        '''
+        """
         # =========================================
         if len(text) == 1:
             phenny.msg(input.nick, "Top 10 based on points per game.")
@@ -555,7 +555,7 @@ class UnoBot:
                     if z[0] == user:
                         phenny.say(STRINGS['SCORE_ROW2'] % (k, z[0], z[3], z[1], z[2], float(z[3])/float(z[1]), float(z[2])/float(z[1])*100))
                     k+=1
-        '''
+        """
 
 unobot = UnoBot ()
 
