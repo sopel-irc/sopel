@@ -31,14 +31,16 @@ def sp (phenny, input):
     #phenny.say("time: " + timee)
     p = datetime.datetime(int(g[0]), int(g[1]), int(g[2]), int(timee[:2]), int(timee[2:]))
     q = p - datetime.datetime.now()
-    r = str(q)
+    r = unicode(q)
     '''
     try:
         r.split("days")
     except:
     '''
-
-    phenny.say("Next episode of South Park in " + str(q))
+    if r[0] == '-':
+        phenny.reply("There are no new episodes for the foreseeable future.")
+    else:
+        phenny.reply("Next episode of South Park in " + r)
 sp.commands = ['sp']
 
 if __name__ == '__main__':
