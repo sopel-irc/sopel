@@ -241,8 +241,7 @@ def defend_ground (phenny, input):
     """
     channel = input.sender
     text = input.group()
-    if text == phenny.config.nick:
-        phenny.write(['JOIN'], channel)                
+    phenny.write(['JOIN'], channel)                
 defend_ground.event = 'KICK'
 defend_ground.rule = '.*'
 defend_ground.priority = 'low'
