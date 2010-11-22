@@ -203,9 +203,9 @@ def auth_check(phenny, nick, target=None):
         return 1
 
 def kick(phenny, input):
-    if not input.admin: 
-        return
+    if not input.admin: return
     text = input.group().split()
+    if len(text) != 3: return
     nick = text[2]
     if nick != phenny.config.nick:
         tmp = text[1] + " " + nick
