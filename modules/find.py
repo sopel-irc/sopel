@@ -29,7 +29,7 @@ def collectlines(phenny, input):
         return
     else:    
         list.append(line)
-    del list[:-10]
+    del list[:-20]
     search_dict[input.nick] = list
     search_file = open("search.txt","w")
     pickle.dump(search_dict, search_file)
