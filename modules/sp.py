@@ -7,11 +7,13 @@ Phenny (about): http://inamidst.com/phenny/
 Feature requested by AJoseph
 """
 
-from BeautifulSoup import BeautifulSoup
-import web, datetime, time, re
+#from BeautifulSoup import BeautifulSoup
+#import web, datetime, time, re
+import datetime
 
 def sp (phenny, input):
     """ Displays how many days, hours, minutes, and seconds until the next *new* episode of South Park """
+    '''
     html = web.get("http://www.imdb.com/title/tt0121955/episodes")
     soup = BeautifulSoup(html)
     b = soup.findAll(attrs={"class":"odd"})
@@ -32,15 +34,16 @@ def sp (phenny, input):
     p = datetime.datetime(int(g[0]), int(g[1]), int(g[2]), int(timee[:2]), int(timee[2:]))
     q = p - datetime.datetime.now()
     r = unicode(q)
-    '''
-    try:
-        r.split("days")
-    except:
-    '''
+    
     if r[0] == '-':
-        phenny.reply("There are no new episodes for the foreseeable future.")
+        phenny.reply("")
     else:
         phenny.reply("Next episode of South Park in " + r)
+    '''
+    p = datetime.datetime(2011, 4, 11, 22, 00)
+    q = p - datetime.datetime.now()
+    r = unicode(q)
+    phenny.say("Next new episode of South Park in " + r)
 sp.commands = ['sp']
 
 if __name__ == '__main__':
