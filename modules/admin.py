@@ -199,17 +199,17 @@ def deauth(nick):
         a = auth_list.index(nick)
         del(auth_list[a])
 
-def deauth_quit(m5, input):
+def deauth_quit(phenny, input):
     deauth(input.nick)
 deauth_quit.event = 'QUIT'
 deauth_quit.rule = '.*'
 
-def deauth_part(m5, input):
+def deauth_part(phenny, input):
     deauth(input.nick)
 deauth_part.event = 'PART'
 deauth_part.rule = '.*'
 
-def deauth_nick(m5, input):
+def deauth_nick(phenny, input):
     deauth(input.nick)
 deauth_nick.event = 'NICK'
 deauth_nick.rule = '.*'
