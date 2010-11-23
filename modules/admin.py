@@ -81,13 +81,10 @@ def op(phenny, input):
     nick = input.group(2)
     verify = auth_check(phenny, input.nick, nick)
     if verify:
+        channel = input.sender
         if not nick:
             nick = input.nick
-            channel = input.sender
-            phenny.write(['MODE', channel, "+o", nick])
-        else:
-            channel = input.sender
-            phenny.write(['MODE', channel, "+o", nick])
+        phenny.write(['MODE', channel, "+o", nick])
 op.rule = (['op'], r'(\S+)?')
 op.priority = 'low'
 
@@ -101,13 +98,10 @@ def deop(phenny, input):
     nick = input.group(2)
     verify = auth_check(phenny, input.nick, nick)
     if verify:
+        channel = input.sender
         if not nick:
             nick = input.nick
-            channel = input.sender
-            phenny.write(['MODE', channel, "-o", nick])
-        else:
-            channel = input.sender
-            phenny.write(['MODE', channel, "-o", nick])
+        phenny.write(['MODE', channel, "-o", nick])
 deop.rule = (['deop'], r'(\S+)?')
 deop.priority = 'low'
 
@@ -121,13 +115,10 @@ def voice(phenny, input):
     nick = input.group(2)
     verify = auth_check(phenny, input.nick, nick)
     if verify:
+        channel = input.sender
         if not nick:
             nick = input.nick
-            channel = input.sender
-            phenny.write(['MODE', channel, "+v", nick])
-        else:
-            channel = input.sender
-            phenny.write(['MODE', channel, "+v", nick])
+        phenny.write(['MODE', channel, "+v", nick])
 voice.rule = (['voice'], r'(\S+)?')
 voice.priority = 'low'
 
@@ -141,13 +132,10 @@ def devoice(phenny, input):
     nick = input.group(2)
     verify = auth_check(phenny, input.nick, nick)
     if verify:
+        channel = input.sender
         if not nick:
             nick = input.nick
-            channel = input.sender
-            phenny.write(['MODE', channel, "-v", nick])
-        else:
-            channel = input.sender
-            phenny.write(['MODE', channel, "-v", nick])
+        phenny.write(['MODE', channel, "-v", nick])
 devoice.rule = (['devoice'], r'(\S+)?')
 devoice.priority = 'low'
 
