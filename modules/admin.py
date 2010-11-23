@@ -190,6 +190,30 @@ def auth_check(phenny, nick, target=None):
     elif nick in auth_list:
         return 1
 
+def deauth(nick):
+    """
+    Remove pepole from the deauth list.
+    """
+    global auth_list
+    if nick in auth_list:
+        a = auth_list.index(nick)
+        del(auth_list[a])
+
+def deauth_quit(m5, input):
+    deauth(input.nick)
+deauth_quit.event = 'QUIT'
+deauth_quit.rule = '.*'
+
+def deauth_part(m5, input):
+    deauth(input.nick)
+deauth_part.event = 'PART'
+deauth_part.rule = '.*'
+
+def deauth_nick(m5, input):
+    deauth(input.nick)
+deauth_nick.event = 'NICK'
+deauth_nick.rule = '.*'
+
 def kick(phenny, input):
     if not input.admin: return
     text = input.group().split()
