@@ -226,6 +226,9 @@ def defend_ground (phenny, input):
     """
     This function monitors all kicks across all channels phenny is in. If she
     detects that she is the one kicked she'll automatically join that channel.
+
+    WARNING: This may not needed and could cause problems if phenny becomes 
+    annoying. Please use this with caution.
     """
     channel = input.sender
     text = input.group()
