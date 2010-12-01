@@ -92,7 +92,7 @@ class UnoBot:
         self.scoreFile = SCOREFILE
         self.deck = [ ]
         self.prescores = [ ]
-        self.dealt = False
+		self.dealt = False
  
     def start(self, phenny, owner):
         if self.game_on:
@@ -109,7 +109,7 @@ class UnoBot:
         if input.nick == self.game_on:
             phenny.msg (CHANNEL, STRINGS['GAME_STOPPED'])
             self.game_on = False
-            self.dealt = False
+			self.dealt = False
         elif self.game_on:
             phenny.msg (CHANNEL, STRINGS['CANT_STOP'] % self.game_on)
             
@@ -157,7 +157,7 @@ class UnoBot:
         self.currentPlayer = 1
         self.cardPlayed (phenny, self.topCard)
         self.showOnTurn (phenny)
-        self.dealt = True
+		self.dealt = True
     
     def play (self, phenny, input):
         if not self.game_on or not self.deck:
@@ -211,7 +211,7 @@ class UnoBot:
         phenny.msg (CHANNEL, STRINGS['DRAWS'] % self.playerOrder[self.currentPlayer])
         c = self.getCard ()
         self.players[self.playerOrder[self.currentPlayer]].append (c)
-        phenny.notice (input.nick, STRINGS['DRAWN_CARD'] % self.renderCards ([c]))
+        phenny.notice (input.nick, STRINGS['DRAWN_CARD'] % self.renderCards ([c], 0))
 
     # this is not a typo, avoiding collision with Python's pass keyword
     def passs (self, phenny, input):
@@ -269,8 +269,8 @@ class UnoBot:
         return ret
     
     def showOnTurn (self, phenny):
-        phenny.msg (CHANNEL, STRINGS['TOP_CARD'] % (self.playerOrder[self.currentPlayer], self.renderCards ([self.topCard])))
-        phenny.notice (self.playerOrder[self.currentPlayer], STRINGS['YOUR_CARDS'] % self.renderCards (self.players[self.playerOrder[self.currentPlayer]]))
+        phenny.msg (CHANNEL, STRINGS['TOP_CARD'] % (self.playerOrder[self.currentPlayer], self.renderCards ([self.topCard], 1)))
+        phenny.notice (self.playerOrder[self.currentPlayer], STRINGS['YOUR_CARDS'] % self.renderCards (self.players[self.playerOrder[self.currentPlayer]], 0))
         msg = STRINGS['NEXT_START']
         tmp = self.currentPlayer + self.way
         if tmp == len (self.players):
@@ -311,10 +311,10 @@ class UnoBot:
         if user not in self.players:
             phenny.notice (user, msg) 
         else:
-            phenny.notice (user, STRINGS['YOUR_CARDS'] % self.renderCards (self.players[user]))
+            phenny.notice (user, STRINGS['YOUR_CARDS'] % self.renderCards (self.players[user], 0))
             phenny.notice (user, msg)
 
-    def renderCards (self, cards):
+    def renderCards (self, cards, idx):
         ret = [ ]
         for c in sorted (cards):
             if c in ['W', 'WD4']:
@@ -331,7 +331,9 @@ class UnoBot:
                 t += '09,01['
             if c[0] == 'R':
                 t += '04,01['
-            t += c[1:] + ']\x0300,01'
+            t += c[1:] + ']\x0300,01' 
+            if idx == 1:
+                t += ' (' + c[0] + ')'
             ret.append (t)
         return ''.join (ret)
     
@@ -346,13 +348,13 @@ class UnoBot:
         if card[1:] == 'D2':
             phenny.msg (CHANNEL, STRINGS['D2'] % self.playerOrder[self.currentPlayer])
             z = [self.getCard (), self.getCard ()]
-            phenny.notice(self.playerOrder[self.currentPlayer], STRINGS['CARDS'] % self.renderCards (z))
+            phenny.notice(self.playerOrder[self.currentPlayer], STRINGS['CARDS'] % self.renderCards (z, 0))
             self.players[self.playerOrder[self.currentPlayer]].extend (z)
             self.incPlayer ()
         elif card[:2] == 'WD':
             phenny.msg (CHANNEL, STRINGS['WD4'] % self.playerOrder[self.currentPlayer])
             z = [self.getCard (), self.getCard (), self.getCard (), self.getCard ()]
-            phenny.notice(self.playerOrder[self.currentPlayer], STRINGS['CARDS'] % self.renderCards (z))
+            phenny.notice(self.playerOrder[self.currentPlayer], STRINGS['CARDS'] % self.renderCards (z, 0))
             self.players[self.playerOrder[self.currentPlayer]].extend (z)
             self.incPlayer ()
         elif card[1] == 'S':
@@ -389,7 +391,7 @@ class UnoBot:
         self.currentPlayer = 0
         self.topCard = None
         self.way = 1
-        self.dealt = False
+		self.dealt = False
         
     
     def incPlayer (self):
@@ -450,7 +452,7 @@ class UnoBot:
     def showTopCard_demand (self, phenny):
         if not self.game_on or not self.deck:
             return
-        phenny.reply(STRINGS['TOP_CARD'] % (self.playerOrder[self.currentPlayer], self.renderCards ([self.topCard])))
+        phenny.reply (STRINGS['TOP_CARD'] % (self.playerOrder[self.currentPlayer], self.renderCards ([self.topCard], 1)))
 
     def leave (self, phenny, input):
         #phenny.say("list before: " + str(self.playerOrder))
@@ -519,7 +521,7 @@ class UnoBot:
                     phenny.say(STRINGS[ranktype] % (j, y[0], y[3], y[1], y[2], float(y[3])/float(y[1]), float(y[2])/float(y[1])*100))
                 j += 1
             
-        """
+		"""
         # =========================================
         if len(text) == 1:
             phenny.msg(input.nick, "Top 10 based on points per game.")
@@ -555,7 +557,7 @@ class UnoBot:
                     if z[0] == user:
                         phenny.say(STRINGS['SCORE_ROW2'] % (k, z[0], z[3], z[1], z[2], float(z[3])/float(z[1]), float(z[2])/float(z[1])*100))
                     k+=1
-        """
+       """
 
 unobot = UnoBot ()
 
