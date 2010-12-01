@@ -92,7 +92,7 @@ class UnoBot:
         self.scoreFile = SCOREFILE
         self.deck = [ ]
         self.prescores = [ ]
-		self.dealt = False
+        self.dealt = False
  
     def start(self, phenny, owner):
         if self.game_on:
@@ -109,7 +109,7 @@ class UnoBot:
         if input.nick == self.game_on:
             phenny.msg (CHANNEL, STRINGS['GAME_STOPPED'])
             self.game_on = False
-			self.dealt = False
+            self.dealt = False
         elif self.game_on:
             phenny.msg (CHANNEL, STRINGS['CANT_STOP'] % self.game_on)
             
@@ -157,7 +157,7 @@ class UnoBot:
         self.currentPlayer = 1
         self.cardPlayed (phenny, self.topCard)
         self.showOnTurn (phenny)
-		self.dealt = True
+        self.dealt = True
     
     def play (self, phenny, input):
         if not self.game_on or not self.deck:
@@ -391,7 +391,7 @@ class UnoBot:
         self.currentPlayer = 0
         self.topCard = None
         self.way = 1
-		self.dealt = False
+        self.dealt = False
         
     
     def incPlayer (self):
