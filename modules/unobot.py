@@ -36,7 +36,7 @@ from datetime import datetime, timedelta
 random.seed()
 
 # Remember to change these 2 lines or nothing will work
-CHANNEL = '##uno'
+CHANNEL = '#bots-devel'
 SCOREFILE = "/home/yanovich/phenny_osu/unoscores.txt"
 
 STRINGS = {
@@ -73,7 +73,12 @@ STRINGS = {
     'REVERSED' : '\x0300,01Order reversed!',
     'GAINS' : '\x0300,01%s gains %s points!',
     'SCORE_ROW' : '\x0300,01#%s %s (%s points, %s games, %s won, %.2f points per game, %.2f percent wins)',
-    'GAME_ALREADY_DEALT' : '\x0300,01Game has already been dealt, please wait until game is over or stopped.'
+    'GAME_ALREADY_DEALT' : '\x0300,01Game has already been dealt, please wait until game is over or stopped.',
+    'PLAYER_COLOR_ENABLED' : '\x0300,01Hand card colors \x0309,01enabled\x0300,01! Format: <COLOR>/[<CARD>].  Example: R/[D2] is a red Draw Two. Type \'.uno-help\' for more help.',
+    'PLAYER_COLOR_DISABLED' : '\x0300,01Hand card colors \x0304,01disabled\x0300,01.',
+    'DISABLED_PCE' : '\x0300,01Hand card colors is \x0304,01disabled\x0300,01 for %s. To enable, \'.pce-on\'',
+    'ENABLED_PCE' : '\x0300,01Hand card colors is \x0309,01enabled\x0300,01 for %s. To disable, \'.pce-off\'',
+    'PCE_CLEARED' : '\x0300,01All players\' hand card color setting is reset by %s.',
 }
 
 class UnoBot:
@@ -83,6 +88,8 @@ class UnoBot:
         self.colors = 'RGBY'
         self.special_cards = [ 'W', 'WD4' ]
         self.players = { }
+        self.owners = { }
+        self.players_pce = { }  # Player color enabled hash table
         self.playerOrder = [ ]
         self.game_on = False
         self.currentPlayer = 0
@@ -104,6 +111,8 @@ class UnoBot:
             self.players = { }
             self.players[owner] = [ ]
             self.playerOrder = [ owner ]
+            if self.players_pce.get(owner, 0):
+                phenny.notice(owner, STRINGS['ENABLED_PCE'] % owner)
     
     def stop (self, phenny, input):
         if input.nick == self.game_on:
@@ -121,6 +130,8 @@ class UnoBot:
                 if input.nick not in self.players:
                     self.players[input.nick] = [ ]
                     self.playerOrder.append (input.nick)
+                    if self.players_pce.get(input.nick, 0):
+                        phenny.notice(input.nick, STRINGS['ENABLED_PCE'] % input.nick)
                     if self.deck:
                         for i in xrange (0, 7):
                             self.players[input.nick].append (self.getCard ())
@@ -211,7 +222,7 @@ class UnoBot:
         phenny.msg (CHANNEL, STRINGS['DRAWS'] % self.playerOrder[self.currentPlayer])
         c = self.getCard ()
         self.players[self.playerOrder[self.currentPlayer]].append (c)
-        phenny.notice (input.nick, STRINGS['DRAWN_CARD'] % self.renderCards ([c], 0))
+        phenny.notice (input.nick, STRINGS['DRAWN_CARD'] % self.renderCards (input.nick, [c], 0))
 
     # this is not a typo, avoiding collision with Python's pass keyword
     def passs (self, phenny, input):
@@ -269,8 +280,8 @@ class UnoBot:
         return ret
     
     def showOnTurn (self, phenny):
-        phenny.msg (CHANNEL, STRINGS['TOP_CARD'] % (self.playerOrder[self.currentPlayer], self.renderCards ([self.topCard], 1)))
-        phenny.notice (self.playerOrder[self.currentPlayer], STRINGS['YOUR_CARDS'] % self.renderCards (self.players[self.playerOrder[self.currentPlayer]], 0))
+        phenny.msg (CHANNEL, STRINGS['TOP_CARD'] % (self.playerOrder[self.currentPlayer], self.renderCards (None, [self.topCard], 1)))
+        phenny.notice (self.playerOrder[self.currentPlayer], STRINGS['YOUR_CARDS'] % self.renderCards (self.playerOrder[self.currentPlayer], self.players[self.playerOrder[self.currentPlayer]], 0))
         msg = STRINGS['NEXT_START']
         tmp = self.currentPlayer + self.way
         if tmp == len (self.players):
@@ -311,10 +322,10 @@ class UnoBot:
         if user not in self.players:
             phenny.notice (user, msg) 
         else:
-            phenny.notice (user, STRINGS['YOUR_CARDS'] % self.renderCards (self.players[user], 0))
+            phenny.notice (user, STRINGS['YOUR_CARDS'] % self.renderCards (user, self.players[user], 0))
             phenny.notice (user, msg)
 
-    def renderCards (self, cards, idx):
+    def renderCards (self, nick, cards, is_chan):
         ret = [ ]
         for c in sorted (cards):
             if c in ['W', 'WD4']:
@@ -324,16 +335,21 @@ class UnoBot:
                 c = c[-1] + '*'
             t = '\x0300,01\x03'
             if c[0] == 'B':
-                t += '11,01['
-            if c[0] == 'Y':
-                t += '08,01['
-            if c[0] == 'G':
-                t += '09,01['
-            if c[0] == 'R':
-                t += '04,01['
-            t += c[1:] + ']\x0300,01' 
-            if idx == 1:
-                t += ' (' + c[0] + ')'
+                t += '11,01'
+            elif c[0] == 'Y':
+                t += '08,01'
+            elif c[0] == 'G':
+                t += '09,01'
+            elif c[0] == 'R':
+                t += '04,01'
+            if not is_chan:
+                if self.players_pce.get(nick, 0):
+                    t += '%s/[%s]  ' % (c[0], c[1:])
+                else:
+                    t += '[%s]' % c[1:]
+            else:
+				t += '[%s] (%s)' % (c[1:], c[0])
+            t += "\x0300,01"
             ret.append (t)
         return ''.join (ret)
     
@@ -348,13 +364,13 @@ class UnoBot:
         if card[1:] == 'D2':
             phenny.msg (CHANNEL, STRINGS['D2'] % self.playerOrder[self.currentPlayer])
             z = [self.getCard (), self.getCard ()]
-            phenny.notice(self.playerOrder[self.currentPlayer], STRINGS['CARDS'] % self.renderCards (z, 0))
+            phenny.notice(self.playerOrder[self.currentPlayer], STRINGS['CARDS'] % self.renderCards (self.playerOrder[self.currentPlayer], z, 0))
             self.players[self.playerOrder[self.currentPlayer]].extend (z)
             self.incPlayer ()
         elif card[:2] == 'WD':
             phenny.msg (CHANNEL, STRINGS['WD4'] % self.playerOrder[self.currentPlayer])
             z = [self.getCard (), self.getCard (), self.getCard (), self.getCard ()]
-            phenny.notice(self.playerOrder[self.currentPlayer], STRINGS['CARDS'] % self.renderCards (z, 0))
+            phenny.notice(self.playerOrder[self.currentPlayer], STRINGS['CARDS'] % self.renderCards (self.playerOrder[self.currentPlayer], z, 0))
             self.players[self.playerOrder[self.currentPlayer]].extend (z)
             self.incPlayer ()
         elif card[1] == 'S':
@@ -452,7 +468,7 @@ class UnoBot:
     def showTopCard_demand (self, phenny):
         if not self.game_on or not self.deck:
             return
-        phenny.reply (STRINGS['TOP_CARD'] % (self.playerOrder[self.currentPlayer], self.renderCards ([self.topCard], 1)))
+        phenny.reply (STRINGS['TOP_CARD'] % (self.playerOrder[self.currentPlayer], self.renderCards (None, [self.topCard], 1)))
 
     def leave (self, phenny, input):
         #phenny.say("list before: " + str(self.playerOrder))
@@ -490,6 +506,31 @@ class UnoBot:
         #phenny.say(input.nick + " you have been removed from the game.")
         self.showOnTurn (phenny)
         #phenny.say("list after: " + str(self.playerOrder))
+
+    def enablePCE (self, phenny, nick):
+        if not self.players_pce.get(nick, 0):
+            self.players_pce.update({ nick : 1})
+            phenny.notice(nick, STRINGS['PLAYER_COLOR_ENABLED'])
+        else:
+            phenny.notice(nick, STRINGS['ENABLED_PCE'] % nick)
+
+    def disablePCE (self, phenny, nick):
+        if self.players_pce.get(nick, 0):
+            self.players_pce.update({ nick : 0})
+            phenny.notice(nick, STRINGS['PLAYER_COLOR_DISABLED'])
+        else:
+            phenny.notice(nick, STRINGS['DISABLED_PCE'] % nick)
+
+    def isPCEEnabled (self, phenny, nick):
+        if not self.players_pce.get(nick, 0):
+            phenny.notice(nick, STRINGS['DISABLED_PCE'] % nick)
+        else:
+            phenny.notice(nick, STRINGS['ENABLED_PCE'] % nick)
+
+    def PCEClear (self, phenny, nick):
+        if not self.owners.get(nick, 0):
+            self.players_pce.clear()
+            phenny.msg(CHANNEL, STRINGS['PCE_CLEARED'] % nick)
 
     def unostat (self, phenny, input):
         text = input.group().split()
@@ -626,6 +667,25 @@ def uno_help (phenny, input):
 uno_help.commands = ['uno-help']
 uno_help.priority = 'low'
 
+def uno_pce_on (phenny, input):
+    unobot.enablePCE(phenny, input.nick)
+uno_pce_on.commands = ['pce-on']
+uno_pce_on.priority = 'low'
+
+def uno_pce_off (phenny, input):
+    unobot.disablePCE(phenny, input.nick)
+uno_pce_off.commands = ['pce-off']
+uno_pce_off.priority = 'low'
+
+def uno_ispce (phenny, input):
+    unobot.isPCEEnabled(phenny, input.nick)
+uno_ispce.commands = ['pce']
+uno_ispce.priority = 'low'
+
+def uno_pce_clear (phenny, input):
+    unobot.PCEClear(phenny, input.nick)
+uno_pce_clear.commands = ['.pce-clear']
+uno_pce_clear.priority = 'low'
 
 if __name__ == '__main__':
     print __doc__.strip()
