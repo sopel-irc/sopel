@@ -36,7 +36,7 @@ from datetime import datetime, timedelta
 random.seed()
 
 # Remember to change these 2 lines or nothing will work
-CHANNEL = '##uno'
+CHANNEL = '#divine-bots-devel'
 SCOREFILE = "/home/yanovich/phenny_osu/unoscores.txt"
 
 STRINGS = {
@@ -329,7 +329,7 @@ class UnoBot:
         ret = [ ]
         for c in sorted (cards):
             if c in ['W', 'WD4']:
-                ret.append ('\x0300,01[' + c + ']')
+                ret.append ('\x0300,01[' + c + '] ')
                 continue
             if c[0] == 'W':
                 c = c[-1] + '*'
