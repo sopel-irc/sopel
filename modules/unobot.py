@@ -390,7 +390,7 @@ class UnoBot:
         try:
             score = 0
             for p in self.players:
-                zfor c in self.players[p]:
+                for c in self.players[p]:
                     if c[0] == 'W':
                         score += self.special_scores[c]
                     elif c[1] in [ 'S', 'R', 'D' ]:
