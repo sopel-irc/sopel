@@ -36,7 +36,7 @@ from datetime import datetime, timedelta
 random.seed()
 
 # Remember to change these 2 lines or nothing will work
-CHANNEL = '#divine-bots-devel'
+CHANNEL = '##uno'
 SCOREFILE = "/home/yanovich/phenny_osu/unoscores.txt"
 
 STRINGS = {
