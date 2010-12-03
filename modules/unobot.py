@@ -344,7 +344,7 @@ class UnoBot:
                 t += '04,01'
             if not is_chan:
                 if self.players_pce.get(nick, 0):
-                    t += '%s/[%s]  ' % (c[0], c[1:])
+                    t += '%s/ [%s]  ' % (c[0], c[1:])
                 else:
                     t += '[%s]' % c[1:]
             else:
@@ -390,7 +390,7 @@ class UnoBot:
         try:
             score = 0
             for p in self.players:
-                for c in self.players[p]:
+                zfor c in self.players[p]:
                     if c[0] == 'W':
                         score += self.special_scores[c]
                     elif c[1] in [ 'S', 'R', 'D' ]:
