@@ -84,6 +84,8 @@ STRINGS = {
     'DISABLED_PCE' : '\x0300,01Hand card colors is \x0304,01disabled\x0300,01 for %s. To enable, \'.pce-on\'',
     'ENABLED_PCE' : '\x0300,01Hand card colors is \x0309,01enabled\x0300,01 for %s. To disable, \'.pce-off\'',
     'PCE_CLEARED' : '\x0300,01All players\' hand card color setting is reset by %s.',
+    'PLAYER_LEAVES' : '\x0300,01Player %s has left the game.',
+    'OWNER_CHANGE' : '\x0300,01Owner %s has left the game. New owner is %s.',
 }
 
 class UnoBot:
@@ -485,41 +487,36 @@ class UnoBot:
         jenney.reply (STRINGS['TOP_CARD'] % (self.playerOrder[self.currentPlayer], self.renderCards (None, [self.topCard], 1)))
 
     def leave (self, jenney, input):
-        #jenney.say("list before: " + str(self.playerOrder))
-        if not self.game_on or not self.deck:
+        self.remove_player(jenney, input.nick)
+
+    def remove_player (self, jenney, nick):
+        if not self.game_on:
             return
-        if input.nick not in self.players:
-            return
-        if len(self.playerOrder) < 3:
-            jenney.reply("You can't leave a 2 player game.")
-            return
-        
-        temp = self.playerOrder[self.currentPlayer]
 
-        del self.players[input.nick]
-        a = self.playerOrder
-        b = a[:]
-        a.remove(input.nick)
-        self.playerorder = a
+        user = self.players.get(nick, None)
+        if user is not None:
+            numPlayers = len(self.playerOrder)
+            if numPlayers == 2:
+                jenney.msg(CHANNEL, STRINGS['PLAYER_LEAVES'] % nick)
+                jenney.msg (CHANNEL, STRINGS['GAME_STOPPED'])
+                self.game_on = None
+                self.dealt = None
+                return
 
-        #if input.nick == self.playerOrder[self.currentPlayer]:
-        #jenney.say("before changing, self.currentPlayer: " + str(self.currentPlayer))
-        #if input.nick != self.playerOrder[self.currentPlayer]:
-        #    self.currentPlayer = self.currentPlayer - self.way
-
-        if b.index(input.nick) < b.index(temp):
-            self.currentPlayer = self.currentPlayer - 1 
-
-        if self.currentPlayer >= len (self.players):
-            self.currentPlayer = 0
-        if self.currentPlayer < 0:
-            self.currentPlayer = len (self.players) - 1
-
-        #jenney.say("after changing, self.currentPlayer: " + str(self.currentPlayer))
-
-        #jenney.say(input.nick + " you have been removed from the game.")
-        self.showOnTurn (jenney)
-        #jenney.say("list after: " + str(self.playerOrder))
+            if self.currentPlayer == len(self.playerOrder) - 1:
+                self.currentPlayer = 0
+            else:
+                self.currentPlayer += 1
+            
+            self.playerOrder.remove(nick)
+            jenney.msg(CHANNEL, STRINGS['PLAYER_LEAVES'] % nick)
+            self.showTopCard_demand(jenney)
+            
+            if self.game_on == nick:
+                self.game_on = self.playerOrder[0]
+                jenney.msg(CHANNEL, STRINGS['OWNER_CHANGE'] % (nick, self.playerOrder[0]))
+            
+            del self.players[nick]
 
     def enablePCE (self, jenney, nick):
         if not self.players_pce.get(nick, 0):
@@ -631,6 +628,24 @@ def leave (jenney, input):
     unobot.leave(jenney, input)
 leave.commands = ['leave']
 leave.priority = 'low'
+
+def remove_on_part (jenney, input):
+    unobot.remove_player(jenney, input.nick)
+remove_on_part.event = 'PART'
+remove_on_part.rule = '.*'
+remove_on_part.priority = 'low'
+
+def remove_on_quit (jenney, input):
+    unobot.remove_player(jenney, input.nick)
+remove_on_quit.event = 'QUIT'
+remove_on_quit.rule = '.*'
+remove_on_quit.priority = 'low'
+
+def remove_on_nickchg (jenney, input):
+    unobot.remove_player(jenney, input.nick)
+remove_on_nickchg.event = 'NICK'
+remove_on_nickchg.rule = '.*'
+remove_on_nickchg.priority = 'low'
 
 def unostats (jenney, input):
     unobot.unostat (jenney, input)
