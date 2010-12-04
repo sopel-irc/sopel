@@ -217,10 +217,13 @@ deauth_nick.rule = '.*'
 def kick(jenney, input):
     if not input.admin: return
     text = input.group().split()
-    if len(text) != 3: return
+    if len(text) < 3: return
     nick = text[2]
+    reason = ' '.join(text[3:])
     if nick != jenney.config.nick:
         tmp = text[1] + " " + nick
+        if reason:
+			tmp += " :" + reason
         jenney.write(['KICK', tmp])
 kick.commands = ['kick']
 kick.priority = 'high'
