@@ -514,7 +514,7 @@ class UnoBot:
             jenney.msg(CHANNEL, STRINGS['PLAYER_LEAVES'] % nick)
             jenney.msg(CHANNEL, STRINGS['TOP_CARD'] % (self.playerOrder[self.currentPlayer], self.renderCards(None, [self.topCard], 1)))
 
-            if numPlayers == 2 and self.dealt:
+            if numPlayers <= 2 and self.dealt:
                 jenney.msg (CHANNEL, STRINGS['GAME_STOPPED'])
                 self.game_on = None
                 self.dealt = None
