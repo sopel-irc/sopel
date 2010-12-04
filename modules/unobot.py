@@ -35,15 +35,20 @@ from datetime import datetime, timedelta
 
 random.seed()
 
-# Remember to change these 2 lines or nothing will work
+# Remember to change these 3 lines or nothing will work
 CHANNEL = '##uno'
 SCOREFILE = "/home/yanovich/phenny_osu/unoscores.txt"
+# Only the owner (starter of the game) can call .unostop to stop the game.
+# But this calls for a way to allow others to stop it after the game has been idle for a while.
+# After this set time, anyone can stop the game via .unostop
+# Set the time ___in minutes___ here: (default is 5 mins)
+INACTIVE_TIMEOUT = 5
 
 STRINGS = {
     'ALREADY_STARTED' : '\x0300,01Game already started by %s! Type join to join!',
     'GAME_STARTED' : '\x0300,01IRC-UNO started by %s - Type join to join!',
     'GAME_STOPPED' : '\x0300,01Game stopped.',
-    'CANT_STOP' : '\x0300,01%s is the game owner, you can\'t stop it!',
+    'CANT_STOP' : '\x0300,01%s is the game owner, you can\'t stop it! To force stop the game, please wait %s seconds.',
     'DEALING_IN' : '\x0300,01Dealing %s into the game as player #%s!',
     'JOINED' : '\x0300,01Dealing %s into the game as player #%s!',
     'ENOUGH' : '\x0300,01There are enough players, type .deal to start!',
@@ -100,11 +105,14 @@ class UnoBot:
         self.deck = [ ]
         self.prescores = [ ]
         self.dealt = False
+        self.lastActive = datetime.now()
+        self.timeout = timedelta(minutes=INACTIVE_TIMEOUT)
  
     def start(self, phenny, owner):
         if self.game_on:
             phenny.msg (CHANNEL, STRINGS['ALREADY_STARTED'] % self.game_on)
         else:
+            self.lastActive = datetime.now()
             self.game_on = owner
             self.deck = [ ]
             phenny.msg (CHANNEL, STRINGS['GAME_STARTED'] % owner)
@@ -115,12 +123,13 @@ class UnoBot:
                 phenny.notice(owner, STRINGS['ENABLED_PCE'] % owner)
     
     def stop (self, phenny, input):
-        if input.nick == self.game_on:
+        tmptime = datetime.now()
+        if input.nick == self.game_on or tmptime - self.lastActive > self.timeout:
             phenny.msg (CHANNEL, STRINGS['GAME_STOPPED'])
             self.game_on = False
             self.dealt = False
         elif self.game_on:
-            phenny.msg (CHANNEL, STRINGS['CANT_STOP'] % self.game_on)
+            phenny.msg (CHANNEL, STRINGS['CANT_STOP'] % (self.game_on, self.timeout.seconds - (tmptime - self.lastActive).seconds))
             
     def join (self, phenny, input):
         #print dir (phenny.bot)
@@ -130,6 +139,7 @@ class UnoBot:
                 if input.nick not in self.players:
                     self.players[input.nick] = [ ]
                     self.playerOrder.append (input.nick)
+                    self.lastActive = datetime.now()
                     if self.players_pce.get(input.nick, 0):
                         phenny.notice(input.nick, STRINGS['ENABLED_PCE'] % input.nick)
                     if self.deck:
@@ -159,6 +169,7 @@ class UnoBot:
             phenny.msg (CHANNEL, STRINGS['ALREADY_DEALT'])
             return
         self.startTime = datetime.now ()
+        self.lastActive = datetime.now()
         self.deck = self.createnewdeck ()
         for i in xrange (0, 7):
             for p in self.players:
@@ -207,6 +218,7 @@ class UnoBot:
             self.gameEnded (phenny, self.playerOrder[pl])
             return
             
+        self.lastActive = datetime.now()
         self.showOnTurn (phenny)
 
     def draw (self, phenny, input):
@@ -222,6 +234,7 @@ class UnoBot:
         phenny.msg (CHANNEL, STRINGS['DRAWS'] % self.playerOrder[self.currentPlayer])
         c = self.getCard ()
         self.players[self.playerOrder[self.currentPlayer]].append (c)
+        self.lastActive = datetime.now()
         phenny.notice (input.nick, STRINGS['DRAWN_CARD'] % self.renderCards (input.nick, [c], 0))
 
     # this is not a typo, avoiding collision with Python's pass keyword
@@ -237,6 +250,7 @@ class UnoBot:
         self.drawn = False
         phenny.msg (CHANNEL, STRINGS['PASSED'] % self.playerOrder[self.currentPlayer])
         self.incPlayer ()
+        self.lastActive = datetime.now()
         self.showOnTurn (phenny)
 
     def top10 (self, phenny, input):
