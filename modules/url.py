@@ -7,21 +7,223 @@ This module will record all URLs to bitly via an api key and account.
 It also automatically displays the "title" of any URL pasted into the channel.
 """
 
+#
+# Copyright 2009 Empeeric LTD. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+import simplejson
+import urllib,urllib2
+import urlparse
+import string
+
+BITLY_BASE_URL = "http://api.j.mp/"
+BITLY_API_VERSION = "2.0.1"
+
+VERBS_PARAM = {
+         'shorten':'longUrl',
+         'expand':'shortUrl',
+         'info':'shortUrl',
+         'stats':'shortUrl',
+         'errors':'',
+}
+
+class Bit:
+    class BitlyError(Exception):
+        '''Base class for bitly errors'''
+        @property
+        def message(self):
+            '''Returns the first argument used to construct this error.'''
+            return self.args[0]
+
+    class Api(object):
+        """ API class for bit.ly """
+        def __init__(self, login, apikey):
+            self.login = login
+            self.apikey = apikey
+            self._urllib = urllib2
+
+        def shorten(self,longURLs,params={}):
+            """ 
+                Takes either:
+                A long URL string and returns shortened URL string
+                Or a list of long URL strings and returns a list of shortened URL strings.
+            """
+            want_result_list = True
+            if not isinstance(longURLs, list):
+                longURLs = [longURLs]
+                want_result_list = False
+
+            for index,url in enumerate(longURLs):
+                if not '://' in url:
+                    longURLs[index] = "http://" + url
+
+            request = self._getURL("shorten",longURLs,params)
+            result = self._fetchUrl(request)
+            json = simplejson.loads(result)
+            self._CheckForError(json)
+
+            results = json['results']
+            res = [self._extract_short_url(results[url]) for url in longURLs]
+
+            if want_result_list:
+                return res
+            else:
+                return res[0]
+
+        def _extract_short_url(self,item):
+            if item['shortKeywordUrl'] == "":
+                return item['shortUrl']
+            else:
+                return item['shortKeywordUrl']
+
+        def expand(self,shortURL,params={}):
+            """ Given a bit.ly url or hash, return long source url """
+            request = self._getURL("expand",shortURL,params)
+            result = self._fetchUrl(request)
+            json = simplejson.loads(result)
+            self._CheckForError(json)
+            return json['results'][string.split(shortURL, '/')[-1]]['longUrl']
+
+        def info(self,shortURL,params={}):
+            """ 
+            Given a bit.ly url or hash, 
+            return information about that page, 
+            such as the long source url
+            """
+            request = self._getURL("info",shortURL,params)
+            result = self._fetchUrl(request)
+            json = simplejson.loads(result)
+            self._CheckForError(json)
+            return json['results'][string.split(shortURL, '/')[-1]]
+
+        def stats(self,shortURL,params={}):
+            """ Given a bit.ly url or hash, return traffic and referrer data.  """
+            request = self._getURL("stats",shortURL,params)
+            result = self._fetchUrl(request)
+            json = simplejson.loads(result)
+            self._CheckForError(json)
+            return Stats.NewFromJsonDict(json['results'])
+
+        def errors(self,params={}):
+            """ Get a list of bit.ly API error codes. """
+            request = self._getURL("errors","",params)
+            result = self._fetchUrl(request)
+            json = simplejson.loads(result)
+            self._CheckForError(json)
+            return json['results']
+
+        def setUrllib(self, urllib):
+            '''Override the default urllib implementation.
+        
+            Args:
+              urllib: an instance that supports the same API as the urllib2 module
+            '''
+            self._urllib = urllib
+
+        def _getURL(self,verb,paramVal,more_params={}):
+            if not isinstance(paramVal, list):
+                paramVal = [paramVal]
+
+            params = {
+                      'version':BITLY_API_VERSION,
+                      'format':'json',
+                      'login':self.login,
+                      'apiKey':self.apikey,
+                }
+
+            params.update(more_params)
+            params = params.items()
+
+            verbParam = VERBS_PARAM[verb]
+            if verbParam:
+                for val in paramVal:
+                    params.append(( verbParam,val ))
+
+            encoded_params = urllib.urlencode(params)
+            return "%s%s?%s" % (BITLY_BASE_URL,verb,encoded_params)
+
+        def _fetchUrl(self,url):
+            '''Fetch a URL
+        
+            Args:
+              url: The URL to retrieve
+        
+            Returns:
+              A string containing the body of the response.
+            '''
+
+            # Open and return the URL 
+            url_data = self._urllib.urlopen(url).read()
+            return url_data
+
+        def _CheckForError(self, data):
+            """Raises a BitlyError if bitly returns an error message.
+        
+            Args:
+              data: A python dict created from the bitly json response
+            Raises:
+              BitlyError wrapping the bitly error message if one exists.
+            """
+            # bitly errors are relatively unlikely, so it is faster
+            # to check first, rather than try and catch the exception
+            if 'ERROR' in data or data['statusCode'] == 'ERROR':
+                raise BitlyError, data['errorMessage']
+            for key in data['results']:
+                if type(data['results']) is dict and type(data['results'][key]) is dict:
+                    if 'statusCode' in data['results'][key] and data['results'][key]['statusCode'] == 'ERROR':
+                        raise BitlyError, data['results'][key]['errorMessage']
+
+    class Stats(object):
+        '''A class representing the Statistics returned by the bitly api.
+        
+        The Stats structure exposes the following properties:
+        status.user_clicks # read only
+        status.clicks # read only
+        '''
+
+        def __init__(self,user_clicks=None,total_clicks=None):
+            self.user_clicks = user_clicks
+            self.total_clicks = total_clicks
+
+        @staticmethod
+        def NewFromJsonDict(data):
+            '''Create a new instance based on a JSON dict.
+        
+            Args:
+              data: A JSON dict, as converted from the JSON in the bitly API
+            Returns:
+              A bitly.Stats instance
+            '''
+            return Stats(user_clicks=data.get('userClicks', None),
+                      total_clicks=data.get('clicks', None))
+
+bitly = Bit()
+
+bitly_api = "R_ff9b3a798d6e5ac38efc7543a72ad4ce"
+bitly_user = "phennyosu"
+
 from BeautifulSoup import BeautifulSoup
-import bitly
-import re, urllib, urllib2, httplib, urlparse, time
+import re, httplib, time
 from htmlentitydefs import name2codepoint
 import web
-import random
-import httplib
 
-#url_finder = re.compile(r'((?:(?:ht|f)tp(?:s?)\:\/\/|~\/|\/)?(?:\w+:\w+@)?((?:(?:[-\w\d{1-3}]+\.)+(?:com|org|net|gov|mil|biz|info|mobi|name|aero|jobs|edu|co\.uk|ac\.uk|it|fr|tv|museum|asia|local|travel|[a-z]{2})?)|((\b25[0-5]\b|\b[2][0-4][0-9]\b|\b[0-1]?[0-9]?[0-9]\b)(\.(\b25[0-5]\b|\b[2][0-4][0-9]\b|\b[0-1]?[0-9]?[0-9]\b)){3}))(?::[\d]{1,5})?(?:(?:(?:\/(?:[-\w~!$+|.,=]|%[a-f\d]{2})+)+|\/)+|\?|#)?(?:(?:\?(?:[-\w~!$+|.,*:]|%[a-f\d{2}])+=?(?:[-\w~!$+|.,*:=]|%[a-f\d]{2})*)(?:&(?:[-\w~!$+|.,*:]|%[a-f\d{2}])+=?(?:[-\w~!$+|.,*:=]|%[a-f\d]{2})*)*)*(?:#(?:[-\w~!$ |/.,*:;=]|%[a-f\d]{2})*)?)')
 url_finder = re.compile(r'((http|https|ftp)(://\S+))')
 r_title = re.compile(r'(?ims)<title[^>]*>(.*?)</title\s*>')
 r_entity = re.compile(r'&[A-Za-z0-9#]+;')
 
 def bitlystats(jenney, input):
-    api = bitly.Api(login=str(input.bitly_user), apikey=str(input.bitly_api))
+    api = bitly.Api(login=str(bitly_user), apikey=str(bitly_api))
     text = input.group(2)
     if len(text) > 0:
         stats = api.stats(text)
@@ -106,15 +308,14 @@ def short(jenney, input):
     if input.nick == 'jenney-git':
         return
     try:
-        api = bitly.Api(login=str(input.bitly_user), apikey=str(input.bitly_api))
-        rand = random.random()
+        api = bitly.Api(login=str(bitly_user), apikey=str(bitly_api))
         text = input.group()
         a = re.findall(url_finder, text)
         k = len(a)
         i = 0
         while i < k:
             b = str(a[i][0])
-            if not b.startswith("http://bit.ly"):
+            if not b.startswith("http://bit.ly") or not b.startswith("http://j.mp/"):
                 short1=api.shorten(b,{'history':1})
                 if (len(b) >= 50):
                     #page_title = find_title(jenney, input, b)
@@ -123,7 +324,6 @@ def short(jenney, input):
             i += 1
     except:
         return
-#short.rule = r'.*(?:(?:ht|f)tp(?:s?)\:\/\/|~\/|\/)(?:\w+:\w+@)?((?:(?:[-\w\d{1-3}]+\.)+(?:com|org|net|gov|mil|biz|info|mobi|name|aero|jobs|edu|co\.uk|ac\.uk|it|fr|tv|museum|asia|local|travel|[a-z]{2})?))(?::[\d]{1,5})?(?:(?:(?:\/(?:[-\w~!$+|.,=]|%[a-f\d]{2})+)+|\/)+|\?|#)?(?:(?:\?(?:[-\w~!$+|.,*:]|%[a-f\d{2}])+=?(?:[-\w~!$+|.,*:=]|%[a-f\d]{2})*)(?:&(?:[-\w~!$+|.,*:]|%[a-f\d{2}])+=?(?:[-\w~!$+|.,*:=]|%[a-f\d]{2})*)*)*(?:#(?:[-\w~!$ |/.,*:;=]|%[a-f\d]{2})*)?\b'
 short.rule = '.*((http|https|ftp)(://\S+)).*'
 short.priority = 'high'
 
@@ -159,7 +359,6 @@ def show_title(jenney,input):
             display = "[ " + str(page_title) + " ]"
         jenney.say(display)
         i += 1
-#show_title.rule = r'.*(?:(?:ht|f)tp(?:s?)\:\/\/|~\/|\/)(?:\w+:\w+@)?((?:(?:[-\w\d{1-3}]+\.)+(?:com|org|net|gov|mil|biz|info|mobi|name|aero|jobs|edu|co\.uk|ac\.uk|it|fr|tv|museum|asia|local|travel|[a-z]{2})?))(?::[\d]{1,5})?(?:(?:(?:\/(?:[-\w~!$+|.,=]|%[a-f\d]{2})+)+|\/)+|\?|#)?(?:(?:\?(?:[-\w~!$+|.,*:]|%[a-f\d{2}])+=?(?:[-\w~!$+|.,*:=]|%[a-f\d]{2})*)(?:&(?:[-\w~!$+|.,*:]|%[a-f\d{2}])+=?(?:[-\w~!$+|.,*:=]|%[a-f\d]{2})*)*)*(?:#(?:[-\w~!$ |/.,*:;=]|%[a-f\d]{2})*)?\b'
 show_title.rule = '.*((http|https|ftp)(://\S+)).*'
 show_title.priority = 'high'
 

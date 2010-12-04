@@ -175,7 +175,6 @@ def auth_verify(jenney, input):
             return
         else:
             auth_list.remove(nick)
-    print auth_list
 auth_verify.event = 'NOTICE'
 auth_verify.rule = r'(\S+) (ACC) ([0-3])'
 auth_verify.priority = 'high'
