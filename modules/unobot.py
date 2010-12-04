@@ -512,14 +512,13 @@ class UnoBot:
                     self.currentPlayer -= 1
             
             jenney.msg(CHANNEL, STRINGS['PLAYER_LEAVES'] % nick)
-            jenney.msg(CHANNEL, STRINGS['TOP_CARD'] % (self.playerOrder[self.currentPlayer], self.renderCards(None, [self.topCard], 1)))
-
-            if numPlayers <= 2 and self.dealt:
+            if numPlayers == 2 and self.dealt or numPlayers == 1:
                 jenney.msg (CHANNEL, STRINGS['GAME_STOPPED'])
                 self.game_on = None
                 self.dealt = None
                 return
             
+            jenney.msg(CHANNEL, STRINGS['TOP_CARD'] % (self.playerOrder[self.currentPlayer], self.renderCards(None, [self.topCard], 1)))
             if self.game_on == nick:
                 self.game_on = self.playerOrder[0]
                 jenney.msg(CHANNEL, STRINGS['OWNER_CHANGE'] % (nick, self.playerOrder[0]))
