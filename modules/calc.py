@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding=utf-8
 """
-calc.py - Phenny Calculator Module
+calc.py - Jenney Calculator Module
 Copyright 2008, Sean B. Palmer, inamidst.com
 Licensed under the Eiffel Forum License 2.
 
@@ -27,11 +27,11 @@ subs = [
     ('mbps', '(megabits / second)')
 ]
 
-def calc(phenny, input): 
+def calc(jenney, input): 
     """Use the Frink online calculator."""
     q = input.group(2)
     if not q: 
-        return phenny.say('0?')
+        return jenney.say('0?')
 
     query = q[:]
     for a, b in subs: 
@@ -61,13 +61,13 @@ def calc(phenny, input):
         elif ' in ' in q: 
             result += ' ' + q.split(' in ', 1)[1]
 
-        phenny.say(q + ' = ' + result[:350])
-    else: phenny.reply("Sorry, can't calculate that.")
-    phenny.say('Note that .calc is deprecated, consider using .c')
+        jenney.say(q + ' = ' + result[:350])
+    else: jenney.reply("Sorry, can't calculate that.")
+    jenney.say('Note that .calc is deprecated, consider using .c')
 calc.commands = ['calc']
 calc.example = '.calc 5 + 3'
 
-def c(phenny, input): 
+def c(jenney, input): 
     """Google calculator."""
     q = input.group(2).encode('utf-8')
     q = q.replace('\xcf\x95', 'phi') # utf-8 U+03D5
@@ -87,28 +87,28 @@ def c(phenny, input):
     answer = escape(answer)
     lhs = escape(lhs)
     if lhs and answer:
-        phenny.say(lhs + " = " + answer)
+        jenney.say(lhs + " = " + answer)
     else:
-        phenny.say('Sorry, no result.')
+        jenney.say('Sorry, no result.')
 c.commands = ['c']
 c.example = '.c 5 + 3'
 
-def py(phenny, input): 
+def py(jenney, input): 
     query = input.group(2)
     uri = 'http://tumbolia.appspot.com/py/'
     answer = web.get(uri + web.urllib.quote(query))
     if answer: 
-        phenny.say(answer)
-    else: phenny.reply('Sorry, no result.')
+        jenney.say(answer)
+    else: jenney.reply('Sorry, no result.')
 py.commands = ['py']
 
-def wa(phenny, input): 
+def wa(jenney, input): 
     query = input.group(2)
     uri = 'http://tumbolia.appspot.com/wa/'
     answer = web.get(uri + web.urllib.quote(query))
     if answer: 
-        phenny.say(answer)
-    else: phenny.reply('Sorry, no result.')
+        jenney.say(answer)
+    else: jenney.reply('Sorry, no result.')
 wa.commands = ['wa']
 
 if __name__ == '__main__': 

@@ -3,7 +3,7 @@ import web, time, re
 
 STRING = 'The next episode of South Park will air on \x0300%s\x03.'
 
-def southpark (phenny, input):
+def southpark (jenney, input):
 	today = time.localtime()
 	src = web.get('http://en.wikipedia.org/wiki/List_of_South_Park_episodes')
 	parts = src.split('Season 15 (2011)')
@@ -21,7 +21,7 @@ def southpark (phenny, input):
 			if dt < today:
 				continue
 			else:
-				phenny.say(STRING % m.group())
+				jenney.say(STRING % m.group())
 				break
 
 # time.strptime("30 Nov 00", "%d %b %y")

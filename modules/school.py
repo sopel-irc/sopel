@@ -2,19 +2,19 @@
 """
 school.py - Class Schedule Module
 Author: Michael S. Yanovich http://opensource.cse.ohio-state.edu/
-Phenny (About): http://inamidst.com/phenny/
+Jenney (About): http://inamidst.com/phenny/
 """
 from BeautifulSoup import BeautifulSoup
 import web, re
 
 r_link = re.compile(r'(?ims)<td>.*</td>')
 
-def classes(phenny, input):
+def classes(jenney, input):
 
     info = input.group(2)
     info = info.split()
     if len(info) > 3 or len(info) < 3:
-        phenny.say("Please enter information in the following format: .class UNIVERSITY_CODE DEPARTMENT_NAME COURSE_NUMBER")
+        jenney.say("Please enter information in the following format: .class UNIVERSITY_CODE DEPARTMENT_NAME COURSE_NUMBER")
         return
     uni = str(info[0])
     clname = str(info[1])
@@ -43,9 +43,9 @@ def classes(phenny, input):
 #~ title = "Title: " + title
 #~ description_class = "Description: " + description_class
 #~ 
-#~ phenny.say(title)
-#~ phenny.say(description_class)
-#~ phenny.say("Offered: " + req)
+#~ jenney.say(title)
+#~ jenney.say(description_class)
+#~ jenney.say("Offered: " + req)
 #===================================================================
 
     #Find the department
@@ -63,7 +63,7 @@ def classes(phenny, input):
     found_url = re.findall(r'".*"', str(found))	
     found_url = str(found_url[0])
     found_url = found_url[1:-1] 
-    #phenny.say("Found department page")
+    #jenney.say("Found department page")
 
     #Find the course information
     class_url = "http://" + uni + ".schedulizer.com" + found_url
@@ -73,15 +73,15 @@ def classes(phenny, input):
     course = clname + " " + clnum
     course = str(course)
     course = ">" + course + "<"
-    #phenny.say("Starting to look for course information")
-    #phenny.say("course: " + course)
+    #jenney.say("Starting to look for course information")
+    #jenney.say("course: " + course)
     for each in listtd2:
         each = str(each)
         if course in each:
             found_course = each
-            #phenny.say(found_course)
+            #jenney.say(found_course)
         else:
-            phenny.say("Sorry I can not find that class.")
+            jenney.say("Sorry I can not find that class.")
             return
 
     found_course_url = re.findall(r'".*"', str(found_course))
@@ -89,7 +89,7 @@ def classes(phenny, input):
     found_course_url = found_course_url[1:-1]
     course_url = "http://" + uni + ".schedulizer.com" + str(found_course_url)
     course_url = str(course_url)
-    #phenny.say("course_url: " + str(course_url))
+    #jenney.say("course_url: " + str(course_url))
     course_page = web.get(course_url)
     soup3 = BeautifulSoup(course_page)
 
@@ -113,10 +113,10 @@ def classes(phenny, input):
     title = "Title: " + str(title)
     description_class = "Description: " + str(description_class)
 
-    phenny.say(str(title))
-    phenny.say(str(description_class))
+    jenney.say(str(title))
+    jenney.say(str(description_class))
     if uni == "osu":
-        phenny.say("Offered: " + str(req))
+        jenney.say("Offered: " + str(req))
 
 classes.commands = ['class']
 classes.priority = 'high'

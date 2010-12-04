@@ -1,5 +1,5 @@
 """
-find.py - Phenny Spell Checking Module
+find.py - Jenney Spell Checking Module
 Author: Michael S. Yanovich, http://opensource.osu.edu/
 Contributions from: Matt Meinwald and Morgan Goose
 About: http://inamidst.com/phenny/
@@ -18,7 +18,7 @@ else:
 exp = re.compile(r"(?<!\\)/")
 
 # Create a temporary log of the most recent thing anyone says.
-def collectlines(phenny, input):
+def collectlines(jenney, input):
     global search_dict
     try:
         list = search_dict[input.nick]
@@ -37,7 +37,7 @@ def collectlines(phenny, input):
 collectlines.rule = '.*'
 collectlines.priority = 'low'
 
-def findandreplace(phenny, input):
+def findandreplace(jenney, input):
     global search_dict
     global search_file
     # obtain "old word" and "new word"
@@ -76,7 +76,7 @@ def findandreplace(phenny, input):
     # output
     if new_phrase:
         phrase = str(str(input.nick) + " meant to say: " + str(new_phrase))
-        phenny.say(phrase)
+        jenney.say(phrase)
 findandreplace.rule = r'(s)/.*'
 findandreplace.priority = 'high'
 
@@ -96,7 +96,7 @@ def freplace(list, pattern, replacement, phrase, flag):
                 return sample
                 break
 
-def meant (phenny, input):
+def meant (jenney, input):
     global search_dict
     global search_file
     global exp
@@ -154,7 +154,7 @@ def meant (phenny, input):
     if new_phrase:
         # phrase = str(input.nick) + " thinks %s \x0300,01meant: " + str(new_phrase)
         phrase = "%s thinks %s \x0300,01meant:\x03 %s" % (input.nick, user, new_phrase)
-        phenny.say(phrase)
+        jenney.say(phrase)
 
 meant.rule = r'.*\:\s.*'
 meant.priority = 'high'

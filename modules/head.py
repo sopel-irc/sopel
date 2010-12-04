@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-head.py - Phenny HTTP Metadata Utilities
+head.py - Jenney HTTP Metadata Utilities
 Copyright 2008, Sean B. Palmer, inamidst.com
 Licensed under the Eiffel Forum License 2.
 
@@ -12,7 +12,7 @@ from htmlentitydefs import name2codepoint
 import web
 from tools import deprecated
 
-def head(phenny, input): 
+def head(jenney, input): 
 	"""Provide HTTP HEAD information."""
 	uri = input.group(2)
 	uri = (uri or '').encode('utf-8')
@@ -20,21 +20,21 @@ def head(phenny, input):
 		uri, header = uri.rsplit(' ', 1)
 	else: uri, header = uri, None
 
-	if not uri and hasattr(phenny, 'last_seen_uri'): 
-		try: uri = phenny.last_seen_uri[input.sender]
-		except KeyError: return phenny.say('?')
+	if not uri and hasattr(jenney, 'last_seen_uri'): 
+		try: uri = jenney.last_seen_uri[input.sender]
+		except KeyError: return jenney.say('?')
 
 	if not uri.startswith('htt'): 
 		uri = 'http://' + uri
 
 	try: info = web.head(uri)
-	except IOError: return phenny.say("Can't connect to %s" % uri)
-	except httplib.InvalidURL: return phenny.say("Not a valid URI, sorry.")
+	except IOError: return jenney.say("Can't connect to %s" % uri)
+	except httplib.InvalidURL: return jenney.say("Not a valid URI, sorry.")
 
 	if not isinstance(info, list): 
 		try: info = dict(info)
 		except TypeError: 
-			return phenny.reply('Try .head http://example.org/ [optional header]')
+			return jenney.reply('Try .head http://example.org/ [optional header]')
 		info['Status'] = '200'
 	else: 
 		newInfo = dict(info[0])
@@ -53,14 +53,14 @@ def head(phenny, input):
 			data.append(time.strftime('%Y-%m-%d %H:%M:%S UTC', modified))
 		if info.has_key('content-length'): 
 			data.append(info['content-length'] + ' bytes')
-		phenny.reply(', '.join(data))
+		jenney.reply(', '.join(data))
 	else: 
 		headerlower = header.lower()
 		if info.has_key(headerlower): 
-			phenny.say(header + ': ' + info.get(headerlower))
+			jenney.say(header + ': ' + info.get(headerlower))
 		else: 
 			msg = 'There was no %s header in the response.' % header
-			phenny.say(msg)
+			jenney.say(msg)
 head.commands = ['head']
 head.example = '.head http://www.w3.org/'
 
@@ -159,11 +159,11 @@ def f_title(self, origin, match, args):
 	else: self.msg(origin.sender, origin.nick + ': No title found')
 f_title.commands = ['title']
 
-def noteuri(phenny, input): 
+def noteuri(jenney, input): 
 	uri = input.group(1).encode('utf-8')
-	if not hasattr(phenny.bot, 'last_seen_uri'): 
-		phenny.bot.last_seen_uri = {}
-	phenny.bot.last_seen_uri[input.sender] = uri
+	if not hasattr(jenney.bot, 'last_seen_uri'): 
+		jenney.bot.last_seen_uri = {}
+	jenney.bot.last_seen_uri[input.sender] = uri
 noteuri.rule = r'.*(http://[^<> "\x01]+)[,.]?'
 noteuri.priority = 'low'
 

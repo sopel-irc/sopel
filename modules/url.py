@@ -1,5 +1,5 @@
 """
-url.py - Phenny Bitly Module
+url.py - Jenney Bitly Module
 Author: Michael S. Yanovich, http://opensource.osu.edu/~yanovich
 About: http://inamidst.com/phenny/
 
@@ -20,16 +20,16 @@ url_finder = re.compile(r'((http|https|ftp)(://\S+))')
 r_title = re.compile(r'(?ims)<title[^>]*>(.*?)</title\s*>')
 r_entity = re.compile(r'&[A-Za-z0-9#]+;')
 
-def bitlystats(phenny, input):
+def bitlystats(jenney, input):
     api = bitly.Api(login=str(input.bitly_user), apikey=str(input.bitly_api))
     text = input.group(2)
     if len(text) > 0:
         stats = api.stats(text)
-        phenny.say("User clicks " + str(stats.user_clicks) + ", total clicks: " + str(stats.total_clicks) + ".")
+        jenney.say("User clicks " + str(stats.user_clicks) + ", total clicks: " + str(stats.total_clicks) + ".")
 bitlystats.commands = ['bit']
 bitlystats.priority = 'medium'
 
-def find_title(phenny, input, url):
+def find_title(jenney, input, url):
     uri = url
 
     redirects = 0
@@ -102,7 +102,7 @@ def find_title(phenny, input, url):
         title = title.replace('\r', '')
         return title
 
-def short(phenny, input):
+def short(jenney, input):
     try:
         api = bitly.Api(login=str(input.bitly_user), apikey=str(input.bitly_api))
         rand = random.random()
@@ -115,9 +115,9 @@ def short(phenny, input):
             if not b.startswith("http://bit.ly"):
                 short1=api.shorten(b,{'history':1})
                 if (len(b) >= 50):
-                    #page_title = find_title(phenny, input, b)
+                    #page_title = find_title(jenney, input, b)
                     #display = "[ " + str(page_title) + " ] " + str(short1)
-                    phenny.say(str(short1))
+                    jenney.say(str(short1))
             i += 1
     except:
         return
@@ -125,7 +125,7 @@ def short(phenny, input):
 short.rule = '.*((http|https|ftp)(://\S+)).*'
 short.priority = 'high'
 
-def title2(phenny, input, link):
+def title2(jenney, input, link):
     link = str(link)
     html = web.get(link)
     soup = BeautifulSoup(html)
@@ -135,7 +135,7 @@ def title2(phenny, input, link):
     b = str(b)
     return b
 
-def show_title(phenny,input):
+def show_title(jenney,input):
     text = input.group()
     a = re.findall(url_finder, text)
     k = len(a)
@@ -144,16 +144,16 @@ def show_title(phenny,input):
         url = str(a[i][0])
         try:
             try: 
-                page_title = find_title(phenny, input, url)
+                page_title = find_title(jenney, input, url)
             except:
-                page_title = title2(phenny, input, url)
+                page_title = title2(jenney, input, url)
         except:
             return
         if page_title == None or page_title == "None":
             return
         else:
             display = "[ " + str(page_title) + " ]"
-        phenny.say(display)
+        jenney.say(display)
         i += 1
 #show_title.rule = r'.*(?:(?:ht|f)tp(?:s?)\:\/\/|~\/|\/)(?:\w+:\w+@)?((?:(?:[-\w\d{1-3}]+\.)+(?:com|org|net|gov|mil|biz|info|mobi|name|aero|jobs|edu|co\.uk|ac\.uk|it|fr|tv|museum|asia|local|travel|[a-z]{2})?))(?::[\d]{1,5})?(?:(?:(?:\/(?:[-\w~!$+|.,=]|%[a-f\d]{2})+)+|\/)+|\?|#)?(?:(?:\?(?:[-\w~!$+|.,*:]|%[a-f\d{2}])+=?(?:[-\w~!$+|.,*:=]|%[a-f\d]{2})*)(?:&(?:[-\w~!$+|.,*:]|%[a-f\d{2}])+=?(?:[-\w~!$+|.,*:=]|%[a-f\d]{2})*)*)*(?:#(?:[-\w~!$ |/.,*:;=]|%[a-f\d]{2})*)?\b'
 show_title.rule = '.*((http|https|ftp)(://\S+)).*'

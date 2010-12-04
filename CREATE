@@ -9,7 +9,7 @@ Revision 0.6 (draft) created February 24, 2010
 
 I) BASICS
 
-        Creating a phenny module is simple and fun! This document is laid out in
+        Creating a jenney module is simple and fun! This document is laid out in
         the following format; 
         I)      Basics
         II)     How To Get Started
@@ -23,14 +23,14 @@ I) BASICS
 
 II) HOW TO GET STARTED
 
-        Before you can get started you need to have a fork of phenny on your co_
-        mptuer. You can obtain a copy of phenny at <http://inamidst.com/phenny/>
+        Before you can get started you need to have a fork of jenney on your co_
+        mptuer. You can obtain a copy of jenney at <http://inamidst.com/jenney/>
         You can also obtain a different fork (if you wish) from The Ohio State 
         University Open Source Club: <http://opensource.cse.ohio-state.edu/git/>
 
         Regardless of which fork you have you can create modules for either or. 
-        I won't go through the instructions of installing phenny since those are
-        already included in both phenny packages.
+        I won't go through the instructions of installing jenney since those are
+        already included in both jenney packages.
 
         Also I'm assuming you now the complete basics about Phenny, (ie: what 
         language she is written in; how to set her up; how to config her, etc.)
@@ -38,20 +38,20 @@ II) HOW TO GET STARTED
 III) CREATE A MODULE
 
         The very first step in creating a module is to open up your text editor
-        of choice and save the file in your phenny/modules folder. (Assuming you
+        of choice and save the file in your jenney/modules folder. (Assuming you
         haven't changed the default location of where modules will be placed for
-        phenny.) As far as I am aware there really isn't a convention already in
+        jenney.) As far as I am aware there really isn't a convention already in
         place for how to name your files. The way I recommend doing it is to 
         summarize what the goal of the whole file will accomplish or does. Later 
         one you will see that if you have a collection of functions you might
         want to name the file for what the collection collectively does or 
         accomplishes. 
 
-        Once you have saved your file you now have created a file that phenny
+        Once you have saved your file you now have created a file that jenney
         can "reload" in a chat room with the admin commands. So for example lets
-        say you have created a file hello_world.py without restarting phenny you
+        say you have created a file hello_world.py without restarting jenney you
         can simply go into a chat room she is sitting in and run the command 
-        "phenny: reload hello_world" but change "phenny" to whatever her nick is
+        "jenney: reload hello_world" but change "jenney" to whatever her nick is
         on the server you are running her on.
 
         NOTICE: When you reload a module in the chat room or via private message
@@ -61,17 +61,17 @@ III) CREATE A MODULE
         der and then reload it in your chat room. If it were successful you will
         see a message along these lines:
 
-                nick: <module 'hello_world.py' from '/home/nick/phenny/modules/h
+                nick: <module 'hello_world.py' from '/home/nick/jenney/modules/h
                 ello_world.py'> (version: 2010-02-18 02:00:00)
 
         Now what this all means is that it has successfully loaded the module
-        from your path where phenny is located at. The version is the time and 
+        from your path where jenney is located at. The version is the time and 
         date that the file was last modify. The 'nick' mentioned above is your
-        irc nick that you are using to administer phenny.
+        irc nick that you are using to administer jenney.
 
         NOTE: You can use anything that is included in your current library of 
         Python that is locally installed on the computer in which you are runni_
-        ng phenny. Which means you can use modules, such as MATH, PICKLE, 
+        ng jenney. Which means you can use modules, such as MATH, PICKLE, 
         SQLITE3, etc.. if they are normally available locally in your Python 
         PATH directories.
 
@@ -92,14 +92,14 @@ IV) FUNCTIONS IN A MODULE
         understand by fellow programmers. 
 
         Also "myvar1" and "myvar2" are the incoming variables into this functio_
-        n. However, for most of the functions you'll be creating with phenny it
+        n. However, for most of the functions you'll be creating with jenney it
         will look like this:
 
-                def helloworld(phenny, input):
+                def helloworld(jenney, input):
 
         Here you need to always (unless you know what you are doing) include
-        "phenny" and "input." "phenny" brings into scope the variables and 
-        accessor you'll need in order for phenny to do what you want her to do.
+        "jenney" and "input." "jenney" brings into scope the variables and 
+        accessor you'll need in order for jenney to do what you want her to do.
         The "input" variable is what listens and brings into scope certain vari_
         ables that are usually used to trigger the function. You'll see in the
         next section on how to 'trigger' a function. I'll also show an example
@@ -108,30 +108,30 @@ IV) FUNCTIONS IN A MODULE
 V) COMMANDS, RULES, AND PRIORITIES (OH MY!)
 
         Ok this is where, in my opinion, the most fun starts. Using commands you
-        can get phenny to actually compute a given function and "say" things in 
+        can get jenney to actually compute a given function and "say" things in 
         the irc chat room. I'm going to display an example of a fully working
         module and I'll break down the pieces of what each thing does so you'll
         better understand what exactly is going on.
 
-                def helloworld(phenny, input):
-                        phenny.say("Hello world!")
+                def helloworld(jenney, input):
+                        jenney.say("Hello world!")
                 helloworld.commands = ['hello']
                 helloworld.priority = 'medium'
 
         Figure 5-1
 
         If you saved the above code into a hello_world.py file in your modules
-        directory of phenny and then loaded as I mentioned above then why type
-        .hello in the chat room she is currently sitting in your phenny bot sho_
+        directory of jenney and then loaded as I mentioned above then why type
+        .hello in the chat room she is currently sitting in your jenney bot sho_
         uld she should say "Hello world!" in the chat room.
 
-        The first important thing (and new thing) is the phenny.say command.
-        'phenny.say' will basically take any string or python variable that can
+        The first important thing (and new thing) is the jenney.say command.
+        'jenney.say' will basically take any string or python variable that can
         be printed natively to stdout into the chat room. You can even have her
-        say variables that of type string, int, etc.. (eg: phenny.say(mystr) )
+        say variables that of type string, int, etc.. (eg: jenney.say(mystr) )
 
         The key thing about this example is helloworld.commands = ['hello']
-        This basically tells phenny to keep an eye out for anything that begins
+        This basically tells jenney to keep an eye out for anything that begins
         with a ".hello" regardless of what is following it. You could try typing
 
                 .hello 125
@@ -143,15 +143,15 @@ V) COMMANDS, RULES, AND PRIORITIES (OH MY!)
         actually use them to manipulate data.
 
         Another key thing to note about figure 5-1 is the last line. This isn't 
-        required for every function but it helps phenny keep things in order
+        required for every function but it helps jenney keep things in order
         when a bunch of things are going on. This is really handy when she is
         being used by several different people at the same time. Basically
-        inside phenny's guts she runs all commands in the following order based
+        inside jenney's guts she runs all commands in the following order based
         on priority. High, Medium, then low. All high commands will execute bef_
         ore all medium commands, and all medium commands will execute before all
         low commands. But this order is only done when there are commands being
         requested to be executed. Unless you build a function that is of utmost
-        importance to the operation of phenny, you'll most likely want to give
+        importance to the operation of jenney, you'll most likely want to give
         the function a medium priority. If you are doing something really obscu_
         re then you can get away with a low priority. 
 
@@ -162,7 +162,7 @@ V) COMMANDS, RULES, AND PRIORITIES (OH MY!)
         they differ in the way they offer more flexibility and you can monitor
         more messages for lines in a chatroom than with commands. Let's say you
         built a function that logs the current channel you are in. But you don't
-        know how to have phenny compute your function for every line in the room
+        know how to have jenney compute your function for every line in the room
         you can do this using rules. 
 
         A key concept to remember is that you never want to have a function have
@@ -182,8 +182,8 @@ V) COMMANDS, RULES, AND PRIORITIES (OH MY!)
 
         Here is a great example of a "rule" in action.
 
-                def interjection(phenny, input):
-                        phenny.say(input.nick + '!')
+                def interjection(jenney, input):
+                        jenney.say(input.nick + '!')
                 interjection.rule = r'$nickname!'
                 interjection.priority = 'high'
                 interjection.thread = False
@@ -196,28 +196,28 @@ V) COMMANDS, RULES, AND PRIORITIES (OH MY!)
         sequence are different. This makes it easier for you to enter regular 
         expressions without having to double up on some of your characters. 
         Another thing to note, the use of $nickname, is a global variable built
-        inside phenny that refers to whatever nickname that you have set for
-        phenny in your configuration file. Therefore the regular expression rule
-        is keeping an eye out for anyone who types just 'phenny!' in the channel
-        where phenny could be the nick of your clone of phenny.
+        inside jenney that refers to whatever nickname that you have set for
+        jenney in your configuration file. Therefore the regular expression rule
+        is keeping an eye out for anyone who types just 'jenney!' in the channel
+        where jenney could be the nick of your clone of jenney.
 
         Another thing to point out is the use of interjection.thread = False.
-        This is a cool feature the creator (sbp) has added into phenny.
-        Out of the box, phenny is multi-threaded so technically it can use two
+        This is a cool feature the creator (sbp) has added into jenney.
+        Out of the box, jenney is multi-threaded so technically it can use two
         cores on a dual-core machine. But the best part is, you can specifically
         tell a given function not to be "multi-threaded." There are numerous
         occasions where this may be necessary.
 
         The best tip I can give regarding rules is to take a look at the modules
-        that come with phenny out of the box specifically the ping.py and if you
-        are using the phenny_osu fork the resp.py module. 
+        that come with jenney out of the box specifically the ping.py and if you
+        are using the jenney_osu fork the resp.py module. 
 
         EVENTS
         Events are basically 'triggers' that will execute your function when the
         specified event that you listed occurs. A perfect example is to have a
         function execute every time someone joins a channel.
 
-                def message_join(phenny, input):
+                def message_join(jenney, input):
                         ...
                 message_join.event = 'JOIN'
 
@@ -225,9 +225,9 @@ V) COMMANDS, RULES, AND PRIORITIES (OH MY!)
 
         You can use either JOIN, PART, NICK, and PRIVMSG. JOIN watches for join
         commands from the IRC server. PART looks for people leaving a channel
-        that phenny is currently in. NICK looks for people in the room that have
+        that jenney is currently in. NICK looks for people in the room that have
         changed their nicks, and PRIVMSG is the default and it looks for any
-        message sent to the channel or to phenny.
+        message sent to the channel or to jenney.
 
 VI) DOCUMENTING YOUR MODULE
 
@@ -245,14 +245,14 @@ VI) DOCUMENTING YOUR MODULE
                 Copyright 2010, Michael Yanovich, opensource.osu.edu/~yanovich/
                 Licensed under the Eiffel Forum License 2.
 
-                http://inamidst.com/phenny/
+                http://inamidst.com/jenney/
                 """
 
         Figure 6-1
 
         Now you don't necessarily have to do everything exactly the same as I
         and sbp have done but it is highly recommend, especially if you would
-        like to create your very own fork of the phenny project.
+        like to create your very own fork of the jenney project.
 
         The second line right after the three double quotes, represents the name
         of the file and a brief title of the file. Then the next line identifies
@@ -266,7 +266,7 @@ VI) DOCUMENTING YOUR MODULE
         Then the final line before the last three double quotes, is a URL to the
         original creator's site. I would highly recommend keeping this there, 
         because the author (sbp) deserves as much credit as he does for creating
-        phenny completely from scratch. Plus it is good to give credit in the
+        jenney completely from scratch. Plus it is good to give credit in the
         open source community!
 
         DOCUMENTING YOUR FUNCTIONS
@@ -279,7 +279,7 @@ VI) DOCUMENTING YOUR MODULE
 
         For example:
 
-                def addpoint(phenny, input):
+                def addpoint(jenney, input):
                         """.addpoint <nick> - Adds 1 point to the score system
                         for <nick>."""
                         ...
@@ -288,23 +288,23 @@ VI) DOCUMENTING YOUR MODULE
 
         A nice but not necessary thing to include in your functions that you
         want to present to the world is the .example property. This displays
-        an example you set, when someone messages phenny "help command."
+        an example you set, when someone messages jenney "help command."
 
         For example:
 
-                def join(phenny, input):
+                def join(jenney, input):
                         ...
                 join.example = '.join #example or .join #example key'
 
         Figure 6-3
 
-        Here in Figure 6-3, when a user messages phenny, "help join" phenny will
+        Here in Figure 6-3, when a user messages jenney, "help join" jenney will
         respond saying ".join #example or .join #example key"
 
         Next at the very end of your document you are going to want to add the
         following lines of code. This is a small python hack, if you will, that
         prevents some weird things from happening if you tried to run the module
-        directly inside of python and not inside phenny. I won't get into the
+        directly inside of python and not inside jenney. I won't get into the
         specifics as they can get really confusing if you don't completely unde_
         rstand Python.
 
@@ -315,20 +315,20 @@ VI) DOCUMENTING YOUR MODULE
 
 VII) BUILT-IN FUNCTIONS, CONSTANTS, AND VARIABLES
 
-        Here is an incomplete and growing list of built-in functions that phenny
+        Here is an incomplete and growing list of built-in functions that jenney
         has access to that you wouldn't normally find in other Python programs.
 
         This section is expected to grow with time.
 
-        phenny.nick
+        jenney.nick
                 will return the string that represents the current nick of
-                phenny running, according to your configuration file.
+                jenney running, according to your configuration file.
 
-        phenny.say(myvar)
+        jenney.say(myvar)
                 will print the contents of the variable "myvar" to the chatroom
 
-        phenny.write(['JOIN'], channel)
-                this makes phenny said a JOIN command to the IRC server to the
+        jenney.write(['JOIN'], channel)
+                this makes jenney said a JOIN command to the IRC server to the
                 join specified channel.
 
         input.admin
@@ -346,10 +346,10 @@ VII) BUILT-IN FUNCTIONS, CONSTANTS, AND VARIABLES
                 red the function.
 
         if input.sender.startswith('#')
-                this checks to see if any message sent to phenny is from a chat
+                this checks to see if any message sent to jenney is from a chat
                 room. This if-statement yields true for all messages sent in any
                 chat room. The only time this if-statement yields a false is
-                when phenny receives a private message.
+                when jenney receives a private message.
 
         f.rule = r'(.*)'
                 this rule will trigger the function 'f' every time a message is

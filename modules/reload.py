@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-reload.py - Phenny Module Reloader Module
+reload.py - Jenney Module Reloader Module
 Copyright 2008, Sean B. Palmer, inamidst.com
 Licensed under the Eiffel Forum License 2.
 
@@ -9,24 +9,24 @@ http://inamidst.com/phenny/
 
 import irc
 
-def f_reload(phenny, input): 
+def f_reload(jenney, input): 
 	"""Reloads a module, for use by admins only.""" 
 	if not input.admin: return
 
 	name = input.group(2)
-	if name == phenny.config.owner: 
-		return phenny.reply('What?')
+	if name == jenney.config.owner: 
+		return jenney.reply('What?')
 
 	if (not name) or (name == '*'): 
-		phenny.setup()
-		return phenny.reply('done')
+		jenney.setup()
+		return jenney.reply('done')
 
 	try: module = getattr(__import__('modules.' + name), name)
 	except ImportError: 
 		module = getattr(__import__('opt.' + name), name)
 	reload(module)
 	if hasattr(module, 'setup'): 
-		module.setup(phenny)
+		module.setup(jenney)
 
 	if hasattr(module, '__file__'): 
 		import os.path, time
@@ -34,10 +34,10 @@ def f_reload(phenny, input):
 		modified = time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime(mtime))
 	else: modified = 'unknown'
 
-	phenny.register(vars(module))
-	phenny.bind_commands()
+	jenney.register(vars(module))
+	jenney.bind_commands()
 
-	phenny.reply('%r (version: %s)' % (module, modified))
+	jenney.reply('%r (version: %s)' % (module, modified))
 f_reload.name = 'reload'
 f_reload.rule = ('$nick', ['reload'], r'(\S+)?')
 f_reload.priority = 'low'

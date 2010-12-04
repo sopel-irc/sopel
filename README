@@ -1,11 +1,11 @@
 Installation &c.
 
-1) Run ./phenny - this creates a default config file
-2) Edit ~/.phenny/default.py
-3) Run ./phenny - this now runs phenny with your settings
+1) Run ./jenney - this creates a default config file
+2) Edit ~/.jenney/default.py
+3) Run ./jenney - this now runs jenney with your settings
 
 Enjoy!
 
 -- 
 Sean B. Palmer, http://inamidst.com/sbp/
-forked by Michael S. Yanovich, http://opensource.cse.ohio-state.edu/git/yanovich/phenny.git/
+forked by Michael S. Yanovich, https://github.com/myano/jenney/

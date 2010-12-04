@@ -2,7 +2,7 @@
 """
 mod.py - Channel Module
 Author: Alek Rollyson, http://opensource.osu.edu/
-Phenny (about): http://inamidst.com/phenny/
+Jenney (about): http://inamidst.com/phenny/
 
 Beefed up by Alek Rollyson. added functions for op, deop, voice, devoice
 Uses NickServ ACC to verify that a nick is identified with services, as well
@@ -19,141 +19,141 @@ import sched
 auth_list = []
 admins = []
 
-def join(phenny, input): 
+def join(jenney, input): 
    """Join the specified channel. This is an admin-only command."""
    # Can only be done in privmsg by an admin
    if input.sender.startswith('#'): return
    if input.admin: 
       channel, key = input.group(1), input.group(2)
       if not key: 
-         phenny.write(['JOIN'], channel)
-      else: phenny.write(['JOIN', channel, key])
+         jenney.write(['JOIN'], channel)
+      else: jenney.write(['JOIN', channel, key])
 join.rule = r'\.join (#\S+)(?: *(\S+))?'
 join.priority = 'low'
 join.example = '.join #example or .join #example key'
 
-def part(phenny, input): 
+def part(jenney, input): 
    """Part the specified channel. This is an admin-only command."""
    # Can only be done in privmsg by an admin
    if input.sender.startswith('#'): return
    if input.admin: 
-      phenny.write(['PART'], input.group(2))
+      jenney.write(['PART'], input.group(2))
 part.commands = ['part']
 part.priority = 'low'
 part.example = '.part #example'
 
-def quit(phenny, input): 
+def quit(jenney, input): 
    """Quit from the server. This is an owner-only command."""
    # Can only be done in privmsg by the owner
    if input.sender.startswith('#'): return
    if input.owner: 
-      phenny.write(['QUIT'])
+      jenney.write(['QUIT'])
       __import__('os')._exit(0)
 quit.commands = ['quit']
 quit.priority = 'low'
 
-def msg(phenny, input): 
+def msg(jenney, input): 
    # Can only be done in privmsg by an admin
    if input.sender.startswith('#'): return
    a, b = input.group(2), input.group(3)
    if (not a) or (not b): return
    if input.admin: 
-      phenny.msg(a, b)
+      jenney.msg(a, b)
 msg.rule = (['msg'], r'(#?\S+) (.+)')
 msg.priority = 'low'
 
-def me(phenny, input): 
+def me(jenney, input): 
    # Can only be done in privmsg by an admin
    if input.sender.startswith('#'): return
    if input.admin: 
       msg = '\x01ACTION %s\x01' % input.group(3)
-      phenny.msg(input.group(2), msg)
+      jenney.msg(input.group(2), msg)
 me.rule = (['me'], r'(#?\S+) (.*)')
 me.priority = 'low'
 
-def op(phenny, input):
+def op(jenney, input):
     """
     Command to op users in a room. If no nick is given,
-    phenny will op the nick who sent the command
+    jenney will op the nick who sent the command
     """
     if not input.admin or not input.sender.startswith('#'):
         return
     nick = input.group(2)
-    verify = auth_check(phenny, input.nick, nick)
+    verify = auth_check(jenney, input.nick, nick)
     if verify:
         channel = input.sender
         if not nick:
             nick = input.nick
-        phenny.write(['MODE', channel, "+o", nick])
+        jenney.write(['MODE', channel, "+o", nick])
 op.rule = (['op'], r'(\S+)?')
 op.priority = 'low'
 
-def deop(phenny, input):
+def deop(jenney, input):
     """
     Command to deop users in a room. If no nick is given,
-    phenny will deop the nick who sent the command
+    jenney will deop the nick who sent the command
     """
     if not input.admin or not input.sender.startswith('#'):
         return
     nick = input.group(2)
-    verify = auth_check(phenny, input.nick, nick)
+    verify = auth_check(jenney, input.nick, nick)
     if verify:
         channel = input.sender
         if not nick:
             nick = input.nick
-        phenny.write(['MODE', channel, "-o", nick])
+        jenney.write(['MODE', channel, "-o", nick])
 deop.rule = (['deop'], r'(\S+)?')
 deop.priority = 'low'
 
-def voice(phenny, input):
+def voice(jenney, input):
     """
     Command to voice users in a room. If no nick is given,
-    phenny will voice the nick who sent the command
+    jenney will voice the nick who sent the command
     """
     if not input.admin or not input.sender.startswith('#'):
         return
     nick = input.group(2)
-    verify = auth_check(phenny, input.nick, nick)
+    verify = auth_check(jenney, input.nick, nick)
     if verify:
         channel = input.sender
         if not nick:
             nick = input.nick
-        phenny.write(['MODE', channel, "+v", nick])
+        jenney.write(['MODE', channel, "+v", nick])
 voice.rule = (['voice'], r'(\S+)?')
 voice.priority = 'low'
 
-def devoice(phenny, input):
+def devoice(jenney, input):
     """
     Command to devoice users in a room. If no nick is given,
-    phenny will devoice the nick who sent the command
+    jenney will devoice the nick who sent the command
     """
     if not input.admin or not input.sender.startswith('#'):
         return
     nick = input.group(2)
-    verify = auth_check(phenny, input.nick, nick)
+    verify = auth_check(jenney, input.nick, nick)
     if verify:
         channel = input.sender
         if not nick:
             nick = input.nick
-        phenny.write(['MODE', channel, "-v", nick])
+        jenney.write(['MODE', channel, "-v", nick])
 devoice.rule = (['devoice'], r'(\S+)?')
 devoice.priority = 'low'
 
-def auth_request(phenny, input):
+def auth_request(jenney, input):
     """
-    This will scan every message in a room for nicks in phenny's
+    This will scan every message in a room for nicks in jenney's
     admin list.  If one is found, it will send an ACC request
     to NickServ.  May only work with Freenode.
     """
-    admins = phenny.config.admins
+    admins = jenney.config.admins
     pattern = '(' + '|'.join([re.escape(x) for x in admins]) + ')'
     matches = re.findall(pattern, input)
     for x in matches:
-        phenny.msg('NickServ', 'ACC ' + x)
+        jenney.msg('NickServ', 'ACC ' + x)
 auth_request.rule = r'.*'
 auth_request.priority = 'high'
 
-def auth_verify(phenny, input):
+def auth_verify(jenney, input):
     """
     This will wait for notices from NickServ and scan for ACC
     responses.  This verifies with NickServ that nicks in the room
@@ -180,12 +180,12 @@ auth_verify.event = 'NOTICE'
 auth_verify.rule = r'(\S+) (ACC) ([0-3])'
 auth_verify.priority = 'high'
 
-def auth_check(phenny, nick, target=None):
+def auth_check(jenney, nick, target=None):
     """
     Checks if nick is on the auth list and returns true if so
     """
     global auth_list
-    if target == phenny.config.nick:
+    if target == jenney.config.nick:
 	    return 0
     elif nick in auth_list:
         return 1
@@ -199,33 +199,33 @@ def deauth(nick):
         a = auth_list.index(nick)
         del(auth_list[a])
 
-def deauth_quit(phenny, input):
+def deauth_quit(jenney, input):
     deauth(input.nick)
 deauth_quit.event = 'QUIT'
 deauth_quit.rule = '.*'
 
-def deauth_part(phenny, input):
+def deauth_part(jenney, input):
     deauth(input.nick)
 deauth_part.event = 'PART'
 deauth_part.rule = '.*'
 
-def deauth_nick(phenny, input):
+def deauth_nick(jenney, input):
     deauth(input.nick)
 deauth_nick.event = 'NICK'
 deauth_nick.rule = '.*'
 
-def kick(phenny, input):
+def kick(jenney, input):
     if not input.admin: return
     text = input.group().split()
     if len(text) != 3: return
     nick = text[2]
-    if nick != phenny.config.nick:
+    if nick != jenney.config.nick:
         tmp = text[1] + " " + nick
-        phenny.write(['KICK', tmp])
+        jenney.write(['KICK', tmp])
 kick.commands = ['kick']
 kick.priority = 'high'
 
-def topic(phenny, input):
+def topic(jenney, input):
     """
     This gives admins the ability to change the topic.
     Note: One does *NOT* have to be an OP, one just has to be on the list of
@@ -238,25 +238,25 @@ def topic(phenny, input):
     except:
         return
 
-    verify = auth_check(phenny, input.nick)
+    verify = auth_check(jenney, input.nick)
     channel = input.sender
     if verify:
         text = "topic " + str(channel) + " " + str(topic)
-        phenny.write(('PRIVMSG', 'chanserv'), text)
+        jenney.write(('PRIVMSG', 'chanserv'), text)
 topic.commands = ['topic']
 topic.priority = 'low'
 
-def defend_ground (phenny, input):
+def defend_ground (jenney, input):
     """
-    This function monitors all kicks across all channels phenny is in. If she
+    This function monitors all kicks across all channels jenney is in. If she
     detects that she is the one kicked she'll automatically join that channel.
 
-    WARNING: This may not needed and could cause problems if phenny becomes 
+    WARNING: This may not needed and could cause problems if jenney becomes 
     annoying. Please use this with caution.
     """
     channel = input.sender
     text = input.group()
-    phenny.write(['JOIN'], channel)                
+    jenney.write(['JOIN'], channel)                
 defend_ground.event = 'KICK'
 defend_ground.rule = '.*'
 defend_ground.priority = 'low'

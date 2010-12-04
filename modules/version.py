@@ -1,22 +1,22 @@
 """
 version.py
 Author: Silas Baronda
-Phenny (About): http://inamidst.com/phenny/
+Jenney (About): http://inamidst.com/phenny/
 """
 
 from subprocess import *
 
-def version(phenny, input):
+def version(jenney, input):
 	p = Popen(["git", "log", "-n 1"], stdout=PIPE, close_fds=True)
 
 	commit = p.stdout.readline()
 	author = p.stdout.readline()
 	date = p.stdout.readline()
 	
-	phenny.say(str(input.nick) + ": running version:")
-	phenny.say("  " + commit)
-	phenny.say("  " + author)
-	phenny.say("  " + date)
+	jenney.say(str(input.nick) + ": running version:")
+	jenney.say("  " + commit)
+	jenney.say("  " + author)
+	jenney.say("  " + date)
 
 version.commands = ['version']
 version.priority = 'medium'

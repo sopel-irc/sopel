@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-validate.py - Phenny Validation Module
+validate.py - Jenney Validation Module
 Copyright 2008, Sean B. Palmer, inamidst.com
 Licensed under the Eiffel Forum License 2.
 
@@ -9,7 +9,7 @@ http://inamidst.com/phenny/
 
 import web
 
-def val(phenny, input): 
+def val(jenney, input): 
 	"""Check a webpage using the W3C Markup Validator."""
 	uri = input.group(2)
 	if not uri.startswith('http://'): 
@@ -21,7 +21,7 @@ def val(phenny, input):
 	result = uri + ' is '
 
 	if isinstance(info, list): 
-		return phenny.say('Got HTTP response %s' % info[1])
+		return jenney.say('Got HTTP response %s' % info[1])
 
 	if info.has_key('X-W3C-Validator-Status'): 
 		result += str(info['X-W3C-Validator-Status'])
@@ -33,7 +33,7 @@ def val(phenny, input):
 				else: result += ' (%s error)' % n
 	else: result += 'Unvalidatable: no X-W3C-Validator-Status'
 
-	phenny.reply(result)
+	jenney.reply(result)
 val.rule = (['val'], r'(?i)(\S+)')
 val.example = '.val http://www.w3.org/'
 

@@ -2,12 +2,12 @@
 """
 xkcd.py - XKCD Module
 Author: Michael S. Yanovich and Goose Morgan http://opensource.cse.ohio-state.edu/
-Phenny (About): http://inamidst.com/phenny/
+Jenney (About): http://inamidst.com/phenny/
 """
 
 import random
 
-def xkcd(phenny, input):
+def xkcd(jenney, input):
 	""".xkcd - Generates a url for a random XKCD clip."""
 	import urllib2
 	from lxml import etree
@@ -17,7 +17,7 @@ def xkcd(phenny, input):
 	newest = etree.tostring(parsed.findall("channel/item/link")[0])
 	max_int = int(newest.split("/")[-3])
 	website = "http://xkcd.com/%d/" % random.randint(0,max_int+1)
-	phenny.say(website)
+	jenney.say(website)
 xkcd.commands = ['xkcd']
 
 if __name__ == '__main__': 

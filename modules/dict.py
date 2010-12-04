@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-dict.py - Phenny Dictionary Module
+dict.py - Jenney Dictionary Module
 Copyright 2008-9, Sean B. Palmer, inamidst.com
 Licensed under the Eiffel Forum License 2.
 
@@ -21,7 +21,7 @@ r_info = re.compile(
 	r'(?:ResultBody"><br /><br />(.*?)&nbsp;)|(?:<b>(.*?)</b>)'
 )
 
-def dict(phenny, input): 
+def dict(jenney, input): 
 	word = input.group(2)
 	word = urllib.quote(word.encode('utf-8'))
 
@@ -47,8 +47,8 @@ def dict(phenny, input):
 			result += '; '
 	result = result.rstrip('; ')
 	if result.endswith('-') and (len(result) < 30): 
-		phenny.reply('Sorry, no definition found.')
-	else: phenny.say(result)
+		jenney.reply('Sorry, no definition found.')
+	else: jenney.say(result)
 dict.commands = ['dict']
 
 if __name__ == '__main__': 
