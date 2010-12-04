@@ -213,7 +213,6 @@ bitly = Bit()
 bitly_api = "R_ff9b3a798d6e5ac38efc7543a72ad4ce"
 bitly_user = "phennyosu"
 
-from BeautifulSoup import BeautifulSoup
 import re, httplib, time
 from htmlentitydefs import name2codepoint
 import web
@@ -327,6 +326,7 @@ def short(jenney, input):
 short.rule = '.*((http|https|ftp)(://\S+)).*'
 short.priority = 'high'
 
+'''
 def title2(jenney, input, link):
     link = str(link)
     html = web.get(link)
@@ -336,6 +336,7 @@ def title2(jenney, input, link):
     b = a[7:-8]
     b = str(b)
     return b
+'''
 
 def show_title(jenney,input):
     if input.nick == 'jenney-git':
@@ -350,7 +351,8 @@ def show_title(jenney,input):
             try: 
                 page_title = find_title(jenney, input, url)
             except:
-                page_title = title2(jenney, input, url)
+                #page_title = title2(jenney, input, url)
+                pass
         except:
             return
         if page_title == None or page_title == "None":

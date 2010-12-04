@@ -4,10 +4,11 @@ school.py - Class Schedule Module
 Author: Michael S. Yanovich http://opensource.cse.ohio-state.edu/
 Jenney (About): http://inamidst.com/phenny/
 """
-from BeautifulSoup import BeautifulSoup
 import web, re
 
 r_link = re.compile(r'(?ims)<td>.*</td>')
+
+'''
 
 def classes(jenney, input):
 
@@ -120,6 +121,8 @@ def classes(jenney, input):
 
 classes.commands = ['class']
 classes.priority = 'high'
+
+'''
 
 if __name__ == '__main__': 
     print __doc__.strip()
