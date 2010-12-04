@@ -345,7 +345,10 @@ class UnoBot:
         ret = [ ]
         for c in sorted (cards):
             if c in ['W', 'WD4']:
-                ret.append ('\x0300,01[' + c + '] ')
+                sp = ''
+                if not is_chan:
+                    sp = ' '
+                ret.append ('\x0300,01[' + c + ']' + sp)
                 continue
             if c[0] == 'W':
                 c = c[-1] + '*'
@@ -496,27 +499,30 @@ class UnoBot:
         user = self.players.get(nick, None)
         if user is not None:
             numPlayers = len(self.playerOrder)
-            if numPlayers == 2:
-                jenney.msg(CHANNEL, STRINGS['PLAYER_LEAVES'] % nick)
+
+            self.playerOrder.remove(nick)
+            del self.players[nick]
+
+            if self.way == 1 and self.currentPlayer == numPlayers - 1:
+                self.currentPlayer = 0
+            elif self.way == -1:
+                if self.currentPlayer == 0:
+                    self.currentPlayer = numPlayers - 2
+                else: 
+                    self.currentPlayer -= 1
+            
+            jenney.msg(CHANNEL, STRINGS['PLAYER_LEAVES'] % nick)
+            jenney.msg(CHANNEL, STRINGS['TOP_CARD'] % (self.playerOrder[self.currentPlayer], self.renderCards(None, [self.topCard], 1)))
+
+            if numPlayers == 2 and self.dealt:
                 jenney.msg (CHANNEL, STRINGS['GAME_STOPPED'])
                 self.game_on = None
                 self.dealt = None
                 return
-
-            if self.currentPlayer == len(self.playerOrder) - 1:
-                self.currentPlayer = 0
-            else:
-                self.currentPlayer += 1
-            
-            self.playerOrder.remove(nick)
-            jenney.msg(CHANNEL, STRINGS['PLAYER_LEAVES'] % nick)
-            self.showTopCard_demand(jenney)
             
             if self.game_on == nick:
                 self.game_on = self.playerOrder[0]
                 jenney.msg(CHANNEL, STRINGS['OWNER_CHANGE'] % (nick, self.playerOrder[0]))
-            
-            del self.players[nick]
 
     def enablePCE (self, jenney, nick):
         if not self.players_pce.get(nick, 0):
