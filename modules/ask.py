@@ -7,6 +7,8 @@ Jenney (About): http://inamidst.com/phenny/
 
 import random, string
 
+random.seed()
+
 def ask(jenney, input):
 	""".ask <item1> or <item2> or <item3> - Randomly picks from a set of items seperated by ' or '."""
 	choices = input.group(2)

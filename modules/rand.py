@@ -7,6 +7,8 @@ Jenney (About): http://inamidst.com/phenny/
 
 import random
 
+random.seed()
+
 def rand(jenney, input):
 	""".rand <arg1> <arg2> - Generates a random integer between <arg1> and <arg2>."""
 	if input.group(2) == " " or input.group(2) == "" or str(input.group(2)) == None or str(input.group(2)) == "" or input.group(2) == None:

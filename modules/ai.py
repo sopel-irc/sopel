@@ -16,6 +16,8 @@ greet_user = ""
 
 greeting = ['Hello', 'Hallo', 'Hi', 'Welcome']
 
+random.seed()
+
 ## Functions that deal with the state of AI being on or off.
 
 def off(jenney, input):

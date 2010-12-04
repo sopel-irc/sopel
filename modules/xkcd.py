@@ -7,6 +7,8 @@ Jenney (About): http://inamidst.com/phenny/
 
 import random
 
+random.seed()
+
 def xkcd(jenney, input):
 	""".xkcd - Generates a url for a random XKCD clip."""
 	import urllib2

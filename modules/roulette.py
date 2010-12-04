@@ -2,6 +2,8 @@
 """ roulette.py """
 import random
 
+random.seed()
+
 # edit this setting for roulette counter. Larger, the number, the harder the game.
 MAX_RANGE = 5
 
