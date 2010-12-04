@@ -103,7 +103,7 @@ def find_title(jenney, input, url):
         return title
 
 def short(jenney, input):
-    if 'github.com' in input:
+    if input.nick == 'jenney-git':
         return
     try:
         api = bitly.Api(login=str(input.bitly_user), apikey=str(input.bitly_api))
@@ -138,7 +138,7 @@ def title2(jenney, input, link):
     return b
 
 def show_title(jenney,input):
-    if 'github.com' in input:
+    if input.nick == 'jenney-git':
         return
     text = input.group()
     a = re.findall(url_finder, text)
