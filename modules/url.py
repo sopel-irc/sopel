@@ -103,6 +103,8 @@ def find_title(jenney, input, url):
         return title
 
 def short(jenney, input):
+    if 'github.com' in input:
+        return
     try:
         api = bitly.Api(login=str(input.bitly_user), apikey=str(input.bitly_api))
         rand = random.random()
@@ -136,6 +138,8 @@ def title2(jenney, input, link):
     return b
 
 def show_title(jenney,input):
+    if 'github.com' in input:
+        return
     text = input.group()
     a = re.findall(url_finder, text)
     k = len(a)
