@@ -25,7 +25,7 @@ ROULETTE_STRINGS = {
 ROULETTE_TMP = {
     'LAST-PLAYER' : None,
     'NUMBER' : None,
-    'TIMEOUT' :timedelta(minutes=INACTIVE_TIMEOUT),
+    'TIMEOUT' :timedelta(minutes=ROULETTE_SETTINGS['INACTIVE_TIMEOUT']),
     'LAST-ACTIVITY' : None,
 }
 
