@@ -236,13 +236,13 @@ def topic(jenney, input):
     if not input.admin:
         return
     text = input.group().split()
-    topic = ' '.join(text[2:])
-    topic = topic.rstrip(' ').lstrip(' ')
+    topic = ' '.join(text[1:])
     if topic == '':
         return
     channel = input.sender
-    jenney.write(['TOPIC', ' %s :%s' % (channel, topic)])
-topic.commands = ['topic', 't']
+    jenney.write(['TOPIC', channel], topic)
+    return
+topic.commands = ['topic']
 topic.priority = 'low'
 
 def defend_ground (jenney, input):
