@@ -12,9 +12,7 @@ of nick spoofing. May only work with freenode, hasn't been tested on other netwo
 Forked by Michael S. Yanovich, http://opensource.osu.edu/~yanovich/
 """
 
-import re
-import time
-import sched
+import re, time, sched
 
 auth_list = []
 admins = []
