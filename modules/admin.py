@@ -235,17 +235,14 @@ def topic(jenney, input):
     """
     if not input.admin:
         return
-    try:
-        topic = input.group().split(".topic ")[1]
-    except:
+    text = input.group().split()
+    topic = ' '.join(text[2:])
+    topic = topic.rstrip(' ').lstrip(' ')
+    if topic == '':
         return
-
-    verify = auth_check(jenney, input.nick)
     channel = input.sender
-    if verify:
-        text = "topic " + str(channel) + " " + str(topic)
-        jenney.write(('PRIVMSG', 'chanserv'), text)
-topic.commands = ['topic']
+    jenney.write(['TOPIC', ' %s :%s' % (channel, topic)])
+topic.commands = ['topic', 't']
 topic.priority = 'low'
 
 def defend_ground (jenney, input):
