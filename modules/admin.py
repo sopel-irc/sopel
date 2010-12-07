@@ -238,7 +238,7 @@ def topic(jenney, input):
     if topic == '':
         return
     channel = input.sender
-    jenney.write(['TOPIC', channel], topic)
+    jenney.write(['PRIVMSG', 'ChanServ'], 'TOPIC %s %s' % (input.sender, topic))
     return
 topic.commands = ['topic']
 topic.priority = 'low'
