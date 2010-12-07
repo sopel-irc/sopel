@@ -214,14 +214,20 @@ deauth_nick.rule = '.*'
 def kick(jenney, input):
     if not input.admin: return
     text = input.group().split()
-    if len(text) < 2: return
-    nick = text[1]
-    reason = ' '.join(text[2:])
+    argc = len(text)
+    if argc < 2: return
+    opt = text[1]
+    nick = opt
+    channel = input.sender
+    reasonidx = 2
+    if opt.startswith('#'):
+        if argc < 3: return
+        nick = text[2]
+        channel = opt
+        reasonidx = 3
+    reason = ' '.join(text[reasonidx:])
     if nick != jenney.config.nick:
-        tmp = input.sender + " " + nick
-        if reason:
-			tmp += " :" + reason
-        jenney.write(['KICK', tmp])
+        jenney.write(['KICK', channel, nick, reason])
 kick.commands = ['kick']
 kick.priority = 'high'
 
@@ -247,11 +253,18 @@ def ban (jenney, input):
     """
     if not input.admin: return
     text = input.group().split()
-    if len(text) < 2: return
-    banmask = text[1]
+    argc = len(text)
+    if argc < 2: return
+    opt = text[1]
+    banmask = opt
+    channel = input.sender
+    if opt.startswith('#'):
+        if argc < 3: return
+        channel = opt
+        banmask = text[2]
     banmask = configureHostMask(banmask)
     if banmask == '': return
-    jenney.write(['MODE', input.sender, '+b', banmask])
+    jenney.write(['MODE', channel, '+b', banmask])
 ban.commands = ['ban']
 ban.priority = 'high'
 
@@ -262,11 +275,18 @@ def unban (jenney, input):
     """
     if not input.admin: return
     text = input.group().split()
-    if len(text) < 2: return
-    banmask = text[1]
+    argc = len(text)
+    if argc < 2: return
+    opt = text[1]
+    banmask = opt
+    channel = input.sender
+    if opt.startswith('#'):
+        if argc < 3: return
+        channel = opt
+        banmask = text[2]
     banmask = configureHostMask(banmask)
     if banmask == '': return
-    jenney.write(['MODE', input.sender, '-b', banmask])
+    jenney.write(['MODE', channel, '-b', banmask])
 unban.commands = ['unban']
 unban.priority = 'high'
 
@@ -277,11 +297,18 @@ def quiet (jenney, input):
    """
    if not input.admin: return
    text = input.group().split()
-   if len(text) < 2: return
-   quietmask = text[1]
+   argc = len(text)
+   if argc < 2: return
+   opt = text[1]
+   quietmask = opt
+   channel = input.sender
+   if opt.startswith('#'):
+      if argc < 3: return
+      quietmask = text[2]
+      channel = opt
    quietmask = configureHostMask(quietmask)
    if quietmask == '': return
-   jenney.write(['MODE', input.sender, '+q', quietmask])
+   jenney.write(['MODE', channel, '+q', quietmask])
 quiet.commands = ['quiet']
 quiet.priority = 'high'
 
@@ -292,11 +319,18 @@ def unquiet (jenney, input):
    """
    if not input.admin: return
    text = input.group().split()
-   if len(text) < 2: return
-   quietmask = text[1]
+   argc = len(text)
+   if argc < 2: return
+   opt = text[1]
+   quietmask = opt
+   channel = input.sender
+   if opt.startswith('#'):
+       if argc < 3: return
+       quietmask = text[2]
+       channel = opt
    quietmask = configureHostMask(quietmask)
    if quietmask == '': return
-   jenney.write(['MODE', input.sender, '-q', quietmask])
+   jenney.write(['MODE', opt, '-q', quietmask])
 unquiet.commands = ['unquiet']
 unquiet.priority = 'high'
 
@@ -304,17 +338,27 @@ def kickban (jenney, input):
    """
    This gives admins the ability to kickban a user.
    The bot must be a Channel Operator for this command to work
+   .kickban [#chan] user1 user!*@* get out of here
    """
    if not input.admin: return
    text = input.group().split()
-   if len(text) < 4: return
-   nick = text[1]
+   argc = len(text)
+   if argc < 4: return
+   opt = text[1]
+   nick = opt
    mask = text[2]
-   reason = ' '.join(text[3:])
+   reasonidx = 3
+   if opt.startswith('#'):
+       if argc < 5: return
+       channel = opt
+       nick = text[2]
+       mask = text[3]
+       reasonidx = 4
+   reason = ' '.join(text[reasonidx:])
    mask = configureHostMask(mask)
    if mask == '': return
-   jenney.write(['MODE', input.sender, '+b', mask])
-   jenney.write(['KICK', input.sender, nick, ' :', reason])
+   jenney.write(['MODE', channel, '+b', mask])
+   jenney.write(['KICK', channel, nick, ' :', reason])
 kickban.commands = ['kickban', 'kb']
 kickban.priority = 'high'
 
