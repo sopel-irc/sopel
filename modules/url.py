@@ -151,8 +151,8 @@ def show_title_demand (jenney, input):
     if page_title is None: page_title = [ ]
     multiple = len(page_title) > 1
     for title in page_title:
-        if not multiple: jenney.say(title[0])
-        else: jenney.say("[ %s ] -  %s" % (title[0],title[1]))
+        if not multiple: jenney.say('[ %s ]' % title[0])
+        else: jenney.say('[ %s ] -  %s' % (title[0],title[1]))
 show_title_demand.commands = ['title']
 show_title_demand.priority = 'high'
 
