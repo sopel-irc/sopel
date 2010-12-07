@@ -17,11 +17,14 @@ from htmlentitydefs import name2codepoint
 import web
 
 url_finder = re.compile(r'((http|https|ftp)(://\S+))')
+loose_url_finder = re.compile(r'((\S+(\.\S+)*)+\.\S{2,6})')
 r_entity = re.compile(r'&[A-Za-z0-9#]+;')
 
-def find_title(jenney, input, url):
+def find_title(url):
     uri = url
 
+    if uri.find('http://') == -1: uri = 'http://'+uri
+	
     redirects = 0
     while True:
         req = urllib2.Request(uri, headers={'Accept':'text/html'})
@@ -119,25 +122,39 @@ def short(jenney, input):
 short.rule = '.*((http|https|ftp)(://\S+)).*'
 short.priority = 'high'
 
-def show_title(jenney,input):
-    if input.nick == 'jenney-git':
-        return
+def get_title(input):
     text = input.group()
-    a = re.findall(url_finder, text)
+    a = re.findall(loose_url_finder, text)
     k = len(a)
     i = 0
+    display = [ ]
     while i < k:
         url = str(a[i][0])
-        try: page_title = find_title(jenney, input, url)
+        try: page_title = find_title(url)
         except: return # if it can't access the site fail silently
         if page_title == None or page_title == "None":
             return
         else:
-            display = "[ " + str(page_title) + " ]"
-        jenney.say(display)
+            display.append([str(page_title), url])
         i += 1
-show_title.rule = '.*((http|https)(://\S+)).*'
-show_title.priority = 'high'
+    return display
+
+def show_title_auto (jenney, input):
+    if input.nick == 'jenney-git' or input.find('.title') == 0: return
+    show_title_demand(jenney, input)
+show_title_auto.rule = '.*((http|https)(://\S+)).*'
+show_title_auto.priority = 'high'
+
+def show_title_demand (jenney, input):
+    try: page_title = get_title(input)
+    except: return
+    if page_title is None: page_title = [ ]
+    multiple = len(page_title) > 1
+    for title in page_title:
+        if not multiple: jenney.say(title[0])
+        else: jenney.say("[ %s ] -  %s" % (title[0],title[1]))
+show_title_demand.commands = ['title']
+show_title_demand.priority = 'high'
 
 if __name__ == '__main__':
     print __doc__.strip()
