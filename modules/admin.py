@@ -214,16 +214,153 @@ deauth_nick.rule = '.*'
 def kick(jenney, input):
     if not input.admin: return
     text = input.group().split()
-    if len(text) < 3: return
-    nick = text[2]
-    reason = ' '.join(text[3:])
+    argc = len(text)
+    if argc < 2: return
+    opt = text[1]
+    nick = opt
+    channel = input.sender
+    reasonidx = 2
+    if opt.startswith('#'):
+        if argc < 3: return
+        nick = text[2]
+        channel = opt
+        reasonidx = 3
+    reason = ' '.join(text[reasonidx:])
     if nick != jenney.config.nick:
-        tmp = text[1] + " " + nick
-        if reason:
-			tmp += " :" + reason
-        jenney.write(['KICK', tmp])
+        jenney.write(['KICK', channel, nick, reason])
 kick.commands = ['kick']
 kick.priority = 'high'
+
+def configureHostMask (mask):
+    if mask == '*!*@*': return mask
+    if re.match('^[^.@!/]+$', mask) is not None: return '%s!*@*' % mask
+    if re.match('^[^@!]+$', mask) is not None: return '*!*@%s' % mask
+	
+    m = re.match('^([^!@]+)@$', mask)
+    if m is not None: return '*!%s@*' % m.group(1)
+	
+    m = re.match('^([^!@]+)@([^@!]+)$', mask)
+    if m is not None: return '*!%s@%s' % (m.group(1), m.group(2))
+	
+    m = re.match('^([^!@]+)!(^[!@]+)@?$', mask)
+    if m is not None: return '%s!%s@*' % (m.group(1), m.group(2))
+    return ''
+
+def ban (jenney, input):
+    """
+    This give admins the ability to ban a user.
+    The bot must be a Channel Operator for this command to work.
+    """
+    if not input.admin: return
+    text = input.group().split()
+    argc = len(text)
+    if argc < 2: return
+    opt = text[1]
+    banmask = opt
+    channel = input.sender
+    if opt.startswith('#'):
+        if argc < 3: return
+        channel = opt
+        banmask = text[2]
+    banmask = configureHostMask(banmask)
+    if banmask == '': return
+    jenney.write(['MODE', channel, '+b', banmask])
+ban.commands = ['ban']
+ban.priority = 'high'
+
+def unban (jenney, input):
+    """
+    This give admins the ability to unban a user.
+    The bot must be a Channel Operator for this command to work.
+    """
+    if not input.admin: return
+    text = input.group().split()
+    argc = len(text)
+    if argc < 2: return
+    opt = text[1]
+    banmask = opt
+    channel = input.sender
+    if opt.startswith('#'):
+        if argc < 3: return
+        channel = opt
+        banmask = text[2]
+    banmask = configureHostMask(banmask)
+    if banmask == '': return
+    jenney.write(['MODE', channel, '-b', banmask])
+unban.commands = ['unban']
+unban.priority = 'high'
+
+def quiet (jenney, input):
+   """
+   This gives admins the ability to quiet a user.
+   The bot must be a Channel Operator for this command to work
+   """
+   if not input.admin: return
+   text = input.group().split()
+   argc = len(text)
+   if argc < 2: return
+   opt = text[1]
+   quietmask = opt
+   channel = input.sender
+   if opt.startswith('#'):
+      if argc < 3: return
+      quietmask = text[2]
+      channel = opt
+   quietmask = configureHostMask(quietmask)
+   if quietmask == '': return
+   jenney.write(['MODE', channel, '+q', quietmask])
+quiet.commands = ['quiet']
+quiet.priority = 'high'
+
+def unquiet (jenney, input):
+   """
+   This gives admins the ability to unquiet a user.
+   The bot must be a Channel Operator for this command to work
+   """
+   if not input.admin: return
+   text = input.group().split()
+   argc = len(text)
+   if argc < 2: return
+   opt = text[1]
+   quietmask = opt
+   channel = input.sender
+   if opt.startswith('#'):
+       if argc < 3: return
+       quietmask = text[2]
+       channel = opt
+   quietmask = configureHostMask(quietmask)
+   if quietmask == '': return
+   jenney.write(['MODE', opt, '-q', quietmask])
+unquiet.commands = ['unquiet']
+unquiet.priority = 'high'
+
+def kickban (jenney, input):
+   """
+   This gives admins the ability to kickban a user.
+   The bot must be a Channel Operator for this command to work
+   .kickban [#chan] user1 user!*@* get out of here
+   """
+   if not input.admin: return
+   text = input.group().split()
+   argc = len(text)
+   if argc < 4: return
+   opt = text[1]
+   nick = opt
+   mask = text[2]
+   reasonidx = 3
+   if opt.startswith('#'):
+       if argc < 5: return
+       channel = opt
+       nick = text[2]
+       mask = text[3]
+       reasonidx = 4
+   reason = ' '.join(text[reasonidx:])
+   mask = configureHostMask(mask)
+   if mask == '': return
+   jenney.write(['MODE', channel, '+b', mask])
+   jenney.write(['KICK', channel, nick, ' :', reason])
+kickban.commands = ['kickban', 'kb']
+kickban.priority = 'high'
 
 def topic(jenney, input):
     """

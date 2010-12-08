@@ -157,7 +157,7 @@ def f_title(self, origin, match, args):
 		title = title.replace('\r', '')
 		self.msg(origin.sender, origin.nick + ': ' + title)
 	else: self.msg(origin.sender, origin.nick + ': No title found')
-f_title.commands = ['title']
+#f_title.commands = ['title']
 
 def noteuri(jenney, input): 
 	uri = input.group(1).encode('utf-8')
