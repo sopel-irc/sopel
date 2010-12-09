@@ -518,10 +518,12 @@ class UnoBot:
                 self.dealt = None
                 return
             
-            jenney.msg(CHANNEL, STRINGS['TOP_CARD'] % (self.playerOrder[self.currentPlayer], self.renderCards(None, [self.topCard], 1)))
             if self.game_on == nick:
                 self.game_on = self.playerOrder[0]
                 jenney.msg(CHANNEL, STRINGS['OWNER_CHANGE'] % (nick, self.playerOrder[0]))
+
+            if self.dealt:
+                jenney.msg(CHANNEL, STRINGS['TOP_CARD'] % (self.playerOrder[self.currentPlayer], self.renderCards(None, [self.topCard], 1)))
 
     def enablePCE (self, jenney, nick):
         if not self.players_pce.get(nick, 0):
