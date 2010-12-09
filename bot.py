@@ -175,6 +175,7 @@ class Jenney(irc.Bot):
 				s.groups = match.groups
 				s.args = args
 				s.admin = origin.nick in self.config.admins
+				s.admins = self.config.admins
 				s.owner = origin.nick == self.config.owner
 				return s
 
