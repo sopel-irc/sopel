@@ -31,6 +31,9 @@ def create_default_config(fn):
    owner = 'yournickname'
    # password = 'yourserverpassword'
 
+   # The trigger you want to use for commands. Default is the dot.
+   prefix = '.'
+
    twitter_username = ""
    twitter_password = ""
    bitly_api = ""
