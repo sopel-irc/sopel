@@ -1,7 +1,7 @@
 import datetime
 import web, time, re
 
-STRING = 'The next episode of South Park will air on \x0300%s\x03.'
+STRING = 'The next new episode of South Park will air on \x0300%s\x03.'
 
 HTMLEntities = {
     '&nbsp;'    : ' ',
