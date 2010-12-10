@@ -10,7 +10,7 @@ import random
 
 def interjection(jenney, input): 
 	jenney.say(input.nick + '!')
-interjection.rule = r'($nickname!|jenney!)'
+interjection.rule = r'($nickname!)'
 interjection.priority = 'high'
 interjection.thread = False
 
