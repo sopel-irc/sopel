@@ -75,7 +75,7 @@ def findandreplace(jenney, input):
 
     # output
     if new_phrase:
-        phrase = str(str(input.nick) + " meant to say: " + str(new_phrase))
+        phrase = unicode(input.nick + " meant to say: " + new_phrase)
         jenney.say(phrase)
 findandreplace.rule = r'(s)/.*'
 findandreplace.priority = 'high'
