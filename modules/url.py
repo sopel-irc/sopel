@@ -19,9 +19,12 @@ import web
 url_finder = re.compile(r'((http|https|ftp)(://\S+))')
 r_entity = re.compile(r'&[A-Za-z0-9#]+;')
 
-def find_title(jenney, input, url):
+def find_title(url):
     uri = url
 
+    if not 'http://' in uri:
+        uri = 'http://' + uri
+    
     redirects = 0
     while True:
         req = urllib2.Request(uri, headers={'Accept':'text/html'})
@@ -94,11 +97,10 @@ def find_title(jenney, input, url):
     if title:
         return title
 
-def short(jenney, input):
-    if input.nick == 'jenney-git':
-        return
+def short(input):
+    bitlys = { }
     try:
-        text = input.group()
+        text = input
         a = re.findall(url_finder, text)
         k = len(a)
         i = 0
@@ -111,33 +113,62 @@ def short(jenney, input):
 
                 url = "http://api.j.mp/v3/shorten?login=%s&apiKey=%s&longUrl=%s&format=txt" % (bitly_user, bitly_api_key, b)
                 shorter = web.get(url)
-                if (len(b) >= 50):
-                    jenney.say(shorter)
+                shorter.strip()
+                bitlys[b] = shorter
+                return bitlys
             i += 1
     except:
         return
-short.rule = '.*((http|https|ftp)(://\S+)).*'
-short.priority = 'high'
+#short.rule = '.*((http|https|ftp)(://\S+)).*'
+#short.priority = 'high'
 
-def show_title(jenney,input):
-    if input.nick == 'jenney-git':
-        return
+def get_title(jenney, input):
     text = input.group()
     a = re.findall(url_finder, text)
     k = len(a)
     i = 0
+    display = { }
     while i < k:
         url = str(a[i][0])
-        try: page_title = find_title(jenney, input, url)
-        except: return # if it can't access the site fail silently
+        try: 
+            page_title = find_title(url)
+        except: 
+            return # if it can't access the site fail silently
+        
         if page_title == None or page_title == "None":
             return
         else:
-            display = "[ " + str(page_title) + " ]"
-        jenney.say(display)
+            display[url] = page_title
         i += 1
-show_title.rule = '.*((http|https)(://\S+)).*'
-show_title.priority = 'high'
+    return display
+
+def show_title_auto (jenney, input):
+    if input.group(0) == '.title': return
+    show_title_demand(jenney, input)
+show_title_auto.rule = '.*((http|https)(://\S+)).*'
+show_title_auto.priority = 'high'
+
+def show_title_demand (jenney, input):
+    try: 
+        page_title = get_title(jenney, input)
+    except: return
+    
+    if page_title is None: 
+        page_title = [ ]
+    multiple = len(page_title) > 1
+    
+    for title in page_title:
+        bitlys = short(title)
+        if not multiple: 
+            jenney.say('[ %s ]' % page_title[title])
+        else:
+            if len(title) > 50:
+                link = bitlys[title]
+            else:
+                link = title
+            jenney.say('[ %s ] -  %s' % (page_title[title], link))
+show_title_demand.commands = ['title']
+show_title_demand.priority = 'high'
 
 if __name__ == '__main__':
     print __doc__.strip()
