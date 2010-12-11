@@ -12,8 +12,14 @@ HTMLEntities = {
     '&#39;'     : "'"
 }
 
-cache = None
-cachets = None
+cache = {
+    'TIMES'     : None,
+    'NEW-EPI'   : None
+}
+cachets = {
+    'TIMES'     : None,
+    'NEW-EPI'   : None
+}
 cachetsreset = timedelta(hours=6)
 maxtitlelen = 0
 maxepilen = 0
@@ -26,10 +32,13 @@ def southpark (jenney, input):
     global cache, cachets
     text = input.group().split()
     if len(text) > 1:
-        if text[1] == 'clear':
-            cache = None
-            cachets = None
+        if text[1] == 'cleartimes':
+            cache['TIMES'] = None
+            cachets['TIMES'] = None
             return
+        elif text[1] == 'clearnewep':
+            cache['NEW-EPI'] = None
+            cachets['NEW-EPI'] = None
         elif text[1] == 'times':
             southparktimes(jenney,input)
             return
@@ -39,6 +48,12 @@ southpark.commands = ['southpark']
 southpark.priority = 'low'
 
 def getNewShowDate (jenney):
+    global cache, cachets
+    tsnow = datetime.now()
+    if cache['NEW-EPI'] is not None and cachets['NEW-EPI'] is not None and tsnow - cachets['NEW-EPI'] <= cachetsreset:
+        jenney.say(STRING % cache['NEW-EPI'])
+        return
+
     today = time.localtime()
     src = web.get('http://en.wikipedia.org/wiki/List_of_South_Park_episodes')
     parts = src.split('Season 15 (2011)')
@@ -56,13 +71,15 @@ def getNewShowDate (jenney):
             if dt < today:
                 continue
             else:
+                cache['NEW-EPI'] = m.group()
+                cachets['NEW-EPI'] = tsnow
                 jenney.say(STRING % m.group())
                 break
 
 def southparktimes (jenney, input):
     global cache, cachets, maxtitlelen, maxepilen
     tsnow = datetime.now()
-    if cache is not None and cachets is not None and tsnow - cachets <= cachetsreset:
+    if cache['TIMES'] is not None and cachets['TIMES'] is not None and tsnow - cachets['TIMES'] <= cachetsreset:
         printListings(jenney)
         return
 
@@ -136,12 +153,12 @@ def southparktimes (jenney, input):
             count -= 1
             if count == 0: break
         if count == 0: break
-    cache = info
-    cachets = tsnow
+    cache['TIMES'] = info
+    cachets['TIMES'] = tsnow
     printListings(jenney)
 
 def printListings (jenney):
-    for i in cache:
+    for i in cache['TIMES']:
         jenney.say('%s:   #%s - \x02%s\x02 %s (%s)   %s' % (time.strftime('%a %b %d', i[0]), i[1]+' '*(maxepilen-len(i[1])), i[2], ' '*(maxtitlelen-len(i[2])+5) , i[3], 'Comedy Central'))
 
 if __name__ == '__main__':
