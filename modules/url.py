@@ -159,8 +159,11 @@ def show_title_demand (jenney, input):
     
     for title in page_title:
         bitlys = short(title)
-        if not multiple: 
-            jenney.say('[ %s ]' % page_title[title])
+        if not multiple:
+            if len(title) > 50:
+                jenney.say('[ %s ] - %s' % (page_title[title], bitlys[title]))
+            else:
+                jenney.say('[ %s ]' % page_title[title])
         else:
             if len(title) > 50:
                 link = bitlys[title]
