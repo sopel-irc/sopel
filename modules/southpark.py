@@ -1,4 +1,4 @@
-import datetime
+from datetime import datetime, timedelta
 import web, time, re
 
 STRING = 'The next new episode of South Park will air on \x0300%s\x03.'
@@ -10,18 +10,35 @@ HTMLEntities = {
     '&amp;'     : '&',
     '&quot;'    : '"',
     '&#39;'     : "'"
-};
+}
+
+cache = None
+cachets = None
+cachetsreset = timedelta(hours=6)
+maxtitlelen = 0
+maxepilen = 0
 
 def htmlDecode (html):
     for k, v in HTMLEntities.iteritems(): html = html.replace(k, v)
     return html
 
 def southpark (jenney, input):
+    global cache, cachets
     text = input.group().split()
     if len(text) > 1:
-        if text[1] == 'times':
+        if text[1] == 'clear':
+            cache = None
+            cachets = None
+            return
+        elif text[1] == 'times':
             southparktimes(jenney,input)
             return
+    else:
+        getNewShowDate(jenney)
+southpark.commands = ['southpark']
+southpark.priority = 'low'
+
+def getNewShowDate (jenney):
     today = time.localtime()
     src = web.get('http://en.wikipedia.org/wiki/List_of_South_Park_episodes')
     parts = src.split('Season 15 (2011)')
@@ -41,10 +58,14 @@ def southpark (jenney, input):
             else:
                 jenney.say(STRING % m.group())
                 break
-southpark.commands = ['southpark']
-southpark.priority = 'low'
 
 def southparktimes (jenney, input):
+    global cache, cachets, maxtitlelen, maxepilen
+    tsnow = datetime.now()
+    if cache is not None and cachets is not None and tsnow - cachets <= cachetsreset:
+        printListings(jenney)
+        return
+
     src = web.get('http://www.comedycentral.com/tv_schedule/index.jhtml?seriesId=11600&forever=please')
     parts = src.split('<div id="tv_schedule_content">')
     cont = parts[1]
@@ -52,9 +73,9 @@ def southparktimes (jenney, input):
     cont = parts[0]
     schedule = cont.split('<div class="schedDiv">')
     del schedule[0]
+
     info = []
     count = 5
-    maxtitlelen = 0
     for s in schedule:
         s = s.replace('\n',' ')
         s = htmlDecode(s)
@@ -92,7 +113,8 @@ def southparktimes (jenney, input):
             stitle = t[sidx+3:send].strip()
             m = re.search('\(([^)]+)\)$', stitle)
             if m is None: break
-            sepi = m.group(1)
+            sepi = str(int(m.group(1)))
+            if len(sepi) > maxepilen: maxepilen = len(sepi)
             stitle = stitle.replace(m.group(), '')
             lenstitle = len(stitle)
             if lenstitle > maxtitlelen: maxtitlelen = lenstitle
@@ -114,13 +136,13 @@ def southparktimes (jenney, input):
             count -= 1
             if count == 0: break
         if count == 0: break
+    cache = info
+    cachets = tsnow
+    printListings(jenney)
 
-    for i in info:
-        jenney.say('%s:  Episode #%s - \x02%s\x02 %s (%s)   %s' % (time.strftime('%a %b %d', i[0]), i[1], i[2], ' '*(maxtitlelen-len(i[2])+5) , i[3], 'Comedy Central'))
-
-
-# time.strptime("30 Nov 00", "%d %b %y")
-# http://www.comedycentral.com/tv_schedule/index.jhtml?seriesId=11600&forever=please
+def printListings (jenney):
+    for i in cache:
+        jenney.say('%s:   #%s - \x02%s\x02 %s (%s)   %s' % (time.strftime('%a %b %d', i[0]), i[1]+' '*(maxepilen-len(i[1])), i[2], ' '*(maxtitlelen-len(i[2])+5) , i[3], 'Comedy Central'))
 
 if __name__ == '__main__':
     print __doc__.strip()
