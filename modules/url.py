@@ -22,9 +22,9 @@ r_entity = re.compile(r'&[A-Za-z0-9#]+;')
 def find_title(url):
     uri = url
 
-    if re.search('^((https?)|(ftp))://', uri) is None:
+    if not re.search('^((https?)|(ftp))://', uri):
         uri = 'http://' + uri
-    
+
     redirects = 0
     while True:
         req = urllib2.Request(uri, headers={'Accept':'text/html'})
@@ -125,16 +125,19 @@ def generateBitLy (jenney, input):
     bitly = short(input)
     idx = 7
     for b in bitly:
-        url = b[0]
-        if url.startswith('https://'): idx = 8
-        elif url.startswith('ftp://'): idx = 6
-        url = url[idx:]
-        f = url.find('/')
-        if f == -1: url = b[0]
-        else: url = b[0][0:idx] + url[0:f]
-        jenney.say('%s  -  %s' % (url, b[1]))
+        displayBitLy(jenney, b[0], b[1])
 generateBitLy.commands = ['bitly']
 generateBitLy.priority = 'high'
+
+def displayBitLy (jenney, url, shorten):
+    idx = 7
+    if url.startswith('https://'): idx = 8
+    elif url.startswith('ftp://'): idx = 6
+    u = url[idx:]
+    f = u.find('/')
+    if f == -1: u = url
+    else: u = url[0:idx] + u[0:f]
+    jenney.say('%s  -  %s' % (u, shorten))
 
 def get_results(text):
     a = re.findall(url_finder, text)
@@ -146,13 +149,10 @@ def get_results(text):
         try: 
             page_title = find_title(url)
         except: 
-            return # if it can't access the site fail silently
+            page_title = None # if it can't access the site fail silently
         
-        if page_title == None or page_title == "None":
-            continue
-        else:
-            bitly = short(url)
-            display.append([page_title, url, bitly[0][1]])
+        bitly = short(url)
+        display.append([page_title, url, bitly[0][1]])
         i += 1
     return display
 
@@ -160,11 +160,13 @@ def show_title_auto (jenney, input):
     if input.startswith('.title ') or input.startswith('.bitly '): return
     try:
         results = get_results(input)
-    except:
-        return
+    except: return
     if results is None: return
 
     for r in results:
+        if r[0] is None:
+            if len(r[1]) > 50: displayBitLy(jenney, r[1], r[2])
+            continue
         if len(r[1]) > 50: r[1] = r[2]
         jenney.say('[ %s ] - %s' % (r[0], r[1]))
 show_title_auto.rule = '.*((http|https)(://\S+)).*'
@@ -173,11 +175,11 @@ show_title_auto.priority = 'high'
 def show_title_demand (jenney, input):
     try:
         results = get_results(input)
-    except:
-        return
+    except: return
     if results is None: return
     
     for r in results:
+        if r[0] is None: continue
         jenney.say('[ %s ] - %s' % (r[0], r[1]))
 show_title_demand.commands = ['title']
 show_title_demand.priority = 'high'
