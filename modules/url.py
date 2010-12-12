@@ -12,7 +12,7 @@ It also automatically displays the "title" of any URL pasted into the channel.
 bitly_api_key = "R_ff9b3a798d6e5ac38efc7543a72ad4ce"
 bitly_user = "phennyosu"
 
-import re, urllib2, sys, traceback
+import re, urllib2
 from htmlentitydefs import name2codepoint
 import web
 
@@ -22,7 +22,7 @@ r_entity = re.compile(r'&[A-Za-z0-9#]+;')
 def find_title(url):
     uri = url
 
-    if not 'http://' in uri:
+    if re.search('^((https?)|(ftp))://', uri) is None:
         uri = 'http://' + uri
     
     redirects = 0
@@ -160,7 +160,8 @@ def show_title_auto (jenney, input):
     if input.startswith('.title ') or input.startswith('.bitly '): return
     try:
         results = get_results(input)
-    except: return
+    except:
+        return
     if results is None: return
 
     for r in results:
@@ -172,7 +173,8 @@ show_title_auto.priority = 'high'
 def show_title_demand (jenney, input):
     try:
         results = get_results(input)
-    except: return
+    except:
+        return
     if results is None: return
     
     for r in results:
