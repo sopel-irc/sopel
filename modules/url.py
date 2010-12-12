@@ -110,7 +110,7 @@ def short(text):
             if not b.startswith("http://bit.ly") or not b.startswith("http://j.mp/"):
                 # check to see if the url is valid
                 try: c = web.head(b)
-                except: return
+                except: return [[None, None]]
 
                 url = "http://api.j.mp/v3/shorten?login=%s&apiKey=%s&longUrl=%s&format=txt" % (bitly_user, bitly_api_key, b)
                 shorter = web.get(url)
@@ -130,6 +130,7 @@ generateBitLy.commands = ['bitly']
 generateBitLy.priority = 'high'
 
 def displayBitLy (jenney, url, shorten):
+    if url is None or shorten is None: return
     idx = 7
     if url.startswith('https://'): idx = 8
     elif url.startswith('ftp://'): idx = 6
