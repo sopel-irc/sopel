@@ -12,7 +12,7 @@ It also automatically displays the "title" of any URL pasted into the channel.
 bitly_api_key = "R_ff9b3a798d6e5ac38efc7543a72ad4ce"
 bitly_user = "phennyosu"
 
-import re, urllib2
+import re, urllib2, sys, traceback
 from htmlentitydefs import name2codepoint
 import web
 
@@ -56,12 +56,14 @@ def find_title(url):
     bytes = u.read(262144)
     u.close()
     content = bytes
-    regex = re.compile('<(/?)title>', re.IGNORECASE)
+    regex = re.compile('<(/?)title( [^>]+)?>', re.IGNORECASE)
     content = regex.sub(r'<\1title>',content)
     regex = re.compile('[\'"]<title>[\'"]', re.IGNORECASE)
     content = regex.sub('',content)
     start = content.find('<title>')
+    if start == -1: return
     end = content.find('</title>', start)
+    if end == -1: return
     content = content[start+7:end]
     content = content.strip('\n').rstrip().lstrip()
     title = content
@@ -97,10 +99,9 @@ def find_title(url):
     if title:
         return title
 
-def short(input):
-    bitlys = { }
+def short(text):
+    bitlys = [ ]
     try:
-        text = input
         a = re.findall(url_finder, text)
         k = len(a)
         i = 0
@@ -114,20 +115,32 @@ def short(input):
                 url = "http://api.j.mp/v3/shorten?login=%s&apiKey=%s&longUrl=%s&format=txt" % (bitly_user, bitly_api_key, b)
                 shorter = web.get(url)
                 shorter.strip()
-                bitlys[b] = shorter
-                return bitlys
+                bitlys.append([b, shorter])
             i += 1
+        return bitlys
     except:
         return
-#short.rule = '.*((http|https|ftp)(://\S+)).*'
-#short.priority = 'high'
 
-def get_title(jenney, input):
-    text = input.group()
+def generateBitLy (jenney, input):
+    bitly = short(input)
+    idx = 7
+    for b in bitly:
+        url = b[0]
+        if url.startswith('https://'): idx = 8
+        elif url.startswith('ftp://'): idx = 6
+        url = url[idx:]
+        f = url.find('/')
+        if f == -1: url = b[0]
+        else: url = b[0][0:idx] + url[0:f]
+        jenney.say('%s  -  %s' % (url, b[1]))
+generateBitLy.commands = ['bitly']
+generateBitLy.priority = 'high'
+
+def get_results(text):
     a = re.findall(url_finder, text)
     k = len(a)
     i = 0
-    display = { }
+    display = [ ]
     while i < k:
         url = str(a[i][0])
         try: 
@@ -136,40 +149,34 @@ def get_title(jenney, input):
             return # if it can't access the site fail silently
         
         if page_title == None or page_title == "None":
-            return
+            continue
         else:
-            display[url] = page_title
+            bitly = short(url)
+            display.append([page_title, url, bitly[0][1]])
         i += 1
     return display
 
 def show_title_auto (jenney, input):
-    if input.group(0) == '.title': return
-    show_title_demand(jenney, input)
+    if input.startswith('.title ') or input.startswith('.bitly '): return
+    try:
+        results = get_results(input)
+    except: return
+    if results is None: return
+
+    for r in results:
+        if len(r[1]) > 50: r[1] = r[2]
+        jenney.say('[ %s ] - %s' % (r[0], r[1]))
 show_title_auto.rule = '.*((http|https)(://\S+)).*'
 show_title_auto.priority = 'high'
 
 def show_title_demand (jenney, input):
-    try: 
-        page_title = get_title(jenney, input)
+    try:
+        results = get_results(input)
     except: return
+    if results is None: return
     
-    if page_title is None: 
-        page_title = [ ]
-    multiple = len(page_title) > 1
-    
-    for title in page_title:
-        bitlys = short(title)
-        if not multiple:
-            if len(title) > 50:
-                jenney.say('[ %s ] - %s' % (page_title[title], bitlys[title]))
-            else:
-                jenney.say('[ %s ]' % page_title[title])
-        else:
-            if len(title) > 50:
-                link = bitlys[title]
-            else:
-                link = title
-            jenney.say('[ %s ] -  %s' % (page_title[title], link))
+    for r in results:
+        jenney.say('[ %s ] - %s' % (r[0], r[1]))
 show_title_demand.commands = ['title']
 show_title_demand.priority = 'high'
 
