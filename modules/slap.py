@@ -15,7 +15,7 @@ def slap(jenney, input):
 		 if (input.nick not in jenney.config.admins or not input.owner):
 			 text[1] = input.nick
 		 else: text[1] = 'herself'
-	 if text[1] in input.admins:
+	 if text[1] in jenney.config.admins:
 		 if (input.nick not in jenney.config.admins or not input.owner):
 			 text[1] = input.nick
 	 verb = random.choice(('slaps', 'kicks', 'destroys', 'annihilates', 'punches', 'teabags', 'roundhouse kicks', 'rusty hooks', 'pwns', 'owns'))
