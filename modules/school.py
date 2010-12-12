@@ -4,11 +4,11 @@ school.py - Class Schedule Module
 Author: Michael S. Yanovich http://opensource.cse.ohio-state.edu/
 Jenney (About): http://inamidst.com/phenny/
 """
+
+'''
 import web, re
 
 r_link = re.compile(r'(?ims)<td>.*</td>')
-
-'''
 
 def classes(jenney, input):
 
