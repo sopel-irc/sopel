@@ -75,7 +75,13 @@ def findandreplace(jenney, input):
 
     # output
     if new_phrase:
-        phrase = unicode(input.nick + " meant to say: " + new_phrase)
+        if "ACTION" in new_phrase:
+            new_phrase = new_phrase.replace("ACTION", "")
+            new_phrase = new_phrase[1:-1]
+            phrase = input.nick + new_phrase
+            phrase = "\x0300,01" + phrase
+        else:
+            phrase = input.nick + " meant to say: " + new_phrase
         jenney.say(phrase)
 findandreplace.rule = r'(s)/.*'
 findandreplace.priority = 'high'
@@ -152,7 +158,6 @@ def meant (jenney, input):
 
     # output
     if new_phrase:
-        # phrase = str(input.nick) + " thinks %s \x0300,01meant: " + str(new_phrase)
         phrase = "%s thinks %s \x0300,01meant:\x03 %s" % (input.nick, user, new_phrase)
         jenney.say(phrase)
 
