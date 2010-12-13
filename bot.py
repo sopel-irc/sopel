@@ -19,7 +19,7 @@ def decode(bytes):
 			text = bytes.decode('cp1252')
 	return text
 
-class Jenney(irc.Bot): 
+class Jenni(irc.Bot): 
 	def __init__(self, config): 
 		args = (config.nick, config.name, config.channels, config.password)
 		irc.Bot.__init__(self, *args)
@@ -147,9 +147,9 @@ class Jenney(irc.Bot):
 					bind(self, func.priority, regexp, func)
 
 	def wrapped(self, origin, text, match): 
-		class JenneyWrapper(object): 
-			def __init__(self, jenney): 
-				self.bot = jenney
+		class JenniWrapper(object): 
+			def __init__(self, jenni): 
+				self.bot = jenni
 
 			def __getattr__(self, attr): 
 				sender = origin.sender or text
@@ -160,7 +160,7 @@ class Jenney(irc.Bot):
 					return lambda msg: self.bot.msg(sender, msg)
 				return getattr(self.bot, attr)
 
-		return JenneyWrapper(self)
+		return JenniWrapper(self)
 
 	def input(self, origin, text, bytes, match, event, args): 
 		class CommandInput(unicode): 
@@ -180,9 +180,9 @@ class Jenney(irc.Bot):
 
 		return CommandInput(text, origin, bytes, match, event, args)
 
-	def call(self, func, origin, jenney, input): 
+	def call(self, func, origin, jenni, input): 
 		try: 
-			func(jenney, input)
+			func(jenni, input)
 		except Exception, e: 
 			self.error(origin)
 
@@ -206,13 +206,13 @@ class Jenney(irc.Bot):
 					match = regexp.match(text)
 					if match: 
 						if self.limit(origin, func): continue
-						jenney = self.wrapped(origin, text, match)
+						jenni = self.wrapped(origin, text, match)
 						input = self.input(origin, text, bytes, match, event, args)
 						if func.thread: 
-							targs = (func, origin, jenney, input)
+							targs = (func, origin, jenni, input)
 							t = threading.Thread(target=self.call, args=targs)
 							t.start()
-						else: self.call(func, origin, jenney, input)
+						else: self.call(func, origin, jenni, input)
 
 						for source in [origin.sender, origin.nick]: 
 							try: self.stats[(func.name, source)] += 1

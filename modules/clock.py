@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-clock.py - Jenney Clock Module
+clock.py - Jenni Clock Module
 Copyright 2008-9, Sean B. Palmer, inamidst.com
 Licensed under the Eiffel Forum License 2.
 
@@ -247,38 +247,38 @@ f_time.commands = ['t']
 f_time.name = 't'
 f_time.example = '.t UTC'
 
-def beats(jenney, input): 
+def beats(jenni, input): 
 	"""Shows the internet time in Swatch beats."""
 	beats = ((time.time() + 3600) % 86400) / 86.4
 	beats = int(math.floor(beats))
-	jenney.say('@%03i' % beats)
+	jenni.say('@%03i' % beats)
 beats.commands = ['beats']
 beats.priority = 'low'
 
 def divide(input, by): 
 	return (input / by), (input % by)
 
-def yi(jenney, input): 
+def yi(jenni, input): 
 	"""Shows whether it is currently yi or not."""
 	quadraels, remainder = divide(int(time.time()), 1753200)
 	raels = quadraels * 4
 	extraraels, remainder = divide(remainder, 432000)
 	if extraraels == 4: 
-		return jenney.say('Yes! PARTAI!')
-	else: jenney.say('Not yet...')
+		return jenni.say('Yes! PARTAI!')
+	else: jenni.say('Not yet...')
 yi.commands = ['yi']
 yi.priority = 'low'
 
-def tock(jenney, input): 
+def tock(jenni, input): 
 	"""Shows the time from the USNO's atomic clock."""
 	u = urllib.urlopen('http://tycho.usno.navy.mil/cgi-bin/timer.pl')
 	info = u.info()
 	u.close()
-	jenney.say('"' + info['Date'] + '" - tycho.usno.navy.mil')
+	jenni.say('"' + info['Date'] + '" - tycho.usno.navy.mil')
 tock.commands = ['tock']
 tock.priority = 'high'
 
-def npl(jenney, input): 
+def npl(jenni, input): 
 	"""Shows the time from NPL's SNTP server."""
 	client = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 	client.sendto('\x1b' + 47 * '\0', ('ntp1.npl.co.uk', 123))
@@ -292,8 +292,8 @@ def npl(jenney, input):
 		a, b = str(d).split('.')
 		f = '%Y-%m-%d %H:%M:%S'
 		result = datetime.datetime.fromtimestamp(d).strftime(f) + '.' + b[:6]
-		jenney.say(result + ' - ntp1.npl.co.uk')
-	else: jenney.say('No data received, sorry')
+		jenni.say(result + ' - ntp1.npl.co.uk')
+	else: jenni.say('No data received, sorry')
 npl.commands = ['npl']
 npl.priority = 'high'
 

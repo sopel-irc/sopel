@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-quote.py - Jenney Quote Module
+quote.py - Jenni Quote Module
 Copyright 2008-10, Michael Yanovich, opensource.osu.edu/~yanovich/wiki/
 Licensed under the Eiffel Forum License 2.
 
@@ -15,7 +15,7 @@ r_paragraph = re.compile(r'(?ims)<dt class="quote">.*?</dt>')
 r_author = re.compile(r'(?ims)<dd class="author">.*?</dt>')
 r_authorb = re.compile(r'(?ims)<b>.*</b>')
 
-def getquote(jenney, input):
+def getquote(jenni, input):
 	global quoteuri
 	global cleanup
 	bytes = web.get(quoteuri)
@@ -25,7 +25,7 @@ def getquote(jenney, input):
 	quote = re.sub(r'<[^>]*?>', '', str(paragraphs[0]))
 	author_para_b =  re.sub(r'<[^>]*?>', '', author_para_b[0])
 	quote += "-- " + author_para_b
-	jenney.say(quote)
+	jenni.say(quote)
 getquote.commands = ['q']
 getquote.priority = 'medium'
 getquote.example = '.q'

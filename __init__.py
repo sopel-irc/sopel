@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 """
-__init__.py - Jenney Init Module
+__init__.py - Jenni Init Module
 Copyright 2008, Sean B. Palmer, inamidst.com
 Licensed under the Eiffel Forum License 2.
 
-http://inamidst.com/jenney/
+http://inamidst.com/phenny/
 """
 
 import sys, os, time, threading, signal
@@ -27,13 +27,13 @@ class Watcher(object):
       try: os.kill(self.child, signal.SIGKILL)
       except OSError: pass
 
-def run_jenney(config): 
+def run_jenni(config): 
    if hasattr(config, 'delay'): 
       delay = config.delay
    else: delay = 20
 
    def connect(config): 
-      p = bot.Jenney(config)
+      p = bot.Jenni(config)
       p.run(config.host, config.port)
 
    try: Watcher()
@@ -53,7 +53,7 @@ def run_jenney(config):
       time.sleep(delay)
 
 def run(config): 
-   t = threading.Thread(target=run_jenney, args=(config,))
+   t = threading.Thread(target=run_jenni, args=(config,))
    if hasattr(t, 'run'): 
       t.run()
    else: t.start()

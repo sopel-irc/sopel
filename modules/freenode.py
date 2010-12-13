@@ -7,7 +7,7 @@ Licensed under the Eiffel Forum License 2.
 http://inamidst.com/phenny/
 """
 
-def replaced(jenney, input): 
+def replaced(jenni, input): 
 	command = input.group(1)
 	responses = {
 		'cp': '.cp has been replaced by .u', 
@@ -26,7 +26,7 @@ def replaced(jenney, input):
 	}
 	try: response = responses[command]
 	except KeyError: return
-	else: jenney.reply(response)
+	else: jenni.reply(response)
 replaced.commands = [
 	'cp', 'pc', 'unicode', 'compare', 'map', 'acronym', 
 	'v', 'validate', 'thesaurus', 'web', 'mangle', 'origin', 

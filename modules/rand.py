@@ -2,17 +2,17 @@
 """
 rand.py - Rand Module
 Author: Michael S. Yanovich http://opensource.cse.ohio-state.edu/
-Jenney (About): http://inamidst.com/phenny/
+Jenni (About): http://inamidst.com/phenny/
 """
 
 import random
 
 random.seed()
 
-def rand(jenney, input):
+def rand(jenni, input):
 	""".rand <arg1> <arg2> - Generates a random integer between <arg1> and <arg2>."""
 	if input.group(2) == " " or input.group(2) == "" or str(input.group(2)) == None or str(input.group(2)) == "" or input.group(2) == None:
-		jenney.say("I'm sorry, " + str(input.nick) + ", but you must enter at least one number.")
+		jenni.say("I'm sorry, " + str(input.nick) + ", but you must enter at least one number.")
 	else:
 		li_integers = input.group(2)
 		li_integers_str = li_integers.split()
@@ -25,7 +25,7 @@ def rand(jenney, input):
 				a = li_integers_str[0]
 				a = int(a)
 				randinte = random.randint(0, a)
-			jenney.say(str(input.nick) + ": your random integer is: " + str(randinte))
+			jenni.say(str(input.nick) + ": your random integer is: " + str(randinte))
 		else:
 			a,b = li_integers.split()
 			a = int(a)
@@ -34,7 +34,7 @@ def rand(jenney, input):
 				randinte = random.randint(a, b)
 			else:
 				randinte = random.randint(b, a)
-			jenney.say(str(input.nick) + ": your random integer is: " + str(randinte))
+			jenni.say(str(input.nick) + ": your random integer is: " + str(randinte))
 
 rand.commands = ['rand']
 rand.priority = 'medium'

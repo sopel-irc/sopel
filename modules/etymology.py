@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-etymology.py - Jenney Etymology Module
+etymology.py - Jenni Etymology Module
 Copyright 2007-9, Sean B. Palmer, inamidst.com
 Licensed under the Eiffel Forum License 2.
 

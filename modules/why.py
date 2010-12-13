@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-why.py - Jenney Why Module
+why.py - Jenni Why Module
 Copyright 2009-10, Michael Yanovich, opensource.osu.edu/~yanovich/wiki/
 Licensed under the Eiffel Forum License 2.
 
@@ -13,13 +13,13 @@ import web
 whyuri = 'http://www.leonatkinson.com/random/index.php/lyrics.html'
 r_paragraph = re.compile(r'(?ims)<tr><td bgcolor=".*?">.*?</td></tr>')
 
-def getwhy(jenney, input):
+def getwhy(jenni, input):
 	global whyuri
 	global r_paragraph
 	bytes = web.get(whyuri)
 	paragraphs = r_paragraph.findall(bytes)
 	line = re.sub(r'<[^>]*?>', '', str(paragraphs[1]))
-	jenney.say(line)
+	jenni.say(line)
 getwhy.commands = ['why']
 getwhy.priority = 'high'
 

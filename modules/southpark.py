@@ -28,7 +28,7 @@ def htmlDecode (html):
     for k, v in HTMLEntities.iteritems(): html = html.replace(k, v)
     return html
 
-def southpark (jenney, input):
+def southpark (jenni, input):
     global cache, cachets
     text = input.group().split()
     if len(text) > 1:
@@ -40,18 +40,18 @@ def southpark (jenney, input):
             cache['NEW-EPI'] = None
             cachets['NEW-EPI'] = None
         elif text[1] == 'times':
-            southparktimes(jenney,input)
+            southparktimes(jenni,input)
             return
     else:
-        getNewShowDate(jenney)
+        getNewShowDate(jenni)
 southpark.commands = ['southpark']
 southpark.priority = 'low'
 
-def getNewShowDate (jenney):
+def getNewShowDate (jenni):
     global cache, cachets
     tsnow = datetime.now()
     if cache['NEW-EPI'] is not None and cachets['NEW-EPI'] is not None and tsnow - cachets['NEW-EPI'] <= cachetsreset:
-        jenney.say(STRING % cache['NEW-EPI'])
+        jenni.say(STRING % cache['NEW-EPI'])
         return
 
     today = time.localtime()
@@ -73,14 +73,14 @@ def getNewShowDate (jenney):
             else:
                 cache['NEW-EPI'] = m.group()
                 cachets['NEW-EPI'] = tsnow
-                jenney.say(STRING % m.group())
+                jenni.say(STRING % m.group())
                 break
 
-def southparktimes (jenney, input):
+def southparktimes (jenni, input):
     global cache, cachets, maxtitlelen, maxepilen
     tsnow = datetime.now()
     if cache['TIMES'] is not None and cachets['TIMES'] is not None and tsnow - cachets['TIMES'] <= cachetsreset:
-        printListings(jenney)
+        printListings(jenni)
         return
 
     src = web.get('http://www.comedycentral.com/tv_schedule/index.jhtml?seriesId=11600&forever=please')
@@ -155,11 +155,11 @@ def southparktimes (jenney, input):
         if count == 0: break
     cache['TIMES'] = info
     cachets['TIMES'] = tsnow
-    printListings(jenney)
+    printListings(jenni)
 
-def printListings (jenney):
+def printListings (jenni):
     for i in cache['TIMES']:
-        jenney.say('%s:   #%s - \x02%s\x02 %s (%s)   %s' % (time.strftime('%a %b %d', i[0]), i[1]+' '*(maxepilen-len(i[1])), i[2], ' '*(maxtitlelen-len(i[2])+5) , i[3], 'Comedy Central'))
+        jenni.say('%s:   #%s - \x02%s\x02 %s (%s)   %s' % (time.strftime('%a %b %d', i[0]), i[1]+' '*(maxepilen-len(i[1])), i[2], ' '*(maxtitlelen-len(i[2])+5) , i[3], 'Comedy Central'))
 
 if __name__ == '__main__':
     print __doc__.strip()
