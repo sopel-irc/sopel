@@ -112,7 +112,7 @@ def short(text):
                 try: c = web.head(b)
                 except: return [[None, None]]
 
-                url = "http://api.j.mp/v3/shorten?login=%s&apiKey=%s&longUrl=%s&format=txt" % (bitly_user, bitly_api_key, b)
+                url = "http://api.j.mp/v3/shorten?login=%s&apiKey=%s&longUrl=%s&format=txt" % (bitly_user, bitly_api_key, urllib2.quote(b))
                 shorter = web.get(url)
                 shorter.strip()
                 bitlys.append([b, shorter])
