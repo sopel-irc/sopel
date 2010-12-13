@@ -1,9 +1,9 @@
 """
-unicode.py - Jenney Unicode Module
+unicode.py - Jenni Unicode Module
 Author: Michael S. Yanovich, http://github.com/myano
 """
 
-def meh (jenney, input):
+def meh (jenni, input):
     import unicodedata
     s = 'u'
     for i in xrange(1,3000):
@@ -11,7 +11,7 @@ def meh (jenney, input):
             s += unichr(i)
         if len(s) > 100:
             break
-    jenney.say(s)
+    jenni.say(s)
 meh.commands = ['sc']
 
 if __name__ == '__main__':

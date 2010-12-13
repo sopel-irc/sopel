@@ -1,5 +1,5 @@
 """
-url.py - Jenney Bitly Module
+url.py - Jenni Bitly Module
 Author: Michael S. Yanovich, http://opensource.osu.edu/~yanovich
 About: http://inamidst.com/phenny/
 
@@ -121,15 +121,15 @@ def short(text):
     except:
         return
 
-def generateBitLy (jenney, input):
+def generateBitLy (jenni, input):
     bitly = short(input)
     idx = 7
     for b in bitly:
-        displayBitLy(jenney, b[0], b[1])
+        displayBitLy(jenni, b[0], b[1])
 generateBitLy.commands = ['bitly']
 generateBitLy.priority = 'high'
 
-def displayBitLy (jenney, url, shorten):
+def displayBitLy (jenni, url, shorten):
     if url is None or shorten is None: return
     idx = 7
     if url.startswith('https://'): idx = 8
@@ -138,7 +138,7 @@ def displayBitLy (jenney, url, shorten):
     f = u.find('/')
     if f == -1: u = url
     else: u = url[0:idx] + u[0:f]
-    jenney.say('%s  -  %s' % (u, shorten))
+    jenni.say('%s  -  %s' % (u, shorten))
 
 def get_results(text):
     a = re.findall(url_finder, text)
@@ -157,7 +157,7 @@ def get_results(text):
         i += 1
     return display
 
-def show_title_auto (jenney, input):
+def show_title_auto (jenni, input):
     if input.startswith('.title ') or input.startswith('.bitly '): return
     try:
         results = get_results(input)
@@ -166,14 +166,14 @@ def show_title_auto (jenney, input):
 
     for r in results:
         if r[0] is None:
-            if len(r[1]) > 50: displayBitLy(jenney, r[1], r[2])
+            if len(r[1]) > 50: displayBitLy(jenni, r[1], r[2])
             continue
         if len(r[1]) > 50: r[1] = r[2]
-        jenney.say('[ %s ] - %s' % (r[0], r[1]))
+        jenni.say('[ %s ] - %s' % (r[0], r[1]))
 show_title_auto.rule = '.*((http|https)(://\S+)).*'
 show_title_auto.priority = 'high'
 
-def show_title_demand (jenney, input):
+def show_title_demand (jenni, input):
     try:
         results = get_results(input)
     except: return
@@ -181,7 +181,7 @@ def show_title_demand (jenney, input):
     
     for r in results:
         if r[0] is None: continue
-        jenney.say('[ %s ] - %s' % (r[0], r[1]))
+        jenni.say('[ %s ] - %s' % (r[0], r[1]))
 show_title_demand.commands = ['title']
 show_title_demand.priority = 'high'
 

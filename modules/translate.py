@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding=utf-8
 """
-translate.py - Jenney Translation Module
+translate.py - Jenni Translation Module
 Copyright 2008, Sean B. Palmer, inamidst.com
 Licensed under the Eiffel Forum License 2.
 
@@ -28,19 +28,19 @@ def translate(text, input, output):
     try: return result['responseData']['translatedText'].encode('cp1252')
     except Exception: return None
 
-def tr(jenney, context): 
+def tr(jenni, context): 
     """Translates a phrase, with an optional language hint."""
     input, output, phrase = context.groups()
 
     phrase = phrase.encode('utf-8')
 
     if (len(phrase) > 350) and (not context.admin): 
-        return jenney.reply('Phrase must be under 350 characters.')
+        return jenni.reply('Phrase must be under 350 characters.')
 
     input = input or detect(phrase)
     if not input: 
         err = 'Unable to guess your crazy moon language, sorry.'
-        return jenney.reply(err)
+        return jenni.reply(err)
     input = input.encode('utf-8')
     output = (output or 'en').encode('utf-8')
 
@@ -51,14 +51,14 @@ def tr(jenney, context):
             msg = '"%s" (%s to %s, translate.google.com)' % (msg, input, output)
         else: msg = 'The %s to %s translation failed, sorry!' % (input, output)
 
-        jenney.reply(msg)
-    else: jenney.reply('Language guessing failed, so try suggesting one!')
+        jenni.reply(msg)
+    else: jenni.reply('Language guessing failed, so try suggesting one!')
 
 tr.rule = ('$nick', ur'(?:([a-z]{2}) +)?(?:([a-z]{2}) +)?["“](.+?)["”]\? *$')
 tr.example = '$nickname: "mon chien"? or $nickname: fr "mon chien"?'
 tr.priority = 'low'
 
-def mangle(jenney, input): 
+def mangle(jenni, input): 
     phrase = input.group(2).encode('utf-8')
     for lang in ['fr', 'de', 'es', 'it', 'ja']: 
         backup = phrase
@@ -75,7 +75,7 @@ def mangle(jenney, input):
             break
         __import__('time').sleep(0.5)
 
-    jenney.reply(phrase or 'ERRORS SRY')
+    jenni.reply(phrase or 'ERRORS SRY')
 mangle.commands = ['mangle']
 
 if __name__ == '__main__': 

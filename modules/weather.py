@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-weather.py - Jenney Weather Module
+weather.py - Jenni Weather Module
 Copyright 2008, Sean B. Palmer, inamidst.com
 Licensed under the Eiffel Forum License 2.
 
@@ -51,7 +51,7 @@ def local(icao, hour, minute):
         #            ':' + str(minute) + 'Z)')
     return str(hour) + ':' + str(minute) + 'Z'
 
-def code(jenney, search): 
+def code(jenni, search): 
     from icao import data
     
     if search.upper() in [loc[0] for loc in data]:

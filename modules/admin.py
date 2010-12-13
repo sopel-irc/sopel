@@ -2,7 +2,7 @@
 """
 mod.py - Channel Module
 Author: Alek Rollyson, http://opensource.osu.edu/
-Jenney (about): http://inamidst.com/phenny/
+Jenni (about): http://inamidst.com/phenny/
 
 Beefed up by Alek Rollyson. added functions for op, deop, voice, devoice
 Uses NickServ ACC to verify that a nick is identified with services, as well
@@ -17,141 +17,141 @@ import re, time, sched
 auth_list = []
 admins = []
 
-def join(jenney, input): 
+def join(jenni, input): 
    """Join the specified channel. This is an admin-only command."""
    # Can only be done in privmsg by an admin
    if input.sender.startswith('#'): return
    if input.admin: 
       channel, key = input.group(1), input.group(2)
       if not key: 
-         jenney.write(['JOIN'], channel)
-      else: jenney.write(['JOIN', channel, key])
+         jenni.write(['JOIN'], channel)
+      else: jenni.write(['JOIN', channel, key])
 join.rule = r'\.join (#\S+)(?: *(\S+))?'
 join.priority = 'low'
 join.example = '.join #example or .join #example key'
 
-def part(jenney, input): 
+def part(jenni, input): 
    """Part the specified channel. This is an admin-only command."""
    # Can only be done in privmsg by an admin
    if input.sender.startswith('#'): return
    if input.admin: 
-      jenney.write(['PART'], input.group(2))
+      jenni.write(['PART'], input.group(2))
 part.commands = ['part']
 part.priority = 'low'
 part.example = '.part #example'
 
-def quit(jenney, input): 
+def quit(jenni, input): 
    """Quit from the server. This is an owner-only command."""
    # Can only be done in privmsg by the owner
    if input.sender.startswith('#'): return
    if input.owner: 
-      jenney.write(['QUIT'])
+      jenni.write(['QUIT'])
       __import__('os')._exit(0)
 quit.commands = ['quit']
 quit.priority = 'low'
 
-def msg(jenney, input): 
+def msg(jenni, input): 
    # Can only be done in privmsg by an admin
    if input.sender.startswith('#'): return
    a, b = input.group(2), input.group(3)
    if (not a) or (not b): return
    if input.admin: 
-      jenney.msg(a, b)
+      jenni.msg(a, b)
 msg.rule = (['msg'], r'(#?\S+) (.+)')
 msg.priority = 'low'
 
-def me(jenney, input): 
+def me(jenni, input): 
    # Can only be done in privmsg by an admin
    if input.sender.startswith('#'): return
    if input.admin: 
       msg = '\x01ACTION %s\x01' % input.group(3)
-      jenney.msg(input.group(2), msg)
+      jenni.msg(input.group(2), msg)
 me.rule = (['me'], r'(#?\S+) (.*)')
 me.priority = 'low'
 
-def op(jenney, input):
+def op(jenni, input):
     """
     Command to op users in a room. If no nick is given,
-    jenney will op the nick who sent the command
+    jenni will op the nick who sent the command
     """
     if not input.admin or not input.sender.startswith('#'):
         return
     nick = input.group(2)
-    verify = auth_check(jenney, input.nick, nick)
+    verify = auth_check(jenni, input.nick, nick)
     if verify:
         channel = input.sender
         if not nick:
             nick = input.nick
-        jenney.write(['MODE', channel, "+o", nick])
+        jenni.write(['MODE', channel, "+o", nick])
 op.rule = (['op'], r'(\S+)?')
 op.priority = 'low'
 
-def deop(jenney, input):
+def deop(jenni, input):
     """
     Command to deop users in a room. If no nick is given,
-    jenney will deop the nick who sent the command
+    jenni will deop the nick who sent the command
     """
     if not input.admin or not input.sender.startswith('#'):
         return
     nick = input.group(2)
-    verify = auth_check(jenney, input.nick, nick)
+    verify = auth_check(jenni, input.nick, nick)
     if verify:
         channel = input.sender
         if not nick:
             nick = input.nick
-        jenney.write(['MODE', channel, "-o", nick])
+        jenni.write(['MODE', channel, "-o", nick])
 deop.rule = (['deop'], r'(\S+)?')
 deop.priority = 'low'
 
-def voice(jenney, input):
+def voice(jenni, input):
     """
     Command to voice users in a room. If no nick is given,
-    jenney will voice the nick who sent the command
+    jenni will voice the nick who sent the command
     """
     if not input.admin or not input.sender.startswith('#'):
         return
     nick = input.group(2)
-    verify = auth_check(jenney, input.nick, nick)
+    verify = auth_check(jenni, input.nick, nick)
     if verify:
         channel = input.sender
         if not nick:
             nick = input.nick
-        jenney.write(['MODE', channel, "+v", nick])
+        jenni.write(['MODE', channel, "+v", nick])
 voice.rule = (['voice'], r'(\S+)?')
 voice.priority = 'low'
 
-def devoice(jenney, input):
+def devoice(jenni, input):
     """
     Command to devoice users in a room. If no nick is given,
-    jenney will devoice the nick who sent the command
+    jenni will devoice the nick who sent the command
     """
     if not input.admin or not input.sender.startswith('#'):
         return
     nick = input.group(2)
-    verify = auth_check(jenney, input.nick, nick)
+    verify = auth_check(jenni, input.nick, nick)
     if verify:
         channel = input.sender
         if not nick:
             nick = input.nick
-        jenney.write(['MODE', channel, "-v", nick])
+        jenni.write(['MODE', channel, "-v", nick])
 devoice.rule = (['devoice'], r'(\S+)?')
 devoice.priority = 'low'
 
-def auth_request(jenney, input):
+def auth_request(jenni, input):
     """
-    This will scan every message in a room for nicks in jenney's
+    This will scan every message in a room for nicks in jenni's
     admin list.  If one is found, it will send an ACC request
     to NickServ.  May only work with Freenode.
     """
-    admins = jenney.config.admins
+    admins = jenni.config.admins
     pattern = '(' + '|'.join([re.escape(x) for x in admins]) + ')'
     matches = re.findall(pattern, input)
     for x in matches:
-        jenney.msg('NickServ', 'ACC ' + x)
+        jenni.msg('NickServ', 'ACC ' + x)
 auth_request.rule = r'.*'
 auth_request.priority = 'high'
 
-def auth_verify(jenney, input):
+def auth_verify(jenni, input):
     """
     This will wait for notices from NickServ and scan for ACC
     responses.  This verifies with NickServ that nicks in the room
@@ -177,12 +177,12 @@ auth_verify.event = 'NOTICE'
 auth_verify.rule = r'(\S+) (ACC) ([0-3])'
 auth_verify.priority = 'high'
 
-def auth_check(jenney, nick, target=None):
+def auth_check(jenni, nick, target=None):
     """
     Checks if nick is on the auth list and returns true if so
     """
     global auth_list
-    if target == jenney.config.nick:
+    if target == jenni.config.nick:
 	    return 0
     elif nick in auth_list:
         return 1
@@ -196,22 +196,22 @@ def deauth(nick):
         a = auth_list.index(nick)
         del(auth_list[a])
 
-def deauth_quit(jenney, input):
+def deauth_quit(jenni, input):
     deauth(input.nick)
 deauth_quit.event = 'QUIT'
 deauth_quit.rule = '.*'
 
-def deauth_part(jenney, input):
+def deauth_part(jenni, input):
     deauth(input.nick)
 deauth_part.event = 'PART'
 deauth_part.rule = '.*'
 
-def deauth_nick(jenney, input):
+def deauth_nick(jenni, input):
     deauth(input.nick)
 deauth_nick.event = 'NICK'
 deauth_nick.rule = '.*'
 
-def kick(jenney, input):
+def kick(jenni, input):
     if not input.admin: return
     text = input.group().split()
     argc = len(text)
@@ -226,8 +226,8 @@ def kick(jenney, input):
         channel = opt
         reasonidx = 3
     reason = ' '.join(text[reasonidx:])
-    if nick != jenney.config.nick:
-        jenney.write(['KICK', channel, nick, reason])
+    if nick != jenni.config.nick:
+        jenni.write(['KICK', channel, nick, reason])
 kick.commands = ['kick']
 kick.priority = 'high'
 
@@ -246,7 +246,7 @@ def configureHostMask (mask):
     if m is not None: return '%s!%s@*' % (m.group(1), m.group(2))
     return ''
 
-def ban (jenney, input):
+def ban (jenni, input):
     """
     This give admins the ability to ban a user.
     The bot must be a Channel Operator for this command to work.
@@ -264,11 +264,11 @@ def ban (jenney, input):
         banmask = text[2]
     banmask = configureHostMask(banmask)
     if banmask == '': return
-    jenney.write(['MODE', channel, '+b', banmask])
+    jenni.write(['MODE', channel, '+b', banmask])
 ban.commands = ['ban']
 ban.priority = 'high'
 
-def unban (jenney, input):
+def unban (jenni, input):
     """
     This give admins the ability to unban a user.
     The bot must be a Channel Operator for this command to work.
@@ -286,11 +286,11 @@ def unban (jenney, input):
         banmask = text[2]
     banmask = configureHostMask(banmask)
     if banmask == '': return
-    jenney.write(['MODE', channel, '-b', banmask])
+    jenni.write(['MODE', channel, '-b', banmask])
 unban.commands = ['unban']
 unban.priority = 'high'
 
-def quiet (jenney, input):
+def quiet (jenni, input):
    """
    This gives admins the ability to quiet a user.
    The bot must be a Channel Operator for this command to work
@@ -308,11 +308,11 @@ def quiet (jenney, input):
       channel = opt
    quietmask = configureHostMask(quietmask)
    if quietmask == '': return
-   jenney.write(['MODE', channel, '+q', quietmask])
+   jenni.write(['MODE', channel, '+q', quietmask])
 quiet.commands = ['quiet']
 quiet.priority = 'high'
 
-def unquiet (jenney, input):
+def unquiet (jenni, input):
    """
    This gives admins the ability to unquiet a user.
    The bot must be a Channel Operator for this command to work
@@ -330,11 +330,11 @@ def unquiet (jenney, input):
        channel = opt
    quietmask = configureHostMask(quietmask)
    if quietmask == '': return
-   jenney.write(['MODE', opt, '-q', quietmask])
+   jenni.write(['MODE', opt, '-q', quietmask])
 unquiet.commands = ['unquiet']
 unquiet.priority = 'high'
 
-def kickban (jenney, input):
+def kickban (jenni, input):
    """
    This gives admins the ability to kickban a user.
    The bot must be a Channel Operator for this command to work
@@ -357,12 +357,12 @@ def kickban (jenney, input):
    reason = ' '.join(text[reasonidx:])
    mask = configureHostMask(mask)
    if mask == '': return
-   jenney.write(['MODE', channel, '+b', mask])
-   jenney.write(['KICK', channel, nick, ' :', reason])
+   jenni.write(['MODE', channel, '+b', mask])
+   jenni.write(['KICK', channel, nick, ' :', reason])
 kickban.commands = ['kickban', 'kb']
 kickban.priority = 'high'
 
-def topic(jenney, input):
+def topic(jenni, input):
     """
     This gives admins the ability to change the topic.
     Note: One does *NOT* have to be an OP, one just has to be on the list of
@@ -375,22 +375,22 @@ def topic(jenney, input):
     if topic == '':
         return
     channel = input.sender
-    jenney.write(['PRIVMSG', 'ChanServ'], 'TOPIC %s %s' % (input.sender, topic))
+    jenni.write(['PRIVMSG', 'ChanServ'], 'TOPIC %s %s' % (input.sender, topic))
     return
 topic.commands = ['topic']
 topic.priority = 'low'
 
-def defend_ground (jenney, input):
+def defend_ground (jenni, input):
     """
-    This function monitors all kicks across all channels jenney is in. If she
+    This function monitors all kicks across all channels jenni is in. If she
     detects that she is the one kicked she'll automatically join that channel.
 
-    WARNING: This may not needed and could cause problems if jenney becomes 
+    WARNING: This may not needed and could cause problems if jenni becomes 
     annoying. Please use this with caution.
     """
     channel = input.sender
     text = input.group()
-    jenney.write(['JOIN'], channel)                
+    jenni.write(['JOIN'], channel)                
 defend_ground.event = 'KICK'
 defend_ground.rule = '.*'
 defend_ground.priority = 'low'

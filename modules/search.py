@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-search.py - Jenney Web Search Module
+search.py - Jenni Web Search Module
 Copyright 2008-9, Sean B. Palmer, inamidst.com
 Licensed under the Eiffel Forum License 2.
 
@@ -37,29 +37,29 @@ def formatnumber(n):
         parts.insert(i, ',')
     return ''.join(parts)
 
-def g(jenney, input): 
+def g(jenni, input): 
     """Queries Google for the specified input."""
     query = input.group(2)
     if not query: 
-        return jenney.reply('.g what?')
+        return jenni.reply('.g what?')
     uri = result(query)
     if uri: 
-        jenney.reply(uri)
-        if not hasattr(jenney.bot, 'last_seen_uri'):
-            jenney.bot.last_seen_uri = {}
-        jenney.bot.last_seen_uri[input.sender] = uri
-    else: jenney.reply("No results found for '%s'." % query)
+        jenni.reply(uri)
+        if not hasattr(jenni.bot, 'last_seen_uri'):
+            jenni.bot.last_seen_uri = {}
+        jenni.bot.last_seen_uri[input.sender] = uri
+    else: jenni.reply("No results found for '%s'." % query)
 g.commands = ['g']
 g.priority = 'high'
 g.example = '.g swhack'
 
-def gc(jenney, input): 
+def gc(jenni, input): 
     """Returns the number of Google results for the specified input."""
     query = input.group(2)
     if not query: 
-        return jenney.reply('.gc what?')
+        return jenni.reply('.gc what?')
     num = formatnumber(count(query))
-    jenney.say(query + ': ' + num)
+    jenni.say(query + ': ' + num)
 gc.commands = ['gc']
 gc.priority = 'high'
 gc.example = '.gc extrapolate'
@@ -68,10 +68,10 @@ r_query = re.compile(
     r'\+?"[^"\\]*(?:\\.[^"\\]*)*"|\[[^]\\]*(?:\\.[^]\\]*)*\]|\S+'
 )
 
-def gcs(jenney, input): 
+def gcs(jenni, input): 
     queries = r_query.findall(input.group(2))
     if len(queries) > 6: 
-        return jenney.reply('Sorry, can only compare up to six things.')
+        return jenni.reply('Sorry, can only compare up to six things.')
 
     results = []
     for i, query in enumerate(queries): 
@@ -83,7 +83,7 @@ def gcs(jenney, input):
 
     results = [(term, n) for (n, term) in reversed(sorted(results))]
     reply = ', '.join('%s (%s)' % (t, formatnumber(n)) for (t, n) in results)
-    jenney.say(reply)
+    jenni.say(reply)
 gcs.commands = ['gcs', 'comp']
 
 if __name__ == '__main__': 

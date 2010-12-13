@@ -1,5 +1,5 @@
 """
-find.py - Jenney Spell Checking Module
+find.py - Jenni Spell Checking Module
 Author: Michael S. Yanovich, http://opensource.osu.edu/
 Contributions from: Matt Meinwald and Morgan Goose
 About: http://inamidst.com/phenny/
@@ -18,7 +18,7 @@ else:
 exp = re.compile(r"(?<!\\)/")
 
 # Create a temporary log of the most recent thing anyone says.
-def collectlines(jenney, input):
+def collectlines(jenni, input):
     global search_dict
     try:
         list = search_dict[input.nick]
@@ -37,7 +37,7 @@ def collectlines(jenney, input):
 collectlines.rule = '.*'
 collectlines.priority = 'low'
 
-def findandreplace(jenney, input):
+def findandreplace(jenni, input):
     global search_dict
     global search_file
     # obtain "old word" and "new word"
@@ -82,7 +82,7 @@ def findandreplace(jenney, input):
             phrase = "\x0300,01" + phrase
         else:
             phrase = input.nick + " meant to say: " + new_phrase
-        jenney.say(phrase)
+        jenni.say(phrase)
 findandreplace.rule = r'(s)/.*'
 findandreplace.priority = 'high'
 
@@ -102,7 +102,7 @@ def freplace(list, pattern, replacement, phrase, flag):
                 return sample
                 break
 
-def meant (jenney, input):
+def meant (jenni, input):
     global search_dict
     global search_file
     global exp
@@ -159,7 +159,7 @@ def meant (jenney, input):
     # output
     if new_phrase:
         phrase = "%s thinks %s \x0300,01meant:\x03 %s" % (input.nick, user, new_phrase)
-        jenney.say(phrase)
+        jenni.say(phrase)
 
 meant.rule = r'.*\:\s.*'
 meant.priority = 'high'

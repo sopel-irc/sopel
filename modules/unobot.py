@@ -37,7 +37,7 @@ random.seed()
 
 # Remember to change these 3 lines or nothing will work
 CHANNEL = '##uno'
-SCOREFILE = "/home/yanovich/jenney/unoscores.txt"
+SCOREFILE = "/home/yanovich/phenny/unoscores.txt"
 # Only the owner (starter of the game) can call .unostop to stop the game.
 # But this calls for a way to allow others to stop it after the game has been idle for a while.
 # After this set time, anyone can stop the game via .unostop
@@ -110,31 +110,31 @@ class UnoBot:
         self.lastActive = datetime.now()
         self.timeout = timedelta(minutes=INACTIVE_TIMEOUT)
  
-    def start(self, jenney, owner):
+    def start(self, jenni, owner):
         if self.game_on:
-            jenney.msg (CHANNEL, STRINGS['ALREADY_STARTED'] % self.game_on)
+            jenni.msg (CHANNEL, STRINGS['ALREADY_STARTED'] % self.game_on)
         else:
             self.lastActive = datetime.now()
             self.game_on = owner
             self.deck = [ ]
-            jenney.msg (CHANNEL, STRINGS['GAME_STARTED'] % owner)
+            jenni.msg (CHANNEL, STRINGS['GAME_STARTED'] % owner)
             self.players = { }
             self.players[owner] = [ ]
             self.playerOrder = [ owner ]
             if self.players_pce.get(owner, 0):
-                jenney.notice(owner, STRINGS['ENABLED_PCE'] % owner)
+                jenni.notice(owner, STRINGS['ENABLED_PCE'] % owner)
     
-    def stop (self, jenney, input):
+    def stop (self, jenni, input):
         tmptime = datetime.now()
         if input.nick == self.game_on or tmptime - self.lastActive > self.timeout:
-            jenney.msg (CHANNEL, STRINGS['GAME_STOPPED'])
+            jenni.msg (CHANNEL, STRINGS['GAME_STOPPED'])
             self.game_on = False
             self.dealt = False
         elif self.game_on:
-            jenney.msg (CHANNEL, STRINGS['CANT_STOP'] % (self.game_on, self.timeout.seconds - (tmptime - self.lastActive).seconds))
+            jenni.msg (CHANNEL, STRINGS['CANT_STOP'] % (self.game_on, self.timeout.seconds - (tmptime - self.lastActive).seconds))
             
-    def join (self, jenney, input):
-        #print dir (jenney.bot)
+    def join (self, jenni, input):
+        #print dir (jenni.bot)
         #print dir (input)
         if self.game_on:
             if not self.dealt:
@@ -143,32 +143,32 @@ class UnoBot:
                     self.playerOrder.append (input.nick)
                     self.lastActive = datetime.now()
                     if self.players_pce.get(input.nick, 0):
-                        jenney.notice(input.nick, STRINGS['ENABLED_PCE'] % input.nick)
+                        jenni.notice(input.nick, STRINGS['ENABLED_PCE'] % input.nick)
                     if self.deck:
                         for i in xrange (0, 7):
                             self.players[input.nick].append (self.getCard ())
-                        jenney.msg (CHANNEL, STRINGS['DEALING_IN'] % (input.nick, self.playerOrder.index (input.nick) + 1))
+                        jenni.msg (CHANNEL, STRINGS['DEALING_IN'] % (input.nick, self.playerOrder.index (input.nick) + 1))
                     else:
-                        jenney.msg (CHANNEL, STRINGS['JOINED'] % (input.nick, self.playerOrder.index (input.nick) + 1))
+                        jenni.msg (CHANNEL, STRINGS['JOINED'] % (input.nick, self.playerOrder.index (input.nick) + 1))
                         if len (self.players) == 2:
-                            jenney.msg (CHANNEL, STRINGS['ENOUGH'])
+                            jenni.msg (CHANNEL, STRINGS['ENOUGH'])
             else:
-                jenney.msg (CHANNEL, STRINGS['GAME_ALREADY_DEALT'])
+                jenni.msg (CHANNEL, STRINGS['GAME_ALREADY_DEALT'])
         else:
-            jenney.msg (CHANNEL, STRINGS['NOT_STARTED'])
+            jenni.msg (CHANNEL, STRINGS['NOT_STARTED'])
     
-    def deal (self, jenney, input):
+    def deal (self, jenni, input):
         if not self.game_on:
-            jenney.msg (CHANNEL, STRINGS['NOT_STARTED'])
+            jenni.msg (CHANNEL, STRINGS['NOT_STARTED'])
             return
         if len (self.players) < 2:
-            jenney.msg (CHANNEL, STRINGS['NOT_ENOUGH'])
+            jenni.msg (CHANNEL, STRINGS['NOT_ENOUGH'])
             return
         if input.nick != self.game_on:
-            jenney.msg (CHANNEL, STRINGS['NEEDS_TO_DEAL'] % self.game_on)
+            jenni.msg (CHANNEL, STRINGS['NEEDS_TO_DEAL'] % self.game_on)
             return
         if len (self.deck):
-            jenney.msg (CHANNEL, STRINGS['ALREADY_DEALT'])
+            jenni.msg (CHANNEL, STRINGS['ALREADY_DEALT'])
             return
         self.startTime = datetime.now ()
         self.lastActive = datetime.now()
@@ -179,15 +179,15 @@ class UnoBot:
         self.topCard = self.getCard ()
         while self.topCard in ['W', 'WD4']: self.topCard = self.getCard ()
         self.currentPlayer = 1
-        self.cardPlayed (jenney, self.topCard)
-        self.showOnTurn (jenney)
+        self.cardPlayed (jenni, self.topCard)
+        self.showOnTurn (jenni)
         self.dealt = True
     
-    def play (self, jenney, input):
+    def play (self, jenni, input):
         if not self.game_on or not self.deck:
             return
         if input.nick != self.playerOrder[self.currentPlayer]:
-            jenney.msg (CHANNEL, STRINGS['ON_TURN'] % self.playerOrder[self.currentPlayer])
+            jenni.msg (CHANNEL, STRINGS['ON_TURN'] % self.playerOrder[self.currentPlayer])
             return
         tok = [z.strip () for z in str (input).upper ().split (' ')]
         if len (tok) != 3:
@@ -198,11 +198,11 @@ class UnoBot:
         else:
             searchcard = (tok[1] + tok[2])
         if searchcard not in self.players[self.playerOrder[self.currentPlayer]]:
-            jenney.msg (CHANNEL, STRINGS['DONT_HAVE'] % self.playerOrder[self.currentPlayer])
+            jenni.msg (CHANNEL, STRINGS['DONT_HAVE'] % self.playerOrder[self.currentPlayer])
             return
         playcard = (tok[1] + tok[2])
         if not self.cardPlayable (playcard):
-            jenney.msg (CHANNEL, STRINGS['DOESNT_PLAY'] % self.playerOrder[self.currentPlayer])
+            jenni.msg (CHANNEL, STRINGS['DOESNT_PLAY'] % self.playerOrder[self.currentPlayer])
             return
         
         self.drawn = False
@@ -211,58 +211,58 @@ class UnoBot:
         pl = self.currentPlayer
         
         self.incPlayer ()
-        self.cardPlayed (jenney, playcard)
+        self.cardPlayed (jenni, playcard)
 
         if len (self.players[self.playerOrder[pl]]) == 1:
-            jenney.msg (CHANNEL, STRINGS['UNO'] % self.playerOrder[pl])
+            jenni.msg (CHANNEL, STRINGS['UNO'] % self.playerOrder[pl])
         elif len (self.players[self.playerOrder[pl]]) == 0:
-            jenney.msg (CHANNEL, STRINGS['WIN'] % (self.playerOrder[pl], (datetime.now () - self.startTime)))
-            self.gameEnded (jenney, self.playerOrder[pl])
+            jenni.msg (CHANNEL, STRINGS['WIN'] % (self.playerOrder[pl], (datetime.now () - self.startTime)))
+            self.gameEnded (jenni, self.playerOrder[pl])
             return
             
         self.lastActive = datetime.now()
-        self.showOnTurn (jenney)
+        self.showOnTurn (jenni)
 
-    def draw (self, jenney, input):
+    def draw (self, jenni, input):
         if not self.game_on or not self.deck:
             return
         if input.nick != self.playerOrder[self.currentPlayer]:
-            jenney.msg (CHANNEL, STRINGS['ON_TURN'] % self.playerOrder[self.currentPlayer])
+            jenni.msg (CHANNEL, STRINGS['ON_TURN'] % self.playerOrder[self.currentPlayer])
             return
         if self.drawn:
-            jenney.msg (CHANNEL, STRINGS['DRAWN_ALREADY'])
+            jenni.msg (CHANNEL, STRINGS['DRAWN_ALREADY'])
             return
         self.drawn = True
-        jenney.msg (CHANNEL, STRINGS['DRAWS'] % self.playerOrder[self.currentPlayer])
+        jenni.msg (CHANNEL, STRINGS['DRAWS'] % self.playerOrder[self.currentPlayer])
         c = self.getCard ()
         self.players[self.playerOrder[self.currentPlayer]].append (c)
         self.lastActive = datetime.now()
-        jenney.notice (input.nick, STRINGS['DRAWN_CARD'] % self.renderCards (input.nick, [c], 0))
+        jenni.notice (input.nick, STRINGS['DRAWN_CARD'] % self.renderCards (input.nick, [c], 0))
 
     # this is not a typo, avoiding collision with Python's pass keyword
-    def passs (self, jenney, input):
+    def passs (self, jenni, input):
         if not self.game_on or not self.deck:
             return
         if input.nick != self.playerOrder[self.currentPlayer]:
-            jenney.msg (CHANNEL, STRINGS['ON_TURN'] % self.playerOrder[self.currentPlayer])
+            jenni.msg (CHANNEL, STRINGS['ON_TURN'] % self.playerOrder[self.currentPlayer])
             return
         if not self.drawn:
-            jenney.msg (CHANNEL, STRINGS['DRAW_FIRST'] % self.playerOrder[self.currentPlayer])
+            jenni.msg (CHANNEL, STRINGS['DRAW_FIRST'] % self.playerOrder[self.currentPlayer])
             return
         self.drawn = False
-        jenney.msg (CHANNEL, STRINGS['PASSED'] % self.playerOrder[self.currentPlayer])
+        jenni.msg (CHANNEL, STRINGS['PASSED'] % self.playerOrder[self.currentPlayer])
         self.incPlayer ()
         self.lastActive = datetime.now()
-        self.showOnTurn (jenney)
+        self.showOnTurn (jenni)
 
-    def top10 (self, jenney, input):
+    def top10 (self, jenni, input):
         self.rankings("ppg")
         i = 1
         for z in self.prescores[:10]:
             if self.game_on or self.deck:
-                jenney.msg(input.nick, STRINGS['SCORE_ROW'] % (i, z[0], z[3], z[1], z[2], float(z[3])/float(z[1]), float(z[2])/float(z[1])*100))
+                jenni.msg(input.nick, STRINGS['SCORE_ROW'] % (i, z[0], z[3], z[1], z[2], float(z[3])/float(z[1]), float(z[2])/float(z[1])*100))
             else:
-                jenney.msg(input.nick, STRINGS['SCORE_ROW'] % (i, z[0], z[3], z[1], z[2], float(z[3])/float(z[1]), float(z[2])/float(z[1])*100))
+                jenni.msg(input.nick, STRINGS['SCORE_ROW'] % (i, z[0], z[3], z[1], z[2], float(z[3])/float(z[1]), float(z[2])/float(z[1])*100))
             i += 1
 
     def createnewdeck (self):
@@ -295,9 +295,9 @@ class UnoBot:
             self.deck = self.createnewdeck ()        
         return ret
     
-    def showOnTurn (self, jenney):
-        jenney.msg (CHANNEL, STRINGS['TOP_CARD'] % (self.playerOrder[self.currentPlayer], self.renderCards (None, [self.topCard], 1)))
-        jenney.notice (self.playerOrder[self.currentPlayer], STRINGS['YOUR_CARDS'] % self.renderCards (self.playerOrder[self.currentPlayer], self.players[self.playerOrder[self.currentPlayer]], 0))
+    def showOnTurn (self, jenni):
+        jenni.msg (CHANNEL, STRINGS['TOP_CARD'] % (self.playerOrder[self.currentPlayer], self.renderCards (None, [self.topCard], 1)))
+        jenni.notice (self.playerOrder[self.currentPlayer], STRINGS['YOUR_CARDS'] % self.renderCards (self.playerOrder[self.currentPlayer], self.players[self.playerOrder[self.currentPlayer]], 0))
         msg = STRINGS['NEXT_START']
         tmp = self.currentPlayer + self.way
         if tmp == len (self.players):
@@ -313,9 +313,9 @@ class UnoBot:
             if tmp < 0:
                 tmp = len (self.players) - 1
         msg += ' - '.join (arr)
-        jenney.notice (self.playerOrder[self.currentPlayer], msg)
+        jenni.notice (self.playerOrder[self.currentPlayer], msg)
     
-    def showCards (self, jenney, user):
+    def showCards (self, jenni, user):
         if not self.game_on or not self.deck:
             return
         msg = STRINGS['NEXT_START']
@@ -336,10 +336,10 @@ class UnoBot:
             k-=1
         msg += ' - '.join (arr)
         if user not in self.players:
-            jenney.notice (user, msg) 
+            jenni.notice (user, msg) 
         else:
-            jenney.notice (user, STRINGS['YOUR_CARDS'] % self.renderCards (user, self.players[user], 0))
-            jenney.notice (user, msg)
+            jenni.notice (user, STRINGS['YOUR_CARDS'] % self.renderCards (user, self.players[user], 0))
+            jenni.notice (user, msg)
 
     def renderCards (self, nick, cards, is_chan):
         ret = [ ]
@@ -379,24 +379,24 @@ class UnoBot:
             return card[0] == self.topCard[-1]
         return (card[0] == self.topCard[0]) or (card[1] == self.topCard[1])
     
-    def cardPlayed (self, jenney, card):
+    def cardPlayed (self, jenni, card):
         if card[1:] == 'D2':
-            jenney.msg (CHANNEL, STRINGS['D2'] % self.playerOrder[self.currentPlayer])
+            jenni.msg (CHANNEL, STRINGS['D2'] % self.playerOrder[self.currentPlayer])
             z = [self.getCard (), self.getCard ()]
-            jenney.notice(self.playerOrder[self.currentPlayer], STRINGS['CARDS'] % self.renderCards (self.playerOrder[self.currentPlayer], z, 0))
+            jenni.notice(self.playerOrder[self.currentPlayer], STRINGS['CARDS'] % self.renderCards (self.playerOrder[self.currentPlayer], z, 0))
             self.players[self.playerOrder[self.currentPlayer]].extend (z)
             self.incPlayer ()
         elif card[:2] == 'WD':
-            jenney.msg (CHANNEL, STRINGS['WD4'] % self.playerOrder[self.currentPlayer])
+            jenni.msg (CHANNEL, STRINGS['WD4'] % self.playerOrder[self.currentPlayer])
             z = [self.getCard (), self.getCard (), self.getCard (), self.getCard ()]
-            jenney.notice(self.playerOrder[self.currentPlayer], STRINGS['CARDS'] % self.renderCards (self.playerOrder[self.currentPlayer], z, 0))
+            jenni.notice(self.playerOrder[self.currentPlayer], STRINGS['CARDS'] % self.renderCards (self.playerOrder[self.currentPlayer], z, 0))
             self.players[self.playerOrder[self.currentPlayer]].extend (z)
             self.incPlayer ()
         elif card[1] == 'S':
-            jenney.msg (CHANNEL, STRINGS['SKIPPED'] % self.playerOrder[self.currentPlayer])
+            jenni.msg (CHANNEL, STRINGS['SKIPPED'] % self.playerOrder[self.currentPlayer])
             self.incPlayer ()
         elif card[1] == 'R' and card[0] != 'W':
-            jenney.msg (CHANNEL, STRINGS['REVERSED'])
+            jenni.msg (CHANNEL, STRINGS['REVERSED'])
             if len(self.players) > 2:
                 self.way = -self.way
                 self.incPlayer ()
@@ -405,7 +405,7 @@ class UnoBot:
                 self.incPlayer ()
         self.topCard = card
     
-    def gameEnded (self, jenney, winner):
+    def gameEnded (self, jenni, winner):
         try:
             score = 0
             for p in self.players:
@@ -416,7 +416,7 @@ class UnoBot:
                         score += self.special_scores[c[1:]]
                     else:
                         score += int (c[1])
-            jenney.msg(CHANNEL, STRINGS['GAINS'] % (winner, score))
+            jenni.msg(CHANNEL, STRINGS['GAINS'] % (winner, score))
             self.saveScores (self.players.keys (), winner, score, (datetime.now () - self.startTime).seconds)
         except Exception, e:
             print 'Score error: %s' % e
@@ -482,17 +482,17 @@ class UnoBot:
             self.prescores = sorted (self.prescores, lambda x, y: cmp ((y[1] != '0') and (float (y[2]) / int (y[1])) or 0, (x[1] != '0') and (float (x[2]) / int (x[1])) or 0))
         
         if not self.prescores:
-            jenney.say(STRINGS['NO_SCORES'])
+            jenni.say(STRINGS['NO_SCORES'])
             
-    def showTopCard_demand (self, jenney):
+    def showTopCard_demand (self, jenni):
         if not self.game_on or not self.deck:
             return
-        jenney.reply (STRINGS['TOP_CARD'] % (self.playerOrder[self.currentPlayer], self.renderCards (None, [self.topCard], 1)))
+        jenni.reply (STRINGS['TOP_CARD'] % (self.playerOrder[self.currentPlayer], self.renderCards (None, [self.topCard], 1)))
 
-    def leave (self, jenney, input):
-        self.remove_player(jenney, input.nick)
+    def leave (self, jenni, input):
+        self.remove_player(jenni, input.nick)
 
-    def remove_player (self, jenney, nick):
+    def remove_player (self, jenni, nick):
         if not self.game_on:
             return
 
@@ -511,176 +511,176 @@ class UnoBot:
                 else: 
                     self.currentPlayer -= 1
             
-            jenney.msg(CHANNEL, STRINGS['PLAYER_LEAVES'] % nick)
+            jenni.msg(CHANNEL, STRINGS['PLAYER_LEAVES'] % nick)
             if numPlayers == 2 and self.dealt or numPlayers == 1:
-                jenney.msg (CHANNEL, STRINGS['GAME_STOPPED'])
+                jenni.msg (CHANNEL, STRINGS['GAME_STOPPED'])
                 self.game_on = None
                 self.dealt = None
                 return
             
             if self.game_on == nick:
                 self.game_on = self.playerOrder[0]
-                jenney.msg(CHANNEL, STRINGS['OWNER_CHANGE'] % (nick, self.playerOrder[0]))
+                jenni.msg(CHANNEL, STRINGS['OWNER_CHANGE'] % (nick, self.playerOrder[0]))
 
             if self.dealt:
-                jenney.msg(CHANNEL, STRINGS['TOP_CARD'] % (self.playerOrder[self.currentPlayer], self.renderCards(None, [self.topCard], 1)))
+                jenni.msg(CHANNEL, STRINGS['TOP_CARD'] % (self.playerOrder[self.currentPlayer], self.renderCards(None, [self.topCard], 1)))
 
-    def enablePCE (self, jenney, nick):
+    def enablePCE (self, jenni, nick):
         if not self.players_pce.get(nick, 0):
             self.players_pce.update({ nick : 1})
-            jenney.notice(nick, STRINGS['PLAYER_COLOR_ENABLED'])
+            jenni.notice(nick, STRINGS['PLAYER_COLOR_ENABLED'])
         else:
-            jenney.notice(nick, STRINGS['ENABLED_PCE'] % nick)
+            jenni.notice(nick, STRINGS['ENABLED_PCE'] % nick)
 
-    def disablePCE (self, jenney, nick):
+    def disablePCE (self, jenni, nick):
         if self.players_pce.get(nick, 0):
             self.players_pce.update({ nick : 0})
-            jenney.notice(nick, STRINGS['PLAYER_COLOR_DISABLED'])
+            jenni.notice(nick, STRINGS['PLAYER_COLOR_DISABLED'])
         else:
-            jenney.notice(nick, STRINGS['DISABLED_PCE'] % nick)
+            jenni.notice(nick, STRINGS['DISABLED_PCE'] % nick)
 
-    def isPCEEnabled (self, jenney, nick):
+    def isPCEEnabled (self, jenni, nick):
         if not self.players_pce.get(nick, 0):
-            jenney.notice(nick, STRINGS['DISABLED_PCE'] % nick)
+            jenni.notice(nick, STRINGS['DISABLED_PCE'] % nick)
         else:
-            jenney.notice(nick, STRINGS['ENABLED_PCE'] % nick)
+            jenni.notice(nick, STRINGS['ENABLED_PCE'] % nick)
 
-    def PCEClear (self, jenney, nick):
+    def PCEClear (self, jenni, nick):
         if not self.owners.get(nick, 0):
             self.players_pce.clear()
-            jenney.msg(CHANNEL, STRINGS['PCE_CLEARED'] % nick)
+            jenni.msg(CHANNEL, STRINGS['PCE_CLEARED'] % nick)
 
-    def unostat (self, jenney, input):
+    def unostat (self, jenni, input):
         text = input.group().split()
         
         if len(text) != 3:
-            jenney.say("Invalid input for stats command. Try '.unostats ppg 10' to show the top 10 ranked by points per game. You can also show rankings by percent-wins 'pw'.")
+            jenni.say("Invalid input for stats command. Try '.unostats ppg 10' to show the top 10 ranked by points per game. You can also show rankings by percent-wins 'pw'.")
             return
 
         if text[1] == "pw" or text[1] == "ppg":
             self.rankings(text[1])
-            self.rank_assist(jenney, input, text[2], "SCORE_ROW")
+            self.rank_assist(jenni, input, text[2], "SCORE_ROW")
         
         if not self.prescores:
-            jenney.say(STRINGS['NO_SCORES'])
+            jenni.say(STRINGS['NO_SCORES'])
 
-    def rank_assist (self, jenney, input, nicknum, ranktype):
+    def rank_assist (self, jenni, input, nicknum, ranktype):
         if nicknum.isdigit():
             i = 1
             s = int(nicknum)
             for z in self.prescores[:s]:
-                jenney.msg(input.nick, STRINGS[ranktype] % (i, z[0], z[3], z[1], z[2], float(z[3])/float(z[1]), float(z[2])/float(z[1])*100))
+                jenni.msg(input.nick, STRINGS[ranktype] % (i, z[0], z[3], z[1], z[2], float(z[3])/float(z[1]), float(z[2])/float(z[1])*100))
                 i += 1
         else:
             j = 1
             t = str(nicknum)
             for y in self.prescores:
                 if y[0] == t:
-                    jenney.say(STRINGS[ranktype] % (j, y[0], y[3], y[1], y[2], float(y[3])/float(y[1]), float(y[2])/float(y[1])*100))
+                    jenni.say(STRINGS[ranktype] % (j, y[0], y[3], y[1], y[2], float(y[3])/float(y[1]), float(y[2])/float(y[1])*100))
                 j += 1
             
 unobot = UnoBot ()
 
-def uno(jenney, input):
-    unobot.start (jenney, input.nick)
+def uno(jenni, input):
+    unobot.start (jenni, input.nick)
 uno.commands = ['uno']
 uno.priority = 'low'
 
-def unostop(jenney, input):
-    unobot.stop (jenney, input)
+def unostop(jenni, input):
+    unobot.stop (jenni, input)
 unostop.commands = ['unostop']
 unostop.priority = 'low'
 
-def join(jenney, input):
-    unobot.join (jenney, input)
+def join(jenni, input):
+    unobot.join (jenni, input)
 join.rule = '^join$'
 join.priority = 'low'
 
-def deal(jenney, input):
-    unobot.deal (jenney, input)
+def deal(jenni, input):
+    unobot.deal (jenni, input)
 deal.commands = ['deal']
 deal.priority = 'low'
 
-def play(jenney, input):
-    unobot.play (jenney, input)
+def play(jenni, input):
+    unobot.play (jenni, input)
 play.commands = ['play', 'p']
 play.priority = 'low'
 
-def draw(jenney, input):
-    unobot.draw (jenney, input)
+def draw(jenni, input):
+    unobot.draw (jenni, input)
 draw.commands = ['draw', 'd']
 draw.priority = 'low'
 
-def passs(jenney, input):
-    unobot.passs (jenney, input)
+def passs(jenni, input):
+    unobot.passs (jenni, input)
 passs.commands = ['pass', 'pa']
 passs.priority = 'low'
 
-def unotop10 (jenney, input):
-    unobot.top10 (jenney, input)
+def unotop10 (jenni, input):
+    unobot.top10 (jenni, input)
 unotop10.commands = ['unotop10']
 unotop10.priority = 'low'
 
-def show_user_cards (jenney, input):
-    unobot.showCards (jenney, input.nick)
+def show_user_cards (jenni, input):
+    unobot.showCards (jenni, input.nick)
 show_user_cards.commands = ['cards']
 show_user_cards.priority = 'low'
 
-def top_card (jenney, input):
-    unobot.showTopCard_demand(jenney)
+def top_card (jenni, input):
+    unobot.showTopCard_demand(jenni)
 top_card.commands = ['top']
 top_card.priority = 'low'
 
-def leave (jenney, input):
-    unobot.leave(jenney, input)
+def leave (jenni, input):
+    unobot.leave(jenni, input)
 leave.commands = ['leave']
 leave.priority = 'low'
 
-def remove_on_part (jenney, input):
-    unobot.remove_player(jenney, input.nick)
+def remove_on_part (jenni, input):
+    unobot.remove_player(jenni, input.nick)
 remove_on_part.event = 'PART'
 remove_on_part.rule = '.*'
 remove_on_part.priority = 'low'
 
-def remove_on_quit (jenney, input):
-    unobot.remove_player(jenney, input.nick)
+def remove_on_quit (jenni, input):
+    unobot.remove_player(jenni, input.nick)
 remove_on_quit.event = 'QUIT'
 remove_on_quit.rule = '.*'
 remove_on_quit.priority = 'low'
 
-def remove_on_nickchg (jenney, input):
-    unobot.remove_player(jenney, input.nick)
+def remove_on_nickchg (jenni, input):
+    unobot.remove_player(jenni, input.nick)
 remove_on_nickchg.event = 'NICK'
 remove_on_nickchg.rule = '.*'
 remove_on_nickchg.priority = 'low'
 
-def unostats (jenney, input):
-    unobot.unostat (jenney, input)
+def unostats (jenni, input):
+    unobot.unostat (jenni, input)
 unostats.commands = ['unostats']
 unostats.priority = 'low'
 
-def uno_help (jenney, input):
-    jenney.reply("For rules, examples, and getting started: http://j.mp/ekfaww")
+def uno_help (jenni, input):
+    jenni.reply("For rules, examples, and getting started: http://j.mp/ekfaww")
 uno_help.commands = ['uno-help']
 uno_help.priority = 'low'
 
-def uno_pce_on (jenney, input):
-    unobot.enablePCE(jenney, input.nick)
+def uno_pce_on (jenni, input):
+    unobot.enablePCE(jenni, input.nick)
 uno_pce_on.commands = ['pce-on']
 uno_pce_on.priority = 'low'
 
-def uno_pce_off (jenney, input):
-    unobot.disablePCE(jenney, input.nick)
+def uno_pce_off (jenni, input):
+    unobot.disablePCE(jenni, input.nick)
 uno_pce_off.commands = ['pce-off']
 uno_pce_off.priority = 'low'
 
-def uno_ispce (jenney, input):
-    unobot.isPCEEnabled(jenney, input.nick)
+def uno_ispce (jenni, input):
+    unobot.isPCEEnabled(jenni, input.nick)
 uno_ispce.commands = ['pce']
 uno_ispce.priority = 'low'
 
-def uno_pce_clear (jenney, input):
-    unobot.PCEClear(jenney, input.nick)
+def uno_pce_clear (jenni, input):
+    unobot.PCEClear(jenni, input.nick)
 uno_pce_clear.commands = ['.pce-clear']
 uno_pce_clear.priority = 'low'
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-wiktionary.py - Jenney Wiktionary Module
+wiktionary.py - Jenni Wiktionary Module
 Copyright 2009, Sean B. Palmer, inamidst.com
 Licensed under the Eiffel Forum License 2.
 
@@ -71,11 +71,11 @@ def format(word, definitions, number=2):
 			result += ', '.join(n)
 	return result.strip(' .,')
 
-def w(jenney, input): 
+def w(jenni, input): 
 	word = input.group(2)
 	etymology, definitions = wiktionary(word)
 	if not definitions: 
-		jenney.say("Couldn't get any definitions for %s." % word)
+		jenni.say("Couldn't get any definitions for %s." % word)
 		return
 
 	result = format(word, definitions)
@@ -86,7 +86,7 @@ def w(jenney, input):
 
 	if len(result) > 300: 
 		result = result[:295] + '[...]'
-	jenney.say(result)
+	jenni.say(result)
 w.commands = ['w']
 w.example = '.w bailiwick'
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-seen.py - Jenney Seen Module
+seen.py - Jenni Seen Module
 Copyright 2008, Sean B. Palmer, inamidst.com
 Licensed under the Eiffel Forum License 2.
 

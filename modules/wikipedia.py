@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-wikipedia.py - Jenney Wikipedia Module
+wikipedia.py - Jenni Wikipedia Module
 Copyright 2008-9, Sean B. Palmer, inamidst.com
 Licensed under the Eiffel Forum License 2.
 
@@ -139,10 +139,10 @@ def wikipedia(term, last=False):
 	term = term.decode('utf-8').encode('utf-8')
 	return sentence + ' - ' + (wikiuri % term)
 
-def wik(jenney, input): 
+def wik(jenni, input): 
 	origterm = input.groups()[1]
 	if not origterm: 
-		return jenney.say('Perhaps you meant ".wik Zen"?')
+		return jenni.say('Perhaps you meant ".wik Zen"?')
 	origterm = origterm.encode('utf-8')
 
 	term = urllib.unquote(origterm)
@@ -152,11 +152,11 @@ def wik(jenney, input):
 	try: result = wikipedia(term)
 	except IOError: 
 		error = "Can't connect to en.wikipedia.org (%s)" % (wikiuri % term)
-		return jenney.say(error)
+		return jenni.say(error)
 
 	if result is not None: 
-		jenney.say(result)
-	else: jenney.say('Can\'t find anything in Wikipedia for "%s".' % origterm)
+		jenni.say(result)
+	else: jenni.say('Can\'t find anything in Wikipedia for "%s".' % origterm)
 
 wik.commands = ['wik']
 wik.priority = 'high'

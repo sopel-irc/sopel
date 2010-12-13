@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding=utf-8
 """
-calc.py - Jenney Calculator Module
+calc.py - Jenni Calculator Module
 Copyright 2008, Sean B. Palmer, inamidst.com
 Licensed under the Eiffel Forum License 2.
 
@@ -27,11 +27,11 @@ subs = [
     ('mbps', '(megabits / second)')
 ]
 
-def calc(jenney, input): 
+def calc(jenni, input): 
     """Use the Frink online calculator."""
     q = input.group(2)
     if not q: 
-        return jenney.say('0?')
+        return jenni.say('0?')
 
     query = q[:]
     for a, b in subs: 
@@ -61,13 +61,13 @@ def calc(jenney, input):
         elif ' in ' in q: 
             result += ' ' + q.split(' in ', 1)[1]
 
-        jenney.say(q + ' = ' + result[:350])
-    else: jenney.reply("Sorry, can't calculate that.")
-    jenney.say('Note that .calc is deprecated, consider using .c')
+        jenni.say(q + ' = ' + result[:350])
+    else: jenni.reply("Sorry, can't calculate that.")
+    jenni.say('Note that .calc is deprecated, consider using .c')
 calc.commands = ['calc']
 calc.example = '.calc 5 + 3'
 
-def c(jenney, input): 
+def c(jenni, input): 
     """Google calculator."""
     q = input.group(2).encode('utf-8')
     q = q.replace('\xcf\x95', 'phi') # utf-8 U+03D5
@@ -87,28 +87,28 @@ def c(jenney, input):
     answer = escape(answer)
     lhs = escape(lhs)
     if lhs and answer:
-        jenney.say(lhs + " = " + answer)
+        jenni.say(lhs + " = " + answer)
     else:
-        jenney.say('Sorry, no result.')
+        jenni.say('Sorry, no result.')
 c.commands = ['c']
 c.example = '.c 5 + 3'
 
-def py(jenney, input): 
+def py(jenni, input): 
     query = input.group(2)
     uri = 'http://tumbolia.appspot.com/py/'
     answer = web.get(uri + web.urllib.quote(query))
     if answer: 
-        jenney.say(answer)
-    else: jenney.reply('Sorry, no result.')
+        jenni.say(answer)
+    else: jenni.reply('Sorry, no result.')
 py.commands = ['py']
 
-def wa(jenney, input): 
+def wa(jenni, input): 
     query = input.group(2)
     uri = 'http://tumbolia.appspot.com/wa/'
     answer = web.get(uri + web.urllib.quote(query))
     if answer: 
-        jenney.say(answer)
-    else: jenney.reply('Sorry, no result.')
+        jenni.say(answer)
+    else: jenni.reply('Sorry, no result.')
 wa.commands = ['wa']
 
 if __name__ == '__main__': 

@@ -1,11 +1,11 @@
 Installation &c.
 
-1) Run ./jenney - this creates a default config file
+1) Run ./jenni - this creates a default config file
 2) Edit ~/.jenney/default.py
-3) Run ./jenney - this now runs jenney with your settings
+3) Run ./jenni - this now runs jenney with your settings
 
 Enjoy!
 
 -- 
 Sean B. Palmer, http://inamidst.com/sbp/
-forked by Michael S. Yanovich, https://github.com/myano/jenney/
+forked by Michael S. Yanovich, https://github.com/myano/jenni/

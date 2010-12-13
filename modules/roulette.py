@@ -29,37 +29,37 @@ ROULETTE_TMP = {
     'LAST-ACTIVITY' : None,
 }
 
-def roulette (jenney, input):
+def roulette (jenni, input):
     global ROULETTE_SETTINGS, ROULETTE_STRINGS, ROULETTE_TMP
     if ROULETTE_TMP['NUMBER'] is None:
         ROULETTE_TMP['NUMBER'] = random.randint(0,ROULETTE_SETTINGS['MAX_RANGE'])
-        jenney.say(ROULETTE_STRINGS['TICK'])
+        jenni.say(ROULETTE_STRINGS['TICK'])
         return
     if ROULETTE_TMP['LAST-PLAYER'] == input.nick:
         return
     ROULETTE_TMP['LAST-ACTIVITY'] = datetime.now()
     ROULETTE_TMP['LAST-PLAYER'] = input.nick
     if ROULETTE_TMP['NUMBER'] == random.randint(0,ROULETTE_SETTINGS['MAX_RANGE']):
-        jenney.write(['KICK', '%s %s :%s' % (input.sender, input.nick, ROULETTE_STRINGS['KICK_REASON'])])
+        jenni.write(['KICK', '%s %s :%s' % (input.sender, input.nick, ROULETTE_STRINGS['KICK_REASON'])])
         ROULETTE_TMP['LAST-PLAYER'] = None
         ROULETTE_TMP['NUMBER'] = None
         ROULETTE_TMP['LAST-ACTIVITY'] = None
     else:
-        jenney.say(ROULETTE_STRINGS['TICK'])
+        jenni.say(ROULETTE_STRINGS['TICK'])
 roulette.commands = ['roulette']
 roulette.priority = 'low'
 
-def rouletteStop (jenney, input):
+def rouletteStop (jenni, input):
     global ROULETTE_TMP, ROULETTE_STRINGS
     if ROULETTE_TMP['LAST-PLAYER'] is None:
         return
     if datetime.now() - ROULETTE_TMP['LAST-ACTIVITY'] > ROULETTE_TMP['TIMEOUT']:
-        jenney.say(ROULETTE_STRINGS['GAME_END'])
+        jenni.say(ROULETTE_STRINGS['GAME_END'])
         ROULETTE_TMP['LAST-ACTIVITY'] = None
         ROULETTE_TMP['LAST-PLAYER'] = None
         ROULETTE_TMP['NUMBER'] = None
     else:
-        jenney.say(ROULETTE_STRINGS['GAME_END_FAIL'] % (input.nick, ROULETTE_TMP['TIMEOUT'].seconds - (datetime.now() - ROULETTE_TMP['LAST-ACTIVITY']).seconds))
+        jenni.say(ROULETTE_STRINGS['GAME_END_FAIL'] % (input.nick, ROULETTE_TMP['TIMEOUT'].seconds - (datetime.now() - ROULETTE_TMP['LAST-ACTIVITY']).seconds))
 rouletteStop.commands = ['roulette-stop']
 roulette.priority = 'low'
 

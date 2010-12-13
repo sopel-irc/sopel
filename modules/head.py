@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-head.py - Jenney HTTP Metadata Utilities
+head.py - Jenni HTTP Metadata Utilities
 Copyright 2008, Sean B. Palmer, inamidst.com
 Licensed under the Eiffel Forum License 2.
 
@@ -12,7 +12,7 @@ from htmlentitydefs import name2codepoint
 import web
 from tools import deprecated
 
-def head(jenney, input): 
+def head(jenni, input): 
 	"""Provide HTTP HEAD information."""
 	uri = input.group(2)
 	uri = (uri or '').encode('utf-8')
@@ -20,21 +20,21 @@ def head(jenney, input):
 		uri, header = uri.rsplit(' ', 1)
 	else: uri, header = uri, None
 
-	if not uri and hasattr(jenney, 'last_seen_uri'): 
-		try: uri = jenney.last_seen_uri[input.sender]
-		except KeyError: return jenney.say('?')
+	if not uri and hasattr(jenni, 'last_seen_uri'): 
+		try: uri = jenni.last_seen_uri[input.sender]
+		except KeyError: return jenni.say('?')
 
 	if not uri.startswith('htt'): 
 		uri = 'http://' + uri
 
 	try: info = web.head(uri)
-	except IOError: return jenney.say("Can't connect to %s" % uri)
-	except httplib.InvalidURL: return jenney.say("Not a valid URI, sorry.")
+	except IOError: return jenni.say("Can't connect to %s" % uri)
+	except httplib.InvalidURL: return jenni.say("Not a valid URI, sorry.")
 
 	if not isinstance(info, list): 
 		try: info = dict(info)
 		except TypeError: 
-			return jenney.reply('Try .head http://example.org/ [optional header]')
+			return jenni.reply('Try .head http://example.org/ [optional header]')
 		info['Status'] = '200'
 	else: 
 		newInfo = dict(info[0])
@@ -53,14 +53,14 @@ def head(jenney, input):
 			data.append(time.strftime('%Y-%m-%d %H:%M:%S UTC', modified))
 		if info.has_key('content-length'): 
 			data.append(info['content-length'] + ' bytes')
-		jenney.reply(', '.join(data))
+		jenni.reply(', '.join(data))
 	else: 
 		headerlower = header.lower()
 		if info.has_key(headerlower): 
-			jenney.say(header + ': ' + info.get(headerlower))
+			jenni.say(header + ': ' + info.get(headerlower))
 		else: 
 			msg = 'There was no %s header in the response.' % header
-			jenney.say(msg)
+			jenni.say(msg)
 head.commands = ['head']
 head.example = '.head http://www.w3.org/'
 
@@ -159,11 +159,11 @@ def f_title(self, origin, match, args):
 	else: self.msg(origin.sender, origin.nick + ': No title found')
 #f_title.commands = ['title']
 
-def noteuri(jenney, input): 
+def noteuri(jenni, input): 
 	uri = input.group(1).encode('utf-8')
-	if not hasattr(jenney.bot, 'last_seen_uri'): 
-		jenney.bot.last_seen_uri = {}
-	jenney.bot.last_seen_uri[input.sender] = uri
+	if not hasattr(jenni.bot, 'last_seen_uri'): 
+		jenni.bot.last_seen_uri = {}
+	jenni.bot.last_seen_uri[input.sender] = uri
 noteuri.rule = r'.*(http://[^<> "\x01]+)[,.]?'
 noteuri.priority = 'low'
 
