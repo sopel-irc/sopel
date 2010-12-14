@@ -33,6 +33,7 @@ def roulette (jenni, input):
     global ROULETTE_SETTINGS, ROULETTE_STRINGS, ROULETTE_TMP
     if ROULETTE_TMP['NUMBER'] is None:
         ROULETTE_TMP['NUMBER'] = random.randint(0,ROULETTE_SETTINGS['MAX_RANGE'])
+        ROULETTE_TMP['LAST-PLAYER'] = input.nick
         jenni.say(ROULETTE_STRINGS['TICK'])
         return
     if ROULETTE_TMP['LAST-PLAYER'] == input.nick:
