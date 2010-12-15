@@ -37,7 +37,7 @@ random.seed()
 
 # Remember to change these 3 lines or nothing will work
 CHANNEL = '##uno'
-SCOREFILE = "/home/yanovich/phenny/unoscores.txt"
+SCOREFILE = "/home/yanovich/jenni/unoscores.txt"
 # Only the owner (starter of the game) can call .unostop to stop the game.
 # But this calls for a way to allow others to stop it after the game has been idle for a while.
 # After this set time, anyone can stop the game via .unostop
@@ -481,9 +481,6 @@ class UnoBot:
         elif rank_type == "pw":
             self.prescores = sorted (self.prescores, lambda x, y: cmp ((y[1] != '0') and (float (y[2]) / int (y[1])) or 0, (x[1] != '0') and (float (x[2]) / int (x[1])) or 0))
         
-        if not self.prescores:
-            jenni.say(STRINGS['NO_SCORES'])
-            
     def showTopCard_demand (self, jenni):
         if not self.game_on or not self.deck:
             return
