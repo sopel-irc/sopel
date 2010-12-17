@@ -346,7 +346,7 @@ class UnoBot:
         for c in sorted (cards):
             if c in ['W', 'WD4']:
                 sp = ''
-                if not is_chan:
+                if not is_chan and self.players_pce.get(nick, 0):
                     sp = ' '
                 ret.append ('\x0300,01[' + c + ']' + sp)
                 continue
