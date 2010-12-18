@@ -7,14 +7,23 @@ This module will record all URLs to bitly via an api key and account.
 It also automatically displays the "title" of any URL pasted into the channel.
 """
 
-# Change the bitly_api_key to use your api key and to have your 
-# own public timeline via bitly
-bitly_api_key = "R_ff9b3a798d6e5ac38efc7543a72ad4ce"
-bitly_user = "phennyosu"
-
 import re, urllib2
 from htmlentitydefs import name2codepoint
 import web
+
+# Place a file in your ~/jenni/ folder named, bitly.txt
+# and inside this file place your API key followed by a ','
+# and then your username. For example, the only line in that 
+# file should look like this:
+# R_d67798xkjc876x8c7kjc87,myusername
+try:
+    file = open("bitly.txt", "r")
+    key = file.read()
+    key = key.split(",")
+    bitly_api_key = str(key[0].lstrip().rstrip())
+    bitly_user = str(key[1].lstrip().rstrip())
+except:
+    print "ERROR: No bitly.txt found."
 
 url_finder = re.compile(r'((http|https|ftp)(://\S+))')
 r_entity = re.compile(r'&[A-Za-z0-9#]+;')
