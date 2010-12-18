@@ -22,6 +22,7 @@ try:
     key = key.split(",")
     bitly_api_key = str(key[0].lstrip().rstrip())
     bitly_user = str(key[1].lstrip().rstrip())
+    file.close()
 except:
     print "ERROR: No bitly.txt found."
 
