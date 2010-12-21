@@ -87,7 +87,7 @@ f_really.priority = 'high'
 
 def wb(jenni, input):
 	jenni.reply("Thank you!")
-wb.rule = '(wb).*(jenni|jenni_osu)$'
+wb.rule = '^(wb|welcome\sback).*$nickname\s'
 
 def bru (jenni, input):
     #if input.sender != "osu_osc":
