@@ -16,6 +16,7 @@ import web
 # and then your username. For example, the only line in that 
 # file should look like this:
 # R_d67798xkjc876x8c7kjc87,myusername
+bitly_loaded = 0
 try:
     file = open("bitly.txt", "r")
     key = file.read()
@@ -23,6 +24,7 @@ try:
     bitly_api_key = str(key[0].lstrip().rstrip())
     bitly_user = str(key[1].lstrip().rstrip())
     file.close()
+    bitly_loaded = 1
 except:
     print "ERROR: No bitly.txt found."
 
@@ -111,6 +113,7 @@ def find_title(url):
 
 def short(text):
     bitlys = [ ]
+    if not bitly_loaded: return []
     try:
         a = re.findall(url_finder, text)
         k = len(a)
@@ -162,8 +165,9 @@ def get_results(text):
         except: 
             page_title = None # if it can't access the site fail silently
         
-        bitly = short(url)
-        display.append([page_title, url, bitly[0][1]])
+        if bitly_loaded: bitly = short(url)
+        else: bitly = url
+        display.append([page_title, url, bitly])
         i += 1
     return display
 
