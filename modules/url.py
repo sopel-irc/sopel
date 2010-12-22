@@ -166,7 +166,7 @@ def get_results(text):
             page_title = None # if it can't access the site fail silently
         
         if bitly_loaded: bitly = short(url)
-        else: bitly = url
+        else: bitly = [[url,url]]
         display.append([page_title, url, bitly])
         i += 1
     return display
