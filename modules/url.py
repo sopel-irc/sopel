@@ -16,6 +16,13 @@ import web
 # and then your username. For example, the only line in that 
 # file should look like this:
 # R_d67798xkjc876x8c7kjc87,myusername
+
+# this variable is to determine when to use bitly. If the URL is more
+# than this length, it'll display a bitly URL instead. To disable bit.ly, put None
+# even if it's set to None, triggering .bitly command will still work!
+BITLY_TRIGGER_LEN = 50
+
+# do not edit below this line unless you know what you're doing
 bitly_loaded = 0
 try:
     file = open("bitly.txt", "r")
@@ -135,6 +142,7 @@ def short(text):
         return
 
 def generateBitLy (jenni, input):
+    if not bitly_loaded: return
     bitly = short(input)
     idx = 7
     for b in bitly:
@@ -144,6 +152,10 @@ generateBitLy.priority = 'high'
 
 def displayBitLy (jenni, url, shorten):
     if url is None or shorten is None: return
+    u = getTLD(url)
+    jenni.say('%s  -  %s' % (u, shorten))
+
+def getTLD (url):
     idx = 7
     if url.startswith('https://'): idx = 8
     elif url.startswith('ftp://'): idx = 6
@@ -151,7 +163,10 @@ def displayBitLy (jenni, url, shorten):
     f = u.find('/')
     if f == -1: u = url
     else: u = url[0:idx] + u[0:f]
-    jenni.say('%s  -  %s' % (u, shorten))
+    return u
+
+def doUseBitLy (url):
+    return bitly_loaded and BITLY_TRIGGER_LEN is not None and len(url) > BITLY_TRIGGER_LEN
 
 def get_results(text):
     a = re.findall(url_finder, text)
@@ -165,8 +180,10 @@ def get_results(text):
         except: 
             page_title = None # if it can't access the site fail silently
         
-        if bitly_loaded: bitly = short(url)
-        else: bitly = [[url,url]]
+        if bitly_loaded and page_title is not None:
+            bitly = short(url)
+            bitly = bitly[0][1]
+        else: bitly = url
         display.append([page_title, url, bitly])
         i += 1
     return display
@@ -179,10 +196,11 @@ def show_title_auto (jenni, input):
     if results is None: return
 
     for r in results:
+        useBitLy = doUseBitLy(r[1])
         if r[0] is None:
-            if len(r[1]) > 50: displayBitLy(jenni, r[1], r[2])
+            if useBitLy: displayBitLy(jenni, r[1], r[2])
             continue
-        if len(r[1]) > 50: r[1] = r[2]
+        if useBitLy: r[1] = r[2]
         jenni.say('[ %s ] - %s' % (r[0], r[1]))
 show_title_auto.rule = '.*((http|https)(://\S+)).*'
 show_title_auto.priority = 'high'
@@ -195,6 +213,7 @@ def show_title_demand (jenni, input):
     
     for r in results:
         if r[0] is None: continue
+        if doUseBitLy(r[1]): r[1] = r[2]
         jenni.say('[ %s ] - %s' % (r[0], r[1]))
 show_title_demand.commands = ['title']
 show_title_demand.priority = 'high'
