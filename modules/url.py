@@ -112,8 +112,8 @@ def find_title(url):
         return title
 
 def short(text):
-    bitlys = [ ]
     if not bitly_loaded: return []
+    bitlys = [ ]
     try:
         a = re.findall(url_finder, text)
         k = len(a)
