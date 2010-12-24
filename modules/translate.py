@@ -46,6 +46,8 @@ def tr(jenni, context):
 
     if input != output: 
         msg = translate(phrase, input, output)
+        if isinstance(msg, str):
+            msg = msg.decode('utf-8')
         if msg: 
             msg = web.decode(msg) # msg.replace('&#39;', "'")
             msg = '"%s" (%s to %s, translate.google.com)' % (msg, input, output)
