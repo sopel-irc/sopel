@@ -200,8 +200,8 @@ def show_title_auto (jenni, input):
         if r[0] is None:
             if useBitLy: displayBitLy(jenni, r[1], r[2])
             continue
-        if useBitLy: r[1] = r[2]
-        jenni.say('[ %s ] - %s' % (r[0], getTLD(r[1])))
+        if useBitLy: r[1] = getTLD(r[2])
+        jenni.say('[ %s ] - %s' % (r[0], r[1]))
 show_title_auto.rule = '.*((http|https)(://\S+)).*'
 show_title_auto.priority = 'high'
 
@@ -213,8 +213,8 @@ def show_title_demand (jenni, input):
     
     for r in results:
         if r[0] is None: continue
-        if doUseBitLy(r[1]): r[1] = r[2]
-        jenni.say('[ %s ] - %s' % (r[0], getTLD(r[1])))
+        if doUseBitLy(r[1]): r[1] = getTLD(r[2])
+        jenni.say('[ %s ] - %s' % (r[0], r[1]))
 show_title_demand.commands = ['title']
 show_title_demand.priority = 'high'
 
