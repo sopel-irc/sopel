@@ -37,6 +37,7 @@ except:
 
 url_finder = re.compile(r'((http|https|ftp)(://\S+))')
 r_entity = re.compile(r'&[A-Za-z0-9#]+;')
+INVALID_WEBSITE = 0x01
 
 def find_title(url):
     uri = url
@@ -80,7 +81,7 @@ def find_title(url):
     regex = re.compile('[\'"]<title>[\'"]', re.IGNORECASE)
     content = regex.sub('',content)
     start = content.find('<title>')
-    if start == -1: return
+    if start == -1: return INVALID_WEBSITE
     end = content.find('</title>', start)
     if end == -1: return
     content = content[start+7:end]
@@ -180,7 +181,7 @@ def get_results(text):
         except: 
             page_title = None # if it can't access the site fail silently
         
-        if bitly_loaded and page_title is not None:
+        if bitly_loaded and (page_title is not None or page_title == INVALID_WEBSITE):
             bitly = short(url)
             bitly = bitly[0][1]
         else: bitly = url
