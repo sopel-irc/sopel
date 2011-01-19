@@ -590,7 +590,7 @@ unostop.priority = 'low'
 
 def join(jenni, input):
     unobot.join (jenni, input)
-join.rule = '^join$'
+join.rule = '^(join|.join)$'
 join.priority = 'low'
 
 def deal(jenni, input):
@@ -605,7 +605,7 @@ play.priority = 'low'
 
 def draw(jenni, input):
     unobot.draw (jenni, input)
-draw.commands = ['draw', 'd']
+draw.commands = ['draw', 'd', 'dr']
 draw.priority = 'low'
 
 def passs(jenni, input):
