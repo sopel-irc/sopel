@@ -53,15 +53,15 @@ state.priority = 'high'
 
 def hello_join(jenni, input):
     well = random.random()
-    if 0 < well < 0.02:
+    if 0 < well < 0.01:
         if input.nick == jenni.config.nick: 
             return
         random_greeting = random.choice(greeting)
         punctuation = random.choice(('!', ' '))
         jenni.say(random_greeting + ' ' + input.nick + punctuation)
-hello_join.event = 'JOIN'
-hello_join.rule = '.*'
-hello_join.priority = 'medium'
+#hello_join.event = 'JOIN'
+#hello_join.rule = '.*'
+#hello_join.priority = 'medium'
 
 def goodbye(jenni, input):
     byemsg = random.choice(('Bye', 'Goodbye', 'Seeya', 'Auf Wiedersehen', 'Au revoir', 'Ttyl'))
