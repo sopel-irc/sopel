@@ -10,82 +10,42 @@ This module tries to make jenni appear more "affection."
 import random, time
 greeting = ['Hi', 'Hey', 'Hello', 'Hallo', 'Welcome']
 # By increasing the variable 'limit' you are also increasing how annoying jenni will be.
-limit = 0.05
+limit = 0.001
 
-def f_whoa(jenni, input):
-	randnum = random.random()
-	if 0 < randnum < limit:
-		respond = ['what?', 'huh?', 'please explain...', 'I\'m confused.']
-		randtime = random.uniform(10,45)
-		time.sleep(randtime)
-		jenni.say(random.choice(respond))
-#f_whoa.rule = '(whoa.*)$'
-#f_whoa.priority = 'high'
-
-def f_lol(jenni, input):
+def f_lol (jenni, input):
 	randnum = random.random()
 	if 0 < randnum < limit:
 		respond = ['haha', 'lol', 'rofl']
-		randtime = random.uniform(0,9)
+		randtime = random.uniform(0,5)
 		time.sleep(randtime)
 		jenni.say(random.choice(respond))
 f_lol.rule = '(haha!?|lol!?)$'
 f_lol.priority = 'high'
 
-def f_bye(jenni, input):
+def f_bye (jenni, input):
 	respond = ['bye!', 'bye', 'see ya', 'see ya!']
 	jenni.say(random.choice(respond))
 f_bye.rule = '(g2g!?|bye!?)$'
 f_bye.priority = 'high'
 
-def f_argh(jenni, input):
-	randnum = random.random()
-	if 0 < randnum < limit:
-		respond = ['I feel your frustration.', 'I\'m sorry.']
-		randtime = random.uniform(10,45)
-		time.sleep(randtime)
-		jenni.say(random.choice(respond))
-#f_argh.rule = '(argh.*)$'
-#f_argh.priority = 'high'
-
-def f_heh(jenni, input):
+def f_heh (jenni, input):
 	randnum = random.random()
 	if 0 < randnum < limit:
 		respond = ['hm']
-		randtime = random.uniform(0,7)
+		randtime = random.uniform(0,5)
 		time.sleep(randtime)
 		jenni.say(random.choice(respond))
 f_heh.rule = '(heh!?)$'
 f_heh.priority = 'high'
 
-def f_awesomeness(jenni, input):
-	randnum = random.random()
-	if 0 < randnum < limit:
-		respond = ['cool', 'awesome', 'sweet', 'neat']
-		randtime = random.uniform(0,9)
-		time.sleep(randtime)
-		jenni.say(random.choice(respond))
-#f_awesomeness.rule = '(cool!?|awesome!?|sweet!?)$'
-#f_awesomeness.priority = 'high'
-
-def f_confusion(jenni, input):
-	randnum = random.random()
-	if 0 < randnum < limit:
-		respond = ['I don\'t get it either.', 'I don\'t get it.', 'Could you elaborate?']
-		randtime = random.uniform(10,45)
-		time.sleep(randtime)
-		jenni.say(random.choice(respond))
-#f_confusion.rule = '(huh.*)$'
-#f_confusion.priority = 'high'
-
-def f_really(jenni, input):
+def f_really (jenni, input):
 	randtime = random.uniform(10,45)
 	time.sleep(randtime)
 	jenni.say(str(input.nick) + ": " + "Yes, really.")
 f_really.rule = r'(?i)$nickname\:\s+(really!?)'
 f_really.priority = 'high'
 
-def wb(jenni, input):
+def wb (jenni, input):
 	jenni.reply("Thank you!")
 wb.rule = '^(wb|welcome\sback).*$nickname\s'
 
