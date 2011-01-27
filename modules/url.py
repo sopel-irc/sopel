@@ -15,7 +15,7 @@ import web
 # and inside this file place your API key followed by a ','
 # and then your username. For example, the only line in that 
 # file should look like this:
-# R_d67798xkjc876x8c7kjc87,myusername
+# R_d67798xkjc87sdx6x8c7kjc87,myusername
 
 # this variable is to determine when to use bitly. If the URL is more
 # than this length, it'll display a bitly URL instead. To disable bit.ly, put None
