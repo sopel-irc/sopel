@@ -40,6 +40,9 @@ r_entity = re.compile(r'&[A-Za-z0-9#]+;')
 INVALID_WEBSITE = 0x01
 
 def find_title(url):
+    """
+    This finds the title when provided with a string of a URL. It returns "
+    """
     uri = url
 
     if not re.search('^((https?)|(ftp))://', uri):
@@ -48,7 +51,7 @@ def find_title(url):
     redirects = 0
     while True:
         req = urllib2.Request(uri, headers={'Accept':'text/html'})
-        req.add_header('User-Agent', 'OpenAnything/1.0 +http://diveintopython.org/')
+        req.add_header('User-Agent', 'OpenAnything/1.0')
         u = urllib2.urlopen(req)
         info = u.info()
         u.close()
@@ -120,6 +123,11 @@ def find_title(url):
         return title
 
 def short(text):
+    """
+    This function creates a bitly url for each url in the provided "text" string.
+    The return type is a list.
+    """
+
     if not bitly_loaded: return []
     bitlys = [ ]
     try:
@@ -180,8 +188,7 @@ def get_results(text):
             page_title = find_title(url)
         except: 
             page_title = None # if it can't access the site fail silently
-        
-        if bitly_loaded and (page_title is not None or page_title == INVALID_WEBSITE):
+        if bitly_loaded: # and (page_title is not None or page_title == INVALID_WEBSITE):
             bitly = short(url)
             bitly = bitly[0][1]
         else: bitly = url
