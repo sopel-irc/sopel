@@ -51,7 +51,7 @@ def find_title(url):
     redirects = 0
     while True:
         req = urllib2.Request(uri, headers={'Accept':'text/html'})
-        req.add_header('User-Agent', 'OpenAnything/1.0')
+        req.add_header('User-Agent', 'Mozilla/5.0 (Windows; U; Windows NT 6.0; en-US; rv:1.9.2.8) Gecko/20100722')
         u = urllib2.urlopen(req)
         info = u.info()
         u.close()
