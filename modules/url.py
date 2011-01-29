@@ -118,7 +118,16 @@ def find_title(url):
 
     title = title.replace('\n', '')
     title = title.replace('\r', '')
-    
+
+    def remove_spaces(x):
+        if "  " in x:
+            x = x.replace("  ", " ")
+            return remove_spaces(x)
+        else:
+            return x
+
+    title = remove_spaces (title)
+
     if title:
         return title
 
