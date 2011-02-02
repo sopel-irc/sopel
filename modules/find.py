@@ -47,7 +47,6 @@ def findandreplace(jenni, input):
     try:
         replacement = list_pattern[2]
     except:
-        replacement = ""
         return
     current_list = search_dict[input.nick]
     phrase = unicode(current_list[-1])
