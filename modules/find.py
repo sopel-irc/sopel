@@ -47,16 +47,14 @@ def findandreplace(jenni, input):
     try:
         replacement = list_pattern[2]
     except:
+        replacement = ""
         return
-    replacement = replacement.replace("\\", "\\\\")
     current_list = search_dict[input.nick]
     phrase = unicode(current_list[-1])
     
     if text.endswith("/g"):
-        #new_phrase = unicode(re.sub(pattern, replacement, phrase))
         new_phrase = freplace(current_list, pattern, replacement, phrase, 0)
     else:
-        #new_phrase = unicode(re.sub(pattern, replacement, phrase, 1))
         new_phrase = freplace(current_list, pattern, replacement, phrase, 1)
     
     # Prevents abuse; apparently there is an RFC spec about how servers handle
@@ -75,6 +73,7 @@ def findandreplace(jenni, input):
 
     # output
     if new_phrase:
+        new_phrase = new_phrase.replace("\\", "\\\\")
         if "ACTION" in new_phrase:
             new_phrase = new_phrase.replace("ACTION", "")
             new_phrase = new_phrase[1:-1]
@@ -108,7 +107,6 @@ def meant (jenni, input):
     global exp
 
     text = unicode(input.group())
-    #text = text.split(": ")
     text = text.split(":",1)
     
     user = text[0]
@@ -134,7 +132,6 @@ def meant (jenni, input):
         current_list = search_dict[user]
     except:
         return
-    replacement = replacement.replace("\\", "\\\\")
     phrase = unicode(current_list[-1])
 
     if matching.endswith("/g"):
@@ -158,15 +155,12 @@ def meant (jenni, input):
 
     # output
     if new_phrase:
+        new_phrase = new_phrase.replace("\\", "\\\\")
         phrase = "%s thinks %s \x0300,01meant:\x03 %s" % (input.nick, user, new_phrase)
         jenni.say(phrase)
 
 meant.rule = r'.*\:\s.*'
 meant.priority = 'high'
 
-def printable (str):
-    from curses.ascii import isprint
-    return ''.join([char for char in str if isprint(char)])
-    
 if __name__ == '__main__':
     print __doc__.strip()
