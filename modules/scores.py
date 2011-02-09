@@ -63,7 +63,8 @@ def rmpoint(jenni, input):
                 scores_dict[nick][1] += 1
                 scores_file = open("scores.txt", "w")
                 pickle.dump(scores_dict, scores_file)
-                jenni.say(nick + ": " + str(scores_dict[nick]))
+                msg = "%s: +%d/-%d, %d" % (nick, scores_dict[nick][0], scores_dict[nick][1], scores_dict[nick][0] - scores_dict[nick][1])
+                jenni.say(msg)
                 scores_file.close()
             else:
                 jenni.reply("I'm sorry, but I'm afraid I can't do that!")
