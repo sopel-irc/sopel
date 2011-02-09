@@ -1,6 +1,6 @@
 """
 url.py - Jenni Bitly Module
-Author: Michael S. Yanovich, http://opensource.osu.edu/~yanovich
+Author: Michael Yanovich, http://yanovich.net/
 About: http://inamidst.com/phenny/
 
 This module will record all URLs to bitly via an api key and account.
@@ -137,7 +137,7 @@ def short(text):
     The return type is a list.
     """
 
-    if not bitly_loaded: return []
+    if not bitly_loaded: return [ ]
     bitlys = [ ]
     try:
         a = re.findall(url_finder, text)
@@ -207,6 +207,7 @@ def get_results(text):
 
 def show_title_auto (jenni, input):
     if input.startswith('.title ') or input.startswith('.bitly '): return
+    if len(re.findall("\([\d]+\sfiles\sin\s[\d]+\sdirs\)", input)) == 1 or len(re.findall("^jenni\:.*http://bit.ly/[\S]{6}$", input)) >= 1: return
     try:
         results = get_results(input)
     except: return
