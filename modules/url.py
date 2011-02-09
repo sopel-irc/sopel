@@ -207,7 +207,8 @@ def get_results(text):
 
 def show_title_auto (jenni, input):
     if input.startswith('.title ') or input.startswith('.bitly '): return
-    if len(re.findall("\([\d]+\sfiles\sin\s[\d]+\sdirs\)", input)) == 1 or len(re.findall("^jenni\:.*http://bit.ly/[\S]{6}$", input)) >= 1: return
+    regexp = jenni.config.nick + "\:.*\s\-\shttp://bit.ly/[\S]{6}$"
+    if len(re.findall("\([\d]+\sfiles\sin\s[\d]+\sdirs\)", input)) == 1 or len(re.findall(regexp, input)) >= 1: return
     try:
         results = get_results(input)
     except: return
