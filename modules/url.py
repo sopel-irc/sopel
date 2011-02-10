@@ -48,6 +48,9 @@ def find_title(url):
     if not re.search('^((https?)|(ftp))://', uri):
         uri = 'http://' + uri
 
+    if "twitter.com" in uri:
+        uri = uri.replace('#!', '?_escaped_fragment_=')
+
     redirects = 0
     while True:
         req = urllib2.Request(uri, headers={'Accept':'text/html'})
