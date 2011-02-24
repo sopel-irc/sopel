@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-tell.py - Phenny Tell and Ask Module
+tell.py - Jenni Tell and Ask Module
 Copyright 2008, Sean B. Palmer, inamidst.com
 Licensed under the Eiffel Forum License 2.
 

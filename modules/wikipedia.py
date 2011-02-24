@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-wikipedia.py - Phenny Wikipedia Module
+wikipedia.py - Jenni Wikipedia Module
 Copyright 2008-9, Sean B. Palmer, inamidst.com
 Licensed under the Eiffel Forum License 2.
 
