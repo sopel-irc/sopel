@@ -26,6 +26,7 @@ def head(jenni, input):
 
 	if not uri.startswith('htt'): 
 		uri = 'http://' + uri
+    # uri = uri.replace('#!', '?_escaped_fragment_=')
 
 	try: info = web.head(uri)
 	except IOError: return jenni.say("Can't connect to %s" % uri)
@@ -80,6 +81,7 @@ def f_title(self, origin, match, args):
 
 	if not ':' in uri: 
 		uri = 'http://' + uri
+    uri = uri.replace('#!', '?_escaped_fragment_=')
 
 	try: 
 		redirects = 0
