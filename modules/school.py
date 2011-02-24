@@ -21,6 +21,7 @@ r_findtitle = re.compile(r'(?ims)<span\sclass\=\"roster\-name\">[)(\'\,\%\&\:\;\
 r_findreq = re.compile(r'(?ims)\r<br>.*<h3>')
 
 def classes(jenni, input):
+    """ shows classes at OSU  """
     '''
     info = input.group(2)
     info = info.split()

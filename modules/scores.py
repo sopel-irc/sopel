@@ -21,7 +21,7 @@ def addpoint(jenni, input):
 
     nick = input.group(2)
     if nick != None:
-        nick.lstrip().rstrip()
+        nick = nick.lstrip().rstrip()
 
     global scores_dict
     if not nick:
@@ -49,7 +49,7 @@ def rmpoint(jenni, input):
     
     nick = input.group(2)
     if nick != None:
-        nick.lstrip().rstrip()
+        nick = nick.lstrip().rstrip()
 
     global scores_dict
     if not nick:
@@ -98,7 +98,7 @@ def rmuser(jenni, input):
 
     nick = input.group(2)
     if nick != None:
-        nick.lstrip().rstrip()
+        nick = nick.lstrip().rstrip()
 
     global scores_dict
     if nick == "" or nick == None:        
@@ -124,7 +124,7 @@ def setpoint(jenni, input):
 
     info = input.group(2)
     if info != None:
-        info.lstrip().rstrip()
+        info = info.lstrip().rstrip()
 
     global scores_dict
     if not info:

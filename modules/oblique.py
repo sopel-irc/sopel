@@ -30,14 +30,19 @@ def mappings(uri):
 
 def service(jenni, input, command, args): 
     t = o.services[command]
-    template = t.replace('${args}', urllib.quote(args.encode('utf-8')))
-    template = template.replace('${nick}', urllib.quote(input.nick))
-    uri = template.replace('${sender}', urllib.quote(input.sender))
+    template = t.replace('${args}', urllib.quote(args.encode('utf-8'), ''))
+    template = template.replace('${nick}', urllib.quote(input.nick, ''))
+    uri = template.replace('${sender}', urllib.quote(input.sender, ''))
 
+    info = web.head(uri)
+    if isinstance(info, list): 
+        info = info[0]
+    if not 'text/plain' in info.get('content-type', '').lower(): 
+        return jenni.reply("Sorry, the service didn't respond in plain text.")
     bytes = web.get(uri)
     lines = bytes.splitlines()
     if not lines: 
-        return jenni.reply('Sorry, the service is broken.')
+        return jenni.reply("Sorry, the service didn't respond any output.")
     jenni.say(lines[0][:350])
 
 def refresh(jenni): 
@@ -110,4 +115,3 @@ snippet.commands = ['snippet']
 
 if __name__ == '__main__': 
     print __doc__.strip()
-
