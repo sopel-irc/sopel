@@ -7,40 +7,46 @@ Licensed under the Eiffel Forum License 2.
 http://inamidst.com/phenny/
 """
 
+import sys, os.path, time, imp
 import irc
 
 def f_reload(jenni, input): 
-	"""Reloads a module, for use by admins only.""" 
-	if not input.admin: return
+    """Reloads a module, for use by admins only.""" 
+    if not input.admin: return
 
-	name = input.group(2)
-	if name == jenni.config.owner: 
-		return jenni.reply('What?')
+    name = input.group(2)
+    if name == jenni.config.owner: 
+        return jenni.reply('What?')
 
-	if (not name) or (name == '*'): 
-		jenni.setup()
-		return jenni.reply('done')
+    if (not name) or (name == '*'): 
+        jenni.setup()
+        return jenni.reply('done')
 
-	try: module = getattr(__import__('modules.' + name), name)
-	except ImportError: 
-		module = getattr(__import__('opt.' + name), name)
-	reload(module)
-	if hasattr(module, 'setup'): 
-		module.setup(jenni)
+    if not sys.modules.has_key(name): 
+        return jenni.reply('%s: no such module!' % name)
 
-	if hasattr(module, '__file__'): 
-		import os.path, time
-		mtime = os.path.getmtime(module.__file__)
-		modified = time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime(mtime))
-	else: modified = 'unknown'
+    # Thanks to moot for prodding me on this
+    path = sys.modules[name].__file__
+    if path.endswith('.pyc') or path.endswith('.pyo'): 
+        path = path[:-1]
+    if not os.path.isfile(path): 
+        return jenni.reply('Found %s, but not the source file' % name)
 
-	jenni.register(vars(module))
-	jenni.bind_commands()
+    module = imp.load_source(name, path)
+    sys.modules[name] = module
+    if hasattr(module, 'setup'): 
+        module.setup(jenni)
 
-	jenni.reply('%r (version: %s)' % (module, modified))
+    mtime = os.path.getmtime(module.__file__)
+    modified = time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime(mtime))
+
+    jenni.register(vars(module))
+    jenni.bind_commands()
+
+    jenni.reply('%r (version: %s)' % (module, modified))
 f_reload.name = 'reload'
 f_reload.rule = ('$nick', ['reload'], r'(\S+)?')
 f_reload.priority = 'low'
 
 if __name__ == '__main__': 
-	print __doc__.strip()
+    print __doc__.strip()
