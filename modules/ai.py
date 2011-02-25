@@ -141,14 +141,6 @@ def random_resp(jenni, input):
         jenni.reply(strinput[1][1:])
 random_resp.rule = r'(?i)$nickname\:\s+(.*)'
 
-def wat(jenni, input):
-    jenni.say("we are team!")
-wat.rule = r'(?i)(.*)\bwe\s+are\s+team\b(.*)'
-
-def wat2(jenni,input):
-    jenni.say("yes we are!")
-wat2.rule = '(?i).*(we)\s(are)\s(not)\s(team).*'
-
 def yesno(jenni,input):
     rand = random.uniform(0,5)
     text = input.group()
