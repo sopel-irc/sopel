@@ -49,7 +49,7 @@ def create_default_config(fn):
     external = { 
        '#liberal': ['!'], # allow all
        '#conservative': [], # allow none
-       '*': ['py', 'whois', 'glyph'] # default whitelist
+       '*': ['!'] # default whitelist, allow all
     }
 
     # EOF

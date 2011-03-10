@@ -124,7 +124,7 @@ def setpoint(jenni, input):
 
     info = input.group(2)
     if info != None:
-        info = info.lstrip().rstrip().split()[0]
+        info = info.lstrip().rstrip()
 
     global scores_dict
     if not info:
@@ -134,18 +134,18 @@ def setpoint(jenni, input):
         stuff_split = stuff.split()
         if input.admin:
             if len(stuff_split) < 3:
-                jenni.reply("I'm sorry, but I'm afraid I don't understand what you want me to do!")
+                jenni.reply("I'm sorry, but I'm afraid I don't understand what you want me to do!1")
             else:
                 nick = stuff_split[0]
                 try:
                     add = int(stuff_split[1])
                     sub = int(stuff_split[2])
                 except:
-                    jenni.say("I'm sorry, but I'm afraid I don't understand what you want me to do!")
+                    jenni.say("I'm sorry, but I'm afraid I don't understand what you want me to do!2")
                     return
                 try:
                     if input.nick == nick:
-                        jenni.reply("I'm sorry, but I'm afraid I can't do that!")
+                        jenni.reply("I'm sorry, but I'm afraid I can't do that!3")
                     else:
                         nick = nick.lower()
                         if nick in scores_dict:
@@ -156,11 +156,11 @@ def setpoint(jenni, input):
                             jenni.say(msg)
                             scores_file.close()
                         else:
-                            jenni.reply("I'm sorry, but I'm afraid I can't do that!")
+                            jenni.reply("I'm sorry, but I'm afraid I can't do that!4")
                 except ValueError:
-                    jenni.reply("I'm sorry but I refuse to do that!")
+                    jenni.reply("I'm sorry but I refuse to do that!5")
         else:
-            jenni.reply("I'm sorry, but you are not one of my admins.")
+            jenni.reply("I'm sorry, but you are not one of my admins.6")
 setpoint.commands = ['setpoint']
 setpoint.priority = 'medium'
 
