@@ -24,7 +24,7 @@ def commands(jenni, input):
 	# This function only works in private message
 	#if input.sender.startswith('#'): return
 	names = ', '.join(sorted(jenni.doc.iterkeys()))
-	jenni.say("I am sending you a private message of all my commands!")
+	jenni.reply("I am sending you a private message of all my commands!")
 	jenni.msg(input.nick, 'Commands I recognise: ' + names + '.')
 	jenni.msg(input.nick, ("For help, do '%s: help example?' where example is the " + 
 					"name of the command you want help for.") % jenni.nick)
