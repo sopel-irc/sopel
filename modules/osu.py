@@ -29,7 +29,10 @@ osu_classes.commands = ['osu']
 osu_classes.priority = 'high'
 
 def office(jenni, input):
-    site = web.get("http://web2/~meinwald/office.php")
+    try:
+        site = web.get("http://opensource.osu.edu/~meinwald/office.php")
+    except:
+        site = web.get("http://web2/~meinwald/office.php")
     lines = site.split('\n')
     jenni.reply(lines[2])
 office.commands = ['office']
