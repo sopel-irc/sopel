@@ -645,6 +645,12 @@ remove_on_quit.event = 'QUIT'
 remove_on_quit.rule = '.*'
 remove_on_quit.priority = 'low'
 
+def remove_on_kick (jenni, input):
+    unobot.remove_player(jenni, input.nick)
+remove_on_kick.event = 'KICK'
+remove_on_kick.rule = '.*'
+remove_on_kick.priority = 'low'
+
 def remove_on_nickchg (jenni, input):
     unobot.remove_player(jenni, input.nick)
 remove_on_nickchg.event = 'NICK'
