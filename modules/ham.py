@@ -16,7 +16,7 @@ def lookup(jenni, input):
     page = web.get(link)
     name = re_look.findall(page)
     if name:
-        jenni.say(name[0])
+        jenni.say("Name: " + name[0] + ", more information available at: " + link)
     else:
         jenni.say('No matches found')
 lookup.commands = ['cs']
