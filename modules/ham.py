@@ -14,8 +14,11 @@ def lookup(jenni, input):
     cs = input.group(2)
     link = "http://www.qth.com/callsign.php?cs=" + unicode(cs)
     page = web.get(link)
-    name = re_look.findall(page)[0]
-    jenni.say(name)
+    name = re_look.findall(page)
+    if name:
+        jenni.say(name[0])
+    else:
+        jenni.say('No matches found')
 lookup.commands = ['cs']
 
 if __name__ == '__main__':
