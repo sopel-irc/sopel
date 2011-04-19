@@ -10,10 +10,9 @@ This module will fix spelling errors if someone corrects them.
 import pickle, time, re
 try:
     search_file = open("search.txt","r")
+    search_dict = pickle.load(search_file)
 except IOError:
     search_dict = dict()
-else:
-    search_dict = pickle.load(search_file)
 
 exp = re.compile(r"(?<!\\)/")
 
@@ -145,9 +144,9 @@ def meant (jenni, input):
             new_phrase[511:]
 
     # Save the new "edited" message.
-    list = search_dict[input.nick]
+    list = search_dict[user]
     list.append(new_phrase)
-    search_dict[input.nick] = list
+    search_dict[user] = list
     search_file = open("search.txt","w")
     pickle.dump(search_dict, search_file)
     search_file.close()
