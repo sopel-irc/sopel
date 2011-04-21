@@ -1,3 +1,12 @@
+#!/usr/bin/env python
+"""
+southpark.py - Jenni Southpark Module
+Copyright 2011, Michael Yanovichh, Kays
+Licensed under the Eiffel Forum License 2.
+
+http://inamidst.com/phenny/
+"""
+
 from datetime import datetime, timedelta
 import web, time, re
 
