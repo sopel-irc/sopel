@@ -21,7 +21,12 @@ def getwhy(jenni, input):
 	line = re.sub(r'<[^>]*?>', '', str(paragraphs[1]))
 	jenni.say(line)
 getwhy.commands = ['why']
-getwhy.priority = 'high'
+getwhy.thread = False
+
+def getwhy2(jenni, input):
+    getwhy(jenni, input)
+getwhy2.commands = ['tubbs']
+getwhy2.thread = False
 
 if __name__ == '__main__':
 	print __doc__.strip()
