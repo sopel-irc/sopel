@@ -1,7 +1,16 @@
+#!/usr/bin/env python
+"""
+southpark.py - Jenni Southpark Module
+Copyright 2011, Michael Yanovichh, Kays
+Licensed under the Eiffel Forum License 2.
+
+http://inamidst.com/phenny/
+"""
+
 from datetime import datetime, timedelta
 import web, time, re
 
-STRING = 'The next new episode of South Park will air on \x0300%s\x03.'
+STRINGS = 'The next new episode of South Park will air on \x0300%s\x03, which is in: %s.'
 
 HTMLEntities = {
     '&nbsp;'    : ' ',
@@ -20,6 +29,22 @@ cachets = {
     'TIMES'     : None,
     'NEW-EPI'   : None
 }
+
+months = {
+    'January'   : 1,
+    'February'  : 2,
+    'March'     : 3,
+    'April'     : 4,
+    'May'       : 5,
+    'June'      : 6,
+    'July'      : 7,
+    'August'    : 8,
+    'September' : 9,
+    'October'   : 10,
+    'November'  : 11,
+    'December'  : 12
+}
+
 cachetsreset = timedelta(hours=6)
 maxtitlelen = 0
 maxepilen = 0
@@ -51,7 +76,9 @@ def getNewShowDate (jenni):
     global cache, cachets
     tsnow = datetime.now()
     if cache['NEW-EPI'] is not None and cachets['NEW-EPI'] is not None and tsnow - cachets['NEW-EPI'] <= cachetsreset:
-        jenni.say(STRING % cache['NEW-EPI'])
+        gc = getcountdown(cache['NEW-EPI'])
+        msg = STRINGS % (cache['NEW-EPI'], gc)
+        jenni.say(msg)
         return
 
     today = time.localtime()
@@ -73,8 +100,21 @@ def getNewShowDate (jenni):
             else:
                 cache['NEW-EPI'] = m.group()
                 cachets['NEW-EPI'] = tsnow
-                jenni.say(STRING % m.group())
+                rcd = getcountdown(m.group())
+                msg = STRINGS % (m.group(), rcd)
+                jenni.say(msg)
                 break
+
+def getcountdown (x):
+    mon = x.split()[0]
+    day = (x.split()[1][:-1])
+    yr = int(x.split()[2])
+    month = months[mon]
+    diff = datetime(int(yr), int(month), int(day), 22, 00, 00) - datetime.today()
+    weeks, days = divmod(diff.days, 7)
+    minutes, seconds = divmod(diff.seconds, 60)
+    hours, minutes = divmod(minutes, 60)
+    return "%s days, %s hours, %s minutes, and %s seconds" % (days, hours, minutes, seconds)
 
 def southparktimes (jenni, input):
     global cache, cachets, maxtitlelen, maxepilen
