@@ -26,7 +26,7 @@ def off(jenni, input):
         global aistate
         aistate = False
     else:
-        jenni.reply("You are not authorized to disabled this feature.")
+        jenni.reply("You are not authorized to disable this feature.")
 off.commands = ['off'] 
 off.priority = 'high'
 
@@ -36,7 +36,7 @@ def on(jenni, input):
         global aistate
         aistate = True
     else:
-        jenni.reply("You are not authorized to enabled this feature.")
+        jenni.reply("You are not authorized to enable this feature.")
 on.commands = ['on']
 on.priority = 'high'
 
