@@ -15,7 +15,6 @@ else:
     scores_dict = pickle.load(scores_file)
     scores_file.close()
 
-# Adds Points to the scores.txt file
 def addpoint(jenni, input):
     """.addpoint <nick> - Adds 1 point to the score system for <nick>."""
 
@@ -43,10 +42,9 @@ def addpoint(jenni, input):
 addpoint.commands = ['addpoint']
 addpoint.priority = 'high'
 
-# Removes Points to the scores.txt file
 def rmpoint(jenni, input):
     """.rmpoint <nick> - Removes 1 point to the score system for <nick>."""
-    
+
     nick = input.group(2)
     if nick != None:
         nick = nick.lstrip().rstrip().split()[0]
@@ -71,28 +69,34 @@ def rmpoint(jenni, input):
 rmpoint.commands = ['rmpoint']
 rmpoint.priority = 'high'
 
-# Lists the Scores in the scores.txt file
 def scores(jenni, input):
     """.scores - Lists all users and their point values in the system."""
-    
+
     global scores_dict
+    info = unicode(input.group(2))
+    top_scores = [ ]
     if len(scores_dict) >= 1:
-        nicks = [ ]
-        for nick in scores_dict:
-            nicks.append(nick)
-        nicks = sorted(nicks) 
-        str_say2 = "| "
-        for nick in nicks:
-            strscore = str(scores_dict[nick])
-            str_say = "%s: +%d/-%d, %d | " % (nick, scores_dict[nick][0], scores_dict[nick][1], scores_dict[nick][0] - scores_dict[nick][1])
-            str_say2 += str_say
-        jenni.say(str_say2)
+        if info != "None":
+            info = info.lower().rstrip().lstrip()
+            try:
+                str_say = "%s: +%s/-%s, %s" % (info, scores_dict[info][0], scores_dict[info][1], scores_dict[info][0] - scores_dict[info][1])
+            except:
+                str_say = "Sorry no score for %s found." % (info)
+        else:
+            q = 0
+            for key, value in sorted(scores_dict.iteritems(), key=lambda (k,v): (v[0]-v[1]), reverse=True):
+                top_scores.append("%s: +%s/-%s, %s" % (key, value[0], value[1], value[0] - value[1]))
+                q += 1
+                if q > 9:
+                    break
+            del top_scores[10:]
+            str_say = "\x0300Top 10:\x03 %s | %s | %s | %s | %s | %s | %s | %s | %s | %s" % (top_scores[0],top_scores[1],top_scores[2],top_scores[3],top_scores[4],top_scores[5],top_scores[6],top_scores[7],top_scores[8],top_scores[9])
+        jenni.say(str_say)
     else:
         jenni.say("There are currently no users with a score.")
 scores.commands = ['scores']
 scores.priority = 'medium'
 
-# Removes a user.
 def rmuser(jenni, input):
     """.rmuser - Removes a user from the scores system."""
 
@@ -101,7 +105,7 @@ def rmuser(jenni, input):
         nick = nick.lstrip().rstrip().split()[0]
 
     global scores_dict
-    if nick == "" or nick == None:        
+    if nick == "" or nick == None:
         jenni.say("I'm sorry, " + str(input.nick) + ". I'm afraid I can't remove that user!")
     else:
         if nick in scores_dict:
@@ -118,7 +122,6 @@ def rmuser(jenni, input):
 rmuser.commands = ['rmuser']
 rmuser.priority = 'medium'
 
-# Set a given number for both points
 def setpoint(jenni, input):
     """.setpoint <nick> <number> <number> - Sets points for given user."""
 
@@ -164,5 +167,5 @@ def setpoint(jenni, input):
 setpoint.commands = ['setpoint']
 setpoint.priority = 'medium'
 
-if __name__ == '__main__': 
+if __name__ == '__main__':
     print __doc__.strip()
