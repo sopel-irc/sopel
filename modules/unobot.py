@@ -37,7 +37,7 @@ random.seed()
 
 # Remember to change these 3 lines or nothing will work
 CHANNEL = '##uno'
-SCOREFILE = "/home/yanovich/jenni/unoscores.txt"
+SCOREFILE = "/home/yano/jenni/unoscores.txt"
 # Only the owner (starter of the game) can call .unostop to stop the game.
 # But this calls for a way to allow others to stop it after the game has been idle for a while.
 # After this set time, anyone can stop the game via .unostop
@@ -53,7 +53,7 @@ STRINGS = {
     'JOINED' : '\x0300,01Dealing %s into the game as player #%s!',
     'ENOUGH' : '\x0300,01There are enough players, type .deal to start!',
     'NOT_STARTED' : '\x0300,01Game not started, type .uno to start!',
-    'NOT_ENOUGH' : '\x0300,01Not enough players to deal yet.',    
+    'NOT_ENOUGH' : '\x0300,01Not enough players to deal yet.',
     'NEEDS_TO_DEAL' : '\x0300,01%s needs to deal.',
     'ALREADY_DEALT' : '\x0300,01Already dealt.',
     'ON_TURN' : '\x0300,01It\'s %s\'s turn.',
@@ -109,7 +109,7 @@ class UnoBot:
         self.dealt = False
         self.lastActive = datetime.now()
         self.timeout = timedelta(minutes=INACTIVE_TIMEOUT)
- 
+
     def start(self, jenni, owner):
         if self.game_on:
             jenni.msg (CHANNEL, STRINGS['ALREADY_STARTED'] % self.game_on)
@@ -123,7 +123,7 @@ class UnoBot:
             self.playerOrder = [ owner ]
             if self.players_pce.get(owner, 0):
                 jenni.notice(owner, STRINGS['ENABLED_PCE'] % owner)
-    
+
     def stop (self, jenni, input):
         tmptime = datetime.now()
         if input.nick == self.game_on or tmptime - self.lastActive > self.timeout:
@@ -132,7 +132,7 @@ class UnoBot:
             self.dealt = False
         elif self.game_on:
             jenni.msg (CHANNEL, STRINGS['CANT_STOP'] % (self.game_on, self.timeout.seconds - (tmptime - self.lastActive).seconds))
-            
+
     def join (self, jenni, input):
         #print dir (jenni.bot)
         #print dir (input)
@@ -156,7 +156,7 @@ class UnoBot:
                 jenni.msg (CHANNEL, STRINGS['GAME_ALREADY_DEALT'])
         else:
             jenni.msg (CHANNEL, STRINGS['NOT_STARTED'])
-    
+
     def deal (self, jenni, input):
         if not self.game_on:
             jenni.msg (CHANNEL, STRINGS['NOT_STARTED'])
@@ -182,7 +182,7 @@ class UnoBot:
         self.cardPlayed (jenni, self.topCard)
         self.showOnTurn (jenni)
         self.dealt = True
-    
+
     def play (self, jenni, input):
         if not self.game_on or not self.deck:
             return
@@ -204,12 +204,12 @@ class UnoBot:
         if not self.cardPlayable (playcard):
             jenni.msg (CHANNEL, STRINGS['DOESNT_PLAY'] % self.playerOrder[self.currentPlayer])
             return
-        
+
         self.drawn = False
         self.players[self.playerOrder[self.currentPlayer]].remove (searchcard)
-        
+
         pl = self.currentPlayer
-        
+
         self.incPlayer ()
         self.cardPlayed (jenni, playcard)
 
@@ -219,7 +219,7 @@ class UnoBot:
             jenni.msg (CHANNEL, STRINGS['WIN'] % (self.playerOrder[pl], (datetime.now () - self.startTime)))
             self.gameEnded (jenni, self.playerOrder[pl])
             return
-            
+
         self.lastActive = datetime.now()
         self.showOnTurn (jenni)
 
@@ -287,14 +287,14 @@ class UnoBot:
         random.shuffle (ret)
 
         return ret
-    
+
     def getCard(self):
         ret = self.deck[0]
         self.deck.pop (0)
         if not self.deck:
-            self.deck = self.createnewdeck ()        
+            self.deck = self.createnewdeck ()
         return ret
-    
+
     def showOnTurn (self, jenni):
         jenni.msg (CHANNEL, STRINGS['TOP_CARD'] % (self.playerOrder[self.currentPlayer], self.renderCards (None, [self.topCard], 1)))
         jenni.notice (self.playerOrder[self.currentPlayer], STRINGS['YOUR_CARDS'] % self.renderCards (self.playerOrder[self.currentPlayer], self.players[self.playerOrder[self.currentPlayer]], 0))
@@ -314,7 +314,7 @@ class UnoBot:
                 tmp = len (self.players) - 1
         msg += ' - '.join (arr)
         jenni.notice (self.playerOrder[self.currentPlayer], msg)
-    
+
     def showCards (self, jenni, user):
         if not self.game_on or not self.deck:
             return
@@ -336,7 +336,7 @@ class UnoBot:
             k-=1
         msg += ' - '.join (arr)
         if user not in self.players:
-            jenni.notice (user, msg) 
+            jenni.notice (user, msg)
         else:
             jenni.notice (user, STRINGS['YOUR_CARDS'] % self.renderCards (user, self.players[user], 0))
             jenni.notice (user, msg)
@@ -371,14 +371,14 @@ class UnoBot:
             t += "\x0300,01"
             ret.append (t)
         return ''.join (ret)
-    
+
     def cardPlayable (self, card):
         if card[0] == 'W' and card[-1] in self.colors:
             return True
         if self.topCard[0] == 'W':
             return card[0] == self.topCard[-1]
         return (card[0] == self.topCard[0]) or (card[1] == self.topCard[1])
-    
+
     def cardPlayed (self, jenni, card):
         if card[1:] == 'D2':
             jenni.msg (CHANNEL, STRINGS['D2'] % self.playerOrder[self.currentPlayer])
@@ -404,7 +404,7 @@ class UnoBot:
             else:
                 self.incPlayer ()
         self.topCard = card
-    
+
     def gameEnded (self, jenni, winner):
         try:
             score = 0
@@ -427,15 +427,15 @@ class UnoBot:
         self.topCard = None
         self.way = 1
         self.dealt = False
-        
-    
+
+
     def incPlayer (self):
         self.currentPlayer = self.currentPlayer + self.way
         if self.currentPlayer == len (self.players):
             self.currentPlayer = 0
         if self.currentPlayer < 0:
             self.currentPlayer = len (self.players) - 1
-    
+
     def saveScores (self, players, winner, score, time):
         from copy import copy
         prescores = { }
@@ -462,7 +462,7 @@ class UnoBot:
             f.close ()
         except Exception, e:
             print 'Failed to write score file %s' % e
-     
+
     # Custom added functions ============================================== #
     def rankings (self, rank_type):
         from copy import copy
@@ -480,7 +480,7 @@ class UnoBot:
             self.prescores = sorted (self.prescores, lambda x, y: cmp ((y[1] != '0') and (float (y[3]) / int (y[1])) or 0, (x[1] != '0') and (float (x[3]) / int (x[1])) or 0))
         elif rank_type == "pw":
             self.prescores = sorted (self.prescores, lambda x, y: cmp ((y[1] != '0') and (float (y[2]) / int (y[1])) or 0, (x[1] != '0') and (float (x[2]) / int (x[1])) or 0))
-        
+
     def showTopCard_demand (self, jenni):
         if not self.game_on or not self.deck:
             return
@@ -505,16 +505,16 @@ class UnoBot:
             elif self.way == -1:
                 if self.currentPlayer == 0:
                     self.currentPlayer = numPlayers - 2
-                else: 
+                else:
                     self.currentPlayer -= 1
-            
+
             jenni.msg(CHANNEL, STRINGS['PLAYER_LEAVES'] % nick)
             if numPlayers == 2 and self.dealt or numPlayers == 1:
                 jenni.msg (CHANNEL, STRINGS['GAME_STOPPED'])
                 self.game_on = None
                 self.dealt = None
                 return
-            
+
             if self.game_on == nick:
                 self.game_on = self.playerOrder[0]
                 jenni.msg(CHANNEL, STRINGS['OWNER_CHANGE'] % (nick, self.playerOrder[0]))
@@ -549,7 +549,7 @@ class UnoBot:
 
     def unostat (self, jenni, input):
         text = input.group().split()
-        
+
         if len(text) != 3:
             jenni.say("Invalid input for stats command. Try '.unostats ppg 10' to show the top 10 ranked by points per game. You can also show rankings by percent-wins 'pw'.")
             return
@@ -557,7 +557,7 @@ class UnoBot:
         if text[1] == "pw" or text[1] == "ppg":
             self.rankings(text[1])
             self.rank_assist(jenni, input, text[2], "SCORE_ROW")
-        
+
         if not self.prescores:
             jenni.say(STRINGS['NO_SCORES'])
 
@@ -575,7 +575,7 @@ class UnoBot:
                 if y[0] == t:
                     jenni.say(STRINGS[ranktype] % (j, y[0], y[3], y[1], y[2], float(y[3])/float(y[1]), float(y[2])/float(y[1])*100))
                 j += 1
-            
+
 unobot = UnoBot ()
 
 def uno(jenni, input):
