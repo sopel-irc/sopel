@@ -84,13 +84,14 @@ def scores(jenni, input):
                 str_say = "Sorry no score for %s found." % (info)
         else:
             q = 0
+            str_say = "\x0300Top 10:\x03"
             for key, value in sorted(scores_dict.iteritems(), key=lambda (k,v): (v[0]-v[1]), reverse=True):
                 top_scores.append("%s: +%s/-%s, %s" % (key, value[0], value[1], value[0] - value[1]))
+                str_say += " %s |" % (top_scores[q])
                 q += 1
                 if q > 9:
                     break
             del top_scores[10:]
-            str_say = "\x0300Top 10:\x03 %s | %s | %s | %s | %s | %s | %s | %s | %s | %s" % (top_scores[0],top_scores[1],top_scores[2],top_scores[3],top_scores[4],top_scores[5],top_scores[6],top_scores[7],top_scores[8],top_scores[9])
         jenni.say(str_say)
     else:
         jenni.say("There are currently no users with a score.")
