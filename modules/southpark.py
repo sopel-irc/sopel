@@ -3,8 +3,6 @@
 southpark.py - Jenni Southpark Module
 Copyright 2011, Michael Yanovich (myano), Kenneth Sham (Kays)
 Licensed under the Eiffel Forum License 2.
-
-http://inamidst.com/phenny/
 """
 
 from datetime import datetime, timedelta
