@@ -26,7 +26,13 @@ def create_default_config(fn):
     f = open(fn, 'w')
     print >> f, trim("""\
     nick = 'jenni'
+    # the name field is jenni's realname as appears on whois.
+    name = 'jenni bot'
+
     host = 'irc.example.net'
+    # for a SSL port, prepend a +. Example: +9999
+    port = '6667'
+
     channels = ['#example', '#test']
     owner = 'yournickname'
     # password = 'yourserverpassword'

@@ -34,7 +34,15 @@ def run_jenni(config):
 
    def connect(config): 
       p = bot.Jenni(config)
-      p.run(config.host, config.port)
+
+      # is the port an ssl port?
+      ssl = False
+      config.port = str(config.port)
+      if config.port.startswith('+'):
+          ssl = True
+          config.port = config.port[1:]
+
+      p.run(config.host, int(config.port), ssl)
 
    try: Watcher()
    except Exception, e: 
