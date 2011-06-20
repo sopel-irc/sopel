@@ -9,7 +9,7 @@ http://inamidst.com/phenny/
 import sys, os, re, threading, imp
 import irc
 
-home = os.getcwd()
+home = os.path.abspath(os.path.dirname(__file__))
 
 def decode(bytes): 
 	try: text = bytes.decode('utf-8')
