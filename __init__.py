@@ -35,7 +35,7 @@ def run_jenni(config):
    def connect(config): 
       p = bot.Jenni(config)
 
-      # is the port an ssl port?
+      # is the port a ssl port?
       ssl = False
       config.port = str(config.port)
       if config.port.startswith('+'):
