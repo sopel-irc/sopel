@@ -77,7 +77,7 @@ class Jenni(irc.Bot):
     def bind_commands(self):
         self.commands = {'high': {}, 'medium': {}, 'low': {}}
 
-                def bind(self, priority, regexp, func):
+        def bind(self, priority, regexp, func):
             print priority, regexp.pattern.encode('utf-8'), func
             # register documentation
             if not hasattr(func, 'name'):
@@ -221,4 +221,3 @@ class Jenni(irc.Bot):
 
 if __name__ == '__main__':
     print __doc__
-
