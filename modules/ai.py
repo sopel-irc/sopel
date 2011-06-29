@@ -27,7 +27,7 @@ def off(jenni, input):
         aistate = False
     else:
         jenni.reply("You are not authorized to disable this feature.")
-off.commands = ['off'] 
+off.commands = ['off']
 off.priority = 'high'
 
 def on(jenni, input):
@@ -54,7 +54,7 @@ state.priority = 'high'
 def hello_join(jenni, input):
     well = random.random()
     if 0 < well < 0.01:
-        if input.nick == jenni.config.nick: 
+        if input.nick == jenni.config.nick:
             return
         random_greeting = random.choice(greeting)
         punctuation = random.choice(('!', ' '))
@@ -118,7 +118,7 @@ def ty(jenni, input):
     time.sleep(human)
     mystr = input.group()
     mystr = str(mystr)
-    if (mystr.find(" no ") == -1) and (mystr.find("no ") == -1) and (mystr.find(" no") == -1):    
+    if (mystr.find(" no ") == -1) and (mystr.find("no ") == -1) and (mystr.find(" no") == -1):
         jenni.reply("You're welcome.")
 ty.rule = '(?i).*(thank).*(you).*(jenni|$nickname).*$'
 ty.priority = 'high'
@@ -171,5 +171,5 @@ def love3 (jenni, input):
     jenni.reply("I love you too.")
 love3.rule = '(?i)(jenni|$nickname)\,\si.*love.*'
 
-if __name__ == '__main__': 
+if __name__ == '__main__':
     print __doc__.strip()

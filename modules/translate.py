@@ -11,7 +11,7 @@ http://inamidst.com/phenny/
 import re, urllib
 import web
 
-def detect(text): 
+def detect(text):
     uri = 'http://ajax.googleapis.com/ajax/services/language/detect'
     q = urllib.quote(text)
     bytes = web.get(uri + '?q=' + q + '&v=1.0')
@@ -19,7 +19,7 @@ def detect(text):
     try: return result['responseData']['language']
     except Exception: return None
 
-def translate(text, input, output): 
+def translate(text, input, output):
     uri = 'http://ajax.googleapis.com/ajax/services/language/translate'
     q = urllib.quote(text)
     pair = input + '%7C' + output
@@ -28,27 +28,27 @@ def translate(text, input, output):
     try: return result['responseData']['translatedText'].encode('cp1252')
     except Exception: return None
 
-def tr(jenni, context): 
+def tr(jenni, context):
     """Translates a phrase, with an optional language hint."""
     input, output, phrase = context.groups()
 
     phrase = phrase.encode('utf-8')
 
-    if (len(phrase) > 350) and (not context.admin): 
+    if (len(phrase) > 350) and (not context.admin):
         return jenni.reply('Phrase must be under 350 characters.')
 
     input = input or detect(phrase)
-    if not input: 
+    if not input:
         err = 'Unable to guess your crazy moon language, sorry.'
         return jenni.reply(err)
     input = input.encode('utf-8')
     output = (output or 'en').encode('utf-8')
 
-    if input != output: 
+    if input != output:
         msg = translate(phrase, input, output)
         if isinstance(msg, str):
             msg = msg.decode('utf-8')
-        if msg: 
+        if msg:
             msg = web.decode(msg) # msg.replace('&#39;', "'")
             msg = '"%s" (%s to %s, translate.google.com)' % (msg, input, output)
         else: msg = 'The %s to %s translation failed, sorry!' % (input, output)
@@ -60,19 +60,19 @@ tr.rule = ('$nick', ur'(?:([a-z]{2}) +)?(?:([a-z]{2}) +)?["“](.+?)["”]\? *$'
 tr.example = '$nickname: "mon chien"? or $nickname: fr "mon chien"?'
 tr.priority = 'low'
 
-def mangle(jenni, input): 
+def mangle(jenni, input):
     phrase = input.group(2).encode('utf-8')
-    for lang in ['fr', 'de', 'es', 'it', 'ja']: 
+    for lang in ['fr', 'de', 'es', 'it', 'ja']:
         backup = phrase
         phrase = translate(phrase, 'en', lang)
-        if not phrase: 
+        if not phrase:
             phrase = backup
             break
         __import__('time').sleep(0.5)
 
         backup = phrase
         phrase = translate(phrase, lang, 'en')
-        if not phrase: 
+        if not phrase:
             phrase = backup
             break
         __import__('time').sleep(0.5)
@@ -80,5 +80,5 @@ def mangle(jenni, input):
     jenni.reply(phrase or 'ERRORS SRY')
 mangle.commands = ['mangle']
 
-if __name__ == '__main__': 
+if __name__ == '__main__':
     print __doc__.strip()

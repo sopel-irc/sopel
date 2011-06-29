@@ -39,5 +39,5 @@ def rand(jenni, input):
 rand.commands = ['rand']
 rand.priority = 'medium'
 
-if __name__ == '__main__': 
+if __name__ == '__main__':
     print __doc__.strip()

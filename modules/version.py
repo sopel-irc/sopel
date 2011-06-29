@@ -12,7 +12,7 @@ def version(jenni, input):
     commit = p.stdout.readline()
     author = p.stdout.readline()
     date = p.stdout.readline()
-    
+
     jenni.say(str(input.nick) + ": running version:")
     jenni.say("  " + commit)
     jenni.say("  " + author)
@@ -21,5 +21,5 @@ def version(jenni, input):
 version.commands = ['version']
 version.priority = 'medium'
 
-if __name__ == '__main__': 
+if __name__ == '__main__':
     print __doc__.strip()
