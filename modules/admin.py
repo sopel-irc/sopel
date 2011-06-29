@@ -183,7 +183,7 @@ def auth_check(jenni, nick, target=None):
     """
     global auth_list
     if target == jenni.config.nick:
-	    return 0
+        return 0
     elif nick in auth_list:
         return 1
 
@@ -235,13 +235,13 @@ def configureHostMask (mask):
     if mask == '*!*@*': return mask
     if re.match('^[^.@!/]+$', mask) is not None: return '%s!*@*' % mask
     if re.match('^[^@!]+$', mask) is not None: return '*!*@%s' % mask
-	
+    
     m = re.match('^([^!@]+)@$', mask)
     if m is not None: return '*!%s@*' % m.group(1)
-	
+    
     m = re.match('^([^!@]+)@([^@!]+)$', mask)
     if m is not None: return '*!%s@%s' % (m.group(1), m.group(2))
-	
+    
     m = re.match('^([^!@]+)!(^[!@]+)@?$', mask)
     if m is not None: return '%s!%s@*' % (m.group(1), m.group(2))
     return ''

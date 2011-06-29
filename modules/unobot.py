@@ -367,7 +367,7 @@ class UnoBot:
                 else:
                     t += '[%s]' % c[1:]
             else:
-				t += '(%s) [%s]' % (c[0], c[1:])
+                t += '(%s) [%s]' % (c[0], c[1:])
             t += "\x0300,01"
             ret.append (t)
         return ''.join (ret)
