@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 """
 find.py - Jenni Spell Checking Module
 Author: Michael S. Yanovich, http://opensource.osu.edu/
