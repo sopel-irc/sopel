@@ -101,5 +101,5 @@ def bru (jenni, input):
 
 #bru.rule = '.*(color|favor|behavior|flavor|honor|labor|rumor|neighbor|favorite).*'
 
-if __name__ == '__main__': 
+if __name__ == '__main__':
     print __doc__.strip()

@@ -26,5 +26,5 @@ ask.commands = ['ask']
 ask.priority = 'medium'
 ask.example = '.ask today or tomorrow or next week'
 
-if __name__ == '__main__': 
+if __name__ == '__main__':
     print __doc__.strip()

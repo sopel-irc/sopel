@@ -45,16 +45,16 @@ def classes(jenni, input):
 #~ both = description[0].split("</b><br /><br />")
 #~ title = both[0]
 #~ description_class = both[1]
-#~ 
+#~
 #~ class_name = re.sub("<p class=\"inset\"><b>", "Title: ", str(title))
-#~ 
+#~
 #~ title = re.sub(r'<[^>]*?>', '', str(title))
 #~ description_class = re.sub(r'<[^>]*?>', '', str(description_class))
 #~ req = re.sub(r'<[^>]*?>', '', str(req))
-#~ 
+#~
 #~ title = "Title: " + title
 #~ description_class = "Description: " + description_class
-#~ 
+#~
 #~ jenni.say(title)
 #~ jenni.say(description_class)
 #~ jenni.say("Offered: " + req)
@@ -74,9 +74,9 @@ def classes(jenni, input):
         if clname2 in item:
             found = item
             break
-    found_url = re.findall(r'".*"', str(found))    
+    found_url = re.findall(r'".*"', str(found))
     found_url = str(found_url[0])
-    found_url = found_url[1:-1] 
+    found_url = found_url[1:-1]
 
     #Find the course information
     class_url = "http://" + uni + ".schedulizer.com" + found_url
@@ -133,7 +133,7 @@ def classes(jenni, input):
         #req = re.sub(r'<[^>]*?>', '', str(req))
         req = r_findreq.findall(course_page)[0][5:-8]
         req = req.replace("<br>", " ")
-        
+
 
 
     title = "Title: " + str(title)
@@ -148,6 +148,6 @@ classes.commands = ['class']
 classes.priority = 'high'
 
 
-if __name__ == '__main__': 
+if __name__ == '__main__':
     print __doc__.strip()
 

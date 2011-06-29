@@ -21,35 +21,35 @@ r_info = re.compile(
     r'(?:ResultBody"><br /><br />(.*?)&nbsp;)|(?:<b>(.*?)</b>)'
 )
 
-def dict(jenni, input): 
+def dict(jenni, input):
     word = input.group(2)
     word = urllib.quote(word.encode('utf-8'))
 
-    def trim(thing): 
-        if thing.endswith('&nbsp;'): 
+    def trim(thing):
+        if thing.endswith('&nbsp;'):
             thing = thing[:-6]
         return thing.strip(' :.')
 
     bytes = web.get(uri % word)
     results = {}
     wordkind = None
-    for kind, sense in r_info.findall(bytes): 
+    for kind, sense in r_info.findall(bytes):
         kind, sense = trim(kind), trim(sense)
         if kind: wordkind = kind
-        elif sense: 
+        elif sense:
             results.setdefault(wordkind, []).append(sense)
     result = input.group(2).encode('utf-8') + ' - '
-    for key in sorted(results.keys()): 
-        if results[key]: 
+    for key in sorted(results.keys()):
+        if results[key]:
             result += (key or '') + ' 1. ' + results[key][0]
-            if len(results[key]) > 1: 
+            if len(results[key]) > 1:
                 result += ', 2. ' + results[key][1]
             result += '; '
     result = result.rstrip('; ')
-    if result.endswith('-') and (len(result) < 30): 
+    if result.endswith('-') and (len(result) < 30):
         jenni.reply('Sorry, no definition found.')
     else: jenni.say(result)
 dict.commands = ['dict']
 
-if __name__ == '__main__': 
+if __name__ == '__main__':
     print __doc__.strip()

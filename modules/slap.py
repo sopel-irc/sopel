@@ -23,5 +23,5 @@ def slap(jenni, input):
 slap.commands = ['slap', 'slaps']
 slap.priority = 'medium'
 
-if __name__ == '__main__': 
+if __name__ == '__main__':
     print __doc__.strip()

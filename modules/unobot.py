@@ -270,7 +270,7 @@ class UnoBot:
         for a in self.colored_card_nums:
             for b in self.colors:
                 ret.append (b + a)
-        for a in self.special_cards: 
+        for a in self.special_cards:
             ret.append (a)
             ret.append (a)
 

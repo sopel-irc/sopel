@@ -13,7 +13,7 @@ import web
 
 # Place a file in your ~/jenni/ folder named, bitly.txt
 # and inside this file place your API key followed by a ','
-# and then your username. For example, the only line in that 
+# and then your username. For example, the only line in that
 # file should look like this:
 # R_d67798xkjc87sdx6x8c7kjc87,myusername
 
@@ -74,9 +74,9 @@ def find_title(url):
 
     try: mtype = info['content-type']
     except:
-        return 
+        return
     if not (('/html' in mtype) or ('/xhtml' in mtype)):
-        return 
+        return
 
     u = urllib2.urlopen(req)
     bytes = u.read(262144)
@@ -196,9 +196,9 @@ def get_results(text):
     display = [ ]
     while i < k:
         url = str(a[i][0])
-        try: 
+        try:
             page_title = find_title(url)
-        except: 
+        except:
             page_title = None # if it can't access the site fail silently
         if bitly_loaded: # and (page_title is not None or page_title == INVALID_WEBSITE):
             bitly = short(url)
@@ -233,7 +233,7 @@ def show_title_demand (jenni, input):
         results = get_results(input)
     except: return
     if results is None: return
-    
+
     for r in results:
         if r[0] is None: continue
         if doUseBitLy(r[1]): r[1] = r[2]
