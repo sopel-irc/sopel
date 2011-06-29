@@ -14,12 +14,12 @@ whyuri = 'http://www.leonatkinson.com/random/index.php/lyrics.html'
 r_paragraph = re.compile(r'(?ims)<tr><td bgcolor=".*?">.*?</td></tr>')
 
 def getwhy(jenni, input):
-	global whyuri
-	global r_paragraph
-	bytes = web.get(whyuri)
-	paragraphs = r_paragraph.findall(bytes)
-	line = re.sub(r'<[^>]*?>', '', str(paragraphs[1]))
-	jenni.say(line)
+    global whyuri
+    global r_paragraph
+    bytes = web.get(whyuri)
+    paragraphs = r_paragraph.findall(bytes)
+    line = re.sub(r'<[^>]*?>', '', str(paragraphs[1]))
+    jenni.say(line)
 getwhy.commands = ['why']
 getwhy.thread = False
 
@@ -29,4 +29,4 @@ getwhy2.commands = ['tubbs']
 getwhy2.thread = False
 
 if __name__ == '__main__':
-	print __doc__.strip()
+    print __doc__.strip()

@@ -65,5 +65,5 @@ def rouletteStop (jenni, input):
 rouletteStop.commands = ['roulette-stop']
 roulette.priority = 'low'
 
-if __name__ == '__main__': 
-	print __doc__.strip()
+if __name__ == '__main__':
+    print __doc__.strip()

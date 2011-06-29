@@ -270,7 +270,7 @@ class UnoBot:
         for a in self.colored_card_nums:
             for b in self.colors:
                 ret.append (b + a)
-        for a in self.special_cards: 
+        for a in self.special_cards:
             ret.append (a)
             ret.append (a)
 
@@ -367,7 +367,7 @@ class UnoBot:
                 else:
                     t += '[%s]' % c[1:]
             else:
-				t += '(%s) [%s]' % (c[0], c[1:])
+                t += '(%s) [%s]' % (c[0], c[1:])
             t += "\x0300,01"
             ret.append (t)
         return ''.join (ret)
