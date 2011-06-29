@@ -2,7 +2,7 @@
 """
 irc.py - A Utility IRC Bot
 Copyright 2008, Sean B. Palmer, inamidst.com
-Modified by: Michael Yanovich,
+Modified by: Michael Yanovich
 Licensed under the Eiffel Forum License 2.
 
 http://inamidst.com/phenny/
