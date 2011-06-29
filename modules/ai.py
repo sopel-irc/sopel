@@ -118,7 +118,7 @@ def ty(jenni, input):
     time.sleep(human)
     mystr = input.group()
     mystr = str(mystr)
-    if (mystr.find(" no ") == -1) and (mystr.find("no ") == -1) and (mystr.find(" no") == -1):	
+    if (mystr.find(" no ") == -1) and (mystr.find("no ") == -1) and (mystr.find(" no") == -1):    
         jenni.reply("You're welcome.")
 ty.rule = '(?i).*(thank).*(you).*(jenni|$nickname).*$'
 ty.priority = 'high'
