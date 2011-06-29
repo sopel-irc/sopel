@@ -19,83 +19,83 @@ r_tag = re.compile(r'<(?!!)[^>]+>')
 r_whitespace = re.compile(r'[\t\r\n ]+')
 
 abbrs = [
-	'cf', 'lit', 'etc', 'Ger', 'Du', 'Skt', 'Rus', 'Eng', 'Amer.Eng', 'Sp', 
-	'Fr', 'N', 'E', 'S', 'W', 'L', 'Gen', 'J.C', 'dial', 'Gk', 
-	'19c', '18c', '17c', '16c', 'St', 'Capt', 'obs', 'Jan', 'Feb', 'Mar', 
-	'Apr', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'c', 'tr', 'e', 'g'
+    'cf', 'lit', 'etc', 'Ger', 'Du', 'Skt', 'Rus', 'Eng', 'Amer.Eng', 'Sp',
+    'Fr', 'N', 'E', 'S', 'W', 'L', 'Gen', 'J.C', 'dial', 'Gk',
+    '19c', '18c', '17c', '16c', 'St', 'Capt', 'obs', 'Jan', 'Feb', 'Mar',
+    'Apr', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'c', 'tr', 'e', 'g'
 ]
 t_sentence = r'^.*?(?<!%s)(?:\.(?= [A-Z0-9]|\Z)|\Z)'
 r_sentence = re.compile(t_sentence % ')(?<!'.join(abbrs))
 
-def unescape(s): 
-	s = s.replace('&gt;', '>')
-	s = s.replace('&lt;', '<')
-	s = s.replace('&amp;', '&')
-	return s
+def unescape(s):
+    s = s.replace('&gt;', '>')
+    s = s.replace('&lt;', '<')
+    s = s.replace('&amp;', '&')
+    return s
 
-def text(html): 
-	html = r_tag.sub('', html)
-	html = r_whitespace.sub(' ', html)
-	return unescape(html).strip()
+def text(html):
+    html = r_tag.sub('', html)
+    html = r_whitespace.sub(' ', html)
+    return unescape(html).strip()
 
-def etymology(word): 
-	# @@ <nsh> sbp, would it be possible to have a flag for .ety to get 2nd/etc
-	# entries? - http://swhack.com/logs/2006-07-19#T15-05-29
-	
-	if len(word) > 25: 
-		raise ValueError("Word too long: %s[...]" % word[:10])
-	word = {'axe': 'ax/axe'}.get(word, word)
+def etymology(word):
+    # @@ <nsh> sbp, would it be possible to have a flag for .ety to get 2nd/etc
+    # entries? - http://swhack.com/logs/2006-07-19#T15-05-29
 
-	bytes = web.get(etyuri % word)
-	definitions = r_definition.findall(bytes)
+    if len(word) > 25:
+        raise ValueError("Word too long: %s[...]" % word[:10])
+    word = {'axe': 'ax/axe'}.get(word, word)
 
-	if not definitions: 
-		return None
+    bytes = web.get(etyuri % word)
+    definitions = r_definition.findall(bytes)
 
-	defn = text(definitions[0])
-	m = r_sentence.match(defn)
-	if not m: 
-		return None
-	sentence = m.group(0)
+    if not definitions:
+        return None
 
-	try: 
-		sentence = unicode(sentence, 'iso-8859-1')
-		sentence = sentence.encode('utf-8')
-	except: pass
+    defn = text(definitions[0])
+    m = r_sentence.match(defn)
+    if not m:
+        return None
+    sentence = m.group(0)
 
-	maxlength = 275
-	if len(sentence) > maxlength: 
-		sentence = sentence[:maxlength]
-		words = sentence[:-5].split(' ')
-		words.pop()
-		sentence = ' '.join(words) + ' [...]'
+    try:
+        sentence = unicode(sentence, 'iso-8859-1')
+        sentence = sentence.encode('utf-8')
+    except: pass
 
-	sentence = '"' + sentence.replace('"', "'") + '"'
-	return sentence + ' - ' + (etyuri % word)
+    maxlength = 275
+    if len(sentence) > maxlength:
+        sentence = sentence[:maxlength]
+        words = sentence[:-5].split(' ')
+        words.pop()
+        sentence = ' '.join(words) + ' [...]'
+
+    sentence = '"' + sentence.replace('"', "'") + '"'
+    return sentence + ' - ' + (etyuri % word)
 
 @deprecated
-def f_etymology(self, origin, match, args): 
-	word = match.group(2)
+def f_etymology(self, origin, match, args):
+    word = match.group(2)
 
-	try: result = etymology(word.encode('utf-8'))
-	except IOError: 
-		msg = "Can't connect to etymonline.com (%s)" % (etyuri % word)
-		self.msg(origin.sender, msg)
-		return
-	except AttributeError: 
-		result = None
+    try: result = etymology(word.encode('utf-8'))
+    except IOError:
+        msg = "Can't connect to etymonline.com (%s)" % (etyuri % word)
+        self.msg(origin.sender, msg)
+        return
+    except AttributeError:
+        result = None
 
-	if result is not None: 
-		self.msg(origin.sender, result)
-	else: 
-		uri = etysearch % word
-		msg = 'Can\'t find the etymology for "%s". Try %s' % (word, uri)
-		self.msg(origin.sender, msg)
+    if result is not None:
+        self.msg(origin.sender, result)
+    else:
+        uri = etysearch % word
+        msg = 'Can\'t find the etymology for "%s". Try %s' % (word, uri)
+        self.msg(origin.sender, msg)
 # @@ Cf. http://swhack.com/logs/2006-01-04#T01-50-22
 f_etymology.rule = (['ety'], r"([A-Za-z0-9' .-]+)$")
 f_etymology.thread = True
 f_etymology.priority = 'high'
 
-if __name__=="__main__": 
-	import sys
-	print etymology(sys.argv[1])
+if __name__=="__main__":
+    import sys
+    print etymology(sys.argv[1])

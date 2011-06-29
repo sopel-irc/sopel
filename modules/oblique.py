@@ -15,10 +15,10 @@ definitions = 'https://github.com/nslater/oblique/wiki'
 r_item = re.compile(r'(?i)<li>(.*?)</li>')
 r_tag = re.compile(r'<[^>]+>')
 
-def mappings(uri): 
+def mappings(uri):
     result = {}
     bytes = web.get(uri)
-    for item in r_item.findall(bytes): 
+    for item in r_item.findall(bytes):
         item = r_tag.sub('', item).strip(' \t\r\n')
         if not ' ' in item: continue
 
@@ -28,25 +28,25 @@ def mappings(uri):
         result[command] = template.replace('&amp;', '&')
     return result
 
-def service(jenni, input, command, args): 
+def service(jenni, input, command, args):
     t = o.services[command]
     template = t.replace('${args}', urllib.quote(args.encode('utf-8'), ''))
     template = template.replace('${nick}', urllib.quote(input.nick, ''))
     uri = template.replace('${sender}', urllib.quote(input.sender, ''))
 
     info = web.head(uri)
-    if isinstance(info, list): 
+    if isinstance(info, list):
         info = info[0]
-    if not 'text/plain' in info.get('content-type', '').lower(): 
+    if not 'text/plain' in info.get('content-type', '').lower():
         return jenni.reply("Sorry, the service didn't respond in plain text.")
     bytes = web.get(uri)
     lines = bytes.splitlines()
-    if not lines: 
+    if not lines:
         return jenni.reply("Sorry, the service didn't respond any output.")
     jenni.say(lines[0][:350])
 
-def refresh(jenni): 
-    if hasattr(jenni.config, 'services'): 
+def refresh(jenni):
+    if hasattr(jenni.config, 'services'):
         services = jenni.config.services
     else: services = definitions
 
@@ -55,42 +55,42 @@ def refresh(jenni):
     o.services = mappings(o.serviceURI)
     return len(o.services), set(o.services) - set(old)
 
-def o(jenni, input): 
+def o(jenni, input):
     """Call a webservice."""
     text = input.group(2)
 
-    if (not o.services) or (text == 'refresh'): 
+    if (not o.services) or (text == 'refresh'):
         length, added = refresh(jenni)
-        if text == 'refresh': 
+        if text == 'refresh':
             msg = 'Okay, found %s services.' % length
-            if added: 
+            if added:
                 msg += ' Added: ' + ', '.join(sorted(added)[:5])
                 if len(added) > 5: msg += ', &c.'
             return jenni.reply(msg)
 
-    if not text: 
+    if not text:
         return jenni.reply('Try %s for details.' % o.serviceURI)
 
-    if ' ' in text: 
+    if ' ' in text:
         command, args = text.split(' ', 1)
     else: command, args = text, ''
     command = command.lower()
 
-    if command == 'service': 
+    if command == 'service':
         msg = o.services.get(args, 'No such service!')
         return jenni.reply(msg)
 
-    if not o.services.has_key(command): 
+    if not o.services.has_key(command):
         return jenni.reply('Sorry, no such service. See %s' % o.serviceURI)
 
-    if hasattr(jenni.config, 'external'): 
+    if hasattr(jenni.config, 'external'):
         default = jenni.config.external.get('*')
         manifest = jenni.config.external.get(input.sender, default)
-        if manifest: 
+        if manifest:
             commands = set(manifest)
-            if (command not in commands) and (manifest[0] != '!'): 
+            if (command not in commands) and (manifest[0] != '!'):
                 return jenni.reply('Sorry, %s is not whitelisted' % command)
-            elif (command in commands) and (manifest[0] == '!'): 
+            elif (command in commands) and (manifest[0] == '!'):
                 return jenni.reply('Sorry, %s is blacklisted' % command)
     service(jenni, input, command, args)
 o.commands = ['o']
@@ -98,8 +98,8 @@ o.example = '.o servicename arg1 arg2 arg3'
 o.services = {}
 o.serviceURI = None
 
-def snippet(jenni, input): 
-    if not o.services: 
+def snippet(jenni, input):
+    if not o.services:
         refresh(jenni)
 
     search = urllib.quote(input.group(2).encode('utf-8'))
@@ -113,5 +113,5 @@ def snippet(jenni, input):
     service(jenni, input, 'py', py)
 snippet.commands = ['snippet']
 
-if __name__ == '__main__': 
+if __name__ == '__main__':
     print __doc__.strip()

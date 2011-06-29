@@ -16,19 +16,19 @@ r_author = re.compile(r'(?ims)<dd class="author">.*?</dt>')
 r_authorb = re.compile(r'(?ims)<b>.*</b>')
 
 def getquote(jenni, input):
-	global quoteuri
-	global cleanup
-	bytes = web.get(quoteuri)
-	paragraphs = r_paragraph.findall(bytes)
-	author_para = r_author.findall(bytes)
-	author_para_b = r_authorb.findall(author_para[0])
-	quote = re.sub(r'<[^>]*?>', '', str(paragraphs[0]))
-	author_para_b =  re.sub(r'<[^>]*?>', '', author_para_b[0])
-	quote += "-- " + author_para_b
-	jenni.say(quote)
+    global quoteuri
+    global cleanup
+    bytes = web.get(quoteuri)
+    paragraphs = r_paragraph.findall(bytes)
+    author_para = r_author.findall(bytes)
+    author_para_b = r_authorb.findall(author_para[0])
+    quote = re.sub(r'<[^>]*?>', '', str(paragraphs[0]))
+    author_para_b =  re.sub(r'<[^>]*?>', '', author_para_b[0])
+    quote += "-- " + author_para_b
+    jenni.say(quote)
 getquote.commands = ['q']
 getquote.priority = 'medium'
 getquote.example = '.q'
 
 if __name__ == '__main__':
-	print __doc__.strip()
+    print __doc__.strip()

@@ -164,7 +164,7 @@ def southparktimes (jenni, input):
             send = t.index('</b>', sidx)
 
             if sidx == -1 or send == -1: break
-            
+
             stitle = t[sidx+3:send].strip()
             m = re.search('\(([^)]+)\)$', stitle)
             if m is None: break

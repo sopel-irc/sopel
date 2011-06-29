@@ -21,7 +21,7 @@ def showstats (jenni, input):
     prescores = rankings(text)
     i = 1
     c = text[1]
-    
+
     if c.isdigit():
         c = int(c)
         for z in prescores[:c]:
@@ -35,7 +35,7 @@ def showstats (jenni, input):
         jenni.say(t)
         for y in prescores:
             if y[0] == t:
-                jenni.msg(input.nick, STRINGS['SCORE_ROW'] % (j, y[0], y[3], y[1], y[2], float(y[3])/float(y[1]), float(y[2])/float(y[1])*100, ( float(y[3]) / int(y[1]) ) / ( 1.01 - ( float(y[2]) / int(y[1]) ) )))            
+                jenni.msg(input.nick, STRINGS['SCORE_ROW'] % (j, y[0], y[3], y[1], y[2], float(y[3])/float(y[1]), float(y[2])/float(y[1])*100, ( float(y[3]) / int(y[1]) ) / ( 1.01 - ( float(y[2]) / int(y[1]) ) )))
             j += 1
 
 showstats.commands = ['unostats2']

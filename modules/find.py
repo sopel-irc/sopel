@@ -26,7 +26,7 @@ def collectlines(jenni, input):
     line = unicode(input.group())
     if line.startswith("s/"):
         return
-    else:    
+    else:
         list.append(line)
     del list[:-20]
     search_dict[input.nick] = list
@@ -49,18 +49,18 @@ def findandreplace(jenni, input):
         return
     current_list = search_dict[input.nick]
     phrase = unicode(current_list[-1])
-    
+
     if text.endswith("/g"):
         new_phrase = freplace(current_list, pattern, replacement, phrase, 0)
     else:
         new_phrase = freplace(current_list, pattern, replacement, phrase, 1)
-    
+
     # Prevents abuse; apparently there is an RFC spec about how servers handle
     # messages that contain more than 512 characters.
     if new_phrase:
         if len(new_phrase) > 512:
             new_phrase[511:]
-    
+
     # Save the new "edited" message.
     list = search_dict[input.nick]
     list.append(new_phrase)
@@ -106,7 +106,7 @@ def meant (jenni, input):
 
     text = unicode(input.group())
     text = text.split(":",1)
-    
+
     user = text[0]
     matching = unicode(text[1][1:])
 
