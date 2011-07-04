@@ -9,7 +9,7 @@ http://inamidst.com/phenny/
 """
 
 import sys, re, time, traceback
-import socket, asyncore, asynchat
+import socket, asyncore, asynchat, ssl
 
 class Origin(object):
     source = re.compile(r'([^!]*)!?([^@]*)@?(.*)')
@@ -65,22 +65,27 @@ class Bot(asynchat.async_chat):
             self.__write(args, text)
         except Exception, e: pass
 
-    def run(self, host, port=6667, ssl=False):
-        self.initiate_connect(host, port, ssl)
+    def run(self, host, port=6667, useSSL=False):
+        self.initiate_connect(host, port, useSSL)
 
-    def initiate_connect(self, host, port, ssl):
+    def initiate_connect(self, host, port, useSSL):
         if self.verbose:
             message = 'Connecting to %s:%s...' % (host, port)
             print >> sys.stderr, message,
-        self.create_socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.connect((host, port))
+        self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-        # if ssl?
-        if ssl:
-            import ssl
-            self.socket = ssl.wrap_socket(self.socket, do_handshake_on_connect=False)
+        # try ssl if we want it
+        if useSSL:
+            try:
+                self.socket = ssl.wrap_socket(self.socket)
+            except Exception as err:
+                return
 
-        try: asyncore.loop()
+        self.socket.connect((host, port))
+        self.set_socket(self.socket)
+        
+        try:
+            asyncore.loop()
         except KeyboardInterrupt:
             sys.exit()
 
