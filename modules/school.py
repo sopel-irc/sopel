@@ -20,8 +20,9 @@ r_findtitle = re.compile(r'(?ims)<span\sclass\=\"roster\-name\">[)(\'\,\%\&\:\;\
 
 r_findreq = re.compile(r'(?ims)\r<br>.*<h3>')
 
-def classes(jenni, input):
-    """ shows classes at OSU  """
+#def classes(jenni, input):
+#    """ shows classes at OSU  """
+#    pass
     '''
     info = input.group(2)
     info = info.split()
@@ -144,8 +145,8 @@ def classes(jenni, input):
     if uni == "osu":
         jenni.say("Offered: " + str(req))
     '''
-classes.commands = ['class']
-classes.priority = 'high'
+#classes.commands = ['class']
+#classes.priority = 'high'
 
 
 if __name__ == '__main__':
