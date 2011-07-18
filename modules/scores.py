@@ -57,9 +57,10 @@ def rmpoint(jenni, input):
             jenni.reply("I'm sorry, but I'm afraid I can't do that!")
         else:
             nick = nick.lower()
-            #if nick in scores_dict:
-            scores_dict[nick] = [0,0]
-            scores_dict[nick][1] += 1
+            if nick in scores_dict:
+                scores_dict[nick][1] += 1
+            else:
+                scores_dict[nick] = [0,0]
             scores_file = open("scores.txt", "w")
             pickle.dump(scores_dict, scores_file)
             msg = "%s: +%d/-%d, %d" % (nick, scores_dict[nick][0], scores_dict[nick][1], scores_dict[nick][0] - scores_dict[nick][1])
