@@ -155,7 +155,7 @@ def meant (jenni, input):
     # output
     if new_phrase:
         new_phrase = new_phrase.replace("\\", "\\\\")
-        phrase = "%s thinks %s \x0300,01meant:\x03 %s" % (input.nick, user, new_phrase)
+        phrase = "%s thinks %s \x02meant:\x02 %s" % (input.nick, user, new_phrase)
         jenni.say(phrase)
 
 meant.rule = r'.*\:\s.*'
