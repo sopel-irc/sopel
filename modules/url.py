@@ -20,7 +20,7 @@ import web
 # this variable is to determine when to use bitly. If the URL is more
 # than this length, it'll display a bitly URL instead. To disable bit.ly, put None
 # even if it's set to None, triggering .bitly command will still work!
-BITLY_TRIGGER_LEN = 50
+BITLY_TRIGGER_LEN = 65
 
 # do not edit below this line unless you know what you're doing
 bitly_loaded = 0
@@ -41,7 +41,7 @@ INVALID_WEBSITE = 0x01
 
 def find_title(url):
     """
-    This finds the title when provided with a string of a URL. It returns "
+    This finds the title when provided with a string of a URL."
     """
     uri = url
 
