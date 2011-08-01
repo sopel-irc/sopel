@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """
 countdown.py - Jenni Countdown Module
-Copyright 2011, Michael Yanovichh
+Copyright 2011, Michael Yanovich
 Licensed under the Eiffel Forum License 2.
 
 http://inamidst.com/phenny/

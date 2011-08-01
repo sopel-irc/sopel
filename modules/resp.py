@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """
 resp.py - Jenni Response Module
-Author: Michael S. Yanovich, http://opensource.osu.edu/
+Author: Michael Yanovich, yanovich.net
 About: http://inamidst.com/phenny/
 
 This module tries to make jenni appear more "affection."

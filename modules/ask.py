@@ -1,8 +1,10 @@
 #!/usr/bin/env python
 """
-scores.py - Ask Module
-Author: Michael S. Yanovich http://opensource.cse.ohio-state.edu/
-Jenni (About): http://inamidst.com/phenny/
+ask.py - Ask Module
+Author: Michael Yanovich, http://yanovich.net/
+Licensed under the Eiffel Forum License 2.
+
+Phenny (About): http://inamidst.com/phenny/
 """
 
 import random, string

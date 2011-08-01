@@ -1,6 +1,6 @@
 """
 url.py - Jenni Bitly Module
-Author: Michael Yanovich, http://yanovich.net/
+Author: Michael Yanovich, yanovich.net
 About: http://inamidst.com/phenny/
 
 This module will record all URLs to bitly via an api key and account.
