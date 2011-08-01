@@ -7,6 +7,9 @@ Licensed under the Eiffel Forum License 2.
 
 This module detects common phrases that many times can be responded with
 "That's what she said."
+
+It also allows users to add new "that's what she said" jokes to it's library 
+by following any appropriate statement with ".twss".
 """
 
 import urllib2
@@ -14,6 +17,10 @@ import re
 import os
 import sys
 from time import sleep
+import pickle
+
+
+last = "DEBUG_ME" # if you see this in the terminal, something broke.
 
 if not os.path.exists("modules/twss.txt"):
     f = open("modules/twss.txt", "w")
@@ -48,14 +55,33 @@ if not os.path.exists("modules/twss.txt"):
              f.write(re.sub("[^\w\s]", "", lowercase) + "\n")
     f.close()
 
+
 def say_it(jenni, input):
+    global last
+    user_quotes = None
     with open("modules/twss.txt") as f:
-        quotes = frozenset([line.rstrip() for line in f])
+        scraped_quotes = frozenset([line.rstrip() for line in f])
+    if os.path.exists("modules/twss_user_added.txt"):
+        with open("modules/twss_user_added.txt") as f2:
+            user_quotes = frozenset([line.rstrip() for line in f2])
+    quotes = scraped_quotes.union(user_quotes) if user_quotes else scraped_quotes
     formatted = input.group(1).lower()
     if re.sub("[^\w\s]", "", formatted) in quotes:
         jenni.say("That's what she said.")
+    last = re.sub("[^\w\s]", "", formatted) 
 say_it.rule = r"(.*)"
 say_it.priority = "low"
+
+
+def add_twss(jenni, input):
+    print last
+    with open("modules/twss_user_added.txt", "a") as f:
+        f.write(re.sub(r"[^\w\s]", "", last.lower()) + "\n")
+        f.close()
+    jenni.say("That's what she said.")
+add_twss.commands = ["twss"]
+add_twss.priority = "low"
+
 
 if __name__ == '__main__':
     print __doc__.strip()
