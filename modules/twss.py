@@ -54,7 +54,7 @@ def say_it(jenni, input):
     formatted = input.group(1).lower()
     if re.sub("[^\w\s]", "", formatted) in quotes:
         jenni.say("That's what she said.")
-        print len(quotes)
+say_it.rule = r"(.*)"
 say_it.priority = "low"
 
 if __name__ == '__main__':
