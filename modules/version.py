@@ -1,5 +1,6 @@
+#!/usr/bin/env python
 """
-version.py
+version.py -- Display's info about the current version of jenni
 Author: Silas Baronda
 Jenni (About): http://inamidst.com/phenny/
 """

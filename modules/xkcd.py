@@ -1,7 +1,9 @@
 #!/usr/bin/env python
 """
 xkcd.py - XKCD Module
-Author: Michael S. Yanovich and Goose Morgan http://opensource.cse.ohio-state.edu/
+Author: Michael Yanovich and Morgan Goose
+Licensed under the Eiffel Forum License 2.
+
 Jenni (About): http://inamidst.com/phenny/
 """
 
