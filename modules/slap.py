@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """
 scores.py - Slap Module
-Author: Michael S. Yanovich http://opensource.cse.ohio-state.edu/
+Author: Michael Yanovich, yanovich.net
 Jenni (About): http://inamidst.com/phenny/
 """
 

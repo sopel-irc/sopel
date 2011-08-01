@@ -1,15 +1,15 @@
 #!/usr/bin/env python
 """
-mod.py - Channel Module
+admin.py - Channel Module
 Author: Alek Rollyson, http://opensource.osu.edu/
-Jenni (about): http://inamidst.com/phenny/
+Licensed under the Eiffel Forum License 2.
 
 Beefed up by Alek Rollyson. added functions for op, deop, voice, devoice
 Uses NickServ ACC to verify that a nick is identified with services, as well
 as m5's admin list as a double verification system. Should eliminate the possibility
 of nick spoofing. May only work with freenode, hasn't been tested on other networks.
 
-Forked by Michael S. Yanovich, http://opensource.osu.edu/~yanovich/
+Forked by Michael Yanovich, yanovich.net
 """
 
 import re, time, sched

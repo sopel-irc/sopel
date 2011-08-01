@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """
 scores.py - Score Module
-Author: Michael S. Yanovich and Matt Meinwald, http://opensource.cse.ohio-state.edu/
+Author: Michael Yanovich, yanovich.net and Matt Meinwald,
 Jenni (About): http://inamidst.com/jenni/
 """
 

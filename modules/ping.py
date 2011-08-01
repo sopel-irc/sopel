@@ -2,7 +2,7 @@
 """
 ping.py - Jenni Ping Module
 Author: Sean B. Palmer, inamidst.com
-Modified by: Michael S. Yanovich
+Modified by: Michael Yanovich
 About: http://inamidst.com/phenny/
 """
 

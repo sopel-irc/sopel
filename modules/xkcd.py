@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """
 xkcd.py - XKCD Module
-Author: Michael S. Yanovich and Goose Morgan http://opensource.cse.ohio-state.edu/
+Author: Michael Yanovich and Goose Morgan yanovich.net
 Jenni (About): http://inamidst.com/phenny/
 """
 
