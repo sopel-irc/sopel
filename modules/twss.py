@@ -1,3 +1,14 @@
+#!/usr/bin/env python
+"""
+twss.py - Jenni's That's What She Said Module
+Copyright 2011 - Joel Friedly and Matt Meinwald
+
+Licensed under the Eiffel Forum License 2.
+
+This module detects common phrases that many times can be responded with
+"That's what she said."
+"""
+
 import urllib2
 import re
 import os
@@ -36,13 +47,15 @@ if not os.path.exists("modules/twss.txt"):
                  lowercase = inner_re.findall(lowercase)[0]
              f.write(re.sub("[^\w\s]", "", lowercase) + "\n")
     f.close()
-    
+
 def say_it(jenni, input):
-    with open("modules/twss.txt") as f: 
+    with open("modules/twss.txt") as f:
         quotes = frozenset([line.rstrip() for line in f])
     formatted = input.group(1).lower()
     if re.sub("[^\w\s]", "", formatted) in quotes:
         jenni.say("That's what she said.")
         print len(quotes)
-say_it.rule = r"(.*)" 
 say_it.priority = "low"
+
+if __name__ == '__main__':
+    print __doc__.strip()

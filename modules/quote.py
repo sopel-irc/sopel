@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """
 quote.py - Jenni Quote Module
-Copyright 2008-10, Michael Yanovich, opensource.osu.edu/~yanovich/wiki/
+Copyright 2008-10, Michael Yanovich, yanovich.net
 Licensed under the Eiffel Forum License 2.
 
 http://inamidst.com/phenny/

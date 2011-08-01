@@ -1,7 +1,9 @@
 #!/usr/bin/env python
 """
 ham.py - Ham Radio Module
-Author: Michael Yanovich - http://yanovich.net/
+Author: Michael Yanovich, yanovich.net
+Licensed under the Eiffel Forum License 2.
+
 This contains a collection of lookups and calls for ham radio enthusiasts.
 """
 

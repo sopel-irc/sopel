@@ -1,10 +1,12 @@
 #!/usr/bin/env python
 """
 find.py - Jenni Spell Checking Module
-Author: Michael S. Yanovich, http://opensource.osu.edu/
-Contributions from: Matt Meinwald and Morgan Goose
+Author: Michael Yanovich, http://yanovich.net
+Licensed under the Eiffel Forum License 2.
+
 About: http://inamidst.com/phenny/
 
+Contributions from: Matt Meinwald and Morgan Goose
 This module will fix spelling errors if someone corrects them.
 """
 

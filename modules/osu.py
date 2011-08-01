@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """
 osu.py - Jenni OSU Module
-Copyright 2011, Michael S. Yanovich, yanovich.net
+Copyright 2011, Michael Yanovich, yanovich.net
 Licensed under the Eiffel Forum License 2.
 
 http://inamidst.com/phenny/
