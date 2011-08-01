@@ -23,7 +23,7 @@ r_findreq = re.compile(r'(?ims)\r<br>.*<h3>')
 #def classes(jenni, input):
 #    """ shows classes at OSU  """
 #    pass
-    '''
+'''
     info = input.group(2)
     info = info.split()
     if len(info) > 3 or len(info) < 3:
@@ -144,7 +144,7 @@ r_findreq = re.compile(r'(?ims)\r<br>.*<h3>')
     jenni.say(str(description_class))
     if uni == "osu":
         jenni.say("Offered: " + str(req))
-    '''
+'''
 #classes.commands = ['class']
 #classes.priority = 'high'
 
