@@ -10,16 +10,16 @@ http://inamidst.com/phenny/
 import re, urllib
 import web
 
-whyuri = 'http://www.leonatkinson.com/random/index.php/lyrics.html'
-r_paragraph = re.compile(r'(?ims)<tr><td bgcolor=".*?">.*?</td></tr>')
+whyuri = 'http://www.leonatkinson.com/random/index.php/rest.html?method=advice'
+r_paragraph = re.compile(r'<quote>.*?</quote>')
 
 def getwhy(jenni, input):
     global whyuri
     global r_paragraph
     bytes = web.get(whyuri)
     paragraphs = r_paragraph.findall(bytes)
-    line = re.sub(r'<[^>]*?>', '', str(paragraphs[1]))
-    jenni.say(line)
+    line = re.sub(r'<[^>]*?>', '', str(paragraphs[0]))
+    jenni.say(line.lower().capitalize() + ".")
 getwhy.commands = ['why']
 getwhy.thread = False
 
