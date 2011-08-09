@@ -12,7 +12,7 @@ This module will fix spelling errors if someone corrects them.
 
 import pickle, time, re
 try:
-    search_file = open("search.txt","r")
+    search_file = open("find.txt","r")
     search_dict = pickle.load(search_file)
 except IOError:
     search_dict = dict()
@@ -21,25 +21,31 @@ exp = re.compile(r"(?<!\\)/")
 
 # Create a temporary log of the most recent thing anyone says.
 def collectlines(jenni, input):
+    # don't log things in PM
+    if not input.sender.startswith('#'): return
     global search_dict
     try:
-        list = search_dict[input.nick]
+        list = search_dict[input.sender][input.nick]
     except:
         list=[]
+        search_dict[input.sender] = { }
     line = unicode(input.group())
     if line.startswith("s/"):
         return
     else:
         list.append(line)
-    del list[:-20]
-    search_dict[input.nick] = list
-    search_file = open("search.txt","w")
+    del list[:-10]
+    search_dict[input.sender][input.nick] = list
+    search_file = open("find.txt","w")
     pickle.dump(search_dict, search_file)
     search_file.close()
 collectlines.rule = '.*'
 collectlines.priority = 'low'
 
 def findandreplace(jenni, input):
+    # don't bother in PM
+    if not input.sender.startswith('#'): return
+
     global search_dict
     global search_file
     # obtain "old word" and "new word"
@@ -48,9 +54,10 @@ def findandreplace(jenni, input):
     pattern = list_pattern[1]
     try:
         replacement = list_pattern[2]
-    except:
-        return
-    current_list = search_dict[input.nick]
+    except: return
+    try:
+        current_list = search_dict[input.sender][input.nick]
+    except: return # no nick found in this room, fail silently
     phrase = unicode(current_list[-1])
 
     if text.endswith("/g"):
@@ -65,10 +72,10 @@ def findandreplace(jenni, input):
             new_phrase[511:]
 
     # Save the new "edited" message.
-    list = search_dict[input.nick]
+    list = search_dict[input.sender][input.nick]
     list.append(new_phrase)
-    search_dict[input.nick] = list
-    search_file = open("search.txt","w")
+    search_dict[input.sender][input.nick] = list
+    search_file = open("find.txt","w")
     pickle.dump(search_dict, search_file)
     search_file.close()
 
@@ -103,6 +110,9 @@ def freplace(list, pattern, replacement, phrase, flag):
                 break
 
 def meant (jenni, input):
+    # don't bother in PM
+    if not input.sender.startswith('#'): return
+
     global search_dict
     global search_file
     global exp
@@ -130,7 +140,7 @@ def meant (jenni, input):
 
     # If someone does it for a user that hasn't said anything
     try:
-        current_list = search_dict[user]
+        current_list = search_dict[input.sender][user]
     except:
         return
     phrase = unicode(current_list[-1])
@@ -147,10 +157,10 @@ def meant (jenni, input):
             new_phrase[511:]
 
     # Save the new "edited" message.
-    list = search_dict[user]
+    list = search_dict[input.sender][user]
     list.append(new_phrase)
-    search_dict[user] = list
-    search_file = open("search.txt","w")
+    search_dict[input.sender][user] = list
+    search_file = open("find.txt","w")
     pickle.dump(search_dict, search_file)
     search_file.close()
 
