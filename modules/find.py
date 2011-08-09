@@ -27,8 +27,7 @@ def collectlines(jenni, input):
     try:
         list = search_dict[input.sender][input.nick]
     except:
-        list=[]
-        search_dict[input.sender] = { }
+        list = []
     line = unicode(input.group())
     if line.startswith("s/"):
         return
