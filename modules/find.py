@@ -24,6 +24,8 @@ def collectlines(jenni, input):
     # don't log things in PM
     if not input.sender.startswith('#'): return
     global search_dict
+    if input.sender not in search_dict:
+        search_dict[input.sender] = { }
     try:
         list = search_dict[input.sender][input.nick]
     except:
