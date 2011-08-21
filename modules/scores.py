@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 """
 scores.py - Score Module
-Author: Michael Yanovich, yanovich.net, Matt Meinwald and Samuel Clements
-Jenni (About): http://inamidst.com/jenni/
+Author: Michael Yanovich, yanovich.net, Matt Meinwald, and Samuel Clements
+Jenni -- https://github.com/myano/jenni
 """
 
 import pickle
@@ -19,7 +19,7 @@ class Scores:
         else:
             self.scores_dict = pickle.load(scores_file)
             scores_file.close()
-    
+
     def str_score(self, nick):
         return "%s: +%s/-%s, %s" % (nick, self.scores_dict[nick][0], self.scores_dict[nick][1], self.scores_dict[nick][0] - self.scores_dict[nick][1])
 
@@ -32,21 +32,21 @@ class Scores:
             nick = nick.lower()
             if not nick in self.scores_dict:
                 self.scores_dict[nick] = [0, 0]
-            
+
             # Add a point if points is TRUE, remove if FALSE
             if points:
                 self.scores_dict[nick][0] += 1
             else:
                 self.scores_dict[nick][1] += 1
-                
+
             self.save()
             jenni.say(self.str_score(nick))
-        
+
     def save(self):
         scores_file = open(self.scores_filename, "w")
         pickle.dump(self.scores_dict, scores_file)
         scores_file.close()
-    
+
     def view_scores(self, jenni, input):
         nick = unicode(input.group(2))
         top_scores = [ ]
@@ -54,7 +54,7 @@ class Scores:
             if nick != "None":
                 nick = nick.lower().rstrip().lstrip()
                 try:
-                    str_say = score(nick)
+                    str_say = self.str_score(nick)
                 except:
                     str_say = "Sorry no score for %s found." % (nick)
             else:
@@ -70,7 +70,7 @@ class Scores:
             jenni.say(str_say)
         else:
             jenni.say("There are currently no users with a score.")
-    
+
     def setpoint(self, jenni, input, nick):
         if not nick:
             jenni.reply("I'm sorry, but I'm afraid I can't add that user!")
@@ -88,7 +88,7 @@ class Scores:
                         add = int(stuff_split[1])
                         sub = int(stuff_split[2])
                     except:
-                        jenni.say("I'm sorry, but I'm afraid I don't understand what you want me to do!")
+                        jenni.reply("I'm sorry, but I'm afraid I don't understand what you want me to do!")
                         return
                     try:
                         nick = nick.lower()
@@ -101,6 +101,22 @@ class Scores:
                     except ValueError:
                         jenni.reply("I'm sorry but I refuse to do that!")
 
+    def rmuser(self, jenni, input, nick):
+        if not nick:
+            jenni.reply("I'm sorry, but I'm afraid I can't remove that user!")
+        else:
+            if nick in self.scores_dict:
+                if input.admin:
+                    #scores_file = open("scores.txt", "w")
+                    del self.scores_dict[nick]
+                    jenni.say("User, %s, has been removed." % (nick))
+                    #pickle.dump(scores_dict, scores_file)
+                    #scores_file.close()
+                    self.save()
+                else:
+                    jenni.say("I'm sorry, %s. I'm afraid I can't do that!" % (input.nick))
+            else:
+                jenni.say("I'm sorry, %s, but I can not remove a person that does not exist!" % (input.nick))
 
 # Jenni commands
 scores = Scores()
@@ -137,6 +153,16 @@ def setpoint(jenni, input):
     scores.setpoint(jenni, input, nick)
 setpoint.commands = ['setpoint']
 setpoint.priority = 'medium'
+
+def removeuser(jenni, input):
+    """.rmuser <nick> -- Removes a given user from the system."""
+    nick = input.group(2)
+    if nick != None:
+        nick = nick.lstrip().rstrip()
+    scores.rmuser(jenni, input, nick)
+removeuser.commands = ['rmuser']
+removeuser.priority = 'medium'
+
 
 if __name__ == '__main__':
     print __doc__.strip()
