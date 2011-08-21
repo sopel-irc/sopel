@@ -1,172 +1,140 @@
 #!/usr/bin/env python
 """
 scores.py - Score Module
-Author: Michael Yanovich, yanovich.net and Matt Meinwald,
+Author: Michael Yanovich, yanovich.net, Matt Meinwald and Samuel Clements
 Jenni (About): http://inamidst.com/jenni/
 """
 
 import pickle
+import os
 
-try:
-    scores_file = open("scores.txt","r")
-except IOError:
-    scores_dict = dict()
-else:
-    scores_dict = pickle.load(scores_file)
-    scores_file.close()
+class Scores:
+    def __init__(self):
+        self.scores_filename = os.path.expanduser('~/.jenni/scores.txt')
 
-def addpoint(jenni, input):
+        try:
+            scores_file = open(self.scores_filename,"r")
+        except IOError:
+            self.scores_dict = dict()
+        else:
+            self.scores_dict = pickle.load(scores_file)
+            scores_file.close()
+    
+    def str_score(self, nick):
+        return "%s: +%s/-%s, %s" % (nick, self.scores_dict[nick][0], self.scores_dict[nick][1], self.scores_dict[nick][0] - self.scores_dict[nick][1])
+
+    def editpoints(self, jenni, input, nick, points):
+        if not nick:
+            jenni.reply("I'm sorry, but I'm afraid I can't add that user!")
+        elif input.nick == nick:
+            jenni.reply("I'm sorry, but I can't let you do that!")
+        else:
+            nick = nick.lower()
+            if not nick in self.scores_dict:
+                self.scores_dict[nick] = [0, 0]
+            
+            # Add a point if points is TRUE, remove if FALSE
+            if points:
+                self.scores_dict[nick][0] += 1
+            else:
+                self.scores_dict[nick][1] += 1
+                
+            self.save()
+            jenni.say(self.str_score(nick))
+        
+    def save(self):
+        scores_file = open(self.scores_filename, "w")
+        pickle.dump(self.scores_dict, scores_file)
+        scores_file.close()
+    
+    def view_scores(self, jenni, input):
+        nick = unicode(input.group(2))
+        top_scores = [ ]
+        if len(self.scores_dict) >= 1:
+            if nick != "None":
+                nick = nick.lower().rstrip().lstrip()
+                try:
+                    str_say = score(nick)
+                except:
+                    str_say = "Sorry no score for %s found." % (nick)
+            else:
+                q = 0
+                str_say = "\x0300Top 10:\x03"
+                for key, value in sorted(self.scores_dict.iteritems(), key=lambda (k,v): (v[0]-v[1]), reverse=True):
+                    top_scores.append("%s: +%s/-%s, %s" % (key, value[0], value[1], value[0] - value[1]))
+                    str_say += " %s |" % (top_scores[q])
+                    q += 1
+                    if q > 9:
+                        break
+                del top_scores[10:]
+            jenni.say(str_say)
+        else:
+            jenni.say("There are currently no users with a score.")
+    
+    def setpoint(self, jenni, input, nick):
+        if not nick:
+            jenni.reply("I'm sorry, but I'm afraid I can't add that user!")
+        else:
+            if not input.admin or input.nick == nick:
+                jenni.reply("I'm sorry, but I'm afraid I can't do that!")
+            else:
+                stuff = nick
+                stuff_split = stuff.split()
+                if len(stuff_split) < 3:
+                    jenni.reply("I'm sorry, but I'm afraid I don't understand what you want me to do!")
+                else:
+                    nick = stuff_split[0]
+                    try:
+                        add = int(stuff_split[1])
+                        sub = int(stuff_split[2])
+                    except:
+                        jenni.say("I'm sorry, but I'm afraid I don't understand what you want me to do!")
+                        return
+                    try:
+                        nick = nick.lower()
+                        if nick in self.scores_dict:
+                            self.scores_dict[nick] = [add, sub]
+                            self.save()
+                            jenni.say(self.str_score(nick))
+                        else:
+                            jenni.reply("The nickname does not exist!")
+                    except ValueError:
+                        jenni.reply("I'm sorry but I refuse to do that!")
+
+
+# Jenni commands
+scores = Scores()
+
+def addpoint_command(jenni, input):
     """.addpoint <nick> - Adds 1 point to the score system for <nick>."""
-
     nick = input.group(2)
     if nick != None:
-        nick = nick.lstrip().rstrip().split()[0]
+        nick = nick.strip().split()[0]
+    scores.editpoints(jenni, input, nick, True)
+addpoint_command.commands = ['addpoint']
+addpoint_command.priority = 'high'
 
-    global scores_dict
-    if not nick:
-        jenni.reply("I'm sorry, but I'm afraid I can't add that user!")
-    else:
-        if input.nick == nick:
-            jenni.reply("I'm sorry, but I'm afraid I can't do that!")
-        else:
-            nick = nick.lower()
-            if nick in scores_dict:
-                scores_dict[nick][0] += 1
-            else:
-                scores_dict[nick] = [1, 0]
-            scores_file = open("scores.txt", "w")
-            pickle.dump(scores_dict, scores_file)
-            msg = "%s: +%d/-%d, %d" % (nick, scores_dict[nick][0], scores_dict[nick][1], scores_dict[nick][0] - scores_dict[nick][1])
-            jenni.say(msg)
-            scores_file.close()
-addpoint.commands = ['addpoint']
-addpoint.priority = 'high'
-
-def rmpoint(jenni, input):
-    """.rmpoint <nick> - Removes 1 point to the score system for <nick>."""
-
+def rmpoint_command(jenni, input):
+    """.rmpoint <nick> - Adds 1 point to the score system for <nick>."""
     nick = input.group(2)
     if nick != None:
-        nick = nick.lstrip().rstrip().split()[0]
+        nick = nick.strip().split()[0]
+    scores.editpoints(jenni, input, nick, False)
+rmpoint_command.commands = ['rmpoint']
+rmpoint_command.priority = 'high'
 
-    global scores_dict
-    if not nick:
-        jenni.reply("I'm sorry, but I'm afraid I can't add that user!")
-    else:
-        if input.nick == nick:
-            jenni.reply("I'm sorry, but I'm afraid I can't do that!")
-        else:
-            nick = nick.lower()
-            if nick in scores_dict:
-                scores_dict[nick][1] += 1
-            else:
-                scores_dict[nick] = [0,0]
-            scores_file = open("scores.txt", "w")
-            pickle.dump(scores_dict, scores_file)
-            msg = "%s: +%d/-%d, %d" % (nick, scores_dict[nick][0], scores_dict[nick][1], scores_dict[nick][0] - scores_dict[nick][1])
-            jenni.say(msg)
-            scores_file.close()
-            #else:
-            #    jenni.reply("I'm sorry, but I'm afraid I can't do that!")
-rmpoint.commands = ['rmpoint']
-rmpoint.priority = 'high'
-
-def scores(jenni, input):
+def view_scores(jenni, input):
     """.scores - Lists all users and their point values in the system."""
-
-    global scores_dict
-    info = unicode(input.group(2))
-    top_scores = [ ]
-    if len(scores_dict) >= 1:
-        if info != "None":
-            info = info.lower().rstrip().lstrip()
-            try:
-                str_say = "%s: +%s/-%s, %s" % (info, scores_dict[info][0], scores_dict[info][1], scores_dict[info][0] - scores_dict[info][1])
-            except:
-                str_say = "Sorry no score for %s found." % (info)
-        else:
-            q = 0
-            str_say = "\x0300Top 10:\x03"
-            for key, value in sorted(scores_dict.iteritems(), key=lambda (k,v): (v[0]-v[1]), reverse=True):
-                top_scores.append("%s: +%s/-%s, %s" % (key, value[0], value[1], value[0] - value[1]))
-                str_say += " %s |" % (top_scores[q])
-                q += 1
-                if q > 9:
-                    break
-            del top_scores[10:]
-        jenni.say(str_say)
-    else:
-        jenni.say("There are currently no users with a score.")
-scores.commands = ['scores']
-scores.priority = 'medium'
-
-def rmuser(jenni, input):
-    """.rmuser - Removes a user from the scores system."""
-
-    nick = input.group(2)
-    if nick != None:
-        nick = nick.lstrip().rstrip().split()[0]
-
-    global scores_dict
-    if nick == "" or nick == None:
-        jenni.say("I'm sorry, " + str(input.nick) + ". I'm afraid I can't remove that user!")
-    else:
-        if nick in scores_dict:
-            if input.admin:
-                scores_file = open("scores.txt", "w")
-                del scores_dict[nick]
-                jenni.say("User, " + str(nick) + ", has been removed.")
-                pickle.dump(scores_dict, scores_file)
-                scores_file.close()
-            else:
-                jenni.say("I'm sorry, " + str(input.nick) + ". I'm afraid I can't do that!")
-        else:
-            jenni.say("I'm sorry, " + str(input.nick) + ", but I can not remove a person that does not exist!")
-rmuser.commands = ['rmuser']
-rmuser.priority = 'medium'
+    scores.view_scores(jenni, input)
+view_scores.commands = ['scores']
+view_scores.priority = 'medium'
 
 def setpoint(jenni, input):
     """.setpoint <nick> <number> <number> - Sets points for given user."""
-
-    info = input.group(2)
-    if info != None:
-        info = info.lstrip().rstrip()
-
-    global scores_dict
-    if not info:
-        jenni.reply("I'm sorry, but I'm afraid I can't add that user!")
-    else:
-        stuff = info
-        stuff_split = stuff.split()
-        if input.admin:
-            if len(stuff_split) < 3:
-                jenni.reply("I'm sorry, but I'm afraid I don't understand what you want me to do!1")
-            else:
-                nick = stuff_split[0]
-                try:
-                    add = int(stuff_split[1])
-                    sub = int(stuff_split[2])
-                except:
-                    jenni.say("I'm sorry, but I'm afraid I don't understand what you want me to do!2")
-                    return
-                try:
-                    if input.nick == nick:
-                        jenni.reply("I'm sorry, but I'm afraid I can't do that!3")
-                    else:
-                        nick = nick.lower()
-                        if nick in scores_dict:
-                            scores_dict[nick] = [add, sub]
-                            scores_file = open("scores.txt", "w")
-                            pickle.dump(scores_dict, scores_file)
-                            msg = "%s: +%d/-%d, %d" % (nick, scores_dict[nick][0], scores_dict[nick][1], scores_dict[nick][0] - scores_dict[nick][1])
-                            jenni.say(msg)
-                            scores_file.close()
-                        else:
-                            jenni.reply("I'm sorry, but I'm afraid I can't do that!4")
-                except ValueError:
-                    jenni.reply("I'm sorry but I refuse to do that!5")
-        else:
-            jenni.reply("I'm sorry, but you are not one of my admins.6")
+    nick = input.group(2)
+    if nick != None:
+        nick = nick.lstrip().rstrip()
+    scores.setpoint(jenni, input, nick)
 setpoint.commands = ['setpoint']
 setpoint.priority = 'medium'
 
