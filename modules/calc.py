@@ -69,6 +69,8 @@ calc.example = '.calc 5 + 3'
 
 def c(jenni, input):
     """Google calculator."""
+    if not input.group(2):
+        return jenni.reply("Nothing to calculate.")
     q = input.group(2).encode('utf-8')
     q = q.replace('\xcf\x95', 'phi') # utf-8 U+03D5
     q = q.replace('\xcf\x80', 'pi') # utf-8 U+03C0
@@ -90,7 +92,7 @@ c.commands = ['c']
 c.example = '.c 5 + 3'
 
 def py(jenni, input):
-    query = input.group(2)
+    query = input.group(2).encode('utf-8')
     uri = 'http://tumbolia.appspot.com/py/'
     answer = web.get(uri + web.urllib.quote(query))
     if answer:
@@ -99,9 +101,11 @@ def py(jenni, input):
 py.commands = ['py']
 
 def wa(jenni, input):
+    if not input.group(2):
+        return jenni.reply("No search term.")
     query = input.group(2).encode('utf-8')
     uri = 'http://tumbolia.appspot.com/wa/'
-    answer = web.get(uri + web.urllib.quote(query))
+    answer = web.get(uri + web.urllib.quote(query.replace('+', '%2B')))
     if answer:
         jenni.say(answer)
     else: jenni.reply('Sorry, no result.')
