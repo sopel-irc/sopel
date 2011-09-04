@@ -10,17 +10,31 @@ http://inamidst.com/phenny/
 import re
 import web
 
+class Grab(web.urllib.URLopener):
+    def __init__(self, *args):
+        self.version = 'Mozilla/5.0 (Jenni)'
+        web.urllib.URLopener.__init__(self, *args)
+        self.addheader('Referer', 'https://github.com/sbp/jenni')
+    def http_error_default(self, url, fp, errcode, errmsg, headers):
+        return web.urllib.addinfourl(fp, [headers, errcode], "http:" + url)
+
 def search(query):
     """Search using AjaxSearch, and return its JSON."""
     uri = 'http://ajax.googleapis.com/ajax/services/search/web'
     args = '?v=1.0&safe=off&q=' + web.urllib.quote(query.encode('utf-8'))
+    handler = web.urllib._urlopener
+    web.urllib._urlopener = Grab()
     bytes = web.get(uri + args)
+    web.urllib._urlopener = handler
     return web.json(bytes)
 
 def result(query):
     results = search(query)
     try: return results['responseData']['results'][0]['unescapedUrl']
     except IndexError: return None
+    except TypeError:
+        print results
+        return False
 
 def count(query):
     results = search(query)
@@ -48,6 +62,7 @@ def g(jenni, input):
         if not hasattr(jenni.bot, 'last_seen_uri'):
             jenni.bot.last_seen_uri = {}
         jenni.bot.last_seen_uri[input.sender] = uri
+    elif uri is False: jenni.reply("Problem getting data from Google.")
     else: jenni.reply("No results found for '%s'." % query)
 g.commands = ['g']
 g.priority = 'high'
@@ -69,6 +84,8 @@ r_query = re.compile(
 )
 
 def gcs(jenni, input):
+    if not input.group(2):
+        return jenni.reply("Nothing to compare.")
     queries = r_query.findall(input.group(2))
     if len(queries) > 6:
         return jenni.reply('Sorry, can only compare up to six things.')
@@ -85,6 +102,51 @@ def gcs(jenni, input):
     reply = ', '.join('%s (%s)' % (t, formatnumber(n)) for (t, n) in results)
     jenni.say(reply)
 gcs.commands = ['gcs', 'comp']
+
+r_bing = re.compile(r'<h3><a href="([^"]+)"')
+
+def bing(jenni, input):
+    """Queries Bing for the specified input."""
+    query = input.group(2)
+    if query.startswith(':'):
+        lang, query = query.split(' ', 1)
+        lang = lang[1:]
+    else: lang = 'en-GB'
+    if not query:
+        return jenni.reply('.bing what?')
+
+    query = web.urllib.quote(query.encode('utf-8'))
+    base = 'http://www.bing.com/search?mkt=%s&q=' % lang
+    bytes = web.get(base + query)
+    m = r_bing.search(bytes)
+    if m:
+        uri = m.group(1)
+        jenni.reply(uri)
+        if not hasattr(jenni.bot, 'last_seen_uri'):
+            jenni.bot.last_seen_uri = {}
+        jenni.bot.last_seen_uri[input.sender] = uri
+    else: jenni.reply("No results found for '%s'." % query)
+bing.commands = ['bing']
+bing.example = '.bing swhack'
+
+r_ddg = re.compile(r'nofollow" class="[^"]+" href="(.*?)">')
+
+def ddg(jenni, input):
+    query = input.group(2)
+    if not query: return jenni.reply('.ddg what?')
+
+    query = web.urllib.quote(query.encode('utf-8'))
+    uri = 'http://duckduckgo.com/html/?q=%s&kl=uk-en' % query
+    bytes = web.get(uri)
+    m = r_ddg.search(bytes)
+    if m:
+        uri = m.group(1)
+        jenni.reply(uri)
+        if not hasattr(jenni.bot, 'last_seen_uri'):
+            jenni.bot.last_seen_uri = {}
+        jenni.bot.last_seen_uri[input.sender] = uri
+    else: jenni.reply("No results found for '%s'." % query)
+ddg.commands = ['ddg']
 
 if __name__ == '__main__':
     print __doc__.strip()
