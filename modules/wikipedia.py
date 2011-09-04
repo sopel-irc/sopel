@@ -7,12 +7,12 @@ Licensed under the Eiffel Forum License 2.
 http://inamidst.com/phenny/
 """
 
-import re, urllib
+import re, urllib, gzip, StringIO
 import web
 
-wikiuri = 'http://en.wikipedia.org/wiki/%s'
-wikisearch = 'http://en.wikipedia.org/wiki/Special:Search?' \
-                          + 'search=%s&fulltext=Search'
+wikiuri = 'http://%s.wikipedia.org/wiki/%s'
+# wikisearch = 'http://%s.wikipedia.org/wiki/Special:Search?' \
+#                            + 'search=%s&fulltext=Search'
 
 r_tr = re.compile(r'(?ims)<tr[^>]*>.*?</tr>')
 r_paragraph = re.compile(r'(?ims)<p[^>]*>.*?</p>|<li(?!n)[^>]*>.*?</li>')
@@ -24,7 +24,7 @@ r_redirect = re.compile(
 
 abbrs = ['etc', 'ca', 'cf', 'Co', 'Ltd', 'Inc', 'Mt', 'Mr', 'Mrs',
             'Dr', 'Ms', 'Rev', 'Fr', 'St', 'Sgt', 'pron', 'approx', 'lit',
-            'syn', 'transl', 'sess', 'fl', 'Op', 'Dec'] \
+            'syn', 'transl', 'sess', 'fl', 'Op', 'Dec', 'Brig', 'Gen'] \
     + list('ABCDEFGHIJKLMNOPQRSTUVWXYZ') \
     + list('abcdefghijklmnopqrstuvwxyz')
 t_sentence = r'^.{5,}?(?<!\b%s)(?:\.(?=[\[ ][A-Z0-9]|\Z)|\Z)'
@@ -59,30 +59,39 @@ def search(term):
         return uri[len('http://en.wikipedia.org/wiki/'):]
     else: return term
 
-def wikipedia(term, last=False):
+def wikipedia(term, language='en', last=False):
     global wikiuri
     if not '%' in term:
         if isinstance(term, unicode):
             t = term.encode('utf-8')
         else: t = term
         q = urllib.quote(t)
-        u = wikiuri % q
+        u = wikiuri % (language, q)
         bytes = web.get(u)
-    else: bytes = web.get(wikiuri % term)
+    else: bytes = web.get(wikiuri % (language, term))
+
+    if bytes.startswith('\x1f\x8b\x08\x00\x00\x00\x00\x00'):
+        f = StringIO.StringIO(bytes)
+        f.seek(0)
+        gzip_file = gzip.GzipFile(fileobj=f)
+        bytes = gzip_file.read()
+        gzip_file.close()
+        f.close()
+
     bytes = r_tr.sub('', bytes)
 
     if not last:
         r = r_redirect.search(bytes[:4096])
         if r:
             term = urllib.unquote(r.group(1))
-            return wikipedia(term, last=True)
+            return wikipedia(term, language=language, last=True)
 
     paragraphs = r_paragraph.findall(bytes)
 
     if not paragraphs:
         if not last:
             term = search(term)
-            return wikipedia(term, last=True)
+            return wikipedia(term, language=language, last=True)
         return None
 
     # Pre-process
@@ -115,7 +124,7 @@ def wikipedia(term, last=False):
     if not m:
         if not last:
             term = search(term)
-            return wikipedia(term, last=True)
+            return wikipedia(term, language=language, last=True)
         return None
     sentence = m.group(0)
 
@@ -127,17 +136,18 @@ def wikipedia(term, last=False):
         sentence = ' '.join(words) + ' [...]'
 
     if (('using the Article Wizard if you wish' in sentence)
-     or ('or add a request for it' in sentence)):
+     or ('or add a request for it' in sentence)
+     or ('in existing articles' in sentence)):
         if not last:
             term = search(term)
-            return wikipedia(term, last=True)
+            return wikipedia(term, language=language, last=True)
         return None
 
     sentence = '"' + sentence.replace('"', "'") + '"'
     sentence = sentence.decode('utf-8').encode('utf-8')
     wikiuri = wikiuri.decode('utf-8').encode('utf-8')
     term = term.decode('utf-8').encode('utf-8')
-    return sentence + ' - ' + (wikiuri % term)
+    return sentence + ' - ' + (wikiuri % (language, term))
 
 def wik(jenni, input):
     origterm = input.groups()[1]
@@ -146,12 +156,19 @@ def wik(jenni, input):
     origterm = origterm.encode('utf-8')
 
     term = urllib.unquote(origterm)
+    language = 'en'
+    if term.startswith(':') and (' ' in term):
+        a, b = term.split(' ', 1)
+        a = a.lstrip(':')
+        if a.isalpha():
+            language, term = a, b
     term = term[0].upper() + term[1:]
     term = term.replace(' ', '_')
 
-    try: result = wikipedia(term)
+    try: result = wikipedia(term, language)
     except IOError:
-        error = "Can't connect to en.wikipedia.org (%s)" % (wikiuri % term)
+        args = (language, wikiuri % (language, term))
+        error = "Can't connect to %s.wikipedia.org (%s)" % args
         return jenni.say(error)
 
     if result is not None:
