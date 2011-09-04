@@ -4,7 +4,9 @@ osu.py - Jenni OSU Module
 Copyright 2011, Michael Yanovich, yanovich.net
 Licensed under the Eiffel Forum License 2.
 
-http://inamidst.com/phenny/
+More info:
+ * Jenni: https://github.com/myano/jenni/
+ * Phenny: http://inamidst.com/phenny/
 
 The module contains various functions specific to The Ohio State University.
 """

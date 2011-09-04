@@ -1,8 +1,12 @@
 #!/usr/bin/env python
 """
 resp.py - Jenni Response Module
-Author: Michael Yanovich, yanovich.net
-About: http://inamidst.com/phenny/
+Copyright 2009-2011, Michael Yanovich, yanovich.net
+Licensed under the Eiffel Forum License 2.
+
+More info:
+ * Jenni: https://github.com/myano/jenni/
+ * Phenny: http://inamidst.com/phenny/
 
 This module tries to make jenni appear more "affection."
 """

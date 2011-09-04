@@ -1,10 +1,12 @@
 #!/usr/bin/env python
 """
 ask.py - Ask Module
-Author: Michael Yanovich, http://yanovich.net/
+Copyright 2011, Michael Yanovich, yanovich.net
 Licensed under the Eiffel Forum License 2.
 
-Phenny (About): http://inamidst.com/phenny/
+More info:
+ * Jenni: https://github.com/myano/jenni/
+ * Phenny: http://inamidst.com/phenny/
 """
 
 import random, string

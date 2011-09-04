@@ -1,8 +1,11 @@
 #!/usr/bin/env python
 """
-school.py - Class Schedule Module
-Author: Michael Yanovich, yanovich.net
-Jenni (About): http://inamidst.com/phenny/
+school.py - Jenni Class Schedule Module
+Copyright 2010-2011, Michael Yanovich, yanovich.net
+
+More info:
+ * Jenni: https://github.com/myano/jenni/
+ * Phenny: http://inamidst.com/phenny/
 """
 
 

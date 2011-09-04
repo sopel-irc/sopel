@@ -1,8 +1,12 @@
 #!/usr/bin/env python
 """
 url.py - Jenni Bitly Module
-Author: Michael Yanovich, yanovich.net
-About: http://inamidst.com/phenny/
+Copyright 2010-2011, Michael Yanovich, yanovich.net, Kenneth Sham.
+Licensed under the Eiffel Forum License 2.
+
+More info:
+ * Jenni: https://github.com/myano/jenni/
+ * Phenny: http://inamidst.com/phenny/
 
 This module will record all URLs to bitly via an api key and account.
 It also automatically displays the "title" of any URL pasted into the channel.
