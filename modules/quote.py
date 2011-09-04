@@ -4,7 +4,9 @@ quote.py - Jenni Quote Module
 Copyright 2008-10, Michael Yanovich, yanovich.net
 Licensed under the Eiffel Forum License 2.
 
-http://inamidst.com/phenny/
+More info:
+ * Jenni: https://github.com/myano/jenni/
+ * Phenny: http://inamidst.com/phenny/
 """
 
 import re, urllib

@@ -1,8 +1,11 @@
 #!/usr/bin/env python
 """
 scores.py - Score Module
-Author: Michael Yanovich, yanovich.net, Matt Meinwald, and Samuel Clements
-Jenni -- https://github.com/myano/jenni
+Copyright 2010-2011, Michael Yanovich (yanovich.net), Matt Meinwald, and Samuel Clements
+
+More info:
+ * Jenni: https://github.com/myano/jenni/
+ * Phenny: http://inamidst.com/phenny/
 """
 
 import pickle

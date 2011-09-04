@@ -2,13 +2,16 @@
 """
 twss.py - Jenni's That's What She Said Module
 Copyright 2011 - Joel Friedly and Matt Meinwald
-
 Licensed under the Eiffel Forum License 2.
+
+More info:
+ * Jenni: https://github.com/myano/jenni/
+ * Phenny: http://inamidst.com/phenny/
 
 This module detects common phrases that many times can be responded with
 "That's what she said."
 
-It also allows users to add new "that's what she said" jokes to it's library 
+It also allows users to add new "that's what she said" jokes to it's library
 by following any appropriate statement with ".twss".
 """
 

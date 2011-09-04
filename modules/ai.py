@@ -1,10 +1,12 @@
 #!/usr/bin/env python
 """
 ai.py - Artificial Intelligence Module
-Author: Michael Yanovich, yanovich.net
+Copyright 2010-2011, Michael Yanovich, yanovich.net
 Licensed under the Eiffel Forum License 2.
 
-Phenny (About): http://inamidst.com/phenny/
+More info:
+ * Jenni: https://github.com/myano/jenni/
+ * Phenny: http://inamidst.com/phenny/
 """
 
 import random, time

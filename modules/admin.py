@@ -1,15 +1,17 @@
 #!/usr/bin/env python
 """
-admin.py - Channel Module
-Author: Alek Rollyson, http://opensource.osu.edu/
+admin.py - Jenni Admin Module
+Copyright 2010-2011, Sean B. Palmer (inamidst.com), Alek Rollyson and Michael Yanovich (yanovich.net)
 Licensed under the Eiffel Forum License 2.
+
+More info:
+ * Jenni: https://github.com/myano/jenni/
+ * Phenny: http://inamidst.com/phenny/
 
 Beefed up by Alek Rollyson. added functions for op, deop, voice, devoice
 Uses NickServ ACC to verify that a nick is identified with services, as well
 as m5's admin list as a double verification system. Should eliminate the possibility
 of nick spoofing. May only work with freenode, hasn't been tested on other networks.
-
-Forked by Michael Yanovich, yanovich.net
 """
 
 import re, time, sched

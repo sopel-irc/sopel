@@ -1,13 +1,16 @@
 #!/usr/bin/env python
 """
 find.py - Jenni Spell Checking Module
-Author: Michael Yanovich, http://yanovich.net
+Copyright 2011, Michael Yanovich, yanovich.net
 Licensed under the Eiffel Forum License 2.
 
-About: http://inamidst.com/phenny/
+More info:
+ * Jenni: https://github.com/myano/jenni/
+ * Phenny: http://inamidst.com/phenny/
 
 Contributions from: Matt Meinwald and Morgan Goose
-This module will fix spelling errors if someone corrects them.
+This module will fix spelling errors if someone corrects them
+using the sed notation (s///) commonly found in vi/vim.
 """
 
 import pickle, time, re

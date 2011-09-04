@@ -1,10 +1,12 @@
 #!/usr/bin/env python
 """
 xkcd.py - XKCD Module
-Author: Michael Yanovich and Morgan Goose
+Copyright 2010, Michael Yanovich (yanovich.net), and Morgan Goose
 Licensed under the Eiffel Forum License 2.
 
-Jenni (About): http://inamidst.com/phenny/
+More info:
+ * Jenni: https://github.com/myano/jenni/
+ * Phenny: http://inamidst.com/phenny/
 """
 
 import random

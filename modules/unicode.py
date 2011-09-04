@@ -1,7 +1,12 @@
 #!/usr/bin/env python
 """
 unicode.py - Jenni Unicode Module
-Author: Michael Yanovich, yanovich.net
+Copyright 2010, Michael Yanovich, yanovich.net
+Licensed under the Eiffel Forum License 2.
+
+More info:
+ * Jenni: https://github.com/myano/jenni/
+ * Phenny: http://inamidst.com/phenny/
 """
 
 def meh (jenni, input):
