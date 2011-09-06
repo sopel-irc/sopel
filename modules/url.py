@@ -30,6 +30,8 @@ EXCLUSION_CHAR = "!"
 
 # do not edit below this line unless you know what you're doing
 bitly_loaded = 0
+IGNORE = ["git.io"]
+
 try:
     file = open("bitly.txt", "r")
     key = file.read()
@@ -50,6 +52,10 @@ def find_title(url):
     This finds the title when provided with a string of a URL."
     """
     uri = url
+
+    for item in IGNORE:
+        if item in url:
+            return
 
     if not re.search('^((https?)|(ftp))://', uri):
         uri = 'http://' + uri
@@ -218,8 +224,7 @@ def get_results(text):
 
 def show_title_auto (jenni, input):
     if input.startswith('.title ') or input.startswith('.bitly '): return
-    regexp = jenni.config.nick + "\:.*\s\-\shttp://bit.ly/[\S]{6}$"
-    if len(re.findall("\([\d]+\sfiles\sin\s[\d]+\sdirs\)", input)) == 1 or len(re.findall(regexp, input)) >= 1: return
+    if len(re.findall("\([\d]+\sfiles\sin\s[\d]+\sdirs\)", input)) == 1: return
     try:
         results = get_results(input)
     except: return
