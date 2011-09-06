@@ -1,15 +1,16 @@
 #!/usr/bin/env python
 """
-bot.py - Phenny IRC Bot
+bot.py - Jenni IRC Bot
 Copyright 2008, Sean B. Palmer, inamidst.com
 Licensed under the Eiffel Forum License 2.
 
 http://inamidst.com/phenny/
 """
+
 import sys, os, re, threading, imp
 import irc
 
-home = os.path.abspath(os.path.dirname(__file__))
+home = os.getcwd()
 
 def decode(bytes):
     try: text = bytes.decode('utf-8')
@@ -39,7 +40,6 @@ class Jenni(irc.Bot):
         else:
             for fn in self.config.enable:
                 filenames.append(os.path.join(home, 'modules', fn + '.py'))
-        # @@ exclude
 
         if hasattr(self.config, 'extra'):
             for fn in self.config.extra:
@@ -51,8 +51,12 @@ class Jenni(irc.Bot):
                             filenames.append(os.path.join(fn, n))
 
         modules = []
+        excluded_modules = getattr(self.config, 'exclude', [])
         for filename in filenames:
             name = os.path.basename(filename)[:-3]
+            if name in excluded_modules: continue
+            # if name in sys.modules:
+            #     del sys.modules[name]
             try: module = imp.load_source(name, filename)
             except Exception, e:
                 print >> sys.stderr, "Error loading %s: %s (in bot.py)" % (name, e)
@@ -92,8 +96,8 @@ class Jenni(irc.Bot):
 
         def sub(pattern, self=self):
             # These replacements have significant order
-            pattern = pattern.replace('$nickname', self.nick)
-            return pattern.replace('$nick', r'%s[,:] +' % self.nick)
+            pattern = pattern.replace('$nickname', re.escape(self.nick))
+            return pattern.replace('$nick', r'%s[,:] +' % re.escape(self.nick))
 
         for name, func in self.variables.iteritems():
             # print name, func
@@ -181,8 +185,7 @@ class Jenni(irc.Bot):
         return CommandInput(text, origin, bytes, match, event, args)
 
     def call(self, func, origin, jenni, input):
-        try:
-            func(jenni, input)
+        try: func(jenni, input)
         except Exception, e:
             self.error(origin)
 
@@ -197,6 +200,7 @@ class Jenni(irc.Bot):
     def dispatch(self, origin, args):
         bytes, event, args = args[0], args[1], args[2:]
         text = decode(bytes)
+
         for priority in ('high', 'medium', 'low'):
             items = self.commands[priority].items()
             for regexp, funcs in items:
@@ -206,8 +210,10 @@ class Jenni(irc.Bot):
                     match = regexp.match(text)
                     if match:
                         if self.limit(origin, func): continue
+
                         jenni = self.wrapped(origin, text, match)
                         input = self.input(origin, text, bytes, match, event, args)
+
                         if func.thread:
                             targs = (func, origin, jenni, input)
                             t = threading.Thread(target=self.call, args=targs)
