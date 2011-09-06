@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-find.py - Jenni Roulette Game Module
+roulette.py - Jenni Roulette Game Module
 Copyright 2010, Kenneth Sham
 Licensed under the Eiffel Forum License 2.
 

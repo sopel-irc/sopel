@@ -71,7 +71,7 @@ def say_it(jenni, input):
     formatted = input.group(1).lower()
     if re.sub("[^\w\s]", "", formatted) in quotes:
         jenni.say("That's what she said.")
-    last = re.sub("[^\w\s]", "", formatted) 
+    last = re.sub("[^\w\s]", "", formatted)
 say_it.rule = r"(.*)"
 say_it.priority = "low"
 
