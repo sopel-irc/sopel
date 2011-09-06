@@ -53,7 +53,7 @@ def search(term):
     else: term = term.decode('utf-8')
 
     term = term.replace('_', ' ')
-    try: uri = search.result('site:en.wikipedia.org %s' % term)
+    try: uri = search.google_search('site:en.wikipedia.org %s' % term)
     except IndexError: return term
     if uri:
         return uri[len('http://en.wikipedia.org/wiki/'):]

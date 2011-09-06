@@ -19,6 +19,8 @@ def f_reload(jenni, input):
         return jenni.reply('What?')
 
     if (not name) or (name == '*'):
+        jenni.variables = None
+        jenni.commands = None
         jenni.setup()
         return jenni.reply('done')
 
@@ -47,6 +49,7 @@ def f_reload(jenni, input):
 f_reload.name = 'reload'
 f_reload.rule = ('$nick', ['reload'], r'(\S+)?')
 f_reload.priority = 'low'
+f_reload.thread = False
 
 if __name__ == '__main__':
     print __doc__.strip()

@@ -2,14 +2,13 @@
 """
 irc.py - A Utility IRC Bot
 Copyright 2008, Sean B. Palmer, inamidst.com
-Modified by: Michael Yanovich
 Licensed under the Eiffel Forum License 2.
 
 http://inamidst.com/phenny/
 """
 
 import sys, re, time, traceback
-import socket, asyncore, asynchat, ssl
+import socket, asyncore, asynchat
 
 class Origin(object):
     source = re.compile(r'([^!]*)!?([^@]*)@?(.*)')
@@ -24,7 +23,6 @@ class Origin(object):
 
         mappings = {bot.nick: self.nick, None: None}
         self.sender = mappings.get(target, target)
-
 
 class Bot(asynchat.async_chat):
     def __init__(self, nick, name, channels, password=None):
@@ -43,6 +41,10 @@ class Bot(asynchat.async_chat):
 
         import threading
         self.sending = threading.RLock()
+
+    # def push(self, *args, **kargs):
+    #     asynchat.async_chat.push(self, *args, **kargs)
+
     def __write(self, args, text=None):
         # print '%r %r %r' % (self, args, text)
         try:
@@ -65,27 +67,16 @@ class Bot(asynchat.async_chat):
             self.__write(args, text)
         except Exception, e: pass
 
-    def run(self, host, port=6667, useSSL=False):
-        self.initiate_connect(host, port, useSSL)
+    def run(self, host, port=6667):
+        self.initiate_connect(host, port)
 
-    def initiate_connect(self, host, port, useSSL):
+    def initiate_connect(self, host, port):
         if self.verbose:
             message = 'Connecting to %s:%s...' % (host, port)
             print >> sys.stderr, message,
-        self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
-        # try ssl if we want it
-        if useSSL:
-            try:
-                self.socket = ssl.wrap_socket(self.socket)
-            except Exception as err:
-                return
-
-        self.socket.connect((host, port))
-        self.set_socket(self.socket)
-        
-        try:
-            asyncore.loop()
+        self.create_socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.connect((host, port))
+        try: asyncore.loop()
         except KeyboardInterrupt:
             sys.exit()
 
@@ -153,16 +144,17 @@ class Bot(asynchat.async_chat):
                     time.sleep(wait - elapsed)
 
         # Loop detection
-        '''
         messages = [m[1] for m in self.stack[-8:]]
         if messages.count(text) >= 5:
             text = '...'
             if messages.count('...') >= 3:
                 self.sending.release()
                 return
-        '''
 
-        self.__write(('PRIVMSG', recipient), text)
+        def safe(input):
+            input = input.replace('\n', '')
+            return input.replace('\r', '')
+        self.__write(('PRIVMSG', safe(recipient)), safe(text))
         self.stack.append((time.time(), text))
         self.stack = self.stack[-10:]
 
@@ -206,4 +198,3 @@ def main():
 
 if __name__=="__main__":
     main()
-

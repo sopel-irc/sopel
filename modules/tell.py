@@ -122,6 +122,7 @@ def message(jenni, input):
     tellee = input.nick
     channel = input.sender
 
+    if not os: return
     if not os.path.exists(jenni.tell_filename):
         return
 
