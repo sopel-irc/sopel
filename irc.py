@@ -49,8 +49,8 @@ class Bot(asynchat.async_chat):
         # print '%r %r %r' % (self, args, text)
         try:
             if text is not None:
-                self.push(' '.join(args) + ' :' + text + '\r\n')
-            else: self.push(' '.join(args) + '\r\n')
+                self.push((' '.join(args) + ' :' + text)[:512] + '\r\n')
+            else: self.push(' '.join(args)[:512] + '\r\n')
         except IndexError:
             pass
 
