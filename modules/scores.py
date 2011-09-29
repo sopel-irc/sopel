@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-scores.py - Score Module
+scores.py - Scores Module
 Copyright 2010-2011, Michael Yanovich (yanovich.net), Matt Meinwald, and Samuel Clements
 
 More info:
@@ -14,17 +14,12 @@ import os
 class Scores:
     def __init__(self):
         self.scores_filename = os.path.expanduser('~/.jenni/scores.txt')
+        self.scores_dict = dict()
+        self.load()
 
-        try:
-            scores_file = open(self.scores_filename,"r")
-        except IOError:
-            self.scores_dict = dict()
-        else:
-            self.scores_dict = pickle.load(scores_file)
-            scores_file.close()
-
-    def str_score(self, nick):
-        return "%s: +%s/-%s, %s" % (nick, self.scores_dict[nick][0], self.scores_dict[nick][1], self.scores_dict[nick][0] - self.scores_dict[nick][1])
+    def str_score(self, nick, channel):
+        return "%s: +%s/-%s, %s" % (nick,
+                self.scores_dict[channel][nick][0], self.scores_dict[channel][nick][1], self.scores_dict[channel][nick][0] - self.scores_dict[channel][nick][1])
 
     def editpoints(self, jenni, input, nick, points):
         if not nick:
@@ -33,43 +28,78 @@ class Scores:
             jenni.reply("I'm sorry, but I can't let you do that!")
         else:
             nick = nick.lower()
-            if not nick in self.scores_dict:
-                self.scores_dict[nick] = [0, 0]
+            if input.sender not in self.scores_dict:
+                self.scores_dict[input.sender] = {}
+            if not nick in self.scores_dict[input.sender]:
+                self.scores_dict[input.sender][nick] = [0, 0]
 
             # Add a point if points is TRUE, remove if FALSE
             if points:
-                self.scores_dict[nick][0] += 1
+                self.scores_dict[input.sender][nick][0] += 1
             else:
-                self.scores_dict[nick][1] += 1
+                self.scores_dict[input.sender][nick][1] += 1
 
             self.save()
-            jenni.say(self.str_score(nick))
+            chan = input.sender
+            jenni.say(self.str_score(nick, chan))
 
     def save(self):
+        """ Save to file in comma seperated values """
         scores_file = open(self.scores_filename, "w")
-        pickle.dump(self.scores_dict, scores_file)
+        for each_chan in self.scores_dict:
+            for each_nick in self.scores_dict[each_chan]:
+                line = "{0},{1},{2},{3}\n".format(each_chan, each_nick,
+                        self.scores_dict[each_chan][each_nick][0],
+                        self.scores_dict[each_chan][each_nick][1])
+                scores_file.write(line)
         scores_file.close()
 
+    def load(self):
+        try:
+            sfile = open(self.scores_filename, "r")
+        except:
+            sfile = open(self.scores_filename, "w")
+            sfile.close()
+            return
+        for line in sfile:
+            values = line.split(",")
+            if len(values) == 4:
+                 if values[0] not in self.scores_dict:
+                     self.scores_dict[values[0]] = dict()
+                 self.scores_dict[values[0]][values[1]] = [int(values[2]),int(values[3])]
+        if not self.scores_dict:
+            self.scores_dict = dict()
+        sfile.close()
+
     def view_scores(self, jenni, input):
+        self.load()
         nick = unicode(input.group(2))
         top_scores = [ ]
         if len(self.scores_dict) >= 1:
             if nick != "None":
                 nick = nick.lower().rstrip().lstrip()
                 try:
-                    str_say = self.str_score(nick)
+                    chan = input.sender
+                    str_say = self.str_score(nick, chan)
                 except:
                     str_say = "Sorry no score for %s found." % (nick)
             else:
+                if input.sender not in self.scores_dict:
+                    jenni.say("There are currently no users with a score in this channel.")
+                    return
                 q = 0
-                str_say = "\x0300Top 10:\x03"
-                for key, value in sorted(self.scores_dict.iteritems(), key=lambda (k,v): (v[0]-v[1]), reverse=True):
+                str_say = "\x0300Top 10 (for %s):\x03" % (input.sender)
+                scores = sorted(self.scores_dict[input.sender].iteritems(),
+                        key=lambda (k,v): (v[0]-v[1]), reverse=True)
+                for key, value in scores:
                     top_scores.append("%s: +%s/-%s, %s" % (key, value[0], value[1], value[0] - value[1]))
-                    str_say += " %s |" % (top_scores[q])
+                    if len(scores) == q + 1:
+                        str_say += " %s" % (top_scores[q])
+                    else:
+                        str_say += " %s |" % (top_scores[q])
                     q += 1
                     if q > 9:
                         break
-                del top_scores[10:]
             jenni.say(str_say)
         else:
             jenni.say("There are currently no users with a score.")
@@ -96,9 +126,10 @@ class Scores:
                     try:
                         nick = nick.lower()
                         if nick in self.scores_dict:
-                            self.scores_dict[nick] = [add, sub]
+                            self.scores_dict[input.sender][nick] = [add, sub]
                             self.save()
-                            jenni.say(self.str_score(nick))
+                            chan = input.sender
+                            jenni.say(self.str_score(nick, chan))
                         else:
                             jenni.reply("The nickname does not exist!")
                     except ValueError:
@@ -110,11 +141,8 @@ class Scores:
         else:
             if nick in self.scores_dict:
                 if input.admin:
-                    #scores_file = open("scores.txt", "w")
-                    del self.scores_dict[nick]
+                    del self.scores_dict[input.sender][nick]
                     jenni.say("User, %s, has been removed." % (nick))
-                    #pickle.dump(scores_dict, scores_file)
-                    #scores_file.close()
                     self.save()
                 else:
                     jenni.say("I'm sorry, %s. I'm afraid I can't do that!" % (input.nick))
