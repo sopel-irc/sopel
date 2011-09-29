@@ -72,68 +72,83 @@ class Scores:
         sfile.close()
 
     def view_scores(self, jenni, input):
-        self.load()
-        nick = unicode(input.group(2))
-        top_scores = [ ]
-        if len(self.scores_dict) >= 1:
-            if nick != "None":
-                nick = nick.lower().rstrip().lstrip()
-                try:
-                    chan = input.sender
-                    str_say = self.str_score(nick, chan)
-                except:
-                    str_say = "Sorry no score for %s found." % (nick)
-            else:
-                if input.sender not in self.scores_dict:
-                    jenni.say("There are currently no users with a score in this channel.")
-                    return
-                q = 0
-                str_say = "\x0300Top 10 (for %s):\x03" % (input.sender)
-                scores = sorted(self.scores_dict[input.sender].iteritems(),
-                        key=lambda (k,v): (v[0]-v[1]), reverse=True)
-                for key, value in scores:
-                    top_scores.append("%s: +%s/-%s, %s" % (key, value[0], value[1], value[0] - value[1]))
-                    if len(scores) == q + 1:
-                        str_say += " %s" % (top_scores[q])
-                    else:
-                        str_say += " %s |" % (top_scores[q])
-                    q += 1
-                    if q > 9:
-                        break
-            jenni.say(str_say)
-        else:
-            jenni.say("There are currently no users with a score.")
 
-    def setpoint(self, jenni, input, nick):
-        if not nick:
-            jenni.reply("I'm sorry, but I'm afraid I can't add that user!")
-        else:
-            if not input.admin or input.nick == nick:
-                jenni.reply("I'm sorry, but I'm afraid I can't do that!")
-            else:
-                stuff = nick
-                stuff_split = stuff.split()
-                if len(stuff_split) < 3:
-                    jenni.reply("I'm sorry, but I'm afraid I don't understand what you want me to do!")
+        def top10(channel):
+            channel = channel.lower()
+            if channel not in self.scores_dict:
+                return "Channel not found."
+            q = 0
+            top_scores = [ ]
+            str_say = "\x0300Top 10 (for %s):\x03" % (channel)
+            scores = sorted(self.scores_dict[channel].iteritems(),
+                    key=lambda (k,v): (v[0]-v[1]), reverse=True)
+            for key, value in scores:
+                top_scores.append("%s: +%s/-%s, %s" % (key, value[0], value[1],
+                    value[0] - value[1]))
+                if len(scores) == q + 1:
+                    str_say += " %s" % (top_scores[q])
                 else:
-                    nick = stuff_split[0]
-                    try:
-                        add = int(stuff_split[1])
-                        sub = int(stuff_split[2])
-                    except:
-                        jenni.reply("I'm sorry, but I'm afraid I don't understand what you want me to do!")
-                        return
-                    try:
-                        nick = nick.lower()
-                        if nick in self.scores_dict:
-                            self.scores_dict[input.sender][nick] = [add, sub]
-                            self.save()
-                            chan = input.sender
-                            jenni.say(self.str_score(nick, chan))
-                        else:
-                            jenni.reply("The nickname does not exist!")
-                    except ValueError:
-                        jenni.reply("I'm sorry but I refuse to do that!")
+                    str_say += " %s |" % (top_scores[q])
+                q += 1
+                if q > 9:
+                    break
+            return str_say
+
+        def given_user(nick, channel):
+            nick = nick.lower()
+            channel = channel.lower()
+            if channel in self.scores_dict:
+                if nick in self.scores_dict[channel]:
+                    return self.str_score(nick, channel)
+                else:
+                    return "{0} not found in {1}.".format(nick, channel)
+            else:
+                return "Channel, {0}, not found.".format(channel)
+
+        self.load()
+        line = input.group()[7:].split()
+        current_channel = input.sender
+        current_channel = current_channel.lower()
+
+        if len(line) == 0:
+            ## .scores
+            t10 = top10(current_channel)
+            jenni.say(t10)
+
+        elif len(line) == 1 and not line[0].startswith("#"):
+            ## .scores <nick>
+            jenni.say(given_user(line[0], current_channel))
+
+        elif len(line) == 1 and line[0].startswith("#"):
+            ## .scores <channel>
+            t10_chan = top10(line[0])
+            jenni.say(t10_chan)
+
+        elif len(line) == 2:
+            ## .scores <channel> <nick>
+            jenni.say(given_user(line[1], line[0]))
+
+    def setpoint(self, jenni, input, line):
+        if not input.admin:
+            return
+        line = line[10:].split()
+        if len(line) != 4:
+            return
+        channel = line[0]
+        nick = line[1].lower()
+        try:
+            add = int(line[2])
+            sub = int(line[3])
+        except:
+            jenni.say("Invalid scores provided.")
+            return
+
+        if channel not in self.scores_dict:
+            self.scores_dict[channel] = dict()
+
+        self.scores_dict[channel][nick] = [add, sub]
+        self.save()
+        jenni.say(self.str_score(nick, channel))
 
     def rmuser(self, jenni, input, nick):
         if not nick:
@@ -177,11 +192,11 @@ view_scores.commands = ['scores']
 view_scores.priority = 'medium'
 
 def setpoint(jenni, input):
-    """.setpoint <nick> <number> <number> - Sets points for given user."""
-    nick = input.group(2)
-    if nick != None:
-        nick = nick.lstrip().rstrip()
-    scores.setpoint(jenni, input, nick)
+    """.setpoint <channel> <nick> <number> <number> - Sets points for given user."""
+    line = input.group()
+    if line != None:
+        line = line.lstrip().rstrip()
+    scores.setpoint(jenni, input, line)
 setpoint.commands = ['setpoint']
 setpoint.priority = 'medium'
 
