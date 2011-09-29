@@ -16,6 +16,14 @@ class Scores:
         self.scores_filename = os.path.expanduser('~/.jenni/scores.txt')
         self.scores_dict = dict()
         self.load()
+        self.STRINGS = {
+                "nochan" : "Channel, {0}, has no users with scores.",
+                "nouser" : "{0} has no score in {1}.",
+                "rmuser" : "User, {0}, has been removed from room: {1}.",
+                "cantadd" : "I'm sorry, but I'm afraid I can't add that user!",
+                "denied" : "I'm sorry, but I can't let you do that!",
+                "invalid" : "Invalid parameters entered.",
+            }
 
     def str_score(self, nick, channel):
         return "%s: +%s/-%s, %s" % (nick,
@@ -23,9 +31,9 @@ class Scores:
 
     def editpoints(self, jenni, input, nick, points):
         if not nick:
-            jenni.reply("I'm sorry, but I'm afraid I can't add that user!")
+            jenni.reply(self.STRINGS["cantadd"])
         elif input.nick == nick:
-            jenni.reply("I'm sorry, but I can't let you do that!")
+            jenni.reply(self.STRINGS["denied"])
         else:
             nick = nick.lower()
             if input.sender not in self.scores_dict:
@@ -76,15 +84,14 @@ class Scores:
         def top10(channel):
             channel = channel.lower()
             if channel not in self.scores_dict:
-                return "Channel not found."
+                return self.STRINGS["nochan"].format(channel)
             q = 0
             top_scores = [ ]
             str_say = "\x0300Top 10 (for %s):\x03" % (channel)
             scores = sorted(self.scores_dict[channel].iteritems(),
                     key=lambda (k,v): (v[0]-v[1]), reverse=True)
             for key, value in scores:
-                top_scores.append("%s: +%s/-%s, %s" % (key, value[0], value[1],
-                    value[0] - value[1]))
+                top_scores.append(self.str_score(key,channel))
                 if len(scores) == q + 1:
                     str_say += " %s" % (top_scores[q])
                 else:
@@ -101,9 +108,9 @@ class Scores:
                 if nick in self.scores_dict[channel]:
                     return self.str_score(nick, channel)
                 else:
-                    return "{0} not found in {1}.".format(nick, channel)
+                    return self.STRINGS["nouser"].format(nick, channel)
             else:
-                return "Channel, {0}, not found.".format(channel)
+                return self.STRINGS["nochan"].format(channel)
 
         self.load()
         line = input.group()[7:].split()
@@ -140,7 +147,7 @@ class Scores:
             add = int(line[2])
             sub = int(line[3])
         except:
-            jenni.say("Invalid scores provided.")
+            jenni.say(self.STRINGS["invalid"])
             return
 
         if channel not in self.scores_dict:
@@ -150,19 +157,35 @@ class Scores:
         self.save()
         jenni.say(self.str_score(nick, channel))
 
-    def rmuser(self, jenni, input, nick):
-        if not nick:
-            jenni.reply("I'm sorry, but I'm afraid I can't remove that user!")
-        else:
-            if nick in self.scores_dict:
-                if input.admin:
-                    del self.scores_dict[input.sender][nick]
-                    jenni.say("User, %s, has been removed." % (nick))
-                    self.save()
+    def rmuser(self, jenni, input, line):
+        if not input.admin:
+            return
+        line = line[8:].split()
+        channel = input.sender
+        nick = line[0].lower()
+
+        def check(nick, channel):
+            nick = nick.lower()
+            channel = channel.lower()
+            if channel in self.scores_dict:
+                if nick in self.scores_dict[channel]:
+                    del self.scores_dict[channel][nick]
+                    return self.STRINGS["rmuser"].format(nick, channel)
                 else:
-                    jenni.say("I'm sorry, %s. I'm afraid I can't do that!" % (input.nick))
+                    return self.STRINGS["nouser"].format(nick, channel)
             else:
-                jenni.say("I'm sorry, %s, but I can not remove a person that does not exist!" % (input.nick))
+                return self.STRINGS["nochan"].format(channel)
+
+        if len(line) == 1:
+            ## .rmuser <nick>
+            result = check(line[0], input.sender)
+            self.save()
+        elif len(line) == 2:
+            ## .rumser <channel> <nick>
+            result = check(line[1],line[0])
+            self.save()
+
+        jenni.say(result)
 
 # Jenni commands
 scores = Scores()
@@ -202,10 +225,10 @@ setpoint.priority = 'medium'
 
 def removeuser(jenni, input):
     """.rmuser <nick> -- Removes a given user from the system."""
-    nick = input.group(2)
-    if nick != None:
-        nick = nick.lstrip().rstrip()
-    scores.rmuser(jenni, input, nick)
+    line = input.group()
+    if line != None:
+        line = line.lstrip().rstrip()
+    scores.rmuser(jenni, input, line)
 removeuser.commands = ['rmuser']
 removeuser.priority = 'medium'
 
