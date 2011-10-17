@@ -6,6 +6,7 @@ Jenni (About): http://inamidst.com/phenny/
 """
 
 import random
+import re
 
 random.seed()
 
@@ -17,6 +18,7 @@ def rand(jenni, input):
         li_integers = input.group(2)
         li_integers_str = li_integers.split()
         if len(li_integers_str) == 1:
+            li_integers_str = re.sub(r'\D', '', str(li_integers_str))
             if int(li_integers_str[0]) <= 1:
                 a = li_integers_str[0]
                 a = int(a)
@@ -28,6 +30,8 @@ def rand(jenni, input):
             jenni.say(str(input.nick) + ": your random integer is: " + str(randinte))
         else:
             a,b = li_integers.split()
+            a = re.sub(r'\D', '', str(a))
+            b = re.sub(r'\D', '', str(b))
             a = int(a)
             b = int(b)
             if a <= b:
