@@ -122,10 +122,9 @@ def meant (jenni, input):
     global exp
 
     text = unicode(input.group())
-    text = text.split(":",1)
-
-    user = text[0]
-    matching = unicode(text[1][1:])
+    pos = text.find(" ")
+    user = text[:pos - 1]
+    matching = text[pos + 1:]
 
     if not matching.startswith("s/"):
         return
@@ -174,7 +173,7 @@ def meant (jenni, input):
         phrase = "%s thinks %s \x02meant:\x02 %s" % (input.nick, user, new_phrase)
         jenni.say(phrase)
 
-meant.rule = r'.*\:\s.*'
+meant.rule = r'\S+(\S|\:)\s.*'
 meant.priority = 'high'
 
 if __name__ == '__main__':
