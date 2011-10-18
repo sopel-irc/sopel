@@ -154,10 +154,11 @@ def yesno(jenni,input):
 yesno.rule = '(jenni|$nickname)\:\s+(yes|no)$'
 
 def ping_reply (jenni,input):
-    text = input.group().split(": ")
-    if text[1] == 'PING' or text[1] == 'ping':
+    text = input.group().split(":")
+    text = text[1].split()
+    if text[0] == 'PING' or text[0] == 'ping':
         jenni.reply("PONG")
-ping_reply.rule = '(?i)($nickname|jenni)\:.*'
+ping_reply.rule = '(?i)($nickname|jenni)\:\s+(ping)\s*'
 
 def love (jenni, input):
     jenni.reply("I love you too.")
