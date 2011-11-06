@@ -90,7 +90,7 @@ def findandreplace(jenni, input):
             new_phrase = new_phrase.replace("ACTION", "")
             new_phrase = new_phrase[1:-1]
             phrase = input.nick + new_phrase
-            phrase = "\x0300,01" + phrase
+            phrase = "\x02" + phrase + "\x02"
         else:
             phrase = input.nick + " meant to say: " + new_phrase
         jenni.say(phrase)
