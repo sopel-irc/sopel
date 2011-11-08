@@ -449,6 +449,7 @@ class UnoBot:
             f.close ()
         except: pass
         for p in players:
+            p = p.lower()
             if p not in prescores:
                 prescores[p] = [ p, 0, 0, 0, 0 ]
             prescores[p][1] += 1
@@ -548,7 +549,7 @@ class UnoBot:
             jenni.msg(CHANNEL, STRINGS['PCE_CLEARED'] % nick)
 
     def unostat (self, jenni, input):
-        text = input.group().split()
+        text = input.group().lower().split()
 
         if len(text) != 3:
             jenni.say("Invalid input for stats command. Try '.unostats ppg 10' to show the top 10 ranked by points per game. You can also show rankings by percent-wins 'pw'.")
