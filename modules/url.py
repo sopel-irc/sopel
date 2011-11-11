@@ -27,10 +27,10 @@ import web
 # even if it's set to None, triggering .bitly command will still work!
 BITLY_TRIGGER_LEN = 65
 EXCLUSION_CHAR = "!"
+IGNORE = ["git.io"]
 
 # do not edit below this line unless you know what you're doing
 bitly_loaded = 0
-IGNORE = ["git.io"]
 
 try:
     file = open("bitly.txt", "r")
@@ -230,7 +230,11 @@ def show_title_auto (jenni, input):
     except: return
     if results is None: return
 
+    k = 1
     for r in results:
+        if k > 3: break
+        k += 1
+
         useBitLy = doUseBitLy(r[1])
         if r[0] is None:
             if useBitLy: displayBitLy(jenni, r[1], r[2])
