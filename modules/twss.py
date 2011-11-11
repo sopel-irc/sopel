@@ -75,7 +75,6 @@ def say_it(jenni, input):
 say_it.rule = r"(.*)"
 say_it.priority = "low"
 
-
 def add_twss(jenni, input):
     print last
     with open("modules/twss_user_added.txt", "a") as f:
@@ -84,7 +83,7 @@ def add_twss(jenni, input):
     jenni.say("That's what she said.")
 add_twss.commands = ["twss"]
 add_twss.priority = "low"
-
+add_twss.threading = False
 
 if __name__ == '__main__':
     print __doc__.strip()
