@@ -69,7 +69,7 @@ def findandreplace(jenni, input):
     else:
         new_phrase = freplace(current_list, pattern, replacement, phrase, 1)
 
-    # Prevents abuse; apparently there is an RFC spec about how servers handle
+    # Prevents abuse; there is an RFC spec about how servers handle
     # messages that contain more than 512 characters.
     if new_phrase:
         if len(new_phrase) > 512:
@@ -99,6 +99,15 @@ findandreplace.priority = 'high'
 
 def freplace(list, pattern, replacement, phrase, flag):
     i = 0
+    bad_chars = { '{' : '}', '[' : ']'}
+    for char in bad_chars:
+        a = 1
+        while a > 0:
+            a = pattern.find(char)
+            if a > 0:
+                c = pattern.find(bad_chars[char])
+                pattern = pattern[:a] + pattern[c+1:]
+
     while i <= len(list):
         i += 1
         k = -i
