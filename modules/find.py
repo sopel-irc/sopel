@@ -85,7 +85,7 @@ def findandreplace(jenni, input):
 
     # output
     if new_phrase:
-        new_phrase = new_phrase.replace("\\", "\\\\")
+        #new_phrase = new_phrase.replace("\\", "\\\\")
         if "ACTION" in new_phrase:
             new_phrase = new_phrase.replace("ACTION", "")
             new_phrase = new_phrase[1:-1]
@@ -99,6 +99,7 @@ findandreplace.priority = 'high'
 
 def freplace(list, pattern, replacement, phrase, flag):
     i = 0
+    """
     bad_chars = { '{' : '}', '[' : ']'}
     for char in bad_chars:
         a = 1
@@ -107,6 +108,9 @@ def freplace(list, pattern, replacement, phrase, flag):
             if a > 0:
                 c = pattern.find(bad_chars[char])
                 pattern = pattern[:a] + pattern[c+1:]
+    """
+
+    pattern = re.escape(pattern)
 
     while i <= len(list):
         i += 1
@@ -178,7 +182,7 @@ def meant (jenni, input):
 
     # output
     if new_phrase:
-        new_phrase = new_phrase.replace("\\", "\\\\")
+        #new_phrase = new_phrase.replace("\\", "\\\\")
         phrase = "%s thinks %s \x02meant:\x02 %s" % (input.nick, user, new_phrase)
         jenni.say(phrase)
 
