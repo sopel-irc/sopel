@@ -80,6 +80,7 @@ def nws_lookup(jenni, input):
     text = input.group(2)
     if not text: return
     bits = text.split(",")
+    master_url = False
     if len(bits) == 2:
         ## county given
         url_part1 = "http://alerts.weather.gov"
@@ -115,7 +116,11 @@ def nws_lookup(jenni, input):
                 state = location[-2:]
                 fips = unicode(state) + "C" + unicode(fips[0])
                 master_url = alerts.format(fips)
-    else:
+            else:
+                jenni.reply("ZIP code does not exist.")
+                return
+
+    if not master_url:
         jenni.reply("Invalid input. Please enter a ZIP code or a county and state pairing, such as 'Franklin, Ohio'")
         return
 
