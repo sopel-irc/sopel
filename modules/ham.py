@@ -17,7 +17,7 @@ import web
 re_look = re.compile('<FONT FACE="Arial, Helvetica, sans-serif" SIZE=4>(.*)<BR>')
 
 def lookup(jenni, input):
-    cs = input.group(2)
+    cs = input.group(2).upper()
     link = "http://www.qth.com/callsign.php?cs=" + unicode(cs)
     page = web.get(link)
     name = re_look.findall(page)
