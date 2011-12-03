@@ -68,11 +68,9 @@ def create_dotdir(dotdir):
         print >> sys.stderr, 'Please fix this and then run jenni again.'
         sys.exit(1)
 
-    print 'Creating a default config file at ~/.jenni/default.py...'
     default = os.path.join(dotdir, 'default.py')
     create_default_config(default)
 
-    print 'Done; now you can edit default.py, and run jenni! Enjoy.'
     sys.exit(0)
 
 def check_dotdir():
@@ -102,8 +100,6 @@ def config_names(config):
     if os.path.isdir(there):
         return files(there)
 
-    print >> sys.stderr, "Error: Couldn't find a config file!"
-    print >> sys.stderr, 'What happened to ~/.jenni/default.py?'
     sys.exit(1)
 
 def main(argv=None):
@@ -113,7 +109,6 @@ def main(argv=None):
     parser.add_option('-c', '--config', metavar='fn',
         help='use this configuration file or directory')
     opts, args = parser.parse_args(argv)
-    if args: print >> sys.stderr, 'Warning: ignoring spurious arguments'
 
     # Step Two: Check Dependencies
 
