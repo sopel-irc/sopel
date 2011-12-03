@@ -168,6 +168,10 @@ def search(jenni, input):
     bu = bing_search(query) or '-'
     du = duck_search(query) or '-'
 
+    gu = gu.decode('utf-8')
+    bu = bu.decode('utf-8')
+    du = du.decode('utf-8')
+
     if (gu == bu) and (bu == du):
         result = '%s (g, b, d)' % gu
     elif (gu == bu):
