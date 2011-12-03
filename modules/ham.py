@@ -1,7 +1,13 @@
 #!/usr/bin/env python
 """
 ham.py - Ham Radio Module
-Author: Michael Yanovich - http://yanovich.net/
+Copyright 2011, Michael Yanovich, yanovich.net
+Licensed under the Eiffel Forum License 2.
+
+More info:
+ * Jenni: https://github.com/myano/jenni/
+ * Phenny: http://inamidst.com/phenny/
+
 This contains a collection of lookups and calls for ham radio enthusiasts.
 """
 
@@ -11,7 +17,7 @@ import web
 re_look = re.compile('<FONT FACE="Arial, Helvetica, sans-serif" SIZE=4>(.*)<BR>')
 
 def lookup(jenni, input):
-    cs = input.group(2)
+    cs = input.group(2).upper()
     link = "http://www.qth.com/callsign.php?cs=" + unicode(cs)
     page = web.get(link)
     name = re_look.findall(page)

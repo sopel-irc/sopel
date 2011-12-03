@@ -1,5 +1,14 @@
 #!/usr/bin/env python
-""" roulette.py """
+"""
+roulette.py - Jenni Roulette Game Module
+Copyright 2010, Kenneth Sham
+Licensed under the Eiffel Forum License 2.
+
+More info:
+ * Jenni: https://github.com/myano/jenni/
+ * Phenny: http://inamidst.com/phenny/
+"""
+
 import random
 from datetime import datetime, timedelta
 random.seed()

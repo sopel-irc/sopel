@@ -1,8 +1,11 @@
 #!/usr/bin/env python
 """
-school.py - Class Schedule Module
-Author: Michael S. Yanovich http://opensource.cse.ohio-state.edu/
-Jenni (About): http://inamidst.com/phenny/
+school.py - Jenni Class Schedule Module
+Copyright 2010-2011, Michael Yanovich, yanovich.net
+
+More info:
+ * Jenni: https://github.com/myano/jenni/
+ * Phenny: http://inamidst.com/phenny/
 """
 
 
@@ -20,9 +23,10 @@ r_findtitle = re.compile(r'(?ims)<span\sclass\=\"roster\-name\">[)(\'\,\%\&\:\;\
 
 r_findreq = re.compile(r'(?ims)\r<br>.*<h3>')
 
-def classes(jenni, input):
-    """ shows classes at OSU  """
-    '''
+#def classes(jenni, input):
+#    """ shows classes at OSU  """
+#    pass
+'''
     info = input.group(2)
     info = info.split()
     if len(info) > 3 or len(info) < 3:
@@ -143,9 +147,9 @@ def classes(jenni, input):
     jenni.say(str(description_class))
     if uni == "osu":
         jenni.say("Offered: " + str(req))
-    '''
-classes.commands = ['class']
-classes.priority = 'high'
+'''
+#classes.commands = ['class']
+#classes.priority = 'high'
 
 
 if __name__ == '__main__':

@@ -1,3 +1,14 @@
+#!/usr/bin/env python
+"""
+unostats.py -- Jenni's uno stat generator
+Copyright 2011, Michael Yanovich, yanovich.net
+Licensed under the Eiffel Forum License 2.
+
+More info:
+ * Jenni: https://github.com/myano/jenni/
+ * Phenny: http://inamidst.com/phenny/
+"""
+
 def rankings (ranktype):
     from copy import copy
     prescores = [ ]

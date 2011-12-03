@@ -1,7 +1,12 @@
+#!/usr/bin/env python
 """
 url.py - Jenni Bitly Module
-Author: Michael Yanovich, http://yanovich.net/
-About: http://inamidst.com/phenny/
+Copyright 2010-2011, Michael Yanovich, yanovich.net, Kenneth Sham.
+Licensed under the Eiffel Forum License 2.
+
+More info:
+ * Jenni: https://github.com/myano/jenni/
+ * Phenny: http://inamidst.com/phenny/
 
 This module will record all URLs to bitly via an api key and account.
 It also automatically displays the "title" of any URL pasted into the channel.
@@ -20,10 +25,13 @@ import web
 # this variable is to determine when to use bitly. If the URL is more
 # than this length, it'll display a bitly URL instead. To disable bit.ly, put None
 # even if it's set to None, triggering .bitly command will still work!
-BITLY_TRIGGER_LEN = 50
+BITLY_TRIGGER_LEN = 65
+EXCLUSION_CHAR = "!"
+IGNORE = ["git.io"]
 
 # do not edit below this line unless you know what you're doing
 bitly_loaded = 0
+
 try:
     file = open("bitly.txt", "r")
     key = file.read()
@@ -35,15 +43,19 @@ try:
 except:
     print "ERROR: No bitly.txt found."
 
-url_finder = re.compile(r'((http|https|ftp)(://\S+))')
+url_finder = re.compile(r'(%s?(http|https|ftp)(://\S+))' % (EXCLUSION_CHAR))
 r_entity = re.compile(r'&[A-Za-z0-9#]+;')
 INVALID_WEBSITE = 0x01
 
 def find_title(url):
     """
-    This finds the title when provided with a string of a URL. It returns "
+    This finds the title when provided with a string of a URL."
     """
     uri = url
+
+    for item in IGNORE:
+        if item in url:
+            return
 
     if not re.search('^((https?)|(ftp))://', uri):
         uri = 'http://' + uri
@@ -52,9 +64,10 @@ def find_title(url):
         uri = uri.replace('#!', '?_escaped_fragment_=')
 
     redirects = 0
+    ## follow re-directs, if someone pastes a bitly of a tinyurl, etc..
     while True:
         req = urllib2.Request(uri, headers={'Accept':'text/html'})
-        req.add_header('User-Agent', 'Mozilla/5.0 (Windows; U; Windows NT 6.0; en-US; rv:1.9.2.8) Gecko/20100722')
+        req.add_header('User-Agent', 'Mozilla/5.0 (Windows NT 6.1; rv:5.0) Gecko/20100101 Firefox/5.0')
         u = urllib2.urlopen(req)
         info = u.info()
         u.close()
@@ -87,7 +100,7 @@ def find_title(url):
     regex = re.compile('[\'"]<title>[\'"]', re.IGNORECASE)
     content = regex.sub('',content)
     start = content.find('<title>')
-    if start == -1: return INVALID_WEBSITE
+    if start == -1: return
     end = content.find('</title>', start)
     if end == -1: return
     content = content[start+7:end]
@@ -196,28 +209,32 @@ def get_results(text):
     display = [ ]
     while i < k:
         url = str(a[i][0])
-        try:
-            page_title = find_title(url)
-        except:
-            page_title = None # if it can't access the site fail silently
-        if bitly_loaded: # and (page_title is not None or page_title == INVALID_WEBSITE):
-            bitly = short(url)
-            bitly = bitly[0][1]
-        else: bitly = url
-        display.append([page_title, url, bitly])
+        if not url.startswith(EXCLUSION_CHAR):
+            try:
+                page_title = find_title(url)
+            except:
+                page_title = None # if it can't access the site fail silently
+            if bitly_loaded: # and (page_title is not None or page_title == INVALID_WEBSITE):
+                bitly = short(url)
+                bitly = bitly[0][1]
+            else: bitly = url
+            display.append([page_title, url, bitly])
         i += 1
     return display
 
 def show_title_auto (jenni, input):
     if input.startswith('.title ') or input.startswith('.bitly '): return
-    regexp = jenni.config.nick + "\:.*\s\-\shttp://bit.ly/[\S]{6}$"
-    if len(re.findall("\([\d]+\sfiles\sin\s[\d]+\sdirs\)", input)) == 1 or len(re.findall(regexp, input)) >= 1: return
+    if len(re.findall("\([\d]+\sfiles\sin\s[\d]+\sdirs\)", input)) == 1: return
     try:
         results = get_results(input)
     except: return
     if results is None: return
 
+    k = 1
     for r in results:
+        if k > 3: break
+        k += 1
+
         useBitLy = doUseBitLy(r[1])
         if r[0] is None:
             if useBitLy: displayBitLy(jenni, r[1], r[2])
@@ -225,7 +242,7 @@ def show_title_auto (jenni, input):
         if useBitLy: r[1] = r[2]
         else: r[1] = getTLD(r[1])
         jenni.say('[ %s ] - %s' % (r[0], r[1]))
-show_title_auto.rule = '.*((http|https)(://\S+)).*'
+show_title_auto.rule = '.*(%s?(http|https)(://\S+)).*' % (EXCLUSION_CHAR)
 show_title_auto.priority = 'high'
 
 def show_title_demand (jenni, input):

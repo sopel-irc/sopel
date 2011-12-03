@@ -1,7 +1,12 @@
+#!/usr/bin/env python
 """
-version.py
-Author: Silas Baronda
-Jenni (About): http://inamidst.com/phenny/
+version.py - Jenni Version Module
+Copyright 2009, Silas Baronda
+Licensed under the Eiffel Forum License 2.
+
+More info:
+ * Jenni: https://github.com/myano/jenni/
+ * Phenny: http://inamidst.com/phenny/
 """
 
 from subprocess import *

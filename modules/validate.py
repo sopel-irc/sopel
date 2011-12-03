@@ -11,10 +11,11 @@ import web
 
 def val(jenni, input):
     """Check a webpage using the W3C Markup Validator."""
+    if not input.group(2):
+        return jenni.reply("Nothing to validate.")
     uri = input.group(2)
-    if uri:
-        if not uri.startswith('http://'):
-            uri = 'http://' + uri
+    if not uri.startswith('http://'):
+        uri = 'http://' + uri
 
     path = '/check?uri=%s;output=xml' % web.urllib.quote(uri)
     info = web.head('http://validator.w3.org' + path)

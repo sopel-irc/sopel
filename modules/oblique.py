@@ -81,7 +81,7 @@ def o(jenni, input):
         return jenni.reply(msg)
 
     if not o.services.has_key(command):
-        return jenni.reply('Sorry, no such service. See %s' % o.serviceURI)
+        return jenni.reply('Service not found in %s' % o.serviceURI)
 
     if hasattr(jenni.config, 'external'):
         default = jenni.config.external.get('*')
