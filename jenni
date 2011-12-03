@@ -16,35 +16,32 @@ from textwrap import dedent as trim
 
 dotdir = os.path.expanduser('~/.jenni')
 
-def check_python_version(): 
-    if sys.version_info < (2, 4): 
-       error = 'Error: Requires Python 2.4 or later, from www.python.org'
-       print >> sys.stderr, error
-       sys.exit(1)
+def check_python_version():
+    if sys.version_info < (2, 4):
+        error = 'Error: Requires Python 2.4 or later, from www.python.org'
+        print >> sys.stderr, error
+        sys.exit(1)
 
-def create_default_config(fn): 
+def create_default_config(fn):
     f = open(fn, 'w')
     print >> f, trim("""\
     nick = 'jenni'
-    # the name field is jenni's realname as appears on whois.
-    name = 'jenni bot'
-
     host = 'irc.example.net'
-    # for a SSL port, prepend a +. Example: +9999
-    port = '6667'
-
     channels = ['#example', '#test']
     owner = 'yournickname'
-    # password = 'yourserverpassword'
+
+    # password is the NickServ password, serverpass is the server password
+    # password = 'example'
+    # serverpass = 'serverpass'
 
     # These are people who will be able to use admin.py's functions...
     admins = [owner, 'someoneyoutrust']
     # But admin.py is disabled by default, as follows:
-    exclude = ['admin', 'ai', 'resp', 'school']
+    exclude = ['admin', 'adminchannel', 'ai', 'resp', 'school']
 
     # If you want to enumerate a list of modules rather than disabling
     # some, use "enable = ['example']", which takes precedent over exclude
-    # 
+    #
     # enable = []
 
     # Directories to load user modules from
@@ -52,24 +49,24 @@ def create_default_config(fn):
     extra = []
 
     # Services to load: maps channel names to white or black lists
-    external = { 
-       '#liberal': ['!'], # allow all
-       '#conservative': [], # allow none
-       '*': ['!'] # default whitelist, allow all
+    external = {
+        '#liberal': ['!'], # allow all
+        '#conservative': [], # allow none
+        '*': ['!'] # default whitelist, allow all
     }
 
     # EOF
     """)
     f.close()
 
-def create_dotdir(dotdir): 
+def create_dotdir(dotdir):
     print 'Creating a config directory at ~/.jenni...'
     try: os.mkdir(dotdir)
-    except Exception, e: 
-       print >> sys.stderr, 'There was a problem creating %s:' % dotdir
-       print >> sys.stderr, e.__class__, str(e)
-       print >> sys.stderr, 'Please fix this and then run jenni again.'
-       sys.exit(1)
+    except Exception, e:
+        print >> sys.stderr, 'There was a problem creating %s:' % dotdir
+        print >> sys.stderr, e.__class__, str(e)
+        print >> sys.stderr, 'Please fix this and then run jenni again.'
+        sys.exit(1)
 
     print 'Creating a default config file at ~/.jenni/default.py...'
     default = os.path.join(dotdir, 'default.py')
@@ -78,43 +75,43 @@ def create_dotdir(dotdir):
     print 'Done; now you can edit default.py, and run jenni! Enjoy.'
     sys.exit(0)
 
-def check_dotdir(): 
-    if not os.path.isdir(dotdir): 
-       create_dotdir(dotdir)
+def check_dotdir():
+    if not os.path.isdir(dotdir):
+        create_dotdir(dotdir)
 
-def config_names(config): 
+def config_names(config):
     config = config or 'default'
 
-    def files(d): 
-       names = os.listdir(d)
-       return list(os.path.join(d, fn) for fn in names if fn.endswith('.py'))
+    def files(d):
+        names = os.listdir(d)
+        return list(os.path.join(d, fn) for fn in names if fn.endswith('.py'))
 
     here = os.path.join('.', config)
-    if os.path.isfile(here): 
-       return [here]
-    if os.path.isfile(here + '.py'): 
-       return [here + '.py']
-    if os.path.isdir(here): 
-       return files(here)
+    if os.path.isfile(here):
+        return [here]
+    if os.path.isfile(here + '.py'):
+        return [here + '.py']
+    if os.path.isdir(here):
+        return files(here)
 
     there = os.path.join(dotdir, config)
-    if os.path.isfile(there): 
-       return [there]
-    if os.path.isfile(there + '.py'): 
-       return [there + '.py']
-    if os.path.isdir(there): 
-       return files(there)
+    if os.path.isfile(there):
+        return [there]
+    if os.path.isfile(there + '.py'):
+        return [there + '.py']
+    if os.path.isdir(there):
+        return files(there)
 
     print >> sys.stderr, "Error: Couldn't find a config file!"
     print >> sys.stderr, 'What happened to ~/.jenni/default.py?'
     sys.exit(1)
 
-def main(argv=None): 
+def main(argv=None):
     # Step One: Parse The Command Line
 
     parser = optparse.OptionParser('%prog [options]')
-    parser.add_option('-c', '--config', metavar='fn', 
-       help='use this configuration file or directory')
+    parser.add_option('-c', '--config', metavar='fn',
+        help='use this configuration file or directory')
     opts, args = parser.parse_args(argv)
     if args: print >> sys.stderr, 'Warning: ignoring spurious arguments'
 
@@ -126,46 +123,45 @@ def main(argv=None):
     # Step Three: Load The Configurations
 
     config_modules = []
-    for config_name in config_names(opts.config): 
-       name = os.path.basename(config_name).split('.')[0] + '_config'
-       module = imp.load_source(name, config_name)
-       module.filename = config_name
+    for config_name in config_names(opts.config):
+        name = os.path.basename(config_name).split('.')[0] + '_config'
+        module = imp.load_source(name, config_name)
+        module.filename = config_name
 
-       if not hasattr(module, 'prefix'): 
-          module.prefix = r'\.'
+        if not hasattr(module, 'prefix'):
+            module.prefix = r'\.'
 
-       if not hasattr(module, 'name'): 
-          module.name = 'Jenni Yanosbot, https://github.com/myano/jenni'
+        if not hasattr(module, 'name'):
+            module.name = 'Jenni Yanosbot, https://github.com/myano/jenni'
 
-       if not hasattr(module, 'port'): 
-          module.port = 6667
+        if not hasattr(module, 'port'):
+            module.port = 6667
 
-       if not hasattr(module, 'password'): 
-          module.password = None
+        if not hasattr(module, 'password'):
+            module.password = None
 
-       if module.host == 'irc.example.net': 
-          error = ('Error: you must edit the config file first!\n' + 
-                   "You're currently using %s" % module.filename)
-          print >> sys.stderr, error
-          sys.exit(1)
+        if module.host == 'irc.example.net':
+            error = ('Error: you must edit the config file first!\n' +
+                        "You're currently using %s" % module.filename)
+            print >> sys.stderr, error
+            sys.exit(1)
 
-       config_modules.append(module)
+        config_modules.append(module)
 
     # Step Four: Load Jenni
 
     try: from __init__ import run
-    except ImportError: 
-       try: from jenni import run
-       except ImportError: 
-          print >> sys.stderr, "Error: Couldn't find jenni to import"
-          sys.exit(1)
+    except ImportError:
+        try: from jenni import run
+        except ImportError:
+            print >> sys.stderr, "Error: Couldn't find jenni to import"
+            sys.exit(1)
 
     # Step Five: Initialise And Run The Jennies
 
     # @@ ignore SIGHUP
-    for config_module in config_modules: 
-       run(config_module) # @@ thread this
+    for config_module in config_modules:
+        run(config_module) # @@ thread this
 
-if __name__ == '__main__': 
+if __name__ == '__main__':
     main()
-

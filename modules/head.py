@@ -83,10 +83,26 @@ def f_title(self, origin, match, args):
         uri = 'http://' + uri
     uri = uri.replace('#!', '?_escaped_fragment_=')
 
+    localhost = [
+        'http://localhost/', 'http://localhost:80/',
+        'http://localhost:8080/', 'http://127.0.0.1/',
+        'http://127.0.0.1:80/', 'http://127.0.0.1:8080/',
+        'https://localhost/', 'https://localhost:80/',
+        'https://localhost:8080/', 'https://127.0.0.1/',
+        'https://127.0.0.1:80/', 'https://127.0.0.1:8080/',
+    ]
+    for s in localhost:
+        if uri.startswith(s):
+            return jenni.reply('Sorry, access forbidden.')
+
     try:
         redirects = 0
         while True:
-            req = urllib2.Request(uri, headers={'Accept':'text/html'})
+            headers = {
+                'Accept': 'text/html',
+                'User-Agent': 'Mozilla/5.0 (Jenni)'
+            }
+            req = urllib2.Request(uri, headers=headers)
             u = urllib2.urlopen(req)
             info = u.info()
             u.close()
@@ -159,16 +175,15 @@ def f_title(self, origin, match, args):
         title = title.replace('\r', '')
         self.msg(origin.sender, origin.nick + ': ' + title)
     else: self.msg(origin.sender, origin.nick + ': No title found')
-#f_title.commands = ['title']
+f_title.commands = ['title']
 
 def noteuri(jenni, input):
     uri = input.group(1).encode('utf-8')
     if not hasattr(jenni.bot, 'last_seen_uri'):
         jenni.bot.last_seen_uri = {}
     jenni.bot.last_seen_uri[input.sender] = uri
-noteuri.rule = r'.*(http://[^<> "\x01]+)[,.]?'
+noteuri.rule = r'.*(http[s]?://[^<> "\x01]+)[,.]?'
 noteuri.priority = 'low'
 
 if __name__ == '__main__':
     print __doc__.strip()
-

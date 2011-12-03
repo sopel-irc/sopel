@@ -1,8 +1,12 @@
 #!/usr/bin/env python
 """
 rand.py - Rand Module
-Author: Michael S. Yanovich http://opensource.cse.ohio-state.edu/
-Jenni (About): http://inamidst.com/phenny/
+Copyright 2010, Michael Yanovich, yanovich.net
+Licensed under the Eiffel Forum License 2.
+
+More info:
+ * Jenni: https://github.com/myano/jenni/
+ * Phenny: http://inamidst.com/phenny/
 """
 
 import random

@@ -37,7 +37,7 @@ random.seed()
 
 # Remember to change these 3 lines or nothing will work
 CHANNEL = '##uno'
-SCOREFILE = "/home/yano/jenni/unoscores.txt"
+SCOREFILE = "/home/yano/dev/jenni/unoscores.txt"
 # Only the owner (starter of the game) can call .unostop to stop the game.
 # But this calls for a way to allow others to stop it after the game has been idle for a while.
 # After this set time, anyone can stop the game via .unostop
@@ -449,6 +449,7 @@ class UnoBot:
             f.close ()
         except: pass
         for p in players:
+            p = p.lower()
             if p not in prescores:
                 prescores[p] = [ p, 0, 0, 0, 0 ]
             prescores[p][1] += 1
@@ -548,7 +549,7 @@ class UnoBot:
             jenni.msg(CHANNEL, STRINGS['PCE_CLEARED'] % nick)
 
     def unostat (self, jenni, input):
-        text = input.group().split()
+        text = input.group().lower().split()
 
         if len(text) != 3:
             jenni.say("Invalid input for stats command. Try '.unostats ppg 10' to show the top 10 ranked by points per game. You can also show rankings by percent-wins 'pw'.")
@@ -582,110 +583,131 @@ def uno(jenni, input):
     unobot.start (jenni, input.nick)
 uno.commands = ['uno']
 uno.priority = 'low'
+uno.thread = False
 
 def unostop(jenni, input):
     unobot.stop (jenni, input)
 unostop.commands = ['unostop']
 unostop.priority = 'low'
+unostop.thread = False
 
 def join(jenni, input):
     unobot.join (jenni, input)
 join.rule = '^(join|.join)$'
 join.priority = 'low'
+join.thread = False
 
 def deal(jenni, input):
     unobot.deal (jenni, input)
 deal.commands = ['deal']
 deal.priority = 'low'
+deal.thread = False
 
 def play(jenni, input):
     unobot.play (jenni, input)
 play.commands = ['play', 'p']
 play.priority = 'low'
+play.thread = False
 
 def draw(jenni, input):
     unobot.draw (jenni, input)
 draw.commands = ['draw', 'd', 'dr']
 draw.priority = 'low'
+draw.thread = False
 
 def passs(jenni, input):
     unobot.passs (jenni, input)
 passs.commands = ['pass', 'pa']
 passs.priority = 'low'
+passs.thread = False
 
 def unotop10 (jenni, input):
     unobot.top10 (jenni, input)
 unotop10.commands = ['unotop10']
 unotop10.priority = 'low'
+unotop10.thread = False
 
 def show_user_cards (jenni, input):
     unobot.showCards (jenni, input.nick)
 show_user_cards.commands = ['cards']
 show_user_cards.priority = 'low'
+show_user_cards.thread = False
 
 def top_card (jenni, input):
     unobot.showTopCard_demand(jenni)
 top_card.commands = ['top']
 top_card.priority = 'low'
+top_card.thread = False
 
 def leave (jenni, input):
     unobot.leave(jenni, input)
 leave.commands = ['leave']
 leave.priority = 'low'
+leave.thread = False
 
 def remove_on_part (jenni, input):
     unobot.remove_player(jenni, input.nick)
 remove_on_part.event = 'PART'
 remove_on_part.rule = '.*'
 remove_on_part.priority = 'low'
+remove_on_part.thread = False
 
 def remove_on_quit (jenni, input):
     unobot.remove_player(jenni, input.nick)
 remove_on_quit.event = 'QUIT'
 remove_on_quit.rule = '.*'
 remove_on_quit.priority = 'low'
+remove_on_quit.thread = False
 
 def remove_on_kick (jenni, input):
     unobot.remove_player(jenni, input.nick)
 remove_on_kick.event = 'KICK'
 remove_on_kick.rule = '.*'
 remove_on_kick.priority = 'low'
+remove_on_kick.thread = False
 
 def remove_on_nickchg (jenni, input):
     unobot.remove_player(jenni, input.nick)
 remove_on_nickchg.event = 'NICK'
 remove_on_nickchg.rule = '.*'
 remove_on_nickchg.priority = 'low'
+remove_on_nickchg.thread = False
 
 def unostats (jenni, input):
     unobot.unostat (jenni, input)
 unostats.commands = ['unostats']
 unostats.priority = 'low'
+unostats.thread = False
 
 def uno_help (jenni, input):
     jenni.reply("For rules, examples, and getting started: http://j.mp/ekfaww")
 uno_help.commands = ['uno-help']
 uno_help.priority = 'low'
+uno_help.thread = False
 
 def uno_pce_on (jenni, input):
     unobot.enablePCE(jenni, input.nick)
 uno_pce_on.commands = ['pce-on']
 uno_pce_on.priority = 'low'
+uno_pce_on.thread = False
 
 def uno_pce_off (jenni, input):
     unobot.disablePCE(jenni, input.nick)
 uno_pce_off.commands = ['pce-off']
 uno_pce_off.priority = 'low'
+uno_pce_off.thread = False
 
 def uno_ispce (jenni, input):
     unobot.isPCEEnabled(jenni, input.nick)
 uno_ispce.commands = ['pce']
 uno_ispce.priority = 'low'
+uno_ispce.thread = False
 
 def uno_pce_clear (jenni, input):
     unobot.PCEClear(jenni, input.nick)
 uno_pce_clear.commands = ['.pce-clear']
 uno_pce_clear.priority = 'low'
+uno_pce_clear.thread = False
 
 if __name__ == '__main__':
     print __doc__.strip()
