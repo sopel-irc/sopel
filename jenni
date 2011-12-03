@@ -15,6 +15,7 @@ import sys, os, imp, optparse
 from textwrap import dedent as trim
 
 dotdir = os.path.expanduser('~/.jenni')
+configpath = os.path.expanduser(dotdir + '/default.py')
 
 def check_python_version():
     if sys.version_info < (2, 4):
@@ -24,7 +25,7 @@ def check_python_version():
 
 def create_default_config(fn):
     f = open(fn, 'w')
-    print >> f, trim("""\
+    output = """\
     nick = 'jenni'
     host = 'irc.example.net'
     channels = ['#example', '#test']
@@ -46,7 +47,7 @@ def create_default_config(fn):
 
     # Directories to load user modules from
     # e.g. /path/to/my/modules
-    extra = []
+    extra = ['""" + os.getcwd() + '/modules/' + """']
 
     # Services to load: maps channel names to white or black lists
     external = {
@@ -56,26 +57,29 @@ def create_default_config(fn):
     }
 
     # EOF
-    """)
+    """
+    print >> f, trim(output)
     f.close()
 
-def create_dotdir(dotdir):
-    print 'Creating a config directory at ~/.jenni...'
-    try: os.mkdir(dotdir)
-    except Exception, e:
-        print >> sys.stderr, 'There was a problem creating %s:' % dotdir
-        print >> sys.stderr, e.__class__, str(e)
-        print >> sys.stderr, 'Please fix this and then run jenni again.'
-        sys.exit(1)
+def create_configfile(dotdir):
 
-    default = os.path.join(dotdir, 'default.py')
-    create_default_config(default)
+    if not os.path.isdir(dotdir):
+        print 'Creating a config directory at ~/.jenni...'
+        try: os.mkdir(dotdir)
+        except Exception, e:
+            print >> sys.stderr, 'There was a problem creating %s:' % dotdir
+            print >> sys.stderr, e.__class__, str(e)
+            print >> sys.stderr, 'Please fix this and then run jenni again.'
+            sys.exit(1)
+
+    create_default_config(configpath)
+    print >> sys.stdout, 'Config file generated. Please edit it at ' + configpath + ' and run ./jenni again.'
 
     sys.exit(0)
 
 def check_dotdir():
-    if not os.path.isdir(dotdir):
-        create_dotdir(dotdir)
+    if not os.path.isdir(dotdir) or not os.path.isfile(configpath):
+        create_configfile(dotdir)
 
 def config_names(config):
     config = config or 'default'
