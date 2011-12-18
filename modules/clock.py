@@ -214,35 +214,50 @@ def f_time(self, origin, match, args):
     if (TZ == 'UTC') or (TZ == 'Z'):
         msg = time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())
         self.msg(origin.sender, msg)
-    elif r_local.match(tz): # thanks to Mark Shoulsdon (clsn)
+        return
+
+    if r_local.match(tz): # thanks to Mark Shoulsdon (clsn)
         locale.setlocale(locale.LC_TIME, (tz[1:-1], 'UTF-8'))
         msg = time.strftime("%A, %d %B %Y %H:%M:%SZ", time.gmtime())
         self.msg(origin.sender, msg)
-    elif TimeZones.has_key(TZ):
+        return
+
+    if TimeZones.has_key(TZ):
         offset = TimeZones[TZ] * 3600
         timenow = time.gmtime(time.time() + offset)
         msg = time.strftime("%a, %d %b %Y %H:%M:%S " + str(TZ), timenow)
         self.msg(origin.sender, msg)
-    elif tz and tz[0] in ('+', '-') and 4 <= len(tz) <= 6:
-        timenow = time.gmtime(time.time() + (int(tz[:3]) * 3600))
-        msg = time.strftime("%a, %d %b %Y %H:%M:%S " + str(tz), timenow)
-        self.msg(origin.sender, msg)
-    else:
-        try: t = float(tz)
-        except ValueError:
-            import os, re, subprocess
-            r_tz = re.compile(r'^[A-Za-z]+(?:/[A-Za-z_]+)*$')
-            if r_tz.match(tz) and os.path.isfile('/usr/share/zoneinfo/' + tz):
-                cmd, PIPE = 'TZ=%s date' % tz, subprocess.PIPE
-                proc = subprocess.Popen(cmd, shell=True, stdout=PIPE)
-                self.msg(origin.sender, proc.communicate()[0])
-            else:
-                error = "Sorry, I don't know about the '%s' timezone." % tz
-                self.msg(origin.sender, origin.nick + ': ' + error)
-        else:
-            timenow = time.gmtime(time.time() + (t * 3600))
+        return
+
+    if tz and 4 <= len(tz) <= 6:
+        t_isValid = False
+        
+        if tz[0] in ('+', '-') and tz[1:].isdigit():
+            t_isValid = True
+        elif tz.isdigit():
+            t_isValid = True
+
+        if t_isValid:
+            self.msg(origin.sender, tz[:3])
+            timenow = time.gmtime(time.time() + (int(tz[:3]) * 3600))
             msg = time.strftime("%a, %d %b %Y %H:%M:%S " + str(tz), timenow)
             self.msg(origin.sender, msg)
+
+    try: t = float(tz)
+    except ValueError:
+        import os, re, subprocess
+        r_tz = re.compile(r'^[A-Za-z]+(?:/[A-Za-z_]+)*$')
+        if r_tz.match(tz) and os.path.isfile('/usr/share/zoneinfo/' + tz):
+            cmd, PIPE = 'TZ=%s date' % tz, subprocess.PIPE
+            proc = subprocess.Popen(cmd, shell=True, stdout=PIPE)
+            self.msg(origin.sender, proc.communicate()[0])
+        else:
+            error = "Sorry, I don't know about the '%s' timezone." % tz
+            self.msg(origin.sender, origin.nick + ': ' + error)
+    else:
+        timenow = time.gmtime(time.time() + (t * 3600))
+        msg = time.strftime("%a, %d %b %Y %H:%M:%S " + str(tz), timenow)
+        self.msg(origin.sender, msg)
 f_time.commands = ['t']
 f_time.name = 't'
 f_time.example = '.t UTC'
