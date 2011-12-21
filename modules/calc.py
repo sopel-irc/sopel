@@ -92,7 +92,9 @@ c.commands = ['c']
 c.example = '.c 5 + 3'
 
 def py(jenni, input):
-    query = input.group(2).encode('utf-8')
+    code = input.group(2)
+    if not code: return
+    query = code.encode('utf-8')
     uri = 'http://tumbolia.appspot.com/py/'
     answer = web.get(uri + web.urllib.quote(query))
     if answer:
