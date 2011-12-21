@@ -238,10 +238,10 @@ def f_time(self, origin, match, args):
             t_isValid = True
 
         if t_isValid:
-            self.msg(origin.sender, tz[:3])
-            timenow = time.gmtime(time.time() + (int(tz[:3]) * 3600))
+            timenow = time.gmtime(time.time() + (int(tz) * 3600))
             msg = time.strftime("%a, %d %b %Y %H:%M:%S " + str(tz), timenow)
             self.msg(origin.sender, msg)
+            return
 
     try: t = float(tz)
     except ValueError:
