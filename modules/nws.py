@@ -13,6 +13,7 @@ watches, warnings, and advisories that are present.
 
 import feedparser
 import re
+import urllib
 import web
 
 states = {
@@ -74,6 +75,7 @@ zip_code_lookup = "http://www.zip-codes.com/zip-code/{0}/zip-code-{0}.asp"
 nomsg = "There are no active watches, warnings or advisories, for {0}."
 re_fips = re.compile(r'(?i)title="FIPS: (.*)">')
 re_state = re.compile(r'(?i)Welcome to\s(.*\,\s[A-Z][A-Z])')
+more_info = "Complete weather watches, warnings, and advisories for {0}, available here: {1}"
 
 def nws_lookup(jenni, input):
     """ Look up weather watches, warnings, and advisories. """
@@ -125,13 +127,40 @@ def nws_lookup(jenni, input):
         return
 
     feed = feedparser.parse(master_url)
+    warnings_dict = { }
     for item in feed.entries:
         if nomsg[:51] == item["title"]:
             jenni.reply(nomsg.format(location))
-            break
+            return
         else:
-            jenni.reply(unicode(item["title"]))
-            jenni.reply(unicode(item["summary"]))
+            warnings_dict[unicode(item["title"])] = unicode(item["summary"])
+
+    paste_code = ""
+    for alert in warnings_dict:
+        paste_code += item["title"] + "\n" + item["summary"] + "\n\n"
+
+    paste_dict = {
+        "paste_private" : 0,
+        "paste_code" : paste_code,
+        }
+
+    pastey = urllib.urlopen("http://pastebin.com/api_public.php",
+        urllib.urlencode(paste_dict)).read()
+
+    if len(warnings_dict) > 0:
+        if input.sender.startswith('#'):
+            i = 1
+            for key in warnings_dict:
+                if i > 1: break
+                jenni.reply(key)
+                jenni.reply(warnings_dict[key][:510])
+                i += 1
+            jenni.reply(more_info.format(location, master_url))
+        else:
+            for key in warnings_dict:
+                jenni.msg(input.nick, key)
+                jenni.msg(input.nick, warnings_dict[key])
+            jenni.msg(input.nick, more_info.format(location, master_url))
 nws_lookup.commands = ['nws']
 
 if __name__ == '__main__':
