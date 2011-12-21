@@ -2,6 +2,7 @@
 # coding=utf-8
 """
 translate.py - Jenni Translation Module
+Copyright 2008, Sean B. Palmer, inamidst.com
 Copyright 2011, Michael Yanovich, yanovich.net
 Licensed under the Eiffel Forum License 2.
 
@@ -10,23 +11,35 @@ More info:
  * Phenny: http://inamidst.com/phenny/
 """
 
-import re, urllib
+import re
 import web
 
-def translate(text, input, output):
-    base = "https://yanovich.net/tr/"
-    if output:
-        base += (output).encode('utf-8') + "/"
-    if input:
-        base += (input).encode('utf-8') + "/"
-    lang_guess = False
-    base = base.replace(" ", "%20")
-    json = web.json(web.get(base + text))
-    obj = json['data']['translations'][0]
-    translation = (web.decode(obj['translatedText'])).encode('utf-8')
-    if 'detectedSourceLanguage' in obj:
-        lang_guess = obj['detectedSourceLanguage']
-    return (translation, lang_guess)
+
+def translate(phrase, fromlang, tolang):
+    url = "http://translate.google.com/translate_a/t?client=t&text={0}"
+    url = url.format(phrase)
+
+    if tolang:
+        tl = (tolang).encode('utf-8')
+    else:
+        tl = ('en').encode('utf-8')
+
+    url += "&tl=" + tl
+
+    if fromlang:
+        sl = (fromlang).encode('utf-8')
+        url += "&sl=" + sl
+
+    results = web.get(url)
+
+    re_sl = re.compile(r'\,"([a-z]{2})"\,\,')
+    sl_possible = re_sl.findall(results)
+    if sl_possible:
+        sl = sl_possible[0]
+    results = results.split('"')
+    phrase = results[1]
+
+    return (phrase, sl, tl)
 
 
 def tr(jenni, context):
@@ -39,28 +52,24 @@ def tr(jenni, context):
         input = False
 
     phrase = phrase.encode('utf-8')
-
     if (len(phrase) > 350) and (not context.admin):
         return jenni.reply('Phrase must be under 350 characters.')
 
-    translation, from_lang = translate(phrase, input, output)
-
     good_response = '"{0}" ({1} to {2}, translate.google.com)'
     bad_response = "The {0} to {1} translation failed, sorry!"
+    dl = "Error: Source language and translation language can not be the same!"
 
-    if input:
-        from_lang = (input).encode('utf-8')
+    result = translate(phrase, input, output)
 
-    if output:
-        to_lang = (output).encode('utf-8')
-    else:
-        to_lang = 'en'
-
-    if translation == phrase:
-        jenni.reply(bad_response.format(from_lang, to_lang))
+    if result[1] == result[2]:
+        jenni.reply(dl)
         return
 
-    jenni.reply(good_response.format(translation, from_lang, to_lang))
+    if phrase == result[0]:
+        response = (bad_response).format(result[1], result[2])
+    else:
+        response = (good_response).format(result[0], result[1], result[2])
+    jenni.reply(response)
 
 tr.rule = ('$nick', ur'(?:([a-z]{2}) +)?(?:([a-z]{2}) +)?["“](.+?)["”]\? *$')
 tr.example = '$nickname: "mon chien"? or $nickname: fr "mon chien"?'
