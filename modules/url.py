@@ -225,7 +225,8 @@ def get_results(text):
 def show_title_auto (jenni, input):
     if (input.startswith('.title ') or input.startswith('.bitly ') or
         input.startswith('.dftba') or 
-        input.match('.*(youtube.com/watch\S*v=|youtu.be/)([\w]+'.*): return
+        re.match('.*(youtube.com/watch\S*v=|youtu.be/)([\w]+.*)', input):
+        return
     if len(re.findall("\([\d]+\sfiles\sin\s[\d]+\sdirs\)", input)) == 1: return
     try:
         results = get_results(input)
