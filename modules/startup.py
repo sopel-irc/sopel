@@ -20,7 +20,7 @@ def startup(jenni, input):
         jenni.write(('JOIN', channel))
         
     #Attempt to set bot mode.
-    jenni.write(('MODE ', phenny.nick + ' +B'))
+    jenni.write(('MODE ', jenni.nick + ' +B'))
 startup.rule = r'(.*)'
 startup.event = '251'
 startup.priority = 'low'
