@@ -80,7 +80,7 @@ def mode(phenny, input):
     if input.sender.startswith('#'): return
     if input.admin:
         mode = input.group(1)
-        phenny.write(('MODE ', phenny.nick + ' ' + mode))
+        phenny.write(('MODE ', jenni.nick + ' ' + mode))
 mode.rule = r'\.mode ([\+-]\S+)'
 mode.priority = 'low'
 
@@ -88,8 +88,8 @@ def raw(phenny, input):
     # Can only be done in privmsg by owner
     if input.sender.startswith('#'): return
     if input.owner:
-        phenny.write(input.group(1))
-raw.commands = ['raw']
+        phenny.write((input.group(1), input.group(2))
+raw.rule = '.raw (\S+) (.*)'
 
 if __name__ == '__main__':
    print __doc__.strip()
