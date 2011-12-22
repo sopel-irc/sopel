@@ -10,62 +10,7 @@ http://inamidst.com/phenny/
 
 import re
 import web
-
-r_result = re.compile(r'(?i)<A NAME=results>(.*?)</A>')
-r_tag = re.compile(r'<\S+.*?>')
-
-subs = [
-    (' in ', ' -> '),
-    (' over ', ' / '),
-    (u'£', 'GBP '),
-    (u'€', 'EUR '),
-    ('\$', 'USD '),
-    (r'\bKB\b', 'kilobytes'),
-    (r'\bMB\b', 'megabytes'),
-    (r'\bGB\b', 'kilobytes'),
-    ('kbps', '(kilobits / second)'),
-    ('mbps', '(megabits / second)')
-]
-
-def calc(jenni, input):
-    """Use the Frink online calculator."""
-    q = input.group(2)
-    if not q:
-        return jenni.say('0?')
-
-    query = q[:]
-    for a, b in subs:
-        query = re.sub(a, b, query)
-    query = query.rstrip(' \t')
-
-    precision = 5
-    if query[-3:] in ('GBP', 'USD', 'EUR', 'NOK'):
-        precision = 2
-    query = web.urllib.quote(query.encode('utf-8'))
-
-    uri = 'http://futureboy.us/fsp/frink.fsp?fromVal='
-    bytes = web.get(uri + query)
-    m = r_result.search(bytes)
-    if m:
-        result = m.group(1)
-        result = r_tag.sub('', result) # strip span.warning tags
-        result = result.replace('&gt;', '>')
-        result = result.replace('(undefined symbol)', '(?) ')
-
-        if '.' in result:
-            try: result = str(round(float(result), precision))
-            except ValueError: pass
-
-        if not result.strip():
-            result = '?'
-        elif ' in ' in q:
-            result += ' ' + q.split(' in ', 1)[1]
-
-        jenni.say(q + ' = ' + result[:350])
-    else: jenni.reply("Sorry, can't calculate that.")
-    jenni.say('Note that .calc is deprecated, consider using .c')
-calc.commands = ['calc']
-calc.example = '.calc 5 + 3'
+import string
 
 def c(jenni, input):
     """Google calculator."""
@@ -88,30 +33,37 @@ def c(jenni, input):
         answer = web.decode(answer)
         jenni.say(answer)
     else: jenni.say('Sorry, no result.')
-c.commands = ['c']
+c.commands = ['c', 'calc']
 c.example = '.c 5 + 3'
 
 def py(jenni, input):
-    code = input.group(2)
-    if not code: return
-    query = code.encode('utf-8')
-    uri = 'http://tumbolia.appspot.com/py/'
-    answer = web.get(uri + web.urllib.quote(query))
-    if answer:
-        jenni.say(answer)
-    else: jenni.reply('Sorry, no result.')
+    """Evaluate a Python expression. Admin-only."""
+    if input.admin:
+        query = input.group(2).encode('utf-8')
+        uri = 'http://tumbolia.appspot.com/py/'
+        answer = web.get(uri + web.urllib.quote(query))
+        if answer:
+            jenni.say(answer)
+        else: jenni.reply('Sorry, no result.')
 py.commands = ['py']
+py.example = '.py len([1,2,3])'
 
 def wa(jenni, input):
+    """Wolfram Alpha calculator"""
     if not input.group(2):
         return jenni.reply("No search term.")
     query = input.group(2).encode('utf-8')
     uri = 'http://tumbolia.appspot.com/wa/'
     answer = web.get(uri + web.urllib.quote(query.replace('+', '%2B')))
     if answer:
-        jenni.say(answer)
+        waOutputArray = string.split(answer, ";")
+        jenni.say('[WOLFRAM] ' + waOutputArray[0]+" = "+waOutputArray[1])
+        waOutputArray = []
+
+
     else: jenni.reply('Sorry, no result.')
 wa.commands = ['wa']
+wa.example = '.wa circumference of the sun * pi'
 
 if __name__ == '__main__':
     print __doc__.strip()

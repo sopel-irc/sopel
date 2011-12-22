@@ -18,6 +18,9 @@ def startup(jenni, input):
     # Cf. http://swhack.com/logs/2005-12-05#T19-32-36
     for channel in jenni.channels:
         jenni.write(('JOIN', channel))
+        
+    #Attempt to set bot mode.
+   jenni.write(('MODE ', phenny.nick + ' +B'))
 startup.rule = r'(.*)'
 startup.event = '251'
 startup.priority = 'low'
