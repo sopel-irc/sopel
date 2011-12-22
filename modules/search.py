@@ -86,6 +86,7 @@ r_query = re.compile(
 )
 
 def gcs(jenni, input):
+    """Compare the number of Google search results"""
     if not input.group(2):
         return jenni.reply("Nothing to compare.")
     queries = r_query.findall(input.group(2))
@@ -105,6 +106,7 @@ def gcs(jenni, input):
     reply = ', '.join('%s (%s)' % (t, formatnumber(n)) for (t, n) in results)
     jenni.say(reply)
 gcs.commands = ['gcs', 'comp']
+gcs.example = '.gcs foo bar'
 
 r_bing = re.compile(r'<h3><a href="([^"]+)"')
 
@@ -147,6 +149,7 @@ def duck_search(query):
     if m: return web.decode(m.group(1))
 
 def duck(jenni, input):
+    """Queries Duck Duck Go for the specified input."""
     query = input.group(2)
     if not query: return jenni.reply('.ddg what?')
 
@@ -161,6 +164,7 @@ def duck(jenni, input):
 duck.commands = ['duck', 'ddg']
 
 def search(jenni, input):
+    """Searches Google, Bing, and Duck Duck Go."""
     if not input.group(2):
         return jenni.reply('.search for what?')
     query = input.group(2).encode('utf-8')
@@ -188,8 +192,10 @@ def search(jenni, input):
 
     jenni.reply(result)
 search.commands = ['search']
+search.example = '.search nerdfighter'
 
 def suggest(jenni, input):
+    """Suggest terms starting with given input"""
     if not input.group(2):
         return jenni.reply("No query term.")
     query = input.group(2).encode('utf-8')

@@ -18,8 +18,8 @@ dotdir = os.path.expanduser('~/.jenni')
 configpath = os.path.expanduser(dotdir + '/default.py')
 
 def check_python_version():
-    if sys.version_info < (2, 4):
-        error = 'Error: Requires Python 2.4 or later, from www.python.org'
+    if sys.version_info < (2, 6):
+        error = 'Error: Requires Python 2.6 or later. Try python2.6 jenni'
         print >> sys.stderr, error
         sys.exit(1)
 
