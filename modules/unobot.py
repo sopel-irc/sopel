@@ -680,7 +680,7 @@ unostats.priority = 'low'
 unostats.thread = False
 
 def uno_help (jenni, input):
-    jenni.reply("For rules, examples, and getting started: http://j.mp/ekfaww")
+    jenni.reply("For rules, examples, and getting started: http://j.mp/esl47K")
 uno_help.commands = ['uno-help']
 uno_help.priority = 'low'
 uno_help.thread = False
