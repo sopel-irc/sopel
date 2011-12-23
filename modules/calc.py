@@ -57,7 +57,10 @@ def wa(jenni, input):
     answer = web.get(uri + web.urllib.quote(query.replace('+', '%2B')))
     if answer:
         waOutputArray = string.split(answer, ";")
-        jenni.say('[WOLFRAM] ' + waOutputArray[0]+" = "+waOutputArray[1])
+        if(len(waOutputArray) < 2):
+            jenni.say('[WOLFRAM ERROR]'+answer)
+        else:
+            jenni.say('[WOLFRAM] ' + waOutputArray[0]+" = "+waOutputArray[1])
         waOutputArray = []
 
 
