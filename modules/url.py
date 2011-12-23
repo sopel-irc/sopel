@@ -330,7 +330,7 @@ def ytinfo(jenni, input):
               + likes + ' | Dislikes: ' + dislikes
    
     jenni.say(message)   
-ytinfo.rule = '.*(youtube.com/watch\S*v=|youtu.be/)([\w]+).*'
+ytinfo.rule = '.*(youtube.com/watch\S*v=|youtu.be/)([\w-]+).*'
 
 if __name__ == '__main__':
     print __doc__.strip()
