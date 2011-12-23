@@ -312,10 +312,10 @@ def f_weather(self, origin, match, args):
 
             if isinstance(temp, int):
                 f = round((temp * 1.8) + 32, 2)
-                temp = u'%s\u2109 (%s\u2103)'.encode('utf-8') % (f, temp)
+                temp = u'%s\u00B0F (%s\u00B0C)'.encode('utf-8') % (f, temp)
     else: pressure = '?mb'
     if isinstance(temp, int):
-        temp = u'%s\u2103'.encode('utf-8') % temp
+        temp = u'%s\u00B0C'.encode('utf-8') % temp
 
     if cond:
         conds = cond
