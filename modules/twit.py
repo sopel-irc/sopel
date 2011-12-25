@@ -17,7 +17,7 @@ api = twitter.Api()
 
 twitter_watch = ['hankgreen', 'realjohngreen']
 watch_wait = 75
-watch = False
+watch = True
 lasts = dict()
 sch = sched.scheduler(time.time, time.sleep)
 
@@ -28,7 +28,7 @@ def gettweet(jenni, input):
 		statuses = api.GetUserTimeline(twituser)
 		recent = [s.text for s in statuses][0]
 		jenni.say("<" + twituser + "> " + unicode(recent))
-	except:	
+	except:
 		jenni.reply("You have inputted an invalid user.")
 gettweet.commands = ['twit']
 gettweet.priority = 'medium'
@@ -99,7 +99,7 @@ def saylast(jenni, input):
    global lasts
    global watch
    global sch
-   
+
    if watch:
       for twituser in twitter_watch:
          try:
@@ -116,7 +116,7 @@ def saylast(jenni, input):
             print inst
       sch.enter(watch_wait, 1, saylast, (jenni, input))
       sch.run()
-		
+
 def tweetwatcher(jenni, input):
    global watch
    global sch
