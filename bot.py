@@ -185,6 +185,9 @@ class Jenni(irc.Bot):
         return CommandInput(text, origin, bytes, match, event, args)
 
     def call(self, func, origin, jenni, input):
+        for hostmask in self.config.badmasks:
+            if hostmask in origin.host:
+                return
         try: func(jenni, input)
         except Exception, e:
             self.error(origin)
