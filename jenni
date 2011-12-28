@@ -35,12 +35,6 @@ def create_default_config(fn):
     # password = 'example'
     # serverpass = 'serverpass'
 
-    # badmasks is a list of hostmasks or partial hostmasks that you would
-    # like to ban. The bot will not respond to these hostmasks.
-    # Currently exact or partial matches work. Regexp is not available at
-    # this time.
-    # badmasks = ['gateway/web/freenode/']
-
     # These are people who will be able to use admin.py's functions...
     admins = [owner, 'someoneyoutrust']
     # But admin.py is disabled by default, as follows:
