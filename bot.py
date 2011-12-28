@@ -185,9 +185,6 @@ class Jenni(irc.Bot):
         return CommandInput(text, origin, bytes, match, event, args)
 
     def call(self, func, origin, jenni, input):
-        for hostmask in self.config.badmasks:
-            if hostmask in origin.host:
-                return
         try: func(jenni, input)
         except Exception, e:
             self.error(origin)
@@ -216,6 +213,25 @@ class Jenni(irc.Bot):
 
                         jenni = self.wrapped(origin, text, match)
                         input = self.input(origin, text, bytes, match, event, args)
+
+                        if os.path.isfile("blocks"):
+                            g = open("blocks", "r")
+                            contents = g.readlines()
+                            g.close()
+
+                            bad_masks = contents[0].split(',')
+                            bad_nicks = contents[1].split(',')
+
+                            if len(bad_masks) > 0:
+                                for hostmask in bad_masks:
+                                    re_temp = re.compile(hostmask)
+                                    if re_temp.findall(origin.host) or hostmask in origin.host:
+                                        return
+                            if len(bad_nicks) > 0:
+                                for nick in bad_nicks:
+                                    re_temp = re.compile(nick)
+                                    if re_temp.findall(input.nick) or nick in input.nick:
+                                        return
 
                         if func.thread:
                             targs = (func, origin, jenni, input)
