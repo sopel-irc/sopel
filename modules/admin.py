@@ -91,7 +91,7 @@ def blocks(jenni, input):
 
     if not os.path.isfile("blocks"):
         blocks = open("blocks", "w")
-        blocks.write('gateway/freenode/,\n')
+        blocks.write('gateway/freenode/\n')
         blocks.write('jenni')
         blocks.close()
 
