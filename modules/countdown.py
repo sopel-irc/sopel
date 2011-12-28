@@ -19,7 +19,7 @@ def generic_countdown(jenni, input):
         jenni.say("Please use correct format: .countdown 2012 12 21")
     if text[0].isdigit() and text[1].isdigit() and text[2].isdigit() and len(text) == 3:
         diff = datetime.datetime(int(text[0]), int(text[1]), int(text[2])) - datetime.datetime.today()
-        jenni.say(str(diff.days) + "-days " +  str(diff.seconds/60/60) + "-hours " +  str(diff.seconds/60 - diff.seconds/60/60 * 60) + "-minutes until " + text[0] + " " + text[1] + " " + text[2])
+        jenni.say(str(diff.days) + " days, " +  str(diff.seconds/60/60) + " hours and " +  str(diff.seconds/60 - diff.seconds/60/60 * 60) + " minutes until " + text[0] + " " + text[1] + " " + text[2])
     else:
         jenni.say("Please use correct format: .countdown 2012 12 21")
 generic_countdown.commands = ['countdown']
