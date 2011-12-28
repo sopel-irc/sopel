@@ -65,7 +65,7 @@ def g(jenni, input):
         jenni.bot.last_seen_uri[input.sender] = uri
     elif uri is False: jenni.reply("Problem getting data from Google.")
     else: jenni.reply("No results found for '%s'." % query)
-g.commands = ['g']
+g.commands = ['g','google']
 g.priority = 'high'
 g.example = '.g swhack'
 
