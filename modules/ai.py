@@ -11,7 +11,7 @@ More info:
 
 import random, time
 
-aistate = True
+aistate = False
 conversation = False
 low = 0
 high = 1
