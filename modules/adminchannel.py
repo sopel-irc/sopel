@@ -328,8 +328,8 @@ def topic(jenni, input):
         return
     channel = input.sender
     topic = purple +'Welcome to: '+ green + channel + purple +' | '
-    if channel is '#YourPants':
-        topic = topic + purple +' | Site: '+ green +'http://nerdfighteria.net' \
+    if channel == '#YourPants':
+        topic = topic + 'Site: '+ green +'http://nerdfighteria.net' \
                 + purple +' | FB: '+ green +'http://fb.me/NerdfighterIRC' \
                 + purple +' | Twitter: '+ green +'@NerdfighterIRC'+ purple \
                 +' | Tumblr: '+ green +'http://dft.ba/-nfirctum'+ purple \
