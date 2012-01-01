@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """
 admin.py - Jenni Admin Module
-Copyright 2010-2011, Michael Yanovich (yanovich.net) and Alek Rollyson.
+Copyright 2010-2011, Michael Yanovich, Alek Rollyson, and Edward Powell
 Licensed under the Eiffel Forum License 2.
 
 More info:
@@ -10,14 +10,16 @@ More info:
 
 Beefed up by Alek Rollyson. added functions for op, deop, voice, devoice
 Uses NickServ ACC to verify that a nick is identified with services, as well
-as m5's admin list as a double verification system. Should eliminate the possibility
-of nick spoofing. May only work with freenode, hasn't been tested on other networks.
+as m5's admin list as a double verification system. Should eliminate the possibility of nick spoofing. May only work with freenode, hasn't been tested
+on other networks.
+Also includes ability to have locked topic 
 """
 
 import re
 
 auth_list = []
 admins = []
+
 
 def op(jenni, input):
     """
@@ -318,15 +320,22 @@ def topic(jenni, input):
     Note: One does *NOT* have to be an OP, one just has to be on the list of
     admins.
     """
+    purple, green, bold = '\x0306', '\x0310', '\x02'
     if not input.admin:
         return
-    text = input.group().split()
-    topic = ' '.join(text[1:])
-    if topic == '':
+    text = input.group(2)
+    if text == '':
         return
     channel = input.sender
-    jenni.write(['PRIVMSG', 'ChanServ'], 'TOPIC %s %s' % (input.sender, topic))
-    return
+    topic = purple +'Welcome to: '+ green + channel + purple +' | '
+    if channel is '#YourPants':
+        topic = topic + purple +' | Site: '+ green +'http://nerdfighteria.net' \
+                + purple +' | FB: '+ green +'http://fb.me/NerdfighterIRC' \
+                + purple +' | Twitter: '+ green +'@NerdfighterIRC'+ purple \
+                +' | Tumblr: '+ green +'http://dft.ba/-nfirctum'+ purple \
+                +' | G+: '+ green +'http://dft.ba/-nfircgplus' + purple +' | '
+    topic = topic + bold +'Topic: '+ bold + green + text
+    jenni.write(('TOPIC', channel + ' :' + topic))
 topic.commands = ['topic']
 topic.priority = 'low'
 
