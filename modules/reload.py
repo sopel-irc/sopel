@@ -9,7 +9,7 @@ http://inamidst.com/phenny/
 
 import sys, os.path, time, imp
 import irc
-import os
+import subprocess
 
 def f_reload(jenni, input):
     """Reloads a module, for use by admins only."""
@@ -54,10 +54,10 @@ f_reload.thread = False
 
 def update(jenni, input):
     """Pulls the latest versions of all modules from Git"""
-    f=os.popen("ls -l")
-    for i in f.readlines():
-        jenni.reply(i)
-update.rule = ('$nick', ['update'])
+    pipe = subprocess.check_output('/usr/bin/git pull')
+    jenni.reply(pipe)
+    #Hopefully will be able to make it read the argument and then reload it
+update.rule = ('$nick', ['update'], '(\S+)?')
 
 if __name__ == '__main__':
     print __doc__.strip()
