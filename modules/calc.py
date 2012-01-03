@@ -65,7 +65,7 @@ def wa(jenni, input):
 
 
     else: jenni.reply('Sorry, no result.')
-wa.commands = ['wa']
+wa.commands = ['wa','wolfram']
 wa.example = '.wa circumference of the sun * pi'
 
 if __name__ == '__main__':
