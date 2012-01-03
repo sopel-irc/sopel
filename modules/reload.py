@@ -9,6 +9,7 @@ http://inamidst.com/phenny/
 
 import sys, os.path, time, imp
 import irc
+import os
 
 def f_reload(jenni, input):
     """Reloads a module, for use by admins only."""
@@ -18,7 +19,7 @@ def f_reload(jenni, input):
     if name == jenni.config.owner:
         return jenni.reply('What?')
 
-    if (not name) or (name == '*'):
+    if (not name) or (name == '*') or (name == 'ALL THE THINGS'):
         jenni.variables = None
         jenni.commands = None
         jenni.setup()
@@ -50,6 +51,13 @@ f_reload.name = 'reload'
 f_reload.rule = ('$nick', ['reload'], r'(\S+)?')
 f_reload.priority = 'low'
 f_reload.thread = False
+
+def update(jenni, input):
+    """Pulls the latest versions of all modules from Git"""
+    f=os.popen("ls -l")
+    for i in f.readlines():
+        jenni.reply(i)
+update.rule = ('$nick', ['update'])
 
 if __name__ == '__main__':
     print __doc__.strip()
