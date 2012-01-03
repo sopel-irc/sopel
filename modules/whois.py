@@ -29,7 +29,6 @@ def sendwhois(phenny, input):
     #rl = None
     #chans = unicode string of the channels the target is on.
 
-
     phenny.say("[DEBUGMSG] (nick,host,rl,chans) = "+str((nick,host,rl,chans))+".")
     msg1 = '[WHOIS] Nick: ' + nick + ' Host: ' + host + \
            ' Real name: ' + rl
