@@ -1,6 +1,6 @@
 """
 move.py - Broadcast message tool, intended for coordinating NationSates defense missions
-Author: Edward D. Powell http://embolalia.net 
+Author: Edward D. Powell http://embolalia.net
 Phenny (About): http://inamidst.com/phenny/
 """
 from time import sleep
@@ -18,10 +18,14 @@ def sendwhois(phenny, input):
     global whois, got318, nick, host, rl, chans, idle, signon
     whois = True
     phenny.write(['WHOIS'], input.group(2))
-    
+
+    phenny.say("[DEBUGMSG]WHOIS made, awaiting got318, whatever that is."
     while not got318:
         sleep(0.5)
-    
+    phenny.say("[DEBUGMSG]got318 is..."+got318+"."
+
+
+    phenny.say("[DEBUGMSG] (nick,host,rl,chans) = "+str((nick,host,rl,chans))+"."
     msg1 = '[WHOIS] Nick: ' + nick + ' Host: ' + host + \
            ' Real name: ' + rl
     msg2 = nick + ' is on the channels: ' + chans
@@ -37,7 +41,7 @@ def sendwhois(phenny, input):
     idle = None
     signon = None
 sendwhois.commands = ['whois']
-    
+
 def whois311(phenny, input):
     global nick, host, rl
     if whois:
