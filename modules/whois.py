@@ -19,13 +19,13 @@ def sendwhois(phenny, input):
     whois = True
     phenny.write(['WHOIS'], input.group(2))
 
-    phenny.say("[DEBUGMSG]WHOIS made, awaiting got318, whatever that is."
+    phenny.say("[DEBUGMSG]WHOIS made, awaiting got318, whatever that is.")
     while not got318:
         sleep(0.5)
     phenny.say("[DEBUGMSG]got318 is..."+got318+"."
 
 
-    phenny.say("[DEBUGMSG] (nick,host,rl,chans) = "+str((nick,host,rl,chans))+"."
+    phenny.say("[DEBUGMSG] (nick,host,rl,chans) = "+str((nick,host,rl,chans))+".")
     msg1 = '[WHOIS] Nick: ' + nick + ' Host: ' + host + \
            ' Real name: ' + rl
     msg2 = nick + ' is on the channels: ' + chans
