@@ -15,4 +15,4 @@ profile.commands = ['yp','profile']
 
 def chanstat(jenni,input):
 	jenni.say('http://stats.nerdfighteria.net/')
-chanstat.commands['chanstat','chanstats']
+chanstat.commands = ['chanstat','chanstats']
