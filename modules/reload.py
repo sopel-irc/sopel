@@ -48,7 +48,7 @@ def f_reload(jenni, input):
 
     jenni.reply('%r (version: %s)' % (module, modified))
 f_reload.name = 'reload'
-f_reload.rule = ('$nick', ['reload'], r'(\S+)?')
+f_reload.rule = ('$nick', ['reload'], r'(.+)?')
 f_reload.priority = 'low'
 f_reload.thread = False
 
