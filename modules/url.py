@@ -332,5 +332,9 @@ def ytinfo(jenni, input):
     jenni.say(message)   
 ytinfo.rule = '.*(youtube.com/watch\S*v=|youtu.be/)([\w-]+).*'
 
+def tyrope(jenni, input):
+    jenni.say('[ Protfolio van Dimitri Molenaars ] - http://tyrope.nl')
+tyrope.rule = '.*http://tyrope\.nl.*'
+
 if __name__ == '__main__':
     print __doc__.strip()

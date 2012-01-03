@@ -52,12 +52,19 @@ f_reload.rule = ('$nick', ['reload'], r'(.+)?')
 f_reload.priority = 'low'
 f_reload.thread = False
 
-def update(jenni, input):
-    """Pulls the latest versions of all modules from Git"""
-    pipe = subprocess.check_output('/usr/bin/git pull', stderr=subprocess.STDOUT)
-    jenni.reply(pipe)
-    #Hopefully will be able to make it read the argument and then reload it
-update.rule = ('$nick', ['update'], '(\S+)?')
+if sys.version_info >= (2, 7):
+    def update(jenni, input):
+        """Pulls the latest versions of all modules from Git"""
+        proc = subprocess.Popen('/usr/bin/git pull',
+                                stdout=subprocess.PIPE,
+                                stderr=subprocess.PIPE,shell=True)
+        jenni.reply(proc.communicate()[0])
+        
+        f_reload(jenni, input)
+else:
+    def update(jenni, input):
+        jenni.say('You need to run me on Python 2.7 to do that.')
+update.rule = ('$nick', ['update'], r'(.+)')
 
 if __name__ == '__main__':
     print __doc__.strip()
