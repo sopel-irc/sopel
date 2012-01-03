@@ -1,5 +1,5 @@
 """
-move.py - Broadcast message tool, intended for coordinating NationSates defense missions
+whois.py - Retrieve WHOIS information on a user and show to the channel.
 Author: Edward D. Powell http://embolalia.net
 Phenny (About): http://inamidst.com/phenny/
 """
