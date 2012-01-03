@@ -54,7 +54,7 @@ f_reload.thread = False
 
 def update(jenni, input):
     """Pulls the latest versions of all modules from Git"""
-    pipe = subprocess.check_output('/usr/bin/git pull')
+    pipe = subprocess.check_output('/usr/bin/git pull', stderr=subprocess.STDOUT)
     jenni.reply(pipe)
     #Hopefully will be able to make it read the argument and then reload it
 update.rule = ('$nick', ['update'], '(\S+)?')
