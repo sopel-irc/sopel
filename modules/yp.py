@@ -8,11 +8,22 @@ More info:
  * Jenni: https://github.com/myano/jenni/
  * Phenny: http://inamidst.com/phenny/
 """
+import web, re
 
 def profile(jenni, input):
-    jenni.say('http://yourpants.org/members/'+ input.group(2) +'/profile')
+    name = input.group(2)
+    if name:
+        url = 'http://yourpants.org/members/' + name + '/profile'
+        response = web.get(url)
+        result = re.search('<title>Page not found',\
+                       response)
+        if not result: jenni.say(url)
 profile.commands = ['yp','profile']
 
 def chanstat(jenni,input):
 	jenni.say('http://stats.nerdfighteria.net/')
 chanstat.commands = ['chanstat','chanstats']
+
+def ning(jenni, input):
+    jenni.say('http://nerdfighters.ning.com/profile/'+ input.group(2))
+ning.commands = ['ning']
