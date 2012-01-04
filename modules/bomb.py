@@ -18,7 +18,7 @@ bombs = dict()
 
 def meter(jenni, input):
     jenni.say('\x02[\x02'+word+'\x02]\x02 '+nick+' is '+randint(1,100)+'%'+word)
-meter.rule = '\.(\S)meter (\S)'
+meter.rule = '\.(\S+)meter (\S)'
 
 def start(jenni, input):
     global bombs
@@ -27,11 +27,10 @@ def start(jenni, input):
     if target in bombs:
         jenni.say('I can\'t fit another bomb in '+target+'\'s pants!')
         return
-    message = 'Hey, '+target+'! '+input.nick+' has stuffed a bomb in your pants. You have 2 minutes  to attempt to defuse the bomb by cutting the wire. There are 5 wires. Red, Yellow, Blue, White, Black. Choose a wire by typing: .cutwire color'
-    
+    message = 'Hey, '+target+'! Don\'t look but, I think there\'s a bomb in your pants. 2 minute timer, 5 wires: Red, Yelow, Blue, White and Black. Which wire should I cut? Don\'t worry, I know what I\'m doing! (respond with .cutwire color)'
     jenni.say(message)
     color = choice(colors)
-    jenni.msg(input.nick, 'The correct color is '+color)
+    jenni.msg(input.nick, 'Hey, don\'t tell '+target+', but the '+color+' wire? Yeah, that\'s the one. But shh! Don\'t say anything!')
     code=sch.enter(fuse, 1, explode, (jenni, input))
     bombs[target] = (color, code)
     sch.run()
@@ -44,8 +43,7 @@ def cutwire(jenni, input):
     c = color.lower()
     sch.cancel(code)
     if input.group(2).lower() == c:
-        jenni.say(input.nick+
-                  ' has cut the '+c+' wire and successfully defuses the bomb!')
+        jenni.say('You did it, '+input.nick+'! I\'ll be honest, I thought you were dead. But nope, you did it. You picked the right one. Well done.')
     else:
         jenni.say('No! No, that\'s the wrong one. Aww, you\'ve gone and killed yourself. Oh, that\'s... that\'s not good. No good at all, really. Wow. Sorry.')
 cutwire.commands = ['cutwire']
