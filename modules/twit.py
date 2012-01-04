@@ -15,7 +15,7 @@ import sched, time
 
 api = twitter.Api()
 
-twitter_watch = ['hankgreen', 'realjohngreen']
+twitter_watch = ['hankgreen', 'realjohngreen', 'NerdfighterIRC']
 watch_wait = 75
 watch = True
 lasts = dict()
@@ -27,7 +27,8 @@ def gettweet(jenni, input):
 		twituser = str(twituser)
 		statuses = api.GetUserTimeline(twituser)
 		recent = [s.text for s in statuses][0]
-		jenni.say("<" + twituser + "> " + unicode(recent))
+		#jenni.say("<" + twituser + "> " + unicode(recent))
+		jenni.say("@" + twituser + ": " + unicode(recent))
 	except:
 		jenni.reply("You have inputted an invalid user.")
 gettweet.commands = ['twit']
