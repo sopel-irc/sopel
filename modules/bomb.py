@@ -27,11 +27,11 @@ def start(jenni, input):
     if target in bombs:
         jenni.say('I can\'t fit another bomb in '+target+'\'s pants!')
         return
-    message = 'Hey, '+target+'! '+target+' has stuffed a bomb in your pants. You have 2 minutes  to attempt to defuse the bomb by cutting the wire. There are 5 wires. Red, Yellow, Blue, White, Black. Choose a wire by typing: .cutwire color'
+    message = 'Hey, '+target+'! '+input.nick+' has stuffed a bomb in your pants. You have 2 minutes  to attempt to defuse the bomb by cutting the wire. There are 5 wires. Red, Yellow, Blue, White, Black. Choose a wire by typing: .cutwire color'
     
     jenni.say(message)
     color = choice(colors)
-    jenni.msg(target, 'The correct color is '+color)
+    jenni.msg(input.nick, 'The correct color is '+color)
     code=sch.enter(fuse, 1, explode, (jenni, input))
     bombs[target] = (color, code)
     sch.run()
