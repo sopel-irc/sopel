@@ -49,7 +49,7 @@ def cutwire(jenni, input):
 cutwire.commands = ['cutwire']
 
 def explode(jenni, input):
-    target = input.group(2)
-    jenni.say('Um, listen, '+target+'. Minor problem. Bit embarrassing. I, uh. I haven\'t quite finished the banning part yet so... if you could just pop out on your own for a bit, that\'d be great. Just for a second. Just... pop out, and come right back in. Can you do that? Thanks.')
+    target = input.group(2).rstrip(' ')
+    jenni.say('Oh, come on, '+target+'! You could\'ve at least picked one! Now you\'re dead. Guts, all over the place. You see that? Guts, all over YourPants.')
     bombs.pop(target)
 
