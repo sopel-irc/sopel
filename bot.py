@@ -214,6 +214,29 @@ class Jenni(irc.Bot):
                         jenni = self.wrapped(origin, text, match)
                         input = self.input(origin, text, bytes, match, event, args)
 
+                        if os.path.isfile("blocks"):
+                            g = open("blocks", "r")
+                            contents = g.readlines()
+                            g.close()
+
+                            bad_masks = contents[0].split(',')
+                            bad_nicks = contents[1].split(',')
+
+                            if len(bad_masks) > 0:
+                                for hostmask in bad_masks:
+                                    hostmask = hostmask.replace("\n", "")
+                                    if len(hostmask) < 1: continue
+                                    re_temp = re.compile(hostmask)
+                                    if re_temp.findall(origin.host) or hostmask in origin.host:
+                                        return
+                            if len(bad_nicks) > 0:
+                                for nick in bad_nicks:
+                                    nick = nick.replace("\n", "")
+                                    if len(nick) < 1: continue
+                                    re_temp = re.compile(nick)
+                                    if re_temp.findall(input.nick) or nick in input.nick:
+                                        return
+
                         if func.thread:
                             targs = (func, origin, jenni, input)
                             t = threading.Thread(target=self.call, args=targs)

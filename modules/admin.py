@@ -9,6 +9,7 @@ More info:
  * Phenny: http://inamidst.com/phenny/
 """
 
+<<<<<<< HEAD
 def join(phenny, input): 
     """Join the specified channel. This is an admin-only command."""
     # Can only be done in privmsg by an admin
@@ -18,6 +19,19 @@ def join(phenny, input):
         if not key: 
             phenny.write(['JOIN'], channel)
         else: phenny.write(['JOIN', channel, key])
+=======
+import os
+
+def join(jenni, input):
+   """Join the specified channel. This is an admin-only command."""
+   # Can only be done in privmsg by an admin
+   if input.sender.startswith('#'): return
+   if input.admin:
+      channel, key = input.group(1), input.group(2)
+      if not key:
+         jenni.write(['JOIN'], channel)
+      else: jenni.write(['JOIN', channel, key])
+>>>>>>> d0c9f1d576da1c7422695bb6e94b09bd376a25ec
 join.rule = r'\.join (#\S+)(?: *(\S+))?'
 join.priority = 'low'
 join.example = '.join #example or .join #example key'
@@ -61,12 +75,12 @@ def me(phenny, input):
 me.rule = (['me'], r'(#?\S+) (.*)')
 me.priority = 'low'
 
-def defend_ground (jenni, input):
+def defend_ground(jenni, input):
     """
     This function monitors all kicks across all channels jenni is in. If she
     detects that she is the one kicked she'll automatically join that channel.
 
-    WARNING: This may not needed and could cause problems if jenni becomes
+    WARNING: This may not be needed and could cause problems if jenni becomes
     annoying. Please use this with caution.
     """
     channel = input.sender
@@ -90,6 +104,87 @@ def raw(phenny, input):
     if input.owner:
         phenny.write((input.group(1), input.group(2)))
 raw.rule = '.raw (\S+) (.*)'
+
+
+def blocks(jenni, input):
+    if not input.admin: return
+
+    STRINGS = {
+            "success_del" : "Successfully deleted block: %s",
+            "success_add" : "Successfully added block: %s",
+            "no_nick" : "No matching nick block found for: %s",
+            "no_host" : "No matching hostmask block found for: %s",
+            "invalid" : "Invalid format for %s a block. Try: .blocks add (nick|hostmask) jenni",
+            "invalid_display" : "Invalid input for displaying blocks.",
+            }
+
+    if not os.path.isfile("blocks"):
+        blocks = open("blocks", "w")
+        blocks.write('gateway/freenode/\n')
+        blocks.write('jenni')
+        blocks.close()
+
+    blocks = open("blocks", "r")
+    contents = blocks.readlines()
+    blocks.close()
+
+    masks = contents[0].replace("\n", "").split(',')
+    nicks = contents[1].replace("\n", "").split(',')
+
+    text = input.group().split()
+
+    if text[1] == "list" and len(text) == 3:
+        if text[2] == "hostmask":
+            for each in masks:
+                jenni.say(each)
+        elif text[2] == "nick":
+            for each in nicks:
+                jenni.say(each)
+        else:
+            jenni.reply(STRINGS['invalid_display'])
+
+    elif text[1] == "add" and len(text) == 4:
+        if text[2] == "nick":
+            nicks.append(text[3])
+        elif text[2] == "hostmask":
+            masks.append(text[3])
+        else:
+            jenni.reply(STRINGS['invalid'] % ("adding"))
+            return
+
+        jenni.reply(STRINGS['success_add'] % (text[3]))
+
+    elif text[1] == "del" and len(text) == 4:
+        if text[2] == "nick":
+            try:
+                nicks.remove(text[3])
+                jenni.reply(STRINGS['success_del'] % (text[3]))
+            except:
+                jenni.reply(STRINGS['no_nick'] % (text[3]))
+                return
+        elif text[2] == "hostmask":
+            try:
+                masks.remove(text[3])
+                jenni.reply(STRINGS['success_del'] % (text[3]))
+            except:
+                jenni.reply(STRINGS['no_host'] % (text[3]))
+                return
+        else:
+            jenni.reply(STRINGS['invalid'] % ("deleting"))
+            return
+
+    os.remove("blocks")
+    blocks = open("blocks", "w")
+    masks_str = ",".join(masks)
+    blocks.write(masks_str)
+    blocks.write("\n")
+    nicks_str = ",".join(nicks)
+    blocks.write(nicks_str)
+    blocks.close()
+
+blocks.commands = ['blocks']
+blocks.priority = 'low'
+blocks.thread = False
 
 if __name__ == '__main__':
    print __doc__.strip()
