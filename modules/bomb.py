@@ -8,7 +8,7 @@ More info:
  * Jenni: https://github.com/myano/jenni/
  * Phenny: http://inamidst.com/phenny/
 """
-from random import choice
+from random import choice, randint
 import sched, time
 
 colors = ['Red', 'Yellow', 'Blue', 'White', 'Black']
@@ -17,8 +17,11 @@ fuse = 30#seconds
 bombs = dict()
 
 def meter(jenni, input):
-    jenni.say('\x02[\x02'+word+'\x02]\x02 '+nick+' is '+randint(1,100)+'%'+word)
-meter.rule = '\.(\S+)meter (\S)'
+    word = input.group(1)
+    nick = input.group(2)
+    percent = randint(1,100)
+    jenni.say('\x02[\x02'+word+'\x02]\x02 '+nick+' is '+str(percent)+'% '+word)
+meter.rule = '\.(\S+)meter (\S+)'
 
 def start(jenni, input):
     global bombs
