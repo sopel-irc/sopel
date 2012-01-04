@@ -28,7 +28,8 @@ def gettweet(jenni, input):
 		statuses = api.GetUserTimeline(twituser)
 		recent = [s.text for s in statuses][0]
 		#jenni.say("<" + twituser + "> " + unicode(recent))
-		jenni.say("@" + twituser + ": " + unicode(recent))
+		if twituser[0] != '@': twituser = twituser + '@'
+		jenni.say(twituser + ": " + unicode(recent))
 	except:
 		jenni.reply("You have inputted an invalid user.")
 gettweet.commands = ['twit']
