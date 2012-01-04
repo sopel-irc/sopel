@@ -16,7 +16,7 @@ sch = sched.scheduler(time.time, time.sleep)
 fuse = 120#seconds
 
 def meter(jenni, input):
-    jenni.say('\x02[\x02'+word+'\x02]\x02 '+nick+' is '+randint(1,100)+'%'+word
+    jenni.say('\x02[\x02'+word+'\x02]\x02 '+nick+' is '+randint(1,100)+'%'+word)
 meter.rule = '\.(\S)meter (\S)'
 
 def start(jenni, input):
