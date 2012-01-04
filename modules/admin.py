@@ -9,7 +9,6 @@ More info:
  * Phenny: http://inamidst.com/phenny/
 """
 
-<<<<<<< HEAD
 def join(phenny, input): 
     """Join the specified channel. This is an admin-only command."""
     # Can only be done in privmsg by an admin
@@ -19,7 +18,6 @@ def join(phenny, input):
         if not key: 
             phenny.write(['JOIN'], channel)
         else: phenny.write(['JOIN', channel, key])
-=======
 import os
 
 def join(jenni, input):
@@ -31,7 +29,6 @@ def join(jenni, input):
       if not key:
          jenni.write(['JOIN'], channel)
       else: jenni.write(['JOIN', channel, key])
->>>>>>> d0c9f1d576da1c7422695bb6e94b09bd376a25ec
 join.rule = r'\.join (#\S+)(?: *(\S+))?'
 join.priority = 'low'
 join.example = '.join #example or .join #example key'
