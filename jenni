@@ -30,6 +30,12 @@ def create_default_config(fn):
     host = 'irc.example.net'
     channels = ['#example', '#test']
     owner = 'yournickname'
+    
+    # Channel where debug messages should be sent.
+    devchan = None
+    
+    # List of other bots, whose outputs should be ignored
+    other_bots = ['examplebot']
 
     # password is the NickServ password, serverpass is the server password
     # password = 'example'
@@ -44,6 +50,10 @@ def create_default_config(fn):
     # some, use "enable = ['example']", which takes precedent over exclude
     #
     # enable = []
+    
+    #Extra values for various modules
+    twitter_username = 'ircwillie'
+    twitter_password = 'nfircwilliebot'
 
     # Directories to load user modules from
     # e.g. /path/to/my/modules

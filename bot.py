@@ -180,6 +180,11 @@ class Jenni(irc.Bot):
                 s.args = args
                 s.admin = origin.nick in self.config.admins
                 s.owner = origin.nick == self.config.owner
+                #Custom config vars
+                s.devchan = self.config.devchan
+                s.twitter_username = self.config.twitter_username
+                s.twitter_password = self.config.twitter_password
+                s.otherbots = self.config.other_bots
                 return s
 
         return CommandInput(text, origin, bytes, match, event, args)
@@ -213,6 +218,7 @@ class Jenni(irc.Bot):
 
                         jenni = self.wrapped(origin, text, match)
                         input = self.input(origin, text, bytes, match, event, args)
+                        if input.nick in input.otherbots: continue
 
                         if os.path.isfile("blocks"):
                             g = open("blocks", "r")
