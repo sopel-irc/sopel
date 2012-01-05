@@ -13,7 +13,7 @@ import sched, time
 
 colors = ['Red', 'Yellow', 'Blue', 'White', 'Black']
 sch = sched.scheduler(time.time, time.sleep)
-fuse = 30#seconds
+fuse = 120#seconds
 bombs = dict()
 
 def meter(jenni, input):
@@ -48,11 +48,18 @@ def cutwire(jenni, input):
     if input.group(2).lower() == c:
         jenni.say('You did it, '+input.nick+'! I\'ll be honest, I thought you were dead. But nope, you did it. You picked the right one. Well done.')
     else:
+        kmsg = 'KICK '+input.channel+' '+target
+               +' : You should\'ve picked the '+bombs[target][0]+' wire.'
         jenni.say('No! No, that\'s the wrong one. Aww, you\'ve gone and killed yourself. Oh, that\'s... that\'s not good. No good at all, really. Wow. Sorry.')
+        jenni.write(kmsg)
 cutwire.commands = ['cutwire']
 
 def explode(jenni, input):
     target = input.group(2).rstrip(' ')
-    jenni.say('Oh, come on, '+target+'! You could\'ve at least picked one! Now you\'re dead. Guts, all over the place. You see that? Guts, all over YourPants.')
+    cmsg = 'Oh, come on, '+target+'! You could\'ve at least picked one! Now you\'re dead. Guts, all over the place. You see that? Guts, all over YourPants.'
+    kmsg = 'KICK '+input.channel+' '+target
+           +' : You should\'ve picked the '+bombs[target][0]+' wire.'
+    jenni.say(cmsg)
+    jenni.write(kmsg)
     bombs.pop(target)
 
