@@ -11,7 +11,7 @@ nick, host, rl, chans, idle, signon = None, None, None, None, None, None
 def sendwhois(phenny, input):
     global whois, got318, nick, host, rl, chans, idle, signon
     whois = True
-    phenny.write(['WHOIS'], input.group(2)*2) #*2 required to trigger 317 (signon time)
+    phenny.write(['WHOIS'], input.group(2)+" "+input.group(2)) #2x required to trigger 317 (signon time)
 
     while not got318: #Wait until event 318 (End of /WHOIS list.)
         sleep(0.5)
