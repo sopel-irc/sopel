@@ -22,13 +22,6 @@ def sendwhois(phenny, input):
     while not got318:
         sleep(0.5)
 
-    #at this point, the variables are:
-    #got318 = true
-    #nick = None
-    #host = None
-    #rl = None
-    #chans = unicode string of the channels the target is on.
-
     msg1 = '[WHOIS] Nick: ' + str(nick) + ' Host: ' + str(host) + \
            ' Real name: ' + str(rl)
     msg2 = str(nick) + ' is on the channels: ' + chans.encode('utf-8')
@@ -48,7 +41,6 @@ sendwhois.commands = ['whois']
 def whois311(phenny, input):
     global nick, host, rl, whois
     if whois:
-        self.msg("#Embo", "[DEBUGMSG]"+phenny.raw) #What exactly are we trying to regex here?
         raw = re.match('\S+ 311 \S+ (\S+) (\S+) (\S+) (\S+) :(\S+)', \
                         phenny.raw)
         nick = raw.group(1)
