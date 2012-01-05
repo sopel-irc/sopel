@@ -41,12 +41,13 @@ start.commands = ['bomb']
 
 def cutwire(jenni, input):
     global bombs
-    if input.nick not in bombs: return
-    color, code = bombs.pop(input.nick)
+    target = input.nick
+    if target not in bombs: return
+    color, code = bombs.pop(target)
     c = color.lower()
     sch.cancel(code)
     if input.group(2).lower() == c:
-        jenni.say('You did it, '+input.nick+'! I\'ll be honest, I thought you were dead. But nope, you did it. You picked the right one. Well done.')
+        jenni.say('You did it, '+target+'! I\'ll be honest, I thought you were dead. But nope, you did it. You picked the right one. Well done.')
     else:
         kmsg = 'KICK '+input.sender+' '+target+\
                ' : You should\'ve picked the '+bombs[target][0]+' wire.'
