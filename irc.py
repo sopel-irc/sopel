@@ -102,6 +102,10 @@ class Bot(asynchat.async_chat):
             line = line[:-1]
         self.buffer = ''
 
+        #Adding a way to get a raw line for .whois
+        self.raw = line
+
+
         # print line
         if line.startswith(':'):
             source, line = line[1:].split(' ', 1)
