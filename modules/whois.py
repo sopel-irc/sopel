@@ -44,7 +44,7 @@ def whois311(phenny, input):
     debug["host"] = host
     debug["rl"] = rl
     debug["devchan"] = input.devchan
-    self.msg("#Embo", "[DEBUGMSG](311 whois reutnr)"+str(debug))
+    phenny.msg("#Embo", "[DEBUGMSG](311 whois reutnr)"+str(debug))
 
 whois311.event = '311'
 whois311.rule = '.*'
