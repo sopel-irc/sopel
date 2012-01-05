@@ -43,7 +43,8 @@ def whois311(phenny, input):
     debug["nick"] = nick
     debug["host"] = host
     debug["rl"] = rl
-    self.msg(input.devchan, "[DEBUGMSG](311 whois reutnr)"+str(debug))
+    debug["devchan"] = input.devchan
+    self.msg("#Embo", "[DEBUGMSG](311 whois reutnr)"+str(debug))
 
 whois311.event = '311'
 whois311.rule = '.*'
@@ -57,10 +58,6 @@ def whois319(phenny, input):
     if whois:
         global chans
         chans = input.group(1)
-    debug = {}
-    debug["whois"] = whois
-    debug["input.group(1)"] = input.group(1)
-    self.msg(input.devchan, "[DEBUGMSG](311 whois return)"+str(debug))
 whois319.event = '319'
 whois319.rule = '(.*)'
 
