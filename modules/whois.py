@@ -18,7 +18,7 @@ def sendwhois(phenny, input):
 
     msg1 = '[WHOIS] Nick: ' + str(nick) + ' Host: ' + str(host) + \
            ' Real name: ' + str(rl)
-    msg2 = str(nick) + ' is on the channels: ' + chans
+    msg2 = str(nick) + ' is on the channels: ' + str(chans)
     phenny.say(msg1)
     phenny.say(msg2)
     #phenny.say(nick + ' has been idle ' + idle + ', signed on ' + signon)
@@ -58,6 +58,11 @@ def whois319(phenny, input):
     if whois:
         global chans
         chans = input.group(1)
+    else:
+        debug = {}
+        debug["whois"] = whois
+        debug["input.group(1)"] = input.group(1)
+        self.msg(input.devchannel, "[DEBUGMSG](311 whois reutnr)"+str(debug))
 whois319.event = '319'
 whois319.rule = '(.*)'
 
