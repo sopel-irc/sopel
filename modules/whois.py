@@ -18,7 +18,7 @@ def sendwhois(phenny, input):
 
     msg1 = '[WHOIS] Nick: ' + str(nick) + ' Host: ' + str(host) + \
            ' Real name: ' + str(rl)
-    msg2 = str(nick) + ' is on the channels: ' + chans.encode('utf-8')
+    msg2 = str(nick) + ' is on the channels: ' + chans
     phenny.say(msg1)
     phenny.say(msg2)
     #phenny.say(nick + ' has been idle ' + idle + ', signed on ' + signon)
