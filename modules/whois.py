@@ -25,7 +25,7 @@ def sendwhois(phenny, input):
 
     #reset variables.
     whois, got318 = False, False
-    nick, host rl, chans, idle, signon = None, None, None, None, None, None
+    nick, host, rl, chans, idle, signon = None, None, None, None, None, None
 sendwhois.commands = ['whois']
 
 def whois311(phenny, input):
