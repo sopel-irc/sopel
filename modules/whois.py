@@ -5,21 +5,15 @@ Phenny (About): http://inamidst.com/phenny/
 """
 from time import sleep
 import re
-whois = False
-got318 = False
-nick = None
-host = None
-rl = None
-chans = None
-idle = None
-signon = None
+whois, got318 = False, False
+nick, host, rl, chans, idle, signon = None, None, None, None, None, None
 
 def sendwhois(phenny, input):
     global whois, got318, nick, host, rl, chans, idle, signon
     whois = True
-    phenny.write(['WHOIS'], input.group(2))
+    phenny.write(['WHOIS'], input.group(2)*2) #*2 required to trigger 317 (signon time)
 
-    while not got318:
+    while not got318: #Wait until event 318 (End of /WHOIS list.)
         sleep(0.5)
 
     msg1 = '[WHOIS] Nick: ' + str(nick) + ' Host: ' + str(host) + \
@@ -28,14 +22,10 @@ def sendwhois(phenny, input):
     phenny.say(msg1)
     phenny.say(msg2)
     #phenny.say(nick + ' has been idle ' + idle + ', signed on ' + signon)
-    whois = False
-    got318 = False
-    nick = None
-    host = None
-    rl = None
-    chans = None
-    idle = None
-    signon = None
+
+    #reset variables.
+    whois, got318 = False, False
+    nick, host rl, chans, idle, signon = None, None, None, None, None, None
 sendwhois.commands = ['whois']
 
 def whois311(phenny, input):
@@ -46,6 +36,16 @@ def whois311(phenny, input):
         nick = raw.group(1)
         host = raw.group(2) + '@' + raw.group(3)
         rl = raw.group(5)
+    else:
+        debug = {}
+        debug["whois"] = whois
+        debug["phenny.raw"] = phenny.raw
+        debug["raw"] = raw
+        debug["nick"] = nick
+        debug["host"] = host
+        debug["rl"] = rl
+        self.msg(input.devchannel, "[DEBUGMSG](311 whois reutnr)"+str(debug))
+
 whois311.event = '311'
 whois311.rule = '.*'
 
