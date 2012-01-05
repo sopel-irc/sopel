@@ -57,8 +57,8 @@ cutwire.commands = ['cutwire']
 def explode(jenni, input):
     target = input.group(2).rstrip(' ')
     cmsg = 'Oh, come on, '+target+'! You could\'ve at least picked one! Now you\'re dead. Guts, all over the place. You see that? Guts, all over YourPants.'
-    kmsg = 'KICK '+input.channel+' '+target
-           +' : You should\'ve picked the '+bombs[target][0]+' wire.'
+    kmsg = 'KICK '+input.channel+' '+target+\
+           ' : You should\'ve picked the '+bombs[target][0]+' wire.'
     jenni.say(cmsg)
     jenni.write(kmsg)
     bombs.pop(target)
