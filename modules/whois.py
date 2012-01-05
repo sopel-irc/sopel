@@ -36,15 +36,6 @@ def whois311(phenny, input):
         nick = raw.group(1)
         host = raw.group(2) + '@' + raw.group(3)
         rl = raw.group(5)
-    debug = {}
-    debug["whois"] = whois
-    debug["phenny.raw"] = phenny.raw
-    debug["raw"] = raw
-    debug["nick"] = nick
-    debug["host"] = host
-    debug["rl"] = rl
-    debug["devchan"] = input.devchan
-    phenny.msg("#Embo", "[DEBUGMSG](311 whois reutnr)"+str(debug))
 
 whois311.event = '311'
 whois311.rule = '.*'
