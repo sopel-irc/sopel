@@ -50,9 +50,9 @@ def cutwire(jenni, input):
         jenni.say('You did it, '+target+'! I\'ll be honest, I thought you were dead. But nope, you did it. You picked the right one. Well done.')
     else:
         kmsg = 'KICK '+input.sender+' '+target+\
-               ' : You should\'ve picked the '+color+' wire.'
+               ' You should\'ve picked the '+color+' wire.'
         jenni.say('No! No, that\'s the wrong one. Aww, you\'ve gone and killed yourself. Oh, that\'s... that\'s not good. No good at all, really. Wow. Sorry.')
-        jenni.write(kmsg)
+        jenni.write([kmsg])
 cutwire.commands = ['cutwire']
 
 def explode(jenni, input):
@@ -61,6 +61,6 @@ def explode(jenni, input):
     kmsg = 'KICK '+input.sender+' '+target+\
            ' : You should\'ve picked the '+bombs[target][0]+' wire.'
     jenni.say(cmsg)
-    jenni.write(kmsg)
+    jenni.write([kmsg])
     bombs.pop(target)
 
