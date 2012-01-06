@@ -42,7 +42,7 @@ start.commands = ['bomb']
 def cutwire(jenni, input):
     global bombs
     target = input.nick
-    if target not in bombs: return
+    if target != jenni.nick and target not in bombs: return
     color, code = bombs.pop(target)
     c = color.lower()
     sch.cancel(code)
