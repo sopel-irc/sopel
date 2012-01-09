@@ -287,13 +287,13 @@ def ytinfo(jenni, input):
             return "Too many re-directs."
     try: mtype = info['content-type']
     except:
-        return 
+        return
     if not (('/html' in mtype) or ('/xhtml' in mtype)):
-        return 
+        return
     u = urllib2.urlopen(req)
     bytes = u.read(262144)
     u.close()
-   
+
     #Parse rscript info.
     rtitle = re.search('(TITLE: )(.*)', bytes)
     title = rtitle.group(2)
@@ -306,17 +306,17 @@ def ytinfo(jenni, input):
     hour = author.group(6)
     minute = author.group(7)
     uploaded = day + '/' + month + '/' + year + ', ' + hour + ':' + minute
-   
+
     duration = int(re.search('(DURATION: )(.*)', bytes).group(2))
     if duration < 1: length = 'LIVE'
     else:
         hours = duration / (60 * 60)
         minutes = duration / 60
         seconds = duration % 60
-      
+
         length = str(minutes) + 'mins ' + str(seconds) + 'secs'
         if hours > 0: length = str(hours) + 'hours ' + str(length)
-   
+
     views = re.search('(VIEWS: )(.*)', bytes).group(2)
     comments = re.search('(COMMENTS: )(.*)', bytes).group(2)
     #Favorite, like, dislike
@@ -328,13 +328,9 @@ def ytinfo(jenni, input):
               ' | Uploaded: ' + uploaded + ' | Length: ' + length + \
               ' | Views: ' + views + ' | Comments: ' + comments + ' | Likes: '\
               + likes + ' | Dislikes: ' + dislikes
-   
-    jenni.say(message)   
-ytinfo.rule = '.*(youtube.com/watch\S*v=|youtu.be/)([\w-]+).*'
 
-def tyrope(jenni, input):
-    jenni.say('[ Protfolio van Dimitri Molenaars ] - http://tyrope.nl')
-tyrope.rule = '.*http://tyrope\.nl.*'
+    jenni.say(message)
+ytinfo.rule = '.*(youtube.com/watch\S*v=|youtu.be/)([\w-]+).*'
 
 if __name__ == '__main__':
     print __doc__.strip()
