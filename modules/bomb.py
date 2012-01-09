@@ -26,7 +26,8 @@ meter.rule = '\.(\S+)meter (\S+)'
 def start(jenni, input):
     global bombs
     global sch
-    target = input.group(2).rstrip(' ')
+    target = input.group(1)
+    if target in input.otherbots or target == jenni.nick: return
     if target in bombs:
         jenni.say('I can\'t fit another bomb in '+target+'\'s pants!')
         return
@@ -37,7 +38,7 @@ def start(jenni, input):
     code=sch.enter(fuse, 1, explode, (jenni, input))
     bombs[target] = (color, code)
     sch.run()
-start.commands = ['bomb']
+start.rule = '.bomb (\S+).*?'
 
 def cutwire(jenni, input):
     global bombs
@@ -46,7 +47,7 @@ def cutwire(jenni, input):
     color, code = bombs.pop(target)
     c = color.lower()
     sch.cancel(code)
-    if input.group(2).lower() == c:
+    if input.group(2).lower().rstrip(' ') == c:
         jenni.say('You did it, '+target+'! I\'ll be honest, I thought you were dead. But nope, you did it. You picked the right one. Well done.')
     else:
         kmsg = 'KICK '+input.sender+' '+target+\
@@ -56,7 +57,7 @@ def cutwire(jenni, input):
 cutwire.commands = ['cutwire']
 
 def explode(jenni, input):
-    target = input.group(2).rstrip(' ')
+    target = input.group(1)
     cmsg = 'Oh, come on, '+target+'! You could\'ve at least picked one! Now you\'re dead. Guts, all over the place. You see that? Guts, all over YourPants.'
     kmsg = 'KICK '+input.sender+' '+target+\
            ' : You should\'ve picked the '+bombs[target][0]+' wire.'
