@@ -130,7 +130,7 @@ def blocks(jenni, input):
         if text[2] == "nick":
             nicks.append(text[3])
         elif text[2] == "hostmask":
-            masks.append(text[3])
+            masks.append(text[3].lower())
         else:
             jenni.reply(STRINGS['invalid'] % ("adding"))
             return
@@ -147,7 +147,7 @@ def blocks(jenni, input):
                 return
         elif text[2] == "hostmask":
             try:
-                masks.remove(text[3])
+                masks.remove(text[3].lower())
                 jenni.reply(STRINGS['success_del'] % (text[3]))
             except:
                 jenni.reply(STRINGS['no_host'] % (text[3]))

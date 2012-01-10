@@ -238,7 +238,9 @@ class Jenni(irc.Bot):
                                     hostmask = hostmask.replace("\n", "")
                                     if len(hostmask) < 1: continue
                                     re_temp = re.compile(hostmask)
-                                    if re_temp.findall(origin.host) or hostmask in origin.host:
+                                    host = origin.host
+                                    host = host.lower()
+                                    if re_temp.findall(host) or hostmask in host:
                                         return
                             if len(bad_nicks) > 0:
                                 for nick in bad_nicks:
