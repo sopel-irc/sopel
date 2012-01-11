@@ -17,8 +17,7 @@ def fml(jenni, input):
     #Grab info from rscript (code re-used from ytinfo)
     uri = 'http://rscript.org/lookup.php?type=fml'
     while True:
-        req = urllib2.Request(uri, headers={'Accept':'text/html'})
-        req.add_header('User-Agent', 'OpenAnything/1.0 +http://diveintopython.org/')
+        req = urllib2.Request(uri, headers={'Accept':'text/html', 'User-Agent':'OpenAnything/1.0 +http://diveintopython.org/'})
         u = urllib2.urlopen(req)
         info = u.info()
         u.close()
