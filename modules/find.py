@@ -101,7 +101,7 @@ def findandreplace(jenni, input):
         jenni.say(phrase)
 
 # Matches optional whitespace + 's' + optional whitespace + separator character
-findandreplace.rule = r'\s*s\s*([^\s\w])(.*)' 
+findandreplace.rule = r'(?u)\s*s\s*([^\s\w])(.*)' 
 #findandreplace.rule = r'(\S+:?)?\s*s\s*([^\s\w])(.*)' # May work for both this and "meant" (requires input.group(i+1))
 findandreplace.priority = 'high'
 
