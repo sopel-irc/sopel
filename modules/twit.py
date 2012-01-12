@@ -118,8 +118,8 @@ def saylast(jenni, input):
             #jenni.reply("Is this user valid?")
 
             jenni.msg(input.devchan,"[DEVMSG]Exception in saylast(), twit.py (line 100).")
-            jenni.msg(input.devchan,"[Exception]"+str(type(inst))+": "+str(inst.args)+", "+str(inst)+"." #this is also put in the logfile.
-            jenni.msg(input.devchan,"[Vardump]lasts: "+str(lasts)+", recent: "+str(recent)+", statuses: "+str(statuses)+", twituser: "+str(twituser)+"."
+            jenni.msg(input.devchan,"[Exception]"+str(type(inst))+": "+str(inst.args)+", "+str(inst)+".") #this is also put in the logfile.
+            jenni.msg(input.devchan,"[Vardump]lasts: "+str(lasts)+", recent: "+str(recent)+", statuses: "+str(statuses)+", twituser: "+str(twituser)+".")
             print type(inst)
             print inst.args
             print inst
