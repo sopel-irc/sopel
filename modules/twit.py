@@ -17,7 +17,7 @@ api = twitter.Api()
 
 twitter_watch = ['hankgreen', 'realjohngreen', 'NerdfighterIRC']
 watch_wait = 75
-watch = True
+watch = False
 lasts = dict()
 sch = sched.scheduler(time.time, time.sleep)
 
@@ -111,8 +111,15 @@ def saylast(jenni, input):
                jenni.say("TWEETWATCH: @" + twituser + ": " + recent)
                lasts[twituser] = recent
          except Exception as inst:
-            jenni.reply("An exception was raised for user: " + twituser)
-            jenni.reply("Is this user valid?")
+            #RuntimeError: maximum recursion depth exceeded while calling a Python object
+
+            #commenting the exception from the live channel, to be moved to the devchan.
+            #jenni.reply("An exception was raised for user: " + twituser)
+            #jenni.reply("Is this user valid?")
+
+            jenni.msg(input.devchan,"[DEVMSG]Exception in saylast(), twit.py (line 100)."
+            jenni.msg(input.devchan,"[Exception]"+str(type(inst))+": "+str(inst.args)+", "+str(inst)+"." #this is also put in the logfile.
+            jenni.msg(input.devchan,"[Vardump]lasts: "+str(lasts)+", recent: "+str(recent)+", statuses: "+str(statuses)+", twituser: "+str(twituser)+"."
             print type(inst)
             print inst.args
             print inst
@@ -121,7 +128,7 @@ def saylast(jenni, input):
 
 def tweetwatcher(jenni, input):
    global watch
-   global sch
+   global sch #are we using this variable? I'm pretty sure we're not.
    if input.admin:
       if input.group(2) == 'off':
          watch = False
