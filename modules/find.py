@@ -49,15 +49,19 @@ collectlines.priority = 'low'
 def findandreplace(jenni, input):
     # don't bother in PM
     if not input.sender.startswith('#'): return
-    # only do something if there is conversation to work with
-    if input.sender not in search_dict or input.nick not in search_dict[input.sender]: return
 
 
     global search_dict
     global search_file
 
-    sep = unicode(input.group(1))
-    rest = unicode(input.group(2)).split(sep)
+    rnick = input.group(1) or input.nick # Correcting other person vs self.
+
+    # only do something if there is conversation to work with
+    if input.sender not in search_dict or rnick not in search_dict[input.sender]: return
+
+    sep = input.group(2)
+    rest = input.group(3).split(sep)
+    me = False # /me command
     flags = ''
     if len(rest) < 2:
         return # need at least a find and replacement value
@@ -74,35 +78,33 @@ def findandreplace(jenni, input):
     else:
         repl = lambda s: s.replace(rest[0],rest[1],count)
 
-    for line in reversed(search_dict[input.sender][input.nick]):
+    for line in reversed(search_dict[input.sender][rnick]):
+        if line.startswith("\x01ACTION"):
+            me = True # /me command
+            line = line[8:]
+        else:
+            me = False
         new_phrase = repl(line)
         if new_phrase != line: # we are done
             break
 
-    if new_phrase == line: return # Didn't find anything
+    if not new_phrase or new_phrase == line: return # Didn't find anything
 
     # Save the new "edited" message.
-    list = search_dict[input.sender][input.nick]
-    list.append(new_phrase)
-    search_dict[input.sender][input.nick] = list
+    list = search_dict[input.sender][rnick]
+    list.append((me and '\x01ACTION ' or '') + new_phrase)
+    search_dict[input.sender][rnick] = list
     search_file = open("find.txt","w")
     pickle.dump(search_dict, search_file)
     search_file.close()
 
     # output
-    if new_phrase:
-        if "ACTION" in new_phrase: # /me
-            new_phrase = new_phrase.replace("ACTION", "")
-            new_phrase = new_phrase[1:-1]
-            phrase = input.nick + new_phrase
-            phrase = "\x02" + phrase + "\x02"
-        else:
-            phrase = input.nick + " meant to say: " + new_phrase
-        jenni.say(phrase)
+    phrase = input.nick + (input.group(1) and ' thinks ' + rnick or '') + (me and ' ' or " \x02meant\x02 to say: ") + new_phrase
+    jenni.say(phrase)
 
 # Matches optional whitespace + 's' + optional whitespace + separator character
-findandreplace.rule = r'(?u)\s*s\s*([^\s\w])(.*)' 
-#findandreplace.rule = r'(\S+:?)?\s*s\s*([^\s\w])(.*)' # May work for both this and "meant" (requires input.group(i+1))
+#findandreplace.rule = r'(?u)\s*s\s*([^\s\w])(.*)' 
+findandreplace.rule = r'(?u)([^\s:]+)?[\s:]\s*s\s*([^\s\w])(.*)' # May work for both this and "meant" (requires input.group(i+1))
 findandreplace.priority = 'high'
 
 #def meant (jenni, input):
