@@ -49,31 +49,37 @@ collectlines.priority = 'low'
 def findandreplace(jenni, input):
     # don't bother in PM
     if not input.sender.startswith('#'): return
+    # only do something if there is conversation to work with
+    if input.sender not in search_dict or input.nick not in search_dict[input.sender]: return
+
 
     global search_dict
     global search_file
-    # obtain "old word" and "new word"
-    text = unicode(input.group())
-    list_pattern = exp.split(text)
-    pattern = list_pattern[1]
-    try:
-        replacement = list_pattern[2]
-    except: return
-    try:
-        current_list = search_dict[input.sender][input.nick]
-    except: return # no nick found in this room, fail silently
-    phrase = unicode(current_list[-1])
 
-    if text.endswith("/g"):
-        new_phrase = freplace(current_list, pattern, replacement, phrase, 0)
+    sep = unicode(input.group(1))
+    rest = unicode(input.group(2)).split(sep)
+    flags = ''
+    if len(rest) < 2:
+        return # need at least a find and replacement value
+    elif len(rest) > 2:
+        # Word characters immediately after the second separator
+        # are considered flags (only g and i now have meaning)
+        flags = re.match(r'\w*',rest[2], re.U).group(0) 
+    #else (len == 2) do nothing special
+
+    count = 'g' in flags and -1 or 1 # Replace unlimited times if /g, else once
+    if 'i' in flags:
+        regex = re.compile(re.escape(rest[0]),re.U|re.I)
+        repl = lambda s: re.sub(regex,rest[1],s,count == 1)
     else:
-        new_phrase = freplace(current_list, pattern, replacement, phrase, 1)
+        repl = lambda s: s.replace(rest[0],rest[1],count)
 
-    # Prevents abuse; there is an RFC spec about how servers handle
-    # messages that contain more than 512 characters.
-    if new_phrase:
-        if len(new_phrase) > 512:
-            new_phrase[511:]
+    for line in reversed(search_dict[input.sender][input.nick]):
+        new_phrase = repl(line)
+        if new_phrase != line: # we are done
+            break
+
+    if new_phrase == line: return # Didn't find anything
 
     # Save the new "edited" message.
     list = search_dict[input.sender][input.nick]
@@ -85,8 +91,7 @@ def findandreplace(jenni, input):
 
     # output
     if new_phrase:
-        #new_phrase = new_phrase.replace("\\", "\\\\")
-        if "ACTION" in new_phrase:
+        if "ACTION" in new_phrase: # /me
             new_phrase = new_phrase.replace("ACTION", "")
             new_phrase = new_phrase[1:-1]
             phrase = input.nick + new_phrase
@@ -94,88 +99,74 @@ def findandreplace(jenni, input):
         else:
             phrase = input.nick + " meant to say: " + new_phrase
         jenni.say(phrase)
-findandreplace.rule = r'(s)/.*'
+
+# Matches optional whitespace + 's' + optional whitespace + separator character
+findandreplace.rule = r'\s*s\s*([^\s\w])(.*)' 
+#findandreplace.rule = r'(\S+:?)?\s*s\s*([^\s\w])(.*)' # May work for both this and "meant" (requires input.group(i+1))
 findandreplace.priority = 'high'
 
-def freplace(list, pattern, replacement, phrase, flag):
-    i = 0
-    pattern = re.escape(pattern)
-    while i <= len(list):
-        i += 1
-        k = -i
-        if len(list) > i:
-            phrase_new = unicode(list[k])
-            if flag == 0:
-                sample = unicode(re.sub(pattern, replacement, phrase_new))
-            elif flag == 1:
-                sample = unicode(re.sub(pattern, replacement, phrase_new, 1))
-
-            if sample != phrase_new:
-                return sample
-                break
-
-def meant (jenni, input):
-    # don't bother in PM
-    if not input.sender.startswith('#'): return
-
-    global search_dict
-    global search_file
-    global exp
-
-    text = unicode(input.group())
-    pos = text.find(" ")
-    user = text[:pos - 1]
-    matching = text[pos + 1:]
-
-    if not matching.startswith("s/"):
-        return
-
-    list_pattern = exp.split(matching)
-    try:
-        pattern = list_pattern[1]
-    except:
-        return
-
-    # Make sure the list exists
-    try:
-        replacement = list_pattern[2]
-    except:
-        return
-
-    # If someone does it for a user that hasn't said anything
-    try:
-        current_list = search_dict[input.sender][user]
-    except:
-        return
-    phrase = unicode(current_list[-1])
-
-    if matching.endswith("/g"):
-        new_phrase = freplace(current_list, pattern, replacement, phrase, 0)
-    else:
-        new_phrase = freplace(current_list, pattern, replacement, phrase, 1)
-
-    # Prevents abuse; apparently there is an RFC spec about how servers handle
-    # messages that contain more than 512 characters.
-    if new_phrase:
-        if len(new_phrase) > 512:
-            new_phrase[511:]
-
-    # Save the new "edited" message.
-    list = search_dict[input.sender][user]
-    list.append(new_phrase)
-    search_dict[input.sender][user] = list
-    search_file = open("find.txt","w")
-    pickle.dump(search_dict, search_file)
-    search_file.close()
-
-    # output
-    if new_phrase:
-        #new_phrase = new_phrase.replace("\\", "\\\\")
-        phrase = "%s thinks %s \x02meant:\x02 %s" % (input.nick, user, new_phrase)
-        jenni.say(phrase)
-
-meant.rule = r'\S+(\S|\:)\s.*'
-meant.priority = 'high'
+#def meant (jenni, input):
+#    # don't bother in PM
+#    if not input.sender.startswith('#'): return
+#
+#    global search_dict
+#    global search_file
+#    global exp
+#
+#    text = unicode(input.group())
+#    pos = text.find(" ")
+#    user = text[:pos - 1]
+#    matching = text[pos + 1:]
+#
+#    if not matching.startswith("s/"):
+#        return
+#
+#    list_pattern = exp.split(matching)
+#    try:
+#        pattern = list_pattern[1]
+#    except:
+#        return
+#
+#    # Make sure the list exists
+#    try:
+#        replacement = list_pattern[2]
+#    except:
+#        return
+#
+#    # If someone does it for a user that hasn't said anything
+#    try:
+#        current_list = search_dict[input.sender][user]
+#    except:
+#        return
+#    phrase = unicode(current_list[-1])
+#
+#    if matching.endswith("/g"):
+#        new_phrase = freplace(current_list, pattern, replacement, phrase, 0)
+#    else:
+#        new_phrase = freplace(current_list, pattern, replacement, phrase, 1)
+#
+#    # Prevents abuse; apparently there is an RFC spec about how servers handle
+#    # messages that contain more than 512 characters.
+#    if new_phrase:
+#        if len(new_phrase) > 512:
+#            new_phrase[511:]
+#
+#    # Save the new "edited" message.
+#    list = search_dict[input.sender][user]
+#    list.append(new_phrase)
+#    search_dict[input.sender][user] = list
+#    search_file = open("find.txt","w")
+#    pickle.dump(search_dict, search_file)
+#    search_file.close()
+#
+#    # output
+#    if new_phrase:
+#        #new_phrase = new_phrase.replace("\\", "\\\\")
+#        phrase = "%s thinks %s \x02meant:\x02 %s" % (input.nick, user, new_phrase)
+#        jenni.say(phrase)
+#
+#meant.rule = r'\S+(\S|\:)\s.*'
+#meant.priority = 'high'
 
 if __name__ == '__main__':
     print __doc__.strip()
