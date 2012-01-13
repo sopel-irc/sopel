@@ -24,20 +24,21 @@ def meter(jenni, input):
 meter.rule = '\.(\S+)meter (\S+)'
 
 def start(jenni, input):
-    global bombs
-    global sch
-    target = input.group(1)
-    if target in input.otherbots or target == jenni.nick: return
-    if target in bombs:
-        jenni.say('I can\'t fit another bomb in '+target+'\'s pants!')
-        return
-    message = 'Hey, '+target+'! Don\'t look but, I think there\'s a bomb in your pants. 2 minute timer, 5 wires: Red, Yellow, Blue, White and Black. Which wire should I cut? Don\'t worry, I know what I\'m doing! (respond with .cutwire color)'
-    jenni.say(message)
-    color = choice(colors)
-    jenni.msg(input.nick, 'Hey, don\'t tell '+target+', but the '+color+' wire? Yeah, that\'s the one. But shh! Don\'t say anything!')
-    code=sch.enter(fuse, 1, explode, (jenni, input))
-    bombs[target] = (color, code)
-    sch.run()
+#     global bombs
+#     global sch
+#     target = input.group(1)
+#     if target in input.otherbots or target == jenni.nick: return
+#     if target in bombs:
+#         jenni.say('I can\'t fit another bomb in '+target+'\'s pants!')
+#         return
+#     message = 'Hey, '+target+'! Don\'t look but, I think there\'s a bomb in your pants. 2 minute timer, 5 wires: Red, Yellow, Blue, White and Black. Which wire should I cut? Don\'t worry, I know what I\'m doing! (respond with .cutwire color)'
+#     jenni.say(message)
+#     color = choice(colors)
+#     jenni.msg(input.nick, 'Hey, don\'t tell '+target+', but the '+color+' wire? Yeah, that\'s the one. But shh! Don\'t say anything!')
+#     code=sch.enter(fuse, 1, explode, (jenni, input))
+#     bombs[target] = (color, code)
+#     sch.run()
+     jenni.say("This feature has been disabled due to potential exploits.")
 start.rule = '.bomb (\S+).*?'
 
 def cutwire(jenni, input):
