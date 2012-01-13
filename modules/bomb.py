@@ -49,7 +49,7 @@ def cutwire(jenni, input):
     c = color.lower()
     sch.cancel(code)
     if input.group(2).lower().rstrip(' ') not in colors:
-        jenni.say('Xan\'t see that wire, '+target+'! You sure you\'re picking the right one? It\'s not here!')
+        jenni.say('I can\'t seem to find that wire, '+target+'! You sure you\'re picking the right one? It\'s not here!')
     elif input.group(2).lower().rstrip(' ') == c:
         jenni.say('You did it, '+target+'! I\'ll be honest, I thought you were dead. But nope, you did it. You picked the right one. Well done.')
     else:
