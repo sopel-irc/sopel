@@ -119,7 +119,9 @@ def saylast(jenni, input):
 
             jenni.msg(input.devchan,"[DEVMSG]Exception in saylast(), twit.py (line 100).")
             jenni.msg(input.devchan,"[Exception]"+str(type(inst))+": "+str(inst.args)+", "+str(inst)+".") #this is also put in the logfile.
-            jenni.msg(input.devchan,"[Vardump]lasts: "+str(lasts)+", recent: "+str(recent)+", statuses: "+str(statuses)+", twituser: "+str(twituser)+".")
+            jenni.msg(input.devchan,"[Vardump]recent: "+str(recent)+", statuses: "+str(statuses)+", twituser: "+str(twituser)+", Lasts:")
+            for user,last in lasts:
+                jenni.msg(input.devchan,str("    @"+user+": "+last)
             print type(inst)
             print inst.args
             print inst
