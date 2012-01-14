@@ -11,14 +11,12 @@ More info:
 
 import random
 
-random.seed()
-
 
 def ask(jenni, input):
     """.ask <item1> or <item2> or <item3> - Randomly picks from a set of items seperated by ' or '."""
 
     choices = input.group(2)
-
+    random.seed()
     if choices == None:
         jenni.reply("There is no spoon! Please try a valid question.")
     elif choices.lower() == "what is the answer to life, the universe, and everything?":
