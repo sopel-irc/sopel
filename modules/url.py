@@ -317,8 +317,8 @@ def ytinfo(jenni, input):
         length = str(minutes) + 'mins ' + str(seconds) + 'secs'
         if hours > 0: length = str(hours) + 'hours ' + str(length)
 
-    views = '{:20,d}'.format(re.search('(VIEWS: )(.*)', bytes).group(2))
-    comments = '{:20,d}'.format(re.search('(COMMENTS: )(.*)', bytes).group(2))
+    views = str('{:20,d}'.format(int(re.search('(VIEWS: )(.*)', bytes).group(2))))
+    comments = str('{:20,d}'.format(int(re.search('(COMMENTS: )(.*)', bytes).group(2))))
     #Favorite, like, dislike
     favorite = re.search('(FAVORITE: )([\d,]+) ([\d,]+) ([\d,]+)', bytes)
     likes = favorite.group(3)
