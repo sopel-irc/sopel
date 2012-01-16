@@ -12,7 +12,7 @@ Beefed up by Alek Rollyson. added functions for op, deop, voice, devoice
 Uses NickServ ACC to verify that a nick is identified with services, as well
 as m5's admin list as a double verification system. Should eliminate the possibility of nick spoofing. May only work with freenode, hasn't been tested
 on other networks.
-Also includes ability to have locked topic 
+Also includes ability to have locked topic
 """
 
 import re
@@ -327,14 +327,28 @@ def topic(jenni, input):
     if text == '':
         return
     channel = input.sender
-    topic = purple +'Welcome to: '+ green + channel + purple +' | '
-    if channel == '#YourPants':
-        topic = topic + 'Site: '+ green +'http://nerdfighteria.net' \
-                + purple +' | FB: '+ green +'http://fb.me/NerdfighterIRC' \
-                + purple +' | Twitter: '+ green +'@NerdfighterIRC'+ purple \
-                +' | Tumblr: '+ green +'http://dft.ba/-nfirctum'+ purple \
-                +' | G+: '+ green +'http://dft.ba/-nfircgplus' + purple +' | '
-    topic = topic + bold +'Topic: '+ bold + green + text
+    if channel == '#YourPants': #English
+        topic = purple +'Welcome to: '+ green +'#YourPants'+ purple +' | ' \
+            +'Site: '+ green +'http://nerdfighteria.net'+ purple \
+            +' | FB: '+ green +'http://fb.me/NerdfighterIRC'+ purple \
+            +' | Twitter: '+ green +'@NerdfighterIRC'+ purple \
+            +' | G+: '+ green +'http://dft.ba/-nfircgplus' + purple \
+            +' | ' + bold + 'Topic: ' + bold + green + text
+    elif channel == "#YourPants-nl": #Dutch
+        topic = purple +'Welkom in: '+ green +'#YourPants-nl'+ purple +' | ' \
+            +' | FB: '+ green +'http://dft.ba/-DutchFB'+ purple \
+            +' | Newsletter: '+ green +'http://dft.ba/-lowNews'+ purple \
+            +' | Link others! '+ green +'http://dft.ba/-nfirc-nl'+ purple \
+            +' | ' + bold + 'Upcoming gatherings: ' + bold + green + text
+    elif channel == "#YourPants-de": #German
+        topic = purple +'Willkommen bei: '+ green + channel + purple ' | ' \
+            + bold +'Thema: '+ bold + green + text
+    elif channel == "#YourPants-fr": #French
+        topic = purple +'Bienvenue à :'+ green + channel + purple ' | ' \
+            + bold +'Fil de discussion: '+ bold + green + text
+    else:
+        topic = purple +'Welcome to :'+ green + channel + purple ' | ' \
+            + bold +'Topic: '+ bold + green + text
     jenni.write(('TOPIC', channel + ' :' + topic))
 topic.commands = ['topic']
 topic.priority = 'low'
