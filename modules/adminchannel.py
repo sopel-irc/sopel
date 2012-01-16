@@ -328,27 +328,27 @@ def topic(jenni, input):
         return
     channel = input.sender
     if channel == '#YourPants': #English
-        topic = purple +'Welcome to: '+ green +'#YourPants'+ purple +' | ' \
-            +'Site: '+ green +'http://nerdfighteria.net'+ purple \
+        topic = purple +'Welcome to: '+ green +'#YourPants'+ purple \
+            +' | Site: '+ green +'http://nerdfighteria.net'+ purple \
             +' | FB: '+ green +'http://fb.me/NerdfighterIRC'+ purple \
             +' | Twitter: '+ green +'@NerdfighterIRC'+ purple \
             +' | G+: '+ green +'http://dft.ba/-nfircgplus' + purple \
             +' | ' + bold + 'Topic: ' + bold + green + text
     elif channel == "#YourPants-nl": #Dutch
-        topic = purple +'Welkom in: '+ green +'#YourPants-nl'+ purple +' | ' \
+        topic = purple +'Welkom in: '+ green +'#YourPants-nl'+ purple \
             +' | FB: '+ green +'http://dft.ba/-DutchFB'+ purple \
             +' | Newsletter: '+ green +'http://dft.ba/-lowNews'+ purple \
             +' | Link others! '+ green +'http://dft.ba/-nfirc-nl'+ purple \
             +' | ' + bold + 'Upcoming gatherings: ' + bold + green + text
     elif channel == "#YourPants-de": #German
-        topic = purple +'Willkommen bei: '+ green + channel + purple +' | ' \
-            + bold +'Thema: '+ bold + green + text
+        topic = purple +'Willkommen bei: '+ green + channel + purple \
+            +' | '+ bold +'Thema: '+ bold + green + text
     elif channel == "#YourPants-fr": #French
-        topic = purple +'Bienvenue \xE0 :'+ green + channel + purple +' | ' \
-            + bold +'Fil de discussion: '+ bold + green + text
+        topic = purple +'Bienvenue \xE0 :'+ green + channel + purple \
+            +' | '+ bold +'Fil de discussion: '+ bold + green + text
     else:
-        topic = purple +'Welcome to :'+ green + channel + purple +' | ' \
-            + bold +'Topic: '+ bold + green + text
+        topic = purple +'Welcome to :'+ green + channel + purple \
+            +' | '+ bold +'Topic: '+ bold + green + text
     jenni.write(('TOPIC', channel + ' :' + topic))
 topic.commands = ['topic']
 topic.priority = 'low'
