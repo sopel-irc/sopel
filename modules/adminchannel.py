@@ -344,7 +344,7 @@ def topic(jenni, input):
         topic = purple +'Willkommen bei: '+ green + channel + purple +' | ' \
             + bold +'Thema: '+ bold + green + text
     elif channel == "#YourPants-fr": #French
-        topic = purple +'Bienvenue à :'+ green + channel + purple +' | ' \
+        topic = purple +'Bienvenue \xE0 :'+ green + channel + purple +' | ' \
             + bold +'Fil de discussion: '+ bold + green + text
     else:
         topic = purple +'Welcome to :'+ green + channel + purple +' | ' \
