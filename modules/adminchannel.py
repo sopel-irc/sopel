@@ -341,13 +341,13 @@ def topic(jenni, input):
             +' | Link others! '+ green +'http://dft.ba/-nfirc-nl'+ purple \
             +' | ' + bold + 'Upcoming gatherings: ' + bold + green + text
     elif channel == "#YourPants-de": #German
-        topic = purple +'Willkommen bei: '+ green + channel + purple ' | ' \
+        topic = purple +'Willkommen bei: '+ green + channel + purple +' | ' \
             + bold +'Thema: '+ bold + green + text
     elif channel == "#YourPants-fr": #French
-        topic = purple +'Bienvenue à :'+ green + channel + purple ' | ' \
+        topic = purple +'Bienvenue à :'+ green + channel + purple +' | ' \
             + bold +'Fil de discussion: '+ bold + green + text
     else:
-        topic = purple +'Welcome to :'+ green + channel + purple ' | ' \
+        topic = purple +'Welcome to :'+ green + channel + purple +' | ' \
             + bold +'Topic: '+ bold + green + text
     jenni.write(('TOPIC', channel + ' :' + topic))
 topic.commands = ['topic']
