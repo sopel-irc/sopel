@@ -49,22 +49,22 @@ py.commands = ['py']
 py.example = '.py len([1,2,3])'
 
 def wa(jenni, input):
-    """Wolfram Alpha calculator"""
-    if not input.group(2):
-        return jenni.reply("No search term.")
-    query = input.group(2).encode('utf-8')
-    uri = 'http://tumbolia.appspot.com/wa/'
-    answer = web.get(uri + web.urllib.quote(query.replace('+', '%2B')))
-    if answer:
-        waOutputArray = string.split(answer, ";")
-        if(len(waOutputArray) < 2):
-            jenni.say('[WOLFRAM ERROR]'+answer)
-        else:
-            jenni.say('[WOLFRAM] ' + waOutputArray[0]+" = "+waOutputArray[1])
-        waOutputArray = []
-
-
-    else: jenni.reply('Sorry, no result.')
+     """Wolfram Alpha calculator"""
+#     if not input.group(2):
+#         return jenni.reply("No search term.")
+#     query = input.group(2).encode('utf-8')
+#     uri = 'http://tumbolia.appspot.com/wa/'
+#     answer = web.get(uri + web.urllib.quote(query.replace('+', '%2B')))
+#     if answer:
+#         waOutputArray = string.split(answer, ";")
+#         if(len(waOutputArray) < 2):
+#             jenni.say('[WOLFRAM ERROR]'+answer)
+#         else:
+#             jenni.say('[WOLFRAM] ' + waOutputArray[0]+" = "+waOutputArray[1])
+#         waOutputArray = []
+#
+#     else: jenni.reply('Sorry, no result.')
+    jenni.reply('This function is broken and disabled. see https://github.com/embolalia/jenni/issues/3 for more details.')
 wa.commands = ['wa','wolfram']
 wa.example = '.wa circumference of the sun * pi'
 
