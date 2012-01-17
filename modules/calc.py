@@ -49,7 +49,7 @@ py.commands = ['py']
 py.example = '.py len([1,2,3])'
 
 def wa(jenni, input):
-     """Wolfram Alpha calculator"""
+    """Wolfram Alpha calculator"""
 #     if not input.group(2):
 #         return jenni.reply("No search term.")
 #     query = input.group(2).encode('utf-8')
