@@ -311,7 +311,7 @@ def ytinfo(jenni, input):
     if duration < 1: length = 'LIVE'
     else:
         hours = duration / (60 * 60)
-        minutes = duration / 60
+        minutes = duration / 60 - (hours * 60)
         seconds = duration % 60
 
         length = str(minutes) + 'mins ' + str(seconds) + 'secs'
