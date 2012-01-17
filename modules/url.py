@@ -316,8 +316,8 @@ def ytinfo(jenni, input):
 
         length = ''
         if hours:
-            length = str(hours) + 'hourse'
-            if minutes:
+            length = str(hours) + 'hours'
+            if minutes or seconds:
                 length = length + ' '
         if minutes:
             length = length + str(minutes) + 'mins'
