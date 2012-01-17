@@ -62,7 +62,7 @@ def wa(jenni, input):
         else:
             jenni.say('[WOLFRAM] ' + waOutputArray[0]+" = "+waOutputArray[1])
         waOutputArray = []
-     else: jenni.reply('Sorry, no result.')
+    else: jenni.reply('Sorry, no result.')
 wa.commands = ['wa','wolfram']
 wa.example = '.wa circumference of the sun * pi'
 
