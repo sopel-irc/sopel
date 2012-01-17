@@ -57,6 +57,9 @@ def refresh(jenni):
 
 def o(jenni, input):
     """Call a webservice."""
+    if input.group(1) == 'urban':
+        input.group(1) = 'o'
+        input.group(2) = 'ud '+ input.group(2)
     text = input.group(2)
 
     if (not o.services) or (text == 'refresh'):
@@ -93,7 +96,7 @@ def o(jenni, input):
             elif (command in commands) and (manifest[0] == '!'):
                 return jenni.reply('Sorry, %s is blacklisted' % command)
     service(jenni, input, command, args)
-o.commands = ['o']
+o.commands = ['o','urban']
 o.example = '.o servicename arg1 arg2 arg3'
 o.services = {}
 o.serviceURI = None
