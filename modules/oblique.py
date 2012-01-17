@@ -59,8 +59,9 @@ def o(jenni, input):
     """Call a webservice."""
     if input.group(1) == 'urban':
         input.group(1) = 'o'
-        input.group(2) = 'ud '+ input.group(2)
-    text = input.group(2)
+        text = 'ud '+ input.group(2)
+    else:
+        text = input.group(2)
 
     if (not o.services) or (text == 'refresh'):
         length, added = refresh(jenni)
