@@ -314,8 +314,9 @@ def ytinfo(jenni, input):
         minutes = duration / 60 - (hours * 60)
         seconds = duration % 60
 
-        length = str(minutes) + 'mins ' + str(seconds) + 'secs'
-        if hours > 0: length = str(hours) + 'hours ' + str(length)
+        if hours: length = str(hours) + 'hourse '
+        if minutes: length = str(minutes) + 'mins '
+        if seconds: length = str(seconds) + 'secs'
 
     views = str('{:20,d}'.format(int(re.search('(VIEWS: )(.*)', bytes).group(2)))).lstrip(' ')
     comments = str('{:20,d}'.format(int(re.search('(COMMENTS: )(.*)', bytes).group(2)))).lstrip(' ')
