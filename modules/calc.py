@@ -64,7 +64,7 @@ def wa(jenni, input):
 #         waOutputArray = []
 #
 #     else: jenni.reply('Sorry, no result.')
-    jenni.reply('This function is broken and disabled. see https://github.com/embolalia/jenni/issues/3 for more details.')
+    jenni.reply('This function is broken and disabled. see https://github.com/embolalia/jenni/issues/20 for more details.')
 wa.commands = ['wa','wolfram']
 wa.example = '.wa circumference of the sun * pi'
 
