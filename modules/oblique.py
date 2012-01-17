@@ -58,7 +58,6 @@ def refresh(jenni):
 def o(jenni, input):
     """Call a webservice."""
     if input.group(1) == 'urban':
-        input.group(1) = 'o'
         text = 'ud '+ input.group(2)
     else:
         text = input.group(2)
