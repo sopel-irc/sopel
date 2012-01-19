@@ -19,8 +19,6 @@ import urllib2
 import re
 import os
 import sys
-from time import sleep
-import pickle
 
 
 last = "DEBUG_ME" # if you see this in the terminal, something broke.
