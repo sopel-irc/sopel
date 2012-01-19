@@ -48,6 +48,7 @@ def handleNames(jenni, input):
     jenni.msg(input.devchan, 'ops and halfplus: '+str(jenni.ops)+'   '+str(jenni.halfplus))
 handleNames.rule = r'(.*)'
 handleNames.event = '353'
+handleNames.threading = False
 
 if __name__ == '__main__':
     print __doc__.strip()
