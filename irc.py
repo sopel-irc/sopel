@@ -41,6 +41,12 @@ class Bot(asynchat.async_chat):
 
         import threading
         self.sending = threading.RLock()
+        
+        #Right now, only accounting for two op levels.
+        #This might be expanded later.
+        #These lists are filled in startup.py, as of right now.
+        self.ops = dict()
+        self.halfplus = dict()
 
     # def push(self, *args, **kargs):
     #     asynchat.async_chat.push(self, *args, **kargs)
@@ -187,6 +193,18 @@ class Bot(asynchat.async_chat):
         except Exception as e:
             self.msg(origin.sender, "Got an error.")
             self.msg("#Embo", "(From: "+origin.sender+") "+str(e))
+
+    #Helper functions to maintain the oper list.
+    def addOp(self, channel, name):
+        print self.ops
+        if not channel in self.ops: self.ops[channel] = set()
+        self.ops[channel].add(name)
+    def addHalfOp(self, channel, name):
+        if not channel in self.halfplus: self.halfplus[channel] = set()
+        self.halfplus[channel].add(name)
+    def flushOps(self, channel):
+        self.ops[channel] = set()
+        self.halfplus[channel] = set()
 
 class TestBot(Bot):
     def f_ping(self, origin, match, args):
