@@ -37,8 +37,8 @@ refreshList.commands = ['.oplist']
 def handleNames(jenni, input):
     jenni.msg(input.devchan, 'input group 1: '+input.group(1))
     names = re.split(' ', input.group(1))
-    print jenni.raw
     channel = re.search('(#\S+)', jenni.raw).group(1)
+    jenni.startOpsList(channel)
     jenni.msg(input.devchan, 'channel: '+channel)
     for name in names:
         if '@' in name or '~' in name or '&' in name:

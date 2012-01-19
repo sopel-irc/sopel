@@ -196,15 +196,15 @@ class Bot(asynchat.async_chat):
 
     #Helper functions to maintain the oper list.
     def addOp(self, channel, name):
-        print self.ops
-        if not channel in self.ops: self.ops[channel] = set()
         self.ops[channel].add(name)
     def addHalfOp(self, channel, name):
-        if not channel in self.halfplus: self.halfplus[channel] = set()
         self.halfplus[channel].add(name)
     def flushOps(self, channel):
         self.ops[channel] = set()
         self.halfplus[channel] = set()
+    def startOpsList(self, channel):
+        if not channel in self.halfplus: self.halfplus[channel] = set()
+        if not channel in self.ops: self.ops[channel] = set()
 
 class TestBot(Bot):
     def f_ping(self, origin, match, args):
