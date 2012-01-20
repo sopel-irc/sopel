@@ -199,6 +199,10 @@ class Bot(asynchat.async_chat):
         self.ops[channel].add(name)
     def addHalfOp(self, channel, name):
         self.halfplus[channel].add(name)
+    def delOp(self, channel, name):
+        self.ops[channel].discard(name)
+    def delHalfOp(self, channel, name):
+        self.halfplus[channel].discard(name)
     def flushOps(self, channel):
         self.ops[channel] = set()
         self.halfplus[channel] = set()
