@@ -299,6 +299,9 @@ def ytinfo(jenni, input):
     title = rtitle.group(2)
 
     author = re.search('(AUTHOR: )(\S*) (20\d\d)-(\d\d)-(\d\d)T(\d\d):(\d\d).*', bytes)
+    if not author:
+        jenni.say('I couldn\'t find information for that video.')
+        return
     uploader = author.group(2)
     year = author.group(3)
     month = author.group(4)
@@ -326,16 +329,18 @@ def ytinfo(jenni, input):
         if seconds: length = length + str(seconds) + 'secs'
 
     views = str('{:20,d}'.format(int(re.search('(VIEWS: )(.*)', bytes).group(2)))).lstrip(' ')
-    comments = str('{:20,d}'.format(int(re.search('(COMMENTS: )(.*)', bytes).group(2)))).lstrip(' ')
+    com = re.search('(COMMENTS: )(\d+)', bytes)
+    if com: comments = str('{:20,d}'.format(int(com.group(2)))).lstrip(' ')
+    else: comments = 'disabled'
     #Favorite, like, dislike
-    favorite = re.search('(FAVORITE: )([\d,]+) ([\d,]+) ([\d,]+)', bytes)
-    likes = favorite.group(3)
-    dislikes = favorite.group(4)
+    favorite = re.search('(FAVORITE: )([\d,]+)( [\d,]+)?( [\d,]+)?', bytes)
+    likes = favorite.group(3) or ' disabled'
+    dislikes = favorite.group(4) or ' disabled'
 
     message = '[YouTube] Title: ' + title + ' | Uploader: ' + uploader + \
               ' | Uploaded: ' + uploaded + ' | Length: ' + length + \
-              ' | Views: ' + views + ' | Comments: ' + comments + ' | Likes: '\
-              + likes + ' | Dislikes: ' + dislikes
+              ' | Views: ' + views + ' | Comments: ' + comments + ' | Likes:'\
+              + likes + ' | Dislikes:' + dislikes
 
     jenni.say(message)
 ytinfo.rule = '.*(youtube.com/watch\S*v=|youtu.be/)([\w-]+).*'
