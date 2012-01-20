@@ -102,7 +102,7 @@ def saylast(jenni, input):
    global watch
    global sch
 
-   if watch:
+   while watch:
       for twituser in twitter_watch:
          try:
             statuses = api.GetUserTimeline(twituser)
@@ -125,8 +125,9 @@ def saylast(jenni, input):
             print type(inst)
             print inst.args
             print inst
-      sch.enter(watch_wait, 1, saylast, (jenni, input))
-      sch.run()
+      time.sleep(watch_wait)
+      #sch.enter(watch_wait, 1, saylast, (jenni, input))
+      #sch.run()
 
 def tweetwatcher(jenni, input):
    global watch
