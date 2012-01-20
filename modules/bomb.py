@@ -50,15 +50,15 @@ def cutwire(jenni, input):
     global bombs, colors
     target = input.nick
     if target != jenni.nick and target not in bombs: return
-    color, code = bombs.pop(target)
-    c = color.lower()
-    if input.group(2).lower().rstrip(' ') not in colors:
+    color, code = bombs.pop(target) #remove target from bomb list
+    if input.group(2).rstrip(' ').capitalize() not in colors:
         jenni.say('I can\'t seem to find that wire, '+target+'! You sure you\'re picking the right one? It\'s not here!')
-    elif input.group(2).lower().rstrip(' ') == c:
+        bombs[target] = (color, code) #Add the target back onto the bomb list,
+    elif input.group(2).rstrip(' ').capitalize() == color:
         jenni.say('You did it, '+target+'! I\'ll be honest, I thought you were dead. But nope, you did it. You picked the right one. Well done.')
-        sch.cancel(code)
+        sch.cancel(code) #defuse bomb
     else:
-        sch.cancel(code)
+        sch.cancel(code) #defuse timer, execute premature detonation
         kmsg = 'KICK '+input.sender+' '+target+\
                ' You should\'ve picked the '+color+' wire.'
         jenni.say('No! No, that\'s the wrong one. Aww, you\'ve gone and killed yourself. Oh, that\'s... that\'s not good. No good at all, really. Wow. Sorry.')
