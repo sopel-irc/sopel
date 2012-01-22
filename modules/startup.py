@@ -18,7 +18,7 @@ def startup(jenni, input):
     
     #Add a line Oper = (name, pass) to the config file to give Willie server ops
     if hasattr(jenni.config, 'Oper'):
-        jenni.write(('OPER', jenni.config.oper[0]+' '+jenni.config.oper[1])
+        jenni.write(('OPER', jenni.config.oper[0]+' '+jenni.config.oper[1]))
 
     # Cf. http://swhack.com/logs/2005-12-05#T19-32-36
     for channel in jenni.channels:
