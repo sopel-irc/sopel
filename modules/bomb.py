@@ -60,17 +60,14 @@ def cutwire(jenni, input):
     else:
         sch.cancel(code) #defuse timer, execute premature detonation
         kmsg = 'KICK '+input.sender+' '+target+\
-               ' You should\'ve picked the '+color+' wire.'
-        jenni.say('No! No, that\'s the wrong one. Aww, you\'ve gone and killed yourself. Oh, that\'s... that\'s not good. No good at all, really. Wow. Sorry.')
+               ': No! No, that\'s the wrong one. Aww, you\'ve gone and killed yourself. Oh, that\'s... that\'s not good. No good at all, really. Wow. Sorry. (You should\'ve picked the '+color+' wire.)'
         jenni.write([kmsg])
 cutwire.commands = ['cutwire']
 
 def explode(jenni, input):
     target = input.group(1)
-    cmsg = 'Oh, come on, '+target+'! You could\'ve at least picked one! Now you\'re dead. Guts, all over the place. You see that? Guts, all over YourPants.'
     kmsg = 'KICK '+input.sender+' '+target+\
-           ' : You should\'ve picked the '+bombs[target][0]+' wire.'
-    jenni.say(cmsg)
+           ' : Oh, come on, '+target+'! You could\'ve at least picked one! Now you\'re dead. Guts, all over the place. You see that? Guts, all over YourPants. (You should\'ve picked the '+bombs[target][0]+' wire.)'
     jenni.write([kmsg])
     bombs.pop(target)
 
