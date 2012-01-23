@@ -60,7 +60,7 @@ def cutwire(jenni, input):
     else:
         sch.cancel(code) #defuse timer, execute premature detonation
         kmsg = 'KICK '+input.sender+' '+target+\
-               ': No! No, that\'s the wrong one. Aww, you\'ve gone and killed yourself. Oh, that\'s... that\'s not good. No good at all, really. Wow. Sorry. (You should\'ve picked the '+color+' wire.)'
+               ' : No! No, that\'s the wrong one. Aww, you\'ve gone and killed yourself. Oh, that\'s... that\'s not good. No good at all, really. Wow. Sorry. (You should\'ve picked the '+color+' wire.)'
         jenni.write([kmsg])
 cutwire.commands = ['cutwire']
 
