@@ -37,7 +37,9 @@ def load_db():
             result = ",".join(new[2:])
             result = result.replace('\n','')
         else:
-            result = new[2][:-1]
+            result = new[2]
+            if len(result) > 0:
+                result = result[:-1]
         result = (result).decode('utf-8')
         search_dict[new[0]][new[1]].append(result)
     return search_dict

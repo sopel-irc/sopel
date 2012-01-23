@@ -9,14 +9,24 @@ More info:
  * Phenny: http://inamidst.com/phenny/
 """
 
-import random
+import random, time
+access = dict()
 
 
 def ask(jenni, input):
     """.ask <item1> or <item2> or <item3> - Randomly picks from a set of items seperated by ' or '."""
+    global access
 
     choices = input.group(2)
     random.seed()
+    if input.nick in access:
+        if (time.time() - access[input.nick]) < 8:
+            return
+        else:
+            access[input.nick] = time.time()
+    else:
+        access[input.nick] = time.time()
+
     if choices == None:
         jenni.reply("There is no spoon! Please try a valid question.")
     elif choices.lower() == "what is the answer to life, the universe, and everything?":
