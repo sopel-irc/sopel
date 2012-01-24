@@ -12,13 +12,12 @@ More info:
 import random
 import re
 
-random.seed()
-
 def rand(jenni, input):
     """.rand <arg1> <arg2> - Generates a random integer between <arg1> and <arg2>."""
     if input.group(2) == " " or input.group(2) == "" or str(input.group(2)) == None or str(input.group(2)) == "" or input.group(2) == None:
         jenni.say("I'm sorry, " + str(input.nick) + ", but you must enter at least one number.")
     else:
+        random.seed()
         li_integers = input.group(2)
         li_integers_str = li_integers.split()
         if len(li_integers_str) == 1:
