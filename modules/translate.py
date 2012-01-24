@@ -52,7 +52,7 @@ def tr(jenni, context):
     output = (output or 'en').encode('utf-8')
 
     if input != output:
-        msg, input = translate(phrase, input, output)
+        msg, input = translate2(phrase, input, output)
         if isinstance(msg, str):
             msg = msg.decode('utf-8')
         if msg:
