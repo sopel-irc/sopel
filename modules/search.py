@@ -1,10 +1,12 @@
-#!/usr/bin/env python
+u#!/usr/bin/env python
 """
 search.py - Jenni Web Search Module
 Copyright 2008-9, Sean B. Palmer, inamidst.com
 Licensed under the Eiffel Forum License 2.
 
-http://inamidst.com/phenny/
+More info:
+ * Jenni: https://github.com/myano/jenni/
+ * Phenny: http://inamidst.com/phenny/
 """
 
 import re
@@ -20,6 +22,8 @@ class Grab(web.urllib.URLopener):
 
 def google_ajax(query):
     """Search using AjaxSearch, and return its JSON."""
+    if isinstance(query, unicode):
+        query = query.encode('utf-8')
     uri = 'http://ajax.googleapis.com/ajax/services/search/web'
     args = '?v=1.0&safe=off&q=' + web.urllib.quote(query)
     handler = web.urllib._urlopener
@@ -167,10 +171,6 @@ def search(jenni, input):
     gu = google_search(query) or '-'
     bu = bing_search(query) or '-'
     du = duck_search(query) or '-'
-
-    gu = gu.decode('utf-8')
-    bu = bu.decode('utf-8')
-    du = du.decode('utf-8')
 
     if (gu == bu) and (bu == du):
         result = '%s (g, b, d)' % gu
