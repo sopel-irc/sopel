@@ -20,39 +20,39 @@ def setup(jenni):
         try: refresh_delay = float(jenni.config.refresh_delay)
         except: pass
 
-    def close():
-        print "Nobody PONGed our PING, restarting"
-        jenni.handle_close()
+        def close():
+            print "Nobody PONGed our PING, restarting"
+            jenni.handle_close()
 
-    def pingloop():
-        timer = threading.Timer(refresh_delay, close, ())
-        jenni.data['startup.setup.timer'] = timer
-        jenni.data['startup.setup.timer'].start()
-        # print "PING!"
-        jenni.write(('PING', jenni.config.host))
-    jenni.data['startup.setup.pingloop'] = pingloop
+        def pingloop():
+            timer = threading.Timer(refresh_delay, close, ())
+            jenni.data['startup.setup.timer'] = timer
+            jenni.data['startup.setup.timer'].start()
+            # print "PING!"
+            jenni.write(('PING', jenni.config.host))
+        jenni.data['startup.setup.pingloop'] = pingloop
 
-    def pong(jenni, input):
-        try:
-            # print "PONG!"
-            jenni.data['startup.setup.timer'].cancel()
-            time.sleep(refresh_delay + 60.0)
-            pingloop()
-        except: pass
-    pong.event = 'PONG'
-    pong.thread = True
-    pong.rule = r'.*'
-    jenni.variables['pong'] = pong
+        def pong(jenni, input):
+            try:
+                # print "PONG!"
+                jenni.data['startup.setup.timer'].cancel()
+                time.sleep(refresh_delay + 60.0)
+                pingloop()
+            except: pass
+        pong.event = 'PONG'
+        pong.thread = True
+        pong.rule = r'.*'
+        jenni.variables['pong'] = pong
 
-    # Need to wrap handle_connect to start the loop.
-    inner_handle_connect = jenni.handle_connect
+        # Need to wrap handle_connect to start the loop.
+        inner_handle_connect = jenni.handle_connect
 
-    def outer_handle_connect():
-        inner_handle_connect()
-        if jenni.data.get('startup.setup.pingloop'):
-            jenni.data['startup.setup.pingloop']()
+        def outer_handle_connect():
+            inner_handle_connect()
+            if jenni.data.get('startup.setup.pingloop'):
+                jenni.data['startup.setup.pingloop']()
 
-    jenni.handle_connect = outer_handle_connect
+        jenni.handle_connect = outer_handle_connect
 
 def startup(jenni, input):
     if hasattr(jenni.config, 'serverpass'):
