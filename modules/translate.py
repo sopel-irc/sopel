@@ -92,7 +92,7 @@ def tr2(jenni, input):
             command = cmd
     phrase = command
 
-    if (len(phrase) > 350) and (not context.admin):
+    if (len(phrase) > 350) and (not input.admin):
         return jenni.reply('Phrase must be under 350 characters.')
 
     src, dest = args
