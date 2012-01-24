@@ -14,6 +14,11 @@ import re, urllib
 import web
 
 def translate(text, input='auto', output='en'):
+    raw = False
+    if output.endswith('-raw'):
+        output = output[:-4]
+        raw = True
+
     import urllib2, json
     opener = urllib2.build_opener()
     opener.addheaders = [(
@@ -33,7 +38,10 @@ def translate(text, input='auto', output='en'):
         result = result.replace(',,', ',null,')
     data = json.loads(result)
 
-    try: language = data[-2][0][0]
+    if raw:
+        return str(data), 'en-raw'
+
+    try: language = data[2] # -2][0][0]
     except: language = '?'
 
     return ''.join(x[0] for x in data[0]), language
@@ -52,7 +60,7 @@ def tr(jenni, context):
     output = (output or 'en').encode('utf-8')
 
     if input != output:
-        msg, input = translate2(phrase, input, output)
+        msg, input = translate(phrase, input, output)
         if isinstance(msg, str):
             msg = msg.decode('utf-8')
         if msg:
@@ -63,9 +71,45 @@ def tr(jenni, context):
         jenni.reply(msg)
     else: jenni.reply('Language guessing failed, so try suggesting one!')
 
-tr.rule = ('$nick', ur'(?:([a-z]{2}) +)?(?:([a-z]{2}) +)?["“](.+?)["”]\? *$')
+tr.rule = ('$nick', ur'(?:([a-z]{2}) +)?(?:([a-z]{2}|en-raw) +)?["“](.+?)["”]\? *$')
 tr.example = '$nickname: "mon chien"? or $nickname: fr "mon chien"?'
 tr.priority = 'low'
+
+def tr2(jenni, input):
+    """Translates a phrase, with an optional language hint."""
+    command = input.group(2).encode('utf-8')
+
+    def langcode(p):
+        return p.startswith(':') and (2 < len(p) < 10) and p[1:].isalpha()
+
+    args = ['auto', 'en']
+
+    for i in xrange(2):
+        if not ' ' in command: break
+        prefix, cmd = command.split(' ', 1)
+        if langcode(prefix):
+            args[i] = prefix[1:]
+            command = cmd
+    phrase = command
+
+    if (len(phrase) > 350) and (not context.admin):
+        return jenni.reply('Phrase must be under 350 characters.')
+
+    src, dest = args
+    if src != dest:
+        msg, src = translate(phrase, src, dest)
+        if isinstance(msg, str):
+            msg = msg.decode('utf-8')
+        if msg:
+            msg = web.decode(msg) # msg.replace('&#39;', "'")
+            msg = '"%s" (%s to %s, translate.google.com)' % (msg, src, dest)
+        else: msg = 'The %s to %s translation failed, sorry!' % (src, dest)
+
+        jenni.reply(msg)
+    else: jenni.reply('Language guessing failed, so try suggesting one!')
+
+tr2.commands = ['tr']
+tr2.priority = 'low'
 
 def mangle(jenni, input):
     phrase = input.group(2).encode('utf-8')
