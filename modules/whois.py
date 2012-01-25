@@ -22,7 +22,7 @@ def sendwhois(phenny, input):
     #hide channels that are +s (prefixed with a ?)
     channels = chans.split(' ')
     for chan in channels:
-        if chan[0] == "?"
+        if chan[0] == "?":
             channels.remove(chan)
     chans = ' '.join(channels)
 
