@@ -136,6 +136,7 @@ class UnoBot:
     def join (self, jenni, input):
         #print dir (jenni.bot)
         #print dir (input)
+        jenni.msg (CHANNEL, "[DEVMSG] "+input.nick+" tried joining.")
         if self.game_on:
             if not self.dealt:
                 if input.nick not in self.players:
