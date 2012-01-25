@@ -18,6 +18,14 @@ def sendwhois(phenny, input):
 
     msg1 = '[WHOIS] Nick: ' + str(nick) + ' Host: ' + str(host) + \
            ' Real name: ' + str(rl)
+
+    #hide channels that are +s (prefixed with a ?)
+    channels = chans.split(' ')
+    for chan in channels:
+        if chan[0] == "?"
+            channels.remove(chan)
+    chans = ' '.join(channels)
+
     msg2 = str(nick) + ' is on the channels: ' + str(chans)
     phenny.say(msg1)
     phenny.say(msg2)
