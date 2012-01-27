@@ -23,7 +23,7 @@ def ytsearch(jenni, input):
     #Before actually loading this in, let's see what input actually is so we can parse it right.
 
     #Grab info from rscript
-    uri = 'http://rscript.org/lookup.php?type=ytinfo&term=' + input.group(1)
+    uri = 'http://rscript.org/lookup.php?type=ytinfo&term=' + input.group(2).encode('utf-8')
     redirects = 0
     while True:
         req = urllib2.Request(uri, headers={'Accept':'text/html'})
@@ -85,7 +85,7 @@ def ytsearch(jenni, input):
     rurl = re.search('(URL: )(.*)', bytes)
     url = rurl.group(2)
 
-    message = '\x03[\x03YT Search\x03]\x03 Title: ' +title+ \
+    message = '[YT Search] Title: ' +title+ \
               ' | Author: ' +author+ \
               ' | Duration: ' +length+ \
               ' | Views: ' +views+ \
