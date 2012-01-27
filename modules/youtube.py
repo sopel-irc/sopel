@@ -84,12 +84,13 @@ def ytsearch(jenni, input):
 
     rurl = re.search('(URL: )(.*)', bytes)
     url = rurl.group(2)
+    jenni.msg(input.devchan,"[DEVMSG]youtube.py line 87: url="+str(url))
 
     message = '\x03[\x03YT Search\x03]\x03 Title: ' +title+ \
               ' | Author: ' +author+ \
               ' | Duration: ' +duration+ \
               ' | Views: ' +views+ \
-              ' | Link: ' + url
+              ' | Link: ' +
 
     jenni.say(message)
 ytsearch.commands = ['yt','youtube']
