@@ -90,7 +90,7 @@ def ytsearch(jenni, input):
               ' | Author: ' +author+ \
               ' | Duration: ' +duration+ \
               ' | Views: ' +views+ \
-              ' | Link: ' +
+              ' | Link: ' +url
 
     jenni.say(message)
 ytsearch.commands = ['yt','youtube']
