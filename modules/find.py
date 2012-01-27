@@ -36,8 +36,8 @@ def load_db():
         if len(new) > 3:
             result = ",".join(new[2:])
             result = result.replace('\n','')
-        else:
-            result = new[2]
+        elif len(new) == 3:
+            result = new[-1]
             if len(result) > 0:
                 result = result[:-1]
         result = (result).decode('utf-8')
