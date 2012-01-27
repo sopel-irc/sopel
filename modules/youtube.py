@@ -24,6 +24,7 @@ def ytsearch(jenni, input):
 
     #Grab info from rscript
     uri = 'http://rscript.org/lookup.php?type=ytinfo&term=' + input.group(2).encode('utf-8')
+    jenni.msg(input.devchan,"[DEVMSG]youtube.py line 26: uri="+str(uri))
     redirects = 0
     while True:
         req = urllib2.Request(uri, headers={'Accept':'text/html'})
