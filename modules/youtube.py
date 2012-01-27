@@ -83,8 +83,7 @@ def ytsearch(jenni, input):
     views = str('{:20,d}'.format(int(re.search('(VIEWS: )(.*)', bytes).group(2)))).lstrip(' ')
 
     rurl = re.search('(URL: )(.*)', bytes)
-    url = rurl.group(2)
-    jenni.msg(input.devchan,"[DEVMSG]youtube.py line 87: url="+str(url))
+    url = str(rurl.group(2))
 
     message = '\x03[\x03YT Search\x03]\x03 Title: ' +title+ \
               ' | Author: ' +author+ \
