@@ -40,18 +40,20 @@ def load_db():
             result = new[-1]
             if len(result) > 0:
                 result = result[:-1]
-        result = (result).decode('utf-8')
-        search_dict[new[0]][new[1]].append(result)
+        if result:
+            result = (result).decode('utf-8')
+            search_dict[new[0]][new[1]].append(result)
     return search_dict
 
 def save_db(search_dict):
     """ save search_dict to find.txt """
     search_file = open("find.txt", "w")
     for channel in search_dict:
-        for nick in search_dict[channel]:
-            for line in search_dict[channel][nick]:
-                new = "%s,%s,%s\n" % (channel, nick, (line).encode('utf-8'))
-                search_file.write(new)
+        if channel is not "":
+            for nick in search_dict[channel]:
+                for line in search_dict[channel][nick]:
+                    new = "%s,%s,%s\n" % (channel, nick, (line).encode('utf-8'))
+                    search_file.write(new)
     search_file.close()
 
 # Create a temporary log of the most recent thing anyone says.
