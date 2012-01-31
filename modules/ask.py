@@ -32,7 +32,7 @@ def ask(jenni, input):
     else:
         list_choices = choices.split(" or ")
         if len(list_choices) == 1:
-            jenni.reply(random.choice('yes', 'no'))
+            jenni.reply(random.choice(['yes', 'no']))
         else:
             jenni.reply((random.choice(list_choices)).encode('utf-8'))
 ask.commands = ['ask']
