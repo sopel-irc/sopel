@@ -21,6 +21,18 @@ watch = False
 lasts = dict()
 sch = sched.scheduler(time.time, time.sleep)
 
+def format_thousands(integer):
+    """Returns string representing number with thousands separated by ','"""
+    groups = []
+    result = ""
+    while ((integer % 1000) != integer):
+        groups.append(str(integer % 1000))
+        integer /= 1000
+    groups.append(str(integer))
+    groups = groups.reverse()
+    result = ",".join(groups)
+    return result
+
 def gettweet(jenni, input):
 	try:
 		twituser = input.group(2)
@@ -41,14 +53,14 @@ def f_info(jenni, input):
 		twituser = input.group(2)
 		twituser = str(twituser)
 		info = api.GetUser(twituser)
-		friendcount = info.friends_count
+		friendcount = format_thousands(info.friends_count)
 		name = info.name
 		id = info.id
 		favourites = info.favourites_count
-		followers = info.followers_count
+		followers = format_thousands(info.followers_count)
 		location = info.location
 		description = info.description
-		jenni.reply("<" + str(twituser) + "> " + str(name) + ". " + "ID: " + str(id) + ". Friend Count: " + str(friendcount) + ". Followers: " + str(followers) + ". Favourites: " + str(favourites) + ". Location: " + str(location) + ". Description: " + str(description))
+		jenni.reply("<" + str(twituser) + "> " + str(name) + ". " + "ID: " + str(id) + ". Friend Count: " + friendcount + ". Followers: " + followers + ". Favourites: " + str(favourites) + ". Location: " + str(location) + ". Description: " + str(description))
 	except:
 		jenni.reply("You have inputted an invalid user.")
 f_info.commands = ['twitinfo']
