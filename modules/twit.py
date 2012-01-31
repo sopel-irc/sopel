@@ -29,7 +29,7 @@ def format_thousands(integer):
         groups.append(str(integer % 1000))
         integer /= 1000
     groups.append(str(integer))
-    groups = groups.reverse()
+    groups.reverse()
     result = ",".join(groups)
     return result
 
