@@ -61,26 +61,26 @@ dice.priority = 'medium'
 
 def rollDice(diceroll):
 #Time for the real fun, dice!
-	if(diceroll.startswith('d')): #check if it's XdX or dX
-		#  dX
-		rolls = 1 #no dice amounts specified, roll 1
-		size = int(diceroll[1:]) # dice with this amount of sides
-	else:
-		# XdX
-		rolls = int(diceroll.split('d')[0]) # dice amount specified, use it.
-		size = int(diceroll.split('d')[1]) #  aswell as this size.
-	result = "" #dice result is zero.
+    if(diceroll.startswith('d')): #check if it's XdX or dX
+        #  dX
+        rolls = 1 #no dice amounts specified, roll 1
+        size = int(diceroll[1:]) # dice with this amount of sides
+    else:
+        # XdX
+        rolls = int(diceroll.split('d')[0]) # dice amount specified, use it.
+        size = int(diceroll.split('d')[1]) #  aswell as this size.
+    result = "" #dice result is zero.
 
-	for i in range(1,rolls+1): #for the amount of dice
-		#roll 10 dice, pick a random dice to use, add string to result.
-		# I should elaborate on this...
-		# str() makes sure the number is in string format (required for the eval())
-		# randint(1,size) is 1 dice and randint(0,9) selects one of the ten dice rolled
-		# reason for this is fairness, true random has at least 2 stages.
-		result += str((randint(1,size),randint(1,size),randint(1,size),randint(1,size),randint(1,size),randint(1,size),randint(1,size),randint(1,size),randint(1,size),randint(1,size))[randint(0,9)])
-		if(i != rolls):
-			#if it's not the last sign, add a plus sign.
-			result += "+"
+    for i in range(1,rolls+1): #for the amount of dice
+        #roll 10 dice, pick a random dice to use, add string to result.
+        # I should elaborate on this...
+        # str() makes sure the number is in string format (required for the eval())
+        # randint(1,size) is 1 dice and randint(0,9) selects one of the ten dice rolled
+        # reason for this is fairness, true random has at least 2 stages.
+        result += str((randint(1,size),randint(1,size),randint(1,size),randint(1,size),randint(1,size),randint(1,size),randint(1,size),randint(1,size),randint(1,size),randint(1,size))[randint(0,9)])
+        if(i != rolls):
+            #if it's not the last sign, add a plus sign.
+            result += "+"
 
 if __name__ == '__main__':
     print __doc__.strip()
