@@ -26,6 +26,7 @@ def load_db():
     search_file.close()
     search_dict = dict()
     for line in lines:
+        result = None
         a = line.replace(r'\n', '')
         new = a.split(r',')
         if len(new) < 2: continue
