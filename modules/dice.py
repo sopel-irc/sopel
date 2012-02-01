@@ -52,9 +52,9 @@ def dice(jenni, input):
         result = str(eval(full_string)) # so normally eval is UNSAFE... but since i've dumped regex over the user input i'm pretty confident in the security.
         #print result to chat
         if(no_dice): #no dice found, warn!
-            jenni.reply("WARNING: NO DICE! "+input.nick+" calculates "+msg+" ("+full_string+"): "+result)
+            jenni.reply("For pure math, you can use .c! "+msg+" = "+result)
         else: #dice found, just let the users know what's happening
-            jenni.reply(input.nick+" rolls "+msg+" ("+full_string+"): "+result)
+            jenni.reply("You roll "+msg+" ("+full_string+"): "+result)
     else: #print illegal warning.
         jenni.reply("Illegal formula segment: "+segment+", aborting.")
 dice.commands = ['roll','dice']
