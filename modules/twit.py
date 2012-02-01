@@ -12,6 +12,7 @@ For this module to work, you need to create 2 variables in your config file ( ~/
 import simplejson
 import twitter
 import sched, time
+import re
 
 api = twitter.Api()
 
@@ -22,16 +23,8 @@ lasts = dict()
 sch = sched.scheduler(time.time, time.sleep)
 
 def format_thousands(integer):
-    """Returns string representing number with thousands separated by ','"""
-    groups = []
-    result = ""
-    while ((integer % 1000) != integer):
-        groups.append(str(integer % 1000))
-        integer /= 1000
-    groups.append(str(integer))
-    groups.reverse()
-    result = ",".join(groups)
-    return result
+    """Returns string of integer, with thousands separated by ','"""
+    return re.sub(r'(\d{3})(?=\d)', r'\1,' str(integer)[::-1]
 
 def gettweet(jenni, input):
 	try:
