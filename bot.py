@@ -227,15 +227,20 @@ class Jenni(irc.Bot):
                             contents = g.readlines()
                             g.close()
 
-                            bad_masks = contents[0].split(',')
-                            bad_nicks = contents[1].split(',')
+                            try: bad_masks = contents[0].split(',')
+                            except: bad_masks = ['']
+
+                            try: bad_nicks = contents[1].split(',')
+                            except: bad_nicks = ['']
 
                             if len(bad_masks) > 0:
                                 for hostmask in bad_masks:
                                     hostmask = hostmask.replace("\n", "")
                                     if len(hostmask) < 1: continue
                                     re_temp = re.compile(hostmask)
-                                    if re_temp.findall(origin.host) or hostmask in origin.host:
+                                    host = origin.host
+                                    host = host.lower()
+                                    if re_temp.findall(host) or hostmask in host:
                                         return
                             if len(bad_nicks) > 0:
                                 for nick in bad_nicks:

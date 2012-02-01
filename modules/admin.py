@@ -113,45 +113,57 @@ def blocks(jenni, input):
             "no_host" : "No matching hostmask block found for: %s",
             "invalid" : "Invalid format for %s a block. Try: .blocks add (nick|hostmask) jenni",
             "invalid_display" : "Invalid input for displaying blocks.",
+            "nonelisted" : "No %s listed in the blocklist.",
+            'huh' : "I could not figure out what you wanted to do.",
             }
 
     if not os.path.isfile("blocks"):
         blocks = open("blocks", "w")
-        blocks.write('gateway/freenode/\n')
-        blocks.write('jenni')
+        blocks.write('\n')
         blocks.close()
 
     blocks = open("blocks", "r")
     contents = blocks.readlines()
     blocks.close()
 
-    masks = contents[0].replace("\n", "").split(',')
-    nicks = contents[1].replace("\n", "").split(',')
+    try: masks = contents[0].replace("\n", "").split(',')
+    except: masks = ['']
+
+    try: nicks = contents[1].replace("\n", "").split(',')
+    except: nicks = ['']
 
     text = input.group().split()
 
-    if text[1] == "list" and len(text) == 3:
+    if len(text) == 3 and text[1] == "list":
         if text[2] == "hostmask":
-            for each in masks:
-                jenni.say(each)
+            if len(masks) > 0 and masks.count("") == 0:
+                for each in masks:
+                    if len(each) > 0:
+                        jenni.say("blocked hostmask: " + each)
+            else:
+                jenni.reply(STRINGS['nonelisted'] % ('hostmasks'))
         elif text[2] == "nick":
-            for each in nicks:
-                jenni.say(each)
+            if len(nicks) > 0 and nicks.count("") == 0:
+                for each in nicks:
+                    if len(each) > 0:
+                        jenni.say("blocked nick: " + each)
+            else:
+                jenni.reply(STRINGS['nonelisted'] % ('nicks'))
         else:
             jenni.reply(STRINGS['invalid_display'])
 
-    elif text[1] == "add" and len(text) == 4:
+    elif len(text) == 4 and text[1] == "add":
         if text[2] == "nick":
             nicks.append(text[3])
         elif text[2] == "hostmask":
-            masks.append(text[3])
+            masks.append(text[3].lower())
         else:
             jenni.reply(STRINGS['invalid'] % ("adding"))
             return
 
         jenni.reply(STRINGS['success_add'] % (text[3]))
 
-    elif text[1] == "del" and len(text) == 4:
+    elif len(text) == 4 and text[1] == "del":
         if text[2] == "nick":
             try:
                 nicks.remove(text[3])
@@ -161,7 +173,7 @@ def blocks(jenni, input):
                 return
         elif text[2] == "hostmask":
             try:
-                masks.remove(text[3])
+                masks.remove(text[3].lower())
                 jenni.reply(STRINGS['success_del'] % (text[3]))
             except:
                 jenni.reply(STRINGS['no_host'] % (text[3]))
@@ -169,13 +181,19 @@ def blocks(jenni, input):
         else:
             jenni.reply(STRINGS['invalid'] % ("deleting"))
             return
+    else:
+        jenni.reply(STRINGS['huh'])
 
     os.remove("blocks")
     blocks = open("blocks", "w")
     masks_str = ",".join(masks)
+    if len(masks_str) > 0 and "," == masks_str[0]:
+        masks_str = masks_str[1:]
     blocks.write(masks_str)
     blocks.write("\n")
     nicks_str = ",".join(nicks)
+    if len(nicks_str) > 0 and "," == nicks_str[0]:
+        nicks_str = nicks_str[1:]
     blocks.write(nicks_str)
     blocks.close()
 

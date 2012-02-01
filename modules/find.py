@@ -13,169 +13,130 @@ This module will fix spelling errors if someone corrects them
 using the sed notation (s///) commonly found in vi/vim.
 """
 
-import pickle, time, re
-try:
-    search_file = open("find.txt","r")
-    search_dict = pickle.load(search_file)
-except IOError:
-    search_dict = dict()
+import os, re
 
-exp = re.compile(r"(?<!\\)/")
+def load_db():
+    """ load lines from find.txt to search_dict """
+    if not os.path.isfile("find.txt"):
+        f = open("find.txt", "w")
+        f.write("#test,yano,foobar\n")
+        f.close()
+    search_file = open("find.txt", "r")
+    lines = search_file.readlines()
+    search_file.close()
+    search_dict = dict()
+    for line in lines:
+        a = line.replace(r'\n', '')
+        new = a.split(r',')
+        if len(new) < 2: continue
+        if new[0] not in search_dict:
+            search_dict[new[0]] = dict()
+        if new[1] not in search_dict[new[0]]:
+            search_dict[new[0]][new[1]] = list()
+        if len(new) > 3:
+            result = ",".join(new[2:])
+            result = result.replace('\n','')
+        elif len(new) == 3:
+            result = new[-1]
+            if len(result) > 0:
+                result = result[:-1]
+        if result:
+            result = (result).decode('utf-8')
+            search_dict[new[0]][new[1]].append(result)
+    return search_dict
+
+def save_db(search_dict):
+    """ save search_dict to find.txt """
+    search_file = open("find.txt", "w")
+    for channel in search_dict:
+        if channel is not "":
+            for nick in search_dict[channel]:
+                for line in search_dict[channel][nick]:
+                    new = "%s,%s,%s\n" % (channel, nick, (line).encode('utf-8'))
+                    search_file.write(new)
+    search_file.close()
 
 # Create a temporary log of the most recent thing anyone says.
 def collectlines(jenni, input):
     # don't log things in PM
     if not input.sender.startswith('#'): return
-    global search_dict
+    search_dict = load_db()
     if input.sender not in search_dict:
-        search_dict[input.sender] = { }
-    try:
-        list = search_dict[input.sender][input.nick]
-    except:
-        list = []
-    line = unicode(input.group())
+        search_dict[input.sender] = dict()
+    if input.nick not in search_dict[input.sender]:
+        search_dict[input.sender][input.nick] = list()
+    templist = search_dict[input.sender][input.nick]
+    line = input.group()
     if line.startswith("s/"):
         return
     else:
-        list.append(line)
-    del list[:-10]
-    search_dict[input.sender][input.nick] = list
-    search_file = open("find.txt","w")
-    pickle.dump(search_dict, search_file)
-    search_file.close()
-collectlines.rule = '.*'
+        templist.append(line)
+    del templist[:-10]
+    search_dict[input.sender][input.nick] = templist
+    save_db(search_dict)
+collectlines.rule = r'.*'
 collectlines.priority = 'low'
 
 def findandreplace(jenni, input):
     # don't bother in PM
     if not input.sender.startswith('#'): return
 
-    global search_dict
-    global search_file
-    # obtain "old word" and "new word"
-    text = unicode(input.group())
-    list_pattern = exp.split(text)
-    pattern = list_pattern[1]
-    try:
-        replacement = list_pattern[2]
-    except: return
-    try:
-        current_list = search_dict[input.sender][input.nick]
-    except: return # no nick found in this room, fail silently
-    phrase = unicode(current_list[-1])
+    search_dict = load_db()
 
-    if text.endswith("/g"):
-        new_phrase = freplace(current_list, pattern, replacement, phrase, 0)
+    rnick = input.group(1) or input.nick # Correcting other person vs self.
+
+    # only do something if there is conversation to work with
+    if input.sender not in search_dict or rnick not in search_dict[input.sender]: return
+
+    sep = input.group(2)
+    rest = input.group(3).split(sep)
+    me = False # /me command
+    flags = ''
+    if len(rest) < 2:
+        return # need at least a find and replacement value
+    elif len(rest) > 2:
+        # Word characters immediately after the second separator
+        # are considered flags (only g and i now have meaning)
+        flags = re.match(r'\w*',rest[2], re.U).group(0)
+    #else (len == 2) do nothing special
+
+    count = 'g' in flags and -1 or 1 # Replace unlimited times if /g, else once
+    if 'i' in flags:
+        regex = re.compile(re.escape(rest[0]),re.U|re.I)
+        repl = lambda s: re.sub(regex,rest[1],s,count == 1)
     else:
-        new_phrase = freplace(current_list, pattern, replacement, phrase, 1)
+        repl = lambda s: s.replace(rest[0],rest[1],count)
 
-    # Prevents abuse; there is an RFC spec about how servers handle
-    # messages that contain more than 512 characters.
-    if new_phrase:
-        if len(new_phrase) > 512:
-            new_phrase[511:]
+    for line in reversed(search_dict[input.sender][rnick]):
+        if line.startswith("\x01ACTION"):
+            me = True # /me command
+            line = line[8:]
+        else:
+            me = False
+        new_phrase = repl(line)
+        if new_phrase != line: # we are done
+            break
+
+    if not new_phrase or new_phrase == line: return # Didn't find anything
 
     # Save the new "edited" message.
-    list = search_dict[input.sender][input.nick]
-    list.append(new_phrase)
-    search_dict[input.sender][input.nick] = list
-    search_file = open("find.txt","w")
-    pickle.dump(search_dict, search_file)
-    search_file.close()
+    templist = search_dict[input.sender][rnick]
+    templist.append((me and '\x01ACTION ' or '') + new_phrase)
+    search_dict[input.sender][rnick] = templist
+    save_db(search_dict)
+    #search_file = open("find.txt","w")
+    #pickle.dump(search_dict, search_file)
+    #search_file.close()
 
     # output
-    if new_phrase:
-        #new_phrase = new_phrase.replace("\\", "\\\\")
-        if "ACTION" in new_phrase:
-            new_phrase = new_phrase.replace("ACTION", "")
-            new_phrase = new_phrase[1:-1]
-            phrase = input.nick + new_phrase
-            phrase = "\x02" + phrase + "\x02"
-        else:
-            phrase = input.nick + " meant to say: " + new_phrase
-        jenni.say(phrase)
-findandreplace.rule = r'(s)/.*'
+    phrase = input.nick + (input.group(1) and ' thinks ' + rnick or '') + (me and ' ' or " \x02meant\x02 to say: ") + new_phrase
+    if me and not input.group(1): phrase = '\x02' + phrase + '\x02'
+    jenni.say(phrase)
+
+# Matches optional whitespace + 's' + optional whitespace + separator character
+findandreplace.rule = r'(?u)(?:([^\s:]+)[\s:])?\s*s\s*([^\s\w])(.*)' # May work for both this and "meant" (requires input.group(i+1))
 findandreplace.priority = 'high'
 
-def freplace(list, pattern, replacement, phrase, flag):
-    i = 0
-    pattern = re.escape(pattern)
-    while i <= len(list):
-        i += 1
-        k = -i
-        if len(list) > i:
-            phrase_new = unicode(list[k])
-            if flag == 0:
-                sample = unicode(re.sub(pattern, replacement, phrase_new))
-            elif flag == 1:
-                sample = unicode(re.sub(pattern, replacement, phrase_new, 1))
-
-            if sample != phrase_new:
-                return sample
-                break
-
-def meant (jenni, input):
-    # don't bother in PM
-    if not input.sender.startswith('#'): return
-
-    global search_dict
-    global search_file
-    global exp
-
-    text = unicode(input.group())
-    pos = text.find(" ")
-    user = text[:pos - 1]
-    matching = text[pos + 1:]
-
-    if not matching.startswith("s/"):
-        return
-
-    list_pattern = exp.split(matching)
-    try:
-        pattern = list_pattern[1]
-    except:
-        return
-
-    # Make sure the list exists
-    try:
-        replacement = list_pattern[2]
-    except:
-        return
-
-    # If someone does it for a user that hasn't said anything
-    try:
-        current_list = search_dict[input.sender][user]
-    except:
-        return
-    phrase = unicode(current_list[-1])
-
-    if matching.endswith("/g"):
-        new_phrase = freplace(current_list, pattern, replacement, phrase, 0)
-    else:
-        new_phrase = freplace(current_list, pattern, replacement, phrase, 1)
-
-    # Prevents abuse; apparently there is an RFC spec about how servers handle
-    # messages that contain more than 512 characters.
-    if new_phrase:
-        if len(new_phrase) > 512:
-            new_phrase[511:]
-
-    # Save the new "edited" message.
-    list = search_dict[input.sender][user]
-    list.append(new_phrase)
-    search_dict[input.sender][user] = list
-    search_file = open("find.txt","w")
-    pickle.dump(search_dict, search_file)
-    search_file.close()
-
-    # output
-    if new_phrase:
-        #new_phrase = new_phrase.replace("\\", "\\\\")
-        phrase = "%s thinks %s \x02meant:\x02 %s" % (input.nick, user, new_phrase)
-        jenni.say(phrase)
-
-meant.rule = r'\S+(\S|\:)\s.*'
-meant.priority = 'high'
 
 if __name__ == '__main__':
     print __doc__.strip()

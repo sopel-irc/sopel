@@ -9,29 +9,34 @@ More info:
  * Phenny: http://inamidst.com/phenny/
 """
 
-import random, string, calc
+import random, time
+access = dict()
 
-random.seed()
 
 def ask(jenni, input):
     """.ask <item1> or <item2> or <item3> - Randomly picks from a set of items seperated by ' or '."""
+    global access
+
     choices = input.group(2)
+    random.seed()
+    nick = (input.nick).lower()
+    if input.nick in access:
+        if (time.time() - access[nick]) < 15:
+            return
+    access[nick] = time.time()
+
     if choices == None:
         jenni.reply("There is no spoon! Please try a valid question.")
     elif choices.lower() == "what is the answer to life, the universe, and everything?":
         jenni.reply("42")
-    #if the question posed is not a yes/no question or 'or' question, ask wolframalpha via oblique
-    elif 'what ' in choices.lower() and not ' or ' in choices.lower():
-      	calc.wa(jenni,input)
     else:
         list_choices = choices.split(" or ")
         if len(list_choices) == 1:
-            jenni.say(str(input.nick) + ": " + str(random.choice(('yes', 'no'))))
+            jenni.reply(random.choice(['yes', 'no']))
         else:
-            jenni.say(str(input.nick) + ": " + str(random.choice(list_choices)))
-
+            jenni.reply((random.choice(list_choices)).encode('utf-8'))
 ask.commands = ['ask']
-ask.priority = 'medium'
+ask.priority = 'low'
 ask.example = '.ask today or tomorrow or next week'
 
 if __name__ == '__main__':
