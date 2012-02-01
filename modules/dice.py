@@ -19,7 +19,8 @@ def dice(jenni, input):
     #MATHTIME! Let's prepare the failsafes.
     legal_formula, no_dice = 1, 1
     #parsing time.
-    formula = ' '.join(input.groups(2)) #back-up the original message, because you're going to feed it back to the user in the end.
+    msg = ' '.join(input.groups(2)[1:])
+    formula = msg #back-up the original message, because you're going to feed it back to the user in the end.
     formula = formula.replace("-", " - ")
     formula = formula.replace("+", " + ") #add spaces
     formula = formula.replace("/", " / ") #for all
@@ -51,9 +52,9 @@ def dice(jenni, input):
         result = str(eval(full_string)) # so normally eval is UNSAFE... but since i've dumped regex over the user input i'm pretty confident in the security.
         #print result to chat
         if(no_dice): #no dice found, warn!
-            jenni.reply("WARNING: NO DICE! "+input.nick+" calculates "+' '.join(input.groups(2))+" ("+full_string+"): "+result)
+            jenni.reply("WARNING: NO DICE! "+input.nick+" calculates "+msg+" ("+full_string+"): "+result)
         else: #dice found, just let the users know what's happening
-            jenni.reply(input.nick+" rolls "+' '.join(input.groups(2))+" ("+full_string+"): "+result)
+            jenni.reply(input.nick+" rolls "+msg+" ("+full_string+"): "+result)
     else: #print illegal warning.
         jenni.reply("Illegal formula segment: "+segment+", aborting.")
 dice.commands = ['roll','dice']
