@@ -24,7 +24,7 @@ sch = sched.scheduler(time.time, time.sleep)
 
 def format_thousands(integer):
     """Returns string of integer, with thousands separated by ','"""
-    return re.sub(r'(\d{3})(?=\d)', r'\1,' str(integer)[::-1]
+    return re.sub(r'(\d{3})(?=\d)', r'\1,' str(integer)[::-1])[::-1]
 
 def gettweet(jenni, input):
 	try:
