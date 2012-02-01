@@ -35,9 +35,14 @@ def format_thousands(integer):
 
 def gettweet(jenni, input):
     try:
+        auth = tweepy.OAuthHandler(jenni.config.consumer_key, jenni.config.consumer_secret)
+        auth.set_access_token(jenni.config.access_token, jenni.config.access_token_secret)
+        api = tweepy.API(auth)
+        
         twituser = input.group(2)
         twituser = str(twituser)
-        statuses = api.GetUserTimeline(twituser)
+
+        statuses = api.user_timeline(twituser)
         recent = [s.text for s in statuses][0]
         #jenni.say("<" + twituser + "> " + unicode(recent))
         if twituser[0] != '@': twituser = '@' + twituser
@@ -50,9 +55,14 @@ gettweet.example = '.twit aplusk'
 
 def f_info(jenni, input):
     try:
+        auth = tweepy.OAuthHandler(jenni.config.consumer_key, jenni.config.consumer_secret)
+        auth.set_access_token(jenni.config.access_token, jenni.config.access_token_secret)
+        api = tweepy.API(auth)
+        
         twituser = input.group(2)
         twituser = str(twituser)
-        info = api.GetUser(twituser)
+
+        info = api.get_user(twituser)
         friendcount = format_thousands(info.friends_count)
         name = info.name
         id = info.id
@@ -77,7 +87,7 @@ def f_update(jenni, input):
     update = str(input.group(2)) + " ^" + input.nick
     if len(update) <= 140:
         api.update_status(update)
-        jenni.reply("Successfully posted to twitter.com/jenni_osu")
+        jenni.reply("Successfully posted to my twitter account.")
     else:
         toofar = len(update) - 140
         jenni.reply("Please shorten the length of your message by: " + str(toofar) + " characters.")
@@ -98,7 +108,7 @@ def f_reply(jenni, input):
         if len(update) <= 140:
             statusid = int(statusid)
             #api3.PostUpdate(str(" ".join(update)), in_reply_to_status_id=10503164300)
-            jenni.reply("Successfully posted to twitter.com/jenni_osu")
+            jenni.reply("Successfully posted to my twitter account.")
         else:
             toofar = len(update) - 140
             jenni.reply("Please shorten the length of your message by: " + str(toofar) + " characters.")
@@ -118,11 +128,15 @@ def saylast(jenni, input):
    global lasts
    global watch
    global sch
+   
+   auth = tweepy.OAuthHandler(jenni.config.consumer_key, jenni.config.consumer_secret)
+   auth.set_access_token(jenni.config.access_token, jenni.config.access_token_secret)
+   api = tweepy.API(auth)
 
    while watch:
       for twituser in twitter_watch:
          try:
-            statuses = api.GetUserTimeline(twituser)
+            statuses = api.user_timeline(twituser)
             recent = unicode([s.text for s in statuses][0])
             if twituser not in lasts or lasts[twituser] != recent:
                jenni.say("TWEETWATCH: @" + twituser + ": " + recent)
