@@ -16,12 +16,9 @@ access_token_secret in your config file (~/.jenni/default.py).
 #account.
 """
 import simplejson
-import twitter
 import tweepy
 import sched, time
 import re
-
-api = twitter.Api()
 
 twitter_watch = ['hankgreen', 'realjohngreen', 'NerdfighterIRC']
 watch_wait = 75
