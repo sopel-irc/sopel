@@ -184,8 +184,6 @@ class Jenni(irc.Bot):
                 #Custom config vars
                 s.config = self.config
                 s.devchan = self.config.devchan
-                s.twitter_username = self.config.twitter_username
-                s.twitter_password = self.config.twitter_password
                 s.otherbots = self.config.other_bots
                 
                 return s
