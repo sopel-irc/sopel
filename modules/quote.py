@@ -9,25 +9,22 @@ More info:
  * Phenny: http://inamidst.com/phenny/
 """
 
-import re, urllib
+import random
+import re
 import web
 
-quoteuri = 'http://www.quotationspage.com/random.php3'
-r_paragraph = re.compile(r'(?ims)<dt class="quote">.*?</dt>')
-r_author = re.compile(r'(?ims)<dd class="author">.*?</dt>')
-r_authorb = re.compile(r'(?ims)<b>.*</b>')
+quoteuri = 'http://www.randomquotes.org/'
+r_qa = re.compile(r'(?i)<p><a href="\S+">(.*)</a><br />.*\n.*">(.*)</a></p>')
+
 
 def getquote(jenni, input):
-    global quoteuri
-    global cleanup
-    bytes = web.get(quoteuri)
-    paragraphs = r_paragraph.findall(bytes)
-    author_para = r_author.findall(bytes)
-    author_para_b = r_authorb.findall(author_para[0])
-    quote = re.sub(r'<[^>]*?>', '', str(paragraphs[0]))
-    author_para_b =  re.sub(r'<[^>]*?>', '', author_para_b[0])
-    quote += "-- " + author_para_b
-    jenni.say(quote)
+    page = web.get(quoteuri)
+    quotes = r_qa.findall(page)
+    random.seed()
+    item = random.randint(0, len(quotes))
+    quote = quotes[item]
+    response = '"%s" -- %s' % (quote[0], quote[1])
+    jenni.reply(response)
 getquote.commands = ['q']
 getquote.priority = 'medium'
 getquote.example = '.q'

@@ -4,7 +4,9 @@ clock.py - Jenni Clock Module
 Copyright 2008-9, Sean B. Palmer, inamidst.com
 Licensed under the Eiffel Forum License 2.
 
-http://inamidst.com/phenny/
+More info:
+ * Jenni: https://github.com/myano/jenni/
+ * Phenny: http://inamidst.com/phenny/
 """
 
 import re, math, time, urllib, locale, socket, struct, datetime
@@ -183,8 +185,8 @@ TZ2 = {
 }
 
 TZ3 = {
-    'AEST': 10,
-    'AEDT': 11
+   'AEST': 10,
+   'AEDT': 11
 }
 
 # TimeZones.update(TZ2) # do these have to be negated?
@@ -214,50 +216,35 @@ def f_time(self, origin, match, args):
     if (TZ == 'UTC') or (TZ == 'Z'):
         msg = time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())
         self.msg(origin.sender, msg)
-        return
-
-    if r_local.match(tz): # thanks to Mark Shoulsdon (clsn)
+    elif r_local.match(tz): # thanks to Mark Shoulsdon (clsn)
         locale.setlocale(locale.LC_TIME, (tz[1:-1], 'UTF-8'))
         msg = time.strftime("%A, %d %B %Y %H:%M:%SZ", time.gmtime())
         self.msg(origin.sender, msg)
-        return
-
-    if TimeZones.has_key(TZ):
+    elif TimeZones.has_key(TZ):
         offset = TimeZones[TZ] * 3600
         timenow = time.gmtime(time.time() + offset)
         msg = time.strftime("%a, %d %b %Y %H:%M:%S " + str(TZ), timenow)
         self.msg(origin.sender, msg)
-        return
-
-    if tz and 4 <= len(tz) <= 6:
-        t_isValid = False
-        
-        if tz[0] in ('+', '-') and tz[1:].isdigit():
-            t_isValid = True
-        elif tz.isdigit():
-            t_isValid = True
-
-        if t_isValid:
-            timenow = time.gmtime(time.time() + (int(tz) * 3600))
-            msg = time.strftime("%a, %d %b %Y %H:%M:%S " + str(tz), timenow)
-            self.msg(origin.sender, msg)
-            return
-
-    try: t = float(tz)
-    except ValueError:
-        import os, re, subprocess
-        r_tz = re.compile(r'^[A-Za-z]+(?:/[A-Za-z_]+)*$')
-        if r_tz.match(tz) and os.path.isfile('/usr/share/zoneinfo/' + tz):
-            cmd, PIPE = 'TZ=%s date' % tz, subprocess.PIPE
-            proc = subprocess.Popen(cmd, shell=True, stdout=PIPE)
-            self.msg(origin.sender, proc.communicate()[0])
-        else:
-            error = "Sorry, I don't know about the '%s' timezone." % tz
-            self.msg(origin.sender, origin.nick + ': ' + error)
-    else:
-        timenow = time.gmtime(time.time() + (t * 3600))
+    elif tz and tz[0] in ('+', '-') and 4 <= len(tz) <= 6:
+        timenow = time.gmtime(time.time() + (int(tz[:3]) * 3600))
         msg = time.strftime("%a, %d %b %Y %H:%M:%S " + str(tz), timenow)
         self.msg(origin.sender, msg)
+    else:
+        try: t = float(tz)
+        except ValueError:
+            import os, re, subprocess
+            r_tz = re.compile(r'^[A-Za-z]+(?:/[A-Za-z_]+)*$')
+            if r_tz.match(tz) and os.path.isfile('/usr/share/zoneinfo/' + tz):
+                cmd, PIPE = 'TZ=%s date' % tz, subprocess.PIPE
+                proc = subprocess.Popen(cmd, shell=True, stdout=PIPE)
+                self.msg(origin.sender, proc.communicate()[0])
+            else:
+                error = "Sorry, I don't know about the '%s' timezone." % tz
+                self.msg(origin.sender, origin.nick + ': ' + error)
+        else:
+            timenow = time.gmtime(time.time() + (t * 3600))
+            msg = time.strftime("%a, %d %b %Y %H:%M:%S " + str(tz), timenow)
+            self.msg(origin.sender, msg)
 f_time.commands = ['t']
 f_time.name = 't'
 f_time.example = '.t UTC'
@@ -295,6 +282,7 @@ tock.priority = 'high'
 
 def npl(jenni, input):
     """Shows the time from NPL's SNTP server."""
+    # for server in ('ntp1.npl.co.uk', 'ntp2.npl.co.uk'):
     client = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     client.sendto('\x1b' + 47 * '\0', ('ntp1.npl.co.uk', 123))
     data, address = client.recvfrom(1024)

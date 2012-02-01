@@ -62,10 +62,12 @@ def southpark (jenni, input):
         if text[1] == 'cleartimes':
             cache['TIMES'] = None
             cachets['TIMES'] = None
+            jenni.reply("Southpark times successfully cleared.")
             return
         elif text[1] == 'clearnewep':
             cache['NEW-EPI'] = None
             cachets['NEW-EPI'] = None
+            jenni.reply("New episodes cleared from cache.")
         elif text[1] == 'times':
             southparktimes(jenni,input)
             return
