@@ -12,6 +12,7 @@ For this module to work, you need to create 2 variables in your config file ( ~/
 import simplejson
 import twitter
 import sched, time
+import re
 
 api = twitter.Api()
 
@@ -20,6 +21,10 @@ watch_wait = 75
 watch = False
 lasts = dict()
 sch = sched.scheduler(time.time, time.sleep)
+
+def format_thousands(integer):
+    """Returns string of integer, with thousands separated by ','"""
+    return re.sub(r'(\d{3})(?=\d)', r'\1,' str(integer)[::-1])[::-1]
 
 def gettweet(jenni, input):
 	try:
@@ -41,14 +46,14 @@ def f_info(jenni, input):
 		twituser = input.group(2)
 		twituser = str(twituser)
 		info = api.GetUser(twituser)
-		friendcount = info.friends_count
+		friendcount = format_thousands(info.friends_count)
 		name = info.name
 		id = info.id
 		favourites = info.favourites_count
-		followers = info.followers_count
+		followers = format_thousands(info.followers_count)
 		location = info.location
 		description = info.description
-		jenni.reply("<" + str(twituser) + "> " + str(name) + ". " + "ID: " + str(id) + ". Friend Count: " + str(friendcount) + ". Followers: " + str(followers) + ". Favourites: " + str(favourites) + ". Location: " + str(location) + ". Description: " + str(description))
+		jenni.reply("<" + str(twituser) + "> " + str(name) + ". " + "ID: " + str(id) + ". Friend Count: " + friendcount + ". Followers: " + followers + ". Favourites: " + str(favourites) + ". Location: " + str(location) + ". Description: " + str(description))
 	except:
 		jenni.reply("You have inputted an invalid user.")
 f_info.commands = ['twitinfo']
