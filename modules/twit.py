@@ -67,7 +67,7 @@ def f_info(jenni, input):
         followers = format_thousands(info.followers_count)
         location = info.location
         description = info.description
-        jenni.reply("<" + str(twituser) + "> " + str(name) + ". " + "ID: " + str(id) + ". Friend Count: " + friendcount + ". Followers: " + followers + ". Favourites: " + str(favourites) + ". Location: " + str(location) + ". Description: " + str(description))
+        jenni.reply("@" + str(twituser) + ": " + str(name) + ". " + "ID: " + str(id) + ". Friend Count: " + friendcount + ". Followers: " + followers + ". Favourites: " + str(favourites) + ". Location: " + str(location) + ". Description: " + str(description))
     except:
         jenni.reply("You have inputted an invalid user.")
 f_info.commands = ['twitinfo']
