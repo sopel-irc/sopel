@@ -20,7 +20,7 @@ def ask(jenni, input):
     choices = input.group(2)
     random.seed()
     nick = (input.nick).lower()
-    if input.nick in access:
+    if nick in access:
         if (time.time() - access[nick]) < 15:
             return
     access[nick] = time.time()

@@ -41,8 +41,10 @@ def load_db():
             if len(result) > 0:
                 result = result[:-1]
         if result:
-            result = (result).decode('utf-8')
-            search_dict[new[0]][new[1]].append(result)
+            result = (result).decode("utf-8")
+            channel = (new[0]).decode("utf-8")
+            nick = (new[1]).decode("utf-8")
+            search_dict[channel][nick].append(result)
     return search_dict
 
 def save_db(search_dict):
@@ -52,41 +54,53 @@ def save_db(search_dict):
         if channel is not "":
             for nick in search_dict[channel]:
                 for line in search_dict[channel][nick]:
-                    new = "%s,%s,%s\n" % (channel, nick, (line).encode('utf-8'))
-                    search_file.write(new)
+                    channel_utf = (channel).encode("utf-8")
+                    search_file.write(channel)
+                    search_file.write(",")
+                    nick = (nick).encode("utf-8")
+                    search_file.write(nick)
+                    search_file.write(",")
+                    line_utf = (line).encode("utf-8")
+                    search_file.write(line_utf)
+                    search_file.write("\n")
     search_file.close()
 
 # Create a temporary log of the most recent thing anyone says.
 def collectlines(jenni, input):
     # don't log things in PM
-    if not input.sender.startswith('#'): return
+    channel = (input.sender).encode("utf-8")
+    nick = (input.nick).encode("utf-8")
+    if not channel.startswith('#'): return
     search_dict = load_db()
-    if input.sender not in search_dict:
-        search_dict[input.sender] = dict()
-    if input.nick not in search_dict[input.sender]:
-        search_dict[input.sender][input.nick] = list()
-    templist = search_dict[input.sender][input.nick]
+    if channel not in search_dict:
+        search_dict[channel] = dict()
+    if nick not in search_dict[channel]:
+        search_dict[channel][nick] = list()
+    templist = search_dict[channel][nick]
     line = input.group()
     if line.startswith("s/"):
         return
     else:
         templist.append(line)
     del templist[:-10]
-    search_dict[input.sender][input.nick] = templist
+    search_dict[channel][nick] = templist
     save_db(search_dict)
 collectlines.rule = r'.*'
 collectlines.priority = 'low'
 
 def findandreplace(jenni, input):
     # don't bother in PM
-    if not input.sender.startswith('#'): return
+    channel = (input.sender).encode("utf-8")
+    nick = (input.nick).encode("utf-8")
+
+    if not channel.startswith('#'): return
 
     search_dict = load_db()
 
-    rnick = input.group(1) or input.nick # Correcting other person vs self.
+    rnick = input.group(1) or nick # Correcting other person vs self.
 
     # only do something if there is conversation to work with
-    if input.sender not in search_dict or rnick not in search_dict[input.sender]: return
+    if channel not in search_dict or rnick not in search_dict[channel]: return
 
     sep = input.group(2)
     rest = input.group(3).split(sep)
@@ -107,7 +121,7 @@ def findandreplace(jenni, input):
     else:
         repl = lambda s: s.replace(rest[0],rest[1],count)
 
-    for line in reversed(search_dict[input.sender][rnick]):
+    for line in reversed(search_dict[channel][rnick]):
         if line.startswith("\x01ACTION"):
             me = True # /me command
             line = line[8:]
@@ -120,16 +134,16 @@ def findandreplace(jenni, input):
     if not new_phrase or new_phrase == line: return # Didn't find anything
 
     # Save the new "edited" message.
-    templist = search_dict[input.sender][rnick]
+    templist = search_dict[channel][rnick]
     templist.append((me and '\x01ACTION ' or '') + new_phrase)
-    search_dict[input.sender][rnick] = templist
+    search_dict[channel][rnick] = templist
     save_db(search_dict)
     #search_file = open("find.txt","w")
     #pickle.dump(search_dict, search_file)
     #search_file.close()
 
     # output
-    phrase = input.nick + (input.group(1) and ' thinks ' + rnick or '') + (me and ' ' or " \x02meant\x02 to say: ") + new_phrase
+    phrase = nick + (input.group(1) and ' thinks ' + rnick or '') + (me and ' ' or " \x02meant\x02 to say: ") + new_phrase
     if me and not input.group(1): phrase = '\x02' + phrase + '\x02'
     jenni.say(phrase)
 
