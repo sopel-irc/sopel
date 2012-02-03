@@ -161,7 +161,7 @@ class Scores:
         jenni.say(self.str_score(nick, channel))
 
     def rmuser(self, jenni, input, line):
-        if not input.admin:
+        if not input.admin or line:
             return
         line = line[8:].split()
         channel = input.sender
@@ -196,7 +196,7 @@ scores = Scores()
 def addpoint_command(jenni, input):
     """.addpoint <nick> - Adds 1 point to the score system for <nick>."""
     nick = input.group(2)
-    if nick != None:
+    if nick:
         nick = nick.strip().split()[0]
     scores.editpoints(jenni, input, nick, True)
 addpoint_command.commands = ['addpoint']
@@ -205,7 +205,7 @@ addpoint_command.priority = 'high'
 def rmpoint_command(jenni, input):
     """.rmpoint <nick> - Adds 1 point to the score system for <nick>."""
     nick = input.group(2)
-    if nick != None:
+    if nick:
         nick = nick.strip().split()[0]
     scores.editpoints(jenni, input, nick, False)
 rmpoint_command.commands = ['rmpoint']
@@ -220,7 +220,7 @@ view_scores.priority = 'medium'
 def setpoint(jenni, input):
     """.setpoint <channel> <nick> <number> <number> - Sets points for given user."""
     line = input.group()
-    if line != None:
+    if line:
         line = line.lstrip().rstrip()
     scores.setpoint(jenni, input, line)
 setpoint.commands = ['setpoint']
@@ -229,7 +229,7 @@ setpoint.priority = 'medium'
 def removeuser(jenni, input):
     """.rmuser <nick> -- Removes a given user from the system."""
     line = input.group()
-    if line != None:
+    if line:
         line = line.lstrip().rstrip()
     scores.rmuser(jenni, input, line)
 removeuser.commands = ['rmuser']
