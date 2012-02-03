@@ -75,19 +75,20 @@ f_info.priority = 'medium'
 f_info.example = '.twitinfo aplsuk'
 
 def f_update(jenni, input):
-    auth = tweepy.OAuthHandler(jenni.config.consumer_key, jenni.config.consumer_secret)
-    auth.set_access_token(jenni.config.access_token, jenni.config.access_token_secret)
-    api = tweepy.API(auth)
-    
-    print api.me().name
-    
-    update = str(input.group(2)) + " ^" + input.nick
-    if len(update) <= 140:
-        api.update_status(update)
-        jenni.reply("Successfully posted to my twitter account.")
-    else:
-        toofar = len(update) - 140
-        jenni.reply("Please shorten the length of your message by: " + str(toofar) + " characters.")
+    if input.admin:
+        auth = tweepy.OAuthHandler(jenni.config.consumer_key, jenni.config.consumer_secret)
+        auth.set_access_token(jenni.config.access_token, jenni.config.access_token_secret)
+        api = tweepy.API(auth)
+        
+        print api.me().name
+        
+        update = str(input.group(2)) + " ^" + input.nick
+        if len(update) <= 140:
+            api.update_status(update)
+            jenni.reply("Successfully posted to my twitter account.")
+        else:
+            toofar = len(update) - 140
+            jenni.reply("Please shorten the length of your message by: " + str(toofar) + " characters.")
 f_update.commands = ['tweet']
 f_update.priority = 'medium'
 f_update.example = '.twitup Hello World!'
