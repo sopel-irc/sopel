@@ -30,6 +30,8 @@ class Scores:
                 self.scores_dict[channel][nick][0], self.scores_dict[channel][nick][1], self.scores_dict[channel][nick][0] - self.scores_dict[channel][nick][1])
 
     def editpoints(self, jenni, input, nick, points):
+        if not nick:
+            return
         nick = (nick).lower()
         if not nick:
             jenni.reply(self.STRINGS["cantadd"])
