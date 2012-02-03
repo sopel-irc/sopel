@@ -91,7 +91,7 @@ def mode(jenni, input):
     if input.sender.startswith('#'): return
     if input.admin:
         mode = input.group(1)
-        phenny.write(('MODE ', jenni.nick + ' ' + mode))
+        jenni.write(('MODE ', jenni.nick + ' ' + mode))
 mode.rule = r'\.mode ([\+-]\S+)'
 mode.priority = 'low'
 
