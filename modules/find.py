@@ -15,6 +15,13 @@ using the sed notation (s///) commonly found in vi/vim.
 
 import os, re
 
+
+def give_me_unicode(obj, encoding="utf-8"):
+    if isinstance(obj, basestring):
+        if not isinstance(obj, unicode):
+            obj = unicode(obj, encoding)
+    return obj
+
 def load_db():
     """ load lines from find.txt to search_dict """
     if not os.path.isfile("find.txt"):
@@ -26,13 +33,17 @@ def load_db():
     search_file.close()
     search_dict = dict()
     for line in lines:
+        line = give_me_unicode(line)
         a = line.replace(r'\n', '')
         new = a.split(r',')
+        if len(new) < 3: continue
+        channel = new[0]
+        nick = new[1]
         if len(new) < 2: continue
-        if new[0] not in search_dict:
-            search_dict[new[0]] = dict()
-        if new[1] not in search_dict[new[0]]:
-            search_dict[new[0]][new[1]] = list()
+        if channel not in search_dict:
+            search_dict[channel] = dict()
+        if nick not in search_dict[channel]:
+            search_dict[channel][nick] = list()
         if len(new) > 3:
             result = ",".join(new[2:])
             result = result.replace('\n','')
@@ -41,9 +52,6 @@ def load_db():
             if len(result) > 0:
                 result = result[:-1]
         if result:
-            result = (result).decode("utf-8")
-            channel = (new[0]).decode("utf-8")
-            nick = (new[1]).decode("utf-8")
             search_dict[channel][nick].append(result)
     return search_dict
 
