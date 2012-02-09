@@ -140,27 +140,23 @@ def saylast(jenni, input):
                jenni.say("TWEETWATCH: @" + twituser + ": " + recent)
                lasts[twituser] = recent
          except Exception as inst:
-            #RuntimeError: maximum recursion depth exceeded while calling a Python object
-
-            #commenting the exception from the live channel, to be moved to the devchan.
-            #jenni.reply("An exception was raised for user: " + twituser)
-            #jenni.reply("Is this user valid?")
-
-            jenni.msg(input.devchan,"[DEVMSG]Exception in saylast(), twit.py (line 100).")
-            jenni.msg(input.devchan,"[Exception]"+str(type(inst))+": "+str(inst.args)+", "+str(inst)+".") #this is also put in the logfile.
-            jenni.msg(input.devchan,"[Vardump]twituser: "+str(twituser)+"recent: "+str(recent)+", Lasts:")
-            for last in lasts:
-                jenni.msg(input.devchan,"    "+str(last))
-            print type(inst)
-            print inst.args
-            print inst
+            if str(inst) = "status code = 503":
+                jenni.msg(input.devchan,"[DEVMSG] Twitter returned HTTP code 503: Service Unavailable."
+            else:
+                jenni.msg(input.devchan,"[DEVMSG]Exception in saylast(), twit.py (line 100).")
+                jenni.msg(input.devchan,"[Exception]"+str(type(inst))+": "+str(inst.args)+", "+str(inst)+".") #this is also put in the logfile.
+                jenni.msg(input.devchan,"[Vardump]twituser: "+str(twituser)+"recent: "+str(recent)+", Lasts:")
+                for last in lasts:
+                    jenni.msg(input.devchan,"    "+str(last))
+                print type(inst)
+                print inst.args
+                print inst
       time.sleep(watch_wait)
       #sch.enter(watch_wait, 1, saylast, (jenni, input))
       #sch.run()
 
 def tweetwatcher(jenni, input):
    global watch
-   global sch #are we using this variable? I'm pretty sure we're not.
    if input.admin:
       if input.group(2) == 'off':
          watch = False
