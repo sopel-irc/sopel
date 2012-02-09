@@ -86,12 +86,12 @@ defend_ground.event = 'KICK'
 defend_ground.rule = '.*'
 defend_ground.priority = 'low'
 
-def mode(phenny, input):
+def mode(jenni, input):
     # Can only be done in privmsg by an admin
     if input.sender.startswith('#'): return
     if input.admin:
         mode = input.group(1)
-        phenny.write(('MODE ', jenni.nick + ' ' + mode))
+        jenni.write(('MODE ', jenni.nick + ' ' + mode))
 mode.rule = r'\.mode ([\+-]\S+)'
 mode.priority = 'low'
 
