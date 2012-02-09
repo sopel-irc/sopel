@@ -11,7 +11,7 @@ More info:
 
 import sys, re, time, traceback
 import socket, asyncore, asynchat
-import os
+import os, codecs
 
 class Origin(object):
     source = re.compile(r'([^!]*)!?([^@]*)@?(.*)')
@@ -41,12 +41,12 @@ def check_logdir():
 
 def log_raw(line):
     check_logdir()
-    f = open("logs/raw.log", 'a')
-    text = (line).decode('utf-8')
-    temp = (text).encode('utf-8')
-    f.write(str(time.time()) + " ")
+    f = codecs.open("logs/raw.log", 'a', encoding='utf-8')
+    f.write(str(time.time()) + "\t")
+    temp = (line).decode('utf-8')
+    temp = temp.replace('\n', '')
     f.write(temp)
-    f.write('\n')
+    f.write("\n")
     f.close()
 
 class Bot(asynchat.async_chat):
@@ -76,12 +76,10 @@ class Bot(asynchat.async_chat):
             if text is not None:
                 # 510 because CR and LF count too, as nyuszika7h points out
                 temp = (' '.join(args) + ' :' + text)[:510] + '\r\n'
-                log_raw(temp)
-                self.push(temp)
             else:
                 temp = ' '.join(args)[:510] + '\r\n'
-                log_raw(temp)
-                self.push(temp)
+            log_raw(temp)
+            self.push(temp)
         except IndexError:
             print "INDEXERROR", text
             #pass
