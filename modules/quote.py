@@ -21,7 +21,7 @@ def getquote(jenni, input):
     page = web.get(quoteuri)
     quotes = r_qa.findall(page)
     random.seed()
-    item = random.randint(0, len(quotes))
+    item = random.randint(0, len(quotes)-1)
     quote = quotes[item]
     response = '"%s" -- %s' % (quote[0], quote[1])
     jenni.reply(response)
