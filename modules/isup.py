@@ -17,5 +17,8 @@ def isup(jenni, input):
     response = web.get(uri)
     result = re.search('(?:<title>)(http://\S* Is )(Down|Up)',\
                        response)
-    jenni.say(site + ' is ' + result.group(2))
+    if result:
+        jenni.say(site + ' is ' + result.group(2))
+    else:
+        jenni.say('Couldn\'t read the result from isup.me -- sorry!')
 isup.commands = ['isup']
