@@ -27,7 +27,7 @@ def sendwhois(phenny, input):
                 channels.remove(chan)
     chans = ' '.join(channels)
 
-    msg2 = str(nick) + ' is on the channels: ' + str(chans)
+    msg2 = str(nick) + ' is on '+len(channels)+' channels: ' + str(chans)
     phenny.say(msg1)
     phenny.say(msg2)
     #phenny.say(nick + ' has been idle ' + idle + ', signed on ' + signon)
