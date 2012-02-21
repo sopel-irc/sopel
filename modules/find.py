@@ -88,6 +88,9 @@ def collectlines(jenni, input):
     line = input.group()
     if line.startswith("s/"):
         return
+    elif line.startswith("\x01ACTION"):
+        line = line[:-1]
+        templist.append(line)
     else:
         templist.append(line)
     del templist[:-10]
@@ -146,9 +149,6 @@ def findandreplace(jenni, input):
     templist.append((me and '\x01ACTION ' or '') + new_phrase)
     search_dict[channel][rnick] = templist
     save_db(search_dict)
-    #search_file = open("find.txt","w")
-    #pickle.dump(search_dict, search_file)
-    #search_file.close()
 
     # output
     phrase = nick + (input.group(1) and ' thinks ' + rnick or '') + (me and ' ' or " \x02meant\x02 to say: ") + new_phrase
