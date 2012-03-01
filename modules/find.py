@@ -130,7 +130,8 @@ def findandreplace(jenni, input):
         regex = re.compile(re.escape(rest[0]),re.U|re.I)
         repl = lambda s: re.sub(regex,rest[1],s,count == 1)
     else:
-        repl = lambda s: s.replace(rest[0],rest[1],count)
+        #repl = lambda s: s.replace(rest[0],rest[1],count)
+        repl = lambda s: re.sub(rest[0], rest[1], line)
 
     for line in reversed(search_dict[channel][rnick]):
         if line.startswith("\x01ACTION"):
