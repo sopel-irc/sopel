@@ -4,11 +4,14 @@ irc.py - A Utility IRC Bot
 Copyright 2008, Sean B. Palmer, inamidst.com
 Licensed under the Eiffel Forum License 2.
 
-http://inamidst.com/phenny/
+More info:
+ * Jenni: https://github.com/myano/jenni/
+ * Phenny: http://inamidst.com/phenny/
 """
 
 import sys, re, time, traceback
 import socket, asyncore, asynchat
+import os, codecs
 
 class Origin(object):
     source = re.compile(r'([^!]*)!?([^@]*)@?(.*)')
@@ -23,6 +26,28 @@ class Origin(object):
 
         mappings = {bot.nick: self.nick, None: None}
         self.sender = mappings.get(target, target)
+
+def create_logdir():
+    try: os.mkdir("logs")
+    except Exception, e:
+        print >> sys.stderr, 'There was a problem creating the logs directory.'
+        print >> sys.stderr, e.__class__, str(e)
+        print >> sys.stderr, 'Please fix this and then run jenni again.'
+        sys.exit(1)
+
+def check_logdir():
+    if not os.path.isdir("logs"):
+        create_logdir()
+
+def log_raw(line):
+    check_logdir()
+    f = codecs.open("logs/raw.log", 'a', encoding='utf-8')
+    f.write(str(time.time()) + "\t")
+    temp = (line).decode('utf-8')
+    temp = temp.replace('\n', '')
+    f.write(temp)
+    f.write("\n")
+    f.close()
 
 class Bot(asynchat.async_chat):
     def __init__(self, nick, name, channels, password=None):
@@ -56,10 +81,14 @@ class Bot(asynchat.async_chat):
         try:
             if text is not None:
                 # 510 because CR and LF count too, as nyuszika7h points out
-                self.push((' '.join(args) + ' :' + text)[:510] + '\r\n')
-            else: self.push(' '.join(args)[:510] + '\r\n')
+                temp = (' '.join(args) + ' :' + text)[:510] + '\r\n'
+            else:
+                temp = ' '.join(args)[:510] + '\r\n'
+            log_raw(temp)
+            self.push(temp)
         except IndexError:
-            pass
+            print "INDEXERROR", text
+            #pass
 
     def write(self, args, text=None):
         # This is a safe version of __write
@@ -100,6 +129,7 @@ class Bot(asynchat.async_chat):
         print >> sys.stderr, 'Closed!'
 
     def collect_incoming_data(self, data):
+        log_raw(data)
         self.buffer += data
 
     def found_terminator(self):
