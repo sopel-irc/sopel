@@ -144,6 +144,9 @@ def find_title(url):
 
     title = remove_spaces (title)
 
+    re_dcc = re.compile(r'(?i)dcc\ssend')
+    title = re.sub(re_dcc, '', title)
+
     if title:
         return title
 
