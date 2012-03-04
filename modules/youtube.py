@@ -164,7 +164,11 @@ def ytinfo(jenni, input):
                 length = length + ' '
         if seconds: length = length + str(seconds) + 'secs'
 
-    views = str('{:20,d}'.format(int(re.search('(VIEWS: )(.*)', bytes).group(2)))).lstrip(' ')
+    try:
+	tempInt = int(re.search('(VIEWS: )(.*)', bytes)
+    except ValueError:
+	tempInt = 0
+    views = str('{:20,d}'.format(tempInt.group(2)))).lstrip(' ')
     com = re.search('(COMMENTS: )(\d+)', bytes)
     if com: comments = str('{:20,d}'.format(int(com.group(2)))).lstrip(' ')
     else: comments = 'disabled'
