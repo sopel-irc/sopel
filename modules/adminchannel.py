@@ -337,9 +337,9 @@ def topic(jenni, input):
     elif channel == "#YourPants-nl": #Dutch
         topic = purple +'Welkom in: '+ green +'#YourPants-nl'+ purple \
             +' | FB: '+ green +'http://dft.ba/-DutchFB'+ purple \
-            +' | Newsletter: '+ green +'http://dft.ba/-lowNews'+ purple \
-            +' | Link others! '+ green +'http://dft.ba/-nfirc-nl'+ purple \
-            +' | ' + bold + 'Upcoming gatherings: ' + bold + green + text
+	    +' | Nieuwsbrief: '+ green +'http://dft.ba/-lowNews'+ purple \
+	    +' | Link hier: '+ green +'http://dft.ba/-irc-nl'+ purple \
+            +' | ' + bold + 'Gatherings: ' + bold + green + text
     elif channel == "#YourPants-de": #German
         topic = purple +'Willkommen bei: '+ green + channel + purple \
             +' | '+ bold +'Thema: '+ bold + green + text
