@@ -156,15 +156,16 @@ def saylast(jenni, input):
       #sch.run()
 
 def tweetwatcher(jenni, input):
-   global watch
-   if input.admin:
-      if input.group(2) == 'off':
-         watch = False
-         jenni.say("Tweetwatcher is now off.")
-      elif input.group(2) == 'on':
-         watch = True
-         saylast(jenni, input)
-         jenni.say("I will now watch for new tweets.")
+    jenni.say("Tweetwatcher has been disabled until it is fixed, for more information check: https://github.com/embolalia/jenni/issues/37")
+#   global watch
+#   if input.admin:
+#      if input.group(2) == 'off':
+#         watch = False
+#         jenni.say("Tweetwatcher is now off.")
+#      elif input.group(2) == 'on':
+#         watch = True
+#         saylast(jenni, input)
+#         jenni.say("I will now watch for new tweets.")
 tweetwatcher.commands = ['tweetwatcher']
 
 if __name__ == '__main__':
