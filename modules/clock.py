@@ -245,7 +245,7 @@ def f_time(self, origin, match, args):
             timenow = time.gmtime(time.time() + (t * 3600))
             msg = time.strftime("%a, %d %b %Y %H:%M:%S " + str(tz), timenow)
             self.msg(origin.sender, msg)
-f_time.commands = ['t']
+f_time.commands = ['t', 'time']
 f_time.name = 't'
 f_time.example = '.t UTC'
 
