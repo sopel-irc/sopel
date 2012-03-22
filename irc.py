@@ -43,8 +43,11 @@ def log_raw(line):
     check_logdir()
     f = codecs.open("logs/raw.log", 'a', encoding='utf-8')
     f.write(str(time.time()) + "\t")
-    temp = (line).decode('utf-8')
-    temp = temp.replace('\n', '')
+    temp = line.replace('\n', '')
+    try:
+        temp = temp.decode('utf-8')
+    except UnicodeDecodeError:
+        temp = unicode(temp, 'iso-8859-1')
     f.write(temp)
     f.write("\n")
     f.close()

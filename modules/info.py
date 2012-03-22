@@ -28,7 +28,7 @@ def commands(jenni, input):
     jenni.msg(input.nick, 'Commands I recognise: ' + names + '.')
     jenni.msg(input.nick, ("For help, do '%s: help example?' where example is the " +
                     "name of the command you want help for.") % jenni.nick)
-commands.commands = ['commands']
+commands.commands = ['commands', 'help']
 commands.priority = 'low'
 
 def help(jenni, input):
