@@ -330,9 +330,6 @@ def topic(jenni, input):
     if channel == '#YourPants': #English
         topic = purple +'Welcome to: '+ green +'#YourPants'+ purple \
             +' | Site: '+ green +'http://nerdfighteria.net'+ purple \
-            +' | FB: '+ green +'http://fb.me/NerdfighterIRC'+ purple \
-            +' | Twitter: '+ green +'@NerdfighterIRC'+ purple \
-            +' | G+: '+ green +'http://dft.ba/-nfircgplus' + purple \
             +' | ' + bold + 'Topic: ' + bold + green + text
     elif channel == "#YourPants-nl": #Dutch
         topic = purple +'Welkom in: '+ green +'#YourPants-nl'+ purple \
