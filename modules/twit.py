@@ -143,11 +143,8 @@ def saylast(jenni, input):
             if str(inst) == "status code = 503":
                 jenni.msg(input.devchan,"[DEVMSG] Twitter returned HTTP code 503: Service Unavailable.")
             else:
-                jenni.msg(input.devchan,"[DEVMSG]Exception in saylast(), twit.py (line 100).")
-                jenni.msg(input.devchan,"[Exception]"+str(type(inst))+": "+str(inst.args)+", "+str(inst)+".") #this is also put in the logfile.
-                jenni.msg(input.devchan,"[Vardump]twituser: "+str(twituser)+"recent: "+str(recent)+", Lasts:")
-                for last in lasts:
-                    jenni.msg(input.devchan,"    "+str(last))
+                jenni.msg(input.devchan,"[DEVMSG]Exception in saylast(), twit.py (line 146).")
+                jenni.msg(input.devchan,"[DEVMSG]"+str(type(inst))+": "+str(inst.args)+", "+str(inst)+".") #this is also put in the logfile.
                 print type(inst)
                 print inst.args
                 print inst
