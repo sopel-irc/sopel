@@ -29,7 +29,11 @@ def ytsearch(jenni, input):
     while True:
         req = urllib2.Request(uri, headers={'Accept':'text/html'})
         req.add_header('User-Agent', 'OpenAnything/1.0 +http://diveintopython.org/')
-        u = urllib2.urlopen(req)
+	try:
+	    u = urllib2.urlopen(req)
+	except HTTPError as e:
+	    jenni.say('It seems like rscript.org is down.')
+	    return
         info = u.info()
         u.close()
         # info = web.head(uri)
