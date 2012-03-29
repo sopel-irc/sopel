@@ -29,7 +29,7 @@ def ytsearch(jenni, input):
     while True:
         req = urllib2.Request(uri, headers={'Accept':'text/html'})
         req.add_header('User-Agent', 'OpenAnything/1.0 +http://diveintopython.org/')
-	try: u = urllib2.urlopen(req)
+	try: u = urllib2.urlopen(req, None, 0.5)
 	except:
 	    jenni.say('Something went wrong when accessing the rscript.org parser.')
 	    return
@@ -109,7 +109,7 @@ def ytinfo(jenni, input):
     while True:
         req = urllib2.Request(uri, headers={'Accept':'text/html'})
         req.add_header('User-Agent', 'OpenAnything/1.0 +http://diveintopython.org/')
-	try: u = urllib2.urlopen(req)
+	try: u = urllib2.urlopen(req, None, 0.5)
 	except:
 	    jenni.say('Something went wrong when accessing the rscript.org parser.')
 	    return
@@ -132,7 +132,7 @@ def ytinfo(jenni, input):
         return
     if not (('/html' in mtype) or ('/xhtml' in mtype)):
         return
-    try: u = urllib2.urlopen(req)
+    try: u = urllib2.urlopen(req, None, 0.5)
     except:
 	jenni.say('Something went wrong when accessing the rscript.org parser.')
 	return
