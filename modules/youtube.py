@@ -132,7 +132,10 @@ def ytinfo(jenni, input):
         return
     if not (('/html' in mtype) or ('/xhtml' in mtype)):
         return
-    u = urllib2.urlopen(req)
+    try: u = urllib2.urlopen(req)
+    except:
+	jenni.say('Something went wrong when accessing the rscript.org parser.')
+	return
     bytes = u.read(262144)
     u.close()
 
