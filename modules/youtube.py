@@ -104,14 +104,14 @@ def ytinfo(jenni, input):
     #like to use the YouTube API directly.
 
     #Grab info from rscript
-    uri = 'http://rscript.org/lookup.php?type=youtubeinfo&id=' + input.group(2)
+    uri = 'http://gdata.youtube.com/feeds/api/videos/' + input.group(2)
     redirects = 0
     while True:
         req = urllib2.Request(uri, headers={'Accept':'text/html'})
         req.add_header('User-Agent', 'OpenAnything/1.0 +http://diveintopython.org/')
 	try: u = urllib2.urlopen(req, None, 0.5)
 	except:
-	    jenni.say('Something went wrong when accessing the rscript.org parser.')
+	    jenni.say('Something went wrong when accessing the YouTube API.')
 	    return
         info = u.info()
         u.close()
@@ -134,28 +134,32 @@ def ytinfo(jenni, input):
         return
     try: u = urllib2.urlopen(req, None, 0.5)
     except:
-	jenni.say('Something went wrong when accessing the rscript.org parser.')
+	jenni.say('Something went wrong when accessing the YouTube API.')
 	return
     bytes = u.read(262144)
     u.close()
 
-    #Parse rscript info.
-    rtitle = re.search('(TITLE: )(.*)', bytes)
-    title = rtitle.group(2)
+    #Parse YouTube API info (XML)
 
-    author = re.search('(AUTHOR: )(\S*) (20\d\d)-(\d\d)-(\d\d)T(\d\d):(\d\d).*', bytes)
-    if not author:
-        jenni.say('I couldn\'t find information for that video.')
-        return
-    uploader = author.group(2)
-    year = author.group(3)
-    month = author.group(4)
-    day = author.group(5)
-    hour = author.group(6)
-    minute = author.group(7)
-    uploaded = day + '/' + month + '/' + year + ', ' + hour + ':' + minute
+    #get title
+    title_result = re.search('(?:<media:title type=\'plain\'>)(.*)(?:</media:title>)', bytes)
+    title = title_result.group(1)
 
-    duration = int(re.search('(DURATION: )(.*)', bytes).group(2))
+    #get youtube channel
+    uploader_result = re.search('(?:<author><name>)(.*)(?:</name>)', bytes)
+    uploader = uploader_result.group(1)
+
+    #get upload time in format: yyyy-MM-ddThh:mm:ss.sssZ
+    uploaded_result = re.search('(?:<yt:uploaded>)(.*)(?:</yt:uploaded>)', bytes)
+    upraw = uploaded_result.group(1)
+    #parse from current format to output format: DD/MM/yyyy, hh:mm
+    uploaded = upraw[8:10]+"/"+upraw[5:7]+"/"+upraw[0:4]+", "+upraw[11:13]+":"+upraw[14:16]
+
+    #get duration in seconds
+    length_result = re.search('(?:<yt:duration seconds=\')(.*)(?:\'/>)', bytes)
+    duration = length_result.group(1)
+
+    #Detect liveshow + parse duration into proper time format.
     if duration < 1: length = 'LIVE'
     else:
         hours = duration / (60 * 60)
@@ -172,23 +176,29 @@ def ytinfo(jenni, input):
             if seconds:
                 length = length + ' '
         if seconds: length = length + str(seconds) + 'secs'
+    
 
-    try:
-	views = str('{:20,d}'.format(int(re.search('(VIEWS: )(.*)', bytes).group(2)))).lstrip(' ')
-    except ValueError:
-	views = '0'
-    com = re.search('(COMMENTS: )(\d+)', bytes)
-    if com: comments = str('{:20,d}'.format(int(com.group(2)))).lstrip(' ')
-    else: comments = 'disabled'
-    #Favorite, like, dislike
-    favorite = re.search('(FAVORITE: )([\d,]+)( [\d,]+)?( [\d,]+)?', bytes)
-    likes = favorite.group(3) or ' disabled'
-    dislikes = favorite.group(4) or ' disabled'
+    #get views
+    views_result = re.search('(?:<yt:statistics favoriteCount=\')([0-9]*)(?:\' viewCount=\')([0-9]*)(?:\'/>)', bytes)
+    views = views_result.group(2)
 
+    #get favourites (for future use?)
+    favs = views_result.group(1)
+
+    #get comment count
+    comments_result = re.search('(?:<gd:comments><gd:feedLink)(?:.*)(?:countHint=\')(.*)(?:\'/></gd:comments>)', bytes)
+    comments = comments_result.group(1)
+
+    #get likes & dislikes
+    liking_result = re.search('(?:<yt:rating numDislikes=\')(.*)(?:\' numLikes=\')(.*)(?:\'/>)',bytes)
+    likes = liking_result.group(2)
+    dislikes = liking_result.group(1)
+
+    #combine variables and print
     message = '[YouTube] Title: ' + title + ' | Uploader: ' + uploader + \
               ' | Uploaded: ' + uploaded + ' | Length: ' + length + \
-              ' | Views: ' + views + ' | Comments: ' + comments + ' | Likes:'\
-              + likes + ' | Dislikes:' + dislikes
+              ' | Views: ' + views + ' | Comments: ' + comments + ' | Likes: '\
+              + likes + ' | Dislikes: ' + dislikes
 
     jenni.say(message)
 ytinfo.rule = '.*(youtube.com/watch\S*v=|youtu.be/)([\w-]+).*'
