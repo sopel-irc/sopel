@@ -110,7 +110,6 @@ def ytinfo(jenni, input):
             jenni.say('Something went wrong when accessing the YouTube API.')
             return
         info = u.info()
-        u.close()
         # info = web.head(uri)
         if not isinstance(info, list):
             status = '200'
@@ -129,11 +128,7 @@ def ytinfo(jenni, input):
     except: return
     if not 'xml' in mtype:
         return
-    try: u = urllib2.urlopen(req, None, 0.5)
-    except:
-        jenni.say('Something went wrong when accessing the YouTube API.')
-        return
-    bytes = u.read(262144)
+    bytes = u.read()
     u.close()
 
     #Parse YouTube API info (XML)
