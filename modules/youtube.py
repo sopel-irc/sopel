@@ -29,10 +29,10 @@ def ytsearch(jenni, input):
     while True:
         req = urllib2.Request(uri, headers={'Accept':'text/html'})
         req.add_header('User-Agent', 'OpenAnything/1.0 +http://diveintopython.org/')
-	try: u = urllib2.urlopen(req, None, 0.5)
-	except:
-	    jenni.say('Something went wrong when accessing the rscript.org parser.')
-	    return
+    try: u = urllib2.urlopen(req, None, 0.5)
+    except:
+        jenni.say('Something went wrong when accessing the rscript.org parser.')
+        return
         info = u.info()
         u.close()
         # info = web.head(uri)
@@ -104,24 +104,22 @@ def ytinfo(jenni, input):
     uri = 'http://gdata.youtube.com/feeds/api/videos/' + input.group(2) + '?v=2'
     redirects = 0
     while True:
-	try:
-	    req = urllib2.Request(uri, headers={'Accept':'*/*', 'User-Agent':'curl/7.21.6 (x86_64-pc-linux-gnu) libcurl/7.21.6 OpenSSL/1.0.0e zlib/1.2.3.4 libidn/1.22 librtmp/2.3'})
-	    try: u = urllib2.urlopen(req, None, 0.5)
-	    except:
-		jenni.say('Something went wrong when accessing the YouTube API.')
-		return
-	    info = u.info()
-	    u.close()
-        except e:
-	    jenni.msg(input.devchan,"[DEVMSG]e="+str(e))
+    req = urllib2.Request(uri, headers={'Accept':'*/*', 'User-Agent':'OpenAnything/1.0 +http://diveintopython.org/'})
+    try: u = urllib2.urlopen(req, None, 0.5)
+    except:
+        jenni.say('Something went wrong when accessing the YouTube API.')
+        return
+        info = u.info()
+        u.close()
         # info = web.head(uri)
         if not isinstance(info, list):
             status = '200'
             info = info[0]
         else:
             status = str(info[1])
-            info = info[0]
-	jenni.msg(input.devchan,"[DEVMSG]YT API Result: ["+status+"]"+info)
+        try: info = info[0]
+        except e: jenni.msg(input.devchan,"[DEVMSG]Line 120: info= "+str(info)+" exception: "+str(e))
+    jenni.msg(input.devchan,"[DEVMSG]YT API Result: ["+status+"]"+info)
         if status.startswith('3'):
             uri = urlparse.urljoin(uri, info['Location'])
         else: break
@@ -135,8 +133,8 @@ def ytinfo(jenni, input):
         return
     try: u = urllib2.urlopen(req, None, 0.5)
     except:
-	jenni.say('Something went wrong when accessing the YouTube API.')
-	return
+    jenni.say('Something went wrong when accessing the YouTube API.')
+    return
     bytes = u.read(262144)
     u.close()
 
