@@ -127,7 +127,7 @@ def ytinfo(jenni, input):
             return "Too many re-directs."
     try: mtype = info['content-type']
     except: return
-    if not (('/html' in mtype) or ('/xhtml' in mtype)):
+    if not 'xml' in mtype:
         return
     try: u = urllib2.urlopen(req, None, 0.5)
     except:
