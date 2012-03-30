@@ -117,9 +117,11 @@ def ytinfo(jenni, input):
         # info = web.head(uri)
         if not isinstance(info, list):
             status = '200'
+            info = info[0]
         else:
             status = str(info[1])
             info = info[0]
+	jenni.msg(input.devchan,"[DEVMSG]YT API Result: ["+status+"]"+info)
         if status.startswith('3'):
             uri = urlparse.urljoin(uri, info['Location'])
         else: break
