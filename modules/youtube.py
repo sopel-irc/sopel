@@ -104,31 +104,30 @@ def ytinfo(jenni, input):
     uri = 'http://gdata.youtube.com/feeds/api/videos/' + input.group(2) + '?v=2'
     redirects = 0
     while True:
-    req = urllib2.Request(uri, headers={'Accept':'*/*', 'User-Agent':'OpenAnything/1.0 +http://diveintopython.org/'})
-    try: u = urllib2.urlopen(req, None, 0.5)
-    except:
-        jenni.say('Something went wrong when accessing the YouTube API.')
-        return
-    info = u.info()
-    u.close()
-    # info = web.head(uri)
-    if not isinstance(info, list):
-        status = '200'
-        info = info[0]
-    else:
-        status = str(info[1])
-    try: info = info[0]
-    except e: jenni.msg(input.devchan,"[DEVMSG]Line 120: info= "+str(info)+" exception: "+str(e))
-    jenni.msg(input.devchan,"[DEVMSG]YT API Result: ["+status+"]"+info)
-        if status.startswith('3'):
-            uri = urlparse.urljoin(uri, info['Location'])
-        else: break
-        redirects += 1
-        if redirects >= 50:
-            return "Too many re-directs."
+        req = urllib2.Request(uri, headers={'Accept':'*/*', 'User-Agent':'OpenAnything/1.0 +http://diveintopython.org/'})
+        try: u = urllib2.urlopen(req, None, 0.5)
+        except:
+            jenni.say('Something went wrong when accessing the YouTube API.')
+            return
+        info = u.info()
+        u.close()
+        # info = web.head(uri)
+        if not isinstance(info, list):
+            status = '200'
+            info = info[0]
+        else:
+            status = str(info[1])
+        try: info = info[0]
+        except e: jenni.msg(input.devchan,"[DEVMSG]Line 120: info= "+str(info)+" exception: "+str(e))
+        jenni.msg(input.devchan,"[DEVMSG]YT API Result: ["+status+"]"+info)
+            if status.startswith('3'):
+                uri = urlparse.urljoin(uri, info['Location'])
+            else: break
+            redirects += 1
+            if redirects >= 50:
+                return "Too many re-directs."
     try: mtype = info['content-type']
-    except:
-        return
+    except: return
     if not (('/html' in mtype) or ('/xhtml' in mtype)):
         return
     try: u = urllib2.urlopen(req, None, 0.5)
