@@ -366,6 +366,7 @@ def f_weather(self, origin, match, args):
             'SH': 'Showers'
         }
 
+        jenni.msg(input.devchan,"[DEVMSG]weather.py:369; "+conds)
         for c in conds:
             if c.endswith('//'):
                 if cond: cond += ', '
