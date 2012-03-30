@@ -9,6 +9,7 @@ http://inamidst.com/phenny/
 
 import sys, os, re, threading, imp
 import irc
+from users import SettingsDB
 
 home = os.getcwd()
 
@@ -96,8 +97,8 @@ class Jenni(irc.Bot):
 
         def sub(pattern, self=self):
             # These replacements have significant order
-            pattern = pattern.replace('$nickname', re.escape(self.nick))
-            return pattern.replace('$nick', r'%s[,:] +' % re.escape(self.nick))
+            pattern = pattern.replace('$nickname', r'((?i)%s)' % re.escape(self.nick))
+            return pattern.replace('$nick', r'((?i)%s)[,:] +' % re.escape(self.nick))
 
         for name, func in self.variables.iteritems():
             # print name, func
@@ -184,6 +185,7 @@ class Jenni(irc.Bot):
                 s.config = self.config
                 s.devchan = self.config.devchan
                 s.otherbots = self.config.other_bots
+                s.users = SettingsDB(self.config)
                 
                 if s.admin == False:
                     for each_admin in self.config.admins:
