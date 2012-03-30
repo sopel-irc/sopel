@@ -11,6 +11,7 @@ http://inamidst.com/phenny/
 import re
 import web
 import string
+import HTMLParser
 
 def c(jenni, input):
     """Google calculator."""
@@ -56,7 +57,7 @@ def wa(jenni, input):
     uri = 'http://tumbolia.appspot.com/wa/'
     answer = web.get(uri + web.urllib.quote(query.replace('+', '%2B')))
     if answer:
-        waOutputArray = string.split(answer, ";")
+        waOutputArray = string.split(HTMLParser.HTMLParser().unescape(answer), ";")
         if(len(waOutputArray) < 2):
             jenni.say('[WOLFRAM ERROR]'+answer)
         else:
