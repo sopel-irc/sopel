@@ -335,7 +335,8 @@ def f_weather(self, origin, match, args):
             'SH': 'Showers of',
             'TS': 'Thundery',
             'FZ': 'Freezing',
-            'VC': 'In the vicinity:'
+            'VC': 'In the vicinity:',
+            'RA': 'Unimaginable',
         }
 
         phenomena = {
