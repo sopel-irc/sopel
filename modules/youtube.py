@@ -114,12 +114,10 @@ def ytinfo(jenni, input):
         # info = web.head(uri)
         if not isinstance(info, list):
             status = '200'
-            try: info = info[0]
-            except AttributeError as e: jenni.msg(input.devchan,"[DEVMSG]Line 120: info= "+str(info)+" exception: "+str(e))
         else:
             status = str(info[1])
-        try: info = info[0]
-        except AttributeError as e: jenni.msg(input.devchan,"[DEVMSG]Line 120: info= "+str(info)+" exception: "+str(e))
+            try: info = info[0]
+            except AttributeError as e: jenni.msg(input.devchan,"[DEVMSG]Line 120: info= "+type(info))
         jenni.msg(input.devchan,"[DEVMSG]YT API Result: ["+status+"]"+info)
         if status.startswith('3'):
             uri = urlparse.urljoin(uri, info['Location'])
