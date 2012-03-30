@@ -90,19 +90,24 @@ def ytget(jenni, uri):
 
     #get views
     views_result = re.search('(?:<yt:statistics favoriteCount=\')([0-9]*)(?:\' viewCount=\')([0-9]*)(?:\'/>)', bytes)
-    vid_info['views'] = views_result.group(2)
+    views = views_result.group(2)
+    vid_info['views'] = str('{:20,d}'.format(int(views))).lstrip(' ')
 
     #get favourites (for future use?)
-    vid_info['favs'] = views_result.group(1)
+    favs = views_result.group(1)
+    vid_info['favs'] = str('{:20,d}'.format(int(favs))).lstrip(' ')
 
     #get comment count
     comments_result = re.search('(?:<gd:comments><gd:feedLink)(?:.*)(?:countHint=\')(.*)(?:\'/></gd:comments>)', bytes)
-    vid_info['comments'] = comments_result.group(1)
+    comments = comments_result.group(1)
+    vid_info['comments'] = str('{:20,d}'.format(int(comments))).lstrip(' ')
 
     #get likes & dislikes
     liking_result = re.search('(?:<yt:rating numDislikes=\')(.*)(?:\' numLikes=\')(.*)(?:\'/>)',bytes)
-    vid_info['likes'] = liking_result.group(2)
-    vid_info['dislikes'] = liking_result.group(1)
+    likes = liking_result.group(2)
+    dislikes = liking_result.group(1)
+    vid_info['likes'] = str('{:20,d}'.format(int(likes))).lstrip(' ')
+    vid_info['dislikes'] = str('{:20,d}'.format(int(dislikes))).lstrip(' ')
     return vid_info
 
 def ytsearch(jenni, input):
