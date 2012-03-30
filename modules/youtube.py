@@ -100,14 +100,11 @@ ytsearch.commands = ['yt','youtube']
 ytsearch.example = '.yt how to be a nerdfighter FAQ'
 
 def ytinfo(jenni, input):
-    #Right now, this uses a parsing script from rscript.org. Eventually, I'd
-    #like to use the YouTube API directly.
-
     #Grab info from YT API
     uri = 'http://gdata.youtube.com/feeds/api/videos/' + input.group(2) + '?v=2'
     redirects = 0
     while True:
-	req = urllib2.Request(uri, headers={'Accept':'application/atom+xml', 'User-Agent':'OpenAnything/1.0 +http://diveintopython.org/'})
+	req = urllib2.Request(uri, headers={'Accept':'*/*', 'User-Agent':'curl/7.21.6 (x86_64-pc-linux-gnu) libcurl/7.21.6 OpenSSL/1.0.0e zlib/1.2.3.4 libidn/1.22 librtmp/2.3'})
 	try: u = urllib2.urlopen(req, None, 0.5)
 	except:
 	    jenni.say('Something went wrong when accessing the YouTube API.')
