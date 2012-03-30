@@ -179,6 +179,11 @@ class Jenni(irc.Bot):
                 s.groups = match.groups
                 s.args = args
                 s.admin = origin.nick in self.config.admins
+                if s.admin == False:
+                    for each_admin in self.config.admins:
+                        re_admin = re.compile(each_admin)
+                        if re_admin.findall(origin.host):
+                            s.admin = True
                 s.owner = origin.nick == self.config.owner
                 return s
 
