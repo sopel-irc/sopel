@@ -29,24 +29,24 @@ def ytsearch(jenni, input):
     while True:
         req = urllib2.Request(uri, headers={'Accept':'text/html'})
         req.add_header('User-Agent', 'OpenAnything/1.0 +http://diveintopython.org/')
-    try: u = urllib2.urlopen(req, None, 0.5)
-    except:
-        jenni.say('Something went wrong when accessing the rscript.org parser.')
-        return
-        info = u.info()
-        u.close()
-        # info = web.head(uri)
-        if not isinstance(info, list):
-            status = '200'
-        else:
-            status = str(info[1])
-            info = info[0]
-        if status.startswith('3'):
-            uri = urlparse.urljoin(uri, info['Location'])
-        else: break
-        redirects += 1
-        if redirects >= 50:
-            return "Too many re-directs."
+        try: u = urllib2.urlopen(req, None, 0.5)
+        except:
+            jenni.say('Something went wrong when accessing the rscript.org parser.')
+            return
+            info = u.info()
+            u.close()
+            # info = web.head(uri)
+            if not isinstance(info, list):
+                status = '200'
+            else:
+                status = str(info[1])
+                info = info[0]
+            if status.startswith('3'):
+                uri = urlparse.urljoin(uri, info['Location'])
+            else: break
+            redirects += 1
+            if redirects >= 50:
+                return "Too many re-directs."
     try: mtype = info['content-type']
     except:
         return
