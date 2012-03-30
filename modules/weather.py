@@ -366,7 +366,7 @@ def f_weather(self, origin, match, args):
             'SH': 'Showers'
         }
 
-        self.msg("#Embo","[DEVMSG]weather.py:369; "+conds)
+        self.msg("#Embo","[DEVMSG]weather.py:369; "+str(conds))
         for c in conds:
             if c.endswith('//'):
                 if cond: cond += ', '
