@@ -147,7 +147,7 @@ def ytinfo(jenni, input):
     uploaded = upraw[8:10]+"/"+upraw[5:7]+"/"+upraw[0:4]+", "+upraw[11:13]+":"+upraw[14:16]
 
     #get duration in seconds
-    length_result = re.search('(?:<yt:duration seconds=\')(.*)(?:\'/>)', bytes)
+    length_result = re.search('(?:<yt:duration seconds=\')([0-9]*)', bytes)
     duration = int(length_result.group(1))
 
     #Detect liveshow + parse duration into proper time format.
