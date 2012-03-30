@@ -95,12 +95,12 @@ def ytget(jenni, uri):
 
     #get favourites (for future use?)
     favs = views_result.group(1)
-    vid_info['views'] = str('{:20,d}'.format(int(favs))).lstrip(' ')
+    vid_info['favs'] = str('{:20,d}'.format(int(favs))).lstrip(' ')
 
     #get comment count
     comments_result = re.search('(?:<gd:comments><gd:feedLink)(?:.*)(?:countHint=\')(.*)(?:\'/></gd:comments>)', bytes)
     comments = comments_result.group(1)
-    vid_info['views'] = str('{:20,d}'.format(int(comments))).lstrip(' ')
+    vid_info['comments'] = str('{:20,d}'.format(int(comments))).lstrip(' ')
 
     #get likes & dislikes
     liking_result = re.search('(?:<yt:rating numDislikes=\')(.*)(?:\' numLikes=\')(.*)(?:\'/>)',bytes)
