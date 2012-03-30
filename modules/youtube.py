@@ -107,9 +107,7 @@ def ytinfo(jenni, input):
     uri = 'http://gdata.youtube.com/feeds/api/videos/' + input.group(2) + '?v=2'
     redirects = 0
     while True:
-        #req = urllib2.Request(uri, headers={'Accept':'text/html'})
-        req = urllib2.Request(uri)
-        req.add_header('User-Agent', 'OpenAnything/1.0 +http://diveintopython.org/')
+	req = urllib2.Request(uri, headers={'Accept':'application/atom+xml', 'User-Agent':'OpenAnything/1.0 +http://diveintopython.org/')
 	try: u = urllib2.urlopen(req, None, 0.5)
 	except:
 	    jenni.say('Something went wrong when accessing the YouTube API.')
