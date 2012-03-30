@@ -132,8 +132,8 @@ def ytinfo(jenni, input):
         return
     try: u = urllib2.urlopen(req, None, 0.5)
     except:
-    jenni.say('Something went wrong when accessing the YouTube API.')
-    return
+        jenni.say('Something went wrong when accessing the YouTube API.')
+        return
     bytes = u.read(262144)
     u.close()
 
