@@ -117,7 +117,6 @@ def ytinfo(jenni, input):
             status = str(info[1])
             try: info = info[0]
             except AttributeError as e: jenni.msg(input.devchan,"[DEVMSG]Line 120: info= "+type(info))
-        jenni.msg(input.devchan,"[DEVMSG]YT API Result: ["+str(status)+"]"+str(info))
         if status.startswith('3'):
             uri = urlparse.urljoin(uri, info['Location'])
         else: break
@@ -149,7 +148,7 @@ def ytinfo(jenni, input):
 
     #get duration in seconds
     length_result = re.search('(?:<yt:duration seconds=\')(.*)(?:\'/>)', bytes)
-    duration = length_result.group(1)
+    duration = int(length_result.group(1))
 
     #Detect liveshow + parse duration into proper time format.
     if duration < 1: length = 'LIVE'
