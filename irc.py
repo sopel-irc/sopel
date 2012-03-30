@@ -47,7 +47,10 @@ def log_raw(line):
     try:
         temp = temp.decode('utf-8')
     except UnicodeDecodeError:
-        temp = unicode(temp, 'iso-8859-1')
+        try:
+            temp = temp.decode('iso-8859-1')
+        except UnicodeDecodeError:
+            temp = temp.decode('cp1252')
     f.write(temp)
     f.write("\n")
     f.close()
