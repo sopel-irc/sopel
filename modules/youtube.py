@@ -103,8 +103,8 @@ def ytinfo(jenni, input):
     #Right now, this uses a parsing script from rscript.org. Eventually, I'd
     #like to use the YouTube API directly.
 
-    #Grab info from rscript
-    uri = 'http://gdata.youtube.com/feeds/api/videos/' + input.group(2)
+    #Grab info from YT API
+    uri = 'http://gdata.youtube.com/feeds/api/videos/' + input.group(2) + '?v=2'
     redirects = 0
     while True:
         req = urllib2.Request(uri, headers={'Accept':'text/html'})
