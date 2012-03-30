@@ -120,12 +120,12 @@ def ytinfo(jenni, input):
         try: info = info[0]
         except e: jenni.msg(input.devchan,"[DEVMSG]Line 120: info= "+str(info)+" exception: "+str(e))
         jenni.msg(input.devchan,"[DEVMSG]YT API Result: ["+status+"]"+info)
-            if status.startswith('3'):
-                uri = urlparse.urljoin(uri, info['Location'])
-            else: break
-            redirects += 1
-            if redirects >= 50:
-                return "Too many re-directs."
+        if status.startswith('3'):
+            uri = urlparse.urljoin(uri, info['Location'])
+        else: break
+        redirects += 1
+        if redirects >= 50:
+            return "Too many re-directs."
     try: mtype = info['content-type']
     except: return
     if not (('/html' in mtype) or ('/xhtml' in mtype)):
