@@ -179,13 +179,25 @@ class Jenni(irc.Bot):
                 s.groups = match.groups
                 s.args = args
                 s.admin = origin.nick in self.config.admins
-                s.owner = origin.nick == self.config.owner
                 
                 #Custom config vars
                 s.config = self.config
                 s.devchan = self.config.devchan
                 s.otherbots = self.config.other_bots
                 
+                if s.admin == False:
+                    for each_admin in self.config.admins:
+                        re_admin = re.compile(each_admin)
+                        if re_admin.findall(origin.host):
+                            s.admin = True
+                        elif '@' in each_admin:
+                            temp = each_admin.split('@')
+                            re_host = re.compile(temp[1])
+                            if re_host.findall(origin.host):
+                                s.admin = True
+                s.owner = origin.nick + '@' + origin.host == self.config.owner
+                if s.owner == False: s.owner = origin.nick == self.config.owner
+                s.host = origin.host
                 return s
         return CommandInput(text, origin, bytes, match, event, args)
 
