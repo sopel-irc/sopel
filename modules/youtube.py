@@ -120,6 +120,8 @@ def ytsearch(jenni, input):
     #Before actually loading this in, let's see what input actually is so we can parse it right.
 
     #Grab info from gdata
+    if not input.group(2):
+       return
     uri = 'http://gdata.youtube.com/feeds/api/videos?v=2&max-results=1&q=' + input.group(2).encode('utf-8')
     uri = uri.replace(' ', '+')
     video_info = ytget(jenni, uri)
