@@ -120,6 +120,8 @@ def ytsearch(jenni, input):
     #Before actually loading this in, let's see what input actually is so we can parse it right.
 
     #Grab info from gdata
+    if not input.group(2):
+       return
     uri = 'http://gdata.youtube.com/feeds/api/videos?v=2&max-results=1&q=' + input.group(2).encode('utf-8')
     uri = uri.replace(' ', '+')
     video_info = ytget(jenni, uri)
@@ -155,6 +157,26 @@ def ytinfo(jenni, input):
 
     jenni.say(message)
 ytinfo.rule = '.*(youtube.com/watch\S*v=|youtu.be/)([\w-]+).*'
+
+def ytlast(jenni, input):
+    if not input.group(2):
+       return
+    uri = 'https://gdata.youtube.com/feeds/api/users/' + input.group(2).encode('utf-8') +'/uploads?max-results=1&v=2'
+    video_info = ytget(jenni, uri)
+
+    if video_info is 'err':
+        return
+
+
+    message = '[Latest Video] Title: ' +video_info['title']+ \
+              ' | Author: ' +video_info['uploader']+ \
+              ' | Duration: ' +video_info['length']+ \
+              ' | Views: ' +video_info['views']+ \
+              ' | Link: ' +video_info['link']
+
+    jenni.say(message)
+ytlast.commands = ['ytlast','ytnew']
+ytlast.example = '.ytlast vlogbrothers'
 
 if __name__ == '__main__':
     print __doc__.strip()
