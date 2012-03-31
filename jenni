@@ -28,6 +28,7 @@ def create_default_config(fn):
     output = """\
     nick = 'jenni'
     host = 'irc.example.net'
+    port = 6667
     channels = ['#example', '#test']
     owner = 'yournickname'
     
