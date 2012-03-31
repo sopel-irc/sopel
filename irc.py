@@ -78,6 +78,8 @@ class Bot(asynchat.async_chat):
         #These lists are filled in startup.py, as of right now.
         self.ops = dict()
         self.halfplus = dict()
+        
+        s.users = SettingsDB(self.config)
 
     # def push(self, *args, **kargs):
     #     asynchat.async_chat.push(self, *args, **kargs)
