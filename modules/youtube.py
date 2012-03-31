@@ -1,4 +1,4 @@
-#!/usr/bin/env pythonhttps://plus.google.com/u/0/
+#!/usr/bin/env python
 # -*- coding: utf8 -*-
 """
 youtube.py - Jenni YouTube Module
