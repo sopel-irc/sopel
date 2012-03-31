@@ -9,6 +9,7 @@ http://inamidst.com/phenny/
 
 import sys, os, re, threading, imp
 import irc
+from users import SettingsDB
 
 home = os.getcwd()
 
@@ -96,8 +97,8 @@ class Jenni(irc.Bot):
 
         def sub(pattern, self=self):
             # These replacements have significant order
-            pattern = pattern.replace('$nickname', re.escape(self.nick))
-            return pattern.replace('$nick', r'%s[,:] +' % re.escape(self.nick))
+            pattern = pattern.replace('$nickname', r'((?i)%s)' % re.escape(self.nick))
+            return pattern.replace('$nick', r'((?i)%s)[,:] +' % re.escape(self.nick))
 
         for name, func in self.variables.iteritems():
             # print name, func
@@ -179,13 +180,26 @@ class Jenni(irc.Bot):
                 s.groups = match.groups
                 s.args = args
                 s.admin = origin.nick in self.config.admins
-                s.owner = origin.nick == self.config.owner
                 
                 #Custom config vars
                 s.config = self.config
                 s.devchan = self.config.devchan
                 s.otherbots = self.config.other_bots
+                s.users = SettingsDB(self.config)
                 
+                if s.admin == False:
+                    for each_admin in self.config.admins:
+                        re_admin = re.compile(each_admin)
+                        if re_admin.findall(origin.host):
+                            s.admin = True
+                        elif '@' in each_admin:
+                            temp = each_admin.split('@')
+                            re_host = re.compile(temp[1])
+                            if re_host.findall(origin.host):
+                                s.admin = True
+                s.owner = origin.nick + '@' + origin.host == self.config.owner
+                if s.owner == False: s.owner = origin.nick == self.config.owner
+                s.host = origin.host
                 return s
         return CommandInput(text, origin, bytes, match, event, args)
 
