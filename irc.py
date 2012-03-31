@@ -12,6 +12,7 @@ More info:
 import sys, re, time, traceback
 import socket, asyncore, asynchat
 import os, codecs
+from users import SettingsDB
 
 class Origin(object):
     source = re.compile(r'([^!]*)!?([^@]*)@?(.*)')
@@ -79,7 +80,8 @@ class Bot(asynchat.async_chat):
         self.ops = dict()
         self.halfplus = dict()
         
-        s.users = SettingsDB(self.config)
+        #Need to figure this out...
+        #s.users = SettingsDB(self.config)
 
     # def push(self, *args, **kargs):
     #     asynchat.async_chat.push(self, *args, **kargs)
