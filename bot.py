@@ -9,7 +9,6 @@ http://inamidst.com/phenny/
 
 import sys, os, re, threading, imp
 import irc
-from users import SettingsDB
 
 home = os.getcwd()
 
