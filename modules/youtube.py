@@ -14,6 +14,7 @@ This module will respond to .yt and .youtube commands and searches the youtubes.
 """
 
 import urllib2, re
+from HTMLParser import HTMLParser
 
 def ytget(jenni, uri):
     redirects = 0
@@ -136,7 +137,7 @@ def ytsearch(jenni, input):
               ' | Views: ' +video_info['views']+ \
               ' | Link: ' +video_info['link']
 
-    jenni.say(message)
+    jenni.say(HTMLParser().unescape(message))
 ytsearch.commands = ['yt','youtube']
 ytsearch.example = '.yt how to be a nerdfighter FAQ'
 
@@ -155,7 +156,7 @@ def ytinfo(jenni, input):
               ' | Views: ' + video_info['views'] + ' | Comments: ' + video_info['comments'] + ' | Likes: '\
               + video_info['likes'] + ' | Dislikes: ' + video_info['dislikes']
 
-    jenni.say(message)
+    jenni.say(HTMLParser().unescape(message))
 ytinfo.rule = '.*(youtube.com/watch\S*v=|youtu.be/)([\w-]+).*'
 
 def ytlast(jenni, input):
@@ -175,7 +176,7 @@ def ytlast(jenni, input):
               ' | Dislikes: ' +video_info['dislikes']+ \
               ' | Link: ' +video_info['link']
 
-    jenni.say(message)
+    jenni.say(HTMLParser().unescape(message))
 ytlast.commands = ['ytlast','ytnew']
 ytlast.example = '.ytlast vlogbrothers'
 
