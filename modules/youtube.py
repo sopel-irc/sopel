@@ -169,9 +169,10 @@ def ytlast(jenni, input):
 
 
     message = '[Latest Video] Title: ' +video_info['title']+ \
-              ' | Author: ' +video_info['uploader']+ \
               ' | Duration: ' +video_info['length']+ \
               ' | Views: ' +video_info['views']+ \
+              ' | Likes: ' +video_info['likes']+ \
+              ' | Dislikes: ' +video_info['dislikes']+ \
               ' | Link: ' +video_info['link']
 
     jenni.say(message)
