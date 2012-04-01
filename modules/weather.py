@@ -93,6 +93,7 @@ def f_weather(self, origin, match, args):
         return
 
     metar = bytes.splitlines().pop()
+    self.msg(origin.devchan,"[DEVMSG]weather.py:96; "+str(metar))
     metar = metar.split(' ')
 
     if len(metar[0]) == 4:
@@ -367,7 +368,7 @@ def f_weather(self, origin, match, args):
             'SH': 'Showers'
         }
 
-        self.msg("#Embo","[DEVMSG]weather.py:369; "+str(conds))
+        self.msg(origin.devchan,"[DEVMSG]weather.py:371; "+str(conds))
         for c in conds:
             if c.endswith('//'):
                 if cond: cond += ', '
