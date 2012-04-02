@@ -12,7 +12,6 @@ More info:
 import sys, re, time, traceback
 import socket, asyncore, asynchat
 import os, codecs
-from users import SettingsDB
 
 class Origin(object):
     source = re.compile(r'([^!]*)!?([^@]*)@?(.*)')
@@ -79,9 +78,6 @@ class Bot(asynchat.async_chat):
         #These lists are filled in startup.py, as of right now.
         self.ops = dict()
         self.halfplus = dict()
-        
-        #Need to figure this out...
-        #s.users = SettingsDB(self.config)
 
     # def push(self, *args, **kargs):
     #     asynchat.async_chat.push(self, *args, **kargs)
@@ -249,6 +245,7 @@ class Bot(asynchat.async_chat):
     def startOpsList(self, channel):
         if not channel in self.halfplus: self.halfplus[channel] = set()
         if not channel in self.ops: self.ops[channel] = set()
+        
 
 class TestBot(Bot):
     def f_ping(self, origin, match, args):

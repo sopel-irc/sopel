@@ -9,6 +9,7 @@ http://inamidst.com/phenny/
 
 import sys, os, re, threading, imp
 import irc
+from users import SettingsDB
 
 home = os.getcwd()
 
@@ -27,7 +28,10 @@ class Jenni(irc.Bot):
         self.config = config
         self.doc = {}
         self.stats = {}
+        
         self.setup()
+        
+        self.users = SettingsDB(config)
 
     def setup(self):
         self.variables = {}
@@ -181,7 +185,7 @@ class Jenni(irc.Bot):
                 s.admin = origin.nick in self.config.admins
                 
                 #Custom config vars
-                s.config = self.config
+                #s.config = self.config
                 s.devchan = self.config.devchan
                 s.otherbots = self.config.other_bots
                 
