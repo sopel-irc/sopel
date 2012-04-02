@@ -8,55 +8,104 @@ http://inamidst.com/phenny/
 
 To use this DB
 """
-#Is there a way to only import the DB module that's actually going to be used?
-import MySQLdb
 
 class SettingsDB(object):
     def __init__(self, config):
         if not hasattr(config, 'userdb_type'):
             print 'No user settings database specified. Ignoring.'
             return
-        self.userdb_type = config.userdb_type
+        self.type = config.userdb_type.lower()
+        self.columns = {}
         
-        if self.userdb_type.lower() is 'mysql':
-            try:
-                self.host = config.userdb_host
-                self.user = config.userdb_user
-                self.passwd = config.userdb_pass
-                self.dbname = config.userdb_name
-            except AttributeError as e:
+        if self.type == 'mysql':
+            self.mySQL(config)
+            
+        elif self.type == 'sqlite':
+            self.sqlite(config)
+        else:
+            print 'User settings database type is not supported. Ignoring.'
+            return
+            
+            
+    def mySQL(self, config):
+        import MySQLdb
+        try:
+                self.__host = config.userdb_host
+                self.__user = config.userdb_user
+                self.__passwd = config.userdb_pass
+                self.__dbname = config.userdb_name
+        except AttributeError as e:
                 print 'Some options are missing for your MySQL user settings DB.'
                 print 'The database will not be set up.'
                 return
             
-            try:
-                self.db = MySQLdb.connect(host=self.host,
-                             user=self.user,
-                             passwd=self.passwd,
-                             db=self.dbname)
-                #TODO check that the DB is valid.
-                self.db.close()
-            except:
-                print 'Error: Unable to connect to user settings DB.'
-                return
+        try:
+            db = MySQLdb.connect(host=self.__host,
+                         user=self.__user,
+                         passwd=self.__passwd,
+                         db=self.__dbname)
+        except:
+            print 'Error: Unable to connect to user settings DB.'
+            return
+        cur = db.cursor()
+        cur.execute("SHOW tables like \"locales\";")
+        if not cur.fetchone():
+            print 'Error: Settings database does not have a "locales" table'
+            return
             
-        if userdb_type.lower() is 'sqlite':
-            print 'sqlite is not yet supported for user settings.'
-            return
+            
+        cur.execute("SHOW columns FROM locales;")
+        for row in cur.fetchall():
+            self.columns.add(row[0])
+        db.close()
+
+    def sqlite(self):
+        print 'sqlite is not yet supported for user settings.'
+        return
+            
+    def __len__(self):
+        if self.type == 'mysql':
+            import MySQLdb
+            
+            db = MySQLdb.connect(host=self.__host,
+                     user=self.__user,
+                     passwd=self.__passwd,
+                     db=self.__dbname)
+            cur = db.cursor()
+            cur.execute("SELECT COUNT(*) FROM locales;")
+            result = int(cur.fetchone()[0])
+            db.close()
+            return result
         else:
-            print 'User settings database type is not supported. Ignoring.'
-            return
-
-
-    def connect(self):
-        if self.userdb_type.lower() is 'mysql':
-            self.db = MySQLdb.connect(host=self.host,
-                             user=self.user,
-                             passwd=self.passwd,
-                             db=self.dbname)
+            return 0
+            
+    def __getitem__(self, key):
+        if self.type == 'mysql':
+            import MySQLdb, MySQLdb.cursors 
+            db = MySQLdb.connect(host=self.__host,
+                     user=self.__user,
+                     passwd=self.__passwd,
+                     db=self.__dbname)
+            cur = MySQLdb.cursors.DictCursor(db)
+            cur.execute('SELECT * FROM locales WHERE nick LIKE "'+key+'";')
+            row = cur.fetchone()
+            db.close()
+            return row
         else:
-            return #TODO
-
+            return None
+            
+    def __setitem__(self, key, value):
+        pass
+        
+    def __delitem__(self, key):
+        pass
+    
+    def __iter__(self):
+        pass
+    
+    def __contains__(self, item):
+        pass
 
 if __name__ == '__main__':
-    print "Coming soon..."
+    import MySQLdb
+    
