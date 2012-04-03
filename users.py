@@ -11,15 +11,17 @@ To use this DB
 
 class SettingsDB(object):
     def __init__(self, config):
+        self.columns = set()
         if not hasattr(config, 'userdb_type'):
             print 'No user settings database specified. Ignoring.'
             return
         self.type = config.userdb_type.lower()
-        self.columns = {}
         
-        if self.type == 'mysql':
+        
+        if self.type == 'dict':
+            self.db = config.userdb_data
+        elif self.type == 'mysql':
             self.mySQL(config)
-            
         elif self.type == 'sqlite':
             self.sqlite(config)
         else:
@@ -64,6 +66,8 @@ class SettingsDB(object):
         return
             
     def __len__(self):
+        if self.type == 'dict':
+            return len(self.db)
         if self.type == 'mysql':
             import MySQLdb
             
@@ -80,32 +84,112 @@ class SettingsDB(object):
             return 0
             
     def __getitem__(self, key):
-        if self.type == 'mysql':
+        if self.type == 'dict':
+            return self.db[key]
+        elif self.type == 'mysql':
             import MySQLdb, MySQLdb.cursors 
             db = MySQLdb.connect(host=self.__host,
                      user=self.__user,
                      passwd=self.__passwd,
                      db=self.__dbname)
             cur = MySQLdb.cursors.DictCursor(db)
-            cur.execute('SELECT * FROM locales WHERE nick LIKE "'+key+'";')
+            cur.execute('SELECT * FROM locales WHERE nick = "'+key+'";')
             row = cur.fetchone()
+            
+            if not row:
+                db.close()
+                raise KeyError(key+' not in database')
             db.close()
+            
             return row
         else:
             return None
-            
+    
+    #value is a dict {'columnName': 'value'} for each updated column        
     def __setitem__(self, key, value):
-        pass
+        if self.type == 'dict':
+            for k, v in value:
+                self.db[key][k] = v
+        elif self.type == 'mysql':
+            import MySQLdb, MySQLdb.cursors 
+            db = MySQLdb.connect(host=self.__host,
+                     user=self.__user,
+                     passwd=self.__passwd,
+                     db=self.__dbname)
+            cur = MySQLdb.cursors.DictCursor(db)
+            cur.execute('SELECT * FROM locales WHERE nick = "'+key+'";')
+            if not cur.fetchone():
+                cols = 'nick'
+                vals = '"'+key+'"'
+                for k in value:
+                    cols = cols + ', ' + k
+                    vals = vals + ', "' + value[k] + '"'
+                command = 'INSERT INTO locales ('+cols+') VALUES (' + \
+                          vals + ');'
+            else:
+                command = 'UPDATE locales SET '
+                for k in value:
+                    command = command + k + '="' + value[k] + '", '
+                command = command[:-2]+' WHERE Nick = "' + key + '";'
+            cur.execute(command)
+            db.close()
+        else: raise KeyError('User database not initialized.')
         
     def __delitem__(self, key):
-        pass
+        if self.type == 'dict':
+            del self.db[key]
+        elif self.type == 'mysql':
+            import MySQLdb
+            db = MySQLdb.connect(host=self.__host,
+                     user=self.__user,
+                     passwd=self.__passwd,
+                     db=self.__dbname)
+            cur = db.cursor()
+            
+            cur.execute('SELECT * FROM locales WHERE nick = "'+key+'";')
+            if not cur.fetchone():
+                db.close()
+                raise KeyError(key+' not in database')
+            
+            cur.execute('DELETE FROM locales WHERE nick = "'+key+'";')
+            db.close()
+        else: raise KeyError('User database not initialized.')
     
     def __iter__(self):
-        pass
+        if self.type == 'dict':
+            return iter(self.db)
+        elif self.type == 'mysql':
+            import MySQLdb
+            db = MySQLdb.connect(host=self.__host,
+                     user=self.__user,
+                     passwd=self.__passwd,
+                     db=self.__dbname)
+            cur = db.cursor()
+            
+            cur.execute('SELECT * FROM locales')
+            #TODO
+            db.close()
+        else: raise KeyError('User database not initialized.')
     
     def __contains__(self, item):
-        pass
-
-if __name__ == '__main__':
-    import MySQLdb
-    
+        if self.type == 'dict':
+            return item in self.db
+        elif self.type == 'mysql':
+            import MySQLdb
+            db = MySQLdb.connect(host=self.__host,
+                     user=self.__user,
+                     passwd=self.__passwd,
+                     db=self.__dbname)
+            cur = db.cursor()
+            
+            #Let's immitate actual dict behavior
+            cur.execute('SELECT * FROM locales WHERE nick = "'+item+'";')
+            result = cur.fetchone()
+            db.close()
+            if result: return True
+            else: return False
+            
+        else: return False
+            
+    def hascolumn(self, column):
+        return column in self.columns
