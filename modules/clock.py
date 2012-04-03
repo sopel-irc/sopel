@@ -321,7 +321,7 @@ def update_user(jenni, input):
                 jenni.say("Okay, "+input.nick+
               ", but you should use one from http://dft.ba/-tz if you use DST.")
             else: jenni.say("Gotcha, " + input.nick)
-update_user.rule = ('$nick', "I'm in the (.*?) time ?zone.?")
+update_user.rule = ('$nick', "I'm in the (.*?) time ?zone\.?")
 
 if __name__ == '__main__':
     print __doc__.strip()

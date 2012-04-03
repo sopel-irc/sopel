@@ -425,7 +425,7 @@ def update_icao(jenni, input):
         else:
             jenni.users[input.nick] = {'icao': icao_code}
             jenni.say("Gotcha, " + input.nick)
-update_icao.rule = ('$nick', 'I live near (.*?).?')
+update_icao.rule = ('$nick', 'I live near (.*?)\.?')
 
 if __name__ == '__main__':
     print __doc__.strip()
