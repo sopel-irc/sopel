@@ -415,7 +415,7 @@ def f_weather(self, origin, match, args):
     self.msg(origin.sender, format.encode('utf-8') % args)
 f_weather.rule = (['weather'], r'(.*)')
 
-def update_user(jenni, input):
+def update_icao(jenni, input):
     if not jenni.users.hascolumn('icao'):
         jenni.say("That's nice.")
     else:
@@ -425,7 +425,7 @@ def update_user(jenni, input):
         else:
             jenni.users[input.nick] = {'icao': icao_code}
             jenni.say("Gotcha, " + input.nick)
-update_user.rule = ('$nick', 'I live near (.*).?')
+update_icao.rule = ('$nick', 'I live near (.*?).?')
 
 if __name__ == '__main__':
     print __doc__.strip()
