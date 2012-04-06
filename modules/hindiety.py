@@ -16,6 +16,8 @@ url = 'http://www.shabdkosh.com/s?e=%s&t=1'
 r_inl = re.compile(r'([^<]+)<')
 r_speech = re.compile(r'(?i)h3 class="([^"]+)">\1\&nbsp;')
 
+term = None
+speech = None
 def hindiety(jenni, word):
     parts = word.split(' ')
 
