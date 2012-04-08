@@ -52,8 +52,9 @@ def cutwire(jenni, input):
     target = input.nick
     if target != jenni.nick and target not in bombs: return
     color, code = bombs.pop(target) #remove target from bomb list
-    jenni.msg(input.devchan,"cutwire input group 2 = "+input.group(2).rstrip(' ').lower()) # DEBUG
-    if search("all( the wires){0,1}!{0,1}", input.group(2).rstrip(' ').lower()):
+    wirecut = input.group(2).rstrip(' ').lower()
+    jenni.msg(input.devchan,"cutwire input group 2 = "+wirecut) # DEBUG
+    if wirecut in ('all', 'all!'):
 	sch.cancel(code) #defuse timer, execute premature detonation
 	kmsg = 'KICK '+input.sender+' '+target+' : Cutting ALL the wires! *boom* (You should\'ve picked the'+color+'wire.)'
 	jenni.write([kmsg])
