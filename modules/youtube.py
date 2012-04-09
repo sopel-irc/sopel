@@ -110,7 +110,7 @@ def ytget(jenni, uri):
     views_result = re.search('(?:<yt:statistics favoriteCount=\')([0-9]*)(?:\' viewCount=\')([0-9]*)(?:\'/>)', bytes)
 	try:
 		views = views_result.group(2)
-		vid_info['views'] = str('{:20,d}'.format(int(views))).lstrip(' ')
+		vid_info['views'] = str('{0:20,d}'.format(int(views))).lstrip(' ')
 	except AttributeError as e:
 		jenni.msg(input.devchan,"[DEVMSG]YouTube.py;115:"+str(e))
 		vid_info['views'] = 'N/A'
@@ -118,7 +118,7 @@ def ytget(jenni, uri):
     #get favourites (for future use?)
 	try:
 		favs = views_result.group(1)
-		vid_info['favs'] = str('{:20,d}'.format(int(favs))).lstrip(' ')
+		vid_info['favs'] = str('{0:20,d}'.format(int(favs))).lstrip(' ')
 	except AttributeError as e:
 		jenni.msg(input.devchan,"[DEVMSG]YouTube.py;123:"+str(e))
 		vid_info['favs'] = 'N/A'
@@ -127,7 +127,7 @@ def ytget(jenni, uri):
     comments_result = re.search('(?:<gd:comments><gd:feedLink)(?:.*)(?:countHint=\')(.*)(?:\'/></gd:comments>)', bytes)
 	try:
 		comments = comments_result.group(1)
-	    vid_info['comments'] = str('{:20,d}'.format(int(comments))).lstrip(' ')
+	    vid_info['comments'] = str('{0:20,d}'.format(int(comments))).lstrip(' ')
 	except AttributeError as e:
 		jenni.msg(input.devchan,"[DEVMSG]YouTube.py;132:"+str(e))
 		vid_info['comments'] = 'N/A'
@@ -136,13 +136,13 @@ def ytget(jenni, uri):
     liking_result = re.search('(?:<yt:rating numDislikes=\')(.*)(?:\' numLikes=\')(.*)(?:\'/>)',bytes)
 	try:
 	    likes = liking_result.group(2)
-		vid_info['likes'] = str('{:20,d}'.format(int(likes))).lstrip(' ')
+		vid_info['likes'] = str('{0:20,d}'.format(int(likes))).lstrip(' ')
 	except AttributeError as e:
 		jenni.msg(input.devchan,"[DEVMSG]YouTube.py;141:"+str(e))
 		vid_info['likes'] = 'N/A'
 	try:
 	    dislikes = liking_result.group(1)
-		vid_info['dislikes'] = str('{:20,d}'.format(int(dislikes))).lstrip(' ')
+		vid_info['dislikes'] = str('{0:20,d}'.format(int(dislikes))).lstrip(' ')
 	except AttributeError as e:
 		jenni.msg(input.devchan,"[DEVMSG]YouTube.py;147:"+str(e))
 		vid_info['dislikes'] = 'N/A'

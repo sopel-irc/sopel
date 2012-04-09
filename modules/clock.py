@@ -12,6 +12,7 @@ More info:
 import re, math, time, urllib, locale, socket, struct, datetime
 from decimal import Decimal as dec
 from tools import deprecated
+import MySQLdb
 
 TimeZones = {'KST': 9, 'CADT': 10.5, 'EETDST': 3, 'MESZ': 2, 'WADT': 9,
             'EET': 2, 'MST': -7, 'WAST': 8, 'IST': 5.5, 'B': 2,
@@ -199,16 +200,14 @@ r_local = re.compile(r'\([a-z]+_[A-Z]+\)')
 def f_time(self, origin, match, args):
     """Returns the current time."""
     tz = match.group(2) or 'GMT'
-
+    tz = tz.strip()
+    
     # Personal time zones, because they're rad
-    if hasattr(self.config, 'timezones'):
-        People = self.config.timezones
-    else: People = {}
-
-    if People.has_key(tz):
-        tz = People[tz]
-    elif (not match.group(2)) and People.has_key(origin.nick):
-        tz = People[origin.nick]
+    if self.users.hascolumn('tz'):
+        if match.group(2) and tz in self.users:
+            tz = self.users[tz]['tz']
+        elif origin.nick in self.users:
+            tz = self.users[origin.nick]['tz']
 
     TZ = tz.upper()
     if len(tz) > 30: return
@@ -299,6 +298,30 @@ def npl(jenni, input):
     else: jenni.say('No data received, sorry')
 npl.commands = ['npl']
 npl.priority = 'high'
+
+def update_user(jenni, input):
+    if not jenni.users.hascolumn('tz'):
+        jenni.say("That's nice.")
+    else:
+        tz = input.group(1)
+        goodtz = tz in TimeZones
+        #We don't see it in our short db, so let's give pytz a try
+        if not goodtz:
+            try:
+                from pytz import all_timezones
+                goodtz = (tz in all_timezones)
+            except: pass
+        
+        if not goodtz:
+            jenni.reply("I don't know that time zone.")
+        else:
+            jenni.users[input.nick] = {'tz': tz}
+            print tz
+            if len(tz) < 7:
+                jenni.say("Okay, "+input.nick+
+              ", but you should use one from http://dft.ba/-tz if you use DST.")
+            else: jenni.say("Gotcha, " + input.nick)
+update_user.rule = ('$nick', "I'm in the (.*?) time ?zone\.?")
 
 if __name__ == '__main__':
     print __doc__.strip()
