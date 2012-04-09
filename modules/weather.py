@@ -76,7 +76,11 @@ def f_weather(self, origin, match, args):
 
     icao_code = match.group(2)
     if not icao_code:
-        return self.msg(origin.sender, 'Try .weather London, for example?')
+        if self.users.hascolumn('icao') and origin.nick in self.users:
+            icao_code = self.users[origin.nick]['icao']
+        else:
+            return self.msg(origin.sender, 'I don\'t know where you live. ' +
+                            'Tell me, or try .weather London, for example?')
 
     icao_code = code(self, icao_code)
 
@@ -410,6 +414,18 @@ def f_weather(self, origin, match, args):
 
     self.msg(origin.sender, format.encode('utf-8') % args)
 f_weather.rule = (['weather'], r'(.*)')
+
+def update_icao(jenni, input):
+    if not jenni.users.hascolumn('icao'):
+        jenni.say("That's nice.")
+    else:
+        icao_code = code(jenni, input.group(1))
+        if not icao_code:
+            jenni.reply("I don't know where that is. Try another place or ICAO code.")
+        else:
+            jenni.users[input.nick] = {'icao': icao_code}
+            jenni.say("Gotcha, " + input.nick)
+update_icao.rule = ('$nick', 'I live near (.*)')
 
 if __name__ == '__main__':
     print __doc__.strip()

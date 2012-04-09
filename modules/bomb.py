@@ -52,15 +52,15 @@ def cutwire(jenni, input):
     target = input.nick
     if target != jenni.nick and target not in bombs: return
     color, code = bombs.pop(target) #remove target from bomb list
-    jenni.msg(input.devchan,"cutwire input group 2 = "+input.group(2).rstrip(' ').lower()) # DEBUG
-    if search("all( the wires){0,1}!{0,1}", input.group(2).rstrip(' ').lower()):
+    wirecut = input.group(2).rstrip(' ')
+    if wirecut.lower() in ('all', 'all!'):
 	sch.cancel(code) #defuse timer, execute premature detonation
-	kmsg = 'KICK '+input.sender+' '+target+' : Cutting ALL the wires! *boom* (You should\'ve picked the'+color+'wire.)'
+	kmsg = 'KICK '+input.sender+' '+target+' : Cutting ALL the wires! *boom* (You should\'ve picked the '+color+' wire.)'
 	jenni.write([kmsg])
-    elif input.group(2).rstrip(' ').capitalize() not in colors:
+    elif wirecut.capitalize() not in colors:
         jenni.say('I can\'t seem to find that wire, '+target+'! You sure you\'re picking the right one? It\'s not here!')
         bombs[target] = (color, code) #Add the target back onto the bomb list,
-    elif input.group(2).rstrip(' ').capitalize() == color:
+    elif wirecut.capitalize() == color:
         jenni.say('You did it, '+target+'! I\'ll be honest, I thought you were dead. But nope, you did it. You picked the right one. Well done.')
         sch.cancel(code) #defuse bomb
     else:

@@ -127,24 +127,21 @@ def at(jenni, input):
     hour, minute, second, tz, message = input.groups()
     if not second: second = '0'
     
-
-    # Personal time zones, because they're rad, copied from clock.py
-    if hasattr(jenni.config, 'timezones'):
-        People = jenni.config.timezones
-    else: People = {}
-
-    if People.has_key(tz):
-        ltz = People[tz]
-    elif (tz == ''):
-        if People.has_key(input.nick):
-            ltz = People[input.nick]
-        else: ltz = 'UTC'
-    elif tz in all_timezones_set: ltz = tz
-    else:
+    tz = match.group(4) or 'UTC'
+    tz = tz.strip()
+    
+    # Personal time zones, because they're rad
+    if self.users.hascolumn('tz'):
+        if match.group(2) and tz in self.users:
+            tz = self.users[tz]['tz']
+        elif origin.nick in self.users:
+            tz = self.users[origin.nick]['tz']
+  
+    if tz not in all_timezones_set:
         jenni.say("Sorry, but I don't have data for that timezone or user.")
         return
         
-    tzi = timezone(ltz)
+    tzi = timezone(tz)
     now = datetime.now(tzi)
     days = int(now.day)
     
