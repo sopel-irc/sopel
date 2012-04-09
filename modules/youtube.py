@@ -16,7 +16,7 @@ This module will respond to .yt and .youtube commands and searches the youtubes.
 import urllib2, re
 from HTMLParser import HTMLParser
 
-def ytget(jenni, uri):
+def ytget(jenni, input, uri):
     redirects = 0
     while True:
         req = urllib2.Request(uri, headers={'Accept':'*/*', 'User-Agent':'OpenAnything/1.0 +http://diveintopython.org/'})
@@ -31,7 +31,7 @@ def ytget(jenni, uri):
         else:
             status = str(info[1])
             try: info = info[0]
-            except AttributeError as e: jenni.msg(input.devchan,"[DEVMSG]Line 120: info= "+type(info))
+            except AttributeError as e: jenni.msg(input.devchan,"[DEVMSG]Line 34: info= "+type(info))
         if status.startswith('3'):
             uri = urlparse.urljoin(uri, info['Location'])
         else: break
@@ -162,7 +162,7 @@ def ytsearch(jenni, input):
        return
     uri = 'http://gdata.youtube.com/feeds/api/videos?v=2&max-results=1&q=' + input.group(2).encode('utf-8')
     uri = uri.replace(' ', '+')
-    video_info = ytget(jenni, uri)
+    video_info = ytget(jenni, input, uri)
 
     if video_info is 'err':
         return
@@ -183,7 +183,7 @@ def ytinfo(jenni, input):
     uri = 'http://gdata.youtube.com/feeds/api/videos/' + input.group(2) + '?v=2'
 
 
-    video_info = ytget(jenni, uri)
+    video_info = ytget(jenni, input, uri)
     if video_info is 'err':
         return
 
@@ -200,7 +200,7 @@ def ytlast(jenni, input):
     if not input.group(2):
        return
     uri = 'https://gdata.youtube.com/feeds/api/users/' + input.group(2).encode('utf-8') +'/uploads?max-results=1&v=2'
-    video_info = ytget(jenni, uri)
+    video_info = ytget(jenni, input, uri)
 
     if video_info is 'err':
         return
