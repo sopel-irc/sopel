@@ -50,65 +50,102 @@ def ytget(jenni, uri):
     vid_info = { }
     #get link
     link_result = re.search('(?:<media:player url=\')(.*)(?:&amp;)', bytes)
-    vid_info['link'] = link_result.group(1).replace('www.youtube.com/watch?v=', 'youtu.be/')
+    try:
+		vid_info['link'] = link_result.group(1).replace('www.youtube.com/watch?v=', 'youtu.be/')
+    except AttributeError as e:
+		jenni.msg(input.devchan,"[DEVMSG]YouTube.py;56:"+str(e))
+		vid_info['link'] = 'N/A'
 
     #get title
     title_result = re.search('(?:<media:title type=\'plain\'>)(.*)(?:</media:title>)', bytes)
-    vid_info['title'] = title_result.group(1)
+    try:
+		vid_info['title'] = title_result.group(1)
+    except AttributeError as e:
+		jenni.msg(input.devchan,"[DEVMSG]YouTube.py;64:"+str(e))
+		vid_info['title'] = 'N/A'
 
     #get youtube channel
     uploader_result = re.search('(?:<author><name>)(.*)(?:</name>)', bytes)
-    vid_info['uploader'] = uploader_result.group(1)
+    try:
+	vid_info['uploader'] = uploader_result.group(1)
+    except AttributeError as e:
+		jenni.msg(input.devchan,"[DEVMSG]YouTube.py;72:"+str(e))
+		vid_info['uploader'] = 'N/A'
 
     #get upload time in format: yyyy-MM-ddThh:mm:ss.sssZ
     uploaded_result = re.search('(?:<yt:uploaded>)(.*)(?:</yt:uploaded>)', bytes)
-    upraw = uploaded_result.group(1)
-    #parse from current format to output format: DD/MM/yyyy, hh:mm
-    vid_info['uploaded'] = upraw[8:10]+"/"+upraw[5:7]+"/"+upraw[0:4]+", "+upraw[11:13]+":"+upraw[14:16]
+    try:
+		upraw = uploaded_result.group(1)
+        #parse from current format to output format: DD/MM/yyyy, hh:mm
+		vid_info['uploaded'] = upraw[8:10]+"/"+upraw[5:7]+"/"+upraw[0:4]+", "+upraw[11:13]+":"+upraw[14:16]
+    except AttributeError as e:
+		jenni.msg(input.devchan,"[DEVMSG]YouTube.py;82:"+str(e))
+		vid_info['uploaded'] = 'N/A'
 
     #get duration in seconds
     length_result = re.search('(?:<yt:duration seconds=\')([0-9]*)', bytes)
-    duration = int(length_result.group(1))
-
-    #Detect liveshow + parse duration into proper time format.
-    if duration < 1: length = 'LIVE'
-    else:
-        hours = duration / (60 * 60)
-        minutes = duration / 60 - (hours * 60)
-        seconds = duration % 60
-
-        vid_info['length'] = ''
-        if hours:
-            vid_info['length'] = str(hours) + 'hours'
-            if minutes or seconds:
-                vid_info['length'] = vid_info['length'] + ' '
-        if minutes:
-            vid_info['length'] = vid_info['length'] + str(minutes) + 'mins'
-            if seconds:
-                vid_info['length'] = vid_info['length'] + ' '
-        if seconds: vid_info['length'] = vid_info['length'] + str(seconds) + 'secs'
-    
+	try:
+		duration = int(length_result.group(1))
+	    #Detect liveshow + parse duration into proper time format.
+		if duration < 1: vid_info['length'] = 'LIVE'
+		else:
+			hours = duration / (60 * 60)
+			minutes = duration / 60 - (hours * 60)
+			seconds = duration % 60
+			vid_info['length'] = ''
+			if hours:
+				vid_info['length'] = str(hours) + 'hours'
+				if minutes or seconds:
+					vid_info['length'] = vid_info['length'] + ' '
+			if minutes:
+				vid_info['length'] = vid_info['length'] + str(minutes) + 'mins'
+				if seconds:
+					vid_info['length'] = vid_info['length'] + ' '
+			if seconds: vid_info['length'] = vid_info['length'] + str(seconds) + 'secs'
+	except AttributeError as e:
+		jenni.msg(input.devchan,"[DEVMSG]YouTube.py;106:"+str(e))
+		vid_info['length'] = 'N/A'
 
     #get views
     views_result = re.search('(?:<yt:statistics favoriteCount=\')([0-9]*)(?:\' viewCount=\')([0-9]*)(?:\'/>)', bytes)
-    views = views_result.group(2)
-    vid_info['views'] = str('{:20,d}'.format(int(views))).lstrip(' ')
+	try:
+		views = views_result.group(2)
+		vid_info['views'] = str('{:20,d}'.format(int(views))).lstrip(' ')
+	except AttributeError as e:
+		jenni.msg(input.devchan,"[DEVMSG]YouTube.py;115:"+str(e))
+		vid_info['views'] = 'N/A'
 
     #get favourites (for future use?)
-    favs = views_result.group(1)
-    vid_info['favs'] = str('{:20,d}'.format(int(favs))).lstrip(' ')
+	try:
+		favs = views_result.group(1)
+		vid_info['favs'] = str('{:20,d}'.format(int(favs))).lstrip(' ')
+	except AttributeError as e:
+		jenni.msg(input.devchan,"[DEVMSG]YouTube.py;123:"+str(e))
+		vid_info['favs'] = 'N/A'
 
     #get comment count
     comments_result = re.search('(?:<gd:comments><gd:feedLink)(?:.*)(?:countHint=\')(.*)(?:\'/></gd:comments>)', bytes)
-    comments = comments_result.group(1)
-    vid_info['comments'] = str('{:20,d}'.format(int(comments))).lstrip(' ')
+	try:
+		comments = comments_result.group(1)
+	    vid_info['comments'] = str('{:20,d}'.format(int(comments))).lstrip(' ')
+	except AttributeError as e:
+		jenni.msg(input.devchan,"[DEVMSG]YouTube.py;132:"+str(e))
+		vid_info['comments'] = 'N/A'
 
     #get likes & dislikes
     liking_result = re.search('(?:<yt:rating numDislikes=\')(.*)(?:\' numLikes=\')(.*)(?:\'/>)',bytes)
-    likes = liking_result.group(2)
-    dislikes = liking_result.group(1)
-    vid_info['likes'] = str('{:20,d}'.format(int(likes))).lstrip(' ')
-    vid_info['dislikes'] = str('{:20,d}'.format(int(dislikes))).lstrip(' ')
+	try:
+	    likes = liking_result.group(2)
+		vid_info['likes'] = str('{:20,d}'.format(int(likes))).lstrip(' ')
+	except AttributeError as e:
+		jenni.msg(input.devchan,"[DEVMSG]YouTube.py;141:"+str(e))
+		vid_info['likes'] = 'N/A'
+	try:
+	    dislikes = liking_result.group(1)
+		vid_info['dislikes'] = str('{:20,d}'.format(int(dislikes))).lstrip(' ')
+	except AttributeError as e:
+		jenni.msg(input.devchan,"[DEVMSG]YouTube.py;147:"+str(e))
+		vid_info['dislikes'] = 'N/A'
     return vid_info
 
 def ytsearch(jenni, input):
