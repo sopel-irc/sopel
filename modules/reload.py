@@ -54,6 +54,8 @@ f_reload.thread = False
 
 if sys.version_info >= (2, 7):
     def update(jenni, input):
+        if not input.admin: return
+        
         """Pulls the latest versions of all modules from Git"""
         proc = subprocess.Popen('/usr/bin/git pull',
                                 stdout=subprocess.PIPE,
