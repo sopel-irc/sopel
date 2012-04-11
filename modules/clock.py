@@ -204,7 +204,7 @@ def f_time(self, origin, match, args):
     goodtz = False
     
     #They didn't give us an argument, so do they want their own time?
-    if not match.group(2) and self.users.hascolumn('tz'):
+    if not match.group(2) and self.users.hascolumn('tz') and origin.nick in self.users:
         utz = self.users[origin.nick]['tz']
         if utz != '':
                 tz = utz
