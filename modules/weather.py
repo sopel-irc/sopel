@@ -78,7 +78,7 @@ def f_weather(self, origin, match, args):
     if not icao_code:
         if self.users.hascolumn('icao') and origin.nick in self.users:
             icao_code = self.users[origin.nick]['icao']
-        else:
+    elif not icao_code or icao_code == '':
             return self.msg(origin.sender, 'I don\'t know where you live. ' +
                             'Tell me, or try .weather London, for example?')
 

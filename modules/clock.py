@@ -199,15 +199,31 @@ r_local = re.compile(r'\([a-z]+_[A-Z]+\)')
 @deprecated
 def f_time(self, origin, match, args):
     """Returns the current time."""
-    tz = match.group(2) or 'GMT'
+    tz = match.group(2) or 'UTC'
     tz = tz.strip()
+    goodtz = False
     
-    # Personal time zones, because they're rad
-    if self.users.hascolumn('tz'):
-        if match.group(2) and tz in self.users:
-            tz = self.users[tz]['tz']
-        elif origin.nick in self.users:
-            tz = self.users[origin.nick]['tz']
+    #They didn't give us an argument, so do they want their own time?
+    if not match.group(2) and self.users.hascolumn('tz'):
+        utz = self.users[origin.nick]['tz']
+        if utz != '':
+                tz = utz
+                goodtz = True
+    #They gave us a timezone (or there's no tz column), so let's find it
+    #Though, I think this might be duplicated work from below..?
+    else: goodtz = tz in TimeZones
+    #We don't see it in our short db, so let's give pytz a try
+    if not goodtz:
+        try:
+            from pytz import all_timezones
+            goodtz = (tz in all_timezones)
+        except: pass
+    #Not in pytz, either, so maybe it's another user.
+    if not goodtz:
+        if self.users.hascolumn('tz'):
+            utz = self.users[tz]['tz']
+            if utz != '': tz = utz
+    #If we still haven't found it at this point, well, fuck it.
 
     TZ = tz.upper()
     if len(tz) > 30: return
@@ -238,7 +254,7 @@ def f_time(self, origin, match, args):
                 proc = subprocess.Popen(cmd, shell=True, stdout=PIPE)
                 self.msg(origin.sender, proc.communicate()[0])
             else:
-                error = "Sorry, I don't know about the '%s' timezone." % tz
+                error = "Sorry, I don't know about the '%s' timezone or user." % tz
                 self.msg(origin.sender, origin.nick + ': ' + error)
         else:
             timenow = time.gmtime(time.time() + (t * 3600))
