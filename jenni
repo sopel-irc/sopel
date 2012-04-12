@@ -41,6 +41,9 @@ def create_default_config(fn):
     # password is the NickServ password, serverpass is the server password
     # password = 'example'
     # serverpass = 'serverpass'
+    
+    # The oper name and password, if the bot is allowed to /oper
+    # Oper = ('opername', 'operpass')
 
     # These are people who will be able to use admin.py's functions...
     admins = [owner, 'someoneyoutrust']
@@ -52,10 +55,6 @@ def create_default_config(fn):
     #
     # enable = []
     
-    #Extra values for various modules
-    twitter_username = 'ircwillie'
-    twitter_password = 'nfircwilliebot'
-
     # Directories to load user modules from
     # e.g. /path/to/my/modules
     extra = ['""" + os.getcwd() + '/modules/' + """']
@@ -66,6 +65,49 @@ def create_default_config(fn):
         '#conservative': [], # allow none
         '*': ['!'] # default whitelist, allow all
     }
+    
+    # Twitter API keys, if you want jenni to be able to tweet.
+    # consumer_key = "something"
+    # consumer_secret = "somethingelse"
+    # access_token = "yetanotherthing"
+    # access_token_secret = "onemorething"
+    
+    # ------------------  USER DATABASE CONFIGURATION  ------------------
+    # The user database can hold any user-specific settings you want. For
+    # example, this branch has modules which will use a user-specific time zone
+    # based on the 'tz' column in the database. The name of the columns used is
+    # up to the module writer, who hopefully made provisions for when you don't
+    # have that column. In order to use that function, it is up to you to make
+    # sure you have the appropriate column in the database.
+    # You have an option of using a MySQL or SQLite database, or a native Python
+    # dict object. The SQL options can be edited without restarting the bot, and
+    # users can edit their entries by themselves, and they can be located on a
+    # different machine. However, they may or may not be slower. If you want to
+    # have this feature (it's optional), uncomment and  put 'mysql', 'sqlite',
+    # or 'native' for this value.
+
+    # userdb_type = 'whatever'
+    
+    # Each type has to be handled a little differently. For a MySQL database,
+    # uncomment and fill in the values below. The database should have a column
+    # named 'locales', with a primary key column named 'nick'. You will need to
+    # have the MySQLdb module installed to use this option.
+    
+    # userdb_host = 'localhost'
+    # userdb_user = 'username'
+    # userdb_pass = 'password'
+    # userdb_name = 'database_name'
+    
+    # For a SQLite database, uncomment and fill in these values:
+    
+    ####SQLite support is not yet implemented. Sorry.
+    
+    # For a native dict database, you need to fill in each user manually, like so:
+    
+    # userdb_data = {
+    #                 'someuser':    {'tz': 'America/New_York'}
+    #                 'anotheruser': {'icao': 'KCMH'}
+    #                 'onemoreuser': {'tz': 'Europe/Berlin', 'icao': 'EDDT'}
 
     # EOF
     """
