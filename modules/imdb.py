@@ -22,9 +22,9 @@ def imdb(jenni, input):
     word=word.replace(" ", "+")
     uri="http://www.imdbapi.com/?t="+word
     req = urllib2.Request(uri, headers={'Accept':'*/*', 'User-Agent':'OpenAnything/1.0 +http://diveintopython.org/'})
-    try: u = urllib2.urlopen(req, None, 7)
+    try: u = urllib2.urlopen(req, None, 30)
     except:
-        jenni.say('IMDB is too slow at the moment :(')
+        jenni.say('IMDB is too slow at the moment, so I couldn't get you info about' + word + ' :(')
         return 'err'
     data = json.load(u) #data is a Dict containing all the information we need
     u.close()
