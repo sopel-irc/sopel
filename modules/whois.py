@@ -40,7 +40,7 @@ sendwhois.commands = ['whois']
 def whois311(phenny, input):
     global nick, host, rl, whois
     if whois:
-        raw = re.match('\S+ 311 \S+ (\S+) (\S+) (\S+) (\S+) :(\S+)', \
+        raw = re.match('\S+ 311 \S+ (\S+) (\S+) (\S+) (\S+) :(.*)', \
                         phenny.raw)
         nick = raw.group(1)
         host = raw.group(2) + '@' + raw.group(3)
