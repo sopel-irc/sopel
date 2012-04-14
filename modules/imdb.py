@@ -22,7 +22,7 @@ def imdb(jenni, input):
     word=word.replace(" ", "+")
     uri="http://www.imdbapi.com/?t="+word
     req = urllib2.Request(uri, headers={'Accept':'*/*', 'User-Agent':'OpenAnything/1.0 +http://diveintopython.org/'})
-    try: u = urllib2.urlopen(req, None, 1.5)
+    try: u = urllib2.urlopen(req, None, 3.5)
     except:
         jenni.say('Something went wrong when accessing the IMDB API. Abandon ship!')
         return 'err'
