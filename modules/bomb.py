@@ -22,7 +22,7 @@ def meter(jenni, input):
     nick = input.group(2)
     percent = randint(1,100)
     jenni.say('\x02[\x02'+word+'\x02]\x02 '+nick+' is '+str(percent)+'% '+word)
-meter.rule = '\.(\S+)meter (\S+)'
+# meter.rule = '\.(\S+)meter (\S+)'
 
 def start(jenni, input):
     print jenni.ops[input.sender]
