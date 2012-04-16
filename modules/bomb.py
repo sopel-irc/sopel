@@ -18,11 +18,12 @@ fuse = 120#seconds
 bombs = dict()
 
 def meter(jenni, input):
+    return # remove this line to re-enable the meter.
     word = input.group(1)
     nick = input.group(2)
     percent = randint(1,100)
     jenni.say('\x02[\x02'+word+'\x02]\x02 '+nick+' is '+str(percent)+'% '+word)
-# meter.rule = '\.(\S+)meter (\S+)'
+meter.rule = '\.(\S+)meter (\S+)'
 
 def start(jenni, input):
     print jenni.ops[input.sender]
