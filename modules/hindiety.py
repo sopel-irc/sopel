@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*- 
+# -*- coding: utf-8 -*-
 """
 hindiety.py - Jenni Hindi Etymology Module
 Copyright 2012, Kenneth K. Sham
@@ -9,6 +9,7 @@ More info:
  * Jenni: https://github.com/myano/jenni/
  * Phenny: http://inamidst.com/phenny/
 """
+
 import re
 import web
 
@@ -18,6 +19,8 @@ r_speech = re.compile(r'(?i)h3 class="([^"]+)">\1\&nbsp;')
 
 term = None
 speech = None
+
+
 def hindiety(jenni, word):
     parts = word.split(' ')
 
@@ -59,12 +62,13 @@ def hindiety(jenni, word):
         return
 
     bytes = bytes[:index]
-    
+
     init(jenni, bytes)
 
-def init (jenni, bytes):
+
+def init(jenni, bytes):
     definitions = bytes.split('class="in l">')
-    
+
     output = []
     out_hash = {}
     t_speech = ''
@@ -86,7 +90,7 @@ def init (jenni, bytes):
         if out_hash[t_speech] == 5:
             continue
         if not speech is None:
-            if speech.lower() <> t_speech.lower():
+            if speech.lower() != t_speech.lower():
                 continue
 
         if definition[0].startswith('div'):
@@ -96,7 +100,7 @@ def init (jenni, bytes):
         definition_term = definition_term.decode('utf-8')
 
         definition_latin = None
-        
+
         if len(definition) >= 4:
             if definition[2] == 'span class="latin">':
                 definition_latin = definition[3]
@@ -126,12 +130,11 @@ def init (jenni, bytes):
             current_line = oute
             continue
         current_line += ', ' + oute
-    if current_line <> '':
+    if current_line != '':
         jenni.say(current_line)
 
 hindiety.commands = ['hi']
 hindiety.priority = 'low'
-
 
 if __name__ == '__main__':
     print __doc__.strip()
