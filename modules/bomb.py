@@ -18,7 +18,6 @@ fuse = 120#seconds
 bombs = dict()
 
 def meter(jenni, input):
-    return # remove this line to re-enable the meter.
     word = input.group(1)
     nick = input.group(2)
     percent = randint(1,100)
