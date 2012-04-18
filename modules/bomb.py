@@ -45,7 +45,7 @@ def start(jenni, input):
     code=sch.enter(fuse, 1, explode, (jenni, input))
     bombs[target] = (color, code)
     sch.run()
-start.rule = '.bomb (\S+).*?'
+start.rule = '.bomb (\S+).*+'
 
 def cutwire(jenni, input):
     global bombs, colors
