@@ -90,7 +90,7 @@ class Scores:
                 return self.STRINGS["nochan"].format(channel)
             q = 0
             top_scores = [ ]
-            str_say = "\x0300Top 10 (for %s):\x03" % (channel)
+            str_say = "\x02Top 10 (for %s):\x02" % (channel)
             scores = sorted(self.scores_dict[channel].iteritems(),
                     key=lambda (k,v): (v[0]-v[1]), reverse=True)
             for key, value in scores:
