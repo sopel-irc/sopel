@@ -12,8 +12,10 @@ This module will record all URLs to bitly via an api key and account.
 It also automatically displays the "title" of any URL pasted into the channel.
 """
 
-import re, urllib2
+import re
 from htmlentitydefs import name2codepoint
+import unicode
+import urllib2
 import web
 
 # Place a file in your ~/jenni/ folder named, bitly.txt
@@ -43,9 +45,17 @@ try:
 except:
     print "ERROR: No bitly.txt found."
 
-url_finder = re.compile(r'(%s?(http|https|ftp)(://\S+))' % (EXCLUSION_CHAR))
+url_finder = re.compile(r'(?u)(%s?(http|https|ftp)(://\S+))' % (EXCLUSION_CHAR))
 r_entity = re.compile(r'&[A-Za-z0-9#]+;')
 INVALID_WEBSITE = 0x01
+
+def noteuri(jenni, input):
+    uri = input.group(1).encode('utf-8')
+    if not hasattr(jenni.bot, 'last_seen_uri'):
+        jenni.bot.last_seen_uri = {}
+    jenni.bot.last_seen_uri[input.sender] = uri
+noteuri.rule = r'(?u).*(http[s]?://[^<> "\x01]+)[,.]?'
+noteuri.priority = 'low'
 
 def find_title(url):
     """
@@ -53,8 +63,11 @@ def find_title(url):
     """
     uri = url
 
+    if not uri and hasattr(self, 'last_seen_uri'):
+        uri = self.last_seen_uri.get(origin.sender)
+
     for item in IGNORE:
-        if item in url:
+        if item in uri:
             return
 
     if not re.search('^((https?)|(ftp))://', uri):
@@ -75,7 +88,7 @@ def find_title(url):
         if not isinstance(info, list):
             status = '200'
         else:
-            status = str(info[1])
+            status = unicode.encode(info[1])
             info = info[0]
         if status.startswith('3'):
             uri = urlparse.urljoin(uri, info['Location'])
@@ -125,11 +138,7 @@ def find_title(url):
     title = r_entity.sub(e, title)
 
     if title:
-        try: title.decode('utf-8')
-        except:
-            try: title = title.decode('iso-8859-1').encode('utf-8')
-            except: title = title.decode('cp1252').encode('utf-8')
-        else: pass
+        title = unicode.decode(title)
     else: title = 'None'
 
     title = title.replace('\n', '')
@@ -163,7 +172,7 @@ def short(text):
         k = len(a)
         i = 0
         while i < k:
-            b = str(a[i][0])
+            b = unicode.decode(a[i][0])
             if not b.startswith("http://bit.ly") or not b.startswith("http://j.mp/"):
                 # check to see if the url is valid
                 try: c = web.head(b)
@@ -211,7 +220,9 @@ def get_results(text):
     i = 0
     display = [ ]
     while i < k:
-        url = str(a[i][0])
+        url = unicode.encode(a[i][0])
+        url = unicode.decode(url)
+        url = unicode.iriToUri(url)
         if not url.startswith(EXCLUSION_CHAR):
             try:
                 page_title = find_title(url)
@@ -245,13 +256,13 @@ def show_title_auto (jenni, input):
         if useBitLy: r[1] = r[2]
         else: r[1] = getTLD(r[1])
         jenni.say('[ %s ] - %s' % (r[0], r[1]))
-show_title_auto.rule = '.*(%s?(http|https)(://\S+)).*' % (EXCLUSION_CHAR)
+show_title_auto.rule = '(?u).*(%s?(http|https)(://\S+)).*' % (EXCLUSION_CHAR)
 show_title_auto.priority = 'high'
 
 def show_title_demand (jenni, input):
-    try:
-        results = get_results(input)
-    except: return
+    #try:
+    results = get_results(input)
+    #except: return
     if results is None: return
 
     for r in results:
