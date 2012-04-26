@@ -214,7 +214,7 @@ def ytlast(jenni, input):
               ' | Link: ' +video_info['link']
 
     jenni.say(HTMLParser().unescape(message))
-ytlast.commands = ['ytlast','ytnew']
+ytlast.commands = ['ytlast','ytnew','ytlatest']
 ytlast.example = '.ytlast vlogbrothers'
 
 if __name__ == '__main__':
