@@ -59,7 +59,10 @@ def ytget(jenni, input, uri):
     title_result = re.search('(?:<media:title type=\'plain\'>)(.*)(?:</media:title>)', bytes)
     if title_result[-1:] == '&': title_result = title_result[-1:]
     try:
-        vid_info['title'] = title_result.group(1)
+        if title_result[-1:].group(1) == '&':
+            vid_info['title'] = title_result.group(1)[-1:]
+        else:
+            vid_info['title'] = title_result.group(1)
     except AttributeError as e:
         vid_info['title'] = 'N/A'
 
