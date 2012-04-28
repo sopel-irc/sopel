@@ -31,6 +31,7 @@ def ytget(jenni, input, uri):
         else:
             status = str(info[1])
             try: info = info[0]
+            except: pass
         if status.startswith('3'):
             uri = urlparse.urljoin(uri, info['Location'])
         else: break
