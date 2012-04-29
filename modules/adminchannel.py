@@ -329,7 +329,7 @@ def topic(jenni, input):
     channel = input.sender
     if channel == '#YourPants': #English
         topic = purple +'Welcome to: '+ green +'#YourPants'+ purple \
-            +' | Site: '+ green +'http://nerdfighteria.net'+ purple \
+            +' | Site: '+ green +'http://dftba.net'+ purple \
             +' | ' + bold + 'Topic: ' + bold + green + text
     elif channel == "#YourPants-nl": #Dutch
         topic = purple +'Welkom in: '+ green +'#YourPants-nl'+ purple \
