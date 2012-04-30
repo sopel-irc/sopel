@@ -25,7 +25,7 @@ import tweepy
 import sched, time
 import re
 
-twitter_watch = ['hankgreen', 'realjohngreen', 'NerdfighterIRC']
+twitter_watch = ['hankgreen', 'realjohngreen', 'NerdNetwk']
 watch_wait = 75
 watch = False
 lasts = dict()
@@ -96,7 +96,7 @@ def f_update(jenni, input):
             jenni.reply("Please shorten the length of your message by: " + str(toofar) + " characters.")
 f_update.commands = ['tweet']
 f_update.priority = 'medium'
-f_update.example = '.twitup Hello World!'
+f_update.example = '.tweet Hello World!'
 
 def f_reply(jenni, input):
     auth = tweepy.OAuthHandler(jenni.config.consumer_key, jenni.config.consumer_secret)
