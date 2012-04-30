@@ -15,7 +15,12 @@ access_token_secret in your config file (~/.jenni/default.py).
 #"twitter_username" with the username you have registered on twitter, and "twitter_password" with the password for that twitter 
 #account.
 """
-import simplejson
+try:
+    import json
+except ImportError:
+    import simplejson as json
+except ImportError:
+    print("Either update to python 2.6+ or install simplejson")
 import tweepy
 import sched, time
 import re

@@ -6,7 +6,12 @@ About: http://inamidst.com/phenny
 This module allows for retrieving stats, shortening and lengthening dft.ba urls.
 """
 import urllib
-import simplejson as json
+try:
+    import json
+except ImportError:
+    import simplejson as json
+except ImportError:
+    print("Either update to python 2.6+ or install simplejson")
 
 def shorten(jenni, input):
     """Shorten a URL with DFT.BA"""
