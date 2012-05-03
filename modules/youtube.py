@@ -51,8 +51,9 @@ def ytget(jenni, input, uri):
     #get link
     link_result = re.search('(?:<media:player url=\')(.*)(?:feature=youtube_gdata_player\'/>)', bytes)
     try:
+        print link_result.group(1)
         if link_result.group(1)[-1:] == '&':
-            vid_info['link'] = link_result.group(1).replace('www.youtube.com/watch?v=', 'youtu.be/')[-1:]
+            vid_info['link'] = link_result.group(1).replace('www.youtube.com/watch?v=', 'youtu.be/')[:-1]
         else:
             vid_info['link'] = link_result.group(1).replace('www.youtube.com/watch?v=', 'youtu.be/')
     except AttributeError as e:
