@@ -85,8 +85,11 @@ def f_weather(self, origin, match, args):
     icao_code = code(self, icao_code)
 
     if not icao_code:
-        self.msg(origin.sender, 'No ICAO code found, sorry')
-        return
+        if self.users.hascolumn('icao') and origin.nick in self.users:
+            icao_code = code(self, self.users[origin.nick]['icao'])
+        if not icao_code or icao_code == '':
+            self.msg(origin.sender, 'No ICAO code found, sorry')
+            return
 
     uri = 'http://weather.noaa.gov/pub/data/observations/metar/stations/%s.TXT'
     try: bytes = web.get(uri % icao_code)
