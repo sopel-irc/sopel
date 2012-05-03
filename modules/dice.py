@@ -57,7 +57,7 @@ def dice(jenni, input):
             jenni.reply("You roll "+msg+" ("+full_string+"): "+result)
     else: #print illegal warning.
         jenni.reply("Illegal formula segment: "+segment+", aborting.")
-dice.commands = ['roll','dice']
+dice.commands = ['roll','dice','d']
 dice.priority = 'medium'
 
 def rollDice(diceroll):

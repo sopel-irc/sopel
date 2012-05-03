@@ -43,15 +43,15 @@ def start(jenni, input):
     color = choice(colors)
     jenni.msg(input.nick, 'Hey, don\'t tell '+target+', but the '+color+' wire? Yeah, that\'s the one. But shh! Don\'t say anything!')
     code=sch.enter(fuse, 1, explode, (jenni, input))
-    bombs[target] = (color, code)
+    bombs[target.lower()] = (color, code)
     sch.run()
 start.rule = '.bomb (\S+).*?'
 
 def cutwire(jenni, input):
     global bombs, colors
     target = input.nick
-    if target != jenni.nick and target not in bombs: return
-    color, code = bombs.pop(target) #remove target from bomb list
+    if target.lower() != jenni.nick.lower() and target.lower() not in bombs: return
+    color, code = bombs.pop(target.lower()) #remove target from bomb list
     wirecut = input.group(2).rstrip(' ')
     if wirecut.lower() in ('all', 'all!'):
 	sch.cancel(code) #defuse timer, execute premature detonation
@@ -59,7 +59,7 @@ def cutwire(jenni, input):
 	jenni.write([kmsg])
     elif wirecut.capitalize() not in colors:
         jenni.say('I can\'t seem to find that wire, '+target+'! You sure you\'re picking the right one? It\'s not here!')
-        bombs[target] = (color, code) #Add the target back onto the bomb list,
+        bombs[target.lower()] = (color, code) #Add the target back onto the bomb list,
     elif wirecut.capitalize() == color:
         jenni.say('You did it, '+target+'! I\'ll be honest, I thought you were dead. But nope, you did it. You picked the right one. Well done.')
         sch.cancel(code) #defuse bomb
@@ -73,7 +73,7 @@ cutwire.commands = ['cutwire']
 def explode(jenni, input):
     target = input.group(1)
     kmsg = 'KICK '+input.sender+' '+target+\
-           ' : Oh, come on, '+target+'! You could\'ve at least picked one! Now you\'re dead. Guts, all over the place. You see that? Guts, all over YourPants. (You should\'ve picked the '+bombs[target][0]+' wire.)'
+           ' : Oh, come on, '+target+'! You could\'ve at least picked one! Now you\'re dead. Guts, all over the place. You see that? Guts, all over YourPants. (You should\'ve picked the '+bombs[target.lower()][0]+' wire.)'
     jenni.write([kmsg])
-    bombs.pop(target)
+    bombs.pop(target.lower())
 
