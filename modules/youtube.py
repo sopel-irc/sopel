@@ -31,7 +31,7 @@ def ytget(jenni, input, uri):
         else:
             status = str(info[1])
             try: info = info[0]
-            except AttributeError as e: jenni.msg(input.devchan,"[DEVMSG]Line 34: info= "+type(info))
+            except: pass
         if status.startswith('3'):
             uri = urlparse.urljoin(uri, info['Location'])
         else: break
@@ -49,11 +49,14 @@ def ytget(jenni, input, uri):
         bytes = bytes.split('<entry gd:')[1]
     vid_info = { }
     #get link
-    link_result = re.search('(?:<media:player url=\')(.*)(?:&amp;)', bytes)
+    link_result = re.search('(?:<media:player url=\')(.*)(?:feature=youtube_gdata_player\'/>)', bytes)
     try:
-        vid_info['link'] = link_result.group(1).replace('www.youtube.com/watch?v=', 'youtu.be/')
+        print link_result.group(1)
+        if link_result.group(1)[-5:] == '&amp;':
+            vid_info['link'] = link_result.group(1).replace('www.youtube.com/watch?v=', 'youtu.be/')[:-5]
+        else:
+            vid_info['link'] = link_result.group(1).replace('www.youtube.com/watch?v=', 'youtu.be/')
     except AttributeError as e:
-        jenni.msg(input.devchan,"[DEVMSG]YouTube.py;56:"+str(e))
         vid_info['link'] = 'N/A'
 
     #get title
@@ -61,7 +64,6 @@ def ytget(jenni, input, uri):
     try:
         vid_info['title'] = title_result.group(1)
     except AttributeError as e:
-        jenni.msg(input.devchan,"[DEVMSG]YouTube.py;64:"+str(e))
         vid_info['title'] = 'N/A'
 
     #get youtube channel
@@ -69,7 +71,6 @@ def ytget(jenni, input, uri):
     try:
         vid_info['uploader'] = uploader_result.group(1)
     except AttributeError as e:
-        jenni.msg(input.devchan,"[DEVMSG]YouTube.py;72:"+str(e))
         vid_info['uploader'] = 'N/A'
 
     #get upload time in format: yyyy-MM-ddThh:mm:ss.sssZ
@@ -79,7 +80,6 @@ def ytget(jenni, input, uri):
         #parse from current format to output format: DD/MM/yyyy, hh:mm
         vid_info['uploaded'] = upraw[8:10]+"/"+upraw[5:7]+"/"+upraw[0:4]+", "+upraw[11:13]+":"+upraw[14:16]
     except AttributeError as e:
-        jenni.msg(input.devchan,"[DEVMSG]YouTube.py;82:"+str(e))
         vid_info['uploaded'] = 'N/A'
 
     #get duration in seconds
@@ -103,7 +103,6 @@ def ytget(jenni, input, uri):
                     vid_info['length'] = vid_info['length'] + ' '
             if seconds: vid_info['length'] = vid_info['length'] + str(seconds) + 'secs'
     except AttributeError as e:
-        jenni.msg(input.devchan,"[DEVMSG]YouTube.py;106:"+str(e))
         vid_info['length'] = 'N/A'
 
     #get views
@@ -112,7 +111,6 @@ def ytget(jenni, input, uri):
         views = views_result.group(2)
         vid_info['views'] = str('{0:20,d}'.format(int(views))).lstrip(' ')
     except AttributeError as e:
-        jenni.msg(input.devchan,"[DEVMSG]YouTube.py;115:"+str(e))
         vid_info['views'] = 'N/A'
 
     #get favourites (for future use?)
@@ -120,7 +118,6 @@ def ytget(jenni, input, uri):
         favs = views_result.group(1)
         vid_info['favs'] = str('{0:20,d}'.format(int(favs))).lstrip(' ')
     except AttributeError as e:
-        jenni.msg(input.devchan,"[DEVMSG]YouTube.py;123:"+str(e))
         vid_info['favs'] = 'N/A'
 
     #get comment count
@@ -129,7 +126,6 @@ def ytget(jenni, input, uri):
         comments = comments_result.group(1)
         vid_info['comments'] = str('{0:20,d}'.format(int(comments))).lstrip(' ')
     except AttributeError as e:
-        jenni.msg(input.devchan,"[DEVMSG]YouTube.py;132:"+str(e))
         vid_info['comments'] = 'N/A'
 
     #get likes & dislikes
@@ -138,13 +134,11 @@ def ytget(jenni, input, uri):
         likes = liking_result.group(2)
         vid_info['likes'] = str('{0:20,d}'.format(int(likes))).lstrip(' ')
     except AttributeError as e:
-        jenni.msg(input.devchan,"[DEVMSG]YouTube.py;141:"+str(e))
         vid_info['likes'] = 'N/A'
     try:
         dislikes = liking_result.group(1)
         vid_info['dislikes'] = str('{0:20,d}'.format(int(dislikes))).lstrip(' ')
     except AttributeError as e:
-        jenni.msg(input.devchan,"[DEVMSG]YouTube.py;147:"+str(e))
         vid_info['dislikes'] = 'N/A'
     return vid_info
 
@@ -214,7 +208,7 @@ def ytlast(jenni, input):
               ' | Link: ' +video_info['link']
 
     jenni.say(HTMLParser().unescape(message))
-ytlast.commands = ['ytlast','ytnew']
+ytlast.commands = ['ytlast','ytnew','ytlatest']
 ytlast.example = '.ytlast vlogbrothers'
 
 if __name__ == '__main__':

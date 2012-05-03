@@ -220,7 +220,7 @@ def f_time(self, origin, match, args):
         except: pass
     #Not in pytz, either, so maybe it's another user.
     if not goodtz:
-        if self.users.hascolumn('tz'):
+        if self.users.hascolumn('tz') and tz in self.users:
             utz = self.users[tz]['tz']
             if utz != '': tz = utz
     #If we still haven't found it at this point, well, fuck it.
