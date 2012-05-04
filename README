@@ -6,6 +6,8 @@ Installation &c.
 
 Enjoy!
 
+4) Run 'sudo pip install feedparser' to get the rss.py and nws.py to work.
+
 For a list of contributions to the Jenni fork see the file CREDITS.
 
 -- 

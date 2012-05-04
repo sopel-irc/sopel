@@ -7,3 +7,4 @@ osu_osc.py
 modules/twss_user_added.txt
 blocks
 logs/*
+rss.db
