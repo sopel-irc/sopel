@@ -338,13 +338,13 @@ def topic(jenni, input):
         topic = purple +'Willkommen bei: '+ green + channel + purple \
             +' | '+ bold +'Thema: '+ bold + green + text
     elif channel == "#yourpants-fr": #French
-        topic = purple +'Bienvenue \xE0 :'+ green + channel + purple \
+        topic = purple +'Bienvenue \xE0: '+ green + channel + purple \
             +' | '+ bold +'Fil de discussion: '+ bold + green + text
     elif channel == "#yourpants-fi": #Finnish
-        topic = purple +'Tervetuloa:'+ green + channel + purple \
+        topic = purple +'Tervetuloa: '+ green + channel + purple \
             +' | '+ bold +'Miitit: '+ bold + green + text
     else: #default
-        topic = purple +'Welcome to :'+ green + channel + purple \
+        topic = purple +'Welcome to: '+ green + channel + purple \
             +' | '+ bold +'Topic: '+ bold + green + text
     jenni.write(('TOPIC', channel + ' :' + topic))
 topic.commands = ['topic']
