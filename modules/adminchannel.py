@@ -319,10 +319,7 @@ def topic(jenni, input):
     This gives ops the ability to change the topic.
     """
     purple, green, bold = '\x0306', '\x0310', '\x02'
-    if input.nick not in jenni.ops[input.sender] or input.nick not in jenni.halfplus[input.sender]:
-        jenni.msg("#embo","[DEVMSG]Topic changed in "+input.sender.lower()+" by "+input.nick)
-        jenni.msg("#embo","[DEVMSG]Ops list:"+jenni.ops[input.sender])
-        jenni.msg("#embo","[DEVMSG]halfplus list:"+jenni.halfplus[input.sender])
+    if input.nick not in jenni.ops[input.sender] and input.nick not in jenni.halfplus[input.sender]:
         return
     text = input.group(2)
     if text == '':
