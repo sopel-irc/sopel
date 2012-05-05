@@ -326,24 +326,24 @@ def topic(jenni, input):
     text = input.group(2)
     if text == '':
         return
-    channel = input.sender
-    if channel == '#YourPants': #English
+    channel = input.sender.lower()
+    if channel == '#yourpants': #English
         topic = purple +'Welcome to: '+ green +'#YourPants'+ purple \
             +' | Site: '+ green +'http://dftba.net'+ purple \
             +' | ' + bold + 'Topic: ' + bold + green + text
-    elif channel == "#YourPants-nl": #Dutch
+    elif channel == "#yourpants-nl": #Dutch
         topic = purple +'Welkom in: '+ green +'#YourPants-nl'+ purple \
             +' | ' + bold + 'Gatherings: ' + bold + green + text
-    elif channel == "#YourPants-de": #German
+    elif channel == "#yourpants-de": #German
         topic = purple +'Willkommen bei: '+ green + channel + purple \
             +' | '+ bold +'Thema: '+ bold + green + text
-    elif channel == "#YourPants-fr": #French
+    elif channel == "#yourpants-fr": #French
         topic = purple +'Bienvenue \xE0 :'+ green + channel + purple \
             +' | '+ bold +'Fil de discussion: '+ bold + green + text
-    elif channel == "#YourPants-fi": #Finnish
+    elif channel == "#yourpants-fi": #Finnish
         topic = purple +'Tervetuloa:'+ green + channel + purple \
             +' | '+ bold +'Miitit: '+ bold + green + text
-    else:
+    else: #default
         topic = purple +'Welcome to :'+ green + channel + purple \
             +' | '+ bold +'Topic: '+ bold + green + text
     jenni.write(('TOPIC', channel + ' :' + topic))
