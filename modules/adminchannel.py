@@ -316,12 +316,10 @@ kickban.priority = 'high'
 
 def topic(jenni, input):
     """
-    This gives admins the ability to change the topic.
-    Note: One does *NOT* have to be an OP, one just has to be on the list of
-    admins.
+    This gives ops the ability to change the topic.
     """
     purple, green, bold = '\x0306', '\x0310', '\x02'
-    if not input.admin:
+    if input.nick not in jenni.ops[input.sender] or input.nick not in jenni.halfplus[input.sender]:
         return
     text = input.group(2)
     if text == '':
