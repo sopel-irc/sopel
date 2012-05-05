@@ -154,9 +154,10 @@ def read_feeds(jenni):
                 jenni.msg(feed_channel, response)
 
                 t = (entry.updated, feed_channel, feed_site_name, feed_url,)
-                c.execute("UPDATE rss SET modified = ? WHERE channel = ? AND site_name = ? AND site_url = ?", t)
+                cur = conn.cursor()
+                cur.execute("UPDATE rss SET modified = ? WHERE channel = ? AND site_name = ? AND site_url = ?", t)
                 conn.commit()
-                c.close()
+                cur.close()
             else:
                 if DEBUG:
                     jenni.msg(feed_channel, u"Skipping previously read entry: %s %s" % (site_name_effect, entry.title))
