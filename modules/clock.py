@@ -204,9 +204,15 @@ def f_time(self, origin, match, args):
     goodtz = False
     
     #They didn't give us an argument, so do they want their own time?
-    if not match.group(2) and self.settings.hascolumn('tz') and origin.nick in self.settings:
-        utz = self.settings[origin.nick]['tz']
-        if utz != '':
+    if not match.group(2) and self.settings.hascolumn('tz'):
+        if origin.nick in self.settings:
+            utz = self.settings[origin.nick]['tz']
+            if utz != '':
+                tz = utz
+                goodtz = True
+        elif origin.sender in self.settings:
+            utz = self.settings[origin.sender]['tz']
+            if utz != '':
                 tz = utz
                 goodtz = True
     #They gave us a timezone (or there's no tz column), so let's find it
@@ -316,7 +322,7 @@ npl.commands = ['npl']
 npl.priority = 'high'
 
 def update_user(jenni, input):
-    if not jenni.users.hascolumn('tz'):
+    if not jenni.settings.hascolumn('tz'):
         jenni.say("That's nice.")
     else:
         tz = input.group(1)
@@ -331,13 +337,37 @@ def update_user(jenni, input):
         if not goodtz:
             jenni.reply("I don't know that time zone.")
         else:
-            jenni.users[input.nick] = {'tz': tz}
+            jenni.settings[input.nick] = {'tz': tz}
             print tz
             if len(tz) < 7:
                 jenni.say("Okay, "+input.nick+
               ", but you should use one from http://dft.ba/-tz if you use DST.")
             else: jenni.say("Gotcha, " + input.nick)
 update_user.rule = ('$nick', "I'm in the (.*?) time ?zone\.?")
+
+def update_channel(jenni, input):
+    if not jenni.settings.hascolumn('tz'):
+        jenni.say("That's nice.")
+    else:
+        tz = input.group(1)
+        goodtz = tz in TimeZones
+        #We don't see it in our short db, so let's give pytz a try
+        if not goodtz:
+            try:
+                from pytz import all_timezones
+                goodtz = (tz in all_timezones)
+            except: pass
+        
+        if not goodtz:
+            jenni.reply("I don't know that time zone.")
+        else:
+            jenni.settings[input.sender] = {'tz': tz}
+            print tz
+            if len(tz) < 7:
+                jenni.say("Okay, "+input.nick+
+              ", but you should use one from http://dft.ba/-tz if you use DST.")
+            else: jenni.say("Gotcha, " + input.nick)
+update_channel.rule = ('$nick', 'this channel uses the (.*?) time ?zone\.?')
 
 if __name__ == '__main__':
     print __doc__.strip()
