@@ -21,6 +21,7 @@ DEBUG = False
 socket.setdefaulttimeout(10)
 INTERVAL = 60  # seconds between checking for new updates
 STOP = False
+dupes = dict()
 
 
 def manage_rss(jenni, input):
@@ -87,7 +88,7 @@ def manage_rss(jenni, input):
         k = 0
         for row in c:
             k += 1
-            jenni.say(unicode(row))
+            jenni.say("list: " + unicode(row))
         if k == 0:
             jenni.reply("No entries in database")
     else:
@@ -116,13 +117,12 @@ def read_feeds(jenni):
         feed_channel = row[0]
         feed_site_name = row[1]
         feed_url = row[2]
-        feed_modified = row[3]
         feed_fg = row[4]
         feed_bg = row[5]
         try:
             fp = feedparser.parse(feed_url)
         except IOError, E:
-            jenni.say(str(E))
+            jenni.say("Can't parse, " + str(E))
         try:
             entry = fp.entries[0]
 
@@ -133,7 +133,13 @@ def read_feeds(jenni):
             elif feed_fg and feed_bg:
                 site_name_effect = "[\x02\x03%s,%s%s\x03\x02]" % (feed_fg, feed_bg, feed_site_name)
 
-            if not feed_modified == entry.updated:
+            #if not feed_modified == entry.updated:
+            if feed_channel not in dupes:
+                dupes[feed_channel] = dict()
+            if feed_site_name not in dupes[feed_channel]:
+                dupes[feed_channel][feed_site_name] = list()
+            if entry.title not in dupes[feed_channel][feed_site_name]:
+                dupes[feed_channel][feed_site_name].append(entry.title)
                 if entry.id:
                     article_url = entry.id
                 elif entry.feedburner_origlink:
@@ -142,6 +148,7 @@ def read_feeds(jenni):
                     article_url = entry.links[0].href
 
                 short_url = url_module.short(article_url)
+
                 if short_url:
                     short_url = short_url[0][1][:-1]
                 else:
@@ -164,7 +171,6 @@ def read_feeds(jenni):
             if DEBUG:
                 jenni.say(str(E))
     c.close()
-    conn.close()
 
 
 def startrss(jenni, input):
