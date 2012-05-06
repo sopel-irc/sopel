@@ -9,10 +9,12 @@ More info:
  * Jenni: https://github.com/myano/jenni/
  * Phenny: http://inamidst.com/phenny/
 """
+sqlite = False
 
 import feedparser
 import socket
-import sqlite3
+if sqlite: import sqlite3 
+else: import MySQLdb
 import sys
 import time
 from modules import url as url_module
@@ -27,14 +29,14 @@ def manage_rss(jenni, input):
     """ .rss operation channel site_name url -- operation can be either 'add', 'del', or 'list' no further operators needed if 'list' used """
     if not input.admin:
         jenni.reply("Sorry, you need to be an admin to modify the RSS feeds.")
-    #conn = sqlite3.connect('rss.db')
-    #c = conn.cursor()
-    #c.execute("CREATE TABLE IF NOT EXISTS rss ( channel text, site_name text, site_url text, modified text, fg text, bg text )")
-    #conn.commit()
-    
-    if not jenni.settings.hascolumns(['rss_site_name', 'rss_url', 'rss_modified', 'rss_fg', 'rss_bg'])
-    	jenni.settings.addcolumns(['rss_site_name', 'rss_url', 'rss_modified', 'rss_fg', 'rss_bg'])
-    	#TODO exception handling for native-type db
+    if sqlite: conn = sqlite3.connect('rss.db')
+    else: conn = MySQLdb.connect(host=jenni.config.userdb_host,
+                         user=jenni.config.userdb_user,
+                         passwd=jenni.config.userdb_pass,
+                         db=jenni.config.userdb_name)
+    c = conn.cursor()
+    c.execute("CREATE TABLE IF NOT EXISTS rss ( channel text, site_name text, site_url text, modified text, fg text, bg text )")
+    conn.commit()
 
     text = input.group().split()
     if len(text) < 2:
@@ -70,19 +72,15 @@ def manage_rss(jenni, input):
             fg_colour = fg_colour.zfill(2)
         if bg_colour:
             bg_colour = bg_colour.zfill(2)
-        
-        jenni.settings[channel] = {'rss_site_name': site_name, 'rss_url': site_url, 'rss_modified': "time", 'rss_fg': fg_colour, 'rss_bg': bg_colour}
-        
-        #c.execute("INSERT INTO rss VALUES (?,?,?,?,?,?)", (channel, site_name, site_url, "time", fg_colour, bg_colour))
-        #conn.commit()
-        #c.close()
+        c.execute('INSERT INTO rss VALUES ("%s","%s","%s","%s","%s","%s")' % (channel, site_name, site_url, "time", fg_colour, bg_colour))
+        conn.commit()
+        c.close()
         jenni.reply("Successfully added values to database.")
     elif len(text) == 3 and text[1] == 'del':
         # .rss del ##channel
-        #c.execute("DELETE FROM rss WHERE channel = ?", (channel,))
-        #conn.commit()
-        #c.close()
-        del jenni.settings[c
+        c.execute("DELETE FROM rss WHERE channel = ?", (channel,))
+        conn.commit()
+        c.close()
         jenni.reply("Successfully removed values from database.")
     elif len(text) >= 4 and text[1] == 'del':
         # .rss del ##channel Site_Name
@@ -116,7 +114,11 @@ feeds = dict()
 def read_feeds(jenni):
     global restarted
     restarted = False
-    conn = sqlite3.connect('rss.db')
+    if sqlite: conn = sqlite3.connect('rss.db')
+    else: conn = MySQLdb.connect(host=jenni.config.userdb_host,
+                         user=jenni.config.userdb_user,
+                         passwd=jenni.config.userdb_pass,
+                         db=jenni.config.userdb_name)
     c = conn.cursor()
     c.execute("SELECT * FROM rss")
 
@@ -128,10 +130,12 @@ def read_feeds(jenni):
         feed_fg = row[4]
         feed_bg = row[5]
         try:
+            print feed_url
             fp = feedparser.parse(feed_url)
         except IOError, E:
             jenni.say(str(E))
-        try:
+        #try:
+        if True:
             entry = fp.entries[0]
 
             if not feed_fg and not feed_bg:
@@ -163,15 +167,16 @@ def read_feeds(jenni):
 
                 t = (entry.updated, feed_channel, feed_site_name, feed_url,)
                 cur = conn.cursor()
-                cur.execute("UPDATE rss SET modified = ? WHERE channel = ? AND site_name = ? AND site_url = ?", t)
+                cur.execute("UPDATE rss SET modified = %s WHERE channel = %s AND site_name = %s AND site_url = %s" % (t, t, t, t))
                 conn.commit()
                 cur.close()
             else:
                 if DEBUG:
                     jenni.msg(feed_channel, u"Skipping previously read entry: %s %s" % (site_name_effect, entry.title))
-        except Exception, E:
-            if DEBUG:
-                jenni.say(str(E))
+        
+        #except Exception, E:
+        #    if DEBUG:
+        #        jenni.say(str(E))
     c.close()
     conn.close()
 
