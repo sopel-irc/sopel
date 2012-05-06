@@ -78,13 +78,13 @@ def manage_rss(jenni, input):
         jenni.reply("Successfully added values to database.")
     elif len(text) == 3 and text[1] == 'del':
         # .rss del ##channel
-        c.execute("DELETE FROM rss WHERE channel = ?", (channel,))
+        c.execute('DELETE FROM rss WHERE channel = "%s"' % channel)
         conn.commit()
         c.close()
         jenni.reply("Successfully removed values from database.")
     elif len(text) >= 4 and text[1] == 'del':
         # .rss del ##channel Site_Name
-        c.execute("DELETE FROM rss WHERE channel = ? and site_name = ?", (channel, " ".join(text[3:]),))
+        c.execute('DELETE FROM rss WHERE channel = "%s" and site_name = "%s"', (channel, " ".join(text[3:])))
         conn.commit()
         c.close()
         jenni.reply("Successfully removed the site from the given channel.")
@@ -130,12 +130,10 @@ def read_feeds(jenni):
         feed_fg = row[4]
         feed_bg = row[5]
         try:
-            print feed_url
             fp = feedparser.parse(feed_url)
         except IOError, E:
             jenni.say(str(E))
-        #try:
-        if True:
+        if True: #try:
             entry = fp.entries[0]
 
             if not feed_fg and not feed_bg:
@@ -165,15 +163,14 @@ def read_feeds(jenni):
 
                 jenni.msg(feed_channel, response)
 
-                t = (entry.updated, feed_channel, feed_site_name, feed_url,)
+                t = (entry.updated, feed_channel, feed_site_name, feed_url)
                 cur = conn.cursor()
-                cur.execute("UPDATE rss SET modified = %s WHERE channel = %s AND site_name = %s AND site_url = %s" % (t, t, t, t))
+                cur.execute('UPDATE rss SET modified = "%s" WHERE channel = "%s" AND site_name = "%s" AND site_url = "%s"' % t)
                 conn.commit()
                 cur.close()
             else:
                 if DEBUG:
                     jenni.msg(feed_channel, u"Skipping previously read entry: %s %s" % (site_name_effect, entry.title))
-        
         #except Exception, E:
         #    if DEBUG:
         #        jenni.say(str(E))
