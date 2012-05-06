@@ -124,18 +124,7 @@ def remind(jenni, input):
             stop = True
     if duration == 0:
         return jenni.reply("Sorry, didn't understand the input.")
-    
-    """
-    m = r_command.match(input.bytes)
-    if not m:
-        return jenni.reply("Sorry, didn't understand the input.")
-    length, scale, message = m.groups()
-
-    length = float(length)
-    factor = scaling.get(scale, 60)
-    duration = length * factor
-    """
-    
+            
     if duration % 1:
         duration = int(duration) + 1
     else: duration = int(duration)
