@@ -27,10 +27,14 @@ def manage_rss(jenni, input):
     """ .rss operation channel site_name url -- operation can be either 'add', 'del', or 'list' no further operators needed if 'list' used """
     if not input.admin:
         jenni.reply("Sorry, you need to be an admin to modify the RSS feeds.")
-    conn = sqlite3.connect('rss.db')
-    c = conn.cursor()
-    c.execute("CREATE TABLE IF NOT EXISTS rss ( channel text, site_name text, site_url text, modified text, fg text, bg text )")
-    conn.commit()
+    #conn = sqlite3.connect('rss.db')
+    #c = conn.cursor()
+    #c.execute("CREATE TABLE IF NOT EXISTS rss ( channel text, site_name text, site_url text, modified text, fg text, bg text )")
+    #conn.commit()
+    
+    if not jenni.settings.hascolumns(['rss_site_name', 'rss_url', 'rss_modified', 'rss_fg', 'rss_bg'])
+    	jenni.settings.addcolumns(['rss_site_name', 'rss_url', 'rss_modified', 'rss_fg', 'rss_bg'])
+    	#TODO exception handling for native-type db
 
     text = input.group().split()
     if len(text) < 2:
@@ -66,15 +70,19 @@ def manage_rss(jenni, input):
             fg_colour = fg_colour.zfill(2)
         if bg_colour:
             bg_colour = bg_colour.zfill(2)
-        c.execute("INSERT INTO rss VALUES (?,?,?,?,?,?)", (channel, site_name, site_url, "time", fg_colour, bg_colour))
-        conn.commit()
-        c.close()
+        
+        jenni.settings[channel] = {'rss_site_name': site_name, 'rss_url': site_url, 'rss_modified': "time", 'rss_fg': fg_colour, 'rss_bg': bg_colour}
+        
+        #c.execute("INSERT INTO rss VALUES (?,?,?,?,?,?)", (channel, site_name, site_url, "time", fg_colour, bg_colour))
+        #conn.commit()
+        #c.close()
         jenni.reply("Successfully added values to database.")
     elif len(text) == 3 and text[1] == 'del':
         # .rss del ##channel
-        c.execute("DELETE FROM rss WHERE channel = ?", (channel,))
-        conn.commit()
-        c.close()
+        #c.execute("DELETE FROM rss WHERE channel = ?", (channel,))
+        #conn.commit()
+        #c.close()
+        del jenni.settings[c
         jenni.reply("Successfully removed values from database.")
     elif len(text) >= 4 and text[1] == 'del':
         # .rss del ##channel Site_Name
