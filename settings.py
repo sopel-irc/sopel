@@ -9,6 +9,8 @@ http://inamidst.com/phenny/
 To use this DB
 """
 
+tablename = 'locales'
+
 class SettingsDB(object):
     def __init__(self, config):
         self.columns = set()
@@ -191,19 +193,19 @@ class SettingsDB(object):
     def hascolumn(self, column):
         return column in self.columns
     def hascolumns(self, columns):
-    	has = True
-    	for column in columns
-    		has = column in self.columns and has
-		return has
-		
-	def addcolumns(self, columns):
-		cmd = 'ALTER TABLE '+tablename+' ADD ( '
-		for column in columns:
-			if isinstance(column, tuple): cmd = cmd + column[0]+' '+column[1]+', '
-			else: cmd = cmd + column + ' text, '
-		cmd = cmd[:-2]+' );')
-		
-		if self.type == 'dict':
+        has = True
+        for column in columns:
+            has = column in self.columns and has
+        return has
+        
+    def addcolumns(self, columns):
+        cmd = 'ALTER TABLE '+tablename+' ADD ( '
+        for column in columns:
+            if isinstance(column, tuple): cmd = cmd + column[0]+' '+column[1]+', '
+            else: cmd = cmd + column + ' text, '
+        cmd = cmd[:-2]+' );'
+        
+        if self.type == 'dict':
             pass #TODO this and sqlite
         elif self.type == 'mysql':
             import MySQLdb
@@ -216,5 +218,5 @@ class SettingsDB(object):
             cur.execute(cmd)
             conn.commit()
             db.close()
-			
-			
+            
+            
