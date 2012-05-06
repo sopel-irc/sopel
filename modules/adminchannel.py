@@ -325,28 +325,35 @@ def topic(jenni, input):
     if text == '':
         return
     channel = input.sender.lower()
-    if channel == '#yourpants': #English
-        topic = purple +'Welcome to: '+ green +'#YourPants'+ purple \
-            +' | Site: '+ green +'http://dftba.net'+ purple \
-            +' | ' + bold + 'Topic: ' + bold + green + text
-    elif channel == "#yourpants-nl": #Dutch
-        topic = purple +'Welkom in: '+ green +'#YourPants-nl'+ purple \
-            +' | ' + bold + 'Gatherings: ' + bold + green + text
-    elif channel == "#yourpants-de": #German
-        topic = purple +'Willkommen bei: '+ green + channel + purple \
-            +' | '+ bold +'Thema: '+ bold + green + text
-    elif channel == "#yourpants-fr": #French
-        topic = purple +'Bienvenue \xE0: '+ green + channel + purple \
-            +' | '+ bold +'Fil de discussion: '+ bold + green + text
-    elif channel == "#yourpants-fi": #Finnish
-        topic = purple +'Tervetuloa: '+ green + channel + purple \
-            +' | '+ bold +'Miitit: '+ bold + green + text
-    else: #default
-        topic = purple +'Welcome to: '+ green + channel + purple \
-            +' | '+ bold +'Topic: '+ bold + green + text
+    
+    narg = 1
+    mask = None
+    if jenni.settings.hascolumn('topic_mask') and channel in jenni.settings:
+        mask = jenni.settings[channel]['topic_mask']
+        narg = len(re.findall('%s', '%s, %s'))
+    if not mask or mask == '':
+        mask = purple +'Welcome to: '+ green + channel + purple \
+            +' | '+ bold +'Topic: '+ bold + green + '%s'
+    
+    top = input.group(2)
+    if not top: top = ''    
+    text = tuple(unicode.split(top, '~', narg))
+    
+    topic = mask % text
+    
     jenni.write(('TOPIC', channel + ' :' + topic))
 topic.commands = ['topic']
 topic.priority = 'low'
+
+def set_mask (jenni, input):
+    if input.nick not in jenni.ops[input.sender] and input.nick not in jenni.halfplus[input.sender]:
+        return
+    if not jenni.settings.hascolumn('topic_mask'):
+        jenni.say("I'm afraid I can't do that.")
+    else:
+        jenni.settings[input.sender] = {'topic_mask': input.group(2)}
+        jenni.say("Gotcha, " + input.nick)
+set_mask.commands = ['tmask']
 
 if __name__ == '__main__':
     print __doc__.strip()
