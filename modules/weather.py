@@ -76,8 +76,8 @@ def f_weather(self, origin, match, args):
 
     icao_code = match.group(2)
     if not icao_code:
-        if self.users.hascolumn('icao') and origin.nick in self.users:
-            icao_code = self.users[origin.nick]['icao']
+        if self.settings.hascolumn('icao') and origin.nick in self.settings:
+            icao_code = self.settings[origin.nick]['icao']
     if not icao_code or icao_code == '':
             return self.msg(origin.sender, 'I don\'t know where you live. ' +
                             'Tell me, or try .weather London, for example?')
@@ -85,8 +85,8 @@ def f_weather(self, origin, match, args):
     icao_code = code(self, icao_code)
 
     if not icao_code:
-        if self.users.hascolumn('icao') and origin.nick in self.users:
-            icao_code = code(self, self.users[origin.nick]['icao'])
+        if self.settings.hascolumn('icao') and origin.nick in self.settings:
+            icao_code = code(self, self.settings[origin.nick]['icao'])
         if not icao_code or icao_code == '':
             self.msg(origin.sender, 'No ICAO code found, sorry')
             return

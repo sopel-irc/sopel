@@ -204,8 +204,8 @@ def f_time(self, origin, match, args):
     goodtz = False
     
     #They didn't give us an argument, so do they want their own time?
-    if not match.group(2) and self.users.hascolumn('tz') and origin.nick in self.users:
-        utz = self.users[origin.nick]['tz']
+    if not match.group(2) and self.settings.hascolumn('tz') and origin.nick in self.settings:
+        utz = self.settings[origin.nick]['tz']
         if utz != '':
                 tz = utz
                 goodtz = True
@@ -220,8 +220,8 @@ def f_time(self, origin, match, args):
         except: pass
     #Not in pytz, either, so maybe it's another user.
     if not goodtz:
-        if self.users.hascolumn('tz') and tz in self.users:
-            utz = self.users[tz]['tz']
+        if self.settings.hascolumn('tz') and tz in self.settings:
+            utz = self.settings[tz]['tz']
             if utz != '': tz = utz
     #If we still haven't found it at this point, well, fuck it.
 

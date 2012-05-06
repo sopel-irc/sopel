@@ -131,11 +131,11 @@ def at(jenni, input):
     tz = tz.strip()
     
     # Personal time zones, because they're rad
-    if self.users.hascolumn('tz'):
-        if match.group(2) and tz in self.users:
-            tz = self.users[tz]['tz']
-        elif origin.nick in self.users:
-            tz = self.users[origin.nick]['tz']
+    if self.settings.hascolumn('tz'):
+        if match.group(2) and tz in self.settings:
+            tz = self.settings[tz]['tz']
+        elif origin.nick in self.settings:
+            tz = self.settings[origin.nick]['tz']
   
     if tz not in all_timezones_set:
         jenni.say("Sorry, but I don't have data for that timezone or user.")
