@@ -102,10 +102,30 @@ scaling = {
 }
 
 periods = '|'.join(scaling.keys())
-p_command = r'\.in ([0-9]+(?:\.[0-9]+)?)\s?((?:%s)\b)?:?\s?(.*)' % periods
-r_command = re.compile(p_command)
+#This isn't regex, it's line noise.
+#p_command = r'\.in (?:(?:(\d+(?:\.\d+)?)\s?((?:%s)\b),?\s?)(?:(\d+(?:\.\d+)?)\s?((?:%s)\b)?,?\s?)(?:(\d+(?:\.\d+)?)\s?((?:%s)\b)?,?\s?)(?:(\d+(?:\.\d+)?)\s?((?:%s)\b)?,?\s?)(?:(\d+(?:\.\d+)?)\s?((?:%s)\b)?,?\s?)(?:(\d+(?:\.\d+)?)\s?((?:%s)\b)?,?\s?)(?:(\d+(?:\.\d+)?)\s?((?:%s)\b)?,?\s?)):?\s?(.*)' % periods
+#r_command = re.compile(p_command)
 
 def remind(jenni, input):
+    duration = 0
+    message = re.split('(\d+ ?(?:'+periods+')) ?', input.group(2))[1:]
+    print input.group(2)
+    print message
+    reminder = ''
+    for piece in message:
+        stop = False
+        grp = re.match('(\d+) ?(.*) ?', piece)
+        if grp and not stop:
+            length = float(grp.group(1))
+            factor = scaling.get(grp.group(2), 60)
+            duration += length * factor
+        else:
+            reminder = reminder + piece
+            stop = True
+    if duration == 0:
+        return jenni.reply("Sorry, didn't understand the input.")
+    
+    """
     m = r_command.match(input.bytes)
     if not m:
         return jenni.reply("Sorry, didn't understand the input.")
@@ -114,12 +134,13 @@ def remind(jenni, input):
     length = float(length)
     factor = scaling.get(scale, 60)
     duration = length * factor
-
+    """
+    
     if duration % 1:
         duration = int(duration) + 1
     else: duration = int(duration)
 
-    create_reminder(jenni, input, duration, message)
+    create_reminder(jenni, input, duration, reminder)
 remind.commands = ['in']
 
 
