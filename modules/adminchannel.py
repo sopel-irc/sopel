@@ -330,15 +330,22 @@ def topic(jenni, input):
     mask = None
     if jenni.settings.hascolumn('topic_mask') and channel in jenni.settings:
         mask = jenni.settings[channel]['topic_mask']
-        narg = len(re.findall('%s', '%s, %s'))
+        narg = len(re.findall('%s', mask))
     if not mask or mask == '':
         mask = purple +'Welcome to: '+ green + channel + purple \
             +' | '+ bold +'Topic: '+ bold + green + '%s'
     
     top = input.group(2)
-    if not top: top = ''    
-    text = tuple(unicode.split(top, '~', narg))
+    text = tuple()
+    if top:
+        text = tuple(unicode.split(top, '~', narg))
+        
     
+    
+    if len(text) != narg:
+        message = "Not enough arguments. You gave "+str(len(text))+', it requires '+str(narg)+'.'
+        print mask
+        return jenni.say(message)
     topic = mask % text
     
     jenni.write(('TOPIC', channel + ' :' + topic))
@@ -354,6 +361,15 @@ def set_mask (jenni, input):
         jenni.settings[input.sender] = {'topic_mask': input.group(2)}
         jenni.say("Gotcha, " + input.nick)
 set_mask.commands = ['tmask']
+
+def show_mask (jenni, input):
+    if input.nick not in jenni.ops[input.sender] and input.nick not in jenni.halfplus[input.sender]:
+        return
+    if not jenni.settings.hascolumn('topic_mask'):
+        jenni.say("I'm afraid I can't do that.")
+    else:
+        jenni.say(jenni.settings[input.sender]['topic_mask'])
+show_mask.commands = ['showmask']
 
 if __name__ == '__main__':
     print __doc__.strip()
