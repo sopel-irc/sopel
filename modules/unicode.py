@@ -21,7 +21,7 @@ def meh(jenni, input):
         if len(s) > 100:
             break
     jenni.say(s)
-meh.commands = ['sc']
+# meh.commands = ['sc']
 
 
 def decode(bytes):
