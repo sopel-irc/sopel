@@ -23,11 +23,11 @@ def rand(jenni, input):
         if len(li_integers_str) == 1:
             li_integers_str = re.sub(r'\D', '', str(li_integers_str))
             if int(li_integers_str[0]) <= 1:
-                a = li_integers_str[0]
+                a = li_integers_str
                 a = int(a)
                 randinte = random.randint(a, 0)
             else:
-                a = li_integers_str[0]
+                a = li_integers_str
                 a = int(a)
                 randinte = random.randint(0, a)
             jenni.say(str(input.nick) + ": your random integer is: " + str(randinte))
