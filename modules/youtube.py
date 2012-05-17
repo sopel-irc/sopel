@@ -185,7 +185,7 @@ def ytinfo(jenni, input):
     #combine variables and print
     message = '[YouTube] Title: ' + video_info['title'] + \
               ' | Uploader: ' + video_info['uploader'] + \
-              ' | Uploaded: ' + video_info['uploaded'] + \ 
+              ' | Uploaded: ' + video_info['uploaded'] + \
               ' | Duration: ' + video_info['length'] + \
               ' | Views: ' + video_info['views'] + \
               ' | Comments: ' + video_info['comments'] + \
