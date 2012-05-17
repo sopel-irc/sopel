@@ -28,6 +28,7 @@ def manage_rss(jenni, input):
     """ .rss operation channel site_name url -- operation can be either 'add', 'del', or 'list' no further operators needed if 'list' used """
     if not input.admin:
         jenni.reply("Sorry, you need to be an admin to modify the RSS feeds.")
+        return
     conn = sqlite3.connect('rss.db')
     c = conn.cursor()
     c.execute("CREATE TABLE IF NOT EXISTS rss ( channel text, site_name text, site_url text, modified text, fg text, bg text )")
@@ -177,6 +178,7 @@ def startrss(jenni, input):
     """ Begin reading RSS feeds """
     if not input.admin:
         jenni.reply("You must be an admin to start up the RSS feeds.")
+        return
     global first_run, restarted, DEBUG, INTERVAL, STOP
 
     query = input.group(2)
@@ -207,7 +209,7 @@ def startrss(jenni, input):
     if not STOP:
         while True:
             if STOP:
-                jenni.say("STOPPED")
+                jenni.reply("STOPPED")
                 first_run = False
                 STOP = False
                 break
