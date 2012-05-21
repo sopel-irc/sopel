@@ -15,7 +15,6 @@ import re, urllib2
 
 def fml(jenni, input):
     return; //ugly hack
-    
     #Grab info from rscript (code re-used from ytinfo)
     uri = 'http://rscript.org/lookup.php?type=fml'
     while True:
