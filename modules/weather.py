@@ -419,14 +419,14 @@ def f_weather(self, origin, match, args):
 f_weather.rule = (['weather'], r'(.*)')
 
 def update_icao(jenni, input):
-    if not jenni.users.hascolumn('icao'):
+    if not jenni.settings.hascolumn('icao'):
         jenni.say("That's nice.")
     else:
         icao_code = code(jenni, input.group(1))
         if not icao_code:
             jenni.reply("I don't know where that is. Try another place or ICAO code.")
         else:
-            jenni.users[input.nick] = {'icao': icao_code}
+            jenni.settings[input.nick] = {'icao': icao_code}
             jenni.say("Gotcha, " + input.nick)
 update_icao.rule = ('$nick', 'I live near (.*)')
 
