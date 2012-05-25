@@ -131,6 +131,7 @@ class SettingsDB(object):
                     command = command + k + '="' + value[k] + '", '
                 command = command[:-2]+' WHERE name = "' + key + '";'
             cur.execute(command)
+            db.commit()
             db.close()
         else: raise KeyError('User database not initialized.')
         
@@ -151,6 +152,7 @@ class SettingsDB(object):
                 raise KeyError(key+' not in database')
             
             cur.execute('DELETE FROM '+tablename+' WHERE name = "'+key+'";')
+            db.commit()
             db.close()
         else: raise KeyError('User database not initialized.')
     
