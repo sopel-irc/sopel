@@ -218,7 +218,9 @@ class SettingsDB(object):
             cur = db.cursor()
             
             cur.execute(cmd)
-            conn.commit()
+            db.commit()
             db.close()
-            
+        #Why a second loop? because I don't want clomuns to be added to self.columns if executing the SQL command fails
+        for column in columns:
+            self.columns.add(column)
             
