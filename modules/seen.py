@@ -10,8 +10,6 @@ http://inamidst.com/phenny/
 """
 
 import time
-import threading
-
 # from http://parand.com/say/index.php/2007/07/13/simple-multi-dimensional-dictionaries-in-python/
 # A simple class to make mutli dimensional dict easy to use
 class Ddict(dict):
@@ -23,50 +21,17 @@ class Ddict(dict):
             self[key] = self.default()
         return dict.__getitem__(self, key)
 
-class DBSyncThread(threading.Thread):
-    def __init__(self):
-        threading.Thread.__init__(self)
-        self._finished = threading.Event()
-        self._interval = 600.0
-    started = False
-    def set_jenni(self, jenni):
-        self.jenni = jenni
-    def run(self):
-        self.started = True
-        global sync_running
-        while True:
-            sync(self.jenni)
-            self._finished.wait(self._interval)
-def sync(jenni):
-    global sync_running
-    if sync_running:
-        return
-    sync_running = True
-    global seen_dict
-    if not jenni.settings.hascolumns({"lastseentimestamp", "lastseenmessage", "lastseenchannel"}):
-        try:
-            jenni.settings.addcolumns({"lastseentimestamp", "lastseenmessage", "lastseenchannel"})
-        except:
-            pass
-    for nick in seen_dict:
-        jenni.settings[nick] = {'lastseentimestamp': str(seen_dict[nick]['timestamp']),'lastseenmessage': seen_dict[nick]['message'],'lastseenchannel': seen_dict[nick]['channel']}
-    seen_dict=Ddict(dict)
-    sync_running = False
+seen_dict=Ddict(dict)
 
-sync_running = False
-seen_dict = Ddict(dict)
-sync_thread = DBSyncThread()
 def seen(jenni, input):
-    start_thread(jenni)
     if not input.group(2):
         jenni.say(".seen <nick> - Reports when <nick> was last seen.")
         return
     nick = input.group(2)
-    sync(jenni)
-    if jenni.settings.hascolumn('lastseenmessage') and nick in jenni.settings and jenni.settings[nick]['lastseentimestamp'] is not None:
-        timestamp = float(jenni.settings[nick]['lastseentimestamp'])
-        channel = jenni.settings[nick]['lastseenchannel']
-        message = jenni.settings[nick]['lastseenmessage']
+    if seen_dict.has_key(nick):
+        timestamp = seen_dict[nick]['timestamp']
+        channel = seen_dict[nick]['channel']
+        message = seen_dict[nick]['message']
         timestamp = time.strftime('%Y-%m-%d %H:%M:%S UTC', time.gmtime(timestamp))
 
         msg = "I last saw %s at %s on %s, saying %s" % (nick, timestamp, channel, message)
@@ -76,8 +41,6 @@ def seen(jenni, input):
 seen.rule = (['seen'], r'(\S+)')
 
 def note(jenni, input):
-    global seen_dict
-    start_thread(jenni)
     if input.sender.startswith('#'):
         seen_dict[input.nick]['timestamp'] = time.time()
         seen_dict[input.nick]['channel'] = input.sender
@@ -85,13 +48,6 @@ def note(jenni, input):
 
 note.rule = r'(.*)'
 note.priority = 'low'
-
-def start_thread(jenni):
-    if not sync_thread.started:
-        sync_thread.set_jenni(jenni)
-        sync_thread.start()
-
-
 
 if __name__ == '__main__':
     print __doc__.strip()
