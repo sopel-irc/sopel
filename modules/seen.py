@@ -23,7 +23,7 @@ class Ddict(dict):
             self[key] = self.default()
         return dict.__getitem__(self, key)
 
-class DBSync(threading.Thread):
+class DBSyncThread(threading.Thread):
     def __init__(self):
         threading.Thread.__init__(self)
         self._finished = threading.Event()
@@ -33,12 +33,17 @@ class DBSync(threading.Thread):
         self.jenni = jenni
     def run(self):
         self.started = True
+        global sync_running
         while True:
             sync(self.jenni)
             self._finished.wait(self._interval)
 def sync(jenni):
+    global sync_running
+    if sync_running:
+        return
+    sync_running = True
     global seen_dict
-    if not jenni.settings.hascolumn("lastseentimestamp") and not jenni.settings.hascolumn("lastseenmessage") and not jenni.settings.hascolumn("lastseenchannel"):
+    if not jenni.settings.hascolumns({"lastseentimestamp", "lastseenmessage", "lastseenchannel"}):
         try:
             jenni.settings.addcolumns({"lastseentimestamp", "lastseenmessage", "lastseenchannel"})
         except:
@@ -46,10 +51,11 @@ def sync(jenni):
     for nick in seen_dict:
         jenni.settings[nick] = {'lastseentimestamp': str(seen_dict[nick]['timestamp']),'lastseenmessage': seen_dict[nick]['message'],'lastseenchannel': seen_dict[nick]['channel']}
     seen_dict=Ddict(dict)
+    sync_running = False
 
-
+sync_running = False
 seen_dict = Ddict(dict)
-sync_thread = DBSync()
+sync_thread = DBSyncThread()
 def seen(jenni, input):
     start_thread(jenni)
     if not input.group(2):
@@ -57,7 +63,7 @@ def seen(jenni, input):
         return
     nick = input.group(2)
     sync(jenni)
-    if jenni.settings.hascolumn('lastseenmessage') and nick in jenni.settings:
+    if jenni.settings.hascolumn('lastseenmessage') and nick in jenni.settings and jenni.settings[nick]['lastseentimestamp'] is not None:
         timestamp = float(jenni.settings[nick]['lastseentimestamp'])
         channel = jenni.settings[nick]['lastseenchannel']
         message = jenni.settings[nick]['lastseenmessage']
