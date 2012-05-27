@@ -28,8 +28,7 @@ def translate(text, input='auto', output='en'):
     )]
 
     input, output = urllib.quote(input), urllib.quote(output)
-    text = urllib.quote(text)
-
+    text = urllib.quote(text.encode("utf-8"))
     result = opener.open('http://translate.google.com/translate_a/t?' +
         ('client=t&hl=en&sl=%s&tl=%s&multires=1' % (input, output)) +
         ('&otf=1&ssel=0&tsel=0&uptl=en&sc=1&text=%s' % text)).read()
@@ -114,7 +113,7 @@ tr2.priority = 'low'
 
 def mangle(jenni, input):
     phrase = (input.group(2).encode('utf-8'), '')
-    for lang in ['fr', 'de', 'es', 'it', 'ja']:
+    for lang in ['fr', 'de', 'es', 'it', 'no', 'fi', 'la', 'ja' ]:
         backup = phrase
         phrase = translate(phrase[0], 'en', lang)
         if not phrase:
@@ -129,7 +128,7 @@ def mangle(jenni, input):
             break
         __import__('time').sleep(0.5)
 
-    jenni.reply(phrase or 'ERRORS SRY')
+    jenni.reply(phrase[0])
     #jenni.reply('This function is broken and disabled. see https://github.com/embolalia/jenni/issues/6 for more details.')
 mangle.commands = ['mangle']
 
