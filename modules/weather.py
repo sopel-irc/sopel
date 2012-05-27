@@ -420,7 +420,7 @@ f_weather.rule = (['weather'], r'(.*)')
 
 def update_icao(jenni, input):
     if not jenni.settings.hascolumn('icao'):
-        jenni.say("That's nice.")
+        jenni.settings.addcolumns({"icao"})
     else:
         icao_code = code(jenni, input.group(1))
         if not icao_code:
