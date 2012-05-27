@@ -27,7 +27,7 @@ class DBSyncThread(threading.Thread):
     def __init__(self):
         threading.Thread.__init__(self)
         self._finished = threading.Event()
-        self._interval = 20.0
+        self._interval = 600.0
     started = False
     def set_jenni(self, jenni):
         self.jenni = jenni
