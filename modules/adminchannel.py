@@ -316,36 +316,60 @@ kickban.priority = 'high'
 
 def topic(jenni, input):
     """
-    This gives admins the ability to change the topic.
-    Note: One does *NOT* have to be an OP, one just has to be on the list of
-    admins.
+    This gives ops the ability to change the topic.
     """
     purple, green, bold = '\x0306', '\x0310', '\x02'
-    if not input.admin:
+    if input.nick not in jenni.ops[input.sender] and input.nick not in jenni.halfplus[input.sender]:
         return
     text = input.group(2)
     if text == '':
         return
-    channel = input.sender
-    if channel == '#YourPants': #English
-        topic = purple +'Welcome to: '+ green +'#YourPants'+ purple \
-            +' | Site: '+ green +'http://dftba.net'+ purple \
-            +' | ' + bold + 'Topic: ' + bold + green + text
-    elif channel == "#YourPants-nl": #Dutch
-        topic = purple +'Welkom in: '+ green +'#YourPants-nl'+ purple \
-            +' | ' + bold + 'Gatherings: ' + bold + green + text
-    elif channel == "#YourPants-de": #German
-        topic = purple +'Willkommen bei: '+ green + channel + purple \
-            +' | '+ bold +'Thema: '+ bold + green + text
-    elif channel == "#YourPants-fr": #French
-        topic = purple +'Bienvenue \xE0 :'+ green + channel + purple \
-            +' | '+ bold +'Fil de discussion: '+ bold + green + text
-    else:
-        topic = purple +'Welcome to :'+ green + channel + purple \
-            +' | '+ bold +'Topic: '+ bold + green + text
+    channel = input.sender.lower()
+    
+    narg = 1
+    mask = None
+    if jenni.settings.hascolumn('topic_mask') and channel in jenni.settings:
+        mask = jenni.settings[channel]['topic_mask']
+        narg = len(re.findall('%s', mask))
+    if not mask or mask == '':
+        mask = purple +'Welcome to: '+ green + channel + purple \
+            +' | '+ bold +'Topic: '+ bold + green + '%s'
+    
+    top = input.group(2)
+    text = tuple()
+    if top:
+        text = tuple(unicode.split(top, '~', narg))
+        
+    
+    
+    if len(text) != narg:
+        message = "Not enough arguments. You gave "+str(len(text))+', it requires '+str(narg)+'.'
+        print mask
+        return jenni.say(message)
+    topic = mask % text
+    
     jenni.write(('TOPIC', channel + ' :' + topic))
 topic.commands = ['topic']
 topic.priority = 'low'
+
+def set_mask (jenni, input):
+    if input.nick not in jenni.ops[input.sender] and input.nick not in jenni.halfplus[input.sender]:
+        return
+    if not jenni.settings.hascolumn('topic_mask'):
+        jenni.say("I'm afraid I can't do that.")
+    else:
+        jenni.settings[input.sender] = {'topic_mask': input.group(2)}
+        jenni.say("Gotcha, " + input.nick)
+set_mask.commands = ['tmask']
+
+def show_mask (jenni, input):
+    if input.nick not in jenni.ops[input.sender] and input.nick not in jenni.halfplus[input.sender]:
+        return
+    if not jenni.settings.hascolumn('topic_mask'):
+        jenni.say("I'm afraid I can't do that.")
+    else:
+        jenni.say(jenni.settings[input.sender]['topic_mask'])
+show_mask.commands = ['showmask']
 
 if __name__ == '__main__':
     print __doc__.strip()

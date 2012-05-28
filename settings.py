@@ -9,6 +9,8 @@ http://inamidst.com/phenny/
 To use this DB
 """
 
+tablename = 'locales'
+
 class SettingsDB(object):
     def __init__(self, config):
         self.columns = set()
@@ -50,13 +52,10 @@ class SettingsDB(object):
             print 'Error: Unable to connect to user settings DB.'
             return
         cur = db.cursor()
-        cur.execute("SHOW tables like \"locales\";")
-        if not cur.fetchone():
-            print 'Error: Settings database does not have a "locales" table'
-            return
+        cur.execute("CREATE TABLE IF NOT EXISTS "+tablename+" ( name text );")
             
             
-        cur.execute("SHOW columns FROM locales;")
+        cur.execute("SHOW columns FROM "+tablename+";")
         for row in cur.fetchall():
             self.columns.add(row[0])
         db.close()
@@ -76,7 +75,7 @@ class SettingsDB(object):
                      passwd=self.__passwd,
                      db=self.__dbname)
             cur = db.cursor()
-            cur.execute("SELECT COUNT(*) FROM locales;")
+            cur.execute("SELECT COUNT(*) FROM "+tablename+";")
             result = int(cur.fetchone()[0])
             db.close()
             return result
@@ -93,7 +92,7 @@ class SettingsDB(object):
                      passwd=self.__passwd,
                      db=self.__dbname)
             cur = MySQLdb.cursors.DictCursor(db)
-            cur.execute('SELECT * FROM locales WHERE nick = "'+key+'";')
+            cur.execute('SELECT * FROM '+tablename+' WHERE name = "'+key+'";')
             row = cur.fetchone()
             
             if not row:
@@ -117,21 +116,22 @@ class SettingsDB(object):
                      passwd=self.__passwd,
                      db=self.__dbname)
             cur = MySQLdb.cursors.DictCursor(db)
-            cur.execute('SELECT * FROM locales WHERE nick = "'+key+'";')
+            cur.execute('SELECT * FROM '+tablename+' WHERE name = "'+key+'";')
             if not cur.fetchone():
-                cols = 'nick'
+                cols = 'name'
                 vals = '"'+key+'"'
                 for k in value:
                     cols = cols + ', ' + k
                     vals = vals + ', "' + value[k] + '"'
-                command = 'INSERT INTO locales ('+cols+') VALUES (' + \
+                command = 'INSERT INTO '+tablename+' ('+cols+') VALUES (' + \
                           vals + ');'
             else:
-                command = 'UPDATE locales SET '
+                command = 'UPDATE '+tablename+' SET '
                 for k in value:
                     command = command + k + '="' + value[k] + '", '
-                command = command[:-2]+' WHERE Nick = "' + key + '";'
+                command = command[:-2]+' WHERE name = "' + key + '";'
             cur.execute(command)
+            db.commit()
             db.close()
         else: raise KeyError('User database not initialized.')
         
@@ -146,12 +146,13 @@ class SettingsDB(object):
                      db=self.__dbname)
             cur = db.cursor()
             
-            cur.execute('SELECT * FROM locales WHERE nick = "'+key+'";')
+            cur.execute('SELECT * FROM '+tablename+' WHERE name = "'+key+'";')
             if not cur.fetchone():
                 db.close()
                 raise KeyError(key+' not in database')
             
-            cur.execute('DELETE FROM locales WHERE nick = "'+key+'";')
+            cur.execute('DELETE FROM '+tablename+' WHERE name = "'+key+'";')
+            db.commit()
             db.close()
         else: raise KeyError('User database not initialized.')
     
@@ -166,7 +167,7 @@ class SettingsDB(object):
                      db=self.__dbname)
             cur = db.cursor()
             
-            cur.execute('SELECT * FROM locales')
+            cur.execute('SELECT * FROM '+tablename+'')
             #TODO
             db.close()
         else: raise KeyError('User database not initialized.')
@@ -183,7 +184,7 @@ class SettingsDB(object):
             cur = db.cursor()
             
             #Let's immitate actual dict behavior
-            cur.execute('SELECT * FROM locales WHERE nick = "'+item+'";')
+            cur.execute('SELECT * FROM '+tablename+' WHERE name = "'+item+'";')
             result = cur.fetchone()
             db.close()
             if result: return True
@@ -193,3 +194,33 @@ class SettingsDB(object):
             
     def hascolumn(self, column):
         return column in self.columns
+    def hascolumns(self, columns):
+        has = True
+        for column in columns:
+            has = column in self.columns and has
+        return has
+        
+    def addcolumns(self, columns):
+        cmd = 'ALTER TABLE '+tablename+' ADD ( '
+        for column in columns:
+            if isinstance(column, tuple): cmd = cmd + column[0]+' '+column[1]+', '
+            else: cmd = cmd + column + ' text, '
+        cmd = cmd[:-2]+' );'
+        
+        if self.type == 'dict':
+            pass #TODO this and sqlite
+        elif self.type == 'mysql':
+            import MySQLdb
+            db = MySQLdb.connect(host=self.__host,
+                     user=self.__user,
+                     passwd=self.__passwd,
+                     db=self.__dbname)
+            cur = db.cursor()
+            
+            cur.execute(cmd)
+            db.commit()
+            db.close()
+        #Why a second loop? because I don't want clomuns to be added to self.columns if executing the SQL command fails
+        for column in columns:
+            self.columns.add(column)
+            

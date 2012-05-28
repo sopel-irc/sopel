@@ -165,6 +165,7 @@ def ytsearch(jenni, input):
     message = '[YT Search] Title: ' +video_info['title']+ \
               ' | Author: ' +video_info['uploader']+ \
               ' | Duration: ' +video_info['length']+ \
+              ' | Uploaded: ' +video_info['uploaded']+ \
               ' | Views: ' +video_info['views']+ \
               ' | Link: ' +video_info['link']
 
@@ -182,10 +183,14 @@ def ytinfo(jenni, input):
         return
 
     #combine variables and print
-    message = '[YouTube] Title: ' + video_info['title'] + ' | Uploader: ' + video_info['uploader'] + \
-              ' | Uploaded: ' + video_info['uploaded'] + ' | Length: ' + video_info['length'] + \
-              ' | Views: ' + video_info['views'] + ' | Comments: ' + video_info['comments'] + ' | Likes: '\
-              + video_info['likes'] + ' | Dislikes: ' + video_info['dislikes']
+    message = '[YouTube] Title: ' + video_info['title'] + \
+              ' | Uploader: ' + video_info['uploader'] + \
+              ' | Uploaded: ' + video_info['uploaded'] + \
+              ' | Duration: ' + video_info['length'] + \
+              ' | Views: ' + video_info['views'] + \
+              ' | Comments: ' + video_info['comments'] + \
+              ' | Likes: ' + video_info['likes'] + \
+              ' | Dislikes: ' + video_info['dislikes']
 
     jenni.say(HTMLParser().unescape(message))
 ytinfo.rule = '.*(youtube.com/watch\S*v=|youtu.be/)([\w-]+).*'
@@ -202,6 +207,7 @@ def ytlast(jenni, input):
 
     message = '[Latest Video] Title: ' +video_info['title']+ \
               ' | Duration: ' +video_info['length']+ \
+              ' | Uploaded: ' +video_info['uploaded']+ \
               ' | Views: ' +video_info['views']+ \
               ' | Likes: ' +video_info['likes']+ \
               ' | Dislikes: ' +video_info['dislikes']+ \
