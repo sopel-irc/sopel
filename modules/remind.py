@@ -102,24 +102,31 @@ scaling = {
 }
 
 periods = '|'.join(scaling.keys())
-p_command = r'\.in ([0-9]+(?:\.[0-9]+)?)\s?((?:%s)\b)?:?\s?(.*)' % periods
-r_command = re.compile(p_command)
 
 def remind(jenni, input):
-    m = r_command.match(input.bytes)
-    if not m:
+    duration = 0
+    message = re.split('(\d+ ?(?:'+periods+')) ?', input.group(2))[1:]
+    print input.group(2)
+    print message
+    reminder = ''
+    for piece in message:
+        stop = False
+        grp = re.match('(\d+) ?(.*) ?', piece)
+        if grp and not stop:
+            length = float(grp.group(1))
+            factor = scaling.get(grp.group(2), 60)
+            duration += length * factor
+        else:
+            reminder = reminder + piece
+            stop = True
+    if duration == 0:
         return jenni.reply("Sorry, didn't understand the input.")
-    length, scale, message = m.groups()
-
-    length = float(length)
-    factor = scaling.get(scale, 60)
-    duration = length * factor
-
+            
     if duration % 1:
         duration = int(duration) + 1
     else: duration = int(duration)
 
-    create_reminder(jenni, input, duration, message)
+    create_reminder(jenni, input, duration, reminder)
 remind.commands = ['in']
 
 
@@ -131,11 +138,11 @@ def at(jenni, input):
     tz = tz.strip()
     
     # Personal time zones, because they're rad
-    if self.users.hascolumn('tz'):
-        if match.group(2) and tz in self.users:
-            tz = self.users[tz]['tz']
-        elif origin.nick in self.users:
-            tz = self.users[origin.nick]['tz']
+    if self.settings.hascolumn('tz'):
+        if match.group(2) and tz in self.settings:
+            tz = self.settings[tz]['tz']
+        elif origin.nick in self.settings:
+            tz = self.settings[origin.nick]['tz']
   
     if tz not in all_timezones_set:
         jenni.say("Sorry, but I don't have data for that timezone or user.")
