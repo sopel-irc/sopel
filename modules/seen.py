@@ -42,9 +42,10 @@ seen.rule = (['seen'], r'(\S+)')
 
 def note(jenni, input):
     if input.sender.startswith('#'):
-        seen_dict[input.nick]['timestamp'] = time.time()
-        seen_dict[input.nick]['channel'] = input.sender.lower()
-        seen_dict[input.nick]['message'] = input
+        nick = input.nick.lower()
+        seen_dict[nick]['timestamp'] = time.time()
+        seen_dict[nick]['channel'] = input.sender
+        seen_dict[nick]['message'] = input
 
 note.rule = r'(.*)'
 note.priority = 'low'
