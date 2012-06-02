@@ -27,7 +27,7 @@ def seen(jenni, input):
     if not input.group(2):
         jenni.say(".seen <nick> - Reports when <nick> was last seen.")
         return
-    nick = input.group(2)
+    nick = input.group(2).lower()
     if seen_dict.has_key(nick):
         timestamp = seen_dict[nick]['timestamp']
         channel = seen_dict[nick]['channel']
@@ -43,7 +43,7 @@ seen.rule = (['seen'], r'(\S+)')
 def note(jenni, input):
     if input.sender.startswith('#'):
         seen_dict[input.nick]['timestamp'] = time.time()
-        seen_dict[input.nick]['channel'] = input.sender
+        seen_dict[input.nick]['channel'] = input.sender.lower()
         seen_dict[input.nick]['message'] = input
 
 note.rule = r'(.*)'
