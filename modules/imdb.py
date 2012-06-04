@@ -30,9 +30,9 @@ def imdb(jenni, input):
     u.close()
     message = '[IMDB] Title: ' +data['Title']+ \
               ' | Year: ' +data['Year']+ \
-              ' | Rating: ' +data['Rating']+ \
+              ' | Rating: ' +data['imdbRating']+ \
               ' | Genre: ' +data['Genre']+ \
-              ' | Link: http://imdb.com/title/' + data['ID']
+              ' | Link: http://imdb.com/title/' + data['imdbID']
     jenni.say(message)
 
 imdb.commands = ['imdb', 'movie']
