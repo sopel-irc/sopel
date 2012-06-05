@@ -7,7 +7,6 @@ This allows users to check if a website is up through isup.me.
 """
 
 import web, re
-import urllib2
 
 def isup(jenni, input):
     """isup.me website status checker"""
@@ -17,7 +16,7 @@ def isup(jenni, input):
     uri = 'http://www.isup.me/' + site
     try:
         response = web.get(uri)
-    except urllib2.HTTPError as e:
+    except Exception as e:
         jenni.say(site + ' is ' + str(e))
         return
     result = re.search('(?:<title>)(http://\S* Is )(Down|Up)',\
