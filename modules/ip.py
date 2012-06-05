@@ -16,7 +16,7 @@ def ip(jenni, input):
 		return jenni.reply("No search term.")
 	query = input.group(2).encode('utf-8')
 	uri = 'http://www.rscript.org/lookup.php?type=ipdns&ip='
-	answer = web.get(uri + web.urllib.quote(query.replace('+', '%2B')))
+	answer = web.get(uri + web.quote(query.replace('+', '%2B')))
 	if answer:
 		invalid = re.search("(?:INVALID: )([\S ]*)", answer)
 		if invalid:

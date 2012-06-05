@@ -17,7 +17,7 @@ def val(jenni, input):
     if not uri.startswith('http://'):
         uri = 'http://' + uri
 
-    path = '/check?uri=%s;output=xml' % web.urllib.quote(uri)
+    path = '/check?uri=%s;output=xml' % web.quote(uri)
     info = web.head('http://validator.w3.org' + path)
 
     result = uri + ' is '

@@ -11,25 +11,13 @@ More info:
 
 import re
 import web
-
-class Grab(web.urllib.URLopener):
-    def __init__(self, *args):
-        self.version = 'Mozilla/5.0 (Jenni)'
-        web.urllib.URLopener.__init__(self, *args)
-        self.addheader('Referer', 'https://github.com/sbp/jenni')
-    def http_error_default(self, url, fp, errcode, errmsg, headers):
-        return web.urllib.addinfourl(fp, [headers, errcode], "http:" + url)
-
 def google_ajax(query):
     """Search using AjaxSearch, and return its JSON."""
     if isinstance(query, unicode):
         query = query.encode('utf-8')
     uri = 'http://ajax.googleapis.com/ajax/services/search/web'
-    args = '?v=1.0&safe=off&q=' + web.urllib.quote(query)
-    handler = web.urllib._urlopener
-    web.urllib._urlopener = Grab()
+    args = '?v=1.0&safe=off&q=' + web.quote(query)
     bytes = web.get(uri + args)
-    web.urllib._urlopener = handler
     return web.json(bytes)
 
 def google_search(query):
@@ -115,7 +103,7 @@ gcs.example = '.gcs foo bar'
 r_bing = re.compile(r'<h3><a href="([^"]+)"')
 
 def bing_search(query, lang='en-GB'):
-    query = web.urllib.quote(query)
+    query = web.quote(query)
     base = 'http://www.bing.com/search?mkt=%s&q=' % lang
     bytes = web.get(base + query)
     m = r_bing.search(bytes)
@@ -146,7 +134,7 @@ r_duck = re.compile(r'nofollow" class="[^"]+" href="(.*?)">')
 
 def duck_search(query):
     query = query.replace('!', '')
-    query = web.urllib.quote(query)
+    query = web.quote(query)
     uri = 'http://duckduckgo.com/html/?q=%s&kl=uk-en' % query
     bytes = web.get(uri)
     m = r_duck.search(bytes)
@@ -200,7 +188,7 @@ def suggest(jenni, input):
         return jenni.reply("No query term.")
     query = input.group(2).encode('utf-8')
     uri = 'http://websitedev.de/temp-bin/suggest.pl?q='
-    answer = web.get(uri + web.urllib.quote(query).replace('+', '%2B'))
+    answer = web.get(uri + web.quote(query).replace('+', '%2B'))
     if answer:
         jenni.say(answer)
     else: jenni.reply('Sorry, no result.')
