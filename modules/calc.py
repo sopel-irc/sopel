@@ -21,7 +21,7 @@ def c(jenni, input):
     q = q.replace('\xcf\x95', 'phi') # utf-8 U+03D5
     q = q.replace('\xcf\x80', 'pi') # utf-8 U+03C0
     uri = 'http://www.google.com/ig/calculator?q='
-    bytes = web.get(uri + web.urllib.quote(q))
+    bytes = web.get(uri + web.quote(q))
     parts = bytes.split('",')
     answer = [p for p in parts if p.startswith('rhs: "')][0][6:]
     if answer:
@@ -42,7 +42,7 @@ def py(jenni, input):
     if input.admin:
         query = input.group(2).encode('utf-8')
         uri = 'http://tumbolia.appspot.com/py/'
-        answer = web.get(uri + web.urllib.quote(query))
+        answer = web.get(uri + web.quote(query))
         if answer:
             jenni.say(answer)
         else: jenni.reply('Sorry, no result.')
@@ -55,7 +55,7 @@ def wa(jenni, input):
         return jenni.reply("No search term.")
     query = input.group(2).encode('utf-8')
     uri = 'http://tumbolia.appspot.com/wa/'
-    answer = web.get(uri + web.urllib.quote(query.replace('+', '%2B')))
+    answer = web.get(uri + web.quote(query.replace('+', '%2B')))
     if answer:
         waOutputArray = string.split(HTMLParser.HTMLParser().unescape(answer), ";")
         if(len(waOutputArray) < 2):

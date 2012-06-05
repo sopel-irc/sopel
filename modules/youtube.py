@@ -13,37 +13,14 @@ More info:
 This module will respond to .yt and .youtube commands and searches the youtubes.
 """
 
-import urllib2, re
+import web, re
 from HTMLParser import HTMLParser
 
 def ytget(jenni, input, uri):
-    redirects = 0
-    while True:
-        req = urllib2.Request(uri, headers={'Accept':'*/*', 'User-Agent':'OpenAnything/1.0 +http://diveintopython.org/'})
-        try: u = urllib2.urlopen(req, None, 0.8)
-        except:
-            jenni.say('Something went wrong when accessing the YouTube API.')
-            return 'err'
-        info = u.info()
-        # info = web.head(uri)
-        if not isinstance(info, list):
-            status = '200'
-        else:
-            status = str(info[1])
-            try: info = info[0]
-            except: pass
-        if status.startswith('3'):
-            uri = urlparse.urljoin(uri, info['Location'])
-        else: break
-        redirects += 1
-        if redirects >= 50:
-            return "Too many re-directs."
-    try: mtype = info['content-type']
-    except: return
-    if not 'xml' in mtype:
-        return 'err'
-    bytes = u.read()
-    u.close()
+    try: bytes = web.get(uri)
+    except: 
+        jenni.say('Something went wrong when accessing the YouTube API.')
+        return err
     #Parse YouTube API info (XML)
     if '<entry gd:' in bytes:
         bytes = bytes.split('<entry gd:')[1]
