@@ -71,6 +71,8 @@ def get_urllib_object(uri, timeout):
     while True:
         req = urllib2.Request(uri, headers={'Accept':'*/*', 'User-Agent':'Mozilla/5.0 (Jenni)'})
         try: u = urllib2.urlopen(req, None, timeout)
+        except urllib2.HTTPError, e:
+            return e.fp
         except:
             raise
         info = u.info()
