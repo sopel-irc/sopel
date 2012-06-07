@@ -13,7 +13,7 @@ except ImportError:
     import simplejson as json
 except ImportError:
     print("Either update to python 2.6+ or install simplejson")
-import urllib2
+import web
 
 def imdb(jenni, input):
     if not input.group(2):
@@ -21,8 +21,7 @@ def imdb(jenni, input):
     word=input.group(2).rstrip()
     word=word.replace(" ", "+")
     uri="http://www.imdbapi.com/?t="+word
-    req = urllib2.Request(uri, headers={'Accept':'*/*', 'User-Agent':'OpenAnything/1.0 +http://diveintopython.org/'})
-    try: u = urllib2.urlopen(req, None, 30)
+    try: u = web.get_urllib_object(uri, 30)
     except:
         jenni.say('IMDB is too slow at the moment :(')
         return 'err'
@@ -30,9 +29,9 @@ def imdb(jenni, input):
     u.close()
     message = '[IMDB] Title: ' +data['Title']+ \
               ' | Year: ' +data['Year']+ \
-              ' | Rating: ' +data['Rating']+ \
+              ' | Rating: ' +data['imdbRating']+ \
               ' | Genre: ' +data['Genre']+ \
-              ' | Link: http://imdb.com/title/' + data['ID']
+              ' | Link: http://imdb.com/title/' + data['imdbID']
     jenni.say(message)
 
 imdb.commands = ['imdb', 'movie']
