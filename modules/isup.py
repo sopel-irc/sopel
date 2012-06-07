@@ -14,7 +14,11 @@ def isup(jenni, input):
     if not site:
         return jenni.reply("What site do you want to check?")
     uri = 'http://www.isup.me/' + site
-    response = web.get(uri)
+    try:
+        response = web.get(uri)
+    except Exception as e:
+        jenni.say(site + ' is ' + str(e))
+        return
     result = re.search('(?:<title>)(http://\S* Is )(Down|Up)',\
                        response)
     if result:

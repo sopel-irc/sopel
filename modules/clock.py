@@ -323,7 +323,7 @@ npl.priority = 'high'
 
 def update_user(jenni, input):
     if not jenni.settings.hascolumn('tz'):
-        jenni.say("That's nice.")
+        jenni.settings.addcolumns({"tz"})
     else:
         tz = input.group(1)
         goodtz = tz in TimeZones
