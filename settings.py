@@ -2,9 +2,9 @@
 """
 *Availability: 3.x+*
 
-This class defines a *dict*-like interface for a semi-arbitrary database
-type. It is meant to allow module writers to operate without regard to
-how the end user has decided to set up the database.
+This class defines an interface for a semi-arbitrary database type. It is meant
+to allow module writers to operate without regard to how the end user has
+decided to set up the database.
 
 The SettingsDB object itself is essentially a dict which maps channel and
 user names to another dict, which maps a column name to some value. As such,
