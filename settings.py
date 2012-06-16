@@ -1,6 +1,21 @@
 #!/usr/bin/env python
 """
-users.py - Abstracted per-user settings database for Jenni
+*Availability: 3.x+*
+
+This class defines a *dict*-like interface for a semi-arbitrary database
+type. It is meant to allow module writers to operate without regard to
+how the end user has decided to set up the database.
+
+The SettingsDB object itself is essentially a dict which maps channel and
+user names to another dict, which maps a column name to some value. As such,
+the most frequent use will be in the form `jenni.settings[user][column]`,
+where table and user are strings.
+
+A number of methods from the dict object are not implemented here. If the
+method is not listed below, it has not yet been written. This may change in
+future versions.
+"""
+"""
 Copyright 2012, Edward D. Powell, embolalia.net
 Licensed under the Eiffel Forum License 2.
 
@@ -9,9 +24,43 @@ http://inamidst.com/phenny/
 To use this DB
 """
 
+from collections import Iterable
+from tools import deprecated
+
+mysql = False
+sqlite = False
+try:
+    import MySQLdb
+    import MySQLdb.cursors
+    mysql = True
+except ImportError: pass
+
+#TODO
+try:
+    pass
+    #sqlite = True
+except ImportError: pass
+
 tablename = 'locales'
 
 class SettingsDB(object):
+    """
+    Return a SettingsDB object configured with the options in the given Config
+    object. The exact settgins used vary depending on the type of database
+    chosen to back the SettingsDB, as determined by the ``userdb_type``
+    attribute of *config*.
+    
+    Currently, two values for ``userdb_type`` are supported: ``dict`` and
+    ``mysql``. Support for ``sqlite`` is planned.
+    
+    With the ``dict`` type, only one other attribute is used - ``userdb_data``.
+    This attribute is a native Python dict, usually written by hand in the
+    jenni config file. As such, the ``dict`` type is unique in that changes to
+    it are nto persistant across restarts of the bot, or multiple instances of
+    the bot.
+    """
+    #Note, #Python recommends using dictcursor, so you can select x in y
+    #Also, PEP8 says not to import in the middle of your code. That answers that.
     def __init__(self, config):
         self.columns = set()
         if not hasattr(config, 'userdb_type'):
@@ -22,36 +71,37 @@ class SettingsDB(object):
         
         if self.type == 'dict':
             self.db = config.userdb_data
-        elif self.type == 'mysql':
+        elif self.type == 'mysql' and mysql:
             self.mySQL(config)
-        elif self.type == 'sqlite':
+        elif self.type == 'sqlite' and sqlite:
             self.sqlite(config)
         else:
-            print 'User settings database type is not supported. Ignoring.'
+            print 'User settings database type is not supported. You may be missing the module for it. Ignoring.'
             return
             
             
-    def mySQL(self, config):
+    def _mySQL(self, config):
         import MySQLdb
         try:
-                self.__host = config.userdb_host
-                self.__user = config.userdb_user
-                self.__passwd = config.userdb_pass
-                self.__dbname = config.userdb_name
+                self._host = config.userdb_host
+                self._user = config.userdb_user
+                self._passwd = config.userdb_pass
+                self._dbname = config.userdb_name
         except AttributeError as e:
                 print 'Some options are missing for your MySQL user settings DB.'
                 print 'The database will not be set up.'
                 return
             
         try:
-            db = MySQLdb.connect(host=self.__host,
-                         user=self.__user,
-                         passwd=self.__passwd,
-                         db=self.__dbname)
+            db = MySQLdb.connect(host=self._host,
+                         user=self._user,
+                         passwd=self._passwd,
+                         db=self._dbname)
         except:
             print 'Error: Unable to connect to user settings DB.'
             return
         cur = db.cursor()
+        #TODO this throws a warning. Do something about that.
         cur.execute("CREATE TABLE IF NOT EXISTS "+tablename+" ( name text );")
             
             
@@ -60,20 +110,62 @@ class SettingsDB(object):
             self.columns.add(row[0])
         db.close()
 
-    def sqlite(self):
+    def _sqlite(self):
         print 'sqlite is not yet supported for user settings.'
         return
-            
-    def __len__(self):
-        if self.type == 'dict':
-            return len(self.db)
+    
+    def users(self):
+        """
+        Returns the number of users (entries not starting with # or &).
+        If the database is uninitialized, returns 0.
+        """
+        
         if self.type == 'mysql':
             import MySQLdb
             
-            db = MySQLdb.connect(host=self.__host,
-                     user=self.__user,
-                     passwd=self.__passwd,
-                     db=self.__dbname)
+            db = MySQLdb.connect(host=self._host,
+                     user=self._user,
+                     passwd=self._passwd,
+                     db=self._dbname)
+            cur = db.cursor()
+            cur.execute("SELECT COUNT(*) FROM "+tablename+
+                    " WHERE name LIKE \"[^#&]%;")
+            result = int(cur.fetchone()[0])
+            db.close()
+            return result
+        else:
+            return 0
+    
+    def channels(self):
+        """
+        Returns the number of users (entries starting with # or &).
+        If the database is uninitialized, returns 0.
+        """
+        
+        if self.type == 'mysql':
+            import MySQLdb
+            
+            db = MySQLdb.connect(host=self._host,
+                     user=self._user,
+                     passwd=self._passwd,
+                     db=self._dbname)
+            cur = db.cursor()
+            cur.execute("SELECT COUNT(*) FROM "+tablename+
+                    " WHERE name LIKE \"[#&]%;")
+            result = int(cur.fetchone()[0])
+            db.close()
+            return result
+        else:
+            return 0
+
+    def size(self):
+        """Returns the total number of users and channels in the database."""
+        if self.type == 'mysql':
+            
+            db = MySQLdb.connect(host=self._host,
+                     user=self._user,
+                     passwd=self._passwd,
+                     db=self._dbname)
             cur = db.cursor()
             cur.execute("SELECT COUNT(*) FROM "+tablename+";")
             result = int(cur.fetchone()[0])
@@ -81,16 +173,81 @@ class SettingsDB(object):
             return result
         else:
             return 0
+
+    @deprecated
+    def __len__(self):
+        return self.size()
+        
+    def _get_one(self, key, value):
+        """Implements get() for where values is a single string"""
+        if self.type == 'dict':
+            return self.db[key]
+        elif self.type == 'mysql':
+            db = MySQLdb.connect(host=self._host,
+                     user=self._user,
+                     passwd=self._passwd,
+                     db=self._dbname)
+            cur = MySQLdb.cursors.DictCursor(db)
+            cur.execute(
+                'SELECT %s FROM '+tablename+' WHERE name = "%s";', (value, key))
+            row = cur.fetchone()
             
+            if not row:
+                db.close()
+                raise KeyError(key+' not in database')
+            db.close()
+            
+            return row[value]
+        else:
+            #TODO This should be a different kind of error.
+            raise KeyError('User database not initialized.')
+    
+    def _get_many(self, key, values):
+        """Implements get() for where values is iterable"""
+        if self.type == 'dict':
+            return self.db[key]
+        elif self.type == 'mysql':
+            db = MySQLdb.connect(host=self._host,
+                     user=self._user,
+                     passwd=self._passwd,
+                     db=self._dbname)
+            cur = MySQLdb.cursors.DictCursor(db)
+            cur.execute(
+                'SELECT %s FROM '+tablename+' WHERE name = "%s";', (value, key))
+            row = cur.fetchone()
+            
+            if not row:
+                db.close()
+                raise KeyError(key+' not in database')
+            db.close()
+            
+            return row[value]
+        else:
+            #TODO This should be a different kind of error.
+            raise KeyError('User database not initialized.')
+
+    def get(self, key, values):
+        """
+        Retrieve one or more ``values`` for a ``key``. 
+        
+        ``values`` can be either a single string or an iterable of strings. If
+        it is a single string, a single string will be returned. If it is an
+        iterable, a dict will be returned which maps each of the keys in 
+        ``values`` to its corresponding data."""
+        if isinstance(values, Iterable):
+            return self._get_many(key, values)
+        else:
+            return self._get_one(key, values)
+    
+    @deprecated
     def __getitem__(self, key):
         if self.type == 'dict':
             return self.db[key]
         elif self.type == 'mysql':
-            import MySQLdb, MySQLdb.cursors 
-            db = MySQLdb.connect(host=self.__host,
-                     user=self.__user,
-                     passwd=self.__passwd,
-                     db=self.__dbname)
+            db = MySQLdb.connect(host=self._host,
+                     user=self._user,
+                     passwd=self._passwd,
+                     db=self._dbname)
             cur = MySQLdb.cursors.DictCursor(db)
             cur.execute('SELECT * FROM '+tablename+' WHERE name = "'+key+'";')
             row = cur.fetchone()
@@ -102,48 +259,55 @@ class SettingsDB(object):
             
             return row
         else:
-            return None
+            raise KeyError('User database not initialized.')
     
-    #value is a dict {'columnName': 'value'} for each updated column        
-    def __setitem__(self, key, value):
+    def update(self, nick, values):
+        """
+        Update the given values for ``nick``. ``value`` must be a dict which
+        maps the names of the columns to be updated to their new values.
+        """
         if self.type == 'dict':
-            for k, v in value:
+            for k, v in values:
                 self.db[key][k] = v
         elif self.type == 'mysql':
-            import MySQLdb, MySQLdb.cursors 
-            db = MySQLdb.connect(host=self.__host,
-                     user=self.__user,
-                     passwd=self.__passwd,
-                     db=self.__dbname)
+            db = MySQLdb.connect(host=self._host,
+                     user=self._user,
+                     passwd=self._passwd,
+                     db=self._dbname)
             cur = MySQLdb.cursors.DictCursor(db)
             cur.execute('SELECT * FROM '+tablename+' WHERE name = "'+key+'";')
             if not cur.fetchone():
                 cols = 'name'
                 vals = '"'+key+'"'
-                for k in value:
+                for k in values:
                     cols = cols + ', ' + k
-                    vals = vals + ', "' + value[k] + '"'
+                    vals = vals + ', "' + values[k] + '"'
                 command = 'INSERT INTO '+tablename+' ('+cols+') VALUES (' + \
                           vals + ');'
             else:
                 command = 'UPDATE '+tablename+' SET '
-                for k in value:
-                    command = command + k + '="' + value[k] + '", '
+                for k in values:
+                    command = command + k + '="' + values[k] + '", '
                 command = command[:-2]+' WHERE name = "' + key + '";'
             cur.execute(command)
             db.commit()
             db.close()
         else: raise KeyError('User database not initialized.')
         
-    def __delitem__(self, key):
+    @deprecated    
+    def __setitem__(self, key, value):
+        self.update(key, value)
+    
+    def delete(self, key):
+        """Deletes the row for *key* in the database, removing its values in all
+        rows."""
         if self.type == 'dict':
             del self.db[key]
         elif self.type == 'mysql':
-            import MySQLdb
-            db = MySQLdb.connect(host=self.__host,
-                     user=self.__user,
-                     passwd=self.__passwd,
-                     db=self.__dbname)
+            db = MySQLdb.connect(host=self._host,
+                     user=self._user,
+                     passwd=self._passwd,
+                     db=self._dbname)
             cur = db.cursor()
             
             cur.execute('SELECT * FROM '+tablename+' WHERE name = "'+key+'";')
@@ -155,32 +319,49 @@ class SettingsDB(object):
             db.commit()
             db.close()
         else: raise KeyError('User database not initialized.')
+        
+    @deprecated
+    def __delitem__(self, key):
+        self.delete(key)
     
-    def __iter__(self):
+    def keys(self):
+        """
+        Return an iterator over the nicks and channels in the database.
+
+        In a for each loop, you can use ``for key in db:``, where key will be a
+        channel or nick, and db is your SettingsDB. This may be deprecated in
+        future versions.
+        """
         if self.type == 'dict':
             return iter(self.db)
         elif self.type == 'mysql':
-            import MySQLdb
-            db = MySQLdb.connect(host=self.__host,
-                     user=self.__user,
-                     passwd=self.__passwd,
-                     db=self.__dbname)
+            db = MySQLdb.connect(host=self._host,
+                     user=self._user,
+                     passwd=self._passwd,
+                     db=self._dbname)
             cur = db.cursor()
             
-            cur.execute('SELECT * FROM '+tablename+'')
-            #TODO
+            cur.execute('SELECT name FROM '+tablename+'')
+            result = cur.fetchall()
             db.close()
+            return result
         else: raise KeyError('User database not initialized.')
     
-    def __contains__(self, item):
+    def __iter__(self):
+        return self.keys()
+    
+    def contains(self, item):
+        """
+        Return ``True`` if d has a key *key*, else ``False``.
+        
+        ``key in db`` will also work, where db is your SettingsDB object."""
         if self.type == 'dict':
             return item in self.db
         elif self.type == 'mysql':
-            import MySQLdb
-            db = MySQLdb.connect(host=self.__host,
-                     user=self.__user,
-                     passwd=self.__passwd,
-                     db=self.__dbname)
+            db = MySQLdb.connect(host=self._host,
+                     user=self._user,
+                     passwd=self._passwd,
+                     db=self._dbname)
             cur = db.cursor()
             
             #Let's immitate actual dict behavior
@@ -191,16 +372,44 @@ class SettingsDB(object):
             else: return False
             
         else: return False
+    
+    def __contains__(self, item):
+        return self.contains(item)
             
     def hascolumn(self, column):
-        return column in self.columns
+        """
+        The SettingsDB contains a cached list of its columns. ``hascolumn(column)``
+        checks this list, and returns True if it contains ``column``. If
+        ``column`` is an iterable, this returns true if all of the values in 
+        ``column`` are in the column cache. Note that this will not check the
+        database itself; it's meant for speed, not accuracy. However, unless
+        you have multiple bots using the same database, or are adding columns
+        while the bot is running, you are unlikely to encounter errors.
+        """
+        if isinstance(values, Iterable):
+            has = True
+            for column in columns:
+                has = column in self.columns and has
+            return has
+        else:
+            return column in self.columns
+        
+    @deprecated
     def hascolumns(self, columns):
+        """
+        Returns True if ``hascolumn`` evaluates to true for each column in the
+        iterable ``columns``.
+        """
         has = True
         for column in columns:
             has = column in self.columns and has
         return has
         
     def addcolumns(self, columns):
+        """
+        Insert a new column into the table, and add it to the column cache.
+        This is the preferred way to add new columns to the database.
+        """
         cmd = 'ALTER TABLE '+tablename+' ADD ( '
         for column in columns:
             if isinstance(column, tuple): cmd = cmd + column[0]+' '+column[1]+', '
@@ -210,11 +419,10 @@ class SettingsDB(object):
         if self.type == 'dict':
             pass #TODO this and sqlite
         elif self.type == 'mysql':
-            import MySQLdb
-            db = MySQLdb.connect(host=self.__host,
-                     user=self.__user,
-                     passwd=self.__passwd,
-                     db=self.__dbname)
+            db = MySQLdb.connect(host=self._host,
+                     user=self._user,
+                     passwd=self._passwd,
+                     db=self._dbname)
             cur = db.cursor()
             
             cur.execute(cmd)
