@@ -350,7 +350,7 @@ class SettingsDB(object):
     def __iter__(self):
         return self.keys()
     
-    def contains(self, item):
+    def contains(self, key):
         """
         Return ``True`` if d has a key *key*, else ``False``.
         
@@ -431,4 +431,66 @@ class SettingsDB(object):
         #Why a second loop? because I don't want clomuns to be added to self.columns if executing the SQL command fails
         for column in columns:
             self.columns.add(column)
+
+    def write_config(config):
+        """
+        Interactively create configuration options and add the attributes to
+        the Config object ``config``.
+        """
+        chunk = """\
+        # ------------------  USER DATABASE CONFIGURATION  ------------------
+        # The user database was not set up at install. Please consult the documentation,
+        # or run the configuration utility if you wish to use it."""
+        c = config.option("Would you like to set up a settings database now")
+        
+        if not c:
+            return chunk
+        
+        config.add('userdb_type',
+            'What type of database would you like to use? [%s]', 'mysql')
+        
+        if config.userdb_type == 'dict':
+            config.add('userdb_data',"""\
+            Enter the data now, all on one line. If you give up, close your
+            brackets and hit enter. If you'd rather edit the file later, hit
+            enter now.""", """\
+            {
+                 'someuser':    {'tz': 'America/New_York'}
+                 'anotheruser': {'icao': 'KCMH'}
+                 'onemoreuser': {'tz': 'Europe/Berlin', 'icao': 'EDDT'}""")
+            chunk = """\
+    # ------------------  USER DATABASE CONFIGURATION  ------------------
+    # Below is the user database configuration. If you want to keep the same
+    # user database type, it's fine to change this. If you want to change types,
+    # you should run the configuration utility (or at least consult the 
+    # SettingsDB documentation page).
+    
+    userdb_type = 'dict'
+    userdb_data = """+str(config.userdb_data)
+        
+        elif config.userdb_type == 'mysql':
+            config.add('userdb_host', "Enter the MySQL hostname", 'localhost')
+            config.add('userdb_user', "Enter the MySQL username")
+            config.add('userdb_pass', "Enter the user's password", 'none')
+            config.add('userdb_name', "Enter the name of the database to use")
             
+            chunk = """\
+    # ------------------  USER DATABASE CONFIGURATION  ------------------
+    # Below is the user database configuration. If you want to keep the same
+    # user database type, it's fine to change this. If you want to change types,
+    # you should run the configuration utility (or at least consult the 
+    # SettingsDB documentation page).
+
+    userdb_type = '%s'
+    userdb_user = '%s'
+    userdb_pass = '%s'
+    userdb_name = '%s'""" % (config.userdb_type, config.userdb_user,
+                             config.userdb_pass, config.userdb_name)
+        
+        elif config.userdb_type == 'sqlite':
+            config.say("This isn't currently supported. Aborting.")
+        else:
+            config.say("This isn't currently supported. Aborting.")
+        
+        return chunk
+
