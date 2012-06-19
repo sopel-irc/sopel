@@ -211,6 +211,7 @@ def addpoint_command(jenni, input):
     scores.editpoints(jenni, input, nick, True)
 addpoint_command.commands = ['addpoint']
 addpoint_command.priority = 'high'
+addpoint_command.rate = 300
 
 
 def rmpoint_command(jenni, input):
@@ -221,6 +222,7 @@ def rmpoint_command(jenni, input):
     scores.editpoints(jenni, input, nick, False)
 rmpoint_command.commands = ['rmpoint']
 rmpoint_command.priority = 'high'
+rmpoint_command.rate = 300
 
 
 def view_scores(jenni, input):
@@ -228,6 +230,7 @@ def view_scores(jenni, input):
     scores.view_scores(jenni, input)
 view_scores.commands = ['scores']
 view_scores.priority = 'medium'
+view_scores.rate = 300
 
 
 def setpoint(jenni, input):

@@ -89,6 +89,7 @@ def w(jenni, input):
     jenni.say(result)
 w.commands = ['w']
 w.example = '.w bailiwick'
+w.rate = 30
 
 if __name__ == '__main__':
     print __doc__.strip()

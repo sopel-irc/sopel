@@ -50,6 +50,7 @@ def dict(jenni, input):
         jenni.reply('Sorry, no definition found.')
     else: jenni.say(result)
 dict.commands = ['dict']
+dict.rate = 30
 
 if __name__ == '__main__':
     print __doc__.strip()

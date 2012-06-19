@@ -73,6 +73,7 @@ def goodbye(jenni, input):
     jenni.say(byemsg + ' ' + input.nick + punctuation)
 goodbye.rule = r'(?i)$nickname\:\s+(bye|goodbye|seeya|cya|ttyl|g2g|gnight|goodnight)'
 goodbye.thread = False
+goodbye.rate = 30
 
 ## Functions that do rely on "AISTATE"
 
@@ -126,14 +127,17 @@ def ty(jenni, input):
         jenni.reply("You're welcome.")
 ty.rule = '(?i).*(thank).*(you).*(jenni|$nickname).*$'
 ty.priority = 'high'
+ty.rate = 30
 
 def ty2(jenni, input):
     ty(jenni,input)
 ty2.rule = '(?i)$nickname\:\s+(thank).*(you).*'
+ty2.rate = 30
 
 def ty4(jenni, input):
     ty(jenni, input)
 ty4.rule = '(?i).*(thanks).*(jenni|$nickname).*'
+ty4.rate = 40
 
 def random_resp(jenni, input):
     # This randomly takes what someone says in the form of "jenni: <message>" and just spits it back out at the user that said it.
@@ -156,6 +160,7 @@ def yesno(jenni,input):
     elif text[0] == 'no':
         jenni.reply("yes")
 yesno.rule = '(jenni|$nickname)\:\s+(yes|no)$'
+yesno.rate = 15
 
 def ping_reply (jenni,input):
     text = input.group().split(":")
@@ -163,18 +168,22 @@ def ping_reply (jenni,input):
     if text[0] == 'PING' or text[0] == 'ping':
         jenni.reply("PONG")
 ping_reply.rule = '(?i)($nickname|jenni)\:\s+(ping)\s*'
+ping_reply.rate = 30
 
 def love (jenni, input):
     jenni.reply("I love you too.")
 love.rule = '(?i)i.*love.*(jenni|$nickname).*'
+love.rate = 30
 
 def love2 (jenni, input):
     jenni.reply("I love you too.")
 love2.rule = '(?i)(jenni|$nickname)\:\si.*love.*'
+love2.rate = 30
 
 def love3 (jenni, input):
     jenni.reply("I love you too.")
 love3.rule = '(?i)(jenni|$nickname)\,\si.*love.*'
+love3.rate = 30
 
 if __name__ == '__main__':
     print __doc__.strip()

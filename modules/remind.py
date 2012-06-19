@@ -131,6 +131,7 @@ def remind(jenni, input):
         jenni.reply('Okay, will remind%s' % w)
     else: jenni.reply('Okay, will remind in %s secs' % duration)
 remind.commands = ['in']
+remind.rate = 30
 
 if __name__ == '__main__':
     print __doc__.strip()

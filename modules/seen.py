@@ -25,6 +25,7 @@ def f_seen(self, origin, match, args):
         self.msg(origin.sender, str(origin.nick) + ': ' + msg)
     else: self.msg(origin.sender, "Sorry, I haven't seen %s around." % nick)
 f_seen.rule = (['seen'], r'(\S+)')
+f_seen.rate = 45
 
 @deprecated
 def f_note(self, origin, match, args):

@@ -40,6 +40,7 @@ def f_bye(jenni, input):
     jenni.say(random.choice(respond))
 f_bye.rule = '(g2g!?|bye!?)$'
 f_bye.priority = 'high'
+f_bye.rate = 30
 
 def f_argh(jenni, input):
     randnum = random.random()

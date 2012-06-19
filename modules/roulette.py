@@ -59,6 +59,7 @@ def roulette (jenni, input):
         jenni.say(ROULETTE_STRINGS['TICK'])
 roulette.commands = ['roulette']
 roulette.priority = 'low'
+roulette.rate = 60
 
 def rouletteStop (jenni, input):
     global ROULETTE_TMP, ROULETTE_STRINGS
@@ -73,6 +74,7 @@ def rouletteStop (jenni, input):
         jenni.say(ROULETTE_STRINGS['GAME_END_FAIL'] % (input.nick, ROULETTE_TMP['TIMEOUT'].seconds - (datetime.now() - ROULETTE_TMP['LAST-ACTIVITY']).seconds))
 rouletteStop.commands = ['roulette-stop']
 roulette.priority = 'low'
+roulette.rate = 60
 
 if __name__ == '__main__':
     print __doc__.strip()

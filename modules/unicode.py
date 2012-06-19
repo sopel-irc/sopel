@@ -22,6 +22,7 @@ def meh(jenni, input):
             break
     jenni.say(s)
 meh.commands = ['sc']
+meh.rate = 30
 
 
 def decode(bytes):

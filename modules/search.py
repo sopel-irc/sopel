@@ -72,6 +72,7 @@ def g(jenni, input):
 g.commands = ['g']
 g.priority = 'high'
 g.example = '.g swhack'
+g.rate = 30
 
 def gc(jenni, input):
     """Returns the number of Google results for the specified input."""
@@ -84,6 +85,7 @@ def gc(jenni, input):
 gc.commands = ['gc']
 gc.priority = 'high'
 gc.example = '.gc extrapolate'
+gc.rate = 30
 
 r_query = re.compile(
     r'\+?"[^"\\]*(?:\\.[^"\\]*)*"|\[[^]\\]*(?:\\.[^]\\]*)*\]|\S+'
@@ -109,6 +111,7 @@ def gcs(jenni, input):
     reply = ', '.join('%s (%s)' % (t, formatnumber(n)) for (t, n) in results)
     jenni.say(reply)
 gcs.commands = ['gcs', 'comp']
+gcs.rate = 30
 
 r_bing = re.compile(r'<h3><a href="([^"]+)"')
 
@@ -139,6 +142,7 @@ def bing(jenni, input):
     else: jenni.reply("No results found for '%s'." % query)
 bing.commands = ['bing']
 bing.example = '.bing swhack'
+bing.rate = 30
 
 r_duck = re.compile(r'nofollow" class="[^"]+" href="(.*?)">')
 
@@ -163,6 +167,7 @@ def duck(jenni, input):
         jenni.bot.last_seen_uri[input.sender] = uri
     else: jenni.reply("No results found for '%s'." % query)
 duck.commands = ['duck', 'ddg']
+duck.rate = 30
 
 def search(jenni, input):
     if not input.group(2):
@@ -188,6 +193,7 @@ def search(jenni, input):
 
     jenni.reply(result)
 search.commands = ['search']
+search.rate = 30
 
 def suggest(jenni, input):
     if not input.group(2):
@@ -199,6 +205,7 @@ def suggest(jenni, input):
         jenni.say(answer)
     else: jenni.reply('Sorry, no result.')
 suggest.commands = ['suggest']
+suggest.rate = 30
 
 if __name__ == '__main__':
     print __doc__.strip()
