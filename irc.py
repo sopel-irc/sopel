@@ -56,7 +56,7 @@ def log_raw(line):
     f.close()
 
 class Bot(asynchat.async_chat):
-    def __init__(self, nick, name, channels, password=None):
+    def __init__(self, nick, name, channels, password=None, logchan_pm=None):
         asynchat.async_chat.__init__(self)
         self.set_terminator('\n')
         self.buffer = ''
@@ -69,6 +69,7 @@ class Bot(asynchat.async_chat):
         self.verbose = True
         self.channels = channels or []
         self.stack = []
+        self.logchan_pm = logchan_pm
 
         import threading
         self.sending = threading.RLock()
@@ -129,7 +130,10 @@ class Bot(asynchat.async_chat):
         print >> sys.stderr, 'Closed!'
 
     def collect_incoming_data(self, data):
-        log_raw(data)
+        if data:
+            log_raw(data)
+            if hasattr(self, "logchan_pm") and self.logchan_pm and "PRIVMSG" in data and "#" not in data.split()[2]:
+                self.msg(self.logchan_pm, data)
         self.buffer += data
 
     def found_terminator(self):
