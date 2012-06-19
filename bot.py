@@ -7,7 +7,7 @@ Licensed under the Eiffel Forum License 2.
 http://inamidst.com/phenny/
 """
 
-import sys, os, re, threading, imp
+import time, sys, os, re, threading, imp
 import irc
 
 home = os.getcwd()
@@ -27,6 +27,8 @@ class Jenni(irc.Bot):
         self.config = config
         self.doc = {}
         self.stats = {}
+        self.times = {}
+        self.acivity = {}
         self.setup()
 
     def setup(self):
@@ -110,6 +112,9 @@ class Jenni(irc.Bot):
             if not hasattr(func, 'event'):
                 func.event = 'PRIVMSG'
             else: func.event = func.event.upper()
+
+            if not hasattr(func, 'rate'):
+                func.rate = 0
 
             if hasattr(func, 'rule'):
                 if isinstance(func.rule, str):
@@ -197,7 +202,17 @@ class Jenni(irc.Bot):
         return CommandInput(text, origin, bytes, match, event, args)
 
     def call(self, func, origin, jenni, input):
-        try: func(jenni, input)
+        nick = (input.nick).lower()
+        if nick in self.times:
+            if func in self.times[nick]:
+                if not input.admin:
+                    if time.time() - self.times[nick][func] < func.rate:
+                        self.times[nick][func] = time.time()
+                        return
+        else: self.times[nick] = dict()
+        self.times[nick][func] = time.time()
+        try:
+            func(jenni, input)
         except Exception, e:
             self.error(origin)
 
@@ -226,6 +241,9 @@ class Jenni(irc.Bot):
                         jenni = self.wrapped(origin, text, match)
                         input = self.input(origin, text, bytes, match, event, args)
 
+                        nick = (input.nick).lower()
+
+                        ## blocking ability
                         if os.path.isfile("blocks"):
                             g = open("blocks", "r")
                             contents = g.readlines()
@@ -253,7 +271,7 @@ class Jenni(irc.Bot):
                                     re_temp = re.compile(nick)
                                     if re_temp.findall(input.nick) or nick in input.nick:
                                         return
-
+                        # stats
                         if func.thread:
                             targs = (func, origin, jenni, input)
                             t = threading.Thread(target=self.call, args=targs)

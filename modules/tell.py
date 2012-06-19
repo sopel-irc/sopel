@@ -101,6 +101,7 @@ def f_remind(jenni, input):
 
     dumpReminders(jenni.tell_filename, jenni.reminders) # @@ tell
 f_remind.rule = ('$nick', ['tell', 'ask'], r'(\S+) (.*)')
+f_remind.rate = 45
 
 def getReminders(jenni, channel, key, tellee):
     lines = []

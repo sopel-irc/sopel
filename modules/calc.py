@@ -66,6 +66,7 @@ def calc(jenni, input):
     jenni.say('Note that .calc is deprecated, consider using .c')
 calc.commands = ['calc']
 calc.example = '.calc 5 + 3'
+calc.rate = 30
 
 def c(jenni, input):
     """Google calculator."""
@@ -90,6 +91,7 @@ def c(jenni, input):
     else: jenni.say('Sorry, no result.')
 c.commands = ['c']
 c.example = '.c 5 + 3'
+c.rate = 30
 
 def py(jenni, input):
     code = input.group(2)
@@ -101,6 +103,7 @@ def py(jenni, input):
         jenni.say(answer)
     else: jenni.reply('Sorry, no result.')
 py.commands = ['py']
+py.rate = 30
 
 def wa(jenni, input):
     if not input.group(2):
@@ -112,6 +115,7 @@ def wa(jenni, input):
         jenni.say(answer)
     else: jenni.reply('Sorry, no result.')
 wa.commands = ['wa']
+wa.rate = 30
 
 if __name__ == '__main__':
     print __doc__.strip()

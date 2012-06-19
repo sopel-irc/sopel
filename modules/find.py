@@ -158,6 +158,7 @@ def findandreplace(jenni, input):
 # Matches optional whitespace + 's' + optional whitespace + separator character
 findandreplace.rule = r'(?u)(?:([^\s:]+)[\s:])?\s*s\s*([^\s\w])(.*)' # May work for both this and "meant" (requires input.group(i+1))
 findandreplace.priority = 'high'
+findandreplace.rate = 30
 
 
 if __name__ == '__main__':

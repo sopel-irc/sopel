@@ -408,6 +408,7 @@ def f_weather(self, origin, match, args):
 
     self.msg(origin.sender, format.encode('utf-8') % args)
 f_weather.rule = (['weather'], r'(.*)')
+f_weather.rate = 30
 
 if __name__ == '__main__':
     print __doc__.strip()

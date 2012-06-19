@@ -25,6 +25,7 @@ def version(jenni, input):
 
 version.commands = ['version']
 version.priority = 'medium'
+version.rate = 30
 
 if __name__ == '__main__':
     print __doc__.strip()
