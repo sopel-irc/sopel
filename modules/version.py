@@ -39,7 +39,7 @@ def ctcp_version(jenni, input):
     date = date.replace("  ", "")
 
     jenni.write(('NOTICE', input.nick),
-            '\x01{0} : {1}\x01'.format(commit, date))
+            '\x01VERSION {0} : {1}\x01'.format(commit, date))
 ctcp_version.rule = '\x01VERSION\x01'
 ctcp_version.rate = 20
 
