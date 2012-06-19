@@ -22,7 +22,9 @@ def decode(bytes):
 
 class Jenni(irc.Bot):
     def __init__(self, config):
-        args = (config.nick, config.name, config.channels, config.password)
+        if hasattr(config, "logchan_pm"): lc_pm = config.logchan_pm
+        else: lc_pm = None
+        args = (config.nick, config.name, config.channels, config.password, lc_pm)
         irc.Bot.__init__(self, *args)
         self.config = config
         self.doc = {}
