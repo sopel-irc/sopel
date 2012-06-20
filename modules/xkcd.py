@@ -25,7 +25,7 @@ def xkcd(jenni, input):
     website = "http://xkcd.com/%d/" % random.randint(0,max_int+1)
     jenni.say(website)
 xkcd.commands = ['xkcd']
-xkcd.priority = low
+xkcd.priority = 'low'
 xkcd.rate = 30
 
 if __name__ == '__main__':
