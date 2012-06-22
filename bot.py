@@ -116,7 +116,10 @@ class Jenni(irc.Bot):
             else: func.event = func.event.upper()
 
             if not hasattr(func, 'rate'):
-                func.rate = 0
+                if hasattr(func, 'commands'):
+                    func.rate = 20
+                else:
+                    func.rate = 0
 
             if hasattr(func, 'rule'):
                 if isinstance(func.rule, str):
