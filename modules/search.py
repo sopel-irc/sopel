@@ -16,7 +16,7 @@ class Grab(web.urllib.URLopener):
     def __init__(self, *args):
         self.version = 'Mozilla/5.0 (Jenni)'
         web.urllib.URLopener.__init__(self, *args)
-        self.addheader('Referer', 'https://github.com/sbp/jenni')
+        self.addheader('Referer', 'https://github.com/myano/jenni')
     def http_error_default(self, url, fp, errcode, errmsg, headers):
         return web.urllib.addinfourl(fp, [headers, errcode], "http:" + url)
 
