@@ -101,7 +101,6 @@ def manage_rss(jenni, input):
     c.close()
 manage_rss.commands = ['rss']
 manage_rss.priority = 'low'
-manage_rss.thread = False
 
 
 class Feed(object):
@@ -236,7 +235,6 @@ def startrss(jenni, input):
         jenni.say("Stopped checking")
 startrss.commands = ['startrss']
 startrss.priority = 'high'
-startrss.thread = False
 
 if __name__ == '__main__':
     print __doc__.strip()
