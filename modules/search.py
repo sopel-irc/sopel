@@ -48,7 +48,10 @@ def g(jenni, input):
     query = input.group(2)
     if not query:
         return jenni.reply('.g what?')
-    query = query.encode('utf-8')
+    try:
+        query = query.encode('utf-8')
+    except:
+        pass
     uri = google_search(query)
     if uri:
         jenni.reply(uri)
