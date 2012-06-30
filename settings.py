@@ -388,8 +388,8 @@ class SettingsDB(object):
         """
         if isinstance(column, Iterable):
             has = True
-            for column in columns:
-                has = column in self.columns and has
+            for col in column:
+                has = col in self.columns and has
             return has
         else:
             return column in self.columns
