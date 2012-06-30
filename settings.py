@@ -72,9 +72,9 @@ class SettingsDB(object):
         if self.type == 'dict':
             self.db = config.userdb_data
         elif self.type == 'mysql' and mysql:
-            self.mySQL(config)
+            self._mySQL(config)
         elif self.type == 'sqlite' and sqlite:
-            self.sqlite(config)
+            self._sqlite(config)
         else:
             print 'User settings database type is not supported. You may be missing the module for it. Ignoring.'
             return
