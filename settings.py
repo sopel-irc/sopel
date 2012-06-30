@@ -174,7 +174,7 @@ class SettingsDB(object):
         else:
             return 0
 
-    @deprecated
+    ## deprecated
     def __len__(self):
         return self.size()
         
@@ -239,7 +239,7 @@ class SettingsDB(object):
         else:
             return self._get_one(key, values)
     
-    @deprecated
+    ## deprecated
     def __getitem__(self, key):
         if self.type == 'dict':
             return self.db[key]
@@ -268,17 +268,17 @@ class SettingsDB(object):
         """
         if self.type == 'dict':
             for k, v in values:
-                self.db[key][k] = v
+                self.db[nick][k] = v
         elif self.type == 'mysql':
             db = MySQLdb.connect(host=self._host,
                      user=self._user,
                      passwd=self._passwd,
                      db=self._dbname)
             cur = MySQLdb.cursors.DictCursor(db)
-            cur.execute('SELECT * FROM '+tablename+' WHERE name = "'+key+'";')
+            cur.execute('SELECT * FROM '+tablename+' WHERE name = "'+nick+'";')
             if not cur.fetchone():
                 cols = 'name'
-                vals = '"'+key+'"'
+                vals = '"'+nick+'"'
                 for k in values:
                     cols = cols + ', ' + k
                     vals = vals + ', "' + values[k] + '"'
@@ -288,13 +288,13 @@ class SettingsDB(object):
                 command = 'UPDATE '+tablename+' SET '
                 for k in values:
                     command = command + k + '="' + values[k] + '", '
-                command = command[:-2]+' WHERE name = "' + key + '";'
+                command = command[:-2]+' WHERE name = "' + nick + '";'
             cur.execute(command)
             db.commit()
             db.close()
         else: raise KeyError('User database not initialized.')
         
-    @deprecated    
+    ## deprecated    
     def __setitem__(self, key, value):
         self.update(key, value)
     
@@ -320,7 +320,7 @@ class SettingsDB(object):
             db.close()
         else: raise KeyError('User database not initialized.')
         
-    @deprecated
+    ## deprecated
     def __delitem__(self, key):
         self.delete(key)
     
@@ -356,7 +356,7 @@ class SettingsDB(object):
         
         ``key in db`` will also work, where db is your SettingsDB object."""
         if self.type == 'dict':
-            return item in self.db
+            return key in self.db
         elif self.type == 'mysql':
             db = MySQLdb.connect(host=self._host,
                      user=self._user,
@@ -365,7 +365,7 @@ class SettingsDB(object):
             cur = db.cursor()
             
             #Let's immitate actual dict behavior
-            cur.execute('SELECT * FROM '+tablename+' WHERE name = "'+item+'";')
+            cur.execute('SELECT * FROM '+tablename+' WHERE name = "'+key+'";')
             result = cur.fetchone()
             db.close()
             if result: return True
@@ -386,15 +386,15 @@ class SettingsDB(object):
         you have multiple bots using the same database, or are adding columns
         while the bot is running, you are unlikely to encounter errors.
         """
-        if isinstance(column, Iterable):
+        if isinstance(column, basestring):
+            return column in self.columns
+        elif isinstance(column, Iterable):
             has = True
             for col in column:
                 has = col in self.columns and has
             return has
-        else:
-            return column in self.columns
         
-    @deprecated
+    ## deprecated
     def hascolumns(self, columns):
         """
         Returns True if ``hascolumn`` evaluates to true for each column in the
