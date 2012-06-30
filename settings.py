@@ -386,7 +386,7 @@ class SettingsDB(object):
         you have multiple bots using the same database, or are adding columns
         while the bot is running, you are unlikely to encounter errors.
         """
-        if isinstance(values, Iterable):
+        if isinstance(column, Iterable):
             has = True
             for column in columns:
                 has = column in self.columns and has
