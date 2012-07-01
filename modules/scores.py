@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 """
 scores.py - Scores Module
-Copyright 2010-2011, Michael Yanovich (yanovich.net), Matt Meinwald, and Samuel Clements
+Copyright 2010-2011, Michael Yanovich (yanovich.net), Matt Meinwald,
+and Samuel Clements
 
 More info:
  * Jenni: https://github.com/myano/jenni/
@@ -11,23 +12,27 @@ More info:
 import pickle
 import os
 
+
 class Scores:
     def __init__(self):
         self.scores_filename = os.path.expanduser('~/.jenni/scores.txt')
         self.scores_dict = dict()
         self.load()
         self.STRINGS = {
-                "nochan" : "Channel, {0}, has no users with scores.",
-                "nouser" : "{0} has no score in {1}.",
-                "rmuser" : "User, {0}, has been removed from room: {1}.",
-                "cantadd" : "I'm sorry, but I'm afraid I can't add that user!",
-                "denied" : "I'm sorry, but I can't let you do that!",
-                "invalid" : "Invalid parameters entered.",
+                "nochan": "Channel, {0}, has no users with scores.",
+                "nouser": "{0} has no score in {1}.",
+                "rmuser": "User, {0}, has been removed from room: {1}.",
+                "cantadd": "I'm sorry, but I'm afraid I can't add that user!",
+                "denied": "I'm sorry, but I can't let you do that!",
+                "invalid": "Invalid parameters entered.",
             }
 
     def str_score(self, nick, channel):
         return "%s: +%s/-%s, %s" % (nick,
-                self.scores_dict[channel][nick][0], self.scores_dict[channel][nick][1], self.scores_dict[channel][nick][0] - self.scores_dict[channel][nick][1])
+                self.scores_dict[channel][nick][0],
+                self.scores_dict[channel][nick][1],
+                self.scores_dict[channel][nick][0] -\
+                self.scores_dict[channel][nick][1])
 
     def editpoints(self, jenni, input, nick, points):
         if not nick:
@@ -75,9 +80,10 @@ class Scores:
         for line in sfile:
             values = line.split(",")
             if len(values) == 4:
-                 if values[0] not in self.scores_dict:
-                     self.scores_dict[values[0]] = dict()
-                 self.scores_dict[values[0]][values[1]] = [int(values[2]),int(values[3])]
+                if values[0] not in self.scores_dict:
+                    self.scores_dict[values[0]] = dict()
+                self.scores_dict[values[0]][values[1]] = [int(values[2]),
+                        int(values[3])]
         if not self.scores_dict:
             self.scores_dict = dict()
         sfile.close()
@@ -89,12 +95,12 @@ class Scores:
             if channel not in self.scores_dict:
                 return self.STRINGS["nochan"].format(channel)
             q = 0
-            top_scores = [ ]
+            top_scores = list()
             str_say = "\x02Top 10 (for %s):\x02" % (channel)
             scores = sorted(self.scores_dict[channel].iteritems(),
-                    key=lambda (k,v): (v[0]-v[1]), reverse=True)
+                    key=lambda (k, v): (v[0] - v[1]), reverse=True)
             for key, value in scores:
-                top_scores.append(self.str_score(key,channel))
+                top_scores.append(self.str_score(key, channel))
                 if len(scores) == q + 1:
                     str_say += " %s" % (top_scores[q])
                 else:
@@ -161,7 +167,10 @@ class Scores:
         jenni.say(self.str_score(nick, channel))
 
     def rmuser(self, jenni, input, line):
-        if not input.admin or line:
+        if not input.admin:
+            return
+        if len(line) < 9:
+            jenni.reply("No input provided.")
             return
         line = line[8:].split()
         channel = input.sender
@@ -181,17 +190,18 @@ class Scores:
 
         if len(line) == 1:
             ## .rmuser <nick>
-            result = check(line[0], input.sender)
+            result = check(nick, input.sender)
             self.save()
         elif len(line) == 2:
             ## .rumser <channel> <nick>
-            result = check(line[1],line[0])
+            result = check(line[1], nick)
             self.save()
 
         jenni.say(result)
 
 # Jenni commands
 scores = Scores()
+
 
 def addpoint_command(jenni, input):
     """.addpoint <nick> - Adds 1 point to the score system for <nick>."""
@@ -201,6 +211,8 @@ def addpoint_command(jenni, input):
     scores.editpoints(jenni, input, nick, True)
 addpoint_command.commands = ['addpoint']
 addpoint_command.priority = 'high'
+addpoint_command.rate = 300
+
 
 def rmpoint_command(jenni, input):
     """.rmpoint <nick> - Adds 1 point to the score system for <nick>."""
@@ -210,21 +222,26 @@ def rmpoint_command(jenni, input):
     scores.editpoints(jenni, input, nick, False)
 rmpoint_command.commands = ['rmpoint']
 rmpoint_command.priority = 'high'
+rmpoint_command.rate = 300
+
 
 def view_scores(jenni, input):
     """.scores - Lists all users and their point values in the system."""
     scores.view_scores(jenni, input)
 view_scores.commands = ['scores']
 view_scores.priority = 'medium'
+view_scores.rate = 300
+
 
 def setpoint(jenni, input):
-    """.setpoint <channel> <nick> <number> <number> - Sets points for given user."""
+    """.setpoint <channel> <nick> <number> <number> - Sets score for user."""
     line = input.group()
     if line:
         line = line.lstrip().rstrip()
     scores.setpoint(jenni, input, line)
 setpoint.commands = ['setpoint']
 setpoint.priority = 'medium'
+
 
 def removeuser(jenni, input):
     """.rmuser <nick> -- Removes a given user from the system."""

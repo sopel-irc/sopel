@@ -25,6 +25,7 @@ def slap(jenni, input):
     jenni.write(['PRIVMSG', input.sender, ' :\x01ACTION', verb, text[1], '\x01'])
 slap.commands = ['slap', 'slaps']
 slap.priority = 'medium'
+slap.rate = 60
 
 if __name__ == '__main__':
     print __doc__.strip()

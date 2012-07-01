@@ -100,6 +100,7 @@ o.commands = ['o','urban']
 o.example = '.o servicename arg1 arg2 arg3'
 o.services = {}
 o.serviceURI = None
+o.rate = 20
 
 def snippet(jenni, input):
     if not o.services:
@@ -115,6 +116,7 @@ def snippet(jenni, input):
           "'&quot;', '\x22')), convertEntities=True)"
     service(jenni, input, 'py', py)
 snippet.commands = ['snippet']
+snippet.rate = 20
 
 if __name__ == '__main__':
     print __doc__.strip()
