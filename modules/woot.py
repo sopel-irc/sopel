@@ -18,6 +18,9 @@ def woot(jenni, input):
     """ .woot -- pulls the latest information from woot.com """
     output = str()
     parsed = feedparser.parse(api)
+    if not parsed['entries']:
+        jenni.reply("No item currently available.")
+        return
     item = parsed['entries'][0]['woot_products']
     link = parsed['entries'][0]['link']
     price = parsed['entries'][0]['woot_price']
@@ -39,6 +42,7 @@ def woot(jenni, input):
     jenni.reply(output)
 woot.commands = ['woot']
 woot.priority = 'low'
+woot.rate = 30
 
 if __name__ == '__main__':
     print __doc__.strip()

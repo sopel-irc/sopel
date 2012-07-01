@@ -23,6 +23,7 @@ def getwhy(jenni, input):
     jenni.say(line.lower().capitalize() + ".")
 getwhy.commands = ['why', 'tubbs']
 getwhy.thread = False
+getwhy.rate = 30
 
 if __name__ == '__main__':
     print __doc__.strip()

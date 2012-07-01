@@ -10,21 +10,13 @@ More info:
 """
 
 import random, time
-access = dict()
 
 
 def ask(jenni, input):
     """.ask <item1> or <item2> or <item3> - Randomly picks from a set of items seperated by ' or '."""
-    global access
 
     choices = input.group(2)
     random.seed()
-    nick = (input.nick).lower()
-    if nick in access:
-        if (time.time() - access[nick]) < 30:
-            access[nick] = time.time()
-            return
-    access[nick] = time.time()
 
     if choices == None:
         jenni.reply("There is no spoon! Please try a valid question.")
@@ -39,6 +31,7 @@ def ask(jenni, input):
 ask.commands = ['ask']
 ask.priority = 'low'
 ask.example = '.ask today or tomorrow or next week'
+ask.rate = 20
 
 if __name__ == '__main__':
     print __doc__.strip()

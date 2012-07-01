@@ -26,6 +26,7 @@ def lookup(jenni, input):
     else:
         jenni.say('No matches found')
 lookup.commands = ['cs']
+lookup.rate = 30
 
 if __name__ == '__main__':
     print __doc__.strip()

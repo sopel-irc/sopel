@@ -25,18 +25,19 @@ def check_python_version():
 
 def create_default_config(fn):
     f = open(fn, 'w')
+    #TODO add logchan to config utility
     output = """\
     nick = 'jenni'
     host = 'irc.example.net'
     port = 6667
     channels = ['#example', '#test']
     owner = 'yournickname'
-    
     # Channel where debug messages should be sent.
     devchan = None
     
     # List of other bots, whose outputs should be ignored
     other_bots = ['examplebot']
+    logchan_pm = ''
 
     # password is the NickServ password, serverpass is the server password
     # password = 'example'
