@@ -14,7 +14,7 @@ It also automatically displays the "title" of any URL pasted into the channel.
 
 import re
 from htmlentitydefs import name2codepoint
-import unicodedata
+import unicode
 import urllib2
 import web
 
@@ -88,7 +88,7 @@ def find_title(url):
         if not isinstance(info, list):
             status = '200'
         else:
-            status = unicodedata.encode(info[1])
+            status = unicode.encode(info[1])
             info = info[0]
         if status.startswith('3'):
             uri = urlparse.urljoin(uri, info['Location'])
@@ -138,7 +138,7 @@ def find_title(url):
     title = r_entity.sub(e, title)
 
     if title:
-        title = unicodedata.decode(title)
+        title = unicode.decode(title)
     else: title = 'None'
 
     title = title.replace('\n', '')
@@ -172,7 +172,7 @@ def short(text):
         k = len(a)
         i = 0
         while i < k:
-            b = unicodedata.decode(a[i][0])
+            b = unicode.decode(a[i][0])
             if not b.startswith("http://bit.ly") or not b.startswith("http://j.mp/"):
                 # check to see if the url is valid
                 try: c = web.head(b)
@@ -220,9 +220,9 @@ def get_results(text):
     i = 0
     display = [ ]
     while i < k:
-        url = unicodedata.encode(a[i][0])
-        url = unicodedata.decode(url)
-        url = unicodedata.iriToUri(url)
+        url = unicode.encode(a[i][0])
+        url = unicode.decode(url)
+        url = unicode.iriToUri(url)
         if not url.startswith(EXCLUSION_CHAR):
             try:
                 page_title = find_title(url)
