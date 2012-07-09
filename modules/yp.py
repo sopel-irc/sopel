@@ -21,7 +21,7 @@ def profile(jenni, input):
 profile.commands = ['yp','profile']
 
 def chanstat(jenni,input):
-	jenni.say('http://stats.dftba.net/yourpants.html')
+	jenni.say('http://stats.dftba.net/')
 chanstat.commands = ['chanstat','chanstats']
 
 def ning(jenni, input):
