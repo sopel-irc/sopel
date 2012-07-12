@@ -226,7 +226,7 @@ class Jenni(irc.Bot):
                             "[DEVMSG] %s prevented from using %s in %s: %d < %d"\
                             % (input.nick, func.__name__, input.sender, timediff, 
                                 func.rate))
-                        return
+                        #return
         else: self.times[nick] = dict()
         self.times[nick][func] = time.time()
         try:
