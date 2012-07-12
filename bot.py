@@ -223,7 +223,7 @@ class Jenni(irc.Bot):
                     if timediff < func.rate:
                         self.times[nick][func] = time.time()
                         jenni.msg("#Embo",
-                            "[DEVMSG] %s prevented from using %s in %s: %d > %d"\
+                            "[DEVMSG] %s prevented from using %s in %s: %d < %d"\
                             % (input.nick, func.__name__, input.sender, timediff, 
                                 func.rate))
                         return
