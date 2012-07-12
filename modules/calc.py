@@ -59,10 +59,20 @@ def wa(jenni, input):
     uri = 'http://tumbolia.appspot.com/wa/'
     answer = web.get(uri + web.quote(query.replace('+', '%2B')))
     if answer:
-        waOutputArray = string.split(HTMLParser.HTMLParser().unescape(answer), ";")
+        answer = answer.decode('string_escape')
+        answer = HTMLParser.HTMLParser().unescape(answer)
+        #This might not work if there are more than one instance of escaped unicode chars
+        #But so far I haven't seen any examples of such output examples from Wolfram Alpha
+        match = re.search('\\\:([0-9A-Fa-f]{4})', answer)
+        if match is not None:
+            char_code = match.group(1)
+            char = unichr(int(char_code, 16))
+            answer = answer.replace('\:'+char_code, char)
+        waOutputArray = string.split(answer, ";")
         if(len(waOutputArray) < 2):
             jenni.say('[WOLFRAM ERROR]'+answer)
         else:
+            
             jenni.say('[WOLFRAM] ' + waOutputArray[0]+" = "+waOutputArray[1])
         waOutputArray = []
     else: jenni.reply('Sorry, no result.')
