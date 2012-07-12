@@ -138,7 +138,9 @@ def ytsearch(jenni, input):
     if video_info is 'err':
         return
 
-
+    if video_info['link'] == 'N/A':
+        jenni.say("Sorry, I couldn't find the video you are looking for")
+        return
     message = '[YT Search] Title: ' +video_info['title']+ \
               ' | Author: ' +video_info['uploader']+ \
               ' | Duration: ' +video_info['length']+ \
