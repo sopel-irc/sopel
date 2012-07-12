@@ -120,7 +120,7 @@ class Jenni(irc.Bot):
 
             if not hasattr(func, 'rate'):
                 if hasattr(func, 'commands'):
-                    func.rate = 20
+                    func.rate = 0
                 else:
                     func.rate = 0
 
@@ -219,8 +219,13 @@ class Jenni(irc.Bot):
         if nick in self.times:
             if func in self.times[nick]:
                 if not input.admin:
-                    if time.time() - self.times[nick][func] < func.rate:
+                    timediff = time.time() - self.times[nick][func]
+                    if timediff < func.rate:
                         self.times[nick][func] = time.time()
+                        jenni.msg("#Embo",
+                            "[DEVMSG] %s prevented from using %s in %s: %d > %d"\
+                            % (input.nick, func.__name__, input.sender, timediff, 
+                                func.rate))
                         return
         else: self.times[nick] = dict()
         self.times[nick][func] = time.time()
