@@ -59,7 +59,6 @@ def gettld(jenni, input):
         jenni.reply(reply)
 gettld.commands = ['tld']
 gettld.thread = False
-gettld.rate = 30
 
 if __name__ == '__main__':
     print __doc__.strip()
