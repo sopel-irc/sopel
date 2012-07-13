@@ -36,7 +36,6 @@ def c(jenni, input):
     else: jenni.say('Sorry, no result.')
 c.commands = ['c', 'calc']
 c.example = '.c 5 + 3'
-c.rate = 30
 
 def py(jenni, input):
     """Evaluate a Python expression. Admin-only."""
@@ -49,7 +48,6 @@ def py(jenni, input):
         else: jenni.reply('Sorry, no result.')
 py.commands = ['py']
 py.example = '.py len([1,2,3])'
-py.rate = 30
 
 def wa(jenni, input):
     """Wolfram Alpha calculator"""
@@ -79,7 +77,6 @@ def wa(jenni, input):
 wa.commands = ['wa','wolfram']
 wa.example = '.wa circumference of the sun * pi'
 wa.commands = ['wa']
-wa.rate = 30
 
 if __name__ == '__main__':
     print __doc__.strip()

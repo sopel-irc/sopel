@@ -26,7 +26,6 @@ def xkcd(jenni, input):
     jenni.say(website)
 xkcd.commands = ['xkcd']
 xkcd.priority = 'low'
-xkcd.rate = 30
 
 if __name__ == '__main__':
     print __doc__.strip()

@@ -417,7 +417,6 @@ def f_weather(self, origin, match, args):
 
     self.msg(origin.sender, format.encode('utf-8') % args)
 f_weather.rule = (['weather'], r'(.*)')
-f_weather.rate = 30
 
 def update_icao(jenni, input):
     if not jenni.settings.hascolumn('icao'):

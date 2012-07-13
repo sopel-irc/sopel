@@ -166,7 +166,6 @@ def nws_lookup(jenni, input):
             jenni.msg(input.nick, more_info.format(location, master_url))
 nws_lookup.commands = ['nws']
 nws_lookup.priority = 'high'
-nws_lookup.rate = 60
 
 if __name__ == '__main__':
     print __doc__.strip()

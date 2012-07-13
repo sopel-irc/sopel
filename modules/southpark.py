@@ -75,7 +75,6 @@ def southpark (jenni, input):
         getNewShowDate(jenni)
 southpark.commands = ['southpark']
 southpark.priority = 'low'
-southpark.rate = 30
 
 def getNewShowDate (jenni):
     global cache, cachets
