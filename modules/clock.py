@@ -277,7 +277,6 @@ def beats(jenni, input):
     jenni.say('@%03i' % beats)
 beats.commands = ['beats']
 beats.priority = 'low'
-beats. rate = 30
 
 def divide(input, by):
     return (input / by), (input % by)
@@ -292,7 +291,6 @@ def yi(jenni, input):
     else: jenni.say('Not yet...')
 yi.commands = ['yi']
 yi.priority = 'low'
-yi.rate = 30
 
 def tock(jenni, input):
     """Shows the time from the USNO's atomic clock."""
@@ -302,7 +300,6 @@ def tock(jenni, input):
     jenni.say('"' + info['Date'] + '" - tycho.usno.navy.mil')
 tock.commands = ['tock']
 tock.priority = 'high'
-tock.rate = 30
 
 def npl(jenni, input):
     """Shows the time from NPL's SNTP server."""
@@ -323,7 +320,6 @@ def npl(jenni, input):
     else: jenni.say('No data received, sorry')
 npl.commands = ['npl']
 npl.priority = 'high'
-npl.rate = 30
 
 def update_user(jenni, input):
     if not jenni.settings.hascolumn('tz'):
