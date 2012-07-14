@@ -28,7 +28,6 @@ def getquote(jenni, input):
 getquote.commands = ['q']
 getquote.priority = 'medium'
 getquote.example = '.q'
-getquote.rate = 30
 
 if __name__ == '__main__':
     print __doc__.strip()

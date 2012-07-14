@@ -74,6 +74,13 @@ def create_default_config(fn):
     # access_token = "yetanotherthing"
     # access_token_secret = "onemorething"
     
+    # -----------------  MEETBOT CONFIGURATION -------------------------
+    
+    # Uncomment the following lines and change them to setup meetbot
+    
+    # meeting_log_path = '/path/to/log/folder/'
+    # meeting_log_baseurl = 'http://example.com/logs/'
+    
     # ------------------  USER DATABASE CONFIGURATION  ------------------
     # The user database can hold any user-specific settings you want. For
     # example, this branch has modules which will use a user-specific time zone

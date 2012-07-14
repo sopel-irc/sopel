@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf8 -*-
 """
-spellcheck.py - Jenni IMDB Module
+imdb.py - Jenni IMDB Module
 Copyright © 2012, Elad Alfassa, <elad@fedoraproject.org>
 Licensed under the Eiffel Forum License 2.
 

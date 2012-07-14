@@ -36,7 +36,6 @@ def c(jenni, input):
     else: jenni.say('Sorry, no result.')
 c.commands = ['c', 'calc']
 c.example = '.c 5 + 3'
-c.rate = 30
 
 def py(jenni, input):
     """Evaluate a Python expression. Admin-only."""
@@ -49,7 +48,6 @@ def py(jenni, input):
         else: jenni.reply('Sorry, no result.')
 py.commands = ['py']
 py.example = '.py len([1,2,3])'
-py.rate = 30
 
 def wa(jenni, input):
     """Wolfram Alpha calculator"""
@@ -59,17 +57,26 @@ def wa(jenni, input):
     uri = 'http://tumbolia.appspot.com/wa/'
     answer = web.get(uri + web.quote(query.replace('+', '%2B')))
     if answer:
-        waOutputArray = string.split(HTMLParser.HTMLParser().unescape(answer), ";")
+        answer = answer.decode('string_escape')
+        answer = HTMLParser.HTMLParser().unescape(answer)
+        #This might not work if there are more than one instance of escaped unicode chars
+        #But so far I haven't seen any examples of such output examples from Wolfram Alpha
+        match = re.search('\\\:([0-9A-Fa-f]{4})', answer)
+        if match is not None:
+            char_code = match.group(1)
+            char = unichr(int(char_code, 16))
+            answer = answer.replace('\:'+char_code, char)
+        waOutputArray = string.split(answer, ";")
         if(len(waOutputArray) < 2):
             jenni.say('[WOLFRAM ERROR]'+answer)
         else:
+            
             jenni.say('[WOLFRAM] ' + waOutputArray[0]+" = "+waOutputArray[1])
         waOutputArray = []
     else: jenni.reply('Sorry, no result.')
 wa.commands = ['wa','wolfram']
 wa.example = '.wa circumference of the sun * pi'
 wa.commands = ['wa']
-wa.rate = 30
 
 if __name__ == '__main__':
     print __doc__.strip()
