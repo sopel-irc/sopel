@@ -9,6 +9,7 @@ This module is an attempt to implement at least some of the functionallity of De
 """
 import time
 import os
+import urllib2
 
 # from http://parand.com/say/index.php/2007/07/13/simple-multi-dimensional-dictionaries-in-python/
 # A simple class to make mutli dimensional dict easy to use
@@ -71,7 +72,7 @@ def logHTML_end(channel):
     logfile = open(meeting_log_path + channel + '/' + figure_logfile_name(channel) + '.html', 'a')
     current_time = time.strftime('%H:%M:%S', time.gmtime())
     logfile.write('</ul>\n<h4>Meeting ended at %s UTC</h4>\n' % current_time)
-    plainlog_url = meeting_log_baseurl + channel + '/' + figure_logfile_name(channel) + '.log'
+    plainlog_url = meeting_log_baseurl + urllib2.quote(channel + '/' + figure_logfile_name(channel) + '.log')
     logfile.write('<a href="%s">Full log</a>' % plainlog_url)
     logfile.write('\n</body>\n</html>')
     logfile.close()
@@ -179,7 +180,7 @@ def endmeeting(jenni, input):
     #TODO: Humanize time output
     jenni.say("Meeting ended! total meeting length %d seconds" % meeting_length)
     logHTML_end(input.sender)
-    htmllog_url = meeting_log_baseurl + input.sender + '/' + figure_logfile_name(input.sender) + '.html'
+    htmllog_url = meeting_log_baseurl + urllib2.quote(input.sender + '/' + figure_logfile_name(input.sender) + '.html')
     logplain('Meeting ended by %s, total meeting length %d seconds' % (input.nick, meeting_length), input.sender)
     jenni.say('Meeting minutes: ' + htmllog_url)
     meetings_dict[input.sender] = Ddict(dict)
