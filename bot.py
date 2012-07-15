@@ -28,12 +28,25 @@ class Jenni(irc.Bot):
         args = (config.nick, config.name, config.channels, config.password, lc_pm)
         irc.Bot.__init__(self, *args)
         self.config = config
+        """The ``Config`` for the current jenni instance."""
         self.doc = {}
+        """
+        A dictionary of module functions to their docstring and example, if
+        declared.
+        """
         self.stats = {}
+        """
+        A dictionary which maps a tuple of a function name and where it was used
+        to the nuber of times it was used there.
+        """
         self.times = {}
+        """
+        A dictionary mapping lower-case'd nicks to dictionaries which map
+        funtion names to the time which they were last used by that nick.
+        """
         self.acivity = {}
-        self.setup()
         
+        self.setup()
         self.settings = SettingsDB(config)
 
     def setup(self):
@@ -80,6 +93,10 @@ class Jenni(irc.Bot):
         self.bind_commands()
 
     def register(self, variables):
+        """
+        With the ``__dict__`` attribute from a jenni module, update or add the
+        trigger commands and rules to allow the function to be triggered.
+        """
         # This is used by reload.py, hence it being methodised
         for name, obj in variables.iteritems():
             if hasattr(obj, 'commands') or hasattr(obj, 'rule'):
@@ -184,19 +201,41 @@ class Jenni(irc.Bot):
             def __new__(cls, text, origin, bytes, match, event, args):
                 s = unicode.__new__(cls, text)
                 s.sender = origin.sender
+                """
+                The channel (or nick, in a private message) from which the
+                message was sent.
+                """
                 s.nick = origin.nick
+                """The nick of the person who sent the message."""
                 s.event = event
+                """The event which triggered the message."""#TODO elaborate
                 s.bytes = bytes
+                """The line which triggered the message"""#TODO elaborate
                 s.match = match
+                """
+                The regular expression ``MatchObject_`` for the triggering line.
+                .. _MatchObject: http://docs.python.org/library/re.html#match-objects
+                """
                 s.group = match.group
+                """The ``group`` function of the ``match`` attribute.
+                
+                See Python ``re_`` documentation for details."""
                 s.groups = match.groups
+                """The ``groups`` function of the ``match`` attribute.
+                
+                See Python ``re_`` documentation for details."""
                 s.args = args
+                """The arguments given to a command.""" #TODO elaborate
                 s.admin = origin.nick in self.config.admins
+                """
+                True if the nick which triggered the command is in jenni's admin
+                list as defined in the config file.
+                """
                 
                 #Custom config vars
                 #s.config = self.config
-                s.devchan = self.config.devchan
-                s.otherbots = self.config.other_bots
+                s.devchan = self.config.devchan #TODO deprecate
+                s.otherbots = self.config.other_bots #TODO deprecate
                 
                 if s.admin == False:
                     for each_admin in self.config.admins:
