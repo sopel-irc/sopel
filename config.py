@@ -93,16 +93,10 @@ class Config(object):
             enable_line = "# enable = []"
         extra = self.extra.append(os.getcwd() + '/modules/')
         
-        print type(trim("""## asfgsdfg
-        
-        # EOF
-        """))
-        print type(self.modules_chunk)
-        
-        output = (trim("""\
+        output = trim("""\
         nick = '"""+self.nick+"""'
         host = '"""+self.host+"""'
-        port = """+self.port+"""
+        port = """+str(self.port)+"""
         channels = """+str(self.channels)+"""
         owner = '"""+self.owner+"""'
         
@@ -141,19 +135,14 @@ class Config(object):
         #    '#conservative': [], # allow none
         #    '*': ['!'] # default whitelist, allow all
         #}
-        """) +
-        self.settings_chunk +
-        trim("""
+        """)+(self.settings_chunk+trim("""
 
         #-----------------------MODULE  SETTINGS-----------------------
 
-        """) +
-        self.modules_chunk
-        + #Here's where I get an error about concatenating str and int...
-        trim("""
+        """)+self.modules_chunk)+trim("""
         
         # EOF
-        """))
+        """)
         print >> f, output
         f.close()
     
