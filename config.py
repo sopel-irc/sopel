@@ -175,11 +175,11 @@ class Config(object):
         """
         print message
         lst = []
-        if hasattr(self, attrib) and self.attrib:
+        if hasattr(self, attrib) and getattr(self, attrib):
             m = "You currently have "
-            for c in self.attrib: m = m + c + ', '
+            for c in getattr(self, attrib): m = m + c + ', '
             if self.option(m[:-2]+'. Would you like to keep them', True):
-                lst = self.attrib
+                lst = getattr(self, attrib)
         mem = raw_input(prompt)
         while mem:
             lst.append(mem)
@@ -299,9 +299,55 @@ class Config(object):
                     if chunk and isinstance(chunk, basestring):
                         self.modules_chunk += trim(chunk)
 
-if __name__ == '__main__':
-    config = Config('foo.py', False)
+def _config_names(dotdir, config):
+    config = config or 'default'
+
+    def files(d):
+        names = os.listdir(d)
+        return list(os.path.join(d, fn) for fn in names if fn.endswith('.py'))
+
+    here = os.path.join('.', config)
+    if os.path.isfile(here):
+        return [here]
+    if os.path.isfile(here + '.py'):
+        return [here + '.py']
+    if os.path.isdir(here):
+        return files(here)
+
+    there = os.path.join(dotdir, config)
+    if os.path.isfile(there):
+        return [there]
+    if os.path.isfile(there + '.py'):
+        return [there + '.py']
+    if os.path.isdir(there):
+        return files(there)
+
+    sys.exit(1)
+
+def main(argv=None):
+    import optparse
+    parser = optparse.OptionParser('%prog [options]')
+    parser.add_option('-c', '--config', metavar='fn',
+        help='use this configuration file or directory')
+    opts, args = parser.parse_args(argv)
+    dotdir = os.path.expanduser('~/.jenni')
+
+    if not os.path.isdir(dotdir):
+        print 'Creating a config directory at ~/.jenni...'
+        try: os.mkdir(dotdir)
+        except Exception, e:
+            print >> sys.stderr, 'There was a problem creating %s:' % dotdir
+            print >> sys.stderr, e.__class__, str(e)
+            print >> sys.stderr, 'Please fix this and then run jenni again.'
+            sys.exit(1)
+    
+    configpath = os.path.join(dotdir, (opts.config or 'default')+'.py')
+    config = Config(configpath, os.path.isfile(configpath))
     config._core()
     config._settings()
     config._modules()
     config.write()
+    
+if __name__ == '__main__':
+    main()
+
