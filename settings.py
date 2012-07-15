@@ -446,11 +446,11 @@ class SettingsDB(object):
         if not c:
             return chunk
         
-        config.add('userdb_type',
+        config.interactive_add('userdb_type',
             'What type of database would you like to use? [%s]', 'mysql')
         
         if config.userdb_type == 'dict':
-            config.add('userdb_data',"""\
+            config.interactive_add('userdb_data',"""\
             Enter the data now, all on one line. If you give up, close your
             brackets and hit enter. If you'd rather edit the file later, hit
             enter now.""", """\
@@ -469,10 +469,10 @@ class SettingsDB(object):
     userdb_data = """+str(config.userdb_data)
         
         elif config.userdb_type == 'mysql':
-            config.add('userdb_host', "Enter the MySQL hostname", 'localhost')
-            config.add('userdb_user', "Enter the MySQL username")
-            config.add('userdb_pass', "Enter the user's password", 'none')
-            config.add('userdb_name', "Enter the name of the database to use")
+            config.interactive_add('userdb_host', "Enter the MySQL hostname", 'localhost')
+            config.interactive_add('userdb_user', "Enter the MySQL username")
+            config.interactive_add('userdb_pass', "Enter the user's password", 'none')
+            config.interactive_add('userdb_name', "Enter the name of the database to use")
             
             chunk = """\
     # ------------------  USER DATABASE CONFIGURATION  ------------------
