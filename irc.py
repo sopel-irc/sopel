@@ -62,12 +62,18 @@ class Bot(asynchat.async_chat):
         self.buffer = ''
 
         self.nick = nick
+        """jenni's current nick. Changing this while jenni is running is untested."""
         self.user = nick
         self.name = name
+        """jenni's "real name", as used for whois."""
         self.password = password
+        """jenni's NickServ password"""
 
         self.verbose = True
+        """True if jenni is running in verbose mode."""
         self.channels = channels or []
+        """A list of jenni's current (?) channels."""
+        
         self.stack = []
         self.logchan_pm = logchan_pm
 
@@ -78,7 +84,9 @@ class Bot(asynchat.async_chat):
         #This might be expanded later.
         #These lists are filled in startup.py, as of right now.
         self.ops = dict()
+        """A dictionary mapping channels to a list of their operators."""
         self.halfplus = dict()
+        """A dictionary mapping channels to a list of their half-ops and ops."""
 
     # def push(self, *args, **kargs):
     #     asynchat.async_chat.push(self, *args, **kargs)
@@ -98,6 +106,19 @@ class Bot(asynchat.async_chat):
             #pass
 
     def write(self, args, text=None):
+        """
+        Send a command to the server. In the simplest case, ``args`` is a list
+        containing just the command you wish to send, and ``text`` the argument
+        to that command {e.g. write(['JOIN'], '#channel')}
+        
+        More specifically, ``args`` will be joined together, separated by a
+        space. If text is given, it will be added preceeded by a space and a 
+        colon (' :').
+        
+        Newlines and carriage returns ('\\n' and '\\r') are removed before
+        sending. Additionally, if the joined ``args`` and ``text`` are more than
+        510 characters, any remaining characters will not be sent.
+        """
         # This is a safe version of __write
         def safe(input):
             input = input.replace('\n', '')
