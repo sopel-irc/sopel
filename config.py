@@ -93,7 +93,13 @@ class Config(object):
             enable_line = "# enable = []"
         extra = self.extra.append(os.getcwd() + '/modules/')
         
-        output = trim("""\
+        print type(trim("""## asfgsdfg
+        
+        # EOF
+        """))
+        print type(self.modules_chunk)
+        
+        output = (trim("""\
         nick = '"""+self.nick+"""'
         host = '"""+self.host+"""'
         port = """+self.port+"""
@@ -135,14 +141,19 @@ class Config(object):
         #    '#conservative': [], # allow none
         #    '*': ['!'] # default whitelist, allow all
         #}
-        """)+(self.settings_chunk+trim("""
+        """) +
+        self.settings_chunk +
+        trim("""
 
         #-----------------------MODULE  SETTINGS-----------------------
 
-        """)+self.modules_chunk)+trim("""
+        """) +
+        self.modules_chunk
+        + #Here's where I get an error about concatenating str and int...
+        trim("""
         
         # EOF
-        """)
+        """))
         print >> f, output
         f.close()
     
@@ -196,7 +207,7 @@ class Config(object):
         d = 'n'
         if default: d = 'y'
         ans = raw_input(question+' (y/n)? ['+d+']')
-        if not ans: ans = 'n'
+        if not ans: ans = d
         return (ans is 'y' or ans is 'Y')
     
     def _core(self):
@@ -296,7 +307,8 @@ class Config(object):
             else:
                 if hasattr(module, 'configure'):
                     chunk = module.configure(self)
-                    if chunk and isinstance(chunk, basestring): self.modules_chunk += trim(chunk)
+                    if chunk and isinstance(chunk, basestring):
+                        self.modules_chunk += trim(chunk)
 
 if __name__ == '__main__':
     config = Config('foo.py', False)
