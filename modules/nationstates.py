@@ -9,6 +9,14 @@ http://inamidst.com/jenni/
 
 import MySQLdb, re
 
+def configure(config):
+    chunk = ''
+    if config.option('Configure NationStates resolution DB'):
+        config.interactive_add('wa_host', "Enter the MySQL hostname", 'localhost')
+        config.interactive_add('wa_user', "Enter the MySQL username")
+        config.interactive_add('wa_pass', "Enter the user's password")
+        config.interactive_add('wa_db', "Enter the name of the database to use")
+    return chunk
 
 def whats(jenni, input):
     """Looks up a NationStates-related abbreviation or WA resolution"""

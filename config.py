@@ -79,15 +79,15 @@ class Config(object):
         """
         f = open(self.filename, 'w')
         
-        if self.password:
+        if hasattr(self, 'password') and self.password:
             password_line = "password = '"+self.password+"'"
         else:
             password_line = "# password = 'example'"
-        if self.serverpass:
+        if hasattr(self, 'serverpass') and self.serverpass:
             serverpass_line = "serverpass = '"+self.serverpass+"'"
         else:
             serverpass_line = "# serverpass = 'example'"
-        if self.enable:
+        if hasattr(self, 'enable') and self.enable:
             enable_line = "enable = "+str(self.enable)
         else:
             enable_line = "# enable = []"
@@ -152,18 +152,18 @@ class Config(object):
         """
         Ask user in terminal for the value to assign to ``attrib``. If ``default``
         is passed, it will be shown as the default value in the prompt. If
-        ``self.attrib`` is already defined, it will be shown as the default
-        regardless of whether default is passed.
+        ``attrib`` is already defined, it will be used instead of ``default``,
+        regardless of wheather ``default`` is passed.
         """
         if hasattr(self, attrib):
             atr = getattr(self, attrib)
-            setattr(self, attrib, raw_input(prompt % atr) or atr)
+            setattr(self, attrib, raw_input(prompt+' [%s]: ' % atr) or atr)
         elif default:
-            setattr(self, attrib, raw_input(prompt % default) or default)
+            setattr(self, attrib, raw_input(prompt+' [%s]: ' % default) or default)
         else:
             inp = ''
             while not inp:
-                inp = raw_input(prompt)
+                inp = raw_input(prompt+': ')
             setattr(self, attrib, inp)
 
     def add_list(self, attrib, message, prompt):
@@ -190,29 +190,31 @@ class Config(object):
         """
         Show user in terminal a "y/n" prompt, and return true or false based on
         the response. If default is passed as true, the default will be shown as
-        ``[y]``, else it will be ``[n]``
+        ``[y]``, else it will be ``[n]``. ``question`` should be phrased as a
+        question, but without a question mark at the end.
         """
         d = 'n'
         if default: d = 'y'
         ans = raw_input(question+' (y/n)? ['+d+']')
-        return (ans == 'y' or ans == 'Y')
+        if not ans: ans = 'n'
+        return (ans is 'y' or ans is 'Y')
     
     def _core(self):
-        self.interactive_add('nick', 'Enter the nickname for your bot:')
-        self.interactive_add('host', 'Enter the server to connect to:')
-        self.interactive_add('port', 'Enter the port to connect on [%s]:', '6667')
+        self.interactive_add('nick', 'Enter the nickname for your bot', 'jenni')
+        self.interactive_add('host', 'Enter the server to connect to', 'irc.dftba.net')
+        self.interactive_add('port', 'Enter the port to connect on', '6667')
         
         c='Enter the channels to connect to by default, one at a time. When done, hit enter again.'
         self.add_list('channels', c, 'Channel:')
                 
-        self.interactive_add('owner', "Enter your own IRC name (or that of the bot's owner:")
-        self.interactive_add('devchan', 'Enter the channel to print debugging messages to [%s]:', 'None')
+        self.interactive_add('owner', "Enter your own IRC name (or that of the bot's owner)")
+        self.interactive_add('devchan', 'Enter the channel to print debugging messages to', 'None')
         
         c="List users you'd like "+self.nick+" to ignore (e.g. other bots), one at a time. Hit enter when done."
         self.add_list('other_bots', c, 'Nick:')
         
-        self.interactive_add('password', "Enter the bot's NickServ password [%s]:", 'None')
-        self.interactive_add('serverpass', "Enter the bot's server password [%s]:", 'None')
+        self.interactive_add('password', "Enter the bot's NickServ password", 'None')
+        self.interactive_add('serverpass', "Enter the bot's server password", 'None')
         
         oper = self.option("Will this bot have IRC Operator privilages")
         if oper:
@@ -232,7 +234,7 @@ class Config(object):
         self.add_list('exclude', c, 'Module:')
         
         if not self.exclude:
-            wl = self.option("Would you like to create a module whitelist (y/n)? [n]")
+            wl = self.option("Would you like to create a module whitelist")
             if wl:
                 c="Enter the modules to use, one at a time. Hit enter when done."
                 self.add_list('enable', c, 'Module:')
@@ -294,7 +296,7 @@ class Config(object):
             else:
                 if hasattr(module, 'configure'):
                     chunk = module.configure(self)
-                    if chunk: self.modules_chunk += trim(chunk)
+                    if chunk and isinstance(chunk, basestring): self.modules_chunk += trim(chunk)
 
 if __name__ == '__main__':
     config = Config('foo.py', False)
