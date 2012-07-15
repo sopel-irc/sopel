@@ -13,6 +13,7 @@ Then run ./jenni again
 
 import sys, os, imp, optparse
 from textwrap import dedent as trim
+from config import Config
 
 dotdir = os.path.expanduser('~/.jenni')
 configpath = os.path.expanduser(dotdir + '/default.py')
@@ -185,21 +186,8 @@ def main(argv=None):
     config_modules = []
     for config_name in config_names(opts.config):
         name = os.path.basename(config_name).split('.')[0] + '_config'
-        module = imp.load_source(name, config_name)
-        module.filename = config_name
-
-        if not hasattr(module, 'prefix'):
-            module.prefix = r'\.'
-
-        if not hasattr(module, 'name'):
-            module.name = 'Jenni Yanosbot, https://github.com/myano/jenni'
-
-        if not hasattr(module, 'port'):
-            module.port = 6667
-
-        if not hasattr(module, 'password'):
-            module.password = None
-
+        module = Config(config_name)
+        
         if module.host == 'irc.example.net':
             error = ('Error: you must edit the config file first!\n' +
                         "You're currently using %s" % module.filename)
