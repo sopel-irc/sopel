@@ -11,6 +11,15 @@ import time
 import os
 import urllib2
 
+def configure(config):
+    chunk = ''
+    if config.option('Configure meetbot', True):
+        config.interactive_add('meeting_log_path', "Path to meeting logs storage directory (should be an absolute path, accessible on a webserver)")
+        config.interactive_add('meeting_log_baseurl', "Base URL for the meeting logs directory (eg. http://example.com/logs)")
+        chunk = ("\nmeeting_log_path = '%s'\nmeeting_log_baseurl = '%s'\n"
+                 % (config.meeting_log_path, config.meeting_log_baseurl))
+    return chunk
+
 # from http://parand.com/say/index.php/2007/07/13/simple-multi-dimensional-dictionaries-in-python/
 # A simple class to make mutli dimensional dict easy to use
 class Ddict(dict):
