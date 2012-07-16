@@ -1,6 +1,14 @@
 #!/usr/bin/env python
 # -*- coding: utf8 -*-
 """
+*Availability: 3.x+*
+
+The web class contains essential web-related functions for interaction with web applications or websites in your modules.
+It supports HTTP GET, HTTP POST and HTTP HEAD.
+
+"""
+
+"""
 web.py - Web Facilities
 Copyright © 2008, Sean B. Palmer, inamidst.com
 Copyright © 2009, Michael Yanovich <yanovich.1@osu.edu>
@@ -19,6 +27,10 @@ from htmlentitydefs import name2codepoint
 
 #HTTP GET
 def get(uri, timeout=20):
+    """
+    Execute an HTTP GET query on `uri`, and return the result.
+    `timeout` is an optional argument, which represents how much time we should wait before throwing a timeout exception. It defualts to 20, but can be set to higher values if you are communicating with a slow web application.
+    """
     if not uri.startswith('http'):
         return
     u = get_urllib_object(uri, timeout)
@@ -28,6 +40,10 @@ def get(uri, timeout=20):
 
 # Get HTTP headers
 def head(uri, timeout=20):
+    """
+    Execute an HTTP GET query on `uri`, and return the headers.
+    `timeout` is an optional argument, which represents how much time we should wait before throwing a timeout exception. It defualts to 20, but can be set to higher values if you are communicating with a slow web application.
+    """
     if not uri.startswith('http'):
         return
     u = get_urllib_object(uri, timeout)
@@ -37,6 +53,9 @@ def head(uri, timeout=20):
 
 # HTTP POST
 def post(uri, query):
+    """
+    Execute an HTTP POST query. `uri` is the target URI, and `query` is the POST data.
+    """
     if not uri.startswith('http'):
         return
     data = urllib2.urlencode(query)
@@ -63,6 +82,10 @@ def decode(html):
 #For internal use in web.py, (modules can use this if they need a urllib object they can execute read() on)
 #Both handles redirects and makes sure input URI is UTF-8
 def get_urllib_object(uri, timeout):
+    """
+    Return a urllib2 object for `uri` and `timeout`. This is better than using urrlib2 directly, for it handles redirects, makes sure URI is utf8, and is shorter and easier to use.
+    Modules may use this if they need a urllib2 object to execute .read() on. For more information, refer to the urllib2 documentation.
+    """
     redirects = 0
     try:
         uri = uri.encode("utf-8")
@@ -92,6 +115,9 @@ def get_urllib_object(uri, timeout):
 
 #Identical to urllib2.quote
 def quote(string):
+    """
+    Identical to urllib2.quote. Use this if you already importing web in your module and don't want to import urllib2 just to use the quote function.
+    """
     return urllib2.quote(string)
 
 r_string = re.compile(r'("(\\.|[^"\\])*")')
