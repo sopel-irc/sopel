@@ -269,11 +269,7 @@ class Config(object):
         self.modules_chunk = ''
         # This segment largely copied from bot.py
         filenames = []
-        if not hasattr(self, 'enable'):
-            for fn in os.listdir(os.path.join(home, 'modules')):
-                if fn.endswith('.py') and not fn.startswith('_'):
-                    filenames.append(os.path.join(home, 'modules', fn))
-        else:
+        if hasattr(self, 'enable'):
             for fn in self.enable:
                 filenames.append(os.path.join(home, 'modules', fn + '.py'))
 
