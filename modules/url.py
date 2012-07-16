@@ -15,7 +15,6 @@ It also automatically displays the "title" of any URL pasted into the channel.
 import re
 from htmlentitydefs import name2codepoint
 import unicode
-import urllib2
 import web
 
 # Place a file in your ~/jenni/ folder named, bitly.txt
@@ -43,7 +42,7 @@ try:
     file.close()
     bitly_loaded = 1
 except:
-    print "ERROR: No bitly.txt found."
+    print "WARNING: No bitly.txt found. bitly functionallity disabled."
 
 url_finder = re.compile(r'(?u)(%s?(http|https|ftp)(://\S+))' % (EXCLUSION_CHAR))
 r_entity = re.compile(r'&[A-Za-z0-9#]+;')
@@ -76,38 +75,7 @@ def find_title(url):
     if "twitter.com" in uri:
         uri = uri.replace('#!', '?_escaped_fragment_=')
 
-    redirects = 0
-    ## follow re-directs, if someone pastes a bitly of a tinyurl, etc..
-    while True:
-        req = urllib2.Request(uri, headers={'Accept':'text/html'})
-        req.add_header('User-Agent', 'Mozilla/5.0 (Windows NT 6.1; rv:5.0) Gecko/20100101 Firefox/5.0')
-        u = urllib2.urlopen(req)
-        info = u.info()
-        u.close()
-
-        if not isinstance(info, list):
-            status = '200'
-        else:
-            status = unicode.encode(info[1])
-            info = info[0]
-        if status.startswith('3'):
-            uri = urlparse.urljoin(uri, info['Location'])
-        else: break
-
-        redirects += 1
-        if redirects >= 50:
-            return "Too many re-directs."
-
-    try: mtype = info['content-type']
-    except:
-        return
-    if not (('/html' in mtype) or ('/xhtml' in mtype)):
-        return
-
-    u = urllib2.urlopen(req)
-    bytes = u.read(262144)
-    u.close()
-    content = bytes
+    content = web.get(uri)
     regex = re.compile('<(/?)title( [^>]+)?>', re.IGNORECASE)
     content = regex.sub(r'<\1title>',content)
     regex = re.compile('[\'"]<title>[\'"]', re.IGNORECASE)
@@ -178,7 +146,7 @@ def short(text):
                 try: c = web.head(b)
                 except: return [[None, None]]
 
-                url = "http://api.j.mp/v3/shorten?login=%s&apiKey=%s&longUrl=%s&format=txt" % (bitly_user, bitly_api_key, urllib2.quote(b))
+                url = "http://api.j.mp/v3/shorten?login=%s&apiKey=%s&longUrl=%s&format=txt" % (bitly_user, bitly_api_key, web.quote(b))
                 shorter = web.get(url)
                 shorter.strip()
                 bitlys.append([b, shorter])
