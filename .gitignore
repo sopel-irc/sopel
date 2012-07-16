@@ -8,3 +8,4 @@ modules/twss_user_added.txt
 blocks
 logs/*
 *.db
+*~
