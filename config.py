@@ -289,7 +289,7 @@ class Config(object):
             #     del sys.modules[name]
             try: module = imp.load_source(name, filename)
             except Exception, e:
-                print >> sys.stderr, "Error loading %s: %s (in bot.py)" % (name, e)
+                print >> sys.stderr, "Error loading %s: %s (in config.py)" % (name, e)
             else:
                 if hasattr(module, 'configure'):
                     chunk = module.configure(self)
