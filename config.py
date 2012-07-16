@@ -244,7 +244,6 @@ class Config(object):
         If you'd like to include modules from other directories, enter them one at a
         time, and hit enter again when done.""")
         self.add_list('extra', c, 'Directory:')
-        self.extra.append(os.getcwd() + '/modules/')
         
     def _settings(self):
         try:
@@ -269,7 +268,11 @@ class Config(object):
         self.modules_chunk = ''
         # This segment largely copied from bot.py
         filenames = []
-        if hasattr(self, 'enable'):
+        if not hasattr(self, 'enable'):
+            for fn in os.listdir(os.path.join(home, 'modules')):
+                if fn.endswith('.py') and not fn.startswith('_'):
+                    filenames.append(os.path.join(home, 'modules', fn))
+        else:
             for fn in self.enable:
                 filenames.append(os.path.join(home, 'modules', fn + '.py'))
 
