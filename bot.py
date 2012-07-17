@@ -232,11 +232,6 @@ class Jenni(irc.Bot):
                 list as defined in the config file.
                 """
                 
-                #Custom config vars
-                #s.config = self.config
-                s.devchan = self.config.devchan #TODO deprecate
-                s.otherbots = self.config.other_bots #TODO deprecate
-                
                 if s.admin == False:
                     for each_admin in self.config.admins:
                         re_admin = re.compile(each_admin)
@@ -297,7 +292,7 @@ class Jenni(irc.Bot):
 
                         jenni = self.wrapped(origin, text, match)
                         input = self.input(origin, text, bytes, match, event, args)
-                        if input.nick in input.otherbots: continue
+                        if input.nick in self.config.other_bots: continue
 
                         nick = (input.nick).lower()
 
