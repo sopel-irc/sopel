@@ -74,6 +74,8 @@ def f_remind(jenni, input):
 
     if len(tellee) > 20:
         return jenni.reply('That nickname is too long.')
+    if tellee.lower() == jenni.nick.lower():
+        return jenni.reply('I\'m here now, you can tell me whatever you want!')
 
     timenow = time.strftime('%d %b %H:%MZ', time.gmtime())
     if not tellee in (teller.lower(), jenni.nick, 'me'): # @@
