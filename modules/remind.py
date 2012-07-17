@@ -134,28 +134,30 @@ def at(jenni, input):
     hour, minute, second, tz, message = input.groups()
     if not second: second = '0'
     
-    tz = match.group(4) or 'UTC'
+    # Personal time zones, because they're rad
+    if jenni.settings.hascolumn('tz'):
+        if input.group(2) and tz in jenni.settings:
+            personal_tz = jenni.settings[tz]['tz']
+        elif input.nick in jenni.settings:
+            personal_tz = jenni.settings[input.nick]['tz']
+    if tz not in all_timezones_set and not personal_tz: 
+        message=tz+message
+        tz = 'UTC'
+    elif tz not in all_timezones_set and personal_tz:
+        message=tz+message
+        tz = personal_tz
     tz = tz.strip()
     
-    # Personal time zones, because they're rad
-    if self.settings.hascolumn('tz'):
-        if match.group(2) and tz in self.settings:
-            tz = self.settings[tz]['tz']
-        elif origin.nick in self.settings:
-            tz = self.settings[origin.nick]['tz']
-  
     if tz not in all_timezones_set:
         jenni.say("Sorry, but I don't have data for that timezone or user.")
         return
         
     tzi = timezone(tz)
     now = datetime.now(tzi)
-    days = int(now.day)
-    
-    timediff = (datetime(now.year, now.month, days, 
-                    int(hour), int(minute), int(second), tzinfo = tzi) 
-                    - now)
-    duration = timediff.total_seconds()
+
+    timediff = (datetime(now.year, now.month, now.day, int(hour), int(minute), int(second), tzinfo = tzi) - now)
+    duration = timediff.seconds
+
     if duration < 0: duration += 86400
     create_reminder(jenni, input, duration, message)
 at.rule = r'\.at (\d+):(\d+):?(\d+)? (\S+)?( .*)'
