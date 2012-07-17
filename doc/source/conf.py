@@ -12,6 +12,8 @@
 # serve to show the default.
 
 import sys, os
+parentdir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+os.sys.path.insert(0,parentdir) 
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
