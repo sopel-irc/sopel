@@ -253,10 +253,7 @@ class Jenni(irc.Bot):
                     timediff = time.time() - self.times[nick][func]
                     if timediff < func.rate:
                         self.times[nick][func] = time.time()
-                        jenni.msg("#Embo",
-                            "[DEVMSG] %s prevented from using %s in %s: %d < %d"\
-                            % (trigger.nick, func.__name__, trigger.sender, timediff, 
-                                func.rate))
+                        jenni.debug('bot.py', "%s prevented from using %s in %s: %d < %d" % (trigger.nick, func.__name__, trigger.sender, timediff, func.rate), "warning")
                         return
         else: self.times[nick] = dict()
         self.times[nick][func] = time.time()

@@ -235,18 +235,25 @@ class Bot(asynchat.async_chat):
         """
         Sends an error to jenni's configured ``debug_target``. 
         """
-        if not self.verbose:
+        if not self.config.verbose:
             return False
-        elif not (self.debug_target is 'stdio' or self.debug_target.startswith('#')):
+        elif not (self.config.debug_target == 'stdio' or self.config.debug_target.startswith('#')):
             return False
-        
+        debug_msg = "[%s] %s" % (tag, text)
         if level == 'verbose':
-            if jenni.verbose == 'verbose':
-                self.msg(self.debug_target, text)
+            if self.config.verbose == 'verbose':
+                print self.config.debug_target
+                if (self.config.debug_target == 'stdio'):
+                    print debug_msg
+                else:
+                    self.msg(self.config.debug_target, debug_msg)
                 return True
         elif level == 'warning':
-            if jenni.verbose == 'verbose' or jenni.verbose == 'warning':
-                self.msg(self.debug_target, text)
+            if self.config.verbose == 'verbose' or self.config.verbose == 'warning':
+                if (self.config.debug_target == 'stdio'):
+                    print debug_msg
+                else:
+                    self.msg(self.config.debug_target, debug_msg)
                 return True
         
         return False
