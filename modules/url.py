@@ -32,17 +32,21 @@ IGNORE = ["git.io"]
 
 # do not edit below this line unless you know what you're doing
 bitly_loaded = 0
+bitly_api_key = ''
+bitly_user = ''
 
-try:
-    file = open("bitly.txt", "r")
-    key = file.read()
-    key = key.split(",")
-    bitly_api_key = str(key[0].lstrip().rstrip())
-    bitly_user = str(key[1].lstrip().rstrip())
-    file.close()
-    bitly_loaded = 1
-except:
-    print "WARNING: No bitly.txt found. bitly functionallity disabled."
+def setup(jenni):
+    try:
+        global bitly_api_key, bitly_user, bitly_loaded
+        file = open("bitly.txt", "r")
+        key = file.read()
+        key = key.split(",")
+        bitly_api_key = str(key[0].lstrip().rstrip())
+        bitly_user = str(key[1].lstrip().rstrip())
+        file.close()
+        bitly_loaded = 1
+    except:
+        print "WARNING: No bitly.txt found. bitly functionallity disabled."
 
 url_finder = re.compile(r'(?u)(%s?(http|https|ftp)(://\S+))' % (EXCLUSION_CHAR))
 r_entity = re.compile(r'&[A-Za-z0-9#]+;')
