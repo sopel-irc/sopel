@@ -103,6 +103,9 @@ class Config(object):
         # Channel where debug messages should be sent.
         debug_target = '"""+self.debug_target+"""'
         
+        # Verbosity level for debug messages.
+        verbose = '"""+self.verbose+"""'
+        
         # List of other bots, whose outputs should be ignored
         other_bots = """+str(self.other_bots)+"""
 
@@ -208,7 +211,9 @@ class Config(object):
         self.add_list('channels', c, 'Channel:')
                 
         self.interactive_add('owner', "Enter your own IRC name (or that of the bot's owner)")
-        self.interactive_add('debug_target', 'Enter the channel to print debugging messages to', 'None')
+        self.interactive_add('debug_target', 'Enter the channel to print debugging messages to. If set to stdio, debug messages will be printed to standard output', 'stdio')
+        
+        self.interactive_add('verbose', 'Verbosity level. If None, all debug messages will be discarded. Valid options are warning/verbose/none', 'None') #FIXME: Make this a bit more user friendly
         
         c="List users you'd like "+self.nick+" to ignore (e.g. other bots), one at a time. Hit enter when done."
         self.add_list('other_bots', c, 'Nick:')
