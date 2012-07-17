@@ -197,7 +197,7 @@ class Jenni(irc.Bot):
         return JenniWrapper(self)
 
     def input(self, origin, text, bytes, match, event, args):
-        class CommandInput(unicode):
+        class Trigger(unicode):
             def __new__(cls, text, origin, bytes, match, event, args):
                 s = unicode.__new__(cls, text)
                 s.sender = origin.sender
@@ -246,7 +246,7 @@ class Jenni(irc.Bot):
                 if s.owner == False: s.owner = origin.nick == self.config.owner
                 s.host = origin.host
                 return s
-        return CommandInput(text, origin, bytes, match, event, args)
+        return Trigger(text, origin, bytes, match, event, args)
 
     def call(self, func, origin, jenni, input):
         nick = (input.nick).lower()
