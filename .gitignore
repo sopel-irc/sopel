@@ -9,3 +9,4 @@ blocks
 logs/*
 *.db
 *~
+doc/build/*
