@@ -50,6 +50,7 @@ class Jenni(irc.Bot):
         self.settings = SettingsDB(config)
 
     def setup(self):
+        print "Welcome to Jenni. Loading modules...\n\n"
         self.variables = {}
 
         filenames = []
@@ -72,6 +73,7 @@ class Jenni(irc.Bot):
 
         modules = []
         excluded_modules = getattr(self.config, 'exclude', [])
+        error_count = 0
         for filename in filenames:
             name = os.path.basename(filename)[:-3]
             if name in excluded_modules: continue
@@ -79,6 +81,7 @@ class Jenni(irc.Bot):
             #     del sys.modules[name]
             try: module = imp.load_source(name, filename)
             except Exception, e:
+                error_count = error_count + 1
                 print >> sys.stderr, "Error loading %s: %s (in bot.py)" % (name, e)
             else:
                 if hasattr(module, 'setup'):
@@ -87,7 +90,8 @@ class Jenni(irc.Bot):
                 modules.append(name)
 
         if modules:
-            print >> sys.stderr, 'Registered modules:', ', '.join(modules)
+            print >> sys.stderr, '\n\nRegistered %d modules,' % len(modules)
+            print >> sys.stderr, '%d modules failed to load\n\n' % error_count
         else: print >> sys.stderr, "Warning: Couldn't find any modules"
 
         self.bind_commands()
@@ -106,7 +110,6 @@ class Jenni(irc.Bot):
         self.commands = {'high': {}, 'medium': {}, 'low': {}}
 
         def bind(self, priority, regexp, func):
-            print priority, regexp.pattern.encode('utf-8'), func
             # register documentation
             if not hasattr(func, 'name'):
                 func.name = func.__name__
