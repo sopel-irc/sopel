@@ -231,7 +231,26 @@ class Bot(asynchat.async_chat):
         self.stack = self.stack[-10:]
 
         self.sending.release()
-
+    def debug(self, tag, text, level):
+        """
+        Sends an error to jenni's configured ``debug_target``. 
+        """
+        if not self.verbose:
+            return False
+        elif not (self.debug_target is 'stdio' or self.debug_target.startswith('#')):
+            return False
+        
+        if level == 'verbose':
+            if jenni.verbose == 'verbose':
+                self.msg(self.debug_target, text)
+                return True
+        elif level == 'warning':
+            if jenni.verbose == 'verbose' or jenni.verbose == 'warning':
+                self.msg(self.debug_target, text)
+                return True
+        
+        return False
+            
     def notice(self, dest, text):
         self.write(('NOTICE', dest), text)
 
