@@ -195,76 +195,73 @@ class Jenni(irc.Bot):
                 return getattr(self.bot, attr)
 
         return JenniWrapper(self)
-
-    def input(self, origin, text, bytes, match, event, args):
-        class Trigger(unicode):
-            def __new__(cls, text, origin, bytes, match, event, args):
-                s = unicode.__new__(cls, text)
-                s.sender = origin.sender
-                """
-                The channel (or nick, in a private message) from which the
-                message was sent.
-                """
-                s.nick = origin.nick
-                """The nick of the person who sent the message."""
-                s.event = event
-                """The event which triggered the message."""#TODO elaborate
-                s.bytes = bytes
-                """The line which triggered the message"""#TODO elaborate
-                s.match = match
-                """
-                The regular expression ``MatchObject_`` for the triggering line.
-                .. _MatchObject: http://docs.python.org/library/re.html#match-objects
-                """
-                s.group = match.group
-                """The ``group`` function of the ``match`` attribute.
+    class Trigger(unicode):
+        def __new__(cls, text, origin, bytes, match, event, args, self):
+            s = unicode.__new__(cls, text)
+            s.sender = origin.sender
+            """
+            The channel (or nick, in a private message) from which the
+            message was sent.
+            """
+            s.nick = origin.nick
+            """The nick of the person who sent the message."""
+            s.event = event
+            """The event which triggered the message."""#TODO elaborate
+            s.bytes = bytes
+            """The line which triggered the message"""#TODO elaborate
+            s.match = match
+            """
+            The regular expression ``MatchObject_`` for the triggering line.
+            .. _MatchObject: http://docs.python.org/library/re.html#match-objects
+            """
+            s.group = match.group
+            """The ``group`` function of the ``match`` attribute.
+            
+            See Python ``re_`` documentation for details."""
+            s.groups = match.groups
+            """The ``groups`` function of the ``match`` attribute.
+            
+            See Python ``re_`` documentation for details."""
+            s.args = args
+            """The arguments given to a command.""" #TODO elaborate
+            s.admin = origin.nick in self.config.admins
+            """
+            True if the nick which triggered the command is in jenni's admin
+            list as defined in the config file.
+            """
                 
-                See Python ``re_`` documentation for details."""
-                s.groups = match.groups
-                """The ``groups`` function of the ``match`` attribute.
-                
-                See Python ``re_`` documentation for details."""
-                s.args = args
-                """The arguments given to a command.""" #TODO elaborate
-                s.admin = origin.nick in self.config.admins
-                """
-                True if the nick which triggered the command is in jenni's admin
-                list as defined in the config file.
-                """
-                
-                if s.admin == False:
-                    for each_admin in self.config.admins:
-                        re_admin = re.compile(each_admin)
-                        if re_admin.findall(origin.host):
+            if s.admin == False:
+                for each_admin in self.config.admins:
+                    re_admin = re.compile(each_admin)
+                    if re_admin.findall(origin.host):
+                        s.admin = True
+                    elif '@' in each_admin:
+                        temp = each_admin.split('@')
+                        re_host = re.compile(temp[1])
+                        if re_host.findall(origin.host):
                             s.admin = True
-                        elif '@' in each_admin:
-                            temp = each_admin.split('@')
-                            re_host = re.compile(temp[1])
-                            if re_host.findall(origin.host):
-                                s.admin = True
-                s.owner = origin.nick + '@' + origin.host == self.config.owner
-                if s.owner == False: s.owner = origin.nick == self.config.owner
-                s.host = origin.host
-                return s
-        return Trigger(text, origin, bytes, match, event, args)
+            s.owner = origin.nick + '@' + origin.host == self.config.owner
+            if s.owner == False: s.owner = origin.nick == self.config.owner
+            s.host = origin.host
+            return s
 
-    def call(self, func, origin, jenni, input):
-        nick = (input.nick).lower()
+    def call(self, func, origin, jenni, trigger):
+        nick = (trigger.nick).lower()
         if nick in self.times:
             if func in self.times[nick]:
-                if not input.admin:
+                if not trigger.admin:
                     timediff = time.time() - self.times[nick][func]
                     if timediff < func.rate:
                         self.times[nick][func] = time.time()
                         jenni.msg("#Embo",
                             "[DEVMSG] %s prevented from using %s in %s: %d < %d"\
-                            % (input.nick, func.__name__, input.sender, timediff, 
+                            % (trigger.nick, func.__name__, trigger.sender, timediff, 
                                 func.rate))
                         return
         else: self.times[nick] = dict()
         self.times[nick][func] = time.time()
         try:
-            func(jenni, input)
+            func(jenni, trigger)
         except Exception, e:
             self.error(origin)
 
@@ -291,10 +288,10 @@ class Jenni(irc.Bot):
                         if self.limit(origin, func): continue
 
                         jenni = self.wrapped(origin, text, match)
-                        input = self.input(origin, text, bytes, match, event, args)
-                        if input.nick in self.config.other_bots: continue
+                        trigger = self.Trigger(text, origin, bytes, match, event, args, self)
+                        if trigger.nick in self.config.other_bots: continue
 
-                        nick = (input.nick).lower()
+                        nick = (trigger.nick).lower()
 
                         ## blocking ability
                         if os.path.isfile("blocks"):
@@ -322,14 +319,14 @@ class Jenni(irc.Bot):
                                     nick = nick.replace("\n", "")
                                     if len(nick) < 1: continue
                                     re_temp = re.compile(nick)
-                                    if re_temp.findall(input.nick) or nick in input.nick:
+                                    if re_temp.findall(trigger.nick) or nick in trigger.nick:
                                         return
                         # stats
                         if func.thread:
-                            targs = (func, origin, jenni, input)
+                            targs = (func, origin, jenni, trigger)
                             t = threading.Thread(target=self.call, args=targs)
                             t.start()
-                        else: self.call(func, origin, jenni, input)
+                        else: self.call(func, origin, jenni, trigger)
 
                         for source in [origin.sender, origin.nick]:
                             try: self.stats[(func.name, source)] += 1
