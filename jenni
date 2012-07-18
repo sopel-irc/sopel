@@ -145,26 +145,11 @@ def check_dotdir():
 
 def config_names(config):
     config = config or 'default'
-
-    def files(d):
-        names = os.listdir(d)
-        return list(os.path.join(d, fn) for fn in names if fn.endswith('.py'))
-
-    here = os.path.join('.', config)
-    if os.path.isfile(here):
-        return [here]
-    if os.path.isfile(here + '.py'):
-        return [here + '.py']
-    if os.path.isdir(here):
-        return files(here)
-
     there = os.path.join(dotdir, config)
     if os.path.isfile(there):
         return [there]
     if os.path.isfile(there + '.py'):
         return [there + '.py']
-    if os.path.isdir(there):
-        return files(there)
 
 def main(argv=None):
     # Step One: Parse The Command Line
