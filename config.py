@@ -243,8 +243,8 @@ class Config(object):
             if wl:
                 c="Enter the modules to use, one at a time. Hit enter when done."
                 self.add_list('enable', c, 'Module:')
-        else: self.enable = []
-        
+            else: 
+                self.enable = []
         c = trim("""\
         If you'd like to include modules from other directories, enter them one at a
         time, and hit enter again when done.""")
