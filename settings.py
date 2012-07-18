@@ -432,49 +432,49 @@ class SettingsDB(object):
         for column in columns:
             self.columns.add(column)
 
-    def write_config(config):
-        """
-        Interactively create configuration options and add the attributes to
-        the Config object ``config``.
-        """
+def write_config(config):
+    """
+    Interactively create configuration options and add the attributes to
+    the Config object ``config``.
+    """
+    chunk = """\
+    # ------------------  USER DATABASE CONFIGURATION  ------------------
+    # The user database was not set up at install. Please consult the documentation,
+    # or run the configuration utility if you wish to use it."""
+    c = config.option("Would you like to set up a settings database now")
+        
+    if not c:
+        return chunk
+        
+    config.interactive_add('userdb_type',
+        'What type of database would you like to use? (mysql/dict)', 'mysql')
+        
+    if config.userdb_type == 'dict':
+        config.interactive_add('userdb_data',"""\
+        Enter the data now, all on one line. If you give up, close your
+        brackets and hit enter. If you'd rather edit the file later, hit
+        enter now.""", """\
+            {
+             'someuser':    {'tz': 'America/New_York'}
+             'anotheruser': {'icao': 'KCMH'}
+             'onemoreuser': {'tz': 'Europe/Berlin', 'icao': 'EDDT'}""")
         chunk = """\
         # ------------------  USER DATABASE CONFIGURATION  ------------------
-        # The user database was not set up at install. Please consult the documentation,
-        # or run the configuration utility if you wish to use it."""
-        c = config.option("Would you like to set up a settings database now")
-        
-        if not c:
-            return chunk
-        
-        config.interactive_add('userdb_type',
-            'What type of database would you like to use? [%s]', 'mysql')
-        
-        if config.userdb_type == 'dict':
-            config.interactive_add('userdb_data',"""\
-            Enter the data now, all on one line. If you give up, close your
-            brackets and hit enter. If you'd rather edit the file later, hit
-            enter now.""", """\
-            {
-                 'someuser':    {'tz': 'America/New_York'}
-                 'anotheruser': {'icao': 'KCMH'}
-                 'onemoreuser': {'tz': 'Europe/Berlin', 'icao': 'EDDT'}""")
-            chunk = """\
-    # ------------------  USER DATABASE CONFIGURATION  ------------------
-    # Below is the user database configuration. If you want to keep the same
-    # user database type, it's fine to change this. If you want to change types,
-    # you should run the configuration utility (or at least consult the 
-    # SettingsDB documentation page).
+        # Below is the user database configuration. If you want to keep the same
+        # user database type, it's fine to change this. If you want to change types,
+        # you should run the configuration utility (or at least consult the 
+        # SettingsDB documentation page).
     
-    userdb_type = 'dict'
-    userdb_data = """+str(config.userdb_data)
+        userdb_type = 'dict'
+        userdb_data = """+str(config.userdb_data)
         
-        elif config.userdb_type == 'mysql':
-            config.interactive_add('userdb_host', "Enter the MySQL hostname", 'localhost')
-            config.interactive_add('userdb_user', "Enter the MySQL username")
-            config.interactive_add('userdb_pass', "Enter the user's password", 'none')
-            config.interactive_add('userdb_name', "Enter the name of the database to use")
+    elif config.userdb_type == 'mysql':
+        config.interactive_add('userdb_host', "Enter the MySQL hostname", 'localhost')
+        config.interactive_add('userdb_user', "Enter the MySQL username")
+        config.interactive_add('userdb_pass', "Enter the user's password", 'none')
+        config.interactive_add('userdb_name', "Enter the name of the database to use")
             
-            chunk = """\
+        chunk = """\
     # ------------------  USER DATABASE CONFIGURATION  ------------------
     # Below is the user database configuration. If you want to keep the same
     # user database type, it's fine to change this. If you want to change types,
@@ -487,10 +487,10 @@ class SettingsDB(object):
     userdb_name = '%s'""" % (config.userdb_type, config.userdb_user,
                              config.userdb_pass, config.userdb_name)
         
-        elif config.userdb_type == 'sqlite':
-            config.say("This isn't currently supported. Aborting.")
-        else:
-            config.say("This isn't currently supported. Aborting.")
-        
-        return chunk
+    elif config.userdb_type == 'sqlite':
+        print "This isn't currently supported. Aborting."
+    else:
+        print "This isn't currently supported. Aborting."
+
+    return chunk
 
