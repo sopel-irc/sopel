@@ -290,7 +290,6 @@ class Config(object):
                         filenames.append(os.path.join(fn, n))
                         
         for filename in filenames:
-            print filename
             name = os.path.basename(filename)[:-3]
             if name in self.exclude: continue
             # if name in sys.modules:
