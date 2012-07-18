@@ -14,6 +14,7 @@ Then run ./jenni again
 import sys, os, imp, optparse
 from textwrap import dedent as trim
 from config import Config
+import config
 
 dotdir = os.path.expanduser('~/.jenni')
 configpath = os.path.expanduser(dotdir + '/default.py')
@@ -24,108 +25,8 @@ def check_python_version():
         print >> sys.stderr, error
         sys.exit(1)
 
-def create_default_config(fn):
-    f = open(fn, 'w')
-    #TODO add logchan to config utility
-    output = """\
-    nick = 'jenni'
-    host = 'irc.example.net'
-    port = 6667
-    channels = ['#example', '#test']
-    owner = 'yournickname'
-    # Channel where debug messages should be sent.
-    devchan = None
-    
-    # List of other bots, whose outputs should be ignored
-    other_bots = ['examplebot']
-    logchan_pm = ''
-
-    # password is the NickServ password, serverpass is the server password
-    # password = 'example'
-    # serverpass = 'serverpass'
-    
-    # The oper name and password, if the bot is allowed to /oper
-    # Oper = ('opername', 'operpass')
-
-    # These are people who will be able to use admin.py's functions...
-    admins = [owner, 'someoneyoutrust']
-    # But admin.py is disabled by default, as follows:
-    exclude = ['admin', 'adminchannel', 'ai', 'resp', 'school']
-
-    # If you want to enumerate a list of modules rather than disabling
-    # some, use "enable = ['example']", which takes precedent over exclude
-    #
-    # enable = []
-    
-    # Directories to load user modules from
-    # e.g. /path/to/my/modules
-    extra = ['""" + os.getcwd() + '/modules/' + """']
-
-    # Services to load: maps channel names to white or black lists
-    external = {
-        '#liberal': ['!'], # allow all
-        '#conservative': [], # allow none
-        '*': ['!'] # default whitelist, allow all
-    }
-    
-    # Twitter API keys, if you want jenni to be able to tweet.
-    # consumer_key = "something"
-    # consumer_secret = "somethingelse"
-    # access_token = "yetanotherthing"
-    # access_token_secret = "onemorething"
-    
-    # -----------------  MEETBOT CONFIGURATION -------------------------
-    
-    # Uncomment the following lines and change them to setup meetbot
-    
-    # meeting_log_path = '/path/to/log/folder/'
-    # meeting_log_baseurl = 'http://example.com/logs/'
-    
-    # ------------------  USER DATABASE CONFIGURATION  ------------------
-    # The user database can hold any user-specific settings you want. For
-    # example, this branch has modules which will use a user-specific time zone
-    # based on the 'tz' column in the database. The name of the columns used is
-    # up to the module writer, who hopefully made provisions for when you don't
-    # have that column. In order to use that function, it is up to you to make
-    # sure you have the appropriate column in the database.
-    # You have an option of using a MySQL or SQLite database, or a native Python
-    # dict object. The SQL options can be edited without restarting the bot, and
-    # users can edit their entries by themselves, and they can be located on a
-    # different machine. However, they may or may not be slower. If you want to
-    # have this feature (it's optional), uncomment and  put 'mysql', 'sqlite',
-    # or 'native' for this value.
-
-    # userdb_type = 'whatever'
-    
-    # Each type has to be handled a little differently. For a MySQL database,
-    # uncomment and fill in the values below. The database should have a column
-    # named 'locales', with a primary key column named 'nick'. You will need to
-    # have the MySQLdb module installed to use this option.
-    
-    # userdb_host = 'localhost'
-    # userdb_user = 'username'
-    # userdb_pass = 'password'
-    # userdb_name = 'database_name'
-    
-    # For a SQLite database, uncomment and fill in these values:
-    
-    ####SQLite support is not yet implemented. Sorry.
-    
-    # For a native dict database, you need to fill in each user manually, like so:
-    
-    # userdb_data = {
-    #                 'someuser':    {'tz': 'America/New_York'}
-    #                 'anotheruser': {'icao': 'KCMH'}
-    #                 'onemoreuser': {'tz': 'Europe/Berlin', 'icao': 'EDDT'}
-
-    # EOF
-    """
-    print >> f, trim(output)
-    f.close()
-
-def create_configfile(dotdir):
-
-    if not os.path.isdir(dotdir):
+def check_dotdir():
+    if not os.path.isdir(dotdir) or not os.path.isfile(configpath):
         print 'Creating a config directory at ~/.jenni...'
         try: os.mkdir(dotdir)
         except Exception, e:
@@ -134,14 +35,6 @@ def create_configfile(dotdir):
             print >> sys.stderr, 'Please fix this and then run jenni again.'
             sys.exit(1)
 
-    create_default_config(configpath)
-    print >> sys.stdout, 'Config file generated. Please edit it at ' + configpath + ' and run ./jenni again.'
-
-    sys.exit(0)
-
-def check_dotdir():
-    if not os.path.isdir(dotdir) or not os.path.isfile(configpath):
-        create_configfile(dotdir)
 
 def config_names(config):
     config = config or 'default'
@@ -153,34 +46,39 @@ def config_names(config):
 
 def main(argv=None):
     # Step One: Parse The Command Line
+    try:
+        parser = optparse.OptionParser('%prog [options]')
+        parser.add_option('-c', '--config', metavar='fn',
+            help='use this configuration file or directory')
+        opts, args = parser.parse_args(argv)
+        # Step Two: Check Dependencies
 
-    parser = optparse.OptionParser('%prog [options]')
-    parser.add_option('-c', '--config', metavar='fn',
-        help='use this configuration file or directory')
-    opts, args = parser.parse_args(argv)
-    # Step Two: Check Dependencies
+        check_python_version() # require python2.4 or later
+        config_name = opts.config or 'default'
+        configpath = os.path.join(dotdir, config_name)
+        if not os.path.isfile(configpath) and not os.path.isfile(configpath+'.py'):
+            print "Welcome to Jenni!\nI can't seem to find the configuration file, so let's generate it!\n"
+            config.create_config(configpath+'.py')
 
-    check_python_version() # require python2.4 or later
-    check_dotdir() # require ~/.jenni, or make it and exit
-
-    # Step Three: Load The Configurations
-    if not config_names(opts.config):
-        print >> sys.stderr, "Error: specified configuration file not found"
-        sys.exit(1)
-
-    config_name = config_names(opts.config)[0]
-    config_module = Config(config_name)
-
-    # Step Four: Load Jenni
-    try: from __init__ import run
-    except ImportError:
-        try: from jenni import run
-        except ImportError:
-            print >> sys.stderr, "Error: Couldn't find jenni to import"
+        # Step Three: Load The Configurations
+        if not config_names(opts.config):
+            print >> sys.stderr, "Error: specified configuration file not found, this is odd because if things are working according to plans I just showed you a nice configuration generation wizard that should've written the config file!"
             sys.exit(1)
 
-    # Step Five: Initialise And Run Jenni
-    run(config_module)
+        config_name = config_names(opts.config)[0]
+        config_module = Config(config_name)
 
+        # Step Four: Load Jenni
+        try: from __init__ import run
+        except ImportError:
+            try: from jenni import run
+            except ImportError:
+                print >> sys.stderr, "Error: Couldn't find jenni to import"
+                sys.exit(1)
+
+        # Step Five: Initialise And Run Jenni
+        run(config_module)
+    except KeyboardInterrupt:
+        print "\n\nInterrupted"
 if __name__ == '__main__':
     main()

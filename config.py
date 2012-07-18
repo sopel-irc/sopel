@@ -327,7 +327,7 @@ def _config_names(dotdir, config):
         return files(there)
 
     sys.exit(1)
-
+    
 def main(argv=None):
     import optparse
     parser = optparse.OptionParser('%prog [options]')
@@ -335,7 +335,12 @@ def main(argv=None):
         help='use this configuration file or directory')
     opts, args = parser.parse_args(argv)
     dotdir = os.path.expanduser('~/.jenni')
+    configpath = os.path.join(dotdir, (opts.config or 'default')+'.py')
+    create_config(configpath)
 
+def create_config(configpath):
+    print "Please answer the following questions to create your configuration file:\n"
+    dotdir = os.path.expanduser('~/.jenni')
     if not os.path.isdir(dotdir):
         print 'Creating a config directory at ~/.jenni...'
         try: os.mkdir(dotdir)
@@ -344,14 +349,18 @@ def main(argv=None):
             print >> sys.stderr, e.__class__, str(e)
             print >> sys.stderr, 'Please fix this and then run jenni again.'
             sys.exit(1)
-    
-    configpath = os.path.join(dotdir, (opts.config or 'default')+'.py')
-    config = Config(configpath, os.path.isfile(configpath))
-    config._core()
-    config._settings()
-    config._modules()
-    config.write()
-    
+    try:
+        config = Config(configpath, os.path.isfile(configpath))
+        config._core()
+        config._settings()
+        config._modules()
+        config.write()
+    except Exception, e:
+        print "Encountered an error while writing the config file. This shouldn't happen. Check permissions."
+        print e
+        sys.exit(1)
+    print "Config file written sucessfully!"
+
 if __name__ == '__main__':
     main()
 
