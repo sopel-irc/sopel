@@ -62,7 +62,7 @@ class Jenni(irc.Bot):
             for fn in self.config.enable:
                 filenames.append(os.path.join(home, 'modules', fn + '.py'))
 
-        if hasattr(self.config, 'extra'):
+        if hasattr(self.config, 'extra') and self.config.extra is not None:
             for fn in self.config.extra:
                 if os.path.isfile(fn):
                     filenames.append(fn)
