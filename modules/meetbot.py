@@ -10,6 +10,7 @@ This module is an attempt to implement at least some of the functionallity of De
 import time
 import os
 import urllib2
+from url import find_title
 
 def configure(config):
     chunk = ''
@@ -264,9 +265,16 @@ def meetinglink(jenni, input):
     if not ischair(input.nick, input.sender):
         jenni.say('Only meeting head or chairs can do that')
         return
-    logplain('LINK: ' + input.group(2), input.sender)
-    logHTML_listitem('<a href="'+input.group(2)+'">'+input.group(2)+'</a>', input.sender)
-    jenni.say('LINK: ' + input.group(2))
+    link = input.group(2)
+    if not link.startswith("http"):
+        link = "http://" + link
+    try:
+        title = find_title(link)
+    except:
+        title = ''
+    logplain('LINK: %s [%s]' % (link, title), input.sender)
+    logHTML_listitem('<a href="%s">%s</a>' % (link, title), input.sender)
+    jenni.say('LINK: ' + link)
 
 meetinglink.commands = ['link']
 meetinglink.example = '.link http://example.com'
