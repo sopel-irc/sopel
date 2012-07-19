@@ -26,6 +26,8 @@ http://dft.ba/-williesource
 
 import os, sys, imp
 from textwrap import dedent as trim
+from bot import enumerate_modules
+
 
 class Config(object):
     def __init__(self, filename, load=True):
@@ -271,30 +273,12 @@ class Config(object):
     def _modules(self):
         home = os.getcwd()
         self.modules_chunk = ''
-        # This segment largely copied from bot.py
-        filenames = []
-        modules_dir = os.path.join(home, 'modules')
-        if not hasattr(self, 'enable') or not self.enable:
-            for fn in os.listdir(modules_dir):
-                if fn.endswith('.py') and not fn.startswith('_'):
-                    filenames.append(os.path.join(modules_dir, fn))
-        else:
-            for fn in self.enable:
-                filenames.append(os.path.join(modules_dir, fn + '.py'))
-        os.sys.path.insert(0,modules_dir)
-        for fn in self.extra:
-            if os.path.isfile(fn):
-                filenames.append(fn)
-            elif os.path.isdir(fn):
-                for n in os.listdir(fn):
-                    if n.endswith('.py') and not n.startswith('_'):
-                        filenames.append(os.path.join(fn, n))
-                        
+
+        filenames = enumerate_modules(self)
+
         for filename in filenames:
             name = os.path.basename(filename)[:-3]
             if name in self.exclude: continue
-            # if name in sys.modules:
-            #     del sys.modules[name]
             try: module = imp.load_source(name, filename)
             except Exception, e:
                 print >> sys.stderr, "Error loading %s: %s (in config.py)" % (name, e)
