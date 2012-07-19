@@ -235,7 +235,7 @@ class Jenni(irc.Bot):
             See Python ``re_`` documentation for details."""
             s.args = args
             """The arguments given to a command.""" #TODO elaborate
-            s.admin = origin.nick in self.config.admins
+            s.admin = (origin.nick in self.config.admins) or origin.nick.lower() == self.config.owner.lower()
             """
             True if the nick which triggered the command is in jenni's admin
             list as defined in the config file.
