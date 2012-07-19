@@ -141,7 +141,18 @@ The ``Jenni`` class
         be used, for example, in a module's ``configure`` function.
 
         The same behavior regarding loop detection and length restrictions apply
-        to ``say`` as to ``msg``.
+        to ``say`` as to ``msg`` and ``action``.
+        
+    .. py:function:: action(text)
+    
+        In a module function, send ``text`` to the channel in which the function
+        was triggered preceeded by CTCP ACTION directive (result identical to using /me in clients).
+        
+        This function is not available outside of module functions. It can not
+        be used, for example, in a module's ``configure`` function.
+
+        The same behavior regarding loop detection and length restrictions apply
+        to ``action`` as to ``msg`` and ``say``.
     
     .. py:attribute:: nick
     
