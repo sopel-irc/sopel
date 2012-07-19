@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf8 -*-
 """
-*Availability: 3.x+*
+*Availability: 3+*
 
 The web class contains essential web-related functions for interaction with web applications or websites in your modules.
 It supports HTTP GET, HTTP POST and HTTP HEAD.

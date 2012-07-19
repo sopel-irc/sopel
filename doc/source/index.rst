@@ -164,6 +164,8 @@ The ``Jenni`` class
     .. py:attribute:: ops 
     .. py:attribute:: halfplus
     
+        *Availability: 3+*
+        
         Dictionary mapping channels to a list of their ops, and half-ops and ops
         respectively.
     
@@ -196,6 +198,8 @@ The ``Jenni`` class
     
     .. py:function:: debug(tag, text, level)
     
+        *Availability: 3+*
+        
         Send ``text`` to jenni's configured ``debug_target``. This can be either
         an IRC channel (starting with ``#``) or ``stdio``. Suppress the message
         if the given ``level`` is lower than jenni's configured ``verbose``
@@ -210,22 +214,29 @@ The ``Jenni`` class
     .. py:function:: addOp(channel, name)
     .. py:function:: addHalfOp(channel, name)
     
+        *Availability: 3+*
         Add ``name`` to ``channel``'s entry in the ``ops`` or ``halfplus``
         dictionaries, respectively.
     
     .. py:function:: delOp(channel, name)
     .. py:function:: delHalfOp(channel, name)
     
+        *Availability: 3+*
+        
         Remove ``name`` from ``channel``'s entry in the ``ops`` or ``halfplus``
         dictionaries, respectively.
     
     .. py:function:: flushOps(channel)
-    
+        
+        *Availability: 3+*
+        
         Re-initialize  and empty the ``ops`` and ``halfops`` entry for
         ``channel``.
     
     .. py:function:: startOpsList(self, channel)
     
+        *Availability: 3+*
+        
         Create an empty entry in ``ops`` and ``halfops`` for ``channel``. This
         will not damage existing entries, but must be done before users can be
         added to either dictionary.

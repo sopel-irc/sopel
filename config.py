@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-*Availability: 3.x+*
+*Availability: 3+ for all functions; attributes may vary.*
 
 The config class is, essentially, a representation of the active jenni config
 file. As such, the details of its members depend entirely upon what is written
