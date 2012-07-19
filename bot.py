@@ -12,6 +12,7 @@ import irc
 from settings import SettingsDB
 
 home = os.getcwd()
+modules_dir = os.path.join(home, 'modules')
 
 def decode(bytes):
     try: text = bytes.decode('utf-8')
@@ -20,6 +21,26 @@ def decode(bytes):
         except UnicodeDecodeError:
             text = bytes.decode('cp1252')
     return text
+
+def enumerate_modules(config):
+    filenames = []
+    if not hasattr(config, 'enable') or not config.enable:
+        for fn in os.listdir(modules_dir):
+            if fn.endswith('.py') and not fn.startswith('_'):
+                filenames.append(os.path.join(modules_dir, fn))
+    else:
+        for fn in config.enable:
+            filenames.append(os.path.join(modules_dir, fn + '.py'))
+
+    if hasattr(config, 'extra') and config.extra is not None:
+        for fn in config.extra:
+            if os.path.isfile(fn):
+                filenames.append(fn)
+            elif os.path.isdir(fn):
+                for n in os.listdir(fn):
+                    if n.endswith('.py') and not n.startswith('_'):
+                        filenames.append(os.path.join(fn, n))
+    return filenames
 
 class Jenni(irc.Bot):
     def __init__(self, config):
@@ -53,24 +74,10 @@ class Jenni(irc.Bot):
         print "Welcome to Jenni. Loading modules...\n\n"
         self.variables = {}
 
-        filenames = []
-        modules_dir = os.path.join(home, 'modules')
-        if not hasattr(self.config, 'enable'):
-            for fn in os.listdir(modules_dir):
-                if fn.endswith('.py') and not fn.startswith('_'):
-                    filenames.append(os.path.join(modules_dir, fn))
-        else:
-            for fn in self.config.enable:
-                filenames.append(os.path.join(modules_dir, fn + '.py'))
 
-        if hasattr(self.config, 'extra') and self.config.extra is not None:
-            for fn in self.config.extra:
-                if os.path.isfile(fn):
-                    filenames.append(fn)
-                elif os.path.isdir(fn):
-                    for n in os.listdir(fn):
-                        if n.endswith('.py') and not n.startswith('_'):
-                            filenames.append(os.path.join(fn, n))
+        filenames = enumerate_modules(self.config)
+        self.enumerate_modules = enumerate_modules
+
         os.sys.path.insert(0,modules_dir) 
         modules = []
         excluded_modules = getattr(self.config, 'exclude', [])
@@ -228,7 +235,7 @@ class Jenni(irc.Bot):
             See Python ``re_`` documentation for details."""
             s.args = args
             """The arguments given to a command.""" #TODO elaborate
-            s.admin = origin.nick in self.config.admins
+            s.admin = (origin.nick in self.config.admins) or origin.nick.lower() == self.config.owner.lower()
             """
             True if the nick which triggered the command is in jenni's admin
             list as defined in the config file.
