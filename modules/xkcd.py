@@ -30,17 +30,17 @@ def xkcd(jenni, input):
 
     # if no input is given (pre - FireRogue's edits code)
     if not input.group(2):
-    	random.seed()
-    	website = "http://xkcd.com/%d/" % random.randint(0,max_int+1)
+        random.seed()
+        website = "http://xkcd.com/%d/" % random.randint(0,max_int+1)
     else:
         query = input.group(2)
 
         # numeric input!
         if (query.strip().isdigit()):
-        	if (int(query.strip()) > max_int):
-         		jenni.say("Sorry, comic #" + query.strip() + " hasn't been posted yet. The last comic was #%d" % max_int)
-         		return
-         	else: website = "http://xkcd.com/" + query.strip() + '/'
+            if (int(query.strip()) > max_int):
+                jenni.say("Sorry, comic #" + query.strip() + " hasn't been posted yet. The last comic was #%d" % max_int)
+                return
+            else: website = "http://xkcd.com/" + query.strip() + '/'
         
         # non-numeric input! code lifted from search.g
         else:
