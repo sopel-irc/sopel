@@ -12,6 +12,8 @@ More info:
 
 import random
 from search import google_search
+import urllib2
+from lxml import etree
 
 """.xkcd - Finds an xkcd comic strip. Takes one of 3 inputs:
     If no input is provided it gives a random comic.
@@ -19,8 +21,6 @@ from search import google_search
     If non-numeric input is provided it will return the first google result for those keywords on the xkcd.com site"""
     
 def xkcd(jenni, input):
-    import urllib2
-    from lxml import etree
     if not input.group(2):
         body = urllib2.urlopen("http://xkcd.com/rss.xml").readlines()[1]
         parsed = etree.fromstring(body)
@@ -33,7 +33,7 @@ def xkcd(jenni, input):
         if (query.strip().isdigit()): 
             random.seed()
             website = "http://xkcd.com/" + query.strip()
-            jenni.say(website)
+            jenni.reply(website)
         else:
            try:
                 query = query.encode('utf-8')
@@ -41,7 +41,7 @@ def xkcd(jenni, input):
                pass
            uri = google_search("site:xkcd.com "+ query)
            if uri:
-               jenni.say(uri)
+               jenni.reply(uri)
            elif uri is False: jenni.say("Problem getting data from Google.")
            else: jenni.say("No results found for '%s'." % query) 
 xkcd.commands = ['xkcd']
