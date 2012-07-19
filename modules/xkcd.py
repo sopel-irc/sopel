@@ -2,7 +2,7 @@
 """
 xkcd.py - XKCD Module
 Copyright 2010, Michael Yanovich (yanovich.net), and Morgan Goose
-Copyright 2012, FireRogue (FireRogue517@gmail.com)
+Copyright 2012, Lior Ramati
 Licensed under the Eiffel Forum License 2.
 
 More info:
