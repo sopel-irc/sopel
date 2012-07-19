@@ -41,7 +41,7 @@ def xkcd(jenni, input):
                pass
            uri = google_search("site:xkcd.com "+ query)
            if uri:
-               jenni.reply(uri)
+               jenni.say(uri)
            elif uri is False: jenni.say("Problem getting data from Google.")
            else: jenni.say("No results found for '%s'." % query) 
 xkcd.commands = ['xkcd']
