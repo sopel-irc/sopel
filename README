@@ -5,4 +5,21 @@ Installation:
 3) ...
 4) Profit!
 
+Making your own mdoules:
+
+To make your own module for jenni, please consult the documentation at http://embolalia.net/jenni/
+To get a copy of the documentation locally, run
+cd doc
+make html
+
+Place your mdoule in the modules/ directory and start jenni to load it.
+
+Command list and various user documentation:
+
+See wiki at https://github.com/embolalia/jenni/wiki
+
+Questions?
+
+Contact us on irc.dftba.net channel #tech
+
 For a list of contributions to the Jenni fork see the file CREDITS.
