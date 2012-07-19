@@ -120,6 +120,115 @@ The ``Jenni`` class
 
 .. autoclass:: bot.Jenni
     :members:
+    
+    .. py:function:: reply(text)
+    
+        In a module function, send ``text`` to the channel in which the function
+        was triggered, preceeded by the nick of the user who triggered it.
+        
+        This function is not available outside of module functions. It can not
+        be used, for example, in a module's ``configure`` function.
+        
+        The same behavior regarding loop detection and length restrictions apply
+        to ``reply`` as to ``msg``.
+    
+    .. py:function:: say(text)
+    
+        In a module function, send ``text`` to the channel in which the function
+        was triggered.
+        
+        This function is not available outside of module functions. It can not
+        be used, for example, in a module's ``configure`` function.
+
+        The same behavior regarding loop detection and length restrictions apply
+        to ``say`` as to ``msg``.
+    
+    .. py:attribute:: nick
+    
+        jenni's current nick. Changing this while jenni is running is untested.
+    
+    .. py:attribute:: name
+    
+        jenni's "real name", as used for whois.
+    
+    .. py:attribute:: password
+    
+        jenni's NickServ password
+    
+    .. py:attribute:: channels
+    
+        A list of jenni's initial channels. This list will initially be the same
+        as the one given in the config file, but is not guaranteed to be kept 
+        up-to-date.
+    
+    .. py:attribute:: ops 
+    .. py:attribute:: halfplus
+    
+        Dictionary mapping channels to a list of their ops, and half-ops and ops
+        respectively.
+    
+    .. py:function:: write(args, text=None)
+    
+        Send a command to the server. In the simplest case, ``args`` is a list
+        containing just the command you wish to send, and ``text`` the argument
+        to that command {e.g. write(['JOIN'], '#channel')}
+        
+        More specifically, ``args`` will be joined together, separated by a
+        space. If text is given, it will be added preceeded by a space and a 
+        colon (' :').
+        
+        Newlines and carriage returns ('\\n' and '\\r') are removed before
+        sending. Additionally, if the joined ``args`` and ``text`` are more than
+        510 characters, any remaining characters will not be sent.
+    
+    .. py:function:: msg(recipient, text)
+    
+        Send a PRIVMSG of ``text`` to ``recipient``. If the same ``text`` was
+        the message in 5 or more of the last 8 calls to ``msg``, ``'...'`` will
+        be sent instead. If this condition is met, and ``'...'`` is more than 3
+        of the last 8 calls, no message will be sent. This is intended to prevent
+        jenni from being caught in an infinite loop with another bot, or being
+        used to spam.
+        
+        After loop detection, the message is checked for length. If the sum of
+        the lengths of ``text`` and ``recipient`` are greater than 500, ``text``
+        will be truncated to fit this limit.
+    
+    .. py:function:: debug(tag, text, level)
+    
+        Send ``text`` to jenni's configured ``debug_target``. This can be either
+        an IRC channel (starting with ``#``) or ``stdio``. Suppress the message
+        if the given ``level`` is lower than jenni's configured ``verbose``
+        setting. Acceptable values for ``level`` are ``'verbose'`` (only send if
+        jenni is in verbose mode) and ``'warning'`` (send if jenni is in verbose
+        or warning mode). Return True if the message is sent or printed, and False if it
+        is not.
+        
+        If ``debug_target`` is a channel, the same behavior regarding loop
+        detection and length restrictions apply to ``debug`` as to ``msg``.
+    
+    .. py:function:: addOp(channel, name)
+    .. py:function:: addHalfOp(channel, name)
+    
+        Add ``name`` to ``channel``'s entry in the ``ops`` or ``halfplus``
+        dictionaries, respectively.
+    
+    .. py:function:: delOp(channel, name)
+    .. py:function:: delHalfOp(channel, name)
+    
+        Remove ``name`` from ``channel``'s entry in the ``ops`` or ``halfplus``
+        dictionaries, respectively.
+    
+    .. py:function:: flushOps(channel)
+    
+        Re-initialize  and empty the ``ops`` and ``halfops`` entry for
+        ``channel``.
+    
+    .. py:function:: startOpsList(self, channel)
+    
+        Create an empty entry in ``ops`` and ``halfops`` for ``channel``. This
+        will not damage existing entries, but must be done before users can be
+        added to either dictionary.
 
 The ``Trigger`` class
 ---------------------
