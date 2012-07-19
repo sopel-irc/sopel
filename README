@@ -1,15 +1,8 @@
-Installation &c.
+Installation:
 
-1) Run ./jenni - this creates a default config file
-2) Edit ~/.jenni/default.py
-3) Run ./jenni - this now runs jenni with your settings
-
-Enjoy!
-
-4) Run 'sudo pip install feedparser' to get the rss.py and nws.py to work.
+1) Run ./jenni
+2) Answer the prompts it gives you
+3) ...
+4) Profit!
 
 For a list of contributions to the Jenni fork see the file CREDITS.
-
--- 
-Sean B. Palmer, http://inamidst.com/sbp/
-forked by Michael Yanovich, https://yanovich.net/
