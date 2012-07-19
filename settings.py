@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-*Availability: 3.x+*
+*Availability: 3+*
 
 This class defines an interface for a semi-arbitrary database type. It is meant
 to allow module writers to operate without regard to how the end user has
