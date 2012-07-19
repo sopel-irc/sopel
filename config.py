@@ -240,11 +240,11 @@ class Config(object):
         
         if not self.exclude:
             wl = self.option("Would you like to create a module whitelist")
+            self.enable = []
             if wl:
                 c="Enter the modules to use, one at a time. Hit enter when done."
                 self.add_list('enable', c, 'Module:')
-            else: 
-                self.enable = []
+
         c = trim("""\
         If you'd like to include modules from other directories, enter them one at a
         time, and hit enter again when done.""")
@@ -273,14 +273,15 @@ class Config(object):
         self.modules_chunk = ''
         # This segment largely copied from bot.py
         filenames = []
+        modules_dir = os.path.join(home, 'modules')
         if not self.enable:
-            for fn in os.listdir(os.path.join(home, 'modules')):
+            for fn in os.listdir(modules_dir):
                 if fn.endswith('.py') and not fn.startswith('_'):
-                    filenames.append(os.path.join(home, 'modules', fn))
+                    filenames.append(os.path.join(modules_dir, fn))
         else:
             for fn in self.enable:
-                filenames.append(os.path.join(home, 'modules', fn + '.py'))
-
+                filenames.append(os.path.join(modules_dir, fn + '.py'))
+        os.sys.path.insert(0,modules_dir)
         for fn in self.extra:
             if os.path.isfile(fn):
                 filenames.append(fn)
