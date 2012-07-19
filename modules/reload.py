@@ -68,5 +68,39 @@ else:
         jenni.say('You need to run me on Python 2.7 to do that.')
 update.rule = ('$nick', ['update'], r'(.+)')
 
+def f_load(jenni, input):
+    """Loads a module, for use by admins only."""
+    if not input.admin: return
+
+    module_name = input.group(2)
+    path = ''
+    if module_name == jenni.config.owner:
+        return jenni.reply('What?')
+
+    if module_name in sys.modules:
+        return jenni.reply('Module already loaded, use reload')
+
+    filenames = jenni.enumerate_modules(jenni.config)
+    excluded_modules = getattr(jenni.config, 'exclude', [])
+    for filename in filenames:
+        name = os.path.basename(filename)[:-3]
+        if name in excluded_modules: continue
+        if name == input.group(2):
+            path = filename
+    if not os.path.isfile(path):
+        return jenni.reply('Module %s not found' % module_name)
+
+    module = imp.load_source(module_name, path)
+    mtime = os.path.getmtime(module.__file__)
+    modified = time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime(mtime))
+    jenni.register(vars(module))
+    jenni.bind_commands()
+
+    jenni.reply('%r (version: %s)' % (module, modified))
+f_load.name = 'load'
+f_load.rule = ('$nick', ['load'], r'(.+)?')
+f_load.priority = 'low'
+f_load.thread = False
+
 if __name__ == '__main__':
     print __doc__.strip()
