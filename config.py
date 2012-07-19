@@ -274,7 +274,7 @@ class Config(object):
         # This segment largely copied from bot.py
         filenames = []
         modules_dir = os.path.join(home, 'modules')
-        if not self.enable:
+        if not hasattr(self, 'enable') or not self.enable:
             for fn in os.listdir(modules_dir):
                 if fn.endswith('.py') and not fn.startswith('_'):
                     filenames.append(os.path.join(modules_dir, fn))
