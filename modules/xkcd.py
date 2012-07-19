@@ -17,8 +17,8 @@ import urllib2
 from lxml import etree
 
 """.xkcd - Finds an xkcd comic strip. Takes one of 3 inputs:
-    If no input is provided it will return a random comic.
-    If a numeric input is provided it will return that comic
+    If no input is provided it will return a random comic
+    If numeric input is provided it will return that comic
     If non-numeric input is provided it will return the first google result for those keywords on the xkcd.com site"""
     
 def xkcd(jenni, input):
@@ -29,14 +29,18 @@ def xkcd(jenni, input):
     max_int = int(newest.split("/")[-3])
 
     # if no input is given (pre - Lior's edits code)
-    if not input.group(2): website = "http://xkcd.com/%d/" % random.randint(0,max_int+1)
+    if not input.group(2): 
+    	random.seed()
+    	website = "http://xkcd.com/%d/" % random.randint(0,max_int+1)
     else:
         query = input.group(2)
 
         # numeric input!
         if (query.strip().isdigit()): 
-            random.seed()
-            website = "http://xkcd.com/" + query.strip() + '/'
+        	if (int(query.strip()) > max_int):
+        		jenni.say("no comic #" + query.strip() + " yet.")
+        		return
+        	else: website = "http://xkcd.com/" + query.strip() + '/'
         
         # non-numeric input! code lifted from search.g
         else:
