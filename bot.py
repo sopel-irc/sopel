@@ -203,6 +203,8 @@ class Jenni(irc.Bot):
                         self.bot.msg(sender, origin.nick + ': ' + msg))
                 elif attr == 'say':
                     return lambda msg: self.bot.msg(sender, msg)
+                elif attr == 'action':
+                    return lambda msg: self.bot.msg(sender, '\001ACTION '+msg+'\001')
                 return getattr(self.bot, attr)
 
         return JenniWrapper(self)
