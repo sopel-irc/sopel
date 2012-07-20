@@ -158,7 +158,7 @@ def delete_factoid(jenni, trigger):
     cur = db.cursor()
     bucket_runtime_data.inhibit_reply = trigger.group(0)
     try:
-        cur.execute('DELETE FROM bucket_facts WHERE ID = %d',int(trigger.group(1)))
+        cur.execute('DELETE FROM bucket_facts WHERE ID = %s',int(trigger.group(1)))
         db.commit()
     except:
         jenni.say("Delete failed! are you sure this is a valid factoid ID?")
@@ -278,28 +278,36 @@ def output_results(jenni, trigger, results, literal=False, addressed=False):
     elif verb == '<directreply>' and not literal and addressed:
         jenni.say(tidbit)
     elif literal:
-        jenni.reply('just a second, I\'ll make the list!')
-        bucket_literal_path = jenni.config.bucket_literal_path
-        bucket_literal_baseurl = jenni.config.bucket_literal_baseurl
-        if not bucket_literal_baseurl.endswith('/'):
-            bucket_literal_baseurl = bucket_literal_baseurl + '/'
-        if not os.path.isdir(bucket_literal_path):
-            try:
-                os.makedirs(bucket_literal_path)
-            except Exception as e:
-                jenni.say("Can't create directory to store literal, sorry!")
-                jenni.say(e)
-                return
-        f = open(os.path.join(bucket_literal_path, fact+'.txt'), 'w')
-        for result in results:
+        if len(results) == 1:
+            result = results[0]
             number = int(result[0])
             fact = result[1]
             tidbit = result[2]
             verb = result[3]
-            literal_line = "#%d - %s %s %s" % (number, fact, verb, tidbit)
-            f.write(literal_line+'\n')
-        f.close()
-        jenni.reply('Here you go! %s (%d factoids)' % (bucket_literal_baseurl+web.quote(fact+'.txt'), len(results)))
+            jenni.say ("#%d - %s %s %s" % (number, fact, verb, tidbit))
+        else:
+            jenni.reply('just a second, I\'ll make the list!')
+            bucket_literal_path = jenni.config.bucket_literal_path
+            bucket_literal_baseurl = jenni.config.bucket_literal_baseurl
+            if not bucket_literal_baseurl.endswith('/'):
+                bucket_literal_baseurl = bucket_literal_baseurl + '/'
+            if not os.path.isdir(bucket_literal_path):
+                try:
+                    os.makedirs(bucket_literal_path)
+                except Exception as e:
+                    jenni.say("Can't create directory to store literal, sorry!")
+                    jenni.say(e)
+                    return
+            f = open(os.path.join(bucket_literal_path, fact+'.txt'), 'w')
+            for result in results:
+                number = int(result[0])
+                fact = result[1]
+                tidbit = result[2]
+                verb = result[3]
+                literal_line = "#%d - %s %s %s" % (number, fact, verb, tidbit)
+                f.write(literal_line+'\n')
+            f.close()
+            jenni.reply('Here you go! %s (%d factoids)' % (bucket_literal_baseurl+web.quote(fact+'.txt'), len(results)))
         return 'Me giving you a literal link'
     return result
 
