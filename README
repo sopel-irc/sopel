@@ -12,7 +12,7 @@ To get a copy of the documentation locally, run
 cd doc
 make html
 
-Place your mdoule in the modules/ directory and start jenni to load it.
+Place your module in the modules/ directory and start jenni to load it.
 
 Command list and various user documentation:
 
