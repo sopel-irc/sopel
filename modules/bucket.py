@@ -230,15 +230,18 @@ def say_fact(jenni, trigger):
         return #ignore commands such as reload or update, don't show 'Don'  t Know' responses for these 
     db = None
     cur = None
+    results = None
     db = connect_db(jenni)
     cur = db.cursor()
 
     search_term = search_term.strip()
     try:
         cur.execute('SELECT * FROM bucket_facts WHERE fact = %s;', search_term)
+        results = cur.fetchall()
     except UnicodeEncodeError:
         jenni.debug('bucket','Warning, database encoding error', 'warning')
-    results = cur.fetchall()
+    if results = None:
+        return
     db.close()
     result = output_results(jenni, trigger, results, literal, addressed)
     was[trigger.sender] = result
