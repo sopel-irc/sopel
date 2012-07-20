@@ -9,6 +9,17 @@ Licensed under the Eiffel Forum License 2.
 https://github.com/embolalia/jenni
 
 This module is built without using code from the original bucket, but using the same DB table format for factoids.
+
+Things to know if you extend this module:
+
+All inventory items are managed by the inventory class.
+All runtime information is in the runtime information class
+
+To preven Jenni from outputting a "Don't Know" message when referred use the following line:
+
+bucket_runtime_data.inhibit_reply = trigger.group(0)
+
+and make sure the priority of your callable is medium or higher.
 """
 import MySQLdb, re
 from re import sub
@@ -41,6 +52,46 @@ def configure(config):
         chunk = ("\nbucket_host = '%s'\nbucket_user = '%s'\nbucket_pass = '%s'\nbucket_db = '%s'\nbucket_literal_path = '%s'\nbucket_literal_baseurl = '%s'\n"
                  % (config.bucket_host, config.bucket_user, config.bucket_pass, config.bucket_db, config.bucket_literal_path, config.bucket_literal_baseurl))
     return chunk
+    
+class Inventory():
+    ''' Everything inventory related '''
+    avilable_items = []
+    current_items = deque([]) #FIFO. Max length 15
+    def add_random(self):
+        ''' Adds a random item to the inventory'''
+        item = self.avilable_items[randint(0, len(self.avilable_items)-1)]
+        self.current_items.appendleft(item)
+        return item
+    def add(self, item, user, channel, jenni):
+        ''' Adds an item to the inventory'''
+        dropped = False
+        if item not in self.avilable_items:
+            db = connect_db(jenni)
+            cur = db.cursor()
+            cur.execute('INSERT INTO bucket_items (`channel`, `what`, `user`) VALUES (%s, %s, %s);', (channel, item, user))
+            db.commit()
+            db.close()
+            self.avilable_items.append(item)
+        if item in self.current_items:
+            return '%ERROR% duplicate item %ERROR%'
+        if len(self.current_items) >= 15:
+            dropped = self.current_items.pop()
+        self.current_items.appendleft(item)
+        return dropped
+    def random_item(self):
+        ''' returns a random item '''
+        if len(self.current_items) == 0:
+            return 'bananas!'
+        item = self.current_items[randint(0, len(self.current_items)-1)]
+        return item
+    def give_item(self):
+        ''' returns a random item and removes it from the inventory '''
+        item = self.random_item()
+        try:
+            self.current_items.remove(item)
+        except ValueError:
+            pass
+        return item
 
 class bucket_runtime_data():
     dont_know_cache = [] #Caching all the Don't Know factoids to reduce amount of DB reads
@@ -48,6 +99,8 @@ class bucket_runtime_data():
     inhibit_reply = '' #Used to inhibit reply of an error message after teaching a factoid
     last_teach = {}
     last_lines = Ddict(dict) #For quotes.
+    inventory = None
+
 def remove_punctuation(string):
     return sub("[,\.\!\?\;]", '', string)
 def setup(jenni):
@@ -59,13 +112,18 @@ def setup(jenni):
     except:
         print 'Error connecting to the bucket database.'
         return
+    bucket_runtime_data.inventory = Inventory()
     cur = db.cursor()
     #caching "Don't Know" replies
     cur.execute('SELECT * FROM bucket_facts WHERE fact = "Don\'t Know";')
     results = cur.fetchall()
+    cur.execute('SELECT * FROM bucket_items;')
+    items = cur.fetchall()
     db.close()
     for result in results:
         bucket_runtime_data.dont_know_cache.append(result[2])
+    for item in items:
+        bucket_runtime_data.inventory.avilable_items.append(item[2])
     print 'Done setting up Bucket!'
 def add_fact(jenni, trigger, fact, tidbit, verb, re, protected, mood, chance):
     db = None
@@ -208,12 +266,60 @@ undo_teach.priority = 'high'
 
 def say_fact(jenni, trigger):
     """Response, if needed"""
-    addressed = trigger.group(0).lower().startswith(jenni.nick.lower()) #Check if our nick was mentioned
-    search_term = trigger.group(0).lower().strip() #What we are going to pass to MySql as our search term
+    query = trigger.group(0)
+    was = bucket_runtime_data.what_was_that
+    if query.startswith('\001ACTION gives %s ' % jenni.nick):
+        #get given item to inventory
+        item = query[len('\001ACTION gives %s ' % jenni.nick):-1]
+        inventory = bucket_runtime_data.inventory
+        dropped = inventory.add(item, trigger.nick, trigger.sender, jenni)
+        db = None
+        cur = None
+        results = None
+        db = connect_db(jenni)
+        cur = db.cursor()
+        search_term = ''
+        if dropped == False:
+            #Query for 'takes item'
+            search_term = 'takes item'
+        elif dropped == '%ERROR% duplicate item %ERROR%':
+            #Query for 'duplicate item'
+            search_term = 'duplicate item'
+        else:
+            #Query for 'pickup full'
+            search_term = 'pickup full'
+        cur.execute('SELECT * FROM bucket_facts WHERE fact = %s;', search_term)
+        results = cur.fetchall()
+        result = ''
+        if len(results) == 1:
+            result = results[0]
+        elif len(results) > 1:
+            result = results[randint(0, len(results)-1)]
+        # 1 = fact
+        fact = result[1]
+        # 2 = tidbit
+        tidbit = result[2]
+        tidbit = tidbit.replace('$item', item)
+        tidbit = tidbit_vars(tidbit, trigger, False)
+        # 3 = verb
+        verb = result[3]
+        special_verbs = ['<reply>', '<directreply>', '<action>'] 
+        if verb not in special_verbs:
+            jenni.say("%s %s %s" % (fact, verb, tidbit))
+        elif verb == '<reply>':
+            jenni.say(tidbit)
+        elif verb == '<action>':
+            jenni.action(tidbit)
+        was = result
+        return
+    if query.startswith('\001ACTION'):
+        query = query[len('\001ACTION '):]
+    addressed = query.lower().startswith(jenni.nick.lower()) #Check if our nick was mentioned
+    search_term = query.lower().strip() #What we are going to pass to MySql as our search term
     if addressed:
         search_term = search_term[(len(jenni.nick)+1):].strip() #Remove our nickname from the search term
     search_term = remove_punctuation(search_term).strip()
-    was = bucket_runtime_data.what_was_that
+
     literal = False
     inhibit = bucket_runtime_data.inhibit_reply
     remember(trigger)
@@ -227,7 +333,7 @@ def say_fact(jenni, trigger):
             jenni.say('I have no idea')
         return
     elif search_term.startswith('reload') or search_term.startswith('update') or inhibit == search_term or inhibit == trigger.group(0):
-        return #ignore commands such as reload or update, don't show 'Don'  t Know' responses for these 
+        return #ignore commands such as reload or update, don't show 'Don't Know' responses for these 
     db = None
     cur = None
     results = None
@@ -249,6 +355,25 @@ def say_fact(jenni, trigger):
 say_fact.rule = ('(.*)')
 say_fact.priority = 'low'
 
+def get_inventory(jenni, trigger):
+    ''' get a human readable list of the bucket inventory '''
+
+    bucket_runtime_data.inhibit_reply = trigger.group(0)
+
+    inventory = bucket_runtime_data.inventory
+
+    readable_item_list = ''
+    
+    if len(inventory.current_items)==0:
+        return jenni.action('is carrying nothing')
+    for item in inventory.current_items:
+        readable_item_list = readable_item_list + ' '+str(item)+','
+
+    jenni.action('is carrying'+readable_item_list)
+
+get_inventory.rule = ('$nick','inventory')
+get_inventory.priority = 'medium'
+
 def output_results(jenni, trigger, results, literal=False, addressed=False):
     if len(results) == 1:
         result = results[0]
@@ -265,9 +390,10 @@ def output_results(jenni, trigger, results, literal=False, addressed=False):
     # 1 = fact
     fact = result[1]
     # 2 = tidbit
-    tidbit = result[2].replace('$who', trigger.nick)
+    tidbit = tidbit_vars(result[2], trigger)
     # 3 = verb
     verb = result[3]
+
     special_verbs = ['<reply>', '<directreply>', '<action>'] 
     if verb not in special_verbs and not literal:
         jenni.say("%s %s %s" % (fact, verb, tidbit))
@@ -316,6 +442,18 @@ def connect_db(jenni):
                          user=jenni.config.bucket_user,
                          passwd=jenni.config.bucket_pass,
                          db=jenni.config.bucket_db)
+def tidbit_vars(tidbit, trigger, random_item=True):
+    ''' Parse in-tidbit vars '''
+    #Special in-tidbit vars:
+    inventory = bucket_runtime_data.inventory
+    tidbit = tidbit.replace('$who', trigger.nick)
+    if '$giveitem' in tidbit:
+        tidbit = tidbit.replace('$giveitem', str(inventory.give_item()))
+    if '$newitem' in tidbit:
+        tidbit = tidbit.replace('$newitem', str(inventory.add_random()))
+    if random_item:
+        tidbit = tidbit.replace('$item', str(inventory.random_item()))
+    return tidbit
 def dont_know(jenni):
     ''' Get a Don't Know reply from the cache '''
     cache = bucket_runtime_data.dont_know_cache
