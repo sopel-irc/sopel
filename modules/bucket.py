@@ -205,16 +205,16 @@ save_quote.priority = 'medium'
 
 def delete_factoid(jenni, trigger):
     """Delets a factoid"""
+    bucket_runtime_data.inhibit_reply = trigger.group(0)
     was = bucket_runtime_data.what_was_that
     if not trigger.admin:
         was[trigger.sender] = dont_know(jenni)
-        bucket_runtime_data.inhibit_reply = trigger.group(0)
         return
     db = None
     cur = None
     db = connect_db(jenni)
     cur = db.cursor()
-    bucket_runtime_data.inhibit_reply = trigger.group(0)
+
     try:
         cur.execute('DELETE FROM bucket_facts WHERE ID = %s',int(trigger.group(1)))
         db.commit()
@@ -231,9 +231,9 @@ delete_factoid.priority = 'high'
 def undo_teach(jenni, trigger):
     """Undo teaching factoid"""
     was = bucket_runtime_data.what_was_that
+    bucket_runtime_data.inhibit_reply = trigger.group(0)
     if not trigger.admin:
         was[trigger.sender] = dont_know(jenni)
-        bucket_runtime_data.inhibit_reply = trigger.group(0)
         return
     last_teach = bucket_runtime_data.last_teach
     fact = ''
@@ -250,7 +250,6 @@ def undo_teach(jenni, trigger):
     cur = None
     db = connect_db(jenni)
     cur = db.cursor()
-    bucket_runtime_data.inhibit_reply = trigger.group(0)
     try:
         cur.execute('DELETE FROM bucket_facts WHERE `fact` = %s AND `verb` = %s AND `tidbit` = %s', (fact, verb, tidbit))
         db.commit()
