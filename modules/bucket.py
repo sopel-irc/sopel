@@ -268,7 +268,7 @@ def say_fact(jenni, trigger):
     """Response, if needed"""
     query = trigger.group(0)
     was = bucket_runtime_data.what_was_that
-    if query.startswith('\001ACTION gives %s ' % jenni.nick):
+    if query.lower().startswith('\001action gives %s ' % jenni.nick.lower()):
         #get given item to inventory
         item = query[len('\001ACTION gives %s ' % jenni.nick):-1]
         inventory = bucket_runtime_data.inventory
