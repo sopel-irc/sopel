@@ -272,10 +272,11 @@ class Config(object):
     
     def _modules(self):
         home = os.getcwd()
+        modules_dir = os.path.join(home, 'modules')
         self.modules_chunk = ''
 
         filenames = enumerate_modules(self)
-
+        os.sys.path.insert(0,modules_dir) 
         for filename in filenames:
             name = os.path.basename(filename)[:-3]
             if name in self.exclude: continue
