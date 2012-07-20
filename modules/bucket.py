@@ -240,7 +240,7 @@ def say_fact(jenni, trigger):
         results = cur.fetchall()
     except UnicodeEncodeError:
         jenni.debug('bucket','Warning, database encoding error', 'warning')
-    if results = None:
+    if results == None:
         return
     db.close()
     result = output_results(jenni, trigger, results, literal, addressed)
