@@ -141,7 +141,7 @@ def save_quote(jenni, trigger):
             add_fact(jenni, trigger, fact, tidbit, verb, re, protected, mood, chance)
             jenni.say("Remembered that %s <reply> %s" % (fact, tidbit))
             return
-
+    jenni.say("Sorry, I don't remember what %s said about %s" % (quotee, word))
 save_quote.rule = ('$nick', 'remember (.*?) (.*)')
 save_quote.priority = 'medium'
 
