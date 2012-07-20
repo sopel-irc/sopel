@@ -234,7 +234,10 @@ def say_fact(jenni, trigger):
     cur = db.cursor()
 
     search_term = search_term.strip()
-    cur.execute('SELECT * FROM bucket_facts WHERE fact = %s;', search_term)
+    try:
+        cur.execute('SELECT * FROM bucket_facts WHERE fact = %s;', search_term)
+    except UnicodeEncodeError:
+        jenni.debug('bucket','Warning, database encoding error', 'warning')
     results = cur.fetchall()
     db.close()
     result = output_results(jenni, trigger, results, literal, addressed)
