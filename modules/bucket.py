@@ -181,7 +181,7 @@ teach_verb.rule = ('$nick', '(.*?) (<\S+>) (.*)')
 teach_verb.priority = 'high'
 
 def save_quote(jenni, trigger):
-    """Teaches verbs/ambiguous reply"""
+    """Saves a quote"""
     bucket_runtime_data.inhibit_reply = trigger.group(0)
     quotee = trigger.group(1).lower()
     word = trigger.group(2)
@@ -194,7 +194,7 @@ def save_quote(jenni, trigger):
     
     memory = bucket_runtime_data.last_lines[trigger.sender][quotee]
     for line in memory:
-        if word in line:
+        if word.lower() in line.lower():
             tidbit = '<%s> %s' % (quotee, line)
             add_fact(jenni, trigger, fact, tidbit, verb, re, protected, mood, chance)
             jenni.say("Remembered that %s <reply> %s" % (fact, tidbit))
