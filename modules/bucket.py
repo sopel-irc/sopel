@@ -92,6 +92,13 @@ class Inventory():
         except ValueError:
             pass
         return item
+    def remove(self, item):
+        ''' Attemt to remove an item from the inventory, returns False if failed '''
+        try:
+            self.current_items.remove(item)
+            return True
+        except ValueError:
+            return False
 
 class bucket_runtime_data():
     dont_know_cache = [] #Caching all the Don't Know factoids to reduce amount of DB reads
@@ -268,13 +275,14 @@ def say_fact(jenni, trigger):
     """Response, if needed"""
     query = trigger.group(0)
     was = bucket_runtime_data.what_was_that
+    inventory = bucket_runtime_data.inventory
     if query.lower().startswith('\001action gives %s ' % jenni.nick.lower()) or remove_punctuation(query.lower()).startswith('%s take this ' % jenni.nick.lower()):
         #get given item to inventory
         if query.lower().startswith('\001action gives %s ' % jenni.nick.lower()):
             item = query[len('\001ACTION gives %s ' % jenni.nick):-1]
         else:
             item = query[len('%s take this  ' % jenni.nick):]
-        inventory = bucket_runtime_data.inventory
+
         dropped = inventory.add(item, trigger.nick, trigger.sender, jenni)
         db = None
         cur = None
@@ -315,6 +323,15 @@ def say_fact(jenni, trigger):
             jenni.action(tidbit)
         was = result
         return
+    elif query.lower().startswith('\001action takes %s\'s ' % jenni.nick.lower()) or query.lower().startswith('\001action steals %s\'s ' % jenni.nick.lower()):
+        if query.lower().startswith('\001action takes %s\'s ' % jenni.nick.lower()):
+            item = remove_punctuation(query[len('\001ACTION takes %s\'s ' % jenni.nick):-1])
+        else:
+            item = remove_punctuation(query[len('\001ACTION steals %s\'s ' % jenni.nick):-1])
+        if (inventory.remove(item)):
+            jenni.say('Hey! Give it back, it\'s mine!')
+        else:
+            jenni.say('But I don\'t have any %s' % item)
     if query.startswith('\001ACTION'):
         query = query[len('\001ACTION '):]
     addressed = query.lower().startswith(jenni.nick.lower()) #Check if our nick was mentioned
