@@ -319,6 +319,9 @@ def say_fact(jenni, trigger):
         search_term = search_term[(len(jenni.nick)+1):].strip() #Remove our nickname from the search term
     search_term = remove_punctuation(search_term).strip()
 
+    if len(query) < 6 and not addressed:
+        return
+
     literal = False
     inhibit = bucket_runtime_data.inhibit_reply
     remember(trigger)
