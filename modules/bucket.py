@@ -100,6 +100,7 @@ class bucket_runtime_data():
     last_teach = {}
     last_lines = Ddict(dict) #For quotes.
     inventory = None
+    shut_up = False
 
 def remove_punctuation(string):
     return sub("[,\.\!\?\;]", '', string)
@@ -323,6 +324,16 @@ def say_fact(jenni, trigger):
         return #Ignore factoids shorter than 6 chars when not addressed
     if search_term == 'don\'t know' and not addressed:
         return #Ignore "don't know" when not addressed
+    if not addressed and bucket_runtime_data.shut_up:
+        return #Don't say anything if not addressed and shutting up
+    if search_term == 'shut up' and addressed:
+        jenni.reply('Okay...')
+        bucket_runtime_data.shut_up = True
+        return
+    elif search_term == 'come back' and addressed:
+        jenni.reply('I\'m back!')
+        bucket_runtime_data.shut_up = False
+        return
     literal = False
     inhibit = bucket_runtime_data.inhibit_reply
     remember(trigger)
