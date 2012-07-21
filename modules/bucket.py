@@ -169,8 +169,8 @@ def teach_verb(jenni, trigger):
     protected = False
     mood = None
     chance = None
-    
-    if not (verb == '<reply>' or verb == '<action>' or verb == '<directreply>'):
+    special_verbs = ['<reply>', '<directreply>', '<directaction>', '<action>'] 
+    if verb not in special_verbs:
         verb = verb[1:-1]
     
     
@@ -302,7 +302,7 @@ def say_fact(jenni, trigger):
         tidbit = tidbit_vars(tidbit, trigger, False)
         # 3 = verb
         verb = result[3]
-        special_verbs = ['<reply>', '<directreply>', '<action>'] 
+        special_verbs = ['<reply>', '<directreply>', '<directaction>', '<action>'] 
         if verb not in special_verbs:
             jenni.say("%s %s %s" % (fact, verb, tidbit))
         elif verb == '<reply>':
@@ -396,7 +396,7 @@ def output_results(jenni, trigger, results, literal=False, addressed=False):
     # 3 = verb
     verb = result[3]
 
-    special_verbs = ['<reply>', '<directreply>', '<action>'] 
+    special_verbs = ['<reply>', '<directreply>', 'directaction', '<action>'] 
     if verb not in special_verbs and not literal:
         jenni.say("%s %s %s" % (fact, verb, tidbit))
     elif verb == '<reply>' and not literal:
@@ -405,6 +405,8 @@ def output_results(jenni, trigger, results, literal=False, addressed=False):
         jenni.action(tidbit)
     elif verb == '<directreply>' and not literal and addressed:
         jenni.say(tidbit)
+    elif verb == '<directaction>' and not literal and addressed:
+        jenni.action(tidbit)
     elif literal:
         if len(results) == 1:
             result = results[0]
