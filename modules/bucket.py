@@ -320,8 +320,9 @@ def say_fact(jenni, trigger):
     search_term = remove_punctuation(search_term).strip()
 
     if len(query) < 6 and not addressed:
-        return
-
+        return #Ignore factoids shorter than 6 chars when not addressed
+    if search_term == 'don\'t know' and not addressed:
+        return #Ignore "don't know" when not addressed
     literal = False
     inhibit = bucket_runtime_data.inhibit_reply
     remember(trigger)
