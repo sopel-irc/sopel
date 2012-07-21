@@ -103,7 +103,7 @@ class bucket_runtime_data():
     shut_up = False
 
 def remove_punctuation(string):
-    return sub("[,\.\!\?\;]", '', string)
+    return sub("[,\.\!\?\;\:]", '', string)
 def setup(jenni):
     print 'Setting up Bucket...'
     db = None
@@ -268,9 +268,12 @@ def say_fact(jenni, trigger):
     """Response, if needed"""
     query = trigger.group(0)
     was = bucket_runtime_data.what_was_that
-    if query.lower().startswith('\001action gives %s ' % jenni.nick.lower()):
+    if query.lower().startswith('\001action gives %s ' % jenni.nick.lower()) or remove_punctuation(query.lower()).startswith('%s take this ' % jenni.nick.lower()):
         #get given item to inventory
-        item = query[len('\001ACTION gives %s ' % jenni.nick):-1]
+        if query.lower().startswith('\001action gives %s ' % jenni.nick.lower()):
+            item = query[len('\001ACTION gives %s ' % jenni.nick):-1]
+        else:
+            item = query[len('%s take this  ' % jenni.nick):]
         inventory = bucket_runtime_data.inventory
         dropped = inventory.add(item, trigger.nick, trigger.sender, jenni)
         db = None
