@@ -112,6 +112,7 @@ class bucket_runtime_data():
     last_lines = Ddict(dict) #For quotes.
     inventory = None
     shut_up = False
+    special_verbs = ['<reply>', '<directreply>', '<directaction>', '<action>'] 
 
 def remove_punctuation(string):
     return sub("[,\.\!\?\;\:]", '', string)
@@ -164,7 +165,9 @@ def teach_is_are(jenni, trigger):
     protected = False
     mood = None
     chance = None
-    
+    for word in trigger.group(0).lower().split(' '):
+        if word in bucket_runtime_data.special_verbs:
+            return #do NOT teach is are if the trigger is similar to "Lemon, Who is the king of the derps? <reply> I am!" (contains both is|are and a special verb.
     
     add_fact(jenni, trigger, fact, tidbit, verb, re, protected, mood, chance)
 teach_is_are.rule = ('$nick', '(.*?) (is|are) (.*)')
@@ -181,8 +184,8 @@ def teach_verb(jenni, trigger):
     protected = False
     mood = None
     chance = None
-    special_verbs = ['<reply>', '<directreply>', '<directaction>', '<action>'] 
-    if verb not in special_verbs:
+    
+    if verb not in bucket_runtime_data.special_verbs:
         verb = verb[1:-1]
     
     
@@ -318,8 +321,8 @@ def say_fact(jenni, trigger):
         tidbit = tidbit_vars(tidbit, trigger, False)
         # 3 = verb
         verb = result[3]
-        special_verbs = ['<reply>', '<directreply>', '<directaction>', '<action>'] 
-        if verb not in special_verbs:
+
+        if verb not in special_verbs.special_verbs:
             jenni.say("%s %s %s" % (fact, verb, tidbit))
         elif verb == '<reply>':
             jenni.say(tidbit)
@@ -441,8 +444,7 @@ def output_results(jenni, trigger, results, literal=False, addressed=False):
     # 3 = verb
     verb = result[3]
 
-    special_verbs = ['<reply>', '<directreply>', 'directaction', '<action>'] 
-    if verb not in special_verbs and not literal:
+    if verb not in bucket_runtime_data.special_verbs and not literal:
         jenni.say("%s %s %s" % (fact, verb, tidbit))
     elif verb == '<reply>' and not literal:
         jenni.say(tidbit)
