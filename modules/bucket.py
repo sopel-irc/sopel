@@ -65,10 +65,14 @@ class Inventory():
     def add(self, item, user, channel, jenni):
         ''' Adds an item to the inventory'''
         dropped = False
-        if item not in self.avilable_items:
+        if item.lower() not in [x.lower() for x in self.avilable_items]:
             db = connect_db(jenni)
             cur = db.cursor()
-            cur.execute('INSERT INTO bucket_items (`channel`, `what`, `user`) VALUES (%s, %s, %s);', (channel, item, user))
+            try:
+                cur.execute('INSERT INTO bucket_items (`channel`, `what`, `user`) VALUES (%s, %s, %s);', (channel, item, user))
+            except MySQLdb.IntegrityError, e:
+                jenni.debug('bucket', 'IntegrityError in inventory code', 'warning')
+                jenni.debug('bucket', str(e), 'warning')
             db.commit()
             db.close()
             self.avilable_items.append(item)
