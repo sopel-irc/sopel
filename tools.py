@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# coding=utf-8
 """
 tools.py - Jenni misc tools
 Copyright 2008, Sean B. Palmer, inamidst.com
