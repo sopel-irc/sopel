@@ -93,6 +93,8 @@ def f_load(jenni, input):
     module = imp.load_source(module_name, path)
     mtime = os.path.getmtime(module.__file__)
     modified = time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime(mtime))
+    if hasattr(module, 'setup'):
+        module.setup(jenni)
     jenni.register(vars(module))
     jenni.bind_commands()
 
