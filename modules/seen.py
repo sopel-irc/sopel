@@ -10,16 +10,7 @@ http://inamidst.com/phenny/
 """
 
 import time
-# from http://parand.com/say/index.php/2007/07/13/simple-multi-dimensional-dictionaries-in-python/
-# A simple class to make mutli dimensional dict easy to use
-class Ddict(dict):
-    def __init__(self, default=None):
-        self.default = default
-
-    def __getitem__(self, key):
-        if not self.has_key(key):
-            self[key] = self.default()
-        return dict.__getitem__(self, key)
+from tools import Ddict
 
 seen_dict=Ddict(dict)
 
