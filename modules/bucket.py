@@ -312,7 +312,7 @@ def say_fact(jenni, trigger):
         # 3 = verb
         verb = result[3]
 
-        if verb not in special_verbs.special_verbs:
+        if verb not in bucket_runtime_data.special_verbs:
             jenni.say("%s %s %s" % (fact, verb, tidbit))
         elif verb == '<reply>':
             jenni.say(tidbit)
