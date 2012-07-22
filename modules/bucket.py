@@ -27,18 +27,8 @@ from random import randint, seed
 import web
 import os
 from collections import deque
+from tools import Ddict
 seed()
-
-# from http://parand.com/say/index.php/2007/07/13/simple-multi-dimensional-dictionaries-in-python/
-# A simple class to make mutli dimensional dict easy to use
-class Ddict(dict):
-    def __init__(self, default=None):
-        self.default = default
-
-    def __getitem__(self, key):
-        if not self.has_key(key):
-            self[key] = self.default()
-        return dict.__getitem__(self, key)
 
 def configure(config):
     chunk = ''
