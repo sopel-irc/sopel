@@ -138,9 +138,9 @@ def add_fact(jenni, trigger, fact, tidbit, verb, re, protected, mood, chance):
         db.commit()
     except MySQLdb.IntegrityError:
         jenni.say("I already had it that way!")
-        db.close()
         return False
-    db.close()
+    finally:
+        db.close()
     bucket_runtime_data.last_teach[trigger.sender] = [fact,verb,tidbit]
     jenni.say("Okay, "+trigger.nick)
 
@@ -219,16 +219,32 @@ def delete_factoid(jenni, trigger):
     cur = None
     db = connect_db(jenni)
     cur = db.cursor()
-
     try:
+        cur.execute('SELECT * FROM bucket_facts WHERE ID = %s;', int(trigger.group(1)))
+        results = cur.fetchall()
+        if len(results)>1:
+            jenni.debug('bucket', 'More than one factoid with the same ID?', 'warning')
+            jenni.debug('bucket', str(results), 'warning')
+            jenni.say('More than one factoid with the same ID. I refuse to continue.')
+            return
+        elif len(results) == 0:
+            jenni.reply('No such factoid')
+            return
         cur.execute('DELETE FROM bucket_facts WHERE ID = %s',int(trigger.group(1)))
         db.commit()
     except:
         jenni.say("Delete failed! are you sure this is a valid factoid ID?")
-        db.close()
         return
-    db.close()
-    jenni.say("Okay, "+trigger.nick)
+    finally:
+        db.close()
+    line = results[0]
+    # 1 = fact
+    fact = line[1]
+    # 2 = tidbit
+    tidbit = line[2]
+    # 3 = verb
+    verb = line[3]
+    jenni.say("Okay, %s, forgot that %s %s %s" % (trigger.nick, fact, verb, tidbit))
     
 delete_factoid.rule = ('$nick', 'delete #(.*)')
 delete_factoid.priority = 'high'
@@ -260,10 +276,10 @@ def undo_teach(jenni, trigger):
         db.commit()
     except:
         jenni.say("Undo failed, this shouldn't have happened!")
-        db.close()
         return
-    db.close()
-    jenni.say("Okay, "+trigger.nick)
+    finally:
+        db.close()
+    jenni.say("Okay, %s, forgot that %s %s %s" % (trigger.nick, fact, verb, tidbit))
     
 undo_teach.rule = ('$nick', 'undo last')
 undo_teach.priority = 'high'
