@@ -375,13 +375,22 @@ def say_fact(jenni, trigger):
     cur = db.cursor()
 
     search_term = search_term.strip()
-    try:
-        cur.execute('SELECT * FROM bucket_facts WHERE fact = %s;', search_term)
-        results = cur.fetchall()
-    except UnicodeEncodeError:
-        jenni.debug('bucket','Warning, database encoding error', 'warning')
-    if results == None:
-        return
+    if search_term == 'random quote':
+        try:
+            cur.execute('SELECT * FROM bucket_facts WHERE fact LIKE "% quotes";')
+            results = cur.fetchall()
+        except UnicodeEncodeError:
+            jenni.debug('bucket','Warning, database encoding error', 'warning')
+        if results == None:
+            return
+    else:
+        try:
+            cur.execute('SELECT * FROM bucket_facts WHERE fact = %s;', search_term)
+            results = cur.fetchall()
+        except UnicodeEncodeError:
+            jenni.debug('bucket','Warning, database encoding error', 'warning')
+        if results == None:
+            return
     db.close()
     result = output_results(jenni, trigger, results, literal, addressed)
     was[trigger.sender] = result
