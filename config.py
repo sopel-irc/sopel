@@ -206,6 +206,8 @@ class Config(object):
     
     def _core(self):
         self.interactive_add('nick', 'Enter the nickname for your bot', 'jenni')
+        self.interactive_add('name', 'Enter the "real name" of you bot for WHOIS responses',
+                             'Willie Embosbot, https://github.com/embolalia/jenni')
         self.interactive_add('host', 'Enter the server to connect to', 'irc.dftba.net')
         self.interactive_add('port', 'Enter the port to connect on', '6667')
         
