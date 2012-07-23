@@ -204,7 +204,11 @@ def save_quote(jenni, trigger):
         return
     for line in memory:
         if remove_punctuation(word.lower()) in remove_punctuation(line.lower()):
-            tidbit = '<%s> %s' % (quotee, line)
+            if line.startswith('\001ACTION'):
+                line = line[len('\001ACTION '):-1]
+                tidbit = '%s %s' % (quotee, line)
+            else:
+                tidbit = '<%s> %s' % (quotee, line)
             add_fact(jenni, trigger, fact, tidbit, verb, re, protected, mood, chance)
             jenni.say("Remembered that %s <reply> %s" % (fact, tidbit))
             return
