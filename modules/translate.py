@@ -119,7 +119,7 @@ tr2.priority = 'low'
 
 def mangle(jenni, input):
     phrase = (input.group(2).encode('utf-8'), '')
-    for lang in ['fr', 'de', 'es', 'it', 'no', 'fi', 'la', 'ja' ]:
+    for lang in ['fr', 'de', 'es', 'it', 'no', 'he', 'la', 'ja' ]:
         backup = phrase
         phrase = translate(phrase[0], 'en', lang)
         if not phrase:
