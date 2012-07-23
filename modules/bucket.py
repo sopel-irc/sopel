@@ -196,17 +196,20 @@ def save_quote(jenni, trigger):
     protected = False
     mood = None
     chance = None
-    
-    memory = bucket_runtime_data.last_lines[trigger.sender][quotee]
+    try:
+        memory = bucket_runtime_data.last_lines[trigger.sender][quotee]
+    except KeyError:
+        jenni.say("Sorry, I don't remember what %s said about %s" % (quotee, word))
+        return
     for line in memory:
-        if word.lower() in line.lower():
+        if remove_punctuation(word.lower()) in remove_punctuation(line.lower()):
             tidbit = '<%s> %s' % (quotee, line)
             add_fact(jenni, trigger, fact, tidbit, verb, re, protected, mood, chance)
             jenni.say("Remembered that %s <reply> %s" % (fact, tidbit))
             return
     jenni.say("Sorry, I don't remember what %s said about %s" % (quotee, word))
 save_quote.rule = ('$nick', 'remember (.*?) (.*)')
-save_quote.priority = 'medium'
+save_quote.priority = 'high'
 
 def delete_factoid(jenni, trigger):
     """Delets a factoid"""
@@ -369,7 +372,6 @@ def say_fact(jenni, trigger):
         return
     literal = False
     inhibit = bucket_runtime_data.inhibit_reply
-    remember(trigger)
     if search_term.startswith('literal '):
         literal = True
         search_term = str.replace(str(search_term), 'literal ','')
@@ -522,18 +524,20 @@ def dont_know(jenni):
     jenni.say(reply)
     return reply
 
-def remember(trigger):
+def remember(jenni, trigger):
     ''' Remember last 10 lines of each user, to use in the quote function '''
     memory = bucket_runtime_data.last_lines
     try:
         fifo = deque(memory[trigger.sender][trigger.nick.lower()])
     except KeyError:
         memory[trigger.sender][trigger.nick.lower()]=[] #Initializing the array
-        return remember(trigger)
+        return remember(jenni, trigger)
     if len(fifo) == 10:
         fifo.pop()
     fifo.appendleft(trigger.group(0))
     memory[trigger.sender][trigger.nick.lower()] = fifo
-    
+remember.rule = ('(.*)')
+remember.priority = 'medium'
+
 if __name__ == '__main__':
     print __doc__.strip()
