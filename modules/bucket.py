@@ -241,12 +241,7 @@ def delete_factoid(jenni, trigger):
     finally:
         db.close()
     line = results[0]
-    # 1 = fact
-    fact = line[1]
-    # 2 = tidbit
-    tidbit = line[2]
-    # 3 = verb
-    verb = line[3]
+    fact, tidbit, verb = parse_factoid(line)
     jenni.say("Okay, %s, forgot that %s %s %s" % (trigger.nick, fact, verb, tidbit))
     
 delete_factoid.rule = ('$nick', 'delete #(.*)')
@@ -292,6 +287,9 @@ def say_fact(jenni, trigger):
     query = trigger.group(0)
     was = bucket_runtime_data.what_was_that
     inventory = bucket_runtime_data.inventory
+    db = None
+    cur = None
+    results = None
     if query.lower().startswith('\001action gives %s ' % jenni.nick.lower()) or remove_punctuation(query.lower()).startswith('%s take this ' % jenni.nick.lower()):
         #get given item to inventory
         if query.lower().startswith('\001action gives %s ' % jenni.nick.lower()):
@@ -300,9 +298,6 @@ def say_fact(jenni, trigger):
             item = query[len('%s take this  ' % jenni.nick):]
 
         dropped = inventory.add(item, trigger.nick, trigger.sender, jenni)
-        db = None
-        cur = None
-        results = None
         db = connect_db(jenni)
         cur = db.cursor()
         search_term = ''
@@ -322,14 +317,9 @@ def say_fact(jenni, trigger):
             result = results[0]
         elif len(results) > 1:
             result = results[randint(0, len(results)-1)]
-        # 1 = fact
-        fact = result[1]
-        # 2 = tidbit
-        tidbit = result[2]
+        fact, tidbit, verb = parse_factoid(result)
         tidbit = tidbit.replace('$item', item)
         tidbit = tidbit_vars(tidbit, trigger, False)
-        # 3 = verb
-        verb = result[3]
 
         if verb not in bucket_runtime_data.special_verbs:
             jenni.say("%s %s %s" % (fact, verb, tidbit))
@@ -383,30 +373,24 @@ def say_fact(jenni, trigger):
         return
     elif search_term.startswith('reload') or search_term.startswith('update') or inhibit == search_term or inhibit == trigger.group(0):
         return #ignore commands such as reload or update, don't show 'Don't Know' responses for these 
-    db = None
-    cur = None
-    results = None
+
     db = connect_db(jenni)
     cur = db.cursor()
 
     search_term = search_term.strip()
-    if search_term == 'random quote':
-        try:
+    try:
+        if search_term == 'random quote':
             cur.execute('SELECT * FROM bucket_facts WHERE fact LIKE "% quotes";')
             results = cur.fetchall()
-        except UnicodeEncodeError:
-            jenni.debug('bucket','Warning, database encoding error', 'warning')
-        if results == None:
-            return
-    else:
-        try:
+        else:
             cur.execute('SELECT * FROM bucket_facts WHERE fact = %s;', search_term)
             results = cur.fetchall()
-        except UnicodeEncodeError:
-            jenni.debug('bucket','Warning, database encoding error', 'warning')
-        if results == None:
-            return
-    db.close()
+    except UnicodeEncodeError:
+        jenni.debug('bucket','Warning, database encoding error', 'warning')
+    finally:
+        db.close()
+    if results == None:
+        return
     result = output_results(jenni, trigger, results, literal, addressed)
     was[trigger.sender] = result
     
@@ -445,12 +429,8 @@ def output_results(jenni, trigger, results, literal=False, addressed=False):
                 return bucket_runtime_data.what_was_that[trigger.sender]
             except KeyError:
                 return ''
-    # 1 = fact
-    fact = result[1]
-    # 2 = tidbit
-    tidbit = tidbit_vars(result[2], trigger)
-    # 3 = verb
-    verb = result[3]
+    fact, tidbit, verb = parse_factoid(result)
+    tidbit = tidbit_vars(tidbit, trigger)
 
     if verb not in bucket_runtime_data.special_verbs and not literal:
         jenni.say("%s %s %s" % (fact, verb, tidbit))
@@ -466,9 +446,7 @@ def output_results(jenni, trigger, results, literal=False, addressed=False):
         if len(results) == 1:
             result = results[0]
             number = int(result[0])
-            fact = result[1]
-            tidbit = result[2]
-            verb = result[3]
+            fact, tidbit, verb = parse_factoid(result)
             jenni.say ("#%d - %s %s %s" % (number, fact, verb, tidbit))
         else:
             jenni.reply('just a second, I\'ll make the list!')
@@ -483,16 +461,14 @@ def output_results(jenni, trigger, results, literal=False, addressed=False):
                     jenni.say("Can't create directory to store literal, sorry!")
                     jenni.say(e)
                     return
-            f = open(os.path.join(bucket_literal_path, fact+'.txt'), 'w')
+            f = open(os.path.join(bucket_literal_path, fact.lower()+'.txt'), 'w')
             for result in results:
                 number = int(result[0])
-                fact = result[1]
-                tidbit = result[2]
-                verb = result[3]
+                fact, tidbit, verb = parse_factoid(result)
                 literal_line = "#%d - %s %s %s" % (number, fact, verb, tidbit)
                 f.write(literal_line+'\n')
             f.close()
-            jenni.reply('Here you go! %s (%d factoids)' % (bucket_literal_baseurl+web.quote(fact+'.txt'), len(results)))
+            jenni.reply('Here you go! %s (%d factoids)' % (bucket_literal_baseurl+web.quote(fact.lower()+'.txt'), len(results)))
         return 'Me giving you a literal link'
     return result
 
@@ -538,6 +514,9 @@ def remember(jenni, trigger):
     memory[trigger.sender][trigger.nick.lower()] = fifo
 remember.rule = ('(.*)')
 remember.priority = 'medium'
+
+def parse_factoid(result):
+    return result[1], result[2], result[3]
 
 if __name__ == '__main__':
     print __doc__.strip()
