@@ -49,12 +49,13 @@ class Inventory():
     current_items = deque([]) #FIFO. Max length 15
     def add_random(self):
         ''' Adds a random item to the inventory'''
-        item = self.avilable_items[randint(0, len(self.avilable_items)-1)]
+        item = self.avilable_items[randint(0, len(self.avilable_items)-1)].strip()
         self.current_items.appendleft(item)
         return item
     def add(self, item, user, channel, jenni):
         ''' Adds an item to the inventory'''
         dropped = False
+        item = item.strip()
         if item.lower() not in [x.lower() for x in self.avilable_items]:
             db = connect_db(jenni)
             cur = db.cursor()
@@ -296,7 +297,7 @@ def say_fact(jenni, trigger):
             item = query[len('\001ACTION gives %s ' % jenni.nick):-1]
         else:
             item = query[len('%s take this  ' % jenni.nick):]
-
+        item = item.strip()
         dropped = inventory.add(item, trigger.nick, trigger.sender, jenni)
         db = connect_db(jenni)
         cur = db.cursor()
