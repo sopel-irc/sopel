@@ -15,7 +15,7 @@ Things to know if you extend this module:
 All inventory items are managed by the inventory class.
 All runtime information is in the runtime information class
 
-To preven Jenni from outputting a "Don't Know" message when referred use the following line:
+To prevent Jenni from outputting a "Don't Know" message when referred use the following line:
 
 bucket_runtime_data.inhibit_reply = trigger.group(0)
 
@@ -60,7 +60,7 @@ class Inventory():
             db = connect_db(jenni)
             cur = db.cursor()
             try:
-                cur.execute('INSERT INTO bucket_items (`channel`, `what`, `user`) VALUES (%s, %s, %s);', (channel, item, user))
+                cur.execute('INSERT INTO bucket_items (`channel`, `what`, `user`) VALUES (%s, %s, %s);', (channel, item.encode('utf8'), user))
             except MySQLdb.IntegrityError, e:
                 jenni.debug('bucket', 'IntegrityError in inventory code', 'warning')
                 jenni.debug('bucket', str(e), 'warning')
@@ -414,7 +414,7 @@ def get_inventory(jenni, trigger):
     if len(inventory.current_items)==0:
         return jenni.action('is carrying nothing')
     for item in inventory.current_items:
-        readable_item_list = readable_item_list + ' '+str(item)+','
+        readable_item_list = readable_item_list + ' '+item+','
 
     jenni.action('is carrying'+readable_item_list)
 
@@ -488,11 +488,11 @@ def tidbit_vars(tidbit, trigger, random_item=True):
     inventory = bucket_runtime_data.inventory
     tidbit = tidbit.replace('$who', trigger.nick)
     if '$giveitem' in tidbit:
-        tidbit = tidbit.replace('$giveitem', str(inventory.give_item()))
+        tidbit = tidbit.replace('$giveitem', inventory.give_item())
     if '$newitem' in tidbit:
-        tidbit = tidbit.replace('$newitem', str(inventory.add_random()))
+        tidbit = tidbit.replace('$newitem', inventory.add_random())
     if random_item:
-        tidbit = tidbit.replace('$item', str(inventory.random_item()))
+        tidbit = tidbit.replace('$item', inventory.random_item())
     return tidbit
 def dont_know(jenni):
     ''' Get a Don't Know reply from the cache '''
