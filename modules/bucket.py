@@ -15,7 +15,7 @@ Things to know if you extend this module:
 All inventory items are managed by the inventory class.
 All runtime information is in the runtime information class
 
-To preven Jenni from outputting a "Don't Know" message when referred use the following line:
+To prevent Jenni from outputting a "Don't Know" message when referred use the following line:
 
 bucket_runtime_data.inhibit_reply = trigger.group(0)
 
@@ -49,17 +49,21 @@ class Inventory():
     current_items = deque([]) #FIFO. Max length 15
     def add_random(self):
         ''' Adds a random item to the inventory'''
-        item = self.avilable_items[randint(0, len(self.avilable_items)-1)]
+        item = self.avilable_items[randint(0, len(self.avilable_items)-1)].strip()
+        if item in self.current_items:
+            self.add_random()
+            return
         self.current_items.appendleft(item)
         return item
     def add(self, item, user, channel, jenni):
         ''' Adds an item to the inventory'''
         dropped = False
+        item = item.strip()
         if item.lower() not in [x.lower() for x in self.avilable_items]:
             db = connect_db(jenni)
             cur = db.cursor()
             try:
-                cur.execute('INSERT INTO bucket_items (`channel`, `what`, `user`) VALUES (%s, %s, %s);', (channel, item, user))
+                cur.execute('INSERT INTO bucket_items (`channel`, `what`, `user`) VALUES (%s, %s, %s);', (channel, item.encode('utf8'), user))
             except MySQLdb.IntegrityError, e:
                 jenni.debug('bucket', 'IntegrityError in inventory code', 'warning')
                 jenni.debug('bucket', str(e), 'warning')
@@ -69,7 +73,7 @@ class Inventory():
         if item in self.current_items:
             return '%ERROR% duplicate item %ERROR%'
         if len(self.current_items) >= 15:
-            dropped = self.current_items.pop()
+            dropped = True
         self.current_items.appendleft(item)
         return dropped
     def random_item(self):
@@ -203,7 +207,11 @@ def save_quote(jenni, trigger):
         return
     for line in memory:
         if remove_punctuation(word.lower()) in remove_punctuation(line.lower()):
-            tidbit = '<%s> %s' % (quotee, line)
+            if line.startswith('\001ACTION'):
+                line = line[len('\001ACTION '):-1]
+                tidbit = '%s %s' % (quotee, line)
+            else:
+                tidbit = '<%s> %s' % (quotee, line)
             add_fact(jenni, trigger, fact, tidbit, verb, re, protected, mood, chance)
             jenni.say("Remembered that %s <reply> %s" % (fact, tidbit))
             return
@@ -296,7 +304,7 @@ def say_fact(jenni, trigger):
             item = query[len('\001ACTION gives %s ' % jenni.nick):-1]
         else:
             item = query[len('%s take this  ' % jenni.nick):]
-
+        item = item.strip()
         dropped = inventory.add(item, trigger.nick, trigger.sender, jenni)
         db = connect_db(jenni)
         cur = db.cursor()
@@ -409,7 +417,7 @@ def get_inventory(jenni, trigger):
     if len(inventory.current_items)==0:
         return jenni.action('is carrying nothing')
     for item in inventory.current_items:
-        readable_item_list = readable_item_list + ' '+str(item)+','
+        readable_item_list = readable_item_list + ' '+item.encode('utf8')+','
 
     jenni.action('is carrying'+readable_item_list)
 
