@@ -50,6 +50,9 @@ class Inventory():
     def add_random(self):
         ''' Adds a random item to the inventory'''
         item = self.avilable_items[randint(0, len(self.avilable_items)-1)].strip()
+        if item in self.current_items:
+            self.add_random()
+            return
         self.current_items.appendleft(item)
         return item
     def add(self, item, user, channel, jenni):
@@ -70,7 +73,7 @@ class Inventory():
         if item in self.current_items:
             return '%ERROR% duplicate item %ERROR%'
         if len(self.current_items) >= 15:
-            dropped = self.current_items.pop()
+            dropped = True
         self.current_items.appendleft(item)
         return dropped
     def random_item(self):
@@ -414,7 +417,7 @@ def get_inventory(jenni, trigger):
     if len(inventory.current_items)==0:
         return jenni.action('is carrying nothing')
     for item in inventory.current_items:
-        readable_item_list = readable_item_list + ' '+item+','
+        readable_item_list = readable_item_list + ' '+item.encode('utf8')+','
 
     jenni.action('is carrying'+readable_item_list)
 
@@ -488,11 +491,11 @@ def tidbit_vars(tidbit, trigger, random_item=True):
     inventory = bucket_runtime_data.inventory
     tidbit = tidbit.replace('$who', trigger.nick)
     if '$giveitem' in tidbit:
-        tidbit = tidbit.replace('$giveitem', inventory.give_item())
+        tidbit = tidbit.replace('$giveitem', str(inventory.give_item()))
     if '$newitem' in tidbit:
-        tidbit = tidbit.replace('$newitem', inventory.add_random())
+        tidbit = tidbit.replace('$newitem', str(inventory.add_random()))
     if random_item:
-        tidbit = tidbit.replace('$item', inventory.random_item())
+        tidbit = tidbit.replace('$item', str(inventory.random_item()))
     return tidbit
 def dont_know(jenni):
     ''' Get a Don't Know reply from the cache '''
