@@ -182,7 +182,9 @@ def teach_verb(jenni, trigger):
     if verb not in bucket_runtime_data.special_verbs:
         verb = verb[1:-1]
     
-    
+    if fact == tidbit and verb == '<alias>':
+        jenni.reply('You can\'t alias like this!')
+        return
     add_fact(jenni, trigger, fact, tidbit, verb, re, protected, mood, chance)
     if fact.lower() == 'don\'t know':
         bucket_runtime_data.dont_know_cache.append(tidbit)
@@ -389,8 +391,9 @@ def say_fact(jenni, trigger):
         else:
             cur.execute('SELECT * FROM bucket_facts WHERE fact = %s;', search_term)
             results = cur.fetchall()
-    except UnicodeEncodeError:
+    except UnicodeEncodeError, e:
         jenni.debug('bucket','Warning, database encoding error', 'warning')
+        jenni.debug('bucket', e, 'warning')
     finally:
         db.close()
     if results == None:
@@ -450,26 +453,32 @@ say_fact.rule = ('(.*)')
 say_fact.priority = 'low'
 
 def pick_result(results, jenni):
-    if len(results) == 1:
-        result = results[0]
-    elif len(results) > 1:
-        result = results[randint(0, len(results)-1)]
-    elif len(results) == 0:
+    try:
+        if len(results) == 1:
+            result = results[0]
+        elif len(results) > 1:
+            result = results[randint(0, len(results)-1)]
+        elif len(results) == 0:
+            return None
+        if result[3] == '<alias>':
+            #Handle alias, recursive!
+            db = connect_db(jenni)
+            cur = db.cursor()
+            search_term = result[2].strip()
+            try:
+                cur.execute('SELECT * FROM bucket_facts WHERE fact = %s;', search_term)
+                results = cur.fetchall()
+            except UnicodeEncodeError, e:
+                jenni.debug('bucket','Warning, database encoding error', 'warning')
+                jenni.debug('bucket',e , 'warning')
+            finally:
+                db.close()
+            result = pick_result(results, jenni)
+        return result
+    except RuntimeError, e:
+        jenni.debug('bucket', 'RutimeError in pick_result', 'warning')
+        jenni.debug('bucket', e, 'warning')
         return None
-    if result[3] == '<alias>':
-        #Handle alias, recursive!
-        db = connect_db(jenni)
-        cur = db.cursor()
-        search_term = result[2].strip()
-        try:
-            cur.execute('SELECT * FROM bucket_facts WHERE fact = %s;', search_term)
-            results = cur.fetchall()
-        except UnicodeEncodeError:
-            jenni.debug('bucket','Warning, database encoding error', 'warning')
-        finally:
-            db.close()
-        result = pick_result(results, jenni)
-    return result
 
 def get_inventory(jenni, trigger):
     ''' get a human readable list of the bucket inventory '''
