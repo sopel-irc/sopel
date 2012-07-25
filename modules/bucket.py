@@ -106,7 +106,7 @@ class bucket_runtime_data():
     last_lines = Ddict(dict) #For quotes.
     inventory = None
     shut_up = False
-    special_verbs = ['<reply>', '<directreply>', '<directaction>', '<action>'] 
+    special_verbs = ['<reply>', '<directreply>', '<directaction>', '<action>', '<alias>'] 
 
 def remove_punctuation(string):
     return sub("[,\.\!\?\;\:]", '', string)
@@ -320,11 +320,7 @@ def say_fact(jenni, trigger):
             search_term = 'pickup full'
         cur.execute('SELECT * FROM bucket_facts WHERE fact = %s;', search_term)
         results = cur.fetchall()
-        result = ''
-        if len(results) == 1:
-            result = results[0]
-        elif len(results) > 1:
-            result = results[randint(0, len(results)-1)]
+        result = pick_result(results, jenni)
         fact, tidbit, verb = parse_factoid(result)
         tidbit = tidbit.replace('$item', item)
         tidbit = tidbit_vars(tidbit, trigger, False)
@@ -399,58 +395,17 @@ def say_fact(jenni, trigger):
         db.close()
     if results == None:
         return
-    result = output_results(jenni, trigger, results, literal, addressed)
-    was[trigger.sender] = result
-    
-say_fact.rule = ('(.*)')
-say_fact.priority = 'low'
-
-def get_inventory(jenni, trigger):
-    ''' get a human readable list of the bucket inventory '''
-
-    bucket_runtime_data.inhibit_reply = trigger.group(0)
-
-    inventory = bucket_runtime_data.inventory
-
-    readable_item_list = ''
-    
-    if len(inventory.current_items)==0:
-        return jenni.action('is carrying nothing')
-    for item in inventory.current_items:
-        readable_item_list = readable_item_list + ' '+item.encode('utf8')+','
-
-    jenni.action('is carrying'+readable_item_list)
-
-get_inventory.rule = ('$nick','inventory')
-get_inventory.priority = 'medium'
-
-def output_results(jenni, trigger, results, literal=False, addressed=False):
-    if len(results) == 1:
-        result = results[0]
-    elif len(results) > 1:
-        result = results[randint(0, len(results)-1)]
-    else:
-        if addressed:
-            return 'Don\'t know: '+dont_know(jenni)
-        else:
-            try:
-                return bucket_runtime_data.what_was_that[trigger.sender]
-            except KeyError:
-                return ''
+    result = pick_result(results, jenni)
+    if addressed and result == None:
+        was[trigger.sender] = 'Don\'t know: '+dont_know(jenni)
+        return
+    elif result == None:
+        return
+            
     fact, tidbit, verb = parse_factoid(result)
     tidbit = tidbit_vars(tidbit, trigger)
 
-    if verb not in bucket_runtime_data.special_verbs and not literal:
-        jenni.say("%s %s %s" % (fact, verb, tidbit))
-    elif verb == '<reply>' and not literal:
-        jenni.say(tidbit)
-    elif verb == '<action>' and not literal:
-        jenni.action(tidbit)
-    elif verb == '<directreply>' and not literal and addressed:
-        jenni.say(tidbit)
-    elif verb == '<directaction>' and not literal and addressed:
-        jenni.action(tidbit)
-    elif literal:
+    if literal:
         if len(results) == 1:
             result = results[0]
             number = int(result[0])
@@ -477,8 +432,63 @@ def output_results(jenni, trigger, results, literal=False, addressed=False):
                 f.write(literal_line+'\n')
             f.close()
             jenni.reply('Here you go! %s (%d factoids)' % (bucket_literal_baseurl+web.quote(fact.lower()+'.txt'), len(results)))
-        return 'Me giving you a literal link'
+        result = 'Me giving you a literal link'
+    elif verb not in bucket_runtime_data.special_verbs:
+        jenni.say("%s %s %s" % (fact, verb, tidbit))
+    elif verb == '<reply>':
+        jenni.say(tidbit)
+    elif verb == '<action>':
+        jenni.action(tidbit)
+    elif verb == '<directreply>' and addressed:
+        jenni.say(tidbit)
+    elif verb == '<directaction>' and addressed:
+        jenni.action(tidbit)
+    was[trigger.sender] = result
+    
+    
+say_fact.rule = ('(.*)')
+say_fact.priority = 'low'
+
+def pick_result(results, jenni):
+    if len(results) == 1:
+        result = results[0]
+    elif len(results) > 1:
+        result = results[randint(0, len(results)-1)]
+    elif len(results) == 0:
+        return None
+    if result[3] == '<alias>':
+        #Handle alias, recursive!
+        db = connect_db(jenni)
+        cur = db.cursor()
+        search_term = result[2].strip()
+        try:
+            cur.execute('SELECT * FROM bucket_facts WHERE fact = %s;', search_term)
+            results = cur.fetchall()
+        except UnicodeEncodeError:
+            jenni.debug('bucket','Warning, database encoding error', 'warning')
+        finally:
+            db.close()
+        result = pick_result(results, jenni)
     return result
+
+def get_inventory(jenni, trigger):
+    ''' get a human readable list of the bucket inventory '''
+
+    bucket_runtime_data.inhibit_reply = trigger.group(0)
+
+    inventory = bucket_runtime_data.inventory
+
+    readable_item_list = ''
+    
+    if len(inventory.current_items)==0:
+        return jenni.action('is carrying nothing')
+    for item in inventory.current_items:
+        readable_item_list = readable_item_list + ' '+item.encode('utf8')+','
+
+    jenni.action('is carrying'+readable_item_list)
+
+get_inventory.rule = ('$nick','inventory')
+get_inventory.priority = 'medium'
 
 def connect_db(jenni):
     return MySQLdb.connect(host=jenni.config.bucket_host,
