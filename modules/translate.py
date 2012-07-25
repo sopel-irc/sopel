@@ -35,7 +35,7 @@ def translate(text, input='auto', output='en'):
             text = text.encode("utf-8")
     except:
         pass
-    text = urllib.quote(text)
+    text = urllib2.quote(text)
     result = opener.open('http://translate.google.com/translate_a/t?' +
         ('client=t&hl=en&sl=%s&tl=%s&multires=1' % (input, output)) +
         ('&otf=1&ssel=0&tsel=0&uptl=en&sc=1&text=%s' % text)).read()
