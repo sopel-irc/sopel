@@ -41,6 +41,26 @@ def configure(config):
         config.interactive_add('bucket_literal_baseurl', "Base URL for literal output")
         chunk = ("\nbucket_host = '%s'\nbucket_user = '%s'\nbucket_pass = '%s'\nbucket_db = '%s'\nbucket_literal_path = '%s'\nbucket_literal_baseurl = '%s'\n"
                  % (config.bucket_host, config.bucket_user, config.bucket_pass, config.bucket_db, config.bucket_literal_path, config.bucket_literal_baseurl))
+        if config.option('do you want to generate bucket tables and populate them with some default data?', True):
+            db = MySQLdb.connect(host=config.bucket_host,
+                         user=config.bucket_user,
+                         passwd=config.bucket_pass,
+                         db=config.bucket_db)
+            cur = db.cursor()
+            #Create facts table
+            cur.execute("CREATE TABLE IF NOT EXISTS `bucket_facts` (`id` int(10) unsigned NOT NULL auto_increment, `fact` varchar(128) NOT NULL,`tidbit` text NOT NULL,`verb` varchar(16) NOT NULL default 'is',`RE` tinyint(1) NOT NULL,`protected` tinyint(1) NOT NULL,`mood` tinyint(3) unsigned default NULL,`chance` tinyint(3) unsigned default NULL,PRIMARY KEY (`id`),UNIQUE KEY `fact` (`fact`,`tidbit`(200),`verb`),KEY `trigger` (`fact`),KEY `RE` (`RE`)) ENGINE=MyISAM DEFAULT CHARSET=latin1;")
+            #Create inventory table
+            cur.execute("CREATE TABLE IF NOT EXISTS `bucket_items` (`id` int(10) unsigned NOT NULL auto_increment,`channel` varchar(64) NOT NULL,`what` varchar(255) NOT NULL,`user` varchar(64) NOT NULL,PRIMARY KEY (`id`),UNIQUE KEY `what` (`what`),KEY `from` (`user`),KEY `where` (`channel`)) ENGINE=MyISAM DEFAULT CHARSET=latin1 ;")
+            #Insert a Don't Know factiod
+            cur.execute('INSERT INTO bucket_facts (`fact`, `tidbit`, `verb`, `RE`, `protected`, `mood`, `chance`) VALUES (%s, %s, %s, %s, %s, %s, %s);', ('Don\'t Know', '++?????++ Out of Cheese Error. Redo From Start.', '<reply>', False, False, None, None))
+            #Insert a pickup full factiod
+            cur.execute('INSERT INTO bucket_facts (`fact`, `tidbit`, `verb`, `RE`, `protected`, `mood`, `chance`) VALUES (%s, %s, %s, %s, %s, %s, %s);', ('pickup full', 'takes $item but drops $giveitem', '<action>', False, False, None, None))
+            #Insert a duplicate item factiod
+            cur.execute('INSERT INTO bucket_facts (`fact`, `tidbit`, `verb`, `RE`, `protected`, `mood`, `chance`) VALUES (%s, %s, %s, %s, %s, %s, %s);', ('duplicate item', 'No thanks, I\'ve already got $item', '<reply>', False, False, None, None))
+            #Insert a take item factiod
+            cur.execute('INSERT INTO bucket_facts (`fact`, `tidbit`, `verb`, `RE`, `protected`, `mood`, `chance`) VALUES (%s, %s, %s, %s, %s, %s, %s);', ('takes item', 'Oh, thanks, I\'ll keep this $item safe', '<reply>', False, False, None, None))
+            db.commit()
+            db.close()
     return chunk
     
 class Inventory():
@@ -351,6 +371,7 @@ def say_fact(jenni, trigger):
             jenni.say('Hey! Give it back, it\'s mine!')
         else:
             jenni.say('But I don\'t have any %s' % item)
+        return
     if query.startswith('\001ACTION'):
         query = query[len('\001ACTION '):]
     addressed = query.lower().startswith(jenni.nick.lower()) #Check if our nick was mentioned
