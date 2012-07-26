@@ -51,8 +51,12 @@ class Inventory():
         ''' Adds a random item to the inventory'''
         item = self.avilable_items[randint(0, len(self.avilable_items)-1)].strip()
         if item in self.current_items:
-            self.add_random()
-            return
+            try:
+                return self.add_random()
+            except RuntimeError:
+                #Too much recursion, this can only mean all avilable_items are in current_items. Bananas.
+                self.current_items.appendleft('bananas!')
+                return 'bananas!'
         self.current_items.appendleft(item)
         return item
     def add(self, item, user, channel, jenni):
