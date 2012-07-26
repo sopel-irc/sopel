@@ -26,7 +26,7 @@ http://dft.ba/-williesource
 
 import os, sys, imp
 from textwrap import dedent as trim
-from bot import enumerate_modules
+from core import enumerate_modules
 
 
 class Config(object):

@@ -5,8 +5,7 @@ from twisted.words.protocols import irc
 from twisted.internet import reactor, protocol
 
 class IRCBot(irc.IRCClient):
-
-	def __init__(self, config):
+    def __init__(self, config):
         irc.IRCClient.__init__(self)
         self.realname = config.name
         self.nickname = config.nick
@@ -32,12 +31,12 @@ class IRCBot(irc.IRCClient):
     def privmsg(self, user, channel, messages):
         if(channel == self.nickname):
             #new PM!
+            pass #for now
 
     def userJoined(self, user, channel):
         pass #Do stuff
     def userLeft(self, user, channel):
         pass #Do stuff
-    
     def userQuit(self, user, quitMessage):
         pass #Do stuff
 
@@ -50,6 +49,26 @@ class IRCBot(irc.IRCClient):
     def irc_unknown(self, prefix, command, params):
         #unknown command recieved, maybe a /whois response?
         pass
+
+def enumerate_modules(config):
+    filenames = []
+    if not hasattr(config, 'enable') or not config.enable:
+        for fn in os.listdir(modules_dir):
+            if fn.endswith('.py') and not fn.startswith('_'):
+                filenames.append(os.path.join(modules_dir, fn))
+    else:
+        for fn in config.enable:
+            filenames.append(os.path.join(modules_dir, fn + '.py'))
+
+    if hasattr(config, 'extra') and config.extra is not None:
+        for fn in config.extra:
+            if os.path.isfile(fn):
+                filenames.append(fn)
+            elif os.path.isdir(fn):
+                for n in os.listdir(fn):
+                    if n.endswith('.py') and not n.startswith('_'):
+                        filenames.append(os.path.join(fn, n))
+    return filenames
 
 class IRCBotFactory(protocol.ClientFactory):
     protocol = IRCBot
