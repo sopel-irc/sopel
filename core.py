@@ -6,14 +6,18 @@ from twisted.internet import reactor, protocol
 
 class IRCBot(irc.IRCClient):
 
-    realname = "" #we need to load this from config
-    nickname, versionName = "", "" #we need to load this from config
-    lineRate, isHelper, isService = 0.05, 0, 0
+	def __init__(self, config):
+        irc.IRCClient.__init__(self)
+        self.realname = config.name
+        self.nickname = config.nick
+        self.username = config.username
+        self.password = config.password
+        self.lineRate = 0.05
 
     def connectionMade(self):
         #Connected, prepare client and bot system, then report connection made to console.
         irc.IRCClient.connectionMade(self)
-        self.tybot = TyBot(self.nickname, self)
+        self.willie = Willie(self.nickname, self)
         print("connected to localhost")
 
     def connectionLost(self, reason):
