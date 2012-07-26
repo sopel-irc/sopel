@@ -106,7 +106,9 @@ class bucket_runtime_data():
     last_lines = Ddict(dict) #For quotes.
     inventory = None
     shut_up = False
-    special_verbs = ['<reply>', '<directreply>', '<directaction>', '<action>', '<alias>'] 
+    special_verbs = ['<reply>', '<directreply>', '<directaction>', '<action>', '<alias>']
+    inv_steal_match = None #Will contain a compiled regex object to check for inventory 'steal' event
+    inv_give_match = None #Will contain a compiled regex object to check for inventory 'give' event
 
 def remove_punctuation(string):
     return sub("[,\.\!\?\;\:]", '', string)
@@ -131,6 +133,8 @@ def setup(jenni):
         bucket_runtime_data.dont_know_cache.append(result[2])
     for item in items:
         bucket_runtime_data.inventory.avilable_items.append(item[2])
+    bucket_runtime_data.inv_give_match = re.compile('((^\001ACTION (gives|hands) %s)|^%s. take this) (.*)' % (jenni.nick, jenni.nick), re.I)
+    bucket_runtime_data.inv_steal_match = re.compile('^\001ACTION (steals|takess) %s\'s (.*)' % jenni.nick, re.I)
     print 'Done setting up Bucket!'
 def add_fact(jenni, trigger, fact, tidbit, verb, re, protected, mood, chance):
     db = None
@@ -211,7 +215,7 @@ def save_quote(jenni, trigger):
         if remove_punctuation(word.lower()) in remove_punctuation(line.lower()):
             if line.startswith('\001ACTION'):
                 line = line[len('\001ACTION '):-1]
-                tidbit = '%s %s' % (quotee, line)
+                tidbit = '* %s %s' % (quotee, line)
             else:
                 tidbit = '<%s> %s' % (quotee, line)
             add_fact(jenni, trigger, fact, tidbit, verb, re, protected, mood, chance)
@@ -300,12 +304,12 @@ def say_fact(jenni, trigger):
     db = None
     cur = None
     results = None
-    if query.lower().startswith('\001action gives %s ' % jenni.nick.lower()) or remove_punctuation(query.lower()).startswith('%s take this ' % jenni.nick.lower()):
-        #get given item to inventory
-        if query.lower().startswith('\001action gives %s ' % jenni.nick.lower()):
-            item = query[len('\001ACTION gives %s ' % jenni.nick):-1]
-        else:
-            item = query[len('%s take this  ' % jenni.nick):]
+    inv_give_match = bucket_runtime_data.inv_give_match.search(query)
+    inv_steal_match = bucket_runtime_data.inv_steal_match.search(query)
+    if inv_give_match is not None:
+        item = inv_give_match.group(4)
+        if item.endswith('\001'):
+            item = item[:-1]
         item = item.strip()
         dropped = inventory.add(item, trigger.nick, trigger.sender, jenni)
         db = connect_db(jenni)
@@ -335,11 +339,10 @@ def say_fact(jenni, trigger):
             jenni.action(tidbit)
         was = result
         return
-    elif query.lower().startswith('\001action takes %s\'s ' % jenni.nick.lower()) or query.lower().startswith('\001action steals %s\'s ' % jenni.nick.lower()):
-        if query.lower().startswith('\001action takes %s\'s ' % jenni.nick.lower()):
-            item = remove_punctuation(query[len('\001ACTION takes %s\'s ' % jenni.nick):-1])
-        else:
-            item = remove_punctuation(query[len('\001ACTION steals %s\'s ' % jenni.nick):-1])
+    elif inv_steal_match is not None:
+        item = inv_steal_match.group(2)
+        if item.endswith('\001'):
+            item = item[:-1]
         if (inventory.remove(item)):
             jenni.say('Hey! Give it back, it\'s mine!')
         else:
@@ -383,7 +386,6 @@ def say_fact(jenni, trigger):
     db = connect_db(jenni)
     cur = db.cursor()
 
-    search_term = search_term.strip()
     try:
         if search_term == 'random quote':
             cur.execute('SELECT * FROM bucket_facts WHERE fact LIKE "% quotes";')
