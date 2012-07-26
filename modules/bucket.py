@@ -158,7 +158,7 @@ def setup(jenni):
     for item in items:
         bucket_runtime_data.inventory.avilable_items.append(item[2])
     bucket_runtime_data.inv_give_match = re.compile('((^\001ACTION (gives|hands) %s)|^%s. take this) (.*)' % (jenni.nick, jenni.nick), re.I)
-    bucket_runtime_data.inv_steal_match = re.compile('^\001ACTION (steals|takess) %s\'s (.*)' % jenni.nick, re.I)
+    bucket_runtime_data.inv_steal_match = re.compile('^\001ACTION (steals|takes) %s\'s (.*)' % jenni.nick, re.I)
     print 'Done setting up Bucket!'
 def add_fact(jenni, trigger, fact, tidbit, verb, re, protected, mood, chance):
     db = None
