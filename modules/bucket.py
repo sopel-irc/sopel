@@ -305,7 +305,6 @@ def say_fact(jenni, trigger):
     cur = None
     results = None
     inv_give_match = bucket_runtime_data.inv_give_match.search(query)
-    inv_steal_match = bucket_runtime_data.inv_steal_match.search(query)
     if inv_give_match is not None:
         item = inv_give_match.group(4)
         if item.endswith('\001'):
@@ -339,7 +338,8 @@ def say_fact(jenni, trigger):
             jenni.action(tidbit)
         was = result
         return
-    elif inv_steal_match is not None:
+    inv_steal_match = bucket_runtime_data.inv_steal_match.search(query)
+    if inv_steal_match is not None:
         item = inv_steal_match.group(2)
         if item.endswith('\001'):
             item = item[:-1]
