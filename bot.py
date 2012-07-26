@@ -155,7 +155,7 @@ class Jenni(irc.Bot):
             if hasattr(func, 'rule'):
                 if isinstance(func.rule, str):
                     pattern = sub(func.rule)
-                    regexp = re.compile(pattern)
+                    regexp = re.compile(pattern, re.I)
                     bind(self, func.priority, regexp, func)
 
                 if isinstance(func.rule, tuple):
@@ -163,7 +163,7 @@ class Jenni(irc.Bot):
                     if len(func.rule) == 2 and isinstance(func.rule[0], str):
                         prefix, pattern = func.rule
                         prefix = sub(prefix)
-                        regexp = re.compile(prefix + pattern)
+                        regexp = re.compile(prefix + pattern, re.I)
                         bind(self, func.priority, regexp, func)
 
                     # 2) e.g. (['p', 'q'], '(.*)')
@@ -172,7 +172,7 @@ class Jenni(irc.Bot):
                         commands, pattern = func.rule
                         for command in commands:
                             command = r'(%s)\b(?: +(?:%s))?' % (command, pattern)
-                            regexp = re.compile(prefix + command)
+                            regexp = re.compile(prefix + command, re.I)
                             bind(self, func.priority, regexp, func)
 
                     # 3) e.g. ('$nick', ['p', 'q'], '(.*)')
@@ -181,14 +181,14 @@ class Jenni(irc.Bot):
                         prefix = sub(prefix)
                         for command in commands:
                             command = r'(%s) +' % command
-                            regexp = re.compile(prefix + command + pattern)
+                            regexp = re.compile(prefix + command + pattern, re.I)
                             bind(self, func.priority, regexp, func)
 
             if hasattr(func, 'commands'):
                 for command in func.commands:
                     template = r'^%s(%s)(?: +(.*))?$'
                     pattern = template % (self.config.prefix, command)
-                    regexp = re.compile(pattern)
+                    regexp = re.compile(pattern, re.I)
                     bind(self, func.priority, regexp, func)
 
     def wrapped(self, origin, text, match):
