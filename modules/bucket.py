@@ -48,7 +48,7 @@ def configure(config):
                          db=config.bucket_db)
             cur = db.cursor()
             #Create facts table
-            cur.execute("CREATE TABLE IF NOT EXISTS `bucket_facts` (`id` int(10) unsigned NOT NULL auto_increment, `fact` varchar(128) NOT NULL,`tidbit` text NOT NULL,`verb` varchar(16) NOT NULL default 'is',`RE` tinyint(1) NOT NULL,`protected` tinyint(1) NOT NULL,`mood` tinyint(3) unsigned default NULL,`chance` tinyint(3) unsigned default NULL,PRIMARY KEY (`id`),UNIQUE KEY `fact` (`fact`,`tidbit`(200),`verb`),KEY `trigger` (`fact`),KEY `RE` (`RE`)) ENGINE=MyISAM DEFAULT CHARSET=latin1;")
+            cur.execute("CREATE TABLE IF NOT EXISTS `bucket_facts` (`id` int(10) unsigned NOT NULL AUTO_INCREMENT,`fact` varchar(128) COLLATE utf8_unicode_ci NOT NULL,`tidbit` text COLLATE utf8_unicode_ci NOT NULL,`verb` varchar(16) CHARACTER SET latin1 NOT NULL DEFAULT 'is',`RE` tinyint(1) NOT NULL,`protected` tinyint(1) NOT NULL,`mood` tinyint(3) unsigned DEFAULT NULL,`chance` tinyint(3) unsigned DEFAULT NULL,PRIMARY KEY (`id`),UNIQUE KEY `fact` (`fact`,`tidbit`(200),`verb`),KEY `trigger` (`fact`),KEY `RE` (`RE`)) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;")
             #Create inventory table
             cur.execute("CREATE TABLE IF NOT EXISTS `bucket_items` (`id` int(10) unsigned NOT NULL auto_increment,`channel` varchar(64) NOT NULL,`what` varchar(255) NOT NULL,`user` varchar(64) NOT NULL,PRIMARY KEY (`id`),UNIQUE KEY `what` (`what`),KEY `from` (`user`),KEY `where` (`channel`)) ENGINE=MyISAM DEFAULT CHARSET=latin1 ;")
             #Insert a Don't Know factiod
@@ -398,7 +398,7 @@ def say_fact(jenni, trigger):
     inhibit = bucket_runtime_data.inhibit_reply
     if search_term.startswith('literal '):
         literal = True
-        search_term = str.replace(search_term, 'literal ','')
+        search_term = search_term.replace('literal ','')
     elif search_term == 'what was that' and addressed:
         try:
             jenni.say('That was '+ was[trigger.sender])
@@ -459,7 +459,7 @@ def say_fact(jenni, trigger):
                 number = int(result[0])
                 fact, tidbit, verb = parse_factoid(result)
                 literal_line = "#%d - %s %s %s" % (number, fact, verb, tidbit)
-                f.write(literal_line+'\n')
+                f.write(literal_line.encode('utf8')+'\n')
             f.close()
             jenni.reply('Here you go! %s (%d factoids)' % (bucket_literal_baseurl+web.quote(fact.lower()+'.txt'), len(results)))
         result = 'Me giving you a literal link'
