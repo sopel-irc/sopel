@@ -398,10 +398,10 @@ def say_fact(jenni, trigger):
     inhibit = bucket_runtime_data.inhibit_reply
     if search_term.startswith('literal '):
         literal = True
-        search_term = str.replace(str(search_term), 'literal ','')
+        search_term = str.replace(search_term, 'literal ','')
     elif search_term == 'what was that' and addressed:
         try:
-            jenni.say('That was '+ str(was[trigger.sender]))
+            jenni.say('That was '+ was[trigger.sender])
         except KeyError:
             jenni.say('I have no idea')
         return
@@ -530,7 +530,9 @@ def connect_db(jenni):
     return MySQLdb.connect(host=jenni.config.bucket_host,
                          user=jenni.config.bucket_user,
                          passwd=jenni.config.bucket_pass,
-                         db=jenni.config.bucket_db)
+                         db=jenni.config.bucket_db,
+                         charset="utf8",
+                         use_unicode=True)
 def tidbit_vars(tidbit, trigger, random_item=True):
     ''' Parse in-tidbit vars '''
     #Special in-tidbit vars:
