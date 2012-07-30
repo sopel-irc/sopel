@@ -399,7 +399,7 @@ def say_fact(jenni, trigger):
     inhibit = bucket_runtime_data.inhibit_reply
     if search_term.startswith('literal '):
         literal = True
-        search_term = search_term.replace('literal ','')
+        search_term = search_term[len('literal '):]
     elif search_term == 'what was that' and addressed:
         try:
             factoid_id = was[trigger.sender][0]
