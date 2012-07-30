@@ -161,7 +161,7 @@ def setup(jenni):
     bucket_runtime_data.inv_give_match = re.compile('((^\001ACTION (gives|hands) %s)|^%s. take this) (.*)' % (jenni.nick, jenni.nick), re.I)
     bucket_runtime_data.inv_steal_match = re.compile('^\001ACTION (steals|takes) %s\'s (.*)' % jenni.nick, re.I)
     print 'Done setting up Bucket!'
-def add_fact(jenni, trigger, fact, tidbit, verb, re, protected, mood, chance):
+def add_fact(jenni, trigger, fact, tidbit, verb, re, protected, mood, chance, say=True):
     db = None
     cur = None
     db = connect_db(jenni)
@@ -175,7 +175,9 @@ def add_fact(jenni, trigger, fact, tidbit, verb, re, protected, mood, chance):
     finally:
         db.close()
     bucket_runtime_data.last_teach[trigger.sender] = [fact,verb,tidbit]
-    jenni.say("Okay, "+trigger.nick)
+    if say:
+        jenni.say("Okay, "+trigger.nick)
+    return True
 
 def teach_is_are(jenni, trigger):
     """Teaches a is b and a are b"""
@@ -214,7 +216,18 @@ def teach_verb(jenni, trigger):
     if fact == tidbit and verb == '<alias>':
         jenni.reply('You can\'t alias like this!')
         return
-    add_fact(jenni, trigger, fact, tidbit, verb, re, protected, mood, chance)
+    say = True
+    if verb == '<alias>':
+        say = False
+    success = add_fact(jenni, trigger, fact, tidbit, verb, re, protected, mood, chance, say)
+    if verb == '<alias>':
+        db = connect_db(jenni)
+        cur = db.cursor()
+        cur.execute('SELECT * FROM bucket_facts WHERE fact = %s;', tidbit)
+        results = cur.fetchall()
+        db.close()
+        if len(results) == 0 and success:
+            jenni.say('Okay, %s, but, FYI, %s doesn\'t exist yet' % (trigger.nick, tidbit))
     if fact.lower() == 'don\'t know':
         bucket_runtime_data.dont_know_cache.append(tidbit)
 teach_verb.rule = ('$nick', '(.*?) (<\S+>) (.*)')
@@ -243,8 +256,9 @@ def save_quote(jenni, trigger):
                 tidbit = '* %s %s' % (quotee, line)
             else:
                 tidbit = '<%s> %s' % (quotee, line)
-            add_fact(jenni, trigger, fact, tidbit, verb, re, protected, mood, chance)
-            jenni.say("Remembered that %s <reply> %s" % (fact, tidbit))
+            result = add_fact(jenni, trigger, fact, tidbit, verb, re, protected, mood, chance)
+            if result:
+                jenni.reply("Remembered that %s <reply> %s" % (fact, tidbit))
             return
     jenni.say("Sorry, I don't remember what %s said about %s" % (quotee, word))
 save_quote.rule = ('$nick', 'remember (.*?) (.*)')
@@ -350,6 +364,7 @@ def say_fact(jenni, trigger):
             search_term = 'pickup full'
         cur.execute('SELECT * FROM bucket_facts WHERE fact = %s;', search_term)
         results = cur.fetchall()
+        db.close()
         result = pick_result(results, jenni)
         fact, tidbit, verb = parse_factoid(result)
         tidbit = tidbit.replace('$item', item)
@@ -391,7 +406,7 @@ def say_fact(jenni, trigger):
         jenni.reply('Okay...')
         bucket_runtime_data.shut_up = True
         return
-    elif search_term == 'come back' and addressed:
+    elif search_term == 'come back' or search_term == 'unshutup' and addressed:
         jenni.reply('I\'m back!')
         bucket_runtime_data.shut_up = False
         return
