@@ -401,7 +401,11 @@ def say_fact(jenni, trigger):
         search_term = search_term.replace('literal ','')
     elif search_term == 'what was that' and addressed:
         try:
-            jenni.say('That was %s' % was[trigger.sender])
+            factoid_id = was[trigger.sender][0]
+            factoid_fact = was[trigger.sender][1]
+            factoid_tidbit = was[trigger.sender][2]
+            factoid_verb = was[trigger.sender][3]
+            jenni.say('That was #%s - %s %s %s' % (factoid_id, factoid_fact, factoid_verb, factoid_tidbit))
         except KeyError:
             jenni.say('I have no idea')
         return
