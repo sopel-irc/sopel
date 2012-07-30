@@ -133,6 +133,7 @@ class bucket_runtime_data():
     special_verbs = ['<reply>', '<directreply>', '<directaction>', '<action>', '<alias>']
     inv_steal_match = None #Will contain a compiled regex object to check for inventory 'steal' event
     inv_give_match = None #Will contain a compiled regex object to check for inventory 'give' event
+    factoid_search_re = re.compile('(.*).~=./(.*)/')
 
 def remove_punctuation(string):
     return sub("[,\.\!\?\;\:]", '', string)
@@ -414,14 +415,18 @@ def say_fact(jenni, trigger):
 
     db = connect_db(jenni)
     cur = db.cursor()
-
+    if not addressed:
+        factoid_search = None
+    else:
+        factoid_search = bucket_runtime_data.factoid_search_re.search(search_term)
     try:
         if search_term == 'random quote':
             cur.execute('SELECT * FROM bucket_facts WHERE fact LIKE "% quotes";')
-            results = cur.fetchall()
+        elif factoid_search is not None:
+            cur.execute('SELECT * FROM bucket_facts WHERE fact = %s AND tidbit LIKE %s ;', (factoid_search.group(1), '%'+factoid_search.group(2)+'%'))
         else:
             cur.execute('SELECT * FROM bucket_facts WHERE fact = %s;', search_term)
-            results = cur.fetchall()
+        results = cur.fetchall()
     except UnicodeEncodeError, e:
         jenni.debug('bucket','Warning, database encoding error', 'warning')
         jenni.debug('bucket', e, 'warning')
@@ -430,8 +435,11 @@ def say_fact(jenni, trigger):
     if results == None:
         return
     result = pick_result(results, jenni)
-    if addressed and result == None:
+    if addressed and result == None and factoid_search is None:
         was[trigger.sender] = 'Don\'t know: '+dont_know(jenni)
+        return
+    elif factoid_search is not None and result is None:
+        jenni.reply('Sorry, I could\'t find anything matching your query')
         return
     elif result == None:
         return
