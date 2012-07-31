@@ -10,9 +10,10 @@ This file has the class for the Factory for the whole she-bang
 made by Lior Ramati (FireRogue) copyright 2012
 """
 
-from twisted.words.protocols import ClientFactory
+from twisted.internet import reactor, protocol
+from IRCParser import Config, IRCParser
 
-class IRCParserFactory(ClientFactory):
+class IRCParserFactory(protocol.ClientFactory):
     def __init__(self, config):
         self.config = config
         # I think quitting will reconnection, and we dont want that
@@ -24,8 +25,8 @@ class IRCParserFactory(ClientFactory):
         return p
 
     def clientConnectionLost(self, connector, reason):
-        if (self.quit):
-            ### quit code
+        if (self.hasQuit):
+            pass ### quit code
         else:
             print "Disconnected from server. Trying to reconnect."
             connector.connect()
@@ -34,3 +35,9 @@ class IRCParserFactory(ClientFactory):
         print "connection failed:" , reason
         print "Please fix this and restart"
         reactor.stop()
+        
+if __name__ == '__main__':
+    c = Config(5)
+    f = IRCParserFactory(c)
+    reactor.connectTCP("irc.dftba.net", 6667, f)
+    reactor.run()

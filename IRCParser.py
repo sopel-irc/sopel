@@ -6,3 +6,18 @@ seperates the protocol stuff from the bot stuff for ease of editing
 gets data from config, but doesnt store it (assuming Willie isn't folded in)
 this is really just a placeholder until we get actual code in here.
 """
+
+from twisted.words.protocols import irc
+
+## just a temp thing for testing purposes
+class Config(object):
+    def __init__(self, a):
+        self.nickname = "TwistedWillie_Test"
+
+class IRCParser(irc.IRCClient):
+    def __init__(self, config):
+        self.nickname = config.nickname
+        
+    def signedOn(self):
+        self.join("#test")
+
