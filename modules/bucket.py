@@ -145,6 +145,7 @@ def setup(jenni):
         db = connect_db(jenni)
     except:
         print 'Error connecting to the bucket database.'
+        raise
         return
     bucket_runtime_data.inventory = Inventory()
     cur = db.cursor()
