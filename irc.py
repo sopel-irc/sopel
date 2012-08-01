@@ -269,7 +269,7 @@ class Bot(asynchat.async_chat):
             try:
                 print trace
             except:
-                logfile = open('logs/exceptions.log', 'a') #todo: make not not hardcoded
+                logfile = open('logs/exceptions.log', 'a') #todo: make not hardcoded
                 logfile.write('from %s at %s:\n' % (origin.sender, str(datetime.now())))
                 logfile.write('Message was: <%s> %s\n' % (trigger.nick, trigger.group(0)))
                 logfile.write(trace)
