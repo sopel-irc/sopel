@@ -12,6 +12,7 @@ More info:
 import sys, re, time, traceback
 import socket, asyncore, asynchat
 import os, codecs
+from datetime import datetime
 
 class Origin(object):
     source = re.compile(r'([^!]*)!?([^@]*)@?(.*)')
@@ -261,11 +262,19 @@ class Bot(asynchat.async_chat):
     def notice(self, dest, text):
         self.write(('NOTICE', dest), text)
 
-    def error(self, origin):
+    def error(self, origin, trigger):
         try:
             import traceback
             trace = traceback.format_exc()
-            print trace
+            try:
+                print trace
+            except:
+                logfile = open('logs/exceptions.log', 'a') #todo: make not not hardcoded
+                logfile.write('from %s at %s:\n' % (origin.sender, str(datetime.now())))
+                logfile.write('Message was: <%s> %s\n' % (trigger.nick, trigger.group(0)))
+                logfile.write(trace)
+                logfile.write('----------------------------------------\n\n')
+                logfile.close()
             lines = list(reversed(trace.splitlines()))
 
             report = [lines[0].strip()]
