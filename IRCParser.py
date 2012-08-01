@@ -11,13 +11,26 @@ from twisted.words.protocols import irc
 
 ## just a temp thing for testing purposes
 class Config(object):
-    def __init__(self, a):
+    def __init__(self):
         self.nickname = "TwistedWillie_Test"
-
+        self.channels = ["#test"]
+        
 class IRCParser(irc.IRCClient):
     def __init__(self, config):
+        print "init prot"
         self.nickname = config.nickname
         
     def signedOn(self):
-        self.join("#test")
+        print "signed on"
+        for channel in self.factory.config.channels:
+            self.join(channel)
+    
+    def privmsg(self, user, channel, message):
+        print "privmsg GET"
+        if (self.nickname == channel):
+            print "PMed"
+            self.willie.PM(user.split('!', 1))
+    
+if __name__ == '__main__':
+    c = Config()
 

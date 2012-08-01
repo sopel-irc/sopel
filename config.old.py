@@ -194,15 +194,14 @@ class Config(object):
     def option(self, question, default=False):
         """
         Show user in terminal a "y/n" prompt, and return true or false based on
-        the response. If default is passed as true, the default will be shown as
-        ``[y]``, else it will be ``[n]``. ``question`` should be phrased as a
-        question, but without a question mark at the end.
+        the response. 'question' should be phrased as a question, but without a 
+        question mark at the end.
         """
-        d = 'n'
-        if default: d = 'y'
+        if default: d = 'y' 
+        else: d = 'n'
         ans = raw_input(question+' (y/n)? ['+d+']')
         if not ans: ans = d
-        return (ans is 'y' or ans is 'Y')
+        return (ans[0].lower() is 'y')
     
     def _core(self):
         self.interactive_add('nick', 'Enter the nickname for your bot', 'jenni')

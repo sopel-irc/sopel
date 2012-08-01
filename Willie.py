@@ -5,3 +5,16 @@ Willie is a standalone class. it gets its own copy of the config file in case
 anything needs to be changed on the fly, but also a pointer to the factory's
 file in case it needs to change anything for all times Willie is run.
 """
+## this is the trigger object in the API
+class Trigger(object):
+    pass
+    
+## this is the API modules connect to
+class Willie(object):
+    def __init__(self):
+        pass
+        
+    def PM(self, sender):
+        print "willie.PM"
+        self.protocol.msg(sender, 'You PMed me!')
+        
