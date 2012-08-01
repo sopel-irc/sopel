@@ -85,17 +85,19 @@ class Jenni(irc.Bot):
         for filename in filenames:
             name = os.path.basename(filename)[:-3]
             if name in excluded_modules: continue
-            # if name in sys.modules:
-            #     del sys.modules[name]
             try: module = imp.load_source(name, filename)
             except Exception, e:
                 error_count = error_count + 1
                 print >> sys.stderr, "Error loading %s: %s (in bot.py)" % (name, e)
             else:
-                if hasattr(module, 'setup'):
-                    module.setup(self)
-                self.register(vars(module))
-                modules.append(name)
+                try:
+                    if hasattr(module, 'setup'):
+                        module.setup(self)
+                    self.register(vars(module))
+                    modules.append(name)
+                except Exception, e:
+                    error_count = error_count + 1
+                    print >> sys.stderr, "Error in %s setup procedure: %s (in bot.py)" % (name, e)
 
         if modules:
             print >> sys.stderr, '\n\nRegistered %d modules,' % len(modules)
