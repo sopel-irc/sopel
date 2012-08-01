@@ -228,6 +228,8 @@ def teach_verb(jenni, trigger):
         db.close()
         if len(results) == 0 and success:
             jenni.say('Okay, %s, but, FYI, %s doesn\'t exist yet' % (trigger.nick, tidbit))
+        if len(results) > 0 and success:
+            jenni.say('Okay, %s' % trigger.nick)
     if fact.lower() == 'don\'t know':
         bucket_runtime_data.dont_know_cache.append(tidbit)
 teach_verb.rule = ('$nick', '(.*?) (<\S+>) (.*)')
