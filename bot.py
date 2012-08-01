@@ -273,7 +273,7 @@ class Jenni(irc.Bot):
         try:
             func(jenni, trigger)
         except Exception, e:
-            self.error(origin)
+            self.error(origin, trigger)
 
     def limit(self, origin, func):
         if origin.sender and origin.sender.startswith('#'):
