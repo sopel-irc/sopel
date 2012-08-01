@@ -34,7 +34,7 @@ def start(jenni, input):
     global bombs
     global sch
     target = input.group(1)
-    if target in jenni.otherbots or target == jenni.nick: return
+    if target in jenni.config.other_bots or target == jenni.nick: return
     if target in bombs:
         jenni.say('I can\'t fit another bomb in '+target+'\'s pants!')
         return
