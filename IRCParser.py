@@ -29,7 +29,7 @@ class IRCParser(irc.IRCClient):
         print "privmsg GET"
         if (self.nickname == channel):
             print "PMed"
-            self.willie.PM(user.split('!', 1))
+            self.willie.PM(user.split('!', 1)[0])
     
 if __name__ == '__main__':
     c = Config()
