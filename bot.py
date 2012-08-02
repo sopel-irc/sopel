@@ -10,6 +10,7 @@ http://inamidst.com/phenny/
 import time, sys, os, re, threading, imp
 import irc
 from settings import SettingsDB
+from tools import try_print_stderr as stderr
 
 home = os.getcwd()
 modules_dir = os.path.join(home, 'modules')
@@ -71,7 +72,7 @@ class Jenni(irc.Bot):
         self.settings = SettingsDB(config)
 
     def setup(self):
-        print  >> sys.stderr, "Welcome to Jenni. Loading modules...\n\n"
+        stderr("\nWelcome to Jenni. Loading modules...\n\n")
         self.variables = {}
 
 
@@ -88,7 +89,7 @@ class Jenni(irc.Bot):
             try: module = imp.load_source(name, filename)
             except Exception, e:
                 error_count = error_count + 1
-                print >> sys.stderr, "Error loading %s: %s (in bot.py)" % (name, e)
+                stderr("Error loading %s: %s (in bot.py)" % (name, e))
             else:
                 try:
                     if hasattr(module, 'setup'):
@@ -97,12 +98,12 @@ class Jenni(irc.Bot):
                     modules.append(name)
                 except Exception, e:
                     error_count = error_count + 1
-                    print >> sys.stderr, "Error in %s setup procedure: %s (in bot.py)" % (name, e)
+                    stderr("Error in %s setup procedure: %s (in bot.py)" % (name, e))
 
         if modules:
-            print >> sys.stderr, '\n\nRegistered %d modules,' % len(modules)
-            print >> sys.stderr, '%d modules failed to load\n\n' % error_count
-        else: print >> sys.stderr, "Warning: Couldn't find any modules"
+            stderr('\n\nRegistered %d modules,' % len(modules))
+            stderr('%d modules failed to load\n\n' % error_count)
+        else: stderr("Warning: Couldn't find any modules")
 
         self.bind_commands()
 
