@@ -71,7 +71,7 @@ class Jenni(irc.Bot):
         self.settings = SettingsDB(config)
 
     def setup(self):
-        print "Welcome to Jenni. Loading modules...\n\n"
+        print  >> sys.stderr, "Welcome to Jenni. Loading modules...\n\n"
         self.variables = {}
 
 
