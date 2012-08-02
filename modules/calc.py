@@ -10,6 +10,7 @@ http://inamidst.com/phenny/
 
 import re
 import web
+from socket import timeout
 import string
 import HTMLParser
 
@@ -55,7 +56,10 @@ def wa(jenni, input):
         return jenni.reply("No search term.")
     query = input.group(2).encode('utf-8')
     uri = 'http://tumbolia.appspot.com/wa/'
-    answer = web.get(uri + web.quote(query.replace('+', '%2B')))
+    try:
+        answer = web.get(uri + web.quote(query.replace('+', '%2B')), 45)
+    except timeout as e:
+        return jenni.say('[WOLFRAM ERROR] Request timed out')
     if answer:
         answer = answer.decode('string_escape')
         answer = HTMLParser.HTMLParser().unescape(answer)
