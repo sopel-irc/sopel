@@ -17,19 +17,22 @@ class Config(object):
         
 class IRCParser(irc.IRCClient):
     def __init__(self, config):
-        print "init prot"
         self.nickname = config.nickname
         
     def signedOn(self):
-        print "signed on"
         for channel in self.factory.config.channels:
             self.join(channel)
     
     def privmsg(self, user, channel, message):
-        print "privmsg GET"
         if (self.nickname == channel):
-            print "PMed"
-            self.willie.PM(user.split('!', 1)[0])
+            self.willie.PM(user.split('!', 1)[0], message)
+            
+    def quit(self, message):
+        self.factory.hasQuit = True
+        irc.IRCClient.quit(self, message)
+        
+        
+            
     
 if __name__ == '__main__':
     c = Config()

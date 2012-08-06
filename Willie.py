@@ -14,7 +14,11 @@ class Willie(object):
     def __init__(self):
         pass
         
-    def PM(self, sender):
-        print "willie.PM"
-        self.protocol.msg(sender, 'You PMed me!')
-        
+    def PM(self, sender, message):
+        self.msg(sender, 'You PMed me!')
+        if message == ".quit":
+            self.protocol.quit("bye!")
+    
+    ## replaces self.protocol.msg with self.msg
+    def msg(self, user, message, length=None):
+        self.protocol.msg(user, message, length=None)

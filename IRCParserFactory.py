@@ -16,27 +16,22 @@ from Willie import Willie
 
 class IRCParserFactory(protocol.ClientFactory):
     def __init__(self, config, willie):
-        print "init factory"
         self.config = config
         self.willie = willie
         # I think quitting will reconnection, and we dont want that
         self.hasQuit = False
 
     def buildProtocol(self, addr):
-        print "build prot"
         p = IRCParser(self.config)
         p.factory = self
         self.willie.protocol = p
         p.willie = self.willie
-        print "willie.protocol = ", self.willie.protocol
-        print "p = ", p
         return p
 
     def clientConnectionLost(self, connector, reason):
         if (self.hasQuit):
-            pass ### quit code
+            reactor.stop() ### quit code
         else:
-            print "Disconnected from server. Trying to reconnect."
             connector.connect()
 
     def clientConnectionFailed(self, connector, reason):
