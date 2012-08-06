@@ -27,9 +27,9 @@ class IRCParser(irc.IRCClient):
         if (self.nickname == channel):
             self.willie.PM(user.split('!', 1)[0], message)
             
-    def quit(self, message):
+    def quit(self, message = ''):
         self.factory.hasQuit = True
-        irc.IRCClient.quit(self, message)
+        self.sendLine("QUIT :%s" % message) #irc.IRCClient.quit(self, message)
         
         
             
