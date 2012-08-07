@@ -401,6 +401,8 @@ def say_fact(jenni, trigger):
 
     if len(query) < 6 and not addressed:
         return #Ignore factoids shorter than 6 chars when not addressed
+    if addressed and len(search_term) is 0:
+        return #Ignore 0 length queries when addressed
     if search_term == 'don\'t know' and not addressed:
         return #Ignore "don't know" when not addressed
     if not addressed and bucket_runtime_data.shut_up:
