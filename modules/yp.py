@@ -20,10 +20,6 @@ def profile(jenni, input):
         if not result: jenni.say(url)
 profile.commands = ['yp','profile']
 
-def chanstat(jenni,input):
-	jenni.say('http://stats.dftba.net/')
-chanstat.commands = ['chanstat','chanstats']
-
 def ning(jenni, input):
     jenni.say('http://nerdfighters.ning.com/profile/'+ input.group(2))
 ning.commands = ['ning']

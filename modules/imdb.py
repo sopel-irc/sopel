@@ -27,11 +27,19 @@ def imdb(jenni, input):
         return 'err'
     data = json.load(u) #data is a Dict containing all the information we need
     u.close()
-    message = '[IMDB] Title: ' +data['Title']+ \
-              ' | Year: ' +data['Year']+ \
-              ' | Rating: ' +data['imdbRating']+ \
-              ' | Genre: ' +data['Genre']+ \
-              ' | Link: http://imdb.com/title/' + data['imdbID']
+    if data['Response'] == 'False':
+        if 'Error' in data:
+            message = '[IMDB] %s' % data['Error']
+        else:
+            jenni.debug('imdb', 'Got an error from the imdb api, search phrase was %s' % word, 'warning')
+            jenni.debug('imdb', str(data), 'warning')
+            message = '[IMDB] Got an error from the IMDB api'
+    else:
+        message = '[IMDB] Title: ' +data['Title']+ \
+                  ' | Year: ' +data['Year']+ \
+                  ' | Rating: ' +data['imdbRating']+ \
+                  ' | Genre: ' +data['Genre']+ \
+                  ' | Link: http://imdb.com/title/' + data['imdbID']
     jenni.say(message)
 
 imdb.commands = ['imdb', 'movie']

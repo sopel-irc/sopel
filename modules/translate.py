@@ -10,8 +10,11 @@ More info:
  * Phenny: http://inamidst.com/phenny/
 """
 
-import re, urllib
+import re
 import web
+from time import sleep
+import urllib2, json
+mangle_lines = {}
 
 def translate(text, input='auto', output='en'):
     raw = False
@@ -19,7 +22,7 @@ def translate(text, input='auto', output='en'):
         output = output[:-4]
         raw = True
 
-    import urllib2, json
+
     opener = urllib2.build_opener()
     opener.addheaders = [(
         'User-Agent', 'Mozilla/5.0' +
@@ -27,13 +30,13 @@ def translate(text, input='auto', output='en'):
         'Gecko/20071127 Firefox/2.0.0.11'
     )]
 
-    input, output = urllib.quote(input), urllib.quote(output)
+    input, output = urllib2.quote(input), urllib2.quote(output)
     try:
         if text is not text.encode("utf-8"):
             text = text.encode("utf-8")
     except:
         pass
-    text = urllib.quote(text)
+    text = urllib2.quote(text)
     result = opener.open('http://translate.google.com/translate_a/t?' +
         ('client=t&hl=en&sl=%s&tl=%s&multires=1' % (input, output)) +
         ('&otf=1&ssel=0&tsel=0&uptl=en&sc=1&text=%s' % text)).read()
@@ -74,7 +77,6 @@ def tr(jenni, context):
 
         jenni.reply(msg)
     else: jenni.reply('Language guessing failed, so try suggesting one!')
-    #jenni.reply('This function is broken and disabled. see https://github.com/embolalia/jenni/issues/3 for more details.')
 
 tr.rule = ('$nick', ur'(?:([a-z]{2}) +)?(?:([a-z]{2}|en-raw) +)?["“](.+?)["”]\? *$')
 tr.example = '$nickname: "mon chien"? or $nickname: fr "mon chien"?'
@@ -116,26 +118,33 @@ def tr2(jenni, input):
 tr2.commands = ['tr']
 tr2.priority = 'low'
 
-def mangle(jenni, input):
-    phrase = (input.group(2).encode('utf-8'), '')
-    for lang in ['fr', 'de', 'es', 'it', 'no', 'fi', 'la', 'ja' ]:
+def mangle(jenni, trigger):
+    global mangle_lines
+    if trigger.group(2) is None:
+        phrase = (mangle_lines[trigger.sender.lower()], '')
+    else:
+        phrase = (trigger.group(2).encode('utf-8'), '')
+    for lang in ['fr', 'de', 'es', 'it', 'no', 'he', 'la', 'ja' ]:
         backup = phrase
         phrase = translate(phrase[0], 'en', lang)
         if not phrase:
             phrase = backup
             break
-        __import__('time').sleep(0.5)
 
         backup = phrase
         phrase = translate(phrase[0], lang, 'en')
         if not phrase:
             phrase = backup
             break
-        __import__('time').sleep(0.5)
 
     jenni.reply(phrase[0])
-    #jenni.reply('This function is broken and disabled. see https://github.com/embolalia/jenni/issues/6 for more details.')
 mangle.commands = ['mangle']
+
+def collect_mangle_lines(jenni, trigger):
+    global mangle_lines
+    mangle_lines[trigger.sender.lower()] = trigger.group(0).encode('utf-8')
+collect_mangle_lines.rule = ('(.*)')
+collect_mangle_lines.priority = 'low'
 
 if __name__ == '__main__':
     print __doc__.strip()

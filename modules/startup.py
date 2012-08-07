@@ -88,7 +88,7 @@ refreshList.commands = ['newoplist']
 
 def opList(jenni, input):
     for channel in jenni.ops:
-        jenni.debug('Oplist', channel+' '+str(jenni.ops[channel]), 'verbose')
+        jenni.debug('Oplist', channel+' '+str(jenni.ops[channel]), 'warning')
 opList.commands = ['listops']
 
 def handleNames(jenni, input):

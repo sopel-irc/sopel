@@ -10,6 +10,7 @@ http://inamidst.com/phenny/
 import time, sys, os, re, threading, imp
 import irc
 from settings import SettingsDB
+from tools import try_print_stderr as stderr
 
 home = os.getcwd()
 modules_dir = os.path.join(home, 'modules')
@@ -71,7 +72,7 @@ class Jenni(irc.Bot):
         self.settings = SettingsDB(config)
 
     def setup(self):
-        print "Welcome to Jenni. Loading modules...\n\n"
+        stderr("\nWelcome to Jenni. Loading modules...\n\n")
         self.variables = {}
 
 
@@ -85,22 +86,24 @@ class Jenni(irc.Bot):
         for filename in filenames:
             name = os.path.basename(filename)[:-3]
             if name in excluded_modules: continue
-            # if name in sys.modules:
-            #     del sys.modules[name]
             try: module = imp.load_source(name, filename)
             except Exception, e:
                 error_count = error_count + 1
-                print >> sys.stderr, "Error loading %s: %s (in bot.py)" % (name, e)
+                stderr("Error loading %s: %s (in bot.py)" % (name, e))
             else:
-                if hasattr(module, 'setup'):
-                    module.setup(self)
-                self.register(vars(module))
-                modules.append(name)
+                try:
+                    if hasattr(module, 'setup'):
+                        module.setup(self)
+                    self.register(vars(module))
+                    modules.append(name)
+                except Exception, e:
+                    error_count = error_count + 1
+                    stderr("Error in %s setup procedure: %s (in bot.py)" % (name, e))
 
         if modules:
-            print >> sys.stderr, '\n\nRegistered %d modules,' % len(modules)
-            print >> sys.stderr, '%d modules failed to load\n\n' % error_count
-        else: print >> sys.stderr, "Warning: Couldn't find any modules"
+            stderr('\n\nRegistered %d modules,' % len(modules))
+            stderr('%d modules failed to load\n\n' % error_count)
+        else: stderr("Warning: Couldn't find any modules")
 
         self.bind_commands()
 
@@ -155,7 +158,7 @@ class Jenni(irc.Bot):
             if hasattr(func, 'rule'):
                 if isinstance(func.rule, str):
                     pattern = sub(func.rule)
-                    regexp = re.compile(pattern)
+                    regexp = re.compile(pattern, re.I)
                     bind(self, func.priority, regexp, func)
 
                 if isinstance(func.rule, tuple):
@@ -163,7 +166,7 @@ class Jenni(irc.Bot):
                     if len(func.rule) == 2 and isinstance(func.rule[0], str):
                         prefix, pattern = func.rule
                         prefix = sub(prefix)
-                        regexp = re.compile(prefix + pattern)
+                        regexp = re.compile(prefix + pattern, re.I)
                         bind(self, func.priority, regexp, func)
 
                     # 2) e.g. (['p', 'q'], '(.*)')
@@ -172,7 +175,7 @@ class Jenni(irc.Bot):
                         commands, pattern = func.rule
                         for command in commands:
                             command = r'(%s)\b(?: +(?:%s))?' % (command, pattern)
-                            regexp = re.compile(prefix + command)
+                            regexp = re.compile(prefix + command, re.I)
                             bind(self, func.priority, regexp, func)
 
                     # 3) e.g. ('$nick', ['p', 'q'], '(.*)')
@@ -181,14 +184,14 @@ class Jenni(irc.Bot):
                         prefix = sub(prefix)
                         for command in commands:
                             command = r'(%s) +' % command
-                            regexp = re.compile(prefix + command + pattern)
+                            regexp = re.compile(prefix + command + pattern, re.I)
                             bind(self, func.priority, regexp, func)
 
             if hasattr(func, 'commands'):
                 for command in func.commands:
                     template = r'^%s(%s)(?: +(.*))?$'
                     pattern = template % (self.config.prefix, command)
-                    regexp = re.compile(pattern)
+                    regexp = re.compile(pattern, re.I)
                     bind(self, func.priority, regexp, func)
 
     def wrapped(self, origin, text, match):
@@ -266,14 +269,14 @@ class Jenni(irc.Bot):
                     timediff = time.time() - self.times[nick][func]
                     if timediff < func.rate:
                         self.times[nick][func] = time.time()
-                        jenni.debug('bot.py', "%s prevented from using %s in %s: %d < %d" % (trigger.nick, func.__name__, trigger.sender, timediff, func.rate), "warning")
+                        self.debug('bot.py', "%s prevented from using %s in %s: %d < %d" % (trigger.nick, func.__name__, trigger.sender, timediff, func.rate), "warning")
                         return
         else: self.times[nick] = dict()
         self.times[nick][func] = time.time()
         try:
             func(jenni, trigger)
         except Exception, e:
-            self.error(origin)
+            self.error(origin, trigger)
 
     def limit(self, origin, func):
         if origin.sender and origin.sender.startswith('#'):
