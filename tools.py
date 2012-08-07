@@ -8,6 +8,7 @@ Licensed under the Eiffel Forum License 2.
 
 https://github.com/embolalia/jenni
 """
+import sys
 
 def deprecated(old):
     def new(jenni, input, old=old):
@@ -36,6 +37,19 @@ class Ddict(dict):
             self[key] = self.default()
         return dict.__getitem__(self, key)
 
+def try_print(string):
+    ''' Try printing to terminal, ignore errors '''
+    try:
+        print string
+    except:
+        pass
+        
+def try_print_stderr(string):
+    ''' Try printing to stderr, ignore errors '''
+    try:
+        print >> sys.stderr, string
+    except:
+        pass
 if __name__ == '__main__':
     print __doc__.strip()
 
