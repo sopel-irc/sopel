@@ -228,7 +228,7 @@ def teach_verb(jenni, trigger):
         results = cur.fetchall()
         db.close()
         if len(results) == 0 and success:
-            jenni.say('Okay, %s, but, FYI, %s doesn\'t exist yet' % (trigger.nick, tidbit))
+            jenni.say('Okay, %s. but, FYI, %s doesn\'t exist yet' % (trigger.nick, tidbit))
         if len(results) > 0 and success:
             jenni.say('Okay, %s' % trigger.nick)
     if fact.lower() == 'don\'t know':
@@ -333,7 +333,7 @@ def undo_teach(jenni, trigger):
         return
     finally:
         db.close()
-    jenni.say("Okay, %s, forgot that %s %s %s" % (trigger.nick, fact, verb, tidbit))
+    jenni.say("Okay, %s. Forgot that %s %s %s" % (trigger.nick, fact, verb, tidbit))
     
 undo_teach.rule = ('$nick', 'undo last')
 undo_teach.priority = 'high'
