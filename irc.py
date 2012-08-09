@@ -292,13 +292,13 @@ class Bot(asynchat.async_chat):
 
     #Helper functions to maintain the oper list.
     def addOp(self, channel, name):
-        self.ops[channel].add(name)
+        self.ops[channel].add(name.lower())
     def addHalfOp(self, channel, name):
-        self.halfplus[channel].add(name)
+        self.halfplus[channel].add(name.lower())
     def delOp(self, channel, name):
-        self.ops[channel].discard(name)
+        self.ops[channel].discard(name.lower())
     def delHalfOp(self, channel, name):
-        self.halfplus[channel].discard(name)
+        self.halfplus[channel].discard(name.lower())
     def flushOps(self, channel):
         self.ops[channel] = set()
         self.halfplus[channel] = set()
