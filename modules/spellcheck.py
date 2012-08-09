@@ -17,10 +17,9 @@ def spellcheck(jenni, input):
     dictionary = enchant.Dict("en_US")
     dictionary_uk = enchant.Dict("en_GB")
     # I don't want to make anyone angry, so I check both American and British English.
-    if dictionary_uk.check(word) and dictionary.check(word):
-        jenni.say(word+" is spelled correctly")
     if dictionary_uk.check(word):
-        jenni.say(word+" is spelled correctly (British)")
+        if dictionary.check(word): jenni.say(word+" is spelled correctly")
+        else: jenni.say(word+" is spelled correctly (British)")
     elif dictionary.check(word):
         jenni.say(word+" is spelled correctly (American)")
     else:
