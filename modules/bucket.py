@@ -228,7 +228,7 @@ def teach_verb(jenni, trigger):
         results = cur.fetchall()
         db.close()
         if len(results) == 0 and success:
-            jenni.say('Okay, %s, but, FYI, %s doesn\'t exist yet' % (trigger.nick, tidbit))
+            jenni.say('Okay, %s. but, FYI, %s doesn\'t exist yet' % (trigger.nick, tidbit))
         if len(results) > 0 and success:
             jenni.say('Okay, %s' % trigger.nick)
     if fact.lower() == 'don\'t know':
@@ -333,7 +333,7 @@ def undo_teach(jenni, trigger):
         return
     finally:
         db.close()
-    jenni.say("Okay, %s, forgot that %s %s %s" % (trigger.nick, fact, verb, tidbit))
+    jenni.say("Okay, %s. Forgot that %s %s %s" % (trigger.nick, fact, verb, tidbit))
     
 undo_teach.rule = ('$nick', 'undo last')
 undo_teach.priority = 'high'
@@ -441,11 +441,11 @@ def say_fact(jenni, trigger):
         factoid_search = bucket_runtime_data.factoid_search_re.search(search_term)
     try:
         if search_term == 'random quote':
-            cur.execute('SELECT * FROM bucket_facts WHERE fact LIKE "% quotes";')
+            cur.execute('SELECT * FROM bucket_facts WHERE fact LIKE "% quotes" ORDER BY id ASC;')
         elif factoid_search is not None:
-            cur.execute('SELECT * FROM bucket_facts WHERE fact = %s AND tidbit LIKE %s ;', (factoid_search.group(1), '%'+factoid_search.group(2)+'%'))
+            cur.execute('SELECT * FROM bucket_facts WHERE fact = %s AND tidbit LIKE %s ORDER BY id ASC;', (factoid_search.group(1), '%'+factoid_search.group(2)+'%'))
         else:
-            cur.execute('SELECT * FROM bucket_facts WHERE fact = %s;', search_term)
+            cur.execute('SELECT * FROM bucket_facts WHERE fact = %s ORDER BY id ASC;', search_term)
         results = cur.fetchall()
     except UnicodeEncodeError, e:
         jenni.debug('bucket','Warning, database encoding error', 'warning')
@@ -486,14 +486,18 @@ def say_fact(jenni, trigger):
                     jenni.say("Can't create directory to store literal, sorry!")
                     jenni.say(e)
                     return
-            f = open(os.path.join(bucket_literal_path, fact.lower()+'.txt'), 'w')
+            if search_term == 'random quote':
+                filename = 'quotes'
+            else:
+                filename = fact.lower()
+            f = open(os.path.join(bucket_literal_path, filename+'.txt'), 'w')
             for result in results:
                 number = int(result[0])
                 fact, tidbit, verb = parse_factoid(result)
                 literal_line = "#%d - %s %s %s" % (number, fact, verb, tidbit)
                 f.write(literal_line.encode('utf8')+'\n')
             f.close()
-            jenni.reply('Here you go! %s (%d factoids)' % (bucket_literal_baseurl+web.quote(fact.lower()+'.txt'), len(results)))
+            jenni.reply('Here you go! %s (%d factoids)' % (bucket_literal_baseurl+web.quote(filename+'.txt'), len(results)))
         result = 'Me giving you a literal link'
     elif verb not in bucket_runtime_data.special_verbs:
         jenni.say("%s %s %s" % (fact, verb, tidbit))
