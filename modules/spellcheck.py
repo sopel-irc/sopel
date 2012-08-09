@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+# -*- coding: utf8 -*-
 """
 spellcheck.py - Jenni spell check Module
 Copyright © 2012, Elad Alfassa, <elad@fedoraproject.org>
