@@ -98,7 +98,8 @@ def handleNames(jenni, input):
     for name in names:
         if '@' in name or '~' in name or '&' in name:
             jenni.addOp(channel, name.lstrip('@&%+~'))
-        if '%' in name:
+            jenni.addHalfOp(channel, name.lstrip('@&%+~'))
+        elif '%' in name:
             jenni.addHalfOp(channel, name.lstrip('@&%+~'))
 handleNames.rule = r'(.*)'
 handleNames.event = '353'
@@ -118,6 +119,23 @@ def runningUpdate(jenni, input):
         else: jenni.delOp(channel, nick)
 runningUpdate.rule = r'(.*)'
 runningUpdate.event = 'MODE'
+
+def nickUpdate(jenni, input):
+    old = input.nick
+    new = input.group(1)
+    
+    for channel in jenni.halfplus:
+        print channel
+        if old in jenni.halfplus[channel]:
+            jenni.delHalfOp(channel, old)
+            jenni.addHalfOp(channel, new)
+    for channel in jenni.ops:
+        if old in jenni.ops[channel]:
+            jenni.delOp(channel, old)
+            jenni.addOp(channel, new)
+    
+nickUpdate.rule = r'(.*)'
+nickUpdate.event = 'NICK'
 
 if __name__ == '__main__':
     print __doc__.strip()
