@@ -31,7 +31,7 @@ def spellcheck(jenni, input):
                 sugWords.append(suggested_word)
         for suggested_word in dictionary_uk.suggest(word):
                 sugWords.append(suggested_word)
-        for suggested_word in set(sorted(sugWords)): # removes duplicates
+        for suggested_word in sorted(set(sugWords)): # removes duplicates
             msg = msg + " '"+suggested_word+"',"
         jenni.say(msg)
 spellcheck.commands = ['spellcheck', 'spell']
