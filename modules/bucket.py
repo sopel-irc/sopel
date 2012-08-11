@@ -371,7 +371,7 @@ def inv_give(jenni, trigger):
     tidbit = tidbit.replace('$item', item)
     tidbit = tidbit_vars(tidbit, trigger, False)
 
-    say_factoid(jenni, verb, tidbit, True)
+    say_factoid(jenni, fact, verb, tidbit, True)
     was = result
     return
 inv_give.rule = ('((^\001ACTION (gives|hands) $nickname)|^$nickname. take this) (.*)')
@@ -508,7 +508,7 @@ def say_fact(jenni, trigger):
             jenni.reply('Here you go! %s (%d factoids)' % (bucket_literal_baseurl+web.quote(filename+'.txt'), len(results)))
         result = 'Me giving you a literal link'
     else:
-        say_factoid(jenni, verb, tidbit, addressed)
+        say_factoid(jenni, fact, verb, tidbit, addressed)
     was[trigger.sender] = result
     
     
@@ -592,10 +592,10 @@ def dont_know(jenni):
         rebuild_dont_know_cache(jenni)
         return dont_know(jenni)
     fact, tidbit, verb = parse_factoid(reply)
-    say_factoid(jenni, verb, tidbit, True)
+    say_factoid(jenni, fact, verb, tidbit, True)
     return reply
 
-def say_factoid(jenni, verb, tidbit, addressed):
+def say_factoid(jenni, fact, verb, tidbit, addressed):
     if verb not in bucket_runtime_data.special_verbs:
         jenni.say("%s %s %s" % (fact, verb, tidbit))
     elif verb == '<reply>':
