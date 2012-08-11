@@ -131,8 +131,6 @@ class bucket_runtime_data():
     inventory = None
     shut_up = False
     special_verbs = ['<reply>', '<directreply>', '<directaction>', '<action>', '<alias>']
-    inv_steal_match = None #Will contain a compiled regex object to check for inventory 'steal' event
-    inv_give_match = None #Will contain a compiled regex object to check for inventory 'give' event
     factoid_search_re = re.compile('(.*).~=./(.*)/')
 
 def remove_punctuation(string):
@@ -156,8 +154,6 @@ def setup(jenni):
     db.close()
     for item in items:
         bucket_runtime_data.inventory.avilable_items.append(item[2])
-    bucket_runtime_data.inv_give_match = re.compile('((^\001ACTION (gives|hands) %s)|^%s. take this) (.*)' % (jenni.nick, jenni.nick), re.I)
-    bucket_runtime_data.inv_steal_match = re.compile('^\001ACTION (steals|takes) %s\'s (.*)' % jenni.nick, re.I)
     print 'Done setting up Bucket!'
 
 def rebuild_dont_know_cache(jenni):
@@ -345,54 +341,64 @@ def undo_teach(jenni, trigger):
 undo_teach.rule = ('$nick', 'undo last')
 undo_teach.priority = 'high'
 
+def inv_give(jenni, trigger):
+    ''' Called when someone gives us an item '''
+    bucket_runtime_data.inhibit_reply = trigger
+    was = bucket_runtime_data.what_was_that
+    inventory = bucket_runtime_data.inventory
+    item = trigger.group(4)
+    if item.endswith('\001'):
+        item = item[:-1]
+    item = item.strip()
+    dropped = inventory.add(item, trigger.nick, trigger.sender, jenni)
+    db = connect_db(jenni)
+    cur = db.cursor()
+    search_term = ''
+    if dropped == False:
+        #Query for 'takes item'
+        search_term = 'takes item'
+    elif dropped == '%ERROR% duplicate item %ERROR%':
+        #Query for 'duplicate item'
+        search_term = 'duplicate item'
+    else:
+        #Query for 'pickup full'
+        search_term = 'pickup full'
+    cur.execute('SELECT * FROM bucket_facts WHERE fact = %s;', search_term)
+    results = cur.fetchall()
+    db.close()
+    result = pick_result(results, jenni)
+    fact, tidbit, verb = parse_factoid(result)
+    tidbit = tidbit.replace('$item', item)
+    tidbit = tidbit_vars(tidbit, trigger, False)
+
+    say_factoid(jenni, verb, tidbit, True)
+    was = result
+    return
+inv_give.rule = ('((^\001ACTION (gives|hands) $nickname)|^$nickname. take this) (.*)')
+inv_give.priority = 'medium'
+
+def inv_steal(jenni, trigger):
+    inventory = bucket_runtime_data.inventory
+    item = trigger.group(2)
+    bucket_runtime_data.inhibit_reply = trigger
+    if item.endswith('\001'):
+       item = item[:-1]
+    if (inventory.remove(item)):
+       jenni.say('Hey! Give it back, it\'s mine!')
+    else:
+       jenni.say('But I don\'t have any %s' % item)
+inv_steal.rule = ('^\001ACTION (steals|takes) $nickname\'s (.*)')
+inv_steal.priority = 'medium'
+
 def say_fact(jenni, trigger):
     """Response, if needed"""
     query = trigger.group(0)
     was = bucket_runtime_data.what_was_that
-    inventory = bucket_runtime_data.inventory
     db = None
     cur = None
     results = None
-    inv_give_match = bucket_runtime_data.inv_give_match.search(query)
-    if inv_give_match is not None:
-        item = inv_give_match.group(4)
-        if item.endswith('\001'):
-            item = item[:-1]
-        item = item.strip()
-        dropped = inventory.add(item, trigger.nick, trigger.sender, jenni)
-        db = connect_db(jenni)
-        cur = db.cursor()
-        search_term = ''
-        if dropped == False:
-            #Query for 'takes item'
-            search_term = 'takes item'
-        elif dropped == '%ERROR% duplicate item %ERROR%':
-            #Query for 'duplicate item'
-            search_term = 'duplicate item'
-        else:
-            #Query for 'pickup full'
-            search_term = 'pickup full'
-        cur.execute('SELECT * FROM bucket_facts WHERE fact = %s;', search_term)
-        results = cur.fetchall()
-        db.close()
-        result = pick_result(results, jenni)
-        fact, tidbit, verb = parse_factoid(result)
-        tidbit = tidbit.replace('$item', item)
-        tidbit = tidbit_vars(tidbit, trigger, False)
 
-        say_factoid(jenni, verb, tidbit, True)
-        was = result
-        return
-    inv_steal_match = bucket_runtime_data.inv_steal_match.search(query)
-    if inv_steal_match is not None:
-        item = inv_steal_match.group(2)
-        if item.endswith('\001'):
-            item = item[:-1]
-        if (inventory.remove(item)):
-            jenni.say('Hey! Give it back, it\'s mine!')
-        else:
-            jenni.say('But I don\'t have any %s' % item)
-        return
+
     if query.startswith('\001ACTION'):
         query = query[len('\001ACTION '):]
     addressed = query.lower().startswith(jenni.nick.lower()) #Check if our nick was mentioned
@@ -432,7 +438,7 @@ def say_fact(jenni, trigger):
         except KeyError:
             jenni.say('I have no idea')
         return
-    elif search_term.startswith('reload') or search_term.startswith('update') or inhibit == search_term or inhibit == trigger.group(0):
+    elif search_term.startswith('reload') or search_term.startswith('update') or inhibit == search_term or inhibit == trigger.group(0) or inhibit == trigger:
         return #ignore commands such as reload or update, don't show 'Don't Know' responses for these 
 
     db = connect_db(jenni)
