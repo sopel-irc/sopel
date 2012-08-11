@@ -341,7 +341,7 @@ def undo_teach(jenni, trigger):
     finally:
         db.close()
     jenni.say("Okay, %s. Forgot that %s %s %s" % (trigger.nick, fact, verb, tidbit))
-    
+    del last_teach[trigger.sender]
 undo_teach.rule = ('$nick', 'undo last')
 undo_teach.priority = 'high'
 
