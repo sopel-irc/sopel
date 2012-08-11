@@ -73,6 +73,8 @@ last line of the function.
         instance is in a channel, or sent a PRIVMSG, where a string matching this
         expression is said, the function will execute. Note that captured groups
         here will be retrievable through the ``Trigger`` object later.
+        
+        Inside the regular expression, some special directives can be used. ``$nick`` will be replaced with the nick of the bot and ``,`` or ``:``, and ``$nickname`` will be replaced with the nick of the bot.
 
     .. py:attribute:: event
     
@@ -91,6 +93,11 @@ last line of the function.
         that function once every 20 seconds. This limit applies to each user
         individually. Users on the ``admin`` list in jenni's configuration are
         exempted from rate limits.
+        
+    .. py:attribute:: priority
+    
+        Priority can be one of ``high``, ``medium``, ``low``. It allows you to
+        control the order of callable execution, if your module needs it. Defaults to ``medium``
 
 .. py:method:: setup(jenni)
 
