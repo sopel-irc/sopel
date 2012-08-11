@@ -147,21 +147,28 @@ def setup(jenni):
         print 'Error connecting to the bucket database.'
         raise
         return
+    #caching "Don't Know" replies
+    rebuild_dont_know_cache(jenni)
     bucket_runtime_data.inventory = Inventory()
     cur = db.cursor()
-    #caching "Don't Know" replies
-    cur.execute('SELECT * FROM bucket_facts WHERE fact = "Don\'t Know";')
-    results = cur.fetchall()
     cur.execute('SELECT * FROM bucket_items;')
     items = cur.fetchall()
     db.close()
-    for result in results:
-        bucket_runtime_data.dont_know_cache.append(result[2])
     for item in items:
         bucket_runtime_data.inventory.avilable_items.append(item[2])
     bucket_runtime_data.inv_give_match = re.compile('((^\001ACTION (gives|hands) %s)|^%s. take this) (.*)' % (jenni.nick, jenni.nick), re.I)
     bucket_runtime_data.inv_steal_match = re.compile('^\001ACTION (steals|takes) %s\'s (.*)' % jenni.nick, re.I)
     print 'Done setting up Bucket!'
+
+def rebuild_dont_know_cache(jenni):
+        db = connect_db(jenni)
+        cur = db.cursor()
+        cur.execute('SELECT * FROM bucket_facts WHERE fact = "Don\'t Know";')
+        results = cur.fetchall()
+        for result in results:
+            bucket_runtime_data.dont_know_cache.append(result)
+        db.close()
+
 def add_fact(jenni, trigger, fact, tidbit, verb, re, protected, mood, chance, say=True):
     db = None
     cur = None
@@ -232,7 +239,7 @@ def teach_verb(jenni, trigger):
         if len(results) > 0 and success:
             jenni.say('Okay, %s' % trigger.nick)
     if fact.lower() == 'don\'t know':
-        bucket_runtime_data.dont_know_cache.append(tidbit)
+        rebuild_dont_know_cache(jenni)
 teach_verb.rule = ('$nick', '(.*?) (<\S+>) (.*)')
 teach_verb.priority = 'high'
 
@@ -373,12 +380,7 @@ def say_fact(jenni, trigger):
         tidbit = tidbit.replace('$item', item)
         tidbit = tidbit_vars(tidbit, trigger, False)
 
-        if verb not in bucket_runtime_data.special_verbs:
-            jenni.say("%s %s %s" % (fact, verb, tidbit))
-        elif verb == '<reply>':
-            jenni.say(tidbit)
-        elif verb == '<action>':
-            jenni.action(tidbit)
+        say_factoid(jenni, verb, tidbit, True)
         was = result
         return
     inv_steal_match = bucket_runtime_data.inv_steal_match.search(query)
@@ -456,7 +458,7 @@ def say_fact(jenni, trigger):
         return
     result = pick_result(results, jenni)
     if addressed and result == None and factoid_search is None:
-        was[trigger.sender] = 'Don\'t know: '+dont_know(jenni)
+        was[trigger.sender] = dont_know(jenni)
         return
     elif factoid_search is not None and result is None:
         jenni.reply('Sorry, I could\'t find anything matching your query')
@@ -499,16 +501,8 @@ def say_fact(jenni, trigger):
             f.close()
             jenni.reply('Here you go! %s (%d factoids)' % (bucket_literal_baseurl+web.quote(filename+'.txt'), len(results)))
         result = 'Me giving you a literal link'
-    elif verb not in bucket_runtime_data.special_verbs:
-        jenni.say("%s %s %s" % (fact, verb, tidbit))
-    elif verb == '<reply>':
-        jenni.say(tidbit)
-    elif verb == '<action>':
-        jenni.action(tidbit)
-    elif verb == '<directreply>' and addressed:
-        jenni.say(tidbit)
-    elif verb == '<directaction>' and addressed:
-        jenni.action(tidbit)
+    else:
+        say_factoid(jenni, verb, tidbit, addressed)
     was[trigger.sender] = result
     
     
@@ -569,6 +563,7 @@ def connect_db(jenni):
                          db=jenni.config.bucket_db,
                          charset="utf8",
                          use_unicode=True)
+
 def tidbit_vars(tidbit, trigger, random_item=True):
     ''' Parse in-tidbit vars '''
     #Special in-tidbit vars:
@@ -581,16 +576,30 @@ def tidbit_vars(tidbit, trigger, random_item=True):
     if random_item:
         tidbit = tidbit.replace('$item', str(inventory.random_item()))
     return tidbit
+
 def dont_know(jenni):
     ''' Get a Don't Know reply from the cache '''
     cache = bucket_runtime_data.dont_know_cache
     try:
         reply = cache[randint(0, len(cache)-1)]
     except ValueError:
-        setup(jenni) #The don't know cache is empty, fill it!
+        rebuild_dont_know_cache(jenni)
         return dont_know(jenni)
-    jenni.say(reply)
+    fact, tidbit, verb = parse_factoid(reply)
+    say_factoid(jenni, verb, tidbit, True)
     return reply
+
+def say_factoid(jenni, verb, tidbit, addressed):
+    if verb not in bucket_runtime_data.special_verbs:
+        jenni.say("%s %s %s" % (fact, verb, tidbit))
+    elif verb == '<reply>':
+        jenni.say(tidbit)
+    elif verb == '<action>':
+        jenni.action(tidbit)
+    elif verb == '<directreply>' and addressed:
+        jenni.say(tidbit)
+    elif verb == '<directaction>' and addressed:
+        jenni.action(tidbit)
 
 def remember(jenni, trigger):
     ''' Remember last 10 lines of each user, to use in the quote function '''
