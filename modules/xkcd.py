@@ -53,9 +53,9 @@ def xkcd(jenni, input):
                 except:
                     pass
                 website = google_search("site:xkcd.com "+ query)
-                regex = re.compile(r'([0-9].*):') # regex for comic specific forum threads
+                regex = re.compile(r'.*?([0-9].*):.*') # regex for comic specific forum threads
                 if (re.match(regex, website)):
-                    website = "http://xkcd.com/" + re.match(regex, website).groups()[0]
+                    website = "http://xkcd.com/" + re.match(regex, website).groups()[0].lstrip('0')
     if website: # format and say result
         website += ' [' + find_title(website)[6:] + ']'
         jenni.say(website)
