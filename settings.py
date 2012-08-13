@@ -234,10 +234,10 @@ class SettingsDB(object):
         it is a single string, a single string will be returned. If it is an
         iterable, a dict will be returned which maps each of the keys in 
         ``values`` to its corresponding data."""
-        if isinstance(values, Iterable):
-            return self._get_many(key, values)
-        else:
+        if isinstance(values, basestring):
             return self._get_one(key, values)
+        elif isinstance(column, Iterable):
+            return self._get_many(key, values)
     
     ## deprecated
     def __getitem__(self, key):
