@@ -77,7 +77,7 @@ def f_weather(self, origin, match, args):
     icao_code = match.group(2)
     if not icao_code:
         if self.settings.hascolumn('icao') and origin.nick in self.settings:
-            icao_code = self.settings[origin.nick]['icao']
+            icao_code = self.settings.get(origin.nick, 'icao')
     if not icao_code or icao_code == '':
             return self.msg(origin.sender, 'I don\'t know where you live. ' +
                             'Tell me, or try .weather London, for example?')
@@ -86,7 +86,7 @@ def f_weather(self, origin, match, args):
 
     if not icao_code:
         if self.settings.hascolumn('icao') and origin.nick in self.settings:
-            icao_code = code(self, self.settings[origin.nick]['icao'])
+            icao_code = code(self, self.settings.get(origin.nick, 'icao'))
         if not icao_code or icao_code == '':
             self.msg(origin.sender, 'No ICAO code found, sorry')
             return
@@ -419,7 +419,7 @@ def f_weather(self, origin, match, args):
 f_weather.rule = (['weather'], r'(.*)')
 
 def update_icao(jenni, input):
-    if not jenni.settings.hascolumn('icao'):
+    if not jenni.settings.hascolumn('icao'):#TODO put this in configure
         jenni.settings.addcolumns({"icao"})
     else:
         icao_code = code(jenni, input.group(1))
@@ -427,8 +427,9 @@ def update_icao(jenni, input):
             jenni.reply("I don't know where that is. Try another place or ICAO code.")
         else:
             jenni.settings[input.nick] = {'icao': icao_code}
-            jenni.say("Gotcha, " + input.nick)
-update_icao.rule = ('$nick', 'I live near (.*)')
+            jenni.reply('I now have you living near %s airport.' % icao_code)
+update_icao.commands = ['setlocation', 'seticao']
+#rule = ('$nick', 'I live near (.*)')
 
 if __name__ == '__main__':
     print __doc__.strip()
