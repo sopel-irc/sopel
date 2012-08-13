@@ -28,27 +28,30 @@ def xkcd(jenni, input):
     newest = etree.tostring(parsed.findall("channel/item/link")[0])
     max_int = int(newest.split("/")[-3])
 
-    # if no input is given (pre - FireRogue's edits code)
+    # if no input is given (pre - lior's edits code)
     if not input.group(2):
         random.seed()
         website = "http://xkcd.com/%d/" % random.randint(0,max_int+1)
     else:
-        query = input.group(2)
+        query = input.group(2).strip()
 
         # numeric input!
-        if (query.strip().isdigit()):
-            if (int(query.strip()) > max_int):
-                jenni.say("Sorry, comic #" + query.strip() + " hasn't been posted yet. The last comic was #%d" % max_int)
+        if (query.isdigit()):
+            if (int(query) > max_int):
+                jenni.say("Sorry, comic #" + query + " hasn't been posted yet. The last comic was #%d" % max_int)
                 return
-            else: website = "http://xkcd.com/" + query.strip() + '/'
+            else: website = "http://xkcd.com/" + query + '/'
         
         # non-numeric input! code lifted from search.g
         else:
-           try:
-                query = query.encode('utf-8')
-           except:
-               pass
-           website = google_search("site:xkcd.com "+ query)
+            if (query.lower() == "latest" or query.lower() == "newest"):
+                website = "https://xkcd.com/"
+            else:
+                try:
+                    query = query.encode('utf-8')
+                except:
+                    pass
+                website = google_search("site:xkcd.com "+ query)
     if website: # format and say result
         website += ' [' + find_title(website)[6:] + ']'
         jenni.say(website)
