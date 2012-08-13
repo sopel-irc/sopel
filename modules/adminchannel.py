@@ -329,7 +329,7 @@ def topic(jenni, input):
     narg = 1
     mask = None
     if jenni.settings.hascolumn('topic_mask') and channel in jenni.settings:
-        mask = jenni.settings[channel]['topic_mask']
+        mask = jenni.settings.get(channel, 'topic_mask')
         narg = len(re.findall('%s', mask))
     if not mask or mask == '':
         mask = purple +'Welcome to: '+ green + channel + purple \
@@ -358,7 +358,7 @@ def set_mask (jenni, input):
     if not jenni.settings.hascolumn('topic_mask'):
         jenni.say("I'm afraid I can't do that.")
     else:
-        jenni.settings[input.sender] = {'topic_mask': input.group(2)}
+        jenni.settings.update(input.sender, {'topic_mask': input.group(2)})
         jenni.say("Gotcha, " + input.nick)
 set_mask.commands = ['tmask']
 
@@ -368,7 +368,7 @@ def show_mask (jenni, input):
     if not jenni.settings.hascolumn('topic_mask'):
         jenni.say("I'm afraid I can't do that.")
     else:
-        jenni.say(jenni.settings[input.sender]['topic_mask'])
+        jenni.say(jenni.settings.get(input.sender, 'topic_mask'))
 show_mask.commands = ['showmask']
 
 if __name__ == '__main__':

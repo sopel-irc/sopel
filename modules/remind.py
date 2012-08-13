@@ -137,9 +137,9 @@ def at(jenni, input):
     # Personal time zones, because they're rad
     if jenni.settings.hascolumn('tz'):
         if input.group(2) and tz in jenni.settings:
-            personal_tz = jenni.settings[tz]['tz']
+            personal_tz = jenni.settings.get(tz, 'tz')
         elif input.nick in jenni.settings:
-            personal_tz = jenni.settings[input.nick]['tz']
+            personal_tz = jenni.settings.get(input.nick, 'tz')
     if tz not in all_timezones_set and not personal_tz: 
         message=tz+message
         tz = 'UTC'
