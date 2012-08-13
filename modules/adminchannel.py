@@ -363,7 +363,9 @@ def set_mask (jenni, input):
 set_mask.commands = ['tmask']
 
 def show_mask (jenni, input):
+    print 'masking'
     if input.nick not in jenni.ops[input.sender] and input.nick not in jenni.halfplus[input.sender]:
+        print 'nop'
         return
     if not jenni.settings.hascolumn('topic_mask'):
         jenni.say("I'm afraid I can't do that.")
