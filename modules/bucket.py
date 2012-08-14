@@ -357,7 +357,7 @@ def inv_give(jenni, trigger):
         item = '%s\'s %s' % (trigger.nick, item)
     elif trigger.group(5) == 'your':
         item = '%s\'s %s' % (jenni.nick, item)
-    elif trigger.group(5) is not 'this':
+    elif trigger.group(5) != 'this':
         item = '%s %s' % (trigger.group(5), item)
         item = re.sub(r'^me ', trigger.nick+' ', item, re.IGNORECASE)
     if trigger.group(3) is not '':
