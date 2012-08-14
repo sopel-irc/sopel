@@ -243,7 +243,7 @@ def save_quote(jenni, trigger):
     """Saves a quote"""
     bucket_runtime_data.inhibit_reply = trigger.group(0)
     quotee = trigger.group(1).lower()
-    word = trigger.group(2)
+    word = trigger.group(2).strip()
     fact = quotee+' quotes'
     verb = '<reply>'
     re = False
@@ -256,7 +256,9 @@ def save_quote(jenni, trigger):
         jenni.say("Sorry, I don't remember what %s said about %s" % (quotee, word))
         return
     for line in memory:
-        if remove_punctuation(word.lower()) in remove_punctuation(line.lower()):
+        if remove_punctuation(word.lower()) in remove_punctuation(line[0].lower()):
+            quotee = line[1]
+            line = line[0]
             if line.startswith('\001ACTION'):
                 line = line[len('\001ACTION '):-1]
                 tidbit = '* %s %s' % (quotee, line)
@@ -628,7 +630,7 @@ def remember(jenni, trigger):
         return remember(jenni, trigger)
     if len(fifo) == 10:
         fifo.pop()
-    fifo.appendleft(trigger.group(0))
+    fifo.appendleft([trigger.group(0), trigger.nick])
     memory[trigger.sender][trigger.nick.lower()] = fifo
 remember.rule = ('(.*)')
 remember.priority = 'medium'
