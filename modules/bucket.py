@@ -346,10 +346,21 @@ def inv_give(jenni, trigger):
     bucket_runtime_data.inhibit_reply = trigger
     was = bucket_runtime_data.what_was_that
     inventory = bucket_runtime_data.inventory
-    item = trigger.group(4)
+    item = trigger.group(6)
     if item.endswith('\001'):
         item = item[:-1]
     item = item.strip()
+
+    if trigger.group(5) == 'my':
+        item = '%s\'s %s' % (trigger.nick, item)
+    elif trigger.group(5) == 'your':
+        item = '%s\'s %s' % (jenni.nick, item)
+    elif trigger.group(5) is not 'this':
+        item = '%s %s' % (trigger.group(5), item)
+        item = re.sub(r'^me ', trigger.nick+' ', item, re.IGNORECASE)
+    if trigger.group(3) is not '':
+        item = re.sub(r'^his ', '%s\'s ' % trigger.nick, item, re.IGNORECASE)
+
     dropped = inventory.add(item, trigger.nick, trigger.sender, jenni)
     db = connect_db(jenni)
     cur = db.cursor()
@@ -374,7 +385,7 @@ def inv_give(jenni, trigger):
     say_factoid(jenni, fact, verb, tidbit, True)
     was = result
     return
-inv_give.rule = ('((^\001ACTION (gives|hands) $nickname)|^$nickname. take this) (.*)')
+inv_give.rule = ('((^\001ACTION (gives|hands) $nickname)|^$nickname. (take|have) (this|my|your|.*)) (.*)')
 inv_give.priority = 'medium'
 
 def inv_steal(jenni, trigger):
