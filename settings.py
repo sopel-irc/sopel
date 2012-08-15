@@ -189,9 +189,8 @@ class SettingsDB(object):
                      db=self._dbname)
             cur = MySQLdb.cursors.DictCursor(db)
             cur.execute(
-                'SELECT %s FROM '+tablename+' WHERE name = "%s";', (value, key))
+                'SELECT * FROM '+tablename+' WHERE name = %s;', key)
             row = cur.fetchone()
-            
             if not row:
                 db.close()
                 raise KeyError(key+' not in database')
@@ -213,7 +212,7 @@ class SettingsDB(object):
                      db=self._dbname)
             cur = MySQLdb.cursors.DictCursor(db)
             cur.execute(
-                'SELECT %s FROM '+tablename+' WHERE name = "%s";', (value, key))
+                'SELECT %s FROM '+tablename+' WHERE name = %s;', (values, key))
             row = cur.fetchone()
             
             if not row:
@@ -234,10 +233,10 @@ class SettingsDB(object):
         it is a single string, a single string will be returned. If it is an
         iterable, a dict will be returned which maps each of the keys in 
         ``values`` to its corresponding data."""
-        if isinstance(values, Iterable):
-            return self._get_many(key, values)
-        else:
+        if isinstance(values, basestring):
             return self._get_one(key, values)
+        elif isinstance(values, Iterable):
+            return self._get_many(key, values)
     
     ## deprecated
     def __getitem__(self, key):

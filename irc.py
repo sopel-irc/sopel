@@ -237,9 +237,9 @@ class Bot(asynchat.async_chat):
         Sends an error to jenni's configured ``debug_target``. 
         """
         if not self.config.verbose:
-            return False
+            self.config.verbose = 'warning'
         elif not (self.config.debug_target == 'stdio' or self.config.debug_target.startswith('#')):
-            return False
+            self.config.debug_target = 'stdio'
         debug_msg = "[%s] %s" % (tag, text)
         if level == 'verbose':
             if self.config.verbose == 'verbose':
@@ -256,6 +256,12 @@ class Bot(asynchat.async_chat):
                 else:
                     self.msg(self.config.debug_target, debug_msg)
                 return True
+        elif level == 'always':
+            if (self.config.debug_target == 'stdio'):
+                print debug_msg
+            else:
+                self.msg(self.config.debug_target, debug_msg)
+            return True
         
         return False
             
@@ -292,13 +298,13 @@ class Bot(asynchat.async_chat):
 
     #Helper functions to maintain the oper list.
     def addOp(self, channel, name):
-        self.ops[channel].add(name)
+        self.ops[channel].add(name.lower())
     def addHalfOp(self, channel, name):
-        self.halfplus[channel].add(name)
+        self.halfplus[channel].add(name.lower())
     def delOp(self, channel, name):
-        self.ops[channel].discard(name)
+        self.ops[channel].discard(name.lower())
     def delHalfOp(self, channel, name):
-        self.halfplus[channel].discard(name)
+        self.halfplus[channel].discard(name.lower())
     def flushOps(self, channel):
         self.ops[channel] = set()
         self.halfplus[channel] = set()
