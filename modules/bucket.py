@@ -66,7 +66,7 @@ def configure(config):
 class Inventory():
     ''' Everything inventory related '''
     avilable_items = []
-    current_items = deque([]) #FIFO. Max length 15
+    current_items = deque([]) # Max length 15
     def add_random(self):
         ''' Adds a random item to the inventory'''
         item = self.avilable_items[randint(0, len(self.avilable_items)-1)].strip()
@@ -106,6 +106,11 @@ class Inventory():
             return 'bananas!'
         item = self.current_items[randint(0, len(self.current_items)-1)]
         return item
+    def populate(self):
+        ''' Clears the inventory and fill it with random items '''
+        self.current_items = deque([])
+        while (len(self.current_items)<15):
+            self.add_random()
     def give_item(self):
         ''' returns a random item and removes it from the inventory '''
         item = self.random_item()
@@ -363,6 +368,7 @@ def inv_give(jenni, trigger):
     if trigger.group(3) is not '':
         item = re.sub(r'^his ', '%s\'s ' % trigger.nick, item, re.IGNORECASE)
 
+    item = item.strip()
     dropped = inventory.add(item, trigger.nick, trigger.sender, jenni)
     db = connect_db(jenni)
     cur = db.cursor()
@@ -402,6 +408,14 @@ def inv_steal(jenni, trigger):
        jenni.say('But I don\'t have any %s' % item)
 inv_steal.rule = ('^\001ACTION (steals|takes) $nickname\'s (.*)')
 inv_steal.priority = 'medium'
+
+def inv_populate(jenni, trigger):
+    bucket_runtime_data.inhibit_reply = trigger
+    inventory = bucket_runtime_data.inventory
+    jenni.action('drops all his inventory and picks up random things instead')
+    inventory.populate()
+inv_populate.rule = ('$nick', 'you need new things(.*|)')
+inv_populate.priority = 'medium'
 
 def say_fact(jenni, trigger):
     """Response, if needed"""
@@ -588,13 +602,19 @@ def tidbit_vars(tidbit, trigger, random_item=True):
     #Special in-tidbit vars:
     inventory = bucket_runtime_data.inventory
     tidbit = tidbit.replace('$who', trigger.nick)
-    if '$giveitem' in tidbit:
-        tidbit = tidbit.replace('$giveitem', str(inventory.give_item()))
-    if '$newitem' in tidbit:
-        tidbit = tidbit.replace('$newitem', str(inventory.add_random()))
-    if random_item:
-        tidbit = tidbit.replace('$item', str(inventory.random_item()))
-    return tidbit
+    finaltidbit = ''
+    for word in tidbit.split(' '):
+        if '$giveitem' in word.lower():
+            #we have to use replace here in case of punctuation
+            word = word.replace('$giveitem', inventory.give_item())
+        elif '$newitem' in word.lower():
+            word = word.replace('$newitem', inventory.add_random())
+        elif '$item' in word.lower() and random_item:
+            word = word.replace('$item', inventory.random_item())
+        if (len(finaltidbit)>0):
+            word = ' ' + word
+        finaltidbit = finaltidbit + word
+    return finaltidbit
 
 def dont_know(jenni):
     ''' Get a Don't Know reply from the cache '''
