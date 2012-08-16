@@ -243,7 +243,6 @@ class Bot(asynchat.async_chat):
         debug_msg = "[%s] %s" % (tag, text)
         if level == 'verbose':
             if self.config.verbose == 'verbose':
-                print self.config.debug_target
                 if (self.config.debug_target == 'stdio'):
                     print debug_msg
                 else:
