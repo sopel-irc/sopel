@@ -17,7 +17,7 @@ All runtime information is in the runtime information class
 
 To prevent Jenni from outputting a "Don't Know" message when referred use the following line:
 
-bucket_runtime_data.inhibit_reply = trigger.group(0)
+bucket_runtime_data.inhibit_reply = trigger
 
 and make sure the priority of your callable is medium or higher.
 """
@@ -84,7 +84,7 @@ class Inventory():
         dropped = False
         item = item.strip()
         if item.lower() not in [x.lower() for x in self.avilable_items]:
-            db = connect_db(jenni)
+            db = bucket_runtime_data.db
             cur = db.cursor()
             try:
                 cur.execute('INSERT INTO bucket_items (`channel`, `what`, `user`) VALUES (%s, %s, %s);', (channel, item.encode('utf8'), user))
@@ -92,7 +92,6 @@ class Inventory():
                 jenni.debug('bucket', 'IntegrityError in inventory code', 'warning')
                 jenni.debug('bucket', str(e), 'warning')
             db.commit()
-            db.close()
             self.avilable_items.append(item)
         if item in self.current_items:
             return '%ERROR% duplicate item %ERROR%'
@@ -137,6 +136,7 @@ class bucket_runtime_data():
     shut_up = False
     special_verbs = ['<reply>', '<directreply>', '<directaction>', '<action>', '<alias>']
     factoid_search_re = re.compile('(.*).~=./(.*)/')
+    db = None
 
 def remove_punctuation(string):
     return sub("[,\.\!\?\;\:]", '', string)
@@ -150,30 +150,28 @@ def setup(jenni):
         print 'Error connecting to the bucket database.'
         raise
         return
+    bucket_runtime_data.db = db
     #caching "Don't Know" replies
     rebuild_dont_know_cache(jenni)
     bucket_runtime_data.inventory = Inventory()
     cur = db.cursor()
     cur.execute('SELECT * FROM bucket_items;')
     items = cur.fetchall()
-    db.close()
     for item in items:
         bucket_runtime_data.inventory.avilable_items.append(item[2])
     print 'Done setting up Bucket!'
 
 def rebuild_dont_know_cache(jenni):
-        db = connect_db(jenni)
+        db = bucket_runtime_data.db
         cur = db.cursor()
         cur.execute('SELECT * FROM bucket_facts WHERE fact = "Don\'t Know";')
         results = cur.fetchall()
         for result in results:
             bucket_runtime_data.dont_know_cache.append(result)
-        db.close()
 
 def add_fact(jenni, trigger, fact, tidbit, verb, re, protected, mood, chance, say=True):
-    db = None
+    db = bucket_runtime_data.db
     cur = None
-    db = connect_db(jenni)
     cur = db.cursor()
     try:
         cur.execute('INSERT INTO bucket_facts (`fact`, `tidbit`, `verb`, `RE`, `protected`, `mood`, `chance`) VALUES (%s, %s, %s, %s, %s, %s, %s);', (fact, tidbit, verb, re, protected, mood, chance))
@@ -181,8 +179,6 @@ def add_fact(jenni, trigger, fact, tidbit, verb, re, protected, mood, chance, sa
     except MySQLdb.IntegrityError:
         jenni.say("I already had it that way!")
         return False
-    finally:
-        db.close()
     bucket_runtime_data.last_teach[trigger.sender] = [fact,verb,tidbit]
     if say:
         jenni.say("Okay, "+trigger.nick)
@@ -206,6 +202,7 @@ def teach_is_are(jenni, trigger):
     add_fact(jenni, trigger, fact, tidbit, verb, re, protected, mood, chance)
 teach_is_are.rule = ('$nick', '(.*?) (is|are) (.*)')
 teach_is_are.priority = 'high'
+teach_is_are.rate = 5
 
 def teach_verb(jenni, trigger):
     """Teaches verbs/ambiguous reply"""
@@ -230,11 +227,10 @@ def teach_verb(jenni, trigger):
         say = False
     success = add_fact(jenni, trigger, fact, tidbit, verb, re, protected, mood, chance, say)
     if verb == '<alias>':
-        db = connect_db(jenni)
+        db = bucket_runtime_data.db
         cur = db.cursor()
         cur.execute('SELECT * FROM bucket_facts WHERE fact = %s;', tidbit)
         results = cur.fetchall()
-        db.close()
         if len(results) == 0 and success:
             jenni.say('Okay, %s. but, FYI, %s doesn\'t exist yet' % (trigger.nick, tidbit))
         if len(results) > 0 and success:
@@ -243,6 +239,7 @@ def teach_verb(jenni, trigger):
         rebuild_dont_know_cache(jenni)
 teach_verb.rule = ('$nick', '(.*?) (<\S+>) (.*)')
 teach_verb.priority = 'high'
+teach_verb.rate = 5
 
 def save_quote(jenni, trigger):
     """Saves a quote"""
@@ -276,6 +273,7 @@ def save_quote(jenni, trigger):
     jenni.say("Sorry, I don't remember what %s said about %s" % (quotee, word))
 save_quote.rule = ('$nick', 'remember (.*?) (.*)')
 save_quote.priority = 'high'
+save_quote.rate = 5
 
 def delete_factoid(jenni, trigger):
     """Delets a factoid"""
@@ -284,9 +282,8 @@ def delete_factoid(jenni, trigger):
     if not trigger.admin:
         was[trigger.sender] = dont_know(jenni)
         return
-    db = None
     cur = None
-    db = connect_db(jenni)
+    db = bucket_runtime_data.db
     cur = db.cursor()
     try:
         cur.execute('SELECT * FROM bucket_facts WHERE ID = %s;', int(trigger.group(1)))
@@ -304,8 +301,6 @@ def delete_factoid(jenni, trigger):
     except:
         jenni.say("Delete failed! are you sure this is a valid factoid ID?")
         return
-    finally:
-        db.close()
     line = results[0]
     fact, tidbit, verb = parse_factoid(line)
     jenni.say("Okay, %s, forgot that %s %s %s" % (trigger.nick, fact, verb, tidbit))
@@ -331,9 +326,8 @@ def undo_teach(jenni, trigger):
     except KeyError:
         jenni.reply('Nothing to undo!')
         return
-    db = None
+    db = bucket_runtime_data.db
     cur = None
-    db = connect_db(jenni)
     cur = db.cursor()
     try:
         cur.execute('DELETE FROM bucket_facts WHERE `fact` = %s AND `verb` = %s AND `tidbit` = %s', (fact, verb, tidbit))
@@ -341,8 +335,6 @@ def undo_teach(jenni, trigger):
     except:
         jenni.say("Undo failed, this shouldn't have happened!")
         return
-    finally:
-        db.close()
     jenni.say("Okay, %s. Forgot that %s %s %s" % (trigger.nick, fact, verb, tidbit))
     del last_teach[trigger.sender]
 undo_teach.rule = ('$nick', 'undo last')
@@ -370,7 +362,7 @@ def inv_give(jenni, trigger):
 
     item = item.strip()
     dropped = inventory.add(item, trigger.nick, trigger.sender, jenni)
-    db = connect_db(jenni)
+    db = bucket_runtime_data.db
     cur = db.cursor()
     search_term = ''
     if dropped == False:
@@ -384,7 +376,6 @@ def inv_give(jenni, trigger):
         search_term = 'pickup full'
     cur.execute('SELECT * FROM bucket_facts WHERE fact = %s;', search_term)
     results = cur.fetchall()
-    db.close()
     result = pick_result(results, jenni)
     fact, tidbit, verb = parse_factoid(result)
     tidbit = tidbit.replace('$item', item)
@@ -395,6 +386,7 @@ def inv_give(jenni, trigger):
     return
 inv_give.rule = ('((^\001ACTION (gives|hands) $nickname)|^$nickname. (take|have) (this|my|your|.*)) (.*)')
 inv_give.priority = 'medium'
+inv_give.rate = 20
 
 def inv_steal(jenni, trigger):
     inventory = bucket_runtime_data.inventory
@@ -408,6 +400,7 @@ def inv_steal(jenni, trigger):
        jenni.say('But I don\'t have any %s' % item)
 inv_steal.rule = ('^\001ACTION (steals|takes) $nickname\'s (.*)')
 inv_steal.priority = 'medium'
+inv_steal.rate = 5
 
 def inv_populate(jenni, trigger):
     bucket_runtime_data.inhibit_reply = trigger
@@ -416,12 +409,13 @@ def inv_populate(jenni, trigger):
     inventory.populate()
 inv_populate.rule = ('$nick', 'you need new things(.*|)')
 inv_populate.priority = 'medium'
+inv_populate.rate = 10
 
 def say_fact(jenni, trigger):
     """Response, if needed"""
     query = trigger.group(0)
     was = bucket_runtime_data.what_was_that
-    db = None
+    db = bucket_runtime_data.db
     cur = None
     results = None
 
@@ -468,7 +462,6 @@ def say_fact(jenni, trigger):
     elif search_term.startswith('reload') or search_term.startswith('update') or inhibit == search_term or inhibit == trigger.group(0) or inhibit == trigger:
         return #ignore commands such as reload or update, don't show 'Don't Know' responses for these 
 
-    db = connect_db(jenni)
     cur = db.cursor()
     if not addressed:
         factoid_search = None
@@ -485,8 +478,6 @@ def say_fact(jenni, trigger):
     except UnicodeEncodeError, e:
         jenni.debug('bucket','Warning, database encoding error', 'warning')
         jenni.debug('bucket', e, 'warning')
-    finally:
-        db.close()
     if results == None:
         return
     result = pick_result(results, jenni)
@@ -552,7 +543,7 @@ def pick_result(results, jenni):
             return None
         if result[3] == '<alias>':
             #Handle alias, recursive!
-            db = connect_db(jenni)
+            db = bucket_runtime_data.db
             cur = db.cursor()
             search_term = result[2].strip()
             try:
@@ -561,8 +552,6 @@ def pick_result(results, jenni):
             except UnicodeEncodeError, e:
                 jenni.debug('bucket','Warning, database encoding error', 'warning')
                 jenni.debug('bucket',e , 'warning')
-            finally:
-                db.close()
             result = pick_result(results, jenni)
         return result
     except RuntimeError, e:
