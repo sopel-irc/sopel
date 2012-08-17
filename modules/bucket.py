@@ -202,7 +202,6 @@ def teach_is_are(jenni, trigger):
     add_fact(jenni, trigger, fact, tidbit, verb, re, protected, mood, chance)
 teach_is_are.rule = ('$nick', '(.*?) (is|are) (.*)')
 teach_is_are.priority = 'high'
-teach_is_are.rate = 5
 
 def teach_verb(jenni, trigger):
     """Teaches verbs/ambiguous reply"""
@@ -239,7 +238,6 @@ def teach_verb(jenni, trigger):
         rebuild_dont_know_cache(jenni)
 teach_verb.rule = ('$nick', '(.*?) (<\S+>) (.*)')
 teach_verb.priority = 'high'
-teach_verb.rate = 5
 
 def save_quote(jenni, trigger):
     """Saves a quote"""
@@ -273,7 +271,7 @@ def save_quote(jenni, trigger):
     jenni.say("Sorry, I don't remember what %s said about %s" % (quotee, word))
 save_quote.rule = ('$nick', 'remember (.*?) (.*)')
 save_quote.priority = 'high'
-save_quote.rate = 5
+
 
 def delete_factoid(jenni, trigger):
     """Delets a factoid"""
@@ -386,7 +384,7 @@ def inv_give(jenni, trigger):
     return
 inv_give.rule = ('((^\001ACTION (gives|hands) $nickname)|^$nickname. (take|have) (this|my|your|.*)) (.*)')
 inv_give.priority = 'medium'
-inv_give.rate = 20
+
 
 def inv_steal(jenni, trigger):
     inventory = bucket_runtime_data.inventory
@@ -400,7 +398,7 @@ def inv_steal(jenni, trigger):
        jenni.say('But I don\'t have any %s' % item)
 inv_steal.rule = ('^\001ACTION (steals|takes) $nickname\'s (.*)')
 inv_steal.priority = 'medium'
-inv_steal.rate = 5
+
 
 def inv_populate(jenni, trigger):
     bucket_runtime_data.inhibit_reply = trigger
@@ -409,7 +407,7 @@ def inv_populate(jenni, trigger):
     inventory.populate()
 inv_populate.rule = ('$nick', 'you need new things(.*|)')
 inv_populate.priority = 'medium'
-inv_populate.rate = 10
+
 
 def say_fact(jenni, trigger):
     """Response, if needed"""
