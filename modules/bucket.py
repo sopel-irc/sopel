@@ -134,7 +134,7 @@ class bucket_runtime_data():
     last_teach = {}
     last_lines = Ddict(dict) #For quotes.
     inventory = None
-    shut_up = False
+    shut_up = []
     special_verbs = ['<reply>', '<directreply>', '<directaction>', '<action>', '<alias>']
     factoid_search_re = re.compile('(.*).~=./(.*)/')
 
@@ -191,7 +191,7 @@ def add_fact(jenni, trigger, fact, tidbit, verb, re, protected, mood, chance, sa
 def teach_is_are(jenni, trigger):
     """Teaches a is b and a are b"""
     fact = trigger.group(1)
-    bucket_runtime_data.inhibit_reply = trigger.group(0)
+    bucket_runtime_data.inhibit_reply = trigger
     fact = remove_punctuation(fact)
     tidbit = trigger.group(3)
     verb = trigger.group(2)
@@ -209,7 +209,7 @@ teach_is_are.priority = 'high'
 
 def teach_verb(jenni, trigger):
     """Teaches verbs/ambiguous reply"""
-    bucket_runtime_data.inhibit_reply = trigger.group(0)
+    bucket_runtime_data.inhibit_reply = trigger
     fact = trigger.group(1)
     fact = remove_punctuation(fact)
     tidbit = trigger.group(3)
@@ -246,7 +246,7 @@ teach_verb.priority = 'high'
 
 def save_quote(jenni, trigger):
     """Saves a quote"""
-    bucket_runtime_data.inhibit_reply = trigger.group(0)
+    bucket_runtime_data.inhibit_reply = trigger
     quotee = trigger.group(1).lower()
     word = trigger.group(2).strip()
     fact = quotee+' quotes'
@@ -279,7 +279,7 @@ save_quote.priority = 'high'
 
 def delete_factoid(jenni, trigger):
     """Delets a factoid"""
-    bucket_runtime_data.inhibit_reply = trigger.group(0)
+    bucket_runtime_data.inhibit_reply = trigger
     was = bucket_runtime_data.what_was_that
     if not trigger.admin:
         was[trigger.sender] = dont_know(jenni)
@@ -316,7 +316,7 @@ delete_factoid.priority = 'high'
 def undo_teach(jenni, trigger):
     """Undo teaching factoid"""
     was = bucket_runtime_data.what_was_that
-    bucket_runtime_data.inhibit_reply = trigger.group(0)
+    bucket_runtime_data.inhibit_reply = trigger
     if not trigger.admin:
         was[trigger.sender] = dont_know(jenni)
         return
@@ -440,15 +440,15 @@ def say_fact(jenni, trigger):
         return #Ignore 0 length queries when addressed
     if search_term == 'don\'t know' and not addressed:
         return #Ignore "don't know" when not addressed
-    if not addressed and bucket_runtime_data.shut_up:
+    if not addressed and trigger.sender in bucket_runtime_data.shut_up:
         return #Don't say anything if not addressed and shutting up
     if search_term == 'shut up' and addressed:
         jenni.reply('Okay...')
-        bucket_runtime_data.shut_up = True
+        bucket_runtime_data.shut_up.append(trigger.sender)
         return
-    elif search_term == 'come back' or search_term == 'unshutup' and addressed:
+    elif search_term in ['come back', 'unshutup', 'get your sorry ass back here'] and addressed:
         jenni.reply('I\'m back!')
-        bucket_runtime_data.shut_up = False
+        bucket_runtime_data.shut_up.remove(trigger.sender)
         return
     literal = False
     inhibit = bucket_runtime_data.inhibit_reply
@@ -465,7 +465,7 @@ def say_fact(jenni, trigger):
         except KeyError:
             jenni.say('I have no idea')
         return
-    elif search_term.startswith('reload') or search_term.startswith('update') or inhibit == search_term or inhibit == trigger.group(0) or inhibit == trigger:
+    elif search_term.startswith('reload') or search_term.startswith('update') or inhibit == trigger:
         return #ignore commands such as reload or update, don't show 'Don't Know' responses for these 
 
     db = connect_db(jenni)
@@ -573,7 +573,7 @@ def pick_result(results, jenni):
 def get_inventory(jenni, trigger):
     ''' get a human readable list of the bucket inventory '''
 
-    bucket_runtime_data.inhibit_reply = trigger.group(0)
+    bucket_runtime_data.inhibit_reply = trigger
 
     inventory = bucket_runtime_data.inventory
 
