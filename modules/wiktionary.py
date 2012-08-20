@@ -72,7 +72,12 @@ def format(word, definitions, number=2):
     return result.strip(' .,')
 
 def w(jenni, input):
-    word = input.group(2)
+    try:
+        word = input.group(2)
+    except:
+        jenni.reply('You must tell me what to look up!')
+        return
+
     etymology, definitions = wiktionary(word)
     if not definitions:
         jenni.say("Couldn't get any definitions for %s." % word)
