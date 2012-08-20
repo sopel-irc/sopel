@@ -72,9 +72,8 @@ def format(word, definitions, number=2):
     return result.strip(' .,')
 
 def w(jenni, input):
-    try:
-        word = input.group(2)
-    except:
+    word = input.group(2)
+    if word is None:
         jenni.reply('You must tell me what to look up!')
         return
 
