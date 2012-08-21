@@ -66,7 +66,7 @@ def configure(config):
 class Inventory():
     ''' Everything inventory related '''
     avilable_items = []
-    current_items = deque([]) #FIFO. Max length 15
+    current_items = deque([]) # Max length 15
     def add_random(self):
         ''' Adds a random item to the inventory'''
         item = self.avilable_items[randint(0, len(self.avilable_items)-1)].strip()
@@ -106,6 +106,11 @@ class Inventory():
             return 'bananas!'
         item = self.current_items[randint(0, len(self.current_items)-1)]
         return item
+    def populate(self):
+        ''' Clears the inventory and fill it with random items '''
+        self.current_items = deque([])
+        while (len(self.current_items)<15):
+            self.add_random()
     def give_item(self):
         ''' returns a random item and removes it from the inventory '''
         item = self.random_item()
@@ -129,7 +134,7 @@ class bucket_runtime_data():
     last_teach = {}
     last_lines = Ddict(dict) #For quotes.
     inventory = None
-    shut_up = False
+    shut_up = []
     special_verbs = ['<reply>', '<directreply>', '<directaction>', '<action>', '<alias>']
     factoid_search_re = re.compile('(.*).~=./(.*)/')
 
@@ -186,7 +191,7 @@ def add_fact(jenni, trigger, fact, tidbit, verb, re, protected, mood, chance, sa
 def teach_is_are(jenni, trigger):
     """Teaches a is b and a are b"""
     fact = trigger.group(1)
-    bucket_runtime_data.inhibit_reply = trigger.group(0)
+    bucket_runtime_data.inhibit_reply = trigger
     fact = remove_punctuation(fact)
     tidbit = trigger.group(3)
     verb = trigger.group(2)
@@ -204,7 +209,7 @@ teach_is_are.priority = 'high'
 
 def teach_verb(jenni, trigger):
     """Teaches verbs/ambiguous reply"""
-    bucket_runtime_data.inhibit_reply = trigger.group(0)
+    bucket_runtime_data.inhibit_reply = trigger
     fact = trigger.group(1)
     fact = remove_punctuation(fact)
     tidbit = trigger.group(3)
@@ -241,9 +246,9 @@ teach_verb.priority = 'high'
 
 def save_quote(jenni, trigger):
     """Saves a quote"""
-    bucket_runtime_data.inhibit_reply = trigger.group(0)
+    bucket_runtime_data.inhibit_reply = trigger
     quotee = trigger.group(1).lower()
-    word = trigger.group(2)
+    word = trigger.group(2).strip()
     fact = quotee+' quotes'
     verb = '<reply>'
     re = False
@@ -256,7 +261,9 @@ def save_quote(jenni, trigger):
         jenni.say("Sorry, I don't remember what %s said about %s" % (quotee, word))
         return
     for line in memory:
-        if remove_punctuation(word.lower()) in remove_punctuation(line.lower()):
+        if remove_punctuation(word.lower()) in remove_punctuation(line[0].lower()):
+            quotee = line[1]
+            line = line[0]
             if line.startswith('\001ACTION'):
                 line = line[len('\001ACTION '):-1]
                 tidbit = '* %s %s' % (quotee, line)
@@ -272,7 +279,7 @@ save_quote.priority = 'high'
 
 def delete_factoid(jenni, trigger):
     """Delets a factoid"""
-    bucket_runtime_data.inhibit_reply = trigger.group(0)
+    bucket_runtime_data.inhibit_reply = trigger
     was = bucket_runtime_data.what_was_that
     if not trigger.admin:
         was[trigger.sender] = dont_know(jenni)
@@ -309,7 +316,7 @@ delete_factoid.priority = 'high'
 def undo_teach(jenni, trigger):
     """Undo teaching factoid"""
     was = bucket_runtime_data.what_was_that
-    bucket_runtime_data.inhibit_reply = trigger.group(0)
+    bucket_runtime_data.inhibit_reply = trigger
     if not trigger.admin:
         was[trigger.sender] = dont_know(jenni)
         return
@@ -346,9 +353,21 @@ def inv_give(jenni, trigger):
     bucket_runtime_data.inhibit_reply = trigger
     was = bucket_runtime_data.what_was_that
     inventory = bucket_runtime_data.inventory
-    item = trigger.group(4)
+    item = trigger.group(6)
     if item.endswith('\001'):
         item = item[:-1]
+    item = item.strip()
+
+    if trigger.group(5) == 'my':
+        item = '%s\'s %s' % (trigger.nick, item)
+    elif trigger.group(5) == 'your':
+        item = '%s\'s %s' % (jenni.nick, item)
+    elif trigger.group(5) != 'this' and trigger.group(5) is not None:
+        item = '%s %s' % (trigger.group(5), item)
+        item = re.sub(r'^me ', trigger.nick+' ', item, re.IGNORECASE)
+    if trigger.group(3) is not '':
+        item = re.sub(r'^his ', '%s\'s ' % trigger.nick, item, re.IGNORECASE)
+
     item = item.strip()
     dropped = inventory.add(item, trigger.nick, trigger.sender, jenni)
     db = connect_db(jenni)
@@ -374,7 +393,7 @@ def inv_give(jenni, trigger):
     say_factoid(jenni, fact, verb, tidbit, True)
     was = result
     return
-inv_give.rule = ('((^\001ACTION (gives|hands) $nickname)|^$nickname. take this) (.*)')
+inv_give.rule = ('((^\001ACTION (gives|hands) $nickname)|^$nickname. (take|have) (this|my|your|.*)) (.*)')
 inv_give.priority = 'medium'
 
 def inv_steal(jenni, trigger):
@@ -389,6 +408,14 @@ def inv_steal(jenni, trigger):
        jenni.say('But I don\'t have any %s' % item)
 inv_steal.rule = ('^\001ACTION (steals|takes) $nickname\'s (.*)')
 inv_steal.priority = 'medium'
+
+def inv_populate(jenni, trigger):
+    bucket_runtime_data.inhibit_reply = trigger
+    inventory = bucket_runtime_data.inventory
+    jenni.action('drops all his inventory and picks up random things instead')
+    inventory.populate()
+inv_populate.rule = ('$nick', 'you need new things(.*|)')
+inv_populate.priority = 'medium'
 
 def say_fact(jenni, trigger):
     """Response, if needed"""
@@ -413,15 +440,15 @@ def say_fact(jenni, trigger):
         return #Ignore 0 length queries when addressed
     if search_term == 'don\'t know' and not addressed:
         return #Ignore "don't know" when not addressed
-    if not addressed and bucket_runtime_data.shut_up:
+    if not addressed and trigger.sender in bucket_runtime_data.shut_up:
         return #Don't say anything if not addressed and shutting up
     if search_term == 'shut up' and addressed:
         jenni.reply('Okay...')
-        bucket_runtime_data.shut_up = True
+        bucket_runtime_data.shut_up.append(trigger.sender)
         return
-    elif search_term == 'come back' or search_term == 'unshutup' and addressed:
+    elif search_term in ['come back', 'unshutup', 'get your sorry ass back here'] and addressed:
         jenni.reply('I\'m back!')
-        bucket_runtime_data.shut_up = False
+        bucket_runtime_data.shut_up.remove(trigger.sender)
         return
     literal = False
     inhibit = bucket_runtime_data.inhibit_reply
@@ -438,7 +465,7 @@ def say_fact(jenni, trigger):
         except KeyError:
             jenni.say('I have no idea')
         return
-    elif search_term.startswith('reload') or search_term.startswith('update') or inhibit == search_term or inhibit == trigger.group(0) or inhibit == trigger:
+    elif search_term.startswith('reload') or search_term.startswith('update') or inhibit == trigger:
         return #ignore commands such as reload or update, don't show 'Don't Know' responses for these 
 
     db = connect_db(jenni)
@@ -546,7 +573,7 @@ def pick_result(results, jenni):
 def get_inventory(jenni, trigger):
     ''' get a human readable list of the bucket inventory '''
 
-    bucket_runtime_data.inhibit_reply = trigger.group(0)
+    bucket_runtime_data.inhibit_reply = trigger
 
     inventory = bucket_runtime_data.inventory
 
@@ -575,13 +602,19 @@ def tidbit_vars(tidbit, trigger, random_item=True):
     #Special in-tidbit vars:
     inventory = bucket_runtime_data.inventory
     tidbit = tidbit.replace('$who', trigger.nick)
-    if '$giveitem' in tidbit:
-        tidbit = tidbit.replace('$giveitem', str(inventory.give_item()))
-    if '$newitem' in tidbit:
-        tidbit = tidbit.replace('$newitem', str(inventory.add_random()))
-    if random_item:
-        tidbit = tidbit.replace('$item', str(inventory.random_item()))
-    return tidbit
+    finaltidbit = ''
+    for word in tidbit.split(' '):
+        if '$giveitem' in word.lower():
+            #we have to use replace here in case of punctuation
+            word = word.replace('$giveitem', inventory.give_item())
+        elif '$newitem' in word.lower():
+            word = word.replace('$newitem', inventory.add_random())
+        elif '$item' in word.lower() and random_item:
+            word = word.replace('$item', inventory.random_item())
+        if (len(finaltidbit)>0):
+            word = ' ' + word
+        finaltidbit = finaltidbit + word
+    return finaltidbit
 
 def dont_know(jenni):
     ''' Get a Don't Know reply from the cache '''
@@ -617,7 +650,7 @@ def remember(jenni, trigger):
         return remember(jenni, trigger)
     if len(fifo) == 10:
         fifo.pop()
-    fifo.appendleft(trigger.group(0))
+    fifo.appendleft([trigger.group(0), trigger.nick])
     memory[trigger.sender][trigger.nick.lower()] = fifo
 remember.rule = ('(.*)')
 remember.priority = 'medium'
