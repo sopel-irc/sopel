@@ -25,6 +25,7 @@ http://dft.ba/-williesource
 """
 
 import os, sys, imp
+import getpass
 from textwrap import dedent as trim
 from bot import enumerate_modules
 
@@ -153,7 +154,7 @@ class Config(object):
     
         
     
-    def interactive_add(self, attrib, prompt, default=None):
+    def interactive_add(self, attrib, prompt, default=None, ispass=False):
         """
         Ask user in terminal for the value to assign to ``attrib``. If ``default``
         is passed, it will be shown as the default value in the prompt. If
@@ -162,13 +163,22 @@ class Config(object):
         """
         if hasattr(self, attrib):
             atr = getattr(self, attrib)
-            setattr(self, attrib, raw_input(prompt+' [%s]: ' % atr) or atr)
+            if ispass == True:
+                setattr(self, attrib, getpass.getpass(prompt+' [%s]: ' % atr) or atr)
+            else:
+                setattr(self, attrib, raw_input(prompt+' [%s]: ' % atr) or atr)
         elif default:
-            setattr(self, attrib, raw_input(prompt+' [%s]: ' % default) or default)
+            if ispass == True:
+                setattr(self, attrib, getpass.getpass(prompt+' [%s]: ' % default) or default)
+            else:
+                setattr(self, attrib, raw_input(prompt+' [%s]: ' % default) or default)
         else:
             inp = ''
             while not inp:
-                inp = raw_input(prompt+': ')
+                if ispass == True:
+                    inp = getpass.getpass(prompt+': ')
+                else:
+                    inp = raw_input(prompt+': ')
             setattr(self, attrib, inp)
 
     def add_list(self, attrib, message, prompt):
@@ -222,13 +232,13 @@ class Config(object):
         c="List users you'd like "+self.nick+" to ignore (e.g. other bots), one at a time. Hit enter when done."
         self.add_list('other_bots', c, 'Nick:')
         
-        self.interactive_add('password', "Enter the bot's NickServ password", 'None')
-        self.interactive_add('serverpass', "Enter the bot's server password", 'None')
+        self.interactive_add('password', "Enter the bot's NickServ password", 'None', ispass=True)
+        self.interactive_add('serverpass', "Enter the bot's server password", 'None', ispass=True)
         
         oper = self.option("Will this bot have IRC Operator privilages")
         if oper:
             opername = raw_input("Operator name:")
-            operpass = raw_input("Operator password:")
+            operpass = getpass.getpass("Operator password:")
             self.operline = "Oper = ('"+opername+"', '"+operpass+"')"
         else: self.operline = "# Oper = ('opername', 'operpass')"
         
