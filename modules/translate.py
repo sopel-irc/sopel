@@ -121,9 +121,16 @@ tr2.priority = 'low'
 def mangle(jenni, trigger):
     global mangle_lines
     if trigger.group(2) is None:
-        phrase = (mangle_lines[trigger.sender.lower()], '')
+        try:
+            phrase = (mangle_lines[trigger.sender.lower()], '')
+        except:
+            jenni.reply("What do you want me to mangle?")
+            return
     else:
-        phrase = (trigger.group(2).encode('utf-8'), '')
+        phrase = (trigger.group(2).encode('utf-8').strip(), '')
+    if phrase[0] == '':
+        jenni.reply("What do you want me to mangle?")
+        return
     for lang in ['fr', 'de', 'es', 'it', 'no', 'he', 'la', 'ja' ]:
         backup = phrase
         phrase = translate(phrase[0], 'en', lang)
@@ -142,7 +149,7 @@ mangle.commands = ['mangle']
 
 def collect_mangle_lines(jenni, trigger):
     global mangle_lines
-    mangle_lines[trigger.sender.lower()] = trigger.group(0).encode('utf-8')
+    mangle_lines[trigger.sender.lower()] = "%s said '%s'" % (trigger.nick, trigger.group(0).encode('utf-8').strip())
 collect_mangle_lines.rule = ('(.*)')
 collect_mangle_lines.priority = 'low'
 
