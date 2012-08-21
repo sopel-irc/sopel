@@ -125,7 +125,6 @@ def nickUpdate(jenni, input):
     new = input.group(1)
     
     for channel in jenni.halfplus:
-        print channel
         if old in jenni.halfplus[channel]:
             jenni.delHalfOp(channel, old)
             jenni.addHalfOp(channel, new)

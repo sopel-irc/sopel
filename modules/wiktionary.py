@@ -73,6 +73,10 @@ def format(word, definitions, number=2):
 
 def w(jenni, input):
     word = input.group(2)
+    if word is None:
+        jenni.reply('You must tell me what to look up!')
+        return
+
     etymology, definitions = wiktionary(word)
     if not definitions:
         jenni.say("Couldn't get any definitions for %s." % word)
