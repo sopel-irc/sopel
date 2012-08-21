@@ -108,7 +108,6 @@ def getReminders(jenni, channel, key, tellee):
     return lines
 
 def message(jenni, input):
-    if not input.sender.startswith('#'): return
 
     tellee = input.nick
     channel = input.sender
