@@ -422,7 +422,7 @@ def update_icao(jenni, input):
     if not jenni.settings.hascolumn('icao'):#TODO put this in configure
         jenni.settings.addcolumns({"icao"})
     else:
-        icao_code = code(jenni, input.group(1))
+        icao_code = code(jenni, input.group(2))
         if not icao_code:
             jenni.reply("I don't know where that is. Try another place or ICAO code.")
         else:
