@@ -211,7 +211,7 @@ def f_time(self, origin, match, args):
                 tz = utz
                 goodtz = True
         elif origin.sender in self.settings:
-            utz = self.settings.get('tz', origin.sender)
+            utz = self.settings.get(origin.sender, 'tz')
             if utz != '':
                 tz = utz
                 goodtz = True
@@ -227,7 +227,7 @@ def f_time(self, origin, match, args):
     #Not in pytz, either, so maybe it's another user.
     if not goodtz:
         if self.settings.hascolumn('tz') and tz in self.settings:
-            utz = self.settings.get('tz', tz)
+            utz = self.settings.get(tz, 'tz')
             if utz != '': tz = utz
     #If we still haven't found it at this point, well, fuck it.
 
