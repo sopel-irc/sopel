@@ -1,15 +1,14 @@
 #!/usr/bin/env python
 """
-etymology.py - Jenni Etymology Module
+etymology.py - Willie Etymology Module
 Copyright 2007-9, Sean B. Palmer, inamidst.com
 Licensed under the Eiffel Forum License 2.
 
-http://inamidst.com/phenny/
+http://willie.dftba.net
 """
 
 import re
 import web
-from tools import deprecated
 
 etyuri = 'http://etymonline.com/?term=%s'
 etysearch = 'http://etymonline.com/?search=%s'
@@ -73,24 +72,23 @@ def etymology(word):
     sentence = '"' + sentence.replace('"', "'") + '"'
     return sentence + ' - ' + (etyuri % word)
 
-@deprecated
-def f_etymology(self, origin, match, args):
-    word = match.group(2)
+def f_etymology(willie, trigger):
+    word = trigger.group(2)
 
     try: result = etymology(word.encode('utf-8'))
     except IOError:
         msg = "Can't connect to etymonline.com (%s)" % (etyuri % word)
-        self.msg(origin.sender, msg)
+        willie.msg(trigger.sender, msg)
         return
     except AttributeError:
         result = None
 
     if result is not None:
-        self.msg(origin.sender, result)
+        willie.msg(trigger.sender, result)
     else:
         uri = etysearch % word
         msg = 'Can\'t find the etymology for "%s". Try %s' % (word, uri)
-        self.msg(origin.sender, msg)
+        willie.msg(trigger.sender, msg)
 # @@ Cf. http://swhack.com/logs/2006-01-04#T01-50-22
 f_etymology.rule = (['ety'], r"([A-Za-z0-9' .-]+)$")
 f_etymology.thread = True
