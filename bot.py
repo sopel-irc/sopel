@@ -1,10 +1,14 @@
 #!/usr/bin/env python
+# coding=utf-8
 """
-bot.py - Jenni IRC Bot
+bot.py - Willie IRC Bot
 Copyright 2008, Sean B. Palmer, inamidst.com
+Copyright 2012, Edward Powell, http://embolalia.net
+Copyright © 2012, Elad Alfassa <elad@fedoraproject.org>
+
 Licensed under the Eiffel Forum License 2.
 
-http://inamidst.com/phenny/
+http://willie.dftba.net/
 """
 
 import time, sys, os, re, threading, imp
@@ -345,6 +349,37 @@ class Jenni(irc.Bot):
                             try: self.stats[(func.name, source)] += 1
                             except KeyError:
                                 self.stats[(func.name, source)] = 1
+    def debug(self, tag, text, level):
+        """
+        Sends an error to jenni's configured ``debug_target``. 
+        """
+        if not self.config.verbose:
+            self.config.verbose = 'warning'
+        elif not (self.config.debug_target == 'stdio' or self.config.debug_target.startswith('#')):
+            self.config.debug_target = 'stdio'
+        debug_msg = "[%s] %s" % (tag, text)
+        if level == 'verbose':
+            if self.config.verbose == 'verbose':
+                if (self.config.debug_target == 'stdio'):
+                    print debug_msg
+                else:
+                    self.msg(self.config.debug_target, debug_msg)
+                return True
+        elif level == 'warning':
+            if self.config.verbose == 'verbose' or self.config.verbose == 'warning':
+                if (self.config.debug_target == 'stdio'):
+                    print debug_msg
+                else:
+                    self.msg(self.config.debug_target, debug_msg)
+                return True
+        elif level == 'always':
+            if (self.config.debug_target == 'stdio'):
+                print debug_msg
+            else:
+                self.msg(self.config.debug_target, debug_msg)
+            return True
+        
+        return False
 
 if __name__ == '__main__':
     print __doc__

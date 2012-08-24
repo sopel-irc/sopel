@@ -1,12 +1,17 @@
 #!/usr/bin/env python
+# coding=utf-8
 """
 irc.py - A Utility IRC Bot
 Copyright 2008, Sean B. Palmer, inamidst.com
+Copyright 2012, Edward Powell, http://embolalia.net
+Copyright © 2012, Elad Alfassa <elad@fedoraproject.org>
+
 Licensed under the Eiffel Forum License 2.
 
 More info:
  * Jenni: https://github.com/myano/jenni/
  * Phenny: http://inamidst.com/phenny/
+ * Willie: http://willie.dftba.net/
 """
 
 import sys, re, time, traceback
@@ -232,37 +237,6 @@ class Bot(asynchat.async_chat):
         self.stack = self.stack[-10:]
 
         self.sending.release()
-    def debug(self, tag, text, level):
-        """
-        Sends an error to jenni's configured ``debug_target``. 
-        """
-        if not self.config.verbose:
-            self.config.verbose = 'warning'
-        elif not (self.config.debug_target == 'stdio' or self.config.debug_target.startswith('#')):
-            self.config.debug_target = 'stdio'
-        debug_msg = "[%s] %s" % (tag, text)
-        if level == 'verbose':
-            if self.config.verbose == 'verbose':
-                if (self.config.debug_target == 'stdio'):
-                    print debug_msg
-                else:
-                    self.msg(self.config.debug_target, debug_msg)
-                return True
-        elif level == 'warning':
-            if self.config.verbose == 'verbose' or self.config.verbose == 'warning':
-                if (self.config.debug_target == 'stdio'):
-                    print debug_msg
-                else:
-                    self.msg(self.config.debug_target, debug_msg)
-                return True
-        elif level == 'always':
-            if (self.config.debug_target == 'stdio'):
-                print debug_msg
-            else:
-                self.msg(self.config.debug_target, debug_msg)
-            return True
-        
-        return False
             
     def notice(self, dest, text):
         self.write(('NOTICE', dest), text)
@@ -274,12 +248,13 @@ class Bot(asynchat.async_chat):
             try:
                 print trace
             except:
-                logfile = open('logs/exceptions.log', 'a') #todo: make not hardcoded
-                logfile.write('from %s at %s:\n' % (origin.sender, str(datetime.now())))
-                logfile.write('Message was: <%s> %s\n' % (trigger.nick, trigger.group(0)))
-                logfile.write(trace)
-                logfile.write('----------------------------------------\n\n')
-                logfile.close()
+                pass
+            logfile = open('logs/exceptions.log', 'a') #todo: make not hardcoded
+            logfile.write('from %s at %s:\n' % (origin.sender, str(datetime.now())))
+            logfile.write('Message was: <%s> %s\n' % (trigger.nick, trigger.group(0)))
+            logfile.write(trace)
+            logfile.write('----------------------------------------\n\n')
+            logfile.close()
             lines = list(reversed(trace.splitlines()))
 
             report = [lines[0].strip()]
@@ -293,7 +268,7 @@ class Bot(asynchat.async_chat):
             self.msg(origin.sender, report[0] + ' (' + report[1] + ')')
         except Exception as e:
             self.msg(origin.sender, "Got an error.")
-            self.msg("#Embo", "(From: "+origin.sender+") "+str(e))
+            self.debug("[core: error reporting]", "(From: "+origin.sender+") "+str(e), 'always')
 
     #Helper functions to maintain the oper list.
     def addOp(self, channel, name):
