@@ -40,7 +40,7 @@ def dice(jenni, input):
                     segment = segment[1:]
                 if segment[-1:] == ')':
                     segment = segment[:-1]
-                value = rollDice(segment) #then roll the dice.
+                value = rollDice(segment.lower()) #then roll the dice.
                 no_dice = 0 # And let the bot know there's dice in the formula
             elif re.search("([0-9]|\+|\-|\*|\/|\(|\)| \+| \-| \*| \/| \(| \))", segment): #are any of the supported math characters in this piece?
                 value = segment #then just make that the value.
