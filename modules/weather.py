@@ -1,15 +1,14 @@
 #!/usr/bin/env python
 """
-weather.py - Jenni Weather Module
+weather.py - Willie Weather Module
 Copyright 2008, Sean B. Palmer, inamidst.com
 Licensed under the Eiffel Forum License 2.
 
-http://inamidst.com/phenny/
+http://willie.dftba.net
 """
 
 import re, urllib
 import web
-from tools import deprecated
 
 r_from = re.compile(r'(?i)([+-]\d+):00 from')
 
@@ -68,27 +67,24 @@ def code(jenni, search):
                 sumOfSquares = (diff, icao_code)
         return sumOfSquares[1]
 
-@deprecated
-def f_weather(self, origin, match, args):
+def f_weather(willie, trigger):
     """.weather <ICAO> - Show the weather at airport with the code <ICAO>."""
-    if origin.sender == '#talis':
-        if args[0].startswith('.weather '): return
 
-    icao_code = match.group(2)
+    icao_code = trigger.group(2)
     if not icao_code:
-        if self.settings.hascolumn('icao') and origin.nick in self.settings:
-            icao_code = self.settings.get(origin.nick, 'icao')
+        if willie.settings.hascolumn('icao') and trigger.nick in willie.settings:
+            icao_code = willie.settings.get(trigger.nick, 'icao')
     if not icao_code or icao_code == '':
-            return self.msg(origin.sender, 'I don\'t know where you live. ' +
+            return willie.msg(trigger.sender, 'I don\'t know where you live. ' +
                             'Tell me, or try .weather London, for example?')
 
-    icao_code = code(self, icao_code)
+    icao_code = code(willie, icao_code)
 
     if not icao_code:
-        if self.settings.hascolumn('icao') and origin.nick in self.settings:
-            icao_code = code(self, self.settings.get(origin.nick, 'icao'))
+        if willie.settings.hascolumn('icao') and trigger.nick in willie.settings:
+            icao_code = code(willie, willie.settings.get(trigger.nick, 'icao'))
         if not icao_code or icao_code == '':
-            self.msg(origin.sender, 'No ICAO code found, sorry')
+            willie.msg(trigger.sender, 'No ICAO code found, sorry')
             return
 
     uri = 'http://weather.noaa.gov/pub/data/observations/metar/stations/%s.TXT'
@@ -96,11 +92,11 @@ def f_weather(self, origin, match, args):
     except AttributeError:
         raise GrumbleError('OH CRAP NOAA HAS GONE DOWN THE WEB IS BROKEN')
     if 'Not Found' in bytes:
-        self.msg(origin.sender, icao_code+': no such ICAO code, or no NOAA data')
+        willie.msg(trigger.sender, icao_code+': no such ICAO code, or no NOAA data')
         return
 
     metar = bytes.splitlines().pop()
-    self.msg("#embo","[DEVMSG]weather.py:96; "+str(metar))
+    willie.msg("#embo","[DEVMSG]weather.py:96; "+str(metar))
     metar = metar.split(' ')
 
     if len(metar[0]) == 4:
@@ -114,7 +110,7 @@ def f_weather(self, origin, match, args):
     if metar[0] == 'AUTO':
         metar = metar[1:]
     if metar[0] == 'VCU':
-        self.msg(origin.sender, icao_code + ': no data provided')
+        willie.msg(trigger.sender, icao_code + ': no data provided')
         return
 
     if metar[0].endswith('KT'):
@@ -127,8 +123,7 @@ def f_weather(self, origin, match, args):
         metar = metar[1:]
     else: vari = None
 
-    if ((len(metar[0]) == 4) or
-         metar[0].endswith('SM')):
+    if len(metar[0]) == 4 or metar[0].endswith('SM'):
         visibility = metar[0]
         metar = metar[1:]
     else: visibility = None
@@ -157,7 +152,7 @@ def f_weather(self, origin, match, args):
         metar = metar[1:]
 
     if not metar:
-        self.msg(origin.sender, icao_code + ': no data provided')
+        willie.msg(trigger.sender, icao_code + ': no data provided')
         return
 
     cover = []
@@ -168,7 +163,7 @@ def f_weather(self, origin, match, args):
         cover.append(metar[0])
         metar = metar[1:]
         if not metar:
-            self.msg(origin.sender, icao_code + ': no data provided')
+            willie.msg(trigger.sender, icao_code + ': no data provided')
             return
 
     if metar[0] == 'CAVOK':
@@ -375,7 +370,7 @@ def f_weather(self, origin, match, args):
             'SH': 'Showers'
         }
 
-        self.msg("#embo","[DEVMSG]weather.py:371; "+str(conds))
+        willie.msg("#embo","[DEVMSG]weather.py:371; "+str(conds))
         for c in conds:
             if c.endswith('//'):
                 if cond: cond += ', '
@@ -415,19 +410,19 @@ def f_weather(self, origin, match, args):
         format = u'%s, %s, %s, %s, %s - %s, %s'
         args = (cover, temp, pressure, cond, wind, str(icao_code), time)
 
-    self.msg(origin.sender, format.encode('utf-8') % args)
+    willie.msg(trigger.sender, format.encode('utf-8') % args)
 f_weather.rule = (['weather'], r'(.*)')
 
-def update_icao(jenni, input):
-    if not jenni.settings.hascolumn('icao'):#TODO put this in configure
-        jenni.settings.addcolumns({"icao"})
+def update_icao(willie, trigger):
+    if not willie.settings.hascolumn('icao'):#TODO put this in configure
+        willie.settings.addcolumns({"icao"})
     else:
-        icao_code = code(jenni, input.group(2))
+        icao_code = code(willie, trigger.group(2))
         if not icao_code:
-            jenni.reply("I don't know where that is. Try another place or ICAO code.")
+            willie.reply("I don't know where that is. Try another place or ICAO code.")
         else:
-            jenni.settings[input.nick] = {'icao': icao_code}
-            jenni.reply('I now have you living near %s airport.' % icao_code)
+            willie.settings[trigger.nick] = {'icao': icao_code}
+            willie.reply('I now have you living near %s airport.' % icao_code)
 update_icao.commands = ['setlocation', 'seticao']
 #rule = ('$nick', 'I live near (.*)')
 
