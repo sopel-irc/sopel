@@ -36,10 +36,6 @@ def dice(jenni, input):
             #the value of this segment is 0
             value = 0
             if re.search("[0-9]*(d|D)[0-9]+", segment): #if there's a dice (regex FTW!)
-                if segment[0] == '(':
-                    segment = segment[1:]
-                if segment[-1:] == ')':
-                    segment = segment[:-1]
                 value = rollDice(segment.lower()) #then roll the dice.
                 no_dice = 0 # And let the bot know there's dice in the formula
             elif re.search("([0-9]|\+|\-|\*|\/|\(|\)| \+| \-| \*| \/| \(| \))", segment): #are any of the supported math characters in this piece?
