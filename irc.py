@@ -17,6 +17,7 @@ More info:
 import sys, re, time, traceback
 import socket, asyncore, asynchat
 import os, codecs
+import traceback
 from datetime import datetime
 
 class Origin(object):
@@ -243,7 +244,6 @@ class Bot(asynchat.async_chat):
 
     def error(self, origin, trigger):
         try:
-            import traceback
             trace = traceback.format_exc()
             try:
                 print trace
@@ -269,6 +269,20 @@ class Bot(asynchat.async_chat):
         except Exception as e:
             self.msg(origin.sender, "Got an error.")
             self.debug("[core: error reporting]", "(From: "+origin.sender+") "+str(e), 'always')
+
+    def handle_error(self):
+        ''' Handle any uncaptured error in the core. Overrides asyncore's handle_error '''
+        trace = traceback.format_exc()
+        try:
+            print trace
+        except:
+            pass
+        self.debug("[core]", 'Fatal error in core, please review exception log', 'always')
+        logfile = open('logs/exceptions.log', 'a') #todo: make not hardcoded
+        logfile.write('Fatal error in core, handle_error() was called')
+        logfile.write(trace)
+        logfile.write('----------------------------------------\n\n')
+        logfile.close()
 
     #Helper functions to maintain the oper list.
     def addOp(self, channel, name):
