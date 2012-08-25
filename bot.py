@@ -263,6 +263,14 @@ class Jenni(irc.Bot):
             s.owner = origin.nick + '@' + origin.host == self.config.owner
             if s.owner == False: s.owner = origin.nick == self.config.owner
             s.host = origin.host
+            if s.sender is not s.nick: #no ops in PM
+                s.ops = self.ops[s.sender]
+                s.halfplus = self.halfplus[s.sender]
+                s.isop = (s.nick.lower() in s.ops or s.nick.lower() in s.halfplus)
+            else:
+                s.isop = False
+                s.ops = None
+                s.halfplus = None
             return s
 
     def call(self, func, origin, jenni, trigger):
