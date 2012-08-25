@@ -264,13 +264,22 @@ class Jenni(irc.Bot):
             if s.owner == False: s.owner = origin.nick == self.config.owner
             s.host = origin.host
             if s.sender is not s.nick: #no ops in PM
-                s.ops = self.ops[s.sender]
-                s.halfplus = self.halfplus[s.sender]
+                try:
+                    s.ops = self.ops[s.sender]
+                except:
+                    s.ops = []
+                """List of channel operators in the channel the message was recived in"""
+                try:
+                    s.halfplus = self.halfplus[s.sender]
+                except:
+                    s.halfplus = []
+                """List of channel half-operators in the channel the message was recived in"""
                 s.isop = (s.nick.lower() in s.ops or s.nick.lower() in s.halfplus)
+                """True if the user is half-op or an op"""
             else:
                 s.isop = False
-                s.ops = None
-                s.halfplus = None
+                s.ops = []
+                s.halfplus = []
             return s
 
     def call(self, func, origin, jenni, trigger):
