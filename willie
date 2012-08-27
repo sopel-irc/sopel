@@ -12,7 +12,15 @@ from textwrap import dedent as trim
 from config import Config
 import config
 
+#Check if data folder exists under new or previous names. If not, use ~/.willie
+#(which will be created later on, if it doesn't yet exist).
 dotdir = os.path.expanduser('~/.willie')
+if not os.path.isdir(dotdir):
+    if os.path.isdir(os.path.expanduser('~/.jenni')):
+        dotdir = os.path.expanduser('~/.jenni')
+    elif os.path.isdir(os.path.expanduser('~/.phenny')):
+        dotdir = os.path.expanduser('~/.phenny')
+
 configpath = os.path.expanduser(dotdir + '/default.py')
 
 def check_python_version():
