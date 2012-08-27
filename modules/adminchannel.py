@@ -326,7 +326,7 @@ def topic(jenni, trigger):
     This gives ops the ability to change the topic.
     """
     purple, green, bold = '\x0306', '\x0310', '\x02'
-    if trigger.isop:
+    if not trigger.isop:
         return
     text = trigger.group(2)
     if text == '':
