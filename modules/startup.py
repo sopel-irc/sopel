@@ -106,17 +106,34 @@ handleNames.event = '353'
 handleNames.thread = False
 
 def runningUpdate(jenni, input):
-    line = re.search('(#\S+) ([+-])([hoaq]) (\S+)', jenni.raw)
-    if line: channel, pm, mode, nick = line.groups()
-    else: return
-    
-    add = pm == '+'
-    if 'h' in mode:
-        if add: jenni.addHalfOp(channel, nick)
-        else: jenni.delHalfOp(channel, nick)
-    else:
-        if add: jenni.addOp(channel, nick)
-        else: jenni.delOp(channel, nick)
+    line = re.findall('([\+\-][ahoqv].)', jenni.raw)
+    channel = re.search('(#\S+)', jenni.raw)
+    if channel is None:
+        return #someone changed the bot's usermode, we don't care about that
+    channel = channel.group(1)
+    nicks = jenni.raw.split(' ')[4:]
+    modes = []
+    for mode in line:
+        for char in mode[1:]:
+            if mode[0] == '+':
+                modes.append((char, True))
+            else:
+                modes.append((char, False))
+     
+    print modes
+    for index in range(len(nicks)):
+        mode=modes[index]
+        nick = nicks[index]
+        if mode[0]=='h':
+            if mode[1] is True:
+                jenni.addHalfOp(channel, nick)
+            else:
+                jenni.delHalfOp(channel, nick)
+        elif mode[0] == 'o':
+            if mode[1] is True:
+                jenni.addOp(channel, nick)
+            else:
+                jenni.delOp(channel, nick)
 runningUpdate.rule = r'(.*)'
 runningUpdate.event = 'MODE'
 
