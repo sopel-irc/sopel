@@ -11,18 +11,9 @@ More info:
  * Phenny: http://inamidst.com/phenny/
  * Willie: http://willie.dftba.net/
 
-Beefed up by Alek Rollyson. added functions for op, deop, voice, devoice
-Uses NickServ ACC to verify that a nick is identified with services, as well
-as m5's admin list as a double verification system. Should eliminate the possibility of nick spoofing. May only work with freenode, hasn't been tested
-on other networks.
-Also includes ability to have locked topic
 """
 
 import re
-
-auth_list = []
-admins = []
-
 
 def op(jenni, trigger):
     """
@@ -91,80 +82,6 @@ def devoice(jenni, trigger):
         jenni.write(['MODE', channel, "-v", nick])
 devoice.rule = (['devoice'], r'(\S+)?')
 devoice.priority = 'low'
-
-def auth_request(jenni, trigger):
-    """
-    This will scan every message in a room for nicks in jenni's
-    admin list.  If one is found, it will send an ACC request
-    to NickServ.  May only work with Freenode.
-    """
-    admins = jenni.config.admins
-    pattern = '(' + '|'.join([re.escape(x) for x in admins]) + ')'
-    matches = re.findall(pattern, trigger)
-    for x in matches:
-        jenni.msg('NickServ', 'ACC ' + x)
-auth_request.rule = r'.*'
-auth_request.priority = 'high'
-
-def auth_verify(jenni, trigger):
-    """
-    This will wait for notices from NickServ and scan for ACC
-    responses.  This verifies with NickServ that nicks in the room
-    are identified with NickServ so that they cannot be spoofed.
-    May only work with freenode.
-    """
-    global auth_list
-    nick = trigger.group(1)
-    level = trigger.group(3)
-    if trigger.nick != 'NickServ':
-        return
-    elif level == '3':
-        if nick in auth_list:
-            return
-        else:
-            auth_list.append(nick)
-    else:
-        if nick not in auth_list:
-            return
-        else:
-            auth_list.remove(nick)
-auth_verify.event = 'NOTICE'
-auth_verify.rule = r'(\S+) (ACC) ([0-3])'
-auth_verify.priority = 'high'
-
-def auth_check(jenni, nick, target=None):
-    """
-    Checks if nick is on the auth list and returns true if so
-    """
-    global auth_list
-    if target == jenni.config.nick:
-        return 0
-    elif nick in auth_list:
-        return 1
-
-def deauth(nick):
-    """
-    Remove pepole from the deauth list.
-    """
-    global auth_list
-    if nick in auth_list:
-        a = auth_list.index(nick)
-        del(auth_list[a])
-
-def deauth_quit(jenni, trigger):
-    deauth(trigger.nick)
-deauth_quit.event = 'QUIT'
-deauth_quit.rule = '.*'
-
-def deauth_part(jenni, trigger):
-    deauth(trigger.nick)
-deauth_part.event = 'PART'
-deauth_part.rule = '.*'
-
-def deauth_nick(jenni, trigger):
-    deauth(trigger.nick)
-deauth_nick.event = 'NICK'
-deauth_nick.rule = '.*'
 
 def kick(jenni, trigger):
     if not trigger.isop:
