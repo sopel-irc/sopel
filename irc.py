@@ -8,10 +8,7 @@ Copyright © 2012, Elad Alfassa <elad@fedoraproject.org>
 
 Licensed under the Eiffel Forum License 2.
 
-More info:
- * Jenni: https://github.com/myano/jenni/
- * Phenny: http://inamidst.com/phenny/
- * Willie: http://willie.dftba.net/
+Willie: http://willie.dftba.net/
 """
 
 import sys, re, time, traceback
@@ -39,7 +36,7 @@ def create_logdir():
     except Exception, e:
         print >> sys.stderr, 'There was a problem creating the logs directory.'
         print >> sys.stderr, e.__class__, str(e)
-        print >> sys.stderr, 'Please fix this and then run jenni again.'
+        print >> sys.stderr, 'Please fix this and then run Willie again.'
         sys.exit(1)
 
 def check_logdir():
@@ -69,17 +66,17 @@ class Bot(asynchat.async_chat):
         self.buffer = ''
 
         self.nick = nick
-        """jenni's current nick. Changing this while jenni is running is untested."""
+        """Willie's current nick. Changing this while Willie is running is untested."""
         self.user = nick
         self.name = name
-        """jenni's "real name", as used for whois."""
+        """Willie's "real name", as used for whois."""
         self.password = password
-        """jenni's NickServ password"""
+        """Willie's NickServ password"""
 
         self.verbose = True
-        """True if jenni is running in verbose mode."""
+        """True if Willie is running in verbose mode."""
         self.channels = channels or []
-        """A list of jenni's current (?) channels."""
+        """The list of channels Willie joins on startup."""
         
         self.stack = []
         self.logchan_pm = logchan_pm

@@ -43,7 +43,7 @@ def run(config):
 
     while True:
         try: 
-            p = bot.Jenni(config)
+            p = bot.Willie(config)
             p.run(config.host, config.port)
         except KeyboardInterrupt:
             sys.exit()

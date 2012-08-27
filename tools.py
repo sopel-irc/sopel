@@ -1,18 +1,18 @@
 #!/usr/bin/env python
 # coding=utf-8
 """
-tools.py - Jenni misc tools
+tools.py - Willie misc tools
 Copyright 2008, Sean B. Palmer, inamidst.com
 Copyright © 2012, Elad Alfassa <elad@fedoraproject.org>
 Licensed under the Eiffel Forum License 2.
 
-https://github.com/embolalia/jenni
+https://willie.dftba.net
 """
 import sys
 
 def deprecated(old):
-    def new(jenni, input, old=old):
-        self = jenni
+    def new(willie, input, old=old):
+        self = willie
         origin = type('Origin', (object,), {
             'sender': input.sender,
             'nick': input.nick

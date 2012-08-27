@@ -2,13 +2,13 @@
 """
 *Availability: 3+ for all functions; attributes may vary.*
 
-The config class is, essentially, a representation of the active jenni config
+The config class is, essentially, a representation of the active Willie config
 file. As such, the details of its members depend entirely upon what is written
 there.
 
 Running the ``config.py`` file directly will give the user an interactive series
 of dialogs to create the configuration file. This will guide the user through
-creating settings for the jenni core, the settings database, and any modules
+creating settings for the Willie core, the settings database, and any modules
 which have a configuration function.
 
 The configuration function, if used, must be declared with the signature
@@ -17,7 +17,7 @@ file. The ``configure`` function should not write to the file, as this is done
 by the utility.
 """
 """
-Config - A config class and writing/updating utility for jenni
+Config - A config class and writing/updating utility for Willie
 Copyright 2012, Edward Powell, embolalia.net
 Licensed under the Eiffel Forum License 2.
 
@@ -49,7 +49,7 @@ class Config(object):
         command.) Note that this is used in a regular expression, so regex
         syntax and special characters apply.
         """
-        self.name = 'Willie Embosbot, https://github.com/embolalia/jenni'
+        self.name = 'Willie Embosbot, http://willie.dftba.net'
         """The "real name" used for the bot's whois."""
         self.port = 6667
         """The port to connect on"""
@@ -215,9 +215,9 @@ class Config(object):
         return (ans is 'y' or ans is 'Y')
     
     def _core(self):
-        self.interactive_add('nick', 'Enter the nickname for your bot', 'jenni')
+        self.interactive_add('nick', 'Enter the nickname for your bot', 'Willie')
         self.interactive_add('name', 'Enter the "real name" of you bot for WHOIS responses',
-                             'Willie Embosbot, https://github.com/embolalia/jenni')
+                             'Willie Embosbot, http://willie.dftba.net')
         self.interactive_add('host', 'Enter the server to connect to', 'irc.dftba.net')
         self.interactive_add('port', 'Enter the port to connect on', '6667')
         
@@ -332,20 +332,20 @@ def main(argv=None):
     parser.add_option('-c', '--config', metavar='fn',
         help='use this configuration file or directory')
     opts, args = parser.parse_args(argv)
-    dotdir = os.path.expanduser('~/.jenni')
+    dotdir = os.path.expanduser('~/.willie')
     configpath = os.path.join(dotdir, (opts.config or 'default')+'.py')
     create_config(configpath)
 
 def create_config(configpath):
     print "Please answer the following questions to create your configuration file:\n"
-    dotdir = os.path.expanduser('~/.jenni')
+    dotdir = os.path.expanduser('~/.willie')
     if not os.path.isdir(dotdir):
-        print 'Creating a config directory at ~/.jenni...'
+        print 'Creating a config directory at ~/.willie...'
         try: os.mkdir(dotdir)
         except Exception, e:
             print >> sys.stderr, 'There was a problem creating %s:' % dotdir
             print >> sys.stderr, e.__class__, str(e)
-            print >> sys.stderr, 'Please fix this and then run jenni again.'
+            print >> sys.stderr, 'Please fix this and then run Willie again.'
             sys.exit(1)
     try:
         config = Config(configpath, os.path.isfile(configpath))
