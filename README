@@ -1,13 +1,13 @@
 Installation:
 
-1) Run ./jenni
+1) Run ./willie
 2) Answer the prompts it gives you
 3) ...
 4) Profit!
 
 Making your own mdoules:
 
-To make your own module for jenni, please consult the documentation at http://embolalia.net/jenni/
+To make your own module for Willie, please consult the documentation at http://willie.dftba.net
 To get a copy of the documentation locally, run
 cd doc
 make html
