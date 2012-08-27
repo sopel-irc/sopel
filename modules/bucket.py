@@ -447,8 +447,11 @@ def say_fact(jenni, trigger):
         bucket_runtime_data.shut_up.append(trigger.sender)
         return
     elif search_term in ['come back', 'unshutup', 'get your sorry ass back here'] and addressed:
-        jenni.reply('I\'m back!')
-        bucket_runtime_data.shut_up.remove(trigger.sender)
+        if trigger.sender in bucket_runtime_data.shut_up:
+            bucket_runtime_data.shut_up.remove(trigger.sender)
+            jenni.reply('I\'m back!')
+        else:
+            jenni.reply('Uhm, what? I was here all the time!')
         return
     literal = False
     inhibit = bucket_runtime_data.inhibit_reply
