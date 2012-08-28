@@ -15,6 +15,8 @@ import sys, re, time, traceback
 import socket, asyncore, asynchat
 import os, codecs
 import traceback
+import ssl, select
+import errno
 from datetime import datetime
 
 class Origin(object):
@@ -60,7 +62,7 @@ def log_raw(line):
     f.close()
 
 class Bot(asynchat.async_chat):
-    def __init__(self, nick, name, channels, password=None, logchan_pm=None):
+    def __init__(self, nick, name, channels, password=None, logchan_pm=None, use_ssl = False):
         asynchat.async_chat.__init__(self)
         self.set_terminator('\n')
         self.buffer = ''
@@ -80,6 +82,8 @@ class Bot(asynchat.async_chat):
         
         self.stack = []
         self.logchan_pm = logchan_pm
+        
+        self.use_ssl = use_ssl
 
         import threading
         self.sending = threading.RLock()
@@ -143,18 +147,67 @@ class Bot(asynchat.async_chat):
             message = 'Connecting to %s:%s...' % (host, port)
             print >> sys.stderr, message,
         self.create_socket(socket.AF_INET, socket.SOCK_STREAM)
+        if self.use_ssl:
+            self.send = self._ssl_send
+            self.recv = self._ssl_recv
         self.connect((host, port))
         try: asyncore.loop()
         except KeyboardInterrupt:
             sys.exit()
 
     def handle_connect(self):
+        if self.use_ssl:
+            self.ssl = ssl.wrap_socket(self.socket, do_handshake_on_connect=False)
+            print >> sys.stderr, '\nSSL Handshake intiated...'
+            while True:
+                try:
+                    self.ssl.do_handshake()
+                    break
+                except ssl.SSLError, err:
+                    if err.args[0] == ssl.SSL_ERROR_WANT_READ:
+                        select.select([self.ssl], [], [])
+                    elif err.args[0] == ssl.SSL_ERROR_WANT_WRITE:
+                        select.select([], [self.ssl], [])
+                    else:
+                        raise
+            self.set_socket(self.ssl)
         if self.verbose:
             print >> sys.stderr, 'connected!'
         if self.password:
             self.write(('PASS', self.password))
         self.write(('NICK', self.nick))
         self.write(('USER', self.user, '+iw', self.nick), self.name)
+
+    def _ssl_send(self, data):
+        """ Replacement for self.send() during SSL connections. """
+        try:
+            result = self.socket.send(data)
+            return result
+        except ssl.SSLError, why:
+            if why[0] in (asyncore.EWOULDBLOCK, errno.ESRCH):
+                return 0
+            else:
+                raise ssl.SSLError, why
+            return 0
+
+    def _ssl_recv(self, buffer_size):
+        """ Replacement for self.recv() during SSL connections. From: http://www.evanfosmark.com/2010/09/ssl-support-in-asynchatasync_chat/ """
+        try:
+            data = self.read(buffer_size)
+            if not data:
+                self.handle_close()
+                return ''
+            return data
+        except ssl.SSLError, why:
+            if why[0] in (asyncore.ECONNRESET, asyncore.ENOTCONN, 
+                          asyncore.ESHUTDOWN):
+                self.handle_close()
+                return ''
+            elif why[0] == errno.ENOENT:
+                # Required in order to keep it non-blocking
+                return ''
+            else:
+                raise
 
     def handle_close(self):
         self.close()

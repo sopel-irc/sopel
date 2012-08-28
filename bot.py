@@ -49,9 +49,15 @@ def enumerate_modules(config):
 
 class Willie(irc.Bot):
     def __init__(self, config):
-        if hasattr(config, "logchan_pm"): lc_pm = config.logchan_pm
-        else: lc_pm = None
-        args = (config.nick, config.name, config.channels, config.password, lc_pm)
+        if hasattr(config, "logchan_pm"): 
+            lc_pm = config.logchan_pm
+        else: 
+            lc_pm = None
+        if hasattr(config, 'use_ssl'):
+            use_ssl = use_ssl
+        else:
+            use_ssl = False
+        args = (config.nick, config.name, config.channels, config.password, lc_pm, use_ssl)
         irc.Bot.__init__(self, *args)
         self.config = config
         """The ``Config`` for the current Willie instance."""
