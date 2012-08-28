@@ -37,7 +37,7 @@ def dumpReminders(fn, data):
 
 def setup(self):
     fn = self.nick + '-' + self.config.host + '.tell.db'
-    self.tell_filename = os.path.join(os.path.expanduser('~/.jenni'), fn)
+    self.tell_filename = os.path.join(self.config.dotdir, fn)
     if not os.path.exists(self.tell_filename):
         try: f = open(self.tell_filename, 'w')
         except OSError: pass
