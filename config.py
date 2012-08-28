@@ -102,7 +102,8 @@ class Config(object):
         port = """+str(self.port)+"""
         channels = """+str(self.channels)+"""
         owner = '"""+self.owner+"""'
-        
+        use_ssl = '"""+self.use_ssl+"""'
+
         # Channel where debug messages should be sent.
         debug_target = '"""+self.debug_target+"""'
         
@@ -220,6 +221,7 @@ class Config(object):
                              'Willie Embosbot, http://willie.dftba.net')
         self.interactive_add('host', 'Enter the server to connect to', 'irc.dftba.net')
         self.interactive_add('port', 'Enter the port to connect on', '6667')
+        self.use_ssl = self.option('Use SSL Secured connection?', False)
         
         c='Enter the channels to connect to by default, one at a time. When done, hit enter again.'
         self.add_list('channels', c, 'Channel:')
