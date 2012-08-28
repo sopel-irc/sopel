@@ -5,7 +5,7 @@ Installation:
 3) ...
 4) Profit!
 
-Making your own mdoules:
+Making your own modules:
 
 To make your own module for Willie, please consult the documentation at http://willie.dftba.net
 To get a copy of the documentation locally, run
@@ -16,7 +16,7 @@ Place your module in the modules/ directory and start jenni to load it.
 
 Command list and various user documentation:
 
-See wiki at https://github.com/embolalia/jenni/wiki
+See wiki at https://github.com/embolalia/willie/wiki
 
 Questions?
 
