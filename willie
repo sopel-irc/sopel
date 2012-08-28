@@ -71,6 +71,7 @@ def main(argv=None):
 
         config_name = config_names(opts.config)[0]
         config_module = Config(config_name)
+        config_module.dotdir = dotdir
 
         # Step Four: Load willie
         try: from __init__ import run

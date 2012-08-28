@@ -14,8 +14,8 @@ import os
 
 
 class Scores:
-    def __init__(self):
-        self.scores_filename = os.path.expanduser('~/.jenni/scores.txt')
+    def __init__(self, willie):
+        self.scores_filename = os.path.join(willie.config.dotdir, 'scores.txt')
         self.scores_dict = dict()
         self.load()
         self.STRINGS = {
@@ -200,7 +200,10 @@ class Scores:
         jenni.say(result)
 
 # Jenni commands
-scores = Scores()
+scores = None
+def setup(willie):
+    global scores
+    scores = Scores(willie)
 
 
 def addpoint_command(jenni, input):
