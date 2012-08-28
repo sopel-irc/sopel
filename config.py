@@ -102,7 +102,7 @@ class Config(object):
         port = """+str(self.port)+"""
         channels = """+str(self.channels)+"""
         owner = '"""+self.owner+"""'
-        use_ssl = '"""+self.use_ssl+"""'
+        use_ssl = '"""+str(self.use_ssl)+"""'
 
         # Channel where debug messages should be sent.
         debug_target = '"""+self.debug_target+"""'
@@ -362,7 +362,7 @@ def create_config(configpath):
         config.write()
     except Exception, e:
         print "Encountered an error while writing the config file. This shouldn't happen. Check permissions."
-        print e
+        raise
         sys.exit(1)
     print "Config file written sucessfully!"
 
