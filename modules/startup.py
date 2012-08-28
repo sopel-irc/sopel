@@ -120,9 +120,10 @@ def runningUpdate(jenni, input):
             else:
                 modes.append((char, False))
      
-    print modes
+    if len(modes) == 0:
+        return #We don't care about these mode changes
     for index in range(len(nicks)):
-        mode=modes[index]
+        mode = modes[index]
         nick = nicks[index]
         if mode[0]=='h':
             if mode[1] is True:
