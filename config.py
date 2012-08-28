@@ -342,6 +342,11 @@ def create_config(configpath):
     print "Please answer the following questions to create your configuration file:\n"
     dotdir = os.path.expanduser('~/.willie')
     if not os.path.isdir(dotdir):
+        if os.path.isdir(os.path.expanduser('~/.jenni')):
+            dotdir = os.path.expanduser('~/.jenni')
+        elif os.path.isdir(os.path.expanduser('~/.phenny')):
+            dotdir = os.path.expanduser('~/.phenny')
+    if not os.path.isdir(dotdir):
         print 'Creating a config directory at ~/.willie...'
         try: os.mkdir(dotdir)
         except Exception, e:
