@@ -54,7 +54,7 @@ class Willie(irc.Bot):
         else: 
             lc_pm = None
         if hasattr(config, 'use_ssl'):
-            use_ssl = use_ssl
+            use_ssl = config.use_ssl
         else:
             use_ssl = False
         args = (config.nick, config.name, config.channels, config.password, lc_pm, use_ssl)
