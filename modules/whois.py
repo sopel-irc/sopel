@@ -13,15 +13,15 @@ import re
 whois, got318 = False, False
 nick, host, rl, chans, idle, signon = None, None, None, None, None, None
 
-def sendwhois(phenny, input):
+def sendwhois(willie, trigger):
     global whois, got318, nick, host, rl, chans, idle, signon
     whois = True
-    phenny.write(['WHOIS'], input.group(2)) #A whois needs a 2nd parameter to get the signon time... name+" "+name doesn't work.
+    willie.write(['WHOIS'], trigger.group(2)) #A whois needs a 2nd parameter to get the signon time... name+" "+name doesn't work.
 
     while not got318: #Wait until event 318 (End of /WHOIS list.)
         sleep(0.5)
     if nick is None:
-        phenny.say('[WHOIS] No such user')
+        willie.say('[WHOIS] No such user')
         whois, got318 = False, False
         nick, host, rl, chans, idle, signon = None, None, None, None, None, None
         return
@@ -40,19 +40,19 @@ def sendwhois(phenny, input):
     else:
         msg2 = str(nick) + ' is not in any channel!'
 
-    phenny.say(msg1)
-    phenny.say(msg2)
+    willie.say(msg1)
+    willie.say(msg2)
 
     #reset variables.
     whois, got318 = False, False
     nick, host, rl, chans, idle, signon = None, None, None, None, None, None
 sendwhois.commands = ['whois']
 
-def whois311(phenny, input):
+def whois311(willie, trigger):
     global nick, host, rl, whois
     if whois:
         raw = re.match('\S+ 311 \S+ (\S+) (\S+) (\S+) (\S+) :(.*)', \
-                        phenny.raw)
+                        willie.raw)
         nick = raw.group(1)
         host = raw.group(2) + '@' + raw.group(3)
         rl = raw.group(5)
@@ -60,14 +60,14 @@ def whois311(phenny, input):
 whois311.event = '311'
 whois311.rule = '.*'
 
-def whois319(phenny, input):
+def whois319(willie, trigger):
     if whois:
         global chans
-        chans = input.group(1)
+        chans = trigger.group(1)
 whois319.event = '319'
 whois319.rule = '(.*)'
 
-def whois318(phenny, input):
+def whois318(willie, trigger):
     if whois:
         global got318
         got318 = True
