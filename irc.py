@@ -168,16 +168,19 @@ class Bot(asynchat.async_chat):
                         select.select([self.ssl], [], [])
                     elif err.args[0] == ssl.SSL_ERROR_WANT_WRITE:
                         select.select([], [self.ssl], [])
+                    elif err.args[0] == 1:
+                        print 'SSL Handshake failed'
+                        sys.exit(1)
                     else:
                         raise
             self.set_socket(self.ssl)
-        if self.verbose:
-            print >> sys.stderr, 'connected!'
-        if self.password:
-            self.write(('PASS', self.password))
+
         self.write(('NICK', self.nick))
         self.write(('USER', self.user, '+iw', self.nick), self.name)
 
+        if hasattr(self.config, 'serverpass'):
+            self.write(('PASS', self.config.serverpass))
+        print 'Connected.'
     def _ssl_send(self, data):
         """ Replacement for self.send() during SSL connections. """
         try:
@@ -327,7 +330,7 @@ class Bot(asynchat.async_chat):
             print trace
         except:
             pass
-        self.debug("[core]", 'Fatal error in core, please review exception log', 'always')
+        self.debug("core", 'Fatal error in core, please review exception log', 'always')
         logfile = open('logs/exceptions.log', 'a') #todo: make not hardcoded
         logfile.write('Fatal error in core, handle_error() was called')
         logfile.write(trace)
