@@ -102,6 +102,7 @@ class Config(object):
         port = """+str(self.port)+"""
         channels = """+str(self.channels)+"""
         owner = '"""+self.owner+"""'
+        name = '"""+self.name+"""'
         use_ssl = '"""+str(self.use_ssl)+"""'
 
         # Channel where debug messages should be sent.
