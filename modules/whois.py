@@ -1,7 +1,12 @@
 """
 whois.py - Retrieve WHOIS information on a user and show to the channel.
 Author: Edward D. Powell http://embolalia.net
-Phenny (About): http://inamidst.com/phenny/
+
+Copyright 2012, Edward Powell, http://embolalia.net
+Copyright © 2012, Elad Alfassa <elad@fedoraproject.org>
+Licensed under the Eiffel Forum License 2.
+
+http://willie.dftba.net/
 """
 from time import sleep
 import re
@@ -15,22 +20,28 @@ def sendwhois(phenny, input):
 
     while not got318: #Wait until event 318 (End of /WHOIS list.)
         sleep(0.5)
-
+    if nick is None:
+        phenny.say('[WHOIS] No such user')
+        whois, got318 = False, False
+        nick, host, rl, chans, idle, signon = None, None, None, None, None, None
+        return
     msg1 = '[WHOIS] Nick: ' + str(nick) + ' Host: ' + str(host) + \
            ' Real name: ' + str(rl)
 
     #hide channels that are +s (prefixed with a ?)
-    channels = chans.split(' ')
-    for chan in channels:
-        if len(chan):
-            if chan[0] == "?":
-                channels.remove(chan)
-    chans = ' '.join(channels)
+    if chans is not None:
+        channels = chans.split(' ')
+        for chan in channels:
+            if len(chan):
+                if chan[0] == "?":
+                    channels.remove(chan)
+        chans = ' '.join(channels)
+        msg2 = str(nick) + ' is on '+str(len(channels)-1)+' channels: ' + str(chans)
+    else:
+        msg2 = str(nick) + ' is not in any channel!'
 
-    msg2 = str(nick) + ' is on '+str(len(channels)-1)+' channels: ' + str(chans)
     phenny.say(msg1)
     phenny.say(msg2)
-    #phenny.say(nick + ' has been idle ' + idle + ', signed on ' + signon)
 
     #reset variables.
     whois, got318 = False, False
@@ -50,28 +61,11 @@ whois311.event = '311'
 whois311.rule = '.*'
 
 def whois319(phenny, input):
-    print input.bytes
-    print input.match
-    print input.event
-    print input.args
-    print input
     if whois:
         global chans
         chans = input.group(1)
 whois319.event = '319'
 whois319.rule = '(.*)'
-
-"""
-#Not sure what's going on with this...
-def whois317(phenny, input):
-    global idle, signon
-    if whois:
-        raw = re.match('\S 317 (\S+) (\S+) (\d+) (\d+) (.*)', phenny.raw)
-        idle = raw.groups(3)
-        signon = raw.groups(4)
-whois317.event = '317'
-whois317.rule = '.*'
-"""
 
 def whois318(phenny, input):
     if whois:
