@@ -13,35 +13,6 @@ This is written as a module to make it easier to extend to support more response
 import re
 import threading, time
 
-#Ping timeout detection:
-
-class runtime_data():
-    ping_timer = None #A timer for ping-pong with the server
-
-def setup(willie):
-    ping_timeout = 300.0
-    if hasattr(willie.config, 'ping_timeout'):
-        try: refresh_delay = float(willie.config.ping_timeout)
-        except: pass
-    runtime_data.ping_timeout = ping_timeout
-
-def close(willie):
-    print "Ping timeout, restarting..."
-    willie.handle_close()
-
-def pingloop(willie):
-    runtime_data.ping_timer = threading.Timer(runtime_data.ping_timeout, close, (willie,))
-    runtime_data.ping_timer.start()
-    willie.write(('PING', willie.config.host))
-
-def pong(willie, Trigger):
-    try:
-        runtime_data.timer.cancel()
-        time.sleep(runtime_data.ping_timeout + 60.0)
-        pingloop(willie)
-    except: pass
-pong.event = 'PONG'
-pong.rule = r'.*'
 
 
 def startup(willie, trigger):
@@ -59,7 +30,6 @@ def startup(willie, trigger):
     for channel in willie.channels:
         willie.write(('JOIN', channel))
 
-    pingloop(willie)
 startup.rule = r'(.*)'
 startup.event = '251'
 startup.priority = 'low'
