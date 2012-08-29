@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+# coding=utf-8
 """
 whois.py - Retrieve WHOIS information on a user and show to the channel.
 Author: Edward D. Powell http://embolalia.net
