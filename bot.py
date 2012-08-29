@@ -87,6 +87,7 @@ class Willie(irc.Bot):
 
 
         filenames = enumerate_modules(self.config)
+        filenames.append('coretasks.py')
         self.enumerate_modules = enumerate_modules
 
         os.sys.path.insert(0,modules_dir) 
@@ -109,9 +110,9 @@ class Willie(irc.Bot):
                 except Exception, e:
                     error_count = error_count + 1
                     stderr("Error in %s setup procedure: %s (in bot.py)" % (name, e))
-
+        
         if modules:
-            stderr('\n\nRegistered %d modules,' % len(modules))
+            stderr('\n\nRegistered %d modules,' % (len(modules)-1))
             stderr('%d modules failed to load\n\n' % error_count)
         else: stderr("Warning: Couldn't find any modules")
 
