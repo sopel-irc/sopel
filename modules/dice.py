@@ -10,6 +10,7 @@ More info:
 """
 
 from random import randint, seed
+from calc import calculate
 import time, re
 
 seed()
@@ -49,7 +50,7 @@ def dice(jenni, input):
     #you done? good.
     if legal_formula == 1 and full_string != "": # did something break? no? good, continue.
         #at this point full string is something like: "4 + 6 + 12 * 4" etc.
-        result = str(eval(full_string)) # so normally eval is UNSAFE... but since i've dumped regex over the user input i'm pretty confident in the security.
+        result = str(calculate(full_string)) # so normally eval is UNSAFE... but since i've dumped regex over the user input i'm pretty confident in the security.
         #print result to chat
         if(no_dice): #no dice found, warn!
             jenni.reply("For pure math, you can use .c! "+msg+" = "+result)
