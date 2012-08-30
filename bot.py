@@ -57,7 +57,19 @@ class Willie(irc.Bot):
             use_ssl = config.use_ssl
         else:
             use_ssl = False
-        args = (config.nick, config.name, config.channels, config.password, lc_pm, use_ssl)
+        if hasattr(config, 'verify_ssl'):
+            verify_ssl = config.verify_ssl
+        else:
+            verify_ssl = False
+        if hasattr(config, 'ca_certs'):
+            ca_certs = config.ca_certs
+        else:
+            ca_certs = '/etc/pki/tls/cert.pem'
+        if  hasattr(config, 'serverpass'):
+            serverpass = config.serverpass
+        else:
+            serverpass = None
+        args = (config.nick, config.name, config.channels, config.password, lc_pm, use_ssl, verify_ssl, ca_certs, serverpass)
         irc.Bot.__init__(self, *args)
         self.config = config
         """The ``Config`` for the current Willie instance."""
