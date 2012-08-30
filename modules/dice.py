@@ -52,7 +52,7 @@ def dice(jenni, input):
         #at this point full string is something like: "4 + 6 + 12 * 4" etc.
         result = calculate(full_string)
         #print result to chat
-        if result = 'Sorry, no result.':
+        if result == 'Sorry, no result.':
             jenni.reply(result)
         elif(no_dice): #no dice found, warn!
             jenni.reply("For pure math, you can use .c! "+msg+" = "+result)
