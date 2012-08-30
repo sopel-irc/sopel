@@ -95,7 +95,15 @@ class Config(object):
         else:
             enable_line = "# enable = []"
         extra = self.extra.append(os.getcwd() + '/modules/')
-        
+        if hasattr(self, 'verify_ssl'):
+            verify_ssl_line = "verify_ssl = "+str(self.verify_ssl)
+        else:
+            verify_ssl_line = "# verify_ssl = True"
+            
+        if hasattr(self, 'ca_certs'):
+            ca_cert_line = "ca_certs = '"+str(self.ca_certs)+"'"
+        else:
+            ca_cert_line = "# ca_certs = '/etc/pki/tls/cert.pem'"
         output = trim("""\
         nick = '"""+self.nick+"""'
         host = '"""+self.host+"""'
@@ -103,7 +111,10 @@ class Config(object):
         channels = """+str(self.channels)+"""
         owner = '"""+self.owner+"""'
         name = '"""+self.name+"""'
+        
         use_ssl = '"""+str(self.use_ssl)+"""'
+        """+verify_ssl_line+"""
+        """+ca_cert_line+"""
 
         # Channel where debug messages should be sent.
         debug_target = '"""+self.debug_target+"""'
@@ -223,6 +234,10 @@ class Config(object):
         self.interactive_add('host', 'Enter the server to connect to', 'irc.dftba.net')
         self.interactive_add('port', 'Enter the port to connect on', '6667')
         self.use_ssl = self.option('Use SSL Secured connection?', False)
+        if self.use_ssl:
+            self.verify_ssl = self.option('Require trusted SSL certificates?', True)
+            if self.verify_ssl:
+                self.interactive_add('ca_certs', 'Enter full path to the CA Certs pem file', '/etc/pki/tls/cert.pem')
         
         c='Enter the channels to connect to by default, one at a time. When done, hit enter again.'
         self.add_list('channels', c, 'Channel:')

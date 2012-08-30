@@ -39,7 +39,7 @@ def create_logdir():
         print >> sys.stderr, 'There was a problem creating the logs directory.'
         print >> sys.stderr, e.__class__, str(e)
         print >> sys.stderr, 'Please fix this and then run Willie again.'
-        sys.exit(1)
+        os._exit(1)
 
 def check_logdir():
     if not os.path.isdir("logs"):
@@ -62,7 +62,7 @@ def log_raw(line):
     f.close()
 
 class Bot(asynchat.async_chat):
-    def __init__(self, nick, name, channels, password=None, logchan_pm=None, use_ssl = False):
+    def __init__(self, nick, name, channels, password=None, logchan_pm=None, use_ssl = False, verify_ssl=False, ca_certs='', serverpass=None):
         asynchat.async_chat.__init__(self)
         self.set_terminator('\n')
         self.buffer = ''
@@ -82,7 +82,9 @@ class Bot(asynchat.async_chat):
         
         self.stack = []
         self.logchan_pm = logchan_pm
-        
+        self.serverpass = serverpass
+        self.verify_ssl = verify_ssl
+        self.ca_certs = ca_certs
         self.use_ssl = use_ssl
 
         import threading
@@ -95,6 +97,10 @@ class Bot(asynchat.async_chat):
         """A dictionary mapping channels to a list of their operators."""
         self.halfplus = dict()
         """A dictionary mapping channels to a list of their half-ops and ops."""
+        
+        #We need this to prevent error loops in handle_error
+        self.error_count = 0
+        self.last_error_timestamp = None
 
     # def push(self, *args, **kargs):
     #     asynchat.async_chat.push(self, *args, **kargs)
@@ -153,12 +159,16 @@ class Bot(asynchat.async_chat):
         self.connect((host, port))
         try: asyncore.loop()
         except KeyboardInterrupt:
-            sys.exit()
+            os._exit(1)
 
     def handle_connect(self):
         if self.use_ssl:
-            self.ssl = ssl.wrap_socket(self.socket, do_handshake_on_connect=False)
+            if not self.verify_ssl:
+                self.ssl = ssl.wrap_socket(self.socket, do_handshake_on_connect=False, suppress_ragged_eofs=True)
+            else:
+                self.ssl = ssl.wrap_socket(self.socket, do_handshake_on_connect=False, suppress_ragged_eofs=True, cert_reqs=ssl.CERT_REQUIRED, ca_certs=self.ca_certs)
             print >> sys.stderr, '\nSSL Handshake intiated...'
+            error_count=0
             while True:
                 try:
                     self.ssl.do_handshake()
@@ -169,17 +179,24 @@ class Bot(asynchat.async_chat):
                     elif err.args[0] == ssl.SSL_ERROR_WANT_WRITE:
                         select.select([], [self.ssl], [])
                     elif err.args[0] == 1:
-                        print 'SSL Handshake failed'
-                        sys.exit(1)
+                        print 'SSL Handshake failed with error: %s' % err.args[1]
+                        os._exit(1)
                     else:
+                        error_count=error_count+1
+                        if error_count > 5:
+                            print 'SSL Handshake failed (%d failed attempts)' % error_count
+                            os._exit(1)
                         raise
+                except Exception as e:
+                    print 'SSL Handshake failed with error: %s' % e
+                    os._exit(1)
             self.set_socket(self.ssl)
 
         self.write(('NICK', self.nick))
         self.write(('USER', self.user, '+iw', self.nick), self.name)
 
-        if hasattr(self.config, 'serverpass'):
-            self.write(('PASS', self.config.serverpass))
+        if self.serverpass is not None:
+            self.write(('PASS', self.serverpass))
         print 'Connected.'
     def _ssl_send(self, data):
         """ Replacement for self.send() during SSL connections. """
@@ -336,6 +353,12 @@ class Bot(asynchat.async_chat):
         logfile.write(trace)
         logfile.write('----------------------------------------\n\n')
         logfile.close()
+        if self.error_count > 10:
+            if (datetime.now() - self.last_error_timestamp).seconds < 5:
+                print "Too many errors, can't continue"
+                os._exit(1)
+        self.last_error_timestamp = datetime.now()
+        self.error_count=self.error_count+1
 
     #Helper functions to maintain the oper list.
     def addOp(self, channel, name):
