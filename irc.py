@@ -17,6 +17,7 @@ import os, codecs
 import traceback
 import ssl, select
 import errno
+import threading
 from datetime import datetime
 
 class Origin(object):
@@ -86,9 +87,11 @@ class Bot(asynchat.async_chat):
         self.verify_ssl = verify_ssl
         self.ca_certs = ca_certs
         self.use_ssl = use_ssl
+        self.hasquit = False
 
-        import threading
         self.sending = threading.RLock()
+        self.writing_lock = threading.Lock()
+        self.raw = None
         
         #Right now, only accounting for two op levels.
         #This might be expanded later.
@@ -102,22 +105,24 @@ class Bot(asynchat.async_chat):
         self.error_count = 0
         self.last_error_timestamp = None
 
-    # def push(self, *args, **kargs):
-    #     asynchat.async_chat.push(self, *args, **kargs)
-
     def __write(self, args, text=None):
-        # print '%r %r %r' % (self, args, text)
         try:
+            self.writing_lock.acquire() #Blocking lock, can't send two things at a time
             if text is not None:
                 # 510 because CR and LF count too, as nyuszika7h points out
                 temp = (' '.join(args) + ' :' + text)[:510] + '\r\n'
             else:
                 temp = ' '.join(args)[:510] + '\r\n'
             log_raw(temp)
-            self.push(temp)
-        except IndexError:
-            print "INDEXERROR", text
-            #pass
+            self.send(temp)
+        finally:
+            self.writing_lock.release()
+
+    def safe(self, string):
+        '''Remove newlines from a string and make sure it is utf8'''
+        string = string.replace('\n', '')
+        string = string.replace('\r', '')
+        return string.encode('utf-8')
 
     def write(self, args, text=None):
         """
@@ -133,17 +138,11 @@ class Bot(asynchat.async_chat):
         sending. Additionally, if the joined ``args`` and ``text`` are more than
         510 characters, any remaining characters will not be sent.
         """
-        # This is a safe version of __write
-        def safe(input):
-            input = input.replace('\n', '')
-            input = input.replace('\r', '')
-            return input.encode('utf-8')
-        try:
-            args = [safe(arg) for arg in args]
-            if text is not None:
-                text = safe(text)
-            self.__write(args, text)
-        except Exception, e: pass
+        args = [self.safe(arg) for arg in args]
+        if text is not None:
+            text = self.safe(text)
+        self.__write(args, text)
+
 
     def run(self, host, port=6667):
         self.initiate_connect(host, port)
@@ -159,7 +158,9 @@ class Bot(asynchat.async_chat):
         self.connect((host, port))
         try: asyncore.loop()
         except KeyboardInterrupt:
-            os._exit(1)
+            print 'KeyboardInterrupt'
+            self.write(['QUIT'], 'KeyboardInterrupt')
+            self.hasquit = True
 
     def handle_connect(self):
         if self.use_ssl:
@@ -259,12 +260,12 @@ class Bot(asynchat.async_chat):
             argstr, text = line.split(' :', 1)
         else: argstr, text = line, ''
         args = argstr.split()
+        
+        if args[0] == 'PING':
+            self.write(('PONG', text))
 
         origin = Origin(self, source, args)
         self.dispatch(origin, tuple([text] + args))
-
-        if args[0] == 'PING':
-            self.write(('PONG', text))
 
     def dispatch(self, origin, args):
         pass
@@ -300,19 +301,18 @@ class Bot(asynchat.async_chat):
                 self.sending.release()
                 return
 
-        def safe(input):
-            input = input.replace('\n', '')
-            return input.replace('\r', '')
-        self.__write(('PRIVMSG', safe(recipient)), safe(text))
+        self.write(('PRIVMSG', recipient, text))
         self.stack.append((time.time(), text))
         self.stack = self.stack[-10:]
 
         self.sending.release()
             
     def notice(self, dest, text):
+        '''Send an IRC NOTICE to a user or a channel. See IRC protocol documentation for more information'''
         self.write(('NOTICE', dest), text)
 
     def error(self, origin, trigger):
+        ''' Called internally when a module causes an error '''
         try:
             trace = traceback.format_exc()
             try:
@@ -338,7 +338,7 @@ class Bot(asynchat.async_chat):
             self.msg(origin.sender, report[0] + ' (' + report[1] + ')')
         except Exception as e:
             self.msg(origin.sender, "Got an error.")
-            self.debug("[core: error reporting]", "(From: "+origin.sender+") "+str(e), 'always')
+            self.debug("core: error reporting", "(From: "+origin.sender+") "+str(e), 'always')
 
     def handle_error(self):
         ''' Handle any uncaptured error in the core. Overrides asyncore's handle_error '''
@@ -350,6 +350,7 @@ class Bot(asynchat.async_chat):
         self.debug("core", 'Fatal error in core, please review exception log', 'always')
         logfile = open('logs/exceptions.log', 'a') #todo: make not hardcoded
         logfile.write('Fatal error in core, handle_error() was called')
+        logfile.write('last raw line was %s' % self.raw)
         logfile.write(trace)
         logfile.write('----------------------------------------\n\n')
         logfile.close()
@@ -375,7 +376,6 @@ class Bot(asynchat.async_chat):
     def startOpsList(self, channel):
         if not channel in self.halfplus: self.halfplus[channel] = set()
         if not channel in self.ops: self.ops[channel] = set()
-        
 
 class TestBot(Bot):
     def f_ping(self, origin, match, args):

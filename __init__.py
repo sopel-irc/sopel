@@ -12,43 +12,22 @@ http://willie.dftba.net/
 """
 
 import sys, os, time, threading, signal
+import traceback
 import bot
-
-class Watcher(object):
-    # Cf. http://aspn.activestate.com/ASPN/Cookbook/Python/Recipe/496735
-    def __init__(self):
-        self.child = os.fork()
-        if self.child != 0:
-            self.watch()
-
-    def watch(self):
-        try: os.wait()
-        except KeyboardInterrupt:
-            self.kill()
-        sys.exit()
-
-    def kill(self):
-        try: os.kill(self.child, signal.SIGKILL)
-        except OSError: pass
 
 def run(config):
     if hasattr(config, 'delay'):
         delay = config.delay
     else: 
         delay = 20
-
-    try: Watcher()
-    except Exception, e:
-        print >> sys.stderr, 'Warning:', e, '(in __init__.py)'
-
+    
     while True:
         try: 
             p = bot.Willie(config)
             p.run(config.host, config.port)
         except KeyboardInterrupt:
-            sys.exit()
+            os._exit(0)
         except Exception, e:
-            import traceback
             trace = traceback.format_exc()
             try:
                 print trace
@@ -56,21 +35,22 @@ def run(config):
                 pass
             logfile = open('logs/exceptions.log', 'a') #todo: make not hardcoded
             logfile.write('Critical exception in core')
-            logfile.write(e)
             logfile.write(trace)
             logfile.write('----------------------------------------\n\n')
             logfile.close()
-            raise e
+            os._exit(1)
 
         if not isinstance(delay, int):
             break
-
+        if p.hasquit:
+            os._exit(0)
         warning = 'Warning: Disconnected. Reconnecting in %s seconds...' % delay
         try:
             print >> sys.stderr, warning
         except:
             pass
         time.sleep(delay)
+
 
 if __name__ == '__main__':
     print __doc__
