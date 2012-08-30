@@ -122,7 +122,10 @@ class Bot(asynchat.async_chat):
         '''Remove newlines from a string and make sure it is utf8'''
         string = string.replace('\n', '')
         string = string.replace('\r', '')
-        return string.encode('utf-8')
+        try:
+            return string.encode('utf-8')
+        except:
+            return string
 
     def write(self, args, text=None):
         """
