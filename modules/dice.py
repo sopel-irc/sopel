@@ -50,9 +50,11 @@ def dice(jenni, input):
     #you done? good.
     if legal_formula == 1 and full_string != "": # did something break? no? good, continue.
         #at this point full string is something like: "4 + 6 + 12 * 4" etc.
-        result = str(calculate(full_string)) # so normally eval is UNSAFE... but since i've dumped regex over the user input i'm pretty confident in the security.
+        result = calculate(full_string)
         #print result to chat
-        if(no_dice): #no dice found, warn!
+        if result = 'Sorry, no result.':
+            jenni.reply(result)
+        elif(no_dice): #no dice found, warn!
             jenni.reply("For pure math, you can use .c! "+msg+" = "+result)
         else: #dice found, just let the users know what's happening
             jenni.reply("You roll "+msg+" ("+full_string+"): "+result)
