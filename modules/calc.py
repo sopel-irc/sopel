@@ -30,7 +30,7 @@ def calculate(input):
         answer = answer.replace('<sup>', '^(')
         answer = answer.replace('</sup>', ')')
         answer = web.decode(answer)
-        return int(answer)
+        return answer
     else: return 'Sorry, no result.'
 
 def c(jenni, input):
@@ -38,9 +38,7 @@ def c(jenni, input):
     if not input.group(2):
         return jenni.reply("Nothing to calculate.")
     result = calculate(input.group(2))
-    if(not str(result).isdigit()): 
-        jenni.say('Sorry, no result.')
-    else: jenni.reply(str(result))
+    jenni.reply(result)
 c.commands = ['c', 'calc']
 c.example = '.c 5 + 3'
 
