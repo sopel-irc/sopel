@@ -9,6 +9,7 @@ Licensed under the Eiffel Forum License 2.
 https://willie.dftba.net
 """
 import sys
+import os
 
 def deprecated(old):
     def new(willie, input, old=old):
@@ -36,6 +37,23 @@ class Ddict(dict):
         if not self.has_key(key):
             self[key] = self.default()
         return dict.__getitem__(self, key)
+
+class output_redirect:
+    ''' A simple object to replace stdout and stderr '''
+    def __init__(self, logpath, stderr=False):
+        self.logpath = logpath
+        self.stderr = stderr
+    def write(self,string):
+        try:
+            if self.stderr:
+                sys.__stderr__.write(string)
+            else:
+                sys.__stdout__.write(string)
+        except:
+            pass
+        logfile = open(self.logpath, 'a')
+        logfile.write(string)
+        logfile.close()
 
 def try_print(string):
     ''' Try printing to terminal, ignore errors '''

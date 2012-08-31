@@ -183,16 +183,16 @@ class Bot(asynchat.async_chat):
                     elif err.args[0] == ssl.SSL_ERROR_WANT_WRITE:
                         select.select([], [self.ssl], [])
                     elif err.args[0] == 1:
-                        print 'SSL Handshake failed with error: %s' % err.args[1]
+                        print >> sys.stderr, 'SSL Handshake failed with error: %s' % err.args[1]
                         os._exit(1)
                     else:
                         error_count=error_count+1
                         if error_count > 5:
-                            print 'SSL Handshake failed (%d failed attempts)' % error_count
+                            print >> sys.stderr, 'SSL Handshake failed (%d failed attempts)' % error_count
                             os._exit(1)
                         raise
                 except Exception as e:
-                    print 'SSL Handshake failed with error: %s' % e
+                    print >> sys.stderr, 'SSL Handshake failed with error: %s' % e
                     os._exit(1)
             self.set_socket(self.ssl)
 
@@ -201,7 +201,7 @@ class Bot(asynchat.async_chat):
 
         if self.serverpass is not None:
             self.write(('PASS', self.serverpass))
-        print 'Connected.'
+        print >> sys.stderr, 'Connected.'
     def _ssl_send(self, data):
         """ Replacement for self.send() during SSL connections. """
         try:
@@ -266,6 +266,10 @@ class Bot(asynchat.async_chat):
         
         if args[0] == 'PING':
             self.write(('PONG', text))
+        if args[0] == '433':
+            print >>sys.stderr, 'Nickname already in use!'
+            self.hasquit = True
+            self.handle_close()
 
         origin = Origin(self, source, args)
         self.dispatch(origin, tuple([text] + args))
@@ -319,10 +323,10 @@ class Bot(asynchat.async_chat):
         try:
             trace = traceback.format_exc()
             try:
-                print trace
+                print >> sys.stderr, trace
             except:
                 pass
-            logfile = open('logs/exceptions.log', 'a') #todo: make not hardcoded
+            logfile = open(os.path.join(self.config.logdir, 'exceptions.log'), 'a') #todo: make not hardcoded
             logfile.write('from %s at %s:\n' % (origin.sender, str(datetime.now())))
             logfile.write('Message was: <%s> %s\n' % (trigger.nick, trigger.group(0)))
             logfile.write(trace)
@@ -347,11 +351,11 @@ class Bot(asynchat.async_chat):
         ''' Handle any uncaptured error in the core. Overrides asyncore's handle_error '''
         trace = traceback.format_exc()
         try:
-            print trace
+            print >> sys.stderr, trace
         except:
             pass
         self.debug("core", 'Fatal error in core, please review exception log', 'always')
-        logfile = open('logs/exceptions.log', 'a') #todo: make not hardcoded
+        logfile = open(os.path.join(self.config.logdir, 'exceptions.log'), 'a') #todo: make not hardcoded
         logfile.write('Fatal error in core, handle_error() was called')
         logfile.write('last raw line was %s' % self.raw)
         logfile.write(trace)
@@ -359,7 +363,7 @@ class Bot(asynchat.async_chat):
         logfile.close()
         if self.error_count > 10:
             if (datetime.now() - self.last_error_timestamp).seconds < 5:
-                print "Too many errors, can't continue"
+                print >> sys.stderr, "Too many errors, can't continue"
                 os._exit(1)
         self.last_error_timestamp = datetime.now()
         self.error_count=self.error_count+1
