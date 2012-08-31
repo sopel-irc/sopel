@@ -22,7 +22,7 @@ def run(config):
         delay = 20
     
     while True:
-        try: 
+        try:
             p = bot.Willie(config)
             p.run(config.host, config.port)
         except KeyboardInterrupt:
@@ -33,7 +33,7 @@ def run(config):
                 print trace
             except:
                 pass
-            logfile = open('logs/exceptions.log', 'a') #todo: make not hardcoded
+            logfile = open(os.path.join(config.logdir, 'exceptions.log'), 'a') #todo: make not hardcoded
             logfile.write('Critical exception in core')
             logfile.write(trace)
             logfile.write('----------------------------------------\n\n')
