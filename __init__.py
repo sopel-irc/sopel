@@ -29,8 +29,6 @@ def run(config):
         try:
             p = bot.Willie(config)
             signal.signal(signal.SIGUSR1, signal_handler)
-            if config.is_forked:
-                os.fork()
             p.run(config.host, config.port)
         except KeyboardInterrupt:
             os._exit(0)
