@@ -42,7 +42,7 @@ Your modules
 ------------
 
 A Willie module contains one or more ``callables``. It may optionally contain a
-``configure`` or ``setup`` function. ``callable``s are given a number of
+``configure`` or ``setup`` function. ``callable`` s are given a number of
 attributes, which determine when they will be executed. Syntactically, this is
 done at the same indentation level as the function's ``def`` line, following the
 last line of the function.
@@ -160,10 +160,22 @@ The ``Willie`` class
 
         The same behavior regarding loop detection and length restrictions apply
         to ``action`` as to ``msg`` and ``say``.
+
+    .. py:function:: quit(message)
     
+        Gracefully quit and shutdown, using ``message`` as the quit message
+        
+    .. py:function:: part(channel)
+    
+        Part ``channel``
+
+    .. py:function:: join(channel, password = None)
+    
+        Join a channel named ``channel``.
+
     .. py:attribute:: nick
     
-        Willie's current nick. Changing this while Willie is running is untested.
+        Willie's current nick. Changing this while Willie is running is unsupported.
     
     .. py:attribute:: name
     
@@ -222,8 +234,9 @@ The ``Willie`` class
         an IRC channel (starting with ``#``) or ``stdio``. Suppress the message
         if the given ``level`` is lower than Willie's configured ``verbose``
         setting. Acceptable values for ``level`` are ``'verbose'`` (only send if
-        Willie is in verbose mode) and ``'warning'`` (send if Willie is in verbose
-        or warning mode). Return True if the message is sent or printed, and False if it
+        Willie is in verbose mode), ``'warning'`` (send if Willie is in verbose
+        or warning mode), ``always`` (send debug message regardless of the configured debug level).
+        Returns True if the message is sent or printed, and False if it
         is not.
         
         If ``debug_target`` is a channel, the same behavior regarding loop
@@ -315,7 +328,12 @@ The ``Trigger`` class
     .. py:attribute:: host
     
         The host which sent the triggering message.
+    .. py:attribute:: isop
     
+        *Availability: 3+*
+        
+        True if the nick which triggered the command is an op on the channel it was triggered in.
+        Will always be False if the command was triggered by a private message
 
 More advanced: ``settings`` and ``config``
 ==========================================
@@ -336,8 +354,8 @@ The ``Config`` class
    :members:
    :undoc-members:
 
-Miscellaneous: ``web``
-======================
+Miscellaneous: ``web``, ``tools``
+=================================
 
 .. automodule:: web
     :members:
