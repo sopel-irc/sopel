@@ -169,6 +169,17 @@ class Bot(asynchat.async_chat):
         self.write(['QUIT'], message)
         self.hasquit = True
 
+    def part(self, channel):
+        '''Part a channel'''
+        self.write(['PART'], channel)
+
+    def join(self, channel, password=None):
+        '''Join a channel'''
+        if password is None:
+            self.write(['JOIN'], channel)
+        else:
+            self.write(['JOIN', channel, password])
+
     def handle_connect(self):
         if self.use_ssl:
             if not self.verify_ssl:
