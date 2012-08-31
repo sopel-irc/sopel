@@ -162,8 +162,12 @@ class Bot(asynchat.async_chat):
         try: asyncore.loop()
         except KeyboardInterrupt:
             print 'KeyboardInterrupt'
-            self.write(['QUIT'], 'KeyboardInterrupt')
-            self.hasquit = True
+            self.quit('KeyboardInterrupt')
+
+    def quit(self, message):
+        '''Disconnect from IRC and close the bot'''
+        self.write(['QUIT'], message)
+        self.hasquit = True
 
     def handle_connect(self):
         if self.use_ssl:
