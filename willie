@@ -55,7 +55,7 @@ def main(argv=None):
     try:
         parser = optparse.OptionParser('%prog [options]')
         parser.add_option('-c', '--config', metavar='filename', help='use a specific configuration file')
-        #parser.add_option("-d", '--fork', action="store_true", dest="deamonize", help="Deamonize willie")
+        parser.add_option("-d", '--fork', action="store_true", dest="deamonize", help="Deamonize willie")
         parser.add_option("-q", '--quit', action="store_true", dest="quit", help="Gracefully quit Willie")
         parser.add_option("-k", '--kill', action="store_true", dest="kill", help="Kill Willie")
         opts, args = parser.parse_args(argv)
@@ -105,6 +105,10 @@ def main(argv=None):
             elif not tools.check_pid(old_pid) and opts.kill or opts.quit:
                 print >> sys.stderr, 'Willie is not running!'
                 sys.exit(1)
+        if opts.deamonize is not None:
+            child_pid = os.fork()
+            if child_pid is not 0:
+                sys.exit()
         pid_file = open(pid_file_path, 'w')
         pid_file.write(str(os.getpid()))
         pid_file.close()
