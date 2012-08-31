@@ -24,7 +24,7 @@ def run(config):
     def signal_handler(sig, frame):
         if sig == signal.SIGUSR1:
             print >> sys.stderr, 'Got quit signal, shutting down.'
-            p.quit('Clsoing')
+            p.quit('Closing')
     while True:
         try:
             p = bot.Willie(config)
