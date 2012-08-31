@@ -68,6 +68,15 @@ def try_print_stderr(string):
         print >> sys.stderr, string
     except:
         pass
+        
+def check_pid(pid):
+    """ Check if process is running by pid. """
+    try:
+        os.kill(pid, 0)
+    except OSError:
+        return False
+    else:
+        return True
 if __name__ == '__main__':
     print __doc__.strip()
 

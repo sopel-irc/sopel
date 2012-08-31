@@ -12,6 +12,7 @@ from textwrap import dedent as trim
 from config import Config
 import config
 import tools
+import signal
 
 #Check if data folder exists under new or previous names. If not, use ~/.willie
 #(which will be created later on, if it doesn't yet exist).
@@ -53,8 +54,10 @@ def main(argv=None):
     # Step One: Parse The Command Line
     try:
         parser = optparse.OptionParser('%prog [options]')
-        parser.add_option('-c', '--config', metavar='fn',
-            help='use this configuration file or directory')
+        parser.add_option('-c', '--config', metavar='filename', help='use a specific configuration file')
+        #parser.add_option("-d", '--fork', action="store_true", dest="deamonize", help="Deamonize willie")
+        parser.add_option("-q", '--quit', action="store_true", dest="quit", help="Gracefully quit Willie")
+        parser.add_option("-k", '--kill', action="store_true", dest="kill", help="Kill Willie")
         opts, args = parser.parse_args(argv)
         # Step Two: Check Dependencies
 
@@ -76,6 +79,38 @@ def main(argv=None):
         config_module.logdir = os.path.abspath('logs')
         sys.stderr = tools.output_redirect(os.path.join(config_module.logdir, 'stdio.log'), stderr=True)
         sys.stdout = tools.output_redirect(os.path.join(config_module.logdir, 'stdio.log'), stderr=False)
+
+        #Handle --quit, --kill and saving the PID to file
+        if opts.config is None:
+            pid_file_path = os.path.join(os.getcwd(), '.pid-default')
+        else:
+            pid_file_path = os.path.join(os.getcwd(), '.pid-%s' % opts.config)
+        if os.path.isfile(pid_file_path):
+            pid_file = open(pid_file_path, 'r')
+            old_pid = int(pid_file.read())
+            pid_file.close()
+            if tools.check_pid(old_pid):
+                if opts.quit is None and opts.kill is None:
+                    print >> sys.stderr, 'There\'s already a Willie instance running with this config file'
+                    print >> sys.stderr, 'Try using the --quit or the --kill options'
+                    sys.exit(1)
+                elif opts.kill:
+                    print >> sys.stderr, 'Killing the willie'
+                    os.kill(old_pid, signal.SIGKILL)
+                    sys.exit(0)
+                elif opts.quit:
+                    print >> sys.stderr, 'Singaling Willie to stop gracefully'
+                    os.kill(old_pid, signal.SIGUSR1)
+                    sys.exit(0)
+            elif not tools.check_pid(old_pid) and opts.kill or opts.quit:
+                print >> sys.stderr, 'Willie is not running!'
+                sys.exit(1)
+        pid_file = open(pid_file_path, 'w')
+        pid_file.write(str(os.getpid()))
+        pid_file.close()
+        config_module.pid_file_path = pid_file_path
+
+        
         # Step Four: Load willie
         try: from __init__ import run
         except ImportError:
@@ -88,5 +123,6 @@ def main(argv=None):
         run(config_module)
     except KeyboardInterrupt:
         print "\n\nInterrupted"
+        os._exit(1)
 if __name__ == '__main__':
     main()

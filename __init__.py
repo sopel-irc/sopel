@@ -14,16 +14,23 @@ http://willie.dftba.net/
 import sys, os, time, threading, signal
 import traceback
 import bot
+import signal
 
 def run(config):
     if hasattr(config, 'delay'):
         delay = config.delay
     else: 
         delay = 20
-    
+    def signal_handler(sig, frame):
+        if sig == signal.SIGUSR1:
+            print >> sys.stderr, 'Got quit signal, shutting down.'
+            p.quit('Clsoing')
     while True:
         try:
             p = bot.Willie(config)
+            signal.signal(signal.SIGUSR1, signal_handler)
+            if config.is_forked:
+                os.fork()
             p.run(config.host, config.port)
         except KeyboardInterrupt:
             os._exit(0)
@@ -43,6 +50,7 @@ def run(config):
         if not isinstance(delay, int):
             break
         if p.hasquit:
+            os.unlink(config.pid_file_path)
             os._exit(0)
         warning = 'Warning: Disconnected. Reconnecting in %s seconds...' % delay
         try:
