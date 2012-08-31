@@ -40,17 +40,19 @@ class Ddict(dict):
 
 class output_redirect:
     ''' A simple object to replace stdout and stderr '''
-    def __init__(self, logpath, stderr=False):
+    def __init__(self, logpath, stderr=False, quiet = False):
         self.logpath = logpath
         self.stderr = stderr
+        self.quiet = quiet
     def write(self,string):
-        try:
-            if self.stderr:
-                sys.__stderr__.write(string)
-            else:
-                sys.__stdout__.write(string)
-        except:
-            pass
+        if not self.quiet:
+            try:
+                if self.stderr:
+                    sys.__stderr__.write(string)
+                else:
+                    sys.__stdout__.write(string)
+            except:
+                pass
         logfile = open(self.logpath, 'a')
         logfile.write(string)
         logfile.close()

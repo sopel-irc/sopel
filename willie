@@ -58,6 +58,7 @@ def main(argv=None):
         parser.add_option("-d", '--fork', action="store_true", dest="deamonize", help="Deamonize willie")
         parser.add_option("-q", '--quit', action="store_true", dest="quit", help="Gracefully quit Willie")
         parser.add_option("-k", '--kill', action="store_true", dest="kill", help="Kill Willie")
+        parser.add_option('--quiet', action="store_true", dest="quiet", help="Supress all output")
         opts, args = parser.parse_args(argv)
         # Step Two: Check Dependencies
 
@@ -77,8 +78,10 @@ def main(argv=None):
         config_module = Config(config_name)
         config_module.dotdir = dotdir
         config_module.logdir = os.path.abspath('logs')
-        sys.stderr = tools.output_redirect(os.path.join(config_module.logdir, 'stdio.log'), stderr=True)
-        sys.stdout = tools.output_redirect(os.path.join(config_module.logdir, 'stdio.log'), stderr=False)
+        if opts.quiet is None:
+            opts.quiet = False
+        sys.stderr = tools.output_redirect(os.path.join(config_module.logdir, 'stdio.log'), True, opts.quiet)
+        sys.stdout = tools.output_redirect(os.path.join(config_module.logdir, 'stdio.log'), False, opts.quiet)
 
         #Handle --quit, --kill and saving the PID to file
         if opts.config is None:
