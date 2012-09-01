@@ -83,10 +83,13 @@ def main(argv=None):
         config_module = Config(config_name)
         config_module.dotdir = dotdir
         config_module.logdir = os.path.abspath('logs')
+        logfile = os.path.os.path.join(config_module.logdir, 'stdio.log')
+        if not os.path.isdir(config_module.logdir):
+            os.mkdir(config_module.logdir)
         if opts.quiet is None:
             opts.quiet = False
-        sys.stderr = tools.output_redirect(os.path.join(config_module.logdir, 'stdio.log'), True, opts.quiet)
-        sys.stdout = tools.output_redirect(os.path.join(config_module.logdir, 'stdio.log'), False, opts.quiet)
+        sys.stderr = tools.output_redirect(logfile, True, opts.quiet)
+        sys.stdout = tools.output_redirect(logfile, False, opts.quiet)
 
         #Handle --quit, --kill and saving the PID to file
         if opts.config is None:
