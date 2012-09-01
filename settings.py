@@ -479,9 +479,10 @@ def write_config(config):
     # SettingsDB documentation page).
 
     userdb_type = '%s'
+    userdb_host = '%s'
     userdb_user = '%s'
     userdb_pass = '%s'
-    userdb_name = '%s'""" % (config.userdb_type, config.userdb_user,
+    userdb_name = '%s'""" % (config.userdb_type, config.userdb_host, config.userdb_user,
                              config.userdb_pass, config.userdb_name)
         
     elif config.userdb_type == 'sqlite':
