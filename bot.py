@@ -102,7 +102,6 @@ class Willie(irc.Bot):
         filenames.append('coretasks.py')
         self.enumerate_modules = enumerate_modules
 
-        os.sys.path.insert(0,modules_dir) 
         modules = []
         excluded_modules = getattr(self.config, 'exclude', [])
         error_count = 0
