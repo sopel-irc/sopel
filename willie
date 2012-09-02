@@ -19,16 +19,10 @@ except ImportError:
     print >> sys.stderr, "Error: Couldn't find willie to import"
     sys.exit(1)
 
-#Check if data folder exists under new or previous names. If not, use ~/.willie
-#(which will be created later on, if it doesn't yet exist).
-dotdir = os.path.expanduser('~/.willie')
-if not os.path.isdir(dotdir):
-    if os.path.isdir(os.path.expanduser('~/.jenni')):
-        dotdir = os.path.expanduser('~/.jenni')
-    elif os.path.isdir(os.path.expanduser('~/.phenny')):
-        dotdir = os.path.expanduser('~/.phenny')
-
-configpath = os.path.expanduser(dotdir + '/default.py')
+willie_dotdir = os.path.expanduser('~/.willie')
+jenni_dotdir = os.path.expanduser('~/.jenni')
+phenny_dotdir = os.path.expanduser('~/.phenny')
+dotdir = willie_dotdir
 
 def check_python_version():
     if sys.version_info < (2, 7):
@@ -36,24 +30,52 @@ def check_python_version():
         print >> sys.stderr, error
         sys.exit(1)
 
-def check_dotdir():
-    if not os.path.isdir(dotdir) or not os.path.isfile(configpath):
-        print 'Creating a config directory at ~/.willie...'
-        try: os.mkdir(dotdir)
-        except Exception, e:
-            print >> sys.stderr, 'There was a problem creating %s:' % dotdir
-            print >> sys.stderr, e.__class__, str(e)
-            print >> sys.stderr, 'Please fix this and then run willie again.'
-            sys.exit(1)
+def enumerate_configs():
+    if os.path.isdir(willie_dotdir):
+        willie_dotdirfiles = os.listdir(willie_dotdir) #Preferred
+        willie_config = []
+        for item in willie_dotdirfiles:
+            if item.endswith('.py'):
+                willie_config.append(item)
+    else:
+        willie_config = None
+    if os.path.isdir(jenni_dotdir):
+        jenni_dotdirfiles = os.listdir(jenni_dotdir) #Fallback
+        jenni_config = []
+        for item in jenni_dotdirfiles:
+            if item.endswith('.py'):
+                jenni_config.append(item)
+    else:
+        jenni_config = []
+    if os.path.isdir(phenny_dotdir):
+        phenny_dotdirfiles = os.listdir(phenny_dotdir) #Preferred
+        phenny_config = []
+        for item in phenny_dotdirfiles:
+            willie_config = []
+            if item.endswith('.py'):
+                phenny_config.append(item)
+    else:
+        phenny_config = []
 
+    return (willie_config, jenni_config, phenny_config)
 
-def config_names(config):
-    config = config or 'default'
-    there = os.path.join(dotdir, config)
-    if os.path.isfile(there):
-        return [there]
-    if os.path.isfile(there + '.py'):
-        return [there + '.py']
+def find_config(name):
+    global dotdir
+    configs = enumerate_configs()
+    if name in configs[0] or name+'.py' in configs[0]:
+        dotdir = willie_dotdir
+        if name+'.py' in configs[0]:
+            name = name+'.py'
+    elif name in configs[1] or name+'.py' in configs[1]:
+        dotdir = jenni_dotdir
+        if name+'.py' in configs[1]:
+            name = name+'.py'
+    elif name in configs[2] or name+'.py' in configs[2]:
+        dotdir = phenny_dotdir
+        if name+'.py' in configs[2]:
+            name = name+'.py'
+
+    return os.path.join(dotdir, name)
 
 def main(argv=None):
     # Step One: Parse The Command Line
@@ -65,29 +87,26 @@ def main(argv=None):
         parser.add_option("-k", '--kill', action="store_true", dest="kill", help="Kill Willie")
         parser.add_option('--quiet', action="store_true", dest="quiet", help="Supress all output")
         opts, args = parser.parse_args(argv)
-        # Step Two: Check Dependencies
 
-        check_python_version() # require python2.4 or later
+
+        check_python_version()
         config_name = opts.config or 'default'
-        configpath = os.path.join(dotdir, config_name)
-        if not os.path.isfile(configpath) and not os.path.isfile(configpath+'.py'):
+        configpath = find_config(config_name)
+        if not os.path.isfile(configpath):
             print "Welcome to Willie!\nI can't seem to find the configuration file, so let's generate it!\n"
-            config.create_config(configpath+'.py')
+            config.create_config(configpath)
+            configpath = find_config(config_name)
 
-        # Step Three: Load The Configurations
-        if not config_names(opts.config):
-            print >> sys.stderr, "Error: specified configuration file not found, this is odd because if things are working according to plans I just showed you a nice configuration generation wizard that should've written the config file!"
-            sys.exit(1)
-
-        config_name = config_names(opts.config)[0]
-        config_module = Config(config_name)
+        config_module = Config(configpath)
         config_module.dotdir = dotdir
+
         config_module.logdir = os.path.abspath('logs')
         logfile = os.path.os.path.join(config_module.logdir, 'stdio.log')
         if not os.path.isdir(config_module.logdir):
             os.mkdir(config_module.logdir)
         if opts.quiet is None:
             opts.quiet = False
+
         sys.stderr = tools.output_redirect(logfile, True, opts.quiet)
         sys.stdout = tools.output_redirect(logfile, False, opts.quiet)
 
