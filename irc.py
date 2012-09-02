@@ -120,6 +120,7 @@ class Bot(asynchat.async_chat):
 
     def safe(self, string):
         '''Remove newlines from a string and make sure it is utf8'''
+        string = str(string)
         string = string.replace('\n', '')
         string = string.replace('\r', '')
         try:
@@ -295,43 +296,42 @@ class Bot(asynchat.async_chat):
         pass
 
     def msg(self, recipient, text):
-        self.sending.acquire()
+        try:
+            self.sending.acquire()
 
-        # Cf. http://swhack.com/logs/2006-03-01#T19-43-25
-        if isinstance(text, unicode):
-            try: text = text.encode('utf-8')
-            except UnicodeEncodeError, e:
-                text = e.__class__ + ': ' + str(e)
-        if isinstance(recipient, unicode):
-            try: recipient = recipient.encode('utf-8')
-            except UnicodeEncodeError, e:
-                return
+            # Cf. http://swhack.com/logs/2006-03-01#T19-43-25
+            if isinstance(text, unicode):
+                try: text = text.encode('utf-8')
+                except UnicodeEncodeError, e:
+                    text = e.__class__ + ': ' + str(e)
+            if isinstance(recipient, unicode):
+                try: recipient = recipient.encode('utf-8')
+                except UnicodeEncodeError, e:
+                    return
 
-        text = str(text)
+            # No messages within the last 3 seconds? Go ahead!
+            # Otherwise, wait so it's been at least 0.8 seconds + penalty
+            if self.stack:
+                elapsed = time.time() - self.stack[-1][0]
+                if elapsed < 3:
+                    penalty = float(max(0, len(text) - 50)) / 70
+                    wait = 0.8 + penalty
+                    if elapsed < wait:
+                        time.sleep(wait - elapsed)
 
-        # No messages within the last 3 seconds? Go ahead!
-        # Otherwise, wait so it's been at least 0.8 seconds + penalty
-        if self.stack:
-            elapsed = time.time() - self.stack[-1][0]
-            if elapsed < 3:
-                penalty = float(max(0, len(text) - 50)) / 70
-                wait = 0.8 + penalty
-                if elapsed < wait:
-                    time.sleep(wait - elapsed)
+            # Loop detection
+            messages = [m[1] for m in self.stack[-8:]]
+            if messages.count(text) >= 5:
+                text = '...'
+                if messages.count('...') >= 3:
+                    self.sending.release()
+                    return
 
-        # Loop detection
-        messages = [m[1] for m in self.stack[-8:]]
-        if messages.count(text) >= 5:
-            text = '...'
-            if messages.count('...') >= 3:
-                self.sending.release()
-                return
-
-        self.write(('PRIVMSG', recipient, text))
-        self.stack.append((time.time(), text))
-        self.stack = self.stack[-10:]
-
-        self.sending.release()
+            self.write(('PRIVMSG', recipient, text))
+            self.stack.append((time.time(), text))
+            self.stack = self.stack[-10:]
+        finally:
+            self.sending.release()
             
     def notice(self, dest, text):
         '''Send an IRC NOTICE to a user or a channel. See IRC protocol documentation for more information'''
