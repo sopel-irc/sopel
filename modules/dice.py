@@ -10,7 +10,7 @@ More info:
 """
 
 from random import randint, seed
-from calc import calculate
+from modules.calc import calculate
 import time, re
 
 seed()

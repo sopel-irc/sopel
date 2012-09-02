@@ -11,8 +11,8 @@ More info:
 """
 
 import random
-from search import google_search
-from url import find_title
+from modules.search import google_search
+from modules.url import find_title
 import urllib2
 from lxml import etree
 import re
