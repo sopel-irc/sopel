@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2.7
 """
 Willie - An IRC Bot
 Copyright 2008, Sean B. Palmer, inamidst.com
@@ -31,8 +31,8 @@ if not os.path.isdir(dotdir):
 configpath = os.path.expanduser(dotdir + '/default.py')
 
 def check_python_version():
-    if sys.version_info < (2, 6):
-        error = 'Error: Requires Python 2.6 or later. Try python2.6 willie'
+    if sys.version_info < (2, 7):
+        error = 'Error: Requires Python 2.7 or later. Try python2.7 willie'
         print >> sys.stderr, error
         sys.exit(1)
 
