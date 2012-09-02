@@ -155,6 +155,8 @@ class Bot(asynchat.async_chat):
             message = 'Connecting to %s:%s...' % (host, port)
             print >> sys.stderr, message,
         self.create_socket(socket.AF_INET, socket.SOCK_STREAM)
+        if self.config.bind_host is not None:
+            self.socket.bind((self.config.bind_host,0))
         if self.use_ssl:
             self.send = self._ssl_send
             self.recv = self._ssl_recv

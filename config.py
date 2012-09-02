@@ -104,6 +104,10 @@ class Config(object):
             ca_cert_line = "ca_certs = '"+str(self.ca_certs)+"'"
         else:
             ca_cert_line = "# ca_certs = '/etc/pki/tls/cert.pem'"
+        if self.bind_host is not None:
+            bind_host_line = "bind_host = '%s'" % self.bind_host
+        else:
+            bind_host_line = "# bind_host = '0.0.0.0'"
         output = trim("""\
         nick = '"""+self.nick+"""'
         host = '"""+self.host+"""'
@@ -115,6 +119,8 @@ class Config(object):
         use_ssl = '"""+str(self.use_ssl)+"""'
         """+verify_ssl_line+"""
         """+ca_cert_line+"""
+        
+        """+bind_host_line+"""
 
         # Channel where debug messages should be sent.
         debug_target = '"""+self.debug_target+"""'
@@ -238,6 +244,7 @@ class Config(object):
             self.verify_ssl = self.option('Require trusted SSL certificates?', True)
             if self.verify_ssl:
                 self.interactive_add('ca_certs', 'Enter full path to the CA Certs pem file', '/etc/pki/tls/cert.pem')
+        self.interactive_add('bind_host', 'Bind connection to a specific IP', 'None')
         
         c='Enter the channels to connect to by default, one at a time. When done, hit enter again.'
         self.add_list('channels', c, 'Channel:')
