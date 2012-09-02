@@ -138,6 +138,7 @@ def startmeeting(jenni, input):
         except Exception as e:
             jenni.say("Can't create log directory for this channel, meeting not started!")
             jenni.say(e)
+            meetings_dict[input.sender] = Ddict(dict)
             return
     #Okay, meeting started!
     logplain('Meeting started by ' + input.nick.lower(), input.sender)
