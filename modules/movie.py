@@ -7,13 +7,7 @@ Licensed under the Eiffel Forum License 2.
 
 This module relies on imdbapi.com
 """
-try:
-    import json
-except ImportError:
-    import simplejson as json
-except ImportError:
-    print("Either update to python 2.6+ or install simplejson")
-import web
+import json
 
 def imdb(jenni, input):
     if not input.group(2):
