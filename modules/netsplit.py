@@ -1,18 +1,19 @@
 #!/usr/bin/env python
 """
-ping.py - jenni Ping Module
-Author: Sean B. Palmer, inamidst.com
-About: http://inamidst.com/phenny/
+netsplit.py - Message the debug channel on a netsplit.
+Author: Edward Powell - embolalia.net
+
+http://willie.dftba.net
 """
 
 import re
 
-def netsplit(jenni, input):
-    network = jenni.config.host.lstrip('irc')#A fair guess, I'd say.
+def netsplit(willie, trigger):
+    network = willie.config.host.lstrip('irc')#A fair guess, I'd say.
     server = '\S+?'+network
     
-    if not re.match(server+' '+server, input.group(1)): return
-    jenni.msg('#Embo', 'Yarg, netsplit!')
+    if not re.match(server+' '+server, trigger.group(1)): return
+    willie.debug('Netsplit', 'Yarg, netsplit!', 'warning')
 netsplit.event = 'QUIT'
 netsplit.rule = '(.*)'
 
