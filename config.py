@@ -104,7 +104,7 @@ class Config(object):
             ca_cert_line = "ca_certs = '"+str(self.ca_certs)+"'"
         else:
             ca_cert_line = "# ca_certs = '/etc/pki/tls/cert.pem'"
-        if self.bind_host is not None:
+        if self.bind_host is not 'None':
             bind_host_line = "bind_host = '%s'" % self.bind_host
         else:
             bind_host_line = "# bind_host = '0.0.0.0'"
