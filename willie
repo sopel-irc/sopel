@@ -48,7 +48,7 @@ def enumerate_configs():
     else:
         jenni_config = []
     if os.path.isdir(phenny_dotdir):
-        phenny_dotdirfiles = os.listdir(phenny_dotdir) #Preferred
+        phenny_dotdirfiles = os.listdir(phenny_dotdir) #Fallback of fallback
         phenny_config = []
         for item in phenny_dotdirfiles:
             willie_config = []
@@ -85,11 +85,37 @@ def main(argv=None):
         parser.add_option("-d", '--fork', action="store_true", dest="deamonize", help="Deamonize willie")
         parser.add_option("-q", '--quit', action="store_true", dest="quit", help="Gracefully quit Willie")
         parser.add_option("-k", '--kill', action="store_true", dest="kill", help="Kill Willie")
+        parser.add_option("-l", '--list', action="store_true", dest="list_configs", help="List all config files found")
         parser.add_option('--quiet', action="store_true", dest="quiet", help="Supress all output")
         opts, args = parser.parse_args(argv)
 
 
         check_python_version()
+        if opts.list_configs is not None:
+            configs = enumerate_configs()
+            print 'Config files in ~/.willie:'
+            if len(configs[0]) is 0:
+                print '\tNone found'
+            else:
+                for config in configs[0]:
+                    print '\t%s' % config
+            print '-------------------------'
+            print 'Config files in ~/.jenni:'
+            if len(configs[1]) is 0:
+                print '\tNone found'
+            else:
+                for config in configs[1]:
+                    print '\t%s' % config
+            print '-------------------------'
+            print 'Config files in ~/.phenny:'
+            if len(configs[2]) is 0:
+                print '\tNone found'
+            else:
+                for config in configs[2]:
+                    print '\t%s' % config
+            print '-------------------------'
+            return
+
         config_name = opts.config or 'default'
         configpath = find_config(config_name)
         if not os.path.isfile(configpath):
@@ -135,6 +161,9 @@ def main(argv=None):
             elif not tools.check_pid(old_pid) and (opts.kill or opts.quit):
                 print >> sys.stderr, 'Willie is not running!'
                 sys.exit(1)
+        elif opts.quit is not None and opts.kill is not None:
+            print >> sys.stderr, 'Willie is not running!'
+            sys.exit(1)
         if opts.deamonize is not None:
             child_pid = os.fork()
             if child_pid is not 0:
