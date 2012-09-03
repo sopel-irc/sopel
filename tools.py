@@ -1,18 +1,19 @@
 #!/usr/bin/env python
 # coding=utf-8
 """
-tools.py - Jenni misc tools
+tools.py - Willie misc tools
 Copyright 2008, Sean B. Palmer, inamidst.com
 Copyright © 2012, Elad Alfassa <elad@fedoraproject.org>
 Licensed under the Eiffel Forum License 2.
 
-https://github.com/embolalia/jenni
+https://willie.dftba.net
 """
 import sys
+import os
 
 def deprecated(old):
-    def new(jenni, input, old=old):
-        self = jenni
+    def new(willie, input, old=old):
+        self = willie
         origin = type('Origin', (object,), {
             'sender': input.sender,
             'nick': input.nick
@@ -37,6 +38,25 @@ class Ddict(dict):
             self[key] = self.default()
         return dict.__getitem__(self, key)
 
+class output_redirect:
+    ''' A simple object to replace stdout and stderr '''
+    def __init__(self, logpath, stderr=False, quiet = False):
+        self.logpath = logpath
+        self.stderr = stderr
+        self.quiet = quiet
+    def write(self,string):
+        if not self.quiet:
+            try:
+                if self.stderr:
+                    sys.__stderr__.write(string)
+                else:
+                    sys.__stdout__.write(string)
+            except:
+                pass
+        logfile = open(self.logpath, 'a')
+        logfile.write(string.encode('utf8'))
+        logfile.close()
+
 def try_print(string):
     ''' Try printing to terminal, ignore errors '''
     try:
@@ -50,6 +70,15 @@ def try_print_stderr(string):
         print >> sys.stderr, string
     except:
         pass
+        
+def check_pid(pid):
+    """ Check if process is running by pid. """
+    try:
+        os.kill(pid, 0)
+    except OSError:
+        return False
+    else:
+        return True
 if __name__ == '__main__':
     print __doc__.strip()
 

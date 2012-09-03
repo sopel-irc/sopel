@@ -2,13 +2,13 @@
 """
 *Availability: 3+ for all functions; attributes may vary.*
 
-The config class is, essentially, a representation of the active jenni config
+The config class is, essentially, a representation of the active Willie config
 file. As such, the details of its members depend entirely upon what is written
 there.
 
 Running the ``config.py`` file directly will give the user an interactive series
 of dialogs to create the configuration file. This will guide the user through
-creating settings for the jenni core, the settings database, and any modules
+creating settings for the Willie core, the settings database, and any modules
 which have a configuration function.
 
 The configuration function, if used, must be declared with the signature
@@ -17,7 +17,7 @@ file. The ``configure`` function should not write to the file, as this is done
 by the utility.
 """
 """
-Config - A config class and writing/updating utility for jenni
+Config - A config class and writing/updating utility for Willie
 Copyright 2012, Edward Powell, embolalia.net
 Licensed under the Eiffel Forum License 2.
 
@@ -25,6 +25,7 @@ http://dft.ba/-williesource
 """
 
 import os, sys, imp
+import getpass
 from textwrap import dedent as trim
 from bot import enumerate_modules
 
@@ -48,7 +49,7 @@ class Config(object):
         command.) Note that this is used in a regular expression, so regex
         syntax and special characters apply.
         """
-        self.name = 'Willie Embosbot, https://github.com/embolalia/jenni'
+        self.name = 'Willie Embosbot, http://willie.dftba.net'
         """The "real name" used for the bot's whois."""
         self.port = 6667
         """The port to connect on"""
@@ -94,14 +95,33 @@ class Config(object):
         else:
             enable_line = "# enable = []"
         extra = self.extra.append(os.getcwd() + '/modules/')
-        
+        if hasattr(self, 'verify_ssl'):
+            verify_ssl_line = "verify_ssl = "+str(self.verify_ssl)
+        else:
+            verify_ssl_line = "# verify_ssl = True"
+            
+        if hasattr(self, 'ca_certs'):
+            ca_cert_line = "ca_certs = '"+str(self.ca_certs)+"'"
+        else:
+            ca_cert_line = "# ca_certs = '/etc/pki/tls/cert.pem'"
+        if self.bind_host is not 'None':
+            bind_host_line = "bind_host = '%s'" % self.bind_host
+        else:
+            bind_host_line = "# bind_host = '0.0.0.0'"
         output = trim("""\
         nick = '"""+self.nick+"""'
         host = '"""+self.host+"""'
         port = """+str(self.port)+"""
         channels = """+str(self.channels)+"""
         owner = '"""+self.owner+"""'
+        name = '"""+self.name+"""'
         
+        use_ssl = '"""+str(self.use_ssl)+"""'
+        """+verify_ssl_line+"""
+        """+ca_cert_line+"""
+        
+        """+bind_host_line+"""
+
         # Channel where debug messages should be sent.
         debug_target = '"""+self.debug_target+"""'
         
@@ -153,7 +173,7 @@ class Config(object):
     
         
     
-    def interactive_add(self, attrib, prompt, default=None):
+    def interactive_add(self, attrib, prompt, default=None, ispass=False):
         """
         Ask user in terminal for the value to assign to ``attrib``. If ``default``
         is passed, it will be shown as the default value in the prompt. If
@@ -162,13 +182,22 @@ class Config(object):
         """
         if hasattr(self, attrib):
             atr = getattr(self, attrib)
-            setattr(self, attrib, raw_input(prompt+' [%s]: ' % atr) or atr)
+            if ispass == True:
+                setattr(self, attrib, getpass.getpass(prompt+' [%s]: ' % atr) or atr)
+            else:
+                setattr(self, attrib, raw_input(prompt+' [%s]: ' % atr) or atr)
         elif default:
-            setattr(self, attrib, raw_input(prompt+' [%s]: ' % default) or default)
+            if ispass == True:
+                setattr(self, attrib, getpass.getpass(prompt+' [%s]: ' % default) or default)
+            else:
+                setattr(self, attrib, raw_input(prompt+' [%s]: ' % default) or default)
         else:
             inp = ''
             while not inp:
-                inp = raw_input(prompt+': ')
+                if ispass == True:
+                    inp = getpass.getpass(prompt+': ')
+                else:
+                    inp = raw_input(prompt+': ')
             setattr(self, attrib, inp)
 
     def add_list(self, attrib, message, prompt):
@@ -205,11 +234,17 @@ class Config(object):
         return (ans is 'y' or ans is 'Y')
     
     def _core(self):
-        self.interactive_add('nick', 'Enter the nickname for your bot', 'jenni')
+        self.interactive_add('nick', 'Enter the nickname for your bot', 'Willie')
         self.interactive_add('name', 'Enter the "real name" of you bot for WHOIS responses',
-                             'Willie Embosbot, https://github.com/embolalia/jenni')
+                             'Willie Embosbot, http://willie.dftba.net')
         self.interactive_add('host', 'Enter the server to connect to', 'irc.dftba.net')
         self.interactive_add('port', 'Enter the port to connect on', '6667')
+        self.use_ssl = self.option('Use SSL Secured connection?', False)
+        if self.use_ssl:
+            self.verify_ssl = self.option('Require trusted SSL certificates?', True)
+            if self.verify_ssl:
+                self.interactive_add('ca_certs', 'Enter full path to the CA Certs pem file', '/etc/pki/tls/cert.pem')
+        self.interactive_add('bind_host', 'Bind connection to a specific IP', 'None')
         
         c='Enter the channels to connect to by default, one at a time. When done, hit enter again.'
         self.add_list('channels', c, 'Channel:')
@@ -222,13 +257,13 @@ class Config(object):
         c="List users you'd like "+self.nick+" to ignore (e.g. other bots), one at a time. Hit enter when done."
         self.add_list('other_bots', c, 'Nick:')
         
-        self.interactive_add('password', "Enter the bot's NickServ password", 'None')
-        self.interactive_add('serverpass', "Enter the bot's server password", 'None')
+        self.interactive_add('password', "Enter the bot's NickServ password", 'None', ispass=True)
+        self.interactive_add('serverpass', "Enter the bot's server password", 'None', ispass=True)
         
         oper = self.option("Will this bot have IRC Operator privilages")
         if oper:
             opername = raw_input("Operator name:")
-            operpass = raw_input("Operator password:")
+            operpass = getpass.getpass("Operator password:")
             self.operline = "Oper = ('"+opername+"', '"+operpass+"')"
         else: self.operline = "# Oper = ('opername', 'operpass')"
         
@@ -322,20 +357,25 @@ def main(argv=None):
     parser.add_option('-c', '--config', metavar='fn',
         help='use this configuration file or directory')
     opts, args = parser.parse_args(argv)
-    dotdir = os.path.expanduser('~/.jenni')
+    dotdir = os.path.expanduser('~/.willie')
     configpath = os.path.join(dotdir, (opts.config or 'default')+'.py')
     create_config(configpath)
 
 def create_config(configpath):
     print "Please answer the following questions to create your configuration file:\n"
-    dotdir = os.path.expanduser('~/.jenni')
+    dotdir = os.path.expanduser('~/.willie')
     if not os.path.isdir(dotdir):
-        print 'Creating a config directory at ~/.jenni...'
+        if os.path.isdir(os.path.expanduser('~/.jenni')):
+            dotdir = os.path.expanduser('~/.jenni')
+        elif os.path.isdir(os.path.expanduser('~/.phenny')):
+            dotdir = os.path.expanduser('~/.phenny')
+    if not os.path.isdir(dotdir):
+        print 'Creating a config directory at ~/.willie...'
         try: os.mkdir(dotdir)
         except Exception, e:
             print >> sys.stderr, 'There was a problem creating %s:' % dotdir
             print >> sys.stderr, e.__class__, str(e)
-            print >> sys.stderr, 'Please fix this and then run jenni again.'
+            print >> sys.stderr, 'Please fix this and then run Willie again.'
             sys.exit(1)
     try:
         config = Config(configpath, os.path.isfile(configpath))
@@ -345,7 +385,7 @@ def create_config(configpath):
         config.write()
     except Exception, e:
         print "Encountered an error while writing the config file. This shouldn't happen. Check permissions."
-        print e
+        raise
         sys.exit(1)
     print "Config file written sucessfully!"
 

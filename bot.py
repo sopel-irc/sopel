@@ -1,10 +1,14 @@
 #!/usr/bin/env python
+# coding=utf-8
 """
-bot.py - Jenni IRC Bot
+bot.py - Willie IRC Bot
 Copyright 2008, Sean B. Palmer, inamidst.com
+Copyright 2012, Edward Powell, http://embolalia.net
+Copyright © 2012, Elad Alfassa <elad@fedoraproject.org>
+
 Licensed under the Eiffel Forum License 2.
 
-http://inamidst.com/phenny/
+http://willie.dftba.net/
 """
 
 import time, sys, os, re, threading, imp
@@ -43,14 +47,32 @@ def enumerate_modules(config):
                         filenames.append(os.path.join(fn, n))
     return filenames
 
-class Jenni(irc.Bot):
+class Willie(irc.Bot):
     def __init__(self, config):
-        if hasattr(config, "logchan_pm"): lc_pm = config.logchan_pm
-        else: lc_pm = None
-        args = (config.nick, config.name, config.channels, config.password, lc_pm)
+        if hasattr(config, "logchan_pm"): 
+            lc_pm = config.logchan_pm
+        else: 
+            lc_pm = None
+        if hasattr(config, 'use_ssl'):
+            use_ssl = config.use_ssl
+        else:
+            use_ssl = False
+        if hasattr(config, 'verify_ssl'):
+            verify_ssl = config.verify_ssl
+        else:
+            verify_ssl = False
+        if hasattr(config, 'ca_certs'):
+            ca_certs = config.ca_certs
+        else:
+            ca_certs = '/etc/pki/tls/cert.pem'
+        if  hasattr(config, 'serverpass'):
+            serverpass = config.serverpass
+        else:
+            serverpass = None
+        args = (config.nick, config.name, config.channels, config.password, lc_pm, use_ssl, verify_ssl, ca_certs, serverpass)
         irc.Bot.__init__(self, *args)
         self.config = config
-        """The ``Config`` for the current jenni instance."""
+        """The ``Config`` for the current Willie instance."""
         self.doc = {}
         """
         A dictionary of module functions to their docstring and example, if
@@ -72,14 +94,14 @@ class Jenni(irc.Bot):
         self.settings = SettingsDB(config)
 
     def setup(self):
-        stderr("\nWelcome to Jenni. Loading modules...\n\n")
+        stderr("\nWelcome to Willie. Loading modules...\n\n")
         self.variables = {}
 
 
         filenames = enumerate_modules(self.config)
+        filenames.append('coretasks.py')
         self.enumerate_modules = enumerate_modules
 
-        os.sys.path.insert(0,modules_dir) 
         modules = []
         excluded_modules = getattr(self.config, 'exclude', [])
         error_count = 0
@@ -99,9 +121,9 @@ class Jenni(irc.Bot):
                 except Exception, e:
                     error_count = error_count + 1
                     stderr("Error in %s setup procedure: %s (in bot.py)" % (name, e))
-
+        
         if modules:
-            stderr('\n\nRegistered %d modules,' % len(modules))
+            stderr('\n\nRegistered %d modules,' % (len(modules)-1))
             stderr('%d modules failed to load\n\n' % error_count)
         else: stderr("Warning: Couldn't find any modules")
 
@@ -109,7 +131,7 @@ class Jenni(irc.Bot):
 
     def register(self, variables):
         """
-        With the ``__dict__`` attribute from a jenni module, update or add the
+        With the ``__dict__`` attribute from a Willie module, update or add the
         trigger commands and rules to allow the function to be triggered.
         """
         # This is used by reload.py, hence it being methodised
@@ -195,9 +217,9 @@ class Jenni(irc.Bot):
                     bind(self, func.priority, regexp, func)
 
     def wrapped(self, origin, text, match):
-        class JenniWrapper(object):
-            def __init__(self, jenni):
-                self.bot = jenni
+        class WillieWrapper(object):
+            def __init__(self, willie):
+                self.bot = willie
 
             def __getattr__(self, attr):
                 sender = origin.sender or text
@@ -210,7 +232,7 @@ class Jenni(irc.Bot):
                     return lambda msg: self.bot.msg(sender, '\001ACTION '+msg+'\001')
                 return getattr(self.bot, attr)
 
-        return JenniWrapper(self)
+        return WillieWrapper(self)
     class Trigger(unicode):
         def __new__(cls, text, origin, bytes, match, event, args, self):
             s = unicode.__new__(cls, text)
@@ -242,7 +264,7 @@ class Jenni(irc.Bot):
             """The arguments given to a command.""" #TODO elaborate
             s.admin = (origin.nick in self.config.admins) or origin.nick.lower() == self.config.owner.lower()
             """
-            True if the nick which triggered the command is in jenni's admin
+            True if the nick which triggered the command is in Willie's admin
             list as defined in the config file.
             """
                 
@@ -259,9 +281,26 @@ class Jenni(irc.Bot):
             s.owner = origin.nick + '@' + origin.host == self.config.owner
             if s.owner == False: s.owner = origin.nick == self.config.owner
             s.host = origin.host
+            if s.sender is not s.nick: #no ops in PM
+                try:
+                    s.ops = self.ops[s.sender]
+                except:
+                    s.ops = []
+                """List of channel operators in the channel the message was recived in"""
+                try:
+                    s.halfplus = self.halfplus[s.sender]
+                except:
+                    s.halfplus = []
+                """List of channel half-operators in the channel the message was recived in"""
+                s.isop = (s.nick.lower() in s.ops or s.nick.lower() in s.halfplus)
+                """True if the user is half-op or an op"""
+            else:
+                s.isop = False
+                s.ops = []
+                s.halfplus = []
             return s
 
-    def call(self, func, origin, jenni, trigger):
+    def call(self, func, origin, willie, trigger):
         nick = (trigger.nick).lower()
         if nick in self.times:
             if func in self.times[nick]:
@@ -274,7 +313,7 @@ class Jenni(irc.Bot):
         else: self.times[nick] = dict()
         self.times[nick][func] = time.time()
         try:
-            func(jenni, trigger)
+            func(willie, trigger)
         except Exception, e:
             self.error(origin, trigger)
 
@@ -300,7 +339,7 @@ class Jenni(irc.Bot):
                     if match:
                         if self.limit(origin, func): continue
 
-                        jenni = self.wrapped(origin, text, match)
+                        willie = self.wrapped(origin, text, match)
                         trigger = self.Trigger(text, origin, bytes, match, event, args, self)
                         if trigger.nick in self.config.other_bots: continue
 
@@ -336,15 +375,48 @@ class Jenni(irc.Bot):
                                         return
                         # stats
                         if func.thread:
-                            targs = (func, origin, jenni, trigger)
+                            targs = (func, origin, willie, trigger)
                             t = threading.Thread(target=self.call, args=targs)
                             t.start()
-                        else: self.call(func, origin, jenni, trigger)
+                        else: self.call(func, origin, willie, trigger)
 
                         for source in [origin.sender, origin.nick]:
                             try: self.stats[(func.name, source)] += 1
                             except KeyError:
                                 self.stats[(func.name, source)] = 1
+    def debug(self, tag, text, level):
+        """
+        Sends an error to Willie's configured ``debug_target``. 
+        """
+        if not hasattr(self.config, 'verbose') or not self.config.verbose:
+            self.config.verbose = 'warning'
+        if not hasattr(self.config, 'debug_target') or not (self.config.debug_target == 'stdio' or self.config.debug_target.startswith('#')):
+            debug_target = 'stdio'
+        else:
+            debug_target = self.config.debug_target
+        debug_msg = "[%s] %s" % (tag, text)
+        if level == 'verbose':
+            if self.config.verbose == 'verbose':
+                if (debug_target == 'stdio'):
+                    print debug_msg
+                else:
+                    self.msg(debug_target, debug_msg)
+                return True
+        elif level == 'warning':
+            if self.config.verbose == 'verbose' or self.config.verbose == 'warning':
+                if (debug_target == 'stdio'):
+                    print debug_msg
+                else:
+                    self.msg(debug_target, debug_msg)
+                return True
+        elif level == 'always':
+            if (debug_target == 'stdio'):
+                print debug_msg
+            else:
+                self.msg(self.config.debug_target, debug_msg)
+            return True
+        
+        return False
 
 if __name__ == '__main__':
     print __doc__

@@ -8,7 +8,7 @@ decided to set up the database.
 
 The SettingsDB object itself is essentially a dict which maps channel and
 user names to another dict, which maps a column name to some value. As such,
-the most frequent use will be in the form `jenni.settings[user][column]`,
+the most frequent use will be in the form `willie.settings[user][column]`,
 where table and user are strings.
 
 A number of methods from the dict object are not implemented here. If the
@@ -19,9 +19,7 @@ future versions.
 Copyright 2012, Edward D. Powell, embolalia.net
 Licensed under the Eiffel Forum License 2.
 
-http://inamidst.com/phenny/
-
-To use this DB
+http://willie.dftba.net
 """
 
 from collections import Iterable
@@ -55,7 +53,7 @@ class SettingsDB(object):
     
     With the ``dict`` type, only one other attribute is used - ``userdb_data``.
     This attribute is a native Python dict, usually written by hand in the
-    jenni config file. As such, the ``dict`` type is unique in that changes to
+    Willie config file. As such, the ``dict`` type is unique in that changes to
     it are nto persistant across restarts of the bot, or multiple instances of
     the bot.
     """
@@ -481,9 +479,10 @@ def write_config(config):
     # SettingsDB documentation page).
 
     userdb_type = '%s'
+    userdb_host = '%s'
     userdb_user = '%s'
     userdb_pass = '%s'
-    userdb_name = '%s'""" % (config.userdb_type, config.userdb_user,
+    userdb_name = '%s'""" % (config.userdb_type, config.userdb_host, config.userdb_user,
                              config.userdb_pass, config.userdb_name)
         
     elif config.userdb_type == 'sqlite':

@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 """
-twitter.py - jenni Twitter Module
+twitter.py - Wilie Twitter Module
 Copyright 2008-10, Michael Yanovich, opensource.osu.edu/~yanovich/wiki/
 Tweetwatch features copyright 2011, Edward Powell, embolalia.net
 Licensed under the Eiffel Forum License 2.
 
-http://inamidst.com/phenny/
+http://willie.dftba.net
 
 For this module to work, you must register the application with Twitter, and
 create the variables consumer_key, consumer_secret, access_token, and
@@ -15,12 +15,6 @@ access_token_secret in your config file (~/.jenni/default.py).
 #"twitter_username" with the username you have registered on twitter, and "twitter_password" with the password for that twitter 
 #account.
 """
-try:
-    import json
-except ImportError:
-    import simplejson as json
-except ImportError:
-    print("Either update to python 2.6+ or install simplejson")
 import tweepy
 import sched, time
 import re
@@ -124,51 +118,6 @@ f_reply.example = '.reply 892379487 I like that idea!'
 def twat(jenni,input):
     f_info(jenni,input)
 twat.commands = ['twatinfo']
-
-
-#Tweetwatch functions
-def saylast(jenni, input):
-   global lasts
-   global watch
-   global sch
-   
-   auth = tweepy.OAuthHandler(jenni.config.consumer_key, jenni.config.consumer_secret)
-   auth.set_access_token(jenni.config.access_token, jenni.config.access_token_secret)
-   api = tweepy.API(auth)
-
-   while watch:
-      for twituser in twitter_watch:
-         try:
-            statuses = api.user_timeline(twituser)
-            recent = unicode([s.text for s in statuses][0])
-            if twituser not in lasts or lasts[twituser] != recent:
-               jenni.say("TWEETWATCH: @" + twituser + ": " + recent)
-               lasts[twituser] = recent
-         except Exception as inst:
-            if str(inst) == "status code = 503":
-                jenni.debug('twit', 'Twitter returned HTTP code 503: Service Unavailable.', 'warning')
-            else:
-                jenni.debug('twit', "Exception in saylast(), twit.py (line 151).", 'warning')
-                jenni.debug('twit', +str(type(inst))+": "+str(inst.args)+", "+str(inst)+".", 'warning') #this is also put in the logfile.
-                print type(inst)
-                print inst.args
-                print inst
-      time.sleep(watch_wait)
-      #sch.enter(watch_wait, 1, saylast, (jenni, input))
-      #sch.run()
-
-def tweetwatcher(jenni, input):
-    jenni.say("Tweetwatcher has been disabled until it is fixed, for more information check: https://github.com/embolalia/jenni/issues/37")
-#   global watch
-#   if input.admin:
-#      if input.group(2) == 'off':
-#         watch = False
-#         jenni.say("Tweetwatcher is now off.")
-#      elif input.group(2) == 'on':
-#         watch = True
-#         saylast(jenni, input)
-#         jenni.say("I will now watch for new tweets.")
-tweetwatcher.commands = ['tweetwatcher']
 
 if __name__ == '__main__':
     print __doc__.strip()

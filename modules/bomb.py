@@ -25,8 +25,6 @@ def meter(jenni, input):
 meter.rule = '\.(\S+)meter (\S+)'
 
 def start(jenni, input):
-    print jenni.ops[input.sender]
-    print input.sender
     if not input.sender.startswith('#') or \
        (input.nick not in jenni.ops[input.sender] and
        input.nick not in jenni.halfplus[input.sender]):

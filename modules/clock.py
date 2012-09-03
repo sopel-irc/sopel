@@ -1,17 +1,15 @@
 #!/usr/bin/env python
 """
-clock.py - Jenni Clock Module
+clock.py - Willie Clock Module
 Copyright 2008-9, Sean B. Palmer, inamidst.com
+Copyright 2012, Edward Powell, embolalia.net
 Licensed under the Eiffel Forum License 2.
 
-More info:
- * Jenni: https://github.com/myano/jenni/
- * Phenny: http://inamidst.com/phenny/
+http://willie.dfbta.net
 """
 
 import re, math, time, urllib, locale, socket, struct, datetime
 from decimal import Decimal as dec
-from tools import deprecated
 import MySQLdb
 
 TimeZones = {'KST': 9, 'CADT': 10.5, 'EETDST': 3, 'MESZ': 2, 'WADT': 9,
@@ -196,22 +194,21 @@ TimeZones.update(TZ3)
 
 r_local = re.compile(r'\([a-z]+_[A-Z]+\)')
 
-@deprecated
-def f_time(self, origin, match, args):
+def f_time(willie, trigger):
     """Returns the current time."""
-    tz = match.group(2) or 'UTC'
+    tz = trigger.group(2) or 'UTC'
     tz = tz.strip()
     goodtz = False
     
     #They didn't give us an argument, so do they want their own time?
-    if not match.group(2) and self.settings.hascolumn('tz'):
-        if origin.nick in self.settings:
-            utz = self.settings.get(origin.nick, 'tz')
+    if not trigger.group(2) and willie.settings.hascolumn('tz'):
+        if trigger.nick in willie.settings:
+            utz = willie.settings.get(trigger.nick, 'tz')
             if utz != '':
                 tz = utz
                 goodtz = True
-        elif origin.sender in self.settings:
-            utz = self.settings.get('tz', origin.sender)
+        elif trigger.sender in willie.settings:
+            utz = willie.settings.get(trigger.sender, 'tz')
             if utz != '':
                 tz = utz
                 goodtz = True
@@ -226,8 +223,8 @@ def f_time(self, origin, match, args):
         except: pass
     #Not in pytz, either, so maybe it's another user.
     if not goodtz:
-        if self.settings.hascolumn('tz') and tz in self.settings:
-            utz = self.settings.get('tz', tz)
+        if willie.settings.hascolumn('tz') and tz in willie.settings:
+            utz = willie.settings.get(tz, 'tz')
             if utz != '': tz = utz
     #If we still haven't found it at this point, well, fuck it.
 
@@ -236,20 +233,20 @@ def f_time(self, origin, match, args):
 
     if (TZ == 'UTC') or (TZ == 'Z'):
         msg = time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())
-        self.msg(origin.sender, msg)
+        willie.msg(trigger.sender, msg)
     elif r_local.match(tz): # thanks to Mark Shoulsdon (clsn)
         locale.setlocale(locale.LC_TIME, (tz[1:-1], 'UTF-8'))
         msg = time.strftime("%A, %d %B %Y %H:%M:%SZ", time.gmtime())
-        self.msg(origin.sender, msg)
+        willie.msg(trigger.sender, msg)
     elif TimeZones.has_key(TZ):
         offset = TimeZones[TZ] * 3600
         timenow = time.gmtime(time.time() + offset)
         msg = time.strftime("%a, %d %b %Y %H:%M:%S " + str(TZ), timenow)
-        self.msg(origin.sender, msg)
+        willie.msg(trigger.sender, msg)
     elif tz and tz[0] in ('+', '-') and 4 <= len(tz) <= 6:
         timenow = time.gmtime(time.time() + (int(tz[:3]) * 3600))
         msg = time.strftime("%a, %d %b %Y %H:%M:%S " + str(tz), timenow)
-        self.msg(origin.sender, msg)
+        willie.msg(trigger.sender, msg)
     else:
         try: t = float(tz)
         except ValueError:
@@ -258,14 +255,14 @@ def f_time(self, origin, match, args):
             if r_tz.match(tz) and os.path.isfile('/usr/share/zoneinfo/' + tz):
                 cmd, PIPE = 'TZ=%s date' % tz, subprocess.PIPE
                 proc = subprocess.Popen(cmd, shell=True, stdout=PIPE)
-                self.msg(origin.sender, proc.communicate()[0])
+                willie.msg(trigger.sender, proc.communicate()[0])
             else:
                 error = "Sorry, I don't know about the '%s' timezone or user." % tz
-                self.msg(origin.sender, origin.nick + ': ' + error)
+                willie.msg(trigger.sender, trigger.nick + ': ' + error)
         else:
             timenow = time.gmtime(time.time() + (t * 3600))
             msg = time.strftime("%a, %d %b %Y %H:%M:%S " + str(tz), timenow)
-            self.msg(origin.sender, msg)
+            willie.msg(trigger.sender, msg)
 f_time.commands = ['t', 'time']
 f_time.name = 't'
 f_time.example = '.t UTC'

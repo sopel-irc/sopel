@@ -10,6 +10,7 @@ More info:
 """
 
 from random import randint, seed
+from modules.calc import calculate
 import time, re
 
 seed()
@@ -36,7 +37,7 @@ def dice(jenni, input):
             #the value of this segment is 0
             value = 0
             if re.search("[0-9]*(d|D)[0-9]+", segment): #if there's a dice (regex FTW!)
-                value = rollDice(segment) #then roll the dice.
+                value = rollDice(segment.lower()) #then roll the dice.
                 no_dice = 0 # And let the bot know there's dice in the formula
             elif re.search("([0-9]|\+|\-|\*|\/|\(|\)| \+| \-| \*| \/| \(| \))", segment): #are any of the supported math characters in this piece?
                 value = segment #then just make that the value.
@@ -49,9 +50,11 @@ def dice(jenni, input):
     #you done? good.
     if legal_formula == 1 and full_string != "": # did something break? no? good, continue.
         #at this point full string is something like: "4 + 6 + 12 * 4" etc.
-        result = str(eval(full_string)) # so normally eval is UNSAFE... but since i've dumped regex over the user input i'm pretty confident in the security.
+        result = calculate(full_string)
         #print result to chat
-        if(no_dice): #no dice found, warn!
+        if result == 'Sorry, no result.':
+            jenni.reply(result)
+        elif(no_dice): #no dice found, warn!
             jenni.reply("For pure math, you can use .c! "+msg+" = "+result)
         else: #dice found, just let the users know what's happening
             jenni.reply("You roll "+msg+" ("+full_string+"): "+result)

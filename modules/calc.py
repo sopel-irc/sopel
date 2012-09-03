@@ -14,11 +14,8 @@ from socket import timeout
 import string
 import HTMLParser
 
-def c(jenni, input):
-    """Google calculator."""
-    if not input.group(2):
-        return jenni.reply("Nothing to calculate.")
-    q = input.group(2).encode('utf-8')
+def calculate(input):
+    q = input.encode('utf-8')
     q = q.replace('\xcf\x95', 'phi') # utf-8 U+03D5
     q = q.replace('\xcf\x80', 'pi') # utf-8 U+03C0
     uri = 'http://www.google.com/ig/calculator?q='
@@ -33,8 +30,15 @@ def c(jenni, input):
         answer = answer.replace('<sup>', '^(')
         answer = answer.replace('</sup>', ')')
         answer = web.decode(answer)
-        jenni.say(answer)
-    else: jenni.say('Sorry, no result.')
+        return answer
+    else: return 'Sorry, no result.'
+
+def c(jenni, input):
+    """Google calculator."""
+    if not input.group(2):
+        return jenni.reply("Nothing to calculate.")
+    result = calculate(input.group(2))
+    jenni.reply(result)
 c.commands = ['c', 'calc']
 c.example = '.c 5 + 3'
 

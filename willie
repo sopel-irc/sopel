@@ -1,0 +1,180 @@
+#!/usr/bin/env python2.7
+"""
+Willie - An IRC Bot
+Copyright 2008, Sean B. Palmer, inamidst.com
+Licensed under the Eiffel Forum License 2.
+
+http://willie.dftba.net
+"""
+
+import sys, os, imp, optparse
+from textwrap import dedent as trim
+from config import Config
+from config import create_config
+import tools
+import signal
+try:
+    from __init__ import run
+except ImportError:
+    print >> sys.stderr, "Error: Couldn't find willie to import"
+    sys.exit(1)
+
+willie_dotdir = os.path.expanduser('~/.willie')
+jenni_dotdir = os.path.expanduser('~/.jenni')
+phenny_dotdir = os.path.expanduser('~/.phenny')
+dotdir = willie_dotdir
+
+def check_python_version():
+    if sys.version_info < (2, 7):
+        error = 'Error: Requires Python 2.7 or later. Try python2.7 willie'
+        print >> sys.stderr, error
+        sys.exit(1)
+
+def enumerate_configs():
+    willie_config = []
+    jenni_config = []
+    phenny_config = []
+    if os.path.isdir(willie_dotdir):
+        willie_dotdirfiles = os.listdir(willie_dotdir) #Preferred
+        for item in willie_dotdirfiles:
+            if item.endswith('.py'):
+                willie_config.append(item)
+    if os.path.isdir(jenni_dotdir):
+        jenni_dotdirfiles = os.listdir(jenni_dotdir) #Fallback
+        for item in jenni_dotdirfiles:
+            if item.endswith('.py'):
+                jenni_config.append(item)
+    if os.path.isdir(phenny_dotdir):
+        phenny_dotdirfiles = os.listdir(phenny_dotdir) #Fallback of fallback
+        for item in phenny_dotdirfiles:
+            willie_config = []
+            if item.endswith('.py'):
+                phenny_config.append(item)
+
+    return (willie_config, jenni_config, phenny_config)
+
+def find_config(name):
+    global dotdir
+    configs = enumerate_configs()
+    if name in configs[0] or name+'.py' in configs[0]:
+        dotdir = willie_dotdir
+        if name+'.py' in configs[0]:
+            name = name+'.py'
+    elif name in configs[1] or name+'.py' in configs[1]:
+        dotdir = jenni_dotdir
+        if name+'.py' in configs[1]:
+            name = name+'.py'
+    elif name in configs[2] or name+'.py' in configs[2]:
+        dotdir = phenny_dotdir
+        if name+'.py' in configs[2]:
+            name = name+'.py'
+    elif not name.endswith('.py'):
+        name = name+'.py'
+
+    return os.path.join(dotdir, name)
+
+def main(argv=None):
+    # Step One: Parse The Command Line
+    try:
+        parser = optparse.OptionParser('%prog [options]')
+        parser.add_option('-c', '--config', metavar='filename', help='use a specific configuration file')
+        parser.add_option("-d", '--fork', action="store_true", dest="deamonize", help="Deamonize willie")
+        parser.add_option("-q", '--quit', action="store_true", dest="quit", help="Gracefully quit Willie")
+        parser.add_option("-k", '--kill', action="store_true", dest="kill", help="Kill Willie")
+        parser.add_option("-l", '--list', action="store_true", dest="list_configs", help="List all config files found")
+        parser.add_option('--quiet', action="store_true", dest="quiet", help="Supress all output")
+        opts, args = parser.parse_args(argv)
+
+
+        check_python_version()
+        if opts.list_configs is not None:
+            configs = enumerate_configs()
+            print 'Config files in ~/.willie:'
+            if len(configs[0]) is 0:
+                print '\tNone found'
+            else:
+                for config in configs[0]:
+                    print '\t%s' % config
+            print '-------------------------'
+            print 'Config files in ~/.jenni:'
+            if len(configs[1]) is 0:
+                print '\tNone found'
+            else:
+                for config in configs[1]:
+                    print '\t%s' % config
+            print '-------------------------'
+            print 'Config files in ~/.phenny:'
+            if len(configs[2]) is 0:
+                print '\tNone found'
+            else:
+                for config in configs[2]:
+                    print '\t%s' % config
+            print '-------------------------'
+            return
+
+        config_name = opts.config or 'default'
+        configpath = find_config(config_name)
+        if not os.path.isfile(configpath):
+            print "Welcome to Willie!\nI can't seem to find the configuration file, so let's generate it!\n"
+            if not configpath.endswith('.py'):
+                configpath = configpath + '.py'
+            create_config(configpath)
+            configpath = find_config(config_name)
+
+        config_module = Config(configpath)
+        config_module.dotdir = dotdir
+
+        config_module.logdir = os.path.abspath('logs')
+        logfile = os.path.os.path.join(config_module.logdir, 'stdio.log')
+        if not os.path.isdir(config_module.logdir):
+            os.mkdir(config_module.logdir)
+        if opts.quiet is None:
+            opts.quiet = False
+
+        sys.stderr = tools.output_redirect(logfile, True, opts.quiet)
+        sys.stdout = tools.output_redirect(logfile, False, opts.quiet)
+
+        #Handle --quit, --kill and saving the PID to file
+        if opts.config is None:
+            pid_file_path = os.path.join(os.getcwd(), '.pid-default')
+        else:
+            pid_file_path = os.path.join(os.getcwd(), '.pid-%s' % opts.config)
+        if os.path.isfile(pid_file_path):
+            pid_file = open(pid_file_path, 'r')
+            old_pid = int(pid_file.read())
+            pid_file.close()
+            if tools.check_pid(old_pid):
+                if opts.quit is None and opts.kill is None:
+                    print >> sys.stderr, 'There\'s already a Willie instance running with this config file'
+                    print >> sys.stderr, 'Try using the --quit or the --kill options'
+                    sys.exit(1)
+                elif opts.kill:
+                    print >> sys.stderr, 'Killing the willie'
+                    os.kill(old_pid, signal.SIGKILL)
+                    sys.exit(0)
+                elif opts.quit:
+                    print >> sys.stderr, 'Singaling Willie to stop gracefully'
+                    os.kill(old_pid, signal.SIGUSR1)
+                    sys.exit(0)
+            elif not tools.check_pid(old_pid) and (opts.kill or opts.quit):
+                print >> sys.stderr, 'Willie is not running!'
+                sys.exit(1)
+        elif opts.quit is not None and opts.kill is not None:
+            print >> sys.stderr, 'Willie is not running!'
+            sys.exit(1)
+        if opts.deamonize is not None:
+            child_pid = os.fork()
+            if child_pid is not 0:
+                sys.exit()
+        pid_file = open(pid_file_path, 'w')
+        pid_file.write(str(os.getpid()))
+        pid_file.close()
+        config_module.pid_file_path = pid_file_path
+
+        # Step Five: Initialise And Run willie
+        run(config_module)
+    except KeyboardInterrupt:
+        print "\n\nInterrupted"
+        os._exit(1)
+if __name__ == '__main__':
+    main()
