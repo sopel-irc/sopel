@@ -68,6 +68,8 @@ def find_config(name):
         dotdir = phenny_dotdir
         if name+'.py' in configs[2]:
             name = name+'.py'
+    elif not name.endswith('.py'):
+        name = name+'.py'
 
     return os.path.join(dotdir, name)
 
@@ -114,6 +116,8 @@ def main(argv=None):
         configpath = find_config(config_name)
         if not os.path.isfile(configpath):
             print "Welcome to Willie!\nI can't seem to find the configuration file, so let's generate it!\n"
+            if not configpath.endswith('.py'):
+                configpath = configpath + '.py'
             create_config(configpath)
             configpath = find_config(config_name)
 
