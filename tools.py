@@ -54,7 +54,7 @@ class output_redirect:
             except:
                 pass
         logfile = open(self.logpath, 'a')
-        logfile.write(string)
+        logfile.write(string.encode('utf8'))
         logfile.close()
 
 def try_print(string):

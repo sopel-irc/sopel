@@ -344,15 +344,26 @@ class Bot(asynchat.async_chat):
         try:
             trace = traceback.format_exc()
             try:
+                trace = trace.decode('utf-8')
+            except:
+                pass # Can't do much about it
+            try:
                 print >> sys.stderr, trace
             except:
-                pass
-            logfile = open(os.path.join(self.config.logdir, 'exceptions.log'), 'a') #todo: make not hardcoded
-            logfile.write('from %s at %s:\n' % (origin.sender, str(datetime.now())))
-            logfile.write('Message was: <%s> %s\n' % (trigger.nick, trigger.group(0)))
-            logfile.write(trace)
-            logfile.write('----------------------------------------\n\n')
-            logfile.close()
+                raise
+            try:
+                logfile = codecs.open(os.path.join(self.config.logdir, 'exceptions.log'), 'a', encoding='utf-8') #todo: make not hardcoded
+                logfile.write(u'from %s at %s:\n' % (origin.sender, str(datetime.now())))
+                logfile.write(u'Message was: <%s> %s\n' % (trigger.nick, trigger.group(0)))
+                try:
+                    logfile.write(trace.encode('utf-8'))
+                except:
+                    logfile.write(trace)
+                logfile.write('----------------------------------------\n\n')
+                logfile.close()
+            except Exception as e:
+                print >> sys.stderr, "Could not save full traceback!"
+                self.debug("core: error reporting", "(From: "+origin.sender+"), can't save traceback: "+str(e), 'always')
             lines = list(reversed(trace.splitlines()))
 
             report = [lines[0].strip()]

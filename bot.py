@@ -388,27 +388,29 @@ class Willie(irc.Bot):
         """
         Sends an error to Willie's configured ``debug_target``. 
         """
-        if not self.config.verbose:
+        if not hasattr(self.config, 'verbose') or not self.config.verbose:
             self.config.verbose = 'warning'
-        elif not (self.config.debug_target == 'stdio' or self.config.debug_target.startswith('#')):
-            self.config.debug_target = 'stdio'
+        if not hasattr(self.config, 'debug_target') or not (self.config.debug_target == 'stdio' or self.config.debug_target.startswith('#')):
+            debug_target = 'stdio'
+        else:
+            debug_target = self.config.debug_target
         debug_msg = "[%s] %s" % (tag, text)
         if level == 'verbose':
             if self.config.verbose == 'verbose':
-                if (self.config.debug_target == 'stdio'):
+                if (debug_target == 'stdio'):
                     print debug_msg
                 else:
-                    self.msg(self.config.debug_target, debug_msg)
+                    self.msg(debug_target, debug_msg)
                 return True
         elif level == 'warning':
             if self.config.verbose == 'verbose' or self.config.verbose == 'warning':
-                if (self.config.debug_target == 'stdio'):
+                if (debug_target == 'stdio'):
                     print debug_msg
                 else:
-                    self.msg(self.config.debug_target, debug_msg)
+                    self.msg(debug_target, debug_msg)
                 return True
         elif level == 'always':
-            if (self.config.debug_target == 'stdio'):
+            if (debug_target == 'stdio'):
                 print debug_msg
             else:
                 self.msg(self.config.debug_target, debug_msg)
