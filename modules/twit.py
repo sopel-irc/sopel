@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 """
-twitter.py - jenni Twitter Module
+twitter.py - Wilie Twitter Module
 Copyright 2008-10, Michael Yanovich, opensource.osu.edu/~yanovich/wiki/
 Tweetwatch features copyright 2011, Edward Powell, embolalia.net
 Licensed under the Eiffel Forum License 2.
 
-http://inamidst.com/phenny/
+http://willie.dftba.net
 
 For this module to work, you must register the application with Twitter, and
 create the variables consumer_key, consumer_secret, access_token, and
@@ -15,12 +15,6 @@ access_token_secret in your config file (~/.jenni/default.py).
 #"twitter_username" with the username you have registered on twitter, and "twitter_password" with the password for that twitter 
 #account.
 """
-try:
-    import json
-except ImportError:
-    import simplejson as json
-except ImportError:
-    print("Either update to python 2.6+ or install simplejson")
 import tweepy
 import sched, time
 import re

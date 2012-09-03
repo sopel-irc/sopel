@@ -1,17 +1,13 @@
 """
-dftba.py - jenni DFT.BA Module
+dftba.py - Willie DFT.BA Module
 Author: Edward Powell, embolalia.net
-About: http://inamidst.com/phenny
+
+http://willie.dftba.net
 
 This module allows for retrieving stats, shortening and lengthening dft.ba urls.
 """
 import urllib
-try:
-    import json
-except ImportError:
-    import simplejson as json
-except ImportError:
-    print("Either update to python 2.6+ or install simplejson")
+import json
 
 def shorten(jenni, input):
     """Shorten a URL with DFT.BA"""
