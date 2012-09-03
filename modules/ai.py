@@ -1,12 +1,10 @@
 #!/usr/bin/env python
 """
 ai.py - Artificial Intelligence Module
-Copyright 2010-2011, Michael Yanovich, yanovich.net
+Copyright 2009-2011, Michael Yanovich, yanovich.net
 Licensed under the Eiffel Forum License 2.
 
-More info:
- * Jenni: https://github.com/myano/jenni/
- * Phenny: http://inamidst.com/phenny/
+http://willie.dftba.net
 """
 
 import random, time
@@ -22,51 +20,6 @@ greeting = ['Hello', 'Hallo', 'Hi', 'Welcome']
 
 random.seed()
 
-## Functions that deal with the state of AI being on or off.
-
-def off(jenni, input):
-    if input.nick == jenni.config.owner:
-        jenni.reply("Feature has been disabled.")
-        global aistate
-        aistate = False
-    else:
-        jenni.reply("You are not authorized to disable this feature.")
-off.commands = ['off']
-off.priority = 'high'
-
-def on(jenni, input):
-    if input.nick == jenni.config.owner:
-        jenni.reply("Feature has been enabled.")
-        global aistate
-        aistate = True
-    else:
-        jenni.reply("You are not authorized to enable this feature.")
-on.commands = ['on']
-on.priority = 'high'
-
-def state(jenni, input):
-    global aistate
-    if aistate == True:
-        jenni.reply("It is on.")
-    else:
-        jenni.reply("It is off.")
-state.commands = ['state']
-state.priority = 'high'
-
-## Functions that do not rely on "AISTATE"
-
-def hello_join(jenni, input):
-    well = random.random()
-    if 0 < well < 0.01:
-        if input.nick == jenni.config.nick:
-            return
-        random_greeting = random.choice(greeting)
-        punctuation = random.choice(('!', ' '))
-        jenni.say(random_greeting + ' ' + input.nick + punctuation)
-#hello_join.event = 'JOIN'
-#hello_join.rule = '.*'
-#hello_join.priority = 'medium'
-
 def goodbye(jenni, input):
     byemsg = random.choice(('Bye', 'Goodbye', 'Seeya', 'Auf Wiedersehen', 'Au revoir', 'Ttyl'))
     punctuation = random.choice(('!', ' '))
@@ -75,48 +28,6 @@ goodbye.rule = r'(?i)$nickname\:\s+(bye|goodbye|seeya|cya|ttyl|g2g|gnight|goodni
 goodbye.thread = False
 goodbye.rate = 30
 
-## Functions that do rely on "AISTATE"
-
-def hau(jenni, input):
-    global aistate
-    global conversation
-    global greet_user
-    greet_user = input.nick
-    if aistate == True and greet_user == input.nick:
-        time.sleep(random.randint(0,1))
-        jenni.reply("How are you?")
-        conversation = True
-hau.rule = r'(?i)(hey|hi|hello)\b.*(jenni|$nickname)\b.*$'
-
-def hau2(jenni, input):
-    hau(jenni,input)
-hau2.rule = r'(?i)(jenni|$nickname)\b.*(hey|hi|hello)\b.*$'
-
-def gau(jenni, input):
-    global aistate
-    global conversation
-    global greet_user
-    if aistate == True and conversation == True and greet_user == input.nick:
-        randmsg = random.choice(["That's good to hear!", "That's great to hear!"])
-        time.sleep(random.randint(0,1))
-        jenni.reply(randmsg)
-        conversation = False
-#gau.rule = '(?i).*(good).*'
-
-def bad(jenni, input):
-    global aistate
-    global conversation
-    global greet_user
-    if input.sender == "#pyohio":
-        return
-    if aistate == True and conversation == True and greet_user == input.nick:
-        randmsg = random.choice(["Sorry to hear about that."])
-        time.sleep(random.randint(0,1))
-        jenni.reply(randmsg)
-        conversation = False
-bad.rule = '(?i).*(bad|horrible|awful|terrible).*$'
-
-## ADDED Functions that do not rely on "AISTATE"
 
 def ty(jenni, input):
     human = random.uniform(0,9)
@@ -138,16 +49,6 @@ def ty4(jenni, input):
     ty(jenni, input)
 ty4.rule = '(?i).*(thanks).*(jenni|$nickname).*'
 ty4.rate = 40
-
-def random_resp(jenni, input):
-    # This randomly takes what someone says in the form of "jenni: <message>" and just spits it back out at the user that said it.
-    human = random.random()
-    if 0 <= human <= 0.025:
-        strinput = input.group()
-        nick = jenni.nick + ":"
-        strinput = strinput.split(nick)
-        jenni.reply(strinput[1][1:])
-random_resp.rule = r'(?i)$nickname\:\s+(.*)'
 
 def yesno(jenni,input):
     rand = random.uniform(0,5)
@@ -184,6 +85,46 @@ def love3 (jenni, input):
     jenni.reply("I love you too.")
 love3.rule = '(?i)(jenni|$nickname)\,\si.*love.*'
 love3.rate = 30
+
+def f_lol(jenni, input):
+    randnum = random.random()
+    if 0 < randnum < limit:
+        respond = ['haha', 'lol', 'rofl']
+        randtime = random.uniform(0,9)
+        time.sleep(randtime)
+        jenni.say(random.choice(respond))
+f_lol.rule = '(haha!?|lol!?)$'
+f_lol.priority = 'high'
+
+def f_bye(jenni, input):
+    respond = ['bye!', 'bye', 'see ya', 'see ya!']
+    jenni.say(random.choice(respond))
+f_bye.rule = '(g2g!?|bye!?)$'
+f_bye.priority = 'high'
+
+def f_heh(jenni, input):
+    randnum = random.random()
+    if 0 < randnum < limit:
+        respond = ['hm']
+        randtime = random.uniform(0,7)
+        time.sleep(randtime)
+        jenni.say(random.choice(respond))
+f_heh.rule = '(heh!?)$'
+f_heh.priority = 'high'
+
+def f_really(jenni, input):
+    randtime = random.uniform(10,45)
+    time.sleep(randtime)
+    jenni.say(str(input.nick) + ": " + "Yes, really.")
+f_really.rule = r'(?i)$nickname\:\s+(really!?)'
+f_really.priority = 'high'
+
+def wb(jenni, input):
+    jenni.reply("Thank you!")
+wb.rule = '^(wb|welcome\sback).*$nickname\s'
+
+if __name__ == '__main__':
+    print __doc__.strip()
 
 if __name__ == '__main__':
     print __doc__.strip()
