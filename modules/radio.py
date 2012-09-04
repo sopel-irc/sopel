@@ -83,7 +83,7 @@ def radio(willie, trigger):
             willie.say('Radio module not configured, make sure radio_URL and radio_sID are defined')
             return
         else:
-            radioURL = willie.config.radio_URL+'/%s?sid='+willie.config.radio_sID
+            radioURL = willie.config.radio_URL+'%s?sid='+willie.config.radio_sID
     try:
         args = trigger.group(2).lower().split(' ')
     except AttributeError:
