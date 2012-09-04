@@ -10,3 +10,4 @@ logs/*
 *.db
 *~
 doc/build/*
+.pid-*
