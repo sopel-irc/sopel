@@ -8,11 +8,31 @@ http://willie.dftba.net/
 """
 
 from time import sleep
-import web
+from xml.dom.minidom import parseString
+import web, xml.dom.minidom
 
 radioURL = 'http://stream.dftba.net:8000/%s?sid=1'
 checkSongs = False
 current_song = ''
+
+def getAPI(willie, trigger):
+    try:
+        raw = web.get(radioURL % 'stats')
+    except Exceoption as e:
+        Willie.say('The radio is not responding to the stats request.')
+        willie.debug('radio', 'Exception while trying to get stats: %s' % e, 'warning')
+    XML = parseString(raw).documentElement
+    servername = XML.getElementsByTagName('SERVERTITLE')[0].firstChild.nodeValue
+    status = XML.getElementsByTagName('SERVERTITLE')[0].firstChild.nodeValue
+    if status:
+        status = 'Online'
+    else:
+        status = 'Offline'
+    curlist = XML.getElementsByTagName('CURRENTLISTENERS')[0].firstChild.nodeValue
+    maxlist = XML.getElementsByTagName('MAXLISTENERS')[0].firstChild.nodeValue
+    willie.say('[%s]Status: %s. Listeners: %s/%s.' % (servername, status, curlist, maxlist))
+    #Garbage disposal
+    XML.unlink()
 
 def currentSong(willie, trigger):
     try:
@@ -37,7 +57,7 @@ def nextSong(willie, trigger):
         willie.say('No songs are queued up.')
 
 def radio(willie, trigger):
-    """ Radio functions, valid parameters: on, off, song, now, next. """
+    """ Radio functions, valid parameters: on, off, song, now, next, soon, stats. """
     global checkSongs, current_song
     args = trigger.group(2).split(' ')
     if args[0] == 'on':
@@ -79,8 +99,10 @@ def radio(willie, trigger):
         willie.reply('Turning off radio data checking.')
     elif args[0] == 'song' or args[0] == 'now':
         currentSong(willie, trigger)
-    elif args[0] == 'next':
+    elif args[0] == 'next' or args[0] == 'soon':
         nextSong(willie, trigger)
+    elif args[0] == 'stats':
+        getAPI(willie, trigger)
 radio.commands = ['radio']
 radio.priority = 'medium'
 
