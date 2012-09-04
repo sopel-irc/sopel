@@ -329,7 +329,7 @@ class Bot(asynchat.async_chat):
                     self.sending.release()
                     return
 
-            self.write(('PRIVMSG', recipient, text))
+            self.write(('PRIVMSG', recipient), text)
             self.stack.append((time.time(), text))
             self.stack = self.stack[-10:]
         finally:
