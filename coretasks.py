@@ -67,7 +67,7 @@ handle_names.thread = False
 
 def track_modes(willie, trigger):
     ''' Track usermode changes and keep our lists of ops up to date '''
-    line = re.findall('([\+\-][ahoqv].)', willie.raw)
+    line = re.findall('([\+\-][ahoqv]*)', willie.raw)
     channel = re.search('(#\S+)', willie.raw)
     if channel is None:
         return #someone changed the bot's usermode, we don't care about that
@@ -80,7 +80,6 @@ def track_modes(willie, trigger):
                 modes.append((char, True))
             else:
                 modes.append((char, False))
-     
     if len(modes) == 0:
         return #We don't care about these mode changes
     for index in range(len(nicks)):
