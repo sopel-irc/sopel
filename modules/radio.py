@@ -62,7 +62,7 @@ def currentSong(willie, trigger):
     if song:
         willie.say('Now playing: '+song)
     else:
-        Willie.say('The radio is currently offline.')
+        willie.say('The radio is currently offline.')
 
 def nextSong(willie, trigger):
     # This function uses the PLAINTEXT API to get the next song only.
