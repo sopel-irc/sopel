@@ -30,25 +30,26 @@ def getAPI(willie, trigger):
         raw = web.get(radioURL % 'stats')
     except Exception as e:
         willie.say('The radio is not responding to the stats request.')
-        willie.debug('radio', 'Exception while trying to get stats: %s' % e, 'warning')
+        willie.debug('radio', 'Exception while trying to get stats: %s' % e, 'verbose')
         return 0
     
     #Parse the XML
     XML = parseString(raw).documentElement
-    servername = XML.getElementsByTagName('SERVERTITLE')[0].firstChild.nodeValue
     status = XML.getElementsByTagName('STREAMSTATUS')[0].firstChild.nodeValue
-    if status:
+    if status != '0':
         status = 'Online'
+        servername = '['+XML.getElementsByTagName('SERVERTITLE')[0].firstChild.nodeValue+']'
     else:
         status = 'Offline'
+        servername = ''
     curlist = XML.getElementsByTagName('CURRENTLISTENERS')[0].firstChild.nodeValue
     maxlist = XML.getElementsByTagName('MAXLISTENERS')[0].firstChild.nodeValue
-
+    
     #Garbage disposal
     XML.unlink()
 
     #print results
-    willie.say('[%s]Status: %s. Listeners: %s/%s.' % (servername, status, curlist, maxlist))
+    willie.say('%sStatus: %s. Listeners: %s/%s.' % (servername, status, curlist, maxlist))
     return 1
 
 def currentSong(willie, trigger):
