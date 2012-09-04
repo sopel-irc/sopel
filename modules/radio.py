@@ -35,7 +35,10 @@ def getAPI(willie, trigger):
     
     #Parse the XML
     XML = parseString(raw).documentElement
-    status = XML.getElementsByTagName('STREAMSTATUS')[0].firstChild.nodeValue
+    try:
+        status = XML.getElementsByTagName('STREAMSTATUS')[0].firstChild.nodeValue
+    except:
+        status = '0'
     if status != '0':
         status = 'Online'
         servername = '['+XML.getElementsByTagName('SERVERTITLE')[0].firstChild.nodeValue+']'
