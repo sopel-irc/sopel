@@ -6,14 +6,6 @@ Tweetwatch features copyright 2011, Edward Powell, embolalia.net
 Licensed under the Eiffel Forum License 2.
 
 http://willie.dftba.net
-
-For this module to work, you must register the application with Twitter, and
-create the variables consumer_key, consumer_secret, access_token, and
-access_token_secret in your config file (~/.jenni/default.py).
-
-#For this module to work, you need to create 2 variables in your config file ( ~/.jenni/default.py ). The first one 
-#"twitter_username" with the username you have registered on twitter, and "twitter_password" with the password for that twitter 
-#account.
 """
 import tweepy
 import sched, time
@@ -24,6 +16,16 @@ watch_wait = 75
 watch = False
 lasts = dict()
 sch = sched.scheduler(time.time, time.sleep)
+
+def configure(config):
+    chunk = ''
+    if config.option('Configure Twitter? (You will need to register on http://api.twitter.com)', True):
+        config.interactive_add('consumer_key', 'Consumer key')
+        config.interactive_add('consumer_secret', 'Consumer secret')
+        config.interactive_add('access_token', 'Access token')
+        config.interactive_add('access_token_secret', 'Access token secret')
+        chunk = ("\nconsumer_key = '%s'\nconsumer_secret = '%s'\naccess_token = '%s'\naccess_token_secret = '%s'"
+                 % (config.consumer_key, config.consumer_secret, config.access_token, config.access_token_secret))
 
 def format_thousands(integer):
     """Returns string of integer, with thousands separated by ','"""
