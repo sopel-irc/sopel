@@ -1,23 +1,17 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-rss.py - Jenni RSS Module
+rss.py - Willie RSS Module
 Copyright 2012, Michael Yanovich, yanovich.net
 Licensed under the Eiffel Forum License 2.
 
-More info:
- * Jenni: https://github.com/myano/jenni/
- * Phenny: http://inamidst.com/phenny/
+http://willie.dfbta.net
 """
-sqlite = False
 
 import feedparser
 import socket
-if sqlite: import sqlite3 
-else: import MySQLdb
 import sys
 import time
-from modules import url as url_module
 
 DEBUG = False
 socket.setdefaulttimeout(10)
@@ -34,11 +28,7 @@ def manage_rss(jenni, input):
     if not input.admin:
         jenni.reply("Sorry, you need to be an admin to modify the RSS feeds.")
         return
-    if sqlite: conn = sqlite3.connect('rss.db')
-    else: conn = MySQLdb.connect(host=jenni.config.userdb_host,
-                         user=jenni.config.userdb_user,
-                         passwd=jenni.config.userdb_pass,
-                         db=jenni.config.userdb_name)
+    conn = jenni.db.connect()
     c = conn.cursor()
     checkdb(c)
     conn.commit()
@@ -103,7 +93,7 @@ def manage_rss(jenni, input):
             jenni.reply("No entries in database")
     else:
         jenni.reply("Incorrect parameters specified.")
-    c.close()
+    conn.close()
 manage_rss.commands = ['rss']
 manage_rss.priority = 'low'
 
@@ -121,11 +111,7 @@ def read_feeds(jenni):
     global STOP
 
     restarted = False
-    if sqlite: conn = sqlite3.connect('rss.db')
-    else: conn = MySQLdb.connect(host=jenni.config.userdb_host,
-                         user=jenni.config.userdb_user,
-                         passwd=jenni.config.userdb_pass,
-                         db=jenni.config.userdb_name)
+    conn = jenni.db.connect()
     c = conn.cursor()
     checkdb(c)
     c.execute("SELECT * FROM rss")
@@ -134,7 +120,7 @@ def read_feeds(jenni):
         jenni.say("No RSS feeds found in database. Please add some rss feeds.")
 
     c.execute("SELECT * FROM rss")
-    conn_recent = sqlite3.connect('recent_rss.db')
+    conn_recent = jenni.db.connect()
     cursor_recent = conn_recent.cursor()
     cursor_recent.execute("CREATE TABLE IF NOT EXISTS recent ( channel text, site_name text, article_title text, article_url text )")
 
@@ -167,25 +153,19 @@ def read_feeds(jenni):
 
         # only print if new entry
         sql_text = (feed_channel, feed_site_name, entry.title, article_url)
-        cursor_recent.execute("SELECT * FROM recent WHERE channel = ? AND site_name = ? and article_title = ? AND article_url = ?", sql_text)
+        cursor_recent.execute("SELECT * FROM recent WHERE channel = %s AND site_name = %s and article_title = %s AND article_url = %s", sql_text)
         if len(cursor_recent.fetchall()) < 1:
-            short_url = url_module.short(article_url)
 
-            if short_url:
-                short_url = short_url[0][1][:-1]
-            else:
-                short_url = article_url
-
-            response = site_name_effect + " %s \x02%s\x02" % (entry.title, short_url)
+            response = site_name_effect + " %s \x02%s\x02" % (entry.title, article_url)
             if entry.updated:
                 response += " - %s" % (entry.updated)
 
             jenni.msg(feed_channel, response)
 
             t = (feed_channel, feed_site_name, entry.title, article_url,)
-            cursor_recent.execute("INSERT INTO recent VALUES (?, ?, ?, ?)", t)
+            cursor_recent.execute("INSERT INTO recent VALUES (%s, %s, %s, %s)", t)
             conn_recent.commit()
-            cursor_recent.close()
+            conn_recent.close()
             conn.commit()
             c.close()
         else:
