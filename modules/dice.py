@@ -15,23 +15,17 @@ seed()
 
 def dice(willie, trigger):
     """.dice <formula> - Rolls dice using the XdY format, also does basic math."""
-    no_dice = 1
-    msg = ''
-    try:
-        msg = ' '.join(trigger.groups(2)[1:])
-    except:
+    no_dice = True
+    if trigger.group(2) == None:
         return willie.reply('You have to specify the dice you wanna roll.')
-    formula = msg
-    formula = formula.replace("-", " - ").replace("+", " + ").replace("/", " / ").replace("*", " * ").replace("(", " ( ").replace(")", " ) ").replace("^", " ^ ")
-    arr = formula.split(" ")
-
+    arr = trigger.group(2).replace("-", " - ").replace("+", " + ").replace("/", " / ").replace("*", " * ").replace("(", " ( ").replace(")", " ) ").replace("^", " ^ ").split(" ")
     full_string, calc_string = '', ''
+    
     for segment in arr:
         if segment != '':
-            display, value = '', ''
             result = re.search("([0-9]+m)?([0-9]*[dD][0-9]+)(v[0-9]+)?", segment)
             if result:
-                display, value, drops = '(', '(', ''
+                value, drops = '(', ''
                 dice = rollDice(result.group(2).lower())
                 if result.group(3) is not None:
                     dropLowest = int(result.group(3)[1:])
@@ -45,30 +39,23 @@ def dice(willie, trigger):
                         else:
                             drops += ']'
                     else:
-                        display += str(dice[i])
                         value += str(dice[i])
                         if i != len(dice)-1:
-                            display += '+'
                             value += '+'
-                value = str(value)
-                no_dice = 0
-                display += drops+')'
-                value += ')'
+                no_dice = False
+                value += drops+')'
             else:
                 value = segment
-                display = segment
-            calc_string += value
-            full_string += display
+            full_string += value
     #repeat next segment
 
-    willie.say(calc_string)
-    result = calculate(calc_string)
+    result = calculate(''.join(full_string.replace('[','#').replace(']','#').split('#')[::2]))
     if result == 'Sorry, no result.':
         willie.reply('Calculation failed, did you try something weird?')
     elif(no_dice):
-        willie.reply("For pure math, you can use .c! "+msg+" = "+result)
+        willie.reply("For pure math, you can use .c! "+trigger.group(2)+" = "+result)
     else:
-        willie.reply("You roll "+msg+" ("+full_string+"): "+result)
+        willie.reply("You roll "+trigger.group(2)+" ("+full_string+"): "+result)
 dice.commands = ['roll','dice','d']
 dice.priority = 'medium'
 
