@@ -13,7 +13,7 @@ http://willie.dftba.net/
 
 import time, sys, os, re, threading, imp
 import irc
-from settings import SettingsDB
+from db import WillieDB
 from tools import try_print_stderr as stderr
 
 home = os.getcwd()
@@ -91,7 +91,8 @@ class Willie(irc.Bot):
         self.acivity = {}
         
         self.setup()
-        self.settings = SettingsDB(config)
+        self.db = WillieDB(config)
+        self.settings = self.db.locales
 
     def setup(self):
         stderr("\nWelcome to Willie. Loading modules...\n\n")

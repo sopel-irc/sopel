@@ -65,10 +65,26 @@ class WillieDB(object):
                          user=self._user,
                          passwd=self._passwd,
                          db=self._dbname)
-            db.close()
         except:
             print 'Error: Unable to connect to user settings DB.'
             return
+        
+        #Set up existing tables and columns
+        cur = MySQLdb.cursors.DictCursor(db)
+        cur.execute("SHOW tables;")
+        tables = cur.fetchall()#.itervalues()
+        for table in tables:
+            name = table['Tables_in_%s' % self._dbname]
+            cur.execute("SHOW columns FROM %s;" % name)
+            result = cur.fetchall()
+            columns = []
+            key = []
+            for column in result:
+                columns.append(column['Field'])
+                if column['Key'].startswith('PRI'):
+                    key.append(column['Field'])
+            setattr(self, name, Table(self, name, columns, key))
+        db.close()
 
     def add_table(self, name, columns, key):
         setattr(self, name, Table(self, name, columns, key))
@@ -98,13 +114,19 @@ class Table(object):
     #Note, #Python recommends using dictcursor, so you can select x in y
     #Also, PEP8 says not to import in the middle of your code. That answers that.
     def __init__(self, db, name, columns, key):
-        if key not in columns:
-            raise Exception #TODO
-        
+        if not key: key = columns[0]
         self.db = db
         self.columns = set(columns)
         self.name = name
-        self.key = key
+        if isinstance(key, basestring):
+            if key not in columns:
+                raise Exception #TODO
+            self.key = key
+        else:
+            for k in key:
+                if k not in columns:
+                    raise Exception #TODO
+            self.key = key[0] #TODO
     
     def users(self):
         """
