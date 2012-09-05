@@ -10,6 +10,13 @@ https://willie.dftba.net
 """
 import sys
 import os
+try:
+    import ssl
+    import OpenSSL
+    import re
+except:
+    #no SSL support
+    ssl = False
 
 def deprecated(old):
     def new(willie, input, old=old):
@@ -79,6 +86,30 @@ def check_pid(pid):
         return False
     else:
         return True
+
+def verify_ssl_cn(server, port):
+    if not ssl:
+        return None
+    cert = None
+    for version in (ssl.PROTOCOL_TLSv1, ssl.PROTOCOL_SSLv3, ssl.PROTOCOL_SSLv23, ssl.PROTOCOL_SSLv2):
+        try:
+            cert = ssl.get_server_certificate((server, port), ssl_version = version)
+            break
+        except Exception as e:
+            pass
+    if cert is None:
+        return None
+    valid = False;
+    x509 = OpenSSL.crypto.load_certificate(OpenSSL.crypto.FILETYPE_PEM, cert)
+    cret_info = x509.get_subject().get_components()
+    cn = x509.get_subject().commonName
+    if cn == server:
+        valid = True
+    elif '*' in cn:
+        cn = cn.replace('*.', '')
+        if re.match('(.*)%s' % cn, server, re.IGNORECASE) is not None:
+            valid = True
+    return (valid, cret_info)
 if __name__ == '__main__':
     print __doc__.strip()
 
