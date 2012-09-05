@@ -11,82 +11,82 @@ More info:
 
 from random import randint, seed
 from modules.calc import calculate
-import time, re
+import re
 
 seed()
 
-def dice(jenni, input):
-    """.dice <formula> - Rolls dice using the XdY format, also does basic (+-*/) math."""
-    #MATHTIME! Let's prepare the failsafes.
-    legal_formula, no_dice = 1, 1
-    #parsing time.
-    msg = ' '.join(input.groups(2)[1:])
-    formula = msg #back-up the original message, because you're going to feed it back to the user in the end.
-    formula = formula.replace("-", " - ")
-    formula = formula.replace("+", " + ") #add spaces
-    formula = formula.replace("/", " / ") #for all
-    formula = formula.replace("*", " * ") #the characters
-    formula = formula.replace("(", " ( ") #supported
-    formula = formula. replace(")", " ) ")
-    arr = formula.split(" ") #aaaand, CUT IT APART! (this is why you needed the spaces.)
+def dice(willie, trigger):
+    """.dice <formula> - Rolls dice using the XdY format, also does basic math."""
+    no_dice = 1
+    msg = ''
+    try:
+        msg = ' '.join(trigger.groups(2)[1:])
+    except:
+        return willie.reply('You have to specify the dice you wanna roll.')
+    formula = msg
+    formula = formula.replace("-", " - ").replace("+", " + ").replace("/", " / ").replace("*", " * ").replace("(", " ( ").replace(")", " ) ").replace("^", " ^ ")
+    arr = formula.split(" ")
 
-    full_string = "" #reset the formula
+    full_string, calc_string = '', ''
     for segment in arr:
-        #let's look at this formula... piece, by, piece
-        if segment != "":
-            #the value of this segment is 0
-            value = 0
-            if re.search("[0-9]*(d|D)[0-9]+", segment): #if there's a dice (regex FTW!)
-                value = rollDice(segment.lower()) #then roll the dice.
-                no_dice = 0 # And let the bot know there's dice in the formula
-            elif re.search("([0-9]|\+|\-|\*|\/|\(|\)| \+| \-| \*| \/| \(| \))", segment): #are any of the supported math characters in this piece?
-                value = segment #then just make that the value.
+        if segment != '':
+            display, value = '', ''
+            result = re.search("([0-9]+m)?([0-9]*[dD][0-9]+)(v[0-9]+)?", segment)
+            if result:
+                display, value, drops = '(', '(', ''
+                dice = rollDice(result.group(2).lower())
+                if result.group(3) is not None:
+                    dropLowest = int(result.group(3)[1:])
+                for i in range(0,len(dice)):
+                    if i < dropLowest:
+                        if drops == '':
+                            drops = '[+'
+                        drops += str(dice[i])
+                        if i < dropLowest-1:
+                            drops += '+'
+                        else:
+                            drops += ']'
+                    else:
+                        display += str(dice[i])
+                        value += str(dice[i])
+                        if i != len(dice)-1:
+                            display += '+'
+                            value += '+'
+                value = str(value)
+                no_dice = 0
+                display += drops+')'
+                value += ')'
             else:
-                legal_formula = 0 #non-supported character found...
-                break #ABORT, ABORT, ABORT!
-            full_string += value #add this segment's value to the full string
+                value = segment
+                display = segment
+            calc_string += value
+            full_string += display
     #repeat next segment
 
-    #you done? good.
-    if legal_formula == 1 and full_string != "": # did something break? no? good, continue.
-        #at this point full string is something like: "4 + 6 + 12 * 4" etc.
-        result = calculate(full_string)
-        #print result to chat
-        if result == 'Sorry, no result.':
-            jenni.reply(result)
-        elif(no_dice): #no dice found, warn!
-            jenni.reply("For pure math, you can use .c! "+msg+" = "+result)
-        else: #dice found, just let the users know what's happening
-            jenni.reply("You roll "+msg+" ("+full_string+"): "+result)
-    else: #print illegal warning.
-        jenni.reply("Illegal formula segment: "+segment+", aborting.")
+    willie.say(calc_string)
+    result = calculate(calc_string)
+    if result == 'Sorry, no result.':
+        willie.reply('Calculation failed, did you try something weird?')
+    elif(no_dice):
+        willie.reply("For pure math, you can use .c! "+msg+" = "+result)
+    else:
+        willie.reply("You roll "+msg+" ("+full_string+"): "+result)
 dice.commands = ['roll','dice','d']
 dice.priority = 'medium'
 
 def rollDice(diceroll):
-#Time for the real fun, dice!
-    if(diceroll.startswith('d')): #check if it's XdX or dX
-        #  dX
-        rolls = 1 #no dice amounts specified, roll 1
-        size = int(diceroll[1:]) # dice with this amount of sides
+    if(diceroll.startswith('d')):
+        rolls = 1
+        size = int(diceroll[1:])
     else:
-        # XdX
-        rolls = int(diceroll.split('d')[0]) # dice amount specified, use it.
-        size = int(diceroll.split('d')[1]) #  aswell as this size.
-    result = "" #dice result is zero.
+        rolls = int(diceroll.split('d')[0])
+        size = int(diceroll.split('d')[1])
+    result = [] #dice results.
 
-    for i in range(1,rolls+1): #for the amount of dice
+    for i in range(1,rolls+1):
         #roll 10 dice, pick a random dice to use, add string to result.
-        # I should elaborate on this...
-        # str() makes sure the number is in string format (required for the eval())
-        # randint(1,size) is 1 dice and randint(0,9) selects one of the ten dice rolled
-        # reason for this is fairness, true random has at least 2 stages.
-        result += str((randint(1,size),randint(1,size),randint(1,size),randint(1,size),randint(1,size),randint(1,size),randint(1,size),randint(1,size),randint(1,size),randint(1,size))[randint(0,9)])
-        if(i != rolls):
-            #if it's not the last sign, add a plus sign.
-            result += "+"
-
-    return "("+result+")" #feed it back to the formula parser... add some parentheses so we know this is 1 roll.
+        result.append((randint(1,size),randint(1,size),randint(1,size),randint(1,size),randint(1,size),randint(1,size),randint(1,size),randint(1,size),randint(1,size),randint(1,size))[randint(0,9)])
+    return sorted(result) #returns a set of integers.
 
 if __name__ == '__main__':
     print __doc__.strip()
