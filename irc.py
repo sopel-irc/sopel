@@ -15,10 +15,16 @@ import sys, re, time, traceback
 import socket, asyncore, asynchat
 import os, codecs
 import traceback
-import ssl, select
+try:
+    import ssl, select
+    has_ssl = True
+except:
+    #no SSL support
+    has_ssl = False
 import errno
 import threading
 from datetime import datetime
+from tools import verify_ssl_cn
 
 class Origin(object):
     source = re.compile(r'([^!]*)!?([^@]*)@?(.*)')
@@ -158,9 +164,11 @@ class Bot(asynchat.async_chat):
         self.create_socket(socket.AF_INET, socket.SOCK_STREAM)
         if hasattr(self.config, 'bind_host') and self.config.bind_host is not None:
             self.socket.bind((self.config.bind_host,0))
-        if self.use_ssl:
+        if self.use_ssl and ssl:
             self.send = self._ssl_send
             self.recv = self._ssl_recv
+        elif not has_ssl and self.use_ssl:
+            print >> sys.stderr, 'SSL is not avilable on your system, attempting connection without it'
         self.connect((host, port))
         try: asyncore.loop()
         except KeyboardInterrupt:
@@ -184,10 +192,20 @@ class Bot(asynchat.async_chat):
             self.write(['JOIN', channel, password])
 
     def handle_connect(self):
-        if self.use_ssl:
+        if self.use_ssl and has_ssl:
             if not self.verify_ssl:
                 self.ssl = ssl.wrap_socket(self.socket, do_handshake_on_connect=False, suppress_ragged_eofs=True)
             else:
+                verification = verify_ssl_cn(self.config.host, self.config.port)
+                if verification is not None:
+                    print >> sys.stderr, '\nSSL Cret information: %s' % verification[1]
+                    if verification[0] == False:
+                        print >> sys.stderr, "Invalid cretficate, CN mismatch!"
+                        sys.exit(1)
+                else:
+                    print >> sys.stderr, 'WARNING! certficate information and CN validation are not avilable.'
+                    print >> sys.stderr, 'Possible reasons: OpenSSL might be missing, or server throtteling connections.'
+                    print >> sys.stderr, 'Trying to connect anyway:'
                 self.ssl = ssl.wrap_socket(self.socket, do_handshake_on_connect=False, suppress_ragged_eofs=True, cert_reqs=ssl.CERT_REQUIRED, ca_certs=self.ca_certs)
             print >> sys.stderr, '\nSSL Handshake intiated...'
             error_count=0
@@ -213,7 +231,6 @@ class Bot(asynchat.async_chat):
                     print >> sys.stderr, 'SSL Handshake failed with error: %s' % e
                     os._exit(1)
             self.set_socket(self.ssl)
-
         self.write(('NICK', self.nick))
         self.write(('USER', self.user, '+iw', self.nick), self.name)
 
