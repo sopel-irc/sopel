@@ -29,6 +29,7 @@ def dice(willie, trigger):
                 dice = rollDice(result.group(2).lower())
                 if result.group(3) is not None:
                     dropLowest = int(result.group(3)[1:])
+                else: dropLowest = 0
                 for i in range(0,len(dice)):
                     if i < dropLowest:
                         if drops == '':
@@ -53,7 +54,7 @@ def dice(willie, trigger):
     if result == 'Sorry, no result.':
         willie.reply('Calculation failed, did you try something weird?')
     elif(no_dice):
-        willie.reply("For pure math, you can use .c! "+trigger.group(2)+" = "+result)
+        willie.reply("For pure math, you can use .c "+trigger.group(2)+" = "+result)
     else:
         willie.reply("You roll "+trigger.group(2)+" ("+full_string+"): "+result)
 dice.commands = ['roll','dice','d']
