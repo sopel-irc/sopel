@@ -25,12 +25,18 @@ http://willie.dftba.net
 from collections import Iterable
 from tools import deprecated
 
+#Attempt to import possible db modules
 mysql = False
-sqlite = False
 try:
     import MySQLdb
     import MySQLdb.cursors
     mysql = True
+except ImportError: pass
+
+sqlite = False
+try:
+    import sqlite3
+    sqlite = True
 except ImportError: pass
 
 class WillieDB(object):
@@ -44,6 +50,8 @@ class WillieDB(object):
         
         if self.type == 'mysql' and mysql:
             self._mySQL(config)
+        elif self.type == 'sqlite' and sqlite:
+            self._sqlite(config)
         else:
             print 'User settings database type is not supported. You may be missing the module for it. Ignoring.'
             return
@@ -56,8 +64,7 @@ class WillieDB(object):
                 self._passwd = config.userdb_pass
                 self._dbname = config.userdb_name
         except AttributeError as e:
-                print 'Some options are missing for your MySQL user settings DB.'
-                print 'The database will not be set up.'
+                print 'Some options are missing for your MySQL DB. The database will not be set up.'
                 return
             
         try:
@@ -72,7 +79,7 @@ class WillieDB(object):
         #Set up existing tables and columns
         cur = MySQLdb.cursors.DictCursor(db)
         cur.execute("SHOW tables;")
-        tables = cur.fetchall()#.itervalues()
+        tables = cur.fetchall()
         for table in tables:
             name = table['Tables_in_%s' % self._dbname]
             cur.execute("SHOW columns FROM %s;" % name)
@@ -85,15 +92,50 @@ class WillieDB(object):
                     key.append(column['Field'])
             setattr(self, name, Table(self, name, columns, key))
         db.close()
+    
+    def _sqlite(self, config):
+        try:
+            self._file = config.userdb_file
+        except AttributeError:
+            print 'No file specified for SQLite DB. The database will not be set up.'
+            return
+            
+        try:
+            db = sqlite3.connect(self._file)
+        except:
+            print 'Error: Unable to connect to DB.'
+            return
+        
+        #Set up existing tables and columns
+        cur = db.cursor()
+        cur.execute("SELECT * FROM sqlite_master;")
+        tables = cur.fetchall()
+        for table in tables:
+            print table[1]
+            name = table[1]
+            cur.execute("PRAGMA table_info(%s);" % name)
+            result = cur.fetchall()
+            print result
+            columns = []
+            key = []
+            for column in result:
+                columns.append(column[1])
+                if column[3]:
+                    key.append(column[1])
+            setattr(self, name, Table(self, name, columns, key))
+        db.close()
 
-    def add_table(self, name, columns, key):
+    def add_table(self, name, columns, key):#TODO
         setattr(self, name, Table(self, name, columns, key))
     
     def connect(self):
-        return MySQLdb.connect(host=self._host,
+        if self.type == 'mysql':
+            return MySQLdb.connect(host=self._host,
                      user=self._user,
                      passwd=self._passwd,
                      db=self._dbname)
+        elif self.type == 'sqlite':
+            return sqlite3.connect(self._file)
 
 class Table(object):
     """
@@ -172,24 +214,26 @@ class Table(object):
     def _get_one(self, key, value):
         """Implements get() for where values is a single string"""
         db = self.db.connect()
-        cur = MySQLdb.cursors.DictCursor(db)
+        cur = db.cursor()
         cur.execute(
-            'SELECT * FROM '+self.name+' WHERE '+self.key+' = %s;', key)
-        row = cur.fetchone()
+            'SELECT '+value+' FROM '+self.name+' WHERE '+self.key+' = %s;', key)
+        row = cur.fetchone()[0]
         if not row:
             db.close()
             raise KeyError(key+' not in database')
         db.close()
         
-        return row[value]
+        return row
     
-    def _get_many(self, key, values):
+    def _get_many(self, key, values): #TODO this doesn't seem to actually work...
         """Implements get() for where values is iterable"""
         db = self.db.connect()
-        cur = MySQLdb.cursors.DictCursor(db)
+        cur = db.cursor()
+        #cur = MySQLdb.cursors.DictCursor(db)
         cur.execute(
             'SELECT %s FROM '+self.name+' WHERE '+self.key+' = %s;', (values, key))
         row = cur.fetchone()
+        print row
         
         if not row:
             db.close()
@@ -231,7 +275,8 @@ class Table(object):
         maps the names of the columns to be updated to their new values.
         """
         db = self.db.connect()
-        cur = MySQLdb.cursors.DictCursor(db)
+        #cur = MySQLdb.cursors.DictCursor(db)
+        cur = db.cursor()
         cur.execute('SELECT * FROM '+self.name+' WHERE '+self.key+' = "'+nick+'";')
         if not cur.fetchone():
             cols = self.key
