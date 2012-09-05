@@ -18,45 +18,53 @@ def dice(willie, trigger):
     no_dice = True
     if trigger.group(2) == None:
         return willie.reply('You have to specify the dice you wanna roll.')
-    arr = trigger.group(2).replace("-", " - ").replace("+", " + ").replace("/", " / ").replace("*", " * ").replace("(", " ( ").replace(")", " ) ").replace("^", " ^ ").split(" ")
+    arr = trigger.group(2).lower().strip(' ')
+    arr = arr.replace('-', ' - ').replace('+', ' + ').replace('/', ' / ').replace('*', ' * ').replace('(', ' ( ').replace(')', ' ) ').replace('^', ' ^ ').replace('()', '').split(' ')
     full_string, calc_string = '', ''
     
     for segment in arr:
-        if segment != '':
-            result = re.search("([0-9]+m)?([0-9]*[dD][0-9]+)(v[0-9]+)?", segment)
-            if result:
-                value, drops = '(', ''
-                dice = rollDice(result.group(2).lower())
-                if result.group(3) is not None:
-                    dropLowest = int(result.group(3)[1:])
-                else: dropLowest = 0
-                for i in range(0,len(dice)):
-                    if i < dropLowest:
-                        if drops == '':
-                            drops = '[+'
-                        drops += str(dice[i])
-                        if i < dropLowest-1:
-                            drops += '+'
-                        else:
-                            drops += ']'
-                    else:
-                        value += str(dice[i])
-                        if i != len(dice)-1:
-                            value += '+'
-                no_dice = False
-                value += drops+')'
+        result = re.search("([0-9]+m)?([0-9]*d[0-9]+)(v[0-9]+)?", segment)
+        if result:
+            value, drops = '(', ''
+            dice = rollDice(result.group(2).lower())
+            if result.group(3) is not None:
+                dropLowest = int(result.group(3)[1:])
+                if(result.group(2).lower().startswith('d')):
+                    if(dropLowest != 0):
+                        willie.reply('You\'re trying to drop too many dice.')
+                        return
+                elif(dropLowest >= int('0'+result.group(2).lower().split('d')[0])):
+                    willie.reply('You\'re trying to drop too many dice.')
+                    return
             else:
-                value = segment
-            full_string += value
+                dropLowest = 0
+            for i in range(0,len(dice)):
+                if i < dropLowest:
+                    if drops == '':
+                        drops = '[+'
+                    drops += str(dice[i])
+                    if i < dropLowest-1:
+                        drops += '+'
+                    else:
+                        drops += ']'
+                else:
+                    value += str(dice[i])
+                    if i != len(dice)-1:
+                        value += '+'
+            no_dice = False
+            value += drops+')'
+        else:
+            value = segment
+        full_string += value
     #repeat next segment
 
     result = calculate(''.join(full_string.replace('[','#').replace(']','#').split('#')[::2]))
     if result == 'Sorry, no result.':
         willie.reply('Calculation failed, did you try something weird?')
     elif(no_dice):
-        willie.reply("For pure math, you can use .c "+trigger.group(2)+" = "+result)
+        willie.reply('For pure math, you can use .c '+trigger.group(2)+' = '+result)
     else:
-        willie.reply("You roll "+trigger.group(2)+" ("+full_string+"): "+result)
+        willie.reply('You roll '+trigger.group(2)+' ('+full_string+'): '+result)
 dice.commands = ['roll','dice','d']
 dice.priority = 'medium'
 
