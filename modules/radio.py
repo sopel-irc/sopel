@@ -87,7 +87,7 @@ def radio(willie, trigger):
     try:
         args = trigger.group(2).lower().split(' ')
     except AttributeError:
-        willie.say('Usage: .radio (on|off|song|now|next|soon|stats)')
+        willie.say('Usage: .radio (next|now|off|on|song|soon|stats)')
         return
     if args[0] == 'on':
         if not trigger.isop:
