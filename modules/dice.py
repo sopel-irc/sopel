@@ -23,11 +23,12 @@ def dice(willie, trigger):
     full_string, calc_string = '', ''
     
     for segment in arr:
+        #check for dice
         result = re.search("([0-9]+m)?([0-9]*d[0-9]+)(v[0-9]+)?", segment)
         if result:
-            value, drops = '(', ''
-            dice = rollDice(result.group(2).lower())
+            #detect droplowest
             if result.group(3) is not None:
+                #check for invalid droplowest
                 dropLowest = int(result.group(3)[1:])
                 if(result.group(2).lower().startswith('d')):
                     if(dropLowest != 0):
@@ -38,6 +39,9 @@ def dice(willie, trigger):
                     return
             else:
                 dropLowest = 0
+            #dicerolling
+            value, drops = '(', ''
+            dice = rollDice(result.group(2).lower())
             for i in range(0,len(dice)):
                 if i < dropLowest:
                     if drops == '':
@@ -58,6 +62,7 @@ def dice(willie, trigger):
         full_string += value
     #repeat next segment
 
+    #we're replacing, splitting and joining to exclude []'s from the math.
     result = calculate(''.join(full_string.replace('[','#').replace(']','#').split('#')[::2]))
     if result == 'Sorry, no result.':
         willie.reply('Calculation failed, did you try something weird?')
