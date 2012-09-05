@@ -33,15 +33,53 @@ try:
     mysql = True
 except ImportError: pass
 
-#TODO
-try:
-    pass
-    #sqlite = True
-except ImportError: pass
+class WillieDB(object):
+    def __init__(self, config):
+        if not hasattr(config, 'userdb_type'):
+            self.type = None
+            print 'No user settings database specified. Ignoring.'
+            return
+        self.type = config.userdb_type.lower()
+        
+        
+        if self.type == 'mysql' and mysql:
+            self._mySQL(config)
+        else:
+            print 'User settings database type is not supported. You may be missing the module for it. Ignoring.'
+            return
+            
+            
+    def _mySQL(self, config):
+        try:
+                self._host = config.userdb_host
+                self._user = config.userdb_user
+                self._passwd = config.userdb_pass
+                self._dbname = config.userdb_name
+        except AttributeError as e:
+                print 'Some options are missing for your MySQL user settings DB.'
+                print 'The database will not be set up.'
+                return
+            
+        try:
+            db = MySQLdb.connect(host=self._host,
+                         user=self._user,
+                         passwd=self._passwd,
+                         db=self._dbname)
+            db.close()
+        except:
+            print 'Error: Unable to connect to user settings DB.'
+            return
 
-tablename = 'locales'
+    def add_table(self, name, columns, key):
+        setattr(self, name, Table(self, name, columns, key))
+    
+    def connect(self):
+        return MySQLdb.connect(host=self._host,
+                     user=self._user,
+                     passwd=self._passwd,
+                     db=self._dbname)
 
-class SettingsDB(object):
+class Table(object):
     """
     Return a SettingsDB object configured with the options in the given Config
     object. The exact settgins used vary depending on the type of database
@@ -59,80 +97,28 @@ class SettingsDB(object):
     """
     #Note, #Python recommends using dictcursor, so you can select x in y
     #Also, PEP8 says not to import in the middle of your code. That answers that.
-    def __init__(self, config):
-        self.columns = set()
-        if not hasattr(config, 'userdb_type'):
-            print 'No user settings database specified. Ignoring.'
-            return
-        self.type = config.userdb_type.lower()
+    def __init__(self, db, name, columns, key):
+        if key not in columns:
+            raise Exception #TODO
         
-        
-        if self.type == 'dict':
-            self.db = config.userdb_data
-        elif self.type == 'mysql' and mysql:
-            self._mySQL(config)
-        elif self.type == 'sqlite' and sqlite:
-            self._sqlite(config)
-        else:
-            print 'User settings database type is not supported. You may be missing the module for it. Ignoring.'
-            return
-            
-            
-    def _mySQL(self, config):
-        import MySQLdb
-        try:
-                self._host = config.userdb_host
-                self._user = config.userdb_user
-                self._passwd = config.userdb_pass
-                self._dbname = config.userdb_name
-        except AttributeError as e:
-                print 'Some options are missing for your MySQL user settings DB.'
-                print 'The database will not be set up.'
-                return
-            
-        try:
-            db = MySQLdb.connect(host=self._host,
-                         user=self._user,
-                         passwd=self._passwd,
-                         db=self._dbname)
-        except:
-            print 'Error: Unable to connect to user settings DB.'
-            return
-        cur = db.cursor()
-        #TODO this throws a warning. Do something about that.
-        cur.execute("CREATE TABLE IF NOT EXISTS "+tablename+" ( name text );")
-            
-            
-        cur.execute("SHOW columns FROM "+tablename+";")
-        for row in cur.fetchall():
-            self.columns.add(row[0])
-        db.close()
-
-    def _sqlite(self):
-        print 'sqlite is not yet supported for user settings.'
-        return
+        self.db = db
+        self.columns = set(columns)
+        self.name = name
+        self.key = key
     
     def users(self):
         """
         Returns the number of users (entries not starting with # or &).
         If the database is uninitialized, returns 0.
         """
-        
-        if self.type == 'mysql':
-            import MySQLdb
-            
-            db = MySQLdb.connect(host=self._host,
-                     user=self._user,
-                     passwd=self._passwd,
-                     db=self._dbname)
-            cur = db.cursor()
-            cur.execute("SELECT COUNT(*) FROM "+tablename+
-                    " WHERE name LIKE \"[^#&]%;")
-            result = int(cur.fetchone()[0])
-            db.close()
-            return result
-        else:
-            return 0
+                  
+        db = self.db.connect()
+        cur = db.cursor()
+        cur.execute("SELECT COUNT(*) FROM "+self.name+
+                " WHERE "+self.key+" LIKE \"[^#&]%;")
+        result = int(cur.fetchone()[0])
+        db.close()
+        return result
     
     def channels(self):
         """
@@ -140,37 +126,22 @@ class SettingsDB(object):
         If the database is uninitialized, returns 0.
         """
         
-        if self.type == 'mysql':
-            import MySQLdb
-            
-            db = MySQLdb.connect(host=self._host,
-                     user=self._user,
-                     passwd=self._passwd,
-                     db=self._dbname)
-            cur = db.cursor()
-            cur.execute("SELECT COUNT(*) FROM "+tablename+
-                    " WHERE name LIKE \"[#&]%;")
-            result = int(cur.fetchone()[0])
-            db.close()
-            return result
-        else:
-            return 0
+        db = self.db.connect()
+        cur = db.cursor()
+        cur.execute("SELECT COUNT(*) FROM "+self.name+
+                " WHERE "+self.key+" LIKE \"[#&]%;")
+        result = int(cur.fetchone()[0])
+        db.close()
+        return result
 
     def size(self):
         """Returns the total number of users and channels in the database."""
-        if self.type == 'mysql':
-            
-            db = MySQLdb.connect(host=self._host,
-                     user=self._user,
-                     passwd=self._passwd,
-                     db=self._dbname)
-            cur = db.cursor()
-            cur.execute("SELECT COUNT(*) FROM "+tablename+";")
-            result = int(cur.fetchone()[0])
-            db.close()
-            return result
-        else:
-            return 0
+        db = self.db.connect()
+        cur = db.cursor()
+        cur.execute("SELECT COUNT(*) FROM "+self.name+";")
+        result = int(cur.fetchone()[0])
+        db.close()
+        return result
 
     ## deprecated
     def __len__(self):
@@ -178,50 +149,32 @@ class SettingsDB(object):
         
     def _get_one(self, key, value):
         """Implements get() for where values is a single string"""
-        if self.type == 'dict':
-            return self.db[key]
-        elif self.type == 'mysql':
-            db = MySQLdb.connect(host=self._host,
-                     user=self._user,
-                     passwd=self._passwd,
-                     db=self._dbname)
-            cur = MySQLdb.cursors.DictCursor(db)
-            cur.execute(
-                'SELECT * FROM '+tablename+' WHERE name = %s;', key)
-            row = cur.fetchone()
-            if not row:
-                db.close()
-                raise KeyError(key+' not in database')
+        db = self.db.connect()
+        cur = MySQLdb.cursors.DictCursor(db)
+        cur.execute(
+            'SELECT * FROM '+self.name+' WHERE '+self.key+' = %s;', key)
+        row = cur.fetchone()
+        if not row:
             db.close()
-            
-            return row[value]
-        else:
-            #TODO This should be a different kind of error.
-            raise KeyError('User database not initialized.')
+            raise KeyError(key+' not in database')
+        db.close()
+        
+        return row[value]
     
     def _get_many(self, key, values):
         """Implements get() for where values is iterable"""
-        if self.type == 'dict':
-            return self.db[key]
-        elif self.type == 'mysql':
-            db = MySQLdb.connect(host=self._host,
-                     user=self._user,
-                     passwd=self._passwd,
-                     db=self._dbname)
-            cur = MySQLdb.cursors.DictCursor(db)
-            cur.execute(
-                'SELECT %s FROM '+tablename+' WHERE name = %s;', (values, key))
-            row = cur.fetchone()
-            
-            if not row:
-                db.close()
-                raise KeyError(key+' not in database')
+        db = self.db.connect()
+        cur = MySQLdb.cursors.DictCursor(db)
+        cur.execute(
+            'SELECT %s FROM '+self.name+' WHERE '+self.key+' = %s;', (values, key))
+        row = cur.fetchone()
+        
+        if not row:
             db.close()
-            
-            return row[value]
-        else:
-            #TODO This should be a different kind of error.
-            raise KeyError('User database not initialized.')
+            raise KeyError(key+' not in database')
+        db.close()
+        
+        return row[value]
 
     def get(self, key, values):
         """
@@ -238,58 +191,42 @@ class SettingsDB(object):
     
     ## deprecated
     def __getitem__(self, key):
-        if self.type == 'dict':
-            return self.db[key]
-        elif self.type == 'mysql':
-            db = MySQLdb.connect(host=self._host,
-                     user=self._user,
-                     passwd=self._passwd,
-                     db=self._dbname)
-            cur = MySQLdb.cursors.DictCursor(db)
-            cur.execute('SELECT * FROM '+tablename+' WHERE name = "'+key+'";')
-            row = cur.fetchone()
-            
-            if not row:
-                db.close()
-                raise KeyError(key+' not in database')
+        db = self.db.connect()
+        cur = MySQLdb.cursors.DictCursor(db)
+        cur.execute('SELECT * FROM '+self.name+' WHERE '+self.key+' = "'+key+'";')
+        row = cur.fetchone()
+        
+        if not row:
             db.close()
-            
-            return row
-        else:
-            raise KeyError('User database not initialized.')
+            raise KeyError(key+' not in database')
+        db.close()
+        
+        return row
     
     def update(self, nick, values):
         """
         Update the given values for ``nick``. ``value`` must be a dict which
         maps the names of the columns to be updated to their new values.
         """
-        if self.type == 'dict':
-            for k, v in values:
-                self.db[nick][k] = v
-        elif self.type == 'mysql':
-            db = MySQLdb.connect(host=self._host,
-                     user=self._user,
-                     passwd=self._passwd,
-                     db=self._dbname)
-            cur = MySQLdb.cursors.DictCursor(db)
-            cur.execute('SELECT * FROM '+tablename+' WHERE name = "'+nick+'";')
-            if not cur.fetchone():
-                cols = 'name'
-                vals = '"'+nick+'"'
-                for k in values:
-                    cols = cols + ', ' + k
-                    vals = vals + ', "' + values[k] + '"'
-                command = 'INSERT INTO '+tablename+' ('+cols+') VALUES (' + \
-                          vals + ');'
-            else:
-                command = 'UPDATE '+tablename+' SET '
-                for k in values:
-                    command = command + k + '="' + values[k] + '", '
-                command = command[:-2]+' WHERE name = "' + nick + '";'
-            cur.execute(command)
-            db.commit()
-            db.close()
-        else: raise KeyError('User database not initialized.')
+        db = self.db.connect()
+        cur = MySQLdb.cursors.DictCursor(db)
+        cur.execute('SELECT * FROM '+self.name+' WHERE '+self.key+' = "'+nick+'";')
+        if not cur.fetchone():
+            cols = self.key
+            vals = '"'+nick+'"'
+            for k in values:
+                cols = cols + ', ' + k
+                vals = vals + ', "' + values[k] + '"'
+            command = 'INSERT INTO '+self.name+' ('+cols+') VALUES (' + \
+                      vals + ');'
+        else:
+            command = 'UPDATE '+self.name+' SET '
+            for k in values:
+                command = command + k + '="' + values[k] + '", '
+            command = command[:-2]+' WHERE '+self.key+' = "' + nick + '";'
+        cur.execute(command)
+        db.commit()
+        db.close()
         
     ## deprecated    
     def __setitem__(self, key, value):
@@ -298,24 +235,17 @@ class SettingsDB(object):
     def delete(self, key):
         """Deletes the row for *key* in the database, removing its values in all
         rows."""
-        if self.type == 'dict':
-            del self.db[key]
-        elif self.type == 'mysql':
-            db = MySQLdb.connect(host=self._host,
-                     user=self._user,
-                     passwd=self._passwd,
-                     db=self._dbname)
-            cur = db.cursor()
-            
-            cur.execute('SELECT * FROM '+tablename+' WHERE name = "'+key+'";')
-            if not cur.fetchone():
-                db.close()
-                raise KeyError(key+' not in database')
-            
-            cur.execute('DELETE FROM '+tablename+' WHERE name = "'+key+'";')
-            db.commit()
+        db = self.db.connect()
+        cur = db.cursor()
+        
+        cur.execute('SELECT * FROM '+self.name+' WHERE '+self.key+' = "'+key+'";')
+        if not cur.fetchone():
             db.close()
-        else: raise KeyError('User database not initialized.')
+            raise KeyError(key+' not in database')
+        
+        cur.execute('DELETE FROM '+self.name+' WHERE '+self.key+' = "'+key+'";')
+        db.commit()
+        db.close()
         
     ## deprecated
     def __delitem__(self, key):
@@ -329,20 +259,13 @@ class SettingsDB(object):
         channel or nick, and db is your SettingsDB. This may be deprecated in
         future versions.
         """
-        if self.type == 'dict':
-            return iter(self.db)
-        elif self.type == 'mysql':
-            db = MySQLdb.connect(host=self._host,
-                     user=self._user,
-                     passwd=self._passwd,
-                     db=self._dbname)
-            cur = db.cursor()
-            
-            cur.execute('SELECT name FROM '+tablename+'')
-            result = cur.fetchall()
-            db.close()
-            return result
-        else: raise KeyError('User database not initialized.')
+        db = self.db.connect()
+        cur = db.cursor()
+        
+        cur.execute('SELECT '+self.key+' FROM '+self.name+'')
+        result = cur.fetchall()
+        db.close()
+        return result
     
     def __iter__(self):
         return self.keys()
@@ -352,22 +275,14 @@ class SettingsDB(object):
         Return ``True`` if d has a key *key*, else ``False``.
         
         ``key in db`` will also work, where db is your SettingsDB object."""
-        if self.type == 'dict':
-            return key in self.db
-        elif self.type == 'mysql':
-            db = MySQLdb.connect(host=self._host,
-                     user=self._user,
-                     passwd=self._passwd,
-                     db=self._dbname)
-            cur = db.cursor()
-            
-            #Let's immitate actual dict behavior
-            cur.execute('SELECT * FROM '+tablename+' WHERE name = "'+key+'";')
-            result = cur.fetchone()
-            db.close()
-            if result: return True
-            else: return False
-            
+        db = self.db.connect()
+        cur = db.cursor()
+        
+        #Let's immitate actual dict behavior
+        cur.execute('SELECT * FROM '+self.name+' WHERE '+self.key+' = "'+key+'";')
+        result = cur.fetchone()
+        db.close()
+        if result: return True
         else: return False
     
     def __contains__(self, item):
@@ -407,24 +322,17 @@ class SettingsDB(object):
         Insert a new column into the table, and add it to the column cache.
         This is the preferred way to add new columns to the database.
         """
-        cmd = 'ALTER TABLE '+tablename+' ADD ( '
+        cmd = 'ALTER TABLE '+self.name+' ADD ( '
         for column in columns:
             if isinstance(column, tuple): cmd = cmd + column[0]+' '+column[1]+', '
             else: cmd = cmd + column + ' text, '
         cmd = cmd[:-2]+' );'
+        db = self.db.connect()
+        cur = db.cursor()
         
-        if self.type == 'dict':
-            pass #TODO this and sqlite
-        elif self.type == 'mysql':
-            db = MySQLdb.connect(host=self._host,
-                     user=self._user,
-                     passwd=self._passwd,
-                     db=self._dbname)
-            cur = db.cursor()
-            
-            cur.execute(cmd)
-            db.commit()
-            db.close()
+        cur.execute(cmd)
+        db.commit()
+        db.close()
         #Why a second loop? because I don't want clomuns to be added to self.columns if executing the SQL command fails
         for column in columns:
             self.columns.add(column)
