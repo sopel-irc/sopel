@@ -4,9 +4,7 @@ dice.py - Dice Module
 Copyright 2010-2012, Dimitri "Tyrope" Molenaars, TyRope.nl
 Licensed under the Eiffel Forum License 2.
 
-More info:
- * Jenni: https://github.com/myano/jenni/
- * Phenny: http://inamidst.com/phenny/
+http://willie.dftba.net/
 """
 
 from random import randint, seed
