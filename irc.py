@@ -164,7 +164,7 @@ class Bot(asynchat.async_chat):
         self.create_socket(socket.AF_INET, socket.SOCK_STREAM)
         if hasattr(self.config, 'bind_host') and self.config.bind_host is not None:
             self.socket.bind((self.config.bind_host,0))
-        if self.use_ssl and ssl:
+        if self.use_ssl and has_ssl:
             self.send = self._ssl_send
             self.recv = self._ssl_recv
         elif not has_ssl and self.use_ssl:
