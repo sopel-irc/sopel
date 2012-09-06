@@ -125,8 +125,47 @@ class WillieDB(object):
             setattr(self, name, Table(self, name, columns, key))
         db.close()
 
-    def add_table(self, name, columns, key):#TODO
-        setattr(self, name, Table(self, name, columns, key))
+    def check_table(self, name, columns, key):
+        return (self.hasattr(self, name) and isinstance(self.name, Table) and
+                self.name.key == key and 
+                all(c in self.name.columns for c in columns))
+    
+    def _get_column_creation_text(columns, key=None):
+        cols = '('
+        for column in columns:
+            if isinstance(column, basestring):
+                cols = cols + column + ' string, '
+            elif isinstance(column, tuple):
+                cols += '%s %s, ' % column
+        cols = cols[-2]
+        if key:
+            if isinstance(key, basestring):
+                cols += 'PRIMARY KEY (%s)' % key
+            else:
+                cols += 'PRIMARY KEY (%s)' % ', '.join(key)
+        return cols+')'
+
+    def add_table(self, name, columns, key):
+        if name.startswith('_'):
+            raise ValueError, 'Invalid table name %s.' % name
+        elif not hasattr(self, name):
+            cols = _get_column_creation_text(columns)
+            db = self.connect()
+            cursor = db.cursor()
+            cursor.execute("CREATE TABLE %s %s;" % (name, cols))
+            db.close()
+            setattr(self, name, Table(self, name, columns, key))
+        elif isinstance(self, name, Table):
+            if self.name.key = key:
+                if not all(c in self.name.columns for c in columns):
+                    db = self.connect()
+                    cursor = db.cursor()
+                    cursor.execute("ALTER TABLE %s ADD COLUMN %s;")
+                    db.close()
+            else:
+                raise ValueError, 'Table %s already exists with different key.' % name
+        else: #Conflict with a non-table value, probably a function
+            raise ValueError, 'Invalid table name %s.' % name
     
     def connect(self):
         if self.type == 'mysql':
