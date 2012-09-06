@@ -21,7 +21,7 @@ http://willie.dftba.net
 
 """
 
-import re, urllib2
+import re, urllib, urllib2
 from htmlentitydefs import name2codepoint
 
 #HTTP GET
@@ -57,7 +57,7 @@ def post(uri, query):
     """
     if not uri.startswith('http'):
         return
-    data = urllib2.urlencode(query)
+    data = urllib.urlencode(query)
     u = urllib2.urlopen(uri, data)
     bytes = u.read()
     u.close()
