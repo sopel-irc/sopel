@@ -17,6 +17,7 @@ def checkConfig(willie):
         return False
     else:
         return [willie.config.git_Oath_token, willie.config.git_repo]
+        #return [willie.config.git_Oath_token, 'embolalia/willie']
 
 def configure(config):
     chunk = ''
@@ -42,13 +43,9 @@ def issue(willie, trigger):
     #parse input
     now = ' '.join(str(datetime.utcnow()).split(' ')).split('.')[0]+' UTC'
     body = 'submitted by: %s\nfrom channel: %s\nat %s' % (trigger.nick, trigger.sender, now)
-    data = '{"title": "%s","body": %s,"labels": ["IRC"]}' % (trigger.group(2), body)
+    data = {'access_token': gitAPI[0], 'title': trigger.group(2), 'body':body, 'labels': ['IRC']}
     #submit
-    try:
-        raw = web.post('https://api.github.com/repos/'+gitAPI[1]+'/issues?access_token='+gitAPI[0], data)
-    except Exception as e:
-        print ('%s %s %s' % (type(e), e.args, e))
-        return willie.say('Exception while reaching the git API.')
+    raw = web.post('https://api.github.com/repos/'+gitAPI[1]+'/issues', data)
 
     print raw
     return willie.say('Issue posted')
