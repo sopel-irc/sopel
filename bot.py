@@ -92,7 +92,11 @@ class Willie(irc.Bot):
         
         self.setup()
         self.db = WillieDB(config)
-        self.settings = self.db.locales
+        if hasattr(self.db, 'locales'):
+            self.settings = self.db.locales
+            self.db.preferences = self.db.locales
+        elif hasattr(self.db, 'preferences'):
+            self.settings = self.db.preferences
 
     def setup(self):
         stderr("\nWelcome to Willie. Loading modules...\n\n")
