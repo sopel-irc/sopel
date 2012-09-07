@@ -11,17 +11,6 @@ import os, re, time, random
 import web
 
 maximum = 4
-lispchannels = frozenset([ '#lisp', '#scheme', '#opendarwin', '#macdev',
-'#fink', '#jedit', '#dylan', '#emacs', '#xemacs', '#colloquy', '#adium',
-'#growl', '#chicken', '#quicksilver', '#svn', '#slate', '#squeak', '#wiki',
-'#nebula', '#myko', '#lisppaste', '#pearpc', '#fpc', '#hprog',
-'#concatenative', '#slate-users', '#swhack', '#ud', '#t', '#compilers',
-'#erights', '#esp', '#scsh', '#sisc', '#haskell', '#rhype', '#sicp', '#darcs',
-'#hardcider', '#lisp-it', '#webkit', '#launchd', '#mudwalker', '#darwinports',
-'#muse', '#chatkit', '#kowaleba', '#vectorprogramming', '#opensolaris',
-'#oscar-cluster', '#ledger', '#cairo', '#idevgames', '#hug-bunny', '##parsers',
-'#perl6', '#sdlperl', '#ksvg', '#rcirc', '#code4lib', '#linux-quebec',
-'#programmering', '#maxima', '#robin', '##concurrency', '#paredit' ])
 
 def loadReminders(fn):
     result = {}
@@ -48,7 +37,7 @@ def dumpReminders(fn, data):
 
 def setup(self):
     fn = self.nick + '-' + self.config.host + '.tell.db'
-    self.tell_filename = os.path.join(os.path.expanduser('~/.jenni'), fn)
+    self.tell_filename = os.path.join(self.config.dotdir, fn)
     if not os.path.exists(self.tell_filename):
         try: f = open(self.tell_filename, 'w')
         except OSError: pass
@@ -119,7 +108,6 @@ def getReminders(jenni, channel, key, tellee):
     return lines
 
 def message(jenni, input):
-    if not input.sender.startswith('#'): return
 
     tellee = input.nick
     channel = input.sender

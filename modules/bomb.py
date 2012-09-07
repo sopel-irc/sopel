@@ -25,8 +25,6 @@ def meter(jenni, input):
 meter.rule = '\.(\S+)meter (\S+)'
 
 def start(jenni, input):
-    print jenni.ops[input.sender]
-    print input.sender
     if not input.sender.startswith('#') or \
        (input.nick not in jenni.ops[input.sender] and
        input.nick not in jenni.halfplus[input.sender]):
@@ -34,7 +32,7 @@ def start(jenni, input):
     global bombs
     global sch
     target = input.group(1)
-    if target in input.otherbots or target == jenni.nick: return
+    if target in jenni.config.other_bots or target == jenni.nick: return
     if target in bombs:
         jenni.say('I can\'t fit another bomb in '+target+'\'s pants!')
         return

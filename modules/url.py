@@ -1,64 +1,24 @@
 #!/usr/bin/env python
 """
-url.py - Jenni Bitly Module
+url.py - Willie URL title module
 Copyright 2010-2011, Michael Yanovich, yanovich.net, Kenneth Sham.
 Licensed under the Eiffel Forum License 2.
 
-More info:
- * Jenni: https://github.com/myano/jenni/
- * Phenny: http://inamidst.com/phenny/
-
-This module will record all URLs to bitly via an api key and account.
-It also automatically displays the "title" of any URL pasted into the channel.
+http://willie.dftba.net
 """
 
 import re
 from htmlentitydefs import name2codepoint
-import unicode
 import web
+import unicodedata
+import urlparse
 
-# Place a file in your ~/jenni/ folder named, bitly.txt
-# and inside this file place your API key followed by a ','
-# and then your username. For example, the only line in that
-# file should look like this:
-# R_d67798xkjc87sdx6x8c7kjc87,myusername
-
-# this variable is to determine when to use bitly. If the URL is more
-# than this length, it'll display a bitly URL instead. To disable bit.ly, put None
-# even if it's set to None, triggering .bitly command will still work!
-BITLY_TRIGGER_LEN = 65
 EXCLUSION_CHAR = "!"
 IGNORE = ["git.io"]
-
-# do not edit below this line unless you know what you're doing
-bitly_loaded = 0
-bitly_api_key = ''
-bitly_user = ''
-
-def setup(jenni):
-    try:
-        global bitly_api_key, bitly_user, bitly_loaded
-        file = open("bitly.txt", "r")
-        key = file.read()
-        key = key.split(",")
-        bitly_api_key = str(key[0].lstrip().rstrip())
-        bitly_user = str(key[1].lstrip().rstrip())
-        file.close()
-        bitly_loaded = 1
-    except:
-        print "WARNING: No bitly.txt found. bitly functionallity disabled."
 
 url_finder = re.compile(r'(?u)(%s?(http|https|ftp)(://\S+))' % (EXCLUSION_CHAR))
 r_entity = re.compile(r'&[A-Za-z0-9#]+;')
 INVALID_WEBSITE = 0x01
-
-def noteuri(jenni, input):
-    uri = input.group(1).encode('utf-8')
-    if not hasattr(jenni.bot, 'last_seen_uri'):
-        jenni.bot.last_seen_uri = {}
-    jenni.bot.last_seen_uri[input.sender] = uri
-noteuri.rule = r'(?u).*(http[s]?://[^<> "\x01]+)[,.]?'
-noteuri.priority = 'low'
 
 def find_title(url):
     """
@@ -110,7 +70,7 @@ def find_title(url):
     title = r_entity.sub(e, title)
 
     if title:
-        title = unicode.decode(title)
+        title = uni_decode(title)
     else: title = 'None'
 
     title = title.replace('\n', '')
@@ -131,48 +91,6 @@ def find_title(url):
     if title:
         return title
 
-def short(text):
-    """
-    This function creates a bitly url for each url in the provided "text" string.
-    The return type is a list.
-    """
-
-    if not bitly_loaded: return [ ]
-    bitlys = [ ]
-    try:
-        a = re.findall(url_finder, text)
-        k = len(a)
-        i = 0
-        while i < k:
-            b = unicode.decode(a[i][0])
-            if not b.startswith("http://bit.ly") or not b.startswith("http://j.mp/"):
-                # check to see if the url is valid
-                try: c = web.head(b)
-                except: return [[None, None]]
-
-                url = "http://api.j.mp/v3/shorten?login=%s&apiKey=%s&longUrl=%s&format=txt" % (bitly_user, bitly_api_key, web.quote(b))
-                shorter = web.get(url)
-                shorter.strip()
-                bitlys.append([b, shorter])
-            i += 1
-        return bitlys
-    except:
-        return
-
-def generateBitLy (jenni, input):
-    if not bitly_loaded: return
-    bitly = short(input)
-    idx = 7
-    for b in bitly:
-        displayBitLy(jenni, b[0], b[1])
-generateBitLy.commands = ['bitly']
-generateBitLy.priority = 'high'
-
-def displayBitLy (jenni, url, shorten):
-    if url is None or shorten is None: return
-    u = getTLD(url)
-    jenni.say('%s  -  %s' % (u, shorten))
-
 def getTLD (url):
     idx = 7
     if url.startswith('https://'): idx = 8
@@ -183,33 +101,26 @@ def getTLD (url):
     else: u = url[0:idx] + u[0:f]
     return u
 
-def doUseBitLy (url):
-    return bitly_loaded and BITLY_TRIGGER_LEN is not None and len(url) > BITLY_TRIGGER_LEN
-
 def get_results(text):
     a = re.findall(url_finder, text)
     k = len(a)
     i = 0
     display = [ ]
     while i < k:
-        url = unicode.encode(a[i][0])
-        url = unicode.decode(url)
-        url = unicode.iriToUri(url)
+        url = uni_encode(a[i][0])
+        url = uni_decode(url)
+        url = iriToUri(url)
         if not url.startswith(EXCLUSION_CHAR):
             try:
                 page_title = find_title(url)
             except:
                 page_title = None # if it can't access the site fail silently
-            if bitly_loaded: # and (page_title is not None or page_title == INVALID_WEBSITE):
-                bitly = short(url)
-                bitly = bitly[0][1]
-            else: bitly = url
-            display.append([page_title, url, bitly])
+            display.append([page_title, url])
         i += 1
     return display
 
 def show_title_auto (jenni, input):
-    if (input.startswith('.title ') or input.startswith('.bitly ') or input.startswith('.dftba') or re.match('.*(youtube.com/watch\S*v=|youtu.be/)([\w-]+.*)', input)) or re.match('.*(http(?:s)?://(www\.)?reddit\.com/r/.*?/comments/[\w-]+).*', input):
+    if (input.startswith('.topic ') or input.startswith('.tmask ') or input.startswith('.title ') or input.startswith('.dftba') or re.match('.*(youtube.com/watch\S*v=|youtu.be/)([\w-]+.*)', input)) or re.match('.*(http(?:s)?://(www\.)?reddit\.com/r/.*?/comments/[\w-]+).*', input):
         return
     if len(re.findall("\([\d]+\sfiles\sin\s[\d]+\sdirs\)", input)) == 1: return
     try:
@@ -222,11 +133,8 @@ def show_title_auto (jenni, input):
         if k > 3: break
         k += 1
 
-        useBitLy = doUseBitLy(r[1])
         if r[0] is None:
-            if useBitLy: displayBitLy(jenni, r[1], r[2])
             continue
-        if useBitLy: r[1] = r[2]
         else: r[1] = getTLD(r[1])
         jenni.say('[ %s ] - %s' % (r[0], r[1]))
 show_title_auto.rule = '(?u).*(%s?(http|https)(://\S+)).*' % (EXCLUSION_CHAR)
@@ -240,11 +148,46 @@ def show_title_demand (jenni, input):
 
     for r in results:
         if r[0] is None: continue
-        if doUseBitLy(r[1]): r[1] = r[2]
-        else: r[1] = getTLD(r[1])
+        r[1] = getTLD(r[1])
         jenni.say('[ %s ] - %s' % (r[0], r[1]))
 show_title_demand.commands = ['title']
 show_title_demand.priority = 'high'
+
+
+#Tools formerly in unicode.py
+
+def uni_decode(bytes):
+    try:
+        text = bytes.decode('utf-8')
+    except UnicodeDecodeError:
+        try:
+            text = bytes.decode('iso-8859-1')
+        except UnicodeDecodeError:
+            text = bytes.decode('cp1252')
+    return text
+
+
+def uni_encode(bytes):
+    try:
+        text = bytes.encode('utf-8')
+    except UnicodeEncodeError:
+        try:
+            text = bytes.encode('iso-8859-1')
+        except UnicodeEncodeError:
+            text = bytes.encode('cp1252')
+    return text
+
+
+def urlEncodeNonAscii(b):
+    return re.sub('[\x80-\xFF]', lambda c: '%%%02x' % ord(c.group(0)), b)
+
+
+def iriToUri(iri):
+    parts = urlparse.urlparse(iri)
+    return urlparse.urlunparse(
+        part.encode('idna') if parti == 1 else urlEncodeNonAscii(part.encode('utf-8'))
+        for parti, part in enumerate(parts)
+    )
 
 if __name__ == '__main__':
     print __doc__.strip()

@@ -10,8 +10,9 @@ This module is an attempt to implement at least some of the functionallity of De
 import time
 import os
 import urllib2
-from url import find_title
+from modules.url import find_title
 from tools import Ddict
+import codecs
 
 def configure(config):
     chunk = ''
@@ -54,7 +55,7 @@ def figure_logfile_name(channel):
 
 #Start HTML log
 def logHTML_start(channel):
-    logfile = open(meeting_log_path + channel + '/' + figure_logfile_name(channel) + '.html', 'a')
+    logfile = codecs.open(meeting_log_path + channel + '/' + figure_logfile_name(channel) + '.html', 'a', encoding='utf-8')
     timestring = time.strftime('%Y-%m-%d %H:%M', time.gmtime(meetings_dict[channel]['start']))
     title = '%s at %s, %s' % (meetings_dict[channel]['title'], channel, timestring)
     logfile.write('<!doctype html>\n<html>\n<head>\n<meta charset="utf-8">\n<title>%TITLE%</title>\n</head>\n<body>\n<h1>%TITLE%</h1>\n'.replace('%TITLE%', title))
@@ -63,13 +64,13 @@ def logHTML_start(channel):
     
 #Write a list item in the HTML log
 def logHTML_listitem(item, channel):
-    logfile = open(meeting_log_path + channel + '/' + figure_logfile_name(channel) + '.html', 'a')
+    logfile = codecs.open(meeting_log_path + channel + '/' + figure_logfile_name(channel) + '.html', 'a', encoding='utf-8')
     logfile.write('<li>'+item+'</li>\n')
     logfile.close()
 
 #End the HTML log
 def logHTML_end(channel):
-    logfile = open(meeting_log_path + channel + '/' + figure_logfile_name(channel) + '.html', 'a')
+    logfile = codecs.open(meeting_log_path + channel + '/' + figure_logfile_name(channel) + '.html', 'a', encoding='utf-8')
     current_time = time.strftime('%H:%M:%S', time.gmtime())
     logfile.write('</ul>\n<h4>Meeting ended at %s UTC</h4>\n' % current_time)
     plainlog_url = meeting_log_baseurl + urllib2.quote(channel + '/' + figure_logfile_name(channel) + '.log')
@@ -80,7 +81,7 @@ def logHTML_end(channel):
 #Write a string to the plain text log
 def logplain(item, channel):
     current_time = time.strftime('%H:%M:%S', time.gmtime())
-    logfile = open(meeting_log_path + channel + '/' + figure_logfile_name(channel) + '.log', 'a')
+    logfile = codecs.open(meeting_log_path + channel + '/' + figure_logfile_name(channel) + '.log', 'a', encoding='utf-8')
     logfile.write('['+ current_time + '] '+item+'\r\n')
     logfile.close()
 
@@ -137,7 +138,8 @@ def startmeeting(jenni, input):
             os.makedirs(meeting_log_path + input.sender)
         except Exception as e:
             jenni.say("Can't create log directory for this channel, meeting not started!")
-            jenni.say(e)
+            meetings_dict[input.sender] = Ddict(dict)
+            raise
             return
     #Okay, meeting started!
     logplain('Meeting started by ' + input.nick.lower(), input.sender)

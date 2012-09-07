@@ -1,189 +1,122 @@
 #!/usr/bin/env python
 """
 ai.py - Artificial Intelligence Module
-Copyright 2010-2011, Michael Yanovich, yanovich.net
+Copyright 2009-2011, Michael Yanovich, yanovich.net
 Licensed under the Eiffel Forum License 2.
 
-More info:
- * Jenni: https://github.com/myano/jenni/
- * Phenny: http://inamidst.com/phenny/
+http://willie.dftba.net
 """
 
 import random, time
 
-aistate = False
-conversation = False
-low = 0
-high = 1
-owner_gone = True
-greet_user = ""
-
-greeting = ['Hello', 'Hallo', 'Hi', 'Welcome']
-
 random.seed()
+limit = 3
 
-## Functions that deal with the state of AI being on or off.
-
-def off(jenni, input):
-    if input.nick == jenni.config.owner:
-        jenni.reply("Feature has been disabled.")
-        global aistate
-        aistate = False
-    else:
-        jenni.reply("You are not authorized to disable this feature.")
-off.commands = ['off']
-off.priority = 'high'
-
-def on(jenni, input):
-    if input.nick == jenni.config.owner:
-        jenni.reply("Feature has been enabled.")
-        global aistate
-        aistate = True
-    else:
-        jenni.reply("You are not authorized to enable this feature.")
-on.commands = ['on']
-on.priority = 'high'
-
-def state(jenni, input):
-    global aistate
-    if aistate == True:
-        jenni.reply("It is on.")
-    else:
-        jenni.reply("It is off.")
-state.commands = ['state']
-state.priority = 'high'
-
-## Functions that do not rely on "AISTATE"
-
-def hello_join(jenni, input):
-    well = random.random()
-    if 0 < well < 0.01:
-        if input.nick == jenni.config.nick:
-            return
-        random_greeting = random.choice(greeting)
-        punctuation = random.choice(('!', ' '))
-        jenni.say(random_greeting + ' ' + input.nick + punctuation)
-#hello_join.event = 'JOIN'
-#hello_join.rule = '.*'
-#hello_join.priority = 'medium'
-
-def goodbye(jenni, input):
+def goodbye(willie, trigger):
     byemsg = random.choice(('Bye', 'Goodbye', 'Seeya', 'Auf Wiedersehen', 'Au revoir', 'Ttyl'))
     punctuation = random.choice(('!', ' '))
-    jenni.say(byemsg + ' ' + input.nick + punctuation)
+    willie.say(byemsg + ' ' + trigger.nick + punctuation)
 goodbye.rule = r'(?i)$nickname\:\s+(bye|goodbye|seeya|cya|ttyl|g2g|gnight|goodnight)'
 goodbye.thread = False
 goodbye.rate = 30
 
-## Functions that do rely on "AISTATE"
 
-def hau(jenni, input):
-    global aistate
-    global conversation
-    global greet_user
-    greet_user = input.nick
-    if aistate == True and greet_user == input.nick:
-        time.sleep(random.randint(0,1))
-        jenni.reply("How are you?")
-        conversation = True
-hau.rule = r'(?i)(hey|hi|hello)\b.*(jenni|$nickname)\b.*$'
-
-def hau2(jenni, input):
-    hau(jenni,input)
-hau2.rule = r'(?i)(jenni|$nickname)\b.*(hey|hi|hello)\b.*$'
-
-def gau(jenni, input):
-    global aistate
-    global conversation
-    global greet_user
-    if aistate == True and conversation == True and greet_user == input.nick:
-        randmsg = random.choice(["That's good to hear!", "That's great to hear!"])
-        time.sleep(random.randint(0,1))
-        jenni.reply(randmsg)
-        conversation = False
-#gau.rule = '(?i).*(good).*'
-
-def bad(jenni, input):
-    global aistate
-    global conversation
-    global greet_user
-    if input.sender == "#pyohio":
-        return
-    if aistate == True and conversation == True and greet_user == input.nick:
-        randmsg = random.choice(["Sorry to hear about that."])
-        time.sleep(random.randint(0,1))
-        jenni.reply(randmsg)
-        conversation = False
-bad.rule = '(?i).*(bad|horrible|awful|terrible).*$'
-
-## ADDED Functions that do not rely on "AISTATE"
-
-def ty(jenni, input):
+def ty(willie, trigger):
     human = random.uniform(0,9)
     time.sleep(human)
-    mystr = input.group()
+    mystr = trigger.group()
     mystr = str(mystr)
     if (mystr.find(" no ") == -1) and (mystr.find("no ") == -1) and (mystr.find(" no") == -1):
-        jenni.reply("You're welcome.")
-ty.rule = '(?i).*(thank).*(you).*(jenni|$nickname).*$'
+        willie.reply("You're welcome.")
+ty.rule = '(?i).*(thank).*(you).*(willie|$nickname).*$'
 ty.priority = 'high'
 ty.rate = 30
 
-def ty2(jenni, input):
-    ty(jenni,input)
+def ty2(willie, trigger):
+    ty(willie,trigger)
 ty2.rule = '(?i)$nickname\:\s+(thank).*(you).*'
 ty2.rate = 30
 
-def ty4(jenni, input):
-    ty(jenni, input)
-ty4.rule = '(?i).*(thanks).*(jenni|$nickname).*'
+def ty4(willie, trigger):
+    ty(willie, trigger)
+ty4.rule = '(?i).*(thanks).*(willie|$nickname).*'
 ty4.rate = 40
 
-def random_resp(jenni, input):
-    # This randomly takes what someone says in the form of "jenni: <message>" and just spits it back out at the user that said it.
-    human = random.random()
-    if 0 <= human <= 0.025:
-        strinput = input.group()
-        nick = jenni.nick + ":"
-        strinput = strinput.split(nick)
-        jenni.reply(strinput[1][1:])
-random_resp.rule = r'(?i)$nickname\:\s+(.*)'
-
-def yesno(jenni,input):
+def yesno(willie,trigger):
     rand = random.uniform(0,5)
-    text = input.group()
+    text = trigger.group()
     text = text.split(":")
     text = text[1].split()
     time.sleep(rand)
     if text[0] == 'yes':
-        jenni.reply("no")
+        willie.reply("no")
     elif text[0] == 'no':
-        jenni.reply("yes")
-yesno.rule = '(jenni|$nickname)\:\s+(yes|no)$'
+        willie.reply("yes")
+yesno.rule = '(willie|$nickname)\:\s+(yes|no)$'
 yesno.rate = 15
 
-def ping_reply (jenni,input):
-    text = input.group().split(":")
+def ping_reply (willie,trigger):
+    text = trigger.group().split(":")
     text = text[1].split()
     if text[0] == 'PING' or text[0] == 'ping':
-        jenni.reply("PONG")
-ping_reply.rule = '(?i)($nickname|jenni)\:\s+(ping)\s*'
+        willie.reply("PONG")
+ping_reply.rule = '(?i)($nickname|willie)\:\s+(ping)\s*'
 ping_reply.rate = 30
 
-def love (jenni, input):
-    jenni.reply("I love you too.")
-love.rule = '(?i)i.*love.*(jenni|$nickname).*'
+def love (willie, trigger):
+    willie.reply("I love you too.")
+love.rule = '(?i)i.*love.*(willie|$nickname).*'
 love.rate = 30
 
-def love2 (jenni, input):
-    jenni.reply("I love you too.")
-love2.rule = '(?i)(jenni|$nickname)\:\si.*love.*'
+def love2 (willie, trigger):
+    willie.reply("I love you too.")
+love2.rule = '(?i)(willie|$nickname)\:\si.*love.*'
 love2.rate = 30
 
-def love3 (jenni, input):
-    jenni.reply("I love you too.")
-love3.rule = '(?i)(jenni|$nickname)\,\si.*love.*'
+def love3 (willie, trigger):
+    willie.reply("I love you too.")
+love3.rule = '(?i)(willie|$nickname)\,\si.*love.*'
 love3.rate = 30
+
+def f_lol(willie, trigger):
+    randnum = random.random()
+    if 0 < randnum < limit:
+        respond = ['haha', 'lol', 'rofl']
+        randtime = random.uniform(0,9)
+        time.sleep(randtime)
+        willie.say(random.choice(respond))
+f_lol.rule = '(haha!?|lol!?)$'
+f_lol.priority = 'high'
+
+def f_bye(willie, trigger):
+    respond = ['bye!', 'bye', 'see ya', 'see ya!']
+    willie.say(random.choice(respond))
+f_bye.rule = '(g2g!?|bye!?)$'
+f_bye.priority = 'high'
+
+def f_heh(willie, trigger):
+    randnum = random.random()
+    if 0 < randnum < limit:
+        respond = ['hm']
+        randtime = random.uniform(0,7)
+        time.sleep(randtime)
+        willie.say(random.choice(respond))
+f_heh.rule = '(heh!?)$'
+f_heh.priority = 'high'
+
+def f_really(willie, trigger):
+    randtime = random.uniform(10,45)
+    time.sleep(randtime)
+    willie.say(str(trigger.nick) + ": " + "Yes, really.")
+f_really.rule = r'(?i)$nickname\:\s+(really!?)'
+f_really.priority = 'high'
+
+def wb(willie, trigger):
+    willie.reply("Thank you!")
+wb.rule = '^(wb|welcome\sback).*$nickname\s'
+
+if __name__ == '__main__':
+    print __doc__.strip()
 
 if __name__ == '__main__':
     print __doc__.strip()

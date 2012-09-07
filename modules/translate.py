@@ -14,6 +14,7 @@ import re
 import web
 from time import sleep
 import urllib2, json
+mangle_lines = {}
 
 def translate(text, input='auto', output='en'):
     raw = False
@@ -117,8 +118,19 @@ def tr2(jenni, input):
 tr2.commands = ['tr']
 tr2.priority = 'low'
 
-def mangle(jenni, input):
-    phrase = (input.group(2).encode('utf-8'), '')
+def mangle(jenni, trigger):
+    global mangle_lines
+    if trigger.group(2) is None:
+        try:
+            phrase = (mangle_lines[trigger.sender.lower()], '')
+        except:
+            jenni.reply("What do you want me to mangle?")
+            return
+    else:
+        phrase = (trigger.group(2).encode('utf-8').strip(), '')
+    if phrase[0] == '':
+        jenni.reply("What do you want me to mangle?")
+        return
     for lang in ['fr', 'de', 'es', 'it', 'no', 'he', 'la', 'ja' ]:
         backup = phrase
         phrase = translate(phrase[0], 'en', lang)
@@ -134,6 +146,12 @@ def mangle(jenni, input):
 
     jenni.reply(phrase[0])
 mangle.commands = ['mangle']
+
+def collect_mangle_lines(jenni, trigger):
+    global mangle_lines
+    mangle_lines[trigger.sender.lower()] = "%s said '%s'" % (trigger.nick, trigger.group(0).encode('utf-8').strip())
+collect_mangle_lines.rule = ('(.*)')
+collect_mangle_lines.priority = 'low'
 
 if __name__ == '__main__':
     print __doc__.strip()

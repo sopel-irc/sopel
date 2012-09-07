@@ -4,86 +4,88 @@ dice.py - Dice Module
 Copyright 2010-2012, Dimitri "Tyrope" Molenaars, TyRope.nl
 Licensed under the Eiffel Forum License 2.
 
-More info:
- * Jenni: https://github.com/myano/jenni/
- * Phenny: http://inamidst.com/phenny/
+http://willie.dftba.net/
 """
 
 from random import randint, seed
-import time, re
+from modules.calc import calculate
+import re
 
 seed()
 
-def dice(jenni, input):
-    """.dice <formula> - Rolls dice using the XdY format, also does basic (+-*/) math."""
-    #MATHTIME! Let's prepare the failsafes.
-    legal_formula, no_dice = 1, 1
-    #parsing time.
-    msg = ' '.join(input.groups(2)[1:])
-    formula = msg #back-up the original message, because you're going to feed it back to the user in the end.
-    formula = formula.replace("-", " - ")
-    formula = formula.replace("+", " + ") #add spaces
-    formula = formula.replace("/", " / ") #for all
-    formula = formula.replace("*", " * ") #the characters
-    formula = formula.replace("(", " ( ") #supported
-    formula = formula. replace(")", " ) ")
-    arr = formula.split(" ") #aaaand, CUT IT APART! (this is why you needed the spaces.)
-
-    full_string = "" #reset the formula
+def dice(willie, trigger):
+    """.dice <formula> - Rolls dice using the XdY format, also does basic math."""
+    no_dice = True
+    if trigger.group(2) == None:
+        return willie.reply('You have to specify the dice you wanna roll.')
+    arr = trigger.group(2).lower().strip(' ')
+    arr = arr.replace('-', ' - ').replace('+', ' + ').replace('/', ' / ').replace('*', ' * ').replace('(', ' ( ').replace(')', ' ) ').replace('^', ' ^ ').replace('()', '').split(' ')
+    full_string, calc_string = '', ''
+    
     for segment in arr:
-        #let's look at this formula... piece, by, piece
-        if segment != "":
-            #the value of this segment is 0
-            value = 0
-            if re.search("[0-9]*(d|D)[0-9]+", segment): #if there's a dice (regex FTW!)
-                value = rollDice(segment) #then roll the dice.
-                no_dice = 0 # And let the bot know there's dice in the formula
-            elif re.search("([0-9]|\+|\-|\*|\/|\(|\)| \+| \-| \*| \/| \(| \))", segment): #are any of the supported math characters in this piece?
-                value = segment #then just make that the value.
+        #check for dice
+        result = re.search("([0-9]+m)?([0-9]*d[0-9]+)(v[0-9]+)?", segment)
+        if result:
+            #detect droplowest
+            if result.group(3) is not None:
+                #check for invalid droplowest
+                dropLowest = int(result.group(3)[1:])
+                if(result.group(2).lower().startswith('d')):
+                    if(dropLowest != 0):
+                        willie.reply('You\'re trying to drop too many dice.')
+                        return
+                elif(dropLowest >= int('0'+result.group(2).lower().split('d')[0])):
+                    willie.reply('You\'re trying to drop too many dice.')
+                    return
             else:
-                legal_formula = 0 #non-supported character found...
-                break #ABORT, ABORT, ABORT!
-            full_string += value #add this segment's value to the full string
+                dropLowest = 0
+            #dicerolling
+            value, drops = '(', ''
+            dice = rollDice(result.group(2).lower())
+            for i in range(0,len(dice)):
+                if i < dropLowest:
+                    if drops == '':
+                        drops = '[+'
+                    drops += str(dice[i])
+                    if i < dropLowest-1:
+                        drops += '+'
+                    else:
+                        drops += ']'
+                else:
+                    value += str(dice[i])
+                    if i != len(dice)-1:
+                        value += '+'
+            no_dice = False
+            value += drops+')'
+        else:
+            value = segment
+        full_string += value
     #repeat next segment
 
-    #you done? good.
-    if legal_formula == 1 and full_string != "": # did something break? no? good, continue.
-        #at this point full string is something like: "4 + 6 + 12 * 4" etc.
-        result = str(eval(full_string)) # so normally eval is UNSAFE... but since i've dumped regex over the user input i'm pretty confident in the security.
-        #print result to chat
-        if(no_dice): #no dice found, warn!
-            jenni.reply("For pure math, you can use .c! "+msg+" = "+result)
-        else: #dice found, just let the users know what's happening
-            jenni.reply("You roll "+msg+" ("+full_string+"): "+result)
-    else: #print illegal warning.
-        jenni.reply("Illegal formula segment: "+segment+", aborting.")
+    #we're replacing, splitting and joining to exclude []'s from the math.
+    result = calculate(''.join(full_string.replace('[','#').replace(']','#').split('#')[::2]))
+    if result == 'Sorry, no result.':
+        willie.reply('Calculation failed, did you try something weird?')
+    elif(no_dice):
+        willie.reply('For pure math, you can use .c '+trigger.group(2)+' = '+result)
+    else:
+        willie.reply('You roll '+trigger.group(2)+' ('+full_string+'): '+result)
 dice.commands = ['roll','dice','d']
 dice.priority = 'medium'
 
 def rollDice(diceroll):
-#Time for the real fun, dice!
-    if(diceroll.startswith('d')): #check if it's XdX or dX
-        #  dX
-        rolls = 1 #no dice amounts specified, roll 1
-        size = int(diceroll[1:]) # dice with this amount of sides
+    if(diceroll.startswith('d')):
+        rolls = 1
+        size = int(diceroll[1:])
     else:
-        # XdX
-        rolls = int(diceroll.split('d')[0]) # dice amount specified, use it.
-        size = int(diceroll.split('d')[1]) #  aswell as this size.
-    result = "" #dice result is zero.
+        rolls = int(diceroll.split('d')[0])
+        size = int(diceroll.split('d')[1])
+    result = [] #dice results.
 
-    for i in range(1,rolls+1): #for the amount of dice
+    for i in range(1,rolls+1):
         #roll 10 dice, pick a random dice to use, add string to result.
-        # I should elaborate on this...
-        # str() makes sure the number is in string format (required for the eval())
-        # randint(1,size) is 1 dice and randint(0,9) selects one of the ten dice rolled
-        # reason for this is fairness, true random has at least 2 stages.
-        result += str((randint(1,size),randint(1,size),randint(1,size),randint(1,size),randint(1,size),randint(1,size),randint(1,size),randint(1,size),randint(1,size),randint(1,size))[randint(0,9)])
-        if(i != rolls):
-            #if it's not the last sign, add a plus sign.
-            result += "+"
-
-    return "("+result+")" #feed it back to the formula parser... add some parentheses so we know this is 1 roll.
+        result.append((randint(1,size),randint(1,size),randint(1,size),randint(1,size),randint(1,size),randint(1,size),randint(1,size),randint(1,size),randint(1,size),randint(1,size))[randint(0,9)])
+    return sorted(result) #returns a set of integers.
 
 if __name__ == '__main__':
     print __doc__.strip()

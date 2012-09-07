@@ -26,7 +26,6 @@ def google_search(query):
     try: return results['responseData']['results'][0]['unescapedUrl']
     except IndexError: return None
     except TypeError:
-        print results
         return False
 
 def google_count(query):
