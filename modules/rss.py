@@ -126,8 +126,8 @@ def read_feeds(jenni):
         feed_channel = row[0]
         feed_site_name = row[1]
         feed_url = row[2]
-        feed_fg = row[3]
-        feed_bg = row[4]
+        feed_fg = row[4]
+        feed_bg = row[5]
         try:
             fp = feedparser.parse(feed_url)
         except IOError, E:
