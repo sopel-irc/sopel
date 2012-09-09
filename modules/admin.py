@@ -1,108 +1,106 @@
 #!/usr/bin/env python
 """
-admin.py - Jenni Admin Module
+admin.py - Willie Admin Module
 Copyright 2010-2011, Sean B. Palmer (inamidst.com) and Michael Yanovich (yanovich.net)
 Licensed under the Eiffel Forum License 2.
 
-More info:
- * Jenni: https://github.com/myano/jenni/
- * Phenny: http://inamidst.com/phenny/
+http://willie.dfbta.net
 """
 
 import os
 
-def join(jenni, input):
+def join(willie, trigger):
    """Join the specified channel. This is an admin-only command."""
    # Can only be done in privmsg by an admin
-   if input.sender.startswith('#'): return
-   if input.admin:
-      channel, key = input.group(1), input.group(2)
+   if trigger.sender.startswith('#'): return
+   if trigger.admin:
+      channel, key = trigger.group(1), trigger.group(2)
       if not key:
-         jenni.write(['JOIN'], channel)
-      else: jenni.write(['JOIN', channel, key])
+         willie.write(['JOIN'], channel)
+      else: willie.write(['JOIN', channel, key])
 join.rule = r'\.join (#\S+)(?: *(\S+))?'
 join.priority = 'low'
 join.example = '.join #example or .join #example key'
 
-def part(phenny, input): 
+def part(phenny, trigger): 
     """Part the specified channel. This is an admin-only command."""
     # Can only be done in privmsg by an admin
-    if input.sender.startswith('#'): return
-    if input.admin: 
-        phenny.write(['PART'], input.group(2))
+    if trigger.sender.startswith('#'): return
+    if trigger.admin: 
+        phenny.write(['PART'], trigger.group(2))
 part.commands = ['part']
 part.priority = 'low'
 part.example = '.part #example'
 
-def quit(phenny, input): 
+def quit(phenny, trigger): 
     """Quit from the server. This is an owner-only command."""
     # Can only be done in privmsg by the owner
-    if input.sender.startswith('#'): return
-    if input.owner: 
+    if trigger.sender.startswith('#'): return
+    if trigger.owner: 
         phenny.write(['QUIT'])
         __import__('os')._exit(0)
 quit.commands = ['quit']
 quit.priority = 'low'
 
-def msg(phenny, input): 
+def msg(phenny, trigger): 
     # Can only be done in privmsg by an admin
-    if input.sender.startswith('#'): return
-    a, b = input.group(2), input.group(3)
+    if trigger.sender.startswith('#'): return
+    a, b = trigger.group(2), trigger.group(3)
     if (not a) or (not b): return
-    if input.admin: 
+    if trigger.admin: 
         phenny.msg(a, b)
 msg.rule = (['msg'], r'(#?\S+) (.+)')
 msg.priority = 'low'
 
-def me(phenny, input): 
+def me(phenny, trigger): 
     # Can only be done in privmsg by an admin
-    if input.sender.startswith('#'): return
-    if input.admin: 
-        msg = '\x01ACTION %s\x01' % input.group(3)
-        phenny.msg(input.group(2), msg)
+    if trigger.sender.startswith('#'): return
+    if trigger.admin: 
+        msg = '\x01ACTION %s\x01' % trigger.group(3)
+        phenny.msg(trigger.group(2), msg)
 me.rule = (['me'], r'(#?\S+) (.*)')
 me.priority = 'low'
 
-def defend_ground(jenni, input):
+def defend_ground(willie, trigger):
     """
-    This function monitors all kicks across all channels jenni is in. If she
+    This function monitors all kicks across all channels willie is in. If she
     detects that she is the one kicked she'll automatically join that channel.
 
-    WARNING: This may not be needed and could cause problems if jenni becomes
+    WARNING: This may not be needed and could cause problems if willie becomes
     annoying. Please use this with caution.
     """
-    channel = input.sender
-    jenni.write(['JOIN'], channel)
+    channel = trigger.sender
+    willie.write(['JOIN'], channel)
 defend_ground.event = 'KICK'
 defend_ground.rule = '.*'
 defend_ground.priority = 'low'
 
-def mode(jenni, input):
+def mode(willie, trigger):
     # Can only be done in privmsg by an admin
-    if input.sender.startswith('#'): return
-    if input.admin:
-        mode = input.group(1)
-        jenni.write(('MODE ', jenni.nick + ' ' + mode))
+    if trigger.sender.startswith('#'): return
+    if trigger.admin:
+        mode = trigger.group(1)
+        willie.write(('MODE ', willie.nick + ' ' + mode))
 mode.rule = r'\.mode ([\+-]\S+)'
 mode.priority = 'low'
 
-def raw(phenny, input):
+def raw(phenny, trigger):
     # Can only be done in privmsg by owner
-    if input.sender.startswith('#'): return
-    if input.owner:
-        phenny.write((input.group(1), input.group(2)))
+    if trigger.sender.startswith('#'): return
+    if trigger.owner:
+        phenny.write((trigger.group(1), trigger.group(2)))
 raw.rule = '.raw (\S+) (.*)'
 
 
-def blocks(jenni, input):
-    if not input.admin: return
+def blocks(willie, trigger):
+    if not trigger.admin: return
 
     STRINGS = {
             "success_del" : "Successfully deleted block: %s",
             "success_add" : "Successfully added block: %s",
             "no_nick" : "No matching nick block found for: %s",
             "no_host" : "No matching hostmask block found for: %s",
-            "invalid" : "Invalid format for %s a block. Try: .blocks add (nick|hostmask) jenni",
+            "invalid" : "Invalid format for %s a block. Try: .blocks add (nick|hostmask) willie",
             "invalid_display" : "Invalid input for displaying blocks.",
             "nonelisted" : "No %s listed in the blocklist.",
             'huh' : "I could not figure out what you wanted to do.",
@@ -123,25 +121,25 @@ def blocks(jenni, input):
     try: nicks = contents[1].replace("\n", "").split(',')
     except: nicks = ['']
 
-    text = input.group().split()
+    text = trigger.group().split()
 
     if len(text) == 3 and text[1] == "list":
         if text[2] == "hostmask":
             if len(masks) > 0 and masks.count("") == 0:
                 for each in masks:
                     if len(each) > 0:
-                        jenni.say("blocked hostmask: " + each)
+                        willie.say("blocked hostmask: " + each)
             else:
-                jenni.reply(STRINGS['nonelisted'] % ('hostmasks'))
+                willie.reply(STRINGS['nonelisted'] % ('hostmasks'))
         elif text[2] == "nick":
             if len(nicks) > 0 and nicks.count("") == 0:
                 for each in nicks:
                     if len(each) > 0:
-                        jenni.say("blocked nick: " + each)
+                        willie.say("blocked nick: " + each)
             else:
-                jenni.reply(STRINGS['nonelisted'] % ('nicks'))
+                willie.reply(STRINGS['nonelisted'] % ('nicks'))
         else:
-            jenni.reply(STRINGS['invalid_display'])
+            willie.reply(STRINGS['invalid_display'])
 
     elif len(text) == 4 and text[1] == "add":
         if text[2] == "nick":
@@ -149,31 +147,31 @@ def blocks(jenni, input):
         elif text[2] == "hostmask":
             masks.append(text[3].lower())
         else:
-            jenni.reply(STRINGS['invalid'] % ("adding"))
+            willie.reply(STRINGS['invalid'] % ("adding"))
             return
 
-        jenni.reply(STRINGS['success_add'] % (text[3]))
+        willie.reply(STRINGS['success_add'] % (text[3]))
 
     elif len(text) == 4 and text[1] == "del":
         if text[2] == "nick":
             try:
                 nicks.remove(text[3])
-                jenni.reply(STRINGS['success_del'] % (text[3]))
+                willie.reply(STRINGS['success_del'] % (text[3]))
             except:
-                jenni.reply(STRINGS['no_nick'] % (text[3]))
+                willie.reply(STRINGS['no_nick'] % (text[3]))
                 return
         elif text[2] == "hostmask":
             try:
                 masks.remove(text[3].lower())
-                jenni.reply(STRINGS['success_del'] % (text[3]))
+                willie.reply(STRINGS['success_del'] % (text[3]))
             except:
-                jenni.reply(STRINGS['no_host'] % (text[3]))
+                willie.reply(STRINGS['no_host'] % (text[3]))
                 return
         else:
-            jenni.reply(STRINGS['invalid'] % ("deleting"))
+            willie.reply(STRINGS['invalid'] % ("deleting"))
             return
     else:
-        jenni.reply(STRINGS['huh'])
+        willie.reply(STRINGS['huh'])
 
     os.remove("blocks")
     blocks = open("blocks", "w")
