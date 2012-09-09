@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 """
-dict.py - Jenni Dictionary Module
+dict.py - Willie Dictionary Module
 Copyright 2008-9, Sean B. Palmer, inamidst.com
 Licensed under the Eiffel Forum License 2.
 
-http://inamidst.com/phenny/
+http://willie.dfbta.net
 """
 
 import re, urllib
@@ -21,8 +21,8 @@ r_info = re.compile(
     r'(?:ResultBody"><br /><br />(.*?)&nbsp;)|(?:<b>(.*?)</b>)'
 )
 
-def dict(jenni, input):
-    word = input.group(2)
+def dict(willie, trigger):
+    word = trigger.group(2)
     word = urllib.quote(word.encode('utf-8'))
 
     def trim(thing):
@@ -38,7 +38,7 @@ def dict(jenni, input):
         if kind: wordkind = kind
         elif sense:
             results.setdefault(wordkind, []).append(sense)
-    result = input.group(2).encode('utf-8') + ' - '
+    result = trigger.group(2).encode('utf-8') + ' - '
     for key in sorted(results.keys()):
         if results[key]:
             result += (key or '') + ' 1. ' + results[key][0]
@@ -47,8 +47,8 @@ def dict(jenni, input):
             result += '; '
     result = result.rstrip('; ')
     if result.endswith('-') and (len(result) < 30):
-        jenni.reply('Sorry, no definition found.')
-    else: jenni.say(result)
+        willie.reply('Sorry, no definition found.')
+    else: willie.say(result)
 dict.commands = ['dict']
 
 if __name__ == '__main__':

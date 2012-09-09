@@ -267,38 +267,38 @@ f_time.commands = ['t', 'time']
 f_time.name = 't'
 f_time.example = '.t UTC'
 
-def beats(jenni, input):
+def beats(willie, trigger):
     """Shows the internet time in Swatch beats."""
     beats = ((time.time() + 3600) % 86400) / 86.4
     beats = int(math.floor(beats))
-    jenni.say('@%03i' % beats)
+    willie.say('@%03i' % beats)
 beats.commands = ['beats']
 beats.priority = 'low'
 
 def divide(input, by):
     return (input / by), (input % by)
 
-def yi(jenni, input):
+def yi(willie, trigger):
     """Shows whether it is currently yi or not."""
     quadraels, remainder = divide(int(time.time()), 1753200)
     raels = quadraels * 4
     extraraels, remainder = divide(remainder, 432000)
     if extraraels == 4:
-        return jenni.say('Yes! PARTAI!')
-    else: jenni.say('Not yet...')
+        return willie.say('Yes! PARTAI!')
+    else: willie.say('Not yet...')
 yi.commands = ['yi']
 yi.priority = 'low'
 
-def tock(jenni, input):
+def tock(willie, trigger):
     """Shows the time from the USNO's atomic clock."""
     u = urllib.urlopen('http://tycho.usno.navy.mil/cgi-bin/timer.pl')
     info = u.info()
     u.close()
-    jenni.say('"' + info['Date'] + '" - tycho.usno.navy.mil')
+    willie.say('"' + info['Date'] + '" - tycho.usno.navy.mil')
 tock.commands = ['tock']
 tock.priority = 'high'
 
-def npl(jenni, input):
+def npl(willie, trigger):
     """Shows the time from NPL's SNTP server."""
     # for server in ('ntp1.npl.co.uk', 'ntp2.npl.co.uk'):
     client = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -313,16 +313,16 @@ def npl(jenni, input):
         a, b = str(d).split('.')
         f = '%Y-%m-%d %H:%M:%S'
         result = datetime.datetime.fromtimestamp(d).strftime(f) + '.' + b[:6]
-        jenni.say(result + ' - ntp1.npl.co.uk')
-    else: jenni.say('No data received, sorry')
+        willie.say(result + ' - ntp1.npl.co.uk')
+    else: willie.say('No data received, sorry')
 npl.commands = ['npl']
 npl.priority = 'high'
 
-def update_user(jenni, input):
-    if not jenni.settings.hascolumn('tz'):
-        jenni.settings.addcolumns({"tz"})#TODO move this to configure
+def update_user(willie, trigger):
+    if not willie.settings.hascolumn('tz'):
+        willie.settings.addcolumns({"tz"})#TODO move this to configure
     else:
-        tz = input.group(2)
+        tz = trigger.group(2)
         goodtz = tz in TimeZones
         #We don't see it in our short db, so let's give pytz a try
         if not goodtz:
@@ -332,21 +332,21 @@ def update_user(jenni, input):
             except: pass
         
         if not goodtz:
-            jenni.reply("I don't know that time zone.")
+            willie.reply("I don't know that time zone.")
         else:
-            jenni.settings.update(input.nick, {'tz': tz})
+            willie.settings.update(trigger.nick, {'tz': tz})
             if len(tz) < 7:
-                jenni.say("Okay, "+input.nick+
+                willie.say("Okay, "+trigger.nick+
               ", but you should use one from http://dft.ba/-tz if you use DST.")
-            else: jenni.reply('I now have you in the %s time zone.' %tz)
+            else: willie.reply('I now have you in the %s time zone.' %tz)
 update_user.commands = ['settz']
 #rule = ('$nick', "I'm in the (.*?) time ?zone\.?")
 
-def update_channel(jenni, input):
-    if not jenni.settings.hascolumn('tz'):
-        jenni.say("That's nice.")
+def update_channel(willie, trigger):
+    if not willie.settings.hascolumn('tz'):
+        willie.say("That's nice.")
     else:
-        tz = input.group(2)
+        tz = trigger.group(2)
         goodtz = tz in TimeZones
         #We don't see it in our short db, so let's give pytz a try
         if not goodtz:
@@ -356,13 +356,13 @@ def update_channel(jenni, input):
             except: pass
         
         if not goodtz:
-            jenni.reply("I don't know that time zone.")
+            willie.reply("I don't know that time zone.")
         else:
-            jenni.settings.update(input.sender, {'tz': tz})
+            willie.settings.update(trigger.sender, {'tz': tz})
             if len(tz) < 7:
-                jenni.say("Okay, "+input.nick+
+                willie.say("Okay, "+trigger.nick+
               ", but you should use one from http://dft.ba/-tz if you use DST.")
-            else: jenni.say("Gotcha, " + input.nick)
+            else: willie.say("Gotcha, " + trigger.nick)
 update_channel.commands = ['channeltz']
 #rule = ('$nick', 'this channel uses the (.*?) time ?zone\.?')
 
