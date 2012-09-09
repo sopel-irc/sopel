@@ -198,7 +198,7 @@ class WillieDB(object):
             setattr(self, name, Table(self, name, columns, key))
         elif isinstance(self, name, Table):
             table = getattr(self, name)
-            if table.key = key:
+            if table.key == key:
                 if not all(c in table.columns for c in columns):
                     db = self.connect()
                     cursor = db.cursor()
