@@ -30,7 +30,6 @@ def configure(config):
 
 def issue(willie, trigger):
     """Create a GitHub issue, also known as a bug report. Syntax: .issue Title of the bug report"""
-    return willie.say('broken feature, requires a fix in web.py, gitted for testcases in local copies.')
     #check input
     if not trigger.group(2):
         return willie.say('Please title the issue')
@@ -43,11 +42,11 @@ def issue(willie, trigger):
     #parse input
     now = ' '.join(str(datetime.utcnow()).split(' ')).split('.')[0]+' UTC'
     body = 'submitted by: %s\nfrom channel: %s\nat %s' % (trigger.nick, trigger.sender, now)
-    data = {'access_token': gitAPI[0], 'title': trigger.group(2), 'body':body, 'labels': ['IRC']}
+    data = {"title":trigger.group(2).encode('utf-8'), "body":body, "labels": ["IRC"]}
     #submit
-    raw = web.post('https://api.github.com/repos/'+gitAPI[1]+'/issues', data)
-
-    print raw
+    raw = web.post('https://api.github.com/repos/'+gitAPI[1]+'/issues?access_token='+gitAPI[0], json.dumps(data))
+    
+    #TODO: Add URL to return value (it's in raw, somewhere.)
     return willie.say('Issue posted')
 issue.commands = ['issue']
 issue.priority = 'medium'
