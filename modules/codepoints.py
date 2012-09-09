@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 """
-codepoints.py - Jenni Codepoints Module
+codepoints.py - Willie Codepoints Module
 Copyright 2008, Sean B. Palmer, inamidst.com
 Licensed under the Eiffel Forum License 2.
 
-http://inamidst.com/phenny/
+http://willie.dfbta.net
 """
 
 import re, unicodedata
@@ -64,15 +64,14 @@ def codepoint_extended(arg):
         if r_search.search(name):
             yield about(u, cp, name)
 
-def u(jenni, input):
+def u(willie, trigger):
     """Look up unicode information."""
-    arg = input.bytes[3:]
-    # jenni.msg('#inamidst', '%r' % arg)
+    arg = trigger.bytes[3:]
     if not arg:
-        return jenni.reply('You gave me zero length input.')
+        return willie.reply('You gave me zero length trigger.')
     elif not arg.strip(' '):
-        if len(arg) > 1: return jenni.reply('%s SPACEs (U+0020)' % len(arg))
-        return jenni.reply('1 SPACE (U+0020)')
+        if len(arg) > 1: return willie.reply('%s SPACEs (U+0020)' % len(arg))
+        return willie.reply('1 SPACE (U+0020)')
 
     # @@ space
     if set(arg.upper()) - set(
@@ -92,41 +91,41 @@ def u(jenni, input):
         if len(arg) == 4:
             try: u = unichr(int(arg, 16))
             except ValueError: pass
-            else: return jenni.say(about(u))
+            else: return willie.say(about(u))
 
         if extended:
             # look up a codepoint with regexp
             results = list(islice(codepoint_extended(arg), 4))
             for i, result in enumerate(results):
                 if (i < 2) or ((i == 2) and (len(results) < 4)):
-                    jenni.say(result)
+                    willie.say(result)
                 elif (i == 2) and (len(results) > 3):
-                    jenni.say(result + ' [...]')
+                    willie.say(result + ' [...]')
             if not results:
-                jenni.reply('Sorry, no results')
+                willie.reply('Sorry, no results')
         else:
             # look up a codepoint freely
             result = codepoint_simple(arg)
             if result is not None:
-                jenni.say(result)
-            else: jenni.reply("Sorry, no results for %r." % arg)
+                willie.say(result)
+            else: willie.reply("Sorry, no results for %r." % arg)
     else:
         text = arg.decode('utf-8')
         # look up less than three podecoints
         if len(text) <= 3:
             for u in text:
-                jenni.say(about(u))
+                willie.say(about(u))
         # look up more than three podecoints
         elif len(text) <= 10:
-            jenni.reply(' '.join('U+%04X' % ord(c) for c in text))
-        else: jenni.reply('Sorry, your input is too long!')
+            willie.reply(' '.join('U+%04X' % ord(c) for c in text))
+        else: willie.reply('Sorry, your trigger is too long!')
 u.commands = ['u']
 u.example = '.u 203D'
 
-def bytes(jenni, input):
+def bytes(willie, trigger):
     """Show the input as pretty printed bytes."""
-    b = input.bytes
-    jenni.reply('%r' % b[b.find(' ') + 1:])
+    b = trigger.bytes
+    willie.reply('%r' % b[b.find(' ') + 1:])
 bytes.commands = ['bytes']
 bytes.example = '.bytes \xe3\x8b\xa1'
 
