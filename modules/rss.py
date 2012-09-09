@@ -112,20 +112,17 @@ def read_feeds(jenni):
 
     restarted = False
     conn = jenni.db.connect()
-    c = conn.cursor()
-    checkdb(c)
-    c.execute("SELECT * FROM rss")
-    if not c.fetchall():
+    cur = conn.cursor()
+    checkdb(cur)
+    cur.execute("SELECT * FROM rss")
+    if not cur.fetchall():
         STOP = True
         jenni.say("No RSS feeds found in database. Please add some rss feeds.")
 
-    c.execute("SELECT * FROM rss")
-    conn_recent = jenni.db.connect()
-    cursor_recent = conn_recent.cursor()
-    cursor_recent.execute("CREATE TABLE IF NOT EXISTS recent ( channel text, site_name text, article_title text, article_url text )")
+    cur.execute("CREATE TABLE IF NOT EXISTS recent ( channel text, site_name text, article_title text, article_url text )")
+    cur.execute("SELECT * FROM rss")
 
-
-    for row in c:
+    for row in cur:
         feed_channel = row[0]
         feed_site_name = row[1]
         feed_url = row[2]
@@ -153,8 +150,8 @@ def read_feeds(jenni):
 
         # only print if new entry
         sql_text = (feed_channel, feed_site_name, entry.title, article_url)
-        cursor_recent.execute("SELECT * FROM recent WHERE channel = %s AND site_name = %s and article_title = %s AND article_url = %s", sql_text)
-        if len(cursor_recent.fetchall()) < 1:
+        cur.execute("SELECT * FROM recent WHERE channel = %s AND site_name = %s and article_title = %s AND article_url = %s", sql_text)
+        if len(cur.fetchall()) < 1:
 
             response = site_name_effect + " %s \x02%s\x02" % (entry.title, article_url)
             if entry.updated:
@@ -163,16 +160,12 @@ def read_feeds(jenni):
             jenni.msg(feed_channel, response)
 
             t = (feed_channel, feed_site_name, entry.title, article_url,)
-            cursor_recent.execute("INSERT INTO recent VALUES (%s, %s, %s, %s)", t)
-            conn_recent.commit()
-            conn_recent.close()
+            cur.execute("INSERT INTO recent VALUES (%s, %s, %s, %s)", t)
             conn.commit()
-            c.close()
         else:
             if DEBUG:
                 jenni.msg(feed_channel, u"Skipping previously read entry: %s %s" % (site_name_effect, entry.title))
-    cursor_recent.close()
-    c.close()
+    conn.close()
 
 
 def startrss(jenni, input):
