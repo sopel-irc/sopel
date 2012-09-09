@@ -11,6 +11,7 @@ import json
 
 def shorten(jenni, input):
     """Shorten a URL with DFT.BA"""
+    return jenni.say("The dft.ba API is no longer available. Can not shorten URL.")
     args = input.groups()
     url = args[0]
     code = None
@@ -41,4 +42,4 @@ def expand(jenni, input):
     else:
         longurl = response['api_response']['response']['long_url']
         jenni.say('http://dft.ba/' + url + ' redirects to ' + longurl)
-expand.rule = '.*http://dft.ba/(\S+).*'
+#expand.rule = '.*http://dft.ba/(\S+).*'

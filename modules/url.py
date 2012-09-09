@@ -120,7 +120,7 @@ def get_results(text):
     return display
 
 def show_title_auto (jenni, input):
-    if (input.startswith('.topic ') or input.startswith('.tmask ') or input.startswith('.title ') or input.startswith('.dftba') or re.match('.*(youtube.com/watch\S*v=|youtu.be/)([\w-]+.*)', input)) or re.match('.*(http(?:s)?://(www\.)?reddit\.com/r/.*?/comments/[\w-]+).*', input):
+    if (input.startswith('.topic ') or input.startswith('.tmask ') or input.startswith('.title ') or re.match('.*(youtube.com/watch\S*v=|youtu.be/)([\w-]+.*)', input)) or re.match('.*(http(?:s)?://(www\.)?reddit\.com/r/.*?/comments/[\w-]+).*', input):
         return
     if len(re.findall("\([\d]+\sfiles\sin\s[\d]+\sdirs\)", input)) == 1: return
     try:
