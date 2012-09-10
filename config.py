@@ -119,7 +119,7 @@ class Config(object):
         owner = '"""+self.owner+"""'
         name = '"""+self.name+"""'
         
-        use_ssl = '"""+str(self.use_ssl)+"""'
+        use_ssl = """+str(self.use_ssl)+"""
         """+verify_ssl_line+"""
         """+ca_cert_line+"""
         
