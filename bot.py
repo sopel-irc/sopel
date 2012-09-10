@@ -69,7 +69,7 @@ class Willie(irc.Bot):
             serverpass = config.serverpass
         else:
             serverpass = None
-        args = (config.nick, config.name, config.channels, config.password, lc_pm, use_ssl, verify_ssl, ca_certs, serverpass)
+        args = (config.nick, config.name, config.channels, config.user, config.password, lc_pm, use_ssl, verify_ssl, ca_certs, serverpass)
         irc.Bot.__init__(self, *args)
         self.config = config
         """The ``Config`` for the current Willie instance."""
