@@ -249,9 +249,14 @@ class Willie(irc.Bot):
             s.nick = origin.nick
             """The nick of the person who sent the message."""
             s.event = event
-            """The event which triggered the message."""#TODO elaborate
+            """
+            The IRC event (e.g. ``PRIVMSG`` or ``MODE``) which triggered the
+            message."""
             s.bytes = bytes
-            """The line which triggered the message"""#TODO elaborate
+            """
+            The text which triggered the message. Equivalent to
+            ``Trigger.group(0)``.
+            """
             s.match = match
             """
             The regular expression ``MatchObject_`` for the triggering line.
@@ -266,7 +271,12 @@ class Willie(irc.Bot):
             
             See Python ``re_`` documentation for details."""
             s.args = args
-            """The arguments given to a command.""" #TODO elaborate
+            """
+            A tuple containing each of the arguments to an event. These are the
+            strings passed between the event name and the colon. For example,
+            setting ``mode -m`` on the channel ``#example``, args would be
+            ``('#example', '-m')``
+            """
             s.admin = (origin.nick in self.config.admins) or origin.nick.lower() == self.config.owner.lower()
             """
             True if the nick which triggered the command is in Willie's admin
