@@ -69,14 +69,15 @@ def log_raw(line):
     f.close()
 
 class Bot(asynchat.async_chat):
-    def __init__(self, nick, name, channels, password=None, logchan_pm=None, use_ssl = False, verify_ssl=False, ca_certs='', serverpass=None):
+    def __init__(self, nick, name, channels, user, password=None, logchan_pm=None, use_ssl = False, verify_ssl=False, ca_certs='', serverpass=None):
         asynchat.async_chat.__init__(self)
         self.set_terminator('\n')
         self.buffer = ''
 
         self.nick = nick
         """Willie's current nick. Changing this while Willie is running is untested."""
-        self.user = nick
+        self.user = user
+        """Willie's user/ident."""
         self.name = name
         """Willie's "real name", as used for whois."""
         self.password = password
