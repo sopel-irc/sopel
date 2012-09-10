@@ -49,6 +49,8 @@ class Config(object):
         command.) Note that this is used in a regular expression, so regex
         syntax and special characters apply.
         """
+        self.user = 'willie'
+        """The user/ident the bot will use."""
         self.name = 'Willie Embosbot, http://willie.dftba.net'
         """The "real name" used for the bot's whois."""
         self.port = 6667
@@ -110,6 +112,7 @@ class Config(object):
             bind_host_line = "# bind_host = '0.0.0.0'"
         output = trim("""\
         nick = '"""+self.nick+"""'
+        user = '"""+self.user+"""'
         host = '"""+self.host+"""'
         port = """+str(self.port)+"""
         channels = """+str(self.channels)+"""
@@ -235,6 +238,7 @@ class Config(object):
     
     def _core(self):
         self.interactive_add('nick', 'Enter the nickname for your bot', 'Willie')
+        self.interactive_add('user', 'Enter the "user" for your bot (the part that comes before the @ in the hostname', 'willie')
         self.interactive_add('name', 'Enter the "real name" of you bot for WHOIS responses',
                              'Willie Embosbot, http://willie.dftba.net')
         self.interactive_add('host', 'Enter the server to connect to', 'irc.dftba.net')
