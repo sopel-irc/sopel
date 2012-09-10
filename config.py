@@ -222,7 +222,24 @@ class Config(object):
             lst.append(mem)
             mem = raw_input(prompt)
         setattr(self, attrib, lst)
-            
+
+    def add_option(self, attrib, question, default=False):
+        """
+        Show user in terminal a "y/n" prompt, and set `attrib` to True or False
+        based on the response. If default is passed as true, the default will be
+        shown as ``[y]``, else it will be ``[n]``. ``question`` should be phrased
+        as a question, but without a question mark at the end. If ``attrib`` is
+        already defined, it will be used instead of ``default``, regardless of
+        wheather ``default`` is passed.
+        """
+        if hasattr(self, attrib):
+            default = getattr(self, attrib)
+        d = 'n'
+        if default: d = 'y'
+        ans = raw_input(question+' (y/n)? ['+d+']')
+        if not ans: ans = d
+        setattr(self, attrib, (ans is 'y' or ans is 'Y'))
+        
     def option(self, question, default=False):
         """
         Show user in terminal a "y/n" prompt, and return true or false based on
@@ -243,9 +260,9 @@ class Config(object):
                              'Willie Embosbot, http://willie.dftba.net')
         self.interactive_add('host', 'Enter the server to connect to', 'irc.dftba.net')
         self.interactive_add('port', 'Enter the port to connect on', '6667')
-        self.use_ssl = self.option('Use SSL Secured connection?', False)
+        self.add_option('use_ssl', 'Use SSL Secured connection?', False)
         if self.use_ssl:
-            self.verify_ssl = self.option('Require trusted SSL certificates?', True)
+            self.add_option('verify_ssl', 'Require trusted SSL certificates?', True)
             if self.verify_ssl:
                 self.interactive_add('ca_certs', 'Enter full path to the CA Certs pem file', '/etc/pki/tls/cert.pem')
         self.interactive_add('bind_host', 'Bind connection to a specific IP', 'None')
