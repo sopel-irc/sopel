@@ -335,16 +335,16 @@ The ``Trigger`` class
         True if the nick which triggered the command is an op on the channel it was triggered in.
         Will always be False if the command was triggered by a private message
 
-More advanced: ``settings`` and ``config``
-==========================================
+More advanced: ``db`` and ``config``
+====================================
 
-The ``willie`` object has, among others, the attributes ``settings`` and
+The ``willie`` object has, among others, the attributes ``db`` and
 ``config``. These can be used for a number of functions and features.
 
-The ``SettingsDB`` class
-------------------------
+The ``WillieDB`` class
+----------------------
 
-.. automodule:: settings
+.. automodule:: db
    :members:
 
 The ``Config`` class
