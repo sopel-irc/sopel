@@ -41,7 +41,7 @@ def issue(willie, trigger):
 
     #parse input
     now = ' '.join(str(datetime.utcnow()).split(' ')).split('.')[0]+' UTC'
-    body = 'submitted by: %s\nfrom channel: %s\nat %s' % (trigger.nick, trigger.sender, now)
+    body = 'Submitted by: %s\nFrom channel: %s\nAt %s' % (trigger.nick, trigger.sender, now)
     data = {"title":trigger.group(2).encode('utf-8'), "body":body, "labels": ["IRC"]}
     #submit
     try:
@@ -51,7 +51,7 @@ def issue(willie, trigger):
     
     data = json.loads(raw)
     willie.say('Issue #%s posted. %s' % (data['number'], data['html_url']))
-    willie.debug('','Issue #%s created in %s' (data['number'],trigger.sender),'warning')
+    willie.debug('','Issue #%s created in %s' % (data['number'],trigger.sender),'warning')
 issue.commands = ['issue']
 issue.priority = 'medium'
 
