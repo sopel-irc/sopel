@@ -8,6 +8,7 @@ http://willie.dftba.net/
 """
 
 from datetime import datetime
+from urllib2 import HTTPError
 import json, re, web
 
 def checkConfig(willie):
@@ -17,7 +18,6 @@ def checkConfig(willie):
         return False
     else:
         return [willie.config.git_Oath_token, willie.config.git_repo]
-        #return [willie.config.git_Oath_token, 'embolalia/willie']
 
 def configure(config):
     chunk = ''
@@ -44,12 +44,17 @@ def issue(willie, trigger):
     body = 'submitted by: %s\nfrom channel: %s\nat %s' % (trigger.nick, trigger.sender, now)
     data = {"title":trigger.group(2).encode('utf-8'), "body":body, "labels": ["IRC"]}
     #submit
-    raw = web.post('https://api.github.com/repos/'+gitAPI[1]+'/issues?access_token='+gitAPI[0], json.dumps(data))
+    try:
+        raw = web.post('https://api.github.com/repos/'+gitAPI[1]+'/issues?access_token='+gitAPI[0], json.dumps(data))
+    except HTTPError as e:
+        return willie.say('The GitHub API returned an error.')
     
-    #TODO: Add URL to return value (it's in raw, somewhere.)
-    return willie.say('Issue posted')
+    data = json.loads(raw)
+    willie.say('Issue #%s posted. %s' % (data['number'], data['html_url']))
+    willie.debug('','Issue #%s created in %s' (data['number'],trigger.sender),'warning')
 issue.commands = ['issue']
 issue.priority = 'medium'
 
 if __name__ == '__main__':
     print __doc__.strip()
+
