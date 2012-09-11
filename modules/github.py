@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-git.py - Jenni Github Module
+github.py - Willie Github Module
 Copyright 2012, Dimitri Molenaars http://tyrope.nl/
 Licensed under the Eiffel Forum License 2.
 
