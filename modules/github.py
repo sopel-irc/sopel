@@ -46,14 +46,49 @@ def issue(willie, trigger):
     #submit
     try:
         raw = web.post('https://api.github.com/repos/'+gitAPI[1]+'/issues?access_token='+gitAPI[0], json.dumps(data))
-    except HTTPError as e:
+    except HTTPError:
         return willie.say('The GitHub API returned an error.')
     
     data = json.loads(raw)
     willie.say('Issue #%s posted. %s' % (data['number'], data['html_url']))
     willie.debug('','Issue #%s created in %s' % (data['number'],trigger.sender),'warning')
-issue.commands = ['issue']
+issue.commands = ['issue','bug']
 issue.priority = 'medium'
+
+def findIssue(willie, trigger):
+    """Search for a GitHub issue by keyword. usage: .findissue search keywords (optional) You can specify the first keyword as "CLOSED" to search closed issues."""
+    if not trigger.group(2):
+        return willie.reply('What are you searching for?')
+
+    #Is the Oauth token and repo available?
+    gitAPI = checkConfig(willie)
+    if gitAPI == False:
+        return willie.say('Git module not configured, make sure git_Oath_token and git_repo are defined')
+    if trigger.group(2).split(' ')[0] == 'CLOSED':
+        if '%20'.join(trigger.group(2).split(' ')[1:]) not in ('','\x02','\x03'):
+            URL = 'https://api.github.com/legacy/issues/search/'+gitAPI[1]+'/closed/'+'%20'.join(trigger.group(2).split(' ')[1:])
+        else:
+            return willie.reply('What are you searching for?')
+    else:
+        URL = 'https://api.github.com/legacy/issues/search/'+gitAPI[1]+'/open/'+trigger.group(2)
+
+    try:
+        raw = web.get(URL)
+    except HTTPError:
+        return willie.say('The GitHub API returned an error.')
+
+    try:
+        data = json.loads(raw)['issues'][-1]
+    except (KeyError, IndexError):
+        return willie.say('No search results.')
+    if len(data['body'].split('\n')) > 1:
+        body = data['body'].split('\n')[0]+'...'
+    else:
+        body = data['body'].split('\n')[0]
+    willie.reply('[#%s]\x02title:\x02 %s \x02|\x02 %s' % (data['number'],data['title'],body))
+    willie.say(data['html_url'])
+findIssue.commands = ['findissue','findbug']
+findIssue.priority = 'medium'
 
 if __name__ == '__main__':
     print __doc__.strip()
