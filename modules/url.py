@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 """
 url.py - Willie URL title module
-Copyright 2010-2011, Michael Yanovich, yanovich.net, Kenneth Sham.
+Copyright 2010-2011, Michael Yanovich, yanovich.net, Kenneth Sham
+Copyright 2012 Edward Powell
 Licensed under the Eiffel Forum License 2.
 
 http://willie.dftba.net
@@ -13,12 +14,41 @@ import web
 import unicodedata
 import urlparse
 
-EXCLUSION_CHAR = "!"
-IGNORE = ["git.io"]
-
-url_finder = re.compile(r'(?u)(%s?(http|https|ftp)(://\S+))' % (EXCLUSION_CHAR))
+url_finder = None
 r_entity = re.compile(r'&[A-Za-z0-9#]+;')
 INVALID_WEBSITE = 0x01
+
+def configure(config):
+    if config.option('Exclude certain URLs from automatic title display', True):
+        config.add_list('url_exclude', 'Enter regular expressions for each URL you would like to exclude.',
+            'Regex:')
+        config.interactive_add('url_exclusion_char',
+            'Prefix to suppress URL titling', '!')
+        
+        chunk = ("url_exclude = %s\nurl_exclusion_char = '%s'\n" % 
+                (config.url_exclude, config.url_exclusion_char))
+        return chunk
+    else: return ''
+    
+def setup(willie):
+    global url_finder
+    # Set up empty url exclusion list and default exclusion character
+    if not hasattr(willie.config, 'url_exclude'):
+        willie.config.set_attr('url_exclude', [])
+    else:
+        for s in willie.config.url_exclude:
+            if isinstance(s, basestring):
+                willie.config.url_exclude.remove(s)
+                willie.config.url_exclude.append(re.compile(s))
+            #Otherwise, it's probably already compiled by another module.
+    
+    if not hasattr(willie.config, 'url_exclusion_char'):
+        willie.config.set_attr('url_exclusion_char', '!')
+    
+    url_finder = re.compile(r'(?u)(%s?(http|https|ftp)(://\S+))' %
+        (willie.config.url_exclusion_char))
+    # We want the exclusion list to be pre-compiled, since url parsing gets
+    # called a /lot/, and it's annoying when it's laggy.
 
 def find_title(url):
     """
@@ -28,10 +58,6 @@ def find_title(url):
 
     if not uri and hasattr(self, 'last_seen_uri'):
         uri = self.last_seen_uri.get(origin.sender)
-
-    for item in IGNORE:
-        if item in uri:
-            return
 
     if not re.search('^((https?)|(ftp))://', uri):
         uri = 'http://' + uri
@@ -101,30 +127,31 @@ def getTLD (url):
     else: u = url[0:idx] + u[0:f]
     return u
 
-def get_results(text):
+def get_results(jenni, text):
     a = re.findall(url_finder, text)
-    k = len(a)
-    i = 0
     display = [ ]
-    while i < k:
-        url = uni_encode(a[i][0])
+    for match in a:
+        match = match[0]
+        if (match.startswith(jenni.config.url_exclusion_char) or
+                any(pattern.match(match) for pattern in jenni.config.url_exclude)):
+            continue
+        print 'no exclusion'
+        url = uni_encode(match)
         url = uni_decode(url)
         url = iriToUri(url)
-        if not url.startswith(EXCLUSION_CHAR):
-            try:
-                page_title = find_title(url)
-            except:
-                page_title = None # if it can't access the site fail silently
-            display.append([page_title, url])
-        i += 1
+        try:
+            page_title = find_title(url)
+        except:
+            page_title = None # if it can't access the site fail silently
+        display.append([page_title, url])
     return display
 
 def show_title_auto (jenni, input):
-    if (input.startswith('.topic ') or input.startswith('.tmask ') or input.startswith('.title ') or re.match('.*(youtube.com/watch\S*v=|youtu.be/)([\w-]+.*)', input)) or re.match('.*(http(?:s)?://(www\.)?reddit\.com/r/.*?/comments/[\w-]+).*', input):
+    if input.startswith('.title '):
         return
     if len(re.findall("\([\d]+\sfiles\sin\s[\d]+\sdirs\)", input)) == 1: return
     try:
-        results = get_results(input)
+        results = get_results(jenni, input)
     except: return
     if results is None: return
 
@@ -137,7 +164,7 @@ def show_title_auto (jenni, input):
             continue
         else: r[1] = getTLD(r[1])
         jenni.say('[ %s ] - %s' % (r[0], r[1]))
-show_title_auto.rule = '(?u).*(%s?(http|https)(://\S+)).*' % (EXCLUSION_CHAR)
+show_title_auto.rule = '(?u).*((http|https)(://\S+)).*'
 show_title_auto.priority = 'high'
 
 def show_title_demand (jenni, input):
