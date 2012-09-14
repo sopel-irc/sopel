@@ -1,20 +1,26 @@
 #!/usr/bin/env python
 # -*- coding: utf8 -*-
 """
-youtube.py - Jenni YouTube Module
+youtube.py - Willie YouTube Module
 Copyright 2012, Dimitri Molenaars, Tyrope.nl.
 Copyright © 2012, Elad Alfassa, <elad@fedoraproject.org>
+Copyright 2012, Edward Powell, embolalia.net
 Licensed under the Eiffel Forum License 2.
 
-More info:
- * Jenni: https://github.com/myano/jenni/
- * Phenny: http://inamidst.com/phenny/
+http://willie.dfbta.net
 
 This module will respond to .yt and .youtube commands and searches the youtubes.
 """
 
 import web, re
 from HTMLParser import HTMLParser
+
+def setup(jenni):
+    regex = re.compile('(youtube.com/watch\S*v=|youtu.be/)([\w-]+)')
+    if not hasattr(jenni.config, 'url_exclude'):
+        jenni.config.set_attr('url_exclude', [regex])
+    else:
+        jenni.config.url_exclude.append(regex)
 
 def ytget(jenni, input, uri):
     try: bytes = web.get(uri)

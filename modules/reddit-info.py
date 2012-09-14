@@ -1,12 +1,19 @@
 """
-reddit.py - jenni reddit module
+reddit.py - Willie Reddit module
 Author: Edward Powell, embolalia.net
-About: http://inamidst.com/phenny
+About: http://willie.dftba.net
 
 This module provides special tools for reddit, namely showing detailed info about reddit posts
 """
 
-import reddit
+import reddit, re
+
+def setup(jenni):
+    regex = re.compile('http(?:s)?://(www\.)?reddit\.com/(r/.*?/comments/[\w-]+|u(ser)?/[\w-]+)')
+    if not hasattr(jenni.config, 'url_exclude'):
+        jenni.config.set_attr('url_exclude', [regex])
+    else:
+        jenni.config.url_exclude.append(regex)
 
 def rpost_info(jenni, input):
     r = reddit.Reddit(user_agent='phenny / jenni IRC bot - see dft.ba/-williesource for more')
@@ -26,7 +33,6 @@ def rpost_info(jenni, input):
 rpost_info.rule = '.*(http(?:s)?://(www\.)?reddit\.com/r/.*?/comments/[\w-]+).*'
 
 def redditor_info(jenni, input):
-    print 'in'
     r = reddit.Reddit(user_agent='phenny / jenni IRC bot - see dft.ba/-williesource for more')
     u = r.get_redditor(input.group(2))#Handling auto-expansion and by command in the same function.
     
