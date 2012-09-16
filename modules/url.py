@@ -127,13 +127,13 @@ def getTLD (url):
     else: u = url[0:idx] + u[0:f]
     return u
 
-def get_results(jenni, text):
+def get_results(willie, text):
     a = re.findall(url_finder, text)
     display = [ ]
     for match in a:
         match = match[0]
-        if (match.startswith(jenni.config.url_exclusion_char) or
-                any(pattern.match(match) for pattern in jenni.config.url_exclude)):
+        if (match.startswith(willie.config.url_exclusion_char) or
+                any(pattern.match(match) for pattern in willie.config.url_exclude)):
             continue
         print 'no exclusion'
         url = uni_encode(match)
@@ -146,12 +146,12 @@ def get_results(jenni, text):
         display.append([page_title, url])
     return display
 
-def show_title_auto (jenni, input):
-    if input.startswith('.title '):
+def show_title_auto (willie, trigger):
+    if trigger.startswith('.title '):
         return
-    if len(re.findall("\([\d]+\sfiles\sin\s[\d]+\sdirs\)", input)) == 1: return
+    if len(re.findall("\([\d]+\sfiles\sin\s[\d]+\sdirs\)", trigger)) == 1: return
     try:
-        results = get_results(jenni, input)
+        results = get_results(willie, trigger)
     except: return
     if results is None: return
 
@@ -163,20 +163,20 @@ def show_title_auto (jenni, input):
         if r[0] is None:
             continue
         else: r[1] = getTLD(r[1])
-        jenni.say('[ %s ] - %s' % (r[0], r[1]))
+        willie.say('[ %s ] - %s' % (r[0], r[1]))
 show_title_auto.rule = '(?u).*((http|https)(://\S+)).*'
 show_title_auto.priority = 'high'
 
-def show_title_demand (jenni, input):
+def show_title_demand (willie, trigger):
     #try:
-    results = get_results(input)
+    results = get_results(trigger)
     #except: return
     if results is None: return
 
     for r in results:
         if r[0] is None: continue
         r[1] = getTLD(r[1])
-        jenni.say('[ %s ] - %s' % (r[0], r[1]))
+        willie.say('[ %s ] - %s' % (r[0], r[1]))
 show_title_demand.commands = ['title']
 show_title_demand.priority = 'high'
 

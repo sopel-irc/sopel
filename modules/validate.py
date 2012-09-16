@@ -1,19 +1,19 @@
 #!/usr/bin/env python
 """
-validate.py - Jenni Validation Module
+validate.py - Willie Validation Module
 Copyright 2008, Sean B. Palmer, inamidst.com
 Licensed under the Eiffel Forum License 2.
 
-http://inamidst.com/phenny/
+http://willie.dftba.net
 """
 
 import web
 
-def val(jenni, input):
+def val(willie, trigger):
     """Check a webpage using the W3C Markup Validator."""
-    if not input.group(2):
-        return jenni.reply("Nothing to validate.")
-    uri = input.group(2)
+    if not trigger.group(2):
+        return willie.reply("Nothing to validate.")
+    uri = trigger.group(2)
     if not uri.startswith('http://'):
         uri = 'http://' + uri
 
@@ -23,7 +23,7 @@ def val(jenni, input):
     result = uri + ' is '
 
     if isinstance(info, list):
-        return jenni.say('Got HTTP response %s' % info[1])
+        return willie.say('Got HTTP response %s' % info[1])
 
     if info.has_key('X-W3C-Validator-Status'):
         result += str(info['X-W3C-Validator-Status'])
@@ -35,7 +35,7 @@ def val(jenni, input):
                 else: result += ' (%s error)' % n
     else: result += 'Unvalidatable: no X-W3C-Validator-Status'
 
-    jenni.reply(result)
+    willie.reply(result)
 val.rule = (['val'], r'(?i)(\S+)')
 val.example = '.val http://www.w3.org/'
 

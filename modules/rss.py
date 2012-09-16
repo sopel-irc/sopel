@@ -23,26 +23,26 @@ def checkdb(cursor):
     cursor.execute("CREATE TABLE IF NOT EXISTS rss ( channel text, site_name text, site_url text, fg text, bg text)")
 
 
-def manage_rss(jenni, input):
+def manage_rss(willie, trigger):
     """ .rss operation channel site_name url -- operation can be either 'add', 'del', or 'list' no further operators needed if 'list' used """
-    if not input.admin:
-        jenni.reply("Sorry, you need to be an admin to modify the RSS feeds.")
+    if not trigger.admin:
+        willie.reply("Sorry, you need to be an admin to modify the RSS feeds.")
         return
-    conn = jenni.db.connect()
+    conn = willie.db.connect()
     c = conn.cursor()
     checkdb(c)
     conn.commit()
 
-    text = input.group().split()
+    text = trigger.group().split()
     if len(text) < 2:
-        jenni.reply("Proper usage: '.rss add ##channel Site_Name URL', '.rss del ##channel Site_Name URL', '.rss del ##channel'")
+        willie.reply("Proper usage: '.rss add ##channel Site_Name URL', '.rss del ##channel Site_Name URL', '.rss del ##channel'")
     elif len(text) > 2:
         channel = text[2].lower()
 
     if len(text) > 4 and text[1] == 'add':
         fg_colour = str()
         bg_colour = str()
-        temp = input.group().split('"')
+        temp = trigger.group().split('"')
         if len(temp) == 1:
             site_name = text[3]
             site_url = text[4]
@@ -61,7 +61,7 @@ def manage_rss(jenni, input):
             if len(ending) == 3:
                 bg_colour = ending[2]
         else:
-            jenni.reply("Not enough parameters specified.")
+            willie.reply("Not enough parameters specified.")
             return
         if fg_colour:
             fg_colour = fg_colour.zfill(2)
@@ -70,29 +70,29 @@ def manage_rss(jenni, input):
         c.execute('INSERT INTO rss VALUES ("%s","%s","%s","%s","%s","%s")' % (channel, site_name, site_url, "time", fg_colour, bg_colour))
         conn.commit()
         c.close()
-        jenni.reply("Successfully added values to database.")
+        willie.reply("Successfully added values to database.")
     elif len(text) == 3 and text[1] == 'del':
         # .rss del ##channel
         c.execute('DELETE FROM rss WHERE channel = "%s"' % channel)
         conn.commit()
         c.close()
-        jenni.reply("Successfully removed values from database.")
+        willie.reply("Successfully removed values from database.")
     elif len(text) >= 4 and text[1] == 'del':
         # .rss del ##channel Site_Name
         c.execute('DELETE FROM rss WHERE channel = "%s" and site_name = "%s"', (channel, " ".join(text[3:])))
         conn.commit()
         c.close()
-        jenni.reply("Successfully removed the site from the given channel.")
+        willie.reply("Successfully removed the site from the given channel.")
     elif len(text) == 2 and text[1] == 'list':
         c.execute("SELECT * FROM rss")
         k = 0
         for row in c:
             k += 1
-            jenni.say("list: " + unicode(row))
+            willie.say("list: " + unicode(row))
         if k == 0:
-            jenni.reply("No entries in database")
+            willie.reply("No entries in database")
     else:
-        jenni.reply("Incorrect parameters specified.")
+        willie.reply("Incorrect parameters specified.")
     conn.close()
 manage_rss.commands = ['rss']
 manage_rss.priority = 'low'
@@ -106,18 +106,18 @@ restarted = False
 feeds = dict()
 
 
-def read_feeds(jenni):
+def read_feeds(willie):
     global restarted
     global STOP
 
     restarted = False
-    conn = jenni.db.connect()
+    conn = willie.db.connect()
     cur = conn.cursor()
     checkdb(cur)
     cur.execute("SELECT * FROM rss")
     if not cur.fetchall():
         STOP = True
-        jenni.say("No RSS feeds found in database. Please add some rss feeds.")
+        willie.say("No RSS feeds found in database. Please add some rss feeds.")
 
     cur.execute("CREATE TABLE IF NOT EXISTS recent ( channel text, site_name text, article_title text, article_url text )")
     cur.execute("SELECT * FROM rss")
@@ -131,7 +131,7 @@ def read_feeds(jenni):
         try:
             fp = feedparser.parse(feed_url)
         except IOError, E:
-            jenni.say("Can't parse, " + str(E))
+            willie.say("Can't parse, " + str(E))
         entry = fp.entries[0]
 
         if not feed_fg and not feed_bg:
@@ -157,64 +157,64 @@ def read_feeds(jenni):
             if entry.updated:
                 response += " - %s" % (entry.updated)
 
-            jenni.msg(feed_channel, response)
+            willie.msg(feed_channel, response)
 
             t = (feed_channel, feed_site_name, entry.title, article_url,)
             cur.execute("INSERT INTO recent VALUES (%s, %s, %s, %s)", t)
             conn.commit()
         else:
             if DEBUG:
-                jenni.msg(feed_channel, u"Skipping previously read entry: %s %s" % (site_name_effect, entry.title))
+                willie.msg(feed_channel, u"Skipping previously read entry: %s %s" % (site_name_effect, entry.title))
     conn.close()
 
 
-def startrss(jenni, input):
+def startrss(willie, trigger):
     """ Begin reading RSS feeds """
-    if not input.admin:
-        jenni.reply("You must be an admin to start up the RSS feeds.")
+    if not trigger.admin:
+        willie.reply("You must be an admin to start up the RSS feeds.")
         return
     global first_run, restarted, DEBUG, INTERVAL, STOP
     DEBUG = False
 
-    query = input.group(2)
+    query = trigger.group(2)
     if query == '-v':
         DEBUG = True
         STOP = False
-        jenni.reply("Debugging enabled.")
+        willie.reply("Debugging enabled.")
     elif query == '-q':
         DEBUG = False
         STOP = False
-        jenni.reply("Debugging disabled.")
+        willie.reply("Debugging disabled.")
     elif query == '-i':
-        INTERVAL = input.group(3)
-        jenni.reply("INTERVAL updated to: %s" % (str(INTERVAL)))
+        INTERVAL = trigger.group(3)
+        willie.reply("INTERVAL updated to: %s" % (str(INTERVAL)))
     elif query == '--stop':
         STOP = True
-        jenni.reply("Stop parameter updated.")
+        willie.reply("Stop parameter updated.")
 
     if first_run:
         if DEBUG:
-            jenni.say("Okay, I'll start rss fetching...")
+            willie.say("Okay, I'll start rss fetching...")
         first_run = False
     else:
         restarted = True
         if DEBUG:
-            jenni.say("Okay, I'll re-start rss...")
+            willie.say("Okay, I'll re-start rss...")
 
     if not STOP:
         while True:
             if STOP:
-                jenni.reply("STOPPED")
+                willie.reply("STOPPED")
                 first_run = False
                 STOP = False
                 break
             if DEBUG:
-                jenni.say("Rechecking feeds")
-            read_feeds(jenni)
+                willie.say("Rechecking feeds")
+            read_feeds(willie)
             time.sleep(INTERVAL)
 
     if DEBUG:
-        jenni.say("Stopped checking")
+        willie.say("Stopped checking")
 startrss.commands = ['startrss']
 startrss.priority = 'high'
 

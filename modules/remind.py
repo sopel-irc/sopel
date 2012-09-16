@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 """
-remind.py - Jenni Reminder Module
+remind.py - Willie Reminder Module
 Copyright 2011, Sean B. Palmer, inamidst.com
 Licensed under the Eiffel Forum License 2.
 
-http://inamidst.com/phenny/
+http://willie.dftba.net
 """
 
 import os, re, time, threading
@@ -38,27 +38,27 @@ def dump_database(name, data):
             f.write('%s\t%s\t%s\t%s\n' % (unixtime, channel, nick, message))
     f.close()
 
-def setup(jenni):
-    jenni.rfn = filename(jenni)
-    jenni.rdb = load_database(jenni.rfn)
+def setup(willie):
+    willie.rfn = filename(willie)
+    willie.rdb = load_database(willie.rfn)
 
-    def monitor(jenni):
+    def monitor(willie):
         time.sleep(5)
         while True:
             now = int(time.time())
-            unixtimes = [int(key) for key in jenni.rdb]
+            unixtimes = [int(key) for key in willie.rdb]
             oldtimes = [t for t in unixtimes if t <= now]
             if oldtimes:
                 for oldtime in oldtimes:
-                    for (channel, nick, message) in jenni.rdb[oldtime]:
+                    for (channel, nick, message) in willie.rdb[oldtime]:
                         if message:
-                            jenni.msg(channel, nick + ': ' + message)
-                        else: jenni.msg(channel, nick + '!')
-                    del jenni.rdb[oldtime]
-                dump_database(jenni.rfn, jenni.rdb)
+                            willie.msg(channel, nick + ': ' + message)
+                        else: willie.msg(channel, nick + '!')
+                    del willie.rdb[oldtime]
+                dump_database(willie.rfn, willie.rdb)
             time.sleep(2.5)
 
-    targs = (jenni,)
+    targs = (willie,)
     t = threading.Thread(target=monitor, args=targs)
     t.start()
 
@@ -103,7 +103,7 @@ scaling = {
 
 periods = '|'.join(scaling.keys())
 
-def remind(jenni, input):
+def remind(willie, input):
     duration = 0
     message = re.split('(\d+ ?(?:'+periods+')) ?', input.group(2))[1:]
     print input.group(2)
@@ -120,26 +120,26 @@ def remind(jenni, input):
             reminder = reminder + piece
             stop = True
     if duration == 0:
-        return jenni.reply("Sorry, didn't understand the input.")
+        return willie.reply("Sorry, didn't understand the input.")
             
     if duration % 1:
         duration = int(duration) + 1
     else: duration = int(duration)
 
-    create_reminder(jenni, input, duration, reminder)
+    create_reminder(willie, input, duration, reminder)
 remind.commands = ['in']
 
 
-def at(jenni, input):
+def at(willie, input):
     hour, minute, second, tz, message = input.groups()
     if not second: second = '0'
     
     # Personal time zones, because they're rad
-    if jenni.settings.hascolumn('tz'):
-        if input.group(2) and tz in jenni.settings:
-            personal_tz = jenni.settings.get(tz, 'tz')
-        elif input.nick in jenni.settings:
-            personal_tz = jenni.settings.get(input.nick, 'tz')
+    if willie.settings.hascolumn('tz'):
+        if input.group(2) and tz in willie.settings:
+            personal_tz = willie.settings.get(tz, 'tz')
+        elif input.nick in willie.settings:
+            personal_tz = willie.settings.get(input.nick, 'tz')
     if tz not in all_timezones_set and not personal_tz: 
         message=tz+message
         tz = 'UTC'
@@ -149,7 +149,7 @@ def at(jenni, input):
     tz = tz.strip()
     
     if tz not in all_timezones_set:
-        jenni.say("Sorry, but I don't have data for that timezone or user.")
+        willie.say("Sorry, but I don't have data for that timezone or user.")
         return
         
     tzi = timezone(tz)
@@ -159,24 +159,24 @@ def at(jenni, input):
     duration = timediff.seconds
 
     if duration < 0: duration += 86400
-    create_reminder(jenni, input, duration, message)
+    create_reminder(willie, input, duration, message)
 at.rule = r'\.at (\d+):(\d+):?(\d+)? (\S+)?( .*)'
 
-def create_reminder(jenni, input, duration, message):
+def create_reminder(willie, input, duration, message):
     t = int(time.time()) + duration
     reminder = (input.sender, input.nick, message)
-    try: jenni.rdb[t].append(reminder)
-    except KeyError: jenni.rdb[t] = [reminder]
+    try: willie.rdb[t].append(reminder)
+    except KeyError: willie.rdb[t] = [reminder]
 
-    dump_database(jenni.rfn, jenni.rdb)
+    dump_database(willie.rfn, willie.rdb)
 
     if duration >= 60:
         w = ''
         if duration >= 3600 * 12:
             w += time.strftime(' on %d %b %Y', time.gmtime(t))
         w += time.strftime(' at %H:%MZ', time.gmtime(t))
-        jenni.reply('Okay, will remind%s' % w)
-    else: jenni.reply('Okay, will remind in %s secs' % duration)
+        willie.reply('Okay, will remind%s' % w)
+    else: willie.reply('Okay, will remind in %s secs' % duration)
 
 if __name__ == '__main__':
     print __doc__.strip()

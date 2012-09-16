@@ -1,33 +1,31 @@
 #!/usr/bin/env python
 """
-ask.py - Ask Module
+qask.py - Ask Module
 Copyright 2011, Michael Yanovich, yanovich.net
 Licensed under the Eiffel Forum License 2.
 
-More info:
- * Jenni: https://github.com/myano/jenni/
- * Phenny: http://inamidst.com/phenny/
+http://willie.dftba.net
 """
 
 import random, time
 
 
-def ask(jenni, input):
+def ask(willie, trigger):
     """.ask <item1> or <item2> or <item3> - Randomly picks from a set of items seperated by ' or '."""
 
-    choices = input.group(2)
+    choices = trigger.group(2)
     random.seed()
 
     if choices == None:
-        jenni.reply("There is no spoon! Please try a valid question.")
+        willie.reply("There is no spoon! Please try a valid question.")
     elif choices.lower() == "what is the answer to life, the universe, and everything?":
-        jenni.reply("42")
+        willie.reply("42")
     else:
         list_choices = choices.split(" or ")
         if len(list_choices) == 1:
-            jenni.reply(random.choice(['yes', 'no']))
+            willie.reply(random.choice(['yes', 'no']))
         else:
-            jenni.reply((random.choice(list_choices)).encode('utf-8'))
+            willie.reply((random.choice(list_choices)).encode('utf-8'))
 ask.commands = ['ask']
 ask.priority = 'low'
 ask.example = '.ask today or tomorrow or next week'

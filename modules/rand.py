@@ -4,21 +4,19 @@ rand.py - Rand Module
 Copyright 2010, Michael Yanovich, yanovich.net
 Licensed under the Eiffel Forum License 2.
 
-More info:
- * Jenni: https://github.com/myano/jenni/
- * Phenny: http://inamidst.com/phenny/
+http://willie.dftba.net
 """
 
 import random
 import re
 
-def rand(jenni, input):
+def rand(willie, trigger):
     """.rand <arg1> <arg2> - Generates a random integer between <arg1> and <arg2>."""
-    if input.group(2) == " " or input.group(2) == "" or str(input.group(2)) == None or str(input.group(2)) == "" or input.group(2) == None:
-        jenni.say("I'm sorry, " + str(input.nick) + ", but you must enter at least one number.")
+    if trigger.group(2) == " " or trigger.group(2) == "" or str(trigger.group(2)) == None or str(trigger.group(2)) == "" or trigger.group(2) == None:
+        willie.say("I'm sorry, " + str(trigger.nick) + ", but you must enter at least one number.")
     else:
         random.seed()
-        li_integers = input.group(2)
+        li_integers = trigger.group(2)
         li_integers_str = li_integers.split()
         if len(li_integers_str) == 1:
             li_integers_str = re.sub(r'\D', '', str(li_integers_str))
@@ -30,7 +28,7 @@ def rand(jenni, input):
                 a = li_integers_str
                 a = int(a)
                 randinte = random.randint(0, a)
-            jenni.say(str(input.nick) + ": your random integer is: " + str(randinte))
+            willie.say(str(trigger.nick) + ": your random integer is: " + str(randinte))
         else:
             a,b = li_integers.split()
             a = re.sub(r'\D', '', str(a))
@@ -41,7 +39,7 @@ def rand(jenni, input):
                 randinte = random.randint(a, b)
             else:
                 randinte = random.randint(b, a)
-            jenni.say(str(input.nick) + ": your random integer is: " + str(randinte))
+            willie.say(str(trigger.nick) + ": your random integer is: " + str(randinte))
 
 rand.commands = ['rand']
 rand.priority = 'medium'

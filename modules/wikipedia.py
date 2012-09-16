@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 """
-wikipedia.py - Jenni Wikipedia Module
+wikipedia.py - Willie Wikipedia Module
 Copyright 2008-9, Sean B. Palmer, inamidst.com
 Licensed under the Eiffel Forum License 2.
 
-http://inamidst.com/phenny/
+http://willie.dftba.net
 """
 
 import re, urllib, gzip, StringIO
@@ -149,10 +149,10 @@ def wikipedia(term, language='en', last=False):
     term = term.decode('utf-8').encode('utf-8')
     return sentence + ' - ' + (wikiuri % (language, term))
 
-def wik(jenni, input):
-    origterm = input.groups()[1]
+def wik(willie, trigger):
+    origterm = trigger.groups()[1]
     if not origterm:
-        return jenni.say('Perhaps you meant ".wik Zen"?')
+        return willie.say('Perhaps you meant ".wik Zen"?')
     origterm = origterm.encode('utf-8')
 
     term = urllib.unquote(origterm)
@@ -169,11 +169,11 @@ def wik(jenni, input):
     except IOError:
         args = (language, wikiuri % (language, term))
         error = "Can't connect to %s.wikipedia.org (%s)" % args
-        return jenni.say(error)
+        return willie.say(error)
 
     if result is not None:
-        jenni.say(result)
-    else: jenni.say('Can\'t find anything in Wikipedia for "%s".' % origterm)
+        willie.say(result)
+    else: willie.say('Can\'t find anything in Wikipedia for "%s".' % origterm)
 
 wik.commands = ['wik', 'wiki']
 wik.priority = 'high'
