@@ -3,9 +3,7 @@
 warnings.py -- NWS Alert Module
 Copyright 2011, Michael Yanovich, yanovich.net
 
-More info:
- * Jenni: https://github.com/myano/jenni/
- * Phenny: http://inamidst.com/phenny/
+http://willie.dftba.net
 
 This module allows one to query the National Weather Service for active
 watches, warnings, and advisories that are present.
@@ -78,9 +76,9 @@ re_state = re.compile(r'State:</a></td><td class="info"><a href="/state/\S\S.asp
 re_city = re.compile(r'City:</a></td><td class="info"><a href="/city/\S+.asp">(.*)</a></td></tr>')
 more_info = "Complete weather watches, warnings, and advisories for {0}, available here: {1}"
 
-def nws_lookup(jenni, input):
+def nws_lookup(willie, trigger):
     """ Look up weather watches, warnings, and advisories. """
-    text = input.group(2)
+    text = trigger.group(2)
     if not text: return
     bits = text.split(",")
     master_url = False
@@ -90,7 +88,7 @@ def nws_lookup(jenni, input):
         state = bits[1].lstrip().rstrip().lower()
         county = bits[0].lstrip().rstrip().lower()
         if state not in states:
-            jenni.reply("State not found.")
+            willie.reply("State not found.")
             return
         url1 = county_list.format(states[state])
         page1 = web.get(url1).split("\n")
@@ -100,7 +98,7 @@ def nws_lookup(jenni, input):
                 url_part2 = line[9:36]
                 break
         if not url_part2:
-            jenni.reply("Could not find county.")
+            willie.reply("Could not find county.")
             return
         master_url = url_part1 + url_part2
         location = text
@@ -114,7 +112,7 @@ def nws_lookup(jenni, input):
                 state = re_state.findall(pagez)
                 city = re_city.findall(pagez)
                 if not state and not city:
-                    jenni.reply("Could not match ZIP code to a state")
+                    willie.reply("Could not match ZIP code to a state")
                     return
                 state = state[0].lower()
                 state = states[state].upper()
@@ -122,18 +120,18 @@ def nws_lookup(jenni, input):
                 fips_combo = unicode(state) + "C" + unicode(fips[0])
                 master_url = alerts.format(fips_combo)
             else:
-                jenni.reply("ZIP code does not exist.")
+                willie.reply("ZIP code does not exist.")
                 return
 
     if not master_url:
-        jenni.reply("Invalid input. Please enter a ZIP code or a county and state pairing, such as 'Franklin, Ohio'")
+        willie.reply("Invalid input. Please enter a ZIP code or a county and state pairing, such as 'Franklin, Ohio'")
         return
 
     feed = feedparser.parse(master_url)
     warnings_dict = { }
     for item in feed.entries:
         if nomsg[:51] == item["title"]:
-            jenni.reply(nomsg.format(location))
+            willie.reply(nomsg.format(location))
             return
         else:
             warnings_dict[unicode(item["title"])] = unicode(item["summary"])
@@ -151,19 +149,19 @@ def nws_lookup(jenni, input):
         urllib.urlencode(paste_dict)).read()
 
     if len(warnings_dict) > 0:
-        if input.sender.startswith('#'):
+        if trigger.sender.startswith('#'):
             i = 1
             for key in warnings_dict:
                 if i > 1: break
-                jenni.reply(key)
-                jenni.reply(warnings_dict[key][:510])
+                willie.reply(key)
+                willie.reply(warnings_dict[key][:510])
                 i += 1
-            jenni.reply(more_info.format(location, master_url))
+            willie.reply(more_info.format(location, master_url))
         else:
             for key in warnings_dict:
-                jenni.msg(input.nick, key)
-                jenni.msg(input.nick, warnings_dict[key])
-            jenni.msg(input.nick, more_info.format(location, master_url))
+                willie.msg(trigger.nick, key)
+                willie.msg(trigger.nick, warnings_dict[key])
+            willie.msg(trigger.nick, more_info.format(location, master_url))
 nws_lookup.commands = ['nws']
 nws_lookup.priority = 'high'
 

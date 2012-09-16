@@ -50,7 +50,7 @@ def local(icao, hour, minute):
         #            ':' + str(minute) + 'Z)')
     return str(hour) + ':' + str(minute) + 'Z'
 
-def code(jenni, search):
+def code(willie, search):
     from icao import data
 
     if search.upper() in [loc[0] for loc in data]:
