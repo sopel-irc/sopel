@@ -121,11 +121,9 @@ class WillieDB(object):
         cur.execute("SELECT * FROM sqlite_master;")
         tables = cur.fetchall()
         for table in tables:
-            print table[1]
             name = table[1]
             cur.execute("PRAGMA table_info(%s);" % name)
             result = cur.fetchall()
-            print result
             columns = []
             key = []
             for column in result:
@@ -310,17 +308,17 @@ class Table(object):
         db = self.db.connect()
         cur = db.cursor()
         #cur = MySQLdb.cursors.DictCursor(db)
+        values = ', '.join(values)
         cur.execute(
-            'SELECT %s FROM '+self.name+' WHERE '+self.key+' = %s;', (values, key))
+            'SELECT '+values+' FROM '+self.name+' WHERE '+self.key+' = %s;', key)
         row = cur.fetchone()
-        print row
         
         if not row:
             db.close()
             raise KeyError(key+' not in database')
         db.close()
         
-        return row[value]
+        return row
 
     def get(self, key, values):
         """
