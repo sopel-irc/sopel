@@ -298,7 +298,7 @@ class Table(object):
         cur.execute(
             'SELECT '+value+' FROM '+self.name+' WHERE '+self.key+' = %s;', key)
         row = cur.fetchone()[0]
-        if not row:
+        if row is None:
             db.close()
             raise KeyError(key+' not in database')
         db.close()
