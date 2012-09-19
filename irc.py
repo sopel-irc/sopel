@@ -434,20 +434,6 @@ class Bot(asynchat.async_chat):
         if not channel in self.halfplus: self.halfplus[channel] = set()
         if not channel in self.ops: self.ops[channel] = set()
 
-class TestBot(Bot):
-    def f_ping(self, origin, match, args):
-        delay = m.group(1)
-        if delay is not None:
-            import time
-            time.sleep(int(delay))
-            self.msg(origin.sender, 'pong (%s)' % delay)
-        else: self.msg(origin.sender, 'pong')
-    f_ping.rule = r'^\.ping(?:[ \t]+(\d+))?$'
-
-def main():
-    # bot = TestBot('testbot', ['#d8uv.com'])
-    # bot.run('irc.freenode.net')
-    print __doc__
 
 if __name__=="__main__":
-    main()
+    print __doc__
