@@ -13,6 +13,7 @@ using the sed notation (s///) commonly found in vi/vim.
 
 import os, re
 
+db_file = ''
 
 def give_me_unicode(obj, encoding="utf-8"):
     if isinstance(obj, basestring):
@@ -20,13 +21,18 @@ def give_me_unicode(obj, encoding="utf-8"):
             obj = unicode(obj, encoding)
     return obj
 
+def setup(willie):
+    global db_file
+    db_file = os.path.join(willie.config.dotdir, 'find.txt')
+
 def load_db():
-    """ load lines from find.txt to search_dict """
-    if not os.path.isfile("find.txt"):
-        f = open("find.txt", "w")
+    """ load lines from db_file to search_dict """
+    global db_file
+    if not os.path.isfile(db_file):
+        f = open(db_file, "w")
         f.write("#test,yano,foobar\n")
         f.close()
-    search_file = open("find.txt", "r")
+    search_file = open(db_file, "r")
     lines = search_file.readlines()
     search_file.close()
     search_dict = dict()
@@ -55,8 +61,9 @@ def load_db():
     return search_dict
 
 def save_db(search_dict):
-    """ save search_dict to find.txt """
-    search_file = open("find.txt", "w")
+    """ save search_dict to db_file """
+    global db_file
+    search_file = open(db_file, "w")
     for channel in search_dict:
         if channel is not "":
             for nick in search_dict[channel]:

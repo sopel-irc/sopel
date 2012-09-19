@@ -10,7 +10,6 @@ http://willie.dfbta.net
 
 import re, math, time, urllib, locale, socket, struct, datetime
 from decimal import Decimal as dec
-import MySQLdb
 
 TimeZones = {'KST': 9, 'CADT': 10.5, 'EETDST': 3, 'MESZ': 2, 'WADT': 9,
             'EET': 2, 'MST': -7, 'WAST': 8, 'IST': 5.5, 'B': 2,
