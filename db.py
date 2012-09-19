@@ -145,21 +145,30 @@ class WillieDB(object):
                     all(c in table.columns for c in columns))
         return False
     
-    def _get_column_creation_text(columns, key=None):
+    def _get_column_creation_text(self, columns, key=None):
         cols = '('
         for column in columns:
             if isinstance(column, basestring):
-                cols = cols + column + ' string, '
+                if self.type == 'mysql':
+                    cols = cols + column + ' VARCHAR(255)'
+                elif self.type == 'sqlite':
+                    cols = cols + column + ' string'
             elif isinstance(column, tuple):
-                cols += '%s %s, ' % column
-        cols = cols[-2]
+                cols += '%s %s' % column
+            
+            if key and column in key:
+                cols += ' NOT NULL'
+            cols += ', '
+
         if key:
             if isinstance(key, basestring):
                 cols += 'PRIMARY KEY (%s)' % key
             else:
                 cols += 'PRIMARY KEY (%s)' % ', '.join(key)
+        else:
+            cols = cols[:-2]
         return cols+')'
-
+    
     def add_table(self, name, columns, key):
         """
         Add a column with the given ``name`` and ``key``, which has the given
@@ -188,7 +197,7 @@ class WillieDB(object):
         if name.startswith('_'):
             raise ValueError, 'Invalid table name %s.' % name
         elif not hasattr(self, name):
-            cols = _get_column_creation_text(columns)
+            cols = self._get_column_creation_text(columns, key)
             db = self.connect()
             cursor = db.cursor()
             cursor.execute("CREATE TABLE %s %s;" % (name, cols))
@@ -246,7 +255,7 @@ class Table(object):
             for k in key:
                 if k not in columns:
                     raise Exception #TODO
-            self.key = key[0] #TODO
+            self.key = key
     
     def users(self):
         """
@@ -284,72 +293,77 @@ class Table(object):
         result = int(cur.fetchone()[0])
         db.close()
         return result
-
-    ## deprecated
-    def __len__(self):
-        return self.size()
+    
+    def _make_where_statement(self, key, row):
+        where = []
+        for k in key:
+            where.append(k+' = %s')
+        return ' AND '.join(where) + ';'
         
-    def _get_one(self, key, value):
+    def _get_one(self, row, value, key):
         """Implements get() for where values is a single string"""
         db = self.db.connect()
         cur = db.cursor()
+        where = self._make_where_statement(key, row)
         cur.execute(
-            'SELECT '+value+' FROM '+self.name+' WHERE '+self.key+' = %s;', key)
+            'SELECT ' + value + ' FROM ' + self.name + ' WHERE ' + where, row)
         row = cur.fetchone()[0]
         if row is None:
             db.close()
-            raise KeyError(key+' not in database')
+            raise KeyError(row+' not in database')
         db.close()
         
         return row
     
-    def _get_many(self, key, values): #TODO this doesn't seem to actually work...
+    def _get_many(self, row, values, key):
         """Implements get() for where values is iterable"""
         db = self.db.connect()
         cur = db.cursor()
-        #cur = MySQLdb.cursors.DictCursor(db)
         values = ', '.join(values)
+        where = self._make_where_statement(key, row)
         cur.execute(
-            'SELECT '+values+' FROM '+self.name+' WHERE '+self.key+' = %s;', key)
+            'SELECT ' + values + ' FROM ' + self.name + ' WHERE ' + where, row)
         row = cur.fetchone()
         
-        if not row:
+        if row is None:
             db.close()
-            raise KeyError(key+' not in database')
+            raise KeyError(row+' not in database')
         db.close()
         
         return row
 
-    def get(self, key, values):
+    def get(self, row, columns, key=None):
         """
-        Retrieve one or more ``values`` for a ``key``. 
+        Retrieve the value(s) in one or more ``columns`` in the row where the
+        ``key`` column(s) match the value(s) given in ``row``. This is basically
+        equivalent to executing ``SELECT <columns> FROM <self> WHERE <key> =
+        <row>``.
         
-        ``values`` can be either a single string or an iterable of strings. If
-        it is a single string, a single string will be returned. If it is an
-        iterable, a dict will be returned which maps each of the keys in 
-        ``values`` to its corresponding data.
+        The ``key`` can be either the name of one column as a string, or a tuple
+        of the names of multiple columns. ``row`` is the value or values of this
+        column or columns for which data will be retrieved. If multiple columns
+        are being used, the order in which the columns are presented should match
+        between ``row`` and ``key``. A ``KeyError`` will be raised if no have
+        values matching ``row`` in ``key``. If ``key`` is not passed, it will
+        default to the table's primary key.
         
-        ``key`` is the value of the table's ``key`` column which results will be
-        selected on.
-        """
-        if isinstance(values, basestring):
-            return self._get_one(key, values)
-        elif isinstance(values, Iterable):
-            return self._get_many(key, values)
-    
-    ## deprecated
-    def __getitem__(self, key):
-        db = self.db.connect()
-        cur = MySQLdb.cursors.DictCursor(db)
-        cur.execute('SELECT * FROM '+self.name+' WHERE '+self.key+' = "'+key+'";')
-        row = cur.fetchone()
+        ``columns`` can either be a single column name, or a tuple of column
+        names. If one name is passed, a single string will be returned. If a
+        tuple of names is passed, the return value will be a tuple in the same
+        order.
+        """#TODO this documentation could be better.
+        if not key:
+            key = self.key
+        print self.key
+        if not (isinstance(row, basestring) and isinstance(key, basestring)):
+            if not len(row) == len(key):
+                print row, key
+                raise ValueError, 'Unequal number of key and row columns.'
         
-        if not row:
-            db.close()
-            raise KeyError(key+' not in database')
-        db.close()
-        
-        return row
+        if isinstance(columns, basestring):
+            return self._get_one(row, columns, key)
+        elif isinstance(columns, Iterable):
+            return self._get_many(row, columns, key)
     
     def update(self, key, values):
         """
@@ -357,9 +371,9 @@ class Table(object):
         maps the names of the columns to be updated to their new values.
         """
         db = self.db.connect()
-        #cur = MySQLdb.cursors.DictCursor(db)
         cur = db.cursor()
-        cur.execute('SELECT * FROM '+self.name+' WHERE '+self.key+' = "'+key+'";')
+        where = self._make_where_statement(self.key, row)
+        cur.execute('SELECT * FROM '+self.name+' WHERE ' + where, row)
         if not cur.fetchone():
             cols = self.key
             vals = '"'+key+'"'
@@ -376,10 +390,6 @@ class Table(object):
         cur.execute(command)
         db.commit()
         db.close()
-        
-    ## deprecated    
-    def __setitem__(self, key, value):
-        self.update(key, value)
     
     def delete(self, key):
         """Deletes the row for *key* in the database, removing its values in all
@@ -395,10 +405,6 @@ class Table(object):
         cur.execute('DELETE FROM '+self.name+' WHERE '+self.key+' = "'+key+'";')
         db.commit()
         db.close()
-        
-    ## deprecated
-    def __delitem__(self, key):
-        self.delete(key)
     
     def keys(self):
         """
@@ -456,17 +462,6 @@ class Table(object):
             for col in column:
                 has = col in self.columns and has
             return has
-        
-    ## deprecated
-    def hascolumns(self, columns):
-        """
-        Returns True if ``hascolumn`` evaluates to true for each column in the
-        iterable ``columns``.
-        """
-        has = True
-        for column in columns:
-            has = column in self.columns and has
-        return has
         
     def addcolumns(self, columns):
         """
