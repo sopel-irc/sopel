@@ -9,6 +9,8 @@ Copyright © 2012, Elad Alfassa <elad@fedoraproject.org>
 Licensed under the Eiffel Forum License 2.
 
 Willie: http://willie.dftba.net/
+
+When working on core IRC protocol related features, consult protocol documentation at http://www.irchelp.org/irchelp/rfc/
 """
 
 import sys, re, time, traceback
@@ -112,19 +114,6 @@ class Bot(asynchat.async_chat):
         self.error_count = 0
         self.last_error_timestamp = None
 
-    def __write(self, args, text=None):
-        try:
-            self.writing_lock.acquire() #Blocking lock, can't send two things at a time
-            if text is not None:
-                # 510 because CR and LF count too, as nyuszika7h points out
-                temp = (' '.join(args) + ' :' + text)[:510] + '\r\n'
-            else:
-                temp = ' '.join(args)[:510] + '\r\n'
-            log_raw(temp)
-            self.send(temp)
-        finally:
-            self.writing_lock.release()
-
     def safe(self, string):
         '''Remove newlines from a string and make sure it is utf8'''
         string = str(string)
@@ -152,7 +141,29 @@ class Bot(asynchat.async_chat):
         args = [self.safe(arg) for arg in args]
         if text is not None:
             text = self.safe(text)
-        self.__write(args, text)
+        try:
+            self.writing_lock.acquire() #Blocking lock, can't send two things at a time
+            """
+            From RFC2812 Internet Relay Chat: Client Protocol
+            Section 2.3
+            
+            https://tools.ietf.org/html/rfc2812.html
+            
+            IRC messages are always lines of characters terminated with a CR-LF
+            (Carriage Return - Line Feed) pair, and these messages SHALL NOT
+            exceed 512 characters in length, counting all characters including
+            the trailing CR-LF. Thus, there are 510 characters maximum allowed
+            for the command and its parameters.  There is no provision for
+            continuation of message lines.
+            """
+            if text is not None:
+                temp = (' '.join(args) + ' :' + text)[:510] + '\r\n'
+            else:
+                temp = ' '.join(args)[:510] + '\r\n'
+            log_raw(temp)
+            self.send(temp)
+        finally:
+            self.writing_lock.release()
 
 
     def run(self, host, port=6667):
@@ -285,12 +296,7 @@ class Bot(asynchat.async_chat):
         if line.endswith('\r'):
             line = line[:-1]
         self.buffer = ''
-
-        #Adding a way to get a raw line for .whois
         self.raw = line
-
-
-        # print line
         if line.startswith(':'):
             source, line = line[1:].split(' ', 1)
         else: source = None
@@ -434,20 +440,6 @@ class Bot(asynchat.async_chat):
         if not channel in self.halfplus: self.halfplus[channel] = set()
         if not channel in self.ops: self.ops[channel] = set()
 
-class TestBot(Bot):
-    def f_ping(self, origin, match, args):
-        delay = m.group(1)
-        if delay is not None:
-            import time
-            time.sleep(int(delay))
-            self.msg(origin.sender, 'pong (%s)' % delay)
-        else: self.msg(origin.sender, 'pong')
-    f_ping.rule = r'^\.ping(?:[ \t]+(\d+))?$'
-
-def main():
-    # bot = TestBot('testbot', ['#d8uv.com'])
-    # bot.run('irc.freenode.net')
-    print __doc__
 
 if __name__=="__main__":
-    main()
+    print __doc__
