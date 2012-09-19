@@ -96,7 +96,6 @@ def f_weather(willie, trigger):
         return
 
     metar = bytes.splitlines().pop()
-    willie.msg("#embo","[DEVMSG]weather.py:96; "+str(metar))
     metar = metar.split(' ')
 
     if len(metar[0]) == 4:
@@ -370,7 +369,6 @@ def f_weather(willie, trigger):
             'SH': 'Showers'
         }
 
-        willie.msg("#embo","[DEVMSG]weather.py:371; "+str(conds))
         for c in conds:
             if c.endswith('//'):
                 if cond: cond += ', '
