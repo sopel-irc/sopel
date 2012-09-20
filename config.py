@@ -24,18 +24,11 @@ Licensed under the Eiffel Forum License 2.
 http://dft.ba/-williesource
 """
 
-import os, sys
-import ConfigParser
+import os, sys, imp
 import getpass
 from textwrap import dedent as trim
 from bot import enumerate_modules
 
-class ConfigurationError(Exception):
-    """ Exception type for configuration errors """
-    def __init__(self, value):  
-        self.value = value
-    def __str__(self):
-        return 'ConfigurationError: %s' % self.value
 
 class Config(object):
     def __init__(self, filename, load=True):
@@ -50,58 +43,137 @@ class Config(object):
         """
         self.filename = filename
         """The config object's associated file, as noted above."""
+        self.prefix = r'\.'
+        """
+        This indicates the prefix for commands. (i.e, the . in the .w
+        command.) Note that this is used in a regular expression, so regex
+        syntax and special characters apply.
+        """
+        self.user = 'willie'
+        """The user/ident the bot will use."""
+        self.name = 'Willie Embosbot, http://willie.dftba.net'
+        """The "real name" used for the bot's whois."""
+        self.port = 6667
+        """The port to connect on"""
+        self.password = None
+        """The nickserv password"""
+        self.host = 'irc.example.net'
+        """
+        The host to connect to. This is set to irc.example.net by default,
+        which serves as a sanity check to make sure that the bot has been
+        configured.
+        """
         if load:
-            self.parser = ConfigParser.SafeConfigParser(allow_no_value=True)
-            self.parser.read(filename)
+            module = imp.load_source('Config', filename)
+            for attrib in dir(module):
+                setattr(self, attrib, getattr(module, attrib))
 
-            #Sanity check for the configuration file:
-            if not self.parser.has_section('core'):
-                raise ConfigurationError('Core section missing!')
-            if not self.parser.has_option('core', 'nick'):
-                raise ConfigurationError('Bot IRC nick not defined, expected option `nick` in [core] section')
-            if not self.parser.has_option('core', 'owner'):
-                raise ConfigurationError('Bot owner not defined, expected option `owner` in [core] section')
-            if not self.parser.has_option('core', 'host'):
-                raise ConfigurationError('IRC server address not defined, expceted option `host` in [core] section')
-
-            #Setting defaults:
-            if not self.parser.has_option('core', 'port'):
-                self.parser.set('core', 'port', '6667')
-            if not self.parser.has_option('core', 'user'):
-                self.parser.set('core', 'user', 'willie')
-            if not self.parser.has_option('core', 'name'):
-                self.parser.set('core', 'name', 'Willie Embosbot, http://willie.dftba.net')
-            if not self.parser.has_option('core', 'prefix'):
-                self.parser.set('core', 'prefix', r'\.')
-            if not self.parser.has_option('core', 'admins'):
-                self.parser.set('core', 'admins', '')
-
-    class ConfigSection():
-        """Represents a section of the config file, contains all keys in the section as attributes"""
-        def __init__(self, name, items):
-            self.name = name
-            for item in items:
-                setattr(self, item[0], item[1])
-        def __getattr__(self, name):
-            return None
-
-    def __getattr__(self, name):
-        """"""
-        if name in self.parser.sections():
-            items = self.parser.items(name)
-            return self.ConfigSection(name, items) #Return a section
-        elif self.parser.has_option('core', name):
-            return self.parser.get('core', name) #For backwards compatibility
-        else:
-            raise AttributeError("%r object has no attribute %r" % (type(self).__name__, name))
-
+    def set_attr(self, attr, value):
+        """
+        Set attr to value. This will succeed regardless of whether the attribute
+        is already set, and regardless of whether the given and current values
+        are of the same type.
+        """
+        setattr(self, attr, value)
+    
     def write(self):
         """
         Writes the current configuration to the file from which the current
         configuration is derived. Changes made through ``set_attr`` may not be
         properly written by this function.
         """
-        pass
+        f = open(self.filename, 'w')
+        
+        if hasattr(self, 'password') and self.password:
+            password_line = "password = '"+self.password+"'"
+        else:
+            password_line = "# password = 'example'"
+        if hasattr(self, 'serverpass') and self.serverpass:
+            serverpass_line = "serverpass = '"+self.serverpass+"'"
+        else:
+            serverpass_line = "# serverpass = 'example'"
+        if hasattr(self, 'enable') and self.enable:
+            enable_line = "enable = "+str(self.enable)
+        else:
+            enable_line = "# enable = []"
+        extra = self.extra.append(os.getcwd() + '/modules/')
+        if hasattr(self, 'verify_ssl'):
+            verify_ssl_line = "verify_ssl = "+str(self.verify_ssl)
+        else:
+            verify_ssl_line = "# verify_ssl = True"
+            
+        if hasattr(self, 'ca_certs'):
+            ca_cert_line = "ca_certs = '"+str(self.ca_certs)+"'"
+        else:
+            ca_cert_line = "# ca_certs = '/etc/pki/tls/cert.pem'"
+        if self.bind_host is not 'None':
+            bind_host_line = "bind_host = '%s'" % self.bind_host
+        else:
+            bind_host_line = "# bind_host = '0.0.0.0'"
+        output = trim("""\
+        nick = '"""+self.nick+"""'
+        user = '"""+self.user+"""'
+        host = '"""+self.host+"""'
+        port = """+str(self.port)+"""
+        channels = """+str(self.channels)+"""
+        owner = '"""+self.owner+"""'
+        name = '"""+self.name+"""'
+        
+        use_ssl = """+str(self.use_ssl)+"""
+        """+verify_ssl_line+"""
+        """+ca_cert_line+"""
+        
+        """+bind_host_line+"""
+
+        # Channel where debug messages should be sent.
+        debug_target = '"""+self.debug_target+"""'
+        
+        # Verbosity level for debug messages.
+        verbose = '"""+self.verbose+"""'
+        
+        # List of other bots, whose outputs should be ignored
+        other_bots = """+str(self.other_bots)+"""
+
+        # password is the NickServ password, serverpass is the server password
+        """+password_line+"""
+        """+serverpass_line+"""
+        
+        # The oper name and password, if the bot is allowed to /oper
+        """+self.operline+"""
+
+        # These are people who will be able to use admin.py's functions...
+        admins = """+str(self.admins)+"""
+        # But admin.py is disabled by default, as follows:
+        exclude = """+str(self.exclude)+"""
+
+        # If you want to enumerate a list of modules rather than disabling
+        # some, use "enable = ['example']", which takes precedent over exclude
+        #
+        """+enable_line+"""
+        
+        # Directories to load user modules from
+        # e.g. /path/to/my/modules
+        extra = """+str(extra)+"""
+
+        # Services to load: maps channel names to white or black lists
+        # 
+        # ?? Doesn't seem to do anything?
+        # external = {
+        #    '#liberal': ['!'], # allow all
+        #    '#conservative': [], # allow none
+        #    '*': ['!'] # default whitelist, allow all
+        #}
+        """)+(self.settings_chunk+trim("""
+
+        #-----------------------MODULE  SETTINGS-----------------------
+
+        """)+self.modules_chunk)+trim("""
+        
+        # EOF
+        """)
+        print >> f, output
+        f.close()
+    
         
     
     def interactive_add(self, attrib, prompt, default=None, ispass=False):

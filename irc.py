@@ -78,48 +78,28 @@ def log_raw(line):
     f.close()
 
 class Bot(asynchat.async_chat):
-    def __init__(self, config):
-        if config.use_ssl is not None:
-            use_ssl = config.use_ssl
-        else:
-            use_ssl = False
-        if config.verify_ssl is not None:
-            verify_ssl = config.verify_ssl
-        else:
-            verify_ssl = False
-        if config.ca_certs is not None:
-            ca_certs = config.ca_certs
-        else:
-            ca_certs = '/etc/pki/tls/cert.pem'
-        if  config.serverpass is not None:
-            serverpass = config.serverpass
-        else:
-            serverpass = None
+    def __init__(self, nick, name, channels, user, password=None, logchan_pm=None, use_ssl = False, verify_ssl=False, ca_certs='', serverpass=None):
         asynchat.async_chat.__init__(self)
         self.set_terminator('\n')
         self.buffer = ''
 
-        self.nick = config.nick
+        self.nick = nick
         """Willie's current nick. Changing this while Willie is running is untested."""
-        self.user = config.user
+        self.user = user
         """Willie's user/ident."""
-        self.name = config.name
+        self.name = name
         """Willie's "real name", as used for whois."""
-        self.password = config.password
+        self.password = password
         """Willie's NickServ password"""
 
         self.verbose = True
         """True if Willie is running in verbose mode."""
-        self.channels = config.channels
+        self.channels = channels or []
         """The list of channels Willie joins on startup."""
-        if self.channels is not None:
-            self.channels = self.channels.split(',')
-        else:
-            self.channels = []
         
         self.stack = []
-        self.logchan_pm = config.logchan_pm
-        self.serverpass = config.serverpass
+        self.logchan_pm = logchan_pm
+        self.serverpass = serverpass
         self.verify_ssl = verify_ssl
         self.ca_certs = ca_certs
         self.use_ssl = use_ssl
@@ -140,7 +120,6 @@ class Bot(asynchat.async_chat):
         #We need this to prevent error loops in handle_error
         self.error_count = 0
         self.last_error_timestamp = None
-        
 
     def safe(self, string):
         '''Remove newlines from a string and make sure it is utf8'''
@@ -236,7 +215,7 @@ class Bot(asynchat.async_chat):
             if not self.verify_ssl:
                 self.ssl = ssl.wrap_socket(self.socket, do_handshake_on_connect=False, suppress_ragged_eofs=True)
             else:
-                verification = verify_ssl_cn(self.config.host, int(self.config.port))
+                verification = verify_ssl_cn(self.config.host, self.config.port)
                 if verification is 'NoCertFound':
                     stderr('Can\'t get server certificate, SSL might be disabled on the server.')
                     sys.exit(1)
@@ -338,9 +317,7 @@ class Bot(asynchat.async_chat):
         
         if args[0] == 'PING':
             self.write(('PONG', text))
-        elif args[0] == 'ERROR':
-            self.debug('IRC Server Error', text, 'always')
-        elif args[0] == '433':
+        if args[0] == '433':
             stderr('Nickname already in use!')
             self.hasquit = True
             self.handle_close()
