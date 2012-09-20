@@ -36,7 +36,7 @@ def enumerate_modules(config):
             if fn.endswith('.py') and not fn.startswith('_'):
                 filenames.append(os.path.join(modules_dir, fn))
     else:
-        for fn in config.enable:
+        for fn in config.enable.split(','):
             filenames.append(os.path.join(modules_dir, fn + '.py'))
 
     if hasattr(config, 'extra') and config.extra is not None:
@@ -51,27 +51,7 @@ def enumerate_modules(config):
 
 class Willie(irc.Bot):
     def __init__(self, config):
-        if hasattr(config, "logchan_pm"): 
-            lc_pm = config.logchan_pm
-        else: 
-            lc_pm = None
-        if hasattr(config, 'use_ssl'):
-            use_ssl = config.use_ssl
-        else:
-            use_ssl = False
-        if hasattr(config, 'verify_ssl'):
-            verify_ssl = config.verify_ssl
-        else:
-            verify_ssl = False
-        if hasattr(config, 'ca_certs'):
-            ca_certs = config.ca_certs
-        else:
-            ca_certs = '/etc/pki/tls/cert.pem'
-        if  hasattr(config, 'serverpass'):
-            serverpass = config.serverpass
-        else:
-            serverpass = None
-        irc.Bot.__init__(self, config.nick, config.name, config.channels, config.user, config.password, lc_pm, use_ssl, verify_ssl, ca_certs, serverpass)
+        irc.Bot.__init__(self, config.core)
         self.config = config
         """The ``Config`` for the current Willie instance."""
         self.doc = {}
@@ -278,14 +258,14 @@ class Willie(irc.Bot):
             setting ``mode -m`` on the channel ``#example``, args would be
             ``('#example', '-m')``
             """
-            s.admin = (origin.nick in self.config.admins) or origin.nick.lower() == self.config.owner.lower()
+            s.admin = (origin.nick in self.config.admins.split(',')) or origin.nick.lower() == self.config.owner.lower()
             """
             True if the nick which triggered the command is in Willie's admin
             list as defined in the config file.
             """
                 
             if s.admin == False:
-                for each_admin in self.config.admins:
+                for each_admin in self.config.admins.split(','):
                     re_admin = re.compile(each_admin)
                     if re_admin.findall(origin.host):
                         s.admin = True
@@ -359,8 +339,10 @@ class Willie(irc.Bot):
 
                         willie = self.wrapped(origin, text)
                         trigger = self.Trigger(text, origin, bytes, match, event, args, self)
-                        if trigger.nick in self.config.other_bots: 
-                            continue
+
+                        if self.config.core.other_bots is not None:
+                            if trigger.nick in self.config.other_bots.split(','): 
+                                continue
 
                         nick = (trigger.nick).lower()
 

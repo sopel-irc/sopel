@@ -10,8 +10,7 @@ http://willie.dftba.net
 import sys
 import os
 import optparse
-from config import Config
-from config import create_config
+from config import Config, create_config, ConfigurationError
 import tools
 from tools import stderr, stdout
 import signal
@@ -38,18 +37,18 @@ def enumerate_configs():
     if os.path.isdir(willie_dotdir):
         willie_dotdirfiles = os.listdir(willie_dotdir) #Preferred
         for item in willie_dotdirfiles:
-            if item.endswith('.py'):
+            if item.endswith('.cfg'):
                 willie_config.append(item)
     if os.path.isdir(jenni_dotdir):
         jenni_dotdirfiles = os.listdir(jenni_dotdir) #Fallback
         for item in jenni_dotdirfiles:
-            if item.endswith('.py'):
+            if item.endswith('.cfg'):
                 jenni_config.append(item)
     if os.path.isdir(phenny_dotdir):
         phenny_dotdirfiles = os.listdir(phenny_dotdir) #Fallback of fallback
         for item in phenny_dotdirfiles:
             willie_config = []
-            if item.endswith('.py'):
+            if item.endswith('.cfg'):
                 phenny_config.append(item)
 
     return (willie_config, jenni_config, phenny_config)
@@ -57,20 +56,20 @@ def enumerate_configs():
 def find_config(name):
     global dotdir
     configs = enumerate_configs()
-    if name in configs[0] or name+'.py' in configs[0]:
+    if name in configs[0] or name+'.cfg' in configs[0]:
         dotdir = willie_dotdir
-        if name+'.py' in configs[0]:
-            name = name+'.py'
-    elif name in configs[1] or name+'.py' in configs[1]:
+        if name+'.cfg' in configs[0]:
+            name = name+'.cfg'
+    elif name in configs[1] or name+'.cfg' in configs[1]:
         dotdir = jenni_dotdir
-        if name+'.py' in configs[1]:
-            name = name+'.py'
-    elif name in configs[2] or name+'.py' in configs[2]:
+        if name+'.cfg' in configs[1]:
+            name = name+'.cfg'
+    elif name in configs[2] or name+'.cfg' in configs[2]:
         dotdir = phenny_dotdir
-        if name+'.py' in configs[2]:
-            name = name+'.py'
-    elif not name.endswith('.py'):
-        name = name+'.py'
+        if name+'.cfg' in configs[2]:
+            name = name+'.cfg'
+    elif not name.endswith('.cfg'):
+        name = name+'.cfg'
 
     return os.path.join(dotdir, name)
 
@@ -121,8 +120,11 @@ def main(argv=None):
                 configpath = configpath + '.py'
             create_config(configpath)
             configpath = find_config(config_name)
-
-        config_module = Config(configpath)
+        try:
+            config_module = Config(configpath)
+        except ConfigurationError as e:
+            stderr(e)
+            sys.exit(1)
         config_module.dotdir = dotdir
 
         config_module.logdir = os.path.abspath('logs')
