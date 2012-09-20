@@ -133,7 +133,7 @@ def get_results(willie, text):
     for match in a:
         match = match[0]
         if (match.startswith(willie.config.url_exclusion_char) or
-                any(pattern.match(match) for pattern in willie.config.url_exclude)):
+                any(pattern.find(match) for pattern in willie.config.url_exclude)):
             continue
         print 'no exclusion'
         url = uni_encode(match)
