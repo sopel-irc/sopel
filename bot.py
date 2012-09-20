@@ -14,17 +14,19 @@ http://willie.dftba.net/
 import time, sys, os, re, threading, imp
 import irc
 from db import WillieDB
-from tools import try_print_stderr as stderr
+from tools import stderr, stdout
 
 home = os.getcwd()
 modules_dir = os.path.join(home, 'modules')
 
-def decode(bytes):
-    try: text = bytes.decode('utf-8')
+def decode(string):
+    try: 
+        text = string.decode('utf-8')
     except UnicodeDecodeError:
-        try: text = bytes.decode('iso-8859-1')
+        try: 
+            text = string.decode('iso-8859-1')
         except UnicodeDecodeError:
-            text = bytes.decode('cp1252')
+            text = string.decode('cp1252')
     return text
 
 def enumerate_modules(config):
@@ -69,8 +71,7 @@ class Willie(irc.Bot):
             serverpass = config.serverpass
         else:
             serverpass = None
-        args = (config.nick, config.name, config.channels, config.user, config.password, lc_pm, use_ssl, verify_ssl, ca_certs, serverpass)
-        irc.Bot.__init__(self, *args)
+        irc.Bot.__init__(self, config.nick, config.name, config.channels, config.user, config.password, lc_pm, use_ssl, verify_ssl, ca_certs, serverpass)
         self.config = config
         """The ``Config`` for the current Willie instance."""
         self.doc = {}
@@ -348,15 +349,18 @@ class Willie(irc.Bot):
             items = self.commands[priority].items()
             for regexp, funcs in items:
                 for func in funcs:
-                    if event != func.event: continue
+                    if event != func.event: 
+                        continue
 
                     match = regexp.match(text)
                     if match:
-                        if self.limit(origin, func): continue
+                        if self.limit(origin, func): 
+                            continue
 
                         willie = self.wrapped(origin, text, match)
                         trigger = self.Trigger(text, origin, bytes, match, event, args, self)
-                        if trigger.nick in self.config.other_bots: continue
+                        if trigger.nick in self.config.other_bots: 
+                            continue
 
                         nick = (trigger.nick).lower()
 
@@ -375,7 +379,8 @@ class Willie(irc.Bot):
                             if len(bad_masks) > 0:
                                 for hostmask in bad_masks:
                                     hostmask = hostmask.replace("\n", "")
-                                    if len(hostmask) < 1: continue
+                                    if len(hostmask) < 1: 
+                                        continue
                                     re_temp = re.compile(hostmask)
                                     host = origin.host
                                     host = host.lower()
@@ -384,7 +389,8 @@ class Willie(irc.Bot):
                             if len(bad_nicks) > 0:
                                 for nick in bad_nicks:
                                     nick = nick.replace("\n", "")
-                                    if len(nick) < 1: continue
+                                    if len(nick) < 1: 
+                                        continue
                                     re_temp = re.compile(nick)
                                     if re_temp.findall(trigger.nick) or nick in trigger.nick:
                                         return
