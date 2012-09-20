@@ -135,7 +135,6 @@ def get_results(willie, text):
         if (match.startswith(willie.config.url_exclusion_char) or
                 any(pattern.find(match) for pattern in willie.config.url_exclude)):
             continue
-        print 'no exclusion'
         url = uni_encode(match)
         url = uni_decode(url)
         url = iriToUri(url)

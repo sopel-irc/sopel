@@ -106,8 +106,6 @@ periods = '|'.join(scaling.keys())
 def remind(willie, input):
     duration = 0
     message = re.split('(\d+ ?(?:'+periods+')) ?', input.group(2))[1:]
-    print input.group(2)
-    print message
     reminder = ''
     for piece in message:
         stop = False
