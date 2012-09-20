@@ -38,29 +38,29 @@ startup.priority = 'low'
 
 #Functions to maintain a list of chanops in all of willie's channels.
 
-def refreshList(willie, trigger):
+def refresh_list(willie, trigger):
     ''' If you need to use this, then it means you found a bug '''
     willie.reply('Refreshing ops list for '+trigger.sender+'.')
     willie.flushOps(trigger.sender)
     if trigger.admin: willie.write(('NAMES', trigger.sender))
-refreshList.commands = ['newoplist']
+refresh_list.commands = ['newoplist']
 
-def opList(willie, trigger):
+def list_ops(willie, trigger):
     for channel in willie.ops:
-        willie.debug('Oplist', channel+' '+str(willie.ops[channel]), 'warning')
-opList.commands = ['listops']
+        willie.debug('Oplist', channel+' '+str(willie.ops[channel]), 'always')
+list_ops.commands = ['listops']
 
 def handle_names(willie, trigger):
     ''' Handle NAMES response, happens when joining to channels'''
     names = re.split(' ', trigger.group(1))
     channel = re.search('(#\S+)', willie.raw).group(1)
-    willie.startOpsList(channel)
+    willie.init_ops_list(channel)
     for name in names:
         if '@' in name or '~' in name or '&' in name:
-            willie.addOp(channel, name.lstrip('@&%+~'))
-            willie.addHalfOp(channel, name.lstrip('@&%+~'))
+            willie.add_op(channel, name.lstrip('@&%+~'))
+            willie.add_halfop(channel, name.lstrip('@&%+~'))
         elif '%' in name:
-            willie.addHalfOp(channel, name.lstrip('@&%+~'))
+            willie.add_halfop(channel, name.lstrip('@&%+~'))
 handle_names.rule = r'(.*)'
 handle_names.event = '353'
 handle_names.thread = False
@@ -87,14 +87,14 @@ def track_modes(willie, trigger):
         nick = nicks[index]
         if mode[0]=='h':
             if mode[1] is True:
-                willie.addHalfOp(channel, nick)
+                willie.add_halfop(channel, nick)
             else:
-                willie.delHalfOp(channel, nick)
+                willie.del_halfop(channel, nick)
         elif mode[0] == 'o':
             if mode[1] is True:
-                willie.addOp(channel, nick)
+                willie.add_op(channel, nick)
             else:
-                willie.delOp(channel, nick)
+                willie.del_op(channel, nick)
 track_modes.rule = r'(.*)'
 track_modes.event = 'MODE'
 
@@ -105,12 +105,12 @@ def track_nicks(willie, trigger):
     
     for channel in willie.halfplus:
         if old in willie.halfplus[channel]:
-            willie.delHalfOp(channel, old)
-            willie.addHalfOp(channel, new)
+            willie.del_halfop(channel, old)
+            willie.add_halfop(channel, new)
     for channel in willie.ops:
         if old in willie.ops[channel]:
-            willie.delOp(channel, old)
-            willie.addOp(channel, new)
+            willie.del_op(channel, old)
+            willie.add_op(channel, new)
     
 track_nicks.rule = r'(.*)'
 track_nicks.event = 'NICK'

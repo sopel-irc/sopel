@@ -45,7 +45,7 @@ class Ddict(dict):
             self[key] = self.default()
         return dict.__getitem__(self, key)
 
-class output_redirect:
+class OutputRedirect:
     ''' A simple object to replace stdout and stderr '''
     def __init__(self, logpath, stderr=False, quiet = False):
         self.logpath = logpath
@@ -64,14 +64,14 @@ class output_redirect:
         logfile.write(string.encode('utf8'))
         logfile.close()
 
-def try_print(string):
+def stdout(string):
     ''' Try printing to terminal, ignore errors '''
     try:
         print string
     except:
         pass
         
-def try_print_stderr(string):
+def stderr(string):
     ''' Try printing to stderr, ignore errors '''
     try:
         print >> sys.stderr, string

@@ -7,16 +7,18 @@ Licensed under the Eiffel Forum License 2.
 http://willie.dftba.net
 """
 
-import sys, os, imp, optparse
-from textwrap import dedent as trim
+import sys
+import os
+import optparse
 from config import Config
 from config import create_config
 import tools
+from tools import stderr, stdout
 import signal
 try:
     from __init__ import run
 except ImportError:
-    print >> sys.stderr, "Error: Couldn't find willie to import"
+    stderr("Error: Couldn't find willie to import")
     sys.exit(1)
 
 willie_dotdir = os.path.expanduser('~/.willie')
@@ -26,8 +28,7 @@ dotdir = willie_dotdir
 
 def check_python_version():
     if sys.version_info < (2, 7):
-        error = 'Error: Requires Python 2.7 or later. Try python2.7 willie'
-        print >> sys.stderr, error
+        stderr('Error: Requires Python 2.7 or later. Try python2.7 willie')
         sys.exit(1)
 
 def enumerate_configs():
@@ -89,33 +90,33 @@ def main(argv=None):
         check_python_version()
         if opts.list_configs is not None:
             configs = enumerate_configs()
-            print 'Config files in ~/.willie:'
+            stdout('Config files in ~/.willie:')
             if len(configs[0]) is 0:
-                print '\tNone found'
+                stdout('\tNone found')
             else:
                 for config in configs[0]:
-                    print '\t%s' % config
-            print '-------------------------'
-            print 'Config files in ~/.jenni:'
+                    stdout('\t%s' % config)
+            stdout('-------------------------')
+            stdout('Config files in ~/.jenni:')
             if len(configs[1]) is 0:
-                print '\tNone found'
+                stdout('\tNone found')
             else:
                 for config in configs[1]:
-                    print '\t%s' % config
-            print '-------------------------'
-            print 'Config files in ~/.phenny:'
+                    stdout('\t%s' % config)
+            stdout('-------------------------')
+            stdout('Config files in ~/.phenny:')
             if len(configs[2]) is 0:
-                print '\tNone found'
+                stdout('\tNone found')
             else:
                 for config in configs[2]:
-                    print '\t%s' % config
-            print '-------------------------'
+                    stdout('\t%s' % config)
+            stdout('-------------------------')
             return
 
         config_name = opts.config or 'default'
         configpath = find_config(config_name)
         if not os.path.isfile(configpath):
-            print "Welcome to Willie!\nI can't seem to find the configuration file, so let's generate it!\n"
+            stdout("Welcome to Willie!\nI can't seem to find the configuration file, so let's generate it!\n")
             if not configpath.endswith('.py'):
                 configpath = configpath + '.py'
             create_config(configpath)
@@ -131,8 +132,8 @@ def main(argv=None):
         if opts.quiet is None:
             opts.quiet = False
 
-        sys.stderr = tools.output_redirect(logfile, True, opts.quiet)
-        sys.stdout = tools.output_redirect(logfile, False, opts.quiet)
+        sys.stderr = tools.OutputRedirect(logfile, True, opts.quiet)
+        sys.stdout = tools.OutputRedirect(logfile, False, opts.quiet)
 
         #Handle --quit, --kill and saving the PID to file
         if opts.config is None:
@@ -145,22 +146,22 @@ def main(argv=None):
             pid_file.close()
             if tools.check_pid(old_pid):
                 if opts.quit is None and opts.kill is None:
-                    print >> sys.stderr, 'There\'s already a Willie instance running with this config file'
-                    print >> sys.stderr, 'Try using the --quit or the --kill options'
+                    stderr('There\'s already a Willie instance running with this config file')
+                    stderr('Try using the --quit or the --kill options')
                     sys.exit(1)
                 elif opts.kill:
-                    print >> sys.stderr, 'Killing the willie'
+                    stderr('Killing the willie')
                     os.kill(old_pid, signal.SIGKILL)
                     sys.exit(0)
                 elif opts.quit:
-                    print >> sys.stderr, 'Singaling Willie to stop gracefully'
+                    stderr('Singaling Willie to stop gracefully')
                     os.kill(old_pid, signal.SIGUSR1)
                     sys.exit(0)
             elif not tools.check_pid(old_pid) and (opts.kill or opts.quit):
-                print >> sys.stderr, 'Willie is not running!'
+                stderr('Willie is not running!')
                 sys.exit(1)
         elif opts.quit is not None and opts.kill is not None:
-            print >> sys.stderr, 'Willie is not running!'
+            stderr('Willie is not running!')
             sys.exit(1)
         if opts.deamonize is not None:
             child_pid = os.fork()
@@ -174,7 +175,7 @@ def main(argv=None):
         # Step Five: Initialise And Run willie
         run(config_module)
     except KeyboardInterrupt:
-        print "\n\nInterrupted"
+        stdout("\n\nInterrupted")
         os._exit(1)
 if __name__ == '__main__':
     main()
