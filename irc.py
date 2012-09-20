@@ -216,14 +216,16 @@ class Bot(asynchat.async_chat):
                 self.ssl = ssl.wrap_socket(self.socket, do_handshake_on_connect=False, suppress_ragged_eofs=True)
             else:
                 verification = verify_ssl_cn(self.config.host, self.config.port)
-                if verification is not None:
+                if verification is 'NoCertFound':
+                    stderr('Can\'t get server certificate, SSL might be disabled on the server.')
+                    sys.exit(1)
+                elif verification is not None:
                     stderr('\nSSL Cret information: %s' % verification[1])
                     if verification[0] == False:
                         stderr("Invalid cretficate, CN mismatch!")
                         sys.exit(1)
                 else:
-                    stderr('WARNING! certficate information and CN validation are not avilable.')
-                    stderr('Possible reasons: OpenSSL might be missing, or server throtteling connections.')
+                    stderr('WARNING! certficate information and CN validation are not avilable. Is pyOpenSSL installed?')
                     stderr('Trying to connect anyway:')
                 self.ssl = ssl.wrap_socket(self.socket, do_handshake_on_connect=False, suppress_ragged_eofs=True, cert_reqs=ssl.CERT_REQUIRED, ca_certs=self.ca_certs)
             stderr('\nSSL Handshake intiated...')

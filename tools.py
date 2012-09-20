@@ -98,7 +98,7 @@ def verify_ssl_cn(server, port):
         except Exception as e:
             pass
     if cert is None:
-        return None
+        return 'NoCertFound'
     valid = False;
     x509 = OpenSSL.crypto.load_certificate(OpenSSL.crypto.FILETYPE_PEM, cert)
     cret_info = x509.get_subject().get_components()
