@@ -222,7 +222,7 @@ class Willie(irc.Bot):
                     regexp = re.compile(pattern, re.I)
                     bind(self, func.priority, regexp, func)
 
-    def wrapped(self, origin, text, match):
+    def wrapped(self, origin, text):
         class WillieWrapper(object):
             def __init__(self, willie):
                 self.bot = willie
@@ -357,7 +357,7 @@ class Willie(irc.Bot):
                         if self.limit(origin, func): 
                             continue
 
-                        willie = self.wrapped(origin, text, match)
+                        willie = self.wrapped(origin, text)
                         trigger = self.Trigger(text, origin, bytes, match, event, args, self)
                         if trigger.nick in self.config.other_bots: 
                             continue
