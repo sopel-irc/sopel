@@ -81,7 +81,8 @@ class Config(object):
                 self.parser.set('core', 'prefix', r'\.')
             if not self.parser.has_option('core', 'admins'):
                 self.parser.set('core', 'admins', '')
-                
+        else:
+            self.parser.add_section('core')
     def save(self):
         """Save all changes to the config file"""
         cfgfile = open(self.filename, 'w')
@@ -102,7 +103,9 @@ class Config(object):
             object.__setattr__(self, '_name', name)
             object.__setattr__(self, '_parent', parent)
             for item in items:
-                object.__setattr__(self, item[0], item[1].strip())
+                value = item[1].strip()
+                if not value.lower() == 'none':
+                    object.__setattr__(self, item[0], value)
         
         def __getattr__(self, name):
             return None
@@ -114,26 +117,20 @@ class Config(object):
         """"""
         if name in self.parser.sections():
             items = self.parser.items(name)
-            return self.ConfigSection(name, items, self) #Return a section
+            section = self.ConfigSection(name, items, self) #Return a section
+            setattr(self, name, section)
+            return section
         elif self.parser.has_option('core', name):
             return self.parser.get('core', name) #For backwards compatibility
         else:
             raise AttributeError("%r object has no attribute %r" % (type(self).__name__, name))
-    
-    def write(self):
-        """
-        Writes the current configuration to the file from which the current
-        configuration is derived. Changes made through ``set_attr`` may not be
-        properly written by this function.
-        """
-        pass
-        
-    
+
+
     def interactive_add(self, section, option, prompt, default=None, ispass=False):
         """
-        Ask user in terminal for the value to assign to ``option``. If ``default``
+        Ask user in terminal for the value to assign to ``option`` under ``section``. If ``default``
         is passed, it will be shown as the default value in the prompt. If
-        ``attrib`` is already defined, it will be used instead of ``default``,
+        ``option`` is already defined in ``section``, it will be used instead of ``default``,
         regardless of wheather ``default`` is passed.
         """
         if self.parser.has_option(section, option):
@@ -152,8 +149,8 @@ class Config(object):
                 value = raw_input(prompt+' [%s]: ' % default) or default
                 self.parser.set(section, option, value)
         else:
-            inp = ''
-            while not inp:
+            value = ''
+            while not value:
                 if ispass == True:
                     value = getpass.getpass(prompt+': ')
                 else:
@@ -162,8 +159,8 @@ class Config(object):
 
     def add_list(self, section, option, message, prompt):
         """
-        Ask user in terminal for a list to assign to ``attrib``. If 
-        ``self.attrib`` is already defined, show the user the current values and
+        Ask user in terminal for a list to assign to ``option``. If 
+        ``option`` is already defined under ``section``, show the user the current values and
         ask if the user would like to keep them. If so, additional values can be
         entered. 
         """
@@ -179,26 +176,19 @@ class Config(object):
             mem = raw_input(prompt)
         self.parser.set(section, option, ','.join(lst))
 
-    def add_option(self, attrib, question, default=False):
+    def add_option(self, section, option, question, default=False):
         """
-        Show user in terminal a "y/n" prompt, and set `attrib` to True or False
+        Show user in terminal a "y/n" prompt, and set `option` to True or False
         based on the response. If default is passed as true, the default will be
         shown as ``[y]``, else it will be ``[n]``. ``question`` should be phrased
-        as a question, but without a question mark at the end. If ``attrib`` is
+        as a question, but without a question mark at the end. If ``option`` is
         already defined, it will be used instead of ``default``, regardless of
         wheather ``default`` is passed.
         """
-        if hasattr(self, attrib):
-            default = getattr(self, attrib)
-        d = 'n'
-        if default: d = 'y'
-        ans = raw_input(question+' (y/n)? ['+d+']')
-        if not ans: ans = d
-        if ans == 'y':
-            ans = 'yes'
-        else:
-            ans = 'no'
-        setattr(self, attrib, ans)
+        if self.parser.has_option(section, option):
+            default = self.parser.getboolean(section, option)
+        answer = self.option(question, default)
+        self.parser.set(section, option, str(answer))
         
     def option(self, question, default=False):
         """
@@ -208,9 +198,11 @@ class Config(object):
         question, but without a question mark at the end.
         """
         d = 'n'
-        if default: d = 'y'
+        if default: 
+            d = 'y'
         ans = raw_input(question+' (y/n)? ['+d+']')
-        if not ans: ans = d
+        if not ans: 
+            ans = d
         return (ans is 'y' or ans is 'Y')
     
     def _core(self):
@@ -241,14 +233,12 @@ class Config(object):
         self.interactive_add('core', 'password', "Enter the bot's NickServ password", 'None', ispass=True)
         self.interactive_add('core', 'serverpass', "Enter the bot's server password", 'None', ispass=True)
         
-        oper = self.option('core', "Will this bot have IRC Operator privilages")
-        if oper:#TODO make this do things normally...
-            opername = raw_input("Operator name:")
-            operpass = getpass.getpass("Operator password:")
-            self.operline = "Oper = ('"+opername+"', '"+operpass+"')"
-        else: self.operline = "# Oper = ('opername', 'operpass')"
-        
-        #Note that this won't include owner. Will insert that later.
+        oper = self.option("Will this bot have IRC Operator privilages")
+        if oper:
+            self.interactive_add('core', 'oper_name', "Operator name:")
+            self.interactive_add('core', 'oper_pass', "Operator password:", ispass=True)
+            
+
 
         c='Enter other users who can perform some adminstrative tasks, one at a time. When done, hit enter again.'
         self.add_list('core', 'admins', c, 'Nick:')
@@ -259,7 +249,7 @@ class Config(object):
         self.add_list('core', 'exclude', c, 'Module:')
         
         if not self.exclude:
-            wl = self.option('core', "Would you like to create a module whitelist")
+            wl = self.option("Would you like to create a module whitelist")
             self.enable = []
             if wl:
                 c="Enter the modules to use, one at a time. Hit enter when done."
@@ -272,7 +262,6 @@ class Config(object):
         
     def _db(self):
         db.configure(self)
-        self.settings = True #why?
         print trim("""
         The configuration utility will now attempt to find modules with their own
         configuration needs.
@@ -281,47 +270,21 @@ class Config(object):
     def _modules(self):
         home = os.getcwd()
         modules_dir = os.path.join(home, 'modules')
-        self.modules_chunk = ''
-
         filenames = enumerate_modules(self)
         os.sys.path.insert(0,modules_dir) 
         for filename in filenames:
             name = os.path.basename(filename)[:-3]
-            if name in self.exclude: continue
-            try: module = imp.load_source(name, filename)
+            if name in self.exclude:
+                continue
+            try:
+                module = imp.load_source(name, filename)
             except Exception, e:
                 print >> sys.stderr, "Error loading %s: %s (in config.py)" % (name, e)
             else:
                 if hasattr(module, 'configure'):
-                    chunk = module.configure(self)
-                    if chunk and isinstance(chunk, basestring):
-                        self.modules_chunk += trim(chunk)
+                    module.configure(self)
 
-def _config_names(dotdir, config):
-    config = config or 'default'
 
-    def files(d):
-        names = os.listdir(d)
-        return list(os.path.join(d, fn) for fn in names if fn.endswith('.py'))
-
-    here = os.path.join('.', config)
-    if os.path.isfile(here):
-        return [here]
-    if os.path.isfile(here + '.py'):
-        return [here + '.py']
-    if os.path.isdir(here):
-        return files(here)
-
-    there = os.path.join(dotdir, config)
-    if os.path.isfile(there):
-        return [there]
-    if os.path.isfile(there + '.py'):
-        return [there + '.py']
-    if os.path.isdir(there):
-        return files(there)
-
-    sys.exit(1)
-    
 def main(argv=None):
     import optparse
     parser = optparse.OptionParser('%prog [options]')
@@ -329,7 +292,7 @@ def main(argv=None):
         help='use this configuration file or directory')
     opts, args = parser.parse_args(argv)
     dotdir = os.path.expanduser('~/.willie')
-    configpath = os.path.join(dotdir, (opts.config or 'default')+'.py')
+    configpath = os.path.join(dotdir, (opts.config or 'default')+'.cfg')
     create_config(configpath)
 
 def create_config(configpath):
@@ -351,9 +314,9 @@ def create_config(configpath):
     try:
         config = Config(configpath, os.path.isfile(configpath))
         config._core()
-        config._settings()
+        config._db()
         config._modules()
-        config.write()
+        config.save()
     except Exception, e:
         print "Encountered an error while writing the config file. This shouldn't happen. Check permissions."
         raise
