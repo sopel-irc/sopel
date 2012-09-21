@@ -51,8 +51,8 @@ class Config(object):
         self.filename = filename
         """The config object's associated file, as noted above."""
         if load:
-            self.parser = ConfigParser.SafeConfigParser(allow_no_value=True)
-            self.parser.read(filename)
+            self.load()
+
 
             #Sanity check for the configuration file:
             if not self.parser.has_section('core'):
@@ -75,6 +75,16 @@ class Config(object):
                 self.parser.set('core', 'prefix', r'\.')
             if not self.parser.has_option('core', 'admins'):
                 self.parser.set('core', 'admins', '')
+                
+    def save(self):
+        """Saves all changes to the config file"""
+        cfgfile = open(self.filename, 'w')
+        self.parser.write(cfgfile)
+        
+    def load(self):
+        """(re)loads the config file"""
+        self.parser = ConfigParser.SafeConfigParser(allow_no_value=True)
+        self.parser.read(self.filename)
 
     class ConfigSection(object):
         """Represents a section of the config file, contains all keys in the section as attributes"""
