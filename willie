@@ -163,7 +163,7 @@ def main(argv=None):
             stderr(e)
             sys.exit(1)
         config_module.dotdir = dotdir
-        
+
 
         config_module.logdir = os.path.abspath('logs')
         logfile = os.path.os.path.join(config_module.logdir, 'stdio.log')
