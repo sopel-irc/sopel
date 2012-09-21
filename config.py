@@ -24,7 +24,9 @@ Licensed under the Eiffel Forum License 2.
 http://dft.ba/-williesource
 """
 
-import os, sys
+import db
+import os
+import sys
 import ConfigParser
 import getpass
 from textwrap import dedent as trim
@@ -104,34 +106,38 @@ class Config(object):
         pass
         
     
-    def interactive_add(self, attrib, prompt, default=None, ispass=False):
+    def interactive_add(self, section, option, prompt, default=None, ispass=False):
         """
-        Ask user in terminal for the value to assign to ``attrib``. If ``default``
+        Ask user in terminal for the value to assign to ``option``. If ``default``
         is passed, it will be shown as the default value in the prompt. If
         ``attrib`` is already defined, it will be used instead of ``default``,
         regardless of wheather ``default`` is passed.
         """
-        if hasattr(self, attrib):
-            atr = getattr(self, attrib)
+        if self.parser.has_option(section, option):
+            atr = self.parser.get(section, option)
             if ispass == True:
-                setattr(self, attrib, getpass.getpass(prompt+' [%s]: ' % atr) or atr)
+                value = getpass.getpass(prompt+' [%s]: ' % atr) or atr
+                self.parser.set(section, option, value)
             else:
-                setattr(self, attrib, raw_input(prompt+' [%s]: ' % atr) or atr)
+                value = raw_input(prompt+' [%s]: ' % atr) or atr
+                self.parser.set(section, option, value)
         elif default:
             if ispass == True:
-                setattr(self, attrib, getpass.getpass(prompt+' [%s]: ' % default) or default)
+                value = getpass.getpass(prompt+' [%s]: ' % default) or default
+                self.parser.set(section, option, value)
             else:
-                setattr(self, attrib, raw_input(prompt+' [%s]: ' % default) or default)
+                value = raw_input(prompt+' [%s]: ' % default) or default
+                self.parser.set(section, option, value)
         else:
             inp = ''
             while not inp:
                 if ispass == True:
-                    inp = getpass.getpass(prompt+': ')
+                    value = getpass.getpass(prompt+': ')
                 else:
-                    inp = raw_input(prompt+': ')
-            setattr(self, attrib, inp)
+                    value = raw_input(prompt+': ')
+            self.parser.set(section, option, value)
 
-    def add_list(self, attrib, message, prompt):
+    def add_list(self, section, option, message, prompt):
         """
         Ask user in terminal for a list to assign to ``attrib``. If 
         ``self.attrib`` is already defined, show the user the current values and
@@ -140,16 +146,15 @@ class Config(object):
         """
         print message
         lst = []
-        if hasattr(self, attrib) and getattr(self, attrib):
-            m = "You currently have "
-            for c in getattr(self, attrib): m = m + c + ', '
-            if self.option(m[:-2]+'. Would you like to keep them', True):
-                lst = getattr(self, attrib)
+        if self.parser.has_option(section, option) and self.parser.get(section, option):
+            m = "You currently have "+ self.parser.get(section, option)
+            if self.option(m+'. Would you like to keep them', True):
+                lst = self.parser.get(section, option)
         mem = raw_input(prompt)
         while mem:
             lst.append(mem)
             mem = raw_input(prompt)
-        setattr(self, attrib, lst)
+        self.parser.set(section, option, ','.join(lst))
 
     def add_option(self, attrib, question, default=False):
         """
@@ -166,7 +171,11 @@ class Config(object):
         if default: d = 'y'
         ans = raw_input(question+' (y/n)? ['+d+']')
         if not ans: ans = d
-        setattr(self, attrib, (ans is 'y' or ans is 'Y'))
+        if ans == 'y':
+            ans = 'yes'
+        else:
+            ans = 'no'
+        setattr(self, attrib, ans)
         
     def option(self, question, default=False):
         """
@@ -182,35 +191,35 @@ class Config(object):
         return (ans is 'y' or ans is 'Y')
     
     def _core(self):
-        self.interactive_add('nick', 'Enter the nickname for your bot', 'Willie')
-        self.interactive_add('user', 'Enter the "user" for your bot (the part that comes before the @ in the hostname', 'willie')
-        self.interactive_add('name', 'Enter the "real name" of you bot for WHOIS responses',
+        self.interactive_add('core', 'nick', 'Enter the nickname for your bot', 'Willie')
+        self.interactive_add('core', 'user', 'Enter the "user" for your bot (the part that comes before the @ in the hostname', 'willie')
+        self.interactive_add('core', 'name', 'Enter the "real name" of you bot for WHOIS responses',
                              'Willie Embosbot, http://willie.dftba.net')
-        self.interactive_add('host', 'Enter the server to connect to', 'irc.dftba.net')
-        self.interactive_add('port', 'Enter the port to connect on', '6667')
-        self.add_option('use_ssl', 'Use SSL Secured connection?', False)
+        self.interactive_add('core', 'host', 'Enter the server to connect to', 'irc.dftba.net')
+        self.interactive_add('core', 'port', 'Enter the port to connect on', '6667')
+        self.add_option('core', 'use_ssl', 'Use SSL Secured connection?', False)
         if self.use_ssl:
-            self.add_option('verify_ssl', 'Require trusted SSL certificates?', True)
+            self.add_option('core', 'verify_ssl', 'Require trusted SSL certificates?', True)
             if self.verify_ssl:
-                self.interactive_add('ca_certs', 'Enter full path to the CA Certs pem file', '/etc/pki/tls/cert.pem')
-        self.interactive_add('bind_host', 'Bind connection to a specific IP', 'None')
+                self.interactive_add('core', 'ca_certs', 'Enter full path to the CA Certs pem file', '/etc/pki/tls/cert.pem')
+        self.interactive_add('core', 'bind_host', 'Bind connection to a specific IP', 'None')
         
         c='Enter the channels to connect to by default, one at a time. When done, hit enter again.'
-        self.add_list('channels', c, 'Channel:')
+        self.add_list('core', 'channels', c, 'Channel:')
                 
-        self.interactive_add('owner', "Enter your own IRC name (or that of the bot's owner)")
-        self.interactive_add('debug_target', 'Enter the channel to print debugging messages to. If set to stdio, debug messages will be printed to standard output', 'stdio')
+        self.interactive_add('core', 'owner', "Enter your own IRC name (or that of the bot's owner)")
+        self.interactive_add('core', 'debug_target', 'Enter the channel to print debugging messages to. If set to stdio, debug messages will be printed to standard output', 'stdio')
         
-        self.interactive_add('verbose', 'Verbosity level. If None, all debug messages will be discarded. Valid options are warning/verbose/none', 'None') #FIXME: Make this a bit more user friendly
+        self.interactive_add('core', 'verbose', 'Verbosity level. If None, all debug messages will be discarded. Valid options are warning/verbose/none', 'None') #FIXME: Make this a bit more user friendly
         
         c="List users you'd like "+self.nick+" to ignore (e.g. other bots), one at a time. Hit enter when done."
-        self.add_list('other_bots', c, 'Nick:')
+        self.add_list('core', 'other_bots', c, 'Nick:')
         
-        self.interactive_add('password', "Enter the bot's NickServ password", 'None', ispass=True)
-        self.interactive_add('serverpass', "Enter the bot's server password", 'None', ispass=True)
+        self.interactive_add('core', 'password', "Enter the bot's NickServ password", 'None', ispass=True)
+        self.interactive_add('core', 'serverpass', "Enter the bot's server password", 'None', ispass=True)
         
-        oper = self.option("Will this bot have IRC Operator privilages")
-        if oper:
+        oper = self.option('core', "Will this bot have IRC Operator privilages")
+        if oper:#TODO make this do things normally...
             opername = raw_input("Operator name:")
             operpass = getpass.getpass("Operator password:")
             self.operline = "Oper = ('"+opername+"', '"+operpass+"')"
@@ -219,38 +228,28 @@ class Config(object):
         #Note that this won't include owner. Will insert that later.
 
         c='Enter other users who can perform some adminstrative tasks, one at a time. When done, hit enter again.'
-        self.add_list('admins', c, 'Nick:')
+        self.add_list('core', 'admins', c, 'Nick:')
         
         c=trim("""\
         If you have any modules you do not wish this bot to load, enter them now, one at
         a time. When done, hit enter. (If you'd rather whitelist modules, leave this empty.)""")
-        self.add_list('exclude', c, 'Module:')
+        self.add_list('core', 'exclude', c, 'Module:')
         
         if not self.exclude:
-            wl = self.option("Would you like to create a module whitelist")
+            wl = self.option('core', "Would you like to create a module whitelist")
             self.enable = []
             if wl:
                 c="Enter the modules to use, one at a time. Hit enter when done."
-                self.add_list('enable', c, 'Module:')
+                self.add_list('core', 'enable', c, 'Module:')
 
         c = trim("""\
         If you'd like to include modules from other directories, enter them one at a
         time, and hit enter again when done.""")
-        self.add_list('extra', c, 'Directory:')
+        self.add_list('core', 'extra', c, 'Directory:')
         
-    def _settings(self):
-        try:
-            import settings
-            self.settings_chunk = trim(settings.write_config(self))
-            self.settings = True
-        except: 
-            self.settings = False
-            self.settings_chunk = trim("""\
-            
-            # ------------------  USER DATABASE CONFIGURATION  ------------------
-            # The user database was not set up at install. Please consult the documentation,
-            # or run the configuration utility if you wish to use it.""")
-        
+    def _db(self):
+        db.configure(self)
+        self.settings = True #why?
         print trim("""
         The configuration utility will now attempt to find modules with their own
         configuration needs.
