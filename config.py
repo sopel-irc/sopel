@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# coding=utf-8
 """
 *Availability: 3+ for all functions; attributes may vary.*
 
@@ -19,9 +20,11 @@ by the utility.
 """
 Config - A config class and writing/updating utility for Willie
 Copyright 2012, Edward Powell, embolalia.net
+Copyright © 2012, Elad Alfassa <elad@fedoraproject.org>
+
 Licensed under the Eiffel Forum License 2.
 
-http://dft.ba/-williesource
+http://willie.dftba.net
 """
 
 import os, sys
@@ -38,7 +41,7 @@ class ConfigurationError(Exception):
         return 'ConfigurationError: %s' % self.value
 
 class Config(object):
-    def __init__(self, filename, load=True):
+    def __init__(self, filename, load=True, ignore_errors=False):
         """
         Return a configuration object. The given filename will be associated
         with the configuration, and is the file which will be written if write()
@@ -50,19 +53,20 @@ class Config(object):
         """
         self.filename = filename
         """The config object's associated file, as noted above."""
+        self.parser = ConfigParser.SafeConfigParser(allow_no_value=True)
         if load:
-            self.load()
+            self.load(False)
 
-
-            #Sanity check for the configuration file:
-            if not self.parser.has_section('core'):
-                raise ConfigurationError('Core section missing!')
-            if not self.parser.has_option('core', 'nick'):
-                raise ConfigurationError('Bot IRC nick not defined, expected option `nick` in [core] section')
-            if not self.parser.has_option('core', 'owner'):
-                raise ConfigurationError('Bot owner not defined, expected option `owner` in [core] section')
-            if not self.parser.has_option('core', 'host'):
-                raise ConfigurationError('IRC server address not defined, expceted option `host` in [core] section')
+            if not ignore_errors:
+                #Sanity check for the configuration file:
+                if not self.parser.has_section('core'):
+                    raise ConfigurationError('Core section missing!')
+                if not self.parser.has_option('core', 'nick'):
+                    raise ConfigurationError('Bot IRC nick not defined, expected option `nick` in [core] section')
+                if not self.parser.has_option('core', 'owner'):
+                    raise ConfigurationError('Bot owner not defined, expected option `owner` in [core] section')
+                if not self.parser.has_option('core', 'host'):
+                    raise ConfigurationError('IRC server address not defined, expceted option `host` in [core] section')
 
             #Setting defaults:
             if not self.parser.has_option('core', 'port'):
@@ -77,14 +81,18 @@ class Config(object):
                 self.parser.set('core', 'admins', '')
                 
     def save(self):
-        """Saves all changes to the config file"""
+        """Save all changes to the config file"""
         cfgfile = open(self.filename, 'w')
         self.parser.write(cfgfile)
         
-    def load(self):
-        """(re)loads the config file"""
-        self.parser = ConfigParser.SafeConfigParser(allow_no_value=True)
+    def load(self, re_init=True):
+        """(re)load the config file"""
+        if re_init:
+            self.parser = ConfigParser.SafeConfigParser(allow_no_value=True)
         self.parser.read(self.filename)
+    def add_section(self, name):
+        """ Add a section to the config file """
+        self.parser.add_section(name)
 
     class ConfigSection(object):
         """Represents a section of the config file, contains all keys in the section as attributes"""
@@ -92,7 +100,7 @@ class Config(object):
             object.__setattr__(self, '_name', name)
             object.__setattr__(self, '_parent', parent)
             for item in items:
-                object.__setattr__(self, item[0], item[1])
+                object.__setattr__(self, item[0], item[1].strip())
         
         def __getattr__(self, name):
             return None
@@ -109,7 +117,7 @@ class Config(object):
             return self.parser.get('core', name) #For backwards compatibility
         else:
             raise AttributeError("%r object has no attribute %r" % (type(self).__name__, name))
-
+    
     def write(self):
         """
         Writes the current configuration to the file from which the current
