@@ -116,7 +116,6 @@ class Bot(asynchat.async_chat):
             self.channels = []
         
         self.stack = []
-        self.logchan_pm = config.logchan_pm
         self.serverpass = config.server_password
         self.verify_ssl = verify_ssl
         self.ca_certs = ca_certs
@@ -315,8 +314,6 @@ class Bot(asynchat.async_chat):
     def collect_incoming_data(self, data):
         if data:
             log_raw(data)
-            if hasattr(self, "logchan_pm") and self.logchan_pm and "PRIVMSG" in data and "#" not in data.split()[2]:
-                self.msg(self.logchan_pm, data)
         self.buffer += data
 
     def found_terminator(self):
