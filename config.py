@@ -49,6 +49,8 @@ class Config(object):
         command.) Note that this is used in a regular expression, so regex
         syntax and special characters apply.
         """
+        self.user = 'willie'
+        """The user/ident the bot will use."""
         self.name = 'Willie Embosbot, http://willie.dftba.net'
         """The "real name" used for the bot's whois."""
         self.port = 6667
@@ -110,13 +112,14 @@ class Config(object):
             bind_host_line = "# bind_host = '0.0.0.0'"
         output = trim("""\
         nick = '"""+self.nick+"""'
+        user = '"""+self.user+"""'
         host = '"""+self.host+"""'
         port = """+str(self.port)+"""
         channels = """+str(self.channels)+"""
         owner = '"""+self.owner+"""'
         name = '"""+self.name+"""'
         
-        use_ssl = '"""+str(self.use_ssl)+"""'
+        use_ssl = """+str(self.use_ssl)+"""
         """+verify_ssl_line+"""
         """+ca_cert_line+"""
         
@@ -219,7 +222,24 @@ class Config(object):
             lst.append(mem)
             mem = raw_input(prompt)
         setattr(self, attrib, lst)
-            
+
+    def add_option(self, attrib, question, default=False):
+        """
+        Show user in terminal a "y/n" prompt, and set `attrib` to True or False
+        based on the response. If default is passed as true, the default will be
+        shown as ``[y]``, else it will be ``[n]``. ``question`` should be phrased
+        as a question, but without a question mark at the end. If ``attrib`` is
+        already defined, it will be used instead of ``default``, regardless of
+        wheather ``default`` is passed.
+        """
+        if hasattr(self, attrib):
+            default = getattr(self, attrib)
+        d = 'n'
+        if default: d = 'y'
+        ans = raw_input(question+' (y/n)? ['+d+']')
+        if not ans: ans = d
+        setattr(self, attrib, (ans is 'y' or ans is 'Y'))
+        
     def option(self, question, default=False):
         """
         Show user in terminal a "y/n" prompt, and return true or false based on
@@ -235,13 +255,14 @@ class Config(object):
     
     def _core(self):
         self.interactive_add('nick', 'Enter the nickname for your bot', 'Willie')
+        self.interactive_add('user', 'Enter the "user" for your bot (the part that comes before the @ in the hostname', 'willie')
         self.interactive_add('name', 'Enter the "real name" of you bot for WHOIS responses',
                              'Willie Embosbot, http://willie.dftba.net')
         self.interactive_add('host', 'Enter the server to connect to', 'irc.dftba.net')
         self.interactive_add('port', 'Enter the port to connect on', '6667')
-        self.use_ssl = self.option('Use SSL Secured connection?', False)
+        self.add_option('use_ssl', 'Use SSL Secured connection?', False)
         if self.use_ssl:
-            self.verify_ssl = self.option('Require trusted SSL certificates?', True)
+            self.add_option('verify_ssl', 'Require trusted SSL certificates?', True)
             if self.verify_ssl:
                 self.interactive_add('ca_certs', 'Enter full path to the CA Certs pem file', '/etc/pki/tls/cert.pem')
         self.interactive_add('bind_host', 'Bind connection to a specific IP', 'None')

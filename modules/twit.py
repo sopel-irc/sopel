@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 """
-twitter.py - Wilie Twitter Module
+twitter.py - Willie Twitter Module
 Copyright 2008-10, Michael Yanovich, opensource.osu.edu/~yanovich/wiki/
-Tweetwatch features copyright 2011, Edward Powell, embolalia.net
+Copyright 2011, Edward Powell, embolalia.net
 Licensed under the Eiffel Forum License 2.
 
 http://willie.dftba.net
@@ -31,33 +31,33 @@ def format_thousands(integer):
     """Returns string of integer, with thousands separated by ','"""
     return re.sub(r'(\d{3})(?=\d)', r'\1,', str(integer)[::-1])[::-1]
 
-def gettweet(jenni, input):
+def gettweet(willie, trigger):
     try:
-        auth = tweepy.OAuthHandler(jenni.config.consumer_key, jenni.config.consumer_secret)
-        auth.set_access_token(jenni.config.access_token, jenni.config.access_token_secret)
+        auth = tweepy.OAuthHandler(willie.config.consumer_key, willie.config.consumer_secret)
+        auth.set_access_token(willie.config.access_token, willie.config.access_token_secret)
         api = tweepy.API(auth)
         
-        twituser = input.group(2)
+        twituser = trigger.group(2)
         twituser = str(twituser)
 
         statuses = api.user_timeline(twituser)
         recent = [s.text for s in statuses][0]
-        #jenni.say("<" + twituser + "> " + unicode(recent))
+        #willie.say("<" + twituser + "> " + unicode(recent))
         if twituser[0] != '@': twituser = '@' + twituser
-        jenni.say(twituser + ": " + unicode(recent))
+        willie.say(twituser + ": " + unicode(recent))
     except:
-        jenni.reply("You have inputted an invalid user.")
+        willie.reply("You have inputted an invalid user.")
 gettweet.commands = ['twit']
 gettweet.priority = 'medium'
 gettweet.example = '.twit aplusk'
 
-def f_info(jenni, input):
+def f_info(willie, trigger):
     try:
-        auth = tweepy.OAuthHandler(jenni.config.consumer_key, jenni.config.consumer_secret)
-        auth.set_access_token(jenni.config.access_token, jenni.config.access_token_secret)
+        auth = tweepy.OAuthHandler(willie.config.consumer_key, willie.config.consumer_secret)
+        auth.set_access_token(willie.config.access_token, willie.config.access_token_secret)
         api = tweepy.API(auth)
         
-        twituser = input.group(2)
+        twituser = trigger.group(2)
         twituser = str(twituser)
 
         info = api.get_user(twituser)
@@ -68,38 +68,38 @@ def f_info(jenni, input):
         followers = format_thousands(info.followers_count)
         location = info.location
         description = info.description
-        jenni.reply("@" + str(twituser) + ": " + str(name) + ". " + "ID: " + str(id) + ". Friend Count: " + friendcount + ". Followers: " + followers + ". Favourites: " + str(favourites) + ". Location: " + str(location) + ". Description: " + str(description))
+        willie.reply("@" + str(twituser) + ": " + str(name) + ". " + "ID: " + str(id) + ". Friend Count: " + friendcount + ". Followers: " + followers + ". Favourites: " + str(favourites) + ". Location: " + str(location) + ". Description: " + str(description))
     except:
-        jenni.reply("You have inputted an invalid user.")
+        willie.reply("You have inputted an invalid user.")
 f_info.commands = ['twitinfo']
 f_info.priority = 'medium'
 f_info.example = '.twitinfo aplsuk'
 
-def f_update(jenni, input):
-    if input.admin:
-        auth = tweepy.OAuthHandler(jenni.config.consumer_key, jenni.config.consumer_secret)
-        auth.set_access_token(jenni.config.access_token, jenni.config.access_token_secret)
+def f_update(willie, trigger):
+    if trigger.admin:
+        auth = tweepy.OAuthHandler(willie.config.consumer_key, willie.config.consumer_secret)
+        auth.set_access_token(willie.config.access_token, willie.config.access_token_secret)
         api = tweepy.API(auth)
         
         print api.me().name
         
-        update = str(input.group(2)) + " ^" + input.nick
+        update = str(trigger.group(2)) + " ^" + trigger.nick
         if len(update) <= 140:
             api.update_status(update)
-            jenni.reply("Successfully posted to my twitter account.")
+            willie.reply("Successfully posted to my twitter account.")
         else:
             toofar = len(update) - 140
-            jenni.reply("Please shorten the length of your message by: " + str(toofar) + " characters.")
+            willie.reply("Please shorten the length of your message by: " + str(toofar) + " characters.")
 f_update.commands = ['tweet']
 f_update.priority = 'medium'
 f_update.example = '.tweet Hello World!'
 
-def f_reply(jenni, input):
-    auth = tweepy.OAuthHandler(jenni.config.consumer_key, jenni.config.consumer_secret)
+def f_reply(willie, trigger):
+    auth = tweepy.OAuthHandler(willie.config.consumer_key, willie.config.consumer_secret)
     auth.set_access_token(access_token, access_token_secret)
     api = tweepy.API(auth)
     
-    incoming = str(input.group(2))
+    incoming = str(trigger.group(2))
     incoming = incoming.split()
     statusid = incoming[0]
     if statusid.isdigit():
@@ -107,18 +107,18 @@ def f_reply(jenni, input):
         if len(update) <= 140:
             statusid = int(statusid)
             #api3.PostUpdate(str(" ".join(update)), in_reply_to_status_id=10503164300)
-            jenni.reply("Successfully posted to my twitter account.")
+            willie.reply("Successfully posted to my twitter account.")
         else:
             toofar = len(update) - 140
-            jenni.reply("Please shorten the length of your message by: " + str(toofar) + " characters.")
+            willie.reply("Please shorten the length of your message by: " + str(toofar) + " characters.")
     else:
-        jenni.reply("Please provide a status ID.")
+        willie.reply("Please provide a status ID.")
 #f_reply.commands = ['reply']
 f_reply.priority = 'medium'
 f_reply.example = '.reply 892379487 I like that idea!'
 
-def twat(jenni,input):
-    f_info(jenni,input)
+def twat(willie,trigger):
+    f_info(willie,trigger)
 twat.commands = ['twatinfo']
 
 if __name__ == '__main__':

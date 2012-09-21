@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 """
-tell.py - Jenni Tell and Ask Module
+tell.py - Willie Tell and Ask Module
 Copyright 2008, Sean B. Palmer, inamidst.com
 Licensed under the Eiffel Forum License 2.
 
-http://inamidst.com/phenny/
+http://willie.dftba.net
 """
 
 import os, re, time, random
@@ -46,11 +46,11 @@ def setup(self):
             f.close()
     self.reminders = loadReminders(self.tell_filename) # @@ tell
 
-def f_remind(jenni, input):
-    teller = input.nick
+def f_remind(willie, trigger):
+    teller = trigger.nick
 
     # @@ Multiple comma-separated tellees? Cf. Terje, #swhack, 2006-04-15
-    verb, tellee, msg = input.groups()
+    verb, tellee, msg = trigger.groups()
     verb = verb.encode('utf-8')
     tellee = tellee.encode('utf-8')
     msg = msg.encode('utf-8')
@@ -58,24 +58,24 @@ def f_remind(jenni, input):
     tellee_original = tellee.rstrip('.,:;')
     tellee = tellee_original.lower()
 
-    if not os.path.exists(jenni.tell_filename):
+    if not os.path.exists(willie.tell_filename):
         return
 
     if len(tellee) > 20:
-        return jenni.reply('That nickname is too long.')
-    if tellee.lower() == jenni.nick.lower():
-        return jenni.reply('I\'m here now, you can tell me whatever you want!')
+        return willie.reply('That nickname is too long.')
+    if tellee.lower() == willie.nick.lower():
+        return willie.reply('I\'m here now, you can tell me whatever you want!')
 
     timenow = time.strftime('%d %b %H:%MZ', time.gmtime())
-    if not tellee in (teller.lower(), jenni.nick, 'me'): # @@
+    if not tellee in (teller.lower(), willie.nick, 'me'): # @@
         # @@ <deltab> and year, if necessary
         warn = False
-        if not jenni.reminders.has_key(tellee):
-            jenni.reminders[tellee] = [(teller, verb, timenow, msg)]
+        if not willie.reminders.has_key(tellee):
+            willie.reminders[tellee] = [(teller, verb, timenow, msg)]
         else:
-            # if len(jenni.reminders[tellee]) >= maximum:
+            # if len(willie.reminders[tellee]) >= maximum:
             #     warn = True
-            jenni.reminders[tellee].append((teller, verb, timenow, msg))
+            willie.reminders[tellee].append((teller, verb, timenow, msg))
         # @@ Stephanie's augmentation
         response = "I'll pass that on when %s is around." % tellee_original
         # if warn: response += (" I'll have to use a pastebin, though, so " +
@@ -85,56 +85,56 @@ def f_remind(jenni, input):
         if rand > 0.9999: response = "yeah, yeah"
         elif rand > 0.999: response = "yeah, sure, whatever"
 
-        jenni.reply(response)
+        willie.reply(response)
     elif teller.lower() == tellee:
-        jenni.say('You can %s yourself that.' % verb)
-    else: jenni.say("Hey, I'm not as stupid as Monty you know!")
+        willie.say('You can %s yourself that.' % verb)
+    else: willie.say("Hey, I'm not as stupid as Monty you know!")
 
-    dumpReminders(jenni.tell_filename, jenni.reminders) # @@ tell
+    dumpReminders(willie.tell_filename, willie.reminders) # @@ tell
 f_remind.rule = ('$nick', ['tell', 'ask'], r'(\S+) (.*)')
 
-def getReminders(jenni, channel, key, tellee):
+def getReminders(willie, channel, key, tellee):
     lines = []
     template = "%s: %s <%s> %s %s %s"
     today = time.strftime('%d %b', time.gmtime())
 
-    for (teller, verb, datetime, msg) in jenni.reminders[key]:
+    for (teller, verb, datetime, msg) in willie.reminders[key]:
         if datetime.startswith(today):
             datetime = datetime[len(today)+1:]
         lines.append(template % (tellee, datetime, teller, verb, tellee, msg))
 
-    try: del jenni.reminders[key]
-    except KeyError: jenni.msg(channel, 'Er...')
+    try: del willie.reminders[key]
+    except KeyError: willie.msg(channel, 'Er...')
     return lines
 
-def message(jenni, input):
+def message(willie, trigger):
 
-    tellee = input.nick
-    channel = input.sender
+    tellee = trigger.nick
+    channel = trigger.sender
 
     if not os: return
-    if not os.path.exists(jenni.tell_filename):
+    if not os.path.exists(willie.tell_filename):
         return
 
     reminders = []
-    remkeys = list(reversed(sorted(jenni.reminders.keys())))
+    remkeys = list(reversed(sorted(willie.reminders.keys())))
     for remkey in remkeys:
         if not remkey.endswith('*') or remkey.endswith(':'):
             if tellee.lower() == remkey:
-                reminders.extend(getReminders(jenni, channel, remkey, tellee))
+                reminders.extend(getReminders(willie, channel, remkey, tellee))
         elif tellee.lower().startswith(remkey.rstrip('*:')):
-            reminders.extend(getReminders(jenni, channel, remkey, tellee))
+            reminders.extend(getReminders(willie, channel, remkey, tellee))
 
     for line in reminders[:maximum]:
-        jenni.say(line)
+        willie.say(line)
 
     if reminders[maximum:]:
-        jenni.say('Further messages sent privately')
+        willie.say('Further messages sent privately')
         for line in reminders[maximum:]:
-            jenni.msg(tellee, line)
+            willie.msg(tellee, line)
 
-    if len(jenni.reminders.keys()) != remkeys:
-        dumpReminders(jenni.tell_filename, jenni.reminders) # @@ tell
+    if len(willie.reminders.keys()) != remkeys:
+        dumpReminders(willie.tell_filename, willie.reminders) # @@ tell
 message.rule = r'(.*)'
 message.priority = 'low'
 

@@ -14,17 +14,19 @@ http://willie.dftba.net/
 import time, sys, os, re, threading, imp
 import irc
 from db import WillieDB
-from tools import try_print_stderr as stderr
+from tools import stderr, stdout
 
 home = os.getcwd()
 modules_dir = os.path.join(home, 'modules')
 
-def decode(bytes):
-    try: text = bytes.decode('utf-8')
+def decode(string):
+    try: 
+        text = string.decode('utf-8')
     except UnicodeDecodeError:
-        try: text = bytes.decode('iso-8859-1')
+        try: 
+            text = string.decode('iso-8859-1')
         except UnicodeDecodeError:
-            text = bytes.decode('cp1252')
+            text = string.decode('cp1252')
     return text
 
 def enumerate_modules(config):
@@ -69,8 +71,7 @@ class Willie(irc.Bot):
             serverpass = config.serverpass
         else:
             serverpass = None
-        args = (config.nick, config.name, config.channels, config.password, lc_pm, use_ssl, verify_ssl, ca_certs, serverpass)
-        irc.Bot.__init__(self, *args)
+        irc.Bot.__init__(self, config.nick, config.name, config.channels, config.user, config.password, lc_pm, use_ssl, verify_ssl, ca_certs, serverpass)
         self.config = config
         """The ``Config`` for the current Willie instance."""
         self.doc = {}
@@ -221,7 +222,7 @@ class Willie(irc.Bot):
                     regexp = re.compile(pattern, re.I)
                     bind(self, func.priority, regexp, func)
 
-    def wrapped(self, origin, text, match):
+    def wrapped(self, origin, text):
         class WillieWrapper(object):
             def __init__(self, willie):
                 self.bot = willie
@@ -249,9 +250,14 @@ class Willie(irc.Bot):
             s.nick = origin.nick
             """The nick of the person who sent the message."""
             s.event = event
-            """The event which triggered the message."""#TODO elaborate
+            """
+            The IRC event (e.g. ``PRIVMSG`` or ``MODE``) which triggered the
+            message."""
             s.bytes = bytes
-            """The line which triggered the message"""#TODO elaborate
+            """
+            The text which triggered the message. Equivalent to
+            ``Trigger.group(0)``.
+            """
             s.match = match
             """
             The regular expression ``MatchObject_`` for the triggering line.
@@ -266,7 +272,12 @@ class Willie(irc.Bot):
             
             See Python ``re_`` documentation for details."""
             s.args = args
-            """The arguments given to a command.""" #TODO elaborate
+            """
+            A tuple containing each of the arguments to an event. These are the
+            strings passed between the event name and the colon. For example,
+            setting ``mode -m`` on the channel ``#example``, args would be
+            ``('#example', '-m')``
+            """
             s.admin = (origin.nick in self.config.admins) or origin.nick.lower() == self.config.owner.lower()
             """
             True if the nick which triggered the command is in Willie's admin
@@ -338,15 +349,18 @@ class Willie(irc.Bot):
             items = self.commands[priority].items()
             for regexp, funcs in items:
                 for func in funcs:
-                    if event != func.event: continue
+                    if event != func.event: 
+                        continue
 
                     match = regexp.match(text)
                     if match:
-                        if self.limit(origin, func): continue
+                        if self.limit(origin, func): 
+                            continue
 
-                        willie = self.wrapped(origin, text, match)
+                        willie = self.wrapped(origin, text)
                         trigger = self.Trigger(text, origin, bytes, match, event, args, self)
-                        if trigger.nick in self.config.other_bots: continue
+                        if trigger.nick in self.config.other_bots: 
+                            continue
 
                         nick = (trigger.nick).lower()
 
@@ -365,7 +379,8 @@ class Willie(irc.Bot):
                             if len(bad_masks) > 0:
                                 for hostmask in bad_masks:
                                     hostmask = hostmask.replace("\n", "")
-                                    if len(hostmask) < 1: continue
+                                    if len(hostmask) < 1: 
+                                        continue
                                     re_temp = re.compile(hostmask)
                                     host = origin.host
                                     host = host.lower()
@@ -374,7 +389,8 @@ class Willie(irc.Bot):
                             if len(bad_nicks) > 0:
                                 for nick in bad_nicks:
                                     nick = nick.replace("\n", "")
-                                    if len(nick) < 1: continue
+                                    if len(nick) < 1: 
+                                        continue
                                     re_temp = re.compile(nick)
                                     if re_temp.findall(trigger.nick) or nick in trigger.nick:
                                         return

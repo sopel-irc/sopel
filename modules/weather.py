@@ -50,7 +50,7 @@ def local(icao, hour, minute):
         #            ':' + str(minute) + 'Z)')
     return str(hour) + ':' + str(minute) + 'Z'
 
-def code(jenni, search):
+def code(willie, search):
     from icao import data
 
     if search.upper() in [loc[0] for loc in data]:
@@ -96,7 +96,7 @@ def f_weather(willie, trigger):
         return
 
     metar = bytes.splitlines().pop()
-    willie.msg("#embo","[DEVMSG]weather.py:96; "+str(metar))
+    willie.debug('weather','weather.py:99; '+str(metar), 'verbose')
     metar = metar.split(' ')
 
     if len(metar[0]) == 4:
@@ -370,7 +370,7 @@ def f_weather(willie, trigger):
             'SH': 'Showers'
         }
 
-        willie.msg("#embo","[DEVMSG]weather.py:371; "+str(conds))
+        willie.debug('weather','weather.py:373; '+str(conds), 'verbose')
         for c in conds:
             if c.endswith('//'):
                 if cond: cond += ', '

@@ -1,13 +1,11 @@
 #!/usr/bin/env python
 # coding=utf-8
 """
-translate.py - Jenni Translation Module
+translate.py - Willie Translation Module
 Copyright 2008, Sean B. Palmer, inamidst.com
 Licensed under the Eiffel Forum License 2.
 
-More info:
- * Jenni: https://github.com/myano/jenni/
- * Phenny: http://inamidst.com/phenny/
+http://willie.dftba.net
 """
 
 import re
@@ -53,14 +51,14 @@ def translate(text, input='auto', output='en'):
 
     return ''.join(x[0] for x in data[0]), language
 
-def tr(jenni, context):
+def tr(willie, trigger):
     """Translates a phrase, with an optional language hint."""
-    input, output, phrase = context.groups()
+    input, output, phrase = trigger.groups()
 
     phrase = phrase.encode('utf-8')
 
-    if (len(phrase) > 350) and (not context.admin):
-        return jenni.reply('Phrase must be under 350 characters.')
+    if (len(phrase) > 350) and (not trigger.admin):
+        return willie.reply('Phrase must be under 350 characters.')
 
     input = input or 'auto'
     input = input.encode('utf-8')
@@ -75,16 +73,16 @@ def tr(jenni, context):
             msg = '"%s" (%s to %s, translate.google.com)' % (msg, input, output)
         else: msg = 'The %s to %s translation failed, sorry!' % (input, output)
 
-        jenni.reply(msg)
-    else: jenni.reply('Language guessing failed, so try suggesting one!')
+        willie.reply(msg)
+    else: willie.reply('Language guessing failed, so try suggesting one!')
 
 tr.rule = ('$nick', ur'(?:([a-z]{2}) +)?(?:([a-z]{2}|en-raw) +)?["“](.+?)["”]\? *$')
 tr.example = '$nickname: "mon chien"? or $nickname: fr "mon chien"?'
 tr.priority = 'low'
 
-def tr2(jenni, input):
+def tr2(willie, trigger):
     """Translates a phrase, with an optional language hint."""
-    command = input.group(2).encode('utf-8')
+    command = trigger.group(2).encode('utf-8')
 
     def langcode(p):
         return p.startswith(':') and (2 < len(p) < 10) and p[1:].isalpha()
@@ -99,8 +97,8 @@ def tr2(jenni, input):
             command = cmd
     phrase = command
 
-    if (len(phrase) > 350) and (not input.admin):
-        return jenni.reply('Phrase must be under 350 characters.')
+    if (len(phrase) > 350) and (not trigger.admin):
+        return willie.reply('Phrase must be under 350 characters.')
 
     src, dest = args
     if src != dest:
@@ -112,24 +110,24 @@ def tr2(jenni, input):
             msg = '"%s" (%s to %s, translate.google.com)' % (msg, src, dest)
         else: msg = 'The %s to %s translation failed, sorry!' % (src, dest)
 
-        jenni.reply(msg)
-    else: jenni.reply('Language guessing failed, so try suggesting one!')
+        willie.reply(msg)
+    else: willie.reply('Language guessing failed, so try suggesting one!')
 
 tr2.commands = ['tr']
 tr2.priority = 'low'
 
-def mangle(jenni, trigger):
+def mangle(willie, trigger):
     global mangle_lines
     if trigger.group(2) is None:
         try:
             phrase = (mangle_lines[trigger.sender.lower()], '')
         except:
-            jenni.reply("What do you want me to mangle?")
+            willie.reply("What do you want me to mangle?")
             return
     else:
         phrase = (trigger.group(2).encode('utf-8').strip(), '')
     if phrase[0] == '':
-        jenni.reply("What do you want me to mangle?")
+        willie.reply("What do you want me to mangle?")
         return
     for lang in ['fr', 'de', 'es', 'it', 'no', 'he', 'la', 'ja' ]:
         backup = phrase
@@ -144,10 +142,10 @@ def mangle(jenni, trigger):
             phrase = backup
             break
 
-    jenni.reply(phrase[0])
+    willie.reply(phrase[0])
 mangle.commands = ['mangle']
 
-def collect_mangle_lines(jenni, trigger):
+def collect_mangle_lines(willie, trigger):
     global mangle_lines
     mangle_lines[trigger.sender.lower()] = "%s said '%s'" % (trigger.nick, trigger.group(0).encode('utf-8').strip())
 collect_mangle_lines.rule = ('(.*)')

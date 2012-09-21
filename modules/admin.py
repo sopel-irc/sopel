@@ -1,7 +1,10 @@
 #!/usr/bin/env python
+# coding=utf-8
 """
 admin.py - Willie Admin Module
 Copyright 2010-2011, Sean B. Palmer (inamidst.com) and Michael Yanovich (yanovich.net)
+Copyright © 2012, Elad Alfassa, <elad@fedoraproject.org>
+
 Licensed under the Eiffel Forum License 2.
 
 http://willie.dfbta.net
@@ -10,60 +13,69 @@ http://willie.dfbta.net
 import os
 
 def join(willie, trigger):
-   """Join the specified channel. This is an admin-only command."""
-   # Can only be done in privmsg by an admin
-   if trigger.sender.startswith('#'): return
-   if trigger.admin:
-      channel, key = trigger.group(1), trigger.group(2)
-      if not key:
-         willie.write(['JOIN'], channel)
-      else: willie.write(['JOIN', channel, key])
+    """Join the specified channel. This is an admin-only command."""
+    # Can only be done in privmsg by an admin
+    if trigger.sender.startswith('#'): 
+        return
+    if trigger.admin:
+        channel, key = trigger.group(1), trigger.group(2)
+        if not key:
+            willie.join(channel)
+        else: 
+            willie.join(channel, key)
 join.rule = r'\.join (#\S+)(?: *(\S+))?'
 join.priority = 'low'
 join.example = '.join #example or .join #example key'
 
-def part(phenny, trigger): 
+def part(willie, trigger): 
     """Part the specified channel. This is an admin-only command."""
     # Can only be done in privmsg by an admin
-    if trigger.sender.startswith('#'): return
+    if trigger.sender.startswith('#'): 
+        return
     if trigger.admin: 
-        phenny.write(['PART'], trigger.group(2))
+        willie.part(trigger.group(2).strip())
 part.commands = ['part']
 part.priority = 'low'
 part.example = '.part #example'
 
-def quit(phenny, trigger): 
+def quit(willie, trigger): 
     """Quit from the server. This is an owner-only command."""
     # Can only be done in privmsg by the owner
-    if trigger.sender.startswith('#'): return
-    if trigger.owner: 
-        phenny.write(['QUIT'])
-        __import__('os')._exit(0)
+    if trigger.sender.startswith('#'): 
+        return
+    if trigger.owner:
+        quit_message = 'Quitting on command from %s' % trigger.nick
+        if trigger.group(2) is not None:
+            quit_message = trigger.group(2)
+        willie.quit(quit_message)
 quit.commands = ['quit']
 quit.priority = 'low'
 
-def msg(phenny, trigger): 
+def msg(willie, trigger): 
     # Can only be done in privmsg by an admin
-    if trigger.sender.startswith('#'): return
+    if trigger.sender.startswith('#'): 
+        return
     a, b = trigger.group(2), trigger.group(3)
-    if (not a) or (not b): return
+    if (not a) or (not b): 
+        return
     if trigger.admin: 
-        phenny.msg(a, b)
+        willie.msg(a, b)
 msg.rule = (['msg'], r'(#?\S+) (.+)')
 msg.priority = 'low'
 
-def me(phenny, trigger): 
+def me(willie, trigger): 
     # Can only be done in privmsg by an admin
-    if trigger.sender.startswith('#'): return
+    if trigger.sender.startswith('#'): 
+        return
     if trigger.admin: 
         msg = '\x01ACTION %s\x01' % trigger.group(3)
-        phenny.msg(trigger.group(2), msg)
+        willie.msg(trigger.group(2), msg)
 me.rule = (['me'], r'(#?\S+) (.*)')
 me.priority = 'low'
 
 def defend_ground(willie, trigger):
     """
-    This function monitors all kicks across all channels willie is in. If she
+    This function monitors all kicks across all channels willie is in. If he
     detects that she is the one kicked she'll automatically join that channel.
 
     WARNING: This may not be needed and could cause problems if willie becomes
@@ -77,7 +89,8 @@ defend_ground.priority = 'low'
 
 def mode(willie, trigger):
     # Can only be done in privmsg by an admin
-    if trigger.sender.startswith('#'): return
+    if trigger.sender.startswith('#'):
+        return
     if trigger.admin:
         mode = trigger.group(1)
         willie.write(('MODE ', willie.nick + ' ' + mode))

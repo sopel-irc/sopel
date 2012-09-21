@@ -5,9 +5,7 @@ Copyright 2010, Michael Yanovich (yanovich.net), and Morgan Goose
 Copyright 2012, Lior Ramati
 Licensed under the Eiffel Forum License 2.
 
-More info:
-* Jenni: https://github.com/myano/jenni/
-* Phenny: http://inamidst.com/phenny/
+http://willie.dftba.net
 """
 
 import random
@@ -22,7 +20,7 @@ If no input is provided it will return a random comic
 If numeric input is provided it will return that comic
 If non-numeric input is provided it will return the first google result for those keywords on the xkcd.com site"""
     
-def xkcd(jenni, input):
+def xkcd(willie, trigger):
     # get latest comic for rand function and numeric input
     body = urllib2.urlopen("http://xkcd.com/rss.xml").readlines()[1]
     parsed = etree.fromstring(body)
@@ -30,16 +28,16 @@ def xkcd(jenni, input):
     max_int = int(newest.split("/")[-3])
 
     # if no input is given (pre - lior's edits code)
-    if not input.group(2): # get rand comic
+    if not trigger.group(2): # get rand comic
         random.seed()
         website = "http://xkcd.com/%d/" % random.randint(0,max_int+1)
     else:
-        query = input.group(2).strip()
+        query = trigger.group(2).strip()
 
         # numeric input! get that comic number if it exists
         if (query.isdigit()):
             if (int(query) > max_int):
-                jenni.say("Sorry, comic #" + query + " hasn't been posted yet. The last comic was #%d" % max_int)
+                willie.say("Sorry, comic #" + query + " hasn't been posted yet. The last comic was #%d" % max_int)
                 return
             else: website = "http://xkcd.com/" + query
         
@@ -58,9 +56,9 @@ def xkcd(jenni, input):
                     website = "http://xkcd.com/" + chkForum.groups()[0].lstrip('0')
     if website: # format and say result
         website += ' [' + find_title(website)[6:] + ']'
-        jenni.say(website)
-    elif website is False: jenni.say("Problem getting data from Google.")
-    else: jenni.say("No results found for '%s'." % query)
+        willie.say(website)
+    elif website is False: willie.say("Problem getting data from Google.")
+    else: willie.say("No results found for '%s'." % query)
 xkcd.commands = ['xkcd']
 xkcd.priority = 'low'
 
