@@ -132,8 +132,13 @@ def get_results(willie, text):
     display = [ ]
     for match in a:
         match = match[0]
+        #for pattern in willie.config.url_exclude:
+        #    if pattern.findall(match):
+        #        print pattern.pattern
+        #        print dir(pattern)
+        #        continue
         if (match.startswith(willie.config.url_exclusion_char) or
-                any(pattern.find(match) for pattern in willie.config.url_exclude)):
+                any(pattern.findall(match) for pattern in willie.config.url_exclude)):
             continue
         url = uni_encode(match)
         url = uni_decode(url)
