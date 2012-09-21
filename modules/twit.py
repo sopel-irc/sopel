@@ -8,24 +8,15 @@ Licensed under the Eiffel Forum License 2.
 http://willie.dftba.net
 """
 import tweepy
-import sched, time
+import time
 import re
 
-twitter_watch = ['hankgreen', 'realjohngreen', 'NerdNetwk']
-watch_wait = 75
-watch = False
-lasts = dict()
-sch = sched.scheduler(time.time, time.sleep)
-
 def configure(config):
-    chunk = ''
-    if config.option('Configure Twitter? (You will need to register on http://api.twitter.com)', True):
-        config.interactive_add('consumer_key', 'Consumer key')
-        config.interactive_add('consumer_secret', 'Consumer secret')
-        config.interactive_add('access_token', 'Access token')
-        config.interactive_add('access_token_secret', 'Access token secret')
-        chunk = ("\nconsumer_key = '%s'\nconsumer_secret = '%s'\naccess_token = '%s'\naccess_token_secret = '%s'"
-                 % (config.consumer_key, config.consumer_secret, config.access_token, config.access_token_secret))
+    if config.option('Configure Twitter? (You will need to register on http://api.twitter.com)', False):
+        config.interactive_add('twitter', 'consumer_key', 'Consumer key')
+        config.interactive_add('twitter', 'consumer_secret', 'Consumer secret')
+        config.interactive_add('twitter', 'access_token', 'Access token')
+        config.interactive_add('twitter', 'access_token_secret', 'Access token secret')
 
 def format_thousands(integer):
     """Returns string of integer, with thousands separated by ','"""
@@ -33,8 +24,8 @@ def format_thousands(integer):
 
 def gettweet(willie, trigger):
     try:
-        auth = tweepy.OAuthHandler(willie.config.consumer_key, willie.config.consumer_secret)
-        auth.set_access_token(willie.config.access_token, willie.config.access_token_secret)
+        auth = tweepy.OAuthHandler(willie.config.twitter.consumer_key, willie.twitter.config.consumer_secret)
+        auth.set_access_token(willie.config.twitter.access_token, willie.config.twitter.access_token_secret)
         api = tweepy.API(auth)
         
         twituser = trigger.group(2)
@@ -53,8 +44,8 @@ gettweet.example = '.twit aplusk'
 
 def f_info(willie, trigger):
     try:
-        auth = tweepy.OAuthHandler(willie.config.consumer_key, willie.config.consumer_secret)
-        auth.set_access_token(willie.config.access_token, willie.config.access_token_secret)
+        auth = tweepy.OAuthHandler(willie.config.twitter.consumer_key, willie.config.twitter.consumer_secret)
+        auth.set_access_token(willie.config.twitter.access_token, willie.config.twitter.access_token_secret)
         api = tweepy.API(auth)
         
         twituser = trigger.group(2)
@@ -77,8 +68,8 @@ f_info.example = '.twitinfo aplsuk'
 
 def f_update(willie, trigger):
     if trigger.admin:
-        auth = tweepy.OAuthHandler(willie.config.consumer_key, willie.config.consumer_secret)
-        auth.set_access_token(willie.config.access_token, willie.config.access_token_secret)
+        auth = tweepy.OAuthHandler(willie.config.twitter.consumer_key, willie.config.twitter.consumer_secret)
+        auth.set_access_token(willie.config.twitter.access_token, willie.config.twitter.access_token_secret)
         api = tweepy.API(auth)
         
         print api.me().name
@@ -95,7 +86,7 @@ f_update.priority = 'medium'
 f_update.example = '.tweet Hello World!'
 
 def f_reply(willie, trigger):
-    auth = tweepy.OAuthHandler(willie.config.consumer_key, willie.config.consumer_secret)
+    auth = tweepy.OAuthHandler(willie.config.twitter.consumer_key, willie.config.twitter.consumer_secret)
     auth.set_access_token(access_token, access_token_secret)
     api = tweepy.API(auth)
     

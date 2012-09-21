@@ -57,7 +57,7 @@ class Config(object):
         """The config object's associated file, as noted above."""
         self.parser = ConfigParser.SafeConfigParser(allow_no_value=True)
         if load:
-            self.load(False)
+            self.parser.read(self.filename)
 
             if not ignore_errors:
                 #Sanity check for the configuration file:
@@ -83,16 +83,13 @@ class Config(object):
                 self.parser.set('core', 'admins', '')
         else:
             self.parser.add_section('core')
+        self.has_option = self.parser.has_option
+
     def save(self):
         """Save all changes to the config file"""
         cfgfile = open(self.filename, 'w')
         self.parser.write(cfgfile)
-        
-    def load(self, re_init=True):
-        """(re)load the config file"""
-        if re_init:
-            self.parser = ConfigParser.SafeConfigParser(allow_no_value=True)
-        self.parser.read(self.filename)
+
     def add_section(self, name):
         """ Add a section to the config file """
         self.parser.add_section(name)
@@ -111,8 +108,10 @@ class Config(object):
             return None
 
         def __setattr__(self, name, value):
-            self._parent.parser.set(self._name, name, value)
             object.__setattr__(self, name, value)
+            if type(value) is list:
+                value = ','.join(value)
+            self._parent.parser.set(self._name, name, value)
 
     def __getattr__(self, name):
         """"""
@@ -134,6 +133,8 @@ class Config(object):
         ``option`` is already defined in ``section``, it will be used instead of ``default``,
         regardless of wheather ``default`` is passed.
         """
+        if not self.parser.has_section(section):
+            self.parser.add_section(section)
         if self.parser.has_option(section, option):
             atr = self.parser.get(section, option)
             if ispass == True:
@@ -231,8 +232,8 @@ class Config(object):
         c="List users you'd like "+self.nick+" to ignore (e.g. other bots), one at a time. Hit enter when done."
         self.add_list('core', 'other_bots', c, 'Nick:')
         
-        self.interactive_add('core', 'password', "Enter the bot's NickServ password", 'None', ispass=True)
-        self.interactive_add('core', 'serverpass', "Enter the bot's server password", 'None', ispass=True)
+        self.interactive_add('core', 'nickserv_password', "Enter the bot's NickServ password", 'None', ispass=True)
+        self.interactive_add('core', 'server_password', "Enter the bot's server password", 'None', ispass=True)
         
         oper = self.option("Will this bot have IRC Operator privilages")
         if oper:
