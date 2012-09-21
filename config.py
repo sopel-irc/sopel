@@ -92,7 +92,11 @@ class Config(object):
 
     def add_section(self, name):
         """ Add a section to the config file """
-        self.parser.add_section(name)
+        return self.parser.add_section(name)
+
+    def has_option(self, name):
+        """ Check if section ``name`` exists """
+        return self.parser.has_section(name)
 
     class ConfigSection(object):
         """Represents a section of the config file, contains all keys in the section as attributes"""
