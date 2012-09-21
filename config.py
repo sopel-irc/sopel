@@ -76,20 +76,25 @@ class Config(object):
             if not self.parser.has_option('core', 'admins'):
                 self.parser.set('core', 'admins', '')
 
-    class ConfigSection():
+    class ConfigSection(object):
         """Represents a section of the config file, contains all keys in the section as attributes"""
-        def __init__(self, name, items):
-            self.name = name
+        def __init__(self, name, items, parent):
+            object.__setattr__(self, '_name', name)
+            object.__setattr__(self, '_parent', parent)
             for item in items:
-                setattr(self, item[0], item[1])
+                object.__setattr__(self, item[0], item[1])
+        
         def __getattr__(self, name):
             return None
+
+        def __setattr__(self, name, value):
+            self._parent.parser.set(self._name, name, value)
 
     def __getattr__(self, name):
         """"""
         if name in self.parser.sections():
             items = self.parser.items(name)
-            return self.ConfigSection(name, items) #Return a section
+            return self.ConfigSection(name, items, self) #Return a section
         elif self.parser.has_option('core', name):
             return self.parser.get('core', name) #For backwards compatibility
         else:
