@@ -1,7 +1,9 @@
 #!/usr/bin/env python2.7
+# coding=utf-8
 """
 Willie - An IRC Bot
 Copyright 2008, Sean B. Palmer, inamidst.com
+Copyright © 2012, Elad Alfassa <elad@fedoraproject.org>
 Licensed under the Eiffel Forum License 2.
 
 http://willie.dftba.net
@@ -14,6 +16,7 @@ from config import Config, create_config, ConfigurationError
 import tools
 from tools import stderr, stdout
 import signal
+import imp
 try:
     from __init__ import run
 except ImportError:
@@ -30,46 +33,46 @@ def check_python_version():
         stderr('Error: Requires Python 2.7 or later. Try python2.7 willie')
         sys.exit(1)
 
-def enumerate_configs():
+def enumerate_configs(extension='.cfg'):
     willie_config = []
     jenni_config = []
     phenny_config = []
     if os.path.isdir(willie_dotdir):
         willie_dotdirfiles = os.listdir(willie_dotdir) #Preferred
         for item in willie_dotdirfiles:
-            if item.endswith('.cfg'):
+            if item.endswith(extension):
                 willie_config.append(item)
     if os.path.isdir(jenni_dotdir):
         jenni_dotdirfiles = os.listdir(jenni_dotdir) #Fallback
         for item in jenni_dotdirfiles:
-            if item.endswith('.cfg'):
+            if item.endswith(extension):
                 jenni_config.append(item)
     if os.path.isdir(phenny_dotdir):
         phenny_dotdirfiles = os.listdir(phenny_dotdir) #Fallback of fallback
         for item in phenny_dotdirfiles:
             willie_config = []
-            if item.endswith('.cfg'):
+            if item.endswith(extension):
                 phenny_config.append(item)
 
     return (willie_config, jenni_config, phenny_config)
 
-def find_config(name):
+def find_config(name, extension='.cfg'):
     global dotdir
     configs = enumerate_configs()
-    if name in configs[0] or name+'.cfg' in configs[0]:
+    if name in configs[0] or name+extension in configs[0]:
         dotdir = willie_dotdir
-        if name+'.cfg' in configs[0]:
-            name = name+'.cfg'
-    elif name in configs[1] or name+'.cfg' in configs[1]:
+        if name+extension in configs[0]:
+            name = name+extension
+    elif name in configs[1] or name+extension in configs[1]:
         dotdir = jenni_dotdir
-        if name+'.cfg' in configs[1]:
-            name = name+'.cfg'
-    elif name in configs[2] or name+'.cfg' in configs[2]:
+        if name+extension in configs[1]:
+            name = name+extension
+    elif name in configs[2] or name+extension in configs[2]:
         dotdir = phenny_dotdir
-        if name+'.cfg' in configs[2]:
-            name = name+'.cfg'
-    elif not name.endswith('.cfg'):
-        name = name+'.cfg'
+        if name+extension in configs[2]:
+            name = name+extension
+    elif not name.endswith(extension):
+        name = name+extension
 
     return os.path.join(dotdir, name)
 
@@ -82,6 +85,7 @@ def main(argv=None):
         parser.add_option("-q", '--quit', action="store_true", dest="quit", help="Gracefully quit Willie")
         parser.add_option("-k", '--kill', action="store_true", dest="kill", help="Kill Willie")
         parser.add_option("-l", '--list', action="store_true", dest="list_configs", help="List all config files found")
+        parser.add_option("-m", '--migrate', action="store_true", dest="migrate_configs", help="Migrate config files to the new format")
         parser.add_option('--quiet', action="store_true", dest="quiet", help="Supress all output")
         opts, args = parser.parse_args(argv)
 
@@ -113,6 +117,39 @@ def main(argv=None):
             return
 
         config_name = opts.config or 'default'
+        
+        if opts.migrate_configs is not None:
+            configpath = find_config(config_name, '.py')
+            new_configpath = configpath[:-2]+'cfg'
+            if os.path.isfile(new_configpath):
+                valid_answer = False
+                while not valid_answer:
+                    answer = raw_input('Warning, new config file already exists. Overwrite? [y/n]')
+                    if answer is 'n' or answer == 'no':
+                        return
+                    elif answer == 'y' or answer == 'yes':
+                        valid_answer = True
+            old_cfg = imp.load_source('Config', configpath)
+            new_cfg = Config(new_configpath, load=False)
+            new_cfg.add_section('core')
+            for attrib in dir(old_cfg):
+                if not attrib.startswith('_'):
+                    value = getattr(old_cfg, attrib)
+                    if value is None:
+                        continue #Skip NoneTypes
+                    if type(value) is list: #Parse lists
+                        parsed_value=''
+                        for item in value:
+                            parsed_value = parsed_value + item
+                            if item is not value[-1]:
+                                parsed_value = parsed_value + ','
+                    else:
+                        parsed_value = str(value)
+                    setattr(new_cfg.core, attrib, parsed_value)
+            new_cfg.save()
+            print 'Configuration migrated sucessfully, starting Willie'
+            
+        
         configpath = find_config(config_name)
         if not os.path.isfile(configpath):
             stdout("Welcome to Willie!\nI can't seem to find the configuration file, so let's generate it!\n")
@@ -126,6 +163,7 @@ def main(argv=None):
             stderr(e)
             sys.exit(1)
         config_module.dotdir = dotdir
+        
 
         config_module.logdir = os.path.abspath('logs')
         logfile = os.path.os.path.join(config_module.logdir, 'stdio.log')
