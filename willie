@@ -138,13 +138,13 @@ def main(argv=None):
                     if value is None:
                         continue #Skip NoneTypes
                     if type(value) is list: #Parse lists
-                        parsed_value=''
-                        for item in value:
-                            parsed_value = parsed_value + item
-                            if item is not value[-1]:
-                                parsed_value = parsed_value + ','
+                        parsed_value = ','.join(value)
                     else:
                         parsed_value = str(value)
+                    if attrib == 'password':
+                        attrib = 'nickserv_password'
+                    if attrib == 'serverpass':
+                        attrib = 'server_password'
                     setattr(new_cfg.core, attrib, parsed_value)
             new_cfg.save()
             print 'Configuration migrated sucessfully, starting Willie'
@@ -163,7 +163,6 @@ def main(argv=None):
             stderr(e)
             sys.exit(1)
         config_module.dotdir = dotdir
-
 
         config_module.logdir = os.path.abspath('logs')
         logfile = os.path.os.path.join(config_module.logdir, 'stdio.log')

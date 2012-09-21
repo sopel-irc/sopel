@@ -15,13 +15,9 @@ from tools import Ddict
 import codecs
 
 def configure(config):
-    chunk = ''
-    if config.option('Configure meetbot', True):
-        config.interactive_add('meeting_log_path', "Path to meeting logs storage directory (should be an absolute path, accessible on a webserver)")
-        config.interactive_add('meeting_log_baseurl', "Base URL for the meeting logs directory (eg. http://example.com/logs)")
-        chunk = ("\nmeeting_log_path = '%s'\nmeeting_log_baseurl = '%s'\n"
-                 % (config.meeting_log_path, config.meeting_log_baseurl))
-    return chunk
+    if config.option('Configure meetbot', False):
+        config.interactive_add('meetbot', 'meeting_log_path', "Path to meeting logs storage directory (should be an absolute path, accessible on a webserver)")
+        config.interactive_add('meetbot', 'meeting_log_baseurl', "Base URL for the meeting logs directory (eg. http://example.com/logs)")
 
 """ 
 meetings_dict is a 2D dict.
@@ -113,7 +109,7 @@ def startmeeting(willie, trigger):
     if not trigger.sender.startswith('#'):
         willie.say('Can only start meetings in channels')
         return
-    if not hasattr(willie.config, 'meeting_log_path') or not hasattr(willie.config, 'meeting_log_baseurl'):
+    if not willie.config.has_section('meetbot')
         willie.say('Meetbot not configured, make sure meeting_log_path and meeting_log_baseurl are defined')
         return
     #Start the meeting
@@ -126,11 +122,11 @@ def startmeeting(willie, trigger):
     meetings_dict[trigger.sender]['running'] = True
     
     global meeting_log_path
-    meeting_log_path = willie.config.meeting_log_path
+    meeting_log_path = willie.config.meetbot.meeting_log_path
     if not meeting_log_path.endswith('/'):
         meeting_log_path = meeting_log_path + '/'
     global meeting_log_baseurl
-    meeting_log_baseurl = willie.config.meeting_log_baseurl
+    meeting_log_baseurl = willie.config.meetbot.meeting_log_baseurl
     if not meeting_log_baseurl.endswith('/'):
         meeting_log_baseurl = meeting_log_baseurl + '/'
     if not os.path.isdir(meeting_log_path + trigger.sender):

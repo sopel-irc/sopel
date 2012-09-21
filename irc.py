@@ -105,8 +105,6 @@ class Bot(asynchat.async_chat):
         """Willie's user/ident."""
         self.name = config.name
         """Willie's "real name", as used for whois."""
-        self.password = config.password
-        """Willie's NickServ password"""
 
         self.verbose = True
         """True if Willie is running in verbose mode."""
@@ -119,7 +117,7 @@ class Bot(asynchat.async_chat):
         
         self.stack = []
         self.logchan_pm = config.logchan_pm
-        self.serverpass = config.serverpass
+        self.serverpass = config.server_password
         self.verify_ssl = verify_ssl
         self.ca_certs = ca_certs
         self.use_ssl = use_ssl
