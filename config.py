@@ -112,6 +112,7 @@ class Config(object):
 
         def __setattr__(self, name, value):
             self._parent.parser.set(self._name, name, value)
+            object.__setattr__(self, name, value)
 
     def __getattr__(self, name):
         """"""
