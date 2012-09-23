@@ -38,7 +38,7 @@ def configure(config):
         config.interactive_add('bucket', 'db_pass', "Enter the user's password")
         config.interactive_add('bucket', 'db_name', "Enter the name of the database to use")
         config.interactive_add('bucket', 'literal_path', "Enter the path in which you want to store output of the literal command")
-        config.interactive_add( 'bucket','literal_baseurl', "Base URL for literal output")n
+        config.interactive_add( 'bucket','literal_baseurl', "Base URL for literal output")
         if config.option('do you want to generate bucket tables and populate them with some default data?', True):
             db = MySQLdb.connect(host=config.bucket.db_host,
                          user=config.bucket.db_user,
