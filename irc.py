@@ -105,8 +105,6 @@ class Bot(asynchat.async_chat):
         """Willie's user/ident."""
         self.name = config.name
         """Willie's "real name", as used for whois."""
-        self.password = config.password
-        """Willie's NickServ password"""
 
         self.verbose = True
         """True if Willie is running in verbose mode."""
@@ -118,8 +116,7 @@ class Bot(asynchat.async_chat):
             self.channels = []
         
         self.stack = []
-        self.logchan_pm = config.logchan_pm
-        self.serverpass = config.serverpass
+        self.serverpass = config.server_password
         self.verify_ssl = verify_ssl
         self.ca_certs = ca_certs
         self.use_ssl = use_ssl
@@ -202,8 +199,8 @@ class Bot(asynchat.async_chat):
             message = 'Connecting to %s:%s...' % (host, port)
             stderr(message)
         self.create_socket(socket.AF_INET, socket.SOCK_STREAM)
-        if hasattr(self.config, 'bind_host') and self.config.bind_host is not None:
-            self.socket.bind((self.config.bind_host,0))
+        if self.config.core.bind_host is not None:
+            self.socket.bind((self.config.core.bind_host,0))
         if self.use_ssl and has_ssl:
             self.send = self._ssl_send
             self.recv = self._ssl_recv
@@ -317,8 +314,6 @@ class Bot(asynchat.async_chat):
     def collect_incoming_data(self, data):
         if data:
             log_raw(data)
-            if hasattr(self, "logchan_pm") and self.logchan_pm and "PRIVMSG" in data and "#" not in data.split()[2]:
-                self.msg(self.logchan_pm, data)
         self.buffer += data
 
     def found_terminator(self):

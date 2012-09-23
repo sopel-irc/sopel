@@ -12,20 +12,16 @@ from urllib2 import HTTPError
 import json, re, web
 
 def checkConfig(willie):
-    if not hasattr(willie.config, 'git_Oath_token'):
-        return False
-    if not hasattr(willie.config, 'git_repo'):
+    if not willie.config.has_option('github', 'Oath_token') or not willie.config.has_option('github', 'repo')
         return False
     else:
-        return [willie.config.git_Oath_token, willie.config.git_repo]
+        return [willie.config.github.Oath_token, willie.config.github.repo]
 
 def configure(config):
     chunk = ''
-    if config.option('Configuring git module', True):
-        config.interactive_add('git_Oath_token', 'Github API Oauth2 token', '')
-        config.interactive_add('git_repo', 'Github repository', 'embolalia/willie')
-        chunk = ("\ngit_Oath_token = '%s'\ngit_repo = '%s'\n"
-                 % (config.git_Oath_token,config.git_repo))
+    if config.option('Configuring github issue reporting and searching module', False):
+        config.interactive_add('github', 'Oath_token', 'Github API Oauth2 token', '')
+        config.interactive_add('github', 'repo', 'Github repository', 'embolalia/willie')
     return chunk
 
 def issue(willie, trigger):
