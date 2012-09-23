@@ -109,7 +109,7 @@ def startmeeting(willie, trigger):
     if not trigger.sender.startswith('#'):
         willie.say('Can only start meetings in channels')
         return
-    if not willie.config.has_section('meetbot')
+    if not willie.config.has_section('meetbot'):
         willie.say('Meetbot not configured, make sure meeting_log_path and meeting_log_baseurl are defined')
         return
     #Start the meeting
