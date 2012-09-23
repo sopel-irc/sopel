@@ -91,7 +91,7 @@ def verify_ssl_cn(server, port):
     if not ssl:
         return None
     cert = None
-    for version in (ssl.PROTOCOL_TLSv1, ssl.PROTOCOL_SSLv3, ssl.PROTOCOL_SSLv23, ssl.PROTOCOL_SSLv2):
+    for version in (ssl.PROTOCOL_TLSv1, ssl.PROTOCOL_SSLv3, ssl.PROTOCOL_SSLv23):
         try:
             cert = ssl.get_server_certificate((server, port), ssl_version = version)
             break
