@@ -153,8 +153,8 @@ def main(argv=None):
         configpath = find_config(config_name)
         if not os.path.isfile(configpath):
             stdout("Welcome to Willie!\nI can't seem to find the configuration file, so let's generate it!\n")
-            if not configpath.endswith('.py'):
-                configpath = configpath + '.py'
+            if not configpath.endswith('.cfg'):
+                configpath = configpath + '.cfg'
             create_config(configpath)
             configpath = find_config(config_name)
         try:

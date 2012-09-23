@@ -30,7 +30,7 @@ def configure(config):
     
 def setup(willie):
     global url_finder, exclusion_char
-    if willie.config.url.exclude is not None:
+    if hasattr(willie.config, 'url') and willie.config.url.exclude is not None:
         regexes = [re.compile(s) for s in willie.config.url.exclude]
     else:
         regexes = []
@@ -42,11 +42,11 @@ def setup(willie):
         exclude.append(regexes)
         willie.memory['url_exclude'] = exclude
     
-    if willie.config.url.exclusion_char is not None:
+    if hasattr(willie.config, 'url') and willie.config.url.exclusion_char is not None:
         exclusion_char = willie.config.url.exclusion_char
     
     url_finder = re.compile(r'(?u)(%s?(http|https|ftp)(://\S+))' %
-        (willie.config.url.exclusion_char))
+        (exclusion_char))
     # We want the exclusion list to be pre-compiled, since url parsing gets
     # called a /lot/, and it's annoying when it's laggy.
 
