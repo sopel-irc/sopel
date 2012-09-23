@@ -10,6 +10,7 @@ http://willie.dftba.net
 import os, re, time, threading
 from pytz import timezone, all_timezones
 import pytz
+import codecs
 from datetime import tzinfo, timedelta, datetime
 all_timezones_set = set(all_timezones)
 
@@ -20,7 +21,7 @@ def filename(self):
 def load_database(name):
     data = {}
     if os.path.isfile(name):
-        f = open(name, 'rb')
+        f = codecs.open(name, 'r', encoding='utf-8')
         for line in f:
             unixtime, channel, nick, message = line.split('\t')
             message = message.rstrip('\n')
@@ -32,7 +33,7 @@ def load_database(name):
     return data
 
 def dump_database(name, data):
-    f = open(name, 'wb')
+    f = codecs.open(name, 'w', encoding='utf-8')
     for unixtime, reminders in data.iteritems():
         for channel, nick, message in reminders:
             f.write('%s\t%s\t%s\t%s\n' % (unixtime, channel, nick, message))
