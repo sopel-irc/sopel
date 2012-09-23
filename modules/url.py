@@ -17,6 +17,7 @@ import urlparse
 url_finder = None
 r_entity = re.compile(r'&[A-Za-z0-9#]+;')
 INVALID_WEBSITE = 0x01
+exclusion_char = '!'
 
 def configure(config):
     if config.option('Exclude certain URLs from automatic title display', True):
@@ -31,19 +32,21 @@ def configure(config):
     else: return ''
     
 def setup(willie):
-    global url_finder
-    # Set up empty url exclusion list and default exclusion character
-    if not hasattr(willie.config, 'url_exclude'):
-        willie.config.set_attr('url_exclude', [])
+    global url_finder, exclusion_char
+    if hasattr(willie.config, 'url_exclude'):
+        regexes = [re.compile(s) for s in willie.config.url_exclude]
     else:
-        for s in willie.config.url_exclude:
-            if isinstance(s, basestring):
-                willie.config.url_exclude.remove(s)
-                willie.config.url_exclude.append(re.compile(s))
-            #Otherwise, it's probably already compiled by another module.
+        regexes = []
     
-    if not hasattr(willie.config, 'url_exclusion_char'):
-        willie.config.set_attr('url_exclusion_char', '!')
+    if not willie.memory.contains('url_exclude'):
+        willie.memory['url_exclude'] = regexes
+    else:
+        exclude = willie.memory['url_exclude']
+        exclude.append(regexes)
+        willie.memory['url_exclude'] = exclude
+    
+    if hasattr(willie.config, 'url_exclusion_char'):
+        exclusion_char = willie.config.url_exclusion_char
     
     url_finder = re.compile(r'(?u)(%s?(http|https|ftp)(://\S+))' %
         (willie.config.url_exclusion_char))
