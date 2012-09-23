@@ -32,6 +32,7 @@ import os
 import sys
 import ConfigParser
 import getpass
+import imp
 from textwrap import dedent as trim
 from bot import enumerate_modules
 
