@@ -12,7 +12,7 @@ from urllib2 import HTTPError
 import json, re, web
 
 def checkConfig(willie):
-    if not willie.config.has_option('github', 'Oath_token') or not willie.config.has_option('github', 'repo')
+    if not willie.config.has_option('github', 'Oath_token') or not willie.config.has_option('github', 'repo'):
         return False
     else:
         return [willie.config.github.Oath_token, willie.config.github.repo]
