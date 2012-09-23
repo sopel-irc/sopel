@@ -20,21 +20,18 @@ INVALID_WEBSITE = 0x01
 exclusion_char = '!'
 
 def configure(config):
-    if config.option('Exclude certain URLs from automatic title display', True):
-        config.add_list('url_exclude', 'Enter regular expressions for each URL you would like to exclude.',
+    if config.option('Exclude certain URLs from automatic title display', False):
+        if not config.has_section('url'):
+            config.add_section('url')
+        config.add_list('url',  'exclude', 'Enter regular expressions for each URL you would like to exclude.',
             'Regex:')
-        config.interactive_add('url_exclusion_char',
+        config.interactive_add('url', 'exclusion_char',
             'Prefix to suppress URL titling', '!')
-        
-        chunk = ("url_exclude = %s\nurl_exclusion_char = '%s'\n" % 
-                (config.url_exclude, config.url_exclusion_char))
-        return chunk
-    else: return ''
     
 def setup(willie):
     global url_finder, exclusion_char
-    if hasattr(willie.config, 'url_exclude'):
-        regexes = [re.compile(s) for s in willie.config.url_exclude]
+    if willie.config.url.exclude is not None:
+        regexes = [re.compile(s) for s in willie.config.url.exclude]
     else:
         regexes = []
     
@@ -45,11 +42,11 @@ def setup(willie):
         exclude.append(regexes)
         willie.memory['url_exclude'] = exclude
     
-    if hasattr(willie.config, 'url_exclusion_char'):
-        exclusion_char = willie.config.url_exclusion_char
+    if willie.config.url.exclusion_char is not None:
+        exclusion_char = willie.config.url.exclusion_char
     
     url_finder = re.compile(r'(?u)(%s?(http|https|ftp)(://\S+))' %
-        (willie.config.url_exclusion_char))
+        (willie.config.url.exclusion_char))
     # We want the exclusion list to be pre-compiled, since url parsing gets
     # called a /lot/, and it's annoying when it's laggy.
 
