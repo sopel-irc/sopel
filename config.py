@@ -106,6 +106,8 @@ class Config(object):
             for item in items:
                 value = item[1].strip()
                 if not value.lower() == 'none':
+                    if value.lower() == 'false':
+                        value = False
                     object.__setattr__(self, item[0], value)
         
         def __getattr__(self, name):
