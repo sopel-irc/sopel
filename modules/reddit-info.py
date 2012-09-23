@@ -10,10 +10,12 @@ import reddit, re
 
 def setup(willie):
     regex = re.compile('http(?:s)?://(www\.)?reddit\.com/(r/.*?/comments/[\w-]+|u(ser)?/[\w-]+)')
-    if not hasattr(willie.config, 'url_exclude'):
-        willie.config.set_attr('url_exclude', [regex])
+    if not willie.memory.contains('url_exclude'):
+        willie.memory['url_exclude'] = [regex]
     else:
-        willie.config.url_exclude.append(regex)
+        exclude = willie.memory['url_exclude']
+        exclude.append(regex)
+        willie.memory['url_exclude'] = exclude
 
 def rpost_info(willie, trigger):
     r = reddit.Reddit(user_agent='phenny / willie IRC bot - see dft.ba/-williesource for more')
