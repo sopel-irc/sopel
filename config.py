@@ -3,9 +3,19 @@
 """
 *Availability: 3+ for all functions; attributes may vary.*
 
-The config class is, essentially, a representation of the active Willie config
-file. As such, the details of its members depend entirely upon what is written
-there.
+The config class is an abstraction class for accessing the active Willie configuration file.
+
+The Willie config file is divided to sections, each section contains keys and values.
+A section is an attribute of the config class, and thus it is of the type ``ConfigSection``.
+Each sections contains the keys as attributes, for example, if you want to access key example from section test, use
+``config.example.test``
+
+The ``core`` section will always be presnet, and contains configuration used by the Willie core. Modules are allowed to read those, but must not change them.
+
+The config file can store strings, booleans and lists. If you need to store a number, cast it to ``int()`` when reading.
+
+For backwards compatibility, every key in the core section is an attribute of the config class as well as of config.core.
+For new code, always specify the name of the section, because this behavior might be removed in the future.
 
 Running the ``config.py`` file directly will give the user an interactive series
 of dialogs to create the configuration file. This will guide the user through
@@ -13,9 +23,7 @@ creating settings for the Willie core, the settings database, and any modules
 which have a configuration function.
 
 The configuration function, if used, must be declared with the signature
-``configure(config)`` and return a string which will be written to the config
-file. The ``configure`` function should not write to the file, as this is done
-by the utility.
+``configure(config)``. To add options, use ``interactive_add``, ``add_list`` and ``add_option``.
 """
 """
 Config - A config class and writing/updating utility for Willie
