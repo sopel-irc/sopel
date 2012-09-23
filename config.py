@@ -222,7 +222,7 @@ class Config(object):
         self.interactive_add('core', 'host', 'Enter the server to connect to', 'irc.dftba.net')
         self.interactive_add('core', 'port', 'Enter the port to connect on', '6667')
         self.add_option('core', 'use_ssl', 'Use SSL Secured connection?', False)
-        if self.use_ssl:
+        if self.parser.get('core', 'use_ssl') == 'True':
             self.add_option('core', 'verify_ssl', 'Require trusted SSL certificates?', True)
             if self.verify_ssl:
                 self.interactive_add('core', 'ca_certs', 'Enter full path to the CA Certs pem file', '/etc/pki/tls/cert.pem')
