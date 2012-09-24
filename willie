@@ -58,7 +58,7 @@ def enumerate_configs(extension='.cfg'):
 
 def find_config(name, extension='.cfg'):
     global dotdir
-    configs = enumerate_configs()
+    configs = enumerate_configs(extension)
     if name in configs[0] or name+extension in configs[0]:
         dotdir = willie_dotdir
         if name+extension in configs[0]:
