@@ -12,7 +12,11 @@ import re
 import web
 from time import sleep
 import urllib2, json
+import random
 mangle_lines = {}
+
+def setup(willie):
+    random.seed()
 
 def translate(text, input='auto', output='en'):
     raw = False
@@ -144,6 +148,47 @@ def mangle(willie, trigger):
 
     willie.reply(phrase[0])
 mangle.commands = ['mangle']
+def get_random_lang(long_list, short_list):
+    random_index = random.randint(0, len(long_list)-1)
+    random_lang = long_list[random_index]
+    if not random_lang in short_list:
+        short_list.append(random_lang)
+    else:
+        return get_random_lang(long_list, short_list)
+    return short_list
+def more_mangle(willie, trigger):
+    global mangle_lines
+    long_lang_list = ['fr', 'de', 'es', 'it', 'no', 'he', 'la', 'ja', 'cy', 'ar', 'yi', 'zh', 'nl', 'ru', 'fi', 'hi', 'af']
+    lang_list = []
+    for index in range(0, 8):
+        lang_list = get_random_lang(long_lang_list, lang_list)
+    random.shuffle(lang_list)
+    if trigger.group(2) is None:
+        try:
+            phrase = (mangle_lines[trigger.sender.lower()], '')
+        except:
+            willie.reply("What do you want me to mangle?")
+            return
+    else:
+        phrase = (trigger.group(2).encode('utf-8').strip(), '')
+    if phrase[0] == '':
+        willie.reply("What do you want me to mangle?")
+        return
+    for lang in lang_list:
+        backup = phrase
+        phrase = translate(phrase[0], 'en', lang)
+        if not phrase:
+            phrase = backup
+            break
+
+        backup = phrase
+        phrase = translate(phrase[0], lang, 'en')
+        if not phrase:
+            phrase = backup
+            break
+
+    willie.reply(phrase[0])
+more_mangle.commands = ['mangle2']
 
 def collect_mangle_lines(willie, trigger):
     global mangle_lines
