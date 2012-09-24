@@ -51,6 +51,7 @@ class WillieDB(object):
     database will be registered, as though added through ``add_table``. 
     """
     def __init__(self, config):
+        self._none = Table(self, '_none', [], '_none')
         if not config.parser.has_section('db'):
             self.type = None
             print 'No user settings database specified. Ignoring.'
@@ -59,14 +60,21 @@ class WillieDB(object):
         
         
         if self.type == 'mysql' and mysql:
+            self.substitution = '%s'
             self._mySQL(config)
         elif self.type == 'sqlite' and sqlite:
+            self.substitution = '?'
             self._sqlite(config)
         else:
             print 'User settings database type is not supported. You may be missing the module for it. Ignoring.'
             return
             
-            
+    def __getattr__(self, attr):
+        """
+        Handle non-existant tables gracefully by returning a pseudo-table.
+        """
+        return self._none
+    
     def _mySQL(self, config):
         try:
                 self._host = config.db.userdb_host
@@ -241,6 +249,14 @@ class Table(object):
     Exception will be thrown. 
     """
     def __init__(self, db, name, columns, key):
+        #This lets us have a pseudo-table to handle a non-existant table
+        if name is '_none':
+            self.db = db
+            self.columns = set()
+            self.name = name
+            self.key = '_none'
+            return
+            
         if not key:
             key = columns[0]
         if len(key) == 1:
@@ -264,6 +280,8 @@ class Table(object):
         Returns the number of users (entries not starting with # or &) in the
         table's ``key`` column.
         """
+        if not self.columns: #handle a non-existant table
+            return 0
                   
         db = self.db.connect()
         cur = db.cursor()
@@ -278,6 +296,8 @@ class Table(object):
         Returns the number of users (entries starting with # or &) in the
         table's ``key`` column.
         """
+        if not self.columns: #handle a non-existant table
+            return 0
         
         db = self.db.connect()
         cur = db.cursor()
@@ -289,6 +309,8 @@ class Table(object):
 
     def size(self):
         """Returns the total number of rows in the table."""
+        if not self.columns: #handle a non-existant table
+            return 0
         db = self.db.connect()
         cur = db.cursor()
         cur.execute("SELECT COUNT(*) FROM "+self.name+";")
@@ -301,11 +323,13 @@ class Table(object):
             key = [key]
         where = []
         for k in key:
-            where.append(k+' = %s')
+            where.append(k+' = %s' % self.db.substitution)
         return ' AND '.join(where) + ';'
         
     def _get_one(self, row, value, key):
         """Implements get() for where values is a single string"""
+        if isinstance(row, basestring):
+            row = [row]
         db = self.db.connect()
         cur = db.cursor()
         where = self._make_where_statement(key, row)
@@ -321,6 +345,8 @@ class Table(object):
     
     def _get_many(self, row, values, key):
         """Implements get() for where values is iterable"""
+        if isinstance(row, basestring):
+            row = [row]
         db = self.db.connect()
         cur = db.cursor()
         values = ', '.join(values)
@@ -356,6 +382,9 @@ class Table(object):
         tuple of names is passed, the return value will be a tuple in the same
         order.
         """#TODO this documentation could be better.
+        if not self.columns: #handle a non-existant table
+            return None
+        
         if not key:
             key = self.key
         if not (isinstance(row, basestring) and isinstance(key, basestring)):
@@ -376,12 +405,19 @@ class Table(object):
         
         The given ``values`` must be a dict of column name to new value.
         """
+        if not self.columns: #handle a non-existant table
+            raise ValueError('Table is empty.')
+        
+        if isinstance(row, basestring):
+            rowl = [row]
+        else:
+            rowl = row
         if not key:
             key = self.key
         db = self.db.connect()
         cur = db.cursor()
         where = self._make_where_statement(key, row)
-        cur.execute('SELECT * FROM '+self.name+' WHERE ' + where, row)
+        cur.execute('SELECT * FROM '+self.name+' WHERE ' + where, rowl)
         if not cur.fetchone():
             vals = '"'+row+'"'
             for k in values:
@@ -401,6 +437,11 @@ class Table(object):
     def delete(self, row, key=None):
         """Deletes the row for ``row`` in the database, removing its values in
         all columns."""
+        if not self.columns: #handle a non-existant table
+            raise KeyError('Table is empty.')
+        
+        if isinstance(row, basestring):
+            row = [row]
         if not key:
             key = self.key
         db = self.db.connect()
@@ -424,6 +465,9 @@ class Table(object):
         the value of the ``key`` column(s), which defaults to the primary key,
         and table is the Table. This may be deprecated in future versions.
         """
+        if not self.columns: #handle a non-existant table
+            raise KeyError('Table is empty.')
+        
         if not key:
             key = self.key
         
@@ -445,13 +489,15 @@ class Table(object):
         
         ``key in db`` will also work, where db is your SettingsDB object.
         """
+        if not self.columns: #handle a non-existant table
+            return False
+        
         if not key:
             key = self.key
         db = self.db.connect()
         cur = db.cursor()
-        
         where = self._make_where_statement(key, row)
-        cur.execute('SELECT * FROM '+self.name+' WHERE '+where, row)
+        cur.execute('SELECT * FROM '+self.name+' WHERE '+where, [row])
         result = cur.fetchone()
         db.close()
         if result: return True
@@ -470,6 +516,9 @@ class Table(object):
         you have multiple bots using the same database, or are adding columns
         while the bot is running, you are unlikely to encounter errors.
         """
+        if not self.columns: #handle a non-existant table
+            return False
+        
         if isinstance(column, basestring):
             return column in self.columns
         elif isinstance(column, Iterable):
@@ -483,6 +532,9 @@ class Table(object):
         Insert a new column into the table, and add it to the column cache.
         This is the preferred way to add new columns to the database.
         """
+        if not self.columns: #handle a non-existant table
+            raise ValueError('Table is empty.')
+        
         cmd = 'ALTER TABLE '+self.name+' ADD ( '
         for column in columns:
             if isinstance(column, tuple): cmd = cmd + column[0]+' '+column[1]+', '
