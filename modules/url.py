@@ -17,36 +17,36 @@ import urlparse
 url_finder = None
 r_entity = re.compile(r'&[A-Za-z0-9#]+;')
 INVALID_WEBSITE = 0x01
+exclusion_char = '!'
 
 def configure(config):
-    if config.option('Exclude certain URLs from automatic title display', True):
-        config.add_list('url_exclude', 'Enter regular expressions for each URL you would like to exclude.',
+    if config.option('Exclude certain URLs from automatic title display', False):
+        if not config.has_section('url'):
+            config.add_section('url')
+        config.add_list('url',  'exclude', 'Enter regular expressions for each URL you would like to exclude.',
             'Regex:')
-        config.interactive_add('url_exclusion_char',
+        config.interactive_add('url', 'exclusion_char',
             'Prefix to suppress URL titling', '!')
-        
-        chunk = ("url_exclude = %s\nurl_exclusion_char = '%s'\n" % 
-                (config.url_exclude, config.url_exclusion_char))
-        return chunk
-    else: return ''
     
 def setup(willie):
-    global url_finder
-    # Set up empty url exclusion list and default exclusion character
-    if not hasattr(willie.config, 'url_exclude'):
-        willie.config.set_attr('url_exclude', [])
+    global url_finder, exclusion_char
+    if hasattr(willie.config, 'url') and willie.config.url.exclude is not None:
+        regexes = [re.compile(s) for s in willie.config.url.exclude]
     else:
-        for s in willie.config.url_exclude:
-            if isinstance(s, basestring):
-                willie.config.url_exclude.remove(s)
-                willie.config.url_exclude.append(re.compile(s))
-            #Otherwise, it's probably already compiled by another module.
+        regexes = []
     
-    if not hasattr(willie.config, 'url_exclusion_char'):
-        willie.config.set_attr('url_exclusion_char', '!')
+    if not willie.memory.contains('url_exclude'):
+        willie.memory['url_exclude'] = regexes
+    else:
+        exclude = willie.memory['url_exclude']
+        exclude.append(regexes)
+        willie.memory['url_exclude'] = exclude
+    
+    if hasattr(willie.config, 'url') and willie.config.url.exclusion_char is not None:
+        exclusion_char = willie.config.url.exclusion_char
     
     url_finder = re.compile(r'(?u)(%s?(http|https|ftp)(://\S+))' %
-        (willie.config.url_exclusion_char))
+        (exclusion_char))
     # We want the exclusion list to be pre-compiled, since url parsing gets
     # called a /lot/, and it's annoying when it's laggy.
 
