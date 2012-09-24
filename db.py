@@ -51,11 +51,11 @@ class WillieDB(object):
     database will be registered, as though added through ``add_table``. 
     """
     def __init__(self, config):
-        if not hasattr(config, 'userdb_type'):
+        if not config.parser.has_section('db'):
             self.type = None
             print 'No user settings database specified. Ignoring.'
             return
-        self.type = config.userdb_type.lower()
+        self.type = config.db.userdb_type.lower()
         
         
         if self.type == 'mysql' and mysql:
@@ -69,10 +69,10 @@ class WillieDB(object):
             
     def _mySQL(self, config):
         try:
-                self._host = config.userdb_host
-                self._user = config.userdb_user
-                self._passwd = config.userdb_pass
-                self._dbname = config.userdb_name
+                self._host = config.db.userdb_host
+                self._user = config.db.userdb_user
+                self._passwd = config.db.userdb_pass
+                self._dbname = config.db.userdb_name
         except AttributeError as e:
                 print 'Some options are missing for your MySQL DB. The database will not be set up.'
                 return
@@ -105,7 +105,7 @@ class WillieDB(object):
     
     def _sqlite(self, config):
         try:
-            self._file = config.userdb_file
+            self._file = config.db.userdb_file
         except AttributeError:
             print 'No file specified for SQLite DB. The database will not be set up.'
             return
@@ -484,56 +484,30 @@ class Table(object):
         for column in columns:
             self.columns.add(column)
 
-def write_config(config):
+def configure(config):
     """
     Interactively create configuration options and add the attributes to
     the Config object ``config``.
     """
-    chunk = """\
-    # ------------------  USER DATABASE CONFIGURATION  ------------------
-    # The user database was not set up at install. Please consult the documentation,
-    # or run the configuration utility if you wish to use it."""
     c = config.option("Would you like to set up a settings database now")
         
     if not c:
-        return chunk
+        return
+    else:
+        config.add_section('db')
         
-    config.interactive_add('userdb_type',
+    config.interactive_add('db', 'userdb_type',
         'What type of database would you like to use? (mysql/sqlite)', 'mysql')
         
-    if config.userdb_type == 'sqlite':
-        config.interactive_add('userdb_file',"""Location of sqlite file""")
-        chunk = """\
-        # ------------------  USER DATABASE CONFIGURATION  ------------------
-        # Below is the user database configuration. If you want to keep the same
-        # user database type, it's fine to change this. If you want to change types,
-        # you should run the configuration utility (or at least consult the 
-        # SettingsDB documentation page).
-    
-        userdb_type = 'sqlite'
-        userdb_data = '%s'""" % userdb_file
+    if config.db.userdb_type == 'sqlite':
+        config.interactive_add('core', 'userdb_file','Location for the database file')
         
-    elif config.userdb_type == 'mysql':
-        config.interactive_add('userdb_host', "Enter the MySQL hostname", 'localhost')
-        config.interactive_add('userdb_user', "Enter the MySQL username")
-        config.interactive_add('userdb_pass', "Enter the user's password", 'none')
-        config.interactive_add('userdb_name', "Enter the name of the database to use")
-            
-        chunk = """\
-    # ------------------  USER DATABASE CONFIGURATION  ------------------
-    # Below is the user database configuration. If you want to keep the same
-    # user database type, it's fine to change this. If you want to change types,
-    # you should run the configuration utility (or at least consult the 
-    # SettingsDB documentation page).
+    elif config.db.userdb_type == 'mysql':
+        config.interactive_add('db', 'userdb_host', "Enter the MySQL hostname", 'localhost')
+        config.interactive_add('db', 'userdb_user', "Enter the MySQL username")
+        config.interactive_add('db', 'userdb_pass', "Enter the user's password", 'none')
+        config.interactive_add('db', 'userdb_name', "Enter the name of the database to use")
 
-    userdb_type = '%s'
-    userdb_host = '%s'
-    userdb_user = '%s'
-    userdb_pass = '%s'
-    userdb_name = '%s'""" % (config.userdb_type, config.userdb_host, config.userdb_user,
-                             config.userdb_pass, config.userdb_name)
     else:
         print "This isn't currently supported. Aborting."
-
-    return chunk
 

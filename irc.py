@@ -78,28 +78,45 @@ def log_raw(line):
     f.close()
 
 class Bot(asynchat.async_chat):
-    def __init__(self, nick, name, channels, user, password=None, logchan_pm=None, use_ssl = False, verify_ssl=False, ca_certs='', serverpass=None):
+    def __init__(self, config):
+        if config.use_ssl is not None:
+            use_ssl = config.use_ssl
+        else:
+            use_ssl = False
+        if config.verify_ssl is not None:
+            verify_ssl = config.verify_ssl
+        else:
+            verify_ssl = False
+        if config.ca_certs is not None:
+            ca_certs = config.ca_certs
+        else:
+            ca_certs = '/etc/pki/tls/cert.pem'
+        if  config.serverpass is not None:
+            serverpass = config.serverpass
+        else:
+            serverpass = None
         asynchat.async_chat.__init__(self)
         self.set_terminator('\n')
         self.buffer = ''
 
-        self.nick = nick
+        self.nick = config.nick
         """Willie's current nick. Changing this while Willie is running is untested."""
-        self.user = user
+        self.user = config.user
         """Willie's user/ident."""
-        self.name = name
+        self.name = config.name
         """Willie's "real name", as used for whois."""
-        self.password = password
-        """Willie's NickServ password"""
 
         self.verbose = True
         """True if Willie is running in verbose mode."""
-        self.channels = channels or []
+        self.channels = config.channels
         """The list of channels Willie joins on startup."""
+        if self.channels is not None:
+            self.channels = self.channels.split(',')
+        else:
+            self.channels = []
         
         self.stack = []
-        self.logchan_pm = logchan_pm
-        self.serverpass = serverpass
+        self.serverpass = config.server_password
         self.verify_ssl = verify_ssl
         self.ca_certs = ca_certs
         self.use_ssl = use_ssl
@@ -120,6 +137,7 @@ class Bot(asynchat.async_chat):
         #We need this to prevent error loops in handle_error
         self.error_count = 0
         self.last_error_timestamp = None
+        
 
     def safe(self, string):
         '''Remove newlines from a string and make sure it is utf8'''
@@ -181,8 +199,8 @@ class Bot(asynchat.async_chat):
             message = 'Connecting to %s:%s...' % (host, port)
             stderr(message)
         self.create_socket(socket.AF_INET, socket.SOCK_STREAM)
-        if hasattr(self.config, 'bind_host') and self.config.bind_host is not None:
-            self.socket.bind((self.config.bind_host,0))
+        if self.config.core.bind_host is not None:
+            self.socket.bind((self.config.core.bind_host,0))
         if self.use_ssl and has_ssl:
             self.send = self._ssl_send
             self.recv = self._ssl_recv
@@ -215,7 +233,7 @@ class Bot(asynchat.async_chat):
             if not self.verify_ssl:
                 self.ssl = ssl.wrap_socket(self.socket, do_handshake_on_connect=False, suppress_ragged_eofs=True)
             else:
-                verification = verify_ssl_cn(self.config.host, self.config.port)
+                verification = verify_ssl_cn(self.config.host, int(self.config.port))
                 if verification is 'NoCertFound':
                     stderr('Can\'t get server certificate, SSL might be disabled on the server.')
                     sys.exit(1)
@@ -296,8 +314,6 @@ class Bot(asynchat.async_chat):
     def collect_incoming_data(self, data):
         if data:
             log_raw(data)
-            if hasattr(self, "logchan_pm") and self.logchan_pm and "PRIVMSG" in data and "#" not in data.split()[2]:
-                self.msg(self.logchan_pm, data)
         self.buffer += data
 
     def found_terminator(self):
@@ -317,7 +333,9 @@ class Bot(asynchat.async_chat):
         
         if args[0] == 'PING':
             self.write(('PONG', text))
-        if args[0] == '433':
+        elif args[0] == 'ERROR':
+            self.debug('IRC Server Error', text, 'always')
+        elif args[0] == '433':
             stderr('Nickname already in use!')
             self.hasquit = True
             self.handle_close()
