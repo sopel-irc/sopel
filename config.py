@@ -100,8 +100,11 @@ class Config(object):
         self.parser.write(cfgfile)
 
     def add_section(self, name):
-        """ Add a section to the config file """
-        return self.parser.add_section(name)
+        """ Add a section to the config file, returns ``False`` if already exists"""
+        try:
+            return self.parser.add_section(name)
+        except ConfigParser.DuplicateSectionError:
+            return False
 
     def has_option(self, name):
         """ Check if section ``name`` exists """
