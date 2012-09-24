@@ -12,10 +12,10 @@ from urllib2 import HTTPError
 import json, re, web
 
 def checkConfig(willie):
-    if not willie.config.has_option('github', 'Oath_token') or not willie.config.has_option('github', 'repo'):
+    if not willie.config.has_option('github', 'oath_token') or not willie.config.has_option('github', 'repo'):
         return False
     else:
-        return [willie.config.github.Oath_token, willie.config.github.repo]
+        return [willie.config.github.oath_token, willie.config.github.repo]
 
 def configure(config):
     chunk = ''
@@ -23,7 +23,7 @@ def configure(config):
         config.interactive_add('github', 'Oath_token', 'Github API Oauth2 token', '')
         config.interactive_add('github', 'repo', 'Github repository', 'embolalia/willie')
     return chunk
-
+    
 def issue(willie, trigger):
     """Create a GitHub issue, also known as a bug report. Syntax: .issue Title of the bug report"""
     #check input
