@@ -234,7 +234,7 @@ class Config(object):
         self.add_option('core', 'use_ssl', 'Use SSL Secured connection?', False)
         if self.parser.get('core', 'use_ssl') == 'True':
             self.add_option('core', 'verify_ssl', 'Require trusted SSL certificates?', True)
-            if self.verify_ssl:
+            if self.parser.get('core', 'verify_ssl') == 'True':
                 self.interactive_add('core', 'ca_certs', 'Enter full path to the CA Certs pem file', '/etc/pki/tls/cert.pem')
         self.interactive_add('core', 'bind_host', 'Bind connection to a specific IP', 'None')
         
