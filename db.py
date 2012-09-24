@@ -240,10 +240,11 @@ class Table(object):
     ``key`` must be a string, which is in the list of strings ``columns``, or an
     Exception will be thrown. 
     """
-    #Note, #Python recommends using dictcursor, so you can select x in y
-    #Also, PEP8 says not to import in the middle of your code. That answers that.
     def __init__(self, db, name, columns, key):
-        if not key: key = columns[0]
+        if not key:
+            key = columns[0]
+        if len(key) == 1:
+            key = key[0] #This catches strings, too, but without consequence.
         self.db = db
         self.columns = set(columns)
         self.name = name
