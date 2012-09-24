@@ -105,7 +105,7 @@ class Config(object):
         except ConfigParser.DuplicateSectionError:
             return False
 
-    def has_option(self, name):
+    def has_option(self, section, name):
         """ Check if section ``name`` exists """
         return self.parser.has_option(name)
 
