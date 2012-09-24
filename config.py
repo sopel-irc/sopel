@@ -92,7 +92,6 @@ class Config(object):
                 self.parser.set('core', 'admins', '')
         else:
             self.parser.add_section('core')
-        self.has_option = self.parser.has_option
 
     def save(self):
         """Save all changes to the config file"""
@@ -108,7 +107,7 @@ class Config(object):
 
     def has_option(self, name):
         """ Check if section ``name`` exists """
-        return self.parser.has_section(name)
+        return self.parser.has_option(name)
 
     class ConfigSection(object):
         """Represents a section of the config file, contains all keys in the section as attributes"""
