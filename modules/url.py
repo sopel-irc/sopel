@@ -30,7 +30,7 @@ def configure(config):
     
 def setup(willie):
     global url_finder, exclusion_char
-    if willie.config.has_option('url', 'exclude') and willie.config.url.exclude:
+    if willie.config.has_option('url', 'exclude'):
         regexes = [re.compile(s) for s in willie.config.url.exclude]
     else:
         regexes = []
@@ -42,7 +42,7 @@ def setup(willie):
         if regexes: exclude.append(regexes)
         willie.memory['url_exclude'] = exclude
     
-    if willie.config.has_option('url', 'exclusion_char') and willie.config.url.exclusion_char:
+    if willie.config.has_option('url', 'exclusion_char'):
         exclusion_char = willie.config.url.exclusion_char
     
     url_finder = re.compile(r'(?u)(%s?(http|https|ftp)(://\S+))' %
