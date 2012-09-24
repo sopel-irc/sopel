@@ -245,6 +245,7 @@ class Table(object):
             key = columns[0]
         if len(key) == 1:
             key = key[0] #This catches strings, too, but without consequence.
+        
         self.db = db
         self.columns = set(columns)
         self.name = name
@@ -296,6 +297,8 @@ class Table(object):
         return result
     
     def _make_where_statement(self, key, row):
+        if isinstance(key, basestring):
+            key = [key]
         where = []
         for k in key:
             where.append(k+' = %s')
@@ -355,10 +358,8 @@ class Table(object):
         """#TODO this documentation could be better.
         if not key:
             key = self.key
-        print self.key
         if not (isinstance(row, basestring) and isinstance(key, basestring)):
             if not len(row) == len(key):
-                print row, key
                 raise ValueError, 'Unequal number of key and row columns.'
         
         if isinstance(columns, basestring):
@@ -426,18 +427,20 @@ class Table(object):
     def __iter__(self):
         return self.keys()
     
-    def contains(self, key):
+    def contains(self, row, key=None):
         """
         Return ``True`` if this table has a row where the key value is equal to
         ``key``, else ``False``.
         
         ``key in db`` will also work, where db is your SettingsDB object.
         """
+        if not key:
+            key = self.key
         db = self.db.connect()
         cur = db.cursor()
         
-        #Let's immitate actual dict behavior
-        cur.execute('SELECT * FROM '+self.name+' WHERE '+self.key+' = "'+key+'";')
+        where = self._make_where_statement(key, row)
+        cur.execute('SELECT * FROM '+self.name+' WHERE '+where, row)
         result = cur.fetchone()
         db.close()
         if result: return True
