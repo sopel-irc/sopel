@@ -30,7 +30,7 @@ def configure(config):
     
 def setup(willie):
     global url_finder, exclusion_char
-    if hasattr(willie.config, 'url') and willie.config.url.exclude is not None:
+    if willie.config.has_option('url', 'exclude'):
         regexes = [re.compile(s) for s in willie.config.url.exclude]
     else:
         regexes = []
@@ -39,10 +39,10 @@ def setup(willie):
         willie.memory['url_exclude'] = regexes
     else:
         exclude = willie.memory['url_exclude']
-        exclude.append(regexes)
+        if regexes: exclude.append(regexes)
         willie.memory['url_exclude'] = exclude
     
-    if hasattr(willie.config, 'url') and willie.config.url.exclusion_char is not None:
+    if willie.config.has_option('url', 'exclusion_char'):
         exclusion_char = willie.config.url.exclusion_char
     
     url_finder = re.compile(r'(?u)(%s?(http|https|ftp)(://\S+))' %
@@ -132,13 +132,8 @@ def get_results(willie, text):
     display = [ ]
     for match in a:
         match = match[0]
-        #for pattern in willie.config.url_exclude:
-        #    if pattern.findall(match):
-        #        print pattern.pattern
-        #        print dir(pattern)
-        #        continue
-        if (match.startswith(willie.config.url_exclusion_char) or
-                any(pattern.findall(match) for pattern in willie.config.url_exclude)):
+        if (match.startswith(exclusion_char) or
+                any(pattern.findall(match) for pattern in willie.memory['url_exclude'])):
             continue
         url = uni_encode(match)
         url = uni_decode(url)
@@ -156,7 +151,7 @@ def show_title_auto (willie, trigger):
     if len(re.findall("\([\d]+\sfiles\sin\s[\d]+\sdirs\)", trigger)) == 1: return
     try:
         results = get_results(willie, trigger)
-    except: return
+    except Exception as e: raise e
     if results is None: return
 
     k = 1
