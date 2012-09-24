@@ -13,6 +13,7 @@ import web
 from time import sleep
 import urllib2, json
 import random
+import os
 mangle_lines = {}
 
 def setup(willie):
@@ -156,7 +157,9 @@ def get_random_lang(long_list, short_list):
     else:
         return get_random_lang(long_list, short_list)
     return short_list
+
 def more_mangle(willie, trigger):
+    ''' Research version of mangle '''
     global mangle_lines
     long_lang_list = ['fr', 'de', 'es', 'it', 'no', 'he', 'la', 'ja', 'cy', 'ar', 'yi', 'zh', 'nl', 'ru', 'fi', 'hi', 'af']
     lang_list = []
@@ -174,6 +177,9 @@ def more_mangle(willie, trigger):
     if phrase[0] == '':
         willie.reply("What do you want me to mangle?")
         return
+    research_logfile = open(os.path.join(willie.config.logdir, 'mangle.log'), 'a')
+    research_logfile.write('Phrase: %s\n' % str(phrase))
+    research_logfile.write('Lang_list: %s\n' % lang_list)
     for lang in lang_list:
         backup = phrase
         phrase = translate(phrase[0], 'en', lang)
@@ -183,11 +189,16 @@ def more_mangle(willie, trigger):
 
         backup = phrase
         phrase = translate(phrase[0], lang, 'en')
+        research_logfile.write('-> %s\n' % str(phrase))
         if not phrase:
             phrase = backup
             break
 
+    research_logfile.write('->[FINAL] %s\n' % str(phrase))
+    research_logfile.write('----------------------------\n\n\n')
+    research_logfile.close()
     willie.reply(phrase[0])
+    
 more_mangle.commands = ['mangle2']
 
 def collect_mangle_lines(willie, trigger):
