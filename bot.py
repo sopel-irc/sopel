@@ -72,10 +72,13 @@ class Willie(irc.Bot):
         self.acivity = {}
         
         self.db = WillieDB(config)
-        if hasattr(self.db, 'locales'):
+        if self.db.check_table('locales', ['name'], 'name'):
             self.settings = self.db.locales
             self.db.preferences = self.db.locales
-        elif hasattr(self.db, 'preferences'):
+        elif self.db.check_table('preferences', ['name'], 'name'):
+            self.settings = self.db.preferences
+        elif self.db.type is not None:
+            self.db.add_table('preferences', ['name'], 'name')
             self.settings = self.db.preferences
             
         self.memory=self.WillieMemory()
