@@ -57,6 +57,7 @@ class WillieDB(object):
             print 'No user settings database specified. Ignoring.'
             return
         self.type = config.db.userdb_type.lower()
+        self.tables = set()
         
         
         if self.type == 'mysql' and mysql:
@@ -109,6 +110,7 @@ class WillieDB(object):
                 if column['Key'].startswith('PRI'):
                     key.append(column['Field'])
             setattr(self, name, Table(self, name, columns, key))
+            self.tables.add(name)
         db.close()
     
     def _sqlite(self, config):
@@ -130,6 +132,9 @@ class WillieDB(object):
         tables = cur.fetchall()
         for table in tables:
             name = table[1]
+            if name.startswith('sqlite_'):
+                continue
+            
             cur.execute("PRAGMA table_info(%s);" % name)
             result = cur.fetchall()
             columns = []
@@ -147,11 +152,9 @@ class WillieDB(object):
         and ``key``, and which contains a column with the same name as each element
         in the given list ``columns``.
         """
-        if hasattr(self, name):
-            table = getattr(self, name)
-            return (isinstance(table, Table) and table.key == key and 
-                    all(c in table.columns for c in columns))
-        return False
+        table = getattr(self, name)
+        return (isinstance(table, Table) and table.key == key and 
+                all(c in table.columns for c in columns))
     
     def _get_column_creation_text(self, columns, key=None):
         cols = '('
@@ -204,26 +207,27 @@ class WillieDB(object):
         
         if name.startswith('_'):
             raise ValueError, 'Invalid table name %s.' % name
-        elif not hasattr(self, name):
+        elif not isinstance(getattr(self, name), Table):
+            #Conflict with a non-table value, probably a function
+            raise ValueError, 'Invalid table name %s.' % name
+        elif not name in self.tables:
             cols = self._get_column_creation_text(columns, key)
             db = self.connect()
             cursor = db.cursor()
             cursor.execute("CREATE TABLE %s %s;" % (name, cols))
             db.close()
             setattr(self, name, Table(self, name, columns, key))
-        elif isinstance(self, name, Table):
-            table = getattr(self, name)
-            if table.key == key:
-                if not all(c in table.columns for c in columns):
-                    db = self.connect()
-                    cursor = db.cursor()
-                    cursor.execute("ALTER TABLE %s ADD COLUMN %s;")
-                    table.colums.add(columns)
-                    db.close()
-            else:
-                raise ValueError, 'Table %s already exists with different key.' % name
-        else: #Conflict with a non-table value, probably a function
-            raise ValueError, 'Invalid table name %s.' % name
+            self.tables.add(name)
+        elif getattr(self, name).key == key:
+        
+            if not all(c in table.columns for c in columns):
+                db = self.connect()
+                cursor = db.cursor()
+                cursor.execute("ALTER TABLE %s ADD COLUMN %s;")
+                table.colums.add(columns)
+                db.close()
+        else:
+            raise ValueError, 'Table %s already exists with different key.' % name
     
     def connect(self):
         """
@@ -256,7 +260,6 @@ class Table(object):
             self.name = name
             self.key = '_none'
             return
-            
         if not key:
             key = columns[0]
         if len(key) == 1:
@@ -535,14 +538,14 @@ class Table(object):
         if not self.columns: #handle a non-existant table
             raise ValueError('Table is empty.')
         
-        cmd = 'ALTER TABLE '+self.name+' ADD ( '
+        cmd = 'ALTER TABLE '+self.name+' ADD '
         for column in columns:
             if isinstance(column, tuple): cmd = cmd + column[0]+' '+column[1]+', '
             else: cmd = cmd + column + ' text, '
-        cmd = cmd[:-2]+' );'
+        cmd = cmd[:-2]+' ;'#TODO does mysql need parens around the cols to add?
+        #TODO multiple column add doesn't work currently...
         db = self.db.connect()
         cur = db.cursor()
-        
         cur.execute(cmd)
         db.commit()
         db.close()
