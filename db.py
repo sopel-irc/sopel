@@ -538,17 +538,17 @@ class Table(object):
         if not self.columns: #handle a non-existant table
             raise ValueError('Table is empty.')
         
-        cmd = 'ALTER TABLE '+self.name+' ADD '
-        for column in columns:
-            if isinstance(column, tuple): cmd = cmd + column[0]+' '+column[1]+', '
-            else: cmd = cmd + column + ' text, '
-        cmd = cmd[:-2]+' ;'#TODO does mysql need parens around the cols to add?
-        #TODO multiple column add doesn't work currently...
+        #I feel like adding one at a time is weird, but it works.
         db = self.db.connect()
-        cur = db.cursor()
-        cur.execute(cmd)
+        for column in columns:
+            cmd = 'ALTER TABLE '+self.name+' ADD '
+            if isinstance(column, tuple): cmd = cmd + column[0]+' '+column[1]+';'
+            else: cmd = cmd + column + ' text;'
+            cur = db.cursor()
+            cur.execute(cmd)
         db.commit()
         db.close()
+        
         #Why a second loop? because I don't want clomuns to be added to self.columns if executing the SQL command fails
         for column in columns:
             self.columns.add(column)
