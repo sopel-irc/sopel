@@ -15,7 +15,7 @@ r_from = re.compile(r'(?i)([+-]\d+):00 from')
 def setup(willie):
     #Having a db means pref's exists. Later, we can just use `if willie.db`.
     if willie.db and not willie.db.preferences.hascolumn('icao'):
-        willie.db.preferences.add_columns(['icao'])
+        willie.db.preferences.addcolumns(['icao'])
 
 def location(name):
     name = urllib.quote(name.encode('utf-8'))
@@ -424,7 +424,7 @@ def update_icao(willie, trigger):
         if not icao_code:
             willie.reply("I don't know where that is. Try another place or ICAO code.")
         else:
-            willie.db.preferences[trigger.nick] = {'icao': icao_code}
+            willie.db.preferences.update(trigger.nick, {'icao': icao_code})
             willie.reply('I now have you living near %s airport.' % icao_code)
     else:
         willie.reply("I can't remember that; I don't have a database.")
