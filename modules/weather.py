@@ -12,6 +12,11 @@ import web
 
 r_from = re.compile(r'(?i)([+-]\d+):00 from')
 
+def setup(willie):
+    #Having a db means pref's exists. Later, we can just use `if willie.db`.
+    if willie.db and not willie.db.preferences.hascolumn('icao'):
+        willie.db.preferences.add_columns(['icao'])
+
 def location(name):
     name = urllib.quote(name.encode('utf-8'))
     uri = 'http://ws.geonames.org/searchJSON?q=%s&maxRows=1' % name
@@ -72,8 +77,8 @@ def f_weather(willie, trigger):
 
     icao_code = trigger.group(2)
     if not icao_code:
-        if willie.settings.hascolumn('icao') and trigger.nick in willie.settings:
-            icao_code = willie.settings.get(trigger.nick, 'icao')
+        if willie.db and trigger.nick in willie.db.preferences:
+            icao_code = willie.db.preferences.get(trigger.nick, 'icao')
     if not icao_code or icao_code == '':
             return willie.msg(trigger.sender, 'I don\'t know where you live. ' +
                             'Tell me, or try .weather London, for example?')
@@ -81,8 +86,8 @@ def f_weather(willie, trigger):
     icao_code = code(willie, icao_code)
 
     if not icao_code:
-        if willie.settings.hascolumn('icao') and trigger.nick in willie.settings:
-            icao_code = code(willie, willie.settings.get(trigger.nick, 'icao'))
+        if willie.db and trigger.nick in willie.db.preferences:
+            icao_code = code(willie, willie.db.preferences.get(trigger.nick, 'icao'))
         if not icao_code or icao_code == '':
             willie.msg(trigger.sender, 'No ICAO code found, sorry')
             return
@@ -414,15 +419,15 @@ def f_weather(willie, trigger):
 f_weather.rule = (['weather'], r'(.*)')
 
 def update_icao(willie, trigger):
-    if not willie.settings.hascolumn('icao'):#TODO put this in configure
-        willie.settings.addcolumns({"icao"})
-    else:
+    if willie.db:
         icao_code = code(willie, trigger.group(2))
         if not icao_code:
             willie.reply("I don't know where that is. Try another place or ICAO code.")
         else:
-            willie.settings[trigger.nick] = {'icao': icao_code}
+            willie.db.preferences[trigger.nick] = {'icao': icao_code}
             willie.reply('I now have you living near %s airport.' % icao_code)
+    else:
+        willie.reply("I can't remember that; I don't have a database.")
 update_icao.commands = ['setlocation', 'seticao']
 #rule = ('$nick', 'I live near (.*)')
 
