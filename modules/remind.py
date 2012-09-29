@@ -14,6 +14,11 @@ import codecs
 from datetime import tzinfo, timedelta, datetime
 all_timezones_set = set(all_timezones)
 
+def setup(willie):
+    #Having a db means pref's exists. Later, we can just use `if willie.db`.
+    if willie.db and not willie.db.preferences.hascolumn('tz'):
+        willie.db.preferences.add_columns(['tz'])
+
 def filename(self):
     name = self.nick + '-' + self.config.host + '.reminders.db'
     return os.path.join(self.config.dotdir, name)
@@ -134,11 +139,11 @@ def at(willie, input):
     if not second: second = '0'
     
     # Personal time zones, because they're rad
-    if willie.settings.hascolumn('tz'):
-        if input.group(2) and tz in willie.settings:
-            personal_tz = willie.settings.get(tz, 'tz')
-        elif input.nick in willie.settings:
-            personal_tz = willie.settings.get(input.nick, 'tz')
+    if willie.db:
+        if input.group(2) and tz in willie.db.preferences:
+            personal_tz = willie.db.preferences.get(tz, 'tz')
+        elif input.nick in willie.db.preferences:
+            personal_tz = willie.db.preferences.get(input.nick, 'tz')
     if tz not in all_timezones_set and not personal_tz: 
         message=tz+message
         tz = 'UTC'

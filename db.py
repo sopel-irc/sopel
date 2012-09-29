@@ -19,18 +19,17 @@ http://willie.dftba.net
 from collections import Iterable
 from tools import deprecated
 
+supported_types = set()
 #Attempt to import possible db modules
-mysql = False
 try:
     import MySQLdb
     import MySQLdb.cursors
-    mysql = True
+    supported_types.add('mysql')
 except ImportError: pass
 
-sqlite = False
 try:
     import sqlite3
-    sqlite = True
+    supported_types.add('sqlite')
 except ImportError: pass
 
 class WillieDB(object):
@@ -52,29 +51,34 @@ class WillieDB(object):
     """
     def __init__(self, config):
         self._none = Table(self, '_none', [], '_none')
+        self.tables = set()
         if not config.parser.has_section('db'):
             self.type = None
             print 'No user settings database specified. Ignoring.'
             return
+        
         self.type = config.db.userdb_type.lower()
-        self.tables = set()
-        
-        
-        if self.type == 'mysql' and mysql:
-            self.substitution = '%s'
-            self._mySQL(config)
-        elif self.type == 'sqlite' and sqlite:
-            self.substitution = '?'
-            self._sqlite(config)
-        else:
+        if self.type not in supported_types:
+            self.type = None
             print 'User settings database type is not supported. You may be missing the module for it. Ignoring.'
             return
+        
+        if self.type == 'mysql':
+            self.substitution = '%s'
+            self._mySQL(config)
+        elif self.type == 'sqlite':
+            self.substitution = '?'
+            self._sqlite(config)
             
     def __getattr__(self, attr):
         """
         Handle non-existant tables gracefully by returning a pseudo-table.
         """
         return self._none
+    
+    def __nonzero__(self):
+        """Allow for testing if a db is set up through `if willie.db`."""
+        return bool(self.type)
     
     def _mySQL(self, config):
         try:
@@ -277,6 +281,9 @@ class Table(object):
                 if k not in columns:
                     raise Exception #TODO
             self.key = key
+    
+    def __nonzero__(self):
+        return bool(self.columns)
     
     def users(self):
         """
@@ -538,17 +545,17 @@ class Table(object):
         if not self.columns: #handle a non-existant table
             raise ValueError('Table is empty.')
         
-        cmd = 'ALTER TABLE '+self.name+' ADD '
-        for column in columns:
-            if isinstance(column, tuple): cmd = cmd + column[0]+' '+column[1]+', '
-            else: cmd = cmd + column + ' text, '
-        cmd = cmd[:-2]+' ;'#TODO does mysql need parens around the cols to add?
-        #TODO multiple column add doesn't work currently...
+        #I feel like adding one at a time is weird, but it works.
         db = self.db.connect()
-        cur = db.cursor()
-        cur.execute(cmd)
+        for column in columns:
+            cmd = 'ALTER TABLE '+self.name+' ADD '
+            if isinstance(column, tuple): cmd = cmd + column[0]+' '+column[1]+';'
+            else: cmd = cmd + column + ' text;'
+            cur = db.cursor()
+            cur.execute(cmd)
         db.commit()
         db.close()
+        
         #Why a second loop? because I don't want clomuns to be added to self.columns if executing the SQL command fails
         for column in columns:
             self.columns.add(column)
