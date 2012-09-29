@@ -64,7 +64,7 @@ class Config(object):
         """
         self.filename = filename
         """The config object's associated file, as noted above."""
-        self.parser = ConfigParser.SafeConfigParser(allow_no_value=True)
+        self.parser = ConfigParser.RawConfigParser(allow_no_value=True)
         if load:
             self.parser.read(self.filename)
 
