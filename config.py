@@ -106,8 +106,12 @@ class Config(object):
             return False
 
     def has_option(self, section, name):
-        """ Check if section ``name`` exists """
+        """ Check if option ``name`` exists under section ``section`` """
         return self.parser.has_option(section, name)
+        
+    def has_section(self, name):
+        """ Check if section ``name`` exists """
+        return self.parser.has_section(name)
 
     class ConfigSection(object):
         """Represents a section of the config file, contains all keys in the section as attributes"""
