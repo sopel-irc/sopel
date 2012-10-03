@@ -17,12 +17,12 @@ import threading, time
 
 def startup(willie, trigger):
     ''' runs when we recived 251 - lusers, which is just before the server sends the motd, and right after establishing a sucessful connection '''
-    if hasattr(willie.config, 'password'):
-        willie.msg('NickServ', 'IDENTIFY %s' % willie.config.password)
+    if hasattr(willie.config.core, 'nickserv_password'):
+        willie.msg('NickServ', 'IDENTIFY %s' % willie.config.core.nickserv_password)
     
     #Add a line Oper = (name, pass) to the config file to give Willie server ops
-    if hasattr(willie.config, 'Oper'):
-        willie.write(('OPER', willie.config.Oper[0]+' '+willie.config.Oper[1]))
+    if willie.config.core.oper_name is not None and willie.config.core.oper_password is not None:
+        willie.write(('OPER', willie.config.core.oper_name+' '+willie.config.oper_password))
     
     #Attempt to set bot mode.
     willie.write(('MODE ', willie.nick + ' +B'))

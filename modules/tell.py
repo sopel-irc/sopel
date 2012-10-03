@@ -8,31 +8,39 @@ http://willie.dftba.net
 """
 
 import os, re, time, random
-import web
+import threading
 
 maximum = 4
 
-def loadReminders(fn):
-    result = {}
-    f = open(fn)
-    for line in f:
-        line = line.strip()
-        if line:
-            try: tellee, teller, verb, timenow, msg = line.split('\t', 4)
-            except ValueError: continue # @@ hmm
-            result.setdefault(tellee, []).append((teller, verb, timenow, msg))
-    f.close()
+def loadReminders(fn, lock):
+    lock.acquire()
+    try:
+        result = {}
+        f = open(fn)
+        for line in f:
+            line = line.strip()
+            if line:
+                try: tellee, teller, verb, timenow, msg = line.split('\t', 4)
+                except ValueError: continue # @@ hmm
+                result.setdefault(tellee, []).append((teller, verb, timenow, msg))
+        f.close()
+    finally:
+        lock.release()
     return result
 
-def dumpReminders(fn, data):
-    f = open(fn, 'w')
-    for tellee in data.iterkeys():
-        for remindon in data[tellee]:
-            line = '\t'.join((tellee,) + remindon)
-            try: f.write(line + '\n')
-            except IOError: break
-    try: f.close()
-    except IOError: pass
+def dumpReminders(fn, data, lock):
+    lock.acquire()
+    try:
+        f = open(fn, 'w')
+        for tellee in data.iterkeys():
+            for remindon in data[tellee]:
+                line = '\t'.join((tellee,) + remindon)
+                try: f.write(line + '\n')
+                except IOError: break
+        try: f.close()
+        except IOError: pass
+    finally:
+        lock.release()
     return True
 
 def setup(self):
@@ -44,12 +52,12 @@ def setup(self):
         else:
             f.write('')
             f.close()
-    self.reminders = loadReminders(self.tell_filename) # @@ tell
+    self.memory['tell_lock'] = threading.Lock()
+    self.memory['reminders'] = loadReminders(self.tell_filename, self.memory['tell_lock'])
 
 def f_remind(willie, trigger):
     teller = trigger.nick
 
-    # @@ Multiple comma-separated tellees? Cf. Terje, #swhack, 2006-04-15
     verb, tellee, msg = trigger.groups()
     verb = verb.encode('utf-8')
     tellee = tellee.encode('utf-8')
@@ -67,30 +75,24 @@ def f_remind(willie, trigger):
         return willie.reply('I\'m here now, you can tell me whatever you want!')
 
     timenow = time.strftime('%d %b %H:%MZ', time.gmtime())
-    if not tellee in (teller.lower(), willie.nick, 'me'): # @@
-        # @@ <deltab> and year, if necessary
-        warn = False
-        if not willie.reminders.has_key(tellee):
-            willie.reminders[tellee] = [(teller, verb, timenow, msg)]
-        else:
-            # if len(willie.reminders[tellee]) >= maximum:
-            #     warn = True
-            willie.reminders[tellee].append((teller, verb, timenow, msg))
-        # @@ Stephanie's augmentation
-        response = "I'll pass that on when %s is around." % tellee_original
-        # if warn: response += (" I'll have to use a pastebin, though, so " +
-        #                              "your message may get lost.")
+    if not tellee in (teller.lower(), willie.nick, 'me'):
+        willie.memory['tell_lock'].acquire()
+        try:
+            if not willie.memory['reminders'].has_key(tellee):
+                willie.memory['reminders'][tellee] = [(teller, verb, timenow, msg)]
+            else:
+                willie.memory['reminders'][tellee].append((teller, verb, timenow, msg))
+        finally:
+            willie.memory['tell_lock'].release()
 
-        rand = random.random()
-        if rand > 0.9999: response = "yeah, yeah"
-        elif rand > 0.999: response = "yeah, sure, whatever"
+        response = "I'll pass that on when %s is around." % tellee_original
 
         willie.reply(response)
     elif teller.lower() == tellee:
         willie.say('You can %s yourself that.' % verb)
     else: willie.say("Hey, I'm not as stupid as Monty you know!")
 
-    dumpReminders(willie.tell_filename, willie.reminders) # @@ tell
+    dumpReminders(willie.tell_filename, willie.memory['reminders'], willie.memory['tell_lock']) # @@ tell
 f_remind.rule = ('$nick', ['tell', 'ask'], r'(\S+) (.*)')
 
 def getReminders(willie, channel, key, tellee):
@@ -98,13 +100,17 @@ def getReminders(willie, channel, key, tellee):
     template = "%s: %s <%s> %s %s %s"
     today = time.strftime('%d %b', time.gmtime())
 
-    for (teller, verb, datetime, msg) in willie.reminders[key]:
-        if datetime.startswith(today):
-            datetime = datetime[len(today)+1:]
-        lines.append(template % (tellee, datetime, teller, verb, tellee, msg))
+    willie.memory['tell_lock'].acquire()
+    try:
+        for (teller, verb, datetime, msg) in willie.memory['reminders'][key]:
+            if datetime.startswith(today):
+                datetime = datetime[len(today)+1:]
+            lines.append(template % (tellee, datetime, teller, verb, tellee, msg))
 
-    try: del willie.reminders[key]
-    except KeyError: willie.msg(channel, 'Er...')
+        try: del willie.memory['reminders'][key]
+        except KeyError: willie.msg(channel, 'Er...')
+    finally:
+        willie.memory['tell_lock'].release()
     return lines
 
 def message(willie, trigger):
@@ -112,12 +118,12 @@ def message(willie, trigger):
     tellee = trigger.nick
     channel = trigger.sender
 
-    if not os: return
     if not os.path.exists(willie.tell_filename):
         return
 
     reminders = []
-    remkeys = list(reversed(sorted(willie.reminders.keys())))
+    remkeys = list(reversed(sorted(willie.memory['reminders'].keys())))
+
     for remkey in remkeys:
         if not remkey.endswith('*') or remkey.endswith(':'):
             if tellee.lower() == remkey:
@@ -133,8 +139,8 @@ def message(willie, trigger):
         for line in reminders[maximum:]:
             willie.msg(tellee, line)
 
-    if len(willie.reminders.keys()) != remkeys:
-        dumpReminders(willie.tell_filename, willie.reminders) # @@ tell
+    if len(willie.memory['reminders'].keys()) != remkeys:
+        dumpReminders(willie.tell_filename, willie.memory['reminders'], willie.memory['tell_lock']) # @@ tell
 message.rule = r'(.*)'
 message.priority = 'low'
 

@@ -19,18 +19,17 @@ http://willie.dftba.net
 from collections import Iterable
 from tools import deprecated
 
+supported_types = set()
 #Attempt to import possible db modules
-mysql = False
 try:
     import MySQLdb
     import MySQLdb.cursors
-    mysql = True
+    supported_types.add('mysql')
 except ImportError: pass
 
-sqlite = False
 try:
     import sqlite3
-    sqlite = True
+    supported_types.add('sqlite')
 except ImportError: pass
 
 class WillieDB(object):
@@ -51,28 +50,42 @@ class WillieDB(object):
     database will be registered, as though added through ``add_table``. 
     """
     def __init__(self, config):
-        if not hasattr(config, 'userdb_type'):
+        self._none = Table(self, '_none', [], '_none')
+        self.tables = set()
+        if not config.parser.has_section('db'):
             self.type = None
             print 'No user settings database specified. Ignoring.'
             return
-        self.type = config.userdb_type.lower()
         
-        
-        if self.type == 'mysql' and mysql:
-            self._mySQL(config)
-        elif self.type == 'sqlite' and sqlite:
-            self._sqlite(config)
-        else:
+        self.type = config.db.userdb_type.lower()
+        if self.type not in supported_types:
+            self.type = None
             print 'User settings database type is not supported. You may be missing the module for it. Ignoring.'
             return
+        
+        if self.type == 'mysql':
+            self.substitution = '%s'
+            self._mySQL(config)
+        elif self.type == 'sqlite':
+            self.substitution = '?'
+            self._sqlite(config)
             
-            
+    def __getattr__(self, attr):
+        """
+        Handle non-existant tables gracefully by returning a pseudo-table.
+        """
+        return self._none
+    
+    def __nonzero__(self):
+        """Allow for testing if a db is set up through `if willie.db`."""
+        return bool(self.type)
+    
     def _mySQL(self, config):
         try:
-                self._host = config.userdb_host
-                self._user = config.userdb_user
-                self._passwd = config.userdb_pass
-                self._dbname = config.userdb_name
+                self._host = config.db.userdb_host
+                self._user = config.db.userdb_user
+                self._passwd = config.db.userdb_pass
+                self._dbname = config.db.userdb_name
         except AttributeError as e:
                 print 'Some options are missing for your MySQL DB. The database will not be set up.'
                 return
@@ -101,11 +114,12 @@ class WillieDB(object):
                 if column['Key'].startswith('PRI'):
                     key.append(column['Field'])
             setattr(self, name, Table(self, name, columns, key))
+            self.tables.add(name)
         db.close()
     
     def _sqlite(self, config):
         try:
-            self._file = config.userdb_file
+            self._file = config.db.userdb_file
         except AttributeError:
             print 'No file specified for SQLite DB. The database will not be set up.'
             return
@@ -122,6 +136,9 @@ class WillieDB(object):
         tables = cur.fetchall()
         for table in tables:
             name = table[1]
+            if name.startswith('sqlite_'):
+                continue
+            
             cur.execute("PRAGMA table_info(%s);" % name)
             result = cur.fetchall()
             columns = []
@@ -139,11 +156,9 @@ class WillieDB(object):
         and ``key``, and which contains a column with the same name as each element
         in the given list ``columns``.
         """
-        if hasattr(self, name):
-            table = getattr(self, name)
-            return (isinstance(table, Table) and table.key == key and 
-                    all(c in table.columns for c in columns))
-        return False
+        table = getattr(self, name)
+        return (isinstance(table, Table) and table.key == key and 
+                all(c in table.columns for c in columns))
     
     def _get_column_creation_text(self, columns, key=None):
         cols = '('
@@ -196,26 +211,27 @@ class WillieDB(object):
         
         if name.startswith('_'):
             raise ValueError, 'Invalid table name %s.' % name
-        elif not hasattr(self, name):
+        elif not isinstance(getattr(self, name), Table):
+            #Conflict with a non-table value, probably a function
+            raise ValueError, 'Invalid table name %s.' % name
+        elif not name in self.tables:
             cols = self._get_column_creation_text(columns, key)
             db = self.connect()
             cursor = db.cursor()
             cursor.execute("CREATE TABLE %s %s;" % (name, cols))
             db.close()
             setattr(self, name, Table(self, name, columns, key))
-        elif isinstance(self, name, Table):
-            table = getattr(self, name)
-            if table.key == key:
-                if not all(c in table.columns for c in columns):
-                    db = self.connect()
-                    cursor = db.cursor()
-                    cursor.execute("ALTER TABLE %s ADD COLUMN %s;")
-                    table.colums.add(columns)
-                    db.close()
-            else:
-                raise ValueError, 'Table %s already exists with different key.' % name
-        else: #Conflict with a non-table value, probably a function
-            raise ValueError, 'Invalid table name %s.' % name
+            self.tables.add(name)
+        elif getattr(self, name).key == key:
+        
+            if not all(c in table.columns for c in columns):
+                db = self.connect()
+                cursor = db.cursor()
+                cursor.execute("ALTER TABLE %s ADD COLUMN %s;")
+                table.colums.add(columns)
+                db.close()
+        else:
+            raise ValueError, 'Table %s already exists with different key.' % name
     
     def connect(self):
         """
@@ -240,10 +256,19 @@ class Table(object):
     ``key`` must be a string, which is in the list of strings ``columns``, or an
     Exception will be thrown. 
     """
-    #Note, #Python recommends using dictcursor, so you can select x in y
-    #Also, PEP8 says not to import in the middle of your code. That answers that.
     def __init__(self, db, name, columns, key):
-        if not key: key = columns[0]
+        #This lets us have a pseudo-table to handle a non-existant table
+        if name is '_none':
+            self.db = db
+            self.columns = set()
+            self.name = name
+            self.key = '_none'
+            return
+        if not key:
+            key = columns[0]
+        if len(key) == 1:
+            key = key[0] #This catches strings, too, but without consequence.
+        
         self.db = db
         self.columns = set(columns)
         self.name = name
@@ -257,11 +282,16 @@ class Table(object):
                     raise Exception #TODO
             self.key = key
     
+    def __nonzero__(self):
+        return bool(self.columns)
+    
     def users(self):
         """
         Returns the number of users (entries not starting with # or &) in the
         table's ``key`` column.
         """
+        if not self.columns: #handle a non-existant table
+            return 0
                   
         db = self.db.connect()
         cur = db.cursor()
@@ -276,6 +306,8 @@ class Table(object):
         Returns the number of users (entries starting with # or &) in the
         table's ``key`` column.
         """
+        if not self.columns: #handle a non-existant table
+            return 0
         
         db = self.db.connect()
         cur = db.cursor()
@@ -287,6 +319,8 @@ class Table(object):
 
     def size(self):
         """Returns the total number of rows in the table."""
+        if not self.columns: #handle a non-existant table
+            return 0
         db = self.db.connect()
         cur = db.cursor()
         cur.execute("SELECT COUNT(*) FROM "+self.name+";")
@@ -295,13 +329,17 @@ class Table(object):
         return result
     
     def _make_where_statement(self, key, row):
+        if isinstance(key, basestring):
+            key = [key]
         where = []
         for k in key:
-            where.append(k+' = %s')
+            where.append(k+' = %s' % self.db.substitution)
         return ' AND '.join(where) + ';'
         
     def _get_one(self, row, value, key):
         """Implements get() for where values is a single string"""
+        if isinstance(row, basestring):
+            row = [row]
         db = self.db.connect()
         cur = db.cursor()
         where = self._make_where_statement(key, row)
@@ -317,6 +355,8 @@ class Table(object):
     
     def _get_many(self, row, values, key):
         """Implements get() for where values is iterable"""
+        if isinstance(row, basestring):
+            row = [row]
         db = self.db.connect()
         cur = db.cursor()
         values = ', '.join(values)
@@ -352,12 +392,13 @@ class Table(object):
         tuple of names is passed, the return value will be a tuple in the same
         order.
         """#TODO this documentation could be better.
+        if not self.columns: #handle a non-existant table
+            return None
+        
         if not key:
             key = self.key
-        print self.key
         if not (isinstance(row, basestring) and isinstance(key, basestring)):
             if not len(row) == len(key):
-                print row, key
                 raise ValueError, 'Unequal number of key and row columns.'
         
         if isinstance(columns, basestring):
@@ -365,59 +406,85 @@ class Table(object):
         elif isinstance(columns, Iterable):
             return self._get_many(row, columns, key)
     
-    def update(self, key, values):
+    def update(self, row, values, key=None):
         """
-        Update the given values for ``key``. ``value`` must be a dict which
-        maps the names of the columns to be updated to their new values.
+        Update the row where the values in ``row`` match the ``key`` columns.
+        If the row does not exist, it will be created. The same rules regarding
+        the type and length of ``key`` and ``row`` apply for ``update`` as for
+        ``get``.
+        
+        The given ``values`` must be a dict of column name to new value.
         """
+        if not self.columns: #handle a non-existant table
+            raise ValueError('Table is empty.')
+        
+        if isinstance(row, basestring):
+            rowl = [row]
+        else:
+            rowl = row
+        if not key:
+            key = self.key
         db = self.db.connect()
         cur = db.cursor()
-        where = self._make_where_statement(self.key, row)
-        cur.execute('SELECT * FROM '+self.name+' WHERE ' + where, row)
+        where = self._make_where_statement(key, row)
+        cur.execute('SELECT * FROM '+self.name+' WHERE ' + where, rowl)
         if not cur.fetchone():
-            cols = self.key
-            vals = '"'+key+'"'
+            vals = '"'+row+'"'
             for k in values:
-                cols = cols + ', ' + k
+                key = key + ', ' + k
                 vals = vals + ', "' + values[k] + '"'
-            command = 'INSERT INTO '+self.name+' ('+cols+') VALUES (' + \
+            command = 'INSERT INTO '+self.name+' ('+key+') VALUES (' + \
                       vals + ');'
         else:
             command = 'UPDATE '+self.name+' SET '
             for k in values:
                 command = command + k + '="' + values[k] + '", '
-            command = command[:-2]+' WHERE '+self.key+' = "' + key + '";'
+            command = command[:-2]+' WHERE '+key+' = "' + row + '";'
         cur.execute(command)
         db.commit()
         db.close()
     
-    def delete(self, key):
-        """Deletes the row for *key* in the database, removing its values in all
-        rows."""
+    def delete(self, row, key=None):
+        """Deletes the row for ``row`` in the database, removing its values in
+        all columns."""
+        if not self.columns: #handle a non-existant table
+            raise KeyError('Table is empty.')
+        
+        if isinstance(row, basestring):
+            row = [row]
+        if not key:
+            key = self.key
         db = self.db.connect()
         cur = db.cursor()
         
-        cur.execute('SELECT * FROM '+self.name+' WHERE '+self.key+' = "'+key+'";')
+        where = self._make_where_statement(key, row)
+        cur.execute('SELECT * FROM '+self.name+' WHERE ' + where, row)
         if not cur.fetchone():
             db.close()
             raise KeyError(key+' not in database')
         
-        cur.execute('DELETE FROM '+self.name+' WHERE '+self.key+' = "'+key+'";')
+        cur.execute('DELETE FROM '+self.name+' WHERE ' + where, row)
         db.commit()
         db.close()
     
-    def keys(self):
+    def keys(self, key=None):
         """
         Return an iterator over the keys and values in the table.
 
         In a for each loop, you can use ``for key in table:``, where key will be
-        the value of the key column (e.g. a channel or nick), and table is the
-        Table. This may be deprecated in future versions.
+        the value of the ``key`` column(s), which defaults to the primary key,
+        and table is the Table. This may be deprecated in future versions.
         """
+        if not self.columns: #handle a non-existant table
+            raise KeyError('Table is empty.')
+        
+        if not key:
+            key = self.key
+        
         db = self.db.connect()
         cur = db.cursor()
         
-        cur.execute('SELECT '+self.key+' FROM '+self.name+'')
+        cur.execute('SELECT '+key+' FROM '+self.name+'')
         result = cur.fetchall()
         db.close()
         return result
@@ -425,18 +492,22 @@ class Table(object):
     def __iter__(self):
         return self.keys()
     
-    def contains(self, key):
+    def contains(self, row, key=None):
         """
         Return ``True`` if this table has a row where the key value is equal to
         ``key``, else ``False``.
         
         ``key in db`` will also work, where db is your SettingsDB object.
         """
+        if not self.columns: #handle a non-existant table
+            return False
+        
+        if not key:
+            key = self.key
         db = self.db.connect()
         cur = db.cursor()
-        
-        #Let's immitate actual dict behavior
-        cur.execute('SELECT * FROM '+self.name+' WHERE '+self.key+' = "'+key+'";')
+        where = self._make_where_statement(key, row)
+        cur.execute('SELECT * FROM '+self.name+' WHERE '+where, [row])
         result = cur.fetchone()
         db.close()
         if result: return True
@@ -455,6 +526,9 @@ class Table(object):
         you have multiple bots using the same database, or are adding columns
         while the bot is running, you are unlikely to encounter errors.
         """
+        if not self.columns: #handle a non-existant table
+            return False
+        
         if isinstance(column, basestring):
             return column in self.columns
         elif isinstance(column, Iterable):
@@ -468,71 +542,48 @@ class Table(object):
         Insert a new column into the table, and add it to the column cache.
         This is the preferred way to add new columns to the database.
         """
-        cmd = 'ALTER TABLE '+self.name+' ADD ( '
-        for column in columns:
-            if isinstance(column, tuple): cmd = cmd + column[0]+' '+column[1]+', '
-            else: cmd = cmd + column + ' text, '
-        cmd = cmd[:-2]+' );'
-        db = self.db.connect()
-        cur = db.cursor()
+        if not self.columns: #handle a non-existant table
+            raise ValueError('Table is empty.')
         
-        cur.execute(cmd)
+        #I feel like adding one at a time is weird, but it works.
+        db = self.db.connect()
+        for column in columns:
+            cmd = 'ALTER TABLE '+self.name+' ADD '
+            if isinstance(column, tuple): cmd = cmd + column[0]+' '+column[1]+';'
+            else: cmd = cmd + column + ' text;'
+            cur = db.cursor()
+            cur.execute(cmd)
         db.commit()
         db.close()
+        
         #Why a second loop? because I don't want clomuns to be added to self.columns if executing the SQL command fails
         for column in columns:
             self.columns.add(column)
 
-def write_config(config):
+def configure(config):
     """
     Interactively create configuration options and add the attributes to
     the Config object ``config``.
     """
-    chunk = """\
-    # ------------------  USER DATABASE CONFIGURATION  ------------------
-    # The user database was not set up at install. Please consult the documentation,
-    # or run the configuration utility if you wish to use it."""
     c = config.option("Would you like to set up a settings database now")
         
     if not c:
-        return chunk
+        return
+    else:
+        config.add_section('db')
         
-    config.interactive_add('userdb_type',
+    config.interactive_add('db', 'userdb_type',
         'What type of database would you like to use? (mysql/sqlite)', 'mysql')
         
-    if config.userdb_type == 'sqlite':
-        config.interactive_add('userdb_file',"""Location of sqlite file""")
-        chunk = """\
-        # ------------------  USER DATABASE CONFIGURATION  ------------------
-        # Below is the user database configuration. If you want to keep the same
-        # user database type, it's fine to change this. If you want to change types,
-        # you should run the configuration utility (or at least consult the 
-        # SettingsDB documentation page).
-    
-        userdb_type = 'sqlite'
-        userdb_data = '%s'""" % userdb_file
+    if config.db.userdb_type == 'sqlite':
+        config.interactive_add('core', 'userdb_file','Location for the database file')
         
-    elif config.userdb_type == 'mysql':
-        config.interactive_add('userdb_host', "Enter the MySQL hostname", 'localhost')
-        config.interactive_add('userdb_user', "Enter the MySQL username")
-        config.interactive_add('userdb_pass', "Enter the user's password", 'none')
-        config.interactive_add('userdb_name', "Enter the name of the database to use")
-            
-        chunk = """\
-    # ------------------  USER DATABASE CONFIGURATION  ------------------
-    # Below is the user database configuration. If you want to keep the same
-    # user database type, it's fine to change this. If you want to change types,
-    # you should run the configuration utility (or at least consult the 
-    # SettingsDB documentation page).
+    elif config.db.userdb_type == 'mysql':
+        config.interactive_add('db', 'userdb_host', "Enter the MySQL hostname", 'localhost')
+        config.interactive_add('db', 'userdb_user', "Enter the MySQL username")
+        config.interactive_add('db', 'userdb_pass', "Enter the user's password", 'none')
+        config.interactive_add('db', 'userdb_name', "Enter the name of the database to use")
 
-    userdb_type = '%s'
-    userdb_host = '%s'
-    userdb_user = '%s'
-    userdb_pass = '%s'
-    userdb_name = '%s'""" % (config.userdb_type, config.userdb_host, config.userdb_user,
-                             config.userdb_pass, config.userdb_name)
     else:
         print "This isn't currently supported. Aborting."
-
-    return chunk
 
