@@ -95,6 +95,25 @@ def f_remind(willie, trigger):
     dumpReminders(willie.tell_filename, willie.memory['reminders'], willie.memory['tell_lock']) # @@ tell
 f_remind.rule = ('$nick', ['tell', 'ask'], r'(\S+) (.*)')
 
+def f_delete(willie, trigger):
+    if trigger.nick is not trigger.sender: return
+    tellee = trigger.group(2)
+    teller = trigger.nick
+    msgno = int(trigger.group(3)) # the msg # to delete
+    count = -1 # need to start at 0, this is my solution (-1+1=0 for first)
+    if tellee not in willie.memory['reminders']:
+        willie.say("You haven't sent %s any messages!" % tellee)
+    else:
+        for entry in willie.memory['reminders'][tellee]:
+            if entry[0] is teller: count += 1
+            if count is msgno:
+                willie.say("OK. Wont %s %s %s" % (entry[1], tellee, entry[3])) # verb, tellee, msg
+                willie.memory['reminders'][tellee].remove(entry)
+                dumpReminders(willie.tell_filename, willie.memory['reminders']. willie.memory['tell_lock'])
+                return
+        willie.say("Invalid Message Number. Please check the number and try again")
+f_delete.rule = (['delete'], r'(\S+) #?([0-9]*)')
+
 def getReminders(willie, channel, key, tellee):
     lines = []
     template = "%s: %s <%s> %s %s %s"
