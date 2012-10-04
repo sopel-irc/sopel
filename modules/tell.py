@@ -95,6 +95,25 @@ def f_remind(willie, trigger):
     dumpReminders(willie.tell_filename, willie.memory['reminders'], willie.memory['tell_lock']) # @@ tell
 f_remind.rule = ('$nick', ['tell', 'ask'], r'(\S+) (.*)')
 
+def f_show(willie, trigger):
+    tellee = trigger.group(2)
+    teller = trigger.nick
+    if teller is trigger.sender:
+        willie.reply("Sending you a PM with all the messages you sent %s" % tellee)
+    if tellee in willie.memory['reminders']:
+        msgs = genlist(willie, tellee, teller)
+        for count in range(len(msgs)):
+            willie.msg(teller, str(count) +': '+ msgs[count])
+    else: willie.msg(teller, "you haven't sent any messages to %s" % tellee)
+f_show.command = ["show"]
+
+def genlist(willie, tellee, teller):
+    msgs = []
+    if tellee in willie.memory['reminders']:
+        for entry in willie.memory['reminders'][tellee]:
+            if entry[0] is teller: msgs.append(entry)
+    return msgs
+
 def getReminders(willie, channel, key, tellee):
     lines = []
     template = "%s: %s <%s> %s %s %s"
