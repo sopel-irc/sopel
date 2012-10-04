@@ -78,10 +78,7 @@ def f_remind(willie, trigger):
     if not tellee in (teller.lower(), willie.nick, 'me'):
         willie.memory['tell_lock'].acquire()
         try:
-            if not willie.memory['reminders'].has_key(tellee):
-                willie.memory['reminders'][tellee] = [(teller, verb, timenow, msg)]
-            else:
-                willie.memory['reminders'][tellee].append((teller, verb, timenow, msg))
+            willie.memory['reminders'].setdefault(tellee, []).append((teller, verb, timenow, msg))
         finally:
             willie.memory['tell_lock'].release()
 
@@ -112,6 +109,16 @@ def getReminders(willie, channel, key, tellee):
     finally:
         willie.memory['tell_lock'].release()
     return lines
+
+def f_seen(willie, trigger):
+    nick = trigger.group(1)
+    count = 0
+    if nick in willie.memory['reminders']:
+        for msg in willie.memory['reminders'][nick]:
+            if msg[0] is teller: count += 1
+    response = "%s has" + ("not" if (count) else "") + "recieved your messages"
+    willie.say(response % nick)
+f_seen.rule = ["sent"]
 
 def message(willie, trigger):
 
