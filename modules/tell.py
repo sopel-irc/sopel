@@ -101,9 +101,11 @@ def f_show(willie, trigger):
     if teller is trigger.sender:
         willie.reply("Sending you a PM with all the messages you sent %s" % tellee)
     if tellee in willie.memory['reminders']:
-        msgs = genlist(willie, tellee, teller)
-        for count in range(len(msgs)):
-            willie.msg(teller, str(count) +': '+ msgs[count])
+        count = 0
+        for msg in willie.memory['reminders'][tellee]:
+            if msg[0] is teller:
+                count += 1
+                willie.msg(teller, str(count) +': '+ msgs[count])
     else: willie.msg(teller, "you haven't sent any messages to %s" % tellee)
 f_show.command = ["show"]
 
