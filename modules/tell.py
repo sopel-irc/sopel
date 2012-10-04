@@ -100,7 +100,7 @@ def f_delete(willie, trigger):
     tellee = trigger.group(2)
     teller = trigger.nick
     msgno = int(trigger.group(3)) # the msg # to delete
-    count = -1 # need to start at 0, this is my solution (-1+1=0 for first)
+    count = 0
     if tellee not in willie.memory['reminders']:
         willie.say("You haven't sent %s any messages!" % tellee)
     else:
