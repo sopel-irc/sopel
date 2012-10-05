@@ -92,7 +92,6 @@ def f_remind(willie, trigger):
     dumpReminders(willie.tell_filename, willie.memory['reminders'], willie.memory['tell_lock']) # @@ tell
 f_remind.rule = ('$nick', ['tell', 'ask'], r'(\S+) (.*)')
 
-<<<<<<< HEAD
 def f_delete(willie, trigger):
     if trigger.nick is not trigger.sender: return
     tellee = trigger.group(2)
@@ -111,7 +110,7 @@ def f_delete(willie, trigger):
                 return
         willie.say("Invalid Message Number. Please check the number and try again")
 f_delete.rule = (['delete'], r'(\S+) #?([0-9]*)')
-=======
+
 def f_show(willie, trigger):
     tellee = trigger.group(2)
     teller = trigger.nick
@@ -125,7 +124,6 @@ def f_show(willie, trigger):
                 willie.msg(teller, str(count) +': '+ msgs[count])
     else: willie.msg(teller, "you haven't sent any messages to %s" % tellee)
 f_show.command = ["show"]
->>>>>>> tell.show
 
 def getReminders(willie, channel, key, tellee):
     lines = []
