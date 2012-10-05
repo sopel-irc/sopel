@@ -92,43 +92,68 @@ def f_remind(willie, trigger):
     dumpReminders(willie.tell_filename, willie.memory['reminders'], willie.memory['tell_lock']) # @@ tell
 f_remind.rule = ('$nick', ['tell', 'ask'], r'(\S+) (.*)')
 
-def f_delete(willie, trigger):
-    if trigger.nick is not trigger.sender: return
-    tellee = trigger.group(2)
+def delete(willie, trigger):
+    if not trigger.nick == trigger.sender: return
+    tellee, msgno = trigger.group(3).split(' ')
+    tellee = tellee.encode('utf-8').lower()
+    msgno = int(msgno) # the msg # to delete
     teller = trigger.nick
-    msgno = int(trigger.group(3)) # the msg # to delete
     count = 0
     if tellee not in willie.memory['reminders']:
         willie.say("You haven't sent %s any messages!" % tellee)
     else:
         for entry in willie.memory['reminders'][tellee]:
-            if entry[0] is teller: count += 1
-            if count is msgno:
+            if entry[0] == teller: count += 1
+            if count == msgno:
                 willie.say("OK. Wont %s %s %s" % (entry[1], tellee, entry[3])) # verb, tellee, msg
                 willie.memory['reminders'][tellee].remove(entry)
-                dumpReminders(willie.tell_filename, willie.memory['reminders']. willie.memory['tell_lock'])
+                dumpReminders(willie.tell_filename, willie.memory['reminders'], willie.memory['tell_lock'])
                 return
-        willie.say("Invalid Message Number. Please check the number and try again")
-f_delete.rule = (['delete'], r'(\S+) #?([0-9]*)')
+        willie.reply("Invalid Message Number. Please check the number and try again")
 
-def f_show(willie, trigger):
-    tellee = trigger.group(2)
+def f_tell(willie, trigger):
+    isPM = trigger.nick == trigger.sender
+    try:
+        cmd = trigger.group(2).lower()
+        args = trigger.group(3).split(' ')
+    except AttributeError: willie.reply("usage: .tell [del(ete)/sent/show] <args>") 
+    else:
+        if cmd[:3] == 'del':
+            if (isPM): 
+                if len(args) == 2:
+                    try: int(args[1])
+                    except: willie.reply("%s is not a number!" % args[1])
+                    else: delete(willie, trigger)
+                else: willie.reply("wrong number of args! (usage: .tell delete <receiver's nick> <message number>)")
+            else: willie.reply("that command is PM only")
+        elif cmd in ['show', 'list', 'view']:
+            if (isPM):
+                if len(args) == 1 and args[0]: show(willie, trigger)
+                else: willie.reply("wrong number of args! (usage: .tell show <receiver's nick>")
+            else: willie.reply("that command is PM only")
+        elif cmd == 'sent':
+            if len(args) == 1 and args[0]: sent(willie, trigger)
+            else: willie.reply("wrong number of args! (usage: .tell sent <receiver's nick>")
+        else: willie.reply("%s isn't a valid command. (usage: .tell [del(ete)/sent/show] <args>)" % cmd)
+f_tell.rule = (['tell', 'ask'], r'(\S+) (.*)')
+
+def show(willie, trigger):
+    tellee = trigger.group(3).encode('utf-8').lower()
     teller = trigger.nick
-    if teller is trigger.sender:
+    if not teller == trigger.sender:
         willie.reply("Sending you a PM with all the messages you sent %s" % tellee)
     if tellee in willie.memory['reminders']:
         count = 0
         for msg in willie.memory['reminders'][tellee]:
-            if msg[0] is teller:
+            if msg[0] == teller:
                 count += 1
-                willie.msg(teller, str(count) +': '+ msgs[count])
+                willie.msg(teller, '%d: %s %s %s' % (count, msg[1], tellee, msg[3]))
     else: willie.msg(teller, "you haven't sent any messages to %s" % tellee)
-f_show.command = ["show"]
 
 def getReminders(willie, channel, key, tellee):
     lines = []
     template = "%s: %s <%s> %s %s %s"
-    today = time.strftime('%d %b', time.gmtime())
+    today = time.strftime('%d %b',116, time.gmtime())
 
     willie.memory['tell_lock'].acquire()
     try:
@@ -143,17 +168,17 @@ def getReminders(willie, channel, key, tellee):
         willie.memory['tell_lock'].release()
     return lines
 
-def f_seen(willie, trigger):
-    tellee = trigger.group(2)
+def sent(willie, trigger):
+    tellee = trigger.group(3).encode('utf-8').lower()
+    teller = trigger.nick
     msgFound = False
     if tellee in willie.memory['reminders']:
         for msg in willie.memory['reminders'][tellee]:
-            if msg[0] is teller: 
+            if msg[0] == teller: 
                 msgFound = True
                 break
-    response = "%s has" + ("not" if (msgFound) else "") + "recieved your messages"
+    response = "%s has" + (" not " if (msgFound) else " ") + "recieved your messages"
     willie.reply(response % tellee)
-f_seen.command = ["sent"]
 
 def message(willie, trigger):
 
