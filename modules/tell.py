@@ -109,13 +109,6 @@ def f_show(willie, trigger):
     else: willie.msg(teller, "you haven't sent any messages to %s" % tellee)
 f_show.command = ["show"]
 
-def genlist(willie, tellee, teller):
-    msgs = []
-    if tellee in willie.memory['reminders']:
-        for entry in willie.memory['reminders'][tellee]:
-            if entry[0] is teller: msgs.append(entry)
-    return msgs
-
 def getReminders(willie, channel, key, tellee):
     lines = []
     template = "%s: %s <%s> %s %s %s"
