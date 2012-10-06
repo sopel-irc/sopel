@@ -2,6 +2,7 @@
 """
 tell.py - Willie Tell and Ask Module
 Copyright 2008, Sean B. Palmer, inamidst.com
+Copyright 2012, Lior Ramati, firerogue517@gmail.com
 Licensed under the Eiffel Forum License 2.
 
 http://willie.dftba.net
@@ -116,7 +117,7 @@ def f_tell(willie, trigger):
     try:
         cmd = trigger.group(2).lower()
         args = trigger.group(3).split(' ')
-    except AttributeError: willie.reply("usage: .tell [del(ete)/sent/show] <args>") 
+    except AttributeError: willie.reply("usage: .tell [del(ete)/sent/show] \x1Fargs\x0F") 
     else:
         if cmd[:3] == 'del':
             if (isPM): 
@@ -124,17 +125,17 @@ def f_tell(willie, trigger):
                     try: int(args[1])
                     except: willie.reply("%s is not a number!" % args[1])
                     else: delete(willie, trigger)
-                else: willie.reply("wrong number of args! (usage: .tell delete <receiver's nick> <message number>)")
+                else: willie.reply("wrong number of args! (usage: .tell delete \x1Freceiver's nick\x0F \x1Fmessage number\x0F)")
             else: willie.reply("that command is PM only")
         elif cmd in ['show', 'list', 'view']:
             if (isPM):
                 if len(args) == 1 and args[0]: show(willie, trigger)
-                else: willie.reply("wrong number of args! (usage: .tell show <receiver's nick>")
+                else: willie.reply("wrong number of args! (usage: .tell show \x1Freceiver's nick\x0F")
             else: willie.reply("that command is PM only")
         elif cmd == 'sent':
             if len(args) == 1 and args[0]: sent(willie, trigger)
-            else: willie.reply("wrong number of args! (usage: .tell sent <receiver's nick>")
-        else: willie.reply("%s isn't a valid command. (usage: .tell [del(ete)/sent/show] <args>)" % cmd)
+            else: willie.reply("wrong number of args! (usage: .tell sent \x1Freceiver's nick\x0F")
+        else: willie.reply("%s isn't a valid command. (usage: .tell [del(ete)/sent/show] \x1Fargs\x0F)" % cmd)
 f_tell.rule = (['tell', 'ask'], r'(\S+) (.*)')
 
 def show(willie, trigger):
@@ -148,11 +149,11 @@ def show(willie, trigger):
             if msg[0] == teller:
                 count += 1
                 willie.msg(teller, '%d: %s %s %s' % (count, msg[1], tellee, msg[3]))
-    else: willie.msg(teller, "you haven't sent any messages to %s" % tellee)
+    else: willie.msg(teller, "%s doesn't have any pending messages from you" % tellee)
 
 def getReminders(willie, channel, key, tellee):
     lines = []
-    template = "%s: %s <%s> %s %s %s"
+    template = "%s: %s <%s\x0F %s %s %s"
     today = time.strftime('%d %b',116, time.gmtime())
 
     willie.memory['tell_lock'].acquire()
@@ -177,7 +178,7 @@ def sent(willie, trigger):
             if msg[0] == teller: 
                 msgFound = True
                 break
-    response = "%s has" + (" not " if (msgFound) else " ") + "recieved your messages"
+    response = "%s " + ("doesn't have any" if (msgFound) else "has") + " pending messages from you"
     willie.reply(response % tellee)
 
 def message(willie, trigger):
