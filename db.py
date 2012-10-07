@@ -515,8 +515,16 @@ class Table(object):
     
     def __contains__(self, item):
         return self.contains(item)
-            
+    
+    @deprecated
     def hascolumn(self, column):
+        return self.has_columns(column)
+    
+    @deprecated
+    def hascolumns(self, column):
+        return self.has_columns(column)
+    
+    def has_columns(self, column):
         """
         Each Table contains a cached list of its columns. ``hascolumn(column)``
         checks this list, and returns True if it contains ``column``. If
@@ -536,8 +544,12 @@ class Table(object):
             for col in column:
                 has = col in self.columns and has
             return has
-        
+    
+    @deprecated
     def addcolumns(self, columns):
+        return self.add_columns(columns)
+    
+    def add_columns(self, columns):
         """
         Insert a new column into the table, and add it to the column cache.
         This is the preferred way to add new columns to the database.
