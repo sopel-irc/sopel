@@ -4,6 +4,7 @@
 tools.py - Willie misc tools
 Copyright 2008, Sean B. Palmer, inamidst.com
 Copyright © 2012, Elad Alfassa <elad@fedoraproject.org>
+Copyright 2012, Edward Powell, embolalia.net
 Licensed under the Eiffel Forum License 2.
 
 https://willie.dftba.net
@@ -17,19 +18,17 @@ try:
 except:
     #no SSL support
     ssl = False
+import traceback
 
 def deprecated(old):
-    def new(willie, input, old=old):
-        self = willie
-        origin = type('Origin', (object,), {
-            'sender': input.sender,
-            'nick': input.nick
-        })()
-        match = input.match
-        args = [input.bytes, input.sender, '@@']
-
-        old(self, origin, match, args)
-    new.__module__ = old.__module__
+    print 2
+    def new(*args, **kwargs):
+        stderr('Function %s is deprecated.' % old.__name__)
+        trace = traceback.extract_stack()
+        for line in traceback.format_list(trace[:-1]):
+            stderr(line[:-1])
+        return old(*args, **kwargs)
+    new.__doc__ = old.__doc__
     new.__name__ = old.__name__
     return new
     
