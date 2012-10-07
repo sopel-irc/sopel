@@ -21,7 +21,6 @@ except:
 import traceback
 
 def deprecated(old):
-    print 2
     def new(*args, **kwargs):
         stderr('Function %s is deprecated.' % old.__name__)
         trace = traceback.extract_stack()
