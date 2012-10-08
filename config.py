@@ -5,12 +5,12 @@
 
 The config class is an abstraction class for accessing the active Willie configuration file.
 
-The Willie config file is divided to sections, each section contains keys and values.
-A section is an attribute of the config class, and thus it is of the type ``ConfigSection``.
-Each sections contains the keys as attributes, for example, if you want to access key example from section test, use
-``config.example.test``
+The Willie config file is divided to sections, and each section contains keys and values.
+A section is an attribute of the config class, and is of type ``ConfigSection``.
+Each section contains the keys as attributes. for example, if you want to access key example from section test, use
+``config.test.example``.
 
-The ``core`` section will always be presnet, and contains configuration used by the Willie core. Modules are allowed to read those, but must not change them.
+The ``core`` section will always be present, and contains configuration used by the Willie core. Modules are allowed to read those, but must not change them.
 
 The config file can store strings, booleans and lists. If you need to store a number, cast it to ``int()`` when reading.
 
