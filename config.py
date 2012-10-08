@@ -5,12 +5,12 @@
 
 The config class is an abstraction class for accessing the active Willie configuration file.
 
-The Willie config file is divided to sections, each section contains keys and values.
-A section is an attribute of the config class, and thus it is of the type ``ConfigSection``.
-Each sections contains the keys as attributes, for example, if you want to access key example from section test, use
-``config.example.test``
+The Willie config file is divided to sections, and each section contains keys and values.
+A section is an attribute of the config class, and is of type ``ConfigSection``.
+Each section contains the keys as attributes. for example, if you want to access key example from section test, use
+``config.test.example``.
 
-The ``core`` section will always be presnet, and contains configuration used by the Willie core. Modules are allowed to read those, but must not change them.
+The ``core`` section will always be present, and contains configuration used by the Willie core. Modules are allowed to read those, but must not change them.
 
 The config file can store strings, booleans and lists. If you need to store a number, cast it to ``int()`` when reading.
 
@@ -64,7 +64,7 @@ class Config(object):
         """
         self.filename = filename
         """The config object's associated file, as noted above."""
-        self.parser = ConfigParser.SafeConfigParser(allow_no_value=True)
+        self.parser = ConfigParser.RawConfigParser(allow_no_value=True)
         if load:
             self.parser.read(self.filename)
 
@@ -106,8 +106,12 @@ class Config(object):
             return False
 
     def has_option(self, section, name):
-        """ Check if section ``name`` exists """
+        """ Check if option ``name`` exists under section ``section`` """
         return self.parser.has_option(section, name)
+        
+    def has_section(self, name):
+        """ Check if section ``name`` exists """
+        return self.parser.has_section(name)
 
     class ConfigSection(object):
         """Represents a section of the config file, contains all keys in the section as attributes"""

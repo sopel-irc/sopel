@@ -12,6 +12,11 @@ http://willie.dftba.net/
 
 import re
 
+def setup(willie):
+    #Having a db means pref's exists. Later, we can just use `if willie.db`.
+    if willie.db and not willie.db.preferences.hascolumn('topic_mask'):
+        willie.db.preferences.add_columns(['topic_mask'])
+
 def op(willie, trigger):
     """
     Command to op users in a room. If no nick is given,
@@ -249,8 +254,8 @@ def topic(willie, trigger):
     
     narg = 1
     mask = None
-    if willie.settings.hascolumn('topic_mask') and channel in willie.settings:
-        mask = willie.settings.get(channel, 'topic_mask')
+    if willie.db and channel in willie.db.preferences:
+        mask = willie.db.preferences.get(channel, 'topic_mask')
         narg = len(re.findall('%s', mask))
     if not mask or mask == '':
         mask = purple +'Welcome to: '+ green + channel + purple \
@@ -275,20 +280,20 @@ topic.priority = 'low'
 def set_mask (willie, trigger):
     if not trigger.isop:
         return
-    if not willie.settings.hascolumn('topic_mask'):
+    if not willie.db:
         willie.say("I'm afraid I can't do that.")
     else:
-        willie.settings.update(trigger.sender, {'topic_mask': trigger.group(2)})
+        willie.db.preferences.update(trigger.sender, {'topic_mask': trigger.group(2)})
         willie.say("Gotcha, " + trigger.nick)
 set_mask.commands = ['tmask']
 
 def show_mask (willie, trigger):
     if not trigger.isop:
         return
-    if not willie.settings.hascolumn('topic_mask'):
+    if not willie.db:
         willie.say("I'm afraid I can't do that.")
     else:
-        willie.say(willie.settings.get(trigger.sender, 'topic_mask'))
+        willie.say(willie.db.preferences.get(trigger.sender, 'topic_mask'))
 show_mask.commands = ['showmask']
 
 def isop (willie, trigger):
