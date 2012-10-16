@@ -84,6 +84,26 @@ class Willie(irc.Bot):
         self.memory=self.WillieMemory()
         '''A thread-safe dict for storage of runtime data to be shared between modules'''
         
+        #Set up block lists
+        #Default to empty
+        if not self.config.has_option('core', 'nick_blocks'):
+            self.config.set('core', 'nick_blocks', '')
+        if not self.config.has_option('core', 'host_blocks'):
+            self.config.set('core', 'host_blocks', '')
+        #Make into lists
+        if not isinstance(self.config.core.nick_blocks, list):
+            self.config.core.nick_blocks = self.config.core.nick_blocks.split(',')
+        if not isinstance(self.config.core.host_blocks, list):
+            self.config.core.host_blocks = self.config.core.host_blocks.split(',')
+        #Add nicks blocked under old scheme, if present
+        if self.config.has_option('core', 'other_bots'):
+            nicks = self.config.core.nick_blocks
+            bots = self.config.core.other_bots
+            if isinstance(bots, basestring):
+                bots = bots.split(',')            
+            nicks.extend(bots)
+            self.config.core.nick_blocks = nicks
+        
         self.setup()
 
     class WillieMemory(dict):
@@ -377,35 +397,27 @@ class Willie(irc.Bot):
                         nick = (trigger.nick).lower()
 
                         ## blocking ability
-                        if (willie.config.has_option('admin', 'nick_blocks') and
-                            willie.config.has_option('admin', 'mask_blocks')):
-                            if not isinstance(willie.config.admin.nick_blocks, list):
-                                bad_nicks = willie.config.admin.nick_blocks.split(',')
-                            else:
-                                bad_nicks = willie.config.admin.nick_blocks
-                            if not isinstance(willie.config.admin.mask_blocks, list):
-                                bad_masks = willie.config.admin.mask_blocks.split(',')
-                            else:
-                                bad_masks = willie.config.admin.mask_blocks
+                        bad_nicks = self.config.core.nick_blocks
+                        bad_masks = self.config.core.host_blocks
 
-                            if len(bad_masks) > 0:
-                                for hostmask in bad_masks:
-                                    hostmask = hostmask.replace("\n", "")
-                                    if len(hostmask) < 1: 
-                                        continue
-                                    re_temp = re.compile(hostmask)
-                                    host = origin.host
-                                    host = host.lower()
-                                    if re_temp.findall(host) or hostmask in host:
-                                        return
-                            if len(bad_nicks) > 0:
-                                for nick in bad_nicks:
-                                    nick = nick.replace("\n", "")
-                                    if len(nick) < 1: 
-                                        continue
-                                    re_temp = re.compile(nick)
-                                    if re_temp.findall(trigger.nick) or nick in trigger.nick:
-                                        return
+                        if len(bad_masks) > 0:
+                            for hostmask in bad_masks:
+                                hostmask = hostmask.replace("\n", "")
+                                if len(hostmask) < 1: 
+                                    continue
+                                re_temp = re.compile(hostmask)
+                                host = origin.host
+                                host = host.lower()
+                                if re_temp.findall(host) or hostmask in host:
+                                    return
+                        if len(bad_nicks) > 0:
+                            for nick in bad_nicks:
+                                nick = nick.replace("\n", "")
+                                if len(nick) < 1: 
+                                    continue
+                                re_temp = re.compile(nick)
+                                if re_temp.findall(trigger.nick) or nick in trigger.nick:
+                                    return
                         # stats
                         if func.thread:
                             targs = (func, origin, willie, trigger)
