@@ -2,8 +2,9 @@
 # coding=utf-8
 """
 coretasks.py - Willie Ruotine Core tasks
-Copyright 2008, Sean B. Palmer, inamidst.com
+Copyright 2008-2011, Sean B. Palmer (inamidst.com) and Michael Yanovich (yanovich.net)
 Copyright © 2012, Elad Alfassa <elad@fedoraproject.org>
+Copyright 2012, Edward Powell (embolalia.net)
 Licensed under the Eiffel Forum License 2.
 
 Willie: http://willie.dftba.net/
@@ -114,6 +115,89 @@ def track_nicks(willie, trigger):
     
 track_nicks.rule = r'(.*)'
 track_nicks.event = 'NICK'
+
+
+#Live blocklist editing
+
+def blocks(willie, trigger):
+    if not trigger.admin: return
+
+    STRINGS = {
+            "success_del" : "Successfully deleted block: %s",
+            "success_add" : "Successfully added block: %s",
+            "no_nick" : "No matching nick block found for: %s",
+            "no_host" : "No matching hostmask block found for: %s",
+            "invalid" : "Invalid format for %s a block. Try: .blocks add (nick|hostmask) willie",
+            "invalid_display" : "Invalid input for displaying blocks.",
+            "nonelisted" : "No %s listed in the blocklist.",
+            'huh' : "I could not figure out what you wanted to do.",
+            }
+
+    masks = willie.config.core.host_blocks
+    nicks = willie.config.core.nick_blocks
+    print nicks, masks
+    text = trigger.group().split()
+
+    if len(text) == 3 and text[1] == "list":
+        if text[2] == "hostmask":
+            if len(masks) > 0 and masks.count("") == 0:
+                for each in masks:
+                    if len(each) > 0:
+                        willie.say("blocked hostmask: " + each)
+            else:
+                willie.reply(STRINGS['nonelisted'] % ('hostmasks'))
+        elif text[2] == "nick":
+            if len(nicks) > 0 and nicks.count("") == 0:
+                for each in nicks:
+                    if len(each) > 0:
+                        willie.say("blocked nick: " + each)
+            else:
+                willie.reply(STRINGS['nonelisted'] % ('nicks'))
+        else:
+            willie.reply(STRINGS['invalid_display'])
+
+    elif len(text) == 4 and text[1] == "add":
+        if text[2] == "nick":
+            nicks.append(text[3])
+            willie.config.core.nick_blocks = nicks
+            willie.config.save()
+        elif text[2] == "hostmask":
+            masks.append(text[3].lower())
+            willie.config.core.host_blocks = masks
+        else:
+            willie.reply(STRINGS['invalid'] % ("adding"))
+            return
+
+        willie.reply(STRINGS['success_add'] % (text[3]))
+
+    elif len(text) == 4 and text[1] == "del":
+        if text[2] == "nick":
+            try:
+                nicks.remove(text[3])
+                willie.config.core.nick_blocks = nicks
+                willie.config.save()
+                willie.reply(STRINGS['success_del'] % (text[3]))
+            except:
+                willie.reply(STRINGS['no_nick'] % (text[3]))
+                return
+        elif text[2] == "hostmask":
+            try:
+                masks.remove(text[3].lower())
+                willie.config.core.host_blocks = masks
+                willie.config.save()
+                willie.reply(STRINGS['success_del'] % (text[3]))
+            except:
+                willie.reply(STRINGS['no_host'] % (text[3]))
+                return
+        else:
+            willie.reply(STRINGS['invalid'] % ("deleting"))
+            return
+    else:
+        willie.reply(STRINGS['huh'])
+
+blocks.commands = ['blocks']
+blocks.priority = 'low'
+blocks.thread = False
 
 if __name__ == '__main__':
     print __doc__.strip()
