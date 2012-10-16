@@ -97,6 +97,8 @@ class Config(object):
         """Save all changes to the config file"""
         cfgfile = open(self.filename, 'w')
         self.parser.write(cfgfile)
+        cfgfile.flush()
+        cfgfile.close()
 
     def add_section(self, name):
         """ Add a section to the config file, returns ``False`` if already exists"""
