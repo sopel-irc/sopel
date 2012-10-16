@@ -377,16 +377,16 @@ class Willie(irc.Bot):
                         nick = (trigger.nick).lower()
 
                         ## blocking ability
-                        if os.path.isfile("blocks"):
-                            g = open("blocks", "r")
-                            contents = g.readlines()
-                            g.close()
-
-                            try: bad_masks = contents[0].split(',')
-                            except: bad_masks = ['']
-
-                            try: bad_nicks = contents[1].split(',')
-                            except: bad_nicks = ['']
+                        if (willie.config.has_option('admin', 'nick_blocks') and
+                            willie.config.has_option('admin', 'mask_blocks')):
+                            if not isinstance(willie.config.admin.nick_blocks, list):
+                                bad_nicks = willie.config.admin.nick_blocks.split(',')
+                            else:
+                                bad_nicks = willie.config.admin.nick_blocks
+                            if not isinstance(willie.config.admin.mask_blocks, list):
+                                bad_masks = willie.config.admin.mask_blocks.split(',')
+                            else:
+                                bad_masks = willie.config.admin.mask_blocks
 
                             if len(bad_masks) > 0:
                                 for hostmask in bad_masks:

@@ -12,6 +12,24 @@ http://willie.dfbta.net
 
 import os
 
+#TODO this will be reworked when we rework the configuration wizard, probably.
+def configure(config):
+    if config.option('Configure advanced administration options', False):
+        if not config.has_section('url'):
+            config.add_section('admin')
+        #TODO add config for defend_ground
+        config.add_list('admin', 'nick_blocks', 
+            'Enter regular expressions for blocked nicks.', 'nick')
+        config.add_list('admin', 'mask_blocks',
+            'Enter regular expressions for blocked hostmasks.', 'mask')
+
+def setup(willie):
+    if willie.config.has_option('admin', 'nick_blocks') and willie.config.has_option('admin', 'mask_blocks'):
+        if not isinstance(willie.config.admin.nick_blocks, list):
+            willie.config.admin.nick_blocks = willie.config.admin.nick_blocks.split(',')
+        if not isinstance(willie.config.admin.mask_blocks, list):
+            willie.config.admin.mask_blocks = willie.config.admin.mask_blocks.split(',')
+
 def join(willie, trigger):
     """Join the specified channel. This is an admin-only command."""
     # Can only be done in privmsg by an admin
@@ -107,6 +125,10 @@ raw.rule = '.raw (\S+) (.*)'
 
 def blocks(willie, trigger):
     if not trigger.admin: return
+    
+    if not (willie.config.has_option('admin', 'nick_blocks') and willie.config.has_option('admin', 'mask_blocks')):
+        print 3
+        return
 
     STRINGS = {
             "success_del" : "Successfully deleted block: %s",
@@ -119,20 +141,8 @@ def blocks(willie, trigger):
             'huh' : "I could not figure out what you wanted to do.",
             }
 
-    if not os.path.isfile("blocks"):
-        blocks = open("blocks", "w")
-        blocks.write('\n')
-        blocks.close()
-
-    blocks = open("blocks", "r")
-    contents = blocks.readlines()
-    blocks.close()
-
-    try: masks = contents[0].replace("\n", "").split(',')
-    except: masks = ['']
-
-    try: nicks = contents[1].replace("\n", "").split(',')
-    except: nicks = ['']
+    masks = willie.config.admin.mask_blocks
+    nicks = willie.config.admin.nick_blocks
 
     text = trigger.group().split()
 
@@ -157,8 +167,11 @@ def blocks(willie, trigger):
     elif len(text) == 4 and text[1] == "add":
         if text[2] == "nick":
             nicks.append(text[3])
+            willie.config.admin.nick_blocks = nicks
+            willie.config.save()
         elif text[2] == "hostmask":
             masks.append(text[3].lower())
+            willie.config.admin.host_blocks = masks
         else:
             willie.reply(STRINGS['invalid'] % ("adding"))
             return
@@ -169,6 +182,8 @@ def blocks(willie, trigger):
         if text[2] == "nick":
             try:
                 nicks.remove(text[3])
+                willie.config.admin.nick_blocks = nicks
+                willie.config.save()
                 willie.reply(STRINGS['success_del'] % (text[3]))
             except:
                 willie.reply(STRINGS['no_nick'] % (text[3]))
@@ -176,6 +191,8 @@ def blocks(willie, trigger):
         elif text[2] == "hostmask":
             try:
                 masks.remove(text[3].lower())
+                willie.config.admin.mask_blocks = masks
+                willie.config.save()
                 willie.reply(STRINGS['success_del'] % (text[3]))
             except:
                 willie.reply(STRINGS['no_host'] % (text[3]))
@@ -185,19 +202,6 @@ def blocks(willie, trigger):
             return
     else:
         willie.reply(STRINGS['huh'])
-
-    os.remove("blocks")
-    blocks = open("blocks", "w")
-    masks_str = ",".join(masks)
-    if len(masks_str) > 0 and "," == masks_str[0]:
-        masks_str = masks_str[1:]
-    blocks.write(masks_str)
-    blocks.write("\n")
-    nicks_str = ",".join(nicks)
-    if len(nicks_str) > 0 and "," == nicks_str[0]:
-        nicks_str = nicks_str[1:]
-    blocks.write(nicks_str)
-    blocks.close()
 
 blocks.commands = ['blocks']
 blocks.priority = 'low'
