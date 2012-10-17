@@ -87,9 +87,9 @@ class Willie(irc.Bot):
         #Set up block lists
         #Default to empty
         if not self.config.has_option('core', 'nick_blocks'):
-            self.config.set('core', 'nick_blocks', '')
+            self.config.core.nick_blocks = ''
         if not self.config.has_option('core', 'host_blocks'):
-            self.config.set('core', 'host_blocks', '')
+            self.config.core.host_blocks = ''
         #Make into lists
         if not isinstance(self.config.core.nick_blocks, list):
             self.config.core.nick_blocks = self.config.core.nick_blocks.split(',')
