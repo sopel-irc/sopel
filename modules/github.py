@@ -25,7 +25,7 @@ def configure(config):
     return chunk
 
 def issue(willie, trigger):
-    """Create a GitHub issue, also known as a bug report. Syntax: .issue Title of the bug report"""
+    """Create a GitHub issue, also known as a bug report. Syntax: .makeissue Title of the bug report"""
     #check input
     if not trigger.group(2):
         return willie.say('Please title the issue')
@@ -48,11 +48,11 @@ def issue(willie, trigger):
     data = json.loads(raw)
     willie.say('Issue #%s posted. %s' % (data['number'], data['html_url']))
     willie.debug('','Issue #%s created in %s' % (data['number'],trigger.sender),'warning')
-issue.commands = ['issue','bug']
+issue.commands = ['makeissue','makebug']
 issue.priority = 'medium'
 
 def findIssue(willie, trigger):
-    """Search for a GitHub issue by keyword. usage: .findissue search keywords (optional) You can specify the first keyword as "CLOSED" to search closed issues."""
+    """Search for a GitHub issue by keyword or ID. usage: .findissue search keywords/ID (optional) You can specify the first keyword as "CLOSED" to search closed issues."""
     if not trigger.group(2):
         return willie.reply('What are you searching for?')
 
