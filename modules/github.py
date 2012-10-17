@@ -23,7 +23,7 @@ def configure(config):
         config.interactive_add('github', 'Oath_token', 'Github API Oauth2 token', '')
         config.interactive_add('github', 'repo', 'Github repository', 'embolalia/willie')
     return chunk
-    
+
 def issue(willie, trigger):
     """Create a GitHub issue, also known as a bug report. Syntax: .issue Title of the bug report"""
     #check input
@@ -60,13 +60,16 @@ def findIssue(willie, trigger):
     gitAPI = checkConfig(willie)
     if gitAPI == False:
         return willie.say('Git module not configured, make sure git_Oath_token and git_repo are defined')
-    if trigger.group(2).split(' ')[0] == 'CLOSED':
+    firstParam = trigger.group(2).split(' ')[0]
+    if firstParam.isdigit():
+        URL = 'https://api.github.com/repos/%s/issues/%s' % (gitAPI[1], trigger.group(2))
+    elif firstParam == 'CLOSED':
         if '%20'.join(trigger.group(2).split(' ')[1:]) not in ('','\x02','\x03'):
             URL = 'https://api.github.com/legacy/issues/search/'+gitAPI[1]+'/closed/'+'%20'.join(trigger.group(2).split(' ')[1:])
         else:
             return willie.reply('What are you searching for?')
     else:
-        URL = 'https://api.github.com/legacy/issues/search/'+gitAPI[1]+'/open/'+trigger.group(2)
+        URL = 'https://api.github.com/legacy/issues/search/%s/open/%s' % (gitAPI[1], trigger.group(2))
 
     try:
         raw = web.get(URL)
@@ -74,7 +77,10 @@ def findIssue(willie, trigger):
         return willie.say('The GitHub API returned an error.')
 
     try:
-        data = json.loads(raw)['issues'][-1]
+        if firstParam.isdigit():
+            data = json.loads(raw)
+        else:
+            data = json.loads(raw)['issues'][-1]
     except (KeyError, IndexError):
         return willie.say('No search results.')
     if len(data['body'].split('\n')) > 1:
