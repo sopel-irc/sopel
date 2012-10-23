@@ -292,8 +292,10 @@ def show_mask (willie, trigger):
         return
     if not willie.db:
         willie.say("I'm afraid I can't do that.")
+    elif trigger.sender in willie.db.preferences:
+        willie.say(willie.db.preferences.get(trigger.sender, 'topic_mask'))
     else:
-        willie.say(willie.db.preferences.get(trigger.sender, 'topic_mask') or '%s')
+        willie.say("%s")
 show_mask.commands = ['showmask']
 
 def isop (willie, trigger):
