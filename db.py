@@ -345,13 +345,13 @@ class Table(object):
         where = self._make_where_statement(key, row)
         cur.execute(
             'SELECT ' + value + ' FROM ' + self.name + ' WHERE ' + where, row)
-        row = cur.fetchone()[0]
+        row = cur.fetchone()
         if row is None:
             db.close()
             raise KeyError(row+' not in database')
         db.close()
         
-        return row
+        return row[0]
     
     def _get_many(self, row, values, key):
         """Implements get() for where values is iterable"""
