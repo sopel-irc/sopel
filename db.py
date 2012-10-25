@@ -577,12 +577,7 @@ def configure(config):
     Interactively create configuration options and add the attributes to
     the Config object ``config``.
     """
-    c = config.option("Would you like to set up a settings database now")
-        
-    if not c:
-        return
-    else:
-        config.add_section('db')
+    config.add_section('db')
         
     config.interactive_add('db', 'userdb_type',
         'What type of database would you like to use? (mysql/sqlite)', 'mysql')
