@@ -25,8 +25,12 @@ def startup(willie, trigger):
     if willie.config.core.oper_name is not None and willie.config.core.oper_password is not None:
         willie.write(('OPER', willie.config.core.oper_name+' '+willie.config.oper_password))
     
-    #Attempt to set bot mode.
-    willie.write(('MODE ', willie.nick + ' +B'))
+    #Set bot modes per config, +B if no config option is defined
+    if willie.config.has_option('core', 'modes'):
+        modes = willie.config.core.modes
+    else:
+        modes = 'B'
+    willie.write(('MODE ', '%s +%s'%(willie.nick, modes)))
 
     for channel in willie.channels:
         willie.write(('JOIN', channel))
