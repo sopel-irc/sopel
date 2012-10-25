@@ -316,7 +316,7 @@ def create_config(configpath):
         config._core()
         if config.option("Would you like to set up a settings database now"):
             config._db()
-        if self.option('Would you like to see if there are any modules that need configuring'):
+        if config.option('Would you like to see if there are any modules that need configuring'):
             config._modules()
         config.save()
     except Exception, e:
