@@ -4,7 +4,7 @@ oblique.py - Web Services Interface
 Copyright 2008-9, Sean B. Palmer, inamidst.com
 Licensed under the Eiffel Forum License 2.
 
-http://inamidst.com/phenny/
+http://willie.dftba.net
 """
 
 import re, urllib
@@ -28,26 +28,26 @@ def mappings(uri):
         result[command] = template.replace('&amp;', '&')
     return result
 
-def service(jenni, input, command, args):
+def service(willie, trigger, command, args):
     t = o.services[command]
     template = t.replace('${args}', urllib.quote(args.encode('utf-8'), ''))
-    template = template.replace('${nick}', urllib.quote(input.nick, ''))
-    uri = template.replace('${sender}', urllib.quote(input.sender, ''))
+    template = template.replace('${nick}', urllib.quote(trigger.nick, ''))
+    uri = template.replace('${sender}', urllib.quote(trigger.sender, ''))
 
     info = web.head(uri)
     if isinstance(info, list):
         info = info[0]
     if not 'text/plain' in info.get('content-type', '').lower():
-        return jenni.reply("Sorry, the service didn't respond in plain text.")
+        return willie.reply("Sorry, the service didn't respond in plain text.")
     bytes = web.get(uri)
     lines = bytes.splitlines()
     if not lines:
-        return jenni.reply("Sorry, the service didn't respond any output.")
-    jenni.say(lines[0][:350])
+        return willie.reply("Sorry, the service didn't respond any output.")
+    willie.say(lines[0][:350])
 
-def refresh(jenni):
-    if hasattr(jenni.config, 'services'):
-        services = jenni.config.services
+def refresh(willie):
+    if hasattr(willie.config, 'services'):
+        services = willie.config.services
     else: services = definitions
 
     old = o.services
@@ -55,24 +55,24 @@ def refresh(jenni):
     o.services = mappings(o.serviceURI)
     return len(o.services), set(o.services) - set(old)
 
-def o(jenni, input):
+def o(willie, trigger):
     """Call a webservice."""
-    if input.group(1) == 'urban':
-        text = 'ud '+ input.group(2)
+    if trigger.group(1) == 'urban':
+        text = 'ud '+ trigger.group(2)
     else:
-        text = input.group(2)
+        text = trigger.group(2)
 
     if (not o.services) or (text == 'refresh'):
-        length, added = refresh(jenni)
+        length, added = refresh(willie)
         if text == 'refresh':
             msg = 'Okay, found %s services.' % length
             if added:
                 msg += ' Added: ' + ', '.join(sorted(added)[:5])
                 if len(added) > 5: msg += ', &c.'
-            return jenni.reply(msg)
+            return willie.reply(msg)
 
     if not text:
-        return jenni.reply('Try %s for details.' % o.serviceURI)
+        return willie.reply('Try %s for details.' % o.serviceURI)
 
     if ' ' in text:
         command, args = text.split(' ', 1)
@@ -81,31 +81,31 @@ def o(jenni, input):
 
     if command == 'service':
         msg = o.services.get(args, 'No such service!')
-        return jenni.reply(msg)
+        return willie.reply(msg)
 
     if not o.services.has_key(command):
-        return jenni.reply('Service not found in %s' % o.serviceURI)
+        return willie.reply('Service not found in %s' % o.serviceURI)
 
-    if hasattr(jenni.config, 'external'):
-        default = jenni.config.external.get('*')
-        manifest = jenni.config.external.get(input.sender, default)
+    if hasattr(willie.config, 'external'):
+        default = willie.config.external.get('*')
+        manifest = willie.config.external.get(trigger.sender, default)
         if manifest:
             commands = set(manifest)
             if (command not in commands) and (manifest[0] != '!'):
-                return jenni.reply('Sorry, %s is not whitelisted' % command)
+                return willie.reply('Sorry, %s is not whitelisted' % command)
             elif (command in commands) and (manifest[0] == '!'):
-                return jenni.reply('Sorry, %s is blacklisted' % command)
-    service(jenni, input, command, args)
+                return willie.reply('Sorry, %s is blacklisted' % command)
+    service(willie, trigger, command, args)
 o.commands = ['o','urban']
 o.example = '.o servicename arg1 arg2 arg3'
 o.services = {}
 o.serviceURI = None
 
-def snippet(jenni, input):
+def snippet(willie, trigger):
     if not o.services:
-        refresh(jenni)
+        refresh(willie)
 
-    search = urllib.quote(input.group(2).encode('utf-8'))
+    search = urllib.quote(trigger.group(2).encode('utf-8'))
     py = "BeautifulSoup.BeautifulSoup(re.sub('<.*?>|(?<= ) +', '', " + \
           "''.join(chr(ord(c)) for c in " + \
           "eval(urllib.urlopen('http://ajax.googleapis.com/ajax/serv" + \
@@ -113,7 +113,7 @@ def snippet(jenni, input):
           ".replace('null', 'None'))['responseData']['resul" + \
           "ts'][0]['content'].decode('unicode-escape')).replace(" + \
           "'&quot;', '\x22')), convertEntities=True)"
-    service(jenni, input, 'py', py)
+    service(willie, trigger, 'py', py)
 snippet.commands = ['snippet']
 
 if __name__ == '__main__':

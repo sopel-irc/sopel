@@ -1,23 +1,17 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-rss.py - Jenni RSS Module
+rss.py - Willie RSS Module
 Copyright 2012, Michael Yanovich, yanovich.net
 Licensed under the Eiffel Forum License 2.
 
-More info:
- * Jenni: https://github.com/myano/jenni/
- * Phenny: http://inamidst.com/phenny/
+http://willie.dfbta.net
 """
-sqlite = False
 
 import feedparser
 import socket
-if sqlite: import sqlite3 
-else: import MySQLdb
 import sys
 import time
-from modules import url as url_module
 
 DEBUG = False
 socket.setdefaulttimeout(10)
@@ -29,30 +23,26 @@ def checkdb(cursor):
     cursor.execute("CREATE TABLE IF NOT EXISTS rss ( channel text, site_name text, site_url text, fg text, bg text)")
 
 
-def manage_rss(jenni, input):
+def manage_rss(willie, trigger):
     """ .rss operation channel site_name url -- operation can be either 'add', 'del', or 'list' no further operators needed if 'list' used """
-    if not input.admin:
-        jenni.reply("Sorry, you need to be an admin to modify the RSS feeds.")
+    if not trigger.admin:
+        willie.reply("Sorry, you need to be an admin to modify the RSS feeds.")
         return
-    if sqlite: conn = sqlite3.connect('rss.db')
-    else: conn = MySQLdb.connect(host=jenni.config.userdb_host,
-                         user=jenni.config.userdb_user,
-                         passwd=jenni.config.userdb_pass,
-                         db=jenni.config.userdb_name)
+    conn = willie.db.connect()
     c = conn.cursor()
     checkdb(c)
     conn.commit()
 
-    text = input.group().split()
+    text = trigger.group().split()
     if len(text) < 2:
-        jenni.reply("Proper usage: '.rss add ##channel Site_Name URL', '.rss del ##channel Site_Name URL', '.rss del ##channel'")
+        willie.reply("Proper usage: '.rss add ##channel Site_Name URL', '.rss del ##channel Site_Name URL', '.rss del ##channel'")
     elif len(text) > 2:
         channel = text[2].lower()
 
     if len(text) > 4 and text[1] == 'add':
         fg_colour = str()
         bg_colour = str()
-        temp = input.group().split('"')
+        temp = trigger.group().split('"')
         if len(temp) == 1:
             site_name = text[3]
             site_url = text[4]
@@ -71,7 +61,7 @@ def manage_rss(jenni, input):
             if len(ending) == 3:
                 bg_colour = ending[2]
         else:
-            jenni.reply("Not enough parameters specified.")
+            willie.reply("Not enough parameters specified.")
             return
         if fg_colour:
             fg_colour = fg_colour.zfill(2)
@@ -80,30 +70,30 @@ def manage_rss(jenni, input):
         c.execute('INSERT INTO rss VALUES ("%s","%s","%s","%s","%s","%s")' % (channel, site_name, site_url, "time", fg_colour, bg_colour))
         conn.commit()
         c.close()
-        jenni.reply("Successfully added values to database.")
+        willie.reply("Successfully added values to database.")
     elif len(text) == 3 and text[1] == 'del':
         # .rss del ##channel
         c.execute('DELETE FROM rss WHERE channel = "%s"' % channel)
         conn.commit()
         c.close()
-        jenni.reply("Successfully removed values from database.")
+        willie.reply("Successfully removed values from database.")
     elif len(text) >= 4 and text[1] == 'del':
         # .rss del ##channel Site_Name
         c.execute('DELETE FROM rss WHERE channel = "%s" and site_name = "%s"', (channel, " ".join(text[3:])))
         conn.commit()
         c.close()
-        jenni.reply("Successfully removed the site from the given channel.")
+        willie.reply("Successfully removed the site from the given channel.")
     elif len(text) == 2 and text[1] == 'list':
         c.execute("SELECT * FROM rss")
         k = 0
         for row in c:
             k += 1
-            jenni.say("list: " + unicode(row))
+            willie.say("list: " + unicode(row))
         if k == 0:
-            jenni.reply("No entries in database")
+            willie.reply("No entries in database")
     else:
-        jenni.reply("Incorrect parameters specified.")
-    c.close()
+        willie.reply("Incorrect parameters specified.")
+    conn.close()
 manage_rss.commands = ['rss']
 manage_rss.priority = 'low'
 
@@ -116,39 +106,32 @@ restarted = False
 feeds = dict()
 
 
-def read_feeds(jenni):
+def read_feeds(willie):
     global restarted
     global STOP
 
     restarted = False
-    if sqlite: conn = sqlite3.connect('rss.db')
-    else: conn = MySQLdb.connect(host=jenni.config.userdb_host,
-                         user=jenni.config.userdb_user,
-                         passwd=jenni.config.userdb_pass,
-                         db=jenni.config.userdb_name)
-    c = conn.cursor()
-    checkdb(c)
-    c.execute("SELECT * FROM rss")
-    if not c.fetchall():
+    conn = willie.db.connect()
+    cur = conn.cursor()
+    checkdb(cur)
+    cur.execute("SELECT * FROM rss")
+    if not cur.fetchall():
         STOP = True
-        jenni.say("No RSS feeds found in database. Please add some rss feeds.")
+        willie.say("No RSS feeds found in database. Please add some rss feeds.")
 
-    c.execute("SELECT * FROM rss")
-    conn_recent = sqlite3.connect('recent_rss.db')
-    cursor_recent = conn_recent.cursor()
-    cursor_recent.execute("CREATE TABLE IF NOT EXISTS recent ( channel text, site_name text, article_title text, article_url text )")
+    cur.execute("CREATE TABLE IF NOT EXISTS recent ( channel text, site_name text, article_title text, article_url text )")
+    cur.execute("SELECT * FROM rss")
 
-
-    for row in c:
+    for row in cur:
         feed_channel = row[0]
         feed_site_name = row[1]
         feed_url = row[2]
-        feed_fg = row[3]
-        feed_bg = row[4]
+        feed_fg = row[4]
+        feed_bg = row[5]
         try:
             fp = feedparser.parse(feed_url)
         except IOError, E:
-            jenni.say("Can't parse, " + str(E))
+            willie.say("Can't parse, " + str(E))
         entry = fp.entries[0]
 
         if not feed_fg and not feed_bg:
@@ -167,81 +150,71 @@ def read_feeds(jenni):
 
         # only print if new entry
         sql_text = (feed_channel, feed_site_name, entry.title, article_url)
-        cursor_recent.execute("SELECT * FROM recent WHERE channel = ? AND site_name = ? and article_title = ? AND article_url = ?", sql_text)
-        if len(cursor_recent.fetchall()) < 1:
-            short_url = url_module.short(article_url)
+        cur.execute("SELECT * FROM recent WHERE channel = %s AND site_name = %s and article_title = %s AND article_url = %s", sql_text)
+        if len(cur.fetchall()) < 1:
 
-            if short_url:
-                short_url = short_url[0][1][:-1]
-            else:
-                short_url = article_url
-
-            response = site_name_effect + " %s \x02%s\x02" % (entry.title, short_url)
+            response = site_name_effect + " %s \x02%s\x02" % (entry.title, article_url)
             if entry.updated:
                 response += " - %s" % (entry.updated)
 
-            jenni.msg(feed_channel, response)
+            willie.msg(feed_channel, response)
 
             t = (feed_channel, feed_site_name, entry.title, article_url,)
-            cursor_recent.execute("INSERT INTO recent VALUES (?, ?, ?, ?)", t)
-            conn_recent.commit()
-            cursor_recent.close()
+            cur.execute("INSERT INTO recent VALUES (%s, %s, %s, %s)", t)
             conn.commit()
-            c.close()
         else:
             if DEBUG:
-                jenni.msg(feed_channel, u"Skipping previously read entry: %s %s" % (site_name_effect, entry.title))
-    cursor_recent.close()
-    c.close()
+                willie.msg(feed_channel, u"Skipping previously read entry: %s %s" % (site_name_effect, entry.title))
+    conn.close()
 
 
-def startrss(jenni, input):
+def startrss(willie, trigger):
     """ Begin reading RSS feeds """
-    if not input.admin:
-        jenni.reply("You must be an admin to start up the RSS feeds.")
+    if not trigger.admin:
+        willie.reply("You must be an admin to start up the RSS feeds.")
         return
     global first_run, restarted, DEBUG, INTERVAL, STOP
     DEBUG = False
 
-    query = input.group(2)
+    query = trigger.group(2)
     if query == '-v':
         DEBUG = True
         STOP = False
-        jenni.reply("Debugging enabled.")
+        willie.reply("Debugging enabled.")
     elif query == '-q':
         DEBUG = False
         STOP = False
-        jenni.reply("Debugging disabled.")
+        willie.reply("Debugging disabled.")
     elif query == '-i':
-        INTERVAL = input.group(3)
-        jenni.reply("INTERVAL updated to: %s" % (str(INTERVAL)))
+        INTERVAL = trigger.group(3)
+        willie.reply("INTERVAL updated to: %s" % (str(INTERVAL)))
     elif query == '--stop':
         STOP = True
-        jenni.reply("Stop parameter updated.")
+        willie.reply("Stop parameter updated.")
 
     if first_run:
         if DEBUG:
-            jenni.say("Okay, I'll start rss fetching...")
+            willie.say("Okay, I'll start rss fetching...")
         first_run = False
     else:
         restarted = True
         if DEBUG:
-            jenni.say("Okay, I'll re-start rss...")
+            willie.say("Okay, I'll re-start rss...")
 
     if not STOP:
         while True:
             if STOP:
-                jenni.reply("STOPPED")
+                willie.reply("STOPPED")
                 first_run = False
                 STOP = False
                 break
             if DEBUG:
-                jenni.say("Rechecking feeds")
-            read_feeds(jenni)
+                willie.say("Rechecking feeds")
+            read_feeds(willie)
             time.sleep(INTERVAL)
 
     if DEBUG:
-        jenni.say("Stopped checking")
+        willie.say("Stopped checking")
 startrss.commands = ['startrss']
 startrss.priority = 'high'
 

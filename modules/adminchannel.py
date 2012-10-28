@@ -1,89 +1,91 @@
 #!/usr/bin/env python
 # coding=utf-8
 """
-admin.py - Jenni Admin Module
+admin.py - Willie Admin Module
 Copyright 2010-2011, Michael Yanovich, Alek Rollyson, and Edward Powell
 Copyright © 2012, Elad Alfassa <elad@fedoraproject.org>
 Licensed under the Eiffel Forum License 2.
 
-More info:
- * Jenni: https://github.com/myano/jenni/
- * Phenny: http://inamidst.com/phenny/
- * Willie: http://willie.dftba.net/
+http://willie.dftba.net/
 
 """
 
 import re
 
-def op(jenni, trigger):
+def setup(willie):
+    #Having a db means pref's exists. Later, we can just use `if willie.db`.
+    if willie.db and not willie.db.preferences.hascolumn('topic_mask'):
+        willie.db.preferences.add_columns(['topic_mask'])
+
+def op(willie, trigger):
     """
     Command to op users in a room. If no nick is given,
-    jenni will op the nick who sent the command
+    willie will op the nick who sent the command
     """
     if not trigger.isop:
         return
     nick = trigger.group(2)
-    verify = auth_check(jenni, trigger.nick, nick)
+    verify = auth_check(willie, trigger.nick, nick)
     if verify:
         channel = trigger.sender
         if not nick:
             nick = trigger.nick
-        jenni.write(['MODE', channel, "+o", nick])
+        willie.write(['MODE', channel, "+o", nick])
 op.rule = (['op'], r'(\S+)?')
 op.priority = 'low'
 
-def deop(jenni, trigger):
+def deop(willie, trigger):
     """
     Command to deop users in a room. If no nick is given,
-    jenni will deop the nick who sent the command
+    willie will deop the nick who sent the command
     """
     if not trigger.isop:
         return
     nick = trigger.group(2)
-    verify = auth_check(jenni, trigger.nick, nick)
+    verify = auth_check(willie, trigger.nick, nick)
     if verify:
         channel = trigger.sender
         if not nick:
             nick = trigger.nick
-        jenni.write(['MODE', channel, "-o", nick])
+        willie.write(['MODE', channel, "-o", nick])
 deop.rule = (['deop'], r'(\S+)?')
 deop.priority = 'low'
 
-def voice(jenni, trigger):
+def voice(willie, trigger):
     """
     Command to voice users in a room. If no nick is given,
-    jenni will voice the nick who sent the command
+    willie will voice the nick who sent the command
     """
     if not trigger.isop:
         return
     nick = trigger.group(2)
-    verify = auth_check(jenni, trigger.nick, nick)
+    verify = auth_check(willie, trigger.nick, nick)
     if verify:
         channel = trigger.sender
         if not nick:
             nick = trigger.nick
-        jenni.write(['MODE', channel, "+v", nick])
+        willie.write(['MODE', channel, "+v", nick])
 voice.rule = (['voice'], r'(\S+)?')
 voice.priority = 'low'
 
-def devoice(jenni, trigger):
+def devoice(willie, trigger):
     """
     Command to devoice users in a room. If no nick is given,
-    jenni will devoice the nick who sent the command
+    willie will devoice the nick who sent the command
     """
     if not trigger.isop:
         return
     nick = trigger.group(2)
-    verify = auth_check(jenni, trigger.nick, nick)
+    verify = auth_check(willie, trigger.nick, nick)
     if verify:
         channel = trigger.sender
         if not nick:
             nick = trigger.nick
-        jenni.write(['MODE', channel, "-v", nick])
+        willie.write(['MODE', channel, "-v", nick])
 devoice.rule = (['devoice'], r'(\S+)?')
 devoice.priority = 'low'
 
-def kick(jenni, trigger):
+def kick(willie, trigger):
     if not trigger.isop:
         return
     text = trigger.group().split()
@@ -99,8 +101,8 @@ def kick(jenni, trigger):
         channel = opt
         reasonidx = 3
     reason = ' '.join(text[reasonidx:])
-    if nick != jenni.config.nick:
-        jenni.write(['KICK', channel, nick, reason])
+    if nick != willie.config.nick:
+        willie.write(['KICK', channel, nick, reason])
 kick.commands = ['kick']
 kick.priority = 'high'
 
@@ -119,7 +121,7 @@ def configureHostMask (mask):
     if m is not None: return '%s!%s@*' % (m.group(1), m.group(2))
     return ''
 
-def ban (jenni, trigger):
+def ban (willie, trigger):
     """
     This give admins the ability to ban a user.
     The bot must be a Channel Operator for this command to work.
@@ -138,11 +140,11 @@ def ban (jenni, trigger):
         banmask = text[2]
     banmask = configureHostMask(banmask)
     if banmask == '': return
-    jenni.write(['MODE', channel, '+b', banmask])
+    willie.write(['MODE', channel, '+b', banmask])
 ban.commands = ['ban']
 ban.priority = 'high'
 
-def unban (jenni, trigger):
+def unban (willie, trigger):
     """
     This give admins the ability to unban a user.
     The bot must be a Channel Operator for this command to work.
@@ -161,11 +163,11 @@ def unban (jenni, trigger):
         banmask = text[2]
     banmask = configureHostMask(banmask)
     if banmask == '': return
-    jenni.write(['MODE', channel, '-b', banmask])
+    willie.write(['MODE', channel, '-b', banmask])
 unban.commands = ['unban']
 unban.priority = 'high'
 
-def quiet (jenni, trigger):
+def quiet (willie, trigger):
     """
     This gives admins the ability to quiet a user.
     The bot must be a Channel Operator for this command to work
@@ -184,11 +186,11 @@ def quiet (jenni, trigger):
        channel = opt
     quietmask = configureHostMask(quietmask)
     if quietmask == '': return
-    jenni.write(['MODE', channel, '+q', quietmask])
+    willie.write(['MODE', channel, '+q', quietmask])
 quiet.commands = ['quiet']
 quiet.priority = 'high'
 
-def unquiet (jenni, trigger):
+def unquiet (willie, trigger):
    """
    This gives admins the ability to unquiet a user.
    The bot must be a Channel Operator for this command to work
@@ -206,11 +208,11 @@ def unquiet (jenni, trigger):
        channel = opt
    quietmask = configureHostMask(quietmask)
    if quietmask == '': return
-   jenni.write(['MODE', opt, '-q', quietmask])
+   willie.write(['MODE', opt, '-q', quietmask])
 unquiet.commands = ['unquiet']
 unquiet.priority = 'high'
 
-def kickban (jenni, trigger):
+def kickban (willie, trigger):
    """
    This gives admins the ability to kickban a user.
    The bot must be a Channel Operator for this command to work
@@ -233,12 +235,12 @@ def kickban (jenni, trigger):
    reason = ' '.join(text[reasonidx:])
    mask = configureHostMask(mask)
    if mask == '': return
-   jenni.write(['MODE', channel, '+b', mask])
-   jenni.write(['KICK', channel, nick, ' :', reason])
+   willie.write(['MODE', channel, '+b', mask])
+   willie.write(['KICK', channel, nick, ' :', reason])
 kickban.commands = ['kickban', 'kb']
 kickban.priority = 'high'
 
-def topic(jenni, trigger):
+def topic(willie, trigger):
     """
     This gives ops the ability to change the topic.
     """
@@ -252,8 +254,8 @@ def topic(jenni, trigger):
     
     narg = 1
     mask = None
-    if jenni.settings.hascolumn('topic_mask') and channel in jenni.settings:
-        mask = jenni.settings.get(channel, 'topic_mask')
+    if willie.db and channel in willie.db.preferences:
+        mask = willie.db.preferences.get(channel, 'topic_mask')
         narg = len(re.findall('%s', mask))
     if not mask or mask == '':
         mask = purple +'Welcome to: '+ green + channel + purple \
@@ -268,37 +270,39 @@ def topic(jenni, trigger):
     
     if len(text) != narg:
         message = "Not enough arguments. You gave "+str(len(text))+', it requires '+str(narg)+'.'
-        return jenni.say(message)
+        return willie.say(message)
     topic = mask % text
     
-    jenni.write(('TOPIC', channel + ' :' + topic))
+    willie.write(('TOPIC', channel + ' :' + topic))
 topic.commands = ['topic']
 topic.priority = 'low'
 
-def set_mask (jenni, trigger):
+def set_mask (willie, trigger):
     if not trigger.isop:
         return
-    if not jenni.settings.hascolumn('topic_mask'):
-        jenni.say("I'm afraid I can't do that.")
+    if not willie.db:
+        willie.say("I'm afraid I can't do that.")
     else:
-        jenni.settings.update(trigger.sender, {'topic_mask': trigger.group(2)})
-        jenni.say("Gotcha, " + trigger.nick)
+        willie.db.preferences.update(trigger.sender, {'topic_mask': trigger.group(2)})
+        willie.say("Gotcha, " + trigger.nick)
 set_mask.commands = ['tmask']
 
-def show_mask (jenni, trigger):
+def show_mask (willie, trigger):
     if not trigger.isop:
         return
-    if not jenni.settings.hascolumn('topic_mask'):
-        jenni.say("I'm afraid I can't do that.")
+    if not willie.db:
+        willie.say("I'm afraid I can't do that.")
+    elif trigger.sender in willie.db.preferences:
+        willie.say(willie.db.preferences.get(trigger.sender, 'topic_mask'))
     else:
-        jenni.say(jenni.settings.get(trigger.sender, 'topic_mask'))
+        willie.say("%s")
 show_mask.commands = ['showmask']
 
-def isop (jenni, trigger):
+def isop (willie, trigger):
     if trigger.isop:
-        jenni.reply('yes')
+        willie.reply('yes')
     else:
-        jenni.reply('no')
+        willie.reply('no')
 isop.commands = ['isop']
 
 if __name__ == '__main__':

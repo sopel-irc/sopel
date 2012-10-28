@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf8 -*-
 """
-meetbot.py - Jenni meeting logger module
+meetbot.py - Willie meeting logger module
 Copyright © 2012, Elad Alfassa, <elad@fedoraproject.org>
 Licensed under the Eiffel Forum License 2.
 
@@ -15,13 +15,9 @@ from tools import Ddict
 import codecs
 
 def configure(config):
-    chunk = ''
-    if config.option('Configure meetbot', True):
-        config.interactive_add('meeting_log_path', "Path to meeting logs storage directory (should be an absolute path, accessible on a webserver)")
-        config.interactive_add('meeting_log_baseurl', "Base URL for the meeting logs directory (eg. http://example.com/logs)")
-        chunk = ("\nmeeting_log_path = '%s'\nmeeting_log_baseurl = '%s'\n"
-                 % (config.meeting_log_path, config.meeting_log_baseurl))
-    return chunk
+    if config.option('Configure meetbot', False):
+        config.interactive_add('meetbot', 'meeting_log_path', "Path to meeting logs storage directory (should be an absolute path, accessible on a webserver)")
+        config.interactive_add('meetbot', 'meeting_log_baseurl', "Base URL for the meeting logs directory (eg. http://example.com/logs)")
 
 """ 
 meetings_dict is a 2D dict.
@@ -38,8 +34,8 @@ Using channel as the meeting ID as there can't be more than one meeting in a cha
 """
 
 meetings_dict=Ddict(dict) #Saves metadata about currently running meetings
-meeting_log_path = '' #To be defined on meeting start as part of sanity checks, used by logging functions so we don't have to pass them jenni
-meeting_log_baseurl = '' #To be defined on meeting start as part of sanity checks, used by logging functions so we don't have to pass them jenni
+meeting_log_path = '' #To be defined on meeting start as part of sanity checks, used by logging functions so we don't have to pass them willie
+meeting_log_baseurl = '' #To be defined on meeting start as part of sanity checks, used by logging functions so we don't have to pass them willie
 
 #Get the logfile name for the meeting in the requested channel
 #Used by all logging functions
@@ -106,197 +102,197 @@ def ischair(nick,channel):
         return False;
 
 #Start meeting (also preforms all required sanity checks)
-def startmeeting(jenni, input):
-    if ismeetingrunning(input.sender):
-        jenni.say('Can\'t do that, there is already a meeting in progress here!')
+def startmeeting(willie, trigger):
+    if ismeetingrunning(trigger.sender):
+        willie.say('Can\'t do that, there is already a meeting in progress here!')
         return
-    if not input.sender.startswith('#'):
-        jenni.say('Can only start meetings in channels')
+    if not trigger.sender.startswith('#'):
+        willie.say('Can only start meetings in channels')
         return
-    if not hasattr(jenni.config, 'meeting_log_path') or not hasattr(jenni.config, 'meeting_log_baseurl'):
-        jenni.say('Meetbot not configured, make sure meeting_log_path and meeting_log_baseurl are defined')
+    if not willie.config.has_section('meetbot'):
+        willie.say('Meetbot not configured, make sure meeting_log_path and meeting_log_baseurl are defined')
         return
     #Start the meeting
-    meetings_dict[input.sender]['start'] = time.time()
-    if not input.group(2):
-        meetings_dict[input.sender]['title'] = 'Untitled meeting'
+    meetings_dict[trigger.sender]['start'] = time.time()
+    if not trigger.group(2):
+        meetings_dict[trigger.sender]['title'] = 'Untitled meeting'
     else:
-        meetings_dict[input.sender]['title'] = input.group(2)
-    meetings_dict[input.sender]['head'] = input.nick.lower()
-    meetings_dict[input.sender]['running'] = True
+        meetings_dict[trigger.sender]['title'] = trigger.group(2)
+    meetings_dict[trigger.sender]['head'] = trigger.nick.lower()
+    meetings_dict[trigger.sender]['running'] = True
     
     global meeting_log_path
-    meeting_log_path = jenni.config.meeting_log_path
+    meeting_log_path = willie.config.meetbot.meeting_log_path
     if not meeting_log_path.endswith('/'):
         meeting_log_path = meeting_log_path + '/'
     global meeting_log_baseurl
-    meeting_log_baseurl = jenni.config.meeting_log_baseurl
+    meeting_log_baseurl = willie.config.meetbot.meeting_log_baseurl
     if not meeting_log_baseurl.endswith('/'):
         meeting_log_baseurl = meeting_log_baseurl + '/'
-    if not os.path.isdir(meeting_log_path + input.sender):
+    if not os.path.isdir(meeting_log_path + trigger.sender):
         try:
-            os.makedirs(meeting_log_path + input.sender)
+            os.makedirs(meeting_log_path + trigger.sender)
         except Exception as e:
-            jenni.say("Can't create log directory for this channel, meeting not started!")
-            meetings_dict[input.sender] = Ddict(dict)
+            willie.say("Can't create log directory for this channel, meeting not started!")
+            meetings_dict[trigger.sender] = Ddict(dict)
             raise
             return
     #Okay, meeting started!
-    logplain('Meeting started by ' + input.nick.lower(), input.sender)
-    logHTML_start(input.sender)
-    jenni.say('Meeting started! use .action, .agreed, .info, .chairs and .subject to control the meeting. to end the meeting, type .endmeeting')
+    logplain('Meeting started by ' + trigger.nick.lower(), trigger.sender)
+    logHTML_start(trigger.sender)
+    willie.say('Meeting started! use .action, .agreed, .info, .chairs and .subject to control the meeting. to end the meeting, type .endmeeting')
 
 
 startmeeting.commands = ['startmeeting']
 startmeeting.example = '.startmeeting title or .startmeeting'
 
 #Change the current subject (will appear as <h3> in the HTML log)
-def meetingsubject(jenni, input):
-    if not ismeetingrunning(input.sender):
-        jenni.say('Can\'t do that, start meeting first')
+def meetingsubject(willie, trigger):
+    if not ismeetingrunning(trigger.sender):
+        willie.say('Can\'t do that, start meeting first')
         return
-    if not input.group(2):
-        jenni.say('what is the subject?')
+    if not trigger.group(2):
+        willie.say('what is the subject?')
         return
-    if not ischair(input.nick, input.sender):
-        jenni.say('Only meeting head or chairs can do that')
+    if not ischair(trigger.nick, trigger.sender):
+        willie.say('Only meeting head or chairs can do that')
         return
-    meetings_dict[input.sender]['current_subject'] = input.group(2)
-    logfile = open(meeting_log_path + input.sender + '/' + figure_logfile_name(input.sender) + '.html', 'a')
-    logfile.write('</ul><h3>'+input.group(2)+'</h3><ul>')
+    meetings_dict[trigger.sender]['current_subject'] = trigger.group(2)
+    logfile = open(meeting_log_path + trigger.sender + '/' + figure_logfile_name(trigger.sender) + '.html', 'a')
+    logfile.write('</ul><h3>'+trigger.group(2)+'</h3><ul>')
     logfile.close()
-    logplain('Current subject: ' + input.group(2) +', (set by ' + input.nick +')', input.sender)
-    jenni.say('Current subject: ' + input.group(2))
+    logplain('Current subject: ' + trigger.group(2) +', (set by ' + trigger.nick +')', trigger.sender)
+    willie.say('Current subject: ' + trigger.group(2))
 meetingsubject.commands = ['subject']
 meetingsubject.example = '.subject roll call'
 
 #End the meeting
-def endmeeting(jenni, input):
-    if not ismeetingrunning(input.sender):
-        jenni.say('Can\'t do that, start meeting first')
+def endmeeting(willie, trigger):
+    if not ismeetingrunning(trigger.sender):
+        willie.say('Can\'t do that, start meeting first')
         return
-    if not ischair(input.nick, input.sender):
-        jenni.say('Only meeting head or chairs can do that')
+    if not ischair(trigger.nick, trigger.sender):
+        willie.say('Only meeting head or chairs can do that')
         return
-    meeting_length = time.time() - meetings_dict[input.sender]['start'] 
+    meeting_length = time.time() - meetings_dict[trigger.sender]['start'] 
     #TODO: Humanize time output
-    jenni.say("Meeting ended! total meeting length %d seconds" % meeting_length)
-    logHTML_end(input.sender)
-    htmllog_url = meeting_log_baseurl + urllib2.quote(input.sender + '/' + figure_logfile_name(input.sender) + '.html')
-    logplain('Meeting ended by %s, total meeting length %d seconds' % (input.nick, meeting_length), input.sender)
-    jenni.say('Meeting minutes: ' + htmllog_url)
-    meetings_dict[input.sender] = Ddict(dict)
+    willie.say("Meeting ended! total meeting length %d seconds" % meeting_length)
+    logHTML_end(trigger.sender)
+    htmllog_url = meeting_log_baseurl + urllib2.quote(trigger.sender + '/' + figure_logfile_name(trigger.sender) + '.html')
+    logplain('Meeting ended by %s, total meeting length %d seconds' % (trigger.nick, meeting_length), trigger.sender)
+    willie.say('Meeting minutes: ' + htmllog_url)
+    meetings_dict[trigger.sender] = Ddict(dict)
 
 endmeeting.commands = ['endmeeting']
 endmeeting.example = '.endmeeting'
 
 #Set meeting chairs (people who can control the meeting)
-def chairs(jenni, input):
-    if not ismeetingrunning(input.sender):
-        jenni.say('Can\'t do that, start meeting first')
+def chairs(willie, trigger):
+    if not ismeetingrunning(trigger.sender):
+        willie.say('Can\'t do that, start meeting first')
         return
-    if not input.group(2):
-        jenni.say('Who are the chairs?')
+    if not trigger.group(2):
+        willie.say('Who are the chairs?')
         return
-    if input.nick.lower() == meetings_dict[input.sender]['head']:
-        meetings_dict[input.sender]['chairs'] = input.group(2).lower().split(' ')
-        chairs_readable = input.group(2).lower().replace(' ', ', ')
-        logplain('Meeting chairs are: ' + chairs_readable, input.sender)
-        logHTML_listitem('<span style="font-weight: bold">Meeting chairs are: </span>'+chairs_readable, input.sender)
-        jenni.say('Meeting chairs are: ' + chairs_readable)
+    if trigger.nick.lower() == meetings_dict[trigger.sender]['head']:
+        meetings_dict[trigger.sender]['chairs'] = trigger.group(2).lower().split(' ')
+        chairs_readable = trigger.group(2).lower().replace(' ', ', ')
+        logplain('Meeting chairs are: ' + chairs_readable, trigger.sender)
+        logHTML_listitem('<span style="font-weight: bold">Meeting chairs are: </span>'+chairs_readable, trigger.sender)
+        willie.say('Meeting chairs are: ' + chairs_readable)
     else:
-        jenni.say("Only meeting head can set chairs")
+        willie.say("Only meeting head can set chairs")
 
 chairs.commands = ['chairs']
 chairs.example = '.chairs Tyrope Jason elad'
 
 #Log action item in the HTML log
-def meetingaction(jenni, input):
-    if not ismeetingrunning(input.sender):
-        jenni.say('Can\'t do that, start meeting first')
+def meetingaction(willie, trigger):
+    if not ismeetingrunning(trigger.sender):
+        willie.say('Can\'t do that, start meeting first')
         return
-    if not input.group(2):
-        jenni.say('try .action someone will do something')
+    if not trigger.group(2):
+        willie.say('try .action someone will do something')
         return
-    if not ischair(input.nick, input.sender):
-        jenni.say('Only meeting head or chairs can do that')
+    if not ischair(trigger.nick, trigger.sender):
+        willie.say('Only meeting head or chairs can do that')
         return
-    logplain('ACTION: ' + input.group(2), input.sender)
-    logHTML_listitem('<span style="font-weight: bold">Action: </span>'+input.group(2), input.sender)
-    jenni.say('ACTION: ' + input.group(2))
+    logplain('ACTION: ' + trigger.group(2), trigger.sender)
+    logHTML_listitem('<span style="font-weight: bold">Action: </span>'+trigger.group(2), trigger.sender)
+    willie.say('ACTION: ' + trigger.group(2))
     
 meetingaction.commands = ['action']
 meetingaction.example = '.action elad will develop a meetbot'
 
 #Log agreed item in the HTML log
-def meetingagreed(jenni, input):
-    if not ismeetingrunning(input.sender):
-        jenni.say('Can\'t do that, start meeting first')
+def meetingagreed(willie, trigger):
+    if not ismeetingrunning(trigger.sender):
+        willie.say('Can\'t do that, start meeting first')
         return
-    if not input.group(2):
-        jenni.say('try .action someone will do something')
+    if not trigger.group(2):
+        willie.say('try .action someone will do something')
         return
-    if not ischair(input.nick, input.sender):
-        jenni.say('Only meeting head or chairs can do that')
+    if not ischair(trigger.nick, trigger.sender):
+        willie.say('Only meeting head or chairs can do that')
         return
-    logplain('AGREED: ' + input.group(2), input.sender)
-    logHTML_listitem('<span style="font-weight: bold">Agreed: </span>'+input.group(2), input.sender)
-    jenni.say('AGREED: ' + input.group(2))
+    logplain('AGREED: ' + trigger.group(2), trigger.sender)
+    logHTML_listitem('<span style="font-weight: bold">Agreed: </span>'+trigger.group(2), trigger.sender)
+    willie.say('AGREED: ' + trigger.group(2))
     
 meetingagreed.commands = ['agreed']
 meetingagreed.example = '.agreed bowties are not cool'
 
 #Log link item in the HTML log
-def meetinglink(jenni, input):
-    if not ismeetingrunning(input.sender):
-        jenni.say('Can\'t do that, start meeting first')
+def meetinglink(willie, trigger):
+    if not ismeetingrunning(trigger.sender):
+        willie.say('Can\'t do that, start meeting first')
         return
-    if not input.group(2):
-        jenni.say('try .action someone will do something')
+    if not trigger.group(2):
+        willie.say('try .action someone will do something')
         return
-    if not ischair(input.nick, input.sender):
-        jenni.say('Only meeting head or chairs can do that')
+    if not ischair(trigger.nick, trigger.sender):
+        willie.say('Only meeting head or chairs can do that')
         return
-    link = input.group(2)
+    link = trigger.group(2)
     if not link.startswith("http"):
         link = "http://" + link
     try:
         title = find_title(link)
     except:
         title = ''
-    logplain('LINK: %s [%s]' % (link, title), input.sender)
-    logHTML_listitem('<a href="%s">%s</a>' % (link, title), input.sender)
-    jenni.say('LINK: ' + link)
+    logplain('LINK: %s [%s]' % (link, title), trigger.sender)
+    logHTML_listitem('<a href="%s">%s</a>' % (link, title), trigger.sender)
+    willie.say('LINK: ' + link)
 
 meetinglink.commands = ['link']
 meetinglink.example = '.link http://example.com'
 
 
 #Log informational item in the HTML log
-def meetinginfo(jenni, input):
-    if not ismeetingrunning(input.sender):
-        jenni.say('Can\'t do that, start meeting first')
+def meetinginfo(willie, trigger):
+    if not ismeetingrunning(trigger.sender):
+        willie.say('Can\'t do that, start meeting first')
         return
-    if not input.group(2):
-        jenni.say('try .info some informative thing')
+    if not trigger.group(2):
+        willie.say('try .info some informative thing')
         return
-    if not ischair(input.nick, input.sender):
-        jenni.say('Only meeting head or chairs can do that')
+    if not ischair(trigger.nick, trigger.sender):
+        willie.say('Only meeting head or chairs can do that')
         return
-    logplain('INFO: ' + input.group(2), input.sender)
-    logHTML_listitem(input.group(2), input.sender)
-    jenni.say('INFO: ' + input.group(2))
+    logplain('INFO: ' + trigger.group(2), trigger.sender)
+    logHTML_listitem(trigger.group(2), trigger.sender)
+    willie.say('INFO: ' + trigger.group(2))
 meetinginfo.commands = ['info']
 meetinginfo.example = '.info all board members present'
 
 #called for every single message
 #Will log to plain text only
-def log_meeting(jenni, input): 
-    if not ismeetingrunning(input.sender):
+def log_meeting(willie, trigger): 
+    if not ismeetingrunning(trigger.sender):
         return
-    if input.startswith('.endmeeting') or input.startswith('.chairs') or input.startswith('.action') or input.startswith('.info') or input.startswith('.startmeeting') or input.startswith('.agreed') or input.startswith('.link') or input.startswith('.subject'):
+    if trigger.startswith('.endmeeting') or trigger.startswith('.chairs') or trigger.startswith('.action') or trigger.startswith('.info') or trigger.startswith('.startmeeting') or trigger.startswith('.agreed') or trigger.startswith('.link') or trigger.startswith('.subject'):
         return
-    logplain('<'+input.nick+'> '+input, input.sender)
+    logplain('<'+trigger.nick+'> '+trigger, trigger.sender)
 
 log_meeting.rule = r'(.*)'
 log_meeting.priority = 'low'

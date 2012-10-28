@@ -17,8 +17,8 @@ import bot
 import signal
 
 def run(config):
-    if hasattr(config, 'delay'):
-        delay = config.delay
+    if config.core.delay is not None:
+        delay = config.core.delay
     else: 
         delay = 20
     def signal_handler(sig, frame):
@@ -30,7 +30,7 @@ def run(config):
             p = bot.Willie(config)
             if hasattr(signal, 'SIGUSR1'):
                 signal.signal(signal.SIGUSR1, signal_handler)
-            p.run(config.host, config.port)
+            p.run(config.core.host, int(config.core.port))
         except KeyboardInterrupt:
             os._exit(0)
         except Exception, e:

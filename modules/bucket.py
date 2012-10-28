@@ -32,20 +32,18 @@ seed()
 
 def configure(config):
     chunk = ''
-    if config.option('Configure Bucket factiod DB', True):
-        config.interactive_add('bucket_host', "Enter the MySQL hostname", 'localhost')
-        config.interactive_add('bucket_user', "Enter the MySQL username")
-        config.interactive_add('bucket_pass', "Enter the user's password")
-        config.interactive_add('bucket_db', "Enter the name of the database to use")
-        config.interactive_add('bucket_literal_path', "Enter the path in which you want to store output of the literal command")
-        config.interactive_add('bucket_literal_baseurl', "Base URL for literal output")
-        chunk = ("\nbucket_host = '%s'\nbucket_user = '%s'\nbucket_pass = '%s'\nbucket_db = '%s'\nbucket_literal_path = '%s'\nbucket_literal_baseurl = '%s'\n"
-                 % (config.bucket_host, config.bucket_user, config.bucket_pass, config.bucket_db, config.bucket_literal_path, config.bucket_literal_baseurl))
+    if config.option('Configure Bucket factiod DB', False):
+        config.interactive_add('bucket', 'db_host', "Enter the MySQL hostname", 'localhost')
+        config.interactive_add('bucket', 'db_user', "Enter the MySQL username")
+        config.interactive_add('bucket', 'db_pass', "Enter the user's password")
+        config.interactive_add('bucket', 'db_name', "Enter the name of the database to use")
+        config.interactive_add('bucket', 'literal_path', "Enter the path in which you want to store output of the literal command")
+        config.interactive_add( 'bucket','literal_baseurl', "Base URL for literal output")
         if config.option('do you want to generate bucket tables and populate them with some default data?', True):
-            db = MySQLdb.connect(host=config.bucket_host,
-                         user=config.bucket_user,
-                         passwd=config.bucket_pass,
-                         db=config.bucket_db)
+            db = MySQLdb.connect(host=config.bucket.db_host,
+                         user=config.bucket.db_user,
+                         passwd=config.bucket.db_pass,
+                         db=config.bucket.db_name)
             cur = db.cursor()
             #Create facts table
             cur.execute("CREATE TABLE IF NOT EXISTS `bucket_facts` (`id` int(10) unsigned NOT NULL AUTO_INCREMENT,`fact` varchar(128) COLLATE utf8_unicode_ci NOT NULL,`tidbit` text COLLATE utf8_unicode_ci NOT NULL,`verb` varchar(16) CHARACTER SET latin1 NOT NULL DEFAULT 'is',`RE` tinyint(1) NOT NULL,`protected` tinyint(1) NOT NULL,`mood` tinyint(3) unsigned DEFAULT NULL,`chance` tinyint(3) unsigned DEFAULT NULL,PRIMARY KEY (`id`),UNIQUE KEY `fact` (`fact`,`tidbit`(200),`verb`),KEY `trigger` (`fact`),KEY `RE` (`RE`)) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;")
@@ -513,8 +511,8 @@ def say_fact(willie, trigger):
             willie.say ("#%d - %s %s %s" % (number, fact, verb, tidbit))
         else:
             willie.reply('just a second, I\'ll make the list!')
-            bucket_literal_path = willie.config.bucket_literal_path
-            bucket_literal_baseurl = willie.config.bucket_literal_baseurl
+            bucket_literal_path = willie.config.bucket.literal_path
+            bucket_literal_baseurl = willie.config.bucket.literal_baseurl
             if not bucket_literal_baseurl.endswith('/'):
                 bucket_literal_baseurl = bucket_literal_baseurl + '/'
             if not os.path.isdir(bucket_literal_path):
@@ -593,10 +591,10 @@ get_inventory.rule = ('$nick','inventory')
 get_inventory.priority = 'medium'
 
 def connect_db(willie):
-    return MySQLdb.connect(host=willie.config.bucket_host,
-                         user=willie.config.bucket_user,
-                         passwd=willie.config.bucket_pass,
-                         db=willie.config.bucket_db,
+    return MySQLdb.connect(host=willie.config.bucket.db_host,
+                         user=willie.config.bucket.db_user,
+                         passwd=willie.config.bucket.db_pass,
+                         db=willie.config.bucket.db_name,
                          charset="utf8",
                          use_unicode=True)
 

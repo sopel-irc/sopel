@@ -4,6 +4,7 @@
 tools.py - Willie misc tools
 Copyright 2008, Sean B. Palmer, inamidst.com
 Copyright © 2012, Elad Alfassa <elad@fedoraproject.org>
+Copyright 2012, Edward Powell, embolalia.net
 Licensed under the Eiffel Forum License 2.
 
 https://willie.dftba.net
@@ -17,19 +18,16 @@ try:
 except:
     #no SSL support
     ssl = False
+import traceback
 
 def deprecated(old):
-    def new(willie, input, old=old):
-        self = willie
-        origin = type('Origin', (object,), {
-            'sender': input.sender,
-            'nick': input.nick
-        })()
-        match = input.match
-        args = [input.bytes, input.sender, '@@']
-
-        old(self, origin, match, args)
-    new.__module__ = old.__module__
+    def new(*args, **kwargs):
+        stderr('Function %s is deprecated.' % old.__name__)
+        trace = traceback.extract_stack()
+        for line in traceback.format_list(trace[:-1]):
+            stderr(line[:-1])
+        return old(*args, **kwargs)
+    new.__doc__ = old.__doc__
     new.__name__ = old.__name__
     return new
     
@@ -45,7 +43,7 @@ class Ddict(dict):
             self[key] = self.default()
         return dict.__getitem__(self, key)
 
-class output_redirect:
+class OutputRedirect:
     ''' A simple object to replace stdout and stderr '''
     def __init__(self, logpath, stderr=False, quiet = False):
         self.logpath = logpath
@@ -64,14 +62,14 @@ class output_redirect:
         logfile.write(string.encode('utf8'))
         logfile.close()
 
-def try_print(string):
+def stdout(string):
     ''' Try printing to terminal, ignore errors '''
     try:
         print string
     except:
         pass
         
-def try_print_stderr(string):
+def stderr(string):
     ''' Try printing to stderr, ignore errors '''
     try:
         print >> sys.stderr, string
@@ -91,14 +89,14 @@ def verify_ssl_cn(server, port):
     if not ssl:
         return None
     cert = None
-    for version in (ssl.PROTOCOL_TLSv1, ssl.PROTOCOL_SSLv3, ssl.PROTOCOL_SSLv23, ssl.PROTOCOL_SSLv2):
+    for version in (ssl.PROTOCOL_TLSv1, ssl.PROTOCOL_SSLv3, ssl.PROTOCOL_SSLv23):
         try:
             cert = ssl.get_server_certificate((server, port), ssl_version = version)
             break
         except Exception as e:
             pass
     if cert is None:
-        return None
+        return 'NoCertFound'
     valid = False;
     x509 = OpenSSL.crypto.load_certificate(OpenSSL.crypto.FILETYPE_PEM, cert)
     cret_info = x509.get_subject().get_components()

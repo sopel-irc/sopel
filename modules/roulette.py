@@ -1,12 +1,10 @@
 #!/usr/bin/env python
 """
-roulette.py - Jenni Roulette Game Module
+roulette.py - Willie Roulette Game Module
 Copyright 2010, Kenneth Sham
 Licensed under the Eiffel Forum License 2.
 
-More info:
- * Jenni: https://github.com/myano/jenni/
- * Phenny: http://inamidst.com/phenny/
+http://willie.dftba.net
 """
 
 import random
@@ -38,39 +36,39 @@ ROULETTE_TMP = {
     'LAST-ACTIVITY' : None,
 }
 
-def roulette (jenni, input):
+def roulette (willie, trigger):
     global ROULETTE_SETTINGS, ROULETTE_STRINGS, ROULETTE_TMP
     if ROULETTE_TMP['NUMBER'] is None:
         ROULETTE_TMP['NUMBER'] = random.randint(0,ROULETTE_SETTINGS['MAX_RANGE'])
-        ROULETTE_TMP['LAST-PLAYER'] = input.nick
+        ROULETTE_TMP['LAST-PLAYER'] = trigger.nick
         ROULETTE_TMP['LAST-ACTIVITY'] = datetime.now()
-        jenni.say(ROULETTE_STRINGS['TICK'])
+        willie.say(ROULETTE_STRINGS['TICK'])
         return
-    if ROULETTE_TMP['LAST-PLAYER'] == input.nick:
+    if ROULETTE_TMP['LAST-PLAYER'] == trigger.nick:
         return
     ROULETTE_TMP['LAST-ACTIVITY'] = datetime.now()
-    ROULETTE_TMP['LAST-PLAYER'] = input.nick
+    ROULETTE_TMP['LAST-PLAYER'] = trigger.nick
     if ROULETTE_TMP['NUMBER'] == random.randint(0,ROULETTE_SETTINGS['MAX_RANGE']):
-        jenni.write(['KICK', '%s %s :%s' % (input.sender, input.nick, ROULETTE_STRINGS['KICK_REASON'])])
+        willie.write(['KICK', '%s %s :%s' % (trigger.sender, trigger.nick, ROULETTE_STRINGS['KICK_REASON'])])
         ROULETTE_TMP['LAST-PLAYER'] = None
         ROULETTE_TMP['NUMBER'] = None
         ROULETTE_TMP['LAST-ACTIVITY'] = None
     else:
-        jenni.say(ROULETTE_STRINGS['TICK'])
+        willie.say(ROULETTE_STRINGS['TICK'])
 roulette.commands = ['roulette']
 roulette.priority = 'low'
 
-def rouletteStop (jenni, input):
+def rouletteStop (willie, trigger):
     global ROULETTE_TMP, ROULETTE_STRINGS
     if ROULETTE_TMP['LAST-PLAYER'] is None:
         return
     if datetime.now() - ROULETTE_TMP['LAST-ACTIVITY'] > ROULETTE_TMP['TIMEOUT']:
-        jenni.say(ROULETTE_STRINGS['GAME_END'])
+        willie.say(ROULETTE_STRINGS['GAME_END'])
         ROULETTE_TMP['LAST-ACTIVITY'] = None
         ROULETTE_TMP['LAST-PLAYER'] = None
         ROULETTE_TMP['NUMBER'] = None
     else:
-        jenni.say(ROULETTE_STRINGS['GAME_END_FAIL'] % (input.nick, ROULETTE_TMP['TIMEOUT'].seconds - (datetime.now() - ROULETTE_TMP['LAST-ACTIVITY']).seconds))
+        willie.say(ROULETTE_STRINGS['GAME_END_FAIL'] % (trigger.nick, ROULETTE_TMP['TIMEOUT'].seconds - (datetime.now() - ROULETTE_TMP['LAST-ACTIVITY']).seconds))
 rouletteStop.commands = ['roulette-stop']
 roulette.priority = 'low'
 

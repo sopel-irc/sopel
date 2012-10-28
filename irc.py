@@ -9,12 +9,21 @@ Copyright © 2012, Elad Alfassa <elad@fedoraproject.org>
 Licensed under the Eiffel Forum License 2.
 
 Willie: http://willie.dftba.net/
+
+When working on core IRC protocol related features, consult protocol documentation at http://www.irchelp.org/irchelp/rfc/
 """
 
-import sys, re, time, traceback
-import socket, asyncore, asynchat
-import os, codecs
+import sys
+import re
+import time
 import traceback
+import socket
+import asyncore
+import asynchat
+import os
+import codecs
+import traceback
+from tools import stderr, stdout
 try:
     import ssl, select
     has_ssl = True
@@ -43,9 +52,9 @@ class Origin(object):
 def create_logdir():
     try: os.mkdir("logs")
     except Exception, e:
-        print >> sys.stderr, 'There was a problem creating the logs directory.'
-        print >> sys.stderr, e.__class__, str(e)
-        print >> sys.stderr, 'Please fix this and then run Willie again.'
+        stderr('There was a problem creating the logs directory.')
+        stderr(e.__class__, str(e))
+        stderr('Please fix this and then run Willie again.')
         os._exit(1)
 
 def check_logdir():
@@ -69,27 +78,45 @@ def log_raw(line):
     f.close()
 
 class Bot(asynchat.async_chat):
-    def __init__(self, nick, name, channels, password=None, logchan_pm=None, use_ssl = False, verify_ssl=False, ca_certs='', serverpass=None):
+    def __init__(self, config):
+        if config.use_ssl is not None:
+            use_ssl = config.use_ssl
+        else:
+            use_ssl = False
+        if config.verify_ssl is not None:
+            verify_ssl = config.verify_ssl
+        else:
+            verify_ssl = False
+        if config.ca_certs is not None:
+            ca_certs = config.ca_certs
+        else:
+            ca_certs = '/etc/pki/tls/cert.pem'
+        if  config.serverpass is not None:
+            serverpass = config.serverpass
+        else:
+            serverpass = None
         asynchat.async_chat.__init__(self)
         self.set_terminator('\n')
         self.buffer = ''
 
-        self.nick = nick
+        self.nick = config.nick
         """Willie's current nick. Changing this while Willie is running is untested."""
-        self.user = nick
-        self.name = name
+        self.user = config.user
+        """Willie's user/ident."""
+        self.name = config.name
         """Willie's "real name", as used for whois."""
-        self.password = password
-        """Willie's NickServ password"""
 
         self.verbose = True
         """True if Willie is running in verbose mode."""
-        self.channels = channels or []
+        self.channels = config.channels
         """The list of channels Willie joins on startup."""
+        if self.channels is not None:
+            self.channels = self.channels.split(',')
+        else:
+            self.channels = []
         
         self.stack = []
-        self.logchan_pm = logchan_pm
-        self.serverpass = serverpass
+        self.serverpass = config.server_password
         self.verify_ssl = verify_ssl
         self.ca_certs = ca_certs
         self.use_ssl = use_ssl
@@ -110,19 +137,7 @@ class Bot(asynchat.async_chat):
         #We need this to prevent error loops in handle_error
         self.error_count = 0
         self.last_error_timestamp = None
-
-    def __write(self, args, text=None):
-        try:
-            self.writing_lock.acquire() #Blocking lock, can't send two things at a time
-            if text is not None:
-                # 510 because CR and LF count too, as nyuszika7h points out
-                temp = (' '.join(args) + ' :' + text)[:510] + '\r\n'
-            else:
-                temp = ' '.join(args)[:510] + '\r\n'
-            log_raw(temp)
-            self.send(temp)
-        finally:
-            self.writing_lock.release()
+        
 
     def safe(self, string):
         '''Remove newlines from a string and make sure it is utf8'''
@@ -151,7 +166,29 @@ class Bot(asynchat.async_chat):
         args = [self.safe(arg) for arg in args]
         if text is not None:
             text = self.safe(text)
-        self.__write(args, text)
+        try:
+            self.writing_lock.acquire() #Blocking lock, can't send two things at a time
+
+            #From RFC2812 Internet Relay Chat: Client Protocol
+            #Section 2.3
+            #
+            #https://tools.ietf.org/html/rfc2812.html
+            #
+            #IRC messages are always lines of characters terminated with a CR-LF
+            #(Carriage Return - Line Feed) pair, and these messages SHALL NOT
+            #exceed 512 characters in length, counting all characters including
+            #the trailing CR-LF. Thus, there are 510 characters maximum allowed
+            #for the command and its parameters.  There is no provision for
+            #continuation of message lines.
+
+            if text is not None:
+                temp = (' '.join(args) + ' :' + text)[:510] + '\r\n'
+            else:
+                temp = ' '.join(args)[:510] + '\r\n'
+            log_raw(temp)
+            self.send(temp)
+        finally:
+            self.writing_lock.release()
 
 
     def run(self, host, port=6667):
@@ -160,15 +197,15 @@ class Bot(asynchat.async_chat):
     def initiate_connect(self, host, port):
         if self.verbose:
             message = 'Connecting to %s:%s...' % (host, port)
-            print >> sys.stderr, message,
+            stderr(message)
         self.create_socket(socket.AF_INET, socket.SOCK_STREAM)
-        if hasattr(self.config, 'bind_host') and self.config.bind_host is not None:
-            self.socket.bind((self.config.bind_host,0))
-        if self.use_ssl and ssl:
+        if self.config.core.bind_host is not None:
+            self.socket.bind((self.config.core.bind_host,0))
+        if self.use_ssl and has_ssl:
             self.send = self._ssl_send
             self.recv = self._ssl_recv
         elif not has_ssl and self.use_ssl:
-            print >> sys.stderr, 'SSL is not avilable on your system, attempting connection without it'
+            stderr('SSL is not avilable on your system, attempting connection without it')
         self.connect((host, port))
         try: asyncore.loop()
         except KeyboardInterrupt:
@@ -196,18 +233,20 @@ class Bot(asynchat.async_chat):
             if not self.verify_ssl:
                 self.ssl = ssl.wrap_socket(self.socket, do_handshake_on_connect=False, suppress_ragged_eofs=True)
             else:
-                verification = verify_ssl_cn(self.config.host, self.config.port)
-                if verification is not None:
-                    print >> sys.stderr, '\nSSL Cret information: %s' % verification[1]
+                verification = verify_ssl_cn(self.config.host, int(self.config.port))
+                if verification is 'NoCertFound':
+                    stderr('Can\'t get server certificate, SSL might be disabled on the server.')
+                    sys.exit(1)
+                elif verification is not None:
+                    stderr('\nSSL Cret information: %s' % verification[1])
                     if verification[0] == False:
-                        print >> sys.stderr, "Invalid cretficate, CN mismatch!"
+                        stderr("Invalid cretficate, CN mismatch!")
                         sys.exit(1)
                 else:
-                    print >> sys.stderr, 'WARNING! certficate information and CN validation are not avilable.'
-                    print >> sys.stderr, 'Possible reasons: OpenSSL might be missing, or server throtteling connections.'
-                    print >> sys.stderr, 'Trying to connect anyway:'
+                    stderr('WARNING! certficate information and CN validation are not avilable. Is pyOpenSSL installed?')
+                    stderr('Trying to connect anyway:')
                 self.ssl = ssl.wrap_socket(self.socket, do_handshake_on_connect=False, suppress_ragged_eofs=True, cert_reqs=ssl.CERT_REQUIRED, ca_certs=self.ca_certs)
-            print >> sys.stderr, '\nSSL Handshake intiated...'
+            stderr('\nSSL Handshake intiated...')
             error_count=0
             while True:
                 try:
@@ -219,12 +258,12 @@ class Bot(asynchat.async_chat):
                     elif err.args[0] == ssl.SSL_ERROR_WANT_WRITE:
                         select.select([], [self.ssl], [])
                     elif err.args[0] == 1:
-                        print >> sys.stderr, 'SSL Handshake failed with error: %s' % err.args[1]
+                        stderr('SSL Handshake failed with error: %s' % err.args[1])
                         os._exit(1)
                     else:
                         error_count=error_count+1
                         if error_count > 5:
-                            print >> sys.stderr, 'SSL Handshake failed (%d failed attempts)' % error_count
+                            stderr('SSL Handshake failed (%d failed attempts)' % error_count)
                             os._exit(1)
                         raise
                 except Exception as e:
@@ -236,7 +275,7 @@ class Bot(asynchat.async_chat):
 
         if self.serverpass is not None:
             self.write(('PASS', self.serverpass))
-        print >> sys.stderr, 'Connected.'
+        stderr('Connected.')
     def _ssl_send(self, data):
         """ Replacement for self.send() during SSL connections. """
         try:
@@ -270,13 +309,11 @@ class Bot(asynchat.async_chat):
 
     def handle_close(self):
         self.close()
-        print >> sys.stderr, 'Closed!'
+        stderr('Closed!')
 
     def collect_incoming_data(self, data):
         if data:
             log_raw(data)
-            if hasattr(self, "logchan_pm") and self.logchan_pm and "PRIVMSG" in data and "#" not in data.split()[2]:
-                self.msg(self.logchan_pm, data)
         self.buffer += data
 
     def found_terminator(self):
@@ -284,12 +321,7 @@ class Bot(asynchat.async_chat):
         if line.endswith('\r'):
             line = line[:-1]
         self.buffer = ''
-
-        #Adding a way to get a raw line for .whois
         self.raw = line
-
-
-        # print line
         if line.startswith(':'):
             source, line = line[1:].split(' ', 1)
         else: source = None
@@ -301,8 +333,10 @@ class Bot(asynchat.async_chat):
         
         if args[0] == 'PING':
             self.write(('PONG', text))
-        if args[0] == '433':
-            print >>sys.stderr, 'Nickname already in use!'
+        elif args[0] == 'ERROR':
+            self.debug('IRC Server Error', text, 'always')
+        elif args[0] == '433':
+            stderr('Nickname already in use!')
             self.hasquit = True
             self.handle_close()
 
@@ -318,11 +352,13 @@ class Bot(asynchat.async_chat):
 
             # Cf. http://swhack.com/logs/2006-03-01#T19-43-25
             if isinstance(text, unicode):
-                try: text = text.encode('utf-8')
+                try: 
+                    text = text.encode('utf-8')
                 except UnicodeEncodeError, e:
                     text = e.__class__ + ': ' + str(e)
             if isinstance(recipient, unicode):
-                try: recipient = recipient.encode('utf-8')
+                try: 
+                    recipient = recipient.encode('utf-8')
                 except UnicodeEncodeError, e:
                     return
 
@@ -364,10 +400,7 @@ class Bot(asynchat.async_chat):
                 trace = trace.decode('utf-8')
             except:
                 pass # Can't do much about it
-            try:
-                print >> sys.stderr, trace
-            except:
-                raise
+                stderr(trace)
             try:
                 logfile = codecs.open(os.path.join(self.config.logdir, 'exceptions.log'), 'a', encoding='utf-8') #todo: make not hardcoded
                 logfile.write(u'from %s at %s:\n' % (origin.sender, str(datetime.now())))
@@ -379,7 +412,7 @@ class Bot(asynchat.async_chat):
                 logfile.write('----------------------------------------\n\n')
                 logfile.close()
             except Exception as e:
-                print >> sys.stderr, "Could not save full traceback!"
+                stderr("Could not save full traceback!")
                 self.debug("core: error reporting", "(From: "+origin.sender+"), can't save traceback: "+str(e), 'always')
             lines = list(reversed(trace.splitlines()))
 
@@ -399,10 +432,7 @@ class Bot(asynchat.async_chat):
     def handle_error(self):
         ''' Handle any uncaptured error in the core. Overrides asyncore's handle_error '''
         trace = traceback.format_exc()
-        try:
-            print >> sys.stderr, trace
-        except:
-            pass
+        stderr(trace)
         self.debug("core", 'Fatal error in core, please review exception log', 'always')
         logfile = open(os.path.join(self.config.logdir, 'exceptions.log'), 'a') #todo: make not hardcoded
         logfile.write('Fatal error in core, handle_error() was called')
@@ -418,35 +448,21 @@ class Bot(asynchat.async_chat):
         self.error_count=self.error_count+1
 
     #Helper functions to maintain the oper list.
-    def addOp(self, channel, name):
+    def add_op(self, channel, name):
         self.ops[channel].add(name.lower())
-    def addHalfOp(self, channel, name):
+    def add_halfop(self, channel, name):
         self.halfplus[channel].add(name.lower())
-    def delOp(self, channel, name):
+    def del_op(self, channel, name):
         self.ops[channel].discard(name.lower())
-    def delHalfOp(self, channel, name):
+    def del_halfop(self, channel, name):
         self.halfplus[channel].discard(name.lower())
-    def flushOps(self, channel):
+    def flush_ops(self, channel):
         self.ops[channel] = set()
         self.halfplus[channel] = set()
-    def startOpsList(self, channel):
+    def init_ops_list(self, channel):
         if not channel in self.halfplus: self.halfplus[channel] = set()
         if not channel in self.ops: self.ops[channel] = set()
 
-class TestBot(Bot):
-    def f_ping(self, origin, match, args):
-        delay = m.group(1)
-        if delay is not None:
-            import time
-            time.sleep(int(delay))
-            self.msg(origin.sender, 'pong (%s)' % delay)
-        else: self.msg(origin.sender, 'pong')
-    f_ping.rule = r'^\.ping(?:[ \t]+(\d+))?$'
-
-def main():
-    # bot = TestBot('testbot', ['#d8uv.com'])
-    # bot.run('irc.freenode.net')
-    print __doc__
 
 if __name__=="__main__":
-    main()
+    print __doc__

@@ -1,14 +1,13 @@
 #!/usr/bin/env python
 # -*- coding: utf8 -*-
 """
-youtube.py - Jenni YouTube Module
+youtube.py - Willie YouTube Module
 Copyright 2012, Dimitri Molenaars, Tyrope.nl.
 Copyright © 2012, Elad Alfassa, <elad@fedoraproject.org>
+Copyright 2012, Edward Powell, embolalia.net
 Licensed under the Eiffel Forum License 2.
 
-More info:
- * Jenni: https://github.com/myano/jenni/
- * Phenny: http://inamidst.com/phenny/
+http://willie.dfbta.net
 
 This module will respond to .yt and .youtube commands and searches the youtubes.
 """
@@ -16,10 +15,19 @@ This module will respond to .yt and .youtube commands and searches the youtubes.
 import web, re
 from HTMLParser import HTMLParser
 
-def ytget(jenni, input, uri):
+def setup(willie):
+    regex = re.compile('(youtube.com/watch\S*v=|youtu.be/)([\w-]+)')
+    if not willie.memory.contains('url_exclude'):
+        willie.memory['url_exclude'] = [regex]
+    else:
+        exclude = willie.memory['url_exclude']
+        exclude.append(regex)
+        willie.memory['url_exclude'] = exclude
+
+def ytget(willie, trigger, uri):
     try: bytes = web.get(uri)
     except: 
-        jenni.say('Something went wrong when accessing the YouTube API.')
+        willie.say('Something went wrong when accessing the YouTube API.')
         return err
     #Parse YouTube API info (XML)
     if '<entry gd:' in bytes:
@@ -118,7 +126,7 @@ def ytget(jenni, input, uri):
         vid_info['dislikes'] = 'N/A'
     return vid_info
 
-def ytsearch(jenni, input):
+def ytsearch(willie, trigger):
     """YouTube search module"""
     #modified from ytinfo: Copyright 2010-2011, Michael Yanovich, yanovich.net, Kenneth Sham.
 
@@ -128,17 +136,17 @@ def ytsearch(jenni, input):
     #Before actually loading this in, let's see what input actually is so we can parse it right.
 
     #Grab info from gdata
-    if not input.group(2):
+    if not trigger.group(2):
        return
-    uri = 'http://gdata.youtube.com/feeds/api/videos?v=2&max-results=1&q=' + input.group(2).encode('utf-8')
+    uri = 'http://gdata.youtube.com/feeds/api/videos?v=2&max-results=1&q=' + trigger.group(2).encode('utf-8')
     uri = uri.replace(' ', '+')
-    video_info = ytget(jenni, input, uri)
+    video_info = ytget(willie, trigger, uri)
 
     if video_info is 'err':
         return
 
     if video_info['link'] == 'N/A':
-        jenni.say("Sorry, I couldn't find the video you are looking for")
+        willie.say("Sorry, I couldn't find the video you are looking for")
         return
     message = '[YT Search] Title: ' +video_info['title']+ \
               ' | Author: ' +video_info['uploader']+ \
@@ -147,16 +155,16 @@ def ytsearch(jenni, input):
               ' | Views: ' +video_info['views']+ \
               ' | Link: ' +video_info['link']
 
-    jenni.say(HTMLParser().unescape(message))
+    willie.say(HTMLParser().unescape(message))
 ytsearch.commands = ['yt','youtube']
 ytsearch.example = '.yt how to be a nerdfighter FAQ'
 
-def ytinfo(jenni, input):
+def ytinfo(willie, trigger):
     #Grab info from YT API
-    uri = 'http://gdata.youtube.com/feeds/api/videos/' + input.group(2) + '?v=2'
+    uri = 'http://gdata.youtube.com/feeds/api/videos/' + trigger.group(2) + '?v=2'
 
 
-    video_info = ytget(jenni, input, uri)
+    video_info = ytget(willie, trigger, uri)
     if video_info is 'err':
         return
 
@@ -170,14 +178,14 @@ def ytinfo(jenni, input):
               ' | Likes: ' + video_info['likes'] + \
               ' | Dislikes: ' + video_info['dislikes']
 
-    jenni.say(HTMLParser().unescape(message))
+    willie.say(HTMLParser().unescape(message))
 ytinfo.rule = '.*(youtube.com/watch\S*v=|youtu.be/)([\w-]+).*'
 
-def ytlast(jenni, input):
-    if not input.group(2):
+def ytlast(willie, trigger):
+    if not trigger.group(2):
        return
-    uri = 'https://gdata.youtube.com/feeds/api/users/' + input.group(2).encode('utf-8') +'/uploads?max-results=1&v=2'
-    video_info = ytget(jenni, input, uri)
+    uri = 'https://gdata.youtube.com/feeds/api/users/' + trigger.group(2).encode('utf-8') +'/uploads?max-results=1&v=2'
+    video_info = ytget(willie, trigger, uri)
 
     if video_info is 'err':
         return
@@ -191,7 +199,7 @@ def ytlast(jenni, input):
               ' | Dislikes: ' +video_info['dislikes']+ \
               ' | Link: ' +video_info['link']
 
-    jenni.say(HTMLParser().unescape(message))
+    willie.say(HTMLParser().unescape(message))
 ytlast.commands = ['ytlast','ytnew','ytlatest']
 ytlast.example = '.ytlast vlogbrothers'
 
