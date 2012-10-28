@@ -21,7 +21,7 @@ http://willie.dftba.net
 
 """
 
-import re, urllib2
+import re, urllib, urllib2
 from htmlentitydefs import name2codepoint
 
 #HTTP GET
@@ -57,8 +57,7 @@ def post(uri, query):
     """
     if not uri.startswith('http'):
         return
-    data = urllib2.urlencode(query)
-    u = urllib2.urlopen(uri, data)
+    u = urllib2.urlopen(uri, query)
     bytes = u.read()
     u.close()
     return bytes
@@ -118,6 +117,13 @@ def quote(string):
     Identical to urllib2.quote. Use this if you already importing web in your module and don't want to import urllib2 just to use the quote function.
     """
     return urllib2.quote(string)
+
+#Identical to urllib.urlencode
+def urlencode(data):
+    """
+    Identical to urllib.urlencode. Use this if you already importing web in your module and don't want to import urllib just to use the urlencode function.
+    """
+    return urllib.urlencode(data)
 
 r_string = re.compile(r'("(\\.|[^"\\])*")')
 r_json = re.compile(r'^[,:{}\[\]0-9.\-+Eaeflnr-u \n\r\t]+$')

@@ -13,18 +13,20 @@ http://willie.dftba.net/
 
 import time, sys, os, re, threading, imp
 import irc
-from settings import SettingsDB
-from tools import try_print_stderr as stderr
+from db import WillieDB
+from tools import stderr, stdout
 
 home = os.getcwd()
 modules_dir = os.path.join(home, 'modules')
 
-def decode(bytes):
-    try: text = bytes.decode('utf-8')
+def decode(string):
+    try: 
+        text = string.decode('utf-8')
     except UnicodeDecodeError:
-        try: text = bytes.decode('iso-8859-1')
+        try: 
+            text = string.decode('iso-8859-1')
         except UnicodeDecodeError:
-            text = bytes.decode('cp1252')
+            text = string.decode('cp1252')
     return text
 
 def enumerate_modules(config):
@@ -34,7 +36,7 @@ def enumerate_modules(config):
             if fn.endswith('.py') and not fn.startswith('_'):
                 filenames.append(os.path.join(modules_dir, fn))
     else:
-        for fn in config.enable:
+        for fn in config.enable.split(','):
             filenames.append(os.path.join(modules_dir, fn + '.py'))
 
     if hasattr(config, 'extra') and config.extra is not None:
@@ -49,28 +51,7 @@ def enumerate_modules(config):
 
 class Willie(irc.Bot):
     def __init__(self, config):
-        if hasattr(config, "logchan_pm"): 
-            lc_pm = config.logchan_pm
-        else: 
-            lc_pm = None
-        if hasattr(config, 'use_ssl'):
-            use_ssl = config.use_ssl
-        else:
-            use_ssl = False
-        if hasattr(config, 'verify_ssl'):
-            verify_ssl = config.verify_ssl
-        else:
-            verify_ssl = False
-        if hasattr(config, 'ca_certs'):
-            ca_certs = config.ca_certs
-        else:
-            ca_certs = '/etc/pki/tls/cert.pem'
-        if  hasattr(config, 'serverpass'):
-            serverpass = config.serverpass
-        else:
-            serverpass = None
-        args = (config.nick, config.name, config.channels, config.password, lc_pm, use_ssl, verify_ssl, ca_certs, serverpass)
-        irc.Bot.__init__(self, *args)
+        irc.Bot.__init__(self, config.core)
         self.config = config
         """The ``Config`` for the current Willie instance."""
         self.doc = {}
@@ -90,8 +71,62 @@ class Willie(irc.Bot):
         """
         self.acivity = {}
         
+        self.db = WillieDB(config)
+        if self.db.check_table('locales', ['name'], 'name'):
+            self.settings = self.db.locales
+            self.db.preferences = self.db.locales
+        elif self.db.check_table('preferences', ['name'], 'name'):
+            self.settings = self.db.preferences
+        elif self.db.type is not None:
+            self.db.add_table('preferences', ['name'], 'name')
+            self.settings = self.db.preferences
+            
+        self.memory=self.WillieMemory()
+        '''A thread-safe dict for storage of runtime data to be shared between modules'''
+        
+        #Set up block lists
+        #Default to empty
+        if not self.config.has_option('core', 'nick_blocks'):
+            self.config.core.nick_blocks = ''
+        if not self.config.has_option('core', 'host_blocks'):
+            self.config.core.host_blocks = ''
+        #Make into lists
+        if not isinstance(self.config.core.nick_blocks, list):
+            self.config.core.nick_blocks = self.config.core.nick_blocks.split(',')
+        if not isinstance(self.config.core.host_blocks, list):
+            self.config.core.host_blocks = self.config.core.host_blocks.split(',')
+        #Add nicks blocked under old scheme, if present
+        if self.config.has_option('core', 'other_bots'):
+            nicks = self.config.core.nick_blocks
+            bots = self.config.core.other_bots
+            if isinstance(bots, basestring):
+                bots = bots.split(',')            
+            nicks.extend(bots)
+            self.config.core.nick_blocks = nicks
+        
         self.setup()
-        self.settings = SettingsDB(config)
+
+    class WillieMemory(dict):
+        ''' A simple thread-safe dict implementation.
+        In order to prevent exceptions when iterating over the values and changing
+        them at the same time from different threads, we use a blocking lock on ``__setitem__`` and ``contains``
+        '''
+        def __init__(self, *args):
+            dict.__init__(self, *args)
+            self.lock = threading.Lock()
+
+        def __setitem__(self, key, value):
+            self.lock.acquire()
+            result = dict.__setitem__(self, key, value)
+            self.lock.release()
+            return result
+                
+        def contains(self, key):
+            ''' Check if a key is in the dict. Use this instead of the ``in`` keyword if you want to be thread-safe '''
+            self.lock.acquire()
+            result = (key in self)
+            self.lock.release()
+            return result
 
     def setup(self):
         stderr("\nWelcome to Willie. Loading modules...\n\n")
@@ -216,7 +251,7 @@ class Willie(irc.Bot):
                     regexp = re.compile(pattern, re.I)
                     bind(self, func.priority, regexp, func)
 
-    def wrapped(self, origin, text, match):
+    def wrapped(self, origin, text):
         class WillieWrapper(object):
             def __init__(self, willie):
                 self.bot = willie
@@ -233,6 +268,7 @@ class Willie(irc.Bot):
                 return getattr(self.bot, attr)
 
         return WillieWrapper(self)
+
     class Trigger(unicode):
         def __new__(cls, text, origin, bytes, match, event, args, self):
             s = unicode.__new__(cls, text)
@@ -244,9 +280,14 @@ class Willie(irc.Bot):
             s.nick = origin.nick
             """The nick of the person who sent the message."""
             s.event = event
-            """The event which triggered the message."""#TODO elaborate
+            """
+            The IRC event (e.g. ``PRIVMSG`` or ``MODE``) which triggered the
+            message."""
             s.bytes = bytes
-            """The line which triggered the message"""#TODO elaborate
+            """
+            The text which triggered the message. Equivalent to
+            ``Trigger.group(0)``.
+            """
             s.match = match
             """
             The regular expression ``MatchObject_`` for the triggering line.
@@ -261,15 +302,20 @@ class Willie(irc.Bot):
             
             See Python ``re_`` documentation for details."""
             s.args = args
-            """The arguments given to a command.""" #TODO elaborate
-            s.admin = (origin.nick in self.config.admins) or origin.nick.lower() == self.config.owner.lower()
+            """
+            A tuple containing each of the arguments to an event. These are the
+            strings passed between the event name and the colon. For example,
+            setting ``mode -m`` on the channel ``#example``, args would be
+            ``('#example', '-m')``
+            """
+            s.admin = (origin.nick in self.config.admins.split(',')) or origin.nick.lower() == self.config.owner.lower()
             """
             True if the nick which triggered the command is in Willie's admin
             list as defined in the config file.
             """
                 
             if s.admin == False:
-                for each_admin in self.config.admins:
+                for each_admin in self.config.admins.split(','):
                     re_admin = re.compile(each_admin)
                     if re_admin.findall(origin.host):
                         s.admin = True
@@ -333,46 +379,45 @@ class Willie(irc.Bot):
             items = self.commands[priority].items()
             for regexp, funcs in items:
                 for func in funcs:
-                    if event != func.event: continue
+                    if event != func.event: 
+                        continue
 
                     match = regexp.match(text)
                     if match:
-                        if self.limit(origin, func): continue
+                        if self.limit(origin, func): 
+                            continue
 
-                        willie = self.wrapped(origin, text, match)
+                        willie = self.wrapped(origin, text)
                         trigger = self.Trigger(text, origin, bytes, match, event, args, self)
-                        if trigger.nick in self.config.other_bots: continue
+
+                        if self.config.core.other_bots is not None:
+                            if trigger.nick in self.config.other_bots.split(','): 
+                                continue
 
                         nick = (trigger.nick).lower()
 
                         ## blocking ability
-                        if os.path.isfile("blocks"):
-                            g = open("blocks", "r")
-                            contents = g.readlines()
-                            g.close()
+                        bad_nicks = self.config.core.nick_blocks
+                        bad_masks = self.config.core.host_blocks
 
-                            try: bad_masks = contents[0].split(',')
-                            except: bad_masks = ['']
-
-                            try: bad_nicks = contents[1].split(',')
-                            except: bad_nicks = ['']
-
-                            if len(bad_masks) > 0:
-                                for hostmask in bad_masks:
-                                    hostmask = hostmask.replace("\n", "")
-                                    if len(hostmask) < 1: continue
-                                    re_temp = re.compile(hostmask)
-                                    host = origin.host
-                                    host = host.lower()
-                                    if re_temp.findall(host) or hostmask in host:
-                                        return
-                            if len(bad_nicks) > 0:
-                                for nick in bad_nicks:
-                                    nick = nick.replace("\n", "")
-                                    if len(nick) < 1: continue
-                                    re_temp = re.compile(nick)
-                                    if re_temp.findall(trigger.nick) or nick in trigger.nick:
-                                        return
+                        if len(bad_masks) > 0:
+                            for hostmask in bad_masks:
+                                hostmask = hostmask.replace("\n", "")
+                                if len(hostmask) < 1: 
+                                    continue
+                                re_temp = re.compile(hostmask)
+                                host = origin.host
+                                host = host.lower()
+                                if re_temp.findall(host) or hostmask in host:
+                                    return
+                        if len(bad_nicks) > 0:
+                            for nick in bad_nicks:
+                                nick = nick.replace("\n", "")
+                                if len(nick) < 1: 
+                                    continue
+                                re_temp = re.compile(nick)
+                                if re_temp.findall(trigger.nick) or nick in trigger.nick:
+                                    return
                         # stats
                         if func.thread:
                             targs = (func, origin, willie, trigger)

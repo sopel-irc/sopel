@@ -12,13 +12,10 @@ from xml.dom.minidom import parseString
 import web, xml.dom.minidom
 
 def configure(config):
-    chunk = ''
-    if config.option('Configure radio module', True):
-        config.interactive_add('radio_URL', 'URL to the ShoutCAST administration page', 'http://127.0.0.1:8000/')
-        config.interactive_add('radio_sID', 'Stream ID (only required for multi-stream servers.)', '1')
-        chunk = ("\nradio_URL = '%s'\nradio_sID = '%s'\n"
-                 % (config.radio_URL, config.radio_sID))
-    return chunk
+    if config.option('Configure radio module', False):
+        config.add_section('radio')
+        config.interactive_add('radio', 'URL', 'URL to the ShoutCAST administration page', 'http://127.0.0.1:8000/')
+        config.interactive_add('radio', 'sID', 'Stream ID (only required for multi-stream servers.)', '1')
 
 radioURL = '' # Set once, after the first .radio request.
 checkSongs = False
@@ -79,11 +76,11 @@ def radio(willie, trigger):
     """ Radio functions, valid parameters: on, off, song, now, next, soon, stats. """
     global checkSongs, current_song, radioURL
     if not radioURL:
-        if not hasattr(willie.config, 'radio_URL') or not hasattr(willie.config, 'radio_sID'):
-            willie.say('Radio module not configured, make sure radio_URL and radio_sID are defined')
+        if not hasattr(willie.config, 'radio'):
+            willie.say('Radio module not configured')
             return
         else:
-            radioURL = willie.config.radio_URL+'%s?sid='+willie.config.radio_sID
+            radioURL = willie.config.radio.URL+'%s?sid='+willie.config.radio.sID
     try:
         args = trigger.group(2).lower().split(' ')
     except AttributeError:

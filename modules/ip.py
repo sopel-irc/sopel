@@ -1,20 +1,20 @@
 #!/usr/bin/env python
 # coding=utf-8
 """
-ip.py - jenni IP Lookup Module
+ip.py - Willie IP Lookup Module
 Copyright 2011, Dimitri Molenaars, TyRope.nl
 Licensed under the Eiffel Forum License 2.
 
-http://inamidst.com/phenny/
+http://willie.dftba.net
 """
 
 import re, web
 
-def ip(jenni, input):
+def ip(willie, trigger):
 	"""IP Lookup tool"""
-	if not input.group(2):
-		return jenni.reply("No search term.")
-	query = input.group(2).encode('utf-8')
+	if not trigger.group(2):
+		return willie.reply("No search term.")
+	query = trigger.group(2).encode('utf-8')
 	uri = 'http://www.rscript.org/lookup.php?type=ipdns&ip='
 	answer = web.get(uri + web.quote(query.replace('+', '%2B')))
 	if answer:
@@ -43,9 +43,9 @@ def ip(jenni, input):
 				response += " | Location: "+city.group(1)
 				response += ", "+state.group(1)
 				response += ", "+country.group(1)+"."
-		jenni.say(response)
+		willie.say(response)
 	else:
-		jenni.reply('Sorry, no result.')
+		willie.reply('Sorry, no result.')
 ip.commands = ['iplookup','ip']
 ip.example = '.iplookup 8.8.8.8'
 

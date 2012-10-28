@@ -1,10 +1,21 @@
 #!/usr/bin/env python
+# coding=utf-8
 """
 *Availability: 3+ for all functions; attributes may vary.*
 
-The config class is, essentially, a representation of the active Willie config
-file. As such, the details of its members depend entirely upon what is written
-there.
+The config class is an abstraction class for accessing the active Willie configuration file.
+
+The Willie config file is divided to sections, and each section contains keys and values.
+A section is an attribute of the config class, and is of type ``ConfigSection``.
+Each section contains the keys as attributes. for example, if you want to access key example from section test, use
+``config.test.example``.
+
+The ``core`` section will always be present, and contains configuration used by the Willie core. Modules are allowed to read those, but must not change them.
+
+The config file can store strings, booleans and lists. If you need to store a number, cast it to ``int()`` when reading.
+
+For backwards compatibility, every key in the core section is an attribute of the config class as well as of config.core.
+For new code, always specify the name of the section, because this behavior might be removed in the future.
 
 Running the ``config.py`` file directly will give the user an interactive series
 of dialogs to create the configuration file. This will guide the user through
@@ -12,26 +23,36 @@ creating settings for the Willie core, the settings database, and any modules
 which have a configuration function.
 
 The configuration function, if used, must be declared with the signature
-``configure(config)`` and return a string which will be written to the config
-file. The ``configure`` function should not write to the file, as this is done
-by the utility.
+``configure(config)``. To add options, use ``interactive_add``, ``add_list`` and ``add_option``.
 """
 """
 Config - A config class and writing/updating utility for Willie
 Copyright 2012, Edward Powell, embolalia.net
+Copyright © 2012, Elad Alfassa <elad@fedoraproject.org>
+
 Licensed under the Eiffel Forum License 2.
 
-http://dft.ba/-williesource
+http://willie.dftba.net
 """
 
-import os, sys, imp
+import db
+import os
+import sys
+import ConfigParser
 import getpass
+import imp
 from textwrap import dedent as trim
 from bot import enumerate_modules
 
+class ConfigurationError(Exception):
+    """ Exception type for configuration errors """
+    def __init__(self, value):  
+        self.value = value
+    def __str__(self):
+        return 'ConfigurationError: %s' % self.value
 
 class Config(object):
-    def __init__(self, filename, load=True):
+    def __init__(self, filename, load=True, ignore_errors=False):
         """
         Return a configuration object. The given filename will be associated
         with the configuration, and is the file which will be written if write()
@@ -43,183 +64,157 @@ class Config(object):
         """
         self.filename = filename
         """The config object's associated file, as noted above."""
-        self.prefix = r'\.'
-        """
-        This indicates the prefix for commands. (i.e, the . in the .w
-        command.) Note that this is used in a regular expression, so regex
-        syntax and special characters apply.
-        """
-        self.name = 'Willie Embosbot, http://willie.dftba.net'
-        """The "real name" used for the bot's whois."""
-        self.port = 6667
-        """The port to connect on"""
-        self.password = None
-        """The nickserv password"""
-        self.host = 'irc.example.net'
-        """
-        The host to connect to. This is set to irc.example.net by default,
-        which serves as a sanity check to make sure that the bot has been
-        configured.
-        """
+        self.parser = ConfigParser.RawConfigParser(allow_no_value=True)
         if load:
-            module = imp.load_source('Config', filename)
-            for attrib in dir(module):
-                setattr(self, attrib, getattr(module, attrib))
+            self.parser.read(self.filename)
 
-    def set_attr(self, attr, value):
+            if not ignore_errors:
+                #Sanity check for the configuration file:
+                if not self.parser.has_section('core'):
+                    raise ConfigurationError('Core section missing!')
+                if not self.parser.has_option('core', 'nick'):
+                    raise ConfigurationError('Bot IRC nick not defined, expected option `nick` in [core] section')
+                if not self.parser.has_option('core', 'owner'):
+                    raise ConfigurationError('Bot owner not defined, expected option `owner` in [core] section')
+                if not self.parser.has_option('core', 'host'):
+                    raise ConfigurationError('IRC server address not defined, expceted option `host` in [core] section')
+
+            #Setting defaults:
+            if not self.parser.has_option('core', 'port'):
+                self.parser.set('core', 'port', '6667')
+            if not self.parser.has_option('core', 'user'):
+                self.parser.set('core', 'user', 'willie')
+            if not self.parser.has_option('core', 'name'):
+                self.parser.set('core', 'name', 'Willie Embosbot, http://willie.dftba.net')
+            if not self.parser.has_option('core', 'prefix'):
+                self.parser.set('core', 'prefix', r'\.')
+            if not self.parser.has_option('core', 'admins'):
+                self.parser.set('core', 'admins', '')
+        else:
+            self.parser.add_section('core')
+
+    def save(self):
+        """Save all changes to the config file"""
+        cfgfile = open(self.filename, 'w')
+        self.parser.write(cfgfile)
+        cfgfile.flush()
+        cfgfile.close()
+
+    def add_section(self, name):
+        """ Add a section to the config file, returns ``False`` if already exists"""
+        try:
+            return self.parser.add_section(name)
+        except ConfigParser.DuplicateSectionError:
+            return False
+
+    def has_option(self, section, name):
+        """ Check if option ``name`` exists under section ``section`` """
+        return self.parser.has_option(section, name)
+        
+    def has_section(self, name):
+        """ Check if section ``name`` exists """
+        return self.parser.has_section(name)
+
+    class ConfigSection(object):
+        """Represents a section of the config file, contains all keys in the section as attributes"""
+        def __init__(self, name, items, parent):
+            object.__setattr__(self, '_name', name)
+            object.__setattr__(self, '_parent', parent)
+            for item in items:
+                value = item[1].strip()
+                if not value.lower() == 'none':
+                    if value.lower() == 'false':
+                        value = False
+                    object.__setattr__(self, item[0], value)
+        
+        def __getattr__(self, name):
+            return None
+
+        def __setattr__(self, name, value):
+            object.__setattr__(self, name, value)
+            if type(value) is list:
+                value = ','.join(value)
+            self._parent.parser.set(self._name, name, value)
+
+    def __getattr__(self, name):
+        """"""
+        if name in self.parser.sections():
+            items = self.parser.items(name)
+            section = self.ConfigSection(name, items, self) #Return a section
+            setattr(self, name, section)
+            return section
+        elif self.parser.has_option('core', name):
+            return self.parser.get('core', name) #For backwards compatibility
+        else:
+            raise AttributeError("%r object has no attribute %r" % (type(self).__name__, name))
+
+
+    def interactive_add(self, section, option, prompt, default=None, ispass=False):
         """
-        Set attr to value. This will succeed regardless of whether the attribute
-        is already set, and regardless of whether the given and current values
-        are of the same type.
-        """
-        setattr(self, attr, value)
-    
-    def write(self):
-        """
-        Writes the current configuration to the file from which the current
-        configuration is derived. Changes made through ``set_attr`` may not be
-        properly written by this function.
-        """
-        f = open(self.filename, 'w')
-        
-        if hasattr(self, 'password') and self.password:
-            password_line = "password = '"+self.password+"'"
-        else:
-            password_line = "# password = 'example'"
-        if hasattr(self, 'serverpass') and self.serverpass:
-            serverpass_line = "serverpass = '"+self.serverpass+"'"
-        else:
-            serverpass_line = "# serverpass = 'example'"
-        if hasattr(self, 'enable') and self.enable:
-            enable_line = "enable = "+str(self.enable)
-        else:
-            enable_line = "# enable = []"
-        extra = self.extra.append(os.getcwd() + '/modules/')
-        if hasattr(self, 'verify_ssl'):
-            verify_ssl_line = "verify_ssl = "+str(self.verify_ssl)
-        else:
-            verify_ssl_line = "# verify_ssl = True"
-            
-        if hasattr(self, 'ca_certs'):
-            ca_cert_line = "ca_certs = '"+str(self.ca_certs)+"'"
-        else:
-            ca_cert_line = "# ca_certs = '/etc/pki/tls/cert.pem'"
-        if self.bind_host is not 'None':
-            bind_host_line = "bind_host = '%s'" % self.bind_host
-        else:
-            bind_host_line = "# bind_host = '0.0.0.0'"
-        output = trim("""\
-        nick = '"""+self.nick+"""'
-        host = '"""+self.host+"""'
-        port = """+str(self.port)+"""
-        channels = """+str(self.channels)+"""
-        owner = '"""+self.owner+"""'
-        name = '"""+self.name+"""'
-        
-        use_ssl = '"""+str(self.use_ssl)+"""'
-        """+verify_ssl_line+"""
-        """+ca_cert_line+"""
-        
-        """+bind_host_line+"""
-
-        # Channel where debug messages should be sent.
-        debug_target = '"""+self.debug_target+"""'
-        
-        # Verbosity level for debug messages.
-        verbose = '"""+self.verbose+"""'
-        
-        # List of other bots, whose outputs should be ignored
-        other_bots = """+str(self.other_bots)+"""
-
-        # password is the NickServ password, serverpass is the server password
-        """+password_line+"""
-        """+serverpass_line+"""
-        
-        # The oper name and password, if the bot is allowed to /oper
-        """+self.operline+"""
-
-        # These are people who will be able to use admin.py's functions...
-        admins = """+str(self.admins)+"""
-        # But admin.py is disabled by default, as follows:
-        exclude = """+str(self.exclude)+"""
-
-        # If you want to enumerate a list of modules rather than disabling
-        # some, use "enable = ['example']", which takes precedent over exclude
-        #
-        """+enable_line+"""
-        
-        # Directories to load user modules from
-        # e.g. /path/to/my/modules
-        extra = """+str(extra)+"""
-
-        # Services to load: maps channel names to white or black lists
-        # 
-        # ?? Doesn't seem to do anything?
-        # external = {
-        #    '#liberal': ['!'], # allow all
-        #    '#conservative': [], # allow none
-        #    '*': ['!'] # default whitelist, allow all
-        #}
-        """)+(self.settings_chunk+trim("""
-
-        #-----------------------MODULE  SETTINGS-----------------------
-
-        """)+self.modules_chunk)+trim("""
-        
-        # EOF
-        """)
-        print >> f, output
-        f.close()
-    
-        
-    
-    def interactive_add(self, attrib, prompt, default=None, ispass=False):
-        """
-        Ask user in terminal for the value to assign to ``attrib``. If ``default``
+        Ask user in terminal for the value to assign to ``option`` under ``section``. If ``default``
         is passed, it will be shown as the default value in the prompt. If
-        ``attrib`` is already defined, it will be used instead of ``default``,
+        ``option`` is already defined in ``section``, it will be used instead of ``default``,
         regardless of wheather ``default`` is passed.
         """
-        if hasattr(self, attrib):
-            atr = getattr(self, attrib)
+        if not self.parser.has_section(section):
+            self.parser.add_section(section)
+        if self.parser.has_option(section, option):
+            atr = self.parser.get(section, option)
             if ispass == True:
-                setattr(self, attrib, getpass.getpass(prompt+' [%s]: ' % atr) or atr)
+                value = getpass.getpass(prompt+' [%s]: ' % atr) or atr
+                self.parser.set(section, option, value)
             else:
-                setattr(self, attrib, raw_input(prompt+' [%s]: ' % atr) or atr)
+                value = raw_input(prompt+' [%s]: ' % atr) or atr
+                self.parser.set(section, option, value)
         elif default:
             if ispass == True:
-                setattr(self, attrib, getpass.getpass(prompt+' [%s]: ' % default) or default)
+                value = getpass.getpass(prompt+' [%s]: ' % default) or default
+                self.parser.set(section, option, value)
             else:
-                setattr(self, attrib, raw_input(prompt+' [%s]: ' % default) or default)
+                value = raw_input(prompt+' [%s]: ' % default) or default
+                self.parser.set(section, option, value)
         else:
-            inp = ''
-            while not inp:
+            value = ''
+            while not value:
                 if ispass == True:
-                    inp = getpass.getpass(prompt+': ')
+                    value = getpass.getpass(prompt+': ')
                 else:
-                    inp = raw_input(prompt+': ')
-            setattr(self, attrib, inp)
+                    value = raw_input(prompt+': ')
+            self.parser.set(section, option, value)
 
-    def add_list(self, attrib, message, prompt):
+    def add_list(self, section, option, message, prompt):
         """
-        Ask user in terminal for a list to assign to ``attrib``. If 
-        ``self.attrib`` is already defined, show the user the current values and
+        Ask user in terminal for a list to assign to ``option``. If 
+        ``option`` is already defined under ``section``, show the user the current values and
         ask if the user would like to keep them. If so, additional values can be
         entered. 
         """
         print message
         lst = []
-        if hasattr(self, attrib) and getattr(self, attrib):
-            m = "You currently have "
-            for c in getattr(self, attrib): m = m + c + ', '
-            if self.option(m[:-2]+'. Would you like to keep them', True):
-                lst = getattr(self, attrib)
+        if self.parser.has_option(section, option) and self.parser.get(section, option):
+            m = "You currently have "+ self.parser.get(section, option)
+            if self.option(m+'. Would you like to keep them', True):
+                lst = self.parser.get(section, option)
         mem = raw_input(prompt)
         while mem:
             lst.append(mem)
             mem = raw_input(prompt)
-        setattr(self, attrib, lst)
-            
+        self.parser.set(section, option, ','.join(lst))
+
+    def add_option(self, section, option, question, default=False):
+        """
+        Show user in terminal a "y/n" prompt, and set `option` to True or False
+        based on the response. If default is passed as true, the default will be
+        shown as ``[y]``, else it will be ``[n]``. ``question`` should be phrased
+        as a question, but without a question mark at the end. If ``option`` is
+        already defined, it will be used instead of ``default``, regardless of
+        wheather ``default`` is passed.
+        """
+        if self.parser.has_option(section, option):
+            default = self.parser.getboolean(section, option)
+        answer = self.option(question, default)
+        self.parser.set(section, option, str(answer))
+        
     def option(self, question, default=False):
         """
         Show user in terminal a "y/n" prompt, and return true or false based on
@@ -228,141 +223,72 @@ class Config(object):
         question, but without a question mark at the end.
         """
         d = 'n'
-        if default: d = 'y'
+        if default: 
+            d = 'y'
         ans = raw_input(question+' (y/n)? ['+d+']')
-        if not ans: ans = d
+        if not ans: 
+            ans = d
         return (ans is 'y' or ans is 'Y')
     
     def _core(self):
-        self.interactive_add('nick', 'Enter the nickname for your bot', 'Willie')
-        self.interactive_add('name', 'Enter the "real name" of you bot for WHOIS responses',
-                             'Willie Embosbot, http://willie.dftba.net')
-        self.interactive_add('host', 'Enter the server to connect to', 'irc.dftba.net')
-        self.interactive_add('port', 'Enter the port to connect on', '6667')
-        self.use_ssl = self.option('Use SSL Secured connection?', False)
-        if self.use_ssl:
-            self.verify_ssl = self.option('Require trusted SSL certificates?', True)
-            if self.verify_ssl:
-                self.interactive_add('ca_certs', 'Enter full path to the CA Certs pem file', '/etc/pki/tls/cert.pem')
-        self.interactive_add('bind_host', 'Bind connection to a specific IP', 'None')
-        
+        self.interactive_add('core', 'nick', 'Enter the nickname for your bot', 'Willie')
+        self.interactive_add('core', 'host', 'Enter the server to connect to', 'irc.dftba.net')
+        self.interactive_add('core', 'port', 'Enter the port to connect on', '6667')
+        self.interactive_add('core', 'owner', "Enter your own IRC name (or that of the bot's owner)")
         c='Enter the channels to connect to by default, one at a time. When done, hit enter again.'
-        self.add_list('channels', c, 'Channel:')
-                
-        self.interactive_add('owner', "Enter your own IRC name (or that of the bot's owner)")
-        self.interactive_add('debug_target', 'Enter the channel to print debugging messages to. If set to stdio, debug messages will be printed to standard output', 'stdio')
-        
-        self.interactive_add('verbose', 'Verbosity level. If None, all debug messages will be discarded. Valid options are warning/verbose/none', 'None') #FIXME: Make this a bit more user friendly
-        
-        c="List users you'd like "+self.nick+" to ignore (e.g. other bots), one at a time. Hit enter when done."
-        self.add_list('other_bots', c, 'Nick:')
-        
-        self.interactive_add('password', "Enter the bot's NickServ password", 'None', ispass=True)
-        self.interactive_add('serverpass', "Enter the bot's server password", 'None', ispass=True)
-        
-        oper = self.option("Will this bot have IRC Operator privilages")
-        if oper:
-            opername = raw_input("Operator name:")
-            operpass = getpass.getpass("Operator password:")
-            self.operline = "Oper = ('"+opername+"', '"+operpass+"')"
-        else: self.operline = "# Oper = ('opername', 'operpass')"
-        
-        #Note that this won't include owner. Will insert that later.
+        self.add_list('core', 'channels', c, 'Channel:')
 
-        c='Enter other users who can perform some adminstrative tasks, one at a time. When done, hit enter again.'
-        self.add_list('admins', c, 'Nick:')
-        
-        c=trim("""\
-        If you have any modules you do not wish this bot to load, enter them now, one at
-        a time. When done, hit enter. (If you'd rather whitelist modules, leave this empty.)""")
-        self.add_list('exclude', c, 'Module:')
-        
-        if not self.exclude:
-            wl = self.option("Would you like to create a module whitelist")
-            self.enable = []
-            if wl:
-                c="Enter the modules to use, one at a time. Hit enter when done."
-                self.add_list('enable', c, 'Module:')
-
-        c = trim("""\
-        If you'd like to include modules from other directories, enter them one at a
-        time, and hit enter again when done.""")
-        self.add_list('extra', c, 'Directory:')
-        
-    def _settings(self):
-        try:
-            import settings
-            self.settings_chunk = trim(settings.write_config(self))
-            self.settings = True
-        except: 
-            self.settings = False
-            self.settings_chunk = trim("""\
-            
-            # ------------------  USER DATABASE CONFIGURATION  ------------------
-            # The user database was not set up at install. Please consult the documentation,
-            # or run the configuration utility if you wish to use it.""")
-        
-        print trim("""
-        The configuration utility will now attempt to find modules with their own
-        configuration needs.
-        """)
+    def _db(self):
+        db.configure(self)
     
     def _modules(self):
         home = os.getcwd()
         modules_dir = os.path.join(home, 'modules')
-        self.modules_chunk = ''
-
         filenames = enumerate_modules(self)
         os.sys.path.insert(0,modules_dir) 
         for filename in filenames:
             name = os.path.basename(filename)[:-3]
-            if name in self.exclude: continue
-            try: module = imp.load_source(name, filename)
+            if name in self.exclude:
+                continue
+            try:
+                module = imp.load_source(name, filename)
             except Exception, e:
                 print >> sys.stderr, "Error loading %s: %s (in config.py)" % (name, e)
             else:
                 if hasattr(module, 'configure'):
-                    chunk = module.configure(self)
-                    if chunk and isinstance(chunk, basestring):
-                        self.modules_chunk += trim(chunk)
+                    module.configure(self)
 
-def _config_names(dotdir, config):
-    config = config or 'default'
 
-    def files(d):
-        names = os.listdir(d)
-        return list(os.path.join(d, fn) for fn in names if fn.endswith('.py'))
-
-    here = os.path.join('.', config)
-    if os.path.isfile(here):
-        return [here]
-    if os.path.isfile(here + '.py'):
-        return [here + '.py']
-    if os.path.isdir(here):
-        return files(here)
-
-    there = os.path.join(dotdir, config)
-    if os.path.isfile(there):
-        return [there]
-    if os.path.isfile(there + '.py'):
-        return [there + '.py']
-    if os.path.isdir(there):
-        return files(there)
-
-    sys.exit(1)
-    
 def main(argv=None):
     import optparse
     parser = optparse.OptionParser('%prog [options]')
     parser.add_option('-c', '--config', metavar='fn',
         help='use this configuration file or directory')
+    parser.add_option('-d', '--database', action='store_true', dest='db_cfg',
+        help='Only configure database settings')
+    parser.add_option('-m', '--modules', action='store_true', dest='mod_cfg',
+        help='Only configure module settings')
     opts, args = parser.parse_args(argv)
     dotdir = os.path.expanduser('~/.willie')
-    configpath = os.path.join(dotdir, (opts.config or 'default')+'.py')
-    create_config(configpath)
+    configpath = os.path.join(dotdir, (opts.config or 'default')+'.cfg')
+    if opts.db_cfg:
+        check_dir(False)
+        if not os.path.isfile(configpath):
+            print "No config file found. Please make one before configuring these options."
+            sys.exit(1)
+        config = Config(configpath, True)
+        config._db()
+    elif opts.mod_cfg:
+        check_dir(False)
+        if not os.path.isfile(configpath):
+            print "No config file found. Please make one before configuring these options."
+            sys.exit(1)
+        config = Config(configpath, True)
+        config._modules()
+    else:
+        create_config(configpath)
 
-def create_config(configpath):
-    print "Please answer the following questions to create your configuration file:\n"
+def check_dir(create=True):
     dotdir = os.path.expanduser('~/.willie')
     if not os.path.isdir(dotdir):
         if os.path.isdir(os.path.expanduser('~/.jenni')):
@@ -370,19 +296,29 @@ def create_config(configpath):
         elif os.path.isdir(os.path.expanduser('~/.phenny')):
             dotdir = os.path.expanduser('~/.phenny')
     if not os.path.isdir(dotdir):
-        print 'Creating a config directory at ~/.willie...'
-        try: os.mkdir(dotdir)
-        except Exception, e:
-            print >> sys.stderr, 'There was a problem creating %s:' % dotdir
-            print >> sys.stderr, e.__class__, str(e)
-            print >> sys.stderr, 'Please fix this and then run Willie again.'
+        if create:
+            print 'Creating a config directory at ~/.willie...'
+            try: os.mkdir(dotdir)
+            except Exception, e:
+                print >> sys.stderr, 'There was a problem creating %s:' % dotdir
+                print >> sys.stderr, e.__class__, str(e)
+                print >> sys.stderr, 'Please fix this and then run Willie again.'
+                sys.exit(1)
+        else:
+            print "No config file found. Please make one before configuring these options."
             sys.exit(1)
+
+def create_config(configpath):
+    check_dir()
+    print "Please answer the following questions to create your configuration file:\n"
     try:
         config = Config(configpath, os.path.isfile(configpath))
         config._core()
-        config._settings()
-        config._modules()
-        config.write()
+        if config.option("Would you like to set up a settings database now"):
+            config._db()
+        if config.option('Would you like to see if there are any modules that need configuring'):
+            config._modules()
+        config.save()
     except Exception, e:
         print "Encountered an error while writing the config file. This shouldn't happen. Check permissions."
         raise

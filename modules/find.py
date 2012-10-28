@@ -1,12 +1,10 @@
 #!/usr/bin/env python
 """
-find.py - Jenni Spell Checking Module
+find.py - Willie Spell Checking Module
 Copyright 2011, Michael Yanovich, yanovich.net
 Licensed under the Eiffel Forum License 2.
 
-More info:
- * Jenni: https://github.com/myano/jenni/
- * Phenny: http://inamidst.com/phenny/
+http://willie.dftba.net
 
 Contributions from: Matt Meinwald and Morgan Goose
 This module will fix spelling errors if someone corrects them
@@ -15,6 +13,7 @@ using the sed notation (s///) commonly found in vi/vim.
 
 import os, re
 
+db_file = ''
 
 def give_me_unicode(obj, encoding="utf-8"):
     if isinstance(obj, basestring):
@@ -22,13 +21,18 @@ def give_me_unicode(obj, encoding="utf-8"):
             obj = unicode(obj, encoding)
     return obj
 
+def setup(willie):
+    global db_file
+    db_file = os.path.join(willie.config.dotdir, 'find.txt')
+
 def load_db():
-    """ load lines from find.txt to search_dict """
-    if not os.path.isfile("find.txt"):
-        f = open("find.txt", "w")
+    """ load lines from db_file to search_dict """
+    global db_file
+    if not os.path.isfile(db_file):
+        f = open(db_file, "w")
         f.write("#test,yano,foobar\n")
         f.close()
-    search_file = open("find.txt", "r")
+    search_file = open(db_file, "r")
     lines = search_file.readlines()
     search_file.close()
     search_dict = dict()
@@ -57,8 +61,9 @@ def load_db():
     return search_dict
 
 def save_db(search_dict):
-    """ save search_dict to find.txt """
-    search_file = open("find.txt", "w")
+    """ save search_dict to db_file """
+    global db_file
+    search_file = open(db_file, "w")
     for channel in search_dict:
         if channel is not "":
             for nick in search_dict[channel]:
@@ -75,10 +80,10 @@ def save_db(search_dict):
     search_file.close()
 
 # Create a temporary log of the most recent thing anyone says.
-def collectlines(jenni, input):
+def collectlines(willie, trigger):
     # don't log things in PM
-    channel = (input.sender).encode("utf-8")
-    nick = (input.nick).encode("utf-8")
+    channel = (trigger.sender).encode("utf-8")
+    nick = (trigger.nick).encode("utf-8")
     if not channel.startswith('#'): return
     search_dict = load_db()
     if channel not in search_dict:
@@ -86,7 +91,7 @@ def collectlines(jenni, input):
     if nick not in search_dict[channel]:
         search_dict[channel][nick] = list()
     templist = search_dict[channel][nick]
-    line = input.group()
+    line = trigger.group()
     if line.startswith("s/"):
         return
     elif line.startswith("\x01ACTION"):
@@ -100,22 +105,22 @@ def collectlines(jenni, input):
 collectlines.rule = r'.*'
 collectlines.priority = 'low'
 
-def findandreplace(jenni, input):
+def findandreplace(willie, trigger):
     # don't bother in PM
-    channel = (input.sender).encode("utf-8")
-    nick = (input.nick).encode("utf-8")
+    channel = (trigger.sender).encode("utf-8")
+    nick = (trigger.nick).encode("utf-8")
 
     if not channel.startswith('#'): return
 
     search_dict = load_db()
 
-    rnick = input.group(1) or nick # Correcting other person vs self.
+    rnick = trigger.group(1) or nick # Correcting other person vs self.
 
     # only do something if there is conversation to work with
     if channel not in search_dict or rnick not in search_dict[channel]: return
 
-    sep = input.group(2)
-    rest = input.group(3).split(sep)
+    sep = trigger.group(2)
+    rest = trigger.group(3).split(sep)
     me = False # /me command
     flags = ''
     if len(rest) < 2:
@@ -152,12 +157,12 @@ def findandreplace(jenni, input):
     save_db(search_dict)
 
     # output
-    phrase = nick + (input.group(1) and ' thinks ' + rnick or '') + (me and ' ' or " \x02meant\x02 to say: ") + new_phrase
-    if me and not input.group(1): phrase = '\x02' + phrase + '\x02'
-    jenni.say(phrase)
+    phrase = nick + (trigger.group(1) and ' thinks ' + rnick or '') + (me and ' ' or " \x02meant\x02 to say: ") + new_phrase
+    if me and not trigger.group(1): phrase = '\x02' + phrase + '\x02'
+    willie.say(phrase)
 
 # Matches optional whitespace + 's' + optional whitespace + separator character
-findandreplace.rule = r'(?u)(?:([^\s:]+)[\s:])?\s*s\s*([^\s\w])(.*)' # May work for both this and "meant" (requires input.group(i+1))
+findandreplace.rule = r'(?u)(?:([^\s:]+)[\s:])?\s*s\s*([^\s\w])(.*)' # May work for both this and "meant" (requires trigger.group(i+1))
 findandreplace.priority = 'high'
 
 

@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 """
 url.py - Willie URL title module
-Copyright 2010-2011, Michael Yanovich, yanovich.net, Kenneth Sham.
+Copyright 2010-2011, Michael Yanovich, yanovich.net, Kenneth Sham
+Copyright 2012 Edward Powell
 Licensed under the Eiffel Forum License 2.
 
 http://willie.dftba.net
@@ -13,12 +14,41 @@ import web
 import unicodedata
 import urlparse
 
-EXCLUSION_CHAR = "!"
-IGNORE = ["git.io"]
-
-url_finder = re.compile(r'(?u)(%s?(http|https|ftp)(://\S+))' % (EXCLUSION_CHAR))
+url_finder = None
 r_entity = re.compile(r'&[A-Za-z0-9#]+;')
 INVALID_WEBSITE = 0x01
+exclusion_char = '!'
+
+def configure(config):
+    if config.option('Exclude certain URLs from automatic title display', False):
+        if not config.has_section('url'):
+            config.add_section('url')
+        config.add_list('url',  'exclude', 'Enter regular expressions for each URL you would like to exclude.',
+            'Regex:')
+        config.interactive_add('url', 'exclusion_char',
+            'Prefix to suppress URL titling', '!')
+    
+def setup(willie):
+    global url_finder, exclusion_char
+    if willie.config.has_option('url', 'exclude'):
+        regexes = [re.compile(s) for s in willie.config.url.exclude]
+    else:
+        regexes = []
+    
+    if not willie.memory.contains('url_exclude'):
+        willie.memory['url_exclude'] = regexes
+    else:
+        exclude = willie.memory['url_exclude']
+        if regexes: exclude.append(regexes)
+        willie.memory['url_exclude'] = exclude
+    
+    if willie.config.has_option('url', 'exclusion_char'):
+        exclusion_char = willie.config.url.exclusion_char
+    
+    url_finder = re.compile(r'(?u)(%s?(http|https|ftp)(://\S+))' %
+        (exclusion_char))
+    # We want the exclusion list to be pre-compiled, since url parsing gets
+    # called a /lot/, and it's annoying when it's laggy.
 
 def find_title(url):
     """
@@ -28,10 +58,6 @@ def find_title(url):
 
     if not uri and hasattr(self, 'last_seen_uri'):
         uri = self.last_seen_uri.get(origin.sender)
-
-    for item in IGNORE:
-        if item in uri:
-            return
 
     if not re.search('^((https?)|(ftp))://', uri):
         uri = 'http://' + uri
@@ -101,31 +127,31 @@ def getTLD (url):
     else: u = url[0:idx] + u[0:f]
     return u
 
-def get_results(text):
+def get_results(willie, text):
     a = re.findall(url_finder, text)
-    k = len(a)
-    i = 0
     display = [ ]
-    while i < k:
-        url = uni_encode(a[i][0])
+    for match in a:
+        match = match[0]
+        if (match.startswith(exclusion_char) or
+                any(pattern.findall(match) for pattern in willie.memory['url_exclude'])):
+            continue
+        url = uni_encode(match)
         url = uni_decode(url)
         url = iriToUri(url)
-        if not url.startswith(EXCLUSION_CHAR):
-            try:
-                page_title = find_title(url)
-            except:
-                page_title = None # if it can't access the site fail silently
-            display.append([page_title, url])
-        i += 1
+        try:
+            page_title = find_title(url)
+        except:
+            page_title = None # if it can't access the site fail silently
+        display.append([page_title, url])
     return display
 
-def show_title_auto (jenni, input):
-    if (input.startswith('.topic ') or input.startswith('.tmask ') or input.startswith('.title ') or input.startswith('.dftba') or re.match('.*(youtube.com/watch\S*v=|youtu.be/)([\w-]+.*)', input)) or re.match('.*(http(?:s)?://(www\.)?reddit\.com/r/.*?/comments/[\w-]+).*', input):
+def show_title_auto (willie, trigger):
+    if trigger.startswith('.title '):
         return
-    if len(re.findall("\([\d]+\sfiles\sin\s[\d]+\sdirs\)", input)) == 1: return
+    if len(re.findall("\([\d]+\sfiles\sin\s[\d]+\sdirs\)", trigger)) == 1: return
     try:
-        results = get_results(input)
-    except: return
+        results = get_results(willie, trigger)
+    except Exception as e: raise e
     if results is None: return
 
     k = 1
@@ -136,20 +162,20 @@ def show_title_auto (jenni, input):
         if r[0] is None:
             continue
         else: r[1] = getTLD(r[1])
-        jenni.say('[ %s ] - %s' % (r[0], r[1]))
-show_title_auto.rule = '(?u).*(%s?(http|https)(://\S+)).*' % (EXCLUSION_CHAR)
+        willie.say('[ %s ] - %s' % (r[0], r[1]))
+show_title_auto.rule = '(?u).*((http|https)(://\S+)).*'
 show_title_auto.priority = 'high'
 
-def show_title_demand (jenni, input):
+def show_title_demand (willie, trigger):
     #try:
-    results = get_results(input)
+    results = get_results(trigger)
     #except: return
     if results is None: return
 
     for r in results:
         if r[0] is None: continue
         r[1] = getTLD(r[1])
-        jenni.say('[ %s ] - %s' % (r[0], r[1]))
+        willie.say('[ %s ] - %s' % (r[0], r[1]))
 show_title_demand.commands = ['title']
 show_title_demand.priority = 'high'
 

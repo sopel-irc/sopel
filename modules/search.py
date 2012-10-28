@@ -1,12 +1,10 @@
 #!/usr/bin/env python
 """
-search.py - Jenni Web Search Module
+search.py - Willie Web Search Module
 Copyright 2008-9, Sean B. Palmer, inamidst.com
 Licensed under the Eiffel Forum License 2.
 
-More info:
- * Jenni: https://github.com/myano/jenni/
- * Phenny: http://inamidst.com/phenny/
+http://willie.dftba.net
 """
 
 import re
@@ -43,35 +41,35 @@ def formatnumber(n):
         parts.insert(i, ',')
     return ''.join(parts)
 
-def g(jenni, input):
+def g(willie, trigger):
     """Queries Google for the specified input."""
-    query = input.group(2)
+    query = trigger.group(2)
     if not query:
-        return jenni.reply('.g what?')
+        return willie.reply('.g what?')
     try:
         query = query.encode('utf-8')
     except:
         pass
     uri = google_search(query)
     if uri:
-        jenni.reply(uri)
-        if not hasattr(jenni.bot, 'last_seen_uri'):
-            jenni.bot.last_seen_uri = {}
-        jenni.bot.last_seen_uri[input.sender] = uri
-    elif uri is False: jenni.reply("Problem getting data from Google.")
-    else: jenni.reply("No results found for '%s'." % query)
+        willie.reply(uri)
+        if not hasattr(willie.bot, 'last_seen_uri'):
+            willie.bot.last_seen_uri = {}
+        willie.bot.last_seen_uri[trigger.sender] = uri
+    elif uri is False: willie.reply("Problem getting data from Google.")
+    else: willie.reply("No results found for '%s'." % query)
 g.commands = ['g','google']
 g.priority = 'high'
 g.example = '.g swhack'
 
-def gc(jenni, input):
+def gc(willie, trigger):
     """Returns the number of Google results for the specified input."""
-    query = input.group(2)
+    query = trigger.group(2)
     if not query:
-        return jenni.reply('.gc what?')
+        return willie.reply('.gc what?')
     query = query.encode('utf-8')
     num = formatnumber(google_count(query))
-    jenni.say(query + ': ' + num)
+    willie.say(query + ': ' + num)
 gc.commands = ['gc']
 gc.priority = 'high'
 gc.example = '.gc extrapolate'
@@ -80,13 +78,13 @@ r_query = re.compile(
     r'\+?"[^"\\]*(?:\\.[^"\\]*)*"|\[[^]\\]*(?:\\.[^]\\]*)*\]|\S+'
 )
 
-def gcs(jenni, input):
+def gcs(willie, trigger):
     """Compare the number of Google search results"""
-    if not input.group(2):
-        return jenni.reply("Nothing to compare.")
-    queries = r_query.findall(input.group(2))
+    if not trigger.group(2):
+        return willie.reply("Nothing to compare.")
+    queries = r_query.findall(trigger.group(2))
     if len(queries) > 6:
-        return jenni.reply('Sorry, can only compare up to six things.')
+        return willie.reply('Sorry, can only compare up to six things.')
 
     results = []
     for i, query in enumerate(queries):
@@ -99,7 +97,7 @@ def gcs(jenni, input):
 
     results = [(term, n) for (n, term) in reversed(sorted(results))]
     reply = ', '.join('%s (%s)' % (t, formatnumber(n)) for (t, n) in results)
-    jenni.say(reply)
+    willie.say(reply)
 gcs.commands = ['gcs', 'comp']
 gcs.example = '.gcs foo bar'
 
@@ -112,24 +110,24 @@ def bing_search(query, lang='en-GB'):
     m = r_bing.search(bytes)
     if m: return m.group(1)
 
-def bing(jenni, input):
+def bing(willie, trigger):
     """Queries Bing for the specified input."""
-    query = input.group(2)
+    query = trigger.group(2)
     if query.startswith(':'):
         lang, query = query.split(' ', 1)
         lang = lang[1:]
     else: lang = 'en-GB'
     if not query:
-        return jenni.reply('.bing what?')
+        return willie.reply('.bing what?')
 
     query = query.encode('utf-8')
     uri = bing_search(query, lang)
     if uri:
-        jenni.reply(uri)
-        if not hasattr(jenni.bot, 'last_seen_uri'):
-            jenni.bot.last_seen_uri = {}
-        jenni.bot.last_seen_uri[input.sender] = uri
-    else: jenni.reply("No results found for '%s'." % query)
+        willie.reply(uri)
+        if not hasattr(willie.bot, 'last_seen_uri'):
+            willie.bot.last_seen_uri = {}
+        willie.bot.last_seen_uri[trigger.sender] = uri
+    else: willie.reply("No results found for '%s'." % query)
 bing.commands = ['bing']
 bing.example = '.bing swhack'
 
@@ -143,26 +141,26 @@ def duck_search(query):
     m = r_duck.search(bytes)
     if m: return web.decode(m.group(1))
 
-def duck(jenni, input):
+def duck(willie, trigger):
     """Queries Duck Duck Go for the specified input."""
-    query = input.group(2)
-    if not query: return jenni.reply('.ddg what?')
+    query = trigger.group(2)
+    if not query: return willie.reply('.ddg what?')
 
     query = query.encode('utf-8')
     uri = duck_search(query)
     if uri:
-        jenni.reply(uri)
-        if not hasattr(jenni.bot, 'last_seen_uri'):
-            jenni.bot.last_seen_uri = {}
-        jenni.bot.last_seen_uri[input.sender] = uri
-    else: jenni.reply("No results found for '%s'." % query)
+        willie.reply(uri)
+        if not hasattr(willie.bot, 'last_seen_uri'):
+            willie.bot.last_seen_uri = {}
+        willie.bot.last_seen_uri[trigger.sender] = uri
+    else: willie.reply("No results found for '%s'." % query)
 duck.commands = ['duck', 'ddg']
 
-def search(jenni, input):
+def search(willie, trigger):
     """Searches Google, Bing, and Duck Duck Go."""
-    if not input.group(2):
-        return jenni.reply('.search for what?')
-    query = input.group(2).encode('utf-8')
+    if not trigger.group(2):
+        return willie.reply('.search for what?')
+    query = trigger.group(2).encode('utf-8')
     gu = google_search(query) or '-'
     bu = bing_search(query) or '-'
     du = duck_search(query) or '-'
@@ -181,20 +179,20 @@ def search(jenni, input):
         if len(du) > 150: du = '(extremely long link)'
         result = '%s (g), %s (b), %s (d)' % (gu, bu, du)
 
-    jenni.reply(result)
+    willie.reply(result)
 search.commands = ['search']
 search.example = '.search nerdfighter'
 
-def suggest(jenni, input):
+def suggest(willie, trigger):
     """Suggest terms starting with given input"""
-    if not input.group(2):
-        return jenni.reply("No query term.")
-    query = input.group(2).encode('utf-8')
+    if not trigger.group(2):
+        return willie.reply("No query term.")
+    query = trigger.group(2).encode('utf-8')
     uri = 'http://websitedev.de/temp-bin/suggest.pl?q='
     answer = web.get(uri + web.quote(query).replace('+', '%2B'))
     if answer:
-        jenni.say(answer)
-    else: jenni.reply('Sorry, no result.')
+        willie.say(answer)
+    else: willie.reply('Sorry, no result.')
 suggest.commands = ['suggest']
 
 if __name__ == '__main__':
