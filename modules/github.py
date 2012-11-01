@@ -18,6 +18,12 @@ def checkConfig(willie):
         return [willie.config.github.oath_token, willie.config.github.repo]
 
 def configure(config):
+    """
+    ``[GitHub]``
+    | name | example | purpose |
+	| Oauth_token | 5868e7af57496cc3ae255868e7af57496cc3ae25 | The OAuthentication token to connect to your github repo |
+    | repo | embolalia/willie | The GitHub repo you're working from. |
+    """
     chunk = ''
     if config.option('Configuring github issue reporting and searching module', False):
         config.interactive_add('github', 'Oath_token', 'Github API Oauth2 token', '')
