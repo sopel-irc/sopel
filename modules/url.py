@@ -24,10 +24,8 @@ def configure(config):
     
     | [url] | example | purpose |
     | ---- | ------- | ------- |
-    | exclude | https?://git\.io/.* | A list of regular expressions for URLs for which the title should
-    not be shown. |
-    | exclusion_char | ! | A character (or string) which, when immediately preceding a
-    URL, will stop the URL's title from being shown. |
+    | exclude | https?://git\.io/.* | A list of regular expressions for URLs for which the title should not be shown. |
+    | exclusion_char | ! | A character (or string) which, when immediately preceding a URL, will stop the URL's title from being shown. |
     """
     if config.option('Exclude certain URLs from automatic title display', False):
         if not config.has_section('url'):
