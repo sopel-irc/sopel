@@ -1,4 +1,14 @@
 #!/usr/bin/env python2.7
+"""
+Willie module documentation utility
+This script creates (either Markdown or reST) files, documenting the commands
+and module configuration options in a Willie instance.
+
+Copyright 2012 Edward Powell, embolalia.net
+Licensed under the Eiffel Forum License 2.
+
+http://willie.dfbta.net
+"""
 import os
 from textwrap import dedent as trim
 import imp
@@ -6,7 +16,8 @@ import imp
 def main():
     filenames = []
     this_dir = os.path.dirname(os.path.abspath(__file__))
-    output_file = os.path.join(this_dir, 'source', 'modules.rst')
+    config_vals_file = os.path.join(this_dir, 'source', 'modules.md')
+    commands_file = os.path.join(this_dir, 'source', 'commands.md')
     root_dir = os.path.dirname(this_dir)
     os.sys.path.insert(0,root_dir)
     modules_dir = os.path.join(root_dir, 'modules')
@@ -16,11 +27,10 @@ def main():
 
     filenames.append(os.path.join(root_dir, 'coretasks.py'))
     
-    with open(output_file, 'w') as f:
+    commands = []
+    
+    with open(config_vals_file, 'w') as f:
         f.write(trim("""\
-        Module Documentation
-        ====================
-        
         This page contains documentation for all modules within Willie's main
         modules directory. If you have added modules without rebuilding the
         documentation, or are using a secondary modules directory, those modules
@@ -30,7 +40,17 @@ def main():
         =======
         """))
         for filename in filenames:
-            document_module(filename, f)
+            c = document_module(filename, f)
+            if c:
+                commands.extend(c)
+    
+    commands.sort()
+    
+    with open(commands_file, 'w') as f:
+        f.write("| Commands | Purpose | Example | Module |\n")
+        f.write("| -------- | ------- | ------- | ------ |\n")
+        for c in commands:
+            process_command(f, c)
 
 def document_module(module_file, f):
     try: module = imp.load_source(os.path.basename(module_file)[:-3], module_file)
@@ -39,17 +59,25 @@ def document_module(module_file, f):
                % (module_file, e))
     else:
             #try:
-            f.write('\n%s\n%s\n'%(module.__name__, '-'*len(module.__name__)))
-            f.write(module.__doc__ or '')
+            commands = []
             if hasattr(module, 'configure'):
+                f.write('\n%s\n%s\n'%(module.__name__, '-'*len(module.__name__)))
                 process_configure(f, module)
+            
             for obj in dir(module):
-                if (hasattr(getattr(module, obj), 'commands')
-                        or hasattr(getattr(module, obj), 'rule')):
-                    process_command(f, getattr(module, obj))
+                func = getattr(module, obj)
+                if (hasattr(func, 'commands')):
+                    if not hasattr(func, 'name'):
+                        name = func.__name__
+                    else:
+                        name = func.name
+                    setattr(func, 'module_name', module.__name__)
+                    commands.append((name, func))
             
             #except Exception, e:
             #print ("Error while documenting %s: %s\nThis module will not be documented" % (module_file, e))
+            
+            return commands
 
 def process_configure(f, module):
     if not module.configure.__doc__: return
@@ -58,21 +86,19 @@ def process_configure(f, module):
     
 
 def process_command(f, func):
-    #Handle customized function name
-    if not hasattr(func, 'name'):
-        name = func.__name__
-    else:
-        name = func.name
+    name = func[0]
+    func = func[1]
     
-    #Handle docstring and example
-    doc = '\n'+(func.__doc__ or '*No documentation found.*')
+    purpose = (func.__doc__ or '*No documentation found.*').replace('\n', '<br>')
     if hasattr(func, 'example'):
-        example = func.example
-        example = example.replace('$nickname', 'Willie')
-        doc = doc + '\n\n*Example:* %s' % example
+        example = func.example.replace('$nickname', 'Willie')
+    else:
+        example = ''
 
-    f.write('\n.. py:attribute:: %s\n' % name)
-    f.write(tabulate(doc)+'\n')
+    commands = '.'+'<br>.'.join(func.commands) #TODO rules
+    module = func.module_name
+    line = "| %s | %s | %s | %s |\n" % (commands, purpose, example, module)
+    f.write(line)
 
 def tabulate(string, indent_by=1):
     return string.replace('\n', '\n'+('\t'*indent_by))
