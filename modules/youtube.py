@@ -160,6 +160,9 @@ ytsearch.commands = ['yt','youtube']
 ytsearch.example = '.yt how to be a nerdfighter FAQ'
 
 def ytinfo(willie, trigger):
+    """
+    Get information about the latest video uploaded by the channel provided.
+    """
     #Grab info from YT API
     uri = 'http://gdata.youtube.com/feeds/api/videos/' + trigger.group(2) + '?v=2'
 

@@ -86,6 +86,9 @@ devoice.rule = (['devoice'], r'(\S+)?')
 devoice.priority = 'low'
 
 def kick(willie, trigger):
+    """
+    Kick a user from the channel.
+    """
     if not trigger.isop:
         return
     text = trigger.group().split()
