@@ -49,52 +49,15 @@ class Origin(object):
         mappings = {bot.nick: self.nick, None: None}
         self.sender = mappings.get(target, target)
 
-def create_logdir():
-    try: os.mkdir("logs")
-    except Exception, e:
-        stderr('There was a problem creating the logs directory.')
-        stderr(e.__class__, str(e))
-        stderr('Please fix this and then run Willie again.')
-        os._exit(1)
-
-def check_logdir():
-    if not os.path.isdir("logs"):
-        create_logdir()
-
-def log_raw(line):
-    check_logdir()
-    f = codecs.open("logs/raw.log", 'a', encoding='utf-8')
-    f.write(str(time.time()) + "\t")
-    temp = line.replace('\n', '')
-    try:
-        temp = temp.decode('utf-8')
-    except UnicodeDecodeError:
-        try:
-            temp = temp.decode('iso-8859-1')
-        except UnicodeDecodeError:
-            temp = temp.decode('cp1252')
-    f.write(temp)
-    f.write("\n")
-    f.close()
-
 class Bot(asynchat.async_chat):
     def __init__(self, config):
-        if config.use_ssl is not None:
-            use_ssl = config.use_ssl
-        else:
-            use_ssl = False
-        if config.verify_ssl is not None:
-            verify_ssl = config.verify_ssl
-        else:
-            verify_ssl = False
         if config.ca_certs is not None:
             ca_certs = config.ca_certs
         else:
             ca_certs = '/etc/pki/tls/cert.pem'
-        if  config.serverpass is not None:
-            serverpass = config.serverpass
-        else:
-            serverpass = None
+        if config.log_raw is None:
+            #Default is to log raw data, can be disabled in config
+            config.log_raw = True 
         asynchat.async_chat.__init__(self)
         self.set_terminator('\n')
         self.buffer = ''
@@ -116,10 +79,7 @@ class Bot(asynchat.async_chat):
             self.channels = []
         
         self.stack = []
-        self.serverpass = config.server_password
-        self.verify_ssl = verify_ssl
         self.ca_certs = ca_certs
-        self.use_ssl = use_ssl
         self.hasquit = False
 
         self.sending = threading.RLock()
@@ -137,7 +97,34 @@ class Bot(asynchat.async_chat):
         #We need this to prevent error loops in handle_error
         self.error_count = 0
         self.last_error_timestamp = None
-        
+
+    def log_raw(self, line):
+        ''' Log raw line to the raw log '''
+        #TODO: make log dir not hardcoded
+        if not self.config.core.log_raw:
+            return
+        if not os.path.isdir("logs"):
+            try:
+                os.mkdir("logs")
+            except Exception, e:
+                stderr('There was a problem creating the logs directory.')
+                stderr(e.__class__, str(e))
+                stderr('Please fix this and then run Willie again.')
+                os._exit(1)
+        f = codecs.open("logs/raw.log", 'a', encoding='utf-8')
+        f.write(str(time.time()) + "\t")
+        temp = line.replace('\n', '')
+        try:
+            temp = temp.decode('utf-8')
+        except UnicodeDecodeError:
+            try:
+                temp = temp.decode('iso-8859-1')
+            except UnicodeDecodeError:
+                temp = temp.decode('cp1252')
+        f.write(temp)
+        f.write("\n")
+        f.close()
+
 
     def safe(self, string):
         '''Remove newlines from a string and make sure it is utf8'''
@@ -185,7 +172,7 @@ class Bot(asynchat.async_chat):
                 temp = (' '.join(args) + ' :' + text)[:510] + '\r\n'
             else:
                 temp = ' '.join(args)[:510] + '\r\n'
-            log_raw(temp)
+            self.log_raw(temp)
             self.send(temp)
         finally:
             self.writing_lock.release()
@@ -201,10 +188,10 @@ class Bot(asynchat.async_chat):
         self.create_socket(socket.AF_INET, socket.SOCK_STREAM)
         if self.config.core.bind_host is not None:
             self.socket.bind((self.config.core.bind_host,0))
-        if self.use_ssl and has_ssl:
+        if self.config.core.use_ssl and has_ssl:
             self.send = self._ssl_send
             self.recv = self._ssl_recv
-        elif not has_ssl and self.use_ssl:
+        elif not has_ssl and self.config.core.use_ssl:
             stderr('SSL is not avilable on your system, attempting connection without it')
         self.connect((host, port))
         try: asyncore.loop()
@@ -229,8 +216,8 @@ class Bot(asynchat.async_chat):
             self.write(['JOIN', channel, password])
 
     def handle_connect(self):
-        if self.use_ssl and has_ssl:
-            if not self.verify_ssl:
+        if self.config.core.use_ssl and has_ssl:
+            if not self.config.core.verify_ssl:
                 self.ssl = ssl.wrap_socket(self.socket, do_handshake_on_connect=False, suppress_ragged_eofs=True)
             else:
                 verification = verify_ssl_cn(self.config.host, int(self.config.port))
@@ -273,8 +260,8 @@ class Bot(asynchat.async_chat):
         self.write(('NICK', self.nick))
         self.write(('USER', self.user, '+iw', self.nick), self.name)
 
-        if self.serverpass is not None:
-            self.write(('PASS', self.serverpass))
+        if self.config.core.server_password is not None:
+            self.write(('PASS', self.config.core.server_password))
         stderr('Connected.')
     def _ssl_send(self, data):
         """ Replacement for self.send() during SSL connections. """
@@ -313,7 +300,7 @@ class Bot(asynchat.async_chat):
 
     def collect_incoming_data(self, data):
         if data:
-            log_raw(data)
+            self.log_raw(data)
         self.buffer += data
 
     def found_terminator(self):
