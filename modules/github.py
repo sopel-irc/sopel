@@ -19,9 +19,9 @@ def checkConfig(willie):
 
 def configure(config):
     """
-    ``[GitHub]``
-    | name | example | purpose |
-	| Oauth_token | 5868e7af57496cc3ae255868e7af57496cc3ae25 | The OAuthentication token to connect to your github repo |
+    | [github] | example | purpose |
+    | -------- | ------- | ------- |
+    | Oauth_token | 5868e7af57496cc3ae255868e7af57496cc3ae25 | The OAuth token to connect to your github repo |
     | repo | embolalia/willie | The GitHub repo you're working from. |
     """
     chunk = ''

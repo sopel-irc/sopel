@@ -12,6 +12,18 @@ import time
 import re
 
 def configure(config):
+    """
+    These values are all found by signing up your bot at 
+    [api.twitter.com](http://api.twitter.com).
+    
+    | [twitter] | example | purpose |
+    | --------- | ------- | ------- |
+    | consumer_key | 09d8c7b0987cAQc7fge09 | OAuth consumer key |
+    | consumer_secret | LIaso6873jI8Yasdlfi76awer76yhasdfi75h6TFJgf | OAuth consumer secret |
+    | access_token | 564018348-Alldf7s6598d76tgsadfo9asdf56uUf65aVgdsf6 | OAuth access token |
+    | access_token_secret | asdfl7698596KIKJVGvJDcfcvcsfdy85hfddlku67 | OAuth access token secret |
+    """
+    
     if config.option('Configure Twitter? (You will need to register on http://api.twitter.com)', False):
         config.interactive_add('twitter', 'consumer_key', 'Consumer key')
         config.interactive_add('twitter', 'consumer_secret', 'Consumer secret')
