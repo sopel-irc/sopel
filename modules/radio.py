@@ -13,9 +13,9 @@ import web, xml.dom.minidom
 
 def configure(config):
     """
-    ``[GitHub]``
-    | name | example | purpose |
-	| URL | http://127.0.0.1:8000/ | URL to the ShoutCAST administration page |
+    | [radio] | example | purpose |
+    | ------- | ------- | ------- |
+    | URL | http://127.0.0.1:8000/ | URL to the ShoutCAST administration page |
     | sID | 1 | Stream ID (only required for multi-stream servers.) |
     """
     if config.option('Configure radio module', False):
