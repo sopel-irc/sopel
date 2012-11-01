@@ -21,9 +21,10 @@ exclusion_char = '!'
 
 def configure(config):
     """
-    ``[url]``
-    | name | example | purpose |
-	| exclude | https?://git\.io/.* | A list of regular expressions for URLs for which the title should
+    
+    | [url] | example | purpose |
+    | ---- | ------- | ------- |
+    | exclude | https?://git\.io/.* | A list of regular expressions for URLs for which the title should
     not be shown. |
     | exclusion_char | ! | A character (or string) which, when immediately preceding a
     URL, will stop the URL's title from being shown. |
