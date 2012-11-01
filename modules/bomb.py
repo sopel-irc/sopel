@@ -44,6 +44,9 @@ def start(willie, trigger):
 start.rule = '.bomb (\S+).*?'
 
 def cutwire(willie, trigger):
+    """
+    Tells willie to cut a wire when you've been bombed.
+    """
     global bombs, colors
     target = trigger.nick
     if target.lower() != willie.nick.lower() and target.lower() not in bombs: return
