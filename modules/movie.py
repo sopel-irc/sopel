@@ -10,6 +10,9 @@ This module relies on imdbapi.com
 import json
 
 def imdb(willie, trigger):
+    """
+    Returns some information about a movie, like Title, Year, Rating, Genre and IMDB Link.
+    """
     if not trigger.group(2):
         return
     word=trigger.group(2).rstrip()
