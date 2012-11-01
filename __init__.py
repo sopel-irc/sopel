@@ -15,6 +15,7 @@ import sys, os, time, threading, signal
 import traceback
 import bot
 import signal
+from tools import stderr
 
 def run(config):
     if config.core.delay is not None:
@@ -23,7 +24,7 @@ def run(config):
         delay = 20
     def signal_handler(sig, frame):
         if sig == signal.SIGUSR1:
-            print >> sys.stderr, 'Got quit signal, shutting down.'
+            stderr('Got quit signal, shutting down.')
             p.quit('Closing')
     while True:
         try:
@@ -32,11 +33,11 @@ def run(config):
                 signal.signal(signal.SIGUSR1, signal_handler)
             p.run(config.core.host, int(config.core.port))
         except KeyboardInterrupt:
-            os._exit(0)
+            break
         except Exception, e:
             trace = traceback.format_exc()
             try:
-                print trace
+                stderr(trace)
             except:
                 pass
             logfile = open(os.path.join(config.logdir, 'exceptions.log'), 'a') #todo: make not hardcoded
@@ -44,20 +45,17 @@ def run(config):
             logfile.write(trace)
             logfile.write('----------------------------------------\n\n')
             logfile.close()
+            os.unlink(config.pid_file_path)
             os._exit(1)
 
         if not isinstance(delay, int):
             break
         if p.hasquit:
-            os.unlink(config.pid_file_path)
-            os._exit(0)
-        warning = 'Warning: Disconnected. Reconnecting in %s seconds...' % delay
-        try:
-            print >> sys.stderr, warning
-        except:
-            pass
+            break
+        stderr('Warning: Disconnected. Reconnecting in %s seconds...' % delay)
         time.sleep(delay)
-
+    os.unlink(config.pid_file_path)
+    os._exit(0)
 
 if __name__ == '__main__':
     print __doc__

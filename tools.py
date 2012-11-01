@@ -63,18 +63,12 @@ class OutputRedirect:
         logfile.close()
 
 def stdout(string):
-    ''' Try printing to terminal, ignore errors '''
-    try:
-        print string
-    except:
-        pass
+    ''' Print to stdout '''
+    print string
         
 def stderr(string):
-    ''' Try printing to stderr, ignore errors '''
-    try:
-        print >> sys.stderr, string
-    except:
-        pass
+    ''' Print to stderr '''
+    print >> sys.stderr, string
         
 def check_pid(pid):
     """ Check if process is running by pid. """
