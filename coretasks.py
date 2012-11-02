@@ -147,6 +147,10 @@ track_join.event = 'JOIN'
 #Live blocklist editing
 
 def blocks(willie, trigger):
+    """
+    Manage Willie's blocking features.
+    https://github.com/embolalia/willie/wiki/Making-Willie-ignore-people
+    """
     if not trigger.admin: return
 
     STRINGS = {
