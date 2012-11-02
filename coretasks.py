@@ -50,8 +50,21 @@ def refresh_list(willie, trigger):
 refresh_list.commands = ['newoplist']
 
 def list_ops(willie, trigger):
-    for channel in willie.ops:
-        willie.debug('Oplist', channel+' '+str(willie.ops[channel]), 'always')
+    """
+    List channel operators in the given channel, or current channel if none is
+    given.
+    """
+    if trigger.group(2):
+        willie.say(trigger.group(2))
+        if trigger.group(2) in willie.ops:
+            willie.say(str(willie.ops[channel]))
+        else:
+            willie.say('None')
+    else:
+        if trigger.sender in willie.ops:
+            willie.say(str(willie.ops[trigger.sender]))
+        else:
+            willie.say('None')
 list_ops.commands = ['listops']
 
 def handle_names(willie, trigger):
