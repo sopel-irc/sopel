@@ -120,13 +120,13 @@ track_nicks.rule = r'(.*)'
 track_nicks.event = 'NICK'
 
 def track_part(willie, trigger):
-    if trigger.sender in willie.channels:
+    if trigger.nick == willie.nick and trigger.sender in willie.channels:
         willie.channels.remove(trigger.sender)
 track_part.rule = r'(.*)'
 track_part.event = 'PART'
 
 def track_join(willie, trigger):
-    if trigger.groups(1) in willie.channels:
+    if trigger.nick == willie.nick and trigger.groups(1) in willie.channels:
         willie.channels.append(trigger.groups(1))
 track_join.rule = r'(.*)'
 track_join.event = 'JOIN'
