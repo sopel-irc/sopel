@@ -71,12 +71,8 @@ class Bot(asynchat.async_chat):
 
         self.verbose = True
         """True if Willie is running in verbose mode."""
-        self.channels = config.channels
-        """The list of channels Willie joins on startup."""
-        if self.channels is not None:
-            self.channels = self.channels.split(',')
-        else:
-            self.channels = []
+        self.channels = []
+        """The list of channels Willie is currently in."""
         
         self.stack = []
         self.ca_certs = ca_certs
