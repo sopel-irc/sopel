@@ -31,7 +31,7 @@ def startup(willie, trigger):
         modes = 'B'
     willie.write(('MODE ', '%s +%s'%(willie.nick, modes)))
 
-    for channel in willie.channels:
+    for channel in willie.config.core.channels.split(','):
         willie.write(('JOIN', channel))
 
 startup.rule = r'(.*)'
@@ -119,6 +119,17 @@ def track_nicks(willie, trigger):
 track_nicks.rule = r'(.*)'
 track_nicks.event = 'NICK'
 
+def track_part(willie, trigger):
+    if trigger.sender in willie.channels:
+        willie.channels.remove(trigger.sender)
+track_part.rule = r'(.*)'
+track_part.event = 'PART'
+
+def track_join(willie, trigger):
+    if trigger.groups(1) in willie.channels:
+        willie.channels.append(trigger.groups(1))
+track_join.rule = r'(.*)'
+track_join.event = 'JOIN'
 
 #Live blocklist editing
 
