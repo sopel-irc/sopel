@@ -248,7 +248,7 @@ class Config(object):
         os.sys.path.insert(0,modules_dir) 
         for filename in filenames:
             name = os.path.basename(filename)[:-3]
-            if name in self.exclude:
+            if self.has_option('core', 'exclude') name in self.exclude:
                 continue
             try:
                 module = imp.load_source(name, filename)
