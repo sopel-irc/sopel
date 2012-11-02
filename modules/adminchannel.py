@@ -281,6 +281,10 @@ topic.commands = ['topic']
 topic.priority = 'low'
 
 def set_mask (willie, trigger):
+    """
+    Set the mask to use for .topic in the current channel. %s is used to allow
+    substituting in chunks of text.
+    """
     if not trigger.isop:
         return
     if not willie.db:
@@ -291,6 +295,7 @@ def set_mask (willie, trigger):
 set_mask.commands = ['tmask']
 
 def show_mask (willie, trigger):
+    """Show the topic mask for the current channel."""
     if not trigger.isop:
         return
     if not willie.db:
@@ -302,6 +307,7 @@ def show_mask (willie, trigger):
 show_mask.commands = ['showmask']
 
 def isop (willie, trigger):
+    """Show if you are an operator in the current channel"""
     if trigger.isop:
         willie.reply('yes')
     else:
