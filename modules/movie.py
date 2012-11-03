@@ -8,6 +8,7 @@ Licensed under the Eiffel Forum License 2.
 This module relies on imdbapi.com
 """
 import json
+import web
 
 def imdb(willie, trigger):
     """
@@ -18,10 +19,7 @@ def imdb(willie, trigger):
     word=trigger.group(2).rstrip()
     word=word.replace(" ", "+")
     uri="http://www.imdbapi.com/?t="+word
-    try: u = web.get_urllib_object(uri, 30)
-    except:
-        willie.say('IMDBAPI is too slow at the moment :(')
-        return 'err'
+    u = web.get_urllib_object(uri, 30)
     data = json.load(u) #data is a Dict containing all the information we need
     u.close()
     if data['Response'] == 'False':
