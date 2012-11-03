@@ -362,7 +362,6 @@ class Bot(asynchat.async_chat):
             if messages.count(text) >= 5:
                 text = '...'
                 if messages.count('...') >= 3:
-                    self.sending.release()
                     return
 
             self.write(('PRIVMSG', recipient), text)
