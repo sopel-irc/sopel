@@ -10,7 +10,7 @@ This module relies on imdbapi.com
 import json
 import web
 
-def imdb(willie, trigger):
+def movie(willie, trigger):
     """
     Returns some information about a movie, like Title, Year, Rating, Genre and IMDB Link.
     """
@@ -28,7 +28,7 @@ def imdb(willie, trigger):
         else:
             willie.debug('movie', 'Got an error from the imdb api, search phrase was %s' % word, 'warning')
             willie.debug('movie', str(data), 'warning')
-            message = '[MOVIE] Got an error from the IMDB api'
+            message = '[MOVIE] Got an error from imdbapi'
     else:
         message = '[MOVIE] Title: ' +data['Title']+ \
                   ' | Year: ' +data['Year']+ \
@@ -37,8 +37,8 @@ def imdb(willie, trigger):
                   ' | IMDB Link: http://imdb.com/title/' + data['imdbID']
     willie.say(message)
 
-imdb.commands = ['movie', 'imdb']
-imdb.example = '.movie Movie Title'
+movie.commands = ['movie', 'imdb']
+movie.example = '.movie Movie Title'
 
 if __name__ == '__main__':
     print __doc__.strip()
