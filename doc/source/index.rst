@@ -35,14 +35,14 @@ At its most basic, writing a Willie module involves creating a Python file with
 some number of functions in it. Each of these functions will be passed a "Willie"
 object ("Phenny" in *1.x*) and a "Trigger" object (CommandInput in *1.x* and
 *2.x*). By convention, these are named ``phenny`` and ``input`` in *1.x*,
-``willie`` and ``input`` in *2.x*, and ``willie`` and ``trigger`` in *3.x*. For
+``jenni`` and ``input`` in *2.x*, and ``willie`` and ``trigger`` in *3.x*. For
 the purposes of this guide, the *3.x* names will be used.
 
 Your modules
 ------------
 
 A Willie module contains one or more ``callables``. It may optionally contain a
-``configure`` or ``setup`` function. ``callable`` s are given a number of
+``configure`` or ``setup`` function. ``callable``\s are given a number of
 attributes, which determine when they will be executed. Syntactically, this is
 done at the same indentation level as the function's ``def`` line, following the
 last line of the function.
@@ -76,14 +76,21 @@ last line of the function.
         
         Inside the regular expression, some special directives can be used. ``$nick`` will be replaced with the nick of the bot and ``,`` or ``:``, and ``$nickname`` will be replaced with the nick of the bot.
 
+        Prior to *3.1*, rules could also be made one of three formats of tuple.
+        The values would be joined together to form a singular regular expression.
+        However, these kinds of rules add no functionality over simple regular
+        expressions, and are considered deprecated in *3.1*.
+
     .. py:attribute:: event
     
         This is one of a number of events, such as ``'JOIN'``, ``'PART'``,
-        ``'QUIT'``, etc. (More details can be found in RFC 1459.) When the Willie
+        ``'QUIT'``, etc. (More details can be found in `RFC 1459`_.) When the Willie
         bot is sent one of these events, the function will execute. Note that
         functions with an event must also be given a ``rule`` to match (though
         it may be ``'.*'``, which will always match) or they will not be triggered.
-    
+        
+        .. _RFC 1459: http://www.irchelp.org/irchelp/rfc/rfc.html
+
     .. py:attribute:: rate
     
         *Availability: 2+*
@@ -115,12 +122,15 @@ last line of the function.
 .. py:method:: configure(config)
 
     *Availability: 3+*
+
     This is an optional function of a module, which will be called during the
-    user's setup of the bot. It's intended purpose is to use the method of the
+    user's setup of the bot. It's intended purpose is to use the methods of the
     passed ``Config`` object in order to create the configuration variables it
-    needs to function properly. It is expected to return a string, beginning and
-    ending with a newline character (``'\n'``), which is to be written to the
-    configuration file.
+    needs to function properly.
+
+    In *3.1+*, the docstring of this function can be used to document the
+    configuration variables that the module uses. This is not currently used
+    by the bot itself; it is merely convention.
 
 The ``Willie`` class
 --------------------
@@ -134,7 +144,7 @@ The ``Willie`` class
         was triggered, preceeded by the nick of the user who triggered it.
         
         This function is not available outside of module functions. It can not
-        be used, for example, in a module's ``configure`` function.
+        be used, for example, in a module's ``setup`` function.
         
         The same behavior regarding loop detection and length restrictions apply
         to ``reply`` as to ``msg``.
@@ -153,7 +163,7 @@ The ``Willie`` class
     .. py:function:: action(text)
     
         In a module function, send ``text`` to the channel in which the function
-        was triggered preceeded by CTCP ACTION directive (result identical to using /me in clients).
+        was triggered preceeded by CTCP ACTION directive (result identical to using /me in most clients).
         
         This function is not available outside of module functions. It can not
         be used, for example, in a module's ``configure`` function.
@@ -242,29 +252,30 @@ The ``Willie`` class
         If ``debug_target`` is a channel, the same behavior regarding loop
         detection and length restrictions apply to ``debug`` as to ``msg``.
     
-    .. py:function:: addOp(channel, name)
-    .. py:function:: addHalfOp(channel, name)
+    .. py:function:: add_op(channel, name)
+    .. py:function:: add_halfop(channel, name)
     
         *Availability: 3+*
+
         Add ``name`` to ``channel``'s entry in the ``ops`` or ``halfplus``
         dictionaries, respectively.
     
-    .. py:function:: delOp(channel, name)
-    .. py:function:: delHalfOp(channel, name)
+    .. py:function:: del_op(channel, name)
+    .. py:function:: del_halfop(channel, name)
     
         *Availability: 3+*
         
         Remove ``name`` from ``channel``'s entry in the ``ops`` or ``halfplus``
         dictionaries, respectively.
     
-    .. py:function:: flushOps(channel)
+    .. py:function:: flush_ops(channel)
         
         *Availability: 3+*
         
         Re-initialize  and empty the ``ops`` and ``halfops`` entry for
         ``channel``.
     
-    .. py:function:: startOpsList(self, channel)
+    .. py:function:: init_ops_list(self, channel)
     
         *Availability: 3+*
         
@@ -296,20 +307,22 @@ The ``Trigger`` class
     
     .. py:attribute:: match
     
-        The regular expression ``MatchObject_`` for the triggering line.
+        The regular expression `MatchObject`_ for the triggering line.
+
         .. _MatchObject: http://docs.python.org/library/re.html#match-objects
+        .. _re: http://docs.python.org/library/re.html
     
     .. py:attribute:: group
     
         The ``group`` function of the ``match`` attribute.
                 
-        See Python ``re_`` documentation for details.
+        See Python `re`_ documentation for details.
     
     .. py:attribute:: groups
     
         The ``groups`` function of the ``match`` attribute.
                 
-        See Python ``re_`` documentation for details.
+        See Python `re`_ documentation for details.
     
     .. py:attribute:: args
     
@@ -328,6 +341,7 @@ The ``Trigger`` class
     .. py:attribute:: host
     
         The host which sent the triggering message.
+
     .. py:attribute:: isop
     
         *Availability: 3+*

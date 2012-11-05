@@ -82,7 +82,8 @@ class Willie(irc.Bot):
             self.settings = self.db.preferences
             
         self.memory=self.WillieMemory()
-        '''A thread-safe dict for storage of runtime data to be shared between modules'''
+        '''A thread-safe dict for storage of runtime data to be shared between modules.
+        See `WillieMemory <#bot.Willie.WillieMemory>`_'''
         
         #Set up block lists
         #Default to empty
@@ -107,7 +108,9 @@ class Willie(irc.Bot):
         self.setup()
 
     class WillieMemory(dict):
-        ''' A simple thread-safe dict implementation.
+        '''Availability: 3.1+
+        
+        A simple thread-safe dict implementation.
         In order to prevent exceptions when iterating over the values and changing
         them at the same time from different threads, we use a blocking lock on ``__setitem__`` and ``contains``
         '''
