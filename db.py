@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-*Availability: 3+*
+*Availability: 3.1+*
 
 *Note:* This supersedes the ``SettingsDB`` object of v3. Within Willie modules,
 simmilar functionallity can be found using ``willie.db.preferences``.
