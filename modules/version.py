@@ -21,6 +21,7 @@ def git_info():
 
 
 def version(willie, trigger):
+    """Display the current revision of Willie being run."""
     commit, author, date = git_info()
 
     willie.say(str(trigger.nick) + ": running version:")

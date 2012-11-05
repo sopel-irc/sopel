@@ -72,6 +72,7 @@ def format(word, definitions, number=2):
     return result.strip(' .,')
 
 def w(willie, trigger):
+    """Look up a word on Wiktionary."""
     word = trigger.group(2)
     if word is None:
         willie.reply('You must tell me what to look up!')

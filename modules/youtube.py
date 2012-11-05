@@ -127,7 +127,7 @@ def ytget(willie, trigger, uri):
     return vid_info
 
 def ytsearch(willie, trigger):
-    """YouTube search module"""
+    """Search YouTube"""
     #modified from ytinfo: Copyright 2010-2011, Michael Yanovich, yanovich.net, Kenneth Sham.
 
     #Right now, this uses a parsing script from rscript.org. Eventually, I'd

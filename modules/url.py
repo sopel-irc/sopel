@@ -176,6 +176,7 @@ show_title_auto.rule = '(?u).*((http|https)(://\S+)).*'
 show_title_auto.priority = 'high'
 
 def show_title_demand (willie, trigger):
+    """Show the title of a URL"""
     #try:
     results = get_results(trigger)
     #except: return

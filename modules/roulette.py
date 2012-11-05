@@ -37,6 +37,7 @@ ROULETTE_TMP = {
 }
 
 def roulette (willie, trigger):
+    """Play a game of Russian Roulette"""
     global ROULETTE_SETTINGS, ROULETTE_STRINGS, ROULETTE_TMP
     if ROULETTE_TMP['NUMBER'] is None:
         ROULETTE_TMP['NUMBER'] = random.randint(0,ROULETTE_SETTINGS['MAX_RANGE'])
@@ -59,6 +60,7 @@ roulette.commands = ['roulette']
 roulette.priority = 'low'
 
 def rouletteStop (willie, trigger):
+    """Reset a game of Russian Roulette"""
     global ROULETTE_TMP, ROULETTE_STRINGS
     if ROULETTE_TMP['LAST-PLAYER'] is None:
         return

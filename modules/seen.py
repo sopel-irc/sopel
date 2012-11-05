@@ -15,6 +15,7 @@ from tools import Ddict
 seen_dict=Ddict(dict)
 
 def seen(willie, trigger):
+    """Reports when and where the user was last seen."""
     if not trigger.group(2):
         willie.say(".seen <nick> - Reports when <nick> was last seen.")
         return
@@ -29,7 +30,7 @@ def seen(willie, trigger):
         willie.say(str(trigger.nick) + ': ' + msg)
     else:
         willie.say("Sorry, I haven't seen %s around." % nick)
-seen.rule = (['seen'], r'(\S+)')
+seen.commands = ['seen']
 
 def note(willie, trigger):
     if trigger.sender.startswith('#'):
