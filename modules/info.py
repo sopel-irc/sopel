@@ -21,8 +21,7 @@ doc.example = '$nickname: doc tell?'
 doc.priority = 'low'
 
 def commands(willie, trigger):
-    # This function only works in private message
-    #if trigger.sender.startswith('#'): return
+    """Return a list of Willie's commands"""
     names = ', '.join(sorted(willie.doc.iterkeys()))
     willie.reply("I am sending you a private message of all my commands!")
     willie.msg(trigger.nick, 'Commands I recognise: ' + names + '.')
