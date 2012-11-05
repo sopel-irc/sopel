@@ -16,6 +16,7 @@ r_qa = re.compile(r'(?i)<p><a href="\S+">(.*)</a><br />.*\n.*">(.*)</a></p>')
 
 
 def getquote(willie, trigger):
+    """Show a random quote."""
     page = web.get(quoteuri)
     quotes = r_qa.findall(page)
     random.seed()
