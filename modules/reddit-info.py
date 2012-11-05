@@ -35,6 +35,7 @@ def rpost_info(willie, trigger):
 rpost_info.rule = '.*(http(?:s)?://(www\.)?reddit\.com/r/.*?/comments/[\w-]+).*'
 
 def redditor_info(willie, trigger):
+    """Show information about the given Redditor"""
     commanded = re.match(willie.config.prefix+'.*', trigger)
     r = reddit.Reddit(user_agent='phenny / willie IRC bot - see dft.ba/-williesource for more')
     try:
