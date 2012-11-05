@@ -282,17 +282,6 @@ beats.priority = 'low'
 def divide(input, by):
     return (input / by), (input % by)
 
-def yi(willie, trigger):
-    """Shows whether it is currently yi or not."""
-    quadraels, remainder = divide(int(time.time()), 1753200)
-    raels = quadraels * 4
-    extraraels, remainder = divide(remainder, 432000)
-    if extraraels == 4:
-        return willie.say('Yes! PARTAI!')
-    else: willie.say('Not yet...')
-yi.commands = ['yi']
-yi.priority = 'low'
-
 def tock(willie, trigger):
     """Shows the time from the USNO's atomic clock."""
     u = urllib.urlopen('http://tycho.usno.navy.mil/cgi-bin/timer.pl')
@@ -323,6 +312,10 @@ npl.commands = ['npl']
 npl.priority = 'high'
 
 def update_user(willie, trigger):
+    """
+    Set your preferred time zone. Most timezones will work, but it's best to use
+    one from http://dft.ba/-tz
+    """
     if willie.db:
         tz = trigger.group(2)
         goodtz = tz in TimeZones
@@ -346,6 +339,9 @@ def update_user(willie, trigger):
 update_user.commands = ['settz']
 
 def update_channel(willie, trigger):
+    """
+    Set the preferred time zone for the channel.
+    """
     if willie.db:
         tz = trigger.group(2)
         goodtz = tz in TimeZones
