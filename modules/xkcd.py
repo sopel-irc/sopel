@@ -15,12 +15,13 @@ import urllib2
 from lxml import etree
 import re
 
-""".xkcd - Finds an xkcd comic strip. Takes one of 3 inputs:
-If no input is provided it will return a random comic
-If numeric input is provided it will return that comic
-If non-numeric input is provided it will return the first google result for those keywords on the xkcd.com site"""
-    
 def xkcd(willie, trigger):
+    """
+    .xkcd - Finds an xkcd comic strip. Takes one of 3 inputs:
+    If no input is provided it will return a random comic
+    If numeric input is provided it will return that comic
+    If non-numeric input is provided it will return the first google result for those keywords on the xkcd.com site
+    """
     # get latest comic for rand function and numeric input
     body = urllib2.urlopen("http://xkcd.com/rss.xml").readlines()[1]
     parsed = etree.fromstring(body)

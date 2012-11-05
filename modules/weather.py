@@ -419,6 +419,7 @@ def f_weather(willie, trigger):
 f_weather.rule = (['weather'], r'(.*)')
 
 def update_icao(willie, trigger):
+    """Set your default weather location."""
     if willie.db:
         icao_code = code(willie, trigger.group(2))
         if not icao_code:

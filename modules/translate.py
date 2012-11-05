@@ -122,6 +122,7 @@ tr2.commands = ['tr']
 tr2.priority = 'low'
 
 def mangle(willie, trigger):
+    """Repeatedly translate the input until it makes no sense."""
     global mangle_lines
     if trigger.group(2) is None:
         try:

@@ -150,6 +150,7 @@ def wikipedia(term, language='en', last=False):
     return sentence + ' - ' + (wikiuri % (language, term))
 
 def wik(willie, trigger):
+    """Look up something on Wikipedia"""
     origterm = trigger.groups()[1]
     if not origterm:
         return willie.say('Perhaps you meant ".wik Zen"?')

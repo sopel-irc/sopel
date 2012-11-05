@@ -12,6 +12,10 @@ This module relies on pyenchant, on Fedora and Red Hat based system, it can be f
 """
 import enchant 
 def spellcheck(willie, trigger):
+    """
+    Says whether the given word is spelled correctly, and gives suggestions if
+    it's not.
+    """
     if not trigger.group(2):
         return
     word=trigger.group(2).rstrip()

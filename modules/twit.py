@@ -35,6 +35,7 @@ def format_thousands(integer):
     return re.sub(r'(\d{3})(?=\d)', r'\1,', str(integer)[::-1])[::-1]
 
 def gettweet(willie, trigger):
+    """Show the last tweet by the given user"""
     try:
         auth = tweepy.OAuthHandler(willie.config.twitter.consumer_key, willie.twitter.config.consumer_secret)
         auth.set_access_token(willie.config.twitter.access_token, willie.config.twitter.access_token_secret)
@@ -55,6 +56,7 @@ gettweet.priority = 'medium'
 gettweet.example = '.twit aplusk'
 
 def f_info(willie, trigger):
+    """Show information about the given Twitter account"""
     try:
         auth = tweepy.OAuthHandler(willie.config.twitter.consumer_key, willie.config.twitter.consumer_secret)
         auth.set_access_token(willie.config.twitter.access_token, willie.config.twitter.access_token_secret)
@@ -79,6 +81,7 @@ f_info.priority = 'medium'
 f_info.example = '.twitinfo aplsuk'
 
 def f_update(willie, trigger):
+    """Tweet with Willie's account. Admin-only."""
     if trigger.admin:
         auth = tweepy.OAuthHandler(willie.config.twitter.consumer_key, willie.config.twitter.consumer_secret)
         auth.set_access_token(willie.config.twitter.access_token, willie.config.twitter.access_token_secret)
@@ -119,10 +122,6 @@ def f_reply(willie, trigger):
 #f_reply.commands = ['reply']
 f_reply.priority = 'medium'
 f_reply.example = '.reply 892379487 I like that idea!'
-
-def twat(willie,trigger):
-    f_info(willie,trigger)
-twat.commands = ['twatinfo']
 
 if __name__ == '__main__':
     print __doc__.strip()
