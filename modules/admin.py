@@ -51,8 +51,11 @@ def quit(willie, trigger):
 quit.commands = ['quit']
 quit.priority = 'low'
 
-def msg(willie, trigger): 
-    # Can only be done in privmsg by an admin
+def msg(willie, trigger):
+    """
+    Send a message to a given channel or nick. Can only be done in privmsg by an
+    admin.
+    """
     if trigger.sender.startswith('#'): 
         return
     a, b = trigger.group(2), trigger.group(3)
@@ -62,9 +65,13 @@ def msg(willie, trigger):
         willie.msg(a, b)
 msg.rule = (['msg'], r'(#?\S+) (.+)')
 msg.priority = 'low'
+msg.example = '.msg #YourPants Does anyone else smell neurotoxin?'
 
 def me(willie, trigger): 
-    # Can only be done in privmsg by an admin
+    """
+    Send an ACTION (/me) to a given channel or nick. Can only be done in privmsg
+    by an admin.
+    """
     if trigger.sender.startswith('#'): 
         return
     if trigger.admin: 
@@ -88,7 +95,7 @@ defend_ground.rule = '.*'
 defend_ground.priority = 'low'
 
 def mode(willie, trigger):
-    # Can only be done in privmsg by an admin
+    """Set a user mode on Willie. Can only be done in privmsg by an admin."""
     if trigger.sender.startswith('#'):
         return
     if trigger.admin:
@@ -96,13 +103,6 @@ def mode(willie, trigger):
         willie.write(('MODE ', willie.nick + ' ' + mode))
 mode.rule = r'\.mode ([\+-]\S+)'
 mode.priority = 'low'
-
-def raw(phenny, trigger):
-    # Can only be done in privmsg by owner
-    if trigger.sender.startswith('#'): return
-    if trigger.owner:
-        phenny.write((trigger.group(1), trigger.group(2)))
-raw.rule = '.raw (\S+) (.*)'
 
 if __name__ == '__main__':
    print __doc__.strip()

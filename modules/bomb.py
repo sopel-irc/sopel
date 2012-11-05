@@ -23,13 +23,19 @@ def meter(willie, trigger):
 meter.rule = '\.(\S+)meter (\S+)'
 
 def start(willie, trigger):
+    """
+    Put a bomb in the specified user's pants. They will be kicked if they
+    don't guess the right wire fast enough.
+    """
+    if not trigger.group(2):return
+    
     if not trigger.sender.startswith('#') or \
        (trigger.nick not in willie.ops[trigger.sender] and
        trigger.nick not in willie.halfplus[trigger.sender]):
         return
     global bombs
     global sch
-    target = trigger.group(1)
+    target = trigger.group(2).split(' ')[0]
     if target in willie.config.other_bots or target == willie.nick: return
     if target in bombs:
         willie.say('I can\'t fit another bomb in '+target+'\'s pants!')
@@ -41,7 +47,7 @@ def start(willie, trigger):
     code=sch.enter(fuse, 1, explode, (willie, trigger))
     bombs[target.lower()] = (color, code)
     sch.run()
-start.rule = '.bomb (\S+).*?'
+start.commands = ['bomb']
 
 def cutwire(willie, trigger):
     """
