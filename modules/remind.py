@@ -110,6 +110,7 @@ scaling = {
 periods = '|'.join(scaling.keys())
 
 def remind(willie, input):
+    """Gives you a reminder in the given amount of time."""
     duration = 0
     message = re.split('(\d+ ?(?:'+periods+')) ?', input.group(2))[1:]
     reminder = ''
@@ -132,9 +133,11 @@ def remind(willie, input):
 
     create_reminder(willie, input, duration, reminder)
 remind.commands = ['in']
+remind.example = '.in 3h45m Go to class'
 
 
 def at(willie, input):
+    """Gives you a reminder at the given time."""
     hour, minute, second, tz, message = input.groups()
     if not second: second = '0'
     
