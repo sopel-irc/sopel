@@ -8,8 +8,9 @@ Licensed under the Eiffel Forum License 2.
 This module relies on imdbapi.com
 """
 import json
+import web
 
-def imdb(willie, trigger):
+def movie(willie, trigger):
     """
     Returns some information about a movie, like Title, Year, Rating, Genre and IMDB Link.
     """
@@ -18,10 +19,7 @@ def imdb(willie, trigger):
     word=trigger.group(2).rstrip()
     word=word.replace(" ", "+")
     uri="http://www.imdbapi.com/?t="+word
-    try: u = web.get_urllib_object(uri, 30)
-    except:
-        willie.say('IMDBAPI is too slow at the moment :(')
-        return 'err'
+    u = web.get_urllib_object(uri, 30)
     data = json.load(u) #data is a Dict containing all the information we need
     u.close()
     if data['Response'] == 'False':
@@ -30,7 +28,7 @@ def imdb(willie, trigger):
         else:
             willie.debug('movie', 'Got an error from the imdb api, search phrase was %s' % word, 'warning')
             willie.debug('movie', str(data), 'warning')
-            message = '[MOVIE] Got an error from the IMDB api'
+            message = '[MOVIE] Got an error from imdbapi'
     else:
         message = '[MOVIE] Title: ' +data['Title']+ \
                   ' | Year: ' +data['Year']+ \
@@ -39,8 +37,8 @@ def imdb(willie, trigger):
                   ' | IMDB Link: http://imdb.com/title/' + data['imdbID']
     willie.say(message)
 
-imdb.commands = ['movie', 'imdb']
-imdb.example = '.movie Movie Title'
+movie.commands = ['movie', 'imdb']
+movie.example = '.movie Movie Title'
 
 if __name__ == '__main__':
     print __doc__.strip()

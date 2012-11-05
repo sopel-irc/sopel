@@ -362,7 +362,6 @@ class Bot(asynchat.async_chat):
             if messages.count(text) >= 5:
                 text = '...'
                 if messages.count('...') >= 3:
-                    self.sending.release()
                     return
 
             self.write(('PRIVMSG', recipient), text)
@@ -383,9 +382,21 @@ class Bot(asynchat.async_chat):
                 trace = trace.decode('utf-8')
             except:
                 pass # Can't do much about it
-                stderr(trace)
+            stderr(trace)
             try:
+                lines = list(reversed(trace.splitlines()))
+                report = [lines[0].strip()]
+                for line in lines:
+                    line = line.strip()
+                    if line.startswith('File "/'):
+                        report.append(line[0].lower() + line[1:])
+                        break
+                else: 
+                    report.append('source unknown')
+                
+                signature = '%s (%s)' % (report[0], report[1])
                 logfile = codecs.open(os.path.join(self.config.logdir, 'exceptions.log'), 'a', encoding='utf-8') #todo: make not hardcoded
+                logfile.write(u'Signature: %s\n' % signature)
                 logfile.write(u'from %s at %s:\n' % (origin.sender, str(datetime.now())))
                 logfile.write(u'Message was: <%s> %s\n' % (trigger.nick, trigger.group(0)))
                 try:
@@ -397,17 +408,8 @@ class Bot(asynchat.async_chat):
             except Exception as e:
                 stderr("Could not save full traceback!")
                 self.debug("core: error reporting", "(From: "+origin.sender+"), can't save traceback: "+str(e), 'always')
-            lines = list(reversed(trace.splitlines()))
 
-            report = [lines[0].strip()]
-            for line in lines:
-                line = line.strip()
-                if line.startswith('File "/'):
-                    report.append(line[0].lower() + line[1:])
-                    break
-            else: report.append('source unknown')
-
-            self.msg(origin.sender, report[0] + ' (' + report[1] + ')')
+            self.msg(origin.sender, signature)
         except Exception as e:
             self.msg(origin.sender, "Got an error.")
             self.debug("core: error reporting", "(From: "+origin.sender+") "+str(e), 'always')
