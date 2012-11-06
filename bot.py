@@ -254,23 +254,25 @@ class Willie(irc.Bot):
                     regexp = re.compile(pattern, re.I)
                     bind(self, func.priority, regexp, func)
 
-    def wrapped(self, origin, text):
-        class WillieWrapper(object):
-            def __init__(self, willie):
-                self.bot = willie
+    class WillieWrapper(object):
+        def __init__(self, willie, origin):
+            self.bot = willie
+            self.origin = origin
+            
+        def say(self, string):
+            self.bot.msg(self.origin.sender, string)
 
-            def __getattr__(self, attr):
-                sender = origin.sender or text
-                if attr == 'reply':
-                    return (lambda msg:
-                        self.bot.msg(sender, origin.nick + ': ' + msg))
-                elif attr == 'say':
-                    return lambda msg: self.bot.msg(sender, msg)
-                elif attr == 'action':
-                    return lambda msg: self.bot.msg(sender, '\001ACTION '+msg+'\001')
-                return getattr(self.bot, attr)
+        def reply(self, string):
+            self.bot.msg(self.origin.sender, self.origin.nick + ': ' + string)
+            
+        def action(self, string, recipient=None):
+            if recipient is None:
+                recipient = self.origin.sender
+            self.bot.msg(recipient, '\001ACTION %s\001' % string)
 
-        return WillieWrapper(self)
+        def __getattr__(self, attr):
+            return getattr(self.bot, attr)
+
 
     class Trigger(unicode):
         def __new__(cls, text, origin, bytes, match, event, args, self):
@@ -390,7 +392,7 @@ class Willie(irc.Bot):
                         if self.limit(origin, func): 
                             continue
 
-                        willie = self.wrapped(origin, text)
+                        willie = self.WillieWrapper(self, origin)
                         trigger = self.Trigger(text, origin, bytes, match, event, args, self)
 
                         if self.config.core.other_bots is not None:
