@@ -577,15 +577,13 @@ def get_inventory(willie, trigger):
     bucket_runtime_data.inhibit_reply = trigger
 
     inventory = bucket_runtime_data.inventory
-
-    readable_item_list = ''
     
     if len(inventory.current_items)==0:
         return willie.action('is carrying nothing')
-    for item in inventory.current_items:
-        readable_item_list = readable_item_list + ' '+item.encode('utf8')+','
 
-    willie.action('is carrying'+readable_item_list)
+    readable_item_list = ', '.join(inventory.current_items)
+
+    willie.action('is carrying '+readable_item_list)
 
 get_inventory.rule = ('$nick','inventory')
 get_inventory.priority = 'medium'
