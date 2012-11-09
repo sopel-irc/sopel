@@ -125,16 +125,5 @@ def urlencode(data):
     """
     return urllib.urlencode(data)
 
-r_string = re.compile(r'("(\\.|[^"\\])*")')
-r_json = re.compile(r'^[,:{}\[\]0-9.\-+Eaeflnr-u \n\r\t]+$')
-env = {'__builtins__': None, 'null': None, 'true': True, 'false': False}
-
-def json(text):
-    """Evaluate JSON text safely (we hope)."""
-    if r_json.match(r_string.sub('', text)):
-        text = r_string.sub(lambda m: 'u' + m.group(1), text)
-        return eval(text.strip(' \t\r\n'), env, {})
-    raise ValueError('Input must be serialised JSON.')
-
 if __name__=="__main__":
     main()

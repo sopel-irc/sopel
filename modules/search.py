@@ -9,6 +9,7 @@ http://willie.dftba.net
 
 import re
 import web
+import json
 
 def google_ajax(query):
     """Search using AjaxSearch, and return its JSON."""
@@ -17,7 +18,7 @@ def google_ajax(query):
     uri = 'http://ajax.googleapis.com/ajax/services/search/web'
     args = '?v=1.0&safe=off&q=' + web.quote(query)
     bytes = web.get(uri + args)
-    return web.json(bytes)
+    return json.loads(bytes)
 
 def google_search(query):
     results = google_ajax(query)
