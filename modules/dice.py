@@ -14,7 +14,7 @@ import re
 seed()
 
 def dice(willie, trigger):
-    """.dice <formula> - Rolls dice using the XdY format, also does basic math."""
+    """.dice <formula> - Rolls dice using the XdY format, also does basic math and drop lowest (XdYvZ)."""
     no_dice = True
     if trigger.group(2) == None:
         return willie.reply('You have to specify the dice you wanna roll.')
