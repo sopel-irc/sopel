@@ -1,12 +1,13 @@
 """
-reddit.py - Willie Reddit module
+reddit-info.py - Willie Reddit module
 Author: Edward Powell, embolalia.net
 About: http://willie.dftba.net
 
 This module provides special tools for reddit, namely showing detailed info about reddit posts
 """
 
-import reddit, re
+import praw
+import re
 
 def setup(willie):
     regex = re.compile('http(?:s)?://(www\.)?reddit\.com/(r/.*?/comments/[\w-]+|u(ser)?/[\w-]+)')
@@ -18,7 +19,7 @@ def setup(willie):
         willie.memory['url_exclude'] = exclude
 
 def rpost_info(willie, trigger):
-    r = reddit.Reddit(user_agent='phenny / willie IRC bot - see dft.ba/-williesource for more')
+    r = praw.Reddit(user_agent='phenny / willie IRC bot - see dft.ba/-williesource for more')
     s = r.get_submission(url=trigger.group(1))
     
     message = '[REDDIT] '+s.title
@@ -37,7 +38,7 @@ rpost_info.rule = '.*(http(?:s)?://(www\.)?reddit\.com/r/.*?/comments/[\w-]+).*'
 def redditor_info(willie, trigger):
     """Show information about the given Redditor"""
     commanded = re.match(willie.config.prefix+'.*', trigger)
-    r = reddit.Reddit(user_agent='phenny / willie IRC bot - see dft.ba/-williesource for more')
+    r = praw.Reddit(user_agent='phenny / willie IRC bot - see dft.ba/-williesource for more')
     try:
         u = r.get_redditor(trigger.group(2))
     except:
