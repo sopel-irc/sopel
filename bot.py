@@ -16,8 +16,8 @@ import irc
 from db import WillieDB
 from tools import stderr, stdout
 
-home = os.getcwd()
-modules_dir = os.path.join(home, 'modules')
+this_dir = os.path.dirname(os.path.abspath(__file__))
+modules_dir = os.path.join(this_dir, 'modules')
 
 def decode(string):
     try: 
@@ -137,7 +137,7 @@ class Willie(irc.Bot):
 
 
         filenames = enumerate_modules(self.config)
-        filenames.append('coretasks.py')
+        filenames.append(os.path.join(this_dir, 'coretasks.py'))
         self.enumerate_modules = enumerate_modules
 
         modules = []
