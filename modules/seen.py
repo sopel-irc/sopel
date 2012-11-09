@@ -10,7 +10,7 @@ http://willie.dftba.net
 """
 
 import time
-from willie.tools import Ddict
+from tools import Ddict
 
 seen_dict=Ddict(dict)
 

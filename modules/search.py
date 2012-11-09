@@ -8,7 +8,7 @@ http://willie.dftba.net
 """
 
 import re
-import willie.web as web
+import web
 import json
 
 def google_ajax(query):

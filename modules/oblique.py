@@ -8,7 +8,7 @@ http://willie.dftba.net
 """
 
 import re, urllib
-import willie.web as web
+import web
 
 definitions = 'https://github.com/nslater/oblique/wiki'
 

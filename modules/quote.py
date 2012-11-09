@@ -9,7 +9,7 @@ http://willie.dftba.net
 
 import random
 import re
-import willie.web as web
+import web
 
 quoteuri = 'http://www.randomquotes.org/'
 r_qa = re.compile(r'(?i)<p><a href="\S+">(.*)</a><br />.*\n.*">(.*)</a></p>')

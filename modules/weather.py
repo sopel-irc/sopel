@@ -10,7 +10,7 @@ http://willie.dftba.net
 import re
 import urllib
 import json
-import willie.web as web
+import web
 
 r_from = re.compile(r'(?i)([+-]\d+):00 from')
 
