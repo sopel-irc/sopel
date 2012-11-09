@@ -10,7 +10,7 @@ This module is an attempt to implement at least some of the functionallity of De
 import time
 import os
 import urllib2
-from modules.url import find_title
+from willie.modules.url import find_title
 from willie.tools import Ddict
 import codecs
 
