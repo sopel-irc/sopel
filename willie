@@ -12,16 +12,18 @@ http://willie.dftba.net
 import sys
 import os
 import optparse
-from config import Config, create_config, ConfigurationError
-import tools
-from tools import stderr, stdout
 import signal
 import imp
 try:
-    from __init__ import run
+    from willie.__init__ import run
+    from willie.config import Config, create_config, ConfigurationError
+    import willie.tools as tools
+    from willie.tools import stderr, stdout
 except ImportError:
-    stderr("Error: Couldn't find willie to import")
-    sys.exit(1)
+    from __init__ import run
+    from config import Config, create_config, ConfigurationError
+    import tools
+    from tools import stderr, stdout
 
 willie_dotdir = os.path.expanduser('~/.willie')
 jenni_dotdir = os.path.expanduser('~/.jenni')
