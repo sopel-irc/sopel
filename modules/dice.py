@@ -8,7 +8,7 @@ http://willie.dftba.net/
 """
 
 from random import randint, seed
-from modules.calc import calculate
+from willie.modules.calc import calculate
 import re
 
 seed()
