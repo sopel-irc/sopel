@@ -8,7 +8,8 @@ Licensed under the Eiffel Forum License 2.
 http://willie.dftba.net
 """
 
-import re, web
+import re
+import willie.web as web
 
 def ip(willie, trigger):
 	"""IP Lookup tool"""

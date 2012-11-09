@@ -12,7 +12,7 @@ watches, warnings, and advisories that are present.
 import feedparser
 import re
 import urllib
-import web
+import willie.web as web
 
 states = {
         "alabama" : "al",
