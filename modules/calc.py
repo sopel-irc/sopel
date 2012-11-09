@@ -9,7 +9,7 @@ http://willie.dfbta.net
 """
 
 import re
-import web
+import willie.web as web
 from socket import timeout
 import string
 import HTMLParser

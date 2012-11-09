@@ -8,7 +8,7 @@ http://willie.dftba.net
 """
 
 import re, urllib2
-import web
+import willie.web as web
 
 uri = 'https://en.wikipedia.org/wiki/List_of_Internet_top-level_domains'
 r_tag = re.compile(r'<(?!!)[^>]+>')

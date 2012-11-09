@@ -8,7 +8,7 @@ http://willie.dftba.net
 """
 
 import re, urllib, gzip, StringIO
-import web
+import willie.web as web
 
 wikiuri = 'http://%s.wikipedia.org/wiki/%s'
 # wikisearch = 'http://%s.wikipedia.org/wiki/Special:Search?' \

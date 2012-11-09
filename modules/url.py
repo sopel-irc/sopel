@@ -10,7 +10,7 @@ http://willie.dftba.net
 
 import re
 from htmlentitydefs import name2codepoint
-import web
+import willie.web as web
 import unicodedata
 import urlparse
 
