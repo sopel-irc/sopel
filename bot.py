@@ -40,7 +40,8 @@ def enumerate_modules(config):
             filenames.append(os.path.join(modules_dir, fn + '.py'))
 
     if hasattr(config, 'extra') and config.extra is not None:
-        for fn in config.extra:
+        extra = config.extra.split(',')
+        for fn in extra:
             if os.path.isfile(fn):
                 filenames.append(fn)
             elif os.path.isdir(fn):
