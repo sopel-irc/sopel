@@ -7,7 +7,9 @@ Licensed under the Eiffel Forum License 2.
 http://willie.dftba.net
 """
 
-import re, urllib
+import re
+import urllib
+import json
 import web
 
 r_from = re.compile(r'(?i)([+-]\d+):00 from')
@@ -26,7 +28,7 @@ def location(name):
     bytes = u.read()
     u.close()
 
-    results = web.json(bytes)
+    results = json.loads(bytes)
     try: name = results['geonames'][0]['name']
     except IndexError:
         return '?', '?', '0', '0'
