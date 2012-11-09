@@ -8,7 +8,7 @@ http://willie.dftba.net
 """
 
 import re
-import web
+import willie.web as web
 
 uri = 'http://en.wiktionary.org/w/index.php?title=%s&printable=yes'
 r_tag = re.compile(r'<[^>]+>')

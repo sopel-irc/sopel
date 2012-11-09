@@ -8,7 +8,7 @@ http://willie.dftba.net
 """
 
 import sys, os.path, time, imp
-import irc
+import willie.irc
 import subprocess
 
 def f_reload(willie, trigger):
