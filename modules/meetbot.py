@@ -11,7 +11,7 @@ import time
 import os
 import urllib2
 from modules.url import find_title
-from tools import Ddict
+from willie.tools import Ddict
 import codecs
 
 def configure(config):

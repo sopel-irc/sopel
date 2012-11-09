@@ -12,7 +12,8 @@ http://willie.dfbta.net
 This module will respond to .yt and .youtube commands and searches the youtubes.
 """
 
-import web, re
+import willie.web as web
+import re
 from HTMLParser import HTMLParser
 
 def setup(willie):
