@@ -8,7 +8,7 @@ http://willie.dftba.net
 """
 
 import re
-import willie.web as web
+import web
 
 etyuri = 'http://etymonline.com/?term=%s'
 etysearch = 'http://etymonline.com/?search=%s'

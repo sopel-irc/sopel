@@ -9,7 +9,7 @@ http://willie.dftba.net
 """
 
 import re
-import willie.web as web
+import web
 from time import sleep
 import urllib2, json
 import random

@@ -8,7 +8,7 @@ Licensed under the Eiffel Forum License 2.
 This module relies on imdbapi.com
 """
 import json
-import willie.web as web
+import web
 
 def movie(willie, trigger):
     """

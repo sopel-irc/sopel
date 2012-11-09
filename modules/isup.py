@@ -6,8 +6,7 @@ About: http://willie.dftba.net
 This allows users to check if a website is up through isup.me.
 """
 
-import willie.web as web
-import re
+import web, re
 
 def isup(willie, trigger):
     """isup.me website status checker"""
