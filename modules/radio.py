@@ -9,7 +9,8 @@ http://willie.dftba.net/
 
 from time import sleep
 from xml.dom.minidom import parseString
-import web, xml.dom.minidom
+import willie.web as web
+import xml.dom.minidom
 
 def configure(config):
     """

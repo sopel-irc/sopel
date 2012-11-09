@@ -9,7 +9,9 @@ http://willie.dftba.net/
 
 from datetime import datetime
 from urllib2 import HTTPError
-import json, re, web
+import json
+import re
+import willie.web as web
 
 def checkConfig(willie):
     if not willie.config.has_option('github', 'oath_token') or not willie.config.has_option('github', 'repo'):

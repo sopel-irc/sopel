@@ -24,10 +24,10 @@ and make sure the priority of your callable is medium or higher.
 import MySQLdb, re
 from re import sub
 from random import randint, seed
-import web
+import willie.web as web
 import os
 from collections import deque
-from tools import Ddict
+from willie.tools import Ddict
 seed()
 
 def configure(config):
