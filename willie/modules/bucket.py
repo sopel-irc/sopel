@@ -31,7 +31,20 @@ from willie.tools import Ddict
 seed()
 
 def configure(config):
-    chunk = ''
+    """
+    It is highly recommended that you run the configuration utility on this
+    module, as it will handle creating an initializing your database. More
+    information on this module at https://github.com/embolalia/willie/wiki/The-Bucket-Module:-User-and-Bot-Owner-Documentation
+    
+    | [bucket] | example | purpose |
+    | -------- | ------- | ------- |
+    | db_host | example.com | The address of the MySQL server |
+    | db_user | bucket | The username to log into the MySQL database |
+    | db_pass | hunter2 | The password for the MySQL database |
+    | db_name | bucket | The name of the database you will use |
+    | literal_path | /home/willie/www/bucket | The path in which to store output of the literal command |
+    | literal_baseurl | http://example.net/~willie/bucket | The base URL for literal output |
+    """
     if config.option('Configure Bucket factiod DB', False):
         config.interactive_add('bucket', 'db_host', "Enter the MySQL hostname", 'localhost')
         config.interactive_add('bucket', 'db_user', "Enter the MySQL username")
@@ -59,7 +72,6 @@ def configure(config):
             cur.execute('INSERT INTO bucket_facts (`fact`, `tidbit`, `verb`, `RE`, `protected`, `mood`, `chance`) VALUES (%s, %s, %s, %s, %s, %s, %s);', ('takes item', 'Oh, thanks, I\'ll keep this $item safe', '<reply>', False, False, None, None))
             db.commit()
             db.close()
-    return chunk
     
 class Inventory():
     ''' Everything inventory related '''
