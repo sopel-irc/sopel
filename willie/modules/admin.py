@@ -12,6 +12,14 @@ http://willie.dfbta.net
 
 import os
 
+def configure(config):
+    """
+    | [admin] | example | purpose |
+    | -------- | ------- | ------- |
+    | hold_ground | False | Auto re-join on kick |
+    """
+    config.add_option('admin', 'hold_ground', "Auto re-join on kick")
+
 def join(willie, trigger):
     """Join the specified channel. This is an admin-only command."""
     # Can only be done in privmsg by an admin
@@ -80,19 +88,20 @@ def me(willie, trigger):
 me.rule = (['me'], r'(#?\S+) (.*)')
 me.priority = 'low'
 
-def defend_ground(willie, trigger):
+def hold_ground(willie, trigger):
     """
-    This function monitors all kicks across all channels willie is in. If he
-    detects that she is the one kicked she'll automatically join that channel.
+    This function monitors all kicks across all channels willie is in. If it
+    detects that it is the one kicked it'll automatically join that channel.
 
     WARNING: This may not be needed and could cause problems if willie becomes
     annoying. Please use this with caution.
     """
-    channel = trigger.sender
-    willie.write(['JOIN'], channel)
-defend_ground.event = 'KICK'
-defend_ground.rule = '.*'
-defend_ground.priority = 'low'
+    if willie.config.admin.hold_ground:
+        channel = trigger.sender
+        willie.join(channel)
+hold_ground.event = 'KICK'
+hold_ground.rule = '.*'
+hold_ground.priority = 'low'
 
 def mode(willie, trigger):
     """Set a user mode on Willie. Can only be done in privmsg by an admin."""
