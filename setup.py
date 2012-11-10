@@ -1,9 +1,10 @@
 #!/usr/bin/env python
 
 from distutils.core import setup
+from willie import __version__
 
 setup(name = 'willie',
-      version = '3.1',
+      version = __version__,
       description = 'Simple and extendible IRC bot',
       author = 'Edward Powell',
       author_email = 'powell.518@gmail.com',
