@@ -96,7 +96,6 @@ class Bot(asynchat.async_chat):
 
     def log_raw(self, line):
         ''' Log raw line to the raw log '''
-        #TODO: make log dir not hardcoded
         if not self.config.core.log_raw:
             return
         if not self.config.core.logdir:
