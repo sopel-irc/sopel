@@ -15,6 +15,12 @@ from willie.tools import Ddict
 import codecs
 
 def configure(config):
+    """
+    | [meetbot] | example | purpose |
+    | --------- | ------- | ------- |
+    | meeting_log_path | /home/willie/www/meetings | Path to meeting logs storage directory (should be an absolute path, accessible on a webserver) |
+    | meeting_log_baseurl | http://example.com/~willie/meetings | Base URL for the meeting logs directory |
+    """
     if config.option('Configure meetbot', False):
         config.interactive_add('meetbot', 'meeting_log_path', "Path to meeting logs storage directory (should be an absolute path, accessible on a webserver)")
         config.interactive_add('meetbot', 'meeting_log_baseurl', "Base URL for the meeting logs directory (eg. http://example.com/logs)")
@@ -103,6 +109,10 @@ def ischair(nick,channel):
 
 #Start meeting (also preforms all required sanity checks)
 def startmeeting(willie, trigger):
+    """
+    Start a meeting.
+    https://github.com/embolalia/willie/wiki/Using-the-meetbot-module
+    """
     if ismeetingrunning(trigger.sender):
         willie.say('Can\'t do that, there is already a meeting in progress here!')
         return
@@ -148,6 +158,10 @@ startmeeting.example = '.startmeeting title or .startmeeting'
 
 #Change the current subject (will appear as <h3> in the HTML log)
 def meetingsubject(willie, trigger):
+    """
+    Change the meeting subject.
+    https://github.com/embolalia/willie/wiki/Using-the-meetbot-module
+    """
     if not ismeetingrunning(trigger.sender):
         willie.say('Can\'t do that, start meeting first')
         return
@@ -168,6 +182,10 @@ meetingsubject.example = '.subject roll call'
 
 #End the meeting
 def endmeeting(willie, trigger):
+    """
+    End a meeting.
+    https://github.com/embolalia/willie/wiki/Using-the-meetbot-module
+    """
     if not ismeetingrunning(trigger.sender):
         willie.say('Can\'t do that, start meeting first')
         return
@@ -188,6 +206,10 @@ endmeeting.example = '.endmeeting'
 
 #Set meeting chairs (people who can control the meeting)
 def chairs(willie, trigger):
+    """
+    Set the meeting chairs.
+    https://github.com/embolalia/willie/wiki/Using-the-meetbot-module
+    """
     if not ismeetingrunning(trigger.sender):
         willie.say('Can\'t do that, start meeting first')
         return
@@ -208,6 +230,10 @@ chairs.example = '.chairs Tyrope Jason elad'
 
 #Log action item in the HTML log
 def meetingaction(willie, trigger):
+    """
+    Log an action in the meeting log
+    https://github.com/embolalia/willie/wiki/Using-the-meetbot-module
+    """
     if not ismeetingrunning(trigger.sender):
         willie.say('Can\'t do that, start meeting first')
         return
@@ -226,6 +252,10 @@ meetingaction.example = '.action elad will develop a meetbot'
 
 #Log agreed item in the HTML log
 def meetingagreed(willie, trigger):
+    """
+    Log an agreement in the meeting log.
+    https://github.com/embolalia/willie/wiki/Using-the-meetbot-module
+    """
     if not ismeetingrunning(trigger.sender):
         willie.say('Can\'t do that, start meeting first')
         return
@@ -244,6 +274,10 @@ meetingagreed.example = '.agreed bowties are not cool'
 
 #Log link item in the HTML log
 def meetinglink(willie, trigger):
+    """
+    Log a link in the meeing log.
+    https://github.com/embolalia/willie/wiki/Using-the-meetbot-module
+    """
     if not ismeetingrunning(trigger.sender):
         willie.say('Can\'t do that, start meeting first')
         return
@@ -270,6 +304,10 @@ meetinglink.example = '.link http://example.com'
 
 #Log informational item in the HTML log
 def meetinginfo(willie, trigger):
+    """
+    Log an informational item in the meeting log
+    https://github.com/embolalia/willie/wiki/Using-the-meetbot-module
+    """
     if not ismeetingrunning(trigger.sender):
         willie.say('Can\'t do that, start meeting first')
         return
