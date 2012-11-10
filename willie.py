@@ -166,7 +166,8 @@ def main(argv=None):
             sys.exit(1)
         config_module.dotdir = dotdir
 
-        config_module.logdir = os.path.abspath('logs')
+        if not config_module.logdir:
+            config_module.logdir = os.path.join(dotdir, 'logs')
         logfile = os.path.os.path.join(config_module.logdir, 'stdio.log')
         if not os.path.isdir(config_module.logdir):
             os.mkdir(config_module.logdir)
