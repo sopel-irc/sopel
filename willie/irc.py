@@ -99,15 +99,19 @@ class Bot(asynchat.async_chat):
         #TODO: make log dir not hardcoded
         if not self.config.core.log_raw:
             return
-        if not os.path.isdir("logs"):
+        if not self.config.core.logdir:
+            self.config.core.logdir = os.path.join(self.config.dotdir,
+                'logs')
+        if not os.path.isdir(self.config.core.logdir):
             try:
-                os.mkdir("logs")
+                os.mkdir(self.config.core.logdir)
             except Exception, e:
                 stderr('There was a problem creating the logs directory.')
                 stderr(e.__class__, str(e))
                 stderr('Please fix this and then run Willie again.')
                 os._exit(1)
-        f = codecs.open("logs/raw.log", 'a', encoding='utf-8')
+        f = codecs.open(os.path.join(self.config.core.logdir, 'raw.log'),
+            'a', encoding='utf-8')
         f.write(str(time.time()) + "\t")
         temp = line.replace('\n', '')
         try:
