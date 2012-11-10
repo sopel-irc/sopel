@@ -40,7 +40,7 @@ def run(config):
                 stderr(trace)
             except:
                 pass
-            logfile = open(os.path.join(config.logdir, 'exceptions.log'), 'a') #todo: make not hardcoded
+            logfile = open(os.path.join(config.logdir, 'exceptions.log'), 'a')
             logfile.write('Critical exception in core')
             logfile.write(trace)
             logfile.write('----------------------------------------\n\n')
