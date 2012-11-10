@@ -15,13 +15,6 @@ sch = sched.scheduler(time.time, time.sleep)
 fuse = 120#seconds
 bombs = dict()
 
-def meter(willie, trigger):
-    word = trigger.group(1)
-    nick = trigger.group(2)
-    percent = randint(1,100)
-    willie.say('\x02[\x02'+word+'\x02]\x02 '+nick+' is '+str(percent)+'% '+word)
-meter.rule = '\.(\S+)meter (\S+)'
-
 def start(willie, trigger):
     """
     Put a bomb in the specified user's pants. They will be kicked if they
