@@ -166,8 +166,8 @@ def main(argv=None):
             sys.exit(1)
         config_module.dotdir = dotdir
 
-        if not config_module.logdir:
-            config_module.logdir = os.path.join(dotdir, 'logs')
+        if not config_module.core.logdir:
+            config_module.core.logdir = os.path.join(dotdir, 'logs')
         logfile = os.path.os.path.join(config_module.logdir, 'stdio.log')
         if not os.path.isdir(config_module.logdir):
             os.mkdir(config_module.logdir)
@@ -179,9 +179,9 @@ def main(argv=None):
 
         #Handle --quit, --kill and saving the PID to file
         if opts.config is None:
-            pid_file_path = os.path.join(os.getcwd(), '.pid-default')
+            pid_file_path = os.path.join(dotdir, '.pid-default')
         else:
-            pid_file_path = os.path.join(os.getcwd(), '.pid-%s' % opts.config)
+            pid_file_path = os.path.join(dotdir, '.pid-%s' % opts.config)
         if os.path.isfile(pid_file_path):
             pid_file = open(pid_file_path, 'r')
             old_pid = int(pid_file.read())
