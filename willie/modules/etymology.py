@@ -73,7 +73,10 @@ def etymology(word):
     return sentence + ' - ' + (etyuri % word)
 
 def f_etymology(willie, trigger):
+    """Look up the etymology of a word"""
     word = trigger.group(2)
+    if not word or not re.match(r"([A-Za-z0-9' .-]+)$", word):
+        return
 
     try: result = etymology(word.encode('utf-8'))
     except IOError:
@@ -90,7 +93,8 @@ def f_etymology(willie, trigger):
         msg = 'Can\'t find the etymology for "%s". Try %s' % (word, uri)
         willie.msg(trigger.sender, msg)
 # @@ Cf. http://swhack.com/logs/2006-01-04#T01-50-22
-f_etymology.rule = (['ety'], r"([A-Za-z0-9' .-]+)$")
+f_etymology.commands = ['ety']
+f_etymology.example = '.ety word'
 f_etymology.thread = True
 f_etymology.priority = 'high'
 
