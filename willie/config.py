@@ -259,34 +259,25 @@ class Config(object):
                     module.configure(self)
 
 
-def main(argv=None):
-    import optparse
-    parser = optparse.OptionParser('%prog [options]')
-    parser.add_option('-c', '--config', metavar='fn',
-        help='use this configuration file or directory')
-    parser.add_option('-d', '--database', action='store_true', dest='db_cfg',
-        help='Only configure database settings')
-    parser.add_option('-m', '--modules', action='store_true', dest='mod_cfg',
-        help='Only configure module settings')
-    opts, args = parser.parse_args(argv)
+def wizard(section, config=None):
     dotdir = os.path.expanduser('~/.willie')
-    configpath = os.path.join(dotdir, (opts.config or 'default')+'.cfg')
-    if opts.db_cfg:
+    configpath = os.path.join(dotdir, (config or 'default')+'.cfg')
+    if section == 'all':
+        create_config(configpath)
+    elif section == 'db':
         check_dir(False)
         if not os.path.isfile(configpath):
             print "No config file found. Please make one before configuring these options."
             sys.exit(1)
         config = Config(configpath, True)
         config._db()
-    elif opts.mod_cfg:
+    elif section == 'mod':
         check_dir(False)
         if not os.path.isfile(configpath):
             print "No config file found. Please make one before configuring these options."
             sys.exit(1)
         config = Config(configpath, True)
-        config._modules()
-    else:
-        create_config(configpath)
+        config._modules()        
 
 def check_dir(create=True):
     dotdir = os.path.expanduser('~/.willie')

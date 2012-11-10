@@ -16,7 +16,7 @@ import signal
 import imp
 try:
     from willie.__init__ import run
-    from willie.config import Config, create_config, ConfigurationError
+    from willie.config import Config, create_config, ConfigurationError, wizard
     import willie.tools as tools
     from willie.tools import stderr, stdout
 except ImportError:
@@ -89,9 +89,21 @@ def main(argv=None):
         parser.add_option("-l", '--list', action="store_true", dest="list_configs", help="List all config files found")
         parser.add_option("-m", '--migrate', action="store_true", dest="migrate_configs", help="Migrate config files to the new format")
         parser.add_option('--quiet', action="store_true", dest="quiet", help="Supress all output")
+        parser.add_option('-w', '--configure-all', action='store_true', dest='wizard', help='Run the configuration wizard.')
+        parser.add_option('--configure-modules', action='store_true', dest='mod_wizard', help='Run the configuration wizard, but only for the module configuration options.')
+        parser.add_option('--configure-database', action='store_true', dest='db_wizard', help='Run the configuration wizard, but only for the database configuration options.')
         opts, args = parser.parse_args(argv)
 
-
+        if opts.wizard:
+            wizard('all', opts.config)
+            return
+        elif opts.mod_wizard:
+            wizard('mod', opts.config)
+            return
+        elif opts.db_wizard:
+            wizard('db', opts.config)
+            return
+                    
         check_python_version()
         if opts.list_configs is not None:
             configs = enumerate_configs()
