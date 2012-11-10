@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Phenny/Jenni/Willie IRC Bot documentation build configuration file, created by
+# Willie IRC Bot documentation build configuration file, created by
 # sphinx-quickstart on Mon Jul 16 23:45:29 2012.
 #
 # This file is execfile()d with the current directory set to its containing dir.
@@ -166,7 +166,7 @@ html_static_path = ['_static']
 #html_file_suffix = None
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'PhennyJenniWillieIRCBotdoc'
+htmlhelp_basename = 'willie'
 
 
 # -- Options for LaTeX output --------------------------------------------------
@@ -185,7 +185,7 @@ latex_elements = {
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
-  ('index', 'PhennyJenniWillieIRCBot.tex', u'Phenny/Jenni/Willie IRC Bot Documentation',
+  ('index', 'willie.tex', u'Willie IRC Bot Documentation',
    u'E. Powell, et al.', 'manual'),
 ]
 
@@ -215,7 +215,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    ('index', 'phennyjenniwillieircbot', u'Phenny/Jenni/Willie IRC Bot Documentation',
+    ('index', 'willie', u'Willie IRC Bot Documentation',
      [u'E. Powell, et al.'], 1)
 ]
 
@@ -229,8 +229,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-  ('index', 'PhennyJenniWillieIRCBot', u'Phenny/Jenni/Willie IRC Bot Documentation',
-   u'E. Powell, et al.', 'PhennyJenniWillieIRCBot', 'One line description of project.',
+  ('index', 'willie', u'Willie IRC Bot Documentation',
+   u'E. Powell, et al.', 'WillieIRCBot', 'One line description of project.',
    'Miscellaneous'),
 ]
 
