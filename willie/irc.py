@@ -39,15 +39,20 @@ class Origin(object):
     source = re.compile(r'([^!]*)!?([^@]*)@?(.*)')
 
     def __init__(self, bot, source, args):
+        #Split out the nick, user, and host from hostmask per the regex above.
         match = Origin.source.match(source or '')
         self.nick, self.user, self.host = match.groups()
 
+        # If we have more than one argument, the second one is the sender
         if len(args) > 1:
             target = args[1]
         else: target = None
-
-        mappings = {bot.nick: self.nick, None: None}
-        self.sender = mappings.get(target, target)
+        
+        # Unless we're messaging the bot directly, in which case that second
+        # arg will be our bot's name.
+        if target and target == bot.nick:
+            target = self.nick
+        self.sender = target
 
 class Bot(asynchat.async_chat):
     def __init__(self, config):
@@ -327,9 +332,9 @@ class Bot(asynchat.async_chat):
             self.handle_close()
 
         origin = Origin(self, source, args)
-        self.dispatch(origin, tuple([text] + args))
+        self.dispatch(origin, text, args)
 
-    def dispatch(self, origin, args):
+    def dispatch(self, origin, text, args):
         pass
 
     def msg(self, recipient, text):
