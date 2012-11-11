@@ -377,9 +377,11 @@ class Willie(irc.Bot):
                     return True
         return False
 
-    def dispatch(self, origin, args):
-        bytes, event, args = args[0], args[1], args[2:]
-        text = decode(bytes)
+    def dispatch(self, origin, text, args):
+        bytes = text
+        text = decode(text)
+        event = args[0]
+        args = args[1:]
 
         for priority in ('high', 'medium', 'low'):
             items = self.commands[priority].items()
