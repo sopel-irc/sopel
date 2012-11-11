@@ -142,13 +142,32 @@ def duck_search(query):
     m = r_duck.search(bytes)
     if m: return web.decode(m.group(1))
 
+def duck_api(query):
+    uri = web.quote(query)
+    uri = 'http://api.duckduckgo.com/?q=%s&format=json&no_html=1&no_redirect=1'%query
+    results = json.loads(web.get(uri))
+    print results
+    if results['Redirect']:
+        return results['Redirect']
+    else:
+        return None
+
 def duck(willie, trigger):
     """Queries Duck Duck Go for the specified input."""
     query = trigger.group(2)
-    if not query: return willie.reply('.ddg what?')
-
+    if not query:
+        return willie.reply('.ddg what?')
     query = query.encode('utf-8')
-    uri = duck_search(query)
+    
+    #If the API gives us something, say it and stop
+    result = duck_api(query)
+    if result:
+        willie.reply(result)
+        return
+    
+    #Otherwise, look it up on the HTMl version
+    uri= duck_search(query)
+    
     if uri:
         willie.reply(uri)
         if not hasattr(willie.bot, 'last_seen_uri'):
