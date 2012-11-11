@@ -10,5 +10,6 @@ logs/*
 *.db
 *~
 doc/build/*
-doc/source/modules.rst
+build/
 .pid-*
+willie.wiki/*
