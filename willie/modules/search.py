@@ -2,6 +2,7 @@
 """
 search.py - Willie Web Search Module
 Copyright 2008-9, Sean B. Palmer, inamidst.com
+Copyright 2012, Edward Powell, embolalia.net
 Licensed under the Eiffel Forum License 2.
 
 http://willie.dftba.net
