@@ -104,7 +104,7 @@ def findandreplace(willie, trigger):
             line = line[8:]
         else:
             me = False
-        new_phrase = repl(line)
+        new_phrase = repl(line) if len(line) < 88 else ''
         if new_phrase != line: # we are done
             break
 
