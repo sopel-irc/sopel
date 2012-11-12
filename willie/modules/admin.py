@@ -96,9 +96,10 @@ def hold_ground(willie, trigger):
     WARNING: This may not be needed and could cause problems if willie becomes
     annoying. Please use this with caution.
     """
-    if willie.config.admin.hold_ground:
+    if willie.config.has_section('admin') and willie.config.admin.hold_ground:
         channel = trigger.sender
-        willie.join(channel)
+        if trigger.args[1] == willie.nick:
+         willie.join(channel)
 hold_ground.event = 'KICK'
 hold_ground.rule = '.*'
 hold_ground.priority = 'low'
