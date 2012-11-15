@@ -41,7 +41,7 @@ def issue(willie, trigger):
     #Is the Oauth token and repo available?
     gitAPI = checkConfig(willie)
     if gitAPI == False:
-        return willie.say('Git module not configured, make sure git_oauth_token and git_repo are defined')
+        return willie.say('Git module not configured, make sure github.oauth_token and github.repo are defined')
 
     #parse input
     now = ' '.join(str(datetime.utcnow()).split(' ')).split('.')[0]+' UTC'
@@ -55,7 +55,7 @@ def issue(willie, trigger):
     
     data = json.loads(raw)
     willie.say('Issue #%s posted. %s' % (data['number'], data['html_url']))
-    willie.debug('','Issue #%s created in %s' % (data['number'],trigger.sender),'warning')
+    willie.debug('GitHub','Issue #%s created in %s' % (data['number'],trigger.sender),'warning')
 issue.commands = ['makeissue','makebug']
 issue.priority = 'medium'
 
@@ -67,7 +67,7 @@ def findIssue(willie, trigger):
     #Is the Oauth token and repo available?
     gitAPI = checkConfig(willie)
     if gitAPI == False:
-        return willie.say('Git module not configured, make sure git_oauth_token and git_repo are defined')
+        return willie.say('Git module not configured, make sure github.oauth_token and github.repo are defined')
     firstParam = trigger.group(2).split(' ')[0]
     if firstParam.isdigit():
         URL = 'https://api.github.com/repos/%s/issues/%s' % (gitAPI[1], trigger.group(2))
