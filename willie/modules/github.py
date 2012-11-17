@@ -14,21 +14,21 @@ import re
 import willie.web as web
 
 def checkConfig(willie):
-    if not willie.config.has_option('github', 'oath_token') or not willie.config.has_option('github', 'repo'):
+    if not willie.config.has_option('github', 'oauth_token') or not willie.config.has_option('github', 'repo'):
         return False
     else:
-        return [willie.config.github.oath_token, willie.config.github.repo]
+        return [willie.config.github.oauth_token, willie.config.github.repo]
 
 def configure(config):
     """
     | [github] | example | purpose |
     | -------- | ------- | ------- |
-    | Oauth_token | 5868e7af57496cc3ae255868e7af57496cc3ae25 | The OAuth token to connect to your github repo |
+    | oauth_token | 5868e7af57496cc3ae255868e7af57496cc3ae25 | The OAuth token to connect to your github repo |
     | repo | embolalia/willie | The GitHub repo you're working from. |
     """
     chunk = ''
     if config.option('Configuring github issue reporting and searching module', False):
-        config.interactive_add('github', 'Oath_token', 'Github API Oauth2 token', '')
+        config.interactive_add('github', 'oauth_token', 'Github API Oauth2 token', '')
         config.interactive_add('github', 'repo', 'Github repository', 'embolalia/willie')
     return chunk
 
@@ -41,7 +41,7 @@ def issue(willie, trigger):
     #Is the Oauth token and repo available?
     gitAPI = checkConfig(willie)
     if gitAPI == False:
-        return willie.say('Git module not configured, make sure git_Oath_token and git_repo are defined')
+        return willie.say('Git module not configured, make sure github.oauth_token and github.repo are defined')
 
     #parse input
     now = ' '.join(str(datetime.utcnow()).split(' ')).split('.')[0]+' UTC'
@@ -55,7 +55,7 @@ def issue(willie, trigger):
     
     data = json.loads(raw)
     willie.say('Issue #%s posted. %s' % (data['number'], data['html_url']))
-    willie.debug('','Issue #%s created in %s' % (data['number'],trigger.sender),'warning')
+    willie.debug('GitHub','Issue #%s created in %s' % (data['number'],trigger.sender),'warning')
 issue.commands = ['makeissue','makebug']
 issue.priority = 'medium'
 
@@ -67,7 +67,7 @@ def findIssue(willie, trigger):
     #Is the Oauth token and repo available?
     gitAPI = checkConfig(willie)
     if gitAPI == False:
-        return willie.say('Git module not configured, make sure git_Oath_token and git_repo are defined')
+        return willie.say('Git module not configured, make sure github.oauth_token and github.repo are defined')
     firstParam = trigger.group(2).split(' ')[0]
     if firstParam.isdigit():
         URL = 'https://api.github.com/repos/%s/issues/%s' % (gitAPI[1], trigger.group(2))
