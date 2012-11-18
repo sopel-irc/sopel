@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 """
 ai.py - Artificial Intelligence Module
 Copyright 2009-2011, Michael Yanovich, yanovich.net

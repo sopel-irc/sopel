@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 """
 bomb.py - Simple Willie bomb prank game
 Copyright 2012, Edward Powell http://embolalia.net

@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 """
 rand.py - Rand Module
 Copyright 2010, Michael Yanovich, yanovich.net

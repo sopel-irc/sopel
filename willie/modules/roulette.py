@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 """
 roulette.py - Willie Roulette Game Module
 Copyright 2010, Kenneth Sham

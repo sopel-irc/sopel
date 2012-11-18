@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 """
 oblique.py - Web Services Interface
 Copyright 2008-9, Sean B. Palmer, inamidst.com

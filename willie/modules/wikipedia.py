@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 """
 wikipedia.py - Willie Wikipedia Module
 Copyright 2008-9, Sean B. Palmer, inamidst.com

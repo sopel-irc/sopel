@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 """
 radio.py - ShoutCAST radio Module
 Copyright 2012, Dimitri "Tyrope" Molenaars, TyRope.nl

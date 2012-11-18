@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 """
 xkcd.py - XKCD Module
 Copyright 2010, Michael Yanovich (yanovich.net), and Morgan Goose
