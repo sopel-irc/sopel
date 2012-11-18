@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 """
 weather.py - Willie Weather Module
 Copyright 2008, Sean B. Palmer, inamidst.com

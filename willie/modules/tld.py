@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 """
 tld.py - Willie TLD Module
 Copyright 2009-10, Michael Yanovich, yanovich.net

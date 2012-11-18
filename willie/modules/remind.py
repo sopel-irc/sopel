@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 """
 remind.py - Willie Reminder Module
 Copyright 2011, Sean B. Palmer, inamidst.com

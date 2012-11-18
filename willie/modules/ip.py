@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # coding=utf-8
 """
 ip.py - Willie IP Lookup Module

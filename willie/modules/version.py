@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 """
 version.py - Willie Version Module
 Copyright 2009, Silas Baronda

@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 """
 quote.py - Willie Quote Module
 Copyright 2008-10, Michael Yanovich, yanovich.net

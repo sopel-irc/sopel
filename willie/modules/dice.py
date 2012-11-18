@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 """
 dice.py - Dice Module
 Copyright 2010-2012, Dimitri "Tyrope" Molenaars, TyRope.nl

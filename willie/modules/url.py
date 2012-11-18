@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 """
 url.py - Willie URL title module
 Copyright 2010-2011, Michael Yanovich, yanovich.net, Kenneth Sham

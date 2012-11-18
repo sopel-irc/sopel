@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 """
 warnings.py -- NWS Alert Module
 Copyright 2011, Michael Yanovich, yanovich.net

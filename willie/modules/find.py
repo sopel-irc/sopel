@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 """
 find.py - Willie Spell Checking Module
 Copyright 2011, Michael Yanovich, yanovich.net

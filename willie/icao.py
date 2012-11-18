@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 """
 icao.py - Willie ICAO Codes Data
 This data and module are in the public domain.

@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 """
 codepoints.py - Willie Codepoints Module
 Copyright 2008, Sean B. Palmer, inamidst.com

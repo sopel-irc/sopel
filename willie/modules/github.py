@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 """
 github.py - Willie Github Module
 Copyright 2012, Dimitri Molenaars http://tyrope.nl/

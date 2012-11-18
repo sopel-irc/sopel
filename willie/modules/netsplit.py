@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 """
 netsplit.py - Message the debug channel on a netsplit.
 Author: Edward Powell - embolalia.net

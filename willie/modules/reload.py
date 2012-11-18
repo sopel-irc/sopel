@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 """
 reload.py - Willie Module Reloader Module
 Copyright 2008, Sean B. Palmer, inamidst.com

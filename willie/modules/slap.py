@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 """
 slap.py - Slap Module
 Copyright 2009, Michael Yanovich, yanovich.net

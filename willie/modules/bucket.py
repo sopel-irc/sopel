@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # coding=utf-8
 """
 bucket.py - willie module to emulate the behavior of #xkcd's Bucket bot
