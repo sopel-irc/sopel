@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 """
 clock.py - Willie Clock Module
 Copyright 2008-9, Sean B. Palmer, inamidst.com

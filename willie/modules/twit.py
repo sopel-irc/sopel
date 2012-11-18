@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 """
 twitter.py - Willie Twitter Module
 Copyright 2008-10, Michael Yanovich, opensource.osu.edu/~yanovich/wiki/

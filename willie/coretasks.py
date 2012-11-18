@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # coding=utf-8
 """
 coretasks.py - Willie Ruotine Core tasks

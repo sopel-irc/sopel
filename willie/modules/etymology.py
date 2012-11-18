@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 """
 etymology.py - Willie Etymology Module
 Copyright 2007-9, Sean B. Palmer, inamidst.com

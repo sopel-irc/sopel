@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 """
 wiktionary.py - Willie Wiktionary Module
 Copyright 2009, Sean B. Palmer, inamidst.com

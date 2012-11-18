@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 """
 info.py - Willie Information Module
 Copyright 2008, Sean B. Palmer, inamidst.com

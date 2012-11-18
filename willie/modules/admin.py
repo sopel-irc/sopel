@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # coding=utf-8
 """
 admin.py - Willie Admin Module

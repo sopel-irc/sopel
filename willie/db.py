@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 """
 *Availability: 3.1+*
 
