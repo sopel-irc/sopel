@@ -20,11 +20,9 @@ periodic updates, the above lists them in a generally ascending order of
 recentness.
 
 For clarity's sake, this documentation will refer to these forks as different
-"API levels" or "API versions". The version numbers will approach the square
-root of 2 (1.41421...), the mathematical constant *e* (2.71828...), and pi 
-(3.14159...) respectively. When a fork adds a new feature, and this guide
-documents it, the current API level of that fork will be given one more
-decimal.
+"API levels" or "API versions". The original phenny fork will be termed *1.x*,
+the jenni fork will be termed *2.x*, and Willie, which this guide will focus
+on, will be termed *3.x*.
 
 .. contents:: :depth: 2
 
