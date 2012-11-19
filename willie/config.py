@@ -209,6 +209,8 @@ class Config(object):
         already defined, it will be used instead of ``default``, regardless of
         wheather ``default`` is passed.
         """
+        if not self.parser.has_section(section):
+            self.parser.add_section(section)
         if self.parser.has_option(section, option):
             default = self.parser.getboolean(section, option)
         answer = self.option(question, default)
