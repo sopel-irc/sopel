@@ -30,27 +30,29 @@ jenni_dotdir = os.path.expanduser('~/.jenni')
 phenny_dotdir = os.path.expanduser('~/.phenny')
 dotdir = willie_dotdir
 
+
 def check_python_version():
     if sys.version_info < (2, 7):
         stderr('Error: Requires Python 2.7 or later. Try python2.7 willie')
         sys.exit(1)
+
 
 def enumerate_configs(extension='.cfg'):
     willie_config = []
     jenni_config = []
     phenny_config = []
     if os.path.isdir(willie_dotdir):
-        willie_dotdirfiles = os.listdir(willie_dotdir) #Preferred
+        willie_dotdirfiles = os.listdir(willie_dotdir)  # Preferred
         for item in willie_dotdirfiles:
             if item.endswith(extension):
                 willie_config.append(item)
     if os.path.isdir(jenni_dotdir):
-        jenni_dotdirfiles = os.listdir(jenni_dotdir) #Fallback
+        jenni_dotdirfiles = os.listdir(jenni_dotdir)  # Fallback
         for item in jenni_dotdirfiles:
             if item.endswith(extension):
                 jenni_config.append(item)
     if os.path.isdir(phenny_dotdir):
-        phenny_dotdirfiles = os.listdir(phenny_dotdir) #Fallback of fallback
+        phenny_dotdirfiles = os.listdir(phenny_dotdir)  # Fallback of fallback
         for item in phenny_dotdirfiles:
             willie_config = []
             if item.endswith(extension):
@@ -58,40 +60,53 @@ def enumerate_configs(extension='.cfg'):
 
     return (willie_config, jenni_config, phenny_config)
 
+
 def find_config(name, extension='.cfg'):
     global dotdir
     configs = enumerate_configs(extension)
-    if name in configs[0] or name+extension in configs[0]:
+    if name in configs[0] or name + extension in configs[0]:
         dotdir = willie_dotdir
-        if name+extension in configs[0]:
-            name = name+extension
-    elif name in configs[1] or name+extension in configs[1]:
+        if name + extension in configs[0]:
+            name = name + extension
+    elif name in configs[1] or name + extension in configs[1]:
         dotdir = jenni_dotdir
-        if name+extension in configs[1]:
-            name = name+extension
-    elif name in configs[2] or name+extension in configs[2]:
+        if name + extension in configs[1]:
+            name = name + extension
+    elif name in configs[2] or name + extension in configs[2]:
         dotdir = phenny_dotdir
-        if name+extension in configs[2]:
-            name = name+extension
+        if name + extension in configs[2]:
+            name = name + extension
     elif not name.endswith(extension):
-        name = name+extension
+        name = name + extension
 
     return os.path.join(dotdir, name)
+
 
 def main(argv=None):
     # Step One: Parse The Command Line
     try:
         parser = optparse.OptionParser('%prog [options]')
-        parser.add_option('-c', '--config', metavar='filename', help='use a specific configuration file')
-        parser.add_option("-d", '--fork', action="store_true", dest="deamonize", help="Deamonize willie")
-        parser.add_option("-q", '--quit', action="store_true", dest="quit", help="Gracefully quit Willie")
-        parser.add_option("-k", '--kill', action="store_true", dest="kill", help="Kill Willie")
-        parser.add_option("-l", '--list', action="store_true", dest="list_configs", help="List all config files found")
-        parser.add_option("-m", '--migrate', action="store_true", dest="migrate_configs", help="Migrate config files to the new format")
-        parser.add_option('--quiet', action="store_true", dest="quiet", help="Supress all output")
-        parser.add_option('-w', '--configure-all', action='store_true', dest='wizard', help='Run the configuration wizard.')
-        parser.add_option('--configure-modules', action='store_true', dest='mod_wizard', help='Run the configuration wizard, but only for the module configuration options.')
-        parser.add_option('--configure-database', action='store_true', dest='db_wizard', help='Run the configuration wizard, but only for the database configuration options.')
+        parser.add_option('-c', '--config', metavar='filename',
+            help='use a specific configuration file')
+        parser.add_option("-d", '--fork', action="store_true",
+            dest="deamonize", help="Deamonize willie")
+        parser.add_option("-q", '--quit', action="store_true", dest="quit",
+            help="Gracefully quit Willie")
+        parser.add_option("-k", '--kill', action="store_true", dest="kill",
+            help="Kill Willie")
+        parser.add_option("-l", '--list', action="store_true",
+            dest="list_configs", help="List all config files found")
+        parser.add_option("-m", '--migrate', action="store_true",
+            dest="migrate_configs",
+            help="Migrate config files to the new format")
+        parser.add_option('--quiet', action="store_true", dest="quiet",
+            help="Supress all output")
+        parser.add_option('-w', '--configure-all', action='store_true',
+            dest='wizard', help='Run the configuration wizard.')
+        parser.add_option('--configure-modules', action='store_true',
+            dest='mod_wizard', help='Run the configuration wizard, but only for the module configuration options.')
+        parser.add_option('--configure-database', action='store_true',
+            dest='db_wizard', help='Run the configuration wizard, but only for the database configuration options.')
         opts, args = parser.parse_args(argv)
 
         if opts.wizard:
@@ -103,7 +118,7 @@ def main(argv=None):
         elif opts.db_wizard:
             wizard('db', opts.config)
             return
-                    
+
         check_python_version()
         if opts.list_configs is not None:
             configs = enumerate_configs()
@@ -131,10 +146,10 @@ def main(argv=None):
             return
 
         config_name = opts.config or 'default'
-        
+
         if opts.migrate_configs is not None:
             configpath = find_config(config_name, '.py')
-            new_configpath = configpath[:-2]+'cfg'
+            new_configpath = configpath[:-2] + 'cfg'
             if os.path.isfile(new_configpath):
                 valid_answer = False
                 while not valid_answer:
@@ -150,8 +165,8 @@ def main(argv=None):
                 if not attrib.startswith('_'):
                     value = getattr(old_cfg, attrib)
                     if value is None:
-                        continue #Skip NoneTypes
-                    if type(value) is list: #Parse lists
+                        continue  # Skip NoneTypes
+                    if type(value) is list:  # Parse lists
                         parsed_value = ','.join(value)
                     else:
                         parsed_value = str(value)
@@ -162,8 +177,7 @@ def main(argv=None):
                     setattr(new_cfg.core, attrib, parsed_value)
             new_cfg.save()
             print 'Configuration migrated sucessfully, starting Willie'
-            
-        
+
         configpath = find_config(config_name)
         if not os.path.isfile(configpath):
             stdout("Welcome to Willie!\nI can't seem to find the configuration file, so let's generate it!\n")
