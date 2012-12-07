@@ -175,7 +175,7 @@ def wik(willie, trigger):
         willie.say(result)
     else: willie.say('Can\'t find anything in Wikipedia for "%s".' % origterm)
 
-wik.commands = ['wik', 'wiki']
+wik.commands = ['wiki', 'wik']
 wik.priority = 'high'
 
 if __name__ == '__main__':
