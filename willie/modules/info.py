@@ -8,16 +8,25 @@ http://willie.dftba.net
 
 def doc(willie, trigger):
     """Shows a command's documentation, and possibly an example."""
-    name = trigger.group(1)
+    name = trigger.group(2)
     name = name.lower()
 
     if willie.doc.has_key(name):
         willie.reply(willie.doc[name][0])
         if willie.doc[name][1]:
             willie.say('e.g. ' + willie.doc[name][1])
-doc.rule = ('$nick', '(?i)(?:help|doc) +([A-Za-z]+)(?:\?+)?$')
+doc.rule = ('$nick', '(?i)(help|doc) +([A-Za-z]+)(?:\?+)?$')
 doc.example = '$nickname: doc tell?'
 doc.priority = 'low'
+
+def help(willie, trigger):
+    """Get help for a command."""
+    if not input.group(2):
+	willie.reply('Say .help <command> (for example .help c) to get help for a command, or .commands for a list of commands.')
+    else:
+	doc(willie, trigger)
+help.commands = ['help']
+help.example = '.help c'
 
 def commands(willie, trigger):
     """Return a list of Willie's commands"""
@@ -26,7 +35,7 @@ def commands(willie, trigger):
     willie.msg(trigger.nick, 'Commands I recognise: ' + names + '.')
     willie.msg(trigger.nick, ("For help, do '%s: help example?' where example is the " +
                     "name of the command you want help for.") % willie.nick)
-commands.commands = ['commands', 'help']
+commands.commands = ['commands']
 commands.priority = 'low'
 
 def help(willie, trigger):
