@@ -234,7 +234,12 @@ class Config(object):
     def _core(self):
         self.interactive_add('core', 'nick', 'Enter the nickname for your bot', 'Willie')
         self.interactive_add('core', 'host', 'Enter the server to connect to', 'irc.dftba.net')
-        self.interactive_add('core', 'port', 'Enter the port to connect on', '6667')
+        self.add_option('core', 'use_ssl', 'Should the bot connect with SSL')
+        if self.use_ssl == 'True':
+            default_port = '6697'
+        else:
+            default_port = '6667'
+        self.interactive_add('core', 'port', 'Enter the port to connect on', default_port)
         self.interactive_add('core', 'owner', "Enter your own IRC name (or that of the bot's owner)")
         c='Enter the channels to connect to by default, one at a time. When done, hit enter again.'
         self.add_list('core', 'channels', c, 'Channel:')
