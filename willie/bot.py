@@ -184,12 +184,13 @@ class Willie(irc.Bot):
             # register documentation
             if not hasattr(func, 'name'):
                 func.name = func.__name__
-            if func.__doc__:
+	    # At least for now, only account for the first command listed.
+            if func.__doc__ and hasattr(func, 'commands') and func.commands[0]:
                 if hasattr(func, 'example'):
                     example = func.example
                     example = example.replace('$nickname', self.nick)
                 else: example = None
-                self.doc[func.name] = (func.__doc__, example)
+		self.doc[func.commands[0]] = (func.__doc__, example)
             self.commands[priority].setdefault(regexp, []).append(func)
 
         def sub(pattern, self=self):
