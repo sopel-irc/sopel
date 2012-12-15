@@ -133,7 +133,7 @@ last line of the function.
 The ``Willie`` class
 --------------------
 
-.. autoclass:: bot.Willie
+.. autoclass:: willie.bot.Willie
     :members:
     
     .. py:function:: reply(text)
@@ -356,20 +356,20 @@ The ``willie`` object has, among others, the attributes ``db`` and
 The ``WillieDB`` class
 ----------------------
 
-.. automodule:: db
+.. automodule:: willie.db
    :members:
 
 The ``Config`` class
 --------------------
 
-.. automodule:: config
+.. automodule:: willie.config
    :members:
    :undoc-members:
 
 Miscellaneous: ``web``, ``tools``
 =================================
 
-.. automodule:: web
+.. automodule:: willie.web
     :members:
 
 Indices and tables
