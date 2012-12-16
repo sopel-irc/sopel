@@ -18,8 +18,8 @@ r_from = re.compile(r'(?i)([+-]\d+):00 from')
 
 def setup(willie):
     #Having a db means pref's exists. Later, we can just use `if willie.db`.
-    if willie.db and not willie.db.preferences.has_column('woeid'):
-        willie.db.preferences.addcolumns(['woeid'])
+    if willie.db and not willie.db.preferences.has_columns('woeid'):
+        willie.db.preferences.add_columns(['woeid'])
 
 def woeid_search(query):
     """
