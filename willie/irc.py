@@ -49,7 +49,7 @@ class Origin(object):
         
         # Unless we're messaging the bot directly, in which case that second
         # arg will be our bot's name.
-        if target and target == bot.nick:
+        if target and target.lower() == bot.nick.lower():
             target = self.nick
         self.sender = target
 
