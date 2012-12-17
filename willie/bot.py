@@ -10,7 +10,12 @@ Licensed under the Eiffel Forum License 2.
 http://willie.dftba.net/
 """
 
-import time, sys, os, re, threading, imp
+import time
+import sys
+import os
+import re
+import threading
+import imp
 import irc
 from db import WillieDB
 from tools import stderr, stdout
@@ -18,15 +23,17 @@ from tools import stderr, stdout
 this_dir = os.path.dirname(os.path.abspath(__file__))
 modules_dir = os.path.join(this_dir, 'modules')
 
+
 def decode(string):
-    try: 
+    try:
         text = string.decode('utf-8')
     except UnicodeDecodeError:
-        try: 
+        try:
             text = string.decode('iso-8859-1')
         except UnicodeDecodeError:
             text = string.decode('cp1252')
     return text
+
 
 def enumerate_modules(config):
     filenames = []
@@ -49,6 +56,7 @@ def enumerate_modules(config):
                         filenames.append(os.path.join(fn, n))
     return filenames
 
+
 class Willie(irc.Bot):
     def __init__(self, config):
         irc.Bot.__init__(self, config.core)
@@ -70,7 +78,7 @@ class Willie(irc.Bot):
         funtion names to the time which they were last used by that nick.
         """
         self.acivity = {}
-        
+
         self.db = WillieDB(config)
         if self.db.check_table('locales', ['name'], 'name'):
             self.settings = self.db.locales
@@ -80,11 +88,13 @@ class Willie(irc.Bot):
         elif self.db.type is not None:
             self.db.add_table('preferences', ['name'], 'name')
             self.settings = self.db.preferences
-            
-        self.memory=self.WillieMemory()
-        '''A thread-safe dict for storage of runtime data to be shared between modules.
-        See `WillieMemory <#bot.Willie.WillieMemory>`_'''
-        
+
+        self.memory = self.WillieMemory()
+        """
+        A thread-safe dict for storage of runtime data to be shared between
+        modules. See `WillieMemory <#bot.Willie.WillieMemory>`_
+        """
+
         #Set up block lists
         #Default to empty
         if not self.config.has_option('core', 'nick_blocks'):
@@ -101,19 +111,21 @@ class Willie(irc.Bot):
             nicks = self.config.core.nick_blocks
             bots = self.config.core.other_bots
             if isinstance(bots, basestring):
-                bots = bots.split(',')            
+                bots = bots.split(',')
             nicks.extend(bots)
             self.config.core.nick_blocks = nicks
-        
+
         self.setup()
 
     class WillieMemory(dict):
-        '''Availability: 3.1+
-        
-        A simple thread-safe dict implementation.
-        In order to prevent exceptions when iterating over the values and changing
-        them at the same time from different threads, we use a blocking lock on ``__setitem__`` and ``contains``
-        '''
+        """
+        Availability: 3.1+
+
+        A simple thread-safe dict implementation. In order to prevent exceptions
+        when iterating over the values and changing them at the same time from
+        different threads, we use a blocking lock on ``__setitem__`` and
+        ``contains``.
+        """
         def __init__(self, *args):
             dict.__init__(self, *args)
             self.lock = threading.Lock()
@@ -123,9 +135,12 @@ class Willie(irc.Bot):
             result = dict.__setitem__(self, key, value)
             self.lock.release()
             return result
-                
+
         def contains(self, key):
-            ''' Check if a key is in the dict. Use this instead of the ``in`` keyword if you want to be thread-safe '''
+            """
+            Check if a key is in the dict. Use this instead of the ``in``
+            keyword if you want to be thread-safe.
+            """
             self.lock.acquire()
             result = (key in self)
             self.lock.release()
@@ -134,7 +149,6 @@ class Willie(irc.Bot):
     def setup(self):
         stderr("\nWelcome to Willie. Loading modules...\n\n")
         self.variables = {}
-
 
         filenames = enumerate_modules(self.config)
         filenames.append(os.path.join(this_dir, 'coretasks.py'))
@@ -145,8 +159,10 @@ class Willie(irc.Bot):
         error_count = 0
         for filename in filenames:
             name = os.path.basename(filename)[:-3]
-            if name in excluded_modules: continue
-            try: module = imp.load_source(name, filename)
+            if name in excluded_modules:
+                continue
+            try:
+                module = imp.load_source(name, filename)
             except Exception, e:
                 error_count = error_count + 1
                 stderr("Error loading %s: %s (in bot.py)" % (name, e))
@@ -159,11 +175,12 @@ class Willie(irc.Bot):
                 except Exception, e:
                     error_count = error_count + 1
                     stderr("Error in %s setup procedure: %s (in bot.py)" % (name, e))
-        
+
         if modules:
-            stderr('\n\nRegistered %d modules,' % (len(modules)-1))
+            stderr('\n\nRegistered %d modules,' % (len(modules) - 1))
             stderr('%d modules failed to load\n\n' % error_count)
-        else: stderr("Warning: Couldn't find any modules")
+        else:
+            stderr("Warning: Couldn't find any modules")
 
         self.bind_commands()
 
@@ -184,13 +201,14 @@ class Willie(irc.Bot):
             # register documentation
             if not hasattr(func, 'name'):
                 func.name = func.__name__
-	    # At least for now, only account for the first command listed.
+            # At least for now, only account for the first command listed.
             if func.__doc__ and hasattr(func, 'commands') and func.commands[0]:
                 if hasattr(func, 'example'):
                     example = func.example
                     example = example.replace('$nickname', self.nick)
-                else: example = None
-		self.doc[func.commands[0]] = (func.__doc__, example)
+                else:
+                    example = None
+            self.doc[func.commands[0]] = (func.__doc__, example)
             self.commands[priority].setdefault(regexp, []).append(func)
 
         def sub(pattern, self=self):
@@ -208,7 +226,8 @@ class Willie(irc.Bot):
 
             if not hasattr(func, 'event'):
                 func.event = 'PRIVMSG'
-            else: func.event = func.event.upper()
+            else:
+                func.event = func.event.upper()
 
             if not hasattr(func, 'rate'):
                 if hasattr(func, 'commands'):
@@ -259,13 +278,13 @@ class Willie(irc.Bot):
         def __init__(self, willie, origin):
             self.bot = willie
             self.origin = origin
-            
+
         def say(self, string):
             self.bot.msg(self.origin.sender, string)
 
         def reply(self, string):
             self.bot.msg(self.origin.sender, self.origin.nick + ': ' + string)
-            
+
         def action(self, string, recipient=None):
             if recipient is None:
                 recipient = self.origin.sender
@@ -273,7 +292,6 @@ class Willie(irc.Bot):
 
         def __getattr__(self, attr):
             return getattr(self.bot, attr)
-
 
     class Trigger(unicode):
         def __new__(cls, text, origin, bytes, match, event, args, self):
@@ -301,11 +319,11 @@ class Willie(irc.Bot):
             """
             s.group = match.group
             """The ``group`` function of the ``match`` attribute.
-            
+
             See Python ``re_`` documentation for details."""
             s.groups = match.groups
             """The ``groups`` function of the ``match`` attribute.
-            
+
             See Python ``re_`` documentation for details."""
             s.args = args
             """
@@ -314,13 +332,14 @@ class Willie(irc.Bot):
             setting ``mode -m`` on the channel ``#example``, args would be
             ``('#example', '-m')``
             """
-            s.admin = (origin.nick in self.config.admins.split(',')) or origin.nick.lower() == self.config.owner.lower()
+            s.admin = ((origin.nick in self.config.admins.split(','))
+                       or origin.nick.lower() == self.config.owner.lower())
             """
             True if the nick which triggered the command is in Willie's admin
             list as defined in the config file.
             """
-                
-            if s.admin == False:
+
+            if not s.admin:
                 for each_admin in self.config.admins.split(','):
                     re_admin = re.compile(each_admin)
                     if re_admin.findall(origin.host):
@@ -331,19 +350,27 @@ class Willie(irc.Bot):
                         if re_host.findall(origin.host):
                             s.admin = True
             s.owner = origin.nick + '@' + origin.host == self.config.owner
-            if s.owner == False: s.owner = origin.nick == self.config.owner
+            if not s.owner:
+                s.owner = (origin.nick == self.config.owner)
+
             s.host = origin.host
-            if s.sender is not s.nick: #no ops in PM
+            if s.sender is not s.nick:  # no ops in PM
                 try:
                     s.ops = self.ops[s.sender]
                 except:
                     s.ops = []
-                """List of channel operators in the channel the message was recived in"""
+                """
+                List of channel operators in the channel the message was
+                recived in
+                """
                 try:
                     s.halfplus = self.halfplus[s.sender]
                 except:
                     s.halfplus = []
-                """List of channel half-operators in the channel the message was recived in"""
+                """
+                List of channel half-operators in the channel the message was
+                recived in
+                """
                 s.isop = (s.nick.lower() in s.ops or s.nick.lower() in s.halfplus)
                 """True if the user is half-op or an op"""
             else:
@@ -362,8 +389,10 @@ class Willie(irc.Bot):
                         self.times[nick][func] = time.time()
                         self.debug('bot.py', "%s prevented from using %s in %s: %d < %d" % (trigger.nick, func.__name__, trigger.sender, timediff, func.rate), "warning")
                         return
-        else: self.times[nick] = dict()
+        else:
+            self.times[nick] = dict()
         self.times[nick][func] = time.time()
+
         try:
             func(willie, trigger)
         except Exception, e:
@@ -387,19 +416,19 @@ class Willie(irc.Bot):
             items = self.commands[priority].items()
             for regexp, funcs in items:
                 for func in funcs:
-                    if event != func.event: 
+                    if event != func.event:
                         continue
 
                     match = regexp.match(text)
                     if match:
-                        if self.limit(origin, func): 
+                        if self.limit(origin, func):
                             continue
 
                         willie = self.WillieWrapper(self, origin)
                         trigger = self.Trigger(text, origin, bytes, match, event, args, self)
 
                         if self.config.core.other_bots is not None:
-                            if trigger.nick in self.config.other_bots.split(','): 
+                            if trigger.nick in self.config.other_bots.split(','):
                                 continue
 
                         nick = (trigger.nick).lower()
@@ -411,7 +440,7 @@ class Willie(irc.Bot):
                         if len(bad_masks) > 0:
                             for hostmask in bad_masks:
                                 hostmask = hostmask.replace("\n", "")
-                                if len(hostmask) < 1: 
+                                if len(hostmask) < 1:
                                     continue
                                 re_temp = re.compile(hostmask)
                                 host = origin.host
@@ -421,29 +450,35 @@ class Willie(irc.Bot):
                         if len(bad_nicks) > 0:
                             for nick in bad_nicks:
                                 nick = nick.replace("\n", "")
-                                if len(nick) < 1: 
+                                if len(nick) < 1:
                                     continue
                                 re_temp = re.compile(nick)
-                                if re_temp.findall(trigger.nick) or nick in trigger.nick:
+                                if (re_temp.findall(trigger.nick)
+                                    or nick in trigger.nick):
                                     return
                         # stats
                         if func.thread:
                             targs = (func, origin, willie, trigger)
                             t = threading.Thread(target=self.call, args=targs)
                             t.start()
-                        else: self.call(func, origin, willie, trigger)
+                        else:
+                            self.call(func, origin, willie, trigger)
 
                         for source in [origin.sender, origin.nick]:
-                            try: self.stats[(func.name, source)] += 1
+                            try:
+                                self.stats[(func.name, source)] += 1
                             except KeyError:
                                 self.stats[(func.name, source)] = 1
+
     def debug(self, tag, text, level):
         """
-        Sends an error to Willie's configured ``debug_target``. 
+        Sends an error to Willie's configured ``debug_target``.
         """
         if not hasattr(self.config, 'verbose') or not self.config.verbose:
             self.config.verbose = 'warning'
-        if not hasattr(self.config, 'debug_target') or not (self.config.debug_target == 'stdio' or self.config.debug_target.startswith('#')):
+        if (not hasattr(self.config, 'debug_target')
+              or not (self.config.debug_target == 'stdio'
+              or self.config.debug_target.startswith('#'))):
             debug_target = 'stdio'
         else:
             debug_target = self.config.debug_target
@@ -468,7 +503,7 @@ class Willie(irc.Bot):
             else:
                 self.msg(self.config.debug_target, debug_msg)
             return True
-        
+
         return False
 
 if __name__ == '__main__':
