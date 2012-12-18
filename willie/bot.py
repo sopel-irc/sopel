@@ -208,7 +208,7 @@ class Willie(irc.Bot):
                     example = example.replace('$nickname', self.nick)
                 else:
                     example = None
-            self.doc[func.commands[0]] = (func.__doc__, example)
+                self.doc[func.commands[0]] = (func.__doc__, example)
             self.commands[priority].setdefault(regexp, []).append(func)
 
         def sub(pattern, self=self):
