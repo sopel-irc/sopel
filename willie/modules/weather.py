@@ -154,7 +154,7 @@ def update_woeid(willie, trigger):
         state = first_result.find('state').text or ''
         country = first_result.find('country').text or ''
         uzip = first_result.find('uzip').text or ''
-        willie.reply('I know have you at WOEID %s (%s %s, %s, %s %s.)' %
+        willie.reply('I now have you at WOEID %s (%s %s, %s, %s %s.)' %
             (woeid, neighborhood, city, state, country, uzip))
     else:
         willie.reply("I can't remember that; I don't have a database.")
