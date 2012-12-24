@@ -120,7 +120,7 @@ def weather(willie, trigger):
             woeid = willie.db.preferences.get(trigger.nick, 'woeid')
         if not woeid:
             return willie.msg(trigger.sender, "I don't know where you live. " +
-                            'Tell me, or try .weather London, for example?')
+                'Give me a location, like .weather London, or tell me where you live by saying .setlocation London, for example.')
     else:
         woeid = woeid_search(location).find('woeid').text
     
