@@ -41,7 +41,7 @@ commands.priority = 'low'
 def help(willie, trigger):
     response = (
         'Hi, I\'m a bot. Say ".commands" to me in private for a list ' +
-        'of my commands, or see http://inamidst.com/phenny/ for more ' +
+        'of my commands, or see http://willie.dftba.net for more ' +
         'general details. My owner is %s.'
     ) % willie.config.owner
     willie.reply(response)
