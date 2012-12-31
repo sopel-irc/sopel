@@ -10,4 +10,6 @@ logs/*
 *.db
 *~
 doc/build/*
+build/
 .pid-*
+willie.wiki/*
