@@ -42,14 +42,13 @@ c.commands = ['c', 'calc']
 c.example = '.c 5 + 3'
 
 def py(willie, trigger):
-    """Evaluate a Python expression. Admin-only."""
-    if trigger.admin:
-        query = trigger.group(2).encode('utf-8')
-        uri = 'http://tumbolia.appspot.com/py/'
-        answer = web.get(uri + web.quote(query))
-        if answer:
-            willie.say(answer)
-        else: willie.reply('Sorry, no result.')
+    """Evaluate a Python expression."""
+    query = trigger.group(2).encode('utf-8')
+    uri = 'http://tumbolia.appspot.com/py/'
+    answer = web.get(uri + web.quote(query))
+    if answer:
+        willie.say(answer)
+    else: willie.reply('Sorry, no result.')
 py.commands = ['py']
 py.example = '.py len([1,2,3])'
 
