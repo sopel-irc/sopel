@@ -36,8 +36,6 @@ version.commands = ['version']
 
 
 def ctcp_version(willie, trigger):
-    date = date.replace("  ", "")
-
     willie.write(('NOTICE', trigger.nick),
             '\x01VERSION Willie IRC Bot version %s\x01' % __version__)
 ctcp_version.rule = '\x01VERSION\x01'
