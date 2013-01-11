@@ -48,50 +48,5 @@ def help(willie, trigger):
 help.rule = ('$nick', r'(?i)help(?:[?!]+)?$')
 help.priority = 'low'
 
-def stats(willie, trigger):
-    """Show information on command usage patterns."""
-    commands = {}
-    users = {}
-    channels = {}
-
-    ignore = set(['f_note', 'startup', 'message', 'noteuri'])
-    for (name, user), count in willie.stats.iteritems():
-        if name in ignore: continue
-        if not user: continue
-
-        if not user.startswith('#'):
-            try: users[user] += count
-            except KeyError: users[user] = count
-        else:
-            try: commands[name] += count
-            except KeyError: commands[name] = count
-
-            try: channels[user] += count
-            except KeyError: channels[user] = count
-
-    comrank = sorted([(b, a) for (a, b) in commands.iteritems()], reverse=True)
-    userank = sorted([(b, a) for (a, b) in users.iteritems()], reverse=True)
-    charank = sorted([(b, a) for (a, b) in channels.iteritems()], reverse=True)
-
-    # most heavily used commands
-    creply = 'most used commands: '
-    for count, command in comrank[:10]:
-        creply += '%s (%s), ' % (command, count)
-    willie.say(creply.rstrip(', '))
-
-    # most heavy users
-    reply = 'power users: '
-    for count, user in userank[:10]:
-        reply += '%s (%s), ' % (user, count)
-    willie.say(reply.rstrip(', '))
-
-    # most heavy channels
-    chreply = 'power channels: '
-    for count, channel in charank[:3]:
-        chreply += '%s (%s), ' % (channel, count)
-    willie.say(chreply.rstrip(', '))
-stats.commands = ['stats']
-stats.priority = 'low'
-
 if __name__ == '__main__':
     print __doc__.strip()
