@@ -64,8 +64,10 @@ class Willie(irc.Bot):
         """The ``Config`` for the current Willie instance."""
         self.doc = {}
         """
+        *Removed in 3.1.2*
+        
         A dictionary of module functions to their docstring and example, if
-        declared.
+        declared. As of 3.1.2, this dict will be empty, and not updated.
         """
         self.stats = {}
         """
@@ -456,19 +458,13 @@ class Willie(irc.Bot):
                                 if (re_temp.findall(trigger.nick)
                                     or nick in trigger.nick):
                                     return
-                        # stats
+                        
                         if func.thread:
                             targs = (func, origin, willie, trigger)
                             t = threading.Thread(target=self.call, args=targs)
                             t.start()
                         else:
                             self.call(func, origin, willie, trigger)
-
-                        for source in [origin.sender, origin.nick]:
-                            try:
-                                self.stats[(func.name, source)] += 1
-                            except KeyError:
-                                self.stats[(func.name, source)] = 1
 
     def debug(self, tag, text, level):
         """
