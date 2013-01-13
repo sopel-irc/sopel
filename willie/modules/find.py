@@ -51,6 +51,10 @@ def findandreplace(willie, trigger):
 
     rnick = trigger.group(1) or trigger.nick # Correcting other person vs self.
 
+    # Return if person corrected isnt in the lines dict
+    if trigger.sender not in willie.memory['find_lines'] or rnick not in willie.memory['find_lines'][trigger.sender]:
+        return;
+
     # only do something if there is conversation to work with
     search_dict = willie.memory['find_lines']
 
