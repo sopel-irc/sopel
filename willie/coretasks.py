@@ -111,11 +111,11 @@ def track_nicks(willie, trigger):
     new = trigger.group(1)
     
     for channel in willie.halfplus:
-        if old in willie.halfplus[channel]:
+        if old.lower() in willie.halfplus[channel]:
             willie.del_halfop(channel, old)
             willie.add_halfop(channel, new)
     for channel in willie.ops:
-        if old in willie.ops[channel]:
+        if old.lower() in willie.ops[channel]:
             willie.del_op(channel, old)
             willie.add_op(channel, new)
     
