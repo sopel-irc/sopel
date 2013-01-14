@@ -83,34 +83,25 @@ handle_names.thread = False
 
 def track_modes(willie, trigger):
     ''' Track usermode changes and keep our lists of ops up to date '''
-    line = re.findall('([\+\-][ahoqv]*)', willie.raw)
-    channel = re.search('(#\S+)', willie.raw)
-    if channel is None:
-        return #someone changed the bot's usermode, we don't care about that
-    channel = channel.group(1)
-    nicks = willie.raw.split(' ')[4:]
-    modes = []
-    for mode in line:
-        for char in mode[1:]:
-            if mode[0] == '+':
-                modes.append((char, True))
-            else:
-                modes.append((char, False))
-    if len(modes) == 0:
-        return #We don't care about these mode changes
-    for index in range(len(nicks)):
-        mode = modes[index]
-        nick = nicks[index]
-        if mode[0]=='h':
-            if mode[1] is True:
-                willie.add_halfop(channel, nick)
-            else:
-                willie.del_halfop(channel, nick)
-        elif mode[0] == 'o':
-            if mode[1] is True:
-                willie.add_op(channel, nick)
-            else:
-                willie.del_op(channel, nick)
+    # 0 is who set it, 1 is MODE. We don't need those.
+    line = willie.raw.split(' ')[2:]
+    
+    # If the first character of where the mode is being set isn't a #
+    # then it's a user mode, not a channel mode, so we'll ignore it.
+    if line[0][0] != '#':
+        return
+    channel, mode, nick = line
+    
+    if 'o' in mode or 'q' in mode: # Op or owner (for UnrealIRCd)
+        if mode[0] == '+':
+            willie.add_op(channel, nick)
+        else:
+            willie.del_op(channel, nick)
+    elif 'h' in mode: # Halfop
+        if mode[0] == '+':
+            willie.add_halfop(channel, nick)
+        else:
+            willie.del_halfop(channel, nick)
 track_modes.rule = r'(.*)'
 track_modes.event = 'MODE'
 
