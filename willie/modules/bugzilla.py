@@ -6,8 +6,9 @@ Licensed under the Eiffel Forum License 2.
 
 http://willie.dftba.net/
 """
-import json
+from lxml import etree
 import re
+from willie import web
 import urllib
 import urllib2
 
@@ -40,32 +41,28 @@ def setup(willie):
         willie.memory['url_exclude'] = exclude
 
 def show_bug(willie, trigger):
+    """Show information about a Bugzilla bug."""
     domain = trigger.group(1)
     if domain not in willie.config.bugzilla.domains:
         return
-    url = 'https://api-dev.%s/1.2/bug/%s' % trigger.groups()
-    header = {'Content-Type': 'application/json', 'Accept': 'application/json'}
-    response = urllib2.urlopen(urllib2.Request(url, headers=header))
-    data = json.loads(response.read())
+    url = 'https://%s%sctype=xml&%s' % trigger.groups()
+    data = web.get(url)
+    bug = etree.fromstring(data).find('bug')
     
     message = ('[BUGZILLA] Product: %s | Component: %s | Version: %s | ' +
         'Importance: %s |  Status: %s | Assigned to: %s | Reported: %s | ' +
         'Modified: %s')
     
-    if 'resolution' in data:
-        status = data['status'] + ' ' + data['resolution']
+    if bug.find('resolution') is not None:
+        status = bug.find('bug_status').text + ' ' + bug.find('resolution').text
     else:
-        status = data['status']
+        status = bug.find('bug_status').text
     
-    message = message % (data['product'], data['component'], data['version'], 
-        (data['priority'] + ' ' + data['severity']), # Importance
-        status, data['assigned_to']['name'], data['creation_time'], 
-        data['last_change_time'])
+    message = message % (bug.find('product').text, bug.find('component').text,
+        bug.find('version').text, 
+        (bug.find('priority').text + ' ' + bug.find('bug_severity').text), # Importance
+        status, bug.find('assigned_to').text, bug.find('creation_ts').text, 
+        bug.find('delta_ts').text)
     willie.say(message)
-show_bug.rule = r'.*https?://(\S+?)/show_bug.cgi\?\S*?id=(\d+).*'
-
-
-
-
-
+show_bug.rule = r'.*https?://(\S+?)(/show_bug.cgi\?\S*?)(id=\d+).*'
 
