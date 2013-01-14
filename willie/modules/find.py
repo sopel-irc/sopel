@@ -53,7 +53,9 @@ def findandreplace(willie, trigger):
 
     search_dict = willie.memory['find_lines']
     # only do something if there is conversation to work with
-    if rnick not in search_dict:
+    if trigger.sender not in search_dict:
+        return
+    if rnick not in search_dict[trigger.sender]:
         return
 
     sep = trigger.group(2)
