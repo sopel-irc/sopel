@@ -11,6 +11,8 @@ This module will fix spelling errors if someone corrects them
 using the sed notation (s///) commonly found in vi/vim.
 """
 
+import re
+
 def setup(willie):
     willie.memory['find_lines'] = dict()
     
