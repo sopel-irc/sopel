@@ -1,0 +1,48 @@
+.\" Man page for willie
+.TH Willie 1 "2013-15-01" "Linux" "Willie IRC Bot"
+
+.SH NAME
+willie - A highly customizable Internet Relay Chat bot
+
+.SH SYNOPSIS
+.\" Options to actually run / quit
+.B willie
+.RB [ \-q | \--quit ]
+.RB [ \-d | \--fork ]
+.RB [ \--quiet ]
+.RB [ -c
+.IR filename
+.RB |  \--config=
+.IR filename ]
+.\" Options to configure or get help
+.br
+.B willie
+.RB [ \-h | \--help ]
+.br
+.B willie
+.RB [ \-m | \--migrate ]
+.br
+.B willie
+.RB [ \-w | \--configure-all ]
+.RB [ \--configure-modules ]
+.RB [ \--configure-database ]
+
+.SH DESCRIPTION
+.B willie
+runs a bot that provides some usefull (and some useless) commands in one or more
+Internet Relay Chat channels. It reads configuration options, such as the
+network to connect to, channels to join, and more from a config file specified
+by the 
+.B -c
+option. If no config file is specified,
+.B ~/.willie/default.cfg
+is used. If the configuration file being used does not exist, a brief
+configuration wizard will be run to set up the basic options, and optionally set
+up a database for user data and any modules that may need configuration.
+.P
+In most cases, simply running 
+.B willie
+will be sufficient; the bot will start after initial configuration, and will run
+until it is told to quit through IRC.
+
+.\" TODO: OPTIONS, FILES, BUGS
