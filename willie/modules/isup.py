@@ -14,16 +14,21 @@ def isup(willie, trigger):
     site = trigger.group(2)
     if not site:
         return willie.reply("What site do you want to check?")
-    uri = 'http://www.isup.me/' + site
+
+    if site[:6] != 'http://' and site[:7] != 'https://':
+        if '://' in site:
+            protocol = site.split('://')[0] + '://'
+            return willie.reply("Try it again without the %s" % protocol)
+        else:
+            site = 'http://' + site
     try:
-        response = web.get(uri)
+        response = web.get(site)
     except Exception as e:
-        willie.say(site + ' is ' + str(e))
+        willie.say(site + ' looks down from here.')
         return
-    result = re.search('(?:<title>)(http://\S* Is )(Down|Up)',\
-                       response)
-    if result:
-        willie.say(site + ' is ' + result.group(2))
+
+    if response:
+        willie.say(site + ' looks fine to me.')
     else:
-        willie.say('Couldn\'t read the result from isup.me -- sorry!')
+        willie.say(site + ' is down from here.')
 isup.commands = ['isup']
