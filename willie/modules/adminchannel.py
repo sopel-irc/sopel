@@ -13,7 +13,7 @@ import re
 
 def setup(willie):
     #Having a db means pref's exists. Later, we can just use `if willie.db`.
-    if willie.db and not willie.db.preferences.hascolumn('topic_mask'):
+    if willie.db and not willie.db.preferences.has_columns('topic_mask'):
         willie.db.preferences.add_columns(['topic_mask'])
 
 def op(willie, trigger):
