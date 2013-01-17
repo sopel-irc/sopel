@@ -110,6 +110,14 @@ def track_nicks(willie, trigger):
     old = trigger.nick
     new = trigger.group(1)
     
+    # Give debug mssage, and PM the owner, if the bot's own nick changes.
+    if old == willie.nick:
+        privmsg = "Hi, I'm your bot, %s. Something has made my nick change. This can cause some problems for me, and make me do weird things. You'll probably want to restart me, and figure out what made that happen so you can stop it happening again. (Usually, it means you tried to give me a nick that's protected by NickServ.)" % willie.nick
+        debug_msg = "Nick changed by server. This can cause unexpected behavior. Please restart the bot."
+        willie.debug('[CORE]', debug_msg, 'always')
+        willie.msg(willie.config.core.owner, privmsg)
+        return
+
     for channel in willie.halfplus:
         if old.lower() in willie.halfplus[channel]:
             willie.del_halfop(channel, old)
@@ -156,7 +164,6 @@ def blocks(willie, trigger):
 
     masks = willie.config.core.host_blocks
     nicks = willie.config.core.nick_blocks
-    print nicks, masks
     text = trigger.group().split()
 
     if len(text) == 3 and text[1] == "list":
