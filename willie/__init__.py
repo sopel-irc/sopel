@@ -16,7 +16,7 @@ import bot
 import signal
 from tools import stderr
 
-__version__ = '3.1.2'
+__version__ = '3.1.3'
 
 def run(config):
     if config.core.delay is not None:
