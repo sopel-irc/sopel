@@ -139,6 +139,7 @@ def weather(willie, trigger):
     willie.say(u'%s: %s, %s, %s, %s'.encode('utf-8') %
         (location, cover, temp, pressure, wind))
 weather.commands = ['weather']
+weather.example = '.weather London'
 
 def update_woeid(willie, trigger):
     """Set your default weather location."""
@@ -159,6 +160,7 @@ def update_woeid(willie, trigger):
     else:
         willie.reply("I can't remember that; I don't have a database.")
 update_woeid.commands = ['setlocation', 'setwoeid']
+update_woeid.example = '.setlocation Columbus, OH'
 
 if __name__ == '__main__':
     print __doc__.strip()
