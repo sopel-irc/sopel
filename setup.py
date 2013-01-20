@@ -11,5 +11,5 @@ setup(name='willie',
       url='http://willie.dftba.net/',
       long_description="""Willie is a simple, lightweight, open source, easy-to-use IRC Utility bot, written in Python. It's designed to be easy to use, easy to run, and easy to make new features for. """,
       packages=['willie', 'willie.modules'],
-      scripts=['willie.py']
+      scripts=['scripts/willie']
      )
