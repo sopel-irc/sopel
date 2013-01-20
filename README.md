@@ -4,8 +4,9 @@ Willie is a simple, lightweight, open source, easy-to-use IRC Utility bot, writt
 
 #Installation
 
-Willie can be run directly from the source directory (simply run ``./willie.py``).  
-To install willie, simply run ``./setup.py`` install
+The easiest way is to simply run ``setup.py install``. Willie can also be run
+by copying ``scripts/willie`` to ``willie.py`` in the root of the source
+directory (i.e, the one with the ``scripts`` folder in it), and running that.
 
 #Making your own modules:
 
@@ -16,7 +17,11 @@ cd doc
 make html
 ```
 
-Place your module in the willie/modules/ directory and start Willie to load it.
+If you installed Willie (with ``setup.py`` or through your distro's package
+manager), the easiest place to put the module is in ``~/.willie/modules``, and
+then add a line to the ``[core]`` section of your config file saying 
+``extra = /home/yourname/.willie/modules``. If you're running straight from the
+source directory, you can just put it in the ``willie/modules`` subdirectory.
 
 #Command list and various user documentation:
 
