@@ -13,3 +13,5 @@ doc/build/*
 build/
 .pid-*
 willie.wiki/*
+willie.py
+*.pyo
