@@ -12,4 +12,6 @@ setup(name='willie',
       long_description="""Willie is a simple, lightweight, open source, easy-to-use IRC Utility bot, written in Python. It's designed to be easy to use, easy to run, and easy to make new features for. """,
       packages=['willie', 'willie.modules'],
       scripts=['scripts/willie']
+      license='Eiffel Forum License, version 2'
+      platforms='Linux x86, x86-64'
      )
