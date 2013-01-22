@@ -90,15 +90,24 @@ def track_modes(willie, trigger):
     # then it's a user mode, not a channel mode, so we'll ignore it.
     if line[0][0] != '#':
         return
-    channel, modes = line[:2]
+    channel, mode_sec = line[:2]
     nicks = line[2:]
+
+    # Break out the modes, because IRC allows e.g. MODE +aB-c foo bar baz
+    sign = ''
+    modes = []
+    for char in mode_sec:
+        if char == '+' or char == '-':
+            sign = char
+        else:
+            modes.append(sign + char)
     
     # Some basic checks for broken replies from server. Probably unnecessary.
-    if (len(modes) - 1) > len(nicks):
+    if len(modes) > len(nicks):
         willie.debug('core',
             'MODE recieved from server with more modes than nicks.', 'warning')
         modes = modes[:(len(nicks) + 1)]  # Try truncating, in case that works.
-    elif (len(modes) - 1) < len(nicks):
+    elif len(modes) < len(nicks):
         willie.debug('core',
             'MODE recieved from server with more nicks than modes.', 'warning')
         nicks = nicks[:(len(modes) - 1)]  # Try truncating, in case that works.
@@ -108,14 +117,14 @@ def track_modes(willie, trigger):
             'verbose')
         return  # Nothing to do here.
     
-    for nick, mode in zip(nicks, modes[1:]):
-        if 'o' in mode or 'q' in mode: # Op or owner (for UnrealIRCd)
-            if modes[0] == '+':
+    for nick, mode in zip(nicks, modes):
+        if mode[1] == 'o' or mode[1] == 'q': # Op or owner (for UnrealIRCd)
+            if mode[0] == '+':
                 willie.add_op(channel, nick)
             else:
                 willie.del_op(channel, nick)
-        elif 'h' in mode: # Halfop
-            if modes[0] == '+':
+        elif mode[1] == 'h': # Halfop
+            if mode[0] == '+':
                 willie.add_halfop(channel, nick)
             else:
                 willie.del_halfop(channel, nick)
