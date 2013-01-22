@@ -13,5 +13,6 @@ setup(name='willie',
       packages=['willie', 'willie.modules'],
       scripts=['scripts/willie'],
       license='Eiffel Forum License, version 2',
-      platforms='Linux x86, x86-64'
+      platforms='Linux x86, x86-64',
+      requires=['MySQLdb', 'feedparser', 'pytz', 'lxml', 'praw', 'enchant', 'tweepy']
      )
