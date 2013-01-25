@@ -32,7 +32,9 @@ def setup(willie):
         for domain in willie.config.bugzilla.domains:
             regex = re.compile('%s/show_bug.cgi\?\S*?id=(\d+)' % domain)
             regexes.append(regex)
-    
+    else:
+        return
+
     if not willie.memory.contains('url_exclude'):
         willie.memory['url_exclude'] = [regex]
     else:
