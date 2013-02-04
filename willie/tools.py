@@ -87,7 +87,6 @@ class Nick(unicode):
 
     def __eq__(self, other):
         if isinstance(other, Nick):
-            print self._lowered, other._lowered
             return self._lowered == other._lowered
         return self._lowered == Nick.lower(other)
 
