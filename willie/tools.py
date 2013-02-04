@@ -42,6 +42,58 @@ class Ddict(dict):
             self[key] = self.default()
         return dict.__getitem__(self, key)
 
+class Nick(unicode):
+    """
+    A `unicode` subclass which acts appropriately for an IRC nickname. When used
+    as normal `unicode` objects, case will be preserved. However, when comparing
+    two Nick objects, or comparing a Nick object with a `unicode` object, the
+    comparison will be case insensitive. This case insensitivity includes the
+    case convention conventions regarding `[]`, `{}`, `|`, and `\` described in
+    RFC 1459.
+    """
+    def __new__(cls, nick):
+        s = unicode.__new__(cls, nick)
+        s._lowered = Nick.lower(nick)
+        return s
+
+    @staticmethod
+    def lower(nick):
+        """Return `nick`, converted to lower-case per RFC 1459"""
+        if isinstance(nick, Nick):
+            return nick._lowered
+
+        l = nick.lower().replace('{', '[').replace('}', ']').replace('|', '\\')
+        return l
+
+    def __lt__(self, other):
+        if isinstance(other, Nick):
+            return self._lowered < other._lowered
+        return self._lowered < Nick.lower(other)
+
+    def __le__(self, other):
+        if isinstance(other, Nick):
+            return self._lowered <= other._lowered
+        return self._lowered <= Nick.lower(other)
+
+    def __gt__(self, other):
+        if isinstance(other, Nick):
+            return self._lowered > other._lowered
+        return self._lowered > Nick.lower(other)
+
+    def __ge__(self, other):
+        if isinstance(other, Nick):
+            return self._lowered >= other._lowered
+        return self._lowered >= Nick.lower(other)
+
+    def __eq__(self, other):
+        if isinstance(other, Nick):
+            print self._lowered, other._lowered
+            return self._lowered == other._lowered
+        return self._lowered == Nick.lower(other)
+
+    def __ne__(self, other):
+        return not (self == other)
+
 class OutputRedirect:
     ''' A simple object to replace stdout and stderr '''
     def __init__(self, logpath, stderr=False, quiet = False):
