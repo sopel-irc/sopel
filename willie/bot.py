@@ -334,8 +334,11 @@ class Willie(irc.Bot):
             setting ``mode -m`` on the channel ``#example``, args would be
             ``('#example', '-m')``
             """
-            s.admin = ((origin.nick in self.config.admins.split(','))
+            if self.config.has_option('core', 'admins') and self.config.admins:
+                s.admin = ((origin.nick in self.config.admins.split(','))
                        or origin.nick.lower() == self.config.owner.lower())
+            else:
+                s.admin = False
             """
             True if the nick which triggered the command is in Willie's admin
             list as defined in the config file.
