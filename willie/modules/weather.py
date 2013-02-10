@@ -41,26 +41,38 @@ def woeid_search(query):
     return first_result
 
 def get_cover(parsed):
-    condition = parsed.entries[0]['yweather_condition']
+    try:
+        condition = parsed.entries[0]['yweather_condition']
+    except KeyError:
+        return 'unknown'.encode('utf-8')
     text = condition['text']
     code = int(condition['code'])
     #TODO parse code to get those little icon thingies.
     return text.encode('utf-8')
 
 def get_temp(parsed):
-    condition = parsed.entries[0]['yweather_condition']
+    try:
+        condition = parsed.entries[0]['yweather_condition']
+    except KeyError:
+        return 'unknown'.encode('utf-8')
     temp = int(condition['temp'])
     f = round((temp * 1.8) + 32, 2)
     return (u'%d\u00B0C (%d\u00B0F)'.encode('utf-8') % (temp, f))
     
 def get_pressure(parsed):
-    pressure = parsed['feed']['yweather_atmosphere']['pressure']
+    try:
+        pressure = parsed['feed']['yweather_atmosphere']['pressure']
+    except KeyError:
+        return 'unknown'.encode('utf-8')
     millibar = float(pressure)
     inches = int(millibar / 33.7685)
     return ('%din (%dmb)' % (inches, int(millibar))).encode('utf-8')
 
 def get_wind(parsed):
-    wind_data = parsed['feed']['yweather_wind']
+    try:
+        wind_data = parsed['feed']['yweather_wind']
+    except KeyError:
+        return 'unknown'.encode('utf-8')
     kph = float(wind_data['speed'])
     speed = int(round(kph / 1.852, 0))
     degrees = int(wind_data['direction'])
@@ -129,6 +141,7 @@ def weather(willie, trigger):
     
     query = web.urlencode({'w': woeid, 'u': 'c'})
     url = 'http://weather.yahooapis.com/forecastrss?' + query
+    willie.say('DEBUG'+url)
     parsed = feedparser.parse(url)
     location = parsed['feed']['title'].encode('utf-8')
     
