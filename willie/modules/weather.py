@@ -141,7 +141,6 @@ def weather(willie, trigger):
     
     query = web.urlencode({'w': woeid, 'u': 'c'})
     url = 'http://weather.yahooapis.com/forecastrss?' + query
-    willie.say('DEBUG'+url)
     parsed = feedparser.parse(url)
     location = parsed['feed']['title'].encode('utf-8')
     
