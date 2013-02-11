@@ -58,6 +58,15 @@ def enumerate_modules(config):
 
 
 class Willie(irc.Bot):
+    NOLIMIT = 1
+    """
+    *Avalability: 3.2+*
+
+    Return value for ``callable``\s, which supresses rate limiting for that
+    call. That is, returning this value means the triggering user will not be
+    prevented from triggering the command again within the rate limit. This can
+    be used, for example, to allow a user to rety a failed command immediately.
+    """
     def __init__(self, config):
         irc.Bot.__init__(self, config.core)
         self.config = config
