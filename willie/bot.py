@@ -411,7 +411,7 @@ class Willie(irc.Bot):
             exit_code = func(willie, trigger)
         except Exception, e:
             self.error(origin, trigger)
-        if not exit_code:
+        if exit_code != Willie.NOLIMIT:
             self.times[nick][func] = time.time()
 
     def limit(self, origin, func):
