@@ -15,7 +15,7 @@ intended to serve that goal.
 Due to the high level of customization encouraged by this bot, there are a few
 different versions of it floating around. For this documentation, we will cover
 three: the original "phenny" by Sean B. Palmer the "jenni" fork by Michael
-Yanovich, and the "Willie" fork by Edward Powell et al. While all recieve
+Yanovich, and the "Willie" fork by Edward Powell et al. While all receive
 periodic updates, the above lists them in a generally ascending order of
 recentness.
 
@@ -30,16 +30,17 @@ Getting started: Your functions, ``willie``, and ``line``
 =========================================================
 
 At its most basic, writing a Willie module involves creating a Python file with
-some number of functions in it. Each of these functions will be passed a "Willie"
-object ("Phenny" in *1.x*) and a "Trigger" object (CommandInput in *1.x* and
-*2.x*). By convention, these are named ``phenny`` and ``input`` in *1.x*,
-``jenni`` and ``input`` in *2.x*, and ``willie`` and ``trigger`` in *3.x*. For
-the purposes of this guide, the *3.x* names will be used.
+some number of functions in it. Each of these functions will be passed a 
+``Willie`` object (``Phenny`` in *1.x* and ``Jenni`` in *2.x*) and a ``Trigger``
+object (``CommandInput`` in *1.x* and *2.x*). By convention, these are named
+``phenny`` and ``input`` in *1.x*, ``jenni`` and ``input`` in *2.x*, and
+``willie`` and ``trigger`` in *3.x*. For the purposes of this guide, the *3.x*
+names will be used.
 
 Your modules
 ------------
 
-A Willie module contains one or more ``callables``. It may optionally contain a
+A Willie module contains one or more ``callable``\s. It may optionally contain a
 ``configure`` or ``setup`` function. ``callable``\s are given a number of
 attributes, which determine when they will be executed. Syntactically, this is
 done at the same indentation level as the function's ``def`` line, following the
@@ -54,6 +55,14 @@ last line of the function.
     with a ``Willie`` object and a ``Trigger`` object , as noted above. Usually,
     methods of the Willie object will be used in reply to the trigger, but this
     isn't a requirement.
+
+    The return value of a callable will usually be ``None``. This doesn't need
+    to be explicit; if the function has no ``return`` statement (or simply
+    uses ``return`` with no arguments), ``None`` will be returned. In *3.2+*,
+    the return value can be a constant defined by the ``Willie`` class; in prior
+    versions return values were ignored. Returning a constant instructs the bot
+    to perform some action after the ``callable``'s execution. For example,
+    returning ``NOLIMIT`` will suspend rate limiting on that call.
     
     Note that the name can, and should, be anything - it doesn't need to be called
     callable.
