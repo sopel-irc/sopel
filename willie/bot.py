@@ -58,6 +58,15 @@ def enumerate_modules(config):
 
 
 class Willie(irc.Bot):
+    NOLIMIT = 1
+    """
+    *Avalability: 3.2+*
+
+    Return value for ``callable``\s, which supresses rate limiting for that
+    call. That is, returning this value means the triggering user will not be
+    prevented from triggering the command again within the rate limit. This can
+    be used, for example, to allow a user to rety a failed command immediately.
+    """
     def __init__(self, config):
         irc.Bot.__init__(self, config.core)
         self.config = config
@@ -334,8 +343,11 @@ class Willie(irc.Bot):
             setting ``mode -m`` on the channel ``#example``, args would be
             ``('#example', '-m')``
             """
-            s.admin = ((origin.nick in self.config.admins.split(','))
+            if self.config.has_option('core', 'admins') and self.config.admins:
+                s.admin = ((origin.nick in self.config.admins.split(','))
                        or origin.nick.lower() == self.config.owner.lower())
+            else:
+                s.admin = False
             """
             True if the nick which triggered the command is in Willie's admin
             list as defined in the config file.
@@ -392,13 +404,15 @@ class Willie(irc.Bot):
                         self.debug('bot.py', "%s prevented from using %s in %s: %d < %d" % (trigger.nick, func.__name__, trigger.sender, timediff, func.rate), "warning")
                         return
         else:
-            self.times[nick] = dict()
-        self.times[nick][func] = time.time()
+            fail = self.times[nick] = dict()
 
+        exit_code = None
         try:
-            func(willie, trigger)
+            exit_code = func(willie, trigger)
         except Exception, e:
             self.error(origin, trigger)
+        if exit_code != Willie.NOLIMIT:
+            self.times[nick][func] = time.time()
 
     def limit(self, origin, func):
         if origin.sender and origin.sender.startswith('#'):

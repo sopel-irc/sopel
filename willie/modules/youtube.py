@@ -149,7 +149,7 @@ def ytsearch(willie, trigger):
         willie.say("Sorry, I couldn't find the video you are looking for")
         return
     message = '[YT Search] Title: ' +video_info['title']+ \
-              ' | Author: ' +video_info['uploader']+ \
+              ' | Uploader: ' +video_info['uploader']+ \
               ' | Duration: ' +video_info['length']+ \
               ' | Uploaded: ' +video_info['uploaded']+ \
               ' | Views: ' +video_info['views']+ \

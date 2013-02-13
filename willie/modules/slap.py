@@ -14,7 +14,7 @@ def slap(willie, trigger):
     if text[1] == willie.nick:
         if (trigger.nick not in willie.config.admins):
             text[1] = trigger.nick
-        else: text[1] = 'herself'
+        else: text[1] = 'itself'
     if text[1] in willie.config.admins:
         if (trigger.nick not in willie.config.admins):
             text[1] = trigger.nick
