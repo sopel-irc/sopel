@@ -345,8 +345,8 @@ class Bot(asynchat.async_chat):
             args = argstr.split()
             args.append(text)
         else:
-            text = ''
             args = line.split()
+            text = args[-1]
 
         if args[0] == 'PING':
             self.write(('PONG', text))
