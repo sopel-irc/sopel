@@ -70,7 +70,7 @@ def format(word, definitions, number=2):
             result += ', '.join(n)
     return result.strip(' .,')
 
-def w(willie, trigger):
+def wiktionary(willie, trigger):
     """Look up a word on Wiktionary."""
     word = trigger.group(2)
     if word is None:
@@ -91,8 +91,8 @@ def w(willie, trigger):
     if len(result) > 300:
         result = result[:295] + '[...]'
     willie.say(result)
-w.commands = ['w']
-w.example = '.w bailiwick'
+wiktionary.commands = ['wt', 'define', 'dict']
+wiktionary.example = '.wt bailiwick'
 
 if __name__ == '__main__':
     print __doc__.strip()
