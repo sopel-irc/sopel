@@ -21,8 +21,7 @@ def configure(config):
     | domains | bugzilla.redhat.com,bugzilla.mozilla.org | A list of Bugzilla issue tracker domains |
     """
     if config.option('Show extra information about Bugzilla issues', False):
-        if not config.has_section('url'):
-            config.add_section('url')
+        config.add_section('bugzilla')
         config.add_list('bugzilla', 'domains', 'Enter the domains of the Bugzillas you want extra information from. (e.g. bugzilla.mozilla.org)',
             'Domain:')
 
