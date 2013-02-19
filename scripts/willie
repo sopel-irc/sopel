@@ -25,9 +25,9 @@ except ImportError:
     import tools
     from tools import stderr, stdout
 
-willie_dotdir = os.path.expanduser('~/.willie')
-jenni_dotdir = os.path.expanduser('~/.jenni')
-phenny_dotdir = os.path.expanduser('~/.phenny')
+willie_dotdir = os.path.join(os.path.expanduser('~'), '.willie')
+jenni_dotdir = os.path.join(os.path.expanduser('~'), '.jenni')
+phenny_dotdir = os.path.join(os.path.expanduser('~'), '.phenny')
 dotdir = willie_dotdir
 
 

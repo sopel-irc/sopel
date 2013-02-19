@@ -343,17 +343,18 @@ class Willie(irc.Bot):
             setting ``mode -m`` on the channel ``#example``, args would be
             ``('#example', '-m')``
             """
-            if self.config.has_option('core', 'admins') and self.config.admins:
-                s.admin = ((origin.nick in self.config.admins.split(','))
-                       or origin.nick.lower() == self.config.owner.lower())
+            if len(self.config.admins)>0:
+                s.admin = (origin.nick in self.config.admins.split(','))
             else:
                 s.admin = False
+
             """
             True if the nick which triggered the command is in Willie's admin
             list as defined in the config file.
             """
 
-            if not s.admin:
+            # Support specifying admins by hostnames
+            if not s.admin and len(self.config.admins)>0:
                 for each_admin in self.config.admins.split(','):
                     re_admin = re.compile(each_admin)
                     if re_admin.findall(origin.host):
@@ -366,6 +367,9 @@ class Willie(irc.Bot):
             s.owner = origin.nick + '@' + origin.host == self.config.owner
             if not s.owner:
                 s.owner = (origin.nick == self.config.owner)
+
+            # Bot owner inherits all the admin rights, therefor is considered admin
+            s.admin = s.admin or s.owner
 
             s.host = origin.host
             if s.sender is not s.nick:  # no ops in PM
