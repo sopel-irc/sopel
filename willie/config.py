@@ -286,16 +286,12 @@ def wizard(section, config=None):
         config._modules()        
 
 def check_dir(create=True):
-    dotdir = os.path.expanduser('~/.willie')
-    if not os.path.isdir(dotdir):
-        if os.path.isdir(os.path.expanduser('~/.jenni')):
-            dotdir = os.path.expanduser('~/.jenni')
-        elif os.path.isdir(os.path.expanduser('~/.phenny')):
-            dotdir = os.path.expanduser('~/.phenny')
+    dotdir = os.path.join(os.path.expanduser('~'), '.willie')
     if not os.path.isdir(dotdir):
         if create:
             print 'Creating a config directory at ~/.willie...'
-            try: os.mkdir(dotdir)
+            try: 
+                os.makedirs(dotdir)
             except Exception, e:
                 print >> sys.stderr, 'There was a problem creating %s:' % dotdir
                 print >> sys.stderr, e.__class__, str(e)
