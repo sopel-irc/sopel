@@ -51,7 +51,7 @@ def show_bug(willie, trigger):
     data = web.get(url)
     bug = etree.fromstring(data).find('bug')
     
-    message = ('[BUGZILLA] Product: %s | Component: %s | Version: %s | ' +
+    message = ('[BUGZILLA] %s | Product: %s | Component: %s | Version: %s | ' +
         'Importance: %s |  Status: %s | Assigned to: %s | Reported: %s | ' +
         'Modified: %s')
     
@@ -60,8 +60,8 @@ def show_bug(willie, trigger):
     else:
         status = bug.find('bug_status').text
     
-    message = message % (bug.find('product').text, bug.find('component').text,
-        bug.find('version').text, 
+    message = message % (bug.find('short_desc').text, bug.find('product').text,
+        bug.find('component').text, bug.find('version').text, 
         (bug.find('priority').text + ' ' + bug.find('bug_severity').text), # Importance
         status, bug.find('assigned_to').text, bug.find('creation_ts').text, 
         bug.find('delta_ts').text)
