@@ -21,7 +21,7 @@ def text(html):
     text = text.replace('(transitive', '(trans.')
     return text
 
-def wiktionary(word):
+def wikt(word):
     bytes = web.get(uri % web.quote(word.encode('utf-8')))
     bytes = r_ul.sub('', bytes)
 
@@ -77,7 +77,7 @@ def wiktionary(willie, trigger):
         willie.reply('You must tell me what to look up!')
         return
 
-    etymology, definitions = wiktionary(word)
+    etymology, definitions = wikt(word)
     if not definitions:
         willie.say("Couldn't get any definitions for %s." % word)
         return
