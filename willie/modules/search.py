@@ -143,6 +143,9 @@ def duck_search(query):
     if m: return web.decode(m.group(1))
 
 def duck_api(query):
+    if '!bang' in query.lower():
+        return 'https://duckduckgo.com/bang.html'
+
     uri = web.quote(query)
     uri = 'http://api.duckduckgo.com/?q=%s&format=json&no_html=1&no_redirect=1'%query
     results = json.loads(web.get(uri))
