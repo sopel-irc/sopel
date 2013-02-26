@@ -36,17 +36,18 @@ def format_thousands(integer):
 def gettweet(willie, trigger):
     """Show the last tweet by the given user"""
     try:
-        auth = tweepy.OAuthHandler(willie.config.twitter.consumer_key, willie.twitter.config.consumer_secret)
+        auth = tweepy.OAuthHandler(willie.config.twitter.consumer_key, willie.config.twitter.consumer_secret)
         auth.set_access_token(willie.config.twitter.access_token, willie.config.twitter.access_token_secret)
         api = tweepy.API(auth)
-        
+
         twituser = trigger.group(2)
         twituser = str(twituser)
 
         statuses = api.user_timeline(twituser)
         recent = [s.text for s in statuses][0]
-        #willie.say("<" + twituser + "> " + unicode(recent))
-        if twituser[0] != '@': twituser = '@' + twituser
+        # #willie.say("<" + twituser + "> " + unicode(recent))
+        if twituser[0] != '@':
+            twituser = '@' + twituser
         willie.say(twituser + ": " + unicode(recent))
     except:
         willie.reply("You have inputted an invalid user.")
@@ -60,7 +61,7 @@ def f_info(willie, trigger):
         auth = tweepy.OAuthHandler(willie.config.twitter.consumer_key, willie.config.twitter.consumer_secret)
         auth.set_access_token(willie.config.twitter.access_token, willie.config.twitter.access_token_secret)
         api = tweepy.API(auth)
-        
+
         twituser = trigger.group(2)
         twituser = str(twituser)
 
@@ -85,9 +86,9 @@ def f_update(willie, trigger):
         auth = tweepy.OAuthHandler(willie.config.twitter.consumer_key, willie.config.twitter.consumer_secret)
         auth.set_access_token(willie.config.twitter.access_token, willie.config.twitter.access_token_secret)
         api = tweepy.API(auth)
-        
+
         print api.me().name
-        
+
         update = str(trigger.group(2)) + " ^" + trigger.nick
         if len(update) <= 140:
             api.update_status(update)
@@ -101,9 +102,9 @@ f_update.example = '.tweet Hello World!'
 
 def f_reply(willie, trigger):
     auth = tweepy.OAuthHandler(willie.config.twitter.consumer_key, willie.config.twitter.consumer_secret)
-    auth.set_access_token(access_token, access_token_secret)
+    auth.set_access_token(willie.config.twitter.access_token, willie.config.twitter.access_token_secret)
     api = tweepy.API(auth)
-    
+
     incoming = str(trigger.group(2))
     incoming = incoming.split()
     statusid = incoming[0]
