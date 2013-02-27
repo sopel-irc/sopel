@@ -43,12 +43,15 @@ import imp
 from textwrap import dedent as trim
 from bot import enumerate_modules
 
+
 class ConfigurationError(Exception):
     """ Exception type for configuration errors """
-    def __init__(self, value):  
+    def __init__(self, value):
         self.value = value
+
     def __str__(self):
         return 'ConfigurationError: %s' % self.value
+
 
 class Config(object):
     def __init__(self, filename, load=True, ignore_errors=False):
@@ -57,7 +60,7 @@ class Config(object):
         with the configuration, and is the file which will be written if write()
         is called. If load is not given or True, the configuration object will
         load the attributes from the file at filename.
-        
+
         A few default values will be set here if they are not defined in the
         config file, or a config file is not loaded. They are documented below.
         """
@@ -84,7 +87,8 @@ class Config(object):
             if not self.parser.has_option('core', 'user'):
                 self.parser.set('core', 'user', 'willie')
             if not self.parser.has_option('core', 'name'):
-                self.parser.set('core', 'name', 'Willie Embosbot, http://willie.dftba.net')
+                self.parser.set('core', 'name',
+                                'Willie Embosbot, http://willie.dftba.net')
             if not self.parser.has_option('core', 'prefix'):
                 self.parser.set('core', 'prefix', r'\.')
             if not self.parser.has_option('core', 'admins'):
@@ -100,7 +104,9 @@ class Config(object):
         cfgfile.close()
 
     def add_section(self, name):
-        """ Add a section to the config file, returns ``False`` if already exists"""
+        """
+        Add a section to the config file, returns ``False`` if already exists.
+        """
         try:
             return self.parser.add_section(name)
         except ConfigParser.DuplicateSectionError:
@@ -109,13 +115,16 @@ class Config(object):
     def has_option(self, section, name):
         """ Check if option ``name`` exists under section ``section`` """
         return self.parser.has_option(section, name)
-        
+
     def has_section(self, name):
         """ Check if section ``name`` exists """
         return self.parser.has_section(name)
 
     class ConfigSection(object):
-        """Represents a section of the config file, contains all keys in the section as attributes"""
+        """
+        Represents a section of the config file, contains all keys in the
+        section as attributes.
+        """
         def __init__(self, name, items, parent):
             object.__setattr__(self, '_name', name)
             object.__setattr__(self, '_parent', parent)
@@ -125,7 +134,7 @@ class Config(object):
                     if value.lower() == 'false':
                         value = False
                     object.__setattr__(self, item[0], value)
-        
+
         def __getattr__(self, name):
             return None
 
@@ -139,60 +148,63 @@ class Config(object):
         """"""
         if name in self.parser.sections():
             items = self.parser.items(name)
-            section = self.ConfigSection(name, items, self) #Return a section
+            section = self.ConfigSection(name, items, self)  # Return a section
             setattr(self, name, section)
             return section
         elif self.parser.has_option('core', name):
-            return self.parser.get('core', name) #For backwards compatibility
+            return self.parser.get('core', name)  # For backwards compatibility
         else:
-            raise AttributeError("%r object has no attribute %r" % (type(self).__name__, name))
+            raise AttributeError("%r object has no attribute %r"
+                                 % (type(self).__name__, name))
 
-
-    def interactive_add(self, section, option, prompt, default=None, ispass=False):
+    def interactive_add(self, section, option, prompt, default=None,
+                        ispass=False):
         """
-        Ask user in terminal for the value to assign to ``option`` under ``section``. If ``default``
-        is passed, it will be shown as the default value in the prompt. If
-        ``option`` is already defined in ``section``, it will be used instead of ``default``,
-        regardless of wheather ``default`` is passed.
+        Ask user in terminal for the value to assign to ``option`` under
+        ``section``. If ``default`` is passed, it will be shown as the default
+        value in the prompt. If ``option`` is already defined in ``section``,
+        it will be used instead of ``default``, regardless of wheather
+        ``default`` is passed.
         """
         if not self.parser.has_section(section):
             self.parser.add_section(section)
         if self.parser.has_option(section, option):
             atr = self.parser.get(section, option)
-            if ispass == True:
-                value = getpass.getpass(prompt+' [%s]: ' % atr) or atr
+            if ispass:
+                value = getpass.getpass(prompt + ' [%s]: ' % atr) or atr
                 self.parser.set(section, option, value)
             else:
-                value = raw_input(prompt+' [%s]: ' % atr) or atr
+                value = raw_input(prompt + ' [%s]: ' % atr) or atr
                 self.parser.set(section, option, value)
         elif default:
-            if ispass == True:
-                value = getpass.getpass(prompt+' [%s]: ' % default) or default
+            if ispass:
+                value = getpass.getpass(prompt + ' [%s]: ' % default) or default
                 self.parser.set(section, option, value)
             else:
-                value = raw_input(prompt+' [%s]: ' % default) or default
+                value = raw_input(prompt + ' [%s]: ' % default) or default
                 self.parser.set(section, option, value)
         else:
             value = ''
             while not value:
-                if ispass == True:
-                    value = getpass.getpass(prompt+': ')
+                if ispass:
+                    value = getpass.getpass(prompt + ': ')
                 else:
-                    value = raw_input(prompt+': ')
+                    value = raw_input(prompt + ': ')
             self.parser.set(section, option, value)
 
     def add_list(self, section, option, message, prompt):
         """
-        Ask user in terminal for a list to assign to ``option``. If 
-        ``option`` is already defined under ``section``, show the user the current values and
-        ask if the user would like to keep them. If so, additional values can be
-        entered. 
+        Ask user in terminal for a list to assign to ``option``. If
+        ``option`` is already defined under ``section``, show the user the
+        current values and ask if the user would like to keep them. If so,
+        additional values can be entered.
         """
         print message
         lst = []
-        if self.parser.has_option(section, option) and self.parser.get(section, option):
-            m = "You currently have "+ self.parser.get(section, option)
-            if self.option(m+'. Would you like to keep them', True):
+        if self.parser.has_option(section, option) and self.parser.get(section,
+                                                                       option):
+            m = "You currently have " + self.parser.get(section, option)
+            if self.option(m + '. Would you like to keep them', True):
                 lst = self.parser.get(section, option)
         mem = raw_input(prompt)
         while mem:
@@ -215,7 +227,7 @@ class Config(object):
             default = self.parser.getboolean(section, option)
         answer = self.option(question, default)
         self.parser.set(section, option, str(answer))
-        
+
     def option(self, question, default=False):
         """
         Show user in terminal a "y/n" prompt, and return true or false based on
@@ -224,34 +236,37 @@ class Config(object):
         question, but without a question mark at the end.
         """
         d = 'n'
-        if default: 
+        if default:
             d = 'y'
-        ans = raw_input(question+' (y/n)? ['+d+']')
-        if not ans: 
+        ans = raw_input(question + ' (y/n)? [' + d + ']')
+        if not ans:
             ans = d
         return (ans is 'y' or ans is 'Y')
-    
+
     def _core(self):
-        self.interactive_add('core', 'nick', 'Enter the nickname for your bot', 'Willie')
-        self.interactive_add('core', 'host', 'Enter the server to connect to', 'irc.dftba.net')
+        self.interactive_add('core', 'nick', 'Enter the nickname for your bot',
+                             'Willie')
+        self.interactive_add('core', 'host', 'Enter the server to connect to',
+                             'irc.dftba.net')
         self.add_option('core', 'use_ssl', 'Should the bot connect with SSL')
         if self.use_ssl == 'True':
             default_port = '6697'
         else:
             default_port = '6667'
-        self.interactive_add('core', 'port', 'Enter the port to connect on', default_port)
+        self.interactive_add('core', 'port', 'Enter the port to connect on',
+                             default_port)
         self.interactive_add('core', 'owner', "Enter your own IRC name (or that of the bot's owner)")
-        c='Enter the channels to connect to by default, one at a time. When done, hit enter again.'
+        c = 'Enter the channels to connect to by default, one at a time. When done, hit enter again.'
         self.add_list('core', 'channels', c, 'Channel:')
 
     def _db(self):
         db.configure(self)
-    
+
     def _modules(self):
         home = os.getcwd()
         modules_dir = os.path.join(home, 'modules')
         filenames = enumerate_modules(self)
-        os.sys.path.insert(0,modules_dir) 
+        os.sys.path.insert(0, modules_dir)
         for filename in filenames:
             name = os.path.basename(filename)[:-3]
             if self.has_option('core', 'exclude') and name in self.exclude:
@@ -259,7 +274,8 @@ class Config(object):
             try:
                 module = imp.load_source(name, filename)
             except Exception, e:
-                print >> sys.stderr, "Error loading %s: %s (in config.py)" % (name, e)
+                print >> sys.stderr, ("Error loading %s: %s (in config.py)"
+                                      % (name, e))
             else:
                 if hasattr(module, 'configure'):
                     module.configure(self)
@@ -267,7 +283,7 @@ class Config(object):
 
 def wizard(section, config=None):
     dotdir = os.path.expanduser('~/.willie')
-    configpath = os.path.join(dotdir, (config or 'default')+'.cfg')
+    configpath = os.path.join(dotdir, (config or 'default') + '.cfg')
     if section == 'all':
         create_config(configpath)
     elif section == 'db':
@@ -283,14 +299,15 @@ def wizard(section, config=None):
             print "No config file found. Please make one before configuring these options."
             sys.exit(1)
         config = Config(configpath, True)
-        config._modules()        
+        config._modules()
+
 
 def check_dir(create=True):
     dotdir = os.path.join(os.path.expanduser('~'), '.willie')
     if not os.path.isdir(dotdir):
         if create:
             print 'Creating a config directory at ~/.willie...'
-            try: 
+            try:
                 os.makedirs(dotdir)
             except Exception, e:
                 print >> sys.stderr, 'There was a problem creating %s:' % dotdir
@@ -300,6 +317,7 @@ def check_dir(create=True):
         else:
             print "No config file found. Please make one before configuring these options."
             sys.exit(1)
+
 
 def create_config(configpath):
     check_dir()
@@ -320,4 +338,3 @@ def create_config(configpath):
 
 if __name__ == '__main__':
     main()
-
