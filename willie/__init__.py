@@ -10,7 +10,10 @@ Licensed under the Eiffel Forum License 2.
 http://willie.dftba.net/
 """
 
-import sys, os, time, threading, signal
+import sys
+import os
+import time
+import threading
 import traceback
 import bot
 import signal
@@ -18,11 +21,13 @@ from tools import stderr
 
 __version__ = '3.1.3'
 
+
 def run(config):
     if config.core.delay is not None:
         delay = config.core.delay
-    else: 
+    else:
         delay = 20
+
     def signal_handler(sig, frame):
         if sig == signal.SIGUSR1:
             stderr('Got quit signal, shutting down.')

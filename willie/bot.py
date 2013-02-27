@@ -74,14 +74,14 @@ class Willie(irc.Bot):
         self.doc = {}
         """
         *Removed in 3.1.2*
-        
+
         A dictionary of module functions to their docstring and example, if
         declared. As of 3.1.2, this dict will be empty, and not updated.
         """
         self.stats = {}
         """
-        A dictionary which maps a tuple of a function name and where it was used
-        to the nuber of times it was used there.
+        A dictionary which maps a tuple of a function name and where it was
+        used to the nuber of times it was used there.
         """
         self.times = {}
         """
@@ -132,10 +132,10 @@ class Willie(irc.Bot):
         """
         Availability: 3.1+
 
-        A simple thread-safe dict implementation. In order to prevent exceptions
-        when iterating over the values and changing them at the same time from
-        different threads, we use a blocking lock on ``__setitem__`` and
-        ``contains``.
+        A simple thread-safe dict implementation. In order to prevent
+        exceptions when iterating over the values and changing them at the same
+        time from different threads, we use a blocking lock on ``__setitem__``
+        and ``contains``.
         """
         def __init__(self, *args):
             dict.__init__(self, *args)
@@ -185,7 +185,8 @@ class Willie(irc.Bot):
                     modules.append(name)
                 except Exception, e:
                     error_count = error_count + 1
-                    stderr("Error in %s setup procedure: %s (in bot.py)" % (name, e))
+                    stderr("Error in %s setup procedure: %s (in bot.py)"
+                           % (name, e))
 
         if modules:
             stderr('\n\nRegistered %d modules,' % (len(modules) - 1))
@@ -343,7 +344,7 @@ class Willie(irc.Bot):
             setting ``mode -m`` on the channel ``#example``, args would be
             ``('#example', '-m')``
             """
-            if len(self.config.admins)>0:
+            if len(self.config.admins) > 0:
                 s.admin = (origin.nick in self.config.admins.split(','))
             else:
                 s.admin = False
@@ -354,7 +355,7 @@ class Willie(irc.Bot):
             """
 
             # Support specifying admins by hostnames
-            if not s.admin and len(self.config.admins)>0:
+            if not s.admin and len(self.config.admins) > 0:
                 for each_admin in self.config.admins.split(','):
                     re_admin = re.compile(each_admin)
                     if re_admin.findall(origin.host):
@@ -368,7 +369,8 @@ class Willie(irc.Bot):
             if not s.owner:
                 s.owner = (origin.nick == self.config.owner)
 
-            # Bot owner inherits all the admin rights, therefor is considered admin
+            # Bot owner inherits all the admin rights, therefore is considered
+            # admin
             s.admin = s.admin or s.owner
 
             s.host = origin.host
@@ -389,7 +391,8 @@ class Willie(irc.Bot):
                 List of channel half-operators in the channel the message was
                 recived in
                 """
-                s.isop = (s.nick.lower() in s.ops or s.nick.lower() in s.halfplus)
+                s.isop = (s.nick.lower() in s.ops or
+                          s.nick.lower() in s.halfplus)
                 """True if the user is half-op or an op"""
             else:
                 s.isop = False
@@ -405,7 +408,11 @@ class Willie(irc.Bot):
                     timediff = time.time() - self.times[nick][func]
                     if timediff < func.rate:
                         self.times[nick][func] = time.time()
-                        self.debug('bot.py', "%s prevented from using %s in %s: %d < %d" % (trigger.nick, func.__name__, trigger.sender, timediff, func.rate), "warning")
+                        self.debug('bot.py',
+                                   "%s prevented from using %s in %s: %d < %d"
+                                   % (trigger.nick, func.__name__,
+                                      trigger.sender, timediff, func.rate),
+                                   "warning")
                         return
         else:
             fail = self.times[nick] = dict()
@@ -445,7 +452,8 @@ class Willie(irc.Bot):
                             continue
 
                         willie = self.WillieWrapper(self, origin)
-                        trigger = self.Trigger(text, origin, bytes, match, event, args, self)
+                        trigger = self.Trigger(text, origin, bytes, match,
+                                               event, args, self)
 
                         if self.config.core.other_bots is not None:
                             if trigger.nick in self.config.other_bots.split(','):
@@ -474,9 +482,9 @@ class Willie(irc.Bot):
                                     continue
                                 re_temp = re.compile(nick)
                                 if (re_temp.findall(trigger.nick)
-                                    or nick in trigger.nick):
+                                        or nick in trigger.nick):
                                     return
-                        
+
                         if func.thread:
                             targs = (func, origin, willie, trigger)
                             t = threading.Thread(target=self.call, args=targs)
@@ -491,8 +499,8 @@ class Willie(irc.Bot):
         if not hasattr(self.config, 'verbose') or not self.config.verbose:
             self.config.verbose = 'warning'
         if (not hasattr(self.config, 'debug_target')
-              or not (self.config.debug_target == 'stdio'
-              or self.config.debug_target.startswith('#'))):
+                or not (self.config.debug_target == 'stdio'
+                        or self.config.debug_target.startswith('#'))):
             debug_target = 'stdio'
         else:
             debug_target = self.config.debug_target
@@ -505,7 +513,8 @@ class Willie(irc.Bot):
                     self.msg(debug_target, debug_msg)
                 return True
         elif level == 'warning':
-            if self.config.verbose == 'verbose' or self.config.verbose == 'warning':
+            if (self.config.verbose == 'verbose'
+                    or self.config.verbose == 'warning'):
                 if (debug_target == 'stdio'):
                     print debug_msg
                 else:
