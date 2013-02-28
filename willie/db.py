@@ -582,7 +582,7 @@ def configure(config):
         'What type of database would you like to use? (mysql/sqlite)', 'mysql')
         
     if config.db.userdb_type == 'sqlite':
-        config.interactive_add('core', 'userdb_file','Location for the database file')
+        config.interactive_add('db', 'userdb_file','Location for the database file')
         
     elif config.db.userdb_type == 'mysql':
         config.interactive_add('db', 'userdb_host', "Enter the MySQL hostname", 'localhost')
