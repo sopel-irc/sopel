@@ -53,42 +53,43 @@ class Nick(unicode):
     """
     def __new__(cls, nick):
         s = unicode.__new__(cls, nick)
-        s._lowered = Nick.lower(nick)
+        s._lowered = Nick._lower(nick)
         return s
 
-    @staticmethod
-    def lower(nick):
+    def lower(self):
         """Return `nick`, converted to lower-case per RFC 1459"""
-        if isinstance(nick, Nick):
-            return nick._lowered
+        return nick._lowered
 
+    @staticmethod
+    def _lower(nick):
+        """Returns `nick` in lower case per RFC 1459"""
         l = nick.lower().replace('{', '[').replace('}', ']').replace('|', '\\')
         return l
 
     def __lt__(self, other):
         if isinstance(other, Nick):
             return self._lowered < other._lowered
-        return self._lowered < Nick.lower(other)
+        return self._lowered < Nick._lower(other)
 
     def __le__(self, other):
         if isinstance(other, Nick):
             return self._lowered <= other._lowered
-        return self._lowered <= Nick.lower(other)
+        return self._lowered <= Nick._lower(other)
 
     def __gt__(self, other):
         if isinstance(other, Nick):
             return self._lowered > other._lowered
-        return self._lowered > Nick.lower(other)
+        return self._lowered > Nick._lower(other)
 
     def __ge__(self, other):
         if isinstance(other, Nick):
             return self._lowered >= other._lowered
-        return self._lowered >= Nick.lower(other)
+        return self._lowered >= Nick._lower(other)
 
     def __eq__(self, other):
         if isinstance(other, Nick):
             return self._lowered == other._lowered
-        return self._lowered == Nick.lower(other)
+        return self._lowered == Nick._lower(other)
 
     def __ne__(self, other):
         return not (self == other)
