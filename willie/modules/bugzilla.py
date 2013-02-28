@@ -15,7 +15,7 @@ import urllib2
 
 def configure(config):
     """
-    
+
     | [bugzilla] | example | purpose |
     | ---- | ------- | ------- |
     | domains | bugzilla.redhat.com,bugzilla.mozilla.org | A list of Bugzilla issue tracker domains |
@@ -23,7 +23,8 @@ def configure(config):
     if config.option('Show extra information about Bugzilla issues', False):
         config.add_section('bugzilla')
         config.add_list('bugzilla', 'domains', 'Enter the domains of the Bugzillas you want extra information from. (e.g. bugzilla.mozilla.org)',
-            'Domain:')
+                        'Domain:')
+
 
 def setup(willie):
     regexes = []
@@ -41,6 +42,7 @@ def setup(willie):
         exclude.extend(regexes)
         willie.memory['url_exclude'] = exclude
 
+
 def show_bug(willie, trigger):
     """Show information about a Bugzilla bug."""
     domain = trigger.group(1)
@@ -49,21 +51,21 @@ def show_bug(willie, trigger):
     url = 'https://%s%sctype=xml&%s' % trigger.groups()
     data = web.get(url)
     bug = etree.fromstring(data).find('bug')
-    
+
     message = ('[BUGZILLA] %s | Product: %s | Component: %s | Version: %s | ' +
-        'Importance: %s |  Status: %s | Assigned to: %s | Reported: %s | ' +
-        'Modified: %s')
-    
+               'Importance: %s |  Status: %s | Assigned to: %s | ' +
+               'Reported: %s | Modified: %s')
+
     if bug.find('resolution') is not None:
         status = bug.find('bug_status').text + ' ' + bug.find('resolution').text
     else:
         status = bug.find('bug_status').text
-    
-    message = message % (bug.find('short_desc').text, bug.find('product').text,
-        bug.find('component').text, bug.find('version').text, 
-        (bug.find('priority').text + ' ' + bug.find('bug_severity').text), # Importance
-        status, bug.find('assigned_to').text, bug.find('creation_ts').text, 
+
+    message = message % (
+        bug.find('short_desc').text, bug.find('product').text,
+        bug.find('component').text, bug.find('version').text,
+        (bug.find('priority').text + ' ' + bug.find('bug_severity').text),
+        status, bug.find('assigned_to').text, bug.find('creation_ts').text,
         bug.find('delta_ts').text)
     willie.say(message)
 show_bug.rule = r'.*https?://(\S+?)(/show_bug.cgi\?\S*?)(id=\d+).*'
-
