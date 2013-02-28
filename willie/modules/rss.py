@@ -66,7 +66,7 @@ def manage_rss(willie, trigger):
             fg_colour = fg_colour.zfill(2)
         if bg_colour:
             bg_colour = bg_colour.zfill(2)
-        c.execute('INSERT INTO rss VALUES ("%s","%s","%s","%s","%s","%s")' % (channel, site_name, site_url, "time", fg_colour, bg_colour))
+        c.execute('INSERT INTO rss VALUES ("%s","%s","%s","%s","%s")' % (channel, site_name, site_url, fg_colour, bg_colour))
         conn.commit()
         c.close()
         willie.reply("Successfully added values to database.")
@@ -125,8 +125,8 @@ def read_feeds(willie):
         feed_channel = row[0]
         feed_site_name = row[1]
         feed_url = row[2]
-        feed_fg = row[4]
-        feed_bg = row[5]
+        feed_fg = row[3]
+        feed_bg = row[4]
         try:
             fp = feedparser.parse(feed_url)
         except IOError, E:
@@ -149,7 +149,7 @@ def read_feeds(willie):
 
         # only print if new entry
         sql_text = (feed_channel, feed_site_name, entry.title, article_url)
-        cur.execute("SELECT * FROM recent WHERE channel = %s AND site_name = %s and article_title = %s AND article_url = %s", sql_text)
+        cur.execute('SELECT * FROM recent WHERE channel = "%s" AND site_name = "%s" and article_title = "%s" AND article_url = "%s"' % sql_text)
         if len(cur.fetchall()) < 1:
 
             response = site_name_effect + " %s \x02%s\x02" % (entry.title, article_url)
@@ -159,7 +159,7 @@ def read_feeds(willie):
             willie.msg(feed_channel, response)
 
             t = (feed_channel, feed_site_name, entry.title, article_url,)
-            cur.execute("INSERT INTO recent VALUES (%s, %s, %s, %s)", t)
+            cur.execute('INSERT INTO recent VALUES ("%s", "%s", "%s", "%s")' % t)
             conn.commit()
         else:
             if DEBUG:
