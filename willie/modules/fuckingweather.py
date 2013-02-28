@@ -23,6 +23,7 @@ def fucking_weather(willie, trigger):
         willie.reply(results[0])
     else:
         willie.reply("I CAN'T GET THE FUCKING WEATHER.")
+        return willie.NOLIMIT
 fucking_weather.commands = ['fucking_weather', 'fw']
 fucking_weather.rate = 30
 fucking_weather.priority = 'low'
