@@ -20,7 +20,8 @@ bucket_runtime_data.inhibit_reply = trigger.group(0)
 
 and make sure the priority of your callable is medium or higher.
 """
-import MySQLdb, re
+import MySQLdb
+import re
 from re import sub
 from random import randint, seed
 import willie.web as web
@@ -29,12 +30,13 @@ from collections import deque
 from willie.tools import Ddict
 seed()
 
+
 def configure(config):
     """
     It is highly recommended that you run the configuration utility on this
     module, as it will handle creating an initializing your database. More
     information on this module at https://github.com/embolalia/willie/wiki/The-Bucket-Module:-User-and-Bot-Owner-Documentation
-    
+
     | [bucket] | example | purpose |
     | -------- | ------- | ------- |
     | db_host | example.com | The address of the MySQL server |
@@ -50,12 +52,12 @@ def configure(config):
         config.interactive_add('bucket', 'db_pass', "Enter the user's password")
         config.interactive_add('bucket', 'db_name', "Enter the name of the database to use")
         config.interactive_add('bucket', 'literal_path', "Enter the path in which you want to store output of the literal command")
-        config.interactive_add( 'bucket','literal_baseurl', "Base URL for literal output")
+        config.interactive_add('bucket', 'literal_baseurl', "Base URL for literal output")
         if config.option('do you want to generate bucket tables and populate them with some default data?', True):
             db = MySQLdb.connect(host=config.bucket.db_host,
-                         user=config.bucket.db_user,
-                         passwd=config.bucket.db_pass,
-                         db=config.bucket.db_name)
+                                 user=config.bucket.db_user,
+                                 passwd=config.bucket.db_pass,
+                                 db=config.bucket.db_name)
             cur = db.cursor()
             #Create facts table
             cur.execute("CREATE TABLE IF NOT EXISTS `bucket_facts` (`id` int(10) unsigned NOT NULL AUTO_INCREMENT,`fact` varchar(128) COLLATE utf8_unicode_ci NOT NULL,`tidbit` text COLLATE utf8_unicode_ci NOT NULL,`verb` varchar(16) CHARACTER SET latin1 NOT NULL DEFAULT 'is',`RE` tinyint(1) NOT NULL,`protected` tinyint(1) NOT NULL,`mood` tinyint(3) unsigned DEFAULT NULL,`chance` tinyint(3) unsigned DEFAULT NULL,PRIMARY KEY (`id`),UNIQUE KEY `fact` (`fact`,`tidbit`(200),`verb`),KEY `trigger` (`fact`),KEY `RE` (`RE`)) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;")
@@ -71,14 +73,17 @@ def configure(config):
             cur.execute('INSERT INTO bucket_facts (`fact`, `tidbit`, `verb`, `RE`, `protected`, `mood`, `chance`) VALUES (%s, %s, %s, %s, %s, %s, %s);', ('takes item', 'Oh, thanks, I\'ll keep this $item safe', '<reply>', False, False, None, None))
             db.commit()
             db.close()
-    
+
+
 class Inventory():
     ''' Everything inventory related '''
     avilable_items = []
-    current_items = deque([]) # Max length 15
+    current_items = deque([])
+    # Max length 15
+
     def add_random(self):
         ''' Adds a random item to the inventory'''
-        item = self.avilable_items[randint(0, len(self.avilable_items)-1)].strip()
+        item = self.avilable_items[randint(0, len(self.avilable_items) - 1)].strip()
         if item in self.current_items:
             try:
                 return self.add_random()
@@ -88,6 +93,7 @@ class Inventory():
                 return 'bananas!'
         self.current_items.appendleft(item)
         return item
+
     def add(self, item, user, channel, willie):
         ''' Adds an item to the inventory'''
         dropped = False
@@ -109,17 +115,20 @@ class Inventory():
             dropped = True
         self.current_items.appendleft(item)
         return dropped
+
     def random_item(self):
         ''' returns a random item '''
         if len(self.current_items) == 0:
             return 'bananas!'
-        item = self.current_items[randint(0, len(self.current_items)-1)]
+        item = self.current_items[randint(0, len(self.current_items) - 1)]
         return item
+
     def populate(self):
         ''' Clears the inventory and fill it with random items '''
         self.current_items = deque([])
-        while (len(self.current_items)<15):
+        while (len(self.current_items) < 15):
             self.add_random()
+
     def give_item(self):
         ''' returns a random item and removes it from the inventory '''
         item = self.random_item()
@@ -128,6 +137,7 @@ class Inventory():
         except ValueError:
             pass
         return item
+
     def remove(self, item):
         ''' Attemt to remove an item from the inventory, returns False if failed '''
         try:
@@ -136,19 +146,23 @@ class Inventory():
         except ValueError:
             return False
 
+
 class bucket_runtime_data():
-    dont_know_cache = [] #Caching all the Don't Know factoids to reduce amount of DB reads
-    what_was_that = {} #Remembering info of last DB read, per channel. for use with the "what was that" command.
-    inhibit_reply = '' #Used to inhibit reply of an error message after teaching a factoid
+    dont_know_cache = []  # Caching all the Don't Know factoids to reduce amount of DB reads
+    what_was_that = {}  # Remembering info of last DB read, per channel. for use with the "what was that" command.
+    inhibit_reply = ''  # Used to inhibit reply of an error message after teaching a factoid
     last_teach = {}
-    last_lines = Ddict(dict) #For quotes.
+    last_lines = Ddict(dict)  # For quotes.
     inventory = None
     shut_up = []
     special_verbs = ['<reply>', '<directreply>', '<directaction>', '<action>', '<alias>']
     factoid_search_re = re.compile('(.*).~=./(.*)/')
 
+
 def remove_punctuation(string):
     return sub("[,\.\!\?\;\:]", '', string)
+
+
 def setup(willie):
     print 'Setting up Bucket...'
     db = None
@@ -170,14 +184,16 @@ def setup(willie):
         bucket_runtime_data.inventory.avilable_items.append(item[2])
     print 'Done setting up Bucket!'
 
+
 def rebuild_dont_know_cache(willie):
-        db = connect_db(willie)
-        cur = db.cursor()
-        cur.execute('SELECT * FROM bucket_facts WHERE fact = "Don\'t Know";')
-        results = cur.fetchall()
-        for result in results:
-            bucket_runtime_data.dont_know_cache.append(result)
-        db.close()
+    db = connect_db(willie)
+    cur = db.cursor()
+    cur.execute('SELECT * FROM bucket_facts WHERE fact = "Don\'t Know";')
+    results = cur.fetchall()
+    for result in results:
+        bucket_runtime_data.dont_know_cache.append(result)
+    db.close()
+
 
 def add_fact(willie, trigger, fact, tidbit, verb, re, protected, mood, chance, say=True):
     db = None
@@ -192,10 +208,11 @@ def add_fact(willie, trigger, fact, tidbit, verb, re, protected, mood, chance, s
         return False
     finally:
         db.close()
-    bucket_runtime_data.last_teach[trigger.sender] = [fact,verb,tidbit]
+    bucket_runtime_data.last_teach[trigger.sender] = [fact, verb, tidbit]
     if say:
-        willie.say("Okay, "+trigger.nick)
+        willie.say("Okay, " + trigger.nick)
     return True
+
 
 def teach_is_are(willie, trigger):
     """Teaches a is b and a are b"""
@@ -210,11 +227,12 @@ def teach_is_are(willie, trigger):
     chance = None
     for word in trigger.group(0).lower().split(' '):
         if word in bucket_runtime_data.special_verbs:
-            return #do NOT teach is are if the trigger is similar to "Lemon, Who is the king of the derps? <reply> I am!" (contains both is|are and a special verb.
-    
+            return  # do NOT teach is are if the trigger is similar to "Lemon, Who is the king of the derps? <reply> I am!" (contains both is|are and a special verb.
+
     add_fact(willie, trigger, fact, tidbit, verb, re, protected, mood, chance)
 teach_is_are.rule = ('$nick', '(.*?) (is|are) (.*)')
 teach_is_are.priority = 'high'
+
 
 def teach_verb(willie, trigger):
     """Teaches verbs/ambiguous reply"""
@@ -227,10 +245,10 @@ def teach_verb(willie, trigger):
     protected = False
     mood = None
     chance = None
-    
+
     if verb not in bucket_runtime_data.special_verbs:
         verb = verb[1:-1]
-    
+
     if fact == tidbit and verb == '<alias>':
         willie.reply('You can\'t alias like this!')
         return
@@ -253,12 +271,13 @@ def teach_verb(willie, trigger):
 teach_verb.rule = ('$nick', '(.*?) (<\S+>) (.*)')
 teach_verb.priority = 'high'
 
+
 def save_quote(willie, trigger):
     """Saves a quote"""
     bucket_runtime_data.inhibit_reply = trigger
     quotee = trigger.group(1).lower()
     word = trigger.group(2).strip()
-    fact = quotee+' quotes'
+    fact = quotee + ' quotes'
     verb = '<reply>'
     re = False
     protected = False
@@ -286,6 +305,7 @@ def save_quote(willie, trigger):
 save_quote.rule = ('$nick', 'remember (.*?) (.*)')
 save_quote.priority = 'high'
 
+
 def delete_factoid(willie, trigger):
     """Delets a factoid"""
     bucket_runtime_data.inhibit_reply = trigger
@@ -300,7 +320,7 @@ def delete_factoid(willie, trigger):
     try:
         cur.execute('SELECT * FROM bucket_facts WHERE ID = %s;', int(trigger.group(1)))
         results = cur.fetchall()
-        if len(results)>1:
+        if len(results) > 1:
             willie.debug('bucket', 'More than one factoid with the same ID?', 'warning')
             willie.debug('bucket', str(results), 'warning')
             willie.say('More than one factoid with the same ID. I refuse to continue.')
@@ -308,7 +328,7 @@ def delete_factoid(willie, trigger):
         elif len(results) == 0:
             willie.reply('No such factoid')
             return
-        cur.execute('DELETE FROM bucket_facts WHERE ID = %s',int(trigger.group(1)))
+        cur.execute('DELETE FROM bucket_facts WHERE ID = %s', int(trigger.group(1)))
         db.commit()
     except:
         willie.say("Delete failed! are you sure this is a valid factoid ID?")
@@ -318,9 +338,10 @@ def delete_factoid(willie, trigger):
     line = results[0]
     fact, tidbit, verb = parse_factoid(line)
     willie.say("Okay, %s, forgot that %s %s %s" % (trigger.nick, fact, verb, tidbit))
-    
+
 delete_factoid.rule = ('$nick', 'delete #(.*)')
 delete_factoid.priority = 'high'
+
 
 def undo_teach(willie, trigger):
     """Undo teaching factoid"""
@@ -357,6 +378,7 @@ def undo_teach(willie, trigger):
 undo_teach.rule = ('$nick', 'undo last')
 undo_teach.priority = 'high'
 
+
 def inv_give(willie, trigger):
     ''' Called when someone gives us an item '''
     bucket_runtime_data.inhibit_reply = trigger
@@ -373,7 +395,7 @@ def inv_give(willie, trigger):
         item = '%s\'s %s' % (willie.nick, item)
     elif trigger.group(5) != 'this' and trigger.group(5) is not None:
         item = '%s %s' % (trigger.group(5), item)
-        item = re.sub(r'^me ', trigger.nick+' ', item, re.IGNORECASE)
+        item = re.sub(r'^me ', trigger.nick + ' ', item, re.IGNORECASE)
     if trigger.group(3) is not '':
         item = re.sub(r'^his ', '%s\'s ' % trigger.nick, item, re.IGNORECASE)
 
@@ -382,7 +404,7 @@ def inv_give(willie, trigger):
     db = connect_db(willie)
     cur = db.cursor()
     search_term = ''
-    if dropped == False:
+    if not dropped:
         #Query for 'takes item'
         search_term = 'takes item'
     elif dropped == '%ERROR% duplicate item %ERROR%':
@@ -405,18 +427,20 @@ def inv_give(willie, trigger):
 inv_give.rule = ('((^\001ACTION (gives|hands) $nickname)|^$nickname. (take|have) (this|my|your|.*)) (.*)')
 inv_give.priority = 'medium'
 
+
 def inv_steal(willie, trigger):
     inventory = bucket_runtime_data.inventory
     item = trigger.group(2)
     bucket_runtime_data.inhibit_reply = trigger
     if item.endswith('\001'):
-       item = item[:-1]
+        item = item[:-1]
     if (inventory.remove(item)):
-       willie.say('Hey! Give it back, it\'s mine!')
+        willie.say('Hey! Give it back, it\'s mine!')
     else:
-       willie.say('But I don\'t have any %s' % item)
+        willie.say('But I don\'t have any %s' % item)
 inv_steal.rule = ('^\001ACTION (steals|takes) $nickname\'s (.*)')
 inv_steal.priority = 'medium'
+
 
 def inv_populate(willie, trigger):
     bucket_runtime_data.inhibit_reply = trigger
@@ -426,6 +450,7 @@ def inv_populate(willie, trigger):
 inv_populate.rule = ('$nick', 'you need new things(.*|)')
 inv_populate.priority = 'medium'
 
+
 def say_fact(willie, trigger):
     """Response, if needed"""
     query = trigger.group(0)
@@ -434,23 +459,22 @@ def say_fact(willie, trigger):
     cur = None
     results = None
 
-
     if query.startswith('\001ACTION'):
         query = query[len('\001ACTION '):]
-    addressed = query.lower().startswith(willie.nick.lower()) #Check if our nick was mentioned
-    search_term = query.lower().strip() #What we are going to pass to MySql as our search term
+    addressed = query.lower().startswith(willie.nick.lower())  # Check if our nick was mentioned
+    search_term = query.lower().strip()  # What we are going to pass to MySql as our search term
     if addressed:
-        search_term = search_term[(len(willie.nick)+1):].strip() #Remove our nickname from the search term
+        search_term = search_term[(len(willie.nick) + 1):].strip()  # Remove our nickname from the search term
     search_term = remove_punctuation(search_term).strip()
 
     if len(query) < 6 and not addressed:
-        return #Ignore factoids shorter than 6 chars when not addressed
+        return  # Ignore factoids shorter than 6 chars when not addressed
     if addressed and len(search_term) is 0:
-        return #Ignore 0 length queries when addressed
+        return  # Ignore 0 length queries when addressed
     if search_term == 'don\'t know' and not addressed:
-        return #Ignore "don't know" when not addressed
+        return  # Ignore "don't know" when not addressed
     if not addressed and trigger.sender in bucket_runtime_data.shut_up:
-        return #Don't say anything if not addressed and shutting up
+        return  # Don't say anything if not addressed and shutting up
     if search_term == 'shut up' and addressed:
         willie.reply('Okay...')
         bucket_runtime_data.shut_up.append(trigger.sender)
@@ -478,7 +502,9 @@ def say_fact(willie, trigger):
             willie.say('I have no idea')
         return
     elif search_term.startswith('reload') or search_term.startswith('update') or inhibit == trigger:
-        return #ignore commands such as reload or update, don't show 'Don't Know' responses for these 
+        # ignore commands such as reload or update, don't show 'Don't Know'
+        # responses for these
+        return
 
     db = connect_db(willie)
     cur = db.cursor()
@@ -490,27 +516,27 @@ def say_fact(willie, trigger):
         if search_term == 'random quote':
             cur.execute('SELECT * FROM bucket_facts WHERE fact LIKE "% quotes" ORDER BY id ASC;')
         elif factoid_search is not None:
-            cur.execute('SELECT * FROM bucket_facts WHERE fact = %s AND tidbit LIKE %s ORDER BY id ASC;', (factoid_search.group(1), '%'+factoid_search.group(2)+'%'))
+            cur.execute('SELECT * FROM bucket_facts WHERE fact = %s AND tidbit LIKE %s ORDER BY id ASC;', (factoid_search.group(1), '%' + factoid_search.group(2) + '%'))
         else:
             cur.execute('SELECT * FROM bucket_facts WHERE fact = %s ORDER BY id ASC;', search_term)
         results = cur.fetchall()
     except UnicodeEncodeError, e:
-        willie.debug('bucket','Warning, database encoding error', 'warning')
+        willie.debug('bucket', 'Warning, database encoding error', 'warning')
         willie.debug('bucket', e, 'warning')
     finally:
         db.close()
-    if results == None:
+    if results is None:
         return
     result = pick_result(results, willie)
-    if addressed and result == None and factoid_search is None:
+    if addressed and result is None and factoid_search is None:
         was[trigger.sender] = dont_know(willie)
         return
     elif factoid_search is not None and result is None:
         willie.reply('Sorry, I could\'t find anything matching your query')
         return
-    elif result == None:
+    elif result is None:
         return
-            
+
     fact, tidbit, verb = parse_factoid(result)
     tidbit = tidbit_vars(tidbit, trigger)
 
@@ -519,7 +545,7 @@ def say_fact(willie, trigger):
             result = results[0]
             number = int(result[0])
             fact, tidbit, verb = parse_factoid(result)
-            willie.say ("#%d - %s %s %s" % (number, fact, verb, tidbit))
+            willie.say("#%d - %s %s %s" % (number, fact, verb, tidbit))
         else:
             willie.reply('just a second, I\'ll make the list!')
             bucket_literal_path = willie.config.bucket.literal_path
@@ -537,29 +563,29 @@ def say_fact(willie, trigger):
                 filename = 'quotes'
             else:
                 filename = fact.lower()
-            f = open(os.path.join(bucket_literal_path, filename+'.txt'), 'w')
+            f = open(os.path.join(bucket_literal_path, filename + '.txt'), 'w')
             for result in results:
                 number = int(result[0])
                 fact, tidbit, verb = parse_factoid(result)
                 literal_line = "#%d - %s %s %s" % (number, fact, verb, tidbit)
-                f.write(literal_line.encode('utf8')+'\n')
+                f.write(literal_line.encode('utf8') + '\n')
             f.close()
-            willie.reply('Here you go! %s (%d factoids)' % (bucket_literal_baseurl+web.quote(filename+'.txt'), len(results)))
+            willie.reply('Here you go! %s (%d factoids)' % (bucket_literal_baseurl + web.quote(filename + '.txt'), len(results)))
         result = 'Me giving you a literal link'
     else:
         say_factoid(willie, fact, verb, tidbit, addressed)
     was[trigger.sender] = result
-    
-    
+
 say_fact.rule = ('(.*)')
 say_fact.priority = 'low'
+
 
 def pick_result(results, willie):
     try:
         if len(results) == 1:
             result = results[0]
         elif len(results) > 1:
-            result = results[randint(0, len(results)-1)]
+            result = results[randint(0, len(results) - 1)]
         elif len(results) == 0:
             return None
         if result[3] == '<alias>':
@@ -571,8 +597,8 @@ def pick_result(results, willie):
                 cur.execute('SELECT * FROM bucket_facts WHERE fact = %s;', search_term)
                 results = cur.fetchall()
             except UnicodeEncodeError, e:
-                willie.debug('bucket','Warning, database encoding error', 'warning')
-                willie.debug('bucket',e , 'warning')
+                willie.debug('bucket', 'Warning, database encoding error', 'warning')
+                willie.debug('bucket', e, 'warning')
             finally:
                 db.close()
             result = pick_result(results, willie)
@@ -582,30 +608,33 @@ def pick_result(results, willie):
         willie.debug('bucket', e, 'warning')
         return None
 
+
 def get_inventory(willie, trigger):
     ''' get a human readable list of the bucket inventory '''
 
     bucket_runtime_data.inhibit_reply = trigger
 
     inventory = bucket_runtime_data.inventory
-    
-    if len(inventory.current_items)==0:
+
+    if len(inventory.current_items) == 0:
         return willie.action('is carrying nothing')
 
     readable_item_list = ', '.join(inventory.current_items)
 
-    willie.action('is carrying '+readable_item_list)
+    willie.action('is carrying ' + readable_item_list)
 
-get_inventory.rule = ('$nick','inventory')
+get_inventory.rule = ('$nick', 'inventory')
 get_inventory.priority = 'medium'
+
 
 def connect_db(willie):
     return MySQLdb.connect(host=willie.config.bucket.db_host,
-                         user=willie.config.bucket.db_user,
-                         passwd=willie.config.bucket.db_pass,
-                         db=willie.config.bucket.db_name,
-                         charset="utf8",
-                         use_unicode=True)
+                           user=willie.config.bucket.db_user,
+                           passwd=willie.config.bucket.db_pass,
+                           db=willie.config.bucket.db_name,
+                           charset="utf8",
+                           use_unicode=True)
+
 
 def tidbit_vars(tidbit, trigger, random_item=True):
     ''' Parse in-tidbit vars '''
@@ -621,22 +650,24 @@ def tidbit_vars(tidbit, trigger, random_item=True):
             word = word.replace('$newitem', inventory.add_random())
         elif '$item' in word.lower() and random_item:
             word = word.replace('$item', inventory.random_item())
-        if (len(finaltidbit)>0):
+        if (len(finaltidbit) > 0):
             word = ' ' + word
         finaltidbit = finaltidbit + word
     return finaltidbit
+
 
 def dont_know(willie):
     ''' Get a Don't Know reply from the cache '''
     cache = bucket_runtime_data.dont_know_cache
     try:
-        reply = cache[randint(0, len(cache)-1)]
+        reply = cache[randint(0, len(cache) - 1)]
     except ValueError:
         rebuild_dont_know_cache(willie)
         return dont_know(willie)
     fact, tidbit, verb = parse_factoid(reply)
     say_factoid(willie, fact, verb, tidbit, True)
     return reply
+
 
 def say_factoid(willie, fact, verb, tidbit, addressed):
     if verb not in bucket_runtime_data.special_verbs:
@@ -650,13 +681,14 @@ def say_factoid(willie, fact, verb, tidbit, addressed):
     elif verb == '<directaction>' and addressed:
         willie.action(tidbit)
 
+
 def remember(willie, trigger):
     ''' Remember last 10 lines of each user, to use in the quote function '''
     memory = bucket_runtime_data.last_lines
     try:
         fifo = deque(memory[trigger.sender][trigger.nick.lower()])
     except KeyError:
-        memory[trigger.sender][trigger.nick.lower()]=[] #Initializing the array
+        memory[trigger.sender][trigger.nick.lower()] = []  # Initializing the array
         return remember(willie, trigger)
     if len(fifo) == 10:
         fifo.pop()
@@ -664,6 +696,7 @@ def remember(willie, trigger):
     memory[trigger.sender][trigger.nick.lower()] = fifo
 remember.rule = ('(.*)')
 remember.priority = 'medium'
+
 
 def parse_factoid(result):
     return result[1], result[2], result[3]
