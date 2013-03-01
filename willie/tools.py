@@ -58,7 +58,7 @@ class Nick(unicode):
 
     def lower(self):
         """Return `nick`, converted to lower-case per RFC 1459"""
-        return nick._lowered
+        return self._lowered
 
     @staticmethod
     def _lower(nick):
