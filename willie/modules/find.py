@@ -66,6 +66,8 @@ def findandreplace(willie, trigger):
     #TODO rest[0] is find, rest[1] is replace. These should be made variables of
     #their own at some point.
     rest = [trigger.group(2), trigger.group(3)]
+    rest[0] = rest[0].replace(r'\/', '/')
+    rest[1] = rest[1].replace(r'\/', '/')
     me = False # /me command
     flags = (trigger.group(4) or '')
     
@@ -120,7 +122,7 @@ def findandreplace(willie, trigger):
 #slash is ignored, you can escape slashes with backslashes, and if you want to
 #search for an actual backslash followed by an actual slash, you're shit out of
 #luck because this is the fucking regex of death as it is.
-findandreplace.rule = r'(?:(\S+)[:,]\s+)?s/((?:[^/]|\\/)+)/((?:[^/]|\\/)+)(?:/(\S+))?'
+findandreplace.rule = r'(?:(\S+)[:,]\s+)?s/((?:\\/|[^/])+)/((?:\\/|[^/])+)(?:/(\S+))?'
 findandreplace.priority = 'high'
 
 
