@@ -134,7 +134,10 @@ def weather(willie, trigger):
             return willie.msg(trigger.sender, "I don't know where you live. " +
                 'Give me a location, like .weather London, or tell me where you live by saying .setlocation London, for example.')
     else:
-        woeid = woeid_search(location).find('woeid').text
+        if willie.db and location in willie.db.preferences:
+            woeid = willie.db.preferences.get(location, 'woeid')
+        else:
+            woeid = woeid_search(location).find('woeid').text
     
     if not woeid:
         return willie.reply("I don't know where that is.")
