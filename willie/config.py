@@ -261,6 +261,7 @@ class Config(object):
 
     def _db(self):
         db.configure(self)
+        self.save()
 
     def _modules(self):
         home = os.getcwd()
@@ -279,6 +280,7 @@ class Config(object):
             else:
                 if hasattr(module, 'configure'):
                     module.configure(self)
+        self.save()
 
 
 def wizard(section, config=None):
