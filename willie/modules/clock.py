@@ -192,8 +192,8 @@ def update_channel_format(willie, trigger):
                      "commands)" % timef)
     else:
         willie.reply("I can't remember that; I don't have a database.")
-update_user_format.commands = ['setchanneltimeformat', 'setctf']
-update_user_format.example = ".settf %FT%T%z"
+update_channel_format.commands = ['setchanneltimeformat', 'setctf']
+update_channel_format.example = ".settf %FT%T%z"
 
 
 if __name__ == '__main__':
