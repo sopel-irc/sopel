@@ -314,7 +314,7 @@ class Willie(irc.Bot):
             message was sent.
             """
             s.nick = origin.nick
-            """The nick of the person who sent the message."""
+            """The ``Nick`` of the person who sent the message."""
             s.event = event
             """
             The IRC event (e.g. ``PRIVMSG`` or ``MODE``) which triggered the
@@ -345,7 +345,8 @@ class Willie(irc.Bot):
             ``('#example', '-m')``
             """
             if len(self.config.admins) > 0:
-                s.admin = (origin.nick in self.config.admins.split(','))
+                s.admin = (origin.nick in 
+                           [Nick(n) for n in self.config.admins.split(',')])
             else:
                 s.admin = False
 
@@ -367,7 +368,7 @@ class Willie(irc.Bot):
                             s.admin = True
             s.owner = origin.nick + '@' + origin.host == self.config.owner
             if not s.owner:
-                s.owner = (origin.nick == self.config.owner)
+                s.owner = (origin.nick == Nick(self.config.owner))
 
             # Bot owner inherits all the admin rights, therefore is considered
             # admin
@@ -391,8 +392,8 @@ class Willie(irc.Bot):
                 List of channel half-operators in the channel the message was
                 recived in
                 """
-                s.isop = (s.nick.lower() in s.ops or
-                          s.nick.lower() in s.halfplus)
+                s.isop = (s.nick in s.ops or
+                          s.nick in s.halfplus)
                 """True if the user is half-op or an op"""
             else:
                 s.isop = False
@@ -401,7 +402,7 @@ class Willie(irc.Bot):
             return s
 
     def call(self, func, origin, willie, trigger):
-        nick = (trigger.nick).lower()
+        nick = trigger.nick
         if nick in self.times:
             if func in self.times[nick]:
                 if not trigger.admin:
@@ -481,8 +482,12 @@ class Willie(irc.Bot):
                                 if len(nick) < 1:
                                     continue
                                 re_temp = re.compile(nick)
-                                if (re_temp.findall(trigger.nick)
-                                        or nick in trigger.nick):
+                                #RFC-lowercasing the regex is impractical. So
+                                #we'll just specify to use RFC-lowercase in the
+                                #regex, which means we'll have to be in RFC-
+                                #lowercase here.
+                                if (re_temp.findall(trigger.nick.lower())
+                                        or nick in trigger.nick.lower()):
                                     return
 
                         if func.thread:
