@@ -149,7 +149,7 @@ track_modes.event = 'MODE'
 def track_nicks(willie, trigger):
     '''Track nickname changes and maintain our chanops list accordingly'''
     old = trigger.nick
-    new = trigger.group(1)
+    new = Nick(trigger.group(1))
 
     # Give debug mssage, and PM the owner, if the bot's own nick changes.
     if old == willie.nick:
@@ -160,11 +160,11 @@ def track_nicks(willie, trigger):
         return
 
     for channel in willie.halfplus:
-        if old.lower() in willie.halfplus[channel]:
+        if old in willie.halfplus[channel]:
             willie.del_halfop(channel, old)
             willie.add_halfop(channel, new)
     for channel in willie.ops:
-        if old.lower() in willie.ops[channel]:
+        if old in willie.ops[channel]:
             willie.del_op(channel, old)
             willie.add_op(channel, new)
 
