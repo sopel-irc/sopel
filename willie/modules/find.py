@@ -122,7 +122,7 @@ def findandreplace(willie, trigger):
 #slash is ignored, you can escape slashes with backslashes, and if you want to
 #search for an actual backslash followed by an actual slash, you're shit out of
 #luck because this is the fucking regex of death as it is.
-findandreplace.rule = r'(?:(\S+)[:,]\s+)?s/((?:\\/|[^/])+)/((?:\\/|[^/])+)(?:/(\S+))?'
+findandreplace.rule = r'(?:(\S+)[:,]\s+)?s/((?:\\/|[^/])+)/((?:\\/|[^/])*)(?:/(\S+))?'
 findandreplace.priority = 'high'
 
 
