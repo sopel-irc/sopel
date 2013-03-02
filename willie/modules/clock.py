@@ -123,6 +123,8 @@ def update_user_format(willie, trigger):
         willie.reply("Got it. Your time will now appear as %s. (If the "
                      "timezone is wrong, you might try the settz command)"
                      % timef)
+    else:
+        willie.reply("I can't remember that; I don't have a database.")
 update_user_format.commands = ['settimeformat', 'settf']
 update_user_format.example = ".settf %FT%T%z"
 
@@ -188,6 +190,8 @@ def update_channel_format(willie, trigger):
                      "unless a user has their own format set. (If the timezone"
                      " is wrong, you might try the settz and channeltz "
                      "commands)" % timef)
+    else:
+        willie.reply("I can't remember that; I don't have a database.")
 update_user_format.commands = ['setchanneltimeformat', 'setctf']
 update_user_format.example = ".settf %FT%T%z"
 
