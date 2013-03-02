@@ -6,6 +6,7 @@ Licensed under the Eiffel Forum License 2.
 
 http://willie.dfbta.net
 """
+import pytz
 import re
 import math
 import time
@@ -21,179 +22,175 @@ def setup(willie):
     #Having a db means pref's exists. Later, we can just use `if willie.db`.
     if willie.db and not willie.db.preferences.has_columns('tz'):
         willie.db.preferences.add_columns(['tz'])
+    if willie.db and not willie.db.preferences.has_columns('time_format'):
+        willie.db.preferences.add_columns(['time_format'])
 
 
 def f_time(willie, trigger):
     """Returns the current time."""
-    tz = trigger.group(2) or 'UTC'
-    tz = tz.strip()
-    goodtz = False
-
-    #They didn't give us an argument, so do they want their own time?
-    if not trigger.group(2) and willie.db:
-        if trigger.nick in willie.db.preferences:
-            utz = willie.db.preferences.get(trigger.nick, 'tz')
-            if utz != '':
-                tz = utz
-                goodtz = True
-        elif trigger.sender in willie.db.preferences:
-            utz = willie.db.preferences.get(trigger.sender, 'tz')
-            if utz != '':
-                tz = utz
-                goodtz = True
-    if not goodtz:
-        try:
-            from pytz import all_timezones
-            goodtz = (tz in all_timezones)
-        except:
-            pass
-    #Not in pytz, either, so maybe it's another user.
-    if not goodtz:
-        if willie.db and tz in willie.db.preferences:
-            utz = willie.db.preferences.get(tz, 'tz')
-            if utz != '':
-                tz = utz
-    #If we still haven't found it at this point, well, fuck it.
-
-    TZ = tz.upper()
-    if len(tz) > 30:
-        return
-
-    if (TZ == 'UTC') or (TZ == 'Z'):
-        msg = time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())
-        willie.msg(trigger.sender, msg)
-    elif r_local.match(tz):  # thanks to Mark Shoulsdon (clsn)
-        locale.setlocale(locale.LC_TIME, (tz[1:-1], 'UTF-8'))
-        msg = time.strftime("%A, %d %B %Y %H:%M:%SZ", time.gmtime())
-        willie.msg(trigger.sender, msg)
-    elif tz and tz[0] in ('+', '-') and 4 <= len(tz) <= 6:
-        timenow = time.gmtime(time.time() + (int(tz[:3]) * 3600))
-        msg = time.strftime("%a, %d %b %Y %H:%M:%S " + str(tz), timenow)
-        willie.msg(trigger.sender, msg)
-    else:
-        try:
-            t = float(tz)
-        except ValueError:
-            import os
-            import re
-            import subprocess
-            r_tz = re.compile(r'^[A-Za-z]+(?:/[A-Za-z_]+)*$')
-            if r_tz.match(tz) and os.path.isfile('/usr/share/zoneinfo/' + tz):
-                cmd, PIPE = 'TZ=%s date' % tz, subprocess.PIPE
-                proc = subprocess.Popen(cmd, shell=True, stdout=PIPE)
-                willie.msg(trigger.sender, proc.communicate()[0])
+    tz = trigger.group(2)
+    if tz:
+        tz = tz.strip()
+        #We have a tz. If it's in all_timezones, we don't need to do anything
+        #more, because we know it's valid. Otherwise, we have to check if it's
+        #supposed to be a user, or just invalid
+        if tz not in pytz.all_timezones:
+            if willie.db and tz in willie.db.preferences:
+                tz = willie.db.preferences.get(tz, 'tz')
+                if not tz:
+                    willie.say("I'm sorry, I don't know %s's timezone" % tz)
             else:
-                error = "Sorry, I don't know about the '%s' timezone or user." % tz
-                willie.msg(trigger.sender, trigger.nick + ': ' + error)
-        else:
-            timenow = time.gmtime(time.time() + (t * 3600))
-            msg = time.strftime("%a, %d %b %Y %H:%M:%S " + str(tz), timenow)
-            willie.msg(trigger.sender, msg)
+                willie.say("I'm sorry, I don't know about the %s timezone or"
+                           " user." % tz)
+    #We don't have a timzeone. Is there one set? If not, just use UTC
+    elif willie.db:
+        if trigger.nick in willie.db.preferences:
+            tz = willie.db.preferences.get(trigger.nick, 'tz')
+        if not tz and trigger.sender in willie.db.preferences:
+            tz = willie.db.preferences.get(trigger.sender, 'tz') or 'UTC'
+    else:
+        tz = 'UTC'
+    tzi = pytz.timezone(tz)
+    now = datetime.datetime.now(tzi)
+
+    tformat = ''
+    if willie.db:
+        if trigger.nick in willie.db.preferences:
+            tformat = willie.db.preferences.get(trigger.nick, 'time_format')
+        if not tformat and trigger.sender in willie.db.preferences:
+            tformat = willie.db.preferences.get(trigger.sender, 'time_format')
+
+    willie.say(now.strftime(tformat or "%F - %T%Z"))
 f_time.commands = ['t', 'time']
 f_time.name = 't'
 f_time.example = '.t UTC'
 
 
-def beats(willie, trigger):
-    """Shows the internet time in Swatch beats."""
-    beats = ((time.time() + 3600) % 86400) / 86.4
-    beats = int(math.floor(beats))
-    willie.say('@%03i' % beats)
-beats.commands = ['beats']
-beats.priority = 'low'
-
-
-def divide(input, by):
-    return (input / by), (input % by)
-
-
-def tock(willie, trigger):
-    """Shows the time from the USNO's atomic clock."""
-    u = urllib.urlopen('http://tycho.usno.navy.mil/cgi-bin/timer.pl')
-    info = u.info()
-    u.close()
-    willie.say('"' + info['Date'] + '" - tycho.usno.navy.mil')
-tock.commands = ['tock']
-tock.priority = 'high'
-
-
-def npl(willie, trigger):
-    """Shows the time from NPL's SNTP server."""
-    # for server in ('ntp1.npl.co.uk', 'ntp2.npl.co.uk'):
-    client = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    client.sendto('\x1b' + 47 * '\0', ('ntp1.npl.co.uk', 123))
-    data, address = client.recvfrom(1024)
-    if data:
-        buf = struct.unpack('B' * 48, data)
-        d = dec('0.0')
-        for i in range(8):
-            d += dec(buf[32 + i]) * dec(str(math.pow(2, (3 - i) * 8)))
-        d -= dec(2208988800L)
-        a, b = str(d).split('.')
-        f = '%Y-%m-%d %H:%M:%S'
-        result = datetime.datetime.fromtimestamp(d).strftime(f) + '.' + b[:6]
-        willie.say(result + ' - ntp1.npl.co.uk')
-    else:
-        willie.say('No data received, sorry')
-npl.commands = ['npl']
-npl.priority = 'high'
-
-
 def update_user(willie, trigger):
     """
-    Set your preferred time zone. Most timezones will work, but it's best to use
-    one from http://dft.ba/-tz
+    Set your preferred time zone. Most timezones will work, but it's best to
+    use one from http://dft.ba/-tz
     """
     if willie.db:
         tz = trigger.group(2)
-        goodtz = False
-        #We don't see it in our short db, so let's give pytz a try
-        try:
-            from pytz import all_timezones
-            goodtz = (tz in all_timezones)
-        except:
-            pass
+        if not tz:
+            willie.reply("What timzeone do you want to set? Try one from "
+                         "http://dft.ba/-tz")
+            return
+        if tz not in pytz.all_timezones:
+            willie.reply("I don't know that time zone. Try one from "
+                         "http://dft.ba/-tz")
+            return
 
-        if not goodtz:
-            willie.reply("I don't know that time zone.")
+        willie.db.preferences.update(trigger.nick, {'tz': tz})
+        if len(tz) < 7:
+            willie.say("Okay, " + trigger.nick +
+                        ", but you should use one from http://dft.ba/-tz if "
+                        "you use DST.")
         else:
-            willie.db.preferences.update(trigger.nick, {'tz': tz})
-            if len(tz) < 7:
-                willie.say("Okay, " + trigger.nick +
-                           ", but you should use one from http://dft.ba/-tz if you use DST.")
-            else:
-                willie.reply('I now have you in the %s time zone.' % tz)
+            willie.reply('I now have you in the %s time zone.' % tz)
     else:
         willie.reply("I can't remember that; I don't have a database.")
 update_user.commands = ['settz']
+
+
+def update_user_format(willie, trigger):
+    """
+    Sets your preferred format for time. Uses the standard strftime format. You
+    can use http://strftime.net or your favorite search engine to learn more.
+    """
+    if willie.db:
+        tformat = trigger.group(2)
+        if not tformat:
+            willie.reply("What format do you want me to use? Try using"
+                         " http://strftime.net to make one.")
+
+        tz = ''
+        if willie.db:
+            if trigger.nick in willie.db.preferences:
+                tz = willie.db.preferences.get(trigger.nick, 'tz')
+            if not tz and trigger.sender in willie.db.preferences:
+                tz = willie.db.preferences.get(trigger.sender, 'tz')
+        now = datetime.datetime.now(pytz.timezone(tz or 'UTC'))
+        timef = ''
+        try:
+            timef = now.strftime(tformat)
+        except:
+            willie.reply("That format doesn't work. Try using"
+                         " http://strftime.net to make one.")
+            return
+        willie.db.preferences.update(trigger.nick, {'time_format': tformat})
+        willie.reply("Got it. Your time will now appear as %s. (If the "
+                     "timezone is wrong, you might try the settz command)"
+                     % timef)
+update_user_format.commands = ['settimeformat', 'settf']
+update_user_format.example = ".settf %FT%T%z"
 
 
 def update_channel(willie, trigger):
     """
     Set the preferred time zone for the channel.
     """
+    if not trigger.isop:
+        return
     if willie.db:
         tz = trigger.group(2)
-        goodtz = False
-        #We don't see it in our short db, so let's give pytz a try
-        try:
-            from pytz import all_timezones
-            goodtz = (tz in all_timezones)
-        except:
-            pass
+        if not tz:
+            willie.reply("What timzeone do you want to set? Try one from "
+                         "http://dft.ba/-tz")
+            return
+        if tz not in pytz.all_timezones:
+            willie.reply("I don't know that time zone. Try one from "
+                         "http://dft.ba/-tz")
+            return
 
-        if not goodtz:
-            willie.reply("I don't know that time zone.")
+        willie.db.preferences.update(trigger.sender, {'tz': tz})
+        if len(tz) < 7:
+            willie.say("Okay, " + trigger.nick +
+                        ", but you should use one from http://dft.ba/-tz if "
+                        "you use DST.")
         else:
-            willie.db.preferences.update(trigger.sender, {'tz': tz})
-            if len(tz) < 7:
-                willie.say("Okay, " + trigger.nick +
-                           ", but you should use one from http://dft.ba/-tz if you use DST.")
-            else:
-                willie.say("Gotcha, " + trigger.nick)
+            willie.reply('I now have you in the %s time zone.' % tz)
     else:
         willie.reply("I can't remember that; I don't have a database.")
 update_channel.commands = ['channeltz']
+
+
+def update_channel_format(willie, trigger):
+    """
+    Sets your preferred format for time. Uses the standard strftime format. You
+    can use http://strftime.net or your favorite search engine to learn more.
+    """
+    if not trigger.isop:
+        return
+    if willie.db:
+        tformat = trigger.group(2)
+        if not tformat:
+            willie.reply("What format do you want me to use? Try using"
+                         " http://strftime.net to make one.")
+
+        tz = ''
+        if willie.db:
+            if trigger.nick in willie.db.preferences:
+                tz = willie.db.preferences.get(trigger.nick, 'tz')
+            if not tz and trigger.sender in willie.db.preferences:
+                tz = willie.db.preferences.get(trigger.sender, 'tz')
+        now = datetime.datetime.now(pytz.timezone(tz or 'UTC'))
+        timef = ''
+        try:
+            timef = now.strftime(tformat)
+        except:
+            willie.reply("That format doesn't work. Try using"
+                         " http://strftime.net to make one.")
+            return
+        willie.db.preferences.update(trigger.sender, {'time_format': tformat})
+        willie.reply("Got it. Times in this channel  will now appear as %s "
+                     "unless a user has their own format set. (If the timezone"
+                     " is wrong, you might try the settz and channeltz "
+                     "commands)" % timef)
+update_user_format.commands = ['setchanneltimeformat', 'setctf']
+update_user_format.example = ".settf %FT%T%z"
+
 
 if __name__ == '__main__':
     print __doc__.strip()
