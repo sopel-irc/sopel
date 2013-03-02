@@ -23,7 +23,7 @@ import asynchat
 import os
 import codecs
 import traceback
-from tools import stderr, stdout
+from tools import stderr, stdout, Nick
 try:
     import select
     import ssl
@@ -44,6 +44,7 @@ class Origin(object):
         #Split out the nick, user, and host from hostmask per the regex above.
         match = Origin.source.match(source or '')
         self.nick, self.user, self.host = match.groups()
+        self.nick = Nick(self.nick)
 
         # If we have more than one argument, the second one is the sender
         if len(args) > 1:
@@ -72,8 +73,8 @@ class Bot(asynchat.async_chat):
         self.set_terminator('\n')
         self.buffer = ''
 
-        self.nick = config.nick
-        """Willie's current nick. Changing this while Willie is running is
+        self.nick = Nick(config.nick)
+        """Willie's current ``Nick``. Changing this while Willie is running is
         untested."""
         self.user = config.user
         """Willie's user/ident."""
@@ -97,10 +98,14 @@ class Bot(asynchat.async_chat):
         #This might be expanded later.
         #These lists are filled in startup.py, as of right now.
         self.ops = dict()
-        """A dictionary mapping channels to a list of their operators."""
+        """
+        A dictionary mapping channels to a ``Nick`` list of their operators.
+        """
         self.halfplus = dict()
-        """A dictionary mapping channels to a list of their half-ops and
-        ops."""
+        """
+        A dictionary mapping channels to a ``Nick`` list of their half-ops and
+        ops.
+        """
 
         #We need this to prevent error loops in handle_error
         self.error_count = 0
@@ -479,17 +484,26 @@ class Bot(asynchat.async_chat):
         self.error_count = self.error_count + 1
 
     #Helper functions to maintain the oper list.
+    #They cast to Nick when adding to be quite sure there aren't any accidental
+    #string nicks. On deletion, you know you'll never need to worry about what
+    #the real superclass is, so we just cast and remove.
     def add_op(self, channel, name):
-        self.ops[channel].add(name.lower())
+        if isinstance(name, Nick):
+            self.ops[channel].add(name)
+        else:
+            self.ops[channel].add(Nick(name))
 
     def add_halfop(self, channel, name):
-        self.halfplus[channel].add(name.lower())
+        if isinstance(name, Nick):
+            self.halfplus[channel].add(name)
+        else:
+            self.halfplus[channel].add(Nick(name))
 
     def del_op(self, channel, name):
-        self.ops[channel].discard(name.lower())
+        self.ops[channel].discard(Nick(name))
 
     def del_halfop(self, channel, name):
-        self.halfplus[channel].discard(name.lower())
+        self.halfplus[channel].discard(Nick(name))
 
     def flush_ops(self, channel):
         self.ops[channel] = set()
