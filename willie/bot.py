@@ -18,7 +18,7 @@ import threading
 import imp
 import irc
 from db import WillieDB
-from tools import stderr, stdout
+from tools import stderr, stdout, Nick
 
 this_dir = os.path.dirname(os.path.abspath(__file__))
 modules_dir = os.path.join(this_dir, 'modules')
@@ -217,7 +217,7 @@ class Willie(irc.Bot):
             if func.__doc__ and hasattr(func, 'commands') and func.commands[0]:
                 if hasattr(func, 'example'):
                     example = func.example
-                    example = example.replace('$nickname', self.nick)
+                    example = example.replace('$nickname', str(self.nick))
                 else:
                     example = None
                 self.doc[func.commands[0]] = (func.__doc__, example)
