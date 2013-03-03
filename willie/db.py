@@ -39,8 +39,9 @@ class WillieDB(object):
     attribute of *config*.
     
     Currently, two values for ``userdb_type`` are supported: ``sqlite`` and
-    ``mysql``. The ``sqlite`` type requires that ``userdb_file`` be set in
-    ``config``, and refer to a writeable sqlite database. The ``mysql`` type 
+    ``mysql``. The ``sqlite`` type requires that ``userdb_file`` be set in the
+    ``db`` section of ``config`` (that is, under the ``[db]`` heading in the
+    config file), and refer to a writeable sqlite database. The ``mysql`` type
     requires ``userdb_host``, ``userdb_user``, ``userdb_pass``, and
     ``userdb_name`` to be set, and provide the host and name of a MySQL database,
     as well as a username and password for a user able to write to said database.
