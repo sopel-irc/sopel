@@ -15,13 +15,13 @@ def configure(config):
     """
     | [radio] | example | purpose |
     | ------- | ------- | ------- |
-    | URL | http://127.0.0.1:8000/ | URL to the ShoutCAST administration page |
-    | sID | 1 | Stream ID (only required for multi-stream servers.) |
+    | url | http://127.0.0.1:8000/ | URL to the ShoutCAST administration page |
+    | sid | 1 | Stream ID (only required for multi-stream servers.) |
     """
     if config.option('Configure radio module', False):
         config.add_section('radio')
-        config.interactive_add('radio', 'URL', 'URL to the ShoutCAST administration page', 'http://127.0.0.1:8000/')
-        config.interactive_add('radio', 'sID', 'Stream ID (only required for multi-stream servers.)', '1')
+        config.interactive_add('radio', 'url', 'URL to the ShoutCAST administration page', 'http://127.0.0.1:8000/')
+        config.interactive_add('radio', 'sid', 'Stream ID (only required for multi-stream servers.)', '1')
 
 radioURL = '' # Set once, after the first .radio request.
 checkSongs = False
@@ -86,7 +86,7 @@ def radio(willie, trigger):
             willie.say('Radio module not configured')
             return
         else:
-            radioURL = willie.config.radio.URL+'%s?sid='+willie.config.radio.sID
+            radioURL = willie.config.radio.url+'%s?sid='+willie.config.radio.sid
     try:
         args = trigger.group(2).lower().split(' ')
     except AttributeError:
