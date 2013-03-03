@@ -24,7 +24,7 @@ def dice(willie, trigger):
     arr = trigger.group(2).lower().strip(' ')
     arr = arr.replace('-', ' - ').replace('+', ' + ').replace('/', ' / ')
     arr = arr.replace('*', ' * ').replace('(', ' ( ').replace(')', ' ) ')
-    arr - arr.replace('^', ' ^ ').replace('()', '').split(' ')
+    arr = arr.replace('^', ' ^ ').replace('()', '').split(' ')
     full_string, calc_string = '', ''
 
     for segment in arr:
