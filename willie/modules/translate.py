@@ -203,7 +203,7 @@ more_mangle.commands = ['mangle2']
 
 def collect_mangle_lines(willie, trigger):
     global mangle_lines
-    mangle_lines[trigger.sender.lower()] = "%s said '%s'" % (trigger.nick, trigger.group(0).encode('utf-8').strip())
+    mangle_lines[trigger.sender.lower()] = "%s said '%s'" % (trigger.nick, (trigger.group(0).strip()))
 collect_mangle_lines.rule = ('(.*)')
 collect_mangle_lines.priority = 'low'
 
