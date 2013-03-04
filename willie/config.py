@@ -151,6 +151,14 @@ class Config(object):
                 value = ','.join(value)
             self._parent.parser.set(self._name, name, value)
 
+        def get_list(self, name):
+            value = getattr(self, name)
+            if isinstance(value, basestring):
+                value = value.split(',')
+                # Keep the split value, so we don't have to keep doing this
+                setattr(self, name, value)
+            return value
+
     def __getattr__(self, name):
         """"""
         if name in self.parser.sections():
