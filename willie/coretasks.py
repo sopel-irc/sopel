@@ -16,6 +16,7 @@ dispatch function in bot.py and making it easier to maintain.
 import re
 import threading
 import time
+from willie.tools import Nick
 
 
 def startup(willie, trigger):
