@@ -42,6 +42,7 @@ def f_time(willie, trigger):
             else:
                 willie.say("I'm sorry, I don't know about the %s timezone or"
                            " user." % tz)
+                return
     #We don't have a timzeone. Is there one set? If not, just use UTC
     elif willie.db:
         if trigger.nick in willie.db.preferences:
