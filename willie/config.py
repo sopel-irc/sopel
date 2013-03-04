@@ -8,7 +8,7 @@ configuration file.
 The Willie config file is divided to sections, and each section contains keys
 and values. A section is an attribute of the config class, and is of type
 ``ConfigSection``. Each section contains the keys as attributes. For example,
-if you want to access key example from section test, use 
+if you want to access key example from section test, use
 ``config.test.example``. Note that the key names are made lower-case by the
 parser, regardless of whether they are upper-case in the file.
 
@@ -22,14 +22,14 @@ For backwards compatibility, every key in the core section is an attribute of
 the config class as well as of config.core. For new code, always specify the
 name of the section, because this behavior might be removed in the future.
 
-Running the ``config.py`` file directly will give the user an interactive series
-of dialogs to create the configuration file. This will guide the user through
-creating settings for the Willie core, the settings database, and any modules
-which have a configuration function.
+Running the ``config.py`` file directly will give the user an interactive
+series of dialogs to create the configuration file. This will guide the user
+through creating settings for the Willie core, the settings database, and any
+modules which have a configuration function.
 
 The configuration function, if used, must be declared with the signature
-``configure(config)``. To add options, use ``interactive_add``, ``add_list`` and
-``add_option``.
+``configure(config)``. To add options, use ``interactive_add``, ``add_list``
+and ``add_option``.
 """
 """
 Config - A config class and writing/updating utility for Willie
@@ -221,10 +221,10 @@ class Config(object):
             m = "You currently have " + self.parser.get(section, option)
             if self.option(m + '. Would you like to keep them', True):
                 lst = self.parser.get(section, option)
-        mem = raw_input(prompt)
+        mem = raw_input(prompt + ' ')
         while mem:
             lst.append(mem)
-            mem = raw_input(prompt)
+            mem = raw_input(prompt + ' ')
         self.parser.set(section, option, ','.join(lst))
 
     def add_option(self, section, option, question, default=False):
@@ -253,7 +253,7 @@ class Config(object):
         d = 'n'
         if default:
             d = 'y'
-        ans = raw_input(question + ' (y/n)? [' + d + ']')
+        ans = raw_input(question + ' (y/n)? [' + d + '] ')
         if not ans:
             ans = d
         return (ans is 'y' or ans is 'Y')
