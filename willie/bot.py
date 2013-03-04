@@ -116,8 +116,6 @@ class Willie(irc.Bot):
         if self.config.has_option('core', 'other_bots'):
             nicks = self.config.core.get_list('nick_blocks')
             bots = self.config.core.get_list('other_bots')
-            if isinstance(bots, basestring):
-                bots = bots.split(',')
             nicks.extend(bots)
             self.config.core.nick_blocks = nicks
 
