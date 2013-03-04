@@ -40,7 +40,7 @@ def startup(willie, trigger):
         modes = 'B'
     willie.write(('MODE ', '%s +%s' % (willie.nick, modes)))
 
-    for channel in willie.config.core.channels.split(','):
+    for channel in willie.config.core.get_list('channels'):
         willie.write(('JOIN', channel))
 
 startup.rule = r'(.*)'
