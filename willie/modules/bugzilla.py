@@ -29,7 +29,7 @@ def configure(config):
 def setup(willie):
     regexes = []
     if willie.config.has_option('bugzilla', 'domains'):
-        for domain in willie.config.bugzilla.domains:
+        for domain in willie.config.bugzilla.get_list(domains):
             regex = re.compile('%s/show_bug.cgi\?\S*?id=(\d+)' % domain)
             regexes.append(regex)
     else:
@@ -46,7 +46,7 @@ def setup(willie):
 def show_bug(willie, trigger):
     """Show information about a Bugzilla bug."""
     domain = trigger.group(1)
-    if domain not in willie.config.bugzilla.domains:
+    if domain not in willie.config.bugzilla.get_list('domains'):
         return
     url = 'https://%s%sctype=xml&%s' % trigger.groups()
     data = web.get(url)
