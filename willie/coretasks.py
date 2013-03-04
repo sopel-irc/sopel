@@ -81,7 +81,7 @@ list_ops.commands = ['listops']
 def handle_names(willie, trigger):
     ''' Handle NAMES response, happens when joining to channels'''
     names = re.split(' ', trigger.group(1))
-    channel = re.search('(#\S+)', willie.raw).group(1)
+    channel = re.search('(#\S*)', willie.raw).group(1)
     willie.init_ops_list(channel)
     for name in names:
         if '@' in name or '~' in name or '&' in name:
