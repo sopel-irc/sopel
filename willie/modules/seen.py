@@ -15,13 +15,15 @@ from willie.tools import Ddict, Nick
 
 seen_dict=Ddict(dict)
 
-def get_tz(willie, nick):
+def get_user_time(willie, nick):
     tz = 'asdf'
     if willie.db and nick in willie.db.preferences:
-            tz = willie.db.preferences.get(nick, 'tz')
+            tz = willie.db.preferences.get(nick, 'tz') or 'UTC'
+            tformat = (willie.db.preferences.get(nick, 'time_format') or
+                       '%Y-%m-%d %H:%M:%S %Z')
     if tz not in pytz.all_timezones_set:
         tz = 'UTC'
-    return tz.strip()
+    return (pytz.timezone(tz.strip()), tformat)
 
 def seen(willie, trigger):
     """Reports when and where the user was last seen."""
@@ -34,9 +36,9 @@ def seen(willie, trigger):
         channel = seen_dict[nick]['channel']
         message = seen_dict[nick]['message']
 
-        tz = get_tz(willie, trigger.nick)
-        saw = datetime.datetime.fromtimestamp(timestamp, pytz.timezone(tz))
-        timestamp = saw.strftime('%Y-%m-%d %H:%M:%S %Z')
+        tz, tformat = get_user_time(willie, trigger.nick)
+        saw = datetime.datetime.fromtimestamp(timestamp, tz)
+        timestamp = saw.strftime(tformat)
 
         msg = "I last saw %s at %s on %s, saying %s" % (nick, timestamp, channel, message)
         willie.say(str(trigger.nick) + ': ' + msg)
