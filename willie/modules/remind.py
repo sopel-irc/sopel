@@ -113,8 +113,8 @@ def remind(willie, input):
     duration = 0
     message = re.split('(\d+ ?(?:'+periods+')) ?', input.group(2))[1:]
     reminder = ''
+    stop = False
     for piece in message:
-        stop = False
         grp = re.match('(\d+) ?(.*) ?', piece)
         if grp and not stop:
             length = float(grp.group(1))

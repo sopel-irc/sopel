@@ -16,6 +16,7 @@ dispatch function in bot.py and making it easier to maintain.
 import re
 import threading
 import time
+from willie.tools import Nick
 
 
 def startup(willie, trigger):
@@ -39,7 +40,7 @@ def startup(willie, trigger):
         modes = 'B'
     willie.write(('MODE ', '%s +%s' % (willie.nick, modes)))
 
-    for channel in willie.config.core.channels.split(','):
+    for channel in willie.config.core.get_list('channels'):
         willie.write(('JOIN', channel))
 
 startup.rule = r'(.*)'
@@ -80,7 +81,7 @@ list_ops.commands = ['listops']
 def handle_names(willie, trigger):
     ''' Handle NAMES response, happens when joining to channels'''
     names = re.split(' ', trigger.group(1))
-    channel = re.search('(#\S+)', willie.raw).group(1)
+    channel = re.search('(#\S*)', willie.raw).group(1)
     willie.init_ops_list(channel)
     for name in names:
         if '@' in name or '~' in name or '&' in name:
