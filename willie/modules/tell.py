@@ -6,8 +6,14 @@ Licensed under the Eiffel Forum License 2.
 http://willie.dftba.net
 """
 
-import os, re, time, random
+import os
+import re
+import time
+import datetime
+import pytz
+import random
 import threading
+from willie.tools import Nick
 
 maximum = 4
 
@@ -54,27 +60,38 @@ def setup(self):
     self.memory['tell_lock'] = threading.Lock()
     self.memory['reminders'] = loadReminders(self.tell_filename, self.memory['tell_lock'])
 
+
+def get_user_time(willie, nick):
+    tz = 'UTC'
+    tformat = '%Y-%m-%d %H:%M:%S %Z'
+    if willie.db and nick in willie.db.preferences:
+            tz = willie.db.preferences.get(nick, 'tz') or 'UTC'
+            tformat = willie.db.preferences.get(nick, 'time_format')
+    if tz not in pytz.all_timezones_set:
+        tz = 'UTC'
+    return (pytz.timezone(tz.strip()), tformat)
+
+
 def f_remind(willie, trigger):
     teller = trigger.nick
 
     verb, tellee, msg = trigger.groups()
-    verb = verb.encode('utf-8')
-    tellee = tellee.encode('utf-8')
-    msg = msg.encode('utf-8')
-
-    tellee_original = tellee.rstrip('.,:;')
-    tellee = tellee_original.lower()
+    verb = unicode(verb)
+    tellee = Nick(tellee.rstrip('.,:;'))
+    msg = unicode(msg)
 
     if not os.path.exists(willie.tell_filename):
         return
 
     if len(tellee) > 20:
         return willie.reply('That nickname is too long.')
-    if tellee.lower() == willie.nick.lower():
-        return willie.reply('I\'m here now, you can tell me whatever you want!')
-
-    timenow = time.strftime('%d %b %H:%MZ', time.gmtime())
-    if not tellee in (teller.lower(), willie.nick, 'me'):
+    if tellee == willie.nick:
+        return willie.reply("I'm here now, you can tell me whatever you want!")
+    
+    tz, tformat = get_user_time(willie, tellee)
+    print tellee, tz, tformat
+    timenow = datetime.datetime.now(tz).strftime(tformat)
+    if not tellee in (Nick(teller), willie.nick, 'me'):
         willie.memory['tell_lock'].acquire()
         try:
             if not willie.memory['reminders'].has_key(tellee):
@@ -84,10 +101,10 @@ def f_remind(willie, trigger):
         finally:
             willie.memory['tell_lock'].release()
 
-        response = "I'll pass that on when %s is around." % tellee_original
+        response = "I'll pass that on when %s is around." % tellee
 
         willie.reply(response)
-    elif teller.lower() == tellee:
+    elif Nick(teller) == tellee:
         willie.say('You can %s yourself that.' % verb)
     else: willie.say("Hey, I'm not as stupid as Monty you know!")
 
@@ -125,9 +142,9 @@ def message(willie, trigger):
 
     for remkey in remkeys:
         if not remkey.endswith('*') or remkey.endswith(':'):
-            if tellee.lower() == remkey:
+            if tellee == remkey:
                 reminders.extend(getReminders(willie, channel, remkey, tellee))
-        elif tellee.lower().startswith(remkey.rstrip('*:')):
+        elif tellee.startswith(remkey.rstrip('*:')):
             reminders.extend(getReminders(willie, channel, remkey, tellee))
 
     for line in reminders[:maximum]:
