@@ -65,6 +65,9 @@ class Nick(unicode):
         """Returns `nick` in lower case per RFC 1459"""
         l = nick.lower().replace('{', '[').replace('}', ']').replace('|', '\\')
         return l
+    
+    def __hash__(self):
+        return self._lowered.__hash__()
 
     def __lt__(self, other):
         if isinstance(other, Nick):
