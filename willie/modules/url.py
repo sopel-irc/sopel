@@ -37,7 +37,8 @@ def configure(config):
 def setup(willie):
     global url_finder, exclusion_char
     if willie.config.has_option('url', 'exclude'):
-        regexes = [re.compile(s) for s in willie.config.url.exclude]
+        regexes = [re.compile(s) for s in
+                   willie.config.url.get_list(exclude)]
     else:
         regexes = []
     

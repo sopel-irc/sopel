@@ -42,11 +42,11 @@ def enumerate_modules(config):
             if fn.endswith('.py') and not fn.startswith('_'):
                 filenames.append(os.path.join(modules_dir, fn))
     else:
-        for fn in config.enable.split(','):
+        for fn in config.core.get_list('enable'):
             filenames.append(os.path.join(modules_dir, fn + '.py'))
 
     if hasattr(config, 'extra') and config.extra is not None:
-        extra = config.extra.split(',')
+        extra = config.core.get_list('extra')
         for fn in extra:
             if os.path.isfile(fn):
                 filenames.append(fn)
@@ -112,17 +112,10 @@ class Willie(irc.Bot):
             self.config.core.nick_blocks = ''
         if not self.config.has_option('core', 'host_blocks'):
             self.config.core.host_blocks = ''
-        #Make into lists
-        if not isinstance(self.config.core.nick_blocks, list):
-            self.config.core.nick_blocks = self.config.core.nick_blocks.split(',')
-        if not isinstance(self.config.core.host_blocks, list):
-            self.config.core.host_blocks = self.config.core.host_blocks.split(',')
         #Add nicks blocked under old scheme, if present
         if self.config.has_option('core', 'other_bots'):
-            nicks = self.config.core.nick_blocks
-            bots = self.config.core.other_bots
-            if isinstance(bots, basestring):
-                bots = bots.split(',')
+            nicks = self.config.core.get_list('nick_blocks')
+            bots = self.config.core.get_list('other_bots')
             nicks.extend(bots)
             self.config.core.nick_blocks = nicks
 
@@ -344,9 +337,10 @@ class Willie(irc.Bot):
             setting ``mode -m`` on the channel ``#example``, args would be
             ``('#example', '-m')``
             """
-            if len(self.config.admins) > 0:
-                s.admin = (origin.nick in 
-                           [Nick(n) for n in self.config.admins.split(',')])
+            if len(self.config.core.get_list('admins')) > 0:
+                s.admin = (origin.nick in
+                           [Nick(n) for n in
+                            self.config.core.get_list('admins')])
             else:
                 s.admin = False
 
@@ -356,8 +350,8 @@ class Willie(irc.Bot):
             """
 
             # Support specifying admins by hostnames
-            if not s.admin and len(self.config.admins) > 0:
-                for each_admin in self.config.admins.split(','):
+            if not s.admin and len(self.config.core.get_list('admins')) > 0:
+                for each_admin in self.config.core.get_list('admins'):
                     re_admin = re.compile(each_admin)
                     if re_admin.findall(origin.host):
                         s.admin = True
@@ -457,14 +451,15 @@ class Willie(irc.Bot):
                                                event, args, self)
 
                         if self.config.core.other_bots is not None:
-                            if trigger.nick in self.config.other_bots.split(','):
+                            if (trigger.nick in
+                                    self.config.core.get_list('other_bots')):
                                 continue
 
                         nick = (trigger.nick).lower()
 
                         ## blocking ability
-                        bad_nicks = self.config.core.nick_blocks
-                        bad_masks = self.config.core.host_blocks
+                        bad_nicks = self.config.core.get_list('nick_blocks')
+                        bad_masks = self.config.core.get_list('host_blocks')
 
                         if len(bad_masks) > 0:
                             for hostmask in bad_masks:
