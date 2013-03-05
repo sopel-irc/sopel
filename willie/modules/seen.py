@@ -34,7 +34,7 @@ def seen(willie, trigger):
         channel = seen_dict[nick]['channel']
         message = seen_dict[nick]['message']
 
-        tz = get_tz(willie, nick)
+        tz = get_tz(willie, trigger.nick)
         saw = datetime.datetime.fromtimestamp(timestamp, pytz.timezone(tz))
         timestamp = saw.strftime('%Y-%m-%d %H:%M:%S %Z')
 
