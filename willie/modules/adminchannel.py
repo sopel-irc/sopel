@@ -162,7 +162,7 @@ def ban(willie, trigger):
     if banmask == '':
         return
     willie.write(['MODE', channel, '+b', banmask])
-ban.commands = ['ban']
+ban.commands = ['ban', 'banish']
 ban.priority = 'high'
 
 
