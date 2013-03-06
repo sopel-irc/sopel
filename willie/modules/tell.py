@@ -63,13 +63,13 @@ def setup(self):
 
 def get_user_time(willie, nick):
     tz = 'UTC'
-    tformat = '%Y-%m-%d %H:%M:%S %Z'
+    tformat = None
     if willie.db and nick in willie.db.preferences:
             tz = willie.db.preferences.get(nick, 'tz') or 'UTC'
             tformat = willie.db.preferences.get(nick, 'time_format')
     if tz not in pytz.all_timezones_set:
         tz = 'UTC'
-    return (pytz.timezone(tz.strip()), tformat)
+    return (pytz.timezone(tz.strip()), tformat or '%Y-%m-%d %H:%M:%S %Z')
 
 
 def f_remind(willie, trigger):
