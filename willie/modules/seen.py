@@ -16,14 +16,14 @@ from willie.tools import Ddict, Nick
 seen_dict=Ddict(dict)
 
 def get_user_time(willie, nick):
-    tz = 'asdf'
+    tz = 'UTC'
+    tformat = None
     if willie.db and nick in willie.db.preferences:
             tz = willie.db.preferences.get(nick, 'tz') or 'UTC'
-            tformat = (willie.db.preferences.get(nick, 'time_format') or
-                       '%Y-%m-%d %H:%M:%S %Z')
+            tformat = willie.db.preferences.get(nick, 'time_format')
     if tz not in pytz.all_timezones_set:
         tz = 'UTC'
-    return (pytz.timezone(tz.strip()), tformat)
+    return (pytz.timezone(tz.strip()), tformat or '%Y-%m-%d %H:%M:%S %Z')
 
 def seen(willie, trigger):
     """Reports when and where the user was last seen."""
