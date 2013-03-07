@@ -6,21 +6,20 @@ Licensed under the Eiffel Forum License 2.
 http://willie.dftba.net
 """
 
-import os, re, time, threading
-from pytz import timezone, all_timezones
+import os
+import re
+import time
+import threading
+from pytz import timezone, all_timezones_set
 import pytz
 import codecs
 from datetime import tzinfo, timedelta, datetime
-all_timezones_set = set(all_timezones)
 
-def setup(willie):
-    #Having a db means pref's exists. Later, we can just use `if willie.db`.
-    if willie.db and not willie.db.preferences.hascolumn('tz'):
-        willie.db.preferences.add_columns(['tz'])
 
 def filename(self):
     name = self.nick + '-' + self.config.host + '.reminders.db'
     return os.path.join(self.config.dotdir, name)
+
 
 def load_database(name):
     data = {}
@@ -29,12 +28,15 @@ def load_database(name):
         for line in f:
             unixtime, channel, nick, message = line.split('\t')
             message = message.rstrip('\n')
-            t = int(float(unixtime))#WTFs going on here?
+            t = int(float(unixtime))  # WTFs going on here?
             reminder = (channel, nick, message)
-            try: data[t].append(reminder)
-            except KeyError: data[t] = [reminder]
+            try:
+                data[t].append(reminder)
+            except KeyError:
+                data[t] = [reminder]
         f.close()
     return data
+
 
 def dump_database(name, data):
     f = codecs.open(name, 'w', encoding='utf-8')
@@ -43,7 +45,14 @@ def dump_database(name, data):
             f.write('%s\t%s\t%s\t%s\n' % (unixtime, channel, nick, message))
     f.close()
 
+
 def setup(willie):
+    #Having a db means pref's exists. Later, we can just use `if willie.db`.
+    if willie.db and not willie.db.preferences.has_columns('tz'):
+        willie.db.preferences.add_columns(['tz'])
+    if willie.db and not willie.db.preferences.has_columns('time_format'):
+        willie.db.preferences.add_columns(['tz'])
+
     willie.rfn = filename(willie)
     willie.rdb = load_database(willie.rfn)
 
@@ -58,7 +67,8 @@ def setup(willie):
                     for (channel, nick, message) in willie.rdb[oldtime]:
                         if message:
                             willie.msg(channel, nick + ': ' + message)
-                        else: willie.msg(channel, nick + '!')
+                        else:
+                            willie.msg(channel, nick + '!')
                     del willie.rdb[oldtime]
                 dump_database(willie.rfn, willie.rdb)
             time.sleep(2.5)
@@ -108,10 +118,11 @@ scaling = {
 
 periods = '|'.join(scaling.keys())
 
+
 def remind(willie, input):
     """Gives you a reminder in the given amount of time."""
     duration = 0
-    message = re.split('(\d+ ?(?:'+periods+')) ?', input.group(2))[1:]
+    message = re.split('(\d+ ?(?:' + periods + ')) ?', input.group(2))[1:]
     reminder = ''
     stop = False
     for piece in message:
@@ -125,54 +136,75 @@ def remind(willie, input):
             stop = True
     if duration == 0:
         return willie.reply("Sorry, didn't understand the input.")
-            
+
     if duration % 1:
         duration = int(duration) + 1
-    else: duration = int(duration)
+    else:
+        duration = int(duration)
 
     create_reminder(willie, input, duration, reminder)
 remind.commands = ['in']
 remind.example = '.in 3h45m Go to class'
 
 
-def at(willie, input):
-    """Gives you a reminder at the given time."""
-    hour, minute, second, tz, message = input.groups()
-    if not second: second = '0'
-    
-    # Personal time zones, because they're rad
-    if willie.db:
-        if input.group(2) and tz in willie.db.preferences:
-            personal_tz = willie.db.preferences.get(tz, 'tz')
-        elif input.nick in willie.db.preferences:
-            personal_tz = willie.db.preferences.get(input.nick, 'tz')
-    if tz not in all_timezones_set and not personal_tz: 
-        message=tz+message
-        tz = 'UTC'
-    elif tz not in all_timezones_set and personal_tz:
-        message=tz+message
-        tz = personal_tz
-    tz = tz.strip()
-    
-    if tz not in all_timezones_set:
-        willie.say("Sorry, but I don't have data for that timezone or user.")
-        return
-        
-    tzi = timezone(tz)
-    now = datetime.now(tzi)
+def at(willie, trigger):
+    """
+    Gives you a reminder at the given time. Takes hh:mm:ssContinent/Large_City
+    message. Continent/Large_City is a timezone from the tzdb; a list of valid
+    options is available at http://dft.ba/-tz . The seconds and timezone are
+    optional.
+    """
+    regex = re.compile(r'(\d+):(\d+)(?::(\d+))?([^\s\d]+)? (.*)')
+    match = regex.match(trigger.group(2))
+    if not match:
+        willie.reply("Sorry, but I didn't understand your input.")
+        return willie.NOLIMIT
+    hour, minute, second, tz, message = match.groups()
+    print match.groups()
+    if not second:
+        second = '0'
+    if tz:
+        if tz not in all_timezones_set:
+            good_tz = False
+            if willie.db and tz in willie.db.preferences:
+                tz = willie.db.preferences.get(tz, 'tz')
+                if tz:
+                    tzi = timezone(tz)
+                    good_tz = True
+            if not good_tz:
+                willie.reply("I don't know that timezone or user.")
+                return willie.NOLIMIT
+        else:
+            tzi = timezone(tz)
+    elif willie.db and tz in willie.db.preferences:
+        tz = willie.db.preferences.get(tz, 'tz')
+        if tz:
+            tzi = timezone(tz)
+        else:
+            tzi = timezone('UTC')
+    else:
+        tzi = timezone('UTC')
 
-    timediff = (datetime(now.year, now.month, now.day, int(hour), int(minute), int(second), tzinfo = tzi) - now)
+    now = datetime.now(tzi)
+    timediff = (datetime(now.year, now.month, now.day, int(hour), int(minute),
+                         int(second), tzinfo=tzi)
+                - now)
     duration = timediff.seconds
 
-    if duration < 0: duration += 86400
-    create_reminder(willie, input, duration, message)
-at.rule = r'\.at (\d+):(\d+):?(\d+)? (\S+)?( .*)'
+    if duration < 0:
+        duration += 86400
+    create_reminder(willie, trigger, duration, message)
+at.commands = ['at']
+at.example = '.at 13:47 Do your homework!'
+
 
 def create_reminder(willie, input, duration, message):
     t = int(time.time()) + duration
     reminder = (input.sender, input.nick, message)
-    try: willie.rdb[t].append(reminder)
-    except KeyError: willie.rdb[t] = [reminder]
+    try:
+        willie.rdb[t].append(reminder)
+    except KeyError:
+        willie.rdb[t] = [reminder]
 
     dump_database(willie.rfn, willie.rdb)
 
@@ -182,7 +214,8 @@ def create_reminder(willie, input, duration, message):
             w += time.strftime(' on %d %b %Y', time.gmtime(t))
         w += time.strftime(' at %H:%MZ', time.gmtime(t))
         willie.reply('Okay, will remind%s' % w)
-    else: willie.reply('Okay, will remind in %s secs' % duration)
+    else:
+        willie.reply('Okay, will remind in %s secs' % duration)
 
 if __name__ == '__main__':
     print __doc__.strip()
