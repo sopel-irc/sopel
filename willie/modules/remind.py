@@ -119,10 +119,10 @@ scaling = {
 periods = '|'.join(scaling.keys())
 
 
-def remind(willie, input):
+def remind(willie, trigger):
     """Gives you a reminder in the given amount of time."""
     duration = 0
-    message = re.split('(\d+ ?(?:' + periods + ')) ?', input.group(2))[1:]
+    message = re.split('(\d+ ?(?:' + periods + ')) ?', trigger.group(2))[1:]
     reminder = ''
     stop = False
     for piece in message:
@@ -141,8 +141,11 @@ def remind(willie, input):
         duration = int(duration) + 1
     else:
         duration = int(duration)
-
-    create_reminder(willie, input, duration, reminder)
+    tzi = timezone('UTC')
+    if willie.db and trigger.nick in willie.db.preferences:
+        tz = willie.db.preferences.get(trigger.nick, 'tz') or 'UTC'
+        tzi = timezone(tz)
+    create_reminder(willie, trigger, duration, reminder, tzi)
 remind.commands = ['in']
 remind.example = '.in 3h45m Go to class'
 
@@ -160,7 +163,6 @@ def at(willie, trigger):
         willie.reply("Sorry, but I didn't understand your input.")
         return willie.NOLIMIT
     hour, minute, second, tz, message = match.groups()
-    print match.groups()
     if not second:
         second = '0'
     if tz:
@@ -193,14 +195,14 @@ def at(willie, trigger):
 
     if duration < 0:
         duration += 86400
-    create_reminder(willie, trigger, duration, message)
+    create_reminder(willie, trigger, duration, message, timezone('UTC'))
 at.commands = ['at']
 at.example = '.at 13:47 Do your homework!'
 
 
-def create_reminder(willie, input, duration, message):
+def create_reminder(willie, trigger, duration, message, tz):
     t = int(time.time()) + duration
-    reminder = (input.sender, input.nick, message)
+    reminder = (trigger.sender, trigger.nick, message)
     try:
         willie.rdb[t].append(reminder)
     except KeyError:
@@ -209,11 +211,13 @@ def create_reminder(willie, input, duration, message):
     dump_database(willie.rfn, willie.rdb)
 
     if duration >= 60:
-        w = ''
-        if duration >= 3600 * 12:
-            w += time.strftime(' on %d %b %Y', time.gmtime(t))
-        w += time.strftime(' at %H:%MZ', time.gmtime(t))
-        willie.reply('Okay, will remind%s' % w)
+        tformat = "%F - %T%Z"
+        if willie.db and trigger.nick in willie.db.preferences:
+            tformat = (willie.db.preferences.get(trigger.nick, 'time_format')
+                       or "%F - %T%Z")
+        timef = datetime.now(tz).strftime(tformat)
+
+        willie.reply('Okay, will remind at %s' % timef)
     else:
         willie.reply('Okay, will remind in %s secs' % duration)
 
