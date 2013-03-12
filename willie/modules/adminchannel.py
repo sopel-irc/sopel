@@ -23,11 +23,8 @@ def op(willie, trigger):
     Command to op users in a room. If no nick is given,
     willie will op the nick who sent the command
     """
-    if not trigger.isop:
-        return
-    nick = trigger.group(2)
-    verify = auth_check(willie, trigger.nick, nick)
-    if verify:
+    if trigger.isop:
+        nick = trigger.group(2)
         channel = trigger.sender
         if not nick:
             nick = trigger.nick
@@ -41,11 +38,8 @@ def deop(willie, trigger):
     Command to deop users in a room. If no nick is given,
     willie will deop the nick who sent the command
     """
-    if not trigger.isop:
-        return
-    nick = trigger.group(2)
-    verify = auth_check(willie, trigger.nick, nick)
-    if verify:
+    if trigger.isop:
+        nick = trigger.group(2)
         channel = trigger.sender
         if not nick:
             nick = trigger.nick
@@ -59,11 +53,8 @@ def voice(willie, trigger):
     Command to voice users in a room. If no nick is given,
     willie will voice the nick who sent the command
     """
-    if not trigger.isop:
-        return
-    nick = trigger.group(2)
-    verify = auth_check(willie, trigger.nick, nick)
-    if verify:
+    if trigger.isop:
+        nick = trigger.group(2)
         channel = trigger.sender
         if not nick:
             nick = trigger.nick
@@ -77,11 +68,8 @@ def devoice(willie, trigger):
     Command to devoice users in a room. If no nick is given,
     willie will devoice the nick who sent the command
     """
-    if not trigger.isop:
-        return
-    nick = trigger.group(2)
-    verify = auth_check(willie, trigger.nick, nick)
-    if verify:
+    if trigger.isop:
+        nick = trigger.group(2)
         channel = trigger.sender
         if not nick:
             nick = trigger.nick
