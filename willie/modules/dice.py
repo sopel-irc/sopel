@@ -6,7 +6,7 @@ Licensed under the Eiffel Forum License 2.
 http://willie.dftba.net/
 """
 
-from random import randint, seed
+from random import randint, seed, choice
 from willie.modules.calc import calculate
 import re
 
@@ -91,5 +91,18 @@ def rollDice(diceroll):
                        randint(1, size))[randint(0, 9)])
     return sorted(result)  # returns a set of integers.
 
+def choose(willie, trigger):
+    """
+    .choice option1|option2|option3 - Makes a difficult choice easy.
+    """
+    if not trigger.group(2):
+        return willie.reply('I\'d choose an option, but you didn\'t give me any.')
+    choices = trigger.group(2).split('|')
+    pick = choice(choices)
+    return willie.reply('Your options: %s. My choice: %s' % (', '.join(choices), pick))
+choose.commands = ['choice', 'ch']
+choose.priority = 'medium'
+
 if __name__ == '__main__':
     print __doc__.strip()
+
