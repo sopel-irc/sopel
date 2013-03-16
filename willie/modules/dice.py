@@ -100,7 +100,7 @@ def choose(willie, trigger):
     choices = trigger.group(2).split('|')
     pick = choice(choices)
     return willie.reply('Your options: %s. My choice: %s' % (', '.join(choices), pick))
-choose.commands = ['choice', 'ch']
+choose.commands = ['choice', 'ch', 'choose']
 choose.priority = 'medium'
 
 if __name__ == '__main__':
