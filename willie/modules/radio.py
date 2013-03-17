@@ -24,7 +24,7 @@ def configure(config):
         config.interactive_add('radio', 'sid', 'Stream ID (only required for multi-stream servers.)', '1')
 
 radioURL = '' # Set once, after the first .radio request.
-checkSongs = False
+checkSongs = 0
 current_song = ''
 
 def getAPI(willie, trigger):
@@ -94,25 +94,24 @@ def radio(willie, trigger):
         return
     if args[0] == 'on':
         if not trigger.isop:
-            return;
-        if checkSongs == True:
-            willie.reply('Radio data checking is already on.')
             return
+        if checkSongs != 0:
+            return willie.reply('Radio data checking is already on.')
         if not getAPI(willie, trigger):
-            willie.say('Radio data checking not enabled.')
-            checkSongs = False
-            return
-        checkSongs = True
+            checkSongs = 0
+            return willie.say('Radio data checking not enabled.')
+        checkSongs = 10
         while checkSongs:
             last = current_song
             try:
                 current_song = web.get(radioURL % 'currentsong')
                 nextsong = web.get(radioURL % 'nextsong')
             except Exception as e:
-                willie.debug('radio', 'Exception while trying to get periodic radio data: %s' % e, 'warning')
-                willie.say('The radio is not responding to the song request.')
-                willie.say('Turning off radio data checking.')
-                checkSongs = False
+                checkSongs -= 1
+                if checkSongs == 0:
+                    willie.debug('radio', 'Exception while trying to get periodic radio data: %s' % e, 'warning')
+                    willie.say('The radio is not responding to the song request.')
+                    willie.say('Turning off radio data checking.')
                 break
             if not current_song == last:
                 if not current_song:
@@ -127,10 +126,10 @@ def radio(willie, trigger):
     elif args[0] == 'off':
         if not trigger.isop:
             return;
-        if checkSongs == False:
+        if checkSongs == 0:
             willie.reply('Radio data checking is already off.')
             return
-        checkSongs = False
+        checkSongs = 0
         current_song = ''
         willie.reply('Turning off radio data checking.')
     elif args[0] == 'song' or args[0] == 'now':
