@@ -178,8 +178,8 @@ def at(willie, trigger):
                 return willie.NOLIMIT
         else:
             tzi = timezone(tz)
-    elif willie.db and tz in willie.db.preferences:
-        tz = willie.db.preferences.get(tz, 'tz')
+    elif willie.db and trigger.nick in willie.db.preferences:
+        tz = willie.db.preferences.get(trigger.nick, 'tz')
         if tz:
             tzi = timezone(tz)
         else:
@@ -189,7 +189,7 @@ def at(willie, trigger):
 
     now = datetime.now(tzi)
     timediff = (datetime(now.year, now.month, now.day, int(hour), int(minute),
-                         int(second), tzinfo=tzi)
+                         int(second), tzinfo=now.tzinfo)
                 - now)
     duration = timediff.seconds
 
@@ -215,7 +215,7 @@ def create_reminder(willie, trigger, duration, message, tz):
         if willie.db and trigger.nick in willie.db.preferences:
             tformat = (willie.db.preferences.get(trigger.nick, 'time_format')
                        or "%F - %T%Z")
-        timef = datetime.now(tz).strftime(tformat)
+        timef = datetime.fromtimestamp(t, tz).strftime(tformat)
 
         willie.reply('Okay, will remind at %s' % timef)
     else:
