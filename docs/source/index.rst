@@ -380,14 +380,14 @@ Miscellaneous: ``web``, ``tools``
 
 These provide a number of useful shortcuts for common tasks.
 
-web
----
+willie.web
+----------
 
 .. automodule:: willie.web
    :members:
 
-tools
------
+willie.tools
+------------
 
 .. automodule:: willie.tools
    :members:
