@@ -122,27 +122,27 @@ def main(argv=None):
         check_python_version()
         if opts.list_configs is not None:
             configs = enumerate_configs()
-            stdout('Config files in ~/.willie:')
+            print 'Config files in ~/.willie:'
             if len(configs[0]) is 0:
-                stdout('\tNone found')
+                print '\tNone found'
             else:
                 for config in configs[0]:
-                    stdout('\t%s' % config)
-            stdout('-------------------------')
-            stdout('Config files in ~/.jenni:')
+                    print '\t%s' % config
+            print '-------------------------'
+            print 'Config files in ~/.jenni:'
             if len(configs[1]) is 0:
-                stdout('\tNone found')
+                print '\tNone found'
             else:
                 for config in configs[1]:
-                    stdout('\t%s' % config)
-            stdout('-------------------------')
-            stdout('Config files in ~/.phenny:')
+                    print '\t%s' % config
+            print '-------------------------'
+            print 'Config files in ~/.phenny:'
             if len(configs[2]) is 0:
-                stdout('\tNone found')
+                print '\tNone found'
             else:
                 for config in configs[2]:
-                    stdout('\t%s' % config)
-            stdout('-------------------------')
+                    print '\t%s' % config
+            print '-------------------------'
             return
 
         config_name = opts.config or 'default'
@@ -180,7 +180,7 @@ def main(argv=None):
 
         configpath = find_config(config_name)
         if not os.path.isfile(configpath):
-            stdout("Welcome to Willie!\nI can't seem to find the configuration file, so let's generate it!\n")
+            print "Welcome to Willie!\nI can't seem to find the configuration file, so let's generate it!\n"
             if not configpath.endswith('.cfg'):
                 configpath = configpath + '.cfg'
             create_config(configpath)
@@ -243,7 +243,7 @@ def main(argv=None):
         # Step Five: Initialise And Run willie
         run(config_module)
     except KeyboardInterrupt:
-        stdout("\n\nInterrupted")
+        print "\n\nInterrupted"
         os._exit(1)
 if __name__ == '__main__':
     main()
