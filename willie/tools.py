@@ -1,5 +1,10 @@
 # coding=utf-8
 """
+*Availability: 3+*
+``tools`` contains a number of useful miscellaneous tools and shortcuts for use
+in Willie modules.
+"""
+"""
 tools.py - Willie misc tools
 Copyright 2008, Sean B. Palmer, inamidst.com
 Copyright © 2012, Elad Alfassa <elad@fedoraproject.org>
@@ -48,8 +53,8 @@ class Nick(unicode):
     as normal `unicode` objects, case will be preserved. However, when comparing
     two Nick objects, or comparing a Nick object with a `unicode` object, the
     comparison will be case insensitive. This case insensitivity includes the
-    case convention conventions regarding `[]`, `{}`, `|`, and `\` described in
-    RFC 1459.
+    case convention conventions regarding ``[]``, ``{}``, ``|``, and ``\\``
+    described in RFC 1459.
     """
     def __new__(cls, nick):
         s = unicode.__new__(cls, nick)
