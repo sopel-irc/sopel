@@ -27,7 +27,7 @@ import traceback
 
 def deprecated(old):
     def new(*args, **kwargs):
-        stderr('Function %s is deprecated.' % old.__name__)
+        print >> sys.stderr, 'Function %s is deprecated.' % old.__name__
         trace = traceback.extract_stack()
         for line in traceback.format_list(trace[:-1]):
             stderr(line[:-1])
@@ -149,7 +149,6 @@ def stdout(string):
     print string
 
 
-@deprecated
 def stderr(string):
     """
     Print the given ``string`` to stderr. This is equivalent to ``print >>
