@@ -97,7 +97,7 @@ def choose(willie, trigger):
     """
     if not trigger.group(2):
         return willie.reply('I\'d choose an option, but you didn\'t give me any.')
-    choices = trigger.group(2).split('|').split('/').split('\\')
+    choices = trigger.group(2).split('|')
     pick = choice(choices)
     return willie.reply('Your options: %s. My choice: %s' % (', '.join(choices), pick))
 choose.commands = ['choice', 'ch', 'choose']
