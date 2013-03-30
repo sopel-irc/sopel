@@ -29,7 +29,7 @@ def configure(config):
 def setup(willie):
     regexes = []
     if willie.config.has_option('bugzilla', 'domains'):
-        for domain in willie.config.bugzilla.get_list(domains):
+        for domain in willie.config.bugzilla.get_list('domains'):
             regex = re.compile('%s/show_bug.cgi\?\S*?id=(\d+)' % domain)
             regexes.append(regex)
     else:
