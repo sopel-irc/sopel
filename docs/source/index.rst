@@ -378,8 +378,19 @@ The ``Config`` class
 Miscellaneous: ``web``, ``tools``
 =================================
 
+These provide a number of useful shortcuts for common tasks.
+
+willie.web
+----------
+
 .. automodule:: willie.web
-    :members:
+   :members:
+
+willie.tools
+------------
+
+.. automodule:: willie.tools
+   :members:
 
 Indices and tables
 ==================
