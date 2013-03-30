@@ -1,0 +1,11 @@
+Changes between 3.1.2 and 3.2.0
+===============================
+* tools.Nick class added for RFC-compliant nickname comparison and storage
+* Returning willie.NO_LIMIT from a callable ignores the rate limit for that call
+* get_list() added to ConfigSection. Will reliably return a list from a config attribute.
+* A number of bugs regarding admin and operator lists were fixed
+* Unusual mode changes no longer cause errors
+* Times shown by .t, .in, etc. all now use formats set by .settimeformat
+* sed feature can use backslashed slashes in substitutions
+* Weather module was rewritten, and now uses Yahoo! Weather
+* Numerous stability and usability fixes
