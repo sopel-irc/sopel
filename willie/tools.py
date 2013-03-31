@@ -41,7 +41,7 @@ def deprecated(old):
 # A simple class to make mutli dimensional dict easy to use
 class Ddict(dict):
     """
-    A simple helper class to ease the creation of multi-dimensional ``dict``s.
+    A simple helper class to ease the creation of multi-dimensional ``dict``\s.
     """
 
     def __init__(self, default=None):
