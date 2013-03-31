@@ -19,7 +19,7 @@ import bot
 import signal
 from tools import stderr
 
-__version__ = '3.2.0-rc1'
+__version__ = '3.2.0'
 
 
 def run(config):
