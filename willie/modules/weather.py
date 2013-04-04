@@ -73,7 +73,12 @@ def get_wind(parsed):
         wind_data = parsed['feed']['yweather_wind']
     except KeyError:
         return 'unknown'.encode('utf-8')
-    kph = float(wind_data['speed'])
+    try:
+        kph = float(wind_data['speed'])
+    except ValueError:
+        kph = -1
+        #Incoming data isn't a number, default to zero.
+        #This is a dirty fix for issue #218
     speed = int(round(kph / 1.852, 0))
     degrees = int(wind_data['direction'])
     if speed < 1:
