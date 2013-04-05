@@ -42,3 +42,25 @@ include your changes.
   the name of the thing you're changing in [brackets] at the beginning of the
   message: the module name for modules, [docs] for documentation files,
   [coretasks] for coretasks.py, [db] for the database feature, and so on.
+
+Issue Tags
+----------
+If you're looking to hack on some code, you should consider fixing one of the
+issues that has been reported to the GitHub issue tracker. Here's a quick guide
+to the tags we use:
+
+* Easyfix           - A great place for a new developer to start off, Easyfix
+                      issues are ones which we think will be simple and quick
+                      to address.
+* Patches Welcome   - Things we don't plan on doing, but which we might be
+                      interested to see someone else submit code for
+* Bug               - An error or incorrect behavior
+* Feature           - A new thing the bot should be able to do
+* Tweak             - A minor change to something the bot already does, like
+                      making something's output prettier, improving the
+                      documentation on something, or addressing technical debt
+* Tracking          - An ongoing process that involves lots of changes in lots
+                      of places. Often also a Tweak.
+* Low Priority      - Things we'll get around to doing eventually
+* Medium Priority   - Things that need to be done soon
+* High Priority     - Things that should've been done yesterday
