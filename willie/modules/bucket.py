@@ -54,7 +54,7 @@ def configure(config):
         config.interactive_add('bucket', 'db_name', "Enter the name of the database to use")
         config.interactive_add('bucket', 'literal_path', "Enter the path in which you want to store output of the literal command")
         config.interactive_add('bucket', 'literal_baseurl', "Base URL for literal output")
-        config.interactive_add('bucket', 'inv_size', "Inventory size", 15)
+        config.interactive_add('bucket', 'inv_size', "Inventory size", '15')
         if config.option('do you want to generate bucket tables and populate them with some default data?', True):
             db = MySQLdb.connect(host=config.bucket.db_host,
                                  user=config.bucket.db_user,
@@ -112,7 +112,7 @@ class Inventory():
             self.avilable_items.append(item)
         if item in self.current_items:
             return '%ERROR% duplicate item %ERROR%'
-        if len(self.current_items) >= willie.config.bucket.inv_size:
+        if len(self.current_items) >= int(willie.config.bucket.inv_size):
             dropped = True
         self.current_items.appendleft(item)
         return dropped
@@ -127,7 +127,7 @@ class Inventory():
     def populate(self):
         ''' Clears the inventory and fill it with random items '''
         self.current_items = deque([])
-        while (len(self.current_items) < willie.config.bucket.inv_size):
+        while (len(self.current_items) < int(willie.config.bucket.inv_size)):
             self.add_random()
 
     def give_item(self):
