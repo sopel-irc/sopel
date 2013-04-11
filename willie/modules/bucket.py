@@ -45,6 +45,7 @@ def configure(config):
     | db_name | bucket | The name of the database you will use |
     | literal_path | /home/willie/www/bucket | The path in which to store output of the literal command |
     | literal_baseurl | http://example.net/~willie/bucket | The base URL for literal output |
+    | inv_size | 15 | The maximum amount of items that Willie can keep. |
     """
     if config.option('Configure Bucket factiod DB', False):
         config.interactive_add('bucket', 'db_host', "Enter the MySQL hostname", 'localhost')
@@ -53,6 +54,7 @@ def configure(config):
         config.interactive_add('bucket', 'db_name', "Enter the name of the database to use")
         config.interactive_add('bucket', 'literal_path', "Enter the path in which you want to store output of the literal command")
         config.interactive_add('bucket', 'literal_baseurl', "Base URL for literal output")
+        config.interactive_add('bucket', 'inv_size', "Inventory size", 15)
         if config.option('do you want to generate bucket tables and populate them with some default data?', True):
             db = MySQLdb.connect(host=config.bucket.db_host,
                                  user=config.bucket.db_user,
@@ -79,7 +81,6 @@ class Inventory():
     ''' Everything inventory related '''
     avilable_items = []
     current_items = deque([])
-    # Max length 15
 
     def add_random(self):
         ''' Adds a random item to the inventory'''
@@ -111,7 +112,7 @@ class Inventory():
             self.avilable_items.append(item)
         if item in self.current_items:
             return '%ERROR% duplicate item %ERROR%'
-        if len(self.current_items) >= 15:
+        if len(self.current_items) >= willie.config.bucket.inv_size:
             dropped = True
         self.current_items.appendleft(item)
         return dropped
@@ -126,7 +127,7 @@ class Inventory():
     def populate(self):
         ''' Clears the inventory and fill it with random items '''
         self.current_items = deque([])
-        while (len(self.current_items) < 15):
+        while (len(self.current_items) < willie.config.bucket.inv_size):
             self.add_random()
 
     def give_item(self):
@@ -307,7 +308,7 @@ save_quote.priority = 'high'
 
 
 def delete_factoid(willie, trigger):
-    """Delets a factoid"""
+    """Deletes a factoid"""
     bucket_runtime_data.inhibit_reply = trigger
     was = bucket_runtime_data.what_was_that
     if not trigger.admin:
