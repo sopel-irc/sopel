@@ -356,6 +356,12 @@ The ``Trigger`` class
         True if the nick which triggered the command is an op on the channel it was triggered in.
         Will always be False if the command was triggered by a private message
 
+    .. py:attribute:: isvoice
+
+        True if the nick which triggered the command is voiced on the channel it was triggered in.
+        Will always be False if the command was triggered by a private message
+        Will be True if user is an op or half-op, even if they don't have +v
+
 More advanced: ``db`` and ``config``
 ====================================
 
