@@ -78,6 +78,25 @@ def list_ops(willie, trigger):
 list_ops.commands = ['listops']
 
 
+def list_voices(willie, trigger):
+    """
+    List channel operators in the given channel, or current channel if none is
+    given.
+    """
+    if trigger.group(2):
+        willie.say(trigger.group(2))
+        if trigger.group(2) in willie.voices:
+            willie.say(str(willie.voices[channel]))
+        else:
+            willie.say('None')
+    else:
+        if trigger.sender in willie.voices:
+            willie.say(str(willie.voices[trigger.sender]))
+        else:
+            willie.say('None')
+list_voices.commands = ['listvoices']
+
+
 def handle_names(willie, trigger):
     ''' Handle NAMES response, happens when joining to channels'''
     names = re.split(' ', trigger.group(1))
@@ -87,8 +106,12 @@ def handle_names(willie, trigger):
         if '@' in name or '~' in name or '&' in name:
             willie.add_op(channel, name.lstrip('@&%+~'))
             willie.add_halfop(channel, name.lstrip('@&%+~'))
+            willie.add_voice(channel, name.lstrip('@&%+~'))
         elif '%' in name:
             willie.add_halfop(channel, name.lstrip('@&%+~'))
+            willie.add_voice(channel, name.lstrip('@&%+~'))
+        elif '+' in name:
+            willie.add_voice(channel, name.lstrip('@&%+~'))
 handle_names.rule = r'(.*)'
 handle_names.event = '353'
 handle_names.thread = False
@@ -143,6 +166,11 @@ def track_modes(willie, trigger):
                 willie.add_halfop(channel, nick)
             else:
                 willie.del_halfop(channel, nick)
+        elif mode[1] == 'v':
+            if mode[0] == '+':
+                willie.add_voice(channel, nick)
+            else:
+                willie.del_voice(channel, nick)
 track_modes.rule = r'(.*)'
 track_modes.event = 'MODE'
 
@@ -168,6 +196,10 @@ def track_nicks(willie, trigger):
         if old in willie.ops[channel]:
             willie.del_op(channel, old)
             willie.add_op(channel, new)
+    for channel in willie.voices:
+        if old in willie.voices[channel]:
+            willie.del_voice(channel, old)
+            willie.add_voice(channel, new)
 
 track_nicks.rule = r'(.*)'
 track_nicks.event = 'NICK'
