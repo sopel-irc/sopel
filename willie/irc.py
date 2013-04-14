@@ -106,6 +106,11 @@ class Bot(asynchat.async_chat):
         A dictionary mapping channels to a ``Nick`` list of their half-ops and
         ops.
         """
+        self.voices = dict()
+        """
+        A dictionary mapping channels to a ``Nick`` list of their voices, half-ops 
+        and ops.
+        """
 
         #We need this to prevent error loops in handle_error
         self.error_count = 0
@@ -499,21 +504,33 @@ class Bot(asynchat.async_chat):
         else:
             self.halfplus[channel].add(Nick(name))
 
+    def add_voice(self, channel, name):
+        if isinstance(name, Nick):
+            self.voices[channel].add(name)
+        else:
+            self.voices[channel].add(Nick(name))
+
     def del_op(self, channel, name):
         self.ops[channel].discard(Nick(name))
 
     def del_halfop(self, channel, name):
         self.halfplus[channel].discard(Nick(name))
 
+    def del_voice(self, channel, name):
+        self.voices[channel].discard(Nick(name))
+
     def flush_ops(self, channel):
         self.ops[channel] = set()
         self.halfplus[channel] = set()
+        self.voices[channel] = set()
 
     def init_ops_list(self, channel):
         if not channel in self.halfplus:
             self.halfplus[channel] = set()
         if not channel in self.ops:
             self.ops[channel] = set()
+        if not channel in self.voices:
+            self.voices[channel] = set()
 
 
 if __name__ == "__main__":
