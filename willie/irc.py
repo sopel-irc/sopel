@@ -314,7 +314,7 @@ class Bot(asynchat.async_chat):
         """ Replacement for self.recv() during SSL connections. From:
         http://evanfosmark.com/2010/09/ssl-support-in-asynchatasync_chat """
         try:
-            data = self.read(buffer_size)
+            data = self.socket.read(buffer_size)
             if not data:
                 self.handle_close()
                 return ''
