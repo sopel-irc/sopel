@@ -64,49 +64,49 @@ def manage_rss(willie, trigger):
             conn.commit()
             willie.reply('Successfully removed the feed from the given channel.')
     elif text[1] == 'start':
-        if not STOP:
-            while True:
-                rows = 0
-                if STOP:
-                    STOP = False
-                    break
-                if DEBUG:
-                    willie.reply('Sync...')
-                db.execute('SELECT * FROM feeds')
-                for row in db:
-                    rows += 1
-                    feed = {
-                    'channel': row[0],
-                    'title': row[1],
-                    'url': row[2]
-                    }
-                    try:
-                        fp = feedparser.parse(feed['url'])
-                        #extra_headers={'Cookie': COOKIE}
-                    except IOError, E:
-                        willie.reply('Invalid entry: ' + str(E))
-                    entry = fp.entries[0]
-                    if hasattr(entry, 'id'):
-                        entry_url = entry.id
-                    else:
-                        entry_url = entry.links[0].href
-                    db.execute('SELECT * FROM entries WHERE channel="%s" AND url="%s"' % (feed['channel'], entry_url))
-                    if len(db.fetchall()) < 1:
-                        message = '[\x02%s\x02] %s \x02%s\x02' % (feed['title'], entry.title, entry_url)
-                        willie.msg(feed['channel'], message)
-                        if DEBUG:
-                            willie.reply('New entry: ' + message)
-                        db.execute('INSERT INTO entries VALUES("%s","%s")' % (feed['channel'], entry_url))
-                        conn.commit()
-                    else:
-                        if DEBUG:
-                            willie.reply('Old entry: ' + message)
-                if rows == 0:
-                    STOP = True
-                    willie.reply('No feeds in database.')
-                if DEBUG:
-                    willie.reply('Done.')
-                time.sleep(INTERVAL)
+        willie.reply('Started.')
+        while True:
+            rows = 0
+            if STOP:
+                STOP = False
+                break
+            if DEBUG:
+                willie.reply('Sync...')
+            db.execute('SELECT * FROM feeds')
+            for row in db:
+                rows += 1
+                feed = {
+                'channel': row[0],
+                'title': row[1],
+                'url': row[2]
+                }
+                try:
+                    fp = feedparser.parse(feed['url'])
+                    #extra_headers={'Cookie': COOKIE}
+                except IOError, E:
+                    willie.reply('Invalid entry: ' + str(E))
+                entry = fp.entries[0]
+                if hasattr(entry, 'id'):
+                    entry_url = entry.id
+                else:
+                    entry_url = entry.links[0].href
+                db.execute('SELECT * FROM entries WHERE channel="%s" AND url="%s"' % (feed['channel'], entry_url))
+                if len(db.fetchall()) < 1:
+                    message = '[\x02%s\x02] %s \x02%s\x02' % (feed['title'], entry.title, entry_url)
+                    willie.msg(feed['channel'], message)
+                    if DEBUG:
+                        willie.reply('New entry: ' + message)
+                    db.execute('INSERT INTO entries VALUES("%s","%s")' % (feed['channel'], entry_url))
+                    conn.commit()
+                else:
+                    if DEBUG:
+                        willie.reply('Old entry: ' + message)
+            if rows == 0:
+                STOP = True
+                willie.reply('No feeds in database.')
+            if DEBUG:
+                willie.reply('Done.')
+            time.sleep(INTERVAL)
         if DEBUG:
             willie.reply('Stopped.')
     elif text[1] == 'stop':
