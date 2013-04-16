@@ -106,8 +106,8 @@ def manage_rss(willie, trigger):
                 else:
                     entry_url = entry.links[0].href
                 db.execute('SELECT * FROM entries WHERE channel="%s" AND url="%s"' % (feed['channel'], entry_url))
+                message = '[\x02%s\x02] %s \x02%s\x02' % (feed['title'], entry.title, entry_url)
                 if len(db.fetchall()) < 1:
-                    message = '[\x02%s\x02] %s \x02%s\x02' % (feed['title'], entry.title, entry_url)
                     willie.msg(feed['channel'], message)
                     if DEBUG:
                         willie.reply('New entry: ' + message)
@@ -135,9 +135,9 @@ def manage_rss(willie, trigger):
             willie.reply('Starting debug.')
             DEBUG = True
     elif text[1] == 'auth':
+        cfg = checkConfig(willie)
         if DEBUG:
             willie.reply('Authenticating as %s on %s...' % (cfg[1], cfg[0]))
-        cfg = checkConfig(willie)
         response = mechanize.urlopen(mechanize.Request(cfg[0]))
         forms = mechanize.ParseResponse(response, backwards_compat=False)
         response.close()
