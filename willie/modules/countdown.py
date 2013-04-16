@@ -13,11 +13,12 @@ def generic_countdown(willie, trigger):
     """
     .countdown <year> <month> <day> - displays a countdown to a given date.
     """
-    try:
-        text = trigger.group(2).split()
-    except:
+    text = trigger.group(2)
+    if not text:
         willie.say("Please use correct format: .countdown 2012 12 21")
-    if (text[0].isdigit() and text[1].isdigit() and text[2].isdigit()
+        return willie.NOLIMIT
+    text = trigger.group(2).split()
+    if text and (text[0].isdigit() and text[1].isdigit() and text[2].isdigit()
             and len(text) == 3):
         diff = (datetime.datetime(int(text[0]), int(text[1]), int(text[2]))
                 - datetime.datetime.today())
@@ -28,6 +29,7 @@ def generic_countdown(willie, trigger):
                    + text[0] + " " + text[1] + " " + text[2])
     else:
         willie.say("Please use correct format: .countdown 2012 12 21")
+        return willie.NOLIMIT
 generic_countdown.commands = ['countdown']
 generic_countdown.priority = 'low'
 
