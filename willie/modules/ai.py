@@ -28,7 +28,7 @@ def ty(willie, trigger):
     mystr = str(mystr)
     if (mystr.find(" no ") == -1) and (mystr.find("no ") == -1) and (mystr.find(" no") == -1):
         willie.reply("You're welcome.")
-ty.rule = '(?i).*(thank).*(you).*(willie|$nickname).*$'
+ty.rule = '(?i).*(thank).*(you).*($nickname).*$'
 ty.priority = 'high'
 ty.rate = 30
 
@@ -41,7 +41,7 @@ ty2.rate = 30
 
 def ty4(willie, trigger):
     ty(willie, trigger)
-ty4.rule = '(?i).*(thanks).*(willie|$nickname).*'
+ty4.rule = '(?i).*(thanks).*($nickname).*'
 ty4.rate = 40
 
 
@@ -55,7 +55,7 @@ def yesno(willie, trigger):
         willie.reply("no")
     elif text[0] == 'no':
         willie.reply("yes")
-yesno.rule = '(willie|$nickname)\:\s+(yes|no)$'
+yesno.rule = '($nickname)\:\s+(yes|no)$'
 yesno.rate = 15
 
 
@@ -64,25 +64,25 @@ def ping_reply(willie, trigger):
     text = text[1].split()
     if text[0] == 'PING' or text[0] == 'ping':
         willie.reply("PONG")
-ping_reply.rule = '(?i)($nickname|willie)\:\s+(ping)\s*'
+ping_reply.rule = '(?i)($nickname)\:\s+(ping)\s*'
 ping_reply.rate = 30
 
 
 def love(willie, trigger):
     willie.reply("I love you too.")
-love.rule = '(?i)i.*love.*(willie|$nickname).*'
+love.rule = '(?i)i.*love.*($nickname).*'
 love.rate = 30
 
 
 def love2(willie, trigger):
     willie.reply("I love you too.")
-love2.rule = '(?i)(willie|$nickname)\:\si.*love.*'
+love2.rule = '(?i)($nickname)\:\si.*love.*'
 love2.rate = 30
 
 
 def love3(willie, trigger):
     willie.reply("I love you too.")
-love3.rule = '(?i)(willie|$nickname)\,\si.*love.*'
+love3.rule = '(?i)($nickname)\,\si.*love.*'
 love3.rate = 30
 
 
@@ -93,7 +93,7 @@ def f_lol(willie, trigger):
         randtime = random.uniform(0, 9)
         time.sleep(randtime)
         willie.say(random.choice(respond))
-f_lol.rule = '(haha!?|lol!?)$'
+#f_lol.rule = '(haha!?|lol!?)$'
 f_lol.priority = 'high'
 
 
