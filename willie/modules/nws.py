@@ -71,7 +71,7 @@ alerts = "http://alerts.weather.gov/cap/wwaatmget.php?x={0}"
 zip_code_lookup = "http://www.zip-codes.com/zip-code/{0}/zip-code-{0}.asp"
 nomsg = "There are no active watches, warnings or advisories, for {0}."
 re_fips = re.compile(r'County FIPS:</a></td><td class="info">(\S+)</td></tr>')
-re_state = re.compile(r'State:</a></td><td class="info"><a href="/state/\S\S.asp">\S\S \[(\S+(?: \S+))?\]</a></td></tr>')
+re_state = re.compile(r'State:</a></td><td class="info"><a href="/state/\S\S.asp">\S\S \[(\S+(?: \S+)?)\]</a></td></tr>')
 re_city = re.compile(r'City:</a></td><td class="info"><a href="/city/\S+.asp">(.*)</a></td></tr>')
 more_info = "Complete weather watches, warnings, and advisories for {0}, available here: {1}"
 
