@@ -52,9 +52,9 @@ startup.priority = 'low'
 
 def refresh_list(willie, trigger):
     ''' If you need to use this, then it means you found a bug '''
-    willie.reply('Refreshing ops list for ' + trigger.sender + '.')
-    willie.flushOps(trigger.sender)
     if trigger.admin:
+        willie.reply('Refreshing ops list for ' + trigger.sender + '.')
+        willie.flushOps(trigger.sender)
         willie.write(('NAMES', trigger.sender))
 refresh_list.commands = ['newoplist']
 
@@ -80,7 +80,7 @@ list_ops.commands = ['listops']
 
 def list_voices(willie, trigger):
     """
-    List channel operators in the given channel, or current channel if none is
+    List users with voice in the given channel, or current channel if none is
     given.
     """
     if trigger.group(2):
