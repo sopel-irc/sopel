@@ -100,6 +100,8 @@ class Config(object):
                 self.parser.set('core', 'prefix', r'\.')
             if not self.parser.has_option('core', 'admins'):
                 self.parser.set('core', 'admins', '')
+            if not self.parser.has_option('core', 'verify_ssl'):
+                self.parser.set('core', 'verify_ssl', 'True')
         else:
             self.parser.add_section('core')
 
