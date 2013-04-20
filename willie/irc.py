@@ -249,12 +249,14 @@ class Bot(asynchat.async_chat):
                 if verification is 'NoCertFound':
                     stderr('Can\'t get server certificate, SSL might be '
                            'disabled on the server.')
-                    sys.exit(1)
+                    os.unlink(self.config.pid_file_path)
+                    os._exit(1)
                 elif verification is not None:
                     stderr('\nSSL Cret information: %s' % verification[1])
                     if verification[0] is False:
                         stderr("Invalid cretficate, CN mismatch!")
-                        sys.exit(1)
+                        os.unlink(self.config.pid_file_path)
+                        os._exit(1)
                 else:
                     stderr('WARNING! certficate information and CN validation '
                            'are not avilable. Is pyOpenSSL installed?')
