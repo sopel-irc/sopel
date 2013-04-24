@@ -25,16 +25,19 @@ abbrs = [
 t_sentence = r'^.*?(?<!%s)(?:\.(?= [A-Z0-9]|\Z)|\Z)'
 r_sentence = re.compile(t_sentence % ')(?<!'.join(abbrs))
 
+
 def unescape(s):
     s = s.replace('&gt;', '>')
     s = s.replace('&lt;', '<')
     s = s.replace('&amp;', '&')
     return s
 
+
 def text(html):
     html = r_tag.sub('', html)
     html = r_whitespace.sub(' ', html)
     return unescape(html).strip()
+
 
 def etymology(word):
     # @@ <nsh> sbp, would it be possible to have a flag for .ety to get 2nd/etc
@@ -56,11 +59,6 @@ def etymology(word):
         return None
     sentence = m.group(0)
 
-    try:
-        sentence = unicode(sentence, 'iso-8859-1')
-        sentence = sentence.encode('utf-8')
-    except: pass
-
     maxlength = 275
     if len(sentence) > maxlength:
         sentence = sentence[:maxlength]
@@ -71,17 +69,17 @@ def etymology(word):
     sentence = '"' + sentence.replace('"', "'") + '"'
     return sentence + ' - ' + (etyuri % word)
 
+
 def f_etymology(willie, trigger):
     """Look up the etymology of a word"""
     word = trigger.group(2)
-    if not word or not re.match(r"([A-Za-z0-9' .-]+)$", word):
-        return
 
-    try: result = etymology(word.encode('utf-8'))
+    try:
+        result = etymology(word)
     except IOError:
         msg = "Can't connect to etymonline.com (%s)" % (etyuri % word)
         willie.msg(trigger.sender, msg)
-        return
+        return willie.NOLIMIT
     except AttributeError:
         result = None
 
@@ -91,12 +89,6 @@ def f_etymology(willie, trigger):
         uri = etysearch % word
         msg = 'Can\'t find the etymology for "%s". Try %s' % (word, uri)
         willie.msg(trigger.sender, msg)
-# @@ Cf. http://swhack.com/logs/2006-01-04#T01-50-22
+        return willie.NOLIMIT
 f_etymology.commands = ['ety']
 f_etymology.example = '.ety word'
-f_etymology.thread = True
-f_etymology.priority = 'high'
-
-if __name__=="__main__":
-    import sys
-    print etymology(sys.argv[1])
