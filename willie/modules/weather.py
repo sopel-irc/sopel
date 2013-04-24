@@ -16,10 +16,12 @@ import feedparser
 
 r_from = re.compile(r'(?i)([+-]\d+):00 from')
 
+
 def setup(willie):
     #Having a db means pref's exists. Later, we can just use `if willie.db`.
     if willie.db and not willie.db.preferences.has_columns('woeid'):
         willie.db.preferences.add_columns(['woeid'])
+
 
 def woeid_search(query):
     """
@@ -40,39 +42,43 @@ def woeid_search(query):
         return None
     return first_result
 
+
 def get_cover(parsed):
     try:
         condition = parsed.entries[0]['yweather_condition']
     except KeyError:
-        return 'unknown'.encode('utf-8')
+        return 'unknown'
     text = condition['text']
     code = int(condition['code'])
     #TODO parse code to get those little icon thingies.
-    return text.encode('utf-8')
+    return text
+
 
 def get_temp(parsed):
     try:
         condition = parsed.entries[0]['yweather_condition']
     except KeyError:
-        return 'unknown'.encode('utf-8')
+        return 'unknown'
     temp = int(condition['temp'])
     f = round((temp * 1.8) + 32, 2)
-    return (u'%d\u00B0C (%d\u00B0F)'.encode('utf-8') % (temp, f))
-    
+    return (u'%d\u00B0C (%d\u00B0F)' % (temp, f))
+
+
 def get_pressure(parsed):
     try:
         pressure = parsed['feed']['yweather_atmosphere']['pressure']
     except KeyError:
-        return 'unknown'.encode('utf-8')
+        return 'unknown'
     millibar = float(pressure)
     inches = int(millibar / 33.7685)
-    return ('%din (%dmb)' % (inches, int(millibar))).encode('utf-8')
+    return ('%din (%dmb)' % (inches, int(millibar)))
+
 
 def get_wind(parsed):
     try:
         wind_data = parsed['feed']['yweather_wind']
     except KeyError:
-        return 'unknown'.encode('utf-8')
+        return 'unknown'
     try:
         kph = float(wind_data['speed'])
     except ValueError:
@@ -107,26 +113,27 @@ def get_wind(parsed):
         description = 'Violent storm'
     else:
         description = 'Hurricane'
-    
+
     if (degrees <= 22.5) or (degrees > 337.5):
-        degrees = u'\u2191'.encode('utf-8')
+        degrees = u'\u2191'
     elif (degrees > 22.5) and (degrees <= 67.5):
-        degrees = u'\u2197'.encode('utf-8')
+        degrees = u'\u2197'
     elif (degrees > 67.5) and (degrees <= 112.5):
-        degrees = u'\u2192'.encode('utf-8')
+        degrees = u'\u2192'
     elif (degrees > 112.5) and (degrees <= 157.5):
-        degrees = u'\u2198'.encode('utf-8')
+        degrees = u'\u2198'
     elif (degrees > 157.5) and (degrees <= 202.5):
-        degrees = u'\u2193'.encode('utf-8')
+        degrees = u'\u2193'
     elif (degrees > 202.5) and (degrees <= 247.5):
-        degrees = u'\u2199'.encode('utf-8')
+        degrees = u'\u2199'
     elif (degrees > 247.5) and (degrees <= 292.5):
-        degrees = u'\u2190'.encode('utf-8')
+        degrees = u'\u2190'
     elif (degrees > 292.5) and (degrees <= 337.5):
-        degrees = u'\u2196'.encode('utf-8')
-    
+        degrees = u'\u2196'
+
     return description + ' ' + str(speed) + 'kt (' + degrees + ')'
-    
+
+
 def weather(willie, trigger):
     """.weather location - Show the weather at the given location."""
 
@@ -137,29 +144,29 @@ def weather(willie, trigger):
             woeid = willie.db.preferences.get(trigger.nick, 'woeid')
         if not woeid:
             return willie.msg(trigger.sender, "I don't know where you live. " +
-                'Give me a location, like .weather London, or tell me where you live by saying .setlocation London, for example.')
+                              'Give me a location, like .weather London, or tell me where you live by saying .setlocation London, for example.')
     else:
         if willie.db and location in willie.db.preferences:
             woeid = willie.db.preferences.get(location, 'woeid')
         else:
             woeid = woeid_search(location).find('woeid').text
-    
+
     if not woeid:
         return willie.reply("I don't know where that is.")
-    
+
     query = web.urlencode({'w': woeid, 'u': 'c'})
     url = 'http://weather.yahooapis.com/forecastrss?' + query
     parsed = feedparser.parse(url)
-    location = parsed['feed']['title'].encode('utf-8')
-    
+    location = parsed['feed']['title']
+
     cover = get_cover(parsed)
     temp = get_temp(parsed)
     pressure = get_pressure(parsed)
     wind = get_wind(parsed)
-    willie.say(u'%s: %s, %s, %s, %s'.encode('utf-8') %
-        (location, cover, temp, pressure, wind))
+    willie.say(u'%s: %s, %s, %s, %s' % (location, cover, temp, pressure, wind))
 weather.commands = ['weather']
 weather.example = '.weather London'
+
 
 def update_woeid(willie, trigger):
     """Set your default weather location."""
@@ -167,16 +174,17 @@ def update_woeid(willie, trigger):
         first_result = woeid_search(trigger.group(2))
         woeid = first_result.find('woeid').text
 
-        willie.db.preferences.update(trigger.nick, {'woeid':woeid})
+        willie.db.preferences.update(trigger.nick, {'woeid': woeid})
 
         neighborhood = first_result.find('neighborhood').text or ''
-        if neighborhood: neighborhood += ','
+        if neighborhood:
+            neighborhood += ','
         city = first_result.find('city').text or ''
         state = first_result.find('state').text or ''
         country = first_result.find('country').text or ''
         uzip = first_result.find('uzip').text or ''
         willie.reply('I now have you at WOEID %s (%s %s, %s, %s %s.)' %
-            (woeid, neighborhood, city, state, country, uzip))
+                     (woeid, neighborhood, city, state, country, uzip))
     else:
         willie.reply("I can't remember that; I don't have a database.")
 update_woeid.commands = ['setlocation', 'setwoeid']
