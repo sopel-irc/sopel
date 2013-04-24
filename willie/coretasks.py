@@ -100,7 +100,7 @@ list_voices.commands = ['listvoices']
 def handle_names(willie, trigger):
     ''' Handle NAMES response, happens when joining to channels'''
     names = re.split(' ', trigger.group(1))
-    channels = re.search('(#\S*)', trigger.raw)
+    channels = re.search('(#\S*)', willie.raw)
     if (channels is None):
         return
     channel = channels.group(1)
