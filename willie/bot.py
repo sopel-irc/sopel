@@ -24,17 +24,6 @@ this_dir = os.path.dirname(os.path.abspath(__file__))
 modules_dir = os.path.join(this_dir, 'modules')
 
 
-def decode(string):
-    try:
-        text = string.decode('utf-8')
-    except UnicodeDecodeError:
-        try:
-            text = string.decode('iso-8859-1')
-        except UnicodeDecodeError:
-            text = string.decode('cp1252')
-    return text
-
-
 def enumerate_modules(config):
     filenames = []
     if not hasattr(config, 'enable') or not config.enable:
@@ -444,7 +433,6 @@ class Willie(irc.Bot):
 
     def dispatch(self, origin, text, args):
         bytes = text
-        text = decode(text)
         event = args[0]
         args = args[1:]
 

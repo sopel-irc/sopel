@@ -133,28 +133,19 @@ class Bot(asynchat.async_chat):
                 os._exit(1)
         f = codecs.open(os.path.join(self.config.core.logdir, 'raw.log'),
                         'a', encoding='utf-8')
-        f.write(str(time.time()) + "\t")
+        f.write(unicode(time.time()) + "\t")
         temp = line.replace('\n', '')
-        try:
-            temp = temp.decode('utf-8')
-        except UnicodeDecodeError:
-            try:
-                temp = temp.decode('iso-8859-1')
-            except UnicodeDecodeError:
-                temp = temp.decode('cp1252')
+
         f.write(temp)
         f.write("\n")
         f.close()
 
     def safe(self, string):
-        '''Remove newlines from a string and make sure it is utf8'''
-        string = str(string)
+        '''Remove newlines from a string'''
         string = string.replace('\n', '')
         string = string.replace('\r', '')
-        try:
-            return string.encode('utf-8')
-        except:
-            return string
+        return string
+
 
     def write(self, args, text=None):
         """
@@ -190,11 +181,11 @@ class Bot(asynchat.async_chat):
             #provision for continuation of message lines.
 
             if text is not None:
-                temp = (' '.join(args) + ' :' + text)[:510] + '\r\n'
+                temp = (u' '.join(args) + ' :' + text)[:510] + '\r\n'
             else:
-                temp = ' '.join(args)[:510] + '\r\n'
+                temp = u' '.join(args)[:510] + '\r\n'
             self.log_raw(temp)
-            self.send(temp)
+            self.send(temp.encode('utf-8'))
         finally:
             self.writing_lock.release()
 
@@ -337,6 +328,7 @@ class Bot(asynchat.async_chat):
         stderr('Closed!')
 
     def collect_incoming_data(self, data):
+        data = unicode(data, encoding='utf-8')
         if data:
             self.log_raw(data)
         self.buffer += data
@@ -345,7 +337,7 @@ class Bot(asynchat.async_chat):
         line = self.buffer
         if line.endswith('\r'):
             line = line[:-1]
-        self.buffer = ''
+        self.buffer = u''
         self.raw = line
         if line.startswith(':'):
             source, line = line[1:].split(' ', 1)
@@ -378,20 +370,6 @@ class Bot(asynchat.async_chat):
     def msg(self, recipient, text):
         try:
             self.sending.acquire()
-
-            # Cf. http://swhack.com/logs/2006-03-01#T19-43-25
-            if isinstance(text, unicode):
-                try:
-                    text = text.encode('utf-8')
-                except UnicodeEncodeError, e:
-                    text = e.__class__ + ': ' + str(e)
-            if isinstance(recipient, unicode):
-                try:
-                    recipient = recipient.encode('utf-8')
-                except UnicodeEncodeError, e:
-                    return
-
-            text = str(text)
 
             # No messages within the last 3 seconds? Go ahead!
             # Otherwise, wait so it's been at least 0.8 seconds + penalty
@@ -475,8 +453,8 @@ class Bot(asynchat.async_chat):
         stderr(trace)
         self.debug("core", 'Fatal error in core, please review exception log',
                    'always')
-        logfile = open(os.path.join(self.config.logdir,
-                                    'exceptions.log'), 'a')  # TODO: make not
+        logfile = codecs.open(os.path.join(self.config.logdir,
+                                    'exceptions.log'), 'a', encoding='utf-8')  # TODO: make not
                                                              # hardcoded
         logfile.write('Fatal error in core, handle_error() was called')
         logfile.write('last raw line was %s' % self.raw)
