@@ -90,7 +90,7 @@ def wiktionary(willie, trigger):
 
     if len(result) > 300:
         result = result[:295] + '[...]'
-    willie.say(result)
+    willie.say(result.decode('utf8'))
 wiktionary.commands = ['wt', 'define', 'dict']
 wiktionary.example = '.wt bailiwick'
 
