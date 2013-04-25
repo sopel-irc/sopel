@@ -113,8 +113,10 @@ def get_urllib_object(uri, timeout):
 #Identical to urllib2.quote
 def quote(string):
     """
-    Identical to urllib2.quote. Use this if you already importing web in your module and don't want to import urllib2 just to use the quote function.
+    Like urllib2.quote but handles unicode properly
     """
+    if isinstance(string, unicode):
+        string = string.encode('utf8')
     return urllib2.quote(string)
 
 #Identical to urllib.urlencode
