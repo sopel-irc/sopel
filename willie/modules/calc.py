@@ -15,6 +15,7 @@ import HTMLParser
 
 
 def calculate(q):
+    q = q.encode('utf8')
     q = q.replace('\xcf\x95', 'phi')  # utf-8 U+03D5
     q = q.replace('\xcf\x80', 'pi')  # utf-8 U+03C0
     uri = 'http://www.google.com/ig/calculator?q='
