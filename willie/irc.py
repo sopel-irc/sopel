@@ -456,9 +456,11 @@ class Bot(asynchat.async_chat):
         logfile = codecs.open(os.path.join(self.config.logdir,
                                     'exceptions.log'), 'a', encoding='utf-8')  # TODO: make not
                                                              # hardcoded
-        logfile.write('Fatal error in core, handle_error() was called')
+        logfile.write('Fatal error in core, handle_error() was called\n')
         logfile.write('last raw line was %s' % self.raw)
         logfile.write(trace)
+        logfile.write('Buffer:\n')
+        logfile.write(self.buffer)
         logfile.write('----------------------------------------\n\n')
         logfile.close()
         if self.error_count > 10:
@@ -467,6 +469,9 @@ class Bot(asynchat.async_chat):
                 os._exit(1)
         self.last_error_timestamp = datetime.now()
         self.error_count = self.error_count + 1
+        # Clearing buffer is important, it will cause willie to lose some lines,
+        # But it is vital if the exception happened before found_terminator()
+        self.buffer = ''
 
     #Helper functions to maintain the oper list.
     #They cast to Nick when adding to be quite sure there aren't any accidental
