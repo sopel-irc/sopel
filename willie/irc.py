@@ -328,7 +328,21 @@ class Bot(asynchat.async_chat):
         stderr('Closed!')
 
     def collect_incoming_data(self, data):
-        data = unicode(data, encoding='utf-8')
+        # We can't trust clients to pass valid unicode.
+        try:
+            data = unicode(data, encoding='utf-8')
+        except UnicodeDecodeError:
+            # not unicode, let's try cp1252
+            try:
+                data = unicode(data, encoding='cp1252')
+            except UnicodeDecodeError:
+                # Okay, let's try ISO8859-1
+                try:
+                    data = unicode(data, encoding='iso8859-1')
+                except:
+                    # Discard line if encoding is unknown
+                    return
+        
         if data:
             self.log_raw(data)
         self.buffer += data
