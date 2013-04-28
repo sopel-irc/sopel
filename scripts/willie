@@ -14,16 +14,12 @@ import os
 import optparse
 import signal
 import imp
-try:
-    from willie.__init__ import run
-    from willie.config import Config, create_config, ConfigurationError, wizard
-    import willie.tools as tools
-    from willie.tools import stderr
-except ImportError:
-    from __init__ import run
-    from config import Config, create_config, ConfigurationError
-    import tools
-    from tools import stderr
+
+from willie.__init__ import run
+from willie.config import Config, create_config, ConfigurationError, wizard
+import willie.tools as tools
+from willie.tools import stderr
+
 
 willie_dotdir = os.path.join(os.path.expanduser('~'), '.willie')
 jenni_dotdir = os.path.join(os.path.expanduser('~'), '.jenni')
