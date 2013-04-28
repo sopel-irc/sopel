@@ -222,7 +222,7 @@ class Config(object):
                                                                        option):
             m = "You currently have " + self.parser.get(section, option)
             if self.option(m + '. Would you like to keep them', True):
-                lst = self.parser.get(section, option)
+                lst = self.parser.get(section, option).split(',')
         mem = raw_input(prompt + ' ')
         while mem:
             lst.append(mem)
