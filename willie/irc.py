@@ -405,7 +405,7 @@ class Bot(asynchat.async_chat):
                     return
 
             self.write(('PRIVMSG', recipient), text)
-            self.stack.append((time.time(), text))
+            self.stack.append((time.time(), self.safe(text)))
             self.stack = self.stack[-10:]
         finally:
             self.sending.release()
