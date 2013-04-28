@@ -144,6 +144,8 @@ class Bot(asynchat.async_chat):
         '''Remove newlines from a string'''
         string = string.replace('\n', '')
         string = string.replace('\r', '')
+        if not isinstance(string, unicode):
+            string = unicode(string, encoding='utf8')
         return string
 
 
