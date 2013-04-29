@@ -23,9 +23,9 @@ First, either clone the repository with ``git clone
 git://github.com/embolalia/willie.git`` or download a tarball from GitHub.
 
 In the source directory (whether cloned or from the tarball) run
-``setup.py install``. Willie can also be run by copying ``scripts/willie`` to
-``willie.py`` in the root of the source directory (i.e, the one with the
-``scripts`` folder in it), and running that.
+``setup.py install``. You can then run ``willie`` to configure and start the
+bot. Alternately, you can just run the ``willie.py`` file in the source
+directory.
 
 Adding modules
 --------------
