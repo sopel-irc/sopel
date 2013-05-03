@@ -1,4 +1,0 @@
-#!/usr/bin/python
-from willie.__main__ import main
-import sys
-main(sys.argv)
