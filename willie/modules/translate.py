@@ -2,6 +2,7 @@
 """
 translate.py - Willie Translation Module
 Copyright 2008, Sean B. Palmer, inamidst.com
+Copyright © 2013, Elad Alfassa <elad@fedoraproject.org>
 Licensed under the Eiffel Forum License 2.
 
 http://willie.dftba.net
@@ -17,6 +18,21 @@ mangle_lines = {}
 
 def setup(willie):
     random.seed()
+
+def configure(config):
+    """
+
+    | [translate] | example | purpose |
+    | ---- | ------- | ------- |
+    | research | True | Enable research mode (logging) for .mangle |
+    | collect_mangle_lines | False | Collect mangle lines to allow .mangle the last message in the channel |
+    """
+    if config.option('Configure mangle module', False):
+        config.add_section('translate')
+        if config.option("Enable research mode"):
+           config.translate.research = True
+        if config.option("Collect mangle lines"):
+           config.translate.collect_mangle_lines = True
 
 def translate(text, input='auto', output='en'):
     raw = False
@@ -40,8 +56,8 @@ def translate(text, input='auto', output='en'):
         pass
     text = urllib2.quote(text)
     result = opener.open('http://translate.google.com/translate_a/t?' +
-        ('client=t&hl=en&sl=%s&tl=%s&multires=1' % (input, output)) +
-        ('&otf=1&ssel=0&tsel=0&uptl=en&sc=1&text=%s' % text)).read()
+        ('client=t&hl=en&sl=%s&tl=%s' % (input, output)) +
+        ('&text=%s' % text)).read()
 
     while ',,' in result:
         result = result.replace(',,', ',null,')
@@ -117,38 +133,9 @@ def tr2(willie, trigger):
         willie.reply(msg)
     else: willie.reply('Language guessing failed, so try suggesting one!')
 
-tr2.commands = ['tr']
+tr2.commands = ['tr', 'translate']
 tr2.priority = 'low'
 
-def mangle(willie, trigger):
-    """Repeatedly translate the input until it makes no sense."""
-    global mangle_lines
-    if trigger.group(2) is None:
-        try:
-            phrase = (mangle_lines[trigger.sender.lower()], '')
-        except:
-            willie.reply("What do you want me to mangle?")
-            return
-    else:
-        phrase = (trigger.group(2).encode('utf-8').strip(), '')
-    if phrase[0] == '':
-        willie.reply("What do you want me to mangle?")
-        return
-    for lang in ['fr', 'de', 'es', 'it', 'no', 'he', 'la', 'ja' ]:
-        backup = phrase
-        phrase = translate(phrase[0], 'en', lang)
-        if not phrase:
-            phrase = backup
-            break
-
-        backup = phrase
-        phrase = translate(phrase[0], lang, 'en')
-        if not phrase:
-            phrase = backup
-            break
-
-    willie.reply(phrase[0])
-mangle.commands = ['mangle']
 def get_random_lang(long_list, short_list):
     random_index = random.randint(0, len(long_list)-1)
     random_lang = long_list[random_index]
@@ -158,10 +145,10 @@ def get_random_lang(long_list, short_list):
         return get_random_lang(long_list, short_list)
     return short_list
 
-def more_mangle(willie, trigger):
-    ''' Research version of mangle '''
+def mangle(willie, trigger):
+    """Repeatedly translate the input until it makes absolutely no sense."""
     global mangle_lines
-    long_lang_list = ['fr', 'de', 'es', 'it', 'no', 'he', 'la', 'ja', 'cy', 'ar', 'yi', 'zh', 'nl', 'ru', 'fi', 'hi', 'af']
+    long_lang_list = ['fr', 'de', 'es', 'it', 'no', 'he', 'la', 'ja', 'cy', 'ar', 'yi', 'zh', 'nl', 'ru', 'fi', 'hi', 'af', 'jw', 'mr', 'ceb', 'cs', 'ga', 'sv', 'eo', 'el', 'ms', 'lv']
     lang_list = []
     for index in range(0, 8):
         lang_list = get_random_lang(long_lang_list, lang_list)
@@ -177,33 +164,42 @@ def more_mangle(willie, trigger):
     if phrase[0] == '':
         willie.reply("What do you want me to mangle?")
         return
-    research_logfile = open(os.path.join(willie.config.logdir, 'mangle.log'), 'a')
-    research_logfile.write('Phrase: %s\n' % str(phrase))
-    research_logfile.write('Lang_list: %s\n' % lang_list)
+    if willie.config.has_section('translate') and willie.config.translate.research == True:
+        research_logfile = open(os.path.join(willie.config.logdir, 'mangle.log'), 'a')
+        research_logfile.write('Phrase: %s\n' % str(phrase))
+        research_logfile.write('Lang_list: %s\n' % lang_list)
     for lang in lang_list:
         backup = phrase
-        phrase = translate(phrase[0], 'en', lang)
+        try:
+            phrase = translate(phrase[0], 'en', lang)
+        except:
+            break
         if not phrase:
             phrase = backup
             break
 
         backup = phrase
-        phrase = translate(phrase[0], lang, 'en')
-        research_logfile.write('-> %s\n' % str(phrase))
+        try:
+            phrase = translate(phrase[0], lang, 'en')
+        except:
+            break
+        if willie.config.has_section('translate') and willie.config.translate.research == True:
+            research_logfile.write('-> %s\n' % str(phrase))
         if not phrase:
             phrase = backup
             break
-
-    research_logfile.write('->[FINAL] %s\n' % str(phrase))
-    research_logfile.write('----------------------------\n\n\n')
-    research_logfile.close()
+    if willie.config.has_section('translate') and willie.config.translate.research == True:
+        research_logfile.write('->[FINAL] %s\n' % str(phrase))
+        research_logfile.write('----------------------------\n\n\n')
+        research_logfile.close()
     willie.reply(phrase[0])
     
-more_mangle.commands = ['mangle2']
+mangle.commands = ['mangle', 'mangle2']
 
 def collect_mangle_lines(willie, trigger):
-    global mangle_lines
-    mangle_lines[trigger.sender.lower()] = "%s said '%s'" % (trigger.nick, (trigger.group(0).strip()))
+    if willie.config.has_section('translate') and willie.config.translate.collect_mangle_lines == True:
+        global mangle_lines
+        mangle_lines[trigger.sender.lower()] = "%s said '%s'" % (trigger.nick, (trigger.group(0).strip()))
 collect_mangle_lines.rule = ('(.*)')
 collect_mangle_lines.priority = 'low'
 
