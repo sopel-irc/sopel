@@ -173,7 +173,7 @@ def mangle(willie, trigger):
         try:
             phrase = translate(phrase[0], 'en', lang)
         except:
-            break
+            phrase = False
         if not phrase:
             phrase = backup
             break
