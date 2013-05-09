@@ -56,8 +56,9 @@ def show_bug(willie, trigger):
                'Importance: %s |  Status: %s | Assigned to: %s | ' +
                'Reported: %s | Modified: %s')
 
-    if bug.find('resolution') is not None:
-        status = bug.find('bug_status').text + ' ' + bug.find('resolution').text
+    resolution = bug.find('resolution')
+    if resolution is not None and resolution.text:
+        status = bug.find('bug_status').text + ' ' + resolution.text
     else:
         status = bug.find('bug_status').text
 
