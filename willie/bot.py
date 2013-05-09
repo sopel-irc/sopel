@@ -107,6 +107,8 @@ class Willie(irc.Bot):
             bots = self.config.core.get_list('other_bots')
             nicks.extend(bots)
             self.config.core.nick_blocks = nicks
+            self.config.core.other_bots = False
+            self.config.save()
 
         self.setup()
 
@@ -451,11 +453,6 @@ class Willie(irc.Bot):
                         willie = self.WillieWrapper(self, origin)
                         trigger = self.Trigger(text, origin, bytes, match,
                                                event, args, self)
-
-                        if self.config.core.other_bots is not None:
-                            if (trigger.nick in
-                                    self.config.core.get_list('other_bots')):
-                                continue
 
                         nick = (trigger.nick).lower()
 
