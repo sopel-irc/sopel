@@ -248,8 +248,9 @@ def blocks(willie, trigger):
         'huh': "I could not figure out what you wanted to do.",
     }
 
-    masks = willie.config.core.host_blocks
-    nicks = willie.config.core.nick_blocks
+    masks = willie.config.core.get_list('host_blocks')
+    nicks = [Nick(nick) for nick in willie.config.core.get_list('nick_blocks')]
+    print masks, nicks
     text = trigger.group().split()
 
     if len(text) == 3 and text[1] == "list":
@@ -287,7 +288,7 @@ def blocks(willie, trigger):
     elif len(text) == 4 and text[1] == "del":
         if text[2] == "nick":
             try:
-                nicks.remove(text[3])
+                nicks.remove(Nick(text[3]))
                 willie.config.core.nick_blocks = nicks
                 willie.config.save()
                 willie.reply(STRINGS['success_del'] % (text[3]))
