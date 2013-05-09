@@ -97,12 +97,12 @@ class Willie(irc.Bot):
 
         #Set up block lists
         #Default to empty
-        if not self.config.has_option('core', 'nick_blocks'):
-            self.config.core.nick_blocks = ''
-        if not self.config.has_option('core', 'host_blocks'):
-            self.config.core.host_blocks = ''
+        if not self.config.has_option('core', 'nick_blocks') or not self.config.core.nick_blocks:
+            self.config.core.nick_blocks = []
+        if not self.config.has_option('core', 'host_blocks') or not self.config.core.nick_blocks:
+            self.config.core.host_blocks = []
         #Add nicks blocked under old scheme, if present
-        if self.config.has_option('core', 'other_bots'):
+        if self.config.has_option('core', 'other_bots') and self.config.core.other_bots:
             nicks = self.config.core.get_list('nick_blocks')
             bots = self.config.core.get_list('other_bots')
             nicks.extend(bots)
