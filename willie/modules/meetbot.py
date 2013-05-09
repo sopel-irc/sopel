@@ -49,7 +49,10 @@ def figure_logfile_name(channel):
         name = 'untitled'
     else:
         name = meetings_dict[channel]['title']
-    name = name.replace(' ', '-')
+    # Real simple sluggifying. This bunch of characters isn't exhaustive, but
+    # whatever. It's close enough for most situations, I think.
+    for c in ' ./\\:*?"<>|&*`':
+        name = name.replace(c, '-')
     timestring = time.strftime('%Y-%m-%d-%H:%M', time.gmtime(meetings_dict[channel]['start']))
     filename = timestring + '_' + name
     return filename
