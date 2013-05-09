@@ -192,26 +192,22 @@ class Bot(asynchat.async_chat):
             self.writing_lock.release()
 
     def run(self, host, port=6667):
-        try:
-            self.initiate_connect(host, port)
-        except socket.error, e:
-            stderr('Connection error: %s' % e.strerror)
-            self.hasquit = True
+        self.initiate_connect(host, port)
 
     def initiate_connect(self, host, port):
         if self.verbose:
             message = 'Connecting to %s:%s...' % (host, port)
             stderr(message)
-        source_address = (self.config.core.bind_host, 0) if \
-            self.config.core.bind_host else None
-        self.set_socket(socket.create_connection((host, port),
-            source_address=source_address))
+        self.create_socket(socket.AF_INET, socket.SOCK_STREAM)
+        if self.config.core.bind_host is not None:
+            self.socket.bind((self.config.core.bind_host, 0))
         if self.config.core.use_ssl and has_ssl:
             self.send = self._ssl_send
             self.recv = self._ssl_recv
         elif not has_ssl and self.config.core.use_ssl:
             stderr('SSL is not avilable on your system, attempting connection '
                    'without it')
+        self.connect((host, port))
         try:
             asyncore.loop()
         except KeyboardInterrupt:
