@@ -17,7 +17,7 @@ def mw_search(server, query, num):
     the specified number of results.
     """
     search_url = ('http://%s/w/api.php?format=json&action=query'
-                  '&list=search&srlimit=%d&srprop=timestamp&srwhat=nearmatch'
+                  '&list=search&srlimit=%d&srprop=timestamp&srwhat=text'
                   '&srsearch=') % (server, num)
     search_url += web.quote(query.encode('utf-8'))
     query = json.loads(web.get(search_url))
