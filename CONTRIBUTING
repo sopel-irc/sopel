@@ -64,3 +64,4 @@ to the tags we use:
 * Low Priority      - Things we'll get around to doing eventually
 * Medium Priority   - Things that need to be done soon
 * High Priority     - Things that should've been done yesterday
+* Windows           - Windows-specific bugs are labelled as such
