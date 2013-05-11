@@ -30,20 +30,23 @@ def enumerate_modules(config):
         for fn in os.listdir(modules_dir):
             if fn.endswith('.py') and not fn.startswith('_'):
                 filenames.append(os.path.join(modules_dir, fn))
-    else:
-        for fn in config.core.get_list('enable'):
-            if fn + '.py' not in os.listdir(config.extra):
-                filenames.append(os.path.join(modules_dir, fn + '.py'))
 
-    if hasattr(config, 'extra') and config.extra is not None:
-        extra = config.core.get_list('extra')
-        for fn in extra:
-            if os.path.isfile(fn):
-                filenames.append(fn)
-            elif os.path.isdir(fn):
+        if hasattr(config, 'extra') and config.extra is not None:
+            extra = config.core.get_list('extra')
+            for fn in extra:
                 for n in os.listdir(fn):
                     if n.endswith('.py') and not n.startswith('_'):
                         filenames.append(os.path.join(fn, n))
+    else:
+        if hasattr(config, 'extra') and config.extra is not None:
+            for fn in config.core.get_list('enable'):
+                if fn + '.py' in os.listdir(config.extra):
+                    filenames.append(os.path.join(config.extra, fn + '.py'))
+                else:
+                    filenames.append(os.path.join(modules_dir, fn + '.py'))
+        else:
+            for fn in config.core.get_list('enable'):
+                filenames.append(os.path.join(modules_dir, fn + '.py'))
     return filenames
 
 
