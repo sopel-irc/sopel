@@ -155,6 +155,8 @@ class Config(object):
 
         def get_list(self, name):
             value = getattr(self, name)
+            if not value:
+                return []
             if isinstance(value, basestring):
                 value = value.split(',')
                 # Keep the split value, so we don't have to keep doing this
