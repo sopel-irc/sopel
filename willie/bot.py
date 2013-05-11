@@ -42,6 +42,7 @@ def enumerate_modules(config):
     else:
         for fn in config.core.get_list('enable'):
             if hasattr(config, 'extra') and config.extra is not None:
+                # If the module on the enabled list is in our extra path, import it from there
                 if fn + '.py' in os.listdir(config.extra):
                         filenames.append(os.path.join(config.extra, fn + '.py'))
                 else:
