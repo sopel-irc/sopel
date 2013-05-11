@@ -20,31 +20,6 @@ import irc
 from db import WillieDB
 from tools import stderr, stdout, Nick
 
-this_dir = os.path.dirname(os.path.abspath(__file__))
-modules_dir = os.path.join(this_dir, 'modules')
-
-
-def enumerate_modules(config):
-    filenames = []
-    if not hasattr(config, 'enable') or not config.enable:
-        for fn in os.listdir(modules_dir):
-            if fn.endswith('.py') and not fn.startswith('_'):
-                filenames.append(os.path.join(modules_dir, fn))
-    else:
-        for fn in config.core.get_list('enable'):
-            filenames.append(os.path.join(modules_dir, fn + '.py'))
-
-    if hasattr(config, 'extra') and config.extra is not None:
-        extra = config.core.get_list('extra')
-        for fn in extra:
-            if os.path.isfile(fn):
-                filenames.append(fn)
-            elif os.path.isdir(fn):
-                for n in os.listdir(fn):
-                    if n.endswith('.py') and not n.startswith('_'):
-                        filenames.append(os.path.join(fn, n))
-    return filenames
-
 
 class Willie(irc.Bot):
     NOLIMIT = 1
@@ -145,17 +120,14 @@ class Willie(irc.Bot):
         stderr("\nWelcome to Willie. Loading modules...\n\n")
         self.variables = {}
 
-        filenames = enumerate_modules(self.config)
-        filenames.append(os.path.join(this_dir, 'coretasks.py'))
-        self.enumerate_modules = enumerate_modules
+        filenames = self.config.enumerate_modules()
+        # Coretasks is special. No custom user coretasks.
+        this_dir = os.path.dirname(os.path.abspath(__file__))
+        filenames['coretasks'] = os.path.join(this_dir, 'coretasks.py')
 
         modules = []
-        excluded_modules = getattr(self.config, 'exclude', [])
         error_count = 0
-        for filename in filenames:
-            name = os.path.basename(filename)[:-3]
-            if name in excluded_modules:
-                continue
+        for name, filename in filenames.iteritems():
             try:
                 module = imp.load_source(name, filename)
             except Exception, e:

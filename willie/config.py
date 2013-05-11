@@ -48,7 +48,6 @@ import ConfigParser
 import getpass
 import imp
 from textwrap import dedent as trim
-from bot import enumerate_modules
 
 
 class ConfigurationError(Exception):
@@ -285,12 +284,9 @@ class Config(object):
     def _modules(self):
         home = os.getcwd()
         modules_dir = os.path.join(home, 'modules')
-        filenames = enumerate_modules(self)
+        filenames = self.enumerate_modules()
         os.sys.path.insert(0, modules_dir)
-        for filename in filenames:
-            name = os.path.basename(filename)[:-3]
-            if self.has_option('core', 'exclude') and name in self.exclude:
-                continue
+        for name, filename in filenames.iteritems():
             try:
                 module = imp.load_source(name, filename)
             except Exception, e:
@@ -301,6 +297,56 @@ class Config(object):
                     module.configure(self)
         self.save()
 
+    def enumerate_modules(self, show_all=False):
+        """
+        *Availability: 4.0+*
+
+        Return a dict mapping the names of modules to the location of their file.
+        This searches the regular modules directory and all directories specified
+        in the `core.extra` attribute of the `config` object. If two modules have
+        the same name, the last one to be found will be returned and the rest will
+        be ignored. Modules are found starting in the regular directory, and then
+        through the extra directories in the order that the are specified.
+
+        If `show_all` is given as `True`, the `enable` and `exclude` configuration
+        options will be ignored, and all modules will be shown (though duplicates
+        will still be ignored as above).
+        """
+        modules = {}
+
+        # First, add modules from the regular modules directory
+        this_dir = os.path.dirname(os.path.abspath(__file__)) 
+        modules_dir = os.path.join(this_dir, 'modules')
+        for fn in os.listdir(modules_dir):
+            if fn.endswith('.py') and not fn.startswith('_'):
+                modules[fn[:-3]] = os.path.join(modules_dir, fn)
+
+        # Next, look at all the extra directories. (get_list returns [] if there
+        # are none or the option isn't defined, so it'll just skip this bit)
+        for directory in self.core.get_list('extra'):
+            for fn in directory:
+                modules[fn[:-3]] = os.path.join(directory, fn)
+
+        # If caller wants all of them, don't apply white and blacklists
+        if show_all:
+            return modules
+
+        # Apply whitelist, if present
+        enable = self.core.get_list('enable')
+        if enable:
+            enabled_modules = {}
+            for module in enable:
+                if module in modules:
+                    enabled_modules[module] = modules[module]
+            modules = enabled_modules
+
+        # Apply blacklist, if present
+        exclude = self.core.get_list('exclude')
+        for module in exclude:
+            if module in modules:
+                del modules[module]
+
+        return modules
 
 def wizard(section, config=None):
     dotdir = os.path.expanduser('~/.willie')
