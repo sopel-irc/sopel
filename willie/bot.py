@@ -26,23 +26,29 @@ modules_dir = os.path.join(this_dir, 'modules')
 
 def enumerate_modules(config):
     filenames = []
+    # No whitelist, load all core modules
     if not hasattr(config, 'enable') or not config.enable:
         for fn in os.listdir(modules_dir):
             if fn.endswith('.py') and not fn.startswith('_'):
                 filenames.append(os.path.join(modules_dir, fn))
-    else:
-        for fn in config.core.get_list('enable'):
-            filenames.append(os.path.join(modules_dir, fn + '.py'))
-
-    if hasattr(config, 'extra') and config.extra is not None:
-        extra = config.core.get_list('extra')
-        for fn in extra:
-            if os.path.isfile(fn):
-                filenames.append(fn)
-            elif os.path.isdir(fn):
+        # Extra is set, let's load those as well
+        if hasattr(config, 'extra') and config.extra is not None:
+            extra = config.core.get_list('extra')
+            for fn in extra:
                 for n in os.listdir(fn):
                     if n.endswith('.py') and not n.startswith('_'):
                         filenames.append(os.path.join(fn, n))
+    # Whitelist is enabled
+    else:
+        for fn in config.core.get_list('enable'):
+            if hasattr(config, 'extra') and config.extra is not None:
+                # If the module on the enabled list is in our extra path, import it from there
+                if fn + '.py' in os.listdir(config.extra):
+                        filenames.append(os.path.join(config.extra, fn + '.py'))
+                else:
+                    filenames.append(os.path.join(modules_dir, fn + '.py'))
+            else:
+                filenames.append(os.path.join(modules_dir, fn + '.py'))
     return filenames
 
 
