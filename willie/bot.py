@@ -32,7 +32,6 @@ def enumerate_modules(config):
                 filenames.append(os.path.join(modules_dir, fn))
     else:
         for fn in config.core.get_list('enable'):
-            fn_py = fn + '.py'
             if fn + '.py' not in os.listdir(config.extra):
                 filenames.append(os.path.join(modules_dir, fn + '.py'))
 
