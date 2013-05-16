@@ -324,7 +324,7 @@ class Config(object):
         # Next, look at all the extra directories. (get_list returns [] if there
         # are none or the option isn't defined, so it'll just skip this bit)
         for directory in self.core.get_list('extra'):
-            for fn in directory:
+            for fn in os.listdir(directory):
                 modules[fn[:-3]] = os.path.join(directory, fn)
 
         # If caller wants all of them, don't apply white and blacklists
