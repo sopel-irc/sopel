@@ -312,7 +312,7 @@ def delete_factoid(willie, trigger):
     bucket_runtime_data.inhibit_reply = trigger
     was = bucket_runtime_data.what_was_that
     if not trigger.admin:
-        was[trigger.sender] = dont_know(willie)
+        was[trigger.sender] = dont_know(willie, trigger)
         return
     db = None
     cur = None
@@ -349,7 +349,7 @@ def undo_teach(willie, trigger):
     was = bucket_runtime_data.what_was_that
     bucket_runtime_data.inhibit_reply = trigger
     if not trigger.admin:
-        was[trigger.sender] = dont_know(willie)
+        was[trigger.sender] = dont_know(willie, trigger)
         return
     last_teach = bucket_runtime_data.last_teach
     fact = ''
@@ -530,7 +530,7 @@ def say_fact(willie, trigger):
         return
     result = pick_result(results, willie)
     if addressed and result is None and factoid_search is None:
-        was[trigger.sender] = dont_know(willie)
+        was[trigger.sender] = dont_know(willie, trigger)
         return
     elif factoid_search is not None and result is None:
         willie.reply('Sorry, I could\'t find anything matching your query')
@@ -657,15 +657,16 @@ def tidbit_vars(tidbit, trigger, random_item=True):
     return finaltidbit
 
 
-def dont_know(willie):
+def dont_know(willie, trigger):
     ''' Get a Don't Know reply from the cache '''
     cache = bucket_runtime_data.dont_know_cache
     try:
         reply = cache[randint(0, len(cache) - 1)]
     except ValueError:
         rebuild_dont_know_cache(willie)
-        return dont_know(willie)
+        return dont_know(willie, trigger)
     fact, tidbit, verb = parse_factoid(reply)
+    tidbit = tidbit_vars(tidbit, trigger, True)
     say_factoid(willie, fact, verb, tidbit, True)
     return reply
 
