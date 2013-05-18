@@ -1,7 +1,7 @@
 """
 url.py - Willie URL title module
 Copyright 2010-2011, Michael Yanovich, yanovich.net, Kenneth Sham
-Copyright 2012 Edward Powell
+Copyright 2012-2013 Edward Powell
 Licensed under the Eiffel Forum License 2.
 
 http://willie.dftba.net
@@ -10,17 +10,24 @@ http://willie.dftba.net
 import re
 from htmlentitydefs import name2codepoint
 import willie.web as web
+import urllib2
 import unicodedata
 import urlparse
 
 url_finder = None
 r_entity = re.compile(r'&[A-Za-z0-9#]+;')
-INVALID_WEBSITE = 0x01
 exclusion_char = '!'
+# These are used to clean up the title tag before actually parsing it. Not the
+# world's best way to do this, but it'll do for now.
+title_tag_data = re.compile('<(/?)title( [^>]+)?>', re.IGNORECASE)
+quoted_title = re.compile('[\'"]<title>[\'"]', re.IGNORECASE)
+# This is another regex that presumably does something important.
+re_dcc = re.compile(r'(?i)dcc\ssend')
+
 
 def configure(config):
     """
-    
+
     | [url] | example | purpose |
     | ---- | ------- | ------- |
     | exclude | https?://git\.io/.* | A list of regular expressions for URLs for which the title should not be shown. |
@@ -29,11 +36,12 @@ def configure(config):
     if config.option('Exclude certain URLs from automatic title display', False):
         if not config.has_section('url'):
             config.add_section('url')
-        config.add_list('url',  'exclude', 'Enter regular expressions for each URL you would like to exclude.',
+        config.add_list('url', 'exclude', 'Enter regular expressions for each URL you would like to exclude.',
             'Regex:')
         config.interactive_add('url', 'exclusion_char',
             'Prefix to suppress URL titling', '!')
-    
+
+
 def setup(willie):
     global url_finder, exclusion_char
     if willie.config.has_option('url', 'exclude'):
@@ -41,156 +49,190 @@ def setup(willie):
                    willie.config.url.get_list(exclude)]
     else:
         regexes = []
-    
+
+    # We're keeping these in their own list, rather than putting then in the
+    # callbacks list because 1, it's easier to deal with modules that are still
+    # using this list, and not the newer callbacks list and 2, having a lambda
+    # just to pass is kinda ugly.
     if not willie.memory.contains('url_exclude'):
         willie.memory['url_exclude'] = regexes
     else:
         exclude = willie.memory['url_exclude']
-        if regexes: exclude.append(regexes)
-        willie.memory['url_exclude'] = exclude
-    
+        if regexes:
+            exclude.append(regexes)
+        willie.memory['url_exclude'] = regexes
+
+    # Ensure that url_callbacks and last_seen_url are in memory
+    if not willie.memory.contains('url_callbacks'):
+        willie.memory['url_callbacks'] = {}
+    if not willie.memory.contains('last_seen_url'):
+        willie.memory['last_seen_url'] = {}
+
     if willie.config.has_option('url', 'exclusion_char'):
         exclusion_char = willie.config.url.exclusion_char
-    
-    url_finder = re.compile(r'(?u)(%s?(http|https|ftp)(://\S+))' %
+
+    url_finder = re.compile(r'(?u)(%s?(?:http|https|ftp)(?:://\S+))' %
         (exclusion_char))
-    # We want the exclusion list to be pre-compiled, since url parsing gets
-    # called a /lot/, and it's annoying when it's laggy.
 
-def find_title(url):
+
+def title_command(willie, trigger):
     """
-    This finds the title when provided with a string of a URL.
+    Show the title or URL information for the given URL, or the last URL seen
+    in this channel.
     """
-    uri = url
+    if not trigger.group(2):
+        if trigger.sender not in willie.memory['last_seen_url']:
+            return
+        matched = check_callbacks(willie, trigger,
+                                  willie.memory['last_seen_url'][trigger.sender],
+                                  True)
+        if not matched:
+            urls = [willie.memory['last_seen_url'][trigger.sender]]
+    else:
+        urls = re.findall(url_finder, trigger)
 
-    if not uri and hasattr(self, 'last_seen_uri'):
-        uri = self.last_seen_uri.get(origin.sender)
+    results = process_urls(willie, trigger, urls)
+title_command.commands = ['title']
 
-    if not re.search('^((https?)|(ftp))://', uri):
-        uri = 'http://' + uri
 
-    if "twitter.com" in uri:
-        uri = uri.replace('#!', '?_escaped_fragment_=')
-
-    content = web.get(uri)
-    regex = re.compile('<(/?)title( [^>]+)?>', re.IGNORECASE)
-    content = regex.sub(r'<\1title>',content)
-    regex = re.compile('[\'"]<title>[\'"]', re.IGNORECASE)
-    content = regex.sub('',content)
-    start = content.find('<title>')
-    if start == -1: return
-    end = content.find('</title>', start)
-    if end == -1: return
-    content = content[start+7:end]
-    content = content.strip('\n').rstrip().lstrip()
-    title = content
-
-    if len(title) > 200:
-        title = title[:200] + '[...]'
-
-    def e(m):
-        entity = m.group()
-        if entity.startswith('&#x'):
-            cp = int(entity[3:-1],16)
-            return unichr(cp).encode('utf-8')
-        elif entity.startswith('&#'):
-            cp = int(entity[2:-1])
-            return unichr(cp).encode('utf-8')
-        else:
-            char = name2codepoint[entity[1:-1]]
-            return unichr(char).encode('utf-8')
-
-    title = r_entity.sub(e, title)
-
-    if title:
-        title = uni_decode(title)
-    else: title = 'None'
-
-    title = title.replace('\n', '')
-    title = title.replace('\r', '')
-
-    def remove_spaces(x):
-        if "  " in x:
-            x = x.replace("  ", " ")
-            return remove_spaces(x)
-        else:
-            return x
-
-    title = remove_spaces (title)
-
-    re_dcc = re.compile(r'(?i)dcc\ssend')
-    title = re.sub(re_dcc, '', title)
-
-    if title:
-        return title
-
-def getTLD (url):
-    idx = 7
-    if url.startswith('https://'): idx = 8
-    elif url.startswith('ftp://'): idx = 6
-    u = url[idx:]
-    f = u.find('/')
-    if f == -1: u = url
-    else: u = url[0:idx] + u[0:f]
-    return u
-
-def get_results(willie, text):
-    a = re.findall(url_finder, text)
-    display = [ ]
-    for match in a:
-        match = match[0]
-        if (match.startswith(exclusion_char) or
-                any(pattern.findall(match) for pattern in willie.memory['url_exclude'])):
-            continue
-        url = uni_encode(match)
-        url = uni_decode(url)
-        url = iriToUri(url)
-        try:
-            page_title = find_title(url)
-        except:
-            page_title = None # if it can't access the site fail silently
-        display.append([page_title, url])
-    return display
-
-def show_title_auto (willie, trigger):
-    if trigger.startswith('.title '):
+def title_auto(willie, trigger):
+    """
+    Automatically show titles for URLs. For shortened URLs/redirects, find
+    where the URL redirects to and show the title for that (or call a function
+    from another module to give more information).
+    """
+    if re.match(willie.config.core.prefix + 'title', trigger):
         return
-    if len(re.findall("\([\d]+\sfiles\sin\s[\d]+\sdirs\)", trigger)) == 1: return
-    try:
-        results = get_results(willie, trigger)
-    except Exception as e: raise e
-    if results is None: return
 
-    k = 1
-    for r in results:
-        if k > 3: break
-        k += 1
+    urls = re.findall(url_finder, trigger)
+    results = process_urls(willie, trigger, urls)
+    willie.memory['last_seen_url'][trigger.sender] = urls[-1]
 
-        if r[0] is None:
-            continue
-        else: r[1] = getTLD(r[1])
-        message = '[ %s ] - %s' % (r[0], r[1])
+    for result in results[:4]:
+        message = '[ %s ] - %s' % tuple(result)
         if message != trigger:
             willie.say(message)
-show_title_auto.rule = '(?u).*((http|https)(://\S+)).*'
-show_title_auto.priority = 'high'
-
-def show_title_demand (willie, trigger):
-    """Show the title of a URL"""
-    #try:
-    results = get_results(trigger)
-    #except: return
-    if results is None: return
-
-    for r in results:
-        if r[0] is None: continue
-        r[1] = getTLD(r[1])
-        willie.say('[ %s ] - %s' % (r[0], r[1]))
-show_title_demand.commands = ['title']
-show_title_demand.priority = 'high'
+title_auto.rule = '(?u).*(https?://\S+).*'
 
 
-#Tools formerly in unicode.py
+def process_urls(willie, trigger, urls):
+    """
+    For each URL in the list, ensure that it isn't handled by another module.
+    If not, find where it redirects to, if anywhere. If that redirected URL
+    should be handled by another module, dispatch the callback for it.
+    Return a list of (title, TLD) tuples for each URL which is not handled by
+    another module.
+    """
+
+    results = []
+    for url in urls:
+        if not url.startswith(exclusion_char):
+            # Magic stuff to account for international domain names
+            url = uni_encode(url)
+            url = uni_decode(url)
+            url = iri_to_uri(url)
+            # First, check that the URL we got doesn't match
+            matched = check_callbacks(willie, trigger, url, False)
+            if matched:
+                continue
+            # Then see if it redirects anywhere
+            new_url = follow_redirects(url)
+            if not new_url:
+                continue
+            # Then see if the final URL matches anything
+            matched = check_callbacks(willie, trigger, new_url, new_url != url)
+            if matched:
+                continue
+            # Finally, actually show the URL
+            title = find_title(url)
+            if title:
+                results.append((title, getTLD(url)))
+    return results
+
+
+def follow_redirects(url):
+    """
+    Follow HTTP 3xx redirects, and return the actual URL. Return None if
+    there's a problem.
+    """
+    try:
+        connection = urllib2.urlopen(url)
+        url = connection.geturl() or url
+        connection.close()
+    except:
+        return None
+    return url
+
+
+def check_callbacks(willie, trigger, url, run=True):
+    """
+    Check the given URL against the callbacks list. If it matches, and ``run``
+    is given as ``True``, run the callback function, otherwise pass. Returns
+    ``True`` if the url matched anything in the callbacks list.
+    """
+    # Check if it matches the exclusion list first
+    matched = any(regex.search(url) for regex in willie.memory['url_exclude'])
+    # Then, check if there's anything in the callback list
+    for regex, function in willie.memory['url_callbacks'].iteritems():
+        match = regex.search(url)
+        if match:
+            if run:
+                function(willie, trigger, match)
+            matched = True
+    return matched
+
+
+def find_title(url):
+    """Return the title for the given URL."""
+    content = web.get(url)
+    # Some cleanup that I don't really grok, but was in the original, so
+    # we'll keep it (with the compiled regexes made global) for now.
+    content = title_tag_data.sub(r'<\1title>', content)
+    content = quoted_title.sub('', content)
+
+    start = content.find('<title>')
+    end = content.find('</title>')
+    if start == -1 or end == -1:
+        return
+    title = content[start + 7:end]
+    title = title.strip()[:200]
+
+    def get_unicode_entity(match):
+        entity = match.group()
+        if entity.startswith('&#x'):
+            cp = int(entity[3:-1], 16)
+        elif entity.startswith('&#'):
+            cp = int(entity[2:-1])
+        else:
+            cp = name2codepoint[entity[1:-1]]
+        return unichr(cp)
+
+    title = r_entity.sub(get_unicode_entity, title)
+    title = uni_decode(title)
+
+    title = ' '.join(title.split())  # cleanly remove multiple spaces
+
+    # More cryptic regex substitutions. This one looks to be myano's invention.
+    title = re_dcc.sub('', title)
+
+    return title or None
+
+
+def getTLD(url):
+    idx = 7
+    if url.startswith('https://'):
+        idx = 8
+    elif url.startswith('ftp://'):
+        idx = 6
+    tld = url[idx:]
+    slash = tld.find('/')
+    if slash != -1:
+        tld = tld[:slash]
+    return tld
+
+
+# Functions for international domain name magic
+
 
 def uni_decode(bytes):
     try:
@@ -218,12 +260,9 @@ def urlEncodeNonAscii(b):
     return re.sub('[\x80-\xFF]', lambda c: '%%%02x' % ord(c.group(0)), b)
 
 
-def iriToUri(iri):
+def iri_to_uri(iri):
     parts = urlparse.urlparse(iri)
     return urlparse.urlunparse(
         part.encode('idna') if parti == 1 else urlEncodeNonAscii(part.encode('utf-8'))
         for parti, part in enumerate(parts)
     )
-
-if __name__ == '__main__':
-    print __doc__.strip()
