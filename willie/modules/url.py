@@ -86,7 +86,9 @@ def title_command(willie, trigger):
         matched = check_callbacks(willie, trigger,
                                   willie.memory['last_seen_url'][trigger.sender],
                                   True)
-        if not matched:
+        if matched:
+            return
+        else:
             urls = [willie.memory['last_seen_url'][trigger.sender]]
     else:
         urls = re.findall(url_finder, trigger)
