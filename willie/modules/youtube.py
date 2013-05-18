@@ -15,24 +15,27 @@ import willie.web as web
 import re
 from HTMLParser import HTMLParser
 
+
 def setup(willie):
     regex = re.compile('(youtube.com/watch\S*v=|youtu.be/)([\w-]+)')
-    if not willie.memory.contains('url_exclude'):
-        willie.memory['url_exclude'] = [regex]
+    if not willie.memory.contains('url_callbacks'):
+        willie.memory['url_callbacks'] = {regex, ytinfo}
     else:
-        exclude = willie.memory['url_exclude']
-        exclude.append(regex)
-        willie.memory['url_exclude'] = exclude
+        exclude = willie.memory['url_callbacks']
+        exclude[regex] = ytinfo
+        willie.memory['url_callbacks'] = exclude
+
 
 def ytget(willie, trigger, uri):
-    try: bytes = web.get(uri)
-    except: 
+    try:
+        bytes = web.get(uri)
+    except:
         willie.say('Something went wrong when accessing the YouTube API.')
         return err
     #Parse YouTube API info (XML)
     if '<entry gd:' in bytes:
         bytes = bytes.split('<entry gd:')[1]
-    vid_info = { }
+    vid_info = {}
     #get link
     link_result = re.search('(?:<media:player url=\')(.*)(?:feature=youtube_gdata_player\'/>)', bytes)
     try:
@@ -62,7 +65,9 @@ def ytget(willie, trigger, uri):
     try:
         upraw = uploaded_result.group(1)
         #parse from current format to output format: DD/MM/yyyy, hh:mm
-        vid_info['uploaded'] = upraw[8:10]+"/"+upraw[5:7]+"/"+upraw[0:4]+", "+upraw[11:13]+":"+upraw[14:16]
+        vid_info['uploaded'] = '%s/%s/%s, %s:%s' % (upraw[8:10], upraw[5:7],
+                                                  upraw[0:4], upraw[11:13],
+                                                  upraw[14:16])
     except AttributeError as e:
         vid_info['uploaded'] = 'N/A'
 
@@ -71,7 +76,8 @@ def ytget(willie, trigger, uri):
     try:
         duration = int(length_result.group(1))
         #Detect liveshow + parse duration into proper time format.
-        if duration < 1: vid_info['length'] = 'LIVE'
+        if duration < 1:
+            vid_info['length'] = 'LIVE'
         else:
             hours = duration / (60 * 60)
             minutes = duration / 60 - (hours * 60)
@@ -85,7 +91,8 @@ def ytget(willie, trigger, uri):
                 vid_info['length'] = vid_info['length'] + str(minutes) + 'mins'
                 if seconds:
                     vid_info['length'] = vid_info['length'] + ' '
-            if seconds: vid_info['length'] = vid_info['length'] + str(seconds) + 'secs'
+            if seconds:
+                vid_info['length'] = vid_info['length'] + str(seconds) + 'secs'
     except AttributeError as e:
         vid_info['length'] = 'N/A'
 
@@ -113,7 +120,7 @@ def ytget(willie, trigger, uri):
         vid_info['comments'] = 'N/A'
 
     #get likes & dislikes
-    liking_result = re.search('(?:<yt:rating numDislikes=\')(.*)(?:\' numLikes=\')(.*)(?:\'/>)',bytes)
+    liking_result = re.search('(?:<yt:rating numDislikes=\')(.*)(?:\' numLikes=\')(.*)(?:\'/>)', bytes)
     try:
         likes = liking_result.group(2)
         vid_info['likes'] = str('{0:20,d}'.format(int(likes))).lstrip(' ')
@@ -126,6 +133,7 @@ def ytget(willie, trigger, uri):
         vid_info['dislikes'] = 'N/A'
     return vid_info
 
+
 def ytsearch(willie, trigger):
     """Search YouTube"""
     #modified from ytinfo: Copyright 2010-2011, Michael Yanovich, yanovich.net, Kenneth Sham.
@@ -137,7 +145,7 @@ def ytsearch(willie, trigger):
 
     #Grab info from gdata
     if not trigger.group(2):
-       return
+        return
     uri = 'http://gdata.youtube.com/feeds/api/videos?v=2&max-results=1&q=' + trigger.group(2).encode('utf-8')
     uri = uri.replace(' ', '+')
     video_info = ytget(willie, trigger, uri)
@@ -148,24 +156,25 @@ def ytsearch(willie, trigger):
     if video_info['link'] == 'N/A':
         willie.say("Sorry, I couldn't find the video you are looking for")
         return
-    message = '[YT Search] Title: ' +video_info['title']+ \
-              ' | Uploader: ' +video_info['uploader']+ \
-              ' | Duration: ' +video_info['length']+ \
-              ' | Uploaded: ' +video_info['uploaded']+ \
-              ' | Views: ' +video_info['views']+ \
-              ' | Link: ' +video_info['link']
+    message = ('[YT Search] Title: ' + video_info['title'] +
+              ' | Uploader: ' + video_info['uploader'] +
+              ' | Duration: ' + video_info['length'] +
+              ' | Uploaded: ' + video_info['uploaded'] +
+              ' | Views: ' + video_info['views'] +
+              ' | Link: ' + video_info['link'])
 
     willie.say(HTMLParser().unescape(message))
-ytsearch.commands = ['yt','youtube']
+ytsearch.commands = ['yt', 'youtube']
 ytsearch.example = '.yt how to be a nerdfighter FAQ'
 
-def ytinfo(willie, trigger):
+
+def ytinfo(willie, trigger, found_match=None):
     """
     Get information about the latest video uploaded by the channel provided.
     """
+    match = found_match or trigger
     #Grab info from YT API
-    uri = 'http://gdata.youtube.com/feeds/api/videos/' + trigger.group(2) + '?v=2'
-
+    uri = 'http://gdata.youtube.com/feeds/api/videos/' + match.group(2) + '?v=2'
 
     video_info = ytget(willie, trigger, uri)
     if video_info is 'err':
@@ -184,26 +193,26 @@ def ytinfo(willie, trigger):
     willie.say(HTMLParser().unescape(message))
 ytinfo.rule = '.*(youtube.com/watch\S*v=|youtu.be/)([\w-]+).*'
 
+
 def ytlast(willie, trigger):
     if not trigger.group(2):
-       return
-    uri = 'https://gdata.youtube.com/feeds/api/users/' + trigger.group(2).encode('utf-8') +'/uploads?max-results=1&v=2'
+        return
+    uri = 'https://gdata.youtube.com/feeds/api/users/' + trigger.group(2).encode('utf-8') + '/uploads?max-results=1&v=2'
     video_info = ytget(willie, trigger, uri)
 
     if video_info is 'err':
         return
 
-
-    message = '[Latest Video] Title: ' +video_info['title']+ \
-              ' | Duration: ' +video_info['length']+ \
-              ' | Uploaded: ' +video_info['uploaded']+ \
-              ' | Views: ' +video_info['views']+ \
-              ' | Likes: ' +video_info['likes']+ \
-              ' | Dislikes: ' +video_info['dislikes']+ \
-              ' | Link: ' +video_info['link']
+    message = ('[Latest Video] Title: ' + video_info['title'] +
+              ' | Duration: ' + video_info['length'] +
+              ' | Uploaded: ' + video_info['uploaded'] +
+              ' | Views: ' + video_info['views'] +
+              ' | Likes: ' + video_info['likes'] +
+              ' | Dislikes: ' + video_info['dislikes'] +
+              ' | Link: ' + video_info['link'])
 
     willie.say(HTMLParser().unescape(message))
-ytlast.commands = ['ytlast','ytnew','ytlatest']
+ytlast.commands = ['ytlast', 'ytnew', 'ytlatest']
 ytlast.example = '.ytlast vlogbrothers'
 
 if __name__ == '__main__':
