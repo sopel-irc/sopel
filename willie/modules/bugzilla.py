@@ -22,33 +22,35 @@ def configure(config):
     """
     if config.option('Show extra information about Bugzilla issues', False):
         config.add_section('bugzilla')
-        config.add_list('bugzilla', 'domains', 'Enter the domains of the Bugzillas you want extra information from. (e.g. bugzilla.mozilla.org)',
+        config.add_list('bugzilla', 'domains',
+                        'Enter the domains of the Bugzillas you want extra '
+                        'information from. (e.g. bugzilla.mozilla.org)',
                         'Domain:')
 
 
 def setup(willie):
     regexes = []
-    if willie.config.has_option('bugzilla', 'domains'):
-        for domain in willie.config.bugzilla.get_list('domains'):
-            regex = re.compile('%s/show_bug.cgi\?\S*?id=(\d+)' % domain)
-            regexes.append(regex)
-    else:
+    if not (willie.config.has_option('bugzilla', 'domains')
+            and willie.config.bugzilla.get_list('domains')):
         return
+    if not willie.memory.contains('url_callbacks'):
+        willie.memory['url_callbacks'] = {}
 
-    if not willie.memory.contains('url_exclude'):
-        willie.memory['url_exclude'] = [regex]
-    else:
-        exclude = willie.memory['url_exclude']
-        exclude.extend(regexes)
-        willie.memory['url_exclude'] = exclude
+    domains = '|'.join(willie.config.bugzilla.get_list('domains'))
+    regex = re.compile((r'https?://(%s)'
+                         '(/show_bug.cgi\?\S*?)'
+                         '(id=\d+)')
+                       % domains)
+    willie.memory['url_callbacks'][regex] = show_bug
 
 
-def show_bug(willie, trigger):
+def show_bug(willie, trigger, match=None):
     """Show information about a Bugzilla bug."""
-    domain = trigger.group(1)
+    match = match or trigger
+    domain = match.group(1)
     if domain not in willie.config.bugzilla.get_list('domains'):
         return
-    url = 'https://%s%sctype=xml&%s' % trigger.groups()
+    url = 'https://%s%sctype=xml&%s' % match.groups()
     data = web.get(url)
     bug = etree.fromstring(data).find('bug')
 
@@ -69,4 +71,6 @@ def show_bug(willie, trigger):
         status, bug.find('assigned_to').text, bug.find('creation_ts').text,
         bug.find('delta_ts').text)
     willie.say(message)
-show_bug.rule = r'.*https?://(\S+?)(/show_bug.cgi\?\S*?)(id=\d+).*'
+show_bug.rule = (r'.*https?://(\S+?)'
+                  '(/show_bug.cgi\?\S*?)'
+                  '(id=\d+).*')
