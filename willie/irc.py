@@ -295,7 +295,9 @@ class Bot(asynchat.async_chat):
         stderr('Connected.')
         self.last_ping_time = datetime.now();
         timeout_check_thread = threading.Thread(target=self._timeout_check)
-        timeout_check_thread.start();
+        timeout_check_thread.start()
+        ping_thread = threading.Thread(target=self._send_ping)
+        ping_thread.start()
 
     def _timeout_check(self):
         while True:
@@ -305,6 +307,12 @@ class Bot(asynchat.async_chat):
                 break;
             else:
                 time.sleep(int(self.config.timeout))
+
+    def _send_ping(self):
+        while True:
+            if (datetime.now() - self.last_ping_time).seconds > int(self.config.timeout)/2:
+                self.write(('PING', self.config.host))
+            time.sleep(int(self.config.timeout)/2)
 
     def _ssl_send(self, data):
         """ Replacement for self.send() during SSL connections. """
@@ -381,9 +389,9 @@ class Bot(asynchat.async_chat):
             args = line.split()
             text = args[-1]
 
+        self.last_ping_time = datetime.now()
         if args[0] == 'PING':
             self.write(('PONG', text))
-            self.last_ping_time = datetime.now();
         elif args[0] == 'ERROR':
             self.debug('IRC Server Error', text, 'always')
         elif args[0] == '433':
