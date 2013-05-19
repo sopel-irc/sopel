@@ -116,7 +116,6 @@ class Bot(asynchat.async_chat):
 
         #We need this to prevent error loops in handle_error
         self.error_count = 0
-        self.last_error_timestamp = None
 
     def log_raw(self, line):
         ''' Log raw line to the raw log '''
@@ -294,6 +293,18 @@ class Bot(asynchat.async_chat):
         if self.config.core.server_password is not None:
             self.write(('PASS', self.config.core.server_password))
         stderr('Connected.')
+        self.last_ping_time = datetime.now();
+        timeout_check_thread = threading.Thread(target=self._timeout_check)
+        timeout_check_thread.start();
+
+    def _timeout_check(self):
+        while True:
+            if (datetime.now() - self.last_ping_time).seconds > self.config.timeout:
+                stderr('Ping timeout reached after %s seconds, closing connection' % self.config.timeout)
+                self.handle_close()
+                break;
+            else:
+                time.sleep(60)
 
     def _ssl_send(self, data):
         """ Replacement for self.send() during SSL connections. """
@@ -372,6 +383,7 @@ class Bot(asynchat.async_chat):
 
         if args[0] == 'PING':
             self.write(('PONG', text))
+            self.last_ping_time = datetime.now();
         elif args[0] == 'ERROR':
             self.debug('IRC Server Error', text, 'always')
         elif args[0] == '433':

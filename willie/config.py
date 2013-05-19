@@ -101,6 +101,8 @@ class Config(object):
                 self.parser.set('core', 'admins', '')
             if not self.parser.has_option('core', 'verify_ssl'):
                 self.parser.set('core', 'verify_ssl', 'True')
+            if not self.parser.has_option('core', 'timeout'):
+                self.parser.set('core', 'timeout', '60')
         else:
             self.parser.add_section('core')
 
