@@ -460,7 +460,7 @@ class Willie(irc.Bot):
                                 #regex, which means we'll have to be in RFC-
                                 #lowercase here.
                                 if (re_temp.findall(trigger.nick.lower())
-                                        or nick in trigger.nick.lower()):
+                                        or Nick(nick).lower() in trigger.nick.lower()):
                                     return
 
                         if func.thread:
