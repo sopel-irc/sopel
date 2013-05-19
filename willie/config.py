@@ -307,8 +307,9 @@ class Config(object):
         This searches the regular modules directory and all directories specified
         in the `core.extra` attribute of the `config` object. If two modules have
         the same name, the last one to be found will be returned and the rest will
-        be ignored. Modules are found starting in the regular directory, and then
-        through the extra directories in the order that the are specified.
+        be ignored. Modules are found starting in the regular directory,
+        followed by `~/.willie/modules`, and then through the extra directories
+        in the order that the are specified.
 
         If `show_all` is given as `True`, the `enable` and `exclude` configuration
         options will be ignored, and all modules will be shown (though duplicates
@@ -322,12 +323,21 @@ class Config(object):
         for fn in os.listdir(modules_dir):
             if fn.endswith('.py') and not fn.startswith('_'):
                 modules[fn[:-3]] = os.path.join(modules_dir, fn)
+        # Next, look in ~/.willie/modules
+        home_modules_dir = os.path.join(os.path.expanduser('~'), '.willie',
+                                        'modules')
+        if not os.path.isdir(home_modules_dir):
+            os.makedirs(home_modules_dir)
+        for fn in os.listdir(home_modules_dir):
+            if fn.endswith('.py') and not fn.startswith('_'):
+                modules[fn[:-3]] = os.path.join(home_modules_dir, fn)
 
-        # Next, look at all the extra directories. (get_list returns [] if there
+        # Last, look at all the extra directories. (get_list returns [] if there
         # are none or the option isn't defined, so it'll just skip this bit)
         for directory in self.core.get_list('extra'):
             for fn in os.listdir(directory):
-                modules[fn[:-3]] = os.path.join(directory, fn)
+                if fn.endswith('.py') and not fn.startswith('_'):
+                    modules[fn[:-3]] = os.path.join(directory, fn)
 
         # If caller wants all of them, don't apply white and blacklists
         if show_all:
