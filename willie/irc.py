@@ -299,12 +299,12 @@ class Bot(asynchat.async_chat):
 
     def _timeout_check(self):
         while True:
-            if (datetime.now() - self.last_ping_time).seconds > self.config.timeout:
+            if (datetime.now() - self.last_ping_time).seconds > int(self.config.timeout):
                 stderr('Ping timeout reached after %s seconds, closing connection' % self.config.timeout)
                 self.handle_close()
                 break;
             else:
-                time.sleep(60)
+                time.sleep(int(self.config.timeout))
 
     def _ssl_send(self, data):
         """ Replacement for self.send() during SSL connections. """
