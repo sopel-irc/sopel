@@ -169,7 +169,7 @@ class Willie(irc.Bot):
             # Function name is no longer used for anything, as far as I know,
             # but we're going to keep it around anyway.
             if not hasattr(func, 'name'):
-                func.name = __name__
+                func.name = func.__name__
             # At least for now, only account for the first command listed.
             if func.__doc__ and hasattr(func, 'commands') and func.commands[0]:
                 if hasattr(func, 'example'):
