@@ -117,7 +117,7 @@ class Bot(asynchat.async_chat):
         #We need this to prevent error loops in handle_error
         self.error_count = 0
 
-    def log_raw(self, line):
+    def log_raw(self, line, prefix):
         ''' Log raw line to the raw log '''
         if not self.config.core.log_raw:
             return
@@ -134,7 +134,7 @@ class Bot(asynchat.async_chat):
                 os._exit(1)
         f = codecs.open(os.path.join(self.config.core.logdir, 'raw.log'),
                         'a', encoding='utf-8')
-        f.write(unicode(time.time()) + "\t")
+        f.write(prefix+unicode(time.time()) + "\t")
         temp = line.replace('\n', '')
 
         f.write(temp)
@@ -187,7 +187,7 @@ class Bot(asynchat.async_chat):
                 temp = (u' '.join(args) + ' :' + text)[:510] + '\r\n'
             else:
                 temp = u' '.join(args)[:510] + '\r\n'
-            self.log_raw(temp)
+            self.log_raw(temp, '>>')
             self.send(temp.encode('utf-8'))
         finally:
             self.writing_lock.release()
@@ -359,7 +359,7 @@ class Bot(asynchat.async_chat):
                     return
         
         if data:
-            self.log_raw(data)
+            self.log_raw(data, '<<')
         self.buffer += data
 
     def found_terminator(self):
