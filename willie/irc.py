@@ -41,6 +41,8 @@ class Origin(object):
     source = re.compile(r'([^!]*)!?([^@]*)@?(.*)')
 
     def __init__(self, bot, source, args):
+        self.hostmask = source
+        
         #Split out the nick, user, and host from hostmask per the regex above.
         match = Origin.source.match(source or '')
         self.nick, self.user, self.host = match.groups()
