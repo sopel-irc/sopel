@@ -11,7 +11,6 @@ import re
 from htmlentitydefs import name2codepoint
 import willie.web as web
 import urllib2
-import unicodedata
 import urlparse
 
 url_finder = None
@@ -130,8 +129,6 @@ def process_urls(willie, trigger, urls):
     for url in urls:
         if not url.startswith(exclusion_char):
             # Magic stuff to account for international domain names
-            url = uni_encode(url)
-            url = uni_decode(url)
             url = iri_to_uri(url)
             # First, check that the URL we got doesn't match
             matched = check_callbacks(willie, trigger, url, False)
@@ -210,7 +207,6 @@ def find_title(url):
         return unichr(cp)
 
     title = r_entity.sub(get_unicode_entity, title)
-    title = uni_decode(title)
 
     title = ' '.join(title.split())  # cleanly remove multiple spaces
 
@@ -234,28 +230,6 @@ def getTLD(url):
 
 
 # Functions for international domain name magic
-
-
-def uni_decode(bytes):
-    try:
-        text = bytes.decode('utf-8')
-    except UnicodeDecodeError:
-        try:
-            text = bytes.decode('iso-8859-1')
-        except UnicodeDecodeError:
-            text = bytes.decode('cp1252')
-    return text
-
-
-def uni_encode(bytes):
-    try:
-        text = bytes.encode('utf-8')
-    except UnicodeEncodeError:
-        try:
-            text = bytes.encode('iso-8859-1')
-        except UnicodeEncodeError:
-            text = bytes.encode('cp1252')
-    return text
 
 
 def urlEncodeNonAscii(b):
