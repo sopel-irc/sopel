@@ -265,14 +265,17 @@ class Willie(irc.Bot):
         def __new__(cls, text, origin, bytes, match, event, args, self):
             s = unicode.__new__(cls, text)
             s.sender = origin.sender
-            """hostmask of the sender in the form <nick>!<user>@<host>"""
-            s.hostmask = origin.hostmask
-            """local name of the user"""
-            s.user = origin.user
             """
             The channel (or nick, in a private message) from which the
             message was sent.
             """
+            s.hostmask = origin.hostmask
+            """
+            Hostmask of the person who sent the message in the form
+            <nick>!<user>@<host>
+            """
+            s.user = origin.user
+            """Local username of the person who sent the message"""
             s.nick = origin.nick
             """The ``Nick`` of the person who sent the message."""
             s.event = event
