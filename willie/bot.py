@@ -152,6 +152,22 @@ class Willie(irc.Bot):
 
         self.bind_commands()
 
+    @staticmethod
+    def is_callable(obj):
+        """Return true if object is a willie callable.
+
+        Object must be both be callable (function or object with __call__) and
+        have hashable. Furthermore, it must have either "commands" or "rule"
+        as attributes to mark it as a willie callable.
+        """
+        if not hasattr(obj, '__call__') or not hasattr(obj, '__hash__'):
+            # There might not be any objects with __hash__ but no __call__,
+            # but I'm not sure so check both. __hash__ is required for set.
+            return False
+        if hasattr(obj, 'commands') or hasattr(obj, 'rule'):
+            return True
+        return False
+
     def register(self, variables):
         """
         With the ``__dict__`` attribute from a Willie module, update or add the
@@ -159,8 +175,32 @@ class Willie(irc.Bot):
         """
         # This is used by reload.py, hence it being methodised
         for obj in variables.itervalues():
-            if hasattr(obj, 'commands') or hasattr(obj, 'rule'):
+            if self.is_callable(obj):
                 self.callables.add(obj)
+
+    def unregister(self, callables):
+        """Unregister all callables and their bindings.
+
+        When unloading a module, this ensures that the unloaded modules will
+        not get called and that the objects can be garbage collected. Objects
+        that have not been registered are ignored.
+
+        Args:
+        callables -- A list of callable objects from a willie module.
+        """
+        def remove_func(func, commands):
+            """Remove all traces of func from commands."""
+            for func_list in commands.itervalues():
+                if func in func_list:
+                    func_list.remove(func)
+        
+        for obj in callables.itervalues():
+            if not self.is_callable(obj):
+                continue
+            if obj in self.callables:
+                self.callables.remove(obj)
+                for commands in self.commands.itervalues():
+                    remove_func(obj, commands)
 
     def bind_commands(self):
         self.commands = {'high': {}, 'medium': {}, 'low': {}}

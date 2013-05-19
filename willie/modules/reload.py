@@ -32,8 +32,22 @@ def f_reload(willie, trigger):
     if not name in sys.modules:
         return willie.reply('%s: no such module!' % name)
 
+    old_module = sys.modules[name]
+
+    old_callables = {}
+    for obj_name, obj in vars(old_module).iteritems():
+        if willie.is_callable(obj):
+            old_callables[obj_name] = obj
+
+    willie.unregister(old_callables)
+    # Also remove all references to willie callables from top level of the
+    # module, so that they will not get loaded again if reloading the
+    # module does not override them.
+    for obj_name in old_callables.keys():
+        delattr(old_module, obj_name)
+
     # Thanks to moot for prodding me on this
-    path = sys.modules[name].__file__
+    path = old_module.__file__
     if path.endswith('.pyc') or path.endswith('.pyo'):
         path = path[:-1]
     if not os.path.isfile(path):
