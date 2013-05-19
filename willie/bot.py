@@ -118,7 +118,7 @@ class Willie(irc.Bot):
 
     def setup(self):
         stderr("\nWelcome to Willie. Loading modules...\n\n")
-        self.callables = set()
+        self.callables = {}
 
         filenames = self.config.enumerate_modules()
         # Coretasks is special. No custom user coretasks.
@@ -158,9 +158,10 @@ class Willie(irc.Bot):
         trigger commands and rules to allow the function to be triggered.
         """
         # This is used by reload.py, hence it being methodised
-        for obj in variables.itervalues():
+        for name, obj in variables.iteritems():
             if hasattr(obj, 'commands') or hasattr(obj, 'rule'):
-                self.callables.add(obj)
+                full_name = '%s.%s' % (variables['__name__'], name)
+                self.callables[full_name] = obj
 
     def bind_commands(self):
         self.commands = {'high': {}, 'medium': {}, 'low': {}}
@@ -185,7 +186,7 @@ class Willie(irc.Bot):
             pattern = pattern.replace('$nickname', r'%s' % re.escape(self.nick))
             return pattern.replace('$nick', r'%s[,:] +' % re.escape(self.nick))
 
-        for func in self.callables:
+        for func in self.callables.itervalues():
             if not hasattr(func, 'priority'):
                 func.priority = 'medium'
 
