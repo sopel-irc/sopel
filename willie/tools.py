@@ -15,6 +15,7 @@ https://willie.dftba.net
 """
 import sys
 import os
+import string
 try:
     import ssl
     import OpenSSL
@@ -58,10 +59,19 @@ class Nick(unicode):
     A `unicode` subclass which acts appropriately for an IRC nickname. When used
     as normal `unicode` objects, case will be preserved. However, when comparing
     two Nick objects, or comparing a Nick object with a `unicode` object, the
-    comparison will be case insensitive. This case insensitivity includes the
-    case convention conventions regarding ``[]``, ``{}``, ``|``, and ``\\``
-    described in RFC 1459.
+    comparison will be case insensitive. This case insensitivity includes
+    characters []|^ being regarded as the lowercase equivalents of characters
+    {}\\~ as prescribed in RFC 2812.
+
+    Characters allowed in a nickname according to RFC 2812 are as follows:
+    letters: A-Z, a-z
+    number: 0-9
+    special: "[", "]", "\", "`", "_", "^", "{", "|", "}"
+    dash: "-"
     """
+    translation_table = string.maketrans(
+        string.ascii_uppercase + "{}\\~",
+        string.ascii_lowercase + "[]|^")
 
     def __new__(cls, nick):
         s = unicode.__new__(cls, nick)
@@ -69,14 +79,15 @@ class Nick(unicode):
         return s
 
     def lower(self):
-        """Return `nick`, converted to lower-case per RFC 1459"""
+        """Return `nick`, converted to lower-case per RFC 2812"""
         return self._lowered
 
     @staticmethod
     def _lower(nick):
-        """Returns `nick` in lower case per RFC 1459"""
-        l = nick.lower().replace('{', '[').replace('}', ']').replace('|', '\\')
-        return l
+        """Returns `nick` in lower case per RFC 2812"""
+        if isinstance(nick, unicode):
+            nick = nick.encode("ascii")
+        return unicode(nick.translate(Nick.translation_table))
 
     def __hash__(self):
         return self._lowered.__hash__()
