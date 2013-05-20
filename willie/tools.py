@@ -85,7 +85,9 @@ class Nick(unicode):
     @staticmethod
     def _lower(nick):
         """Returns `nick` in lower case per RFC 2812"""
-        return nick.translate(Nick.translation_table)
+        if isinstance(nick, unicode):
+            nick = nick.encode("ascii")
+        return unicode(nick.translate(Nick.translation_table))
 
     def __hash__(self):
         return self._lowered.__hash__()
