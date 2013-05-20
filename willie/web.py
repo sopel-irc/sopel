@@ -24,17 +24,23 @@ import re, urllib, urllib2
 from htmlentitydefs import name2codepoint
 
 #HTTP GET
-def get(uri, timeout=20):
-    """
-    Execute an HTTP GET query on `uri`, and return the result.
-    `timeout` is an optional argument, which represents how much time we should wait before throwing a timeout exception. It defualts to 20, but can be set to higher values if you are communicating with a slow web application.
+def get(uri, timeout=20, encoding='utf8'):
+    """Execute an HTTP GET query on `uri`, and return the result.
+
+    `timeout` is an optional argument, which represents how much time we should
+    wait before throwing a timeout exception. It defualts to 20, but can be set
+    to higher values if you are communicating with a slow web application.
+
+    `encoding` is an optional argument, which determines what character set the
+    result should be decoded from. It defaults to `utf8`, but can be given as
+    any other encoding acceptable by `decode`
     """
     if not uri.startswith('http'):
-        return
+        uri = 'http://' + uri
     u = get_urllib_object(uri, timeout)
-    bytes = u.read()
+    data = u.read()
     u.close()
-    return bytes
+    return data.decode(encoding)
 
 # Get HTTP headers
 def head(uri, timeout=20):
@@ -51,15 +57,18 @@ def head(uri, timeout=20):
 
 # HTTP POST
 def post(uri, query):
-    """
-    Execute an HTTP POST query. `uri` is the target URI, and `query` is the POST data.
+    """Execute an HTTP POST query on the given URI.
+
+    `query` is the url-encoded data to send with the query (from `urlencode()`,
+    for example). `encoding` specifies which encoding should be used for the
+    data returned from the server, and defaults to `utf8`.
     """
     if not uri.startswith('http'):
-        return
+        uri = 'http://' + uri
     u = urllib2.urlopen(uri, query)
-    bytes = u.read()
+    data = u.read()
     u.close()
-    return bytes
+    return data.decode(encoding)
 
 r_entity = re.compile(r'&([^;\s]+);')
 
