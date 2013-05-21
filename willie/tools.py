@@ -84,7 +84,7 @@ class Nick(unicode):
         # which may be useful at some point in the future.
         low = nick.lower().replace('{', '[').replace('}', ']')
         low = low.replace('|', '\\').replace('^', '~')
-        return l
+        return low
 
     def __hash__(self):
         return self._lowered.__hash__()
