@@ -156,13 +156,13 @@ class Willie(irc.Bot):
     def is_callable(obj):
         """Return true if object is a willie callable.
 
-        Object must be both be callable (function or object with __call__) and
-        have hashable. Furthermore, it must have either "commands" or "rule"
-        as attributes to mark it as a willie callable.
+        Object must be both be callable and have hashable. Furthermore, it must
+        have either "commands" or "rule" as attributes to mark it as a willie
+        callable.
         """
-        if not hasattr(obj, '__call__') or not hasattr(obj, '__hash__'):
-            # There might not be any objects with __hash__ but no __call__,
-            # but I'm not sure so check both. __hash__ is required for set.
+        if not callable(obj):
+            # Check is to help distinguish between willie callables and objects
+            # which just happen to have parameter commands or rule.
             return False
         if hasattr(obj, 'commands') or hasattr(obj, 'rule'):
             return True
@@ -178,15 +178,15 @@ class Willie(irc.Bot):
             if self.is_callable(obj):
                 self.callables.add(obj)
 
-    def unregister(self, callables):
-        """Unregister all callables and their bindings.
+    def unregister(self, variables):
+        """Unregister all willie callables in variables, and their bindings.
 
         When unloading a module, this ensures that the unloaded modules will
         not get called and that the objects can be garbage collected. Objects
         that have not been registered are ignored.
 
         Args:
-        callables -- A list of callable objects from a willie module.
+        variables -- A list of callable objects from a willie module.
         """
         def remove_func(func, commands):
             """Remove all traces of func from commands."""
@@ -194,7 +194,7 @@ class Willie(irc.Bot):
                 if func in func_list:
                     func_list.remove(func)
         
-        for obj in callables.itervalues():
+        for obj in variables.itervalues():
             if not self.is_callable(obj):
                 continue
             if obj in self.callables:
