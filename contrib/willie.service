@@ -1,0 +1,16 @@
+[Unit]
+Description=Willie IRC bot
+Documentation=http://willie.dftba.net/
+After=network.target
+
+[Service]
+Type=simple
+User=willie
+PIDFile=/run/willie/willie.pid
+ExecStart=/usr/bin/willie -c /etc/willie.cfg --quiet
+ExecStop=/usr/bin/willie -c /etc/willie.cfg -q
+Restart=on-failure
+RestartPreventExitStatus=2
+
+[Install]
+WantedBy=multi-user.target

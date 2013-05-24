@@ -1,0 +1,10 @@
+This folder contains willie.service and willie.cfg designed to be distributed by 3rd party distrubtions such as Fedora Project or Arch Linux.
+
+willie.cfg is a default configuration file for willie, that assumes the OS is new enough to have /run and /usr/lib/tmpfiles.d
+
+willie.service is a systemd service file that assumes you are using a rather recent Willie and has no multiple instance support (TODO). It also assumes that the system has a special user named willie designated for running the bot and this user has access to /run/willie (should be setup by willie.conf in /usr/lib/tmpfiles.d), /var/log/willie and /var/lib/willie
+
+Default installation paths:
+ willie.cfg	/etc
+ willie.conf	/usr/lib/tmpfiles.d
+ willie.service	/usr/lib/systemd/system
