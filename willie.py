@@ -115,7 +115,13 @@ def main(argv=None):
             config_module = Config(configpath)
         except ConfigurationError as e:
             stderr(e)
-            sys.exit(1)
+            sys.exit(2)
+
+        if config_module.core.not_configured:
+            stderr('Bot is not configured, can\'t start')
+            # exit with code 2 to prevent auto restart on fail by systemd
+            sys.exit(2)
+
         if not config_module.has_option('core', 'homedir'):
             config_module.dotdir = homedir
             config_module.homedir = homedir
