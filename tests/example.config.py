@@ -12,4 +12,4 @@ Username = 'Tester'
 
 #Willie information
 Willie_nick = 'Willie'
-
+timeout = 20

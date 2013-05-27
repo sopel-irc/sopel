@@ -1,4 +1,4 @@
-import config, threading, sys
+import config, threading, sys, os
 from time import sleep
 try:
     from twisted.words.protocols import irc
@@ -45,32 +45,40 @@ class Tests():
     # To use trigger values, call as %trigger.value%
     tests = [
         #TODO: Automatically generate this list
-        ['GreetPub', ('msg', config.Channel, config.Willie_nick+'!'), ('msg', config.Channel, config.Nickname+'!')],
+        ['GreetPub', ('msg', config.Channel, config.Willie_nick+'!'), ('msg', config.Channel, config.Nickname+': 2')],
         ['GreetPriv', ('msg', config.Willie_nick, config.Willie_nick+'!'), ('msg', config.Nickname, config.Nickname+'!')],
     ]
 
     def executeTests(self, willie):
         for test in self.tests:
             self.activeTest = test[0]
-            print "Test: "+test[0]
+            sys.stdout.write("Test: "+test[0])
+            sys.stdout.write("."*(40-len(test[0])))
             if test[1][0] == 'msg':
                 willie.msg(test[1][1], test[1][2])
             elif test[1][0] == 'action':
                 willie.describe(test[1][1], test[1][2])
             #Wait for result.
-            while not self.willieReply:
-                sleep(1)
-
-            if self.willieReply != test[2]:
-                print "  FAILED"
-                print "  Expected output: "+str(test[2])
-                print "  Received:        "+str(self.willieReply)
-            else: print "  SUCCESS"
+            for i in range(config.timeout+1):
+                if not self.willieReply:
+                    if i == config.timeout:
+                        print "[FAILED]"
+                        print "  Operation timed out."
+                        break
+                    sleep(1)
+                else:
+                    if self.willieReply != test[2]:
+                        print "[FAILED]"
+                        print "  Expected output: "+str(test[2])
+                        print "  Received:        "+str(self.willieReply)
+                    else:
+                        print "[SUCCESS]"
+                    break
             self.willieReply = None
         print "Testing complete."
         willie.quit("Testing complete.")
         #TODO exit Willie
-        sys._exit(0)
+        os._exit(0)
 
     def onJoin(self, willie, trigger):
         self.willieReply = ('join', trigger.channel, trigger.user)
