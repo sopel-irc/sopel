@@ -1,4 +1,4 @@
-import config, sys
+import config, threading, sys
 from time import sleep
 try:
     from twisted.words.protocols import irc
@@ -11,6 +11,7 @@ class trigger():
     """ A data class to feed to tests """
 
     channel = None
+    user = None
     nick = None
     ident = None
     host = None
@@ -18,6 +19,7 @@ class trigger():
 
     def __init__(self, chan, user):
         self.channel = chan
+        self.user = user
         n = user.split('!')
         self.nick = n[0]
         try:
@@ -43,8 +45,8 @@ class Tests():
     # To use trigger values, call as %trigger.value%
     tests = [
         #TODO: Automatically generate this list
-        ['GreetPriv', ('msg', config.Willie_nick, config.Willie_nick+'!'), ('msg', config.Nickname, config.Nickname+'!')],
         ['GreetPub', ('msg', config.Channel, config.Willie_nick+'!'), ('msg', config.Channel, config.Nickname+'!')],
+        ['GreetPriv', ('msg', config.Willie_nick, config.Willie_nick+'!'), ('msg', config.Nickname, config.Nickname+'!')],
     ]
 
     def executeTests(self, willie):
@@ -52,18 +54,17 @@ class Tests():
             self.activeTest = test[0]
             print "Test: "+test[0]
             if test[1][0] == 'msg':
-                willie.say(test[1][1], test[1][2])
+                willie.msg(test[1][1], test[1][2])
             elif test[1][0] == 'action':
                 willie.describe(test[1][1], test[1][2])
             #Wait for result.
             while not self.willieReply:
-                #Bad, BAAAAAAAAAAAAAAD...
-                sleep(5)
+                sleep(1)
 
             if self.willieReply != test[2]:
                 print "  FAILED"
                 print "  Expected output: "+str(test[2])
-                print "  Received:        "+str(test[2])
+                print "  Received:        "+str(self.willieReply)
             else: print "  SUCCESS"
             self.willieReply = None
         print "Testing complete."
@@ -72,9 +73,7 @@ class Tests():
         sys.exit(0)
 
     def onJoin(self, willie, trigger):
-        if trigger.nick == config.Willie_nick:
-            if(self.activeTest == None): #We're not testing yet
-                self.executeTests(willie) #Start testing
+        self.willieReply = ('join', trigger.channel, trigger.user)
 
     def onMsg(self, willie, trigger):
         if trigger.nick != config.Willie_nick:
@@ -82,7 +81,7 @@ class Tests():
         if self.activeTest == None:
             return #No active tests
         else:
-            self.willieReply = ('msg', trigger.msg)
+            self.willieReply = ('msg', trigger.channel, trigger.msg)
 
     def onAction(self, willie, trigger):
         if trigger.nick != config.Willie_nick:
@@ -90,7 +89,7 @@ class Tests():
         if self.activeTest == None:
             return #No active tests
         else:
-            self.willieReply = ('action', trigger.msg)
+            self.willieReply = ('action', trigger.channel, trigger.msg)
 
 class WillieTest(irc.IRCClient):
     """ IRC data handler """
@@ -100,14 +99,13 @@ class WillieTest(irc.IRCClient):
     realname = 'Willie test unit'
     testUnit = Tests()
 
-    def connectionLost(self, reason):
-        print "Disconnected: "+str(reason).split(":")[3]
-
     def signedOn(self):
         self.join(config.Channel)
         if config.NS_Password != '':
             self.msg('NickServ', 'IDENTIFY '+config.NS_Password)
-        #TODO: Launch Willie
+        t=threading.Thread(target=self.testUnit.executeTests, args=(self,))
+        t.daemon = True
+        reactor.callLater(5, t.start)
 
     def userJoined(self, user, channel):
         trig = trigger(channel, user)
@@ -126,12 +124,6 @@ class WillieTest(irc.IRCClient):
 class testFactory(protocol.ClientFactory):
     """ TCP Connection handler """
     protocol = WillieTest
-    def clientConnectionLost(self, connector, reason):
-        print "Connection lost: ", reason
-        connector.connect()
-    def clientConnectionFailed(self, connector, reason):
-        print "Connection failed: ", reason
-        reactor.stop()
 
 # Boot sequence
 if __name__ == '__main__':
@@ -144,5 +136,6 @@ if __name__ == '__main__':
             sys.exit(1)
     else:
         reactor.connectTCP(config.Server, config.Port, testFactory())
+    #TODO: Launch Willie
     reactor.run()
 
