@@ -70,7 +70,7 @@ class Tests():
         print "Testing complete."
         willie.quit("Testing complete.")
         #TODO exit Willie
-        sys.exit(0)
+        sys._exit(0)
 
     def onJoin(self, willie, trigger):
         self.willieReply = ('join', trigger.channel, trigger.user)
