@@ -56,7 +56,7 @@ def head(uri, timeout=20):
     return info
 
 # HTTP POST
-def post(uri, query, encoding='utf8'):
+def post(uri, query):
     """Execute an HTTP POST query on the given URI.
 
     `query` is the url-encoded data to send with the query (from `urlencode()`,
