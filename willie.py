@@ -21,10 +21,7 @@ import willie.tools as tools
 from willie.tools import stderr
 
 
-willie_dotdir = os.path.join(os.path.expanduser('~'), '.willie')
-jenni_dotdir = os.path.join(os.path.expanduser('~'), '.jenni')
-phenny_dotdir = os.path.join(os.path.expanduser('~'), '.phenny')
-dotdir = willie_dotdir
+homedir = os.path.join(os.path.expanduser('~'), '.willie')
 
 
 def check_python_version():
@@ -34,51 +31,29 @@ def check_python_version():
 
 
 def enumerate_configs(extension='.cfg'):
-    willie_config = []
-    jenni_config = []
-    phenny_config = []
-    if os.path.isdir(willie_dotdir):
-        willie_dotdirfiles = os.listdir(willie_dotdir)  # Preferred
+    configfiles = []
+    if os.path.isdir(homedir):
+        willie_dotdirfiles = os.listdir(homedir)  # Preferred
         for item in willie_dotdirfiles:
             if item.endswith(extension):
-                willie_config.append(item)
-    if os.path.isdir(jenni_dotdir):
-        jenni_dotdirfiles = os.listdir(jenni_dotdir)  # Fallback
-        for item in jenni_dotdirfiles:
-            if item.endswith(extension):
-                jenni_config.append(item)
-    if os.path.isdir(phenny_dotdir):
-        phenny_dotdirfiles = os.listdir(phenny_dotdir)  # Fallback of fallback
-        for item in phenny_dotdirfiles:
-            willie_config = []
-            if item.endswith(extension):
-                phenny_config.append(item)
+                configfiles.append(item)
 
-    return (willie_config, jenni_config, phenny_config)
+    return configfiles
 
 
 def find_config(name, extension='.cfg'):
-    global dotdir
+    if os.path.isfile(name):
+        return name
     configs = enumerate_configs(extension)
-    if name in configs[0] or name + extension in configs[0]:
-        dotdir = willie_dotdir
-        if name + extension in configs[0]:
+    if name in configs or name + extension in configs:
+        if name + extension in configs:
             name = name + extension
-    elif name in configs[1] or name + extension in configs[1]:
-        dotdir = jenni_dotdir
-        if name + extension in configs[1]:
-            name = name + extension
-    elif name in configs[2] or name + extension in configs[2]:
-        dotdir = phenny_dotdir
-        if name + extension in configs[2]:
-            name = name + extension
-    elif not name.endswith(extension):
-        name = name + extension
 
-    return os.path.join(dotdir, name)
+    return os.path.join(homedir, name)
 
 
 def main(argv=None):
+    global homedir
     # Step One: Parse The Command Line
     try:
         parser = optparse.OptionParser('%prog [options]')
@@ -122,57 +97,12 @@ def main(argv=None):
             if len(configs[0]) is 0:
                 print '\tNone found'
             else:
-                for config in configs[0]:
-                    print '\t%s' % config
-            print '-------------------------'
-            print 'Config files in ~/.jenni:'
-            if len(configs[1]) is 0:
-                print '\tNone found'
-            else:
-                for config in configs[1]:
-                    print '\t%s' % config
-            print '-------------------------'
-            print 'Config files in ~/.phenny:'
-            if len(configs[2]) is 0:
-                print '\tNone found'
-            else:
-                for config in configs[2]:
+                for config in configs:
                     print '\t%s' % config
             print '-------------------------'
             return
 
         config_name = opts.config or 'default'
-
-        if opts.migrate_configs is not None:
-            configpath = find_config(config_name, '.py')
-            new_configpath = configpath[:-2] + 'cfg'
-            if os.path.isfile(new_configpath):
-                valid_answer = False
-                while not valid_answer:
-                    answer = raw_input('Warning, new config file already exists. Overwrite? [y/n]')
-                    if answer is 'n' or answer == 'no':
-                        return
-                    elif answer == 'y' or answer == 'yes':
-                        valid_answer = True
-            old_cfg = imp.load_source('Config', configpath)
-            new_cfg = Config(new_configpath, load=False)
-            new_cfg.add_section('core')
-            for attrib in dir(old_cfg):
-                if not attrib.startswith('_'):
-                    value = getattr(old_cfg, attrib)
-                    if value is None:
-                        continue  # Skip NoneTypes
-                    if type(value) is list:  # Parse lists
-                        parsed_value = ','.join(value)
-                    else:
-                        parsed_value = str(value)
-                    if attrib == 'password':
-                        attrib = 'nickserv_password'
-                    if attrib == 'serverpass':
-                        attrib = 'server_password'
-                    setattr(new_cfg.core, attrib, parsed_value)
-            new_cfg.save()
-            print 'Configuration migrated sucessfully, starting Willie'
 
         configpath = find_config(config_name)
         if not os.path.isfile(configpath):
@@ -185,11 +115,22 @@ def main(argv=None):
             config_module = Config(configpath)
         except ConfigurationError as e:
             stderr(e)
-            sys.exit(1)
-        config_module.dotdir = dotdir
+            sys.exit(2)
+
+        if config_module.core.not_configured:
+            stderr('Bot is not configured, can\'t start')
+            # exit with code 2 to prevent auto restart on fail by systemd
+            sys.exit(2)
+
+        if not config_module.has_option('core', 'homedir'):
+            config_module.dotdir = homedir
+            config_module.homedir = homedir
+        else:
+            homedir = config_module.core.homedir
+            config_module.dotdir = config_module.core.homedir
 
         if not config_module.core.logdir:
-            config_module.core.logdir = os.path.join(dotdir, 'logs')
+            config_module.core.logdir = os.path.join(homedir, 'logs')
         logfile = os.path.os.path.join(config_module.logdir, 'stdio.log')
         if not os.path.isdir(config_module.logdir):
             os.mkdir(config_module.logdir)
@@ -200,10 +141,14 @@ def main(argv=None):
         sys.stdout = tools.OutputRedirect(logfile, False, opts.quiet)
 
         #Handle --quit, --kill and saving the PID to file
+        pid_dir = config_module.core.pid_dir or homedir
         if opts.config is None:
-            pid_file_path = os.path.join(dotdir, '.pid-default')
+            pid_file_path = os.path.join(pid_dir, 'willie.pid')
         else:
-            pid_file_path = os.path.join(dotdir, '.pid-%s' % opts.config)
+            basename = os.path.basename(opts.config)
+            if basename.endswith('.cfg'):
+                basename = basename[:-4]
+            pid_file_path = os.path.join(pid_dir, 'willie-%s.pid' % basename)
         if os.path.isfile(pid_file_path):
             pid_file = open(pid_file_path, 'r')
             old_pid = int(pid_file.read())

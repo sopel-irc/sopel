@@ -118,7 +118,7 @@ class Willie(irc.Bot):
 
     def setup(self):
         stderr("\nWelcome to Willie. Loading modules...\n\n")
-        self.variables = {}
+        self.callables = {}
 
         filenames = self.config.enumerate_modules()
         # Coretasks is special. No custom user coretasks.
@@ -160,13 +160,15 @@ class Willie(irc.Bot):
         # This is used by reload.py, hence it being methodised
         for name, obj in variables.iteritems():
             if hasattr(obj, 'commands') or hasattr(obj, 'rule'):
-                self.variables[name] = obj
+                full_name = '%s.%s' % (variables['__name__'], name)
+                self.callables[full_name] = obj
 
     def bind_commands(self):
         self.commands = {'high': {}, 'medium': {}, 'low': {}}
 
         def bind(self, priority, regexp, func):
-            # register documentation
+            # Function name is no longer used for anything, as far as I know,
+            # but we're going to keep it around anyway.
             if not hasattr(func, 'name'):
                 func.name = func.__name__
             # At least for now, only account for the first command listed.
@@ -184,8 +186,7 @@ class Willie(irc.Bot):
             pattern = pattern.replace('$nickname', r'%s' % re.escape(self.nick))
             return pattern.replace('$nick', r'%s[,:] +' % re.escape(self.nick))
 
-        for name, func in self.variables.iteritems():
-            # print name, func
+        for func in self.callables.itervalues():
             if not hasattr(func, 'priority'):
                 func.priority = 'medium'
 

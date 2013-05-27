@@ -59,24 +59,32 @@ class Nick(unicode):
     as normal `unicode` objects, case will be preserved. However, when comparing
     two Nick objects, or comparing a Nick object with a `unicode` object, the
     comparison will be case insensitive. This case insensitivity includes the
-    case convention conventions regarding ``[]``, ``{}``, ``|``, and ``\\``
-    described in RFC 1459.
+    case convention conventions regarding ``[]``, ``{}``, ``|``, ``\\``, ``^``
+    and ``~`` described in RFC 2812.
     """
 
     def __new__(cls, nick):
+        # According to RFC2812, nicks have to be in the ASCII range. However,
+        # I think it's best to let the IRCd determine that, and we'll just
+        # assume unicode. It won't hurt anything, and is more internally
+        # consistent. And who knows, maybe there's another use case for this
+        # weird case convention.
         s = unicode.__new__(cls, nick)
         s._lowered = Nick._lower(nick)
         return s
 
     def lower(self):
-        """Return `nick`, converted to lower-case per RFC 1459"""
+        """Return `nick`, converted to lower-case per RFC 2812"""
         return self._lowered
 
     @staticmethod
     def _lower(nick):
-        """Returns `nick` in lower case per RFC 1459"""
-        l = nick.lower().replace('{', '[').replace('}', ']').replace('|', '\\')
-        return l
+        """Returns `nick` in lower case per RFC 2812"""
+        # The tilde replacement isn't needed for nicks, but is for channels,
+        # which may be useful at some point in the future.
+        low = nick.lower().replace('{', '[').replace('}', ']')
+        low = low.replace('|', '\\').replace('^', '~')
+        return low
 
     def __hash__(self):
         return self._lowered.__hash__()

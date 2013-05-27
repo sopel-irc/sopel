@@ -23,8 +23,8 @@ def f_reload(willie, trigger):
     if name == willie.config.owner:
         return willie.reply('What?')
 
-    if (not name) or (name == '*') or (name == 'ALL THE THINGS'):
-        willie.variables = None
+    if (not name) or (name == '*') or (name.upper() == 'ALL THE THINGS'):
+        willie.callables = None
         willie.commands = None
         willie.setup()
         return willie.reply('done')
