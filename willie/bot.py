@@ -118,7 +118,7 @@ class Willie(irc.Bot):
 
     def setup(self):
         stderr("\nWelcome to Willie. Loading modules...\n\n")
-        self.callables = {}
+        self.callables = set()
 
         filenames = self.config.enumerate_modules()
         # Coretasks is special. No custom user coretasks.
@@ -152,16 +152,55 @@ class Willie(irc.Bot):
 
         self.bind_commands()
 
+    @staticmethod
+    def is_callable(obj):
+        """Return true if object is a willie callable.
+
+        Object must be both be callable and have hashable. Furthermore, it must
+        have either "commands" or "rule" as attributes to mark it as a willie
+        callable.
+        """
+        if not callable(obj):
+            # Check is to help distinguish between willie callables and objects
+            # which just happen to have parameter commands or rule.
+            return False
+        if hasattr(obj, 'commands') or hasattr(obj, 'rule'):
+            return True
+        return False
+
     def register(self, variables):
         """
         With the ``__dict__`` attribute from a Willie module, update or add the
         trigger commands and rules to allow the function to be triggered.
         """
         # This is used by reload.py, hence it being methodised
-        for name, obj in variables.iteritems():
-            if hasattr(obj, 'commands') or hasattr(obj, 'rule'):
-                full_name = '%s.%s' % (variables['__name__'], name)
-                self.callables[full_name] = obj
+        for obj in variables.itervalues():
+            if self.is_callable(obj):
+                self.callables.add(obj)
+
+    def unregister(self, variables):
+        """Unregister all willie callables in variables, and their bindings.
+
+        When unloading a module, this ensures that the unloaded modules will
+        not get called and that the objects can be garbage collected. Objects
+        that have not been registered are ignored.
+
+        Args:
+        variables -- A list of callable objects from a willie module.
+        """
+        def remove_func(func, commands):
+            """Remove all traces of func from commands."""
+            for func_list in commands.itervalues():
+                if func in func_list:
+                    func_list.remove(func)
+        
+        for obj in variables.itervalues():
+            if not self.is_callable(obj):
+                continue
+            if obj in self.callables:
+                self.callables.remove(obj)
+                for commands in self.commands.itervalues():
+                    remove_func(obj, commands)
 
     def bind_commands(self):
         self.commands = {'high': {}, 'medium': {}, 'low': {}}
@@ -186,7 +225,7 @@ class Willie(irc.Bot):
             pattern = pattern.replace('$nickname', r'%s' % re.escape(self.nick))
             return pattern.replace('$nick', r'%s[,:] +' % re.escape(self.nick))
 
-        for func in self.callables.itervalues():
+        for func in self.callables:
             if not hasattr(func, 'priority'):
                 func.priority = 'medium'
 
