@@ -5,10 +5,11 @@ It defines the following decorators for defining willie callables:
 willie.module.rule
 willie.module.thread
 willie.module.name (deprecated)
-willie.module.commands
+willie.module.command
 willie.module.priority
 willie.module.event
 willie.module.rate
+willie.module.example
 """
 """
 willie/module.py - Willie IRC Bot (http://willie.dftba.net/)
@@ -19,7 +20,9 @@ Licensed under the Eiffel Forum License 2.
 
 
 def rule(value):
-    """Decorator rule(value). Equivalent to func.rule = value.
+    """Decorator. Equivalent to func.rule.append(value).
+
+    This decorator can be used multiple times to add more rules.
 
     Args:
         value: A regular expression which will trigger the function.
@@ -38,7 +41,9 @@ def rule(value):
     expressions, and are considered deprecated in 3.1.
     """
     def add_attribute(function):
-        function.rule = value
+        if not hasattr(function, "rule"):
+            function.rule = []
+        function.rule.append(value)
         return function
 
     if isinstance(value, tuple):
@@ -49,7 +54,7 @@ def rule(value):
 
 
 def thread(value):
-    """Decorator thread(value). Equivalent to func.thread = value.
+    """Decorator. Equivalent to func.thread = value.
 
     Args:
         value: Either True or False. If True the function is called in
@@ -62,7 +67,7 @@ def thread(value):
 
 
 def name(value):
-    """Decorator name(value). Equivalent to func.name = value.
+    """Decorator. Equivalent to func.name = value.
 
     This attribute is considered deprecated in 3.1.
     """
@@ -70,24 +75,36 @@ def name(value):
                              " Replace tuple-form .rule with a regexp.")
 
 
-def commands(value):
-    """Decorator commands(value). Equivalent to func.commands = value.
+def command(value):
+    """Decorator. Triggers on lines starting with "<command prefix>command".
+
+    This decorator can be used multiple times to add multiple rules. The
+    resulting match object will have the command as the first group, rest of
+    the line, excluding leading whitespace, as the second group. Parameters
+    1 through 4, seperated by whitespace, will be groups 3-6.
 
     Args:
-        value: A list of commands which will trigger the function.
+        command: A string, which can be a regular expression.
 
-    If the Willie instance is in a channel, or sent a PRIVMSG, where one of
-    these strings is said, preceded only by the configured prefix (a period, by
-    default), the function will execute.
+    Returns:
+        A function with a new regular expression appended to the rule
+        attribute. If there is no rule attribute, it is added.
+
+    Example:
+        @command("hello"):
+            If the command prefix is "\.", this would trigger on lines starting
+            with ".hello".
     """
     def add_attribute(function):
-        function.commands = value
+        if not hasattr(function, "commands"):
+            function.commands = []
+        function.commands.append(value)
         return function
     return add_attribute
 
 
 def priority(value):
-    """Decorator priority(value). Equivalent to func.priority = value.
+    """Decorator. Equivalent to func.priority = value.
 
     Args:
         value: Priority can be one of "high", "medium", "low". Defaults to
@@ -103,7 +120,7 @@ def priority(value):
 
 
 def event(value):
-    """Decorator event(value). Equivalent to func.event = value.
+    """Decorator. Equivalent to func.event = value.
 
     This is one of a number of events, such as 'JOIN', 'PART', 'QUIT', etc.
     (More details can be found in RFC 1459.) When the Willie bot is sent one of
@@ -118,7 +135,7 @@ def event(value):
 
 
 def rate(value):
-    """Decorator rate(value). Equivalent to func.rate = value.
+    """Decorator. Equivalent to func.rate = value.
 
     Availability: 2+
 
@@ -129,5 +146,16 @@ def rate(value):
     """
     def add_attribute(function):
         function.rate = value
+        return function
+    return add_attribute
+
+
+def example(value):
+    """Decorator. Equivalent to func.example = value.
+
+    This doesn't do anything yet.
+    """
+    def add_attribute(function):
+        function.example = value
         return function
     return add_attribute
