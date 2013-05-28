@@ -205,12 +205,17 @@ class Willie(irc.Bot):
                     func.rate = 0
 
             if hasattr(func, 'rule'):
-                if isinstance(func.rule, str):
-                    pattern = sub(func.rule)
-                    regexp = re.compile(pattern, re.I)
-                    bind(self, func.priority, regexp, func)
+                rules = func.rule
+                if isinstance(rules, basestring):
+                    rules = [func.rule]
 
-                if isinstance(func.rule, tuple):
+                if isinstance(rules, list):
+                    for rule in rules:
+                        pattern = sub(rule)
+                        regexp = re.compile(pattern, re.I)
+                        bind(self, func.priority, regexp, func)
+
+                elif isinstance(func.rule, tuple):
                     # 1) e.g. ('$nick', '(.*)')
                     if len(func.rule) == 2 and isinstance(func.rule[0], str):
                         prefix, pattern = func.rule
