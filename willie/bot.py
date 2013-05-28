@@ -212,7 +212,10 @@ class Willie(irc.Bot):
                 if isinstance(rules, list):
                     for rule in rules:
                         pattern = sub(rule)
-                        regexp = re.compile(pattern, re.I)
+                        flags = re.IGNORECASE
+                        if rule.find("\n") != -1:
+                            flags |= re.VERBOSE
+                        regexp = re.compile(pattern, flags)
                         bind(self, func.priority, regexp, func)
 
                 elif isinstance(func.rule, tuple):
