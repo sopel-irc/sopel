@@ -12,7 +12,7 @@ web.py - Web Facilities
 Copyright © 2008, Sean B. Palmer, inamidst.com
 Copyright © 2009, Michael Yanovich <yanovich.1@osu.edu>
 Copyright © 2012, Dimitri Molenaars, Tyrope.nl.
-Copyright © 2012, Elad Alfassa, <elad@fedoraproject.org>
+Copyright © 2012-2013, Elad Alfassa, <elad@fedoraproject.org>
 Licensed under the Eiffel Forum License 2.
 
 More info:
@@ -24,27 +24,28 @@ import re, urllib, urllib2
 from htmlentitydefs import name2codepoint
 
 #HTTP GET
-def get(uri, timeout=20):
+def get(uri, timeout=20, headers=None):
     """
     Execute an HTTP GET query on `uri`, and return the result.
     `timeout` is an optional argument, which represents how much time we should wait before throwing a timeout exception. It defualts to 20, but can be set to higher values if you are communicating with a slow web application.
+    `headers` is a dict of HTTP headers to send with the request.
     """
     if not uri.startswith('http'):
-        return
-    u = get_urllib_object(uri, timeout)
+        uri = "http://" + uri
+    u = get_urllib_object(uri, timeout, headers)
     bytes = u.read()
     u.close()
     return bytes
 
 # Get HTTP headers
-def head(uri, timeout=20):
+def head(uri, timeout=20, headers=None):
     """
     Execute an HTTP GET query on `uri`, and return the headers.
     `timeout` is an optional argument, which represents how much time we should wait before throwing a timeout exception. It defualts to 20, but can be set to higher values if you are communicating with a slow web application.
     """
     if not uri.startswith('http'):
-        return
-    u = get_urllib_object(uri, timeout)
+        uri = "http://" + uri
+    u = get_urllib_object(uri, timeout, headers)
     info = u.info()
     u.close()
     return info
@@ -53,10 +54,11 @@ def head(uri, timeout=20):
 def post(uri, query):
     """
     Execute an HTTP POST query. `uri` is the target URI, and `query` is the POST data.
+    `headers` is a dict of HTTP headers to send with the request.
     """
     if not uri.startswith('http'):
-        return
-    u = urllib2.urlopen(uri, query)
+        uri = "http://" + uri
+    u = urllib2.urlopen(uri, query, headers)
     bytes = u.read()
     u.close()
     return bytes
@@ -78,9 +80,9 @@ def decode(html):
 
 #For internal use in web.py, (modules can use this if they need a urllib object they can execute read() on)
 #Both handles redirects and makes sure input URI is UTF-8
-def get_urllib_object(uri, timeout):
+def get_urllib_object(uri, timeout, headers):
     """
-    Return a urllib2 object for `uri` and `timeout`. This is better than using urrlib2 directly, for it handles redirects, makes sure URI is utf8, and is shorter and easier to use.
+    Return a urllib2 object for `uri` and `timeout` and `headers`. This is better than using urrlib2 directly, for it handles redirects, makes sure URI is utf8, and is shorter and easier to use.
     Modules may use this if they need a urllib2 object to execute .read() on. For more information, refer to the urllib2 documentation.
     """
     redirects = 0
@@ -88,8 +90,13 @@ def get_urllib_object(uri, timeout):
         uri = uri.encode("utf-8")
     except:
         pass
+    original_headers = {'Accept':'*/*', 'User-Agent':'Mozilla/5.0 (Jenni)'}
+    if headers is not None:
+        headers = dict(original_headers.items(), headers.items())
+    else:
+        headers = original_headers
     while True:
-        req = urllib2.Request(uri, headers={'Accept':'*/*', 'User-Agent':'Mozilla/5.0 (Jenni)'})
+        req = urllib2.Request(uri, headers=headers)
         try: u = urllib2.urlopen(req, None, timeout)
         except urllib2.HTTPError, e:
             return e.fp
