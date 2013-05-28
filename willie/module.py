@@ -6,6 +6,7 @@ willie.module.rule
 willie.module.thread
 willie.module.name (deprecated)
 willie.module.command
+willie.module.nickname_command
 willie.module.priority
 willie.module.event
 willie.module.rate
@@ -100,6 +101,55 @@ def command(value):
             function.commands = []
         function.commands.append(value)
         return function
+    return add_attribute
+
+
+def nickname_command(command):
+    """Decorator. Triggers on lines starting with "$nickname: command".
+
+    This decorator can be used multiple times to add multiple rules. The
+    resulting match object will have the command as the first group, rest of
+    the line, excluding leading whitespace, as the second group. Parameters
+    1 through 4, seperated by whitespace, will be groups 3-6.
+
+    Args:
+        command: A string, which can be a regular expression.
+
+    Returns:
+        A function with a new regular expression appended to the rule
+        attribute. If there is no rule attribute, it is added.
+
+    Example:
+        @nickname_command("hello!"):
+            Would trigger on "$nickname: hello!", "$nickname,   hello!",
+            "$nickname hello!", "$nickname hello! parameter1" and
+            "$nickname hello! p1 p2 p3 p4 p5 p6 p7 p8 p9".
+        @nickname_command(".*"):
+            Would trigger on anything starting with "$nickname[:,]? ", and
+            would have never have any additional parameters, as the command
+            would match the rest of the line.
+    """
+    def add_attribute(function):
+        if not hasattr(function, "rule"):
+            function.rule = []
+        rule = r"""
+        ^
+        $nickname[:,]? # Nickname.
+        \s+({command}) # Command as group 0.
+        (?:\s+         # Whitespace to end command.
+        (              # Rest of the line as group 1.
+        (?:(\S+))?     # Parameters 1-4 as groups 2-5.
+        (?:\s+(\S+))?
+        (?:\s+(\S+))?
+        (?:\s+(\S+))?
+        .*             # Accept anything after the parameters. Leave it up to
+                       # the module to parse the line.
+        ))?            # Group 1 must be None, if there are no parameters.
+        $              # EoL, so there are no partial matches.
+        """.format(command=command)
+        function.rule.append(rule)
+        return function
+
     return add_attribute
 
 
