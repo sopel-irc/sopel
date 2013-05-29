@@ -7,6 +7,8 @@ willie.wiki/*
 *.pyo
 *.txt
 *~
+*.rpm
+*.spec
 .*.sw*
 .pid-*
 blocks
