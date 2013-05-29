@@ -132,6 +132,3 @@ def urlencode(data):
     Identical to urllib.urlencode. Use this if you already importing web in your module and don't want to import urllib just to use the urlencode function.
     """
     return urllib.urlencode(data)
-
-if __name__=="__main__":
-    main()
