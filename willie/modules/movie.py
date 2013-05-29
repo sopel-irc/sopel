@@ -1,14 +1,17 @@
 # -*- coding: utf8 -*-
 """
 imdb.py - Willie Movie Information Module
-Copyright © 2012, Elad Alfassa, <elad@fedoraproject.org>
+Copyright © 2012-2013, Elad Alfassa, <elad@fedoraproject.org>
 Licensed under the Eiffel Forum License 2.
 
 This module relies on imdbapi.com
 """
 import json
 import willie.web as web
+import willie.module
 
+@willie.module.commands('movie', 'imdb')
+@willie.module.example('.movie Movie Title')
 def movie(willie, trigger):
     """
     Returns some information about a movie, like Title, Year, Rating, Genre and IMDB Link.
@@ -35,9 +38,6 @@ def movie(willie, trigger):
                   ' | Genre: ' +data['Genre']+ \
                   ' | IMDB Link: http://imdb.com/title/' + data['imdbID']
     willie.say(message)
-
-movie.commands = ['movie', 'imdb']
-movie.example = '.movie Movie Title'
 
 if __name__ == '__main__':
     print __doc__.strip()

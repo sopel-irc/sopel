@@ -15,6 +15,7 @@ willie.module.example
 """
 willie/module.py - Willie IRC Bot (http://willie.dftba.net/)
 Copyright 2013, Ari Koivula, <ari@koivu.la>
+Copyright © 2013, Elad Alfassa <elad@fedoraproject.org>
 
 Licensed under the Eiffel Forum License 2.
 """
@@ -88,8 +89,8 @@ def command(value):
         command: A string, which can be a regular expression.
 
     Returns:
-        A function with a new regular expression appended to the rule
-        attribute. If there is no rule attribute, it is added.
+        A function with a new command appended to the commands
+        attribute. If there is no commands attribute, it is added.
 
     Example:
         @command("hello"):
@@ -103,6 +104,21 @@ def command(value):
         return function
     return add_attribute
 
+def commands(*command_list):
+    """Decorator. Sets a command list for a callable
+
+    This decorator can be used to add multiple commands to one callable in
+    a single line.
+
+    Example:
+        @commands('j', 'join')
+    """
+    def add_attribute(function):
+        if not hasattr(function, "commands"):
+            function.commands = []
+        function.commands.extend(command_list)
+        return function
+    return add_attribute
 
 def nickname_command(command):
     """Decorator. Triggers on lines starting with "$nickname: command".
@@ -203,7 +219,7 @@ def rate(value):
 def example(value):
     """Decorator. Equivalent to func.example = value.
 
-    This doesn't do anything yet.
+    Usage example for a callable.
     """
     def add_attribute(function):
         function.example = value
