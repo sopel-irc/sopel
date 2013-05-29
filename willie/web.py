@@ -80,7 +80,7 @@ def decode(html):
 
 #For internal use in web.py, (modules can use this if they need a urllib object they can execute read() on)
 #Both handles redirects and makes sure input URI is UTF-8
-def get_urllib_object(uri, timeout, headers):
+def get_urllib_object(uri, timeout, headers=None):
     """
     Return a urllib2 object for `uri` and `timeout` and `headers`. This is better than using urrlib2 directly, for it handles redirects, makes sure URI is utf8, and is shorter and easier to use.
     Modules may use this if they need a urllib2 object to execute .read() on. For more information, refer to the urllib2 documentation.
