@@ -16,114 +16,117 @@ dispatch function in bot.py and making it easier to maintain.
 import re
 import threading
 import time
+import willie
+from willie.module import command
 from willie.tools import Nick
 
 
-def startup(willie, trigger):
+@willie.module.event('251')
+@willie.module.rule('.*')
+@willie.module.priority('low')
+def startup(bot, trigger):
     """
     Runs when we recived 251 - lusers, which is just before the server sends the
     motd, and right after establishing a sucessful connection.
     """
-    if willie.config.core.nickserv_password is not None:
-        willie.msg('NickServ', 'IDENTIFY %s'
-                   % willie.config.core.nickserv_password)
+    if bot.config.core.nickserv_password is not None:
+        bot.msg('NickServ', 'IDENTIFY %s'
+                   % bot.config.core.nickserv_password)
 
-    if (willie.config.core.oper_name is not None
-            and willie.config.core.oper_password is not None):
-        willie.write(('OPER', willie.config.core.oper_name + ' '
-                     + willie.config.oper_password))
+    if (bot.config.core.oper_name is not None
+            and bot.config.core.oper_password is not None):
+        bot.write(('OPER', bot.config.core.oper_name + ' '
+                     + bot.config.oper_password))
 
     #Set bot modes per config, +B if no config option is defined
-    if willie.config.has_option('core', 'modes'):
-        modes = willie.config.core.modes
+    if bot.config.has_option('core', 'modes'):
+        modes = bot.config.core.modes
     else:
         modes = 'B'
-    willie.write(('MODE ', '%s +%s' % (willie.nick, modes)))
+    bot.write(('MODE ', '%s +%s' % (bot.nick, modes)))
 
-    for channel in willie.config.core.get_list('channels'):
-        willie.write(('JOIN', channel))
-
-startup.rule = r'(.*)'
-startup.event = '251'
-startup.priority = 'low'
+    for channel in bot.config.core.get_list('channels'):
+        bot.write(('JOIN', channel))
 
 #Functions to maintain a list of chanops in all of willie's channels.
 
 
-def refresh_list(willie, trigger):
+@willie.module.command('newoplist')
+def refresh_list(bot, trigger):
     ''' If you need to use this, then it means you found a bug '''
     if trigger.admin:
-        willie.reply('Refreshing ops list for ' + trigger.sender + '.')
-        willie.flushOps(trigger.sender)
-        willie.write(('NAMES', trigger.sender))
-refresh_list.commands = ['newoplist']
+        bot.reply('Refreshing ops list for ' + trigger.sender + '.')
+        bot.flushOps(trigger.sender)
+        bot.write(('NAMES', trigger.sender))
 
 
-def list_ops(willie, trigger):
+@willie.module.command('listops')
+def list_ops(bot, trigger):
     """
     List channel operators in the given channel, or current channel if none is
     given.
     """
     if trigger.group(2):
-        willie.say(trigger.group(2))
-        if trigger.group(2) in willie.ops:
-            willie.say(str(willie.ops[channel]))
+        bot.say(trigger.group(2))
+        if trigger.group(2) in bot.ops:
+            bot.say(str(bot.ops[channel]))
         else:
-            willie.say('None')
+            bot.say('None')
     else:
-        if trigger.sender in willie.ops:
-            willie.say(str(willie.ops[trigger.sender]))
+        if trigger.sender in bot.ops:
+            bot.say(str(bot.ops[trigger.sender]))
         else:
-            willie.say('None')
-list_ops.commands = ['listops']
+            bot.say('None')
 
 
-def list_voices(willie, trigger):
+@willie.module.command('listvoices')
+def list_voices(bot, trigger):
     """
     List users with voice in the given channel, or current channel if none is
     given.
     """
     if trigger.group(2):
-        willie.say(trigger.group(2))
-        if trigger.group(2) in willie.voices:
-            willie.say(str(willie.voices[channel]))
+        bot.say(trigger.group(2))
+        if trigger.group(2) in bot.voices:
+            bot.say(str(bot.voices[channel]))
         else:
-            willie.say('None')
+            bot.say('None')
     else:
-        if trigger.sender in willie.voices:
-            willie.say(str(willie.voices[trigger.sender]))
+        if trigger.sender in bot.voices:
+            bot.say(str(bot.voices[trigger.sender]))
         else:
-            willie.say('None')
-list_voices.commands = ['listvoices']
+            bot.say('None')
 
 
-def handle_names(willie, trigger):
+@willie.module.rule('.*')
+@willie.module.event('353')
+@willie.module.thread(False)
+def handle_names(bot, trigger):
     ''' Handle NAMES response, happens when joining to channels'''
     names = re.split(' ', trigger.group(1))
-    channels = re.search('(#\S*)', willie.raw)
+    channels = re.search('(#\S*)', bot.raw)
     if (channels is None):
         return
     channel = channels.group(1)
-    willie.init_ops_list(channel)
+    bot.init_ops_list(channel)
     for name in names:
         if '@' in name or '~' in name or '&' in name:
-            willie.add_op(channel, name.lstrip('@&%+~'))
-            willie.add_halfop(channel, name.lstrip('@&%+~'))
-            willie.add_voice(channel, name.lstrip('@&%+~'))
+            bot.add_op(channel, name.lstrip('@&%+~'))
+            bot.add_halfop(channel, name.lstrip('@&%+~'))
+            bot.add_voice(channel, name.lstrip('@&%+~'))
         elif '%' in name:
-            willie.add_halfop(channel, name.lstrip('@&%+~'))
-            willie.add_voice(channel, name.lstrip('@&%+~'))
+            bot.add_halfop(channel, name.lstrip('@&%+~'))
+            bot.add_voice(channel, name.lstrip('@&%+~'))
         elif '+' in name:
-            willie.add_voice(channel, name.lstrip('@&%+~'))
-handle_names.rule = r'(.*)'
-handle_names.event = '353'
-handle_names.thread = False
+            bot.add_voice(channel, name.lstrip('@&%+~'))
 
 
-def track_modes(willie, trigger):
+@willie.module.rule('(.*)')
+@willie.module.event('MODE')
+def track_modes(bot, trigger):
     ''' Track usermode changes and keep our lists of ops up to date '''
     # 0 is who set it, 1 is MODE. We don't need those.
-    line = willie.raw.split(' ')[2:]
+    line = bot.raw.split(' ')[2:]
 
     # If the first character of where the mode is being set isn't a #
     # then it's a user mode, not a channel mode, so we'll ignore it.
@@ -143,93 +146,95 @@ def track_modes(willie, trigger):
 
     # Some basic checks for broken replies from server. Probably unnecessary.
     if len(modes) > len(nicks):
-        willie.debug('core',
+        bot.debug('core',
                      'MODE recieved from server with more modes than nicks.',
                      'warning')
         modes = modes[:(len(nicks) + 1)]  # Try truncating, in case that works.
     elif len(modes) < len(nicks):
-        willie.debug('core',
+        bot.debug('core',
                      'MODE recieved from server with more nicks than modes.',
                      'warning')
         nicks = nicks[:(len(modes) - 1)]  # Try truncating, in case that works.
     # This one is almost certainly unneeded.
     if not (len(modes) and len(nicks)):
-        willie.debug('core', 'MODE recieved from server without arguments',
+        bot.debug('core', 'MODE recieved from server without arguments',
                      'verbose')
         return  # Nothing to do here.
 
     for nick, mode in zip(nicks, modes):
         if mode[1] == 'o' or mode[1] == 'q':  # Op or owner (for UnrealIRCd)
             if mode[0] == '+':
-                willie.add_op(channel, nick)
+                bot.add_op(channel, nick)
             else:
-                willie.del_op(channel, nick)
+                bot.del_op(channel, nick)
         elif mode[1] == 'h':  # Halfop
             if mode[0] == '+':
-                willie.add_halfop(channel, nick)
+                bot.add_halfop(channel, nick)
             else:
-                willie.del_halfop(channel, nick)
+                bot.del_halfop(channel, nick)
         elif mode[1] == 'v':
             if mode[0] == '+':
-                willie.add_voice(channel, nick)
+                bot.add_voice(channel, nick)
             else:
-                willie.del_voice(channel, nick)
-track_modes.rule = r'(.*)'
-track_modes.event = 'MODE'
+                bot.del_voice(channel, nick)
 
 
-def track_nicks(willie, trigger):
+@willie.module.rule('.*')
+@willie.module.event('NICK')
+def track_nicks(bot, trigger):
     '''Track nickname changes and maintain our chanops list accordingly'''
     old = trigger.nick
     new = Nick(trigger.group(1))
 
     # Give debug mssage, and PM the owner, if the bot's own nick changes.
-    if old == willie.nick:
-        privmsg = "Hi, I'm your bot, %s. Something has made my nick change. This can cause some problems for me, and make me do weird things. You'll probably want to restart me, and figure out what made that happen so you can stop it happening again. (Usually, it means you tried to give me a nick that's protected by NickServ.)" % willie.nick
+    if old == bot.nick:
+        privmsg = "Hi, I'm your bot, %s. Something has made my nick change. This can cause some problems for me, and make me do weird things. You'll probably want to restart me, and figure out what made that happen so you can stop it happening again. (Usually, it means you tried to give me a nick that's protected by NickServ.)" % bot.nick
         debug_msg = "Nick changed by server. This can cause unexpected behavior. Please restart the bot."
-        willie.debug('[CORE]', debug_msg, 'always')
-        willie.msg(willie.config.core.owner, privmsg)
+        bot.debug('[CORE]', debug_msg, 'always')
+        bot.msg(bot.config.core.owner, privmsg)
         return
 
-    for channel in willie.halfplus:
-        if old in willie.halfplus[channel]:
-            willie.del_halfop(channel, old)
-            willie.add_halfop(channel, new)
-    for channel in willie.ops:
-        if old in willie.ops[channel]:
-            willie.del_op(channel, old)
-            willie.add_op(channel, new)
-    for channel in willie.voices:
-        if old in willie.voices[channel]:
-            willie.del_voice(channel, old)
-            willie.add_voice(channel, new)
-
-track_nicks.rule = r'(.*)'
-track_nicks.event = 'NICK'
+    for channel in bot.halfplus:
+        if old in bot.halfplus[channel]:
+            bot.del_halfop(channel, old)
+            bot.add_halfop(channel, new)
+    for channel in bot.ops:
+        if old in bot.ops[channel]:
+            bot.del_op(channel, old)
+            bot.add_op(channel, new)
+    for channel in bot.voices:
+        if old in bot.voices[channel]:
+            bot.del_voice(channel, old)
+            bot.add_voice(channel, new)
 
 
-def track_part(willie, trigger):
-    if trigger.nick == willie.nick:
-        willie.channels.remove(trigger.sender)
-track_part.rule = r'(.*)'
-track_part.event = 'PART'
+@willie.module.rule('(.*)')
+@willie.module.event('PART')
+def track_part(bot, trigger):
+    if trigger.nick == bot.nick:
+        bot.channels.remove(trigger.sender)
 
-def track_kick(willie, trigger):
-    if trigger.args[1] == willie.nick:
-        willie.channels.remove(trigger.sender)
-track_kick.rule = r'.*'
-track_kick.event = 'KICK'
 
-def track_join(willie, trigger):
-    if trigger.nick == willie.nick and trigger.sender not in willie.channels:
-        willie.channels.append(trigger.sender)
-track_join.rule = r'(.*)'
-track_join.event = 'JOIN'
+@willie.module.rule('.*')
+@willie.module.event('KICK')
+def track_kick(bot, trigger):
+    if trigger.args[1] == bot.nick:
+        bot.channels.remove(trigger.sender)
+
+
+@willie.module.rule('.*')
+@willie.module.event('JOIN')
+def track_join(bot, trigger):
+    if trigger.nick == bot.nick and trigger.sender not in bot.channels:
+        bot.channels.append(trigger.sender)
 
 #Live blocklist editing
 
 
-def blocks(willie, trigger):
+@willie.module.command('blocks')
+@willie.module.priority('low')
+@willie.module.thread(False)
+def blocks(bot, trigger):
     """
     Manage Willie's blocking features.
     https://github.com/embolalia/willie/wiki/Making-Willie-ignore-people
@@ -248,8 +253,8 @@ def blocks(willie, trigger):
         'huh': "I could not figure out what you wanted to do.",
     }
 
-    masks = willie.config.core.get_list('host_blocks')
-    nicks = [Nick(nick) for nick in willie.config.core.get_list('nick_blocks')]
+    masks = bot.config.core.get_list('host_blocks')
+    nicks = [Nick(nick) for nick in bot.config.core.get_list('nick_blocks')]
     print masks, nicks
     text = trigger.group().split()
 
@@ -258,61 +263,54 @@ def blocks(willie, trigger):
             if len(masks) > 0 and masks.count("") == 0:
                 for each in masks:
                     if len(each) > 0:
-                        willie.say("blocked hostmask: " + each)
+                        bot.say("blocked hostmask: " + each)
             else:
-                willie.reply(STRINGS['nonelisted'] % ('hostmasks'))
+                bot.reply(STRINGS['nonelisted'] % ('hostmasks'))
         elif text[2] == "nick":
             if len(nicks) > 0 and nicks.count("") == 0:
                 for each in nicks:
                     if len(each) > 0:
-                        willie.say("blocked nick: " + each)
+                        bot.say("blocked nick: " + each)
             else:
-                willie.reply(STRINGS['nonelisted'] % ('nicks'))
+                bot.reply(STRINGS['nonelisted'] % ('nicks'))
         else:
-            willie.reply(STRINGS['invalid_display'])
+            bot.reply(STRINGS['invalid_display'])
 
     elif len(text) == 4 and text[1] == "add":
         if text[2] == "nick":
             nicks.append(text[3])
-            willie.config.core.nick_blocks = nicks
-            willie.config.save()
+            bot.config.core.nick_blocks = nicks
+            bot.config.save()
         elif text[2] == "hostmask":
             masks.append(text[3].lower())
-            willie.config.core.host_blocks = masks
+            bot.config.core.host_blocks = masks
         else:
-            willie.reply(STRINGS['invalid'] % ("adding"))
+            bot.reply(STRINGS['invalid'] % ("adding"))
             return
 
-        willie.reply(STRINGS['success_add'] % (text[3]))
+        bot.reply(STRINGS['success_add'] % (text[3]))
 
     elif len(text) == 4 and text[1] == "del":
         if text[2] == "nick":
             try:
                 nicks.remove(Nick(text[3]))
-                willie.config.core.nick_blocks = nicks
-                willie.config.save()
-                willie.reply(STRINGS['success_del'] % (text[3]))
+                bot.config.core.nick_blocks = nicks
+                bot.config.save()
+                bot.reply(STRINGS['success_del'] % (text[3]))
             except:
-                willie.reply(STRINGS['no_nick'] % (text[3]))
+                bot.reply(STRINGS['no_nick'] % (text[3]))
                 return
         elif text[2] == "hostmask":
             try:
                 masks.remove(text[3].lower())
-                willie.config.core.host_blocks = masks
-                willie.config.save()
-                willie.reply(STRINGS['success_del'] % (text[3]))
+                bot.config.core.host_blocks = masks
+                bot.config.save()
+                bot.reply(STRINGS['success_del'] % (text[3]))
             except:
-                willie.reply(STRINGS['no_host'] % (text[3]))
+                bot.reply(STRINGS['no_host'] % (text[3]))
                 return
         else:
-            willie.reply(STRINGS['invalid'] % ("deleting"))
+            bot.reply(STRINGS['invalid'] % ("deleting"))
             return
     else:
-        willie.reply(STRINGS['huh'])
-
-blocks.commands = ['blocks']
-blocks.priority = 'low'
-blocks.thread = False
-
-if __name__ == '__main__':
-    print __doc__.strip()
+        bot.reply(STRINGS['huh'])

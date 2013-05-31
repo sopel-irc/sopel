@@ -19,18 +19,12 @@ import imp
 import irc
 from db import WillieDB
 from tools import stderr, stdout, Nick
+import module
 
 
 class Willie(irc.Bot):
-    NOLIMIT = 1
-    """
-    *Avalability: 3.2+*
+    NOLIMIT = module.NOLIMIT
 
-    Return value for ``callable``\s, which supresses rate limiting for that
-    call. That is, returning this value means the triggering user will not be
-    prevented from triggering the command again within the rate limit. This can
-    be used, for example, to allow a user to rety a failed command immediately.
-    """
     def __init__(self, config):
         irc.Bot.__init__(self, config.core)
         self.config = config
@@ -466,7 +460,7 @@ class Willie(irc.Bot):
             exit_code = func(willie, trigger)
         except Exception, e:
             self.error(origin, trigger)
-        if exit_code != Willie.NOLIMIT:
+        if exit_code != module.NOLIMIT:
             self.times[nick][func] = time.time()
 
     def limit(self, origin, func):
