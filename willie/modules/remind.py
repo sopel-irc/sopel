@@ -14,6 +14,7 @@ from pytz import timezone, all_timezones_set
 import pytz
 import codecs
 from datetime import tzinfo, timedelta, datetime
+from willie.module import command, example, NOLIMIT
 
 
 def filename(self):
@@ -46,34 +47,34 @@ def dump_database(name, data):
     f.close()
 
 
-def setup(willie):
-    #Having a db means pref's exists. Later, we can just use `if willie.db`.
-    if willie.db and not willie.db.preferences.has_columns('tz'):
-        willie.db.preferences.add_columns(['tz'])
-    if willie.db and not willie.db.preferences.has_columns('time_format'):
-        willie.db.preferences.add_columns(['tz'])
+def setup(bot):
+    #Having a db means pref's exists. Later, we can just use `if bot.db`.
+    if bot.db and not bot.db.preferences.has_columns('tz'):
+        bot.db.preferences.add_columns(['tz'])
+    if bot.db and not bot.db.preferences.has_columns('time_format'):
+        bot.db.preferences.add_columns(['tz'])
 
-    willie.rfn = filename(willie)
-    willie.rdb = load_database(willie.rfn)
+    bot.rfn = filename(bot)
+    bot.rdb = load_database(bot.rfn)
 
-    def monitor(willie):
+    def monitor(bot):
         time.sleep(5)
         while True:
             now = int(time.time())
-            unixtimes = [int(key) for key in willie.rdb]
+            unixtimes = [int(key) for key in bot.rdb]
             oldtimes = [t for t in unixtimes if t <= now]
             if oldtimes:
                 for oldtime in oldtimes:
-                    for (channel, nick, message) in willie.rdb[oldtime]:
+                    for (channel, nick, message) in bot.rdb[oldtime]:
                         if message:
-                            willie.msg(channel, nick + ': ' + message)
+                            bot.msg(channel, nick + ': ' + message)
                         else:
-                            willie.msg(channel, nick + '!')
-                    del willie.rdb[oldtime]
-                dump_database(willie.rfn, willie.rdb)
+                            bot.msg(channel, nick + '!')
+                    del bot.rdb[oldtime]
+                dump_database(bot.rfn, bot.rdb)
             time.sleep(2.5)
 
-    targs = (willie,)
+    targs = (bot,)
     t = threading.Thread(target=monitor, args=targs)
     t.start()
 
@@ -119,7 +120,9 @@ scaling = {
 periods = '|'.join(scaling.keys())
 
 
-def remind(willie, trigger):
+@command('in')
+@example('.in 3h45m Go to class')
+def remind(bot, trigger):
     """Gives you a reminder in the given amount of time."""
     duration = 0
     message = re.split('(\d+ ?(?:' + periods + ')) ?', trigger.group(2))[1:]
@@ -135,22 +138,22 @@ def remind(willie, trigger):
             reminder = reminder + piece
             stop = True
     if duration == 0:
-        return willie.reply("Sorry, didn't understand the input.")
+        return bot.reply("Sorry, didn't understand the input.")
 
     if duration % 1:
         duration = int(duration) + 1
     else:
         duration = int(duration)
     tzi = timezone('UTC')
-    if willie.db and trigger.nick in willie.db.preferences:
-        tz = willie.db.preferences.get(trigger.nick, 'tz') or 'UTC'
+    if bot.db and trigger.nick in bot.db.preferences:
+        tz = bot.db.preferences.get(trigger.nick, 'tz') or 'UTC'
         tzi = timezone(tz)
-    create_reminder(willie, trigger, duration, reminder, tzi)
-remind.commands = ['in']
-remind.example = '.in 3h45m Go to class'
+    create_reminder(bot, trigger, duration, reminder, tzi)
 
 
-def at(willie, trigger):
+@command('at')
+@example('.at 13:47 Do your homework!')
+def at(bot, trigger):
     """
     Gives you a reminder at the given time. Takes hh:mm:ssContinent/Large_City
     message. Continent/Large_City is a timezone from the tzdb; a list of valid
@@ -160,26 +163,26 @@ def at(willie, trigger):
     regex = re.compile(r'(\d+):(\d+)(?::(\d+))?([^\s\d]+)? (.*)')
     match = regex.match(trigger.group(2))
     if not match:
-        willie.reply("Sorry, but I didn't understand your input.")
-        return willie.NOLIMIT
+        bot.reply("Sorry, but I didn't understand your input.")
+        return NOLIMIT
     hour, minute, second, tz, message = match.groups()
     if not second:
         second = '0'
     if tz:
         if tz not in all_timezones_set:
             good_tz = False
-            if willie.db and tz in willie.db.preferences:
-                tz = willie.db.preferences.get(tz, 'tz')
+            if bot.db and tz in bot.db.preferences:
+                tz = bot.db.preferences.get(tz, 'tz')
                 if tz:
                     tzi = timezone(tz)
                     good_tz = True
             if not good_tz:
-                willie.reply("I don't know that timezone or user.")
-                return willie.NOLIMIT
+                bot.reply("I don't know that timezone or user.")
+                return NOLIMIT
         else:
             tzi = timezone(tz)
-    elif willie.db and trigger.nick in willie.db.preferences:
-        tz = willie.db.preferences.get(trigger.nick, 'tz')
+    elif bot.db and trigger.nick in bot.db.preferences:
+        tz = bot.db.preferences.get(trigger.nick, 'tz')
         if tz:
             tzi = timezone(tz)
         else:
@@ -195,31 +198,26 @@ def at(willie, trigger):
 
     if duration < 0:
         duration += 86400
-    create_reminder(willie, trigger, duration, message, timezone('UTC'))
-at.commands = ['at']
-at.example = '.at 13:47 Do your homework!'
+    create_reminder(bot, trigger, duration, message, timezone('UTC'))
 
 
-def create_reminder(willie, trigger, duration, message, tz):
+def create_reminder(bot, trigger, duration, message, tz):
     t = int(time.time()) + duration
     reminder = (trigger.sender, trigger.nick, message)
     try:
-        willie.rdb[t].append(reminder)
+        bot.rdb[t].append(reminder)
     except KeyError:
-        willie.rdb[t] = [reminder]
+        bot.rdb[t] = [reminder]
 
-    dump_database(willie.rfn, willie.rdb)
+    dump_database(bot.rfn, bot.rdb)
 
     if duration >= 60:
         tformat = "%F - %T%Z"
-        if willie.db and trigger.nick in willie.db.preferences:
-            tformat = (willie.db.preferences.get(trigger.nick, 'time_format')
+        if bot.db and trigger.nick in bot.db.preferences:
+            tformat = (bot.db.preferences.get(trigger.nick, 'time_format')
                        or "%F - %T%Z")
         timef = datetime.fromtimestamp(t, tz).strftime(tformat)
 
-        willie.reply('Okay, will remind at %s' % timef)
+        bot.reply('Okay, will remind at %s' % timef)
     else:
-        willie.reply('Okay, will remind in %s secs' % duration)
-
-if __name__ == '__main__':
-    print __doc__.strip()
+        bot.reply('Okay, will remind in %s secs' % duration)
