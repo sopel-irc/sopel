@@ -287,11 +287,12 @@ class Bot(asynchat.async_chat):
                                           % e)
                     os._exit(1)
             self.set_socket(self.ssl)
-        self.write(('NICK', self.nick))
-        self.write(('USER', self.user, '+iw', self.nick), self.name)
 
         if self.config.core.server_password is not None:
             self.write(('PASS', self.config.core.server_password))
+        self.write(('NICK', self.nick))
+        self.write(('USER', self.user, '+iw', self.nick), self.name)
+
         stderr('Connected.')
         self.last_ping_time = datetime.now();
         timeout_check_thread = threading.Thread(target=self._timeout_check)
