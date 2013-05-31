@@ -20,6 +20,15 @@ Copyright © 2013, Elad Alfassa <elad@fedoraproject.org>
 Licensed under the Eiffel Forum License 2.
 """
 
+NOLIMIT = 1
+"""Return value for ``callable``\s, which supresses rate limiting for the call.
+
+*Avalability: 4.0+; available as ``Willie.NOLIMIT`` in 3.2*
+
+Returning this value means the triggering user will not be
+prevented from triggering the command again within the rate limit. This can
+be used, for example, to allow a user to rety a failed command immediately.
+"""
 
 def rule(value):
     """Decorator. Equivalent to func.rule.append(value).
