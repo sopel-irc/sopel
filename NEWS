@@ -1,7 +1,25 @@
+Changes between 3.2.0 and 4.0.0
+===============================
+* Messages are now decoded from, and encoded to, UTF8 on receiving and sending.
+* Triggers, and the appropriate attributes thereof, are now unicode objects.
+* Decorators were introduced for setting attributes on callables, available in willie.module
+* the NOLIMIT return value was moved from the Willie class to willie.module
+* Module discovery was reworked. ~/.willie/modules is now an extra directory by default
+* Callables with the same name in different modules no longer override each other
+* The home directory, usually ~/.willie, can now be configured by adding homedir under [core]
+* The location of pid files can now be configured by adding pid_dir under [core]
+* Willie can now be run as a systemd service
+* willie.channels is now properly maintained
+* trigger.isvoice can now be used to determine if a user has voice privileges
+* The information of the last URL seen in a channel can now be replayed with .title
+* Case sensitivity in nick blocking is fixed
+* The ai, bucket, fuckingweather, nws, and roulette modules were moved to the willie-extras repository
+* Numerous minor features, and stability and usability fixes
+
 Changes between 3.1.2 and 3.2.0
 ===============================
 * tools.Nick class added for RFC-compliant nickname comparison and storage
-* Returning willie.NO_LIMIT from a callable ignores the rate limit for that call
+* Returning willie.NOLIMIT from a callable ignores the rate limit for that call
 * get_list() added to ConfigSection. Will reliably return a list from a config attribute.
 * A number of bugs regarding admin and operator lists were fixed
 * Unusual mode changes no longer cause errors
