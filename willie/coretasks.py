@@ -17,7 +17,6 @@ import re
 import threading
 import time
 import willie
-from willie.module import command
 from willie.tools import Nick
 
 
@@ -98,12 +97,12 @@ def list_voices(bot, trigger):
             bot.say('None')
 
 
-@willie.module.rule('.*')
+@willie.module.rule('(.*)')
 @willie.module.event('353')
 @willie.module.thread(False)
 def handle_names(bot, trigger):
     ''' Handle NAMES response, happens when joining to channels'''
-    names = re.split(' ', trigger.group(1))
+    names = re.split(' ', trigger)
     channels = re.search('(#\S*)', bot.raw)
     if (channels is None):
         return
@@ -184,7 +183,7 @@ def track_modes(bot, trigger):
 def track_nicks(bot, trigger):
     '''Track nickname changes and maintain our chanops list accordingly'''
     old = trigger.nick
-    new = Nick(trigger.group(1))
+    new = Nick(trigger)
 
     # Give debug mssage, and PM the owner, if the bot's own nick changes.
     if old == bot.nick:
