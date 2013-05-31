@@ -2,7 +2,7 @@
 """
 youtube.py - Willie YouTube Module
 Copyright 2012, Dimitri Molenaars, Tyrope.nl.
-Copyright © 2012, Elad Alfassa, <elad@fedoraproject.org>
+Copyright © 2012-2013, Elad Alfassa, <elad@fedoraproject.org>
 Copyright 2012, Edward Powell, embolalia.net
 Licensed under the Eiffel Forum License 2.
 
@@ -12,7 +12,7 @@ This module will respond to .yt and .youtube commands and searches the youtubes.
 """
 
 import willie.web as web
-import re
+import json
 from HTMLParser import HTMLParser
 
 
@@ -29,41 +29,38 @@ def setup(willie):
 def ytget(willie, trigger, uri):
     try:
         bytes = web.get(uri)
+        result = json.loads(bytes)
+        if result.has_key('feed'):
+            video_entry = result['feed']['entry'][0]
+        else:
+            video_entry = result['entry']
     except:
         willie.say('Something went wrong when accessing the YouTube API.')
-        return err
-    #Parse YouTube API info (XML)
-    if '<entry gd:' in bytes:
-        bytes = bytes.split('<entry gd:')[1]
+        return 'err'
     vid_info = {}
-    #get link
-    link_result = re.search('(?:<media:player url=\')(.*)(?:feature=youtube_gdata_player\'/>)', bytes)
     try:
-        if link_result.group(1)[-5:] == '&amp;':
-            vid_info['link'] = link_result.group(1).replace('www.youtube.com/watch?v=', 'youtu.be/')[:-5]
-        else:
-            vid_info['link'] = link_result.group(1).replace('www.youtube.com/watch?v=', 'youtu.be/')
+        # The ID format is tag:youtube.com,2008:video:RYlCVwxoL_g
+        # So we need to split by : and take the last item
+        vid_id = video_entry['id']['$t'].split(':')
+        vid_id = vid_id[len(vid_id)-1] #last item is the actual ID
+        vid_info['link'] = 'http://youtu.be/' + vid_id
     except AttributeError as e:
         vid_info['link'] = 'N/A'
 
-    #get title
-    title_result = re.search('(?:<media:title type=\'plain\'>)(.*)(?:</media:title>)', bytes)
     try:
-        vid_info['title'] = title_result.group(1)
+        vid_info['title'] = video_entry['title']['$t']
     except AttributeError as e:
         vid_info['title'] = 'N/A'
 
     #get youtube channel
-    uploader_result = re.search('(?:<author><name>)(.*)(?:</name>)', bytes)
     try:
-        vid_info['uploader'] = uploader_result.group(1)
+        vid_info['uploader'] = video_entry['author'][0]['name']['$t']
     except AttributeError as e:
         vid_info['uploader'] = 'N/A'
 
     #get upload time in format: yyyy-MM-ddThh:mm:ss.sssZ
-    uploaded_result = re.search('(?:<yt:uploaded>)(.*)(?:</yt:uploaded>)', bytes)
     try:
-        upraw = uploaded_result.group(1)
+        upraw = video_entry['published']['$t']
         #parse from current format to output format: DD/MM/yyyy, hh:mm
         vid_info['uploaded'] = '%s/%s/%s, %s:%s' % (upraw[8:10], upraw[5:7],
                                                   upraw[0:4], upraw[11:13],
@@ -72,9 +69,8 @@ def ytget(willie, trigger, uri):
         vid_info['uploaded'] = 'N/A'
 
     #get duration in seconds
-    length_result = re.search('(?:<yt:duration seconds=\')([0-9]*)', bytes)
     try:
-        duration = int(length_result.group(1))
+        duration = int(video_entry['media$group']['yt$duration']['seconds'])
         #Detect liveshow + parse duration into proper time format.
         if duration < 1:
             vid_info['length'] = 'LIVE'
@@ -97,37 +93,27 @@ def ytget(willie, trigger, uri):
         vid_info['length'] = 'N/A'
 
     #get views
-    views_result = re.search('(?:<yt:statistics favoriteCount=\')([0-9]*)(?:\' viewCount=\')([0-9]*)(?:\'/>)', bytes)
     try:
-        views = views_result.group(2)
+        views = video_entry['yt$statistics']['viewCount']
         vid_info['views'] = str('{0:20,d}'.format(int(views))).lstrip(' ')
     except AttributeError as e:
         vid_info['views'] = 'N/A'
 
-    #get favourites (for future use?)
-    try:
-        favs = views_result.group(1)
-        vid_info['favs'] = str('{0:20,d}'.format(int(favs))).lstrip(' ')
-    except AttributeError as e:
-        vid_info['favs'] = 'N/A'
-
     #get comment count
-    comments_result = re.search('(?:<gd:comments><gd:feedLink)(?:.*)(?:countHint=\')(.*)(?:\'/></gd:comments>)', bytes)
     try:
-        comments = comments_result.group(1)
+        comments = video_entry['gd$comments']['gd$feedLink']['countHint']
         vid_info['comments'] = str('{0:20,d}'.format(int(comments))).lstrip(' ')
     except AttributeError as e:
         vid_info['comments'] = 'N/A'
 
     #get likes & dislikes
-    liking_result = re.search('(?:<yt:rating numDislikes=\')(.*)(?:\' numLikes=\')(.*)(?:\'/>)', bytes)
     try:
-        likes = liking_result.group(2)
+        likes = video_entry['yt$rating']['numLikes']
         vid_info['likes'] = str('{0:20,d}'.format(int(likes))).lstrip(' ')
     except AttributeError as e:
         vid_info['likes'] = 'N/A'
     try:
-        dislikes = liking_result.group(1)
+        dislikes = video_entry['yt$rating']['numDislikes']
         vid_info['dislikes'] = str('{0:20,d}'.format(int(dislikes))).lstrip(' ')
     except AttributeError as e:
         vid_info['dislikes'] = 'N/A'
@@ -137,16 +123,9 @@ def ytget(willie, trigger, uri):
 def ytsearch(willie, trigger):
     """Search YouTube"""
     #modified from ytinfo: Copyright 2010-2011, Michael Yanovich, yanovich.net, Kenneth Sham.
-
-    #Right now, this uses a parsing script from rscript.org. Eventually, I'd
-    #like to use the YouTube API directly.
-
-    #Before actually loading this in, let's see what input actually is so we can parse it right.
-
-    #Grab info from gdata
     if not trigger.group(2):
         return
-    uri = 'http://gdata.youtube.com/feeds/api/videos?v=2&max-results=1&q=' + trigger.group(2).encode('utf-8')
+    uri = 'http://gdata.youtube.com/feeds/api/videos?v=2&alt=json&max-results=1&q=' + trigger.group(2).encode('utf-8')
     uri = uri.replace(' ', '+')
     video_info = ytget(willie, trigger, uri)
 
@@ -174,7 +153,7 @@ def ytinfo(willie, trigger, found_match=None):
     """
     match = found_match or trigger
     #Grab info from YT API
-    uri = 'http://gdata.youtube.com/feeds/api/videos/' + match.group(2) + '?v=2'
+    uri = 'http://gdata.youtube.com/feeds/api/videos/' + match.group(2) + '?v=2&alt=json'
 
     video_info = ytget(willie, trigger, uri)
     if video_info is 'err':
@@ -197,7 +176,7 @@ ytinfo.rule = '.*(youtube.com/watch\S*v=|youtu.be/)([\w-]+).*'
 def ytlast(willie, trigger):
     if not trigger.group(2):
         return
-    uri = 'https://gdata.youtube.com/feeds/api/users/' + trigger.group(2).encode('utf-8') + '/uploads?max-results=1&v=2'
+    uri = 'https://gdata.youtube.com/feeds/api/users/' + trigger.group(2).encode('utf-8') + '/uploads?max-results=1&alt=json&v=2'
     video_info = ytget(willie, trigger, uri)
 
     if video_info is 'err':
