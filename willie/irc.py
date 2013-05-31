@@ -42,7 +42,7 @@ class Origin(object):
 
     def __init__(self, bot, source, args):
         self.hostmask = source
-        
+
         #Split out the nick, user, and host from hostmask per the regex above.
         match = Origin.source.match(source or '')
         self.nick, self.user, self.host = match.groups()
@@ -110,7 +110,7 @@ class Bot(asynchat.async_chat):
         """
         self.voices = dict()
         """
-        A dictionary mapping channels to a ``Nick`` list of their voices, half-ops 
+        A dictionary mapping channels to a ``Nick`` list of their voices, half-ops
         and ops.
         """
 
@@ -134,7 +134,7 @@ class Bot(asynchat.async_chat):
                 os._exit(1)
         f = codecs.open(os.path.join(self.config.core.logdir, 'raw.log'),
                         'a', encoding='utf-8')
-        f.write(prefix+unicode(time.time()) + "\t")
+        f.write(prefix + unicode(time.time()) + "\t")
         temp = line.replace('\n', '')
 
         f.write(temp)
@@ -149,19 +149,21 @@ class Bot(asynchat.async_chat):
             string = unicode(string, encoding='utf8')
         return string
 
-
     def write(self, args, text=None):
-        """
-        Send a command to the server. In the simplest case, ``args`` is a list
-        containing just the command you wish to send, and ``text`` the argument
-        to that command {e.g. write(['JOIN'], '#channel')}
+        """Send a command to the server
 
-        More specifically, ``args`` will be joined together, separated by a
-        space. If text is given, it will be added preceeded by a space and a
-        colon (' :').
+        ``args`` is an iterable of strings, which are joined by spaces.
+        ``text`` is treated as though it were the final item in ``args``, but
+        is preceeded by a ``:``. This is a special case which  means that
+        ``text``, unlike the items in ``args`` may contain spaces (though this
+        constraint is not checked by ``write``).
+
+        In other words, both ``willie.write(('PRIVMSG',), 'Hello, world!')``
+        and ``willie.write(('PRIVMSG', ':Hello, world!'))`` will send
+        ``PRIVMSG :Hello, world!`` to the server.
 
         Newlines and carriage returns ('\\n' and '\\r') are removed before
-        sending. Additionally, if the joined ``args`` and ``text`` are more
+        sending. Additionally, if the message (after joining) is longer than
         than 510 characters, any remaining characters will not be sent.
         """
         args = [self.safe(arg) for arg in args]
@@ -294,7 +296,7 @@ class Bot(asynchat.async_chat):
         self.write(('USER', self.user, '+iw', self.nick), self.name)
 
         stderr('Connected.')
-        self.last_ping_time = datetime.now();
+        self.last_ping_time = datetime.now()
         timeout_check_thread = threading.Thread(target=self._timeout_check)
         timeout_check_thread.start()
         ping_thread = threading.Thread(target=self._send_ping)
@@ -305,15 +307,15 @@ class Bot(asynchat.async_chat):
             if (datetime.now() - self.last_ping_time).seconds > int(self.config.timeout):
                 stderr('Ping timeout reached after %s seconds, closing connection' % self.config.timeout)
                 self.handle_close()
-                break;
+                break
             else:
                 time.sleep(int(self.config.timeout))
 
     def _send_ping(self):
         while True:
-            if (datetime.now() - self.last_ping_time).seconds > int(self.config.timeout)/2:
+            if (datetime.now() - self.last_ping_time).seconds > int(self.config.timeout) / 2:
                 self.write(('PING', self.config.host))
-            time.sleep(int(self.config.timeout)/2)
+            time.sleep(int(self.config.timeout) / 2)
 
     def _ssl_send(self, data):
         """ Replacement for self.send() during SSL connections. """
@@ -366,7 +368,7 @@ class Bot(asynchat.async_chat):
                 except:
                     # Discard line if encoding is unknown
                     return
-        
+
         if data:
             self.log_raw(data, '<<')
         self.buffer += data
@@ -381,7 +383,7 @@ class Bot(asynchat.async_chat):
             source, line = line[1:].split(' ', 1)
         else:
             source = None
-        
+
         if ' :' in line:
             argstr, text = line.split(' :', 1)
             args = argstr.split()
@@ -492,8 +494,8 @@ class Bot(asynchat.async_chat):
         stderr(trace)
         self.debug("core", 'Fatal error in core, please review exception log',
                    'always')
-        logfile = codecs.open(os.path.join(self.config.logdir,
-                                    'exceptions.log'), 'a', encoding='utf-8')  # TODO: make not
+        logfile = codecs.open(os.path.join(self.config.logdir, 'exceptions.log'),
+                              'a', encoding='utf-8')  # TODO: make not
                                                              # hardcoded
         logfile.write('Fatal error in core, handle_error() was called\n')
         logfile.write('last raw line was %s' % self.raw)

@@ -217,20 +217,24 @@ The ``Willie`` class
         respectively.
     
     .. py:function:: write(args, text=None)
-    
-        Send a command to the server. In the simplest case, ``args`` is a list
-        containing just the command you wish to send, and ``text`` the argument
-        to that command {e.g. write(['JOIN'], '#channel')}
-        
-        More specifically, ``args`` will be joined together, separated by a
-        space. If text is given, it will be added preceeded by a space and a 
-        colon (' :').
-        
+
+        Send a command to the server
+
+        ``args`` is an iterable of strings, which are joined by spaces.
+        ``text`` is treated as though it were the final item in ``args``, but
+        is preceeded by a ``:``. This is a special case which  means that
+        ``text``, unlike the items in ``args`` may contain spaces (though this
+        constraint is not checked by ``write``).
+
+        In other words, both ``willie.write(('PRIVMSG',), 'Hello, world!')``
+        and ``willie.write(('PRIVMSG', ':Hello, world!'))`` will send
+        ``PRIVMSG :Hello, world!`` to the server.
+
         Newlines and carriage returns ('\\n' and '\\r') are removed before
-        sending. Additionally, if the joined ``args`` and ``text`` are more than
-        510 characters, any remaining characters will not be sent.
-    
-    .. py:function:: msg(recipient, text)
+        sending. Additionally, if the message (after joining) is longer than
+        than 510 characters, any remaining characters will not be sent.
+
+       .. py:function:: msg(recipient, text)
     
         Send a PRIVMSG of ``text`` to ``recipient``. If the same ``text`` was
         the message in 5 or more of the last 8 calls to ``msg``, ``'...'`` will
