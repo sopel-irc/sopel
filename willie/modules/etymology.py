@@ -7,7 +7,8 @@ http://willie.dftba.net
 """
 
 import re
-import willie.web as web
+from willie import web
+from willie.module import command, example, NOLIMIT
 
 etyuri = 'http://etymonline.com/?term=%s'
 etysearch = 'http://etymonline.com/?search=%s'
@@ -70,7 +71,9 @@ def etymology(word):
     return sentence + ' - ' + (etyuri % word)
 
 
-def f_etymology(willie, trigger):
+@command('ety')
+@example('word')
+def f_etymology(bot, trigger):
     """Look up the etymology of a word"""
     word = trigger.group(2)
 
@@ -78,17 +81,15 @@ def f_etymology(willie, trigger):
         result = etymology(word)
     except IOError:
         msg = "Can't connect to etymonline.com (%s)" % (etyuri % word)
-        willie.msg(trigger.sender, msg)
-        return willie.NOLIMIT
+        bot.msg(trigger.sender, msg)
+        return NOLIMIT
     except AttributeError:
         result = None
 
     if result is not None:
-        willie.msg(trigger.sender, result)
+        bot.msg(trigger.sender, result)
     else:
         uri = etysearch % word
         msg = 'Can\'t find the etymology for "%s". Try %s' % (word, uri)
-        willie.msg(trigger.sender, msg)
-        return willie.NOLIMIT
-f_etymology.commands = ['ety']
-f_etymology.example = '.ety word'
+        bot.msg(trigger.sender, msg)
+        return NOLIMIT

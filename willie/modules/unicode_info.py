@@ -7,19 +7,22 @@ Licensed under the Eiffel Forum License 2.
 http://willie.dfbta.net
 """
 import unicodedata
+from willie.module import command, example, NOLIMIT
 
 
+@command('u')
+@example('.u 203D')
 def codepoint(willie, trigger):
     arg = trigger.group(2).strip()
     if len(arg) == 0:
         willie.reply('What code point do you want me to look up?')
-        return willie.NOLIMIT
+        return NOLIMIT
     elif len(arg) > 1:
         try:
             arg = unichr(int(arg, 16))
         except:
             willie.reply("That's not a valid code point.")
-            return willie.NOLIMIT
+            return NOLIMIT
 
     # Get the hex value for the code point, and drop the 0x from the front
     point = str(hex(ord(u'' + arg)))[2:]
@@ -35,6 +38,3 @@ def codepoint(willie, trigger):
     else:
         template = 'U+%s %s (\xe2\x97\x8c%s)'
     willie.say(template % (point, name, arg))
-
-codepoint.commands = ['u']
-codepoint.example = '.u 203D'
