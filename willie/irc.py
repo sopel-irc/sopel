@@ -510,9 +510,8 @@ class Bot(asynchat.async_chat):
                 os._exit(1)
         self.last_error_timestamp = datetime.now()
         self.error_count = self.error_count + 1
-        # Clearing buffer is important, it will cause willie to lose some lines,
-        # But it is vital if the exception happened before found_terminator()
-        self.buffer = ''
+        if self.config.exit_on_error:
+            os._exit(1)
 
     #Helper functions to maintain the oper list.
     #They cast to Nick when adding to be quite sure there aren't any accidental
