@@ -13,6 +13,7 @@ This module will respond to .yt and .youtube commands and searches the youtubes.
 
 import willie.web as web
 import json
+import re
 from HTMLParser import HTMLParser
 
 
