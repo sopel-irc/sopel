@@ -5,11 +5,13 @@ Licensed under the Eiffel Forum License 2.
 
 http://willie.dftba.net
 """
-import willie.web as web
+from willie import web
+from willie.module import NOLIMIT, commands, example
 import json
 import re
 
 REDIRECT = re.compile(r'^REDIRECT (.*)')
+
 
 def mw_search(server, query, num):
     """
@@ -44,21 +46,21 @@ def mw_snippet(server, query):
     return snippet['extract']
 
 
-def wikipedia(willie, trigger):
+@commands('w', 'wiki', 'wik')
+@example('.w San Francisco')
+def wikipedia(bot, trigger):
     query = trigger.group(2)
     if not query:
-        willie.reply('What do you want me to look up?')
-        return willie.NOLIMIT
+        bot.reply('What do you want me to look up?')
+        return NOLIMIT
     server = 'en.wikipedia.org'
     query = mw_search(server, query, 1)
     if not query:
-        willie.reply("I can't find any results for that.")
-        return willie.NOLIMIT
+        bot.reply("I can't find any results for that.")
+        return NOLIMIT
     else:
         query = query[0]
     snippet = mw_snippet(server, query)
 
     query = query.replace(' ', '_')
-    willie.say('"%s" - http://en.wikipedia.org/wiki/%s' % (snippet, query))
-wikipedia.commands = ['w', 'wiki', 'wik']
-wikipedia.example = '.w San Francisco'
+    bot.say('"%s" - http://en.wikipedia.org/wiki/%s' % (snippet, query))

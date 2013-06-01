@@ -56,7 +56,7 @@ def run(config):
 
         if not isinstance(delay, int):
             break
-        if p.hasquit:
+        if p.hasquit or config.exit_on_error:
             break
         stderr('Warning: Disconnected. Reconnecting in %s seconds...' % delay)
         time.sleep(delay)

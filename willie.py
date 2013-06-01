@@ -65,6 +65,8 @@ def main(argv=None):
             help="Gracefully quit Willie")
         parser.add_option("-k", '--kill', action="store_true", dest="kill",
             help="Kill Willie")
+        parser.add_option('--exit-on-error', action="store_true", dest="exit_on_error",
+            help="Exit immediately on every error instead of trying to recover")
         parser.add_option("-l", '--list', action="store_true",
             dest="list_configs", help="List all config files found")
         parser.add_option("-m", '--migrate', action="store_true",
@@ -134,6 +136,12 @@ def main(argv=None):
         logfile = os.path.os.path.join(config_module.logdir, 'stdio.log')
         if not os.path.isdir(config_module.logdir):
             os.mkdir(config_module.logdir)
+
+        if opts.exit_on_error:
+            config_module.exit_on_error = True
+        else:
+            config_module.exit_on_error = False
+
         if opts.quiet is None:
             opts.quiet = False
 

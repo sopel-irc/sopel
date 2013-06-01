@@ -10,10 +10,13 @@ import sys
 import os.path
 import time
 import imp
-import willie.irc
+import willie.module
 import subprocess
 
 
+@willie.module.nickname_command("reload")
+@willie.module.priority("low")
+@willie.module.thread(False)
 def f_reload(willie, trigger):
     """Reloads a module, for use by admins only."""
     if not trigger.admin:
@@ -32,8 +35,22 @@ def f_reload(willie, trigger):
     if not name in sys.modules:
         return willie.reply('%s: no such module!' % name)
 
+    old_module = sys.modules[name]
+
+    old_callables = {}
+    for obj_name, obj in vars(old_module).iteritems():
+        if willie.is_callable(obj):
+            old_callables[obj_name] = obj
+
+    willie.unregister(old_callables)
+    # Also remove all references to willie callables from top level of the
+    # module, so that they will not get loaded again if reloading the
+    # module does not override them.
+    for obj_name in old_callables.keys():
+        delattr(old_module, obj_name)
+
     # Thanks to moot for prodding me on this
-    path = sys.modules[name].__file__
+    path = old_module.__file__
     if path.endswith('.pyc') or path.endswith('.pyo'):
         path = path[:-1]
     if not os.path.isfile(path):
@@ -51,10 +68,7 @@ def f_reload(willie, trigger):
     willie.bind_commands()
 
     willie.reply('%r (version: %s)' % (module, modified))
-f_reload.name = 'reload'
-f_reload.rule = ('$nick', ['reload'], r'(.+)?')
-f_reload.priority = 'low'
-f_reload.thread = False
+
 
 if sys.version_info >= (2, 7):
     def update(willie, trigger):
@@ -74,6 +88,9 @@ else:
 update.rule = ('$nick', ['update'], r'(.+)')
 
 
+@willie.module.nickname_command("load")
+@willie.module.priority("low")
+@willie.module.thread(False)
 def f_load(willie, trigger):
     """Loads a module, for use by admins only."""
     if not trigger.admin:
@@ -107,10 +124,7 @@ def f_load(willie, trigger):
     willie.bind_commands()
 
     willie.reply('%r (version: %s)' % (module, modified))
-f_load.name = 'load'
-f_load.rule = ('$nick', ['load'], r'(.+)?')
-f_load.priority = 'low'
-f_load.thread = False
+
 
 if __name__ == '__main__':
     print __doc__.strip()

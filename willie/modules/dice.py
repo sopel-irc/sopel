@@ -8,11 +8,16 @@ http://willie.dftba.net/
 
 from random import randint, seed, choice
 from willie.modules.calc import calculate
+import willie.module
 import re
 
 seed()
 
 
+@willie.module.command("roll")
+@willie.module.command("dice")
+@willie.module.command("d")
+@willie.module.priority("medium")
 def dice(willie, trigger):
     """
     .dice <formula> - Rolls dice using the XdY format, also does basic math and
@@ -74,8 +79,6 @@ def dice(willie, trigger):
     else:
         willie.reply('You roll ' + trigger.group(2) + ': ' + full_string + ' = '
                      + result)
-dice.commands = ['roll', 'dice', 'd']
-dice.priority = 'medium'
 
 
 def rollDice(diceroll):
@@ -91,6 +94,11 @@ def rollDice(diceroll):
                        randint(1, size))[randint(0, 9)])
     return sorted(result)  # returns a set of integers.
 
+
+@willie.module.command("choice")
+@willie.module.command("ch")
+@willie.module.command("choose")
+@willie.module.priority("medium")
 def choose(willie, trigger):
     """
     .choice option1|option2|option3 - Makes a difficult choice easy.
@@ -100,8 +108,7 @@ def choose(willie, trigger):
     choices = re.split('[\|\\\\\/]', trigger.group(2))
     pick = choice(choices)
     return willie.reply('Your options: %s. My choice: %s' % (', '.join(choices), pick))
-choose.commands = ['choice', 'ch', 'choose']
-choose.priority = 'medium'
+
 
 if __name__ == '__main__':
     print __doc__.strip()
