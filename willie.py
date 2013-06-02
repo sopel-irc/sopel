@@ -3,7 +3,8 @@
 """
 Willie - An IRC Bot
 Copyright 2008, Sean B. Palmer, inamidst.com
-Copyright Â© 2012, Elad Alfassa <elad@fedoraproject.org>
+Copyright © 2012, Elad Alfassa <elad@fedoraproject.org>
+Copyright © 2013, Dimitri Molenaars <tyrope@tyrope.nl>
 Licensed under the Eiffel Forum License 2.
 
 http://willie.dftba.net
@@ -168,11 +169,19 @@ def main(argv=None):
                     sys.exit(1)
                 elif opts.kill:
                     stderr('Killing the willie')
-                    os.kill(old_pid, signal.SIGKILL)
+                    try:
+                        os.kill(old_pid, signal.SIGKILL)
+                    except AttributeError:
+                        stderr('SIGKILL signal not supported (are you using windows?) Trying SIGABRT instead.')
+                        os.kill(old_pid, signal.SIGTERM)
                     sys.exit(0)
                 elif opts.quit:
                     stderr('Signaling Willie to stop gracefully')
-                    os.kill(old_pid, signal.SIGUSR1)
+                    try:
+                        os.kill(old_pid, signal.SIGUSR1)
+                    except AttributeError:
+                        stderr('SIGUSR1 signal not supported (are you using windows?) Killing Willie non-gracefully instead.')
+                        os.kill(old_pid, signal.SIGTERM)
                     sys.exit(0)
             elif not tools.check_pid(old_pid) and (opts.kill or opts.quit):
                 stderr('Willie is not running!')
