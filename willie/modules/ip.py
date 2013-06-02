@@ -24,8 +24,8 @@ def ip(willie, trigger):
     gi_city = pygeoip.GeoIP('/usr/share/GeoIP/GeoLiteCity.dat')
     gi_org = pygeoip.GeoIP('/usr/share/GeoIP/GeoIPASNum.dat')
     host = socket.getfqdn(query)
-    response = "[IP/Host Lookup] Hostname: " + host
-    response += " | Location: " + gi_city.country_name_by_name(query)
+    response = "[IP/Host Lookup] Hostname: %s" % host
+    response += " | Location: %s" % gi_city.country_name_by_name(query)
     region = gi_city.region_by_name(query)['region_name']
     if region is not '':
         response += " | Region: %s" % region
