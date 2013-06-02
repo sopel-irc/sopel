@@ -29,7 +29,7 @@ def run(config):
         delay = 20
 
     def signal_handler(sig, frame):
-        if sig == signal.SIGUSR1:
+        if sig == signal.SIGUSR1 or sig == signal.SIGTERM:
             stderr('Got quit signal, shutting down.')
             p.quit('Closing')
     while True:
@@ -37,6 +37,8 @@ def run(config):
             p = bot.Willie(config)
             if hasattr(signal, 'SIGUSR1'):
                 signal.signal(signal.SIGUSR1, signal_handler)
+            if hasattr(signal, 'SIGTERM')
+                signal.signal(signal.SIGTERM, signal_handler)
             p.run(config.core.host, int(config.core.port))
         except KeyboardInterrupt:
             break
