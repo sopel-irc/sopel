@@ -1,6 +1,7 @@
 build/
 doc/build/*
 logs/*
+tests/config/*
 tests/twisted/
 tests/config.py
 willie.wiki/*

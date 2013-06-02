@@ -1,5 +1,6 @@
-import config, threading, sys, os
+import config, os, subprocess, sys, tempfile, threading
 from time import sleep
+
 try:
     from twisted.words.protocols import irc
     from twisted.internet import reactor, protocol
@@ -49,15 +50,44 @@ class Tests():
         ['GreetPriv', ('msg', config.Willie_nick, config.Willie_nick+'!'), ('msg', config.Nickname, config.Nickname+'!')],
     ]
 
-    def executeTests(self, willie):
+    def runWillies(self, bot):
+        for conf in os.listdir(
+                        os.path.join(
+                            os.getcwd(),
+                            'config')):
+            print("Active config: ", conf)
+            try:
+                p = self.startWillie(conf)
+                sleep(15)
+            except Exception as e:
+                print("Willie failed to run with config file "+conf)
+                print e
+            else:
+                #Willie started.
+                if p.poll() is not None:
+                    #But didn't stay on.
+                    print("Willie stopped before testing could begin, exit code: "+p.returncode)
+                    print("Active configuration file: "+conf)
+                else:
+                    #Willie is still running, start testing.
+                    if not self.runTests(bot):
+                        print("Failed tests detected on instance with config file "+conf+". Halting tests.")
+                        self.stopWillie(conf)
+                        break
+                    self.stopWillie(conf)
+        bot.quit("Testing complete.")
+        os._exit(0)
+
+    def runTests(self, bot):
+        success = True
         for test in self.tests:
             self.activeTest = test[0]
             sys.stdout.write("Test: "+test[0])
             sys.stdout.write("."*(40-len(test[0])))
             if test[1][0] == 'msg':
-                willie.msg(test[1][1], test[1][2])
+                bot.msg(test[1][1], test[1][2])
             elif test[1][0] == 'action':
-                willie.describe(test[1][1], test[1][2])
+                bot.describe(test[1][1], test[1][2])
             #Wait for result.
             for i in range(config.timeout+1):
                 if not self.willieReply:
@@ -71,19 +101,51 @@ class Tests():
                         print "[FAILED]"
                         print "  Expected output: "+str(test[2])
                         print "  Received:        "+str(self.willieReply)
+                        success = False
                     else:
                         print "[SUCCESS]"
                     break
             self.willieReply = None
-        print "Testing complete."
-        willie.quit("Testing complete.")
-        #TODO exit Willie
-        os._exit(0)
+        return success
 
-    def onJoin(self, willie, trigger):
+    def startWillie(self, conf):
+        command = [sys.executable,
+                os.path.join(
+                    os.path.dirname(os.getcwd()),
+                    "willie.py",),
+                    "--exit-on-error",
+                    "-c",
+                    os.path.join(
+                        os.getcwd(),
+                        "config",
+                        conf)]
+        for cmd in command:
+            print cmd,
+        print ''
+        p =  subprocess.Popen(
+                command,
+                shell=True)
+        return p
+
+    def stopWillie(self, conf):
+        #Unix-only
+        p = subprocess.Popen(
+                [sys.executable,
+                os.path.join(
+                    os.path.dirname(os.getcwd()),
+                    "willie.py",),
+                    "-q",
+                    "-c",
+                    os.path.join(
+                        os.getcwd(),
+                        "config",
+                        conf)],
+                    shell=True)
+
+    def onJoin(self, bot, trigger):
         self.willieReply = ('join', trigger.channel, trigger.user)
 
-    def onMsg(self, willie, trigger):
+    def onMsg(self, bot, trigger):
         if trigger.nick != config.Willie_nick:
             return #Message didn't originate from Willie
         if self.activeTest == None:
@@ -91,7 +153,7 @@ class Tests():
         else:
             self.willieReply = ('msg', trigger.channel, trigger.msg)
 
-    def onAction(self, willie, trigger):
+    def onAction(self, bot, trigger):
         if trigger.nick != config.Willie_nick:
             return #Message didn't originate from Willie
         if self.activeTest == None:
@@ -111,7 +173,7 @@ class WillieTest(irc.IRCClient):
         self.join(config.Channel)
         if config.NS_Password != '':
             self.msg('NickServ', 'IDENTIFY '+config.NS_Password)
-        t=threading.Thread(target=self.testUnit.executeTests, args=(self,))
+        t=threading.Thread(target=self.testUnit.runWillies, args=(self,))
         t.daemon = True
         reactor.callLater(5, t.start)
 
@@ -140,10 +202,9 @@ if __name__ == '__main__':
             from twisted.internet import ssl
             reactor.connectSSL(config.Server, config.Port, testFactory(), ssl.ClientContextFactory)
         except:
-            print ("Error starting SSL connection. Do you have OpenSSL installed?")
+            print("Error starting SSL connection. Do you have OpenSSL installed?")
             sys.exit(1)
     else:
         reactor.connectTCP(config.Server, config.Port, testFactory())
-    #TODO: Launch Willie
     reactor.run()
 
