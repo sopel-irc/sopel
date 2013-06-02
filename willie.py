@@ -172,7 +172,10 @@ def main(argv=None):
                     sys.exit(0)
                 elif opts.quit:
                     stderr('Signaling Willie to stop gracefully')
-                    os.kill(old_pid, signal.SIGUSR1)
+                    if hasattr(signal, 'SIGUSR1'):
+                        os.kill(old_pid, signal.SIGUSR1)
+                    else:
+                        os.kill(old_pid, signal.SIGTERM)
                     sys.exit(0)
             elif not tools.check_pid(old_pid) and (opts.kill or opts.quit):
                 stderr('Willie is not running!')
