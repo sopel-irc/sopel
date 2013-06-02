@@ -30,7 +30,8 @@ def ip(willie, trigger):
     if region is not '':
         response += " | Region: %s" % region
     isp = gi_org.org_by_name(query)
-    isp = re.sub('^AS\d+ ', '', isp)
+    if isp is not None:
+        isp = re.sub('^AS\d+ ', '', isp)
     response += " | ISP: %s" % isp
     willie.say(response)
 
