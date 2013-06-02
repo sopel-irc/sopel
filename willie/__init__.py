@@ -37,7 +37,7 @@ def run(config):
             p = bot.Willie(config)
             if hasattr(signal, 'SIGUSR1'):
                 signal.signal(signal.SIGUSR1, signal_handler)
-            if hasattr(signal, 'SIGTERM')
+            if hasattr(signal, 'SIGTERM'):
                 signal.signal(signal.SIGTERM, signal_handler)
             p.run(config.core.host, int(config.core.port))
         except KeyboardInterrupt:
