@@ -71,26 +71,26 @@ def manage_rss(willie, trigger):
             fg_colour = fg_colour.zfill(2)
         if bg_colour:
             bg_colour = bg_colour.zfill(2)
-        c.execute('INSERT INTO rss VALUES ("%s","%s","%s","%s","%s")' % sub*5, (channel, site_name, site_url, fg_colour, bg_colour))
+        c.execute('INSERT INTO rss VALUES (%s,%s,%s,%s,%s)' % (SUB*5), (channel, site_name, site_url, fg_colour, bg_colour))
         conn.commit()
         c.close()
         willie.reply("Successfully added values to database.")
     elif len(text) == 3 and text[1] == 'del':
         # .rss del ##channel
-        c.execute('DELETE FROM rss WHERE channel = "%s"' % SUB, channel)
+        c.execute('DELETE FROM rss WHERE channel = %s' % SUB, (channel,))
         conn.commit()
         c.close()
         willie.reply("Successfully removed values from database.")
     elif len(text) >= 4 and text[1] == 'del':
         # .rss del ##channel Site_Name
-        c.execute('DELETE FROM rss WHERE channel = "%s" and site_name = "%s"' % SUB*2, (channel, " ".join(text[3:])))
+        c.execute('DELETE FROM rss WHERE channel = %s and site_name = %s' % (SUB*2), (channel, " ".join(text[3:])))
         conn.commit()
         c.close()
         willie.reply("Successfully removed the site from the given channel.")
     elif len(text) == 2 and text[1] == 'list':
         c.execute("SELECT * FROM rss")
         k = 0
-        for row in c:
+        for row in c.fetchall():
             k += 1
             willie.say("list: " + unicode(row))
         if k == 0:
@@ -126,7 +126,7 @@ def read_feeds(willie):
     cur.execute("CREATE TABLE IF NOT EXISTS recent ( channel text, site_name text, article_title text, article_url text )")
     cur.execute("SELECT * FROM rss")
 
-    for row in cur:
+    for row in cur.fetchall():
         feed_channel = row[0]
         feed_site_name = row[1]
         feed_url = row[2]
@@ -154,7 +154,7 @@ def read_feeds(willie):
 
         # only print if new entry
         sql_text = (feed_channel, feed_site_name, entry.title, article_url)
-        cur.execute('SELECT * FROM recent WHERE channel = "%s" AND site_name = "%s" and article_title = "%s" AND article_url = "%s"' % SUB*4, sql_text)
+        cur.execute('SELECT * FROM recent WHERE channel = %s AND site_name = %s and article_title = %s AND article_url = %s' % (SUB*4), sql_text)
         if len(cur.fetchall()) < 1:
 
             response = site_name_effect + " %s \x02%s\x02" % (entry.title, article_url)
@@ -164,7 +164,7 @@ def read_feeds(willie):
             willie.msg(feed_channel, response)
 
             t = (feed_channel, feed_site_name, entry.title, article_url,)
-            cur.execute('INSERT INTO recent VALUES ("%s", "%s", "%s", "%s")' % SUB*4, t)
+            cur.execute('INSERT INTO recent VALUES (%s, %s, %s, %s)' % (SUB*4), t)
             conn.commit()
         else:
             if DEBUG:
