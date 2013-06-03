@@ -104,14 +104,10 @@ def f_load(willie, trigger):
     if module_name in sys.modules:
         return willie.reply('Module already loaded, use reload')
 
-    filenames = willie.config.enumerate_modules()
-    excluded_modules = getattr(willie.config, 'exclude', [])
-    for filename in filenames:
-        name = os.path.basename(filename)[:-3]
-        if name in excluded_modules:
-            continue
+    mods = willie.config.enumerate_modules()
+    for name in mods:
         if name == trigger.group(2):
-            path = filename
+            path = mods[name]
     if not os.path.isfile(path):
         return willie.reply('Module %s not found' % module_name)
 
