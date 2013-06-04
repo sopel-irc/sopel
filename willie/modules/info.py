@@ -1,9 +1,9 @@
 """
-info.py - bot Information Module
+info.py - Willie Information Module
 Copyright 2008, Sean B. Palmer, inamidst.com
 Licensed under the Eiffel Forum License 2.
 
-http://bot.dftba.net
+http://willie.dftba.net
 """
 from willie.module import command, rule, example, priority
 
