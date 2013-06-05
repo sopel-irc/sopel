@@ -9,7 +9,7 @@ from willie.module import command, commands, example
 import re
 
 find_temp = re.compile('([0-9]*\.?[0-9]*)[ °]*(K|C|F)',  re.IGNORECASE)
-find_length = re.compile('([0-9]*\.?[0-9]*)[ ]*(mile|m|meter|km|cm|kilometer|inch|in|ft|foot|feet)',  re.IGNORECASE)
+find_length = re.compile('([0-9]*\.?[0-9]*)[ ]*(mile|m|meter|km|cm|kilometer|inch|in|ft|foot|feet|yd|yard|yards)',  re.IGNORECASE)
 
 def f_to_c(temp):
     return (float(temp) - 32) * 5/9
@@ -67,12 +67,46 @@ def distance(bot, trigger):
         meter = numeric / 100
     elif unit == "ft" or unit == "foot" or unit == "feet":
         meter = numeric / 3.2808
+    elif unit == 'yard' or unit == 'yd' or unit == 'yards':
+        meter = numeric / (3.2808 * 3)
 
-    inch = meter * 39.370
-    mile = meter * 0.00062137
     if meter >= 1000:
-        bot.reply("%skm = %smile" % (meter/1000, mile))
+        metric_part = '%skm' % (meter / 1000)
     elif meter < 1:
-        bot.reply("%scm = %sinch" % (meter*100, inch))
+        metric_part = '%scm' % (meter * 100)
     else:
-        bot.reply("%sm = %sinch" % (meter, inch))
+        metric_part = '%sm' % meter
+
+
+    # Shit like this makes me hate being an American.
+    inch = meter * 39.37
+    foot = int(inch) / 12
+    inch = inch - (foot * 12)
+    yard = foot / 3
+    mile = meter * 0.00062137
+    print yard, foot, inch, mile
+
+    if yard > 500:
+        if mile == 1:
+            stupid_part = '1 mile'
+        else:
+            stupid_part = '%s miles' % mile
+    else:
+        parts = []
+        if yard >= 100:
+            parts.append('%s yards' % yard)
+            foot -= (yard * 3)
+
+        if foot == 1:
+            parts.append('1 foot')
+        elif foot != 0:
+            parts.append('%s feet' % foot)
+
+        if inch == 1:
+            parts.append('1 inch')
+        elif inch != 0:
+            parts.append('%s inches' % inch)
+
+        stupid_part = ', '.join(parts)
+
+    bot.reply('%s = %s' % (metric_part, stupid_part))
