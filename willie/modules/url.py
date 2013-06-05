@@ -10,6 +10,7 @@ http://willie.dftba.net
 import re
 from htmlentitydefs import name2codepoint
 import willie.web as web
+from willie.module import command, rule
 import urllib2
 import urlparse
 
@@ -74,6 +75,7 @@ def setup(willie):
         (exclusion_char))
 
 
+@command('title')
 def title_command(willie, trigger):
     """
     Show the title or URL information for the given URL, or the last URL seen
@@ -93,9 +95,11 @@ def title_command(willie, trigger):
         urls = re.findall(url_finder, trigger)
 
     results = process_urls(willie, trigger, urls)
-title_command.commands = ['title']
+    for result in results[:4]:
+        message = '[ %s ] - %s' % tuple(result)
 
 
+@rule('(?u).*(https?://\S+).*')
 def title_auto(willie, trigger):
     """
     Automatically show titles for URLs. For shortened URLs/redirects, find
@@ -113,7 +117,6 @@ def title_auto(willie, trigger):
         message = '[ %s ] - %s' % tuple(result)
         if message != trigger:
             willie.say(message)
-title_auto.rule = '(?u).*(https?://\S+).*'
 
 
 def process_urls(willie, trigger, urls):
