@@ -58,7 +58,7 @@ def post(uri, query):
     """
     if not uri.startswith('http'):
         uri = "http://" + uri
-    u = urllib2.urlopen(uri, query, headers)
+    u = urllib2.urlopen(uri, query)
     bytes = u.read()
     u.close()
     return bytes
