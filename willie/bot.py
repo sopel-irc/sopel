@@ -310,7 +310,7 @@ class Willie(irc.Bot):
             self.bot.msg(self.origin.sender, string)
 
         def reply(self, string):
-            self.bot.msg(self.origin.sender, self.origin.nick + ': ' + string)
+            self.bot.msg(self.origin.sender, u'%s: %s' % (self.origin.nick, string.decode('utf8')))
 
         def action(self, string, recipient=None):
             if recipient is None:
