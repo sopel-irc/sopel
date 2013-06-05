@@ -1,8 +1,8 @@
 """
 *Availability: 3.1+*
 
-*Note:* This supersedes the ``SettingsDB`` object of v3. Within Willie modules,
-simmilar functionallity can be found using ``willie.db.preferences``.
+*Note:* This supersedes the ``SettingsDB`` object of 3.0. Within Willie modules,
+simmilar functionallity can be found using ``db.preferences``.
 
 This class defines an interface for a semi-arbitrary database type. It is meant
 to allow module writers to operate without regard to how the end user has
