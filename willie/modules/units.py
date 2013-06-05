@@ -2,6 +2,7 @@
 """
 units.py - Unit conversion module for Willie
 Copyright © 2013, Elad Alfassa, <elad@fedoraproject.org>
+Copyright © 2013, Dimitri Molenaars, <tyrope@tyrope.nl>
 Licensed under the Eiffel Forum License 2.
 
 """
@@ -9,7 +10,7 @@ from willie.module import command, commands, example
 import re
 
 find_temp = re.compile('([0-9]*\.?[0-9]*)[ °]*(K|C|F)',  re.IGNORECASE)
-find_length = re.compile('([0-9]*\.?[0-9]*)[ ]*(mile|m|meter|km|cm|kilometer|inch|in|ft|foot|feet|yd|yard|yards)',  re.IGNORECASE)
+find_length = re.compile('([0-9]*\.?[0-9]*)[ ]*(mile[s]?|mi|inch|in|foot|feet|ft|yard[s]?|yd|(?:centi|kilo|)meter[s]?|[kc]?m)',  re.IGNORECASE)
 
 def f_to_c(temp):
     return (float(temp) - 32) * 5/9
@@ -55,19 +56,19 @@ def distance(bot, trigger):
     unit = source[1].lower()
     numeric = float(source[0])
     meter = 0
-    if unit == "m" or unit == "meter":
+    if unit in ("meters","meter", "m"):
         meter = numeric
-    elif unit == "kilometer" or unit == "km":
+    elif unit in ("kilometers", "kilometer", "km"):
         meter = numeric * 1000
-    elif unit == "mile":
+    elif unit == ("miles", "mile", "mi"):
         meter = numeric / 0.00062137
-    elif unit == "inch" or unit == "in":
+    elif unit in ("inch", "in"):
         meter = numeric / 39.370
-    elif unit == "cm":
+    elif unit in ("centimeters","centimeter","cm"):
         meter = numeric / 100
-    elif unit == "ft" or unit == "foot" or unit == "feet":
+    elif unit in ("feet","foot","ft":
         meter = numeric / 3.2808
-    elif unit == 'yard' or unit == 'yd' or unit == 'yards':
+    elif unit in ("yards", "yard", "yd"):
         meter = numeric / (3.2808 * 3)
 
     if meter >= 1000:
@@ -109,3 +110,4 @@ def distance(bot, trigger):
         stupid_part = ', '.join(parts)
 
     bot.reply('%s = %s' % (metric_part, stupid_part))
+
