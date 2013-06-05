@@ -12,8 +12,10 @@ import time
 import datetime
 import pytz
 from willie.tools import Ddict, Nick
+from willie.module import command, rule
 
-seen_dict=Ddict(dict)
+seen_dict = Ddict(dict)
+
 
 def get_user_time(willie, nick):
     tz = 'UTC'
@@ -25,13 +27,15 @@ def get_user_time(willie, nick):
         tz = 'UTC'
     return (pytz.timezone(tz.strip()), tformat or '%Y-%m-%d %H:%M:%S %Z')
 
+
+@command('seen')
 def seen(willie, trigger):
     """Reports when and where the user was last seen."""
     if not trigger.group(2):
         willie.say(".seen <nick> - Reports when <nick> was last seen.")
         return
     nick = Nick(trigger.group(2).strip())
-    if seen_dict.has_key(nick):
+    if nick in seen_dict:
         timestamp = seen_dict[nick]['timestamp']
         channel = seen_dict[nick]['channel']
         message = seen_dict[nick]['message']
@@ -44,17 +48,13 @@ def seen(willie, trigger):
         willie.say(str(trigger.nick) + ': ' + msg)
     else:
         willie.say("Sorry, I haven't seen %s around." % nick)
-seen.commands = ['seen']
 
+
+@rule('(.*)')
+@priority('low')
 def note(willie, trigger):
     if trigger.sender.startswith('#'):
         nick = Nick(trigger.nick)
         seen_dict[nick]['timestamp'] = time.time()
         seen_dict[nick]['channel'] = trigger.sender
         seen_dict[nick]['message'] = trigger
-
-note.rule = r'(.*)'
-note.priority = 'low'
-
-if __name__ == '__main__':
-    print __doc__.strip()
