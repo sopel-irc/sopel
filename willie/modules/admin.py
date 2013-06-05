@@ -22,7 +22,7 @@ def configure(config):
     config.add_option('admin', 'hold_ground', "Auto re-join on kick")
 
 
-def join(willie, trigger):
+def join(bot, trigger):
     """Join the specified channel. This is an admin-only command."""
     # Can only be done in privmsg by an admin
     if trigger.sender.startswith('#'):
@@ -30,27 +30,27 @@ def join(willie, trigger):
     if trigger.admin:
         channel, key = trigger.group(1), trigger.group(2)
         if not key:
-            willie.join(channel)
+            bot.join(channel)
         else:
-            willie.join(channel, key)
+            bot.join(channel, key)
 join.rule = r'\.join (#\S+)(?: *(\S+))?'
 join.priority = 'low'
 join.example = '.join #example or .join #example key'
 
 
-def part(willie, trigger):
+def part(bot, trigger):
     """Part the specified channel. This is an admin-only command."""
     # Can only be done in privmsg by an admin
     if trigger.sender.startswith('#'):
         return
     if trigger.admin:
-        willie.part(trigger.group(2).strip())
+        bot.part(trigger.group(2).strip())
 part.commands = ['part']
 part.priority = 'low'
 part.example = '.part #example'
 
 
-def quit(willie, trigger):
+def quit(bot, trigger):
     """Quit from the server. This is an owner-only command."""
     # Can only be done in privmsg by the owner
     if trigger.sender.startswith('#'):
@@ -59,12 +59,12 @@ def quit(willie, trigger):
         quit_message = 'Quitting on command from %s' % trigger.nick
         if trigger.group(2) is not None:
             quit_message = trigger.group(2)
-        willie.quit(quit_message)
+        bot.quit(quit_message)
 quit.commands = ['quit']
 quit.priority = 'low'
 
 
-def msg(willie, trigger):
+def msg(bot, trigger):
     """
     Send a message to a given channel or nick. Can only be done in privmsg by an
     admin.
@@ -75,13 +75,13 @@ def msg(willie, trigger):
     if (not a) or (not b):
         return
     if trigger.admin:
-        willie.msg(a, b)
+        bot.msg(a, b)
 msg.rule = (['msg'], r'(#?\S+) (.+)')
 msg.priority = 'low'
 msg.example = '.msg #YourPants Does anyone else smell neurotoxin?'
 
 
-def me(willie, trigger):
+def me(bot, trigger):
     """
     Send an ACTION (/me) to a given channel or nick. Can only be done in privmsg
     by an admin.
@@ -90,12 +90,12 @@ def me(willie, trigger):
         return
     if trigger.admin:
         msg = '\x01ACTION %s\x01' % trigger.group(3)
-        willie.msg(trigger.group(2), msg)
+        bot.msg(trigger.group(2), msg)
 me.rule = (['me'], r'(#?\S+) (.*)')
 me.priority = 'low'
 
 
-def hold_ground(willie, trigger):
+def hold_ground(bot, trigger):
     """
     This function monitors all kicks across all channels willie is in. If it
     detects that it is the one kicked it'll automatically join that channel.
@@ -103,24 +103,25 @@ def hold_ground(willie, trigger):
     WARNING: This may not be needed and could cause problems if willie becomes
     annoying. Please use this with caution.
     """
-    if willie.config.has_section('admin') and willie.config.admin.hold_ground:
+    if bot.config.has_section('admin') and bot.config.admin.hold_ground:
         channel = trigger.sender
-        if trigger.args[1] == willie.nick:
-            willie.join(channel)
+        if trigger.args[1] == bot.nick:
+            bot.join(channel)
 hold_ground.event = 'KICK'
 hold_ground.rule = '.*'
 hold_ground.priority = 'low'
 
 
-def mode(willie, trigger):
+def mode(bot, trigger):
     """Set a user mode on Willie. Can only be done in privmsg by an admin."""
     if trigger.sender.startswith('#'):
         return
     if trigger.admin:
         mode = trigger.group(1)
-        willie.write(('MODE ', willie.nick + ' ' + mode))
+        bot.write(('MODE ', bot.nick + ' ' + mode))
 mode.rule = r'\.mode ([\+-]\S+)'
 mode.priority = 'low'
+
 
 if __name__ == '__main__':
     print __doc__.strip()
