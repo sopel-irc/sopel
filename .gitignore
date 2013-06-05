@@ -1,6 +1,7 @@
 build/
 doc/build/*
 logs/*
+tests
 willie.wiki/*
 *.db
 *.pyc
