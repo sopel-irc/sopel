@@ -84,7 +84,6 @@ def distance(bot, trigger):
     inch = inch - (foot * 12)
     yard = foot / 3
     mile = meter * 0.00062137
-    print yard, foot, inch, mile
 
     if yard > 500:
         if mile == 1:
