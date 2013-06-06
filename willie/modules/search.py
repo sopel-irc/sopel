@@ -119,29 +119,7 @@ def bing_search(query, lang='en-GB'):
     if m:
         return m.group(1)
 
-
-def bing(bot, trigger):
-    """Queries Bing for the specified input."""
-    query = trigger.group(2)
-    if query.startswith(':'):
-        lang, query = query.split(' ', 1)
-        lang = lang[1:]
-    else:
-        lang = 'en-GB'
-    if not query:
-        return bot.reply('.bing what?')
-
-    uri = bing_search(query, lang)
-    if uri:
-        bot.reply(uri)
-        bot.memory['last_seen_url'][trigger.sender] = uri
-    else:
-        bot.reply("No results found for '%s'." % query)
-bing.commands = ['bing']
-bing.example = '.bing swhack'
-
 r_duck = re.compile(r'nofollow" class="[^"]+" href="(.*?)">')
-
 
 def duck_search(query):
     query = query.replace('!', '')
