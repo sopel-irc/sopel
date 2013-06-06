@@ -4,6 +4,7 @@ admin.py - Willie Admin Module
 Copyright 2010-2011, Sean B. Palmer (inamidst.com) and Michael Yanovich
 (yanovich.net)
 Copyright © 2012, Elad Alfassa, <elad@fedoraproject.org>
+Copyright 2013, Ari Koivula <ari@koivu.la>
 
 Licensed under the Eiffel Forum License 2.
 
@@ -140,6 +141,48 @@ def mode(bot, trigger):
         return
     mode = trigger.group(3)
     bot.write(('MODE ', bot.nick + ' ' + mode))
+
+
+@willie.module.commands('set')
+def set_config(bot, trigger):
+    """See and modify values of willies config object."""
+    if trigger.sender.startswith('#'):
+        return
+    if not trigger.admin:
+        return
+
+    # Get section and option from first argument.
+    arg1 = trigger.group(3).split('.')
+    if len(arg1) == 1:
+        section, option = "core", arg1[0]
+    elif len(arg1) == 2:
+        section, option = arg1
+    else:
+        return
+
+    # Don't modify non-existing values to guard against typos.
+    if not bot.config.has_option(section, option):
+        return
+
+    # Display current value if no value is given.
+    value = trigger.group(4)
+    if not value:
+        value = getattr(getattr(bot.config, section), option)
+        bot.reply("%s.%s = %s" % (section, option, value))
+        return
+
+    # Otherwise, set the value to one given as argument 2.
+    setattr(getattr(bot.config, section), option, value)
+
+
+@willie.module.command('save')
+def save_config(bot, trigger):
+    """Save state of willies config object to the configuration file."""
+    if trigger.sender.startswith('#'):
+        return
+    if not trigger.admin:
+        return
+    bot.config.save()
 
 
 if __name__ == '__main__':
