@@ -222,9 +222,9 @@ class Bot(asynchat.async_chat):
         self.write(['QUIT'], message)
         self.hasquit = True
 
-    def part(self, channel):
+    def part(self, channel, msg=None):
         '''Part a channel'''
-        self.write(['PART'], channel)
+        self.write(['PART', channel], msg)
 
     def join(self, channel, password=None):
         '''Join a channel'''
