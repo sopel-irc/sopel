@@ -30,9 +30,12 @@ def join(bot, trigger):
     # Can only be done in privmsg by an admin
     if trigger.sender.startswith('#'):
         return
+
     if trigger.admin:
         channel, key = trigger.group(3), trigger.group(4)
-        if not key:
+        if not channel:
+            return
+        elif not key:
             bot.join(channel)
         else:
             bot.join(channel, key)
@@ -47,7 +50,8 @@ def part(bot, trigger):
     if trigger.sender.startswith('#'):
         return
     if trigger.admin:
-        bot.part(trigger.group(2).strip())
+        part_msg = trigger.group(2).strip()
+        bot.part(part_msg)
 
 
 @willie.module.commands('quit')
@@ -57,11 +61,14 @@ def quit(bot, trigger):
     # Can only be done in privmsg by the owner
     if trigger.sender.startswith('#'):
         return
-    if trigger.owner:
+    if not trigger.owner:
+        return
+
+    quit_message = trigger.group(2)
+    if not quit_message:
         quit_message = 'Quitting on command from %s' % trigger.nick
-        if trigger.group(2) is not None:
-            quit_message = trigger.group(2)
-        bot.quit(quit_message)
+
+    bot.quit(quit_message)
 
 
 @willie.module.commands('msg')
@@ -74,11 +81,15 @@ def msg(bot, trigger):
     """
     if trigger.sender.startswith('#'):
         return
-    a, b = trigger.group(3), trigger.group(4)
-    if (not a) or (not b):
+    if not trigger.admin:
         return
-    if trigger.admin:
-        bot.msg(a, b)
+
+    channel, _sep, message = trigger.group(2).partition(' ')
+    message = message.strip()
+    if not channel or not message:
+        return
+
+    bot.msg(channel, message)
 
 
 @willie.module.commands('me')
@@ -90,9 +101,16 @@ def me(bot, trigger):
     """
     if trigger.sender.startswith('#'):
         return
-    if trigger.admin:
-        msg = '\x01ACTION %s\x01' % trigger.group(4)
-        bot.msg(trigger.group(3), msg)
+    if not trigger.admin:
+        return
+
+    channel, _sep, action = trigger.group(2).partition(' ')
+    action = action.strip()
+    if not channel or not action:
+        return
+
+    msg = '\x01ACTION %s\x01' % action
+    bot.msg(channel, msg)
 
 
 @willie.module.event('KICK')
@@ -118,9 +136,10 @@ def mode(bot, trigger):
     """Set a user mode on Willie. Can only be done in privmsg by an admin."""
     if trigger.sender.startswith('#'):
         return
-    if trigger.admin:
-        mode = trigger.group(3)
-        bot.write(('MODE ', bot.nick + ' ' + mode))
+    if not trigger.admin:
+        return
+    mode = trigger.group(3)
+    bot.write(('MODE ', bot.nick + ' ' + mode))
 
 
 if __name__ == '__main__':
