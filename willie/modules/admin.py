@@ -50,9 +50,14 @@ def part(bot, trigger):
     # Can only be done in privmsg by an admin
     if trigger.sender.startswith('#'):
         return
-    if trigger.admin:
-        part_msg = trigger.group(2).strip()
-        bot.part(part_msg)
+    if not trigger.admin:
+        return
+
+    channel, _sep, part_msg = trigger.group(2).partition(' ')
+    if part_msg:
+        bot.part(channel, part_msg)
+    else:
+        bot.part(channel)
 
 
 @willie.module.commands('quit')
