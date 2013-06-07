@@ -12,7 +12,7 @@ import time
 import datetime
 import pytz
 from willie.tools import Ddict, Nick
-from willie.module import command, rule
+from willie.module import command, rule, priority
 
 seen_dict = Ddict(dict)
 
