@@ -186,7 +186,7 @@ def check_callbacks(willie, trigger, url, run=True):
 
 def find_title(url):
     """Return the title for the given URL."""
-    content = web.get(url)
+    content = web.get(url).decode('utf8')
     # Some cleanup that I don't really grok, but was in the original, so
     # we'll keep it (with the compiled regexes made global) for now.
     content = title_tag_data.sub(r'<\1title>', content)
