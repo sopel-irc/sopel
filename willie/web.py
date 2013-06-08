@@ -90,9 +90,9 @@ def get_urllib_object(uri, timeout, headers=None):
         uri = uri.encode("utf-8")
     except:
         pass
-    original_headers = {'Accept':'*/*', 'User-Agent':'Mozilla/5.0 (Jenni)'}
+    original_headers = {'Accept':'*/*', 'User-Agent':'Mozilla/5.0 (Willie)'}
     if headers is not None:
-        headers = dict(original_headers.items(), headers.items())
+        original_headers.update(headers)
     else:
         headers = original_headers
     while True:
