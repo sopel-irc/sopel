@@ -85,7 +85,6 @@ def get_urllib_object(uri, timeout, headers=None):
     Return a urllib2 object for `uri` and `timeout` and `headers`. This is better than using urrlib2 directly, for it handles redirects, makes sure URI is utf8, and is shorter and easier to use.
     Modules may use this if they need a urllib2 object to execute .read() on. For more information, refer to the urllib2 documentation.
     """
-    redirects = 0
     try:
         uri = uri.encode("utf-8")
     except:
@@ -99,6 +98,7 @@ def get_urllib_object(uri, timeout, headers=None):
     try:
         u = urllib2.urlopen(req, None, timeout)
     except urllib2.HTTPError, e:
+        # Even when there's an error (say HTTP 404), return page contents
         return e.fp
 
     return u
