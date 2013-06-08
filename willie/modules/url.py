@@ -186,7 +186,24 @@ def check_callbacks(willie, trigger, url, run=True):
 
 def find_title(url):
     """Return the title for the given URL."""
-    content = web.get(url).decode('utf8')
+    # We want to try for UTF-8 if we can
+    content = web.get(url, headers={'Accept-Charset': 'utf-8'})
+    headers = web.head(url, headers={'Accept-Charset': 'utf-8'})
+    content_type = headers.get('Content-Type')
+    encoding = re.match('.*?charset *= *(\S+)', content_type).group(1)
+    # If they gave us something else instead, try that
+    if encoding:
+        try:
+            content = content.decode(encoding)
+        except:
+            encoding = None
+    # They didn't tell us what they gave us, so go with UTF-8 or fail silently.
+    if not encoding:
+        try:
+            content = content.decode('utf-8')
+        except:
+            return
+
     # Some cleanup that I don't really grok, but was in the original, so
     # we'll keep it (with the compiled regexes made global) for now.
     content = title_tag_data.sub(r'<\1title>', content)
