@@ -96,12 +96,11 @@ def get_urllib_object(uri, timeout, headers=None):
     else:
         headers = original_headers
     req = urllib2.Request(uri, headers=headers)
-    try: 
+    try:
         u = urllib2.urlopen(req, None, timeout)
     except urllib2.HTTPError, e:
         return e.fp
-    except:
-        raise
+
     return u
 
 #Identical to urllib2.quote
