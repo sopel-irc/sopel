@@ -190,15 +190,15 @@ def find_title(url):
     content = web.get(url, headers={'Accept-Charset': 'utf-8'})
     headers = web.head(url, headers={'Accept-Charset': 'utf-8'})
     content_type = headers.get('Content-Type')
-    encoding = re.match('.*?charset *= *(\S+)', content_type).group(1)
+    encoding_match = re.match('.*?charset *= *(\S+)', content_type)
     # If they gave us something else instead, try that
-    if encoding:
+    if encoding_match:
         try:
-            content = content.decode(encoding)
+            content = content.decode(encoding_match.group(1))
         except:
-            encoding = None
+            encoding_match = None
     # They didn't tell us what they gave us, so go with UTF-8 or fail silently.
-    if not encoding:
+    if not encoding_match:
         try:
             content = content.decode('utf-8')
         except:
