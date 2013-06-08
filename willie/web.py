@@ -24,18 +24,22 @@ import re, urllib, urllib2
 from htmlentitydefs import name2codepoint
 
 #HTTP GET
-def get(uri, timeout=20, headers=None):
+def get(uri, timeout=20, headers=None, return_headers=False):
     """
     Execute an HTTP GET query on `uri`, and return the result.
     `timeout` is an optional argument, which represents how much time we should wait before throwing a timeout exception. It defualts to 20, but can be set to higher values if you are communicating with a slow web application.
     `headers` is a dict of HTTP headers to send with the request.
+    If `return_headers` is True, return a tuple of (bytes, headers)
     """
     if not uri.startswith('http'):
         uri = "http://" + uri
     u = get_urllib_object(uri, timeout, headers)
     bytes = u.read()
     u.close()
-    return bytes
+    if not return_headers:
+        return bytes
+    else:
+        return (bytes,u.info())
 
 # Get HTTP headers
 def head(uri, timeout=20, headers=None):
