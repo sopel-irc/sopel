@@ -158,7 +158,7 @@ def follow_redirects(url):
     there's a problem.
     """
     try:
-        connection = urllib2.urlopen(url)
+        connection = web.get_urllib_object(url, 60)
         url = connection.geturl() or url
         connection.close()
     except:

@@ -95,26 +95,13 @@ def get_urllib_object(uri, timeout, headers=None):
         original_headers.update(headers)
     else:
         headers = original_headers
-    while True:
-        req = urllib2.Request(uri, headers=headers)
-        try: u = urllib2.urlopen(req, None, timeout)
-        except urllib2.HTTPError, e:
-            return e.fp
-        except:
-            raise
-        info = u.info()
-        if not isinstance(info, list):
-            status = '200'
-        else:
-            status = str(info[1])
-            try: info = info[0]
-            except: pass
-        if status.startswith('3'):
-            uri = urlparse.urljoin(uri, info['Location'])
-        else: break
-        redirects += 1
-        if redirects >= 50:
-            return "Too many re-directs."
+    req = urllib2.Request(uri, headers=headers)
+    try: 
+        u = urllib2.urlopen(req, None, timeout)
+    except urllib2.HTTPError, e:
+        return e.fp
+    except:
+        raise
     return u
 
 #Identical to urllib2.quote
