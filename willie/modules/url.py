@@ -10,6 +10,7 @@ http://willie.dftba.net
 import re
 from htmlentitydefs import name2codepoint
 import willie.web as web
+from willie.module import command, rule
 import urllib2
 import urlparse
 
@@ -74,6 +75,7 @@ def setup(willie):
         (exclusion_char))
 
 
+@command('title')
 def title_command(willie, trigger):
     """
     Show the title or URL information for the given URL, or the last URL seen
@@ -93,9 +95,11 @@ def title_command(willie, trigger):
         urls = re.findall(url_finder, trigger)
 
     results = process_urls(willie, trigger, urls)
-title_command.commands = ['title']
+    for result in results[:4]:
+        message = '[ %s ] - %s' % tuple(result)
 
 
+@rule('(?u).*(https?://\S+).*')
 def title_auto(willie, trigger):
     """
     Automatically show titles for URLs. For shortened URLs/redirects, find
@@ -113,7 +117,6 @@ def title_auto(willie, trigger):
         message = '[ %s ] - %s' % tuple(result)
         if message != trigger:
             willie.say(message)
-title_auto.rule = '(?u).*(https?://\S+).*'
 
 
 def process_urls(willie, trigger, urls):
@@ -155,7 +158,7 @@ def follow_redirects(url):
     there's a problem.
     """
     try:
-        connection = urllib2.urlopen(url)
+        connection = web.get_urllib_object(url, 60)
         url = connection.geturl() or url
         connection.close()
     except:
@@ -183,7 +186,22 @@ def check_callbacks(willie, trigger, url, run=True):
 
 def find_title(url):
     """Return the title for the given URL."""
-    content = web.get(url)
+    content, headers = web.get(url, return_headers=True)
+    content_type = headers.get('Content-Type') or ''
+    encoding_match = re.match('.*?charset *= *(\S+)', content_type)
+    # If they gave us something else instead, try that
+    if encoding_match:
+        try:
+            content = content.decode(encoding_match.group(1))
+        except:
+            encoding_match = None
+    # They didn't tell us what they gave us, so go with UTF-8 or fail silently.
+    if not encoding_match:
+        try:
+            content = content.decode('utf-8')
+        except:
+            return
+
     # Some cleanup that I don't really grok, but was in the original, so
     # we'll keep it (with the compiled regexes made global) for now.
     content = title_tag_data.sub(r'<\1title>', content)

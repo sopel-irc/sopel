@@ -50,33 +50,31 @@ def formatnumber(n):
     return ''.join(parts)
 
 
-def g(willie, trigger):
+def g(bot, trigger):
     """Queries Google for the specified input."""
     query = trigger.group(2)
     if not query:
-        return willie.reply('.g what?')
+        return bot.reply('.g what?')
     uri = google_search(query)
     if uri:
-        willie.reply(uri)
-        if not hasattr(willie.bot, 'last_seen_uri'):
-            willie.bot.last_seen_uri = {}
-        willie.bot.last_seen_uri[trigger.sender] = uri
+        bot.reply(uri)
+        bot.memory['last_seen_url'][trigger.sender] = uri
     elif uri is False:
-        willie.reply("Problem getting data from Google.")
+        bot.reply("Problem getting data from Google.")
     else:
-        willie.reply("No results found for '%s'." % query)
+        bot.reply("No results found for '%s'." % query)
 g.commands = ['g', 'google']
 g.priority = 'high'
 g.example = '.g swhack'
 
 
-def gc(willie, trigger):
+def gc(bot, trigger):
     """Returns the number of Google results for the specified input."""
     query = trigger.group(2)
     if not query:
-        return willie.reply('.gc what?')
+        return bot.reply('.gc what?')
     num = formatnumber(google_count(query))
-    willie.say(query + ': ' + num)
+    bot.say(query + ': ' + num)
 gc.commands = ['gc']
 gc.priority = 'high'
 gc.example = '.gc extrapolate'
@@ -86,13 +84,13 @@ r_query = re.compile(
 )
 
 
-def gcs(willie, trigger):
+def gcs(bot, trigger):
     """Compare the number of Google search results"""
     if not trigger.group(2):
-        return willie.reply("Nothing to compare.")
+        return bot.reply("Nothing to compare.")
     queries = r_query.findall(trigger.group(2))
     if len(queries) > 6:
-        return willie.reply('Sorry, can only compare up to six things.')
+        return bot.reply('Sorry, can only compare up to six things.')
 
     results = []
     for i, query in enumerate(queries):
@@ -106,7 +104,7 @@ def gcs(willie, trigger):
 
     results = [(term, n) for (n, term) in reversed(sorted(results))]
     reply = ', '.join('%s (%s)' % (t, formatnumber(n)) for (t, n) in results)
-    willie.say(reply)
+    bot.say(reply)
 gcs.commands = ['gcs', 'comp']
 gcs.example = '.gcs foo bar'
 
@@ -121,31 +119,7 @@ def bing_search(query, lang='en-GB'):
     if m:
         return m.group(1)
 
-
-def bing(willie, trigger):
-    """Queries Bing for the specified input."""
-    query = trigger.group(2)
-    if query.startswith(':'):
-        lang, query = query.split(' ', 1)
-        lang = lang[1:]
-    else:
-        lang = 'en-GB'
-    if not query:
-        return willie.reply('.bing what?')
-
-    uri = bing_search(query, lang)
-    if uri:
-        willie.reply(uri)
-        if not hasattr(willie.bot, 'last_seen_uri'):
-            willie.bot.last_seen_uri = {}
-        willie.bot.last_seen_uri[trigger.sender] = uri
-    else:
-        willie.reply("No results found for '%s'." % query)
-bing.commands = ['bing']
-bing.example = '.bing swhack'
-
 r_duck = re.compile(r'nofollow" class="[^"]+" href="(.*?)">')
-
 
 def duck_search(query):
     query = query.replace('!', '')
@@ -171,35 +145,33 @@ def duck_api(query):
         return None
 
 
-def duck(willie, trigger):
+def duck(bot, trigger):
     """Queries Duck Duck Go for the specified input."""
     query = trigger.group(2)
     if not query:
-        return willie.reply('.ddg what?')
+        return bot.reply('.ddg what?')
 
     #If the API gives us something, say it and stop
     result = duck_api(query)
     if result:
-        willie.reply(result)
+        bot.reply(result)
         return
 
     #Otherwise, look it up on the HTMl version
     uri = duck_search(query)
 
     if uri:
-        willie.reply(uri)
-        if not hasattr(willie.bot, 'last_seen_uri'):
-            willie.bot.last_seen_uri = {}
-        willie.bot.last_seen_uri[trigger.sender] = uri
+        bot.reply(uri)
+        bot.memory['last_seen_url'][trigger.sender] = uri
     else:
-        willie.reply("No results found for '%s'." % query)
+        bot.reply("No results found for '%s'." % query)
 duck.commands = ['duck', 'ddg']
 
 
-def search(willie, trigger):
+def search(bot, trigger):
     """Searches Google, Bing, and Duck Duck Go."""
     if not trigger.group(2):
-        return willie.reply('.search for what?')
+        return bot.reply('.search for what?')
     query = trigger.group(2)
     gu = google_search(query) or '-'
     bu = bing_search(query) or '-'
@@ -222,22 +194,22 @@ def search(willie, trigger):
             du = '(extremely long link)'
         result = '%s (g), %s (b), %s (d)' % (gu, bu, du)
 
-    willie.reply(result)
+    bot.reply(result)
 search.commands = ['search']
 search.example = '.search nerdfighter'
 
 
-def suggest(willie, trigger):
+def suggest(bot, trigger):
     """Suggest terms starting with given input"""
     if not trigger.group(2):
-        return willie.reply("No query term.")
+        return bot.reply("No query term.")
     query = trigger.group(2)
     uri = 'http://websitedev.de/temp-bin/suggest.pl?q='
     answer = web.get(uri + web.quote(query).replace('+', '%2B'))
     if answer:
-        willie.say(answer)
+        bot.say(answer)
     else:
-        willie.reply('Sorry, no result.')
+        bot.reply('Sorry, no result.')
 suggest.commands = ['suggest']
 
 if __name__ == '__main__':

@@ -24,18 +24,22 @@ import re, urllib, urllib2
 from htmlentitydefs import name2codepoint
 
 #HTTP GET
-def get(uri, timeout=20, headers=None):
+def get(uri, timeout=20, headers=None, return_headers=False):
     """
     Execute an HTTP GET query on `uri`, and return the result.
     `timeout` is an optional argument, which represents how much time we should wait before throwing a timeout exception. It defualts to 20, but can be set to higher values if you are communicating with a slow web application.
     `headers` is a dict of HTTP headers to send with the request.
+    If `return_headers` is True, return a tuple of (bytes, headers)
     """
     if not uri.startswith('http'):
         uri = "http://" + uri
     u = get_urllib_object(uri, timeout, headers)
     bytes = u.read()
     u.close()
-    return bytes
+    if not return_headers:
+        return bytes
+    else:
+        return (bytes,u.info())
 
 # Get HTTP headers
 def head(uri, timeout=20, headers=None):
@@ -85,36 +89,22 @@ def get_urllib_object(uri, timeout, headers=None):
     Return a urllib2 object for `uri` and `timeout` and `headers`. This is better than using urrlib2 directly, for it handles redirects, makes sure URI is utf8, and is shorter and easier to use.
     Modules may use this if they need a urllib2 object to execute .read() on. For more information, refer to the urllib2 documentation.
     """
-    redirects = 0
     try:
         uri = uri.encode("utf-8")
     except:
         pass
-    original_headers = {'Accept':'*/*', 'User-Agent':'Mozilla/5.0 (Jenni)'}
+    original_headers = {'Accept':'*/*', 'User-Agent':'Mozilla/5.0 (Willie)'}
     if headers is not None:
-        headers = dict(original_headers.items(), headers.items())
+        original_headers.update(headers)
     else:
         headers = original_headers
-    while True:
-        req = urllib2.Request(uri, headers=headers)
-        try: u = urllib2.urlopen(req, None, timeout)
-        except urllib2.HTTPError, e:
-            return e.fp
-        except:
-            raise
-        info = u.info()
-        if not isinstance(info, list):
-            status = '200'
-        else:
-            status = str(info[1])
-            try: info = info[0]
-            except: pass
-        if status.startswith('3'):
-            uri = urlparse.urljoin(uri, info['Location'])
-        else: break
-        redirects += 1
-        if redirects >= 50:
-            return "Too many re-directs."
+    req = urllib2.Request(uri, headers=headers)
+    try:
+        u = urllib2.urlopen(req, None, timeout)
+    except urllib2.HTTPError, e:
+        # Even when there's an error (say HTTP 404), return page contents
+        return e.fp
+
     return u
 
 #Identical to urllib2.quote
