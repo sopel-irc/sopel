@@ -149,11 +149,22 @@ def mode(bot, trigger):
 
 
 @willie.module.commands('set')
+@willie.module.example('.set core.owner Me')
 def set_config(bot, trigger):
-    """See and modify values of willies config object."""
+    """See and modify values of willies config object.
+
+    Trigger args:
+        arg1 - section and option, in the form "section.option"
+        arg2 - value
+
+    If there is no section, section will default to "core".
+    If value is None, the option will be deleted.
+    """
     if trigger.sender.startswith('#'):
+        bot.reply("This command only works as a private message.")
         return
     if not trigger.admin:
+        bot.reply("This command requires admin priviledges.")
         return
 
     # Get section and option from first argument.
@@ -163,16 +174,23 @@ def set_config(bot, trigger):
     elif len(arg1) == 2:
         section, option = arg1
     else:
+        bot.reply("Usage: .set section.option value")
         return
 
     # Don't modify non-existing values to guard against typos.
     if not bot.config.has_option(section, option):
+        bot.reply("Option %s.%s does not exist." % (section, option))
         return
 
     # Display current value if no value is given.
     value = trigger.group(4)
     if not value:
-        value = getattr(getattr(bot.config, section), option)
+        # Except if the option looks like a password. Censor those to stop them
+        # from being put on log files.
+        if option.endswith("password") or option.endswith("pass"):
+            value = "(password censored)"
+        else:
+            value = getattr(getattr(bot.config, section), option)
         bot.reply("%s.%s = %s" % (section, option, value))
         return
 
@@ -181,6 +199,7 @@ def set_config(bot, trigger):
 
 
 @willie.module.command('save')
+@willie.module.example('.save')
 def save_config(bot, trigger):
     """Save state of willies config object to the configuration file."""
     if trigger.sender.startswith('#'):
