@@ -9,6 +9,7 @@ http://willie.dftba.net/
 from lxml import etree
 import re
 from willie import web
+from willie.module import rule
 import urllib
 import urllib2
 
@@ -28,27 +29,30 @@ def configure(config):
                         'Domain:')
 
 
-def setup(willie):
+def setup(bot):
     regexes = []
-    if not (willie.config.has_option('bugzilla', 'domains')
-            and willie.config.bugzilla.get_list('domains')):
+    if not (bot.config.has_option('bugzilla', 'domains')
+            and bot.config.bugzilla.get_list('domains')):
         return
-    if not willie.memory.contains('url_callbacks'):
-        willie.memory['url_callbacks'] = {}
+    if not bot.memory.contains('url_callbacks'):
+        bot.memory['url_callbacks'] = {}
 
-    domains = '|'.join(willie.config.bugzilla.get_list('domains'))
+    domains = '|'.join(bot.config.bugzilla.get_list('domains'))
     regex = re.compile((r'https?://(%s)'
                          '(/show_bug.cgi\?\S*?)'
                          '(id=\d+)')
                        % domains)
-    willie.memory['url_callbacks'][regex] = show_bug
+    bot.memory['url_callbacks'][regex] = show_bug
 
 
-def show_bug(willie, trigger, match=None):
+@rule(r'.*https?://(\S+?)'
+       '(/show_bug.cgi\?\S*?)'
+       '(id=\d+).*')
+def show_bug(bot, trigger, match=None):
     """Show information about a Bugzilla bug."""
     match = match or trigger
     domain = match.group(1)
-    if domain not in willie.config.bugzilla.get_list('domains'):
+    if domain not in bot.config.bugzilla.get_list('domains'):
         return
     url = 'https://%s%sctype=xml&%s' % match.groups()
     data = web.get(url)
@@ -70,7 +74,4 @@ def show_bug(willie, trigger, match=None):
         (bug.find('priority').text + ' ' + bug.find('bug_severity').text),
         status, bug.find('assigned_to').text, bug.find('creation_ts').text,
         bug.find('delta_ts').text)
-    willie.say(message)
-show_bug.rule = (r'.*https?://(\S+?)'
-                  '(/show_bug.cgi\?\S*?)'
-                  '(id=\d+).*')
+    bot.say(message)
