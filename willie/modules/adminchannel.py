@@ -10,15 +10,17 @@ http://willie.dftba.net/
 """
 
 import re
+from willie.module import command, commands, priority
 
 
-def setup(willie):
-    #Having a db means pref's exists. Later, we can just use `if willie.db`.
-    if willie.db and not willie.db.preferences.has_columns('topic_mask'):
-        willie.db.preferences.add_columns(['topic_mask'])
+def setup(bot):
+    #Having a db means pref's exists. Later, we can just use `if bot.db`.
+    if bot.db and not bot.db.preferences.has_columns('topic_mask'):
+        bot.db.preferences.add_columns(['topic_mask'])
 
 
-def op(willie, trigger):
+@command('op')
+def op(bot, trigger):
     """
     Command to op users in a room. If no nick is given,
     willie will op the nick who sent the command
@@ -28,12 +30,11 @@ def op(willie, trigger):
         channel = trigger.sender
         if not nick:
             nick = trigger.nick
-        willie.write(['MODE', channel, "+o", nick])
-op.rule = (['op'], r'(\S+)?')
-op.priority = 'low'
+        bot.write(['MODE', channel, "+o", nick])
 
 
-def deop(willie, trigger):
+@command('deop')
+def deop(bot, trigger):
     """
     Command to deop users in a room. If no nick is given,
     willie will deop the nick who sent the command
@@ -43,12 +44,11 @@ def deop(willie, trigger):
         channel = trigger.sender
         if not nick:
             nick = trigger.nick
-        willie.write(['MODE', channel, "-o", nick])
-deop.rule = (['deop'], r'(\S+)?')
-deop.priority = 'low'
+        bot.write(['MODE', channel, "-o", nick])
 
 
-def voice(willie, trigger):
+@command('voice')
+def voice(bot, trigger):
     """
     Command to voice users in a room. If no nick is given,
     willie will voice the nick who sent the command
@@ -58,12 +58,11 @@ def voice(willie, trigger):
         channel = trigger.sender
         if not nick:
             nick = trigger.nick
-        willie.write(['MODE', channel, "+v", nick])
-voice.rule = (['voice'], r'(\S+)?')
-voice.priority = 'low'
+        bot.write(['MODE', channel, "+v", nick])
 
 
-def devoice(willie, trigger):
+@command('devoice')
+def devoice(bot, trigger):
     """
     Command to devoice users in a room. If no nick is given,
     willie will devoice the nick who sent the command
@@ -73,12 +72,12 @@ def devoice(willie, trigger):
         channel = trigger.sender
         if not nick:
             nick = trigger.nick
-        willie.write(['MODE', channel, "-v", nick])
-devoice.rule = (['devoice'], r'(\S+)?')
-devoice.priority = 'low'
+        bot.write(['MODE', channel, "-v", nick])
 
 
-def kick(willie, trigger):
+@command('kick')
+@priority('high')
+def kick(bot, trigger):
     """
     Kick a user from the channel.
     """
@@ -99,10 +98,8 @@ def kick(willie, trigger):
         channel = opt
         reasonidx = 3
     reason = ' '.join(text[reasonidx:])
-    if nick != willie.config.nick:
-        willie.write(['KICK', channel, nick, reason])
-kick.commands = ['kick']
-kick.priority = 'high'
+    if nick != bot.config.nick:
+        bot.write(['KICK', channel, nick, reason])
 
 
 def configureHostMask(mask):
@@ -127,7 +124,9 @@ def configureHostMask(mask):
     return ''
 
 
-def ban(willie, trigger):
+@command('ban')
+@priority('high')
+def ban(bot, trigger):
     """
     This give admins the ability to ban a user.
     The bot must be a Channel Operator for this command to work.
@@ -149,12 +148,11 @@ def ban(willie, trigger):
     banmask = configureHostMask(banmask)
     if banmask == '':
         return
-    willie.write(['MODE', channel, '+b', banmask])
-ban.commands = ['ban', 'banish']
-ban.priority = 'high'
+    bot.write(['MODE', channel, '+b', banmask])
 
 
-def unban(willie, trigger):
+@command('unban')
+def unban(bot, trigger):
     """
     This give admins the ability to unban a user.
     The bot must be a Channel Operator for this command to work.
@@ -176,12 +174,11 @@ def unban(willie, trigger):
     banmask = configureHostMask(banmask)
     if banmask == '':
         return
-    willie.write(['MODE', channel, '-b', banmask])
-unban.commands = ['unban']
-unban.priority = 'high'
+    bot.write(['MODE', channel, '-b', banmask])
 
 
-def quiet(willie, trigger):
+@command('quiet')
+def quiet(bot, trigger):
     """
     This gives admins the ability to quiet a user.
     The bot must be a Channel Operator for this command to work
@@ -203,12 +200,11 @@ def quiet(willie, trigger):
     quietmask = configureHostMask(quietmask)
     if quietmask == '':
         return
-    willie.write(['MODE', channel, '+q', quietmask])
-quiet.commands = ['quiet']
-quiet.priority = 'high'
+    bot.write(['MODE', channel, '+q', quietmask])
 
 
-def unquiet(willie, trigger):
+@command('unquiet')
+def unquiet(bot, trigger):
     """
    This gives admins the ability to unquiet a user.
    The bot must be a Channel Operator for this command to work
@@ -230,12 +226,12 @@ def unquiet(willie, trigger):
     quietmask = configureHostMask(quietmask)
     if quietmask == '':
         return
-    willie.write(['MODE', opt, '-q', quietmask])
-unquiet.commands = ['unquiet']
-unquiet.priority = 'high'
+    bot.write(['MODE', opt, '-q', quietmask])
 
 
-def kickban(willie, trigger):
+@commands('kickban', 'kb')
+@priority('high')
+def kickban(bot, trigger):
     """
    This gives admins the ability to kickban a user.
    The bot must be a Channel Operator for this command to work
@@ -262,13 +258,12 @@ def kickban(willie, trigger):
     mask = configureHostMask(mask)
     if mask == '':
         return
-    willie.write(['MODE', channel, '+b', mask])
-    willie.write(['KICK', channel, nick, ' :', reason])
-kickban.commands = ['kickban', 'kb']
-kickban.priority = 'high'
+    bot.write(['MODE', channel, '+b', mask])
+    bot.write(['KICK', channel, nick, ' :', reason])
 
 
-def topic(willie, trigger):
+@command('topic')
+def topic(bot, trigger):
     """
     This gives ops the ability to change the topic.
     """
@@ -282,8 +277,8 @@ def topic(willie, trigger):
 
     narg = 1
     mask = None
-    if willie.db and channel in willie.db.preferences:
-        mask = willie.db.preferences.get(channel, 'topic_mask')
+    if bot.db and channel in bot.db.preferences:
+        mask = bot.db.preferences.get(channel, 'topic_mask')
         narg = len(re.findall('%s', mask))
     if not mask or mask == '':
         mask = purple + 'Welcome to: ' + green + channel + purple \
@@ -296,49 +291,44 @@ def topic(willie, trigger):
 
     if len(text) != narg:
         message = "Not enough arguments. You gave " + str(len(text)) + ', it requires ' + str(narg) + '.'
-        return willie.say(message)
+        return bot.say(message)
     topic = mask % text
 
-    willie.write(('TOPIC', channel + ' :' + topic))
-topic.commands = ['topic']
-topic.priority = 'low'
+    bot.write(('TOPIC', channel + ' :' + topic))
 
 
-def set_mask(willie, trigger):
+@command('tmask')
+def set_mask(bot, trigger):
     """
     Set the mask to use for .topic in the current channel. %s is used to allow
     substituting in chunks of text.
     """
     if not trigger.isop:
         return
-    if not willie.db:
-        willie.say("I'm afraid I can't do that.")
+    if not bot.db:
+        bot.say("I'm afraid I can't do that.")
     else:
-        willie.db.preferences.update(trigger.sender, {'topic_mask': trigger.group(2)})
-        willie.say("Gotcha, " + trigger.nick)
-set_mask.commands = ['tmask']
+        bot.db.preferences.update(trigger.sender, {'topic_mask': trigger.group(2)})
+        bot.say("Gotcha, " + trigger.nick)
 
 
-def show_mask(willie, trigger):
+@command('showmask')
+def show_mask(bot, trigger):
     """Show the topic mask for the current channel."""
     if not trigger.isop:
         return
-    if not willie.db:
-        willie.say("I'm afraid I can't do that.")
-    elif trigger.sender in willie.db.preferences:
-        willie.say(willie.db.preferences.get(trigger.sender, 'topic_mask'))
+    if not bot.db:
+        bot.say("I'm afraid I can't do that.")
+    elif trigger.sender in bot.db.preferences:
+        bot.say(bot.db.preferences.get(trigger.sender, 'topic_mask'))
     else:
-        willie.say("%s")
-show_mask.commands = ['showmask']
+        bot.say("%s")
 
 
-def isop(willie, trigger):
+@command('isop')
+def isop(bot, trigger):
     """Show if you are an operator in the current channel"""
     if trigger.isop:
-        willie.reply('yes')
+        bot.reply('yes')
     else:
-        willie.reply('no')
-isop.commands = ['isop']
-
-if __name__ == '__main__':
-    print __doc__.strip()
+        bot.reply('no')

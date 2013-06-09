@@ -9,15 +9,19 @@ http://willie.dftba.net
 """
 
 import re
-import willie.web as web
+from willie import web
+from willie.module import rule, commands, priority, example
 from time import sleep
-import urllib2, json
+import urllib2
+import json
 import random
 import os
 mangle_lines = {}
 
-def setup(willie):
+
+def setup(bot):
     random.seed()
+
 
 def configure(config):
     """
@@ -30,16 +34,16 @@ def configure(config):
     if config.option('Configure mangle module', False):
         config.add_section('translate')
         if config.option("Enable research mode"):
-           config.translate.research = True
+            config.translate.research = True
         if config.option("Collect mangle lines"):
-           config.translate.collect_mangle_lines = True
+            config.translate.collect_mangle_lines = True
+
 
 def translate(text, input='auto', output='en'):
     raw = False
     if output.endswith('-raw'):
         output = output[:-4]
         raw = True
-
 
     opener = urllib2.build_opener()
     opener.addheaders = [(
@@ -66,19 +70,25 @@ def translate(text, input='auto', output='en'):
     if raw:
         return str(data), 'en-raw'
 
-    try: language = data[2] # -2][0][0]
-    except: language = '?'
+    try:
+        language = data[2]  # -2][0][0]
+    except:
+        language = '?'
 
     return ''.join(x[0] for x in data[0]), language
 
-def tr(willie, trigger):
+
+@rule(ur'$nickname[,:]\s+(?:([a-z]{2}) +)?(?:([a-z]{2}|en-raw) +)?["“](.+?)["”]\? *$')
+@example('$nickname: "mon chien"? or $nickname: fr "mon chien"?')
+@priority('low')
+def tr(bot, trigger):
     """Translates a phrase, with an optional language hint."""
     input, output, phrase = trigger.groups()
 
     phrase = phrase.encode('utf-8')
 
     if (len(phrase) > 350) and (not trigger.admin):
-        return willie.reply('Phrase must be under 350 characters.')
+        return bot.reply('Phrase must be under 350 characters.')
 
     input = input or 'auto'
     input = input.encode('utf-8')
@@ -89,18 +99,18 @@ def tr(willie, trigger):
         if isinstance(msg, str):
             msg = msg.decode('utf-8')
         if msg:
-            msg = web.decode(msg) # msg.replace('&#39;', "'")
+            msg = web.decode(msg)  # msg.replace('&#39;', "'")
             msg = '"%s" (%s to %s, translate.google.com)' % (msg, input, output)
-        else: msg = 'The %s to %s translation failed, sorry!' % (input, output)
+        else:
+            msg = 'The %s to %s translation failed, sorry!' % (input, output)
 
-        willie.reply(msg)
-    else: willie.reply('Language guessing failed, so try suggesting one!')
+        bot.reply(msg)
+    else:
+        bot.reply('Language guessing failed, so try suggesting one!')
 
-tr.rule = ('$nick', ur'(?:([a-z]{2}) +)?(?:([a-z]{2}|en-raw) +)?["“](.+?)["”]\? *$')
-tr.example = '$nickname: "mon chien"? or $nickname: fr "mon chien"?'
-tr.priority = 'low'
 
-def tr2(willie, trigger):
+@commands('translate', 'tr')
+def tr2(bot, trigger):
     """Translates a phrase, with an optional language hint."""
     command = trigger.group(2).encode('utf-8')
 
@@ -110,7 +120,8 @@ def tr2(willie, trigger):
     args = ['auto', 'en']
 
     for i in xrange(2):
-        if not ' ' in command: break
+        if not ' ' in command:
+            break
         prefix, cmd = command.split(' ', 1)
         if langcode(prefix):
             args[i] = prefix[1:]
@@ -118,7 +129,7 @@ def tr2(willie, trigger):
     phrase = command
 
     if (len(phrase) > 350) and (not trigger.admin):
-        return willie.reply('Phrase must be under 350 characters.')
+        return bot.reply('Phrase must be under 350 characters.')
 
     src, dest = args
     if src != dest:
@@ -126,18 +137,18 @@ def tr2(willie, trigger):
         if isinstance(msg, str):
             msg = msg.decode('utf-8')
         if msg:
-            msg = web.decode(msg) # msg.replace('&#39;', "'")
+            msg = web.decode(msg)  # msg.replace('&#39;', "'")
             msg = '"%s" (%s to %s, translate.google.com)' % (msg, src, dest)
-        else: msg = 'The %s to %s translation failed, sorry!' % (src, dest)
+        else:
+            msg = 'The %s to %s translation failed, sorry!' % (src, dest)
 
-        willie.reply(msg)
-    else: willie.reply('Language guessing failed, so try suggesting one!')
+        bot.reply(msg)
+    else:
+        bot.reply('Language guessing failed, so try suggesting one!')
 
-tr2.commands = ['tr', 'translate']
-tr2.priority = 'low'
 
 def get_random_lang(long_list, short_list):
-    random_index = random.randint(0, len(long_list)-1)
+    random_index = random.randint(0, len(long_list) - 1)
     random_lang = long_list[random_index]
     if not random_lang in short_list:
         short_list.append(random_lang)
@@ -145,7 +156,9 @@ def get_random_lang(long_list, short_list):
         return get_random_lang(long_list, short_list)
     return short_list
 
-def mangle(willie, trigger):
+
+@commands('mangle', 'mangle2')
+def mangle(bot, trigger):
     """Repeatedly translate the input until it makes absolutely no sense."""
     global mangle_lines
     long_lang_list = ['fr', 'de', 'es', 'it', 'no', 'he', 'la', 'ja', 'cy', 'ar', 'yi', 'zh', 'nl', 'ru', 'fi', 'hi', 'af', 'jw', 'mr', 'ceb', 'cs', 'ga', 'sv', 'eo', 'el', 'ms', 'lv']
@@ -157,15 +170,15 @@ def mangle(willie, trigger):
         try:
             phrase = (mangle_lines[trigger.sender.lower()], '')
         except:
-            willie.reply("What do you want me to mangle?")
+            bot.reply("What do you want me to mangle?")
             return
     else:
         phrase = (trigger.group(2).encode('utf-8').strip(), '')
     if phrase[0] == '':
-        willie.reply("What do you want me to mangle?")
+        bot.reply("What do you want me to mangle?")
         return
-    if willie.config.has_section('translate') and willie.config.translate.research == True:
-        research_logfile = open(os.path.join(willie.config.logdir, 'mangle.log'), 'a')
+    if bot.config.has_section('translate') and bot.config.translate.research == True:
+        research_logfile = open(os.path.join(bot.config.logdir, 'mangle.log'), 'a')
         research_logfile.write('Phrase: %s\n' % str(phrase))
         research_logfile.write('Lang_list: %s\n' % lang_list)
     for lang in lang_list:
@@ -183,26 +196,21 @@ def mangle(willie, trigger):
             phrase = translate(phrase[0], lang, 'en')
         except:
             break
-        if willie.config.has_section('translate') and willie.config.translate.research == True:
+        if bot.config.has_section('translate') and bot.config.translate.research == True:
             research_logfile.write('-> %s\n' % str(phrase))
         if not phrase:
             phrase = backup
             break
-    if willie.config.has_section('translate') and willie.config.translate.research == True:
+    if bot.config.has_section('translate') and bot.config.translate.research == True:
         research_logfile.write('->[FINAL] %s\n' % str(phrase))
         research_logfile.write('----------------------------\n\n\n')
         research_logfile.close()
-    willie.reply(phrase[0])
-    
-mangle.commands = ['mangle', 'mangle2']
+    bot.reply(phrase[0])
 
-def collect_mangle_lines(willie, trigger):
-    if willie.config.has_section('translate') and willie.config.translate.collect_mangle_lines == True:
+
+@rule('(.*)')
+@priority('low')
+def collect_mangle_lines(bot, trigger):
+    if bot.config.has_section('translate') and bot.config.translate.collect_mangle_lines == True:
         global mangle_lines
         mangle_lines[trigger.sender.lower()] = "%s said '%s'" % (trigger.nick, (trigger.group(0).strip()))
-collect_mangle_lines.rule = ('(.*)')
-collect_mangle_lines.priority = 'low'
-
-if __name__ == '__main__':
-    print __doc__.strip()
-
