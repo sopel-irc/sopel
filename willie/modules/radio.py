@@ -9,7 +9,9 @@ http://willie.dftba.net/
 from time import sleep
 from xml.dom.minidom import parseString
 import willie.web as web
+from willie.module import command
 import xml.dom.minidom
+
 
 def configure(config):
     """
@@ -23,83 +25,88 @@ def configure(config):
         config.interactive_add('radio', 'url', 'URL to the ShoutCAST administration page', 'http://127.0.0.1:8000/')
         config.interactive_add('radio', 'sid', 'Stream ID (only required for multi-stream servers.)', '1')
 
-radioURL = '' # Set once, after the first .radio request.
+radioURL = ''  # Set once, after the first .radio request.
 checkSongs = 0
 current_song = ''
 
-def getAPI(willie, trigger):
+
+def getAPI(bot, trigger):
     #contact the 'heavyweight' XML API
     try:
         raw = web.get(radioURL % 'stats')
     except Exception as e:
-        willie.say('The radio is not responding to the stats request.')
+        bot.say('The radio is not responding to the stats request.')
         return 0
-    
+
     #Parse the XML
     XML = parseString(raw).documentElement
     status = XML.getElementsByTagName('STREAMSTATUS')[0].firstChild.nodeValue
     if status == '0':
-        willie.say('The radio is currently offline.')
+        bot.say('The radio is currently offline.')
         return 0
 
     status = 'Online'
     servername = XML.getElementsByTagName('SERVERTITLE')[0].firstChild.nodeValue
     curlist = XML.getElementsByTagName('CURRENTLISTENERS')[0].firstChild.nodeValue
     maxlist = XML.getElementsByTagName('MAXLISTENERS')[0].firstChild.nodeValue
-    
+
     #Garbage disposal
     XML.unlink()
 
     #print results
-    willie.say('[%s]Status: %s. Listeners: %s/%s.' % (servername, status, curlist, maxlist))
+    bot.say('[%s]Status: %s. Listeners: %s/%s.' % (servername, status, curlist, maxlist))
     return 1
 
-def currentSong(willie, trigger):
+
+def currentSong(bot, trigger):
     # This function uses the PLAINTEXT API to get the current song only.
     try:
         song = web.get(radioURL % 'currentsong')
     except Exception as e:
-        willie.say('The radio is not responding to the song request.')
-        willie.debug('radio', 'Exception while trying to get current song: %s' % e, 'warning')
+        bot.say('The radio is not responding to the song request.')
+        bot.debug('radio', 'Exception while trying to get current song: %s' % e, 'warning')
     if song:
-        willie.say('Now playing: '+song)
+        bot.say('Now playing: ' + song)
     else:
-        willie.say('The radio is currently offline.')
+        bot.say('The radio is currently offline.')
 
-def nextSong(willie, trigger):
+
+def nextSong(bot, trigger):
     # This function uses the PLAINTEXT API to get the next song only.
     try:
         song = web.get(radioURL % 'nextsong')
     except Exception as e:
-        willie.say('The radio is not responding to the song request.')
-        willie.debug('radio', 'Exception while trying to get next song: %s' % e, 'warning')
+        bot.say('The radio is not responding to the song request.')
+        bot.debug('radio', 'Exception while trying to get next song: %s' % e, 'warning')
     if song:
-        willie.say('Next up: '+song)
+        bot.say('Next up: ' + song)
     else:
-        willie.say('No songs are queued up.')
+        bot.say('No songs are queued up.')
 
-def radio(willie, trigger):
+
+@command('radio')
+def radio(bot, trigger):
     """ Radio functions, valid parameters: on, off, song, now, next, soon, stats. """
     global checkSongs, current_song, radioURL
     if not radioURL:
-        if not hasattr(willie.config, 'radio'):
-            willie.say('Radio module not configured')
+        if not hasattr(bot.config, 'radio'):
+            bot.say('Radio module not configured')
             return
         else:
-            radioURL = willie.config.radio.url+'%s?sid='+willie.config.radio.sid
+            radioURL = bot.config.radio.url + '%s?sid=' + bot.config.radio.sid
     try:
         args = trigger.group(2).lower().split(' ')
     except AttributeError:
-        willie.say('Usage: .radio (next|now|off|on|song|soon|stats)')
+        bot.say('Usage: .radio (next|now|off|on|song|soon|stats)')
         return
     if args[0] == 'on':
         if not trigger.isop:
             return
         if checkSongs != 0:
-            return willie.reply('Radio data checking is already on.')
-        if not getAPI(willie, trigger):
+            return bot.reply('Radio data checking is already on.')
+        if not getAPI(bot, trigger):
             checkSongs = 0
-            return willie.say('Radio data checking not enabled.')
+            return bot.say('Radio data checking not enabled.')
         checkSongs = 10
         while checkSongs:
             last = current_song
@@ -109,37 +116,32 @@ def radio(willie, trigger):
             except Exception as e:
                 checkSongs -= 1
                 if checkSongs == 0:
-                    willie.debug('radio', 'Exception while trying to get periodic radio data: %s' % e, 'warning')
-                    willie.say('The radio is not responding to the song request.')
-                    willie.say('Turning off radio data checking.')
+                    bot.debug('radio', 'Exception while trying to get periodic radio data: %s' % e, 'warning')
+                    bot.say('The radio is not responding to the song request.')
+                    bot.say('Turning off radio data checking.')
                 break
             if not current_song == last:
                 if not current_song:
                     csong = 'The radio is currently offline.'
                 else:
-                    csong = 'Now Playing: '+current_song
+                    csong = 'Now Playing: ' + current_song
                 if nextsong and current_song:
-                    willie.say(csong+' | Coming Up: '+nextsong)
+                    bot.say(csong + ' | Coming Up: ' + nextsong)
                 else:
-                    willie.say(csong)
+                    bot.say(csong)
             sleep(5)
     elif args[0] == 'off':
         if not trigger.isop:
-            return;
+            return
         if checkSongs == 0:
-            willie.reply('Radio data checking is already off.')
+            bot.reply('Radio data checking is already off.')
             return
         checkSongs = 0
         current_song = ''
-        willie.reply('Turning off radio data checking.')
+        bot.reply('Turning off radio data checking.')
     elif args[0] == 'song' or args[0] == 'now':
-        currentSong(willie, trigger)
+        currentSong(bot, trigger)
     elif args[0] == 'next' or args[0] == 'soon':
-        nextSong(willie, trigger)
+        nextSong(bot, trigger)
     elif args[0] == 'stats':
-        getAPI(willie, trigger)
-radio.commands = ['radio']
-radio.priority = 'medium'
-
-if __name__ == '__main__':
-    print __doc__.strip()
+        getAPI(bot, trigger)
