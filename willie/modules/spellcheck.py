@@ -9,7 +9,12 @@ http://willie.dftba.net
 
 This module relies on pyenchant, on Fedora and Red Hat based system, it can be found in the package python-enchant
 """
-import enchant 
+import enchant
+from willie.module import commands, example
+
+
+@commands('spellcheck', 'spell')
+@example('.spellcheck stuff')
 def spellcheck(willie, trigger):
     """
     Says whether the given word is spelled correctly, and gives suggestions if
@@ -39,8 +44,3 @@ def spellcheck(willie, trigger):
         for suggested_word in sorted(set(sugWords)): # removes duplicates
             msg = msg + " '"+suggested_word+"',"
         willie.say(msg)
-spellcheck.commands = ['spellcheck', 'spell']
-spellcheck.example = '.spellcheck stuff'
-
-if __name__ == '__main__':
-    print __doc__.strip()
