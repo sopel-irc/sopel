@@ -10,17 +10,16 @@ http://willie.dftba.net
 import re
 import urllib
 import json
-import willie.web as web
+from willie import web
+from willie.module import command, commands, example
 from lxml import etree
 import feedparser
 
-r_from = re.compile(r'(?i)([+-]\d+):00 from')
 
-
-def setup(willie):
-    #Having a db means pref's exists. Later, we can just use `if willie.db`.
-    if willie.db and not willie.db.preferences.has_columns('woeid'):
-        willie.db.preferences.add_columns(['woeid'])
+def setup(bot):
+    #Having a db means pref's exists. Later, we can just use `if bot.db`.
+    if bot.db and not bot.db.preferences.has_columns('woeid'):
+        bot.db.preferences.add_columns(['woeid'])
 
 
 def woeid_search(query):
@@ -134,25 +133,27 @@ def get_wind(parsed):
     return description + ' ' + str(speed) + 'kt (' + degrees + ')'
 
 
-def weather(willie, trigger):
+@command('weather')
+@example('.weather London')
+def weather(bot, trigger):
     """.weather location - Show the weather at the given location."""
 
     location = trigger.group(2)
     woeid = ''
     if not location:
-        if willie.db and trigger.nick in willie.db.preferences:
-            woeid = willie.db.preferences.get(trigger.nick, 'woeid')
+        if bot.db and trigger.nick in bot.db.preferences:
+            woeid = bot.db.preferences.get(trigger.nick, 'woeid')
         if not woeid:
-            return willie.msg(trigger.sender, "I don't know where you live. " +
-                              'Give me a location, like .weather London, or tell me where you live by saying .setlocation London, for example.')
+            return bot.msg(trigger.sender, "I don't know where you live. " +
+                           'Give me a location, like .weather London, or tell me where you live by saying .setlocation London, for example.')
     else:
-        if willie.db and location in willie.db.preferences:
-            woeid = willie.db.preferences.get(location, 'woeid')
+        if bot.db and location in bot.db.preferences:
+            woeid = bot.db.preferences.get(location, 'woeid')
         else:
             woeid = woeid_search(location).find('woeid').text
 
     if not woeid:
-        return willie.reply("I don't know where that is.")
+        return bot.reply("I don't know where that is.")
 
     query = web.urlencode({'w': woeid, 'u': 'c'})
     url = 'http://weather.yahooapis.com/forecastrss?' + query
@@ -163,18 +164,18 @@ def weather(willie, trigger):
     temp = get_temp(parsed)
     pressure = get_pressure(parsed)
     wind = get_wind(parsed)
-    willie.say(u'%s: %s, %s, %s, %s' % (location, cover, temp, pressure, wind))
-weather.commands = ['weather']
-weather.example = '.weather London'
+    bot.say(u'%s: %s, %s, %s, %s' % (location, cover, temp, pressure, wind))
 
 
-def update_woeid(willie, trigger):
+@commands('setlocation', 'setwoeid')
+@example('.setlocation Columbus, OH')
+def update_woeid(bot, trigger):
     """Set your default weather location."""
-    if willie.db:
+    if bot.db:
         first_result = woeid_search(trigger.group(2))
         woeid = first_result.find('woeid').text
 
-        willie.db.preferences.update(trigger.nick, {'woeid': woeid})
+        bot.db.preferences.update(trigger.nick, {'woeid': woeid})
 
         neighborhood = first_result.find('neighborhood').text or ''
         if neighborhood:
@@ -183,12 +184,7 @@ def update_woeid(willie, trigger):
         state = first_result.find('state').text or ''
         country = first_result.find('country').text or ''
         uzip = first_result.find('uzip').text or ''
-        willie.reply('I now have you at WOEID %s (%s %s, %s, %s %s.)' %
-                     (woeid, neighborhood, city, state, country, uzip))
+        bot.reply('I now have you at WOEID %s (%s %s, %s, %s %s.)' %
+                  (woeid, neighborhood, city, state, country, uzip))
     else:
-        willie.reply("I can't remember that; I don't have a database.")
-update_woeid.commands = ['setlocation', 'setwoeid']
-update_woeid.example = '.setlocation Columbus, OH'
-
-if __name__ == '__main__':
-    print __doc__.strip()
+        bot.reply("I can't remember that; I don't have a database.")
