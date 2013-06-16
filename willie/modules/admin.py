@@ -4,13 +4,14 @@ admin.py - Willie Admin Module
 Copyright 2010-2011, Sean B. Palmer (inamidst.com) and Michael Yanovich
 (yanovich.net)
 Copyright © 2012, Elad Alfassa, <elad@fedoraproject.org>
+Copyright 2013, Ari Koivula <ari@koivu.la>
 
 Licensed under the Eiffel Forum License 2.
 
 http://willie.dfbta.net
 """
 
-import os
+import willie.module
 
 
 def configure(config):
@@ -22,80 +23,106 @@ def configure(config):
     config.add_option('admin', 'hold_ground', "Auto re-join on kick")
 
 
-def join(willie, trigger):
+@willie.module.commands('join')
+@willie.module.priority('low')
+@willie.module.example('.join #example or .join #example key')
+def join(bot, trigger):
     """Join the specified channel. This is an admin-only command."""
     # Can only be done in privmsg by an admin
     if trigger.sender.startswith('#'):
         return
+
     if trigger.admin:
-        channel, key = trigger.group(1), trigger.group(2)
-        if not key:
-            willie.join(channel)
+        channel, key = trigger.group(3), trigger.group(4)
+        if not channel:
+            return
+        elif not key:
+            bot.join(channel)
         else:
-            willie.join(channel, key)
-join.rule = r'\.join (#\S+)(?: *(\S+))?'
-join.priority = 'low'
-join.example = '.join #example or .join #example key'
+            bot.join(channel, key)
 
 
-def part(willie, trigger):
+@willie.module.commands('part')
+@willie.module.priority('low')
+@willie.module.example('.part #example')
+def part(bot, trigger):
     """Part the specified channel. This is an admin-only command."""
     # Can only be done in privmsg by an admin
     if trigger.sender.startswith('#'):
         return
-    if trigger.admin:
-        willie.part(trigger.group(2).strip())
-part.commands = ['part']
-part.priority = 'low'
-part.example = '.part #example'
+    if not trigger.admin:
+        return
+
+    channel, _sep, part_msg = trigger.group(2).partition(' ')
+    if part_msg:
+        bot.part(channel, part_msg)
+    else:
+        bot.part(channel)
 
 
-def quit(willie, trigger):
+@willie.module.commands('quit')
+@willie.module.priority('low')
+def quit(bot, trigger):
     """Quit from the server. This is an owner-only command."""
     # Can only be done in privmsg by the owner
     if trigger.sender.startswith('#'):
         return
-    if trigger.owner:
+    if not trigger.owner:
+        return
+
+    quit_message = trigger.group(2)
+    if not quit_message:
         quit_message = 'Quitting on command from %s' % trigger.nick
-        if trigger.group(2) is not None:
-            quit_message = trigger.group(2)
-        willie.quit(quit_message)
-quit.commands = ['quit']
-quit.priority = 'low'
+
+    bot.quit(quit_message)
 
 
-def msg(willie, trigger):
+@willie.module.commands('msg')
+@willie.module.priority('low')
+@willie.module.example('.msg #YourPants Does anyone else smell neurotoxin?')
+def msg(bot, trigger):
     """
     Send a message to a given channel or nick. Can only be done in privmsg by an
     admin.
     """
     if trigger.sender.startswith('#'):
         return
-    a, b = trigger.group(2), trigger.group(3)
-    if (not a) or (not b):
+    if not trigger.admin:
         return
-    if trigger.admin:
-        willie.msg(a, b)
-msg.rule = (['msg'], r'(#?\S+) (.+)')
-msg.priority = 'low'
-msg.example = '.msg #YourPants Does anyone else smell neurotoxin?'
+
+    channel, _sep, message = trigger.group(2).partition(' ')
+    message = message.strip()
+    if not channel or not message:
+        return
+
+    bot.msg(channel, message)
 
 
-def me(willie, trigger):
+@willie.module.commands('me')
+@willie.module.priority('low')
+def me(bot, trigger):
     """
     Send an ACTION (/me) to a given channel or nick. Can only be done in privmsg
     by an admin.
     """
     if trigger.sender.startswith('#'):
         return
-    if trigger.admin:
-        msg = '\x01ACTION %s\x01' % trigger.group(3)
-        willie.msg(trigger.group(2), msg)
-me.rule = (['me'], r'(#?\S+) (.*)')
-me.priority = 'low'
+    if not trigger.admin:
+        return
+
+    channel, _sep, action = trigger.group(2).partition(' ')
+    action = action.strip()
+    if not channel or not action:
+        return
+
+    msg = '\x01ACTION %s\x01' % action
+    bot.msg(channel, msg)
 
 
-def hold_ground(willie, trigger):
+@willie.module.event('KICK')
+@willie.module.rule(r'.*')
+@willie.module.priority('low')
+def hold_ground(bot, trigger):
     """
     This function monitors all kicks across all channels willie is in. If it
     detects that it is the one kicked it'll automatically join that channel.
@@ -103,24 +130,84 @@ def hold_ground(willie, trigger):
     WARNING: This may not be needed and could cause problems if willie becomes
     annoying. Please use this with caution.
     """
-    if willie.config.has_section('admin') and willie.config.admin.hold_ground:
+    if bot.config.has_section('admin') and bot.config.admin.hold_ground:
         channel = trigger.sender
-        if trigger.args[1] == willie.nick:
-            willie.join(channel)
-hold_ground.event = 'KICK'
-hold_ground.rule = '.*'
-hold_ground.priority = 'low'
+        if trigger.args[1] == bot.nick:
+            bot.join(channel)
 
 
-def mode(willie, trigger):
+@willie.module.commands('mode')
+@willie.module.priority('low')
+def mode(bot, trigger):
     """Set a user mode on Willie. Can only be done in privmsg by an admin."""
     if trigger.sender.startswith('#'):
         return
-    if trigger.admin:
-        mode = trigger.group(1)
-        willie.write(('MODE ', willie.nick + ' ' + mode))
-mode.rule = r'\.mode ([\+-]\S+)'
-mode.priority = 'low'
+    if not trigger.admin:
+        return
+    mode = trigger.group(3)
+    bot.write(('MODE ', bot.nick + ' ' + mode))
+
+
+@willie.module.commands('set')
+@willie.module.example('.set core.owner Me')
+def set_config(bot, trigger):
+    """See and modify values of willies config object.
+
+    Trigger args:
+        arg1 - section and option, in the form "section.option"
+        arg2 - value
+
+    If there is no section, section will default to "core".
+    If value is None, the option will be deleted.
+    """
+    if trigger.sender.startswith('#'):
+        bot.reply("This command only works as a private message.")
+        return
+    if not trigger.admin:
+        bot.reply("This command requires admin priviledges.")
+        return
+
+    # Get section and option from first argument.
+    arg1 = trigger.group(3).split('.')
+    if len(arg1) == 1:
+        section, option = "core", arg1[0]
+    elif len(arg1) == 2:
+        section, option = arg1
+    else:
+        bot.reply("Usage: .set section.option value")
+        return
+
+    # Don't modify non-existing values to guard against typos.
+    if not bot.config.has_option(section, option):
+        bot.reply("Option %s.%s does not exist." % (section, option))
+        return
+
+    # Display current value if no value is given.
+    value = trigger.group(4)
+    if not value:
+        # Except if the option looks like a password. Censor those to stop them
+        # from being put on log files.
+        if option.endswith("password") or option.endswith("pass"):
+            value = "(password censored)"
+        else:
+            value = getattr(getattr(bot.config, section), option)
+        bot.reply("%s.%s = %s" % (section, option, value))
+        return
+
+    # Otherwise, set the value to one given as argument 2.
+    setattr(getattr(bot.config, section), option, value)
+
+
+@willie.module.command('save')
+@willie.module.example('.save')
+def save_config(bot, trigger):
+    """Save state of willies config object to the configuration file."""
+    if trigger.sender.startswith('#'):
+        return
+    if not trigger.admin:
+        return
+    bot.config.save()
+
 
 if __name__ == '__main__':
     print __doc__.strip()
