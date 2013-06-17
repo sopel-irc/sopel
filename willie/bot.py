@@ -104,7 +104,6 @@ class Willie(irc.Bot):
 
         def add_job(self, job):
             """Add a Job to the current job queue."""
-            print job
             self._jobs.put(job)
 
         def clear_jobs(self):
@@ -120,8 +119,8 @@ class Willie(irc.Bot):
             while True:
                 try:
                     self._do_next_job()
-                except Exception as e:
-                    print e
+                except Exception:
+                    self.bot.error()
 
         def _do_next_job(self):
             with self._mutex:
@@ -139,7 +138,6 @@ class Willie(irc.Bot):
                 self._cleared = False
                 job = self._jobs.get()
                 with released(self._mutex):
-                    print "calling", job
                     if job.func.thread:
                         t = threading.Thread(
                                 target=self._call, args=(job.func,))
@@ -598,7 +596,7 @@ class Willie(irc.Bot):
 
     def call(self, func, origin, willie, trigger):
         nick = trigger.nick
-        if (nick in self.times):
+        if nick in self.times:
             if func in self.times[nick]:
                 if not trigger.admin:
                     timediff = time.time() - self.times[nick][func]
