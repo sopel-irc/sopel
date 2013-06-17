@@ -120,7 +120,15 @@ class Willie(irc.Bot):
                 try:
                     self._do_next_job()
                 except Exception:
+                    # Modules exceptions are caught earlier, so this is a bit
+                    # more serious. Options are to either stop the main thread
+                    # or continue this thread and hope that it won't happen
+                    # again.
                     self.bot.error()
+                    # Sleep a bit to guard against busy-looping and filling
+                    # the log with useless error messages.
+                    time.sleep(10.0)  # seconds
+
 
         def _do_next_job(self):
             with self._mutex:
