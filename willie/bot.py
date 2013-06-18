@@ -87,6 +87,15 @@ class Willie(irc.Bot):
         self.setup()
 
     class JobScheduler(threading.Thread):
+        """Calls jobs assigned to it in steady intervals.
+
+        JobScheduler is a thread that keeps track of Jobs and calls them
+        every X seconds, where X is a property of the Job. It maintains jobs
+        in a priority queue, where the next job to be called is always the
+        first item. Thread safety is maintained with a mutex that is released
+        during long operations, so methods add_job and clear_jobs can be
+        safely called from the main thread.
+        """
         min_reaction_time = 30.0  # seconds
         """How often should scheduler checks for changes in the job list."""
 
@@ -109,13 +118,15 @@ class Willie(irc.Bot):
         def clear_jobs(self):
             """Clear current Job queue and start fresh."""
             if self._jobs.empty():
-                # Guards against getting stuck waiting for self._mutex.
+                # Guards against getting stuck waiting for self._mutex when
+                # thread is waiting for self._jobs to not be empty.
                 return
             with self._mutex:
                 self._cleared = True
                 self._jobs = PriorityQueue()
 
         def run(self):
+            """Run forever."""
             while True:
                 try:
                     self._do_next_job()
@@ -129,8 +140,8 @@ class Willie(irc.Bot):
                     # the log with useless error messages.
                     time.sleep(10.0)  # seconds
 
-
         def _do_next_job(self):
+            """Wait until there is a job and do it."""
             with self._mutex:
                 # Wait until the next job should be executed.
                 # This has to be a loop, because signals stop time.sleep().
@@ -153,12 +164,14 @@ class Willie(irc.Bot):
                     else:
                         self._call(job.func)
                     job.next()
+                # If jobs were cleared during the call, don't put an old job
+                # into the new job queue.
                 if not self._cleared:
-                    # If jobs were cleared during the call, don't put an old
-                    # job into the new job queue.
                     self._jobs.put(job)
 
         def _call(self, func):
+            """Wrapper for collecting errors from modules."""
+            # Willie.bot.call is way too specialized to be used instead.
             try:
                 func(self.bot)
             except Exception:
@@ -172,8 +185,6 @@ class Willie(irc.Bot):
         Calling the method next modifies the Job object for the next time it should
         be executed. Current time is used to decide when the job should be executed
         next so it should only be called right after the function was called.
-
-        The function associated with the job can be called by calling Job itself.
         """
 
         max_catchup = 5
@@ -225,7 +236,7 @@ class Willie(irc.Bot):
             """Return a string representation of the Job object.
 
             Example result:
-                <Job(2013-06-14 11:01:36.884000, <function upper at 0x02386BF0>)>
+                <Job(2013-06-14 11:01:36.884000, 20s, <function upper at 0x02386BF0>)>
             """
             iso_time = str(datetime.fromtimestamp(self.next_time))
             return "<Job(%s, %ss, %s)>" % \
@@ -305,8 +316,8 @@ class Willie(irc.Bot):
         """Return true if object is a willie callable.
 
         Object must be both be callable and have hashable. Furthermore, it must
-        have either "commands" or "rule" as attributes to mark it as a willie
-        callable.
+        have either "commands", "rule" or "interval" as attributes to mark it
+        as a willie callable.
         """
         if not callable(obj):
             # Check is to help distinguish between willie callables and objects
