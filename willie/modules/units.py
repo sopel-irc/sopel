@@ -44,7 +44,7 @@ def temperature(bot, trigger):
 
     kelvin = c_to_k(celsius)
     fahrenheit = c_to_f(celsius)
-    bot.reply("%s°C = %s°F = %s°K" % (celsius, fahrenheit, kelvin))
+    bot.reply("%s°C = %s°F = %sK" % (celsius, fahrenheit, kelvin))
 
 @commands('length', 'distance')
 @example('.distance 3km')
