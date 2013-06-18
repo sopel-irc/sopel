@@ -8,7 +8,8 @@ http://willie.dfbta.net
 """
 
 import re
-import willie.web as web
+from willie import web
+from willie.module import command, commands, example
 from socket import timeout
 import string
 import HTMLParser
@@ -35,39 +36,41 @@ def calculate(q):
         return 'Sorry, no result.'
 
 
-def c(willie, trigger):
+@commands('c', 'calc')
+@example('.c 5 + 3')
+def c(bot, trigger):
     """Google calculator."""
     if not trigger.group(2):
-        return willie.reply("Nothing to calculate.")
+        return bot.reply("Nothing to calculate.")
     result = calculate(trigger.group(2))
-    willie.reply(result)
-c.commands = ['c', 'calc']
-c.example = '.c 5 + 3'
+    bot.reply(result)
 
 
-def py(willie, trigger):
+@command('py')
+@example('.py len([1,2,3])')
+def py(bot, trigger):
     """Evaluate a Python expression."""
     query = trigger.group(2)
     uri = 'http://tumbolia.appspot.com/py/'
     answer = web.get(uri + web.quote(query))
     if answer:
-        willie.say(answer)
+        bot.say(answer)
     else:
-        willie.reply('Sorry, no result.')
-py.commands = ['py']
-py.example = '.py len([1,2,3])'
+        bot.reply('Sorry, no result.')
 
 
-def wa(willie, trigger):
+@commands('wa', 'wolfram')
+@example('.wa circumference of the sun * pi')
+def wa(bot, trigger):
     """Wolfram Alpha calculator"""
     if not trigger.group(2):
-        return willie.reply("No search term.")
+        return bot.reply("No search term.")
     query = trigger.group(2)
     uri = 'http://tumbolia.appspot.com/wa/'
     try:
         answer = web.get(uri + web.quote(query.replace('+', '%2B')), 45)
     except timeout as e:
-        return willie.say('[WOLFRAM ERROR] Request timed out')
+        return bot.say('[WOLFRAM ERROR] Request timed out')
     if answer:
         answer = answer.decode('string_escape')
         answer = HTMLParser.HTMLParser().unescape(answer)
@@ -81,17 +84,11 @@ def wa(willie, trigger):
             answer = answer.replace('\:' + char_code, char)
         waOutputArray = string.split(answer, ";")
         if(len(waOutputArray) < 2):
-            willie.say('[WOLFRAM ERROR]' + answer)
+            bot.say('[WOLFRAM ERROR]' + answer)
         else:
 
-            willie.say('[WOLFRAM] ' + waOutputArray[0] + " = "
+            bot.say('[WOLFRAM] ' + waOutputArray[0] + " = "
                        + waOutputArray[1])
         waOutputArray = []
     else:
-        willie.reply('Sorry, no result.')
-wa.commands = ['wa', 'wolfram']
-wa.example = '.wa circumference of the sun * pi'
-wa.commands = ['wa']
-
-if __name__ == '__main__':
-    print __doc__.strip()
+        bot.reply('Sorry, no result.')

@@ -5,16 +5,12 @@ Licensed under the Eiffel Forum License 2.
 
 http://willie.dftba.net/
 """
+from willie.module import commands
 
-def googleit(willie, trigger):
+@commands('lmgtfy', 'lmgify', 'gify', 'gtfy')
+def googleit(bot, trigger):
     """Let me just... google that for you."""
     #No input
     if not trigger.group(2):
-        return willie.say('http://google.com/')
-    willie.say('http://lmgtfy.com/?q='+trigger.group(2).replace(' ','+'))
-googleit.commands = ['lmgtfy','lmgify','gify','gtfy']
-googleit.priority = 'medium'
-
-if __name__ == '__main__':
-    print __doc__.strip()
-
+        return bot.say('http://google.com/')
+    bot.say('http://lmgtfy.com/?q=' + trigger.group(2).replace(' ', '+'))

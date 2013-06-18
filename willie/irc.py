@@ -221,10 +221,11 @@ class Bot(asynchat.async_chat):
         '''Disconnect from IRC and close the bot'''
         self.write(['QUIT'], message)
         self.hasquit = True
+        self.handle_close()
 
-    def part(self, channel):
+    def part(self, channel, msg=None):
         '''Part a channel'''
-        self.write(['PART'], channel)
+        self.write(['PART', channel], msg)
 
     def join(self, channel, password=None):
         '''Join a channel'''

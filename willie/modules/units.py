@@ -44,7 +44,7 @@ def temperature(bot, trigger):
 
     kelvin = c_to_k(celsius)
     fahrenheit = c_to_f(celsius)
-    bot.reply("%s°C = %s°F = %s°K" % (celsius, fahrenheit, kelvin))
+    bot.reply("%s°C = %s°F = %sK" % (celsius, fahrenheit, kelvin))
 
 @commands('length', 'distance')
 @example('.distance 3km')
@@ -66,7 +66,7 @@ def distance(bot, trigger):
         meter = numeric / 39.370
     elif unit in ("centimeters","centimeter","cm"):
         meter = numeric / 100
-    elif unit in ("feet","foot","ft":
+    elif unit in ("feet","foot","ft"):
         meter = numeric / 3.2808
     elif unit in ("yards", "yard", "yd"):
         meter = numeric / (3.2808 * 3)
