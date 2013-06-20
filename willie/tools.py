@@ -23,6 +23,8 @@ except:
     #no SSL support
     ssl = False
 import traceback
+import Queue
+import copy
 
 
 def deprecated(old):
@@ -35,6 +37,33 @@ def deprecated(old):
     new.__doc__ = old.__doc__
     new.__name__ = old.__name__
     return new
+
+
+class PriorityQueue(Queue.PriorityQueue):
+    """A priority queue with a peek method."""
+    def peek(self):
+        """Return a copy of the first element without removing it."""
+        self.not_empty.acquire()
+        try:
+            while not self._qsize():
+                self.not_empty.wait()
+            # Return a copy to avoid corrupting the heap. This is important
+            # for thread safety if the object is mutable.
+            return copy.deepcopy(self.queue[0])
+        finally:
+            self.not_empty.release()
+
+
+class released(object):
+    """A context manager that releases a lock temporarily."""
+    def __init__(self, lock):
+        self.lock = lock
+
+    def __enter__(self):
+        self.lock.release()
+
+    def __exit__(self, _type, _value, _traceback):
+        self.lock.acquire()
 
 
 # from http://parand.com/say/index.php/2007/07/13/simple-multi-dimensional-dictionaries-in-python/
