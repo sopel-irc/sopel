@@ -6,10 +6,10 @@ Copyright © 2013, Dimitri Molenaars, <tyrope@tyrope.nl>
 Licensed under the Eiffel Forum License 2.
 
 """
-from willie.module import command, commands, example
+from willie.module import command, commands, example, NOLIMIT
 import re
 
-find_temp = re.compile('([0-9]*\.?[0-9]*)[ °]*(K|C|F)',  re.IGNORECASE)
+find_temp = re.compile('(-?[0-9]*\.?[0-9]*)[ °]*(K|C|F)',  re.IGNORECASE)
 find_length = re.compile('([0-9]*\.?[0-9]*)[ ]*(mile[s]?|mi|inch|in|foot|feet|ft|yard[s]?|yd|(?:centi|kilo|)meter[s]?|[kc]?m)',  re.IGNORECASE)
 
 def f_to_c(temp):
@@ -31,7 +31,11 @@ def temperature(bot, trigger):
     """
     Convert temperatures
     """
-    source = find_temp.match(trigger.group(2)).groups()
+    try:
+        source = find_temp.match(trigger.group(2)).groups()
+    except AttributeError:
+        bot.reply("That's not a valid temperature.")
+        return NOLIMIT
     unit = source[1].upper()
     numeric = float(source[0])
     celsius = 0
@@ -52,7 +56,11 @@ def distance(bot, trigger):
     """
     Convert distances
     """
-    source = find_length.match(trigger.group(2)).groups()
+    try:
+        source = find_length.match(trigger.group(2)).groups()
+    except AttributeError:
+        bot.reply("That's not a valid length unit.")
+        return NOLIMIT
     unit = source[1].lower()
     numeric = float(source[0])
     meter = 0
@@ -60,7 +68,7 @@ def distance(bot, trigger):
         meter = numeric
     elif unit in ("kilometers", "kilometer", "km"):
         meter = numeric * 1000
-    elif unit == ("miles", "mile", "mi"):
+    elif unit in ("miles", "mile", "mi"):
         meter = numeric / 0.00062137
     elif unit in ("inch", "in"):
         meter = numeric / 39.370
