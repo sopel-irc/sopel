@@ -30,6 +30,39 @@ prevented from triggering the command again within the rate limit. This can
 be used, for example, to allow a user to rety a failed command immediately.
 """
 
+
+def interval(*args):
+    """Decorator. Equivalent to func.interval.append(value)
+
+    A function that uses this decorator will be called every X seconds, where
+    X is the argument. This decorator can be used multiple times for multiple
+    intervals, or all intervals can be given at once as arguments. The first
+    time the function will be called is X seconds after the bot was started.
+
+    For the callable, the first argument will be the bot itself, but it will
+    not have the say, reply or action methods as would be the case when called
+    due to rule or command.
+
+    There is no guarantee that the bot is connected to a server or joined a
+    channel when the function is called, so care must be taken.
+
+    Example:
+        import willie.module
+        @willie.module.interval(5)
+        def spam_every_5s(bot):
+            if "#here" in bot.channels:
+                bot.msg("#here", "It has been five seconds!")
+    """
+    def add_attribute(function):
+        if not hasattr(function, "interval"):
+            function.interval = []
+        for arg in args:
+            function.interval.append(arg)
+        return function
+
+    return add_attribute
+
+
 def rule(value):
     """Decorator. Equivalent to func.rule.append(value).
 
