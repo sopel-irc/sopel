@@ -61,7 +61,7 @@ class Origin(object):
         self.sender = target
 
 
-class Bot(asynchat.async_chat):
+class Bot(asynchat.async_chat, object):
     def __init__(self, config):
         if config.ca_certs is not None:
             ca_certs = config.ca_certs
@@ -220,6 +220,9 @@ class Bot(asynchat.async_chat):
     def quit(self, message):
         '''Disconnect from IRC and close the bot'''
         self.write(['QUIT'], message)
+        self._shutdown()
+
+    def _shutdown(self):
         self.hasquit = True
         self.handle_close()
 
@@ -307,7 +310,7 @@ class Bot(asynchat.async_chat):
         while True:
             if (datetime.now() - self.last_ping_time).seconds > int(self.config.timeout):
                 stderr('Ping timeout reached after %s seconds, closing connection' % self.config.timeout)
-                self.handle_close()
+                self._shutdown()
                 break
             else:
                 time.sleep(int(self.config.timeout))
@@ -336,13 +339,13 @@ class Bot(asynchat.async_chat):
         try:
             data = self.socket.read(buffer_size)
             if not data:
-                self.handle_close()
+                self._shutdown()
                 return ''
             return data
         except ssl.SSLError, why:
             if why[0] in (asyncore.ECONNRESET, asyncore.ENOTCONN,
                           asyncore.ESHUTDOWN):
-                self.handle_close()
+                self._shutdown()
                 return ''
             elif why[0] == errno.ENOENT:
                 # Required in order to keep it non-blocking
@@ -400,8 +403,7 @@ class Bot(asynchat.async_chat):
             self.debug('IRC Server Error', text, 'always')
         elif args[0] == '433':
             stderr('Nickname already in use!')
-            self.hasquit = True
-            self.handle_close()
+            self._shutdown()
 
         origin = Origin(self, source, args)
         self.dispatch(origin, text, args)
