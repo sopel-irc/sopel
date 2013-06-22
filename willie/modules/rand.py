@@ -6,12 +6,16 @@ Licensed under the Eiffel Forum License 2.
 http://willie.dftba.net
 """
 
+from willie.module import commands, example
 import random
 import re
 
+
+@commands('rand')
+@example('.rand 1 100')
 def rand(willie, trigger):
-    """.rand <arg1> <arg2> - Generates a random integer between <arg1> and <arg2>."""
-    if trigger.group(2) == " " or trigger.group(2) == "" or str(trigger.group(2)) == None or str(trigger.group(2)) == "" or trigger.group(2) == None:
+    """Generates a random integer between <arg1> and <arg2>."""
+    if not trigger.group(2):
         willie.say("I'm sorry, " + str(trigger.nick) + ", but you must enter at least one number.")
     else:
         random.seed()
@@ -29,7 +33,7 @@ def rand(willie, trigger):
                 randinte = random.randint(0, a)
             willie.say(str(trigger.nick) + ": your random integer is: " + str(randinte))
         else:
-            a,b = li_integers.split()
+            a, b = li_integers.split()
             a = re.sub(r'\D', '', str(a))
             b = re.sub(r'\D', '', str(b))
             a = int(a)
@@ -39,9 +43,3 @@ def rand(willie, trigger):
             else:
                 randinte = random.randint(b, a)
             willie.say(str(trigger.nick) + ": your random integer is: " + str(randinte))
-
-rand.commands = ['rand']
-rand.priority = 'medium'
-
-if __name__ == '__main__':
-    print __doc__.strip()

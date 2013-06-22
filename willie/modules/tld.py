@@ -6,12 +6,17 @@ Licensed under the Eiffel Forum License 2.
 http://willie.dftba.net
 """
 
-import re, urllib2
-import willie.web as web
+from willie import web
+from willie.module import commands, example
+import re
+import urllib2
 
 uri = 'https://en.wikipedia.org/wiki/List_of_Internet_top-level_domains'
 r_tag = re.compile(r'<(?!!)[^>]+>')
 
+
+@commands('tld')
+@example('.tld ru')
 def gettld(willie, trigger):
     """Show information about the given Top Level Domain."""
     page = web.get(uri)
@@ -55,8 +60,3 @@ def gettld(willie, trigger):
         else:
             reply = "No matches found for TLD: {0}".format(unicode(trigger.group(2)))
         willie.reply(reply)
-gettld.commands = ['tld']
-gettld.thread = False
-
-if __name__ == '__main__':
-    print __doc__.strip()
