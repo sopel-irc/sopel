@@ -7,15 +7,7 @@ Licensed under the Eiffel Forum License 2.
 http://willie.dfbta.net
 """
 import pytz
-import re
-import math
-import time
-import urllib
-import locale
-import socket
-import struct
 import datetime
-from decimal import Decimal as dec
 from willie.module import commands, command, example
 
 
