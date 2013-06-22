@@ -1,6 +1,7 @@
 """
 info.py - Willie Information Module
 Copyright 2008, Sean B. Palmer, inamidst.com
+Copyright © 2013, Elad Alfassa, <elad@fedoraproject.org>
 Licensed under the Eiffel Forum License 2.
 
 http://willie.dftba.net
@@ -8,26 +9,21 @@ http://willie.dftba.net
 from willie.module import command, rule, example, priority
 
 @rule('$nick' '(?i)(help|doc) +([A-Za-z]+)(?:\?+)?$')
-@example('$nickname: help tell')
-@priority('low')
-def doc(bot, trigger):
-    """Shows a command's documentation, and possibly an example."""
-    name = trigger.group(2)
-    name = name.lower()
-
-    if bot.doc.has_key(name):
-        bot.reply(bot.doc[name][0])
-        if bot.doc[name][1]:
-            bot.say('e.g. ' + bot.doc[name][1])
-	    
+@example('.help tell')
 @command('help')
-@example('.help c')
+@priority('low')
 def help(bot, trigger):
-    """Get help for a command."""
+    """Shows a command's documentation, and possibly an example."""
     if not trigger.group(2):
-	bot.reply('Say .help <command> (for example .help c) to get help for a command, or .commands for a list of commands.')
+        bot.reply('Say .help <command> (for example .help c) to get help for a command, or .commands for a list of commands.')
     else:
-	doc(bot, trigger)
+        name = trigger.group(2)
+        name = name.lower()
+
+        if bot.doc.has_key(name):
+            bot.reply(bot.doc[name][0])
+            if bot.doc[name][1]:
+                bot.say('e.g. ' + bot.doc[name][1])
 
 @command('commands')
 @priority('low')
