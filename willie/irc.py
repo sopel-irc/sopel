@@ -61,7 +61,7 @@ class Origin(object):
         self.sender = target
 
 
-class Bot(asynchat.async_chat):
+class Bot(asynchat.async_chat, object):
     def __init__(self, config):
         if config.ca_certs is not None:
             ca_certs = config.ca_certs
@@ -220,8 +220,15 @@ class Bot(asynchat.async_chat):
     def quit(self, message):
         '''Disconnect from IRC and close the bot'''
         self.write(['QUIT'], message)
-        self.hasquit = True
         self.handle_close()
+
+    def handle_close(self):
+        super(Bot, asynchat.async_chat).handle_close()
+        self._shutdown()
+        stderr('Closed!')
+
+    def _shutdown(self):
+        self.hasquit = True
 
     def part(self, channel, msg=None):
         '''Part a channel'''
@@ -350,10 +357,6 @@ class Bot(asynchat.async_chat):
             else:
                 raise
 
-    def handle_close(self):
-        self.close()
-        stderr('Closed!')
-
     def collect_incoming_data(self, data):
         # We can't trust clients to pass valid unicode.
         try:
@@ -400,7 +403,6 @@ class Bot(asynchat.async_chat):
             self.debug('IRC Server Error', text, 'always')
         elif args[0] == '433':
             stderr('Nickname already in use!')
-            self.hasquit = True
             self.handle_close()
 
         origin = Origin(self, source, args)
