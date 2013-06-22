@@ -9,17 +9,21 @@ Licensed under the Eiffel Forum License 2.
 from willie.module import command, commands, example, NOLIMIT
 import re
 
-find_temp = re.compile('(-?[0-9]*\.?[0-9]*)[ °]*(K|C|F)',  re.IGNORECASE)
-find_length = re.compile('([0-9]*\.?[0-9]*)[ ]*(mile[s]?|mi|inch|in|foot|feet|ft|yard[s]?|yd|(?:centi|kilo|)meter[s]?|[kc]?m)',  re.IGNORECASE)
+find_temp = re.compile('(-?[0-9]*\.?[0-9]*)[ °]*(K|C|F)', re.IGNORECASE)
+find_length = re.compile('([0-9]*\.?[0-9]*)[ ]*(mile[s]?|mi|inch|in|foot|feet|ft|yard[s]?|yd|(?:centi|kilo|)meter[s]?|[kc]?m)', re.IGNORECASE)
+
 
 def f_to_c(temp):
-    return (float(temp) - 32) * 5/9
+    return (float(temp) - 32) * 5 / 9
+
 
 def c_to_k(temp):
     return temp + 273.15
 
+
 def c_to_f(temp):
-    return (9.0/5.0 * temp + 32)
+    return (9.0 / 5.0 * temp + 32)
+
 
 def k_to_c(temp):
     return temp - 273.15
@@ -50,6 +54,7 @@ def temperature(bot, trigger):
     fahrenheit = c_to_f(celsius)
     bot.reply("%s°C = %s°F = %sK" % (celsius, fahrenheit, kelvin))
 
+
 @commands('length', 'distance')
 @example('.distance 3km')
 def distance(bot, trigger):
@@ -64,7 +69,7 @@ def distance(bot, trigger):
     unit = source[1].lower()
     numeric = float(source[0])
     meter = 0
-    if unit in ("meters","meter", "m"):
+    if unit in ("meters", "meter", "m"):
         meter = numeric
     elif unit in ("kilometers", "kilometer", "km"):
         meter = numeric * 1000
@@ -72,9 +77,9 @@ def distance(bot, trigger):
         meter = numeric / 0.00062137
     elif unit in ("inch", "in"):
         meter = numeric / 39.370
-    elif unit in ("centimeters","centimeter","cm"):
+    elif unit in ("centimeters", "centimeter", "cm"):
         meter = numeric / 100
-    elif unit in ("feet","foot","ft"):
+    elif unit in ("feet", "foot", "ft"):
         meter = numeric / 3.2808
     elif unit in ("yards", "yard", "yd"):
         meter = numeric / (3.2808 * 3)
@@ -85,7 +90,6 @@ def distance(bot, trigger):
         metric_part = '%scm' % (meter * 100)
     else:
         metric_part = '%sm' % meter
-
 
     # Shit like this makes me hate being an American.
     inch = meter * 39.37
@@ -118,4 +122,3 @@ def distance(bot, trigger):
         stupid_part = ', '.join(parts)
 
     bot.reply('%s = %s' % (metric_part, stupid_part))
-
