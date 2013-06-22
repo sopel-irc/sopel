@@ -291,23 +291,22 @@ def blocks(bot, trigger):
 
     elif len(text) == 4 and text[1] == "del":
         if text[2] == "nick":
-            try:
-                nicks.remove(Nick(text[3]))
-                bot.config.core.nick_blocks = nicks
-                bot.config.save()
-                bot.reply(STRINGS['success_del'] % (text[3]))
-            except:
+            if Nick(text[3]) not in nicks:
                 bot.reply(STRINGS['no_nick'] % (text[3]))
                 return
+            nicks.remove(Nick(text[3]))
+            bot.config.core.nick_blocks = nicks
+            bot.config.save()
+            bot.reply(STRINGS['success_del'] % (text[3]))
         elif text[2] == "hostmask":
-            try:
-                masks.remove(text[3].lower())
-                bot.config.core.host_blocks = masks
-                bot.config.save()
-                bot.reply(STRINGS['success_del'] % (text[3]))
-            except:
+            mask = text[3].lower()
+            if mask not in masks:
                 bot.reply(STRINGS['no_host'] % (text[3]))
                 return
+            masks.remove(mask)
+            bot.config.core.host_blocks = masks
+            bot.config.save()
+            bot.reply(STRINGS['success_del'] % (text[3]))
         else:
             bot.reply(STRINGS['invalid'] % ("deleting"))
             return
