@@ -12,16 +12,16 @@ from willie.module import command, example, NOLIMIT
 
 @command('u')
 @example('.u 203D')
-def codepoint(willie, trigger):
+def codepoint(bot, trigger):
     arg = trigger.group(2).strip()
     if len(arg) == 0:
-        willie.reply('What code point do you want me to look up?')
+        bot.reply('What code point do you want me to look up?')
         return NOLIMIT
     elif len(arg) > 1:
         try:
             arg = unichr(int(arg, 16))
         except:
-            willie.reply("That's not a valid code point.")
+            bot.reply("That's not a valid code point.")
             return NOLIMIT
 
     # Get the hex value for the code point, and drop the 0x from the front
@@ -37,4 +37,4 @@ def codepoint(willie, trigger):
         template = 'U+%s %s (%s)'
     else:
         template = 'U+%s %s (\xe2\x97\x8c%s)'
-    willie.say(template % (point, name, arg))
+    bot.say(template % (point, name, arg))

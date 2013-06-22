@@ -13,12 +13,13 @@ import pygeoip
 import socket
 from willie.module import commands, example
 
+
 @commands('iplookup', 'ip')
 @example('.ip 8.8.8.8')
-def ip(willie, trigger):
+def ip(bot, trigger):
     """IP Lookup tool"""
     if not trigger.group(2):
-        return willie.reply("No search term.")
+        return bot.reply("No search term.")
     query = trigger.group(2)
     # FIXME: This shouldn't be hardcoded
     gi_city = pygeoip.GeoIP('/usr/share/GeoIP/GeoLiteCity.dat')
@@ -33,7 +34,4 @@ def ip(willie, trigger):
     if isp is not None:
         isp = re.sub('^AS\d+ ', '', isp)
     response += " | ISP: %s" % isp
-    willie.say(response)
-
-if __name__ == '__main__':
-    print __doc__.strip()
+    bot.say(response)
