@@ -6,9 +6,12 @@ About: http://willie.dftba.net
 This allows users to check if a website is up through isup.me.
 """
 
-import willie.web as web
+from willie import web
+from willie.module import commands
 import re
 
+
+@commands('isup')
 def isup(willie, trigger):
     """isup.me website status checker"""
     site = trigger.group(2)
@@ -31,4 +34,3 @@ def isup(willie, trigger):
         willie.say(site + ' looks fine to me.')
     else:
         willie.say(site + ' is down from here.')
-isup.commands = ['isup']
