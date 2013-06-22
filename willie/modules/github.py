@@ -13,6 +13,7 @@ import re
 from willie import web
 from willie.module import commands
 
+
 def checkConfig(bot):
     if not bot.config.has_option('github', 'oauth_token') or not bot.config.has_option('github', 'repo'):
         return False

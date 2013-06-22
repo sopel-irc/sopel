@@ -7,6 +7,7 @@ http://willie.dftba.net/
 """
 from willie.module import commands
 
+
 @commands('lmgtfy', 'lmgify', 'gify', 'gtfy')
 def googleit(bot, trigger):
     """Let me just... google that for you."""

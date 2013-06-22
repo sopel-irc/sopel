@@ -8,6 +8,7 @@ http://willie.dftba.net
 """
 from willie.module import command, rule, example, priority
 
+
 @rule('$nick' '(?i)(help|doc) +([A-Za-z]+)(?:\?+)?$')
 @example('.help tell')
 @command('help')
@@ -20,10 +21,11 @@ def help(bot, trigger):
         name = trigger.group(2)
         name = name.lower()
 
-        if bot.doc.has_key(name):
+        if name in bot.doc:
             bot.reply(bot.doc[name][0])
             if bot.doc[name][1]:
                 bot.say('e.g. ' + bot.doc[name][1])
+
 
 @command('commands')
 @priority('low')
@@ -34,6 +36,7 @@ def commands(bot, trigger):
     bot.msg(trigger.nick, 'Commands I recognise: ' + names + '.')
     bot.msg(trigger.nick, ("For help, do '%s: help example' where example is the " +
                     "name of the command you want help for.") % bot.nick)
+
 
 @rule('$nick' r'(?i)help(?:[?!]+)?$')
 @priority('low')
