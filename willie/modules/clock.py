@@ -52,6 +52,8 @@ def f_time(bot, trigger):
             tz = bot.db.preferences.get(trigger.nick, 'tz')
         if not tz and trigger.sender in bot.db.preferences:
             tz = bot.db.preferences.get(trigger.sender, 'tz') or 'UTC'
+        else:
+            tz = 'UTC'
     else:
         tz = 'UTC'
     tzi = pytz.timezone(tz)
