@@ -77,16 +77,16 @@ def format(word, definitions, number=2):
 
 @commands('wt', 'define', 'dict')
 @example('.wt bailiwick')
-def wiktionary(willie, trigger):
+def wiktionary(bot, trigger):
     """Look up a word on Wiktionary."""
     word = trigger.group(2)
     if word is None:
-        willie.reply('You must tell me what to look up!')
+        bot.reply('You must tell me what to look up!')
         return
 
     etymology, definitions = wikt(word)
     if not definitions:
-        willie.say("Couldn't get any definitions for %s." % word)
+        bot.say("Couldn't get any definitions for %s." % word)
         return
 
     result = format(word, definitions)
@@ -97,4 +97,4 @@ def wiktionary(willie, trigger):
 
     if len(result) > 300:
         result = result[:295] + '[...]'
-    willie.say(result.decode('utf8'))
+    bot.say(result.decode('utf8'))

@@ -73,12 +73,12 @@ def setup(self):
     self.memory['reminders'] = loadReminders(self.tell_filename, self.memory['tell_lock'])
 
 
-def get_user_time(willie, nick):
+def get_user_time(bot, nick):
     tz = 'UTC'
     tformat = None
-    if willie.db and nick in willie.db.preferences:
-            tz = willie.db.preferences.get(nick, 'tz') or 'UTC'
-            tformat = willie.db.preferences.get(nick, 'time_format')
+    if bot.db and nick in bot.db.preferences:
+            tz = bot.db.preferences.get(nick, 'tz') or 'UTC'
+            tformat = bot.db.preferences.get(nick, 'time_format')
     if tz not in pytz.all_timezones_set:
         tz = 'UTC'
     return (pytz.timezone(tz.strip()), tformat or '%Y-%m-%d %H:%M:%S %Z')
@@ -97,86 +97,86 @@ def f_remind(willie, trigger):
 
     tellee = Nick(tellee.rstrip('.,:;'))
 
-    if not os.path.exists(willie.tell_filename):
+    if not os.path.exists(bot.tell_filename):
         return
 
     if len(tellee) > 20:
-        return willie.reply('That nickname is too long.')
-    if tellee == willie.nick:
-        return willie.reply("I'm here now, you can tell me whatever you want!")
+        return bot.reply('That nickname is too long.')
+    if tellee == bot.nick:
+        return bot.reply("I'm here now, you can tell me whatever you want!")
 
-    tz, tformat = get_user_time(willie, tellee)
+    tz, tformat = get_user_time(bot, tellee)
     print tellee, tz, tformat
     timenow = datetime.datetime.now(tz).strftime(tformat)
-    if not tellee in (Nick(teller), willie.nick, 'me'):
-        willie.memory['tell_lock'].acquire()
+    if not tellee in (Nick(teller), bot.nick, 'me'):
+        bot.memory['tell_lock'].acquire()
         try:
-            if not tellee in willie.memory['reminders']:
-                willie.memory['reminders'][tellee] = [(teller, verb, timenow, msg)]
+            if not tellee in bot.memory['reminders']:
+                bot.memory['reminders'][tellee] = [(teller, verb, timenow, msg)]
             else:
-                willie.memory['reminders'][tellee].append((teller, verb, timenow, msg))
+                bot.memory['reminders'][tellee].append((teller, verb, timenow, msg))
         finally:
-            willie.memory['tell_lock'].release()
+            bot.memory['tell_lock'].release()
 
         response = "I'll pass that on when %s is around." % tellee
 
-        willie.reply(response)
+        bot.reply(response)
     elif Nick(teller) == tellee:
-        willie.say('You can %s yourself that.' % verb)
+        bot.say('You can %s yourself that.' % verb)
     else:
-        willie.say("Hey, I'm not as stupid as Monty you know!")
+        bot.say("Hey, I'm not as stupid as Monty you know!")
 
-    dumpReminders(willie.tell_filename, willie.memory['reminders'], willie.memory['tell_lock'])  # @@ tell
+    dumpReminders(bot.tell_filename, bot.memory['reminders'], bot.memory['tell_lock'])  # @@ tell
 
 
-def getReminders(willie, channel, key, tellee):
+def getReminders(bot, channel, key, tellee):
     lines = []
     template = "%s: %s <%s> %s %s %s"
     today = time.strftime('%d %b', time.gmtime())
 
-    willie.memory['tell_lock'].acquire()
+    bot.memory['tell_lock'].acquire()
     try:
-        for (teller, verb, datetime, msg) in willie.memory['reminders'][key]:
+        for (teller, verb, datetime, msg) in bot.memory['reminders'][key]:
             if datetime.startswith(today):
                 datetime = datetime[len(today) + 1:]
             lines.append(template % (tellee, datetime, teller, verb, tellee, msg))
 
         try:
-            del willie.memory['reminders'][key]
+            del bot.memory['reminders'][key]
         except KeyError:
-            willie.msg(channel, 'Er...')
+            bot.msg(channel, 'Er...')
     finally:
-        willie.memory['tell_lock'].release()
+        bot.memory['tell_lock'].release()
     return lines
 
 
 @rule('(.*)')
 @priority('low')
-def message(willie, trigger):
+def message(bot, trigger):
 
     tellee = trigger.nick
     channel = trigger.sender
 
-    if not os.path.exists(willie.tell_filename):
+    if not os.path.exists(bot.tell_filename):
         return
 
     reminders = []
-    remkeys = list(reversed(sorted(willie.memory['reminders'].keys())))
+    remkeys = list(reversed(sorted(bot.memory['reminders'].keys())))
 
     for remkey in remkeys:
         if not remkey.endswith('*') or remkey.endswith(':'):
             if tellee == remkey:
-                reminders.extend(getReminders(willie, channel, remkey, tellee))
+                reminders.extend(getReminders(bot, channel, remkey, tellee))
         elif tellee.startswith(remkey.rstrip('*:')):
-            reminders.extend(getReminders(willie, channel, remkey, tellee))
+            reminders.extend(getReminders(bot, channel, remkey, tellee))
 
     for line in reminders[:maximum]:
-        willie.say(line)
+        bot.say(line)
 
     if reminders[maximum:]:
-        willie.say('Further messages sent privately')
+        bot.say('Further messages sent privately')
         for line in reminders[maximum:]:
-            willie.msg(tellee, line)
+            bot.msg(tellee, line)
 
-    if len(willie.memory['reminders'].keys()) != remkeys:
-        dumpReminders(willie.tell_filename, willie.memory['reminders'], willie.memory['tell_lock'])  # @@ tell
+    if len(bot.memory['reminders'].keys()) != remkeys:
+        dumpReminders(bot.tell_filename, bot.memory['reminders'], bot.memory['tell_lock'])  # @@ tell

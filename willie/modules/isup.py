@@ -12,25 +12,25 @@ import re
 
 
 @commands('isup')
-def isup(willie, trigger):
+def isup(bot, trigger):
     """isup.me website status checker"""
     site = trigger.group(2)
     if not site:
-        return willie.reply("What site do you want to check?")
+        return bot.reply("What site do you want to check?")
 
     if site[:6] != 'http://' and site[:7] != 'https://':
         if '://' in site:
             protocol = site.split('://')[0] + '://'
-            return willie.reply("Try it again without the %s" % protocol)
+            return bot.reply("Try it again without the %s" % protocol)
         else:
             site = 'http://' + site
     try:
         response = web.get(site)
     except Exception as e:
-        willie.say(site + ' looks down from here.')
+        bot.say(site + ' looks down from here.')
         return
 
     if response:
-        willie.say(site + ' looks fine to me.')
+        bot.say(site + ' looks fine to me.')
     else:
-        willie.say(site + ' is down from here.')
+        bot.say(site + ' is down from here.')

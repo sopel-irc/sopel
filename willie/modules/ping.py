@@ -9,22 +9,22 @@ from willie.module import rule, priority, thread
 
 
 @rule(r'(?i)(hi|hello|hey) $nickname[ \t]*$')
-def hello(willie, trigger):
+def hello(bot, trigger):
     if trigger.owner:
         greeting = random.choice(('Fuck off,', 'Screw you,', 'Go away'))
     else:
         greeting = random.choice(('Hi', 'Hey', 'Hello'))
     punctuation = random.choice(('', '!'))
-    willie.say(greeting + ' ' + trigger.nick + punctuation)
+    bot.say(greeting + ' ' + trigger.nick + punctuation)
 
 
 @rule(r'(?i)(Fuck|Screw) you, $nickname[ \t]*$')
-def rude(willie, trigger):
-    willie.say('Watch your mouth, ' + trigger.nick + ', or I\'ll tell your mother!')
+def rude(bot, trigger):
+    bot.say('Watch your mouth, ' + trigger.nick + ', or I\'ll tell your mother!')
 
 
 @rule('$nickname!')
 @priority('high')
 @thread(False)
-def interjection(willie, trigger):
-    willie.say(trigger.nick + '!')
+def interjection(bot, trigger):
+    bot.say(trigger.nick + '!')
