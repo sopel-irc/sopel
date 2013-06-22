@@ -13,10 +13,10 @@ import re
 
 @commands('rand')
 @example('.rand 1 100')
-def rand(willie, trigger):
+def rand(bot, trigger):
     """Generates a random integer between <arg1> and <arg2>."""
     if not trigger.group(2):
-        willie.say("I'm sorry, " + str(trigger.nick) + ", but you must enter at least one number.")
+        bot.say("I'm sorry, " + str(trigger.nick) + ", but you must enter at least one number.")
     else:
         random.seed()
         li_integers = trigger.group(2)
@@ -31,7 +31,7 @@ def rand(willie, trigger):
                 a = li_integers_str
                 a = int(a)
                 randinte = random.randint(0, a)
-            willie.say(str(trigger.nick) + ": your random integer is: " + str(randinte))
+            bot.say(str(trigger.nick) + ": your random integer is: " + str(randinte))
         else:
             a, b = li_integers.split()
             a = re.sub(r'\D', '', str(a))
@@ -42,4 +42,4 @@ def rand(willie, trigger):
                 randinte = random.randint(a, b)
             else:
                 randinte = random.randint(b, a)
-            willie.say(str(trigger.nick) + ": your random integer is: " + str(randinte))
+            bot.say(str(trigger.nick) + ": your random integer is: " + str(randinte))
