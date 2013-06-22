@@ -1,5 +1,5 @@
 """
-info.py - Willie Information Module
+help.py - Willie Help Module
 Copyright 2008, Sean B. Palmer, inamidst.com
 Copyright © 2013, Elad Alfassa, <elad@fedoraproject.org>
 Licensed under the Eiffel Forum License 2.
