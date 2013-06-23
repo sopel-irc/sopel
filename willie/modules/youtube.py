@@ -11,39 +11,40 @@ http://willie.dfbta.net
 This module will respond to .yt and .youtube commands and searches the youtubes.
 """
 
-import willie.web as web
+from willie import web
+from willie.module import rule, commands, example
 import json
 import re
 from HTMLParser import HTMLParser
 
 
-def setup(willie):
+def setup(bot):
     regex = re.compile('(youtube.com/watch\S*v=|youtu.be/)([\w-]+)')
-    if not willie.memory.contains('url_callbacks'):
-        willie.memory['url_callbacks'] = {regex, ytinfo}
+    if not bot.memory.contains('url_callbacks'):
+        bot.memory['url_callbacks'] = {regex, ytinfo}
     else:
-        exclude = willie.memory['url_callbacks']
+        exclude = bot.memory['url_callbacks']
         exclude[regex] = ytinfo
-        willie.memory['url_callbacks'] = exclude
+        bot.memory['url_callbacks'] = exclude
 
 
-def ytget(willie, trigger, uri):
+def ytget(bot, trigger, uri):
     try:
         bytes = web.get(uri)
         result = json.loads(bytes)
-        if result.has_key('feed'):
+        if 'feed' in result:
             video_entry = result['feed']['entry'][0]
         else:
             video_entry = result['entry']
     except:
-        willie.say('Something went wrong when accessing the YouTube API.')
+        bot.say('Something went wrong when accessing the YouTube API.')
         return 'err'
     vid_info = {}
     try:
         # The ID format is tag:youtube.com,2008:video:RYlCVwxoL_g
         # So we need to split by : and take the last item
         vid_id = video_entry['id']['$t'].split(':')
-        vid_id = vid_id[len(vid_id)-1] #last item is the actual ID
+        vid_id = vid_id[len(vid_id) - 1]  # last item is the actual ID
         vid_info['link'] = 'http://youtu.be/' + vid_id
     except KeyError as e:
         vid_info['link'] = 'N/A'
@@ -121,20 +122,22 @@ def ytget(willie, trigger, uri):
     return vid_info
 
 
-def ytsearch(willie, trigger):
+@commands('yt', 'youtube')
+@example('.yt how to be a nerdfighter FAQ')
+def ytsearch(bot, trigger):
     """Search YouTube"""
     #modified from ytinfo: Copyright 2010-2011, Michael Yanovich, yanovich.net, Kenneth Sham.
     if not trigger.group(2):
         return
     uri = 'http://gdata.youtube.com/feeds/api/videos?v=2&alt=json&max-results=1&q=' + trigger.group(2).encode('utf-8')
     uri = uri.replace(' ', '+')
-    video_info = ytget(willie, trigger, uri)
+    video_info = ytget(bot, trigger, uri)
 
     if video_info is 'err':
         return
 
     if video_info['link'] == 'N/A':
-        willie.say("Sorry, I couldn't find the video you are looking for")
+        bot.say("Sorry, I couldn't find the video you are looking for")
         return
     message = ('[YT Search] Title: ' + video_info['title'] +
               ' | Uploader: ' + video_info['uploader'] +
@@ -143,12 +146,11 @@ def ytsearch(willie, trigger):
               ' | Views: ' + video_info['views'] +
               ' | Link: ' + video_info['link'])
 
-    willie.say(HTMLParser().unescape(message))
-ytsearch.commands = ['yt', 'youtube']
-ytsearch.example = '.yt how to be a nerdfighter FAQ'
+    bot.say(HTMLParser().unescape(message))
 
 
-def ytinfo(willie, trigger, found_match=None):
+@rule('.*(youtube.com/watch\S*v=|youtu.be/)([\w-]+).*')
+def ytinfo(bot, trigger, found_match=None):
     """
     Get information about the latest video uploaded by the channel provided.
     """
@@ -156,7 +158,7 @@ def ytinfo(willie, trigger, found_match=None):
     #Grab info from YT API
     uri = 'http://gdata.youtube.com/feeds/api/videos/' + match.group(2) + '?v=2&alt=json'
 
-    video_info = ytget(willie, trigger, uri)
+    video_info = ytget(bot, trigger, uri)
     if video_info is 'err':
         return
 
@@ -170,15 +172,16 @@ def ytinfo(willie, trigger, found_match=None):
               ' | Likes: ' + video_info['likes'] + \
               ' | Dislikes: ' + video_info['dislikes']
 
-    willie.say(HTMLParser().unescape(message))
-ytinfo.rule = '.*(youtube.com/watch\S*v=|youtu.be/)([\w-]+).*'
+    bot.say(HTMLParser().unescape(message))
 
 
-def ytlast(willie, trigger):
+@commands('ytlast', 'ytnew', 'ytlatest')
+@example('.ytlast vlogbrothers')
+def ytlast(bot, trigger):
     if not trigger.group(2):
         return
     uri = 'https://gdata.youtube.com/feeds/api/users/' + trigger.group(2).encode('utf-8') + '/uploads?max-results=1&alt=json&v=2'
-    video_info = ytget(willie, trigger, uri)
+    video_info = ytget(bot, trigger, uri)
 
     if video_info is 'err':
         return
@@ -191,9 +194,4 @@ def ytlast(willie, trigger):
               ' | Dislikes: ' + video_info['dislikes'] +
               ' | Link: ' + video_info['link'])
 
-    willie.say(HTMLParser().unescape(message))
-ytlast.commands = ['ytlast', 'ytnew', 'ytlatest']
-ytlast.example = '.ytlast vlogbrothers'
-
-if __name__ == '__main__':
-    print __doc__.strip()
+    bot.say(HTMLParser().unescape(message))

@@ -443,14 +443,11 @@ class Bot(asynchat.async_chat, object):
         documentation for more information'''
         self.write(('NOTICE', dest), text)
 
-    def error(self, origin, trigger):
+    def error(self, origin=None, trigger=None):
         ''' Called internally when a module causes an error '''
         try:
             trace = traceback.format_exc()
-            try:
-                trace = trace.decode('utf-8')
-            except:
-                pass  # Can't do much about it
+            trace = trace.decode('utf-8', errors='xmlcharrefreplace')
             stderr(trace)
             try:
                 lines = list(reversed(trace.splitlines()))
@@ -464,30 +461,30 @@ class Bot(asynchat.async_chat, object):
                     report.append('source unknown')
 
                 signature = '%s (%s)' % (report[0], report[1])
-                logfile = codecs.open(os.path.join(self.config.logdir,
-                                                   'exceptions.log'),
-                                      'a', encoding='utf-8')  # TODO: make not
-                                                              # hardcoded
-                logfile.write(u'Signature: %s\n' % signature)
-                logfile.write(u'from %s at %s:\n' % (origin.sender,
-                                                     str(datetime.now())))
-                logfile.write(u'Message was: <%s> %s\n' % (trigger.nick,
-                                                           trigger.group(0)))
-                try:
-                    logfile.write(trace.encode('utf-8'))
-                except:
+                # TODO: make not hardcoded
+                log_filename = os.path.join(
+                        self.config.logdir, 'exceptions.log')
+                with codecs.open(log_filename, 'a', encoding='utf-8') as logfile:
+                    logfile.write(u'Signature: %s\n' % signature)
+                    if origin:
+                        logfile.write(u'from %s at %s:\n' % (
+                                origin.sender, str(datetime.now())))
+                    if trigger:
+                        logfile.write(u'Message was: <%s> %s\n' % (
+                                trigger.nick, trigger.group(0)))
                     logfile.write(trace)
-                logfile.write('----------------------------------------\n\n')
-                logfile.close()
+                    logfile.write('----------------------------------------\n\n')
             except Exception as e:
                 stderr("Could not save full traceback!")
                 self.debug("core: error reporting", "(From: " + origin.sender +
                            "), can't save traceback: " + str(e), 'always')
 
-            self.msg(origin.sender, signature)
+            if origin:
+                self.msg(origin.sender, signature)
         except Exception as e:
-            self.msg(origin.sender, "Got an error.")
-            self.debug("core: error reporting", "(From: " + origin.sender +
+            if origin:
+                self.msg(origin.sender, "Got an error.")
+                self.debug("core: error reporting", "(From: " + origin.sender +
                        ") " + str(e), 'always')
 
     def handle_error(self):

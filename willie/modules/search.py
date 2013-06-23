@@ -121,6 +121,7 @@ def bing_search(query, lang='en-GB'):
 
 r_duck = re.compile(r'nofollow" class="[^"]+" href="(.*?)">')
 
+
 def duck_search(query):
     query = query.replace('!', '')
     query = web.quote(query)

@@ -7,6 +7,7 @@ Licensed under the Eiffel Forum License 2.
 """
 from willie.module import command, example
 
+
 @command('announce')
 @example('.announce Some important message here')
 def announce(bot, trigger):

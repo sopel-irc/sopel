@@ -7,15 +7,7 @@ Licensed under the Eiffel Forum License 2.
 http://willie.dfbta.net
 """
 import pytz
-import re
-import math
-import time
-import urllib
-import locale
-import socket
-import struct
 import datetime
-from decimal import Decimal as dec
 from willie.module import commands, command, example
 
 
@@ -52,6 +44,8 @@ def f_time(bot, trigger):
             tz = bot.db.preferences.get(trigger.nick, 'tz')
         if not tz and trigger.sender in bot.db.preferences:
             tz = bot.db.preferences.get(trigger.sender, 'tz') or 'UTC'
+        else:
+            tz = 'UTC'
     else:
         tz = 'UTC'
     tzi = pytz.timezone(tz)

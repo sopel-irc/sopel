@@ -42,11 +42,11 @@ def configure(config):
             'Prefix to suppress URL titling', '!')
 
 
-def setup(willie):
+def setup(bot):
     global url_finder, exclusion_char
-    if willie.config.has_option('url', 'exclude'):
+    if bot.config.has_option('url', 'exclude'):
         regexes = [re.compile(s) for s in
-                   willie.config.url.get_list(exclude)]
+                   bot.config.url.get_list(exclude)]
     else:
         regexes = []
 
@@ -54,72 +54,72 @@ def setup(willie):
     # callbacks list because 1, it's easier to deal with modules that are still
     # using this list, and not the newer callbacks list and 2, having a lambda
     # just to pass is kinda ugly.
-    if not willie.memory.contains('url_exclude'):
-        willie.memory['url_exclude'] = regexes
+    if not bot.memory.contains('url_exclude'):
+        bot.memory['url_exclude'] = regexes
     else:
-        exclude = willie.memory['url_exclude']
+        exclude = bot.memory['url_exclude']
         if regexes:
             exclude.append(regexes)
-        willie.memory['url_exclude'] = regexes
+        bot.memory['url_exclude'] = regexes
 
     # Ensure that url_callbacks and last_seen_url are in memory
-    if not willie.memory.contains('url_callbacks'):
-        willie.memory['url_callbacks'] = {}
-    if not willie.memory.contains('last_seen_url'):
-        willie.memory['last_seen_url'] = {}
+    if not bot.memory.contains('url_callbacks'):
+        bot.memory['url_callbacks'] = {}
+    if not bot.memory.contains('last_seen_url'):
+        bot.memory['last_seen_url'] = {}
 
-    if willie.config.has_option('url', 'exclusion_char'):
-        exclusion_char = willie.config.url.exclusion_char
+    if bot.config.has_option('url', 'exclusion_char'):
+        exclusion_char = bot.config.url.exclusion_char
 
     url_finder = re.compile(r'(?u)(%s?(?:http|https|ftp)(?:://\S+))' %
         (exclusion_char))
 
 
 @command('title')
-def title_command(willie, trigger):
+def title_command(bot, trigger):
     """
     Show the title or URL information for the given URL, or the last URL seen
     in this channel.
     """
     if not trigger.group(2):
-        if trigger.sender not in willie.memory['last_seen_url']:
+        if trigger.sender not in bot.memory['last_seen_url']:
             return
-        matched = check_callbacks(willie, trigger,
-                                  willie.memory['last_seen_url'][trigger.sender],
+        matched = check_callbacks(bot, trigger,
+                                  bot.memory['last_seen_url'][trigger.sender],
                                   True)
         if matched:
             return
         else:
-            urls = [willie.memory['last_seen_url'][trigger.sender]]
+            urls = [bot.memory['last_seen_url'][trigger.sender]]
     else:
         urls = re.findall(url_finder, trigger)
 
-    results = process_urls(willie, trigger, urls)
+    results = process_urls(bot, trigger, urls)
     for result in results[:4]:
         message = '[ %s ] - %s' % tuple(result)
 
 
 @rule('(?u).*(https?://\S+).*')
-def title_auto(willie, trigger):
+def title_auto(bot, trigger):
     """
     Automatically show titles for URLs. For shortened URLs/redirects, find
     where the URL redirects to and show the title for that (or call a function
     from another module to give more information).
     """
-    if re.match(willie.config.core.prefix + 'title', trigger):
+    if re.match(bot.config.core.prefix + 'title', trigger):
         return
 
     urls = re.findall(url_finder, trigger)
-    results = process_urls(willie, trigger, urls)
-    willie.memory['last_seen_url'][trigger.sender] = urls[-1]
+    results = process_urls(bot, trigger, urls)
+    bot.memory['last_seen_url'][trigger.sender] = urls[-1]
 
     for result in results[:4]:
         message = '[ %s ] - %s' % tuple(result)
         if message != trigger:
-            willie.say(message)
+            bot.say(message)
 
 
-def process_urls(willie, trigger, urls):
+def process_urls(bot, trigger, urls):
     """
     For each URL in the list, ensure that it isn't handled by another module.
     If not, find where it redirects to, if anywhere. If that redirected URL
@@ -134,7 +134,7 @@ def process_urls(willie, trigger, urls):
             # Magic stuff to account for international domain names
             url = iri_to_uri(url)
             # First, check that the URL we got doesn't match
-            matched = check_callbacks(willie, trigger, url, False)
+            matched = check_callbacks(bot, trigger, url, False)
             if matched:
                 continue
             # Then see if it redirects anywhere
@@ -142,7 +142,7 @@ def process_urls(willie, trigger, urls):
             if not new_url:
                 continue
             # Then see if the final URL matches anything
-            matched = check_callbacks(willie, trigger, new_url, new_url != url)
+            matched = check_callbacks(bot, trigger, new_url, new_url != url)
             if matched:
                 continue
             # Finally, actually show the URL
@@ -166,20 +166,20 @@ def follow_redirects(url):
     return url
 
 
-def check_callbacks(willie, trigger, url, run=True):
+def check_callbacks(bot, trigger, url, run=True):
     """
     Check the given URL against the callbacks list. If it matches, and ``run``
     is given as ``True``, run the callback function, otherwise pass. Returns
     ``True`` if the url matched anything in the callbacks list.
     """
     # Check if it matches the exclusion list first
-    matched = any(regex.search(url) for regex in willie.memory['url_exclude'])
+    matched = any(regex.search(url) for regex in bot.memory['url_exclude'])
     # Then, check if there's anything in the callback list
-    for regex, function in willie.memory['url_callbacks'].iteritems():
+    for regex, function in bot.memory['url_callbacks'].iteritems():
         match = regex.search(url)
         if match:
             if run:
-                function(willie, trigger, match)
+                function(bot, trigger, match)
             matched = True
     return matched
 

@@ -6,13 +6,18 @@ Licensed under the Eiffel Forum License 2.
 http://willie.dftba.net
 """
 
-import re, urllib2
-import willie.web as web
+from willie import web
+from willie.module import commands, example
+import re
+import urllib2
 
 uri = 'https://en.wikipedia.org/wiki/List_of_Internet_top-level_domains'
 r_tag = re.compile(r'<(?!!)[^>]+>')
 
-def gettld(willie, trigger):
+
+@commands('tld')
+@example('.tld ru')
+def gettld(bot, trigger):
     """Show information about the given Top Level Domain."""
     page = web.get(uri)
     search = r'(?i)<td><a href="\S+" title="\S+">\.{0}</a></td>\n(<td><a href=".*</a></td>\n)?<td>([A-Za-z0-9].*?)</td>\n<td>(.*)</td>\n<td[^>]*>(.*?)</td>\n<td[^>]*>(.*?)</td>\n'
@@ -35,7 +40,7 @@ def gettld(willie, trigger):
             desc = desc[:400] + "..."
         reply = "%s -- %s. IDN: %s, DNSSEC: %s" % (matches[1], desc,
                 matches[3], matches[4])
-        willie.reply(reply)
+        bot.reply(reply)
     else:
         search = r'<td><a href="\S+" title="\S+">.{0}</a></td>\n<td><span class="flagicon"><img.*?\">(.*?)</a></td>\n<td[^>]*>(.*?)</td>\n<td[^>]*>(.*?)</td>\n<td[^>]*>(.*?)</td>\n<td[^>]*>(.*?)</td>\n<td[^>]*>(.*?)</td>\n'
         search = search.format(unicode(trigger.group(2)))
@@ -54,9 +59,4 @@ def gettld(willie, trigger):
             reply = "%s (%s, %s). IDN: %s, DNSSEC: %s, SLD: %s" % (dict_val["country"], dict_val["expl"], dict_val["notes"], dict_val["idn"], dict_val["dnssec"], dict_val["sld"])
         else:
             reply = "No matches found for TLD: {0}".format(unicode(trigger.group(2)))
-        willie.reply(reply)
-gettld.commands = ['tld']
-gettld.thread = False
-
-if __name__ == '__main__':
-    print __doc__.strip()
+        bot.reply(reply)
