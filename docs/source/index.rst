@@ -41,10 +41,10 @@ Your modules
 ------------
 
 A Willie module contains one or more ``callable``\s. It may optionally contain a
-``configure`` or ``setup`` function. ``callable``\s are given a number of
-attributes, which determine when they will be executed. Syntactically, this is
-done at the same indentation level as the function's ``def`` line, following the
-last line of the function.
+``configure``, ``setup``, and ``shutdown`` function. ``callable``\s are given a
+number of attributes, which determine when they will be executed. Syntactically,
+this isdone at the same indentation level as the function's ``def`` line,
+following the last line of the function.
 
 .. py:method:: callable(willie, trigger)
 
@@ -126,6 +126,19 @@ last line of the function.
     of this function. As such, an infinite loop (such as an unthreaded polling
     loop) will cause the bot to hang.
 
+.. py:method:: shutdown(willie)
+
+    This is an optional function of a module, which will be called while the
+    Willie is quitting. Note that this normally occurs after closing connection
+    to the server, so the behavior of the Willie object's messaging functions is
+    undefined. The purpose of this function is to perform whatever actions are
+    needed to allow a module to properly clean up (e.g, ensuring that any
+    temporary cache files are deleted).
+
+    The bot will not continue notifying other modules or continue quitting
+    during the execution of this function. As such, an infinite loop (such as
+    an unthreaded polling loop) will cause the bot to hang.
+
 .. py:method:: configure(config)
 
     *Availability: 3+*
@@ -151,7 +164,7 @@ The ``Willie`` class
         was triggered, preceeded by the nick of the user who triggered it.
         
         This function is not available outside of module functions. It can not
-        be used, for example, in a module's ``setup`` function.
+        be used, for example, in a module's ``setup`` or ``shutdown`` function.
         
         The same behavior regarding loop detection and length restrictions apply
         to ``reply`` as to ``msg``.
@@ -180,7 +193,10 @@ The ``Willie`` class
 
     .. py:function:: quit(message)
     
-        Gracefully quit and shutdown, using ``message`` as the quit message
+        Gracefully quit and shutdown, using ``message`` as the quit message.
+
+        Willie will notify modules that it is quitting should the modules have
+        a ``shutdown`` method.
         
     .. py:function:: part(channel)
     
