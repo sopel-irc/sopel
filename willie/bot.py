@@ -20,7 +20,8 @@ from datetime import datetime
 
 import irc
 from db import WillieDB
-from tools import stderr, stdout, Nick, PriorityQueue, released
+from tools import (stderr, stdout, Nick, PriorityQueue, released,
+        get_command_regexp)
 import module
 
 
@@ -447,26 +448,8 @@ class Willie(irc.Bot):
 
             if hasattr(func, 'commands'):
                 for command in func.commands:
-                    # This regexp match equivalently and produce the same
-                    # groups 1 and 2 as the old regexp: r'^%s(%s)(?: +(.*))?$'
-                    # The only differences should be handling all whitespace
-                    # like spaces and the addition of groups 3-6.
-                    pattern = r"""
-                    {prefix}({command}) # Command as group 1.
-                    (?:\s+              # Whitespace to end command.
-                    (                   # Rest of the line as group 2.
-                    (?:(\S+))?          # Parameters 1-4 as groups 3-6.
-                    (?:\s+(\S+))?
-                    (?:\s+(\S+))?
-                    (?:\s+(\S+))?
-                    .*                  # Accept anything after the parameters.
-                                        # Leave it up to the module to parse
-                                        # the line.
-                    ))?                 # Group 2 must be None, if there are no
-                                        # parameters.
-                    $                   # EoL, so there are no partial matches.
-                    """.format(prefix=self.config.prefix, command=command)
-                    regexp = re.compile(pattern, re.IGNORECASE | re.VERBOSE)
+                    prefix = self.config.prefix
+                    regexp = get_command_regexp(prefix, command)
                     bind(self, func.priority, regexp, func)
 
             if hasattr(func, 'interval'):
