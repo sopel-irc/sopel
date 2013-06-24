@@ -15,6 +15,7 @@ https://willie.dftba.net
 """
 import sys
 import os
+import threading
 try:
     import ssl
     import OpenSSL
@@ -241,5 +242,33 @@ def verify_ssl_cn(server, port):
         if re.match('(.*)%s' % cn, server, re.IGNORECASE) is not None:
             valid = True
     return (valid, cret_info)
-if __name__ == '__main__':
-    print __doc__.strip()
+
+
+class WillieMemory(dict):
+    """
+    *Availability: 4.0; available as ``Willie.WillieMemory`` in 3.1.0 - 3.2.0*
+
+    A simple thread-safe dict implementation. In order to prevent
+    exceptions when iterating over the values and changing them at the same
+    time from different threads, we use a blocking lock on ``__setitem__``
+    and ``contains``.
+    """
+    def __init__(self, *args):
+        dict.__init__(self, *args)
+        self.lock = threading.Lock()
+
+    def __setitem__(self, key, value):
+        self.lock.acquire()
+        result = dict.__setitem__(self, key, value)
+        self.lock.release()
+        return result
+
+    def contains(self, key):
+        """
+        Check if a key is in the dict. Use this instead of the ``in``
+        keyword if you want to be thread-safe.
+        """
+        self.lock.acquire()
+        result = (key in self)
+        self.lock.release()
+        return result

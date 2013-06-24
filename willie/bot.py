@@ -17,7 +17,7 @@ import re
 import threading
 import imp
 from datetime import datetime
-
+from willie import tools
 import irc
 from db import WillieDB
 from tools import stderr, stdout, Nick, PriorityQueue, released
@@ -60,10 +60,10 @@ class Willie(irc.Bot):
             self.db.add_table('preferences', ['name'], 'name')
             self.settings = self.db.preferences
 
-        self.memory = self.WillieMemory()
+        self.memory = tools.WillieMemory()
         """
         A thread-safe dict for storage of runtime data to be shared between
-        modules. See `WillieMemory <#bot.Willie.WillieMemory>`_
+        modules. See `WillieMemory <#tools.Willie.WillieMemory>`_
         """
 
         self.scheduler = Willie.JobScheduler(self)
@@ -245,35 +245,6 @@ class Willie(irc.Bot):
         def __iter__(self):
             """This is an iterator. Never stops though."""
             return self
-
-    class WillieMemory(dict):
-        """
-        Availability: 3.1+
-
-        A simple thread-safe dict implementation. In order to prevent
-        exceptions when iterating over the values and changing them at the same
-        time from different threads, we use a blocking lock on ``__setitem__``
-        and ``contains``.
-        """
-        def __init__(self, *args):
-            dict.__init__(self, *args)
-            self.lock = threading.Lock()
-
-        def __setitem__(self, key, value):
-            self.lock.acquire()
-            result = dict.__setitem__(self, key, value)
-            self.lock.release()
-            return result
-
-        def contains(self, key):
-            """
-            Check if a key is in the dict. Use this instead of the ``in``
-            keyword if you want to be thread-safe.
-            """
-            self.lock.acquire()
-            result = (key in self)
-            self.lock.release()
-            return result
 
     def setup(self):
         stderr("\nWelcome to Willie. Loading modules...\n\n")
