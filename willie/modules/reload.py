@@ -71,6 +71,7 @@ def f_reload(bot, trigger):
 
 
 if sys.version_info >= (2, 7):
+    @willie.module.nickname_commands('update')
     def update(bot, trigger):
         if not trigger.admin:
             return
@@ -83,9 +84,9 @@ if sys.version_info >= (2, 7):
 
         f_reload(bot, trigger)
 else:
+    @willie.module.nickname_commands('update')
     def update(bot, trigger):
         bot.say('You need to run me on Python 2.7 to do that.')
-update.rule = ('$nick', ['update'], r'(.+)')
 
 
 @willie.module.nickname_commands("load")

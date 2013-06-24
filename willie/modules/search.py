@@ -8,7 +8,8 @@ http://willie.dftba.net
 """
 
 import re
-import willie.web as web
+from willie import web
+from willie.module import commands, example
 import json
 import time
 
@@ -50,6 +51,8 @@ def formatnumber(n):
     return ''.join(parts)
 
 
+@commands('g', 'google')
+@example('.g swhack')
 def g(bot, trigger):
     """Queries Google for the specified input."""
     query = trigger.group(2)
@@ -63,11 +66,10 @@ def g(bot, trigger):
         bot.reply("Problem getting data from Google.")
     else:
         bot.reply("No results found for '%s'." % query)
-g.commands = ['g', 'google']
-g.priority = 'high'
-g.example = '.g swhack'
 
 
+@commands('gc')
+@example('.gc extrapolate')
 def gc(bot, trigger):
     """Returns the number of Google results for the specified input."""
     query = trigger.group(2)
@@ -75,15 +77,14 @@ def gc(bot, trigger):
         return bot.reply('.gc what?')
     num = formatnumber(google_count(query))
     bot.say(query + ': ' + num)
-gc.commands = ['gc']
-gc.priority = 'high'
-gc.example = '.gc extrapolate'
 
 r_query = re.compile(
     r'\+?"[^"\\]*(?:\\.[^"\\]*)*"|\[[^]\\]*(?:\\.[^]\\]*)*\]|\S+'
 )
 
 
+@commands('gcs', 'comp')
+@example('.gcs foo bar')
 def gcs(bot, trigger):
     """Compare the number of Google search results"""
     if not trigger.group(2):
@@ -105,8 +106,6 @@ def gcs(bot, trigger):
     results = [(term, n) for (n, term) in reversed(sorted(results))]
     reply = ', '.join('%s (%s)' % (t, formatnumber(n)) for (t, n) in results)
     bot.say(reply)
-gcs.commands = ['gcs', 'comp']
-gcs.example = '.gcs foo bar'
 
 r_bing = re.compile(r'<h3><a href="([^"]+)"')
 
@@ -146,6 +145,8 @@ def duck_api(query):
         return None
 
 
+@commands('duck', 'ddg')
+@example('.duck privacy or .duck !mcwiki obsidian')
 def duck(bot, trigger):
     """Queries Duck Duck Go for the specified input."""
     query = trigger.group(2)
@@ -166,9 +167,10 @@ def duck(bot, trigger):
         bot.memory['last_seen_url'][trigger.sender] = uri
     else:
         bot.reply("No results found for '%s'." % query)
-duck.commands = ['duck', 'ddg']
 
 
+@commands('search')
+@example('.search nerdfighter')
 def search(bot, trigger):
     """Searches Google, Bing, and Duck Duck Go."""
     if not trigger.group(2):
@@ -196,10 +198,9 @@ def search(bot, trigger):
         result = '%s (g), %s (b), %s (d)' % (gu, bu, du)
 
     bot.reply(result)
-search.commands = ['search']
-search.example = '.search nerdfighter'
 
 
+@commands('suggest')
 def suggest(bot, trigger):
     """Suggest terms starting with given input"""
     if not trigger.group(2):
@@ -211,7 +212,3 @@ def suggest(bot, trigger):
         bot.say(answer)
     else:
         bot.reply('Sorry, no result.')
-suggest.commands = ['suggest']
-
-if __name__ == '__main__':
-    print __doc__.strip()
