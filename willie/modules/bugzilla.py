@@ -8,7 +8,7 @@ http://willie.dftba.net/
 """
 from lxml import etree
 import re
-from willie import web
+from willie import web, tools
 from willie.module import rule
 import urllib
 import urllib2
@@ -35,7 +35,7 @@ def setup(bot):
             and bot.config.bugzilla.get_list('domains')):
         return
     if not bot.memory.contains('url_callbacks'):
-        bot.memory['url_callbacks'] = {}
+        bot.memory['url_callbacks'] = tools.WillieMemory()
 
     domains = '|'.join(bot.config.bugzilla.get_list('domains'))
     regex = re.compile((r'https?://(%s)'

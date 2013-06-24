@@ -12,12 +12,12 @@ using the sed notation (s///) commonly found in vi/vim.
 """
 
 import re
-from willie.tools import Nick
+from willie.tools import Nick, WillieMemory
 from willie.module import rule, priority
 
 
 def setup(bot):
-    bot.memory['find_lines'] = dict()
+    bot.memory['find_lines'] = WillieMemory()
 
 
 @rule('.*')
@@ -31,7 +31,7 @@ def collectlines(bot, trigger):
 
     # Add a log for the channel and nick, if there isn't already one
     if trigger.sender not in bot.memory['find_lines']:
-        bot.memory['find_lines'][trigger.sender] = dict()
+        bot.memory['find_lines'][trigger.sender] = WillieMemory()
     if Nick(trigger.nick) not in bot.memory['find_lines'][trigger.sender]:
         bot.memory['find_lines'][trigger.sender][Nick(trigger.nick)] = list()
 

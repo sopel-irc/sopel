@@ -9,7 +9,7 @@ http://willie.dftba.net
 
 import re
 from htmlentitydefs import name2codepoint
-import willie.web as web
+from willie import web, tools
 from willie.module import commands, rule
 import urllib2
 import urlparse
@@ -64,9 +64,9 @@ def setup(bot):
 
     # Ensure that url_callbacks and last_seen_url are in memory
     if not bot.memory.contains('url_callbacks'):
-        bot.memory['url_callbacks'] = {}
+        bot.memory['url_callbacks'] = tools.WillieMemory()
     if not bot.memory.contains('last_seen_url'):
-        bot.memory['last_seen_url'] = {}
+        bot.memory['last_seen_url'] = tools.WillieMemory()
 
     if bot.config.has_option('url', 'exclusion_char'):
         exclusion_char = bot.config.url.exclusion_char

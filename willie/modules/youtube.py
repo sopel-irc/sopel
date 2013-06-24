@@ -11,7 +11,7 @@ http://willie.dfbta.net
 This module will respond to .yt and .youtube commands and searches the youtubes.
 """
 
-from willie import web
+from willie import web, tools
 from willie.module import rule, commands, example
 import json
 import re
@@ -21,11 +21,8 @@ from HTMLParser import HTMLParser
 def setup(bot):
     regex = re.compile('(youtube.com/watch\S*v=|youtu.be/)([\w-]+)')
     if not bot.memory.contains('url_callbacks'):
-        bot.memory['url_callbacks'] = {regex, ytinfo}
-    else:
-        exclude = bot.memory['url_callbacks']
-        exclude[regex] = ytinfo
-        bot.memory['url_callbacks'] = exclude
+        bot.memory['url_callbacks'] = tools.WillieMemory()
+    bot.memory['url_callbacks'][regex] = exclude
 
 
 def ytget(bot, trigger, uri):
