@@ -14,7 +14,7 @@ import willie.module
 import subprocess
 
 
-@willie.module.nickname_command("reload")
+@willie.module.nickname_commands("reload")
 @willie.module.priority("low")
 @willie.module.thread(False)
 def f_reload(bot, trigger):
@@ -88,7 +88,7 @@ else:
 update.rule = ('$nick', ['update'], r'(.+)')
 
 
-@willie.module.nickname_command("load")
+@willie.module.nickname_commands("load")
 @willie.module.priority("low")
 @willie.module.thread(False)
 def f_load(bot, trigger):

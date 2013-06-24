@@ -14,7 +14,7 @@ import pytz
 import random
 import threading
 from willie.tools import Nick
-from willie.module import command, nickname_command, rule, priority, example
+from willie.module import commands, nickname_commands, rule, priority, example
 
 maximum = 4
 
@@ -84,9 +84,8 @@ def get_user_time(bot, nick):
     return (pytz.timezone(tz.strip()), tformat or '%Y-%m-%d %H:%M:%S %Z')
 
 
-@command('tell')
-@nickname_command('tell')
-@nickname_command('ask')
+@commands('tell', 'ask')
+@nickname_commands('tell', 'ask')
 @example('Willie, tell Embolalia he broke something again.')
 def f_remind(bot, trigger):
     """Give someone a message the next time they're seen"""
