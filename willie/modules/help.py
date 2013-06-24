@@ -1,3 +1,4 @@
+# coding=utf-8
 """
 help.py - Willie Help Module
 Copyright 2008, Sean B. Palmer, inamidst.com
