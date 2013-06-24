@@ -198,7 +198,7 @@ def set_config(bot, trigger):
     setattr(getattr(bot.config, section), option, value)
 
 
-@willie.module.command('save')
+@willie.module.commands('save')
 @willie.module.example('.save')
 def save_config(bot, trigger):
     """Save state of willies config object to the configuration file."""

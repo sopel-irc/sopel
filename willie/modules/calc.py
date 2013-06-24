@@ -9,7 +9,7 @@ http://willie.dfbta.net
 
 import re
 from willie import web
-from willie.module import command, commands, example
+from willie.module import commands, example
 from socket import timeout
 import string
 import HTMLParser
@@ -46,7 +46,7 @@ def c(bot, trigger):
     bot.reply(result)
 
 
-@command('py')
+@commands('py')
 @example('.py len([1,2,3])')
 def py(bot, trigger):
     """Evaluate a Python expression."""

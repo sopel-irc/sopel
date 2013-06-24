@@ -14,9 +14,9 @@ import re
 seed()
 
 
-@willie.module.command("roll")
-@willie.module.command("dice")
-@willie.module.command("d")
+@willie.module.commands("roll")
+@willie.module.commands("dice")
+@willie.module.commands("d")
 @willie.module.priority("medium")
 def dice(bot, trigger):
     """
@@ -95,9 +95,9 @@ def rollDice(diceroll):
     return sorted(result)  # returns a set of integers.
 
 
-@willie.module.command("choice")
-@willie.module.command("ch")
-@willie.module.command("choose")
+@willie.module.commands("choice")
+@willie.module.commands("ch")
+@willie.module.commands("choose")
 @willie.module.priority("medium")
 def choose(bot, trigger):
     """

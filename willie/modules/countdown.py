@@ -5,11 +5,11 @@ Licensed under the Eiffel Forum License 2.
 
 http://willie.dfbta.net
 """
-from willie.module import command, NOLIMIT
+from willie.module import commands, NOLIMIT
 import datetime
 
 
-@command('countdown')
+@commands('countdown')
 def generic_countdown(bot, trigger):
     """
     .countdown <year> <month> <day> - displays a countdown to a given date.

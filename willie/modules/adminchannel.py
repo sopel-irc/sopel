@@ -10,7 +10,7 @@ http://willie.dftba.net/
 """
 
 import re
-from willie.module import command, commands, priority
+from willie.module import commands, priority
 
 
 def setup(bot):
@@ -19,7 +19,7 @@ def setup(bot):
         bot.db.preferences.add_columns(['topic_mask'])
 
 
-@command('op')
+@commands('op')
 def op(bot, trigger):
     """
     Command to op users in a room. If no nick is given,
@@ -33,7 +33,7 @@ def op(bot, trigger):
         bot.write(['MODE', channel, "+o", nick])
 
 
-@command('deop')
+@commands('deop')
 def deop(bot, trigger):
     """
     Command to deop users in a room. If no nick is given,
@@ -47,7 +47,7 @@ def deop(bot, trigger):
         bot.write(['MODE', channel, "-o", nick])
 
 
-@command('voice')
+@commands('voice')
 def voice(bot, trigger):
     """
     Command to voice users in a room. If no nick is given,
@@ -61,7 +61,7 @@ def voice(bot, trigger):
         bot.write(['MODE', channel, "+v", nick])
 
 
-@command('devoice')
+@commands('devoice')
 def devoice(bot, trigger):
     """
     Command to devoice users in a room. If no nick is given,
@@ -75,7 +75,7 @@ def devoice(bot, trigger):
         bot.write(['MODE', channel, "-v", nick])
 
 
-@command('kick')
+@commands('kick')
 @priority('high')
 def kick(bot, trigger):
     """
@@ -124,7 +124,7 @@ def configureHostMask(mask):
     return ''
 
 
-@command('ban')
+@commands('ban')
 @priority('high')
 def ban(bot, trigger):
     """
@@ -151,7 +151,7 @@ def ban(bot, trigger):
     bot.write(['MODE', channel, '+b', banmask])
 
 
-@command('unban')
+@commands('unban')
 def unban(bot, trigger):
     """
     This give admins the ability to unban a user.
@@ -177,7 +177,7 @@ def unban(bot, trigger):
     bot.write(['MODE', channel, '-b', banmask])
 
 
-@command('quiet')
+@commands('quiet')
 def quiet(bot, trigger):
     """
     This gives admins the ability to quiet a user.
@@ -203,7 +203,7 @@ def quiet(bot, trigger):
     bot.write(['MODE', channel, '+q', quietmask])
 
 
-@command('unquiet')
+@commands('unquiet')
 def unquiet(bot, trigger):
     """
    This gives admins the ability to unquiet a user.
@@ -262,7 +262,7 @@ def kickban(bot, trigger):
     bot.write(['KICK', channel, nick, ' :', reason])
 
 
-@command('topic')
+@commands('topic')
 def topic(bot, trigger):
     """
     This gives ops the ability to change the topic.
@@ -297,7 +297,7 @@ def topic(bot, trigger):
     bot.write(('TOPIC', channel + ' :' + topic))
 
 
-@command('tmask')
+@commands('tmask')
 def set_mask(bot, trigger):
     """
     Set the mask to use for .topic in the current channel. %s is used to allow
@@ -312,7 +312,7 @@ def set_mask(bot, trigger):
         bot.say("Gotcha, " + trigger.nick)
 
 
-@command('showmask')
+@commands('showmask')
 def show_mask(bot, trigger):
     """Show the topic mask for the current channel."""
     if not trigger.isop:
@@ -325,7 +325,7 @@ def show_mask(bot, trigger):
         bot.say("%s")
 
 
-@command('isop')
+@commands('isop')
 def isop(bot, trigger):
     """Show if you are an operator in the current channel"""
     if trigger.isop:

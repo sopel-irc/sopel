@@ -20,7 +20,7 @@ def git_info():
     return commit, author, date
 
 
-@willie.module.command('version')
+@willie.module.commands('version')
 def version(bot, trigger):
     """Display the latest commit version, if Willie is running in a git repo."""
     commit, author, date = git_info()

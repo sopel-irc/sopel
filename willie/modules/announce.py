@@ -5,10 +5,10 @@ Copyright © 2013, Elad Alfassa, <elad@fedoraproject.org>
 Licensed under the Eiffel Forum License 2.
 
 """
-from willie.module import command, example
+from willie.module import commands, example
 
 
-@command('announce')
+@commands('announce')
 @example('.announce Some important message here')
 def announce(bot, trigger):
     """

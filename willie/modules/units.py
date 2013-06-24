@@ -6,7 +6,7 @@ Copyright © 2013, Dimitri Molenaars, <tyrope@tyrope.nl>
 Licensed under the Eiffel Forum License 2.
 
 """
-from willie.module import command, commands, example, NOLIMIT
+from willie.module import commands, example, NOLIMIT
 import re
 
 find_temp = re.compile('(-?[0-9]*\.?[0-9]*)[ °]*(K|C|F)', re.IGNORECASE)
@@ -29,7 +29,7 @@ def k_to_c(temp):
     return temp - 273.15
 
 
-@command('temp')
+@commands('temp')
 @example('.temp 100F')
 def temperature(bot, trigger):
     """

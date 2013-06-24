@@ -12,7 +12,7 @@ import time
 import datetime
 import pytz
 from willie.tools import Ddict, Nick
-from willie.module import command, rule, priority
+from willie.module import commands, rule, priority
 
 seen_dict = Ddict(dict)
 
@@ -28,7 +28,7 @@ def get_user_time(bot, nick):
     return (pytz.timezone(tz.strip()), tformat or '%Y-%m-%d %H:%M:%S %Z')
 
 
-@command('seen')
+@commands('seen')
 def seen(bot, trigger):
     """Reports when and where the user was last seen."""
     if not trigger.group(2):

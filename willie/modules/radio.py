@@ -9,7 +9,7 @@ http://willie.dftba.net/
 from time import sleep
 from xml.dom.minidom import parseString
 import willie.web as web
-from willie.module import command
+from willie.module import commands
 import xml.dom.minidom
 
 
@@ -84,7 +84,7 @@ def nextSong(bot, trigger):
         bot.say('No songs are queued up.')
 
 
-@command('radio')
+@commands('radio')
 def radio(bot, trigger):
     """ Radio functions, valid parameters: on, off, song, now, next, soon, stats. """
     global checkSongs, current_song, radioURL

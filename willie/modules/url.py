@@ -10,7 +10,7 @@ http://willie.dftba.net
 import re
 from htmlentitydefs import name2codepoint
 import willie.web as web
-from willie.module import command, rule
+from willie.module import commands, rule
 import urllib2
 import urlparse
 
@@ -75,7 +75,7 @@ def setup(bot):
         (exclusion_char))
 
 
-@command('title')
+@commands('title')
 def title_command(bot, trigger):
     """
     Show the title or URL information for the given URL, or the last URL seen
