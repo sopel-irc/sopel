@@ -7,6 +7,7 @@ This module provides special tools for reddit, namely showing detailed info abou
 """
 
 from willie.module import commands, rule, example, NOLIMIT
+from willie import tools
 import praw
 import re
 domain = r'https?://(?:www\.|np\.)?reddit\.com'
@@ -18,7 +19,7 @@ def setup(bot):
     post_regex = re.compile(post_url)
     user_regex = re.compile(user_url)
     if not bot.memory.contains('url_callbacks'):
-        bot.memory['url_callbacks'] = {}
+        bot.memory['url_callbacks'] = tools.WillieMemory()
     bot.memory['url_callbacks'][post_regex] = rpost_info
     bot.memory['url_callbacks'][user_regex] = redditor_info
 
