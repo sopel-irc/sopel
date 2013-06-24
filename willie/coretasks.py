@@ -50,7 +50,7 @@ def startup(bot, trigger):
 #Functions to maintain a list of chanops in all of willie's channels.
 
 
-@willie.module.command('newoplist')
+@willie.module.commands('newoplist')
 def refresh_list(bot, trigger):
     ''' If you need to use this, then it means you found a bug '''
     if trigger.admin:
@@ -59,7 +59,7 @@ def refresh_list(bot, trigger):
         bot.write(('NAMES', trigger.sender))
 
 
-@willie.module.command('listops')
+@willie.module.commands('listops')
 def list_ops(bot, trigger):
     """
     List channel operators in the given channel, or current channel if none is
@@ -78,7 +78,7 @@ def list_ops(bot, trigger):
             bot.say('None')
 
 
-@willie.module.command('listvoices')
+@willie.module.commands('listvoices')
 def list_voices(bot, trigger):
     """
     List users with voice in the given channel, or current channel if none is
@@ -230,7 +230,7 @@ def track_join(bot, trigger):
 #Live blocklist editing
 
 
-@willie.module.command('blocks')
+@willie.module.commands('blocks')
 @willie.module.priority('low')
 @willie.module.thread(False)
 def blocks(bot, trigger):
