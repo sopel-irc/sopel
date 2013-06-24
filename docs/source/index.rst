@@ -385,8 +385,8 @@ The ``Config`` class
    :members:
    :undoc-members:
 
-Miscellaneous: ``web``, ``tools``
-=================================
+Miscellaneous: ``web``, ``tools``, ``module``
+=============================================
 
 These provide a number of useful shortcuts for common tasks.
 
@@ -400,6 +400,11 @@ willie.tools
 ------------
 
 .. automodule:: willie.tools
+   :members:
+
+willie.module
+-------------
+.. automodule:: willie.module
    :members:
 
 Indices and tables
