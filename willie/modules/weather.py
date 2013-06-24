@@ -11,7 +11,7 @@ import re
 import urllib
 import json
 from willie import web
-from willie.module import command, commands, example
+from willie.module import commands, example
 from lxml import etree
 import feedparser
 
@@ -133,7 +133,7 @@ def get_wind(parsed):
     return description + ' ' + str(speed) + 'kt (' + degrees + ')'
 
 
-@command('weather')
+@commands('weather')
 @example('.weather London')
 def weather(bot, trigger):
     """.weather location - Show the weather at the given location."""

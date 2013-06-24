@@ -8,7 +8,7 @@ http://willie.dfbta.net
 """
 import pytz
 import datetime
-from willie.module import commands, command, example
+from willie.module import commands, example
 
 
 def setup(bot):
@@ -61,7 +61,7 @@ def f_time(bot, trigger):
     bot.say(now.strftime(tformat or "%F - %T%Z"))
 
 
-@command('settz')
+@commands('settz')
 @example('.settz America/New_York')
 def update_user(bot, trigger):
     """
@@ -125,7 +125,7 @@ def update_user_format(bot, trigger):
         bot.reply("I can't remember that; I don't have a database.")
 
 
-@command('channeltz')
+@commands('channeltz')
 @example('.chantz America/New_York')
 def update_channel(bot, trigger):
     """

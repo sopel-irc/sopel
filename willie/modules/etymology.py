@@ -8,7 +8,7 @@ http://willie.dftba.net
 
 import re
 from willie import web
-from willie.module import command, example, NOLIMIT
+from willie.module import commands, example, NOLIMIT
 
 etyuri = 'http://etymonline.com/?term=%s'
 etysearch = 'http://etymonline.com/?search=%s'
@@ -71,7 +71,7 @@ def etymology(word):
     return sentence + ' - ' + (etyuri % word)
 
 
-@command('ety')
+@commands('ety')
 @example('word')
 def f_etymology(bot, trigger):
     """Look up the etymology of a word"""

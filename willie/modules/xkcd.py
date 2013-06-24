@@ -10,13 +10,13 @@ http://willie.dftba.net
 import random
 from willie.modules.search import google_search
 from willie.modules.url import find_title
-from willie.module import command
+from willie.module import commands
 import urllib2
 from lxml import etree
 import re
 
 
-@command('xkcd')
+@commands('xkcd')
 def xkcd(bot, trigger):
     """
     .xkcd - Finds an xkcd comic strip. Takes one of 3 inputs:

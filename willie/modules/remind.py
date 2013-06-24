@@ -14,7 +14,7 @@ from pytz import timezone, all_timezones_set
 import pytz
 import codecs
 from datetime import tzinfo, timedelta, datetime
-from willie.module import command, example, NOLIMIT
+from willie.module import commands, example, NOLIMIT
 
 
 def filename(self):
@@ -120,7 +120,7 @@ scaling = {
 periods = '|'.join(scaling.keys())
 
 
-@command('in')
+@commands('in')
 @example('.in 3h45m Go to class')
 def remind(bot, trigger):
     """Gives you a reminder in the given amount of time."""
@@ -151,7 +151,7 @@ def remind(bot, trigger):
     create_reminder(bot, trigger, duration, reminder, tzi)
 
 
-@command('at')
+@commands('at')
 @example('.at 13:47 Do your homework!')
 def at(bot, trigger):
     """

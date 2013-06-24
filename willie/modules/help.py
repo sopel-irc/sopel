@@ -6,12 +6,12 @@ Licensed under the Eiffel Forum License 2.
 
 http://willie.dftba.net
 """
-from willie.module import command, rule, example, priority
+from willie.module import commands, rule, example, priority
 
 
 @rule('$nick' '(?i)(help|doc) +([A-Za-z]+)(?:\?+)?$')
 @example('.help tell')
-@command('help')
+@commands('help')
 @priority('low')
 def help(bot, trigger):
     """Shows a command's documentation, and possibly an example."""
@@ -27,7 +27,7 @@ def help(bot, trigger):
                 bot.say('e.g. ' + bot.doc[name][1])
 
 
-@command('commands')
+@commands('commands')
 @priority('low')
 def commands(bot, trigger):
     """Return a list of bot's commands"""

@@ -6,7 +6,7 @@ About: http://willie.dftba.net
 This module provides special tools for reddit, namely showing detailed info about reddit posts
 """
 
-from willie.module import command, rule, example, NOLIMIT
+from willie.module import commands, rule, example, NOLIMIT
 import praw
 import re
 domain = r'https?://(?:www\.|np\.)?reddit\.com'
@@ -45,7 +45,7 @@ def rpost_info(bot, trigger, match=None):
 
 
 #If you change this, you'll have to change some other things...
-@command('redditor')
+@commands('redditor')
 def redditor_info(bot, trigger, match=None):
     """Show information about the given Redditor"""
     commanded = re.match(bot.config.prefix + 'redditor', trigger)

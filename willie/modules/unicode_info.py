@@ -7,10 +7,10 @@ Licensed under the Eiffel Forum License 2.
 http://willie.dfbta.net
 """
 import unicodedata
-from willie.module import command, example, NOLIMIT
+from willie.module import commands, example, NOLIMIT
 
 
-@command('u')
+@commands('u')
 @example('.u 203D')
 def codepoint(bot, trigger):
     arg = trigger.group(2).strip()
