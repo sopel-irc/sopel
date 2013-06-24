@@ -263,12 +263,23 @@ class WillieMemory(dict):
         self.lock.release()
         return result
 
-    def contains(self, key):
+    def __contains__(self, key):
         """
-        Check if a key is in the dict. Use this instead of the ``in``
-        keyword if you want to be thread-safe.
+        Check if a key is in the dict, locking it for writes when doing so.
         """
         self.lock.acquire()
-        result = (key in self)
+        result = dict.__contains__(self, key)
         self.lock.release()
         return result
+
+    def contains(self, key):
+        """ Backwards compatability with 3.x, use `in` operator instead """
+        return self.__contains__(key)
+
+    def lock():
+        """ Lock this instance from writes. Useful if you want to iterate """
+        return self.lock.acquire()
+
+    def unlock():
+        """ Release the write lock """
+        return self.lock.release()
