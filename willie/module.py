@@ -5,8 +5,8 @@ It defines the following decorators for defining willie callables:
 willie.module.rule
 willie.module.thread
 willie.module.name (deprecated)
-willie.module.command
-willie.module.nickname_command
+willie.module.commands
+willie.module.nickname_commands
 willie.module.priority
 willie.module.event
 willie.module.rate
@@ -119,13 +119,13 @@ def name(value):
                              " Replace tuple-form .rule with a regexp.")
 
 
-def command(value):
-    """Decorator. Triggers on lines starting with "<command prefix>command".
+def commands(*command_list):
+    """Decorator. Sets a command list for a callable.
 
-    This decorator can be used multiple times to add multiple rules. The
-    resulting match object will have the command as the first group, rest of
-    the line, excluding leading whitespace, as the second group. Parameters
-    1 through 4, seperated by whitespace, will be groups 3-6.
+    This decorator can be used to add multiple commands to one callable in
+    a single line. The resulting match object will have the command as the
+    first group, rest of the line, excluding leading whitespace, as the second
+    group. Parameters 1 through 4, seperated by whitespace, will be groups 3-6.
 
     Args:
         command: A string, which can be a regular expression.
@@ -138,22 +138,10 @@ def command(value):
         @command("hello"):
             If the command prefix is "\.", this would trigger on lines starting
             with ".hello".
-    """
-    def add_attribute(function):
-        if not hasattr(function, "commands"):
-            function.commands = []
-        function.commands.append(value)
-        return function
-    return add_attribute
 
-def commands(*command_list):
-    """Decorator. Sets a command list for a callable
-
-    This decorator can be used to add multiple commands to one callable in
-    a single line.
-
-    Example:
         @commands('j', 'join')
+            If the command prefix is "\.", this would trigger on lines starting
+            with either ".j" or ".join".
     """
     def add_attribute(function):
         if not hasattr(function, "commands"):
@@ -162,7 +150,8 @@ def commands(*command_list):
         return function
     return add_attribute
 
-def nickname_command(command):
+
+def nickname_commands(*command_list):
     """Decorator. Triggers on lines starting with "$nickname: command".
 
     This decorator can be used multiple times to add multiple rules. The
@@ -193,10 +182,10 @@ def nickname_command(command):
         rule = r"""
         ^
         $nickname[:,]? # Nickname.
-        \s+({command}) # Command as group 0.
+        \s+({command}) # Command as group 1.
         (?:\s+         # Whitespace to end command.
-        (              # Rest of the line as group 1.
-        (?:(\S+))?     # Parameters 1-4 as groups 2-5.
+        (              # Rest of the line as group 2.
+        (?:(\S+))?     # Parameters 1-4 as groups 3-6.
         (?:\s+(\S+))?
         (?:\s+(\S+))?
         (?:\s+(\S+))?
@@ -204,7 +193,7 @@ def nickname_command(command):
                        # the module to parse the line.
         ))?            # Group 1 must be None, if there are no parameters.
         $              # EoL, so there are no partial matches.
-        """.format(command=command)
+        """.format(command='|'.join(command_list))
         function.rule.append(rule)
         return function
 
