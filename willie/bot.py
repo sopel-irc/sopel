@@ -479,8 +479,8 @@ class Willie(irc.Bot):
             self.bot = willie
             self.origin = origin
 
-        def say(self, string):
-            self.bot.msg(self.origin.sender, string)
+        def say(self, string, max_messages=1):
+            self.bot.msg(self.origin.sender, string, max_messages=1)
 
         def reply(self, string):
             if isinstance(string, str):
