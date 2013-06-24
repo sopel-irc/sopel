@@ -154,9 +154,10 @@ The ``Willie`` class
         be used, for example, in a module's ``setup`` function.
         
         The same behavior regarding loop detection and length restrictions apply
-        to ``reply`` as to ``msg``.
+        to ``reply`` as to ``msg``, though ``reply`` does not offer automatic
+        message splitting.
     
-    .. py:function:: say(text)
+    .. py:function:: say(text, max_messages=1)
     
         In a module function, send ``text`` to the channel in which the function
         was triggered.
@@ -164,8 +165,8 @@ The ``Willie`` class
         This function is not available outside of module functions. It can not
         be used, for example, in a module's ``configure`` function.
 
-        The same behavior regarding loop detection and length restrictions apply
-        to ``say`` as to ``msg`` and ``action``.
+        The same behavior regarding loop detection and length restrictions, as
+        well as message splitting, apply to ``say`` as to ``msg``.
         
     .. py:function:: action(text)
     
@@ -176,7 +177,8 @@ The ``Willie`` class
         be used, for example, in a module's ``configure`` function.
 
         The same behavior regarding loop detection and length restrictions apply
-        to ``action`` as to ``msg`` and ``say``.
+        to ``action`` as to ``msg`` and ``say``, though like ``reply`` there is
+        no facility for message splitting.
 
     .. py:function:: quit(message)
     
@@ -234,7 +236,7 @@ The ``Willie`` class
         sending. Additionally, if the message (after joining) is longer than
         than 510 characters, any remaining characters will not be sent.
 
-       .. py:function:: msg(recipient, text)
+       .. py:function:: msg(recipient, text, max_messages=1)
     
         Send a PRIVMSG of ``text`` to ``recipient``. If the same ``text`` was
         the message in 5 or more of the last 8 calls to ``msg``, ``'...'`` will
@@ -243,10 +245,26 @@ The ``Willie`` class
         Willie from being caught in an infinite loop with another bot, or being
         used to spam.
         
-        After loop detection, the message is checked for length. If the sum of
-        the lengths of ``text`` and ``recipient`` are greater than 500, ``text``
-        will be truncated to fit this limit.
-    
+        If ``max_messages`` argument is optional, and defaults to 1. The
+        message will be split into that number of segments. Each segment will
+        be 400 bytes long or less (bearing in mind that messages are UTF-8
+        encoded). The message will be split at the last space before the 400th
+        byte, or at the 400th byte if no such space exists. The remainder will
+        be split in the same manner until either the given number of segments
+        is reached or the remainder is less than 400 bytes.
+
+        If the message is too long to fit into the given number of segments (or
+        if no number is given), the bot will send as many bytes to the server
+        as it can. The server, due to the structure of the protocol, will
+        likely truncate the message further, to a length that is not
+        determinable by Willie (though you can generally rely on 400 bytes
+        making it through).
+
+        Note that when a message is split not on a space but on a byte number,
+        no attention is given to Unicode character boundaries, and no other
+        word boundaries besides space will be split upon. This will not cause
+        problems in the vast majority of cases.
+
     .. py:function:: debug(tag, text, level)
     
         *Availability: 3+*
