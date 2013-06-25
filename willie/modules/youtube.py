@@ -22,7 +22,7 @@ def setup(bot):
     regex = re.compile('(youtube.com/watch\S*v=|youtu.be/)([\w-]+)')
     if not bot.memory.contains('url_callbacks'):
         bot.memory['url_callbacks'] = tools.WillieMemory()
-    bot.memory['url_callbacks'][regex] = exclude
+    bot.memory['url_callbacks'][regex] = ytinfo
 
 
 def ytget(bot, trigger, uri):
