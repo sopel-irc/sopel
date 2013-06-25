@@ -545,18 +545,12 @@ class Willie(irc.Bot):
 
             s.host = origin.host
             if s.sender is not s.nick:  # no ops in PM
-                try:
-                    s.ops = self.ops[s.sender]
-                except:
-                    s.ops = []
+                s.ops = self.ops.get(s.sender, [])
                 """
                 List of channel operators in the channel the message was
                 recived in
                 """
-                try:
-                    s.halfplus = self.halfplus[s.sender]
-                except:
-                    s.halfplus = []
+                s.halfplus = self.halfplus.get(s.sender, [])
                 """
                 List of channel half-operators in the channel the message was
                 recived in
@@ -564,10 +558,7 @@ class Willie(irc.Bot):
                 s.isop = (s.nick in s.ops or
                           s.nick in s.halfplus)
                 """True if the user is half-op or an op"""
-                try:
-                    s.voices = self.voices[s.sender]
-                except:
-                    s.voices = []
+                s.voices = self.voices.get(s.sender, [])
                 """
                 List of channel operators in the channel the message was
                 recived in
