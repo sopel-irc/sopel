@@ -37,7 +37,8 @@ def calculate(q):
 
 
 @commands('c', 'calc')
-@example('.c 5 + 3')
+@example('.c 5 + 3', '8')
+@example('.calc 20cm in inches', '7.87401575 inches')
 def c(bot, trigger):
     """Google calculator."""
     if not trigger.group(2):
@@ -47,7 +48,7 @@ def c(bot, trigger):
 
 
 @commands('py')
-@example('.py len([1,2,3])')
+@example('.py len([1,2,3])', '3')
 def py(bot, trigger):
     """Evaluate a Python expression."""
     query = trigger.group(2)
@@ -60,7 +61,8 @@ def py(bot, trigger):
 
 
 @commands('wa', 'wolfram')
-@example('.wa circumference of the sun * pi')
+@example('.wa sun mass / earth mass',
+        '[WOLFRAM] M_(.)\/M_(+)  (solar mass per Earth mass) = 332948.6')
 def wa(bot, trigger):
     """Wolfram Alpha calculator"""
     if not trigger.group(2):
@@ -74,9 +76,9 @@ def wa(bot, trigger):
     if answer:
         answer = answer.decode('string_escape')
         answer = HTMLParser.HTMLParser().unescape(answer)
-        #This might not work if there are more than one instance of escaped
-        #unicode chars But so far I haven't seen any examples of such output
-        #examples from Wolfram Alpha
+        # This might not work if there are more than one instance of escaped
+        # unicode chars But so far I haven't seen any examples of such output
+        # examples from Wolfram Alpha
         match = re.search('\\\:([0-9A-Fa-f]{4})', answer)
         if match is not None:
             char_code = match.group(1)
@@ -92,3 +94,8 @@ def wa(bot, trigger):
         waOutputArray = []
     else:
         bot.reply('Sorry, no result.')
+
+
+if __name__ == "__main__":
+    from willie.test_tools import run_example_tests
+    run_example_tests(__file__)
