@@ -34,6 +34,7 @@ def f_time(bot, trigger):
                 tz = bot.db.preferences.get(tz, 'tz')
                 if not tz:
                     bot.say("I'm sorry, I don't know %s's timezone" % tz)
+                    return
             else:
                 bot.say("I'm sorry, I don't know about the %s timezone or"
                            " user." % tz)
