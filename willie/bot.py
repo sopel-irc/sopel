@@ -17,7 +17,7 @@ import re
 import threading
 import imp
 from datetime import datetime
-
+from willie import tools
 import irc
 from db import WillieDB
 from tools import (stderr, stdout, Nick, PriorityQueue, released,
@@ -61,10 +61,10 @@ class Willie(irc.Bot):
             self.db.add_table('preferences', ['name'], 'name')
             self.settings = self.db.preferences
 
-        self.memory = self.WillieMemory()
+        self.memory = tools.WillieMemory()
         """
         A thread-safe dict for storage of runtime data to be shared between
-        modules. See `WillieMemory <#bot.Willie.WillieMemory>`_
+        modules. See `WillieMemory <#tools.Willie.WillieMemory>`_
         """
 
         self.scheduler = Willie.JobScheduler(self)
@@ -246,35 +246,6 @@ class Willie(irc.Bot):
         def __iter__(self):
             """This is an iterator. Never stops though."""
             return self
-
-    class WillieMemory(dict):
-        """
-        Availability: 3.1+
-
-        A simple thread-safe dict implementation. In order to prevent
-        exceptions when iterating over the values and changing them at the same
-        time from different threads, we use a blocking lock on ``__setitem__``
-        and ``contains``.
-        """
-        def __init__(self, *args):
-            dict.__init__(self, *args)
-            self.lock = threading.Lock()
-
-        def __setitem__(self, key, value):
-            self.lock.acquire()
-            result = dict.__setitem__(self, key, value)
-            self.lock.release()
-            return result
-
-        def contains(self, key):
-            """
-            Check if a key is in the dict. Use this instead of the ``in``
-            keyword if you want to be thread-safe.
-            """
-            self.lock.acquire()
-            result = (key in self)
-            self.lock.release()
-            return result
 
     def setup(self):
         stderr("\nWelcome to Willie. Loading modules...\n\n")
@@ -467,8 +438,8 @@ class Willie(irc.Bot):
             self.bot = willie
             self.origin = origin
 
-        def say(self, string):
-            self.bot.msg(self.origin.sender, string)
+        def say(self, string, max_messages=1):
+            self.bot.msg(self.origin.sender, string, max_messages=1)
 
         def reply(self, string):
             if isinstance(string, str):
@@ -562,18 +533,12 @@ class Willie(irc.Bot):
 
             s.host = origin.host
             if s.sender is not s.nick:  # no ops in PM
-                try:
-                    s.ops = self.ops[s.sender]
-                except:
-                    s.ops = []
+                s.ops = self.ops.get(s.sender, [])
                 """
                 List of channel operators in the channel the message was
                 recived in
                 """
-                try:
-                    s.halfplus = self.halfplus[s.sender]
-                except:
-                    s.halfplus = []
+                s.halfplus = self.halfplus.get(s.sender, [])
                 """
                 List of channel half-operators in the channel the message was
                 recived in
@@ -581,10 +546,7 @@ class Willie(irc.Bot):
                 s.isop = (s.nick in s.ops or
                           s.nick in s.halfplus)
                 """True if the user is half-op or an op"""
-                try:
-                    s.voices = self.voices[s.sender]
-                except:
-                    s.voices = []
+                s.voices = self.voices.get(s.sender, [])
                 """
                 List of channel operators in the channel the message was
                 recived in

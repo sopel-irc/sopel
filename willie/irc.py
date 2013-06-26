@@ -409,7 +409,24 @@ class Bot(asynchat.async_chat):
     def dispatch(self, origin, text, args):
         pass
 
-    def msg(self, recipient, text):
+    def msg(self, recipient, text, max_messages=1):
+        # We're arbitrarily saying that the max is 400 bytes of text when
+        # messages will be split. Otherwise, we'd have to acocunt for the bot's
+        # hostmask, which is hard.
+        max_text_length = 400
+        encoded_text = text.encode('utf-8')
+        excess = ''
+        if max_messages > 1 and len(encoded_text) > max_text_length:
+            last_space = encoded_text.rfind(' ', 0, max_text_length)
+            if last_space == -1:
+                excess = encoded_text[max_text_length:]
+                encoded_text = encoded_text[:max_text_length]
+            else:
+                excess = encoded_text[last_space + 1:]
+                encoded_text = encoded_text[:last_space]
+            # Back to unicode again, so we don't screw things up later.
+            text = encoded_text.decode('utf-8')
+        # We'll then send the excess at the end
         try:
             self.sending.acquire()
 
@@ -435,6 +452,10 @@ class Bot(asynchat.async_chat):
             self.stack = self.stack[-10:]
         finally:
             self.sending.release()
+        # Now that we've sent the first part, we need to send the rest. Doing
+        # this recursively seems easier to me than iteratively
+        if excess:
+            self.msg(recipient, excess, max_messages)
 
     def notice(self, dest, text):
         '''Send an IRC NOTICE to a user or a channel. See IRC protocol

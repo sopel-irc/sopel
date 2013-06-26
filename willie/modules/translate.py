@@ -60,8 +60,8 @@ def translate(text, input='auto', output='en'):
         pass
     text = urllib2.quote(text)
     result = opener.open('http://translate.google.com/translate_a/t?' +
-        ('client=t&hl=en&sl=%s&tl=%s' % (input, output)) +
-        ('&text=%s' % text)).read()
+        ('client=t&sl=%s&tl=%s' % (input, output)) +
+        ('&q=%s' % text)).read()
 
     while ',,' in result:
         result = result.replace(',,', ',null,')
@@ -191,11 +191,12 @@ def mangle(bot, trigger):
             phrase = backup
             break
 
-        backup = phrase
         try:
             phrase = translate(phrase[0], lang, 'en')
         except:
-            break
+            phrase = backup
+            continue
+
         if bot.config.has_section('translate') and bot.config.translate.research == True:
             research_logfile.write('-> %s\n' % str(phrase))
         if not phrase:
