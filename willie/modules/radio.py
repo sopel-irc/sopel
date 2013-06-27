@@ -10,7 +10,6 @@ from time import sleep
 from xml.dom.minidom import parseString
 import willie.web as web
 from willie.module import commands
-import xml.dom.minidom
 
 
 def configure(config):
@@ -34,7 +33,7 @@ def getAPI(bot, trigger):
     #contact the 'heavyweight' XML API
     try:
         raw = web.get(radioURL % 'stats')
-    except Exception as e:
+    except Exception:
         bot.say('The radio is not responding to the stats request.')
         return 0
 

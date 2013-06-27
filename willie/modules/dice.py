@@ -30,7 +30,7 @@ def dice(bot, trigger):
     arr = arr.replace('-', ' - ').replace('+', ' + ').replace('/', ' / ')
     arr = arr.replace('*', ' * ').replace('(', ' ( ').replace(')', ' ) ')
     arr = arr.replace('^', ' ^ ').replace('()', '').split(' ')
-    full_string, calc_string = '', ''
+    full_string = ''
 
     for segment in arr:
         #check for dice

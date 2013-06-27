@@ -8,10 +8,8 @@ Licensed under the Eiffel Forum License 2.
 http://willie.dftba.net
 """
 
-import re
 from willie import web
 from willie.module import rule, commands, priority, example
-from time import sleep
 import urllib2
 import json
 import random
@@ -163,7 +161,7 @@ def mangle(bot, trigger):
     global mangle_lines
     long_lang_list = ['fr', 'de', 'es', 'it', 'no', 'he', 'la', 'ja', 'cy', 'ar', 'yi', 'zh', 'nl', 'ru', 'fi', 'hi', 'af', 'jw', 'mr', 'ceb', 'cs', 'ga', 'sv', 'eo', 'el', 'ms', 'lv']
     lang_list = []
-    for index in range(0, 8):
+    for __ in range(0, 8):
         lang_list = get_random_lang(long_lang_list, lang_list)
     random.shuffle(lang_list)
     if trigger.group(2) is None:

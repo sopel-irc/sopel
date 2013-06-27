@@ -7,9 +7,6 @@ Licensed under the Eiffel Forum License 2.
 http://willie.dftba.net
 """
 
-import re
-import urllib
-import json
 from willie import web
 from willie.module import commands, example
 from lxml import etree
@@ -17,7 +14,7 @@ import feedparser
 
 
 def setup(bot):
-    #Having a db means pref's exists. Later, we can just use `if bot.db`.
+    # Having a db means pref's exists. Later, we can just use `if bot.db`.
     if bot.db and not bot.db.preferences.has_columns('woeid'):
         bot.db.preferences.add_columns(['woeid'])
 
@@ -48,8 +45,8 @@ def get_cover(parsed):
     except KeyError:
         return 'unknown'
     text = condition['text']
-    code = int(condition['code'])
-    #TODO parse code to get those little icon thingies.
+    # code = int(condition['code'])
+    # TODO parse code to get those little icon thingies.
     return text
 
 
@@ -82,8 +79,8 @@ def get_wind(parsed):
         kph = float(wind_data['speed'])
     except ValueError:
         kph = -1
-        #Incoming data isn't a number, default to zero.
-        #This is a dirty fix for issue #218
+        # Incoming data isn't a number, default to zero.
+        # This is a dirty fix for issue #218
     speed = int(round(kph / 1.852, 0))
     degrees = int(wind_data['direction'])
     if speed < 1:

@@ -13,7 +13,7 @@ import threading
 from pytz import timezone, all_timezones_set
 import pytz
 import codecs
-from datetime import tzinfo, timedelta, datetime
+from datetime import datetime
 from willie.module import commands, example, NOLIMIT
 
 

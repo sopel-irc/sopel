@@ -9,7 +9,6 @@ http://willie.dftba.net/
 from datetime import datetime
 from urllib2 import HTTPError
 import json
-import re
 from willie import web
 from willie.module import commands
 
@@ -38,20 +37,20 @@ def configure(config):
 @commands('makeissue', 'makebug')
 def issue(bot, trigger):
     """Create a GitHub issue, also known as a bug report. Syntax: .makeissue Title of the bug report"""
-    #check input
+    # check input
     if not trigger.group(2):
         return bot.say('Please title the issue')
 
-    #Is the Oauth token and repo available?
+    # Is the Oauth token and repo available?
     gitAPI = checkConfig(bot)
     if gitAPI == False:
         return bot.say('Git module not configured, make sure github.oauth_token and github.repo are defined')
 
-    #parse input
+    # parse input
     now = ' '.join(str(datetime.utcnow()).split(' ')).split('.')[0] + ' UTC'
     body = 'Submitted by: %s\nFrom channel: %s\nAt %s' % (trigger.nick, trigger.sender, now)
     data = {"title": trigger.group(2).encode('utf-8'), "body": body, "labels": ["IRC"]}
-    #submit
+    # submit
     try:
         raw = web.post('https://api.github.com/repos/' + gitAPI[1] + '/issues?access_token=' + gitAPI[0], json.dumps(data))
     except HTTPError:
@@ -68,7 +67,7 @@ def findIssue(bot, trigger):
     if not trigger.group(2):
         return bot.reply('What are you searching for?')
 
-    #Is the Oauth token and repo available?
+    # Is the Oauth token and repo available?
     gitAPI = checkConfig(bot)
     if gitAPI == False:
         return bot.say('Git module not configured, make sure github.oauth_token and github.repo are defined')

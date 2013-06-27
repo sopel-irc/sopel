@@ -10,14 +10,13 @@ http://willie.dfbta.net
 from willie.module import commands, priority
 import feedparser
 import socket
-import sys
 import time
 
 DEBUG = False
 socket.setdefaulttimeout(10)
 INTERVAL = 10  # seconds between checking for new updates
 STOP = False
-#This is reset in setup().
+# This is reset in setup().
 SUB = ('%s',)
 
 
