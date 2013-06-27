@@ -30,7 +30,9 @@ def k_to_c(temp):
 
 
 @commands('temp')
-@example('.temp 100F')
+@example('.temp 100F', '37.7777777778°C = 100.0°F = 310.927777778K')
+@example('.temp 100C', '100.0°C = 212.0°F = 373.15K')
+@example('.temp 100K', '-173.15°C = -279.67°F = 100.0K')
 def temperature(bot, trigger):
     """
     Convert temperatures
@@ -56,7 +58,12 @@ def temperature(bot, trigger):
 
 
 @commands('length', 'distance')
-@example('.distance 3km')
+@example('.distance 3m', '3.0m = 9 feet, 10.11 inches')
+@example('.distance 3km', '3.0km = 1.86411 miles')
+@example('.distance 3 miles', '4.82804126366km = 3.0 miles')
+@example('.distance 3 inch', '7.62001524003cm = 3.0 inches')
+@example('.distance 3 feet', '91.4411119239cm = 3 feet, 0.000365764447693 inches')
+@example('.distance 3 yards', '30.4803706413cm = 1 foot, 0.000121921482561 inches')
 def distance(bot, trigger):
     """
     Convert distances
@@ -122,3 +129,8 @@ def distance(bot, trigger):
         stupid_part = ', '.join(parts)
 
     bot.reply('%s = %s' % (metric_part, stupid_part))
+
+
+if __name__ == "__main__":
+    from willie.test_tools import run_example_tests
+    run_example_tests(__file__)
