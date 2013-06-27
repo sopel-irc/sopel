@@ -11,7 +11,6 @@ import re
 from htmlentitydefs import name2codepoint
 from willie import web, tools
 from willie.module import commands, rule
-import urllib2
 import urlparse
 
 url_finder = None
@@ -46,7 +45,7 @@ def setup(bot):
     global url_finder, exclusion_char
     if bot.config.has_option('url', 'exclude'):
         regexes = [re.compile(s) for s in
-                   bot.config.url.get_list(exclude)]
+                   bot.config.url.get_list(bot.config.exclude)]
     else:
         regexes = []
 
