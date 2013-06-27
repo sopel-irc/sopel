@@ -11,14 +11,15 @@ willie.module.priority
 willie.module.event
 willie.module.rate
 willie.module.example
-"""
-"""
+
 willie/module.py - Willie IRC Bot (http://willie.dftba.net/)
 Copyright 2013, Ari Koivula, <ari@koivu.la>
 Copyright © 2013, Elad Alfassa <elad@fedoraproject.org>
 
 Licensed under the Eiffel Forum License 2.
 """
+
+import willie.test_tools
 
 NOLIMIT = 1
 """Return value for ``callable``\s, which supresses rate limiting for the call.
@@ -247,12 +248,57 @@ def rate(value):
     return add_attribute
 
 
-def example(value):
-    """Decorator. Equivalent to func.example = value.
-
-    Usage example for a callable.
+class example(object):
+    """Decorator. Add an example attribute into a function and generate a test.
     """
-    def add_attribute(function):
-        function.example = value
-        return function
-    return add_attribute
+    def __init__(self, msg, result=None, privmsg=False, admin=False,
+            owner=False, repeat=1, re=None):
+        """Accepts arguments for the decorator.
+
+        Args:
+            msg - The example message to give to the function as input.
+            result - Resulting output from calling the function with msg.
+            privmsg - If true, make the message appear to have sent in a
+                private message to the bot. If false, make it appear to have
+                come from a channel.
+            admin - Bool. Make the message appear to have come from an admin.
+            owner - Bool. Make the message appear to have come from an owner.
+            repeat - How many times to repeat the test. Usefull for tests that
+                return random stuff.
+            re - Bool. If true, result is interpreted as a regular expression.
+        """
+        # Argument re is a result in regular expression form. Giving both it
+        # and non-regular expression form makes no sense and it is not possible
+        # to know which should be used.
+        assert not (result and re)
+        # Wrap result into a list for get_example_test
+        self.result = None
+        self.use_re = False
+        if result is not None:
+            self.result = [result]
+        elif re is not None:
+            self.result = [re]
+            self.use_re = True
+        self.msg = msg
+        self.privmsg = privmsg
+        self.admin = admin
+        self.owner = owner
+        self.repeat = repeat
+
+    def __call__(self, func):
+        if not hasattr(func, "example"):
+            func.example = []
+
+        if self.result:
+            test = willie.test_tools.get_example_test(
+                    func, self.msg, self.result, self.privmsg, self.admin,
+                    self.owner, self.repeat, self.use_re)
+            willie.test_tools.insert_into_module(
+                    test, func.__module__, func.__name__, 'test_example')
+
+        record = {"example": self.msg,
+                "result": self.result,
+                "privmsg": self.privmsg,
+                "admin": self.admin, }
+        func.example.append(record)
+        return func
