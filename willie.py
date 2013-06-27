@@ -13,7 +13,6 @@ import sys
 import os
 import optparse
 import signal
-import imp
 
 from willie.__init__ import run
 from willie.config import Config, create_config, ConfigurationError, wizard

@@ -11,7 +11,6 @@ http://willie.dftba.net/
 """
 
 import time
-import sys
 import os
 import re
 import threading
@@ -20,7 +19,7 @@ from datetime import datetime
 from willie import tools
 import irc
 from db import WillieDB
-from tools import (stderr, stdout, Nick, PriorityQueue, released,
+from tools import (stderr, Nick, PriorityQueue, released,
         get_command_regexp)
 import module
 
