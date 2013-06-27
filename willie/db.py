@@ -212,29 +212,39 @@ class WillieDB(object):
         this can be achieved by creating the table manually, or with a custom
         query, and then creating the WillieDB object.
         """
-
-        if name.startswith('_'):
+        # First, get the attribute with that name. It'll probably be a pseudo-
+        # table, but we want to know if the table already exists or if it's
+        # some other db attribute.
+        extant_table = getattr(self, name)
+        if name.startswith('_'):  # exclude special names
             raise ValueError('Invalid table name %s.' % name)
-        elif not isinstance(getattr(self, name), Table):
+        elif not isinstance(extant_table, Table):
             #Conflict with a non-table value, probably a function
             raise ValueError('Invalid table name %s.' % name)
         elif not name in self.tables:
+            # We got a table, but it's not registered in the table list, so we
+            # create it.
             cols = self._get_column_creation_text(columns, key)
             db = self.connect()
             cursor = db.cursor()
             cursor.execute("CREATE TABLE %s %s;" % (name, cols))
             db.close()
-            setattr(self, name, Table(self, name, columns, key))
+            extant_table = Table(self, name, columns, key)
+            setattr(self, name, extant_table)
             self.tables.add(name)
-        elif getattr(self, name).key == key:
-
-            if not all(c in table.columns for c in columns):
+        elif extant_table.key == key:
+            # We got an actual table. If the key on the table being created
+            # has the same key, it's safe to assume it's the one the user
+            # wanted, so if there are columns not already there, we add them.
+            if not all(c in extant_table.columns for c in columns):
                 db = self.connect()
                 cursor = db.cursor()
                 cursor.execute("ALTER TABLE %s ADD COLUMN %s;")
-                table.colums.add(columns)
+                extant_table.colums.add(columns)
                 db.close()
         else:
+            # There's already a different table with that name, which we can't
+            # fix, so raise an error.
             raise ValueError('Table %s already exists with different key.'
                              % name)
 
