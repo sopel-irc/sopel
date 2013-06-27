@@ -16,14 +16,12 @@ documentation at http://www.irchelp.org/irchelp/rfc/
 import sys
 import re
 import time
-import traceback
 import socket
 import asyncore
 import asynchat
 import os
 import codecs
-import traceback
-from tools import stderr, stdout, Nick
+from tools import stderr, Nick
 try:
     import select
     import ssl

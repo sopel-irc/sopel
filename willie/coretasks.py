@@ -14,8 +14,6 @@ responses to standard IRC codes without having to shove them all into the
 dispatch function in bot.py and making it easier to maintain.
 """
 import re
-import threading
-import time
 import willie
 from willie.tools import Nick
 

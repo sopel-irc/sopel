@@ -47,7 +47,6 @@ import sys
 import ConfigParser
 import getpass
 import imp
-from textwrap import dedent as trim
 
 
 class ConfigurationError(Exception):
@@ -415,5 +414,3 @@ def create_config(configpath):
         sys.exit(1)
     print "Config file written sucessfully!"
 
-if __name__ == '__main__':
-    main()
