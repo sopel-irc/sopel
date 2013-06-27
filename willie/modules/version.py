@@ -7,7 +7,7 @@ http://willie.dftba.net
 """
 
 from datetime import datetime
-from subprocess import *
+from subprocess import Popen, PIPE
 import willie
 
 

@@ -22,6 +22,7 @@ except ImportError:
 
 from willie.module import commands, example
 
+
 def configure(config):
     """
 
@@ -33,6 +34,7 @@ def configure(config):
         config.add_section('ip')
         config.interactive_add('ip', 'GeoIP_db_path', 'Full path to the GeoIP database', None)
 
+
 def _decompress(source, target, delete_after_decompression = True):
     """ Decompress a GZip file """
     f_in = gzip.open(source, 'rb')
@@ -42,6 +44,7 @@ def _decompress(source, target, delete_after_decompression = True):
     f_in.close()
     if delete_after_decompression:
         os.remove(source)
+
 
 def _find_geoip_db(bot):
     """ Find the GeoIP database """
@@ -53,8 +56,8 @@ def _find_geoip_db(bot):
         else:
             bot.debug('ip', 'GeoIP path configured but DB not found in configured path', 'warning')
     if (os.path.isfile(os.path.join(bot.config.homedir, 'GeoLiteCity.dat')) and
-           os.path.isfile(os.path.join(bot.config.homedir, 'GeoIPASNum.dat'))):
-           return bot.config.homedir
+            os.path.isfile(os.path.join(bot.config.homedir, 'GeoIPASNum.dat'))):
+        return bot.config.homedir
     elif (os.path.isfile(os.path.join('/usr/share/GeoIP', 'GeoLiteCity.dat')) and
            os.path.isfile(os.path.join('/usr/share/GeoIP', 'GeoIPASNum.dat'))):
             return '/usr/share/GeoIP'

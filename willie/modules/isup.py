@@ -8,7 +8,6 @@ This allows users to check if a website is up through isup.me.
 
 from willie import web
 from willie.module import commands
-import re
 
 
 @commands('isup')
@@ -26,7 +25,7 @@ def isup(bot, trigger):
             site = 'http://' + site
     try:
         response = web.get(site)
-    except Exception as e:
+    except Exception:
         bot.say(site + ' looks down from here.')
         return
 

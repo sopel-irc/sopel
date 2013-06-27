@@ -7,11 +7,9 @@ http://willie.dftba.net
 """
 
 import os
-import re
 import time
 import datetime
 import pytz
-import random
 import threading
 from willie.tools import Nick
 from willie.module import commands, nickname_commands, rule, priority, example

@@ -26,6 +26,7 @@ def configure(config):
         config.interactive_add('meetbot', 'meeting_log_path', "Path to meeting logs storage directory (should be an absolute path, accessible on a webserver)")
         config.interactive_add('meetbot', 'meeting_log_baseurl', "Base URL for the meeting logs directory (eg. http://example.com/logs)")
 
+meetings_dict = Ddict(dict)  # Saves metadata about currently running meetings
 """
 meetings_dict is a 2D dict.
 
@@ -39,8 +40,6 @@ current subject
 
 Using channel as the meeting ID as there can't be more than one meeting in a channel at the same time.
 """
-
-meetings_dict = Ddict(dict)  # Saves metadata about currently running meetings
 meeting_log_path = ''  # To be defined on meeting start as part of sanity checks, used by logging functions so we don't have to pass them bot
 meeting_log_baseurl = ''  # To be defined on meeting start as part of sanity checks, used by logging functions so we don't have to pass them bot
 

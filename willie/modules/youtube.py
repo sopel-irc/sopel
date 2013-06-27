@@ -43,18 +43,18 @@ def ytget(bot, trigger, uri):
         vid_id = video_entry['id']['$t'].split(':')
         vid_id = vid_id[len(vid_id) - 1]  # last item is the actual ID
         vid_info['link'] = 'http://youtu.be/' + vid_id
-    except KeyError as e:
+    except KeyError:
         vid_info['link'] = 'N/A'
 
     try:
         vid_info['title'] = video_entry['title']['$t']
-    except KeyError as e:
+    except KeyError:
         vid_info['title'] = 'N/A'
 
     #get youtube channel
     try:
         vid_info['uploader'] = video_entry['author'][0]['name']['$t']
-    except KeyError as e:
+    except KeyError:
         vid_info['uploader'] = 'N/A'
 
     #get upload time in format: yyyy-MM-ddThh:mm:ss.sssZ
@@ -64,7 +64,7 @@ def ytget(bot, trigger, uri):
         vid_info['uploaded'] = '%s/%s/%s, %s:%s' % (upraw[8:10], upraw[5:7],
                                                   upraw[0:4], upraw[11:13],
                                                   upraw[14:16])
-    except KeyError as e:
+    except KeyError:
         vid_info['uploaded'] = 'N/A'
 
     #get duration in seconds
@@ -88,33 +88,33 @@ def ytget(bot, trigger, uri):
                     vid_info['length'] = vid_info['length'] + ' '
             if seconds:
                 vid_info['length'] = vid_info['length'] + str(seconds) + 'secs'
-    except KeyError as e:
+    except KeyError:
         vid_info['length'] = 'N/A'
 
     #get views
     try:
         views = video_entry['yt$statistics']['viewCount']
         vid_info['views'] = str('{0:20,d}'.format(int(views))).lstrip(' ')
-    except KeyError as e:
+    except KeyError:
         vid_info['views'] = 'N/A'
 
     #get comment count
     try:
         comments = video_entry['gd$comments']['gd$feedLink']['countHint']
         vid_info['comments'] = str('{0:20,d}'.format(int(comments))).lstrip(' ')
-    except KeyError as e:
+    except KeyError:
         vid_info['comments'] = 'N/A'
 
     #get likes & dislikes
     try:
         likes = video_entry['yt$rating']['numLikes']
         vid_info['likes'] = str('{0:20,d}'.format(int(likes))).lstrip(' ')
-    except KeyError as e:
+    except KeyError:
         vid_info['likes'] = 'N/A'
     try:
         dislikes = video_entry['yt$rating']['numDislikes']
         vid_info['dislikes'] = str('{0:20,d}'.format(int(dislikes))).lstrip(' ')
-    except KeyError as e:
+    except KeyError:
         vid_info['dislikes'] = 'N/A'
     return vid_info
 

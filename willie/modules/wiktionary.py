@@ -84,7 +84,7 @@ def wiktionary(bot, trigger):
         bot.reply('You must tell me what to look up!')
         return
 
-    etymology, definitions = wikt(word)
+    _etymology, definitions = wikt(word)
     if not definitions:
         bot.say("Couldn't get any definitions for %s." % word)
         return
