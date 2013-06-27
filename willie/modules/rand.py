@@ -1,6 +1,6 @@
 """
 rand.py - Rand Module
-Copyright 2010, Michael Yanovich, yanovich.net
+Copyright 2013, Ari Koivula, <ari@koivu.la>
 Licensed under the Eiffel Forum License 2.
 
 http://willie.dftba.net
@@ -8,44 +8,35 @@ http://willie.dftba.net
 
 from willie.module import commands, example
 import random
-import re
+import sys
 
 
 @commands('rand')
-@example('.rand 1 99', re=r'your random integer is: (\d|\d\d)', repeat=10)
-@example('.rand 10', re=r'your random integer is: (\d|\d\d)')
-@example('.rand 11 11', 'your random integer is: 11')
-@example('.rand -1 -1', 'your random integer is: -1')
+@example('.rand 2', re=r'random\(0, 2\) = (0|1|2)', repeat=10)
+@example('.rand -1 -1', 'random(-1, -1) = -1')
+@example('.rand', re=r'random\(0, \d+\) = \d+')
+@example('.rand 99 10', re=r'random\(10, 99\) = \d\d', repeat=10)
+@example('.rand 10 99', re=r'random\(10, 99\) = \d\d', repeat=10)
 def rand(bot, trigger):
-    """Generates a random integer between <arg1> and <arg2>."""
-    if not trigger.group(2):
-        bot.reply("I'm sorry, but you must enter at least one number.")
+    """Replies with a random number between first and second argument."""
+    arg1 = trigger.group(3)
+    arg2 = trigger.group(4)
+
+    if arg2 is not None:
+        low = int(arg1)
+        high = int(arg2)
+    elif arg1 is not None:
+        low = 0
+        high = int(arg1)
     else:
-        random.seed()
-        li_integers = trigger.group(2)
-        li_integers_str = li_integers.split()
-        if len(li_integers_str) == 1:
-            li_integers_str = re.sub(r'\D', '', str(li_integers_str))
-            if int(li_integers_str[0]) <= 1:
-                a = li_integers_str
-                a = int(a)
-                randinte = random.randint(a, 0)
-            else:
-                a = li_integers_str
-                a = int(a)
-                randinte = random.randint(0, a)
-            bot.reply("your random integer is: " + str(randinte))
-        else:
-            a, b = li_integers.split()
-            a = re.sub(r'\D', '', str(a))
-            b = re.sub(r'\D', '', str(b))
-            a = int(a)
-            b = int(b)
-            if a <= b:
-                randinte = random.randint(a, b)
-            else:
-                randinte = random.randint(b, a)
-            bot.reply("your random integer is: " + str(randinte))
+        low = 0
+        high = sys.maxint
+
+    if low > high:
+        low, high = high, low
+
+    number = random.randint(low, high)
+    bot.reply("random(%d, %d) = %d" % (low, high, number))
 
 
 if __name__ == "__main__":
