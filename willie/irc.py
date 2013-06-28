@@ -21,6 +21,7 @@ import asyncore
 import asynchat
 import os
 import codecs
+import traceback
 from tools import stderr, Nick
 try:
     import select
@@ -512,8 +513,7 @@ class Bot(asynchat.async_chat):
         self.debug("core", 'Fatal error in core, please review exception log',
                    'always')
         logfile = codecs.open(os.path.join(self.config.logdir, 'exceptions.log'),
-                              'a', encoding='utf-8')  # TODO: make not
-                                                             # hardcoded
+                              'a', encoding='utf-8')  # TODO: make not hardcoded
         logfile.write('Fatal error in core, handle_error() was called\n')
         logfile.write('last raw line was %s' % self.raw)
         logfile.write(trace)
