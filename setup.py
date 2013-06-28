@@ -9,6 +9,8 @@ import shutil
 
 def do_setup():
     try:
+        # This special screwing is to make willie.py get installed to PATH as
+        # willie, not willie.py. Don't remove it, or you'll break it.
         tmp_dir = tempfile.mkdtemp()
         tmp_main_script = os.path.join(tmp_dir, 'willie')
         shutil.copy('willie.py', tmp_main_script)
@@ -22,6 +24,10 @@ def do_setup():
               long_description="""Willie is a simple, lightweight, open source, easy-to-use IRC Utility bot, written in Python. It's designed to be easy to use, easy to run, and easy to make new features for. """,
               packages=['willie', 'willie.modules'],
               scripts=[tmp_main_script],
+              # This line makes willie.py get included in the manifest
+              # automatically, but just dumps it because the above is putting
+              # it where it actually needs to be.
+              data_files=[(tmp_dir, ['willie.py'])],
               license='Eiffel Forum License, version 2',
               platforms='Linux x86, x86-64',
               requires=['MySQLdb', 'feedparser', 'pytz', 'lxml', 'praw', 'enchant', 'pygeoip']
