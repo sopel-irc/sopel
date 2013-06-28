@@ -96,8 +96,8 @@ def get_example_test(tested_func, msg, results, privmsg, admin,
                 msg, origin, msg, match, origin_args[0], origin_args, bot)
 
         module = sys.modules[tested_func.__module__]
-        if hasattr(module, 'asetup'):
-            module.asetup(bot)
+        if hasattr(module, 'setup'):
+            module.setup(bot)
 
         for _i in xrange(repeat):
             wrapper = MockWillieWrapper(bot, origin)
