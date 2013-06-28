@@ -16,12 +16,14 @@ import willie.irc
 import willie.tools
 
 
-class MockWillie():
+class MockWillie(object):
     def __init__(self, nick, admin=False, owner=False):
         self.nick = nick
         self.user = "willie"
 
         self.channels = ["#channel"]
+
+        self.memory = willie.tools.WillieMemory()
 
         self.ops = {}
         self.halfplus = {}
@@ -41,7 +43,7 @@ class MockWillie():
         cfg.parser.set('core', 'owner', '')
 
 
-class MockWillieWrapper():
+class MockWillieWrapper(object):
     def __init__(self, bot, origin):
         self.bot = bot
         self.origin = origin
@@ -52,8 +54,8 @@ class MockWillieWrapper():
 
     say = reply = action = _store
 
-    def __getattribute__(self, *args):
-        self.bot.__getattribute__(*args)
+    def __getattr__(self, attr):
+        return getattr(self.bot, attr)
 
 
 def get_example_test(tested_func, msg, results, privmsg, admin,
@@ -93,6 +95,10 @@ def get_example_test(tested_func, msg, results, privmsg, admin,
         trigger = willie.bot.Willie.Trigger(
                 msg, origin, msg, match, origin_args[0], origin_args, bot)
 
+        module = sys.modules[tested_func.__module__]
+        if hasattr(module, 'asetup'):
+            module.asetup(bot)
+
         for _i in xrange(repeat):
             wrapper = MockWillieWrapper(bot, origin)
             tested_func(wrapper, trigger)
@@ -119,13 +125,14 @@ def insert_into_module(func, module_name, base_name, prefix):
     setattr(module, func.__name__, func)
 
 
-def run_example_tests(filename, multithread=False, verbose=False):
+def run_example_tests(filename, tb='native', multithread=False, verbose=False):
     # These are only required when running tests, so import them here rather
     # than at the module level.
     import pytest
     from multiprocessing import cpu_count
 
     args = [filename, "-s"]
+    args.extend(['--tb', tb])
     if verbose:
         args.extend(['-v'])
     if multithread and cpu_count() > 1:
