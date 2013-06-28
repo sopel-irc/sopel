@@ -95,8 +95,8 @@ def title_command(bot, trigger):
         urls = re.findall(url_finder, trigger)
 
     results = process_urls(bot, trigger, urls)
-    for result in results[:4]:
-        message = '[ %s ] - %s' % tuple(result)
+    for title, domain in results[:4]:
+        bot.reply('[ %s ] - %s' % (title, domain))
 
 
 @rule('(?u).*(https?://\S+).*')
@@ -113,8 +113,9 @@ def title_auto(bot, trigger):
     results = process_urls(bot, trigger, urls)
     bot.memory['last_seen_url'][trigger.sender] = urls[-1]
 
-    for result in results[:4]:
-        message = '[ %s ] - %s' % tuple(result)
+    for title, domain in results[:4]:
+        message = '[ %s ] - %s' % (title, domain)
+        # Guard against responding to other instances of this bot.
         if message != trigger:
             bot.say(message)
 
