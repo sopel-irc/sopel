@@ -10,7 +10,7 @@ http://willie.dftba.net
 import re
 from htmlentitydefs import name2codepoint
 from willie import web, tools
-from willie.module import commands, rule
+from willie.module import commands, rule, example
 import urlparse
 
 url_finder = None
@@ -75,6 +75,7 @@ def setup(bot):
 
 
 @commands('title')
+@example('.title http://google.com', '[ Google ] - google.com')
 def title_command(bot, trigger):
     """
     Show the title or URL information for the given URL, or the last URL seen
@@ -259,3 +260,8 @@ def iri_to_uri(iri):
         part.encode('idna') if parti == 1 else urlEncodeNonAscii(part.encode('utf-8'))
         for parti, part in enumerate(parts)
     )
+
+
+if __name__ == "__main__":
+    from willie.test_tools import run_example_tests
+    run_example_tests(__file__)
