@@ -595,62 +595,66 @@ class Willie(irc.Bot):
         return False
 
     def dispatch(self, origin, text, args):
-        bytes = text
-        event = args[0]
-        args = args[1:]
+        event, args = args[0], args[1:]
+
+        wrapper = self.WillieWrapper(self, origin)
+
+        if self.config.core.nick_blocks or self.config.core.host_blocks:
+            nick_blocked = self._nick_blocked(origin.nick)
+            host_blocked = self._host_blocked(origin.host)
+        else:
+            nick_blocked = host_blocked = None
 
         for priority in ('high', 'medium', 'low'):
             items = self.commands[priority].items()
+
             for regexp, funcs in items:
+                match = regexp.match(text)
+                if not match:
+                    continue
+                trigger = self.Trigger(text, origin, text, match, event, args, self)
+                if not trigger.admin and (nick_blocked or host_blocked):
+                    self.debug(__file__,
+                            "%s prevented from using %s because "
+                            "nick_blocked=%s, host_blocked=%s" % (
+                                origin.hostmask, funcs,
+                                nick_blocked, host_blocked),
+                            "warning")
+                    return
+
                 for func in funcs:
                     if event != func.event:
                         continue
+                    if self.limit(origin, func):
+                        continue
+                    if func.thread:
+                        targs = (func, origin, wrapper, trigger)
+                        t = threading.Thread(target=self.call, args=targs)
+                        t.start()
+                    else:
+                        self.call(func, origin, wrapper, trigger)
 
-                    match = regexp.match(text)
-                    if match:
-                        if self.limit(origin, func):
-                            continue
+    def _host_blocked(self, host):
+        bad_masks = self.config.core.get_list('host_blocks')
+        for bad_mask in bad_masks:
+            bad_mask = bad_mask.strip()
+            if not bad_mask:
+                continue
+            if (re.match(bad_mask + '$', host, re.IGNORECASE) or
+                    bad_mask == host):
+                return True
+        return False
 
-                        willie = self.WillieWrapper(self, origin)
-                        trigger = self.Trigger(text, origin, bytes, match,
-                                               event, args, self)
-
-                        nick = (trigger.nick).lower()
-
-                        ## blocking ability
-                        bad_nicks = self.config.core.get_list('nick_blocks')
-                        bad_masks = self.config.core.get_list('host_blocks')
-
-                        if len(bad_masks) > 0:
-                            for hostmask in bad_masks:
-                                hostmask = hostmask.replace("\n", "")
-                                if len(hostmask) < 1:
-                                    continue
-                                re_temp = re.compile(hostmask)
-                                host = origin.host
-                                host = host.lower()
-                                if re_temp.findall(host) or hostmask in host:
-                                    return
-                        if len(bad_nicks) > 0:
-                            for nick in bad_nicks:
-                                nick = nick.replace("\n", "")
-                                if len(nick) < 1:
-                                    continue
-                                re_temp = re.compile(nick)
-                                #RFC-lowercasing the regex is impractical. So
-                                #we'll just specify to use RFC-lowercase in the
-                                #regex, which means we'll have to be in RFC-
-                                #lowercase here.
-                                if (re_temp.findall(trigger.nick.lower())
-                                        or Nick(nick).lower() in trigger.nick.lower()):
-                                    return
-
-                        if func.thread:
-                            targs = (func, origin, willie, trigger)
-                            t = threading.Thread(target=self.call, args=targs)
-                            t.start()
-                        else:
-                            self.call(func, origin, willie, trigger)
+    def _nick_blocked(self, nick):
+        bad_nicks = self.config.core.get_list('nick_blocks')
+        for bad_nick in bad_nicks:
+            bad_nick = bad_nick.strip()
+            if not bad_nick:
+                continue
+            if (re.match(bad_nick + '$', nick, re.IGNORECASE) or
+                    Nick(bad_nick) == nick):
+                return True
+        return False
 
     def debug(self, tag, text, level):
         """
