@@ -564,26 +564,25 @@ class Willie(irc.Bot):
 
     def call(self, func, origin, willie, trigger):
         nick = trigger.nick
-        if nick in self.times:
-            if func in self.times[nick]:
-                if not trigger.admin:
-                    timediff = time.time() - self.times[nick][func]
-                    if timediff < func.rate:
-                        self.times[nick][func] = time.time()
-                        self.debug('bot.py',
-                                   "%s prevented from using %s in %s: %d < %d"
-                                   % (trigger.nick, func.__name__,
-                                      trigger.sender, timediff, func.rate),
-                                   "warning")
-                        return
-        else:
-            fail = self.times[nick] = dict()
+        if nick not in self.times:
+            self.times[nick] = dict()
+        if func in self.times[nick] and not trigger.admin:
+            timediff = time.time() - self.times[nick][func]
+            if timediff < func.rate:
+                self.times[nick][func] = time.time()
+                self.debug('bot.py',
+                        "%s prevented from using %s in %s: %d < %d" % (
+                            trigger.nick, func.__name__, trigger.sender,
+                            timediff, func.rate),
+                        "warning")
+                return
 
-        exit_code = None
         try:
             exit_code = func(willie, trigger)
-        except Exception, e:
+        except Exception:
+            exit_code = None
             self.error(origin, trigger)
+
         if exit_code != module.NOLIMIT:
             self.times[nick][func] = time.time()
 
