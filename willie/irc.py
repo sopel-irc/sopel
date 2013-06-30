@@ -454,7 +454,7 @@ class Bot(asynchat.async_chat):
         # Now that we've sent the first part, we need to send the rest. Doing
         # this recursively seems easier to me than iteratively
         if excess:
-            self.msg(recipient, excess, max_messages)
+            self.msg(recipient, excess, max_messages - 1)
 
     def notice(self, dest, text):
         '''Send an IRC NOTICE to a user or a channel. See IRC protocol
