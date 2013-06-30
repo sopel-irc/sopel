@@ -438,7 +438,7 @@ class Willie(irc.Bot):
             self.origin = origin
 
         def say(self, string, max_messages=1):
-            self.bot.msg(self.origin.sender, string, max_messages=1)
+            self.bot.msg(self.origin.sender, string, max_messages)
 
         def reply(self, string):
             if isinstance(string, str):
