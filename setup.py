@@ -2,7 +2,6 @@
 
 from distutils.core import setup
 from willie import __version__
-from sys import argv
 import tempfile
 import os
 import shutil
