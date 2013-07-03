@@ -1,4 +1,6 @@
 build/
+dist/
+MANIFEST
 doc/build/*
 logs/*
 tests
@@ -12,9 +14,6 @@ willie.wiki/*
 *.spec
 .*.sw*
 .pid-*
-blocks
-osu_osc.py
-uno_test.py
 
 # IntelliJ idea
 .idea
