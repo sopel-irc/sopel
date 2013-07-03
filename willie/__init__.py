@@ -19,7 +19,7 @@ import bot
 import signal
 from tools import stderr
 
-__version__ = '4.0.0-git'
+__version__ = '4.0.1'
 
 
 def run(config):
