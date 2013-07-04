@@ -177,14 +177,12 @@ def set_config(bot, trigger):
         bot.reply("Usage: .set section.option value")
         return
 
-    # Don't modify non-existing values to guard against typos.
-    if not bot.config.has_option(section, option):
-        bot.reply("Option %s.%s does not exist." % (section, option))
-        return
-
     # Display current value if no value is given.
     value = trigger.group(4)
     if not value:
+        if not bot.config.has_option(section, option):
+            bot.reply("Option %s.%s does not exist." % (section, option))
+            return
         # Except if the option looks like a password. Censor those to stop them
         # from being put on log files.
         if option.endswith("password") or option.endswith("pass"):
