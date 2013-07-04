@@ -657,41 +657,33 @@ class Willie(irc.Bot):
         return False
 
     def debug(self, tag, text, level):
+        """Sends an error to Willie's configured ``debug_target``.
+
+        Returns: True if message was sent.
         """
-        Sends an error to Willie's configured ``debug_target``.
-        """
-        if not hasattr(self.config, 'verbose') or not self.config.verbose:
+        if not self.config.verbose:
             self.config.verbose = 'warning'
-        if (not hasattr(self.config, 'debug_target')
-                or not (self.config.debug_target == 'stdio'
-                        or self.config.debug_target.startswith('#'))):
-            debug_target = 'stdio'
-        else:
-            debug_target = self.config.debug_target
+        if not self.config.debug_target:
+            self.config.debug_target = 'stdio'
+        debug_target = self.config.debug_target
+        verbosity = self.config.verbose
+        
         debug_msg = "[%s] %s" % (tag, text)
-        if level == 'verbose':
-            if self.config.verbose == 'verbose':
-                if (debug_target == 'stdio'):
-                    print debug_msg
-                else:
-                    self.msg(debug_target, debug_msg)
-                return True
-        elif level == 'warning':
-            if (self.config.verbose == 'verbose'
-                    or self.config.verbose == 'warning'):
-                if (debug_target == 'stdio'):
-                    print debug_msg
-                else:
-                    self.msg(debug_target, debug_msg)
-                return True
-        elif level == 'always':
-            if (debug_target == 'stdio'):
+
+        output_on = {
+                'verbose': ['verbose'],
+                'warning': ['verbose', 'warning'],
+                'always': ['verbose', 'warning', 'always'],
+                }
+        if level in output_on and verbosity in output_on[level]:
+            if debug_target == 'stdio':
                 print debug_msg
             else:
-                self.msg(self.config.debug_target, debug_msg)
+                self.msg(debug_target, debug_msg)
             return True
+        else:
+            return False
 
-        return False
 
 if __name__ == '__main__':
     print __doc__
