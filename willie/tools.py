@@ -299,10 +299,10 @@ class WillieMemory(dict):
         """ Backwards compatability with 3.x, use `in` operator instead """
         return self.__contains__(key)
 
-    def lock():
+    def lock(self):
         """ Lock this instance from writes. Useful if you want to iterate """
         return self.lock.acquire()
 
-    def unlock():
+    def unlock(self):
         """ Release the write lock """
         return self.lock.release()
