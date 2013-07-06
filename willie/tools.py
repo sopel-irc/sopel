@@ -29,6 +29,12 @@ import copy
 
 
 def get_command_regexp(prefix, command):
+    """Return a compiled regexp object that implements the command."""
+    # Escape all whitespace with a single backslash. This ensures that regexp
+    # in the prefix is treated as it was before the actual regexp was changed
+    # to use the verbose syntax.
+    prefix = re.sub(r"(\s)", r"\\\1", prefix)
+
     # This regexp match equivalently and produce the same
     # groups 1 and 2 as the old regexp: r'^%s(%s)(?: +(.*))?$'
     # The only differences should be handling all whitespace
