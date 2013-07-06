@@ -192,7 +192,7 @@ def meetingsubject(bot, trigger):
 
 
 #End the meeting
-@commands('.endmeeting')
+@commands('endmeeting')
 @example('.endmeeting')
 def endmeeting(bot, trigger):
     """
