@@ -262,7 +262,10 @@ class Willie(irc.Bot):
                 module = imp.load_source(name, filename)
             except Exception, e:
                 error_count = error_count + 1
-                stderr("Error loading %s: %s (in bot.py)" % (name, e))
+                filename, lineno = tools.get_raising_file_and_line()
+                rel_path = os.path.relpath(filename, os.path.dirname(__file__))
+                raising_stmt = "%s:%d" % (rel_path, lineno)
+                stderr("Error loading %s: %s (%s)" % (name, e, raising_stmt))
             else:
                 try:
                     if hasattr(module, 'setup'):
@@ -271,8 +274,11 @@ class Willie(irc.Bot):
                     modules.append(name)
                 except Exception, e:
                     error_count = error_count + 1
-                    stderr("Error in %s setup procedure: %s (in bot.py)"
-                           % (name, e))
+                    filename, lineno = tools.get_raising_file_and_line()
+                    rel_path = os.path.relpath(filename, os.path.dirname(__file__))
+                    raising_stmt = "%s:%d" % (rel_path, lineno)
+                    stderr("Error in %s setup procedure: %s (%s)"
+                           % (name, e, raising_stmt))
 
         if modules:
             stderr('\n\nRegistered %d modules,' % (len(modules) - 1))
