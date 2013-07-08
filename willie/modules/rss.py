@@ -32,75 +32,71 @@ def setup(bot):
 @commands('rss')
 @priority('low')
 def manage_rss(bot, trigger):
-    """ .rss operation channel site_name url -- operation can be either 'add', 'del', or 'list' no further operators needed if 'list' used """
+    """ '.rss add #channel Feed_Name URL [fg] [bg]', '.rss del [#channel] Feed_Name', '.rss clear #channel, '.rss list'"""
     if not trigger.admin:
         bot.reply("Sorry, you need to be an admin to modify the RSS feeds.")
         return
+
+    text = trigger.group().split()
+    if (len(text) < 2 or
+        text[1] not in ('add', 'del', 'clear', 'list') or
+        (len(text) < 5 and text[1] == 'add') or
+        (len(text) < 3 and text[1] in ('del', 'clear'))
+        ):
+        bot.reply("Proper usage: '.rss add #channel Feed_Name URL [fg] [bg]', '.rss del [#channel] Feed_Name', '.rss clear #channel', '.rss list'")
+        return
+
     conn = bot.db.connect()
     c = conn.cursor()
     checkdb(c)
     conn.commit()
+    
+    if text[1] == 'add':
+        # .rss add #channel Feed_Name URL fg bg
+        channel = text[2]
+        feed_name = text[3]
+        feed_url = text[4]
+        fg_colour = text[5].zfill(2) if len(text) >= 6 else '01'
+        bg_colour = text[6].zfill(2) if len(text) >= 7 else '00'
 
-    text = trigger.group().split()
-    if len(text) < 2:
-        bot.reply("Proper usage: '.rss add ##channel Site_Name URL', '.rss del ##channel Site_Name URL', '.rss del ##channel'")
-    elif len(text) > 2:
-        channel = text[2].lower()
-
-    if len(text) > 4 and text[1] == 'add':
-        fg_colour = str()
-        bg_colour = str()
-        temp = trigger.group().split('"')
-        if len(temp) == 1:
-            site_name = text[3]
-            site_url = text[4]
-            if len(text) >= 6:
-                # .rss add ##yano ScienceDaily http://sciencedaily.com/ 03
-                fg_colour = str(text[5])
-            if len(text) == 7:
-                # .rss add ##yano ScienceDaily http://sciencedaily.com/ 03 00
-                bg_colour = str(text[6])
-        elif temp[-1].split():
-            site_name = temp[1]
-            ending = temp[-1].split()
-            site_url = ending[0]
-            if len(ending) >= 2:
-                fg_colour = ending[1]
-            if len(ending) == 3:
-                bg_colour = ending[2]
+        c.execute('INSERT INTO rss VALUES (%s,%s,%s,%s,%s)' % (SUB * 5),
+                  (channel, feed_name, feed_url, fg_colour, bg_colour))
+        conn.commit()
+        c.close()
+        bot.reply("Successfully added the feed to the channel.")
+        
+    elif text[1] == 'clear':
+        # .rss clear #channel
+        c.execute('DELETE FROM rss WHERE channel = %s' % SUB, (text[2],))
+        conn.commit()
+        c.close()
+        bot.reply("Successfully cleared all feeds from the given channel.")
+        
+    elif text[1] == 'del':
+        if len(text) > 3:
+            # .rss del #channel Feed_Name
+            c.execute('DELETE FROM rss WHERE channel = %s and site_name = %s' % (SUB * 2),
+                      (text[2], text[3]))
+            conn.commit()
+            c.close()
+            bot.reply("Successfully removed the feed from the given channel.")
         else:
-            bot.reply("Not enough parameters specified.")
-            return
-        if fg_colour:
-            fg_colour = fg_colour.zfill(2)
-        if bg_colour:
-            bg_colour = bg_colour.zfill(2)
-        c.execute('INSERT INTO rss VALUES (%s,%s,%s,%s,%s)' % (SUB * 5), (channel, site_name, site_url, fg_colour, bg_colour))
-        conn.commit()
-        c.close()
-        bot.reply("Successfully added values to database.")
-    elif len(text) == 3 and text[1] == 'del':
-        # .rss del ##channel
-        c.execute('DELETE FROM rss WHERE channel = %s' % SUB, (channel,))
-        conn.commit()
-        c.close()
-        bot.reply("Successfully removed values from database.")
-    elif len(text) >= 4 and text[1] == 'del':
-        # .rss del ##channel Site_Name
-        c.execute('DELETE FROM rss WHERE channel = %s and site_name = %s' % (SUB * 2), (channel, " ".join(text[3:])))
-        conn.commit()
-        c.close()
-        bot.reply("Successfully removed the site from the given channel.")
-    elif len(text) == 2 and text[1] == 'list':
+            # .rss del Feed_Name
+            c.execute('DELETE FROM rss WHERE site_name = %s' % SUB,
+                      (text[2],))
+            conn.commit()
+            c.close()
+            bot.reply("Successfully removed the feed from all channels.")
+        
+    elif text[1] == 'list':
         c.execute("SELECT * FROM rss")
         k = 0
         for row in c.fetchall():
             k += 1
-            bot.say("list: " + unicode(row))
+            bot.say("{0} {1} ({2}) - {3} {4}".format(*row))
         if k == 0:
-            bot.reply("No entries in database")
-    else:
-        bot.reply("Incorrect parameters specified.")
+            bot.reply("No RSS feeds in database.")
+
     conn.close()
 
 
@@ -177,7 +173,7 @@ def read_feeds(bot):
 @commands('startrss')
 @priority('high')
 def startrss(bot, trigger):
-    """ Begin reading RSS feeds """
+    """Begin reading RSS feeds. [-v : Verbose | -q : Quiet | -i [seconds] : Set fetch interval | --stop : Stop fetching] """
     if not trigger.admin:
         bot.reply("You must be an admin to start up the RSS feeds.")
         return
@@ -198,16 +194,16 @@ def startrss(bot, trigger):
         bot.reply("INTERVAL updated to: %s" % (str(INTERVAL)))
     elif query == '--stop':
         STOP = True
-        bot.reply("Stop parameter updated.")
+        bot.reply("Okay, I'll stop RSS fetching...")
 
     if first_run:
         if DEBUG:
-            bot.say("Okay, I'll start rss fetching...")
+            bot.reply("Okay, I'll start RSS fetching...")
         first_run = False
     else:
         restarted = True
         if DEBUG:
-            bot.say("Okay, I'll re-start rss...")
+            bot.reply("Okay, I'll restart RSS fetching...")
 
     if not STOP:
         while True:
