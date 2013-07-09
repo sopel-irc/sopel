@@ -7,15 +7,18 @@ Licensed under the Eiffel Forum License 2.
 http://willie.dfbta.net
 """
 
-from willie.module import commands, priority
+from willie.module import commands, interval, priority
 import feedparser
 import socket
-import time
 
-DEBUG = False
 socket.setdefaulttimeout(10)
-INTERVAL = 10  # seconds between checking for new updates
-STOP = False
+
+INTERVAL = 20 # seconds between checking for new updates
+DEBUG = False # display debug messages
+
+first_run = True
+STOP = True
+
 # This is reset in setup().
 SUB = ('%s',)
 
@@ -27,6 +30,11 @@ def checkdb(cursor):
 def setup(bot):
     global SUB
     SUB = (bot.db.substitution,)
+    
+    
+def msg_all_channels(bot, msg):
+    for channel in bot.channels:
+        bot.msg(channel, msg)
 
 
 @commands('rss')
@@ -100,42 +108,42 @@ def manage_rss(bot, trigger):
     conn.close()
 
 
-class Feed(object):
-    modified = ''
-
-first_run = True
-restarted = False
-feeds = dict()
-
-
+@interval(INTERVAL)
 def read_feeds(bot):
-    global restarted
     global STOP
-
-    restarted = False
+    if STOP:
+        return
+    
     conn = bot.db.connect()
-    cur = conn.cursor()
-    checkdb(cur)
-    cur.execute("SELECT * FROM rss")
-    if not cur.fetchall():
+    c = conn.cursor()
+    checkdb(c)
+    c.execute("SELECT * FROM rss")
+    feeds = c.fetchall()
+    
+    if not feeds:
         STOP = True
-        bot.say("No RSS feeds found in database. Please add some rss feeds.")
-
-    cur.execute("CREATE TABLE IF NOT EXISTS recent ( channel text, site_name text, article_title text, article_url text )")
-    cur.execute("SELECT * FROM rss")
-
-    for row in cur.fetchall():
-        feed_channel = row[0]
-        feed_site_name = row[1]
-        feed_url = row[2]
-        feed_fg = row[3]
-        feed_bg = row[4]
+        msg_all_channels(bot, "No RSS feeds found in database; stopping.")
+        return
+    
+    if DEBUG:
+        s = 's' if len(feeds) != 1 else ''
+        msg_all_channels(bot, "Checking {0} RSS feed{1}...".format(len(feeds), s))
+    
+    for feed in feeds:
+        feed_channel = feed[0]
+        feed_site_name = feed[1]
+        feed_url = feed[2]
+        feed_fg = feed[3]
+        feed_bg = feed[4]
         try:
             fp = feedparser.parse(feed_url)
         except IOError, E:
-            bot.say("Can't parse, " + str(E))
+            msg_all_channels(bot, "Can't parse, " + str(E))
         entry = fp.entries[0]
-
+        
+        if DEBUG:
+            bot.msg(feed_channel, "Found an entry: " + entry.title)
+        
         if not feed_fg and not feed_bg:
             site_name_effect = "[\x02%s\x02]" % (feed_site_name)
         elif feed_fg and not feed_bg:
@@ -151,10 +159,11 @@ def read_feeds(bot):
             article_url = entry.links[0].href
 
         # only print if new entry
+        c.execute("CREATE TABLE IF NOT EXISTS recent ( channel text, site_name text, article_title text, article_url text )")
         sql_text = (feed_channel, feed_site_name, entry.title, article_url)
-        cur.execute('SELECT * FROM recent WHERE channel = %s AND site_name = %s and article_title = %s AND article_url = %s' % (SUB * 4), sql_text)
-        if len(cur.fetchall()) < 1:
+        c.execute('SELECT * FROM recent WHERE channel = %s AND site_name = %s and article_title = %s AND article_url = %s' % (SUB * 4), sql_text)
 
+        if not c.fetchall():
             response = site_name_effect + " %s \x02%s\x02" % (entry.title, article_url)
             if entry.updated:
                 response += " - %s" % (entry.updated)
@@ -162,11 +171,12 @@ def read_feeds(bot):
             bot.msg(feed_channel, response)
 
             t = (feed_channel, feed_site_name, entry.title, article_url,)
-            cur.execute('INSERT INTO recent VALUES (%s, %s, %s, %s)' % (SUB * 4), t)
+            c.execute('INSERT INTO recent VALUES (%s, %s, %s, %s)' % (SUB * 4), t)
             conn.commit()
         else:
             if DEBUG:
                 bot.msg(feed_channel, u"Skipping previously read entry: %s %s" % (site_name_effect, entry.title))
+
     conn.close()
 
 
@@ -177,45 +187,31 @@ def startrss(bot, trigger):
     if not trigger.admin:
         bot.reply("You must be an admin to start up the RSS feeds.")
         return
-    global first_run, restarted, DEBUG, INTERVAL, STOP
-    DEBUG = False
-
-    query = trigger.group(2)
-    if query == '-v':
+    
+    global first_run, DEBUG, STOP
+    
+    flag = trigger.group(3)
+    if flag == '-v':
         DEBUG = True
-        STOP = False
         bot.reply("Debugging enabled.")
-    elif query == '-q':
+    elif flag == '-q':
         DEBUG = False
-        STOP = False
         bot.reply("Debugging disabled.")
-    elif query == '-i':
-        INTERVAL = trigger.group(3)
-        bot.reply("INTERVAL updated to: %s" % (str(INTERVAL)))
-    elif query == '--stop':
+    elif flag == '-i':
+        # changing the interval doesn't currently seem to work
+        try:
+            read_feeds.interval = [int(trigger.group(4))]
+            bot.reply("Interval updated to {0} seconds".format(trigger.group(4)))
+        except ValueError:
+            pass
+        
+    if flag == '--stop':
         STOP = True
         bot.reply("Okay, I'll stop RSS fetching...")
-
-    if first_run:
-        if DEBUG:
-            bot.reply("Okay, I'll start RSS fetching...")
-        first_run = False
     else:
-        restarted = True
-        if DEBUG:
-            bot.reply("Okay, I'll restart RSS fetching...")
-
-    if not STOP:
-        while True:
-            if STOP:
-                bot.reply("STOPPED")
-                first_run = False
-                STOP = False
-                break
-            if DEBUG:
-                bot.say("Rechecking feeds")
-            read_feeds(bot)
-            time.sleep(INTERVAL)
-
-    if DEBUG:
-        bot.say("Stopped checking")
+        STOP = False
+        bot.reply("Okay, I'll start RSS fetching..." if first_run else
+                  "Okay, I'll restart RSS fetching...")
+    first_run = False
+        
+        
