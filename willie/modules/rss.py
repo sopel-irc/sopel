@@ -108,78 +108,6 @@ def manage_rss(bot, trigger):
     conn.close()
 
 
-@interval(INTERVAL)
-def read_feeds(bot):
-    global STOP
-    if STOP:
-        return
-    
-    conn = bot.db.connect()
-    c = conn.cursor()
-    checkdb(c)
-    c.execute("SELECT * FROM rss")
-    feeds = c.fetchall()
-    
-    if not feeds:
-        STOP = True
-        msg_all_channels(bot, "No RSS feeds found in database; stopping.")
-        return
-    
-    if DEBUG:
-        s = 's' if len(feeds) != 1 else ''
-        msg_all_channels(bot, "Checking {0} RSS feed{1}...".format(len(feeds), s))
-    
-    for feed in feeds:
-        feed_channel = feed[0]
-        feed_site_name = feed[1]
-        feed_url = feed[2]
-        feed_fg = feed[3]
-        feed_bg = feed[4]
-        try:
-            fp = feedparser.parse(feed_url)
-        except IOError, E:
-            msg_all_channels(bot, "Can't parse, " + str(E))
-        entry = fp.entries[0]
-        
-        if DEBUG:
-            bot.msg(feed_channel, "Found an entry: " + entry.title)
-        
-        if not feed_fg and not feed_bg:
-            site_name_effect = "[\x02%s\x02]" % (feed_site_name)
-        elif feed_fg and not feed_bg:
-            site_name_effect = "[\x02\x03%s%s\x03\x02]" % (feed_fg, feed_site_name)
-        elif feed_fg and feed_bg:
-            site_name_effect = "[\x02\x03%s,%s%s\x03\x02]" % (feed_fg, feed_bg, feed_site_name)
-
-        if hasattr(entry, 'id'):
-            article_url = entry.id
-        elif hasattr(entry, 'feedburner_origlink'):
-            article_url = entry.feedburner_origlink
-        else:
-            article_url = entry.links[0].href
-
-        # only print if new entry
-        c.execute("CREATE TABLE IF NOT EXISTS recent ( channel text, site_name text, article_title text, article_url text )")
-        sql_text = (feed_channel, feed_site_name, entry.title, article_url)
-        c.execute('SELECT * FROM recent WHERE channel = %s AND site_name = %s and article_title = %s AND article_url = %s' % (SUB * 4), sql_text)
-
-        if not c.fetchall():
-            response = site_name_effect + " %s \x02%s\x02" % (entry.title, article_url)
-            if entry.updated:
-                response += " - %s" % (entry.updated)
-
-            bot.msg(feed_channel, response)
-
-            t = (feed_channel, feed_site_name, entry.title, article_url,)
-            c.execute('INSERT INTO recent VALUES (%s, %s, %s, %s)' % (SUB * 4), t)
-            conn.commit()
-        else:
-            if DEBUG:
-                bot.msg(feed_channel, u"Skipping previously read entry: %s %s" % (site_name_effect, entry.title))
-
-    conn.close()
-
-
 @commands('startrss')
 @priority('high')
 def startrss(bot, trigger):
@@ -215,3 +143,61 @@ def startrss(bot, trigger):
     first_run = False
         
         
+@interval(INTERVAL)
+def read_feeds(bot):
+    global STOP
+    if STOP:
+        return
+    
+    conn = bot.db.connect()
+    c = conn.cursor()
+    checkdb(c)
+    c.execute("SELECT * FROM rss")
+    feeds = c.fetchall()
+    
+    if not feeds:
+        STOP = True
+        msg_all_channels(bot, "No RSS feeds found in database; stopping.")
+        return
+    
+    if DEBUG:
+        s = 's' if len(feeds) != 1 else ''
+        msg_all_channels(bot, "Checking {0} RSS feed{1}...".format(len(feeds), s))
+    
+    for feed in feeds:
+        feed_channel, feed_name, feed_url, feed_fg, feed_bg = feed
+        feed_name_colour = "\x02\x03{0},{1}{2}\x03\x02".format(feed_fg, feed_bg, feed_name)
+
+        try:
+            fp = feedparser.parse(feed_url)
+        except IOError, E:
+            msg_all_channels(bot, "Can't parse, " + str(E))
+
+        if DEBUG:
+            bot.msg(feed_channel, "Found {0} entries for {1}".format(len(fp.entries), feed_name))
+        
+        try:
+            entry = fp.entries[0]
+        except IndexError:
+            continue
+
+        # check if new entry
+        c.execute("CREATE TABLE IF NOT EXISTS recent ( channel text, site_name text, article_title text, article_url text )")
+        c.execute('SELECT * FROM recent WHERE channel = %s AND site_name = %s and article_title = %s AND article_url = %s' % (SUB * 4),
+                  (feed_channel, feed_name, entry.title, entry.link))
+        if c.fetchall():
+            if DEBUG:
+                bot.msg(feed_channel, u"Skipping previously read entry: [{0}] {1}".format(feed_name, entry.title))
+        else:
+            # print entry
+            message = "[{0}] \x02{1}\x02 {2}".format(feed_name_colour, entry.title, entry.link)
+            if entry.updated:
+                message += " - " + entry.updated
+            bot.msg(feed_channel, message)
+
+            c.execute('INSERT INTO recent VALUES (%s, %s, %s, %s)' % (SUB * 4),
+                      (feed_channel, feed_name, entry.title, entry.link))
+            conn.commit()
+
+    conn.close()
+
