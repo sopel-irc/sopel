@@ -64,14 +64,20 @@ def manage_rss(bot, trigger):
         channel = text[2]
         feed_name = text[3]
         feed_url = text[4]
-        fg_colour = text[5].zfill(2) if len(text) >= 6 else '01'
-        bg_colour = text[6].zfill(2) if len(text) >= 7 else '00'
-
-        c.execute('INSERT INTO rss VALUES (%s,%s,%s,%s,%s)' % (SUB * 5),
-                  (channel, feed_name, feed_url, fg_colour, bg_colour))
+        fg = text[5].zfill(2) if len(text) >= 6 else '01'
+        bg = text[6].zfill(2) if len(text) >= 7 else '00'
+        
+        c.execute('SELECT * FROM rss WHERE channel = %s AND site_name = %s' % (SUB * 2), (channel, feed_name))
+        if c.fetchall():
+            c.execute('UPDATE rss SET site_url=%s, fg=%s, bg=%s WHERE channel = %s AND site_name = %s' % (SUB * 5),
+                      (feed_url, fg, bg, channel, feed_name))
+            bot.reply("Successfully modified the feed.")
+        else:
+            c.execute('INSERT INTO rss VALUES (%s, %s, %s, %s, %s)' % (SUB * 5),
+                      (channel, feed_name, feed_url, fg, bg))
+            bot.reply("Successfully added the feed to the channel.")
         conn.commit()
         c.close()
-        bot.reply("Successfully added the feed to the channel.")
         
     elif text[1] == 'clear':
         # .rss clear #channel
@@ -83,7 +89,7 @@ def manage_rss(bot, trigger):
     elif text[1] == 'del':
         if len(text) > 3:
             # .rss del #channel Feed_Name
-            c.execute('DELETE FROM rss WHERE channel = %s and site_name = %s' % (SUB * 2),
+            c.execute('DELETE FROM rss WHERE channel = %s AND site_name = %s' % (SUB * 2),
                       (text[2], text[3]))
             conn.commit()
             c.close()
