@@ -35,6 +35,14 @@ def setup(bot):
 def msg_all_channels(bot, msg):
     for channel in bot.channels:
         bot.msg(channel, msg)
+        
+        
+def colour_text(text, fg, bg):
+    if not fg:
+        return text
+    else:
+        colour = '{0},{1}'.format(fg, bg) if bg != '' else fg
+        return "\x03{0}{1}\x03".format(colour, text)
 
 
 @commands('rss')
@@ -64,8 +72,8 @@ def manage_rss(bot, trigger):
         channel = text[2]
         feed_name = text[3]
         feed_url = text[4]
-        fg = (int(text[5]) % 16).zfill(2) if len(text) >= 6 and text[5].isdigit() else '01'
-        bg = (int(text[6]) % 16).zfill(2) if len(text) >= 7 and text[6].isdigit() else '00'
+        fg = str(int(text[5]) % 16).zfill(2) if len(text) >= 6 and text[5].isdigit() else ''
+        bg = str(int(text[6]) % 16).zfill(2) if len(text) >= 7 and text[6].isdigit() else ''
         
         c.execute('SELECT * FROM rss WHERE channel = %s AND site_name = %s' % (SUB * 2),
                   (channel, feed_name))
@@ -112,7 +120,9 @@ def manage_rss(bot, trigger):
             noun = 'feeds' if len(feeds) != 1 else 'feed'
             bot.say("{0} RSS {1} in database:".format(len(feeds), noun))
         for feed in feeds:
-            bot.say("{0} \x03{3},{4}{1}\x03 {2} - {3} {4}".format(*feed))
+            feed_channel, feed_name, feed_url, fg, bg = feed
+            bot.say("{0} {1} {2} - {3} {4}".format(
+                feed_channel, colour_text(feed_name, fg, bg), feed_url, fg, bg))
 
     conn.close()
 
@@ -174,8 +184,7 @@ def read_feeds(bot):
         msg_all_channels(bot, "Checking {0} RSS {1}...".format(len(feeds), noun))
     
     for feed in feeds:
-        feed_channel, feed_name, feed_url, feed_fg, feed_bg = feed
-        feed_name_colour = "\x02\x03{0},{1}{2}\x03\x02".format(feed_fg, feed_bg, feed_name)
+        feed_channel, feed_name, feed_url, fg, bg = feed
 
         try:
             fp = feedparser.parse(feed_url)
@@ -200,7 +209,8 @@ def read_feeds(bot):
                 bot.msg(feed_channel, u"Skipping previously read entry: [{0}] {1}".format(feed_name, entry.title))
         else:
             # print entry and save into recent
-            message = "[{0}] \x02{1}\x02 {2}".format(feed_name_colour, entry.title, entry.link)
+            message = u"[\x02{0}\x02] \x02{1}\x02 {2}".format(
+                colour_text(feed_name, fg, bg), entry.title, entry.link)
             if entry.updated:
                 message += " - " + entry.updated
             bot.msg(feed_channel, message)
