@@ -28,8 +28,8 @@ SUB = ('%s',)
 def checkdb(cursor):
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS rss_feeds
-        (channel text, feed_name text, feed_url text, fg tinyint, bg tinyint,
-        article_title text, article_url text,
+        (channel TEXT, feed_name TEXT, feed_url TEXT, fg TINYINT, bg TINYINT,
+        enabled BOOL DEFAULT 1, article_title TEXT, article_url TEXT,
         PRIMARY KEY (channel, feed_name))
         ''')
 
@@ -55,14 +55,14 @@ def colour_text(text, fg, bg):
 @commands('rss')
 @priority('low')
 def manage_rss(bot, trigger):
-    """Manage RSS feeds. Usage: .rss <add|del|clear|list>  (Use .startrss to start fetching feeds.)"""
+    """Manage RSS feeds. Usage: .rss <add|del|toggle|list>  (Use .startrss to start fetching feeds.)"""
     if not trigger.admin:
         bot.reply("Sorry, you need to be an admin to modify the RSS feeds.")
         return
 
     text = trigger.group().split()
-    if (len(text) < 2 or text[1] not in ('add', 'del', 'clear', 'list')):
-        bot.reply("Please specify an operation: add del clear list")
+    if (len(text) < 2 or text[1] not in ('add', 'del', 'toggle', 'list')):
+        bot.reply("Please specify an operation: add del toggle list")
         return
 
     conn = bot.db.connect()
@@ -75,7 +75,7 @@ def manage_rss(bot, trigger):
         pattern = r'''
             ^\.rss\s+add
             \s+([&#+!][^\s,]+)   # channel
-            \s+("[^"]+"|[^"\s]+) # name, which can contain spaces if quoted
+            \s+("[\w\s]+"|\w+)   # name, which can contain spaces if quoted
             \s+(\S+)             # url
             (?:\s+(\d+))?        # foreground colour (optional)
             (?:\s+(\d+))?        # background colour (optional)
@@ -105,8 +105,8 @@ def manage_rss(bot, trigger):
                 WHERE channel = %s AND feed_name = %s
                 ''' % (SUB * 5), (feed_url, fg, bg, channel, feed_name))
             bot.reply("Successfully modified the feed.")
+
         conn.commit()
-        c.close()
         
     elif text[1] == 'clear':
         # .rss clear <#channel>
@@ -120,34 +120,67 @@ def manage_rss(bot, trigger):
             return
         
         c.execute('DELETE FROM rss_feeds WHERE channel = %s' % SUB, (match.group(1),))
-        conn.commit()
-        c.close()
         bot.reply("Successfully cleared all feeds from the given channel.")
         
+        conn.commit()
+        
     elif text[1] == 'del':
-        # .rss del [#channel] <Feed_Name>
+        # .rss del [#channel] [Feed_Name]
         pattern = r"""
             ^\.rss\s+del
             (?:\s+([&#+!][^\s,]+))? # channel (optional)
-            \s+("[^"]+"|[^"\s]+)    # name, which can contain spaces if quoted
+            (?:\s+("[\w\s]+"|\w+))? # name (optional)
             """
         match = re.match(pattern, trigger.group(), re.IGNORECASE | re.VERBOSE)
-        if match is None:
-            bot.reply("Remove a feed from one or all channels. Usage: .rss del [#channel] <Feed_Name>")
+        if match is None or (not match.group(1) and not match.group(2)):
+            bot.reply("Remove one or all feeds from one or all channels. Usage: .rss del [#channel] [Feed_Name]")
             return
         
         channel = match.group(1)
-        feed_name = match.group(2).strip('"')
+        feed_name = match.group(2).strip('"') if match.group(2) else None
+        args = [arg for arg in (channel, feed_name) if arg]
         
-        if match.group(1):
-            c.execute('DELETE FROM rss_feeds WHERE channel = %s AND feed_name = %s' % (SUB * 2),
-                      (channel, feed_name))
-            bot.reply("Successfully removed the feed from the given channel.")
+        c.execute(('DELETE FROM rss_feeds WHERE '
+                   + ('channel = %s AND ' if channel else '')
+                   + ('feed_name = %s' if feed_name else '')
+                   ).rstrip(' AND ') % (SUB * len(args)), args)
+        
+        if c.rowcount:
+            noun = 'feeds' if c.rowcount != 1 else 'feed'
+            bot.reply("Successfully removed {0} {1}.".format(c.rowcount, noun))
         else:
-            c.execute('DELETE FROM rss_feeds WHERE feed_name = %s' % SUB, (feed_name,))
-            bot.reply("Successfully removed the feed from all channels.")
+            bot.reply("No feeds matched the command.")
+        
         conn.commit()
-        c.close()
+        
+    elif text[1] == 'toggle':
+        # .rss toggle [#channel] [Feed_Name]
+        pattern = r"""
+            ^\.rss\s+toggle
+            (?:\s+([&#+!][^\s,]+))? # channel (optional)
+            (?:\s+("[\w\s]+"|\w+))? # name (optional)
+            """
+        match = re.match(pattern, trigger.group(), re.IGNORECASE | re.VERBOSE)
+        if match is None or (not match.group(1) and not match.group(2)):
+            bot.reply("Enable or disable a feed or feeds. Usage: .rss toggle [#channel] [Feed_Name]")
+            return
+        
+        channel = match.group(1)
+        feed_name = match.group(2).strip('"') if match.group(2) else None
+        args = [arg for arg in (channel, feed_name) if arg]
+        
+        c.execute(('UPDATE rss_feeds SET enabled = 1 - enabled WHERE '
+                   + ('channel = %s AND ' if channel else '')
+                   + ('feed_name = %s' if feed_name else '')
+                   ).rstrip(' AND ') % (SUB * len(args)), args)
+        
+        if c.rowcount:
+            noun = 'feeds' if c.rowcount != 1 else 'feed'
+            bot.reply("Successfully toggled {0} {1}.".format(c.rowcount, noun))
+        else:
+            bot.reply("No feeds matched the command.")
+
+        conn.commit()
         
     elif text[1] == 'list':
         # .rss list
@@ -160,10 +193,12 @@ def manage_rss(bot, trigger):
             noun = 'feeds' if len(feeds) != 1 else 'feed'
             bot.say("{0} RSS {1} in the database:".format(len(feeds), noun))
         for feed in feeds:
-            feed_channel, feed_name, feed_url, fg, bg = feed[:5]
-            bot.say("{0} {1} {2} {3} {4}".format(
-                feed_channel, colour_text(feed_name, fg, bg), feed_url, fg, bg))
-
+            feed_channel, feed_name, feed_url, fg, bg, enabled = feed[:6]
+            bot.say("{0} {1} {2}{3} {4} {5}".format(
+                feed_channel, colour_text(feed_name, fg, bg), feed_url,
+                " (disabled)" if not enabled else '', fg, bg))
+            
+    c.close()
     conn.close()
 
 
@@ -216,7 +251,7 @@ def read_feeds(bot):
     
     if not feeds:
         STOP = True
-        msg_all_channels(bot, "No RSS feeds found in database; stopping.")
+        msg_all_channels(bot, "No RSS feeds in database; stopping.")
         return
     
     if DEBUG:
@@ -224,7 +259,10 @@ def read_feeds(bot):
         msg_all_channels(bot, "Checking {0} RSS {1}...".format(len(feeds), noun))
     
     for feed in feeds:
-        feed_channel, feed_name, feed_url, fg, bg, article_title, article_url = feed
+        feed_channel, feed_name, feed_url, fg, bg, enabled, article_title, article_url = feed
+        
+        if not enabled:
+            continue
 
         try:
             fp = feedparser.parse(feed_url)
