@@ -25,18 +25,61 @@ STOP = True
 SUB = ('%s',)
 
 
-def checkdb(cursor):
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS rss_feeds
-        (channel TEXT, feed_name TEXT, feed_url TEXT, fg TINYINT, bg TINYINT,
-        enabled BOOL DEFAULT 1, article_title TEXT, article_url TEXT,
-        PRIMARY KEY (channel, feed_name))
-        ''')
-
-
 def setup(bot):
     global SUB
     SUB = (bot.db.substitution,)
+    
+    conn = bot.db.connect()
+    c = conn.cursor()
+    
+    # if new table doesn't exist, create it and try importing from old tables
+    try:
+        c.execute('SELECT * FROM rss_feeds')
+    except StandardError:
+        c.execute('''
+            CREATE TABLE IF NOT EXISTS rss_feeds
+            (channel TEXT, feed_name TEXT, feed_url TEXT, fg TINYINT, bg TINYINT,
+            enabled BOOL DEFAULT 1, article_title TEXT, article_url TEXT,
+            PRIMARY KEY (channel, feed_name))
+            ''')
+
+        try:
+            c.execute('SELECT * FROM rss')
+            oldfeeds = c.fetchall()
+        except StandardError:
+            oldfeeds = []
+            
+        for feed in oldfeeds:
+            channel, site_name, site_url, fg, bg = feed
+
+            # get recent article if possible
+            try:
+                c.execute('''
+                    SELECT article_title, article_url FROM recent
+                    WHERE channel = %s AND site_name = %s
+                    ''' % (SUB * 2), (channel, site_name))
+                article_title, article_url = c.fetchone()
+            except (StandardError, TypeError):
+                article_title = article_url = None
+            
+            # add feed to new table
+            if article_url:
+                c.execute('''
+                    INSERT INTO rss_feeds (channel, feed_name, feed_url, fg, bg, article_title, article_url)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s)
+                    ''' % (SUB * 7), (channel, site_name, site_url, fg, bg, article_title, article_url))
+            else:
+                c.execute('''
+                    INSERT INTO rss_feeds (channel, feed_name, feed_url, fg, bg)
+                    VALUES (%s, %s, %s, %s, %s)
+                    ''' % (SUB * 5), (channel, site_name, site_url, fg, bg))
+        
+        #c.execute('DROP TABLE IF EXISTS rss')
+        #c.execute('DROP TABLE IF EXISTS recent')
+        conn.commit()
+
+    c.close()
+    conn.close()
     
     
 def msg_all_channels(bot, msg):
@@ -67,8 +110,6 @@ def manage_rss(bot, trigger):
 
     conn = bot.db.connect()
     c = conn.cursor()
-    checkdb(c)
-    conn.commit()
     
     if text[1] == 'add':
         # .rss add <#channel> <Feed_Name> <URL> [fg] [bg]
@@ -245,7 +286,6 @@ def read_feeds(bot):
     
     conn = bot.db.connect()
     c = conn.cursor()
-    checkdb(c)
     c.execute('SELECT * FROM rss_feeds')
     feeds = c.fetchall()
     
@@ -298,5 +338,6 @@ def read_feeds(bot):
             ''' % (SUB * 4), (entry.title, entry.link, feed_channel, feed_name))
         conn.commit()
 
+    c.close()
     conn.close()
 
