@@ -319,7 +319,7 @@ def show_mask(bot, trigger):
         return
     if not bot.db:
         bot.say("I'm afraid I can't do that.")
-    elif trigger.sender in bot.db.preferences:
+    elif trigger.sender.lower() in bot.db.preferences:
         bot.say(bot.db.preferences.get(trigger.sender.lower(), 'topic_mask'))
     else:
         bot.say("%s")
