@@ -308,7 +308,7 @@ def set_mask(bot, trigger):
     if not bot.db:
         bot.say("I'm afraid I can't do that.")
     else:
-        bot.db.preferences.update(trigger.sender, {'topic_mask': trigger.group(2)})
+        bot.db.preferences.update(trigger.sender.lower(), {'topic_mask': trigger.group(2)})
         bot.say("Gotcha, " + trigger.nick)
 
 
@@ -319,8 +319,8 @@ def show_mask(bot, trigger):
         return
     if not bot.db:
         bot.say("I'm afraid I can't do that.")
-    elif trigger.sender in bot.db.preferences:
-        bot.say(bot.db.preferences.get(trigger.sender, 'topic_mask'))
+    elif trigger.sender.lower() in bot.db.preferences:
+        bot.say(bot.db.preferences.get(trigger.sender.lower(), 'topic_mask'))
     else:
         bot.say("%s")
 
