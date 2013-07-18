@@ -71,12 +71,12 @@ class Willie(irc.Bot):
 
         #Set up block lists
         #Default to empty
-        if not self.config.has_option('core', 'nick_blocks') or not self.config.core.nick_blocks:
+        if not self.config.core.nick_blocks:
             self.config.core.nick_blocks = []
-        if not self.config.has_option('core', 'host_blocks') or not self.config.core.nick_blocks:
+        if not self.config.core.nick_blocks:
             self.config.core.host_blocks = []
         #Add nicks blocked under old scheme, if present
-        if self.config.has_option('core', 'other_bots') and self.config.core.other_bots:
+        if self.config.core.other_bots:
             nicks = self.config.core.get_list('nick_blocks')
             bots = self.config.core.get_list('other_bots')
             nicks.extend(bots)
@@ -411,7 +411,7 @@ class Willie(irc.Bot):
 
                     # 2) e.g. (['p', 'q'], '(.*)')
                     elif len(func.rule) == 2 and isinstance(func.rule[0], list):
-                        prefix = self.config.prefix
+                        prefix = self.config.core.prefix
                         commands, pattern = func.rule
                         for command in commands:
                             command = r'(%s)\b(?: +(?:%s))?' % (command, pattern)
@@ -429,7 +429,7 @@ class Willie(irc.Bot):
 
             if hasattr(func, 'commands'):
                 for command in func.commands:
-                    prefix = self.config.prefix
+                    prefix = self.config.core.prefix
                     regexp = get_command_regexp(prefix, command)
                     bind(self, func.priority, regexp, func)
 
@@ -528,9 +528,13 @@ class Willie(irc.Bot):
                         re_host = re.compile(temp[1])
                         if re_host.findall(origin.host):
                             s.admin = True
-            s.owner = origin.nick + '@' + origin.host == self.config.owner
-            if not s.owner:
-                s.owner = (origin.nick == Nick(self.config.owner))
+
+            if not self.config.core.owner:
+                s.owner = False
+            elif '@' in self.config.core.owner:
+                s.owner = origin.nick + '@' + origin.host == self.config.core.owner
+            else:
+                s.owner = (origin.nick == Nick(self.config.core.owner))
 
             # Bot owner inherits all the admin rights, therefore is considered
             # admin
@@ -594,7 +598,7 @@ class Willie(irc.Bot):
 
     def limit(self, origin, func):
         if origin.sender and origin.sender.startswith('#'):
-            if hasattr(self.config, 'limit'):
+            if self.config.has_section('limit'):
                 limits = self.config.limit.get(origin.sender)
                 if limits and (func.__module__ not in limits):
                     return True
@@ -667,12 +671,12 @@ class Willie(irc.Bot):
 
         Returns: True if message was sent.
         """
-        if not self.config.verbose:
-            self.config.verbose = 'warning'
-        if not self.config.debug_target:
-            self.config.debug_target = 'stdio'
-        debug_target = self.config.debug_target
-        verbosity = self.config.verbose
+        if not self.config.core.verbose:
+            self.config.core.verbose = 'warning'
+        if not self.config.core.debug_target:
+            self.config.core.debug_target = 'stdio'
+        debug_target = self.config.core.debug_target
+        verbosity = self.config.core.verbose
         
         debug_msg = "[%s] %s" % (tag, text)
 
