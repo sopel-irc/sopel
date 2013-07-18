@@ -18,7 +18,7 @@ from willie.module import commands, interval, priority
 
 socket.setdefaulttimeout(10)
 
-INTERVAL = 20 # seconds between checking for new updates
+INTERVAL = 60 * 5 # seconds between checking for new updates
 DEBUG = False # display debug messages
 
 first_run = True
