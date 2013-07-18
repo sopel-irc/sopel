@@ -7,11 +7,14 @@ Licensed under the Eiffel Forum License 2.
 http://willie.dfbta.net
 """
 
-from willie.module import commands, interval, priority
-import feedparser
+from datetime import datetime
+import time
 import re
 import socket
 
+import feedparser
+
+from willie.module import commands, interval, priority
 
 socket.setdefaulttimeout(10)
 
@@ -40,7 +43,7 @@ def setup(bot):
             CREATE TABLE IF NOT EXISTS rss_feeds
             (channel TEXT, feed_name TEXT, feed_url TEXT, fg TINYINT, bg TINYINT,
             enabled BOOL DEFAULT 1, article_title TEXT, article_url TEXT,
-            etag TEXT, PRIMARY KEY (channel, feed_name))
+            published TEXT, etag TEXT, PRIMARY KEY (channel, feed_name))
             ''')
 
         try:
@@ -299,7 +302,7 @@ def read_feeds(bot):
         msg_all_channels(bot, "Checking {0} RSS {1}...".format(len(feeds), noun))
     
     for feed in feeds:
-        feed_channel, feed_name, feed_url, fg, bg, enabled, article_title, article_url, etag = feed
+        feed_channel, feed_name, feed_url, fg, bg, enabled, article_title, article_url, published, etag = feed
         
         if not enabled:
             continue
@@ -324,6 +327,25 @@ def read_feeds(bot):
             if DEBUG:
                 bot.msg(feed_channel, u"Skipping previously read entry: [{0}] {1}".format(feed_name, entry.title))
             continue
+        
+        if "published" in entry:
+            entry_dt = datetime.fromtimestamp(time.mktime(entry.published_parsed))
+        else:
+            entry_dt = None
+        
+        if published and entry_dt:
+            published_dt = datetime.strptime(published, "%Y-%m-%d %H:%M:%S")
+            
+            if published_dt >= entry_dt:
+                # This will make more sense once iterating over the feed is
+                # implemented. Once that happens, deleting or modifying the 
+                # latest item would result in the whole feed getting re-msg'd.
+                # This will prevent that from happening.
+                if DEBUG:
+                    debug_msg = u"Skipping older entry: [{0}] {1}, because {2} >= {3}".format(
+                            feed_name, entry.title, published_dt, entry_dt)
+                    bot.msg(feed_channel, debug_msg)
+                continue
 
         # print new entry
         message = u"[\x02{0}\x02] \x02{1}\x02 {2}".format(
@@ -334,9 +356,9 @@ def read_feeds(bot):
         
         # save into recent
         c.execute('''
-            UPDATE rss_feeds SET article_title = %s, article_url = %s, etag = %s
+            UPDATE rss_feeds SET article_title = %s, article_url = %s, published = %s, etag = %s
             WHERE channel = %s AND feed_name = %s
-            ''' % (SUB * 5), (entry.title, entry.link, fp.etag, feed_channel, feed_name))
+            ''' % (SUB * 6), (entry.title, entry.link, entry_dt, fp.etag, feed_channel, feed_name))
         conn.commit()
 
     c.close()
