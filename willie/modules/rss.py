@@ -7,219 +7,337 @@ Licensed under the Eiffel Forum License 2.
 http://willie.dfbta.net
 """
 
-from willie.module import commands, priority
+from willie.module import commands, interval, priority
 import feedparser
+import re
 import socket
-import time
 
-DEBUG = False
+
 socket.setdefaulttimeout(10)
-INTERVAL = 10  # seconds between checking for new updates
-STOP = False
+
+INTERVAL = 20 # seconds between checking for new updates
+DEBUG = False # display debug messages
+
+first_run = True
+STOP = True
+
 # This is reset in setup().
 SUB = ('%s',)
-
-
-def checkdb(cursor):
-    cursor.execute("CREATE TABLE IF NOT EXISTS rss ( channel text, site_name text, site_url text, fg text, bg text)")
 
 
 def setup(bot):
     global SUB
     SUB = (bot.db.substitution,)
+    
+    conn = bot.db.connect()
+    c = conn.cursor()
+    
+    # if new table doesn't exist, create it and try importing from old tables
+    try:
+        c.execute('SELECT * FROM rss_feeds')
+    except StandardError:
+        c.execute('''
+            CREATE TABLE IF NOT EXISTS rss_feeds
+            (channel TEXT, feed_name TEXT, feed_url TEXT, fg TINYINT, bg TINYINT,
+            enabled BOOL DEFAULT 1, article_title TEXT, article_url TEXT,
+            PRIMARY KEY (channel, feed_name))
+            ''')
+
+        try:
+            c.execute('SELECT * FROM rss')
+            oldfeeds = c.fetchall()
+        except StandardError:
+            oldfeeds = []
+            
+        for feed in oldfeeds:
+            channel, site_name, site_url, fg, bg = feed
+
+            # get recent article if possible
+            try:
+                c.execute('''
+                    SELECT article_title, article_url FROM recent
+                    WHERE channel = %s AND site_name = %s
+                    ''' % (SUB * 2), (channel, site_name))
+                article_title, article_url = c.fetchone()
+            except (StandardError, TypeError):
+                article_title = article_url = None
+            
+            # add feed to new table
+            if article_url:
+                c.execute('''
+                    INSERT INTO rss_feeds (channel, feed_name, feed_url, fg, bg, article_title, article_url)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s)
+                    ''' % (SUB * 7), (channel, site_name, site_url, fg, bg, article_title, article_url))
+            else:
+                c.execute('''
+                    INSERT INTO rss_feeds (channel, feed_name, feed_url, fg, bg)
+                    VALUES (%s, %s, %s, %s, %s)
+                    ''' % (SUB * 5), (channel, site_name, site_url, fg, bg))
+        
+        #c.execute('DROP TABLE IF EXISTS rss')
+        #c.execute('DROP TABLE IF EXISTS recent')
+        conn.commit()
+
+    c.close()
+    conn.close()
+    
+    
+def msg_all_channels(bot, msg):
+    for channel in bot.channels:
+        bot.msg(channel, msg)
+        
+        
+def colour_text(text, fg, bg):
+    if not fg:
+        return text
+    else:
+        colour = '{0},{1}'.format(fg, bg) if bg != '' else fg
+        return "\x03{0}{1}\x03".format(colour, text)
 
 
 @commands('rss')
 @priority('low')
 def manage_rss(bot, trigger):
-    """ .rss operation channel site_name url -- operation can be either 'add', 'del', or 'list' no further operators needed if 'list' used """
+    """Manage RSS feeds. Usage: .rss <add|del|toggle|list>  (Use .startrss to start fetching feeds.)"""
     if not trigger.admin:
         bot.reply("Sorry, you need to be an admin to modify the RSS feeds.")
         return
-    conn = bot.db.connect()
-    c = conn.cursor()
-    checkdb(c)
-    conn.commit()
 
     text = trigger.group().split()
-    if len(text) < 2:
-        bot.reply("Proper usage: '.rss add ##channel Site_Name URL', '.rss del ##channel Site_Name URL', '.rss del ##channel'")
-    elif len(text) > 2:
-        channel = text[2].lower()
+    if (len(text) < 2 or text[1] not in ('add', 'del', 'toggle', 'list')):
+        bot.reply("Please specify an operation: add del toggle list")
+        return
 
-    if len(text) > 4 and text[1] == 'add':
-        fg_colour = str()
-        bg_colour = str()
-        temp = trigger.group().split('"')
-        if len(temp) == 1:
-            site_name = text[3]
-            site_url = text[4]
-            if len(text) >= 6:
-                # .rss add ##yano ScienceDaily http://sciencedaily.com/ 03
-                fg_colour = str(text[5])
-            if len(text) == 7:
-                # .rss add ##yano ScienceDaily http://sciencedaily.com/ 03 00
-                bg_colour = str(text[6])
-        elif temp[-1].split():
-            site_name = temp[1]
-            ending = temp[-1].split()
-            site_url = ending[0]
-            if len(ending) >= 2:
-                fg_colour = ending[1]
-            if len(ending) == 3:
-                bg_colour = ending[2]
-        else:
-            bot.reply("Not enough parameters specified.")
-            return
-        if fg_colour:
-            fg_colour = fg_colour.zfill(2)
-        if bg_colour:
-            bg_colour = bg_colour.zfill(2)
-        c.execute('INSERT INTO rss VALUES (%s,%s,%s,%s,%s)' % (SUB * 5), (channel, site_name, site_url, fg_colour, bg_colour))
-        conn.commit()
-        c.close()
-        bot.reply("Successfully added values to database.")
-    elif len(text) == 3 and text[1] == 'del':
-        # .rss del ##channel
-        c.execute('DELETE FROM rss WHERE channel = %s' % SUB, (channel,))
-        conn.commit()
-        c.close()
-        bot.reply("Successfully removed values from database.")
-    elif len(text) >= 4 and text[1] == 'del':
-        # .rss del ##channel Site_Name
-        c.execute('DELETE FROM rss WHERE channel = %s and site_name = %s' % (SUB * 2), (channel, " ".join(text[3:])))
-        conn.commit()
-        c.close()
-        bot.reply("Successfully removed the site from the given channel.")
-    elif len(text) == 2 and text[1] == 'list':
-        c.execute("SELECT * FROM rss")
-        k = 0
-        for row in c.fetchall():
-            k += 1
-            bot.say("list: " + unicode(row))
-        if k == 0:
-            bot.reply("No entries in database")
-    else:
-        bot.reply("Incorrect parameters specified.")
-    conn.close()
-
-
-class Feed(object):
-    modified = ''
-
-first_run = True
-restarted = False
-feeds = dict()
-
-
-def read_feeds(bot):
-    global restarted
-    global STOP
-
-    restarted = False
     conn = bot.db.connect()
-    cur = conn.cursor()
-    checkdb(cur)
-    cur.execute("SELECT * FROM rss")
-    if not cur.fetchall():
-        STOP = True
-        bot.say("No RSS feeds found in database. Please add some rss feeds.")
-
-    cur.execute("CREATE TABLE IF NOT EXISTS recent ( channel text, site_name text, article_title text, article_url text )")
-    cur.execute("SELECT * FROM rss")
-
-    for row in cur.fetchall():
-        feed_channel = row[0]
-        feed_site_name = row[1]
-        feed_url = row[2]
-        feed_fg = row[3]
-        feed_bg = row[4]
-        try:
-            fp = feedparser.parse(feed_url)
-        except IOError, E:
-            bot.say("Can't parse, " + str(E))
-        entry = fp.entries[0]
-
-        if not feed_fg and not feed_bg:
-            site_name_effect = "[\x02%s\x02]" % (feed_site_name)
-        elif feed_fg and not feed_bg:
-            site_name_effect = "[\x02\x03%s%s\x03\x02]" % (feed_fg, feed_site_name)
-        elif feed_fg and feed_bg:
-            site_name_effect = "[\x02\x03%s,%s%s\x03\x02]" % (feed_fg, feed_bg, feed_site_name)
-
-        if hasattr(entry, 'id'):
-            article_url = entry.id
-        elif hasattr(entry, 'feedburner_origlink'):
-            article_url = entry.feedburner_origlink
+    c = conn.cursor()
+    
+    if text[1] == 'add':
+        # .rss add <#channel> <Feed_Name> <URL> [fg] [bg]
+        pattern = r'''
+            ^\.rss\s+add
+            \s+([&#+!][^\s,]+)   # channel
+            \s+("[\w\s]+"|\w+)   # name, which can contain spaces if quoted
+            \s+(\S+)             # url
+            (?:\s+(\d+))?        # foreground colour (optional)
+            (?:\s+(\d+))?        # background colour (optional)
+            '''
+        match = re.match(pattern, trigger.group(), re.IGNORECASE | re.VERBOSE)
+        if match is None:
+            bot.reply("Add a feed to a channel, or modify an existing one. Usage: .rss add <#channel> <Feed_Name> <URL> [fg] [bg]")
+            return
+        
+        channel = match.group(1)
+        feed_name = match.group(2).strip('"')
+        feed_url = match.group(3)
+        fg = int(match.group(4)) % 16 if match.group(4) else ''
+        bg = int(match.group(5)) % 16 if match.group(5) else ''
+        
+        c.execute('SELECT * FROM rss_feeds WHERE channel = %s AND feed_name = %s' % (SUB * 2),
+                  (channel, feed_name))
+        if not c.fetchone():
+            c.execute('''
+                INSERT INTO rss_feeds (channel, feed_name, feed_url, fg, bg)
+                VALUES (%s, %s, %s, %s, %s)
+                ''' % (SUB * 5), (channel, feed_name, feed_url, fg, bg))
+            bot.reply("Successfully added the feed to the channel.")
         else:
-            article_url = entry.links[0].href
+            c.execute('''
+                UPDATE rss_feeds SET feed_url = %s, fg = %s, bg = %s
+                WHERE channel = %s AND feed_name = %s
+                ''' % (SUB * 5), (feed_url, fg, bg, channel, feed_name))
+            bot.reply("Successfully modified the feed.")
 
-        # only print if new entry
-        sql_text = (feed_channel, feed_site_name, entry.title, article_url)
-        cur.execute('SELECT * FROM recent WHERE channel = %s AND site_name = %s and article_title = %s AND article_url = %s' % (SUB * 4), sql_text)
-        if len(cur.fetchall()) < 1:
-
-            response = site_name_effect + " %s \x02%s\x02" % (entry.title, article_url)
-            if entry.updated:
-                response += " - %s" % (entry.updated)
-
-            bot.msg(feed_channel, response)
-
-            t = (feed_channel, feed_site_name, entry.title, article_url,)
-            cur.execute('INSERT INTO recent VALUES (%s, %s, %s, %s)' % (SUB * 4), t)
-            conn.commit()
+        conn.commit()
+        
+    elif text[1] == 'clear':
+        # .rss clear <#channel>
+        pattern = r"""
+            ^\.rss\s+clear
+            \s+([&#+!][^\s,]+) # channel
+            """
+        match = re.match(pattern, trigger.group(), re.IGNORECASE | re.VERBOSE)
+        if match is None:
+            bot.reply("Clear all feeds from a channel. Usage: .rss clear <#channel>")
+            return
+        
+        c.execute('DELETE FROM rss_feeds WHERE channel = %s' % SUB, (match.group(1),))
+        bot.reply("Successfully cleared all feeds from the given channel.")
+        
+        conn.commit()
+        
+    elif text[1] == 'del':
+        # .rss del [#channel] [Feed_Name]
+        pattern = r"""
+            ^\.rss\s+del
+            (?:\s+([&#+!][^\s,]+))? # channel (optional)
+            (?:\s+("[\w\s]+"|\w+))? # name (optional)
+            """
+        match = re.match(pattern, trigger.group(), re.IGNORECASE | re.VERBOSE)
+        if match is None or (not match.group(1) and not match.group(2)):
+            bot.reply("Remove one or all feeds from one or all channels. Usage: .rss del [#channel] [Feed_Name]")
+            return
+        
+        channel = match.group(1)
+        feed_name = match.group(2).strip('"') if match.group(2) else None
+        args = [arg for arg in (channel, feed_name) if arg]
+        
+        c.execute(('DELETE FROM rss_feeds WHERE '
+                   + ('channel = %s AND ' if channel else '')
+                   + ('feed_name = %s' if feed_name else '')
+                   ).rstrip(' AND ') % (SUB * len(args)), args)
+        
+        if c.rowcount:
+            noun = 'feeds' if c.rowcount != 1 else 'feed'
+            bot.reply("Successfully removed {0} {1}.".format(c.rowcount, noun))
         else:
-            if DEBUG:
-                bot.msg(feed_channel, u"Skipping previously read entry: %s %s" % (site_name_effect, entry.title))
+            bot.reply("No feeds matched the command.")
+        
+        conn.commit()
+        
+    elif text[1] == 'toggle':
+        # .rss toggle [#channel] [Feed_Name]
+        pattern = r"""
+            ^\.rss\s+toggle
+            (?:\s+([&#+!][^\s,]+))? # channel (optional)
+            (?:\s+("[\w\s]+"|\w+))? # name (optional)
+            """
+        match = re.match(pattern, trigger.group(), re.IGNORECASE | re.VERBOSE)
+        if match is None or (not match.group(1) and not match.group(2)):
+            bot.reply("Enable or disable a feed or feeds. Usage: .rss toggle [#channel] [Feed_Name]")
+            return
+        
+        channel = match.group(1)
+        feed_name = match.group(2).strip('"') if match.group(2) else None
+        args = [arg for arg in (channel, feed_name) if arg]
+        
+        c.execute(('UPDATE rss_feeds SET enabled = 1 - enabled WHERE '
+                   + ('channel = %s AND ' if channel else '')
+                   + ('feed_name = %s' if feed_name else '')
+                   ).rstrip(' AND ') % (SUB * len(args)), args)
+        
+        if c.rowcount:
+            noun = 'feeds' if c.rowcount != 1 else 'feed'
+            bot.reply("Successfully toggled {0} {1}.".format(c.rowcount, noun))
+        else:
+            bot.reply("No feeds matched the command.")
+
+        conn.commit()
+        
+    elif text[1] == 'list':
+        # .rss list
+        c.execute('SELECT * FROM rss_feeds')
+        feeds = c.fetchall()
+        
+        if not feeds:
+            bot.reply("No RSS feeds in the database.")
+        else:
+            noun = 'feeds' if len(feeds) != 1 else 'feed'
+            bot.say("{0} RSS {1} in the database:".format(len(feeds), noun))
+        for feed in feeds:
+            feed_channel, feed_name, feed_url, fg, bg, enabled = feed[:6]
+            bot.say("{0} {1} {2}{3} {4} {5}".format(
+                feed_channel, colour_text(feed_name, fg, bg), feed_url,
+                " (disabled)" if not enabled else '', fg, bg))
+            
+    c.close()
     conn.close()
 
 
 @commands('startrss')
 @priority('high')
 def startrss(bot, trigger):
-    """ Begin reading RSS feeds """
+    """Begin reading RSS feeds. Usage: .startrss [-v :Verbose | -q :Quiet | --stop :Stop fetching]"""
     if not trigger.admin:
-        bot.reply("You must be an admin to start up the RSS feeds.")
+        bot.reply("You must be an admin to start fetching RSS feeds.")
         return
-    global first_run, restarted, DEBUG, INTERVAL, STOP
-    DEBUG = False
-
-    query = trigger.group(2)
-    if query == '-v':
+    
+    global first_run, DEBUG, STOP
+    
+    flag = trigger.group(3)
+    if flag == '-v':
         DEBUG = True
-        STOP = False
         bot.reply("Debugging enabled.")
-    elif query == '-q':
+    elif flag == '-q':
         DEBUG = False
-        STOP = False
         bot.reply("Debugging disabled.")
-    elif query == '-i':
-        INTERVAL = trigger.group(3)
-        bot.reply("INTERVAL updated to: %s" % (str(INTERVAL)))
-    elif query == '--stop':
+    elif flag == '-i':
+        # changing the interval doesn't currently seem to work
+        try:
+            read_feeds.interval = [int(trigger.group(4))]
+            bot.reply("Interval updated to {0} seconds".format(trigger.group(4)))
+        except ValueError:
+            pass
+        
+    if flag == '--stop':
         STOP = True
-        bot.reply("Stop parameter updated.")
-
-    if first_run:
-        if DEBUG:
-            bot.say("Okay, I'll start rss fetching...")
-        first_run = False
+        bot.reply("Okay, I'll stop fetching RSS feeds.")
     else:
-        restarted = True
-        if DEBUG:
-            bot.say("Okay, I'll re-start rss...")
-
-    if not STOP:
-        while True:
-            if STOP:
-                bot.reply("STOPPED")
-                first_run = False
-                STOP = False
-                break
-            if DEBUG:
-                bot.say("Rechecking feeds")
-            read_feeds(bot)
-            time.sleep(INTERVAL)
-
+        STOP = False
+        bot.reply("Okay, I'll start fetching RSS feeds..." if first_run else
+                  "Continuing to fetch RSS feeds...")
+    first_run = False
+        
+        
+@interval(INTERVAL)
+def read_feeds(bot):
+    global STOP
+    if STOP:
+        return
+    
+    conn = bot.db.connect()
+    c = conn.cursor()
+    c.execute('SELECT * FROM rss_feeds')
+    feeds = c.fetchall()
+    
+    if not feeds:
+        STOP = True
+        msg_all_channels(bot, "No RSS feeds in database; stopping.")
+        return
+    
     if DEBUG:
-        bot.say("Stopped checking")
+        noun = 'feeds' if len(feeds) != 1 else 'feed'
+        msg_all_channels(bot, "Checking {0} RSS {1}...".format(len(feeds), noun))
+    
+    for feed in feeds:
+        feed_channel, feed_name, feed_url, fg, bg, enabled, article_title, article_url = feed
+        
+        if not enabled:
+            continue
+
+        try:
+            fp = feedparser.parse(feed_url)
+        except IOError, E:
+            msg_all_channels(bot, "Can't parse, " + str(E))
+
+        if DEBUG:
+            noun = 'entries' if len(fp.entries) != 1 else 'entry'
+            bot.msg(feed_channel, "Found {0} {1} for {2}".format(len(fp.entries), noun, feed_name))
+        
+        try:
+            entry = fp.entries[0]
+        except IndexError:
+            continue
+
+        # check if new entry
+        if article_title == entry.title and article_url == entry.link:
+            if DEBUG:
+                bot.msg(feed_channel, u"Skipping previously read entry: [{0}] {1}".format(feed_name, entry.title))
+            continue
+
+        # print new entry
+        message = u"[\x02{0}\x02] \x02{1}\x02 {2}".format(
+            colour_text(feed_name, fg, bg), entry.title, entry.link)
+        if entry.updated:
+            message += " - " + entry.updated
+        bot.msg(feed_channel, message)
+        
+        # save into recent
+        c.execute('''
+            UPDATE rss_feeds SET article_title = %s, article_url = %s
+            WHERE channel = %s AND feed_name = %s
+            ''' % (SUB * 4), (entry.title, entry.link, feed_channel, feed_name))
+        conn.commit()
+
+    c.close()
+    conn.close()
+
