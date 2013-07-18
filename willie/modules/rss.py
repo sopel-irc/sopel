@@ -40,7 +40,7 @@ def setup(bot):
             CREATE TABLE IF NOT EXISTS rss_feeds
             (channel TEXT, feed_name TEXT, feed_url TEXT, fg TINYINT, bg TINYINT,
             enabled BOOL DEFAULT 1, article_title TEXT, article_url TEXT,
-            PRIMARY KEY (channel, feed_name))
+            etag TEXT, PRIMARY KEY (channel, feed_name))
             ''')
 
         try:
@@ -299,19 +299,20 @@ def read_feeds(bot):
         msg_all_channels(bot, "Checking {0} RSS {1}...".format(len(feeds), noun))
     
     for feed in feeds:
-        feed_channel, feed_name, feed_url, fg, bg, enabled, article_title, article_url = feed
+        feed_channel, feed_name, feed_url, fg, bg, enabled, article_title, article_url, etag = feed
         
         if not enabled:
             continue
 
         try:
-            fp = feedparser.parse(feed_url)
+            fp = feedparser.parse(feed_url, etag=etag)
         except IOError, E:
             msg_all_channels(bot, "Can't parse, " + str(E))
 
         if DEBUG:
-            noun = 'entries' if len(fp.entries) != 1 else 'entry'
-            bot.msg(feed_channel, "Found {0} {1} for {2}".format(len(fp.entries), noun, feed_name))
+            debug_msg = "{0}: status = {1}, version = {2}, items = {3}".format(
+                    feed_name, fp.status, fp.version, len(fp.entries))
+            bot.msg(feed_channel, debug_msg)
         
         try:
             entry = fp.entries[0]
@@ -333,9 +334,9 @@ def read_feeds(bot):
         
         # save into recent
         c.execute('''
-            UPDATE rss_feeds SET article_title = %s, article_url = %s
+            UPDATE rss_feeds SET article_title = %s, article_url = %s, etag = %s
             WHERE channel = %s AND feed_name = %s
-            ''' % (SUB * 4), (entry.title, entry.link, feed_channel, feed_name))
+            ''' % (SUB * 5), (entry.title, entry.link, fp.etag, feed_channel, feed_name))
         conn.commit()
 
     c.close()
