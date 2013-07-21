@@ -36,6 +36,7 @@ def setup(bot):
     c = conn.cursor()
     
     # if new table doesn't exist, create it and try importing from old tables
+    # The rss_feeds table was added on 17.7.2013.
     try:
         c.execute('SELECT * FROM rss_feeds')
     except StandardError:
@@ -43,48 +44,62 @@ def setup(bot):
             CREATE TABLE IF NOT EXISTS rss_feeds
             (channel TEXT, feed_name TEXT, feed_url TEXT, fg TINYINT, bg TINYINT,
             enabled BOOL DEFAULT 1, article_title TEXT, article_url TEXT,
-            published TEXT, etag TEXT, PRIMARY KEY (channel, feed_name))
+            published TEXT, etag TEXT, modified TEXT, PRIMARY KEY (channel, feed_name))
             ''')
 
-        try:
-            c.execute('SELECT * FROM rss')
-            oldfeeds = c.fetchall()
-        except StandardError:
-            oldfeeds = []
-            
-        for feed in oldfeeds:
-            channel, site_name, site_url, fg, bg = feed
-
-            # get recent article if possible
-            try:
-                c.execute('''
-                    SELECT article_title, article_url FROM recent
-                    WHERE channel = %s AND site_name = %s
-                    ''' % (SUB * 2), (channel, site_name))
-                article_title, article_url = c.fetchone()
-            except (StandardError, TypeError):
-                article_title = article_url = None
-            
-            # add feed to new table
-            if article_url:
-                c.execute('''
-                    INSERT INTO rss_feeds (channel, feed_name, feed_url, fg, bg, article_title, article_url)
-                    VALUES (%s, %s, %s, %s, %s, %s, %s)
-                    ''' % (SUB * 7), (channel, site_name, site_url, fg, bg, article_title, article_url))
-            else:
-                c.execute('''
-                    INSERT INTO rss_feeds (channel, feed_name, feed_url, fg, bg)
-                    VALUES (%s, %s, %s, %s, %s)
-                    ''' % (SUB * 5), (channel, site_name, site_url, fg, bg))
+        migrate_from_old_tables(c)
         
+        # These tables are no longer used, but lets not delete them right away.
         #c.execute('DROP TABLE IF EXISTS rss')
         #c.execute('DROP TABLE IF EXISTS recent')
+        conn.commit()
+    
+    # The modified column was added on 21.7.2013.
+    try:
+        c.execute('SELECT modified FROM rss_feeds')
+    except StandardError:
+        c.execute('''
+            ALTER TABLE rss_feeds ADD modified TEXT
+        ''')
         conn.commit()
 
     c.close()
     conn.close()
     
     
+def migrate_from_old_tables(c):
+    try:
+        c.execute('SELECT * FROM rss')
+        oldfeeds = c.fetchall()
+    except StandardError:
+        oldfeeds = []
+        
+    for feed in oldfeeds:
+        channel, site_name, site_url, fg, bg = feed
+
+        # get recent article if possible
+        try:
+            c.execute('''
+                SELECT article_title, article_url FROM recent
+                WHERE channel = %s AND site_name = %s
+                ''' % (SUB * 2), (channel, site_name))
+            article_title, article_url = c.fetchone()
+        except (StandardError, TypeError):
+            article_title = article_url = None
+        
+        # add feed to new table
+        if article_url:
+            c.execute('''
+                INSERT INTO rss_feeds (channel, feed_name, feed_url, fg, bg, article_title, article_url)
+                VALUES (%s, %s, %s, %s, %s, %s, %s)
+                ''' % (SUB * 7), (channel, site_name, site_url, fg, bg, article_title, article_url))
+        else:
+            c.execute('''
+                INSERT INTO rss_feeds (channel, feed_name, feed_url, fg, bg)
+                VALUES (%s, %s, %s, %s, %s)
+                ''' % (SUB * 5), (channel, site_name, site_url, fg, bg))
+
+
 def msg_all_channels(bot, msg):
     for channel in bot.channels:
         bot.msg(channel, msg)
@@ -302,13 +317,13 @@ def read_feeds(bot):
         msg_all_channels(bot, "Checking {0} RSS {1}...".format(len(feeds), noun))
     
     for feed in feeds:
-        feed_channel, feed_name, feed_url, fg, bg, enabled, article_title, article_url, published, etag = feed
+        feed_channel, feed_name, feed_url, fg, bg, enabled, article_title, article_url, published, etag, modified = feed
         
         if not enabled:
             continue
 
         try:
-            fp = feedparser.parse(feed_url, etag=etag)
+            fp = feedparser.parse(feed_url, etag=etag, modified=modified)
         except IOError, E:
             msg_all_channels(bot, "Can't parse, " + str(E))
 
@@ -322,16 +337,30 @@ def read_feeds(bot):
         except IndexError:
             continue
 
+        entry_dt = None
+        if "published" in entry:
+            entry_dt = datetime.fromtimestamp(time.mktime(entry.published_parsed))
+
+        feed_etag = None
+        if hasattr(fp, 'etag'):
+            feed_etag = fp.etag
+
+        feed_modified = None
+        if hasattr(fp, 'modified'):
+            feed_modified = fp.modified
+
+        c.execute('''
+            UPDATE rss_feeds SET article_title = %s, article_url = %s, published = %s, etag = %s, modified = %s
+            WHERE channel = %s AND feed_name = %s
+            ''' % (SUB * 7), (entry.title, entry.link, entry_dt, feed_etag, feed_modified, feed_channel, feed_name))
+        conn.commit()
+
         # check if new entry
         if article_title == entry.title and article_url == entry.link:
             if DEBUG:
                 bot.msg(feed_channel, u"Skipping previously read entry: [{0}] {1}".format(feed_name, entry.title))
             continue
         
-        if "published" in entry:
-            entry_dt = datetime.fromtimestamp(time.mktime(entry.published_parsed))
-        else:
-            entry_dt = None
         
         if published and entry_dt:
             published_dt = datetime.strptime(published, "%Y-%m-%d %H:%M:%S")
@@ -353,13 +382,6 @@ def read_feeds(bot):
         if entry.updated:
             message += " - " + entry.updated
         bot.msg(feed_channel, message)
-        
-        # save into recent
-        c.execute('''
-            UPDATE rss_feeds SET article_title = %s, article_url = %s, published = %s, etag = %s
-            WHERE channel = %s AND feed_name = %s
-            ''' % (SUB * 6), (entry.title, entry.link, entry_dt, fp.etag, feed_channel, feed_name))
-        conn.commit()
 
     c.close()
     conn.close()
