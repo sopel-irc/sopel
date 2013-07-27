@@ -22,6 +22,11 @@ title_tag_data = re.compile('<(/?)title( [^>]+)?>', re.IGNORECASE)
 quoted_title = re.compile('[\'"]<title>[\'"]', re.IGNORECASE)
 # This is another regex that presumably does something important.
 re_dcc = re.compile(r'(?i)dcc\ssend')
+# This sets the maximum number of bytes that should be read in order to find
+# the title. We don't want it too high, or a link to a big file/stream will
+# just keep downloading until there's no more memory. 640k ought to be enough
+# for anybody.
+max_bytes = 655360
 
 
 def configure(config):
@@ -191,7 +196,7 @@ def check_callbacks(bot, trigger, url, run=True):
 
 def find_title(url):
     """Return the title for the given URL."""
-    content, headers = web.get(url, return_headers=True)
+    content, headers = web.get(url, return_headers=True, limit_bytes=max_bytes)
     content_type = headers.get('Content-Type') or ''
     encoding_match = re.match('.*?charset *= *(\S+)', content_type)
     # If they gave us something else instead, try that
