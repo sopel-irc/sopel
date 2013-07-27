@@ -24,17 +24,21 @@ import re, urllib, urllib2
 from htmlentitydefs import name2codepoint
 
 #HTTP GET
-def get(uri, timeout=20, headers=None, return_headers=False):
+def get(uri, timeout=20, headers=None, return_headers=False, limit_bytes=None):
     """
     Execute an HTTP GET query on `uri`, and return the result.
     `timeout` is an optional argument, which represents how much time we should wait before throwing a timeout exception. It defualts to 20, but can be set to higher values if you are communicating with a slow web application.
     `headers` is a dict of HTTP headers to send with the request.
     If `return_headers` is True, return a tuple of (bytes, headers)
+
+    If `limit_bytes` is provided, only read that many bytes from the URL. This
+    may be a good idea when reading from unknown sites, to prevent excessively
+    large files from being downloaded.
     """
     if not uri.startswith('http'):
         uri = "http://" + uri
     u = get_urllib_object(uri, timeout, headers)
-    bytes = u.read()
+    bytes = u.read(limit_bytes)
     u.close()
     if not return_headers:
         return bytes
@@ -55,15 +59,19 @@ def head(uri, timeout=20, headers=None):
     return info
 
 # HTTP POST
-def post(uri, query):
+def post(uri, query, limit_bytes=None):
     """
     Execute an HTTP POST query. `uri` is the target URI, and `query` is the POST data.
     `headers` is a dict of HTTP headers to send with the request.
+
+    If `limit_bytes` is provided, only read that many bytes from the URL. This
+    may be a good idea when reading from unknown sites, to prevent excessively
+    large files from being downloaded.
     """
     if not uri.startswith('http'):
         uri = "http://" + uri
     u = urllib2.urlopen(uri, query)
-    bytes = u.read()
+    bytes = u.read(limit_bytes)
     u.close()
     return bytes
 
