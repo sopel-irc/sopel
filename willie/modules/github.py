@@ -50,7 +50,7 @@ def issue(bot, trigger):
     # parse input
     now = ' '.join(str(datetime.utcnow()).split(' ')).split('.')[0] + ' UTC'
     body = 'Submitted by: %s\nFrom channel: %s\nAt %s' % (trigger.nick, trigger.sender, now)
-    data = {"title": trigger.group(2).encode('utf-8'), "body": body, "labels": ["IRC"]}
+    data = {"title": trigger.group(2).encode('utf-8'), "body": body}
     # submit
     try:
         raw = web.post('https://api.github.com/repos/' + gitAPI[1] + '/issues?access_token=' + gitAPI[0], json.dumps(data))
