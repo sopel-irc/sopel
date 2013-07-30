@@ -42,6 +42,7 @@ Using channel as the meeting ID as there can't be more than one meeting in a cha
 """
 meeting_log_path = ''  # To be defined on meeting start as part of sanity checks, used by logging functions so we don't have to pass them bot
 meeting_log_baseurl = ''  # To be defined on meeting start as part of sanity checks, used by logging functions so we don't have to pass them bot
+meeting_actions = {}  # A dict of channels to the actions that have been created in them. This way we can have .listactions spit them back out later on.
 
 
 #Get the logfile name for the meeting in the requested channel
@@ -163,6 +164,7 @@ def startmeeting(bot, trigger):
     #Okay, meeting started!
     logplain('Meeting started by ' + trigger.nick.lower(), trigger.sender)
     logHTML_start(trigger.sender)
+    meeting_actions[trigger.sender] = []
     bot.say('Meeting started! use .action, .agreed, .info, .chairs and .subject to control the meeting. to end the meeting, type .endmeeting')
 
 
@@ -213,6 +215,7 @@ def endmeeting(bot, trigger):
     logplain('Meeting ended by %s, total meeting length %d seconds' % (trigger.nick, meeting_length), trigger.sender)
     bot.say('Meeting minutes: ' + htmllog_url)
     meetings_dict[trigger.sender] = Ddict(dict)
+    del meeting_actions[trigger.sender]
 
 
 #Set meeting chairs (people who can control the meeting)
@@ -258,8 +261,15 @@ def meetingaction(bot, trigger):
         return
     logplain('ACTION: ' + trigger.group(2), trigger.sender)
     logHTML_listitem('<span style="font-weight: bold">Action: </span>' + trigger.group(2), trigger.sender)
+    meeting_actions[trigger.sender].append(trigger.group(2))
     bot.say('ACTION: ' + trigger.group(2))
 
+
+@commands('listactions')
+@example('.listactions')
+def listactions(bot, trigger):
+    for action in meeting_actions[trigger.sender]:
+        bot.say('ACTION: ' + action)
 
 #Log agreed item in the HTML log
 @commands('agreed')
