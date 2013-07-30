@@ -112,7 +112,7 @@ def add_traceback(bot, trigger):
     try:
         raw = web.post('https://api.github.com/repos/' + gitAPI[1] + '/issues/'
                        + number + '/comments?access_token=' + gitAPI[0],
-                       json.dumps({'body': '``\n' + post + '\n``'}))
+                       json.dumps({'body': '``\n' + post + '``'}))
     except OSError:#HTTPError:
         return bot.say('The GitHub API returned an error.')
 
