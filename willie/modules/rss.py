@@ -40,12 +40,18 @@ def setup(bot):
     try:
         c.execute('SELECT * FROM rss_feeds')
     except StandardError:
+        # MySQL needs to only compare on the first n characters of a TEXT field
+        # but SQLite won't accept the syntax needed to make it do it.
+        if bot.db.type == 'mysql':
+            primary_key = '(channel(254), feed_name(254)))'
+        else:
+            primary_key = '(channel, feed_name))'
         c.execute('''
             CREATE TABLE IF NOT EXISTS rss_feeds
             (channel TEXT, feed_name TEXT, feed_url TEXT, fg TINYINT, bg TINYINT,
             enabled BOOL DEFAULT 1, article_title TEXT, article_url TEXT,
-            published TEXT, etag TEXT, modified TEXT, PRIMARY KEY (channel, feed_name))
-            ''')
+            published TEXT, etag TEXT, modified TEXT, PRIMARY KEY 
+            ''' + primary_key)
 
         migrate_from_old_tables(c)
         
