@@ -140,7 +140,7 @@ def manage_rss(bot, trigger):
         pattern = r'''
             ^\.rss\s+add
             \s+([&#+!][^\s,]+)   # channel
-            \s+("[\w\s]+"|\w+)   # name, which can contain spaces if quoted
+            \s+("[^"]+"|\w+)     # name, which can contain anything but quotes if quoted
             \s+(\S+)             # url
             (?:\s+(\d+))?        # foreground colour (optional)
             (?:\s+(\d+))?        # background colour (optional)
@@ -194,7 +194,7 @@ def manage_rss(bot, trigger):
         pattern = r"""
             ^\.rss\s+del
             (?:\s+([&#+!][^\s,]+))? # channel (optional)
-            (?:\s+("[\w\s]+"|\w+))? # name (optional)
+            (?:\s+("[^"]+"|\w+))? # name (optional)
             """
         match = re.match(pattern, trigger.group(), re.IGNORECASE | re.VERBOSE)
         if match is None or (not match.group(1) and not match.group(2)):
@@ -223,7 +223,7 @@ def manage_rss(bot, trigger):
         pattern = r"""
             ^\.rss\s+toggle
             (?:\s+([&#+!][^\s,]+))? # channel (optional)
-            (?:\s+("[\w\s]+"|\w+))? # name (optional)
+            (?:\s+("[^"]+"|\w+))? # name (optional)
             """
         match = re.match(pattern, trigger.group(), re.IGNORECASE | re.VERBOSE)
         if match is None or (not match.group(1) and not match.group(2)):
