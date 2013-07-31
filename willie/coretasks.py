@@ -21,6 +21,7 @@ from willie.tools import Nick
 @willie.module.event('251')
 @willie.module.rule('.*')
 @willie.module.priority('low')
+@willie.module.unblockable
 def startup(bot, trigger):
     """
     Runs when we recived 251 - lusers, which is just before the server sends the
@@ -49,6 +50,7 @@ def startup(bot, trigger):
 
 
 @willie.module.commands('newoplist')
+@willie.module.unblockable
 def refresh_list(bot, trigger):
     ''' If you need to use this, then it means you found a bug '''
     if trigger.admin:
@@ -58,6 +60,7 @@ def refresh_list(bot, trigger):
 
 
 @willie.module.commands('listops')
+@willie.module.unblockable
 def list_ops(bot, trigger):
     """
     List channel operators in the given channel, or current channel if none is
@@ -77,6 +80,7 @@ def list_ops(bot, trigger):
 
 
 @willie.module.commands('listvoices')
+@willie.module.unblockable
 def list_voices(bot, trigger):
     """
     List users with voice in the given channel, or current channel if none is
@@ -98,6 +102,7 @@ def list_voices(bot, trigger):
 @willie.module.rule('(.*)')
 @willie.module.event('353')
 @willie.module.thread(False)
+@willie.module.unblockable
 def handle_names(bot, trigger):
     ''' Handle NAMES response, happens when joining to channels'''
     names = re.split(' ', trigger)
@@ -120,6 +125,7 @@ def handle_names(bot, trigger):
 
 @willie.module.rule('(.*)')
 @willie.module.event('MODE')
+@willie.module.unblockable
 def track_modes(bot, trigger):
     ''' Track usermode changes and keep our lists of ops up to date '''
     # 0 is who set it, 1 is MODE. We don't need those.
@@ -178,6 +184,7 @@ def track_modes(bot, trigger):
 
 @willie.module.rule('.*')
 @willie.module.event('NICK')
+@willie.module.unblockable
 def track_nicks(bot, trigger):
     '''Track nickname changes and maintain our chanops list accordingly'''
     old = trigger.nick
@@ -207,6 +214,7 @@ def track_nicks(bot, trigger):
 
 @willie.module.rule('(.*)')
 @willie.module.event('PART')
+@willie.module.unblockable
 def track_part(bot, trigger):
     if trigger.nick == bot.nick:
         bot.channels.remove(trigger.sender)
@@ -214,6 +222,7 @@ def track_part(bot, trigger):
 
 @willie.module.rule('.*')
 @willie.module.event('KICK')
+@willie.module.unblockable
 def track_kick(bot, trigger):
     if trigger.args[1] == bot.nick:
         bot.channels.remove(trigger.sender)
@@ -221,6 +230,7 @@ def track_kick(bot, trigger):
 
 @willie.module.rule('.*')
 @willie.module.event('JOIN')
+@willie.module.unblockable
 def track_join(bot, trigger):
     if trigger.nick == bot.nick and trigger.sender not in bot.channels:
         bot.channels.append(trigger.sender)
@@ -231,6 +241,7 @@ def track_join(bot, trigger):
 @willie.module.commands('blocks')
 @willie.module.priority('low')
 @willie.module.thread(False)
+@willie.module.unblockable
 def blocks(bot, trigger):
     """
     Manage Willie's blocking features.

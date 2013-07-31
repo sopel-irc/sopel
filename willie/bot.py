@@ -370,6 +370,9 @@ class Willie(irc.Bot):
             return pattern.replace('$nick', r'%s[,:] +' % re.escape(self.nick))
 
         for func in self.callables:
+            if not hasattr(func, 'unblockable'):
+                func.unblockable = False
+            
             if not hasattr(func, 'priority'):
                 func.priority = 'medium'
 
@@ -576,7 +579,10 @@ class Willie(irc.Bot):
         nick = trigger.nick
         if nick not in self.times:
             self.times[nick] = dict()
-        if func in self.times[nick] and not trigger.admin:
+
+        if (not trigger.admin and 
+                not func.unblockable and
+                func in self.times[nick]):
             timediff = time.time() - self.times[nick][func]
             if timediff < func.rate:
                 self.times[nick][func] = time.time()
@@ -623,16 +629,20 @@ class Willie(irc.Bot):
                 if not match:
                     continue
                 trigger = self.Trigger(text, origin, text, match, event, args, self)
-                if not trigger.admin and (nick_blocked or host_blocked):
-                    self.debug(__file__,
-                            "%s prevented from using %s because "
-                            "nick_blocked=%s, host_blocked=%s" % (
-                                origin.hostmask, funcs,
-                                nick_blocked, host_blocked),
-                            "warning")
-                    return
 
                 for func in funcs:
+                    if (not trigger.admin and
+                            not func.unblockable and
+                            (nick_blocked or host_blocked)):
+                        self.debug(__file__,
+                                "%s prevented from using %s because "
+                                "nick_blocked=%s, host_blocked=%s" % (
+                                    origin.hostmask, 
+                                    "%s.%s" % (func.__module__, func.__name__),
+                                    nick_blocked, host_blocked),
+                                "warning")
+                        continue
+                    
                     if event != func.event:
                         continue
                     if self.limit(origin, func):
