@@ -396,7 +396,7 @@ class Bot(asynchat.async_chat):
         if args[0] == 'PING':
             self.write(('PONG', text))
         elif args[0] == 'ERROR':
-            self.debug('IRC Server Error', text, 'always')
+            self.debug(__file__, text, 'always')
         elif args[0] == '433':
             stderr('Nickname already in use!')
             self.hasquit = True
@@ -494,7 +494,7 @@ class Bot(asynchat.async_chat):
                     logfile.write('----------------------------------------\n\n')
             except Exception as e:
                 stderr("Could not save full traceback!")
-                self.debug("core: error reporting", "(From: " + origin.sender +
+                self.debug(__file__, "(From: " + origin.sender +
                            "), can't save traceback: " + str(e), 'always')
 
             if origin:
@@ -502,7 +502,7 @@ class Bot(asynchat.async_chat):
         except Exception as e:
             if origin:
                 self.msg(origin.sender, "Got an error.")
-                self.debug("core: error reporting", "(From: " + origin.sender +
+                self.debug(__file__, "(From: " + origin.sender +
                        ") " + str(e), 'always')
 
     def handle_error(self):
@@ -510,7 +510,7 @@ class Bot(asynchat.async_chat):
         handle_error '''
         trace = traceback.format_exc()
         stderr(trace)
-        self.debug("core", 'Fatal error in core, please review exception log',
+        self.debug(__file__, 'Fatal error in core, please review exception log',
                    'always')
         logfile = codecs.open(os.path.join(self.config.logdir, 'exceptions.log'),
                               'a', encoding='utf-8')  # TODO: make not hardcoded

@@ -54,7 +54,7 @@ def _find_geoip_db(bot):
            os.path.isfile(os.path.join(config.ip.GeoIP_db_path, 'GeoIPASNum.dat'))):
             return config.ip.GeoIP_db_path
         else:
-            bot.debug('ip', 'GeoIP path configured but DB not found in configured path', 'warning')
+            bot.debug(__file__, 'GeoIP path configured but DB not found in configured path', 'warning')
     if (os.path.isfile(os.path.join(bot.config.homedir, 'GeoLiteCity.dat')) and
             os.path.isfile(os.path.join(bot.config.homedir, 'GeoIPASNum.dat'))):
         return bot.config.homedir
@@ -62,7 +62,7 @@ def _find_geoip_db(bot):
            os.path.isfile(os.path.join('/usr/share/GeoIP', 'GeoIPASNum.dat'))):
             return '/usr/share/GeoIP'
     elif can_download:
-        bot.debug('ip', 'Downloading GeoIP database', 'always')
+        bot.debug(__file__, 'Downloading GeoIP database', 'always')
         bot.say('Downloading GeoIP database, please wait...')
         geolite_city_url = 'http://geolite.maxmind.com/download/geoip/database/GeoLiteCity.dat.gz'
         geolite_ASN_url = 'http://download.maxmind.com/download/geoip/database/asnum/GeoIPASNum.dat.gz'
@@ -86,7 +86,7 @@ def ip(bot, trigger):
     query = trigger.group(2)
     db_path = _find_geoip_db(bot)
     if db_path is False:
-        bot.debug('ip', 'Can\'t find (or download) usable GeoIP database', 'always')
+        bot.debug(__file__, 'Can\'t find (or download) usable GeoIP database', 'always')
         bot.say('Sorry, I don\'t have a GeoIP database to use for this lookup')
         return False
     geolite_city_filepath = os.path.join(_find_geoip_db(bot), 'GeoLiteCity.dat')
