@@ -642,6 +642,7 @@ class Willie(irc.Bot):
         else:
             nick_blocked = host_blocked = None
 
+        list_of_blocked_functions = []
         for priority in ('high', 'medium', 'low'):
             items = self.commands[priority].items()
 
@@ -655,13 +656,9 @@ class Willie(irc.Bot):
                     if (not trigger.admin and
                             not func.unblockable and
                             (nick_blocked or host_blocked)):
-                        self.debug(__file__,
-                                "%s prevented from using %s because "
-                                "nick_blocked=%s, host_blocked=%s" % (
-                                    origin.hostmask, 
-                                    "%s.%s" % (func.__module__, func.__name__),
-                                    nick_blocked, host_blocked),
-                                "warning")
+                        function_name = "%s.%s" % (
+                                func.__module__, func.__name__)
+                        list_of_blocked_functions.append(function_name)
                         continue
                     
                     if event != func.event:
@@ -674,6 +671,15 @@ class Willie(irc.Bot):
                         t.start()
                     else:
                         self.call(func, origin, wrapper, trigger)
+
+        if list_of_blocked_functions:
+            self.debug(__file__,
+                    "%s prevented from using %s because "
+                    "nick_blocked=%s, host_blocked=%s" % (
+                        origin.nick, 
+                        ', '.join(list_of_blocked_functions),
+                        nick_blocked, host_blocked),
+                    "warning")
 
     def _host_blocked(self, host):
         bad_masks = self.config.core.get_list('host_blocks')
