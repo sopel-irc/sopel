@@ -32,6 +32,17 @@ be used, for example, to allow a user to rety a failed command immediately.
 """
 
 
+def unblockable(function):
+    """Decorator. Equivalent to func.unblockable = True
+
+    If this decorator is used, the function will be called, even if the bot has
+    been configured to ignore commands from the user. This can be used to
+    ensure events such as JOIN are always recorded.
+    """
+    function.unblockable = True
+    return function
+
+
 def interval(*args):
     """Decorator. Equivalent to func.interval.append(value)
 
