@@ -39,7 +39,7 @@ def f_reload(bot, trigger):
 
     old_callables = {}
     for obj_name, obj in vars(old_module).iteritems():
-        if bot.is_callable(obj):
+        if bot.is_callable(obj) or bot.is_shutdown(obj):
             old_callables[obj_name] = obj
 
     bot.unregister(old_callables)
@@ -48,6 +48,10 @@ def f_reload(bot, trigger):
     # module does not override them.
     for obj_name in old_callables.keys():
         delattr(old_module, obj_name)
+    
+    # Also delete the setup function
+    if hasattr(old_module, "setup"):
+        delattr(old_module, "setup")
 
     # Thanks to moot for prodding me on this
     path = old_module.__file__
