@@ -60,7 +60,7 @@ class Origin(object):
         self.sender = target
 
 
-class Bot(asynchat.async_chat, object):
+class Bot(asynchat.async_chat):
     def __init__(self, config):
         if config.ca_certs is not None:
             ca_certs = config.ca_certs
@@ -218,16 +218,25 @@ class Bot(asynchat.async_chat, object):
 
     def quit(self, message):
         '''Disconnect from IRC and close the bot'''
-        self.write(['QUIT'], message)
-        self.handle_close()
+        self.write(['QUIT'], message) 
+        self.hasquit = True
+        # Wait for acknowledgement from the server. By RFC 2812 it should be
+        # an ERROR msg, but many servers just close the connection. Either way
+        # is fine by us.
+        # Closing the connection now would mean that stuff in the buffers that
+        # has not yet been processed would never be processed. It would also
+        # release the main thread, which is problematic because whomever called
+        # quit might still want to do something before main thread quits.
 
     def handle_close(self):
-        super(Bot, self).handle_close()
         self._shutdown()
+        
         stderr('Closed!')
-
-    def _shutdown(self):
-        self.hasquit = True
+        
+        # This will eventually call asyncore dispatchers close method, which
+        # will release the main thread. This should be called last to avoid
+        # race conditions.
+        asynchat.async_chat.handle_close(self)
 
     def part(self, channel, msg=None):
         '''Part a channel'''
@@ -400,6 +409,8 @@ class Bot(asynchat.async_chat, object):
             self.write(('PONG', text))
         elif args[0] == 'ERROR':
             self.debug(__file__, text, 'always')
+            if self.hasquit:
+                self.close_when_done()
         elif args[0] == '433':
             stderr('Nickname already in use!')
             self.handle_close()

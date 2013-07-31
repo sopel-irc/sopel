@@ -737,17 +737,16 @@ class Willie(irc.Bot):
 
 
     def _shutdown(self):
-        super(Willie, self)._shutdown()
+        stderr('Calling shutdown for %d modules.' % (len(self.shutdown_methods),))
 
         hostmask = "%s!%s@%s" % (self.nick, self.user, socket.gethostname())
         willie = self.WillieWrapper(self, irc.Origin(self, hostmask, []))
-        if self.shutdown_methods:
-            stderr('Shutting down %d modules' % (len(self.shutdown_methods),))
-            for shutdown_method in self.shutdown_methods:
-                try:
-                    shutdown_method(willie)
-                except Exception as e:
-                    stderr("Error calling shutdown method for module %s:%s" % (shutdown_method.__module__, e))
+        for shutdown_method in self.shutdown_methods:
+            try:
+                stderr("calling %s.%s" % (shutdown_method.__module__, shutdown_method.__name__,))
+                shutdown_method(willie)
+            except Exception as e:
+                stderr("Error calling shutdown method for module %s:%s" % (shutdown_method.__module__, e))
 
 
 if __name__ == '__main__':
