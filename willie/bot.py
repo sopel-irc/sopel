@@ -350,10 +350,6 @@ class Willie(irc.Bot):
         hostmask = "%s!%s@%s" % (self.nick, self.user, socket.gethostname())
         willie = self.WillieWrapper(self, irc.Origin(self, hostmask, []))
         for obj in variables.itervalues():
-            if not self.is_callable(obj):
-                continue
-            if not self.is_shutdown(obj):
-                continue
             if obj in self.callables:
                 self.callables.remove(obj)
                 for commands in self.commands.itervalues():
