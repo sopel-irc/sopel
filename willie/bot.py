@@ -660,7 +660,7 @@ class Willie(irc.Bot):
                                 func.__module__, func.__name__)
                         list_of_blocked_functions.append(function_name)
                         continue
-                    
+
                     if event != func.event:
                         continue
                     if self.limit(origin, func):
@@ -673,12 +673,17 @@ class Willie(irc.Bot):
                         self.call(func, origin, wrapper, trigger)
 
         if list_of_blocked_functions:
+            if nick_blocked and host_blocked:
+                block_type = 'both'
+            elif nick_blocked:
+                block_type = 'nick'
+            else:
+                block_type = 'host'
             self.debug(__file__,
-                    "%s prevented from using %s because "
-                    "nick_blocked=%s, host_blocked=%s" % (
-                        origin.nick, 
-                        ', '.join(list_of_blocked_functions),
-                        nick_blocked, host_blocked),
+                    "[%s]%s prevented from using %s." % (
+                        block_type,
+                        origin.nick,
+                        ', '.join(list_of_blocked_functions)),
                     "warning")
 
     def _host_blocked(self, host):
