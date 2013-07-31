@@ -11,10 +11,12 @@ http://willie.dftba.net/
 """
 
 import time
+import imp
 import os
 import re
+import socket
 import threading
-import imp
+
 from datetime import datetime
 from willie import tools
 import irc
@@ -249,6 +251,7 @@ class Willie(irc.Bot):
     def setup(self):
         stderr("\nWelcome to Willie. Loading modules...\n\n")
         self.callables = set()
+        self.shutdown_methods = set()
 
         filenames = self.config.enumerate_modules()
         # Coretasks is special. No custom user coretasks.
@@ -306,15 +309,26 @@ class Willie(irc.Bot):
             return True
         return False
 
+    @staticmethod
+    def is_shutdown(obj):
+        """Return true if object is a willie shutdown method.
+
+        Object must be both be callable and named shutdown.
+        """
+        return callable(obj) and obj.__name__ == 'shutdown'
+
     def register(self, variables):
         """
         With the ``__dict__`` attribute from a Willie module, update or add the
-        trigger commands and rules to allow the function to be triggered.
+        trigger commands and rules, to allow the function to be triggered, and
+        shutdown methods, to allow the modules to be notified when willie is
+        quitting.
         """
-        # This is used by reload.py, hence it being methodised
         for obj in variables.itervalues():
             if self.is_callable(obj):
                 self.callables.add(obj)
+            if self.is_shutdown(obj):
+                self.shutdown_methods.add(obj)
 
     def unregister(self, variables):
         """Unregister all willie callables in variables, and their bindings.
@@ -326,19 +340,30 @@ class Willie(irc.Bot):
         Args:
         variables -- A list of callable objects from a willie module.
         """
+
         def remove_func(func, commands):
             """Remove all traces of func from commands."""
             for func_list in commands.itervalues():
                 if func in func_list:
                     func_list.remove(func)
-        
+
+        hostmask = "%s!%s@%s" % (self.nick, self.user, socket.gethostname())
+        willie = self.WillieWrapper(self, irc.Origin(self, hostmask, []))
         for obj in variables.itervalues():
             if not self.is_callable(obj):
+                continue
+            if not self.is_shutdown(obj):
                 continue
             if obj in self.callables:
                 self.callables.remove(obj)
                 for commands in self.commands.itervalues():
                     remove_func(obj, commands)
+            if obj in self.shutdown_methods:
+                try:
+                    obj(willie)
+                except Exception as e:
+                    stderr("Error calling shutdown method for module %s:%s" % (obj.__module__, e))
+                self.shutdown_methods.remove(obj)
 
     def bind_commands(self):
         self.commands = {'high': {}, 'medium': {}, 'low': {}}
@@ -713,6 +738,20 @@ class Willie(irc.Bot):
             return True
         else:
             return False
+
+
+    def _shutdown(self):
+        super(Willie, self)._shutdown()
+
+        hostmask = "%s!%s@%s" % (self.nick, self.user, socket.gethostname())
+        willie = self.WillieWrapper(self, irc.Origin(self, hostmask, []))
+        if self.shutdown_methods:
+            stderr('Shutting down %d modules' % (len(self.shutdown_methods),))
+            for shutdown_method in self.shutdown_methods:
+                try:
+                    shutdown_method(willie)
+                except Exception as e:
+                    stderr("Error calling shutdown method for module %s:%s" % (shutdown_method.__module__, e))
 
 
 if __name__ == '__main__':
