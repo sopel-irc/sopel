@@ -586,7 +586,7 @@ class Willie(irc.Bot):
             timediff = time.time() - self.times[nick][func]
             if timediff < func.rate:
                 self.times[nick][func] = time.time()
-                self.debug('bot.py',
+                self.debug(__file__,
                         "%s prevented from using %s in %s: %d < %d" % (
                             trigger.nick, func.__name__, trigger.sender,
                             timediff, func.rate),
@@ -678,6 +678,14 @@ class Willie(irc.Bot):
 
     def debug(self, tag, text, level):
         """Sends an error to Willie's configured ``debug_target``.
+        
+        Args:
+            tag - What the msg will be tagged as. It is recommended to pass
+                __file__ as the tag. If the file exists, a relative path is
+                used as the file. Otherwise the tag is used as it is.
+            text - Body of the message.
+            level - Either verbose, warning or always. Configuration option
+                config.verbose which levels are ignored.
 
         Returns: True if message was sent.
         """
@@ -688,6 +696,8 @@ class Willie(irc.Bot):
         debug_target = self.config.core.debug_target
         verbosity = self.config.core.verbose
         
+        if os.path.exists(tag):
+            tag = os.path.relpath(tag, os.path.dirname(__file__))
         debug_msg = "[%s] %s" % (tag, text)
 
         output_on = {

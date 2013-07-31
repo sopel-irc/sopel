@@ -29,8 +29,8 @@ def movie(bot, trigger):
         if 'Error' in data:
             message = '[MOVIE] %s' % data['Error']
         else:
-            bot.debug('movie', 'Got an error from the imdb api, search phrase was %s' % word, 'warning')
-            bot.debug('movie', str(data), 'warning')
+            bot.debug(__file__, 'Got an error from the imdb api, search phrase was %s' % word, 'warning')
+            bot.debug(__file__, str(data), 'warning')
             message = '[MOVIE] Got an error from imdbapi'
     else:
         message = '[MOVIE] Title: ' + data['Title'] + \

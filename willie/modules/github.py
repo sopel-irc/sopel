@@ -59,7 +59,7 @@ def issue(bot, trigger):
 
     data = json.loads(raw)
     bot.say('Issue #%s posted. %s' % (data['number'], data['html_url']))
-    bot.debug('GitHub', 'Issue #%s created in %s' % (data['number'], trigger.sender), 'warning')
+    bot.debug(__file__, 'Issue #%s created in %s' % (data['number'], trigger.sender), 'warning')
 
 
 @commands('addtrace', 'addtraceback')
@@ -118,7 +118,7 @@ def add_traceback(bot, trigger):
 
     data = json.loads(raw)
     bot.say('Added traceback to issue #%s. %s' % (number, data['html_url']))
-    bot.debug('GitHub', 'Traceback added to #%s in %s.' % (number, trigger.sender), 'warning')
+    bot.debug(__file__, 'Traceback added to #%s in %s.' % (number, trigger.sender), 'warning')
 
 
 @commands('findissue', 'findbug')

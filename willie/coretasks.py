@@ -149,18 +149,18 @@ def track_modes(bot, trigger):
 
     # Some basic checks for broken replies from server. Probably unnecessary.
     if len(modes) > len(nicks):
-        bot.debug('core',
+        bot.debug(__file__,
                      'MODE recieved from server with more modes than nicks.',
                      'warning')
         modes = modes[:(len(nicks) + 1)]  # Try truncating, in case that works.
     elif len(modes) < len(nicks):
-        bot.debug('core',
+        bot.debug(__file__,
                      'MODE recieved from server with more nicks than modes.',
                      'warning')
         nicks = nicks[:(len(modes) - 1)]  # Try truncating, in case that works.
     # This one is almost certainly unneeded.
     if not (len(modes) and len(nicks)):
-        bot.debug('core', 'MODE recieved from server without arguments',
+        bot.debug(__file__, 'MODE recieved from server without arguments',
                      'verbose')
         return  # Nothing to do here.
 
@@ -194,7 +194,7 @@ def track_nicks(bot, trigger):
     if old == bot.nick:
         privmsg = "Hi, I'm your bot, %s. Something has made my nick change. This can cause some problems for me, and make me do weird things. You'll probably want to restart me, and figure out what made that happen so you can stop it happening again. (Usually, it means you tried to give me a nick that's protected by NickServ.)" % bot.nick
         debug_msg = "Nick changed by server. This can cause unexpected behavior. Please restart the bot."
-        bot.debug('[CORE]', debug_msg, 'always')
+        bot.debug(__file__, debug_msg, 'always')
         bot.msg(bot.config.core.owner, privmsg)
         return
 
