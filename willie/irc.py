@@ -82,8 +82,6 @@ class Bot(asynchat.async_chat):
         self.name = config.name
         """Willie's "real name", as used for whois."""
 
-        self.verbose = True
-        """True if Willie is running in verbose mode."""
         self.channels = []
         """The list of channels Willie is currently in."""
 
@@ -197,9 +195,7 @@ class Bot(asynchat.async_chat):
         self.initiate_connect(host, port)
 
     def initiate_connect(self, host, port):
-        if self.verbose:
-            message = 'Connecting to %s:%s...' % (host, port)
-            stderr(message)
+        stderr('Connecting to %s:%s...' % (host, port))
         self.create_socket(socket.AF_INET, socket.SOCK_STREAM)
         if self.config.core.bind_host is not None:
             self.socket.bind((self.config.core.bind_host, 0))
@@ -230,9 +226,8 @@ class Bot(asynchat.async_chat):
 
     def handle_close(self):
         self._shutdown()
-        
         stderr('Closed!')
-        
+
         # This will eventually call asyncore dispatchers close method, which
         # will release the main thread. This should be called last to avoid
         # race conditions.
