@@ -393,7 +393,7 @@ class Willie(irc.Bot):
         for func in self.callables:
             if not hasattr(func, 'unblockable'):
                 func.unblockable = False
-            
+
             if not hasattr(func, 'priority'):
                 func.priority = 'medium'
 
@@ -710,7 +710,7 @@ class Willie(irc.Bot):
 
     def debug(self, tag, text, level):
         """Sends an error to Willie's configured ``debug_target``.
-        
+
         Args:
             tag - What the msg will be tagged as. It is recommended to pass
                 __file__ as the tag. If the file exists, a relative path is
@@ -727,7 +727,7 @@ class Willie(irc.Bot):
             self.config.core.debug_target = 'stdio'
         debug_target = self.config.core.debug_target
         verbosity = self.config.core.verbose
-        
+
         if os.path.exists(tag):
             tag = os.path.relpath(tag, os.path.dirname(__file__))
         debug_msg = "[%s] %s" % (tag, text)
