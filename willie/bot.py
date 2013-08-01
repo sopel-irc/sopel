@@ -611,7 +611,7 @@ class Willie(irc.Bot):
                         "%s prevented from using %s in %s: %d < %d" % (
                             trigger.nick, func.__name__, trigger.sender,
                             timediff, func.rate),
-                        "warning")
+                        "verbose")
                 return
 
         try:
