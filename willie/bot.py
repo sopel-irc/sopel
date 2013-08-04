@@ -684,7 +684,7 @@ class Willie(irc.Bot):
                         block_type,
                         origin.nick,
                         ', '.join(list_of_blocked_functions)),
-                    "warning")
+                    "verbose")
 
     def _host_blocked(self, host):
         bad_masks = self.config.core.get_list('host_blocks')
