@@ -1,4 +1,4 @@
-# -*- coding: utf8 -*-
+﻿# -*- coding: utf8 -*-
 """
 spellcheck.py - Willie spell check Module
 Copyright © 2012, Elad Alfassa, <elad@fedoraproject.org>
@@ -38,11 +38,11 @@ def spellcheck(bot, trigger):
         bot.say(word + " is spelled correctly (American)")
     else:
         msg = word + " is not spelled correctly. Maybe you want one of these spellings:"
-        sugWords = {}
+        sugWords = []
         for suggested_word in dictionary.suggest(word):
-            sugWords[suggested_word] = 'US'
+                sugWords.append(suggested_word)
         for suggested_word in dictionary_uk.suggest(word):
-            sugWords.setdefault(suggested_word, '') += 'GB'
-        for suggested_word, dicts in sugWords.iteritems():  # removes duplicates
-            msg = msg + " '" + suggested_word + ("' (%s)," % dicts if len(dicts) is 2 else "',") # if/else indicates which dictionary if the spelling is only valid in one
+                sugWords.append(suggested_word)
+        for suggested_word in sorted(set(sugWords)):  # removes duplicates
+            msg = msg + " '" + suggested_word + "',"
         bot.say(msg[:-1]) # remove trailing ','
