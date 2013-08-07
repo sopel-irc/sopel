@@ -18,6 +18,9 @@ seed()
 @willie.module.commands("dice")
 @willie.module.commands("d")
 @willie.module.priority("medium")
+@willie.module.example(".roll 3d1+1", 'You roll 3d1+1: (1+1+1)+1 = 4')
+@willie.module.example(".roll 3d1v2+1", 'You roll 3d1v2+1: (1[+1+1])+1 = 2')
+@willie.module.example(".roll 2d4", re='You roll 2d4: \(\d\+\d\) = \d')
 def dice(bot, trigger):
     """
     .dice <formula> - Rolls dice using the XdY format, also does basic math and
@@ -108,3 +111,8 @@ def choose(bot, trigger):
     choices = re.split('[\|\\\\\/]', trigger.group(2))
     pick = choice(choices)
     return bot.reply('Your options: %s. My choice: %s' % (', '.join(choices), pick))
+
+
+if __name__ == "__main__":
+    from willie.test_tools import run_example_tests
+    run_example_tests(__file__)
