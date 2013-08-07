@@ -1,17 +1,111 @@
 """
 dice.py - Dice Module
 Copyright 2010-2013, Dimitri "Tyrope" Molenaars, TyRope.nl
+Copyright 2013, Ari Koivula, <ari@koivu.la>
 Licensed under the Eiffel Forum License 2.
 
 http://willie.dftba.net/
 """
 
-from random import randint, seed, choice
-from willie.modules.calc import calculate
+import random
 import willie.module
 import re
 
-seed()
+
+class DicePouch:
+    def __init__(self, num_of_die, type_of_die, addition):
+        """Initialize dice pouch and roll the dice.
+
+        Args:
+            num_of_die: number of dice in the pouch.
+            type_of_die: how many faces the dice have.
+            addition: how much is added to the result of the dice.
+        """
+        self.num = num_of_die
+        self.type = type_of_die
+        self.addition = addition
+
+        self.dice = {}
+        self.dropped = {}
+
+        self.roll_dice()
+
+    def roll_dice(self):
+        """Roll all the dice in the pouch."""
+        self.dice = {}
+        self.dropped = {}
+        for __ in xrange(self.num):
+            number = random.randint(1, self.type)
+            count = self.dice.setdefault(number, 0)
+            self.dice[number] = count + 1
+
+    def drop_lowest(self, n):
+        """Drop n lowest dice from the result.
+
+        Args:
+            n: the number of dice to drop.
+        """
+        for i in xrange(1, self.type + 1):
+            count = self.dice[i]
+            if n < count:
+                self.dice[i] = count - n
+                self.dropped[i] = n
+                break
+            else:
+                del self.dice[i]
+                self.dropped[i] = count
+                n = n - count
+
+    def get_simple_string(self):
+        """Return the values of the dice like (2+2+2[+1+1])+1."""
+        dice = self.dice.iteritems()
+        faces = ("+".join([str(face)] * times) for face, times in dice)
+        dice_str = "+".join(faces)
+
+        dropped_str = ""
+        if self.dropped:
+            dropped = self.dropped.iteritems()
+            dfaces = ("+".join([str(face)] * times) for face, times in dropped)
+            dropped_str = "[+%s]" % ("+".join(dfaces),)
+
+        plus_str = ""
+        if self.addition:
+            plus_str = "{:+d}".format(self.addition)
+
+        return "(%s%s)%s" % (dice_str, dropped_str, plus_str)
+
+    def get_compressed_string(self):
+        """Return the values of the dice like (3x2[+2x1])+1."""
+        dice = self.dice.iteritems()
+        faces = ("%dx%d" % (times, face) for face, times in dice)
+        dice_str = "+".join(faces)
+
+        dropped_str = ""
+        if self.dropped:
+            dropped = self.dropped.iteritems()
+            dfaces = ("%dx%d" % (times, face) for face, times in dropped)
+            dropped_str = "[+%s]" % ("+".join(dfaces),)
+
+        plus_str = ""
+        if self.addition:
+            plus_str = "{:+d}".format(self.addition)
+
+        return "(%s%s)%s" % (dice_str, dropped_str, plus_str)
+
+    def get_sum(self):
+        """Get the sum of non-dropped dice and the addition."""
+        result = self.addition
+        for face, times in self.dice.iteritems():
+            result += face * times
+        return result
+
+    def get_number_of_faces(self):
+        """Returns sum of different faces for dropped and not dropped dice
+
+        This can be used to estimate, whether the result can be shown in
+        compressed form in a reasonable amount of space.
+        """
+        return len(self.dice) + len(self.dropped)
 
 
 @willie.module.commands("roll")
@@ -21,81 +115,53 @@ seed()
 @willie.module.example(".roll 3d1+1", 'You roll 3d1+1: (1+1+1)+1 = 4')
 @willie.module.example(".roll 3d1v2+1", 'You roll 3d1v2+1: (1[+1+1])+1 = 2')
 @willie.module.example(".roll 2d4", re='You roll 2d4: \(\d\+\d\) = \d')
-def dice(bot, trigger):
-    """
-    .dice <formula> - Rolls dice using the XdY format, also does basic math and
-    drop lowest (XdYvZ).
-    """
-    no_dice = True
-    if not trigger.group(2):
-        return bot.reply('You have to specify the dice you wanna roll.')
-    arr = trigger.group(2).lower().replace(' ', '')
-    arr = arr.replace('-', ' - ').replace('+', ' + ').replace('/', ' / ')
-    arr = arr.replace('*', ' * ').replace('(', ' ( ').replace(')', ' ) ')
-    arr = arr.replace('^', ' ^ ').replace('()', '').split(' ')
-    full_string = ''
+@willie.module.example(".roll 100d1", re='[^:]*: \(100x1\) = 100')
+def roll(bot, trigger):
+    """.dice XdY[vZ][+N], rolls dice and reports the result.
 
-    for segment in arr:
-        #check for dice
-        result = re.search("([0-9]+m)?([0-9]*d[0-9]+)(v[0-9]+)?", segment)
-        if result:
-            #detect droplowest
-            if result.group(3) is not None:
-                #check for invalid droplowest
-                dropLowest = int(result.group(3)[1:])
-                if(dropLowest >= int(result.group(2).split('d')[0] or 1)):
-                    bot.reply('You\'re trying to drop too many dice.')
-                    return
-            else:
-                dropLowest = 0
-            #dicerolling
-            value, drops = '(', ''
-            dice = rollDice(result.group(2))
-            for i in range(0, len(dice)):
-                if i < dropLowest:
-                    if drops == '':
-                        drops = '[+'
-                    drops += str(dice[i])
-                    if i < dropLowest - 1:
-                        drops += '+'
-                    else:
-                        drops += ']'
-                else:
-                    value += str(dice[i])
-                    if i != len(dice) - 1:
-                        value += '+'
-            no_dice = False
-            value += drops + ')'
-        else:
-            value = segment
-        full_string += value
-    #repeat next segment
+    X is the number of dice. Y is the number of faces in the dice. Z is the
+    number of lowest dice to be dropped from the result. N is the constant to
+    be applied to the end result.
+    """
+    result = re.search(r"""
+            (?P<dice_num>\d+)
+            d
+            (?P<dice_type>\d+)
+            (v(?P<drop_lowest>\d+))?
+            (?P<plus>(-|\+)\d+)?
+            $""",
+            trigger.group(2),
+            re.IGNORECASE | re.VERBOSE)
+    if not result:
+        bot.reply("Syntax for rolling dice is XdY[vZ][+N].")
+        return
 
-    #we're replacing, splitting and joining to exclude []'s from the math.
-    result = calculate(''.join(
-                full_string.replace('[', '#').replace(']', '#').split('#')[::2]))
-    if result == 'Sorry, no result.':
-        bot.reply('Calculation failed, did you try something weird?')
-    elif(no_dice):
-        bot.reply('For pure math, you can use .c '
-                     + trigger.group(2) + ' = ' + result)
+    dice_num = int(result.group('dice_num'))
+    dice_type = int(result.group('dice_type'))
+    addition = int(result.group('plus') or 0)
+
+    # Upper limit for dice should be at most a million. Creating a dict with
+    # more than a million elements already takes a noticeable amount of time
+    # on a fast computer and ~55kB of memory.
+    if dice_num > 1000:
+        bot.reply("I only have 1000 dice. =(")
+        return
+
+    dice = DicePouch(dice_num, dice_type, addition)
+
+    if result.group('drop_lowest'):
+        drop = int(result.group('drop_lowest'))
+        dice.drop_lowest(drop)
+
+    if dice_num <= 10:
+        dice_str = dice.get_simple_string()
+    elif dice.get_number_of_faces() <= 10:
+        dice_str = dice.get_compressed_string()
     else:
-        bot.reply('You roll ' + trigger.group(2) + ': ' + full_string + ' = '
-                     + result)
+        dice_str = "(...)"
 
-
-def rollDice(diceroll):
-    rolls = int(diceroll.split('d')[0] or 1)
-    size = int(diceroll.split('d')[1])
-    result = []  # dice results.
-
-    for i in range(1, rolls + 1):
-        #roll 10 dice, pick a random dice to use, add string to result.
-        result.append((randint(1, size), randint(1, size), randint(1, size),
-                       randint(1, size), randint(1, size), randint(1, size),
-                       randint(1, size), randint(1, size), randint(1, size),
-                       randint(1, size))[randint(0, 9)])
-    return sorted(result)  # returns a set of integers.
+    bot.reply("You roll %s: %s = %d" % (
+            trigger.group(2), dice_str, dice.get_sum()))
 
 
 @willie.module.commands("choice")
@@ -109,7 +175,7 @@ def choose(bot, trigger):
     if not trigger.group(2):
         return bot.reply('I\'d choose an option, but you didn\'t give me any.')
     choices = re.split('[\|\\\\\/]', trigger.group(2))
-    pick = choice(choices)
+    pick = random.choice(choices)
     return bot.reply('Your options: %s. My choice: %s' % (', '.join(choices), pick))
 
 
