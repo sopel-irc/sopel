@@ -105,7 +105,8 @@ def get_example_test(tested_func, msg, results, privmsg, admin,
             assert len(wrapper.output) == len(results)
             for result, output in zip(results, wrapper.output):
                 if use_regexp:
-                    assert re.match(result, output) is not None
+                    if not re.match(result, output):
+                        assert result == output
                 else:
                     assert result == output
 
