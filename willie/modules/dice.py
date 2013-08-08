@@ -6,10 +6,11 @@ Licensed under the Eiffel Forum License 2.
 
 http://willie.dftba.net/
 """
-
 import random
-import willie.module
 import re
+
+import willie.module
+from willie.tools import eval_equation
 
 
 class DicePouch:
@@ -108,6 +109,34 @@ class DicePouch:
         return len(self.dice) + len(self.dropped)
 
 
+def _roll_dice(dice_expression):
+    result = re.search(r"""
+            (?P<dice_num>\d*)
+            d
+            (?P<dice_type>\d+)
+            (v(?P<drop_lowest>\d+))?
+            $""",
+            dice_expression,
+            re.IGNORECASE | re.VERBOSE)
+
+    dice_num = int(result.group('dice_num') or 1)
+    dice_type = int(result.group('dice_type'))
+
+    # Upper limit for dice should be at most a million. Creating a dict with
+    # more than a million elements already takes a noticeable amount of time
+    # on a fast computer and ~55kB of memory.
+    if dice_num > 1000:
+        return None
+
+    dice = DicePouch(dice_num, dice_type, 0)
+
+    if result.group('drop_lowest'):
+        drop = int(result.group('drop_lowest'))
+        dice.drop_lowest(drop)
+
+    return dice
+
+
 @willie.module.commands("roll")
 @willie.module.commands("dice")
 @willie.module.commands("d")
@@ -116,6 +145,9 @@ class DicePouch:
 @willie.module.example(".roll 3d1v2+1", 'You roll 3d1v2+1: (1[+1+1])+1 = 2')
 @willie.module.example(".roll 2d4", re='You roll 2d4: \(\d\+\d\) = \d')
 @willie.module.example(".roll 100d1", re='[^:]*: \(100x1\) = 100')
+@willie.module.example(".roll 1001d1", 'I only have 1000 dice. =(')
+@willie.module.example(".roll 1d1 + 1d1", 'You roll 1d1 + 1d1: (1) + (1) = 2')
+@willie.module.example(".roll 1d1+1d1", 'You roll 1d1+1d1: (1)+(1) = 2')
 def roll(bot, trigger):
     """.dice XdY[vZ][+N], rolls dice and reports the result.
 
@@ -123,45 +155,46 @@ def roll(bot, trigger):
     number of lowest dice to be dropped from the result. N is the constant to
     be applied to the end result.
     """
-    result = re.search(r"""
-            (?P<dice_num>\d+)
-            d
-            (?P<dice_type>\d+)
-            (v(?P<drop_lowest>\d+))?
-            (?P<plus>(-|\+)\d+)?
-            $""",
-            trigger.group(2),
-            re.IGNORECASE | re.VERBOSE)
-    if not result:
-        bot.reply("Syntax for rolling dice is XdY[vZ][+N].")
-        return
+    # This regexp is only allowed to have one captured group, because having
+    # more would alter the output of re.findall.
+    dice_regexp = r"\d*d\d+(?:v\d+)?"
 
-    dice_num = int(result.group('dice_num'))
-    dice_type = int(result.group('dice_type'))
-    addition = int(result.group('plus') or 0)
-
-    # Upper limit for dice should be at most a million. Creating a dict with
-    # more than a million elements already takes a noticeable amount of time
-    # on a fast computer and ~55kB of memory.
-    if dice_num > 1000:
+    # Get a list of all dice expressions, evaluate them and then replace the
+    # expressions in the original string with the results. Replacing is done
+    # using string formatting, so %-characters must be escaped.
+    arg_str = trigger.group(2)
+    dice_expressions = re.findall(dice_regexp, arg_str)
+    arg_str = arg_str.replace("%", "%%")
+    arg_str = re.sub(dice_regexp, "%s", arg_str)
+    dice = map(_roll_dice, dice_expressions)
+    if None in dice:
         bot.reply("I only have 1000 dice. =(")
         return
 
-    dice = DicePouch(dice_num, dice_type, addition)
+    def _get_eval_str(dice):
+        return "(%d)" % (dice.get_sum(),)
 
-    if result.group('drop_lowest'):
-        drop = int(result.group('drop_lowest'))
-        dice.drop_lowest(drop)
+    def _get_pretty_str(dice):
+        if dice.num <= 10:
+            return dice.get_simple_string()
+        elif dice.get_number_of_faces() <= 10:
+            return dice.get_compressed_string()
+        else:
+            return "(...)"
 
-    if dice_num <= 10:
-        dice_str = dice.get_simple_string()
-    elif dice.get_number_of_faces() <= 10:
-        dice_str = dice.get_compressed_string()
-    else:
-        dice_str = "(...)"
+    eval_str = arg_str % (tuple(map(_get_eval_str, dice)))
+    pretty_str = arg_str % (tuple(map(_get_pretty_str, dice)))
+
+    # Showing the actual error will hopefully give a better hint of what is
+    # wrong with the syntax than a generic error message.
+    try:
+        result = eval_equation(eval_str)
+    except Exception as e:
+        bot.reply("SyntaxError, eval(%s), %s" % (eval_str, e))
+        return
 
     bot.reply("You roll %s: %s = %d" % (
-            trigger.group(2), dice_str, dice.get_sum()))
+            trigger.group(2), pretty_str, result))
 
 
 @willie.module.commands("choice")
