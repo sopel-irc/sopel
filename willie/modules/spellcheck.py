@@ -1,8 +1,8 @@
-# -*- coding: utf8 -*-
+﻿# -*- coding: utf8 -*-
 """
 spellcheck.py - Willie spell check Module
 Copyright © 2012, Elad Alfassa, <elad@fedoraproject.org>
-Copyright © 2012, Lior Ramati
+Copyright © 2012-2013, Lior Ramati
 Licensed under the Eiffel Forum License 2.
 
 http://willie.dftba.net
@@ -45,4 +45,4 @@ def spellcheck(bot, trigger):
                 sugWords.append(suggested_word)
         for suggested_word in sorted(set(sugWords)):  # removes duplicates
             msg = msg + " '" + suggested_word + "',"
-        bot.say(msg)
+        bot.say(msg[:-1]) # remove trailing ','
