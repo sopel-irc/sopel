@@ -3,8 +3,7 @@
 *Availability: 3+*
 ``tools`` contains a number of useful miscellaneous tools and shortcuts for use
 in Willie modules.
-"""
-"""
+
 tools.py - Willie misc tools
 Copyright 2008, Sean B. Palmer, inamidst.com
 Copyright © 2012, Elad Alfassa <elad@fedoraproject.org>
@@ -13,6 +12,8 @@ Licensed under the Eiffel Forum License 2.
 
 https://willie.dftba.net
 """
+from __future__ import division
+
 import sys
 import os
 import re
@@ -26,6 +27,83 @@ except ImportError:
 import traceback
 import Queue
 import copy
+import ast
+import operator
+
+
+class ExpressionEvaluator:
+    """A generic class for evaluating limited forms of Python expressions.
+
+    Instances can overwrite binary_ops and unary_ops attributes with dicts of
+    the form {ast.Node, function}. When the ast.Node being used as key is
+    found, it will be evaluated using the given function.
+    """
+    class Error(Exception):
+        pass
+
+    def __init__(self, bin_ops=None, unary_ops=None):
+        self.binary_ops = bin_ops or {}
+        self.unary_ops = unary_ops or {}
+
+    def __call__(self, expression_str):
+        """Evaluate a python expression and return the result.
+
+        Raises:
+            SyntaxError: If the given expression_str is not a valid python
+                statement.
+            ExpressionEvaluator.Error: If the instance of ExpressionEvaluator
+                does not have a handler for the ast.Node.
+        """
+        ast_expression = ast.parse(expression_str, mode='eval')
+        return self._eval_node(ast_expression.body)
+
+    def _eval_node(self, node):
+        """Recursively evaluate the given ast.Node.
+
+        Uses self.binary_ops and self.unary_ops for the implementation.
+
+        A subclass could overwrite this to handle more nodes, calling it only
+        for nodes it does not implement it self.
+
+        Raises:
+            ExpressionEvaluator.Error: If it can't handle the ast.Node.
+        """
+        if isinstance(node, ast.Num):
+            return node.n
+
+        elif (isinstance(node, ast.BinOp) and
+                type(node.op) in self.binary_ops):
+            left = self._eval_node(node.left)
+            right = self._eval_node(node.right)
+            return self.binary_ops[type(node.op)](left, right)
+
+        elif (isinstance(node, ast.UnaryOp) and
+                type(node.op) in self.unary_ops):
+            operand = self._eval_node(node.operand)
+            return self.unary_ops[type(node.op)](operand)
+
+        raise ExpressionEvaluator.Error(
+                "Ast.Node '%s' not implemented." % (type(node).__name__,))
+
+_bin_ops = {
+        ast.Add: operator.add,
+        ast.Sub: operator.sub,
+        ast.Mult: operator.mul,
+        ast.Div: operator.div,
+        ast.Pow: operator.pow,
+        ast.Mod: operator.mod,
+        ast.FloorDiv: operator.floordiv,
+        }
+_unary_ops = {
+        ast.USub: operator.neg,
+        ast.UAdd: operator.pos,
+        }
+eval_equation = ExpressionEvaluator(_bin_ops, _unary_ops)
+"""Evaluates a Python equation expression and returns the result.
+
+Supports addition (+), subtraction (-), multiplication (*), division (/),
+power (**) and modulo (%).
+"""
 
 
 def get_raising_file_and_line(tb=None):
