@@ -179,11 +179,11 @@ def nickname_commands(*command_list):
         attribute. If there is no rule attribute, it is added.
 
     Example:
-        @nickname_command("hello!"):
+        @nickname_commands("hello!"):
             Would trigger on "$nickname: hello!", "$nickname,   hello!",
             "$nickname hello!", "$nickname hello! parameter1" and
             "$nickname hello! p1 p2 p3 p4 p5 p6 p7 p8 p9".
-        @nickname_command(".*"):
+        @nickname_commands(".*"):
             Would trigger on anything starting with "$nickname[:,]? ", and
             would have never have any additional parameters, as the command
             would match the rest of the line.
