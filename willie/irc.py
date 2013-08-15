@@ -301,6 +301,11 @@ class Bot(asynchat.async_chat):
                     os._exit(1)
             self.set_socket(self.ssl)
 
+        # Request list of server capabilities. IRCv3 servers will respond with
+        # CAP * LS (which we handle in coretasks). v2 servers will respond with
+        # 421 Unknown command, which we'll ignore
+        self.write(('CAP', 'LS'))
+
         if self.config.core.server_password is not None:
             self.write(('PASS', self.config.core.server_password))
         self.write(('NICK', self.nick))

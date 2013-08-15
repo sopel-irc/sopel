@@ -16,6 +16,7 @@ dispatch function in bot.py and making it easier to maintain.
 import re
 import willie
 from willie.tools import Nick
+import base64
 
 
 @willie.module.event('251')
@@ -234,6 +235,63 @@ def track_kick(bot, trigger):
 def track_join(bot, trigger):
     if trigger.nick == bot.nick and trigger.sender not in bot.channels:
         bot.channels.append(trigger.sender)
+
+
+@willie.module.rule('.*')
+@willie.module.event('CAP')
+@willie.module.thread(False)
+@willie.module.priority('high')
+@willie.module.unblockable
+def recieve_cap_list(bot, trigger):
+    if trigger.args[0] == '*' and trigger.args[1] == 'LS':
+        recieve_cap_ls_reply(bot, trigger)
+    elif (trigger.args[0] == bot.nick and trigger.args[1] == 'ACK' and
+          'sasl' in trigger.args[2]):
+        recieve_cap_ack_sasl(bot)
+
+
+def recieve_cap_ls_reply(bot, trigger):
+    if False and bot.server_capabilities:
+        # We've already seen the results, so someone sent CAP LS from a module.
+        # We're too late to do SASL, and we don't want to send CAP END before
+        # the module has done what it needs to, so just return
+        return
+
+    bot.server_capabilities.union(trigger.split(' '))
+    # If we want to do SASL, we have to wait before we can send CAP END. So if
+    # we are, wait on 903 (SASL successful) to send it.
+    #TODO better error handling here, and sending other CAP requests
+    if bot.config.core.sasl_password:
+        bot.write(('CAP', 'REQ', 'sasl'))
+    else:
+        bot.write(('CAP', 'END'))
+
+
+def recieve_cap_ack_sasl(bot):
+    # Presumably we're only here if we said we actually *want* sasl, but still
+    # check anyway.
+    if not bot.config.core.sasl_password:
+        return
+    mech = bot.config.core.sasl_mechanism or 'PLAIN'
+    bot.write(('AUTHENTICATE', mech))
+
+
+@willie.module.event('AUTHENTICATE')
+@willie.module.rule('.*')
+def auth_proceed(bot, trigger):
+    if trigger.args[0] != '+':
+        # How did we get here? I am not good with computer.
+        return
+    # Is this right?
+    sasl_token = '\0'.join((bot.nick, bot.nick, bot.config.core.sasl_password))
+    # Spec says we do a base 64 encode on the SASL stuff
+    bot.write(('AUTHENTICATE', base64.b64encode(sasl_token)))
+
+@willie.module.event('903')
+@willie.module.rule('.*')
+def sasl_success(bot, trigger):
+    bot.write(('CAP', 'END'))
+
 
 #Live blocklist editing
 
