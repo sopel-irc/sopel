@@ -52,6 +52,11 @@ class Willie(irc.Bot):
         """
         self.acivity = {}
 
+        self.server_capabilities = set()
+        """A set containing the IRCv3 capabilities that the server supports.
+
+        For servers that do not support IRCv3, this will be an empty set."""
+
         self.db = WillieDB(config)
         if self.db.check_table('locales', ['name'], 'name'):
             self.settings = self.db.locales
