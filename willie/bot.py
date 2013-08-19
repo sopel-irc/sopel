@@ -315,7 +315,11 @@ class Willie(irc.Bot):
 
         Object must be both be callable and named shutdown.
         """
-        return callable(obj) and obj.__name__ == 'shutdown'
+        if (callable(obj) and
+                hasattr(obj, "name")
+                and obj.__name__ == 'shutdown'):
+            return True
+        return False
 
     def register(self, variables):
         """
