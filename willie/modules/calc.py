@@ -86,7 +86,11 @@ def wa(bot, trigger):
             answer = answer.replace('\:' + char_code, char)
         waOutputArray = string.split(answer, ";")
         if(len(waOutputArray) < 2):
-            bot.say('[WOLFRAM ERROR]' + answer)
+            if(answer.strip() == "Couldn't grab results from json stringified precioussss."):
+                # Answer isn't given in an IRC-able format, just link to it.
+                bot.say('[WOLFRAM]Couldn\'t display answer, try http://www.wolframalpha.com/input/?i='+query.replace(' ','+'))
+            else:
+                bot.say('[WOLFRAM ERROR]' + answer)
         else:
 
             bot.say('[WOLFRAM] ' + waOutputArray[0] + " = "
