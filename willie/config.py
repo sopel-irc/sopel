@@ -62,9 +62,9 @@ class Config(object):
     def __init__(self, filename, load=True, ignore_errors=False):
         """
         Return a configuration object. The given filename will be associated
-        with the configuration, and is the file which will be written if write()
-        is called. If load is not given or True, the configuration object will
-        load the attributes from the file at filename.
+        with the configuration, and is the file which will be written if
+        write() is called. If load is not given or True, the configuration
+        object will load the attributes from the file at filename.
 
         A few default values will be set here if they are not defined in the
         config file, or a config file is not loaded. They are documented below.
@@ -80,11 +80,20 @@ class Config(object):
                 if not self.parser.has_section('core'):
                     raise ConfigurationError('Core section missing!')
                 if not self.parser.has_option('core', 'nick'):
-                    raise ConfigurationError('Bot IRC nick not defined, expected option `nick` in [core] section')
+                    raise ConfigurationError(
+                        'Bot IRC nick not defined,'
+                        ' expected option `nick` in [core] section'
+                    )
                 if not self.parser.has_option('core', 'owner'):
-                    raise ConfigurationError('Bot owner not defined, expected option `owner` in [core] section')
+                    raise ConfigurationError(
+                        'Bot owner not defined,'
+                        ' expected option `owner` in [core] section'
+                    )
                 if not self.parser.has_option('core', 'host'):
-                    raise ConfigurationError('IRC server address not defined, expceted option `host` in [core] section')
+                    raise ConfigurationError(
+                        'IRC server address not defined,'
+                        ' expceted option `host` in [core] section'
+                    )
 
             #Setting defaults:
             if not self.parser.has_option('core', 'port'):
@@ -197,7 +206,9 @@ class Config(object):
                 self.parser.set(section, option, value)
         elif default:
             if ispass:
-                value = getpass.getpass(prompt + ' [%s]: ' % default) or default
+                value = getpass.getpass(
+                    prompt + ' [%s]: ' % default
+                ) or default
                 self.parser.set(section, option, value)
             else:
                 value = raw_input(prompt + ' [%s]: ' % default) or default
@@ -234,11 +245,11 @@ class Config(object):
     def add_option(self, section, option, question, default=False):
         """
         Show user in terminal a "y/n" prompt, and set `option` to True or False
-        based on the response. If default is passed as true, the default will be
-        shown as ``[y]``, else it will be ``[n]``. ``question`` should be phrased
-        as a question, but without a question mark at the end. If ``option`` is
-        already defined, it will be used instead of ``default``, regardless of
-        wheather ``default`` is passed.
+        based on the response. If default is passed as true, the default will
+        be shown as ``[y]``, else it will be ``[n]``. ``question`` should be
+        phrased as a question, but without a question mark at the end. If
+        ``option`` is already defined, it will be used instead of ``default``,
+        regardless of wheather ``default`` is passed.
         """
         if not self.parser.has_section(section):
             self.parser.add_section(section)
@@ -250,9 +261,9 @@ class Config(object):
     def option(self, question, default=False):
         """
         Show user in terminal a "y/n" prompt, and return true or false based on
-        the response. If default is passed as true, the default will be shown as
-        ``[y]``, else it will be ``[n]``. ``question`` should be phrased as a
-        question, but without a question mark at the end.
+        the response. If default is passed as true, the default will be shown
+        as ``[y]``, else it will be ``[n]``. ``question`` should be phrased as
+        a question, but without a question mark at the end.
         """
         d = 'n'
         if default:
@@ -274,8 +285,12 @@ class Config(object):
             default_port = '6667'
         self.interactive_add('core', 'port', 'Enter the port to connect on',
                              default_port)
-        self.interactive_add('core', 'owner', "Enter your own IRC name (or that of the bot's owner)")
-        c = 'Enter the channels to connect to by default, one at a time. When done, hit enter again.'
+        self.interactive_add(
+            'core', 'owner',
+            "Enter your own IRC name (or that of the bot's owner)"
+        )
+        c = 'Enter the channels to connect to by default, one at a time.' + \
+            ' When done, hit enter again.'
         self.add_list('core', 'channels', c, 'Channel:')
 
     def _db(self):
@@ -302,22 +317,22 @@ class Config(object):
         """
         *Availability: 4.0+*
 
-        Return a dict mapping the names of modules to the location of their file.
-        This searches the regular modules directory and all directories specified
-        in the `core.extra` attribute of the `config` object. If two modules have
-        the same name, the last one to be found will be returned and the rest will
-        be ignored. Modules are found starting in the regular directory,
-        followed by `~/.willie/modules`, and then through the extra directories
-        in the order that the are specified.
+        Return a dict mapping the names of modules to the location of their
+        file.  This searches the regular modules directory and all directories
+        specified in the `core.extra` attribute of the `config` object. If two
+        modules have the same name, the last one to be found will be returned
+        and the rest will be ignored. Modules are found starting in the regular
+        directory, followed by `~/.willie/modules`, and then through the extra
+        directories in the order that the are specified.
 
-        If `show_all` is given as `True`, the `enable` and `exclude` configuration
-        options will be ignored, and all modules will be shown (though duplicates
-        will still be ignored as above).
+        If `show_all` is given as `True`, the `enable` and `exclude`
+        configuration options will be ignored, and all modules will be shown
+        (though duplicates will still be ignored as above).
         """
         modules = {}
 
         # First, add modules from the regular modules directory
-        this_dir = os.path.dirname(os.path.abspath(__file__)) 
+        this_dir = os.path.dirname(os.path.abspath(__file__))
         modules_dir = os.path.join(this_dir, 'modules')
         for fn in os.listdir(modules_dir):
             if fn.endswith('.py') and not fn.startswith('_'):
@@ -331,8 +346,9 @@ class Config(object):
             if fn.endswith('.py') and not fn.startswith('_'):
                 modules[fn[:-3]] = os.path.join(home_modules_dir, fn)
 
-        # Last, look at all the extra directories. (get_list returns [] if there
-        # are none or the option isn't defined, so it'll just skip this bit)
+        # Last, look at all the extra directories. (get_list returns [] if
+        # there are none or the option isn't defined, so it'll just skip this
+        # bit)
         for directory in self.core.get_list('extra'):
             for fn in os.listdir(directory):
                 if fn.endswith('.py') and not fn.startswith('_'):
@@ -359,6 +375,7 @@ class Config(object):
 
         return modules
 
+
 def wizard(section, config=None):
     dotdir = os.path.expanduser('~/.willie')
     configpath = os.path.join(dotdir, (config or 'default') + '.cfg')
@@ -367,14 +384,16 @@ def wizard(section, config=None):
     elif section == 'db':
         check_dir(False)
         if not os.path.isfile(configpath):
-            print "No config file found. Please make one before configuring these options."
+            print "No config file found." + \
+                " Please make one before configuring these options."
             sys.exit(1)
         config = Config(configpath, True)
         config._db()
     elif section == 'mod':
         check_dir(False)
         if not os.path.isfile(configpath):
-            print "No config file found. Please make one before configuring these options."
+            print "No config file found." + \
+                " Please make one before configuring these options."
             sys.exit(1)
         config = Config(configpath, True)
         config._modules()
@@ -388,9 +407,15 @@ def check_dir(create=True):
             try:
                 os.makedirs(dotdir)
             except Exception, e:
-                print >> sys.stderr, 'There was a problem creating %s:' % dotdir
+                print >> (
+                    sys.stderr,
+                    'There was a problem creating %s:' % dotdir
+                )
                 print >> sys.stderr, e.__class__, str(e)
-                print >> sys.stderr, 'Please fix this and then run Willie again.'
+                print >> (
+                    sys.stderr,
+                    'Please fix this and then run Willie again.'
+                )
                 sys.exit(1)
         else:
             print "No config file found. Please make one before configuring these options."
@@ -399,18 +424,22 @@ def check_dir(create=True):
 
 def create_config(configpath):
     check_dir()
-    print "Please answer the following questions to create your configuration file:\n"
+    print "Please answer the following questions" + \
+        " to create your configuration file:\n"
     try:
         config = Config(configpath, os.path.isfile(configpath))
         config._core()
         if config.option("Would you like to set up a settings database now"):
             config._db()
-        if config.option('Would you like to see if there are any modules that need configuring'):
+        if config.option(
+            'Would you like to see if there are any modules'
+            ' that need configuring'
+        ):
             config._modules()
         config.save()
     except Exception, e:
-        print "Encountered an error while writing the config file. This shouldn't happen. Check permissions."
+        print "Encountered an error while writing the config file." + \
+            " This shouldn't happen. Check permissions."
         raise
         sys.exit(1)
     print "Config file written sucessfully!"
-
