@@ -83,21 +83,22 @@ class ExpressionEvaluator:
             return self.unary_ops[type(node.op)](operand)
 
         raise ExpressionEvaluator.Error(
-                "Ast.Node '%s' not implemented." % (type(node).__name__,))
+            "Ast.Node '%s' not implemented." % (type(node).__name__,)
+        )
 
 _bin_ops = {
-        ast.Add: operator.add,
-        ast.Sub: operator.sub,
-        ast.Mult: operator.mul,
-        ast.Div: operator.div,
-        ast.Pow: operator.pow,
-        ast.Mod: operator.mod,
-        ast.FloorDiv: operator.floordiv,
-        }
+    ast.Add: operator.add,
+    ast.Sub: operator.sub,
+    ast.Mult: operator.mul,
+    ast.Div: operator.div,
+    ast.Pow: operator.pow,
+    ast.Mod: operator.mod,
+    ast.FloorDiv: operator.floordiv,
+}
 _unary_ops = {
-        ast.USub: operator.neg,
-        ast.UAdd: operator.pos,
-        }
+    ast.USub: operator.neg,
+    ast.UAdd: operator.pos,
+}
 eval_equation = ExpressionEvaluator(_bin_ops, _unary_ops)
 """Evaluates a Python equation expression and returns the result.
 
@@ -187,7 +188,8 @@ class released(object):
         self.lock.acquire()
 
 
-# from http://parand.com/say/index.php/2007/07/13/simple-multi-dimensional-dictionaries-in-python/
+# from
+# http://parand.com/say/index.php/2007/07/13/simple-multi-dimensional-dictionaries-in-python/
 # A simple class to make mutli dimensional dict easy to use
 class Ddict(dict):
     """
@@ -205,12 +207,12 @@ class Ddict(dict):
 
 class Nick(unicode):
     """
-    A `unicode` subclass which acts appropriately for an IRC nickname. When used
-    as normal `unicode` objects, case will be preserved. However, when comparing
-    two Nick objects, or comparing a Nick object with a `unicode` object, the
-    comparison will be case insensitive. This case insensitivity includes the
-    case convention conventions regarding ``[]``, ``{}``, ``|``, ``\\``, ``^``
-    and ``~`` described in RFC 2812.
+    A `unicode` subclass which acts appropriately for an IRC nickname. When
+    used as normal `unicode` objects, case will be preserved. However, when
+    comparing two Nick objects, or comparing a Nick object with a `unicode`
+    object, the comparison will be case insensitive. This case insensitivity
+    includes the case convention conventions regarding ``[]``, ``{}``, ``|``,
+    ``\\``, ``^`` and ``~`` described in RFC 2812.
     """
 
     def __new__(cls, nick):
@@ -342,9 +344,13 @@ def verify_ssl_cn(server, port):
     if not ssl:
         return None
     cert = None
-    for version in (ssl.PROTOCOL_TLSv1, ssl.PROTOCOL_SSLv3, ssl.PROTOCOL_SSLv23):
+    for version in (
+        ssl.PROTOCOL_TLSv1, ssl.PROTOCOL_SSLv3, ssl.PROTOCOL_SSLv23
+    ):
         try:
-            cert = ssl.get_server_certificate((server, port), ssl_version=version)
+            cert = ssl.get_server_certificate(
+                (server, port), ssl_version=version
+            )
             break
         except Exception as e:
             pass
