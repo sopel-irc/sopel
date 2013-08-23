@@ -330,38 +330,36 @@ def read_feeds(bot):
             bot.debug(__file__, "Can't parse, " + str(E), 'always')
 
         if DEBUG:
-            debug_msg = "{0}: status = {1}, version = {2}, items = {3}".format(
-                feed_name, fp.status, fp.version, len(fp.entries))
-            bot.msg(feed_channel, debug_msg)
+            bot.msg(feed_channel, "{0}: status = {1}, version = {2}, items = {3}".format(
+                feed_name, fp.status, fp.version, len(fp.entries)))
+
+            # throw a debug message if feed is not well-formed XML
+            if fp.bozo:
+                bot.msg(feed_channel, 'Malformed feed: ' + fp.bozo_exception.getMessage())
 
         try:
             entry = fp.entries[0]
         except IndexError:
             continue
 
-        entry_dt = None
-        if "published" in entry:
-            entry_dt = datetime.fromtimestamp(time.mktime(entry.published_parsed))
+        entry_dt = (datetime.fromtimestamp(time.mktime(entry.published_parsed))
+                    if "published" in entry else None)
 
-        feed_etag = None
-        if hasattr(fp, 'etag'):
-            feed_etag = fp.etag
+        feed_etag = fp.etag if hasattr(fp, 'etag') else None
+        feed_modified = fp.modified if hasattr(fp, 'modified') else None
 
-        feed_modified = None
-        if hasattr(fp, 'modified'):
-            feed_modified = fp.modified
+        # check if article is new, and skip otherwise
+        if (article_title == entry.title and article_url == entry.link
+            and etag == feed_etag and modified == feed_modified):
+            if DEBUG:
+                bot.msg(feed_channel, u"Skipping previously read entry: [{0}] {1}".format(feed_name, entry.title))
+            continue
 
         c.execute('''
             UPDATE rss_feeds SET article_title = %s, article_url = %s, published = %s, etag = %s, modified = %s
             WHERE channel = %s AND feed_name = %s
             ''' % (SUB * 7), (entry.title, entry.link, entry_dt, feed_etag, feed_modified, feed_channel, feed_name))
         conn.commit()
-
-        # check if new entry
-        if article_title == entry.title and article_url == entry.link:
-            if DEBUG:
-                bot.msg(feed_channel, u"Skipping previously read entry: [{0}] {1}".format(feed_name, entry.title))
-            continue
 
         if published and entry_dt:
             published_dt = datetime.strptime(published, "%Y-%m-%d %H:%M:%S")
