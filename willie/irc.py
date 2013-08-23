@@ -110,8 +110,8 @@ class Bot(asynchat.async_chat):
         """
         self.voices = dict()
         """
-        A dictionary mapping channels to a ``Nick`` list of their voices, half-ops
-        and ops.
+        A dictionary mapping channels to a ``Nick`` list of their voices,
+        half-ops and ops.
         """
 
         #We need this to prevent error loops in handle_error
@@ -217,7 +217,7 @@ class Bot(asynchat.async_chat):
 
     def quit(self, message):
         '''Disconnect from IRC and close the bot'''
-        self.write(['QUIT'], message) 
+        self.write(['QUIT'], message)
         self.hasquit = True
         # Wait for acknowledgement from the server. By RFC 2812 it should be
         # an ERROR msg, but many servers just close the connection. Either way
@@ -318,8 +318,14 @@ class Bot(asynchat.async_chat):
 
     def _timeout_check(self):
         while True:
-            if (datetime.now() - self.last_ping_time).seconds > int(self.config.timeout):
-                stderr('Ping timeout reached after %s seconds, closing connection' % self.config.timeout)
+            if (
+                datetime.now() - self.last_ping_time
+            ).seconds > int(self.config.timeout):
+                stderr(
+                    'Ping timeout reached after %s seconds,' +
+                    ' closing connection' %
+                    self.config.timeout
+                )
                 self.handle_close()
                 break
             else:
@@ -327,7 +333,9 @@ class Bot(asynchat.async_chat):
 
     def _send_ping(self):
         while True:
-            if (datetime.now() - self.last_ping_time).seconds > int(self.config.timeout) / 2:
+            if (
+                datetime.now() - self.last_ping_time
+            ).seconds > int(self.config.timeout) / 2:
                 self.write(('PING', self.config.host))
             time.sleep(int(self.config.timeout) / 2)
 
@@ -493,17 +501,28 @@ class Bot(asynchat.async_chat):
                 signature = '%s (%s)' % (report[0], report[1])
                 # TODO: make not hardcoded
                 log_filename = os.path.join(
-                        self.config.logdir, 'exceptions.log')
-                with codecs.open(log_filename, 'a', encoding='utf-8') as logfile:
+                    self.config.logdir, 'exceptions.log'
+                )
+                with codecs.open(
+                    log_filename, 'a', encoding='utf-8'
+                ) as logfile:
                     logfile.write(u'Signature: %s\n' % signature)
                     if origin:
-                        logfile.write(u'from %s at %s:\n' % (
-                                origin.sender, str(datetime.now())))
+                        logfile.write(
+                            u'from %s at %s:\n' % (
+                                origin.sender, str(datetime.now())
+                            )
+                        )
                     if trigger:
-                        logfile.write(u'Message was: <%s> %s\n' % (
-                                trigger.nick, trigger.group(0)))
+                        logfile.write(
+                            u'Message was: <%s> %s\n' % (
+                                trigger.nick, trigger.group(0)
+                            )
+                        )
                     logfile.write(trace)
-                    logfile.write('----------------------------------------\n\n')
+                    logfile.write(
+                        '----------------------------------------\n\n'
+                    )
             except Exception as e:
                 stderr("Could not save full traceback!")
                 self.debug(__file__, "(From: " + origin.sender +
@@ -514,18 +533,28 @@ class Bot(asynchat.async_chat):
         except Exception as e:
             if origin:
                 self.msg(origin.sender, "Got an error.")
-                self.debug(__file__, "(From: " + origin.sender +
-                       ") " + str(e), 'always')
+                self.debug(
+                    __file__,
+                    "(From: " + origin.sender + ") " + str(e),
+                    'always'
+                )
 
     def handle_error(self):
         ''' Handle any uncaptured error in the core. Overrides asyncore's
         handle_error '''
         trace = traceback.format_exc()
         stderr(trace)
-        self.debug(__file__, 'Fatal error in core, please review exception log',
-                   'always')
-        logfile = codecs.open(os.path.join(self.config.logdir, 'exceptions.log'),
-                              'a', encoding='utf-8')  # TODO: make not hardcoded
+        self.debug(
+            __file__,
+            'Fatal error in core, please review exception log',
+            'always'
+        )
+        # TODO: make not hardcoded
+        logfile = codecs.open(
+            os.path.join(self.config.logdir, 'exceptions.log'),
+            'a',
+            encoding='utf-8'
+        )
         logfile.write('Fatal error in core, handle_error() was called\n')
         logfile.write('last raw line was %s' % self.raw)
         logfile.write(trace)

@@ -263,7 +263,7 @@ class example(object):
     """Decorator. Add an example attribute into a function and generate a test.
     """
     def __init__(self, msg, result=None, privmsg=False, admin=False,
-            owner=False, repeat=1, re=None):
+                 owner=False, repeat=1, re=None):
         """Accepts arguments for the decorator.
 
         Args:
@@ -302,14 +302,18 @@ class example(object):
 
         if self.result:
             test = willie.test_tools.get_example_test(
-                    func, self.msg, self.result, self.privmsg, self.admin,
-                    self.owner, self.repeat, self.use_re)
+                func, self.msg, self.result, self.privmsg, self.admin,
+                self.owner, self.repeat, self.use_re
+            )
             willie.test_tools.insert_into_module(
-                    test, func.__module__, func.__name__, 'test_example')
+                test, func.__module__, func.__name__, 'test_example'
+            )
 
-        record = {"example": self.msg,
-                "result": self.result,
-                "privmsg": self.privmsg,
-                "admin": self.admin, }
+        record = {
+            "example": self.msg,
+            "result": self.result,
+            "privmsg": self.privmsg,
+            "admin": self.admin,
+        }
         func.example.append(record)
         return func
