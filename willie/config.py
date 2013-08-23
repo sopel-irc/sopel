@@ -407,15 +407,11 @@ def check_dir(create=True):
             try:
                 os.makedirs(dotdir)
             except Exception, e:
-                print >> (
-                    sys.stderr,
+                print >> sys.stderr, \
                     'There was a problem creating %s:' % dotdir
-                )
                 print >> sys.stderr, e.__class__, str(e)
-                print >> (
-                    sys.stderr,
+                print >> sys.stderr, \
                     'Please fix this and then run Willie again.'
-                )
                 sys.exit(1)
         else:
             print "No config file found. Please make one before configuring these options."
