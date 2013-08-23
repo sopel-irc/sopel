@@ -490,6 +490,7 @@ class Willie(irc.Bot):
     class Trigger(unicode):
         def __new__(cls, text, origin, bytes, match, event, args, self):
             s = unicode.__new__(cls, text)
+            s.raw = origin.raw
             s.sender = origin.sender
             """
             The channel (or nick, in a private message) from which the
