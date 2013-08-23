@@ -39,8 +39,11 @@ from tools import verify_ssl_cn
 class Origin(object):
     source = re.compile(r'([^!]*)!?([^@]*)@?(.*)')
 
-    def __init__(self, bot, source, args):
+    def __init__(self, bot, raw, source, args):
         self.hostmask = source
+
+        # Full raw line from server
+        self.raw = raw
 
         #Split out the nick, user, and host from hostmask per the regex above.
         match = Origin.source.match(source or '')
@@ -385,7 +388,8 @@ class Bot(asynchat.async_chat):
         if line.endswith('\r'):
             line = line[:-1]
         self.buffer = u''
-        self.raw = line
+        raw = line
+        self.raw = raw
         if line.startswith(':'):
             source, line = line[1:].split(' ', 1)
         else:
@@ -410,7 +414,7 @@ class Bot(asynchat.async_chat):
             stderr('Nickname already in use!')
             self.handle_close()
 
-        origin = Origin(self, source, args)
+        origin = Origin(self, raw, source, args)
         self.dispatch(origin, text, args)
 
     def dispatch(self, origin, text, args):
