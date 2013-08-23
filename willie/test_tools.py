@@ -59,7 +59,7 @@ class MockWillieWrapper(object):
 
 
 def get_example_test(tested_func, msg, results, privmsg, admin,
-        owner, repeat, use_regexp):
+                     owner, repeat, use_regexp):
     """Get a function that calls tested_func with fake wrapper and trigger.
 
     Args:
@@ -93,7 +93,8 @@ def get_example_test(tested_func, msg, results, privmsg, admin,
 
         origin = willie.irc.Origin(bot, hostmask, origin_args)
         trigger = willie.bot.Willie.Trigger(
-                msg, origin, msg, match, origin_args[0], origin_args, bot)
+            msg, origin, msg, match, origin_args[0], origin_args, bot
+        )
 
         module = sys.modules[tested_func.__module__]
         if hasattr(module, 'setup'):

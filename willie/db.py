@@ -1,8 +1,8 @@
 """
 *Availability: 3.1+*
 
-*Note:* This supersedes the ``SettingsDB`` object of 3.0. Within Willie modules,
-simmilar functionallity can be found using ``db.preferences``.
+*Note:* This supersedes the ``SettingsDB`` object of 3.0. Within Willie
+modules, simmilar functionallity can be found using ``db.preferences``.
 
 This class defines an interface for a semi-arbitrary database type. It is meant
 to allow module writers to operate without regard to how the end user has
@@ -46,8 +46,9 @@ class WillieDB(object):
     ``db`` section of ``config`` (that is, under the ``[db]`` heading in the
     config file), and refer to a writeable sqlite database. The ``mysql`` type
     requires ``userdb_host``, ``userdb_user``, ``userdb_pass``, and
-    ``userdb_name`` to be set, and provide the host and name of a MySQL database,
-    as well as a username and password for a user able to write to said database.
+    ``userdb_name`` to be set, and provide the host and name of a MySQL
+    database, as well as a username and password for a user able to write to
+    said database.
 
     Upon creation of the object, the tables currently existing in the given
     database will be registered, as though added through ``add_table``.
@@ -64,7 +65,8 @@ class WillieDB(object):
         self.type = config.db.userdb_type.lower()
         if self.type not in supported_types:
             self.type = None
-            print 'User settings database type is not supported. You may be missing the module for it. Ignoring.'
+            print 'User settings database type is not supported.' + \
+                ' You may be missing the module for it. Ignoring.'
             return
 
         if self.type == 'mysql':
@@ -91,14 +93,17 @@ class WillieDB(object):
             self._passwd = config.db.userdb_pass
             self._dbname = config.db.userdb_name
         except AttributeError as e:
-            print 'Some options are missing for your MySQL DB. The database will not be set up.'
+            print 'Some options are missing for your MySQL DB.' + \
+                ' The database will not be set up.'
             return
 
         try:
-            db = MySQLdb.connect(host=self._host,
-                         user=self._user,
-                         passwd=self._passwd,
-                         db=self._dbname)
+            db = MySQLdb.connect(
+                host=self._host,
+                user=self._user,
+                passwd=self._passwd,
+                db=self._dbname
+            )
         except:
             print 'Error: Unable to connect to user settings DB.'
             return
@@ -125,7 +130,8 @@ class WillieDB(object):
         try:
             self._file = config.db.userdb_file
         except AttributeError:
-            print 'No file specified for SQLite DB. The database will not be set up.'
+            print 'No file specified for SQLite DB.' + \
+                ' The database will not be set up.'
             return
 
         try:
@@ -157,8 +163,8 @@ class WillieDB(object):
     def check_table(self, name, columns, key):
         """
         Return ``True`` if the WillieDB contains a table with the same ``name``
-        and ``key``, and which contains a column with the same name as each element
-        in the given list ``columns``.
+        and ``key``, and which contains a column with the same name as each
+        element in the given list ``columns``.
         """
         table = getattr(self, name)
         return (isinstance(table, Table) and table.key == key and
@@ -192,9 +198,9 @@ class WillieDB(object):
         """
         Add a column with the given ``name`` and ``key``, which has the given
         ``columns``. Each element in ``columns`` may be either a string giving
-        the name of the column, or a tuple containing the name of the column and
-        its type (using SQL type names). If the former, the type will be assumed
-        as string.
+        the name of the column, or a tuple containing the name of the column
+        and its type (using SQL type names). If the former, the type will be
+        assumed as string.
 
         This will attempt to create the table within the database. If an error
         is encountered while adding the table, it will not be added to the
@@ -202,15 +208,15 @@ class WillieDB(object):
         the given columns will be added (if they don't already exist).
 
         The given ``name`` can not be the same as any function or attribute
-        (with the exception of other tables) of the ``WillieDB`` object, nor may
-        it start with ``'_'``. If it does not meet this requirement, or if the
-        ``name`` matches that of an existing table with a different ``key``, a
-        ``ValueError`` will be thrown.
+        (with the exception of other tables) of the ``WillieDB`` object, nor
+        may it start with ``'_'``. If it does not meet this requirement, or if
+        the ``name`` matches that of an existing table with a different
+        ``key``, a ``ValueError`` will be thrown.
 
         When a table is created, the column ``key`` will be declared as the
-        primary key of the table. If it is desired that there be no primary key,
-        this can be achieved by creating the table manually, or with a custom
-        query, and then creating the WillieDB object.
+        primary key of the table. If it is desired that there be no primary
+        key, this can be achieved by creating the table manually, or with a
+        custom query, and then creating the WillieDB object.
         """
         # First, get the attribute with that name. It'll probably be a pseudo-
         # table, but we want to know if the table already exists or if it's
@@ -250,15 +256,17 @@ class WillieDB(object):
 
     def connect(self):
         """
-        Create a database connection object. This functions essentially the same
-        as the ``connect`` function of the appropriate database type, allowing
-        for custom queries to be executed.
+        Create a database connection object. This functions essentially the
+        same as the ``connect`` function of the appropriate database type,
+        allowing for custom queries to be executed.
         """
         if self.type == 'mysql':
-            return MySQLdb.connect(host=self._host,
-                     user=self._user,
-                     passwd=self._passwd,
-                     db=self._dbname)
+            return MySQLdb.connect(
+                host=self._host,
+                user=self._user,
+                passwd=self._passwd,
+                db=self._dbname
+            )
         elif self.type == 'sqlite':
             return sqlite3.connect(self._file)
 
@@ -266,11 +274,11 @@ class WillieDB(object):
 class Table(object):
     """
     Return an object which represents a table in the given WillieDB, with the
-    given attributes. This will not check if ``db`` already has a table with the
-    given ``name``; the ``db``'s ``add_table`` provides that functionality.
+    given attributes. This will not check if ``db`` already has a table with
+    the given ``name``; the ``db``'s ``add_table`` provides that functionality.
 
-    ``key`` must be a string, which is in the list of strings ``columns``, or an
-    Exception will be thrown.
+    ``key`` must be a string, which is in the list of strings ``columns``, or
+    an Exception will be thrown.
     """
 
     def __init__(self, db, name, columns, key):
@@ -312,8 +320,10 @@ class Table(object):
 
         db = self.db.connect()
         cur = db.cursor()
-        cur.execute("SELECT COUNT(*) FROM " + self.name +
-                " WHERE " + self.key + " LIKE \"[^#&]%;")
+        cur.execute(
+            "SELECT COUNT(*) FROM " + self.name +
+            " WHERE " + self.key + " LIKE \"[^#&]%;"
+        )
         result = int(cur.fetchone()[0])
         db.close()
         return result
@@ -328,8 +338,10 @@ class Table(object):
 
         db = self.db.connect()
         cur = db.cursor()
-        cur.execute("SELECT COUNT(*) FROM " + self.name +
-                " WHERE " + self.key + " LIKE \"[#&]%;")
+        cur.execute(
+            "SELECT COUNT(*) FROM " + self.name +
+            " WHERE " + self.key + " LIKE \"[#&]%;"
+        )
         result = int(cur.fetchone()[0])
         db.close()
         return result
@@ -392,17 +404,17 @@ class Table(object):
     def get(self, row, columns, key=None):
         """
         Retrieve the value(s) in one or more ``columns`` in the row where the
-        ``key`` column(s) match the value(s) given in ``row``. This is basically
-        equivalent to executing ``SELECT <columns> FROM <self> WHERE <key> =
-        <row>``.
+        ``key`` column(s) match the value(s) given in ``row``. This is
+        basically equivalent to executing ``SELECT <columns> FROM <self> WHERE
+        <key> = <row>``.
 
-        The ``key`` can be either the name of one column as a string, or a tuple
-        of the names of multiple columns. ``row`` is the value or values of this
-        column or columns for which data will be retrieved. If multiple columns
-        are being used, the order in which the columns are presented should match
-        between ``row`` and ``key``. A ``KeyError`` will be raised if no have
-        values matching ``row`` in ``key``. If ``key`` is not passed, it will
-        default to the table's primary key.
+        The ``key`` can be either the name of one column as a string, or a
+        tuple of the names of multiple columns. ``row`` is the value or values
+        of this column or columns for which data will be retrieved. If multiple
+        columns are being used, the order in which the columns are presented
+        should match between ``row`` and ``key``. A ``KeyError`` will be raised
+        if no have values matching ``row`` in ``key``. If ``key`` is not
+        passed, it will default to the table's primary key.
 
         ``columns`` can either be a single column name, or a tuple of column
         names. If one name is passed, a single string will be returned. If a
@@ -451,7 +463,7 @@ class Table(object):
                 key = key + ', ' + k
                 vals = vals + ', "' + values[k] + '"'
             command = ('INSERT INTO ' + self.name + ' (' + key + ') VALUES (' +
-                      vals + ');')
+                       vals + ');')
         else:
             command = 'UPDATE ' + self.name + ' SET '
             for k in values:
@@ -488,9 +500,9 @@ class Table(object):
         """
         Return an iterator over the keys and values in the table.
 
-        In a for each loop, you can use ``for key in table:``, where key will be
-        the value of the ``key`` column(s), which defaults to the primary key,
-        and table is the Table. This may be deprecated in future versions.
+        In a for each loop, you can use ``for key in table:``, where key will
+        be the value of the ``key`` column(s), which defaults to the primary
+        key, and table is the Table. This may be deprecated in future versions.
         """
         if not self.columns:  # handle a non-existant table
             raise KeyError('Table is empty.')
@@ -589,7 +601,8 @@ class Table(object):
         db.commit()
         db.close()
 
-        #Why a second loop? because I don't want clomuns to be added to self.columns if executing the SQL command fails
+        # Why a second loop? because I don't want clomuns to be added to
+        # self.columns if executing the SQL command fails
         for column in columns:
             self.columns.add(column)
 
@@ -601,17 +614,27 @@ def configure(config):
     """
     config.add_section('db')
 
-    config.interactive_add('db', 'userdb_type',
-        'What type of database would you like to use? (mysql/sqlite)', 'mysql')
+    config.interactive_add(
+        'db', 'userdb_type',
+        'What type of database would you like to use? (mysql/sqlite)', 'mysql'
+    )
 
     if config.db.userdb_type == 'sqlite':
-        config.interactive_add('db', 'userdb_file', 'Location for the database file')
+        config.interactive_add(
+            'db', 'userdb_file', 'Location for the database file'
+        )
 
     elif config.db.userdb_type == 'mysql':
-        config.interactive_add('db', 'userdb_host', "Enter the MySQL hostname", 'localhost')
+        config.interactive_add(
+            'db', 'userdb_host', "Enter the MySQL hostname", 'localhost'
+        )
         config.interactive_add('db', 'userdb_user', "Enter the MySQL username")
-        config.interactive_add('db', 'userdb_pass', "Enter the user's password", 'none')
-        config.interactive_add('db', 'userdb_name', "Enter the name of the database to use")
+        config.interactive_add(
+            'db', 'userdb_pass', "Enter the user's password", 'none'
+        )
+        config.interactive_add(
+            'db', 'userdb_name', "Enter the name of the database to use"
+        )
 
     else:
         print "This isn't currently supported. Aborting."
