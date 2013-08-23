@@ -22,7 +22,7 @@ from willie import tools
 import irc
 from db import WillieDB
 from tools import (stderr, Nick, PriorityQueue, released,
-        get_command_regexp)
+                   get_command_regexp)
 import module
 
 
@@ -166,7 +166,8 @@ class Willie(irc.Bot):
                 with released(self._mutex):
                     if job.func.thread:
                         t = threading.Thread(
-                                target=self._call, args=(job.func,))
+                            target=self._call, args=(job.func,)
+                        )
                         t.start()
                     else:
                         self._call(job.func)
@@ -185,19 +186,23 @@ class Willie(irc.Bot):
                 self.bot.error()
 
     class Job(object):
-        """Job is a simple structure that hold information about when a function
-        should be called next. They can be put in a priority queue, in which case
-        the Job that should be executed next is returned.
+        """
+        Job is a simple structure that hold information about
+        when a function should be called next. They can be put in
+        a priority queue, in which case the Job that should be
+        executed next is returned.
 
-        Calling the method next modifies the Job object for the next time it should
-        be executed. Current time is used to decide when the job should be executed
-        next so it should only be called right after the function was called.
+        Calling the method next modifies the Job object for the
+        next time it should be executed. Current time is used to
+        decide when the job should be executed next so it should
+        only be called right after the function was called.
         """
 
         max_catchup = 5
-        """This governs how much the scheduling of jobs is allowed to get behind
-        before they are simply thrown out to avoid calling the same function too
-        many times at once.
+        """
+        This governs how much the scheduling of jobs is allowed
+        to get behind before they are simply thrown out to avoid
+        calling the same function too many times at once.
         """
 
         def __init__(self, interval, func):
@@ -221,15 +226,17 @@ class Willie(irc.Bot):
             delta = last_time + self.interval - current_time
 
             if last_time > current_time + self.interval:
-                # Clock appears to have moved backwards. Reset the timer to avoid
-                # waiting for the clock to catch up to whatever time it was
-                # previously.
+                # Clock appears to have moved backwards. Reset
+                # the timer to avoid waiting for the clock to
+                # catch up to whatever time it was previously.
                 self.next_time = current_time + self.interval
             elif delta < 0 and abs(delta) > self.interval * self.max_catchup:
-                # Execution of jobs is too far behind. Give up on trying to catch
-                # up and reset the time, so that will only be repeated a maximum
-                # of self.max_catchup times.
-                self.next_time = current_time - self.interval * self.max_catchup
+                # Execution of jobs is too far behind. Give up on
+                # trying to catch up and reset the time, so that
+                # will only be repeated a maximum of
+                # self.max_catchup times.
+                self.next_time = current_time - \
+                    self.interval * self.max_catchup
             else:
                 self.next_time = last_time + self.interval
 
@@ -283,7 +290,9 @@ class Willie(irc.Bot):
                 except Exception, e:
                     error_count = error_count + 1
                     filename, lineno = tools.get_raising_file_and_line()
-                    rel_path = os.path.relpath(filename, os.path.dirname(__file__))
+                    rel_path = os.path.relpath(
+                        filename, os.path.dirname(__file__)
+                    )
                     raising_stmt = "%s:%d" % (rel_path, lineno)
                     stderr("Error in %s setup procedure: %s (%s)"
                            % (name, e, raising_stmt))
@@ -320,7 +329,11 @@ class Willie(irc.Bot):
 
         Object must be both be callable and named shutdown.
         """
-        return callable(obj) and obj.__name__ == 'shutdown'
+        if (callable(obj) and
+                hasattr(obj, "name")
+                and obj.__name__ == 'shutdown'):
+            return True
+        return False
 
     def register(self, variables):
         """
@@ -363,7 +376,10 @@ class Willie(irc.Bot):
                 try:
                     obj(willie)
                 except Exception as e:
-                    stderr("Error calling shutdown method for module %s:%s" % (obj.__module__, e))
+                    stderr(
+                        "Error calling shutdown method for module %s:%s" %
+                        (obj.__module__, e)
+                    )
                 self.shutdown_methods.remove(obj)
 
     def bind_commands(self):
@@ -392,7 +408,10 @@ class Willie(irc.Bot):
 
         def sub(pattern, self=self):
             # These replacements have significant order
-            pattern = pattern.replace('$nickname', r'%s' % re.escape(self.nick))
+            pattern = pattern.replace(
+                '$nickname', r'%s' %
+                re.escape(self.nick)
+            )
             return pattern.replace('$nick', r'%s[,:] +' % re.escape(self.nick))
 
         for func in self.callables:
@@ -439,11 +458,14 @@ class Willie(irc.Bot):
                         bind(self, func.priority, regexp, func)
 
                     # 2) e.g. (['p', 'q'], '(.*)')
-                    elif len(func.rule) == 2 and isinstance(func.rule[0], list):
+                    elif len(func.rule) == 2 and \
+                            isinstance(func.rule[0], list):
                         prefix = self.config.core.prefix
                         commands, pattern = func.rule
                         for command in commands:
-                            command = r'(%s)\b(?: +(?:%s))?' % (command, pattern)
+                            command = r'(%s)\b(?: +(?:%s))?' % (
+                                command, pattern
+                            )
                             regexp = re.compile(prefix + command, re.I)
                             bind(self, func.priority, regexp, func)
 
@@ -453,7 +475,9 @@ class Willie(irc.Bot):
                         prefix = sub(prefix)
                         for command in commands:
                             command = r'(%s) +' % command
-                            regexp = re.compile(prefix + command + pattern, re.I)
+                            regexp = re.compile(
+                                prefix + command + pattern, re.I
+                            )
                             bind(self, func.priority, regexp, func)
 
             if hasattr(func, 'commands'):
@@ -478,7 +502,10 @@ class Willie(irc.Bot):
         def reply(self, string):
             if isinstance(string, str):
                 string = string.decode('utf8')
-            self.bot.msg(self.origin.sender, u'%s: %s' % (self.origin.nick, string))
+            self.bot.msg(
+                self.origin.sender,
+                u'%s: %s' % (self.origin.nick, string)
+            )
 
         def action(self, string, recipient=None):
             if recipient is None:
@@ -491,6 +518,7 @@ class Willie(irc.Bot):
     class Trigger(unicode):
         def __new__(cls, text, origin, bytes, match, event, args, self):
             s = unicode.__new__(cls, text)
+            s.raw = origin.raw
             s.sender = origin.sender
             """
             The channel (or nick, in a private message) from which the
@@ -561,7 +589,8 @@ class Willie(irc.Bot):
             if not self.config.core.owner:
                 s.owner = False
             elif '@' in self.config.core.owner:
-                s.owner = origin.nick + '@' + origin.host == self.config.core.owner
+                s.owner = origin.nick + '@' + \
+                    origin.host == self.config.core.owner
             else:
                 s.owner = (origin.nick == Nick(self.config.core.owner))
 
@@ -606,17 +635,20 @@ class Willie(irc.Bot):
         if nick not in self.times:
             self.times[nick] = dict()
 
-        if (not trigger.admin and 
-                not func.unblockable and
-                func in self.times[nick]):
+        if not trigger.admin and \
+                not func.unblockable and \
+                func in self.times[nick]:
             timediff = time.time() - self.times[nick][func]
             if timediff < func.rate:
                 self.times[nick][func] = time.time()
-                self.debug(__file__,
-                        "%s prevented from using %s in %s: %d < %d" % (
-                            trigger.nick, func.__name__, trigger.sender,
-                            timediff, func.rate),
-                        "verbose")
+                self.debug(
+                    __file__,
+                    "%s prevented from using %s in %s: %d < %d" % (
+                        trigger.nick, func.__name__, trigger.sender,
+                        timediff, func.rate
+                    ),
+                    "verbose"
+                )
                 return
 
         try:
@@ -655,14 +687,17 @@ class Willie(irc.Bot):
                 match = regexp.match(text)
                 if not match:
                     continue
-                trigger = self.Trigger(text, origin, text, match, event, args, self)
+                trigger = self.Trigger(
+                    text, origin, text, match, event, args, self
+                )
 
                 for func in funcs:
                     if (not trigger.admin and
                             not func.unblockable and
                             (nick_blocked or host_blocked)):
                         function_name = "%s.%s" % (
-                                func.__module__, func.__name__)
+                            func.__module__, func.__name__
+                        )
                         list_of_blocked_functions.append(function_name)
                         continue
 
@@ -684,12 +719,15 @@ class Willie(irc.Bot):
                 block_type = 'nick'
             else:
                 block_type = 'host'
-            self.debug(__file__,
-                    "[%s]%s prevented from using %s." % (
-                        block_type,
-                        origin.nick,
-                        ', '.join(list_of_blocked_functions)),
-                    "verbose")
+            self.debug(
+                __file__,
+                "[%s]%s prevented from using %s." % (
+                    block_type,
+                    origin.nick,
+                    ', '.join(list_of_blocked_functions)
+                ),
+                "verbose"
+            )
 
     def _host_blocked(self, host):
         bad_masks = self.config.core.get_list('host_blocks')
@@ -738,10 +776,10 @@ class Willie(irc.Bot):
         debug_msg = "[%s] %s" % (tag, text)
 
         output_on = {
-                'verbose': ['verbose'],
-                'warning': ['verbose', 'warning'],
-                'always': ['verbose', 'warning', 'always'],
-                }
+            'verbose': ['verbose'],
+            'warning': ['verbose', 'warning'],
+            'always': ['verbose', 'warning', 'always'],
+        }
         if level in output_on and verbosity in output_on[level]:
             if debug_target == 'stdio':
                 print debug_msg
@@ -751,18 +789,27 @@ class Willie(irc.Bot):
         else:
             return False
 
-
     def _shutdown(self):
-        stderr('Calling shutdown for %d modules.' % (len(self.shutdown_methods),))
+        stderr(
+            'Calling shutdown for %d modules.' % (len(self.shutdown_methods),)
+        )
 
         hostmask = "%s!%s@%s" % (self.nick, self.user, socket.gethostname())
         willie = self.WillieWrapper(self, irc.Origin(self, hostmask, []))
         for shutdown_method in self.shutdown_methods:
             try:
-                stderr("calling %s.%s" % (shutdown_method.__module__, shutdown_method.__name__,))
+                stderr(
+                    "calling %s.%s" % (
+                        shutdown_method.__module__, shutdown_method.__name__,
+                    )
+                )
                 shutdown_method(willie)
             except Exception as e:
-                stderr("Error calling shutdown method for module %s:%s" % (shutdown_method.__module__, e))
+                stderr(
+                    "Error calling shutdown method for module %s:%s" % (
+                        shutdown_method.__module__, e
+                    )
+                )
 
 
 if __name__ == '__main__':
