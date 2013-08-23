@@ -128,7 +128,7 @@ def invite_join(bot, trigger):
     """
     if not trigger.admin:
         return
-    bot.write(('JOIN', trigger.args[1]))
+    bot.join(trigger.args[1])
 
 
 @willie.module.event('KICK')
