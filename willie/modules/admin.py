@@ -119,6 +119,18 @@ def me(bot, trigger):
     bot.msg(channel, msg)
 
 
+@willie.module.event('INVITE')
+@willie.module.rule('.*')
+@willie.module.priority('low')
+def invite_join(bot, trigger):
+    """
+    Join a channel willie is invited to, if the inviter is an admin.
+    """
+    if not trigger.admin:
+        return
+    bot.write(('JOIN', trigger.args[1]))
+
+
 @willie.module.event('KICK')
 @willie.module.rule(r'.*')
 @willie.module.priority('low')
