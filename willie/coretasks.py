@@ -14,6 +14,7 @@ responses to standard IRC codes without having to shove them all into the
 dispatch function in bot.py and making it easier to maintain.
 """
 import re
+import time
 import willie
 from willie.tools import Nick
 import base64
@@ -25,17 +26,22 @@ import base64
 @willie.module.unblockable
 def startup(bot, trigger):
     """
-    Runs when we recived 251 - lusers, which is just before the server sends the
-    motd, and right after establishing a sucessful connection.
+    Runs when we recived 251 - lusers, which is just before the server sends
+    the motd, and right after establishing a sucessful connection.
     """
+
     if bot.config.core.nickserv_password is not None:
-        bot.msg('NickServ', 'IDENTIFY %s'
-                   % bot.config.core.nickserv_password)
+        bot.msg(
+            'NickServ',
+            'IDENTIFY %s' % bot.config.core.nickserv_password
+        )
 
     if (bot.config.core.oper_name is not None
             and bot.config.core.oper_password is not None):
-        bot.write(('OPER', bot.config.core.oper_name + ' '
-                     + bot.config.oper_password))
+        bot.write((
+            'OPER',
+            bot.config.core.oper_name + ' ' + bot.config.oper_password
+        ))
 
     #Set bot modes per config, +B if no config option is defined
     if bot.config.has_option('core', 'modes'):
@@ -44,8 +50,32 @@ def startup(bot, trigger):
         modes = 'B'
     bot.write(('MODE ', '%s +%s' % (bot.nick, modes)))
 
+    bot.memory['retry_join'] = dict()
     for channel in bot.config.core.get_list('channels'):
         bot.write(('JOIN', channel))
+
+
+@willie.module.event('477')
+@willie.module.rule('.*')
+@willie.module.priority('high')
+def retry_join(bot, trigger):
+    """
+    Give NickServ enough time to identify, and retry rejoining an
+    identified-only (+R) channel. Maximum of ten rejoin attempts.
+    """
+    channel = re.search('477 %s (.*?) :' % bot.nick, trigger.raw).group(1)
+    if channel in bot.memory['retry_join'].keys():
+        bot.memory['retry_join'][channel] += 1
+        if bot.memory['retry_join'][channel] > 10:
+            bot.debug(__file__, 'Failed to join %s after 10 attempts.' % channel, 'warning')
+            return
+    else:
+        bot.memory['retry_join'][channel] = 0
+        bot.write(('JOIN', channel))
+        return
+
+    time.sleep(6)
+    bot.write(('JOIN', channel))
 
 #Functions to maintain a list of chanops in all of willie's channels.
 
@@ -150,19 +180,26 @@ def track_modes(bot, trigger):
 
     # Some basic checks for broken replies from server. Probably unnecessary.
     if len(modes) > len(nicks):
-        bot.debug(__file__,
-                     'MODE recieved from server with more modes than nicks.',
-                     'warning')
+        bot.debug(
+            __file__,
+            'MODE recieved from server with more modes than nicks.',
+            'warning'
+        )
         modes = modes[:(len(nicks) + 1)]  # Try truncating, in case that works.
     elif len(modes) < len(nicks):
-        bot.debug(__file__,
-                     'MODE recieved from server with more nicks than modes.',
-                     'warning')
+        bot.debug(
+            __file__,
+            'MODE recieved from server with more nicks than modes.',
+            'warning'
+        )
         nicks = nicks[:(len(modes) - 1)]  # Try truncating, in case that works.
     # This one is almost certainly unneeded.
     if not (len(modes) and len(nicks)):
-        bot.debug(__file__, 'MODE recieved from server without arguments',
-                     'verbose')
+        bot.debug(
+            __file__,
+            'MODE recieved from server without arguments',
+            'verbose'
+        )
         return  # Nothing to do here.
 
     for nick, mode in zip(nicks, modes):
@@ -193,8 +230,17 @@ def track_nicks(bot, trigger):
 
     # Give debug mssage, and PM the owner, if the bot's own nick changes.
     if old == bot.nick:
-        privmsg = "Hi, I'm your bot, %s. Something has made my nick change. This can cause some problems for me, and make me do weird things. You'll probably want to restart me, and figure out what made that happen so you can stop it happening again. (Usually, it means you tried to give me a nick that's protected by NickServ.)" % bot.nick
-        debug_msg = "Nick changed by server. This can cause unexpected behavior. Please restart the bot."
+        privmsg = "Hi, I'm your bot, %s." + \
+            " Something has made my nick change." + \
+            " This can cause some problems for me," + \
+            " and make me do weird things." + \
+            " You'll probably want to restart me," + \
+            " and figure out what made that happen" + \
+            " so you can stop it happening again." + \
+            " (Usually, it means you tried to give me a nick" + \
+            " that's protected by NickServ.)" % bot.nick
+        debug_msg = "Nick changed by server." + \
+            " This can cause unexpected behavior. Please restart the bot."
         bot.debug(__file__, debug_msg, 'always')
         bot.msg(bot.config.core.owner, privmsg)
         return
