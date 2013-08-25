@@ -13,56 +13,55 @@ encouraged) that users write new "modules" for it. This documentation is
 intended to serve that goal.
 
 Due to the high level of customization encouraged by this bot, there are a few
-different versions of it floating around. For this documentation, we will cover
-three: the original "phenny" by Sean B. Palmer the "jenni" fork by Michael
-Yanovich, and the "Willie" fork by Edward Powell et al. While all receive
-periodic updates, the above lists them in a generally ascending order of
-recentness.
-
-For clarity's sake, this documentation will refer to these forks as different
-"API levels" or "API versions". The original phenny fork will be termed *1.x*,
-the jenni fork will be termed *2.x*, and Willie, which this guide will focus
-on, will be termed *3.x*.
+different versions of it floating around. This documentation focuses on Willie,
+but some parts may be applicable to older versions. The original "phenny" is,
+for the purpose of this documentation, called version *1.x*, and the "jenni"
+fork thereof considered version *2.x*. Willie versions start at *3.0* and
+follow `semantic versioning <http://semver.org>`_.
 
 .. contents:: :depth: 2
 
-Getting started: Your functions, ``willie``, and ``line``
-=========================================================
+Getting started: Your functions, ``willie``, and ``trigger``
+============================================================
 
 At its most basic, writing a Willie module involves creating a Python file with
 some number of functions in it. Each of these functions will be passed a 
 ``Willie`` object (``Phenny`` in *1.x* and ``Jenni`` in *2.x*) and a ``Trigger``
 object (``CommandInput`` in *1.x* and *2.x*). By convention, these are named
-``phenny`` and ``input`` in *1.x*, ``jenni`` and ``input`` in *2.x*, and
-``willie`` and ``trigger`` in *3.x*. For the purposes of this guide, the *3.x*
-names will be used.
+``phenny`` and ``input`` in *1.x*, ``jenni`` and ``input`` in *2.x*, 
+``willie`` and ``trigger`` in *3.x*, and ``bot`` and ``trigger`` from version
+*4.0* onward. For the purposes of this guide, the *4.0* names will be used.
 
 Your modules
 ------------
 
-A Willie module contains one or more ``callable``\s. It may optionally contain a
-``configure``, ``setup``, and ``shutdown`` function. ``callable``\s are given a
-number of attributes, which determine when they will be executed. Syntactically,
-this isdone at the same indentation level as the function's ``def`` line,
-following the last line of the function.
+A Willie module contains one or more ``callable``\s. It may optionally contain
+``configure``, ``setup``, and ``shutdown`` functions. ``callable``\s are given a
+number of attributes, which determine when they will be executed. This is done
+with decorators, imported from `willie.module <#module-willie.module>`_. It may
+also be done by adding the attributes directly, at the same indentation level
+as the function's ``def`` line, following the last line of the function; this
+is the only option in versions prior to *4.0*.
 
-.. py:method:: callable(willie, trigger)
+.. py:method:: callable(bot, trigger)
 
     This is the general function format, called by Willie when a command is used,
     a rule is matched, or an event is seen, as determined by the attributes of
     the function. The details of what this function does are entirely up to the
     module writer - the only hard requirement from the bot is that it be callable
-    with a ``Willie`` object and a ``Trigger`` object , as noted above. Usually,
+    with a ``Willie`` object and a ``Trigger`` object, as noted above. Usually,
     methods of the Willie object will be used in reply to the trigger, but this
     isn't a requirement.
 
     The return value of a callable will usually be ``None``. This doesn't need
     to be explicit; if the function has no ``return`` statement (or simply
     uses ``return`` with no arguments), ``None`` will be returned. In *3.2+*,
-    the return value can be a constant defined by the ``Willie`` class; in prior
-    versions return values were ignored. Returning a constant instructs the bot
-    to perform some action after the ``callable``'s execution. For example,
-    returning ``NOLIMIT`` will suspend rate limiting on that call.
+    the return value can be a constant; in prior versions return values were
+    ignored. Returning a constant instructs the bot to perform some action
+    after the ``callable``'s execution. For example, returning ``NOLIMIT`` will
+    suspend rate limiting on that call. These constants are defined in
+    `willie.module <##module-willie.module>`_, except in version *3.2* in which
+    they are defined as attributes of the ``Willie`` class.)
     
     Note that the name can, and should, be anything - it doesn't need to be called
     callable.
@@ -121,12 +120,20 @@ following the last line of the function.
     undefined. The purpose of this function is to perform whatever actions are
     needed to allow a module to function properly (e.g, ensuring that the
     appropriate configuration variables are set and exist).
+
+    Throwing an exception from this function (such as a `ConfigurationError
+    <#willie.config.ConfigurationError>`_) will prevent any callables in the
+    module from being registered, and provide an error message to the user.
+    This is useful when requiring the presence of configuration values or making
+    other environmental requirements.
     
     The bot will not continue loading modules or connecting during the execution
     of this function. As such, an infinite loop (such as an unthreaded polling
     loop) will cause the bot to hang.
 
 .. py:method:: shutdown(willie)
+
+    *Availability: 4.1+*
 
     This is an optional function of a module, which will be called while the
     Willie is quitting. Note that this normally occurs after closing connection
