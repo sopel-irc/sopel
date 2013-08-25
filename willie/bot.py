@@ -35,10 +35,10 @@ class Willie(irc.Bot):
         """The ``Config`` for the current Willie instance."""
         self.doc = {}
         """
-        *Removed in 3.1.2*
-
-        A dictionary of module functions to their docstring and example, if
-        declared. As of 3.1.2, this dict will be empty, and not updated.
+        A dictionary of command names to their docstring and example, if
+        declared. The first item in a callable's commands list is used as the
+        key in version *3.2* onward. Prior to *3.2*, the name of the function
+        as declared in the source code was used.
         """
         self.stats = {}
         """
