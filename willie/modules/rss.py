@@ -362,10 +362,24 @@ def read_feeds(bot):
             if fp.bozo:
                 bot.msg(feed.channel, 'Malformed feed: ' + fp.bozo_exception.getMessage())
 
-        try:
-            entry = fp.entries[0]
-        except IndexError:
+        if fp.status == 301:  # MOVED_PERMANENTLY
+            # Set the new location as the feed url.
+            c.execute('''
+                UPDATE rss_feeds SET feed_url = %s
+                WHERE channel = %s AND feed_name = %s
+                ''' % (SUB * 3), (fp.href, feed.channel, feed.name))
+            conn.commit()
+        elif fp.status == 410:  # GONE
+            # Disable the feed.
+            c.execute('''
+                UPDATE rss_feeds SET enabled = %s
+                WHERE channel = %s AND feed_name = %s
+                ''' % (SUB * 3), (0, feed.channel, feed.name))
+            conn.commit()
+
+        if not fp.entries:
             continue
+        entry = fp.entries[0]
 
         entry_dt = (datetime.fromtimestamp(time.mktime(entry.published_parsed))
                     if "published" in entry else None)
