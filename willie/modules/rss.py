@@ -30,6 +30,28 @@ channels_with_feeds = []
 SUB = ('%s',)
 
 
+class _RssFeed:
+    """Represent a single row in the feed table."""
+    def __init__(self, row):
+        """Initialize with values from the feed table.
+
+        Args:
+            row: a tupple with all the fields of a row.
+        """
+        item = iter(row)
+        self.channel = next(item)
+        self.name = next(item)
+        self.url = next(item)
+        self.fg = next(item)
+        self.bg = next(item)
+        self.enabled = next(item)
+        self.title = next(item)
+        self.link = next(item)
+        self.published = next(item)
+        self.etag = next(item)
+        self.modified = next(item)
+
+
 def setup(bot):
     global SUB
     SUB = (bot.db.substitution,)
@@ -254,11 +276,14 @@ def manage_rss(bot, trigger):
         else:
             noun = 'feeds' if len(feeds) != 1 else 'feed'
             bot.say("{0} RSS {1} in the database:".format(len(feeds), noun))
-        for feed in feeds:
-            feed_channel, feed_name, feed_url, fg, bg, enabled = feed[:6]
+        for feed_row in feeds:
+            feed = _RssFeed(feed_row)
             bot.say("{0} {1} {2}{3} {4} {5}".format(
-                feed_channel, colour_text(feed_name, fg, bg), feed_url,
-                " (disabled)" if not enabled else '', fg, bg))
+                    feed.channel,
+                    colour_text(feed.name, feed.fg, feed.bg),
+                    feed.url,
+                    " (disabled)" if not feed.enabled else '',
+                    feed.fg, feed.bg))
 
     c.close()
     conn.close()
@@ -318,24 +343,24 @@ def read_feeds(bot):
         bot.debug(__file__, "Checking {0} RSS {1}...".format(len(feeds), noun),
                   'always')
 
-    for feed in feeds:
-        feed_channel, feed_name, feed_url, fg, bg, enabled, article_title, article_url, published, etag, modified = feed
+    for feed_row in feeds:
+        feed = _RssFeed(feed_row)
 
-        if not enabled:
+        if not feed.enabled:
             continue
 
         try:
-            fp = feedparser.parse(feed_url, etag=etag, modified=modified)
+            fp = feedparser.parse(feed.url, etag=feed.etag, modified=feed.modified)
         except IOError, E:
             bot.debug(__file__, "Can't parse, " + str(E), 'always')
 
         if DEBUG:
-            bot.msg(feed_channel, "{0}: status = {1}, version = {2}, items = {3}".format(
-                feed_name, fp.status, fp.version, len(fp.entries)))
+            bot.msg(feed.channel, "{0}: status = {1}, version = {2}, items = {3}".format(
+                feed.name, fp.status, fp.version, len(fp.entries)))
 
             # throw a debug message if feed is not well-formed XML
             if fp.bozo:
-                bot.msg(feed_channel, 'Malformed feed: ' + fp.bozo_exception.getMessage())
+                bot.msg(feed.channel, 'Malformed feed: ' + fp.bozo_exception.getMessage())
 
         try:
             entry = fp.entries[0]
@@ -349,20 +374,20 @@ def read_feeds(bot):
         feed_modified = fp.modified if hasattr(fp, 'modified') else None
 
         # check if article is new, and skip otherwise
-        if (article_title == entry.title and article_url == entry.link
-            and etag == feed_etag and modified == feed_modified):
+        if (feed.title == entry.title and feed.link == entry.link
+            and feed.etag == feed_etag and feed.modified == feed_modified):
             if DEBUG:
-                bot.msg(feed_channel, u"Skipping previously read entry: [{0}] {1}".format(feed_name, entry.title))
+                bot.msg(feed.channel, u"Skipping previously read entry: [{0}] {1}".format(feed.name, entry.title))
             continue
 
         c.execute('''
             UPDATE rss_feeds SET article_title = %s, article_url = %s, published = %s, etag = %s, modified = %s
             WHERE channel = %s AND feed_name = %s
-            ''' % (SUB * 7), (entry.title, entry.link, entry_dt, feed_etag, feed_modified, feed_channel, feed_name))
+            ''' % (SUB * 7), (entry.title, entry.link, entry_dt, feed_etag, feed_modified, feed.channel, feed.name))
         conn.commit()
 
-        if published and entry_dt:
-            published_dt = datetime.strptime(published, "%Y-%m-%d %H:%M:%S")
+        if feed.published and entry_dt:
+            published_dt = datetime.strptime(feed.published, "%Y-%m-%d %H:%M:%S")
 
             if published_dt >= entry_dt:
                 # This will make more sense once iterating over the feed is
@@ -371,16 +396,16 @@ def read_feeds(bot):
                 # This will prevent that from happening.
                 if DEBUG:
                     debug_msg = u"Skipping older entry: [{0}] {1}, because {2} >= {3}".format(
-                        feed_name, entry.title, published_dt, entry_dt)
-                    bot.msg(feed_channel, debug_msg)
+                        feed.name, entry.title, published_dt, entry_dt)
+                    bot.msg(feed.channel, debug_msg)
                 continue
 
         # print new entry
         message = u"[\x02{0}\x02] \x02{1}\x02 {2}".format(
-            colour_text(feed_name, fg, bg), entry.title, entry.link)
+            colour_text(feed.name, feed.fg, feed.bg), entry.title, entry.link)
         if entry.updated:
             message += " - " + entry.updated
-        bot.msg(feed_channel, message)
+        bot.msg(feed.channel, message)
 
     c.close()
     conn.close()
