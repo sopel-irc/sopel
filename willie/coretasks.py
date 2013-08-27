@@ -48,8 +48,32 @@ def startup(bot, trigger):
         modes = 'B'
     bot.write(('MODE ', '%s +%s' % (bot.nick, modes)))
 
+    bot.memory['retry_join'] = dict()
     for channel in bot.config.core.get_list('channels'):
-        bot.write(('JOIN', channel))
+        bot.join(channel)
+
+
+@willie.module.event('477')
+@willie.module.rule('.*')
+@willie.module.priority('high')
+def retry_join(bot, trigger):
+    """
+    Give NickServ enough time to identify, and retry rejoining an
+    identified-only (+R) channel. Maximum of ten rejoin attempts.
+    """
+    channel = trigger.args[1]
+    if channel in bot.memory['retry_join'].keys():
+        bot.memory['retry_join'][channel] += 1
+        if bot.memory['retry_join'][channel] > 10:
+            bot.debug(__file__, 'Failed to join %s after 10 attempts.' % channel, 'warning')
+            return
+    else:
+        bot.memory['retry_join'][channel] = 0
+        bot.join(channel)
+        return
+
+    time.sleep(6)
+    bot.join(channel)
 
 #Functions to maintain a list of chanops in all of willie's channels.
 
