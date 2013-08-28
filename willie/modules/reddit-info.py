@@ -38,9 +38,13 @@ def rpost_info(bot, trigger, match=None):
     if s.over_18:
         message = message + ' 05[NSFW]'
         #TODO implement per-channel settings db, and make this able to kick
+    if s.author:
+        author = s.author.name
+    else:
+        author = '[deleted]'
     message = (message + ' | ' + str(s.ups - s.downs) + ' points (03'
                + str(s.ups) + '|05' + str(s.downs) + ') | ' +
-               str(s.num_comments) + ' comments | Posted by ' + s.author.name)
+               str(s.num_comments) + ' comments | Posted by ' + author)
     #TODO add creation time with s.created
     bot.say(message)
 
