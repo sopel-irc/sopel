@@ -35,10 +35,10 @@ class Willie(irc.Bot):
         """The ``Config`` for the current Willie instance."""
         self.doc = {}
         """
-        *Removed in 3.1.2*
-
-        A dictionary of module functions to their docstring and example, if
-        declared. As of 3.1.2, this dict will be empty, and not updated.
+        A dictionary of command names to their docstring and example, if
+        declared. The first item in a callable's commands list is used as the
+        key in version *3.2* onward. Prior to *3.2*, the name of the function
+        as declared in the source code was used.
         """
         self.stats = {}
         """
@@ -51,6 +51,11 @@ class Willie(irc.Bot):
         funtion names to the time which they were last used by that nick.
         """
         self.acivity = {}
+
+        self.server_capabilities = set()
+        """A set containing the IRCv3 capabilities that the server supports.
+
+        For servers that do not support IRCv3, this will be an empty set."""
 
         self.db = WillieDB(config)
         if self.db.check_table('locales', ['name'], 'name'):
