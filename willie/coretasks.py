@@ -97,17 +97,9 @@ def list_ops(bot, trigger):
     List channel operators in the given channel, or current channel if none is
     given.
     """
-    if trigger.group(2):
-        bot.say(trigger.group(2))
-        if trigger.group(2) in bot.ops:
-            bot.say(str(bot.ops[channel]))
-        else:
-            bot.say('None')
-    else:
-        if trigger.sender in bot.ops:
-            bot.say(str(bot.ops[trigger.sender]))
-        else:
-            bot.say('None')
+    channel = trigger.group(2) if trigger.group(2) else trigger.sender
+    user_list = str(bot.ops.get(channel))
+    bot.say(user_list)
 
 
 @willie.module.commands('listvoices')
@@ -117,17 +109,9 @@ def list_voices(bot, trigger):
     List users with voice in the given channel, or current channel if none is
     given.
     """
-    if trigger.group(2):
-        bot.say(trigger.group(2))
-        if trigger.group(2) in bot.voices:
-            bot.say(str(bot.voices[channel]))
-        else:
-            bot.say('None')
-    else:
-        if trigger.sender in bot.voices:
-            bot.say(str(bot.voices[trigger.sender]))
-        else:
-            bot.say('None')
+    channel = trigger.group(2) if trigger.group(2) else trigger.sender
+    user_list = str(bot.voices.get(channel))
+    bot.say(user_list)
 
 
 @willie.module.rule('(.*)')
