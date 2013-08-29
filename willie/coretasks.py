@@ -81,7 +81,6 @@ def retry_join(bot, trigger):
 
 
 @willie.module.commands('newoplist')
-@willie.module.unblockable
 def refresh_list(bot, trigger):
     ''' If you need to use this, then it means you found a bug '''
     if trigger.admin:
@@ -91,7 +90,6 @@ def refresh_list(bot, trigger):
 
 
 @willie.module.commands('listops')
-@willie.module.unblockable
 def list_ops(bot, trigger):
     """
     List channel operators in the given channel, or current channel if none is
@@ -103,7 +101,6 @@ def list_ops(bot, trigger):
 
 
 @willie.module.commands('listvoices')
-@willie.module.unblockable
 def list_voices(bot, trigger):
     """
     List users with voice in the given channel, or current channel if none is
