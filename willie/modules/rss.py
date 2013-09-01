@@ -56,6 +56,9 @@ def setup(bot):
     global SUB
     SUB = (bot.db.substitution,)
 
+    if not bot.db:
+        raise ConfigurationError("Database not set up, or unavailable.")
+
     conn = bot.db.connect()
     c = conn.cursor()
 
