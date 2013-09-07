@@ -31,74 +31,81 @@ channels_with_feeds = []
 SUB = ('%s',)
 
 
-class _RssFeed:
+class RSSFeed:
     """Represent a single row in the feed table."""
-    def __init__(self, row):
-        """Initialize with values from the feed table.
 
-        Args:
-            row: a tupple with all the fields of a row.
-        """
-        item = iter(row)
-        self.channel = next(item)
-        self.name = next(item)
-        self.url = next(item)
-        self.fg = next(item)
-        self.bg = next(item)
-        self.enabled = next(item)
-        self.title = next(item)
-        self.link = next(item)
-        self.published = next(item)
-        self.etag = next(item)
-        self.modified = next(item)
+    def __init__(self, row):
+        """Initialize with values from the feed table."""
+        columns = ('channel',
+                   'name',
+                   'url',
+                   'fg',
+                   'bg',
+                   'enabled',
+                   'title',
+                   'link',
+                   'published',
+                   'etag',
+                   'modified',
+                   )
+        for i, column in enumerate(columns):
+            setattr(self, column, row[i])
 
 
 def setup(bot):
-    global SUB
-    SUB = (bot.db.substitution,)
-
     if not bot.db:
         raise ConfigurationError("Database not set up, or unavailable.")
-
     conn = bot.db.connect()
     c = conn.cursor()
 
+    global SUB
+    SUB = (bot.db.substitution,)
+
     # if new table doesn't exist, create it and try importing from old tables
-    # The rss_feeds table was added on 17.7.2013.
+    # The rss_feeds table was added on 2013-07-17.
     try:
         c.execute('SELECT * FROM rss_feeds')
     except StandardError:
-        # MySQL needs to only compare on the first n characters of a TEXT field
-        # but SQLite won't accept the syntax needed to make it do it.
-        if bot.db.type == 'mysql':
-            primary_key = '(channel(254), feed_name(254)))'
-        else:
-            primary_key = '(channel, feed_name))'
-        c.execute('''
-            CREATE TABLE IF NOT EXISTS rss_feeds
-            (channel TEXT, feed_name TEXT, feed_url TEXT, fg TINYINT, bg TINYINT,
-            enabled BOOL DEFAULT 1, article_title TEXT, article_url TEXT,
-            published TEXT, etag TEXT, modified TEXT, PRIMARY KEY 
-            ''' + primary_key)
-
+        create_table(bot, c)
         migrate_from_old_tables(c)
 
         # These tables are no longer used, but lets not delete them right away.
-        #c.execute('DROP TABLE IF EXISTS rss')
-        #c.execute('DROP TABLE IF EXISTS recent')
+        # c.execute('DROP TABLE IF EXISTS rss')
+        # c.execute('DROP TABLE IF EXISTS recent')
         conn.commit()
 
-    # The modified column was added on 21.7.2013.
+    # The modified column was added on 2013-07-21.
     try:
         c.execute('SELECT modified FROM rss_feeds')
     except StandardError:
-        c.execute('''
-            ALTER TABLE rss_feeds ADD modified TEXT
-        ''')
+        c.execute('ALTER TABLE rss_feeds ADD modified TEXT')
         conn.commit()
 
-    c.close()
     conn.close()
+
+
+def create_table(bot, c):
+    # MySQL needs to only compare on the first n characters of a TEXT field
+    # but SQLite won't accept the syntax needed to make it do it.
+    if bot.db.type == 'mysql':
+        primary_key = '(channel(254), feed_name(254))'
+    else:
+        primary_key = '(channel, feed_name)'
+
+    c.execute('''CREATE TABLE IF NOT EXISTS rss_feeds (
+        channel TEXT,
+        feed_name TEXT,
+        feed_url TEXT,
+        fg TINYINT,
+        bg TINYINT,
+        enabled BOOL DEFAULT 1,
+        article_title TEXT,
+        article_url TEXT,
+        published TEXT,
+        etag TEXT,
+        modified TEXT,
+        PRIMARY KEY {0}
+        )'''.format(primary_key))
 
 
 def migrate_from_old_tables(c):
@@ -134,7 +141,8 @@ def migrate_from_old_tables(c):
                 ''' % (SUB * 5), (channel, site_name, site_url, fg, bg))
 
 
-def colour_text(text, fg, bg):
+def colour_text(text, fg, bg=''):
+    """Given some text and fore/back colours, return a coloured text string."""
     if not fg:
         return text
     else:
@@ -281,7 +289,7 @@ def manage_rss(bot, trigger):
             noun = 'feeds' if len(feeds) != 1 else 'feed'
             bot.say("{0} RSS {1} in the database:".format(len(feeds), noun))
         for feed_row in feeds:
-            feed = _RssFeed(feed_row)
+            feed = RSSFeed(feed_row)
             bot.say("{0} {1} {2}{3} {4} {5}".format(
                     feed.channel,
                     colour_text(feed.name, feed.fg, feed.bg),
@@ -348,7 +356,7 @@ def read_feeds(bot):
                   'always')
 
     for feed_row in feeds:
-        feed = _RssFeed(feed_row)
+        feed = RSSFeed(feed_row)
 
         if not feed.enabled:
             continue
