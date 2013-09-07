@@ -9,7 +9,7 @@ http://willie.dftba.net/
 from time import sleep
 from xml.dom.minidom import parseString
 import willie.web as web
-from willie.module import commands
+from willie.module import commands, OP
 
 
 def configure(config):
@@ -99,7 +99,7 @@ def radio(bot, trigger):
         bot.say('Usage: .radio (next|now|off|on|song|soon|stats)')
         return
     if args[0] == 'on':
-        if not trigger.isop:
+        if bot.privileges[trigger.sender][trigger.nick] < OP:
             return
         if checkSongs != 0:
             return bot.reply('Radio data checking is already on.')
@@ -130,7 +130,7 @@ def radio(bot, trigger):
                     bot.say(csong)
             sleep(5)
     elif args[0] == 'off':
-        if not trigger.isop:
+        if bot.privileges[trigger.sender][trigger.nick] < OP:
             return
         if checkSongs == 0:
             bot.reply('Radio data checking is already off.')
