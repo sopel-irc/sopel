@@ -307,7 +307,7 @@ The ``Willie`` class
     .. py:function:: add_op(channel, name)
     .. py:function:: add_halfop(channel, name)
     
-        *Availability: 3+*
+        *Availability: 3+, deprecated in 4.1.0*
 
         Add ``name`` to ``channel``'s entry in the ``ops`` or ``halfplus``
         dictionaries, respectively.
@@ -315,21 +315,21 @@ The ``Willie`` class
     .. py:function:: del_op(channel, name)
     .. py:function:: del_halfop(channel, name)
     
-        *Availability: 3+*
+        *Availability: 3+, deprecated in 4.1.0*
         
         Remove ``name`` from ``channel``'s entry in the ``ops`` or ``halfplus``
         dictionaries, respectively.
     
     .. py:function:: flush_ops(channel)
         
-        *Availability: 3+*
+        *Availability: 3+, deprecated in 4.1.0*
         
         Re-initialize  and empty the ``ops`` and ``halfops`` entry for
         ``channel``.
     
     .. py:function:: init_ops_list(self, channel)
     
-        *Availability: 3+*
+        *Availability: 3+, deprecated in 4.1.0*
         
         Create an empty entry in ``ops`` and ``halfops`` for ``channel``. This
         will not damage existing entries, but must be done before users can be
@@ -396,12 +396,14 @@ The ``Trigger`` class
 
     .. py:attribute:: isop
     
-        *Availability: 3+*
+        *Availability: 3+, deprecated in 4.1.0*
         
         True if the nick which triggered the command is an op on the channel it was triggered in.
         Will always be False if the command was triggered by a private message
 
     .. py:attribute:: isvoice
+    
+        *Availability: 3+, deprecated in 4.1.0*
 
         True if the nick which triggered the command is voiced on the channel it was triggered in.
         Will always be False if the command was triggered by a private message
