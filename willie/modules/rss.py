@@ -11,6 +11,7 @@ from datetime import datetime
 import time
 import re
 import socket
+import sys
 
 import feedparser
 
@@ -72,6 +73,7 @@ def setup(bot):
         # These tables are no longer used, but lets not delete them right away.
         # c.execute('DROP TABLE IF EXISTS rss')
         # c.execute('DROP TABLE IF EXISTS recent')
+
         conn.commit()
 
     # The modified column was added on 2013-07-21.
@@ -153,152 +155,156 @@ def colour_text(text, fg, bg=''):
 @commands('rss')
 @priority('low')
 def manage_rss(bot, trigger):
-    """Manage RSS feeds. Usage: .rss <add|del|toggle|list>  (Use .startrss to start fetching feeds.)"""
+    """Manage RSS feeds. Usage: .rss <add|clear|del|toggle|list>  (Use .startrss to start fetching feeds.)"""
     if not trigger.admin:
         bot.reply("Sorry, you need to be an admin to modify the RSS feeds.")
         return
 
+    actions = ('add', 'clear', 'del', 'toggle', 'list')
     text = trigger.group().split()
-    if (len(text) < 2 or text[1] not in ('add', 'del', 'toggle', 'list')):
-        bot.reply("Please specify an operation: add del toggle list")
+    if (len(text) < 2 or text[1] not in actions):
+        bot.reply("Please specify an operation: " + ', '.join(actions))
         return
 
     conn = bot.db.connect()
-    c = conn.cursor()
-
-    if text[1] == 'add':
-        # .rss add <#channel> <Feed_Name> <URL> [fg] [bg]
-        pattern = r'''
-            ^\.rss\s+add
-            \s+([&#+!][^\s,]+)   # channel
-            \s+("[^"]+"|\w+)     # name, which can contain anything but quotes if quoted
-            \s+(\S+)             # url
-            (?:\s+(\d+))?        # foreground colour (optional)
-            (?:\s+(\d+))?        # background colour (optional)
-            '''
-        match = re.match(pattern, trigger.group(), re.IGNORECASE | re.VERBOSE)
-        if match is None:
-            bot.reply("Add a feed to a channel, or modify an existing one. Usage: .rss add <#channel> <Feed_Name> <URL> [fg] [bg]")
-            return
-
-        channel = match.group(1)
-        feed_name = match.group(2).strip('"')
-        feed_url = match.group(3)
-        fg = int(match.group(4)) % 16 if match.group(4) else ''
-        bg = int(match.group(5)) % 16 if match.group(5) else ''
-
-        c.execute('SELECT * FROM rss_feeds WHERE channel = {0} AND feed_name = {0}'.format(SUB),
-                  (channel, feed_name))
-        if not c.fetchone():
-            c.execute('''
-                INSERT INTO rss_feeds (channel, feed_name, feed_url, fg, bg)
-                VALUES ({0}, {0}, {0}, {0}, {0})
-                '''.format(SUB), (channel, feed_name, feed_url, fg, bg))
-            bot.reply("Successfully added the feed to the channel.")
-        else:
-            c.execute('''
-                UPDATE rss_feeds SET feed_url = {0}, fg = {0}, bg = {0}
-                WHERE channel = {0} AND feed_name = {0}
-                '''.format(SUB), (feed_url, fg, bg, channel, feed_name))
-            bot.reply("Successfully modified the feed.")
-
+    # run the function and commit database changes if it returns true
+    if getattr(sys.modules[__name__], 'rss_' + text[1])(bot, trigger, conn.cursor()):
         conn.commit()
-
-    elif text[1] == 'clear':
-        # .rss clear <#channel>
-        pattern = r"""
-            ^\.rss\s+clear
-            \s+([&#+!][^\s,]+) # channel
-            """
-        match = re.match(pattern, trigger.group(), re.IGNORECASE | re.VERBOSE)
-        if match is None:
-            bot.reply("Clear all feeds from a channel. Usage: .rss clear <#channel>")
-            return
-
-        c.execute('DELETE FROM rss_feeds WHERE channel = {0}'.format(SUB), (match.group(1),))
-        bot.reply("Successfully cleared all feeds from the given channel.")
-
-        conn.commit()
-
-    elif text[1] == 'del':
-        # .rss del [#channel] [Feed_Name]
-        pattern = r"""
-            ^\.rss\s+del
-            (?:\s+([&#+!][^\s,]+))? # channel (optional)
-            (?:\s+("[^"]+"|\w+))? # name (optional)
-            """
-        match = re.match(pattern, trigger.group(), re.IGNORECASE | re.VERBOSE)
-        if match is None or (not match.group(1) and not match.group(2)):
-            bot.reply("Remove one or all feeds from one or all channels. Usage: .rss del [#channel] [Feed_Name]")
-            return
-
-        channel = match.group(1)
-        feed_name = match.group(2).strip('"') if match.group(2) else None
-        args = [arg for arg in (channel, feed_name) if arg]
-
-        c.execute(('DELETE FROM rss_feeds WHERE '
-                   + ('channel = {0} AND ' if channel else '')
-                   + ('feed_name = {0}' if feed_name else '')
-                   ).rstrip(' AND ').format(SUB), args)
-
-        if c.rowcount:
-            noun = 'feeds' if c.rowcount != 1 else 'feed'
-            bot.reply("Successfully removed {0} {1}.".format(c.rowcount, noun))
-        else:
-            bot.reply("No feeds matched the command.")
-
-        conn.commit()
-
-    elif text[1] == 'toggle':
-        # .rss toggle [#channel] [Feed_Name]
-        pattern = r"""
-            ^\.rss\s+toggle
-            (?:\s+([&#+!][^\s,]+))? # channel (optional)
-            (?:\s+("[^"]+"|\w+))? # name (optional)
-            """
-        match = re.match(pattern, trigger.group(), re.IGNORECASE | re.VERBOSE)
-        if match is None or (not match.group(1) and not match.group(2)):
-            bot.reply("Enable or disable a feed or feeds. Usage: .rss toggle [#channel] [Feed_Name]")
-            return
-
-        channel = match.group(1)
-        feed_name = match.group(2).strip('"') if match.group(2) else None
-        args = [arg for arg in (channel, feed_name) if arg]
-
-        c.execute(('UPDATE rss_feeds SET enabled = 1 - enabled WHERE '
-                   + ('channel = {0} AND ' if channel else '')
-                   + ('feed_name = {0}' if feed_name else '')
-                   ).rstrip(' AND ').format(SUB), args)
-
-        if c.rowcount:
-            noun = 'feeds' if c.rowcount != 1 else 'feed'
-            bot.reply("Successfully toggled {0} {1}.".format(c.rowcount, noun))
-        else:
-            bot.reply("No feeds matched the command.")
-
-        conn.commit()
-
-    elif text[1] == 'list':
-        # .rss list
-        c.execute('SELECT * FROM rss_feeds')
-        feeds = c.fetchall()
-
-        if not feeds:
-            bot.reply("No RSS feeds in the database.")
-        else:
-            noun = 'feeds' if len(feeds) != 1 else 'feed'
-            bot.say("{0} RSS {1} in the database:".format(len(feeds), noun))
-        for feed_row in feeds:
-            feed = RSSFeed(feed_row)
-            bot.say("{0} {1} {2}{3} {4} {5}".format(
-                    feed.channel,
-                    colour_text(feed.name, feed.fg, feed.bg),
-                    feed.url,
-                    " (disabled)" if not feed.enabled else '',
-                    feed.fg, feed.bg))
-
-    c.close()
     conn.close()
+
+
+def rss_add(bot, trigger, c):
+    # .rss add <#channel> <Feed_Name> <URL> [fg] [bg]
+    pattern = r'''
+        ^\.rss\s+add
+        \s+([&#+!][^\s,]+)   # channel
+        \s+("[^"]+"|\w+)     # name, which can contain anything but quotes if quoted
+        \s+(\S+)             # url
+        (?:\s+(\d+))?        # foreground colour (optional)
+        (?:\s+(\d+))?        # background colour (optional)
+        '''
+    match = re.match(pattern, trigger.group(), re.IGNORECASE | re.VERBOSE)
+    if match is None:
+        bot.reply("Add a feed to a channel, or modify an existing one. Usage: .rss add <#channel> <Feed_Name> <URL> [fg] [bg]")
+        return
+
+    channel = match.group(1)
+    feed_name = match.group(2).strip('"')
+    feed_url = match.group(3)
+    fg = int(match.group(4)) % 16 if match.group(4) else ''
+    bg = int(match.group(5)) % 16 if match.group(5) else ''
+
+    c.execute('SELECT * FROM rss_feeds WHERE channel = {0} AND feed_name = {0}'.format(SUB),
+              (channel, feed_name))
+    if not c.fetchone():
+        c.execute('''
+            INSERT INTO rss_feeds (channel, feed_name, feed_url, fg, bg)
+            VALUES ({0}, {0}, {0}, {0}, {0})
+            '''.format(SUB), (channel, feed_name, feed_url, fg, bg))
+        bot.reply("Successfully added the feed to the channel.")
+    else:
+        c.execute('''
+            UPDATE rss_feeds SET feed_url = {0}, fg = {0}, bg = {0}
+            WHERE channel = {0} AND feed_name = {0}
+            '''.format(SUB), (feed_url, fg, bg, channel, feed_name))
+        bot.reply("Successfully modified the feed.")
+    return True
+
+
+def rss_clear(bot, trigger, c):
+    # .rss clear <#channel>
+    pattern = r"""
+        ^\.rss\s+clear
+        \s+([&#+!][^\s,]+) # channel
+        """
+    match = re.match(pattern, trigger.group(), re.IGNORECASE | re.VERBOSE)
+    if match is None:
+        bot.reply("Clear all feeds from a channel. Usage: .rss clear <#channel>")
+        return
+
+    c.execute('DELETE FROM rss_feeds WHERE channel = {0}'.format(SUB), (match.group(1),))
+    bot.reply("Successfully cleared all feeds from the given channel.")
+    return True
+
+
+def rss_del(bot, trigger, c):
+    # .rss del [#channel] [Feed_Name]
+    pattern = r"""
+        ^\.rss\s+del
+        (?:\s+([&#+!][^\s,]+))? # channel (optional)
+        (?:\s+("[^"]+"|\w+))? # name (optional)
+        """
+    match = re.match(pattern, trigger.group(), re.IGNORECASE | re.VERBOSE)
+    if match is None or (not match.group(1) and not match.group(2)):
+        bot.reply("Remove one or all feeds from one or all channels. Usage: .rss del [#channel] [Feed_Name]")
+        return
+
+    channel = match.group(1)
+    feed_name = match.group(2).strip('"') if match.group(2) else None
+    args = [arg for arg in (channel, feed_name) if arg]
+
+    c.execute(('DELETE FROM rss_feeds WHERE '
+               + ('channel = {0} AND ' if channel else '')
+               + ('feed_name = {0}' if feed_name else '')
+               ).rstrip(' AND ').format(SUB), args)
+
+    if c.rowcount:
+        noun = 'feeds' if c.rowcount != 1 else 'feed'
+        bot.reply("Successfully removed {0} {1}.".format(c.rowcount, noun))
+    else:
+        bot.reply("No feeds matched the command.")
+
+    return True
+
+
+def rss_toggle(bot, trigger, c):
+    # .rss toggle [#channel] [Feed_Name]
+    pattern = r"""
+        ^\.rss\s+toggle
+        (?:\s+([&#+!][^\s,]+))? # channel (optional)
+        (?:\s+("[^"]+"|\w+))? # name (optional)
+        """
+    match = re.match(pattern, trigger.group(), re.IGNORECASE | re.VERBOSE)
+    if match is None or (not match.group(1) and not match.group(2)):
+        bot.reply("Enable or disable a feed or feeds. Usage: .rss toggle [#channel] [Feed_Name]")
+        return
+
+    channel = match.group(1)
+    feed_name = match.group(2).strip('"') if match.group(2) else None
+    args = [arg for arg in (channel, feed_name) if arg]
+
+    c.execute(('UPDATE rss_feeds SET enabled = 1 - enabled WHERE '
+               + ('channel = {0} AND ' if channel else '')
+               + ('feed_name = {0}' if feed_name else '')
+               ).rstrip(' AND ').format(SUB), args)
+
+    if c.rowcount:
+        noun = 'feeds' if c.rowcount != 1 else 'feed'
+        bot.reply("Successfully toggled {0} {1}.".format(c.rowcount, noun))
+    else:
+        bot.reply("No feeds matched the command.")
+
+    return True
+
+
+def rss_list(bot, trigger, c):
+    # .rss list
+    c.execute('SELECT * FROM rss_feeds')
+    feeds = c.fetchall()
+
+    if not feeds:
+        bot.reply("No RSS feeds in the database.")
+    else:
+        noun = 'feeds' if len(feeds) != 1 else 'feed'
+        bot.say("{0} RSS {1} in the database:".format(len(feeds), noun))
+    for feed_row in feeds:
+        feed = RSSFeed(feed_row)
+        bot.say("{0} {1} {2}{3} {4} {5}".format(
+                feed.channel,
+                colour_text(feed.name, feed.fg, feed.bg),
+                feed.url,
+                " (disabled)" if not feed.enabled else '',
+                feed.fg, feed.bg))
 
 
 @commands('startrss')
