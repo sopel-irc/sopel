@@ -134,12 +134,12 @@ class RSSManager:
 
 
     def manage_rss(self, bot, trigger):
-        """Manage RSS feeds. Usage: .rss <start|stop|add|del|clear|toggle|list>"""
+        """Manage RSS feeds. Usage: .rss <start|stop|add|del|clear|toggle|list|fetch>"""
         if not trigger.admin:
             bot.reply("Sorry, you need to be an admin to modify the RSS feeds.")
             return
 
-        actions = ('start', 'stop', 'add', 'del', 'clear', 'toggle', 'list')
+        actions = ('start', 'stop', 'add', 'del', 'clear', 'toggle', 'list', 'fetch')
         text = trigger.group().split()
         if (len(text) < 2 or text[1] not in actions):
             bot.reply("Please specify an operation: " + ', '.join(actions))
@@ -292,6 +292,11 @@ class RSSManager:
                         feed.fg, feed.bg))
 
 
+    def rss_fetch(self, bot, trigger, c):
+        """Force all RSS feeds to be fetched immediately. Usage: .rss fetch"""
+        read_feeds(bot, True)
+
+
 class RSSFeed:
     """Represent a single row in the feed table."""
 
@@ -314,8 +319,8 @@ class RSSFeed:
 
 
 @interval(INTERVAL)
-def read_feeds(bot):
-    if not bot.memory['rss_manager'].running:
+def read_feeds(bot, force=False):
+    if not bot.memory['rss_manager'].running and not force:
         return
 
     sub = bot.db.substitution
