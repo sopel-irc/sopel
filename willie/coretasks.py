@@ -80,37 +80,6 @@ def retry_join(bot, trigger):
 #Functions to maintain a list of chanops in all of willie's channels.
 
 
-@willie.module.commands('newoplist')
-def refresh_list(bot, trigger):
-    ''' If you need to use this, then it means you found a bug '''
-    if trigger.admin:
-        bot.reply('Refreshing ops list for ' + trigger.sender + '.')
-        bot.flushOps(trigger.sender)
-        bot.write(('NAMES', trigger.sender))
-
-
-@willie.module.commands('listops')
-def list_ops(bot, trigger):
-    """
-    List channel operators in the given channel, or current channel if none is
-    given.
-    """
-    channel = trigger.group(2) if trigger.group(2) else trigger.sender
-    user_list = str(bot.ops.get(channel))
-    bot.say(user_list)
-
-
-@willie.module.commands('listvoices')
-def list_voices(bot, trigger):
-    """
-    List users with voice in the given channel, or current channel if none is
-    given.
-    """
-    channel = trigger.group(2) if trigger.group(2) else trigger.sender
-    user_list = str(bot.voices.get(channel))
-    bot.say(user_list)
-
-
 @willie.module.rule('(.*)')
 @willie.module.event('353')
 @willie.module.thread(False)
@@ -122,8 +91,26 @@ def handle_names(bot, trigger):
     if (channels is None):
         return
     channel = channels.group(1)
+    if channel not in bot.privileges:
+        bot.privileges[channel] = dict()
     bot.init_ops_list(channel)
     for name in names:
+        priv = 0
+        # This could probably be made flexible in the future, but I don't think
+        # it'd be worht it.
+        mapping = {'+': willie.module.VOICE,
+                   '%': willie.module.HALFOP,
+                   '@': willie.module.OP,
+                   '&': willie.module.ADMIN,
+                   '~': willie.module.OWNER}
+        for prefix, value in mapping.iteritems():
+            if prefix in name:
+                priv = priv | value
+        nick = Nick(name.lstrip(''.join(mapping.keys())))
+        bot.privileges[channel][nick] = priv
+
+        # Old op list maintenance is down here, and should be removed at some
+        # point
         if '@' in name or '~' in name or '&' in name:
             bot.add_op(channel, name.lstrip('@&%+~'))
             bot.add_halfop(channel, name.lstrip('@&%+~'))
@@ -140,15 +127,14 @@ def handle_names(bot, trigger):
 @willie.module.unblockable
 def track_modes(bot, trigger):
     ''' Track usermode changes and keep our lists of ops up to date '''
-    # 0 is who set it, 1 is MODE. We don't need those.
-    line = bot.raw.split(' ')[2:]
+    line = trigger.args
 
     # If the first character of where the mode is being set isn't a #
     # then it's a user mode, not a channel mode, so we'll ignore it.
     if line[0][0] != '#':
         return
     channel, mode_sec = line[:2]
-    nicks = line[2:]
+    nicks = [Nick(n) for n in line[2:]]
 
     # Break out the modes, because IRC allows e.g. MODE +aB-c foo bar baz
     sign = ''
@@ -183,8 +169,20 @@ def track_modes(bot, trigger):
         )
         return  # Nothing to do here.
 
+    mapping = {'v': willie.module.VOICE,
+               'h': willie.module.HALFOP,
+               'o': willie.module.OP,
+               'a': willie.module.ADMIN,
+               'q': willie.module.OWNER}
     for nick, mode in zip(nicks, modes):
-        if mode[1] == 'o' or mode[1] == 'q':  # Op or owner (for UnrealIRCd)
+        priv = bot.privileges[channel].get(nick) or 0
+        value = mapping.get(mode[1])
+        if value is not None:
+            priv = priv | value
+            bot.privileges[channel][nick] = priv
+
+        #Old mode maintenance
+        if mode[1] == 'o' or mode[1] == 'q' or mode[1] == 'a':
             if mode[0] == '+':
                 bot.add_op(channel, nick)
             else:
@@ -226,6 +224,12 @@ def track_nicks(bot, trigger):
         bot.msg(bot.config.core.owner, privmsg)
         return
 
+    for channel in bot.privileges:
+        if old in bot.privileges[channel]:
+            value = bot.privileges[channel].pop(old)
+            bot.privileges[channel][new] = value
+
+    # Old privilege maintenance
     for channel in bot.halfplus:
         if old in bot.halfplus[channel]:
             bot.del_halfop(channel, old)
@@ -246,6 +250,9 @@ def track_nicks(bot, trigger):
 def track_part(bot, trigger):
     if trigger.nick == bot.nick:
         bot.channels.remove(trigger.sender)
+        del bot.privileges[trigger.sender]
+    else:
+        del bot.privileges[trigger.sender][trigger.nick]
 
 
 @willie.module.rule('.*')
@@ -254,6 +261,9 @@ def track_part(bot, trigger):
 def track_kick(bot, trigger):
     if trigger.args[1] == bot.nick:
         bot.channels.remove(trigger.sender)
+        del bot.privileges[trigger.sender]
+    else:
+        del bot.privileges[trigger.sender][trigger.args[1]]
 
 
 @willie.module.rule('.*')
@@ -262,6 +272,15 @@ def track_kick(bot, trigger):
 def track_join(bot, trigger):
     if trigger.nick == bot.nick and trigger.sender not in bot.channels:
         bot.channels.append(trigger.sender)
+        bot.privileges[trigger.sender] = dict()
+    bot.privileges[trigger.sender][trigger.nick] = 0
+
+
+@willie.module.rule('.*')
+@willie.module.event('QUIT')
+@willie.module.unblockable
+def track_quit(bot, trigger):
+    del bot.privileges[trigger.sender][trigger.args[1]]
 
 
 @willie.module.rule('.*')
@@ -278,13 +297,18 @@ def recieve_cap_list(bot, trigger):
 
 
 def recieve_cap_ls_reply(bot, trigger):
-    if False and bot.server_capabilities:
+    if bot.server_capabilities:
         # We've already seen the results, so someone sent CAP LS from a module.
         # We're too late to do SASL, and we don't want to send CAP END before
         # the module has done what it needs to, so just return
         return
 
-    bot.server_capabilities.union(trigger.split(' '))
+    bot.server_capabilities = set(trigger.split(' '))
+    # Whether or not the server supports multi-prefix doesn't change how we
+    # parse it, so we don't need to wait on an ACK
+    if 'multi-prefix' in bot.server_capabilities:
+        bot.write(('CAP', 'REQ', 'multi-prefix'))
+
     # If we want to do SASL, we have to wait before we can send CAP END. So if
     # we are, wait on 903 (SASL successful) to send it.
     #TODO better error handling here, and sending other CAP requests
@@ -313,6 +337,7 @@ def auth_proceed(bot, trigger):
     sasl_token = '\0'.join((bot.nick, bot.nick, bot.config.core.sasl_password))
     # Spec says we do a base 64 encode on the SASL stuff
     bot.write(('AUTHENTICATE', base64.b64encode(sasl_token)))
+
 
 @willie.module.event('903')
 @willie.module.rule('.*')
@@ -348,7 +373,6 @@ def blocks(bot, trigger):
 
     masks = bot.config.core.get_list('host_blocks')
     nicks = [Nick(nick) for nick in bot.config.core.get_list('nick_blocks')]
-    print masks, nicks
     text = trigger.group().split()
 
     if len(text) == 3 and text[1] == "list":

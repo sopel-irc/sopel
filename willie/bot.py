@@ -57,6 +57,13 @@ class Willie(irc.Bot):
 
         For servers that do not support IRCv3, this will be an empty set."""
 
+        self.privileges = dict()
+        """A dictionary of channels to their users and privilege levels
+
+        The value associated with each channel is a dictionary of Nicks to a
+        bitwise integer value, determined by combining the appropriate constants
+        from `module`."""
+
         self.db = WillieDB(config)
         if self.db.check_table('locales', ['name'], 'name'):
             self.settings = self.db.locales

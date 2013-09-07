@@ -31,6 +31,12 @@ prevented from triggering the command again within the rate limit. This can
 be used, for example, to allow a user to rety a failed command immediately.
 """
 
+VOICE = 1
+HALFOP = 2
+OP = 4
+ADMIN = 8
+OWNER = 16
+
 
 def unblockable(function):
     """Decorator. Equivalent to func.unblockable = True
