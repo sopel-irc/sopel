@@ -28,7 +28,7 @@ STOP = False
 channels_with_feeds = []
 
 # This is reset in setup().
-SUB = ('%s',)
+SUB = '%s'
 
 
 class RSSFeed:
@@ -59,7 +59,7 @@ def setup(bot):
     c = conn.cursor()
 
     global SUB
-    SUB = (bot.db.substitution,)
+    SUB = bot.db.substitution
 
     # if new table doesn't exist, create it and try importing from old tables
     # The rss_feeds table was added on 2013-07-17.
@@ -122,8 +122,8 @@ def migrate_from_old_tables(c):
         try:
             c.execute('''
                 SELECT article_title, article_url FROM recent
-                WHERE channel = %s AND site_name = %s
-                ''' % (SUB * 2), (channel, site_name))
+                WHERE channel = {0} AND site_name = {0}
+                '''.format(SUB), (channel, site_name))
             article_title, article_url = c.fetchone()
         except (StandardError, TypeError):
             article_title = article_url = None
@@ -132,13 +132,13 @@ def migrate_from_old_tables(c):
         if article_url:
             c.execute('''
                 INSERT INTO rss_feeds (channel, feed_name, feed_url, fg, bg, article_title, article_url)
-                VALUES (%s, %s, %s, %s, %s, %s, %s)
-                ''' % (SUB * 7), (channel, site_name, site_url, fg, bg, article_title, article_url))
+                VALUES ({0}, {0}, {0}, {0}, {0}, {0}, {0})
+                '''.format(SUB), (channel, site_name, site_url, fg, bg, article_title, article_url))
         else:
             c.execute('''
                 INSERT INTO rss_feeds (channel, feed_name, feed_url, fg, bg)
-                VALUES (%s, %s, %s, %s, %s)
-                ''' % (SUB * 5), (channel, site_name, site_url, fg, bg))
+                VALUES ({0}, {0}, {0}, {0}, {0})
+                '''.format(SUB), (channel, site_name, site_url, fg, bg))
 
 
 def colour_text(text, fg, bg=''):
@@ -187,19 +187,19 @@ def manage_rss(bot, trigger):
         fg = int(match.group(4)) % 16 if match.group(4) else ''
         bg = int(match.group(5)) % 16 if match.group(5) else ''
 
-        c.execute('SELECT * FROM rss_feeds WHERE channel = %s AND feed_name = %s' % (SUB * 2),
+        c.execute('SELECT * FROM rss_feeds WHERE channel = {0} AND feed_name = {0}'.format(SUB),
                   (channel, feed_name))
         if not c.fetchone():
             c.execute('''
                 INSERT INTO rss_feeds (channel, feed_name, feed_url, fg, bg)
-                VALUES (%s, %s, %s, %s, %s)
-                ''' % (SUB * 5), (channel, feed_name, feed_url, fg, bg))
+                VALUES ({0}, {0}, {0}, {0}, {0})
+                '''.format(SUB), (channel, feed_name, feed_url, fg, bg))
             bot.reply("Successfully added the feed to the channel.")
         else:
             c.execute('''
-                UPDATE rss_feeds SET feed_url = %s, fg = %s, bg = %s
-                WHERE channel = %s AND feed_name = %s
-                ''' % (SUB * 5), (feed_url, fg, bg, channel, feed_name))
+                UPDATE rss_feeds SET feed_url = {0}, fg = {0}, bg = {0}
+                WHERE channel = {0} AND feed_name = {0}
+                '''.format(SUB), (feed_url, fg, bg, channel, feed_name))
             bot.reply("Successfully modified the feed.")
 
         conn.commit()
@@ -215,7 +215,7 @@ def manage_rss(bot, trigger):
             bot.reply("Clear all feeds from a channel. Usage: .rss clear <#channel>")
             return
 
-        c.execute('DELETE FROM rss_feeds WHERE channel = %s' % SUB, (match.group(1),))
+        c.execute('DELETE FROM rss_feeds WHERE channel = {0}'.format(SUB), (match.group(1),))
         bot.reply("Successfully cleared all feeds from the given channel.")
 
         conn.commit()
@@ -237,9 +237,9 @@ def manage_rss(bot, trigger):
         args = [arg for arg in (channel, feed_name) if arg]
 
         c.execute(('DELETE FROM rss_feeds WHERE '
-                   + ('channel = %s AND ' if channel else '')
-                   + ('feed_name = %s' if feed_name else '')
-                   ).rstrip(' AND ') % (SUB * len(args)), args)
+                   + ('channel = {0} AND ' if channel else '')
+                   + ('feed_name = {0}' if feed_name else '')
+                   ).rstrip(' AND ').format(SUB), args)
 
         if c.rowcount:
             noun = 'feeds' if c.rowcount != 1 else 'feed'
@@ -266,9 +266,9 @@ def manage_rss(bot, trigger):
         args = [arg for arg in (channel, feed_name) if arg]
 
         c.execute(('UPDATE rss_feeds SET enabled = 1 - enabled WHERE '
-                   + ('channel = %s AND ' if channel else '')
-                   + ('feed_name = %s' if feed_name else '')
-                   ).rstrip(' AND ') % (SUB * len(args)), args)
+                   + ('channel = {0} AND ' if channel else '')
+                   + ('feed_name = {0}' if feed_name else '')
+                   ).rstrip(' AND ').format(SUB), args)
 
         if c.rowcount:
             noun = 'feeds' if c.rowcount != 1 else 'feed'
@@ -377,16 +377,16 @@ def read_feeds(bot):
         if fp.status == 301:  # MOVED_PERMANENTLY
             # Set the new location as the feed url.
             c.execute('''
-                UPDATE rss_feeds SET feed_url = %s
-                WHERE channel = %s AND feed_name = %s
-                ''' % (SUB * 3), (fp.href, feed.channel, feed.name))
+                UPDATE rss_feeds SET feed_url = {0}
+                WHERE channel = {0} AND feed_name = {0}
+                '''.format(SUB), (fp.href, feed.channel, feed.name))
             conn.commit()
         elif fp.status == 410:  # GONE
             # Disable the feed.
             c.execute('''
-                UPDATE rss_feeds SET enabled = %s
-                WHERE channel = %s AND feed_name = %s
-                ''' % (SUB * 3), (0, feed.channel, feed.name))
+                UPDATE rss_feeds SET enabled = {0}
+                WHERE channel = {0} AND feed_name = {0}
+                '''.format(SUB), (0, feed.channel, feed.name))
             conn.commit()
 
         if not fp.entries:
@@ -407,9 +407,11 @@ def read_feeds(bot):
             continue
 
         c.execute('''
-            UPDATE rss_feeds SET article_title = %s, article_url = %s, published = %s, etag = %s, modified = %s
-            WHERE channel = %s AND feed_name = %s
-            ''' % (SUB * 7), (entry.title, entry.link, entry_dt, feed_etag, feed_modified, feed.channel, feed.name))
+            UPDATE rss_feeds
+            SET article_title = {0}, article_url = {0}, published = {0}, etag = {0}, modified = {0}
+            WHERE channel = {0} AND feed_name = {0}
+            '''.format(SUB), (entry.title, entry.link, entry_dt, feed_etag, feed_modified,
+                              feed.channel, feed.name))
         conn.commit()
 
         if feed.published and entry_dt:
