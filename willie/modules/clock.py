@@ -8,7 +8,7 @@ http://willie.dfbta.net
 """
 import pytz
 import datetime
-from willie.module import commands, example
+from willie.module import commands, example, OP
 
 
 def setup(bot):
@@ -133,7 +133,7 @@ def update_channel(bot, trigger):
     """
     Set the preferred time zone for the channel.
     """
-    if not trigger.isop:
+    if bot.privileges[trigger.sender][trigger.nick] < OP:
         return
     if bot.db:
         tz = trigger.group(2)
@@ -164,7 +164,7 @@ def update_channel_format(bot, trigger):
     Sets your preferred format for time. Uses the standard strftime format. You
     can use http://strftime.net or your favorite search engine to learn more.
     """
-    if not trigger.isop:
+    if bot.privileges[trigger.sender][trigger.nick] < OP:
         return
     if bot.db:
         tformat = trigger.group(2)
