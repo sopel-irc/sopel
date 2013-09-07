@@ -21,7 +21,6 @@ from willie.config import ConfigurationError
 socket.setdefaulttimeout(10)
 
 INTERVAL = 60 * 5  # seconds between checking for new updates
-DEBUG = False  # display debug messages
 STOP = True
 
 # This is reset in setup().
@@ -331,33 +330,28 @@ def read_feeds(bot):
     c = conn.cursor()
     c.execute('SELECT * FROM rss_feeds')
     feeds = c.fetchall()
-
     if not feeds:
+        bot.debug(__file__, "No RSS feeds to check.", 'warning')
         return
-
-    if DEBUG:
-        noun = 'feeds' if len(feeds) != 1 else 'feed'
-        bot.debug(__file__, "Checking {0} RSS {1}...".format(len(feeds), noun),
-                  'always')
 
     for feed_row in feeds:
         feed = RSSFeed(feed_row)
-
         if not feed.enabled:
             continue
 
         try:
             fp = feedparser.parse(feed.url, etag=feed.etag, modified=feed.modified)
-        except IOError, E:
-            bot.debug(__file__, "Can't parse, " + str(E), 'always')
+        except IOError, e:
+            bot.debug(__file__, "Can't parse feed {0}: {1}".format(feed.name, str(e)), 'always')
+            continue
 
-        if DEBUG:
-            bot.msg(feed.channel, "{0}: status = {1}, version = {2}, items = {3}".format(
-                feed.name, fp.status, fp.version, len(fp.entries)))
+        if fp.bozo:
+            bot.debug(__file__, 'Malformed feed {0}: {1}'.format(
+                feed.name, fp.bozo_exception.getMessage()), 'always')
+            continue
 
-            # throw a debug message if feed is not well-formed XML
-            if fp.bozo:
-                bot.msg(feed.channel, 'Malformed feed: ' + fp.bozo_exception.getMessage())
+        bot.debug(feed.channel, "{0}: status = {1}, version = {2}, items = {3}".format(
+                feed.name, fp.status, fp.version, len(fp.entries)), 'verbose')
 
         if fp.status == 301:  # MOVED_PERMANENTLY
             # Set the new location as the feed url.
@@ -366,6 +360,7 @@ def read_feeds(bot):
                 WHERE channel = {0} AND feed_name = {0}
                 '''.format(SUB), (fp.href, feed.channel, feed.name))
             conn.commit()
+
         elif fp.status == 410:  # GONE
             # Disable the feed.
             c.execute('''
@@ -376,21 +371,22 @@ def read_feeds(bot):
 
         if not fp.entries:
             continue
-        entry = fp.entries[0]
-
-        entry_dt = (datetime.fromtimestamp(time.mktime(entry.published_parsed))
-                    if "published" in entry else None)
 
         feed_etag = fp.etag if hasattr(fp, 'etag') else None
         feed_modified = fp.modified if hasattr(fp, 'modified') else None
 
+        entry = fp.entries[0]
+        entry_dt = (datetime.fromtimestamp(time.mktime(entry.published_parsed))
+                    if "published" in entry else None)
+
         # check if article is new, and skip otherwise
         if (feed.title == entry.title and feed.link == entry.link
             and feed.etag == feed_etag and feed.modified == feed_modified):
-            if DEBUG:
-                bot.msg(feed.channel, u"Skipping previously read entry: [{0}] {1}".format(feed.name, entry.title))
+            bot.debug(__file__, u"Skipping previously read entry: [{0}] {1}".format(
+                    feed.name, entry.title), 'verbose')
             continue
 
+        # save article title, url, and modified date
         c.execute('''
             UPDATE rss_feeds
             SET article_title = {0}, article_url = {0}, published = {0}, etag = {0}, modified = {0}
@@ -401,16 +397,13 @@ def read_feeds(bot):
 
         if feed.published and entry_dt:
             published_dt = datetime.strptime(feed.published, "%Y-%m-%d %H:%M:%S")
-
             if published_dt >= entry_dt:
                 # This will make more sense once iterating over the feed is
                 # implemented. Once that happens, deleting or modifying the
                 # latest item would result in the whole feed getting re-msg'd.
                 # This will prevent that from happening.
-                if DEBUG:
-                    debug_msg = u"Skipping older entry: [{0}] {1}, because {2} >= {3}".format(
-                        feed.name, entry.title, published_dt, entry_dt)
-                    bot.msg(feed.channel, debug_msg)
+                bot.debug(__file__, u"Skipping older entry: [{0}] {1}, because {2} >= {3}".format(
+                        feed.name, entry.title, published_dt, entry_dt), 'verbose')
                 continue
 
         # print new entry
@@ -420,5 +413,4 @@ def read_feeds(bot):
             message += " - " + entry.updated
         bot.msg(feed.channel, message)
 
-    c.close()
     conn.close()
