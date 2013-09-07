@@ -15,6 +15,7 @@ import socket
 import feedparser
 
 from willie.module import commands, interval, priority
+from willie.config import ConfigurationError
 
 socket.setdefaulttimeout(10)
 
