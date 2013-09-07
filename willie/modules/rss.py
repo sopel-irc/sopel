@@ -168,7 +168,7 @@ def manage_rss(bot, trigger):
 
 
 def rss_start(bot, trigger, c):
-    # .rss stop
+    """Start fetching feeds. Usage: .rss start"""
     global STOP
     bot.reply("Okay, I'll start fetching RSS feeds..." if STOP else
               "Continuing to fetch RSS feeds.")
@@ -177,7 +177,7 @@ def rss_start(bot, trigger, c):
 
 
 def rss_stop(bot, trigger, c):
-    # .rss start
+    """Stop fetching feeds. Usage: .rss stop"""
     global STOP
     bot.reply("Okay, I'll stop fetching RSS feeds..." if not STOP else
               "Not currently fetching RSS feeds.")
@@ -186,11 +186,13 @@ def rss_stop(bot, trigger, c):
 
 
 def rss_add(bot, trigger, c):
-    # .rss add <#channel> <Feed_Name> <URL> [fg] [bg]
+    """Add a feed to a channel, or modify an existing one.
+    Usage: .rss add <#channel> <Feed_Name> <URL> [fg] [bg]
+    """
     pattern = r'''
         ^\.rss\s+add
         \s+([&#+!][^\s,]+)   # channel
-        \s+("[^"]+"|\w+)     # name, which can contain anything but quotes if quoted
+        \s+("[^"]+"|[\w-]+)  # name, which can contain anything but quotes if quoted
         \s+(\S+)             # url
         (?:\s+(\d+))?        # foreground colour (optional)
         (?:\s+(\d+))?        # background colour (optional)
@@ -224,7 +226,9 @@ def rss_add(bot, trigger, c):
 
 
 def rss_del(bot, trigger, c):
-    # .rss del [#channel] [Feed_Name]
+    """Remove one or all feeds from one or all channels.
+    Usage: .rss del [#channel] [Feed_Name]
+    """
     pattern = r"""
         ^\.rss\s+del
         (?:\s+([&#+!][^\s,]+))? # channel (optional)
@@ -253,24 +257,8 @@ def rss_del(bot, trigger, c):
     return True
 
 
-def rss_clear(bot, trigger, c):
-    # .rss clear <#channel>
-    pattern = r"""
-        ^\.rss\s+clear
-        \s+([&#+!][^\s,]+) # channel
-        """
-    match = re.match(pattern, trigger.group(), re.IGNORECASE | re.VERBOSE)
-    if match is None:
-        bot.reply("Clear all feeds from a channel. Usage: .rss clear <#channel>")
-        return
-
-    c.execute('DELETE FROM rss_feeds WHERE channel = {0}'.format(SUB), (match.group(1),))
-    bot.reply("Successfully cleared all feeds from the given channel.")
-    return True
-
-
 def rss_toggle(bot, trigger, c):
-    # .rss toggle [#channel] [Feed_Name]
+    """Enable or disable a feed or feeds. Usage: .rss toggle [#channel] [Feed_Name]"""
     pattern = r"""
         ^\.rss\s+toggle
         (?:\s+([&#+!][^\s,]+))? # channel (optional)
@@ -300,7 +288,7 @@ def rss_toggle(bot, trigger, c):
 
 
 def rss_list(bot, trigger, c):
-    # .rss list
+    """List all feeds in the database. Usage: .rss list"""
     c.execute('SELECT * FROM rss_feeds')
     feeds = c.fetchall()
 
@@ -310,14 +298,14 @@ def rss_list(bot, trigger, c):
         noun = 'feeds' if len(feeds) != 1 else 'feed'
         bot.say("{0} RSS {1} in the database:".format(len(feeds), noun))
 
-    for feed_row in feeds:
-        feed = RSSFeed(feed_row)
-        bot.say("{0} {1} {2}{3} {4} {5}".format(
-                feed.channel,
-                colour_text(feed.name, feed.fg, feed.bg),
-                feed.url,
-                " (disabled)" if not feed.enabled else '',
-                feed.fg, feed.bg))
+        for feed_row in feeds:
+            feed = RSSFeed(feed_row)
+            bot.say("{0} {1} {2}{3} {4} {5}".format(
+                    feed.channel,
+                    colour_text(feed.name, feed.fg, feed.bg),
+                    feed.url,
+                    " (disabled)" if not feed.enabled else '',
+                    feed.fg, feed.bg))
 
 
 @interval(INTERVAL)
