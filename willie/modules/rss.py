@@ -15,18 +15,14 @@ import sys
 
 import feedparser
 
-from willie.module import commands, interval, priority
+from willie.module import commands, interval
 from willie.config import ConfigurationError
 
 socket.setdefaulttimeout(10)
 
 INTERVAL = 60 * 5  # seconds between checking for new updates
 DEBUG = False  # display debug messages
-
-first_run = True
-STOP = False
-
-channels_with_feeds = []
+STOP = True
 
 # This is reset in setup().
 SUB = '%s'
@@ -153,14 +149,13 @@ def colour_text(text, fg, bg=''):
 
 
 @commands('rss')
-@priority('low')
 def manage_rss(bot, trigger):
-    """Manage RSS feeds. Usage: .rss <add|clear|del|toggle|list>  (Use .startrss to start fetching feeds.)"""
+    """Manage RSS feeds. Usage: .rss <start|stop|add|del|clear|toggle|list>"""
     if not trigger.admin:
         bot.reply("Sorry, you need to be an admin to modify the RSS feeds.")
         return
 
-    actions = ('add', 'clear', 'del', 'toggle', 'list')
+    actions = ('start', 'stop', 'add', 'del', 'clear', 'toggle', 'list')
     text = trigger.group().split()
     if (len(text) < 2 or text[1] not in actions):
         bot.reply("Please specify an operation: " + ', '.join(actions))
@@ -171,6 +166,24 @@ def manage_rss(bot, trigger):
     if getattr(sys.modules[__name__], 'rss_' + text[1])(bot, trigger, conn.cursor()):
         conn.commit()
     conn.close()
+
+
+def rss_start(bot, trigger, c):
+    # .rss stop
+    global STOP
+    bot.reply("Okay, I'll start fetching RSS feeds..." if STOP else
+              "Continuing to fetch RSS feeds.")
+    bot.debug(__file__, "RSS started.", 'always')
+    STOP = False
+
+
+def rss_stop(bot, trigger, c):
+    # .rss start
+    global STOP
+    bot.reply("Okay, I'll stop fetching RSS feeds..." if not STOP else
+              "Not currently fetching RSS feeds.")
+    bot.debug(__file__, "RSS stopped.", 'always')
+    STOP = True
 
 
 def rss_add(bot, trigger, c):
@@ -211,22 +224,6 @@ def rss_add(bot, trigger, c):
     return True
 
 
-def rss_clear(bot, trigger, c):
-    # .rss clear <#channel>
-    pattern = r"""
-        ^\.rss\s+clear
-        \s+([&#+!][^\s,]+) # channel
-        """
-    match = re.match(pattern, trigger.group(), re.IGNORECASE | re.VERBOSE)
-    if match is None:
-        bot.reply("Clear all feeds from a channel. Usage: .rss clear <#channel>")
-        return
-
-    c.execute('DELETE FROM rss_feeds WHERE channel = {0}'.format(SUB), (match.group(1),))
-    bot.reply("Successfully cleared all feeds from the given channel.")
-    return True
-
-
 def rss_del(bot, trigger, c):
     # .rss del [#channel] [Feed_Name]
     pattern = r"""
@@ -254,6 +251,22 @@ def rss_del(bot, trigger, c):
     else:
         bot.reply("No feeds matched the command.")
 
+    return True
+
+
+def rss_clear(bot, trigger, c):
+    # .rss clear <#channel>
+    pattern = r"""
+        ^\.rss\s+clear
+        \s+([&#+!][^\s,]+) # channel
+        """
+    match = re.match(pattern, trigger.group(), re.IGNORECASE | re.VERBOSE)
+    if match is None:
+        bot.reply("Clear all feeds from a channel. Usage: .rss clear <#channel>")
+        return
+
+    c.execute('DELETE FROM rss_feeds WHERE channel = {0}'.format(SUB), (match.group(1),))
+    bot.reply("Successfully cleared all feeds from the given channel.")
     return True
 
 
@@ -297,6 +310,7 @@ def rss_list(bot, trigger, c):
     else:
         noun = 'feeds' if len(feeds) != 1 else 'feed'
         bot.say("{0} RSS {1} in the database:".format(len(feeds), noun))
+
     for feed_row in feeds:
         feed = RSSFeed(feed_row)
         bot.say("{0} {1} {2}{3} {4} {5}".format(
@@ -305,41 +319,6 @@ def rss_list(bot, trigger, c):
                 feed.url,
                 " (disabled)" if not feed.enabled else '',
                 feed.fg, feed.bg))
-
-
-@commands('startrss')
-@priority('high')
-def startrss(bot, trigger):
-    """Begin reading RSS feeds. Usage: .startrss [-v :Verbose | -q :Quiet | --stop :Stop fetching]"""
-    if not trigger.admin:
-        bot.reply("You must be an admin to start fetching RSS feeds.")
-        return
-
-    global first_run, DEBUG, STOP
-
-    flag = trigger.group(3)
-    if flag == '-v':
-        DEBUG = True
-        bot.reply("Debugging enabled.")
-    elif flag == '-q':
-        DEBUG = False
-        bot.reply("Debugging disabled.")
-    elif flag == '-i':
-        # changing the interval doesn't currently seem to work
-        try:
-            read_feeds.interval = [int(trigger.group(4))]
-            bot.reply("Interval updated to {0} seconds".format(trigger.group(4)))
-        except ValueError:
-            pass
-
-    if flag == '--stop':
-        STOP = True
-        bot.reply("Okay, I'll stop fetching RSS feeds.")
-    else:
-        STOP = False
-        bot.reply("Okay, I'll start fetching RSS feeds..." if first_run else
-                  "Continuing to fetch RSS feeds...")
-    first_run = False
 
 
 @interval(INTERVAL)
