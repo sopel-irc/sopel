@@ -134,12 +134,12 @@ class RSSManager:
 
 
     def manage_rss(self, bot, trigger):
-        """Manage RSS feeds. Usage: .rss <start|stop|add|del|clear|toggle|list|fetch>"""
+        """Manage RSS feeds. Usage: .rss <start|stop|add|del|toggle|list|fetch>"""
         if not trigger.admin:
             bot.reply("Sorry, you need to be an admin to modify the RSS feeds.")
             return
 
-        actions = ('start', 'stop', 'add', 'del', 'clear', 'toggle', 'list', 'fetch')
+        actions = 'start', 'stop', 'add', 'del', 'toggle', 'list', 'fetch'
         text = trigger.group().split()
         if (len(text) < 2 or text[1] not in actions):
             bot.reply("Please specify an operation: " + ', '.join(actions))
@@ -147,12 +147,12 @@ class RSSManager:
 
         conn = bot.db.connect()
         # run the function and commit database changes if it returns true
-        if getattr(self, 'rss_' + text[1])(bot, trigger, conn.cursor()):
+        if getattr(self, '_rss_' + text[1])(bot, trigger, conn.cursor()):
             conn.commit()
         conn.close()
 
 
-    def rss_start(self, bot, trigger, c):
+    def _rss_start(self, bot, trigger, c):
         """Start fetching feeds. Usage: .rss start"""
         bot.reply("Okay, I'll start fetching RSS feeds..." if not self.running else
                   "Continuing to fetch RSS feeds.")
@@ -160,7 +160,7 @@ class RSSManager:
         self.running = True
 
 
-    def rss_stop(self, bot, trigger, c):
+    def _rss_stop(self, bot, trigger, c):
         """Stop fetching feeds. Usage: .rss stop"""
         bot.reply("Okay, I'll stop fetching RSS feeds..." if self.running else
                   "Not currently fetching RSS feeds.")
@@ -168,7 +168,7 @@ class RSSManager:
         self.running = False
 
 
-    def rss_add(self, bot, trigger, c):
+    def _rss_add(self, bot, trigger, c):
         """Add a feed to a channel, or modify an existing one.
         Usage: .rss add <#channel> <Feed_Name> <URL> [fg] [bg]
         """
@@ -209,7 +209,7 @@ class RSSManager:
         return True
 
 
-    def rss_del(self, bot, trigger, c):
+    def _rss_del(self, bot, trigger, c):
         """Remove one or all feeds from one or all channels.
         Usage: .rss del [#channel] [Feed_Name]
         """
@@ -241,7 +241,7 @@ class RSSManager:
         return True
 
 
-    def rss_toggle(self, bot, trigger, c):
+    def _rss_toggle(self, bot, trigger, c):
         """Enable or disable a feed or feeds. Usage: .rss toggle [#channel] [Feed_Name]"""
         pattern = r"""
             ^\.rss\s+toggle
@@ -271,7 +271,7 @@ class RSSManager:
         return True
 
 
-    def rss_list(self, bot, trigger, c):
+    def _rss_list(self, bot, trigger, c):
         """List all feeds in the database. Usage: .rss list"""
         c.execute('SELECT * FROM rss_feeds')
         feeds = c.fetchall()
@@ -292,7 +292,7 @@ class RSSManager:
                         feed.fg, feed.bg))
 
 
-    def rss_fetch(self, bot, trigger, c):
+    def _rss_fetch(self, bot, trigger, c):
         """Force all RSS feeds to be fetched immediately. Usage: .rss fetch"""
         read_feeds(bot, True)
 
