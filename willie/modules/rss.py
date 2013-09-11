@@ -132,17 +132,20 @@ class RSSManager:
         self.running = False
         self.sub = bot.db.substitution
 
+        # get a list of all methods in this class that start with _rss_
+        self.actions = sorted(method[5:] for method in dir(self) if method[:5] == '_rss_')
+
 
     def manage_rss(self, bot, trigger):
-        """Manage RSS feeds. Usage: .rss <start|stop|add|del|toggle|list|fetch>"""
+        """Manage RSS feeds. Usage: .rss <command>"""
         if not trigger.admin:
             bot.reply("Sorry, you need to be an admin to modify the RSS feeds.")
             return
 
-        actions = 'start', 'stop', 'add', 'del', 'toggle', 'list', 'fetch'
         text = trigger.group().split()
-        if (len(text) < 2 or text[1] not in actions):
-            bot.reply("Please specify an operation: " + ', '.join(actions))
+        if (len(text) < 2 or text[1] not in self.actions):
+            bot.reply("Usage: .rss <command>")
+            bot.reply("Available RSS commands: " + ', '.join(self.actions))
             return
 
         conn = bot.db.connect()
@@ -295,6 +298,18 @@ class RSSManager:
     def _rss_fetch(self, bot, trigger, c):
         """Force all RSS feeds to be fetched immediately. Usage: .rss fetch"""
         read_feeds(bot, True)
+
+
+    def _rss_help(self, bot, trigger, c):
+        """Get help on any of the RSS feed commands. Usage: .rss help <command>"""
+        if trigger.group(4) in self.actions:
+            # print the docstring from the given method
+            for line in getattr(self, '_rss_' + trigger.group(4)).__doc__.split('\n'):
+                bot.reply(line.strip())
+        else:
+            bot.reply("For help on a command, type: .rss help <command>")
+            bot.reply("Available RSS commands: " + ', '.join(self.actions))
+
 
 
 class RSSFeed:
