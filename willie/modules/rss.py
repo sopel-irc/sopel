@@ -156,7 +156,7 @@ class RSSManager:
         """Start fetching feeds. Usage: .rss start"""
         bot.reply("Okay, I'll start fetching RSS feeds..." if not self.running else
                   "Continuing to fetch RSS feeds.")
-        bot.debug(__file__, "RSS started.", 'always')
+        bot.debug(__file__, "RSS started.", 'verbose')
         self.running = True
 
 
@@ -164,7 +164,7 @@ class RSSManager:
         """Stop fetching feeds. Usage: .rss stop"""
         bot.reply("Okay, I'll stop fetching RSS feeds..." if self.running else
                   "Not currently fetching RSS feeds.")
-        bot.debug(__file__, "RSS stopped.", 'always')
+        bot.debug(__file__, "RSS stopped.", 'verbose')
         self.running = False
 
 
@@ -337,22 +337,34 @@ def read_feeds(bot, force=False):
         if not feed.enabled:
             continue
 
+        def disable_feed():
+            c.execute('''
+                UPDATE rss_feeds SET enabled = {0}
+                WHERE channel = {0} AND feed_name = {0}
+                '''.format(sub), (0, feed.channel, feed.name))
+            conn.commit()
+
         try:
             fp = feedparser.parse(feed.url, etag=feed.etag, modified=feed.modified)
         except IOError, e:
-            bot.debug(__file__, "Can't parse feed {0}: {1}".format(feed.name, str(e)), 'always')
-            continue
-
-        if fp.bozo:
-            bot.debug(__file__, 'Malformed feed {0}: {1}'.format(
-                feed.name, fp.bozo_exception.getMessage()), 'always')
+            bot.debug(__file__, "Can't parse feed on {0}, disabling ({1})".format(
+                feed.name, str(e)), 'warning')
+            disable_feed()
             continue
 
         bot.debug(feed.channel, "{0}: status = {1}, version = {2}, items = {3}".format(
                 feed.name, fp.status, fp.version, len(fp.entries)), 'verbose')
 
+        if fp.bozo:
+            bot.debug(__file__, 'Got malformed feed on {0}, disabling ({1})'.format(
+                feed.name, fp.bozo_exception.getMessage()), 'warning')
+            disable_feed()
+            continue
+
         if fp.status == 301:  # MOVED_PERMANENTLY
-            # Set the new location as the feed url.
+            bot.debug(__file__,
+                'Got HTTP 301 (Moved Permanently) on {0}, updating URI to {1}'.format(
+                feed.name, fp.href), 'warning')
             c.execute('''
                 UPDATE rss_feeds SET feed_url = {0}
                 WHERE channel = {0} AND feed_name = {0}
@@ -360,12 +372,9 @@ def read_feeds(bot, force=False):
             conn.commit()
 
         elif fp.status == 410:  # GONE
-            # Disable the feed.
-            c.execute('''
-                UPDATE rss_feeds SET enabled = {0}
-                WHERE channel = {0} AND feed_name = {0}
-                '''.format(sub), (0, feed.channel, feed.name))
-            conn.commit()
+            bot.debug(__file__, 'Got HTTP 410 (Gone) on {0}, disabling'.format(
+                feed.name), 'warning')
+            disable_feed()
 
         if not fp.entries:
             continue
