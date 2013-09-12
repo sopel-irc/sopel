@@ -17,6 +17,7 @@ import feedparser
 from willie.module import commands, interval
 from willie.config import ConfigurationError
 
+
 socket.setdefaulttimeout(10)
 
 INTERVAL = 60 * 5  # seconds between checking for new updates
@@ -136,6 +137,13 @@ class RSSManager:
         self.actions = sorted(method[5:] for method in dir(self) if method[:5] == '_rss_')
 
 
+    def _show_doc(self, bot, command):
+        """Given an RSS command, say the docstring for the corresponding method."""
+        for line in getattr(self, '_rss_' + command).__doc__.split('\n'):
+            if line:
+                bot.reply(line.strip())
+
+
     def manage_rss(self, bot, trigger):
         """Manage RSS feeds. Usage: .rss <command>"""
         if not trigger.admin:
@@ -185,7 +193,7 @@ class RSSManager:
             '''
         match = re.match(pattern, trigger.group(), re.IGNORECASE | re.VERBOSE)
         if match is None:
-            bot.reply("Add a feed to a channel, or modify an existing one. Usage: .rss add <#channel> <Feed_Name> <URL> [fg] [bg]")
+            self._show_doc(bot, 'add')
             return
 
         channel = match.group(1)
@@ -222,8 +230,9 @@ class RSSManager:
             (?:\s+("[^"]+"|[\w-]+))? # name (optional)
             """
         match = re.match(pattern, trigger.group(), re.IGNORECASE | re.VERBOSE)
+        # at least one of channel and feed name is required
         if match is None or (not match.group(1) and not match.group(2)):
-            bot.reply("Remove one or all feeds from one or all channels. Usage: .rss del [#channel] [Feed_Name]")
+            self._show_doc(bot, 'del')
             return
 
         channel = match.group(1)
@@ -250,24 +259,25 @@ class RSSManager:
 
 
     def _rss_disable(self, bot, trigger, c):
-        """Disable a feed or feeds. Usage: .rss enable [#channel] [Feed_Name]"""
+        """Disable a feed or feeds. Usage: .rss disable [#channel] [Feed_Name]"""
         return self._toggle(bot, trigger, c)
 
 
     def _toggle(self, bot, trigger, c):
         """Enable or disable a feed or feeds. Usage: .rss <enable|disable> [#channel] [Feed_Name]"""
+        command = trigger.group(3)
+
         pattern = r"""
             ^\.rss\s+(enable|disable) # command
             (?:\s+([&#+!][^\s,]+))?   # channel (optional)
             (?:\s+("[^"]+"|[\w-]+))?  # name (optional)
             """
         match = re.match(pattern, trigger.group(), re.IGNORECASE | re.VERBOSE)
+        # at least one of channel and feed name is required
         if match is None or (not match.group(2) and not match.group(3)):
-            bot.reply("{0} a feed or feeds. Usage: .rss toggle [#channel] [Feed_Name]".format(
-                trigger.group(3).capitalize()))
+            self._show_doc(bot, command)
             return
 
-        command = trigger.group(3)
         enabled = 1 if command == 'enable' else 0
         channel = match.group(2)
         feed_name = match.group(3).strip('"') if match.group(3) else None
@@ -296,7 +306,7 @@ class RSSManager:
             """
         match = re.match(pattern, trigger.group(), re.IGNORECASE | re.VERBOSE)
         if match is None:
-            bot.reply("Remove one or all feeds from one or all channels. Usage: .rss del [#channel] [Feed_Name]")
+            self._show_doc(bot, 'list')
             return
 
         channel = match.group(1)
@@ -337,11 +347,9 @@ class RSSManager:
 
     def _rss_help(self, bot, trigger, c):
         """Get help on any of the RSS feed commands. Usage: .rss help <command>"""
-        if trigger.group(4) in self.actions:
-            # print the docstring from the given method
-            for line in getattr(self, '_rss_' + trigger.group(4)).__doc__.split('\n'):
-                if line:
-                    bot.reply(line.strip())
+        command = trigger.group(4)
+        if command in self.actions:
+            self._show_doc(bot, command)
         else:
             bot.reply("For help on a command, type: .rss help <command>")
             bot.reply("Available RSS commands: " + ', '.join(self.actions))
