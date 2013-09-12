@@ -218,8 +218,8 @@ class RSSManager:
         """
         pattern = r"""
             ^\.rss\s+del
-            (?:\s+([&#+!][^\s,]+))? # channel (optional)
-            (?:\s+("[^"]+"|\w+))? # name (optional)
+            (?:\s+([&#+!][^\s,]+))?  # channel (optional)
+            (?:\s+("[^"]+"|[\w-]+))? # name (optional)
             """
         match = re.match(pattern, trigger.group(), re.IGNORECASE | re.VERBOSE)
         if match is None or (not match.group(1) and not match.group(2)):
@@ -244,30 +244,43 @@ class RSSManager:
         return True
 
 
-    def _rss_toggle(self, bot, trigger, c):
-        """Enable or disable a feed or feeds. Usage: .rss toggle [#channel] [Feed_Name]"""
+    def _rss_enable(self, bot, trigger, c):
+        """Enable a feed or feeds. Usage: .rss enable [#channel] [Feed_Name]"""
+        return self._toggle(bot, trigger, c)
+
+
+    def _rss_disable(self, bot, trigger, c):
+        """Disable a feed or feeds. Usage: .rss enable [#channel] [Feed_Name]"""
+        return self._toggle(bot, trigger, c)
+
+
+    def _toggle(self, bot, trigger, c):
+        """Enable or disable a feed or feeds. Usage: .rss <enable|disable> [#channel] [Feed_Name]"""
         pattern = r"""
-            ^\.rss\s+toggle
-            (?:\s+([&#+!][^\s,]+))? # channel (optional)
-            (?:\s+("[^"]+"|\w+))? # name (optional)
+            ^\.rss\s+(enable|disable) # command
+            (?:\s+([&#+!][^\s,]+))?   # channel (optional)
+            (?:\s+("[^"]+"|[\w-]+))?  # name (optional)
             """
         match = re.match(pattern, trigger.group(), re.IGNORECASE | re.VERBOSE)
-        if match is None or (not match.group(1) and not match.group(2)):
-            bot.reply("Enable or disable a feed or feeds. Usage: .rss toggle [#channel] [Feed_Name]")
+        if match is None or (not match.group(2) and not match.group(3)):
+            bot.reply("{0} a feed or feeds. Usage: .rss toggle [#channel] [Feed_Name]".format(
+                trigger.group(3).capitalize()))
             return
 
-        channel = match.group(1)
-        feed_name = match.group(2).strip('"') if match.group(2) else None
-        args = [arg for arg in (channel, feed_name) if arg]
+        command = trigger.group(3)
+        enabled = 1 if command == 'enable' else 0
+        channel = match.group(2)
+        feed_name = match.group(3).strip('"') if match.group(3) else None
+        args = [arg for arg in (enabled, channel, feed_name) if arg is not None]
 
-        c.execute(('UPDATE rss_feeds SET enabled = 1 - enabled WHERE '
+        c.execute(('UPDATE rss_feeds SET enabled = {0} WHERE '
                    + ('channel = {0} AND ' if channel else '')
                    + ('feed_name = {0}' if feed_name else '')
                    ).rstrip(' AND ').format(self.sub), args)
 
         if c.rowcount:
             noun = 'feeds' if c.rowcount != 1 else 'feed'
-            bot.reply("Successfully toggled {0} {1}.".format(c.rowcount, noun))
+            bot.reply("Successfully {0}d {1} {2}.".format(command, c.rowcount, noun))
         else:
             bot.reply("No feeds matched the command.")
 
