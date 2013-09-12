@@ -288,24 +288,46 @@ class RSSManager:
 
 
     def _rss_list(self, bot, trigger, c):
-        """List all feeds in the database. Usage: .rss list"""
+        """Get information on all feeds in the database. Usage: .rss list [#channel] [Feed_Name]"""
+        pattern = r"""
+            ^\.rss\s+list
+            (?:\s+([&#+!][^\s,]+))?  # channel (optional)
+            (?:\s+("[^"]+"|[\w-]+))? # name (optional)
+            """
+        match = re.match(pattern, trigger.group(), re.IGNORECASE | re.VERBOSE)
+        if match is None:
+            bot.reply("Remove one or all feeds from one or all channels. Usage: .rss del [#channel] [Feed_Name]")
+            return
+
+        channel = match.group(1)
+        feed_name = match.group(2).strip('"') if match.group(2) else None
+
         c.execute('SELECT * FROM rss_feeds')
-        feeds = c.fetchall()
+        feeds = [RSSFeed(row) for row in c.fetchall()]
 
         if not feeds:
             bot.reply("No RSS feeds in the database.")
-        else:
-            noun = 'feeds' if len(feeds) != 1 else 'feed'
-            bot.say("{0} RSS {1} in the database:".format(len(feeds), noun))
+            return
 
-            for feed_row in feeds:
-                feed = RSSFeed(feed_row)
-                bot.say("{0} {1} {2}{3} {4} {5}".format(
-                        feed.channel,
-                        colour_text(feed.name, feed.fg, feed.bg),
-                        feed.url,
-                        " (disabled)" if not feed.enabled else '',
-                        feed.fg, feed.bg))
+        filtered = [feed for feed in feeds
+                    if (feed.channel == channel or channel is None)
+                    and (feed.name == feed_name or feed_name is None)]
+
+        if not filtered:
+            bot.reply("No feeds matched the command.")
+            return
+
+        noun = 'feeds' if len(feeds) != 1 else 'feed'
+        bot.reply("Showing {0} of {1} RSS {2} in the database:".format(
+            len(filtered), len(feeds), noun))
+
+        for feed in filtered:
+            bot.say("  {0} {1} {2}{3} {4} {5}".format(
+                    feed.channel,
+                    colour_text(feed.name, feed.fg, feed.bg),
+                    feed.url,
+                    " (disabled)" if not feed.enabled else '',
+                    feed.fg, feed.bg))
 
 
     def _rss_fetch(self, bot, trigger, c):
@@ -318,7 +340,8 @@ class RSSManager:
         if trigger.group(4) in self.actions:
             # print the docstring from the given method
             for line in getattr(self, '_rss_' + trigger.group(4)).__doc__.split('\n'):
-                bot.reply(line.strip())
+                if line:
+                    bot.reply(line.strip())
         else:
             bot.reply("For help on a command, type: .rss help <command>")
             bot.reply("Available RSS commands: " + ', '.join(self.actions))
