@@ -26,7 +26,7 @@ def do_setup():
               scripts=[tmp_main_script],
               license='Eiffel Forum License, version 2',
               platforms='Linux x86, x86-64',
-              requires=['MySQLdb', 'feedparser', 'pytz', 'lxml', 'praw', 'enchant', 'pygeoip']
+              requires=['feedparser', 'pytz', 'lxml', 'praw', 'enchant', 'pygeoip']
              )
     finally:
         try:
