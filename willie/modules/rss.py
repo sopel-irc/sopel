@@ -140,8 +140,9 @@ class RSSManager:
     def _show_doc(self, bot, command):
         """Given an RSS command, say the docstring for the corresponding method."""
         for line in getattr(self, '_rss_' + command).__doc__.split('\n'):
+            line = line.strip()
             if line:
-                bot.reply(line.strip())
+                bot.reply(line)
 
 
     def manage_rss(self, bot, trigger):
