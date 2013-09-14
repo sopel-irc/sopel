@@ -616,7 +616,7 @@ def configure(config):
 
     config.interactive_add(
         'db', 'userdb_type',
-        'What type of database would you like to use? (mysql/sqlite)', 'mysql'
+        'What type of database would you like to use? (sqlite/mysql)', 'sqlite'
     )
 
     if config.db.userdb_type == 'sqlite':
