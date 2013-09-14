@@ -238,9 +238,13 @@ class Bot(asynchat.async_chat):
         self.write(['PART', channel], msg)
 
     def join(self, channel, password=None):
-        '''Join a channel'''
+        '''Join a channel
+        
+        If `channel` contains a space, and no `password` is given, the space is
+        assumed to split the argument into the channel to join and its password.
+        `channel` should not contain a space if `password` is given.'''
         if password is None:
-            self.write(['JOIN'], channel)
+            self.write(('JOIN', channel))
         else:
             self.write(['JOIN', channel, password])
 
