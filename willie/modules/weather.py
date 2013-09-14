@@ -9,8 +9,9 @@ http://willie.dftba.net
 
 from willie import web
 from willie.module import commands, example
-from lxml import etree
+
 import feedparser
+from lxml import etree
 
 
 def setup(bot):
@@ -26,15 +27,10 @@ def woeid_search(query):
     None if there is no result, or the woeid field is empty.
     """
     query = web.urlencode({'q': 'select * from geo.placefinder where text="%s"' % query})
-    woeid_yml = 'http://query.yahooapis.com/v1/public/yql?' + query
-    body = web.get(woeid_yml)
+    body = web.get('http://query.yahooapis.com/v1/public/yql?' + query)
     parsed = etree.fromstring(body)
     first_result = parsed.find('results/Result')
-    if len(first_result) == 0:
-        return None
-
-    woeid = first_result.find('woeid').text
-    if not woeid:
+    if first_result is None or len(first_result) == 0:
         return None
     return first_result
 
@@ -147,7 +143,9 @@ def weather(bot, trigger):
         if bot.db and location in bot.db.preferences:
             woeid = bot.db.preferences.get(location, 'woeid')
         else:
-            woeid = woeid_search(location).find('woeid').text
+            first_result = woeid_search(location)
+            if first_result is not None:
+                woeid = first_result.find('woeid').text
 
     if not woeid:
         return bot.reply("I don't know where that is.")
@@ -170,6 +168,9 @@ def update_woeid(bot, trigger):
     """Set your default weather location."""
     if bot.db:
         first_result = woeid_search(trigger.group(2))
+        if first_result is None:
+            return bot.reply("I don't know where that is.")
+
         woeid = first_result.find('woeid').text
 
         bot.db.preferences.update(trigger.nick, {'woeid': woeid})
