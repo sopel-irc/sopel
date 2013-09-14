@@ -192,13 +192,18 @@ class Bot(asynchat.async_chat):
             self.writing_lock.release()
 
     def run(self, host, port=6667):
-        self.initiate_connect(host, port)
+        try:
+            self.initiate_connect(host, port)
+        except socket.error, e:
+            stderr('Connection error: %s' % e.strerror)
+            self.hasquit = True
 
     def initiate_connect(self, host, port):
         stderr('Connecting to %s:%s...' % (host, port))
-        self.create_socket(socket.AF_INET, socket.SOCK_STREAM)
-        if self.config.core.bind_host is not None:
-            self.socket.bind((self.config.core.bind_host, 0))
+        source_address = ((self.config.core.bind_host, 0)
+                          if self.config.core.bind_address else None)
+        self.set_socket(socket.create_connection((host, port),
+            source_address=source_address))
         if self.config.core.use_ssl and has_ssl:
             self.send = self._ssl_send
             self.recv = self._ssl_recv
