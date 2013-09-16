@@ -18,3 +18,8 @@ willie.wiki/*
 # IntelliJ idea
 .idea
 *.iml
+
+# Eclipse/PyDev
+.settings
+.project
+.pydevproject
