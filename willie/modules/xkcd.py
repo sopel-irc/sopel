@@ -8,12 +8,13 @@ http://willie.dftba.net
 """
 
 import random
+import re
+import urllib2
+import xml.etree.ElementTree as etree
+
+from willie.module import commands
 from willie.modules.search import google_search
 from willie.modules.url import find_title
-from willie.module import commands
-import urllib2
-from lxml import etree
-import re
 
 
 @commands('xkcd')
