@@ -125,6 +125,7 @@ def colour_text(text, fg, bg=''):
 
 @commands('rss')
 def manage_rss(bot, trigger):
+    """Manage RSS feeds. For a list of commands, type: .rss help"""
     bot.memory['rss_manager'].manage_rss(bot, trigger)
 
 
@@ -182,6 +183,7 @@ class RSSManager:
 
     def _rss_add(self, bot, trigger, c):
         """Add a feed to a channel, or modify an existing one.
+        Set mIRC-style foreground and background colour indices using fg and bg.
         Usage: .rss add <#channel> <Feed_Name> <URL> [fg] [bg]
         """
         pattern = r'''
@@ -420,6 +422,8 @@ def read_feeds(bot, force=False):
                 feed.name, fp.bozo_exception.getMessage()), 'warning')
             disable_feed()
             continue
+
+        status = fp.status
 
         if fp.status == 301:  # MOVED_PERMANENTLY
             bot.debug(__file__,
