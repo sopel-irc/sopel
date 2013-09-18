@@ -414,20 +414,23 @@ def read_feeds(bot, force=False):
             disable_feed()
             continue
 
-        bot.debug(feed.channel, "{0}: status = {1}, version = {2}, items = {3}".format(
-                feed.name, fp.status, fp.version, len(fp.entries)), 'verbose')
+        # fp.status will only exist if pulling from an online feed
+        status = getattr(fp, 'status', None)
 
+        bot.debug(feed.channel, "{0}: status = {1}, version = '{2}', items = {3}".format(
+                feed.name, status, fp.version, len(fp.entries)), 'verbose')
+
+        # check for malformed XML
         if fp.bozo:
-            bot.debug(__file__, 'Got malformed feed on {0}, disabling ({1})'.format(
+            bot.debug(__file__, "Got malformed feed on {0}, disabling ({1})".format(
                 feed.name, fp.bozo_exception.getMessage()), 'warning')
             disable_feed()
             continue
 
-        status = fp.status
-
-        if fp.status == 301:  # MOVED_PERMANENTLY
+        # check HTTP status
+        if status == 301:  # MOVED_PERMANENTLY
             bot.debug(__file__,
-                'Got HTTP 301 (Moved Permanently) on {0}, updating URI to {1}'.format(
+                "Got HTTP 301 (Moved Permanently) on {0}, updating URI to {1}".format(
                 feed.name, fp.href), 'warning')
             c.execute('''
                 UPDATE rss_feeds SET feed_url = {0}
@@ -435,8 +438,8 @@ def read_feeds(bot, force=False):
                 '''.format(sub), (fp.href, feed.channel, feed.name))
             conn.commit()
 
-        elif fp.status == 410:  # GONE
-            bot.debug(__file__, 'Got HTTP 410 (Gone) on {0}, disabling'.format(
+        elif status == 410:  # GONE
+            bot.debug(__file__, "Got HTTP 410 (Gone) on {0}, disabling".format(
                 feed.name), 'warning')
             disable_feed()
 
@@ -448,7 +451,7 @@ def read_feeds(bot, force=False):
 
         entry = fp.entries[0]
         entry_dt = (datetime.fromtimestamp(time.mktime(entry.published_parsed))
-                    if "published" in entry else None)
+                    if 'published' in entry else None)
 
         # check if article is new, and skip otherwise
         if (feed.title == entry.title and feed.link == entry.link
