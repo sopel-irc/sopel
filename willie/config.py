@@ -339,7 +339,7 @@ class Config(object):
                 modules[fn[:-3]] = os.path.join(modules_dir, fn)
         # Next, look in ~/.willie/modules
         if self.core.homedir is not None:
-            home_modules_dir = os.path.join(self.core.homedir, modules)
+            home_modules_dir = os.path.join(self.core.homedir, 'modules')
         else:
             home_modules_dir = os.path.join(os.path.expanduser('~'), '.willie',
                                         'modules')
