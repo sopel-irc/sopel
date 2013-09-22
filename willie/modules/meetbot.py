@@ -37,6 +37,7 @@ head (can stop the meeting, plus all abilities of chairs)
 chairs (can add infolines to the logs)
 title
 current subject
+comments (what people who aren't voiced want to add)
 
 Using channel as the meeting ID as there can't be more than one meeting in a channel at the same time.
 """
@@ -144,6 +145,7 @@ def startmeeting(bot, trigger):
         meetings_dict[trigger.sender]['title'] = trigger.group(2)
     meetings_dict[trigger.sender]['head'] = trigger.nick.lower()
     meetings_dict[trigger.sender]['running'] = True
+    meetings_dict[trigger.sender]['comments'] = []
 
     global meeting_log_path
     meeting_log_path = bot.config.meetbot.meeting_log_path
@@ -271,6 +273,7 @@ def listactions(bot, trigger):
     for action in meeting_actions[trigger.sender]:
         bot.say('ACTION: ' + action)
 
+
 #Log agreed item in the HTML log
 @commands('agreed')
 @example('.agreed Bowties are cool')
@@ -354,3 +357,49 @@ def log_meeting(bot, trigger):
     if trigger.startswith('.endmeeting') or trigger.startswith('.chairs') or trigger.startswith('.action') or trigger.startswith('.info') or trigger.startswith('.startmeeting') or trigger.startswith('.agreed') or trigger.startswith('.link') or trigger.startswith('.subject'):
         return
     logplain('<' + trigger.nick + '> ' + trigger, trigger.sender)
+
+
+@commands('comment')
+def take_comment(bot, trigger):
+    """
+    Log a comment, to be shown with other comments when a chair uses .comments.
+    Intended to allow commentary from those outside the primary group of people
+    in the meeting.
+
+    Used in private message only, as `.comment <#channel> <comment to add>`
+    https://github.com/embolalia/willie/wiki/Using-the-meetbot-module
+    """
+    target, message = trigger.group(2).split(None, 1)
+    if trigger.sender[0] in '#&+!':
+        return
+    if not ismeetingrunning(target):
+        bot.say("There's not currently a meeting in that channel.")
+    else:
+        meetings_dict[trigger.group(3)]['comments'].append((trigger.nick, message))
+        bot.say("Your comment has been recorded. It will be shown when the"
+                " chairs tell me to show the comments.")
+
+@commands('comments')
+def show_comments(bot, trigger):
+    """
+    Show the comments that have been logged for this meeting with .comment.
+    https://github.com/embolalia/willie/wiki/Using-the-meetbot-module
+    """
+    if not ismeetingrunning(trigger.sender):
+        return
+    if not ischair(trigger.nick, trigger.sender):
+        bot.say('Only meeting head or chairs can do that')
+        return
+    comments = meetings_dict[trigger.sender]['comments']
+    if comments:
+        msg = 'The following comments were made:'
+        bot.say(msg)
+        logplain('<%s> %s' % (bot.nick, msg), trigger.sender)
+        for comment in comments:
+            msg = '<%s> %s' % comment
+            bot.say(msg)
+            logplain('<%s> %s' % (bot.nick, msg), trigger.sender)
+        meetings_dict[trigger.sender]['comments'] = []
+    else:
+        bot.say('No comments have been logged.')
+
