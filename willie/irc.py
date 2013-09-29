@@ -126,7 +126,7 @@ class Bot(asynchat.async_chat):
                 os.mkdir(self.config.core.logdir)
             except Exception, e:
                 stderr('There was a problem creating the logs directory.')
-                stderr(e.__class__, str(e))
+                stderr('%s %s' % (str(e.__class__), str(e)))
                 stderr('Please fix this and then run Willie again.')
                 os._exit(1)
         f = codecs.open(os.path.join(self.config.core.logdir, 'raw.log'),
@@ -244,7 +244,7 @@ class Bot(asynchat.async_chat):
 
     def join(self, channel, password=None):
         '''Join a channel
-        
+
         If `channel` contains a space, and no `password` is given, the space is
         assumed to split the argument into the channel to join and its password.
         `channel` should not contain a space if `password` is given.'''
