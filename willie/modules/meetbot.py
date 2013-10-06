@@ -167,7 +167,8 @@ def startmeeting(bot, trigger):
     logplain('Meeting started by ' + trigger.nick.lower(), trigger.sender)
     logHTML_start(trigger.sender)
     meeting_actions[trigger.sender] = []
-    bot.say('Meeting started! use .action, .agreed, .info, .chairs and .subject to control the meeting. to end the meeting, type .endmeeting')
+    bot.say('Meeting started! use .action, .agreed, .info, .chairs, .subject and .comments to control the meeting. to end the meeting, type .endmeeting')
+    bot.say('Users without speaking permission can use .comment '+trigger.sender+' followed by their comment in a PM with me to vocalize themselves.')
 
 
 #Change the current subject (will appear as <h3> in the HTML log)
@@ -378,6 +379,7 @@ def take_comment(bot, trigger):
         meetings_dict[trigger.group(3)]['comments'].append((trigger.nick, message))
         bot.say("Your comment has been recorded. It will be shown when the"
                 " chairs tell me to show the comments.")
+        bot.msg(meetings_dict[trigger.group(3)]['head'], "A new comment has been recorded.")
 
 @commands('comments')
 def show_comments(bot, trigger):
