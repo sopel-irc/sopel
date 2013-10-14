@@ -154,9 +154,13 @@ def findIssue(bot, trigger):
             data = json.loads(raw)['issues'][-1]
     except (KeyError, IndexError):
         return bot.say('No search results.')
-    if len(data['body'].split('\n')) > 1:
-        body = data['body'].split('\n')[0] + '...'
-    else:
-        body = data['body'].split('\n')[0]
+    try:
+        if len(data['body'].split('\n')) > 1:
+            body = data['body'].split('\n')[0] + '...'
+        else:
+            body = data['body'].split('\n')[0]
+    except (KeyError):
+        bot.debug('GitHub KeyErr', 'API returned an invalid result on query request '+trigger.group(2), 'always')
+        return bot.say('Invalid result, please try again later.')
     bot.reply('[#%s]\x02title:\x02 %s \x02|\x02 %s' % (data['number'], data['title'], body))
     bot.say(data['html_url'])
