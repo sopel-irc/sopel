@@ -46,16 +46,22 @@ class DicePouch:
         Args:
             n: the number of dice to drop.
         """
-        for i in xrange(1, self.type + 1):
+        for i, count in self.dice.iteritems():
             count = self.dice[i]
-            if n < count:
+            if n == 0:
+                break
+            elif n < count:
                 self.dice[i] = count - n
                 self.dropped[i] = n
                 break
             else:
-                del self.dice[i]
+                self.dice[i] = 0
                 self.dropped[i] = count
                 n = n - count
+
+        for i, count in self.dropped.iteritems():
+            if self.dice[i] == 0:
+                del self.dice[i]
 
     def get_simple_string(self):
         """Return the values of the dice like (2+2+2[+1+1])+1."""
