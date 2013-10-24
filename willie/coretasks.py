@@ -298,7 +298,9 @@ def track_join(bot, trigger):
 @willie.module.event('QUIT')
 @willie.module.unblockable
 def track_quit(bot, trigger):
-    del bot.privileges[trigger.sender][trigger.args[1]]
+    for chanprivs in bot.privileges.values():
+        if trigger.nick in chanprivs:
+            del chanprivs[trigger.nick]
 
 
 @willie.module.rule('.*')
