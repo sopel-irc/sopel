@@ -20,7 +20,7 @@ from willie.tools import Nick
 import base64
 
 
-@willie.module.event('251')
+@willie.module.event('001')
 @willie.module.rule('.*')
 @willie.module.priority('low')
 @willie.module.unblockable
