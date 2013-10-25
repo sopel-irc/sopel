@@ -114,6 +114,10 @@ class Bot(asynchat.async_chat):
         #We need this to prevent error loops in handle_error
         self.error_count = 0
 
+        self.connection_registered = False
+        """ Set to True when a server has accepted the client connection and
+        messages can be sent and received. """
+
     def log_raw(self, line, prefix):
         ''' Log raw line to the raw log '''
         if not self.config.core.log_raw:
@@ -230,6 +234,8 @@ class Bot(asynchat.async_chat):
         # quit might still want to do something before main thread quits.
 
     def handle_close(self):
+        self.connection_registered = False
+
         self._shutdown()
         stderr('Closed!')
 
