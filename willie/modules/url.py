@@ -7,6 +7,7 @@ Licensed under the Eiffel Forum License 2.
 http://willie.dftba.net
 """
 
+from HTMLParser import HTMLParser
 import re
 from htmlentitydefs import name2codepoint
 from willie import web, tools
@@ -188,6 +189,16 @@ def check_callbacks(bot, trigger, url, run=True):
             matched = True
     return matched
 
+def unescape_html_entity(string):
+    """
+    Try to convert the html entity to unicode string.
+    See: http://goo.gl/eTfZ4m
+    """
+    try:
+        parser = HTMLParser()
+        return parser.unescape(parser.unescape(string))
+    except Exception:
+        return string
 
 def find_title(url):
     """Return the title for the given URL."""
@@ -236,7 +247,7 @@ def find_title(url):
     # More cryptic regex substitutions. This one looks to be myano's invention.
     title = re_dcc.sub('', title)
 
-    return title or None
+    return unescape_html_entity(title) or None
 
 
 def getTLD(url):
