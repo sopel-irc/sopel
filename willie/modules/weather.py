@@ -131,7 +131,7 @@ def get_wind(parsed):
 def weather(bot, trigger):
     """.weather location - Show the weather at the given location."""
 
-    location = trigger.group(2)
+    location = trigger.group(2).strip()
     woeid = ''
     if not location:
         if bot.db and trigger.nick in bot.db.preferences:
