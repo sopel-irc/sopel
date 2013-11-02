@@ -64,7 +64,8 @@ def interval(*args):
     There is no guarantee that the bot is connected to a server or joined a
     channel when the function is called, so care must be taken.
 
-    Example:
+    Example:::
+
         import willie.module
         @willie.module.interval(5)
         def spam_every_5s(bot):
