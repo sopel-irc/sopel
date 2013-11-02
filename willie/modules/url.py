@@ -14,7 +14,6 @@ from willie.module import commands, rule, example
 import urlparse
 
 url_finder = None
-r_entity = re.compile(r'&[A-Za-z0-9#]+;')
 exclusion_char = '!'
 # These are used to clean up the title tag before actually parsing it. Not the
 # world's best way to do this, but it'll do for now.
@@ -221,20 +220,8 @@ def find_title(url):
     end = content.find('</title>')
     if start == -1 or end == -1:
         return
-    title = content[start + 7:end]
+    title = web.decode(content[start + 7:end])
     title = title.strip()[:200]
-
-    def get_unicode_entity(match):
-        entity = match.group()
-        if entity.startswith('&#x'):
-            cp = int(entity[3:-1], 16)
-        elif entity.startswith('&#'):
-            cp = int(entity[2:-1])
-        else:
-            cp = name2codepoint[entity[1:-1]]
-        return unichr(cp)
-
-    title = r_entity.sub(get_unicode_entity, title)
 
     title = ' '.join(title.split())  # cleanly remove multiple spaces
 
