@@ -771,7 +771,9 @@ class Willie(irc.Bot):
             tag - What the msg will be tagged as. It is recommended to pass
                 __file__ as the tag. If the file exists, a relative path is
                 used as the file. Otherwise the tag is used as it is.
+
             text - Body of the message.
+
             level - Either verbose, warning or always. Configuration option
                 config.verbose which levels are ignored.
 
