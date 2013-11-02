@@ -39,8 +39,9 @@ from tools import verify_ssl_cn
 class Origin(object):
     source = re.compile(r'([^!]*)!?([^@]*)@?(.*)')
 
-    def __init__(self, bot, source, args):
+    def __init__(self, bot, source, args, tags):
         self.hostmask = source
+        self.tags = tags
 
         #Split out the nick, user, and host from hostmask per the regex above.
         match = Origin.source.match(source or '')
@@ -414,6 +415,18 @@ class Bot(asynchat.async_chat):
             line = line[:-1]
         self.buffer = u''
         self.raw = line
+
+        # Break off IRCv3 message tags, if present
+        tags = {}
+        if line.startswith('@'):
+            tagstring, line = line.split(' ', 1)
+            for tag in tagstring[1:].split(';'):
+                tag = tag.split('=', 1)
+                if len(tag) > 1:
+                    tags[tag[0]] = tag[1]
+                else:
+                    tags[tag[0]] = None
+
         if line.startswith(':'):
             source, line = line[1:].split(' ', 1)
         else:
@@ -438,7 +451,7 @@ class Bot(asynchat.async_chat):
             stderr('Nickname already in use!')
             self.handle_close()
 
-        origin = Origin(self, source, args)
+        origin = Origin(self, source, args, tags)
         self.dispatch(origin, text, args)
 
     def dispatch(self, origin, text, args):
