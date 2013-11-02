@@ -309,7 +309,7 @@ def track_quit(bot, trigger):
 @willie.module.priority('high')
 @willie.module.unblockable
 def recieve_cap_list(bot, trigger):
-    if trigger.args[0] == '*' and trigger.args[1] == 'LS':
+    if trigger.args[1] == 'LS':
         recieve_cap_ls_reply(bot, trigger)
     elif (trigger.args[0] == bot.nick and trigger.args[1] == 'ACK' and
           'sasl' in trigger.args[2]):
@@ -326,8 +326,12 @@ def recieve_cap_ls_reply(bot, trigger):
     bot.server_capabilities = set(trigger.split(' '))
     # Whether or not the server supports multi-prefix doesn't change how we
     # parse it, so we don't need to wait on an ACK
-    if 'multi-prefix' in bot.server_capabilities:
-        bot.write(('CAP', 'REQ', 'multi-prefix'))
+    bot.enabled_capabilities.add('multi-prefix')
+    print bot.enabled_capabilities
+    print bot.server_capabilities
+    for cap in bot.enabled_capabilities:
+       if cap in bot.server_capabilities:
+        bot.write(('CAP', 'REQ', cap))
 
     # If we want to do SASL, we have to wait before we can send CAP END. So if
     # we are, wait on 903 (SASL successful) to send it.

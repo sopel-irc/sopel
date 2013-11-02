@@ -56,6 +56,8 @@ class Willie(irc.Bot):
         """A set containing the IRCv3 capabilities that the server supports.
 
         For servers that do not support IRCv3, this will be an empty set."""
+        self.enabled_capabilities = set()
+        """A set containing the IRCv3 capabilities that the bot has enabled."""
 
         self.privileges = dict()
         """A dictionary of channels to their users and privilege levels
@@ -568,6 +570,11 @@ class Willie(irc.Bot):
             setting ``mode -m`` on the channel ``#example``, args would be
             ``('#example', '-m')``
             """
+            s.tags = origin.tags
+            """A map of the IRCv3 message tags on the message.
+
+            If the message had no tags, or the server does not support IRCv3
+            message tags, this will be an empty dict."""
             if len(self.config.core.get_list('admins')) > 0:
                 s.admin = (origin.nick in
                            [Nick(n) for n in
@@ -764,7 +771,9 @@ class Willie(irc.Bot):
             tag - What the msg will be tagged as. It is recommended to pass
                 __file__ as the tag. If the file exists, a relative path is
                 used as the file. Otherwise the tag is used as it is.
+
             text - Body of the message.
+
             level - Either verbose, warning or always. Configuration option
                 config.verbose which levels are ignored.
 
@@ -817,6 +826,29 @@ class Willie(irc.Bot):
                     )
                 )
 
+    def cap_req(self, module_name, capability):
+        """Tell Willie to request a capability when it starts.
+
+        By prefixing the capability with `-`, it will be ensured that the
+        capability is not enabled by any module which loads after the current
+        one. If it has already been enabled by another module, an Exception
+        will be thrown.
+
+        Simmilarly, by prefixing the capability with `=`, it will be ensured
+        that the capability is present. If the server denies the request, an
+        error will be given and the module will be unloaded."""
+        #TODO explain that the error won't come in setup()
+        #TODO find a way to require that this is only called in startup()
+        print capability
+        if capability[0] == '-':
+            if capability[1:] in self.enabled_capabilities:
+                raise Exception('Capability conflict') #TODO better exception
+            else:
+                self.enabled_capabilities.add(capability)
+        elif capability[0] == '=':  #TODO actually make this required.
+            self.enabled_capabilities.add(capability[1:])
+        else:
+            self.enabled_capabilities.add(capability)
 
 if __name__ == '__main__':
     print __doc__
