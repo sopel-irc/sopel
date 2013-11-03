@@ -58,6 +58,12 @@ class Willie(irc.Bot):
         For servers that do not support IRCv3, this will be an empty set."""
         self.enabled_capabilities = set()
         """A set containing the IRCv3 capabilities that the bot has enabled."""
+        self._cap_reqs = dict()
+        """A dictionary of capability requests
+
+        Maps the capability name to a tuple of the prefix ('-', '=', or ''),
+        the name of the requesting module, and the function to call if the
+        request is rejected."""
 
         self.privileges = dict()
         """A dictionary of channels to their users and privilege levels
@@ -830,25 +836,52 @@ class Willie(irc.Bot):
         """Tell Willie to request a capability when it starts.
 
         By prefixing the capability with `-`, it will be ensured that the
-        capability is not enabled by any module which loads after the current
-        one. If it has already been enabled by another module, an Exception
-        will be thrown.
+        capability is not enabled. Simmilarly, by prefixing the capability with
+        `=`, it will be ensured that the capability is enabled. Requiring and
+        disabling is "first come, first served"; if one module requires a
+        capability, and another prohibits it, this function will raise an
+        exception in whichever module loads second. An exception will also be
+        raised if the module is being loaded after the bot has already started,
+        and the request would change the set of enabled capabilities.
 
-        Simmilarly, by prefixing the capability with `=`, it will be ensured
-        that the capability is present. If the server denies the request, an
-        error will be given and the module will be unloaded."""
-        #TODO explain that the error won't come in setup()
-        #TODO find a way to require that this is only called in startup()
-        print capability
-        if capability[0] == '-':
-            if capability[1:] in self.enabled_capabilities:
-                raise Exception('Capability conflict') #TODO better exception
-            else:
-                self.enabled_capabilities.add(capability)
-        elif capability[0] == '=':  #TODO actually make this required.
-            self.enabled_capabilities.add(capability[1:])
+        If the capability is not prefixed, and no other module prohibits it, it
+        will be requested.  Otherwise, it will not be requested. Since
+        capability requests that are not mandatory may be rejected by the
+        server, as well as by other modules, a module which makes such a
+        request should account for that possibility.
+
+        The actual capability request to the server is handled after the
+        completion of this function. In the event that the server denies a
+        request, the `failure_callback` function will be called, if provided.
+        The arguments will be a `Willie` object, and the capability which was
+        rejected. This can be used to disable callables which rely on the
+        capability."""
+        #TODO raise better exceptions
+        cap = capability[1:]
+        prefix = capability[0]
+
+        if prefix == '-':
+            if self.connection_registered and cap in self.enabled_capabilities:
+                raise Exception('Can not change capabilities after server '
+                                'connection has been completed.')
+            entry = self._cap_reqs.get(cap, [])
+            if any((ent[0] != '-' for ent in entry)):
+                raise Exception('Capability conflict')
+            entry.append((prefix, module_name, failure_callback))
+            self._cap_reqs[cap] = entry
         else:
-            self.enabled_capabilities.add(capability)
+            if prefix != '=':
+                cap = capability
+                prefix = ''
+            if self.connection_registered and (cap not in
+                                               self.enabled_capabilities):
+                raise Exception('Can not change capabilities after server '
+                                'connection has been completed.')
+            entry = self._cap_reqs.get(cap, [])
+            if any((ent[0] == '-' for ent in entry)):
+                raise Exception('Capability conflict')
+            entry.append((prefix, module_name, failure_callback))
+            self._cap_reqs[cap] = entry
 
 if __name__ == '__main__':
     print __doc__
