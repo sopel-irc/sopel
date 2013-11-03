@@ -90,8 +90,9 @@ def get_example_test(tested_func, msg, results, privmsg, admin,
         sender = bot.nick if privmsg else "#channel"
         hostmask = "%s!%s@%s" % (bot.nick, "UserName", "example.com")
         origin_args = ["PRIVMSG", sender, msg]
+        tags = {}  # TODO enable testing with message tags somehow
 
-        origin = willie.irc.Origin(bot, hostmask, origin_args)
+        origin = willie.irc.Origin(bot, hostmask, origin_args, tags)
         trigger = willie.bot.Willie.Trigger(
             msg, origin, msg, match, origin_args[0], origin_args, bot
         )

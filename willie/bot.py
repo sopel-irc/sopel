@@ -381,7 +381,7 @@ class Willie(irc.Bot):
                     func_list.remove(func)
 
         hostmask = "%s!%s@%s" % (self.nick, self.user, socket.gethostname())
-        willie = self.WillieWrapper(self, irc.Origin(self, hostmask, []))
+        willie = self.WillieWrapper(self, irc.Origin(self, hostmask, [], {}))
         for obj in variables.itervalues():
             if obj in self.callables:
                 self.callables.remove(obj)
@@ -816,7 +816,7 @@ class Willie(irc.Bot):
         )
 
         hostmask = "%s!%s@%s" % (self.nick, self.user, socket.gethostname())
-        willie = self.WillieWrapper(self, irc.Origin(self, hostmask, []))
+        willie = self.WillieWrapper(self, irc.Origin(self, hostmask, [], {}))
         for shutdown_method in self.shutdown_methods:
             try:
                 stderr(
