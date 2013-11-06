@@ -43,7 +43,8 @@ def c(bot, trigger):
     """Google calculator."""
     if not trigger.group(2):
         return bot.reply("Nothing to calculate.")
-    result = calculate(trigger.group(2))
+    #result = calculate(trigger.group(2))
+    result = "The iGoogle calculator that Willie uses has been discontinued, a fix is on it's way. In the meantime use .wa"
     bot.reply(result)
 
 
