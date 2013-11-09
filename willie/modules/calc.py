@@ -10,41 +10,25 @@ http://willie.dfbta.net
 import re
 from willie import web
 from willie.module import commands, example
+from willie.tools import eval_equation
 from socket import timeout
 import string
 import HTMLParser
 
 
-def calculate(q):
-    q = q.encode('utf8')
-    q = q.replace('\xcf\x95', 'phi')  # utf-8 U+03D5
-    q = q.replace('\xcf\x80', 'pi')  # utf-8 U+03C0
-    uri = 'http://www.google.com/ig/calculator?q='
-    bytes = web.get(uri + web.quote(q))
-    parts = bytes.split('",')
-    answer = [p for p in parts if p.startswith('rhs: "')][0][6:]
-    if answer:
-        answer = answer.decode('unicode-escape')
-        answer = ''.join(chr(ord(c)) for c in answer)
-        answer = answer.decode('utf-8')
-        answer = answer.replace(u'\xc2\xa0', ',')
-        answer = answer.replace('<sup>', '^(')
-        answer = answer.replace('</sup>', ')')
-        answer = web.decode(answer)
-        return answer
-    else:
-        return 'Sorry, no result.'
-
-
 @commands('c', 'calc')
 @example('.c 5 + 3', '8')
-@example('.calc 20cm in inches', '7.87401575 inches')
 def c(bot, trigger):
     """Google calculator."""
     if not trigger.group(2):
         return bot.reply("Nothing to calculate.")
-    #result = calculate(trigger.group(2))
-    result = "The iGoogle calculator that Willie uses has been discontinued, a fix is on it's way. In the meantime use .wa"
+    try:
+        result = eval_equation(trigger.group(2))
+    except Exception as e:
+        raise e
+        result = ("Sorry, I can't calculate that with this command. "
+                  "I might have another one that can. "
+                  "Use .commands for a list.")
     bot.reply(result)
 
 
@@ -63,7 +47,7 @@ def py(bot, trigger):
 
 @commands('wa', 'wolfram')
 @example('.wa sun mass / earth mass',
-        '[WOLFRAM] M_(.)\/M_(+)  (solar mass per Earth mass) = 332948.6')
+         '[WOLFRAM] M_(.)\/M_(+)  (solar mass per Earth mass) = 332948.6')
 def wa(bot, trigger):
     """Wolfram Alpha calculator"""
     if not trigger.group(2):
@@ -89,13 +73,13 @@ def wa(bot, trigger):
         if(len(waOutputArray) < 2):
             if(answer.strip() == "Couldn't grab results from json stringified precioussss."):
                 # Answer isn't given in an IRC-able format, just link to it.
-                bot.say('[WOLFRAM]Couldn\'t display answer, try http://www.wolframalpha.com/input/?i='+query.replace(' ','+'))
+                bot.say('[WOLFRAM]Couldn\'t display answer, try http://www.wolframalpha.com/input/?i=' + query.replace(' ', '+'))
             else:
                 bot.say('[WOLFRAM ERROR]' + answer)
         else:
 
             bot.say('[WOLFRAM] ' + waOutputArray[0] + " = "
-                       + waOutputArray[1])
+                    + waOutputArray[1])
         waOutputArray = []
     else:
         bot.reply('Sorry, no result.')
