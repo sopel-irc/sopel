@@ -832,7 +832,7 @@ class Willie(irc.Bot):
                     )
                 )
 
-    def cap_req(self, module_name, capability):
+    def cap_req(self, module_name, capability, failure_callback):
         """Tell Willie to request a capability when it starts.
 
         By prefixing the capability with `-`, it will be ensured that the
