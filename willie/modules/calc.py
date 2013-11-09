@@ -24,8 +24,9 @@ def c(bot, trigger):
         return bot.reply("Nothing to calculate.")
     try:
         result = eval_equation(trigger.group(2))
-    except Exception as e:
-        raise e
+    except ZeroDivisionError:
+        result = "Division by zero is not supported in this universe."
+    except Exception:
         result = ("Sorry, I can't calculate that with this command. "
                   "I might have another one that can. "
                   "Use .commands for a list.")
