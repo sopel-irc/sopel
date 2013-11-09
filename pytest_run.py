@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # coding=utf-8
 """This is a script for running pytest from the command line.
 
