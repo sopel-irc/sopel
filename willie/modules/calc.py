@@ -23,7 +23,7 @@ def c(bot, trigger):
     if not trigger.group(2):
         return bot.reply("Nothing to calculate.")
     try:
-        result = eval_equation(trigger.group(2))
+        result = str(eval_equation(trigger.group(2)))
     except ZeroDivisionError:
         result = "Division by zero is not supported in this universe."
     except Exception:
