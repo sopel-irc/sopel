@@ -1,3 +1,55 @@
+Changes between 4.0.1 and 4.1.0
+===============================
+Module Changes (for users):
+* Admin-only .set command can now set non-existent config values
+* The meetbot .endmeeting command now works properly
+* Significant improvements made to RSS module
+  * The database structure for storing RSS feeds has been modified. The module will attempt to migrate old data.
+  * Command syntax has changed in multiple ways
+  * .rss help is now available with more detailed information on usage.
+  * Module is overall better-behaved and less buggy
+* Traceback can now be attached to a GitHub issue from Willie's logs
+* GitHub module no longer puts "IRC" tag on issues it creates
+* A .listactions command is added to allow actions to be listed before the end of a meeting
+* Dice now limits itself to 1000 dice, and output is cleaned up
+* Willie now joins channels when invited
+* Reddit module no longer gives an error if the submitter's account has been deleted
+* A new .comments feature allows optional comments on meetings, e.g. from those muted in the channel
+* .xkcd is more robust, and can now access the nth-latest comic
+* calc module now uses an internal calculator, rather than the discontinued iGoogle calculator
+
+
+Core Changes (for users):
+* Memory lock and unlock no longer cause errors
+* Debugging target no longer needs to be a channel
+* Whitespace can now be used in the command prefix
+* Line numbers are given when modules fail to load
+* Error messages are more consistent across core and modules
+* Willie now retries joining channels if it fails initially
+* sqlite is now the default and recommended database type
+  * MySQL remains supported; support may be dropped in a later version
+  * MySQLdb is no longer listed as a recommended dependency
+* IRCv3 is now largely supported
+  * Willie can now authenticate with SASL
+
+
+API Changes (for developers):
+* Modules can now provide a shutdown() function to clean up when the bot is quitting or the module is reloading
+* web.get and web.post can be told to limit how much they read from a URL, to prevent malicious use
+* A new @unblockable decorator allows callables to be run even when triggered by otherwise blocked users
+* Willie can now connect over IPv6
+* If the channel given to bot.join contains a space, the part after the space will be used as the password
+* IRCv3 is now largely supported
+  * Modules can now request capabilities from the server.
+  * Message tags, if enabled, can be read from trigger.tags
+
+Changes between 4.0.0 and 4.0.1
+===============================
+Core Changes (for users):
+* Setup script once again works properly
+* Message splitting now works properly
+* Bug fixes in handling of nick and hostmask blocks
+
 Changes between 3.2.0 and 4.0.0
 ===============================
 Module Changes (for users):
