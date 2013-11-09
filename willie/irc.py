@@ -275,9 +275,9 @@ class Bot(asynchat.async_chat):
                     os.unlink(self.config.pid_file_path)
                     os._exit(1)
                 elif verification is not None:
-                    stderr('\nSSL Cret information: %s' % verification[1])
+                    stderr('\nSSL Cert information: %s' % verification[1])
                     if verification[0] is False:
-                        stderr("Invalid cretficate, CN mismatch!")
+                        stderr("Invalid certficate, CN mismatch!")
                         os.unlink(self.config.pid_file_path)
                         os._exit(1)
                 else:
