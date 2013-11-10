@@ -14,6 +14,7 @@ import time
 import imp
 import os
 import re
+import sys
 import socket
 import threading
 
@@ -406,8 +407,30 @@ class Willie(irc.Bot):
             # but we're going to keep it around anyway.
             if not hasattr(func, 'name'):
                 func.name = func.__name__
+
+            def trim_docstring(doc):
+                """Clean up a docstring"""
+                if not doc:
+                    return ''
+                lines = doc.expandtabs().splitlines()
+                indent = sys.maxint
+                for line in lines[1:]:
+                    stripped = line.lstrip()
+                    if stripped:
+                        indent = min(indent, len(line) - len(stripped))
+                trimmed = [lines[0].strip()]
+                if indent < sys.maxint:
+                    for line in lines[1:]:
+                        trimmed.append(line[indent:].rstrip())
+                while trimmed and not trimmed[-1]:
+                    trimmed.pop()
+                while trimmed and not trimmed[0]:
+                    trimmed.pop(0)
+                return '\n'.join(trimmed)
+            doc = trim_docstring(func.__doc__)
+
             # At least for now, only account for the first command listed.
-            if func.__doc__ and hasattr(func, 'commands') and func.commands[0]:
+            if doc and hasattr(func, 'commands') and func.commands[0]:
                 if hasattr(func, 'example'):
                     if isinstance(func.example, basestring):
                         # Support old modules that add the attribute directly.
@@ -418,7 +441,7 @@ class Willie(irc.Bot):
                     example = example.replace('$nickname', str(self.nick))
                 else:
                     example = None
-                self.doc[func.commands[0]] = (func.__doc__, example)
+                self.doc[func.commands[0]] = (doc, example)
             self.commands[priority].setdefault(regexp, []).append(func)
 
         def sub(pattern, self=self):
