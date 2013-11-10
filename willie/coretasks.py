@@ -277,11 +277,12 @@ def track_part(bot, trigger):
 @willie.module.event('KICK')
 @willie.module.unblockable
 def track_kick(bot, trigger):
-    if trigger.args[1] == bot.nick:
+    nick = Nick(trigger.args[1])
+    if nick == bot.nick:
         bot.channels.remove(trigger.sender)
         del bot.privileges[trigger.sender]
     else:
-        del bot.privileges[trigger.sender][trigger.args[1]]
+        del bot.privileges[trigger.sender][nick]
 
 
 @willie.module.rule('.*')
@@ -292,6 +293,7 @@ def track_join(bot, trigger):
         bot.channels.append(trigger.sender)
         bot.privileges[trigger.sender] = dict()
     bot.privileges[trigger.sender][trigger.nick] = 0
+    print bot.privileges
 
 
 @willie.module.rule('.*')
