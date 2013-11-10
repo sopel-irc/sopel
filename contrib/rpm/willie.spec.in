@@ -20,8 +20,6 @@ Requires:       pytz
 Requires:       python-lxml
 Requires:       python-feedparser
 Requires:       python-enchant
-Requires:       tweepy
-Requires:       MySQL-python
 Requires:       pyOpenSSL
 Requires:       python-praw
 
