@@ -293,7 +293,6 @@ def track_join(bot, trigger):
         bot.channels.append(trigger.sender)
         bot.privileges[trigger.sender] = dict()
     bot.privileges[trigger.sender][trigger.nick] = 0
-    print bot.privileges
 
 
 @willie.module.rule('.*')
