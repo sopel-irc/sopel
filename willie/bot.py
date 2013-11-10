@@ -430,7 +430,8 @@ class Willie(irc.Bot):
             doc = trim_docstring(func.__doc__)
 
             # At least for now, only account for the first command listed.
-            if doc and hasattr(func, 'commands') and func.commands[0]:
+            if hasattr(func, 'commands') and func.commands[0]:
+                example = None
                 if hasattr(func, 'example'):
                     if isinstance(func.example, basestring):
                         # Support old modules that add the attribute directly.
@@ -439,9 +440,8 @@ class Willie(irc.Bot):
                         # The new format is a list of dicts.
                         example = func.example[0]["example"]
                     example = example.replace('$nickname', str(self.nick))
-                else:
-                    example = None
-                self.doc[func.commands[0]] = (doc, example)
+                if doc or example:
+                    self.doc[func.commands[0]] = (doc, example)
             self.commands[priority].setdefault(regexp, []).append(func)
 
         def sub(pattern, self=self):
