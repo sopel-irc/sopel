@@ -138,7 +138,6 @@ def duck_api(query):
     uri = web.quote(query)
     uri = 'http://api.duckduckgo.com/?q=%s&format=json&no_html=1&no_redirect=1' % query
     results = json.loads(web.get(uri))
-    print results
     if results['Redirect']:
         return results['Redirect']
     else:

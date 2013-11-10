@@ -103,7 +103,6 @@ def f_remind(bot, trigger):
         return bot.reply("I'm here now, you can tell me whatever you want!")
 
     tz, tformat = get_user_time(bot, tellee)
-    print tellee, tz, tformat
     timenow = datetime.datetime.now(tz).strftime(tformat)
     if not tellee in (Nick(teller), bot.nick, 'me'):
         bot.memory['tell_lock'].acquire()

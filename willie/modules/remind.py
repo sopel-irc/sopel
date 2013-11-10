@@ -133,7 +133,6 @@ def remind(bot, trigger):
         grp = re.match('(\d+(?:\.\d+)?) ?(.*) ?', piece)
         if grp and not stop:
             length = float(grp.group(1))
-            print length
             factor = scaling.get(grp.group(2), 60)
             duration += length * factor
         else:
