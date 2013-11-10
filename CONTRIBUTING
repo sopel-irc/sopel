@@ -10,11 +10,12 @@ Submit Issues
 -------------
 It's very important to us that we know when our code is failing. As such, we
 greatly appreciate when users submit tickets on the GitHub issue tracker. Be
-sure to describe your issue clearly and concisely. It's also a good idea to
-include the version you're running, your operating system, how you installed
-Willie (via your package manager, pip, setup.py install, or running straight
-from source) and, if applicable, the relevant output from the log files in
-~/.willie/logs.
+sure to describe your issue clearly and concisely. You should include the
+version you're using in your reports; you can see this by giving Willie the
+.version command. It's also a good idea to include your operating system, how
+you installed Willie (via your package manager, pip, setup.py install, or
+running straight from source) and, if applicable, the relevant output from the
+log files in ~/.willie/logs.
 
 
 Commit Code
