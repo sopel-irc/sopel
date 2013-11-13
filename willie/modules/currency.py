@@ -52,7 +52,6 @@ def exchange(bot, trigger):
         return NOLIMIT
 
     amount, of, to = match.groups()
-    print amount, of, to
     try:
         amount = float(amount)
     except:
@@ -62,9 +61,7 @@ def exchange(bot, trigger):
         bot.reply("Zero is zero, no matter what country you're in.")
     try:
         of_rate, of_name = get_rate(of)
-        print of_rate
         to_rate, to_name = get_rate(to)
-        print to_rate
     except Exception as e:
         bot.reply("Something went wrong while I was getting the exchange rate.")
         return NOLIMIT
