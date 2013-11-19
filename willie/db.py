@@ -14,7 +14,7 @@ Licensed under the Eiffel Forum License 2.
 
 http://willie.dftba.net
 """
-
+import os
 from collections import Iterable
 from tools import deprecated
 
@@ -128,7 +128,7 @@ class WillieDB(object):
 
     def _sqlite(self, config):
         try:
-            self._file = config.db.userdb_file
+            self._file = os.path.expanduser(config.db.userdb_file)
         except AttributeError:
             print 'No file specified for SQLite DB.' + \
                 ' The database will not be set up.'
