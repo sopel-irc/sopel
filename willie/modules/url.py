@@ -54,7 +54,7 @@ def setup(bot=None):
 
     if bot.config.has_option('url', 'exclude'):
         regexes = [re.compile(s) for s in
-                   bot.config.url.get_list(bot.config.url.exclude)]
+                   bot.config.url.get_list('exclude')]
     else:
         regexes = []
 
