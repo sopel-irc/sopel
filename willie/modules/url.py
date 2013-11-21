@@ -2,6 +2,7 @@
 url.py - Willie URL title module
 Copyright 2010-2011, Michael Yanovich, yanovich.net, Kenneth Sham
 Copyright 2012-2013 Edward Powell
+Copyright 2013      Lior Ramati (firerogue517@gmail.com)
 Licensed under the Eiffel Forum License 2.
 
 http://willie.dftba.net
@@ -53,7 +54,7 @@ def setup(bot=None):
 
     if bot.config.has_option('url', 'exclude'):
         regexes = [re.compile(s) for s in
-                   bot.config.url.get_list(bot.config.url.exclude)]
+                   bot.config.url.get_list('exclude')]
     else:
         regexes = []
 
@@ -67,7 +68,7 @@ def setup(bot=None):
         exclude = bot.memory['url_exclude']
         if regexes:
             exclude.append(regexes)
-        bot.memory['url_exclude'] = regexes
+        bot.memory['url_exclude'] = exclude
 
     # Ensure that url_callbacks and last_seen_url are in memory
     if not bot.memory.contains('url_callbacks'):
