@@ -15,6 +15,7 @@ willie.module.example
 willie/module.py - Willie IRC Bot (http://willie.dftba.net/)
 Copyright 2013, Ari Koivula, <ari@koivu.la>
 Copyright © 2013, Elad Alfassa <elad@fedoraproject.org>
+Copyright 2013, Lior Ramati <firerogue517@gmail.com>
 
 Licensed under the Eiffel Forum License 2.
 """
@@ -270,7 +271,7 @@ class example(object):
     """Decorator. Add an example attribute into a function and generate a test.
     """
     def __init__(self, msg, result=None, privmsg=False, admin=False,
-                 owner=False, repeat=1, re=None):
+                 owner=False, repeat=1, re=False):
         """Accepts arguments for the decorator.
 
         Args:
@@ -285,18 +286,12 @@ class example(object):
                 return random stuff.
             re - Bool. If true, result is interpreted as a regular expression.
         """
-        # Argument re is a result in regular expression form. Giving both it
-        # and non-regular expression form makes no sense and it is not possible
-        # to know which should be used.
-        assert not (result and re)
         # Wrap result into a list for get_example_test
-        self.result = None
-        self.use_re = False
         if result is not None:
             self.result = [result]
-        elif re is not None:
-            self.result = [re]
-            self.use_re = True
+            self.use_re = re
+        else:
+            self.result = None
         self.msg = msg
         self.privmsg = privmsg
         self.admin = admin
