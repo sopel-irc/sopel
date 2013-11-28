@@ -8,7 +8,7 @@ Copyright 2013, Ari Koivula <ari@koivu.la>
 
 Licensed under the Eiffel Forum License 2.
 
-http://willie.dfbta.net
+http://willie.dftba.net
 """
 
 import willie.module
