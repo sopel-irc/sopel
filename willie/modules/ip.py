@@ -35,7 +35,7 @@ def configure(config):
         config.interactive_add('ip', 'GeoIP_db_path', 'Full path to the GeoIP database', None)
 
 
-def _decompress(source, target, delete_after_decompression = True):
+def _decompress(source, target, delete_after_decompression=True):
     """ Decompress a GZip file """
     f_in = gzip.open(source, 'rb')
     f_out = open(target, 'wb')
@@ -50,8 +50,8 @@ def _find_geoip_db(bot):
     """ Find the GeoIP database """
     config = bot.config
     if config.has_section('ip') and config.ip.GeoIP_db_path is not None:
-        if (os.path.isfile(os.path.join(config.ip.GeoIP_db_path, 'GeoLiteCity.dat')) and 
-           os.path.isfile(os.path.join(config.ip.GeoIP_db_path, 'GeoIPASNum.dat'))):
+        if (os.path.isfile(os.path.join(config.ip.GeoIP_db_path, 'GeoLiteCity.dat')) and
+                os.path.isfile(os.path.join(config.ip.GeoIP_db_path, 'GeoIPASNum.dat'))):
             return config.ip.GeoIP_db_path
         else:
             bot.debug(__file__, 'GeoIP path configured but DB not found in configured path', 'warning')
@@ -59,8 +59,8 @@ def _find_geoip_db(bot):
             os.path.isfile(os.path.join(bot.config.homedir, 'GeoIPASNum.dat'))):
         return bot.config.homedir
     elif (os.path.isfile(os.path.join('/usr/share/GeoIP', 'GeoLiteCity.dat')) and
-           os.path.isfile(os.path.join('/usr/share/GeoIP', 'GeoIPASNum.dat'))):
-            return '/usr/share/GeoIP'
+            os.path.isfile(os.path.join('/usr/share/GeoIP', 'GeoIPASNum.dat'))):
+        return '/usr/share/GeoIP'
     elif can_download:
         bot.debug(__file__, 'Downloading GeoIP database', 'always')
         bot.say('Downloading GeoIP database, please wait...')
