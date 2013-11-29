@@ -62,9 +62,9 @@ class Willie(irc.Bot):
         self._cap_reqs = dict()
         """A dictionary of capability requests
 
-        Maps the capability name to a tuple of the prefix ('-', '=', or ''),
-        the name of the requesting module, and the function to call if the
-        request is rejected."""
+        Maps the capability name to a list of tuples of the prefix ('-', '=',
+        or ''), the name of the requesting module, and the function to call if
+        the request is rejected."""
 
         self.privileges = dict()
         """A dictionary of channels to their users and privilege levels
@@ -901,7 +901,9 @@ class Willie(irc.Bot):
                 raise Exception('Can not change capabilities after server '
                                 'connection has been completed.')
             entry = self._cap_reqs.get(cap, [])
-            if any((ent[0] == '-' for ent in entry)):
+            # Non-mandatory will callback at the same time as if the server
+            # rejected it.
+            if any((ent[0] == '-' for ent in entry)) and prefix == '=':
                 raise Exception('Capability conflict')
             entry.append((prefix, module_name, failure_callback))
             self._cap_reqs[cap] = entry

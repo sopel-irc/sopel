@@ -343,16 +343,26 @@ def recieve_cap_ls_reply(bot, trigger):
     if 'multi-prefix' not in bot._cap_reqs:
         # Whether or not the server supports multi-prefix doesn't change how we
         # parse it, so we don't need to worry if it fails.
-        bot._cap_reqs['multi-prefix'] = ['', 'coretasks', None]
+        bot._cap_reqs['multi-prefix'] = (['', 'coretasks', None],)
 
-    for cap, req in bot._cap_reqs.iteritems():
+    for cap, reqs in bot._cap_reqs.iteritems():
+        # At this point, we know mandatory and prohibited don't co-exist, but
+        # we need to call back for optionals if they're also prohibited
+        prefix = ''
+        for entry in reqs:
+            if prefix == '-' and entry[0] != '-':
+                entry[2](bot, entry[0] + cap)
+                continue
+            if entry[0]:
+                prefix = entry[0]
+
         # It's not required, or it's supported, so we can request it
-        if req[0] != '=' or cap in bot.server_capabilities:
+        if prefix != '=' or cap in bot.server_capabilities:
             # REQs fail as a whole, so we send them one capability at a time
-            bot.write(('CAP', 'REQ', req[0] + cap))
+            bot.write(('CAP', 'REQ', entry[0] + cap))
         elif req[2]:
             # Server is going to fail on it, so we call the failure function
-            req[2](bot, req[0] + cap)
+            req[2](bot, entry[0] + cap)
 
     # If we want to do SASL, we have to wait before we can send CAP END. So if
     # we are, wait on 903 (SASL successful) to send it.
