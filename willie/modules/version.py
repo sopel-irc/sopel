@@ -34,11 +34,12 @@ def git_info():
 @willie.module.commands('version')
 def version(bot, trigger):
     """Display the latest commit version, if Willie is running in a git repo."""
-    commit, author, date, message = git_info()
-
-    if not commit.strip():
+    info = git_info()
+    if not info:
         bot.reply("Willie v. " + willie.__version__)
         return
+
+    commit, author, date, message = git_info()
 
     bot.say(str(trigger.nick) + ": Willie v. %s at commit:" % willie.__version__)
     bot.say("  commit: " + commit)
