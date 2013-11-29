@@ -129,7 +129,7 @@ class Bot(asynchat.async_chat):
         if not os.path.isdir(self.config.core.logdir):
             try:
                 os.mkdir(self.config.core.logdir)
-            except Exception, e:
+            except Exception as e:
                 stderr('There was a problem creating the logs directory.')
                 stderr('%s %s' % (str(e.__class__), str(e)))
                 stderr('Please fix this and then run Willie again.')
@@ -207,8 +207,10 @@ class Bot(asynchat.async_chat):
         stderr('Connecting to %s:%s...' % (host, port))
         source_address = ((self.config.core.bind_host, 0)
                           if self.config.core.bind_address else None)
-        self.set_socket(socket.create_connection((host, port),
-            source_address=source_address))
+        self.set_socket(socket.create_connection(
+            (host, port),
+            source_address=source_address)
+        )
         if self.config.core.use_ssl and has_ssl:
             self.send = self._ssl_send
             self.recv = self._ssl_recv
@@ -253,8 +255,9 @@ class Bot(asynchat.async_chat):
         '''Join a channel
 
         If `channel` contains a space, and no `password` is given, the space is
-        assumed to split the argument into the channel to join and its password.
-        `channel` should not contain a space if `password` is given.'''
+        assumed to split the argument into the channel to join and its
+        password.  `channel` should not contain a space if `password` is
+        given.'''
         if password is None:
             self.write(('JOIN', channel))
         else:

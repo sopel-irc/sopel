@@ -70,8 +70,8 @@ class Willie(irc.Bot):
         """A dictionary of channels to their users and privilege levels
 
         The value associated with each channel is a dictionary of Nicks to a
-        bitwise integer value, determined by combining the appropriate constants
-        from `module`."""
+        bitwise integer value, determined by combining the appropriate
+        constants from `module`."""
 
         self.db = WillieDB(config)
         if self.db.check_table('locales', ['name'], 'name'):
@@ -291,7 +291,7 @@ class Willie(irc.Bot):
         for name, filename in filenames.iteritems():
             try:
                 module = imp.load_source(name, filename)
-            except Exception, e:
+            except Exception as e:
                 error_count = error_count + 1
                 filename, lineno = tools.get_raising_file_and_line()
                 rel_path = os.path.relpath(filename, os.path.dirname(__file__))
@@ -303,7 +303,7 @@ class Willie(irc.Bot):
                         module.setup(self)
                     self.register(vars(module))
                     modules.append(name)
-                except Exception, e:
+                except Exception as e:
                     error_count = error_count + 1
                     filename, lineno = tools.get_raising_file_and_line()
                     rel_path = os.path.relpath(

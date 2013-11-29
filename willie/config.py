@@ -305,7 +305,7 @@ class Config(object):
         for name, filename in filenames.iteritems():
             try:
                 module = imp.load_source(name, filename)
-            except Exception, e:
+            except Exception as e:
                 print >> sys.stderr, ("Error loading %s: %s (in config.py)"
                                       % (name, e))
             else:
@@ -341,8 +341,11 @@ class Config(object):
         if self.core.homedir is not None:
             home_modules_dir = os.path.join(self.core.homedir, 'modules')
         else:
-            home_modules_dir = os.path.join(os.path.expanduser('~'), '.willie',
-                                        'modules')
+            home_modules_dir = os.path.join(
+                os.path.expanduser('~'),
+                '.willie',
+                'modules'
+            )
         if not os.path.isdir(home_modules_dir):
             os.makedirs(home_modules_dir)
         for fn in os.listdir(home_modules_dir):
@@ -409,7 +412,7 @@ def check_dir(create=True):
             print 'Creating a config directory at ~/.willie...'
             try:
                 os.makedirs(dotdir)
-            except Exception, e:
+            except Exception as e:
                 print >> sys.stderr, \
                     'There was a problem creating %s:' % dotdir
                 print >> sys.stderr, e.__class__, str(e)
@@ -417,7 +420,8 @@ def check_dir(create=True):
                     'Please fix this and then run Willie again.'
                 sys.exit(1)
         else:
-            print "No config file found. Please make one before configuring these options."
+            print "No config file found." \
+                " Please make one before configuring these options."
             sys.exit(1)
 
 
@@ -436,7 +440,7 @@ def create_config(configpath):
         ):
             config._modules()
         config.save()
-    except Exception, e:
+    except Exception as e:
         print "Encountered an error while writing the config file." + \
             " This shouldn't happen. Check permissions."
         raise

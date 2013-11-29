@@ -85,7 +85,11 @@ def retry_join(bot, trigger):
     if channel in bot.memory['retry_join'].keys():
         bot.memory['retry_join'][channel] += 1
         if bot.memory['retry_join'][channel] > 10:
-            bot.debug(__file__, 'Failed to join %s after 10 attempts.' % channel, 'warning')
+            bot.debug(
+                __file__,
+                'Failed to join %s after 10 attempts.' % channel,
+                'warning'
+            )
             return
     else:
         bot.memory['retry_join'][channel] = 0
@@ -409,7 +413,8 @@ def blocks(bot, trigger):
         "success_add": "Successfully added block: %s",
         "no_nick": "No matching nick block found for: %s",
         "no_host": "No matching hostmask block found for: %s",
-        "invalid": "Invalid format for %s a block. Try: .blocks add (nick|hostmask) willie",
+        "invalid": "Invalid format for %s a block." \
+                   " Try: .blocks add (nick|hostmask) willie",
         "invalid_display": "Invalid input for displaying blocks.",
         "nonelisted": "No %s listed in the blocklist.",
         'huh': "I could not figure out what you wanted to do.",
