@@ -7,32 +7,44 @@ http://willie.dftba.net
 """
 
 from datetime import datetime
-from subprocess import Popen, PIPE
 import willie
+import re
+from os import path
 
+log_line = re.compile('\S+ (\S+) (.*? <.*?>) (\d+) (\S+)\tcommit[^:]*: (.+)')
 
 def git_info():
-    p = Popen(["git", "log", "-n 1"], stdout=PIPE, close_fds=True)
-
-    commit = p.stdout.readline()
-    author = p.stdout.readline()
-    date = p.stdout.readline()
-    return commit, author, date
+    repo = path.dirname(path.dirname(path.dirname(__file__)))
+    log_file = path.join(repo, '.git', 'logs', 'HEAD')
+    if path.isfile(log_file):
+        with open(log_file) as log:
+            logs = log.readlines()
+            for line in reversed(logs):
+                match = log_line.match(line)
+                if match:
+                    break
+            if not match:
+                return
+            sha, author, seconds, offset, message = match.groups()
+            time = datetime.fromtimestamp(float(seconds))
+            time = time.strftime('%a %b %d %H:%M:%S %Y ') + offset
+    return sha, author, time, message
 
 
 @willie.module.commands('version')
 def version(bot, trigger):
     """Display the latest commit version, if Willie is running in a git repo."""
-    commit, author, date = git_info()
+    commit, author, date, message = git_info()
 
     if not commit.strip():
         bot.reply("Willie v. " + willie.__version__)
         return
 
     bot.say(str(trigger.nick) + ": Willie v. %s at commit:" % willie.__version__)
-    bot.say("  " + commit)
-    bot.say("  " + author)
-    bot.say("  " + date)
+    bot.say("  commit: " + commit)
+    bot.say("  Author: " + author)
+    bot.say("  Date: " + date)
+    bot.say("      " + message)
 
 
 @willie.module.rule('\x01VERSION\x01')
