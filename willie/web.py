@@ -95,7 +95,7 @@ def entity(match):
         return unichr(int(value[2:], 16))
     elif value.startswith('#'):
         return unichr(int(value[1:]))
-    elif name2codepoint.has_key(value):  # FIXME: Maybe use 'in'?
+    elif value in name2codepoint:
         return unichr(name2codepoint[value])
     return '[' + value + ']'
 
