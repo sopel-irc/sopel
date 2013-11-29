@@ -116,14 +116,15 @@ class DicePouch:
 
 
 def _roll_dice(dice_expression):
-    result = re.search(r"""
-            (?P<dice_num>\d*)
-            d
-            (?P<dice_type>\d+)
-            (v(?P<drop_lowest>\d+))?
-            $""",
-            dice_expression,
-            re.IGNORECASE | re.VERBOSE)
+    result = re.search(
+        r"""
+        (?P<dice_num>\d*)
+        d
+        (?P<dice_type>\d+)
+        (v(?P<drop_lowest>\d+))?
+        $""",
+        dice_expression,
+        re.IGNORECASE | re.VERBOSE)
 
     dice_num = int(result.group('dice_num') or 1)
     dice_type = int(result.group('dice_type'))
@@ -200,7 +201,7 @@ def roll(bot, trigger):
         return
 
     bot.reply("You roll %s: %s = %d" % (
-            trigger.group(2), pretty_str, result))
+        trigger.group(2), pretty_str, result))
 
 
 @willie.module.commands("choice")

@@ -323,4 +323,3 @@ def show_mask(bot, trigger):
         bot.say(bot.db.preferences.get(trigger.sender.lower(), 'topic_mask'))
     else:
         bot.say("%s")
-

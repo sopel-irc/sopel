@@ -48,7 +48,7 @@ def f_reload(bot, trigger):
     # module does not override them.
     for obj_name in old_callables.keys():
         delattr(old_module, obj_name)
-    
+
     # Also delete the setup function
     if hasattr(old_module, "setup"):
         delattr(old_module, "setup")

@@ -137,14 +137,12 @@ class RSSManager:
         # get a list of all methods in this class that start with _rss_
         self.actions = sorted(method[5:] for method in dir(self) if method[:5] == '_rss_')
 
-
     def _show_doc(self, bot, command):
         """Given an RSS command, say the docstring for the corresponding method."""
         for line in getattr(self, '_rss_' + command).__doc__.split('\n'):
             line = line.strip()
             if line:
                 bot.reply(line)
-
 
     def manage_rss(self, bot, trigger):
         """Manage RSS feeds. Usage: .rss <command>"""
@@ -164,7 +162,6 @@ class RSSManager:
             conn.commit()
         conn.close()
 
-
     def _rss_start(self, bot, trigger, c):
         """Start fetching feeds. Usage: .rss start"""
         bot.reply("Okay, I'll start fetching RSS feeds..." if not self.running else
@@ -172,14 +169,12 @@ class RSSManager:
         bot.debug(__file__, "RSS started.", 'verbose')
         self.running = True
 
-
     def _rss_stop(self, bot, trigger, c):
         """Stop fetching feeds. Usage: .rss stop"""
         bot.reply("Okay, I'll stop fetching RSS feeds..." if self.running else
                   "Not currently fetching RSS feeds.")
         bot.debug(__file__, "RSS stopped.", 'verbose')
         self.running = False
-
 
     def _rss_add(self, bot, trigger, c):
         """Add a feed to a channel, or modify an existing one.
@@ -222,7 +217,6 @@ class RSSManager:
             bot.reply("Successfully modified the feed.")
         return True
 
-
     def _rss_del(self, bot, trigger, c):
         """Remove one or all feeds from one or all channels.
         Usage: .rss del [#channel] [Feed_Name]
@@ -255,16 +249,13 @@ class RSSManager:
 
         return True
 
-
     def _rss_enable(self, bot, trigger, c):
         """Enable a feed or feeds. Usage: .rss enable [#channel] [Feed_Name]"""
         return self._toggle(bot, trigger, c)
 
-
     def _rss_disable(self, bot, trigger, c):
         """Disable a feed or feeds. Usage: .rss disable [#channel] [Feed_Name]"""
         return self._toggle(bot, trigger, c)
-
 
     def _toggle(self, bot, trigger, c):
         """Enable or disable a feed or feeds. Usage: .rss <enable|disable> [#channel] [Feed_Name]"""
@@ -298,7 +289,6 @@ class RSSManager:
             bot.reply("No feeds matched the command.")
 
         return True
-
 
     def _rss_list(self, bot, trigger, c):
         """Get information on all feeds in the database. Usage: .rss list [#channel] [Feed_Name]"""
@@ -342,11 +332,9 @@ class RSSManager:
                     " (disabled)" if not feed.enabled else '',
                     feed.fg, feed.bg))
 
-
     def _rss_fetch(self, bot, trigger, c):
         """Force all RSS feeds to be fetched immediately. Usage: .rss fetch"""
         read_feeds(bot, True)
-
 
     def _rss_help(self, bot, trigger, c):
         """Get help on any of the RSS feed commands. Usage: .rss help <command>"""
@@ -356,7 +344,6 @@ class RSSManager:
         else:
             bot.reply("For help on a command, type: .rss help <command>")
             bot.reply("Available RSS commands: " + ', '.join(self.actions))
-
 
 
 class RSSFeed:
@@ -418,7 +405,7 @@ def read_feeds(bot, force=False):
         status = getattr(fp, 'status', None)
 
         bot.debug(feed.channel, "{0}: status = {1}, version = '{2}', items = {3}".format(
-                feed.name, status, fp.version, len(fp.entries)), 'verbose')
+            feed.name, status, fp.version, len(fp.entries)), 'verbose')
 
         # check for malformed XML
         if fp.bozo:
@@ -429,7 +416,8 @@ def read_feeds(bot, force=False):
 
         # check HTTP status
         if status == 301:  # MOVED_PERMANENTLY
-            bot.debug(__file__,
+            bot.debug(
+                __file__,
                 "Got HTTP 301 (Moved Permanently) on {0}, updating URI to {1}".format(
                 feed.name, fp.href), 'warning')
             c.execute('''
@@ -455,9 +443,9 @@ def read_feeds(bot, force=False):
 
         # check if article is new, and skip otherwise
         if (feed.title == entry.title and feed.link == entry.link
-            and feed.etag == feed_etag and feed.modified == feed_modified):
+                and feed.etag == feed_etag and feed.modified == feed_modified):
             bot.debug(__file__, u"Skipping previously read entry: [{0}] {1}".format(
-                    feed.name, entry.title), 'verbose')
+                feed.name, entry.title), 'verbose')
             continue
 
         # save article title, url, and modified date
@@ -477,7 +465,7 @@ def read_feeds(bot, force=False):
                 # latest item would result in the whole feed getting re-msg'd.
                 # This will prevent that from happening.
                 bot.debug(__file__, u"Skipping older entry: [{0}] {1}, because {2} >= {3}".format(
-                        feed.name, entry.title, published_dt, entry_dt), 'verbose')
+                    feed.name, entry.title, published_dt, entry_dt), 'verbose')
                 continue
 
         # print new entry

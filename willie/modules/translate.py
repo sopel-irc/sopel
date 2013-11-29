@@ -58,8 +58,8 @@ def translate(text, input='auto', output='en'):
         pass
     text = urllib2.quote(text)
     result = opener.open('http://translate.google.com/translate_a/t?' +
-        ('client=t&sl=%s&tl=%s' % (input, output)) +
-        ('&q=%s' % text)).read()
+                         ('client=t&sl=%s&tl=%s' % (input, output)) +
+                         ('&q=%s' % text)).read()
 
     while ',,' in result:
         result = result.replace(',,', ',null,')
@@ -176,7 +176,7 @@ def mangle(bot, trigger):
     if phrase[0] == '':
         bot.reply("What do you want me to mangle?")
         return
-    if bot.config.has_section('translate') and bot.config.translate.research == True:
+    if bot.config.has_section('translate') and bot.config.translate.research:
         research_logfile = open(os.path.join(bot.config.logdir, 'mangle.log'), 'a')
         research_logfile.write('Phrase: %s\n' % str(phrase))
         research_logfile.write('Lang_list: %s\n' % lang_list)
@@ -196,12 +196,12 @@ def mangle(bot, trigger):
             phrase = backup
             continue
 
-        if bot.config.has_section('translate') and bot.config.translate.research == True:
+        if bot.config.has_section('translate') and bot.config.translate.research:
             research_logfile.write('-> %s\n' % str(phrase))
         if not phrase:
             phrase = backup
             break
-    if bot.config.has_section('translate') and bot.config.translate.research == True:
+    if bot.config.has_section('translate') and bot.config.translate.research:
         research_logfile.write('->[FINAL] %s\n' % str(phrase))
         research_logfile.write('----------------------------\n\n\n')
         research_logfile.close()
@@ -211,6 +211,6 @@ def mangle(bot, trigger):
 @rule('(.*)')
 @priority('low')
 def collect_mangle_lines(bot, trigger):
-    if bot.config.has_section('translate') and bot.config.translate.collect_mangle_lines == True:
+    if bot.config.has_section('translate') and bot.config.translate.collect_mangle_lines:
         global mangle_lines
         mangle_lines[trigger.sender.lower()] = "%s said '%s'" % (trigger.nick, (trigger.group(0).strip()))

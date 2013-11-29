@@ -44,7 +44,7 @@ def issue(bot, trigger):
 
     # Is the Oauth token and repo available?
     gitAPI = checkConfig(bot)
-    if gitAPI == False:
+    if not gitAPI:
         return bot.say('Git module not configured, make sure github.oauth_token and github.repo are defined')
 
     # parse input
@@ -72,7 +72,7 @@ def add_traceback(bot, trigger):
     command will only work for errors from unhandled exceptions."""
     # Make sure the API is set up
     gitAPI = checkConfig(bot)
-    if gitAPI == False:
+    if not gitAPI:
         return bot.say('Git module not configured, make sure github.oauth_token and github.repo are defined')
 
     # Make sure the input is valid
@@ -113,7 +113,7 @@ def add_traceback(bot, trigger):
         raw = web.post('https://api.github.com/repos/' + gitAPI[1] + '/issues/'
                        + number + '/comments?access_token=' + gitAPI[0],
                        json.dumps({'body': '``\n' + post + '``'}))
-    except OSError:#HTTPError:
+    except OSError:  # HTTPError:
         return bot.say('The GitHub API returned an error.')
 
     data = json.loads(raw)
@@ -129,7 +129,7 @@ def findIssue(bot, trigger):
 
     # Is the Oauth token and repo available?
     gitAPI = checkConfig(bot)
-    if gitAPI == False:
+    if not gitAPI:
         return bot.say('Git module not configured, make sure github.oauth_token and github.repo are defined')
     firstParam = trigger.group(2).split(' ')[0]
     if firstParam.isdigit():
@@ -160,7 +160,11 @@ def findIssue(bot, trigger):
         else:
             body = data['body'].split('\n')[0]
     except (KeyError):
-        bot.debug('GitHub KeyErr', 'API returned an invalid result on query request '+trigger.group(2), 'always')
+        bot.debug(
+            'GitHub KeyErr',
+            ('API returned an invalid result on query request ' +
+             trigger.group(2)),
+            'always')
         return bot.say('Invalid result, please try again later.')
     bot.reply('[#%s]\x02title:\x02 %s \x02|\x02 %s' % (data['number'], data['title'], body))
     bot.say(data['html_url'])
