@@ -1,11 +1,12 @@
 #!/usr/bin/env python
+# -*- coding: utf8 -*-
+from __future__ import unicode_literals
 
 from distutils.core import setup
 from willie import __version__
 import tempfile
 import os
 import shutil
-
 
 def do_setup():
     try:
@@ -23,11 +24,14 @@ def do_setup():
             author_email='powell.518@gmail.com',
             url='http://willie.dftba.net/',
             long_description="""Willie is a simple, lightweight, open source, easy-to-use IRC Utility bot, written in Python. It's designed to be easy to use, easy to run, and easy to make new features for. """,
-            packages=['willie', 'willie.modules'],
+            # Distutils is shit, and doesn't check if it's a list of basestring
+            # but instead requires str.
+            packages=[b'willie', b'willie.modules'],
             scripts=[tmp_main_script],
             license='Eiffel Forum License, version 2',
             platforms='Linux x86, x86-64',
-            requires=['feedparser', 'pytz', 'lxml', 'praw', 'enchant', 'pygeoip']
+            requires=[b'feedparser', b'pytz', b'lxml', b'praw', b'enchant',
+                      b'pygeoip']
         )
     finally:
         try:
