@@ -50,7 +50,7 @@ def _find_geoip_db(bot):
     """ Find the GeoIP database """
     config = bot.config
     if config.has_section('ip') and config.ip.GeoIP_db_path is not None:
-        if (os.path.isfile(os.path.join(config.ip.GeoIP_db_path, 'GeoLiteCity.dat')) and 
+        if (os.path.isfile(os.path.join(config.ip.GeoIP_db_path, 'GeoLiteCity.dat')) and
            os.path.isfile(os.path.join(config.ip.GeoIP_db_path, 'GeoIPASNum.dat'))):
             return config.ip.GeoIP_db_path
         else:
@@ -96,8 +96,8 @@ def ip(bot, trigger):
     host = socket.getfqdn(query)
     response = "[IP/Host Lookup] Hostname: %s" % host
     response += " | Location: %s" % gi_city.country_name_by_name(query)
-    region = gi_city.region_by_name(query)['region_name']
-    if region is not '':
+    region = gi_city.region_by_name(query)['region_code']
+    if region is not None:
         response += " | Region: %s" % region
     isp = gi_org.org_by_name(query)
     if isp is not None:
