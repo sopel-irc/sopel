@@ -1,5 +1,5 @@
 #!/usr/bin/env python2.7
-# coding=utf-8
+# -*- coding: utf8 -*-
 """
 Willie - An IRC Bot
 Copyright 2008, Sean B. Palmer, inamidst.com
@@ -8,6 +8,7 @@ Licensed under the Eiffel Forum License 2.
 
 http://willie.dftba.net
 """
+from __future__ import unicode_literals
 
 import sys
 import os
