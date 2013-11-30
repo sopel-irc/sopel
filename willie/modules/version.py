@@ -13,39 +13,34 @@ from os import path
 
 log_line = re.compile('\S+ (\S+) (.*? <.*?>) (\d+) (\S+)\tcommit[^:]*: (.+)')
 
+
 def git_info():
-    repo = path.dirname(path.dirname(path.dirname(__file__)))
-    log_file = path.join(repo, '.git', 'logs', 'HEAD')
-    if path.isfile(log_file):
-        with open(log_file) as log:
-            logs = log.readlines()
-            for line in reversed(logs):
-                match = log_line.match(line)
-                if match:
-                    break
-            if not match:
-                return
-            sha, author, seconds, offset, message = match.groups()
-            time = datetime.fromtimestamp(float(seconds))
-            time = time.strftime('%a %b %d %H:%M:%S %Y ') + offset
-    return sha, author, time, message
+    repo = path.join(path.dirname(path.dirname(path.dirname(__file__))), '.git')
+    head = path.join(repo, 'HEAD')
+    if path.isfile(head):
+        with open(head) as h:
+            head_loc = h.readline()[5:-1]  # strip ref: and \n
+        head_file = path.join(repo, head_loc)
+        if path.isfile(head_file):
+            with open(head_file) as h:
+                sha = h.readline()
+                if sha:
+                    return sha
 
 
 @willie.module.commands('version')
 def version(bot, trigger):
     """Display the latest commit version, if Willie is running in a git repo."""
-    info = git_info()
-    if not info:
-        bot.reply("Willie v. " + willie.__version__)
+    release = willie.__version__
+    sha = git_info()
+    if not sha:
+        msg = 'Willie v. ' + release
+        if release[-4:] == '-git':
+            msg += ' at unknown commit.'
+        bot.reply(msg)
         return
 
-    commit, author, date, message = git_info()
-
-    bot.say(str(trigger.nick) + ": Willie v. %s at commit:" % willie.__version__)
-    bot.say("  commit: " + commit)
-    bot.say("  Author: " + author)
-    bot.say("  Date: " + date)
-    bot.say("      " + message)
+    bot.reply("Willie v. {} at commit: {}".format(willie.__version__, sha))
 
 
 @willie.module.rule('\x01VERSION\x01')
