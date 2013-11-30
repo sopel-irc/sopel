@@ -96,7 +96,10 @@ def ip(bot, trigger):
     host = socket.getfqdn(query)
     response = "[IP/Host Lookup] Hostname: %s" % host
     response += " | Location: %s" % gi_city.country_name_by_name(query)
-    region = gi_city.region_by_name(query)['region_code']
+    try:
+        region = gi_city.region_by_name(query)['region_name'] # pygeoip < 0.3.0
+    except:
+        region = gi_city.region_by_name(query)['region_code'] # pygeoip >= 0.3.0
     if region is not None:
         response += " | Region: %s" % region
     isp = gi_org.org_by_name(query)
