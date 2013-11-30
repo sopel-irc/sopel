@@ -26,7 +26,9 @@ def woeid_search(query):
     node for the result, so that location data can still be retrieved. Returns
     None if there is no result, or the woeid field is empty.
     """
-    query = web.urlencode({'q': 'select * from geo.placefinder where text="%s"' % query})
+    query = web.urlencode({
+        'q': 'select * from geo.placefinder where text="%s"' % query
+    })
     body = web.get('http://query.yahooapis.com/v1/public/yql?' + query)
     parsed = etree.fromstring(body)
     first_result = parsed.find('results/Result')
@@ -137,8 +139,13 @@ def weather(bot, trigger):
         if bot.db and trigger.nick in bot.db.preferences:
             woeid = bot.db.preferences.get(trigger.nick, 'woeid')
         if not woeid:
-            return bot.msg(trigger.sender, "I don't know where you live. " +
-                           'Give me a location, like .weather London, or tell me where you live by saying .setlocation London, for example.')
+            return bot.msg(
+                trigger.sender,
+                "I don't know where you live. "
+                'Give me a location, like .weather London, or '
+                'tell me where you live by saying .setlocation London, '
+                'for example.'
+            )
     else:
         location = location.strip()
         if bot.db and location in bot.db.preferences:

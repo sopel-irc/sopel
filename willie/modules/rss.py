@@ -135,10 +135,15 @@ class RSSManager:
         self.sub = bot.db.substitution
 
         # get a list of all methods in this class that start with _rss_
-        self.actions = sorted(method[5:] for method in dir(self) if method[:5] == '_rss_')
+        self.actions = sorted(
+            method[5:] for method in dir(self) if method[:5] == '_rss_'
+        )
 
     def _show_doc(self, bot, command):
-        """Given an RSS command, say the docstring for the corresponding method."""
+        """
+            Given an RSS command, say the docstring for the corresponding
+            method.
+        """
         for line in getattr(self, '_rss_' + command).__doc__.split('\n'):
             line = line.strip()
             if line:
@@ -147,7 +152,9 @@ class RSSManager:
     def manage_rss(self, bot, trigger):
         """Manage RSS feeds. Usage: .rss <command>"""
         if not trigger.admin:
-            bot.reply("Sorry, you need to be an admin to modify the RSS feeds.")
+            bot.reply(
+                "Sorry, you need to be an admin to modify the RSS feeds."
+            )
             return
 
         text = trigger.group().split()
@@ -164,8 +171,10 @@ class RSSManager:
 
     def _rss_start(self, bot, trigger, c):
         """Start fetching feeds. Usage: .rss start"""
-        bot.reply("Okay, I'll start fetching RSS feeds..." if not self.running else
-                  "Continuing to fetch RSS feeds.")
+        if not self.running:
+            bot.reply("Okay, I'll start fetching RSS feeds...")
+        else:
+            bot.reply("Continuing to fetch RSS feeds.")
         bot.debug(__file__, "RSS started.", 'verbose')
         self.running = True
 
@@ -177,9 +186,11 @@ class RSSManager:
         self.running = False
 
     def _rss_add(self, bot, trigger, c):
-        """Add a feed to a channel, or modify an existing one.
-        Set mIRC-style foreground and background colour indices using fg and bg.
-        Usage: .rss add <#channel> <Feed_Name> <URL> [fg] [bg]
+        """
+            Add a feed to a channel, or modify an existing one.
+            Set mIRC-style foreground and background colour indices using fg
+            and bg.
+            Usage: .rss add <#channel> <Feed_Name> <URL> [fg] [bg]
         """
         pattern = r'''
             ^\.rss\s+add
@@ -254,11 +265,16 @@ class RSSManager:
         return self._toggle(bot, trigger, c)
 
     def _rss_disable(self, bot, trigger, c):
-        """Disable a feed or feeds. Usage: .rss disable [#channel] [Feed_Name]"""
+        """
+            Disable a feed or feeds. Usage: .rss disable [#channel] [Feed_Name]
+        """
         return self._toggle(bot, trigger, c)
 
     def _toggle(self, bot, trigger, c):
-        """Enable or disable a feed or feeds. Usage: .rss <enable|disable> [#channel] [Feed_Name]"""
+        """
+            Enable or disable a feed or feeds.
+            Usage: .rss <enable|disable> [#channel] [Feed_Name]
+        """
         command = trigger.group(3)
 
         pattern = r"""
@@ -275,7 +291,9 @@ class RSSManager:
         enabled = 1 if command == 'enable' else 0
         channel = match.group(2)
         feed_name = match.group(3).strip('"') if match.group(3) else None
-        args = [arg for arg in (enabled, channel, feed_name) if arg is not None]
+        args = [
+            arg for arg in (enabled, channel, feed_name) if arg is not None
+        ]
 
         c.execute(('UPDATE rss_feeds SET enabled = {0} WHERE '
                    + ('channel = {0} AND ' if channel else '')
@@ -284,14 +302,23 @@ class RSSManager:
 
         if c.rowcount:
             noun = 'feeds' if c.rowcount != 1 else 'feed'
-            bot.reply("Successfully {0}d {1} {2}.".format(command, c.rowcount, noun))
+            bot.reply(
+                "Successfully {0}d {1} {2}.".format(
+                    command,
+                    c.rowcount,
+                    noun
+                )
+            )
         else:
             bot.reply("No feeds matched the command.")
 
         return True
 
     def _rss_list(self, bot, trigger, c):
-        """Get information on all feeds in the database. Usage: .rss list [#channel] [Feed_Name]"""
+        """
+            Get information on all feeds in the database.
+            Usage: .rss list [#channel] [Feed_Name]
+        """
         pattern = r"""
             ^\.rss\s+list
             (?:\s+([&#+!][^\s,]+))?  # channel (optional)
@@ -337,7 +364,10 @@ class RSSManager:
         read_feeds(bot, True)
 
     def _rss_help(self, bot, trigger, c):
-        """Get help on any of the RSS feed commands. Usage: .rss help <command>"""
+        """
+            Get help on any of the RSS feed commands.
+            Usage: .rss help <command>
+        """
         command = trigger.group(4)
         if command in self.actions:
             self._show_doc(bot, command)
@@ -394,23 +424,47 @@ def read_feeds(bot, force=False):
             conn.commit()
 
         try:
-            fp = feedparser.parse(feed.url, etag=feed.etag, modified=feed.modified)
-        except IOError, e:
-            bot.debug(__file__, "Can't parse feed on {0}, disabling ({1})".format(
-                feed.name, str(e)), 'warning')
+            fp = feedparser.parse(
+                feed.url,
+                etag=feed.etag,
+                modified=feed.modified
+            )
+        except IOError as e:
+            bot.debug(
+                __file__,
+                "Can't parse feed on {0}, disabling ({1})".format(
+                    feed.name,
+                    str(e)
+                ),
+                'warning'
+            )
             disable_feed()
             continue
 
         # fp.status will only exist if pulling from an online feed
         status = getattr(fp, 'status', None)
 
-        bot.debug(feed.channel, "{0}: status = {1}, version = '{2}', items = {3}".format(
-            feed.name, status, fp.version, len(fp.entries)), 'verbose')
+        bot.debug(
+            feed.channel,
+            "{0}: status = {1}, version = '{2}', items = {3}".format(
+                feed.name,
+                status,
+                fp.version,
+                len(fp.entries)
+            ),
+            'verbose'
+        )
 
         # check for malformed XML
         if fp.bozo:
-            bot.debug(__file__, "Got malformed feed on {0}, disabling ({1})".format(
-                feed.name, fp.bozo_exception.getMessage()), 'warning')
+            bot.debug(
+                __file__,
+                "Got malformed feed on {0}, disabling ({1})".format(
+                    feed.name,
+                    fp.bozo_exception.getMessage()
+                ),
+                'warning'
+            )
             disable_feed()
             continue
 
@@ -418,8 +472,13 @@ def read_feeds(bot, force=False):
         if status == 301:  # MOVED_PERMANENTLY
             bot.debug(
                 __file__,
-                "Got HTTP 301 (Moved Permanently) on {0}, updating URI to {1}".format(
-                feed.name, fp.href), 'warning')
+                "Got HTTP 301 (Moved Permanently) on {0}, "
+                "updating URI to {1}".format(
+                    feed.name,
+                    fp.href
+                ),
+                'warning'
+            )
             c.execute('''
                 UPDATE rss_feeds SET feed_url = {0}
                 WHERE channel = {0} AND feed_name = {0}
@@ -444,8 +503,14 @@ def read_feeds(bot, force=False):
         # check if article is new, and skip otherwise
         if (feed.title == entry.title and feed.link == entry.link
                 and feed.etag == feed_etag and feed.modified == feed_modified):
-            bot.debug(__file__, u"Skipping previously read entry: [{0}] {1}".format(
-                feed.name, entry.title), 'verbose')
+            bot.debug(
+                __file__,
+                u"Skipping previously read entry: [{0}] {1}".format(
+                    feed.name,
+                    entry.title
+                ),
+                'verbose'
+            )
             continue
 
         # save article title, url, and modified date
@@ -458,14 +523,26 @@ def read_feeds(bot, force=False):
         conn.commit()
 
         if feed.published and entry_dt:
-            published_dt = datetime.strptime(feed.published, "%Y-%m-%d %H:%M:%S")
+            published_dt = datetime.strptime(
+                feed.published,
+                "%Y-%m-%d %H:%M:%S"
+            )
             if published_dt >= entry_dt:
                 # This will make more sense once iterating over the feed is
                 # implemented. Once that happens, deleting or modifying the
                 # latest item would result in the whole feed getting re-msg'd.
                 # This will prevent that from happening.
-                bot.debug(__file__, u"Skipping older entry: [{0}] {1}, because {2} >= {3}".format(
-                    feed.name, entry.title, published_dt, entry_dt), 'verbose')
+                bot.debug(
+                    __file__,
+                    u"Skipping older entry: [{0}] {1}, "
+                    u"because {2} >= {3}".format(
+                        feed.name,
+                        entry.title,
+                        published_dt,
+                        entry_dt
+                    ),
+                    'verbose'
+                )
                 continue
 
         # print new entry

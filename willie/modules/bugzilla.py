@@ -36,16 +36,13 @@ def setup(bot):
         bot.memory['url_callbacks'] = tools.WillieMemory()
 
     domains = '|'.join(bot.config.bugzilla.get_list('domains'))
-    regex = re.compile((r'https?://(%s)'
-                         '(/show_bug.cgi\?\S*?)'
-                         '(id=\d+)')
-                       % domains)
+    regex = re.compile(
+        (r'https?://(%s)(/show_bug.cgi\?\S*?)(id=\d+)') % domains
+    )
     bot.memory['url_callbacks'][regex] = show_bug
 
 
-@rule(r'.*https?://(\S+?)'
-       '(/show_bug.cgi\?\S*?)'
-       '(id=\d+).*')
+@rule(r'.*https?://(\S+?)(/show_bug.cgi\?\S*?)(id=\d+).*')
 def show_bug(bot, trigger, match=None):
     """Show information about a Bugzilla bug."""
     match = match or trigger

@@ -213,10 +213,13 @@ def choose(bot, trigger):
     .choice option1|option2|option3 - Makes a difficult choice easy.
     """
     if not trigger.group(2):
-        return bot.reply('I\'d choose an option, but you didn\'t give me any.')
-    choices = re.split('[\|\\\\\/]', trigger.group(2))
+        return bot.reply("I'd choose an option, but you didn't give me any.")
+    choices = re.split(r'[\|\\\/]', trigger.group(2))
     pick = random.choice(choices)
-    return bot.reply('Your options: %s. My choice: %s' % (', '.join(choices), pick))
+    return bot.reply(
+        'Your options: %s. My choice: %s' %
+        (', '.join(choices), pick)
+    )
 
 
 if __name__ == "__main__":

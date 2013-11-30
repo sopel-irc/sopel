@@ -62,8 +62,14 @@ def temperature(bot, trigger):
 @example('.distance 3km', '3.0km = 1.86411 miles')
 @example('.distance 3 miles', '4.82804126366km = 3.0 miles')
 @example('.distance 3 inch', '7.62001524003cm = 3.0 inches')
-@example('.distance 3 feet', '91.4411119239cm = 3 feet, 0.000365764447693 inches')
-@example('.distance 3 yards', '30.4803706413cm = 1 foot, 0.000121921482561 inches')
+@example(
+    '.distance 3 feet',
+    '91.4411119239cm = 3 feet, 0.000365764447693 inches'
+)
+@example(
+    '.distance 3 yards',
+    '30.4803706413cm = 1 foot, 0.000121921482561 inches'
+)
 def distance(bot, trigger):
     """
     Convert distances

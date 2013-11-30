@@ -55,7 +55,16 @@ def gettld(bot, trigger):
                 dict_val[key] = r_tag.sub('', dict_val[key])
             if len(dict_val["notes"]) > 400:
                 dict_val["notes"] = dict_val["notes"][:400] + "..."
-            reply = "%s (%s, %s). IDN: %s, DNSSEC: %s, SLD: %s" % (dict_val["country"], dict_val["expl"], dict_val["notes"], dict_val["idn"], dict_val["dnssec"], dict_val["sld"])
+            reply = "%s (%s, %s). IDN: %s, DNSSEC: %s, SLD: %s" % (
+                dict_val["country"],
+                dict_val["expl"],
+                dict_val["notes"],
+                dict_val["idn"],
+                dict_val["dnssec"],
+                dict_val["sld"]
+            )
         else:
-            reply = "No matches found for TLD: {0}".format(unicode(trigger.group(2)))
+            reply = "No matches found for TLD: {0}".format(
+                unicode(trigger.group(2))
+            )
         bot.reply(reply)

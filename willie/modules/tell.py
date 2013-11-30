@@ -29,7 +29,9 @@ def loadReminders(fn, lock):
                     tellee, teller, verb, timenow, msg = line.split('\t', 4)
                 except ValueError:
                     continue  # @@ hmm
-                result.setdefault(tellee, []).append((teller, verb, timenow, msg))
+                result.setdefault(tellee, []).append(
+                    (teller, verb, timenow, msg)
+                )
         f.close()
     finally:
         lock.release()
@@ -68,7 +70,10 @@ def setup(self):
             f.write('')
             f.close()
     self.memory['tell_lock'] = threading.Lock()
-    self.memory['reminders'] = loadReminders(self.tell_filename, self.memory['tell_lock'])
+    self.memory['reminders'] = loadReminders(
+        self.tell_filename,
+        self.memory['tell_lock']
+    )
 
 
 def get_user_time(bot, nick):
@@ -108,9 +113,13 @@ def f_remind(bot, trigger):
         bot.memory['tell_lock'].acquire()
         try:
             if not tellee in bot.memory['reminders']:
-                bot.memory['reminders'][tellee] = [(teller, verb, timenow, msg)]
+                bot.memory['reminders'][tellee] = [
+                    (teller, verb, timenow, msg)
+                ]
             else:
-                bot.memory['reminders'][tellee].append((teller, verb, timenow, msg))
+                bot.memory['reminders'][tellee].append(
+                    (teller, verb, timenow, msg)
+                )
         finally:
             bot.memory['tell_lock'].release()
 
@@ -122,7 +131,11 @@ def f_remind(bot, trigger):
     else:
         bot.say("Hey, I'm not as stupid as Monty you know!")
 
-    dumpReminders(bot.tell_filename, bot.memory['reminders'], bot.memory['tell_lock'])  # @@ tell
+    dumpReminders(
+        bot.tell_filename,
+        bot.memory['reminders'],
+        bot.memory['tell_lock']
+    )  # @@ tell
 
 
 def getReminders(bot, channel, key, tellee):
@@ -135,7 +148,16 @@ def getReminders(bot, channel, key, tellee):
         for (teller, verb, datetime, msg) in bot.memory['reminders'][key]:
             if datetime.startswith(today):
                 datetime = datetime[len(today) + 1:]
-            lines.append(template % (tellee, datetime, teller, verb, tellee, msg))
+            lines.append(
+                template % (
+                    tellee,
+                    datetime,
+                    teller,
+                    verb,
+                    tellee,
+                    msg
+                )
+            )
 
         try:
             del bot.memory['reminders'][key]
@@ -175,4 +197,8 @@ def message(bot, trigger):
             bot.msg(tellee, line)
 
     if len(bot.memory['reminders'].keys()) != remkeys:
-        dumpReminders(bot.tell_filename, bot.memory['reminders'], bot.memory['tell_lock'])  # @@ tell
+        dumpReminders(
+            bot.tell_filename,
+            bot.memory['reminders'],
+            bot.memory['tell_lock']
+        )  # @@ tell

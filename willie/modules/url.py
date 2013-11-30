@@ -37,13 +37,25 @@ def configure(config):
     | exclude | https?://git\.io/.* | A list of regular expressions for URLs for which the title should not be shown. |
     | exclusion_char | ! | A character (or string) which, when immediately preceding a URL, will stop the URL's title from being shown. |
     """
-    if config.option('Exclude certain URLs from automatic title display', False):
+    if config.option(
+        'Exclude certain URLs from automatic title display',
+        False
+    ):
         if not config.has_section('url'):
             config.add_section('url')
-        config.add_list('url', 'exclude', 'Enter regular expressions for each URL you would like to exclude.',
-            'Regex:')
-        config.interactive_add('url', 'exclusion_char',
-            'Prefix to suppress URL titling', '!')
+        config.add_list(
+            'url',
+            'exclude',
+            'Enter regular expressions for each URL you would like to '
+            'exclude.',
+            'Regex:'
+        )
+        config.interactive_add(
+            'url',
+            'exclusion_char',
+            'Prefix to suppress URL titling',
+            '!'
+        )
 
 
 def setup(bot=None):
@@ -79,8 +91,9 @@ def setup(bot=None):
     if bot.config.has_option('url', 'exclusion_char'):
         exclusion_char = bot.config.url.exclusion_char
 
-    url_finder = re.compile(r'(?u)(%s?(?:http|https|ftp)(?:://\S+))' %
-        (exclusion_char))
+    url_finder = re.compile(
+        r'(?u)(%s?(?:http|https|ftp)(?:://\S+))' % exclusion_char
+    )
 
 
 @commands('title')
@@ -255,8 +268,9 @@ def urlEncodeNonAscii(b):
 def iri_to_uri(iri):
     parts = urlparse.urlparse(iri)
     return urlparse.urlunparse(
-        part.encode('idna') if parti == 1 else urlEncodeNonAscii(part.encode('utf-8'))
-        for parti, part in enumerate(parts)
+        part.encode('idna') if parti == 1 else urlEncodeNonAscii(
+            part.encode('utf-8')
+        ) for parti, part in enumerate(parts)
     )
 
 

@@ -290,7 +290,8 @@ def topic(bot, trigger):
         text = tuple(unicode.split(top, '~', narg))
 
     if len(text) != narg:
-        message = "Not enough arguments. You gave " + str(len(text)) + ', it requires ' + str(narg) + '.'
+        message = "Not enough arguments. You gave " + \
+            str(len(text)) + ', it requires ' + str(narg) + '.'
         return bot.say(message)
     topic = mask % text
 
@@ -308,7 +309,10 @@ def set_mask(bot, trigger):
     if not bot.db:
         bot.say("I'm afraid I can't do that.")
     else:
-        bot.db.preferences.update(trigger.sender.lower(), {'topic_mask': trigger.group(2)})
+        bot.db.preferences.update(
+            trigger.sender.lower(),
+            {'topic_mask': trigger.group(2)}
+        )
         bot.say("Gotcha, " + trigger.nick)
 
 

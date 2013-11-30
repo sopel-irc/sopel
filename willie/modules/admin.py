@@ -82,8 +82,8 @@ def quit(bot, trigger):
 @willie.module.example('.msg #YourPants Does anyone else smell neurotoxin?')
 def msg(bot, trigger):
     """
-    Send a message to a given channel or nick. Can only be done in privmsg by an
-    admin.
+    Send a message to a given channel or nick. Can only be done in privmsg by
+    an admin.
     """
     if trigger.sender.startswith('#'):
         return
@@ -102,8 +102,8 @@ def msg(bot, trigger):
 @willie.module.priority('low')
 def me(bot, trigger):
     """
-    Send an ACTION (/me) to a given channel or nick. Can only be done in privmsg
-    by an admin.
+    Send an ACTION (/me) to a given channel or nick. Can only be done in
+    privmsg by an admin.
     """
     if trigger.sender.startswith('#'):
         return

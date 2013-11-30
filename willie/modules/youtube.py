@@ -8,7 +8,8 @@ Licensed under the Eiffel Forum License 2.
 
 http://willie.dfbta.net
 
-This module will respond to .yt and .youtube commands and searches the youtubes.
+This module will respond to .yt and .youtube commands and searches the
+youtubes.
 """
 
 from willie import web, tools
@@ -61,9 +62,13 @@ def ytget(bot, trigger, uri):
     try:
         upraw = video_entry['published']['$t']
         #parse from current format to output format: DD/MM/yyyy, hh:mm
-        vid_info['uploaded'] = '%s/%s/%s, %s:%s' % (upraw[8:10], upraw[5:7],
-                                                  upraw[0:4], upraw[11:13],
-                                                  upraw[14:16])
+        vid_info['uploaded'] = '%s/%s/%s, %s:%s' % (
+            upraw[8:10],
+            upraw[5:7],
+            upraw[0:4],
+            upraw[11:13],
+            upraw[14:16]
+        )
     except KeyError:
         vid_info['uploaded'] = 'N/A'
 
@@ -101,7 +106,9 @@ def ytget(bot, trigger, uri):
     #get comment count
     try:
         comments = video_entry['gd$comments']['gd$feedLink']['countHint']
-        vid_info['comments'] = str('{0:20,d}'.format(int(comments))).lstrip(' ')
+        vid_info['comments'] = str('{0:20,d}'.format(
+            int(comments)
+        )).lstrip(' ')
     except KeyError:
         vid_info['comments'] = 'N/A'
 
@@ -113,7 +120,9 @@ def ytget(bot, trigger, uri):
         vid_info['likes'] = 'N/A'
     try:
         dislikes = video_entry['yt$rating']['numDislikes']
-        vid_info['dislikes'] = str('{0:20,d}'.format(int(dislikes))).lstrip(' ')
+        vid_info['dislikes'] = str('{0:20,d}'.format(
+            int(dislikes)
+        )).lstrip(' ')
     except KeyError:
         vid_info['dislikes'] = 'N/A'
     return vid_info
@@ -123,7 +132,8 @@ def ytget(bot, trigger, uri):
 @example('.yt how to be a nerdfighter FAQ')
 def ytsearch(bot, trigger):
     """Search YouTube"""
-    #modified from ytinfo: Copyright 2010-2011, Michael Yanovich, yanovich.net, Kenneth Sham.
+    # Modified from ytinfo: Copyright 2010-2011, Michael Yanovich,
+    # yanovich.net, Kenneth Sham.
     if not trigger.group(2):
         return
     uri = 'http://gdata.youtube.com/feeds/api/videos?v=2&alt=json&max-results=1&q=' + trigger.group(2).encode('utf-8')
@@ -136,12 +146,14 @@ def ytsearch(bot, trigger):
     if video_info['link'] == 'N/A':
         bot.say("Sorry, I couldn't find the video you are looking for")
         return
-    message = ('[YT Search] Title: ' + video_info['title'] +
-              ' | Uploader: ' + video_info['uploader'] +
-              ' | Duration: ' + video_info['length'] +
-              ' | Uploaded: ' + video_info['uploaded'] +
-              ' | Views: ' + video_info['views'] +
-              ' | Link: ' + video_info['link'])
+    message = (
+        '[YT Search] Title: ' + video_info['title'] +
+        ' | Uploader: ' + video_info['uploader'] +
+        ' | Duration: ' + video_info['length'] +
+        ' | Uploaded: ' + video_info['uploaded'] +
+        ' | Views: ' + video_info['views'] +
+        ' | Link: ' + video_info['link']
+    )
 
     bot.say(HTMLParser().unescape(message))
 
@@ -153,7 +165,8 @@ def ytinfo(bot, trigger, found_match=None):
     """
     match = found_match or trigger
     #Grab info from YT API
-    uri = 'http://gdata.youtube.com/feeds/api/videos/' + match.group(2) + '?v=2&alt=json'
+    uri = 'http://gdata.youtube.com/feeds/api/videos/' + \
+        match.group(2) + '?v=2&alt=json'
 
     video_info = ytget(bot, trigger, uri)
     if video_info is 'err':
@@ -177,18 +190,22 @@ def ytinfo(bot, trigger, found_match=None):
 def ytlast(bot, trigger):
     if not trigger.group(2):
         return
-    uri = 'https://gdata.youtube.com/feeds/api/users/' + trigger.group(2).encode('utf-8') + '/uploads?max-results=1&alt=json&v=2'
+    uri = 'https://gdata.youtube.com/feeds/api/users/' + \
+        trigger.group(2).encode('utf-8') + \
+        '/uploads?max-results=1&alt=json&v=2'
     video_info = ytget(bot, trigger, uri)
 
     if video_info is 'err':
         return
 
-    message = ('[Latest Video] Title: ' + video_info['title'] +
-              ' | Duration: ' + video_info['length'] +
-              ' | Uploaded: ' + video_info['uploaded'] +
-              ' | Views: ' + video_info['views'] +
-              ' | Likes: ' + video_info['likes'] +
-              ' | Dislikes: ' + video_info['dislikes'] +
-              ' | Link: ' + video_info['link'])
+    message = (
+        '[Latest Video] Title: ' + video_info['title'] +
+        ' | Duration: ' + video_info['length'] +
+        ' | Uploaded: ' + video_info['uploaded'] +
+        ' | Views: ' + video_info['views'] +
+        ' | Likes: ' + video_info['likes'] +
+        ' | Dislikes: ' + video_info['dislikes'] +
+        ' | Link: ' + video_info['link']
+    )
 
     bot.say(HTMLParser().unescape(message))

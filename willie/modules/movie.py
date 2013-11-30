@@ -15,7 +15,8 @@ import willie.module
 @willie.module.example('.movie Movie Title')
 def movie(bot, trigger):
     """
-    Returns some information about a movie, like Title, Year, Rating, Genre and IMDB Link.
+        Returns some information about a movie, like Title, Year, Rating, Genre
+        and IMDB Link.
     """
     if not trigger.group(2):
         return
@@ -23,13 +24,18 @@ def movie(bot, trigger):
     word = word.replace(" ", "+")
     uri = "http://www.imdbapi.com/?t=" + word
     u = web.get_urllib_object(uri, 30)
-    data = json.load(u)  # data is a Dict containing all the information we need
+    # data is a Dict containing all the information we need
+    data = json.load(u)
     u.close()
     if data['Response'] == 'False':
         if 'Error' in data:
             message = '[MOVIE] %s' % data['Error']
         else:
-            bot.debug(__file__, 'Got an error from the imdb api, search phrase was %s' % word, 'warning')
+            bot.debug(
+                __file__,
+                'Got an error from the imdb api, search phrase was %s' % word,
+                'warning'
+            )
             bot.debug(__file__, str(data), 'warning')
             message = '[MOVIE] Got an error from imdbapi'
     else:

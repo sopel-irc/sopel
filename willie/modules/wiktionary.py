@@ -60,8 +60,15 @@ def wikt(word):
             break
     return etymology, definitions
 
-parts = ('preposition', 'particle', 'noun', 'verb',
-    'adjective', 'adverb', 'interjection')
+parts = (
+    'preposition',
+    'particle',
+    'noun',
+    'verb',
+    'adjective',
+    'adverb',
+    'interjection'
+)
 
 
 def format(word, definitions, number=2):

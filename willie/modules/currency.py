@@ -63,9 +63,15 @@ def exchange(bot, trigger):
         of_rate, of_name = get_rate(of)
         to_rate, to_name = get_rate(to)
     except Exception as e:
-        bot.reply("Something went wrong while I was getting the exchange rate.")
+        bot.reply(
+            "Something went wrong while I was getting the exchange rate."
+        )
         return NOLIMIT
 
     result = amount / of_rate * to_rate
-    bot.say("{} {} ({}) = {} {} ({})".format(amount, of, of_name,
-                                           result, to, to_name))
+    bot.say(
+        "{} {} ({}) = {} {} ({})".format(
+            amount, of, of_name,
+            result, to, to_name
+        )
+    )

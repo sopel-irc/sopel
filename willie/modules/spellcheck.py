@@ -7,7 +7,8 @@ Licensed under the Eiffel Forum License 2.
 
 http://willie.dftba.net
 
-This module relies on pyenchant, on Fedora and Red Hat based system, it can be found in the package python-enchant
+This module relies on pyenchant, on Fedora and Red Hat based system, it can be
+found in the package python-enchant
 """
 import enchant
 from willie.module import commands, example
@@ -28,7 +29,8 @@ def spellcheck(bot, trigger):
         return
     dictionary = enchant.Dict("en_US")
     dictionary_uk = enchant.Dict("en_GB")
-    # I don't want to make anyone angry, so I check both American and British English.
+    # I don't want to make anyone angry, so I check both American and British
+    # English.
     if dictionary_uk.check(word):
         if dictionary.check(word):
             bot.say(word + " is spelled correctly")
@@ -37,7 +39,8 @@ def spellcheck(bot, trigger):
     elif dictionary.check(word):
         bot.say(word + " is spelled correctly (American)")
     else:
-        msg = word + " is not spelled correctly. Maybe you want one of these spellings:"
+        msg = word + " is not spelled correctly. " \
+            "Maybe you want one of these spellings:"
         sugWords = []
         for suggested_word in dictionary.suggest(word):
                 sugWords.append(suggested_word)

@@ -21,8 +21,18 @@ def configure(config):
     """
     if config.option('Configure radio module', False):
         config.add_section('radio')
-        config.interactive_add('radio', 'url', 'URL to the ShoutCAST administration page', 'http://127.0.0.1:8000/')
-        config.interactive_add('radio', 'sid', 'Stream ID (only required for multi-stream servers.)', '1')
+        config.interactive_add(
+            'radio',
+            'url',
+            'URL to the ShoutCAST administration page',
+            'http://127.0.0.1:8000/'
+        )
+        config.interactive_add(
+            'radio',
+            'sid',
+            'Stream ID (only required for multi-stream servers.)',
+            '1'
+        )
 
 radioURL = ''  # Set once, after the first .radio request.
 checkSongs = 0
@@ -45,15 +55,26 @@ def getAPI(bot, trigger):
         return 0
 
     status = 'Online'
-    servername = XML.getElementsByTagName('SERVERTITLE')[0].firstChild.nodeValue
-    curlist = XML.getElementsByTagName('CURRENTLISTENERS')[0].firstChild.nodeValue
+    servername = XML.getElementsByTagName(
+        'SERVERTITLE'
+    )[0].firstChild.nodeValue
+    curlist = XML.getElementsByTagName(
+        'CURRENTLISTENERS'
+    )[0].firstChild.nodeValue
     maxlist = XML.getElementsByTagName('MAXLISTENERS')[0].firstChild.nodeValue
 
     #Garbage disposal
     XML.unlink()
 
     #print results
-    bot.say('[%s]Status: %s. Listeners: %s/%s.' % (servername, status, curlist, maxlist))
+    bot.say(
+        '[%s]Status: %s. Listeners: %s/%s.' % (
+            servername,
+            status,
+            curlist,
+            maxlist
+        )
+    )
     return 1
 
 
@@ -63,7 +84,11 @@ def currentSong(bot, trigger):
         song = web.get(radioURL % 'currentsong')
     except Exception as e:
         bot.say('The radio is not responding to the song request.')
-        bot.debug(__file__, 'Exception while trying to get current song: %s' % e, 'warning')
+        bot.debug(
+            __file__,
+            'Exception while trying to get current song: %s' % e,
+            'warning'
+        )
     if song:
         bot.say('Now playing: ' + song)
     else:
@@ -76,7 +101,11 @@ def nextSong(bot, trigger):
         song = web.get(radioURL % 'nextsong')
     except Exception as e:
         bot.say('The radio is not responding to the song request.')
-        bot.debug(__file__, 'Exception while trying to get next song: %s' % e, 'warning')
+        bot.debug(
+            __file__,
+            'Exception while trying to get next song: %s' % e,
+            'warning'
+        )
     if song:
         bot.say('Next up: ' + song)
     else:
@@ -85,7 +114,10 @@ def nextSong(bot, trigger):
 
 @commands('radio')
 def radio(bot, trigger):
-    """ Radio functions, valid parameters: on, off, song, now, next, soon, stats. """
+    """
+        Radio functions, valid parameters: on, off, song, now, next, soon,
+        stats.
+    """
     global checkSongs, current_song, radioURL
     if not radioURL:
         if not hasattr(bot.config, 'radio'):
@@ -115,7 +147,12 @@ def radio(bot, trigger):
             except Exception as e:
                 checkSongs -= 1
                 if checkSongs == 0:
-                    bot.debug(__file__, 'Exception while trying to get periodic radio data: %s' % e, 'warning')
+                    bot.debug(
+                        __file__,
+                        'Exception while trying to get periodic radio '
+                        'data: %s' % e,
+                        'warning'
+                    )
                     bot.say('The radio is not responding to the song request.')
                     bot.say('Turning off radio data checking.')
                 break

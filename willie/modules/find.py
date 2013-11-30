@@ -83,8 +83,8 @@ def findandreplace(bot, trigger):
     if Nick(rnick) not in search_dict[trigger.sender]:
         return
 
-    #TODO rest[0] is find, rest[1] is replace. These should be made variables of
-    #their own at some point.
+    # TODO rest[0] is find, rest[1] is replace. These should be made variables
+    # of their own at some point.
     rest = [trigger.group(2), trigger.group(3)]
     rest[0] = rest[0].replace(r'\/', '/')
     rest[1] = rest[1].replace(r'\/', '/')

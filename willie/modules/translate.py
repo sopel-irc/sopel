@@ -99,7 +99,11 @@ def tr(bot, trigger):
             msg = msg.decode('utf-8')
         if msg:
             msg = web.decode(msg)  # msg.replace('&#39;', "'")
-            msg = '"%s" (%s to %s, translate.google.com)' % (msg, input, output)
+            msg = '"%s" (%s to %s, translate.google.com)' % (
+                msg,
+                input,
+                output
+            )
         else:
             msg = 'The %s to %s translation failed, sorry!' % (input, output)
 
@@ -160,7 +164,11 @@ def get_random_lang(long_list, short_list):
 def mangle(bot, trigger):
     """Repeatedly translate the input until it makes absolutely no sense."""
     global mangle_lines
-    long_lang_list = ['fr', 'de', 'es', 'it', 'no', 'he', 'la', 'ja', 'cy', 'ar', 'yi', 'zh', 'nl', 'ru', 'fi', 'hi', 'af', 'jw', 'mr', 'ceb', 'cs', 'ga', 'sv', 'eo', 'el', 'ms', 'lv']
+    long_lang_list = [
+        'fr', 'de', 'es', 'it', 'no', 'he', 'la', 'ja', 'cy', 'ar',
+        'yi', 'zh', 'nl', 'ru', 'fi', 'hi', 'af', 'jw', 'mr', 'ceb',
+        'cs', 'ga', 'sv', 'eo', 'el', 'ms', 'lv'
+    ]
     lang_list = []
     for __ in range(0, 8):
         lang_list = get_random_lang(long_lang_list, lang_list)
@@ -177,7 +185,10 @@ def mangle(bot, trigger):
         bot.reply("What do you want me to mangle?")
         return
     if bot.config.has_section('translate') and bot.config.translate.research:
-        research_logfile = open(os.path.join(bot.config.logdir, 'mangle.log'), 'a')
+        research_logfile = open(
+            os.path.join(bot.config.logdir, 'mangle.log'),
+            'a'
+        )
         research_logfile.write('Phrase: %s\n' % str(phrase))
         research_logfile.write('Lang_list: %s\n' % lang_list)
     for lang in lang_list:
@@ -196,7 +207,8 @@ def mangle(bot, trigger):
             phrase = backup
             continue
 
-        if bot.config.has_section('translate') and bot.config.translate.research:
+        if bot.config.has_section('translate') and \
+                bot.config.translate.research:
             research_logfile.write('-> %s\n' % str(phrase))
         if not phrase:
             phrase = backup
@@ -211,6 +223,10 @@ def mangle(bot, trigger):
 @rule('(.*)')
 @priority('low')
 def collect_mangle_lines(bot, trigger):
-    if bot.config.has_section('translate') and bot.config.translate.collect_mangle_lines:
+    if bot.config.has_section('translate') and \
+            bot.config.translate.collect_mangle_lines:
         global mangle_lines
-        mangle_lines[trigger.sender.lower()] = "%s said '%s'" % (trigger.nick, (trigger.group(0).strip()))
+        mangle_lines[trigger.sender.lower()] = "%s said '%s'" % (
+            trigger.nick,
+            (trigger.group(0).strip())
+        )

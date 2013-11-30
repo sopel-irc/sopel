@@ -59,7 +59,8 @@ def xkcd(bot, trigger):
     If no input is provided it will return a random comic
     If numeric input is provided it will return that comic, or the nth-latest
     comic if the number is non-positive
-    If non-numeric input is provided it will return the first google result for those keywords on the xkcd.com site
+    If non-numeric input is provided it will return the first google result for
+    those keywords on the xkcd.com site
     """
     # get latest comic for rand function and numeric input
     latest = get_info()
