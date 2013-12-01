@@ -29,8 +29,9 @@ def rfc1459_startup(bot, trigger):
 
     251 RPL_LUSERCLIENT is a mandatory message that is sent after client
     connects to the server in rfc1459. RFC2812 does not require it and all
-    networks might not send it. This trigger is for those servers that send
-    251 but not 001.
+    networks might not send it. This trigger is for those servers that send 251
+    but not 001.
+
     """
     if not bot.connection_registered:
         startup(bot, trigger)
@@ -43,8 +44,9 @@ def rfc1459_startup(bot, trigger):
 def startup(bot, trigger):
     """Do tasks related to connecting to the network.
 
-    001 RPL_WELCOME is from RFC2812 and is the first message that is sent
-    after the connection has been registered on the network.
+    001 RPL_WELCOME is from RFC2812 and is the first message that is sent after
+    the connection has been registered on the network.
+
     """
     bot.connection_registered = True
 
@@ -77,9 +79,11 @@ def startup(bot, trigger):
 @willie.module.rule('.*')
 @willie.module.priority('high')
 def retry_join(bot, trigger):
-    """
+    """Give NickServer enough time to identify on a +R channel.
+
     Give NickServ enough time to identify, and retry rejoining an
     identified-only (+R) channel. Maximum of ten rejoin attempts.
+
     """
     channel = trigger.args[1]
     if channel in bot.memory['retry_join'].keys():
@@ -103,7 +107,7 @@ def retry_join(bot, trigger):
 @willie.module.thread(False)
 @willie.module.unblockable
 def handle_names(bot, trigger):
-    ''' Handle NAMES response, happens when joining to channels'''
+    """Handle NAMES response, happens when joining to channelsi."""
     names = re.split(' ', trigger)
     channels = re.search('(#\S*)', bot.raw)
     if (channels is None):
@@ -144,7 +148,7 @@ def handle_names(bot, trigger):
 @willie.module.event('MODE')
 @willie.module.unblockable
 def track_modes(bot, trigger):
-    ''' Track usermode changes and keep our lists of ops up to date '''
+    """Track usermode changes and keep our lists of ops up to date."""
     line = trigger.args
 
     # If the first character of where the mode is being set isn't a #
@@ -221,7 +225,7 @@ def track_modes(bot, trigger):
 @willie.module.event('NICK')
 @willie.module.unblockable
 def track_nicks(bot, trigger):
-    '''Track nickname changes and maintain our chanops list accordingly'''
+    """Track nickname changes and maintain our chanops list accordingly."""
     old = trigger.nick
     new = Nick(trigger)
 
@@ -407,9 +411,10 @@ def sasl_success(bot, trigger):
 @willie.module.thread(False)
 @willie.module.unblockable
 def blocks(bot, trigger):
-    """
-    Manage Willie's blocking features.
+    """Manage Willie's blocking features.
+
     https://github.com/embolalia/willie/wiki/Making-Willie-ignore-people
+
     """
     if not trigger.admin:
         return
