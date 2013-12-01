@@ -109,6 +109,7 @@ def tr(bot, trigger):
 
 
 @commands('translate', 'tr')
+@example('.tr :en :fr my dog  .tr mon chien')
 def tr2(bot, trigger):
     """Translates a phrase, with an optional language hint."""
     command = trigger.group(2).encode('utf-8')
