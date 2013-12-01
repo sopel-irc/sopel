@@ -14,9 +14,10 @@ import willie.module
 @willie.module.commands('movie', 'imdb')
 @willie.module.example('.movie Movie Title')
 def movie(bot, trigger):
-    """
-        Returns some information about a movie, like Title, Year, Rating, Genre
-        and IMDB Link.
+    """Returns some information about a movie.
+    
+    The information are like Title, Year, Rating, Genre and IMDB Link.
+
     """
     if not trigger.group(2):
         return

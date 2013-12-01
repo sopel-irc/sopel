@@ -22,9 +22,7 @@ def git_info():
 
 @willie.module.commands('version')
 def version(bot, trigger):
-    """
-        Display the latest commit version, if Willie is running in a git repo.
-    """
+    """Display the latest commit version if Willie is running in a git repo."""
     commit, author, date = git_info()
 
     if not commit.strip():

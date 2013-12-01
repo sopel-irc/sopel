@@ -56,9 +56,10 @@ def configure(config):
 
 @commands('makeissue', 'makebug')
 def issue(bot, trigger):
-    """
-        Create a GitHub issue, also known as a bug report. Syntax: .makeissue
-        Title of the bug report
+    """Create a GitHub issue, also known as a bug report.
+    
+    Syntax: .makeissue Title of the bug report
+
     """
     # check input
     if not trigger.group(2):
@@ -104,14 +105,14 @@ def issue(bot, trigger):
 
 @commands('addtrace', 'addtraceback')
 def add_traceback(bot, trigger):
-    """
-        Add a traceback to a GitHub issue.
+    """Add a traceback to a GitHub issue.
 
-        This pulls the traceback from the exceptions log file. To use, put
-        .addtrace followed by the issue number to add the comment to, then the
-        signature of the error (the message shown to the channel when the error
-        occured). This command will only work for errors from unhandled
-        exceptions.
+    This pulls the traceback from the exceptions log file.
+    To use, put .addtrace followed by the issue number to add the comment to,
+    then the signature of the error (the message shown to the channel when the
+    error occured).
+    This command will only work for errors from unhandled exceptions.
+
     """
     # Make sure the API is set up
     gitAPI = checkConfig(bot)
@@ -181,10 +182,11 @@ def add_traceback(bot, trigger):
 
 @commands('findissue', 'findbug')
 def findIssue(bot, trigger):
-    """
-        Search for a GitHub issue by keyword or ID. usage: .findissue search
-        keywords/ID (optional) You can specify the first keyword as "CLOSED" to
-        search closed issues.
+    """Search for a GitHub issue by keyword or ID.
+    
+    Usage: .findissue search keywords/ID (optional)
+    You can specify the first keyword as "CLOSED" to search closed issues.
+
     """
     if not trigger.group(2):
         return bot.reply('What are you searching for?')

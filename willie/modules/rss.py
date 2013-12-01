@@ -140,9 +140,10 @@ class RSSManager:
         )
 
     def _show_doc(self, bot, command):
-        """
-            Given an RSS command, say the docstring for the corresponding
-            method.
+        """Show the documentation.
+        
+        Given an RSS command, say the docstring for the corresponding method.
+
         """
         for line in getattr(self, '_rss_' + command).__doc__.split('\n'):
             line = line.strip()
@@ -186,11 +187,12 @@ class RSSManager:
         self.running = False
 
     def _rss_add(self, bot, trigger, c):
-        """
-            Add a feed to a channel, or modify an existing one.
-            Set mIRC-style foreground and background colour indices using fg
-            and bg.
-            Usage: .rss add <#channel> <Feed_Name> <URL> [fg] [bg]
+        """Add a feed to a channel, or modify an existing one.
+
+        Set mIRC-style foreground and background colour indices using fg and
+        bg.
+        Usage: .rss add <#channel> <Feed_Name> <URL> [fg] [bg]
+
         """
         pattern = r'''
             ^\.rss\s+add
@@ -265,15 +267,18 @@ class RSSManager:
         return self._toggle(bot, trigger, c)
 
     def _rss_disable(self, bot, trigger, c):
-        """
-            Disable a feed or feeds. Usage: .rss disable [#channel] [Feed_Name]
+        """Disable a feed or feeds.
+        
+        Usage: .rss disable [#channel] [Feed_Name]
+
         """
         return self._toggle(bot, trigger, c)
 
     def _toggle(self, bot, trigger, c):
-        """
-            Enable or disable a feed or feeds.
-            Usage: .rss <enable|disable> [#channel] [Feed_Name]
+        """Enable or disable a feed or feeds.
+
+        Usage: .rss <enable|disable> [#channel] [Feed_Name]
+
         """
         command = trigger.group(3)
 
@@ -315,9 +320,10 @@ class RSSManager:
         return True
 
     def _rss_list(self, bot, trigger, c):
-        """
-            Get information on all feeds in the database.
-            Usage: .rss list [#channel] [Feed_Name]
+        """Get information on all feeds in the database.
+
+        Usage: .rss list [#channel] [Feed_Name]
+
         """
         pattern = r"""
             ^\.rss\s+list
@@ -364,9 +370,10 @@ class RSSManager:
         read_feeds(bot, True)
 
     def _rss_help(self, bot, trigger, c):
-        """
-            Get help on any of the RSS feed commands.
-            Usage: .rss help <command>
+        """Get help on any of the RSS feed commands.
+
+        Usage: .rss help <command>
+
         """
         command = trigger.group(4)
         if command in self.actions:

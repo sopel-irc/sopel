@@ -114,9 +114,10 @@ def nextSong(bot, trigger):
 
 @commands('radio')
 def radio(bot, trigger):
-    """
-        Radio functions, valid parameters: on, off, song, now, next, soon,
-        stats.
+    """Radio functions.
+    
+    Valid parameters: on, off, song, now, next, soon, stats.
+
     """
     global checkSongs, current_song, radioURL
     if not radioURL:
