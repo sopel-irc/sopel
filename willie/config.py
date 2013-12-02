@@ -50,7 +50,6 @@ import imp
 
 
 class ConfigurationError(Exception):
-
     """ Exception type for configuration errors """
 
     def __init__(self, value):
