@@ -1,6 +1,6 @@
 # coding=utf-8
 """
-irc.py - A Utility IRC Bot
+irc.py - An Utility IRC Bot
 Copyright 2008, Sean B. Palmer, inamidst.com
 Copyright 2012, Edward Powell, http://embolalia.net
 Copyright © 2012, Elad Alfassa <elad@fedoraproject.org>
@@ -376,7 +376,7 @@ class Bot(asynchat.async_chat):
         """Replacement for self.recv() during SSL connections.
 
         From: http://evanfosmark.com/2010/09/ssl-support-in-asynchatasync_chat
-        
+
         """
         try:
             data = self.socket.read(buffer_size)
@@ -513,7 +513,7 @@ class Bot(asynchat.async_chat):
 
     def notice(self, dest, text):
         """Send an IRC NOTICE to a user or a channel.
-        
+
         See IRC protocol documentation for more information.
 
         """
