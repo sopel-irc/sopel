@@ -35,9 +35,11 @@ except ImportError:
 
 
 class WillieDB(object):
-    """
+
+    """WillieDB object configured with the options in the given Config object.
+
     Return a WillieDB object configured with the options in the given Config
-    object. The exact settgins used vary depending on the type of database
+    object. The exact settings used vary depending on the type of database
     chosen to back the SettingsDB, as determined by the ``userdb_type``
     attribute of *config*.
 
@@ -52,6 +54,7 @@ class WillieDB(object):
 
     Upon creation of the object, the tables currently existing in the given
     database will be registered, as though added through ``add_table``.
+
     """
 
     def __init__(self, config):
@@ -77,9 +80,7 @@ class WillieDB(object):
             self._sqlite(config)
 
     def __getattr__(self, attr):
-        """
-        Handle non-existant tables gracefully by returning a pseudo-table.
-        """
+        """Handle non-existant tables gracefully by returning a pseudo-table."""
         return self._none
 
     def __nonzero__(self):
@@ -161,10 +162,12 @@ class WillieDB(object):
         db.close()
 
     def check_table(self, name, columns, key):
-        """
+        """Check if WillidDB contains a specific table.
+
         Return ``True`` if the WillieDB contains a table with the same ``name``
         and ``key``, and which contains a column with the same name as each
         element in the given list ``columns``.
+
         """
         table = getattr(self, name)
         return (isinstance(table, Table) and table.key == key and
@@ -195,7 +198,8 @@ class WillieDB(object):
         return cols + ')'
 
     def add_table(self, name, columns, key):
-        """
+        """Add a table to WillieDB according to the given parameters.
+
         Add a column with the given ``name`` and ``key``, which has the given
         ``columns``. Each element in ``columns`` may be either a string giving
         the name of the column, or a tuple containing the name of the column
@@ -217,6 +221,7 @@ class WillieDB(object):
         primary key of the table. If it is desired that there be no primary
         key, this can be achieved by creating the table manually, or with a
         custom query, and then creating the WillieDB object.
+
         """
         # First, get the attribute with that name. It'll probably be a pseudo-
         # table, but we want to know if the table already exists or if it's
@@ -255,10 +260,11 @@ class WillieDB(object):
                              % name)
 
     def connect(self):
-        """
-        Create a database connection object. This functions essentially the
-        same as the ``connect`` function of the appropriate database type,
-        allowing for custom queries to be executed.
+        """Create a database connection object.
+
+        This functions essentially the same as the ``connect`` function of the
+        appropriate database type, allowing for custom queries to be executed.
+
         """
         if self.type == 'mysql':
             return MySQLdb.connect(
@@ -272,13 +278,16 @@ class WillieDB(object):
 
 
 class Table(object):
-    """
+
+    """Return an object which represent a table in the given WillieDB.
+
     Return an object which represents a table in the given WillieDB, with the
     given attributes. This will not check if ``db`` already has a table with
     the given ``name``; the ``db``'s ``add_table`` provides that functionality.
 
     ``key`` must be a string, which is in the list of strings ``columns``, or
     an Exception will be thrown.
+
     """
 
     def __init__(self, db, name, columns, key):
@@ -311,9 +320,11 @@ class Table(object):
         return bool(self.columns)
 
     def users(self):
-        """
-        Returns the number of users (entries not starting with # or &) in the
-        table's ``key`` column.
+        """Returns the number of users.
+
+        Users are entries not starting with # or & in the table's ``key``
+        column.
+
         """
         if not self.columns:  # handle a non-existant table
             return 0
@@ -329,9 +340,11 @@ class Table(object):
         return result
 
     def channels(self):
-        """
-        Returns the number of users (entries starting with # or &) in the
-        table's ``key`` column.
+        """Return the number of channels.
+
+        Channels are entries starting with # or & in the table's ``key``
+        column.
+
         """
         if not self.columns:  # handle a non-existant table
             return 0
@@ -402,7 +415,8 @@ class Table(object):
         return row
 
     def get(self, row, columns, key=None):
-        """
+        """Equivalent to SELECT FROM WHERE for WillieDB.
+
         Retrieve the value(s) in one or more ``columns`` in the row where the
         ``key`` column(s) match the value(s) given in ``row``. This is
         basically equivalent to executing ``SELECT <columns> FROM <self> WHERE
@@ -420,6 +434,7 @@ class Table(object):
         names. If one name is passed, a single string will be returned. If a
         tuple of names is passed, the return value will be a tuple in the same
         order.
+
         """  # TODO this documentation could be better.
         if not self.columns:  # handle a non-existant table
             return None
@@ -436,13 +451,15 @@ class Table(object):
             return self._get_many(row, columns, key)
 
     def update(self, row, values, key=None):
-        """
+        """Equivalent to UPDATE SET WHERE for WillieDB.
+
         Update the row where the values in ``row`` match the ``key`` columns.
         If the row does not exist, it will be created. The same rules regarding
         the type and length of ``key`` and ``row`` apply for ``update`` as for
         ``get``.
 
         The given ``values`` must be a dict of column name to new value.
+
         """
         if not self.columns:  # handle a non-existant table
             raise ValueError('Table is empty.')
@@ -474,8 +491,12 @@ class Table(object):
         db.close()
 
     def delete(self, row, key=None):
-        """Deletes the row for ``row`` in the database, removing its values in
-        all columns."""
+        """Equivalent to DELETE FROM WHERE for WillieDB.
+
+        Deletes the row for ``row`` in the database, removing its values in all
+        columns.
+
+        """
         if not self.columns:  # handle a non-existant table
             raise KeyError('Table is empty.')
 
@@ -497,12 +518,12 @@ class Table(object):
         db.close()
 
     def keys(self, key=None):
-        """
-        Return an iterator over the keys and values in the table.
+        """Return an iterator over the keys and values in the table.
 
         In a for each loop, you can use ``for key in table:``, where key will
         be the value of the ``key`` column(s), which defaults to the primary
         key, and table is the Table. This may be deprecated in future versions.
+
         """
         if not self.columns:  # handle a non-existant table
             raise KeyError('Table is empty.')
@@ -522,11 +543,13 @@ class Table(object):
         return self.keys()
 
     def contains(self, row, key=None):
-        """
+        """Check if the table has a row ``row`` with the key ``key``.
+
         Return ``True`` if this table has a row where the key value is equal to
         ``key``, else ``False``.
 
         ``key in db`` will also work, where db is your SettingsDB object.
+
         """
         if not self.columns:  # handle a non-existant table
             return False
@@ -556,14 +579,18 @@ class Table(object):
         return self.has_columns(column)
 
     def has_columns(self, column):
-        """
+        """Check if ``column`` is in the Table's cached list of its columns.
+
         Each Table contains a cached list of its columns. ``hascolumn(column)``
-        checks this list, and returns True if it contains ``column``. If
-        ``column`` is an iterable, this returns true if all of the values in
-        ``column`` are in the column cache. Note that this will not check the
-        database itself; it's meant for speed, not accuracy. However, unless
-        you have multiple bots using the same database, or are adding columns
-        while the bot is running, you are unlikely to encounter errors.
+        checks this list, and returns True if it contains ``column``.
+        If ``column`` is an iterable, this returns true if all of the values in
+        ``column`` are in the column cache.
+
+        Note that this will not check the database itself; it's meant for
+        speed, not accuracy. However, unless you have multiple bots using the
+        same database, or are adding columns while the bot is running, you are
+        unlikely to encounter errors.
+
         """
         if not self.columns:  # handle a non-existant table
             return False
@@ -581,9 +608,11 @@ class Table(object):
         return self.add_columns(columns)
 
     def add_columns(self, columns):
-        """
+        """Insert a new column.
+
         Insert a new column into the table, and add it to the column cache.
         This is the preferred way to add new columns to the database.
+
         """
         if not self.columns:  # handle a non-existant table
             raise ValueError('Table is empty.')
@@ -608,9 +637,11 @@ class Table(object):
 
 
 def configure(config):
-    """
+    """Configure the Config object ``config``.
+
     Interactively create configuration options and add the attributes to
     the Config object ``config``.
+
     """
     config.add_section('db')
 
