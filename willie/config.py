@@ -51,6 +51,7 @@ import imp
 
 class ConfigurationError(Exception):
     """ Exception type for configuration errors """
+
     def __init__(self, value):
         self.value = value
 
@@ -60,14 +61,16 @@ class ConfigurationError(Exception):
 
 class Config(object):
     def __init__(self, filename, load=True, ignore_errors=False):
-        """
-        Return a configuration object. The given filename will be associated
-        with the configuration, and is the file which will be written if
-        write() is called. If load is not given or True, the configuration
-        object will load the attributes from the file at filename.
+        """Return a configuration object.
+
+        The given filename will be associated with the configuration, and is
+        the file which will be written if write() is called. If load is not
+        given or True, the configuration object will load the attributes from
+        the file at filename.
 
         A few default values will be set here if they are not defined in the
         config file, or a config file is not loaded. They are documented below.
+
         """
         self.filename = filename
         """The config object's associated file, as noted above."""
@@ -115,15 +118,17 @@ class Config(object):
             self.parser.add_section('core')
 
     def save(self):
-        """Save all changes to the config file"""
+        """Save all changes to the config file."""
         cfgfile = open(self.filename, 'w')
         self.parser.write(cfgfile)
         cfgfile.flush()
         cfgfile.close()
 
     def add_section(self, name):
-        """
-        Add a section to the config file, returns ``False`` if already exists.
+        """Add a section to the config file.
+
+        Returns ``False`` if already exists.
+
         """
         try:
             return self.parser.add_section(name)
@@ -131,18 +136,21 @@ class Config(object):
             return False
 
     def has_option(self, section, name):
-        """ Check if option ``name`` exists under section ``section`` """
+        """Check if option ``name`` exists under section ``section``."""
         return self.parser.has_option(section, name)
 
     def has_section(self, name):
-        """ Check if section ``name`` exists """
+        """Check if section ``name`` exists."""
         return self.parser.has_section(name)
 
     class ConfigSection(object):
+
+        """Represents a section of the config file.
+
+        Contains all keys in thesection as attributes.
+
         """
-        Represents a section of the config file, contains all keys in the
-        section as attributes.
-        """
+
         def __init__(self, name, items, parent):
             object.__setattr__(self, '_name', name)
             object.__setattr__(self, '_parent', parent)
@@ -187,12 +195,14 @@ class Config(object):
 
     def interactive_add(self, section, option, prompt, default=None,
                         ispass=False):
-        """
+        """Ask for the value to assign to ``option`` under ``section``.
+
         Ask user in terminal for the value to assign to ``option`` under
         ``section``. If ``default`` is passed, it will be shown as the default
         value in the prompt. If ``option`` is already defined in ``section``,
         it will be used instead of ``default``, regardless of wheather
         ``default`` is passed.
+
         """
         if not self.parser.has_section(section):
             self.parser.add_section(section)
@@ -223,11 +233,13 @@ class Config(object):
             self.parser.set(section, option, value)
 
     def add_list(self, section, option, message, prompt):
-        """
-        Ask user in terminal for a list to assign to ``option``. If
-        ``option`` is already defined under ``section``, show the user the
-        current values and ask if the user would like to keep them. If so,
-        additional values can be entered.
+        """Ask for a list to assign to ``option``.
+
+        Ask user in terminal for a list to assign to ``option``. If ``option``
+        is already defined under ``section``, show the user the current values
+        and ask if the user would like to keep them. If so, additional values
+        can be entered.
+
         """
         print message
         lst = []
@@ -243,13 +255,15 @@ class Config(object):
         self.parser.set(section, option, ','.join(lst))
 
     def add_option(self, section, option, question, default=False):
-        """
+        """Ask "y/n" and set `option` based in the response.
+
         Show user in terminal a "y/n" prompt, and set `option` to True or False
         based on the response. If default is passed as true, the default will
         be shown as ``[y]``, else it will be ``[n]``. ``question`` should be
         phrased as a question, but without a question mark at the end. If
         ``option`` is already defined, it will be used instead of ``default``,
         regardless of wheather ``default`` is passed.
+
         """
         if not self.parser.has_section(section):
             self.parser.add_section(section)
@@ -259,11 +273,13 @@ class Config(object):
         self.parser.set(section, option, str(answer))
 
     def option(self, question, default=False):
-        """
+        """Ask "y/n" and return the corresponding boolean answer.
+
         Show user in terminal a "y/n" prompt, and return true or false based on
         the response. If default is passed as true, the default will be shown
         as ``[y]``, else it will be ``[n]``. ``question`` should be phrased as
         a question, but without a question mark at the end.
+
         """
         d = 'n'
         if default:
@@ -314,7 +330,8 @@ class Config(object):
         self.save()
 
     def enumerate_modules(self, show_all=False):
-        """
+        """Map the names of modules to the location of their file.
+
         *Availability: 4.0+*
 
         Return a dict mapping the names of modules to the location of their
@@ -328,6 +345,7 @@ class Config(object):
         If `show_all` is given as `True`, the `enable` and `exclude`
         configuration options will be ignored, and all modules will be shown
         (though duplicates will still be ignored as above).
+
         """
         modules = {}
 

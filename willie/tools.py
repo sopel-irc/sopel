@@ -32,12 +32,15 @@ import operator
 
 
 class ExpressionEvaluator:
+
     """A generic class for evaluating limited forms of Python expressions.
 
     Instances can overwrite binary_ops and unary_ops attributes with dicts of
     the form {ast.Node, function}. When the ast.Node being used as key is
     found, it will be evaluated using the given function.
+
     """
+
     class Error(Exception):
         pass
 
@@ -53,6 +56,7 @@ class ExpressionEvaluator:
                 statement.
             ExpressionEvaluator.Error: If the instance of ExpressionEvaluator
                 does not have a handler for the ast.Node.
+
         """
         ast_expression = ast.parse(expression_str, mode='eval')
         return self._eval_node(ast_expression.body)
@@ -67,6 +71,7 @@ class ExpressionEvaluator:
 
         Raises:
             ExpressionEvaluator.Error: If it can't handle the ast.Node.
+
         """
         if isinstance(node, ast.Num):
             return node.n
@@ -108,9 +113,10 @@ power (**) and modulo (%).
 
 
 def get_raising_file_and_line(tb=None):
-    """Return the file and line number of the statement that raised the tb
+    """Return the file and line number of the statement that raised the tb.
 
     Returns: (filename, lineno) tuple
+
     """
     if not tb:
         tb = sys.exc_info()[2]
@@ -192,8 +198,11 @@ class released(object):
 # http://parand.com/say/index.php/2007/07/13/simple-multi-dimensional-dictionaries-in-python/
 # A simple class to make mutli dimensional dict easy to use
 class Ddict(dict):
-    """
+
+    """Class for multi-dimensional ``dict``.
+
     A simple helper class to ease the creation of multi-dimensional ``dict``\s.
+
     """
 
     def __init__(self, default=None):
@@ -206,13 +215,15 @@ class Ddict(dict):
 
 
 class Nick(unicode):
-    """
-    A `unicode` subclass which acts appropriately for an IRC nickname. When
-    used as normal `unicode` objects, case will be preserved. However, when
-    comparing two Nick objects, or comparing a Nick object with a `unicode`
-    object, the comparison will be case insensitive. This case insensitivity
-    includes the case convention conventions regarding ``[]``, ``{}``, ``|``,
-    ``\\``, ``^`` and ``~`` described in RFC 2812.
+
+    """A `unicode` subclass which acts appropriately for an IRC nickname.
+    
+    When used as normal `unicode` objects, case will be preserved.
+    However, when comparing two Nick objects, or comparing a Nick object with a
+    `unicode` object, the comparison will be case insensitive. This case
+    insensitivity includes the case convention conventions regarding ``[]``,
+    ``{}``, ``|``, ``\\``, ``^`` and ``~`` described in RFC 2812.
+
     """
 
     def __new__(cls, nick):
@@ -226,12 +237,12 @@ class Nick(unicode):
         return s
 
     def lower(self):
-        """Return `nick`, converted to lower-case per RFC 2812"""
+        """Return `nick`, converted to lower-case per RFC 2812."""
         return self._lowered
 
     @staticmethod
     def _lower(nick):
-        """Returns `nick` in lower case per RFC 2812"""
+        """Returns `nick` in lower case per RFC 2812."""
         # The tilde replacement isn't needed for nicks, but is for channels,
         # which may be useful at some point in the future.
         low = nick.lower().replace('{', '[').replace('}', ']')
@@ -271,16 +282,23 @@ class Nick(unicode):
 
 
 class OutputRedirect:
-    """
+
+    """Redirect te output to the terminal and a log file.
+
     A simplified object used to write to both the terminal and a log file.
+
     """
 
     def __init__(self, logpath, stderr=False, quiet=False):
-        """
+        """Create an object which will to to a file and the terminal.
+
         Create an object which will log to the file at ``logpath`` as well as
-        the terminal. If ``stderr`` is given and true, it will write to stderr
-        rather than stdout. If ``quiet`` is given and True, data will be
-        written to the log file only, but not the terminal.
+        the terminal.
+        If ``stderr`` is given and true, it will write to stderr rather than
+        stdout.
+        If ``quiet`` is given and True, data will be written to the log file
+        only, but not the terminal.
+
         """
         self.logpath = logpath
         self.stderr = stderr
@@ -310,18 +328,21 @@ def stdout(string):
 
 
 def stderr(string):
-    """
-    Print the given ``string`` to stderr. This is equivalent to ``print >>
-    sys.stderr, string``
+    """Print the given ``string`` to stderr.
+    
+    This is equivalent to ``print >> sys.stderr, string``
+
     """
     print >> sys.stderr, string
 
 
 def check_pid(pid):
-    """
+    """Check if a process is running with the given ``PID``.
+
     *Availability: Only on POSIX systems*
 
     Return ``True`` if there is a process running with the given ``PID``.
+
     """
     try:
         os.kill(pid, 0)
@@ -332,14 +353,18 @@ def check_pid(pid):
 
 
 def verify_ssl_cn(server, port):
-    """
+    """Verify the SSL certificate.
+
     *Availability: Must have the OpenSSL Python module installed.*
 
     Verify the SSL certificate given by the ``server`` when connecting on the
-    given ``port``. This returns ``None`` if OpenSSL is not available or
-    'NoCertFound' if there was no certificate given. Otherwise, a two-tuple
-    containing a boolean of whether the certificate is valid and the
-    certificate information is returned.
+    given ``port``.
+
+    This returns ``None`` if OpenSSL is not available or 'NoCertFound' if there
+    was no certificate given.
+    Otherwise, a two-tuple containing a boolean of whether the certificate is
+    valid and the certificate information is returned.
+
     """
     if not ssl:
         return None
@@ -371,13 +396,15 @@ def verify_ssl_cn(server, port):
 
 
 class WillieMemory(dict):
-    """
+
+    """A simple thread-safe dict implementation.
+
     *Availability: 4.0; available as ``Willie.WillieMemory`` in 3.1.0 - 3.2.0*
 
-    A simple thread-safe dict implementation. In order to prevent
-    exceptions when iterating over the values and changing them at the same
-    time from different threads, we use a blocking lock on ``__setitem__``
-    and ``contains``.
+    In order to prevent exceptions when iterating over the values and changing
+    them at the same time from different threads, we use a blocking lock on
+    ``__setitem__`` and ``contains``.
+
     """
     def __init__(self, *args):
         dict.__init__(self, *args)
@@ -390,8 +417,10 @@ class WillieMemory(dict):
         return result
 
     def __contains__(self, key):
-        """
-        Check if a key is in the dict, locking it for writes when doing so.
+        """Check if a key is in the dict.
+
+        It locks it for writes when doing so.
+
         """
         self.lock.acquire()
         result = dict.__contains__(self, key)
@@ -399,13 +428,13 @@ class WillieMemory(dict):
         return result
 
     def contains(self, key):
-        """ Backwards compatability with 3.x, use `in` operator instead """
+        """Backwards compatability with 3.x, use `in` operator instead."""
         return self.__contains__(key)
 
     def lock(self):
-        """ Lock this instance from writes. Useful if you want to iterate """
+        """Lock this instance from writes. Useful if you want to iterate."""
         return self.lock.acquire()
 
     def unlock(self):
-        """ Release the write lock """
+        """Release the write lock."""
         return self.lock.release()

@@ -74,6 +74,7 @@ def get_example_test(tested_func, msg, results, privmsg, admin,
         repeat - How many times to repeat the test. Usefull for tests that
             return random stuff.
         use_regexp = Bool. If true, results is in regexp format.
+
     """
     def test():
         bot = MockWillie("NickName", admin=admin, owner=owner)
@@ -116,8 +117,7 @@ def get_example_test(tested_func, msg, results, privmsg, admin,
 
 
 def insert_into_module(func, module_name, base_name, prefix):
-    """Add a function into a module
-    """
+    """Add a function into a module."""
     func.__module__ = module_name
     module = sys.modules[module_name]
     # Make sure the func method does not overwrite anything.

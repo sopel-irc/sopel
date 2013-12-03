@@ -1,6 +1,6 @@
 # coding=utf-8
 """
-irc.py - A Utility IRC Bot
+irc.py - An Utility IRC Bot
 Copyright 2008, Sean B. Palmer, inamidst.com
 Copyright 2012, Edward Powell, http://embolalia.net
 Copyright © 2012, Elad Alfassa <elad@fedoraproject.org>
@@ -120,7 +120,7 @@ class Bot(asynchat.async_chat):
         messages can be sent and received. """
 
     def log_raw(self, line, prefix):
-        ''' Log raw line to the raw log '''
+        """Log raw line to the raw log."""
         if not self.config.core.log_raw:
             return
         if not self.config.core.logdir:
@@ -144,7 +144,7 @@ class Bot(asynchat.async_chat):
         f.close()
 
     def safe(self, string):
-        '''Remove newlines from a string'''
+        """Remove newlines from a string."""
         string = string.replace('\n', '')
         string = string.replace('\r', '')
         if not isinstance(string, unicode):
@@ -152,7 +152,7 @@ class Bot(asynchat.async_chat):
         return string
 
     def write(self, args, text=None):
-        """Send a command to the server
+        """Send a command to the server.
 
         ``args`` is an iterable of strings, which are joined by spaces.
         ``text`` is treated as though it were the final item in ``args``, but
@@ -167,6 +167,7 @@ class Bot(asynchat.async_chat):
         Newlines and carriage returns ('\\n' and '\\r') are removed before
         sending. Additionally, if the message (after joining) is longer than
         than 510 characters, any remaining characters will not be sent.
+
         """
         args = [self.safe(arg) for arg in args]
         if text is not None:
@@ -223,7 +224,7 @@ class Bot(asynchat.async_chat):
             self.quit('KeyboardInterrupt')
 
     def quit(self, message):
-        '''Disconnect from IRC and close the bot'''
+        """Disconnect from IRC and close the bot."""
         self.write(['QUIT'], message)
         self.hasquit = True
         # Wait for acknowledgement from the server. By RFC 2812 it should be
@@ -246,15 +247,17 @@ class Bot(asynchat.async_chat):
         asynchat.async_chat.handle_close(self)
 
     def part(self, channel, msg=None):
-        '''Part a channel'''
+        """Part a channel."""
         self.write(['PART', channel], msg)
 
     def join(self, channel, password=None):
-        '''Join a channel
+        """Join a channel
 
         If `channel` contains a space, and no `password` is given, the space is
-        assumed to split the argument into the channel to join and its password.
-        `channel` should not contain a space if `password` is given.'''
+        assumed to split the argument into the channel to join and its
+        password.  `channel` should not contain a space if `password` is given.
+
+        """
         if password is None:
             self.write(('JOIN', channel))
         else:
@@ -358,7 +361,7 @@ class Bot(asynchat.async_chat):
             time.sleep(int(self.config.timeout) / 2)
 
     def _ssl_send(self, data):
-        """ Replacement for self.send() during SSL connections. """
+        """Replacement for self.send() during SSL connections."""
         try:
             result = self.socket.send(data)
             return result
@@ -370,8 +373,11 @@ class Bot(asynchat.async_chat):
             return 0
 
     def _ssl_recv(self, buffer_size):
-        """ Replacement for self.recv() during SSL connections. From:
-        http://evanfosmark.com/2010/09/ssl-support-in-asynchatasync_chat """
+        """Replacement for self.recv() during SSL connections.
+
+        From: http://evanfosmark.com/2010/09/ssl-support-in-asynchatasync_chat
+
+        """
         try:
             data = self.socket.read(buffer_size)
             if not data:
@@ -506,12 +512,15 @@ class Bot(asynchat.async_chat):
             self.msg(recipient, excess, max_messages - 1)
 
     def notice(self, dest, text):
-        '''Send an IRC NOTICE to a user or a channel. See IRC protocol
-        documentation for more information'''
+        """Send an IRC NOTICE to a user or a channel.
+
+        See IRC protocol documentation for more information.
+
+        """
         self.write(('NOTICE', dest), text)
 
     def error(self, origin=None, trigger=None):
-        ''' Called internally when a module causes an error '''
+        """Called internally when a module causes an error."""
         try:
             trace = traceback.format_exc()
             trace = trace.decode('utf-8', errors='xmlcharrefreplace')
@@ -569,8 +578,11 @@ class Bot(asynchat.async_chat):
                 )
 
     def handle_error(self):
-        ''' Handle any uncaptured error in the core. Overrides asyncore's
-        handle_error '''
+        """Handle any uncaptured error in the core.
+
+        Overrides asyncore's handle_error.
+
+        """
         trace = traceback.format_exc()
         stderr(trace)
         self.debug(
