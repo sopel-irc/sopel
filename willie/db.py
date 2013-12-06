@@ -181,11 +181,14 @@ class WillieDB(object):
                     cols = cols + column + ' VARCHAR(255)'
                 elif self.type == 'sqlite':
                     cols = cols + column + ' string'
+                if key and column in key:
+                    cols += ' NOT NULL'
+
             elif isinstance(column, tuple):
                 cols += '%s %s' % column
+                if key and column[0] in key:
+                    cols += ' NOT NULL'
 
-            if key and column in key:
-                cols += ' NOT NULL'
             cols += ', '
 
         if key:
@@ -307,14 +310,35 @@ class Table(object):
         self.columns = set(columns)
         self.name = name
         if isinstance(key, basestring):
-            if key not in columns:
-                raise Exception  # TODO
-            self.key = key
+            if isinstance(columns[0], basestring):
+                if key not in columns:
+                    raise Exception  # TODO
+                self.key = key
+            elif isinstance(columns[0], tuple):
+                key_matched = False
+                for column in columns:
+                    if key == column[0]:
+                        self.key = key
+                        key_matched = True
+                        break
+                if not key_matched:
+                    raise Exception  # TODO (key not found in columns)
+
         else:
             for k in key:
-                if k not in columns:
-                    raise Exception  # TODO
-            self.key = key
+                if isinstance(columns[0], basestring):
+                    if k not in columns:
+                        raise Exception  # TODO
+                    self.key = key
+                elif isinstance(columns[0], tuple):
+                    key_matched = False
+                    for column in columns:
+                        if k == column:
+                            self.key = k
+                            key_matched = True
+                            break
+                    if not key_matched:
+                        raise Exception  # TODO (key not found in columns)
 
     def __nonzero__(self):
         return bool(self.columns)
