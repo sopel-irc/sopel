@@ -181,11 +181,14 @@ class WillieDB(object):
                     cols = cols + column + ' VARCHAR(255)'
                 elif self.type == 'sqlite':
                     cols = cols + column + ' string'
+                if key and column in key:
+                    cols += ' NOT NULL'
+
             elif isinstance(column, tuple):
                 cols += '%s %s' % column
+                if key and column[0] in key:
+                    cols += ' NOT NULL'
 
-            if key and column in key:
-                cols += ' NOT NULL'
             cols += ', '
 
         if key:
