@@ -159,6 +159,7 @@ class WillieDB(object):
                 if column[3]:
                     key.append(column[1])
             setattr(self, name, Table(self, name, columns, key))
+            self.tables.add(name)
         db.close()
 
     def check_table(self, name, columns, key):
@@ -250,11 +251,26 @@ class WillieDB(object):
             # We got an actual table. If the key on the table being created
             # has the same key, it's safe to assume it's the one the user
             # wanted, so if there are columns not already there, we add them.
-            if not all(c in extant_table.columns for c in columns):
+            new_cols = []
+
+            for new_col in columns:
+                if isinstance(new_col, tuple):
+                    if new_col[0] not in extant_table.columns:
+                        new_cols.append(" ".join(new_col))
+                elif isinstance(new_col, basestring):
+                    if new_col not in extant_table.columns:
+                        new_cols.append(new_col)
+                else:
+                    raise ValueError('%s is not a proper column definition'\
+                                     '(basestring or tuple expected)'
+                                     % str(type(new_col)))
+
+            if len(new_cols) > 0:
                 db = self.connect()
                 cursor = db.cursor()
-                cursor.execute("ALTER TABLE %s ADD COLUMN %s;")
-                extant_table.colums.add(columns)
+                for column in new_cols:
+                    cursor.execute('ALTER TABLE %s ADD %s;' % (name, column))
+                    extant_table.columns.add(column)
                 db.close()
         else:
             # There's already a different table with that name, which we can't
