@@ -81,8 +81,6 @@ def kick(bot, trigger):
     """
     Kick a user from the channel.
     """
-    if bot.privileges[trigger.sender][trigger.nick] < OP:
-        return
     text = trigger.group().split()
     argc = len(text)
     if argc < 2:
@@ -98,8 +96,10 @@ def kick(bot, trigger):
         channel = opt
         reasonidx = 3
     reason = ' '.join(text[reasonidx:])
+    if bot.privileges[channel][trigger.nick] < OP:
+        return
     if nick != bot.config.nick:
-        bot.write(['KICK', channel, nick, reason])
+        bot.write(['KICK', channel, nick], text=reason)
 
 
 def configureHostMask(mask):
