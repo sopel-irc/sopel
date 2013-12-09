@@ -50,8 +50,9 @@ def _find_geoip_db(bot):
     """ Find the GeoIP database """
     config = bot.config
     if config.has_section('ip') and config.ip.GeoIP_db_path is not None:
-        if (os.path.isfile(os.path.join(config.ip.GeoIP_db_path, 'GeoLiteCity.dat')) and
-                os.path.isfile(os.path.join(config.ip.GeoIP_db_path, 'GeoIPASNum.dat'))):
+        cities_db = os.path.join(config.ip.GeoIP_db_path, 'GeoLiteCity.dat')
+        ipasnum_db = os.path.join(config.ip.GeoIP_db_path, 'GeoIPASNum.dat')
+        if os.path.isfile(cities_db) and os.path.isfile(ipasnum_db):
             return config.ip.GeoIP_db_path
         else:
             bot.debug(__file__, 'GeoIP path configured but DB not found in configured path', 'warning')
@@ -96,12 +97,15 @@ def ip(bot, trigger):
     host = socket.getfqdn(query)
     response = "[IP/Host Lookup] Hostname: %s" % host
     response += " | Location: %s" % gi_city.country_name_by_name(query)
+    
+    region_data = gi_city.region_by_name(query)
     try:
-        region = gi_city.region_by_name(query)['region_name'] # pygeoip < 0.3.0
-    except:
-        region = gi_city.region_by_name(query)['region_code'] # pygeoip >= 0.3.0
-    if region is not None:
+        region = region_data['region_code']  # pygeoip >= 0.3.0
+    except KeyError:
+        region = region_data['region_name']  # pygeoip < 0.3.0
+    if region:
         response += " | Region: %s" % region
+    
     isp = gi_org.org_by_name(query)
     if isp is not None:
         isp = re.sub('^AS\d+ ', '', isp)
