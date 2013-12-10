@@ -286,7 +286,13 @@ def track_kick(bot, trigger):
         bot.channels.remove(trigger.sender)
         del bot.privileges[trigger.sender]
     else:
-        del bot.privileges[trigger.sender][nick]
+        # Temporary fix to stop KeyErrors from being sent to channel
+        # The privileges dict may not have all nicks stored at all times
+        # causing KeyErrors
+        try:
+            del bot.privileges[trigger.sender][nick]
+        except KeyError:
+            pass
 
 
 @willie.module.rule('.*')
