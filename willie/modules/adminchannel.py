@@ -59,7 +59,10 @@ def op(bot, trigger):
     # Let's make sure we are not trying to op the bot, since it should
     # already be op and if it is not, the command will not work anyway.
     if bot.config.nick not in trigger.group().split():
-        setMode(bot, trigger, '+o')
+        try:
+            setMode(bot, trigger, '+o')
+        except ArgsError as e:
+            bot.reply(ERROR_MESSAGE_FORMAT % (ERROR_PREFIX, e.message))
 
 
 @commands('deop')
@@ -80,7 +83,10 @@ def deop(bot, trigger):
         bot.say('%s' % cleanDoc(deop))
         return
 
-    setMode(bot, trigger, '-o')
+    try:
+        setMode(bot, trigger, '-o')
+    except ArgsError as e:
+        bot.reply(ERROR_MESSAGE_FORMAT % (ERROR_PREFIX, e.message))
 
 
 @commands('voice')
@@ -101,7 +107,10 @@ def voice(bot, trigger):
         bot.say('%s' % cleanDoc(voice))
         return
 
-    setMode(bot, trigger, '+v')
+    try:
+        setMode(bot, trigger, '+v')
+    except ArgsError as e:
+        bot.reply(ERROR_MESSAGE_FORMAT % (ERROR_PREFIX, e.message))
 
 
 @commands('devoice')
@@ -122,7 +131,10 @@ def devoice(bot, trigger):
         bot.say('%s' % cleanDoc(devoice))
         return
 
-    setMode(bot, trigger, '-v')
+    try:
+        setMode(bot, trigger, '-v')
+    except ArgsError as e:
+        bot.reply(ERROR_MESSAGE_FORMAT % (ERROR_PREFIX, e.message))
 
 
 @commands('kick')
@@ -575,28 +587,24 @@ def setMode(bot, trigger, mode):
     args = trigger.group().split()
     argc = len(args) - 1
 
-    try:
-        if argc == 0:
-            nick = trigger.nick
-            channel = trigger.sender
-        elif argc == 1:
-            nick = args[1]
-            channel = trigger.sender
+    if argc == 0:
+        nick = trigger.nick
+        channel = trigger.sender
+    elif argc == 1:
+        nick = args[1]
+        channel = trigger.sender
+    else:
+        if args[1].startswith('#'):
+            channel, nick = args[1:3]
+        elif args[2].startswith('#'):
+            nick, channel = args[1:3]
         else:
-            if args[1].startswith('#'):
-                channel, nick = args[1:3]
-            elif args[2].startswith('#'):
-                nick, channel = args[1:3]
-            else:
-                raise ArgsError(NO_CHANNEL)
+            raise ArgsError(NO_CHANNEL)
 
-        if not permissionsCheck(bot, channel, trigger.nick):
-            raise ArgsError(NO_PERMISSION)
+    if not permissionsCheck(bot, channel, trigger.nick):
+        raise ArgsError(NO_PERMISSION)
 
-        bot.write(['MODE', channel, mode, nick])
-
-    except ArgsError as e:
-        bot.reply(ERROR_MESSAGE_FORMAT % (ERROR_PREFIX, e.message))
+    bot.write(['MODE', channel, mode, nick])
 
 
 def cleanDoc(doc):
