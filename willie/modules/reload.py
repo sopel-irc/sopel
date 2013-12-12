@@ -76,7 +76,7 @@ def f_reload(bot, trigger):
 
 if sys.version_info >= (2, 7):
     @willie.module.nickname_commands('update')
-    def f_update_new(bot, trigger):
+    def f_update(bot, trigger):
         if not trigger.admin:
             return
 
@@ -89,7 +89,7 @@ if sys.version_info >= (2, 7):
         f_reload(bot, trigger)
 else:
     @willie.module.nickname_commands('update')
-    def f_update_old(bot, trigger):
+    def f_update(bot, trigger):
         bot.say('You need to run me on Python 2.7 to do that.')
 
 
@@ -141,10 +141,7 @@ def pm_f_reload(bot, trigger):
 def pm_f_update(bot, trigger):
     """Wrapper for allowing delivery of .update command via PM"""
     if not trigger.sender.startswith('#'):
-        if sys.version_info >= (2, 7):
-            f_update_new(bot, trigger)
-        else:
-            f_update_old(bot, trigger)
+        f_update(bot, trigger)
 
 
 @willie.module.commands("load")
