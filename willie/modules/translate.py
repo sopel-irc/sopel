@@ -17,10 +17,6 @@ import os
 mangle_lines = {}
 
 
-def setup(bot):
-    random.seed()
-
-
 def configure(config):
     """
 
@@ -109,7 +105,8 @@ def tr(bot, trigger):
 
 
 @commands('translate', 'tr')
-@example('.tr :en :fr my dog  .tr mon chien')
+@example('.tr :en :fr my dog', '"mon chien" (en to fr, translate.google.com)')
+@example('.tr mon chien', '"my dog" (fr to en, translate.google.com)')
 def tr2(bot, trigger):
     """Translates a phrase, with an optional language hint."""
     command = trigger.group(2).encode('utf-8')
@@ -215,3 +212,8 @@ def collect_mangle_lines(bot, trigger):
     if bot.config.has_section('translate') and bot.config.translate.collect_mangle_lines:
         global mangle_lines
         mangle_lines[trigger.sender.lower()] = "%s said '%s'" % (trigger.nick, (trigger.group(0).strip()))
+
+
+if __name__ == "__main__":
+    from willie.test_tools import run_example_tests
+    run_example_tests(__file__)
