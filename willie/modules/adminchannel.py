@@ -12,16 +12,18 @@ http://willie.dftba.net/
 import re
 from willie.module import commands, priority, OP
 
-STRINGS = {'NOT_ENOUGH_ARGS' : 'Not enough arguments specified',
-           'TOO_MANY_ARGS' : 'Too many arguments specified',
-           'NO_PERMISSION' : 'You do not have permission to do this',
-           'NO_CHANNEL' : 'The channel provided is invalid or one was not specified',
-           'INVALID_MASK' : 'The mask provided is invalid',
-           'NO_TOPIC' : 'The topic privided is invalid or one was not specified',
-           'NO_DATABASE' : 'Could not connect to the Database',
-           'DEFAULT_KICK_REASON' : 'No reason specified',
-           'ERROR_PREFIX' : '[ERROR]',
-           'ERROR_MESSAGE_FORMAT' : '%s %s'}
+STRINGS = {'NOT_ENOUGH_ARGS': 'Not enough arguments specified',
+           'TOO_MANY_ARGS': 'Too many arguments specified',
+           'NO_PERMISSION': 'You do not have permission to do this',
+           'NO_CHANNEL': 'The channel provided is invalid or one was not\
+                          specified',
+           'INVALID_MASK': 'The mask provided is invalid',
+           'NO_TOPIC': 'The topic privided is invalid or one was not\
+                        specified',
+           'NO_DATABASE': 'Could not connect to the Database',
+           'DEFAULT_KICK_REASON': 'No reason specified',
+           'ERROR_PREFIX': '[ERROR]',
+           'ERROR_MESSAGE_FORMAT': '%s %s'}
 
 
 def setup(bot):
@@ -161,7 +163,8 @@ def kick(bot, trigger):
             channel = trigger.sender
             reasonidx = 2
     else:
-        bot.reply(STRINGS.get('ERROR_MESSAGE_FORMAT') % (STRINGS.get('ERROR_PREFIX'), e.message))
+        bot.reply(STRINGS.get('ERROR_MESSAGE_FORMAT') %
+                             (STRINGS.get('ERROR_PREFIX'), e.message))
         return
 
     if reasonidx > 1:
@@ -170,7 +173,8 @@ def kick(bot, trigger):
         reason = DEFAULT_KICK_REASON
 
     if not permissionsCheck(bot, channel, trigger.nick):
-        bot.reply(STRINGS.get('ERROR_MESSAGE_FORMAT') % (STRINGS.get('NO_PERMISSION'), e.message))
+        bot.reply(STRINGS.get('ERROR_MESSAGE_FORMAT') %
+                             (STRINGS.get('ERROR_PREFIX'), e.message))
         return
 
     if nick != bot.config.nick:
@@ -270,7 +274,8 @@ def kickban(bot, trigger):
     argc = len(args) - 1
 
     if argc < 2:
-        bot.reply(STRINGS.get('ERROR_MESSAGE_FORMAT') % (STRINGS.get('NOT_ENOUGH_ARGS'), e.message))
+        bot.reply(STRINGS.get('ERROR_MESSAGE_FORMAT') %
+                             (STRINGS.get('ERROR_PREFIX'), e.message))
         return
     elif argc == 2:
         channel = trigger.sender
@@ -295,11 +300,13 @@ def kickban(bot, trigger):
     banmask = configureHostMask(banmask)
 
     if banmask == '':
-        bot.reply(STRINGS.get('ERROR_MESSAGE_FORMAT') % (STRINGS.get('INVALID_MASK'), e.message))
+        bot.reply(STRINGS.get('ERROR_MESSAGE_FORMAT') %
+                             (STRINGS.get('ERROR_PREFIX'), e.message))
         return
 
     if not permissionsCheck(bot, channel, trigger.nick):
-        bot.reply(STRINGS.get('ERROR_MESSAGE_FORMAT') % (STRINGS.get('NO_PERMISSION'), e.message))
+        bot.reply(STRINGS.get('ERROR_MESSAGE_FORMAT') %
+                             (STRINGS.get('ERROR_PREFIX'), e.message))
         return
 
     bot.write(['MODE', channel, '+b', banmask])
@@ -329,10 +336,12 @@ def topic(bot, trigger):
     argc = len(args) - 1
 
     if argc < 1:
-        bot.reply(STRINGS.get('ERROR_MESSAGE_FORMAT') % (STRINGS.get('NO_TOPIC'), e.message))
+        bot.reply(STRINGS.get('ERROR_MESSAGE_FORMAT') %
+                             (STRINGS.get('ERROR_PREFIX'), e.message))
         return
     elif argc < 2 and args[1].startswith('#'):
-        bot.reply(STRINGS.get('ERROR_MESSAGE_FORMAT') % (STRINGS.get('NO_TOPIC'), e.message))
+        bot.reply(STRINGS.get('ERROR_MESSAGE_FORMAT') %
+                             (STRINGS.get('ERROR_PREFIX'), e.message))
         return
     elif argc > 1:
         if args[1].startswith('#'):
@@ -374,7 +383,8 @@ def topic(bot, trigger):
     new_topic = mask % topic_args
 
     if not permissionsCheck(bot, channel, trigger.nick):
-        bot.reply(STRINGS.get('ERROR_MESSAGE_FORMAT') % (STRINGS.get('NO_PERMISSION'), e.message))
+        bot.reply(STRINGS.get('ERROR_MESSAGE_FORMAT') %
+                             (STRINGS.get('ERROR_PREFIX'), e.message))
         return
 
     bot.write(('TOPIC', channel), text=new_topic)
@@ -401,7 +411,8 @@ def set_mask(bot, trigger):
     argc = len(args) - 1
 
     if argc < 1:
-        bot.reply(STRINGS.get('ERROR_MESSAGE_FORMAT') % (STRINGS.get('NO_TOPIC'), e.message))
+        bot.reply(STRINGS.get('ERROR_MESSAGE_FORMAT') %
+                             (STRINGS.get('ERROR_PREFIX'), e.message))
         return
     elif argc >= 1:
         if args[1].startswith('#'):
@@ -414,11 +425,13 @@ def set_mask(bot, trigger):
     topic_mask = ' '.join(args[maskidx:])
 
     if not permissionsCheck(bot, channel, trigger.nick):
-        bot.reply(STRINGS.get('ERROR_MESSAGE_FORMAT') % (STRINGS.get('NO_PERMISSION'), e.message))
+        bot.reply(STRINGS.get('ERROR_MESSAGE_FORMAT') %
+                             (STRINGS.get('ERROR_PREFIX'), e.message))
         return
 
     if not bot.db:
-        bot.reply(STRINGS.get('ERROR_MESSAGE_FORMAT') % (STRINGS.get('NO_DATABASE'), e.message))
+        bot.reply(STRINGS.get('ERROR_MESSAGE_FORMAT') %
+                             (STRINGS.get('ERROR_PREFIX'), e.message))
         return
 
     bot.db.preferences.update(channel.lower(), {'topic_mask': topic_mask})
@@ -451,15 +464,18 @@ def show_mask(bot, trigger):
         channel = trigger.sender.lower()
 
     if not permissionsCheck(bot, channel, trigger.nick):
-        bot.reply(STRINGS.get('ERROR_MESSAGE_FORMAT') % (STRINGS.get('NO_PERMISSION'), e.message))
+        bot.reply(STRINGS.get('ERROR_MESSAGE_FORMAT') %
+                             (STRINGS.get('ERROR_PREFIX'), e.message))
         return
 
     if not bot.db:
-        bot.reply(STRINGS.get('ERROR_MESSAGE_FORMAT') % (STRINGS.get('NO_DATABASE'), e.message))
+        bot.reply(STRINGS.get('ERROR_MESSAGE_FORMAT') %
+                             (STRINGS.get('ERROR_PREFIX'), e.message))
         return
 
     if channel not in bot.db.preferences:
-        bot.reply(STRINGS.get('ERROR_MESSAGE_FORMAT') % (STRINGS.get('NO_CHANNEL'), e.message))
+        bot.reply(STRINGS.get('ERROR_MESSAGE_FORMAT') %
+                             (STRINGS.get('ERROR_PREFIX'), e.message))
         return
 
     topic = bot.db.preferences.get(channel, 'topic_mask')
@@ -540,19 +556,23 @@ def setMaskMode(bot, trigger, mode):
         elif args[1].startswith('#'):
             banmask, channel = args[1:3]
         else:
-            bot.reply(STRINGS.get('ERROR_MESSAGE_FORMAT') % (STRINGS.get('NO_CHANNEL'), e.message))
+            bot.reply(STRINGS.get('ERROR_MESSAGE_FORMAT') %
+                                 (STRINGS.get('ERROR_PREFIX'), e.message))
             return
     else:
-        bot.reply(STRINGS.get('ERROR_MESSAGE_FORMAT') % (STRINGS.get('TOO_MANY_ARGS'), e.message))
+        bot.reply(STRINGS.get('ERROR_MESSAGE_FORMAT') %
+                             (STRINGS.get('ERROR_PREFIX'), e.message))
         return
 
     if not permissionsCheck(bot, channel, trigger.nick):
-        bot.reply(STRINGS.get('ERROR_MESSAGE_FORMAT') % (STRINGS.get('NO_PERMISSION'), e.message))
+        bot.reply(STRINGS.get('ERROR_MESSAGE_FORMAT') %
+                             (STRINGS.get('ERROR_PREFIX'), e.message))
         return
 
     banmask = configureHostMask(banmask)
     if banmask == '':
-        bot.reply(STRINGS.get('ERROR_MESSAGE_FORMAT') % (STRINGS.get('INVALID_MASK'), e.message))
+        bot.reply(STRINGS.get('ERROR_MESSAGE_FORMAT') %
+                             (STRINGS.get('ERROR_PREFIX'), e.message))
         return
 
     bot.write(['MODE', channel, mode, banmask])
@@ -580,11 +600,13 @@ def setMode(bot, trigger, mode):
         elif args[2].startswith('#'):
             nick, channel = args[1:3]
         else:
-            bot.reply(STRINGS.get('ERROR_MESSAGE_FORMAT') % (STRINGS.get('NO_CHANNEL'), e.message))
+            bot.reply(STRINGS.get('ERROR_MESSAGE_FORMAT') %
+                                 (STRINGS.get('ERROR_PREFIX'), e.message))
             return
 
     if not permissionsCheck(bot, channel, trigger.nick):
-        bot.reply(STRINGS.get('ERROR_MESSAGE_FORMAT') % (STRINGS.get('NO_PERMISSION'), e.message))
+        bot.reply(STRINGS.get('ERROR_MESSAGE_FORMAT') %
+                             (STRINGS.get('ERROR_PREFIX'), e.message))
         return
 
     bot.write(['MODE', channel, mode, nick])
