@@ -159,6 +159,7 @@ class WillieDB(object):
                 if column[3]:
                     key.append(column[1])
             setattr(self, name, Table(self, name, columns, key))
+            self.tables.add(name)
         db.close()
 
     def check_table(self, name, columns, key):
@@ -181,11 +182,14 @@ class WillieDB(object):
                     cols = cols + column + ' VARCHAR(255)'
                 elif self.type == 'sqlite':
                     cols = cols + column + ' string'
+                if key and column in key:
+                    cols += ' NOT NULL'
+
             elif isinstance(column, tuple):
                 cols += '%s %s' % column
+                if key and column[0] in key:
+                    cols += ' NOT NULL'
 
-            if key and column in key:
-                cols += ' NOT NULL'
             cols += ', '
 
         if key:
@@ -247,11 +251,26 @@ class WillieDB(object):
             # We got an actual table. If the key on the table being created
             # has the same key, it's safe to assume it's the one the user
             # wanted, so if there are columns not already there, we add them.
-            if not all(c in extant_table.columns for c in columns):
+            new_cols = []
+
+            for new_col in columns:
+                if isinstance(new_col, tuple):
+                    if new_col[0] not in extant_table.columns:
+                        new_cols.append(" ".join(new_col))
+                elif isinstance(new_col, basestring):
+                    if new_col not in extant_table.columns:
+                        new_cols.append(new_col)
+                else:
+                    raise ValueError('%s is not a proper column definition'\
+                                     '(basestring or tuple expected)'
+                                     % str(type(new_col)))
+
+            if len(new_cols) > 0:
                 db = self.connect()
                 cursor = db.cursor()
-                cursor.execute("ALTER TABLE %s ADD COLUMN %s;")
-                extant_table.colums.add(columns)
+                for column in new_cols:
+                    cursor.execute('ALTER TABLE %s ADD %s;' % (name, column))
+                    extant_table.columns.add(column)
                 db.close()
         else:
             # There's already a different table with that name, which we can't
@@ -307,14 +326,35 @@ class Table(object):
         self.columns = set(columns)
         self.name = name
         if isinstance(key, basestring):
-            if key not in columns:
-                raise Exception  # TODO
-            self.key = key
+            if isinstance(columns[0], basestring):
+                if key not in columns:
+                    raise Exception  # TODO
+                self.key = key
+            elif isinstance(columns[0], tuple):
+                key_matched = False
+                for column in columns:
+                    if key == column[0]:
+                        self.key = key
+                        key_matched = True
+                        break
+                if not key_matched:
+                    raise Exception  # TODO (key not found in columns)
+
         else:
             for k in key:
-                if k not in columns:
-                    raise Exception  # TODO
-            self.key = key
+                if isinstance(columns[0], basestring):
+                    if k not in columns:
+                        raise Exception  # TODO
+                    self.key = key
+                elif isinstance(columns[0], tuple):
+                    key_matched = False
+                    for column in columns:
+                        if k == column:
+                            self.key = k
+                            key_matched = True
+                            break
+                    if not key_matched:
+                        raise Exception  # TODO (key not found in columns)
 
     def __nonzero__(self):
         return bool(self.columns)
