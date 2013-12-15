@@ -277,6 +277,22 @@ def rate(value):
     return add_attribute
 
 
+def require_privmsg(function):
+    """
+    Decorator, this allows functions to specify if they should be only
+    allowed via private message.
+    """
+    def _nop(*args, **kwargs):
+        # Assign trigger and bot for easy access later
+        bot, trigger = args[0:2]
+        if trigger.is_privmsg:
+            return function(*args, **kwargs)
+        bot.reply('This command can only be executed via PM \
+                  (Private Message)')
+        return
+    return _nop
+
+
 class example(object):
 
     """Decorator. Add an example.
