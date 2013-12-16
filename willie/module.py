@@ -21,6 +21,7 @@ Licensed under the Eiffel Forum License 2.
 """
 
 import willie.test_tools
+import functools
 
 NOLIMIT = 1
 """Return value for ``callable``\s, which supresses rate limiting for the call.
@@ -282,6 +283,7 @@ def require_privmsg(function):
     Decorator, this allows functions to specify if they should be only
     allowed via private message.
     """
+    @functools.wraps(function)
     def _nop(*args, **kwargs):
         # Assign trigger and bot for easy access later
         bot, trigger = args[0:2]
