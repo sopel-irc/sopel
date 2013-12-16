@@ -574,7 +574,7 @@ class Willie(irc.Bot):
 
             """Is trigger from a channel or in PM"""
             s.is_privmsg = False
-            if origin.sender[0] not in '#&+!':
+            if origin.sender is not None and origin.sender[0] not in '#&+!':
                 s.is_privmsg = True
 
             s.sender = origin.sender
