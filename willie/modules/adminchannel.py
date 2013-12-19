@@ -12,18 +12,19 @@ http://willie.dftba.net/
 import re
 from willie.module import commands, priority, OP
 
-STRINGS = {'NOT_ENOUGH_ARGS': 'Not enough arguments specified',
-           'TOO_MANY_ARGS': 'Too many arguments specified',
-           'NO_PERMISSION': 'You do not have permission to do this',
-           'NO_CHANNEL': 'The channel provided is invalid or one was not\
-                          specified',
-           'INVALID_MASK': 'The mask provided is invalid',
-           'NO_TOPIC': 'The topic privided is invalid or one was not\
-                        specified',
-           'NO_DATABASE': 'Could not connect to the Database',
+STRINGS = {'NOT_ENOUGH_ARGS': '[Error] Not enough arguments specified',
+           'TOO_MANY_ARGS': '[Error] Too many arguments specified',
+           'NO_PERMISSION': '[Error] You do not have permission to do this',
+           'NO_CHANNEL': '[Error] The channel provided is invalid or one ' +
+           'was not specified',
+           'INVALID_MASK': '[Error] The mask provided is invalid or one ' +
+           'was not specified',
+           'NO_DATABASE': '[Error] Could not connect to the Database',
+           'NO_MASK_SET': 'No mask is set for this channel',
            'DEFAULT_KICK_REASON': 'No reason specified',
-           'ERROR_PREFIX': '[ERROR]',
-           'ERROR_MESSAGE_FORMAT': '%s %s'}
+           'INVALID_TOPIC_MASK': 'An invalid topic mask is in place, using' +
+           'the default',
+           'NO_TOPIC_MASK': 'No topic mask in place, using the default'}
 
 
 def setup(bot):
@@ -130,51 +131,60 @@ def kick(bot, trigger):
     Note: Bot must be OP
     """
 
-    # If there are no arguments then return the USE statement
-    if len(trigger.group().split()) < 2:
-        bot.say('%s' % cleanDoc(kick))
-        return
-
     args = trigger.group().split()
     argc = len(args) - 1
     reasonidx = 1
 
-    if argc == 1:
-        nick = args[1]
-        channel = trigger.sender
-    elif argc == 2:
-        if args[1].startswith('#'):
-            channel, nick = args[1:3]
-        elif args[2].startswith('#'):
-            nick, channel = args[1:3]
-        else:
-            nick = args[1]
-            channel = trigger.sender
-            reasonidx = 2
-    elif argc > 2:
-        if args[1].startswith('#'):
-            channel, nick = args[1:3]
-            reasonidx = 3
-        elif args[2].startswith('#'):
-            nick, channel = args[1:3]
-            reasonidx = 3
-        else:
-            nick = args[1]
-            channel = trigger.sender
-            reasonidx = 2
-    else:
-        bot.reply(STRINGS.get('ERROR_MESSAGE_FORMAT') %
-                             (STRINGS.get('ERROR_PREFIX'), e.message))
+    # If there are no arguments then return the USE statement
+    if argc < 1:
+        bot.say('%s' % cleanDoc(kick))
         return
 
-    if reasonidx > 1:
-        reason = ' '.join(args[reasonidx:])
+    if trigger.is_privmsg:
+        if argc <= 1:
+            bot.reply(STRINGS['NOT_ENOUGH_ARGS'])
+            return
+        elif args >= 2:
+            if isChannel(args[1]):
+                channel, nick = args[1:3]
+                reasonidx = 3
+            elif isChannel(args[2]):
+                nick, channel = args[1:3]
+                reasonidx = 3
+            else:
+                bot.reply(STRINGS['NO_CHANNEL'])
+                return
     else:
-        reason = DEFAULT_KICK_REASON
+        if argc < 1:
+            bot.reply(STRINGS['NOT_ENOUGH_ARGS'])
+            return
+        elif argc == 1:
+            if isChannel(args[1]):
+                bot.reply(STRINGS['NOT_ENOUGH_ARGS'])
+                return
+            else:
+                nick = args[1]
+                channel = trigger.sender
+        elif argc >= 2:
+            if isChannel(args[1]):
+                channel, nick = args[1:3]
+                reasonidx = 3
+            elif isChannel(args[2]):
+                nick, channel = args[1:3]
+                reasonidx = 3
+            else:
+                nick = args[1]
+                channel = trigger.sender
+                reasonidx = 2
+
+    channel = channel.lower()
+
+    reason = ' '.join(args[reasonidx:])
+    if reason.strip() == '':
+        reason = STRINGS['DEFAULT_KICK_REASON']
 
     if not permissionsCheck(bot, channel, trigger.nick):
-        bot.reply(STRINGS.get('ERROR_MESSAGE_FORMAT') %
-                             (STRINGS.get('ERROR_PREFIX'), e.message))
+        bot.reply(STRINGS['NO_PERMISSION'])
         return
 
     if nick != bot.config.nick:
@@ -265,48 +275,61 @@ def kickban(bot, trigger):
     Note: Bot must be OP
     """
 
-    # If there are no arguments then return the USE statement
-    if len(trigger.group().split()) < 2:
-        bot.say('%s' % help)
-        return
-
     args = trigger.group().split()
     argc = len(args) - 1
+    reasonidx = 1
 
-    if argc < 2:
-        bot.reply(STRINGS.get('ERROR_MESSAGE_FORMAT') %
-                             (STRINGS.get('ERROR_PREFIX'), e.message))
+    # If there are no arguments then return the USE statement
+    if argc < 1:
+        bot.say('%s' % cleandoc(kickban))
         return
-    elif argc == 2:
-        channel = trigger.sender
-        nick, banmask = args[1:3]
-        reasonidx = 2
-    elif argc > 2:
-        if args[1].startswith('#'):
-            channel, nick, banmask = args[1:4]
-            reasonidx = 4
-        elif args[3].startswith('#'):
-            nick, banmask, channel = args[1:4]
-            reasonidx = 4
-        else:
-            nick, banmask = args[1:3]
-            channel = trigger.sender
-            reasonidx = 3
+
+    if trigger.is_privmsg:
+        if argc <= 2:
+            bot.reply(STRINGS['NOT_ENOUGH_ARGS'])
+            return
+        elif argc >= 3:
+            if isChannel(args[1]):
+                channel, nick, banmask = args[1:4]
+                reasonidx = 4
+            else:
+                bot.replay(STRINGS['NO_CHANNEL'])
+                return
+    else:
+        if argc < 2:
+            bot.reply(STRINGS['NOT_ENOUGH_ARGS'])
+            return
+        elif argc == 2:
+            if isChannel(args[1]) or isChannel(args[2]):
+                bot.reply(STRINGS['NOT_ENOUGH_ARGS'])
+                return
+            else:
+                nick, banmask = args[1:3]
+                channel = trigger.sender
+                reasonidx = 3
+        elif argc >= 3:
+            if isChannel(args[1]):
+                channel, nick, banmask = args[1:4]
+                reasonidx = 4
+            else:
+                channel = trigger.sender
+                nick, banmask = args[1:3]
+                reasonidx = 3
 
     reason = ' '.join(args[reasonidx:])
     if reason == '' or reason is None:
-        reason = DEFAULT_KICK_REASON
+        reason = STRINGS['DEFAULT_KICK_REASON']
+
+    channel = channel.lower()
 
     banmask = configureHostMask(banmask)
 
     if banmask == '':
-        bot.reply(STRINGS.get('ERROR_MESSAGE_FORMAT') %
-                             (STRINGS.get('ERROR_PREFIX'), e.message))
+        bot.reply(STRINGS['INVALID_MASK'])
         return
 
     if not permissionsCheck(bot, channel, trigger.nick):
-        bot.reply(STRINGS.get('ERROR_MESSAGE_FORMAT') %
-                             (STRINGS.get('ERROR_PREFIX'), e.message))
+        bot.reply(STRINGS['NO_PERMISSION'])
         return
 
     bot.write(['MODE', channel, '+b', banmask])
@@ -324,32 +347,38 @@ def topic(bot, trigger):
 
     Note: Bot must be OP
     """
-
-    # If there are no arguments then return the USE statement
-    if len(trigger.group().split()) < 2:
-        bot.say('%s' % cleanDoc(topic))
-        return
-
     purple, green, bold = '\x0306', '\x0310', '\x02'
 
     args = trigger.group().split()
     argc = len(args) - 1
 
+    # If there are no arguments then return the USE statement
     if argc < 1:
-        bot.reply(STRINGS.get('ERROR_MESSAGE_FORMAT') %
-                             (STRINGS.get('ERROR_PREFIX'), e.message))
+        bot.say('%s' % cleanDoc(topic))
         return
-    elif argc < 2 and args[1].startswith('#'):
-        bot.reply(STRINGS.get('ERROR_MESSAGE_FORMAT') %
-                             (STRINGS.get('ERROR_PREFIX'), e.message))
-        return
-    elif argc > 1:
-        if args[1].startswith('#'):
-            channel = args[1]
-            topicidx = 2
-        else:
-            channel = trigger.sender
+
+    if trigger.is_privmsg:
+        if argc < 2:
+            bot.reply(STRINGS['NOT_ENOUGH_ARGS'])
+            return
+        if argc >= 2:
+            if isChannel(args[1]):
+                channel = args[1]
+                topicidx = 2
+            else:
+                bot.reply(STRINGS['NO_CHANNEL'])
+                return
+    else:
+        if argc == 1:
             topicidx = 1
+            channel = trigger.sender
+        if argc >= 2:
+            if isChannel(args[1]):
+                channel = args[1]
+                topicidx = 2
+            else:
+                channel = trigger.sender
+                topicidx = 1
 
     channel = channel.lower()
 
@@ -359,6 +388,7 @@ def topic(bot, trigger):
     if bot.db and channel in bot.db.preferences:
         mask = bot.db.preferences.get(channel, 'topic_mask')
     else:
+        bot.reply(STRINGS['NO_TOPIC_MASK'])
         mask = default_mask
 
     nargs = len(re.findall('%s', mask))
@@ -366,25 +396,25 @@ def topic(bot, trigger):
     # If the number of '%s' encountered in the mask is 0 or the mask is
     # empty then we should use the default mask
     if nargs < 1 or mask is None or mask == '':
+        bot.reply(STRINGS['INVALID_TOPIC_MASK'])
         mask = default_mask
 
     # Attempt to get a list of arguments. This can be a single string
     # delimited by '~'
     new_topic = ' '.join(args[topicidx:])
-    topic_args = tuple(topic.split('~', nargs))
+    topic_args = tuple(new_topic.split('~', nargs))
 
     # Make sure we have enough arguments
     if len(topic_args) < nargs:
-        message = 'Not enough arguments. You gave ' \
-                  + str(len(topic_args)) + ', it requires ' + str(narg) \
-                  + '.'
-        return bot.reply(message)
+        message = str('Not enough arguments. You gave %s, it requires %s.' %
+                      (str(len(topic_args)), str(nargs)))
+        bot.reply(message)
+        return
 
     new_topic = mask % topic_args
 
     if not permissionsCheck(bot, channel, trigger.nick):
-        bot.reply(STRINGS.get('ERROR_MESSAGE_FORMAT') %
-                             (STRINGS.get('ERROR_PREFIX'), e.message))
+        bot.reply(STRINGS['NO_PERMISSION'])
         return
 
     bot.write(('TOPIC', channel), text=new_topic)
@@ -401,37 +431,45 @@ def set_mask(bot, trigger):
 
     Note: Bot must be OP
     """
+    args = trigger.group().split()
+    argc = len(args) - 1
+    topicidx = 1
 
     # If there are no arguments then return the USE statement
-    if len(trigger.group().split()) < 2:
+    if argc < 1:
         bot.say('%s' % cleanDoc(set_mask))
         return
 
-    args = trigger.group().split()
-    argc = len(args) - 1
+    if trigger.is_privmsg:
+        if argc < 2:
+            bot.reply(STRINGS['NOT_ENOUGH_ARGS'])
+            return
+        elif argc >= 2:
+            if isChannel(args[1]):
+                channel = args[1]
+                topicidx = 2
+            else:
+                bot.reply(STRINGS['NO_CHANNEL'])
+                return
+    else:
+        if argc >= 1:
+            if isChannel(args[1]):
+                channel = args[1]
+                topicidx = 2
+            else:
+                channel = trigger.sender
+                topicidx = 1
 
-    if argc < 1:
-        bot.reply(STRINGS.get('ERROR_MESSAGE_FORMAT') %
-                             (STRINGS.get('ERROR_PREFIX'), e.message))
-        return
-    elif argc >= 1:
-        if args[1].startswith('#'):
-            channel = args[1].lower()
-            maskidx = 2
-        else:
-            channel = trigger.sender.lower()
-            maskidx = 1
+    channel = channel.lower()
 
-    topic_mask = ' '.join(args[maskidx:])
+    topic_mask = ' '.join(args[topicidx:])
 
     if not permissionsCheck(bot, channel, trigger.nick):
-        bot.reply(STRINGS.get('ERROR_MESSAGE_FORMAT') %
-                             (STRINGS.get('ERROR_PREFIX'), e.message))
+        bot.reply(STRINGS['NO_PERMISSION'])
         return
 
     if not bot.db:
-        bot.reply(STRINGS.get('ERROR_MESSAGE_FORMAT') %
-                             (STRINGS.get('ERROR_PREFIX'), e.message))
+        bot.reply(STRINGS['NO_DATABASE'])
         return
 
     bot.db.preferences.update(channel.lower(), {'topic_mask': topic_mask})
@@ -448,37 +486,51 @@ def show_mask(bot, trigger):
     Note: Bot must be OP
     """
 
-    # If there are no arguments then return the USE statement
-    if len(trigger.group().split()) < 2 and not trigger.sender.startswith('#'):
-        bot.say('%s' % cleanDoc(show_mask))
-        return
-
     args = trigger.group().split()
     argc = len(args) - 1
 
-    if argc < 1:
-        channel = trigger.sender.lower()
-    elif args[1].startswith('#'):
-        channel = args[1].lower()
+    if trigger.is_privmsg:
+        if argc < 1:
+            bot.reply(STRINGS['NO_CHANNEL'])
+            return
+        elif argc == 1:
+            if isChannel(args[1]):
+                channel = args[1]
+            else:
+                bot.reply(STRINGS['NO_CHANNEL'])
+                return
+        elif argc > 1:
+            bot.reply(STRINGS['TOO_MANY_ARGS'])
+            return
     else:
-        channel = trigger.sender.lower()
+        if argc < 1:
+            channel = trigger.sender
+        elif argc == 1:
+            if isChannel(args[1]):
+                channel = args[1]
+            else:
+                bot.reply(STRINGS['NO_CHANNEL'])
+                return
+        elif argc > 1:
+            bot.reply(STRINGS['TOO_MANY_ARGS'])
+            return
 
-    if not permissionsCheck(bot, channel, trigger.nick):
-        bot.reply(STRINGS.get('ERROR_MESSAGE_FORMAT') %
-                             (STRINGS.get('ERROR_PREFIX'), e.message))
-        return
+    channel = channel.lower()
 
     if not bot.db:
-        bot.reply(STRINGS.get('ERROR_MESSAGE_FORMAT') %
-                             (STRINGS.get('ERROR_PREFIX'), e.message))
+        bot.reply(STRINGS['NO_DATABASE'])
         return
 
     if channel not in bot.db.preferences:
-        bot.reply(STRINGS.get('ERROR_MESSAGE_FORMAT') %
-                             (STRINGS.get('ERROR_PREFIX'), e.message))
+        bot.reply(STRINGS['NO_MASK_SET'])
+        return
+
+    if not permissionsCheck(bot, channel, trigger.nick):
+        bot.reply(STRINGS['NO_PERMISSION'])
         return
 
     topic = bot.db.preferences.get(channel, 'topic_mask')
+
     bot.reply('The topic mask is:')
     bot.say('%s' % topic)
 
@@ -519,6 +571,7 @@ def configureHostMask(mask):
     m = re.match('^([^!@]+)!([^!@]+)@([^!@]+)$', mask)
     if m is not None:
         return '%s!%s@%s' % (m.group(1), m.group(2), m.group(3))
+
     return ''
 
 
@@ -547,32 +600,53 @@ def setMaskMode(bot, trigger, mode):
     args = trigger.group().split()
     argc = len(args) - 1
 
-    if argc == 1:
-        banmask = args[1]
-        channel = trigger.sender
-    elif argc == 2:
-        if args[1].startswith('#'):
-            channel, banmask = args[1:3]
-        elif args[1].startswith('#'):
-            banmask, channel = args[1:3]
-        else:
-            bot.reply(STRINGS.get('ERROR_MESSAGE_FORMAT') %
-                                 (STRINGS.get('ERROR_PREFIX'), e.message))
+    if trigger.is_privmsg:
+        if argc < 2:
+            bot.reply(STRINGS['NOT_ENOUGH_ARGS'])
+            return
+        elif argc == 2:
+            if isChannel(args[1]):
+                channel = args[1]
+                banmask = args[2]
+            else:
+                bot.reply(STRINGS['NO_CHANNEL'])
+                return
+        elif argc > 2:
+            bot.reply(STRINGS['TOO_MANY_ARGS'])
             return
     else:
-        bot.reply(STRINGS.get('ERROR_MESSAGE_FORMAT') %
-                             (STRINGS.get('ERROR_PREFIX'), e.message))
-        return
+        if argc < 1:
+            bot.reply(STRINGS['NOT_ENOUGH_ARGS'])
+            return
+        elif argc == 1:
+            if isChannel(args[1]):
+                bot.reply(STRINGS['INVALID_MASK'])
+                return
+            else:
+                banmask = args[1]
+                channel = trigger.sender
+        elif argc == 2:
+            if isChannel(args[1]):
+                channel, banmask = args[1:3]
+            elif isChannel(args[2]):
+                banmask, channel = args[1:3]
+            else:
+                bot.reply(STRINGS['NO_CHANNEL'])
+                return
+        elif argc > 2:
+            bot.reply(STRINGS['TOO_MANY_ARGS'])
+            return
+
+    channel = channel.lower()
 
     if not permissionsCheck(bot, channel, trigger.nick):
-        bot.reply(STRINGS.get('ERROR_MESSAGE_FORMAT') %
-                             (STRINGS.get('ERROR_PREFIX'), e.message))
+        bot.reply(STRINGS['NO_PERMISSION'])
         return
 
     banmask = configureHostMask(banmask)
+
     if banmask == '':
-        bot.reply(STRINGS.get('ERROR_MESSAGE_FORMAT') %
-                             (STRINGS.get('ERROR_PREFIX'), e.message))
+        bot.reply(STRINGS['INVALID_MASK'])
         return
 
     bot.write(['MODE', channel, mode, banmask])
@@ -588,25 +662,49 @@ def setMode(bot, trigger, mode):
     args = trigger.group().split()
     argc = len(args) - 1
 
-    if argc == 0:
-        nick = trigger.nick
-        channel = trigger.sender
-    elif argc == 1:
-        nick = args[1]
-        channel = trigger.sender
-    else:
-        if args[1].startswith('#'):
-            channel, nick = args[1:3]
-        elif args[2].startswith('#'):
-            nick, channel = args[1:3]
+    if trigger.is_privmsg:
+        if argc <= 1:
+            bot.reply(STRINGS['NOT_ENOUGH_ARGS'])
+            return
+        elif argc == 2:
+            # Order [channel] [nick]
+            if isChannel(args[1]):
+                channel, nick = args[1:3]
+            elif isChannel(args[2]):
+                nick, channel = args[1:3]
+            else:
+                bot.reply(STRINGS['NO_CHANNEL'])
+                return
         else:
-            bot.reply(STRINGS.get('ERROR_MESSAGE_FORMAT') %
-                                 (STRINGS.get('ERROR_PREFIX'), e.message))
+            bot.reply(STRINGS['TOO_MANY_ARGS'])
+            return
+    else:
+        if argc == 0:
+            nick = trigger.nick
+            channel = trigger.sender
+        elif argc == 1:
+            nick = args[1]
+            channel = trigger.sender
+            if isChannel(nick):
+                bot.reply(STRINGS['NOT_ENOUGH_ARGS'])
+                return
+        elif argc == 2:
+            # Order [channel] [nick]
+            if isChannel(args[1]):
+                channel, nick = args[1:3]
+            elif isChannel(args[2]):
+                nick, channel = args[1:3]
+            else:
+                bot.reply(STRINGS['TOO_MANY_ARGS'])
+                return
+        else:
+            bot.reply(STRINGS['TOO_MANY_ARGS'])
             return
 
+    channel = channel.lower()
+
     if not permissionsCheck(bot, channel, trigger.nick):
-        bot.reply(STRINGS.get('ERROR_MESSAGE_FORMAT') %
-                             (STRINGS.get('ERROR_PREFIX'), e.message))
+        bot.reply(STRINGS['NO_PERMISSION'])
         return
 
     bot.write(['MODE', channel, mode, nick])
@@ -620,3 +718,13 @@ def cleanDoc(doc):
     for line in doc.__doc__.replace('\r', '').split('\n'):
         if line != '':
             return line
+
+
+def isChannel(value):
+    """
+    Check if the given string is a channel or not
+    """
+    if value is not None and value[0] in '&#~!':
+        return True
+    else:
+        return False
