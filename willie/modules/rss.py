@@ -117,7 +117,7 @@ def migrate_from_old_tables(bot, c):
 
 def colour_text(text, fg, bg=''):
     """Given some text and fore/back colours, return a coloured text string."""
-    if not fg:
+    if fg == '':
         return text
     else:
         colour = '{0},{1}'.format(fg, bg) if bg != '' else fg
@@ -315,7 +315,7 @@ class RSSManager:
 
         filtered = [feed for feed in feeds
                     if (feed.channel == channel or channel is None)
-                    and (feed.name == feed_name or feed_name is None)]
+                    and (feed_name is None or feed.name.lower() == feed_name.lower())]
 
         if not filtered:
             bot.reply("No feeds matched the command.")
