@@ -281,7 +281,7 @@ def kickban(bot, trigger):
 
     # If there are no arguments then return the USE statement
     if argc < 1:
-        bot.say('%s' % cleandoc(kickban))
+        bot.say('%s' % cleanDoc(kickban))
         return
 
     if trigger.is_privmsg:
