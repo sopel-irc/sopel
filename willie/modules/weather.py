@@ -49,9 +49,9 @@ def get_cover(parsed):
 def get_temp(parsed):
     try:
         condition = parsed.entries[0]['yweather_condition']
-    except KeyError:
+        temp = int(condition['temp'])
+    except (KeyError, ValueError):
         return 'unknown'
-    temp = int(condition['temp'])
     f = round((temp * 1.8) + 32, 2)
     return (u'%d\u00B0C (%d\u00B0F)' % (temp, f))
 
@@ -59,26 +59,22 @@ def get_temp(parsed):
 def get_pressure(parsed):
     try:
         pressure = parsed['feed']['yweather_atmosphere']['pressure']
-    except KeyError:
+        millibar = float(pressure)
+        inches = int(millibar / 33.7685)
+    except (KeyError, ValueError):
         return 'unknown'
-    millibar = float(pressure)
-    inches = int(millibar / 33.7685)
     return ('%din (%dmb)' % (inches, int(millibar)))
 
 
 def get_wind(parsed):
     try:
         wind_data = parsed['feed']['yweather_wind']
-    except KeyError:
-        return 'unknown'
-    try:
         kph = float(wind_data['speed'])
-    except ValueError:
-        kph = -1
-        # Incoming data isn't a number, default to zero.
-        # This is a dirty fix for issue #218
-    speed = int(round(kph / 1.852, 0))
-    degrees = int(wind_data['direction'])
+        speed = int(round(kph / 1.852, 0))
+        degrees = int(wind_data['direction'])
+    except (KeyError, ValueError):
+        return 'unknown'
+
     if speed < 1:
         description = 'Calm'
     elif speed < 4:
