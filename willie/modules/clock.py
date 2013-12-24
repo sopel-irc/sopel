@@ -38,7 +38,7 @@ def f_time(bot, trigger):
                     return
             else:
                 bot.say("I'm sorry, I don't know about the %s timezone or"
-                           " user. Try one from http://dft.ba/-tz" % tz
+                           " user. Try one from http://dft.ba/-tz" % tz)
                 return
     #We don't have a timzeone. Is there one set? If not, just use UTC
     elif bot.db:
