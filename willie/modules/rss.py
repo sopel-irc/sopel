@@ -21,6 +21,7 @@ from willie.config import ConfigurationError
 socket.setdefaulttimeout(10)
 
 INTERVAL = 60 * 5  # seconds between checking for new updates
+DATEFORMAT = '%b %d %Y %X'  # format for timestamp displayed on new items
 
 
 def setup(bot):
@@ -434,12 +435,15 @@ def read_feeds(bot, force=False):
         if not fp.entries:
             continue
 
-        feed_etag = fp.etag if hasattr(fp, 'etag') else None
-        feed_modified = fp.modified if hasattr(fp, 'modified') else None
+        feed_etag = getattr(fp, 'etag', None)
+        feed_modified = getattr(fp, 'modified', None)
 
         entry = fp.entries[0]
+        # parse published and updated times into datetime objects (or None)
         entry_dt = (datetime.fromtimestamp(time.mktime(entry.published_parsed))
-                    if 'published' in entry else None)
+                    if hasattr(entry, 'published_parsed') else None)
+        entry_update_dt = (datetime.fromtimestamp(time.mktime(entry.updated_parsed))
+                           if hasattr(entry, 'updated_parsed') else None)
 
         # check if article is new, and skip otherwise
         if (feed.title == entry.title and feed.link == entry.link
@@ -471,8 +475,10 @@ def read_feeds(bot, force=False):
         # print new entry
         message = u"[\x02{0}\x02] \x02{1}\x02 {2}".format(
             colour_text(feed.name, feed.fg, feed.bg), entry.title, entry.link)
-        if entry.updated:
-            message += " - " + entry.updated
+        # append update time if it exists, or published time if it doesn't
+        timestamp = entry_update_dt or entry_dt
+        if timestamp:
+            message += " - {0}".format(timestamp.strftime(DATEFORMAT))
         bot.msg(feed.channel, message)
 
     conn.close()
