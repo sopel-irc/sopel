@@ -21,7 +21,6 @@ from willie.config import ConfigurationError
 socket.setdefaulttimeout(10)
 
 INTERVAL = 60 * 5  # seconds between checking for new updates
-DATEFORMAT = '%b %d %Y %X'  # format for timestamp displayed on new items
 
 
 def setup(bot):
@@ -472,13 +471,23 @@ def read_feeds(bot, force=False):
                     feed.name, entry.title, published_dt, entry_dt), 'verbose')
                 continue
 
-        # print new entry
+        # create message for new entry
         message = u"[\x02{0}\x02] \x02{1}\x02 {2}".format(
             colour_text(feed.name, feed.fg, feed.bg), entry.title, entry.link)
+
         # append update time if it exists, or published time if it doesn't
         timestamp = entry_update_dt or entry_dt
         if timestamp:
-            message += " - {0}".format(timestamp.strftime(DATEFORMAT))
+            # attempt to get time format from preferences
+            tformat = ''
+            if feed.channel in bot.db.preferences:
+                tformat = bot.db.preferences.get(feed.channel, 'time_format') or tformat
+            if not tformat and bot.config.has_option('clock', 'time_format'):
+                tformat = bot.config.clock.time_format
+
+            message += " - {0}".format(timestamp.strftime(tformat or '%F - %T%Z'))
+
+        # print message
         bot.msg(feed.channel, message)
 
     conn.close()
