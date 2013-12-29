@@ -1,6 +1,5 @@
 # coding=utf-8
-"""
-adminchannel.py - Willie Admin Module
+"""adminchannel.py - Willie Admin Module
 Copyright 2010-2011, Michael Yanovich, Alek Rollyson, and Edward Powell
 Copyright © 2012, Elad Alfassa <elad@fedoraproject.org>
 Licensed under the Eiffel Forum License 2.
@@ -35,20 +34,19 @@ def setup(bot):
 
 @commands('op')
 def op(bot, trigger):
-    """
-    USE: .op [#channel] [nick]
+    """Command to op users in a room.
+    
+    If no nick is given, willie will op the nick who sent the command in the
+    channel it was issues in. This can also be issued via PM.
 
-    Command to op users in a room. If no nick is given,
-    willie will op the nick who sent the command in the
-    channel it was issues in. This can also be issued via
-    PM.
+    USE: .op [#channel] [nick]
 
     Note: Bot must be OP
     """
 
     # If there are no arguments then return the USE statement
     if len(trigger.group().split()) < 2:
-        bot.say('%s' % cleanDoc(op))
+        bot.say('USE: .op [#channel] [nick]')
         return
 
     # Let's make sure we are not trying to op the bot, since it should
@@ -59,20 +57,19 @@ def op(bot, trigger):
 
 @commands('deop')
 def deop(bot, trigger):
-    """
-    USE: .deop [#channel] [nick]
+    """Command to deop users in a room.
+    
+    If no nick is given, willie will deop the nick who sent the command in the
+    channel it was issues in. This can also be issued via PM.
 
-    Command to deop users in a room. If no nick is given,
-    willie will deop the nick who sent the command in the
-    channel it was issues in. This can also be issued via
-    PM.
+    USE: .deop [#channel] [nick]
 
     Note: Bot must be OP
     """
 
     # If there are no arguments then return the USE statement
     if len(trigger.group().split()) < 2:
-        bot.say('%s' % cleanDoc(deop))
+        bot.say('USE: .deop [#channel] [nick]')
         return
 
     setMode(bot, trigger, '-o')
@@ -80,20 +77,19 @@ def deop(bot, trigger):
 
 @commands('voice')
 def voice(bot, trigger):
-    """
-    USE: .voice [#channel] [nick]
+    """Command to voice users in a room.
+    
+    If no nick is given, willie will voice the nick who sent the command in
+    the channel it was issues in. This can also be issued via PM.
 
-    Command to voice users in a room. If no nick is given,
-    willie will voice the nick who sent the command in the
-    channel it was issues in. This can also be issued via
-    PM.
+    USE: .voice [#channel] [nick]
 
     Note: Bot must be OP
     """
 
     # If there are no arguments then return the USE statement
     if len(trigger.group().split()) < 2:
-        bot.say('%s' % cleanDoc(voice))
+        bot.say('USE: .voice [#channel] [nick]')
         return
 
     setMode(bot, trigger, '+v')
@@ -101,20 +97,19 @@ def voice(bot, trigger):
 
 @commands('devoice')
 def devoice(bot, trigger):
-    """
-    USE: .devoice [#channel] [nick]
+    """Command to devoice users in a room.
+    
+    If no nick is given, willie will voice the nick who sent the command in
+    the channel it was issues in. This can also be issued via PM.
 
-    Command to devoice users in a room. If no nick is given,
-    willie will voice the nick who sent the command in the
-    channel it was issues in. This can also be issued via
-    PM.
+    USE: .devoice [#channel] [nick]
 
     Note: Bot must be OP
     """
 
     # If there are no arguments then return the USE statement
     if len(trigger.group().split()) < 2:
-        bot.say('%s' % cleanDoc(devoice))
+        bot.say('USE: .devoice [#channel] [nick]')
         return
 
     setMode(bot, trigger, '-v')
@@ -123,10 +118,9 @@ def devoice(bot, trigger):
 @commands('kick')
 @priority('high')
 def kick(bot, trigger):
-    """
-    USE: .kick [#channel] nick
+    """Command to Kick a user from a room.
 
-    Command to Kick a user from a room.
+    USE: .kick [#channel] nick
 
     Note: Bot must be OP
     """
@@ -137,7 +131,7 @@ def kick(bot, trigger):
 
     # If there are no arguments then return the USE statement
     if argc < 1:
-        bot.say('%s' % cleanDoc(kick))
+        bot.say('USE: .kick [#channel] nick')
         return
 
     if trigger.is_privmsg:
@@ -194,17 +188,16 @@ def kick(bot, trigger):
 @commands('ban')
 @priority('high')
 def ban(bot, trigger):
-    """
-    USE: .ban [#channel] banmask
+    """Command to ban a user from a room.
 
-    Command to ban a user from a room.
+    USE: .ban [#channel] banmask
 
     Note: Bot must be OP
     """
 
     # If there are no arguments then return the USE statement
     if len(trigger.group().split()) < 2:
-        bot.say('%s' % cleanDoc(ban))
+        bot.say('USE: .ban [#channel] banmask')
         return
 
     setMaskMode(bot, trigger, '+b')
@@ -212,17 +205,16 @@ def ban(bot, trigger):
 
 @commands('unban')
 def unban(bot, trigger):
-    """
-    USE: .ban [#channel] banmask
+    """Command to ban a user from a room.
 
-    Command to ban a user from a room.
+    USE: .ban [#channel] banmask
 
     Note: Bot must be OP
     """
 
     # If there are no arguments then return the USE statement
     if len(trigger.group().split()) < 2:
-        bot.say('%s' % cleanDoc(unban))
+        bot.say('USE: .ban [#channel] banmask')
         return
 
     setMaskMode(bot, trigger, '-b')
@@ -230,17 +222,16 @@ def unban(bot, trigger):
 
 @commands('quiet')
 def quiet(bot, trigger):
-    """
-    USE: .quiet [#channel] quietmask
+    """Command to quiet a user in a room.
 
-    Command to quiet a user in a room.
+    USE: .quiet [#channel] quietmask
 
     Note: Bot must be OP
     """
 
     # If there are no arguments then return the USE statement
     if len(trigger.group().split()) < 2:
-        bot.say('%s' % cleanDoc(quiet))
+        bot.say('USE: .quiet [#channel] quietmask')
         return
 
     setMaskMode(bot, trigger, '+q')
@@ -248,17 +239,16 @@ def quiet(bot, trigger):
 
 @commands('unquiet')
 def unquiet(bot, trigger):
-    """
-    USE: .unquiet [#channel] quietmask
+    """Command to unquiet a user in a room.
 
-    Command to unquiet a user in a room.
+    USE: .unquiet [#channel] quietmask
 
     Note: Bot must be OP
     """
 
     # If there are no arguments then return the USE statement
     if len(trigger.group().split()) < 2:
-        bot.say('%s' % cleanDoc(unquiet))
+        bot.say('USE: .unquiet [#channel] quietmask')
         return
 
     setMaskMode(bot, trigger, '-q')
@@ -267,10 +257,9 @@ def unquiet(bot, trigger):
 @commands('kickban', 'kb')
 @priority('high')
 def kickban(bot, trigger):
-    """
-    USE: .kickban|.kb [#channel] nick banmask [reason]
+    """Command to kick and ban a user from a room.
 
-    Command to kick and ban a user from a room.
+    USE: .kickban|.kb [#channel] nick banmask [reason]
 
     Note: Bot must be OP
     """
@@ -281,7 +270,7 @@ def kickban(bot, trigger):
 
     # If there are no arguments then return the USE statement
     if argc < 1:
-        bot.say('%s' % cleanDoc(kickban))
+        bot.say('USE: .kickban|.kb [#channel] nick banmask [reason]')
         return
 
     if trigger.is_privmsg:
@@ -338,12 +327,12 @@ def kickban(bot, trigger):
 
 @commands('topic')
 def topic(bot, trigger):
-    """
-    USE: .topic [#channel] Channel Topic
+    """Command to change an channel's topic
+    
+    The Channel Topic can use '~' as a delimiter, showing that there are
+    multiple arguments to be provided for the topic mask to use.
 
-    Command to change an channel's topic, the Channel Topic can use '~' as a
-    delimiter, showing that there are multiple arguments to be provided for the
-    topic mask to use.
+    USE: .topic [#channel] Channel Topic
 
     Note: Bot must be OP
     """
@@ -354,7 +343,7 @@ def topic(bot, trigger):
 
     # If there are no arguments then return the USE statement
     if argc < 1:
-        bot.say('%s' % cleanDoc(topic))
+        bot.say('USE: .topic [#channel] Channel Topic')
         return
 
     if trigger.is_privmsg:
@@ -422,12 +411,12 @@ def topic(bot, trigger):
 
 @commands('tmask')
 def set_mask(bot, trigger):
-    """
-    USE: .tmask [#channel] Channel Topic
+    """Command to change an channel's topic mask
+    
+    The topic mask is used to help format the channel's topic in a uniform
+    manner upon updating. %s is used to allow substituting in chunks of text.
 
-    Command to change an channel's topic mask, the topic mask is used to help
-    format the channel's topic in a uniform manner upon updating. %s is used to
-    allow substituting in chunks of text.
+    USE: .tmask [#channel] Channel Topic
 
     Note: Bot must be OP
     """
@@ -437,7 +426,7 @@ def set_mask(bot, trigger):
 
     # If there are no arguments then return the USE statement
     if argc < 1:
-        bot.say('%s' % cleanDoc(set_mask))
+        bot.say('USE: .tmask [#channel] Channel Topic')
         return
 
     if trigger.is_privmsg:
@@ -478,10 +467,9 @@ def set_mask(bot, trigger):
 
 @commands('showmask')
 def show_mask(bot, trigger):
-    """
-    USE: .showmask [#channel]
+    """Command to show the topic mask of a given channel.
 
-    Command to show the topic mask of a given channel.
+    USE: .showmask [#channel]
 
     Note: Bot must be OP
     """
@@ -536,8 +524,7 @@ def show_mask(bot, trigger):
 
 
 def configureHostMask(mask):
-    """
-    Allows for short form bans to be used
+    """Allows for short form masks to be used
 
     nick!user@host.domain
     """
@@ -576,12 +563,11 @@ def configureHostMask(mask):
 
 
 def permissionsCheck(bot, channel, nick):
-    """
-    Checks to see if the provided user has OP access to the channel
+    """Checks to see if the provided user has OP access to the channel
 
     Returns:
-        False if they do not
-        True if they do
+        False   -- if they do not
+        True    -- if they do
     """
     if channel not in bot.privileges or \
             nick not in bot.privileges[channel] or \
@@ -591,10 +577,13 @@ def permissionsCheck(bot, channel, nick):
 
 
 def setMaskMode(bot, trigger, mode):
-    """
-    Takes a bot, trigger and mode as arguments and applies
-    the needed mode change on the channel/nick. Used by (un)ban/(un)quiet
+    """Applies needed mode changes to specified nick/channel
 
+    bot     -- bot passed unaltered from original function call
+    trigger -- trigger passed unaltered from original function call
+    mode    -- mode change that needs to be made (+o,-o,+v,-v,...)
+
+    Used by (un)ban/(un)quiet
     Note: These Require the bot to be OP
     """
     args = trigger.group().split()
@@ -653,10 +642,13 @@ def setMaskMode(bot, trigger, mode):
 
 
 def setMode(bot, trigger, mode):
-    """
-    Takes a bot, trigger and mode as arguments and applies
-    the needed mode change on the channel/nick. Used by (de)op/(de)voice
+    """Applies needed mode changes to specified nick/channel
 
+    bot     -- bot passed unaltered from original function call
+    trigger -- trigger passed unaltered from original function call
+    mode    -- mode change that needs to be made
+
+    Used by (de)op/(de)voice
     Note: These Require the bot to be OP
     """
     args = trigger.group().split()
@@ -710,20 +702,8 @@ def setMode(bot, trigger, mode):
     bot.write(['MODE', channel, mode, nick])
 
 
-def cleanDoc(doc):
-    """
-    Try to find the first newline and truncate, we skip the first two
-    lines to avoid docs that start with \r\n
-    """
-    for line in doc.__doc__.replace('\r', '').split('\n'):
-        if line != '':
-            return line
-
-
 def isChannel(value):
-    """
-    Check if the given string is a channel or not
-    """
+    """Check if the given string is a channel or not"""
     if value is not None and value[0] in '&#~!':
         return True
     else:
