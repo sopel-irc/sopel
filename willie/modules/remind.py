@@ -53,7 +53,7 @@ def setup(bot):
     if bot.db and not bot.db.preferences.has_columns('tz'):
         bot.db.preferences.add_columns(['tz'])
     if bot.db and not bot.db.preferences.has_columns('time_format'):
-        bot.db.preferences.add_columns(['tz'])
+        bot.db.preferences.add_columns(['time_format'])
 
     bot.rfn = filename(bot)
     bot.rdb = load_database(bot.rfn)
