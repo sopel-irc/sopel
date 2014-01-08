@@ -16,7 +16,7 @@ from willie.module import commands, example, NOLIMIT
 # Bank of England, or the European Central Bank. Who knew?
 base_url = 'http://www.bankofcanada.ca/stats/assets/rates_rss/noon/en_{}.xml'
 regex = re.compile(r'''
-    (\d+(?:\.\d+)?)         # Decimal number
+    (\d+(?:\.\d+)?)        # Decimal number
     \s*([a-zA-Z]{3})       # 3-letter currency code
     \s+(?:in|as|of|to)\s+  # preposition
     ([a-zA-Z]{3})          # 3-letter currency code
@@ -41,13 +41,13 @@ def get_rate(code):
     return float(rate), name
 
 
-@commands('cur', 'currrency', 'exchange')
+@commands('cur', 'currency', 'exchange')
 @example('.cur 20 EUR in USD')
 def exchange(bot, trigger):
     """Show the exchange rate between two currencies"""
     match = regex.match(trigger.group(2))
     if not match:
-        #It's appologetic, because it's using Canadian data.
+        # It's apologetic, because it's using Canadian data.
         bot.reply("Sorry, I didn't understand the input.")
         return NOLIMIT
 
