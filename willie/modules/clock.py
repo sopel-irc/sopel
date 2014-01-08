@@ -11,6 +11,13 @@ import datetime
 from willie.module import commands, example, OP
 
 
+def configure(config):
+    config.interactive_add('clock', 'tz',
+                           'Preferred time zone (http://dft.ba/-tz)', 'UTC')
+    config.interactive_add('clock', 'time_format',
+                           'Preferred time format (http://strftime.net)', '%F - %T%Z')
+
+
 def setup(bot):
     #Having a db means pref's exists. Later, we can just use `if bot.db`.
     if bot.db and not bot.db.preferences.has_columns('tz'):
@@ -38,7 +45,7 @@ def f_time(bot, trigger):
                     return
             else:
                 bot.say("I'm sorry, I don't know about the %s timezone or"
-                           " user." % tz)
+                           " user. Try one from http://dft.ba/-tz" % tz)
                 return
     #We don't have a timzeone. Is there one set? If not, just use UTC
     elif bot.db:
@@ -46,12 +53,10 @@ def f_time(bot, trigger):
             tz = bot.db.preferences.get(trigger.nick, 'tz')
         if not tz and trigger.sender in bot.db.preferences:
             tz = bot.db.preferences.get(trigger.sender, 'tz')
-        if not tz:
-            tz = 'UTC'
-    else:
-        tz = 'UTC'
-    tzi = pytz.timezone(tz)
-    now = datetime.datetime.now(tzi)
+        if not tz and bot.config.has_option('clock', 'tz'):
+            tz = bot.config.clock.tz
+
+    now = datetime.datetime.now(pytz.timezone(tz or 'UTC'))
 
     tformat = ''
     if bot.db:
@@ -111,6 +116,9 @@ def update_user_format(bot, trigger):
                 tz = bot.db.preferences.get(trigger.nick, 'tz')
             if not tz and trigger.sender in bot.db.preferences:
                 tz = bot.db.preferences.get(trigger.sender, 'tz')
+            if not tz and bot.config.has_option('clock', 'tz'):
+                tz = bot.config.clock.tz
+
         now = datetime.datetime.now(pytz.timezone(tz or 'UTC'))
         timef = ''
         try:
@@ -178,6 +186,9 @@ def update_channel_format(bot, trigger):
                 tz = bot.db.preferences.get(trigger.nick, 'tz')
             if not tz and trigger.sender in bot.db.preferences:
                 tz = bot.db.preferences.get(trigger.sender, 'tz')
+            if not tz and bot.config.has_option('clock', 'tz'):
+                tz = bot.config.clock.tz
+
         now = datetime.datetime.now(pytz.timezone(tz or 'UTC'))
         timef = ''
         try:

@@ -9,10 +9,12 @@ http://willie.dftba.net/
 from datetime import datetime
 from urllib2 import HTTPError
 import json
-from willie import web
-from willie.module import commands
+from willie import web, tools
+from willie.module import commands, rule, NOLIMIT
 import os
+import re
 
+issueURL = r'https?://(?:www\.)?github.com/([A-z0-9\-]+/[A-z0-9\-]+)/issues/([\d]+)'
 
 def checkConfig(bot):
     if not bot.config.has_option('github', 'oauth_token') or not bot.config.has_option('github', 'repo'):
@@ -34,6 +36,11 @@ def configure(config):
         config.interactive_add('github', 'repo', 'Github repository', 'embolalia/willie')
     return chunk
 
+def setup(bot):
+    regex = re.compile(issueURL)
+    if not bot.memory.contains('url_callbacks'):
+        bot.memory['url_callbacks'] = tools.WillieMemory()
+    bot.memory['url_callbacks'][regex] = issue_info
 
 @commands('makeissue', 'makebug')
 def issue(bot, trigger):
@@ -55,7 +62,8 @@ def issue(bot, trigger):
     try:
         raw = web.post('https://api.github.com/repos/' + gitAPI[1] + '/issues?access_token=' + gitAPI[0], json.dumps(data))
     except HTTPError:
-        return bot.say('The GitHub API returned an error.')
+        bot.say('The GitHub API returned an error.')
+        return NOLIMIT
 
     data = json.loads(raw)
     bot.say('Issue #%s posted. %s' % (data['number'], data['html_url']))
@@ -114,7 +122,8 @@ def add_traceback(bot, trigger):
                        + number + '/comments?access_token=' + gitAPI[0],
                        json.dumps({'body': '``\n' + post + '``'}))
     except OSError:  # HTTPError:
-        return bot.say('The GitHub API returned an error.')
+        bot.say('The GitHub API returned an error.')
+        return NOLIMIT
 
     data = json.loads(raw)
     bot.say('Added traceback to issue #%s. %s' % (number, data['html_url']))
@@ -145,7 +154,8 @@ def findIssue(bot, trigger):
     try:
         raw = web.get(URL)
     except HTTPError:
-        return bot.say('The GitHub API returned an error.')
+        bot.say('The GitHub API returned an error.')
+        return NOLIMIT
 
     try:
         if firstParam.isdigit():
@@ -165,6 +175,29 @@ def findIssue(bot, trigger):
             ('API returned an invalid result on query request ' +
              trigger.group(2)),
             'always')
-        return bot.say('Invalid result, please try again later.')
+        bot.say('Invalid result, please try again later.')
+        return NOLIMIT
     bot.reply('[#%s]\x02title:\x02 %s \x02|\x02 %s' % (data['number'], data['title'], body))
     bot.say(data['html_url'])
+
+@rule('.*%s.*' % issueURL)
+def issue_info(bot, trigger, match=None):
+    match = match or trigger
+    URL = 'https://api.github.com/repos/%s/issues/%s' % (match.group(1), match.group(2))
+
+    try:
+        raw = web.get(URL)
+    except HTTPError:
+        bot.say('The GitHub API returned an error.')
+        return NOLIMIT
+    data = json.loads(raw)
+    try:
+        if len(data['body'].split('\n')) > 1:
+            body = data['body'].split('\n')[0] + '...'
+        else:
+            body = data['body'].split('\n')[0]
+    except (KeyError):
+        bot.say('The API says this is an invalid issue. Please report this if you know it\'s a correct link!')
+        return NOLIMIT
+    bot.reply('[#%s]\x02title:\x02 %s \x02|\x02 %s' % (data['number'], data['title'], body))
+

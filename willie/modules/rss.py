@@ -116,7 +116,7 @@ def migrate_from_old_tables(bot, c):
 
 def colour_text(text, fg, bg=''):
     """Given some text and fore/back colours, return a coloured text string."""
-    if not fg:
+    if fg == '':
         return text
     else:
         colour = '{0},{1}'.format(fg, bg) if bg != '' else fg
@@ -314,7 +314,7 @@ class RSSManager:
 
         filtered = [feed for feed in feeds
                     if (feed.channel == channel or channel is None)
-                    and (feed.name == feed_name or feed_name is None)]
+                    and (feed_name is None or feed.name.lower() == feed_name.lower())]
 
         if not filtered:
             bot.reply("No feeds matched the command.")
@@ -434,12 +434,15 @@ def read_feeds(bot, force=False):
         if not fp.entries:
             continue
 
-        feed_etag = fp.etag if hasattr(fp, 'etag') else None
-        feed_modified = fp.modified if hasattr(fp, 'modified') else None
+        feed_etag = getattr(fp, 'etag', None)
+        feed_modified = getattr(fp, 'modified', None)
 
         entry = fp.entries[0]
+        # parse published and updated times into datetime objects (or None)
         entry_dt = (datetime.fromtimestamp(time.mktime(entry.published_parsed))
-                    if 'published' in entry else None)
+                    if hasattr(entry, 'published_parsed') else None)
+        entry_update_dt = (datetime.fromtimestamp(time.mktime(entry.updated_parsed))
+                           if hasattr(entry, 'updated_parsed') else None)
 
         # check if article is new, and skip otherwise
         if (feed.title == entry.title and feed.link == entry.link
@@ -468,11 +471,23 @@ def read_feeds(bot, force=False):
                     feed.name, entry.title, published_dt, entry_dt), 'verbose')
                 continue
 
-        # print new entry
+        # create message for new entry
         message = u"[\x02{0}\x02] \x02{1}\x02 {2}".format(
             colour_text(feed.name, feed.fg, feed.bg), entry.title, entry.link)
-        if entry.updated:
-            message += " - " + entry.updated
+
+        # append update time if it exists, or published time if it doesn't
+        timestamp = entry_update_dt or entry_dt
+        if timestamp:
+            # attempt to get time format from preferences
+            tformat = ''
+            if feed.channel in bot.db.preferences:
+                tformat = bot.db.preferences.get(feed.channel, 'time_format') or tformat
+            if not tformat and bot.config.has_option('clock', 'time_format'):
+                tformat = bot.config.clock.time_format
+
+            message += " - {0}".format(timestamp.strftime(tformat or '%F - %T%Z'))
+
+        # print message
         bot.msg(feed.channel, message)
 
     conn.close()
