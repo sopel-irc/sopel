@@ -443,7 +443,7 @@ class Bot(asynchat.async_chat):
             args = argstr.split(' ')
             args.append(text)
         else:
-            args = line.split()
+            args = line.split(' ')
             text = args[-1]
 
         self.last_ping_time = datetime.now()
