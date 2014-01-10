@@ -440,10 +440,10 @@ class Bot(asynchat.async_chat):
 
         if ' :' in line:
             argstr, text = line.split(' :', 1)
-            args = argstr.split()
+            args = argstr.split(' ')
             args.append(text)
         else:
-            args = line.split()
+            args = line.split(' ')
             text = args[-1]
 
         self.last_ping_time = datetime.now()
