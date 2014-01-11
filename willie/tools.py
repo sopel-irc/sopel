@@ -249,9 +249,6 @@ class Nick(unicode):
         low = low.replace('|', '\\').replace('^', '~')
         return low
 
-    def __hash__(self):
-        return self._lowered.__hash__()
-
     def __lt__(self, other):
         if isinstance(other, Nick):
             return self._lowered < other._lowered
