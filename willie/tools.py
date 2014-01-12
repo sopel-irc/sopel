@@ -249,6 +249,12 @@ class Nick(unicode):
         low = low.replace('|', '\\').replace('^', '~')
         return low
 
+    def __repr__(self):
+        return "%s(%r)" % (
+            self.__class__.__name__,
+            self.__str__()
+        )
+
     def __hash__(self):
         return self._lowered.__hash__()
 
