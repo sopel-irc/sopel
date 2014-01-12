@@ -142,7 +142,7 @@ def findIssue(bot, trigger):
         return bot.say('Git module not configured, make sure github.oauth_token and github.repo are defined')
     firstParam = trigger.group(2).split(' ')[0]
     if firstParam.isdigit():
-        URL = 'https://api.github.com/repos/%s/issues/%s' % (gitAPI[1], trigger.group(2))
+        URL = 'https://api.github.com/repos/%s/issues/%s' % (gitAPI[1], firstParam)
     elif firstParam == 'CLOSED':
         if '%20'.join(trigger.group(2).split(' ')[1:]) not in ('', '\x02', '\x03'):
             URL = 'https://api.github.com/legacy/issues/search/' + gitAPI[1] + '/closed/' + '%20'.join(trigger.group(2).split(' ')[1:])
