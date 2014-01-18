@@ -53,7 +53,7 @@ def seen(bot, trigger):
 @rule('(.*)')
 @priority('low')
 def note(bot, trigger):
-    if trigger.sender.startswith('#'):
+    if not trigger.is_privmsg:
         nick = Nick(trigger.nick)
         seen_dict[nick]['timestamp'] = time.time()
         seen_dict[nick]['channel'] = trigger.sender

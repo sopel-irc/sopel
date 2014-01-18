@@ -29,7 +29,7 @@ def configure(config):
 def join(bot, trigger):
     """Join the specified channel. This is an admin-only command."""
     # Can only be done in privmsg by an admin
-    if trigger.sender.startswith('#'):
+    if not trigger.is_privmsg:
         return
 
     if trigger.admin:
@@ -48,7 +48,7 @@ def join(bot, trigger):
 def part(bot, trigger):
     """Part the specified channel. This is an admin-only command."""
     # Can only be done in privmsg by an admin
-    if trigger.sender.startswith('#'):
+    if not trigger.is_privmsg:
         return
     if not trigger.admin:
         return
@@ -65,7 +65,7 @@ def part(bot, trigger):
 def quit(bot, trigger):
     """Quit from the server. This is an owner-only command."""
     # Can only be done in privmsg by the owner
-    if trigger.sender.startswith('#'):
+    if not trigger.is_privmsg:
         return
     if not trigger.owner:
         return
@@ -85,7 +85,7 @@ def msg(bot, trigger):
     Send a message to a given channel or nick. Can only be done in privmsg by an
     admin.
     """
-    if trigger.sender.startswith('#'):
+    if not trigger.is_privmsg:
         return
     if not trigger.admin:
         return
@@ -105,7 +105,7 @@ def me(bot, trigger):
     Send an ACTION (/me) to a given channel or nick. Can only be done in privmsg
     by an admin.
     """
-    if trigger.sender.startswith('#'):
+    if not trigger.is_privmsg:
         return
     if not trigger.admin:
         return
@@ -152,7 +152,7 @@ def hold_ground(bot, trigger):
 @willie.module.priority('low')
 def mode(bot, trigger):
     """Set a user mode on Willie. Can only be done in privmsg by an admin."""
-    if trigger.sender.startswith('#'):
+    if not trigger.is_privmsg:
         return
     if not trigger.admin:
         return
@@ -172,7 +172,7 @@ def set_config(bot, trigger):
     If there is no section, section will default to "core".
     If value is None, the option will be deleted.
     """
-    if trigger.sender.startswith('#'):
+    if not trigger.is_privmsg:
         bot.reply("This command only works as a private message.")
         return
     if not trigger.admin:
@@ -212,7 +212,7 @@ def set_config(bot, trigger):
 @willie.module.example('.save')
 def save_config(bot, trigger):
     """Save state of willies config object to the configuration file."""
-    if trigger.sender.startswith('#'):
+    if not trigger.is_privmsg:
         return
     if not trigger.admin:
         return
