@@ -88,11 +88,20 @@ def get_user_time(bot, nick):
 def f_remind(bot, trigger):
     """Give someone a message the next time they're seen"""
     teller = trigger.nick
-
     verb = trigger.group(1)
-    tellee, msg = trigger.group(2).split(None, 1)
 
-    tellee = Nick(tellee.rstrip('.,:;'))
+    if not trigger.group(3):
+        bot.reply("%s whom?" % verb)
+        return
+
+    tellee = trigger.group(3).rstrip('.,:;')
+    msg = trigger.group(2).lstrip(tellee).lstrip()
+
+    if not msg:
+        bot.reply("%s %s what?" % (verb, tellee))
+        return
+
+    tellee = Nick(tellee)
 
     if not os.path.exists(bot.tell_filename):
         return
