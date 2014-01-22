@@ -103,7 +103,7 @@ def main(argv=None):
         if opts.list_configs is not None:
             configs = enumerate_configs()
             print 'Config files in ~/.willie:'
-            if len(configs[0]) is 0:
+            if len(configs) is 0:
                 print '\tNone found'
             else:
                 for config in configs:
