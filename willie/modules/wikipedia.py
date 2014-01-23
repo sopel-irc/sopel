@@ -22,10 +22,9 @@ def configure(config):
         config.add_section('wikipedia')
         config.interactive_add('wikipedia', 'default_lang', 'Wikipedia default language', 'en')
 
-
-    if config.option('Would you like to configure individual default language per channel', False):
-        c = 'Enter #channel:lang, one at time. When done, hit enter again.'
-        config.add_list('wikipedia', 'lang_per_channel', c, 'Channel:')
+        if config.option('Would you like to configure individual default language per channel', False):
+            c = 'Enter #channel:lang, one at time. When done, hit enter again.'
+            config.add_list('wikipedia', 'lang_per_channel', c, 'Channel:')
 
 def mw_search(server, query, num):
     """
