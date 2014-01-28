@@ -1,4 +1,4 @@
-# coding=utf-8
+#coding: utf8
 """
 irc.py - An Utility IRC Bot
 Copyright 2008, Sean B. Palmer, inamidst.com
@@ -12,6 +12,7 @@ Willie: http://willie.dftba.net/
 When working on core IRC protocol related features, consult protocol
 documentation at http://www.irchelp.org/irchelp/rfc/
 """
+from __future__ import unicode_literals
 
 import sys
 import re

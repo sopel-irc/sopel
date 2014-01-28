@@ -1,4 +1,4 @@
-# coding=utf-8
+#coding: utf8
 """This module has classes and functions that can help in writing tests.
 
 test_tools.py - Willie misc tools
@@ -7,6 +7,8 @@ Licensed under the Eiffel Forum License 2.
 
 https://willie.dftba.net
 """
+from __future__ import unicode_literals
+
 import sys
 import re
 

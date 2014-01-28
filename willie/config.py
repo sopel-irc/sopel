@@ -1,4 +1,4 @@
-# coding=utf-8
+#coding: utf8
 """
 *Availability: 3+ for all functions; attributes may vary.*
 
@@ -40,6 +40,7 @@ Licensed under the Eiffel Forum License 2.
 
 http://willie.dftba.net
 """
+from __future__ import unicode_literals
 
 import db
 import os

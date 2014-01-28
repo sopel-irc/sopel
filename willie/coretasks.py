@@ -1,4 +1,4 @@
-# coding=utf-8
+#coding: utf8
 """
 coretasks.py - Willie Routine Core tasks
 Copyright 2008-2011, Sean B. Palmer (inamidst.com) and Michael Yanovich
@@ -13,6 +13,9 @@ This is written as a module to make it easier to extend to support more
 responses to standard IRC codes without having to shove them all into the
 dispatch function in bot.py and making it easier to maintain.
 """
+from __future__ import unicode_literals
+
+
 import re
 import time
 import willie
