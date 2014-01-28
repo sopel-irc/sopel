@@ -6,6 +6,7 @@ Licensed under the Eiffel Forum License 2.
 
 http://willie.dfbta.net
 """
+from __future__ import unicode_literals
 
 import re
 from willie import web
@@ -22,8 +23,10 @@ def c(bot, trigger):
     """Google calculator."""
     if not trigger.group(2):
         return bot.reply("Nothing to calculate.")
+    # Account for the silly non-Anglophones and their silly radix point.
+    eqn = trigger.group(2).replace(',', '.')
     try:
-        result = str(eval_equation(trigger.group(2)))
+        result = str(eval_equation(eqn))
     except ZeroDivisionError:
         result = "Division by zero is not supported in this universe."
     except Exception:
