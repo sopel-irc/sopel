@@ -1,3 +1,4 @@
+#encoding=utf8
 """
 tell.py - Willie Tell and Ask Module
 Copyright 2008, Sean B. Palmer, inamidst.com
@@ -5,6 +6,7 @@ Licensed under the Eiffel Forum License 2.
 
 http://willie.dftba.net
 """
+from __future__ import unicode_literals
 
 import os
 import time
@@ -23,7 +25,7 @@ def loadReminders(fn, lock):
         result = {}
         f = open(fn)
         for line in f:
-            line = line.strip()
+            line = line.strip().decode('utf8')
             if line:
                 try:
                     tellee, teller, verb, timenow, msg = line.split('\t', 4)
@@ -88,11 +90,20 @@ def get_user_time(bot, nick):
 def f_remind(bot, trigger):
     """Give someone a message the next time they're seen"""
     teller = trigger.nick
-
     verb = trigger.group(1)
-    tellee, msg = trigger.group(2).split(None, 1)
 
-    tellee = Nick(tellee.rstrip('.,:;'))
+    if not trigger.group(3):
+        bot.reply("%s whom?" % verb)
+        return
+
+    tellee = trigger.group(3).rstrip('.,:;')
+    msg = trigger.group(2).lstrip(tellee).lstrip()
+
+    if not msg:
+        bot.reply("%s %s what?" % (verb, tellee))
+        return
+
+    tellee = Nick(tellee)
 
     if not os.path.exists(bot.tell_filename):
         return

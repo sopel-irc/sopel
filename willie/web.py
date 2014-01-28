@@ -1,4 +1,4 @@
-# -*- coding: utf8 -*-
+#coding: utf8
 """
 *Availability: 3+*
 
@@ -20,6 +20,7 @@ More info:
 http://willie.dftba.net
 
 """
+from __future__ import unicode_literals
 
 import re
 import urllib

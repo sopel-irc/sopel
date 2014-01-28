@@ -1,4 +1,4 @@
-# coding=utf-8
+#coding: utf8
 """
 coretasks.py - Willie Routine Core tasks
 Copyright 2008-2011, Sean B. Palmer (inamidst.com) and Michael Yanovich
@@ -13,6 +13,9 @@ This is written as a module to make it easier to extend to support more
 responses to standard IRC codes without having to shove them all into the
 dispatch function in bot.py and making it easier to maintain.
 """
+from __future__ import unicode_literals
+
+
 import re
 import time
 import willie
@@ -107,24 +110,28 @@ def retry_join(bot, trigger):
 @willie.module.thread(False)
 @willie.module.unblockable
 def handle_names(bot, trigger):
-    """Handle NAMES response, happens when joining to channelsi."""
-    names = re.split(' ', trigger)
+    """Handle NAMES response, happens when joining to channels."""
+    names = trigger.split()
+    print names
+    #TODO specific to one channel type. See issue 281.
     channels = re.search('(#\S*)', bot.raw)
-    if (channels is None):
+    if not channels:
         return
-    channel = channels.group(1)
+    channel = Nick(channels.group(1))
     if channel not in bot.privileges:
         bot.privileges[channel] = dict()
     bot.init_ops_list(channel)
+
+    # This could probably be made flexible in the future, but I don't think
+    # it'd be worth it.
+    mapping = {'+': willie.module.VOICE,
+               '%': willie.module.HALFOP,
+               '@': willie.module.OP,
+               '&': willie.module.ADMIN,
+               '~': willie.module.OWNER}
+
     for name in names:
         priv = 0
-        # This could probably be made flexible in the future, but I don't think
-        # it'd be worht it.
-        mapping = {'+': willie.module.VOICE,
-                   '%': willie.module.HALFOP,
-                   '@': willie.module.OP,
-                   '&': willie.module.ADMIN,
-                   '~': willie.module.OWNER}
         for prefix, value in mapping.iteritems():
             if prefix in name:
                 priv = priv | value
@@ -156,6 +163,7 @@ def track_modes(bot, trigger):
     if line[0][0] != '#':
         return
     channel, mode_sec = line[:2]
+    channel = Nick(channel)
     nicks = [Nick(n) for n in line[2:]]
 
     # Break out the modes, because IRC allows e.g. MODE +aB-c foo bar baz
@@ -247,6 +255,7 @@ def track_nicks(bot, trigger):
         return
 
     for channel in bot.privileges:
+        channel = Nick(channel)
         if old in bot.privileges[channel]:
             value = bot.privileges[channel].pop(old)
             bot.privileges[channel][new] = value

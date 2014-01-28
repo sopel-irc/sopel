@@ -1,3 +1,4 @@
+#coding: utf8
 """
 *Availability: 3.1+*
 
@@ -14,6 +15,8 @@ Licensed under the Eiffel Forum License 2.
 
 http://willie.dftba.net
 """
+from __future__ import unicode_literals
+
 import os
 from collections import Iterable
 from tools import deprecated
