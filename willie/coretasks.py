@@ -107,24 +107,28 @@ def retry_join(bot, trigger):
 @willie.module.thread(False)
 @willie.module.unblockable
 def handle_names(bot, trigger):
-    """Handle NAMES response, happens when joining to channelsi."""
-    names = re.split(' ', trigger)
+    """Handle NAMES response, happens when joining to channels."""
+    names = trigger.split()
+    print names
+    #TODO specific to one channel type. See issue 281.
     channels = re.search('(#\S*)', bot.raw)
-    if (channels is None):
+    if not channels:
         return
-    channel = channels.group(1)
+    channel = Nick(channels.group(1))
     if channel not in bot.privileges:
         bot.privileges[channel] = dict()
     bot.init_ops_list(channel)
+
+    # This could probably be made flexible in the future, but I don't think
+    # it'd be worth it.
+    mapping = {'+': willie.module.VOICE,
+               '%': willie.module.HALFOP,
+               '@': willie.module.OP,
+               '&': willie.module.ADMIN,
+               '~': willie.module.OWNER}
+
     for name in names:
         priv = 0
-        # This could probably be made flexible in the future, but I don't think
-        # it'd be worht it.
-        mapping = {'+': willie.module.VOICE,
-                   '%': willie.module.HALFOP,
-                   '@': willie.module.OP,
-                   '&': willie.module.ADMIN,
-                   '~': willie.module.OWNER}
         for prefix, value in mapping.iteritems():
             if prefix in name:
                 priv = priv | value
