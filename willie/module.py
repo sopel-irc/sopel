@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+#coding: utf8
 """This module is meant to be imported from willie modules.
 
 It defines the following decorators for defining willie callables:
@@ -19,6 +19,7 @@ Copyright 2013, Lior Ramati <firerogue517@gmail.com>
 
 Licensed under the Eiffel Forum License 2.
 """
+from __future__ import unicode_literals
 
 import willie.test_tools
 import functools

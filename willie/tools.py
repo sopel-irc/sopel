@@ -1,4 +1,4 @@
-# coding=utf-8
+#coding: utf8
 """
 *Availability: 3+*
 ``tools`` contains a number of useful miscellaneous tools and shortcuts for use
