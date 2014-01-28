@@ -50,7 +50,7 @@ class Origin(object):
 
         # If we have more than one argument, the second one is the sender
         if len(args) > 1:
-            target = args[1]
+            target = Nick(args[1])
         else:
             target = None
 

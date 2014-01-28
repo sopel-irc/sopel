@@ -160,6 +160,7 @@ def track_modes(bot, trigger):
     if line[0][0] != '#':
         return
     channel, mode_sec = line[:2]
+    channel = Nick(channel)
     nicks = [Nick(n) for n in line[2:]]
 
     # Break out the modes, because IRC allows e.g. MODE +aB-c foo bar baz
@@ -251,6 +252,7 @@ def track_nicks(bot, trigger):
         return
 
     for channel in bot.privileges:
+        channel = Nick(channel)
         if old in bot.privileges[channel]:
             value = bot.privileges[channel].pop(old)
             bot.privileges[channel][new] = value
