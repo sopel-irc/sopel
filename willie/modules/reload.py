@@ -133,14 +133,14 @@ def f_load(bot, trigger):
 @willie.module.thread(False)
 def pm_f_reload(bot, trigger):
     """Wrapper for allowing delivery of .reload command via PM"""
-    if not trigger.sender.startswith('#'):
+    if trigger.is_privmsg:
         f_reload(bot, trigger)
 
 
 @willie.module.commands('update')
 def pm_f_update(bot, trigger):
     """Wrapper for allowing delivery of .update command via PM"""
-    if not trigger.sender.startswith('#'):
+    if trigger.is_privmsg:
         f_update(bot, trigger)
 
 
@@ -149,7 +149,7 @@ def pm_f_update(bot, trigger):
 @willie.module.thread(False)
 def pm_f_load(bot, trigger):
     """Wrapper for allowing delivery of .load command via PM"""
-    if not trigger.sender.startswith('#'):
+    if trigger.is_privmsg:
         f_load(bot, trigger)
 
 

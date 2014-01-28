@@ -1,4 +1,4 @@
-# coding=utf-8
+#coding: utf8
 """
 *Availability: 3+*
 ``tools`` contains a number of useful miscellaneous tools and shortcuts for use
@@ -248,6 +248,12 @@ class Nick(unicode):
         low = nick.lower().replace('{', '[').replace('}', ']')
         low = low.replace('|', '\\').replace('^', '~')
         return low
+
+    def __repr__(self):
+        return "%s(%r)" % (
+            self.__class__.__name__,
+            self.__str__()
+        )
 
     def __hash__(self):
         return self._lowered.__hash__()

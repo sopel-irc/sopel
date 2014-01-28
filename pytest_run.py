@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# coding=utf-8
+#coding: utf8
 """This is a script for running pytest from the command line.
 
 This script exists so that the project directory gets added to sys.path, which
@@ -11,6 +11,7 @@ Licensed under the Eiffel Forum License 2.
 
 http://willie.dfbta.net
 """
+from __future__ import unicode_literals
 
 if __name__ == "__main__":
     import sys

@@ -33,7 +33,8 @@ def help(bot, trigger):
 def commands(bot, trigger):
     """Return a list of bot's commands"""
     names = ', '.join(sorted(bot.doc.iterkeys()))
-    bot.reply("I am sending you a private message of all my commands!")
+    if not trigger.is_privmsg:
+        bot.reply("I am sending you a private message of all my commands!")
     bot.msg(trigger.nick, 'Commands I recognise: ' + names + '.', max_messages=10)
     bot.msg(trigger.nick, ("For help, do '%s: help example' where example is the " +
                     "name of the command you want help for.") % bot.nick)

@@ -1,5 +1,5 @@
 #!/usr/bin/env python2.7
-# -*- coding: utf8 -*-
+#coding: utf8
 """
 Willie - An IRC Bot
 Copyright 2008, Sean B. Palmer, inamidst.com
@@ -103,7 +103,7 @@ def main(argv=None):
         if opts.list_configs is not None:
             configs = enumerate_configs()
             print 'Config files in ~/.willie:'
-            if len(configs[0]) is 0:
+            if len(configs) is 0:
                 print '\tNone found'
             else:
                 for config in configs:

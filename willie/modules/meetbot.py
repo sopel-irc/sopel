@@ -131,7 +131,7 @@ def startmeeting(bot, trigger):
     if ismeetingrunning(trigger.sender):
         bot.say('Can\'t do that, there is already a meeting in progress here!')
         return
-    if not trigger.sender.startswith('#'):
+    if trigger.is_privmsg:
         bot.say('Can only start meetings in channels')
         return
     if not bot.config.has_section('meetbot'):
