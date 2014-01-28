@@ -1,10 +1,13 @@
+#encoding=utf8
 """currency.py - Willie Exchange Rate Module
 Copyright 2013 Edward Powell, embolalia.com
 Licensed under the Eiffel Forum License 2
 
 http://willie.dftba.net
 """
+from __future__ import unicode_literals
 
+import json
 from lxml import etree
 import re
 
@@ -26,6 +29,9 @@ regex = re.compile(r'''
 def get_rate(code):
     if code == 'CAD':
         return 1, 'Canadian Dollar'
+    elif code == 'BTC':
+        rates = json.loads(web.get('https://api.bitcoinaverage.com/ticker/all'))
+        return 1 / rates['CAD']['24h_avg'], 'Bitcoin—24hr average'
 
     data = web.get(base_url.format(code))
     xml = etree.fromstring(data)
@@ -56,16 +62,38 @@ def exchange(bot, trigger):
         amount = float(amount)
     except:
         bot.reply("Sorry, I didn't understand the input.")
+    display(bot, amount, of, to)
 
+def display(bot, amount, of, to):
     if not amount:
         bot.reply("Zero is zero, no matter what country you're in.")
     try:
         of_rate, of_name = get_rate(of)
         to_rate, to_name = get_rate(to)
     except Exception as e:
+        raise
         bot.reply("Something went wrong while I was getting the exchange rate.")
         return NOLIMIT
 
     result = amount / of_rate * to_rate
     bot.say("{} {} ({}) = {} {} ({})".format(amount, of, of_name,
                                            result, to, to_name))
+
+
+@commands('btc', 'bitcoin')
+@example('.btc 20 EUR')
+def bitcoin(bot, trigger):
+    #if 2 args, 1st is number and 2nd is currency. If 1 arg, it's either the number or the currency.
+    to = trigger.group(4)
+    amount = trigger.group(3)
+    if not to:
+        to = trigger.group(3) or 'USD'
+        amount = 1
+
+    try:
+        amount = float(amount)
+    except:
+        bot.reply("Sorry, I didn't understand the input.")
+        return NOLIMIT
+
+    display(bot, amount, 'BTC', to)
