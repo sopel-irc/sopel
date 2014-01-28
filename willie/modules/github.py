@@ -86,7 +86,7 @@ def add_traceback(bot, trigger):
     # Make sure the input is valid
     args = trigger.group(2).split(None, 1)
     if len(args) != 2:
-        bot.say(validate)
+        bot.say('Please give both the issue number and the error message.')
         return
     number, trace = args
 
