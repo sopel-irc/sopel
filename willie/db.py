@@ -8,8 +8,7 @@ modules, simmilar functionallity can be found using ``db.preferences``.
 This class defines an interface for a semi-arbitrary database type. It is meant
 to allow module writers to operate without regard to how the end user has
 decided to set up the database.
-"""
-"""
+
 Copyright 2012, Edward D. Powell, embolalia.net
 Licensed under the Eiffel Forum License 2.
 
@@ -314,7 +313,7 @@ class Table(object):
 
     def __init__(self, db, name, columns, key):
         #This lets us have a pseudo-table to handle a non-existant table
-        if name is '_none':
+        if name == '_none':
             self.db = db
             self.columns = set()
             self.name = name
