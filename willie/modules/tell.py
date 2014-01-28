@@ -1,3 +1,4 @@
+#encoding=utf8
 """
 tell.py - Willie Tell and Ask Module
 Copyright 2008, Sean B. Palmer, inamidst.com
@@ -5,6 +6,7 @@ Licensed under the Eiffel Forum License 2.
 
 http://willie.dftba.net
 """
+from __future__ import unicode_literals
 
 import os
 import time
@@ -23,7 +25,7 @@ def loadReminders(fn, lock):
         result = {}
         f = open(fn)
         for line in f:
-            line = line.strip()
+            line = line.strip().decode('utf8')
             if line:
                 try:
                     tellee, teller, verb, timenow, msg = line.split('\t', 4)
