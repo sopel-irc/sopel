@@ -31,15 +31,10 @@ The configuration function, if used, must be declared with the signature
 ``configure(config)``. To add options, use ``interactive_add``, ``add_list``
 and ``add_option``.
 """
-"""
-Config - A config class and writing/updating utility for Willie
-Copyright 2012, Edward Powell, embolalia.net
-Copyright © 2012, Elad Alfassa <elad@fedoraproject.org>
+#Copyright 2012, Edward Powell, embolalia.net
+#Copyright © 2012, Elad Alfassa <elad@fedoraproject.org>
+#Licensed under the Eiffel Forum License 2.
 
-Licensed under the Eiffel Forum License 2.
-
-http://willie.dftba.net
-"""
 from __future__ import unicode_literals
 
 import db
