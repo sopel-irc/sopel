@@ -124,7 +124,7 @@ def insert_into_module(func, module_name, base_name, prefix):
     module = sys.modules[module_name]
     # Make sure the func method does not overwrite anything.
     for i in xrange(1000):
-        func.__name__ = "%s_%s_%s" % (prefix, base_name, i)
+        func.__name__ = str("%s_%s_%s" % (prefix, base_name, i))
         if not hasattr(module, func.__name__):
             break
     setattr(module, func.__name__, func)
