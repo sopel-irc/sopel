@@ -123,7 +123,7 @@ def title_auto(bot, trigger):
     bot.memory['last_seen_url'][trigger.sender] = urls[-1]
 
     for title, domain in results[:4]:
-        message = '[ %s ] - %s' % (title, domain)
+        message = '\x02{0}\x02 - {1}'.format(title, domain)
         # Guard against responding to other instances of this bot.
         if message != trigger:
             bot.say(message)

@@ -71,7 +71,7 @@ def g(bot, trigger):
         return bot.reply('.g what?')
     uri, title = google_search_with_title(query)
     if uri:
-        bot.reply('[ {0} ] - {1}'.format(title, uri))
+        bot.reply('\x02{0}\x02 - {1}'.format(title, uri))
         bot.memory['last_seen_url'][trigger.sender] = uri
     elif uri is False:
         bot.reply("Problem getting data from Google.")

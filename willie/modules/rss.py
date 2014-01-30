@@ -472,7 +472,7 @@ def read_feeds(bot, force=False):
                 continue
 
         # create message for new entry
-        message = u"[\x02{0}\x02] \x02{1}\x02 {2}".format(
+        message = u"[\x02{0}\x02] \x02{1}\x02 - {2}".format(
             colour_text(feed.name, feed.fg, feed.bg), entry.title, entry.link)
 
         # append update time if it exists, or published time if it doesn't
