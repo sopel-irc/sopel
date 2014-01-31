@@ -136,10 +136,10 @@ def invite_join(bot, trigger):
 @willie.module.priority('low')
 def hold_ground(bot, trigger):
     """
-    This function monitors all kicks across all channels willie is in. If it
+    This function monitors all kicks across all channels Willie is in. If it
     detects that it is the one kicked it'll automatically join that channel.
 
-    WARNING: This may not be needed and could cause problems if willie becomes
+    WARNING: This may not be needed and could cause problems if Willie becomes
     annoying. Please use this with caution.
     """
     if bot.config.has_section('admin') and bot.config.admin.hold_ground:
@@ -160,10 +160,12 @@ def mode(bot, trigger):
     bot.write(('MODE ', bot.nick + ' ' + mode))
 
 
-@willie.module.commands('set')
+@willie.module.commands('set', 'addto', 'removefrom')
 @willie.module.example('.set core.owner Me')
+@willie.module.example('.addto core.admins My_Friend')
+@willie.module.example('.removefrom core.admins My_ExFriend')
 def set_config(bot, trigger):
-    """See and modify values of willies config object.
+    """See and modify values of Willie's config object.
 
     Trigger args:
         arg1 - section and option, in the form "section.option"
@@ -176,7 +178,7 @@ def set_config(bot, trigger):
         bot.reply("This command only works as a private message.")
         return
     if not trigger.admin:
-        bot.reply("This command requires admin priviledges.")
+        bot.reply("This command requires admin privileges.")
         return
 
     # Get section and option from first argument.
@@ -189,29 +191,44 @@ def set_config(bot, trigger):
         bot.reply("Usage: .set section.option value")
         return
 
-    # Display current value if no value is given.
     value = trigger.group(4)
     if not value:
         if not bot.config.has_option(section, option):
-            bot.reply("Option %s.%s does not exist." % (section, option))
+            bot.reply("Option {0}.{1} does not exist.".format(section, option))
             return
-        # Except if the option looks like a password. Censor those to stop them
+        # If the option looks like a password, censor it to stop them
         # from being put on log files.
         if option.endswith("password") or option.endswith("pass"):
             value = "(password censored)"
         else:
             value = getattr(getattr(bot.config, section), option)
-        bot.reply("%s.%s = %s" % (section, option, value))
-        return
 
-    # Otherwise, set the value to one given as argument 2.
-    setattr(getattr(bot.config, section), option, value)
+    else:
+        command = trigger.group(1)
+        if command == 'set':
+            # Set the value to one given as argument 2.
+            setattr(getattr(bot.config, section), option, value)
+
+        elif command in ('addto', 'removefrom'):
+            vlist = getattr(getattr(bot.config, section), option)
+            try:
+                # Assume this option is a list, and try to add or remove the value.
+                vlist.append(value) if command == 'addto' else vlist.remove(value)
+                value = vlist
+                setattr(getattr(bot.config, section), option, value)
+            except AttributeError:
+                bot.reply("That option doesn't appear to be a list.")
+                return
+            except ValueError: # tried to remove value not in list
+                pass
+
+    bot.reply("{0}.{1} = {2}".format(section, option, value))
 
 
 @willie.module.commands('save')
 @willie.module.example('.save')
 def save_config(bot, trigger):
-    """Save state of willies config object to the configuration file."""
+    """Save state of Willie's config object to the configuration file."""
     if not trigger.is_privmsg:
         return
     if not trigger.admin:
