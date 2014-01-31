@@ -112,7 +112,7 @@ def retry_join(bot, trigger):
 def handle_names(bot, trigger):
     """Handle NAMES response, happens when joining to channels."""
     names = trigger.split()
-    print names
+
     #TODO specific to one channel type. See issue 281.
     channels = re.search('(#\S*)', bot.raw)
     if not channels:
