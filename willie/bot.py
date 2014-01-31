@@ -414,6 +414,15 @@ class Willie(irc.Bot):
                     )
                 self.shutdown_methods.remove(obj)
 
+    def sub(self, pattern):
+        """Given a rule, make some substitutions and return the final pattern."""
+        # These replacements have significant order
+        pattern = pattern.replace(
+            '$nickname', r'%s' %
+            re.escape(self.nick)
+        )
+        return pattern.replace('$nick', r'%s[,:] +' % re.escape(self.nick))
+
     def bind_commands(self):
         self.commands = {'high': {}, 'medium': {}, 'low': {}}
         self.scheduler.clear_jobs()
@@ -460,14 +469,6 @@ class Willie(irc.Bot):
                     self.doc[func.commands[0]] = (doc, example)
             self.commands[priority].setdefault(regexp, []).append(func)
 
-        def sub(pattern, self=self):
-            # These replacements have significant order
-            pattern = pattern.replace(
-                '$nickname', r'%s' %
-                re.escape(self.nick)
-            )
-            return pattern.replace('$nick', r'%s[,:] +' % re.escape(self.nick))
-
         for func in self.callables:
             if not hasattr(func, 'unblockable'):
                 func.unblockable = False
@@ -496,7 +497,7 @@ class Willie(irc.Bot):
 
                 if isinstance(rules, list):
                     for rule in rules:
-                        pattern = sub(rule)
+                        pattern = self.sub(rule)
                         flags = re.IGNORECASE
                         if rule.find("\n") != -1:
                             flags |= re.VERBOSE
@@ -507,7 +508,7 @@ class Willie(irc.Bot):
                     # 1) e.g. ('$nick', '(.*)')
                     if len(func.rule) == 2 and isinstance(func.rule[0], str):
                         prefix, pattern = func.rule
-                        prefix = sub(prefix)
+                        prefix = self.sub(prefix)
                         regexp = re.compile(prefix + pattern, re.I)
                         bind(self, func.priority, regexp, func)
 
@@ -526,7 +527,7 @@ class Willie(irc.Bot):
                     # 3) e.g. ('$nick', ['p', 'q'], '(.*)')
                     elif len(func.rule) == 3:
                         prefix, commands, pattern = func.rule
-                        prefix = sub(prefix)
+                        prefix = self.sub(prefix)
                         for command in commands:
                             command = r'(%s) +' % command
                             regexp = re.compile(
