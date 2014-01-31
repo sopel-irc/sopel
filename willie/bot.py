@@ -415,19 +415,26 @@ class Willie(irc.Bot):
                 self.shutdown_methods.remove(obj)
 
     def sub(self, pattern):
-        """Given a rule, make some substitutions and return the final pattern."""
+        """Replace any of the following special directives in a function's rule expression:
+        $nickname -> the bot's nick
+        $nick     -> the bot's nick followed by : or ,
+        """
+        nick = re.escape(self.nick)
+
         # These replacements have significant order
-        pattern = pattern.replace(
-            '$nickname', r'%s' %
-            re.escape(self.nick)
-        )
-        return pattern.replace('$nick', r'%s[,:] +' % re.escape(self.nick))
+        subs = [('$nickname', r'{0}'.format(nick)),
+                ('$nick', r'{0}[,:]\s+'.format(nick)),
+                ]
+        for directive, subpattern in subs:
+            pattern = pattern.replace(directive, subpattern)
+
+        return pattern
 
     def bind_commands(self):
         self.commands = {'high': {}, 'medium': {}, 'low': {}}
         self.scheduler.clear_jobs()
 
-        def bind(self, priority, regexp, func):
+        def bind(priority, regexp, func):
             # Function name is no longer used for anything, as far as I know,
             # but we're going to keep it around anyway.
             if not hasattr(func, 'name'):
@@ -502,7 +509,7 @@ class Willie(irc.Bot):
                         if rule.find("\n") != -1:
                             flags |= re.VERBOSE
                         regexp = re.compile(pattern, flags)
-                        bind(self, func.priority, regexp, func)
+                        bind(func.priority, regexp, func)
 
                 elif isinstance(func.rule, tuple):
                     # 1) e.g. ('$nick', '(.*)')
@@ -510,7 +517,7 @@ class Willie(irc.Bot):
                         prefix, pattern = func.rule
                         prefix = self.sub(prefix)
                         regexp = re.compile(prefix + pattern, re.I)
-                        bind(self, func.priority, regexp, func)
+                        bind(func.priority, regexp, func)
 
                     # 2) e.g. (['p', 'q'], '(.*)')
                     elif len(func.rule) == 2 and \
@@ -522,7 +529,7 @@ class Willie(irc.Bot):
                                 command, pattern
                             )
                             regexp = re.compile(prefix + command, re.I)
-                            bind(self, func.priority, regexp, func)
+                            bind(func.priority, regexp, func)
 
                     # 3) e.g. ('$nick', ['p', 'q'], '(.*)')
                     elif len(func.rule) == 3:
@@ -533,13 +540,13 @@ class Willie(irc.Bot):
                             regexp = re.compile(
                                 prefix + command + pattern, re.I
                             )
-                            bind(self, func.priority, regexp, func)
+                            bind(func.priority, regexp, func)
 
             if hasattr(func, 'commands'):
                 for command in func.commands:
                     prefix = self.config.core.prefix
                     regexp = get_command_regexp(prefix, command)
-                    bind(self, func.priority, regexp, func)
+                    bind(func.priority, regexp, func)
 
             if hasattr(func, 'interval'):
                 for interval in func.interval:
