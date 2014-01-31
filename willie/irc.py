@@ -73,7 +73,7 @@ class Bot(asynchat.async_chat):
             #Default is to log raw data, can be disabled in config
             config.log_raw = True
         asynchat.async_chat.__init__(self)
-        self.set_terminator('\n')
+        self.set_terminator(b'\n')
         self.buffer = ''
 
         self.nick = Nick(config.nick)
