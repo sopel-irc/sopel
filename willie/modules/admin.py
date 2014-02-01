@@ -191,37 +191,32 @@ def set_config(bot, trigger):
         bot.reply("Usage: .set section.option value")
         return
 
+    # Set the value of the config option.
     value = trigger.group(4)
-    if not value:
-        if not bot.config.has_option(section, option):
-            bot.reply("Option {0}.{1} does not exist.".format(section, option))
-            return
-        # If the option looks like a password, censor it to stop them
-        # from being put on log files.
-        if option.endswith("password") or option.endswith("pass"):
-            value = "(password censored)"
-        else:
-            value = getattr(getattr(bot.config, section), option)
-
-    else:
+    if value:
         command = trigger.group(1)
         if command == 'set':
             # Set the value to one given as argument 2.
             setattr(getattr(bot.config, section), option, value)
 
         elif command in ('addto', 'removefrom'):
-            vlist = getattr(getattr(bot.config, section), option)
+            # Convert this option to a list, and try to add or remove the value.
+            vlist = getattr(bot.config, section).get_list(option)
             try:
-                # Assume this option is a list, and try to add or remove the value.
                 vlist.append(value) if command == 'addto' else vlist.remove(value)
-                value = vlist
-                setattr(getattr(bot.config, section), option, value)
-            except AttributeError:
-                bot.reply("That option doesn't appear to be a list.")
-                return
+                setattr(getattr(bot.config, section), option, vlist)
             except ValueError: # tried to remove value not in list
                 pass
 
+    # Display the value of the config option, whether it has been changed or not.
+    if not bot.config.has_option(section, option):
+        bot.reply("Option {0}.{1} does not exist.".format(section, option))
+        return
+    # If the option looks like a password, censor it to stop them from being put on log files.
+    if option.endswith("password") or option.endswith("pass"):
+        value = "(password censored)"
+    else:
+        value = getattr(getattr(bot.config, section), option)
     bot.reply("{0}.{1} = {2}".format(section, option, value))
 
 
