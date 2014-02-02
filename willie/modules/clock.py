@@ -1,3 +1,4 @@
+#coding: utf8
 """
 clock.py - Willie Clock Module
 Copyright 2008-9, Sean B. Palmer, inamidst.com
@@ -6,9 +7,12 @@ Licensed under the Eiffel Forum License 2.
 
 http://willie.dfbta.net
 """
+from __future__ import unicode_literals
+
 import pytz
 import datetime
 from willie.module import commands, example, OP
+from willie.tools import get_timezone, format_time
 
 
 def configure(config):
@@ -30,42 +34,10 @@ def setup(bot):
 @example('.t America/New_York')
 def f_time(bot, trigger):
     """Returns the current time."""
-    tz = trigger.group(2)
-    if tz:
-        tz = tz.strip()
-        #We have a tz. If it's in all_timezones, we don't need to do anything
-        #more, because we know it's valid. Otherwise, we have to check if it's
-        #supposed to be a user, or just invalid
-        if tz not in pytz.all_timezones:
-            if bot.db and tz in bot.db.preferences:
-                tz = bot.db.preferences.get(tz, 'tz')
-                if not tz:
-                    bot.say("I'm sorry, I don't know %s's timezone"
-                            % trigger.group(2))
-                    return
-            else:
-                bot.say("I'm sorry, I don't know about the %s timezone or"
-                           " user. Try one from http://dft.ba/-tz" % tz)
-                return
-    #We don't have a timzeone. Is there one set? If not, just use UTC
-    elif bot.db:
-        if trigger.nick in bot.db.preferences:
-            tz = bot.db.preferences.get(trigger.nick, 'tz')
-        if not tz and trigger.sender in bot.db.preferences:
-            tz = bot.db.preferences.get(trigger.sender, 'tz')
-        if not tz and bot.config.has_option('clock', 'tz'):
-            tz = bot.config.clock.tz
-
-    now = datetime.datetime.now(pytz.timezone(tz or 'UTC'))
-
-    tformat = ''
-    if bot.db:
-        if trigger.nick in bot.db.preferences:
-            tformat = bot.db.preferences.get(trigger.nick, 'time_format')
-        if not tformat and trigger.sender in bot.db.preferences:
-            tformat = bot.db.preferences.get(trigger.sender, 'time_format')
-
-    bot.say(now.strftime(tformat or "%F - %T%Z"))
+    zone = get_timezone(bot.db, bot.config, trigger.group(2), trigger.nick,
+                        trigger.sender)
+    time = format_time(bot.db, bot.config, zone, trigger.nick, trigger.sender)
+    bot.say(time)
 
 
 @commands('settz')
