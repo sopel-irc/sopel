@@ -34,8 +34,14 @@ def setup(bot):
 @example('.t America/New_York')
 def f_time(bot, trigger):
     """Returns the current time."""
-    zone = get_timezone(bot.db, bot.config, trigger.group(2), trigger.nick,
-                        trigger.sender)
+    if trigger.group(2):
+        zone = get_timezone(bot.db, bot.config, trigger.group(2), None, None)
+        if not zone:
+            bot.say('oops')
+            return
+    else:
+        zone = get_timezone(bot.db, bot.config, None, trigger.nick,
+                            trigger.sender)
     time = format_time(bot.db, bot.config, zone, trigger.nick, trigger.sender)
     bot.say(time)
 
