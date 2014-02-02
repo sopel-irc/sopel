@@ -14,6 +14,7 @@ https://willie.dftba.net
 """
 from __future__ import division
 
+import datetime
 import sys
 import os
 import re
@@ -24,6 +25,10 @@ try:
 except ImportError:
     #no SSL support
     ssl = False
+try:
+    import pytz
+except:
+    pytz = False
 import traceback
 import Queue
 import copy
@@ -217,7 +222,7 @@ class Ddict(dict):
 class Nick(unicode):
 
     """A `unicode` subclass which acts appropriately for an IRC nickname.
-    
+
     When used as normal `unicode` objects, case will be preserved.
     However, when comparing two Nick objects, or comparing a Nick object with a
     `unicode` object, the comparison will be case insensitive. This case
@@ -335,7 +340,7 @@ def stdout(string):
 
 def stderr(string):
     """Print the given ``string`` to stderr.
-    
+
     This is equivalent to ``print >> sys.stderr, string``
 
     """
@@ -399,6 +404,101 @@ def verify_ssl_cn(server, port):
         if re.match('(.*)%s' % cn, server, re.IGNORECASE) is not None:
             valid = True
     return (valid, cret_info)
+
+
+def get_timezone(db=None, config=None, zone=None, nick=None, channel=None):
+    """Find, and return, the approriate timezone
+
+    Time zone is pulled in the following priority:
+    1. `zone`, if it is valid
+    2. The timezone for `zone` in `db` if one is set and valid.
+    3. The timezone for `nick` in `db`, if one is set and valid.
+    4. The timezone for `channel` in `db`, if one is set and valid.
+    5. The default timezone in `config`, if one is set and valid.
+
+    If `db` is not given, or given but not set up, steps 2 and 3 will be
+    skipped. If `config` is not given, step 4 will be skipped. If no step
+    yeilds a valid timezone, `None` is returned.
+
+    Valid timezones are those present in the IANA Time Zone Database. Prior to
+    checking timezones, two translations are made to make the zone names more
+    human-friendly. First, the string is split on `', '`, the pieces reversed,
+    and then joined with `'/'`. Next, remaining spaces are replaced with `'_'`.
+    Finally, strings longer than 4 characters are made title-case, and those 4
+    characters and shorter are made upper-case. This means "new york, america"
+    becomes "America/New_York", and "utc" becomes "UTC".
+
+    This function relies on `pytz` being available. If it is not available,
+    `None` will always be returned.
+    """
+    if not pytz:
+        return None
+    tz = None
+
+    def check(zone):
+        """Returns the transformed zone, if valid, else None"""
+        if zone:
+            parts = '/'.join(reversed(zone.split(', ')))
+            if len(zone) <= 4:
+                zone = zone.upper()
+            else:
+                zone = zone.title()
+            if zone in pytz.all_timezones:
+                return zone
+        return None
+
+    if zone:
+        tz = check(zone)
+        if not tz and zone in db.preferences:
+            tz = check(db.preferences.get(zone, 'tz'))
+    if not tz and nick and nick in db.preferences:
+        tz = check(db.preferences.get(nick, 'tz'))
+    if not tz and channel and channel in db.preferences:
+        tz = check(db.preferences.get(channel, 'tz'))
+    if not tz and config.has_option('core', 'default_timezone'):
+        tz = check(config.core.default_timezone)
+    return tz
+
+
+def format_time(db=None, config=None, zone=None, nick=None, channel=None,
+                 time=None):
+    """Return a formatted string of the given time in the given zone.
+
+    `time`, if given, should be a naive `datetime.datetime` object and will be
+    treated as being in the UTC timezone. If it is not given, the current time
+    will be used. If `zone` is given and `pytz` is available, `zone` must be
+    present in the IANA Time Zone Database; `get_timezone` can be helpful for
+    this. If `zone` is not given or `pytz` is not available, UTC will be
+    assumed.
+
+    The format for the string is chosen in the following order:
+
+    1. The format for `nick` in `db`, if one is set and valid.
+    2. The format for `channel` in `db`, if one is set and valid.
+    3. The default format in `config`, if one is set and valid.
+    4. ISO-8601
+
+    If `db` is not given or is not set up, steps 1 and 2 are skipped. If config
+    is not given, step 3 will be skipped."""
+    tformat = None
+    if db:
+        if nick and nick in db.preferences:
+            tformat = db.preferences.get(nick, 'time_format')
+        if not tformat and channel in db.preferences:
+            tformat = db.preferences.get(channel, 'time_format')
+    if not tformat and config.has_option('core', 'default_time_format'):
+        tformat = config.core.default_time_format
+    if not tformat:
+        tformat = '%F - %T%Z'
+
+    if not time:
+        time = datetime.datetime.utcnow()
+
+    if not pytz or not zone:
+        return time.strftime(tformat)
+    else:
+        zone = pytz.timezone(zone)
+        return zone.localize(time).strftime(tformat)
 
 
 class WillieMemory(dict):
