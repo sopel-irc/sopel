@@ -438,7 +438,7 @@ def get_timezone(db=None, config=None, zone=None, nick=None, channel=None):
     def check(zone):
         """Returns the transformed zone, if valid, else None"""
         if zone:
-            parts = '/'.join(reversed(zone.split(', ')))
+            zone = '/'.join(reversed(zone.split(', '))).replace(' ', '_')
             if len(zone) <= 4:
                 zone = zone.upper()
             else:
@@ -449,6 +449,7 @@ def get_timezone(db=None, config=None, zone=None, nick=None, channel=None):
 
     if zone:
         tz = check(zone)
+        print tz
         if not tz and zone in db.preferences:
             tz = check(db.preferences.get(zone, 'tz'))
     if not tz and nick and nick in db.preferences:
