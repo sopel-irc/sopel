@@ -200,17 +200,47 @@ def find_title(url):
     content_type = headers.get('Content-Type') or ''
     encoding_match = re.match('.*?charset *= *(\S+)', content_type)
     # If they gave us something else instead, try that
-    if encoding_match:
+
+    if encoding_match is not None:
         try:
             content = content.decode(encoding_match.group(1))
         except:
             encoding_match = None
-    # They didn't tell us what they gave us, so go with UTF-8 or fail silently.
+
+    else:
+        whtml = web.wHTMLParser(strict=False)
+        matched = whtml.find(content.decode('utf-8', 'ignore'), 
+                                'meta', ['http-equiv','content-type'])
+
+        try:
+            content_type = matched['attr']['content']
+        except AttributeError:
+            content_type = None
+        except TypeError:
+            content_type = None
+        else:
+            encoding_match = re.match('.*?charset *= *(\S+)', content_type)
+
+    if encoding_match is not None:
+        try:
+            content = content.decode(encoding_match.group(1))
+        except:
+            encoding_match = None
+
+    # They didn't tell us what they gave us, so go with UTF-8 or force 'replace'
     if not encoding_match:
         try:
             content = content.decode('utf-8')
-        except:
-            return
+        except UnicodeDecodeError:
+            try:
+                content = content.decode('utf-8', 'ignore')
+            except:
+                pass
+        except UnicodeEncodeError:
+            try:
+               content = content.decode('utf-8', 'ignore')
+            except:
+                pass
 
     # Some cleanup that I don't really grok, but was in the original, so
     # we'll keep it (with the compiled regexes made global) for now.
