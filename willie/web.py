@@ -18,8 +18,80 @@ import re
 import urllib
 import urllib2
 from htmlentitydefs import name2codepoint
+try:
+    from HTMLParser import HTMLParser
+except ImportError:
+    from html.parser import HTMLParser
 
 
+class wHTMLParser(HTMLParser):
+    def __init__(self, *args, **kwargs):
+        self.clear()
+
+    def clear(self):
+        """Clear the class, set all values to 0
+        """
+        self.rec = 0
+        self.found = -1
+        self.findtag = None
+        self.datarec = None
+        self.catch = None
+        self.catchmatch = None 
+        self.parsed = []
+        self.reset()
+
+    def find(self, data, findtag = None, catch = None):
+        """Find a tag into doc passed by data
+        
+        `data` Is the html document
+        `findtag` Is the tag to search
+        `catch` Allow you catch only one tag matched with
+        ['name','value']
+       
+        This make a list of dicts representing the tag. You can
+        accest this using wHTMLParser.parsed[0].tag for tagname
+        wHTMLParser.parsed[0].data for data and for a dict of 
+        attributes like name:value wHTMLParser.parsed[0].attr
+
+        This function return a list of dicts or only one dict
+        if catch is set. If none found, return None.
+
+        """
+        self.catch = catch
+        self.findtag = findtag
+        self.feed(data)
+        if catch is not None:
+            try:
+                return self.parsed[self.catchmatch]
+            except TypeError:
+                return None
+        else:
+            return self.parsed
+
+    def handle_startendtag(self, tag, attrs):
+        self.handle_starttag(tag, attrs)
+
+    def handle_starttag(self, tag, attrs):
+        if self.findtag is not None and self.findtag == tag:
+            self.rec = 1
+            self.found = self.found + 1
+            self.parsed.append({ 'tag':None, 'attr':{}, 'data':None })
+            self.parsed[-1]['tag'] = tag
+            for name, value in attrs:
+                self.parsed[-1]['attr'][name] = value
+                if ( name.lower() == self.catch[0].lower() and 
+                     value.lower() == self.catch[1].lower()
+                   ):
+                    self.catchmatch = len(self.parsed) - 1
+        
+    def handle_endtag(self, tag):
+        if self.findtag is not None and self.findtag == tag:
+            self.rec = 0
+
+    def handle_data(self, data):
+        if self.rec == 1:
+            self.parsed[-1]['data'] = data
+            
 # HTTP GET
 def get(uri, timeout=20, headers=None, return_headers=False,
         limit_bytes=None):
