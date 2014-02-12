@@ -130,12 +130,12 @@ def ytsearch(bot, trigger):
         bot.say("Sorry, I couldn't find the video you are looking for")
         return
 
-    message = ('\x02{0}\x02 | Length: {1} | Uploader: {2} | Uploaded: {3} | Views: {4} | '
+    message = ('{0} | Length: {1} | Uploader: {2} | Uploaded: {3} | Views: {4} | '
                '+{5} -{6} | Comments: {7} | {8}'
                .format(video_info['title'], video_info['length'], video_info['uploader'],
                        video_info['uploaded'], video_info['views'], video_info['likes'],
                        video_info['dislikes'], video_info['comments'], video_info['link']))
-    bot.say(HTMLParser().unescape(message))
+    bot.reply(HTMLParser().unescape(message))
 
 
 @rule('.*(youtube.com/watch\S*v=|youtu.be/)([\w-]+).*')
@@ -152,12 +152,12 @@ def ytinfo(bot, trigger, found_match=None):
         return
 
     #combine variables and print
-    message = ('\x02{0}\x02 | Length: {1} | Uploader: {2} | Uploaded: {3} | Views: {4} | '
+    message = ('{0} | Length: {1} | Uploader: {2} | Uploaded: {3} | Views: {4} | '
                '+{5} -{6} | Comments: {7} | {8}'
                .format(video_info['title'], video_info['length'], video_info['uploader'],
                        video_info['uploaded'], video_info['views'], video_info['likes'],
                        video_info['dislikes'], video_info['comments'], video_info['link']))
-    bot.say(HTMLParser().unescape(message))
+    bot.reply(HTMLParser().unescape(message))
 
 
 @commands('ytlast', 'ytnew', 'ytlatest')
@@ -171,7 +171,7 @@ def ytlast(bot, trigger):
     if video_info is 'err':
         return
 
-    message = ('\x02{0}\x02 | Length: {1} | Uploader: {2} | Uploaded: {3} | Views: {4} | '
+    message = ('{0} | Length: {1} | Uploader: {2} | Uploaded: {3} | Views: {4} | '
                '+{5} -{6} | Comments: {7} | {8}'
                .format(video_info['title'], video_info['length'], video_info['uploader'],
                        video_info['uploaded'], video_info['views'], video_info['likes'],

@@ -107,7 +107,7 @@ def title_command(bot, trigger):
 
     results = process_urls(bot, trigger, urls)
     for title, domain in results[:4]:
-        bot.reply('\x02{0}\x02 - {1}'.format(title, domain))
+        bot.reply('{0} - {1}'.format(title, domain))
 
 
 @rule('(?u).*(https?://\S+).*')
@@ -125,7 +125,7 @@ def title_auto(bot, trigger):
     bot.memory['last_seen_url'][trigger.sender] = urls[-1]
 
     for title, domain in results[:4]:
-        message = '\x02{0}\x02 - {1}'.format(title, domain)
+        message = '{0} | {1}'.format(title, domain)
         # Guard against responding to other instances of this bot.
         if message != trigger:
             bot.say(message)
