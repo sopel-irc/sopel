@@ -33,6 +33,12 @@ try:
 except ImportError:
     pass
 
+try:
+    import psycopg2
+    supported_types.add('postgres')
+except ImportError:
+    pass
+
 
 class WillieDB(object):
 
@@ -43,14 +49,14 @@ class WillieDB(object):
     chosen to back the SettingsDB, as determined by the ``userdb_type``
     attribute of *config*.
 
-    Currently, two values for ``userdb_type`` are supported: ``sqlite`` and
-    ``mysql``. The ``sqlite`` type requires that ``userdb_file`` be set in the
-    ``db`` section of ``config`` (that is, under the ``[db]`` heading in the
-    config file), and refer to a writeable sqlite database. The ``mysql`` type
-    requires ``userdb_host``, ``userdb_user``, ``userdb_pass``, and
-    ``userdb_name`` to be set, and provide the host and name of a MySQL
-    database, as well as a username and password for a user able to write to
-    said database.
+    Currently, two values for ``userdb_type`` are supported: ``sqlite``,
+    ``mysql`` and ``postgres``. The ``sqlite`` type requires that
+    ``userdb_file`` be set in the ``db`` section of ``config`` (that is, under
+    the ``[db]`` heading in the config file), and refer to a writeable sqlite
+    database. The ``mysql`` and ``postgres`` types require ``userdb_host``,
+    ``userdb_user``, ``userdb_pass``, and ``userdb_name`` to be set, and
+    provide the host and name of a MySQL or PostgreSQL database, as well as a
+    username and password for a user able to write to said database.
 
     Upon creation of the object, the tables currently existing in the given
     database will be registered, as though added through ``add_table``.
@@ -78,9 +84,14 @@ class WillieDB(object):
         elif self.type == 'sqlite':
             self.substitution = '?'
             self._sqlite(config)
+        elif self.type == 'postgres':
+            self.substitution = '%s'
+            self._postgres(config)
 
     def __getattr__(self, attr):
-        """Handle non-existant tables gracefully by returning a pseudo-table."""
+        """Handle non-existant tables gracefully by returning a
+        pseudo-table.
+        """
         return self._none
 
     def __nonzero__(self):
@@ -93,7 +104,7 @@ class WillieDB(object):
             self._user = config.db.userdb_user
             self._passwd = config.db.userdb_pass
             self._dbname = config.db.userdb_name
-        except AttributeError as e:
+        except AttributeError:
             print 'Some options are missing for your MySQL DB.' + \
                 ' The database will not be set up.'
             return
@@ -162,6 +173,59 @@ class WillieDB(object):
             self.tables.add(name)
         db.close()
 
+    def _postgres(self, config):
+        try:
+            self._host = config.db.userdb_host
+            self._user = config.db.userdb_user
+            self._passwd = config.db.userdb_pass
+            self._dbname = config.db.userdb_name
+        except AttributeError:
+            print 'Some options are missing for your PostgreSQL DB.' \
+                ' The database will not be set up.'
+            return
+
+        try:
+            db = psycopg2.connect(
+                host=self._host,
+                user=self._user,
+                password=self._passwd,
+                database=self._dbname
+            )
+        except psycopg2.DatabaseError, e:
+            print 'Error: Unable to connect to user settings DB.'
+            return
+
+        #Set up existing tables and columns
+        try:
+            cur = db.cursor()
+            cur.execute("SELECT table_name FROM information_schema.tables"
+                        " WHERE table_schema = 'public'")
+            tables = cur.fetchall()
+            for table in tables:
+                name = table[0]
+                cur.execute("SELECT column_name FROM"
+                            " information_schema.constraint_column_usage WHERE"
+                            " table_schema = 'public' and table_name = '%s'"
+                            " and constraint_name = '%s_pkey'" % (name, name))
+                result = cur.fetchone()
+                if result:
+                    key = [result[0]]
+                else:
+                    key = []
+                columns = []
+                cur.execute("SELECT column_name FROM"
+                            " information_schema.columns WHERE table_schema"
+                            " = 'public' and table_name = '%s'" % name)
+                result = cur.fetchall()
+                for column in result:
+                    columns.append(column[0])
+                setattr(self, name, Table(self, name, columns, key))
+                self.tables.add(name)
+        except psycopg2.DatabaseError, e:
+            print 'Error: Unable to configure user settings DB.'
+            raise e
+        db.close()
+
     def check_table(self, name, columns, key):
         """Check if WillidDB contains a specific table.
 
@@ -182,6 +246,8 @@ class WillieDB(object):
                     cols = cols + column + ' VARCHAR(255)'
                 elif self.type == 'sqlite':
                     cols = cols + column + ' string'
+                elif self.type == 'postgres':
+                    cols = cols + column + ' text'
                 if key and column in key:
                     cols += ' NOT NULL'
 
@@ -243,6 +309,7 @@ class WillieDB(object):
             db = self.connect()
             cursor = db.cursor()
             cursor.execute("CREATE TABLE %s %s;" % (name, cols))
+            db.commit()
             db.close()
             extant_table = Table(self, name, columns, key)
             setattr(self, name, extant_table)
@@ -261,7 +328,7 @@ class WillieDB(object):
                     if new_col not in extant_table.columns:
                         new_cols.append(new_col)
                 else:
-                    raise ValueError('%s is not a proper column definition'\
+                    raise ValueError('%s is not a proper column definition'
                                      '(basestring or tuple expected)'
                                      % str(type(new_col)))
 
@@ -271,6 +338,7 @@ class WillieDB(object):
                 for column in new_cols:
                     cursor.execute('ALTER TABLE %s ADD %s;' % (name, column))
                     extant_table.columns.add(column)
+                db.commit()
                 db.close()
         else:
             # There's already a different table with that name, which we can't
@@ -294,6 +362,13 @@ class WillieDB(object):
             )
         elif self.type == 'sqlite':
             return sqlite3.connect(self._file)
+        elif self.type == 'postgres':
+            return psycopg2.connect(
+                host=self._host,
+                user=self._user,
+                password=self._passwd,
+                database=self._dbname
+            )
 
 
 class Table(object):
@@ -687,7 +762,8 @@ def configure(config):
 
     config.interactive_add(
         'db', 'userdb_type',
-        'What type of database would you like to use? (sqlite/mysql)', 'sqlite'
+        'What type of database would you like to use? (sqlite/mysql/postgres)',
+        'sqlite'
     )
 
     if config.db.userdb_type == 'sqlite':
@@ -700,6 +776,19 @@ def configure(config):
             'db', 'userdb_host', "Enter the MySQL hostname", 'localhost'
         )
         config.interactive_add('db', 'userdb_user', "Enter the MySQL username")
+        config.interactive_add(
+            'db', 'userdb_pass', "Enter the user's password", 'none'
+        )
+        config.interactive_add(
+            'db', 'userdb_name', "Enter the name of the database to use"
+        )
+
+    elif config.db.userdb_type == 'postgres':
+        config.interactive_add(
+            'db', 'userdb_host', "Enter the PostgreSQL hostname", 'localhost'
+        )
+        config.interactive_add('db', 'userdb_user',
+                               "Enter the PostgreSQL username")
         config.interactive_add(
             'db', 'userdb_pass', "Enter the user's password", 'none'
         )
