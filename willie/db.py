@@ -49,7 +49,7 @@ class WillieDB(object):
     chosen to back the SettingsDB, as determined by the ``userdb_type``
     attribute of *config*.
 
-    Currently, two values for ``userdb_type`` are supported: ``sqlite``,
+    Currently, three values for ``userdb_type`` are supported: ``sqlite``,
     ``mysql`` and ``postgres``. The ``sqlite`` type requires that
     ``userdb_file`` be set in the ``db`` section of ``config`` (that is, under
     the ``[db]`` heading in the config file), and refer to a writeable sqlite
