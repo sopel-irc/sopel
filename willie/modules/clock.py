@@ -56,7 +56,7 @@ def update_user(bot, trigger):
     if bot.db:
         tz = trigger.group(2)
         if not tz:
-            bot.reply("What timzeone do you want to set? Try one from "
+            bot.reply("What timezone do you want to set? Try one from "
                          "http://dft.ba/-tz")
             return
         if tz not in pytz.all_timezones:
@@ -124,7 +124,7 @@ def update_channel(bot, trigger):
     if bot.db:
         tz = trigger.group(2)
         if not tz:
-            bot.reply("What timzeone do you want to set? Try one from "
+            bot.reply("What timezone do you want to set? Try one from "
                          "http://dft.ba/-tz")
             return
         if tz not in pytz.all_timezones:
