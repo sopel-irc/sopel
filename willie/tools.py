@@ -498,8 +498,11 @@ def format_time(db=None, config=None, zone=None, nick=None, channel=None,
     if not pytz or not zone:
         return time.strftime(tformat)
     else:
+        if not time.tzinfo:
+            utc = pytz.timezone('UTC')
+            time = utc.localize(time)
         zone = pytz.timezone(zone)
-        return zone.localize(time).strftime(tformat)
+        return time.astimezone(zone).strftime(tformat)
 
 
 class WillieMemory(dict):
