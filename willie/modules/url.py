@@ -8,6 +8,8 @@ Licensed under the Eiffel Forum License 2.
 http://willie.dftba.net
 """
 
+from __future__ import unicode_literals
+
 import re
 from htmlentitydefs import name2codepoint
 from willie import web, tools
@@ -105,7 +107,7 @@ def title_command(bot, trigger):
 
     results = process_urls(bot, trigger, urls)
     for title, domain in results[:4]:
-        bot.reply('[ %s ] - %s' % (title, domain))
+        bot.reply('{0} - {1}'.format(title, domain))
 
 
 @rule('(?u).*(https?://\S+).*')
@@ -123,7 +125,7 @@ def title_auto(bot, trigger):
     bot.memory['last_seen_url'][trigger.sender] = urls[-1]
 
     for title, domain in results[:4]:
-        message = '[ %s ] - %s' % (title, domain)
+        message = '{0} | {1}'.format(title, domain)
         # Guard against responding to other instances of this bot.
         if message != trigger:
             bot.say(message)

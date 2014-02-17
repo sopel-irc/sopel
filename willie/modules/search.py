@@ -32,6 +32,17 @@ def google_search(query):
         return False
 
 
+def google_search_with_title(query):
+    results = google_ajax(query)
+    try:
+        return (results['responseData']['results'][0]['unescapedUrl'],
+                results['responseData']['results'][0]['titleNoFormatting'])
+    except IndexError:
+        return None
+    except TypeError:
+        return False
+
+
 def google_count(query):
     results = google_ajax(query)
     if not 'responseData' in results:
@@ -58,9 +69,9 @@ def g(bot, trigger):
     query = trigger.group(2)
     if not query:
         return bot.reply('.g what?')
-    uri = google_search(query)
+    uri, title = google_search_with_title(query)
     if uri:
-        bot.reply(uri)
+        bot.reply('{0} | {1}'.format(title, uri))
         bot.memory['last_seen_url'][trigger.sender] = uri
     elif uri is False:
         bot.reply("Problem getting data from Google.")

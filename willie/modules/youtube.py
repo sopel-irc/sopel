@@ -61,9 +61,8 @@ def ytget(bot, trigger, uri):
     try:
         upraw = video_entry['published']['$t']
         #parse from current format to output format: DD/MM/yyyy, hh:mm
-        vid_info['uploaded'] = '%s/%s/%s, %s:%s' % (upraw[8:10], upraw[5:7],
-                                                  upraw[0:4], upraw[11:13],
-                                                  upraw[14:16])
+        vid_info['uploaded'] = '{0}-{1}-{2}, {3}:{4}'.format(upraw[0:4], upraw[8:10], upraw[5:7],
+                                                             upraw[11:13], upraw[14:16])
     except KeyError:
         vid_info['uploaded'] = 'N/A'
 
@@ -77,17 +76,11 @@ def ytget(bot, trigger, uri):
             hours = duration / (60 * 60)
             minutes = duration / 60 - (hours * 60)
             seconds = duration % 60
-            vid_info['length'] = ''
+
             if hours:
-                vid_info['length'] = str(hours) + 'hours'
-                if minutes or seconds:
-                    vid_info['length'] = vid_info['length'] + ' '
-            if minutes:
-                vid_info['length'] = vid_info['length'] + str(minutes) + 'mins'
-                if seconds:
-                    vid_info['length'] = vid_info['length'] + ' '
-            if seconds:
-                vid_info['length'] = vid_info['length'] + str(seconds) + 'secs'
+                vid_info['length'] = '{0}:{1:02}:{2:02}'.format(hours, minutes, seconds)
+            else:
+                vid_info['length'] = '{0}:{1:02}'.format(minutes, seconds)
     except KeyError:
         vid_info['length'] = 'N/A'
 
@@ -136,14 +129,13 @@ def ytsearch(bot, trigger):
     if video_info['link'] == 'N/A':
         bot.say("Sorry, I couldn't find the video you are looking for")
         return
-    message = ('[YT Search] Title: ' + video_info['title'] +
-              ' | Uploader: ' + video_info['uploader'] +
-              ' | Duration: ' + video_info['length'] +
-              ' | Uploaded: ' + video_info['uploaded'] +
-              ' | Views: ' + video_info['views'] +
-              ' | Link: ' + video_info['link'])
 
-    bot.say(HTMLParser().unescape(message))
+    message = ('{0} | Length: {1} | Uploader: {2} | Uploaded: {3} | Views: {4} | '
+               '+{5} -{6} | Comments: {7} | {8}'
+               .format(video_info['title'], video_info['length'], video_info['uploader'],
+                       video_info['uploaded'], video_info['views'], video_info['likes'],
+                       video_info['dislikes'], video_info['comments'], video_info['link']))
+    bot.reply(HTMLParser().unescape(message))
 
 
 @rule('.*(youtube.com/watch\S*v=|youtu.be/)([\w-]+).*')
@@ -160,16 +152,12 @@ def ytinfo(bot, trigger, found_match=None):
         return
 
     #combine variables and print
-    message = '[YouTube] Title: ' + video_info['title'] + \
-              ' | Uploader: ' + video_info['uploader'] + \
-              ' | Uploaded: ' + video_info['uploaded'] + \
-              ' | Duration: ' + video_info['length'] + \
-              ' | Views: ' + video_info['views'] + \
-              ' | Comments: ' + video_info['comments'] + \
-              ' | Likes: ' + video_info['likes'] + \
-              ' | Dislikes: ' + video_info['dislikes']
-
-    bot.say(HTMLParser().unescape(message))
+    message = ('{0} | Length: {1} | Uploader: {2} | Uploaded: {3} | Views: {4} | '
+               '+{5} -{6} | Comments: {7} | {8}'
+               .format(video_info['title'], video_info['length'], video_info['uploader'],
+                       video_info['uploaded'], video_info['views'], video_info['likes'],
+                       video_info['dislikes'], video_info['comments'], video_info['link']))
+    bot.reply(HTMLParser().unescape(message))
 
 
 @commands('ytlast', 'ytnew', 'ytlatest')
@@ -183,12 +171,9 @@ def ytlast(bot, trigger):
     if video_info is 'err':
         return
 
-    message = ('[Latest Video] Title: ' + video_info['title'] +
-              ' | Duration: ' + video_info['length'] +
-              ' | Uploaded: ' + video_info['uploaded'] +
-              ' | Views: ' + video_info['views'] +
-              ' | Likes: ' + video_info['likes'] +
-              ' | Dislikes: ' + video_info['dislikes'] +
-              ' | Link: ' + video_info['link'])
-
+    message = ('{0} | Length: {1} | Uploader: {2} | Uploaded: {3} | Views: {4} | '
+               '+{5} -{6} | Comments: {7} | {8}'
+               .format(video_info['title'], video_info['length'], video_info['uploader'],
+                       video_info['uploaded'], video_info['views'], video_info['likes'],
+                       video_info['dislikes'], video_info['comments'], video_info['link']))
     bot.say(HTMLParser().unescape(message))
