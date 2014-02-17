@@ -456,7 +456,7 @@ def get_timezone(db=None, config=None, zone=None, nick=None, channel=None):
         tz = check(db.preferences.get(nick, 'tz'))
     if not tz and channel and channel in db.preferences:
         tz = check(db.preferences.get(channel, 'tz'))
-    if not tz and config.has_option('core', 'default_timezone'):
+    if not tz and config and config.has_option('core', 'default_timezone'):
         tz = check(config.core.default_timezone)
     return tz
 
@@ -487,7 +487,8 @@ def format_time(db=None, config=None, zone=None, nick=None, channel=None,
             tformat = db.preferences.get(nick, 'time_format')
         if not tformat and channel in db.preferences:
             tformat = db.preferences.get(channel, 'time_format')
-    if not tformat and config.has_option('core', 'default_time_format'):
+    if not tformat and config and config.has_option('core',
+                                                    'default_time_format'):
         tformat = config.core.default_time_format
     if not tformat:
         tformat = '%F - %T%Z'
