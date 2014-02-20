@@ -19,7 +19,7 @@ from willie.__init__ import run
 from willie.config import Config, create_config, ConfigurationError, wizard
 import willie.tools as tools
 from willie.tools import stderr
-
+import willie.web
 
 homedir = os.path.join(os.path.expanduser('~'), '.willie')
 
