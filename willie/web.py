@@ -141,7 +141,7 @@ class VerifiedHTTPSHandler(urllib2.HTTPSHandler):
 # For internal use in web.py, (modules can use this if they need a urllib
 # object they can execute read() on) Both handles redirects and makes sure
 # input URI is UTF-8
-def get_urllib_object(uri, timeout, headers=None, data=None, verify_ssl=True):
+def get_urllib_object(uri, timeout, headers=None, verify_ssl=True, data=None):
     """Return a urllib2 object for `uri` and `timeout` and `headers`.
 
     This is better than using urrlib2 directly, for it handles SSL verifcation, makes
