@@ -531,7 +531,7 @@ class Bot(asynchat.async_chat):
                 report = [lines[0].strip()]
                 for line in lines:
                     line = line.strip()
-                    if line.startswith('File "/'):
+                    if line.startswith('File "'):
                         report.append(line[0].lower() + line[1:])
                         break
                 else:
