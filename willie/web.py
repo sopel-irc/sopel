@@ -17,12 +17,21 @@ from __future__ import unicode_literals
 import re
 import urllib
 import urllib2
+import httplib
+import ssl
+import os.path
+import socket
+if not hasattr(ssl, 'match_hostname'):
+    # Attempt to import ssl_match_hostname from python-backports
+    import backports.ssl_match_hostname
+    ssl.match_hostname = backports.ssl_match_hostname.match_hostname
+    ssl.CertificateError = backports.ssl_match_hostname.CertificateError
 from htmlentitydefs import name2codepoint
 
 
 # HTTP GET
 def get(uri, timeout=20, headers=None, return_headers=False,
-        limit_bytes=None):
+        limit_bytes=None, verify_ssl=True):
     """Execute an HTTP GET query on `uri`, and return the result.
 
     `timeout` is an optional argument, which represents how much time we should
@@ -38,7 +47,7 @@ def get(uri, timeout=20, headers=None, return_headers=False,
     """
     if not uri.startswith('http'):
         uri = "http://" + uri
-    u = get_urllib_object(uri, timeout, headers)
+    u = get_urllib_object(uri, timeout, headers, verify_ssl)
     bytes = u.read(limit_bytes)
     u.close()
     if not return_headers:
@@ -48,7 +57,7 @@ def get(uri, timeout=20, headers=None, return_headers=False,
 
 
 # Get HTTP headers
-def head(uri, timeout=20, headers=None):
+def head(uri, timeout=20, headers=None, verify_ssl=True):
     """Execute an HTTP GET query on `uri`, and return the headers.
 
     `timeout` is an optional argument, which represents how much time we should
@@ -58,14 +67,14 @@ def head(uri, timeout=20, headers=None):
     """
     if not uri.startswith('http'):
         uri = "http://" + uri
-    u = get_urllib_object(uri, timeout, headers)
+    u = get_urllib_object(uri, timeout, headers, verify_ssl)
     info = u.info()
     u.close()
     return info
 
 
 # HTTP POST
-def post(uri, query, limit_bytes=None):
+def post(uri, query, limit_bytes=None, timeout=20, verify_ssl=True):
     """Execute an HTTP POST query.
 
     `uri` is the target URI, and `query` is the POST data. `headers` is a dict
@@ -78,7 +87,7 @@ def post(uri, query, limit_bytes=None):
     """
     if not uri.startswith('http'):
         uri = "http://" + uri
-    u = urllib2.urlopen(uri, query)
+    u = get_urllib_object(uri, timeout=timeout, verify_ssl=verify_ssl, data=data)
     bytes = u.read(limit_bytes)
     u.close()
     return bytes
@@ -101,13 +110,41 @@ def decode(html):
     return r_entity.sub(entity, html)
 
 
+class VerifiedHTTPSConnection(httplib.HTTPConnection):
+        "Verified HTTPS Connection handler"
+
+        default_port = httplib.HTTPS_PORT
+
+        def __init__(self, *args, **kwargs):
+            httplib.HTTPConnection.__init__(self, *args, **kwargs)
+
+        def connect(self):
+            """Connect to the host and port specified in __init__."""
+            sock = socket.create_connection((self.host, self.port),
+                                            self.timeout, self.source_address)
+            if self._tunnel_host:
+                self.sock = sock
+                self._tunnel()
+            if not  os.path.exists(ca_certs):
+                raise Exception('CA Certifcate bundle %s is not readable' % ca_certs)
+            self.sock = ssl.wrap_socket(sock,
+                                        ca_certs=ca_certs,
+                                        cert_reqs=ssl.CERT_REQUIRED)
+            ssl.match_hostname(self.sock.getpeercert(), self.host)
+
+class VerifiedHTTPSHandler(urllib2.HTTPSHandler):
+
+    def https_open(self, req):
+            return self.do_open(VerifiedHTTPSConnection, req)
+
+
 # For internal use in web.py, (modules can use this if they need a urllib
 # object they can execute read() on) Both handles redirects and makes sure
 # input URI is UTF-8
-def get_urllib_object(uri, timeout, headers=None):
+def get_urllib_object(uri, timeout, headers=None, data=None, verify_ssl=True):
     """Return a urllib2 object for `uri` and `timeout` and `headers`.
 
-    This is better than using urrlib2 directly, for it handles redirects, makes
+    This is better than using urrlib2 directly, for it handles SSL verifcation, makes
     sure URI is utf8, and is shorter and easier to use.  Modules may use this
     if they need a urllib2 object to execute .read() on.
 
@@ -123,10 +160,14 @@ def get_urllib_object(uri, timeout, headers=None):
         original_headers.update(headers)
     else:
         headers = original_headers
-    req = urllib2.Request(uri, headers=headers)
+    if verify_ssl:
+        opener = urllib2.build_opener(VerifiedHTTPSHandler)
+    else:
+        opener = urllib2.build_opener()
+    req = urllib2.Request(uri, headers=headers, data=data)
     try:
-        u = urllib2.urlopen(req, None, timeout)
-    except urllib2.HTTPError, e:
+        u = opener.open(req, None, timeout)
+    except urllib2.HTTPError as e:
         # Even when there's an error (say HTTP 404), return page contents
         return e.fp
 

@@ -18,6 +18,7 @@ import threading
 import traceback
 import bot
 import signal
+import web
 from tools import stderr
 
 __version__ = '4.1.0-git'
@@ -28,6 +29,11 @@ def run(config):
         delay = config.core.delay
     else:
         delay = 20
+    # Inject ca_certs from config to web for SSL validation of web requests
+    if config.ca_certs is not None:
+        web.ca_certs  = config.ca_certs
+    else:
+        web.ca_certs = '/etc/pki/tls/certs/ca-bundle.crt'
 
     def signal_handler(sig, frame):
         if sig == signal.SIGUSR1 or sig == signal.SIGTERM:

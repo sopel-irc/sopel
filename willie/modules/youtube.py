@@ -126,7 +126,7 @@ def ytsearch(bot, trigger):
     #modified from ytinfo: Copyright 2010-2011, Michael Yanovich, yanovich.net, Kenneth Sham.
     if not trigger.group(2):
         return
-    uri = 'http://gdata.youtube.com/feeds/api/videos?v=2&alt=json&max-results=1&q=' + trigger.group(2).encode('utf-8')
+    uri = 'https://gdata.youtube.com/feeds/api/videos?v=2&alt=json&max-results=1&q=' + trigger.group(2).encode('utf-8')
     uri = uri.replace(' ', '+')
     video_info = ytget(bot, trigger, uri)
 
@@ -153,7 +153,7 @@ def ytinfo(bot, trigger, found_match=None):
     """
     match = found_match or trigger
     #Grab info from YT API
-    uri = 'http://gdata.youtube.com/feeds/api/videos/' + match.group(2) + '?v=2&alt=json'
+    uri = 'https://gdata.youtube.com/feeds/api/videos/' + match.group(2) + '?v=2&alt=json'
 
     video_info = ytget(bot, trigger, uri)
     if video_info is 'err':

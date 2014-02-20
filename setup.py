@@ -31,7 +31,7 @@ def do_setup():
             license='Eiffel Forum License, version 2',
             platforms='Linux x86, x86-64',
             requires=[b'feedparser', b'pytz', b'lxml', b'praw', b'enchant',
-                      b'pygeoip']
+                      b'pygeoip', b'backports.ssl_match_hostname']
         )
     finally:
         try:
