@@ -30,7 +30,7 @@ def run(config):
     else:
         delay = 20
     # Inject ca_certs from config to web for SSL validation of web requests
-    if config.ca_certs is not None:
+    if hasattr(config, 'ca_certs') and config.ca_certs is not None:
         web.ca_certs  = config.ca_certs
     else:
         web.ca_certs = '/etc/pki/tls/certs/ca-bundle.crt'
