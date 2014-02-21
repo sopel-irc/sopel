@@ -561,18 +561,30 @@ class Willie(irc.Bot):
         def say(self, string, max_messages=1):
             self.bot.msg(self.origin.sender, string, max_messages)
 
-        def reply(self, string):
+        def reply(self, string, notice=False):
             if isinstance(string, str):
                 string = string.decode('utf8')
-            self.bot.msg(
-                self.origin.sender,
-                u'%s: %s' % (self.origin.nick, string)
-            )
+            if notice:
+                self.notice(
+                    u'%s: %s' % (self.origin.nick, string),
+                    self.origin.sender
+                )
+            else:
+                self.bot.msg(
+                    self.origin.sender,
+                    u'%s: %s' % (self.origin.nick, string)
+                )
 
         def action(self, string, recipient=None):
             if recipient is None:
                 recipient = self.origin.sender
             self.bot.msg(recipient, '\001ACTION %s\001' % string)
+
+        def notice(self, string, recipient=None):
+            if recipient is None:
+                recipient = self.origin.sender
+            print 'notice'
+            self.write(('NOTICE', recipient), string)
 
         def __getattr__(self, attr):
             return getattr(self.bot, attr)
