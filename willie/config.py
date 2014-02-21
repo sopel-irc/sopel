@@ -283,7 +283,7 @@ class Config(object):
         ans = raw_input(question + ' (y/n)? [' + d + '] ')
         if not ans:
             ans = d
-        return (ans is 'y' or ans is 'Y')
+        return (ans == 'y' or ans == 'Y')
 
     def _core(self):
         self.interactive_add('core', 'nick', 'Enter the nickname for your bot',
