@@ -7,7 +7,11 @@ http://willie.dftba.net/
 """
 
 from datetime import datetime
-from urllib2 import HTTPError
+import sys
+if sys.version_info.major < 3:
+    from urllib2 import HTTPError
+else:
+    from urllib.error import HTTPError
 import json
 from willie import web, tools
 from willie.module import commands, rule, NOLIMIT
