@@ -9,6 +9,7 @@ Licensed under the Eiffel Forum License 2.
 http://willie.dftba.net
 """
 from __future__ import unicode_literals
+from __future__ import print_function
 
 import sys
 import os
@@ -103,20 +104,20 @@ def main(argv=None):
         check_python_version()
         if opts.list_configs:
             configs = enumerate_configs()
-            print 'Config files in ~/.willie:'
+            print('Config files in ~/.willie:')
             if len(configs) is 0:
-                print '\tNone found'
+                print('\tNone found')
             else:
                 for config in configs:
-                    print '\t%s' % config
-            print '-------------------------'
+                    print('\t%s' % config)
+            print('-------------------------')
             return
 
         config_name = opts.config or 'default'
 
         configpath = find_config(config_name)
         if not os.path.isfile(configpath):
-            print "Welcome to Willie!\nI can't seem to find the configuration file, so let's generate it!\n"
+            print("Welcome to Willie!\nI can't seem to find the configuration file, so let's generate it!\n")
             if not configpath.endswith('.cfg'):
                 configpath = configpath + '.cfg'
             create_config(configpath)
@@ -197,7 +198,7 @@ def main(argv=None):
         # Step Five: Initialise And Run willie
         run(config_module)
     except KeyboardInterrupt:
-        print "\n\nInterrupted"
+        print("\n\nInterrupted")
         os._exit(1)
 if __name__ == '__main__':
     main()
