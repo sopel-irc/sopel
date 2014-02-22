@@ -10,6 +10,8 @@ Licensed under the Eiffel Forum License 2.
 http://willie.dftba.net/
 """
 from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import absolute_import
 
 import time
 import imp
@@ -21,11 +23,14 @@ import threading
 
 from datetime import datetime
 from willie import tools
-import irc
-from db import WillieDB
-from tools import (stderr, Nick, PriorityQueue, released,
+import willie.irc as irc
+from willie.db import WillieDB
+from willie.tools import (stderr, Nick, PriorityQueue, released,
                    get_command_regexp)
-import module
+import willie.module as module
+if sys.version_info.major >= 3:
+    unicode = str
+    basestring = str
 
 
 class Willie(irc.Bot):
@@ -445,13 +450,13 @@ class Willie(irc.Bot):
                 if not doc:
                     return ''
                 lines = doc.expandtabs().splitlines()
-                indent = sys.maxint
+                indent = sys.maxsize
                 for line in lines[1:]:
                     stripped = line.lstrip()
                     if stripped:
                         indent = min(indent, len(line) - len(stripped))
                 trimmed = [lines[0].strip()]
-                if indent < sys.maxint:
+                if indent < sys.maxsize:
                     for line in lines[1:]:
                         trimmed.append(line[indent:].rstrip())
                 while trimmed and not trimmed[-1]:
@@ -869,7 +874,7 @@ class Willie(irc.Bot):
         }
         if level in output_on and verbosity in output_on[level]:
             if debug_target == 'stdio':
-                print debug_msg
+                print(debug_msg)
             else:
                 self.msg(debug_target, debug_msg)
             return True
@@ -952,6 +957,3 @@ class Willie(irc.Bot):
                 raise Exception('Capability conflict')
             entry.append((prefix, module_name, failure_callback))
             self._cap_reqs[cap] = entry
-
-if __name__ == '__main__':
-    print __doc__

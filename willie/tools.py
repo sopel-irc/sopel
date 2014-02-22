@@ -13,6 +13,7 @@ Licensed under the Eiffel Forum License 2.
 https://willie.dftba.net
 """
 from __future__ import division
+from __future__ import print_function
 
 import datetime
 import sys
@@ -24,10 +25,15 @@ try:
 except:
     pytz = False
 import traceback
-import Queue
+try:
+    import Queue
+except ImportError:
+    import queue as Queue
 import copy
 import ast
 import operator
+if sys.version_info.major >= 3:
+    unicode = str
 
 
 class ExpressionEvaluator:
@@ -156,7 +162,7 @@ def get_command_regexp(prefix, command):
 
 def deprecated(old):
     def new(*args, **kwargs):
-        print >> sys.stderr, 'Function %s is deprecated.' % old.__name__
+        print('Function %s is deprecated.' % old.__name__, file=sys.stderr)
         trace = traceback.extract_stack()
         for line in traceback.format_list(trace[:-1]):
             stderr(line[:-1])
@@ -320,7 +326,7 @@ class OutputRedirect:
             except:
                 pass
         logfile = open(self.logpath, 'a')
-        logfile.write(string.encode('utf8'))
+        logfile.write(string)
         logfile.close()
 
 
@@ -329,7 +335,7 @@ class OutputRedirect:
 #4.0
 @deprecated
 def stdout(string):
-    print string
+    print(string)
 
 
 def stderr(string):
@@ -338,7 +344,7 @@ def stderr(string):
     This is equivalent to ``print >> sys.stderr, string``
 
     """
-    print >> sys.stderr, string
+    print(string, file=sys.stderr)
 
 
 def check_pid(pid):
@@ -400,7 +406,6 @@ def get_timezone(db=None, config=None, zone=None, nick=None, channel=None):
 
     if zone:
         tz = check(zone)
-        print tz
         if not tz and zone in db.preferences:
             tz = check(db.preferences.get(zone, 'tz'))
     if not tz and nick and nick in db.preferences:
