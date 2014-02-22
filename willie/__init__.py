@@ -49,7 +49,7 @@ def run(config):
             p.run(config.core.host, int(config.core.port))
         except KeyboardInterrupt:
             break
-        except Exception, e:
+        except Exception as e:
             trace = traceback.format_exc()
             try:
                 stderr(trace)

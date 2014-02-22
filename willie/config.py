@@ -317,7 +317,7 @@ class Config(object):
         for name, filename in filenames.iteritems():
             try:
                 module = imp.load_source(name, filename)
-            except Exception, e:
+            except Exception as e:
                 print >> sys.stderr, ("Error loading %s: %s (in config.py)"
                                       % (name, e))
             else:
@@ -423,7 +423,7 @@ def check_dir(create=True):
             print 'Creating a config directory at ~/.willie...'
             try:
                 os.makedirs(dotdir)
-            except Exception, e:
+            except Exception as e:
                 print >> sys.stderr, \
                     'There was a problem creating %s:' % dotdir
                 print >> sys.stderr, e.__class__, str(e)
@@ -450,7 +450,7 @@ def create_config(configpath):
         ):
             config._modules()
         config.save()
-    except Exception, e:
+    except Exception as e:
         print "Encountered an error while writing the config file." + \
             " This shouldn't happen. Check permissions."
         raise
