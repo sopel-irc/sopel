@@ -2,7 +2,7 @@
 """
 youtube.py - Willie YouTube Module
 Copyright 2012, Dimitri Molenaars, Tyrope.nl.
-Copyright © 2012-2013, Elad Alfassa, <elad@fedoraproject.org>
+Copyright © 2012-2014, Elad Alfassa, <elad@fedoraproject.org>
 Copyright 2012, Edward Powell, embolalia.net
 Licensed under the Eiffel Forum License 2.
 
@@ -15,8 +15,11 @@ from willie import web, tools
 from willie.module import rule, commands, example
 import json
 import re
-from HTMLParser import HTMLParser
-
+import sys
+if sys.version_info.major < 3:
+    from HTMLParser import HTMLParser
+else:
+    from html.parser import HTMLParser
 
 def setup(bot):
     regex = re.compile('(youtube.com/watch\S*v=|youtu.be/)([\w-]+)')

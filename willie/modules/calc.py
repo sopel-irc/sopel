@@ -13,8 +13,11 @@ from willie import web
 from willie.module import commands, example
 from willie.tools import eval_equation
 from socket import timeout
-import string
-import HTMLParser
+import sys
+if sys.version_info.major < 3:
+    import HTMLParser
+else:
+    import html.parser as HTMLParser
 
 
 @commands('c', 'calc')
@@ -63,7 +66,7 @@ def wa(bot, trigger):
     except timeout as e:
         return bot.say('[WOLFRAM ERROR] Request timed out')
     if answer:
-        answer = answer.decode('string_escape')
+        answer = answer.decode('unicode_escape')
         answer = HTMLParser.HTMLParser().unescape(answer)
         # This might not work if there are more than one instance of escaped
         # unicode chars But so far I haven't seen any examples of such output
@@ -73,7 +76,7 @@ def wa(bot, trigger):
             char_code = match.group(1)
             char = unichr(int(char_code, 16))
             answer = answer.replace('\:' + char_code, char)
-        waOutputArray = string.split(answer, ";")
+        waOutputArray = answer.split(";")
         if(len(waOutputArray) < 2):
             if(answer.strip() == "Couldn't grab results from json stringified precioussss."):
                 # Answer isn't given in an IRC-able format, just link to it.

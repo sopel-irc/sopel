@@ -217,7 +217,3 @@ def save_config(bot, trigger):
     if not trigger.admin:
         return
     bot.config.save()
-
-
-if __name__ == '__main__':
-    print __doc__.strip()

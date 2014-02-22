@@ -36,7 +36,7 @@ def do_setup():
     finally:
         try:
             shutil.rmtree(tmp_dir)
-        except OSError, e:
+        except OSError as e:
             if e.errno != 2:  # The directory is already gone, so ignore it
                 raise
 
