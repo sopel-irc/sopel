@@ -15,9 +15,16 @@ HTTP HEAD.
 from __future__ import unicode_literals
 
 import re
+import sys
 import urllib
-import urllib2
-import httplib
+if sys.version_info.major < 3:
+    import urllib2
+    import httplib
+    from htmlentitydefs import name2codepoint
+else:
+    import urllib.request as urllib2
+    import http.client as httplib
+    from html.entities import name2codepoint
 import ssl
 import os.path
 import socket
@@ -26,7 +33,6 @@ if not hasattr(ssl, 'match_hostname'):
     import backports.ssl_match_hostname
     ssl.match_hostname = backports.ssl_match_hostname.match_hostname
     ssl.CertificateError = backports.ssl_match_hostname.CertificateError
-from htmlentitydefs import name2codepoint
 
 
 # HTTP GET

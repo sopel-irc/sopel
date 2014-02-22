@@ -10,16 +10,17 @@ Licensed under the Eiffel Forum License 2.
 http://willie.dftba.net/
 """
 from __future__ import unicode_literals
+from __future__ import absolute_import
 
 import sys
 import os
 import time
 import threading
 import traceback
-import bot
+import willie.bot as bot
 import signal
-import web
-from tools import stderr
+import willie.web as web
+from willie.tools import stderr
 
 __version__ = '4.1.0-git'
 
@@ -71,6 +72,3 @@ def run(config):
         time.sleep(delay)
     os.unlink(config.pid_file_path)
     os._exit(0)
-
-if __name__ == '__main__':
-    print __doc__

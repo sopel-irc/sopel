@@ -36,14 +36,21 @@ and ``add_option``.
 #Licensed under the Eiffel Forum License 2.
 
 from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import absolute_import
 
-import db
+import willie.db as db
 import os
 import sys
-import ConfigParser
+try:
+    import ConfigParser
+except ImportError:
+    import configparser as ConfigParser
 import getpass
 import imp
-
+if sys.version_info.major >= 3:
+    unicode = str
+    basestring = str
 
 class ConfigurationError(Exception):
     """ Exception type for configuration errors """
@@ -237,7 +244,7 @@ class Config(object):
         can be entered.
 
         """
-        print message
+        print(message)
         lst = []
         if self.parser.has_option(section, option) and self.parser.get(section,
                                                                        option):
@@ -318,8 +325,8 @@ class Config(object):
             try:
                 module = imp.load_source(name, filename)
             except Exception as e:
-                print >> sys.stderr, ("Error loading %s: %s (in config.py)"
-                                      % (name, e))
+                print("Error loading %s: %s (in config.py)"
+                                      % (name, e), file=sys.stderr)
             else:
                 if hasattr(module, 'configure'):
                     module.configure(self)
@@ -401,16 +408,16 @@ def wizard(section, config=None):
     elif section == 'db':
         check_dir(False)
         if not os.path.isfile(configpath):
-            print "No config file found." + \
-                " Please make one before configuring these options."
+            print("No config file found." + \
+                " Please make one before configuring these options.")
             sys.exit(1)
         config = Config(configpath, True)
         config._db()
     elif section == 'mod':
         check_dir(False)
         if not os.path.isfile(configpath):
-            print "No config file found." + \
-                " Please make one before configuring these options."
+            print("No config file found." + \
+                " Please make one before configuring these options.")
             sys.exit(1)
         config = Config(configpath, True)
         config._modules()
@@ -420,25 +427,23 @@ def check_dir(create=True):
     dotdir = os.path.join(os.path.expanduser('~'), '.willie')
     if not os.path.isdir(dotdir):
         if create:
-            print 'Creating a config directory at ~/.willie...'
+            print('Creating a config directory at ~/.willie...')
             try:
                 os.makedirs(dotdir)
             except Exception as e:
-                print >> sys.stderr, \
-                    'There was a problem creating %s:' % dotdir
-                print >> sys.stderr, e.__class__, str(e)
-                print >> sys.stderr, \
-                    'Please fix this and then run Willie again.'
+                print('There was a problem creating %s:' % dotdir, file=sys.stderr)
+                print('%s, %s' % (e.__class__, str(e)), file=sys.stderr)
+                print('Please fix this and then run Willie again.', file=sys.stderr)
                 sys.exit(1)
         else:
-            print "No config file found. Please make one before configuring these options."
+            print("No config file found. Please make one before configuring these options.")
             sys.exit(1)
 
 
 def create_config(configpath):
     check_dir()
-    print "Please answer the following questions" + \
-        " to create your configuration file:\n"
+    print("Please answer the following questions" + \
+        " to create your configuration file:\n")
     try:
         config = Config(configpath, os.path.isfile(configpath))
         config._core()
@@ -451,8 +456,8 @@ def create_config(configpath):
             config._modules()
         config.save()
     except Exception as e:
-        print "Encountered an error while writing the config file." + \
-            " This shouldn't happen. Check permissions."
+        print("Encountered an error while writing the config file." + \
+            " This shouldn't happen. Check permissions.")
         raise
         sys.exit(1)
-    print "Config file written sucessfully!"
+    print("Config file written sucessfully!")

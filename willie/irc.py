@@ -13,6 +13,8 @@ When working on core IRC protocol related features, consult protocol
 documentation at http://www.irchelp.org/irchelp/rfc/
 """
 from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import absolute_import
 
 import sys
 import re
@@ -23,7 +25,7 @@ import asynchat
 import os
 import codecs
 import traceback
-from tools import stderr, Nick
+from willie.tools import stderr, Nick
 try:
     import select
     import ssl
@@ -40,6 +42,8 @@ if has_ssl:
 import errno
 import threading
 from datetime import datetime
+if sys.version_info.major >= 3:
+    unicode = str
 
 
 class Origin(object):
@@ -226,7 +230,7 @@ class Bot(asynchat.async_chat):
         try:
             asyncore.loop()
         except KeyboardInterrupt:
-            print 'KeyboardInterrupt'
+            print('KeyboardInterrupt')
             self.quit('KeyboardInterrupt')
 
     def quit(self, message):
@@ -334,11 +338,11 @@ class Bot(asynchat.async_chat):
         try:
             result = self.socket.send(data)
             return result
-        except ssl.SSLError, why:
+        except ssl.SSLError as why:
             if why[0] in (asyncore.EWOULDBLOCK, errno.ESRCH):
                 return 0
             else:
-                raise ssl.SSLError, why
+                raise why
             return 0
 
     def _ssl_recv(self, buffer_size):
@@ -353,7 +357,7 @@ class Bot(asynchat.async_chat):
                 self.handle_close()
                 return ''
             return data
-        except ssl.SSLError, why:
+        except ssl.SSLError as why:
             if why[0] in (asyncore.ECONNRESET, asyncore.ENOTCONN,
                           asyncore.ESHUTDOWN):
                 self.handle_close()
@@ -492,7 +496,8 @@ class Bot(asynchat.async_chat):
         """Called internally when a module causes an error."""
         try:
             trace = traceback.format_exc()
-            trace = trace.decode('utf-8', errors='xmlcharrefreplace')
+            if sys.version_info.major < 3:
+                trace = trace.decode('utf-8', errors='xmlcharrefreplace')
             stderr(trace)
             try:
                 lines = list(reversed(trace.splitlines()))
@@ -624,7 +629,3 @@ class Bot(asynchat.async_chat):
             self.ops[channel] = set()
         if not channel in self.voices:
             self.voices[channel] = set()
-
-
-if __name__ == "__main__":
-    print __doc__
