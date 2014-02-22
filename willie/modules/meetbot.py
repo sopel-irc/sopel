@@ -8,7 +8,7 @@ This module is an attempt to implement at least some of the functionallity of De
 """
 import time
 import os
-import urllib2
+from willie.web import quote
 from willie.modules.url import find_title
 from willie.module import example, commands, rule, priority
 from willie.tools import Ddict
@@ -84,7 +84,7 @@ def logHTML_end(channel):
     logfile = codecs.open(meeting_log_path + channel + '/' + figure_logfile_name(channel) + '.html', 'a', encoding='utf-8')
     current_time = time.strftime('%H:%M:%S', time.gmtime())
     logfile.write('</ul>\n<h4>Meeting ended at %s UTC</h4>\n' % current_time)
-    plainlog_url = meeting_log_baseurl + urllib2.quote(channel + '/' + figure_logfile_name(channel) + '.log')
+    plainlog_url = meeting_log_baseurl + quote(channel + '/' + figure_logfile_name(channel) + '.log')
     logfile.write('<a href="%s">Full log</a>' % plainlog_url)
     logfile.write('\n</body>\n</html>')
     logfile.close()
@@ -216,7 +216,7 @@ def endmeeting(bot, trigger):
     #TODO: Humanize time output
     bot.say("Meeting ended! total meeting length %d seconds" % meeting_length)
     logHTML_end(trigger.sender)
-    htmllog_url = meeting_log_baseurl + urllib2.quote(trigger.sender + '/' + figure_logfile_name(trigger.sender) + '.html')
+    htmllog_url = meeting_log_baseurl + quote(trigger.sender + '/' + figure_logfile_name(trigger.sender) + '.html')
     logplain('Meeting ended by %s, total meeting length %d seconds' % (trigger.nick, meeting_length), trigger.sender)
     bot.say('Meeting minutes: ' + htmllog_url)
     meetings_dict[trigger.sender] = Ddict(dict)
