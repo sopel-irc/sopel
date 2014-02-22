@@ -2,7 +2,7 @@
 """
 translate.py - Willie Translation Module
 Copyright 2008, Sean B. Palmer, inamidst.com
-Copyright © 2013, Elad Alfassa <elad@fedoraproject.org>
+Copyright © 2013-2014, Elad Alfassa <elad@fedoraproject.org>
 Licensed under the Eiffel Forum License 2.
 
 http://willie.dftba.net
@@ -10,12 +10,13 @@ http://willie.dftba.net
 
 from willie import web
 from willie.module import rule, commands, priority, example
-import urllib2
 import json
+import sys
 import random
 import os
 mangle_lines = {}
-
+if sys.version_info.major >= 3:
+    unicode = str
 
 def configure(config):
     """
@@ -35,31 +36,34 @@ def configure(config):
 
 def translate(text, input='auto', output='en'):
     raw = False
-    if output.endswith('-raw'):
+    if unicode(output).endswith('-raw'):
         output = output[:-4]
         raw = True
 
-    opener = urllib2.build_opener()
-    opener.addheaders = [(
-        'User-Agent', 'Mozilla/5.0' +
+    headers = {
+        'User-Agent': 'Mozilla/5.0' +
         '(X11; U; Linux i686)' +
         'Gecko/20071127 Firefox/2.0.0.11'
-    )]
+    }
 
-    input, output = urllib2.quote(input), urllib2.quote(output)
-    try:
-        if text is not text.encode("utf-8"):
-            text = text.encode("utf-8")
-    except:
-        pass
-    text = urllib2.quote(text)
-    result = opener.open('http://translate.google.com/translate_a/t?' +
+    input, output = web.quote(input), web.quote(output)
+    if sys.version_info.major < 3:
+        try:
+            if text is not text.encode("utf-8"):
+                text = text.encode("utf-8")
+        except:
+            pass
+    text = web.quote(text)
+    result = web.get('http://translate.google.com/translate_a/t?' +
                          ('client=t&sl=%s&tl=%s' % (input, output)) +
-                         ('&q=%s' % text)).read()
+                         ('&q=%s' % text), 40, headers=headers)
+    if sys.version_info.major>=3:
+        result = result.decode()
 
     while ',,' in result:
         result = result.replace(',,', ',null,')
         result = result.replace('[,', '[null,')
+
     data = json.loads(result)
 
     if raw:
@@ -87,11 +91,11 @@ def tr(bot, trigger):
 
     input = input or 'auto'
     input = input.encode('utf-8')
-    output = (output or 'en').encode('utf-8')
+    output = output or 'en'
 
     if input != output:
         msg, input = translate(phrase, input, output)
-        if isinstance(msg, str):
+        if sys.version_info.major < 3 and isinstance(msg, str):
             msg = msg.decode('utf-8')
         if msg:
             msg = web.decode(msg)  # msg.replace('&#39;', "'")
@@ -109,14 +113,14 @@ def tr(bot, trigger):
 @example('.tr mon chien', '"my dog" (fr to en, translate.google.com)')
 def tr2(bot, trigger):
     """Translates a phrase, with an optional language hint."""
-    command = trigger.group(2).encode('utf-8')
+    command = trigger.group(2)
 
     def langcode(p):
         return p.startswith(':') and (2 < len(p) < 10) and p[1:].isalpha()
 
     args = ['auto', 'en']
 
-    for i in xrange(2):
+    for i in range(2):
         if not ' ' in command:
             break
         prefix, cmd = command.split(' ', 1)
@@ -131,7 +135,7 @@ def tr2(bot, trigger):
     src, dest = args
     if src != dest:
         msg, src = translate(phrase, src, dest)
-        if isinstance(msg, str):
+        if sys.version_info.major < 3 and isinstance(msg, str):
             msg = msg.decode('utf-8')
         if msg:
             msg = web.decode(msg)  # msg.replace('&#39;', "'")
