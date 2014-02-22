@@ -583,7 +583,6 @@ class Willie(irc.Bot):
         def notice(self, string, recipient=None):
             if recipient is None:
                 recipient = self.origin.sender
-            print 'notice'
             self.write(('NOTICE', recipient), string)
 
         def __getattr__(self, attr):
