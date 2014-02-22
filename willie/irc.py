@@ -28,13 +28,18 @@ try:
     import select
     import ssl
     has_ssl = True
-except:
+except ImportError:
     #no SSL support
     has_ssl = False
+if has_ssl:
+    if not hasattr(ssl, 'match_hostname'):
+        # Attempt to import ssl_match_hostname from python-backports
+        import backports.ssl_match_hostname
+        ssl.match_hostname = backports.ssl_match_hostname.match_hostname
+        ssl.CertificateError = backports.ssl_match_hostname.CertificateError
 import errno
 import threading
 from datetime import datetime
-from tools import verify_ssl_cn
 
 
 class Origin(object):
@@ -268,56 +273,19 @@ class Bot(asynchat.async_chat):
         if self.config.core.use_ssl and has_ssl:
             if not self.config.core.verify_ssl:
                 self.ssl = ssl.wrap_socket(self.socket,
-                                           do_handshake_on_connect=False,
+                                           do_handshake_on_connect=True,
                                            suppress_ragged_eofs=True)
             else:
-                verification = verify_ssl_cn(self.config.host,
-                                             int(self.config.port))
-                if verification is 'NoCertFound':
-                    stderr('Can\'t get server certificate, SSL might be '
-                           'disabled on the server.')
-                    os.unlink(self.config.pid_file_path)
-                    os._exit(1)
-                elif verification is not None:
-                    stderr('\nSSL Cert information: %s' % verification[1])
-                    if verification[0] is False:
-                        stderr("Invalid certficate, CN mismatch!")
-                        os.unlink(self.config.pid_file_path)
-                        os._exit(1)
-                else:
-                    stderr('WARNING! certficate information and CN validation '
-                           'are not avilable. Is pyOpenSSL installed?')
-                    stderr('Trying to connect anyway:')
                 self.ssl = ssl.wrap_socket(self.socket,
-                                           do_handshake_on_connect=False,
+                                           do_handshake_on_connect=True,
                                            suppress_ragged_eofs=True,
                                            cert_reqs=ssl.CERT_REQUIRED,
                                            ca_certs=self.ca_certs)
-            stderr('\nSSL Handshake intiated...')
-            error_count = 0
-            while True:
                 try:
-                    self.ssl.do_handshake()
-                    break
-                except ssl.SSLError, err:
-                    if err.args[0] == ssl.SSL_ERROR_WANT_READ:
-                        select.select([self.ssl], [], [])
-                    elif err.args[0] == ssl.SSL_ERROR_WANT_WRITE:
-                        select.select([], [self.ssl], [])
-                    elif err.args[0] == 1:
-                        stderr('SSL Handshake failed with error: %s' %
-                               err.args[1])
-                        os._exit(1)
-                    else:
-                        error_count = error_count + 1
-                        if error_count > 5:
-                            stderr('SSL Handshake failed (%d failed attempts)'
-                                   % error_count)
-                            os._exit(1)
-                        raise
-                except Exception as e:
-                    print >> sys.stderr, ('SSL Handshake failed with error: %s'
-                                          % e)
+                    ssl.match_hostname(self.ssl.getpeercert(), self.config.host)
+                except ssl.CertificateError:
+                    stderr("Invalid certficate, hostname mismatch!")
+                    os.unlink(self.config.pid_file_path)
                     os._exit(1)
             self.set_socket(self.ssl)
 
