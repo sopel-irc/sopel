@@ -186,7 +186,7 @@ def get_urllib_object(uri, timeout, headers=None, verify_ssl=True, data=None):
 # Identical to urllib2.quote
 def quote(string):
     """Like urllib2.quote but handles unicode properly."""
-    if isinstance(string, unicode):
+    if sys.version_info.major < 3 and isinstance(string, unicode):
         string = string.encode('utf8')
     return urllib2.quote(string)
 

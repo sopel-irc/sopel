@@ -109,6 +109,8 @@ def get_example_test(tested_func, msg, results, privmsg, admin,
             tested_func(wrapper, trigger)
             assert len(wrapper.output) == len(results)
             for result, output in zip(results, wrapper.output):
+                if type(output) is bytes:
+                    output = output.decode()
                 if use_regexp:
                     if not re.match(result, output):
                         assert result == output
