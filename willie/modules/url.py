@@ -9,10 +9,16 @@ http://willie.dftba.net
 """
 
 import re
-from htmlentitydefs import name2codepoint
+import sys
+if sys.version_info.major < 3:
+    from htmlentitydefs import name2codepoint
+    import urlparse
+else:
+    from html.entities import name2codepoint
+    import urllib.parse as urlparse
 from willie import web, tools
 from willie.module import commands, rule, example
-import urlparse
+
 
 url_finder = None
 exclusion_char = '!'
@@ -117,7 +123,6 @@ def title_auto(bot, trigger):
     """
     if re.match(bot.config.core.prefix + 'title', trigger):
         return
-
     urls = re.findall(url_finder, trigger)
     results = process_urls(bot, trigger, urls)
     bot.memory['last_seen_url'][trigger.sender] = urls[-1]
@@ -188,7 +193,7 @@ def check_callbacks(bot, trigger, url, run=True):
     # Check if it matches the exclusion list first
     matched = any(regex.search(url) for regex in bot.memory['url_exclude'])
     # Then, check if there's anything in the callback list
-    for regex, function in bot.memory['url_callbacks'].iteritems():
+    for regex, function in tools.iteritems(bot.memory['url_callbacks']):
         match = regex.search(url)
         if match:
             if run:

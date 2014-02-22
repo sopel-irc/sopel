@@ -26,11 +26,14 @@ from willie import tools
 import willie.irc as irc
 from willie.db import WillieDB
 from willie.tools import (stderr, Nick, PriorityQueue, released,
-                   get_command_regexp)
+                   get_command_regexp, iteritems, itervalues)
 import willie.module as module
 if sys.version_info.major >= 3:
     unicode = str
     basestring = str
+    py3 = True
+else:
+    py3 = False
 
 
 class Willie(irc.Bot):
@@ -304,7 +307,7 @@ class Willie(irc.Bot):
 
         modules = []
         error_count = 0
-        for name, filename in filenames.iteritems():
+        for name, filename in iteritems(filenames):
             try:
                 module = imp.load_source(name, filename)
             except Exception as e:
@@ -378,7 +381,7 @@ class Willie(irc.Bot):
         quitting.
 
         """
-        for obj in variables.itervalues():
+        for obj in itervalues(variables):
             if self.is_callable(obj):
                 self.callables.add(obj)
             if self.is_shutdown(obj):
@@ -398,16 +401,16 @@ class Willie(irc.Bot):
 
         def remove_func(func, commands):
             """Remove all traces of func from commands."""
-            for func_list in commands.itervalues():
+            for func_list in itervalues(commands):
                 if func in func_list:
                     func_list.remove(func)
 
         hostmask = "%s!%s@%s" % (self.nick, self.user, socket.gethostname())
         willie = self.WillieWrapper(self, irc.Origin(self, hostmask, [], {}))
-        for obj in variables.itervalues():
+        for obj in itervalues(variables):
             if obj in self.callables:
                 self.callables.remove(obj)
-                for commands in self.commands.itervalues():
+                for commands in itervalues(self.commands):
                     remove_func(obj, commands)
             if obj in self.shutdown_methods:
                 try:
@@ -567,7 +570,7 @@ class Willie(irc.Bot):
             self.bot.msg(self.origin.sender, string, max_messages)
 
         def reply(self, string, notice=False):
-            if isinstance(string, str):
+            if isinstance(string, str) and not py3:
                 string = string.decode('utf8')
             if notice:
                 self.notice(
