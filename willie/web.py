@@ -157,10 +157,13 @@ def get_urllib_object(uri, timeout, headers=None, verify_ssl=True, data=None):
     For more information, refer to the urllib2 documentation.
 
     """
-    try:
-        uri = uri.encode("utf-8")
-    except:
-        pass
+    if sys.version_info.major < 3:
+        try:
+            uri = uri.encode("utf-8")
+        except:
+            pass
+    else:
+        uri = str(uri)
     original_headers = {'Accept': '*/*', 'User-Agent': 'Mozilla/5.0 (Willie)'}
     if headers is not None:
         original_headers.update(headers)

@@ -45,7 +45,7 @@ def load_database(name):
 
 def dump_database(name, data):
     f = codecs.open(name, 'w', encoding='utf-8')
-    for unixtime, reminders in data.iteritems():
+    for unixtime, reminders in willie.tools.iteritems(data):
         for channel, nick, message in reminders:
             f.write('%s\t%s\t%s\t%s\n' % (unixtime, channel, nick, message))
     f.close()

@@ -10,6 +10,7 @@ import sys
 import os.path
 import time
 import imp
+from willie.tools import iteritems
 import willie.module
 import subprocess
 
@@ -38,7 +39,7 @@ def f_reload(bot, trigger):
     old_module = sys.modules[name]
 
     old_callables = {}
-    for obj_name, obj in vars(old_module).iteritems():
+    for obj_name, obj in iteritems(vars(old_module)):
         if bot.is_callable(obj) or bot.is_shutdown(obj):
             old_callables[obj_name] = obj
 
@@ -151,7 +152,3 @@ def pm_f_load(bot, trigger):
     """Wrapper for allowing delivery of .load command via PM"""
     if trigger.is_privmsg:
         f_load(bot, trigger)
-
-
-if __name__ == '__main__':
-    print __doc__.strip()

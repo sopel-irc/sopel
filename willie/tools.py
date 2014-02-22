@@ -34,6 +34,13 @@ import ast
 import operator
 if sys.version_info.major >= 3:
     unicode = str
+    iteritems  = dict.items
+    itervalues = dict.values
+    iterkeys   = dict.keys
+else:
+    iteritems  = dict.iteritems
+    itervalues = dict.itervalues
+    iterkeys   = dict.iterkeys
 
 
 class ExpressionEvaluator:
