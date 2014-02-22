@@ -3,7 +3,7 @@
 """
 Willie - An IRC Bot
 Copyright 2008, Sean B. Palmer, inamidst.com
-Copyright © 2012, Elad Alfassa <elad@fedoraproject.org>
+Copyright © 2012-2014, Elad Alfassa <elad@fedoraproject.org>
 Licensed under the Eiffel Forum License 2.
 
 http://willie.dftba.net
@@ -12,7 +12,7 @@ from __future__ import unicode_literals
 
 import sys
 import os
-import optparse
+import argparse
 import signal
 
 from willie.__init__ import run
@@ -56,38 +56,39 @@ def main(argv=None):
     global homedir
     # Step One: Parse The Command Line
     try:
-        parser = optparse.OptionParser('%prog [options]')
-        parser.add_option('-c', '--config', metavar='filename',
-                          help='use a specific configuration file')
-        parser.add_option("-d", '--fork', action="store_true",
+        parser = argparse.ArgumentParser(description='Willie IRC Bot',
+                                         usage='%(prog)s [options]')
+        parser.add_argument('-c', '--config', metavar='filename',
+                            help='use a specific configuration file')
+        parser.add_argument("-d", '--fork', action="store_true",
                           dest="deamonize", help="Deamonize willie")
-        parser.add_option("-q", '--quit', action="store_true", dest="quit",
+        parser.add_argument("-q", '--quit', action="store_true", dest="quit",
                           help="Gracefully quit Willie")
-        parser.add_option("-k", '--kill', action="store_true", dest="kill",
+        parser.add_argument("-k", '--kill', action="store_true", dest="kill",
                           help="Kill Willie")
-        parser.add_option('--exit-on-error', action="store_true",
+        parser.add_argument('--exit-on-error', action="store_true",
                           dest="exit_on_error", help=(
                               "Exit immediately on every error instead of "
                               "trying to recover"))
-        parser.add_option("-l", '--list', action="store_true",
+        parser.add_argument("-l", '--list', action="store_true",
                           dest="list_configs",
                           help="List all config files found")
-        parser.add_option("-m", '--migrate', action="store_true",
+        parser.add_argument("-m", '--migrate', action="store_true",
                           dest="migrate_configs",
                           help="Migrate config files to the new format")
-        parser.add_option('--quiet', action="store_true", dest="quiet",
+        parser.add_argument('--quiet', action="store_true", dest="quiet",
                           help="Supress all output")
-        parser.add_option('-w', '--configure-all', action='store_true',
+        parser.add_argument('-w', '--configure-all', action='store_true',
                           dest='wizard', help='Run the configuration wizard.')
-        parser.add_option('--configure-modules', action='store_true',
+        parser.add_argument('--configure-modules', action='store_true',
                           dest='mod_wizard', help=(
                               'Run the configuration wizard, but only for the '
                               'module configuration options.'))
-        parser.add_option('--configure-database', action='store_true',
+        parser.add_argument('--configure-database', action='store_true',
                           dest='db_wizard', help=(
                               'Run the configuration wizard, but only for the '
                               'database configuration options.'))
-        opts, args = parser.parse_args(argv)
+        opts = parser.parse_args()
 
         if opts.wizard:
             wizard('all', opts.config)
@@ -100,7 +101,7 @@ def main(argv=None):
             return
 
         check_python_version()
-        if opts.list_configs is not None:
+        if opts.list_configs:
             configs = enumerate_configs()
             print 'Config files in ~/.willie:'
             if len(configs) is 0:
@@ -144,13 +145,7 @@ def main(argv=None):
         if not os.path.isdir(config_module.logdir):
             os.mkdir(config_module.logdir)
 
-        if opts.exit_on_error:
-            config_module.exit_on_error = True
-        else:
-            config_module.exit_on_error = False
-
-        if opts.quiet is None:
-            opts.quiet = False
+        config_module.exit_on_error = opts.exit_on_error
 
         sys.stderr = tools.OutputRedirect(logfile, True, opts.quiet)
         sys.stdout = tools.OutputRedirect(logfile, False, opts.quiet)
@@ -169,7 +164,7 @@ def main(argv=None):
             old_pid = int(pid_file.read())
             pid_file.close()
             if tools.check_pid(old_pid):
-                if opts.quit is None and opts.kill is None:
+                if not opts.quit and not opts.kill:
                     stderr('There\'s already a Willie instance running with this config file')
                     stderr('Try using the --quit or the --kill options')
                     sys.exit(1)
@@ -187,10 +182,10 @@ def main(argv=None):
             elif not tools.check_pid(old_pid) and (opts.kill or opts.quit):
                 stderr('Willie is not running!')
                 sys.exit(1)
-        elif opts.quit is not None or opts.kill is not None:
+        elif opts.quit or opts.kill:
             stderr('Willie is not running!')
             sys.exit(1)
-        if opts.deamonize is not None:
+        if opts.deamonize:
             child_pid = os.fork()
             if child_pid is not 0:
                 sys.exit()
