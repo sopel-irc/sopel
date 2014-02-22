@@ -20,12 +20,6 @@ import os
 import re
 import threading
 try:
-    import ssl
-    import OpenSSL
-except ImportError:
-    #no SSL support
-    ssl = False
-try:
     import pytz
 except:
     pytz = False
@@ -361,49 +355,6 @@ def check_pid(pid):
         return False
     else:
         return True
-
-
-def verify_ssl_cn(server, port):
-    """Verify the SSL certificate.
-
-    *Availability: Must have the OpenSSL Python module installed.*
-
-    Verify the SSL certificate given by the ``server`` when connecting on the
-    given ``port``.
-
-    This returns ``None`` if OpenSSL is not available or 'NoCertFound' if there
-    was no certificate given.
-    Otherwise, a two-tuple containing a boolean of whether the certificate is
-    valid and the certificate information is returned.
-
-    """
-    if not ssl:
-        return None
-    cert = None
-    for version in (
-        ssl.PROTOCOL_TLSv1, ssl.PROTOCOL_SSLv3, ssl.PROTOCOL_SSLv23
-    ):
-        try:
-            cert = ssl.get_server_certificate(
-                (server, port), ssl_version=version
-            )
-            break
-        except Exception as e:
-            pass
-    if cert is None:
-        return 'NoCertFound'
-    valid = False
-
-    x509 = OpenSSL.crypto.load_certificate(OpenSSL.crypto.FILETYPE_PEM, cert)
-    cret_info = x509.get_subject().get_components()
-    cn = x509.get_subject().commonName
-    if cn == server:
-        valid = True
-    elif '*' in cn:
-        cn = cn.replace('*.', '')
-        if re.match('(.*)%s' % cn, server, re.IGNORECASE) is not None:
-            valid = True
-    return (valid, cret_info)
 
 
 def get_timezone(db=None, config=None, zone=None, nick=None, channel=None):
