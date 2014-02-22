@@ -150,7 +150,7 @@ class VerifiedHTTPSHandler(urllib2.HTTPSHandler):
 def get_urllib_object(uri, timeout, headers=None, verify_ssl=True, data=None):
     """Return a urllib2 object for `uri` and `timeout` and `headers`.
 
-    This is better than using urrlib2 directly, for it handles SSL verifcation, makes
+    This is better than using urlib2 directly, for it handles SSL verifcation, makes
     sure URI is utf8, and is shorter and easier to use.  Modules may use this
     if they need a urllib2 object to execute .read() on.
 
