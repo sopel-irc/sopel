@@ -44,7 +44,8 @@ def get(uri, timeout=20, headers=None, return_headers=False,
     wait before throwing a timeout exception. It defaults to 20, but can be set
     to higher values if you are communicating with a slow web application.
     `headers` is a dict of HTTP headers to send with the request.  If
-    `return_headers` is True, return a tuple of (bytes, headers)
+    `return_headers` is True, return a tuple of (bytes, headers, final_url)
+    in this case, final_url is the final URL after redirections.
 
     If `limit_bytes` is provided, only read that many bytes from the URL. This
     may be a good idea when reading from unknown sites, to prevent excessively
@@ -59,7 +60,7 @@ def get(uri, timeout=20, headers=None, return_headers=False,
     if not return_headers:
         return bytes
     else:
-        return (bytes, u.info())
+        return (bytes, u.info(), u.geturl())
 
 
 # Get HTTP headers
