@@ -302,7 +302,7 @@ class Willie(irc.Bot):
         for name, filename in filenames.iteritems():
             try:
                 module = imp.load_source(name, filename)
-            except Exception, e:
+            except Exception as e:
                 error_count = error_count + 1
                 filename, lineno = tools.get_raising_file_and_line()
                 rel_path = os.path.relpath(filename, os.path.dirname(__file__))
@@ -314,7 +314,7 @@ class Willie(irc.Bot):
                         module.setup(self)
                     self.register(vars(module))
                     modules.append(name)
-                except Exception, e:
+                except Exception as e:
                     error_count = error_count + 1
                     filename, lineno = tools.get_raising_file_and_line()
                     rel_path = os.path.relpath(

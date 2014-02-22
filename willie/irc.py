@@ -135,7 +135,7 @@ class Bot(asynchat.async_chat):
         if not os.path.isdir(self.config.core.logdir):
             try:
                 os.mkdir(self.config.core.logdir)
-            except Exception, e:
+            except Exception as e:
                 stderr('There was a problem creating the logs directory.')
                 stderr('%s %s' % (str(e.__class__), str(e)))
                 stderr('Please fix this and then run Willie again.')
@@ -206,7 +206,7 @@ class Bot(asynchat.async_chat):
     def run(self, host, port=6667):
         try:
             self.initiate_connect(host, port)
-        except socket.error, e:
+        except socket.error as e:
             stderr('Connection error: %s' % e.strerror)
             self.hasquit = True
 
