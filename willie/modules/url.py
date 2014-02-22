@@ -3,6 +3,7 @@ url.py - Willie URL title module
 Copyright 2010-2011, Michael Yanovich, yanovich.net, Kenneth Sham
 Copyright 2012-2013 Edward Powell
 Copyright 2013      Lior Ramati (firerogue517@gmail.com)
+Copyright © 2014 Elad Alfassa <elad@fedoraproject.org>
 Licensed under the Eiffel Forum License 2.
 
 http://willie.dftba.net
@@ -139,7 +140,7 @@ def process_urls(bot, trigger, urls):
     For each URL in the list, ensure that it isn't handled by another module.
     If not, find where it redirects to, if anywhere. If that redirected URL
     should be handled by another module, dispatch the callback for it.
-    Return a list of (title, TLD) tuples for each URL which is not handled by
+    Return a list of (title, hostname) tuples for each URL which is not handled by
     another module.
     """
 
@@ -166,7 +167,7 @@ def process_urls(bot, trigger, urls):
             # Finally, actually show the URL
             title = find_title(url)
             if title:
-                results.append((title, getTLD(url)))
+                results.append((title, get_hostname(url)))
     return results
 
 
@@ -240,17 +241,17 @@ def find_title(url):
     return title or None
 
 
-def getTLD(url):
+def get_hostname(url):
     idx = 7
     if url.startswith('https://'):
         idx = 8
     elif url.startswith('ftp://'):
         idx = 6
-    tld = url[idx:]
-    slash = tld.find('/')
+    hostname = url[idx:]
+    slash = hostname.find('/')
     if slash != -1:
-        tld = tld[:slash]
-    return tld
+        hostname = hostname[:slash]
+    return hostname
 
 
 # Functions for international domain name magic
