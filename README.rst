@@ -22,6 +22,11 @@ Latest source
 First, either clone the repository with ``git clone
 git://github.com/embolalia/willie.git`` or download a tarball from GitHub.
 
+Note: willie requires Python 2.7 or Python 3.3 to run. On Python 2.7,
+willie requires ``backports.ssl_match_hostname`` to be installed. Use
+``pip install backports.ssl_match_hostname`` or ``yum install python-backports.ssl_match_hostname`` to install it,
+or download and install it manually `from PyPi <https://pypi.python.org/pypi/backports.ssl_match_hostname>`.
+
 In the source directory (whether cloned or from the tarball) run
 ``setup.py install``. You can then run ``willie`` to configure and start the
 bot. Alternately, you can just run the ``willie.py`` file in the source
