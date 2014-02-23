@@ -11,7 +11,7 @@ import os
 from willie.web import quote
 from willie.modules.url import find_title
 from willie.module import example, commands, rule, priority
-from willie.tools import Ddict
+from willie.tools import Ddict, Nick
 import codecs
 
 
@@ -373,6 +373,7 @@ def take_comment(bot, trigger):
     https://github.com/embolalia/willie/wiki/Using-the-meetbot-module
     """
     target, message = trigger.group(2).split(None, 1)
+    target = Nick(target)
     if trigger.sender[0] in '#&+!':
         return
     if not ismeetingrunning(target):
