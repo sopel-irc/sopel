@@ -12,6 +12,15 @@ from __future__ import unicode_literals
 from __future__ import print_function
 
 import sys
+from willie.tools import stderr
+
+if sys.version_info < (2, 7):
+    stderr('Error: Requires Python 2.7 or later. Try python2.7 willie')
+    sys.exit(1)
+if sys.version_info.major == 3 and sys.version_info.minor < 3.3:
+    stderr('Error: When running on Python 3, Python 3.3 is required.')
+    sys.exit(1)
+
 import os
 import argparse
 import signal
@@ -19,17 +28,9 @@ import signal
 from willie.__init__ import run
 from willie.config import Config, create_config, ConfigurationError, wizard
 import willie.tools as tools
-from willie.tools import stderr
 import willie.web
 
 homedir = os.path.join(os.path.expanduser('~'), '.willie')
-
-
-def check_python_version():
-    if sys.version_info < (2, 7):
-        stderr('Error: Requires Python 2.7 or later. Try python2.7 willie')
-        sys.exit(1)
-
 
 def enumerate_configs(extension='.cfg'):
     configfiles = []
@@ -101,7 +102,6 @@ def main(argv=None):
             wizard('db', opts.config)
             return
 
-        check_python_version()
         if opts.list_configs:
             configs = enumerate_configs()
             print('Config files in ~/.willie:')
