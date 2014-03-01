@@ -89,6 +89,8 @@ def msg(bot, trigger):
         return
     if not trigger.admin:
         return
+    if trigger.group(2) is None:
+        return
 
     channel, _sep, message = trigger.group(2).partition(' ')
     message = message.strip()
@@ -108,6 +110,8 @@ def me(bot, trigger):
     if not trigger.is_privmsg:
         return
     if not trigger.admin:
+        return
+    if trigger.group(2) is None:
         return
 
     channel, _sep, action = trigger.group(2).partition(' ')
