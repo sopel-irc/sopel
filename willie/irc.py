@@ -199,9 +199,9 @@ class Bot(asynchat.async_chat):
             #provision for continuation of message lines.
 
             if text is not None:
-                temp = (u' '.join(args) + ' :' + text)[:510] + '\r\n'
+                temp = (' '.join(args) + ' :' + text)[:510] + '\r\n'
             else:
-                temp = u' '.join(args)[:510] + '\r\n'
+                temp = ' '.join(args)[:510] + '\r\n'
             self.log_raw(temp, '>>')
             self.send(temp.encode('utf-8'))
         finally:
@@ -392,7 +392,7 @@ class Bot(asynchat.async_chat):
         line = self.buffer
         if line.endswith('\r'):
             line = line[:-1]
-        self.buffer = u''
+        self.buffer = ''
         self.raw = line
 
         # Break off IRCv3 message tags, if present
@@ -518,16 +518,16 @@ class Bot(asynchat.async_chat):
                 with codecs.open(
                     log_filename, 'a', encoding='utf-8'
                 ) as logfile:
-                    logfile.write(u'Signature: %s\n' % signature)
+                    logfile.write(Signature: %s\n' % signature)
                     if origin:
                         logfile.write(
-                            u'from %s at %s:\n' % (
+                            from %s at %s:\n' % (
                                 origin.sender, str(datetime.now())
                             )
                         )
                     if trigger:
                         logfile.write(
-                            u'Message was: <%s> %s\n' % (
+                            Message was: <%s> %s\n' % (
                                 trigger.nick, trigger.group(0)
                             )
                         )

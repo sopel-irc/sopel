@@ -574,13 +574,13 @@ class Willie(irc.Bot):
                 string = string.decode('utf8')
             if notice:
                 self.notice(
-                    u'%s: %s' % (self.origin.nick, string),
+                    '%s: %s' % (self.origin.nick, string),
                     self.origin.sender
                 )
             else:
                 self.bot.msg(
                     self.origin.sender,
-                    u'%s: %s' % (self.origin.nick, string)
+                    '%s: %s' % (self.origin.nick, string)
                 )
 
         def action(self, string, recipient=None):
