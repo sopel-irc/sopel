@@ -455,9 +455,6 @@ class Bot(asynchat.async_chat):
             else:
                 excess = encoded_text[last_space + 1:]
                 encoded_text = encoded_text[:last_space]
-            # Back to unicode again, so we don't screw things up later.
-            if sys.version_info.major < 3:
-                text = encoded_text.decode('utf-8')
         # We'll then send the excess at the end
         try:
             self.sending.acquire()
