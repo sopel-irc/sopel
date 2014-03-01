@@ -21,10 +21,12 @@ if sys.version_info.major < 3:
     import urllib2
     import httplib
     from htmlentitydefs import name2codepoint
+    from urlparse import urlparse
 else:
     import urllib.request as urllib2
     import http.client as httplib
     from html.entities import name2codepoint
+    from urllib.parse import urlparse
 import ssl
 import os.path
 import socket
@@ -157,13 +159,8 @@ def get_urllib_object(uri, timeout, headers=None, verify_ssl=True, data=None):
     For more information, refer to the urllib2 documentation.
 
     """
-    if sys.version_info.major < 3:
-        try:
-            uri = uri.encode("utf-8")
-        except:
-            pass
-    else:
-        uri = str(uri)
+
+    uri = quote_query(uri)
     original_headers = {'Accept': '*/*', 'User-Agent': 'Mozilla/5.0 (Willie)'}
     if headers is not None:
         original_headers.update(headers)
@@ -184,19 +181,25 @@ def get_urllib_object(uri, timeout, headers=None, verify_ssl=True, data=None):
 
 
 # Identical to urllib2.quote
-def quote(string):
+def quote(string, safe='/'):
     """Like urllib2.quote but handles unicode properly."""
-    if sys.version_info.major < 3 and isinstance(string, unicode):
-        string = string.encode('utf8')
-    return urllib2.quote(string)
+    if sys.version_info.major < 3:
+        if isinstance(string, unicode):
+            string = string.encode('utf8')
+        string = urllib.quote(string, safe.encode('utf8'))
+    else:
+        string = urllib.parse.quote(str(string), safe)
+    return string
 
 
-# Identical to urllib.urlencode
-def urlencode(data):
-    """Identical to urllib.urlencode.
+def quote_query(string):
+    """Quotes the query parameters."""
+    parsed = urlparse(string)
+    string = string.replace(parsed.query, quote(parsed.query, "/="), 1)
+    return string
 
-    Use this if you already importing web in your module and don't want to
-    import urllib just to use the urlencode function.
 
-    """
-    return urllib.urlencode(data)
+if sys.version_info.major < 3:
+    urlencode = urllib.urlencode
+else:
+    urlencode = urllib.parse.urlencode
