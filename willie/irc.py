@@ -518,16 +518,16 @@ class Bot(asynchat.async_chat):
                 with codecs.open(
                     log_filename, 'a', encoding='utf-8'
                 ) as logfile:
-                    logfile.write(Signature: %s\n' % signature)
+                    logfile.write('Signature: %s\n' % signature)
                     if origin:
                         logfile.write(
-                            from %s at %s:\n' % (
+                            'from %s at %s:\n' % (
                                 origin.sender, str(datetime.now())
                             )
                         )
                     if trigger:
                         logfile.write(
-                            Message was: <%s> %s\n' % (
+                            'Message was: <%s> %s\n' % (
                                 trigger.nick, trigger.group(0)
                             )
                         )
