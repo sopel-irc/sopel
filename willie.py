@@ -17,7 +17,7 @@ from willie.tools import stderr
 if sys.version_info < (2, 7):
     stderr('Error: Requires Python 2.7 or later. Try python2.7 willie')
     sys.exit(1)
-if sys.version_info.major == 3 and sys.version_info.minor < 3.3:
+if sys.version_info.major == 3 and sys.version_info.minor < 3:
     stderr('Error: When running on Python 3, Python 3.3 is required.')
     sys.exit(1)
 
