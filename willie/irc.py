@@ -155,10 +155,13 @@ class Bot(asynchat.async_chat):
 
     def safe(self, string):
         """Remove newlines from a string."""
+        if sys.version_info.major >=3 and isinstance(string, bytes):
+                string = string.decode('utf8')
+        elif sys.version_info.major < 3:
+            if not isinstance(string, unicode):
+                string = unicode(string, encoding='utf8')
         string = string.replace('\n', '')
         string = string.replace('\r', '')
-        if not isinstance(string, unicode):
-            string = unicode(string, encoding='utf8')
         return string
 
     def write(self, args, text=None):
@@ -441,7 +444,8 @@ class Bot(asynchat.async_chat):
         # messages will be split. Otherwise, we'd have to acocunt for the bot's
         # hostmask, which is hard.
         max_text_length = 400
-        encoded_text = text.encode('utf-8')
+        if isinstance(text, unicode):
+            encoded_text = text.encode('utf-8')
         excess = ''
         if max_messages > 1 and len(encoded_text) > max_text_length:
             last_space = encoded_text.rfind(' ', 0, max_text_length)
@@ -452,7 +456,8 @@ class Bot(asynchat.async_chat):
                 excess = encoded_text[last_space + 1:]
                 encoded_text = encoded_text[:last_space]
             # Back to unicode again, so we don't screw things up later.
-            text = encoded_text.decode('utf-8')
+            if sys.version_info.major < 3:
+                text = encoded_text.decode('utf-8')
         # We'll then send the excess at the end
         try:
             self.sending.acquire()
