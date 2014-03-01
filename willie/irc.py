@@ -512,44 +512,27 @@ class Bot(asynchat.async_chat):
 
                 signature = '%s (%s)' % (report[0], report[1])
                 # TODO: make not hardcoded
-                log_filename = os.path.join(
-                    self.config.logdir, 'exceptions.log'
-                )
-                with codecs.open(
-                    log_filename, 'a', encoding='utf-8'
-                ) as logfile:
+                log_filename = os.path.join(self.config.logdir, 'exceptions.log')
+                with codecs.open(log_filename, 'a', encoding='utf-8') as logfile:
                     logfile.write('Signature: %s\n' % signature)
                     if origin:
-                        logfile.write(
-                            'from %s at %s:\n' % (
-                                origin.sender, str(datetime.now())
-                            )
-                        )
+                        logfile.write('from %s at %s:\n' % (origin.sender, str(datetime.now())))
                     if trigger:
-                        logfile.write(
-                            'Message was: <%s> %s\n' % (
-                                trigger.nick, trigger.group(0)
-                            )
-                        )
+                        logfile.write('Message was: <%s> %s\n' % (trigger.nick, trigger.group(0)))
                     logfile.write(trace)
                     logfile.write(
                         '----------------------------------------\n\n'
                     )
             except Exception as e:
                 stderr("Could not save full traceback!")
-                self.debug(__file__, "(From: " + origin.sender +
-                           "), can't save traceback: " + str(e), 'always')
+                self.debug(__file__, "(From: " + origin.sender + "), can't save traceback: " + str(e), 'always')
 
             if origin:
                 self.msg(origin.sender, signature)
         except Exception as e:
             if origin:
                 self.msg(origin.sender, "Got an error.")
-                self.debug(
-                    __file__,
-                    "(From: " + origin.sender + ") " + str(e),
-                    'always'
-                )
+                self.debug(__file__, "(From: " + origin.sender + ") " + str(e), 'always')
 
     def handle_error(self):
         """Handle any uncaptured error in the core.
