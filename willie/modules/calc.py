@@ -43,6 +43,9 @@ def c(bot, trigger):
 @example('.py len([1,2,3])', '3')
 def py(bot, trigger):
     """Evaluate a Python expression."""
+    if not trigger.group(2):
+        return bot.say("Need an expression to evaluate")
+
     query = trigger.group(2)
     uri = 'http://tumbolia.appspot.com/py/'
     answer = web.get(uri + web.quote(query))
