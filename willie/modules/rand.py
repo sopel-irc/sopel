@@ -31,7 +31,7 @@ def rand(bot, trigger):
             high = int(arg1)
         else:
             low = 0
-            high = sys.maxint
+            high = sys.maxsize
     except (ValueError, TypeError):
         return bot.reply("Arguments must be of integer type")
 
