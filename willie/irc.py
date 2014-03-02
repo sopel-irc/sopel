@@ -444,6 +444,7 @@ class Bot(asynchat.async_chat):
         # messages will be split. Otherwise, we'd have to acocunt for the bot's
         # hostmask, which is hard.
         max_text_length = 400
+        encoded_text = text
         if isinstance(text, unicode):
             encoded_text = text.encode('utf-8')
         excess = ''
