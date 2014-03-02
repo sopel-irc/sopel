@@ -444,9 +444,11 @@ class Bot(asynchat.async_chat):
         # messages will be split. Otherwise, we'd have to acocunt for the bot's
         # hostmask, which is hard.
         max_text_length = 400
-        encoded_text = text
+        # Encode to bytes, for propper length calculation
         if isinstance(text, unicode):
             encoded_text = text.encode('utf-8')
+        else:
+            encoded_text = text
         excess = ''
         if max_messages > 1 and len(encoded_text) > max_text_length:
             last_space = encoded_text.rfind(' ', 0, max_text_length)
@@ -457,6 +459,8 @@ class Bot(asynchat.async_chat):
                 excess = encoded_text[last_space + 1:]
                 encoded_text = encoded_text[:last_space]
         # We'll then send the excess at the end
+        # Back to unicode again, so we don't screw things up later.
+        text = encoded_text.decode('utf-8')
         try:
             self.sending.acquire()
 
@@ -472,6 +476,8 @@ class Bot(asynchat.async_chat):
 
             # Loop detection
             messages = [m[1] for m in self.stack[-8:]]
+            if sys.version_info.major < 3 and isinstance(text, str):
+                text = text.decode('utf-8')
             if messages.count(text) >= 5:
                 text = '...'
                 if messages.count('...') >= 3:
