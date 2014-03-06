@@ -41,7 +41,7 @@ def f_time(bot, trigger):
     if trigger.group(2):
         zone = get_timezone(bot.db, bot.config, trigger.group(2), None, None)
         if not zone:
-            bot.say('oops')
+            bot.say('Could not find timezone %s.' % trigger.group(2))
             return
     else:
         zone = get_timezone(bot.db, bot.config, None, trigger.nick,
@@ -173,3 +173,4 @@ def update_channel_format(bot, trigger):
                      "unless a user has their own format set. (If the timezone"
                      " is wrong, you might try the settz and channeltz "
                      "commands)" % timef)
+
