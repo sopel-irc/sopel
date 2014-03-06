@@ -46,14 +46,6 @@ def translate(text, input='auto', output='en'):
         'Gecko/20071127 Firefox/2.0.0.11'
     }
 
-    input, output = web.quote(input), web.quote(output)
-    if sys.version_info.major < 3:
-        try:
-            if text is not text.encode("utf-8"):
-                text = text.encode("utf-8")
-        except:
-            pass
-    text = web.quote(text)
     result = web.get('http://translate.google.com/translate_a/t?' +
                          ('client=t&sl=%s&tl=%s' % (input, output)) +
                          ('&q=%s' % text), 40, headers=headers)
