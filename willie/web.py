@@ -195,7 +195,7 @@ def quote(string, safe='/'):
 def quote_query(string):
     """Quotes the query parameters."""
     parsed = urlparse(string)
-    string = string.replace(parsed.query, quote(parsed.query, "/="), 1)
+    string = string.replace(parsed.query, quote(parsed.query, "/=&"), 1)
     return string
 
 
