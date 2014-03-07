@@ -203,5 +203,5 @@ def issue_info(bot, trigger, match=None):
     except (KeyError):
         bot.say('The API says this is an invalid issue. Please report this if you know it\'s a correct link!')
         return NOLIMIT
-    bot.reply('[#%s]\x02title:\x02 %s \x02|\x02 %s' % (data['number'], data['title'], body))
+    bot.say('[#%s]\x02title:\x02 %s \x02|\x02 %s' % (data['number'], data['title'], body))
 
