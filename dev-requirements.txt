@@ -1,0 +1,7 @@
+# python modules that must be installed before the tests can run
+backports.ssl_match_hostname
+lxml
+pygeoip
+praw
+feedparser
+pyenchant
