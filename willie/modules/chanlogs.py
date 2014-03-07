@@ -70,6 +70,7 @@ def setup(bot):
 
 
 @willie.module.rule('.*')
+@willie.module.unblockable
 def log_message(bot, message):
     "Log every message in a channel"
     # if this is a private message and we're not logging those, return early
@@ -91,6 +92,7 @@ def log_message(bot, message):
 
 @willie.module.rule('.*')
 @willie.module.event("JOIN")
+@willie.module.unblockable
 def log_join(bot, trigger):
     tpl = bot.config.chanlogs.join_template or JOIN_TPL
     logline = _format_template(tpl, bot, trigger=trigger)
@@ -100,6 +102,7 @@ def log_join(bot, trigger):
 
 @willie.module.rule('.*')
 @willie.module.event("PART")
+@willie.module.unblockable
 def log_part(bot, trigger):
     tpl = bot.config.chanlogs.part_template or PART_TPL
     logline = _format_template(tpl, bot, trigger=trigger)
@@ -109,6 +112,7 @@ def log_part(bot, trigger):
 
 @willie.module.rule('.*')
 @willie.module.event("QUIT")
+@willie.module.unblockable
 def log_quit(bot, trigger):
     tpl = bot.config.chanlogs.quit_template or QUIT_TPL
     logline = _format_template(tpl, bot, trigger=trigger)
@@ -120,6 +124,7 @@ def log_quit(bot, trigger):
 
 @willie.module.rule('.*')
 @willie.module.event("NICK")
+@willie.module.unblockable
 def log_nick_change(bot, trigger):
     tpl = bot.config.chanlogs.nick_template or NICK_TPL
     logline = _format_template(tpl, bot, trigger=trigger)
