@@ -1,0 +1,14 @@
+language: python
+python:
+  - "2.7"
+  - "3.3"
+install:
+  - sudo apt-get install -qq python-enchant
+  - if [[ $TRAVIS_PYTHON_VERSION == "2.7" ]]; then pip install backports.ssl_match_hostname; fi
+  - pip install -r dev-requirements.txt
+  - pip install coveralls
+script:
+  - coverage run --source willie -m py.test .
+  - coverage report --show-missing
+after_success:
+  - coveralls
