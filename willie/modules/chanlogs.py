@@ -50,6 +50,18 @@ def get_fpath(bot, channel=None):
     return os.path.join(basedir, fname)
 
 
+def _format_template(tpl, bot, **kwargs):
+    dt = datetime.utcnow()
+    if not bot.config.chanlogs.microseconds:
+        dt = dt.replace(microsecond=0)
+
+    return tpl.format(
+        origin=bot.origin, datetime=dt.isoformat(),
+        date=dt.date().isoformat(), time=dt.time().isoformat(),
+        **kwargs
+    )
+
+
 def setup(bot):
     # ensure log directory exists
     basedir = os.path.expanduser(bot.config.chanlogs.dir)
@@ -72,15 +84,7 @@ def log_message(bot, message):
     else:
         tpl = bot.config.chanlogs.message_template or MESSAGE_TPL
 
-    dt = datetime.utcnow()
-    if not bot.config.chanlogs.microseconds:
-        dt = dt.replace(microsecond=0)
-
-    logline = tpl.format(
-        message=message, origin=bot.origin,
-        datetime=dt.isoformat(), date=dt.date().isoformat(),
-        time=dt.time().isoformat(),
-    )
+    logline = _format_template(tpl, bot, message=message)
     with open(get_fpath(bot), "a") as f:
         f.write(logline + "\n")
 
@@ -89,17 +93,7 @@ def log_message(bot, message):
 @willie.module.event("JOIN")
 def log_join(bot, trigger):
     tpl = bot.config.chanlogs.join_template or JOIN_TPL
-
-    dt = datetime.utcnow()
-    if not bot.config.chanlogs.microseconds:
-        dt = dt.replace(microsecond=0)
-
-    logline = tpl.format(
-        trigger=trigger, origin=bot.origin,
-        datetime=dt.isoformat(), date=dt.date().isoformat(),
-        time=dt.time().isoformat(),
-    )
-
+    logline = _format_template(tpl, bot, trigger=trigger)
     with open(get_fpath(bot, channel=trigger), "a") as f:
         f.write(logline + "\n")
 
@@ -108,17 +102,7 @@ def log_join(bot, trigger):
 @willie.module.event("PART")
 def log_part(bot, trigger):
     tpl = bot.config.chanlogs.part_template or PART_TPL
-
-    dt = datetime.utcnow()
-    if not bot.config.chanlogs.microseconds:
-        dt = dt.replace(microsecond=0)
-
-    logline = tpl.format(
-        trigger=trigger, origin=bot.origin,
-        datetime=dt.isoformat(), date=dt.date().isoformat(),
-        time=dt.time().isoformat(),
-    )
-
+    logline = _format_template(tpl, bot, trigger=trigger)
     with open(get_fpath(bot, channel=trigger), "a") as f:
         f.write(logline + "\n")
 
@@ -127,17 +111,7 @@ def log_part(bot, trigger):
 @willie.module.event("QUIT")
 def log_quit(bot, trigger):
     tpl = bot.config.chanlogs.quit_template or QUIT_TPL
-
-    dt = datetime.utcnow()
-    if not bot.config.chanlogs.microseconds:
-        dt = dt.replace(microsecond=0)
-
-    logline = tpl.format(
-        trigger=trigger, origin=bot.origin,
-        datetime=dt.isoformat(), date=dt.date().isoformat(),
-        time=dt.time().isoformat(),
-    )
-
+    logline = _format_template(tpl, bot, trigger=trigger)
     # write it to *all* channels
     for channel in bot.channels:
         with open(get_fpath(bot, channel), "a") as f:
@@ -148,17 +122,7 @@ def log_quit(bot, trigger):
 @willie.module.event("NICK")
 def log_nick_change(bot, trigger):
     tpl = bot.config.chanlogs.nick_template or NICK_TPL
-
-    dt = datetime.utcnow()
-    if not bot.config.chanlogs.microseconds:
-        dt = dt.replace(microsecond=0)
-
-    logline = tpl.format(
-        trigger=trigger, origin=bot.origin,
-        datetime=dt.isoformat(), date=dt.date().isoformat(),
-        time=dt.time().isoformat(),
-    )
-
+    logline = _format_template(tpl, bot, trigger=trigger)
     # write it to *all* channels
     for channel in bot.channels:
         with open(get_fpath(bot, channel), "a") as f:
