@@ -6,6 +6,7 @@ Copyright © 2013, Dimitri Molenaars, <tyrope@tyrope.nl>
 Licensed under the Eiffel Forum License 2.
 
 """
+from __future__ import unicode_literals
 from willie.module import commands, example, NOLIMIT
 import re
 
