@@ -7,7 +7,7 @@ Licensed under the Eiffel Forum License 2.
 
 http://willie.dftba.net
 """
-
+from __future__ import unicode_literals
 from willie import web
 from willie.module import rule, commands, priority, example
 import json
@@ -34,10 +34,10 @@ def configure(config):
             config.translate.collect_mangle_lines = True
 
 
-def translate(text, input='auto', output='en'):
+def translate(text, in_lang='auto', out_lang='en'):
     raw = False
-    if unicode(output).endswith('-raw'):
-        output = output[:-4]
+    if unicode(out_lang).endswith('-raw'):
+        out_lang = out_lang[:-4]
         raw = True
 
     headers = {
@@ -46,9 +46,18 @@ def translate(text, input='auto', output='en'):
         'Gecko/20071127 Firefox/2.0.0.11'
     }
 
-    result = web.get('http://translate.google.com/translate_a/t?' +
-                         ('client=t&sl=%s&tl=%s' % (input, output)) +
-                         ('&q=%s' % text), 40, headers=headers)
+    url_query = {
+        "client": "t",
+        "sl": in_lang,
+        "tl": out_lang,
+        "q": text,
+    }
+    query_string = "&".join(
+        "{key}={value}".format(key=key, value=value)
+        for key, value in url_query.items()
+    )
+    url = "http://translate.google.com/translate_a/t?{query}".format(query=query_string)
+    result = web.get(url, timeout=40, headers=headers)
     if sys.version_info.major>=3:
         result = result.decode()
 
@@ -74,19 +83,19 @@ def translate(text, input='auto', output='en'):
 @priority('low')
 def tr(bot, trigger):
     """Translates a phrase, with an optional language hint."""
-    input, output, phrase = trigger.groups()
+    in_lang, out_lang, phrase = trigger.groups()
 
     phrase = phrase.encode('utf-8')
 
     if (len(phrase) > 350) and (not trigger.admin):
         return bot.reply('Phrase must be under 350 characters.')
 
-    input = input or 'auto'
-    input = input.encode('utf-8')
-    output = output or 'en'
+    in_lang = in_lang or 'auto'
+    in_lang = in_lang.encode('utf-8')
+    out_lang = out_lang or 'en'
 
-    if input != output:
-        msg, input = translate(phrase, input, output)
+    if in_lang != out_lang:
+        msg, in_lang = translate(phrase, in_lang, out_lang)
         if sys.version_info.major < 3 and isinstance(msg, str):
             msg = msg.decode('utf-8')
         if msg:
