@@ -39,9 +39,9 @@ def setup(bot):
 def f_time(bot, trigger):
     """Returns the current time."""
     if trigger.group(2):
-        zone = get_timezone(bot.db, bot.config, trigger.group(2), None, None)
+        zone = get_timezone(bot.db, bot.config, trigger.group(2).strip(), None, None)
         if not zone:
-            bot.say('Could not find timezone %s.' % trigger.group(2))
+            bot.say('Could not find timezone %s.' % trigger.group(2).strip())
             return
     else:
         zone = get_timezone(bot.db, bot.config, None, trigger.nick,
