@@ -16,10 +16,6 @@ def do_setup():
         tmp_main_script = os.path.join(tmp_dir, 'willie')
         shutil.copy('willie.py', tmp_main_script)
 
-        with open("dev-requirements.txt") as f:
-            requires = [line for line in f.readlines()
-                        if not line.startswith("#")]
-
         setup(
             name='willie',
             version=__version__,
@@ -34,7 +30,8 @@ def do_setup():
             scripts=[tmp_main_script],
             license='Eiffel Forum License, version 2',
             platforms='Linux x86, x86-64',
-            requires=requires,
+            requires=[b'feedparser', b'pytz', b'lxml', b'praw', b'enchant',
+                      b'pygeoip', b'backports.ssl_match_hostname']
         )
     finally:
         try:
