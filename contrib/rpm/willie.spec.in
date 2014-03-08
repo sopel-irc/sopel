@@ -22,6 +22,7 @@ Requires:       python-feedparser
 Requires:       python-enchant
 Requires:       pyOpenSSL
 Requires:       python-praw
+Requires:       python-backports-ssl_match_hostname
 
 %description
 Willie is a simple, lightweight, open source, easy-to-use IRC Utility bot.
