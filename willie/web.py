@@ -95,7 +95,7 @@ def post(uri, query, limit_bytes=None, timeout=20, verify_ssl=True):
     """
     if not uri.startswith('http'):
         uri = "http://" + uri
-    u = get_urllib_object(uri, timeout=timeout, verify_ssl=verify_ssl, data=data)
+    u = get_urllib_object(uri, timeout=timeout, verify_ssl=verify_ssl, data=query)
     bytes = u.read(limit_bytes)
     u.close()
     return bytes
