@@ -5,8 +5,10 @@ Channel logger
 from __future__ import unicode_literals
 import os
 import os.path
+import threading
 from datetime import datetime
 import willie.module
+import willie.tools
 
 MESSAGE_TPL = "{datetime}  <{origin.nick}> {message}"
 ACTION_TPL = "{datetime}  * {origin.nick} {message}"
@@ -68,6 +70,10 @@ def setup(bot):
     if not os.path.exists(basedir):
         os.makedirs(basedir)
 
+    # locks for log files
+    if not bot.memory.contains('chanlog_locks'):
+        bot.memory['chanlog_locks'] = willie.tools.WillieMemoryWithDefault(threading.Lock)
+
 
 @willie.module.rule('.*')
 @willie.module.unblockable
@@ -86,8 +92,10 @@ def log_message(bot, message):
         tpl = bot.config.chanlogs.message_template or MESSAGE_TPL
 
     logline = _format_template(tpl, bot, message=message)
-    with open(get_fpath(bot), "a") as f:
-        f.write(logline + "\n")
+    fpath = get_fpath(bot)
+    with bot.memory['chanlog_locks'][fpath]:
+        with open(fpath, "a") as f:
+            f.write(logline + "\n")
 
 
 @willie.module.rule('.*')
@@ -96,8 +104,10 @@ def log_message(bot, message):
 def log_join(bot, trigger):
     tpl = bot.config.chanlogs.join_template or JOIN_TPL
     logline = _format_template(tpl, bot, trigger=trigger)
-    with open(get_fpath(bot, channel=trigger), "a") as f:
-        f.write(logline + "\n")
+    fpath = get_fpath(bot, channel=trigger)
+    with bot.memory['chanlog_locks'][fpath]:
+        with open(fpath, "a") as f:
+            f.write(logline + "\n")
 
 
 @willie.module.rule('.*')
@@ -106,8 +116,10 @@ def log_join(bot, trigger):
 def log_part(bot, trigger):
     tpl = bot.config.chanlogs.part_template or PART_TPL
     logline = _format_template(tpl, bot, trigger=trigger)
-    with open(get_fpath(bot, channel=trigger), "a") as f:
-        f.write(logline + "\n")
+    fpath = get_fpath(bot, channel=trigger)
+    with bot.memory['chanlog_locks'][fpath]:
+        with open(fpath, "a") as f:
+            f.write(logline + "\n")
 
 
 @willie.module.rule('.*')
@@ -118,8 +130,10 @@ def log_quit(bot, trigger):
     logline = _format_template(tpl, bot, trigger=trigger)
     # write it to *all* channels
     for channel in bot.channels:
-        with open(get_fpath(bot, channel), "a") as f:
-            f.write(logline + "\n")
+        fpath = get_fpath(bot, channel)
+        with bot.memory['chanlog_locks'][fpath]:
+            with open(fpath, "a") as f:
+                f.write(logline + "\n")
 
 
 @willie.module.rule('.*')
@@ -130,5 +144,7 @@ def log_nick_change(bot, trigger):
     logline = _format_template(tpl, bot, trigger=trigger)
     # write it to *all* channels
     for channel in bot.channels:
-        with open(get_fpath(bot, channel), "a") as f:
-            f.write(logline + "\n")
+        fpath = get_fpath(bot, channel)
+        with bot.memory['chanlog_locks'][fpath]:
+            with open(fpath, "a") as f:
+                f.write(logline + "\n")
