@@ -5,7 +5,7 @@ python:
 git:
   submodules: false
 install:
-  - sudo apt-get install -qq python-enchant
+  - sudo apt-get install -qq enchant
   - pip install -r dev-requirements.txt
   - pip install coveralls
 script:
