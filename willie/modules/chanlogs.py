@@ -125,15 +125,18 @@ def log_part(bot, trigger):
 @willie.module.rule('.*')
 @willie.module.event("QUIT")
 @willie.module.unblockable
+@willie.module.thread(False)
+@willie.module.priority('high')
 def log_quit(bot, trigger):
     tpl = bot.config.chanlogs.quit_template or QUIT_TPL
     logline = _format_template(tpl, bot, trigger=trigger)
-    # write it to *all* channels
-    for channel in bot.channels:
-        fpath = get_fpath(bot, channel)
-        with bot.memory['chanlog_locks'][fpath]:
-            with open(fpath, "a") as f:
-                f.write(logline + "\n")
+    # write it to *all* channels that the user was present in
+    for channel, privileges in bot.privileges.items():
+        if bot.origin.nick in privileges:
+            fpath = get_fpath(bot, channel)
+            with bot.memory['chanlog_locks'][fpath]:
+                with open(fpath, "a") as f:
+                    f.write(logline + "\n")
 
 
 @willie.module.rule('.*')
