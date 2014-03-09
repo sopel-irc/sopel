@@ -15,7 +15,7 @@ import os
 
 try:
     import gzip
-    from urllib import urlretrieve
+    from six.moves.urllib.request import urlretrieve
     can_download = True
 except ImportError:
     can_download = False
@@ -97,7 +97,7 @@ def ip(bot, trigger):
     host = socket.getfqdn(query)
     response = "[IP/Host Lookup] Hostname: %s" % host
     response += " | Location: %s" % gi_city.country_name_by_name(query)
-    
+
     region_data = gi_city.region_by_name(query)
     try:
         region = region_data['region_code']  # pygeoip >= 0.3.0
@@ -105,7 +105,7 @@ def ip(bot, trigger):
         region = region_data['region_name']  # pygeoip < 0.3.0
     if region:
         response += " | Region: %s" % region
-    
+
     isp = gi_org.org_by_name(query)
     if isp is not None:
         isp = re.sub('^AS\d+ ', '', isp)

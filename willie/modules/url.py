@@ -11,13 +11,8 @@ http://willie.dftba.net
 """
 
 import re
-import sys
-if sys.version_info.major < 3:
-    from htmlentitydefs import name2codepoint
-    import urlparse
-else:
-    from html.entities import name2codepoint
-    import urllib.parse as urlparse
+import six
+from six.moves import urllib
 from willie import web, tools
 from willie.module import commands, rule, example
 
@@ -195,7 +190,7 @@ def check_callbacks(bot, trigger, url, run=True):
     # Check if it matches the exclusion list first
     matched = any(regex.search(url) for regex in bot.memory['url_exclude'])
     # Then, check if there's anything in the callback list
-    for regex, function in tools.iteritems(bot.memory['url_callbacks']):
+    for regex, function in six.iteritems(bot.memory['url_callbacks']):
         match = regex.search(url)
         if match:
             if run:
@@ -263,8 +258,8 @@ def urlEncodeNonAscii(b):
 
 
 def iri_to_uri(iri):
-    parts = urlparse.urlparse(iri)
-    return urlparse.urlunparse(
+    parts = urllib.parse.urlparse(iri)
+    return urllib.parse.urlunparse(
         part.encode('idna') if parti == 1 else urlEncodeNonAscii(part.encode('utf-8'))
         for parti, part in enumerate(parts)
     )

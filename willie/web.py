@@ -16,20 +16,11 @@ from __future__ import unicode_literals
 
 import re
 import sys
-import urllib
-if sys.version_info.major < 3:
-    import urllib2
-    import httplib
-    from htmlentitydefs import name2codepoint
-    from urlparse import urlparse
-else:
-    import urllib.request as urllib2
-    import http.client as httplib
-    from html.entities import name2codepoint
-    from urllib.parse import urlparse
-import ssl
+import six
+from six.moves import urllib, http_client, html_entities
 import os.path
 import socket
+import ssl
 if not hasattr(ssl, 'match_hostname'):
     # Attempt to import ssl_match_hostname from python-backports
     import backports.ssl_match_hostname
@@ -109,8 +100,8 @@ def entity(match):
         return unichr(int(value[2:], 16))
     elif value.startswith('#'):
         return unichr(int(value[1:]))
-    elif value in name2codepoint:
-        return unichr(name2codepoint[value])
+    elif value in html_entities.name2codepoint:
+        return unichr(html_entities.name2codepoint[value])
     return '[' + value + ']'
 
 
@@ -118,13 +109,13 @@ def decode(html):
     return r_entity.sub(entity, html)
 
 
-class VerifiedHTTPSConnection(httplib.HTTPConnection):
+class VerifiedHTTPSConnection(http_client.HTTPConnection):
         "Verified HTTPS Connection handler"
 
-        default_port = httplib.HTTPS_PORT
+        default_port = http_client.HTTPS_PORT
 
         def __init__(self, *args, **kwargs):
-            httplib.HTTPConnection.__init__(self, *args, **kwargs)
+            http_client.HTTPConnection.__init__(self, *args, **kwargs)
 
         def connect(self):
             """Connect to the host and port specified in __init__."""
@@ -140,7 +131,7 @@ class VerifiedHTTPSConnection(httplib.HTTPConnection):
                                         cert_reqs=ssl.CERT_REQUIRED)
             ssl.match_hostname(self.sock.getpeercert(), self.host)
 
-class VerifiedHTTPSHandler(urllib2.HTTPSHandler):
+class VerifiedHTTPSHandler(urllib.request.HTTPSHandler):
 
     def https_open(self, req):
             return self.do_open(VerifiedHTTPSConnection, req)
@@ -167,13 +158,13 @@ def get_urllib_object(uri, timeout, headers=None, verify_ssl=True, data=None):
     else:
         headers = original_headers
     if verify_ssl:
-        opener = urllib2.build_opener(VerifiedHTTPSHandler)
+        opener = urllib.request.build_opener(VerifiedHTTPSHandler)
     else:
-        opener = urllib2.build_opener()
-    req = urllib2.Request(uri, headers=headers, data=data)
+        opener = urllib.request.build_opener()
+    req = urllib.request.Request(uri, headers=headers, data=data)
     try:
         u = opener.open(req, None, timeout)
-    except urllib2.HTTPError as e:
+    except urllib.request.HTTPError as e:
         # Even when there's an error (say HTTP 404), return page contents
         return e.fp
 
@@ -183,10 +174,10 @@ def get_urllib_object(uri, timeout, headers=None, verify_ssl=True, data=None):
 # Identical to urllib2.quote
 def quote(string, safe='/'):
     """Like urllib2.quote but handles unicode properly."""
-    if sys.version_info.major < 3:
-        if isinstance(string, unicode):
+    if six.PY2:
+        if isinstance(string, six.text_type):
             string = string.encode('utf8')
-        string = urllib.quote(string, safe.encode('utf8'))
+        string = urllib.parse.quote(string, safe.encode('utf8'))
     else:
         string = urllib.parse.quote(str(string), safe)
     return string
@@ -194,12 +185,6 @@ def quote(string, safe='/'):
 
 def quote_query(string):
     """Quotes the query parameters."""
-    parsed = urlparse(string)
+    parsed = urllib.parse.urlparse(string)
     string = string.replace(parsed.query, quote(parsed.query, "/=&"), 1)
     return string
-
-
-if sys.version_info.major < 3:
-    urlencode = urllib.urlencode
-else:
-    urlencode = urllib.parse.urlencode

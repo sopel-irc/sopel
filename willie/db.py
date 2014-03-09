@@ -20,9 +20,7 @@ import os
 import sys
 from collections import Iterable
 from willie.tools import deprecated
-if sys.version_info.major >= 3:
-    unicode = str
-    basestring = str
+import six
 
 supported_types = set()
 #Attempt to import possible db modules
@@ -183,7 +181,7 @@ class WillieDB(object):
     def _get_column_creation_text(self, columns, key=None):
         cols = '('
         for column in columns:
-            if isinstance(column, basestring):
+            if isinstance(column, six.string_types):
                 if self.type == 'mysql':
                     cols = cols + column + ' VARCHAR(255)'
                 elif self.type == 'sqlite':
@@ -199,7 +197,7 @@ class WillieDB(object):
             cols += ', '
 
         if key:
-            if isinstance(key, basestring):
+            if isinstance(key, six.string_types):
                 cols += 'PRIMARY KEY (%s)' % key
             else:
                 cols += 'PRIMARY KEY (%s)' % ', '.join(key)
@@ -263,12 +261,12 @@ class WillieDB(object):
                 if isinstance(new_col, tuple):
                     if new_col[0] not in extant_table.columns:
                         new_cols.append(" ".join(new_col))
-                elif isinstance(new_col, basestring):
+                elif isinstance(new_col, six.string_types):
                     if new_col not in extant_table.columns:
                         new_cols.append(new_col)
                 else:
                     raise ValueError('%s is not a proper column definition'\
-                                     '(basestring or tuple expected)'
+                                     '(str or tuple expected)'
                                      % str(type(new_col)))
 
             if len(new_cols) > 0:
@@ -331,8 +329,8 @@ class Table(object):
         self.db = db
         self.columns = set(columns)
         self.name = name
-        if isinstance(key, basestring):
-            if isinstance(columns[0], basestring):
+        if isinstance(key, six.string_types):
+            if isinstance(columns[0], six.string_types):
                 if key not in columns:
                     raise Exception  # TODO
                 self.key = key
@@ -348,7 +346,7 @@ class Table(object):
 
         else:
             for k in key:
-                if isinstance(columns[0], basestring):
+                if isinstance(columns[0], six.string_types):
                     if k not in columns:
                         raise Exception  # TODO
                     self.key = key
@@ -417,7 +415,7 @@ class Table(object):
         return result
 
     def _make_where_statement(self, key, row):
-        if isinstance(key, basestring):
+        if isinstance(key, six.string_types):
             key = [key]
         where = []
         for k in key:
@@ -426,7 +424,7 @@ class Table(object):
 
     def _get_one(self, row, value, key):
         """Implements get() for where values is a single string"""
-        if isinstance(row, basestring):
+        if isinstance(row, six.string_types):
             row = [row]
         db = self.db.connect()
         cur = db.cursor()
@@ -443,7 +441,7 @@ class Table(object):
 
     def _get_many(self, row, values, key):
         """Implements get() for where values is iterable"""
-        if isinstance(row, basestring):
+        if isinstance(row, six.string_types):
             row = [row]
         db = self.db.connect()
         cur = db.cursor()
@@ -487,11 +485,11 @@ class Table(object):
 
         if not key:
             key = self.key
-        if not (isinstance(row, basestring) and isinstance(key, basestring)):
+        if not (isinstance(row, six.string_types) and isinstance(key, six.string_types)):
             if not len(row) == len(key):
                 raise ValueError('Unequal number of key and row columns.')
 
-        if isinstance(columns, basestring):
+        if isinstance(columns, six.string_types):
             return self._get_one(row, columns, key)
         elif isinstance(columns, Iterable):
             return self._get_many(row, columns, key)
@@ -510,7 +508,7 @@ class Table(object):
         if not self.columns:  # handle a non-existant table
             raise ValueError('Table is empty.')
 
-        if isinstance(row, basestring):
+        if isinstance(row, six.string_types):
             rowl = [row]
         else:
             rowl = row
@@ -546,7 +544,7 @@ class Table(object):
         if not self.columns:  # handle a non-existant table
             raise KeyError('Table is empty.')
 
-        if isinstance(row, basestring):
+        if isinstance(row, six.string_types):
             row = [row]
         if not key:
             key = self.key
@@ -641,7 +639,7 @@ class Table(object):
         if not self.columns:  # handle a non-existant table
             return False
 
-        if isinstance(column, basestring):
+        if isinstance(column, six.string_types):
             return column in self.columns
         elif isinstance(column, Iterable):
             has = True

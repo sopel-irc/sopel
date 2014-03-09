@@ -20,20 +20,15 @@ import re
 import sys
 import socket
 import threading
+import six
 
 from datetime import datetime
 from willie import tools
 import willie.irc as irc
 from willie.db import WillieDB
 from willie.tools import (stderr, Nick, PriorityQueue, released,
-                   get_command_regexp, iteritems, itervalues)
+                   get_command_regexp)
 import willie.module as module
-if sys.version_info.major >= 3:
-    unicode = str
-    basestring = str
-    py3 = True
-else:
-    py3 = False
 
 
 class Willie(irc.Bot):
@@ -307,7 +302,7 @@ class Willie(irc.Bot):
 
         modules = []
         error_count = 0
-        for name, filename in iteritems(filenames):
+        for name, filename in six.iteritems(filenames):
             try:
                 module = imp.load_source(name, filename)
             except Exception as e:
@@ -381,7 +376,7 @@ class Willie(irc.Bot):
         quitting.
 
         """
-        for obj in itervalues(variables):
+        for obj in six.itervalues(variables):
             if self.is_callable(obj):
                 self.callables.add(obj)
             if self.is_shutdown(obj):
@@ -401,16 +396,16 @@ class Willie(irc.Bot):
 
         def remove_func(func, commands):
             """Remove all traces of func from commands."""
-            for func_list in itervalues(commands):
+            for func_list in six.itervalues(commands):
                 if func in func_list:
                     func_list.remove(func)
 
         hostmask = "%s!%s@%s" % (self.nick, self.user, socket.gethostname())
         willie = self.WillieWrapper(self, irc.Origin(self, hostmask, [], {}))
-        for obj in itervalues(variables):
+        for obj in six.itervalues(variables):
             if obj in self.callables:
                 self.callables.remove(obj)
-                for commands in itervalues(self.commands):
+                for commands in six.itervalues(self.commands):
                     remove_func(obj, commands)
             if obj in self.shutdown_methods:
                 try:
@@ -473,7 +468,7 @@ class Willie(irc.Bot):
             if hasattr(func, 'commands') and func.commands[0]:
                 example = None
                 if hasattr(func, 'example'):
-                    if isinstance(func.example, basestring):
+                    if isinstance(func.example, six.string_types):
                         # Support old modules that add the attribute directly.
                         example = func.example
                     else:
@@ -507,7 +502,7 @@ class Willie(irc.Bot):
 
             if hasattr(func, 'rule'):
                 rules = func.rule
-                if isinstance(rules, basestring):
+                if isinstance(rules, six.string_types):
                     rules = [func.rule]
 
                 if isinstance(rules, list):
@@ -570,7 +565,7 @@ class Willie(irc.Bot):
             self.bot.msg(self.origin.sender, string, max_messages)
 
         def reply(self, string, notice=False):
-            if isinstance(string, str) and not py3:
+            if isinstance(string, str) and not six.PY3:
                 string = string.decode('utf8')
             if notice:
                 self.notice(
@@ -596,9 +591,9 @@ class Willie(irc.Bot):
         def __getattr__(self, attr):
             return getattr(self.bot, attr)
 
-    class Trigger(unicode):
+    class Trigger(six.text_type):
         def __new__(cls, text, origin, bytes, match, event, args, self):
-            s = unicode.__new__(cls, text)
+            s = six.text_type.__new__(cls, text)
 
             """Is trigger from a channel or in PM"""
             s.is_privmsg = False

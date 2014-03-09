@@ -40,7 +40,6 @@ from __future__ import print_function
 from __future__ import absolute_import
 
 import willie.db as db
-from willie.tools import iteritems
 import os
 import sys
 try:
@@ -49,9 +48,7 @@ except ImportError:
     import configparser as ConfigParser
 import getpass
 import imp
-if sys.version_info.major >= 3:
-    unicode = str
-    basestring = str
+import six
 
 class ConfigurationError(Exception):
     """ Exception type for configuration errors """
@@ -178,7 +175,7 @@ class Config(object):
             value = getattr(self, name)
             if not value:
                 return []
-            if isinstance(value, basestring):
+            if isinstance(value, six.string_types):
                 value = value.split(',')
                 # Keep the split value, so we don't have to keep doing this
                 setattr(self, name, value)
@@ -322,7 +319,7 @@ class Config(object):
         modules_dir = os.path.join(home, 'modules')
         filenames = self.enumerate_modules()
         os.sys.path.insert(0, modules_dir)
-        for name, filename in iteritems(filenames):
+        for name, filename in six.iteritems(filenames):
             try:
                 module = imp.load_source(name, filename)
             except Exception as e:

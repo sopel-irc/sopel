@@ -9,6 +9,7 @@ http://willie.dftba.net
 from willie import web
 from willie.module import commands, example
 import re
+import six
 
 uri = 'https://en.wikipedia.org/wiki/List_of_Internet_top-level_domains'
 r_tag = re.compile(r'<(?!!)[^>]+>')
@@ -42,7 +43,7 @@ def gettld(bot, trigger):
         bot.reply(reply)
     else:
         search = r'<td><a href="\S+" title="\S+">.{0}</a></td>\n<td><span class="flagicon"><img.*?\">(.*?)</a></td>\n<td[^>]*>(.*?)</td>\n<td[^>]*>(.*?)</td>\n<td[^>]*>(.*?)</td>\n<td[^>]*>(.*?)</td>\n<td[^>]*>(.*?)</td>\n'
-        search = search.format(unicode(trigger.group(2)))
+        search = search.format(six.text_type(trigger.group(2)))
         re_country = re.compile(search)
         matches = re_country.findall(page)
         if matches:
@@ -57,5 +58,5 @@ def gettld(bot, trigger):
                 dict_val["notes"] = dict_val["notes"][:400] + "..."
             reply = "%s (%s, %s). IDN: %s, DNSSEC: %s, SLD: %s" % (dict_val["country"], dict_val["expl"], dict_val["notes"], dict_val["idn"], dict_val["dnssec"], dict_val["sld"])
         else:
-            reply = "No matches found for TLD: {0}".format(unicode(trigger.group(2)))
+            reply = "No matches found for TLD: {0}".format(six.text_type(trigger.group(2)))
         bot.reply(reply)

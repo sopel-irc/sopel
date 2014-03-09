@@ -18,8 +18,9 @@ from __future__ import unicode_literals
 
 import re
 import time
+import six
 import willie
-from willie.tools import Nick, iteritems
+from willie.tools import Nick
 import base64
 
 
@@ -132,7 +133,7 @@ def handle_names(bot, trigger):
 
     for name in names:
         priv = 0
-        for prefix, value in iteritems(mapping):
+        for prefix, value in six.iteritems(mapping):
             if prefix in name:
                 priv = priv | value
         nick = Nick(name.lstrip(''.join(mapping.keys())))
@@ -364,7 +365,7 @@ def recieve_cap_ls_reply(bot, trigger):
         # parse it, so we don't need to worry if it fails.
         bot._cap_reqs['multi-prefix'] = (['', 'coretasks', None],)
 
-    for cap, reqs in iteritems(bot._cap_reqs):
+    for cap, reqs in six.iteritems(bot._cap_reqs):
         # At this point, we know mandatory and prohibited don't co-exist, but
         # we need to call back for optionals if they're also prohibited
         prefix = ''

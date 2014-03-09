@@ -13,7 +13,8 @@ import time
 import datetime
 import willie.tools
 import threading
-from willie.tools import Nick, iterkeys
+import six
+from willie.tools import Nick
 from willie.module import commands, nickname_commands, rule, priority, example
 
 maximum = 4
@@ -42,7 +43,7 @@ def dumpReminders(fn, data, lock):
     lock.acquire()
     try:
         f = open(fn, 'w')
-        for tellee in iterkeys(data):
+        for tellee in six.iterkeys(data):
             for remindon in data[tellee]:
                 line = '\t'.join((tellee,) + remindon)
                 try:

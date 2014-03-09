@@ -10,7 +10,7 @@ import sys
 import os.path
 import time
 import imp
-from willie.tools import iteritems
+import six
 import willie.module
 import subprocess
 
@@ -39,7 +39,7 @@ def f_reload(bot, trigger):
     old_module = sys.modules[name]
 
     old_callables = {}
-    for obj_name, obj in iteritems(vars(old_module)):
+    for obj_name, obj in six.iteritems(vars(old_module)):
         if bot.is_callable(obj) or bot.is_shutdown(obj):
             old_callables[obj_name] = obj
 

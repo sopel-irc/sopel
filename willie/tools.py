@@ -32,15 +32,7 @@ except ImportError:
 import copy
 import ast
 import operator
-if sys.version_info.major >= 3:
-    unicode = str
-    iteritems  = dict.items
-    itervalues = dict.values
-    iterkeys   = dict.keys
-else:
-    iteritems  = dict.iteritems
-    itervalues = dict.itervalues
-    iterkeys   = dict.iterkeys
+import six
 
 
 class ExpressionEvaluator:
@@ -226,7 +218,7 @@ class Ddict(dict):
         return dict.__getitem__(self, key)
 
 
-class Nick(unicode):
+class Nick(six.text_type):
 
     """A `unicode` subclass which acts appropriately for an IRC nickname.
 
@@ -244,7 +236,7 @@ class Nick(unicode):
         # assume unicode. It won't hurt anything, and is more internally
         # consistent. And who knows, maybe there's another use case for this
         # weird case convention.
-        s = unicode.__new__(cls, nick)
+        s = six.text_type.__new__(cls, nick)
         s._lowered = Nick._lower(nick)
         return s
 
