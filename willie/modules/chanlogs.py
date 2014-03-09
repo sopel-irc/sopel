@@ -9,6 +9,7 @@ import threading
 from datetime import datetime
 import willie.module
 import willie.tools
+from willie.config import ConfigurationError
 
 MESSAGE_TPL = "{datetime}  <{origin.nick}> {message}"
 ACTION_TPL = "{datetime}  * {origin.nick} {message}"
@@ -65,6 +66,11 @@ def _format_template(tpl, bot, **kwargs):
 
 
 def setup(bot):
+    if not getattr(bot.config, "chanlogs", None):
+        raise ConfigurationError("Channel logs are not configured")
+    if not getattr(bot.config.chanlogs, "dir", None):
+        raise ConfigurationError("Channel log storage directory is not defined")
+
     # ensure log directory exists
     basedir = os.path.expanduser(bot.config.chanlogs.dir)
     if not os.path.exists(basedir):
