@@ -26,7 +26,7 @@ def woeid_search(query):
     node for the result, so that location data can still be retrieved. Returns
     None if there is no result, or the woeid field is empty.
     """
-    query = web.urlencode({'q': 'select * from geo.placefinder where text="%s"' % query})
+    query = 'q=select * from geo.placefinder where text="%s"' % query
     body = web.get('http://query.yahooapis.com/v1/public/yql?' + query)
     parsed = etree.fromstring(body)
     first_result = parsed.find('results/Result')
