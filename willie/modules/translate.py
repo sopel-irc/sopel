@@ -14,9 +14,9 @@ import json
 import sys
 import random
 import os
+import six
 mangle_lines = {}
-if sys.version_info.major >= 3:
-    unicode = str
+
 
 def configure(config):
     """
@@ -36,7 +36,7 @@ def configure(config):
 
 def translate(text, in_lang='auto', out_lang='en'):
     raw = False
-    if unicode(out_lang).endswith('-raw'):
+    if six.text_type(out_lang).endswith('-raw'):
         out_lang = out_lang[:-4]
         raw = True
 

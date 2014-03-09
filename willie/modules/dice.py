@@ -8,6 +8,8 @@ http://willie.dftba.net/
 """
 import random
 import re
+import six
+from six.moves import range
 
 import willie.module
 from willie.tools import eval_equation
@@ -35,7 +37,7 @@ class DicePouch:
         """Roll all the dice in the pouch."""
         self.dice = {}
         self.dropped = {}
-        for __ in xrange(self.num):
+        for __ in range(self.num):
             number = random.randint(1, self.type)
             count = self.dice.setdefault(number, 0)
             self.dice[number] = count + 1
@@ -46,7 +48,7 @@ class DicePouch:
         Args:
             n: the number of dice to drop.
         """
-        for i, count in self.dice.iteritems():
+        for i, count in six.iteritems(self.dice):
             count = self.dice[i]
             if n == 0:
                 break
@@ -59,20 +61,20 @@ class DicePouch:
                 self.dropped[i] = count
                 n = n - count
 
-        for i, count in self.dropped.iteritems():
+        for i, count in six.iteritems(self.dropped):
             if self.dice[i] == 0:
                 del self.dice[i]
 
     def get_simple_string(self):
         """Return the values of the dice like (2+2+2[+1+1])+1."""
-        dice = self.dice.iteritems()
-        faces = ("+".join([str(face)] * times) for face, times in dice)
+        faces = ("+".join([str(face)] * times)
+                 for face, times in six.iteritems(self.dice))
         dice_str = "+".join(faces)
 
         dropped_str = ""
         if self.dropped:
-            dropped = self.dropped.iteritems()
-            dfaces = ("+".join([str(face)] * times) for face, times in dropped)
+            dfaces = ("+".join([str(face)] * times)
+                      for face, times in six.iteritems(self.dropped))
             dropped_str = "[+%s]" % ("+".join(dfaces),)
 
         plus_str = ""
@@ -83,14 +85,14 @@ class DicePouch:
 
     def get_compressed_string(self):
         """Return the values of the dice like (3x2[+2x1])+1."""
-        dice = self.dice.iteritems()
-        faces = ("%dx%d" % (times, face) for face, times in dice)
+        faces = ("%dx%d" % (times, face)
+                 for face, times in six.iteritems(self.dice))
         dice_str = "+".join(faces)
 
         dropped_str = ""
         if self.dropped:
-            dropped = self.dropped.iteritems()
-            dfaces = ("%dx%d" % (times, face) for face, times in dropped)
+            dfaces = ("%dx%d" % (times, face)
+                      for face, times in six.iteritems(self.dropped))
             dropped_str = "[+%s]" % ("+".join(dfaces),)
 
         plus_str = ""
@@ -102,7 +104,7 @@ class DicePouch:
     def get_sum(self):
         """Get the sum of non-dropped dice and the addition."""
         result = self.addition
-        for face, times in self.dice.iteritems():
+        for face, times in six.iteritems(self.dice):
             result += face * times
         return result
 
@@ -173,7 +175,7 @@ def roll(bot, trigger):
     dice_expressions = re.findall(dice_regexp, arg_str)
     arg_str = arg_str.replace("%", "%%")
     arg_str = re.sub(dice_regexp, "%s", arg_str)
-    dice = map(_roll_dice, dice_expressions)
+    dice = list(map(_roll_dice, dice_expressions))
     if None in dice:
         bot.reply("I only have 1000 dice. =(")
         return

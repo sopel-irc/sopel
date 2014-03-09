@@ -9,6 +9,7 @@ Licensed under the Eiffel Forum License 2.
 from __future__ import unicode_literals
 from willie.module import commands, example, NOLIMIT
 import re
+import math
 
 find_temp = re.compile('(-?[0-9]*\.?[0-9]*)[ °]*(K|C|F)', re.IGNORECASE)
 find_length = re.compile('([0-9]*\.?[0-9]*)[ ]*(mile[s]?|mi|inch|in|foot|feet|ft|yard[s]?|yd|(?:centi|kilo|)meter[s]?|[kc]?m)', re.IGNORECASE)
@@ -31,9 +32,9 @@ def k_to_c(temp):
 
 
 @commands('temp')
-@example('.temp 100F', '37.7777777778°C = 100.0°F = 310.927777778K')
-@example('.temp 100C', '100.0°C = 212.0°F = 373.15K')
-@example('.temp 100K', '-173.15°C = -279.67°F = 100.0K')
+@example('.temp 100F', '37.77777778°C = 100°F = 310.9277778K')
+@example('.temp 100C', '100°C = 212°F = 373.15K')
+@example('.temp 100K', '-173.15°C = -279.67°F = 100K')
 def temperature(bot, trigger):
     """
     Convert temperatures
@@ -55,16 +56,18 @@ def temperature(bot, trigger):
 
     kelvin = c_to_k(celsius)
     fahrenheit = c_to_f(celsius)
-    bot.reply("%s°C = %s°F = %sK" % (celsius, fahrenheit, kelvin))
+    bot.reply("{c:.10g}°C = {f:.10g}°F = {k:.10g}K".format(
+        c=celsius, f=fahrenheit, k=kelvin
+    ))
 
 
 @commands('length', 'distance')
-@example('.distance 3m', '3.0m = 9 feet, 10.11 inches')
-@example('.distance 3km', '3.0km = 1.86411 miles')
-@example('.distance 3 miles', '4.82804126366km = 3.0 miles')
-@example('.distance 3 inch', '7.62001524003cm = 3.0 inches')
-@example('.distance 3 feet', '91.4411119239cm = 3 feet, 0.000365764447693 inches')
-@example('.distance 3 yards', '30.4803706413cm = 1 foot, 0.000121921482561 inches')
+@example('.distance 3m', '3m = 9 feet, 10.11 inches')
+@example('.distance 3km', '3km = 1.86411 miles')
+@example('.distance 3 miles', '4.828041264km = 3 miles')
+@example('.distance 3 inch', '7.62001524cm = 3 inches')
+@example('.distance 3 feet', '91.44111192cm = 3 feet, 0.0003657644477 inches')
+@example('.distance 3 yards', '30.48037064cm = 1 foot, 0.0001219214826 inches')
 def distance(bot, trigger):
     """
     Convert distances
@@ -93,15 +96,15 @@ def distance(bot, trigger):
         meter = numeric / (3.2808 * 3)
 
     if meter >= 1000:
-        metric_part = '%skm' % (meter / 1000)
+        metric_part = '{:.10g}km'.format(meter / 1000)
     elif meter < 1:
-        metric_part = '%scm' % (meter * 100)
+        metric_part = '{:.10g}cm'.format(meter * 100)
     else:
-        metric_part = '%sm' % meter
+        metric_part = '{:.10g}m'.format(meter)
 
     # Shit like this makes me hate being an American.
     inch = meter * 39.37
-    foot = int(inch) / 12
+    foot = math.floor(int(inch) / 12)
     inch = inch - (foot * 12)
     yard = foot / 3
     mile = meter * 0.00062137
@@ -110,22 +113,22 @@ def distance(bot, trigger):
         if mile == 1:
             stupid_part = '1 mile'
         else:
-            stupid_part = '%s miles' % mile
+            stupid_part = '{:.10g} miles'.format(mile)
     else:
         parts = []
         if yard >= 100:
-            parts.append('%s yards' % yard)
+            parts.append('{:.10g} yards'.format(yard))
             foot -= (yard * 3)
 
         if foot == 1:
             parts.append('1 foot')
         elif foot != 0:
-            parts.append('%s feet' % foot)
+            parts.append('{:.10g} feet'.format(foot))
 
         if inch == 1:
             parts.append('1 inch')
         elif inch != 0:
-            parts.append('%s inches' % inch)
+            parts.append('{:.10g} inches'.format(inch))
 
         stupid_part = ', '.join(parts)
 

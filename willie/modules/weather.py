@@ -12,6 +12,7 @@ from willie.module import commands, example
 
 import feedparser
 from lxml import etree
+from six.moves import urllib
 
 
 def setup(bot):
@@ -147,7 +148,7 @@ def weather(bot, trigger):
     if not woeid:
         return bot.reply("I don't know where that is.")
 
-    query = web.urlencode({'w': woeid, 'u': 'c'})
+    query = urllib.parse.urlencode({'w': woeid, 'u': 'c'})
     url = 'http://weather.yahooapis.com/forecastrss?' + query
     parsed = feedparser.parse(url)
     location = parsed['feed']['title']
