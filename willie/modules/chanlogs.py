@@ -24,7 +24,7 @@ def configure(config):
         config.add_section("chanlogs")
         config.interactive_add(
             "chanlogs", "dir",
-            "Path to channel log storage directory (should be an absolute path, accessible on a webserver)",
+            "Absolute path to channel log storage directory",
             default="/home/willie/chanlogs"
         )
         config.add_option("chanlogs", "by_day", "Split log files by day", default=True)
