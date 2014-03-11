@@ -62,7 +62,7 @@ def _format_template(tpl, bot, **kwargs):
         origin=bot.origin, datetime=dt.isoformat(),
         date=dt.date().isoformat(), time=dt.time().isoformat(),
         **kwargs
-    )
+    ) + "\n"
 
 
 def setup(bot):
@@ -101,7 +101,7 @@ def log_message(bot, message):
     fpath = get_fpath(bot)
     with bot.memory['chanlog_locks'][fpath]:
         with open(fpath, "a") as f:
-            f.write(logline + "\n")
+            f.write(logline.encode('utf-8'))
 
 
 @willie.module.rule('.*')
@@ -113,7 +113,7 @@ def log_join(bot, trigger):
     fpath = get_fpath(bot, channel=trigger)
     with bot.memory['chanlog_locks'][fpath]:
         with open(fpath, "a") as f:
-            f.write(logline + "\n")
+            f.write(logline.encode('utf-8'))
 
 
 @willie.module.rule('.*')
@@ -125,7 +125,7 @@ def log_part(bot, trigger):
     fpath = get_fpath(bot, channel=trigger)
     with bot.memory['chanlog_locks'][fpath]:
         with open(fpath, "a") as f:
-            f.write(logline + "\n")
+            f.write(logline.encode('utf-8'))
 
 
 @willie.module.rule('.*')
@@ -142,7 +142,7 @@ def log_quit(bot, trigger):
             fpath = get_fpath(bot, channel)
             with bot.memory['chanlog_locks'][fpath]:
                 with open(fpath, "a") as f:
-                    f.write(logline + "\n")
+                    f.write(logline.encode('utf-8'))
 
 
 @willie.module.rule('.*')
@@ -159,4 +159,4 @@ def log_nick_change(bot, trigger):
             fpath = get_fpath(bot, channel)
             with bot.memory['chanlog_locks'][fpath]:
                 with open(fpath, "a") as f:
-                    f.write(logline + "\n")
+                    f.write(logline.encode('utf-8'))
