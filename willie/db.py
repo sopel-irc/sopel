@@ -80,8 +80,8 @@ class WillieDB(object):
         self.type = config.db.userdb_type.lower()
         if self.type not in supported_types:
             self.type = None
-            print('User settings database type is not supported.' + \
-                ' You may be missing the module for it. Ignoring.')
+            print('User settings database type is not supported.'
+                  ' You may be missing the module for it. Ignoring.')
             return
 
         if self.type == 'mysql':
@@ -110,9 +110,9 @@ class WillieDB(object):
             self._user = config.db.userdb_user
             self._passwd = config.db.userdb_pass
             self._dbname = config.db.userdb_name
-        except AttributeError as e:
-            print('Some options are missing for your MySQL DB.' + \
-                ' The database will not be set up.')
+        except AttributeError:
+            print('Some options are missing for your MySQL DB.'
+                  ' The database will not be set up.')
             return
 
         try:
@@ -148,8 +148,8 @@ class WillieDB(object):
         try:
             self._file = os.path.expanduser(config.db.userdb_file)
         except AttributeError:
-            print('No file specified for SQLite DB.' + \
-                ' The database will not be set up.')
+            print('No file specified for SQLite DB.'
+                  ' The database will not be set up.')
             return
 
         try:
@@ -187,7 +187,7 @@ class WillieDB(object):
             self._dbname = config.db.userdb_name
         except AttributeError:
             print('Some options are missing for your PostgreSQL DB.'
-                ' The database will not be set up.')
+                  ' The database will not be set up.')
             return
 
         try:
