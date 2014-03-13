@@ -8,6 +8,7 @@ Licensed under the Eiffel Forum License 2.
 http://willie.dftba.net
 """
 from willie.module import commands, rule, example, priority
+from willie.tools import iterkeys
 
 
 @rule('$nick' '(?i)(help|doc) +([A-Za-z]+)(?:\?+)?$')
@@ -32,7 +33,7 @@ def help(bot, trigger):
 @priority('low')
 def commands(bot, trigger):
     """Return a list of bot's commands"""
-    names = ', '.join(sorted(bot.doc.iterkeys()))
+    names = ', '.join(sorted(iterkeys(bot.doc)))
     if not trigger.is_privmsg:
         bot.reply("I am sending you a private message of all my commands!")
     bot.msg(trigger.nick, 'Commands I recognise: ' + names + '.', max_messages=10)
@@ -49,7 +50,3 @@ def help2(bot, trigger):
         'general details. My owner is %s.'
     ) % bot.config.owner
     bot.reply(response)
-
-
-if __name__ == '__main__':
-    print __doc__.strip()

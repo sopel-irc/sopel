@@ -1,0 +1,15 @@
+language: python
+python:
+  - "2.7"
+  - "3.3"
+git:
+  submodules: false
+install:
+  - sudo apt-get install -qq enchant
+  - pip install -r dev-requirements.txt
+  - pip install coveralls
+script:
+  - coverage run --source willie -m py.test .
+  - coverage report --show-missing
+after_success:
+  - coveralls

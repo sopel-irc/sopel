@@ -11,9 +11,9 @@ from __future__ import unicode_literals
 import os
 import time
 import datetime
-import pytz
+import willie.tools
 import threading
-from willie.tools import Nick
+from willie.tools import Nick, iterkeys
 from willie.module import commands, nickname_commands, rule, priority, example
 
 maximum = 4
@@ -42,7 +42,7 @@ def dumpReminders(fn, data, lock):
     lock.acquire()
     try:
         f = open(fn, 'w')
-        for tellee in data.iterkeys():
+        for tellee in iterkeys(data):
             for remindon in data[tellee]:
                 line = '\t'.join((tellee,) + remindon)
                 try:
@@ -71,17 +71,6 @@ def setup(self):
             f.close()
     self.memory['tell_lock'] = threading.Lock()
     self.memory['reminders'] = loadReminders(self.tell_filename, self.memory['tell_lock'])
-
-
-def get_user_time(bot, nick):
-    tz = 'UTC'
-    tformat = None
-    if bot.db and nick in bot.db.preferences:
-            tz = bot.db.preferences.get(nick, 'tz') or 'UTC'
-            tformat = bot.db.preferences.get(nick, 'time_format')
-    if tz not in pytz.all_timezones_set:
-        tz = 'UTC'
-    return (pytz.timezone(tz.strip()), tformat or '%Y-%m-%d %H:%M:%S %Z')
 
 
 @commands('tell', 'ask')
@@ -113,9 +102,9 @@ def f_remind(bot, trigger):
     if tellee == bot.nick:
         return bot.reply("I'm here now, you can tell me whatever you want!")
 
-    tz, tformat = get_user_time(bot, tellee)
-    timenow = datetime.datetime.now(tz).strftime(tformat)
     if not tellee in (Nick(teller), bot.nick, 'me'):
+        tz = willie.tools.get_timezone(bot.db, bot.config, None, tellee)
+        timenow = willie.tools.format_time(bot.db, bot.config, tz, tellee)
         bot.memory['tell_lock'].acquire()
         try:
             if not tellee in bot.memory['reminders']:

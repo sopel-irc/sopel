@@ -104,11 +104,13 @@ def get_example_test(tested_func, msg, results, privmsg, admin,
         if hasattr(module, 'setup'):
             module.setup(bot)
 
-        for _i in xrange(repeat):
+        for _i in range(repeat):
             wrapper = MockWillieWrapper(bot, origin)
             tested_func(wrapper, trigger)
             assert len(wrapper.output) == len(results)
             for result, output in zip(results, wrapper.output):
+                if type(output) is bytes:
+                    output = output.decode('utf-8')
                 if use_regexp:
                     if not re.match(result, output):
                         assert result == output
@@ -123,7 +125,7 @@ def insert_into_module(func, module_name, base_name, prefix):
     func.__module__ = module_name
     module = sys.modules[module_name]
     # Make sure the func method does not overwrite anything.
-    for i in xrange(1000):
+    for i in range(1000):
         func.__name__ = str("%s_%s_%s" % (prefix, base_name, i))
         if not hasattr(module, func.__name__):
             break
