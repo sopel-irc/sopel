@@ -6,7 +6,7 @@ Copyright © 2013, Dimitri Molenaars, <tyrope@tyrope.nl>
 Licensed under the Eiffel Forum License 2.
 
 """
-from __future__ import unicode_literals
+from __future__ import unicode_literals, division
 from willie.module import commands, example, NOLIMIT
 import re
 
@@ -31,9 +31,9 @@ def k_to_c(temp):
 
 
 @commands('temp')
-@example('.temp 100F', '37.7777777778°C = 100.0°F = 310.927777778K')
-@example('.temp 100C', '100.0°C = 212.0°F = 373.15K')
-@example('.temp 100K', '-173.15°C = -279.67°F = 100.0K')
+@example('.temp 100F', '37.78°C = 100.00°F = 310.93K')
+@example('.temp 100C', '100.00°C = 212.00°F = 373.15K')
+@example('.temp 100K', '-173.15°C = -279.67°F = 100.00K')
 def temperature(bot, trigger):
     """
     Convert temperatures
@@ -55,16 +55,16 @@ def temperature(bot, trigger):
 
     kelvin = c_to_k(celsius)
     fahrenheit = c_to_f(celsius)
-    bot.reply("%s°C = %s°F = %sK" % (celsius, fahrenheit, kelvin))
+    bot.reply("{:.2f}°C = {:.2f}°F = {:.2f}K".format(celsius, fahrenheit, kelvin))
 
 
 @commands('length', 'distance')
-@example('.distance 3m', '3.0m = 9 feet, 10.11 inches')
-@example('.distance 3km', '3.0km = 1.86411 miles')
-@example('.distance 3 miles', '4.82804126366km = 3.0 miles')
-@example('.distance 3 inch', '7.62001524003cm = 3.0 inches')
-@example('.distance 3 feet', '91.4411119239cm = 3 feet, 0.000365764447693 inches')
-@example('.distance 3 yards', '30.4803706413cm = 1 foot, 0.000121921482561 inches')
+@example('.distance 3m', '3.00m = 9 feet, 10.11 inches')
+@example('.distance 3km', '3.00km = 1.86 miles')
+@example('.distance 3 miles', '4.83km = 3.00 miles')
+@example('.distance 3 inch', '7.62cm = 3.00 inches')
+@example('.distance 3 feet', '91.44cm = 3 feet, 0.00 inches')
+@example('.distance 3 yards', '30.48cm = 1 foot, 0.00 inches')
 def distance(bot, trigger):
     """
     Convert distances
@@ -86,50 +86,44 @@ def distance(bot, trigger):
     elif unit in ("inch", "in"):
         meter = numeric / 39.370
     elif unit in ("centimeters", "centimeter", "cm"):
-        meter = numeric / 100
+        meter = numeric // 100
     elif unit in ("feet", "foot", "ft"):
         meter = numeric / 3.2808
     elif unit in ("yards", "yard", "yd"):
         meter = numeric / (3.2808 * 3)
 
     if meter >= 1000:
-        metric_part = '%skm' % (meter / 1000)
+        metric_part = '{:.2f}km'.format(meter / 1000)
     elif meter < 1:
-        metric_part = '%scm' % (meter * 100)
+        metric_part = '{:.2f}cm'.format(meter * 100)
     else:
-        metric_part = '%sm' % meter
+        metric_part = '{:.2f}m'.format(meter)
 
     # Shit like this makes me hate being an American.
     inch = meter * 39.37
-    foot = int(inch) / 12
+    foot = int(inch) // 12
     inch = inch - (foot * 12)
-    yard = foot / 3
+    yard = foot // 3
     mile = meter * 0.00062137
 
     if yard > 500:
-        if mile == 1:
-            stupid_part = '1 mile'
-        else:
-            stupid_part = '%s miles' % mile
+        stupid_part = '{:.2f} miles'.format(mile)
     else:
         parts = []
         if yard >= 100:
-            parts.append('%s yards' % yard)
+            parts.append('{} yards'.format(yard))
             foot -= (yard * 3)
 
         if foot == 1:
             parts.append('1 foot')
         elif foot != 0:
-            parts.append('%s feet' % foot)
+            parts.append('{:.0f} feet'.format(foot))
 
-        if inch == 1:
-            parts.append('1 inch')
-        elif inch != 0:
-            parts.append('%s inches' % inch)
+        parts.append('{:.2f} inches'.format(inch))
 
         stupid_part = ', '.join(parts)
 
-    bot.reply('%s = %s' % (metric_part, stupid_part))
+    bot.reply('{} = {}'.format(metric_part, stupid_part))
 
 
 if __name__ == "__main__":
