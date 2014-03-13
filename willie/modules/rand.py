@@ -22,15 +22,18 @@ def rand(bot, trigger):
     arg1 = trigger.group(3)
     arg2 = trigger.group(4)
 
-    if arg2 is not None:
-        low = int(arg1)
-        high = int(arg2)
-    elif arg1 is not None:
-        low = 0
-        high = int(arg1)
-    else:
-        low = 0
-        high = sys.maxint
+    try:
+        if arg2 is not None:
+            low = int(arg1)
+            high = int(arg2)
+        elif arg1 is not None:
+            low = 0
+            high = int(arg1)
+        else:
+            low = 0
+            high = sys.maxsize
+    except (ValueError, TypeError):
+        return bot.reply("Arguments must be of integer type")
 
     if low > high:
         low, high = high, low

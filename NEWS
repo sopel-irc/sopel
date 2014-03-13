@@ -1,3 +1,25 @@
+Changes between 4.1.0 and 4.2.0
+===============================
+Module Changes (for users):
+* A new .cur command can convert a number of currencies, including Bitcoin
+* .c can now understand a comma used as a radix point (rather than a period)
+* .w can now look in the Wikipedia for a specified (or configurable default) language
+* Timezones are now more user-friendly, and used more consistently across modules
+* Misc bugfixes
+
+Core Changes (for users):
+* willie.web now verifies HTTPS connections properly
+* The SQLite database file respects use of ~ in the configured filename
+* Willie can now run in Python 3
+* Willie now depends on python-backports.ssl_match_hostname (see README.rst for installation instructions)
+* Misc bugfixes
+
+API Changes (for developers):
+* trigger.is_privmsg is added for an easy way to see if a trigger was created in a private or channel message
+* get_timezone and format_time are added to tools to make displaying time according to user/channel format easier
+* Added bot.notice and an optinal notice parameter for bot.reply for easier sending of IRC NOTICE messages
+
+
 Changes between 4.0.1 and 4.1.0
 ===============================
 Module Changes (for users):

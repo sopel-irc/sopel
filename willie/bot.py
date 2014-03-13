@@ -10,6 +10,8 @@ Licensed under the Eiffel Forum License 2.
 http://willie.dftba.net/
 """
 from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import absolute_import
 
 import time
 import imp
@@ -21,11 +23,17 @@ import threading
 
 from datetime import datetime
 from willie import tools
-import irc
-from db import WillieDB
-from tools import (stderr, Nick, PriorityQueue, released,
-                   get_command_regexp)
-import module
+import willie.irc as irc
+from willie.db import WillieDB
+from willie.tools import (stderr, Nick, PriorityQueue, released,
+                   get_command_regexp, iteritems, itervalues)
+import willie.module as module
+if sys.version_info.major >= 3:
+    unicode = str
+    basestring = str
+    py3 = True
+else:
+    py3 = False
 
 
 class Willie(irc.Bot):
@@ -299,10 +307,10 @@ class Willie(irc.Bot):
 
         modules = []
         error_count = 0
-        for name, filename in filenames.iteritems():
+        for name, filename in iteritems(filenames):
             try:
                 module = imp.load_source(name, filename)
-            except Exception, e:
+            except Exception as e:
                 error_count = error_count + 1
                 filename, lineno = tools.get_raising_file_and_line()
                 rel_path = os.path.relpath(filename, os.path.dirname(__file__))
@@ -314,7 +322,7 @@ class Willie(irc.Bot):
                         module.setup(self)
                     self.register(vars(module))
                     modules.append(name)
-                except Exception, e:
+                except Exception as e:
                     error_count = error_count + 1
                     filename, lineno = tools.get_raising_file_and_line()
                     rel_path = os.path.relpath(
@@ -373,7 +381,7 @@ class Willie(irc.Bot):
         quitting.
 
         """
-        for obj in variables.itervalues():
+        for obj in itervalues(variables):
             if self.is_callable(obj):
                 self.callables.add(obj)
             if self.is_shutdown(obj):
@@ -393,16 +401,16 @@ class Willie(irc.Bot):
 
         def remove_func(func, commands):
             """Remove all traces of func from commands."""
-            for func_list in commands.itervalues():
+            for func_list in itervalues(commands):
                 if func in func_list:
                     func_list.remove(func)
 
         hostmask = "%s!%s@%s" % (self.nick, self.user, socket.gethostname())
         willie = self.WillieWrapper(self, irc.Origin(self, hostmask, [], {}))
-        for obj in variables.itervalues():
+        for obj in itervalues(variables):
             if obj in self.callables:
                 self.callables.remove(obj)
-                for commands in self.commands.itervalues():
+                for commands in itervalues(self.commands):
                     remove_func(obj, commands)
             if obj in self.shutdown_methods:
                 try:
@@ -445,13 +453,13 @@ class Willie(irc.Bot):
                 if not doc:
                     return ''
                 lines = doc.expandtabs().splitlines()
-                indent = sys.maxint
+                indent = sys.maxsize
                 for line in lines[1:]:
                     stripped = line.lstrip()
                     if stripped:
                         indent = min(indent, len(line) - len(stripped))
                 trimmed = [lines[0].strip()]
-                if indent < sys.maxint:
+                if indent < sys.maxsize:
                     for line in lines[1:]:
                         trimmed.append(line[indent:].rstrip())
                 while trimmed and not trimmed[-1]:
@@ -561,18 +569,29 @@ class Willie(irc.Bot):
         def say(self, string, max_messages=1):
             self.bot.msg(self.origin.sender, string, max_messages)
 
-        def reply(self, string):
-            if isinstance(string, str):
+        def reply(self, string, notice=False):
+            if isinstance(string, str) and not py3:
                 string = string.decode('utf8')
-            self.bot.msg(
-                self.origin.sender,
-                u'%s: %s' % (self.origin.nick, string)
-            )
+            if notice:
+                self.notice(
+                    '%s: %s' % (self.origin.nick, string),
+                    self.origin.sender
+                )
+            else:
+                self.bot.msg(
+                    self.origin.sender,
+                    '%s: %s' % (self.origin.nick, string)
+                )
 
         def action(self, string, recipient=None):
             if recipient is None:
                 recipient = self.origin.sender
             self.bot.msg(recipient, '\001ACTION %s\001' % string)
+
+        def notice(self, string, recipient=None):
+            if recipient is None:
+                recipient = self.origin.sender
+            self.write(('NOTICE', recipient), string)
 
         def __getattr__(self, attr):
             return getattr(self.bot, attr)
@@ -858,7 +877,7 @@ class Willie(irc.Bot):
         }
         if level in output_on and verbosity in output_on[level]:
             if debug_target == 'stdio':
-                print debug_msg
+                print(debug_msg)
             else:
                 self.msg(debug_target, debug_msg)
             return True
@@ -941,6 +960,3 @@ class Willie(irc.Bot):
                 raise Exception('Capability conflict')
             entry.append((prefix, module_name, failure_callback))
             self._cap_reqs[cap] = entry
-
-if __name__ == '__main__':
-    print __doc__

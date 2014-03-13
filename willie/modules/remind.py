@@ -11,12 +11,15 @@ import re
 import time
 import threading
 import collections
-from pytz import timezone, all_timezones_set
-import pytz
 import codecs
 from datetime import datetime
 from willie.module import commands, example, NOLIMIT
+import willie.tools
 
+try:
+    import pytz
+except:
+    pytz = None
 
 def filename(self):
     name = self.nick + '-' + self.config.host + '.reminders.db'
@@ -42,19 +45,13 @@ def load_database(name):
 
 def dump_database(name, data):
     f = codecs.open(name, 'w', encoding='utf-8')
-    for unixtime, reminders in data.iteritems():
+    for unixtime, reminders in willie.tools.iteritems(data):
         for channel, nick, message in reminders:
             f.write('%s\t%s\t%s\t%s\n' % (unixtime, channel, nick, message))
     f.close()
 
 
 def setup(bot):
-    #Having a db means pref's exists. Later, we can just use `if bot.db`.
-    if bot.db and not bot.db.preferences.has_columns('tz'):
-        bot.db.preferences.add_columns(['tz'])
-    if bot.db and not bot.db.preferences.has_columns('time_format'):
-        bot.db.preferences.add_columns(['time_format'])
-
     bot.rfn = filename(bot)
     bot.rdb = load_database(bot.rfn)
 
@@ -145,21 +142,19 @@ def remind(bot, trigger):
         duration = int(duration) + 1
     else:
         duration = int(duration)
-    tzi = timezone('UTC')
-    if bot.db and trigger.nick in bot.db.preferences:
-        tz = bot.db.preferences.get(trigger.nick, 'tz') or 'UTC'
-        tzi = timezone(tz)
-    create_reminder(bot, trigger, duration, reminder, tzi)
+    timezone = willie.tools.get_timezone(
+        bot.db, bot.config, None, trigger.nick, trigger.sender)
+    create_reminder(bot, trigger, duration, reminder, timezone)
 
 
 @commands('at')
 @example('.at 13:47 Do your homework!')
 def at(bot, trigger):
     """
-    Gives you a reminder at the given time. Takes hh:mm:ssContinent/Large_City
-    message. Continent/Large_City is a timezone from the tzdb; a list of valid
-    options is available at http://dft.ba/-tz . The seconds and timezone are
-    optional.
+    Gives you a reminder at the given time. Takes hh:mm:ssTimezone
+    message. Timezone is any timezone Willie takes elsewhere; the best choices
+    are those from the tzdb; a list of valid options is available at
+    http://dft.ba/-tz . The seconds and timezone are optional.
     """
     regex = re.compile(r'(\d+):(\d+)(?::(\d+))?([^\s\d]+)? (.*)')
     match = regex.match(trigger.group(2))
@@ -169,37 +164,29 @@ def at(bot, trigger):
     hour, minute, second, tz, message = match.groups()
     if not second:
         second = '0'
-    if tz:
-        if tz not in all_timezones_set:
-            good_tz = False
-            if bot.db and tz in bot.db.preferences:
-                tz = bot.db.preferences.get(tz, 'tz')
-                if tz:
-                    tzi = timezone(tz)
-                    good_tz = True
-            if not good_tz:
-                bot.reply("I don't know that timezone or user.")
-                return NOLIMIT
-        else:
-            tzi = timezone(tz)
-    elif bot.db and trigger.nick in bot.db.preferences:
-        tz = bot.db.preferences.get(trigger.nick, 'tz')
-        if tz:
-            tzi = timezone(tz)
-        else:
-            tzi = timezone('UTC')
-    else:
-        tzi = timezone('UTC')
 
-    now = datetime.now(tzi)
-    timediff = (datetime(now.year, now.month, now.day, int(hour), int(minute),
-                         int(second), tzinfo=now.tzinfo)
-                - now)
+    if pytz:
+        timezone = willie.tools.get_timezone(bot.db, bot.config, tz,
+                                             trigger.nick, trigger.sender)
+        now = datetime.now(pytz.timezone(timezone))
+        at_time = datetime(now.year, now.month, now.day,
+                           int(hour), int(minute), int(second),
+                           tzinfo=now.tzinfo)
+        timediff = at_time - now
+    else:
+        if tz and tz.upper() != 'UTC':
+            bot.reply("I don't have timzeone support installed.")
+            return NOLIMIT
+        now = datetime.now()
+        at_time = datetime(now.year, now.month, now.day,
+                           int(hour), int(minute), int(second))
+        timediff = at_time - now
+
     duration = timediff.seconds
 
     if duration < 0:
         duration += 86400
-    create_reminder(bot, trigger, duration, message, timezone('UTC'))
+    create_reminder(bot, trigger, duration, message, 'UTC')
 
 
 def create_reminder(bot, trigger, duration, message, tz):
@@ -213,11 +200,9 @@ def create_reminder(bot, trigger, duration, message, tz):
     dump_database(bot.rfn, bot.rdb)
 
     if duration >= 60:
-        tformat = "%F - %T%Z"
-        if bot.db and trigger.nick in bot.db.preferences:
-            tformat = (bot.db.preferences.get(trigger.nick, 'time_format')
-                       or "%F - %T%Z")
-        timef = datetime.fromtimestamp(t, tz).strftime(tformat)
+        remind_at = datetime.utcfromtimestamp(t)
+        timef = willie.tools.format_time(bot.db, bot.config, tz, trigger.nick,
+                                         trigger.sender, remind_at)
 
         bot.reply('Okay, will remind at %s' % timef)
     else:

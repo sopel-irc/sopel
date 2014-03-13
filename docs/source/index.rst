@@ -179,11 +179,14 @@ The ``Willie`` class
 .. autoclass:: willie.bot.Willie
    :members:
 
-.. py:function:: reply(text)
+.. py:function:: reply(text, notice=False)
 
     In a module function, send ``text`` to the channel in which the function was
     triggered, preceeded by the nick of the user who triggered it.
-    
+
+    If ``notice`` is set to True, this function will send the reply in an 
+    IRC ``NOTICE`` instead of a regular IRC ``PRIVMSG``.
+
     This function is not available outside of module functions. It can not
     be used, for example, in a module's ``setup`` or ``shutdown`` function.
     
@@ -202,12 +205,32 @@ The ``Willie`` class
     The same behavior regarding loop detection and length restrictions, as
     well as message splitting, apply to ``say`` as to ``msg``.
     
-.. py:function:: action(text)
+.. py:function:: action(text, recipient=None)
 
     In a module function, send ``text`` to the channel in which the function
     was triggered preceeded by CTCP ACTION directive (result identical to using
     /me in most clients).
-    
+
+    If ``recipient`` is specified and is not ``None``, this function will send
+    the message to ``recipient`` instead of the originating channel.
+    ``recipient`` can be either a channel or a user.
+
+    This function is not available outside of module functions. It can not
+    be used, for example, in a module's ``configure`` function.
+
+    The same behavior regarding loop detection and length restrictions apply
+    to ``action`` as to ``msg`` and ``say``, though like ``reply`` there is
+    no facility for message splitting.
+
+.. py:function:: notice(text, recipient=None)
+
+    In a module function, send ``text`` to the channel in which the function
+    was triggered as an IRC ``NOTICE``.
+
+    If ``recipient`` is specified and is not ``None``, this function will send
+    the message to ``recipient`` instead of the originating channel.
+    ``recipient`` can be either a channel or a user.
+
     This function is not available outside of module functions. It can not
     be used, for example, in a module's ``configure`` function.
 

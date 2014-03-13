@@ -20,11 +20,9 @@ def movie(bot, trigger):
     if not trigger.group(2):
         return
     word = trigger.group(2).rstrip()
-    word = word.replace(" ", "+")
     uri = "http://www.imdbapi.com/?t=" + word
-    u = web.get_urllib_object(uri, 30)
-    data = json.load(u)  # data is a Dict containing all the information we need
-    u.close()
+    u = web.get(uri, 30)
+    data = json.loads(u.decode('utf-8'))  # data is a Dict containing all the information we need
     if data['Response'] == 'False':
         if 'Error' in data:
             message = '[MOVIE] %s' % data['Error']

@@ -13,6 +13,7 @@ Licensed under the Eiffel Forum License 2.
 https://willie.dftba.net
 """
 from __future__ import division
+from __future__ import print_function
 
 import datetime
 import sys
@@ -20,20 +21,26 @@ import os
 import re
 import threading
 try:
-    import ssl
-    import OpenSSL
-except ImportError:
-    #no SSL support
-    ssl = False
-try:
     import pytz
 except:
     pytz = False
 import traceback
-import Queue
+try:
+    import Queue
+except ImportError:
+    import queue as Queue
 import copy
 import ast
 import operator
+if sys.version_info.major >= 3:
+    unicode = str
+    iteritems  = dict.items
+    itervalues = dict.values
+    iterkeys   = dict.keys
+else:
+    iteritems  = dict.iteritems
+    itervalues = dict.itervalues
+    iterkeys   = dict.iterkeys
 
 
 class ExpressionEvaluator:
@@ -162,7 +169,7 @@ def get_command_regexp(prefix, command):
 
 def deprecated(old):
     def new(*args, **kwargs):
-        print >> sys.stderr, 'Function %s is deprecated.' % old.__name__
+        print('Function %s is deprecated.' % old.__name__, file=sys.stderr)
         trace = traceback.extract_stack()
         for line in traceback.format_list(trace[:-1]):
             stderr(line[:-1])
@@ -326,7 +333,7 @@ class OutputRedirect:
             except:
                 pass
         logfile = open(self.logpath, 'a')
-        logfile.write(string.encode('utf8'))
+        logfile.write(string)
         logfile.close()
 
 
@@ -335,7 +342,7 @@ class OutputRedirect:
 #4.0
 @deprecated
 def stdout(string):
-    print string
+    print(string)
 
 
 def stderr(string):
@@ -344,7 +351,7 @@ def stderr(string):
     This is equivalent to ``print >> sys.stderr, string``
 
     """
-    print >> sys.stderr, string
+    print(string, file=sys.stderr)
 
 
 def check_pid(pid):
@@ -361,49 +368,6 @@ def check_pid(pid):
         return False
     else:
         return True
-
-
-def verify_ssl_cn(server, port):
-    """Verify the SSL certificate.
-
-    *Availability: Must have the OpenSSL Python module installed.*
-
-    Verify the SSL certificate given by the ``server`` when connecting on the
-    given ``port``.
-
-    This returns ``None`` if OpenSSL is not available or 'NoCertFound' if there
-    was no certificate given.
-    Otherwise, a two-tuple containing a boolean of whether the certificate is
-    valid and the certificate information is returned.
-
-    """
-    if not ssl:
-        return None
-    cert = None
-    for version in (
-        ssl.PROTOCOL_TLSv1, ssl.PROTOCOL_SSLv3, ssl.PROTOCOL_SSLv23
-    ):
-        try:
-            cert = ssl.get_server_certificate(
-                (server, port), ssl_version=version
-            )
-            break
-        except Exception as e:
-            pass
-    if cert is None:
-        return 'NoCertFound'
-    valid = False
-
-    x509 = OpenSSL.crypto.load_certificate(OpenSSL.crypto.FILETYPE_PEM, cert)
-    cret_info = x509.get_subject().get_components()
-    cn = x509.get_subject().commonName
-    if cn == server:
-        valid = True
-    elif '*' in cn:
-        cn = cn.replace('*.', '')
-        if re.match('(.*)%s' % cn, server, re.IGNORECASE) is not None:
-            valid = True
-    return (valid, cret_info)
 
 
 def get_timezone(db=None, config=None, zone=None, nick=None, channel=None):
@@ -449,14 +413,13 @@ def get_timezone(db=None, config=None, zone=None, nick=None, channel=None):
 
     if zone:
         tz = check(zone)
-        print tz
         if not tz and zone in db.preferences:
             tz = check(db.preferences.get(zone, 'tz'))
     if not tz and nick and nick in db.preferences:
         tz = check(db.preferences.get(nick, 'tz'))
     if not tz and channel and channel in db.preferences:
         tz = check(db.preferences.get(channel, 'tz'))
-    if not tz and config.has_option('core', 'default_timezone'):
+    if not tz and config and config.has_option('core', 'default_timezone'):
         tz = check(config.core.default_timezone)
     return tz
 
@@ -487,7 +450,8 @@ def format_time(db=None, config=None, zone=None, nick=None, channel=None,
             tformat = db.preferences.get(nick, 'time_format')
         if not tformat and channel in db.preferences:
             tformat = db.preferences.get(channel, 'time_format')
-    if not tformat and config.has_option('core', 'default_time_format'):
+    if not tformat and config and config.has_option('core',
+                                                    'default_time_format'):
         tformat = config.core.default_time_format
     if not tformat:
         tformat = '%F - %T%Z'
@@ -498,8 +462,11 @@ def format_time(db=None, config=None, zone=None, nick=None, channel=None,
     if not pytz or not zone:
         return time.strftime(tformat)
     else:
+        if not time.tzinfo:
+            utc = pytz.timezone('UTC')
+            time = utc.localize(time)
         zone = pytz.timezone(zone)
-        return zone.localize(time).strftime(tformat)
+        return time.astimezone(zone).strftime(tformat)
 
 
 class WillieMemory(dict):

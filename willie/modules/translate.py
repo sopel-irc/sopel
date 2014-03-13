@@ -2,20 +2,21 @@
 """
 translate.py - Willie Translation Module
 Copyright 2008, Sean B. Palmer, inamidst.com
-Copyright © 2013, Elad Alfassa <elad@fedoraproject.org>
+Copyright © 2013-2014, Elad Alfassa <elad@fedoraproject.org>
 Licensed under the Eiffel Forum License 2.
 
 http://willie.dftba.net
 """
-
+from __future__ import unicode_literals
 from willie import web
 from willie.module import rule, commands, priority, example
-import urllib2
 import json
+import sys
 import random
 import os
 mangle_lines = {}
-
+if sys.version_info.major >= 3:
+    unicode = str
 
 def configure(config):
     """
@@ -33,33 +34,37 @@ def configure(config):
             config.translate.collect_mangle_lines = True
 
 
-def translate(text, input='auto', output='en'):
+def translate(text, in_lang='auto', out_lang='en'):
     raw = False
-    if output.endswith('-raw'):
-        output = output[:-4]
+    if unicode(out_lang).endswith('-raw'):
+        out_lang = out_lang[:-4]
         raw = True
 
-    opener = urllib2.build_opener()
-    opener.addheaders = [(
-        'User-Agent', 'Mozilla/5.0' +
+    headers = {
+        'User-Agent': 'Mozilla/5.0' +
         '(X11; U; Linux i686)' +
         'Gecko/20071127 Firefox/2.0.0.11'
-    )]
+    }
 
-    input, output = urllib2.quote(input), urllib2.quote(output)
-    try:
-        if text is not text.encode("utf-8"):
-            text = text.encode("utf-8")
-    except:
-        pass
-    text = urllib2.quote(text)
-    result = opener.open('http://translate.google.com/translate_a/t?' +
-                         ('client=t&sl=%s&tl=%s' % (input, output)) +
-                         ('&q=%s' % text)).read()
+    url_query = {
+        "client": "t",
+        "sl": in_lang,
+        "tl": out_lang,
+        "q": text,
+    }
+    query_string = "&".join(
+        "{key}={value}".format(key=key, value=value)
+        for key, value in url_query.items()
+    )
+    url = "http://translate.google.com/translate_a/t?{query}".format(query=query_string)
+    result = web.get(url, timeout=40, headers=headers)
+    if sys.version_info.major>=3:
+        result = result.decode()
 
     while ',,' in result:
         result = result.replace(',,', ',null,')
         result = result.replace('[,', '[null,')
+
     data = json.loads(result)
 
     if raw:
@@ -73,25 +78,25 @@ def translate(text, input='auto', output='en'):
     return ''.join(x[0] for x in data[0]), language
 
 
-@rule(ur'$nickname[,:]\s+(?:([a-z]{2}) +)?(?:([a-z]{2}|en-raw) +)?["“](.+?)["”]\? *$')
+@rule(u'$nickname[,:]\s+(?:([a-z]{2}) +)?(?:([a-z]{2}|en-raw) +)?["“](.+?)["”]\? *$')
 @example('$nickname: "mon chien"? or $nickname: fr "mon chien"?')
 @priority('low')
 def tr(bot, trigger):
     """Translates a phrase, with an optional language hint."""
-    input, output, phrase = trigger.groups()
+    in_lang, out_lang, phrase = trigger.groups()
 
     phrase = phrase.encode('utf-8')
 
     if (len(phrase) > 350) and (not trigger.admin):
         return bot.reply('Phrase must be under 350 characters.')
 
-    input = input or 'auto'
-    input = input.encode('utf-8')
-    output = (output or 'en').encode('utf-8')
+    in_lang = in_lang or 'auto'
+    in_lang = in_lang.encode('utf-8')
+    out_lang = out_lang or 'en'
 
-    if input != output:
-        msg, input = translate(phrase, input, output)
-        if isinstance(msg, str):
+    if in_lang != out_lang:
+        msg, in_lang = translate(phrase, in_lang, out_lang)
+        if sys.version_info.major < 3 and isinstance(msg, str):
             msg = msg.decode('utf-8')
         if msg:
             msg = web.decode(msg)  # msg.replace('&#39;', "'")
@@ -109,14 +114,14 @@ def tr(bot, trigger):
 @example('.tr mon chien', '"my dog" (fr to en, translate.google.com)')
 def tr2(bot, trigger):
     """Translates a phrase, with an optional language hint."""
-    command = trigger.group(2).encode('utf-8')
+    command = trigger.group(2)
 
     def langcode(p):
         return p.startswith(':') and (2 < len(p) < 10) and p[1:].isalpha()
 
     args = ['auto', 'en']
 
-    for i in xrange(2):
+    for i in range(2):
         if not ' ' in command:
             break
         prefix, cmd = command.split(' ', 1)
@@ -131,7 +136,7 @@ def tr2(bot, trigger):
     src, dest = args
     if src != dest:
         msg, src = translate(phrase, src, dest)
-        if isinstance(msg, str):
+        if sys.version_info.major < 3 and isinstance(msg, str):
             msg = msg.decode('utf-8')
         if msg:
             msg = web.decode(msg)  # msg.replace('&#39;', "'")

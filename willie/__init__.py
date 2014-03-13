@@ -10,17 +10,19 @@ Licensed under the Eiffel Forum License 2.
 http://willie.dftba.net/
 """
 from __future__ import unicode_literals
+from __future__ import absolute_import
 
 import sys
 import os
 import time
 import threading
 import traceback
-import bot
+import willie.bot as bot
 import signal
-from tools import stderr
+import willie.web as web
+from willie.tools import stderr
 
-__version__ = '4.1.0-git'
+__version__ = '4.2.1-git'
 
 
 def run(config):
@@ -28,6 +30,11 @@ def run(config):
         delay = config.core.delay
     else:
         delay = 20
+    # Inject ca_certs from config to web for SSL validation of web requests
+    if hasattr(config, 'ca_certs') and config.ca_certs is not None:
+        web.ca_certs  = config.ca_certs
+    else:
+        web.ca_certs = '/etc/pki/tls/certs/ca-bundle.crt'
 
     def signal_handler(sig, frame):
         if sig == signal.SIGUSR1 or sig == signal.SIGTERM:
@@ -43,7 +50,7 @@ def run(config):
             p.run(config.core.host, int(config.core.port))
         except KeyboardInterrupt:
             break
-        except Exception, e:
+        except Exception as e:
             trace = traceback.format_exc()
             try:
                 stderr(trace)
@@ -65,6 +72,3 @@ def run(config):
         time.sleep(delay)
     os.unlink(config.pid_file_path)
     os._exit(0)
-
-if __name__ == '__main__':
-    print __doc__
