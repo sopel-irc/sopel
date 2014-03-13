@@ -9,6 +9,7 @@ Licensed under the Eiffel Forum License 2.
 from __future__ import unicode_literals
 from willie.module import commands, example, NOLIMIT
 import re
+import math
 
 find_temp = re.compile('(-?[0-9]*\.?[0-9]*)[ °]*(K|C|F)', re.IGNORECASE)
 find_length = re.compile('([0-9]*\.?[0-9]*)[ ]*(mile[s]?|mi|inch|in|foot|feet|ft|yard[s]?|yd|(?:centi|kilo|)meter[s]?|[kc]?m)', re.IGNORECASE)
@@ -101,7 +102,7 @@ def distance(bot, trigger):
 
     # Shit like this makes me hate being an American.
     inch = meter * 39.37
-    foot = int(inch) / 12
+    foot = math.floor(int(inch) / 12)
     inch = inch - (foot * 12)
     yard = foot / 3
     mile = meter * 0.00062137
