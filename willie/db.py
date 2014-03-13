@@ -186,8 +186,8 @@ class WillieDB(object):
             self._passwd = config.db.userdb_pass
             self._dbname = config.db.userdb_name
         except AttributeError:
-            print 'Some options are missing for your PostgreSQL DB.' \
-                ' The database will not be set up.'
+            print('Some options are missing for your PostgreSQL DB.'
+                ' The database will not be set up.')
             return
 
         try:
@@ -198,7 +198,7 @@ class WillieDB(object):
                 database=self._dbname
             )
         except psycopg2.DatabaseError, e:
-            print 'Error: Unable to connect to user settings DB.'
+            print('Error: Unable to connect to user settings DB.')
             return
 
         #Set up existing tables and columns
@@ -228,7 +228,7 @@ class WillieDB(object):
                 setattr(self, name, Table(self, name, columns, key))
                 self.tables.add(name)
         except psycopg2.DatabaseError, e:
-            print 'Error: Unable to configure user settings DB.'
+            print('Error: Unable to configure user settings DB.')
             raise e
         db.close()
 
@@ -772,29 +772,19 @@ def configure(config):
         'sqlite'
     )
 
+    non_sqlite_dbs = {'mysql': 'MySQL', 'postgres': 'PostgreSQL'}
     if config.db.userdb_type == 'sqlite':
         config.interactive_add(
             'db', 'userdb_file', 'Location for the database file'
         )
 
-    elif config.db.userdb_type == 'mysql':
+    elif config.db.userdb_type in [non_sqlite_dbs]:
+        db_type = non_sqlite_dbs[config.db.userdb_type]
         config.interactive_add(
-            'db', 'userdb_host', "Enter the MySQL hostname", 'localhost'
-        )
-        config.interactive_add('db', 'userdb_user', "Enter the MySQL username")
-        config.interactive_add(
-            'db', 'userdb_pass', "Enter the user's password", 'none'
+            'db', 'userdb_host', "Enter the %s hostname" % db_type, 'localhost'
         )
         config.interactive_add(
-            'db', 'userdb_name', "Enter the name of the database to use"
-        )
-
-    elif config.db.userdb_type == 'postgres':
-        config.interactive_add(
-            'db', 'userdb_host', "Enter the PostgreSQL hostname", 'localhost'
-        )
-        config.interactive_add('db', 'userdb_user',
-                               "Enter the PostgreSQL username")
+            'db', 'userdb_user', "Enter the %s username" % db_type)
         config.interactive_add(
             'db', 'userdb_pass', "Enter the user's password", 'none'
         )
