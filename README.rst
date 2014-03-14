@@ -1,5 +1,5 @@
-Introduction
-------------
+Introduction |build-status| |coverage-status|
+---------------------------------------------
 
 Willie is a simple, lightweight, open source, easy-to-use IRC Utility bot,
 written in Python. It's designed to be easy to use, run and extend.
@@ -60,3 +60,8 @@ Questions?
 Contact us on irc.dftba.net channel #tech
 
 For a list of contributions to the Jenni fork see the file ``CREDITS``.
+
+.. |build-status| image:: https://travis-ci.org/embolalia/willie.png
+   :target: https://travis-ci.org/embolalia/willie
+.. |coverage-status| image:: https://coveralls.io/repos/embolalia/willie/badge.png
+   :target: https://coveralls.io/r/embolalia/willie
