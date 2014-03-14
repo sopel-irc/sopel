@@ -273,6 +273,9 @@ def meetingaction(bot, trigger):
 @commands('listactions')
 @example('.listactions')
 def listactions(bot, trigger):
+    if not ismeetingrunning(trigger.sender):
+        bot.say('Can\'t do that, start meeting first')
+        return
     for action in meeting_actions[trigger.sender]:
         bot.say('ACTION: ' + action)
 
