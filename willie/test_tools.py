@@ -11,6 +11,7 @@ from __future__ import unicode_literals
 
 import sys
 import re
+import os
 
 import willie.config
 import willie.bot
@@ -43,6 +44,8 @@ class MockWillie(object):
         cfg = self.config
         cfg.parser.set('core', 'admins', '')
         cfg.parser.set('core', 'owner', '')
+        home_dir = os.path.join(os.path.expanduser('~'), '.willie')
+        cfg.parser.set('core', 'homedir', home_dir)
 
 
 class MockWillieWrapper(object):

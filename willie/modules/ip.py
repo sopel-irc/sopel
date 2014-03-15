@@ -79,7 +79,7 @@ def _find_geoip_db(bot):
 
 
 @commands('iplookup', 'ip')
-@example('.ip 8.8.8.8')
+@example('.ip 8.8.8.8', r'[IP/Host Lookup] Hostname: google-public-dns-a.google.com | Location: United States | ISP: Google Inc.', re=True)
 def ip(bot, trigger):
     """IP Lookup tool"""
     if not trigger.group(2):
@@ -111,3 +111,8 @@ def ip(bot, trigger):
         isp = re.sub('^AS\d+ ', '', isp)
     response += " | ISP: %s" % isp
     bot.say(response)
+
+
+if __name__ == "__main__":
+    from willie.test_tools import run_example_tests
+    run_example_tests(__file__)
