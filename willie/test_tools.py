@@ -128,7 +128,7 @@ def get_example_test(tested_func, msg, results, privmsg, admin,
         for _i in range(repeat):
             wrapper = MockWillieWrapper(bot, origin)
             tested_func(wrapper, trigger)
-            wrapper.output = filter(isnt_ignored, wrapper.output)
+            wrapper.output = list(filter(isnt_ignored, wrapper.output))
             assert len(wrapper.output) == len(results)
             for result, output in zip(results, wrapper.output):
                 if type(output) is bytes:
