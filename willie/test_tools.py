@@ -45,6 +45,8 @@ class MockWillie(object):
         cfg.parser.set('core', 'admins', '')
         cfg.parser.set('core', 'owner', '')
         home_dir = os.path.join(os.path.expanduser('~'), '.willie')
+        if not os.path.exists(home_dir):
+            os.mkdir(home_dir)
         cfg.parser.set('core', 'homedir', home_dir)
     
     def debug(self, _tag, _text, _level):
