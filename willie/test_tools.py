@@ -46,6 +46,14 @@ class MockWillie(object):
         cfg.parser.set('core', 'owner', '')
         home_dir = os.path.join(os.path.expanduser('~'), '.willie')
         cfg.parser.set('core', 'homedir', home_dir)
+    
+    def debug(self, _tag, _text, _level):
+        """Mock implementation of Bot.debug.
+        
+        Returns that we wrote something somewhere (lies).
+        
+        """
+        return False
 
 
 class MockWillieWrapper(object):
