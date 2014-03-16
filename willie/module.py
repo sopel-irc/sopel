@@ -320,11 +320,13 @@ class example(object):
 
         """
         # Wrap result into a list for get_example_test
-        if result is not None:
+        if isinstance(result, list):
+            self.result = result
+        elif result is not None:
             self.result = [result]
-            self.use_re = re
         else:
             self.result = None
+        self.use_re = re
         self.msg = msg
         self.privmsg = privmsg
         self.admin = admin
