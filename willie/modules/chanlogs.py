@@ -136,8 +136,10 @@ def log_part(bot, trigger):
 def log_quit(bot, trigger):
     tpl = bot.config.chanlogs.quit_template or QUIT_TPL
     logline = _format_template(tpl, bot, trigger=trigger)
-    # write it to *all* channels that the user was present in
-    for channel, privileges in bot.privileges.items():
+    # make a copy of bot.privileges that we can safely iterate over
+    privcopy = list(bot.privileges.items())
+    # write logline to *all* channels that the user was present in
+    for channel, privileges in privcopy:
         if bot.origin.nick in privileges:
             fpath = get_fpath(bot, channel)
             with bot.memory['chanlog_locks'][fpath]:
@@ -153,8 +155,10 @@ def log_nick_change(bot, trigger):
     logline = _format_template(tpl, bot, trigger=trigger)
     old_nick = bot.origin.nick
     new_nick = bot.origin.sender
-    # write it to *all* channels that the user is present in
-    for channel, privileges in bot.privileges.items():
+    # make a copy of bot.privileges that we can safely iterate over
+    privcopy = list(bot.privileges.items())
+    # write logline to *all* channels that the user is present in
+    for channel, privileges in privcopy:
         if old_nick in privileges or new_nick in privileges:
             fpath = get_fpath(bot, channel)
             with bot.memory['chanlog_locks'][fpath]:
