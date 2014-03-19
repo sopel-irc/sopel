@@ -29,6 +29,7 @@ try:
     import Queue
 except ImportError:
     import queue as Queue
+from collections import defaultdict
 import copy
 import ast
 import operator
@@ -498,6 +499,42 @@ class WillieMemory(dict):
         """
         self.lock.acquire()
         result = dict.__contains__(self, key)
+        self.lock.release()
+        return result
+
+    def contains(self, key):
+        """Backwards compatability with 3.x, use `in` operator instead."""
+        return self.__contains__(key)
+
+    def lock(self):
+        """Lock this instance from writes. Useful if you want to iterate."""
+        return self.lock.acquire()
+
+    def unlock(self):
+        """Release the write lock."""
+        return self.lock.release()
+
+
+class WillieMemoryWithDefault(defaultdict):
+    """Same as WillieMemory, but subclasses from collections.defaultdict."""
+    def __init__(self, *args):
+        defaultdict.__init__(self, *args)
+        self.lock = threading.Lock()
+
+    def __setitem__(self, key, value):
+        self.lock.acquire()
+        result = defaultdict.__setitem__(self, key, value)
+        self.lock.release()
+        return result
+
+    def __contains__(self, key):
+        """Check if a key is in the dict.
+
+        It locks it for writes when doing so.
+
+        """
+        self.lock.acquire()
+        result = defaultdict.__contains__(self, key)
         self.lock.release()
         return result
 
