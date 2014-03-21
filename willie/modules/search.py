@@ -38,9 +38,9 @@ def google_search_with_title(query):
         return (results['responseData']['results'][0]['unescapedUrl'],
                 results['responseData']['results'][0]['titleNoFormatting'])
     except IndexError:
-        return None
+        return None, ''
     except TypeError:
-        return False
+        return False, ''
 
 
 def google_count(query):
