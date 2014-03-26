@@ -92,6 +92,14 @@ def main(argv=None):
                               'database configuration options.'))
         opts = parser.parse_args()
 
+        try:
+            if os.getuid() == 0 or os.geteuid() == 0:
+                stderr('Error: Do not run Willie with root privileges.')
+                sys.exit(1)
+        except AttributeError:
+            # Windows don't have os.getuid/os.geteuid
+            pass
+
         if opts.wizard:
             wizard('all', opts.config)
             return
