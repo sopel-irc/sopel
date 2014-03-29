@@ -74,7 +74,7 @@ def wikipedia(bot, trigger):
     #change lang if channel has custom language set
     if (
         trigger.sender and
-        trigger.sender.startswith('#') and
+        not trigger.sender.is_nick() and
         bot.config.has_option('wikipedia', 'lang_per_channel')
        ):
         customlang = re.search(
