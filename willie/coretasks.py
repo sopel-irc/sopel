@@ -159,7 +159,6 @@ def track_modes(bot, trigger):
     # Mode message format: <channel> *( ( "-" / "+" ) *<modes> *<modeparams> )
     channel = Nick(trigger.args[0])
     line = trigger.args[1:]
-    print channel, line
 
     # If the first character of where the mode is being set isn't a #
     # then it's a user mode, not a channel mode, so we'll ignore it.
@@ -193,7 +192,6 @@ def track_modes(bot, trigger):
     modes = []
     for arg in line:
         if arg[0] in '+-':
-            print arg
             # There was a comment claiming IRC allows e.g. MODE +aB-c foo, but
             # I don't see it in any RFCs. Leaving in the extra parsing for now.
             sign = ''
@@ -205,18 +203,15 @@ def track_modes(bot, trigger):
                     modes.append(sign + char)
         else:
             arg = Nick(arg)
-            print modes, arg
             for mode in modes:
                 priv = bot.privileges[channel].get(arg, 0)
                 value = mapping.get(mode[1])
-                print priv, value
                 if value is not None:
                     if mode[0] == '+':
                         priv = priv | value
                     else:
                         priv = priv & ~value
                     bot.privileges[channel][arg] = priv
-                    print bot.privileges[channel][arg]
                 handle_old_modes(arg, mode)
 
 
