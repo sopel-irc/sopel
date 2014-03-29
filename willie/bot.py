@@ -601,10 +601,7 @@ class Willie(irc.Bot):
             s = unicode.__new__(cls, text)
 
             """Is trigger from a channel or in PM"""
-            s.is_privmsg = False
-            if (origin.sender is not None
-                    and not origin.sender.startswith(('#', '&', '+', '!'))):
-                s.is_privmsg = True
+            s.is_privmsg = origin.sender.is_nick()
 
             s.sender = origin.sender
             """
@@ -753,7 +750,7 @@ class Willie(irc.Bot):
             self.times[nick][func] = time.time()
 
     def limit(self, origin, func):
-        if origin.sender and origin.sender.startswith('#'):
+        if origin.sender and not origin.sender.is_nick():
             if self.config.has_section('limit'):
                 limits = self.config.limit.get(origin.sender)
                 if limits and (func.__module__ not in limits):

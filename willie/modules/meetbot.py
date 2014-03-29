@@ -377,7 +377,7 @@ def take_comment(bot, trigger):
     """
     target, message = trigger.group(2).split(None, 1)
     target = Nick(target)
-    if trigger.sender[0] in '#&+!':
+    if not trigger.sender.is_nick():
         return
     if not ismeetingrunning(target):
         bot.say("There's not currently a meeting in that channel.")

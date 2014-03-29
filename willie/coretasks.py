@@ -162,7 +162,7 @@ def track_modes(bot, trigger):
 
     # If the first character of where the mode is being set isn't a #
     # then it's a user mode, not a channel mode, so we'll ignore it.
-    if channel[0] != '#':
+    if channel.is_nick():
         return
 
     def handle_old_modes(nick, mode):

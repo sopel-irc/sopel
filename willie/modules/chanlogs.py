@@ -91,7 +91,7 @@ def setup(bot):
 def log_message(bot, message):
     "Log every message in a channel"
     # if this is a private message and we're not logging those, return early
-    if not bot.origin.sender.startswith("#") and not bot.config.chanlogs.privmsg:
+    if message.sender.is_nick() and not bot.config.chanlogs.privmsg:
         return
 
     # determine which template we want, message or action
