@@ -29,6 +29,7 @@ try:
     import Queue
 except ImportError:
     import queue as Queue
+from collections import defaultdict
 import copy
 import ast
 import operator
@@ -42,6 +43,7 @@ else:
     itervalues = dict.itervalues
     iterkeys   = dict.iterkeys
 
+_channel_prefixes = ('#', '&', '+', '!')
 
 class ExpressionEvaluator:
 
@@ -227,8 +229,7 @@ class Ddict(dict):
 
 
 class Nick(unicode):
-
-    """A `unicode` subclass which acts appropriately for an IRC nickname.
+    """A `unicode` subclass which acts appropriately for IRC identifiers.
 
     When used as normal `unicode` objects, case will be preserved.
     However, when comparing two Nick objects, or comparing a Nick object with a
@@ -297,6 +298,11 @@ class Nick(unicode):
 
     def __ne__(self, other):
         return not (self == other)
+
+    def is_nick(self):
+        """Returns True if the Identifier is a nickname (as opposed to channel)
+        """
+        return self and not self.startswith(_channel_prefixes)
 
 
 class OutputRedirect:
@@ -498,6 +504,42 @@ class WillieMemory(dict):
         """
         self.lock.acquire()
         result = dict.__contains__(self, key)
+        self.lock.release()
+        return result
+
+    def contains(self, key):
+        """Backwards compatability with 3.x, use `in` operator instead."""
+        return self.__contains__(key)
+
+    def lock(self):
+        """Lock this instance from writes. Useful if you want to iterate."""
+        return self.lock.acquire()
+
+    def unlock(self):
+        """Release the write lock."""
+        return self.lock.release()
+
+
+class WillieMemoryWithDefault(defaultdict):
+    """Same as WillieMemory, but subclasses from collections.defaultdict."""
+    def __init__(self, *args):
+        defaultdict.__init__(self, *args)
+        self.lock = threading.Lock()
+
+    def __setitem__(self, key, value):
+        self.lock.acquire()
+        result = defaultdict.__setitem__(self, key, value)
+        self.lock.release()
+        return result
+
+    def __contains__(self, key):
+        """Check if a key is in the dict.
+
+        It locks it for writes when doing so.
+
+        """
+        self.lock.acquire()
+        result = defaultdict.__contains__(self, key)
         self.lock.release()
         return result
 

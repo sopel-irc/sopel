@@ -156,62 +156,17 @@ def handle_names(bot, trigger):
 @willie.module.unblockable
 def track_modes(bot, trigger):
     """Track usermode changes and keep our lists of ops up to date."""
-    line = trigger.args
+    # Mode message format: <channel> *( ( "-" / "+" ) *<modes> *<modeparams> )
+    channel = Nick(trigger.args[0])
+    line = trigger.args[1:]
 
     # If the first character of where the mode is being set isn't a #
     # then it's a user mode, not a channel mode, so we'll ignore it.
-    if line[0][0] != '#':
+    if channel.is_nick():
         return
-    channel, mode_sec = line[:2]
-    channel = Nick(channel)
-    nicks = [Nick(n) for n in line[2:]]
 
-    # Break out the modes, because IRC allows e.g. MODE +aB-c foo bar baz
-    sign = ''
-    modes = []
-    for char in mode_sec:
-        if char == '+' or char == '-':
-            sign = char
-        else:
-            modes.append(sign + char)
-
-    # Some basic checks for broken replies from server. Probably unnecessary.
-    if len(modes) > len(nicks):
-        bot.debug(
-            __file__,
-            'MODE recieved from server with more modes than nicks.',
-            'warning'
-        )
-        modes = modes[:(len(nicks) + 1)]  # Try truncating, in case that works.
-    elif len(modes) < len(nicks):
-        bot.debug(
-            __file__,
-            'MODE recieved from server with more nicks than modes.',
-            'warning'
-        )
-        nicks = nicks[:(len(modes) - 1)]  # Try truncating, in case that works.
-    # This one is almost certainly unneeded.
-    if not (len(modes) and len(nicks)):
-        bot.debug(
-            __file__,
-            'MODE recieved from server without arguments',
-            'verbose'
-        )
-        return  # Nothing to do here.
-
-    mapping = {'v': willie.module.VOICE,
-               'h': willie.module.HALFOP,
-               'o': willie.module.OP,
-               'a': willie.module.ADMIN,
-               'q': willie.module.OWNER}
-    for nick, mode in zip(nicks, modes):
-        priv = bot.privileges[channel].get(nick) or 0
-        value = mapping.get(mode[1])
-        if value is not None:
-            priv = priv | value
-            bot.privileges[channel][nick] = priv
-
-        #Old mode maintenance
+    def handle_old_modes(nick, mode):
+        #Old mode maintenance. Drop this crap in 5.0.
         if mode[1] == 'o' or mode[1] == 'q' or mode[1] == 'a':
             if mode[0] == '+':
                 bot.add_op(channel, nick)
@@ -227,6 +182,37 @@ def track_modes(bot, trigger):
                 bot.add_voice(channel, nick)
             else:
                 bot.del_voice(channel, nick)
+
+    mapping = {'v': willie.module.VOICE,
+               'h': willie.module.HALFOP,
+               'o': willie.module.OP,
+               'a': willie.module.ADMIN,
+               'q': willie.module.OWNER}
+
+    modes = []
+    for arg in line:
+        if arg[0] in '+-':
+            # There was a comment claiming IRC allows e.g. MODE +aB-c foo, but
+            # I don't see it in any RFCs. Leaving in the extra parsing for now.
+            sign = ''
+            modes = []
+            for char in arg:
+                if char == '+' or char == '-':
+                    sign = char
+                else:
+                    modes.append(sign + char)
+        else:
+            arg = Nick(arg)
+            for mode in modes:
+                priv = bot.privileges[channel].get(arg, 0)
+                value = mapping.get(mode[1])
+                if value is not None:
+                    if mode[0] == '+':
+                        priv = priv | value
+                    else:
+                        priv = priv & ~value
+                    bot.privileges[channel][arg] = priv
+                handle_old_modes(arg, mode)
 
 
 @willie.module.rule('.*')

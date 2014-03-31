@@ -11,6 +11,7 @@ from __future__ import unicode_literals
 
 import sys
 import re
+import os
 
 import willie.config
 import willie.bot
@@ -43,6 +44,18 @@ class MockWillie(object):
         cfg = self.config
         cfg.parser.set('core', 'admins', '')
         cfg.parser.set('core', 'owner', '')
+        home_dir = os.path.join(os.path.expanduser('~'), '.willie')
+        if not os.path.exists(home_dir):
+            os.mkdir(home_dir)
+        cfg.parser.set('core', 'homedir', home_dir)
+    
+    def debug(self, _tag, _text, _level):
+        """Mock implementation of Bot.debug.
+        
+        Returns that we wrote something somewhere (lies).
+        
+        """
+        return False
 
 
 class MockWillieWrapper(object):
@@ -61,7 +74,7 @@ class MockWillieWrapper(object):
 
 
 def get_example_test(tested_func, msg, results, privmsg, admin,
-                     owner, repeat, use_regexp):
+                     owner, repeat, use_regexp, ignore = []):
     """Get a function that calls tested_func with fake wrapper and trigger.
 
     Args:
@@ -76,6 +89,7 @@ def get_example_test(tested_func, msg, results, privmsg, admin,
         repeat - How many times to repeat the test. Usefull for tests that
             return random stuff.
         use_regexp = Bool. If true, results is in regexp format.
+        ignore - List of strings to ignore.
 
     """
     def test():
@@ -104,9 +118,17 @@ def get_example_test(tested_func, msg, results, privmsg, admin,
         if hasattr(module, 'setup'):
             module.setup(bot)
 
+        def isnt_ignored(value):
+            """Return True if value doesn't match any re in ignore list."""
+            for ignored_line in ignore:
+                if re.match(ignored_line, value):
+                    return False
+            return True
+
         for _i in range(repeat):
             wrapper = MockWillieWrapper(bot, origin)
             tested_func(wrapper, trigger)
+            wrapper.output = list(filter(isnt_ignored, wrapper.output))
             assert len(wrapper.output) == len(results)
             for result, output in zip(results, wrapper.output):
                 if type(output) is bytes:
