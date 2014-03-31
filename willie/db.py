@@ -596,17 +596,17 @@ class Table(object):
         where = self._make_where_statement(key, row)
         cur.execute('SELECT * FROM ' + self.name + ' WHERE ' + where, rowl)
         if not cur.fetchone():
-            vals = '"' + row + '"'
+            vals = "'" + row + "'"
             for k in values:
                 key = key + ', ' + k
-                vals = vals + ', "' + values[k] + '"'
+                vals = vals + ", '" + values[k] + "'"
             command = ('INSERT INTO ' + self.name + ' (' + key + ') VALUES (' +
                        vals + ');')
         else:
             command = 'UPDATE ' + self.name + ' SET '
             for k in values:
-                command = command + k + '="' + values[k] + '", '
-            command = command[:-2] + ' WHERE ' + key + ' = "' + row + '";'
+                command = command + k + "='" + values[k] + "', "
+            command = command[:-2] + ' WHERE ' + key + " = '" + row + "';"
         cur.execute(command)
         db.commit()
         db.close()
