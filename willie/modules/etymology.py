@@ -83,7 +83,7 @@ def f_etymology(bot, trigger):
         msg = "Can't connect to etymonline.com (%s)" % (etyuri % word)
         bot.msg(trigger.sender, msg)
         return NOLIMIT
-    except AttributeError:
+    except (AttributeError, TypeError):
         result = None
 
     if result is not None:

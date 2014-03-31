@@ -12,11 +12,11 @@ import sys
 
 
 @commands('rand')
-@example('.rand 2', re=r'random\(0, 2\) = (0|1|2)', repeat=10)
+@example('.rand 2', r'random\(0, 2\) = (0|1|2)', re=True, repeat=10)
 @example('.rand -1 -1', 'random(-1, -1) = -1')
-@example('.rand', re=r'random\(0, \d+\) = \d+')
-@example('.rand 99 10', re=r'random\(10, 99\) = \d\d', repeat=10)
-@example('.rand 10 99', re=r'random\(10, 99\) = \d\d', repeat=10)
+@example('.rand', r'random\(0, \d+\) = \d+', re=True)
+@example('.rand 99 10', r'random\(10, 99\) = \d\d', re=True, repeat=10)
+@example('.rand 10 99', r'random\(10, 99\) = \d\d', re=True, repeat=10)
 def rand(bot, trigger):
     """Replies with a random number between first and second argument."""
     arg1 = trigger.group(3)
