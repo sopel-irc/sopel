@@ -1,3 +1,16 @@
+Changes between 4.2.0 and 4.3.0
+===============================
+Module Changes (for users):
+* A new channel logging module is added
+* Misc bugfixes, especially when running with Python 3
+
+Core changes (for users):
+* Fixed a regression that caused numerous errors in willie.web
+* Misc bugfixes
+
+API Changes (for developers):
+* Nick instances now have an `is_nick` attribute, which is True when the value is a valid nickname (as opposed to a channel)
+
 Changes between 4.1.0 and 4.2.0
 ===============================
 Module Changes (for users):
