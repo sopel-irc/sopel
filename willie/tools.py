@@ -152,7 +152,7 @@ def get_command_regexp(prefix, command):
     # The only differences should be handling all whitespace
     # like spaces and the addition of groups 3-6.
     pattern = r"""
-        {prefix}({command}) # Command as group 1.
+        (?:{prefix})({command}) # Command as group 1.
         (?:\s+              # Whitespace to end command.
         (                   # Rest of the line as group 2.
         (?:(\S+))?          # Parameters 1-4 as groups 3-6.
