@@ -74,8 +74,18 @@ def startup(bot, trigger):
     bot.write(('MODE ', '%s +%s' % (bot.nick, modes)))
 
     bot.memory['retry_join'] = dict()
-    for channel in bot.config.core.get_list('channels'):
-        bot.join(channel)
+
+    if bot.config.has_option('core', 'throttle_join'):
+        throttle_rate = int(bot.config.core.throttle_join)
+        channels_joined = 0
+        for channel in bot.config.core.get_list('channels'):
+            channels_joined += 1
+            if not channels_joined % throttle_rate:
+                time.sleep(1)
+            bot.join(channel)
+    else:
+        for channel in bot.config.core.get_list('channels'):
+            bot.join(channel)
 
 
 @willie.module.event('477')
