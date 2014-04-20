@@ -1,18 +1,26 @@
+#coding: utf8
 """
 url.py - Willie URL title module
 Copyright 2010-2011, Michael Yanovich, yanovich.net, Kenneth Sham
 Copyright 2012-2013 Edward Powell
 Copyright 2013      Lior Ramati (firerogue517@gmail.com)
+Copyright © 2014 Elad Alfassa <elad@fedoraproject.org>
 Licensed under the Eiffel Forum License 2.
 
 http://willie.dftba.net
 """
 
 import re
-from htmlentitydefs import name2codepoint
+import sys
+if sys.version_info.major < 3:
+    from htmlentitydefs import name2codepoint
+    import urlparse
+else:
+    from html.entities import name2codepoint
+    import urllib.parse as urlparse
 from willie import web, tools
 from willie.module import commands, rule, example
-import urlparse
+
 
 url_finder = None
 exclusion_char = '!'
@@ -117,7 +125,6 @@ def title_auto(bot, trigger):
     """
     if re.match(bot.config.core.prefix + 'title', trigger):
         return
-
     urls = re.findall(url_finder, trigger)
     results = process_urls(bot, trigger, urls)
     bot.memory['last_seen_url'][trigger.sender] = urls[-1]
@@ -134,7 +141,7 @@ def process_urls(bot, trigger, urls):
     For each URL in the list, ensure that it isn't handled by another module.
     If not, find where it redirects to, if anywhere. If that redirected URL
     should be handled by another module, dispatch the callback for it.
-    Return a list of (title, TLD) tuples for each URL which is not handled by
+    Return a list of (title, hostname) tuples for each URL which is not handled by
     another module.
     """
 
@@ -142,7 +149,10 @@ def process_urls(bot, trigger, urls):
     for url in urls:
         if not url.startswith(exclusion_char):
             # Magic stuff to account for international domain names
-            url = iri_to_uri(url)
+            try:
+                url = iri_to_uri(url)
+            except:
+                pass
             # First, check that the URL we got doesn't match
             matched = check_callbacks(bot, trigger, url, False)
             if matched:
@@ -158,7 +168,7 @@ def process_urls(bot, trigger, urls):
             # Finally, actually show the URL
             title = find_title(url)
             if title:
-                results.append((title, getTLD(url)))
+                results.append((title, get_hostname(url)))
     return results
 
 
@@ -185,7 +195,7 @@ def check_callbacks(bot, trigger, url, run=True):
     # Check if it matches the exclusion list first
     matched = any(regex.search(url) for regex in bot.memory['url_exclude'])
     # Then, check if there's anything in the callback list
-    for regex, function in bot.memory['url_callbacks'].iteritems():
+    for regex, function in tools.iteritems(bot.memory['url_callbacks']):
         match = regex.search(url)
         if match:
             if run:
@@ -232,17 +242,17 @@ def find_title(url):
     return title or None
 
 
-def getTLD(url):
+def get_hostname(url):
     idx = 7
     if url.startswith('https://'):
         idx = 8
     elif url.startswith('ftp://'):
         idx = 6
-    tld = url[idx:]
-    slash = tld.find('/')
+    hostname = url[idx:]
+    slash = hostname.find('/')
     if slash != -1:
-        tld = tld[:slash]
-    return tld
+        hostname = hostname[:slash]
+    return hostname
 
 
 # Functions for international domain name magic

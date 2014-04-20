@@ -31,12 +31,12 @@ def do_setup():
             license='Eiffel Forum License, version 2',
             platforms='Linux x86, x86-64',
             requires=[b'feedparser', b'pytz', b'lxml', b'praw', b'enchant',
-                      b'pygeoip']
+                      b'pygeoip', b'backports.ssl_match_hostname']
         )
     finally:
         try:
             shutil.rmtree(tmp_dir)
-        except OSError, e:
+        except OSError as e:
             if e.errno != 2:  # The directory is already gone, so ignore it
                 raise
 

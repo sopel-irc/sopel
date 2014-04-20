@@ -395,7 +395,7 @@ def read_feeds(bot, force=False):
 
         try:
             fp = feedparser.parse(feed.url, etag=feed.etag, modified=feed.modified)
-        except IOError, e:
+        except IOError as e:
             bot.debug(__file__, "Can't parse feed on {0}, disabling ({1})".format(
                 feed.name, str(e)), 'warning')
             disable_feed()

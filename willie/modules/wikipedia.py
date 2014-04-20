@@ -34,7 +34,7 @@ def mw_search(server, query, num):
     search_url = ('http://%s/w/api.php?format=json&action=query'
                   '&list=search&srlimit=%d&srprop=timestamp&srwhat=text'
                   '&srsearch=') % (server, num)
-    search_url += web.quote(query.encode('utf-8'))
+    search_url += query
     query = json.loads(web.get(search_url))
     if 'query' in query:
         query = query['query']['search']
@@ -50,7 +50,7 @@ def mw_snippet(server, query):
     snippet_url = ('https://'+server+'/w/api.php?format=json'
                    '&action=query&prop=extracts&exintro&explaintext'
                    '&exchars=300&redirects&titles=')
-    snippet_url += web.quote(query.encode('utf-8'))
+    snippet_url += query
     snippet = json.loads(web.get(snippet_url))
     snippet = snippet['query']['pages']
 
@@ -73,23 +73,27 @@ def wikipedia(bot, trigger):
 
     #change lang if channel has custom language set
     if (
-        trigger.sender and 
-        trigger.sender.startswith('#') and 
+        trigger.sender and
+        not trigger.sender.is_nick() and
         bot.config.has_option('wikipedia', 'lang_per_channel')
        ):
         customlang = re.search(
-                         '('+trigger.sender+'):(\w+)', 
+                         '('+trigger.sender+'):(\w+)',
                           bot.config.wikipedia.lang_per_channel
                           )
         if customlang is not None:
             lang = customlang.group(2)
+
+    if trigger.group(2) is None:
+        bot.reply("What do you want me to look up?")
+        return NOLIMIT
 
     query = trigger.group(2)
     args = re.search(r'^-([a-z]{2,12})\s(.*)', query)
     if args is not None:
         lang = args.group(1)
         query = args.group(2)
-   
+
     if not query:
         bot.reply('What do you want me to look up?')
         return NOLIMIT

@@ -1,0 +1,8 @@
+# python modules that must be installed before the tests can run
+backports.ssl_match_hostname
+lxml
+pygeoip
+praw
+feedparser
+# can't install pyenchant from PyPI on Python 3: https://github.com/rfk/pyenchant/issues/33
+git+https://github.com/rfk/pyenchant.git

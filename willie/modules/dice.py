@@ -35,7 +35,7 @@ class DicePouch:
         """Roll all the dice in the pouch."""
         self.dice = {}
         self.dropped = {}
-        for __ in xrange(self.num):
+        for __ in range(self.num):
             number = random.randint(1, self.type)
             count = self.dice.setdefault(number, 0)
             self.dice[number] = count + 1
@@ -46,7 +46,7 @@ class DicePouch:
         Args:
             n: the number of dice to drop.
         """
-        for i, count in self.dice.iteritems():
+        for i, count in self.dice.items():
             count = self.dice[i]
             if n == 0:
                 break
@@ -59,19 +59,19 @@ class DicePouch:
                 self.dropped[i] = count
                 n = n - count
 
-        for i, count in self.dropped.iteritems():
+        for i, count in self.dropped.items():
             if self.dice[i] == 0:
                 del self.dice[i]
 
     def get_simple_string(self):
         """Return the values of the dice like (2+2+2[+1+1])+1."""
-        dice = self.dice.iteritems()
+        dice = self.dice.items()
         faces = ("+".join([str(face)] * times) for face, times in dice)
         dice_str = "+".join(faces)
 
         dropped_str = ""
         if self.dropped:
-            dropped = self.dropped.iteritems()
+            dropped = self.dropped.items()
             dfaces = ("+".join([str(face)] * times) for face, times in dropped)
             dropped_str = "[+%s]" % ("+".join(dfaces),)
 
@@ -83,13 +83,13 @@ class DicePouch:
 
     def get_compressed_string(self):
         """Return the values of the dice like (3x2[+2x1])+1."""
-        dice = self.dice.iteritems()
+        dice = self.dice.items()
         faces = ("%dx%d" % (times, face) for face, times in dice)
         dice_str = "+".join(faces)
 
         dropped_str = ""
         if self.dropped:
-            dropped = self.dropped.iteritems()
+            dropped = self.dropped.items()
             dfaces = ("%dx%d" % (times, face) for face, times in dropped)
             dropped_str = "[+%s]" % ("+".join(dfaces),)
 
@@ -102,7 +102,7 @@ class DicePouch:
     def get_sum(self):
         """Get the sum of non-dropped dice and the addition."""
         result = self.addition
-        for face, times in self.dice.iteritems():
+        for face, times in self.dice.items():
             result += face * times
         return result
 
@@ -150,8 +150,8 @@ def _roll_dice(dice_expression):
 @willie.module.priority("medium")
 @willie.module.example(".roll 3d1+1", 'You roll 3d1+1: (1+1+1)+1 = 4')
 @willie.module.example(".roll 3d1v2+1", 'You roll 3d1v2+1: (1[+1+1])+1 = 2')
-@willie.module.example(".roll 2d4", re='You roll 2d4: \(\d\+\d\) = \d')
-@willie.module.example(".roll 100d1", re='[^:]*: \(100x1\) = 100')
+@willie.module.example(".roll 2d4", 'You roll 2d4: \(\d\+\d\) = \d', re=True)
+@willie.module.example(".roll 100d1", '[^:]*: \(100x1\) = 100', re=True)
 @willie.module.example(".roll 1001d1", 'I only have 1000 dice. =(')
 @willie.module.example(".roll 1d1 + 1d1", 'You roll 1d1 + 1d1: (1) + (1) = 2')
 @willie.module.example(".roll 1d1+1d1", 'You roll 1d1+1d1: (1)+(1) = 2')
@@ -173,7 +173,7 @@ def roll(bot, trigger):
     dice_expressions = re.findall(dice_regexp, arg_str)
     arg_str = arg_str.replace("%", "%%")
     arg_str = re.sub(dice_regexp, "%s", arg_str)
-    dice = map(_roll_dice, dice_expressions)
+    dice = list(map(_roll_dice, dice_expressions))
     if None in dice:
         bot.reply("I only have 1000 dice. =(")
         return

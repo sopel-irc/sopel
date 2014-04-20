@@ -13,10 +13,16 @@ decided to set up the database.
 #Licensed under the Eiffel Forum License 2.
 
 from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import absolute_import
 
 import os
+import sys
 from collections import Iterable
-from tools import deprecated
+from willie.tools import deprecated
+if sys.version_info.major >= 3:
+    unicode = str
+    basestring = str
 
 supported_types = set()
 #Attempt to import possible db modules
@@ -62,14 +68,14 @@ class WillieDB(object):
         self.tables = set()
         if not config.parser.has_section('db'):
             self.type = None
-            print 'No user settings database specified. Ignoring.'
+            print('No user settings database specified. Ignoring.')
             return
 
         self.type = config.db.userdb_type.lower()
         if self.type not in supported_types:
             self.type = None
-            print 'User settings database type is not supported.' + \
-                ' You may be missing the module for it. Ignoring.'
+            print('User settings database type is not supported.' + \
+                ' You may be missing the module for it. Ignoring.')
             return
 
         if self.type == 'mysql':
@@ -94,8 +100,8 @@ class WillieDB(object):
             self._passwd = config.db.userdb_pass
             self._dbname = config.db.userdb_name
         except AttributeError as e:
-            print 'Some options are missing for your MySQL DB.' + \
-                ' The database will not be set up.'
+            print('Some options are missing for your MySQL DB.' + \
+                ' The database will not be set up.')
             return
 
         try:
@@ -106,7 +112,7 @@ class WillieDB(object):
                 db=self._dbname
             )
         except:
-            print 'Error: Unable to connect to user settings DB.'
+            print('Error: Unable to connect to user settings DB.')
             return
 
         #Set up existing tables and columns
@@ -131,14 +137,14 @@ class WillieDB(object):
         try:
             self._file = os.path.expanduser(config.db.userdb_file)
         except AttributeError:
-            print 'No file specified for SQLite DB.' + \
-                ' The database will not be set up.'
+            print('No file specified for SQLite DB.' + \
+                ' The database will not be set up.')
             return
 
         try:
             db = sqlite3.connect(self._file)
         except:
-            print 'Error: Unable to connect to DB.'
+            print('Error: Unable to connect to DB.')
             return
 
         #Set up existing tables and columns
@@ -708,4 +714,4 @@ def configure(config):
         )
 
     else:
-        print "This isn't currently supported. Aborting."
+        print("This isn't currently supported. Aborting.")
