@@ -12,13 +12,19 @@ import re
 import pygeoip
 import socket
 import os
+import gzip
 
+urlretrieve = None
 try:
-    import gzip
     from urllib import urlretrieve
-    can_download = True
 except ImportError:
-    can_download = False
+    try:
+        # urlretrieve has been put under urllib.request in Python 3.
+        # It's also deprecated so this should probably be replaced with
+        # urllib2.
+        from urllib.request import urlretrieve
+    except ImportError:
+        pass
 
 from willie.module import commands, example
 
@@ -62,7 +68,7 @@ def _find_geoip_db(bot):
     elif (os.path.isfile(os.path.join('/usr/share/GeoIP', 'GeoLiteCity.dat')) and
             os.path.isfile(os.path.join('/usr/share/GeoIP', 'GeoIPASNum.dat'))):
         return '/usr/share/GeoIP'
-    elif can_download:
+    elif urlretrieve:
         bot.debug(__file__, 'Downloading GeoIP database', 'always')
         bot.say('Downloading GeoIP database, please wait...')
         geolite_city_url = 'http://geolite.maxmind.com/download/geoip/database/GeoLiteCity.dat.gz'
@@ -79,7 +85,10 @@ def _find_geoip_db(bot):
 
 
 @commands('iplookup', 'ip')
-@example('.ip 8.8.8.8')
+@example('.ip 8.8.8.8',
+        r'[IP/Host Lookup] Hostname: google-public-dns-a.google.com | Location: United States | ISP: Google Inc.',
+        re=True, 
+        ignore='Downloading GeoIP database, please wait...')
 def ip(bot, trigger):
     """IP Lookup tool"""
     if not trigger.group(2):
@@ -111,3 +120,8 @@ def ip(bot, trigger):
         isp = re.sub('^AS\d+ ', '', isp)
     response += " | ISP: %s" % isp
     bot.say(response)
+
+
+if __name__ == "__main__":
+    from willie.test_tools import run_example_tests
+    run_example_tests(__file__)

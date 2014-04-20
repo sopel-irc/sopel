@@ -7,7 +7,11 @@ http://willie.dftba.net/
 """
 
 from datetime import datetime
-from urllib2 import HTTPError
+import sys
+if sys.version_info.major < 3:
+    from urllib2 import HTTPError
+else:
+    from urllib.error import HTTPError
 import json
 from willie import web, tools
 from willie.module import commands, rule, NOLIMIT
@@ -199,5 +203,5 @@ def issue_info(bot, trigger, match=None):
     except (KeyError):
         bot.say('The API says this is an invalid issue. Please report this if you know it\'s a correct link!')
         return NOLIMIT
-    bot.reply('[#%s]\x02title:\x02 %s \x02|\x02 %s' % (data['number'], data['title'], body))
+    bot.say('[#%s]\x02title:\x02 %s \x02|\x02 %s' % (data['number'], data['title'], body))
 

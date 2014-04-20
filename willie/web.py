@@ -15,14 +15,31 @@ HTTP HEAD.
 from __future__ import unicode_literals
 
 import re
+import sys
 import urllib
-import urllib2
-from htmlentitydefs import name2codepoint
+if sys.version_info.major < 3:
+    import urllib2
+    import httplib
+    from htmlentitydefs import name2codepoint
+    from urlparse import urlparse
+else:
+    import urllib.request as urllib2
+    import http.client as httplib
+    from html.entities import name2codepoint
+    from urllib.parse import urlparse
+import ssl
+import os.path
+import socket
+if not hasattr(ssl, 'match_hostname'):
+    # Attempt to import ssl_match_hostname from python-backports
+    import backports.ssl_match_hostname
+    ssl.match_hostname = backports.ssl_match_hostname.match_hostname
+    ssl.CertificateError = backports.ssl_match_hostname.CertificateError
 
 
 # HTTP GET
 def get(uri, timeout=20, headers=None, return_headers=False,
-        limit_bytes=None):
+        limit_bytes=None, verify_ssl=True):
     """Execute an HTTP GET query on `uri`, and return the result.
 
     `timeout` is an optional argument, which represents how much time we should
@@ -38,7 +55,7 @@ def get(uri, timeout=20, headers=None, return_headers=False,
     """
     if not uri.startswith('http'):
         uri = "http://" + uri
-    u = get_urllib_object(uri, timeout, headers)
+    u = get_urllib_object(uri, timeout, headers, verify_ssl)
     bytes = u.read(limit_bytes)
     u.close()
     if not return_headers:
@@ -48,7 +65,7 @@ def get(uri, timeout=20, headers=None, return_headers=False,
 
 
 # Get HTTP headers
-def head(uri, timeout=20, headers=None):
+def head(uri, timeout=20, headers=None, verify_ssl=True):
     """Execute an HTTP GET query on `uri`, and return the headers.
 
     `timeout` is an optional argument, which represents how much time we should
@@ -58,14 +75,14 @@ def head(uri, timeout=20, headers=None):
     """
     if not uri.startswith('http'):
         uri = "http://" + uri
-    u = get_urllib_object(uri, timeout, headers)
+    u = get_urllib_object(uri, timeout, headers, verify_ssl)
     info = u.info()
     u.close()
     return info
 
 
 # HTTP POST
-def post(uri, query, limit_bytes=None):
+def post(uri, query, limit_bytes=None, timeout=20, verify_ssl=True):
     """Execute an HTTP POST query.
 
     `uri` is the target URI, and `query` is the POST data. `headers` is a dict
@@ -78,7 +95,7 @@ def post(uri, query, limit_bytes=None):
     """
     if not uri.startswith('http'):
         uri = "http://" + uri
-    u = urllib2.urlopen(uri, query)
+    u = get_urllib_object(uri, timeout=timeout, verify_ssl=verify_ssl, data=query)
     bytes = u.read(limit_bytes)
     u.close()
     return bytes
@@ -101,32 +118,62 @@ def decode(html):
     return r_entity.sub(entity, html)
 
 
+class VerifiedHTTPSConnection(httplib.HTTPConnection):
+        "Verified HTTPS Connection handler"
+
+        default_port = httplib.HTTPS_PORT
+
+        def __init__(self, *args, **kwargs):
+            httplib.HTTPConnection.__init__(self, *args, **kwargs)
+
+        def connect(self):
+            """Connect to the host and port specified in __init__."""
+            sock = socket.create_connection((self.host, self.port),
+                                            self.timeout, self.source_address)
+            if self._tunnel_host:
+                self.sock = sock
+                self._tunnel()
+            if not  os.path.exists(ca_certs):
+                raise Exception('CA Certifcate bundle %s is not readable' % ca_certs)
+            self.sock = ssl.wrap_socket(sock,
+                                        ca_certs=ca_certs,
+                                        cert_reqs=ssl.CERT_REQUIRED)
+            ssl.match_hostname(self.sock.getpeercert(), self.host)
+
+class VerifiedHTTPSHandler(urllib2.HTTPSHandler):
+
+    def https_open(self, req):
+            return self.do_open(VerifiedHTTPSConnection, req)
+
+
 # For internal use in web.py, (modules can use this if they need a urllib
 # object they can execute read() on) Both handles redirects and makes sure
 # input URI is UTF-8
-def get_urllib_object(uri, timeout, headers=None):
+def get_urllib_object(uri, timeout, headers=None, verify_ssl=True, data=None):
     """Return a urllib2 object for `uri` and `timeout` and `headers`.
 
-    This is better than using urrlib2 directly, for it handles redirects, makes
+    This is better than using urlib2 directly, for it handles SSL verifcation, makes
     sure URI is utf8, and is shorter and easier to use.  Modules may use this
     if they need a urllib2 object to execute .read() on.
 
     For more information, refer to the urllib2 documentation.
 
     """
-    try:
-        uri = uri.encode("utf-8")
-    except:
-        pass
+
+    uri = quote_query(uri)
     original_headers = {'Accept': '*/*', 'User-Agent': 'Mozilla/5.0 (Willie)'}
     if headers is not None:
         original_headers.update(headers)
     else:
         headers = original_headers
-    req = urllib2.Request(uri, headers=headers)
+    if verify_ssl:
+        opener = urllib2.build_opener(VerifiedHTTPSHandler)
+    else:
+        opener = urllib2.build_opener()
+    req = urllib2.Request(uri, headers=headers, data=data)
     try:
-        u = urllib2.urlopen(req, None, timeout)
-    except urllib2.HTTPError, e:
+        u = opener.open(req, None, timeout)
+    except urllib2.HTTPError as e:
         # Even when there's an error (say HTTP 404), return page contents
         return e.fp
 
@@ -134,19 +181,25 @@ def get_urllib_object(uri, timeout, headers=None):
 
 
 # Identical to urllib2.quote
-def quote(string):
+def quote(string, safe='/'):
     """Like urllib2.quote but handles unicode properly."""
-    if isinstance(string, unicode):
-        string = string.encode('utf8')
-    return urllib2.quote(string)
+    if sys.version_info.major < 3:
+        if isinstance(string, unicode):
+            string = string.encode('utf8')
+        string = urllib.quote(string, safe.encode('utf8'))
+    else:
+        string = urllib.parse.quote(str(string), safe)
+    return string
 
 
-# Identical to urllib.urlencode
-def urlencode(data):
-    """Identical to urllib.urlencode.
+def quote_query(string):
+    """Quotes the query parameters."""
+    parsed = urlparse(string)
+    string = string.replace(parsed.query, quote(parsed.query, "/=&"), 1)
+    return string
 
-    Use this if you already importing web in your module and don't want to
-    import urllib just to use the urlencode function.
 
-    """
-    return urllib.urlencode(data)
+if sys.version_info.major < 3:
+    urlencode = urllib.urlencode
+else:
+    urlencode = urllib.parse.urlencode

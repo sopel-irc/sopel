@@ -12,7 +12,8 @@ import willie.module
 
 
 @willie.module.commands('movie', 'imdb')
-@willie.module.example('.movie Movie Title')
+@willie.module.example('.movie ThisTitleDoesNotExist', '[MOVIE] Movie not found!')
+@willie.module.example('.movie Citizen Kane', '[MOVIE] Title: Citizen Kane | Year: 1941 | Rating: 8.5 | Genre: Drama, Mystery | IMDB Link: http://imdb.com/title/tt0033467')
 def movie(bot, trigger):
     """
     Returns some information about a movie, like Title, Year, Rating, Genre and IMDB Link.
@@ -20,11 +21,9 @@ def movie(bot, trigger):
     if not trigger.group(2):
         return
     word = trigger.group(2).rstrip()
-    word = word.replace(" ", "+")
     uri = "http://www.imdbapi.com/?t=" + word
-    u = web.get_urllib_object(uri, 30)
-    data = json.load(u)  # data is a Dict containing all the information we need
-    u.close()
+    u = web.get(uri, 30)
+    data = json.loads(u.decode('utf-8'))  # data is a Dict containing all the information we need
     if data['Response'] == 'False':
         if 'Error' in data:
             message = '[MOVIE] %s' % data['Error']
@@ -39,3 +38,8 @@ def movie(bot, trigger):
                   ' | Genre: ' + data['Genre'] + \
                   ' | IMDB Link: http://imdb.com/title/' + data['imdbID']
     bot.say(message)
+
+
+if __name__ == "__main__":
+    from willie.test_tools import run_example_tests
+    run_example_tests(__file__)

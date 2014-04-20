@@ -11,14 +11,12 @@ willie.module.priority
 willie.module.event
 willie.module.rate
 willie.module.example
-
-willie/module.py - Willie IRC Bot (http://willie.dftba.net/)
-Copyright 2013, Ari Koivula, <ari@koivu.la>
-Copyright © 2013, Elad Alfassa <elad@fedoraproject.org>
-Copyright 2013, Lior Ramati <firerogue517@gmail.com>
-
-Licensed under the Eiffel Forum License 2.
 """
+#Copyright 2013, Ari Koivula, <ari@koivu.la>
+#Copyright © 2013, Elad Alfassa <elad@fedoraproject.org>
+#Copyright 2013, Lior Ramati <firerogue517@gmail.com>
+#Licensed under the Eiffel Forum License 2.
+
 from __future__ import unicode_literals
 
 import willie.test_tools
@@ -305,7 +303,7 @@ class example(object):
     """
 
     def __init__(self, msg, result=None, privmsg=False, admin=False,
-                 owner=False, repeat=1, re=False):
+                 owner=False, repeat=1, re=False, ignore=None):
         """Accepts arguments for the decorator.
 
         Args:
@@ -319,19 +317,29 @@ class example(object):
             repeat - How many times to repeat the test. Usefull for tests that
                 return random stuff.
             re - Bool. If true, result is interpreted as a regular expression.
+            ignore - a list of outputs to ignore.
 
         """
         # Wrap result into a list for get_example_test
-        if result is not None:
+        if isinstance(result, list):
+            self.result = result
+        elif result is not None:
             self.result = [result]
-            self.use_re = re
         else:
             self.result = None
+        self.use_re = re
         self.msg = msg
         self.privmsg = privmsg
         self.admin = admin
         self.owner = owner
         self.repeat = repeat
+        
+        if isinstance(ignore, list):
+            self.ignore = ignore
+        elif ignore is not None:
+            self.ignore = [ignore]
+        else:
+            self.ignore = []
 
     def __call__(self, func):
         if not hasattr(func, "example"):
@@ -340,7 +348,7 @@ class example(object):
         if self.result:
             test = willie.test_tools.get_example_test(
                 func, self.msg, self.result, self.privmsg, self.admin,
-                self.owner, self.repeat, self.use_re
+                self.owner, self.repeat, self.use_re, self.ignore
             )
             willie.test_tools.insert_into_module(
                 test, func.__module__, func.__name__, 'test_example'
