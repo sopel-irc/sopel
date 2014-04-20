@@ -30,7 +30,7 @@ def configure(config):
         config.interactive_add(
             "chanlogs", "dir",
             "Absolute path to channel log storage directory",
-            default="/home/willie/chanlogs"
+            default=os.path.join("~", "chanlogs")
         )
         config.add_option("chanlogs", "by_day", "Split log files by day", default=True)
         config.add_option("chanlogs", "privmsg", "Record private messages", default=False)
