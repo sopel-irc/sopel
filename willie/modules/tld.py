@@ -1,3 +1,4 @@
+#coding: utf8
 """
 tld.py - Willie TLD Module
 Copyright 2009-10, Michael Yanovich, yanovich.net
@@ -5,6 +6,7 @@ Licensed under the Eiffel Forum License 2.
 
 http://willie.dftba.net
 """
+from __future__ import unicode_literals
 
 from willie import web
 from willie.module import commands, example

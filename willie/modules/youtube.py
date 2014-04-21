@@ -1,4 +1,4 @@
-# -*- coding: utf8 -*-
+#coding: utf8
 """
 youtube.py - Willie YouTube Module
 Copyright 2012, Dimitri Molenaars, Tyrope.nl.

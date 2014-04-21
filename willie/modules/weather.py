@@ -1,3 +1,4 @@
+#coding: utf8
 """
 weather.py - Willie Yahoo! Weather Module
 Copyright 2008, Sean B. Palmer, inamidst.com
@@ -6,6 +7,7 @@ Licensed under the Eiffel Forum License 2.
 
 http://willie.dftba.net
 """
+from __future__ import unicode_literals
 
 from willie import web
 from willie.module import commands, example

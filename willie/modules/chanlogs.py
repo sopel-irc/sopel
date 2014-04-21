@@ -1,4 +1,4 @@
-# coding=utf-8
+#coding: utf8
 """
 chanlogs.py - Willie Channel Logger module
 Copyright 2014, David Baumgold <david@davidbaumgold.com>
