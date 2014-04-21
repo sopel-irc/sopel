@@ -10,6 +10,7 @@ http://willie.dfbta.net
 
 This module will respond to .yt and .youtube commands and searches the youtubes.
 """
+from __future__ import unicode_literals
 
 from willie import web, tools
 from willie.module import rule, commands, example
@@ -37,6 +38,7 @@ def ytget(bot, trigger, uri):
         else:
             video_entry = result['entry']
     except:
+        raise
         bot.say('Something went wrong when accessing the YouTube API.')
         return 'err'
     vid_info = {}
@@ -129,7 +131,7 @@ def ytsearch(bot, trigger):
     #modified from ytinfo: Copyright 2010-2011, Michael Yanovich, yanovich.net, Kenneth Sham.
     if not trigger.group(2):
         return
-    uri = 'https://gdata.youtube.com/feeds/api/videos?v=2&alt=json&max-results=1&q=' + trigger.group(2).encode('utf-8')
+    uri = 'https://gdata.youtube.com/feeds/api/videos?v=2&alt=json&max-results=1&q=' + trigger.group(2)
     uri = uri.replace(' ', '+')
     video_info = ytget(bot, trigger, uri)
 
@@ -180,7 +182,7 @@ def ytinfo(bot, trigger, found_match=None):
 def ytlast(bot, trigger):
     if not trigger.group(2):
         return
-    uri = 'https://gdata.youtube.com/feeds/api/users/' + trigger.group(2).encode('utf-8') + '/uploads?max-results=1&alt=json&v=2'
+    uri = 'https://gdata.youtube.com/feeds/api/users/' + trigger.group(2) + '/uploads?max-results=1&alt=json&v=2'
     video_info = ytget(bot, trigger, uri)
 
     if video_info is 'err':
