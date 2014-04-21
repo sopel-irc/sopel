@@ -1,3 +1,4 @@
+#coding: utf8
 """
 radio.py - ShoutCAST radio Module
 Copyright 2012, Dimitri "Tyrope" Molenaars, TyRope.nl
@@ -5,6 +6,7 @@ Licensed under the Eiffel Forum License 2.
 
 http://willie.dftba.net/
 """
+from __future__ import unicode_literals
 
 from time import sleep
 from xml.dom.minidom import parseString

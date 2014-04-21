@@ -1,4 +1,4 @@
-# -*- coding: utf8 -*-
+#coding: utf8
 """
 imdb.py - Willie Movie Information Module
 Copyright © 2012-2013, Elad Alfassa, <elad@fedoraproject.org>
@@ -6,6 +6,7 @@ Licensed under the Eiffel Forum License 2.
 
 This module relies on imdbapi.com
 """
+from __future__ import unicode_literals
 import json
 import willie.web as web
 import willie.module

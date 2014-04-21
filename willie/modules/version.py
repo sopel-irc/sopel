@@ -1,3 +1,4 @@
+#coding: utf8
 """
 version.py - Willie Version Module
 Copyright 2009, Silas Baronda
@@ -5,6 +6,7 @@ Licensed under the Eiffel Forum License 2.
 
 http://willie.dftba.net
 """
+from __future__ import unicode_literals
 
 from datetime import datetime
 import willie

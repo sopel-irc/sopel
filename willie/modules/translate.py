@@ -1,4 +1,4 @@
-# coding=utf-8
+#coding: utf8
 """
 translate.py - Willie Translation Module
 Copyright 2008, Sean B. Palmer, inamidst.com
@@ -85,13 +85,10 @@ def tr(bot, trigger):
     """Translates a phrase, with an optional language hint."""
     in_lang, out_lang, phrase = trigger.groups()
 
-    phrase = phrase.encode('utf-8')
-
     if (len(phrase) > 350) and (not trigger.admin):
         return bot.reply('Phrase must be under 350 characters.')
 
     in_lang = in_lang or 'auto'
-    in_lang = in_lang.encode('utf-8')
     out_lang = out_lang or 'en'
 
     if in_lang != out_lang:
@@ -175,7 +172,7 @@ def mangle(bot, trigger):
             bot.reply("What do you want me to mangle?")
             return
     else:
-        phrase = (trigger.group(2).encode('utf-8').strip(), '')
+        phrase = (trigger.group(2).strip(), '')
     if phrase[0] == '':
         bot.reply("What do you want me to mangle?")
         return

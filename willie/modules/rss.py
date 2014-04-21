@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+#coding: utf8
 """
 rss.py - Willie RSS Module
 Copyright 2012, Michael Yanovich, yanovich.net
@@ -6,6 +6,7 @@ Licensed under the Eiffel Forum License 2.
 
 http://willie.dfbta.net
 """
+from __future__ import unicode_literals
 
 from datetime import datetime
 import time
