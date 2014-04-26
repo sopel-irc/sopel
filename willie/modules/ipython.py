@@ -1,0 +1,51 @@
+#coding: utf8
+"""
+ipython.py - willie ipython console!
+Copyright © 2014, Elad Alfassa <elad@fedoraproject.org>
+Licensed under the Eiffel Forum License 2.
+
+Willie: http://willie.dftba.net/
+"""
+from __future__ import unicode_literals
+import willie
+import sys
+from IPython.frontend.terminal.embed import InteractiveShellEmbed
+console = None
+
+
+@willie.module.commands('console')
+def interactive_shell(bot, trigger):
+    """
+    Starts an interactive IPython console
+    """
+    global console
+    if not trigger.admin:
+        bot.say('Only admins can start the interactive console')
+        return
+    if 'iconsole_running' in bot.memory and bot.memory['iconsole_running']:
+        bot.say('Console already running')
+        return
+
+    # Backup stderr/stdout wrappers
+    old_stdout = sys.stdout
+    old_stderr = sys.stderr
+
+    # IPython wants actual stderr and stdout
+    sys.stdout = sys.__stdout__
+    sys.stderr = sys.__stderr__
+
+    banner1 = 'Willie interactive shell (embedded IPython)'
+    banner2 = '`bot` and `trigger` are available. To exit, type exit'
+    exitmsg = 'Interactive shell closed'
+
+    console = InteractiveShellEmbed(banner1=banner1, banner2=banner2,
+                                    exit_msg=exitmsg)
+
+    bot.memory['iconsole_running'] = True
+    bot.say('console started')
+    console()
+    bot.memory['iconsole_running'] = False
+
+    # Restore stderr/stdout wrappers
+    sys.stdout = old_stdout
+    sys.stderr = old_stderr
