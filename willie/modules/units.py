@@ -65,6 +65,7 @@ def temperature(bot, trigger):
 @example('.distance 3 inch', '7.62cm = 3.00 inches')
 @example('.distance 3 feet', '91.44cm = 3 feet, 0.00 inches')
 @example('.distance 3 yards', '2.74m = 9 feet, 0.00 inches')
+@example('.distance 155cm', '1.55m = 5 feet, 1.02 inches')
 def distance(bot, trigger):
     """
     Convert distances
