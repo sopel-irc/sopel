@@ -65,6 +65,7 @@ def temperature(bot, trigger):
 @example('.distance 3 inch', '7.62cm = 3.00 inches')
 @example('.distance 3 feet', '91.44cm = 3 feet, 0.00 inches')
 @example('.distance 3 yards', '2.74m = 9 feet, 0.00 inches')
+@example('.distance 155cm', '1.55m = 5 feet, 1.02 inches')
 def distance(bot, trigger):
     """
     Convert distances
@@ -86,7 +87,7 @@ def distance(bot, trigger):
     elif unit in ("inch", "in"):
         meter = numeric / 39.370
     elif unit in ("centimeters", "centimeter", "cm"):
-        meter = numeric // 100
+        meter = numeric / 100
     elif unit in ("feet", "foot", "ft"):
         meter = numeric / 3.2808
     elif unit in ("yards", "yard", "yd"):
