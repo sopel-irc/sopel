@@ -367,7 +367,7 @@ class Willie(irc.Bot):
 
         """
         if (callable(obj) and
-                hasattr(obj, "name")
+                hasattr(obj, "__name__")
                 and obj.__name__ == 'shutdown'):
             return True
         return False
