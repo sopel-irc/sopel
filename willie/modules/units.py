@@ -11,7 +11,7 @@ from willie.module import commands, example, NOLIMIT
 import re
 
 find_temp = re.compile('(-?[0-9]*\.?[0-9]*)[ °]*(K|C|F)', re.IGNORECASE)
-find_length = re.compile('([0-9]*\.?[0-9]*)[ ]*(mile[s]?|mi|inch|in|foot|feet|ft|yard[s]?|yd|(?:centi|kilo|)meter[s]?|[kc]?m)', re.IGNORECASE)
+find_length = re.compile('([0-9]*\.?[0-9]*)[ ]*(mile[s]?|mi|inch|in|foot|feet|ft|yard[s]?|yd|(?:centi|kilo|)meter[s]?|[kc]?m|ly|light-year[s]?|au|AU|astronomical unit[s]?|parsec[s]?|pc)', re.IGNORECASE)
 
 
 def f_to_c(temp):
@@ -92,6 +92,12 @@ def distance(bot, trigger):
         meter = numeric / 3.2808
     elif unit in ("yards", "yard", "yd"):
         meter = numeric / (3.2808 / 3)
+    elif unit in ("light-year", "light-years", "ly"):
+        meter = numeric * 9460730472580800
+    elif unit in ("astronomical unit", "astronomical units", "au", "AU"):
+        meter = numeric * 149597870700
+    elif unit in ("parsec", "parsecs", "pc"):
+        meter = numeric * 30856776376340068
 
     if meter >= 1000:
         metric_part = '{:.2f}km'.format(meter / 1000)
@@ -105,7 +111,7 @@ def distance(bot, trigger):
     foot = int(inch) // 12
     inch = inch - (foot * 12)
     yard = foot // 3
-    mile = meter * 0.00062137
+    mile = meter * 0.000621371192
 
     if yard > 500:
         stupid_part = '{:.2f} miles'.format(mile)
