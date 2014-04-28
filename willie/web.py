@@ -134,7 +134,7 @@ class VerifiedHTTPSConnection(httplib.HTTPConnection):
                 self.sock = sock
                 self._tunnel()
             if not  os.path.exists(ca_certs):
-                raise Exception('CA Certifcate bundle %s is not readable' % ca_certs)
+                raise Exception('CA Certificate bundle %s is not readable' % ca_certs)
             self.sock = ssl.wrap_socket(sock,
                                         ca_certs=ca_certs,
                                         cert_reqs=ssl.CERT_REQUIRED)
