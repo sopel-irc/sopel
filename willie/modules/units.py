@@ -86,7 +86,7 @@ def distance(bot, trigger):
     elif unit in ("inch", "in"):
         meter = numeric / 39.370
     elif unit in ("centimeters", "centimeter", "cm"):
-        meter = numeric // 100
+        meter = numeric / 100
     elif unit in ("feet", "foot", "ft"):
         meter = numeric / 3.2808
     elif unit in ("yards", "yard", "yd"):
