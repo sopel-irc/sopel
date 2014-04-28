@@ -474,14 +474,16 @@ class Bot(asynchat.async_chat):
                     if elapsed < wait:
                         time.sleep(wait - elapsed)
 
-            # Loop detection
-            messages = [m[1] for m in self.stack[-8:]]
-            if sys.version_info.major < 3 and isinstance(text, str):
-                text = text.decode('utf-8')
-            if messages.count(text) >= 5:
-                text = '...'
-                if messages.count('...') >= 3:
-                    return
+                # Loop detection
+                messages = [m[1] for m in self.stack[-8:]]
+
+                # If what we about to send repeated at least 5 times in the
+                # last 5 minutes, replace with '...'
+                if messages.count(text) >= 5 and elapsed < 300:
+                    text = '...'
+                    if messages.count('...') >= 3:
+                        # If we said '...' 3 times, discard message
+                        return
 
             self.write(('PRIVMSG', recipient), text)
             self.stack.append((time.time(), self.safe(text)))
