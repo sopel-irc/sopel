@@ -11,6 +11,7 @@ from __future__ import unicode_literals
 import os
 import os.path
 import threading
+import sys
 from datetime import datetime
 import willie.module
 import willie.tools
@@ -63,11 +64,15 @@ def _format_template(tpl, bot, **kwargs):
     if not bot.config.chanlogs.microseconds:
         dt = dt.replace(microsecond=0)
 
-    return tpl.format(
+    formatted = tpl.format(
         origin=bot.origin, datetime=dt.isoformat(),
         date=dt.date().isoformat(), time=dt.time().isoformat(),
         **kwargs
     ) + "\n"
+
+    if sys.version_info.major < 3 and isinstance(formatted, unicode):
+        formatted = formatted.encode('utf-8')
+    return formatted
 
 
 def setup(bot):
@@ -106,7 +111,7 @@ def log_message(bot, message):
     fpath = get_fpath(bot)
     with bot.memory['chanlog_locks'][fpath]:
         with open(fpath, "a") as f:
-            f.write(logline.encode('utf-8'))
+            f.write(logline)
 
 
 @willie.module.rule('.*')
@@ -118,7 +123,7 @@ def log_join(bot, trigger):
     fpath = get_fpath(bot, channel=trigger)
     with bot.memory['chanlog_locks'][fpath]:
         with open(fpath, "a") as f:
-            f.write(logline.encode('utf-8'))
+            f.write(logline)
 
 
 @willie.module.rule('.*')
@@ -130,7 +135,7 @@ def log_part(bot, trigger):
     fpath = get_fpath(bot, channel=trigger)
     with bot.memory['chanlog_locks'][fpath]:
         with open(fpath, "a") as f:
-            f.write(logline.encode('utf-8'))
+            f.write(logline)
 
 
 @willie.module.rule('.*')
@@ -149,7 +154,7 @@ def log_quit(bot, trigger):
             fpath = get_fpath(bot, channel)
             with bot.memory['chanlog_locks'][fpath]:
                 with open(fpath, "a") as f:
-                    f.write(logline.encode('utf-8'))
+                    f.write(logline)
 
 
 @willie.module.rule('.*')
@@ -168,4 +173,4 @@ def log_nick_change(bot, trigger):
             fpath = get_fpath(bot, channel)
             with bot.memory['chanlog_locks'][fpath]:
                 with open(fpath, "a") as f:
-                    f.write(logline.encode('utf-8'))
+                    f.write(logline)
