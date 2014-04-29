@@ -1,4 +1,4 @@
-# coding=utf-8
+#coding: utf8
 """
 admin.py - Willie Admin Module
 Copyright 2010-2011, Michael Yanovich, Alek Rollyson, and Edward Powell
@@ -8,6 +8,7 @@ Licensed under the Eiffel Forum License 2.
 http://willie.dftba.net/
 
 """
+from __future__ import unicode_literals
 
 import re
 from willie.module import commands, priority, OP

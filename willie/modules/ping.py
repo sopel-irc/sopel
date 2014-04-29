@@ -1,8 +1,10 @@
+#coding: utf8
 """
 ping.py - Willie Ping Module
 Author: Sean B. Palmer, inamidst.com
 About: http://willie.dftba.net
 """
+from __future__ import unicode_literals
 
 import random
 from willie.module import rule, priority, thread

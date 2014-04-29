@@ -1,3 +1,4 @@
+#coding: utf8
 """
 dice.py - Dice Module
 Copyright 2010-2013, Dimitri "Tyrope" Molenaars, TyRope.nl
@@ -6,6 +7,7 @@ Licensed under the Eiffel Forum License 2.
 
 http://willie.dftba.net/
 """
+from __future__ import unicode_literals
 import random
 import re
 
