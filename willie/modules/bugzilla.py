@@ -1,4 +1,4 @@
-# coding=utf-8
+#coding: utf8
 """
 admin.py - Willie Bugzilla Module
 Copyright © 2013, Edward Powell, embolalia.net
@@ -6,6 +6,8 @@ Licensed under the Eiffel Forum License 2.
 
 http://willie.dftba.net/
 """
+from __future__ import unicode_literals
+
 from lxml import etree
 import re
 from willie import web, tools

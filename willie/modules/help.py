@@ -1,4 +1,4 @@
-# coding=utf-8
+#coding: utf8
 """
 help.py - Willie Help Module
 Copyright 2008, Sean B. Palmer, inamidst.com
@@ -7,6 +7,8 @@ Licensed under the Eiffel Forum License 2.
 
 http://willie.dftba.net
 """
+from __future__ import unicode_literals
+
 from willie.module import commands, rule, example, priority
 from willie.tools import iterkeys
 

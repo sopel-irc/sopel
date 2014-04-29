@@ -1,4 +1,4 @@
-#encoding=utf8
+#coding: utf8
 """currency.py - Willie Exchange Rate Module
 Copyright 2013 Edward Powell, embolalia.com
 Licensed under the Eiffel Forum License 2

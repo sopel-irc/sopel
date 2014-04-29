@@ -1,3 +1,4 @@
+#coding: utf8
 """
 codepoints.py - Willie Codepoints Module
 Copyright 2013, Edward Powell, embolalia.net
@@ -6,6 +7,7 @@ Licensed under the Eiffel Forum License 2.
 
 http://willie.dfbta.net
 """
+from __future__ import unicode_literals
 import unicodedata
 from willie.module import commands, example, NOLIMIT
 
