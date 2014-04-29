@@ -731,6 +731,7 @@ class Willie(irc.Bot):
 
         if not trigger.admin and \
                 not func.unblockable and \
+                func.rate > 0 and \
                 func in self.times[nick]:
             timediff = time.time() - self.times[nick][func]
             if timediff < func.rate:
