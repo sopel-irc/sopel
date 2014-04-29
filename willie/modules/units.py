@@ -11,7 +11,7 @@ from willie.module import commands, example, NOLIMIT
 import re
 
 find_temp = re.compile('(-?[0-9]*\.?[0-9]*)[ °]*(K|C|F)', re.IGNORECASE)
-find_length = re.compile('([0-9]*\.?[0-9]*)[ ]*(mile[s]?|mi|inch|in|foot|feet|ft|yard[s]?|yd|(?:centi|kilo|)meter[s]?|[kc]?m|ly|light-year[s]?|au|AU|astronomical unit[s]?|parsec[s]?|pc)', re.IGNORECASE)
+find_length = re.compile('([0-9]*\.?[0-9]*)[ ]*(mile[s]?|mi|inch|in|foot|feet|ft|yard[s]?|yd|(?:centi|kilo|)meter[s]?|[kc]?m|ly|light-year[s]?|au|astronomical unit[s]?|parsec[s]?|pc)', re.IGNORECASE)
 
 
 def f_to_c(temp):
@@ -94,7 +94,7 @@ def distance(bot, trigger):
         meter = numeric / (3.2808 / 3)
     elif unit in ("light-year", "light-years", "ly"):
         meter = numeric * 9460730472580800
-    elif unit in ("astronomical unit", "astronomical units", "au", "AU"):
+    elif unit in ("astronomical unit", "astronomical units", "au"):
         meter = numeric * 149597870700
     elif unit in ("parsec", "parsecs", "pc"):
         meter = numeric * 30856776376340068
