@@ -566,6 +566,11 @@ class Willie(irc.Bot):
             self.bot = willie
             self.origin = origin
 
+        def __dir__(self):
+            classattrs = [attr for attr in self.__dict__
+                          if not attr.startswith('__')]
+            return list(self.__dict__)+classattrs+dir(self.bot)
+
         def say(self, string, max_messages=1):
             self.bot.msg(self.origin.sender, string, max_messages)
 
