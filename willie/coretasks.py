@@ -279,7 +279,10 @@ def track_part(bot, trigger):
         bot.channels.remove(trigger.sender)
         del bot.privileges[trigger.sender]
     else:
-        del bot.privileges[trigger.sender][trigger.nick]
+        try:
+            del bot.privileges[trigger.sender][trigger.nick]
+        except KeyError:
+            pass
 
 
 @willie.module.rule('.*')
