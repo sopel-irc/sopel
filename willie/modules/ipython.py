@@ -9,7 +9,24 @@ Willie: http://willie.dftba.net/
 from __future__ import unicode_literals
 import willie
 import sys
+if sys.version_info.major >= 3:
+    # Backup stderr/stdout wrappers
+    old_stdout = sys.stdout
+    old_stderr = sys.stderr
+
+    # IPython wants actual stderr and stdout. In Python 2, it only needed that
+    # when actually starting the console, but in Python 3 it seems to need that
+    # on import as well
+    sys.stdout = sys.__stdout__
+    sys.stderr = sys.__stderr__
+
 from IPython.frontend.terminal.embed import InteractiveShellEmbed
+
+if sys.version_info.major >= 3:
+    # Restore stderr/stdout wrappers
+    sys.stdout = old_stdout
+    sys.stderr = old_stderr
+
 console = None
 
 
