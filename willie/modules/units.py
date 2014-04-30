@@ -12,6 +12,7 @@ import re
 
 find_temp = re.compile('(-?[0-9]*\.?[0-9]*)[ °]*(K|C|F)', re.IGNORECASE)
 find_length = re.compile('([0-9]*\.?[0-9]*)[ ]*(mile[s]?|mi|inch|in|foot|feet|ft|yard[s]?|yd|(?:centi|kilo|)meter[s]?|[kc]?m)', re.IGNORECASE)
+find_mass = re.compile('([0-9]*\.?[0-9]*)[ ]*(lb|lbm|pound[s]?|ounce|oz|(?:kilo|)gram(?:me|)[s]?|[k]?g)', re.IGNORECASE)
 
 
 def f_to_c(temp):
@@ -126,6 +127,40 @@ def distance(bot, trigger):
 
     bot.reply('{} = {}'.format(metric_part, stupid_part))
 
+
+@commands('weight', 'mass')
+def mass(bot, trigger):
+    """
+    Convert mass
+    """
+    try:
+        source = find_mass.match(trigger.group(2)).groups()
+    except (AttributeError, TypeError):
+        bot.reply("That's not a valid mass unit.")
+        return NOLIMIT
+    unit = source[1].lower()
+    numeric = float(source[0])
+    metric = 0
+    if unit in ("gram", "grams", "gramme", "grammes", "g"):
+        metric = numeric
+    elif unit in ("kilogram", "kilograms", "kilogramme", "kilogrammes", "kg"):
+        metric = numeric * 1000
+    elif unit in ("lb", "lbm", "pound", "pounds"):
+        metric = numeric * 453.6
+    elif unit in ("oz", "ounce"):
+        metric = numeric * 28.35
+
+    pound = metric / 453.6
+    # TODO: Someone who uses and understands Imperial units should "fix" this
+    # to not display them as decimal points, but rather as weird Imperial
+    # 1 pound, 2 ounces or whatnot
+
+    if metric >= 1000:
+        metric_part = '{:.2f}kg'.format(metric / 1000)
+    else:
+        metric_part = '{:.2f}g'.format(metric)
+
+    bot.reply('{} = {}lb'.format(metric_part, pound))
 
 if __name__ == "__main__":
     from willie.test_tools import run_example_tests
