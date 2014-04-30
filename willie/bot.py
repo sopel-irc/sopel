@@ -567,7 +567,7 @@ class Willie(irc.Bot):
             self.origin = origin
 
         def __dir__(self):
-            classattrs = [attr for attr in self.__dict__
+            classattrs = [attr for attr in self.__class__.__dict__
                           if not attr.startswith('__')]
             return list(self.__dict__)+classattrs+dir(self.bot)
 
