@@ -150,17 +150,21 @@ def mass(bot, trigger):
     elif unit in ("oz", "ounce"):
         metric = numeric * 28.35
 
-    pound = metric / 453.6
-    # TODO: Someone who uses and understands Imperial units should "fix" this
-    # to not display them as decimal points, but rather as weird Imperial
-    # 1 pound, 2 ounces or whatnot
-
     if metric >= 1000:
         metric_part = '{:.2f}kg'.format(metric / 1000)
     else:
         metric_part = '{:.2f}g'.format(metric)
 
-    bot.reply('{} = {}lb'.format(metric_part, pound))
+    ounce = metric * .03527
+    pound = int(ounce) // 16
+    ounce = ounce - (pound * 16)
+
+    if pound > 1:
+        stupid_part = '{} pounds {:.2f} ounces'.format(pound, ounce)
+    else:
+        stupid_part = '{:.2f} oz'.format(ounce)
+
+    bot.reply('{} = {}'.format(metric_part, stupid_part))
 
 if __name__ == "__main__":
     from willie.test_tools import run_example_tests
