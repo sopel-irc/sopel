@@ -18,6 +18,7 @@ mangle_lines = {}
 if sys.version_info.major >= 3:
     unicode = str
 
+
 def configure(config):
     """
 
@@ -122,7 +123,7 @@ def tr2(bot, trigger):
     args = ['auto', 'en']
 
     for i in range(2):
-        if not ' ' in command:
+        if ' ' not in command:
             break
         prefix, cmd = command.split(' ', 1)
         if langcode(prefix):
@@ -152,7 +153,7 @@ def tr2(bot, trigger):
 def get_random_lang(long_list, short_list):
     random_index = random.randint(0, len(long_list) - 1)
     random_lang = long_list[random_index]
-    if not random_lang in short_list:
+    if random_lang not in short_list:
         short_list.append(random_lang)
     else:
         return get_random_lang(long_list, short_list)
