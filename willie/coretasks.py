@@ -66,6 +66,14 @@ def startup(bot, trigger):
             bot.config.core.oper_name + ' ' + bot.config.oper_password
         ))
 
+    #Use Authserv if authserv_password and authserv_account is set in config.
+    if (bot.config.core.authserv_password is not None
+            and bot.config.core.authserv_account is not None):
+        bot.write((
+            'AUTHSERV auth',
+            bot.config.core.authserv_account + ' ' + bot.config.authserv_password
+        ))
+
     #Set bot modes per config, +B if no config option is defined
     if bot.config.has_option('core', 'modes'):
         modes = bot.config.core.modes
