@@ -197,7 +197,7 @@ class WillieDB(object):
                 password=self._passwd,
                 database=self._dbname
             )
-        except psycopg2.DatabaseError, e:
+        except psycopg2.DatabaseError as e:
             print('Error: Unable to connect to user settings DB.')
             return
 
@@ -227,7 +227,7 @@ class WillieDB(object):
                     columns.append(column[0])
                 setattr(self, name, Table(self, name, columns, key))
                 self.tables.add(name)
-        except psycopg2.DatabaseError, e:
+        except psycopg2.DatabaseError as e:
             print('Error: Unable to configure user settings DB.')
             raise e
         db.close()
