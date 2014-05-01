@@ -74,8 +74,18 @@ def startup(bot, trigger):
     bot.write(('MODE ', '%s +%s' % (bot.nick, modes)))
 
     bot.memory['retry_join'] = dict()
-    for channel in bot.config.core.get_list('channels'):
-        bot.join(channel)
+
+    if bot.config.has_option('core', 'throttle_join'):
+        throttle_rate = int(bot.config.core.throttle_join)
+        channels_joined = 0
+        for channel in bot.config.core.get_list('channels'):
+            channels_joined += 1
+            if not channels_joined % throttle_rate:
+                time.sleep(1)
+            bot.join(channel)
+    else:
+        for channel in bot.config.core.get_list('channels'):
+            bot.join(channel)
 
 
 @willie.module.event('477')
@@ -107,6 +117,7 @@ def retry_join(bot, trigger):
 
 @willie.module.rule('(.*)')
 @willie.module.event('353')
+@willie.module.priority('high')
 @willie.module.thread(False)
 @willie.module.unblockable
 def handle_names(bot, trigger):
@@ -153,6 +164,8 @@ def handle_names(bot, trigger):
 
 @willie.module.rule('(.*)')
 @willie.module.event('MODE')
+@willie.module.priority('high')
+@willie.module.thread(False)
 @willie.module.unblockable
 def track_modes(bot, trigger):
     """Track usermode changes and keep our lists of ops up to date."""
@@ -217,6 +230,8 @@ def track_modes(bot, trigger):
 
 @willie.module.rule('.*')
 @willie.module.event('NICK')
+@willie.module.priority('high')
+@willie.module.thread(False)
 @willie.module.unblockable
 def track_nicks(bot, trigger):
     """Track nickname changes and maintain our chanops list accordingly."""
@@ -263,17 +278,24 @@ def track_nicks(bot, trigger):
 
 @willie.module.rule('(.*)')
 @willie.module.event('PART')
+@willie.module.priority('high')
+@willie.module.thread(False)
 @willie.module.unblockable
 def track_part(bot, trigger):
     if trigger.nick == bot.nick:
         bot.channels.remove(trigger.sender)
         del bot.privileges[trigger.sender]
     else:
-        del bot.privileges[trigger.sender][trigger.nick]
+        try:
+            del bot.privileges[trigger.sender][trigger.nick]
+        except KeyError:
+            pass
 
 
 @willie.module.rule('.*')
 @willie.module.event('KICK')
+@willie.module.priority('high')
+@willie.module.thread(False)
 @willie.module.unblockable
 def track_kick(bot, trigger):
     nick = Nick(trigger.args[1])
@@ -292,6 +314,8 @@ def track_kick(bot, trigger):
 
 @willie.module.rule('.*')
 @willie.module.event('JOIN')
+@willie.module.priority('high')
+@willie.module.thread(False)
 @willie.module.unblockable
 def track_join(bot, trigger):
     if trigger.nick == bot.nick and trigger.sender not in bot.channels:
@@ -302,6 +326,8 @@ def track_join(bot, trigger):
 
 @willie.module.rule('.*')
 @willie.module.event('QUIT')
+@willie.module.priority('high')
+@willie.module.thread(False)
 @willie.module.unblockable
 def track_quit(bot, trigger):
     for chanprivs in bot.privileges.values():

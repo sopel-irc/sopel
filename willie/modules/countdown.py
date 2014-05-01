@@ -1,3 +1,4 @@
+#coding: utf8
 """
 countdown.py - Willie Countdown Module
 Copyright 2011, Michael Yanovich, yanovich.net
@@ -5,6 +6,7 @@ Licensed under the Eiffel Forum License 2.
 
 http://willie.dfbta.net
 """
+from __future__ import unicode_literals
 from willie.module import commands, NOLIMIT
 import datetime
 

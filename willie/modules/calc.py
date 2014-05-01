@@ -1,4 +1,4 @@
-# coding=utf-8
+#coding: utf8
 """
 calc.py - Willie Calculator Module
 Copyright 2008, Sean B. Palmer, inamidst.com
@@ -57,7 +57,7 @@ def py(bot, trigger):
 
 @commands('wa', 'wolfram')
 @example('.wa sun mass / earth mass',
-         '[WOLFRAM] M_(.)\/M_(+)  (solar mass per Earth mass) = 332948.6')
+         '[WOLFRAM] M_sun\/M_earth  (solar mass per Earth mass) = 332948.6')
 def wa(bot, trigger):
     """Wolfram Alpha calculator"""
     if not trigger.group(2):

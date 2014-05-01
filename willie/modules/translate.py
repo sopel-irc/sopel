@@ -1,4 +1,4 @@
-# coding=utf-8
+#coding: utf8
 """
 translate.py - Willie Translation Module
 Copyright 2008, Sean B. Palmer, inamidst.com
@@ -17,6 +17,7 @@ import os
 mangle_lines = {}
 if sys.version_info.major >= 3:
     unicode = str
+
 
 def configure(config):
     """
@@ -58,8 +59,10 @@ def translate(text, in_lang='auto', out_lang='en'):
     )
     url = "http://translate.google.com/translate_a/t?{query}".format(query=query_string)
     result = web.get(url, timeout=40, headers=headers)
-    if sys.version_info.major>=3:
+    if sys.version_info.major >= 3:
         result = result.decode()
+    elif isinstance(result, str):
+        result = result.decode('utf-8')
 
     while ',,' in result:
         result = result.replace(',,', ',null,')
@@ -85,13 +88,10 @@ def tr(bot, trigger):
     """Translates a phrase, with an optional language hint."""
     in_lang, out_lang, phrase = trigger.groups()
 
-    phrase = phrase.encode('utf-8')
-
     if (len(phrase) > 350) and (not trigger.admin):
         return bot.reply('Phrase must be under 350 characters.')
 
     in_lang = in_lang or 'auto'
-    in_lang = in_lang.encode('utf-8')
     out_lang = out_lang or 'en'
 
     if in_lang != out_lang:
@@ -111,6 +111,7 @@ def tr(bot, trigger):
 
 @commands('translate', 'tr')
 @example('.tr :en :fr my dog', '"mon chien" (en to fr, translate.google.com)')
+@example('.tr היי', '"Hi" (iw to en, translate.google.com)')
 @example('.tr mon chien', '"my dog" (fr to en, translate.google.com)')
 def tr2(bot, trigger):
     """Translates a phrase, with an optional language hint."""
@@ -122,7 +123,7 @@ def tr2(bot, trigger):
     args = ['auto', 'en']
 
     for i in range(2):
-        if not ' ' in command:
+        if ' ' not in command:
             break
         prefix, cmd = command.split(' ', 1)
         if langcode(prefix):
@@ -152,7 +153,7 @@ def tr2(bot, trigger):
 def get_random_lang(long_list, short_list):
     random_index = random.randint(0, len(long_list) - 1)
     random_lang = long_list[random_index]
-    if not random_lang in short_list:
+    if random_lang not in short_list:
         short_list.append(random_lang)
     else:
         return get_random_lang(long_list, short_list)
@@ -175,7 +176,7 @@ def mangle(bot, trigger):
             bot.reply("What do you want me to mangle?")
             return
     else:
-        phrase = (trigger.group(2).encode('utf-8').strip(), '')
+        phrase = (trigger.group(2).strip(), '')
     if phrase[0] == '':
         bot.reply("What do you want me to mangle?")
         return

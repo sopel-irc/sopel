@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+#coding: utf8
 """
 rss.py - Willie RSS Module
 Copyright 2012, Michael Yanovich, yanovich.net
@@ -6,6 +6,7 @@ Licensed under the Eiffel Forum License 2.
 
 http://willie.dfbta.net
 """
+from __future__ import unicode_literals
 
 from datetime import datetime
 import time
@@ -183,7 +184,7 @@ class RSSManager:
         """
         pattern = r'''
             ^\.rss\s+add
-            \s+([&#+!][^\s,]+)   # channel
+            \s+([~&#+!][^\s,]+)   # channel
             \s+("[^"]+"|[\w-]+)  # name, which can contain anything but quotes if quoted
             \s+(\S+)             # url
             (?:\s+(\d+))?        # foreground colour (optional)
@@ -223,7 +224,7 @@ class RSSManager:
         """
         pattern = r"""
             ^\.rss\s+del
-            (?:\s+([&#+!][^\s,]+))?  # channel (optional)
+            (?:\s+([~&#+!][^\s,]+))?  # channel (optional)
             (?:\s+("[^"]+"|[\w-]+))? # name (optional)
             """
         match = re.match(pattern, trigger.group(), re.IGNORECASE | re.VERBOSE)
@@ -263,7 +264,7 @@ class RSSManager:
 
         pattern = r"""
             ^\.rss\s+(enable|disable) # command
-            (?:\s+([&#+!][^\s,]+))?   # channel (optional)
+            (?:\s+([~&#+!][^\s,]+))?   # channel (optional)
             (?:\s+("[^"]+"|[\w-]+))?  # name (optional)
             """
         match = re.match(pattern, trigger.group(), re.IGNORECASE | re.VERBOSE)
@@ -294,7 +295,7 @@ class RSSManager:
         """Get information on all feeds in the database. Usage: .rss list [#channel] [Feed_Name]"""
         pattern = r"""
             ^\.rss\s+list
-            (?:\s+([&#+!][^\s,]+))?  # channel (optional)
+            (?:\s+([~&#+!][^\s,]+))?  # channel (optional)
             (?:\s+("[^"]+"|[\w-]+))? # name (optional)
             """
         match = re.match(pattern, trigger.group(), re.IGNORECASE | re.VERBOSE)

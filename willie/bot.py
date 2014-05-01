@@ -367,7 +367,7 @@ class Willie(irc.Bot):
 
         """
         if (callable(obj) and
-                hasattr(obj, "name")
+                hasattr(obj, "__name__")
                 and obj.__name__ == 'shutdown'):
             return True
         return False
@@ -566,6 +566,11 @@ class Willie(irc.Bot):
             self.bot = willie
             self.origin = origin
 
+        def __dir__(self):
+            classattrs = [attr for attr in self.__class__.__dict__
+                          if not attr.startswith('__')]
+            return list(self.__dict__)+classattrs+dir(self.bot)
+
         def say(self, string, max_messages=1):
             self.bot.msg(self.origin.sender, string, max_messages)
 
@@ -726,6 +731,7 @@ class Willie(irc.Bot):
 
         if not trigger.admin and \
                 not func.unblockable and \
+                func.rate > 0 and \
                 func in self.times[nick]:
             timediff = time.time() - self.times[nick][func]
             if timediff < func.rate:

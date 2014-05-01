@@ -22,7 +22,7 @@ import signal
 import willie.web as web
 from willie.tools import stderr
 
-__version__ = '4.2.1-git'
+__version__ = '4.3.0-git'
 
 
 def run(config):

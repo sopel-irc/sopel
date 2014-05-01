@@ -1,4 +1,4 @@
-# coding=utf-8
+#coding: utf8
 """
 ip.py - Willie IP Lookup Module
 Copyright 2011, Dimitri Molenaars, TyRope.nl,
@@ -7,6 +7,7 @@ Licensed under the Eiffel Forum License 2.
 
 http://willie.dftba.net
 """
+from __future__ import unicode_literals
 
 import re
 import pygeoip

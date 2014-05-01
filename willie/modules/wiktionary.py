@@ -1,3 +1,4 @@
+#coding: utf8
 """
 wiktionary.py - Willie Wiktionary Module
 Copyright 2009, Sean B. Palmer, inamidst.com
@@ -5,6 +6,7 @@ Licensed under the Eiffel Forum License 2.
 
 http://willie.dftba.net
 """
+from __future__ import unicode_literals
 
 import re
 from willie import web
@@ -25,7 +27,7 @@ def text(html):
 
 
 def wikt(word):
-    bytes = web.get(uri % web.quote(word.encode('utf-8')))
+    bytes = web.get(uri % web.quote(word))
     bytes = r_ul.sub('', bytes)
 
     mode = None
@@ -64,12 +66,11 @@ parts = ('preposition', 'particle', 'noun', 'verb',
     'adjective', 'adverb', 'interjection')
 
 
-def format(word, definitions, number=2):
-    result = '%s' % word.encode('utf-8')
+def format(result, definitions, number=2):
     for part in parts:
         if part in definitions:
             defs = definitions[part][:number]
-            result += u' \u2014 '.encode('utf-8') + ('%s: ' % part)
+            result += u' — {}: '.format(part)
             n = ['%s. %s' % (i + 1, e.strip(' .')) for i, e in enumerate(defs)]
             result += ', '.join(n)
     return result.strip(' .,')
@@ -97,4 +98,4 @@ def wiktionary(bot, trigger):
 
     if len(result) > 300:
         result = result[:295] + '[...]'
-    bot.say(result.decode('utf8'))
+    bot.say(result)

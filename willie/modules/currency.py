@@ -1,4 +1,4 @@
-#encoding=utf8
+#coding: utf8
 """currency.py - Willie Exchange Rate Module
 Copyright 2013 Edward Powell, embolalia.com
 Licensed under the Eiffel Forum License 2
@@ -51,6 +51,8 @@ def get_rate(code):
 @example('.cur 20 EUR in USD')
 def exchange(bot, trigger):
     """Show the exchange rate between two currencies"""
+    if not trigger.group(2):
+        return bot.reply("No search term. An example: .cur 20 EUR in USD")    
     match = regex.match(trigger.group(2))
     if not match:
         # It's apologetic, because it's using Canadian data.
