@@ -1,3 +1,4 @@
+#coding: utf8
 """
 xkcd.py - XKCD Module
 Copyright 2010, Michael Yanovich (yanovich.net), and Morgan Goose
@@ -7,6 +8,7 @@ Licensed under the Eiffel Forum License 2.
 
 http://willie.dftba.net
 """
+from __future__ import unicode_literals
 
 import json
 import random
@@ -42,10 +44,6 @@ def get_info(number=None):
 
 
 def google(query):
-    try:
-        query = query.encode('utf-8')
-    except:
-        pass
     url = google_search(query + sites_query)
     match = re.match('(?:https?://)?xkcd.com/(\d+)/?', url)
     if match:

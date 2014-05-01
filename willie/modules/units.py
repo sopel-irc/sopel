@@ -1,4 +1,4 @@
-# -*- coding: utf8 -*-
+#coding: utf8
 """
 units.py - Unit conversion module for Willie
 Copyright © 2013, Elad Alfassa, <elad@fedoraproject.org>
@@ -11,7 +11,8 @@ from willie.module import commands, example, NOLIMIT
 import re
 
 find_temp = re.compile('(-?[0-9]*\.?[0-9]*)[ °]*(K|C|F)', re.IGNORECASE)
-find_length = re.compile('([0-9]*\.?[0-9]*)[ ]*(mile[s]?|mi|inch|in|foot|feet|ft|yard[s]?|yd|(?:centi|kilo|)meter[s]?|[kc]?m)', re.IGNORECASE)
+find_length = re.compile('([0-9]*\.?[0-9]*)[ ]*(mile[s]?|mi|inch|in|foot|feet|ft|yard[s]?|yd|(?:milli|centi|kilo|)meter[s]?|[mkc]?m)', re.IGNORECASE)
+find_mass = re.compile('([0-9]*\.?[0-9]*)[ ]*(lb|lbm|pound[s]?|ounce|oz|(?:kilo|)gram(?:me|)[s]?|[k]?g)', re.IGNORECASE)
 
 
 def f_to_c(temp):
@@ -65,6 +66,7 @@ def temperature(bot, trigger):
 @example('.distance 3 inch', '7.62cm = 3.00 inches')
 @example('.distance 3 feet', '91.44cm = 3 feet, 0.00 inches')
 @example('.distance 3 yards', '2.74m = 9 feet, 0.00 inches')
+@example('.distance 155cm', '1.55m = 5 feet, 1.02 inches')
 def distance(bot, trigger):
     """
     Convert distances
@@ -79,6 +81,8 @@ def distance(bot, trigger):
     meter = 0
     if unit in ("meters", "meter", "m"):
         meter = numeric
+    elif unit in ("millimeters", "millimeter", "mm"):
+        meter = numeric / 1000
     elif unit in ("kilometers", "kilometer", "km"):
         meter = numeric * 1000
     elif unit in ("miles", "mile", "mi"):
@@ -86,7 +90,7 @@ def distance(bot, trigger):
     elif unit in ("inch", "in"):
         meter = numeric / 39.370
     elif unit in ("centimeters", "centimeter", "cm"):
-        meter = numeric // 100
+        meter = numeric / 100
     elif unit in ("feet", "foot", "ft"):
         meter = numeric / 3.2808
     elif unit in ("yards", "yard", "yd"):
@@ -94,6 +98,8 @@ def distance(bot, trigger):
 
     if meter >= 1000:
         metric_part = '{:.2f}km'.format(meter / 1000)
+    elif meter < 0.01:
+        metric_part = '{:.2f}mm'.format(meter * 1000)
     elif meter < 1:
         metric_part = '{:.2f}cm'.format(meter * 100)
     else:
@@ -125,6 +131,44 @@ def distance(bot, trigger):
 
     bot.reply('{} = {}'.format(metric_part, stupid_part))
 
+
+@commands('weight', 'mass')
+def mass(bot, trigger):
+    """
+    Convert mass
+    """
+    try:
+        source = find_mass.match(trigger.group(2)).groups()
+    except (AttributeError, TypeError):
+        bot.reply("That's not a valid mass unit.")
+        return NOLIMIT
+    unit = source[1].lower()
+    numeric = float(source[0])
+    metric = 0
+    if unit in ("gram", "grams", "gramme", "grammes", "g"):
+        metric = numeric
+    elif unit in ("kilogram", "kilograms", "kilogramme", "kilogrammes", "kg"):
+        metric = numeric * 1000
+    elif unit in ("lb", "lbm", "pound", "pounds"):
+        metric = numeric * 453.6
+    elif unit in ("oz", "ounce"):
+        metric = numeric * 28.35
+
+    if metric >= 1000:
+        metric_part = '{:.2f}kg'.format(metric / 1000)
+    else:
+        metric_part = '{:.2f}g'.format(metric)
+
+    ounce = metric * .03527
+    pound = int(ounce) // 16
+    ounce = ounce - (pound * 16)
+
+    if pound > 1:
+        stupid_part = '{} pounds {:.2f} ounces'.format(pound, ounce)
+    else:
+        stupid_part = '{:.2f} oz'.format(ounce)
+
+    bot.reply('{} = {}'.format(metric_part, stupid_part))
 
 if __name__ == "__main__":
     from willie.test_tools import run_example_tests

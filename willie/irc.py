@@ -31,7 +31,7 @@ try:
     import ssl
     has_ssl = True
 except ImportError:
-    #no SSL support
+    # no SSL support
     has_ssl = False
 if has_ssl:
     if not hasattr(ssl, 'match_hostname'):
@@ -53,7 +53,7 @@ class Origin(object):
         self.hostmask = source
         self.tags = tags
 
-        #Split out the nick, user, and host from hostmask per the regex above.
+        # Split out the nick, user, and host from hostmask per the regex above.
         match = Origin.source.match(source or '')
         self.nick, self.user, self.host = match.groups()
         self.nick = Nick(self.nick)
@@ -79,7 +79,7 @@ class Bot(asynchat.async_chat):
             ca_certs = '/etc/pki/tls/cert.pem'
 
         if config.log_raw is None:
-            #Default is to log raw data, can be disabled in config
+            # Default is to log raw data, can be disabled in config
             config.log_raw = True
         asynchat.async_chat.__init__(self)
         self.set_terminator(b'\n')
@@ -104,9 +104,9 @@ class Bot(asynchat.async_chat):
         self.writing_lock = threading.Lock()
         self.raw = None
 
-        #Right now, only accounting for two op levels.
-        #This might be expanded later.
-        #These lists are filled in startup.py, as of right now.
+        # Right now, only accounting for two op levels.
+        # This might be expanded later.
+        # These lists are filled in startup.py, as of right now.
         self.ops = dict()
         """
         A dictionary mapping channels to a ``Nick`` list of their operators.
@@ -122,7 +122,7 @@ class Bot(asynchat.async_chat):
         half-ops and ops.
         """
 
-        #We need this to prevent error loops in handle_error
+        # We need this to prevent error loops in handle_error
         self.error_count = 0
 
         self.connection_registered = False
@@ -155,7 +155,7 @@ class Bot(asynchat.async_chat):
 
     def safe(self, string):
         """Remove newlines from a string."""
-        if sys.version_info.major >=3 and isinstance(string, bytes):
+        if sys.version_info.major >= 3 and isinstance(string, bytes):
                 string = string.decode('utf8')
         elif sys.version_info.major < 3:
             if not isinstance(string, unicode):
@@ -189,17 +189,17 @@ class Bot(asynchat.async_chat):
             self.writing_lock.acquire()  # Blocking lock, can't send two things
                                          # at a time
 
-            #From RFC2812 Internet Relay Chat: Client Protocol
-            #Section 2.3
+            # From RFC2812 Internet Relay Chat: Client Protocol
+            # Section 2.3
             #
-            #https://tools.ietf.org/html/rfc2812.html
+            # https://tools.ietf.org/html/rfc2812.html
             #
-            #IRC messages are always lines of characters terminated with a
-            #CR-LF (Carriage Return - Line Feed) pair, and these messages SHALL
-            #NOT exceed 512 characters in length, counting all characters
-            #including the trailing CR-LF. Thus, there are 510 characters
-            #maximum allowed for the command and its parameters.  There is no
-            #provision for continuation of message lines.
+            # IRC messages are always lines of characters terminated with a
+            # CR-LF (Carriage Return - Line Feed) pair, and these messages SHALL
+            # NOT exceed 512 characters in length, counting all characters
+            # including the trailing CR-LF. Thus, there are 510 characters
+            # maximum allowed for the command and its parameters.  There is no
+            # provision for continuation of message lines.
 
             if text is not None:
                 temp = (' '.join(args) + ' :' + text)[:510] + '\r\n'
@@ -222,7 +222,7 @@ class Bot(asynchat.async_chat):
         source_address = ((self.config.core.bind_host, 0)
                           if self.config.core.bind_address else None)
         self.set_socket(socket.create_connection((host, port),
-            source_address=source_address))
+                        source_address=source_address))
         if self.config.core.use_ssl and has_ssl:
             self.send = self._ssl_send
             self.recv = self._ssl_recv
@@ -474,14 +474,16 @@ class Bot(asynchat.async_chat):
                     if elapsed < wait:
                         time.sleep(wait - elapsed)
 
-            # Loop detection
-            messages = [m[1] for m in self.stack[-8:]]
-            if sys.version_info.major < 3 and isinstance(text, str):
-                text = text.decode('utf-8')
-            if messages.count(text) >= 5:
-                text = '...'
-                if messages.count('...') >= 3:
-                    return
+                # Loop detection
+                messages = [m[1] for m in self.stack[-8:]]
+
+                # If what we about to send repeated at least 5 times in the
+                # last 5 minutes, replace with '...'
+                if messages.count(text) >= 5 and elapsed < 300:
+                    text = '...'
+                    if messages.count('...') >= 3:
+                        # If we said '...' 3 times, discard message
+                        return
 
             self.write(('PRIVMSG', recipient), text)
             self.stack.append((time.time(), self.safe(text)))
@@ -578,10 +580,10 @@ class Bot(asynchat.async_chat):
         if self.config.exit_on_error:
             os._exit(1)
 
-    #Helper functions to maintain the oper list.
-    #They cast to Nick when adding to be quite sure there aren't any accidental
-    #string nicks. On deletion, you know you'll never need to worry about what
-    #the real superclass is, so we just cast and remove.
+    # Helper functions to maintain the oper list.
+    # They cast to Nick when adding to be quite sure there aren't any accidental
+    # string nicks. On deletion, you know you'll never need to worry about what
+    # the real superclass is, so we just cast and remove.
     def add_op(self, channel, name):
         if isinstance(name, Nick):
             self.ops[channel].add(name)
@@ -615,9 +617,9 @@ class Bot(asynchat.async_chat):
         self.voices[channel] = set()
 
     def init_ops_list(self, channel):
-        if not channel in self.halfplus:
+        if channel not in self.halfplus:
             self.halfplus[channel] = set()
-        if not channel in self.ops:
+        if channel not in self.ops:
             self.ops[channel] = set()
-        if not channel in self.voices:
+        if channel not in self.voices:
             self.voices[channel] = set()
