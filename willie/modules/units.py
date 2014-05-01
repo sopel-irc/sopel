@@ -98,7 +98,8 @@ def distance(bot, trigger):
 
     if meter >= 1000:
         metric_part = '{:.2f}km'.format(meter / 1000)
-    #TODO, Maybe: elif meter < 0.01, display in millimeters?
+    elif meter < 0.01:
+        metric_part = '{:.2f}mm'.format(meter * 1000)
     elif meter < 1:
         metric_part = '{:.2f}cm'.format(meter * 100)
     else:
