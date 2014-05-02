@@ -9,10 +9,15 @@ http://willie.dfbta.net
 """
 from __future__ import unicode_literals
 import unicodedata
+import sys
 from willie.module import commands, example, NOLIMIT
+
+if sys.version_info.major >= 3:
+    unichr = chr
 
 
 @commands('u')
+@example('.u ‽', 'U+203D INTERROBANG (‽)')
 @example('.u 203D', 'U+203D INTERROBANG (‽)')
 def codepoint(bot, trigger):
     arg = trigger.group(2).strip()
