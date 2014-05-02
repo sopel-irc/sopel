@@ -13,7 +13,7 @@ from willie.module import commands, example, NOLIMIT
 
 
 @commands('u')
-@example('.u 203D')
+@example('.u 203D', 'U+203D INTERROBANG (‽)')
 def codepoint(bot, trigger):
     arg = trigger.group(2).strip()
     if len(arg) == 0:
@@ -40,3 +40,7 @@ def codepoint(bot, trigger):
     else:
         template = 'U+%s %s (\xe2\x97\x8c%s)'
     bot.say(template % (point, name, arg))
+
+if __name__ == "__main__":
+    from willie.test_tools import run_example_tests
+    run_example_tests(__file__)
