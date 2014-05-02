@@ -13,6 +13,7 @@ import re
 from willie import web
 from willie.module import commands, example
 import json
+import sys
 import time
 
 
@@ -21,6 +22,8 @@ def google_ajax(query):
     uri = 'http://ajax.googleapis.com/ajax/services/search/web'
     args = '?v=1.0&safe=off&q=' + query
     bytes = web.get(uri + args)
+    if sys.version_info.major >= 3:
+        bytes = bytes.decode()
     return json.loads(bytes)
 
 
