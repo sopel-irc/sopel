@@ -96,7 +96,7 @@ class Bot(asynchat.async_chat):
         self.channels = []
         """The list of channels Willie is currently in."""
 
-        self.stack = []
+        self.stack = {}
         self.ca_certs = ca_certs
         self.hasquit = False
 
@@ -466,28 +466,33 @@ class Bot(asynchat.async_chat):
 
             # No messages within the last 3 seconds? Go ahead!
             # Otherwise, wait so it's been at least 0.8 seconds + penalty
-            if self.stack:
-                elapsed = time.time() - self.stack[-1][0]
+
+            recipient_id = Nick(recipient)
+
+            if recipient_id not in self.stack:
+                self.stack[recipient_id] = []
+            elif self.stack[recipient_id]:
+                elapsed = time.time() - self.stack[recipient_id][-1][0]
                 if elapsed < 3:
                     penalty = float(max(0, len(text) - 50)) / 70
-                    wait = 0.8 + penalty
+                    wait = 0.7 + penalty
                     if elapsed < wait:
                         time.sleep(wait - elapsed)
 
                 # Loop detection
-                messages = [m[1] for m in self.stack[-8:]]
+                messages = [m[1] for m in self.stack[recipient_id][-8:]]
 
                 # If what we about to send repeated at least 5 times in the
-                # last 5 minutes, replace with '...'
-                if messages.count(text) >= 5 and elapsed < 300:
+                # last 2 minutes, replace with '...'
+                if messages.count(text) >= 5 and elapsed < 120:
                     text = '...'
                     if messages.count('...') >= 3:
                         # If we said '...' 3 times, discard message
                         return
 
             self.write(('PRIVMSG', recipient), text)
-            self.stack.append((time.time(), self.safe(text)))
-            self.stack = self.stack[-10:]
+            self.stack[recipient_id].append((time.time(), self.safe(text)))
+            self.stack[recipient_id] = self.stack[recipient_id][-10:]
         finally:
             self.sending.release()
         # Now that we've sent the first part, we need to send the rest. Doing
