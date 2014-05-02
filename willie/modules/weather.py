@@ -1,4 +1,4 @@
-#coding: utf8
+# coding=utf8
 """
 weather.py - Willie Yahoo! Weather Module
 Copyright 2008, Sean B. Palmer, inamidst.com

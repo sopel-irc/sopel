@@ -1,4 +1,4 @@
-#coding: utf8
+# coding=utf8
 """
 translate.py - Willie Translation Module
 Copyright 2008, Sean B. Palmer, inamidst.com

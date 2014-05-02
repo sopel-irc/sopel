@@ -1,4 +1,4 @@
-#coding: utf8
+# coding=utf8
 """
 find.py - Willie Spelling correction module
 Copyright 2011, Michael Yanovich, yanovich.net

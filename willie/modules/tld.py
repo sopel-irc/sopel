@@ -1,4 +1,4 @@
-#coding: utf8
+# coding=utf8
 """
 tld.py - Willie TLD Module
 Copyright 2009-10, Michael Yanovich, yanovich.net

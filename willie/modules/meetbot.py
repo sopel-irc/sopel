@@ -1,4 +1,4 @@
-#coding: utf8
+# coding=utf8
 """
 meetbot.py - Willie meeting logger module
 Copyright © 2012, Elad Alfassa, <elad@fedoraproject.org>

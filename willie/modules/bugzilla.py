@@ -1,4 +1,4 @@
-#coding: utf8
+# coding=utf8
 """
 admin.py - Willie Bugzilla Module
 Copyright © 2013, Edward Powell, embolalia.net

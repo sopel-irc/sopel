@@ -1,4 +1,4 @@
-#coding: utf8
+# coding=utf8
 """
 imdb.py - Willie Movie Information Module
 Copyright © 2012-2013, Elad Alfassa, <elad@fedoraproject.org>

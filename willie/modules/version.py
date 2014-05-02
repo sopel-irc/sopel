@@ -1,4 +1,4 @@
-#coding: utf8
+# coding=utf8
 """
 version.py - Willie Version Module
 Copyright 2009, Silas Baronda

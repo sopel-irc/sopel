@@ -1,4 +1,4 @@
-#coding: utf8
+# coding=utf8
 """
 reddit-info.py - Willie Reddit module
 Author: Edward Powell, embolalia.net

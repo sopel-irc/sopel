@@ -1,4 +1,4 @@
-#coding: utf8
+# coding=utf8
 """
 ip.py - Willie IP Lookup Module
 Copyright 2011, Dimitri Molenaars, TyRope.nl,

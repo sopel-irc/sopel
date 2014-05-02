@@ -1,4 +1,4 @@
-#coding: utf8
+# coding=utf8
 """
 wikipedia.py - Willie Wikipedia Module
 Copyright 2013 Edward Powell - embolalia.net
