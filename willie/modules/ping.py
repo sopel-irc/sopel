@@ -1,4 +1,4 @@
-#coding: utf8
+# coding=utf8
 """
 ping.py - Willie Ping Module
 Author: Sean B. Palmer, inamidst.com

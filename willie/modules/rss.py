@@ -1,4 +1,4 @@
-#coding: utf8
+# coding=utf8
 """
 rss.py - Willie RSS Module
 Copyright 2012, Michael Yanovich, yanovich.net

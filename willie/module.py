@@ -1,4 +1,4 @@
-#coding: utf8
+# coding=utf8
 """This module is meant to be imported from willie modules.
 
 It defines the following decorators for defining willie callables:

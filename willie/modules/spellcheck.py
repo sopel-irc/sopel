@@ -1,4 +1,4 @@
-#coding: utf8
+# coding=utf8
 """
 spellcheck.py - Willie spell check Module
 Copyright © 2012, Elad Alfassa, <elad@fedoraproject.org>

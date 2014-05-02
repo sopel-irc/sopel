@@ -1,4 +1,4 @@
-#coding: utf8
+# coding=utf8
 """
 admin.py - Willie Admin Module
 Copyright 2010-2011, Michael Yanovich, Alek Rollyson, and Edward Powell

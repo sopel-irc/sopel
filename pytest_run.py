@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-#coding: utf8
+# coding=utf8
 """This is a script for running pytest from the command line.
 
 This script exists so that the project directory gets added to sys.path, which

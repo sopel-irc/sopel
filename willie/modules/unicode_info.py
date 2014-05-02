@@ -1,4 +1,4 @@
-#coding: utf8
+# coding=utf8
 """
 codepoints.py - Willie Codepoints Module
 Copyright 2013, Edward Powell, embolalia.net

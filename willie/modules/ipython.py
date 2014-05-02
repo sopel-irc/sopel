@@ -1,4 +1,4 @@
-#coding: utf8
+# coding=utf8
 """
 ipython.py - willie ipython console!
 Copyright © 2014, Elad Alfassa <elad@fedoraproject.org>
