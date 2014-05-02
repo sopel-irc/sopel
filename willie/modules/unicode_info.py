@@ -25,6 +25,8 @@ def codepoint(bot, trigger):
         bot.reply('What code point do you want me to look up?')
         return NOLIMIT
     elif len(arg) > 1:
+        if arg.startswith('U+'):
+            arg = arg[2:]
         try:
             arg = unichr(int(arg, 16))
         except:
