@@ -29,7 +29,7 @@ def codepoint(bot, trigger):
     # Get the hex value for the code point, and drop the 0x from the front
     point = str(hex(ord(u'' + arg)))[2:]
     # Make the hex 4 characters long with preceding 0s, and all upper case
-    point = point.rjust(4, '0').upper()
+    point = point.rjust(4, str('0')).upper()
     try:
         name = unicodedata.name(arg)
     except ValueError:
