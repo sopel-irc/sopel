@@ -59,7 +59,7 @@ def get(uri, timeout=20, headers=None, return_headers=False,
     bytes = u.read(limit_bytes)
     u.close()
     if not return_headers:
-        return bytes
+        return bytes.decode('utf-8')
     else:
         return (bytes, u.info())
 
