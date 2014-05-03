@@ -59,10 +59,6 @@ def translate(text, in_lang='auto', out_lang='en'):
     )
     url = "http://translate.google.com/translate_a/t?{query}".format(query=query_string)
     result = web.get(url, timeout=40, headers=headers)
-    if sys.version_info.major >= 3:
-        result = result.decode()
-    elif isinstance(result, str):
-        result = result.decode('utf-8')
 
     while ',,' in result:
         result = result.replace(',,', ',null,')
