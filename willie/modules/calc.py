@@ -65,7 +65,8 @@ def wa(bot, trigger):
     query = trigger.group(2)
     uri = 'http://tumbolia.appspot.com/wa/'
     try:
-        answer = web.get(uri + web.quote(query).replace('+', '%2B'), 45)
+        answer = web.get(uri + web.quote(query).replace('+', '%2B'), 45,
+                         dont_decode=True)
     except timeout as e:
         return bot.say('[WOLFRAM ERROR] Request timed out')
     if answer:
