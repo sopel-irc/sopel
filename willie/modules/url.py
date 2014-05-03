@@ -207,7 +207,8 @@ def check_callbacks(bot, trigger, url, run=True):
 
 def find_title(url):
     """Return the title for the given URL."""
-    content, headers = web.get(url, return_headers=True, limit_bytes=max_bytes)
+    content, headers = web.get(url, return_headers=True, limit_bytes=max_bytes,
+                               dont_decode=True)
     content_type = headers.get('Content-Type') or ''
     encoding_match = re.match('.*?charset *= *(\S+)', content_type)
     # If they gave us something else instead, try that
