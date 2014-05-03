@@ -39,7 +39,7 @@ if not hasattr(ssl, 'match_hostname'):
 
 # HTTP GET
 def get(uri, timeout=20, headers=None, return_headers=False,
-        limit_bytes=None, verify_ssl=True):
+        limit_bytes=None, verify_ssl=True, dont_decode=False):
     """Execute an HTTP GET query on `uri`, and return the result.
 
     `timeout` is an optional argument, which represents how much time we should
@@ -58,8 +58,10 @@ def get(uri, timeout=20, headers=None, return_headers=False,
     u = get_urllib_object(uri, timeout, headers, verify_ssl)
     bytes = u.read(limit_bytes)
     u.close()
+    if not dont_decode:
+        bytes = bytes.decode('utf-8')
     if not return_headers:
-        return bytes.decode('utf-8')
+        return bytes
     else:
         return (bytes, u.info())
 
