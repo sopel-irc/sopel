@@ -29,7 +29,8 @@ def woeid_search(query):
     None if there is no result, or the woeid field is empty.
     """
     query = 'q=select * from geo.placefinder where text="%s"' % query
-    body = web.get('http://query.yahooapis.com/v1/public/yql?' + query)
+    body = web.get('http://query.yahooapis.com/v1/public/yql?' + query,
+                   dont_decode=True)
     parsed = etree.fromstring(body)
     first_result = parsed.find('results/Result')
     if first_result is None or len(first_result) == 0:
