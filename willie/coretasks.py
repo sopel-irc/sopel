@@ -204,6 +204,8 @@ def track_modes(bot, trigger):
 
     modes = []
     for arg in line:
+        if len(arg) == 0:
+            continue
         if arg[0] in '+-':
             # There was a comment claiming IRC allows e.g. MODE +aB-c foo, but
             # I don't see it in any RFCs. Leaving in the extra parsing for now.
