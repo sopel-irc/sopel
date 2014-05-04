@@ -1,4 +1,4 @@
-Introduction |build-status| |coverage-status|
+Introduction |build-status|
 ---------------------------------------------
 
 Willie is a simple, lightweight, open source, easy-to-use IRC Utility bot,
