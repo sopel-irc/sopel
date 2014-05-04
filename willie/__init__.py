@@ -17,15 +17,15 @@ import os
 import time
 import threading
 import traceback
-import willie.bot as bot
 import signal
-import willie.web as web
-from willie.tools import stderr
 
 __version__ = '4.3.0-git'
 
 
 def run(config):
+    import willie.bot as bot
+    import willie.web as web
+    from willie.tools import stderr
     if config.core.delay is not None:
         delay = config.core.delay
     else:
