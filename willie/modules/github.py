@@ -20,7 +20,10 @@ from willie.module import commands, rule, NOLIMIT
 import os
 import re
 
-issueURL = r'https?://(?:www\.)?github.com/([A-z0-9\-]+/[A-z0-9\-]+)/issues/([\d]+)'
+issueURL = (r'https?://(?:www\.)?github.com/'
+             '([A-z0-9\-]+/[A-z0-9\-]+)/'
+             '(?:issues|pull)/'
+             '([\d]+)')
 
 def checkConfig(bot):
     if not bot.config.has_option('github', 'oauth_token') or not bot.config.has_option('github', 'repo'):
