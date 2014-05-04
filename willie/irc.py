@@ -73,10 +73,14 @@ class Origin(object):
 
 class Bot(asynchat.async_chat):
     def __init__(self, config):
+        ca_certs = '/etc/pki/tls/cert.pem'
         if config.ca_certs is not None:
             ca_certs = config.ca_certs
-        else:
-            ca_certs = '/etc/pki/tls/cert.pem'
+        elif not os.path.isfile(ca_certs):
+            ca_certs = '/etc/ssl/certs/ca-certificates.crt'
+        if not os.path.isfile(ca_certs):
+            stderr('Could not open CA certificates file. SSL will not '
+                   'work properly.')
 
         if config.log_raw is None:
             # Default is to log raw data, can be disabled in config
