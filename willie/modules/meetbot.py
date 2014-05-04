@@ -376,10 +376,14 @@ def take_comment(bot, trigger):
     Used in private message only, as `.comment <#channel> <comment to add>`
     https://github.com/embolalia/willie/wiki/Using-the-meetbot-module
     """
-    target, message = trigger.group(2).split(None, 1)
-    target = Nick(target)
     if not trigger.sender.is_nick():
         return
+    if not trigger.group(4):  # <2 arguements were given
+        bot.say('Usage: .comment <#channel> <comment to add>')
+        return
+
+    target, message = trigger.group(2).split(None, 1)
+    target = Nick(target)
     if not ismeetingrunning(target):
         bot.say("There's not currently a meeting in that channel.")
     else:
