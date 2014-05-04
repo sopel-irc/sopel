@@ -656,43 +656,24 @@ class Willie(irc.Bot):
 
             If the message had no tags, or the server does not support IRCv3
             message tags, this will be an empty dict."""
-            if len(self.config.core.get_list('admins')) > 0:
-                s.admin = (origin.nick in
-                           [Nick(n) for n in
-                            self.config.core.get_list('admins')])
-            else:
-                s.admin = False
 
+            def match_host_or_nick(pattern):
+                pattern = tools.get_hostmask_regex(pattern)
+                return bool(
+                    pattern.match(origin.nick) or
+                    pattern.match('@'.join((origin.nick, origin.host)))
+                )
+
+            s.admin = any(match_host_or_nick(item)
+                          for item in self.config.core.get_list('admins'))
             """
             True if the nick which triggered the command is in Willie's admin
             list as defined in the config file.
             """
-
-            # Support specifying admins by hostnames
-            if not s.admin and len(self.config.core.get_list('admins')) > 0:
-                for each_admin in self.config.core.get_list('admins'):
-                    re_admin = re.compile(each_admin)
-                    if re_admin.findall(origin.host):
-                        s.admin = True
-                    elif '@' in each_admin:
-                        temp = each_admin.split('@')
-                        re_host = re.compile(temp[1])
-                        if re_host.findall(origin.host):
-                            s.admin = True
-
-            if not self.config.core.owner:
-                s.owner = False
-            elif '@' in self.config.core.owner:
-                s.owner = origin.nick + '@' + \
-                    origin.host == self.config.core.owner
-            else:
-                s.owner = (origin.nick == Nick(self.config.core.owner))
-
-            # Bot owner inherits all the admin rights, therefore is considered
-            # admin
+            s.owner = match_host_or_nick(self.config.core.owner)
             s.admin = s.admin or s.owner
-
             s.host = origin.host
+
             if s.sender is not s.nick:  # no ops in PM
                 s.ops = self.ops.get(s.sender, [])
                 """
