@@ -476,6 +476,17 @@ def format_time(db=None, config=None, zone=None, nick=None, channel=None,
         return time.astimezone(zone).strftime(tformat)
 
 
+def get_hostmask_regex(mask):
+    """Return a compiled `re.RegexObject` for an IRC hostmask"""
+    result = ''
+    for char in mask:
+        if char == '*':
+            result += '.*'
+        else:
+            result += re.escape(char)
+    return re.compile(result, re.I)
+
+
 class WillieMemory(dict):
 
     """A simple thread-safe dict implementation.
