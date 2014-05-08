@@ -120,7 +120,7 @@ def log_message(bot, message):
 def log_join(bot, trigger):
     tpl = bot.config.chanlogs.join_template or JOIN_TPL
     logline = _format_template(tpl, bot, trigger=trigger)
-    fpath = get_fpath(bot, channel=trigger)
+    fpath = get_fpath(bot, channel=trigger.sender)
     with bot.memory['chanlog_locks'][fpath]:
         with open(fpath, "a") as f:
             f.write(logline)
@@ -132,7 +132,7 @@ def log_join(bot, trigger):
 def log_part(bot, trigger):
     tpl = bot.config.chanlogs.part_template or PART_TPL
     logline = _format_template(tpl, bot, trigger=trigger)
-    fpath = get_fpath(bot, channel=trigger)
+    fpath = get_fpath(bot, channel=trigger.sender)
     with bot.memory['chanlog_locks'][fpath]:
         with open(fpath, "a") as f:
             f.write(logline)
