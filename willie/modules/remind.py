@@ -170,6 +170,8 @@ def at(bot, trigger):
     if pytz:
         timezone = willie.tools.get_timezone(bot.db, bot.config, tz,
                                              trigger.nick, trigger.sender)
+        if not timezone:
+            timezone = 'UTC'
         now = datetime.now(pytz.timezone(timezone))
         at_time = datetime(now.year, now.month, now.day,
                            int(hour), int(minute), int(second),
