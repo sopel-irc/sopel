@@ -218,7 +218,7 @@ class Bot(asynchat.async_chat):
         try:
             self.initiate_connect(host, port)
         except socket.error as e:
-            stderr('Connection error: %s' % e.strerror)
+            stderr('Connection error: %s' % e)
             self.hasquit = True
 
     def initiate_connect(self, host, port):
@@ -261,7 +261,7 @@ class Bot(asynchat.async_chat):
         # This will eventually call asyncore dispatchers close method, which
         # will release the main thread. This should be called last to avoid
         # race conditions.
-        asynchat.async_chat.handle_close(self)
+        self.close()
 
     def part(self, channel, msg=None):
         """Part a channel."""
@@ -319,14 +319,8 @@ class Bot(asynchat.async_chat):
 
     def _timeout_check(self):
         while True:
-            if (
-                datetime.now() - self.last_ping_time
-            ).seconds > int(self.config.timeout):
-                stderr(
-                    'Ping timeout reached after %s seconds,' +
-                    ' closing connection' %
-                    self.config.timeout
-                )
+            if (datetime.now() - self.last_ping_time).seconds > int(self.config.timeout):
+                stderr('Ping timeout reached after %s seconds, closing connection' % self.config.timeout)
                 self.handle_close()
                 break
             else:
@@ -334,10 +328,11 @@ class Bot(asynchat.async_chat):
 
     def _send_ping(self):
         while True:
-            if (
-                datetime.now() - self.last_ping_time
-            ).seconds > int(self.config.timeout) / 2:
-                self.write(('PING', self.config.host))
+            if self.connected and (datetime.now() - self.last_ping_time).seconds > int(self.config.timeout) / 2:
+                try:
+                    self.write(('PING', self.config.host))
+                except socket.error:
+                    pass
             time.sleep(int(self.config.timeout) / 2)
 
     def _ssl_send(self, data):
