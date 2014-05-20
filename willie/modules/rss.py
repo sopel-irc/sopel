@@ -132,7 +132,7 @@ def manage_rss(bot, trigger):
 
 class RSSManager:
     def __init__(self, bot):
-        self.running = False
+        self.running = True
         self.sub = bot.db.substitution
 
         # get a list of all methods in this class that start with _rss_
