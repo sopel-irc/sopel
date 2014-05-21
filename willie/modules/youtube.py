@@ -30,24 +30,18 @@ def setup(bot):
 
 
 def ytget(bot, trigger, uri):
-    try:
-        bytes = web.get(uri)
-        result = json.loads(bytes)
-        if 'feed' in result:
-            try:
-                video_entry = result['feed']['entry'][0]
-            except KeyError:
-                #Issue 544, caused by searches with a hyphen.
-                bot.say('Something went wrong when reading YouTube '+
-                    'API data.')
-                bot.debug('YT','Search result from %s: %s' %
-                    (trigger.sender, video_entry), 'info')
-                return 'err'
-        else:
-            video_entry = result['entry']
-    except:
-        bot.say('Something went wrong when accessing the YouTube API.')
-        return 'err'
+    bytes = web.get(uri)
+    result = json.loads(bytes)
+    if 'feed' in result:
+        try:
+            video_entry = result['feed']['entry'][0]
+        except KeyError:
+            #Issue 544, caused by searches with a hyphen.
+            bot.debug('YT','Search result from %s: %s' %
+                (trigger.sender, result['feed']), 'info')
+            raise
+    else:
+        video_entry = result['entry']
     vid_info = {}
     try:
         # The ID format is tag:youtube.com,2008:video:RYlCVwxoL_g
