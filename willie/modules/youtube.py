@@ -37,7 +37,7 @@ def ytget(bot, trigger, uri):
             try:
                 video_entry = result['feed']['entry'][0]
             except KeyError:
-                raise #Issue 544, caused by searches with a hyphen.
+                #Issue 544, caused by searches with a hyphen.
                 bot.say('Something went wrong when reading YouTube '+
                     'API data.')
                 bot.debug('YT','Search result from %s: %s' %
@@ -46,7 +46,6 @@ def ytget(bot, trigger, uri):
         else:
             video_entry = result['entry']
     except:
-        raise
         bot.say('Something went wrong when accessing the YouTube API.')
         return 'err'
     vid_info = {}
