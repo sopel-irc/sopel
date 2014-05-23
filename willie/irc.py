@@ -224,7 +224,7 @@ class Bot(asynchat.async_chat):
     def initiate_connect(self, host, port):
         stderr('Connecting to %s:%s...' % (host, port))
         source_address = ((self.config.core.bind_host, 0)
-                          if self.config.core.bind_address else None)
+                          if self.config.core.bind_host else None)
         self.set_socket(socket.create_connection((host, port),
                         source_address=source_address))
         if self.config.core.use_ssl and has_ssl:
