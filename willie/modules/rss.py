@@ -408,13 +408,6 @@ def read_feeds(bot, force=False):
         bot.debug(feed.channel, "{0}: status = {1}, version = '{2}', items = {3}".format(
             feed.name, status, fp.version, len(fp.entries)), 'verbose')
 
-        # check for malformed XML
-        if fp.bozo:
-            bot.debug(__file__, "Got malformed feed on {0}, disabling ({1})".format(
-                feed.name, fp.bozo_exception.getMessage()), 'warning')
-            disable_feed()
-            continue
-
         # check HTTP status
         if status == 301:  # MOVED_PERMANENTLY
             bot.debug(
