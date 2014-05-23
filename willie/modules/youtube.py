@@ -32,16 +32,14 @@ def setup(bot):
 def ytget(bot, trigger, uri):
     bytes = web.get(uri)
     result = json.loads(bytes)
-    if 'feed' in result:
-        try:
+    try:
+        if 'feed' in result:
             video_entry = result['feed']['entry'][0]
-        except KeyError:
-            #Issue 544, caused by searches with a hyphen.
-            bot.debug('YT','Search result from %s: %s' %
-                (trigger.sender, result['feed']), 'info')
-            raise
-    else:
-        video_entry = result['entry']
+        else:
+            video_entry = result['entry']
+    except KeyError:
+        return {'link': 'N/A'}  # Empty result
+
     vid_info = {}
     try:
         # The ID format is tag:youtube.com,2008:video:RYlCVwxoL_g
@@ -133,7 +131,6 @@ def ytsearch(bot, trigger):
     if not trigger.group(2):
         return
     uri = 'https://gdata.youtube.com/feeds/api/videos?v=2&alt=json&max-results=1&q=' + trigger.group(2)
-    uri = uri.replace(' ', '+')
     video_info = ytget(bot, trigger, uri)
 
     if video_info is 'err':
