@@ -1,3 +1,18 @@
+Changes between 4.4.0 and 4.4.1
+===============================
+Module Changes (for users):
+* RSS no longer checks for malformed XML
+* Starting RSS manually after bot restart is no longer needed
+* Youtube video search properly handles spaces
+* The .at command defaults to UTC if user's timezone is not set
+
+
+Core changes (for users):
+* Ping timeout handling is working again
+* bind_host configuration option is working again
+
+
+
 Changes between 4.3.0 and 4.4.0
 ===============================
 Module Changes (for users):
