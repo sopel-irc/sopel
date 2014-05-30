@@ -49,6 +49,7 @@ except ImportError:
     import configparser as ConfigParser
 import getpass
 import imp
+import willie.bot
 if sys.version_info.major >= 3:
     unicode = str
     basestring = str
