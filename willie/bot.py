@@ -563,8 +563,8 @@ class Willie(irc.Bot):
 
     class WillieWrapper(object):
         def __init__(self, willie, origin):
-            self.bot = willie
-            self.origin = origin
+            object.__setattr__(self, 'bot', willie)
+            object.__setattr__(self, 'origin', origin)
 
         def __dir__(self):
             classattrs = [attr for attr in self.__class__.__dict__
@@ -600,6 +600,9 @@ class Willie(irc.Bot):
 
         def __getattr__(self, attr):
             return getattr(self.bot, attr)
+
+        def __setattr__(self, attr, value):
+            return setattr(self.bot, attr, value)
 
     class Trigger(unicode):
         def __new__(cls, text, origin, bytes, match, event, args, self):
