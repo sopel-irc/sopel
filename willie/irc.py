@@ -318,7 +318,7 @@ class Bot(asynchat.async_chat):
         ping_thread.start()
 
     def _timeout_check(self):
-        while True:
+        while self.connected or self.connecting:
             if (datetime.now() - self.last_ping_time).seconds > int(self.config.timeout):
                 stderr('Ping timeout reached after %s seconds, closing connection' % self.config.timeout)
                 self.handle_close()
@@ -327,7 +327,7 @@ class Bot(asynchat.async_chat):
                 time.sleep(int(self.config.timeout))
 
     def _send_ping(self):
-        while True:
+        while self.connected or self.connecting:
             if self.connected and (datetime.now() - self.last_ping_time).seconds > int(self.config.timeout) / 2:
                 try:
                     self.write(('PING', self.config.host))
