@@ -1,0 +1,14 @@
+description "willie - IRC bot for the free willing"
+
+start on runlevel [2345]
+stop on runlevel [016]
+
+respawn
+# this is so willie is not respawned on a config fail
+normal  exit 0 2
+# Graceful quit
+kill signal USR1
+
+pre-start exec install -o willie -g willie -d /run/willie
+
+exec start-stop-daemon -S -q -c willie -x /usr/bin/willie -- -c /etc/willie.cfg --quiet
