@@ -22,6 +22,7 @@ def configure(config):
     | hold_ground | False | Auto re-join on kick |
     """
     config.add_option('admin', 'hold_ground', "Auto re-join on kick")
+    config.add_option('admin', 'auto_accept_invites', "Auto Accept All Invites")
 
 
 @willie.module.commands('join')
@@ -131,7 +132,7 @@ def invite_join(bot, trigger):
     """
     Join a channel willie is invited to, if the inviter is an admin.
     """
-    if not trigger.admin:
+    if not trigger.admin and not bot.config.admin.auto_accept_invite:
         return
     bot.join(trigger.args[1])
 
