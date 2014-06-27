@@ -132,10 +132,10 @@ def invite_join(bot, trigger):
     """
     Join a channel willie is invited to, if the inviter is an admin.
     """
-    if not trigger.admin and not bot.config.admin.auto_accept_invite:
+    if trigger.admin or bot.config.admin.auto_accept_invite:
+        bot.join(trigger.args[1])
         return
-    bot.join(trigger.args[1])
-
+    return NOLIMIT
 
 @willie.module.event('KICK')
 @willie.module.rule(r'.*')
