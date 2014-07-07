@@ -11,7 +11,7 @@ http://willie.dftba.net/
 from __future__ import unicode_literals
 
 import re
-from willie.module import commands, priority, OP
+from willie.module import commands, priority, OP, HALFOP
 from willie.tools import Nick
 
 
@@ -27,12 +27,15 @@ def op(bot, trigger):
     Command to op users in a room. If no nick is given,
     willie will op the nick who sent the command
     """
-    if bot.privileges[trigger.sender][trigger.nick] >= OP:
-        nick = trigger.group(2)
-        channel = trigger.sender
-        if not nick:
-            nick = trigger.nick
-        bot.write(['MODE', channel, "+o", nick])
+    if bot.privileges[trigger.sender][trigger.nick] < OP:
+        return
+    if bot.privileges[trigger.sender][bot.nick] < OP:
+        return bot.reply("I'm not a channel operator!")
+    nick = trigger.group(2)
+    channel = trigger.sender
+    if not nick:
+        nick = trigger.nick
+    bot.write(['MODE', channel, "+o", nick])
 
 
 @commands('deop')
@@ -41,12 +44,15 @@ def deop(bot, trigger):
     Command to deop users in a room. If no nick is given,
     willie will deop the nick who sent the command
     """
-    if bot.privileges[trigger.sender][trigger.nick] >= OP:
-        nick = trigger.group(2)
-        channel = trigger.sender
-        if not nick:
-            nick = trigger.nick
-        bot.write(['MODE', channel, "-o", nick])
+    if bot.privileges[trigger.sender][trigger.nick] < OP:
+        return
+    if bot.privileges[trigger.sender][bot.nick] < OP:
+        return bot.reply("I'm not a channel operator!")
+    nick = trigger.group(2)
+    channel = trigger.sender
+    if not nick:
+        nick = trigger.nick
+    bot.write(['MODE', channel, "-o", nick])
 
 
 @commands('voice')
@@ -55,12 +61,15 @@ def voice(bot, trigger):
     Command to voice users in a room. If no nick is given,
     willie will voice the nick who sent the command
     """
-    if bot.privileges[trigger.sender][trigger.nick] >= OP:
-        nick = trigger.group(2)
-        channel = trigger.sender
-        if not nick:
-            nick = trigger.nick
-        bot.write(['MODE', channel, "+v", nick])
+    if bot.privileges[trigger.sender][trigger.nick] < OP:
+        return
+    if bot.privileges[trigger.sender][bot.nick] < HALFOP:
+        return bot.reply("I'm not a channel operator!")
+    nick = trigger.group(2)
+    channel = trigger.sender
+    if not nick:
+        nick = trigger.nick
+    bot.write(['MODE', channel, "+v", nick])
 
 
 @commands('devoice')
@@ -69,12 +78,15 @@ def devoice(bot, trigger):
     Command to devoice users in a room. If no nick is given,
     willie will devoice the nick who sent the command
     """
-    if bot.privileges[trigger.sender][trigger.nick] >= OP:
-        nick = trigger.group(2)
-        channel = trigger.sender
-        if not nick:
-            nick = trigger.nick
-        bot.write(['MODE', channel, "-v", nick])
+    if bot.privileges[trigger.sender][trigger.nick] < OP:
+        return
+    if bot.privileges[trigger.sender][bot.nick] < HALFOP:
+        return bot.reply("I'm not a channel operator!")
+    nick = trigger.group(2)
+    channel = trigger.sender
+    if not nick:
+        nick = trigger.nick
+    bot.write(['MODE', channel, "-v", nick])
 
 
 @commands('kick')
@@ -85,6 +97,8 @@ def kick(bot, trigger):
     """
     if bot.privileges[trigger.sender][trigger.nick] < OP:
         return
+    if bot.privileges[trigger.sender][bot.nick] < HALFOP:
+        return bot.reply("I'm not a channel operator!")
     text = trigger.group().split()
     argc = len(text)
     if argc < 2:
@@ -135,6 +149,8 @@ def ban(bot, trigger):
     """
     if bot.privileges[trigger.sender][trigger.nick] < OP:
         return
+    if bot.privileges[trigger.sender][bot.nick] < HALFOP:
+        return bot.reply("I'm not a channel operator!")
     text = trigger.group().split()
     argc = len(text)
     if argc < 2:
@@ -161,6 +177,8 @@ def unban(bot, trigger):
     """
     if bot.privileges[trigger.sender][trigger.nick] < OP:
         return
+    if bot.privileges[trigger.sender][bot.nick] < HALFOP:
+        return bot.reply("I'm not a channel operator!")
     text = trigger.group().split()
     argc = len(text)
     if argc < 2:
@@ -183,10 +201,12 @@ def unban(bot, trigger):
 def quiet(bot, trigger):
     """
     This gives admins the ability to quiet a user.
-    The bot must be a Channel Operator for this command to work
+    The bot must be a Channel Operator for this command to work.
     """
     if bot.privileges[trigger.sender][trigger.nick] < OP:
         return
+    if bot.privileges[trigger.sender][bot.nick] < OP:
+        return bot.reply("I'm not a channel operator!")
     text = trigger.group().split()
     argc = len(text)
     if argc < 2:
@@ -209,10 +229,12 @@ def quiet(bot, trigger):
 def unquiet(bot, trigger):
     """
    This gives admins the ability to unquiet a user.
-   The bot must be a Channel Operator for this command to work
+   The bot must be a Channel Operator for this command to work.
    """
     if bot.privileges[trigger.sender][trigger.nick] < OP:
         return
+    if bot.privileges[trigger.sender][bot.nick] < OP:
+        return bot.reply("I'm not a channel operator!")
     text = trigger.group().split()
     argc = len(text)
     if argc < 2:
@@ -236,11 +258,13 @@ def unquiet(bot, trigger):
 def kickban(bot, trigger):
     """
    This gives admins the ability to kickban a user.
-   The bot must be a Channel Operator for this command to work
+   The bot must be a Channel Operator for this command to work.
    .kickban [#chan] user1 user!*@* get out of here
    """
     if bot.privileges[trigger.sender][trigger.nick] < OP:
         return
+    if bot.privileges[trigger.sender][bot.nick] < HALFOP:
+        return bot.reply("I'm not a channel operator!")
     text = trigger.group().split()
     argc = len(text)
     if argc < 4:
@@ -268,10 +292,13 @@ def kickban(bot, trigger):
 def topic(bot, trigger):
     """
     This gives ops the ability to change the topic.
+    The bot must be a Channel Operator for this command to work.
     """
     purple, green, bold = '\x0306', '\x0310', '\x02'
     if bot.privileges[trigger.sender][trigger.nick] < OP:
         return
+    if bot.privileges[trigger.sender][bot.nick] < HALFOP:
+        return bot.reply("I'm not a channel operator!")
     text = trigger.group(2)
     if text == '':
         return
