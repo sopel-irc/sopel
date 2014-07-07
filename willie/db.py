@@ -778,7 +778,7 @@ def configure(config):
             'db', 'userdb_file', 'Location for the database file'
         )
 
-    elif config.db.userdb_type in [non_sqlite_dbs]:
+    elif config.db.userdb_type in non_sqlite_dbs:
         db_type = non_sqlite_dbs[config.db.userdb_type]
         config.interactive_add(
             'db', 'userdb_host', "Enter the %s hostname" % db_type, 'localhost'
