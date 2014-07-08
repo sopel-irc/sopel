@@ -16,7 +16,8 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-import math
+import time
+import numbers
 import datetime
 import sys
 import os
@@ -48,7 +49,6 @@ else:
 _channel_prefixes = ('#', '&', '+', '!')
 
 class ExpressionEvaluator:
-
     """A generic class for evaluating limited forms of Python expressions.
 
     Instances can overwrite binary_ops and unary_ops attributes with dicts of
@@ -64,7 +64,7 @@ class ExpressionEvaluator:
         self.binary_ops = bin_ops or {}
         self.unary_ops = unary_ops or {}
 
-    def __call__(self, expression_str):
+    def __call__(self, expression_str, timeout=5.0):
         """Evaluate a python expression and return the result.
 
         Raises:
@@ -75,9 +75,9 @@ class ExpressionEvaluator:
 
         """
         ast_expression = ast.parse(expression_str, mode='eval')
-        return self._eval_node(ast_expression.body)
+        return self._eval_node(ast_expression.body, time.time() + timeout)
 
-    def _eval_node(self, node):
+    def _eval_node(self, node, timeout):
         """Recursively evaluate the given ast.Node.
 
         Uses self.binary_ops and self.unary_ops for the implementation.
@@ -94,23 +94,30 @@ class ExpressionEvaluator:
 
         elif (isinstance(node, ast.BinOp) and
                 type(node.op) in self.binary_ops):
-            left = self._eval_node(node.left)
-            right = self._eval_node(node.right)
+            left = self._eval_node(node.left, timeout)
+            right = self._eval_node(node.right, timeout)
+            if time.time() > timeout:
+                raise ExpressionEvaluator.Error(
+                        "Time for evaluating expression ran out.")
             return self.binary_ops[type(node.op)](left, right)
 
         elif (isinstance(node, ast.UnaryOp) and
                 type(node.op) in self.unary_ops):
-            operand = self._eval_node(node.operand)
+            operand = self._eval_node(node.operand, timeout)
+            if time.time() > timeout:
+                raise ExpressionEvaluator.Error(
+                        "Time for evaluating expression ran out.")
             return self.unary_ops[type(node.op)](operand)
 
         raise ExpressionEvaluator.Error(
-            "Ast.Node '%s' not implemented." % (type(node).__name__,)
-        )
+                "Ast.Node '%s' not implemented." % (type(node).__name__,))
 
 def guarded_mul(left, right):
     """Decorate a function to raise an error for values > limit."""
-    if not isinstance(left, int) or not isinstance(right, int):
-        # Only handle ints because floats will overflow anyway.
+    # Only handle ints because floats will overflow anyway.
+    if not isinstance(left, numbers.Integral):
+        pass
+    if not isinstance(right, numbers.Integral):
         pass
     elif left in (0, 1) or right in (0, 1):
         # Ignore trivial cases.
@@ -169,8 +176,10 @@ def pow_complexity(num, exp):
 
 
 def guarded_pow(left, right):
-    if not isinstance(left, int) or not isinstance(right, int):
-        # Only handle ints because floats will overflow anyway.
+    # Only handle ints because floats will overflow anyway.
+    if not isinstance(left, numbers.Integral):
+        pass
+    if not isinstance(right, numbers.Integral):
         pass
     elif pow_complexity(left, right) < 0.5:
         # Value 0.5 is arbitary and based on a estimated runtime of 0.5s
@@ -204,10 +213,10 @@ class EquationEvaluator(ExpressionEvaluator):
     
     def __call__(self, expression_str):
         result = ExpressionEvaluator.__call__(self, expression_str)
-        if math.log10(result) > 255:
-            # Guard against very large values because converting them into
-            # string might take a very long time.
-            raise ValueError("Result is too large to be printed.")
+        
+        # This wrapper is here so additional sanity checks could be done
+        # on the result of the eval, but currently none are done.
+        
         return result
 
 eval_equation = EquationEvaluator()

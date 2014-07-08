@@ -29,7 +29,8 @@ def c(bot, trigger):
     # Account for the silly non-Anglophones and their silly radix point.
     eqn = trigger.group(2).replace(',', '.')
     try:
-        result = str(eval_equation(eqn))
+        result = eval_equation(eqn)
+        result = "{:.10g}".format(result)
     except ZeroDivisionError:
         result = "Division by zero is not supported in this universe."
     except Exception as e:
