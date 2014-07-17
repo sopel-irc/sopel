@@ -96,9 +96,9 @@ def tr(bot, trigger):
             msg = msg.decode('utf-8')
         if msg:
             msg = web.decode(msg)  # msg.replace('&#39;', "'")
-            msg = '"%s" (%s to %s, translate.google.com)' % (msg, input, output)
+            msg = '"%s" (%s to %s, translate.google.com)' % (msg, in_lang, out_lang)
         else:
-            msg = 'The %s to %s translation failed, sorry!' % (input, output)
+            msg = 'The %s to %s translation failed, sorry!' % (in_lang, out_lang)
 
         bot.reply(msg)
     else:
