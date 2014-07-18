@@ -63,7 +63,9 @@ def get(uri, timeout=20, headers=None, return_headers=False,
     if not return_headers:
         return bytes
     else:
-        return (bytes, u.info())
+        headers = dict(u.info())
+        headers['_http_status'] = u.code
+        return (bytes, headers)
 
 
 # Get HTTP headers
