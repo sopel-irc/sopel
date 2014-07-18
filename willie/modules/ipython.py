@@ -20,7 +20,11 @@ if sys.version_info.major >= 3:
     sys.stdout = sys.__stdout__
     sys.stderr = sys.__stderr__
 try:
-    from IPython.frontend.terminal.embed import InteractiveShellEmbed
+    import IPython
+    if IPython.terminal:
+        from IPython.terminal.embed import InteractiveShellEmbed
+    else:
+        from IPython.frontend.terminal.embed import InteractiveShellEmbed
 finally:
     if sys.version_info.major >= 3:
         # Restore stderr/stdout wrappers
