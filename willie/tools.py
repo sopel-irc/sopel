@@ -578,13 +578,9 @@ def format_time(db=None, config=None, zone=None, nick=None, channel=None,
 
 def get_hostmask_regex(mask):
     """Return a compiled `re.RegexObject` for an IRC hostmask"""
-    result = ''
-    for char in mask:
-        if char == '*':
-            result += '.*'
-        else:
-            result += re.escape(char)
-    return re.compile(result, re.I)
+    mask = re.escape(mask)
+    mask.replace('\*', '.*')
+    return re.compile(mask + '$', re.I)
 
 
 class WillieMemory(dict):
