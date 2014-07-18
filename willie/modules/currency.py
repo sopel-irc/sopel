@@ -33,7 +33,9 @@ def get_rate(code):
         rates = json.loads(web.get('https://api.bitcoinaverage.com/ticker/all'))
         return 1 / rates['CAD']['24h_avg'], 'Bitcoin—24hr average'
 
-    data = web.get(base_url.format(code), dont_decode=True)
+    data, headers = web.get(base_url.format(code), dont_decode=True, return_headers=True)
+    if headers['_http_status'] == 404:
+        return False, False
     xml = etree.fromstring(data)
     namestring = xml.find('{http://purl.org/rss/1.0/}channel/'
                           '{http://purl.org/rss/1.0/}title').text
@@ -71,7 +73,13 @@ def display(bot, amount, of, to):
         bot.reply("Zero is zero, no matter what country you're in.")
     try:
         of_rate, of_name = get_rate(of)
+        if not of_name:
+            bot.reply("Unkown currency: %s" % of)
+            return
         to_rate, to_name = get_rate(to)
+        if not to_name:
+            bot.reply("Unkown currency: %s" % to)
+            return
     except Exception as e:
         raise
         bot.reply("Something went wrong while I was getting the exchange rate.")
