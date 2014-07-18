@@ -280,6 +280,13 @@ class Willie(irc.Bot):
             """Compare Job objects according to attribute next_time."""
             return self.next_time - other.next_time
 
+        if py3:
+            def __lt__(self, other):
+                return self.next_time < other.next_time
+
+            def __gt__(self, other):
+                return self.next_time > other.next_time
+
         def __str__(self):
             """Return a string representation of the Job object.
 
