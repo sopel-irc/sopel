@@ -476,7 +476,6 @@ class Willie(irc.Bot):
                 return '\n'.join(trimmed)
             doc = trim_docstring(func.__doc__)
 
-            # At least for now, only account for the first command listed.
             if hasattr(func, 'commands') and func.commands[0]:
                 example = None
                 if hasattr(func, 'example'):
@@ -488,7 +487,8 @@ class Willie(irc.Bot):
                         example = func.example[0]["example"]
                     example = example.replace('$nickname', str(self.nick))
                 if doc or example:
-                    self.doc[func.commands[0]] = (doc, example)
+                    for command in func.commands:
+                        self.doc[command] = (doc, example)
             self.commands[priority].setdefault(regexp, []).append(func)
 
         for func in self.callables:
