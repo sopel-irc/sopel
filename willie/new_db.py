@@ -88,3 +88,22 @@ class WillieDB(object):
             result = result[0]
         return result
 
+    def unalias_nick(self, nick, alias):
+        """Removes an alias.
+
+        Raises ValueError if there is not at least one other nick in the group.
+        """
+        pass  # TODO
+
+    def merge_nick_groups(self, nicks):
+        """Merges the nick groups for the specified nicks.
+
+        Takes an iterable of nicks, which may or may not be registered.
+        Unregistered nicks will be registered. Keys which are set for only one
+        of the given nicks will be preserved. Where multiple nicks have values
+        for a given key, the value set for an arbitrary nick will be chosen
+        (#TODO unless deterministic is just as easy to implement)."""
+        pass  # TODO
+
+# TODO settings for channels, and a method to provide a Trigger and get the
+# nick setting if set, else the channel setting.
