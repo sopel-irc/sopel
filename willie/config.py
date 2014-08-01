@@ -1,4 +1,4 @@
-#coding: utf8
+# coding=utf8
 """
 *Availability: 3+ for all functions; attributes may vary.*
 
@@ -49,9 +49,11 @@ except ImportError:
     import configparser as ConfigParser
 import getpass
 import imp
+import willie.bot
 if sys.version_info.major >= 3:
     unicode = str
     basestring = str
+    raw_input = input
 
 class ConfigurationError(Exception):
     """ Exception type for configuration errors """

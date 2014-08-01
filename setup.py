@@ -1,12 +1,18 @@
 #!/usr/bin/env python
-#coding: utf8
+# coding=utf8
 from __future__ import unicode_literals
 
 from distutils.core import setup
 from willie import __version__
 import tempfile
+import sys
 import os
 import shutil
+
+requires = ['feedparser', 'pytz', 'lxml', 'praw', 'enchant', 'pygeoip']
+if sys.version_info.major < 3:
+    requires.append('backports.ssl_match_hostname')
+
 
 def do_setup():
     try:
@@ -26,12 +32,11 @@ def do_setup():
             long_description="""Willie is a simple, lightweight, open source, easy-to-use IRC Utility bot, written in Python. It's designed to be easy to use, easy to run, and easy to make new features for. """,
             # Distutils is shit, and doesn't check if it's a list of basestring
             # but instead requires str.
-            packages=[b'willie', b'willie.modules'],
+            packages=[str('willie'), str('willie.modules')],
             scripts=[tmp_main_script],
             license='Eiffel Forum License, version 2',
             platforms='Linux x86, x86-64',
-            requires=[b'feedparser', b'pytz', b'lxml', b'praw', b'enchant',
-                      b'pygeoip', b'backports.ssl_match_hostname']
+            requires=requires
         )
     finally:
         try:

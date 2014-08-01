@@ -1,4 +1,4 @@
-#coding: utf8
+# coding=utf8
 """
 etymology.py - Willie Etymology Module
 Copyright 2007-9, Sean B. Palmer, inamidst.com

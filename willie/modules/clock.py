@@ -1,4 +1,4 @@
-#coding: utf8
+# coding=utf8
 """
 clock.py - Willie Clock Module
 Copyright 2008-9, Sean B. Palmer, inamidst.com

@@ -1,4 +1,4 @@
-#coding: utf8
+# coding=utf8
 """
 weather.py - Willie Yahoo! Weather Module
 Copyright 2008, Sean B. Palmer, inamidst.com
@@ -29,7 +29,8 @@ def woeid_search(query):
     None if there is no result, or the woeid field is empty.
     """
     query = 'q=select * from geo.placefinder where text="%s"' % query
-    body = web.get('http://query.yahooapis.com/v1/public/yql?' + query)
+    body = web.get('http://query.yahooapis.com/v1/public/yql?' + query,
+                   dont_decode=True)
     parsed = etree.fromstring(body)
     first_result = parsed.find('results/Result')
     if first_result is None or len(first_result) == 0:
@@ -72,6 +73,7 @@ def get_wind(parsed):
     try:
         wind_data = parsed['feed']['yweather_wind']
         kph = float(wind_data['speed'])
+        m_s = float(round(kph / 3.6, 1))
         speed = int(round(kph / 1.852, 0))
         degrees = int(wind_data['direction'])
     except (KeyError, ValueError):
@@ -121,10 +123,10 @@ def get_wind(parsed):
     elif (degrees > 292.5) and (degrees <= 337.5):
         degrees = u'\u2196'
 
-    return description + ' ' + str(speed) + 'kt (' + degrees + ')'
+    return description + ' ' + str(m_s) + 'm/s (' + degrees + ')'
 
 
-@commands('weather')
+@commands('weather', 'wea')
 @example('.weather London')
 def weather(bot, trigger):
     """.weather location - Show the weather at the given location."""

@@ -1,4 +1,4 @@
-#coding: utf8
+# coding=utf8
 """
 coretasks.py - Willie Routine Core tasks
 Copyright 2008-2011, Sean B. Palmer (inamidst.com) and Michael Yanovich
@@ -66,6 +66,14 @@ def startup(bot, trigger):
             bot.config.core.oper_name + ' ' + bot.config.oper_password
         ))
 
+    #Use Authserv if authserv_password and authserv_account is set in config.
+    if (bot.config.core.authserv_password is not None
+            and bot.config.core.authserv_account is not None):
+        bot.write((
+            'AUTHSERV auth',
+            bot.config.core.authserv_account + ' ' + bot.config.authserv_password
+        ))
+
     #Set bot modes per config, +B if no config option is defined
     if bot.config.has_option('core', 'modes'):
         modes = bot.config.core.modes
@@ -117,6 +125,7 @@ def retry_join(bot, trigger):
 
 @willie.module.rule('(.*)')
 @willie.module.event('353')
+@willie.module.priority('high')
 @willie.module.thread(False)
 @willie.module.unblockable
 def handle_names(bot, trigger):
@@ -163,6 +172,8 @@ def handle_names(bot, trigger):
 
 @willie.module.rule('(.*)')
 @willie.module.event('MODE')
+@willie.module.priority('high')
+@willie.module.thread(False)
 @willie.module.unblockable
 def track_modes(bot, trigger):
     """Track usermode changes and keep our lists of ops up to date."""
@@ -201,6 +212,8 @@ def track_modes(bot, trigger):
 
     modes = []
     for arg in line:
+        if len(arg) == 0:
+            continue
         if arg[0] in '+-':
             # There was a comment claiming IRC allows e.g. MODE +aB-c foo, but
             # I don't see it in any RFCs. Leaving in the extra parsing for now.
@@ -227,6 +240,8 @@ def track_modes(bot, trigger):
 
 @willie.module.rule('.*')
 @willie.module.event('NICK')
+@willie.module.priority('high')
+@willie.module.thread(False)
 @willie.module.unblockable
 def track_nicks(bot, trigger):
     """Track nickname changes and maintain our chanops list accordingly."""
@@ -273,17 +288,24 @@ def track_nicks(bot, trigger):
 
 @willie.module.rule('(.*)')
 @willie.module.event('PART')
+@willie.module.priority('high')
+@willie.module.thread(False)
 @willie.module.unblockable
 def track_part(bot, trigger):
     if trigger.nick == bot.nick:
         bot.channels.remove(trigger.sender)
         del bot.privileges[trigger.sender]
     else:
-        del bot.privileges[trigger.sender][trigger.nick]
+        try:
+            del bot.privileges[trigger.sender][trigger.nick]
+        except KeyError:
+            pass
 
 
 @willie.module.rule('.*')
 @willie.module.event('KICK')
+@willie.module.priority('high')
+@willie.module.thread(False)
 @willie.module.unblockable
 def track_kick(bot, trigger):
     nick = Nick(trigger.args[1])
@@ -302,6 +324,8 @@ def track_kick(bot, trigger):
 
 @willie.module.rule('.*')
 @willie.module.event('JOIN')
+@willie.module.priority('high')
+@willie.module.thread(False)
 @willie.module.unblockable
 def track_join(bot, trigger):
     if trigger.nick == bot.nick and trigger.sender not in bot.channels:
@@ -312,6 +336,8 @@ def track_join(bot, trigger):
 
 @willie.module.rule('.*')
 @willie.module.event('QUIT')
+@willie.module.priority('high')
+@willie.module.thread(False)
 @willie.module.unblockable
 def track_quit(bot, trigger):
     for chanprivs in bot.privileges.values():
@@ -403,7 +429,12 @@ def auth_proceed(bot, trigger):
         # How did we get here? I am not good with computer.
         return
     # Is this right?
-    sasl_token = '\0'.join((bot.nick, bot.nick, bot.config.core.sasl_password))
+    if bot.config.core.sasl_username:
+        sasl_username = bot.config.core.sasl_username
+    else:
+        sasl_username = bot.nick
+    sasl_token = '\0'.join((sasl_username, sasl_username,
+                           bot.config.core.sasl_password))
     # Spec says we do a base 64 encode on the SASL stuff
     bot.write(('AUTHENTICATE', base64.b64encode(sasl_token)))
 

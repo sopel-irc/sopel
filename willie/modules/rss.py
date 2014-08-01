@@ -1,4 +1,4 @@
-#coding: utf8
+# coding=utf8
 """
 rss.py - Willie RSS Module
 Copyright 2012, Michael Yanovich, yanovich.net
@@ -132,7 +132,7 @@ def manage_rss(bot, trigger):
 
 class RSSManager:
     def __init__(self, bot):
-        self.running = False
+        self.running = True
         self.sub = bot.db.substitution
 
         # get a list of all methods in this class that start with _rss_
@@ -184,7 +184,7 @@ class RSSManager:
         """
         pattern = r'''
             ^\.rss\s+add
-            \s+([&#+!][^\s,]+)   # channel
+            \s+([~&#+!][^\s,]+)   # channel
             \s+("[^"]+"|[\w-]+)  # name, which can contain anything but quotes if quoted
             \s+(\S+)             # url
             (?:\s+(\d+))?        # foreground colour (optional)
@@ -224,7 +224,7 @@ class RSSManager:
         """
         pattern = r"""
             ^\.rss\s+del
-            (?:\s+([&#+!][^\s,]+))?  # channel (optional)
+            (?:\s+([~&#+!][^\s,]+))?  # channel (optional)
             (?:\s+("[^"]+"|[\w-]+))? # name (optional)
             """
         match = re.match(pattern, trigger.group(), re.IGNORECASE | re.VERBOSE)
@@ -264,7 +264,7 @@ class RSSManager:
 
         pattern = r"""
             ^\.rss\s+(enable|disable) # command
-            (?:\s+([&#+!][^\s,]+))?   # channel (optional)
+            (?:\s+([~&#+!][^\s,]+))?   # channel (optional)
             (?:\s+("[^"]+"|[\w-]+))?  # name (optional)
             """
         match = re.match(pattern, trigger.group(), re.IGNORECASE | re.VERBOSE)
@@ -295,7 +295,7 @@ class RSSManager:
         """Get information on all feeds in the database. Usage: .rss list [#channel] [Feed_Name]"""
         pattern = r"""
             ^\.rss\s+list
-            (?:\s+([&#+!][^\s,]+))?  # channel (optional)
+            (?:\s+([~&#+!][^\s,]+))?  # channel (optional)
             (?:\s+("[^"]+"|[\w-]+))? # name (optional)
             """
         match = re.match(pattern, trigger.group(), re.IGNORECASE | re.VERBOSE)
@@ -407,13 +407,6 @@ def read_feeds(bot, force=False):
 
         bot.debug(feed.channel, "{0}: status = {1}, version = '{2}', items = {3}".format(
             feed.name, status, fp.version, len(fp.entries)), 'verbose')
-
-        # check for malformed XML
-        if fp.bozo:
-            bot.debug(__file__, "Got malformed feed on {0}, disabling ({1})".format(
-                feed.name, fp.bozo_exception.getMessage()), 'warning')
-            disable_feed()
-            continue
 
         # check HTTP status
         if status == 301:  # MOVED_PERMANENTLY

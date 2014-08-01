@@ -1,3 +1,46 @@
+Changes between 4.4.0 and 4.4.1
+===============================
+Module Changes (for users):
+* RSS no longer checks for malformed XML
+* Starting RSS manually after bot restart is no longer needed
+* Youtube video search properly handles spaces
+* The .at command defaults to UTC if user's timezone is not set
+
+
+Core changes (for users):
+* Ping timeout handling is working again
+* bind_host configuration option is working again
+
+
+
+Changes between 4.3.0 and 4.4.0
+===============================
+Module Changes (for users):
+* .cur behaves better when bad arguments are given
+* Fixed numerous unicode errors
+* Added a command to open an IPython console within the module context
+* Added mass units and millimeters to .cur
+* GitHub pull requests now get extended URL info
+* .weather now displays wind in m/s instead of kts
+* A security issue involving improperly named channel logs was fixed
+* Misc bugfixed
+
+Core changes (for users):
+* Channel joins at bot startup can be rate limited with the `throttle_joins` option in the [core] config section to work around server limits
+* Added the ability for SASL login where the nickname and username are different
+* Improved loop protection and rate limiting
+* Fixed multiple Python 3 errors
+* Enable logging the bot in to Authserv at startup
+* Added support for Postgres as the database backend
+* SSL cert location detection now works on Debian-based systems
+* Misc bugfixes
+
+API Changes (for developers):
+* Unicode in command decorators now works properly
+* `web.get` now decodes the result from UTF-8, with a `dont_decode` argument to disable
+
+
+
 Changes between 4.2.0 and 4.3.0
 ===============================
 Module Changes (for users):

@@ -1,4 +1,4 @@
-#coding: utf8
+# coding=utf8
 """
 __init__.py - Willie Init Module
 Copyright 2008, Sean B. Palmer, inamidst.com
@@ -17,24 +17,28 @@ import os
 import time
 import threading
 import traceback
-import willie.bot as bot
 import signal
-import willie.web as web
-from willie.tools import stderr
 
-__version__ = '4.3.0-git'
+__version__ = '4.4.1-git'
 
 
 def run(config):
+    import willie.bot as bot
+    import willie.web as web
+    from willie.tools import stderr
     if config.core.delay is not None:
         delay = config.core.delay
     else:
         delay = 20
     # Inject ca_certs from config to web for SSL validation of web requests
+    web.ca_certs = '/etc/pki/tls/certs/ca-bundle.crt'
     if hasattr(config, 'ca_certs') and config.ca_certs is not None:
-        web.ca_certs  = config.ca_certs
-    else:
-        web.ca_certs = '/etc/pki/tls/certs/ca-bundle.crt'
+        web.ca_certs = config.ca_certs
+    elif not os.path.isfile(web.ca_certs):
+        web.ca_certs = '/etc/ssl/certs/ca-certificates.crt'
+    if not os.path.isfile(web.ca_certs):
+        stderr('Could not open CA certificates file. SSL will not '
+               'work properly.')
 
     def signal_handler(sig, frame):
         if sig == signal.SIGUSR1 or sig == signal.SIGTERM:
