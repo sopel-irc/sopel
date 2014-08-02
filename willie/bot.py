@@ -468,7 +468,7 @@ class Willie(irc.Bot):
                 trimmed = [lines[0].strip()]
                 if indent < sys.maxsize:
                     for line in lines[1:]:
-                        trimmed.append(line[indent:].rstrip())
+                        trimmed.append(" " + line[indent:].rstrip())
                 while trimmed and not trimmed[-1]:
                     trimmed.pop()
                 while trimmed and not trimmed[0]:
