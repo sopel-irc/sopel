@@ -103,10 +103,6 @@ def version_check(bot):
             # Message the owner.
             bot.msg(bot.config.core.owner, message_release %
                     {'latest': latest_release, 'local': willie.__version__ })
-            for admin in bot.config.core.admins:
-                # Message the admins as well.
-                bot.msg(admin, message_release %
-                        {'latest': latest_release, 'local': willie.__version__ })
     else:
         # Running a -git version.
         API_result = willie.web.get(API_url + 'commits/master')
@@ -120,8 +116,4 @@ def version_check(bot):
             # Message the owner.
             bot.msg(bot.config.core.owner, message_git %
                     {'latest': remote_HEAD, 'local': git_HEAD })
-            for admin in bot.config.core.admins:
-                # Message the admins as well.
-                bot.msg(admin, message_git %
-                        {'latest': remote_HEAD, 'local': git_HEAD })
 
