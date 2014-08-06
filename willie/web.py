@@ -58,12 +58,22 @@ def get(uri, timeout=20, headers=None, return_headers=False,
     u = get_urllib_object(uri, timeout, headers, verify_ssl)
     bytes = u.read(limit_bytes)
     u.close()
+    headers = dict(u.info())
     if not dont_decode:
-        bytes = bytes.decode('utf-8')
+        # Detect encoding automatically from HTTP headers
+        content_type = headers.get('Content-Type') or ''
+        encoding_match = re.match('.*?charset *= *(\S+)', content_type, re.IGNORECASE)
+        if encoding_match:
+            try:
+                bytes = bytes.decode(encoding_match.group(1))
+            except:
+                # attempt unicode on failure
+                encoding_match = None
+        if not encoding_match:
+            bytes = bytes.decode('utf-8')
     if not return_headers:
         return bytes
     else:
-        headers = dict(u.info())
         headers['_http_status'] = u.code
         return (bytes, headers)
 

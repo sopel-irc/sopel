@@ -207,22 +207,10 @@ def check_callbacks(bot, trigger, url, run=True):
 
 def find_title(url):
     """Return the title for the given URL."""
-    content, headers = web.get(url, return_headers=True, limit_bytes=max_bytes,
-                               dont_decode=True)
-    content_type = headers.get('Content-Type') or ''
-    encoding_match = re.match('.*?charset *= *(\S+)', content_type)
-    # If they gave us something else instead, try that
-    if encoding_match:
-        try:
-            content = content.decode(encoding_match.group(1))
-        except:
-            encoding_match = None
-    # They didn't tell us what they gave us, so go with UTF-8 or fail silently.
-    if not encoding_match:
-        try:
-            content = content.decode('utf-8')
-        except:
-            return
+    try:
+        content, headers = web.get(url, return_headers=True, limit_bytes=max_bytes)
+    except UnicodeDecodeError:
+        return # Fail silently when data can't be decoded
 
     # Some cleanup that I don't really grok, but was in the original, so
     # we'll keep it (with the compiled regexes made global) for now.
