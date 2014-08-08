@@ -96,13 +96,21 @@ def update_user_format(bot, trigger):
 
         tz = get_timezone(bot.db, bot.config, None, None,
                                        trigger.sender)
+
+        # Get old format as back-up
+        old_format = bot.db.preferences.get(trigger.nick, 'time_format')
+
+        # Save the new format in the database so we can test it.
+        bot.db.preferences.update(trigger.nick, {'time_format': tformat})
+
         try:
             timef = format_time(db = bot.db, zone=tz, nick=trigger.nick)
         except:
             bot.reply("That format doesn't work. Try using"
                          " http://strftime.net to make one.")
+            # New format doesn't work. Revert save in database.
+            bot.db.preferences.update(trigger.nick, {'time_format': old_format})
             return
-        bot.db.preferences.update(trigger.nick, {'time_format': tformat})
         bot.reply("Got it. Your time will now appear as %s. (If the "
                      "timezone is wrong, you might try the settz command)"
                      % timef)
