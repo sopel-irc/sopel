@@ -13,6 +13,25 @@ from willie.module import commands, rule, example, priority
 from willie.tools import iterkeys
 
 
+def setup(bot=None):
+    if not bot:
+        return
+
+    global threshold
+    threshold=3
+    """
+    The number of lines a docstring can consist of (not counting leading and trailing blank lines) 
+    and still get printed directly into a channel. When there are more lines than that, 
+    .help will send it via private message to whoever asked. 
+    If [help]/threshold is defined in the config, that value will be used instead.
+    """
+
+    if bot.config.has_option('help', 'threshold'):
+        try:
+            threshold=int(bot.config.help.threshold)
+        except ValueError: #value in config is not an integer; carry on and use the default value
+            print("Warning: Attribute threshold of section [help] contains something that is not an integer; default value of %d will be used." % threshold)
+
 @rule('$nick' '(?i)(help|doc) +([A-Za-z]+)(?:\?+)?$')
 @example('.help tell')
 @commands('help')
@@ -26,9 +45,17 @@ def help(bot, trigger):
         name = name.lower()
 
         if name in bot.doc:
-            bot.reply(bot.doc[name][0])
+            if len(bot.doc[name][0]) + (1 if bot.doc[name][1] else 0) > threshold:
+                if trigger.nick != trigger.sender: #don't say that if asked in private
+                    bot.reply('The documentation for this command is too long; I\'m sending it to you in a private message.')
+                msgfun=lambda l: bot.msg(trigger.nick,l)
+            else:
+                msgfun=bot.reply
+
+            for line in bot.doc[name][0]:
+                msgfun(line)
             if bot.doc[name][1]:
-                bot.say('e.g. ' + bot.doc[name][1])
+                msgfun('e.g. ' + bot.doc[name][1])
 
 
 @commands('commands')
