@@ -97,7 +97,7 @@ def update_user_format(bot, trigger):
         tz = get_timezone(bot.db, bot.config, None, None,
                                        trigger.sender)
         try:
-            timef = format_time(zone=tz)
+            timef = format_time(db = bot.db, zone=tz, nick=trigger.nick)
         except:
             bot.reply("That format doesn't work. Try using"
                          " http://strftime.net to make one.")
