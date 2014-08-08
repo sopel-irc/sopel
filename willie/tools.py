@@ -36,6 +36,7 @@ from collections import defaultdict
 import copy
 import ast
 import operator
+import codecs
 if sys.version_info.major >= 3:
     unicode = str
     iteritems  = dict.items
@@ -439,9 +440,8 @@ class OutputRedirect:
                     sys.__stdout__.write(string)
             except:
                 pass
-        logfile = open(self.logpath, 'a')
-        logfile.write(string)
-        logfile.close()
+        with codecs.open(self.logpath, 'a', encoding="utf8") as logfile:
+            logfile.write(string)
 
 
 #These seems to trace back to when we thought we needed a try/except on prints,
