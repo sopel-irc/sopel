@@ -450,7 +450,7 @@ class Bot(asynchat.async_chat):
             encoded_text = text
         excess = ''
         if max_messages > 1 and len(encoded_text) > max_text_length:
-            last_space = encoded_text.rfind(' ', 0, max_text_length)
+            last_space = encoded_text.rfind(' '.encode('utf-8'), 0, max_text_length)
             if last_space == -1:
                 excess = encoded_text[max_text_length:]
                 encoded_text = encoded_text[:max_text_length]
