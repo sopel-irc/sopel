@@ -17,20 +17,9 @@ def setup(bot=None):
     if not bot:
         return
 
-    global threshold
-    threshold=3
-    """
-    The number of lines a docstring can consist of (not counting leading and trailing blank lines) 
-    and still get printed directly into a channel. When there are more lines than that, 
-    .help will send it via private message to whoever asked. 
-    If [help]/threshold is defined in the config, that value will be used instead.
-    """
-
-    if bot.config.has_option('help', 'threshold'):
-        try:
-            threshold=int(bot.config.help.threshold)
-        except ValueError: #value in config is not an integer; carry on and use the default value
-            print("Warning: Attribute threshold of section [help] contains something that is not an integer; default value of %d will be used." % threshold)
+    if bot.config.has_option('help', 'threshold') and not bot.config.help.threshold.isdecimal():#non-negative integer
+        from willie.config import ConfigurationError
+        raise ConfigurationError("Attribute threshold of section [help] must be a nonnegative integer")
 
 @rule('$nick' '(?i)(help|doc) +([A-Za-z]+)(?:\?+)?$')
 @example('.help tell')
@@ -43,7 +32,12 @@ def help(bot, trigger):
     else:
         name = trigger.group(2)
         name = name.lower()
-
+        
+        if bot.config.has_option('help', 'threshold'):
+            threshold=int(bot.config.help.threshold)
+        else:
+            threshold=3
+        
         if name in bot.doc:
             if len(bot.doc[name][0]) + (1 if bot.doc[name][1] else 0) > threshold:
                 if trigger.nick != trigger.sender: #don't say that if asked in private
