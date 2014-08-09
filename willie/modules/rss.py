@@ -379,7 +379,6 @@ def read_feeds(bot, force=False):
     c.execute('SELECT * FROM rss_feeds')
     feeds = c.fetchall()
     if not feeds:
-        bot.debug(__file__, "No RSS feeds to check.", 'warning')
         return
 
     for feed_row in feeds:
