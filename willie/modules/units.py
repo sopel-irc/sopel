@@ -11,7 +11,7 @@ from willie.module import commands, example, NOLIMIT
 import re
 
 find_temp = re.compile('(-?[0-9]*\.?[0-9]*)[ °]*(K|C|F)', re.IGNORECASE)
-find_length = re.compile('([0-9]*\.?[0-9]*)[ ]*(mile[s]?|mi|inch|in|foot|feet|ft|yard[s]?|yd|(?:milli|centi|kilo|)meter[s]?|[mkc]?m)', re.IGNORECASE)
+find_length = re.compile('([0-9]*\.?[0-9]*)[ ]*(mile[s]?|mi|inch|in|foot|feet|ft|yard[s]?|yd|(?:milli|centi|kilo|)meter[s]?|[mkc]?m|ly|light-year[s]?|au|astronomical unit[s]?|parsec[s]?|pc)', re.IGNORECASE)
 find_mass = re.compile('([0-9]*\.?[0-9]*)[ ]*(lb|lbm|pound[s]?|ounce|oz|(?:kilo|)gram(?:me|)[s]?|[k]?g)', re.IGNORECASE)
 
 
@@ -67,6 +67,9 @@ def temperature(bot, trigger):
 @example('.distance 3 feet', '91.44cm = 3 feet, 0.00 inches')
 @example('.distance 3 yards', '2.74m = 9 feet, 0.00 inches')
 @example('.distance 155cm', '1.55m = 5 feet, 1.02 inches')
+@example('.length 3 ly', '28382191417742.40km = 17635876112814.77 miles')
+@example('.length 3 au', '448793612.10km = 278867421.71 miles')
+@example('.length 3 parsec', '92570329129020.20km = 57520535754731.61 miles')
 def distance(bot, trigger):
     """
     Convert distances
@@ -95,6 +98,12 @@ def distance(bot, trigger):
         meter = numeric / 3.2808
     elif unit in ("yards", "yard", "yd"):
         meter = numeric / (3.2808 / 3)
+    elif unit in ("light-year", "light-years", "ly"):
+        meter = numeric * 9460730472580800
+    elif unit in ("astronomical unit", "astronomical units", "au"):
+        meter = numeric * 149597870700
+    elif unit in ("parsec", "parsecs", "pc"):
+        meter = numeric * 30856776376340068
 
     if meter >= 1000:
         metric_part = '{:.2f}km'.format(meter / 1000)
@@ -110,7 +119,7 @@ def distance(bot, trigger):
     foot = int(inch) // 12
     inch = inch - (foot * 12)
     yard = foot // 3
-    mile = meter * 0.00062137
+    mile = meter * 0.000621371192
 
     if yard > 500:
         stupid_part = '{:.2f} miles'.format(mile)
