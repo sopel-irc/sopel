@@ -22,6 +22,12 @@ else:
 
 @commands('c', 'calc')
 @example('.c 5 + 3', '8')
+@example('.c 0.9*10', '9')
+@example('.c 10*0.9', '9')
+@example('.c 2*(1+2)*3', '18')
+@example('.c 2**10', '1024')
+@example('.c 5 // 2', '2')
+@example('.c 5 / 2', '2.5')
 def c(bot, trigger):
     """Evaluate some calculation."""
     if not trigger.group(2):
