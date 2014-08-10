@@ -117,7 +117,7 @@ def guarded_mul(left, right):
     # Only handle ints because floats will overflow anyway.
     if not isinstance(left, numbers.Integral):
         pass
-    if not isinstance(right, numbers.Integral):
+    elif not isinstance(right, numbers.Integral):
         pass
     elif left in (0, 1) or right in (0, 1):
         # Ignore trivial cases.
