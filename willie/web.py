@@ -27,6 +27,7 @@ else:
     import http.client as httplib
     from html.entities import name2codepoint
     from urllib.parse import urlparse
+    unichr = chr
 import ssl
 import os.path
 import socket
