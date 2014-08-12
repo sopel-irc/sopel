@@ -22,11 +22,13 @@ if sys.version_info.major < 3:
     import httplib
     from htmlentitydefs import name2codepoint
     from urlparse import urlparse
+    from urlparse import urlunparse
 else:
     import urllib.request as urllib2
     import http.client as httplib
     from html.entities import name2codepoint
     from urllib.parse import urlparse
+    from urllib.parse import urlunparse
     unichr = chr
 import ssl
 import os.path
@@ -175,6 +177,12 @@ def get_urllib_object(uri, timeout, headers=None, verify_ssl=True, data=None):
 
     """
 
+    try:
+        # Check if we need to do IDN parsing
+        uri.encode('ascii')
+    except:
+        uri = iri_to_uri(uri)
+
     uri = quote_query(uri)
     original_headers = {'Accept': '*/*', 'User-Agent': 'Mozilla/5.0 (Willie)'}
     if headers is not None:
@@ -212,6 +220,28 @@ def quote_query(string):
     parsed = urlparse(string)
     string = string.replace(parsed.query, quote(parsed.query, "/=&"), 1)
     return string
+
+
+# Functions for international domain name magic
+
+def urlencode_non_ascii(b):
+    regex = '[\x80-\xFF]'
+    if sys.version_info.major > 2:
+        regex = b'[\x80-\xFF]'
+    return re.sub(regex, lambda c: '%%%02x' % ord(c.group(0)), b)
+
+
+def iri_to_uri(iri):
+    parts = urlparse(iri)
+    parts_seq = (part.encode('idna') if parti == 1 else urlencode_non_ascii(part.encode('utf-8')) for parti, part in enumerate(parts))
+    if sys.version_info.major > 2:
+        parts_seq = list(parts_seq)
+
+    parsed = urlunparse(parts_seq)
+    if sys.version_info.major > 2:
+        return parsed.decode()
+    else:
+        return parsed
 
 
 if sys.version_info.major < 3:
