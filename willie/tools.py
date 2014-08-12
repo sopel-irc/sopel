@@ -179,7 +179,7 @@ def guarded_pow(left, right):
     # Only handle ints because floats will overflow anyway.
     if not isinstance(left, numbers.Integral):
         pass
-    if not isinstance(right, numbers.Integral):
+    elif not isinstance(right, numbers.Integral):
         pass
     elif pow_complexity(left, right) < 0.5:
         # Value 0.5 is arbitary and based on a estimated runtime of 0.5s
