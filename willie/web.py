@@ -120,11 +120,11 @@ r_entity = re.compile(r'&([^;\s]+);')
 def entity(match):
     value = match.group(1).lower()
     if value.startswith('#x'):
-        return unichr(int(value[2:], 16))
+        return chr(int(value[2:], 16))
     elif value.startswith('#'):
-        return unichr(int(value[1:]))
+        return chr(int(value[1:]))
     elif value in name2codepoint:
-        return unichr(name2codepoint[value])
+        return chr(name2codepoint[value])
     return '[' + value + ']'
 
 
