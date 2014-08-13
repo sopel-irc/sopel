@@ -168,7 +168,7 @@ def weather(bot, trigger):
 def update_woeid(bot, trigger):
     """Set your default weather location."""
     if bot.db:
-        if trigger.group(2).strip() is "":
+        if not trigger.group(2):
             return bot.reply("You need to give me a place!")
         
         first_result = woeid_search(trigger.group(2))
