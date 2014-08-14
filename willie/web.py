@@ -177,13 +177,14 @@ def get_urllib_object(uri, timeout, headers=None, verify_ssl=True, data=None):
 
     """
 
+    uri = quote_query(uri)
+
     try:
         # Check if we need to do IDN parsing
         uri.encode('ascii')
     except:
         uri = iri_to_uri(uri)
 
-    uri = quote_query(uri)
     original_headers = {'Accept': '*/*', 'User-Agent': 'Mozilla/5.0 (Willie)'}
     if headers is not None:
         original_headers.update(headers)
