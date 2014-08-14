@@ -133,6 +133,10 @@ class Bot(asynchat.async_chat):
         """ Set to True when a server has accepted the client connection and
         messages can be sent and received. """
 
+        # Work around bot.connecting missing in Python older than 2.7.4
+        if not hasattr(self, "connecting"):
+            self.connecting = False
+
     def log_raw(self, line, prefix):
         """Log raw line to the raw log."""
         if not self.config.core.log_raw:
