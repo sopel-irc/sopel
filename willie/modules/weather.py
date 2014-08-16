@@ -172,6 +172,9 @@ def update_woeid(bot, trigger):
         return NOLIMIT
 
     if bot.db:
+        if not trigger.group(2):
+            return bot.reply("You need to give me a place!")
+        
         first_result = woeid_search(trigger.group(2))
         if first_result is None:
             return bot.reply("I don't know where that is.")
