@@ -16,6 +16,7 @@ from __future__ import unicode_literals
 import re
 from willie.tools import Nick, WillieMemory
 from willie.module import rule, priority
+from willie.formatting import bold
 
 
 def setup(bot):
@@ -131,7 +132,7 @@ def findandreplace(bot, trigger):
 
     # output
     if not me:
-        new_phrase = '\x02meant\x02 to say: ' + new_phrase
+        new_phrase = '%s to say: %s' % (bold('meant'), new_phrase)
     if trigger.group(1):
         phrase = '%s thinks %s %s' % (trigger.nick, rnick, new_phrase)
     else:
