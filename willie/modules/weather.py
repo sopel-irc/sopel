@@ -10,7 +10,7 @@ http://willie.dftba.net
 from __future__ import unicode_literals
 
 from willie import web
-from willie.module import commands, example
+from willie.module import commands, example, NOLIMIT
 
 import feedparser
 from lxml import etree
@@ -167,6 +167,10 @@ def weather(bot, trigger):
 @example('.setlocation Columbus, OH')
 def update_woeid(bot, trigger):
     """Set your default weather location."""
+    if not trigger.group(2):
+        bot.reply('Give me a location, like "Washington, DC" or "London".')
+        return NOLIMIT
+
     if bot.db:
         first_result = woeid_search(trigger.group(2))
         if first_result is None:
