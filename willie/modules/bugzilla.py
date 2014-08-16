@@ -55,7 +55,7 @@ def show_bug(bot, trigger, match=None):
     if domain not in bot.config.bugzilla.get_list('domains'):
         return
     url = 'https://%s%sctype=xml&%s' % match.groups()
-    data = web.get(url)
+    data = web.get(url, dont_decode=True)
     bug = etree.fromstring(data).find('bug')
 
     message = ('[BUGZILLA] %s | Product: %s | Component: %s | Version: %s | ' +
