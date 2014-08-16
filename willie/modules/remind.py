@@ -125,7 +125,8 @@ periods = '|'.join(scaling.keys())
 def remind(bot, trigger):
     """Gives you a reminder in the given amount of time."""
     duration = 0
-    message = re.split('(\d+(?:\.\d+)? ?(?:' + periods + ')) ?', trigger.group(2))[1:]
+    message = filter(None, re.split('(\d+(?:\.\d+)? ?(?:' + periods + ')) ?',
+                                    trigger.group(2))[1:])
     reminder = ''
     stop = False
     for piece in message:
