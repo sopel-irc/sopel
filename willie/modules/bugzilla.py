@@ -52,7 +52,7 @@ def show_bug(bot, trigger, match=None):
     """Show information about a Bugzilla bug."""
     match = match or trigger
     domain = match.group(1)
-    if domain not in bot.config.bugzilla.get_list('domains'):
+    if not bot.config.has_section('bugzilla') or domain not in bot.config.bugzilla.get_list('domains'):
         return
     url = 'https://%s%sctype=xml&%s' % match.groups()
     data = web.get(url, dont_decode=True)
