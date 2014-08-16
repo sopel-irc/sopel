@@ -9,6 +9,7 @@ This module provides special tools for reddit, namely showing detailed info abou
 from __future__ import unicode_literals
 
 from willie.module import commands, rule, example, NOLIMIT
+from willie.formatting import bold, color, colors
 from willie import tools
 import praw
 import re
@@ -28,26 +29,40 @@ def setup(bot):
 
 @rule('.*%s.*' % post_url)
 def rpost_info(bot, trigger, match=None):
-    r = praw.Reddit(user_agent='phenny / willie IRC bot - see dft.ba/-williesource for more')
+    r = praw.Reddit(user_agent='Willie IRC bot - see dft.ba/-williesource for more')
     match = match or trigger
     s = r.get_submission(url=match.group(1))
 
-    message = '[REDDIT] ' + s.title
+    message = ('[REDDIT] {title} {link}{nsfw} | {points} points ({percent}) | '
+               '{comments} comments | Posted by {author}')
+
     if s.is_self:
-        message = message + ' (self.' + s.subreddit.display_name + ')'
+        link = '(self.{})'.format(s.subreddit.display_name)
     else:
-        message = message + ' (' + s.url + ')' + ' to r/' + s.subreddit.display_name
+        link = '({}) to r/{}'.format(s.url, s.subreddit.display_name)
+
     if s.over_18:
-        message = message + ' 05[NSFW]'
+        nsfw = bold(color(' [NSFW]', colors.RED))
         #TODO implement per-channel settings db, and make this able to kick
+    else:
+        nsfw = ''
+
     if s.author:
         author = s.author.name
     else:
         author = '[deleted]'
-    message = (message + ' | ' + str(s.ups - s.downs) + ' points (03'
-               + str(s.ups) + '|05' + str(s.downs) + ') | ' +
-               str(s.num_comments) + ' comments | Posted by ' + author)
     #TODO add creation time with s.created
+
+    if s.score > 0:
+        point_color = colors.GREEN
+    else:
+        point_color = colors.RED
+
+    percent = color(unicode(s.upvote_ratio * 100) + '%', point_color)
+
+    message = message.format(
+        title=s.title, link=link, nsfw=nsfw, points=s.score, percent=percent,
+        comments=s.num_comments, author=author)
     bot.say(message)
 
 
