@@ -73,7 +73,7 @@ def get(uri, timeout=20, headers=None, return_headers=False,
                 # attempt unicode on failure
                 encoding_match = None
         if not encoding_match:
-            bytes = bytes.decode('utf-8')
+            bytes = bytes.decode('utf-8', "ignore")
     if not return_headers:
         return bytes
     else:
