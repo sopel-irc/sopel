@@ -158,7 +158,7 @@ def findIssue(bot, trigger):
         else:
             return bot.reply('What are you searching for?')
     else:
-        URL = 'https://api.github.com/legacy/issues/search/%s/open/%s' % (gitAPI[1], trigger.group(2))
+        URL = 'https://api.github.com/legacy/issues/search/%s/open/%s' % (gitAPI[1], web.quote(trigger.group(2)))
 
     try:
         raw = web.get(URL)
