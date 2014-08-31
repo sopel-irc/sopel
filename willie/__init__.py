@@ -19,7 +19,7 @@ import threading
 import traceback
 import signal
 
-__version__ = '4.4.1-git'
+__version__ = '4.5.0'
 
 
 def run(config):
