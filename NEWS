@@ -1,3 +1,28 @@
+Changes between 4.4.1 and 4.5.0
+===============================
+Module Changes (for users):
+* Willie will now alert the owner at startup, and every 24 hours, when a new version is available
+* .calc will now time out on excessively long calculations, and is less likely to error out
+* .help now works properly for command aliases
+* .help will now output multi-line help in multiple messages, rather than all at once
+* A new .uptime command tells how long the bot has been running
+* .length can now handle astronomical units
+* Absolute vote counts are no longer shown in reddit output
+* Using .setlocation without a location will no longer set your location to Italy
+* Time units for .in are now case-insensitive
+* .duck no longer gives a long, unrelated URL
+
+Core changes (for users):
+* Scheduled tasks now work properly under Python 3
+* Willie no longer accepts partial matches for admin status
+
+API Changes (for developers):
+* Setting attributes on the bot object now works as expected
+* The status code is now returned from web.get as `_http_status` in the headers
+* web.get now attempts to decode based on headers, rather than assuming utf-8
+* web.iri_to_uri is now available to decode internationalized domain names
+* A willie.formatting module is now available to simplify IRC bold, underline and color formatting
+
 Changes between 4.4.0 and 4.4.1
 ===============================
 Module Changes (for users):
