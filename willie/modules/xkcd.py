@@ -45,6 +45,8 @@ def get_info(number=None):
 
 def google(query):
     url = google_search(query + sites_query)
+    if not url:
+        return None
     match = re.match('(?:https?://)?xkcd.com/(\d+)/?', url)
     if match:
         return match.group(1)
@@ -66,27 +68,35 @@ def xkcd(bot, trigger):
     # if no input is given (pre - lior's edits code)
     if not trigger.group(2):  # get rand comic
         random.seed()
-        requested = get_info(random.randint(0, max_int + 1))
+        requested = get_info(random.randint(1, max_int + 1))
     else:
         query = trigger.group(2).strip()
 
-        # Positive or 0; get given number or latest
-        if query.isdigit():
-            query = int(query)
+        numbered = re.match(r"^(#|\+|-)?(\d+)$", query)
+        if numbered:
+            query = int(numbered.group(2))
+            if numbered.group(1) == "-":
+                query = -query
             if query > max_int:
                 bot.say(("Sorry, comic #{} hasn't been posted yet. "
                          "The last comic was #{}").format(query, max_int))
                 return
-            elif query == 0:
+            elif query <= -max_int:
+                bot.say(("Sorry, but there were only {} comics "
+                         "released yet so far").format(max_int))
+                return
+            elif abs(query) == 0:
                 requested = latest
-            else:
+            elif query == 404 or max_int + query == 404:
+                bot.say("404 - Not Found") # don't error on that one
+                return
+            elif query > 0:
                 requested = get_info(query)
-        # Negative: go back that many from current
-        elif query[0] == '-' and query[1:].isdigit():
-            query = int(query[1:])
-            requested = get_info(max_int - query)
-        # Non-number: google.
+            else:
+                # Negative: go back that many from current
+                requested = get_info(max_int + query)
         else:
+            # Non-number: google.
             if (query.lower() == "latest" or query.lower() == "newest"):
                 requested = latest
             else:
