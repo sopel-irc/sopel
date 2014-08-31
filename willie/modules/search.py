@@ -10,12 +10,19 @@ http://willie.dftba.net
 from __future__ import unicode_literals
 
 import re
-from willie import web
+from willie import web, tools
 from willie.module import commands, example
 import json
 import sys
 import time
 
+def setup(bot=None):
+    if bot:
+        # Ensure that url_callbacks and last_seen_url are in memory
+        if not bot.memory.contains('url_callbacks'):
+            bot.memory['url_callbacks'] = tools.WillieMemory()
+        if not bot.memory.contains('last_seen_url'):
+            bot.memory['last_seen_url'] = tools.WillieMemory()
 
 def google_ajax(query):
     """Search using AjaxSearch, and return its JSON."""
