@@ -34,6 +34,7 @@ def parse_version(version):
 @willie.module.event('251')
 @willie.module.rule('.*')
 def startup_version_check(bot, trigger):
+    global startup_check_run
     if not startup_check_run:
         startup_check_run = True
         check_version(bot)
