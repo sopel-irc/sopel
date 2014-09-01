@@ -1,25 +1,18 @@
-How to contribute
-=================
+Submitting Issues
+-----------------
 
-The Willie project welcomes patches from third parties. There are always things
-that can be improved, and we can't always do all of them ourselves. We love it
-when people help out.
+When submitting issues to our
+[issue tracker](https://github.com/embolalia/willie/issues), it's important
+that you do the following:
 
+1. Describe your issue clearly and concisely.
+2. Give Willie the .version command, and include the output in your issue.
+3. Note the OS you're running Willie on, and how you installed Willie (via your
+package manager, pip, setup.py install, or running straight from source)
+4. Include relevant output from the log files in ~/.willie/logs.
 
-Submit Issues
--------------
-It's very important to us that we know when our code is failing. As such, we
-greatly appreciate when users submit tickets on the GitHub issue tracker. Be
-sure to describe your issue clearly and concisely. You should include the
-version you're using in your reports; you can see this by giving Willie the
-.version command. It's also a good idea to include your operating system, how
-you installed Willie (via your package manager, pip, setup.py install, or
-running straight from source) and, if applicable, the relevant output from the
-log files in ~/.willie/logs.
-
-
-Commit Code
------------
+Committing Code
+---------------
 We prefer code to be submitted through GitHub pull requests. We do require that
 code submitted to the project be licensed under the Eiffel Forum License v2,
 the text of which was distributed with the source code.
