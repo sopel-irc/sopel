@@ -22,11 +22,17 @@ if sys.version_info.major < 3:
 else:
     from html.parser import HTMLParser
 
+regex = re.compile('(youtube.com/watch\S*v=|youtu.be/)([\w-]+)')
+
+
 def setup(bot):
-    regex = re.compile('(youtube.com/watch\S*v=|youtu.be/)([\w-]+)')
     if not bot.memory.contains('url_callbacks'):
         bot.memory['url_callbacks'] = tools.WillieMemory()
     bot.memory['url_callbacks'][regex] = ytinfo
+
+
+def shutdown(bot):
+    del bot.memory['url_callbacks'][regex]
 
 
 def ytget(bot, trigger, uri):

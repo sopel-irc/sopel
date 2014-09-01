@@ -16,15 +16,20 @@ import re
 domain = r'https?://(?:www\.|np\.)?reddit\.com'
 post_url = '(%s/r/.*?/comments/[\w-]+)' % domain
 user_url = '%s/u(ser)?/([\w-]+)' % domain
+post_regex = re.compile(post_url)
+user_regex = re.compile(user_url)
 
 
 def setup(bot):
-    post_regex = re.compile(post_url)
-    user_regex = re.compile(user_url)
     if not bot.memory.contains('url_callbacks'):
         bot.memory['url_callbacks'] = tools.WillieMemory()
     bot.memory['url_callbacks'][post_regex] = rpost_info
     bot.memory['url_callbacks'][user_regex] = redditor_info
+
+
+def shutdown(bot):
+    del bot.memory['url_callbacks'][post_regex]
+    del bot.memory['url_callbacks'][user_regex]
 
 
 @rule('.*%s.*' % post_url)

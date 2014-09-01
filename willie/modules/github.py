@@ -24,6 +24,7 @@ issueURL = (r'https?://(?:www\.)?github.com/'
              '([A-z0-9\-]+/[A-z0-9\-]+)/'
              '(?:issues|pull)/'
              '([\d]+)')
+regex = re.compile(issueURL)
 
 def checkConfig(bot):
     if not bot.config.has_option('github', 'oauth_token') or not bot.config.has_option('github', 'repo'):
@@ -45,11 +46,16 @@ def configure(config):
         config.interactive_add('github', 'repo', 'Github repository', 'embolalia/willie')
     return chunk
 
+
 def setup(bot):
-    regex = re.compile(issueURL)
     if not bot.memory.contains('url_callbacks'):
         bot.memory['url_callbacks'] = tools.WillieMemory()
     bot.memory['url_callbacks'][regex] = issue_info
+
+
+def shutdown(bot):
+    del bot.memory['url_callbacks'][regex]
+
 
 @commands('makeissue', 'makebug')
 def issue(bot, trigger):
