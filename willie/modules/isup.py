@@ -26,7 +26,8 @@ def isup(bot, trigger):
         else:
             site = 'http://' + site
     
-    if not '.' in site: site += ".com"
+    if not '.' in site:
+        site += ".com"
     
     try:
         response = web.get(site)
