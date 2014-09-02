@@ -59,6 +59,14 @@ def get_temp(parsed):
     return (u'%d\u00B0C (%d\u00B0F)' % (temp, f))
 
 
+def get_humidity(parsed):
+    try:
+        humidity = parsed['feed']['yweather_atmosphere']['humidity']
+    except (KeyError, ValueError):
+        return 'unknown'
+    return humidity
+
+
 def get_pressure(parsed):
     try:
         pressure = parsed['feed']['yweather_atmosphere']['pressure']
@@ -158,9 +166,10 @@ def weather(bot, trigger):
 
     cover = get_cover(parsed)
     temp = get_temp(parsed)
+    humidity = get_humidity(parsed)
     pressure = get_pressure(parsed)
     wind = get_wind(parsed)
-    bot.say(u'%s: %s, %s, %s, %s' % (location, cover, temp, pressure, wind))
+    bot.say(u'%s: %s, %s - %s%%, %s, %s' % (location, cover, temp, humidity, pressure, wind))
 
 
 @commands('setlocation', 'setwoeid')
