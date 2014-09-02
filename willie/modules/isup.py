@@ -25,6 +25,10 @@ def isup(bot, trigger):
             return bot.reply("Try it again without the %s" % protocol)
         else:
             site = 'http://' + site
+    
+    if not '.' in site:
+        site += ".com"
+    
     try:
         response = web.get(site)
     except Exception:
