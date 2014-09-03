@@ -21,7 +21,7 @@ if sys.version_info.major >= 3:
     sys.stderr = sys.__stderr__
 try:
     import IPython
-    if IPython.terminal:
+    if hasattr(IPython, 'terminal'):
         from IPython.terminal.embed import InteractiveShellEmbed
     else:
         from IPython.frontend.terminal.embed import InteractiveShellEmbed
