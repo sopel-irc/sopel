@@ -1,3 +1,11 @@
+Changes between 4.5.0 and 4.5.1
+===============================
+Module Changes (for users):
+* Version checking module no longer causes an error at startup
+* URL handling modules no longer repeat themselves after being reloaded
+* .isup now adds a .com TLD if none is used
+* IPython integration now works with older versions of IPython
+
 Changes between 4.4.1 and 4.5.0
 ===============================
 Module Changes (for users):
