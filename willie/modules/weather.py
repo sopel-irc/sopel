@@ -64,7 +64,7 @@ def get_humidity(parsed):
         humidity = parsed['feed']['yweather_atmosphere']['humidity']
     except (KeyError, ValueError):
         return 'unknown'
-    return "humidity: %s%%" % humidity
+    return "Humidity: %s%%" % humidity
 
 
 def get_wind(parsed):
