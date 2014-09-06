@@ -23,24 +23,7 @@ from willie.tools import Nick, iteritems
 import base64
 
 
-@willie.module.event('251')
-@willie.module.rule('.*')
-@willie.module.thread(False)
-@willie.module.unblockable
-def rfc1459_startup(bot, trigger):
-    """Startup trigger for rfc1459 servers.
-
-    251 RPL_LUSERCLIENT is a mandatory message that is sent after client
-    connects to the server in rfc1459. RFC2812 does not require it and all
-    networks might not send it. This trigger is for those servers that send 251
-    but not 001.
-
-    """
-    if not bot.connection_registered:
-        startup(bot, trigger)
-
-
-@willie.module.event('001')
+@willie.module.event('001', '251')
 @willie.module.rule('.*')
 @willie.module.thread(False)
 @willie.module.unblockable
@@ -50,7 +33,14 @@ def startup(bot, trigger):
     001 RPL_WELCOME is from RFC2812 and is the first message that is sent after
     the connection has been registered on the network.
 
+    251 RPL_LUSERCLIENT is a mandatory message that is sent after client
+    connects to the server in rfc1459. RFC2812 does not require it and all
+    networks might not send it. We support both.
+
     """
+    if bot.connection_registered:
+        return
+
     bot.connection_registered = True
 
     if bot.config.core.nickserv_password is not None:
