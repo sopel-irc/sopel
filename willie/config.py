@@ -122,6 +122,7 @@ class Config(object):
                 self.parser.set('core', 'timeout', '120')
         else:
             self.parser.add_section('core')
+        self.get = self.parser.get
 
     def save(self):
         """Save all changes to the config file."""
