@@ -39,6 +39,8 @@ if not hasattr(ssl, 'match_hostname'):
     ssl.match_hostname = backports.ssl_match_hostname.match_hostname
     ssl.CertificateError = backports.ssl_match_hostname.CertificateError
 
+from willie import __version__
+USER_AGENT = 'Willie/{} (http://willie.dftba.net)'
 
 # HTTP GET
 def get(uri, timeout=20, headers=None, return_headers=False,
@@ -185,7 +187,7 @@ def get_urllib_object(uri, timeout, headers=None, verify_ssl=True, data=None):
     except:
         uri = iri_to_uri(uri)
 
-    original_headers = {'Accept': '*/*', 'User-Agent': 'Mozilla/5.0 (Willie)'}
+    original_headers = {'Accept': '*/*', 'User-Agent': USER_AGENT}
     if headers is not None:
         original_headers.update(headers)
     else:

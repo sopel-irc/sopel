@@ -42,9 +42,7 @@ def translate(text, in_lang='auto', out_lang='en'):
         raw = True
 
     headers = {
-        'User-Agent': 'Mozilla/5.0' +
-        '(X11; U; Linux i686)' +
-        'Gecko/20071127 Firefox/2.0.0.11'
+        'User-Agent': web.USER_AGENT
     }
 
     url_query = {
