@@ -120,6 +120,12 @@ def title_auto(bot, trigger):
     """
     if re.match(bot.config.core.prefix + 'title', trigger):
         return
+
+    # Avoid fetching known malicious links
+    if 'safety_cache' in bot.memory and trigger in bot.memory['safety_cache']:
+        if bot.memory['safety_cache'][trigger]['positives'] > 1:
+            return
+
     urls = re.findall(url_finder, trigger)
     results = process_urls(bot, trigger, urls)
     bot.memory['last_seen_url'][trigger.sender] = urls[-1]
