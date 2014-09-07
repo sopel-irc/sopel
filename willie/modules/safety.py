@@ -30,6 +30,7 @@ def configure(config):
     | vt_api_key | ea4ca709a686edfcc96a144c224935776e2ba46b77 | VirusTotal API key |
     """
     if config.option('Configure malicious URL protection'):
+        config.add_section('safety')
         config.add_option('safety', 'enabled_by_default', 'Enable malicious URL checking for channels by default?', True)
         config.interactive_add('safety', 'vt_api_key', 'VirusTotal API Key (not mandatory)', None)
 
