@@ -1,4 +1,4 @@
-#coding: utf8
+# coding=utf8
 """
 isup.py - Simple website status check with isup.me
 Author: Edward Powell http://embolalia.net
@@ -25,6 +25,10 @@ def isup(bot, trigger):
             return bot.reply("Try it again without the %s" % protocol)
         else:
             site = 'http://' + site
+    
+    if not '.' in site:
+        site += ".com"
+    
     try:
         response = web.get(site)
     except Exception:

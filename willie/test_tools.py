@@ -1,4 +1,4 @@
-#coding: utf8
+# coding=utf8
 """This module has classes and functions that can help in writing tests.
 
 test_tools.py - Willie misc tools

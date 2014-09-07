@@ -1,4 +1,4 @@
-#coding: utf8
+# coding=utf8
 """
 search.py - Willie Web Search Module
 Copyright 2008-9, Sean B. Palmer, inamidst.com
@@ -13,6 +13,7 @@ import re
 from willie import web
 from willie.module import commands, example
 import json
+import sys
 import time
 
 
@@ -126,6 +127,8 @@ def duck_search(query):
     query = query.replace('!', '')
     uri = 'http://duckduckgo.com/html/?q=%s&kl=uk-en' % query
     bytes = web.get(uri)
+    if 'web-result"' in bytes: #filter out the adds on top of the page
+        bytes = bytes.split('web-result"')[1]
     m = r_duck.search(bytes)
     if m:
         return web.decode(m.group(1))

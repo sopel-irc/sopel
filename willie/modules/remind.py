@@ -1,4 +1,4 @@
-#coding: utf8
+# coding=utf8
 """
 remind.py - Willie Reminder Module
 Copyright 2011, Sean B. Palmer, inamidst.com
@@ -125,14 +125,15 @@ periods = '|'.join(scaling.keys())
 def remind(bot, trigger):
     """Gives you a reminder in the given amount of time."""
     duration = 0
-    message = re.split('(\d+(?:\.\d+)? ?(?:' + periods + ')) ?', trigger.group(2))[1:]
+    message = filter(None, re.split('(\d+(?:\.\d+)? ?(?:(?i)' + periods + ')) ?',
+                                    trigger.group(2))[1:])
     reminder = ''
     stop = False
     for piece in message:
         grp = re.match('(\d+(?:\.\d+)?) ?(.*) ?', piece)
         if grp and not stop:
             length = float(grp.group(1))
-            factor = scaling.get(grp.group(2), 60)
+            factor = scaling.get(grp.group(2).lower(), 60)
             duration += length * factor
         else:
             reminder = reminder + piece
@@ -170,6 +171,8 @@ def at(bot, trigger):
     if pytz:
         timezone = willie.tools.get_timezone(bot.db, bot.config, tz,
                                              trigger.nick, trigger.sender)
+        if not timezone:
+            timezone = 'UTC'
         now = datetime.now(pytz.timezone(timezone))
         at_time = datetime(now.year, now.month, now.day,
                            int(hour), int(minute), int(second),

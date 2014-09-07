@@ -1,4 +1,4 @@
-#coding: utf8
+# coding=utf8
 """
 coretasks.py - Willie Routine Core tasks
 Copyright 2008-2011, Sean B. Palmer (inamidst.com) and Michael Yanovich
@@ -23,24 +23,7 @@ from willie.tools import Nick, iteritems
 import base64
 
 
-@willie.module.event('251')
-@willie.module.rule('.*')
-@willie.module.thread(False)
-@willie.module.unblockable
-def rfc1459_startup(bot, trigger):
-    """Startup trigger for rfc1459 servers.
-
-    251 RPL_LUSERCLIENT is a mandatory message that is sent after client
-    connects to the server in rfc1459. RFC2812 does not require it and all
-    networks might not send it. This trigger is for those servers that send 251
-    but not 001.
-
-    """
-    if not bot.connection_registered:
-        startup(bot, trigger)
-
-
-@willie.module.event('001')
+@willie.module.event('001', '251')
 @willie.module.rule('.*')
 @willie.module.thread(False)
 @willie.module.unblockable
@@ -50,7 +33,14 @@ def startup(bot, trigger):
     001 RPL_WELCOME is from RFC2812 and is the first message that is sent after
     the connection has been registered on the network.
 
+    251 RPL_LUSERCLIENT is a mandatory message that is sent after client
+    connects to the server in rfc1459. RFC2812 does not require it and all
+    networks might not send it. We support both.
+
     """
+    if bot.connection_registered:
+        return
+
     bot.connection_registered = True
 
     if bot.config.core.nickserv_password is not None:
@@ -212,6 +202,8 @@ def track_modes(bot, trigger):
 
     modes = []
     for arg in line:
+        if len(arg) == 0:
+            continue
         if arg[0] in '+-':
             # There was a comment claiming IRC allows e.g. MODE +aB-c foo, but
             # I don't see it in any RFCs. Leaving in the extra parsing for now.
@@ -427,7 +419,12 @@ def auth_proceed(bot, trigger):
         # How did we get here? I am not good with computer.
         return
     # Is this right?
-    sasl_token = '\0'.join((bot.nick, bot.nick, bot.config.core.sasl_password))
+    if bot.config.core.sasl_username:
+        sasl_username = bot.config.core.sasl_username
+    else:
+        sasl_username = bot.nick
+    sasl_token = '\0'.join((sasl_username, sasl_username,
+                           bot.config.core.sasl_password))
     # Spec says we do a base 64 encode on the SASL stuff
     bot.write(('AUTHENTICATE', base64.b64encode(sasl_token)))
 

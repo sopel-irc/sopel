@@ -1,4 +1,4 @@
-#coding: utf8
+# coding=utf8
 """
 calc.py - Willie Calculator Module
 Copyright 2008, Sean B. Palmer, inamidst.com
@@ -22,20 +22,26 @@ else:
 
 @commands('c', 'calc')
 @example('.c 5 + 3', '8')
+@example('.c 0.9*10', '9')
+@example('.c 10*0.9', '9')
+@example('.c 2*(1+2)*3', '18')
+@example('.c 2**10', '1024')
+@example('.c 5 // 2', '2')
+@example('.c 5 / 2', '2.5')
 def c(bot, trigger):
-    """Google calculator."""
+    """Evaluate some calculation."""
     if not trigger.group(2):
         return bot.reply("Nothing to calculate.")
     # Account for the silly non-Anglophones and their silly radix point.
     eqn = trigger.group(2).replace(',', '.')
     try:
-        result = str(eval_equation(eqn))
+        result = eval_equation(eqn)
+        result = "{:.10g}".format(result)
     except ZeroDivisionError:
         result = "Division by zero is not supported in this universe."
-    except Exception:
-        result = ("Sorry, I can't calculate that with this command. "
-                  "I might have another one that can. "
-                  "Use .commands for a list.")
+    except Exception as e:
+        result = "{error}: {msg}".format(
+                error=type(e), msg=e)
     bot.reply(result)
 
 
@@ -65,7 +71,8 @@ def wa(bot, trigger):
     query = trigger.group(2)
     uri = 'http://tumbolia.appspot.com/wa/'
     try:
-        answer = web.get(uri + web.quote(query).replace('+', '%2B'), 45)
+        answer = web.get(uri + web.quote(query.replace('+', 'plus')), 45,
+                         dont_decode=True)
     except timeout as e:
         return bot.say('[WOLFRAM ERROR] Request timed out')
     if answer:

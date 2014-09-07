@@ -1,4 +1,4 @@
-#coding: utf8
+# coding=utf8
 """
 codepoints.py - Willie Codepoints Module
 Copyright 2013, Edward Powell, embolalia.net
@@ -9,17 +9,24 @@ http://willie.dfbta.net
 """
 from __future__ import unicode_literals
 import unicodedata
+import sys
 from willie.module import commands, example, NOLIMIT
+
+if sys.version_info.major >= 3:
+    unichr = chr
 
 
 @commands('u')
-@example('.u 203D')
+@example('.u ‽', 'U+203D INTERROBANG (‽)')
+@example('.u 203D', 'U+203D INTERROBANG (‽)')
 def codepoint(bot, trigger):
     arg = trigger.group(2).strip()
     if len(arg) == 0:
         bot.reply('What code point do you want me to look up?')
         return NOLIMIT
     elif len(arg) > 1:
+        if arg.startswith('U+'):
+            arg = arg[2:]
         try:
             arg = unichr(int(arg, 16))
         except:
@@ -29,7 +36,7 @@ def codepoint(bot, trigger):
     # Get the hex value for the code point, and drop the 0x from the front
     point = str(hex(ord(u'' + arg)))[2:]
     # Make the hex 4 characters long with preceding 0s, and all upper case
-    point = point.rjust(4, '0').upper()
+    point = point.rjust(4, str('0')).upper()
     try:
         name = unicodedata.name(arg)
     except ValueError:
@@ -40,3 +47,7 @@ def codepoint(bot, trigger):
     else:
         template = 'U+%s %s (\xe2\x97\x8c%s)'
     bot.say(template % (point, name, arg))
+
+if __name__ == "__main__":
+    from willie.test_tools import run_example_tests
+    run_example_tests(__file__)

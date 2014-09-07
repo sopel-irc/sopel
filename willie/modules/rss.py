@@ -1,4 +1,4 @@
-#coding: utf8
+# coding=utf8
 """
 rss.py - Willie RSS Module
 Copyright 2012, Michael Yanovich, yanovich.net
@@ -132,7 +132,7 @@ def manage_rss(bot, trigger):
 
 class RSSManager:
     def __init__(self, bot):
-        self.running = False
+        self.running = True
         self.sub = bot.db.substitution
 
         # get a list of all methods in this class that start with _rss_
@@ -379,7 +379,6 @@ def read_feeds(bot, force=False):
     c.execute('SELECT * FROM rss_feeds')
     feeds = c.fetchall()
     if not feeds:
-        bot.debug(__file__, "No RSS feeds to check.", 'warning')
         return
 
     for feed_row in feeds:
@@ -407,13 +406,6 @@ def read_feeds(bot, force=False):
 
         bot.debug(feed.channel, "{0}: status = {1}, version = '{2}', items = {3}".format(
             feed.name, status, fp.version, len(fp.entries)), 'verbose')
-
-        # check for malformed XML
-        if fp.bozo:
-            bot.debug(__file__, "Got malformed feed on {0}, disabling ({1})".format(
-                feed.name, fp.bozo_exception.getMessage()), 'warning')
-            disable_feed()
-            continue
 
         # check HTTP status
         if status == 301:  # MOVED_PERMANENTLY

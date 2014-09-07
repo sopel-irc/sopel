@@ -1,7 +1,8 @@
-#coding: utf8
+# coding=utf8
 """
 version.py - Willie Version Module
 Copyright 2009, Silas Baronda
+Copyright 2014, Dimitri Molenaars <tyrope@tyrope.nl>
 Licensed under the Eiffel Forum License 2.
 
 http://willie.dftba.net
@@ -12,6 +13,7 @@ from datetime import datetime
 import willie
 import re
 from os import path
+import json
 
 log_line = re.compile('\S+ (\S+) (.*? <.*?>) (\d+) (\S+)\tcommit[^:]*: (.+)')
 

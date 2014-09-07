@@ -6,9 +6,8 @@ After=network.target
 [Service]
 Type=simple
 User=willie
-PIDFile=/run/willie/willie.pid
+PIDFile=/run/willie/willie-willie.pid
 ExecStart=/usr/bin/willie -c /etc/willie.cfg --quiet
-ExecStop=/bin/kill -USR1 $MAINPID
 Restart=on-failure
 RestartPreventExitStatus=2
 RestartSec=30

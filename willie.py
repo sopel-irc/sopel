@@ -1,5 +1,5 @@
 #!/usr/bin/env python2.7
-#coding: utf8
+# coding=utf8
 """
 Willie - An IRC Bot
 Copyright 2008, Sean B. Palmer, inamidst.com
@@ -155,6 +155,7 @@ def main(argv=None):
             os.mkdir(config_module.logdir)
 
         config_module.exit_on_error = opts.exit_on_error
+        config_module._is_deamonized = opts.deamonize
 
         sys.stderr = tools.OutputRedirect(logfile, True, opts.quiet)
         sys.stdout = tools.OutputRedirect(logfile, False, opts.quiet)

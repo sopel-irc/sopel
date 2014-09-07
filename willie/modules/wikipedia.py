@@ -1,4 +1,4 @@
-#coding: utf8
+# coding=utf8
 """
 wikipedia.py - Willie Wikipedia Module
 Copyright 2013 Edward Powell - embolalia.net
@@ -58,7 +58,7 @@ def mw_snippet(server, query):
 
     # For some reason, the API gives the page *number* as the key, so we just
     # grab the first page number in the results.
-    snippet = snippet[snippet.keys()[0]]
+    snippet = snippet[list(snippet.keys())[0]]
 
     return snippet['extract']
 

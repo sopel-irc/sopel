@@ -1,4 +1,4 @@
-#coding: utf8
+# coding=utf8
 """
 countdown.py - Willie Countdown Module
 Copyright 2011, Michael Yanovich, yanovich.net

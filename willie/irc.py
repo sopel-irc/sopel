@@ -1,4 +1,4 @@
-#coding: utf8
+# coding=utf8
 """
 irc.py - An Utility IRC Bot
 Copyright 2008, Sean B. Palmer, inamidst.com
@@ -73,10 +73,14 @@ class Origin(object):
 
 class Bot(asynchat.async_chat):
     def __init__(self, config):
+        ca_certs = '/etc/pki/tls/cert.pem'
         if config.ca_certs is not None:
             ca_certs = config.ca_certs
-        else:
-            ca_certs = '/etc/pki/tls/cert.pem'
+        elif not os.path.isfile(ca_certs):
+            ca_certs = '/etc/ssl/certs/ca-certificates.crt'
+        if not os.path.isfile(ca_certs):
+            stderr('Could not open CA certificates file. SSL will not '
+                   'work properly.')
 
         if config.log_raw is None:
             # Default is to log raw data, can be disabled in config
@@ -96,7 +100,7 @@ class Bot(asynchat.async_chat):
         self.channels = []
         """The list of channels Willie is currently in."""
 
-        self.stack = []
+        self.stack = {}
         self.ca_certs = ca_certs
         self.hasquit = False
 
@@ -128,6 +132,10 @@ class Bot(asynchat.async_chat):
         self.connection_registered = False
         """ Set to True when a server has accepted the client connection and
         messages can be sent and received. """
+
+        # Work around bot.connecting missing in Python older than 2.7.4
+        if not hasattr(self, "connecting"):
+            self.connecting = False
 
     def log_raw(self, line, prefix):
         """Log raw line to the raw log."""
@@ -214,13 +222,13 @@ class Bot(asynchat.async_chat):
         try:
             self.initiate_connect(host, port)
         except socket.error as e:
-            stderr('Connection error: %s' % e.strerror)
+            stderr('Connection error: %s' % e)
             self.hasquit = True
 
     def initiate_connect(self, host, port):
         stderr('Connecting to %s:%s...' % (host, port))
         source_address = ((self.config.core.bind_host, 0)
-                          if self.config.core.bind_address else None)
+                          if self.config.core.bind_host else None)
         self.set_socket(socket.create_connection((host, port),
                         source_address=source_address))
         if self.config.core.use_ssl and has_ssl:
@@ -257,7 +265,7 @@ class Bot(asynchat.async_chat):
         # This will eventually call asyncore dispatchers close method, which
         # will release the main thread. This should be called last to avoid
         # race conditions.
-        asynchat.async_chat.handle_close(self)
+        self.close()
 
     def part(self, channel, msg=None):
         """Part a channel."""
@@ -314,26 +322,21 @@ class Bot(asynchat.async_chat):
         ping_thread.start()
 
     def _timeout_check(self):
-        while True:
-            if (
-                datetime.now() - self.last_ping_time
-            ).seconds > int(self.config.timeout):
-                stderr(
-                    'Ping timeout reached after %s seconds,' +
-                    ' closing connection' %
-                    self.config.timeout
-                )
+        while self.connected or self.connecting:
+            if (datetime.now() - self.last_ping_time).seconds > int(self.config.timeout):
+                stderr('Ping timeout reached after %s seconds, closing connection' % self.config.timeout)
                 self.handle_close()
                 break
             else:
                 time.sleep(int(self.config.timeout))
 
     def _send_ping(self):
-        while True:
-            if (
-                datetime.now() - self.last_ping_time
-            ).seconds > int(self.config.timeout) / 2:
-                self.write(('PING', self.config.host))
+        while self.connected or self.connecting:
+            if self.connected and (datetime.now() - self.last_ping_time).seconds > int(self.config.timeout) / 2:
+                try:
+                    self.write(('PING', self.config.host))
+                except socket.error:
+                    pass
             time.sleep(int(self.config.timeout) / 2)
 
     def _ssl_send(self, data):
@@ -451,7 +454,7 @@ class Bot(asynchat.async_chat):
             encoded_text = text
         excess = ''
         if max_messages > 1 and len(encoded_text) > max_text_length:
-            last_space = encoded_text.rfind(' ', 0, max_text_length)
+            last_space = encoded_text.rfind(' '.encode('utf-8'), 0, max_text_length)
             if last_space == -1:
                 excess = encoded_text[max_text_length:]
                 encoded_text = encoded_text[:max_text_length]
@@ -466,28 +469,33 @@ class Bot(asynchat.async_chat):
 
             # No messages within the last 3 seconds? Go ahead!
             # Otherwise, wait so it's been at least 0.8 seconds + penalty
-            if self.stack:
-                elapsed = time.time() - self.stack[-1][0]
+
+            recipient_id = Nick(recipient)
+
+            if recipient_id not in self.stack:
+                self.stack[recipient_id] = []
+            elif self.stack[recipient_id]:
+                elapsed = time.time() - self.stack[recipient_id][-1][0]
                 if elapsed < 3:
                     penalty = float(max(0, len(text) - 50)) / 70
-                    wait = 0.8 + penalty
+                    wait = 0.7 + penalty
                     if elapsed < wait:
                         time.sleep(wait - elapsed)
 
                 # Loop detection
-                messages = [m[1] for m in self.stack[-8:]]
+                messages = [m[1] for m in self.stack[recipient_id][-8:]]
 
                 # If what we about to send repeated at least 5 times in the
-                # last 5 minutes, replace with '...'
-                if messages.count(text) >= 5 and elapsed < 300:
+                # last 2 minutes, replace with '...'
+                if messages.count(text) >= 5 and elapsed < 120:
                     text = '...'
                     if messages.count('...') >= 3:
                         # If we said '...' 3 times, discard message
                         return
 
             self.write(('PRIVMSG', recipient), text)
-            self.stack.append((time.time(), self.safe(text)))
-            self.stack = self.stack[-10:]
+            self.stack[recipient_id].append((time.time(), self.safe(text)))
+            self.stack[recipient_id] = self.stack[recipient_id][-10:]
         finally:
             self.sending.release()
         # Now that we've sent the first part, we need to send the rest. Doing
