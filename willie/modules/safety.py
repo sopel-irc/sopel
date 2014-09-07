@@ -158,7 +158,8 @@ def toggle_safety(bot, trigger):
     """ Set safety setting for channel """
     allowed_states = ['strict', 'on', 'off', 'local', 'local strict']
     if not trigger.group(2) or trigger.group(2).lower() not in allowed_states:
-        bot.reply('Available options: strict / on /off')
+        options = ' / '.join(allowed_states)
+        bot.reply('Available options: %s' % options)
         return
     if not bot.db:
         bot.reply('No database configured, can\'t modify settings')
