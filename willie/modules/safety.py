@@ -20,6 +20,8 @@ import time
 if sys.version_info.major > 2:
     unicode = str
 
+vt_base_api_url = 'https://www.virustotal.com/vtapi/v2/url/'
+
 
 def configure(config):
     """
@@ -73,7 +75,6 @@ def url_handler(bot, trigger):
     apikey = bot.config.safety.vt_api_key
     if apikey is not None:
         payload = {'resource': unicode(trigger), 'apikey': apikey, 'scan': '1'}
-        vt_base_api_url = 'https://www.virustotal.com/vtapi/v2/url/'
 
         if trigger not in bot.memory['safety_cache']:
             result = web.post(vt_base_api_url+'report', payload)
