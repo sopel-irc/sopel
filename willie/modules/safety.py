@@ -69,7 +69,7 @@ def setup(bot):
 
 
 def _download_malwaredomains_db(path):
-    print('Downloading malwaredomains db…')
+    print('Downloading malwaredomains db...')
     urlretrieve('http://mirror1.malwaredomains.com/files/justdomains', path)
 
 
