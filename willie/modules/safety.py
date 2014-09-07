@@ -17,6 +17,7 @@ import sys
 import json
 import time
 import os.path
+import re
 
 if sys.version_info.major > 2:
     unicode = str
@@ -38,7 +39,7 @@ def configure(config):
     | ---- | ------- | ------- |
     | enabled_by_default | True | Enable safety on implicity on channels |
     | vt_api_key | ea4ca709a686edfcc96a144c224935776e2ba46b77 | VirusTotal API key |
-    | known_good | youtube.com,vimeo.com | list of "known good" domains to ignore |
+    | known_good | youtube.com,vimeo.com,.*\.tumblr.com | list of "known good" domains to ignore |
     """
     if config.option('Configure malicious URL protection?'):
         config.add_section('safety')
@@ -52,7 +53,8 @@ def setup(bot):
     if bot.db and not bot.db.preferences.has_columns('safety'):
         bot.db.preferences.add_columns(['safety'])
     bot.memory['safety_cache'] = willie.tools.WillieMemory()
-    known_good = bot.confg.get_list('safety', 'known_good')
+    for item in bot.config.safety.get_list('known_good'):
+        known_good.append(re.compile(item, re.I))
 
     loc = os.path.join(bot.config.homedir, 'malwaredomains.txt')
     if os.path.isfile(loc):
@@ -63,7 +65,7 @@ def setup(bot):
         _download_malwaredomains_db(loc)
     with open(loc, 'r') as f:
         for line in f:
-            malware_domains.append(unicode(line).strip())
+            malware_domains.append(unicode(line).strip().lower())
 
 
 def _download_malwaredomains_db(path):
@@ -103,8 +105,8 @@ def url_handler(bot, trigger):
         return  # Not overriden by DB, configured default off
 
     netloc = urlparse(trigger).netloc
-    if netloc in known_good:
-        return  # whitelisted
+    if any(regex.search(netloc) for regex in known_good):
+        return  # Whitelisted
 
     apikey = bot.config.safety.vt_api_key
     try:
@@ -134,7 +136,7 @@ def url_handler(bot, trigger):
         bot.debug('[safety]', e, 'debug')
         pass  # Ignoring exceptions with VT so MalwareDomains will always work
 
-    if unicode(netloc) in malware_domains:
+    if unicode(netloc).lower() in malware_domains:
         # malwaredomains is more trustworthy than some VT engines
         # therefor it gets a weight of 10 engines when calculating confidence
         positives += 10
