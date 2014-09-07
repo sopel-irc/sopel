@@ -192,10 +192,15 @@ def get_urllib_object(uri, timeout, headers=None, verify_ssl=True, data=None):
         original_headers.update(headers)
     else:
         headers = original_headers
+
     if verify_ssl:
         opener = urllib2.build_opener(VerifiedHTTPSHandler)
     else:
         opener = urllib2.build_opener()
+
+    if type(data) is dict:
+        data = urlencode(data).encode('utf-8')
+
     req = urllib2.Request(uri, headers=headers, data=data)
     try:
         u = opener.open(req, None, timeout)
