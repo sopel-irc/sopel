@@ -15,12 +15,6 @@ from willie.module import commands, priority, OP, HALFOP
 from willie.tools import Nick
 
 
-def setup(bot):
-    #Having a db means pref's exists. Later, we can just use `if bot.db`.
-    if bot.db and not bot.db.preferences.has_columns('topic_mask'):
-        bot.db.preferences.add_columns(['topic_mask'])
-
-
 @commands('op')
 def op(bot, trigger):
     """
@@ -228,9 +222,9 @@ def quiet(bot, trigger):
 @commands('unquiet')
 def unquiet(bot, trigger):
     """
-   This gives admins the ability to unquiet a user.
-   The bot must be a Channel Operator for this command to work.
-   """
+    This gives admins the ability to unquiet a user.
+    The bot must be a Channel Operator for this command to work.
+    """
     if bot.privileges[trigger.sender][trigger.nick] < OP:
         return
     if bot.privileges[trigger.sender][bot.nick] < OP:
@@ -257,10 +251,10 @@ def unquiet(bot, trigger):
 @priority('high')
 def kickban(bot, trigger):
     """
-   This gives admins the ability to kickban a user.
-   The bot must be a Channel Operator for this command to work.
-   .kickban [#chan] user1 user!*@* get out of here
-   """
+    This gives admins the ability to kickban a user.
+    The bot must be a Channel Operator for this command to work.
+    .kickban [#chan] user1 user!*@* get out of here
+    """
     if bot.privileges[trigger.sender][trigger.nick] < OP:
         return
     if bot.privileges[trigger.sender][bot.nick] < HALFOP:
@@ -306,9 +300,8 @@ def topic(bot, trigger):
 
     narg = 1
     mask = None
-    if bot.db and channel in bot.db.preferences:
-        mask = bot.db.preferences.get(channel, 'topic_mask')
-        narg = len(re.findall('%s', mask))
+    mask = bot.db.get_channel_value(channel, 'topic_mask')
+    narg = len(re.findall('%s', mask))
     if not mask or mask == '':
         mask = purple + 'Welcome to: ' + green + channel + purple \
             + ' | ' + bold + 'Topic: ' + bold + green + '%s'
@@ -334,11 +327,8 @@ def set_mask(bot, trigger):
     """
     if bot.privileges[trigger.sender][trigger.nick] < OP:
         return
-    if not bot.db:
-        bot.say("I'm afraid I can't do that.")
-    else:
-        bot.db.preferences.update(trigger.sender.lower(), {'topic_mask': trigger.group(2)})
-        bot.say("Gotcha, " + trigger.nick)
+    bot.db.set_channel_value(trigger.sender, 'topic_mask', trigger.group(2))
+    bot.say("Gotcha, " + trigger.nick)
 
 
 @commands('showmask')
@@ -346,9 +336,6 @@ def show_mask(bot, trigger):
     """Show the topic mask for the current channel."""
     if bot.privileges[trigger.sender][trigger.nick] < OP:
         return
-    if not bot.db:
-        bot.say("I'm afraid I can't do that.")
-    elif trigger.sender.lower() in bot.db.preferences:
-        bot.say(bot.db.preferences.get(trigger.sender.lower(), 'topic_mask'))
-    else:
-        bot.say("%s")
+    mask = bot.db.get_channel_value(trigger.sender, 'topic_mask')
+    mask = mask or "%s"
+    bot.say(mask)

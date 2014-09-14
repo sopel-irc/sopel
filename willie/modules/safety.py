@@ -50,8 +50,6 @@ def configure(config):
 def setup(bot):
     if not bot.config.has_section('safety'):
         raise ConfigurationError("Safety module not configured")
-    if bot.db and not bot.db.preferences.has_columns('safety'):
-        bot.db.preferences.add_columns(['safety'])
     bot.memory['safety_cache'] = willie.tools.WillieMemory()
     for item in bot.config.safety.get_list('known_good'):
         known_good.append(re.compile(item, re.I))
@@ -90,8 +88,8 @@ def url_handler(bot, trigger):
         else:
             check = bool(check)
     # DB overrides config:
-    if bot.db and trigger.sender.lower() in bot.db.preferences:
-        setting = bot.db.preferences.get(trigger.sender.lower(), 'safety')
+    setting = bot.db.get_channel_value(trigger.sender, 'safety')
+    if setting is not None:
         if setting == 'off':
             return  # Not checking
         elif setting in ['on', 'strict', 'local', 'local strict']:
@@ -161,14 +159,11 @@ def toggle_safety(bot, trigger):
         options = ' / '.join(allowed_states)
         bot.reply('Available options: %s' % options)
         return
-    if not bot.db:
-        bot.reply('No database configured, can\'t modify settings')
-        return
     if not trigger.isop and not trigger.admin:
         bot.reply('Only channel operators can change safety settings')
 
     channel = trigger.sender.lower()
-    bot.db.preferences.update(channel, {'safety': trigger.group(2).lower()})
+    bot.db.set_channel_value(channel, 'safety', trigger.group(2).lower())
     bot.reply('Safety is now set to %s in this channel' % trigger.group(2))
 
 

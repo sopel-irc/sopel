@@ -16,12 +16,6 @@ import feedparser
 from lxml import etree
 
 
-def setup(bot):
-    # Having a db means pref's exists. Later, we can just use `if bot.db`.
-    if bot.db and not bot.db.preferences.has_columns('woeid'):
-        bot.db.preferences.add_columns(['woeid'])
-
-
 def woeid_search(query):
     """
     Find the first Where On Earth ID for the given query. Result is the etree
@@ -134,16 +128,14 @@ def weather(bot, trigger):
     location = trigger.group(2)
     woeid = ''
     if not location:
-        if bot.db and trigger.nick in bot.db.preferences:
-            woeid = bot.db.preferences.get(trigger.nick, 'woeid')
+        woeid = bot.db.get_nick_value(trigger.nick, 'woeid')
         if not woeid:
             return bot.msg(trigger.sender, "I don't know where you live. " +
                            'Give me a location, like .weather London, or tell me where you live by saying .setlocation London, for example.')
     else:
         location = location.strip()
-        if bot.db and location in bot.db.preferences:
-            woeid = bot.db.preferences.get(location, 'woeid')
-        else:
+        woeid = bot.db.get_channel_value(location, 'woeid')
+        if woeid is None:
             first_result = woeid_search(location)
             if first_result is not None:
                 woeid = first_result.find('woeid').text
@@ -171,23 +163,20 @@ def update_woeid(bot, trigger):
         bot.reply('Give me a location, like "Washington, DC" or "London".')
         return NOLIMIT
 
-    if bot.db:
-        first_result = woeid_search(trigger.group(2))
-        if first_result is None:
-            return bot.reply("I don't know where that is.")
+    first_result = woeid_search(trigger.group(2))
+    if first_result is None:
+        return bot.reply("I don't know where that is.")
 
-        woeid = first_result.find('woeid').text
+    woeid = first_result.find('woeid').text
 
-        bot.db.preferences.update(trigger.nick, {'woeid': woeid})
+    bot.db.set_nick_value(trigger.nick, 'woeid', woeid)
 
-        neighborhood = first_result.find('neighborhood').text or ''
-        if neighborhood:
-            neighborhood += ','
-        city = first_result.find('city').text or ''
-        state = first_result.find('state').text or ''
-        country = first_result.find('country').text or ''
-        uzip = first_result.find('uzip').text or ''
-        bot.reply('I now have you at WOEID %s (%s %s, %s, %s %s.)' %
-                  (woeid, neighborhood, city, state, country, uzip))
-    else:
-        bot.reply("I can't remember that; I don't have a database.")
+    neighborhood = first_result.find('neighborhood').text or ''
+    if neighborhood:
+        neighborhood += ','
+    city = first_result.find('city').text or ''
+    state = first_result.find('state').text or ''
+    country = first_result.find('country').text or ''
+    uzip = first_result.find('uzip').text or ''
+    bot.reply('I now have you at WOEID %s (%s %s, %s, %s %s.)' %
+              (woeid, neighborhood, city, state, country, uzip))
