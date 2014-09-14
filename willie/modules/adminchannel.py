@@ -315,8 +315,7 @@ def topic(bot, trigger):
 
     narg = 1
     mask = None
-    if bot.db and channel in bot.db.preferences:
-        mask = bot.db.preferences.get(channel, 'topic_mask')
+    mask = bot.db.get_channel_value(channel, 'topic_mask')
     mask = mask or default_mask(trigger)
     mask = mask.replace('%s', '{}')
     narg = len(re.findall('{}', mask))
@@ -343,11 +342,8 @@ def set_mask(bot, trigger):
     """
     if bot.privileges[trigger.sender][trigger.nick] < OP:
         return
-    if not bot.db:
-        bot.say("I'm afraid I can't do that.")
-    else:
-        bot.db.preferences.update(trigger.sender.lower(), {'topic_mask': trigger.group(2)})
-        bot.say("Gotcha, " + trigger.nick)
+    bot.db.set_channel_value(trigger.sender, 'topic_mask', trigger.group(2))
+    bot.say("Gotcha, " + trigger.nick)
 
 
 @commands('showmask')
@@ -355,9 +351,6 @@ def show_mask(bot, trigger):
     """Show the topic mask for the current channel."""
     if bot.privileges[trigger.sender][trigger.nick] < OP:
         return
-    if not bot.db:
-        bot.say("I'm afraid I can't do that.")
-    elif trigger.sender.lower() in bot.db.preferences:
-        bot.say(bot.db.preferences.get(trigger.sender.lower(), 'topic_mask'))
-    else:
-        bot.say(default_mask(trigger))
+    mask = bot.db.get_channel_value(trigger.sender, 'topic_mask')
+    mask = mask or default_mask(trigger)
+    bot.say(mask)

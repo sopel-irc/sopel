@@ -27,8 +27,6 @@ INTERVAL = 60 * 5  # seconds between checking for new updates
 def setup(bot):
     bot.memory['rss_manager'] = RSSManager(bot)
 
-    if not bot.db:
-        raise ConfigurationError("Database not set up, or unavailable.")
     conn = bot.db.connect()
     c = conn.cursor()
 
@@ -38,31 +36,14 @@ def setup(bot):
         c.execute('SELECT * FROM rss_feeds')
     except StandardError:
         create_table(bot, c)
-        migrate_from_old_tables(bot, c)
-
-        # These tables are no longer used, but lets not delete them right away.
-        # c.execute('DROP TABLE IF EXISTS rss')
-        # c.execute('DROP TABLE IF EXISTS recent')
-
         conn.commit()
-
-    # The modified column was added on 2013-07-21.
-    try:
-        c.execute('SELECT modified FROM rss_feeds')
-    except StandardError:
-        c.execute('ALTER TABLE rss_feeds ADD modified TEXT')
-        conn.commit()
-
     conn.close()
 
 
 def create_table(bot, c):
     # MySQL needs to only compare on the first n characters of a TEXT field
     # but SQLite won't accept the syntax needed to make it do it.
-    if bot.db.type == 'mysql':
-        primary_key = '(channel(254), feed_name(254))'
-    else:
-        primary_key = '(channel, feed_name)'
+    primary_key = '(channel, feed_name)'
 
     c.execute('''CREATE TABLE IF NOT EXISTS rss_feeds (
         channel TEXT,
@@ -78,41 +59,6 @@ def create_table(bot, c):
         modified TEXT,
         PRIMARY KEY {0}
         )'''.format(primary_key))
-
-
-def migrate_from_old_tables(bot, c):
-    sub = bot.db.substitution
-
-    try:
-        c.execute('SELECT * FROM rss')
-        oldfeeds = c.fetchall()
-    except StandardError:
-        oldfeeds = []
-
-    for feed in oldfeeds:
-        channel, site_name, site_url, fg, bg = feed
-
-        # get recent article if possible
-        try:
-            c.execute('''
-                SELECT article_title, article_url FROM recent
-                WHERE channel = {0} AND site_name = {0}
-                '''.format(sub), (channel, site_name))
-            article_title, article_url = c.fetchone()
-        except (StandardError, TypeError):
-            article_title = article_url = None
-
-        # add feed to new table
-        if article_url:
-            c.execute('''
-                INSERT INTO rss_feeds (channel, feed_name, feed_url, fg, bg, article_title, article_url)
-                VALUES ({0}, {0}, {0}, {0}, {0}, {0}, {0})
-                '''.format(sub), (channel, site_name, site_url, fg, bg, article_title, article_url))
-        else:
-            c.execute('''
-                INSERT INTO rss_feeds (channel, feed_name, feed_url, fg, bg)
-                VALUES ({0}, {0}, {0}, {0}, {0})
-                '''.format(sub), (channel, site_name, site_url, fg, bg))
 
 
 def colour_text(text, fg=None, bg=None):
@@ -133,7 +79,6 @@ def manage_rss(bot, trigger):
 class RSSManager:
     def __init__(self, bot):
         self.running = True
-        self.sub = bot.db.substitution
 
         # get a list of all methods in this class that start with _rss_
         self.actions = sorted(method[5:] for method in dir(self) if method[:5] == '_rss_')
@@ -202,19 +147,19 @@ class RSSManager:
         bg = int(match.group(5)) % 16 if match.group(5) else None
 
         c.execute('''
-            SELECT * FROM rss_feeds WHERE channel = {0} AND feed_name = {0}
-            '''.format(self.sub), (channel, feed_name))
+            SELECT * FROM rss_feeds WHERE channel = ? AND feed_name = ?
+            ''', (channel, feed_name))
         if not c.fetchone():
             c.execute('''
                 INSERT INTO rss_feeds (channel, feed_name, feed_url, fg, bg)
-                VALUES ({0}, {0}, {0}, {0}, {0})
-                '''.format(self.sub), (channel, feed_name, feed_url, fg, bg))
+                VALUES (?, ?, ?, ?, ?)
+                ''', (channel, feed_name, feed_url, fg, bg))
             bot.reply("Successfully added the feed to the channel.")
         else:
             c.execute('''
-                UPDATE rss_feeds SET feed_url = {0}, fg = {0}, bg = {0}
-                WHERE channel = {0} AND feed_name = {0}
-                '''.format(self.sub), (feed_url, fg, bg, channel, feed_name))
+                UPDATE rss_feeds SET feed_url = ?, fg = ?, bg = ?
+                WHERE channel = ? AND feed_name = ?
+                ''', (feed_url, fg, bg, channel, feed_name))
             bot.reply("Successfully modified the feed.")
         return True
 
@@ -238,9 +183,9 @@ class RSSManager:
         args = [arg for arg in (channel, feed_name) if arg]
 
         c.execute(('DELETE FROM rss_feeds WHERE '
-                   + ('channel = {0} AND ' if channel else '')
-                   + ('feed_name = {0}' if feed_name else '')
-                   ).rstrip(' AND ').format(self.sub), args)
+                   + ('channel = ? AND ' if channel else '')
+                   + ('feed_name = ?' if feed_name else '')
+                   ).rstrip(' AND '), args)
 
         if c.rowcount:
             noun = 'feeds' if c.rowcount != 1 else 'feed'
@@ -278,10 +223,10 @@ class RSSManager:
         feed_name = match.group(3).strip('"') if match.group(3) else None
         args = [arg for arg in (enabled, channel, feed_name) if arg is not None]
 
-        c.execute(('UPDATE rss_feeds SET enabled = {0} WHERE '
-                   + ('channel = {0} AND ' if channel else '')
-                   + ('feed_name = {0}' if feed_name else '')
-                   ).rstrip(' AND ').format(self.sub), args)
+        c.execute(('UPDATE rss_feeds SET enabled = ? WHERE '
+                   + ('channel = ? AND ' if channel else '')
+                   + ('feed_name = ?' if feed_name else '')
+                   ).rstrip(' AND '), args)
 
         if c.rowcount:
             noun = 'feeds' if c.rowcount != 1 else 'feed'
@@ -373,7 +318,6 @@ def read_feeds(bot, force=False):
     if not bot.memory['rss_manager'].running and not force:
         return
 
-    sub = bot.db.substitution
     conn = bot.db.connect()
     c = conn.cursor()
     c.execute('SELECT * FROM rss_feeds')
@@ -388,9 +332,9 @@ def read_feeds(bot, force=False):
 
         def disable_feed():
             c.execute('''
-                UPDATE rss_feeds SET enabled = {0}
-                WHERE channel = {0} AND feed_name = {0}
-                '''.format(sub), (0, feed.channel, feed.name))
+                UPDATE rss_feeds SET enabled = ?
+                WHERE channel = ? AND feed_name = ?
+                ''', (0, feed.channel, feed.name))
             conn.commit()
 
         try:
@@ -414,9 +358,9 @@ def read_feeds(bot, force=False):
                 "Got HTTP 301 (Moved Permanently) on {0}, updating URI to {1}".format(
                     feed.name, fp.href), 'warning')
             c.execute('''
-                UPDATE rss_feeds SET feed_url = {0}
-                WHERE channel = {0} AND feed_name = {0}
-                '''.format(sub), (fp.href, feed.channel, feed.name))
+                UPDATE rss_feeds SET feed_url = ?
+                WHERE channel = ? AND feed_name = ?
+                ''', (fp.href, feed.channel, feed.name))
             conn.commit()
 
         elif status == 410:  # GONE
@@ -447,10 +391,10 @@ def read_feeds(bot, force=False):
         # save article title, url, and modified date
         c.execute('''
             UPDATE rss_feeds
-            SET article_title = {0}, article_url = {0}, published = {0}, etag = {0}, modified = {0}
-            WHERE channel = {0} AND feed_name = {0}
-            '''.format(sub), (entry.title, entry.link, entry_dt, feed_etag, feed_modified,
-                              feed.channel, feed.name))
+            SET article_title = ?, article_url = ?, published = ?, etag = ?, modified = ?
+            WHERE channel = ? AND feed_name = ?
+            ''', (entry.title, entry.link, entry_dt, feed_etag, feed_modified,
+                  feed.channel, feed.name))
         conn.commit()
 
         if feed.published and entry_dt:
@@ -472,9 +416,7 @@ def read_feeds(bot, force=False):
         timestamp = entry_update_dt or entry_dt
         if timestamp:
             # attempt to get time format from preferences
-            tformat = ''
-            if feed.channel in bot.db.preferences:
-                tformat = bot.db.preferences.get(feed.channel, 'time_format') or tformat
+            tformat = bot.db.get_channel_value(feed.channel, 'time_format')
             if not tformat and bot.config.has_option('clock', 'time_format'):
                 tformat = bot.config.clock.time_format
 

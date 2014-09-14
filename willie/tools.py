@@ -509,9 +509,10 @@ def get_timezone(db=None, config=None, zone=None, nick=None, channel=None):
 
     Time zone is pulled in the following priority:
     1. `zone`, if it is valid
-    2. The timezone for `zone` in `db` if one is set and valid.
-    3. The timezone for `nick` in `db`, if one is set and valid.
-    4. The timezone for `channel` in `db`, if one is set and valid.
+    2. The timezone for the channel or nick `zone` in `db` if one is set and
+       valid.
+    3. The timezone for the nick `nick` in `db`, if one is set and valid.
+    4. The timezone for the channel  `channel` in `db`, if one is set and valid.
     5. The default timezone in `config`, if one is set and valid.
 
     If `db` is not given, or given but not set up, steps 2 and 3 will be
@@ -547,12 +548,12 @@ def get_timezone(db=None, config=None, zone=None, nick=None, channel=None):
 
     if zone:
         tz = check(zone)
-        if not tz and zone in db.preferences:
-            tz = check(db.preferences.get(zone, 'tz'))
-    if not tz and nick and nick in db.preferences:
-        tz = check(db.preferences.get(nick, 'tz'))
-    if not tz and channel and channel in db.preferences:
-        tz = check(db.preferences.get(channel, 'tz'))
+        if not tz:
+            tz = check(db.get_channel_or_nick_value(zone, 'timezone'))
+    if not tz and nick:
+        tz = check(db.get_nick_value(nick, 'timezone'))
+    if not tz and channel:
+        tz = check(db.get_channel_value(channel, 'timezone'))
     if not tz and config and config.has_option('core', 'default_timezone'):
         tz = check(config.core.default_timezone)
     return tz
@@ -571,8 +572,8 @@ def format_time(db=None, config=None, zone=None, nick=None, channel=None,
 
     The format for the string is chosen in the following order:
 
-    1. The format for `nick` in `db`, if one is set and valid.
-    2. The format for `channel` in `db`, if one is set and valid.
+    1. The format for the nick `nick` in `db`, if one is set and valid.
+    2. The format for the channel `channel` in `db`, if one is set and valid.
     3. The default format in `config`, if one is set and valid.
     4. ISO-8601
 
@@ -580,10 +581,10 @@ def format_time(db=None, config=None, zone=None, nick=None, channel=None,
     is not given, step 3 will be skipped."""
     tformat = None
     if db:
-        if nick and nick in db.preferences:
-            tformat = db.preferences.get(nick, 'time_format')
+        if nick:
+            tformat = db.get_nick_value(nick, 'time_format')
         if not tformat and channel in db.preferences:
-            tformat = db.preferences.get(channel, 'time_format')
+            tformat = db.get_channel_value(channel, 'time_format')
     if not tformat and config and config.has_option('core',
                                                     'default_time_format'):
         tformat = config.core.default_time_format
