@@ -9,20 +9,23 @@ from __future__ import unicode_literals
 import json
 import os
 import sqlite3
+import tempfile
 
 import pytest
 
-from willie.new_db import WillieDB
+from willie.config import Config
+from willie.db import WillieDB
 from willie.tools import Nick
 
-db_filename = 'asdf'
+db_filename = tempfile.mkstemp()[1]
 
 
 @pytest.fixture
 def db():
-    db = WillieDB(db_filename)
-    # TODO add tests to ensure this is working properly, too.
-    db.create()
+    config = Config('', False)
+    config.core.db_filename = db_filename
+    db = WillieDB(config)
+    # TODO add tests to ensure db creation works properly, too.
     return db
 
 

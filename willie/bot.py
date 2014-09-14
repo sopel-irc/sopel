@@ -83,14 +83,7 @@ class Willie(irc.Bot):
         from `module`."""
 
         self.db = WillieDB(config)
-        if self.db.check_table('locales', ['name'], 'name'):
-            self.settings = self.db.locales
-            self.db.preferences = self.db.locales
-        elif self.db.check_table('preferences', ['name'], 'name'):
-            self.settings = self.db.preferences
-        elif self.db.type is not None:
-            self.db.add_table('preferences', ['name'], 'name')
-            self.settings = self.db.preferences
+        """The bot's database."""
 
         self.memory = tools.WillieMemory()
         """

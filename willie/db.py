@@ -1,4 +1,5 @@
 import json
+import os.path
 import sqlite3
 from willie.tools import Nick
 
@@ -18,11 +19,15 @@ def _deserialize(value):
 
 class WillieDB(object):
 
-    def __init__(self, filename):
-        self.filename = filename
+    def __init__(self, config):
+        self.filename = config.core.db_filename
+        if self.filename is None:
+            self.filename = os.path.splitext(config.filename)[0] + '.db'
+        self._create()
 
     def connect(self):
         """Return a raw database connection object."""
+        print self.filename
         return sqlite3.connect(self.filename)
 
     def execute(self, *args, **kwargs):
@@ -34,8 +39,18 @@ class WillieDB(object):
             cur = conn.cursor()
             return cur.execute(*args, **kwargs)
 
-    def create(self):
+    def _create(self):
         """Create the basic database structure."""
+        # Do nothing if the db already exists.
+        try:
+            self.execute('SELECT * FROM nicknames;')
+            self.execute('SELECT * FROM nick_values;')
+            self.execute('SELECT * FROM channel_values;')
+        except:
+            pass
+        else:
+            return
+
         self.execute(
             'CREATE TABLE nicknames '
             '(nick_id INTEGER, slug STRING PRIMARY KEY, canonical string)'
