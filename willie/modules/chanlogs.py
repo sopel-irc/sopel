@@ -36,6 +36,7 @@ def configure(config):
         config.add_option("chanlogs", "by_day", "Split log files by day", default=True)
         config.add_option("chanlogs", "privmsg", "Record private messages", default=False)
         config.add_option("chanlogs", "microseconds", "Microsecond precision", default=False)
+        config.add_option("chanlogs", "utc", "Use UTC time", default=True)
         # could ask if user wants to customize message templates,
         # but that seems unnecessary
 
@@ -49,7 +50,7 @@ def get_fpath(bot, channel=None):
     channel = channel or bot.origin.sender
     channel = channel.lstrip("#")
 
-    dt = datetime.utcnow()
+    dt = datetime.utcnow() if bot.config.chanlogs.utc else datetime.now()
     if not bot.config.chanlogs.microseconds:
         dt = dt.replace(microsecond=0)
     if bot.config.chanlogs.by_day:
@@ -60,7 +61,7 @@ def get_fpath(bot, channel=None):
 
 
 def _format_template(tpl, bot, **kwargs):
-    dt = datetime.utcnow()
+    dt = datetime.utcnow() if bot.config.chanlogs.utc else datetime.now()
     if not bot.config.chanlogs.microseconds:
         dt = dt.replace(microsecond=0)
 
