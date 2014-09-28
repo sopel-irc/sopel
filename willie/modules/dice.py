@@ -171,6 +171,8 @@ def roll(bot, trigger):
     # Get a list of all dice expressions, evaluate them and then replace the
     # expressions in the original string with the results. Replacing is done
     # using string formatting, so %-characters must be escaped.
+    if not trigger.group(2):
+        return bot.reply("No dice to roll.")
     arg_str = trigger.group(2)
     dice_expressions = re.findall(dice_regexp, arg_str)
     arg_str = arg_str.replace("%", "%%")
