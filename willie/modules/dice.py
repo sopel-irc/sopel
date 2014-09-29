@@ -117,7 +117,7 @@ class DicePouch:
         return len(self.dice) + len(self.dropped)
 
 
-def _roll_dice(dice_expression):
+def _roll_dice(bot, dice_expression):
     result = re.search(
         r"""
         (?P<dice_num>\d*)
@@ -131,11 +131,17 @@ def _roll_dice(dice_expression):
     dice_num = int(result.group('dice_num') or 1)
     dice_type = int(result.group('dice_type'))
 
+    # Dice can't have zero or a negative number of sides.
+    if dice_type <= 0:
+        bot.reply("I don't have any dice with %d sides. =(" % dice_type)
+        return None # Signal there was a problem
+
     # Upper limit for dice should be at most a million. Creating a dict with
     # more than a million elements already takes a noticeable amount of time
     # on a fast computer and ~55kB of memory.
     if dice_num > 1000:
-        return None
+        bot.reply('I only have 1000 dice. =(')
+        return None # Signal there was a problem
 
     dice = DicePouch(dice_num, dice_type, 0)
 
@@ -177,9 +183,12 @@ def roll(bot, trigger):
     dice_expressions = re.findall(dice_regexp, arg_str)
     arg_str = arg_str.replace("%", "%%")
     arg_str = re.sub(dice_regexp, "%s", arg_str)
-    dice = list(map(_roll_dice, dice_expressions))
+
+    f = lambda dice_expr: _roll_dice  (bot, dice_expr)
+    dice = list(map(f, dice_expressions))
+
     if None in dice:
-        bot.reply("I only have 1000 dice. =(")
+        # Stop computing roll if there was a problem rolling dice.
         return
 
     def _get_eval_str(dice):
