@@ -26,6 +26,7 @@ import os
 import codecs
 import traceback
 from willie.tools import stderr, Nick
+from willie.certs import get_cacert
 try:
     import select
     import ssl
@@ -73,12 +74,8 @@ class Origin(object):
 
 class Bot(asynchat.async_chat):
     def __init__(self, config):
-        ca_certs = '/etc/pki/tls/cert.pem'
-        if config.ca_certs is not None:
-            ca_certs = config.ca_certs
-        elif not os.path.isfile(ca_certs):
-            ca_certs = '/etc/ssl/certs/ca-certificates.crt'
-        if not os.path.isfile(ca_certs):
+        ca_certs = getattr(config, 'ca_certs', None) or get_cacert()
+        if ca_certs is not None and not os.path.isfile(ca_certs):
             stderr('Could not open CA certificates file. SSL will not '
                    'work properly.')
 

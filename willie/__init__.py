@@ -19,6 +19,8 @@ import threading
 import traceback
 import signal
 
+from willie.certs import get_cacert
+
 __version__ = '4.5.1-git'
 
 
@@ -31,12 +33,10 @@ def run(config):
     else:
         delay = 20
     # Inject ca_certs from config to web for SSL validation of web requests
-    web.ca_certs = '/etc/pki/tls/certs/ca-bundle.crt'
-    if hasattr(config, 'ca_certs') and config.ca_certs is not None:
-        web.ca_certs = config.ca_certs
-    elif not os.path.isfile(web.ca_certs):
-        web.ca_certs = '/etc/ssl/certs/ca-certificates.crt'
-    if not os.path.isfile(web.ca_certs):
+    ca_certs = getattr(config, 'ca_certs', None) or get_cacert()
+    if ca_certs is not None and os.path.isfile(ca_certs):
+        web.ca_certs = ca_certs
+    else:
         stderr('Could not open CA certificates file. SSL will not '
                'work properly.')
 
