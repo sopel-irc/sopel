@@ -46,6 +46,13 @@ except ImportError:
     pass
 
 
+try:
+    import crate.client
+    supported_types.add('crate')
+except ImportError:
+    pass
+
+
 class WillieDB(object):
 
     """WillieDB object configured with the options in the given Config object.
@@ -55,14 +62,16 @@ class WillieDB(object):
     chosen to back the SettingsDB, as determined by the ``userdb_type``
     attribute of *config*.
 
-    Currently, three values for ``userdb_type`` are supported: ``sqlite``,
-    ``mysql`` and ``postgres``. The ``sqlite`` type requires that
+    Currently, four values for ``userdb_type`` are supported: ``sqlite``,
+    ``mysql``, ``crate`` and ``postgres``. The ``sqlite`` type requires that
     ``userdb_file`` be set in the ``db`` section of ``config`` (that is, under
     the ``[db]`` heading in the config file), and refer to a writeable sqlite
     database. The ``mysql`` and ``postgres`` types require ``userdb_host``,
     ``userdb_user``, ``userdb_pass``, and ``userdb_name`` to be set, and
     provide the host and name of a MySQL or PostgreSQL database, as well as a
     username and password for a user able to write to said database.
+
+    The ``crate`` type requires ``userdb_hosts`` to be set.
 
     Upon creation of the object, the tables currently existing in the given
     database will be registered, as though added through ``add_table``.
@@ -93,6 +102,9 @@ class WillieDB(object):
         elif self.type == 'postgres':
             self.substitution = '%s'
             self._postgres(config)
+        elif self.type == 'crate':
+            self.substitution = '?'
+            self._crate(config)
 
     def __getattr__(self, attr):
         """Handle non-existant tables gracefully by returning a
@@ -143,6 +155,40 @@ class WillieDB(object):
             setattr(self, name, Table(self, name, columns, key))
             self.tables.add(name)
         db.close()
+
+    def _crate(self, config):
+        try:
+            self._hosts = config.db.userdb_hosts
+        except AttributeError:
+            print('userdb_hosts option is missing for your Crate cluster.')
+            return
+
+        conn = crate.client.connect(self._hosts, error_trace=True)
+        cur = conn.cursor()
+        cur.execute("select table_name from information_schema.tables"
+                    " where schema_name = 'doc'")
+        tables = cur.fetchall()
+        for table in tables:
+            name = table[0]
+            cur.execute("select constraint_name"
+                        " from information_schema.table_constraints"
+                        " where schema_name = 'doc'"
+                        " and table_name = ? "
+                        " and constraint_type = 'PRIMARY_KEY'", (name,))
+            result = cur.fetchone()
+            if result:
+                key = result[0]
+            else:
+                key = []
+            columns = []
+            cur.execute("select column_name from"
+                        " information_schema.columns where schema_name = 'doc'"
+                        " and table_name = ?", (name,))
+            result = cur.fetchall()
+            columns = [c[0] for c in result]
+            setattr(self, name, Table(self, name, columns, key))
+            self.tables.add(name)
+        conn.close()
 
     def _sqlite(self, config):
         try:
@@ -250,16 +296,16 @@ class WillieDB(object):
             if isinstance(column, basestring):
                 if self.type == 'mysql':
                     cols = cols + column + ' VARCHAR(255)'
-                elif self.type == 'sqlite':
+                elif self.type in ('sqlite', 'crate'):
                     cols = cols + column + ' string'
                 elif self.type == 'postgres':
                     cols = cols + column + ' text'
-                if key and column in key:
+                if self.type != 'crate' and key and column in key:
                     cols += ' NOT NULL'
 
             elif isinstance(column, tuple):
                 cols += '%s %s' % column
-                if key and column[0] in key:
+                if self.type != 'crate' and key and column[0] in key:
                     cols += ' NOT NULL'
 
             cols += ', '
@@ -375,6 +421,24 @@ class WillieDB(object):
                 password=self._passwd,
                 database=self._dbname
             )
+        elif self.type == 'crate':
+            conn = crate.client.connect(self._hosts, error_trace=True)
+            # mock execute to strip away trailing semicolons
+            import types
+            from crate.client.cursor import Cursor
+            from crate.client.exceptions import ProgrammingError
+            def execute(self, sql, parameters=None, bulk_parameters=None):
+                sql = sql.rstrip(';')
+                Cursor.execute(self, sql, parameters, bulk_parameters)
+            def cursor(self):
+                if not self._closed:
+                    cursor = Cursor(self)
+                    cursor.execute = types.MethodType(execute, cursor)
+                    return cursor
+                else:
+                    raise ProgrammingError("Connection closed")
+            conn.cursor = types.MethodType(cursor, conn)
+            return conn
 
 
 class Table(object):
@@ -745,7 +809,8 @@ class Table(object):
             if isinstance(column, tuple):
                 cmd = cmd + column[0] + ' ' + column[1] + ';'
             else:
-                cmd = cmd + column + ' text;'
+                dbtype = ' text;' if self.type != 'crate' else ' string;'
+                cmd = cmd + column + dbtype
             cur = db.cursor()
             cur.execute(cmd)
         db.commit()
