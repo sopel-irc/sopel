@@ -7,12 +7,18 @@ Licensed under the Eiffel Forum License 2.
 http://willie.dftba.net
 """
 from __future__ import unicode_literals
-from willie import web
-from willie.module import NOLIMIT, commands, example
+from willie import web, tools
+from willie.module import NOLIMIT, commands, example, rule
 import json
 import re
 
 REDIRECT = re.compile(r'^REDIRECT (.*)')
+
+def setup(bot):
+    regex = re.compile('([a-z]+).(wikipedia.org/wiki/)([^ ]+)')
+    if not bot.memory.contains('url_callbacks'):
+        bot.memory['url_callbacks'] = tools.WillieMemory()
+    bot.memory['url_callbacks'][regex] = mw_info
 
 def configure(config):
     """
@@ -43,6 +49,29 @@ def mw_search(server, query, num):
         return [r['title'] for r in query]
     else:
         return None
+
+@rule('.*/([a-z]+).(wikipedia.org/wiki/)([^ ]+).*')
+def mw_info(bot, trigger, found_match=None):
+    """
+    Retrives a snippet of the specified length from the given page on the given
+    server.
+    """
+    match = found_match or trigger
+    snippet_url = ('https://'+match.group(1)+'.wikipedia.org/w/api.php?format=json'
+                   '&action=query&prop=extracts&exintro&explaintext'
+                   '&exchars=300&redirects&titles=')
+    snippet_url += match.group(3)
+    snippet = json.loads(web.get(snippet_url))
+    snippet = snippet['query']['pages']
+
+    # For some reason, the API gives the page *number* as the key, so we just
+    # grab the first page number in the results.
+    snippet = snippet[list(snippet.keys())[0]]
+
+    if 'extract' in snippet:
+        bot.say('"%s" - http://%s.wikipedia.org/wiki/%s' % (snippet['extract'], match.group(1), match.group(3)))
+    else:
+        bot.say('http://%s.wikipedia.org/wiki/%s' % (match.group(1), match.group(3)))
 
 def mw_snippet(server, query):
     """
