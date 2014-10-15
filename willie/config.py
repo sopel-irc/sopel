@@ -53,7 +53,9 @@ import willie.bot
 if sys.version_info.major >= 3:
     unicode = str
     basestring = str
-    raw_input = input
+    get_input = input
+else:
+    get_input = lambda x: raw_input(x).decode('utf8')
 
 class ConfigurationError(Exception):
     """ Exception type for configuration errors """
@@ -219,7 +221,7 @@ class Config(object):
                 value = getpass.getpass(prompt + ' [%s]: ' % atr) or atr
                 self.parser.set(section, option, value)
             else:
-                value = raw_input(prompt + ' [%s]: ' % atr) or atr
+                value = get_input(prompt + ' [%s]: ' % atr) or atr
                 self.parser.set(section, option, value)
         elif default:
             if ispass:
@@ -228,7 +230,7 @@ class Config(object):
                 ) or default
                 self.parser.set(section, option, value)
             else:
-                value = raw_input(prompt + ' [%s]: ' % default) or default
+                value = get_input(prompt + ' [%s]: ' % default) or default
                 self.parser.set(section, option, value)
         else:
             value = ''
@@ -236,7 +238,7 @@ class Config(object):
                 if ispass:
                     value = getpass.getpass(prompt + ': ')
                 else:
-                    value = raw_input(prompt + ': ')
+                    value = get_input(prompt + ': ')
             self.parser.set(section, option, value)
 
     def add_list(self, section, option, message, prompt):
@@ -255,10 +257,10 @@ class Config(object):
             m = "You currently have " + self.parser.get(section, option)
             if self.option(m + '. Would you like to keep them', True):
                 lst = self.parser.get(section, option).split(',')
-        mem = raw_input(prompt + ' ')
+        mem = get_input(prompt + ' ')
         while mem:
             lst.append(mem)
-            mem = raw_input(prompt + ' ')
+            mem = get_input(prompt + ' ')
         self.parser.set(section, option, ','.join(lst))
 
     def add_option(self, section, option, question, default=False):
@@ -291,7 +293,7 @@ class Config(object):
         d = 'n'
         if default:
             d = 'y'
-        ans = raw_input(question + ' (y/n)? [' + d + '] ')
+        ans = get_input(question + ' (y/n)? [' + d + '] ')
         if not ans:
             ans = d
         return ans.lower() == 'y'
