@@ -61,7 +61,7 @@ Contact us on irc.dftba.net channel #tech
 
 For a list of contributions to the Jenni fork see the file ``CREDITS``.
 
-.. |build-status| image:: https://travis-ci.org/embolalia/willie.png
+.. |build-status| image:: https://travis-ci.org/embolalia/willie.svg
    :target: https://travis-ci.org/embolalia/willie
 .. |coverage-status| image:: https://coveralls.io/repos/embolalia/willie/badge.png
    :target: https://coveralls.io/r/embolalia/willie
