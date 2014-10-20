@@ -14,6 +14,10 @@ from willie.web import USER_AGENT
 from willie import tools
 import praw
 import re
+import sys
+if sys.version_info.major >= 3:
+    unicode = str
+
 domain = r'https?://(?:www\.|np\.)?reddit\.com'
 post_url = '(%s/r/.*?/comments/[\w-]+)' % domain
 user_url = '%s/u(ser)?/([\w-]+)' % domain
