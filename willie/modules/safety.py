@@ -116,7 +116,7 @@ def url_handler(bot, trigger):
                        'scan': '1'}
 
             if trigger not in bot.memory['safety_cache']:
-                result = web.post(vt_base_api_url+'report', payload)
+                result = web.post(vt_base_api_url + 'report', payload)
                 if sys.version_info.major > 2:
                     result = result.decode('utf-8')
                 result = json.loads(result)

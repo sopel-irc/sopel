@@ -21,10 +21,11 @@ import os
 import re
 
 issueURL = (r'https?://(?:www\.)?github.com/'
-             '([A-z0-9\-]+/[A-z0-9\-]+)/'
-             '(?:issues|pull)/'
-             '([\d]+)')
+            '([A-z0-9\-]+/[A-z0-9\-]+)/'
+            '(?:issues|pull)/'
+            '([\d]+)')
 regex = re.compile(issueURL)
+
 
 def checkConfig(bot):
     if not bot.config.has_option('github', 'oauth_token') or not bot.config.has_option('github', 'repo'):
@@ -195,6 +196,7 @@ def findIssue(bot, trigger):
     bot.reply('[#%s]\x02title:\x02 %s \x02|\x02 %s' % (data['number'], data['title'], body))
     bot.say(data['html_url'])
 
+
 @rule('.*%s.*' % issueURL)
 def issue_info(bot, trigger, match=None):
     match = match or trigger
@@ -215,4 +217,3 @@ def issue_info(bot, trigger, match=None):
         bot.say('The API says this is an invalid issue. Please report this if you know it\'s a correct link!')
         return NOLIMIT
     bot.say('[#%s]\x02title:\x02 %s \x02|\x02 %s' % (data['number'], data['title'], body))
-

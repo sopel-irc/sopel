@@ -412,7 +412,7 @@ def read_feeds(bot, force=False):
             bot.debug(
                 __file__,
                 "Got HTTP 301 (Moved Permanently) on {0}, updating URI to {1}".format(
-                feed.name, fp.href), 'warning')
+                    feed.name, fp.href), 'warning')
             c.execute('''
                 UPDATE rss_feeds SET feed_url = {0}
                 WHERE channel = {0} AND feed_name = {0}

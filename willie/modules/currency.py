@@ -54,7 +54,7 @@ def get_rate(code):
 def exchange(bot, trigger):
     """Show the exchange rate between two currencies"""
     if not trigger.group(2):
-        return bot.reply("No search term. An example: .cur 20 EUR in USD")    
+        return bot.reply("No search term. An example: .cur 20 EUR in USD")
     match = regex.match(trigger.group(2))
     if not match:
         # It's apologetic, because it's using Canadian data.
@@ -67,6 +67,7 @@ def exchange(bot, trigger):
     except:
         bot.reply("Sorry, I didn't understand the input.")
     display(bot, amount, of, to)
+
 
 def display(bot, amount, of, to):
     if not amount:
@@ -87,7 +88,7 @@ def display(bot, amount, of, to):
 
     result = amount / of_rate * to_rate
     bot.say("{} {} ({}) = {} {} ({})".format(amount, of, of_name,
-                                           result, to, to_name))
+                                             result, to, to_name))
 
 
 @commands('btc', 'bitcoin')

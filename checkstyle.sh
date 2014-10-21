@@ -6,8 +6,6 @@ find_source_files() {
 files=$(find_source_files)
 # These are acceptable (for now). 128 and 127 should be removed eventually.
 ignore='--ignore=E501,E128,E127'
-# These ones are not acceptable. They should be removed as we fix them.
-ignore=$ignore',E401,E251,E226,E126,E502,E302,W293,W291,E221,W391,E225,E121,E122,E261,E211,E231,E262,E271,E265,E111,E131,E713,'
 # For now, go through all the checking stages and only die at the end
 exit_code=0
 

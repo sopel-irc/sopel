@@ -23,6 +23,7 @@ try:
 except:
     pytz = None
 
+
 def filename(self):
     name = self.nick + '-' + self.config.host + '.reminders.db'
     return os.path.join(self.config.dotdir, name)

@@ -127,7 +127,7 @@ def duck_search(query):
     query = query.replace('!', '')
     uri = 'http://duckduckgo.com/html/?q=%s&kl=uk-en' % query
     bytes = web.get(uri)
-    if 'web-result"' in bytes: #filter out the adds on top of the page
+    if 'web-result"' in bytes:  # filter out the adds on top of the page
         bytes = bytes.split('web-result"')[1]
     m = r_duck.search(bytes)
     if m:
@@ -208,7 +208,7 @@ def suggest(bot, trigger):
         return bot.reply("No query term.")
     query = trigger.group(2)
     uri = 'http://websitedev.de/temp-bin/suggest.pl?q='
-    answer = web.get(uri+query.replace('+', '%2B'))
+    answer = web.get(uri + query.replace('+', '%2B'))
     if answer:
         bot.say(answer)
     else:

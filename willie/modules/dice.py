@@ -134,14 +134,14 @@ def _roll_dice(bot, dice_expression):
     # Dice can't have zero or a negative number of sides.
     if dice_type <= 0:
         bot.reply("I don't have any dice with %d sides. =(" % dice_type)
-        return None # Signal there was a problem
+        return None  # Signal there was a problem
 
     # Upper limit for dice should be at most a million. Creating a dict with
     # more than a million elements already takes a noticeable amount of time
     # on a fast computer and ~55kB of memory.
     if dice_num > 1000:
         bot.reply('I only have 1000 dice. =(')
-        return None # Signal there was a problem
+        return None  # Signal there was a problem
 
     dice = DicePouch(dice_num, dice_type, 0)
 
@@ -184,7 +184,7 @@ def roll(bot, trigger):
     arg_str = arg_str.replace("%", "%%")
     arg_str = re.sub(dice_regexp, "%s", arg_str)
 
-    f = lambda dice_expr: _roll_dice  (bot, dice_expr)
+    f = lambda dice_expr: _roll_dice(bot, dice_expr)
     dice = list(map(f, dice_expressions))
 
     if None in dice:

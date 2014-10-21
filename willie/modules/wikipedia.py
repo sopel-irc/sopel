@@ -14,6 +14,7 @@ import re
 
 REDIRECT = re.compile(r'^REDIRECT (.*)')
 
+
 def configure(config):
     """
     |  [wikipedia]  | example | purpose |
@@ -27,6 +28,7 @@ def configure(config):
         if config.option('Would you like to configure individual default language per channel', False):
             c = 'Enter #channel:lang, one at time. When done, hit enter again.'
             config.add_list('wikipedia', 'lang_per_channel', c, 'Channel:')
+
 
 def mw_search(server, query, num):
     """
@@ -44,12 +46,13 @@ def mw_search(server, query, num):
     else:
         return None
 
+
 def mw_snippet(server, query):
     """
     Retrives a snippet of the specified length from the given page on the given
     server.
     """
-    snippet_url = ('https://'+server+'/w/api.php?format=json'
+    snippet_url = ('https://' + server + '/w/api.php?format=json'
                    '&action=query&prop=extracts&exintro&explaintext'
                    '&exchars=300&redirects&titles=')
     snippet_url += query
@@ -74,15 +77,10 @@ def wikipedia(bot, trigger):
         lang = bot.config.wikipedia.default_lang
 
     #change lang if channel has custom language set
-    if (
-        trigger.sender and
-        not trigger.sender.is_nick() and
-        bot.config.has_option('wikipedia', 'lang_per_channel')
-       ):
-        customlang = re.search(
-                         '('+trigger.sender+'):(\w+)',
-                          bot.config.wikipedia.lang_per_channel
-                          )
+    if (trigger.sender and not trigger.sender.is_nick() and
+            bot.config.has_option('wikipedia', 'lang_per_channel')):
+        customlang = re.search('(' + trigger.sender + '):(\w+)',
+                               bot.config.wikipedia.lang_per_channel)
         if customlang is not None:
             lang = customlang.group(2)
 

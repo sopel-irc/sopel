@@ -43,9 +43,14 @@ def configure(config):
     if config.option('Exclude certain URLs from automatic title display', False):
         if not config.has_section('url'):
             config.add_section('url')
-        config.add_list('url', 'exclude', 'Enter regular expressions for each URL you would like to exclude.',
+        config.add_list(
+            'url',
+            'exclude',
+            'Enter regular expressions for each URL you would like to exclude.',
             'Regex:')
-        config.interactive_add('url', 'exclusion_char',
+        config.interactive_add(
+            'url',
+            'exclusion_char',
             'Prefix to suppress URL titling', '!')
 
 
@@ -83,7 +88,7 @@ def setup(bot=None):
         exclusion_char = bot.config.url.exclusion_char
 
     url_finder = re.compile(r'(?u)(%s?(?:http|https|ftp)(?:://\S+))' %
-        (exclusion_char))
+                            (exclusion_char))
 
 
 @commands('title')
@@ -210,7 +215,7 @@ def find_title(url):
     try:
         content, headers = web.get(url, return_headers=True, limit_bytes=max_bytes)
     except UnicodeDecodeError:
-        return # Fail silently when data can't be decoded
+        return  # Fail silently when data can't be decoded
 
     # Some cleanup that I don't really grok, but was in the original, so
     # we'll keep it (with the compiled regexes made global) for now.
