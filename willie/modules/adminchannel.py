@@ -15,13 +15,14 @@ from willie import formatting
 from willie.module import commands, priority, OP, HALFOP
 from willie.tools import Nick
 
+
 def default_mask(trigger):
-   welcome = formatting.color('Welcome to:', formatting.colors.PURPLE)
-   chan = formatting.color(trigger.sender, formatting.colors.TEAL)
-   topic_ = formatting.bold('Topic:')
-   topic_ = formatting.color('| ' + topic_, formatting.colors.PURPLE)
-   arg = formatting.color('{}', formatting.colors.GREEN)
-   return '{} {} {} {}'.format(welcome, chan, topic_, arg)
+    welcome = formatting.color('Welcome to:', formatting.colors.PURPLE)
+    chan = formatting.color(trigger.sender, formatting.colors.TEAL)
+    topic_ = formatting.bold('Topic:')
+    topic_ = formatting.color('| ' + topic_, formatting.colors.PURPLE)
+    arg = formatting.color('{}', formatting.colors.GREEN)
+    return '{} {} {} {}'.format(welcome, chan, topic_, arg)
 
 
 def setup(bot):
@@ -266,10 +267,10 @@ def unquiet(bot, trigger):
 @priority('high')
 def kickban(bot, trigger):
     """
-   This gives admins the ability to kickban a user.
-   The bot must be a Channel Operator for this command to work.
-   .kickban [#chan] user1 user!*@* get out of here
-   """
+    This gives admins the ability to kickban a user.
+    The bot must be a Channel Operator for this command to work.
+    .kickban [#chan] user1 user!*@* get out of here
+    """
     if bot.privileges[trigger.sender][trigger.nick] < OP:
         return
     if bot.privileges[trigger.sender][bot.nick] < HALFOP:
