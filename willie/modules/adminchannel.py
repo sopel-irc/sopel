@@ -11,15 +11,17 @@ http://willie.dftba.net/
 from __future__ import unicode_literals
 
 import re
+from willie import formatting
 from willie.module import commands, priority, OP, HALFOP
 from willie.tools import Nick
 
-welcome = formatting.color('Welcome to:', formatting.PURPLE)
-chan = formatting.color(trigger.sender, formatting.TEAL)
-topic_ = formatting.bold('Topic:')
-topic_ = formatting.color('| ' + topic_, formatting.PURPLE)
-arg = formatting.color('{}', formatting.GREEN)
-DEFAULT_MASK = '{} {} {} {}'.format(welcome, chan, topic_, arg)
+def default_mask(trigger):
+   welcome = formatting.color('Welcome to:', formatting.colors.PURPLE)
+   chan = formatting.color(trigger.sender, formatting.colors.TEAL)
+   topic_ = formatting.bold('Topic:')
+   topic_ = formatting.color('| ' + topic_, formatting.colors.PURPLE)
+   arg = formatting.color('{}', formatting.colors.GREEN)
+   return '{} {} {} {}'.format(welcome, chan, topic_, arg)
 
 
 def setup(bot):
@@ -314,7 +316,7 @@ def topic(bot, trigger):
     mask = None
     if bot.db and channel in bot.db.preferences:
         mask = bot.db.preferences.get(channel, 'topic_mask')
-    mask = mask or DEFAULT_MASK
+    mask = mask or default_mask(trigger)
     mask = mask.replace('%s', '{}')
     narg = len(re.findall('{}', mask))
 
@@ -357,4 +359,4 @@ def show_mask(bot, trigger):
     elif trigger.sender.lower() in bot.db.preferences:
         bot.say(bot.db.preferences.get(trigger.sender.lower(), 'topic_mask'))
     else:
-        bot.say(DEFAULT_MASK)
+        bot.say(default_mask(trigger))
