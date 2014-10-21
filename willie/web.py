@@ -42,6 +42,7 @@ if not hasattr(ssl, 'match_hostname'):
 from willie import __version__
 USER_AGENT = 'Willie/{} (http://willie.dftba.net)'
 
+
 # HTTP GET
 def get(uri, timeout=20, headers=None, return_headers=False,
         limit_bytes=None, verify_ssl=True, dont_decode=False):
@@ -152,12 +153,13 @@ class VerifiedHTTPSConnection(httplib.HTTPConnection):
             if self._tunnel_host:
                 self.sock = sock
                 self._tunnel()
-            if not  os.path.exists(ca_certs):
+            if not os.path.exists(ca_certs):
                 raise Exception('CA Certificate bundle %s is not readable' % ca_certs)
             self.sock = ssl.wrap_socket(sock,
                                         ca_certs=ca_certs,
                                         cert_reqs=ssl.CERT_REQUIRED)
             ssl.match_hostname(self.sock.getpeercert(), self.host)
+
 
 class VerifiedHTTPSHandler(urllib2.HTTPSHandler):
 

@@ -26,7 +26,7 @@ from willie import tools
 import willie.irc as irc
 from willie.db import WillieDB
 from willie.tools import (stderr, Nick, PriorityQueue, released,
-                   get_command_regexp, iteritems, itervalues)
+                          get_command_regexp, iteritems, itervalues)
 import willie.module as module
 if sys.version_info.major >= 3:
     unicode = str
@@ -576,7 +576,7 @@ class Willie(irc.Bot):
         def __dir__(self):
             classattrs = [attr for attr in self.__class__.__dict__
                           if not attr.startswith('__')]
-            return list(self.__dict__)+classattrs+dir(self.bot)
+            return list(self.__dict__) + classattrs + dir(self.bot)
 
         def say(self, string, max_messages=1):
             self.bot.msg(self.origin.sender, string, max_messages)

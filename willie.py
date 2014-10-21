@@ -32,6 +32,7 @@ import willie.web
 
 homedir = os.path.join(os.path.expanduser('~'), '.willie')
 
+
 def enumerate_configs(extension='.cfg'):
     configfiles = []
     if os.path.isdir(homedir):
@@ -63,33 +64,33 @@ def main(argv=None):
         parser.add_argument('-c', '--config', metavar='filename',
                             help='use a specific configuration file')
         parser.add_argument("-d", '--fork', action="store_true",
-                          dest="deamonize", help="Deamonize willie")
+                            dest="deamonize", help="Deamonize willie")
         parser.add_argument("-q", '--quit', action="store_true", dest="quit",
-                          help="Gracefully quit Willie")
+                            help="Gracefully quit Willie")
         parser.add_argument("-k", '--kill', action="store_true", dest="kill",
-                          help="Kill Willie")
+                            help="Kill Willie")
         parser.add_argument('--exit-on-error', action="store_true",
-                          dest="exit_on_error", help=(
-                              "Exit immediately on every error instead of "
-                              "trying to recover"))
+                            dest="exit_on_error", help=(
+                                "Exit immediately on every error instead of "
+                                "trying to recover"))
         parser.add_argument("-l", '--list', action="store_true",
-                          dest="list_configs",
-                          help="List all config files found")
+                            dest="list_configs",
+                            help="List all config files found")
         parser.add_argument("-m", '--migrate', action="store_true",
-                          dest="migrate_configs",
-                          help="Migrate config files to the new format")
+                            dest="migrate_configs",
+                            help="Migrate config files to the new format")
         parser.add_argument('--quiet', action="store_true", dest="quiet",
-                          help="Supress all output")
+                            help="Supress all output")
         parser.add_argument('-w', '--configure-all', action='store_true',
-                          dest='wizard', help='Run the configuration wizard.')
+                            dest='wizard', help='Run the configuration wizard.')
         parser.add_argument('--configure-modules', action='store_true',
-                          dest='mod_wizard', help=(
-                              'Run the configuration wizard, but only for the '
-                              'module configuration options.'))
+                            dest='mod_wizard', help=(
+                                'Run the configuration wizard, but only for the '
+                                'module configuration options.'))
         parser.add_argument('--configure-database', action='store_true',
-                          dest='db_wizard', help=(
-                              'Run the configuration wizard, but only for the '
-                              'database configuration options.'))
+                            dest='db_wizard', help=(
+                                'Run the configuration wizard, but only for the '
+                                'database configuration options.'))
         opts = parser.parse_args()
 
         try:

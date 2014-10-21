@@ -57,6 +57,7 @@ if sys.version_info.major >= 3:
 else:
     get_input = lambda x: raw_input(x).decode('utf8')
 
+
 class ConfigurationError(Exception):
     """ Exception type for configuration errors """
 
@@ -332,7 +333,7 @@ class Config(object):
                 module = imp.load_source(name, filename)
             except Exception as e:
                 print("Error loading %s: %s (in config.py)"
-                                      % (name, e), file=sys.stderr)
+                      % (name, e), file=sys.stderr)
             else:
                 if hasattr(module, 'configure'):
                     module.configure(self)
@@ -369,7 +370,7 @@ class Config(object):
             home_modules_dir = os.path.join(self.core.homedir, 'modules')
         else:
             home_modules_dir = os.path.join(os.path.expanduser('~'), '.willie',
-                                        'modules')
+                                            'modules')
         if not os.path.isdir(home_modules_dir):
             os.makedirs(home_modules_dir)
         for fn in os.listdir(home_modules_dir):
@@ -414,16 +415,16 @@ def wizard(section, config=None):
     elif section == 'db':
         check_dir(False)
         if not os.path.isfile(configpath):
-            print("No config file found." + \
-                " Please make one before configuring these options.")
+            print("No config file found." +
+                  " Please make one before configuring these options.")
             sys.exit(1)
         config = Config(configpath, True)
         config._db()
     elif section == 'mod':
         check_dir(False)
         if not os.path.isfile(configpath):
-            print("No config file found." + \
-                " Please make one before configuring these options.")
+            print("No config file found." +
+                  " Please make one before configuring these options.")
             sys.exit(1)
         config = Config(configpath, True)
         config._modules()
@@ -448,8 +449,8 @@ def check_dir(create=True):
 
 def create_config(configpath):
     check_dir()
-    print("Please answer the following questions" + \
-        " to create your configuration file:\n")
+    print("Please answer the following questions" +
+          " to create your configuration file:\n")
     try:
         config = Config(configpath, os.path.isfile(configpath))
         config._core()
@@ -462,8 +463,8 @@ def create_config(configpath):
             config._modules()
         config.save()
     except Exception as e:
-        print("Encountered an error while writing the config file." + \
-            " This shouldn't happen. Check permissions.")
+        print("Encountered an error while writing the config file." +
+              " This shouldn't happen. Check permissions.")
         raise
         sys.exit(1)
     print("Config file written sucessfully!")
