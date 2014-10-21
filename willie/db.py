@@ -27,7 +27,6 @@ class WillieDB(object):
 
     def connect(self):
         """Return a raw database connection object."""
-        print self.filename
         return sqlite3.connect(self.filename)
 
     def execute(self, *args, **kwargs):
@@ -43,6 +42,7 @@ class WillieDB(object):
         """Create the basic database structure."""
         # Do nothing if the db already exists.
         try:
+            self.execute('SELECT * FROM nick_ids;')
             self.execute('SELECT * FROM nicknames;')
             self.execute('SELECT * FROM nick_values;')
             self.execute('SELECT * FROM channel_values;')
@@ -52,27 +52,33 @@ class WillieDB(object):
             return
 
         self.execute(
+            'CREATE TABLE nick_ids (nick_id INTEGER PRIMARY KEY AUTOINCREMENT)'
+        )
+        self.execute(
             'CREATE TABLE nicknames '
-            '(nick_id INTEGER, slug STRING PRIMARY KEY, canonical string)'
+            '(nick_id INTEGER REFERENCES nick_ids, '
+            'slug STRING PRIMARY KEY, canonical string)'
         )
         self.execute(
             'CREATE TABLE nick_values '
-            '(nick_id INTEGER REFERENCES nicknames(nick_id), '
+            '(nick_id INTEGER REFERENCES nick_ids(nick_id), '
             'key STRING, value STRING, '
             'PRIMARY KEY (nick_id, key))'
         )
-        # A dummy record is needed for the method of grabbing an id number to
-        # work
-        self.execute('INSERT INTO nicknames VALUES (?, ?, ?)', [0, '', ''])
         self.execute(
             'CREATE TABLE channel_values '
             '(channel STRING, key STRING, value STRING, '
             'PRIMARY KEY (channel, key))'
         )
 
+    def get_url(self):
+        """Returns a URL for the database, usable to connect with SQLAlchemy.
+        """
+        return 'sqlite://{}'.format(self.filename)
+
     # NICK FUNCTIONS
 
-    def _get_nick_id(self, nick, create=True):
+    def get_nick_id(self, nick, create=True):
         """Return the internal identifier for a given nick.
 
         This identifier is unique to a user, and shared across all of that
@@ -84,10 +90,15 @@ class WillieDB(object):
         if nick_id is None:
             if not create:
                 raise ValueError('No ID exists for the given nick')
-            self.execute(
+            with self.connect() as conn:
+                cur = conn.cursor()
+                cur.execute('INSERT INTO nick_ids VALUES (NULL)')
+                nick_id = cur.execute('SELECT last_insert_rowid()').fetchone()[0]
+                print nick_id
+                cur.execute(
                 'INSERT INTO nicknames (nick_id, slug, canonical) VALUES '
-                '((SELECT max(nick_id) + 1 from nicknames), ?, ?)',
-                [slug, nick])
+                '(?, ?, ?)',
+                [nick_id, slug, nick])
             nick_id = self.execute('SELECT nick_id from nicknames where slug = ?',
                                    [slug]).fetchone()
         return nick_id[0]
@@ -99,7 +110,7 @@ class WillieDB(object):
         exist, it will be added along with the alias."""
         nick = Nick(nick)
         alias = Nick(alias)
-        nick_id = self._get_nick_id(nick)
+        nick_id = self.get_nick_id(nick)
         sql = 'INSERT INTO nicknames (nick_id, slug, canonical) VALUES (?, ?, ?)'
         values = [nick_id, alias.lower(), alias]
         try:
@@ -111,7 +122,7 @@ class WillieDB(object):
         """Sets the value for a given key to be associated with the nick."""
         nick = Nick(nick)
         value = json.dumps(value, ensure_ascii=False)
-        nick_id = self._get_nick_id(nick)
+        nick_id = self.get_nick_id(nick)
         self.execute('INSERT OR REPLACE INTO nick_values VALUES (?, ?, ?)',
                      [nick_id, key, value])
 
@@ -133,7 +144,7 @@ class WillieDB(object):
         To delete an entire group, use `delete_group`.
         """
         alias = Nick(alias)
-        nick_id = self._get_nick_id(alias, False)
+        nick_id = self.get_nick_id(alias, False)
         count = self.execute('SELECT COUNT(*) FROM nicknames WHERE nick_id = ?',
                              [nick_id]).fetchone()[0]
         if count == 0:
@@ -144,7 +155,7 @@ class WillieDB(object):
         """Removes a nickname, and all associated aliases and settings.
         """
         nick = Nick(nick)
-        nick_id = self._get_nick_id(nick, False)
+        nick_id = self.get_nick_id(nick, False)
         self.execute('DELETE FROM nicknames WHERE nick_id = ?', [nick_id])
         self.execute('DELETE FROM nick_values WHERE nick_id = ?', [nick_id])
 
@@ -159,8 +170,8 @@ class WillieDB(object):
         Note that merging of data only applies to the native key-value store.
         If modules define their own tables which rely on the nick table, they
         will need to have their merging done separately."""
-        first_id = self._get_nick_id(Nick(first_nick))
-        second_id = self._get_nick_id(Nick(second_nick))
+        first_id = self.get_nick_id(Nick(first_nick))
+        second_id = self.get_nick_id(Nick(second_nick))
         self.execute(
             'UPDATE OR IGNORE nick_values SET nick_id = ? WHERE nick_id = ?',
             [first_id, second_id])

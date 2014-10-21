@@ -44,7 +44,7 @@ def test_get_nick_id(db):
     ]
 
     for test in tests:
-        test[0] = db._get_nick_id(test[2])
+        test[0] = db.get_nick_id(test[2])
         nick_id, slug, nick = test
         with conn:
             cursor = conn.cursor()
@@ -60,13 +60,13 @@ def test_get_nick_id(db):
     # Check that the retrieval actually is idempotent
     for test in tests:
         nick_id = test[0]
-        new_id = db._get_nick_id(test[2])
+        new_id = db.get_nick_id(test[2])
         assert nick_id == new_id
 
     # Even if the case is different
     for test in tests:
         nick_id = test[0]
-        new_id = db._get_nick_id(Nick(test[2].upper()))
+        new_id = db.get_nick_id(Nick(test[2].upper()))
         assert nick_id == new_id
 
 
@@ -75,12 +75,12 @@ def test_alias_nick(db):
     nick = 'Embolalia'
     aliases = ['EmbölaliÅ', 'Embo`work', 'Embo']
 
-    nick_id = db._get_nick_id(nick)
+    nick_id = db.get_nick_id(nick)
     for alias in aliases:
         db.alias_nick(nick, alias)
 
     for alias in aliases:
-        assert db._get_nick_id(alias) == nick_id
+        assert db.get_nick_id(alias) == nick_id
 
     db.alias_nick('both', 'arenew')  # Shouldn't fail.
 
@@ -95,7 +95,7 @@ def test_set_nick_value(db):
     conn = sqlite3.connect(db_filename)
     cursor = conn.cursor()
     nick = 'Embolalia'
-    nick_id = db._get_nick_id(nick)
+    nick_id = db.get_nick_id(nick)
     data = {
         'key': 'value',
         'number_key': 1234,
@@ -125,7 +125,7 @@ def test_get_nick_value(db):
     conn = sqlite3.connect(db_filename)
     cursor = conn.cursor()
     nick = 'Embolalia'
-    nick_id = db._get_nick_id(nick)
+    nick_id = db.get_nick_id(nick)
     data = {
         'key': 'value',
         'number_key': 1234,
@@ -179,13 +179,11 @@ def test_delete_nick_group(db):
 
     db.delete_nick_group(aliases[0])
 
-    for alias in aliases:
-        # Nothing else has created values, so we know the tables are empty
-        nicks = conn.execute('SELECT * FROM nicknames').fetchall()
-        # 1 because of the dummy record
-        assert len(nicks) == 1
-        data = conn.execute('SELECT * FROM nick_values').fetchone()
-        assert data is None
+    # Nothing else has created values, so we know the tables are empty
+    nicks = conn.execute('SELECT * FROM nicknames').fetchall()
+    assert len(nicks) == 0
+    data = conn.execute('SELECT * FROM nick_values').fetchone()
+    assert data is None
 
 
 def test_merge_nick_groups(db):
