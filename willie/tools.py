@@ -583,7 +583,7 @@ def format_time(db=None, config=None, zone=None, nick=None, channel=None,
 def get_hostmask_regex(mask):
     """Return a compiled `re.RegexObject` for an IRC hostmask"""
     mask = re.escape(mask)
-    mask.replace('\*', '.*')
+    mask = mask.replace(r'\*', '.*')
     return re.compile(mask + '$', re.I)
 
 
