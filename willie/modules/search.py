@@ -64,7 +64,8 @@ def g(bot, trigger):
     uri = google_search(query)
     if uri:
         bot.reply(uri)
-        bot.memory['last_seen_url'][trigger.sender] = uri
+        if 'last_seen_url' in bot.memory:
+            bot.memory['last_seen_url'][trigger.sender] = uri
     elif uri is False:
         bot.reply("Problem getting data from Google.")
     else:
@@ -165,7 +166,8 @@ def duck(bot, trigger):
 
     if uri:
         bot.reply(uri)
-        bot.memory['last_seen_url'][trigger.sender] = uri
+        if 'last_seen_url' in bot.memory:
+            bot.memory['last_seen_url'][trigger.sender] = uri
     else:
         bot.reply("No results found for '%s'." % query)
 
