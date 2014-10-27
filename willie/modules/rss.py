@@ -115,12 +115,12 @@ def migrate_from_old_tables(bot, c):
                 '''.format(sub), (channel, site_name, site_url, fg, bg))
 
 
-def colour_text(text, fg, bg=''):
+def colour_text(text, fg=None, bg=None):
     """Given some text and fore/back colours, return a coloured text string."""
-    if fg == '':
+    if fg is None:
         return text
     else:
-        colour = '{0},{1}'.format(fg, bg) if bg != '' else fg
+        colour = '{0},{1}'.format(fg, bg) if bg is not None else fg
         return "\x03{0}{1}\x03".format(colour, text)
 
 
@@ -198,8 +198,8 @@ class RSSManager:
         channel = match.group(1)
         feed_name = match.group(2).strip('"')
         feed_url = match.group(3)
-        fg = int(match.group(4)) % 16 if match.group(4) else ''
-        bg = int(match.group(5)) % 16 if match.group(5) else ''
+        fg = int(match.group(4)) % 16 if match.group(4) else None
+        bg = int(match.group(5)) % 16 if match.group(5) else None
 
         c.execute('''
             SELECT * FROM rss_feeds WHERE channel = {0} AND feed_name = {0}
