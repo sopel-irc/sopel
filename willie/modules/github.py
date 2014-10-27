@@ -97,7 +97,11 @@ def add_traceback(bot, trigger):
     # Make sure the API is set up
     gitAPI = checkConfig(bot)
     if not gitAPI:
-        return bot.say('Git module not configured, make sure github.oauth_token and github.repo are defined')
+        return bot.say('GitHub module not configured, make sure github.oauth_token and github.repo are defined')
+
+    if not trigger.group(2):
+        bot.say('Please give both the issue number and the error message.')
+        return
 
     # Make sure the input is valid
     args = trigger.group(2).split(None, 1)
