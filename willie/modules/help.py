@@ -26,7 +26,7 @@ def setup(bot=None):
 @rule('$nick' '(?i)(help|doc) +([A-Za-z]+)(?:\?+)?$')
 @example('.help tell')
 @commands('help')
-@priority('low')
+@priority('high')
 def help(bot, trigger):
     """Shows a command's documentation, and possibly an example."""
     if not trigger.group(2):
