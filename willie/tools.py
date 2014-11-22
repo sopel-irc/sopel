@@ -23,6 +23,8 @@ import sys
 import os
 import re
 import threading
+import warnings
+
 try:
     import pytz
 except:
@@ -273,6 +275,18 @@ def get_command_regexp(prefix, command):
         """.format(prefix=prefix, command=command)
     return re.compile(pattern, re.IGNORECASE | re.VERBOSE)
 
+
+def deprecate_for_5(thing):
+    warnings.warn(thing + 'will be removed in Willie 5.0. Please see '
+                  'http://willie.dftba.net/willie_5.html for more info.')
+
+def deprecated_5(old):
+    def new(*args, **kwargs):
+        deprecate_for_5(old.__name__)
+        return old(*args, **kwargs)
+    new.__doc__ = old.__doc__
+    new.__name__ = old.__name__
+    return new
 
 def deprecated(old):
     def new(*args, **kwargs):

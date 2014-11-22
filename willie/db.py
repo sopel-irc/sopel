@@ -1,9 +1,12 @@
 # coding=utf8
 """
-*Availability: 3.1+*
+*Availability: 3.1-4.6*
 
-*Note:* This supersedes the ``SettingsDB`` object of 3.0. Within Willie
-modules, simmilar functionallity can be found using ``db.preferences``.
+*Note:* This will be replaced with a new system in 5.0. Some of the new
+functions have been backported in 4.6, and those should be preferred over the
+rest, which will be removed. This also supersedes the ``SettingsDB`` object of
+3.0. Within Willie modules, simmilar functionallity can be found using
+``db.preferences``.
 
 This class defines an interface for a semi-arbitrary database type. It is meant
 to allow module writers to operate without regard to how the end user has
@@ -19,7 +22,7 @@ from __future__ import absolute_import
 import os
 import sys
 from collections import Iterable
-from willie.tools import deprecated
+from willie.tools import deprecate_for_5, deprecated_5
 if sys.version_info.major >= 3:
     unicode = str
     basestring = str
@@ -73,8 +76,8 @@ class WillieDB(object):
         self._none = Table(self, '_none', [], '_none')
         self.tables = set()
         if not config.parser.has_section('db'):
-            self.type = None
-            print('No user settings database specified. Ignoring.')
+            self.type = 'sqlite'
+            self._init_sqlite(os.path.splitext(config.filename)[0] + '.db')
             return
 
         self.type = config.db.userdb_type.lower()
@@ -85,12 +88,14 @@ class WillieDB(object):
             return
 
         if self.type == 'mysql':
+            deprecate_for_5('MySQL DB support')
             self.substitution = '%s'
             self._mySQL(config)
         elif self.type == 'sqlite':
             self.substitution = '?'
             self._sqlite(config)
         elif self.type == 'postgres':
+            deprecate_for_5('Postgres DB support')
             self.substitution = '%s'
             self._postgres(config)
 
@@ -145,8 +150,11 @@ class WillieDB(object):
         db.close()
 
     def _sqlite(self, config):
+        self._init_sqlite(config.db.userdb_file)
+
+    def _init_sqlite(self, filename):
         try:
-            self._file = os.path.expanduser(config.db.userdb_file)
+            self._file = os.path.expanduser(filename)
         except AttributeError:
             print('No file specified for SQLite DB.'
                   ' The database will not be set up.')
@@ -240,6 +248,8 @@ class WillieDB(object):
         element in the given list ``columns``.
 
         """
+        if name != 'preferences' and name != 'locales':
+            deprecate_for_5('db.check_table')
         table = getattr(self, name)
         return (isinstance(table, Table) and table.key == key and
                 all(c in table.columns for c in columns))
@@ -299,6 +309,8 @@ class WillieDB(object):
         custom query, and then creating the WillieDB object.
 
         """
+        if name != 'preferences':
+            deprecate_for_5('db.add_table')
         # First, get the attribute with that name. It'll probably be a pseudo-
         # table, but we want to know if the table already exists or if it's
         # some other db attribute.
@@ -376,6 +388,58 @@ class WillieDB(object):
                 database=self._dbname
             )
 
+    def execute(self, *args, **kwargs):
+        """Execute an arbitrary SQL query against the database.
+
+        *Availability: 5+* (Backported to 4.6+)
+
+        Returns a cursor object, on which things like `.fetchall()` can be
+        called per PEP 249."""
+        with self.connect() as conn:
+            cur = conn.cursor()
+            return cur.execute(*args, **kwargs)
+
+    def set_nick_value(self, nick, key, value):
+        """Sets the value for a given key to be associated with the nick.
+
+        *Availability: 5+* (Backported to 4.6)"""
+        return self.preferences.update(nick, {key: value})
+
+    def get_nick_value(self, nick, key):
+        """Retrieves the value for a given key associated with a nick.
+
+        *Availability: 5+* (Backported to 4.6+)"""
+        return self.preferences.get(nick, key)
+
+    def set_channel_value(self, nick, key, value):
+        """Sets the value for a given key to be associated with the channel.
+
+        *Availability: 5+* (Backported to 4.6+)"""
+        return self.preferences.update(nick, {key: value})
+
+    def get_channel_value(self, nick, key):
+        """Retrieves the value for a given key associated with a channel.
+
+        *Availability: 5+* (Backported to 4.6+)"""
+        return self.preferences.get(nick, key)
+
+    def get_nick_or_channel_value(self, name, key):
+        """Gets the value `key` associated to the nick or channel  `name`.
+
+        *Availability: 5+* (Backported to 4.6+)"""
+        return self.preferences.get(name, key)
+
+    def get_preferred_value(self, names, key):
+        """Gets the value for the first name which has it set.
+
+        *Availability: 5+* (Backported to 4.6+)
+
+        `names` is a list of channel and/or user names. Returns None if none of
+        the names have the key set."""
+        for name in names:
+            value = self.get_nick_or_channel_value(name, key)
+            if value is not None:
+                return value
 
 class Table(object):
 
@@ -440,6 +504,7 @@ class Table(object):
     def __nonzero__(self):
         return bool(self.columns)
 
+    @deprecated_5
     def users(self):
         """Returns the number of users.
 
@@ -460,6 +525,7 @@ class Table(object):
         db.close()
         return result
 
+    @deprecated_5
     def channels(self):
         """Return the number of channels.
 
@@ -480,6 +546,7 @@ class Table(object):
         db.close()
         return result
 
+    @deprecated_5
     def size(self):
         """Returns the total number of rows in the table."""
         if not self.columns:  # handle a non-existant table
@@ -535,6 +602,7 @@ class Table(object):
 
         return row
 
+    @deprecated_5
     def get(self, row, columns, key=None):
         """Equivalent to SELECT FROM WHERE for WillieDB.
 
@@ -571,6 +639,7 @@ class Table(object):
         elif isinstance(columns, Iterable):
             return self._get_many(row, columns, key)
 
+    @deprecated_5
     def update(self, row, values, key=None):
         """Equivalent to UPDATE SET WHERE for WillieDB.
 
@@ -611,6 +680,7 @@ class Table(object):
         db.commit()
         db.close()
 
+    @deprecated_5
     def delete(self, row, key=None):
         """Equivalent to DELETE FROM WHERE for WillieDB.
 
@@ -638,6 +708,7 @@ class Table(object):
         db.commit()
         db.close()
 
+    @deprecated_5
     def keys(self, key=None):
         """Return an iterator over the keys and values in the table.
 
@@ -663,6 +734,7 @@ class Table(object):
     def __iter__(self):
         return self.keys()
 
+    @deprecated_5
     def contains(self, row, key=None):
         """Check if the table has a row ``row`` with the key ``key``.
 
@@ -699,6 +771,7 @@ class Table(object):
     def hascolumns(self, column):
         return self.has_columns(column)
 
+    @deprecated_5
     def has_columns(self, column):
         """Check if ``column`` is in the Table's cached list of its columns.
 
@@ -728,6 +801,7 @@ class Table(object):
     def addcolumns(self, columns):
         return self.add_columns(columns)
 
+    @deprecated_5
     def add_columns(self, columns):
         """Insert a new column.
 
@@ -755,42 +829,3 @@ class Table(object):
         # self.columns if executing the SQL command fails
         for column in columns:
             self.columns.add(column)
-
-
-def configure(config):
-    """Configure the Config object ``config``.
-
-    Interactively create configuration options and add the attributes to
-    the Config object ``config``.
-
-    """
-    config.add_section('db')
-
-    config.interactive_add(
-        'db', 'userdb_type',
-        'What type of database would you like to use? (sqlite/mysql/postgres)',
-        'sqlite'
-    )
-
-    non_sqlite_dbs = {'mysql': 'MySQL', 'postgres': 'PostgreSQL'}
-    if config.db.userdb_type == 'sqlite':
-        config.interactive_add(
-            'db', 'userdb_file', 'Location for the database file'
-        )
-
-    elif config.db.userdb_type in non_sqlite_dbs:
-        db_type = non_sqlite_dbs[config.db.userdb_type]
-        config.interactive_add(
-            'db', 'userdb_host', "Enter the %s hostname" % db_type, 'localhost'
-        )
-        config.interactive_add(
-            'db', 'userdb_user', "Enter the %s username" % db_type)
-        config.interactive_add(
-            'db', 'userdb_pass', "Enter the user's password", 'none'
-        )
-        config.interactive_add(
-            'db', 'userdb_name', "Enter the name of the database to use"
-        )
-
-    else:
-        print("This isn't currently supported. Aborting.")
