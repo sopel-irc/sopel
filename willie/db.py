@@ -441,6 +441,7 @@ class WillieDB(object):
             if value is not None:
                 return value
 
+
 class Table(object):
 
     """Return an object which represent a table in the given WillieDB.
@@ -763,11 +764,11 @@ class Table(object):
     def __contains__(self, item):
         return self.contains(item)
 
-    @deprecated
+    @deprecated_5
     def hascolumn(self, column):
         return self.has_columns(column)
 
-    @deprecated
+    @deprecated_5
     def hascolumns(self, column):
         return self.has_columns(column)
 
@@ -797,7 +798,7 @@ class Table(object):
                 has = col in self.columns and has
             return has
 
-    @deprecated
+    @deprecated_5
     def addcolumns(self, columns):
         return self.add_columns(columns)
 
