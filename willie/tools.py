@@ -204,6 +204,7 @@ class EquationEvaluator(ExpressionEvaluator):
         ast.Pow: guarded_pow,
         ast.Mod: operator.mod,
         ast.FloorDiv: operator.floordiv,
+        ast.BitXor: guarded_pow
     }
     __unary_ops = {
         ast.USub: operator.neg,
