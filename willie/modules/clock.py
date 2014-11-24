@@ -92,6 +92,7 @@ def update_user_format(bot, trigger):
         if not tformat:
             bot.reply("What format do you want me to use? Try using"
                       " http://strftime.net to make one.")
+            return
 
         tz = get_timezone(bot.db, bot.config, None, None, trigger.sender)
 
