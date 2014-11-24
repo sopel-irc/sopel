@@ -1,4 +1,4 @@
-    # coding=utf8
+# coding=utf8
 """
 weather.py - Willie Yahoo! Weather Module
 Copyright 2008, Sean B. Palmer, inamidst.com
@@ -14,7 +14,6 @@ from willie.module import commands, example, NOLIMIT
 
 import feedparser
 from lxml import etree
-from sys import version_info
 
 
 def setup(bot):
@@ -152,28 +151,7 @@ def weather(bot, trigger):
 
     query = web.urlencode({'w': woeid, 'u': 'c'})
     url = 'http://weather.yahooapis.com/forecastrss?' + query
-
-    # Since feedparser has problems with Python 3 and unicode, and there was
-    # no feedparser release since 2012, we have to workaround this manually
-    # in a really ugly way. This kinda sucks.
-    # See https://code.google.com/p/feedparser/issues/detail?id=384
-    # it will be solved once feeedparser 5.1.4 will be released, but who knows
-    # when that will be. I thought of adding a version check here so we won't
-    # try to workaround on feedparser 5.1.4, but it's 1:08 in the morning so
-    # I decided it's not a good use of my time right now.
-
-    if version_info.major > 3:
-        # backup the refernece to chardet, just in case
-        old_chardet = feedparser.chardet
-        # set it to none, to skip a faulty feedparser code branch
-        feedparser.chardet = None
-        parsed = feedparser.parse(url)  # Do the actual parsing
-        # restore chardet to its original value
-        feedparser.chardet = old_chardet
-    else:
-        # Python 2.x, no feedparser issues here
-        parsed = feedparser.parse(url)
-
+    parsed = feedparser.parse(url)
     location = parsed['feed']['title']
 
     cover = get_cover(parsed)
