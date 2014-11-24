@@ -461,8 +461,14 @@ class OutputRedirect:
                     sys.__stdout__.write(string)
             except:
                 pass
-        with codecs.open(self.logpath, 'a', encoding="utf8") as logfile:
-            logfile.write(string)
+
+        with codecs.open(self.logpath, 'ab', encoding="utf8",
+                         errors='xmlcharrefreplace') as logfile:
+            try:
+                logfile.write(string)
+            except UnicodeDecodeError:
+                # we got an invalid string, safely encode it to utf-8
+                logfile.write(unicode(string, 'utf8', errors="replace"))
 
 
 #These seems to trace back to when we thought we needed a try/except on prints,
