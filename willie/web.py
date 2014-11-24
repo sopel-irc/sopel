@@ -44,6 +44,9 @@ USER_AGENT = 'Willie/{} (http://willie.dftba.net)'
 
 
 # HTTP GET
+# Note: dont_decode is a horrible name for an argument, double negative
+# is super confusing. We need to replace it, maybe in 5.0 because this would
+# mean breaking backwards compatability
 def get(uri, timeout=20, headers=None, return_headers=False,
         limit_bytes=None, verify_ssl=True, dont_decode=False):
     """Execute an HTTP GET query on `uri`, and return the result.
