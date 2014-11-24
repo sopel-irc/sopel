@@ -75,7 +75,7 @@ def setup(bot=None):
     else:
         exclude = bot.memory['url_exclude']
         if regexes:
-            exclude.append(regexes)
+            exclude.extend(regexes)
         bot.memory['url_exclude'] = exclude
 
     # Ensure that url_callbacks and last_seen_url are in memory
