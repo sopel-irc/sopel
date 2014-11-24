@@ -25,7 +25,7 @@ import os
 import argparse
 import signal
 
-from willie.__init__ import run
+from willie.__init__ import run, __version__
 from willie.config import Config, create_config, ConfigurationError, wizard
 import willie.tools as tools
 import willie.web
@@ -91,6 +91,8 @@ def main(argv=None):
                             dest='db_wizard', help=(
                                 'Run the configuration wizard, but only for the '
                                 'database configuration options.'))
+        parser.add_argument('-v', '--version', action="store_true",
+                            dest="version", help="Show version number and exit")
         opts = parser.parse_args()
 
         try:
@@ -101,7 +103,14 @@ def main(argv=None):
             # Windows don't have os.getuid/os.geteuid
             pass
 
-        if opts.wizard:
+        if opts.version:
+            py_ver = '%s.%s.%s' % (sys.version_info.major,
+                                   sys.version_info.minor,
+                                   sys.version_info.micro)
+            print('Willie %s (running on python %s)' % (__version__, py_ver))
+            print('http://willie.dftba.net/')
+            return
+        elif opts.wizard:
             wizard('all', opts.config)
             return
         elif opts.mod_wizard:
