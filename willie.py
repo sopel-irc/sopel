@@ -170,7 +170,7 @@ def main(argv=None):
         sys.stderr = tools.OutputRedirect(logfile, True, opts.quiet)
         sys.stdout = tools.OutputRedirect(logfile, False, opts.quiet)
 
-        #Handle --quit, --kill and saving the PID to file
+        # Handle --quit, --kill and saving the PID to file
         pid_dir = config_module.core.pid_dir or homedir
         if opts.config is None:
             pid_file_path = os.path.join(pid_dir, 'willie.pid')
@@ -180,10 +180,12 @@ def main(argv=None):
                 basename = basename[:-4]
             pid_file_path = os.path.join(pid_dir, 'willie-%s.pid' % basename)
         if os.path.isfile(pid_file_path):
-            pid_file = open(pid_file_path, 'r')
-            old_pid = int(pid_file.read())
-            pid_file.close()
-            if tools.check_pid(old_pid):
+            with open(pid_file_path, 'r') as pid_file:
+                try:
+                    old_pid = int(pid_file.read())
+                except ValueError:
+                    old_pid = None
+            if old_pid is not None and tools.check_pid(old_pid):
                 if not opts.quit and not opts.kill:
                     stderr('There\'s already a Willie instance running with this config file')
                     stderr('Try using the --quit or the --kill options')
@@ -209,9 +211,8 @@ def main(argv=None):
             child_pid = os.fork()
             if child_pid is not 0:
                 sys.exit()
-        pid_file = open(pid_file_path, 'w')
-        pid_file.write(str(os.getpid()))
-        pid_file.close()
+        with open(pid_file_path, 'w') as pid_file:
+            pid_file.write(str(os.getpid()))
         config_module.pid_file_path = pid_file_path
 
         # Step Five: Initialise And Run willie
