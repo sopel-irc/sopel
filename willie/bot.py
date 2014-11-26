@@ -485,7 +485,17 @@ class Willie(irc.Bot):
                     else:
                         # The new format is a list of dicts.
                         example = func.example[0]["example"]
+
+
                     example = example.replace('$nickname', str(self.nick))
+		    if example[:1] != self.config.prefix:
+		        if example[:1] == ".":
+				# the example starts with a dot, but that
+				# isn't the prefix we're using
+				# replace a dot with the correct prefix
+				example = self.config.prefix + example[1:]
+			else:
+				example = self.config.prefix + example
                 if doc or example:
                     for command in func.commands:
                         self.doc[command] = (doc, example)
