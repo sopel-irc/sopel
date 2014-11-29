@@ -70,7 +70,7 @@ def get(uri, timeout=20, headers=None, return_headers=False,
     headers = dict(u.info())
     if not dont_decode:
         # Detect encoding automatically from HTTP headers
-        content_type = headers.get('Content-Type') or ''
+        content_type = headers.get('content-type') or ''
         encoding_match = re.match('.*?charset *= *(\S+)', content_type, re.IGNORECASE)
         if encoding_match:
             try:
