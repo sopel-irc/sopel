@@ -105,7 +105,7 @@ def head(uri, timeout=20, headers=None, verify_ssl=True):
 
 
 # HTTP POST
-def post(uri, query, limit_bytes=None, timeout=20, verify_ssl=True):
+def post(uri, query, limit_bytes=None, timeout=20, verify_ssl=True, return_headers=False):
     """Execute an HTTP POST query.
 
     `uri` is the target URI, and `query` is the POST data. `headers` is a dict
@@ -120,8 +120,13 @@ def post(uri, query, limit_bytes=None, timeout=20, verify_ssl=True):
         uri = "http://" + uri
     u = get_urllib_object(uri, timeout=timeout, verify_ssl=verify_ssl, data=query)
     bytes = u.read(limit_bytes)
+    headers = dict(u.info())
     u.close()
-    return bytes
+    if not return_headers:
+        return bytes
+    else:
+        headers['_http_status'] = u.code
+        return (bytes, headers)
 
 r_entity = re.compile(r'&([^;\s]+);')
 
