@@ -75,11 +75,11 @@ def display(bot, amount, of, to):
     try:
         of_rate, of_name = get_rate(of)
         if not of_name:
-            bot.reply("Unkown currency: %s" % of)
+            bot.reply("Unknown currency: %s" % of)
             return
         to_rate, to_name = get_rate(to)
         if not to_name:
-            bot.reply("Unkown currency: %s" % to)
+            bot.reply("Unknown currency: %s" % to)
             return
     except Exception as e:
         raise
