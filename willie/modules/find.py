@@ -111,7 +111,7 @@ def findandreplace(bot, trigger):
         count = -1
     else:
         count = 1
-        
+
     reflags = 0
     if 'i' in flags:
         reflags = re.U | re.I
@@ -121,7 +121,7 @@ def findandreplace(bot, trigger):
     except re.error as e:
         bot.reply(u'That ain\'t valid regex! (%s)' % (e.message))
         return
-    
+
     # Look back through the user's lines in the channel until you find a line
     # where the replacement works
     for line in reversed(search_dict[trigger.sender][rnick]):
