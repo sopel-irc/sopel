@@ -7,7 +7,7 @@ Licensed under the Eiffel Forum License 2.
 
 http://willie.dftba.net
 
-Contributions from: Matt Meinwald and Morgan Goose
+Contributions from: Matt Meinwald, Morgan Goose and Max Gurela
 This module will fix spelling errors if someone corrects them
 using the sed notation (s///) commonly found in vi/vim.
 """
@@ -56,19 +56,33 @@ def collectlines(bot, trigger):
 
 #Match nick, s/find/replace/flags. Flags and nick are optional, nick can be
 #followed by comma or colon, anything after the first space after the third
-#slash is ignored, you can escape slashes with backslashes, and if you want to
-#search for an actual backslash followed by an actual slash, you're shit out of
-#luck because this is the fucking regex of death as it is.
-@rule(r"""(?:
-            (\S+)           # Catch a nick in group 1
-          [:,]\s+)?         # Followed by colon/comma and whitespace, if given
-          s/                # The literal s/
-          (                 # Group 2 is the thing to find
-            (?:\\/ | [^/])+ # One or more non-slashes or escaped slashes
-          )/(               # Group 3 is what to replace with
-            (?:\\/ | [^/])* # One or more non-slashes or escaped slashes
-          )
-          (?:/(\S+))?       # Optional slash, followed by group 4 (flags)
+#slash is ignored, you can escape slashes with backslashes.
+#
+#Slightly modified regex from https://www.azabani.com/2014/02/08/writing-irc-sedbot.html
+@rule(r"""^			# start of the message
+(?:(\S+)[:,]\s+)? 	# CAPTURE nick
+(?:					# BEGIN first sed expression
+  s/				#   sed replacement expression delimiter
+  (					#   BEGIN needle component
+    (?:				#     BEGIN single needle character
+      [^\\/]		#       anything that isn't a slash or backslash...
+      |\\.			#       ...or any backslash escape
+    )*				#     END single needle character, zero or more
+  )					#   END needle component
+  /					#   slash between needle and replacement
+  (					#   BEGIN replacement component
+    (?:				#     BEGIN single replacement character
+      [^\\/]|\\.	#       escape or non-slash-backslash, as above
+    )*				#     END single replacement character, zero or more
+  )					#   END replacement component
+  (?:/				#   slash between replacement and flags
+  (					#   BEGIN flags component
+    (?:				#     BEGIN single flag
+      [^ ]+			#       any sequence of non-whitespace chars
+    )*				#     END single flag, zero or more
+  ))?				#   END flags component
+)					# END first sed expression
+$					# end of the message
           """)
 @priority('high')
 def findandreplace(bot, trigger):
@@ -86,11 +100,9 @@ def findandreplace(bot, trigger):
     if Nick(rnick) not in search_dict[trigger.sender]:
         return
 
-    #TODO rest[0] is find, rest[1] is replace. These should be made variables of
-    #their own at some point.
     rest = [trigger.group(2), trigger.group(3)]
-    rest[0] = rest[0].replace(r'\/', '/')
-    rest[1] = rest[1].replace(r'\/', '/')
+    find = rest[0]
+    replace = rest[1]
     me = False  # /me command
     flags = (trigger.group(4) or '')
 
@@ -99,15 +111,17 @@ def findandreplace(bot, trigger):
         count = -1
     else:
         count = 1
-
-    # repl is a lambda function which performs the substitution. i flag turns
-    # off case sensitivity. re.U turns on unicode replacement.
+        
+    reflags = 0
     if 'i' in flags:
-        regex = re.compile(re.escape(rest[0]), re.U | re.I)
-        repl = lambda s: re.sub(regex, rest[1], s, count == 1)
-    else:
-        repl = lambda s: s.replace(rest[0], rest[1], count)
+        reflags = re.U | re.I
 
+    try:
+        find = re.compile(find, reflags)
+    except re.error as e:
+        bot.reply(u'That ain\'t valid regex! (%s)' % (e.message))
+        return
+    
     # Look back through the user's lines in the channel until you find a line
     # where the replacement works
     for line in reversed(search_dict[trigger.sender][rnick]):
@@ -116,7 +130,7 @@ def findandreplace(bot, trigger):
             line = line[8:]
         else:
             me = False
-        new_phrase = repl(line)
+        new_phrase = find.sub(replace, line, count == 1)
         if new_phrase != line:  # we are done
             break
 
