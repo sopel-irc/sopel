@@ -59,30 +59,29 @@ def collectlines(bot, trigger):
 #slash is ignored, you can escape slashes with backslashes.
 #
 #Slightly modified regex from https://www.azabani.com/2014/02/08/writing-irc-sedbot.html
-@rule(r"""^			# start of the message
-(?:(\S+)[:,]\s+)? 	# CAPTURE nick
-(?:					# BEGIN first sed expression
-  s/				#   sed replacement expression delimiter
-  (					#   BEGIN needle component
-    (?:				#     BEGIN single needle character
-      [^\\/]		#       anything that isn't a slash or backslash...
-      |\\.			#       ...or any backslash escape
-    )*				#     END single needle character, zero or more
-  )					#   END needle component
-  /					#   slash between needle and replacement
-  (					#   BEGIN replacement component
-    (?:				#     BEGIN single replacement character
-      [^\\/]|\\.	#       escape or non-slash-backslash, as above
-    )*				#     END single replacement character, zero or more
-  )					#   END replacement component
-  (?:/				#   slash between replacement and flags
-  (					#   BEGIN flags component
-    (?:				#     BEGIN single flag
-      [^ ]+			#       any sequence of non-whitespace chars
-    )*				#     END single flag, zero or more
-  ))?				#   END flags component
-)					# END first sed expression
-$					# end of the message
+@rule(r"""^         # start of the message
+(?:(\S+)[:,]\s+)?   # CAPTURE nick
+(?:                 # BEGIN first sed expression
+  s/                #   sed replacement expression delimiter
+  (                 #   BEGIN needle component
+    (?:             #     BEGIN single needle character
+      [^\\/]        #       anything that isn't a slash or backslash...
+      |\\.          #       ...or any backslash escape
+    )*              #     END single needle character, zero or more
+  )                 #   END needle component
+  /                 #   slash between needle and replacement
+  (                 #   BEGIN replacement component
+    (?:             #     BEGIN single replacement character
+      [^\\/]|\\.    #       escape or non-slash-backslash, as above
+    )*              #     END single replacement character, zero or more
+  )                 #   END replacement component
+  (?:/              #   slash between replacement and flags
+  (                 #   BEGIN flags component
+    (?:             #     BEGIN single flag
+      [^ ]+         #       any sequence of non-whitespace chars
+    )*              #     END single flag, zero or more
+  ))?               #   END flags component
+)                   # END first sed expression
           """)
 @priority('high')
 def findandreplace(bot, trigger):
