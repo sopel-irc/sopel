@@ -61,12 +61,12 @@ def create_table(bot, c):
         )'''.format(primary_key))
 
 
-def colour_text(text, fg, bg=''):
+def colour_text(text, fg=None, bg=None):
     """Given some text and fore/back colours, return a coloured text string."""
-    if fg == '':
+    if fg is None:
         return text
     else:
-        colour = '{0},{1}'.format(fg, bg) if bg != '' else fg
+        colour = '{0},{1}'.format(fg, bg) if bg is not None else fg
         return "\x03{0}{1}\x03".format(colour, text)
 
 
@@ -143,8 +143,8 @@ class RSSManager:
         channel = match.group(1)
         feed_name = match.group(2).strip('"')
         feed_url = match.group(3)
-        fg = int(match.group(4)) % 16 if match.group(4) else ''
-        bg = int(match.group(5)) % 16 if match.group(5) else ''
+        fg = int(match.group(4)) % 16 if match.group(4) else None
+        bg = int(match.group(5)) % 16 if match.group(5) else None
 
         c.execute('''
             SELECT * FROM rss_feeds WHERE channel = ? AND feed_name = ?
@@ -356,7 +356,7 @@ def read_feeds(bot, force=False):
             bot.debug(
                 __file__,
                 "Got HTTP 301 (Moved Permanently) on {0}, updating URI to {1}".format(
-                feed.name, fp.href), 'warning')
+                    feed.name, fp.href), 'warning')
             c.execute('''
                 UPDATE rss_feeds SET feed_url = ?
                 WHERE channel = ? AND feed_name = ?
@@ -394,7 +394,7 @@ def read_feeds(bot, force=False):
             SET article_title = ?, article_url = ?, published = ?, etag = ?, modified = ?
             WHERE channel = ? AND feed_name = ?
             ''', (entry.title, entry.link, entry_dt, feed_etag, feed_modified,
-                              feed.channel, feed.name))
+                  feed.channel, feed.name))
         conn.commit()
 
         if feed.published and entry_dt:

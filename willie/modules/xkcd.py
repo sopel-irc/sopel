@@ -88,7 +88,7 @@ def xkcd(bot, trigger):
             elif abs(query) == 0:
                 requested = latest
             elif query == 404 or max_int + query == 404:
-                bot.say("404 - Not Found") # don't error on that one
+                bot.say("404 - Not Found")  # don't error on that one
                 return
             elif query > 0:
                 requested = get_info(query)

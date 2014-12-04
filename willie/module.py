@@ -335,7 +335,7 @@ class example(object):
         self.admin = admin
         self.owner = owner
         self.repeat = repeat
-        
+
         if isinstance(ignore, list):
             self.ignore = ignore
         elif ignore is not None:

@@ -55,18 +55,17 @@ def update_user(bot, trigger):
         tz = trigger.group(2)
         if not tz:
             bot.reply("What timezone do you want to set? Try one from "
-                         "http://dft.ba/-tz")
+                      "http://dft.ba/-tz")
             return
         if tz not in pytz.all_timezones:
             bot.reply("I don't know that time zone. Try one from "
-                         "http://dft.ba/-tz")
+                      "http://dft.ba/-tz")
             return
 
         bot.db.set_nick_value(trigger.nick, 'timezone', tz)
         if len(tz) < 7:
-            bot.say("Okay, " + trigger.nick +
-                        ", but you should use one from http://dft.ba/-tz if "
-                        "you use DST.")
+            bot.say("Okay, {}, but you should use one from http://dft.ba/-tz "
+                    "if you use DST.".format(trigger.nick))
         else:
             bot.reply('I now have you in the %s time zone.' % tz)
 
@@ -81,10 +80,9 @@ def update_user_format(bot, trigger):
     tformat = trigger.group(2)
     if not tformat:
         bot.reply("What format do you want me to use? Try using"
-                     " http://strftime.net to make one.")
+                  " http://strftime.net to make one.")
 
-    tz = get_timezone(bot.db, bot.config, None, None,
-                                   trigger.sender)
+    tz = get_timezone(bot.db, bot.config, None, None, trigger.sender)
 
     # Get old format as back-up
     old_format = bot.db.get_nick_value(trigger.nick, 'time_format')
@@ -93,16 +91,16 @@ def update_user_format(bot, trigger):
     bot.db.set_nick_value(trigger.nick, 'time_format', tformat)
 
     try:
-        timef = format_time(db = bot.db, zone=tz, nick=trigger.nick)
+        timef = format_time(db=bot.db, zone=tz, nick=trigger.nick)
     except:
         bot.reply("That format doesn't work. Try using"
-                     " http://strftime.net to make one.")
+                  " http://strftime.net to make one.")
         # New format doesn't work. Revert save in database.
         bot.db.set_nick_value(trigger.nick, 'time_format', old_format)
         return
     bot.reply("Got it. Your time will now appear as %s. (If the "
-                 "timezone is wrong, you might try the settz command)"
-                 % timef)
+              "timezone is wrong, you might try the settz command)"
+              % timef)
 
 
 @commands('channeltz')
@@ -119,21 +117,20 @@ def update_channel(bot, trigger):
         tz = trigger.group(2)
         if not tz:
             bot.reply("What timezone do you want to set? Try one from "
-                         "http://dft.ba/-tz")
+                      "http://dft.ba/-tz")
             return
         if tz not in pytz.all_timezones:
             bot.reply("I don't know that time zone. Try one from "
-                         "http://dft.ba/-tz")
+                      "http://dft.ba/-tz")
             return
 
         bot.db.set_channel_value(trigger.sender, 'timezone', tz)
         if len(tz) < 7:
-            bot.say("Okay, " + trigger.nick +
-                        ", but you should use one from http://dft.ba/-tz if "
-                        "you use DST.")
+            bot.say("Okay, {}, but you should use one from http://dft.ba/-tz "
+                    "if you use DST.".format(trigger.nick))
         else:
             bot.reply(
-                'I now have {} in the {} time zone.'.format(trigger.sender,tz))
+                'I now have {} in the {} time zone.'.format(trigger.sender, tz))
 
 
 @commands('setchanneltimeformat', 'setctf')
@@ -149,19 +146,17 @@ def update_channel_format(bot, trigger):
     tformat = trigger.group(2)
     if not tformat:
         bot.reply("What format do you want me to use? Try using"
-                     " http://strftime.net to make one.")
+                  " http://strftime.net to make one.")
 
-    tz = get_timezone(bot.db, bot.config, None, None,
-                                   trigger.sender)
+    tz = get_timezone(bot.db, bot.config, None, None, trigger.sender)
     try:
         timef = format_time(zone=tz)
     except:
         bot.reply("That format doesn't work. Try using"
-                     " http://strftime.net to make one.")
+                  " http://strftime.net to make one.")
         return
     bot.db.set_channel_value(trigger.sender, 'time_format', tformat)
     bot.reply("Got it. Times in this channel  will now appear as %s "
-                 "unless a user has their own format set. (If the timezone"
-                 " is wrong, you might try the settz and channeltz "
-                 "commands)" % timef)
-
+              "unless a user has their own format set. (If the timezone"
+              " is wrong, you might try the settz and channeltz "
+              "commands)" % timef)

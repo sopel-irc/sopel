@@ -40,7 +40,7 @@ to add a a line to the ``[core]`` section of your config file saying
 
 Some extra modules are available in the
 `willie-extras <https://github.com/embolalia/willie-extras>`_ repository, but of
-course you can also write new modules. A `tutorial <https://github.com/embolalia/willie/wiki/How-To-Create-a-Willie-Module>`_
+course you can also write new modules. A `tutorial <https://github.com/embolalia/willie/wiki//Willie-tutorial,-Part-2>`_
 for creating new modules is available on the wiki.
 API documentation can be found online at http://willie.dftba.net/docs, or
 you can create a local version by running ``make html`` in the ``doc``
@@ -61,7 +61,7 @@ Contact us on irc.dftba.net channel #tech
 
 For a list of contributions to the Jenni fork see the file ``CREDITS``.
 
-.. |build-status| image:: https://travis-ci.org/embolalia/willie.png
+.. |build-status| image:: https://travis-ci.org/embolalia/willie.svg
    :target: https://travis-ci.org/embolalia/willie
 .. |coverage-status| image:: https://coveralls.io/repos/embolalia/willie/badge.png
    :target: https://coveralls.io/r/embolalia/willie

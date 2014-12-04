@@ -40,8 +40,7 @@ def c(bot, trigger):
     except ZeroDivisionError:
         result = "Division by zero is not supported in this universe."
     except Exception as e:
-        result = "{error}: {msg}".format(
-                error=type(e), msg=e)
+        result = "{error}: {msg}".format(error=type(e), msg=e)
     bot.reply(result)
 
 

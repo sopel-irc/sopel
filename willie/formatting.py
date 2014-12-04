@@ -5,6 +5,9 @@ The formatting module includes functions to apply IRC formatting to text."""
 # Copyright 2014, Edward D. Powell, embolalia.net
 # Licensed under the Eiffel Forum License 2.
 from __future__ import unicode_literals
+import sys
+if sys.version_info.major >= 3:
+    unicode = str
 
 # Color names are as specified at http://www.mirc.com/colors.html
 

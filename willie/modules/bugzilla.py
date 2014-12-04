@@ -16,6 +16,7 @@ from willie.module import rule
 
 regex = None
 
+
 def configure(config):
     """
 
@@ -42,8 +43,8 @@ def setup(bot):
 
     domains = '|'.join(bot.config.bugzilla.get_list('domains'))
     regex = re.compile((r'https?://(%s)'
-                         '(/show_bug.cgi\?\S*?)'
-                         '(id=\d+)')
+                        '(/show_bug.cgi\?\S*?)'
+                        '(id=\d+)')
                        % domains)
     bot.memory['url_callbacks'][regex] = show_bug
 
@@ -53,8 +54,8 @@ def shutdown(bot):
 
 
 @rule(r'.*https?://(\S+?)'
-       '(/show_bug.cgi\?\S*?)'
-       '(id=\d+).*')
+      '(/show_bug.cgi\?\S*?)'
+      '(id=\d+).*')
 def show_bug(bot, trigger, match=None):
     """Show information about a Bugzilla bug."""
     match = match or trigger

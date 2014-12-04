@@ -64,7 +64,8 @@ def g(bot, trigger):
     uri = google_search(query)
     if uri:
         bot.reply(uri)
-        bot.memory['last_seen_url'][trigger.sender] = uri
+        if 'last_seen_url' in bot.memory:
+            bot.memory['last_seen_url'][trigger.sender] = uri
     elif uri is False:
         bot.reply("Problem getting data from Google.")
     else:
@@ -127,7 +128,7 @@ def duck_search(query):
     query = query.replace('!', '')
     uri = 'http://duckduckgo.com/html/?q=%s&kl=uk-en' % query
     bytes = web.get(uri)
-    if 'web-result"' in bytes: #filter out the adds on top of the page
+    if 'web-result"' in bytes:  # filter out the adds on top of the page
         bytes = bytes.split('web-result"')[1]
     m = r_duck.search(bytes)
     if m:
@@ -165,7 +166,8 @@ def duck(bot, trigger):
 
     if uri:
         bot.reply(uri)
-        bot.memory['last_seen_url'][trigger.sender] = uri
+        if 'last_seen_url' in bot.memory:
+            bot.memory['last_seen_url'][trigger.sender] = uri
     else:
         bot.reply("No results found for '%s'." % query)
 
@@ -208,7 +210,7 @@ def suggest(bot, trigger):
         return bot.reply("No query term.")
     query = trigger.group(2)
     uri = 'http://websitedev.de/temp-bin/suggest.pl?q='
-    answer = web.get(uri+query.replace('+', '%2B'))
+    answer = web.get(uri + query.replace('+', '%2B'))
     if answer:
         bot.say(answer)
     else:

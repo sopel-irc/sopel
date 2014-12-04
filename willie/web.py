@@ -42,7 +42,11 @@ if not hasattr(ssl, 'match_hostname'):
 from willie import __version__
 USER_AGENT = 'Willie/{} (http://willie.dftba.net)'
 
+
 # HTTP GET
+# Note: dont_decode is a horrible name for an argument, double negative
+# is super confusing. We need to replace it, maybe in 5.0 because this would
+# mean breaking backwards compatability
 def get(uri, timeout=20, headers=None, return_headers=False,
         limit_bytes=None, verify_ssl=True, dont_decode=False):
     """Execute an HTTP GET query on `uri`, and return the result.
@@ -66,7 +70,7 @@ def get(uri, timeout=20, headers=None, return_headers=False,
     headers = dict(u.info())
     if not dont_decode:
         # Detect encoding automatically from HTTP headers
-        content_type = headers.get('Content-Type') or ''
+        content_type = headers.get('content-type') or ''
         encoding_match = re.match('.*?charset *= *(\S+)', content_type, re.IGNORECASE)
         if encoding_match:
             try:
@@ -101,7 +105,7 @@ def head(uri, timeout=20, headers=None, verify_ssl=True):
 
 
 # HTTP POST
-def post(uri, query, limit_bytes=None, timeout=20, verify_ssl=True):
+def post(uri, query, limit_bytes=None, timeout=20, verify_ssl=True, return_headers=False):
     """Execute an HTTP POST query.
 
     `uri` is the target URI, and `query` is the POST data. `headers` is a dict
@@ -116,8 +120,13 @@ def post(uri, query, limit_bytes=None, timeout=20, verify_ssl=True):
         uri = "http://" + uri
     u = get_urllib_object(uri, timeout=timeout, verify_ssl=verify_ssl, data=query)
     bytes = u.read(limit_bytes)
+    headers = dict(u.info())
     u.close()
-    return bytes
+    if not return_headers:
+        return bytes
+    else:
+        headers['_http_status'] = u.code
+        return (bytes, headers)
 
 r_entity = re.compile(r'&([^;\s]+);')
 
@@ -152,12 +161,13 @@ class VerifiedHTTPSConnection(httplib.HTTPConnection):
             if self._tunnel_host:
                 self.sock = sock
                 self._tunnel()
-            if not  os.path.exists(ca_certs):
+            if not os.path.exists(ca_certs):
                 raise Exception('CA Certificate bundle %s is not readable' % ca_certs)
             self.sock = ssl.wrap_socket(sock,
                                         ca_certs=ca_certs,
                                         cert_reqs=ssl.CERT_REQUIRED)
             ssl.match_hostname(self.sock.getpeercert(), self.host)
+
 
 class VerifiedHTTPSHandler(urllib2.HTTPSHandler):
 

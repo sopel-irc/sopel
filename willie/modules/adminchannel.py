@@ -11,8 +11,18 @@ http://willie.dftba.net/
 from __future__ import unicode_literals
 
 import re
+from willie import formatting
 from willie.module import commands, priority, OP, HALFOP
 from willie.tools import Nick
+
+
+def default_mask(trigger):
+    welcome = formatting.color('Welcome to:', formatting.colors.PURPLE)
+    chan = formatting.color(trigger.sender, formatting.colors.TEAL)
+    topic_ = formatting.bold('Topic:')
+    topic_ = formatting.color('| ' + topic_, formatting.colors.PURPLE)
+    arg = formatting.color('{}', formatting.colors.GREEN)
+    return '{} {} {} {}'.format(welcome, chan, topic_, arg)
 
 
 @commands('op')
@@ -293,28 +303,27 @@ def topic(bot, trigger):
         return
     if bot.privileges[trigger.sender][bot.nick] < HALFOP:
         return bot.reply("I'm not a channel operator!")
-    text = trigger.group(2)
-    if text == '':
+    if not trigger.group(2):
         return
     channel = trigger.sender.lower()
 
     narg = 1
     mask = None
     mask = bot.db.get_channel_value(channel, 'topic_mask')
-    narg = len(re.findall('%s', mask))
-    if not mask or mask == '':
-        mask = purple + 'Welcome to: ' + green + channel + purple \
-            + ' | ' + bold + 'Topic: ' + bold + green + '%s'
+    mask = mask or default_mask(trigger)
+    mask = mask.replace('%s', '{}')
+    narg = len(re.findall('{}', mask))
 
     top = trigger.group(2)
-    text = tuple()
+    args = []
     if top:
-        text = tuple(unicode.split(top, '~', narg))
+        args = top.split('~', narg)
 
-    if len(text) != narg:
-        message = "Not enough arguments. You gave " + str(len(text)) + ', it requires ' + str(narg) + '.'
+    if len(args) != narg:
+        message = "Not enough arguments. You gave {}, it requires {}.".format(
+            len(args), narg)
         return bot.say(message)
-    topic = mask % text
+    topic = mask.format(*args)
 
     bot.write(('TOPIC', channel + ' :' + topic))
 
@@ -322,7 +331,7 @@ def topic(bot, trigger):
 @commands('tmask')
 def set_mask(bot, trigger):
     """
-    Set the mask to use for .topic in the current channel. %s is used to allow
+    Set the mask to use for .topic in the current channel. {} is used to allow
     substituting in chunks of text.
     """
     if bot.privileges[trigger.sender][trigger.nick] < OP:
@@ -337,5 +346,5 @@ def show_mask(bot, trigger):
     if bot.privileges[trigger.sender][trigger.nick] < OP:
         return
     mask = bot.db.get_channel_value(trigger.sender, 'topic_mask')
-    mask = mask or "%s"
+    mask = mask or default_mask(trigger)
     bot.say(mask)
