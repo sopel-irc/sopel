@@ -37,7 +37,7 @@ def op(bot, trigger):
     Command to op users in a room. If no nick is given,
     willie will op the nick who sent the command
     """
-    if bot.privileges[trigger.sender][trigger.nick] < OP:
+    if bot.privileges[trigger.sender][trigger.nick] < OP and not trigger.admin:
         return
     if bot.privileges[trigger.sender][bot.nick] < OP:
         return bot.reply("I'm not a channel operator!")
