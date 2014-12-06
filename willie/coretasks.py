@@ -240,7 +240,7 @@ def track_nicks(bot, trigger):
 
     # Give debug mssage, and PM the owner, if the bot's own nick changes.
     if old == bot.nick:
-        privmsg = "Hi, I'm your bot, %s." + \
+        privmsg = ("Hi, I'm your bot, %s." + \
             " Something has made my nick change." + \
             " This can cause some problems for me," + \
             " and make me do weird things." + \
@@ -248,7 +248,7 @@ def track_nicks(bot, trigger):
             " and figure out what made that happen" + \
             " so you can stop it happening again." + \
             " (Usually, it means you tried to give me a nick" + \
-            " that's protected by NickServ.)" % bot.nick
+            " that's protected by NickServ.)") % bot.nick
         debug_msg = "Nick changed by server." + \
             " This can cause unexpected behavior. Please restart the bot."
         bot.debug(__file__, debug_msg, 'always')
