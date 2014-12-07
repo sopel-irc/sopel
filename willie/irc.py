@@ -444,7 +444,7 @@ class Bot(asynchat.async_chat):
             else:
                 self.nick_try += 1
             if self.nick_try >= self.nick_try_max:
-                stderr('closing connexion')
+                stderr('closing connection')
                 self.handle_close()
             else:
                 self.nick = Nick(self.config.core.nick + str(self.nick_try))
