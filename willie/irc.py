@@ -443,7 +443,7 @@ class Bot(asynchat.async_chat):
                 self.nick_try = 0
             else:
                 self.nick_try += 1
-            if self.nick_try > self.nick_try_max:
+            if self.nick_try >= self.nick_try_max:
                 stderr('closing connexion')
                 self.handle_close()
             else:
