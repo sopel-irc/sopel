@@ -92,6 +92,11 @@ class Bot(asynchat.async_chat):
         self.nick = Nick(config.nick)
         """Willie's current ``Nick``. Changing this while Willie is running is
         untested."""
+        self.nick_try = None
+        """The current attempt at finding the right nick. If None, no attempt
+        has been done yet. zero-based."""
+        self.nick_try_max = 10  # XXX: should be in config
+        """the maximum number of attempts at finding a free nick"""
         self.user = config.user
         """Willie's user/ident."""
         self.name = config.name
@@ -433,8 +438,18 @@ class Bot(asynchat.async_chat):
             if self.hasquit:
                 self.close_when_done()
         elif args[0] == '433':
-            stderr('Nickname already in use!')
-            self.handle_close()
+            stderr('Nickname %s already in use!' % self.nick)
+            if self.nick_try is None:
+                self.nick_try = 0
+            else:
+                self.nick_try += 1
+            if self.nick_try >= self.nick_try_max:
+                stderr('closing connection')
+                self.handle_close()
+            else:
+                self.nick = Nick(self.config.core.nick + str(self.nick_try))
+                stderr('trying again with nick %s' % self.nick)
+                self.write(('NICK', self.nick))
 
         origin = Origin(self, source, args, tags)
         self.dispatch(origin, text, args)
