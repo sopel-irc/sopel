@@ -117,8 +117,6 @@ def ip(bot, trigger):
         response += " | Region: %s" % region
 
     isp = gi_org.org_by_name(query)
-    if isp is not None:
-        isp = re.sub('^AS\d+ ', '', isp)
     response += " | ISP: %s" % isp
     bot.say(response)
 
