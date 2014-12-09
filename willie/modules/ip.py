@@ -106,7 +106,10 @@ def ip(bot, trigger):
     gi_org = pygeoip.GeoIP(geolite_ASN_filepath)
     host = socket.getfqdn(query)
     response = "[IP/Host Lookup] Hostname: %s" % host
-    response += " | Location: %s" % gi_city.country_name_by_name(query)
+    try:
+        response += " | Location: %s" % gi_city.country_name_by_name(query)
+    except AttributeError:
+        response += ' | Location: Unknown'
 
     region_data = gi_city.region_by_name(query)
     try:
