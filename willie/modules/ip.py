@@ -109,7 +109,7 @@ def ip(bot, trigger):
     try:
         response += " | Location: %s" % gi_city.country_name_by_name(query)
     except AttributeError:
-        pass
+        response += ' | Location: Unknown'
 
     region_data = gi_city.region_by_name(query)
     try:
