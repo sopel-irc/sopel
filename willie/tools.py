@@ -451,6 +451,9 @@ class OutputRedirect:
         self.stderr = stderr
         self.quiet = quiet
 
+    def flush(self, *args, **kwargs):
+	pass
+
     def write(self, string):
         """Write the given ``string`` to the logfile and terminal."""
         if not self.quiet:
