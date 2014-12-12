@@ -99,21 +99,21 @@ def get_wind(parsed):
         description = 'Hurricane'
 
     if (degrees <= 22.5) or (degrees > 337.5):
-        degrees = u'\u2191'
-    elif (degrees > 22.5) and (degrees <= 67.5):
-        degrees = u'\u2197'
-    elif (degrees > 67.5) and (degrees <= 112.5):
-        degrees = u'\u2192'
-    elif (degrees > 112.5) and (degrees <= 157.5):
-        degrees = u'\u2198'
-    elif (degrees > 157.5) and (degrees <= 202.5):
         degrees = u'\u2193'
-    elif (degrees > 202.5) and (degrees <= 247.5):
+    elif (degrees > 22.5) and (degrees <= 67.5):
         degrees = u'\u2199'
-    elif (degrees > 247.5) and (degrees <= 292.5):
+    elif (degrees > 67.5) and (degrees <= 112.5):
         degrees = u'\u2190'
-    elif (degrees > 292.5) and (degrees <= 337.5):
+    elif (degrees > 112.5) and (degrees <= 157.5):
         degrees = u'\u2196'
+    elif (degrees > 157.5) and (degrees <= 202.5):
+        degrees = u'\u2191'
+    elif (degrees > 202.5) and (degrees <= 247.5):
+        degrees = u'\u2197'
+    elif (degrees > 247.5) and (degrees <= 292.5):
+        degrees = u'\u2192'
+    elif (degrees > 292.5) and (degrees <= 337.5):
+        degrees = u'\u2198'
 
     return description + ' ' + str(m_s) + 'm/s (' + degrees + ')'
 
@@ -144,7 +144,7 @@ def weather(bot, trigger):
     query = web.urlencode({'w': woeid, 'u': 'c'})
     url = 'http://weather.yahooapis.com/forecastrss?' + query
     parsed = feedparser.parse(url)
-    location = parsed['feed']['title']
+    location = parsed['entries'][0]['title'].replace("Conditions for ", "")
 
     cover = get_cover(parsed)
     temp = get_temp(parsed)
