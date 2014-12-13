@@ -413,13 +413,13 @@ def wizard(section, config=None):
     if section == 'all':
         create_config(configpath)
     elif section == 'db':
-        check_dir(False)
-        if not os.path.isfile(configpath):
-            print("No config file found." +
-                  " Please make one before configuring these options.")
-            sys.exit(1)
-        config = Config(configpath, True)
-        config._db()
+        print(
+            'Willie will be moving to an automatically configured sqlite '
+            'database in version 5.0. In preparation, the database config '
+            'wizard has been disabled. Please note that MySQL and Postgres'
+            ' support will be dropped entirely in 5.0. See '
+            'http://willie.dftba.net/willie_5.html for more information.'
+        )
     elif section == 'mod':
         check_dir(False)
         if not os.path.isfile(configpath):
@@ -454,8 +454,6 @@ def create_config(configpath):
     try:
         config = Config(configpath, os.path.isfile(configpath))
         config._core()
-        if config.option("Would you like to set up a settings database now"):
-            config._db()
         if config.option(
             'Would you like to see if there are any modules'
             ' that need configuring'
