@@ -18,6 +18,9 @@ from willie.db import WillieDB
 from willie.tools import Nick
 
 db_filename = tempfile.mkstemp()[1]
+if sys.version_info.major >= 3:
+    unicode = str
+    basestring = str
 
 
 @pytest.fixture

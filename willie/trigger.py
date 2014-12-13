@@ -1,12 +1,21 @@
+# coding=utf8
+from __future__ import unicode_literals
+
 import re
 
 import willie.tools
+
+if sys.version_info.major >= 3:
+    unicode = str
+    basestring = str
+
 
 class PreTrigger(object):
     """A parsed message from the server, which has not been matched against
     any rules."""
     component_regex = re.compile(r'([^!]*)!?([^@]*)@?(.*)')
     intent_regex = re.compile('\x01(\\S+) (.*)\x01')
+
     def __init__(self, own_nick, line):
         """own_nick is the bot's nick, needed to correctly parse sender.
         line is the full line from the server."""
@@ -125,7 +134,7 @@ class Trigger(unicode):
             )
 
         self.admin = any(match_host_or_nick(item)
-                      for item in config.core.get_list('admins'))
+                         for item in config.core.get_list('admins'))
         """
         True if the nick which triggered the command is one of the bot's admins.
         """

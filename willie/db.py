@@ -1,7 +1,16 @@
+# coding=utf8
+from __future__ import unicode_literals
+
 import json
 import os.path
 import sqlite3
+
 from willie.tools import Identifier
+
+if sys.version_info.major >= 3:
+    unicode = str
+    basestring = str
+
 
 def _deserialize(value):
     if value is None:
@@ -16,6 +25,7 @@ def _deserialize(value):
     except:
         pass
     return value
+
 
 class WillieDB(object):
 
@@ -96,9 +106,10 @@ class WillieDB(object):
                 nick_id = cur.execute('SELECT last_insert_rowid()').fetchone()[0]
                 print nick_id
                 cur.execute(
-                'INSERT INTO nicknames (nick_id, slug, canonical) VALUES '
-                '(?, ?, ?)',
-                [nick_id, slug, nick])
+                    'INSERT INTO nicknames (nick_id, slug, canonical) VALUES '
+                    '(?, ?, ?)',
+                    [nick_id, slug, nick]
+                )
             nick_id = self.execute('SELECT nick_id from nicknames where slug = ?',
                                    [slug]).fetchone()
         return nick_id[0]
