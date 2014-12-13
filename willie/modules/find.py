@@ -14,7 +14,7 @@ using the sed notation (s///) commonly found in vi/vim.
 from __future__ import unicode_literals
 
 import re
-from willie.tools import Nick, WillieMemory
+from willie.tools import Identifier, WillieMemory
 from willie.module import rule, priority
 from willie.formatting import bold
 
@@ -35,11 +35,11 @@ def collectlines(bot, trigger):
     # Add a log for the channel and nick, if there isn't already one
     if trigger.sender not in bot.memory['find_lines']:
         bot.memory['find_lines'][trigger.sender] = WillieMemory()
-    if Nick(trigger.nick) not in bot.memory['find_lines'][trigger.sender]:
-        bot.memory['find_lines'][trigger.sender][Nick(trigger.nick)] = list()
+    if Identifier(trigger.nick) not in bot.memory['find_lines'][trigger.sender]:
+        bot.memory['find_lines'][trigger.sender][Identifier(trigger.nick)] = list()
 
     # Create a temporary list of the user's lines in a channel
-    templist = bot.memory['find_lines'][trigger.sender][Nick(trigger.nick)]
+    templist = bot.memory['find_lines'][trigger.sender][Identifier(trigger.nick)]
     line = trigger.group()
     if line.startswith("s/"):  # Don't remember substitutions
         return
@@ -51,7 +51,7 @@ def collectlines(bot, trigger):
 
     del templist[:-10]  # Keep the log to 10 lines per person
 
-    bot.memory['find_lines'][trigger.sender][Nick(trigger.nick)] = templist
+    bot.memory['find_lines'][trigger.sender][Identifier(trigger.nick)] = templist
 
 
 #Match nick, s/find/replace/flags. Flags and nick are optional, nick can be
@@ -77,13 +77,13 @@ def findandreplace(bot, trigger):
         return
 
     # Correcting other person vs self.
-    rnick = Nick(trigger.group(1) or trigger.nick)
+    rnick = Identifier(trigger.group(1) or trigger.nick)
 
     search_dict = bot.memory['find_lines']
     # only do something if there is conversation to work with
     if trigger.sender not in search_dict:
         return
-    if Nick(rnick) not in search_dict[trigger.sender]:
+    if Identifier(rnick) not in search_dict[trigger.sender]:
         return
 
     #TODO rest[0] is find, rest[1] is replace. These should be made variables of

@@ -25,7 +25,7 @@ import asynchat
 import os
 import codecs
 import traceback
-from willie.tools import stderr, Nick
+from willie.tools import stderr, Identifier
 from willie.trigger import PreTrigger, Trigger
 try:
     import select
@@ -65,8 +65,8 @@ class Bot(asynchat.async_chat):
         self.set_terminator(b'\n')
         self.buffer = ''
 
-        self.nick = Nick(config.nick)
-        """Willie's current ``Nick``. Changing this while Willie is running is
+        self.nick = Identifier(config.nick)
+        """Willie's current ``Identifier``. Changing this while Willie is running is
         untested."""
         self.user = config.user
         """Willie's user/ident."""
@@ -89,16 +89,16 @@ class Bot(asynchat.async_chat):
         # These lists are filled in startup.py, as of right now.
         self.ops = dict()
         """
-        A dictionary mapping channels to a ``Nick`` list of their operators.
+        A dictionary mapping channels to a ``Identifier`` list of their operators.
         """
         self.halfplus = dict()
         """
-        A dictionary mapping channels to a ``Nick`` list of their half-ops and
+        A dictionary mapping channels to a ``Identifier`` list of their half-ops and
         ops.
         """
         self.voices = dict()
         """
-        A dictionary mapping channels to a ``Nick`` list of their voices,
+        A dictionary mapping channels to a ``Identifier`` list of their voices,
         half-ops and ops.
         """
 
@@ -409,7 +409,7 @@ class Bot(asynchat.async_chat):
             # No messages within the last 3 seconds? Go ahead!
             # Otherwise, wait so it's been at least 0.8 seconds + penalty
 
-            recipient_id = Nick(recipient)
+            recipient_id = Identifier(recipient)
 
             if recipient_id not in self.stack:
                 self.stack[recipient_id] = []
@@ -527,35 +527,35 @@ class Bot(asynchat.async_chat):
             os._exit(1)
 
     # Helper functions to maintain the oper list.
-    # They cast to Nick when adding to be quite sure there aren't any accidental
+    # They cast to Identifier when adding to be quite sure there aren't any accidental
     # string nicks. On deletion, you know you'll never need to worry about what
     # the real superclass is, so we just cast and remove.
     def add_op(self, channel, name):
-        if isinstance(name, Nick):
+        if isinstance(name, Identifier):
             self.ops[channel].add(name)
         else:
-            self.ops[channel].add(Nick(name))
+            self.ops[channel].add(Identifier(name))
 
     def add_halfop(self, channel, name):
-        if isinstance(name, Nick):
+        if isinstance(name, Identifier):
             self.halfplus[channel].add(name)
         else:
-            self.halfplus[channel].add(Nick(name))
+            self.halfplus[channel].add(Identifier(name))
 
     def add_voice(self, channel, name):
-        if isinstance(name, Nick):
+        if isinstance(name, Identifier):
             self.voices[channel].add(name)
         else:
-            self.voices[channel].add(Nick(name))
+            self.voices[channel].add(Identifier(name))
 
     def del_op(self, channel, name):
-        self.ops[channel].discard(Nick(name))
+        self.ops[channel].discard(Identifier(name))
 
     def del_halfop(self, channel, name):
-        self.halfplus[channel].discard(Nick(name))
+        self.halfplus[channel].discard(Identifier(name))
 
     def del_voice(self, channel, name):
-        self.voices[channel].discard(Nick(name))
+        self.voices[channel].discard(Identifier(name))
 
     def flush_ops(self, channel):
         self.ops[channel] = set()

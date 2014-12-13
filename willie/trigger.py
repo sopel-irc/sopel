@@ -42,11 +42,11 @@ class PreTrigger(object):
         self.event = self.args[0]
         components = PreTrigger.component_regex.match(self.hostmask or '').groups()
         self.nick, self.user, self.host = components
-        self.nick = willie.tools.Nick(self.nick)
+        self.nick = willie.tools.Identifier(self.nick)
 
         # If we have more than one argument, the second one is the sender
         if len(self.args) > 1:
-            target = willie.tools.Nick(self.args[1])
+            target = willie.tools.Identifier(self.args[1])
         else:
             target = None
 
@@ -87,7 +87,7 @@ class Trigger(unicode):
         self.user = message.user
         """Local username of the person who sent the message"""
         self.nick = message.nick
-        """The ``Nick`` of the person who sent the message."""
+        """The ``Identifier`` of the person who sent the message."""
         self.host = message.host
         """The hostname of the person who sent the message"""
         self.event = message.event

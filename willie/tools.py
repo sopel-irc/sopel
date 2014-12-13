@@ -427,10 +427,6 @@ class Identifier(unicode):
         return self and not self.startswith(_channel_prefixes)
 
 
-Nick = Identifier
-"""Identical to the Identifier class. Deprecated from 4.6.0."""
-
-
 class OutputRedirect:
 
     """Redirect te output to the terminal and a log file.

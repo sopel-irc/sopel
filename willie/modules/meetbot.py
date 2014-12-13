@@ -12,7 +12,7 @@ import os
 from willie.web import quote
 from willie.modules.url import find_title
 from willie.module import example, commands, rule, priority
-from willie.tools import Ddict, Nick
+from willie.tools import Ddict, Identifier
 import codecs
 
 
@@ -383,7 +383,7 @@ def take_comment(bot, trigger):
         return
 
     target, message = trigger.group(2).split(None, 1)
-    target = Nick(target)
+    target = Identifier(target)
     if not ismeetingrunning(target):
         bot.say("There's not currently a meeting in that channel.")
     else:

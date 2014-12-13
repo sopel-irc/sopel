@@ -25,7 +25,7 @@ from datetime import datetime
 from willie import tools
 import willie.irc as irc
 from willie.db import WillieDB
-from willie.tools import (stderr, Nick, PriorityQueue, released,
+from willie.tools import (stderr, Identifier, PriorityQueue, released,
                           get_command_regexp, iteritems, itervalues)
 import willie.module as module
 if sys.version_info.major >= 3:
@@ -78,7 +78,7 @@ class Willie(irc.Bot):
         self.privileges = dict()
         """A dictionary of channels to their users and privilege levels
 
-        The value associated with each channel is a dictionary of Nicks to a
+        The value associated with each channel is a dictionary of Identifiers to a
         bitwise integer value, determined by combining the appropriate constants
         from `module`."""
 
@@ -720,7 +720,7 @@ class Willie(irc.Bot):
             if not bad_nick:
                 continue
             if (re.match(bad_nick + '$', nick, re.IGNORECASE) or
-                    Nick(bad_nick) == nick):
+                    Identifier(bad_nick) == nick):
                 return True
         return False
 

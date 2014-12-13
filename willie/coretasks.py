@@ -19,7 +19,7 @@ from __future__ import unicode_literals
 import re
 import time
 import willie
-from willie.tools import Nick, iteritems
+from willie.tools import Identifier, iteritems
 import base64
 
 
@@ -126,7 +126,7 @@ def handle_names(bot, trigger):
     channels = re.search('(#\S*)', bot.raw)
     if not channels:
         return
-    channel = Nick(channels.group(1))
+    channel = Identifier(channels.group(1))
     if channel not in bot.privileges:
         bot.privileges[channel] = dict()
     bot.init_ops_list(channel)
@@ -144,7 +144,7 @@ def handle_names(bot, trigger):
         for prefix, value in iteritems(mapping):
             if prefix in name:
                 priv = priv | value
-        nick = Nick(name.lstrip(''.join(mapping.keys())))
+        nick = Identifier(name.lstrip(''.join(mapping.keys())))
         bot.privileges[channel][nick] = priv
 
         # Old op list maintenance is down here, and should be removed at some
@@ -168,7 +168,7 @@ def handle_names(bot, trigger):
 def track_modes(bot, trigger):
     """Track usermode changes and keep our lists of ops up to date."""
     # Mode message format: <channel> *( ( "-" / "+" ) *<modes> *<modeparams> )
-    channel = Nick(trigger.args[0])
+    channel = Identifier(trigger.args[0])
     line = trigger.args[1:]
 
     # If the first character of where the mode is being set isn't a #
@@ -215,7 +215,7 @@ def track_modes(bot, trigger):
                 else:
                     modes.append(sign + char)
         else:
-            arg = Nick(arg)
+            arg = Identifier(arg)
             for mode in modes:
                 priv = bot.privileges[channel].get(arg, 0)
                 value = mapping.get(mode[1])
@@ -236,7 +236,7 @@ def track_modes(bot, trigger):
 def track_nicks(bot, trigger):
     """Track nickname changes and maintain our chanops list accordingly."""
     old = trigger.nick
-    new = Nick(trigger)
+    new = Identifier(trigger)
 
     # Give debug mssage, and PM the owner, if the bot's own nick changes.
     if old == bot.nick:
@@ -256,7 +256,7 @@ def track_nicks(bot, trigger):
         return
 
     for channel in bot.privileges:
-        channel = Nick(channel)
+        channel = Identifier(channel)
         if old in bot.privileges[channel]:
             value = bot.privileges[channel].pop(old)
             bot.privileges[channel][new] = value
@@ -298,7 +298,7 @@ def track_part(bot, trigger):
 @willie.module.thread(False)
 @willie.module.unblockable
 def track_kick(bot, trigger):
-    nick = Nick(trigger.args[1])
+    nick = Identifier(trigger.args[1])
     if nick == bot.nick:
         bot.channels.remove(trigger.sender)
         del bot.privileges[trigger.sender]
@@ -463,7 +463,7 @@ def blocks(bot, trigger):
     }
 
     masks = bot.config.core.get_list('host_blocks')
-    nicks = [Nick(nick) for nick in bot.config.core.get_list('nick_blocks')]
+    nicks = [Identifier(nick) for nick in bot.config.core.get_list('nick_blocks')]
     text = trigger.group().split()
 
     if len(text) == 3 and text[1] == "list":
@@ -500,10 +500,10 @@ def blocks(bot, trigger):
 
     elif len(text) == 4 and text[1] == "del":
         if text[2] == "nick":
-            if Nick(text[3]) not in nicks:
+            if Identifier(text[3]) not in nicks:
                 bot.reply(STRINGS['no_nick'] % (text[3]))
                 return
-            nicks.remove(Nick(text[3]))
+            nicks.remove(Identifier(text[3]))
             bot.config.core.nick_blocks = nicks
             bot.config.save()
             bot.reply(STRINGS['success_del'] % (text[3]))

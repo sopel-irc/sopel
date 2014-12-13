@@ -11,7 +11,7 @@ from __future__ import unicode_literals
 
 import time
 import datetime
-from willie.tools import Ddict, Nick, get_timezone, format_time
+from willie.tools import Ddict, Identifier, get_timezone, format_time
 from willie.module import commands, rule, priority
 
 seen_dict = Ddict(dict)
@@ -23,7 +23,7 @@ def seen(bot, trigger):
     if not trigger.group(2):
         bot.say(".seen <nick> - Reports when <nick> was last seen.")
         return
-    nick = Nick(trigger.group(2).strip())
+    nick = Identifier(trigger.group(2).strip())
     if nick in seen_dict:
         timestamp = seen_dict[nick]['timestamp']
         channel = seen_dict[nick]['channel']
@@ -45,7 +45,7 @@ def seen(bot, trigger):
 @priority('low')
 def note(bot, trigger):
     if not trigger.is_privmsg:
-        nick = Nick(trigger.nick)
+        nick = Identifier(trigger.nick)
         seen_dict[nick]['timestamp'] = time.time()
         seen_dict[nick]['channel'] = trigger.sender
         seen_dict[nick]['message'] = trigger

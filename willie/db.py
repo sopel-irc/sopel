@@ -1,7 +1,7 @@
 import json
 import os.path
 import sqlite3
-from willie.tools import Nick
+from willie.tools import Identifier
 
 def _deserialize(value):
     if value is None:
@@ -108,8 +108,8 @@ class WillieDB(object):
 
         Raises ValueError if the alias already exists. If nick does not already
         exist, it will be added along with the alias."""
-        nick = Nick(nick)
-        alias = Nick(alias)
+        nick = Identifier(nick)
+        alias = Identifier(alias)
         nick_id = self.get_nick_id(nick)
         sql = 'INSERT INTO nicknames (nick_id, slug, canonical) VALUES (?, ?, ?)'
         values = [nick_id, alias.lower(), alias]
@@ -120,7 +120,7 @@ class WillieDB(object):
 
     def set_nick_value(self, nick, key, value):
         """Sets the value for a given key to be associated with the nick."""
-        nick = Nick(nick)
+        nick = Identifier(nick)
         value = json.dumps(value, ensure_ascii=False)
         nick_id = self.get_nick_id(nick)
         self.execute('INSERT OR REPLACE INTO nick_values VALUES (?, ?, ?)',
@@ -128,7 +128,7 @@ class WillieDB(object):
 
     def get_nick_value(self, nick, key):
         """Retrieves the value for a given key associated with a nick."""
-        nick = Nick(nick)
+        nick = Identifier(nick)
         result = self.execute(
             'SELECT value FROM nicknames, nick_values WHERE slug = ? AND key = ?',
             [nick.lower(), key]
@@ -143,7 +143,7 @@ class WillieDB(object):
         Raises ValueError if there is not at least one other nick in the group.
         To delete an entire group, use `delete_group`.
         """
-        alias = Nick(alias)
+        alias = Identifier(alias)
         nick_id = self.get_nick_id(alias, False)
         count = self.execute('SELECT COUNT(*) FROM nicknames WHERE nick_id = ?',
                              [nick_id]).fetchone()[0]
@@ -154,7 +154,7 @@ class WillieDB(object):
     def delete_nick_group(self, nick):
         """Removes a nickname, and all associated aliases and settings.
         """
-        nick = Nick(nick)
+        nick = Identifier(nick)
         nick_id = self.get_nick_id(nick, False)
         self.execute('DELETE FROM nicknames WHERE nick_id = ?', [nick_id])
         self.execute('DELETE FROM nick_values WHERE nick_id = ?', [nick_id])
@@ -170,8 +170,8 @@ class WillieDB(object):
         Note that merging of data only applies to the native key-value store.
         If modules define their own tables which rely on the nick table, they
         will need to have their merging done separately."""
-        first_id = self.get_nick_id(Nick(first_nick))
-        second_id = self.get_nick_id(Nick(second_nick))
+        first_id = self.get_nick_id(Identifier(first_nick))
+        second_id = self.get_nick_id(Identifier(second_nick))
         self.execute(
             'UPDATE OR IGNORE nick_values SET nick_id = ? WHERE nick_id = ?',
             [first_id, second_id])
@@ -182,14 +182,14 @@ class WillieDB(object):
     # CHANNEL FUNCTIONS
 
     def set_channel_value(self, channel, key, value):
-        channel = Nick(channel).lower()
+        channel = Identifier(channel).lower()
         value = json.dumps(value, ensure_ascii=False)
         self.execute('INSERT OR REPLACE INTO channel_values VALUES (?, ?, ?)',
                      [channel, key, value])
 
     def get_channel_value(self, channel, key):
         """Retrieves the value for a given key associated with a channel."""
-        channel = Nick(channel).lower()
+        channel = Identifier(channel).lower()
         result = self.execute(
             'SELECT value FROM channel_values WHERE channel = ? AND key = ?',
             [channel, key]
@@ -203,7 +203,7 @@ class WillieDB(object):
     def get_nick_or_channel_value(self, name, key):
         """Gets the value `key` associated to the nick or channel  `name`.
         """
-        name = Nick(name)
+        name = Identifier(name)
         if name.is_nick():
             return self.get_nick_value(name, key)
         else:

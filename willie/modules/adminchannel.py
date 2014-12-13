@@ -13,7 +13,7 @@ from __future__ import unicode_literals
 import re
 from willie import formatting
 from willie.module import commands, priority, OP, HALFOP
-from willie.tools import Nick
+from willie.tools import Identifier
 
 
 def default_mask(trigger):
@@ -107,7 +107,7 @@ def kick(bot, trigger):
     argc = len(text)
     if argc < 2:
         return
-    opt = Nick(text[1])
+    opt = Identifier(text[1])
     nick = opt
     channel = trigger.sender
     reasonidx = 2
@@ -159,7 +159,7 @@ def ban(bot, trigger):
     argc = len(text)
     if argc < 2:
         return
-    opt = Nick(text[1])
+    opt = Identifier(text[1])
     banmask = opt
     channel = trigger.sender
     if not opt.is_nick():
@@ -187,7 +187,7 @@ def unban(bot, trigger):
     argc = len(text)
     if argc < 2:
         return
-    opt = Nick(text[1])
+    opt = Identifier(text[1])
     banmask = opt
     channel = trigger.sender
     if not opt.is_nick():
@@ -215,7 +215,7 @@ def quiet(bot, trigger):
     argc = len(text)
     if argc < 2:
         return
-    opt = Nick(text[1])
+    opt = Identifier(text[1])
     quietmask = opt
     channel = trigger.sender
     if not opt.is_nick():
@@ -243,7 +243,7 @@ def unquiet(bot, trigger):
     argc = len(text)
     if argc < 2:
         return
-    opt = Nick(text[1])
+    opt = Identifier(text[1])
     quietmask = opt
     channel = trigger.sender
     if not opt.is_nick():
@@ -273,7 +273,7 @@ def kickban(bot, trigger):
     argc = len(text)
     if argc < 4:
         return
-    opt = Nick(text[1])
+    opt = Identifier(text[1])
     nick = opt
     mask = text[2]
     reasonidx = 3
