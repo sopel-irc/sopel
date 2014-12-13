@@ -17,6 +17,7 @@ import willie.config
 import willie.bot
 import willie.irc
 import willie.tools
+import willie.trigger
 
 
 class MockWillie(object):
@@ -59,9 +60,9 @@ class MockWillie(object):
 
 
 class MockWillieWrapper(object):
-    def __init__(self, bot, origin):
+    def __init__(self, bot, pretrigger):
         self.bot = bot
-        self.origin = origin
+        self.pretrigger = pretrigger
         self.output = []
 
     def _store(self, string, recipent=None):
@@ -105,14 +106,12 @@ def get_example_test(tested_func, msg, results, privmsg, admin,
         assert match, "Example did not match any command."
 
         sender = bot.nick if privmsg else "#channel"
-        hostmask = "%s!%s@%s" % (bot.nick, "UserName", "example.com")
-        origin_args = ["PRIVMSG", sender, msg]
-        tags = {}  # TODO enable testing with message tags somehow
+        hostmask = "%s!%s@%s " % (bot.nick, "UserName", "example.com")
+        # TODO enable message tags
+        full_message = ':{} PRIVMSG {} :{}'.format(hostmask, sender, msg)
 
-        origin = willie.irc.Origin(bot, hostmask, origin_args, tags)
-        trigger = willie.bot.Willie.Trigger(
-            msg, origin, msg, match, origin_args[0], origin_args, bot
-        )
+        pretrigger = willie.trigger.PreTrigger(bot.nick, full_message)
+        trigger = willie.trigger.Trigger(bot.config, pretrigger, match)
 
         module = sys.modules[tested_func.__module__]
         if hasattr(module, 'setup'):
@@ -126,7 +125,7 @@ def get_example_test(tested_func, msg, results, privmsg, admin,
             return True
 
         for _i in range(repeat):
-            wrapper = MockWillieWrapper(bot, origin)
+            wrapper = MockWillieWrapper(bot, trigger)
             tested_func(wrapper, trigger)
             wrapper.output = list(filter(isnt_ignored, wrapper.output))
             assert len(wrapper.output) == len(results)

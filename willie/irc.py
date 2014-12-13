@@ -26,6 +26,7 @@ import os
 import codecs
 import traceback
 from willie.tools import stderr, Nick
+from willie.trigger import PreTrigger, Trigger
 try:
     import select
     import ssl
@@ -44,31 +45,6 @@ import threading
 from datetime import datetime
 if sys.version_info.major >= 3:
     unicode = str
-
-
-class Origin(object):
-    source = re.compile(r'([^!]*)!?([^@]*)@?(.*)')
-
-    def __init__(self, bot, source, args, tags):
-        self.hostmask = source
-        self.tags = tags
-
-        # Split out the nick, user, and host from hostmask per the regex above.
-        match = Origin.source.match(source or '')
-        self.nick, self.user, self.host = match.groups()
-        self.nick = Nick(self.nick)
-
-        # If we have more than one argument, the second one is the sender
-        if len(args) > 1:
-            target = Nick(args[1])
-        else:
-            target = None
-
-        # Unless we're messaging the bot directly, in which case that second
-        # arg will be our bot's name.
-        if target and target.lower() == bot.nick.lower():
-            target = self.nick
-        self.sender = target
 
 
 class Bot(asynchat.async_chat):
@@ -399,47 +375,10 @@ class Bot(asynchat.async_chat):
         if line.endswith('\r'):
             line = line[:-1]
         self.buffer = ''
-        self.raw = line
+        pretrigger = PreTrigger(self.nick, line)
+        self.dispatch(pretrigger, text, args)
 
-        # Break off IRCv3 message tags, if present
-        tags = {}
-        if line.startswith('@'):
-            tagstring, line = line.split(' ', 1)
-            for tag in tagstring[1:].split(';'):
-                tag = tag.split('=', 1)
-                if len(tag) > 1:
-                    tags[tag[0]] = tag[1]
-                else:
-                    tags[tag[0]] = None
-
-        if line.startswith(':'):
-            source, line = line[1:].split(' ', 1)
-        else:
-            source = None
-
-        if ' :' in line:
-            argstr, text = line.split(' :', 1)
-            args = argstr.split(' ')
-            args.append(text)
-        else:
-            args = line.split(' ')
-            text = args[-1]
-
-        self.last_ping_time = datetime.now()
-        if args[0] == 'PING':
-            self.write(('PONG', text))
-        elif args[0] == 'ERROR':
-            self.debug(__file__, text, 'always')
-            if self.hasquit:
-                self.close_when_done()
-        elif args[0] == '433':
-            stderr('Nickname already in use!')
-            self.handle_close()
-
-        origin = Origin(self, source, args, tags)
-        self.dispatch(origin, text, args)
-
-    def dispatch(self, origin, text, args):
+    def dispatch(self, pretrigger, text, args):
         pass
 
     def msg(self, recipient, text, max_messages=1):
@@ -511,7 +450,7 @@ class Bot(asynchat.async_chat):
         """
         self.write(('NOTICE', dest), text)
 
-    def error(self, origin=None, trigger=None):
+    def error(self, trigger=None):
         """Called internally when a module causes an error."""
         try:
             trace = traceback.format_exc()
@@ -534,24 +473,23 @@ class Bot(asynchat.async_chat):
                 log_filename = os.path.join(self.config.logdir, 'exceptions.log')
                 with codecs.open(log_filename, 'a', encoding='utf-8') as logfile:
                     logfile.write('Signature: %s\n' % signature)
-                    if origin:
-                        logfile.write('from %s at %s:\n' % (origin.sender, str(datetime.now())))
                     if trigger:
-                        logfile.write('Message was: <%s> %s\n' % (trigger.nick, trigger.group(0)))
+                        logfile.write('from {} at {}. Message was: {}\n'.format(
+                            trigger.nick, str(datetime.now()), trigger.group(0)))
                     logfile.write(trace)
                     logfile.write(
                         '----------------------------------------\n\n'
                     )
             except Exception as e:
                 stderr("Could not save full traceback!")
-                self.debug(__file__, "(From: " + origin.sender + "), can't save traceback: " + str(e), 'always')
+                self.debug(__file__, "(From: " + trigger.sender + "), can't save traceback: " + str(e), 'always')
 
-            if origin:
-                self.msg(origin.sender, signature)
+            if trigger:
+                self.msg(trigger.sender, signature)
         except Exception as e:
-            if origin:
-                self.msg(origin.sender, "Got an error.")
-                self.debug(__file__, "(From: " + origin.sender + ") " + str(e), 'always')
+            if trigger:
+                self.msg(trigger.sender, "Got an error.")
+                self.debug(__file__, "(From: " + trigger.sender + ") " + str(e), 'always')
 
     def handle_error(self):
         """Handle any uncaptured error in the core.

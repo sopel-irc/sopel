@@ -405,8 +405,6 @@ class Willie(irc.Bot):
                 if func in func_list:
                     func_list.remove(func)
 
-        hostmask = "%s!%s@%s" % (self.nick, self.user, socket.gethostname())
-        willie = self.WillieWrapper(self, irc.Origin(self, hostmask, [], {}))
         for obj in itervalues(variables):
             if obj in self.callables:
                 self.callables.remove(obj)
@@ -414,7 +412,7 @@ class Willie(irc.Bot):
                     remove_func(obj, commands)
             if obj in self.shutdown_methods:
                 try:
-                    obj(willie)
+                    obj(self)
                 except Exception as e:
                     stderr(
                         "Error calling shutdown method for module %s:%s" %
@@ -562,153 +560,52 @@ class Willie(irc.Bot):
                     self.scheduler.add_job(job)
 
     class WillieWrapper(object):
-        def __init__(self, willie, origin):
-            object.__setattr__(self, 'bot', willie)
-            object.__setattr__(self, 'origin', origin)
+        def __init__(self, willie, trigger):
+            # The custom __setattr__ for this class sets the attribute on the
+            # original bot object. We don't want that for these, so we set them
+            # with the normal __setattr__.
+            object.__setattr__(self, '_bot', willie)
+            object.__setattr__(self, '_trigger', _trigger)
 
         def __dir__(self):
             classattrs = [attr for attr in self.__class__.__dict__
                           if not attr.startswith('__')]
-            return list(self.__dict__) + classattrs + dir(self.bot)
+            return list(self.__dict__) + classattrs + dir(self._bot)
 
         def say(self, string, max_messages=1):
-            self.bot.msg(self.origin.sender, string, max_messages)
+            self._bot.msg(self._trigger.sender, string, max_messages)
 
         def reply(self, string, notice=False):
             if isinstance(string, str) and not py3:
                 string = string.decode('utf8')
             if notice:
                 self.notice(
-                    '%s: %s' % (self.origin.nick, string),
-                    self.origin.sender
+                    '%s: %s' % (self._trigger.nick, string),
+                    self._trigger.sender
                 )
             else:
-                self.bot.msg(
-                    self.origin.sender,
-                    '%s: %s' % (self.origin.nick, string)
+                self._bot.msg(
+                    self._trigger.sender,
+                    '%s: %s' % (self._trigger.nick, string)
                 )
 
         def action(self, string, recipient=None):
             if recipient is None:
-                recipient = self.origin.sender
-            self.bot.msg(recipient, '\001ACTION %s\001' % string)
+                recipient = self._trigger.sender
+            self._bot.msg(recipient, '\001ACTION %s\001' % string)
 
         def notice(self, string, recipient=None):
             if recipient is None:
-                recipient = self.origin.sender
+                recipient = self._trigger.sender
             self.write(('NOTICE', recipient), string)
 
         def __getattr__(self, attr):
-            return getattr(self.bot, attr)
+            return getattr(self._bot, attr)
 
         def __setattr__(self, attr, value):
-            return setattr(self.bot, attr, value)
+            return setattr(self._bot, attr, value)
 
-    class Trigger(unicode):
-        def __new__(cls, text, origin, bytes, match, event, args, self):
-            s = unicode.__new__(cls, text)
-
-            """Is trigger from a channel or in PM"""
-            s.is_privmsg = origin.sender.is_nick()
-
-            s.sender = origin.sender
-            """
-            The channel (or nick, in a private message) from which the
-            message was sent.
-            """
-            s.hostmask = origin.hostmask
-            """
-            Hostmask of the person who sent the message in the form
-            <nick>!<user>@<host>
-            """
-            s.user = origin.user
-            """Local username of the person who sent the message"""
-            s.nick = origin.nick
-            """The ``Nick`` of the person who sent the message."""
-            s.event = event
-            """
-            The IRC event (e.g. ``PRIVMSG`` or ``MODE``) which triggered the
-            message."""
-            s.bytes = bytes
-            """
-            The text which triggered the message. Equivalent to
-            ``Trigger.group(0)``.
-            """
-            s.match = match
-            """
-            The regular expression ``MatchObject_`` for the triggering line.
-            .. _MatchObject: http://docs.python.org/library/re.html#match-objects
-            """
-            s.group = match.group
-            """The ``group`` function of the ``match`` attribute.
-
-            See Python ``re_`` documentation for details."""
-            s.groups = match.groups
-            """The ``groups`` function of the ``match`` attribute.
-
-            See Python ``re_`` documentation for details."""
-            s.args = args
-            """
-            A tuple containing each of the arguments to an event. These are the
-            strings passed between the event name and the colon. For example,
-            setting ``mode -m`` on the channel ``#example``, args would be
-            ``('#example', '-m')``
-            """
-            s.tags = origin.tags
-            """A map of the IRCv3 message tags on the message.
-
-            If the message had no tags, or the server does not support IRCv3
-            message tags, this will be an empty dict."""
-
-            def match_host_or_nick(pattern):
-                pattern = tools.get_hostmask_regex(pattern)
-                return bool(
-                    pattern.match(origin.nick) or
-                    pattern.match('@'.join((origin.nick, origin.host)))
-                )
-
-            s.admin = any(match_host_or_nick(item)
-                          for item in self.config.core.get_list('admins'))
-            """
-            True if the nick which triggered the command is in Willie's admin
-            list as defined in the config file.
-            """
-            s.owner = match_host_or_nick(self.config.core.owner)
-            s.admin = s.admin or s.owner
-            s.host = origin.host
-
-            if s.sender is not s.nick:  # no ops in PM
-                s.ops = self.ops.get(s.sender, [])
-                """
-                List of channel operators in the channel the message was
-                recived in
-                """
-                s.halfplus = self.halfplus.get(s.sender, [])
-                """
-                List of channel half-operators in the channel the message was
-                recived in
-                """
-                s.isop = (s.nick in s.ops or
-                          s.nick in s.halfplus)
-                """True if the user is half-op or an op"""
-                s.voices = self.voices.get(s.sender, [])
-                """
-                List of channel operators in the channel the message was
-                recived in
-                """
-                s.isvoice = (s.nick in s.ops or
-                             s.nick in s.halfplus or
-                             s.nick in s.voices)
-                """True if the user is voiced, has op, or has half-op"""
-            else:
-                s.isop = False
-                s.isvoice = False
-                s.ops = []
-                s.halfplus = []
-                s.voices = []
-            return s
-
-    def call(self, func, origin, willie, trigger):
+    def call(self, func, willie, trigger):
         nick = trigger.nick
         if nick not in self.times:
             self.times[nick] = dict()
@@ -734,27 +631,25 @@ class Willie(irc.Bot):
             exit_code = func(willie, trigger)
         except Exception:
             exit_code = None
-            self.error(origin, trigger)
+            self.error(trigger)
 
         if exit_code != module.NOLIMIT:
             self.times[nick][func] = time.time()
 
-    def limit(self, origin, func):
-        if origin.sender and not origin.sender.is_nick():
+    def limit(self, trigger, func):
+        if trigger.sender and not trigger.sender.is_nick():
             if self.config.has_section('limit'):
-                limits = self.config.limit.get(origin.sender)
+                limits = self.config.limit.get(trigger.sender)
                 if limits and (func.__module__ not in limits):
                     return True
         return False
 
-    def dispatch(self, origin, text, args):
+    def dispatch(self, pretrigger, text, args):
         event, args = args[0], args[1:]
 
-        wrapper = self.WillieWrapper(self, origin)
-
         if self.config.core.nick_blocks or self.config.core.host_blocks:
-            nick_blocked = self._nick_blocked(origin.nick)
-            host_blocked = self._host_blocked(origin.host)
+            nick_blocked = self._nick_blocked(pretrigger.nick)
+            host_blocked = self._host_blocked(pretrigger.host)
         else:
             nick_blocked = host_blocked = None
 
@@ -766,9 +661,8 @@ class Willie(irc.Bot):
                 match = regexp.match(text)
                 if not match:
                     continue
-                trigger = self.Trigger(
-                    text, origin, text, match, event, args, self
-                )
+                trigger = Trigger(self.config, text, match)
+                wrapper = WillieWrapper(self, trigger)
 
                 for func in funcs:
                     if (not trigger.admin and
@@ -782,14 +676,14 @@ class Willie(irc.Bot):
 
                     if event not in func.event:
                         continue
-                    if self.limit(origin, func):
+                    if self.limit(trigger, func):
                         continue
                     if func.thread:
-                        targs = (func, origin, wrapper, trigger)
+                        targs = (func, wrapper, trigger)
                         t = threading.Thread(target=self.call, args=targs)
                         t.start()
                     else:
-                        self.call(func, origin, wrapper, trigger)
+                        self.call(func, wrapper, trigger)
 
         if list_of_blocked_functions:
             if nick_blocked and host_blocked:
@@ -802,7 +696,7 @@ class Willie(irc.Bot):
                 __file__,
                 "[%s]%s prevented from using %s." % (
                     block_type,
-                    origin.nick,
+                    pretrigger.nick,
                     ', '.join(list_of_blocked_functions)
                 ),
                 "verbose"
@@ -876,8 +770,6 @@ class Willie(irc.Bot):
             'Calling shutdown for %d modules.' % (len(self.shutdown_methods),)
         )
 
-        hostmask = "%s!%s@%s" % (self.nick, self.user, socket.gethostname())
-        willie = self.WillieWrapper(self, irc.Origin(self, hostmask, [], {}))
         for shutdown_method in self.shutdown_methods:
             try:
                 stderr(
@@ -885,7 +777,7 @@ class Willie(irc.Bot):
                         shutdown_method.__module__, shutdown_method.__name__,
                     )
                 )
-                shutdown_method(willie)
+                shutdown_method(self)
             except Exception as e:
                 stderr(
                     "Error calling shutdown method for module %s:%s" % (
