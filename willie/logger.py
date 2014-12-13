@@ -1,4 +1,8 @@
+# coding=utf8
+from __future__ import unicode_literals
+
 import logging
+
 
 class IrcLoggingHandler(logging.Handler):
     def __init__(self, bot, level):
@@ -15,15 +19,18 @@ class IrcLoggingHandler(logging.Handler):
         except:
             self.handleError(record)
 
+
 class ChannelOutputFormatter(logging.Formatter):
     def __init__(self):
         super(ChannelOutputFormatter, self).__init__(
             fmt='[%(filename)s] %(msg)s'
         )
+
     def formatException(self, exc_info):
         # logging will through a newline between the message and this, but
         # that's fine because Willie will strip it back out anyway
         return ' - ' + repr(exc_info[1])
+
 
 def setup_logging(bot):
     level = bot.config.core.logging_level or 'WARNING'
@@ -33,6 +40,7 @@ def setup_logging(bot):
         handler = IrcLoggingHandler(bot, level)
         handler.setFormatter(ChannelOutputFormatter())
         logger.addHandler(handler)
+
 
 def get_logger(name=None):
     """Return a logger for a module, if the name is given.
