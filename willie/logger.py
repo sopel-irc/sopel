@@ -33,3 +33,15 @@ def setup_logging(bot):
         handler = IrcLoggingHandler(bot, level)
         handler.setFormatter(ChannelOutputFormatter())
         logger.addHandler(handler)
+
+def get_logger(name=None):
+    """Return a logger for a module, if the name is given.
+
+    This is equivalent to `logging.getLogger('willie.modules.' + name)` when
+    name is given, and `logging.getLogger('willie')` when it is not. The latter
+    case is intended for use in Willie's core; modules should call
+    `get_logger(__name__)` to get a logger."""
+    if name:
+        return logging.getLogger('willie.modules.' + name)
+    else:
+        return logging.getLogger('willie')
