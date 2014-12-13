@@ -351,37 +351,36 @@ class Ddict(dict):
         return dict.__getitem__(self, key)
 
 
-class Nick(unicode):
+class Identifier(unicode):
     """A `unicode` subclass which acts appropriately for IRC identifiers.
 
     When used as normal `unicode` objects, case will be preserved.
-    However, when comparing two Nick objects, or comparing a Nick object with a
-    `unicode` object, the comparison will be case insensitive. This case
-    insensitivity includes the case convention conventions regarding ``[]``,
-    ``{}``, ``|``, ``\\``, ``^`` and ``~`` described in RFC 2812.
-
+    However, when comparing two Identifier objects, or comparing a Identifier
+    object with a `unicode` object, the comparison will be case insensitive.
+    This case insensitivity includes the case convention conventions regarding
+    ``[]``, ``{}``, ``|``, ``\\``, ``^`` and ``~`` described in RFC 2812.
     """
 
-    def __new__(cls, nick):
-        # According to RFC2812, nicks have to be in the ASCII range. However,
-        # I think it's best to let the IRCd determine that, and we'll just
-        # assume unicode. It won't hurt anything, and is more internally
+    def __new__(cls, identifier):
+        # According to RFC2812, identifiers have to be in the ASCII range.
+        # However, I think it's best to let the IRCd determine that, and we'll
+        # just assume unicode. It won't hurt anything, and is more internally
         # consistent. And who knows, maybe there's another use case for this
         # weird case convention.
-        s = unicode.__new__(cls, nick)
-        s._lowered = Nick._lower(nick)
+        s = unicode.__new__(cls, identifier)
+        s._lowered = Identifier._lower(identifier)
         return s
 
     def lower(self):
-        """Return `nick`, converted to lower-case per RFC 2812."""
+        """Return the identifier converted to lower-case per RFC 2812."""
         return self._lowered
 
     @staticmethod
-    def _lower(nick):
-        """Returns `nick` in lower case per RFC 2812."""
-        # The tilde replacement isn't needed for nicks, but is for channels,
-        # which may be useful at some point in the future.
-        low = nick.lower().replace('{', '[').replace('}', ']')
+    def _lower(identifier):
+        """Returns `identifier` in lower case per RFC 2812."""
+        # The tilde replacement isn't needed for identifiers, but is for
+        # channels, which may be useful at some point in the future.
+        low = identifier.lower().replace('{', '[').replace('}', ']')
         low = low.replace('|', '\\').replace('^', '~')
         return low
 
@@ -395,29 +394,29 @@ class Nick(unicode):
         return self._lowered.__hash__()
 
     def __lt__(self, other):
-        if isinstance(other, Nick):
+        if isinstance(other, Identifier):
             return self._lowered < other._lowered
-        return self._lowered < Nick._lower(other)
+        return self._lowered < Identifier._lower(other)
 
     def __le__(self, other):
-        if isinstance(other, Nick):
+        if isinstance(other, Identifier):
             return self._lowered <= other._lowered
-        return self._lowered <= Nick._lower(other)
+        return self._lowered <= Identifier._lower(other)
 
     def __gt__(self, other):
-        if isinstance(other, Nick):
+        if isinstance(other, Identifier):
             return self._lowered > other._lowered
-        return self._lowered > Nick._lower(other)
+        return self._lowered > Identifier._lower(other)
 
     def __ge__(self, other):
-        if isinstance(other, Nick):
+        if isinstance(other, Identifier):
             return self._lowered >= other._lowered
-        return self._lowered >= Nick._lower(other)
+        return self._lowered >= Identifier._lower(other)
 
     def __eq__(self, other):
-        if isinstance(other, Nick):
+        if isinstance(other, Identifier):
             return self._lowered == other._lowered
-        return self._lowered == Nick._lower(other)
+        return self._lowered == Identifier._lower(other)
 
     def __ne__(self, other):
         return not (self == other)
@@ -426,6 +425,10 @@ class Nick(unicode):
         """Returns True if the Identifier is a nickname (as opposed to channel)
         """
         return self and not self.startswith(_channel_prefixes)
+
+
+Nick = Identifier
+"""Identical to the Identifier class. Deprecated from 4.6.0."""
 
 
 class OutputRedirect:
