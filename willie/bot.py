@@ -28,6 +28,8 @@ from willie.db import WillieDB
 from willie.tools import (stderr, Identifier, PriorityQueue, released,
                           get_command_regexp, iteritems, itervalues)
 import willie.module as module
+from willie.trigger import Trigger
+
 if sys.version_info.major >= 3:
     unicode = str
     basestring = str
@@ -565,7 +567,7 @@ class Willie(irc.Bot):
             # original bot object. We don't want that for these, so we set them
             # with the normal __setattr__.
             object.__setattr__(self, '_bot', willie)
-            object.__setattr__(self, '_trigger', _trigger)
+            object.__setattr__(self, '_trigger', trigger)
 
         def __dir__(self):
             classattrs = [attr for attr in self.__class__.__dict__
@@ -644,8 +646,9 @@ class Willie(irc.Bot):
                     return True
         return False
 
-    def dispatch(self, pretrigger, text, args):
-        event, args = args[0], args[1:]
+    def dispatch(self, pretrigger):
+        args = pretrigger.args
+        event, args, text = args[0], args[1:], args[-1]
 
         if self.config.core.nick_blocks or self.config.core.host_blocks:
             nick_blocked = self._nick_blocked(pretrigger.nick)
@@ -661,8 +664,8 @@ class Willie(irc.Bot):
                 match = regexp.match(text)
                 if not match:
                     continue
-                trigger = Trigger(self.config, text, match)
-                wrapper = WillieWrapper(self, trigger)
+                trigger = Trigger(self.config, pretrigger, match)
+                wrapper = self.WillieWrapper(self, trigger)
 
                 for func in funcs:
                     if (not trigger.admin and

@@ -3,6 +3,7 @@ from __future__ import unicode_literals
 
 import json
 import os.path
+import sys
 import sqlite3
 
 from willie.tools import Identifier

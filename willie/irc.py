@@ -376,9 +376,20 @@ class Bot(asynchat.async_chat):
             line = line[:-1]
         self.buffer = ''
         pretrigger = PreTrigger(self.nick, line)
-        self.dispatch(pretrigger, text, args)
 
-    def dispatch(self, pretrigger, text, args):
+        if pretrigger.args[0] == 'PING':
+            self.write(('PONG', pretrigger.args[-1]))
+        elif pretrigger.args[0] == 'ERROR':
+            self.debug(__file__, pretrigger.args[-1], 'always')
+            if self.hasquit:
+                self.close_when_done()
+        elif pretrigger.args[0] == '433':
+            stderr('Nickname already in use!')
+            self.handle_close()
+
+        self.dispatch(pretrigger)
+
+    def dispatch(self, pretrigger):
         pass
 
     def msg(self, recipient, text, max_messages=1):

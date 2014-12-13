@@ -2,6 +2,7 @@
 from __future__ import unicode_literals
 
 import re
+import sys
 
 import willie.tools
 
@@ -67,7 +68,7 @@ class PreTrigger(object):
 
         # Parse CTCP into a form consistent with IRCv3 intents
         if self.event == 'PRIVMSG' or self.event == 'NOTICE':
-            intent_match = intent_regex.match(self.args[-1])
+            intent_match = PreTrigger.intent_regex.match(self.args[-1])
             if intent_match:
                 self.tags['intent'], self.args[-1] = intent_match.groups()
 
@@ -81,6 +82,8 @@ class Trigger(unicode):
     """
     def __new__(cls, config, message, match):
         self = unicode.__new__(cls, message.args[-1])
+        self.sender = message.sender
+        # TODO docstring for sender
         self.raw = message.line
         """The entire message, as sent from the server. This includes the CTCP
         \\x01 bytes and command, if they were included."""
