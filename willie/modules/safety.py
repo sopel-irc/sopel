@@ -11,7 +11,7 @@ from __future__ import print_function
 import willie.web as web
 from willie.config import ConfigurationError
 from willie.formatting import color, bold
-from willie.formatting import get_logger
+from willie.logger import get_logger
 import willie.tools
 import willie.module
 import sys
