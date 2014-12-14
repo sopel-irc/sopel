@@ -105,7 +105,6 @@ class WillieDB(object):
                 cur = conn.cursor()
                 cur.execute('INSERT INTO nick_ids VALUES (NULL)')
                 nick_id = cur.execute('SELECT last_insert_rowid()').fetchone()[0]
-                print nick_id
                 cur.execute(
                     'INSERT INTO nicknames (nick_id, slug, canonical) VALUES '
                     '(?, ?, ?)',
