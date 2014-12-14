@@ -9,13 +9,14 @@ from __future__ import unicode_literals
 import json
 import os
 import sqlite3
+import sys
 import tempfile
 
 import pytest
 
 from willie.config import Config
 from willie.db import WillieDB
-from willie.tools import Nick
+from willie.tools import Identifier
 
 db_filename = tempfile.mkstemp()[1]
 if sys.version_info.major >= 3:
@@ -39,11 +40,11 @@ def teardown_function(function):
 def test_get_nick_id(db):
     conn = sqlite3.connect(db_filename)
     tests = [
-        [None, 'embolalia', Nick('Embolalia')],
+        [None, 'embolalia', Identifier('Embolalia')],
         # Ensures case conversion is handled properly
-        [None, '[][]', Nick('[]{}')],
+        [None, '[][]', Identifier('[]{}')],
         # Unicode, just in case
-        [None, 'embölaliå', Nick('EmbölaliÅ')],
+        [None, 'embölaliå', Identifier('EmbölaliÅ')],
     ]
 
     for test in tests:
@@ -69,7 +70,7 @@ def test_get_nick_id(db):
     # Even if the case is different
     for test in tests:
         nick_id = test[0]
-        new_id = db.get_nick_id(Nick(test[2].upper()))
+        new_id = db.get_nick_id(Identifier(test[2].upper()))
         assert nick_id == new_id
 
 
@@ -151,11 +152,11 @@ def test_unalias_nick(db):
     nick = 'Embolalia'
     nick_id = 42
     conn.execute('INSERT INTO nicknames VALUES (?, ?, ?)',
-                 [nick_id, Nick(nick).lower(), nick])
+                 [nick_id, Identifier(nick).lower(), nick])
     aliases = ['EmbölaliÅ', 'Embo`work', 'Embo']
     for alias in aliases:
         conn.execute('INSERT INTO nicknames VALUES (?, ?, ?)',
-                     [nick_id, Nick(alias).lower(), alias])
+                     [nick_id, Identifier(alias).lower(), alias])
     conn.commit()
 
     for alias in aliases:
@@ -174,7 +175,7 @@ def test_delete_nick_group(db):
     nick_id = 42
     for alias in aliases:
         conn.execute('INSERT INTO nicknames VALUES (?, ?, ?)',
-                     [nick_id, Nick(alias).lower(), alias])
+                     [nick_id, Identifier(alias).lower(), alias])
     conn.commit()
 
     db.set_nick_value(aliases[0], 'foo', 'bar')
@@ -194,7 +195,7 @@ def test_merge_nick_groups(db):
     aliases = ['Embolalia', 'Embo']
     for nick_id, alias in enumerate(aliases):
         conn.execute('INSERT INTO nicknames VALUES (?, ?, ?)',
-                     [nick_id, Nick(alias).lower(), alias])
+                     [nick_id, Identifier(alias).lower(), alias])
     conn.commit()
 
     finals = (('foo', 'bar'), ('bar', 'blue'), ('spam', 'eggs'))
