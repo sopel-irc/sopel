@@ -21,7 +21,6 @@ Core changes (for users):
 
 API changes (for developers):
 * Numerous functions were added to the db to ease the transition to Willie 5
-* CTCP
 * tools.Nick has been renamed tools.Identifier. Nick will be removed in Willie 5
 * willie.web functions now specify a meaningful default user agent
 * web.post now supports dicts as the payload, and can optionally return headers
