@@ -11,6 +11,7 @@ from __future__ import print_function
 import willie.web as web
 from willie.config import ConfigurationError
 from willie.formatting import color, bold
+from willie.formatting import get_logger
 import willie.tools
 import willie.module
 import sys
@@ -26,6 +27,8 @@ if sys.version_info.major > 2:
 else:
     from urllib import urlretrieve
     from urlparse import urlparse
+
+LOGGER = get_logger(__name__)
 
 vt_base_api_url = 'https://www.virustotal.com/vtapi/v2/url/'
 malware_domains = []
@@ -131,7 +134,7 @@ def url_handler(bot, trigger):
             positives = result['positives']
             total = result['total']
     except Exception as e:
-        bot.debug('[safety]', e, 'debug')
+        LOGGER.debug('Error from checking URL with VT.', exc_info=True)
         pass  # Ignoring exceptions with VT so MalwareDomains will always work
 
     if unicode(netloc).lower() in malware_domains:

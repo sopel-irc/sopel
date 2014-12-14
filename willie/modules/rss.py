@@ -17,7 +17,9 @@ import feedparser
 
 from willie.module import commands, interval
 from willie.config import ConfigurationError
+from willie.logger import get_logger
 
+LOGGER = get_logger(__name__)
 
 socket.setdefaulttimeout(10)
 
@@ -112,14 +114,14 @@ class RSSManager:
         """Start fetching feeds. Usage: .rss start"""
         bot.reply("Okay, I'll start fetching RSS feeds..." if not self.running else
                   "Continuing to fetch RSS feeds.")
-        bot.debug(__file__, "RSS started.", 'verbose')
+        LOGGER.debug("RSS started.")
         self.running = True
 
     def _rss_stop(self, bot, trigger, c):
         """Stop fetching feeds. Usage: .rss stop"""
         bot.reply("Okay, I'll stop fetching RSS feeds..." if self.running else
                   "Not currently fetching RSS feeds.")
-        bot.debug(__file__, "RSS stopped.", 'verbose')
+        LOGGER.debug("RSS stopped.")
         self.running = False
 
     def _rss_add(self, bot, trigger, c):
@@ -340,23 +342,23 @@ def read_feeds(bot, force=False):
         try:
             fp = feedparser.parse(feed.url, etag=feed.etag, modified=feed.modified)
         except IOError as e:
-            bot.debug(__file__, "Can't parse feed on {0}, disabling ({1})".format(
-                feed.name, str(e)), 'warning')
+            LOGGER.exception("Can't parse feed on %s, disabling.",
+                             feed.name)
             disable_feed()
             continue
 
         # fp.status will only exist if pulling from an online feed
         status = getattr(fp, 'status', None)
 
-        bot.debug(feed.channel, "{0}: status = {1}, version = '{2}', items = {3}".format(
-            feed.name, status, fp.version, len(fp.entries)), 'verbose')
+        LOGGER.debug("%s: status = %s, version = '%s', items = %s",
+                     feed.name, status, fp.version, len(fp.entries))
 
         # check HTTP status
         if status == 301:  # MOVED_PERMANENTLY
-            bot.debug(
-                __file__,
-                "Got HTTP 301 (Moved Permanently) on {0}, updating URI to {1}".format(
-                    feed.name, fp.href), 'warning')
+            bot.warning(
+                "Got HTTP 301 (Moved Permanently) on %s, updating URI to %s",
+                feed.name, fp.href
+            )
             c.execute('''
                 UPDATE rss_feeds SET feed_url = ?
                 WHERE channel = ? AND feed_name = ?
@@ -364,8 +366,8 @@ def read_feeds(bot, force=False):
             conn.commit()
 
         elif status == 410:  # GONE
-            bot.debug(__file__, "Got HTTP 410 (Gone) on {0}, disabling".format(
-                feed.name), 'warning')
+            LOGGER.warning("Got HTTP 410 (Gone) on {0}, disabling",
+                           feed.name)
             disable_feed()
 
         if not fp.entries:
@@ -384,8 +386,8 @@ def read_feeds(bot, force=False):
         # check if article is new, and skip otherwise
         if (feed.title == entry.title and feed.link == entry.link
                 and feed.etag == feed_etag and feed.modified == feed_modified):
-            bot.debug(__file__, u"Skipping previously read entry: [{0}] {1}".format(
-                feed.name, entry.title), 'verbose')
+            LOGGER.info(u"Skipping previously read entry: [%s] %s",
+                        feed.name, entry.title)
             continue
 
         # save article title, url, and modified date
@@ -404,8 +406,9 @@ def read_feeds(bot, force=False):
                 # implemented. Once that happens, deleting or modifying the
                 # latest item would result in the whole feed getting re-msg'd.
                 # This will prevent that from happening.
-                bot.debug(__file__, u"Skipping older entry: [{0}] {1}, because {2} >= {3}".format(
-                    feed.name, entry.title, published_dt, entry_dt), 'verbose')
+                LOGGER.info(
+                    "Skipping older entry: [%s] %s, because %s >= %s",
+                    feed.name, entry.title, published_dt, entry_dt)
                 continue
 
         # create message for new entry

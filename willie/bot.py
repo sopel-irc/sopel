@@ -25,10 +25,13 @@ from datetime import datetime
 from willie import tools
 import willie.irc as irc
 from willie.db import WillieDB
-from willie.tools import (stderr, Identifier, PriorityQueue, released,
-                          get_command_regexp, iteritems, itervalues)
+from willie.tools import (stderr, Nick, PriorityQueue, released,
+                          get_command_regexp, iteritems, itervalues,
+                          deprecated_5)
 import willie.module as module
-from willie.trigger import Trigger
+from willie.logger import get_logger
+
+LOGGER = get_logger(__name__)
 
 if sys.version_info.major >= 3:
     unicode = str
@@ -619,13 +622,10 @@ class Willie(irc.Bot):
             timediff = time.time() - self.times[nick][func]
             if timediff < func.rate:
                 self.times[nick][func] = time.time()
-                self.debug(
-                    __file__,
-                    "%s prevented from using %s in %s: %d < %d" % (
-                        trigger.nick, func.__name__, trigger.sender,
-                        timediff, func.rate
-                    ),
-                    "verbose"
+                LOGGER.info(
+                    "%s prevented from using %s in %s: %d < %d",
+                    trigger.nick, func.__name__, trigger.sender, timediff,
+                    func.rate
                 )
                 return
 
@@ -695,14 +695,11 @@ class Willie(irc.Bot):
                 block_type = 'nick'
             else:
                 block_type = 'host'
-            self.debug(
-                __file__,
-                "[%s]%s prevented from using %s." % (
-                    block_type,
-                    pretrigger.nick,
-                    ', '.join(list_of_blocked_functions)
-                ),
-                "verbose"
+            LOGGER.info(
+                "[%s]%s prevented from using %s.",
+                block_type,
+                origin.nick,
+                ', '.join(list_of_blocked_functions)
             )
 
     def _host_blocked(self, host):
@@ -727,6 +724,7 @@ class Willie(irc.Bot):
                 return True
         return False
 
+    @deprecated_5
     def debug(self, tag, text, level):
         """Sends an error to Willie's configured ``debug_target``.
 

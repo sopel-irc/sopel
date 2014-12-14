@@ -10,6 +10,9 @@ from __future__ import unicode_literals
 import json
 import willie.web as web
 import willie.module
+from willie.logger import get_logger
+
+LOGGER = get_logger(__name__)
 
 
 @willie.module.commands('movie', 'imdb')
@@ -29,8 +32,9 @@ def movie(bot, trigger):
         if 'Error' in data:
             message = '[MOVIE] %s' % data['Error']
         else:
-            bot.debug(__file__, 'Got an error from the imdb api, search phrase was %s' % word, 'warning')
-            bot.debug(__file__, str(data), 'warning')
+            LOGGER.warning(
+                'Got an error from the imdb api, search phrase was %s; data was %s',
+                word, str(data))
             message = '[MOVIE] Got an error from imdbapi'
     else:
         message = '[MOVIE] Title: ' + data['Title'] + \

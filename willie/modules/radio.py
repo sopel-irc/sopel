@@ -12,6 +12,9 @@ from time import sleep
 from xml.dom.minidom import parseString
 import willie.web as web
 from willie.module import commands, OP
+from willie.logger import get_logger
+
+LOGGER = get_logger(__name__)
 
 
 def configure(config):
@@ -65,7 +68,8 @@ def currentSong(bot, trigger):
         song = web.get(radioURL % 'currentsong')
     except Exception as e:
         bot.say('The radio is not responding to the song request.')
-        bot.debug(__file__, 'Exception while trying to get current song: %s' % e, 'warning')
+        LOGGER.warning('Exception while trying to get current song.',
+                       exc_info=True)
     if song:
         bot.say('Now playing: ' + song)
     else:
@@ -78,7 +82,7 @@ def nextSong(bot, trigger):
         song = web.get(radioURL % 'nextsong')
     except Exception as e:
         bot.say('The radio is not responding to the song request.')
-        bot.debug(__file__, 'Exception while trying to get next song: %s' % e, 'warning')
+        LOGGER.exception('Exception while trying to get next song.')
     if song:
         bot.say('Next up: ' + song)
     else:
@@ -117,7 +121,9 @@ def radio(bot, trigger):
             except Exception as e:
                 checkSongs -= 1
                 if checkSongs == 0:
-                    bot.debug(__file__, 'Exception while trying to get periodic radio data: %s' % e, 'warning')
+                    LOGGER.exception(
+                        'Exception while trying to get periodic radio data: %s'
+                    )
                     bot.say('The radio is not responding to the song request.')
                     bot.say('Turning off radio data checking.')
                 break

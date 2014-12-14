@@ -21,6 +21,9 @@ import time
 import willie
 from willie.tools import Identifier, iteritems
 import base64
+from willie.logger import get_logger
+
+LOGGER = get_logger(__name__)
 
 
 @willie.module.event('001', '251')
@@ -100,7 +103,7 @@ def retry_join(bot, trigger):
     if channel in bot.memory['retry_join'].keys():
         bot.memory['retry_join'][channel] += 1
         if bot.memory['retry_join'][channel] > 10:
-            bot.debug(__file__, 'Failed to join %s after 10 attempts.' % channel, 'warning')
+            LOGGER.warning('Failed to join %s after 10 attempts.', channel)
             return
     else:
         bot.memory['retry_join'][channel] = 0
@@ -251,7 +254,7 @@ def track_nicks(bot, trigger):
             " that's protected by NickServ.)" % bot.nick
         debug_msg = "Nick changed by server." + \
             " This can cause unexpected behavior. Please restart the bot."
-        bot.debug(__file__, debug_msg, 'always')
+        LOGGER.critical(debug_msg)
         bot.msg(bot.config.core.owner, privmsg)
         return
 
