@@ -33,6 +33,17 @@ class ChannelOutputFormatter(logging.Formatter):
 
 
 def setup_logging(bot):
+    verbose = bot.config.core.verbose
+    if not bot.config.core.logging_level:
+        if verbose is None or verbose == 'None':
+            bot.config.core.logging_level = 'ERROR'
+        elif verbose == 'warning':
+            bot.config.core.logging_level = 'WARNING'
+        elif verbose == 'verbose':
+            bot.config.core.logging_level = 'DEBUG'
+    if not bot.config.core.logging_channel:
+        bot.config.core.logging_channel = bot.config.core.debug_target
+
     level = bot.config.core.logging_level or 'WARNING'
     logging.basicConfig(level=level)
     logger = logging.getLogger('willie')
