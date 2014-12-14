@@ -19,6 +19,9 @@ from willie import web, tools
 from willie.module import commands, rule, NOLIMIT
 import os
 import re
+from willie.logger import get_logger
+
+LOGGER = get_logger(__name__)
 
 issueURL = (r'https?://(?:www\.)?github.com/'
             '([A-z0-9\-]+/[A-z0-9\-]+)/'
@@ -83,7 +86,7 @@ def issue(bot, trigger):
 
     data = json.loads(raw)
     bot.say('Issue #%s posted. %s' % (data['number'], data['html_url']))
-    bot.debug(__file__, 'Issue #%s created in %s' % (data['number'], trigger.sender), 'warning')
+    LOGGER.warning('Issue #%s created in %s', data['number'], trigger.sender)
 
 
 @commands('addtrace', 'addtraceback')
@@ -147,7 +150,7 @@ def add_traceback(bot, trigger):
 
     data = json.loads(raw)
     bot.say('Added traceback to issue #%s. %s' % (number, data['html_url']))
-    bot.debug(__file__, 'Traceback added to #%s in %s.' % (number, trigger.sender), 'warning')
+    LOGGER.warning('Traceback added to #%s in %s.', number, trigger.sender)
 
 
 @commands('findissue', 'findbug')
@@ -190,11 +193,8 @@ def findIssue(bot, trigger):
         else:
             body = data['body'].split('\n')[0]
     except (KeyError):
-        bot.debug(
-            'GitHub KeyErr',
-            ('API returned an invalid result on query request ' +
-             trigger.group(2)),
-            'always')
+        LOGGER.exception('API returned an invalid result on query request %s',
+                      trigger.group(2))
         bot.say('Invalid result, please try again later.')
         return NOLIMIT
     bot.reply('[#%s]\x02title:\x02 %s \x02|\x02 %s' % (data['number'], data['title'], body))

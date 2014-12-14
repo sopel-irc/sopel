@@ -28,6 +28,9 @@ except ImportError:
         pass
 
 from willie.module import commands, example
+from willie.logger import get_logger
+
+LOGGER = get_logger(__name__)
 
 
 def configure(config):
@@ -62,7 +65,9 @@ def _find_geoip_db(bot):
         if os.path.isfile(cities_db) and os.path.isfile(ipasnum_db):
             return config.ip.GeoIP_db_path
         else:
-            bot.debug(__file__, 'GeoIP path configured but DB not found in configured path', 'warning')
+            LOGGER.warning(
+                'GeoIP path configured but DB not found in configured path'
+            )
     if (os.path.isfile(os.path.join(bot.config.homedir, 'GeoLiteCity.dat')) and
             os.path.isfile(os.path.join(bot.config.homedir, 'GeoIPASNum.dat'))):
         return bot.config.homedir
@@ -70,7 +75,7 @@ def _find_geoip_db(bot):
             os.path.isfile(os.path.join('/usr/share/GeoIP', 'GeoIPASNum.dat'))):
         return '/usr/share/GeoIP'
     elif urlretrieve:
-        bot.debug(__file__, 'Downloading GeoIP database', 'always')
+        LOGGER.warning('Downloading GeoIP database')
         bot.say('Downloading GeoIP database, please wait...')
         geolite_city_url = 'http://geolite.maxmind.com/download/geoip/database/GeoLiteCity.dat.gz'
         geolite_ASN_url = 'http://download.maxmind.com/download/geoip/database/asnum/GeoIPASNum.dat.gz'
@@ -97,7 +102,7 @@ def ip(bot, trigger):
     query = trigger.group(2)
     db_path = _find_geoip_db(bot)
     if db_path is False:
-        bot.debug(__file__, 'Can\'t find (or download) usable GeoIP database', 'always')
+        LOGGER.error('Can\'t find (or download) usable GeoIP database')
         bot.say('Sorry, I don\'t have a GeoIP database to use for this lookup')
         return False
     geolite_city_filepath = os.path.join(_find_geoip_db(bot), 'GeoLiteCity.dat')
