@@ -16,6 +16,7 @@ from willie.logger import get_logger
 
 LOGGER = get_logger(__name__)
 
+
 def configure(config):
     """
     | [radio] | example | purpose |
