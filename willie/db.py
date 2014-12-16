@@ -22,7 +22,7 @@ from __future__ import absolute_import
 import os
 import sys
 from collections import Iterable
-from willie.tools import deprecate_for_5, deprecated_5
+from willie.tools import deprecate_for_5, deprecated_5, iteritems
 if sys.version_info.major >= 3:
     unicode = str
     basestring = str
@@ -665,19 +665,22 @@ class Table(object):
         cur = db.cursor()
         where = self._make_where_statement(key, row)
         cur.execute('SELECT * FROM ' + self.name + ' WHERE ' + where, rowl)
+        values = [(k, v) for k, v in iteritems(values)]
         if not cur.fetchone():
-            vals = "'" + row + "'"
-            for k in values:
+            vals = ''
+            for k, _ in values:
                 key = key + ', ' + k
-                vals = vals + ", '" + values[k] + "'"
+                vals = vals + ", %s"
             command = ('INSERT INTO ' + self.name + ' (' + key + ') VALUES (' +
                        vals + ');')
         else:
             command = 'UPDATE ' + self.name + ' SET '
-            for k in values:
-                command = command + k + "='" + values[k] + "', "
+            for k, _ in values:
+                command = command + k + "= %s, "
             command = command[:-2] + ' WHERE ' + key + " = '" + row + "';"
-        cur.execute(command)
+        shit = [val[1] for val in values]
+        command = command.replace('%s', self.db.substitution)
+        cur.execute(command, shit)
         db.commit()
         db.close()
 
