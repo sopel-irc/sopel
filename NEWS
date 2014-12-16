@@ -1,3 +1,17 @@
+Changes between 4.6.0 and 4.6.1
+===============================
+This release starts preparations for Willie 5. See http://willie.dftba.net/willie_5.html
+for more information.
+
+Module changes (for users):
+* Fix regression in table creations and erroneously changed column names
+
+Core changes (for users):
+* Fix regression in db update function
+
+API changes (for developers):
+* Correctly print out deprecation warnings
+
 Changes between 4.5.1 and 4.6.0
 ===============================
 This release starts preparations for Willie 5. See http://willie.dftba.net/willie_5.html
