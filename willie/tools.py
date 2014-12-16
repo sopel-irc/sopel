@@ -279,8 +279,9 @@ def get_command_regexp(prefix, command):
 
 
 def deprecate_for_5(thing):
-    warnings.warn(thing + 'will be removed in Willie 5.0. Please see '
-                  'http://willie.dftba.net/willie_5.html for more info.')
+    warnings.warn(thing + ' will be removed in Willie 5.0. Please see '
+                  'http://willie.dftba.net/willie_5.html for more info.',
+                  stacklevel=3)
 
 
 def deprecated_5(old):
