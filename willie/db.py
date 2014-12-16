@@ -665,19 +665,19 @@ class Table(object):
         cur = db.cursor()
         where = self._make_where_statement(key, row)
         cur.execute('SELECT * FROM ' + self.name + ' WHERE ' + where, rowl)
-        subs = list(values.iterkeys()) + list(values.itervalues())
         if not cur.fetchone():
-            values[key] = row
-            vals = ', '.join(('%s',) * len(values))
-            keys = ', '.join(values.iterkeys())
-            subs = list(values.itervalues())
-            command = ('INSERT INTO ' + self.name + ' (' + keys + ') VALUES (' +
+            vals = "'" + row + "'"
+            for k in values:
+                key = key + ', ' + k
+                vals = vals + ", '" + values[k] + "'"
+            command = ('INSERT INTO ' + self.name + ' (' + key + ') VALUES (' +
                        vals + ');')
         else:
-            k_equals_v = ', '.join('%s = %s' * len(values))
-            command = 'UPDATE ' + self.name + ' SET ' + k_equals_v + ' WHERE ' + key + " = '" + row + "';"
-        command = command.replace('%s', self.db.substitution)
-        cur.execute(command, subs)
+            command = 'UPDATE ' + self.name + ' SET '
+            for k in values:
+                command = command + k + "='" + values[k] + "', "
+            command = command[:-2] + ' WHERE ' + key + " = '" + row + "';"
+        cur.execute(command)
         db.commit()
         db.close()
 
