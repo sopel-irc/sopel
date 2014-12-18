@@ -25,10 +25,12 @@ from datetime import datetime
 from willie import tools
 import willie.irc as irc
 from willie.db import WillieDB
-from willie.tools import (stderr, PriorityQueue, released, get_command_regexp,
+from willie.tools import (stderr, PriorityQueue, Identifier, released, get_command_regexp,
                           iteritems, itervalues, deprecated_5)
+from willie.trigger import Trigger
 import willie.module as module
 from willie.logger import get_logger
+
 
 LOGGER = get_logger(__name__)
 
