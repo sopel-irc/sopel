@@ -84,8 +84,8 @@ def ytget(bot, trigger, uri):
         if duration < 1:
             vid_info['length'] = 'LIVE'
         else:
-            hours = duration / (60 * 60)
-            minutes = duration / 60 - (hours * 60)
+            hours = duration // (60 * 60)
+            minutes = duration // 60 - (hours * 60)
             seconds = duration % 60
             vid_info['length'] = ''
             if hours:
