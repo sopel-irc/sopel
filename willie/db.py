@@ -666,8 +666,9 @@ class Table(object):
         where = self._make_where_statement(key, row)
         cur.execute('SELECT * FROM ' + self.name + ' WHERE ' + where, rowl)
         values = [(k, v) for k, v in iteritems(values)]
+        print(values)
         if not cur.fetchone():
-            vals = ''
+            vals = '%s'
             for k, _ in values:
                 key = key + ', ' + k
                 vals = vals + ", %s"
@@ -678,8 +679,9 @@ class Table(object):
             for k, _ in values:
                 command = command + k + "= %s, "
             command = command[:-2] + ' WHERE ' + key + " = '" + row + "';"
-        shit = [val[1] for val in values]
+        shit = [row] + [val[1] for val in values]
         command = command.replace('%s', self.db.substitution)
+        print(command, shit)
         cur.execute(command, shit)
         db.commit()
         db.close()
