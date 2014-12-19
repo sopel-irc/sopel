@@ -13,8 +13,6 @@ import re
 from willie import web
 from willie.module import commands, example
 import json
-import sys
-import time
 
 
 def formatnumber(n):
