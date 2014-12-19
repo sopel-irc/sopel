@@ -280,10 +280,6 @@ class Bot(asynchat.async_chat):
                     os._exit(1)
             self.set_socket(self.ssl)
 
-        # Request list of server capabilities. IRCv3 servers will respond with
-        # CAP * LS (which we handle in coretasks). v2 servers will respond with
-        # 421 Unknown command, which we'll ignore
-        self.write(('CAP', 'LS'))
 
         if self.config.core.server_password is not None:
             self.write(('PASS', self.config.core.server_password))
@@ -296,6 +292,13 @@ class Bot(asynchat.async_chat):
         timeout_check_thread.start()
         ping_thread = threading.Thread(target=self._send_ping)
         ping_thread.start()
+
+        # Request list of server capabilities. IRCv3 servers will respond with
+        # CAP * LS (which we handle in coretasks). v2 servers will respond with
+        # 421 Unknown command, which we'll ignore
+        # This needs to come after Authentication as it can cause connection
+        # Issues
+        self.write(('CAP', 'LS'))
 
     def _timeout_check(self):
         while self.connected or self.connecting:
