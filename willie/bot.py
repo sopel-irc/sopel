@@ -23,6 +23,7 @@ import threading
 
 from datetime import datetime
 from willie import tools
+from willie.trigger import Trigger
 import willie.irc as irc
 from willie.db import WillieDB
 from willie.tools import (stderr, PriorityQueue, Identifier, released, get_command_regexp,
