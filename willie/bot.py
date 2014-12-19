@@ -699,7 +699,7 @@ class Willie(irc.Bot):
             LOGGER.info(
                 "[%s]%s prevented from using %s.",
                 block_type,
-                origin.nick,
+                trigger.nick,
                 ', '.join(list_of_blocked_functions)
             )
 
