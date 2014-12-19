@@ -375,6 +375,7 @@ class Bot(asynchat.async_chat):
         if line.endswith('\r'):
             line = line[:-1]
         self.buffer = ''
+        self.last_ping_time = datetime.now()
         pretrigger = PreTrigger(self.nick, line)
 
         if pretrigger.args[0] == 'PING':
