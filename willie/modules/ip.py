@@ -92,7 +92,7 @@ def _find_geoip_db(bot):
 
 @commands('iplookup', 'ip')
 @example('.ip 8.8.8.8',
-         r'[IP/Host Lookup] Hostname: google-public-dns-a.google.com | Location: United States | Region: CA | ISP: Google Inc.',
+         r'[IP/Host Lookup] Hostname: google-public-dns-a.google.com | Location: United States | Region: CA | ISP: AS15169 Google Inc.',
          re=True,
          ignore='Downloading GeoIP database, please wait...')
 def ip(bot, trigger):
@@ -125,8 +125,6 @@ def ip(bot, trigger):
         response += " | Region: %s" % region
 
     isp = gi_org.org_by_name(query)
-    if isp is not None:
-        isp = re.sub('^AS\d+ ', '', isp)
     response += " | ISP: %s" % isp
     bot.say(response)
 
