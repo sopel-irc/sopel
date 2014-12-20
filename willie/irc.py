@@ -311,6 +311,7 @@ class Bot(asynchat.async_chat):
             if self.connected and (datetime.now() - self.last_ping_time).seconds > int(self.config.timeout) / 2:
                 try:
                     self.write(('PING', self.config.host))
+                    self.last_ping_time = datetime.now()
                 except socket.error:
                     pass
             time.sleep(int(self.config.timeout) / 2)
