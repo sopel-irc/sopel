@@ -1,3 +1,14 @@
+Changes between 4.6.1 and 4.6.2
+===============================
+This release starts preparations for Willie 5. See http://willie.dftba.net/willie_5.html
+for more information.
+
+Module changes (for users):
+* Due to API deprecation and instability, .g now uses DuckDuckGo instead of Google
+
+Core changes (for users):
+* Fix remaining regression in db update function
+
 Changes between 4.6.0 and 4.6.1
 ===============================
 This release starts preparations for Willie 5. See http://willie.dftba.net/willie_5.html
