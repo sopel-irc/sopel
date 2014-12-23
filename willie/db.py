@@ -141,7 +141,9 @@ class WillieDB(object):
         """Retrieves the value for a given key associated with a nick."""
         nick = Identifier(nick)
         result = self.execute(
-            'SELECT value FROM nicknames, nick_values WHERE slug = ? AND key = ?',
+            'SELECT value FROM nicknames JOIN nick_values '
+            'ON nicknames.nick_id = nick_values.nick_id '
+            'WHERE slug = ? AND key = ?',
             [nick.lower(), key]
         ).fetchone()
         if result is not None:
