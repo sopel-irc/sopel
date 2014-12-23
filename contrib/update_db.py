@@ -47,9 +47,13 @@ def main():
         print('Migrating column {}'.format(old_name))
 
         values = cur.execute(
-            'SELECT name, {} FROM preferences'.format(old_name)).fetchall()
+            'SELECT name, {} FROM preferences WHERE {} NOT NULL'
+            .format(old_name, old_name)).fetchall()
         for value in values:
-            new_db.set_nick_value(value[0], new_name, value[1])
+            if value[0][0] in '+%@&~#&':
+                new_db.set_channel_value(value[0], new_name, value[1])
+            else:
+                new_db.set_nick_value(value[0], new_name, value[1])
 
 if __name__ == '__main__':
     main()
