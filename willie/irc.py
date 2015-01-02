@@ -216,17 +216,14 @@ class Bot(asynchat.async_chat):
          returned and `headers` is a dict of headers that the server returned.
       """
 
-
-
         def valid_address(addr):
             """ Verify that an IP/port tuple is valid """
-            return isinstance(addr, (list, tuple)) and len(addr) == 2 and isinstance(addr[0], str) and isinstance(addr[1],
-                                                                                                                  (int, long))
+            return isinstance(addr, (list, tuple)) and len(addr) == 2 and isinstance(addr[0], str) and isinstance(addr[1], (int, long))
 
         if not valid_address(address):
             raise ValueError('Invalid target address')
 
-        if proxy == None:
+        if proxy is None:
             s = socket.create_connection(address, source_address=source_address)
             return s, 0, {}
 
