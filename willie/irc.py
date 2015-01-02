@@ -194,19 +194,97 @@ class Bot(asynchat.async_chat):
         finally:
             self.writing_lock.release()
 
-    def run(self, host, port=6667):
+    def run(self, host, port=6667, proxy=None, proxyport=None):
         try:
-            self.initiate_connect(host, port)
+            self.initiate_connect(host, port, proxy, proxyport)
         except socket.error as e:
             stderr('Connection error: %s' % e)
             self.hasquit = True
 
-    def initiate_connect(self, host, port):
+    def http_proxy_connect(self, address, proxy=None, source_address=None):
+
+        """
+      Establish a socket connection through an HTTP proxy.
+
+      Arguments:
+        address (required)     = The address of the target
+        proxy (def: None)      = The address of the proxy server
+      Returns:
+        A 3-tuple of the format:
+          (socket, status_code, headers)
+        Where `socket' is the socket object, `status_code` is the HTTP status code that the server
+         returned and `headers` is a dict of headers that the server returned.
+      """
+
+
+
+        def valid_address(addr):
+            """ Verify that an IP/port tuple is valid """
+            return isinstance(addr, (list, tuple)) and len(addr) == 2 and isinstance(addr[0], str) and isinstance(addr[1],
+                                                                                                                  (int, long))
+
+        if not valid_address(address):
+            raise ValueError('Invalid target address')
+
+        if proxy == None:
+            s = socket.create_connection(address, source_address=source_address)
+            return s, 0, {}
+
+        if not valid_address(proxy):
+            raise ValueError('Invalid proxy address')
+
+        headers = {
+            'host': address[0]
+        }
+
+        s = socket.create_connection(proxy, source_address=source_address)
+        fp = s.makefile('r+')
+
+        fp.write('CONNECT %s:%d HTTP/1.0\r\n' % address)
+        fp.write('\r\n'.join('%s: %s' % (k, v) for (k, v) in headers.items()) + '\r\n\r\n')
+        fp.flush()
+
+        statusline = fp.readline().rstrip('\r\n')
+
+        if statusline.count(' ') < 2:
+            fp.close()
+            s.close()
+            raise IOError('Bad response')
+        version, status, statusmsg = statusline.split(' ', 2)
+        if not version in ('HTTP/1.0', 'HTTP/1.1'):
+            fp.close()
+            s.close()
+            raise IOError('Unsupported HTTP version')
+        try:
+            status = int(status)
+        except ValueError:
+            fp.close()
+            s.close()
+            raise IOError('Bad response')
+
+        response_headers = {}
+
+        while True:
+            tl = ''
+            l = fp.readline().rstrip('\r\n')
+            if l == '':
+                break
+            if not ':' in l:
+                continue
+            k, v = l.split(':', 1)
+            response_headers[k.strip().lower()] = v.strip()
+
+        fp.close()
+        return (s, status, response_headers)
+
+    def initiate_connect(self, host, port, proxy=None, proxyport=None):
         stderr('Connecting to %s:%s...' % (host, port))
         source_address = ((self.config.core.bind_host, 0)
                           if self.config.core.bind_host else None)
-        self.set_socket(socket.create_connection((host, port),
-                        source_address=source_address))
+
+        connection = self.http_proxy_connect((host, port), (proxy, proxyport), source_address)
+
+        self.set_socket(connection[0])
         if self.config.core.use_ssl and has_ssl:
             self.send = self._ssl_send
             self.recv = self._ssl_recv

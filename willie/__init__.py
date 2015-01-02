@@ -53,7 +53,7 @@ def run(config):
             if hasattr(signal, 'SIGTERM'):
                 signal.signal(signal.SIGTERM, signal_handler)
             willie.logger.setup_logging(p)
-            p.run(config.core.host, int(config.core.port))
+            p.run(config.core.host, int(config.core.port), config.core.proxy, int(config.core.proxyport))
         except KeyboardInterrupt:
             break
         except Exception as e:
