@@ -12,8 +12,8 @@ import willie.web as web
 from willie.config import ConfigurationError
 from willie.formatting import color, bold
 from willie.logger import get_logger
+from willie.module import commands, interval, priority, rule, OP
 import willie.tools
-import willie.module
 import sys
 import json
 import time
@@ -157,17 +157,18 @@ def url_handler(bot, trigger):
 @willie.module.commands('safety')
 def toggle_safety(bot, trigger):
     """ Set safety setting for channel """
+    if not trigger.admin and bot.privileges[trigger.sender][trigger.nick] < OP:
+        bot.reply('Only channel operators can change safety settings')
+        return
     allowed_states = ['strict', 'on', 'off', 'local', 'local strict']
     if not trigger.group(2) or trigger.group(2).lower() not in allowed_states:
         options = ' / '.join(allowed_states)
         bot.reply('Available options: %s' % options)
         return
-    if not trigger.isop and not trigger.admin:
-        bot.reply('Only channel operators can change safety settings')
 
     channel = trigger.sender.lower()
     bot.db.set_channel_value(channel, 'safety', trigger.group(2).lower())
-    bot.reply('Safety is now set to %s in this channel' % trigger.group(2))
+    bot.reply('Safety is now set to "%s" on this channel' % trigger.group(2))
 
 
 # Clean the cache every day, also when > 1024 entries
