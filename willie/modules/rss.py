@@ -355,7 +355,7 @@ def read_feeds(bot, force=False):
 
         # check HTTP status
         if status == 301:  # MOVED_PERMANENTLY
-            bot.warning(
+            LOGGER.warning(
                 "Got HTTP 301 (Moved Permanently) on %s, updating URI to %s",
                 feed.name, fp.href
             )
