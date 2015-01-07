@@ -582,7 +582,7 @@ def format_time(db=None, config=None, zone=None, nick=None, channel=None,
     if db:
         if nick:
             tformat = db.get_nick_value(nick, 'time_format')
-        if not tformat:
+        if not tformat and channel:
             tformat = db.get_channel_value(channel, 'time_format')
     if not tformat and config and config.has_option('core',
                                                     'default_time_format'):
