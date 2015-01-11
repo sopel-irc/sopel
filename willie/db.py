@@ -82,7 +82,7 @@ class WillieDB(object):
             'PRIMARY KEY (channel, key))'
         )
 
-    def get_url(self):
+    def get_uri(self):
         """Returns a URL for the database, usable to connect with SQLAlchemy.
         """
         return 'sqlite://{}'.format(self.filename)
