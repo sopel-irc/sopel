@@ -7,12 +7,19 @@ Licensed under the Eiffel Forum License 2.
 http://willie.dftba.net
 """
 from __future__ import unicode_literals
-from willie import web
-from willie.module import NOLIMIT, commands, example
+from willie import web, tools
+from willie.module import NOLIMIT, commands, example, rule
 import json
 import re
 
 REDIRECT = re.compile(r'^REDIRECT (.*)')
+
+
+def setup(bot):
+    regex = re.compile('([a-z]+).(wikipedia.org/wiki/)([^ ]+)')
+    if not bot.memory.contains('url_callbacks'):
+        bot.memory['url_callbacks'] = tools.WillieMemory()
+        bot.memory['url_callbacks'][regex] = mw_info
 
 
 def configure(config):
@@ -47,6 +54,16 @@ def mw_search(server, query, num):
         return None
 
 
+def say_snippet(bot, server, query, show_url=True):
+    page_name = query.replace('_', ' ')
+    query = query.replace(' ', '_')
+    snippet = mw_snippet(server, query)
+    msg = '[WIKIPEDIA] {} | "{}"'.format(page_name, snippet)
+    if show_url:
+        msg = msg + ' | https://{}/wiki/{}'.format(server, query)
+    bot.say(msg)
+
+
 def mw_snippet(server, query):
     """
     Retrives a snippet of the specified length from the given page on the given
@@ -64,6 +81,16 @@ def mw_snippet(server, query):
     snippet = snippet[list(snippet.keys())[0]]
 
     return snippet['extract']
+
+
+@rule('.*/([a-z]+\.wikipedia.org)/wiki/([^ ]+).*')
+def mw_info(bot, trigger, found_match=None):
+    """
+    Retrives a snippet of the specified length from the given page on the given
+    server.
+    """
+    match = found_match or trigger
+    say_snippet(bot, match.group(1), match.group(2), show_url=False)
 
 
 @commands('w', 'wiki', 'wik')
@@ -104,7 +131,4 @@ def wikipedia(bot, trigger):
         return NOLIMIT
     else:
         query = query[0]
-    snippet = mw_snippet(server, query)
-
-    query = query.replace(' ', '_')
-    bot.say('"%s" - http://%s.wikipedia.org/wiki/%s' % (snippet, lang, query))
+    say_snippet(bot, server, query)
