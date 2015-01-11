@@ -53,6 +53,12 @@ def startup(bot, trigger):
             'IDENTIFY %s' % bot.config.core.nickserv_password
         )
 
+    if bot.config.core.bitlbee_password is not None:
+        bot.msg(
+            '&bitlbee',
+            'IDENTIFY %s' % bot.config.core.bitlbee_password
+        )
+
     if (bot.config.core.oper_name is not None
             and bot.config.core.oper_password is not None):
         bot.write((
