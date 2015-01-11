@@ -46,11 +46,6 @@ def startup(bot, trigger):
 
     bot.connection_registered = True
 
-    # Request server capabilities. Some servers are fine on having this sent
-    # immediately on startup, but others need to have it after completing the
-    # registraion of the connection with the network, so we do it here.
-    bot.write(('CAP', 'LS'))
-
     if bot.config.core.nickserv_password is not None:
         bot.msg(
             'NickServ',

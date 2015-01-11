@@ -292,6 +292,13 @@ class Bot(asynchat.async_chat):
         ping_thread = threading.Thread(target=self._send_ping)
         ping_thread.start()
 
+        # Request list of server capabilities. IRCv3 servers will respond with
+        # CAP * LS (which we handle in coretasks). v2 servers will respond with
+        # 421 Unknown command, which we'll ignore
+        # This needs to come after Authentication as it can cause connection
+        # Issues
+        self.write(('CAP', 'LS'))
+
     def _timeout_check(self):
         while self.connected or self.connecting:
             if (datetime.now() - self.last_ping_time).seconds > int(self.config.timeout):
