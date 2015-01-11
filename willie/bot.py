@@ -649,7 +649,7 @@ class Willie(irc.Bot):
 
     def dispatch(self, pretrigger):
         args = pretrigger.args
-        event, args, text = args[0], args[1:], args[-1]
+        event, args, text = pretrigger.event, args, args[-1]
 
         if self.config.core.nick_blocks or self.config.core.host_blocks:
             nick_blocked = self._nick_blocked(pretrigger.nick)

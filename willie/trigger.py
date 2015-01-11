@@ -50,13 +50,14 @@ class PreTrigger(object):
             self.text = self.args[-1]
 
         self.event = self.args[0]
+        self.args = self.args[1:]
         components = PreTrigger.component_regex.match(self.hostmask or '').groups()
         self.nick, self.user, self.host = components
         self.nick = willie.tools.Identifier(self.nick)
 
-        # If we have more than one argument, the second one is the sender
-        if len(self.args) > 1:
-            target = willie.tools.Identifier(self.args[1])
+        # If we have arguments, the first one is the sender
+        if self.args:
+            target = willie.tools.Identifier(self.args[0])
         else:
             target = None
 
