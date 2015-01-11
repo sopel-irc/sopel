@@ -22,6 +22,13 @@ db_filename = tempfile.mkstemp()[1]
 if sys.version_info.major >= 3:
     unicode = str
     basestring = str
+    iteritems = dict.items
+    itervalues = dict.values
+    iterkeys = dict.keys
+else:
+    iteritems = dict.iteritems
+    itervalues = dict.itervalues
+    iterkeys = dict.iterkeys
 
 
 @pytest.fixture
@@ -103,15 +110,14 @@ def test_set_nick_value(db):
     data = {
         'key': 'value',
         'number_key': 1234,
-        'bytes': b'value',
         'unicode': 'EmbölaliÅ',
     }
 
     def check():
-        for key, value in data.iteritems():
+        for key, value in iteritems(data):
             db.set_nick_value(nick, key, value)
 
-        for key, value in data.iteritems():
+        for key, value in iteritems(data):
             found_value = cursor.execute(
                 'SELECT value FROM nick_values WHERE nick_id = ? AND key = ?',
                 [nick_id, key]
@@ -133,16 +139,15 @@ def test_get_nick_value(db):
     data = {
         'key': 'value',
         'number_key': 1234,
-        'bytes': b'value',
         'unicode': 'EmbölaliÅ',
     }
 
-    for key, value in data.iteritems():
+    for key, value in iteritems(data):
         cursor.execute('INSERT INTO nick_values VALUES (?, ?, ?)',
                        [nick_id, key, json.dumps(value, ensure_ascii=False)])
     conn.commit()
 
-    for key, value in data.iteritems():
+    for key, value in iteritems(data):
         found_value = db.get_nick_value(nick, key)
         assert found_value == value
 
