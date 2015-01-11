@@ -429,7 +429,7 @@ def auth_proceed(bot, trigger):
     sasl_token = '\0'.join((sasl_username, sasl_username,
                            bot.config.core.sasl_password))
     # Spec says we do a base 64 encode on the SASL stuff
-    bot.write(('AUTHENTICATE', base64.b64encode(sasl_token)))
+    bot.write(('AUTHENTICATE', base64.b64encode(sasl_token.encode('utf-8'))))
 
 
 @willie.module.event('903')
