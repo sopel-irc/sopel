@@ -135,7 +135,7 @@ def invite_join(bot, trigger):
     if trigger.admin or bot.config.admin.auto_accept_invite:
         bot.join(trigger.args[1])
         return
-    return NOLIMIT
+
 
 @willie.module.event('KICK')
 @willie.module.rule(r'.*')
