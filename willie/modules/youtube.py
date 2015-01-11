@@ -10,7 +10,7 @@ http://willie.dfbta.net
 
 This module will respond to .yt and .youtube commands and searches the youtubes.
 """
-from __future__ import unicode_literals
+from __future__ import unicode_literals, division
 
 from willie import web, tools
 from willie.module import rule, commands, example
