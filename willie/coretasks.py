@@ -49,7 +49,7 @@ def startup(bot, trigger):
     if bot.config.core.nickserv_password is not None:
         nickserv_name = bot.config.core.nickserv_name or 'NickServ'
         bot.msg(
-            'NickServ',
+            nickserv_name,
             'IDENTIFY %s' % bot.config.core.nickserv_password
         )
 
