@@ -378,13 +378,13 @@ class Bot(asynchat.async_chat):
         self.last_ping_time = datetime.now()
         pretrigger = PreTrigger(self.nick, line)
 
-        if pretrigger.args[0] == 'PING':
+        if pretrigger.event == 'PING':
             self.write(('PONG', pretrigger.args[-1]))
-        elif pretrigger.args[0] == 'ERROR':
+        elif pretrigger.event == 'ERROR':
             self.debug(__file__, pretrigger.args[-1], 'always')
             if self.hasquit:
                 self.close_when_done()
-        elif pretrigger.args[0] == '433':
+        elif pretrigger.event == '433':
             stderr('Nickname already in use!')
             self.handle_close()
 
