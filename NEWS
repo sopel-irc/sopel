@@ -1,3 +1,49 @@
+Changes between 4.6.1 and 4.6.2
+===============================
+This release starts preparations for Willie 5. See http://willie.dftba.net/willie_5.html
+for more information.
+Module changes (for users):
+* Due to API deprecation and instability, .g now uses DuckDuckGo instead of Google
+Core changes (for users):
+* Fix remaining regression in db update function
+
+Changes between 4.6.0 and 4.6.1
+===============================
+This release starts preparations for Willie 5. See http://willie.dftba.net/willie_5.html
+for more information.
+Module changes (for users):
+* Fix regression in table creations and erroneously changed column names
+Core changes (for users):
+* Fix regression in db update function
+API changes (for developers):
+* Correctly print out deprecation warnings
+
+Changes between 4.5.1 and 4.6.0
+===============================
+This release starts preparations for Willie 5. See http://willie.dftba.net/willie_5.html
+for more information.
+Module Changes (for users):
+* The ^ operator in .calc is now equivalent to **
+* .dice, .tr, and .addtrace give meaningful errors when no argument is given
+* A number of database issues were fixed (more will be fixed in Willie 5)
+* A number of Python 3-related issues were fixed.
+* Malicious URLs are now detected with VirusTotal and malwaredomains
+* .weather no longer shows pressure
+Core changes (for users):
+* The config wizard no longer configures the database, instead automatically creating a sqlite db
+* MySQL and Postgres databases are deprecated; only sqlite will be supported in Willie 5
+* Logging channel and level can be configured with logging_channel and logging_level in the config
+* A --version switch was added to the willie command, to show the version in use
+* Corrupt PID files will no longer prevent the bot from starting
+* Non-ASCII values no longer crash the config wizard
+API changes (for developers):
+* Numerous functions were added to the db to ease the transition to Willie 5
+* tools.Nick has been renamed tools.Identifier. Nick will be removed in Willie 5
+* willie.web functions now specify a meaningful default user agent
+* web.post now supports dicts as the payload, and can optionally return headers
+* config.get was added as an alias to config.parser.get
+* Callables can now handle more than one event by stacking decorators
+
 Changes between 4.5.0 and 4.5.1
 ===============================
 Module Changes (for users):
