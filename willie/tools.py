@@ -454,6 +454,12 @@ class OutputRedirect:
             except UnicodeDecodeError:
                 # we got an invalid string, safely encode it to utf-8
                 logfile.write(unicode(string, 'utf8', errors="replace"))
+    
+    def flush(self):
+        if self.stderr:
+            sys.__stderr__.flush()
+        else:
+            sys.__stdout__.flush()
 
 
 #These seems to trace back to when we thought we needed a try/except on prints,
