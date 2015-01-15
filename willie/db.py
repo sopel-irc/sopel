@@ -29,6 +29,11 @@ def _deserialize(value):
 
 
 class WillieDB(object):
+    """*Availability: 5.0+*
+    
+    This defines an interface for basic, common operations on a sqlite
+    database. It simplifies those common operations, and allows direct access
+    to the database, wherever the user has configured it to be."""
 
     def __init__(self, config):
         self.filename = config.core.db_filename
@@ -85,7 +90,7 @@ class WillieDB(object):
     def get_uri(self):
         """Returns a URL for the database, usable to connect with SQLAlchemy.
         """
-        return 'sqlite://{}'.format(self.filename)
+        return 'sqlite://{}'.format(os.path.abspath(self.filename))
 
     # NICK FUNCTIONS
 
