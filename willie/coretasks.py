@@ -53,13 +53,6 @@ def startup(bot, trigger):
             'IDENTIFY %s' % bot.config.core.nickserv_password
         )
 
-    if (bot.config.core.oper_name is not None
-            and bot.config.core.oper_password is not None):
-        bot.write((
-            'OPER',
-            bot.config.core.oper_name + ' ' + bot.config.oper_password
-        ))
-
     #Use Authserv if authserv_password and authserv_account is set in config.
     if (bot.config.core.authserv_password is not None
             and bot.config.core.authserv_account is not None):
