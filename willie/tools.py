@@ -548,7 +548,7 @@ def get_timezone(db=None, config=None, zone=None, nick=None, channel=None):
     if zone:
         tz = check(zone)
         if not tz:
-            tz = check(db.get_channel_or_nick_value(zone, 'timezone'))
+            tz = check(db.get_nick_or_channel_value(zone, 'timezone'))
     if not tz and nick:
         tz = check(db.get_nick_value(nick, 'timezone'))
     if not tz and channel:
