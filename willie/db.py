@@ -33,12 +33,20 @@ class WillieDB(object):
     
     This defines an interface for basic, common operations on a sqlite
     database. It simplifies those common operations, and allows direct access
-    to the database, wherever the user has configured it to be."""
+    to the database, wherever the user has configured it to be.
+    
+    When configured with a relative filename, it is assumed to be in the same
+    directory as the config."""
 
     def __init__(self, config):
-        self.filename = config.core.db_filename
-        if self.filename is None:
-            self.filename = os.path.splitext(config.filename)[0] + '.db'
+        path = os.path.expanduser(config.core.db_filename)
+        config_dir, config_file = os.path.split(config.filename)
+        config_name, _ = os.path.splitext(config_file)
+        if path is None:
+            os.path.join(config_dir, config_name, '.db')
+        if not os.path.isabs(path):
+            path = os.path.normpath(os.path.join(config_dir, path))
+        self.filename = path
         self._create()
 
     def connect(self):
@@ -90,7 +98,7 @@ class WillieDB(object):
     def get_uri(self):
         """Returns a URL for the database, usable to connect with SQLAlchemy.
         """
-        return 'sqlite://{}'.format(os.path.abspath(self.filename))
+        return 'sqlite://{}'.format(self.filename)
 
     # NICK FUNCTIONS
 
