@@ -30,16 +30,16 @@ from willie.trigger import PreTrigger, Trigger
 try:
     import select
     import ssl
-    has_ssl = True
-except ImportError:
-    # no SSL support
-    has_ssl = False
-if has_ssl:
     if not hasattr(ssl, 'match_hostname'):
         # Attempt to import ssl_match_hostname from python-backports
         import backports.ssl_match_hostname
         ssl.match_hostname = backports.ssl_match_hostname.match_hostname
         ssl.CertificateError = backports.ssl_match_hostname.CertificateError
+    has_ssl = True
+except ImportError:
+    # no SSL support
+    has_ssl = False
+
 import errno
 import threading
 from datetime import datetime

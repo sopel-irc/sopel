@@ -17,6 +17,11 @@ from __future__ import unicode_literals
 import re
 import sys
 import urllib
+import os.path
+import socket
+
+from willie import __version__
+
 if sys.version_info.major < 3:
     import urllib2
     import httplib
@@ -30,17 +35,19 @@ else:
     from urllib.parse import urlparse
     from urllib.parse import urlunparse
     unichr = chr
-import ssl
-import os.path
-import socket
-if not hasattr(ssl, 'match_hostname'):
-    # Attempt to import ssl_match_hostname from python-backports
-    import backports.ssl_match_hostname
-    ssl.match_hostname = backports.ssl_match_hostname.match_hostname
-    ssl.CertificateError = backports.ssl_match_hostname.CertificateError
 
-from willie import __version__
-USER_AGENT = 'Willie/{} (http://willie.dftba.net)'
+try:
+    import ssl
+    if not hasattr(ssl, 'match_hostname'):
+        # Attempt to import ssl_match_hostname from python-backports
+        import backports.ssl_match_hostname
+        ssl.match_hostname = backports.ssl_match_hostname.match_hostname
+        ssl.CertificateError = backports.ssl_match_hostname.CertificateError
+    has_ssl = True
+except ImportError:
+    has_ssl = False
+
+USER_AGENT = 'Willie/{} (http://willie.dftba.net)'.format(__version__)
 
 
 # HTTP GET
@@ -152,6 +159,8 @@ class VerifiedHTTPSConnection(httplib.HTTPConnection):
         default_port = httplib.HTTPS_PORT
 
         def __init__(self, *args, **kwargs):
+            if not has_ssl:
+                raise Exception('SSL verification is not available.')
             httplib.HTTPConnection.__init__(self, *args, **kwargs)
 
         def connect(self):
