@@ -91,13 +91,17 @@ def main(argv=None):
                             dest="version", help="Show version number and exit")
         opts = parser.parse_args()
 
+        # Step Two: "Do not run as root" checks.
         try:
+            # Linux/Mac
             if os.getuid() == 0 or os.geteuid() == 0:
                 stderr('Error: Do not run Willie with root privileges.')
                 sys.exit(1)
         except AttributeError:
-            # Windows don't have os.getuid/os.geteuid
-            pass
+            # Windows
+            if os.environ.get("USERNAME") == "Administrator":
+                stderr('Error: Do not run Willie as Administrator.')
+                sys.exit(1)
 
         if opts.version:
             py_ver = '%s.%s.%s' % (sys.version_info.major,
