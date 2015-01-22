@@ -173,24 +173,6 @@ def track_modes(bot, trigger):
     if channel.is_nick():
         return
 
-    def handle_old_modes(nick, mode):
-        #Old mode maintenance. Drop this crap in 5.0.
-        if mode[1] == 'o' or mode[1] == 'q' or mode[1] == 'a':
-            if mode[0] == '+':
-                bot.add_op(channel, nick)
-            else:
-                bot.del_op(channel, nick)
-        elif mode[1] == 'h':  # Halfop
-            if mode[0] == '+':
-                bot.add_halfop(channel, nick)
-            else:
-                bot.del_halfop(channel, nick)
-        elif mode[1] == 'v':
-            if mode[0] == '+':
-                bot.add_voice(channel, nick)
-            else:
-                bot.del_voice(channel, nick)
-
     mapping = {'v': willie.module.VOICE,
                'h': willie.module.HALFOP,
                'o': willie.module.OP,
@@ -222,7 +204,6 @@ def track_modes(bot, trigger):
                     else:
                         priv = priv & ~value
                     bot.privileges[channel][arg] = priv
-                handle_old_modes(arg, mode)
 
 
 @willie.module.rule('.*')

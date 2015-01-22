@@ -39,7 +39,6 @@ from __future__ import unicode_literals
 from __future__ import print_function
 from __future__ import absolute_import
 
-import willie.db as db
 from willie.tools import iteritems
 import os
 import sys
@@ -319,10 +318,6 @@ class Config(object):
             ' When done, hit enter again.'
         self.add_list('core', 'channels', c, 'Channel:')
 
-    def _db(self):
-        db.configure(self)
-        self.save()
-
     def _modules(self):
         home = os.getcwd()
         modules_dir = os.path.join(home, 'modules')
@@ -412,14 +407,6 @@ def wizard(section, config=None):
     configpath = os.path.join(dotdir, (config or 'default') + '.cfg')
     if section == 'all':
         create_config(configpath)
-    elif section == 'db':
-        print(
-            'Willie will be moving to an automatically configured sqlite '
-            'database in version 5.0. In preparation, the database config '
-            'wizard has been disabled. Please note that MySQL and Postgres'
-            ' support will be dropped entirely in 5.0. See '
-            'http://willie.dftba.net/willie_5.html for more information.'
-        )
     elif section == 'mod':
         check_dir(False)
         if not os.path.isfile(configpath):

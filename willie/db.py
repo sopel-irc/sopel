@@ -30,11 +30,11 @@ def _deserialize(value):
 
 class WillieDB(object):
     """*Availability: 5.0+*
-    
+
     This defines an interface for basic, common operations on a sqlite
     database. It simplifies those common operations, and allows direct access
     to the database, wherever the user has configured it to be.
-    
+
     When configured with a relative filename, it is assumed to be in the same
     directory as the config."""
 

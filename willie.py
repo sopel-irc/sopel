@@ -87,10 +87,6 @@ def main(argv=None):
                             dest='mod_wizard', help=(
                                 'Run the configuration wizard, but only for the '
                                 'module configuration options.'))
-        parser.add_argument('--configure-database', action='store_true',
-                            dest='db_wizard', help=(
-                                'Run the configuration wizard, but only for the '
-                                'database configuration options.'))
         parser.add_argument('-v', '--version', action="store_true",
                             dest="version", help="Show version number and exit")
         opts = parser.parse_args()
@@ -115,9 +111,6 @@ def main(argv=None):
             return
         elif opts.mod_wizard:
             wizard('mod', opts.config)
-            return
-        elif opts.db_wizard:
-            wizard('db', opts.config)
             return
 
         if opts.list_configs:

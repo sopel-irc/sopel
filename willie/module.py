@@ -4,7 +4,6 @@
 It defines the following decorators for defining willie callables:
 willie.module.rule
 willie.module.thread
-willie.module.name (deprecated)
 willie.module.commands
 willie.module.nickname_commands
 willie.module.priority
@@ -100,22 +99,12 @@ def rule(value):
     Inside the regular expression, some special directives can be used. $nick
     will be replaced with the nick of the bot and , or :, and $nickname will be
     replaced with the nick of the bot.
-
-    Prior to 3.1, rules could also be made one of three formats of tuple. The
-    values would be joined together to form a singular regular expression.
-    However, these kinds of rules add no functionality over simple regular
-    expressions, and are considered deprecated in 3.1.
-
     """
     def add_attribute(function):
         if not hasattr(function, "rule"):
             function.rule = []
         function.rule.append(value)
         return function
-
-    if isinstance(value, tuple):
-        raise DeprecationWarning("Tuple-form .rule is deprecated in 3.1."
-                                 " Replace tuple-form .rule with a regexp.")
 
     return add_attribute
 
@@ -132,16 +121,6 @@ def thread(value):
         function.thread = value
         return function
     return add_attribute
-
-
-def name(value):
-    """Decorator. Equivalent to func.name = value.
-
-    This attribute is considered deprecated in 3.1.
-
-    """
-    raise DeprecationWarning("This attribute is considered deprecated in 3.1."
-                             " Replace tuple-form .rule with a regexp.")
 
 
 def commands(*command_list):

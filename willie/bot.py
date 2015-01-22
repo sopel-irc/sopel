@@ -26,7 +26,7 @@ from willie import tools
 import willie.irc as irc
 from willie.db import WillieDB
 from willie.tools import (stderr, PriorityQueue, Identifier, released, get_command_regexp,
-                          iteritems, itervalues, deprecated_5)
+                          iteritems, itervalues)
 from willie.trigger import Trigger
 import willie.module as module
 from willie.logger import get_logger
@@ -724,48 +724,6 @@ class Willie(irc.Bot):
                     Identifier(bad_nick) == nick):
                 return True
         return False
-
-    @deprecated_5
-    def debug(self, tag, text, level):
-        """Sends an error to Willie's configured ``debug_target``.
-
-        Args:
-            tag - What the msg will be tagged as. It is recommended to pass
-                __file__ as the tag. If the file exists, a relative path is
-                used as the file. Otherwise the tag is used as it is.
-
-            text - Body of the message.
-
-            level - Either verbose, warning or always. Configuration option
-                config.verbose which levels are ignored.
-
-        Returns: True if message was sent.
-
-        """
-        if not self.config.core.verbose:
-            self.config.core.verbose = 'warning'
-        if not self.config.core.debug_target:
-            self.config.core.debug_target = 'stdio'
-        debug_target = self.config.core.debug_target
-        verbosity = self.config.core.verbose
-
-        if os.path.exists(tag):
-            tag = os.path.relpath(tag, os.path.dirname(__file__))
-        debug_msg = "[%s] %s" % (tag, text)
-
-        output_on = {
-            'verbose': ['verbose'],
-            'warning': ['verbose', 'warning'],
-            'always': ['verbose', 'warning', 'always'],
-        }
-        if level in output_on and verbosity in output_on[level]:
-            if debug_target == 'stdio':
-                print(debug_msg)
-            else:
-                self.msg(debug_target, debug_msg)
-            return True
-        else:
-            return False
 
     def _shutdown(self):
         stderr(
