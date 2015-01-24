@@ -25,6 +25,7 @@ import asynchat
 import os
 import codecs
 import traceback
+from willie.logger import get_logger
 from willie.tools import stderr, Identifier
 from willie.trigger import PreTrigger, Trigger
 try:
@@ -46,6 +47,7 @@ from datetime import datetime
 if sys.version_info.major >= 3:
     unicode = str
 
+LOGGER = get_logger(__name__)
 
 class Bot(asynchat.async_chat):
     def __init__(self, config):
@@ -381,7 +383,7 @@ class Bot(asynchat.async_chat):
         if pretrigger.event == 'PING':
             self.write(('PONG', pretrigger.args[-1]))
         elif pretrigger.event == 'ERROR':
-            self.debug(__file__, pretrigger.args[-1], 'always')
+            LOGGER.error("ERROR recieved from server: %s", pretrigger.args[-1])
             if self.hasquit:
                 self.close_when_done()
         elif pretrigger.event == '433':
@@ -494,14 +496,14 @@ class Bot(asynchat.async_chat):
                     )
             except Exception as e:
                 stderr("Could not save full traceback!")
-                self.debug(__file__, "(From: " + trigger.sender + "), can't save traceback: " + str(e), 'always')
+                LOGGER.error("Could not save traceback from %s to file: %s", trigger.sender, str(e))
 
             if trigger:
                 self.msg(trigger.sender, signature)
         except Exception as e:
             if trigger:
                 self.msg(trigger.sender, "Got an error.")
-                self.debug(__file__, "(From: " + trigger.sender + ") " + str(e), 'always')
+                LOGGER.error("Exception from %s: %s", trigger.sender, str(e))
 
     def handle_error(self):
         """Handle any uncaptured error in the core.
@@ -511,11 +513,7 @@ class Bot(asynchat.async_chat):
         """
         trace = traceback.format_exc()
         stderr(trace)
-        self.debug(
-            __file__,
-            'Fatal error in core, please review exception log',
-            'always'
-        )
+        LOGGER.error('Fatal error in core, please review exception log')
         # TODO: make not hardcoded
         logfile = codecs.open(
             os.path.join(self.config.logdir, 'exceptions.log'),
