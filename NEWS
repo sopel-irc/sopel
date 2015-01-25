@@ -1,5 +1,5 @@
-Changes between 4.6.2 and 5.0.0 (as of 2014-01-12)
-==================================================
+Changes between 4.6.2 and 5.0.0
+===============================
 This release contains backwards-incompatible changes. See
 http://willie.dftba.net/willie_5.html for more information.
 
@@ -11,6 +11,7 @@ Core changes (for users):
 * WillieDB is entirely rewritten, meaning migration will be needed to access old data
 * Logging output to the debug channel is improved
 * The name of the NickServ user can be configured with nickserv_name in [core]
+* SSL is disabled on Python 2.7 when backports.ssl_match_hostname is not installed
 
 API changes (for developers):
 * Deprecated WillieDB functions are removed
