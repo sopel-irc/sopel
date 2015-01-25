@@ -28,9 +28,6 @@ echo "Building package and uploading to PyPI..."
 ./setup.py sdist upload --sign
 rm ~/.pypirc
 
-echo "Updating download file on willie.dftba.net..."
-ssh $server_user@willie.dftba.net "cd /var/www/willie/files; wget -O willie-$version.tar.gz https://github.com/embolalia/willie/archive/$version.tar.gz"
-
 echo "Building docs..."
 cd docs
 make html
