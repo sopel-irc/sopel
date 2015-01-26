@@ -49,6 +49,7 @@ if sys.version_info.major >= 3:
 
 LOGGER = get_logger(__name__)
 
+
 class Bot(asynchat.async_chat):
     def __init__(self, config):
         ca_certs = '/etc/pki/tls/cert.pem'
