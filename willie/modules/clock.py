@@ -42,7 +42,7 @@ def f_time(bot, trigger):
     bot.say(time)
 
 
-@commands('settz')
+@commands('settz', 'settimezone')
 @example('.settz America/New_York')
 def update_user(bot, trigger):
     """
@@ -70,6 +70,28 @@ def update_user(bot, trigger):
             bot.reply('I now have you in the %s time zone.' % tz)
 
 
+@commands('gettz', 'gettimezone')
+@example('.gettz [nick]')
+def get_user_tz(bot, trigger):
+    """
+    Gets a user's preferred time zone, will show yours if no user specified
+    """
+    if not pytz:
+        bot.reply("Sorry, I don't have timezone support installed.")
+    else:
+        nick = trigger.group(2)
+        if not nick:
+            nick = trigger.nick
+
+        nick = nick.strip()
+
+        tz = bot.db.get_nick_value(nick, 'timezone')
+        if tz:
+            bot.say('%s\'s time zone is %s.' % (nick, tz))
+        else:
+            bot.say('%s has not set their time zone' % nick)
+
+
 @commands('settimeformat', 'settf')
 @example('.settf %FT%T%z')
 def update_user_format(bot, trigger):
@@ -81,6 +103,7 @@ def update_user_format(bot, trigger):
     if not tformat:
         bot.reply("What format do you want me to use? Try using"
                   " http://strftime.net to make one.")
+        return
 
     tz = get_timezone(bot.db, bot.config, None, trigger.nick, trigger.sender)
 
@@ -103,8 +126,29 @@ def update_user_format(bot, trigger):
               % timef)
 
 
-@commands('channeltz')
-@example('.chantz America/New_York')
+@commands('gettimeformat', 'gettf')
+@example('.gettf [nick]')
+def get_user_format(bot, trigger):
+    """
+    Gets a user's preferred time format, will show yours if no user specified
+    """
+    nick = trigger.group(2)
+    if not nick:
+        nick = trigger.nick
+
+    nick = nick.strip()
+
+    # Get old format as back-up
+    format = bot.db.get_nick_value(nick, 'time_format')
+
+    if format:
+        bot.say("%s's time format: %s." % (nick, format))
+    else:
+        bot.say("%s hasn't set a custom time format" % nick)
+
+
+@commands('setchanneltz', 'setctz')
+@example('.setctz America/New_York')
 def update_channel(bot, trigger):
     """
     Set the preferred time zone for the channel.
@@ -133,8 +177,31 @@ def update_channel(bot, trigger):
                 'I now have {} in the {} time zone.'.format(trigger.sender, tz))
 
 
+@commands('getchanneltz', 'getctz')
+@example('.getctz [channel]')
+def get_channel_tz(bot, trigger):
+    """
+    Gets the preferred channel timezone, or the current channel timezone if no
+    channel given.
+    """
+    if not pytz:
+        bot.reply("Sorry, I don't have timezone support installed.")
+    else:
+        channel = trigger.group(2)
+        if not channel:
+            channel = trigger.sender
+
+        channel = channel.strip()
+
+        timezone = bot.db.get_channel_value(channel, 'timezone')
+        if timezone:
+            bot.say('%s\'s timezone: %s' % (channel, timezone))
+        else:
+            bot.say('%s has no preferred timezone' % channel)
+
+
 @commands('setchanneltimeformat', 'setctf')
-@example('setctf %FT%T%z')
+@example('.setctf %FT%T%z')
 def update_channel_format(bot, trigger):
     """
     Sets your preferred format for time. Uses the standard strftime format. You
@@ -160,3 +227,24 @@ def update_channel_format(bot, trigger):
               "unless a user has their own format set. (If the timezone"
               " is wrong, you might try the settz and channeltz "
               "commands)" % timef)
+
+
+@commands('getchanneltimeformat', 'getctf')
+@example('.getctf [channel]')
+def get_channel_format(bot, trigger):
+    """
+    Gets the channel's preferred time format, will return current channel's if
+    no channel name is given
+    """
+
+    channel = trigger.group(2)
+    if not channel:
+        channel = trigger.sender
+
+    channel = channel.strip()
+
+    tformat = bot.db.get_channel_value(channel, 'time_format')
+    if tformat:
+        bot.say('%s\'s time format: %s' % (channel, tformat))
+    else:
+        bot.say('%s has no preferred time format' % channel)
