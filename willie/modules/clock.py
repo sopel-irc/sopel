@@ -82,7 +82,7 @@ def update_user_format(bot, trigger):
         bot.reply("What format do you want me to use? Try using"
                   " http://strftime.net to make one.")
 
-    tz = get_timezone(bot.db, bot.config, None, None, trigger.sender)
+    tz = get_timezone(bot.db, bot.config, None, trigger.nick, trigger.sender)
 
     # Get old format as back-up
     old_format = bot.db.get_nick_value(trigger.nick, 'time_format')
