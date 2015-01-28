@@ -11,10 +11,8 @@ from __future__ import unicode_literals
 
 import time
 import datetime
-from willie.tools import Ddict, Identifier, get_timezone, format_time
+from willie.tools import Identifier, get_timezone, format_time
 from willie.module import commands, rule, priority
-
-seen_dict = Ddict(dict)
 
 
 @commands('seen')
@@ -23,11 +21,11 @@ def seen(bot, trigger):
     if not trigger.group(2):
         bot.say(".seen <nick> - Reports when <nick> was last seen.")
         return
-    nick = Identifier(trigger.group(2).strip())
-    if nick in seen_dict:
-        timestamp = seen_dict[nick]['timestamp']
-        channel = seen_dict[nick]['channel']
-        message = seen_dict[nick]['message']
+    nick = trigger.group(2).strip()
+    timestamp = bot.db.get_nick_value(nick, 'seen_timestamp')
+    if timestamp:
+        channel = bot.db.get_nick_value(nick, 'seen_channel')
+        message = bot.db.get_nick_value(nick, 'seen_message')
 
         tz = get_timezone(bot.db, bot.config, None, trigger.nick,
                           trigger.sender)
@@ -42,14 +40,13 @@ def seen(bot, trigger):
             msg += " in another channel."
         bot.say(str(trigger.nick) + ': ' + msg)
     else:
-        bot.say("Sorry, I haven't seen %s around." % nick)
+        bot.say("Sorry, I haven't seen {} around.".format(nick))
 
 
 @rule('(.*)')
 @priority('low')
 def note(bot, trigger):
     if not trigger.is_privmsg:
-        nick = Identifier(trigger.nick)
-        seen_dict[nick]['timestamp'] = time.time()
-        seen_dict[nick]['channel'] = trigger.sender
-        seen_dict[nick]['message'] = trigger
+        bot.db.set_nick_value(trigger.nick, 'seen_timestamp', time.time())
+        bot.db.set_nick_value(trigger.nick, 'seen_channel', trigger.sender)
+        bot.db.set_nick_value(trigger.nick, 'seen_message', trigger)
