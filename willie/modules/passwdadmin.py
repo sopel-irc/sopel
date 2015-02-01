@@ -8,6 +8,7 @@ then ops/voices that user in that channel.
 import willie
 import time
 import re
+from __future__ import unicode_literals
 
 # the list key is channel, the value is the key for that channel.
 OPLIST = None
