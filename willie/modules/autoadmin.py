@@ -5,9 +5,9 @@ Security hole: if the users in the whitelist aren't
 protected by a nickserv, someone malicious could take your chat room
 """
 
+from __future__ import unicode_literals
 import willie
 import time
-from __future__ import unicode_literals
 
 # the whitelist is a hash of arrays
 # the key for the hash is the room, the array is the whitelist of users
