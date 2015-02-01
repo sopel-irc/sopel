@@ -14,26 +14,31 @@ import time
 OPWHITELIST = None
 VOICEWHITELIST = None
 
+
 def configure(config):
-    config.add_option('autoadmin', 'oplist',
+    config.add_option(
+        'autoadmin', 'oplist',
         'Key-value pairs of users to op. Format"#channel:nick,'
         'otherchan:othernick", '
         'To op in all rooms do ALL:nick.', default="")
-    config.add_option('autoadmin', 'voicelist',
+    config.add_option(
+        'autoadmin', 'voicelist',
         'Key-value pairs of users to give voice to. Format "channel:nick, '
         'To give voice in all rooms do ALL:nick.', default="")
+
 
 def create_list(oplist, whitelist):
     if len(oplist) > 0:
         parts = oplist.split(',')
         for p in parts:
-            (chan,nick) = p.split(':')
+            (chan, nick) = p.split(':')
             if chan is not None and nick is not None:
                 chan = chan.strip()
                 nick = nick.strip()
                 if chan not in whitelist:
                     whitelist[chan] = []
                 whitelist[chan].append(nick)
+
 
 def do_setup(bot):
     """
@@ -47,6 +52,7 @@ def do_setup(bot):
         create_list(bot.config.autoadmin.oplist, OPWHITELIST)
     if bot.config.autoadmin.voicelist is not None:
         create_list(bot.config.autoadmin.voicelist, VOICEWHITELIST)
+
 
 def checklist(thelist, trigger):
     if trigger.sender in thelist:
@@ -73,13 +79,7 @@ def check_user(bot, trigger):
         time.sleep(2)
         bot.write('Welcome back %s', trigger.nick)
         bot.write(['MODE', trigger.sender, "+o", trigger.nick])
-    elif checklist( VOICEWHITELIST, trigger):
+    elif checklist(VOICEWHITELIST, trigger):
         time.sleep(2)
         bot.write('Welcome back %s', trigger.nick)
         bot.write(['MODE', trigger.sender, "+v", trigger.nick])
-
-# for dev only
-#@willie.module.commands('showlist')
-#def do_showlist(bot,trigger):
-#    bot.say("ops %s"%OPWHITELIST)
-#    bot.say("voices %s"%VOICEWHITELIST)
