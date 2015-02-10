@@ -46,18 +46,20 @@ def configure(config):
         # could ask if user wants to customize message templates,
         # but that seems unnecessary
 
+
 def get_datetime(bot):
     """
     Returns a datetime object of the current time.
     """
     dt = datetime.utcnow()
     if pytz:
-        dt = dt.replace(tzinfo = timezone('UTC'))
+        dt = dt.replace(tzinfo=timezone('UTC'))
         if bot.config.chanlogs.localtime:
             dt = dt.astimezone(timezone(bot.config.clock.tz))
     if not bot.config.chanlogs.microseconds:
         dt = dt.replace(microsecond=0)
     return dt
+
 
 def get_fpath(bot, trigger, channel=None):
     """
