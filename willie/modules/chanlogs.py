@@ -10,6 +10,7 @@ http://willie.dftba.net
 from __future__ import unicode_literals
 import os
 import os.path
+import re
 import threading
 import sys
 from datetime import datetime
@@ -23,6 +24,8 @@ NICK_TPL = "{datetime}  *** {trigger.nick} is now known as {trigger.sender}"
 JOIN_TPL = "{datetime}  *** {trigger.nick} has joined {trigger}"
 PART_TPL = "{datetime}  *** {trigger.nick} has left {trigger}"
 QUIT_TPL = "{datetime}  *** {trigger.nick} has quit IRC"
+# According to Wikipedia
+BAD_CHARS = re.compile(r'[\/?%*:|"<>. ]')
 
 
 def configure(config):
@@ -48,6 +51,7 @@ def get_fpath(bot, trigger, channel=None):
     basedir = os.path.expanduser(bot.config.chanlogs.dir)
     channel = channel or trigger.sender
     channel = channel.lstrip("#")
+    channel = BAD_CHARS.sub('__')
 
     dt = datetime.utcnow()
     if not bot.config.chanlogs.microseconds:
