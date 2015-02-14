@@ -9,7 +9,7 @@ ignore='--ignore=E501,E128,E127'
 # These are rules that are relatively new or have had their definitions tweaked
 # recently, so we'll forgive them until versions of PEP8 in various developers'
 #distros are updated
-ignore=$ignore',E265,E713,E111,E113'
+ignore=$ignore',E265,E713,E111,E113,E402,E731'
 # For now, go through all the checking stages and only die at the end
 exit_code=0
 
