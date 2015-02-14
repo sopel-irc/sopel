@@ -12,7 +12,7 @@ from __future__ import unicode_literals
 
 import re
 from willie import formatting
-from willie.module import commands, priority, OP, HALFOP
+from willie.module import commands, priority, OP, HALFOP, require_privilege
 from willie.tools import Identifier
 
 
@@ -25,14 +25,13 @@ def default_mask(trigger):
     return '{} {} {} {}'.format(welcome, chan, topic_, arg)
 
 
+@require_privilege(OP)
 @commands('op')
 def op(bot, trigger):
     """
     Command to op users in a room. If no nick is given,
     willie will op the nick who sent the command
     """
-    if bot.privileges[trigger.sender][trigger.nick] < OP:
-        return
     if bot.privileges[trigger.sender][bot.nick] < OP:
         return bot.reply("I'm not a channel operator!")
     nick = trigger.group(2)
@@ -42,14 +41,13 @@ def op(bot, trigger):
     bot.write(['MODE', channel, "+o", nick])
 
 
+@require_privilege(OP)
 @commands('deop')
 def deop(bot, trigger):
     """
     Command to deop users in a room. If no nick is given,
     willie will deop the nick who sent the command
     """
-    if bot.privileges[trigger.sender][trigger.nick] < OP:
-        return
     if bot.privileges[trigger.sender][bot.nick] < OP:
         return bot.reply("I'm not a channel operator!")
     nick = trigger.group(2)
@@ -59,14 +57,13 @@ def deop(bot, trigger):
     bot.write(['MODE', channel, "-o", nick])
 
 
+@require_privilege(OP)
 @commands('voice')
 def voice(bot, trigger):
     """
     Command to voice users in a room. If no nick is given,
     willie will voice the nick who sent the command
     """
-    if bot.privileges[trigger.sender][trigger.nick] < OP:
-        return
     if bot.privileges[trigger.sender][bot.nick] < HALFOP:
         return bot.reply("I'm not a channel operator!")
     nick = trigger.group(2)
@@ -76,14 +73,13 @@ def voice(bot, trigger):
     bot.write(['MODE', channel, "+v", nick])
 
 
+@require_privilege(OP)
 @commands('devoice')
 def devoice(bot, trigger):
     """
     Command to devoice users in a room. If no nick is given,
     willie will devoice the nick who sent the command
     """
-    if bot.privileges[trigger.sender][trigger.nick] < OP:
-        return
     if bot.privileges[trigger.sender][bot.nick] < HALFOP:
         return bot.reply("I'm not a channel operator!")
     nick = trigger.group(2)
@@ -93,14 +89,13 @@ def devoice(bot, trigger):
     bot.write(['MODE', channel, "-v", nick])
 
 
+@require_privilege(OP)
 @commands('kick')
 @priority('high')
 def kick(bot, trigger):
     """
     Kick a user from the channel.
     """
-    if bot.privileges[trigger.sender][trigger.nick] < OP:
-        return
     if bot.privileges[trigger.sender][bot.nick] < HALFOP:
         return bot.reply("I'm not a channel operator!")
     text = trigger.group().split()
@@ -144,6 +139,7 @@ def configureHostMask(mask):
     return ''
 
 
+@require_privilege(OP)
 @commands('ban')
 @priority('high')
 def ban(bot, trigger):
@@ -151,8 +147,6 @@ def ban(bot, trigger):
     This give admins the ability to ban a user.
     The bot must be a Channel Operator for this command to work.
     """
-    if bot.privileges[trigger.sender][trigger.nick] < OP:
-        return
     if bot.privileges[trigger.sender][bot.nick] < HALFOP:
         return bot.reply("I'm not a channel operator!")
     text = trigger.group().split()
@@ -173,14 +167,13 @@ def ban(bot, trigger):
     bot.write(['MODE', channel, '+b', banmask])
 
 
+@require_privilege(OP)
 @commands('unban')
 def unban(bot, trigger):
     """
     This give admins the ability to unban a user.
     The bot must be a Channel Operator for this command to work.
     """
-    if bot.privileges[trigger.sender][trigger.nick] < OP:
-        return
     if bot.privileges[trigger.sender][bot.nick] < HALFOP:
         return bot.reply("I'm not a channel operator!")
     text = trigger.group().split()
@@ -201,14 +194,13 @@ def unban(bot, trigger):
     bot.write(['MODE', channel, '-b', banmask])
 
 
+@require_privilege(OP)
 @commands('quiet')
 def quiet(bot, trigger):
     """
     This gives admins the ability to quiet a user.
     The bot must be a Channel Operator for this command to work.
     """
-    if bot.privileges[trigger.sender][trigger.nick] < OP:
-        return
     if bot.privileges[trigger.sender][bot.nick] < OP:
         return bot.reply("I'm not a channel operator!")
     text = trigger.group().split()
@@ -229,14 +221,13 @@ def quiet(bot, trigger):
     bot.write(['MODE', channel, '+q', quietmask])
 
 
+@require_privilege(OP)
 @commands('unquiet')
 def unquiet(bot, trigger):
     """
     This gives admins the ability to unquiet a user.
     The bot must be a Channel Operator for this command to work.
     """
-    if bot.privileges[trigger.sender][trigger.nick] < OP:
-        return
     if bot.privileges[trigger.sender][bot.nick] < OP:
         return bot.reply("I'm not a channel operator!")
     text = trigger.group().split()
@@ -257,6 +248,7 @@ def unquiet(bot, trigger):
     bot.write(['MODE', opt, '-q', quietmask])
 
 
+@require_privilege(OP)
 @commands('kickban', 'kb')
 @priority('high')
 def kickban(bot, trigger):
@@ -265,8 +257,6 @@ def kickban(bot, trigger):
     The bot must be a Channel Operator for this command to work.
     .kickban [#chan] user1 user!*@* get out of here
     """
-    if bot.privileges[trigger.sender][trigger.nick] < OP:
-        return
     if bot.privileges[trigger.sender][bot.nick] < HALFOP:
         return bot.reply("I'm not a channel operator!")
     text = trigger.group().split()
@@ -292,6 +282,7 @@ def kickban(bot, trigger):
     bot.write(['KICK', channel, nick, ' :', reason])
 
 
+@require_privilege(OP)
 @commands('topic')
 def topic(bot, trigger):
     """
@@ -299,8 +290,6 @@ def topic(bot, trigger):
     The bot must be a Channel Operator for this command to work.
     """
     purple, green, bold = '\x0306', '\x0310', '\x02'
-    if bot.privileges[trigger.sender][trigger.nick] < OP:
-        return
     if bot.privileges[trigger.sender][bot.nick] < HALFOP:
         return bot.reply("I'm not a channel operator!")
     if not trigger.group(2):
@@ -328,23 +317,21 @@ def topic(bot, trigger):
     bot.write(('TOPIC', channel + ' :' + topic))
 
 
+@require_privilege(OP)
 @commands('tmask')
 def set_mask(bot, trigger):
     """
     Set the mask to use for .topic in the current channel. {} is used to allow
     substituting in chunks of text.
     """
-    if bot.privileges[trigger.sender][trigger.nick] < OP:
-        return
     bot.db.set_channel_value(trigger.sender, 'topic_mask', trigger.group(2))
     bot.say("Gotcha, " + trigger.nick)
 
 
+@require_privilege(OP)
 @commands('showmask')
 def show_mask(bot, trigger):
     """Show the topic mask for the current channel."""
-    if bot.privileges[trigger.sender][trigger.nick] < OP:
-        return
     mask = bot.db.get_channel_value(trigger.sender, 'topic_mask')
     mask = mask or default_mask(trigger)
     bot.say(mask)

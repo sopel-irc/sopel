@@ -25,36 +25,29 @@ def configure(config):
     config.add_option('admin', 'auto_accept_invites', "Auto Accept All Invites")
 
 
+@willie.module.require_privmsg
+@willie.module.require_admin
 @willie.module.commands('join')
 @willie.module.priority('low')
 @willie.module.example('.join #example or .join #example key')
 def join(bot, trigger):
     """Join the specified channel. This is an admin-only command."""
-    # Can only be done in privmsg by an admin
-    if not trigger.is_privmsg:
+    channel, key = trigger.group(3), trigger.group(4)
+    if not channel:
         return
-
-    if trigger.admin:
-        channel, key = trigger.group(3), trigger.group(4)
-        if not channel:
-            return
-        elif not key:
-            bot.join(channel)
-        else:
-            bot.join(channel, key)
+    elif not key:
+        bot.join(channel)
+    else:
+        bot.join(channel, key)
 
 
+@willie.module.require_privmsg
+@willie.module.require_admin
 @willie.module.commands('part')
 @willie.module.priority('low')
 @willie.module.example('.part #example')
 def part(bot, trigger):
     """Part the specified channel. This is an admin-only command."""
-    # Can only be done in privmsg by an admin
-    if not trigger.is_privmsg:
-        return
-    if not trigger.admin:
-        return
-
     channel, _sep, part_msg = trigger.group(2).partition(' ')
     if part_msg:
         bot.part(channel, part_msg)
@@ -62,16 +55,12 @@ def part(bot, trigger):
         bot.part(channel)
 
 
+@willie.module.require_privmsg
+@willie.module.require_owner
 @willie.module.commands('quit')
 @willie.module.priority('low')
 def quit(bot, trigger):
     """Quit from the server. This is an owner-only command."""
-    # Can only be done in privmsg by the owner
-    if not trigger.is_privmsg:
-        return
-    if not trigger.owner:
-        return
-
     quit_message = trigger.group(2)
     if not quit_message:
         quit_message = 'Quitting on command from %s' % trigger.nick
@@ -79,6 +68,8 @@ def quit(bot, trigger):
     bot.quit(quit_message)
 
 
+@willie.module.require_privmsg
+@willie.module.require_admin
 @willie.module.commands('msg')
 @willie.module.priority('low')
 @willie.module.example('.msg #YourPants Does anyone else smell neurotoxin?')
@@ -87,10 +78,6 @@ def msg(bot, trigger):
     Send a message to a given channel or nick. Can only be done in privmsg by an
     admin.
     """
-    if not trigger.is_privmsg:
-        return
-    if not trigger.admin:
-        return
     if trigger.group(2) is None:
         return
 
@@ -102,6 +89,8 @@ def msg(bot, trigger):
     bot.msg(channel, message)
 
 
+@willie.module.require_privmsg
+@willie.module.require_admin
 @willie.module.commands('me')
 @willie.module.priority('low')
 def me(bot, trigger):
@@ -109,10 +98,6 @@ def me(bot, trigger):
     Send an ACTION (/me) to a given channel or nick. Can only be done in privmsg
     by an admin.
     """
-    if not trigger.is_privmsg:
-        return
-    if not trigger.admin:
-        return
     if trigger.group(2) is None:
         return
 
@@ -154,18 +139,18 @@ def hold_ground(bot, trigger):
             bot.join(channel)
 
 
+@willie.module.require_privmsg
+@willie.module.require_admin
 @willie.module.commands('mode')
 @willie.module.priority('low')
 def mode(bot, trigger):
     """Set a user mode on Willie. Can only be done in privmsg by an admin."""
-    if not trigger.is_privmsg:
-        return
-    if not trigger.admin:
-        return
     mode = trigger.group(3)
     bot.write(('MODE ', bot.nick + ' ' + mode))
 
 
+@willie.module.require_privmsg("This command only works as a private message.")
+@willie.module.require_admin("This command requires admin privileges.")
 @willie.module.commands('set')
 @willie.module.example('.set core.owner Me')
 def set_config(bot, trigger):
@@ -178,13 +163,6 @@ def set_config(bot, trigger):
     If there is no section, section will default to "core".
     If value is None, the option will be deleted.
     """
-    if not trigger.is_privmsg:
-        bot.reply("This command only works as a private message.")
-        return
-    if not trigger.admin:
-        bot.reply("This command requires admin priviledges.")
-        return
-
     # Get section and option from first argument.
     arg1 = trigger.group(3).split('.')
     if len(arg1) == 1:
@@ -214,12 +192,10 @@ def set_config(bot, trigger):
     setattr(getattr(bot.config, section), option, value)
 
 
+@willie.module.require_privmsg
+@willie.module.require_admin
 @willie.module.commands('save')
 @willie.module.example('.save')
 def save_config(bot, trigger):
     """Save state of willies config object to the configuration file."""
-    if not trigger.is_privmsg:
-        return
-    if not trigger.admin:
-        return
     bot.config.save()

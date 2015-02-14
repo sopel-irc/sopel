@@ -258,25 +258,113 @@ def rate(value):
     return add_attribute
 
 
-def require_privmsg(function):
+def require_privmsg(message=None):
     """
     Decorator, this allows functions to specify if they should be only
     allowed via private message.
+
+    If it is not, `message` will be said if given.
     """
-    @functools.wraps(function)
-    def _nop(*args, **kwargs):
-        # Assign trigger and bot for easy access later
-        bot, trigger = args[0:2]
-        if trigger.is_privmsg:
-            return function(*args, **kwargs)
-        bot.reply('This command can only be executed via PM \
-                  (Private Message)')
-        return
-    return _nop
+    def actual_decorator(function):
+        @functools.wraps(function)
+        def _nop(*args, **kwargs):
+            # Assign trigger and bot for easy access later
+            bot, trigger = args[0:2]
+            if trigger.is_privmsg:
+                return function(*args, **kwargs)
+            else:
+                if message:
+                    bot.say(message)
+        return _nop
+    # Hack to allow decorator without parens
+    if callable(message):
+        return actual_decorator(message)
+    return actual_decorator
+
+
+def require_chanmsg(message=None):
+    """
+    Decorator, this allows functions to specify if they should be only
+    allowed via channel message.
+
+    If it is not, `message` will be said if given.
+    """
+    def actual_decorator(function):
+        @functools.wraps(function)
+        def _nop(*args, **kwargs):
+            # Assign trigger and bot for easy access later
+            bot, trigger = args[0:2]
+            if trigger.is_privmsg:
+                return function(*args, **kwargs)
+            else:
+                if message:
+                    bot.say(message)
+        return _nop
+    # Hack to allow decorator without parens
+    if callable(message):
+        return actual_decorator(message)
+    return actual_decorator
+
+
+def require_privilege(level, message=None):
+    """Decorator. Require the given channel privilege level to execute the
+    function.
+
+    `level` can be one of the privilege levels defined in this module. If the
+    user does not have the privilege, `message` will be said if given. If it is
+    a private message, no checking will be done."""
+    def actual_decorator(function):
+        @functools.wraps(function)
+        def guarded(bot, trigger, *args, **kwargs):
+            if (not trigger.is_privmsg and
+                    bot.privileges[trigger.sender][trigger.nick] < level):
+                if message:
+                    bot.say(message)
+            else:
+                return function(bot, trigger, *args, **kwargs)
+        return guarded
+    return actual_decorator
+
+
+def require_admin(message=None):
+    """Decorator. Require the user triggering the message to be a bot admin.
+
+    If they are not, `message` will be said if given."""
+    def actual_decorator(function):
+        @functools.wraps(function)
+        def guarded(bot, trigger, *args, **kwargs):
+            if not trigger.admin:
+                if message:
+                    bot.say(message)
+            else:
+                return function(bot, trigger, *args, **kwargs)
+        return guarded
+    # Hack to allow decorator without parens
+    if callable(message):
+        return actual_decorator(message)
+    return actual_decorator
+
+
+def require_owner(message=None):
+    """Decorator. Require the user triggering the message to be the bot owner.
+
+    If they are not, `message` will be said if given."""
+    def actual_decorator(function):
+        @functools.wraps(function)
+        def guarded(bot, trigger, *args, **kwargs):
+            if not trigger.owner:
+                if message:
+                    bot.say(message)
+            else:
+                return function(bot, trigger, *args, **kwargs)
+        return guarded
+    # Hack to allow decorator without parens
+    if callable(message):
+        return actual_decorator(message)
+    return actual_decorator
 
 
 class example(object):
-
     """Decorator. Add an example.
 
     Add an example attribute into a function and generate a test.
