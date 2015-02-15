@@ -376,76 +376,8 @@ The ``Willie`` class
 The ``Trigger`` class
 ---------------------
 
-.. py:class:: Trigger
- 
-    .. py:attribute:: sender
-    
-        The channel (or nick, in a private message) from which the message was
-        sent.
-    
-    .. py:attribute:: nick
-    
-        The nick of the person who sent the message.
-    
-    .. py:attribute:: event
-    
-        The event which triggered the message.
-    
-    .. py:attribute:: bytes
-    
-        The line which triggered the message.
-    
-    .. py:attribute:: match
-    
-        The regular expression `MatchObject`_ for the triggering line.
-
-        .. _MatchObject: http://docs.python.org/library/re.html#match-objects
-        .. _re: http://docs.python.org/library/re.html
-    
-    .. py:attribute:: group
-    
-        The ``group`` function of the ``match`` attribute.
-                
-        See Python `re`_ documentation for details.
-    
-    .. py:attribute:: groups
-    
-        The ``groups`` function of the ``match`` attribute.
-                
-        See Python `re`_ documentation for details.
-    
-    .. py:attribute:: args
-    
-        The arguments given to a command.
-    
-    .. py:attribute:: admin
-    
-        True if the nick which triggered the command is in Willie's admin list as
-        defined in the config file.
-    
-    .. py:attribute:: owner
-    
-        True if the nick which triggered the command is the owner stated in the
-        config file.
-    
-    .. py:attribute:: host
-    
-        The host which sent the triggering message.
-
-    .. py:attribute:: isop
-    
-        *Availability: 3+, deprecated in 4.1.0*
-        
-        True if the nick which triggered the command is an op on the channel it was triggered in.
-        Will always be False if the command was triggered by a private message
-
-    .. py:attribute:: isvoice
-    
-        *Availability: 3+, deprecated in 4.1.0*
-
-        True if the nick which triggered the command is voiced on the channel it was triggered in.
-        Will always be False if the command was triggered by a private message
-        Will be True if user is an op or half-op, even if they don't have +v
+.. autoclass:: willie.trigger.Trigger
+   :members:
 
 More advanced: ``db`` and ``config``
 ====================================
@@ -501,3 +433,4 @@ Indices and tables
 * :ref:`modindex`
 * :ref:`search`
 
+.. _re: https://docs.python.org/2/library/re.html

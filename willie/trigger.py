@@ -102,16 +102,17 @@ class Trigger(unicode):
     """The IRC event (e.g. ``PRIVMSG`` or ``MODE``) which triggered the
     message."""
     match = property(lambda self: self._match)
-    """The regular expression ``MatchObject_`` for the triggering line.
+    """The regular expression `MatchObject`_ for the triggering line.
+
     .. _MatchObject: http://docs.python.org/library/re.html#match-objects"""
     group = property(lambda self: self._match.group)
     """The ``group`` function of the ``match`` attribute.
 
-    See Python ``re_`` documentation for details."""
+    See Python `re`_ documentation for details."""
     groups = property(lambda self: self._match.groups)
     """The ``groups`` function of the ``match`` attribute.
 
-    See Python ``re_`` documentation for details."""
+    See Python `re`_ documentation for details."""
     args = property(lambda self: self._pretrigger.args)
     """
     A tuple containing each of the arguments to an event. These are the
