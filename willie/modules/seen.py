@@ -43,6 +43,7 @@ def seen(bot, trigger):
         bot.say("Sorry, I haven't seen {} around.".format(nick))
 
 
+@thread(False)
 @rule('(.*)')
 @priority('low')
 def note(bot, trigger):
