@@ -483,6 +483,10 @@ class Willie(irc.Bot):
                         # The new format is a list of dicts.
                         example = func.example[0]["example"]
                     example = example.replace('$nickname', str(self.nick))
+                    help_prefix = (self.config.core.help_prefix 
+                                   or self.config.core.prefix.strip('\\'))
+                    if example[0] != help_prefix:
+                        example = help_prefix + example[len(help_prefix):]
                 if doc or example:
                     for command in func.commands:
                         self.doc[command] = (doc, example)
