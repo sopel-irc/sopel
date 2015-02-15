@@ -355,8 +355,8 @@ class Config(object):
         modules = {}
 
         # First, add modules from the regular modules directory
-        this_dir = os.path.dirname(os.path.abspath(__file__))
-        modules_dir = os.path.join(this_dir, 'modules')
+        main_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        modules_dir = os.path.join(main_dir, 'modules')
         for fn in os.listdir(modules_dir):
             if fn.endswith('.py') and not fn.startswith('_'):
                 modules[fn[:-3]] = os.path.join(modules_dir, fn)
