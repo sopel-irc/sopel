@@ -12,7 +12,7 @@ from __future__ import unicode_literals
 import time
 import datetime
 from willie.tools import Identifier, get_timezone, format_time
-from willie.module import commands, rule, priority
+from willie.module import commands, rule, priority, thread
 
 
 @commands('seen')
