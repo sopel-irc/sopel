@@ -81,54 +81,57 @@ class Trigger(unicode):
     with `'\\x01'`) will have the `'\\x01'` bytes stripped, and the command
     (e.g. `ACTION`) placed mapped to the `'intent'` key in `Trigger.tags`.
     """
+    sender = property(lambda self: self._pretrigger.sender)
+    """The channel from which the message was sent.
+
+    In a private message, this is the nick that sent the message."""
+    raw = property(lambda self: self._pretrigger.line)
+    """The entire message, as sent from the server. This includes the CTCP
+    \\x01 bytes and command, if they were included."""
+    is_privmsg = property(lambda self: self._is_privmsg)
+    """True if the trigger is from a user, False if it's from a channel."""
+    hostmask = property(lambda self: self._pretrigger.hostmask)
+    """Hostmask of the person who sent the message as <nick>!<user>@<host>"""
+    user = property(lambda self: self._pretrigger.user)
+    """Local username of the person who sent the message"""
+    nick = property(lambda self: self._pretrigger.nick)
+    """The ``Identifier`` of the person who sent the message."""
+    host = property(lambda self: self._pretrigger.host)
+    """The hostname of the person who sent the message"""
+    event = property(lambda self: self._pretrigger.event)
+    """The IRC event (e.g. ``PRIVMSG`` or ``MODE``) which triggered the
+    message."""
+    match = property(lambda self: self._match)
+    """The regular expression ``MatchObject_`` for the triggering line.
+    .. _MatchObject: http://docs.python.org/library/re.html#match-objects"""
+    group = property(lambda self: self._match.group)
+    """The ``group`` function of the ``match`` attribute.
+
+    See Python ``re_`` documentation for details."""
+    groups = property(lambda self: self._match.groups)
+    """The ``groups`` function of the ``match`` attribute.
+
+    See Python ``re_`` documentation for details."""
+    args = property(lambda self: self._pretrigger.args)
+    """
+    A tuple containing each of the arguments to an event. These are the
+    strings passed between the event name and the colon. For example,
+    setting ``mode -m`` on the channel ``#example``, args would be
+    ``('#example', '-m')``
+    """
+    tags = property(lambda self: self._pretrigger.tags)
+    """A map of the IRCv3 message tags on the message."""
+    admin = property(lambda self: self._admin)
+    """True if the nick which triggered the command is one of the bot's admins.
+    """
+    owner = property(lambda self: self._owner)
+    """True if the nick which triggered the command is the bot's owner."""
+
     def __new__(cls, config, message, match):
         self = unicode.__new__(cls, message.args[-1])
-        self.sender = message.sender
-        # TODO docstring for sender
-        self.raw = message.line
-        """The entire message, as sent from the server. This includes the CTCP
-        \\x01 bytes and command, if they were included."""
-
-        self.is_privmsg = message.sender.is_nick()
-        """True if the trigger is from a user, False if it's from a channel."""
-
-        self.hostmask = message.hostmask
-        """
-        Hostmask of the person who sent the message in the form
-        <nick>!<user>@<host>
-        """
-        self.user = message.user
-        """Local username of the person who sent the message"""
-        self.nick = message.nick
-        """The ``Identifier`` of the person who sent the message."""
-        self.host = message.host
-        """The hostname of the person who sent the message"""
-        self.event = message.event
-        """
-        The IRC event (e.g. ``PRIVMSG`` or ``MODE``) which triggered the
-        message."""
-        self.match = match
-        """
-        The regular expression ``MatchObject_`` for the triggering line.
-        .. _MatchObject: http://docs.python.org/library/re.html#match-objects
-        """
-        self.group = match.group
-        """The ``group`` function of the ``match`` attribute.
-
-        See Python ``re_`` documentation for details."""
-        self.groups = match.groups
-        """The ``groups`` function of the ``match`` attribute.
-
-        See Python ``re_`` documentation for details."""
-        self.args = message.args
-        """
-        A tuple containing each of the arguments to an event. These are the
-        strings passed between the event name and the colon. For example,
-        setting ``mode -m`` on the channel ``#example``, args would be
-        ``('#example', '-m')``
-        """
-        self.tags = message.tags
-        """A map of the IRCv3 message tags on the message."""
+        self._pretrigger = message
+        self._match = match
+        self._is_privmsg = message.sender.is_nick()
 
         def match_host_or_nick(pattern):
             pattern = willie.tools.get_hostmask_regex(pattern)
@@ -137,13 +140,9 @@ class Trigger(unicode):
                 pattern.match('@'.join((self.nick, self.host)))
             )
 
-        self.admin = any(match_host_or_nick(item)
+        self._admin = any(match_host_or_nick(item)
                          for item in config.core.get_list('admins'))
-        """
-        True if the nick which triggered the command is one of the bot's admins.
-        """
-        self.owner = match_host_or_nick(config.core.owner)
-        """True if the nick which triggered the command is the bot's owner."""
-        self.admin = self.admin or self.owner
+        self._owner = match_host_or_nick(config.core.owner)
+        self._admin = self.admin or self.owner
 
         return self
