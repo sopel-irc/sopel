@@ -307,8 +307,8 @@ def require_chanmsg(message=None):
 
 
 def require_privilege(level, message=None):
-    """Decorator. Require the given channel privilege level to execute the
-    function.
+    """Decorator. Require at lesat the given channel privilege level to execute
+    the function.
 
     `level` can be one of the privilege levels defined in this module. If the
     user does not have the privilege, `message` will be said if given. If it is
@@ -316,8 +316,9 @@ def require_privilege(level, message=None):
     def actual_decorator(function):
         @functools.wraps(function)
         def guarded(bot, trigger, *args, **kwargs):
-            if (not trigger.is_privmsg and
-                    bot.privileges[trigger.sender][trigger.nick] < level):
+            channel_privs = bot.privileges[trigger.sender]
+            allowed = channel_privs.get(trigger.nick, 0) >= level
+            if not trigger.is_privmsg and not allowed:
                 if message:
                     bot.say(message)
             else:
