@@ -20,9 +20,10 @@ def configure(config):
     | [admin] | example | purpose |
     | -------- | ------- | ------- |
     | hold_ground | False | Auto re-join on kick |
+    | auto_accept_invite | False | Auto accept invites from non-admin users |
     """
     config.add_option('admin', 'hold_ground', "Auto re-join on kick")
-    config.add_option('admin', 'auto_accept_invites', "Auto Accept All Invites")
+    config.add_option('admin', 'auto_accept_invite', "Auto Accept All Invites")
 
 
 @willie.module.require_privmsg
