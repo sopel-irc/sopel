@@ -45,6 +45,7 @@ def f_reload(bot, trigger):
         if bot.is_callable(obj) or bot.is_shutdown(obj):
             old_callables[obj_name] = obj
 
+    bot.unregister_help(old_module)
     bot.unregister(old_callables)
     # Also remove all references to willie callables from top level of the
     # module, so that they will not get loaded again if reloading the
@@ -72,6 +73,7 @@ def f_reload(bot, trigger):
     modified = time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime(mtime))
 
     bot.register(vars(module))
+    bot.register_help(module)
     bot.bind_commands()
 
     bot.reply('%r (version: %s)' % (module, modified))
@@ -120,6 +122,7 @@ def f_load(bot, trigger):
     if hasattr(module, 'setup'):
         module.setup(bot)
     bot.register(vars(module))
+    bot.register_help(module)
     bot.bind_commands()
 
     bot.reply('%r (version: %s)' % (module, modified))
