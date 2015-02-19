@@ -2,14 +2,19 @@
 # coding=utf8
 from __future__ import unicode_literals
 
-from distutils.core import setup
+try:
+    from setuptools import setup
+    python_packaging = 'crap'
+except ImportError:
+    from distutils.core import setup
+    python_packaging = 'shit'
 from willie import __version__
 import tempfile
 import sys
 import os
 import shutil
 
-requires = ['feedparser', 'pytz', 'lxml', 'praw', 'enchant', 'pygeoip']
+requires = ['feedparser', 'pytz', 'lxml', 'praw', 'pyenchant', 'pygeoip']
 if sys.version_info.major < 3:
     requires.append('backports.ssl_match_hostname')
 
@@ -22,7 +27,7 @@ def do_setup():
         tmp_main_script = os.path.join(tmp_dir, 'willie')
         shutil.copy('willie.py', tmp_main_script)
 
-        setup(
+        setup_args = dict(
             name='willie',
             version=__version__,
             description='Simple and extendible IRC bot',
@@ -38,6 +43,10 @@ def do_setup():
             platforms='Linux x86, x86-64',
             requires=requires
         )
+        if python_packaging == 'crap':
+            pass
+            setup_args['install_requires'] = requires
+        setup(**setup_args)
     finally:
         try:
             shutil.rmtree(tmp_dir)
