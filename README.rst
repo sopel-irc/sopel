@@ -1,4 +1,4 @@
-Introduction |status| |version| |downloads| |license| |issues| |forks| |stars| |followers| |badges|
+Introduction |status| |version| |downloads| |license| |issues| |forks| |stars| |ages| |works| |badges|
 ---------------------------------------------
 
 Willie is a simple, lightweight, open source, easy-to-use IRC Utility bot,
@@ -59,7 +59,7 @@ Questions?
 
 Join us in `#willie <irc://irc.freenode.net/#willie>`_ on Freenode.
 
-.. |build-status| image:: https://travis-ci.org/embolalia/willie.svg
+.. |status| image:: https://travis-ci.org/embolalia/willie.svg
    :target: https://travis-ci.org/embolalia/willie
 .. |coverage-status| image:: https://coveralls.io/repos/embolalia/willie/badge.png
    :target: https://coveralls.io/r/embolalia/willie
@@ -69,16 +69,12 @@ Join us in `#willie <irc://irc.freenode.net/#willie>`_ on Freenode.
    :target: https://pypi.python.org/pypi/willie/5.0.0
 .. |license| image:: https://img.shields.io/pypi/l/willie.svg
    :target: https://github.com/embolalia/willie/blob/master/COPYING
-.. |issues| image:: https://img.shields.io/github/issues/badges/willie.svg
+.. |issues| image:: https://img.shields.io/github/issues/embolalia/willie.svg
    :target: https://github.com/embolalia/willie/issues
-.. |forks| image:: https://img.shields.io/github/forks/badges/willie.svg
+.. |forks| image:: https://img.shields.io/github/forks/embolalia/willie.svg
    :target: https://github.com/embolalia/willie/network
-.. |stars| image:: https://img.shields.io/github/stars/badges/willie.svg
+.. |stars| image:: https://img.shields.io/github/stars/embolalia/willie.svg
    :target: https://github.com/embolalia/willie/stargazers
-.. |followers| image:: https://img.shields.io/github/followers/badges/willie.svg
-   :target: https://github.com/embolalia/willie/watchers
 .. |ages| image:: https://img.shields.io/badge/ages-12%2B-green.svg
 .. |works| image:: https://img.shields.io/badge/works-usually-yellow.svg
-.. |badges| image:: https://img.shields.io/badge/badges-11-green.svg
-
-Introduction |status| |version| |downloads| |license| |issues| |forks| |stars| |followers| |badges|
+.. |badges| image:: https://img.shields.io/badge/badges-10-green.svg
