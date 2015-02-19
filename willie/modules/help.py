@@ -12,6 +12,8 @@ from __future__ import unicode_literals
 from willie.module import commands, rule, example, priority
 from willie.tools import iterkeys
 
+import textwrap
+
 
 def setup(bot=None):
     if not bot:
@@ -30,7 +32,26 @@ def setup(bot=None):
 def help(bot, trigger):
     """Shows a command's documentation, and possibly an example."""
     if not trigger.group(2):
-        bot.reply('Say .help <command> (for example .help c) to get help for a command, or .commands for a list of commands.')
+        if not trigger.is_privmsg:
+            bot.reply("Sending my resume in private...")
+
+        bot.notice("Send e.g. '.help length' for more.", trigger.nick)
+
+        groups = bot.modules_commands
+        name_length = max(6, max(len(k) for k in groups))
+        for name in sorted(groups):
+            group = groups[name]
+            # set the name column to a constant width
+            name = name.upper().ljust(name_length)
+            # bolden the name
+            group_help = "\002" + name + "\002  " + "  ".join(group)
+            # wrap message with indent for name column
+            indent = " " * name_length + "  "
+            group_help = textwrap.wrap(group_help, subsequent_indent=indent)
+            # send it
+            for line in group_help:
+                bot.notice(line, trigger.nick)
+
     else:
         name = trigger.group(2)
         name = name.lower()
