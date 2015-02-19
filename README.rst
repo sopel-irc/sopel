@@ -57,9 +57,7 @@ information including a full listing of
 Questions?
 ----------
 
-Contact us on irc.dftba.net channel #tech
-
-For a list of contributions to the Jenni fork see the file ``CREDITS``.
+Join us in [#willie](irc://irc.freenode.net/#willie) on Freenode.
 
 .. |build-status| image:: https://travis-ci.org/embolalia/willie.svg
    :target: https://travis-ci.org/embolalia/willie
