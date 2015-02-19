@@ -1,5 +1,7 @@
-Introduction |status| |version| |downloads| |license| |issues| |forks| |stars| |ages| |works| |badges|
----------------------------------------------
+|status| |version| |downloads| |license| |issues| |forks| |stars| |ages| |works| |badges|
+
+Introduction
+------------
 
 Willie is a simple, lightweight, open source, easy-to-use IRC Utility bot,
 written in Python. It's designed to be easy to use, run and extend.
