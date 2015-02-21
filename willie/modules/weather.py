@@ -132,7 +132,7 @@ def weather(bot, trigger):
                            'Give me a location, like .weather London, or tell me where you live by saying .setlocation London, for example.')
     else:
         location = location.strip()
-        woeid = bot.db.get_channel_value(location, 'woeid')
+        woeid = bot.db.get_nick_value(location, 'woeid')
         if woeid is None:
             first_result = woeid_search(location)
             if first_result is not None:
