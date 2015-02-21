@@ -1,4 +1,4 @@
-Changes between 5.0.0 and 5.1.0
+Changes between 5.0.0 and 5.1.1
 ===============================
 Module changes (for users):
 * Fixed a regression that caused getting weather for a nick to fail
