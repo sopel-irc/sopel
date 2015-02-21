@@ -1,3 +1,21 @@
+Changes between 5.0.0 and 5.1.0
+===============================
+Module changes (for users):
+* Fixed a regression that caused getting weather for a nick to fail
+* Bugs related to channel log filenames are fixed
+* Channel logs can now use the bot's preferred time zone
+* Getter and setter methods for timezone and format are more consistently named
+* .seen persists across bot restarts
+* .seen no longer shows message or channel unless used within the same channel
+* Special characters in Wikipedia URLs are handled correctly
+
+Core changes (for users):
+* help_prefix can now be given in [core] to change the command prefix used in help
+
+API changes (for developers):
+* The Trigger object is now immutable, as expected
+* New decorators for checking privileges on callables are added
+
 Changes between 4.6.2 and 5.0.0
 ===============================
 This release contains backwards-incompatible changes. See
