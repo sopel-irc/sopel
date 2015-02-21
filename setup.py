@@ -44,7 +44,6 @@ def do_setup():
             requires=requires
         )
         if python_packaging == 'crap':
-            pass
             setup_args['install_requires'] = requires
         setup(**setup_args)
     finally:
