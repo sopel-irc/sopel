@@ -334,73 +334,24 @@ class Config(object):
                     module.configure(self)
         self.save()
 
-    def enumerate_modules(self, show_all=False):
-        """Map the names of modules to the location of their file.
+    enumerate_modules = willie.loader.enumerate_modules
+    """Map the names of modules to the location of their file.
 
-        *Availability: 4.0+*
+    *Availability: 4.0+*
 
-        Return a dict mapping the names of modules to the location of their
-        file.  This searches the regular modules directory and all directories
-        specified in the `core.extra` attribute of the `config` object. If two
-        modules have the same name, the last one to be found will be returned
-        and the rest will be ignored. Modules are found starting in the regular
-        directory, followed by `~/.willie/modules`, and then through the extra
-        directories in the order that the are specified.
+    Return a dict mapping the names of modules to the location of their
+    file.  This searches the regular modules directory and all directories
+    specified in the `core.extra` attribute of the `config` object. If two
+    modules have the same name, the last one to be found will be returned
+    and the rest will be ignored. Modules are found starting in the regular
+    directory, followed by `~/.willie/modules`, and then through the extra
+    directories in the order that the are specified.
 
-        If `show_all` is given as `True`, the `enable` and `exclude`
-        configuration options will be ignored, and all modules will be shown
-        (though duplicates will still be ignored as above).
+    If `show_all` is given as `True`, the `enable` and `exclude`
+    configuration options will be ignored, and all modules will be shown
+    (though duplicates will still be ignored as above).
 
-        """
-        modules = {}
-
-        # First, add modules from the regular modules directory
-        main_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        modules_dir = os.path.join(main_dir, 'modules')
-        for fn in os.listdir(modules_dir):
-            if fn.endswith('.py') and not fn.startswith('_'):
-                modules[fn[:-3]] = os.path.join(modules_dir, fn)
-        # Next, look in ~/.willie/modules
-        if self.core.homedir is not None:
-            home_modules_dir = os.path.join(self.core.homedir, 'modules')
-        else:
-            home_modules_dir = os.path.join(os.path.expanduser('~'), '.willie',
-                                            'modules')
-        if not os.path.isdir(home_modules_dir):
-            os.makedirs(home_modules_dir)
-        for fn in os.listdir(home_modules_dir):
-            if fn.endswith('.py') and not fn.startswith('_'):
-                modules[fn[:-3]] = os.path.join(home_modules_dir, fn)
-
-        # Last, look at all the extra directories. (get_list returns [] if
-        # there are none or the option isn't defined, so it'll just skip this
-        # bit)
-        for directory in self.core.get_list('extra'):
-            for fn in os.listdir(directory):
-                if fn.endswith('.py') and not fn.startswith('_'):
-                    modules[fn[:-3]] = os.path.join(directory, fn)
-
-        # If caller wants all of them, don't apply white and blacklists
-        if show_all:
-            return modules
-
-        # Apply whitelist, if present
-        enable = self.core.get_list('enable')
-        if enable:
-            enabled_modules = {}
-            for module in enable:
-                if module in modules:
-                    enabled_modules[module] = modules[module]
-            modules = enabled_modules
-
-        # Apply blacklist, if present
-        exclude = self.core.get_list('exclude')
-        for module in exclude:
-            if module in modules:
-                del modules[module]
-
-        return modules
-
+    """
 
 def wizard(section, config=None):
     dotdir = os.path.expanduser('~/.willie')

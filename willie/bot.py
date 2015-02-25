@@ -13,13 +13,14 @@ from __future__ import unicode_literals
 from __future__ import print_function
 from __future__ import absolute_import
 
-import time
+import collections
 import imp
 import os
 import re
-import sys
 import socket
+import sys
 import threading
+import time
 
 from datetime import datetime
 from willie import tools
@@ -30,6 +31,7 @@ from willie.tools import (stderr, PriorityQueue, Identifier, released, get_comma
 from willie.trigger import Trigger
 import willie.module as module
 from willie.logger import get_logger
+import willie.loader
 
 
 LOGGER = get_logger(__name__)
@@ -47,6 +49,14 @@ class Willie(irc.Bot):
 
     def __init__(self, config):
         irc.Bot.__init__(self, config.core)
+        # `re.compile('.*') is re.compile('.*')` because of caching, so we need
+        # to associate a list with each regex, since they are unexpectedly
+        # indistinct.
+        self._callables = {
+            'high': collections.defaultdict(list),
+            'medium': collections.defaultdict(list),
+            'low': collections.defaultdict(list)
+        }
         self.config = config
         """The ``Config`` for the current Willie instance."""
         self.doc = {}
@@ -106,14 +116,6 @@ class Willie(irc.Bot):
             self.config.core.nick_blocks = []
         if not self.config.core.nick_blocks:
             self.config.core.host_blocks = []
-        #Add nicks blocked under old scheme, if present
-        if self.config.core.other_bots:
-            nicks = self.config.core.get_list('nick_blocks')
-            bots = self.config.core.get_list('other_bots')
-            nicks.extend(bots)
-            self.config.core.nick_blocks = nicks
-            self.config.core.other_bots = False
-            self.config.save()
 
         self.setup()
 
@@ -303,19 +305,16 @@ class Willie(irc.Bot):
 
     def setup(self):
         stderr("\nWelcome to Willie. Loading modules...\n\n")
-        self.callables = set()
-        self.shutdown_methods = set()
 
-        filenames = self.config.enumerate_modules()
-        # Coretasks is special. No custom user coretasks.
-        this_dir = os.path.dirname(os.path.abspath(__file__))
-        filenames['coretasks'] = os.path.join(this_dir, 'coretasks.py')
+        modules = willie.loader.enumerate_modules(self.config)
 
-        modules = []
         error_count = 0
-        for name, filename in iteritems(filenames):
+        success_count = 0
+        for name in modules:
+            path, type_ = modules[name]
+
             try:
-                module = imp.load_source(name, filename)
+                module, _ = willie.loader.load_module(name, path, type_)
             except Exception as e:
                 error_count = error_count + 1
                 filename, lineno = tools.get_raising_file_and_line()
@@ -326,8 +325,8 @@ class Willie(irc.Bot):
                 try:
                     if hasattr(module, 'setup'):
                         module.setup(self)
-                    self.register(vars(module))
-                    modules.append(name)
+                    relevant_parts = willie.loader.clean_module(
+                        module, self.config)
                 except Exception as e:
                     error_count = error_count + 1
                     filename, lineno = tools.get_raising_file_and_line()
@@ -337,237 +336,23 @@ class Willie(irc.Bot):
                     raising_stmt = "%s:%d" % (rel_path, lineno)
                     stderr("Error in %s setup procedure: %s (%s)"
                            % (name, e, raising_stmt))
+                else:
+                    self.register(*relevant_parts)
+                    success_count += 1
 
         if modules:
-            stderr('\n\nRegistered %d modules,' % (len(modules) - 1))
+            stderr('\n\nRegistered %d modules,' % (success_count - 1))
             stderr('%d modules failed to load\n\n' % error_count)
         else:
-            stderr("Warning: Couldn't find any modules")
+            # TODO since this includes coretasks, this should probably be fatal
+            stderr("Warning: Couldn't load any modules")
 
-        self.bind_commands()
-
-    @staticmethod
-    def is_callable(obj):
-        """Return true if object is a willie callable.
-
-        Object must be both be callable and have hashable. Furthermore, it must
-        have either "commands", "rule" or "interval" as attributes to mark it
-        as a willie callable.
-
-        """
-        if not callable(obj):
-            # Check is to help distinguish between willie callables and objects
-            # which just happen to have parameter commands or rule.
-            return False
-        if (hasattr(obj, 'commands') or
-                hasattr(obj, 'rule') or
-                hasattr(obj, 'interval')):
-            return True
-        return False
-
-    @staticmethod
-    def is_shutdown(obj):
-        """Return true if object is a willie shutdown method.
-
-        Object must be both be callable and named shutdown.
-
-        """
-        if (callable(obj) and
-                hasattr(obj, "__name__")
-                and obj.__name__ == 'shutdown'):
-            return True
-        return False
-
-    def register(self, variables):
-        """Register all willie callables.
-
-        With the ``__dict__`` attribute from a Willie module, update or add the
-        trigger commands and rules, to allow the function to be triggered, and
-        shutdown methods, to allow the modules to be notified when willie is
-        quitting.
-
-        """
-        for obj in itervalues(variables):
-            if self.is_callable(obj):
-                self.callables.add(obj)
-            if self.is_shutdown(obj):
-                self.shutdown_methods.add(obj)
-
-    def unregister(self, variables):
-        """Unregister all willie callables in variables, and their bindings.
-
-        When unloading a module, this ensures that the unloaded modules will
-        not get called and that the objects can be garbage collected. Objects
-        that have not been registered are ignored.
-
-        Args:
-        variables -- A list of callable objects from a willie module.
-
-        """
-
-        def remove_func(func, commands):
-            """Remove all traces of func from commands."""
-            for func_list in itervalues(commands):
-                if func in func_list:
-                    func_list.remove(func)
-
-        for obj in itervalues(variables):
-            if obj in self.callables:
-                self.callables.remove(obj)
-                for commands in itervalues(self.commands):
-                    remove_func(obj, commands)
-            if obj in self.shutdown_methods:
-                try:
-                    obj(self)
-                except Exception as e:
-                    stderr(
-                        "Error calling shutdown method for module %s:%s" %
-                        (obj.__module__, e)
-                    )
-                self.shutdown_methods.remove(obj)
-
-    def sub(self, pattern):
-        """Replace any of the following special directives in a function's rule expression:
-        $nickname -> the bot's nick
-        $nick     -> the bot's nick followed by : or ,
-        """
-        nick = re.escape(self.nick)
-
-        # These replacements have significant order
-        subs = [('$nickname', r'{0}'.format(nick)),
-                ('$nick', r'{0}[,:]\s+'.format(nick)),
-                ]
-        for directive, subpattern in subs:
-            pattern = pattern.replace(directive, subpattern)
-
-        return pattern
-
-    def bind_commands(self):
-        self.commands = {'high': {}, 'medium': {}, 'low': {}}
-        self.scheduler.clear_jobs()
-
-        def bind(priority, regexp, func):
-            # Function name is no longer used for anything, as far as I know,
-            # but we're going to keep it around anyway.
-            if not hasattr(func, 'name'):
-                func.name = func.__name__
-
-            def trim_docstring(doc):
-                """Clean up a docstring"""
-                if not doc:
-                    return []
-                lines = doc.expandtabs().splitlines()
-                indent = sys.maxsize
-                for line in lines[1:]:
-                    stripped = line.lstrip()
-                    if stripped:
-                        indent = min(indent, len(line) - len(stripped))
-                trimmed = [lines[0].strip()]
-                if indent < sys.maxsize:
-                    for line in lines[1:]:
-                        trimmed.append(line[indent:].rstrip())
-                while trimmed and not trimmed[-1]:
-                    trimmed.pop()
-                while trimmed and not trimmed[0]:
-                    trimmed.pop(0)
-                return trimmed
-            doc = trim_docstring(func.__doc__)
-
-            if hasattr(func, 'commands') and func.commands[0]:
-                example = None
-                if hasattr(func, 'example'):
-                    if isinstance(func.example, basestring):
-                        # Support old modules that add the attribute directly.
-                        example = func.example
-                    else:
-                        # The new format is a list of dicts.
-                        example = func.example[0]["example"]
-                    example = example.replace('$nickname', str(self.nick))
-                    help_prefix = (self.config.core.help_prefix
-                                   or self.config.core.prefix.strip('\\'))
-                    if example[0] != help_prefix:
-                        example = help_prefix + example[len(help_prefix):]
-                if doc or example:
-                    for command in func.commands:
-                        self.doc[command] = (doc, example)
-            self.commands[priority].setdefault(regexp, []).append(func)
-
-        for func in self.callables:
-            if not hasattr(func, 'unblockable'):
-                func.unblockable = False
-
-            if not hasattr(func, 'priority'):
-                func.priority = 'medium'
-
-            if not hasattr(func, 'thread'):
-                func.thread = True
-
-            if not hasattr(func, 'event'):
-                func.event = ['PRIVMSG']
-            else:
-                if type(func.event) is not list:
-                    func.event = [func.event.upper()]
-                else:
-                    func.event = [event.upper() for event in func.event]
-
-            if not hasattr(func, 'rate'):
-                func.rate = 0
-
-            if hasattr(func, 'rule'):
-                rules = func.rule
-                if isinstance(rules, basestring):
-                    rules = [func.rule]
-
-                if isinstance(rules, list):
-                    for rule in rules:
-                        pattern = self.sub(rule)
-                        flags = re.IGNORECASE
-                        if rule.find("\n") != -1:
-                            flags |= re.VERBOSE
-                        regexp = re.compile(pattern, flags)
-                        bind(func.priority, regexp, func)
-
-                elif isinstance(func.rule, tuple):
-                    # 1) e.g. ('$nick', '(.*)')
-                    if len(func.rule) == 2 and isinstance(func.rule[0], str):
-                        prefix, pattern = func.rule
-                        prefix = self.sub(prefix)
-                        regexp = re.compile(prefix + pattern, re.I)
-                        bind(func.priority, regexp, func)
-
-                    # 2) e.g. (['p', 'q'], '(.*)')
-                    elif len(func.rule) == 2 and \
-                            isinstance(func.rule[0], list):
-                        prefix = self.config.core.prefix
-                        commands, pattern = func.rule
-                        for command in commands:
-                            command = r'(%s)\b(?: +(?:%s))?' % (
-                                command, pattern
-                            )
-                            regexp = re.compile(prefix + command, re.I)
-                            bind(func.priority, regexp, func)
-
-                    # 3) e.g. ('$nick', ['p', 'q'], '(.*)')
-                    elif len(func.rule) == 3:
-                        prefix, commands, pattern = func.rule
-                        prefix = self.sub(prefix)
-                        for command in commands:
-                            command = r'(%s) +' % command
-                            regexp = re.compile(
-                                prefix + command + pattern, re.I
-                            )
-                            bind(func.priority, regexp, func)
-
-            if hasattr(func, 'commands'):
-                for command in func.commands:
-                    prefix = self.config.core.prefix
-                    regexp = get_command_regexp(prefix, command)
-                    bind(func.priority, regexp, func)
-
-            if hasattr(func, 'interval'):
-                for interval in func.interval:
-                    job = Willie.Job(interval, func)
-                    self.scheduler.add_job(job)
+    def register(self, callables, jobs, shutdowns):
+        self.shutdown_methods = shutdowns
+        for callbl in callables:
+            for rule in callbl.rule:
+                self._callables[callbl.priority][rule].append(callbl)
+        # TODO jobs
 
     class WillieWrapper(object):
         def __init__(self, willie, trigger):
@@ -663,7 +448,7 @@ class Willie(irc.Bot):
 
         list_of_blocked_functions = []
         for priority in ('high', 'medium', 'low'):
-            items = self.commands[priority].items()
+            items = self._callables[priority].items()
 
             for regexp, funcs in items:
                 match = regexp.match(text)
