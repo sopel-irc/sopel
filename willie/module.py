@@ -273,7 +273,7 @@ def require_privmsg(message=None):
             if trigger.is_privmsg:
                 return function(*args, **kwargs)
             else:
-                if message:
+                if message and not callable(message):
                     bot.say(message)
         return _nop
     # Hack to allow decorator without parens
@@ -297,7 +297,7 @@ def require_chanmsg(message=None):
             if trigger.is_privmsg:
                 return function(*args, **kwargs)
             else:
-                if message:
+                if message and not callable(message):
                     bot.say(message)
         return _nop
     # Hack to allow decorator without parens
@@ -319,7 +319,7 @@ def require_privilege(level, message=None):
             channel_privs = bot.privileges[trigger.sender]
             allowed = channel_privs.get(trigger.nick, 0) >= level
             if not trigger.is_privmsg and not allowed:
-                if message:
+                if message and not callable(message):
                     bot.say(message)
             else:
                 return function(bot, trigger, *args, **kwargs)
@@ -335,7 +335,7 @@ def require_admin(message=None):
         @functools.wraps(function)
         def guarded(bot, trigger, *args, **kwargs):
             if not trigger.admin:
-                if message:
+                if message and not callable(message):
                     bot.say(message)
             else:
                 return function(bot, trigger, *args, **kwargs)
@@ -354,7 +354,7 @@ def require_owner(message=None):
         @functools.wraps(function)
         def guarded(bot, trigger, *args, **kwargs):
             if not trigger.owner:
-                if message:
+                if message and not callable(message):
                     bot.say(message)
             else:
                 return function(bot, trigger, *args, **kwargs)
