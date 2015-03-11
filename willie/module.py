@@ -241,6 +241,29 @@ def event(*event_list):
     return add_attribute
 
 
+def intent(*intent_list):
+    """Make a callable trigger on a message with any of the given intents.
+
+    *Availability: 5.2.0+*
+
+    NOTE: Due to a bug, messages sent with the intent in the CTCP format
+    (rather than IRCv3 message tags) which do not include a message (for
+    example, a message like ``\\x01VERSION\\x01``) are not correctly parsed by
+    the bot, and as such do not get caught by this decorator. This erroneous
+    behavior is kept in 5.x for compatability, but will be rectified in 6.0.
+
+    Additionally in 5.x, a rule or command must be specified in addition to
+    this, even if it is just ``'.*``.
+    """
+    def add_attribute(function):
+        if not hasattr(function, "intents"):
+            function.intents = []
+        function.intents.extend(intent_list)
+        print function.intents
+        return function
+    return add_attribute
+
+
 def rate(value):
     """Decorator. Equivalent to func.rate = value.
 

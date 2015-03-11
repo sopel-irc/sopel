@@ -1,3 +1,12 @@
+Changes between 5.1.1 and 5.2.0
+===============================
+Module changes (for users):
+* An exception that failed the chanlogs module from loading is fixed
+
+API changes (for developers):
+* Privilege decorators no longer cause an error when no message is given
+* A new @intent decorator is added as a shortcut for triggering on a message with an intent
+
 Changes between 5.0.0 and 5.1.1
 ===============================
 Module changes (for users):

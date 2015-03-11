@@ -361,6 +361,7 @@ class Willie(irc.Bot):
             return False
         if (hasattr(obj, 'commands') or
                 hasattr(obj, 'rule') or
+                hasattr(obj, 'intents') or
                 hasattr(obj, 'interval')):
             return True
         return False
@@ -685,6 +686,9 @@ class Willie(irc.Bot):
                     if event not in func.event:
                         continue
                     if self.limit(trigger, func):
+                        continue
+                    if (hasattr(func, 'intents') and
+                            trigger.tags.get('intent') not in func.intents):
                         continue
                     if func.thread:
                         targs = (func, wrapper, trigger)
