@@ -259,7 +259,6 @@ def intent(*intent_list):
         if not hasattr(function, "intents"):
             function.intents = []
         function.intents.extend(intent_list)
-        print function.intents
         return function
     return add_attribute
 
