@@ -2,6 +2,7 @@ Changes between 5.1.1 and 5.2.0
 ===============================
 Module changes (for users):
 * An exception that failed the chanlogs module from loading is fixed
+* Meetbot meeting subjects no longer fail with unicode
 
 API changes (for developers):
 * Privilege decorators no longer cause an error when no message is given

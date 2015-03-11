@@ -192,7 +192,7 @@ def meetingsubject(bot, trigger):
         bot.say('Only meeting head or chairs can do that')
         return
     meetings_dict[trigger.sender]['current_subject'] = trigger.group(2)
-    logfile = open(meeting_log_path + trigger.sender + '/' + figure_logfile_name(trigger.sender) + '.html', 'a')
+    logfile = codecs.open(meeting_log_path + trigger.sender + '/' + figure_logfile_name(trigger.sender) + '.html', 'a', encoding='utf-8')
     logfile.write('</ul><h3>' + trigger.group(2) + '</h3><ul>')
     logfile.close()
     logplain('Current subject: ' + trigger.group(2) + ', (set by ' + trigger.nick + ')', trigger.sender)
