@@ -132,8 +132,8 @@ def log_message(bot, message):
     logline = _format_template(tpl, bot, message, message=message)
     fpath = get_fpath(bot, message)
     with bot.memory['chanlog_locks'][fpath]:
-        with open(fpath, "a") as f:
-            f.write(logline)
+        with open(fpath, "ab") as f:
+            f.write(logline.encode('utf8'))
 
 
 @willie.module.rule('.*')
@@ -144,8 +144,8 @@ def log_join(bot, trigger):
     logline = _format_template(tpl, bot, trigger)
     fpath = get_fpath(bot, trigger, channel=trigger.sender)
     with bot.memory['chanlog_locks'][fpath]:
-        with open(fpath, "a") as f:
-            f.write(logline)
+        with open(fpath, "ab") as f:
+            f.write(logline.encode('utf8'))
 
 
 @willie.module.rule('.*')
@@ -156,9 +156,8 @@ def log_part(bot, trigger):
     logline = _format_template(tpl, bot, trigger=trigger)
     fpath = get_fpath(bot, trigger, channel=trigger.sender)
     with bot.memory['chanlog_locks'][fpath]:
-        with open(fpath, "a") as f:
-            f.write(logline)
-
+        with open(fpath, "ab") as f:
+            f.write(logline.encode('utf8'))
 
 @willie.module.rule('.*')
 @willie.module.event("QUIT")
@@ -175,8 +174,8 @@ def log_quit(bot, trigger):
         if trigger.nick in privileges:
             fpath = get_fpath(bot, trigger, channel)
             with bot.memory['chanlog_locks'][fpath]:
-                with open(fpath, "a") as f:
-                    f.write(logline)
+                with open(fpath, "ab") as f:
+                    f.write(logline.encode('utf8'))
 
 
 @willie.module.rule('.*')
@@ -194,5 +193,5 @@ def log_nick_change(bot, trigger):
         if old_nick in privileges or new_nick in privileges:
             fpath = get_fpath(bot, trigger, channel)
             with bot.memory['chanlog_locks'][fpath]:
-                with open(fpath, "a") as f:
-                    f.write(logline)
+                with open(fpath, "ab") as f:
+                    f.write(logline.encode('utf8'))
