@@ -52,7 +52,7 @@ def py(bot, trigger):
         return bot.say("Need an expression to evaluate")
 
     query = trigger.group(2)
-    uri = 'http://tumbolia.appspot.com/py/'
+    uri = 'http://tumbolia-hrd.appspot.com/py/'
     answer = web.get(uri + web.quote(query))
     if answer:
         bot.say(answer)
@@ -68,7 +68,7 @@ def wa(bot, trigger):
     if not trigger.group(2):
         return bot.reply("No search term.")
     query = trigger.group(2)
-    uri = 'http://tumbolia.appspot.com/wa/'
+    uri = 'http://tumbolia-hrd.appspot.com/wa/'
     try:
         answer = web.get(uri + web.quote(query.replace('+', 'plus')), 45,
                          dont_decode=True)
