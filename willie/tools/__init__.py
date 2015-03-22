@@ -24,12 +24,7 @@ import re
 import threading
 import codecs
 import traceback
-try:
-    import Queue
-except ImportError:
-    import queue as Queue
 from collections import defaultdict
-import copy
 
 if sys.version_info.major >= 3:
     unicode = str
@@ -49,6 +44,7 @@ from .calculation import (  # NOQA
     EquationEvaluator, eval_equation
 )
 from .time import get_timezone, format_time  # NOQA
+from .jobs import PriorityQueue, released  # NOQA
 
 
 def get_raising_file_and_line(tb=None):
@@ -104,33 +100,6 @@ def deprecated(old):
     new.__doc__ = old.__doc__
     new.__name__ = old.__name__
     return new
-
-
-class PriorityQueue(Queue.PriorityQueue):
-    """A priority queue with a peek method."""
-    def peek(self):
-        """Return a copy of the first element without removing it."""
-        self.not_empty.acquire()
-        try:
-            while not self._qsize():
-                self.not_empty.wait()
-            # Return a copy to avoid corrupting the heap. This is important
-            # for thread safety if the object is mutable.
-            return copy.deepcopy(self.queue[0])
-        finally:
-            self.not_empty.release()
-
-
-class released(object):
-    """A context manager that releases a lock temporarily."""
-    def __init__(self, lock):
-        self.lock = lock
-
-    def __enter__(self):
-        self.lock.release()
-
-    def __exit__(self, _type, _value, _traceback):
-        self.lock.acquire()
 
 
 # from
@@ -229,7 +198,7 @@ class Identifier(unicode):
         return self and not self.startswith(_channel_prefixes)
 
 
-class OutputRedirect:
+class OutputRedirect(object):
 
     """Redirect te output to the terminal and a log file.
 
