@@ -11,7 +11,7 @@ from __future__ import unicode_literals
 import re
 from willie import web
 from willie.module import commands, example
-from willie.tools import eval_equation
+from willie.tools.calculation import eval_equation
 from socket import timeout
 import sys
 if sys.version_info.major < 3:

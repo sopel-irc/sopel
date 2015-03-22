@@ -12,7 +12,7 @@ import random
 import re
 
 import willie.module
-from willie.tools import eval_equation
+from willie.tools.calculation import eval_equation
 
 
 class DicePouch:
