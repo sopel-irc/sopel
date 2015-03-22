@@ -13,7 +13,7 @@ import time
 import threading
 import sys
 from willie.tools import Identifier, iterkeys
-from willie.tools.calc import get_timezone, format_time
+from willie.tools.time import get_timezone, format_time
 from willie.module import commands, nickname_commands, rule, priority, example
 
 maximum = 4

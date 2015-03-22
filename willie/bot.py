@@ -387,7 +387,7 @@ class Willie(irc.Bot):
 
             if hasattr(func, 'interval'):
                 for interval in func.interval:
-                    job = Willie.Job(interval, func)
+                    job = willie.tools.jobs.Job(interval, func)
                     self.scheduler.add_job(job)
 
     class WillieWrapper(object):
