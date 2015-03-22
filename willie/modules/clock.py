@@ -14,9 +14,8 @@ try:
 except ImportError:
     pytz = None
 
-import datetime
 from willie.module import commands, example, OP
-from willie.tools import get_timezone, format_time
+from willie.tools.time import get_timezone, format_time
 
 
 def configure(config):
