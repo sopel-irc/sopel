@@ -18,15 +18,11 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-import time
-import numbers
-import datetime
 import sys
 import os
 import re
 import threading
-import warnings
-
+import codecs
 import traceback
 try:
     import Queue
@@ -34,9 +30,7 @@ except ImportError:
     import queue as Queue
 from collections import defaultdict
 import copy
-import ast
-import operator
-import codecs
+
 if sys.version_info.major >= 3:
     unicode = str
     iteritems = dict.items
@@ -50,11 +44,11 @@ else:
 _channel_prefixes = ('#', '&', '+', '!')
 
 # 5.x compatibility
-from .calculation import (
+from .calculation import (  # NOQA
     ExpressionEvaluator, guarded_mul, pow_complexity, guarded_pow,
     EquationEvaluator, eval_equation
 )
-from .time import get_timezone, format_time
+from .time import get_timezone, format_time  # NOQA
 
 
 def get_raising_file_and_line(tb=None):
@@ -284,9 +278,9 @@ class OutputRedirect:
             sys.__stdout__.flush()
 
 
-#These seems to trace back to when we thought we needed a try/except on prints,
-#because it looked like that was why we were having problems. We'll drop it in
-#4.0
+# These seems to trace back to when we thought we needed a try/except on prints,
+# because it looked like that was why we were having problems. We'll drop it in
+# 4.0^H^H^H5.0^H^H^H6.0^H^H^Hsome version when someone can be bothered.
 @deprecated
 def stdout(string):
     print(string)

@@ -1,6 +1,9 @@
 # coding=utf8
 """Tools to help safely do calculations from user input"""
 from __future__ import unicode_literals
+
+import time
+import numbers
 import operator
 import ast
 
@@ -81,10 +84,11 @@ def guarded_mul(left, right):
         # Ignore trivial cases.
         pass
     elif left.bit_length() + right.bit_length() > 664386:
-        # 664386 is the number of bits (10**100000)**2 has, which is instant on my
-        # laptop, while (10**1000000)**2 has a noticeable delay. It could certainly
-        # be improved.
-        raise ValueError("Value is too large to be handled in limited time and memory.")
+        # 664386 is the number of bits (10**100000)**2 has, which is instant on
+        # my laptop, while (10**1000000)**2 has a noticeable delay. It could
+        # certainly be improved.
+        raise ValueError(
+            "Value is too large to be handled in limited time and memory.")
 
     return operator.mul(left, right)
 

@@ -16,7 +16,6 @@ import sys
 from datetime import datetime
 try:
     from pytz import timezone
-    from pytz import all_timezones
     import pytz
 except ImportError:
     pytz = None
@@ -158,6 +157,7 @@ def log_part(bot, trigger):
     with bot.memory['chanlog_locks'][fpath]:
         with open(fpath, "ab") as f:
             f.write(logline.encode('utf8'))
+
 
 @willie.module.rule('.*')
 @willie.module.event("QUIT")
