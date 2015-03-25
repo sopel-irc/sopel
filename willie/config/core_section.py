@@ -58,6 +58,9 @@ class CoreSection(StaticSection):
     channels = ListAttribute('channels')
     """List of channels for the bot to join when it connects"""
 
+    db_filename = ValidatedAttribute('db_filename')
+    """The filename for Willie's database."""
+
     default_time_format = ValidatedAttribute('default_time_format',
                                              default='%F - %T%Z')
     """The default format to use for time in messages."""
@@ -70,8 +73,6 @@ class CoreSection(StaticSection):
 
     exclude = ListAttribute('exclude')
     """A list of modules which should not be loaded."""
-
-    exit_on_error = ValidatedAttribute('exit_on_error')  # TODO wat
 
     extra = ListAttribute('extra')
     """A list of other directories you'd like to include modules from."""

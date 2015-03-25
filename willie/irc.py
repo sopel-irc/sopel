@@ -536,8 +536,6 @@ class Bot(asynchat.async_chat):
                 os._exit(1)
         self.last_error_timestamp = datetime.now()
         self.error_count = self.error_count + 1
-        if self.config.exit_on_error:
-            os._exit(1)
 
     # Helper functions to maintain the oper list.
     # They cast to Identifier when adding to be quite sure there aren't any accidental

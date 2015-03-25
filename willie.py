@@ -69,10 +69,6 @@ def main(argv=None):
                             help="Gracefully quit Willie")
         parser.add_argument("-k", '--kill', action="store_true", dest="kill",
                             help="Kill Willie")
-        parser.add_argument('--exit-on-error', action="store_true",
-                            dest="exit_on_error", help=(
-                                "Exit immediately on every error instead of "
-                                "trying to recover"))
         parser.add_argument("-l", '--list', action="store_true",
                             dest="list_configs",
                             help="List all config files found")
@@ -161,7 +157,6 @@ def main(argv=None):
         if not os.path.isdir(config_module.logdir):
             os.mkdir(config_module.logdir)
 
-        config_module.exit_on_error = opts.exit_on_error
         config_module._is_deamonized = opts.deamonize
 
         sys.stderr = tools.OutputRedirect(logfile, True, opts.quiet)
