@@ -1,4 +1,4 @@
-# coding=utf-8
+# coding=utf8
 
 from __future__ import unicode_literals
 
@@ -131,13 +131,13 @@ class CoreSection(StaticSection):
     It is a regular expression (so the default, ``\.``, means commands start
     with a period), though using capturing groups will create problems."""
 
-    timeout = ValidatedAttribute('timeout')  # TODO default?
+    timeout = ValidatedAttribute('timeout', int, default=120)
     """The amount of time acceptable between pings before timing out."""
 
     use_ssl = ValidatedAttribute('use_ssl', bool, default=False)
     """Whether to use a SSL secured connection."""
 
-    user = ValidatedAttribute('user')
+    user = ValidatedAttribute('user', default='willie')
     """The "user" for your bot (the part before the @ in the hostname)."""
 
     verbose = ValidatedAttribute('verbose')  # TODO remove

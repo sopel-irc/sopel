@@ -27,7 +27,6 @@ import signal
 
 from willie.__init__ import run, __version__
 from willie.config import Config, create_config, ConfigurationError, wizard
-from willie.config.core_section import CoreSection
 import willie.tools as tools
 import willie.web
 
@@ -140,7 +139,6 @@ def main(argv=None):
             configpath = find_config(config_name)
         try:
             config_module = Config(configpath)
-            config_module.core = CoreSection(config_module.parser, 'core')
         except ConfigurationError as e:
             stderr(e)
             sys.exit(2)
