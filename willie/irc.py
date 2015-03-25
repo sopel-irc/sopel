@@ -121,6 +121,7 @@ class Bot(asynchat.async_chat):
         if not self.config.core.log_raw:
             return
         if not self.config.core.logdir:
+            # change for 6.0
             self.config.core.logdir = os.path.join(self.config.dotdir,
                                                    'logs')
         if not os.path.isdir(self.config.core.logdir):

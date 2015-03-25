@@ -1,18 +1,22 @@
 # coding=utf8
 
 from __future__ import unicode_literals
+from __future__ import print_function
 
 from willie.config.types import (
     StaticSection, ValidatedAttribute, ListAttribute, ChoiceAttribute
 )
 from willie.tools import Identifier
 
+import sys
+
 
 class CoreSection(StaticSection):
     #  5.x backwards compat; remove for 6.0.0
     def __getattr__(self, name):
         if self._parser.has_option(self._section_name, name):
-            print('deprecated', self._section_name, name)  # TODO
+            print('The "{}" core config setting is deprecated'.format(name),
+                  file=sys.stderr)
             return self._parser.get(self._section_name, name)
         else:
             return None
@@ -60,9 +64,6 @@ class CoreSection(StaticSection):
 
     default_timezone = ValidatedAttribute('default_timezone')
     """The default timezone to use for time in messages."""
-
-    delay = ValidatedAttribute('delay')  # TODO wat
-    dotdir = ValidatedAttribute('dotdir')  # TODO wat
 
     enable = ListAttribute('enable')
     """A whitelist of the only modules you want to enable."""

@@ -187,13 +187,16 @@ class Config(object):
             return value
 
     def __getattr__(self, name):
-        """"""
         if name in self.parser.sections():
             items = self.parser.items(name)
             section = self.ConfigSection(name, items, self)  # Return a section
             setattr(self, name, section)
             return section
         elif self.parser.has_option('core', name):
+            print('Accessing core config "{}" directly from the main config '
+                  'directly is deprecated, and will not be possible in '
+                  '6.0.'.format(name),
+                  file=sys.stderr)
             return self.parser.get('core', name)  # For backwards compatibility
         else:
             raise AttributeError("%r object has no attribute %r"
