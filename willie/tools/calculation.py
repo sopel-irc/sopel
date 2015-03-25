@@ -7,6 +7,8 @@ import numbers
 import operator
 import ast
 
+__all__ = ['eval_equation']
+
 
 class ExpressionEvaluator:
     """A generic class for evaluating limited forms of Python expressions.

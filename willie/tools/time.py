@@ -1,4 +1,5 @@
 # coding=utf8
+"""Tools for getting and displaying the time."""
 from __future__ import unicode_literals
 
 import datetime
@@ -14,7 +15,7 @@ def get_timezone(db=None, config=None, zone=None, nick=None, channel=None):
     Time zone is pulled in the following priority:
     1. `zone`, if it is valid
     2. The timezone for the channel or nick `zone` in `db` if one is set and
-       valid.
+    valid.
     3. The timezone for the nick `nick` in `db`, if one is set and valid.
     4. The timezone for the channel  `channel` in `db`, if one is set and valid.
     5. The default timezone in `config`, if one is set and valid.
