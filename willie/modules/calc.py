@@ -55,7 +55,8 @@ def py(bot, trigger):
     uri = 'http://tumbolia-hrd.appspot.com/py/'
     answer = web.get(uri + web.quote(query))
     if answer:
-        bot.say(answer)
+        #bot.say can potentially lead to 3rd party commands triggering.
+        bot.reply(answer)
     else:
         bot.reply('Sorry, no result.')
 
