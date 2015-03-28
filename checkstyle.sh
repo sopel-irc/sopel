@@ -49,15 +49,29 @@ if $fail_py3_unicode; then
     exit_code=1
 fi
 
-fail_unicode_literals=false
-for file in $files; do
-    if ! grep -L 'from __future__ import unicode_literals' $file; then
-        fail_unicode_literals=true
+check_future () {
+    fail_unicode_literals=false
+    for file in $files; do
+        if ! grep -L "from __future__ import $1" $file; then
+            fail_unicode_literals=true
+        fi
+    done
+    if $fail_unicode_literals; then
+        if $2; then
+            echo "ERROR: Above files do not have $1 import."
+            exit_code=1
+        else
+            echo "WARNING: Above files do not have $1 import."
+        fi
     fi
+}
+for mandatory in unicode_literals
+do
+    check_future $mandatory true
 done
-if $fail_unicode_literals; then
-    echo "ERROR: Above files do not have unicode_literals import."
-    exit_code=1
-fi
+for optional in division print_function absolute_import
+do
+    check_future $optional false
+done
 
 exit $exit_code
