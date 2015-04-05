@@ -245,7 +245,7 @@ def unquiet(bot, trigger):
     quietmask = configureHostMask(quietmask)
     if quietmask == '':
         return
-    bot.write(['MODE', opt, '-q', quietmask])
+    bot.write(['MODE', channel, '-q', quietmask])
 
 
 @require_privilege(OP)
