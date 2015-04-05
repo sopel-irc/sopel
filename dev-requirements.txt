@@ -7,3 +7,4 @@ praw
 feedparser
 pyenchant
 pep8==1.4.6
+urllib3
