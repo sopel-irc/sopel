@@ -87,6 +87,7 @@ def rpost_info(bot, trigger, match=None):
 
 # If you change this, you'll have to change some other things...
 @commands('redditor')
+@example('.redditor poem_for_your_sprog')
 def redditor_info(bot, trigger, match=None):
     """Show information about the given Redditor"""
     commanded = re.match(bot.config.prefix + 'redditor', trigger)
