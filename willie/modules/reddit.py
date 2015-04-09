@@ -103,15 +103,32 @@ def redditor_info(bot, trigger, match=None):
         # Fail silently if it wasn't an explicit command.
 
     message = '[REDDITOR] ' + u.name
+    now = dt.datetime.utcnow()
+    cakeday_start = dt.datetime.utcfromtimestamp(u.created_utc)
+    cakeday_start = cakeday_start.replace(year=now.year)
+    day = dt.timedelta(days=1)
+    year_div_by_400 = now.year % 400 == 0
+    year_div_by_100 = now.year % 100 == 0
+    year_div_by_4 = now.year % 4 == 0
+    is_leap = year_div_by_400 or ((not year_div_by_100) and year_div_by_4)
+    if (not is_leap) and ((cakeday_start.month, cakeday_start.day) == (2, 29)):
+        # If cake day is 2/29 and it's not a leap year, cake day is 1/3.
+        # Cake day begins at exact account creation time.
+        is_cakeday = cakeday_start + day <= now <= cakeday_start + (2 * day)
+    else:
+        is_cakeday = cakeday_start <= now <= cakeday_start + day
+
+    if is_cakeday:
+        message = message + ' | 13Cake day'
     if commanded:
         message = message + ' | http://reddit.com/u/' + u.name
     if u.is_gold:
         message = message + ' | 08Gold'
     if u.is_mod:
         message = message + ' | 05Mod'
-    message = message + ' | Link: ' + str(u.link_karma) + ' | Comment: ' + str(u.comment_karma)
+    message = message + (' | Link: ' + str(u.link_karma) + ' | Comment: '
+                         + str(u.comment_karma))
 
-    #TODO detect cake day with u.created
     bot.say(message)
 
 
