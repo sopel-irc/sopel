@@ -4,7 +4,8 @@ reddit-info.py - Willie Reddit module
 Author: Edward Powell, embolalia.net
 About: http://willie.dftba.net
 
-This module provides special tools for reddit, namely showing detailed info about reddit posts
+This module provides special tools for reddit, namely showing detailed
+info about reddit posts
 """
 from __future__ import unicode_literals
 
@@ -53,7 +54,7 @@ def rpost_info(bot, trigger, match=None):
 
     if s.over_18:
         nsfw = bold(color(' [NSFW]', colors.RED))
-        #TODO implement per-channel settings db, and make this able to kick
+        # TODO implement per-channel settings db, and make this able to kick
     else:
         nsfw = ''
 
@@ -76,7 +77,7 @@ def rpost_info(bot, trigger, match=None):
     bot.say(message)
 
 
-#If you change this, you'll have to change some other things...
+# If you change this, you'll have to change some other things...
 @commands('redditor')
 def redditor_info(bot, trigger, match=None):
     """Show information about the given Redditor"""
@@ -91,7 +92,7 @@ def redditor_info(bot, trigger, match=None):
             return NOLIMIT
         else:
             return
-        #Fail silently if it wasn't an explicit command.
+        # Fail silently if it wasn't an explicit command.
 
     message = '[REDDITOR] ' + u.name
     if commanded:
@@ -106,7 +107,7 @@ def redditor_info(bot, trigger, match=None):
     bot.say(message)
 
 
-#If you change the groups here, you'll have to change some things above.
+# If you change the groups here, you'll have to change some things above.
 @rule('.*%s.*' % user_url)
 def auto_redditor_info(bot, trigger):
     redditor_info(bot, trigger)
