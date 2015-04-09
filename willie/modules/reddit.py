@@ -12,7 +12,8 @@ from __future__ import unicode_literals
 from willie.module import commands, rule, example, NOLIMIT
 from willie.formatting import bold, color, colors
 from willie.web import USER_AGENT
-from willie import tools
+from willie.tools import WillieMemory, time
+import datetime as dt
 import praw
 import re
 import sys
@@ -28,7 +29,7 @@ user_regex = re.compile(user_url)
 
 def setup(bot):
     if not bot.memory.contains('url_callbacks'):
-        bot.memory['url_callbacks'] = tools.WillieMemory()
+        bot.memory['url_callbacks'] = WillieMemory()
     bot.memory['url_callbacks'][post_regex] = rpost_info
     bot.memory['url_callbacks'][user_regex] = redditor_info
 
@@ -45,7 +46,8 @@ def rpost_info(bot, trigger, match=None):
     s = r.get_submission(url=match.group(1))
 
     message = ('[REDDIT] {title} {link}{nsfw} | {points} points ({percent}) | '
-               '{comments} comments | Posted by {author}')
+               '{comments} comments | Posted by {author} | '
+               'Created at {created}')
 
     if s.is_self:
         link = '(self.{})'.format(s.subreddit.display_name)
@@ -62,7 +64,12 @@ def rpost_info(bot, trigger, match=None):
         author = s.author.name
     else:
         author = '[deleted]'
-    #TODO add creation time with s.created
+
+    tz = time.get_timezone(bot.db, bot.config, None, trigger.nick,
+                           trigger.sender)
+    time_created = dt.datetime.utcfromtimestamp(s.created_utc)
+    created = time.format_time(bot.db, bot.config, tz, trigger.nick,
+                               trigger.sender, time_created)
 
     if s.score > 0:
         point_color = colors.GREEN
@@ -73,7 +80,8 @@ def rpost_info(bot, trigger, match=None):
 
     message = message.format(
         title=s.title, link=link, nsfw=nsfw, points=s.score, percent=percent,
-        comments=s.num_comments, author=author)
+        comments=s.num_comments, author=author, created=created)
+
     bot.say(message)
 
 
