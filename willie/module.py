@@ -316,7 +316,7 @@ def require_chanmsg(message=None):
         def _nop(*args, **kwargs):
             # Assign trigger and bot for easy access later
             bot, trigger = args[0:2]
-            if trigger.is_privmsg:
+            if not trigger.is_privmsg:
                 return function(*args, **kwargs)
             else:
                 if message and not callable(message):
