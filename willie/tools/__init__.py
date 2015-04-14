@@ -68,6 +68,7 @@ def get_command_regexp(prefix, command):
     # in the prefix is treated as it was before the actual regexp was changed
     # to use the verbose syntax.
     prefix = re.sub(r"(\s)", r"\\\1", prefix)
+    command = re.sub(r"(\s)", r"\\\1", command)
 
     # This regexp match equivalently and produce the same
     # groups 1 and 2 as the old regexp: r'^%s(%s)(?: +(.*))?$'
