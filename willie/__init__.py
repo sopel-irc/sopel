@@ -76,5 +76,8 @@ def run(config):
             break
         stderr('Warning: Disconnected. Reconnecting in %s seconds...' % delay)
         time.sleep(delay)
-    os.unlink(config.pid_file_path)
+    try:
+        os.unlink(config.pid_file_path)
+    except Exception as e:
+        stderr('Warning: Failed to remove pidfile %s: %s' % (config.pid_file_path, e))
     os._exit(0)
