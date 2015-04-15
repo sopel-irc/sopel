@@ -115,6 +115,9 @@ class Willie(irc.Bot):
             self.config.core.other_bots = False
             self.config.save()
 
+        self.help_prefix = (self.config.core.help_prefix
+                            or self.config.core.prefix.strip('\\'))
+
         self.setup()
 
     # 5.0 compat, just in case. Remove in 6.0
@@ -304,10 +307,8 @@ class Willie(irc.Bot):
                         # The new format is a list of dicts.
                         example = func.example[0]["example"]
                     example = example.replace('$nickname', str(self.nick))
-                    help_prefix = (self.config.core.help_prefix
-                                   or self.config.core.prefix.strip('\\'))
-                    if example[0] != help_prefix:
-                        example = help_prefix + example[len(help_prefix):]
+                    if example[0] != self.help_prefix:
+                        example = self.help_prefix + example[len(self.help_prefix):]
                 if doc or example:
                     for command in func.commands:
                         self.doc[command] = (doc, example)
