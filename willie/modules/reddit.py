@@ -9,7 +9,7 @@ info about reddit posts
 """
 from __future__ import unicode_literals
 
-from willie.module import commands, rule, example, NOLIMIT
+from willie.module import commands, rule, example, NOLIMIT, OP
 from willie.formatting import bold, color, colors
 from willie.web import USER_AGENT
 from willie.tools import WillieMemory, time
@@ -137,3 +137,22 @@ def redditor_info(bot, trigger, match=None):
 @rule('.*%s.*' % user_url)
 def auto_redditor_info(bot, trigger):
     redditor_info(bot, trigger)
+
+
+@commands('setsafeforwork', 'setsfw')
+@example('.setsfw true')
+@example('.setsfw false')
+def update_channel(bot, trigger):
+    """
+    Sets the Safe for Work status (true or false) for the current
+    channel. Defaults to false.
+    """
+    if bot.privileges[trigger.sender][trigger.nick] < OP:
+        return
+    else:
+        sfw = trigger.group(3).strip().lower() == 'true'
+        bot.db.set_channel_value(trigger.sender, 'sfw', sfw)
+        if sfw:
+            bot.reply('Got it. %s is now flagged as SFW.' % trigger.sender)
+        else:
+            bot.reply('Got it. %s is now flagged as NSFW.' % trigger.sender)
