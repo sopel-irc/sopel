@@ -396,6 +396,11 @@ class example(object):
     Inside the example, some special directives
     can be used. ``$nickname`` will be replaced by the nick of the bot,
     ``$prefix`` will be replaced by the configured prefix.
+
+    If the example shows a prefixed command, it should just use the . as
+    the prefix (as the first character in the string). If the prefix is
+    configured to be something different, this initial dot will
+    automatically be replaced by the configured prefix.
     """
 
     def __init__(self, msg, result=None, privmsg=False, admin=False,

@@ -314,8 +314,8 @@ class Willie(irc.Bot):
                         example = func.example[0]["example"]
                     example = example.replace('$nickname', str(self.nick))
                     example = example.replace('$prefix', str(self.help_prefix))
-                    if example[0] != self.help_prefix:
-                        example = self.help_prefix + example[len(self.help_prefix):]
+                    if example[0] == '.':
+                        example = self.help_prefix + example[1:]
                 if doc or example:
                     for command in func.commands:
                         self.doc[command] = (doc, example)
