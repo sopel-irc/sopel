@@ -56,7 +56,11 @@ def rpost_info(bot, trigger, match=None):
 
     if s.over_18:
         nsfw = bold(color(' [NSFW]', colors.RED))
-        # TODO implement per-channel settings db, and make this able to kick
+        sfw = bot.db.get_channel_value(trigger.sender, 'sfw')
+        if sfw:
+            link = '(link hidden)'
+            bot.write(['KICK', trigger.sender, trigger.nick,
+                       'Linking to NSFW content in a SFW channel.'])
     else:
         nsfw = ''
 
@@ -156,3 +160,23 @@ def update_channel(bot, trigger):
             bot.reply('Got it. %s is now flagged as SFW.' % trigger.sender)
         else:
             bot.reply('Got it. %s is now flagged as NSFW.' % trigger.sender)
+
+
+@commands('getsafeforwork', 'getsfw')
+@example('.getsfw [channel]')
+def get_channel_sfw(bot, trigger):
+    """
+    Gets the preferred channel's Safe for Work status, or the current
+    channel's status if no channel given.
+    """
+    channel = trigger.group(2)
+    if not channel:
+        channel = trigger.sender
+
+    channel = channel.strip()
+
+    sfw = bot.db.get_channel_value(channel, 'sfw')
+    if sfw:
+        bot.say('%s is flagged as SFW' % channel)
+    else:
+        bot.say('%s is flagged as NSFW' % channel)
