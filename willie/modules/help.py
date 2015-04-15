@@ -75,3 +75,5 @@ def help2(bot, trigger):
         'general details. My owner is %s.'
     ) % bot.config.core.owner
     bot.reply(response)
+    if bot.config.has_option('help', 'extra_overview_msg'):
+        bot.reply(bot.config.help.extra_overview_msg)
