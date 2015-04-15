@@ -97,8 +97,8 @@ def rule(value):
     captured groups here will be retrievable through the Trigger object later.
 
     Inside the regular expression, some special directives can be used. $nick
-    will be replaced with the nick of the bot and , or :, and $nickname will be
-    replaced with the nick of the bot.
+    will match the nick of the bot followed by , or : followed by some
+    whitespace, and $nickname will match just the nick of the bot.
     """
     def add_attribute(function):
         if not hasattr(function, "rule"):

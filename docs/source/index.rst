@@ -78,8 +78,9 @@ only option in versions prior to *4.0*.
         groups here will be retrievable through the ``Trigger`` object later.
         
         Inside the regular expression, some special directives can be used.
-        ``$nick`` will be replaced with the nick of the bot and ``,`` or ``:``,
-        and ``$nickname`` will be replaced with the nick of the bot.
+        ``$nick`` will match the nick of the bot followed by ``,`` or
+        ``:`` followed by some whitespace, and ``$nickname`` will match
+        just the nick of the bot.
 
         Prior to *3.1*, rules could also be made one of three formats of tuple.
         The values would be joined together to form a singular regular
