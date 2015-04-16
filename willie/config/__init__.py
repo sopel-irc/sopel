@@ -122,6 +122,8 @@ class Config(object):
                 self.parser.set('core', 'verify_ssl', 'True')
             if not self.parser.has_option('core', 'timeout'):
                 self.parser.set('core', 'timeout', '120')
+            if not self.parser.has_option('core', 'log_raw'):
+                self.parser.set('core', 'log_raw', 'true')
         else:
             self.parser.add_section('core')
         self.get = self.parser.get
