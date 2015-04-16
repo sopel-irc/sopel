@@ -391,6 +391,7 @@ def recieve_cap_ack_sasl(bot):
     # check anyway.
     password = bot.config.core.auth_password or bot.config.core.sasl_password
     if not password:
+        LOGGER.critical("SASL requested, but no password specified?")
         return
     mech = bot.config.core.sasl_mechanism or 'PLAIN'
     bot.write(('AUTHENTICATE', mech))
