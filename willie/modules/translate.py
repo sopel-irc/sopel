@@ -51,7 +51,7 @@ def translate(text, in_lang='auto', out_lang='en'):
         "client": "gtx",
         "sl": in_lang,
         "tl": out_lang,
-        "dt": "t", 
+        "dt": "t",
         "q": text,
     }
     query_string = "&".join(
