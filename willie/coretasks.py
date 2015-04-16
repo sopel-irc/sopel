@@ -403,9 +403,9 @@ def auth_proceed(bot, trigger):
         # How did we get here? I am not good with computer.
         return
     # Is this right?
+    password = bot.config.core.auth_password or bot.config.core.sasl_password
     sasl_username = bot.config.core.auth_username or bot.config.core.sasl_username or bot.nick
-    sasl_token = '\0'.join((sasl_username, sasl_username,
-                           bot.config.core.sasl_password))
+    sasl_token = '\0'.join((sasl_username, sasl_username, password))
     # Spec says we do a base 64 encode on the SASL stuff
     bot.write(('AUTHENTICATE', base64.b64encode(sasl_token.encode('utf-8'))))
 
