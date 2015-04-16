@@ -48,16 +48,17 @@ def translate(text, in_lang='auto', out_lang='en'):
     }
 
     url_query = {
-        "client": "t",
+        "client": "gtx",
         "sl": in_lang,
         "tl": out_lang,
+        "dt": "t", 
         "q": text,
     }
     query_string = "&".join(
         "{key}={value}".format(key=key, value=value)
         for key, value in url_query.items()
     )
-    url = "http://translate.google.com/translate_a/t?{query}".format(query=query_string)
+    url = "https://translate.googleapis.com/translate_a/single?{query}".format(query=query_string)
     result = web.get(url, timeout=40, headers=headers)
 
     while ',,' in result:
