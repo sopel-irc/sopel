@@ -58,7 +58,7 @@ def translate(text, in_lang='auto', out_lang='en'):
         "{key}={value}".format(key=key, value=value)
         for key, value in url_query.items()
     )
-    url = "https://translate.googleapis.com/translate_a/single?{query}".format(query=query_string)
+    url = "http://translate.googleapis.com/translate_a/single?{query}".format(query=query_string)
     result = web.get(url, timeout=40, headers=headers)
 
     while ',,' in result:
