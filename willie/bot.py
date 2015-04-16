@@ -254,12 +254,14 @@ class Willie(irc.Bot):
         """Replace any of the following special directives in a function's rule expression:
         $nickname -> the bot's nick
         $nick     -> the bot's nick followed by : or ,
+        $prefix   -> the configured prefix
         """
         nick = re.escape(self.nick)
 
         # These replacements have significant order
         subs = [('$nickname', r'{0}'.format(nick)),
                 ('$nick', r'{0}[,:]\s+'.format(nick)),
+                ('$prefix', self.config.core.prefix),
                 ]
         for directive, subpattern in subs:
             pattern = pattern.replace(directive, subpattern)
@@ -297,6 +299,10 @@ class Willie(irc.Bot):
                 return trimmed
             doc = trim_docstring(func.__doc__)
 
+            # Allow using $prefix in docstring
+            doc = [line.replace('$nickname', str(self.nick)) for line in doc]
+            doc = [line.replace('$prefix', str(self.help_prefix)) for line in doc]
+
             if hasattr(func, 'commands') and func.commands[0]:
                 example = None
                 if hasattr(func, 'example'):
@@ -307,6 +313,7 @@ class Willie(irc.Bot):
                         # The new format is a list of dicts.
                         example = func.example[0]["example"]
                     example = example.replace('$nickname', str(self.nick))
+                    example = example.replace('$prefix', str(self.help_prefix))
                     if example[0] != self.help_prefix:
                         example = self.help_prefix + example[len(self.help_prefix):]
                 if doc or example:
