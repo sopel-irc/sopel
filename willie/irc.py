@@ -214,7 +214,7 @@ class Bot(asynchat.async_chat):
             self.send = self._ssl_send
             self.recv = self._ssl_recv
         elif not has_ssl and self.config.core.use_ssl:
-            stderr('SSL is not avilable on your system, attempting connection '
+            stderr('SSL is not available on your system, attempting connection '
                    'without it')
         self.connect((host, port))
         try:
