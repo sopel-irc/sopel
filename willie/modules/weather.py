@@ -144,7 +144,7 @@ def weather(bot, trigger):
     query = web.urlencode({'w': woeid, 'u': 'c'})
     url = 'http://weather.yahooapis.com/forecastrss?' + query
     parsed = feedparser.parse(url)
-    location = parsed['entries'][0]['title'].replace("Conditions for ", "")
+    location = parsed['feed']['title']
 
     cover = get_cover(parsed)
     temp = get_temp(parsed)
