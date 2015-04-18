@@ -27,6 +27,7 @@ except:
 
 def filename(self):
     name = self.nick + '-' + self.config.host + '.reminders.db'
+    # change by 6.0
     return os.path.join(self.config.dotdir, name)
 
 

@@ -65,6 +65,7 @@ def dumpReminders(fn, data, lock):
 
 def setup(self):
     fn = self.nick + '-' + self.config.host + '.tell.db'
+    # change in 6.0
     self.tell_filename = os.path.join(self.config.dotdir, fn)
     if not os.path.exists(self.tell_filename):
         try:

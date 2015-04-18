@@ -12,10 +12,8 @@ http://willie.dftba.net/
 from __future__ import unicode_literals
 from __future__ import absolute_import
 
-import sys
 import os
 import time
-import threading
 import traceback
 import signal
 
@@ -27,10 +25,10 @@ def run(config):
     import willie.web as web
     import willie.logger
     from willie.tools import stderr
+    delay = 20
+    # Remove for 6.0 until someone complains
     if config.core.delay is not None:
         delay = config.core.delay
-    else:
-        delay = 20
     # Inject ca_certs from config to web for SSL validation of web requests
     web.ca_certs = '/etc/pki/tls/certs/ca-bundle.crt'
     if hasattr(config, 'ca_certs') and config.ca_certs is not None:
@@ -56,7 +54,7 @@ def run(config):
             p.run(config.core.host, int(config.core.port))
         except KeyboardInterrupt:
             break
-        except Exception as e:
+        except Exception:
             trace = traceback.format_exc()
             try:
                 stderr(trace)
@@ -72,7 +70,7 @@ def run(config):
 
         if not isinstance(delay, int):
             break
-        if p.hasquit or config.exit_on_error:
+        if p.hasquit:
             break
         stderr('Warning: Disconnected. Reconnecting in %s seconds...' % delay)
         time.sleep(delay)

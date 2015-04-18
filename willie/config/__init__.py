@@ -31,9 +31,9 @@ The configuration function, if used, must be declared with the signature
 ``configure(config)``. To add options, use ``interactive_add``, ``add_list``
 and ``add_option``.
 """
-#Copyright 2012, Edward Powell, embolalia.net
-#Copyright © 2012, Elad Alfassa <elad@fedoraproject.org>
-#Licensed under the Eiffel Forum License 2.
+# Copyright 2012, Edward Powell, embolalia.net
+# Copyright © 2012, Elad Alfassa <elad@fedoraproject.org>
+# Licensed under the Eiffel Forum License 2.
 
 from __future__ import unicode_literals
 from __future__ import print_function
@@ -48,7 +48,8 @@ except ImportError:
     import configparser as ConfigParser
 import getpass
 import imp
-import willie.bot
+from willie.config.core_section import CoreSection
+from willie.config.types import StaticSection
 if sys.version_info.major >= 3:
     unicode = str
     basestring = str
@@ -87,7 +88,7 @@ class Config(object):
             self.parser.read(self.filename)
 
             if not ignore_errors:
-                #Sanity check for the configuration file:
+                # Sanity check for the configuration file:
                 if not self.parser.has_section('core'):
                     raise ConfigurationError('Core section missing!')
                 if not self.parser.has_option('core', 'nick'):
@@ -105,25 +106,9 @@ class Config(object):
                         'IRC server address not defined,'
                         ' expceted option `host` in [core] section'
                     )
-
-            #Setting defaults:
-            if not self.parser.has_option('core', 'port'):
-                self.parser.set('core', 'port', '6667')
-            if not self.parser.has_option('core', 'user'):
-                self.parser.set('core', 'user', 'willie')
-            if not self.parser.has_option('core', 'name'):
-                self.parser.set('core', 'name',
-                                'Willie Embosbot, http://willie.dftba.net')
-            if not self.parser.has_option('core', 'prefix'):
-                self.parser.set('core', 'prefix', r'\.')
-            if not self.parser.has_option('core', 'admins'):
-                self.parser.set('core', 'admins', '')
-            if not self.parser.has_option('core', 'verify_ssl'):
-                self.parser.set('core', 'verify_ssl', 'True')
-            if not self.parser.has_option('core', 'timeout'):
-                self.parser.set('core', 'timeout', '120')
         else:
             self.parser.add_section('core')
+        self.define_section('core', CoreSection)
         self.get = self.parser.get
 
     def save(self):
@@ -143,6 +128,18 @@ class Config(object):
             return self.parser.add_section(name)
         except ConfigParser.DuplicateSectionError:
             return False
+
+    def define_section(self, name, cls_):
+        """Define the available settings in a section.
+
+        ``cls_`` must be a subclass of ``StaticSection``. If the section has
+        already been defined with a different class, ValueError is raised."""
+        if not issubclass(cls_, StaticSection):
+            raise ValueError("Class must be a subclass of StaticSection.")
+        current = getattr(self, name)
+        if not isinstance(current, self.ConfigSection) and not current.__class__ == cls_:
+            raise ValueError("Can not re-define class for section.")
+        setattr(self, name, cls_(self, name))
 
     def has_option(self, section, name):
         """Check if option ``name`` exists under section ``section``."""
@@ -190,13 +187,16 @@ class Config(object):
             return value
 
     def __getattr__(self, name):
-        """"""
         if name in self.parser.sections():
             items = self.parser.items(name)
             section = self.ConfigSection(name, items, self)  # Return a section
             setattr(self, name, section)
             return section
         elif self.parser.has_option('core', name):
+            print('Accessing core config "{}" directly from the main config '
+                  'directly is deprecated, and will not be possible in '
+                  '6.0.'.format(name),
+                  file=sys.stderr)
             return self.parser.get('core', name)  # For backwards compatibility
         else:
             raise AttributeError("%r object has no attribute %r"

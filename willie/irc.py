@@ -121,6 +121,7 @@ class Bot(asynchat.async_chat):
         if not self.config.core.log_raw:
             return
         if not self.config.core.logdir:
+            # change for 6.0
             self.config.core.logdir = os.path.join(self.config.dotdir,
                                                    'logs')
         if not os.path.isdir(self.config.core.logdir):
@@ -535,8 +536,6 @@ class Bot(asynchat.async_chat):
                 os._exit(1)
         self.last_error_timestamp = datetime.now()
         self.error_count = self.error_count + 1
-        if self.config.exit_on_error:
-            os._exit(1)
 
     # Helper functions to maintain the oper list.
     # They cast to Identifier when adding to be quite sure there aren't any accidental
