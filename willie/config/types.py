@@ -1,6 +1,7 @@
 # coding=utf8
 
 from __future__ import unicode_literals
+import os.path
 import sys
 
 try:
@@ -17,10 +18,11 @@ class StaticSection(object):
 
     This class is intended to be subclassed with added ``ValidatedAttribute``s.
     """
-    def __init__(self, parser, section_name):
-        if not parser.has_section(section_name):
+    def __init__(self, config, section_name):
+        if not config.parser.has_section(section_name):
             raise ValueError()  # TODO
-        self._parser = parser
+        self._parent = config
+        self._parser = config.parser
         self._section_name = section_name
         for value in self.__dict__.keys():
             try:
@@ -136,3 +138,33 @@ class ChoiceAttribute(BaseValidated):
             return value
         else:
             raise ValueError('Value must be in {}'.format(self.choices))
+
+
+class FilenameAttribute(BaseValidated):
+    def __init__(self, name, relative=True, directory=False, default=None):
+        super(ChoiceAttribute, self).__init__(name, default=default)
+        self.relative = relative
+        self.directory = directory
+
+    def parse(self, value):
+        if not os.path.isabs(value):
+            if not self.relative:
+                raise ValueError("Value must be an absolute path.")
+            value = os.path.join(self._relative_to(), value)
+
+        if self.directory and not os.path.isdir(value):
+            try:
+                os.mkdirs(value)
+            except OSError:
+                raise ValueError(
+                    "Value must be an existing or creatable directory.")
+        if not self.directory and not os.path.isfile(value):
+            try:
+                open(value, 'w').close()
+            except OSError:
+                raise ValueError("Value must be an exisint or creatable file.")
+        return value
+
+    def serialize(self, value):
+        self.parse(value)
+        return value  # So that it's still relative

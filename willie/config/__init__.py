@@ -139,7 +139,7 @@ class Config(object):
         current = getattr(self, name)
         if not isinstance(current, self.ConfigSection) and not current.__class__ == cls_:
             raise ValueError("Can not re-define class for section.")
-        setattr(self, name, cls_(self.parser, name))
+        setattr(self, name, cls_(self, name))
 
     def has_option(self, section, name):
         """Check if option ``name`` exists under section ``section``."""

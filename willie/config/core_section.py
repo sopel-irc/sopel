@@ -80,7 +80,7 @@ class CoreSection(StaticSection):
     help_prefix = ValidatedAttribute('help_prefix', default='.')
     """The prefix to use in help"""
 
-    homedir = ValidatedAttribute('homedir')  # TODO wat
+    homedir = FilenameAttribute('homedir', relative=False, directory=True)  # TODO wat
 
     host = ValidatedAttribute('host')
     """The server to connect to."""
@@ -141,8 +141,6 @@ class CoreSection(StaticSection):
 
     user = ValidatedAttribute('user', default='willie')
     """The "user" for your bot (the part before the @ in the hostname)."""
-
-    verbose = ValidatedAttribute('verbose')  # TODO remove
 
     verify_ssl = ValidatedAttribute('verify_ssl', default=True)
     """Whether to require a trusted SSL certificate for SSL connections."""
