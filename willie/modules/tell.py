@@ -10,11 +10,10 @@ from __future__ import unicode_literals
 
 import os
 import time
-import datetime
-import willie.tools
 import threading
 import sys
 from willie.tools import Identifier, iterkeys
+from willie.tools.time import get_timezone, format_time
 from willie.module import commands, nickname_commands, rule, priority, example
 
 maximum = 4
@@ -109,8 +108,8 @@ def f_remind(bot, trigger):
         return bot.reply("I'm here now, you can tell me whatever you want!")
 
     if not tellee in (Identifier(teller), bot.nick, 'me'):
-        tz = willie.tools.get_timezone(bot.db, bot.config, None, tellee)
-        timenow = willie.tools.format_time(bot.db, bot.config, tz, tellee)
+        tz = get_timezone(bot.db, bot.config, None, tellee)
+        timenow = format_time(bot.db, bot.config, tz, tellee)
         bot.memory['tell_lock'].acquire()
         try:
             if not tellee in bot.memory['reminders']:

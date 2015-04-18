@@ -4,14 +4,16 @@ reddit-info.py - Willie Reddit module
 Author: Edward Powell, embolalia.net
 About: http://willie.dftba.net
 
-This module provides special tools for reddit, namely showing detailed info about reddit posts
+This module provides special tools for reddit, namely showing detailed
+info about reddit posts
 """
 from __future__ import unicode_literals
 
-from willie.module import commands, rule, example, NOLIMIT
+from willie.module import commands, rule, example, NOLIMIT, OP
 from willie.formatting import bold, color, colors
 from willie.web import USER_AGENT
-from willie import tools
+from willie.tools import WillieMemory, time
+import datetime as dt
 import praw
 import re
 import sys
@@ -27,7 +29,7 @@ user_regex = re.compile(user_url)
 
 def setup(bot):
     if not bot.memory.contains('url_callbacks'):
-        bot.memory['url_callbacks'] = tools.WillieMemory()
+        bot.memory['url_callbacks'] = WillieMemory()
     bot.memory['url_callbacks'][post_regex] = rpost_info
     bot.memory['url_callbacks'][user_regex] = redditor_info
 
@@ -44,7 +46,8 @@ def rpost_info(bot, trigger, match=None):
     s = r.get_submission(url=match.group(1))
 
     message = ('[REDDIT] {title} {link}{nsfw} | {points} points ({percent}) | '
-               '{comments} comments | Posted by {author}')
+               '{comments} comments | Posted by {author} | '
+               'Created at {created}')
 
     if s.is_self:
         link = '(self.{})'.format(s.subreddit.display_name)
@@ -53,7 +56,11 @@ def rpost_info(bot, trigger, match=None):
 
     if s.over_18:
         nsfw = bold(color(' [NSFW]', colors.RED))
-        #TODO implement per-channel settings db, and make this able to kick
+        sfw = bot.db.get_channel_value(trigger.sender, 'sfw')
+        if sfw:
+            link = '(link hidden)'
+            bot.write(['KICK', trigger.sender, trigger.nick,
+                       'Linking to NSFW content in a SFW channel.'])
     else:
         nsfw = ''
 
@@ -61,7 +68,12 @@ def rpost_info(bot, trigger, match=None):
         author = s.author.name
     else:
         author = '[deleted]'
-    #TODO add creation time with s.created
+
+    tz = time.get_timezone(bot.db, bot.config, None, trigger.nick,
+                           trigger.sender)
+    time_created = dt.datetime.utcfromtimestamp(s.created_utc)
+    created = time.format_time(bot.db, bot.config, tz, trigger.nick,
+                               trigger.sender, time_created)
 
     if s.score > 0:
         point_color = colors.GREEN
@@ -72,12 +84,14 @@ def rpost_info(bot, trigger, match=None):
 
     message = message.format(
         title=s.title, link=link, nsfw=nsfw, points=s.score, percent=percent,
-        comments=s.num_comments, author=author)
+        comments=s.num_comments, author=author, created=created)
+
     bot.say(message)
 
 
-#If you change this, you'll have to change some other things...
+# If you change this, you'll have to change some other things...
 @commands('redditor')
+@example('.redditor poem_for_your_sprog')
 def redditor_info(bot, trigger, match=None):
     """Show information about the given Redditor"""
     commanded = re.match(bot.config.prefix + 'redditor', trigger)
@@ -91,22 +105,78 @@ def redditor_info(bot, trigger, match=None):
             return NOLIMIT
         else:
             return
-        #Fail silently if it wasn't an explicit command.
+        # Fail silently if it wasn't an explicit command.
 
     message = '[REDDITOR] ' + u.name
+    now = dt.datetime.utcnow()
+    cakeday_start = dt.datetime.utcfromtimestamp(u.created_utc)
+    cakeday_start = cakeday_start.replace(year=now.year)
+    day = dt.timedelta(days=1)
+    year_div_by_400 = now.year % 400 == 0
+    year_div_by_100 = now.year % 100 == 0
+    year_div_by_4 = now.year % 4 == 0
+    is_leap = year_div_by_400 or ((not year_div_by_100) and year_div_by_4)
+    if (not is_leap) and ((cakeday_start.month, cakeday_start.day) == (2, 29)):
+        # If cake day is 2/29 and it's not a leap year, cake day is 1/3.
+        # Cake day begins at exact account creation time.
+        is_cakeday = cakeday_start + day <= now <= cakeday_start + (2 * day)
+    else:
+        is_cakeday = cakeday_start <= now <= cakeday_start + day
+
+    if is_cakeday:
+        message = message + ' | 13Cake day'
     if commanded:
         message = message + ' | http://reddit.com/u/' + u.name
     if u.is_gold:
         message = message + ' | 08Gold'
     if u.is_mod:
         message = message + ' | 05Mod'
-    message = message + ' | Link: ' + str(u.link_karma) + ' | Comment: ' + str(u.comment_karma)
+    message = message + (' | Link: ' + str(u.link_karma) + ' | Comment: '
+                         + str(u.comment_karma))
 
-    #TODO detect cake day with u.created
     bot.say(message)
 
 
-#If you change the groups here, you'll have to change some things above.
+# If you change the groups here, you'll have to change some things above.
 @rule('.*%s.*' % user_url)
 def auto_redditor_info(bot, trigger):
     redditor_info(bot, trigger)
+
+
+@commands('setsafeforwork', 'setsfw')
+@example('.setsfw true')
+@example('.setsfw false')
+def update_channel(bot, trigger):
+    """
+    Sets the Safe for Work status (true or false) for the current
+    channel. Defaults to false.
+    """
+    if bot.privileges[trigger.sender][trigger.nick] < OP:
+        return
+    else:
+        sfw = trigger.group(3).strip().lower() == 'true'
+        bot.db.set_channel_value(trigger.sender, 'sfw', sfw)
+        if sfw:
+            bot.reply('Got it. %s is now flagged as SFW.' % trigger.sender)
+        else:
+            bot.reply('Got it. %s is now flagged as NSFW.' % trigger.sender)
+
+
+@commands('getsafeforwork', 'getsfw')
+@example('.getsfw [channel]')
+def get_channel_sfw(bot, trigger):
+    """
+    Gets the preferred channel's Safe for Work status, or the current
+    channel's status if no channel given.
+    """
+    channel = trigger.group(2)
+    if not channel:
+        channel = trigger.sender
+
+    channel = channel.strip()
+
+    sfw = bot.db.get_channel_value(channel, 'sfw')
+    if sfw:
+        bot.say('%s is flagged as SFW' % channel)
+    else:
+        bot.say('%s is flagged as NSFW' % channel)

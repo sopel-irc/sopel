@@ -1,7 +1,23 @@
+Changes between 5.2.0 and 5.3.0
+===============================
+Module changes (for users):
+* The YouTube module warns at startup of the impending breakage of its API by Google
+* Unicode no longer breaks channel logging
+* .py hits an updated service running Python 2.7, rather than 2.5
+
+API changes (for developers):
+* Time and calculation tools are split out into multiple modules. The moved things will also be available in tools itself until 6.0, whereupon they will only be available in their new locations.
+* Functions and classes used internally for scheduling jobs are moved. They are still available in their old location, but are no longer documented and will not be considered part of the public API in 6.0.
+
+
 Changes between 5.1.1 and 5.2.0
 ===============================
 Module changes (for users):
 * An exception that failed the chanlogs module from loading is fixed
+* Meetbot meeting subjects no longer fail with unicode
+
+Core changes (for users):
+* The various ways of authenticating the bot are now configured using the same set of attributes. The old settings will be used as fallback until 6.0.0
 
 API changes (for developers):
 * Privilege decorators no longer cause an error when no message is given

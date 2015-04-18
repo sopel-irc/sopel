@@ -11,7 +11,7 @@ from __future__ import unicode_literals
 import re
 from willie import web
 from willie.module import commands, example
-from willie.tools import eval_equation
+from willie.tools.calculation import eval_equation
 from socket import timeout
 import sys
 if sys.version_info.major < 3:
@@ -52,10 +52,11 @@ def py(bot, trigger):
         return bot.say("Need an expression to evaluate")
 
     query = trigger.group(2)
-    uri = 'http://tumbolia.appspot.com/py/'
+    uri = 'http://tumbolia-hrd.appspot.com/py/'
     answer = web.get(uri + web.quote(query))
     if answer:
-        bot.say(answer)
+        #bot.say can potentially lead to 3rd party commands triggering.
+        bot.reply(answer)
     else:
         bot.reply('Sorry, no result.')
 
@@ -68,7 +69,7 @@ def wa(bot, trigger):
     if not trigger.group(2):
         return bot.reply("No search term.")
     query = trigger.group(2)
-    uri = 'http://tumbolia.appspot.com/wa/'
+    uri = 'http://tumbolia-hrd.appspot.com/wa/'
     try:
         answer = web.get(uri + web.quote(query.replace('+', 'plus')), 45,
                          dont_decode=True)

@@ -14,6 +14,7 @@ from __future__ import unicode_literals, division
 
 from willie import web, tools
 from willie.module import rule, commands, example
+import logging
 import json
 import re
 import sys
@@ -26,6 +27,11 @@ regex = re.compile('(youtube.com/watch\S*v=|youtu.be/)([\w-]+)')
 
 
 def setup(bot):
+    # To early to use the good logger
+    logging.warning(
+        "YouTube is deprecating the v2 API soon. This will break the YouTube "
+        "module. See http://git.io/willie764"
+    )
     if not bot.memory.contains('url_callbacks'):
         bot.memory['url_callbacks'] = tools.WillieMemory()
     bot.memory['url_callbacks'][regex] = ytinfo

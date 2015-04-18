@@ -26,6 +26,24 @@ from willie.logger import get_logger
 LOGGER = get_logger(__name__)
 
 
+def auth_after_register(bot):
+    """Do NickServ/AuthServ auth"""
+    if bot.config.core.auth_method == 'nickserv' or bot.config.core.nickserv_password:
+        nickserv_name = bot.config.core.auth_target or bot.config.core.nickserv_name or 'NickServ'
+        bot.msg(
+            nickserv_name,
+            'IDENTIFY %s' % bot.config.core.nickserv_password
+        )
+
+    elif bot.config.core.auth_method == 'authserv' or bot.config.core.authserv_password:
+        account = bot.config.core.auth_username or bot.config.core.authserv_account
+        password = bot.config.core.auth_password or bot.config.core.authserv_password
+        bot.write((
+            'AUTHSERV auth',
+            account + ' ' + password
+        ))
+
+
 @willie.module.event('001', '251')
 @willie.module.rule('.*')
 @willie.module.thread(False)
@@ -46,20 +64,7 @@ def startup(bot, trigger):
 
     bot.connection_registered = True
 
-    if bot.config.core.nickserv_password is not None:
-        nickserv_name = bot.config.core.nickserv_name or 'NickServ'
-        bot.msg(
-            nickserv_name,
-            'IDENTIFY %s' % bot.config.core.nickserv_password
-        )
-
-    #Use Authserv if authserv_password and authserv_account is set in config.
-    if (bot.config.core.authserv_password is not None
-            and bot.config.core.authserv_account is not None):
-        bot.write((
-            'AUTHSERV auth',
-            bot.config.core.authserv_account + ' ' + bot.config.authserv_password
-        ))
+    auth_after_register(bot)
 
     #Set bot modes per config, +B if no config option is defined
     if bot.config.has_option('core', 'modes'):
@@ -375,7 +380,7 @@ def recieve_cap_ls_reply(bot, trigger):
 
     # If we want to do SASL, we have to wait before we can send CAP END. So if
     # we are, wait on 903 (SASL successful) to send it.
-    if bot.config.core.sasl_password:
+    if bot.config.core.auth_method == 'sasl' or bot.config.core.sasl_password:
         bot.write(('CAP', 'REQ', 'sasl'))
     else:
         bot.write(('CAP', 'END'))
@@ -384,7 +389,8 @@ def recieve_cap_ls_reply(bot, trigger):
 def recieve_cap_ack_sasl(bot):
     # Presumably we're only here if we said we actually *want* sasl, but still
     # check anyway.
-    if not bot.config.core.sasl_password:
+    password = bot.config.core.auth_password or bot.config.core.sasl_password
+    if not password:
         return
     mech = bot.config.core.sasl_mechanism or 'PLAIN'
     bot.write(('AUTHENTICATE', mech))
@@ -397,10 +403,7 @@ def auth_proceed(bot, trigger):
         # How did we get here? I am not good with computer.
         return
     # Is this right?
-    if bot.config.core.sasl_username:
-        sasl_username = bot.config.core.sasl_username
-    else:
-        sasl_username = bot.nick
+    sasl_username = bot.config.core.auth_username or bot.config.core.sasl_username or bot.nick
     sasl_token = '\0'.join((sasl_username, sasl_username,
                            bot.config.core.sasl_password))
     # Spec says we do a base 64 encode on the SASL stuff

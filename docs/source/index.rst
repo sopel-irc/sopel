@@ -12,13 +12,6 @@ but rather be run as a standalone program. However, it is intended (and
 encouraged) that users write new "modules" for it. This documentation is
 intended to serve that goal.
 
-Due to the high level of customization encouraged by this bot, there are a few
-different versions of it floating around. This documentation focuses on Willie,
-but some parts may be applicable to older versions. The original "phenny" is,
-for the purpose of this documentation, called version *1.x*, and the "jenni"
-fork thereof considered version *2.x*. Willie versions start at *3.0* and
-follow `semantic versioning <http://semver.org>`_.
-
 .. contents:: :depth: 2
 
 Getting started: Your functions, ``willie``, and ``trigger``
@@ -413,6 +406,12 @@ willie.tools
 ------------
 
 .. automodule:: willie.tools
+   :members:
+
+.. automodule:: willie.tools.time
+   :members:
+
+.. automodule:: willie.tools.calculation
    :members:
 
 willie.module

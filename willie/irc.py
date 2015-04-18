@@ -288,8 +288,9 @@ class Bot(asynchat.async_chat):
         # 421 Unknown command, which we'll ignore
         self.write(('CAP', 'LS'))
 
-        if self.config.core.server_password is not None:
-            self.write(('PASS', self.config.core.server_password))
+        if self.config.core.auth_method == 'server' or self.config.core.server_password:
+            password = self.config.core.auth_password or self.config.core.server_password
+            self.write(('PASS', password))
         self.write(('NICK', self.nick))
         self.write(('USER', self.user, '+iw', self.nick), self.name)
 
