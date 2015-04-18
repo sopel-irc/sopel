@@ -314,7 +314,7 @@ class Willie(irc.Bot):
             )
 
     def _host_blocked(self, host):
-        bad_masks = self.config.core.get_list('host_blocks')
+        bad_masks = self.config.core.host_blocks
         for bad_mask in bad_masks:
             bad_mask = bad_mask.strip()
             if not bad_mask:
@@ -325,7 +325,7 @@ class Willie(irc.Bot):
         return False
 
     def _nick_blocked(self, nick):
-        bad_nicks = self.config.core.get_list('nick_blocks')
+        bad_nicks = self.config.core.nick_blocks
         for bad_nick in bad_nicks:
             bad_nick = bad_nick.strip()
             if not bad_nick:

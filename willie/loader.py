@@ -63,10 +63,8 @@ def enumerate_modules(config, show_all=False):
         if result:
             modules[result[0]] = result[1:]
 
-    # Last, look at all the extra directories. (get_list returns [] if
-    # there are none or the option isn't defined, so it'll just skip this
-    # bit)
-    for directory in config.core.get_list('extra'):
+    # Last, look at all the extra directories.
+    for directory in config.core.extra:
         for path in os.listdir(directory):
             path = os.path.join(directory, path)
             result = get_module_description(path)
@@ -82,7 +80,7 @@ def enumerate_modules(config, show_all=False):
         return modules
 
     # Apply whitelist, if present
-    enable = config.core.get_list('enable')
+    enable = config.core.enable
     if enable:
         enabled_modules = {'coretasks': modules['coretasks']}
         for module in enable:
@@ -91,7 +89,7 @@ def enumerate_modules(config, show_all=False):
         modules = enabled_modules
 
     # Apply blacklist, if present
-    exclude = config.core.get_list('exclude')
+    exclude = config.core.exclude
     for module in exclude:
         if module in modules:
             del modules[module]

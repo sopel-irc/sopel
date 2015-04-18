@@ -4,29 +4,13 @@ from __future__ import unicode_literals
 from __future__ import print_function
 
 from willie.config.types import (
-    StaticSection, ValidatedAttribute, ListAttribute, ChoiceAttribute
+    StaticSection, ValidatedAttribute, ListAttribute, ChoiceAttribute,
+    FilenameAttribute, _HomedirAttribute
 )
 from willie.tools import Identifier
 
-import sys
-
 
 class CoreSection(StaticSection):
-    #  5.x backwards compat; remove for 6.0.0
-    def __getattr__(self, name):
-        if self._parser.has_option(self._section_name, name):
-            print('The "{}" core config setting is deprecated'.format(name),
-                  file=sys.stderr)
-            return self._parser.get(self._section_name, name)
-        else:
-            return None
-
-    def get_list(self, name):
-        if hasattr(self, name):
-            return getattr(self, name)
-        else:
-            return ','.split(self._parser.get(self._section_name, name))
-
     admins = ListAttribute('admins')
     """The list of people (other than the owner) who can administer the bot"""
 
@@ -80,7 +64,9 @@ class CoreSection(StaticSection):
     help_prefix = ValidatedAttribute('help_prefix', default='.')
     """The prefix to use in help"""
 
-    homedir = FilenameAttribute('homedir', relative=False, directory=True)  # TODO wat
+    homedir = _HomedirAttribute()
+    """The directory in which the configuration and module data are stored."""
+    # TODO is that what that is? What about default?
 
     host = ValidatedAttribute('host')
     """The server to connect to."""
@@ -93,7 +79,7 @@ class CoreSection(StaticSection):
     log_raw = ValidatedAttribute('log_raw', bool, default=False)
     """Whether a log of raw lines as sent and recieved should be kept."""
 
-    logdir = ValidatedAttribute('logdir')  # TODO default
+    logdir = FilenameAttribute('logdir', directory=True, default='logs')
     """Directory in which to place logs."""
 
     logging_channel = ValidatedAttribute('logging_channel', Identifier)
@@ -119,10 +105,18 @@ class CoreSection(StaticSection):
 
     Regular expression syntax is used."""
 
+    not_configured = ValidatedAttribute('not_configured', bool, default=False)
+    """For package maintainers. Not used in normal configurations.
+
+    This allows software packages to install a default config file, with this
+    set to true, so that the bot will not run until it has been properly
+    configured."""
+
     owner = ValidatedAttribute('owner')
     """The IRC name of the owner of the bot."""
 
-    pid_file_path = ValidatedAttribute('pid_file_path')  # TODO wat
+    pid_file_path = FilenameAttribute('pid_file_path')  # TODO wat
+    pid_dir = FilenameAttribute('pid_dir')  # TODO wat
 
     port = ValidatedAttribute('port', int, default=6667)
     """The port to connect on."""

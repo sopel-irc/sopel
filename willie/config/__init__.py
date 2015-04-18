@@ -40,6 +40,7 @@ from __future__ import print_function
 from __future__ import absolute_import
 
 from willie.tools import iteritems
+import willie.loader
 import os
 import sys
 try:

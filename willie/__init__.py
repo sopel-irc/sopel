@@ -26,9 +26,6 @@ def run(config):
     import willie.logger
     from willie.tools import stderr
     delay = 20
-    # Remove for 6.0 until someone complains
-    if config.core.delay is not None:
-        delay = config.core.delay
     # Inject ca_certs from config to web for SSL validation of web requests
     web.ca_certs = '/etc/pki/tls/certs/ca-bundle.crt'
     if hasattr(config, 'ca_certs') and config.ca_certs is not None:

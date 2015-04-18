@@ -144,7 +144,7 @@ class Trigger(unicode):
             )
 
         self._admin = any(match_host_or_nick(item)
-                         for item in config.core.get_list('admins'))
+                         for item in config.core.admins)
         self._owner = match_host_or_nick(config.core.owner)
         self._admin = self.admin or self.owner
 

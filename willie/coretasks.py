@@ -78,13 +78,13 @@ def startup(bot, trigger):
     if bot.config.has_option('core', 'throttle_join'):
         throttle_rate = int(bot.config.core.throttle_join)
         channels_joined = 0
-        for channel in bot.config.core.get_list('channels'):
+        for channel in bot.config.core.channels:
             channels_joined += 1
             if not channels_joined % throttle_rate:
                 time.sleep(1)
             bot.join(channel)
     else:
-        for channel in bot.config.core.get_list('channels'):
+        for channel in bot.config.core.channels:
             bot.join(channel)
 
 
@@ -443,8 +443,8 @@ def blocks(bot, trigger):
         'huh': "I could not figure out what you wanted to do.",
     }
 
-    masks = bot.config.core.get_list('host_blocks')
-    nicks = [Identifier(nick) for nick in bot.config.core.get_list('nick_blocks')]
+    masks = bot.config.core.host_blocks
+    nicks = [Identifier(nick) for nick in bot.config.core.nick_blocks]
     text = trigger.group().split()
 
     if len(text) == 3 and text[1] == "list":

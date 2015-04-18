@@ -140,17 +140,52 @@ class ChoiceAttribute(BaseValidated):
             raise ValueError('Value must be in {}'.format(self.choices))
 
 
-class FilenameAttribute(BaseValidated):
+class ValidatedWithContext(BaseValidated):
+    def __get__(self, instance, owner=None):
+        try:
+            value = instance._parser.get(instance._section_name, self.name)
+        except configparser.NoOptionError:
+            if self.default is not NO_DEFAULT:
+                return self.default
+            raise AttributeError()  # TODO
+        main_config = instance._parent
+        this_section = getattr(main_config, instance._section_name)
+        return self.parse(main_config, this_section, value)
+
+    def __set__(self, instance, value):
+        main_config = instance._parent
+        this_section = getattr(main_config, instance._section_name)
+        value = self.serialize(main_config, this_section, value)
+        instance._parser.set(instance._section_name, self.name, value)
+
+
+class _HomedirAttribute(BaseValidated):
+    def __init__(self):
+        pass
+
+    def __get__(self, instance, owner=None):
+        return os.path.dirname(instance._parent.filename)
+
+    def __put__(self, instance, value):
+        raise AttributeError("Can't set attribute.")
+
+    def __delete__(self, instance):
+        raise AttributeError("Can't delete attribute.")
+
+
+class FilenameAttribute(ValidatedWithContext):
     def __init__(self, name, relative=True, directory=False, default=None):
-        super(ChoiceAttribute, self).__init__(name, default=default)
+        super(FilenameAttribute, self).__init__(name, default=default)
         self.relative = relative
         self.directory = directory
 
-    def parse(self, value):
+    def parse(self, main_config, this_section, value):
         if not os.path.isabs(value):
             if not self.relative:
                 raise ValueError("Value must be an absolute path.")
-            value = os.path.join(self._relative_to(), value)
+            value = os.path.join(main_config.core.homedir, value)
+
+        value = os.path.expanduser(value)
 
         if self.directory and not os.path.isdir(value):
             try:
@@ -165,6 +200,6 @@ class FilenameAttribute(BaseValidated):
                 raise ValueError("Value must be an exisint or creatable file.")
         return value
 
-    def serialize(self, value):
+    def serialize(self, main_config, this_section, value):
         self.parse(value)
         return value  # So that it's still relative
