@@ -47,9 +47,11 @@ def version(bot, trigger):
     bot.reply("Willie v. {} at commit: {}".format(willie.__version__, sha))
 
 
-@willie.module.rule('\x01VERSION\x01')
+@willie.module.intent('VERSION')
 @willie.module.rate(20)
+@willie.module.rule('.*')
 def ctcp_version(bot, trigger):
+    print('wat')
     bot.write(('NOTICE', trigger.nick),
               '\x01VERSION Willie IRC Bot version %s\x01' % willie.__version__)
 

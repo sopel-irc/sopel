@@ -241,6 +241,29 @@ def event(*event_list):
     return add_attribute
 
 
+def intent(*intent_list):
+    """Make a callable trigger on a message with any of the given intents.
+
+    *Availability: 5.2.0+*
+
+    NOTE: Due to a bug, messages sent with the intent in the CTCP format
+    (rather than IRCv3 message tags) which do not include a message (for
+    example, a message like ``\\x01VERSION\\x01``) are not correctly parsed by
+    the bot, and as such do not get caught by this decorator. This erroneous
+    behavior is kept in 5.x for compatability, but will be rectified in 6.0.
+
+    Additionally in 5.x, a rule or command must be specified in addition to
+    this, even if it is just ``'.*``.
+    """
+    def add_attribute(function):
+        if not hasattr(function, "intents"):
+            function.intents = []
+        function.intents.extend(intent_list)
+        print function.intents
+        return function
+    return add_attribute
+
+
 def rate(value):
     """Decorator. Equivalent to func.rate = value.
 
@@ -273,7 +296,7 @@ def require_privmsg(message=None):
             if trigger.is_privmsg:
                 return function(*args, **kwargs)
             else:
-                if message:
+                if message and not callable(message):
                     bot.say(message)
         return _nop
     # Hack to allow decorator without parens
@@ -297,7 +320,7 @@ def require_chanmsg(message=None):
             if trigger.is_privmsg:
                 return function(*args, **kwargs)
             else:
-                if message:
+                if message and not callable(message):
                     bot.say(message)
         return _nop
     # Hack to allow decorator without parens
@@ -319,7 +342,7 @@ def require_privilege(level, message=None):
             channel_privs = bot.privileges[trigger.sender]
             allowed = channel_privs.get(trigger.nick, 0) >= level
             if not trigger.is_privmsg and not allowed:
-                if message:
+                if message and not callable(message):
                     bot.say(message)
             else:
                 return function(bot, trigger, *args, **kwargs)
@@ -335,7 +358,7 @@ def require_admin(message=None):
         @functools.wraps(function)
         def guarded(bot, trigger, *args, **kwargs):
             if not trigger.admin:
-                if message:
+                if message and not callable(message):
                     bot.say(message)
             else:
                 return function(bot, trigger, *args, **kwargs)
@@ -354,7 +377,7 @@ def require_owner(message=None):
         @functools.wraps(function)
         def guarded(bot, trigger, *args, **kwargs):
             if not trigger.owner:
-                if message:
+                if message and not callable(message):
                     bot.say(message)
             else:
                 return function(bot, trigger, *args, **kwargs)

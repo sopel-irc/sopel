@@ -471,6 +471,9 @@ class Willie(irc.Bot):
                         continue
                     if self.limit(trigger, func):
                         continue
+                    if (hasattr(func, 'intents') and
+                            trigger.tags.get('intent') not in func.intents):
+                        continue
                     if func.thread:
                         targs = (func, wrapper, trigger)
                         t = threading.Thread(target=self.call, args=targs)

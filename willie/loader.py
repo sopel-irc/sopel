@@ -154,7 +154,7 @@ def clean_callable(func, config):
 
     if hasattr(func, 'rule'):
         if isinstance(func.rule, basestring):
-            func.rule = [rule]
+            func.rule = [func.rule]
         func.rule = [compile_rule(nick, rule) for rule in func.rule]
 
     if hasattr(func, 'commands'):
@@ -191,7 +191,8 @@ def clean_module(module, config):
         if callable(obj):
             if getattr(obj, '__name__', None) == 'shutdown':
                 shutdowns.append(obj)
-            elif (hasattr(obj, 'commands') or hasattr(obj, 'rule')):
+            elif (hasattr(obj, 'commands') or hasattr(obj, 'rule') or
+                  hasattr(obj, 'intent')):
                 clean_callable(obj, config)
                 callables.append(obj)
             elif hasattr(obj, 'interval'):
