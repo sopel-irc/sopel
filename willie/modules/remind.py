@@ -26,7 +26,7 @@ except:
 
 
 def filename(self):
-    name = self.nick + '-' + self.config.host + '.reminders.db'
+    name = self.nick + '-' + self.config.core.host + '.reminders.db'
     return os.path.join(self.config.core.homedir, name)
 
 

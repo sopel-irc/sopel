@@ -121,7 +121,7 @@ def add_traceback(bot, trigger):
 
     # Find the relevant lines from the log file
     post = ''
-    logfile = os.path.join(bot.config.logdir, 'exceptions.log')
+    logfile = os.path.join(bot.config.core.logdir, 'exceptions.log')
     with open(logfile) as log:
         in_trace = False
         for data in log:

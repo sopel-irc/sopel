@@ -273,7 +273,7 @@ class Bot(asynchat.async_chat):
                                            cert_reqs=ssl.CERT_REQUIRED,
                                            ca_certs=self.ca_certs)
                 try:
-                    ssl.match_hostname(self.ssl.getpeercert(), self.config.host)
+                    ssl.match_hostname(self.ssl.getpeercert(), self.config.core.host)
                 except ssl.CertificateError:
                     stderr("Invalid certficate, hostname mismatch!")
                     os.unlink(self.config.pid_file_path)
@@ -285,8 +285,8 @@ class Bot(asynchat.async_chat):
         # 421 Unknown command, which we'll ignore
         self.write(('CAP', 'LS'))
 
-        if self.config.core.auth_method == 'server' or self.config.core.server_password:
-            password = self.config.core.auth_password or self.config.core.server_password
+        if self.config.core.auth_method == 'server':
+            password = self.config.core.auth_password
             self.write(('PASS', password))
         self.write(('NICK', self.nick))
         self.write(('USER', self.user, '+iw', self.nick), self.name)
@@ -300,21 +300,21 @@ class Bot(asynchat.async_chat):
 
     def _timeout_check(self):
         while self.connected or self.connecting:
-            if (datetime.now() - self.last_ping_time).seconds > int(self.config.timeout):
-                stderr('Ping timeout reached after %s seconds, closing connection' % self.config.timeout)
+            if (datetime.now() - self.last_ping_time).seconds > int(self.config.core.timeout):
+                stderr('Ping timeout reached after %s seconds, closing connection' % self.config.core.timeout)
                 self.handle_close()
                 break
             else:
-                time.sleep(int(self.config.timeout))
+                time.sleep(int(self.config.core.timeout))
 
     def _send_ping(self):
         while self.connected or self.connecting:
-            if self.connected and (datetime.now() - self.last_ping_time).seconds > int(self.config.timeout) / 2:
+            if self.connected and (datetime.now() - self.last_ping_time).seconds > int(self.config.core.timeout) / 2:
                 try:
-                    self.write(('PING', self.config.host))
+                    self.write(('PING', self.config.core.host))
                 except socket.error:
                     pass
-            time.sleep(int(self.config.timeout) / 2)
+            time.sleep(int(self.config.core.timeout) / 2)
 
     def _ssl_send(self, data):
         """Replacement for self.send() during SSL connections."""
@@ -483,7 +483,7 @@ class Bot(asynchat.async_chat):
 
                 signature = '%s (%s)' % (report[0], report[1])
                 # TODO: make not hardcoded
-                log_filename = os.path.join(self.config.logdir, 'exceptions.log')
+                log_filename = os.path.join(self.config.core.logdir, 'exceptions.log')
                 with codecs.open(log_filename, 'a', encoding='utf-8') as logfile:
                     logfile.write('Signature: %s\n' % signature)
                     if trigger:
@@ -515,7 +515,7 @@ class Bot(asynchat.async_chat):
         LOGGER.error('Fatal error in core, please review exception log')
         # TODO: make not hardcoded
         logfile = codecs.open(
-            os.path.join(self.config.logdir, 'exceptions.log'),
+            os.path.join(self.config.core.logdir, 'exceptions.log'),
             'a',
             encoding='utf-8'
         )

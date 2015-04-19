@@ -20,7 +20,7 @@ import signal
 __version__ = '5.2.0-git'
 
 
-def run(config):
+def run(config, daemon=False):
     import willie.bot as bot
     import willie.web as web
     import willie.logger
@@ -42,7 +42,7 @@ def run(config):
             p.quit('Closing')
     while True:
         try:
-            p = bot.Willie(config)
+            p = bot.Willie(config, daemon=daemon)
             if hasattr(signal, 'SIGUSR1'):
                 signal.signal(signal.SIGUSR1, signal_handler)
             if hasattr(signal, 'SIGTERM'):
@@ -57,7 +57,7 @@ def run(config):
                 stderr(trace)
             except:
                 pass
-            logfile = open(os.path.join(config.logdir, 'exceptions.log'), 'a')
+            logfile = open(os.path.join(config.core.logdir, 'exceptions.log'), 'a')
             logfile.write('Critical exception in core')
             logfile.write(trace)
             logfile.write('----------------------------------------\n\n')

@@ -28,7 +28,6 @@ import signal
 from willie.__init__ import run, __version__
 from willie.config import Config, create_config, ConfigurationError, wizard
 import willie.tools as tools
-import willie.web
 
 homedir = os.path.join(os.path.expanduser('~'), '.willie')
 
@@ -144,18 +143,7 @@ def main(argv=None):
             # exit with code 2 to prevent auto restart on fail by systemd
             sys.exit(2)
 
-        if not config_module.has_option('core', 'homedir'):
-            config_module.dotdir = homedir
-            config_module.homedir = homedir
-        else:
-            homedir = config_module.core.homedir
-            config_module.dotdir = config_module.core.homedir
-
-        if not config_module.core.logdir:
-            config_module.core.logdir = os.path.join(homedir, 'logs')
-        logfile = os.path.os.path.join(config_module.logdir, 'stdio.log')
-        if not os.path.isdir(config_module.logdir):
-            os.mkdir(config_module.logdir)
+        logfile = os.path.os.path.join(config_module.core.logdir, 'stdio.log')
 
         config_module._is_deamonized = opts.deamonize
 
@@ -163,7 +151,7 @@ def main(argv=None):
         sys.stdout = tools.OutputRedirect(logfile, False, opts.quiet)
 
         # Handle --quit, --kill and saving the PID to file
-        pid_dir = config_module.core.pid_dir or homedir
+        pid_dir = config_module.core.pid_dir
         if opts.config is None:
             pid_file_path = os.path.join(pid_dir, 'willie.pid')
         else:
@@ -206,7 +194,7 @@ def main(argv=None):
                 sys.exit()
         with open(pid_file_path, 'w') as pid_file:
             pid_file.write(str(os.getpid()))
-        config_module.pid_file_path = pid_file_path
+        config_module.core.pid_file_path = pid_file_path
 
         # Step Five: Initialise And Run willie
         run(config_module)

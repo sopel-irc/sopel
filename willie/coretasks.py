@@ -28,16 +28,16 @@ LOGGER = get_logger(__name__)
 
 def auth_after_register(bot):
     """Do NickServ/AuthServ auth"""
-    if bot.config.core.auth_method == 'nickserv' or bot.config.core.nickserv_password:
-        nickserv_name = bot.config.core.auth_target or bot.config.core.nickserv_name or 'NickServ'
+    if bot.config.core.auth_method == 'nickserv':
+        nickserv_name = bot.config.core.auth_target or 'NickServ'
         bot.msg(
             nickserv_name,
-            'IDENTIFY %s' % bot.config.core.nickserv_password
+            'IDENTIFY %s' % bot.config.core.auth_password
         )
 
-    elif bot.config.core.auth_method == 'authserv' or bot.config.core.authserv_password:
-        account = bot.config.core.auth_username or bot.config.core.authserv_account
-        password = bot.config.core.auth_password or bot.config.core.authserv_password
+    elif bot.config.core.auth_method == 'authserv':
+        account = bot.config.core.auth_username
+        password = bot.config.core.auth_password
         bot.write((
             'AUTHSERV auth',
             account + ' ' + password

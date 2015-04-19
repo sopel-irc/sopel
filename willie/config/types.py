@@ -201,5 +201,5 @@ class FilenameAttribute(ValidatedWithContext):
         return value
 
     def serialize(self, main_config, this_section, value):
-        self.parse(value)
+        self.parse(main_config, this_section, value)
         return value  # So that it's still relative

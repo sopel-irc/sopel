@@ -116,7 +116,7 @@ class CoreSection(StaticSection):
     """The IRC name of the owner of the bot."""
 
     pid_file_path = FilenameAttribute('pid_file_path')  # TODO wat
-    pid_dir = FilenameAttribute('pid_dir')  # TODO wat
+    pid_dir = FilenameAttribute('pid_dir', default='.')  # TODO wat
 
     port = ValidatedAttribute('port', int, default=6667)
     """The port to connect on."""

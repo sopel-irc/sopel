@@ -180,7 +180,7 @@ def mangle(bot, trigger):
         bot.reply("What do you want me to mangle?")
         return
     if bot.config.has_section('translate') and bot.config.translate.research:
-        research_logfile = open(os.path.join(bot.config.logdir, 'mangle.log'), 'a')
+        research_logfile = open(os.path.join(bot.config.core.logdir, 'mangle.log'), 'a')
         research_logfile.write('Phrase: %s\n' % str(phrase))
         research_logfile.write('Lang_list: %s\n' % lang_list)
     for lang in lang_list:
