@@ -252,12 +252,12 @@ class Willie(irc.Bot):
                 self.shutdown_methods.remove(obj)
 
     def register_help(self, module):
-        commands = sum([
-            obj.commands
-            for _, obj in iteritems(vars(module))
-            if hasattr(obj, 'commands')
-        ], [])
-        # single command are put in special group "others"
+        commands = []
+        for _, obj in iteritems(vars(module)):
+            if hasattr(obj, "commands"):
+                commands.append(obj.commands)
+        
+        # single command modules are put in the special group "others"
         if len(commands) == 1:
             others = self.modules_commands.setdefault("others", [])
             others.append(commands[0])
@@ -265,11 +265,11 @@ class Willie(irc.Bot):
             self.modules_commands[module.__name__] = commands
 
     def unregister_help(self, module):
-        commands = sum([
-            obj.commands
-            for _, obj in iteritems(vars(module))
-            if hasattr(obj, 'commands')
-        ], [])
+        commands = []
+        for _, obj in iteritems(vars(module)):
+            if hasattr(obj, "commands"):
+                commands.append(obj.commands)
+        
         if len(commands) == 1:
             command = commands[0]
             others = self.modules_commands.get("others", [])
