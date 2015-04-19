@@ -36,7 +36,7 @@ class CoreSection(StaticSection):
     bind_host = ValidatedAttribute('bind_host')
     """Bind the connection to a specific IP"""
 
-    ca_certs = ValidatedAttribute('ca_certs', default='/etc/pki/tls/cert.pem')
+    ca_certs = FilenameAttribute('ca_certs', default='/etc/pki/tls/cert.pem')
     """The path of the CA certs pem file"""
 
     channels = ListAttribute('channels')
@@ -76,7 +76,7 @@ class CoreSection(StaticSection):
 
     Regular expression syntax is used"""
 
-    log_raw = ValidatedAttribute('log_raw', bool, default=False)
+    log_raw = ValidatedAttribute('log_raw', bool, default=True)
     """Whether a log of raw lines as sent and recieved should be kept."""
 
     logdir = FilenameAttribute('logdir', directory=True, default='logs')

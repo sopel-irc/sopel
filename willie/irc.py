@@ -52,28 +52,18 @@ LOGGER = get_logger(__name__)
 
 class Bot(asynchat.async_chat):
     def __init__(self, config):
-        ca_certs = '/etc/pki/tls/cert.pem'
-        if config.ca_certs is not None:
-            ca_certs = config.ca_certs
-        elif not os.path.isfile(ca_certs):
-            ca_certs = '/etc/ssl/certs/ca-certificates.crt'
-        if not os.path.isfile(ca_certs):
-            stderr('Could not open CA certificates file. SSL will not '
-                   'work properly.')
+        ca_certs = config.core.ca_certs
 
-        if config.log_raw is None:
-            # Default is to log raw data, can be disabled in config
-            config.log_raw = True
         asynchat.async_chat.__init__(self)
         self.set_terminator(b'\n')
         self.buffer = ''
 
-        self.nick = Identifier(config.nick)
+        self.nick = Identifier(config.core.nick)
         """Willie's current ``Identifier``. Changing this while Willie is running is
         untested."""
-        self.user = config.user
+        self.user = config.core.user
         """Willie's user/ident."""
-        self.name = config.name
+        self.name = config.core.name
         """Willie's "real name", as used for whois."""
 
         self.channels = []
@@ -276,7 +266,7 @@ class Bot(asynchat.async_chat):
                     ssl.match_hostname(self.ssl.getpeercert(), self.config.core.host)
                 except ssl.CertificateError:
                     stderr("Invalid certficate, hostname mismatch!")
-                    os.unlink(self.config.pid_file_path)
+                    os.unlink(self.config.core.pid_file_path)
                     os._exit(1)
             self.set_socket(self.ssl)
 

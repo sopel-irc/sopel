@@ -94,7 +94,7 @@ def rpost_info(bot, trigger, match=None):
 @example('.redditor poem_for_your_sprog')
 def redditor_info(bot, trigger, match=None):
     """Show information about the given Redditor"""
-    commanded = re.match(bot.config.prefix + 'redditor', trigger)
+    commanded = re.match(bot.config.core.prefix + 'redditor', trigger)
     r = praw.Reddit(user_agent=USER_AGENT)
     match = match or trigger
     try:

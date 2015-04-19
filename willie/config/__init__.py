@@ -193,12 +193,6 @@ class Config(object):
             section = self.ConfigSection(name, items, self)  # Return a section
             setattr(self, name, section)
             return section
-        elif self.parser.has_option('core', name):
-            print('Accessing core config "{}" directly from the main config '
-                  'directly is deprecated, and will not be possible in '
-                  '6.0.'.format(name),
-                  file=sys.stderr)
-            return self.parser.get('core', name)  # For backwards compatibility
         else:
             raise AttributeError("%r object has no attribute %r"
                                  % (type(self).__name__, name))
@@ -322,7 +316,7 @@ class Config(object):
     def _modules(self):
         home = os.getcwd()
         modules_dir = os.path.join(home, 'modules')
-        filenames = self.enumerate_modules()
+        filenames = willie.loader.enumerate_modules(self)
         os.sys.path.insert(0, modules_dir)
         for name, filename in iteritems(filenames):
             try:

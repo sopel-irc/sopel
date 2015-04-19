@@ -37,9 +37,9 @@ class MockWillie(object):
         self._init_config()
 
         if admin:
-            self.config.admins = self.nick
+            self.config.core.admins = [self.nick]
         if owner:
-            self.config.owner = self.nick
+            self.config.core.owner = self.nick
 
     def _init_config(self):
         cfg = self.config

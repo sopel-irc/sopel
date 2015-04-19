@@ -13,6 +13,7 @@ import os.path
 import time
 import imp
 from willie.tools import iteritems
+import willie.loader
 import willie.module
 import subprocess
 
@@ -26,7 +27,7 @@ def f_reload(bot, trigger):
         return
 
     name = trigger.group(2)
-    if name == bot.config.owner:
+    if name == bot.config.core.owner:
         return bot.reply('What?')
 
     if not name or name == '*' or name.upper() == 'ALL THE THINGS':
@@ -101,13 +102,13 @@ def f_load(bot, trigger):
 
     module_name = trigger.group(2)
     path = ''
-    if module_name == bot.config.owner:
+    if module_name == bot.config.core.owner:
         return bot.reply('What?')
 
     if module_name in sys.modules:
         return bot.reply('Module already loaded, use reload')
 
-    mods = bot.config.enumerate_modules()
+    mods = willie.loader.enumerate_modules(config)
     for name in mods:
         if name == trigger.group(2):
             path = mods[name]
