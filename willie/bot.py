@@ -256,13 +256,8 @@ class Willie(irc.Bot):
         for _, obj in iteritems(vars(module)):
             if hasattr(obj, "commands"):
                 commands.append(obj.commands)
-        
-        # single command modules are put in the special group "others"
-        if len(commands) == 1:
-            others = self.modules_commands.setdefault("others", [])
-            others.append(commands[0])
-        elif commands:
-            self.modules_commands[module.__name__] = commands
+
+        self.modules_commands[module.__name__] = commands
 
     def unregister_help(self, module):
         commands = []
@@ -270,13 +265,7 @@ class Willie(irc.Bot):
             if hasattr(obj, "commands"):
                 commands.append(obj.commands)
         
-        if len(commands) == 1:
-            command = commands[0]
-            others = self.modules_commands.get("others", [])
-            if command in others:
-                del others[others.index(command)]
-        else:
-            del self.modules_commands[module.__name__]
+        del self.modules_commands[module.__name__]
 
     def sub(self, pattern):
         """Replace any of the following special directives in a function's rule expression:
