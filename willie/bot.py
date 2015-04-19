@@ -47,7 +47,7 @@ class Willie(irc.Bot):
     NOLIMIT = module.NOLIMIT
 
     def __init__(self, config, daemon=False):
-        irc.Bot.__init__(self, config.core)
+        irc.Bot.__init__(self, config)
         self._daemon = daemon  # Used for iPython. TODO something saner here
         # `re.compile('.*') is re.compile('.*')` because of caching, so we need
         # to associate a list with each regex, since they are unexpectedly
