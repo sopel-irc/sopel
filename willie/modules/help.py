@@ -35,7 +35,7 @@ def help(bot, trigger):
         if not trigger.is_privmsg:
             bot.reply("I am sending you a private message of all my commands!")
 
-        bot.notice("For more information about a particular command use %shelp <command>", bot.config.core.help_prefix, trigger.nick)
+        bot.notice("For more information about a particular command use %shelp <command>" % bot.config.core.help_prefix, trigger.nick)
 
         groups = bot.modules_commands
         name_length = max(6, max(len(k) for k in groups))
@@ -78,8 +78,8 @@ def help(bot, trigger):
 @priority('low')
 def help2(bot, trigger):
     response = (
-        'Hi, I\'m a bot. Say ".commands" to me in private for a list ' +
+        'Hi, I\'m a bot. Say "%scommands" to me in private for a list ' +
         'of my commands, or see http://willie.dftba.net for more ' +
         'general details. My owner is %s.'
-    ) % bot.config.owner
+    ) % (bot.config.core.help_prefix, bot.config.owner)
     bot.reply(response)
