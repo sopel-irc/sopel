@@ -120,10 +120,6 @@ class Bot(asynchat.async_chat):
         """Log raw line to the raw log."""
         if not self.config.core.log_raw:
             return
-        if not self.config.core.logdir:
-            # change for 6.0
-            self.config.core.logdir = os.path.join(self.config.dotdir,
-                                                   'logs')
         if not os.path.isdir(self.config.core.logdir):
             try:
                 os.mkdir(self.config.core.logdir)

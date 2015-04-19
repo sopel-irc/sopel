@@ -117,10 +117,6 @@ class Willie(irc.Bot):
             self.config.core.host_blocks = []
         self.setup()
 
-    # 5.0 compat, just in case. Remove in 6.0
-    JobScheduler = willie.tools.jobs.JobScheduler
-    Job = willie.tools.jobs.JobScheduler
-
     def setup(self):
         stderr("\nWelcome to Willie. Loading modules...\n\n")
 

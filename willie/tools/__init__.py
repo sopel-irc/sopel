@@ -2,9 +2,7 @@
 """
 *Availability: 3+*
 ``tools`` contains a number of useful miscellaneous tools and shortcuts for use
-in Willie modules. A number of things are moved into sub-modules like
-``tools.time`` in 5.3; they will be removed from ``tools`` itself in 6.0.
-"""
+in Willie modules."""
 
 # tools.py - Willie misc tools
 # Copyright 2008, Sean B. Palmer, inamidst.com
