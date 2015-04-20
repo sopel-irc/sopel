@@ -81,5 +81,5 @@ def help2(bot, trigger):
         'Hi, I\'m a bot. Say "%scommands" to me in private for a list ' +
         'of my commands, or see http://willie.dftba.net for more ' +
         'general details. My owner is %s.'
-    ) % (bot.config.core.help_prefix, bot.config.owner)
+    ) % (bot.config.core.help_prefix, bot.config.core.owner)
     bot.reply(response)
