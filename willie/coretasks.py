@@ -502,3 +502,16 @@ def blocks(bot, trigger):
             return
     else:
         bot.reply(STRINGS['huh'])
+
+@willie.module.interval(600)
+def flood_decay(bot):
+    ''' A crude first attempt at making the anti-spam unit aware of time '''
+    try:
+        bot.sending.acquire()
+        
+        for recipient_id in bot.stack.iterkeys():
+            if self.stack[recipient_id]:
+                self.stack[recipient_id].pop(0)
+    
+    finally:
+        bot.sending.release()
