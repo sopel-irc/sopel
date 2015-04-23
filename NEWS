@@ -1,9 +1,11 @@
 Changes between 5.2.0 and 5.3.0
 ===============================
 Module changes (for users):
-* The YouTube module warns at startup of the impending breakage of its API by Google
-* Unicode no longer breaks channel logging
+* The YouTube module is removed due to breakage of its API by Google
+* Fixes for unicode in channel logging
 * .py hits an updated service running Python 2.7, rather than 2.5
+* Multiple new features are added in the reddit module
+* Wind direction arrows in weather now point the right way
 
 API changes (for developers):
 * Time and calculation tools are split out into multiple modules. The moved things will also be available in tools itself until 6.0, whereupon they will only be available in their new locations.
