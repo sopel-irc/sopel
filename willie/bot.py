@@ -155,11 +155,10 @@ class Willie(irc.Bot):
                     self.register(*relevant_parts)
                     success_count += 1
 
-        if modules:
+        if len(modules) < 2:  # coretasks is counted
             stderr('\n\nRegistered %d modules,' % (success_count - 1))
             stderr('%d modules failed to load\n\n' % error_count)
         else:
-            # TODO since this includes coretasks, this should probably be fatal
             stderr("Warning: Couldn't load any modules")
 
     def register(self, callables, jobs, shutdowns):
