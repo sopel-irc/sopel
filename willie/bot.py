@@ -167,7 +167,10 @@ class Willie(irc.Bot):
         for callbl in callables:
             for rule in callbl.rule:
                 self._callables[callbl.priority][rule].append(callbl)
-        # TODO jobs
+        for func in jobs:
+            for interval in func.interval:
+                job = willie.tools.jobs.Job(interval, func)
+                self.scheduler.add_job(job)
 
     class WillieWrapper(object):
         def __init__(self, willie, trigger):
