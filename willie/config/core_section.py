@@ -65,8 +65,8 @@ class CoreSection(StaticSection):
     """The prefix to use in help"""
 
     homedir = _HomedirAttribute()
-    """The directory in which the configuration and module data are stored."""
-    # TODO is that what that is? What about default?
+    """The directory in which the configuration and some other data are stored.
+    """
 
     host = ValidatedAttribute('host')
     """The server to connect to."""
@@ -115,8 +115,11 @@ class CoreSection(StaticSection):
     owner = ValidatedAttribute('owner')
     """The IRC name of the owner of the bot."""
 
-    pid_file_path = FilenameAttribute('pid_file_path')  # TODO wat
-    pid_dir = FilenameAttribute('pid_dir', default='.')  # TODO wat
+    pid_file_path = FilenameAttribute('pid_file_path')
+    """The path of the file Willie uses to track its process ID.
+
+    You probably do not need to change this unless you're managing Willie with
+    systemd or similar."""
 
     port = ValidatedAttribute('port', int, default=6667)
     """The port to connect on."""
