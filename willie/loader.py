@@ -194,7 +194,6 @@ def clean_module(module, config):
                 clean_callable(obj, config)
                 callables.append(obj)
             elif hasattr(obj, 'interval'):
-                # TODO needed?
                 clean_callable(obj, config)
                 jobs.append(obj)
     return callables, jobs, shutdowns
