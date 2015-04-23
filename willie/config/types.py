@@ -20,7 +20,7 @@ class StaticSection(object):
     """
     def __init__(self, config, section_name):
         if not config.parser.has_section(section_name):
-            raise ValueError()  # TODO
+            raise ValueError("Section {} doesn't exist".format(section_name))
         self._parent = config
         self._parser = config.parser
         self._section_name = section_name
@@ -49,10 +49,10 @@ class BaseValidated(object):
         self.default = default
 
     def serialize(self, value):
-        raise NotImplemented  # TODO message
+        raise NotImplemented("Serialize method must be implemented in subclass")
 
     def parse(self, value):
-        raise NotImplemented  # TODO message
+        raise NotImplemented("Parse method must be implemented in subclass")
 
     def __get__(self, instance, owner=None):
         try:
@@ -60,7 +60,11 @@ class BaseValidated(object):
         except configparser.NoOptionError:
             if self.default is not NO_DEFAULT:
                 return self.default
-            raise AttributeError()  # TODO
+            raise AttributeError(
+                "Missing required value for {}.{}".format(
+                    instance._section_name, self.name
+                )
+            )
         return self.parse(value)
 
     def __set__(self, instance, value):
@@ -147,7 +151,11 @@ class ValidatedWithContext(BaseValidated):
         except configparser.NoOptionError:
             if self.default is not NO_DEFAULT:
                 return self.default
-            raise AttributeError()  # TODO
+            raise AttributeError(
+                "Missing required value for {}.{}".format(
+                    instance._section_name, self.name
+                )
+            )
         main_config = instance._parent
         this_section = getattr(main_config, instance._section_name)
         return self.parse(main_config, this_section, value)
