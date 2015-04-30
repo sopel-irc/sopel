@@ -4,8 +4,8 @@ python:
   - "3.3"
 git:
   submodules: false
+sudo: false  # Enables running on faster infrastructure.
 install:
-  - sudo apt-get install -qq enchant
   - pip install -r dev-requirements.txt
   - pip install coveralls
   - pip install pep8
