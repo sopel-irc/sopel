@@ -25,7 +25,7 @@ def setup(bot):
     regex = re.compile('([a-z]+).(wikipedia.org/wiki/)([^ ]+)')
     if not bot.memory.contains('url_callbacks'):
         bot.memory['url_callbacks'] = tools.WillieMemory()
-        bot.memory['url_callbacks'][regex] = mw_info
+    bot.memory['url_callbacks'][regex] = mw_info
 
 
 def configure(config):
