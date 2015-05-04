@@ -17,10 +17,10 @@ import time
 import traceback
 import signal
 
-__version__ = '5.2.0-git'
+__version__ = '6.0.0.dev'
 
 
-def run(config, daemon=False):
+def run(config, pid_file, daemon=False):
     import willie.bot as bot
     import willie.web as web
     import willie.logger
@@ -65,7 +65,7 @@ def run(config, daemon=False):
             logfile.write(trace)
             logfile.write('----------------------------------------\n\n')
             logfile.close()
-            os.unlink(config.core.pid_file_path)
+            os.unlink(pid_file)
             os._exit(1)
 
         if not isinstance(delay, int):
@@ -74,5 +74,5 @@ def run(config, daemon=False):
             break
         stderr('Warning: Disconnected. Reconnecting in %s seconds...' % delay)
         time.sleep(delay)
-    os.unlink(config.core.pid_file_path)
+    os.unlink(pid_file)
     os._exit(0)

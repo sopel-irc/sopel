@@ -194,10 +194,9 @@ def main(argv=None):
                 sys.exit()
         with open(pid_file_path, 'w') as pid_file:
             pid_file.write(str(os.getpid()))
-        config_module.core.pid_file_path = pid_file_path
 
         # Step Five: Initialise And Run willie
-        run(config_module)
+        run(config_module, pid_file_path)
     except KeyboardInterrupt:
         print("\n\nInterrupted")
         os._exit(1)

@@ -115,8 +115,8 @@ class CoreSection(StaticSection):
     owner = ValidatedAttribute('owner')
     """The IRC name of the owner of the bot."""
 
-    pid_file_path = FilenameAttribute('pid_file_path')
-    """The path of the file Willie uses to track its process ID.
+    pid_dir = FilenameAttribute('pid_dir', directory=True, default='.')
+    """The directory in which to put the file Willie uses to track its process ID.
 
     You probably do not need to change this unless you're managing Willie with
     systemd or similar."""
