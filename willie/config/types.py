@@ -144,29 +144,6 @@ class ChoiceAttribute(BaseValidated):
             raise ValueError('Value must be in {}'.format(self.choices))
 
 
-class ValidatedWithContext(BaseValidated):
-    def __get__(self, instance, owner=None):
-        try:
-            value = instance._parser.get(instance._section_name, self.name)
-        except configparser.NoOptionError:
-            if self.default is not NO_DEFAULT:
-                return self.default
-            raise AttributeError(
-                "Missing required value for {}.{}".format(
-                    instance._section_name, self.name
-                )
-            )
-        main_config = instance._parent
-        this_section = getattr(main_config, instance._section_name)
-        return self.parse(main_config, this_section, value)
-
-    def __set__(self, instance, value):
-        main_config = instance._parent
-        this_section = getattr(main_config, instance._section_name)
-        value = self.serialize(main_config, this_section, value)
-        instance._parser.set(instance._section_name, self.name, value)
-
-
 class _HomedirAttribute(BaseValidated):
     def __init__(self):
         pass
@@ -181,11 +158,33 @@ class _HomedirAttribute(BaseValidated):
         raise AttributeError("Can't delete attribute.")
 
 
-class FilenameAttribute(ValidatedWithContext):
+class FilenameAttribute(BaseValidated):
     def __init__(self, name, relative=True, directory=False, default=None):
         super(FilenameAttribute, self).__init__(name, default=default)
         self.relative = relative
         self.directory = directory
+
+    def __get__(self, instance, owner=None):
+        try:
+            value = instance._parser.get(instance._section_name, self.name)
+        except configparser.NoOptionError:
+            if self.default is not NO_DEFAULT:
+                value = self.default
+            else:
+                raise AttributeError(
+                    "Missing required value for {}.{}".format(
+                        instance._section_name, self.name
+                    )
+                )
+        main_config = instance._parent
+        this_section = getattr(main_config, instance._section_name)
+        return self.parse(main_config, this_section, value)
+
+    def __set__(self, instance, value):
+        main_config = instance._parent
+        this_section = getattr(main_config, instance._section_name)
+        value = self.serialize(main_config, this_section, value)
+        instance._parser.set(instance._section_name, self.name, value)
 
     def parse(self, main_config, this_section, value):
         if not os.path.isabs(value):
