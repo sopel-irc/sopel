@@ -66,9 +66,9 @@ Join us in `#willie <irc://irc.freenode.net/#willie>`_ on Freenode.
 .. |coverage-status| image:: https://coveralls.io/repos/embolalia/willie/badge.png
    :target: https://coveralls.io/r/embolalia/willie
 .. |version| image:: https://img.shields.io/pypi/v/willie.svg
-   :target: https://pypi.python.org/pypi/willie/5.0.0
+   :target: https://pypi.python.org/pypi/willie
 .. |downloads| image:: https://img.shields.io/pypi/dm/willie.svg
-   :target: https://pypi.python.org/pypi/willie/5.0.0
+   :target: https://pypi.python.org/pypi/willie
 .. |license| image:: https://img.shields.io/pypi/l/willie.svg
    :target: https://github.com/embolalia/willie/blob/master/COPYING
 .. |issues| image:: https://img.shields.io/github/issues/embolalia/willie.svg
