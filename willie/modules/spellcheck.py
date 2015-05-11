@@ -10,7 +10,10 @@ http://willie.dftba.net
 This module relies on pyenchant, on Fedora and Red Hat based system, it can be found in the package python-enchant
 """
 from __future__ import unicode_literals
-import enchant
+try:
+    import enchant
+except ImportError:
+    enchant = None
 from willie.module import commands, example
 
 
@@ -21,6 +24,8 @@ def spellcheck(bot, trigger):
     Says whether the given word is spelled correctly, and gives suggestions if
     it's not.
     """
+    if not enchant:
+        bot.say("Missing pyenchant module.")
     if not trigger.group(2):
         return
     word = trigger.group(2).rstrip()
