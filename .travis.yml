@@ -5,6 +5,9 @@ python:
 git:
   submodules: false
 sudo: false  # Enables running on faster infrastructure.
+cache:
+  directories:
+    - $HOME/.cache/pip
 install:
   - pip install -r dev-requirements.txt
   - pip install coveralls
