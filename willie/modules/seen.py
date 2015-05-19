@@ -37,9 +37,9 @@ def seen(bot, trigger):
 
         msg = "I last saw {} at {}".format(nick, timestamp)
         if Identifier(channel) == trigger.sender:
-	    if action:
+            if action:
                 msg = msg + " in here, doing " + nick + " " + message
-	    else:
+            else:
                 msg = msg + " in here, saying " + message
         else:
             msg += " in another channel."
