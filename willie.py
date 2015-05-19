@@ -94,7 +94,7 @@ def main(argv=None):
         opts = parser.parse_args()
 
         # Step Two: "Do not run as root" checks.
-        if not ops.root:
+        if not opts.root:
             try:
                 # Linux/Mac
                 if os.getuid() == 0 or os.geteuid() == 0:
