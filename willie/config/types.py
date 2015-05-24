@@ -11,6 +11,7 @@ except ImportError:
 
 if sys.version_info.major >= 3:
     unicode = str
+    basestring = (str, bytes)
 
 
 class StaticSection(object):

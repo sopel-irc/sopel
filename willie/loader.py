@@ -8,6 +8,9 @@ import sys
 
 from willie.tools import itervalues, get_command_regexp
 
+if sys.version_info.major >= 3:
+    basestring = (str, bytes)
+
 
 def get_module_description(path):
     good_file = (os.path.isfile(path) and path.endswith('.py')
@@ -173,7 +176,8 @@ def clean_callable(func, config):
 def load_module(name, path, type_):
     """Load a module, and sort out the callables and shutdowns"""
     if type_ == imp.PY_SOURCE:
-        module = imp.load_module(name, open(path), path, ('.py', 'U', type_))
+        with open(path) as mod:
+            module = imp.load_module(name, mod, path, ('.py', 'U', type_))
     elif type_ == imp.PKG_DIRECTORY:
         module = imp.load_module(name, None, path, ('', '', type_))
     else:
