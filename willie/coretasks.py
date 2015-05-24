@@ -17,11 +17,15 @@ from __future__ import unicode_literals
 
 
 import re
+import sys
 import time
 import willie
 from willie.tools import Identifier, iteritems
 import base64
 from willie.logger import get_logger
+
+if sys.version_info.major >= 3:
+    unicode = str
 
 LOGGER = get_logger(__name__)
 
@@ -443,23 +447,23 @@ def blocks(bot, trigger):
         'huh': "I could not figure out what you wanted to do.",
     }
 
-    masks = bot.config.core.host_blocks
-    nicks = [Identifier(nick) for nick in bot.config.core.nick_blocks]
+    masks = set(s for s in bot.config.core.host_blocks if s != '')
+    nicks = set(Identifier(nick)
+                for nick in bot.config.core.nick_blocks
+                if nick != '')
     text = trigger.group().split()
 
     if len(text) == 3 and text[1] == "list":
         if text[2] == "hostmask":
-            if len(masks) > 0 and masks.count("") == 0:
-                for each in masks:
-                    if len(each) > 0:
-                        bot.say("blocked hostmask: " + each)
+            if len(masks) > 0:
+                blocked = ', '.join(unicode(mask) for mask in masks)
+                bot.say("Blocked hostmasks: {}".format(blocked))
             else:
                 bot.reply(STRINGS['nonelisted'] % ('hostmasks'))
         elif text[2] == "nick":
-            if len(nicks) > 0 and nicks.count("") == 0:
-                for each in nicks:
-                    if len(each) > 0:
-                        bot.say("blocked nick: " + each)
+            if len(nicks) > 0:
+                blocked = ', '.join(unicode(nick) for nick in nicks)
+                bot.say("Blocked nicks: {}".format(blocked))
             else:
                 bot.reply(STRINGS['nonelisted'] % ('nicks'))
         else:
@@ -467,12 +471,12 @@ def blocks(bot, trigger):
 
     elif len(text) == 4 and text[1] == "add":
         if text[2] == "nick":
-            nicks.append(text[3])
+            nicks.add(text[3])
             bot.config.core.nick_blocks = nicks
             bot.config.save()
         elif text[2] == "hostmask":
-            masks.append(text[3].lower())
-            bot.config.core.host_blocks = masks
+            masks.add(text[3].lower())
+            bot.config.core.host_blocks = list(masks)
         else:
             bot.reply(STRINGS['invalid'] % ("adding"))
             return
@@ -485,7 +489,7 @@ def blocks(bot, trigger):
                 bot.reply(STRINGS['no_nick'] % (text[3]))
                 return
             nicks.remove(Identifier(text[3]))
-            bot.config.core.nick_blocks = nicks
+            bot.config.core.nick_blocks = [unicode(n) for n in nicks]
             bot.config.save()
             bot.reply(STRINGS['success_del'] % (text[3]))
         elif text[2] == "hostmask":
@@ -494,7 +498,7 @@ def blocks(bot, trigger):
                 bot.reply(STRINGS['no_host'] % (text[3]))
                 return
             masks.remove(mask)
-            bot.config.core.host_blocks = masks
+            bot.config.core.host_blocks = [unicode(m) for m in masks]
             bot.config.save()
             bot.reply(STRINGS['success_del'] % (text[3]))
         else:
