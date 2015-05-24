@@ -19,6 +19,15 @@ import re
 import sys
 if sys.version_info.major >= 3:
     unicode = str
+    if sys.version_info.minor >= 4:
+        from html import unescape
+    else:
+        from html.parser import HTMLParser
+        unescape = HTMLParser().unescape
+else:
+    from HTMLParser import HTMLParser
+    unescape = HTMLParser().unescape
+
 
 domain = r'https?://(?:www\.|np\.)?reddit\.com'
 post_url = '(%s/r/.*?/comments/[\w-]+)' % domain
@@ -82,8 +91,9 @@ def rpost_info(bot, trigger, match=None):
 
     percent = color(unicode(s.upvote_ratio * 100) + '%', point_color)
 
+    title = unescape(s.title)
     message = message.format(
-        title=s.title, link=link, nsfw=nsfw, points=s.score, percent=percent,
+        title=title, link=link, nsfw=nsfw, points=s.score, percent=percent,
         comments=s.num_comments, author=author, created=created)
 
     bot.say(message)
