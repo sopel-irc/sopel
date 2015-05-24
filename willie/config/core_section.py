@@ -11,11 +11,28 @@ from willie.tools import Identifier
 
 
 class CoreSection(StaticSection):
+    def configure(self):
+        self.configure_setting('admins', 'Enter the nickname for your bot.')
+        self.configure_setting('host', 'Enter the server to connect to.')
+        self.configure_setting('use_ssl', 'Should the bot connect with SSL?')
+        if self.use_ssl:
+            default_port = 6697
+        else:
+            default_port = 6667
+        self.configure_setting('port', 'Enter the port to connect on.',
+                               default=default_port)
+        self.configure_setting(
+            'owner', "Enter your own IRC name (or that of the bot's owner)")
+        self.configure_setting(
+            'channels',
+            'Enter the channels to connect to at startup, separated by commas.'
+        )
+
     admins = ListAttribute('admins')
     """The list of people (other than the owner) who can administer the bot"""
 
-    auth_method = ChoiceAttribute('auth_method', ['nickserv', 'authserv',
-                                                  'sasl', 'server'])
+    auth_method = ChoiceAttribute('auth_method', choices=[
+        'nickserv', 'authserv', 'sasl', 'server'])
     """The method to use to authenticate with the server.
 
     Can be ``nickserv``, ``authserv``, ``sasl``, or ``server``."""
