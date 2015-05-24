@@ -37,14 +37,6 @@ else:
 
 _channel_prefixes = ('#', '&', '+', '!')
 
-# 5.x compatibility
-from .calculation import (  # NOQA
-    ExpressionEvaluator, guarded_mul, pow_complexity, guarded_pow,
-    EquationEvaluator, eval_equation
-)
-from .time import get_timezone, format_time  # NOQA
-from .jobs import PriorityQueue, released  # NOQA
-
 
 def get_raising_file_and_line(tb=None):
     """Return the file and line number of the statement that raised the tb.
