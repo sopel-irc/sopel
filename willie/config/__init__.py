@@ -293,26 +293,6 @@ class Config(object):
             ans = d
         return ans.lower() == 'y'
 
-    def _core(self):
-        self.interactive_add('core', 'nick', 'Enter the nickname for your bot',
-                             'Willie')
-        self.interactive_add('core', 'host', 'Enter the server to connect to',
-                             'irc.dftba.net')
-        self.add_option('core', 'use_ssl', 'Should the bot connect with SSL')
-        if self.use_ssl == 'True':
-            default_port = '6697'
-        else:
-            default_port = '6667'
-        self.interactive_add('core', 'port', 'Enter the port to connect on',
-                             default_port)
-        self.interactive_add(
-            'core', 'owner',
-            "Enter your own IRC name (or that of the bot's owner)"
-        )
-        c = 'Enter the channels to connect to by default, one at a time.' + \
-            ' When done, hit enter again.'
-        self.add_list('core', 'channels', c, 'Channel:')
-
     def _modules(self):
         home = os.getcwd()
         modules_dir = os.path.join(home, 'modules')
@@ -368,7 +348,7 @@ def create_config(configpath):
           " to create your configuration file:\n")
     try:
         config = Config(configpath, os.path.isfile(configpath))
-        config._core()
+        config.core.configure()
         if config.option(
             'Would you like to see if there are any modules'
             ' that need configuring'

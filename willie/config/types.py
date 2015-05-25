@@ -63,17 +63,15 @@ class StaticSection(object):
             try:
                 default = getattr(self, name)
             except AttributeError:
-                raise ValueError(
-                    "Must provide a default if the attribute has no default.")
-        default = getattr(self, name) or default or self.default
+                pass
         while True:
             try:
                 value = clazz.configure(prompt, default)
             except ValueError as exc:
-                print(exc.message)
+                print(exc)
             else:
                 break
-        self.value = value
+        setattr(self, name, value)
 
 
 class BaseValidated(object):
@@ -90,9 +88,12 @@ class BaseValidated(object):
     def configure(self, prompt, default):
         """With the prompt and default, parse and return a value from terminal.
         """
-        if default is not NO_DEFAULT:
+        if default is not NO_DEFAULT and default is not None:
             prompt = '{} [{}]'.format(prompt, default)
-        value = get_input(prompt) or default
+        value = get_input(prompt + ' ')
+        if not value and default is NO_DEFAULT:
+            raise ValueError("You must provide a value for this option.")
+        value = value or default
         return self.parse(value)
 
     def serialize(self, value):
@@ -109,6 +110,13 @@ class BaseValidated(object):
         raise NotImplemented("Parse method must be implemented in subclass")
 
     def __get__(self, instance, owner=None):
+        if instance is None:
+            # If instance is None, we're getting from a section class, not an
+            # instance of a session class. It makes the wizard code simpler
+            # (and is really just more intuitive) to return the descriptor
+            # instance here.
+            return self
+
         try:
             value = instance._parser.get(instance._section_name, self.name)
         except configparser.NoOptionError:
@@ -187,6 +195,25 @@ class ListAttribute(BaseValidated):
     def serialize(self, value):
         return ','.join(value)
 
+    def configure(self, prompt, default):
+        each_prompt = '?'
+        if isinstance(prompt, tuple):
+            each_prompt = prompt[1]
+            prompt = prompt[0]
+
+        if default is not NO_DEFAULT:
+            default = ','.join(default)
+            prompt = '{} [{}]'.format(prompt, default)
+        else:
+            default = ''
+        print(prompt)
+        values = []
+        value = get_input(each_prompt + ' ') or default
+        while value:
+            value = get_input(each_prompt + ' ')
+            values.append(value)
+        return self.parse(value)
+
 
 class ChoiceAttribute(BaseValidated):
     """A config attribute which must be one of a set group of options.
@@ -216,6 +243,8 @@ class _HomedirAttribute(BaseValidated):
         pass
 
     def __get__(self, instance, owner=None):
+        if instance is None:
+            return self
         return os.path.dirname(instance._parent.filename)
 
     def __put__(self, instance, value):
@@ -239,6 +268,8 @@ class FilenameAttribute(BaseValidated):
         self.directory = directory
 
     def __get__(self, instance, owner=None):
+        if instance is None:
+            return self
         try:
             value = instance._parser.get(instance._section_name, self.name)
         except configparser.NoOptionError:

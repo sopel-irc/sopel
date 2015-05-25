@@ -5,14 +5,14 @@ from __future__ import print_function
 
 from willie.config.types import (
     StaticSection, ValidatedAttribute, ListAttribute, ChoiceAttribute,
-    FilenameAttribute, _HomedirAttribute
+    FilenameAttribute, _HomedirAttribute, NO_DEFAULT
 )
 from willie.tools import Identifier
 
 
 class CoreSection(StaticSection):
     def configure(self):
-        self.configure_setting('admins', 'Enter the nickname for your bot.')
+        self.configure_setting('nick', 'Enter the nickname for your bot.')
         self.configure_setting('host', 'Enter the server to connect to.')
         self.configure_setting('use_ssl', 'Should the bot connect with SSL?')
         if self.use_ssl:
@@ -27,6 +27,7 @@ class CoreSection(StaticSection):
             'channels',
             'Enter the channels to connect to at startup, separated by commas.'
         )
+        print(self.nick)
 
     admins = ListAttribute('admins')
     """The list of people (other than the owner) who can administer the bot"""
@@ -85,7 +86,7 @@ class CoreSection(StaticSection):
     """The directory in which the configuration and some other data are stored.
     """
 
-    host = ValidatedAttribute('host')
+    host = ValidatedAttribute('host', default='irc.dftba.net')
     """The server to connect to."""
 
     host_blocks = ListAttribute('host_blocks')
@@ -129,7 +130,7 @@ class CoreSection(StaticSection):
     set to true, so that the bot will not run until it has been properly
     configured."""
 
-    owner = ValidatedAttribute('owner')
+    owner = ValidatedAttribute('owner', default=NO_DEFAULT)
     """The IRC name of the owner of the bot."""
 
     pid_dir = FilenameAttribute('pid_dir', directory=True, default='.')
