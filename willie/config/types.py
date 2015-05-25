@@ -210,9 +210,9 @@ class ListAttribute(BaseValidated):
         values = []
         value = get_input(each_prompt + ' ') or default
         while value:
-            value = get_input(each_prompt + ' ')
             values.append(value)
-        return self.parse(value)
+            value = get_input(each_prompt + ' ')
+        return self.parse(','.join(values))
 
 
 class ChoiceAttribute(BaseValidated):
@@ -292,6 +292,8 @@ class FilenameAttribute(BaseValidated):
         instance._parser.set(instance._section_name, self.name, value)
 
     def parse(self, main_config, this_section, value):
+        if value is None:
+            return
         if not os.path.isabs(value):
             if not self.relative:
                 raise ValueError("Value must be an absolute path.")

@@ -27,16 +27,9 @@ def run(config, pid_file, daemon=False):
     from willie.tools import stderr
     delay = 20
     # Inject ca_certs from config to web for SSL validation of web requests
-    if not os.path.isfile(config.core.ca_certs):
-        deb_certs = '/etc/ssl/certs/ca-certificates.crt'
-        if not os.path.isfile(deb_certs):
-            stderr('Could not open CA certificates file. SSL will not '
-                   'work properly.')
-        else:
-            config.core.ca_certs = deb_certs
-            config.save()
-            stderr('CA cert location unconfigured or invalid, but they were '
-                   'found elsewhere. This location will be used in the future.')
+    if not config.core.ca_certs:
+        stderr('Could not open CA certificates file. SSL will not '
+               'work properly.')
     web.ca_certs = config.core.ca_certs
 
     def signal_handler(sig, frame):

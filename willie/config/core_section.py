@@ -3,11 +3,22 @@
 from __future__ import unicode_literals
 from __future__ import print_function
 
+import os.path
+
 from willie.config.types import (
     StaticSection, ValidatedAttribute, ListAttribute, ChoiceAttribute,
     FilenameAttribute, _HomedirAttribute, NO_DEFAULT
 )
 from willie.tools import Identifier
+
+
+def _find_certs():
+    certs = '/etc/pki/tls/cert.pem'
+    if not os.path.isfile(certs):
+        certs = '/etc/ssl/certs/ca-certificates.crt'
+        if not os.path.isfile(certs):
+            return None
+    return certs
 
 
 class CoreSection(StaticSection):
@@ -53,7 +64,7 @@ class CoreSection(StaticSection):
     bind_host = ValidatedAttribute('bind_host')
     """Bind the connection to a specific IP"""
 
-    ca_certs = FilenameAttribute('ca_certs', default='/etc/pki/tls/cert.pem')
+    ca_certs = FilenameAttribute('ca_certs', default=_find_certs())
     """The path of the CA certs pem file"""
 
     channels = ListAttribute('channels')
