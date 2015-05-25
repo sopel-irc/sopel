@@ -13,8 +13,8 @@ fi
 
 clean
 $SUDO pip2 install -r dev-requirements.txt
-python2.7 pytest_run.py
+python2.7 pytest_run.py willie test
 clean
 $SUDO pip3 install -r dev-requirements.txt
-python3 pytest_run.py
+python3 pytest_run.py willie test
 ./checkstyle.sh

@@ -3,7 +3,7 @@
 from __future__ import unicode_literals
 import os.path
 import sys
-from tools import get_input
+from willie.tools import get_input
 
 try:
     import configparser

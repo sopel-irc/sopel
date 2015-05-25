@@ -1,10 +1,12 @@
 build/
 dist/
+env/
 MANIFEST
 doc/build/*
 logs/*
 tests
 willie.wiki/*
+willie.egg-info/*
 *.db
 *.pyc
 *.pyo

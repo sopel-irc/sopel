@@ -1,7 +1,7 @@
 #!/bin/sh
 
 find_source_files() {
-    find . -name '*.py' -size +0 -print | grep -ve './docs' -e './contrib' -e './conftest.py'
+    find . -name '*.py' -size +0 -print | grep -ve './docs' -e 'env' -e './contrib' -e './conftest.py'
 }
 files=$(find_source_files)
 # These are acceptable (for now). 128 and 127 should be removed eventually.

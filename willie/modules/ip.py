@@ -68,9 +68,9 @@ def _find_geoip_db(bot):
             LOGGER.warning(
                 'GeoIP path configured but DB not found in configured path'
             )
-    if (os.path.isfile(os.path.join(bot.config.homedir, 'GeoLiteCity.dat')) and
-            os.path.isfile(os.path.join(bot.config.homedir, 'GeoIPASNum.dat'))):
-        return bot.config.homedir
+    if (os.path.isfile(os.path.join(bot.config.core.homedir, 'GeoLiteCity.dat')) and
+            os.path.isfile(os.path.join(bot.config.core.homedir, 'GeoIPASNum.dat'))):
+        return bot.config.core.homedir
     elif (os.path.isfile(os.path.join('/usr/share/GeoIP', 'GeoLiteCity.dat')) and
             os.path.isfile(os.path.join('/usr/share/GeoIP', 'GeoIPASNum.dat'))):
         return '/usr/share/GeoIP'
@@ -79,13 +79,13 @@ def _find_geoip_db(bot):
         bot.say('Downloading GeoIP database, please wait...')
         geolite_city_url = 'http://geolite.maxmind.com/download/geoip/database/GeoLiteCity.dat.gz'
         geolite_ASN_url = 'http://download.maxmind.com/download/geoip/database/asnum/GeoIPASNum.dat.gz'
-        geolite_city_filepath = os.path.join(bot.config.homedir, 'GeoLiteCity.dat.gz')
-        geolite_ASN_filepath = os.path.join(bot.config.homedir, 'GeoIPASNum.dat.gz')
+        geolite_city_filepath = os.path.join(bot.config.core.homedir, 'GeoLiteCity.dat.gz')
+        geolite_ASN_filepath = os.path.join(bot.config.core.homedir, 'GeoIPASNum.dat.gz')
         urlretrieve(geolite_city_url, geolite_city_filepath)
         urlretrieve(geolite_ASN_url, geolite_ASN_filepath)
         _decompress(geolite_city_filepath, geolite_city_filepath[:-3])
         _decompress(geolite_ASN_filepath, geolite_ASN_filepath[:-3])
-        return bot.config.homedir
+        return bot.config.core.homedir
     else:
         return False
 

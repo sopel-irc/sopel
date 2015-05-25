@@ -329,24 +329,6 @@ class Config(object):
                     module.configure(self)
         self.save()
 
-    enumerate_modules = willie.loader.enumerate_modules
-    """Map the names of modules to the location of their file.
-
-    *Availability: 4.0+*
-
-    Return a dict mapping the names of modules to the location of their
-    file.  This searches the regular modules directory and all directories
-    specified in the `core.extra` attribute of the `config` object. If two
-    modules have the same name, the last one to be found will be returned
-    and the rest will be ignored. Modules are found starting in the regular
-    directory, followed by `~/.willie/modules`, and then through the extra
-    directories in the order that the are specified.
-
-    If `show_all` is given as `True`, the `enable` and `exclude`
-    configuration options will be ignored, and all modules will be shown
-    (though duplicates will still be ignored as above).
-
-    """
 
 def wizard(section, config=None):
     dotdir = os.path.expanduser('~/.willie')
