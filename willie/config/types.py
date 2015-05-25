@@ -173,11 +173,11 @@ class ValidatedAttribute(BaseValidated):
     def parse(self, value):
         return value
 
-    def get_value(self, prompt, default):
+    def configure(self, prompt, default):
         if self.parse == _parse_boolean:
             prompt += ' (y/n)'
             default = 'y' if default else 'n'
-        return super(ValidatedAttribute, self).get_value(prompt, default)
+        return super(ValidatedAttribute, self).configure(prompt, default)
 
 
 class ListAttribute(BaseValidated):

@@ -27,7 +27,6 @@ class CoreSection(StaticSection):
             'channels',
             'Enter the channels to connect to at startup, separated by commas.'
         )
-        print(self.nick)
 
     admins = ListAttribute('admins')
     """The list of people (other than the owner) who can administer the bot"""
