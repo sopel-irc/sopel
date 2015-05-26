@@ -14,7 +14,6 @@ from __future__ import print_function
 from __future__ import absolute_import
 
 import collections
-import imp
 import os
 import re
 import sys
@@ -22,13 +21,11 @@ import threading
 import time
 
 from willie import tools
-import willie.irc as irc
+from willie import irc
 from willie.db import WillieDB
-from willie.tools import (stderr, Identifier, get_command_regexp, iteritems,
-                          itervalues)
+from willie.tools import stderr, Identifier
 import willie.tools.jobs
 from willie.trigger import Trigger
-import willie.module as module
 from willie.logger import get_logger
 import willie.loader
 
@@ -44,8 +41,6 @@ else:
 
 
 class Willie(irc.Bot):
-    NOLIMIT = module.NOLIMIT
-
     def __init__(self, config, daemon=False):
         irc.Bot.__init__(self, config)
         self._daemon = daemon  # Used for iPython. TODO something saner here
@@ -242,7 +237,9 @@ class Willie(irc.Bot):
             exit_code = None
             self.error(trigger)
 
-        if exit_code != module.NOLIMIT:
+        # TODO un-fuck this circular import
+        from willie.module import NOLIMIT
+        if exit_code != NOLIMIT:
             self.times[nick][func] = time.time()
 
     def limit(self, trigger, func):

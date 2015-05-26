@@ -39,7 +39,8 @@ from __future__ import unicode_literals
 from __future__ import print_function
 from __future__ import absolute_import
 
-from willie.tools import iteritems
+from willie.tools import iteritems, stderr
+import willie.tools
 import willie.loader
 import os
 import sys
@@ -298,12 +299,15 @@ class Config(object):
         modules_dir = os.path.join(home, 'modules')
         filenames = willie.loader.enumerate_modules(self)
         os.sys.path.insert(0, modules_dir)
-        for name, filename in iteritems(filenames):
+        for name, mod_spec in iteritems(filenames):
+            path, type_ = mod_spec
             try:
-                module = imp.load_source(name, filename)
+                module, _ = willie.loader.load_module(name, path, type_)
             except Exception as e:
-                print("Error loading %s: %s (in config.py)"
-                      % (name, e), file=sys.stderr)
+                filename, lineno = willie.tools.get_raising_file_and_line()
+                rel_path = os.path.relpath(filename, os.path.dirname(__file__))
+                raising_stmt = "%s:%d" % (rel_path, lineno)
+                stderr("Error loading %s: %s (%s)" % (name, e, raising_stmt))
             else:
                 if hasattr(module, 'configure'):
                     module.configure(self)
