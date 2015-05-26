@@ -20,6 +20,7 @@ import re
 import sys
 import time
 import willie
+import willie.module
 from willie.tools import Identifier, iteritems
 import base64
 from willie.logger import get_logger

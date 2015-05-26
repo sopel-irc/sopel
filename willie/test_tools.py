@@ -14,8 +14,6 @@ import re
 import os
 
 import willie.config
-import willie.bot
-import willie.irc
 import willie.tools
 import willie.trigger
 

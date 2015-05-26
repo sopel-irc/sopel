@@ -26,6 +26,7 @@ from willie.db import WillieDB
 from willie.tools import stderr, Identifier
 import willie.tools.jobs
 from willie.trigger import Trigger
+from willie.module import NOLIMIT
 from willie.logger import get_logger
 import willie.loader
 
@@ -237,8 +238,6 @@ class Willie(irc.Bot):
             exit_code = None
             self.error(trigger)
 
-        # TODO un-fuck this circular import
-        from willie.module import NOLIMIT
         if exit_code != NOLIMIT:
             self.times[nick][func] = time.time()
 
