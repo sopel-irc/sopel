@@ -10,6 +10,7 @@ http://willie.dftba.net/
 from __future__ import unicode_literals
 import random
 import re
+import operator
 
 import willie.module
 from willie.tools.calculation import eval_equation
@@ -48,7 +49,10 @@ class DicePouch:
         Args:
             n: the number of dice to drop.
         """
-        for i, count in self.dice.items():
+
+        sorted_x = sorted(self.dice.items(), key=operator.itemgetter(0))
+
+        for i, count in sorted_x:
             count = self.dice[i]
             if n == 0:
                 break
