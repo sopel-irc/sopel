@@ -1,10 +1,8 @@
 # coding=utf8
-"""
-admin.py - Willie Bugzilla Module
-Copyright © 2013, Edward Powell, embolalia.net
-Licensed under the Eiffel Forum License 2.
+"""Bugzilla issue reporting module
 
-http://willie.dftba.net/
+Copyright 2013-2015, Embolalia, embolalia.com
+Licensed under the Eiffel Forum License 2.
 """
 from __future__ import unicode_literals
 
@@ -12,36 +10,36 @@ from lxml import etree
 import re
 from willie import web, tools
 from willie.module import rule
+from willie.config.types import StaticSection, ListAttribute
 
 
 regex = None
 
 
-def configure(config):
-    """
+class BugzillaSection(StaticSection):
+    domains = ListAttribute('domains')
 
-    | [bugzilla] | example | purpose |
-    | ---- | ------- | ------- |
-    | domains | bugzilla.redhat.com,bugzilla.mozilla.org | A list of Bugzilla issue tracker domains |
-    """
-    if config.option('Show extra information about Bugzilla issues', False):
-        config.add_section('bugzilla')
-        config.add_list('bugzilla', 'domains',
-                        'Enter the domains of the Bugzillas you want extra '
-                        'information from. (e.g. bugzilla.mozilla.org)',
-                        'Domain:')
+
+def configure(config):
+    config.define_section('bugzilla', BugzillaSection)
+    config.bugzilla.configure_setting(
+        'domains',
+        'Enter the domains of the Bugzillas you want extra information '
+        'from, separated by commas (e.g. bugzilla.mozilla.org,bugzilla.'
+        'redhat.com)'
+    )
 
 
 def setup(bot):
     global regex
-    regexes = []
-    if not (bot.config.has_option('bugzilla', 'domains')
-            and bot.config.bugzilla.get_list('domains')):
+    bot.config.define_section('bugzilla', BugzillaSection)
+
+    if not bot.config.bugzilla.domains:
         return
     if not bot.memory.contains('url_callbacks'):
         bot.memory['url_callbacks'] = tools.WillieMemory()
 
-    domains = '|'.join(bot.config.bugzilla.get_list('domains'))
+    domains = '|'.join(bot.config.bugzilla.domains)
     regex = re.compile((r'https?://(%s)'
                         '(/show_bug.cgi\?\S*?)'
                         '(id=\d+)')
@@ -60,7 +58,7 @@ def show_bug(bot, trigger, match=None):
     """Show information about a Bugzilla bug."""
     match = match or trigger
     domain = match.group(1)
-    if not bot.config.has_section('bugzilla') or domain not in bot.config.bugzilla.get_list('domains'):
+    if domain not in bot.config.bugzilla.domains:
         return
     url = 'https://%s%sctype=xml&%s' % match.groups()
     data = web.get(url, dont_decode=True)
