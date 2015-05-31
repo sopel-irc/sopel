@@ -309,7 +309,13 @@ class Config(object):
                 raising_stmt = "%s:%d" % (rel_path, lineno)
                 stderr("Error loading %s: %s (%s)" % (name, e, raising_stmt))
             else:
-                if hasattr(module, 'configure'):
+                prompt = name + ' module'
+                if module.__doc__:
+                    doc = module.__doc__.split('\n', 1)[0]
+                    if doc:
+                        prompt = doc
+                prompt = 'Configure {}?'.format(prompt)
+                if hasattr(module, 'configure') and self.option(prompt, False):
                     module.configure(self)
         self.save()
 

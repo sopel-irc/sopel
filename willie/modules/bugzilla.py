@@ -25,8 +25,7 @@ def configure(config):
     config.bugzilla.configure_setting(
         'domains',
         'Enter the domains of the Bugzillas you want extra information '
-        'from, separated by commas (e.g. bugzilla.mozilla.org,bugzilla.'
-        'redhat.com)'
+        'from (e.g. bugzilla.gnome.org)'
     )
 
 
