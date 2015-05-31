@@ -17,6 +17,7 @@ else:
 import json
 from willie import web, tools
 from willie.module import commands, rule, NOLIMIT
+from willie.config import StaticSection, ValidatedAttribute
 import os
 import re
 from willie.logger import get_logger
@@ -30,28 +31,30 @@ issueURL = (r'https?://(?:www\.)?github.com/'
 regex = re.compile(issueURL)
 
 
-def checkConfig(bot):
-    if not bot.config.has_option('github', 'oauth_token') or not bot.config.has_option('github', 'repo'):
+def check_config(bot):
+    if not bot.config.github.oauth_token or not bot.config.githubi.repo:
         return False
     else:
         return [bot.config.github.oauth_token, bot.config.github.repo]
 
 
+class GithubSection(StaticSection):
+    oauth_token = ValidatedAttribute('oauth_token')
+    """The GitHub OAuth token"""
+    repo = ValidatedAttribute('repo')
+    """The GitHub repo to report issues to and find issues from"""
+
+
 def configure(config):
-    """
-    | [github] | example | purpose |
-    | -------- | ------- | ------- |
-    | oauth_token | 5868e7af57496cc3ae255868e7af57496cc3ae25 | The OAuth token to connect to your github repo |
-    | repo | embolalia/willie | The GitHub repo you're working from. |
-    """
-    chunk = ''
-    if config.option('Configuring github issue reporting and searching module', False):
-        config.interactive_add('github', 'oauth_token', 'Github API Oauth2 token', '')
-        config.interactive_add('github', 'repo', 'Github repository', 'embolalia/willie')
-    return chunk
+    config.define_section('github', GithubSection)
+    config.github.configure_setting('oauth_token', 'Github OAuth token')
+    config.github.configure_setting(
+        'repo', 'Github repository (e.g. embolalia/willie'
+    )
 
 
 def setup(bot):
+    bot.config.define_section('github', GithubSection)
     if not bot.memory.contains('url_callbacks'):
         bot.memory['url_callbacks'] = tools.WillieMemory()
     bot.memory['url_callbacks'][regex] = issue_info
@@ -69,7 +72,7 @@ def issue(bot, trigger):
         return bot.say('Please title the issue')
 
     # Is the Oauth token and repo available?
-    gitAPI = checkConfig(bot)
+    gitAPI = check_config(bot)
     if not gitAPI:
         return bot.say('Git module not configured, make sure github.oauth_token and github.repo are defined')
 
@@ -98,7 +101,7 @@ def add_traceback(bot, trigger):
     the error (the message shown to the channel when the error occured). This
     command will only work for errors from unhandled exceptions."""
     # Make sure the API is set up
-    gitAPI = checkConfig(bot)
+    gitAPI = check_config(bot)
     if not gitAPI:
         return bot.say('GitHub module not configured, make sure github.oauth_token and github.repo are defined')
 
@@ -160,7 +163,7 @@ def findIssue(bot, trigger):
         return bot.reply('What are you searching for?')
 
     # Is the Oauth token and repo available?
-    gitAPI = checkConfig(bot)
+    gitAPI = check_config(bot)
     if not gitAPI:
         return bot.say('Git module not configured, make sure github.oauth_token and github.repo are defined')
     firstParam = trigger.group(2).split(' ')[0]
