@@ -27,22 +27,22 @@ except ImportError:
     except ImportError:
         pass
 
+from willie.config.types import StaticSection, FilenameAttribute
 from willie.module import commands, example
 from willie.logger import get_logger
 
 LOGGER = get_logger(__name__)
 
 
-def configure(config):
-    """
+class GeoipSection(StaticSection):
+    GeoIP_db_path = FilenameAttribute('GeoIP_db_path', directory=True)
+    """Path of the directory containing the GeoIP db files."""
 
-    | [ip] | example | purpose |
-    | ---- | ------- | ------- |
-    | GeoIP_db_path | None | Full path for the GeoIP database. If not specified or None, the bot will try to look for the database in /usr/share/GeoIP, and if it's not there it'll try to automatically download the database into its configuration directory |
-    """
-    if config.option('Configure a custom location for the GeoIP db?', False):
-        config.add_section('ip')
-        config.interactive_add('ip', 'GeoIP_db_path', 'Full path to the GeoIP database', None)
+
+def configure(config):
+    config.define_section('ip', GeoipSection)
+    config.ip.configure_setting('GeoIP_db_path',
+                                'Path of the GeoIP db files')
 
 
 def _decompress(source, target, delete_after_decompression=True):

@@ -17,7 +17,7 @@ else:
 import json
 from willie import web, tools
 from willie.module import commands, rule, NOLIMIT
-from willie.config import StaticSection, ValidatedAttribute
+from willie.config.types import StaticSection, ValidatedAttribute
 import os
 import re
 from willie.logger import get_logger
