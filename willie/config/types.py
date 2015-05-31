@@ -23,8 +23,6 @@ class StaticSection(object):
     """A configuration section with parsed and validated settings.
 
     This class is intended to be subclassed with added ``ValidatedAttribute``s.
-    If the subclass has a ``__configure__`` method, it will be used in the
-    configuration wizard to configure the section.
     """
     def __init__(self, config, section_name):
         if not config.parser.has_section(section_name):

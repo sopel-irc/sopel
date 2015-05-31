@@ -50,7 +50,7 @@ except ImportError:
     import configparser as ConfigParser
 import getpass
 import imp
-from willie.config.core_section import CoreSection
+import willie.config.core_section
 from willie.config.types import StaticSection
 if sys.version_info.major >= 3:
     unicode = str
@@ -110,7 +110,7 @@ class Config(object):
                     )
         else:
             self.parser.add_section('core')
-        self.define_section('core', CoreSection)
+        self.define_section('core', willie.config.core_section.CoreSection)
         self.get = self.parser.get
 
     def save(self):
@@ -314,7 +314,7 @@ class Config(object):
                     doc = module.__doc__.split('\n', 1)[0]
                     if doc:
                         prompt = doc
-                prompt = 'Configure {}?'.format(prompt)
+                prompt = 'Configure ' + prompt
                 if hasattr(module, 'configure') and self.option(prompt, False):
                     module.configure(self)
         self.save()
@@ -358,7 +358,7 @@ def create_config(configpath):
           " to create your configuration file:\n")
     try:
         config = Config(configpath, os.path.isfile(configpath))
-        config.core.configure()
+        willie.config.core_section.configure(config)
         if config.option(
             'Would you like to see if there are any modules'
             ' that need configuring'

@@ -21,24 +21,25 @@ def _find_certs():
     return certs
 
 
-class CoreSection(StaticSection):
-    def configure(self):
-        self.configure_setting('nick', 'Enter the nickname for your bot.')
-        self.configure_setting('host', 'Enter the server to connect to.')
-        self.configure_setting('use_ssl', 'Should the bot connect with SSL?')
-        if self.use_ssl:
-            default_port = 6697
-        else:
-            default_port = 6667
-        self.configure_setting('port', 'Enter the port to connect on.',
-                               default=default_port)
-        self.configure_setting(
-            'owner', "Enter your own IRC name (or that of the bot's owner)")
-        self.configure_setting(
-            'channels',
-            'Enter the channels to connect to at startup, separated by commas.'
-        )
+def configure(config):
+    config.core.configure_setting('nick', 'Enter the nickname for your bot.')
+    config.core.configure_setting('host', 'Enter the server to connect to.')
+    config.core.configure_setting('use_ssl', 'Should the bot connect with SSL?')
+    if config.core.use_ssl:
+        default_port = 6697
+    else:
+        default_port = 6667
+    config.core.configure_setting('port', 'Enter the port to connect on.',
+                                  default=default_port)
+    config.core.configure_setting(
+        'owner', "Enter your own IRC name (or that of the bot's owner)")
+    config.core.configure_setting(
+        'channels',
+        'Enter the channels to connect to at startup, separated by commas.'
+    )
 
+
+class CoreSection(StaticSection):
     admins = ListAttribute('admins')
     """The list of people (other than the owner) who can administer the bot"""
 
