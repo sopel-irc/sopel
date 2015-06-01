@@ -62,6 +62,10 @@ class StaticSection(object):
                 default = getattr(self, name)
             except AttributeError:
                 pass
+            except ValueError:
+                print('The configured value for this option was invalid.')
+                if clazz.default is not NO_DEFAULT:
+                    default = clazz.default
         while True:
             try:
                 value = clazz.configure(prompt, default)
