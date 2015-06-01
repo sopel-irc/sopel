@@ -45,6 +45,10 @@ def configure(config):
         'time_format', 'Preferred time format (http://strftime.net)')
 
 
+def setup(bot):
+    bot.config.define_section('clock', TimeSection)
+
+
 @commands('t', 'time')
 @example('.t America/New_York')
 def f_time(bot, trigger):

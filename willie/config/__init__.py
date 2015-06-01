@@ -88,30 +88,15 @@ class Config(object):
         self.parser = ConfigParser.RawConfigParser(allow_no_value=True)
         if load:
             self.parser.read(self.filename)
-
-            if not ignore_errors:
-                # Sanity check for the configuration file:
-                if not self.parser.has_section('core'):
-                    raise ConfigurationError('Core section missing!')
-                if not self.parser.has_option('core', 'nick'):
-                    raise ConfigurationError(
-                        'Bot IRC nick not defined,'
-                        ' expected option `nick` in [core] section'
-                    )
-                if not self.parser.has_option('core', 'owner'):
-                    raise ConfigurationError(
-                        'Bot owner not defined,'
-                        ' expected option `owner` in [core] section'
-                    )
-                if not self.parser.has_option('core', 'host'):
-                    raise ConfigurationError(
-                        'IRC server address not defined,'
-                        ' expceted option `host` in [core] section'
-                    )
+            # TODO ignore errors?
         else:
             self.parser.add_section('core')
         self.define_section('core', willie.config.core_section.CoreSection)
         self.get = self.parser.get
+
+    @property
+    def homedir(self):
+        return os.path.dirname(self.filename)
 
     def save(self):
         """Save all changes to the config file."""

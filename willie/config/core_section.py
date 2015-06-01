@@ -7,7 +7,7 @@ import os.path
 
 from willie.config.types import (
     StaticSection, ValidatedAttribute, ListAttribute, ChoiceAttribute,
-    FilenameAttribute, _HomedirAttribute, NO_DEFAULT
+    FilenameAttribute, NO_DEFAULT
 )
 from willie.tools import Identifier
 
@@ -92,10 +92,6 @@ class CoreSection(StaticSection):
 
     help_prefix = ValidatedAttribute('help_prefix', default='.')
     """The prefix to use in help"""
-
-    homedir = _HomedirAttribute()
-    """The directory in which the configuration and some other data are stored.
-    """
 
     host = ValidatedAttribute('host', default='irc.dftba.net')
     """The server to connect to."""

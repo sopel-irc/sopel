@@ -30,7 +30,7 @@ class StaticSection(object):
         self._parent = config
         self._parser = config.parser
         self._section_name = section_name
-        for value in self.__dict__.keys():
+        for value in dir(self):
             try:
                 getattr(self, value)
             except ValueError as e:
@@ -238,24 +238,6 @@ class ChoiceAttribute(BaseValidated):
             raise ValueError('Value must be in {}'.format(self.choices))
 
 
-class _HomedirAttribute(BaseValidated):
-    """Private. A special attribute which is just the directory of the config.
-    """
-    def __init__(self):
-        pass
-
-    def __get__(self, instance, owner=None):
-        if instance is None:
-            return self
-        return os.path.dirname(instance._parent.filename)
-
-    def __put__(self, instance, value):
-        raise AttributeError("Can't set attribute.")
-
-    def __delete__(self, instance):
-        raise AttributeError("Can't delete attribute.")
-
-
 class FilenameAttribute(BaseValidated):
     """A config attribute which must be a file or directory."""
     def __init__(self, name, relative=True, directory=False, default=None):
@@ -299,7 +281,7 @@ class FilenameAttribute(BaseValidated):
         if not os.path.isabs(value):
             if not self.relative:
                 raise ValueError("Value must be an absolute path.")
-            value = os.path.join(main_config.core.homedir, value)
+            value = os.path.join(main_config.homedir, value)
 
         value = os.path.expanduser(value)
 

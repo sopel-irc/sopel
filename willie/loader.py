@@ -53,11 +53,7 @@ def enumerate_modules(config, show_all=False):
         if result:
             modules[result[0]] = result[1:]
     # Next, look in ~/.willie/modules
-    if config.core.homedir is not None:
-        home_modules_dir = os.path.join(config.core.homedir, 'modules')
-    else:
-        home_modules_dir = os.path.join(os.path.expanduser('~'), '.willie',
-                                        'modules')
+    home_modules_dir = os.path.join(config.homedir, 'modules')
     if not os.path.isdir(home_modules_dir):
         os.makedirs(home_modules_dir)
     for path in os.listdir(home_modules_dir):
