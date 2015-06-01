@@ -15,14 +15,34 @@ except ImportError:
     pytz = None
 
 from willie.module import commands, example, OP
-from willie.tools.time import get_timezone, format_time
+from willie.tools.time import (
+    get_timezone, format_time, validate_format, validate_timezone
+)
+from willie.config.types import StaticSection, ValidatedAttribute
+
+
+class TimeSection(StaticSection):
+    tz = ValidatedAttribute(
+        'tz',
+        parse=validate_timezone,
+        serialize=validate_timezone,
+        default='UTC'
+    )
+    """Default time zone (see http://dft.ba/-tz)"""
+    time_format = ValidatedAttribute(
+        'time_format',
+        parse=validate_format,
+        default='%F - %T%Z'
+    )
+    """Default time format (see http://strftime.net)"""
 
 
 def configure(config):
-    config.interactive_add('clock', 'tz',
-                           'Preferred time zone (http://dft.ba/-tz)', 'UTC')
-    config.interactive_add('clock', 'time_format',
-                           'Preferred time format (http://strftime.net)', '%F - %T%Z')
+    config.define_section('clock', TimeSection)
+    config.clock.configure_setting(
+        'tz', 'Preferred time zone (http://dft.ba/-tz)')
+    config.clock.configure_setting(
+        'time_format', 'Preferred time format (http://strftime.net)')
 
 
 @commands('t', 'time')

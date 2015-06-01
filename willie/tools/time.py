@@ -10,6 +10,47 @@ except:
     pytz = False
 
 
+def validate_timezone(zone):
+    """Return an IETF timezone from the given IETF zone or common abbreviation.
+
+    If the length of the zone is 4 or less, it will be upper-cased before being
+    looked up; otherwise it will be title-cased. This is the expected
+    case-insensitivity behavior in the majority of cases. For example, ``'edt'``
+    and ``'america/new_york'`` will both return ``'America/New_York'``.
+
+    If the zone is not valid, ``ValueError`` will be raised. If ``pytz`` is not
+    available, and the given zone is anything other than ``'UTC'``,
+    ``ValueError`` will be raised.
+    """
+    if zone is None:
+        return None
+    if not pytz:
+        if zone.upper() != 'UTC':
+            raise ValueError('Only UTC available, since pytz is not installed.')
+        else:
+            return zone
+
+    zone = '/'.join(reversed(zone.split(', '))).replace(' ', '_')
+    if len(zone) <= 4:
+        zone = zone.upper()
+    else:
+        zone = zone.title()
+    if zone in pytz.all_timezones:
+        return zone
+    else:
+        raise ValueError("Invalid time zone.")
+
+
+def validate_format(tformat):
+    """Returns the format, if valid, else None"""
+    try:
+        time = datetime.datetime.utcnow()
+        time.strftime(tformat)
+    except:
+        raise ValueError('Invalid time format')
+    return tformat
+
+
 def get_timezone(db=None, config=None, zone=None, nick=None, channel=None):
     """Find, and return, the approriate timezone
 
@@ -40,28 +81,17 @@ def get_timezone(db=None, config=None, zone=None, nick=None, channel=None):
         return None
     tz = None
 
-    def check(zone):
-        """Returns the transformed zone, if valid, else None"""
-        if zone:
-            zone = '/'.join(reversed(zone.split(', '))).replace(' ', '_')
-            if len(zone) <= 4:
-                zone = zone.upper()
-            else:
-                zone = zone.title()
-            if zone in pytz.all_timezones:
-                return zone
-        return None
-
     if zone:
-        tz = check(zone)
+        tz = validate_timezone(zone)
         if not tz:
-            tz = check(db.get_nick_or_channel_value(zone, 'timezone'))
+            tz = validate_timezone(
+                db.get_nick_or_channel_value(zone, 'timezone'))
     if not tz and nick:
-        tz = check(db.get_nick_value(nick, 'timezone'))
+        tz = validate_timezone(db.get_nick_value(nick, 'timezone'))
     if not tz and channel:
-        tz = check(db.get_channel_value(channel, 'timezone'))
+        tz = validate_timezone(db.get_channel_value(channel, 'timezone'))
     if not tz and config and config.has_option('core', 'default_timezone'):
-        tz = check(config.core.default_timezone)
+        tz = validate_timezone(config.core.default_timezone)
     return tz
 
 
