@@ -93,6 +93,15 @@ class CoreSection(StaticSection):
     help_prefix = ValidatedAttribute('help_prefix', default='.')
     """The prefix to use in help"""
 
+    @property
+    def homedir(self):
+        """The directory in which various files are stored at runtime.
+
+        By default, this is the same directory as the config. It can not be
+        changed at runtime.
+        """
+        return self._parent.homedir
+
     host = ValidatedAttribute('host', default='irc.dftba.net')
     """The server to connect to."""
 

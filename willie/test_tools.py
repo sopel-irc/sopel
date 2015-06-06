@@ -28,6 +28,8 @@ import willie.trigger
 class MockConfig(willie.config.Config):
     def __init__(self):
         self.filename = tempfile.mkstemp()[1]
+        #self._homedir = tempfile.mkdtemp()
+        #self.filename = os.path.join(self._homedir, 'test.cfg')
         self.parser = ConfigParser.RawConfigParser(allow_no_value=True)
         self.parser.add_section('core')
         self.parser.set('core', 'owner', 'Embolalia')

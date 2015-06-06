@@ -96,7 +96,15 @@ class Config(object):
 
     @property
     def homedir(self):
-        return os.path.dirname(self.filename)
+        configured = None
+        try:
+            configured = self.parser.get('core', 'homedir')
+        except ConfigParser.NoOptionError:
+            pass
+        if configured:
+            return configured
+        else:
+            return os.path.dirname(self.filename)
 
     def save(self):
         """Save all changes to the config file."""

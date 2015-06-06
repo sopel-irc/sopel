@@ -39,6 +39,7 @@ class StaticSection(object):
                                                          e.message)
                 )
             except AttributeError:
+                raise
                 raise ValueError(
                     'Missing required value for {}.{}'.format(section_name,
                                                               value)
