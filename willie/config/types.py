@@ -287,7 +287,7 @@ class FilenameAttribute(BaseValidated):
 
         if self.directory and not os.path.isdir(value):
             try:
-                os.mkdirs(value)
+                os.makedirs(value)
             except OSError:
                 raise ValueError(
                     "Value must be an existing or creatable directory.")

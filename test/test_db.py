@@ -5,6 +5,7 @@ TODO: Most of these tests assume functionality tested in other tests. This is
 enough to get everything working (and is better than nothing), but best
 practice would probably be not to do that."""
 from __future__ import unicode_literals
+from __future__ import absolute_import
 
 import json
 import os
@@ -14,8 +15,8 @@ import tempfile
 
 import pytest
 
-from willie.config import Config
 from willie.db import WillieDB
+from willie.test_tools import MockConfig
 from willie.tools import Identifier
 
 db_filename = tempfile.mkstemp()[1]
@@ -33,7 +34,7 @@ else:
 
 @pytest.fixture
 def db():
-    config = Config('', False)
+    config = MockConfig()
     config.core.db_filename = db_filename
     db = WillieDB(config)
     # TODO add tests to ensure db creation works properly, too.
