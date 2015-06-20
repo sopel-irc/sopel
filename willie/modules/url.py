@@ -12,9 +12,9 @@ http://willie.dftba.net
 from __future__ import unicode_literals
 
 import re
-import sys
 from willie import web, tools
 from willie.module import commands, rule, example
+from willie.config.types import ValidatedAttribute, StaticSection
 
 
 url_finder = None
@@ -32,37 +32,34 @@ re_dcc = re.compile(r'(?i)dcc\ssend')
 max_bytes = 655360
 
 
-def configure(config):
-    """
+class UrlSection(StaticSection):
+    # TODO some validation rules maybe?
+    exclude = ValidatedAttribute('exclude')
+    exclusion_char = ValidatedAttribute('exclusion_char')
 
-    | [url] | example | purpose |
-    | ---- | ------- | ------- |
-    | exclude | https?://git\.io/.* | A list of regular expressions for URLs for which the title should not be shown. |
-    | exclusion_char | ! | A character (or string) which, when immediately preceding a URL, will stop the URL's title from being shown. |
-    """
-    if config.option('Exclude certain URLs from automatic title display', False):
-        if not config.has_section('url'):
-            config.add_section('url')
-        config.add_list(
-            'url',
-            'exclude',
-            'Enter regular expressions for each URL you would like to exclude.',
-            'Regex:')
-        config.interactive_add(
-            'url',
-            'exclusion_char',
-            'Prefix to suppress URL titling', '!')
+
+def configure(config):
+    config.define_section('url', UrlSection)
+    config.url.configure_setting(
+        'exclude',
+        'Enter regular expressions for each URL you would like to exclude.'
+    )
+    config.url.configure_setting(
+        'exclusion_char',
+        'Enter a character which can be prefixed to suppress URL titling'
+    )
 
 
 def setup(bot=None):
     global url_finder, exclusion_char
 
+    # TODO figure out why this is needed, and get rid of it, because really?
     if not bot:
         return
+    bot.config.define_section('url', UrlSection)
 
-    if bot.config.has_option('url', 'exclude'):
-        regexes = [re.compile(s) for s in
-                   bot.config.url.get_list('exclude')]
+    if bot.config.url.exclude:
+        regexes = [re.compile(s) for s in bot.config.url.exclude]
     else:
         regexes = []
 
@@ -84,7 +81,7 @@ def setup(bot=None):
     if not bot.memory.contains('last_seen_url'):
         bot.memory['last_seen_url'] = tools.WillieMemory()
 
-    if bot.config.has_option('url', 'exclusion_char'):
+    if bot.config.url.exclusion_char:
         exclusion_char = bot.config.url.exclusion_char
 
     url_finder = re.compile(r'(?u)(%s?(?:http|https|ftp)(?:://\S+))' %
