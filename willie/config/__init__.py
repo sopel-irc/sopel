@@ -1,37 +1,19 @@
 # coding=utf8
 """
-*Availability: 3+ for all functions; attributes may vary.*
+*Availability: 3+; 6+ for configuration section definitions.*
 
-The config class is an abstraction class for accessing the active Willie
-configuration file.
+The config object provides a simplified to access Willie's configuration file.
+The sections of the file are attributes of the object, and the keys in the
+section are attributes of that. So, for example, the ``eggs`` attribute in the
+``[spam]`` section can be accessed from ``config.spam.eggs``.
 
-The Willie config file is divided to sections, and each section contains keys
-and values. A section is an attribute of the config class, and is of type
-``ConfigSection``. Each section contains the keys as attributes. For example,
-if you want to access key example from section test, use
-``config.test.example``. Note that the key names are made lower-case by the
-parser, regardless of whether they are upper-case in the file.
-
-The ``core`` section will always be present, and contains configuration used by
-the Willie core. Modules are allowed to read those, but must not change them.
-
-The config file can store strings, booleans and lists. If you need to store a
-number, cast it to ``int()`` when reading.
-
-For backwards compatibility, every key in the core section is an attribute of
-the config class as well as of config.core. For new code, always specify the
-name of the section, because this behavior might be removed in the future.
-
-Running the ``config.py`` file directly will give the user an interactive
-series of dialogs to create the configuration file. This will guide the user
-through creating settings for the Willie core, the settings database, and any
-modules which have a configuration function.
-
-The configuration function, if used, must be declared with the signature
-``configure(config)``. To add options, use ``interactive_add``, ``add_list``
-and ``add_option``.
+Section definitions (see "Section configuration sections" below) can be added
+to the config object with ``define_section``. When this is done, only the
+defined keys will be available. A section can not be given more than one
+definition. The ``[core]`` section is defined with ``CoreSection`` when the
+object is initialized.
 """
-# Copyright 2012, Edward Powell, embolalia.net
+# Copyright 2012-2015, Edward Powell, embolalia.net
 # Copyright © 2012, Elad Alfassa <elad@fedoraproject.org>
 # Licensed under the Eiffel Forum License 2.
 

@@ -1,4 +1,28 @@
 # coding=utf8
+"""Types for creating section definitions.
+
+A section definition consists of a subclass of ``StaticSection``, on which any
+number of subclasses of ``BaseValidated`` (a few common ones of which are
+available in this module) are assigned as attributes. These descriptors define
+how to read values from, and write values to, the config file.
+
+As an example, if one wanted to define the ``[spam]`` section as having an
+``eggs`` option, which contains a list of values, they could do this:
+
+    >>> class SpamSection(StaticSection):
+    ...     eggs = ListAttribute('eggs')
+    ...
+    >>> SpamSection(config, 'spam')
+    >>> print(config.spam.eggs)
+    []
+    >>> config.spam.eggs = ['goose', 'turkey', 'duck', 'chicken', 'quail']
+    >>> print(config.spam.eggs)
+    ['goose', 'turkey', 'duck', 'chicken', 'quail']
+    >>> config.spam.eggs = 'herring'
+    Traceback (most recent call last):
+        ...
+    ValueError: ListAttribute value must be a list.
+"""
 
 from __future__ import unicode_literals
 import os.path
@@ -196,6 +220,8 @@ class ListAttribute(BaseValidated):
         return value.split(',')
 
     def serialize(self, value):
+        if not isinstance(value, list):
+            raise ValueError('ListAttribute value must be a list.')
         return ','.join(value)
 
     def configure(self, prompt, default):
