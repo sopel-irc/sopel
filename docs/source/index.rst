@@ -397,6 +397,7 @@ The [core] configuration section
 
 .. autoclass:: willie.config.core_section.CoreSection
    :members:
+   :undoc-members:
 
 Miscellaneous: ``web``, ``tools``, ``module``, ``formatting``
 =============================================================

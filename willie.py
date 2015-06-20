@@ -26,7 +26,7 @@ import argparse
 import signal
 
 from willie.__init__ import run, __version__
-from willie.config import Config, create_config, ConfigurationError, wizard
+from willie.config import Config, create_config, ConfigurationError, _wizard
 import willie.tools as tools
 
 homedir = os.path.join(os.path.expanduser('~'), '.willie')
@@ -106,10 +106,10 @@ def main(argv=None):
             print('http://willie.dftba.net/')
             return
         elif opts.wizard:
-            wizard('all', opts.config)
+            _wizard('all', opts.config)
             return
         elif opts.mod_wizard:
-            wizard('mod', opts.config)
+            _wizard('mod', opts.config)
             return
 
         if opts.list_configs:

@@ -49,7 +49,6 @@ try:
 except ImportError:
     import configparser as ConfigParser
 import getpass
-import imp
 import willie.config.core_section
 from willie.config.types import StaticSection
 if sys.version_info.major >= 3:
@@ -182,85 +181,6 @@ class Config(object):
             raise AttributeError("%r object has no attribute %r"
                                  % (type(self).__name__, name))
 
-    def interactive_add(self, section, option, prompt, default=None,
-                        ispass=False):
-        """Ask for the value to assign to ``option`` under ``section``.
-
-        Ask user in terminal for the value to assign to ``option`` under
-        ``section``. If ``default`` is passed, it will be shown as the default
-        value in the prompt. If ``option`` is already defined in ``section``,
-        it will be used instead of ``default``, regardless of wheather
-        ``default`` is passed.
-
-        """
-        if not self.parser.has_section(section):
-            self.parser.add_section(section)
-        if self.parser.has_option(section, option):
-            atr = self.parser.get(section, option)
-            if ispass:
-                value = getpass.getpass(prompt + ' [%s]: ' % atr) or atr
-                self.parser.set(section, option, value)
-            else:
-                value = get_input(prompt + ' [%s]: ' % atr) or atr
-                self.parser.set(section, option, value)
-        elif default:
-            if ispass:
-                value = getpass.getpass(
-                    prompt + ' [%s]: ' % default
-                ) or default
-                self.parser.set(section, option, value)
-            else:
-                value = get_input(prompt + ' [%s]: ' % default) or default
-                self.parser.set(section, option, value)
-        else:
-            value = ''
-            while not value:
-                if ispass:
-                    value = getpass.getpass(prompt + ': ')
-                else:
-                    value = get_input(prompt + ': ')
-            self.parser.set(section, option, value)
-
-    def add_list(self, section, option, message, prompt):
-        """Ask for a list to assign to ``option``.
-
-        Ask user in terminal for a list to assign to ``option``. If ``option``
-        is already defined under ``section``, show the user the current values
-        and ask if the user would like to keep them. If so, additional values
-        can be entered.
-
-        """
-        print(message)
-        lst = []
-        if self.parser.has_option(section, option) and self.parser.get(section,
-                                                                       option):
-            m = "You currently have " + self.parser.get(section, option)
-            if self.option(m + '. Would you like to keep them', True):
-                lst = self.parser.get(section, option).split(',')
-        mem = get_input(prompt + ' ')
-        while mem:
-            lst.append(mem)
-            mem = get_input(prompt + ' ')
-        self.parser.set(section, option, ','.join(lst))
-
-    def add_option(self, section, option, question, default=False):
-        """Ask "y/n" and set `option` based in the response.
-
-        Show user in terminal a "y/n" prompt, and set `option` to True or False
-        based on the response. If default is passed as true, the default will
-        be shown as ``[y]``, else it will be ``[n]``. ``question`` should be
-        phrased as a question, but without a question mark at the end. If
-        ``option`` is already defined, it will be used instead of ``default``,
-        regardless of wheather ``default`` is passed.
-
-        """
-        if not self.parser.has_section(section):
-            self.parser.add_section(section)
-        if self.parser.has_option(section, option):
-            default = self.parser.getboolean(section, option)
-        answer = self.option(question, default)
-        self.parser.set(section, option, str(answer))
-
     def option(self, question, default=False):
         """Ask "y/n" and return the corresponding boolean answer.
 
@@ -293,18 +213,21 @@ class Config(object):
                 raising_stmt = "%s:%d" % (rel_path, lineno)
                 stderr("Error loading %s: %s (%s)" % (name, e, raising_stmt))
             else:
-                prompt = name + ' module'
-                if module.__doc__:
-                    doc = module.__doc__.split('\n', 1)[0]
-                    if doc:
-                        prompt = doc
-                prompt = 'Configure ' + prompt
-                if hasattr(module, 'configure') and self.option(prompt, False):
-                    module.configure(self)
+                if hasattr(module, 'configure'):
+                    prompt = name + ' module'
+                    if module.__doc__:
+                        doc = module.__doc__.split('\n', 1)[0]
+                        if doc:
+                            prompt = doc
+                    prompt = 'Configure {} (y/n)? [n]'.format(prompt)
+                    do_configure = get_input(prompt)
+                    do_configure = do_configure and do_configure.lower() == 'y'
+                    if do_configure:
+                        module.configure(self)
         self.save()
 
 
-def wizard(section, config=None):
+def _wizard(section, config=None):
     dotdir = os.path.expanduser('~/.willie')
     configpath = os.path.join(dotdir, (config or 'default') + '.cfg')
     if section == 'all':
@@ -349,7 +272,7 @@ def create_config(configpath):
         ):
             config._modules()
         config.save()
-    except Exception as e:
+    except Exception:
         print("Encountered an error while writing the config file." +
               " This shouldn't happen. Check permissions.")
         raise
