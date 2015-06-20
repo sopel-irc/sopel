@@ -324,11 +324,6 @@ class WillieMemory(dict):
         """Backwards compatability with 3.x, use `in` operator instead."""
         return self.__contains__(key)
 
-    def unlock(self):
-        """Release the write lock."""
-        return self.lock.release()
-
-
 class WillieMemoryWithDefault(defaultdict):
     """Same as WillieMemory, but subclasses from collections.defaultdict."""
     def __init__(self, *args):
@@ -355,11 +350,3 @@ class WillieMemoryWithDefault(defaultdict):
     def contains(self, key):
         """Backwards compatability with 3.x, use `in` operator instead."""
         return self.__contains__(key)
-
-    def lock(self):
-        """Lock this instance from writes. Useful if you want to iterate."""
-        return self.lock.acquire()
-
-    def unlock(self):
-        """Release the write lock."""
-        return self.lock.release()
