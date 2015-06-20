@@ -40,6 +40,7 @@ def configure(config):
 
 
 class CoreSection(StaticSection):
+    """The config section used for configuring the bot itself."""
     admins = ListAttribute('admins')
     """The list of people (other than the owner) who can administer the bot"""
 

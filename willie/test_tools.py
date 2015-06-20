@@ -36,6 +36,11 @@ class MockConfig(willie.config.Config):
         self.define_section('core', willie.config.core_section.CoreSection)
         self.get = self.parser.get
 
+    def define_section(self, name, cls_):
+        if not self.parser.has_section(name):
+            self.parser.add_section(name)
+        setattr(self, name, cls_(self, name))
+
 
 class MockWillie(object):
     def __init__(self, nick, admin=False, owner=False):

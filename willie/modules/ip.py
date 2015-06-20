@@ -41,6 +41,13 @@ def configure(config):
                                 'Path of the GeoIP db files')
 
 
+def setup(bot=None):
+    if not bot:
+        return  # Because of some weird pytest thing?
+
+    bot.config.define_section('ip', GeoipSection)
+
+
 def _decompress(source, target, delete_after_decompression=True):
     """ Decompress a GZip file """
     f_in = gzip.open(source, 'rb')
@@ -55,7 +62,7 @@ def _decompress(source, target, delete_after_decompression=True):
 def _find_geoip_db(bot):
     """ Find the GeoIP database """
     config = bot.config
-    if config.has_section('ip') and config.ip.GeoIP_db_path is not None:
+    if config.ip.GeoIP_db_path:
         cities_db = os.path.join(config.ip.GeoIP_db_path, 'GeoLiteCity.dat')
         ipasnum_db = os.path.join(config.ip.GeoIP_db_path, 'GeoIPASNum.dat')
         if os.path.isfile(cities_db) and os.path.isfile(ipasnum_db):

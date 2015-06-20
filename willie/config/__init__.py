@@ -71,7 +71,7 @@ class ConfigurationError(Exception):
 
 
 class Config(object):
-    def __init__(self, filename, load=True, ignore_errors=False):
+    def __init__(self, filename):
         """Return a configuration object.
 
         The given filename will be associated with the configuration, and is
@@ -86,16 +86,15 @@ class Config(object):
         self.filename = filename
         """The config object's associated file, as noted above."""
         self.parser = ConfigParser.RawConfigParser(allow_no_value=True)
-        if load:
-            self.parser.read(self.filename)
-            # TODO ignore errors?
-        else:
-            self.parser.add_section('core')
+        self.parser.read(self.filename)
         self.define_section('core', willie.config.core_section.CoreSection)
         self.get = self.parser.get
 
     @property
     def homedir(self):
+        """An alias to config.core.homedir"""
+        # Technically it's the other way around, so we can bootstrap filename
+        # attributes in the core section, but whatever.
         configured = None
         try:
             configured = self.parser.get('core', 'homedir')
@@ -117,7 +116,6 @@ class Config(object):
         """Add a section to the config file.
 
         Returns ``False`` if already exists.
-
         """
         try:
             return self.parser.add_section(name)
@@ -132,17 +130,10 @@ class Config(object):
         if not issubclass(cls_, StaticSection):
             raise ValueError("Class must be a subclass of StaticSection.")
         current = getattr(self, name)
-        if not isinstance(current, self.ConfigSection) and not current.__class__ == cls_:
+        if (not isinstance(current, self.ConfigSection)
+                and not current.__class__ == cls_):
             raise ValueError("Can not re-define class for section.")
         setattr(self, name, cls_(self, name))
-
-    def has_option(self, section, name):
-        """Check if option ``name`` exists under section ``section``."""
-        return self.parser.has_option(section, name)
-
-    def has_section(self, name):
-        """Check if section ``name`` exists."""
-        return self.parser.has_section(name)
 
     class ConfigSection(object):
 
