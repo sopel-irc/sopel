@@ -41,6 +41,7 @@ from __future__ import absolute_import
 
 from willie.tools import iteritems, stderr
 import willie.tools
+from willie.tools import get_input
 import willie.loader
 import os
 import sys
@@ -48,15 +49,8 @@ try:
     import ConfigParser
 except ImportError:
     import configparser as ConfigParser
-import getpass
 import willie.config.core_section
 from willie.config.types import StaticSection
-if sys.version_info.major >= 3:
-    unicode = str
-    basestring = str
-    get_input = input
-else:
-    get_input = lambda x: raw_input(x).decode('utf8')
 
 
 class ConfigurationError(Exception):
@@ -231,9 +225,9 @@ def _wizard(section, config=None):
     dotdir = os.path.expanduser('~/.willie')
     configpath = os.path.join(dotdir, (config or 'default') + '.cfg')
     if section == 'all':
-        create_config(configpath)
+        _create_config(configpath)
     elif section == 'mod':
-        check_dir(False)
+        _check_dir(False)
         if not os.path.isfile(configpath):
             print("No config file found." +
                   " Please make one before configuring these options.")
@@ -242,7 +236,7 @@ def _wizard(section, config=None):
         config._modules()
 
 
-def check_dir(create=True):
+def _check_dir(create=True):
     dotdir = os.path.join(os.path.expanduser('~'), '.willie')
     if not os.path.isdir(dotdir):
         if create:
@@ -259,8 +253,8 @@ def check_dir(create=True):
             sys.exit(1)
 
 
-def create_config(configpath):
-    check_dir()
+def _create_config(configpath):
+    _check_dir()
     print("Please answer the following questions" +
           " to create your configuration file:\n")
     try:
