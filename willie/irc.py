@@ -61,9 +61,6 @@ class Bot(asynchat.async_chat):
             stderr('Could not open CA certificates file. SSL will not '
                    'work properly.')
 
-        if config.log_raw is None:
-            # Default is to log raw data, can be disabled in config
-            config.log_raw = True
         asynchat.async_chat.__init__(self)
         self.set_terminator(b'\n')
         self.buffer = ''
@@ -214,7 +211,7 @@ class Bot(asynchat.async_chat):
             self.send = self._ssl_send
             self.recv = self._ssl_recv
         elif not has_ssl and self.config.core.use_ssl:
-            stderr('SSL is not avilable on your system, attempting connection '
+            stderr('SSL is not available on your system, attempting connection '
                    'without it')
         self.connect((host, port))
         try:

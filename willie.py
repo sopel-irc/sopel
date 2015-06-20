@@ -198,8 +198,7 @@ def main(argv=None):
                     else:
                         os.kill(old_pid, signal.SIGTERM)
                     sys.exit(0)
-            elif old_pid is None or (not tools.check_pid(old_pid)
-                                     and (opts.kill or opts.quit)):
+            elif opts.kill or opts.quit:
                 stderr('Willie is not running!')
                 sys.exit(1)
         elif opts.quit or opts.kill:

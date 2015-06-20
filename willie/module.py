@@ -96,9 +96,10 @@ def rule(value):
     matching this expression is said, the function will execute. Note that
     captured groups here will be retrievable through the Trigger object later.
 
-    Inside the regular expression, some special directives can be used. $nick
-    will be replaced with the nick of the bot and , or :, and $nickname will be
-    replaced with the nick of the bot.
+    Inside the regular expression, some special directives can be used.
+    $nick will match the nick of the bot followed by , or : followed by
+    some whitespace, nickname will match just the nick of the bot, and
+    $prefix will match the configured prefix.
     """
     def add_attribute(function):
         if not hasattr(function, "rule"):
@@ -392,6 +393,14 @@ class example(object):
 
     Add an example attribute into a function and generate a test.
 
+    Inside the example, some special directives
+    can be used. ``$nickname`` will be replaced by the nick of the bot,
+    ``$prefix`` will be replaced by the configured prefix.
+
+    If the example shows a prefixed command, it should just use the . as
+    the prefix (as the first character in the string). If the prefix is
+    configured to be something different, this initial dot will
+    automatically be replaced by the configured prefix.
     """
 
     def __init__(self, msg, result=None, privmsg=False, admin=False,
