@@ -9,10 +9,10 @@ This module uses virustotal.com
 from __future__ import unicode_literals
 from __future__ import print_function
 import willie.web as web
-from willie.config import ConfigurationError
+from willie.config.types import StaticSection, ValidatedAttribute, ListAttribute
 from willie.formatting import color, bold
 from willie.logger import get_logger
-from willie.module import commands, interval, priority, rule, OP
+from willie.module import OP
 import willie.tools
 import sys
 import json
@@ -35,26 +35,31 @@ malware_domains = []
 known_good = []
 
 
-def configure(config):
-    """
+class SafetySection(StaticSection):
+    enabled_by_default = ValidatedAttribute('enabled_by_default', bool, True)
+    """Enable URL safety in all channels where it isn't explicitly disabled."""
+    known_good = ListAttribute('known_good')
+    """List of "known good" domains to ignore."""
+    vt_api_key = ValidatedAttribute('vt_api_key')
+    """Optional VirusTotal API key."""
 
-    | [safety] | example | purpose |
-    | ---- | ------- | ------- |
-    | enabled_by_default | True | Enable safety on implicity on channels |
-    | vt_api_key | ea4ca709a686edfcc96a144c224935776e2ba46b77 | VirusTotal API key |
-    | known_good | youtube.com,vimeo.com,.*\.tumblr.com | list of "known good" domains to ignore |
-    """
-    if config.option('Configure malicious URL protection?'):
-        config.add_section('safety')
-        config.add_option('safety', 'enabled_by_default', 'Enable malicious URL checking for channels by default?', True)
-        config.interactive_add('safety', 'vt_api_key', 'VirusTotal API Key (not mandatory)', None)
+
+def configure(config):
+    config.define_section('safety', SafetySection)
+    config.safety.configure_setting('enabled_by_default')
+    config.safety.configure_setting('known_good')
+    config.safety.configure_setting(
+        'vt_api_key',
+        "Optionaly, enter a VirusTotal API key to improve malicious URL "
+        "protection. Otherwise, only the Malwarebytes DB will be used."
+    )
 
 
 def setup(bot):
-    if not bot.config.has_section('safety'):
-        raise ConfigurationError("Safety module not configured")
+    bot.config.define_section('safety', SafetySection)
+
     bot.memory['safety_cache'] = willie.tools.WillieMemory()
-    for item in bot.config.safety.get_list('known_good'):
+    for item in bot.config.safety.known_good:
         known_good.append(re.compile(item, re.I))
 
     loc = os.path.join(bot.config.homedir, 'malwaredomains.txt')
@@ -83,13 +88,10 @@ def url_handler(bot, trigger):
     positives = 0   # Number of engines saying it's malicious
     total = 0       # Number of total engines
     use_vt = True   # Use VirusTotal
-    if bot.config.has_section('safety'):
-        check = bot.config.safety.enabled_by_default
-        if check is None:
-            # If not set, assume default
-            check = True
-        else:
-            check = bool(check)
+    check = bot.config.safety.enabled_by_default
+    if check is None:
+        # If not set, assume default
+        check = True
     # DB overrides config:
     setting = bot.db.get_channel_value(trigger.sender, 'safety')
     if setting is not None:
