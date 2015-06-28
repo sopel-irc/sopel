@@ -212,8 +212,9 @@ def test_merge_nick_groups(db):
 
     db.merge_nick_groups(aliases[0], aliases[1])
 
-    nick_id = conn.execute('SELECT nick_id FROM nicknames').fetchone()[0]
-    alias_id = conn.execute('SELECT nick_id FROM nicknames').fetchone()[0]
+    nick_ids = conn.execute('SELECT nick_id FROM nicknames')
+    nick_id = nick_ids.fetchone()[0]
+    alias_id = nick_ids.fetchone()[0]
     assert nick_id == alias_id
 
     for key, value in finals:
