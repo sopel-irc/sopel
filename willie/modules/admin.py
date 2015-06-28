@@ -143,7 +143,7 @@ def hold_ground(bot, trigger):
     WARNING: This may not be needed and could cause problems if willie becomes
     annoying. Please use this with caution.
     """
-    if bot.config.has_section('admin') and bot.config.admin.hold_ground:
+    if bot.config.admin.hold_ground:
         channel = trigger.sender
         if trigger.args[1] == bot.nick:
             bot.join(channel)
