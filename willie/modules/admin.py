@@ -12,18 +12,27 @@ http://willie.dftba.net
 """
 from __future__ import unicode_literals
 
+from willie.config.types import StaticSection, ValidatedAttribute
 import willie.module
 
 
+class AdminSection(StaticSection):
+    hold_ground = ValidatedAttribute('hold_ground', bool, default=False)
+    """Auto re-join on kick"""
+    auto_accept_invite = ValidatedAttribute('auto_accept_invite', bool,
+                                            default=True)
+
+
 def configure(config):
-    """
-    | [admin] | example | purpose |
-    | -------- | ------- | ------- |
-    | hold_ground | False | Auto re-join on kick |
-    | auto_accept_invite | False | Auto accept invites from non-admin users |
-    """
-    config.add_option('admin', 'hold_ground', "Auto re-join on kick")
-    config.add_option('admin', 'auto_accept_invite', "Auto Accept All Invites")
+    config.define_section('admin', AdminSection)
+    config.admin.configure_setting('hold_ground',
+                                   "Automatically re-join after being kicked?")
+    config.admin.configure_setting('auto_accept_invite',
+                                   'Automatically join channels when invited?')
+
+
+def setup(bot):
+    bot.config.define_section('admin', AdminSection)
 
 
 @willie.module.require_privmsg
