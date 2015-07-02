@@ -126,6 +126,9 @@ class Willie(irc.Bot):
         self.callables = set()
         self.shutdown_methods = set()
 
+        # module name: list(command names)
+        self.modules_commands = {}
+
         filenames = self.config.enumerate_modules()
         # Coretasks is special. No custom user coretasks.
         this_dir = os.path.dirname(os.path.abspath(__file__))
@@ -147,6 +150,7 @@ class Willie(irc.Bot):
                     if hasattr(module, 'setup'):
                         module.setup(self)
                     self.register(vars(module))
+                    self.register_help(module)
                     modules.append(name)
                 except Exception as e:
                     error_count = error_count + 1
@@ -246,6 +250,22 @@ class Willie(irc.Bot):
                         (obj.__module__, e)
                     )
                 self.shutdown_methods.remove(obj)
+
+    def register_help(self, module):
+        commands = []
+        for _, obj in iteritems(vars(module)):
+            if hasattr(obj, "commands"):
+                commands.append(obj.commands)
+
+        self.modules_commands[module.__name__] = commands
+
+    def unregister_help(self, module):
+        commands = []
+        for _, obj in iteritems(vars(module)):
+            if hasattr(obj, "commands"):
+                commands.append(obj.commands)
+        
+        del self.modules_commands[module.__name__]
 
     def sub(self, pattern):
         """Replace any of the following special directives in a function's rule expression:
