@@ -50,7 +50,7 @@ class StaticSection(object):
     """
     def __init__(self, config, section_name):
         if not config.parser.has_section(section_name):
-            raise ValueError("Section {} doesn't exist".format(section_name))
+            config.parser.add_section(section_name)
         self._parent = config
         self._parser = config.parser
         self._section_name = section_name

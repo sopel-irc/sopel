@@ -165,6 +165,12 @@ class CoreSection(StaticSection):
     It is a regular expression (so the default, ``\.``, means commands start
     with a period), though using capturing groups will create problems."""
 
+    throttle_join = ValidatedAttribute('throttle_join', int)
+    """Slow down the initial join of channels to prevent getting kicked.
+
+    Willie will only join this many channels at a time, sleeping for a second
+    between each batch. This is unnecessary on most networks."""
+
     timeout = ValidatedAttribute('timeout', int, default=120)
     """The amount of time acceptable between pings before timing out."""
 

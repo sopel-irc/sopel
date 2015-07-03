@@ -241,14 +241,6 @@ class Willie(irc.Bot):
         if exit_code != NOLIMIT:
             self.times[nick][func] = time.time()
 
-    def limit(self, trigger, func):
-        if trigger.sender and not trigger.sender.is_nick():
-            if self.config.has_section('limit'):
-                limits = self.config.limit.get(trigger.sender)
-                if limits and (func.__module__ not in limits):
-                    return True
-        return False
-
     def dispatch(self, pretrigger):
         args = pretrigger.args
         event, args, text = pretrigger.event, args, args[-1]
@@ -281,8 +273,6 @@ class Willie(irc.Bot):
                         continue
 
                     if event not in func.event:
-                        continue
-                    if self.limit(trigger, func):
                         continue
                     if (hasattr(func, 'intents') and
                             trigger.tags.get('intent') not in func.intents):

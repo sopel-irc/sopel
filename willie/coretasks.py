@@ -71,16 +71,12 @@ def startup(bot, trigger):
 
     auth_after_register(bot)
 
-    #Set bot modes per config, +B if no config option is defined
-    if bot.config.has_option('core', 'modes'):
-        modes = bot.config.core.modes
-    else:
-        modes = 'B'
+    modes = bot.config.core.modes
     bot.write(('MODE ', '%s +%s' % (bot.nick, modes)))
 
     bot.memory['retry_join'] = dict()
 
-    if bot.config.has_option('core', 'throttle_join'):
+    if bot.config.core.throttle_join:
         throttle_rate = int(bot.config.core.throttle_join)
         channels_joined = 0
         for channel in bot.config.core.channels:

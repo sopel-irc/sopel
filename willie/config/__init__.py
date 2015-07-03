@@ -104,8 +104,8 @@ class Config(object):
         already been defined with a different class, ValueError is raised."""
         if not issubclass(cls_, StaticSection):
             raise ValueError("Class must be a subclass of StaticSection.")
-        current = getattr(self, name)
-        if (not isinstance(current, self.ConfigSection)
+        current = getattr(self, name, None)
+        if (current is not None and not isinstance(current, self.ConfigSection)
                 and not current.__class__ == cls_):
             raise ValueError("Can not re-define class for section.")
         setattr(self, name, cls_(self, name))

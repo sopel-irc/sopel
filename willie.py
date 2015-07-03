@@ -26,7 +26,7 @@ import argparse
 import signal
 
 from willie.__init__ import run, __version__
-from willie.config import Config, create_config, ConfigurationError, _wizard
+from willie.config import Config, _create_config, ConfigurationError, _wizard
 import willie.tools as tools
 
 homedir = os.path.join(os.path.expanduser('~'), '.willie')
@@ -130,7 +130,7 @@ def main(argv=None):
             print("Welcome to Willie!\nI can't seem to find the configuration file, so let's generate it!\n")
             if not configpath.endswith('.cfg'):
                 configpath = configpath + '.cfg'
-            create_config(configpath)
+            _create_config(configpath)
             configpath = find_config(config_name)
         try:
             config_module = Config(configpath)
