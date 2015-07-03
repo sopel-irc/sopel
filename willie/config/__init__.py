@@ -214,7 +214,7 @@ def _wizard(section, config=None):
             print("No config file found." +
                   " Please make one before configuring these options.")
             sys.exit(1)
-        config = Config(configpath, True)
+        config = Config(configpath)
         config._modules()
 
 
@@ -240,7 +240,7 @@ def _create_config(configpath):
     print("Please answer the following questions" +
           " to create your configuration file:\n")
     try:
-        config = Config(configpath, os.path.isfile(configpath))
+        config = Config(configpath)
         willie.config.core_section.configure(config)
         if config.option(
             'Would you like to see if there are any modules'
