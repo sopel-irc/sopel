@@ -203,7 +203,7 @@ class WillieDB(object):
             'UPDATE OR IGNORE nick_values SET nick_id = ? WHERE nick_id = ?',
             [first_id, second_id])
         self.execute('DELETE FROM nick_values WHERE nick_id = ?', [second_id])
-        self.execute('UPDATE nick_values SET nick_id = ? WHERE nick_id = ?',
+        self.execute('UPDATE nicknames SET nick_id = ? WHERE nick_id = ?',
                      [first_id, second_id])
 
     # CHANNEL FUNCTIONS

@@ -15,8 +15,13 @@ import os
 import shutil
 
 requires = ['feedparser', 'pytz', 'lxml', 'praw', 'pyenchant', 'pygeoip']
-if sys.version_info.major < 3:
+if sys.version_info[0] < 3:
     requires.append('backports.ssl_match_hostname')
+if sys.version_info < (2, 7) or (
+        sys.version_info[0] > 3 and sys.version_info < (3, 3)):
+    # Maybe not the cleanest or best way to do this, but I'm tired of answering
+    # this fucking question, and if you get here you should go RTGDMFM.
+    raise ImportError('Willie requires Python 2.7+ or 3.3+.')
 
 
 def do_setup():
