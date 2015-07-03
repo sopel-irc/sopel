@@ -44,8 +44,9 @@ else:
 class Willie(irc.Bot):
     NOLIMIT = module.NOLIMIT
 
-    def __init__(self, config):
+    def __init__(self, config, daemon=False):
         irc.Bot.__init__(self, config.core)
+        self._daemon = daemon
         self.config = config
         """The ``Config`` for the current Willie instance."""
         self.doc = {}

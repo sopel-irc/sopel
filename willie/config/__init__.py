@@ -56,6 +56,9 @@ if sys.version_info.major >= 3:
 else:
     get_input = lambda x: raw_input(x).decode('utf8')
 
+from willie.config.core_section import CoreSection
+from willie.config.types import StaticSection
+
 
 class ConfigurationError(Exception):
     """ Exception type for configuration errors """
@@ -105,26 +108,25 @@ class Config(object):
                         'IRC server address not defined,'
                         ' expceted option `host` in [core] section'
                     )
-
-            #Setting defaults:
-            if not self.parser.has_option('core', 'port'):
-                self.parser.set('core', 'port', '6667')
-            if not self.parser.has_option('core', 'user'):
-                self.parser.set('core', 'user', 'willie')
-            if not self.parser.has_option('core', 'name'):
-                self.parser.set('core', 'name',
-                                'Willie Embosbot, http://willie.dftba.net')
-            if not self.parser.has_option('core', 'prefix'):
-                self.parser.set('core', 'prefix', r'\.')
-            if not self.parser.has_option('core', 'admins'):
-                self.parser.set('core', 'admins', '')
-            if not self.parser.has_option('core', 'verify_ssl'):
-                self.parser.set('core', 'verify_ssl', 'True')
-            if not self.parser.has_option('core', 'timeout'):
-                self.parser.set('core', 'timeout', '120')
         else:
             self.parser.add_section('core')
+        self.define_section('core', CoreSection)
         self.get = self.parser.get
+
+    @property
+    def homedir(self):
+        """An alias to config.core.homedir"""
+        # Technically it's the other way around, so we can bootstrap filename
+        # attributes in the core section, but whatever.
+        configured = None
+        try:
+            configured = self.parser.get('core', 'homedir')
+        except ConfigParser.NoOptionError:
+            pass
+        if configured:
+            return configured
+        else:
+            return os.path.dirname(self.filename)
 
     def save(self):
         """Save all changes to the config file."""
@@ -143,6 +145,19 @@ class Config(object):
             return self.parser.add_section(name)
         except ConfigParser.DuplicateSectionError:
             return False
+
+    def define_section(self, name, cls_):
+        """Define the available settings in a section.
+
+        ``cls_`` must be a subclass of ``StaticSection``. If the section has
+        already been defined with a different class, ValueError is raised."""
+        if not issubclass(cls_, StaticSection):
+            raise ValueError("Class must be a subclass of StaticSection.")
+        current = getattr(self, name, None)
+        if (current is not None and not isinstance(current, self.ConfigSection)
+                and not current.__class__ == cls_):
+            raise ValueError("Can not re-define class for section.")
+        setattr(self, name, cls_(self, name))
 
     def has_option(self, section, name):
         """Check if option ``name`` exists under section ``section``."""
@@ -191,13 +206,21 @@ class Config(object):
 
     def __getattr__(self, name):
         """"""
+        deprecation_msg = (
+            'Accessing core config "{}" directly from the main config '
+            'is deprecated, and will not be possible in 6.0'.format(name)
+        )
         if name in self.parser.sections():
             items = self.parser.items(name)
             section = self.ConfigSection(name, items, self)  # Return a section
             setattr(self, name, section)
             return section
         elif self.parser.has_option('core', name):
+            print(deprecation_msg, file=sys.stderr)
             return self.parser.get('core', name)  # For backwards compatibility
+        elif hasattr(self.core, name):
+            print(deprecation_msg, file=sys.stderr)
+            return self.core.name
         else:
             raise AttributeError("%r object has no attribute %r"
                                  % (type(self).__name__, name))

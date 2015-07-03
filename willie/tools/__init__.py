@@ -48,6 +48,15 @@ from .time import get_timezone, format_time  # NOQA
 from .jobs import PriorityQueue, released  # NOQA
 
 
+def get_input(prompt):
+    """Get decoded input from the terminal (equivalent to python 3's ``input``).
+    """
+    if sys.version_info.major >= 3:
+        return input(prompt)
+    else:
+        return raw_input(prompt).decode('utf8')
+
+
 def get_raising_file_and_line(tb=None):
     """Return the file and line number of the statement that raised the tb.
 

@@ -22,24 +22,17 @@ import signal
 __version__ = '5.3.0-git'
 
 
-def run(config):
+def run(config, pid_file, daemon=False):
     import willie.bot as bot
     import willie.web as web
     import willie.logger
     from willie.tools import stderr
-    if config.core.delay is not None:
-        delay = config.core.delay
-    else:
-        delay = 20
+    delay = 20
     # Inject ca_certs from config to web for SSL validation of web requests
-    web.ca_certs = '/etc/pki/tls/certs/ca-bundle.crt'
-    if hasattr(config, 'ca_certs') and config.ca_certs is not None:
-        web.ca_certs = config.ca_certs
-    elif not os.path.isfile(web.ca_certs):
-        web.ca_certs = '/etc/ssl/certs/ca-certificates.crt'
-    if not os.path.isfile(web.ca_certs):
+    if not config.core.ca_certs:
         stderr('Could not open CA certificates file. SSL will not '
                'work properly.')
+    web.ca_certs = config.core.ca_certs
 
     def signal_handler(sig, frame):
         if sig == signal.SIGUSR1 or sig == signal.SIGTERM:
@@ -47,7 +40,7 @@ def run(config):
             p.quit('Closing')
     while True:
         try:
-            p = bot.Willie(config)
+            p = bot.Willie(config, daemon=daemon)
             if hasattr(signal, 'SIGUSR1'):
                 signal.signal(signal.SIGUSR1, signal_handler)
             if hasattr(signal, 'SIGTERM'):
@@ -56,25 +49,25 @@ def run(config):
             p.run(config.core.host, int(config.core.port))
         except KeyboardInterrupt:
             break
-        except Exception as e:
+        except Exception:
             trace = traceback.format_exc()
             try:
                 stderr(trace)
             except:
                 pass
-            logfile = open(os.path.join(config.logdir, 'exceptions.log'), 'a')
+            logfile = open(os.path.join(config.core.logdir, 'exceptions.log'), 'a')
             logfile.write('Critical exception in core')
             logfile.write(trace)
             logfile.write('----------------------------------------\n\n')
             logfile.close()
-            os.unlink(config.pid_file_path)
+            os.unlink(pid_file)
             os._exit(1)
 
         if not isinstance(delay, int):
             break
-        if p.hasquit or config.exit_on_error:
+        if p.hasquit:
             break
         stderr('Warning: Disconnected. Reconnecting in %s seconds...' % delay)
         time.sleep(delay)
-    os.unlink(config.pid_file_path)
+    os.unlink(pid_file)
     os._exit(0)
