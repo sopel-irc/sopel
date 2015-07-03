@@ -381,7 +381,7 @@ def recieve_cap_ls_reply(bot, trigger):
 
     # If we want to do SASL, we have to wait before we can send CAP END. So if
     # we are, wait on 903 (SASL successful) to send it.
-    if bot.config.core.auth_method == 'sasl' or bot.config.core.sasl_password:
+    if bot.config.core.auth_method == 'sasl':
         bot.write(('CAP', 'REQ', 'sasl'))
     else:
         bot.write(('CAP', 'END'))
@@ -390,10 +390,10 @@ def recieve_cap_ls_reply(bot, trigger):
 def recieve_cap_ack_sasl(bot):
     # Presumably we're only here if we said we actually *want* sasl, but still
     # check anyway.
-    password = bot.config.core.auth_password or bot.config.core.sasl_password
+    password = bot.config.core.auth_password
     if not password:
         return
-    mech = bot.config.core.sasl_mechanism or 'PLAIN'
+    mech = 'PLAIN'  # TODO configurable mechanism
     bot.write(('AUTHENTICATE', mech))
 
 
@@ -404,9 +404,9 @@ def auth_proceed(bot, trigger):
         # How did we get here? I am not good with computer.
         return
     # Is this right?
-    sasl_username = bot.config.core.auth_username or bot.config.core.sasl_username or bot.nick
-    sasl_token = '\0'.join((sasl_username, sasl_username,
-                           bot.config.core.sasl_password))
+    sasl_username = bot.config.core.auth_username or bot.nick
+    sasl_password = bot.config.core.auth_password
+    sasl_token = '\0'.join((sasl_username, sasl_username, sasl_password))
     # Spec says we do a base 64 encode on the SASL stuff
     bot.write(('AUTHENTICATE', base64.b64encode(sasl_token.encode('utf-8'))))
 
