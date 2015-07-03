@@ -273,6 +273,9 @@ def rate(value):
     once every 20 seconds. This limit applies to each user individually. Users
     on the admin list in Willie’s configuration are exempted from rate limits.
 
+    Rate-limited functions that use scheduled future commands should import
+    threading.Timer() instead of sched, or rate limiting will not work properly.
+
     """
     def add_attribute(function):
         function.rate = value
