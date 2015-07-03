@@ -8,7 +8,7 @@ http://willie.dftba.net
 """
 from __future__ import unicode_literals
 from willie import web, tools
-from willie.config import StaticSection, ValidatedAttribute
+from willie.config.types import StaticSection, ValidatedAttribute
 from willie.module import NOLIMIT, commands, example, rule
 import json
 import re
