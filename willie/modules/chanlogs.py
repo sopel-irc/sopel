@@ -91,8 +91,8 @@ def _format_template(tpl, bot, trigger, **kwargs):
         **kwargs
     ) + "\n"
 
-    if sys.version_info.major < 3 and isinstance(formatted, unicode):
-        formatted = formatted.encode('utf-8')
+    if sys.version_info.major < 3 and not isinstance(formatted, unicode):
+        formatted = formatted.decode('utf-8')
     return formatted
 
 
