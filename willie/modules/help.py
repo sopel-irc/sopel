@@ -13,16 +13,6 @@ from willie.module import commands, rule, example, priority
 from willie.tools import iterkeys
 
 
-def setup(bot=None):
-    if not bot:
-        return
-
-    if (bot.config.has_option('help', 'threshold') and not
-            bot.config.help.threshold.isdecimal()):  # non-negative integer
-        from willie.config import ConfigurationError
-        raise ConfigurationError("Attribute threshold of section [help] must be a nonnegative integer")
-
-
 @rule('$nick' '(?i)(help|doc) +([A-Za-z]+)(?:\?+)?$')
 @example('.help tell')
 @commands('help')
@@ -35,10 +25,8 @@ def help(bot, trigger):
         name = trigger.group(2)
         name = name.lower()
 
-        if bot.config.has_option('help', 'threshold'):
-            threshold = int(bot.config.help.threshold)
-        else:
-            threshold = 3
+        # number of lines of help to show
+        threshold = 3
 
         if name in bot.doc:
             if len(bot.doc[name][0]) + (1 if bot.doc[name][1] else 0) > threshold:
