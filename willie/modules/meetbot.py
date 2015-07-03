@@ -9,6 +9,9 @@ This module is an attempt to implement at least some of the functionallity of De
 from __future__ import unicode_literals
 import time
 import os
+from willie.config.types import (
+    StaticSection, FilenameAttribute, ValidatedAttribute
+)
 from willie.web import quote
 from willie.modules.url import find_title
 from willie.module import example, commands, rule, priority
@@ -16,16 +19,28 @@ from willie.tools import Ddict, Identifier
 import codecs
 
 
+class MeetbotSection(StaticSection):
+    meeting_log_path = FilenameAttribute('meeting_log_path', directory=True,
+                                         default='~/www/meetings')
+    """Path to meeting logs storage directory
+
+    This should be an absolute path, accessible on a webserver."""
+    meeting_log_baseurl = ValidatedAttribute(
+        'meeting_log_baseurl',
+        default='http://localhost/~willie/meetings'
+    )
+    """Base URL for the meeting logs directory"""
+
+
 def configure(config):
-    """
-    | [meetbot] | example | purpose |
-    | --------- | ------- | ------- |
-    | meeting_log_path | /home/willie/www/meetings | Path to meeting logs storage directory (should be an absolute path, accessible on a webserver) |
-    | meeting_log_baseurl | http://example.com/~willie/meetings | Base URL for the meeting logs directory |
-    """
-    if config.option('Configure meetbot', False):
-        config.interactive_add('meetbot', 'meeting_log_path', "Path to meeting logs storage directory (should be an absolute path, accessible on a webserver)")
-        config.interactive_add('meetbot', 'meeting_log_baseurl', "Base URL for the meeting logs directory (eg. http://example.com/logs)")
+    config.define_section('meetbot', MeetbotSection)
+    config.meetbot.configure_setting('meeting_log_path')
+    config.meetbot.configure_setting('meeting_log_baseurl')
+
+
+def setup(bot):
+    bot.config.define_section('meetbot', MeetbotSection)
+
 
 meetings_dict = Ddict(dict)  # Saves metadata about currently running meetings
 """

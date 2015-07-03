@@ -29,7 +29,7 @@ class WikipediaSection(StaticSection):
 
 
 def setup(bot):
-    bot.config.define_section('wikipedia', WikipediaSection, default="en")
+    bot.config.define_section('wikipedia', WikipediaSection)
 
     regex = re.compile('([a-z]+).(wikipedia.org/wiki/)([^ ]+)')
     if not bot.memory.contains('url_callbacks'):
