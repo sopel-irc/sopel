@@ -17,7 +17,7 @@ import time
 import traceback
 import signal
 
-__version__ = '6.0.0a0'
+__version__ = '6.0.0a1'
 
 
 def run(config, pid_file, daemon=False):
