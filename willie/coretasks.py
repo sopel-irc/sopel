@@ -44,9 +44,10 @@ def auth_after_register(bot):
             nickserv_name = bot.config.core.nickserv_name
         else:
             nickserv_name = 'NickServ'
+        password = bot.config.core.auth_password or bot.config.core.nickserv_password
         bot.msg(
             nickserv_name,
-            'IDENTIFY %s' % bot.config.core.nickserv_password
+            'IDENTIFY %s' % password
         )
 
     elif bot.config.core.auth_method == 'authserv' or _have_conf(bot, 'authserv_password'):
