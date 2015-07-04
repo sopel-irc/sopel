@@ -26,8 +26,8 @@ except:
 
 
 def filename(self):
-    name = self.nick + '-' + self.config.host + '.reminders.db'
-    return os.path.join(self.config.dotdir, name)
+    name = self.nick + '-' + self.config.core.host + '.reminders.db'
+    return os.path.join(self.config.core.dotdir, name)
 
 
 def load_database(name):

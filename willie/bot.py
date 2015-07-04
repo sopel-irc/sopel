@@ -108,7 +108,7 @@ class Willie(irc.Bot):
             self.config.core.host_blocks = []
         # Add nicks blocked under old scheme, if present
         # Why the fuck is this still here? Remove for 6.0.
-        if self.config.core.other_bots:
+        if self.config.parser.has_option('core', 'other_bots'):
             nicks = self.config.core.get_list('nick_blocks')
             bots = self.config.core.get_list('other_bots')
             nicks.extend(bots)
