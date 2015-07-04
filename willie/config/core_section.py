@@ -9,7 +9,7 @@ from willie.config.types import (
     StaticSection, ValidatedAttribute, ListAttribute, ChoiceAttribute,
     FilenameAttribute, NO_DEFAULT
 )
-from willie.tools import Identifier
+from willie.tools import Identifier, _print_deprecation
 
 import sys
 
@@ -43,9 +43,10 @@ def configure(config):
 
 class CoreSection(StaticSection):
     def __getattr__(self, name):
+        if not hasattr(CoreSection, name) and not name.startswith('__'):
+            _print_deprecation('The "{}" core config setting is deprecated'.format(name))
+
         if self._parser.has_option(self._section_name, name):
-            print('The "{}" core config setting is deprecated'.format(name),
-                  file=sys.stderr)
             return self._parser.get(self._section_name, name)
         else:
             return None

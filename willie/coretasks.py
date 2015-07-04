@@ -30,16 +30,26 @@ if sys.version_info.major >= 3:
 LOGGER = get_logger(__name__)
 
 
+def _have_conf(bot, name):
+    """Shim to prevent deprecation warnings"""
+    return bot.config.parser.has_option('core', name)
+
+
 def auth_after_register(bot):
     """Do NickServ/AuthServ auth"""
-    if bot.config.core.auth_method == 'nickserv' or bot.config.core.nickserv_password:
-        nickserv_name = bot.config.core.auth_target or bot.config.core.nickserv_name or 'NickServ'
+    if bot.config.core.auth_method == 'nickserv' or _have_conf(bot, 'nickserv_password'):
+        if bot.config.core.auth_target:
+            nickserv_name = bot.config.core.auth_target
+        elif _have_conf(bot, 'nickserv_name'):
+            nickserv_name = bot.config.core.nickserv_name
+        else:
+            nickserv_name = 'NickServ'
         bot.msg(
             nickserv_name,
             'IDENTIFY %s' % bot.config.core.nickserv_password
         )
 
-    elif bot.config.core.auth_method == 'authserv' or bot.config.core.authserv_password:
+    elif bot.config.core.auth_method == 'authserv' or _have_conf(bot, 'authserv_password'):
         account = bot.config.core.auth_username or bot.config.core.authserv_account
         password = bot.config.core.auth_password or bot.config.core.authserv_password
         bot.write((
@@ -384,7 +394,7 @@ def recieve_cap_ls_reply(bot, trigger):
 
     # If we want to do SASL, we have to wait before we can send CAP END. So if
     # we are, wait on 903 (SASL successful) to send it.
-    if bot.config.core.auth_method == 'sasl' or bot.config.core.sasl_password:
+    if bot.config.core.auth_method == 'sasl' or _have_conf(bot, 'sasl_password'):
         bot.write(('CAP', 'REQ', 'sasl'))
     else:
         bot.write(('CAP', 'END'))
@@ -396,7 +406,9 @@ def recieve_cap_ack_sasl(bot):
     password = bot.config.core.auth_password or bot.config.core.sasl_password
     if not password:
         return
-    mech = bot.config.core.sasl_mechanism or 'PLAIN'
+    mech = 'PLAIN'
+    if _have_conf(bot, 'sasl_mechanism'):
+        mech = bot.config.core.sasl_mechanism
     bot.write(('AUTHENTICATE', mech))
 
 
@@ -409,7 +421,7 @@ def auth_proceed(bot, trigger):
     # Is this right?
     sasl_username = bot.config.core.auth_username or bot.config.core.sasl_username or bot.nick
     sasl_token = '\0'.join((sasl_username, sasl_username,
-                           bot.config.core.sasl_password))
+                           bot.config.core.auth_password or bot.config.core.sasl_password))
     # Spec says we do a base 64 encode on the SASL stuff
     bot.write(('AUTHENTICATE', base64.b64encode(sasl_token.encode('utf-8'))))
 

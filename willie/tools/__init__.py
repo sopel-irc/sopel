@@ -100,12 +100,16 @@ def get_command_regexp(prefix, command):
     return re.compile(pattern, re.IGNORECASE | re.VERBOSE)
 
 
+def _print_deprecation(msg):
+    print(msg, file=sys.stderr)
+    trace = traceback.extract_stack()
+    for line in traceback.format_list(trace[:-2]):
+        stderr(line[:-1])
+
+
 def deprecated(old):
     def new(*args, **kwargs):
-        print('Function %s is deprecated.' % old.__name__, file=sys.stderr)
-        trace = traceback.extract_stack()
-        for line in traceback.format_list(trace[:-1]):
-            stderr(line[:-1])
+        _print_deprecation('Function %s is deprecated.' % old.__name__)
         return old(*args, **kwargs)
     new.__doc__ = old.__doc__
     new.__name__ = old.__name__

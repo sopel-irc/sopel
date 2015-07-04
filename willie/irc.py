@@ -288,7 +288,7 @@ class Bot(asynchat.async_chat):
         # 421 Unknown command, which we'll ignore
         self.write(('CAP', 'LS'))
 
-        if self.config.core.auth_method == 'server' or self.config.core.server_password:
+        if self.config.core.auth_method == 'server' or self.config.has_option('core', 'server_password'):
             password = self.config.core.auth_password or self.config.core.server_password
             self.write(('PASS', password))
         self.write(('NICK', self.nick))
@@ -314,7 +314,7 @@ class Bot(asynchat.async_chat):
         while self.connected or self.connecting:
             if self.connected and (datetime.now() - self.last_ping_time).seconds > int(self.config.core.timeout) / 2:
                 try:
-                    self.write(('PING', self.config.host))
+                    self.write(('PING', self.config.core.host))
                 except socket.error:
                     pass
             time.sleep(int(self.config.core.timeout) / 2)
@@ -486,7 +486,7 @@ class Bot(asynchat.async_chat):
 
                 signature = '%s (%s)' % (report[0], report[1])
                 # TODO: make not hardcoded
-                log_filename = os.path.join(self.config.logdir, 'exceptions.log')
+                log_filename = os.path.join(self.config.core.logdir, 'exceptions.log')
                 with codecs.open(log_filename, 'a', encoding='utf-8') as logfile:
                     logfile.write('Signature: %s\n' % signature)
                     if trigger:
@@ -518,7 +518,7 @@ class Bot(asynchat.async_chat):
         LOGGER.error('Fatal error in core, please review exception log')
         # TODO: make not hardcoded
         logfile = codecs.open(
-            os.path.join(self.config.logdir, 'exceptions.log'),
+            os.path.join(self.config.core.logdir, 'exceptions.log'),
             'a',
             encoding='utf-8'
         )

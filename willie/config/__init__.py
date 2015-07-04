@@ -39,7 +39,7 @@ from __future__ import unicode_literals
 from __future__ import print_function
 from __future__ import absolute_import
 
-from willie.tools import iteritems
+from willie.tools import iteritems, _print_deprecation
 import os
 import sys
 try:
@@ -216,10 +216,10 @@ class Config(object):
             setattr(self, name, section)
             return section
         elif self.parser.has_option('core', name):
-            print(deprecation_msg, file=sys.stderr)
+            _print_deprecation(deprecation_msg)
             return self.parser.get('core', name)  # For backwards compatibility
         elif hasattr(self.core, name):
-            print(deprecation_msg, file=sys.stderr)
+            _print_deprecation(deprecation_msg)
             return getattr(self.core, name)
         else:
             raise AttributeError("%r object has no attribute %r"
