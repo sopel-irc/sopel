@@ -148,6 +148,8 @@ def main(argv=None):
             # exit with code 2 to prevent auto restart on fail by systemd
             sys.exit(2)
 
+        config_module.core.dotdir = config_module.core.homedir
+
         logfile = os.path.join(config_module.core.logdir, 'stdio.log')
 
         config_module._is_deamonized = opts.deamonize

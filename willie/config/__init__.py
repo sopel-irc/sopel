@@ -220,7 +220,7 @@ class Config(object):
             return self.parser.get('core', name)  # For backwards compatibility
         elif hasattr(self.core, name):
             print(deprecation_msg, file=sys.stderr)
-            return self.core.name
+            return getattr(self.core, name)
         else:
             raise AttributeError("%r object has no attribute %r"
                                  % (type(self).__name__, name))
