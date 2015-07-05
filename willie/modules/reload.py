@@ -9,9 +9,7 @@ http://willie.dftba.net
 from __future__ import unicode_literals
 
 import sys
-import os.path
 import time
-import imp
 from willie.tools import iteritems
 import willie.loader
 import willie.module
@@ -43,10 +41,8 @@ def f_reload(bot, trigger):
 
     old_callables = {}
     for obj_name, obj in iteritems(vars(old_module)):
-        if bot.is_callable(obj) or bot.is_shutdown(obj):
-            old_callables[obj_name] = obj
+        bot.unregister(obj)
 
-    bot.unregister(old_callables)
     # Also remove all references to willie callables from top level of the
     # module, so that they will not get loaded again if reloading the
     # module does not override them.
@@ -57,23 +53,22 @@ def f_reload(bot, trigger):
     if hasattr(old_module, "setup"):
         delattr(old_module, "setup")
 
-    # Thanks to moot for prodding me on this
-    path = old_module.__file__
-    if path.endswith('.pyc') or path.endswith('.pyo'):
-        path = path[:-1]
-    if not os.path.isfile(path):
-        return bot.reply('Found %s, but not the source file' % name)
+    modules = willie.loader.enumerate_modules(bot.config)
+    path, type_ = modules[name]
+    load_module(bot, name, path, type_)
 
-    module = imp.load_source(name, path)
-    sys.modules[name] = module
+
+def load_module(bot, name, path, type_):
+    module, mtime = willie.loader.load_module(name, path, type_)
+    relevant_parts = willie.loader.clean_module(module, bot.config)
+
+    bot.register(*relevant_parts)
+
+    # TODO sys.modules[name] = module
     if hasattr(module, 'setup'):
         module.setup(bot)
 
-    mtime = os.path.getmtime(module.__file__)
     modified = time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime(mtime))
-
-    bot.register(vars(module))
-    bot.bind_commands()
 
     bot.reply('%r (version: %s)' % (module, modified))
 
@@ -100,30 +95,19 @@ def f_load(bot, trigger):
     if not trigger.admin:
         return
 
-    module_name = trigger.group(2)
+    name = trigger.group(2)
     path = ''
-    if module_name == bot.config.core.owner:
+    if name == bot.config.core.owner:
         return bot.reply('What?')
 
-    if module_name in sys.modules:
+    if name in sys.modules:
         return bot.reply('Module already loaded, use reload')
 
-    mods = willie.loader.enumerate_modules(config)
-    for name in mods:
-        if name == trigger.group(2):
-            path = mods[name]
-    if not os.path.isfile(path):
-        return bot.reply('Module %s not found' % module_name)
-
-    module = imp.load_source(module_name, path)
-    mtime = os.path.getmtime(module.__file__)
-    modified = time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime(mtime))
-    if hasattr(module, 'setup'):
-        module.setup(bot)
-    bot.register(vars(module))
-    bot.bind_commands()
-
-    bot.reply('%r (version: %s)' % (module, modified))
+    mods = willie.loader.enumerate_modules(bot.config)
+    if name not in mods:
+        return bot.reply('Module %s not found' % name)
+    path, type_ = mods[name]
+    load_module(bot, name, path, type_)
 
 
 # Catch PM based messages

@@ -157,6 +157,15 @@ class Willie(irc.Bot):
         else:
             stderr("Warning: Couldn't load any modules")
 
+    def unregister(self, obj):
+        if hasattr(obj, 'rule'):  # commands and intents have it added
+            for rule in obj.rule:
+                self._callables[obj.priority][rule].remove(obj)
+        if hasattr(obj, 'interval'):
+            pass  # TODO
+        if getattr(obj, '__name__', None) == 'shutdown':
+            self.shutdown_methods.remove(obj)
+
     def register(self, callables, jobs, shutdowns):
         self.shutdown_methods = shutdowns
         for callbl in callables:

@@ -181,6 +181,10 @@ def load_module(name, path, type_):
     return module, os.path.getmtime(path)
 
 
+def is_triggerable(obj):
+    return any(hasattr(obj, attr) for attr in ('rule', 'rule', 'intent'))
+
+
 def clean_module(module, config):
     callables = []
     shutdowns = []
@@ -189,8 +193,7 @@ def clean_module(module, config):
         if callable(obj):
             if getattr(obj, '__name__', None) == 'shutdown':
                 shutdowns.append(obj)
-            elif (hasattr(obj, 'commands') or hasattr(obj, 'rule') or
-                  hasattr(obj, 'intent')):
+            elif is_triggerable(obj):
                 clean_callable(obj, config)
                 callables.append(obj)
             elif hasattr(obj, 'interval'):
