@@ -76,7 +76,7 @@ class CoreSection(StaticSection):
     """The filename for Willie's database."""
 
     default_time_format = ValidatedAttribute('default_time_format',
-                                             default='%F - %T%Z')
+                                             default='%Y-%m-%d - %T%Z')
     """The default format to use for time in messages."""
 
     default_timezone = ValidatedAttribute('default_timezone')

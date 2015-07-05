@@ -32,7 +32,7 @@ class TimeSection(StaticSection):
     time_format = ValidatedAttribute(
         'time_format',
         parse=validate_format,
-        default='%F - %T%Z'
+        default='%Y-%m-%d - %T%Z'
     )
     """Default time format (see http://strftime.net)"""
 
@@ -116,7 +116,7 @@ def get_user_tz(bot, trigger):
 
 
 @commands('settimeformat', 'settf')
-@example('.settf %FT%T%z')
+@example('.settf %Y-%m-%dT%T%z')
 def update_user_format(bot, trigger):
     """
     Sets your preferred format for time. Uses the standard strftime format. You
@@ -224,7 +224,7 @@ def get_channel_tz(bot, trigger):
 
 
 @commands('setchanneltimeformat', 'setctf')
-@example('.setctf %FT%T%z')
+@example('.setctf %Y-%m-%dT%T%z')
 def update_channel_format(bot, trigger):
     """
     Sets your preferred format for time. Uses the standard strftime format. You
