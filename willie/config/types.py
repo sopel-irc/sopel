@@ -48,7 +48,7 @@ class StaticSection(object):
 
     This class is intended to be subclassed with added ``ValidatedAttribute``s.
     """
-    def __init__(self, config, section_name):
+    def __init__(self, config, section_name, validate=True):
         if not config.parser.has_section(section_name):
             config.parser.add_section(section_name)
         self._parent = config
@@ -63,11 +63,11 @@ class StaticSection(object):
                                                          e.message)
                 )
             except AttributeError:
-                raise
-                raise ValueError(
-                    'Missing required value for {}.{}'.format(section_name,
-                                                              value)
-                )
+                if validate:
+                    raise ValueError(
+                        'Missing required value for {}.{}'.format(section_name,
+                                                                value)
+                    )
 
     def configure_setting(self, name, prompt=None, default=NO_DEFAULT):
         """Return a validated value for this attribute from the terminal.

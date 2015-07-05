@@ -46,8 +46,8 @@ class ConfigurationError(Exception):
 
 
 class Config(object):
-    def __init__(self, filename):
-        """Return a configuration object.
+    def __init__(self, filename, validate=True):
+        """The bot's configuration.
 
         The given filename will be associated with the configuration, and is
         the file which will be written if write() is called. If load is not
@@ -56,13 +56,13 @@ class Config(object):
 
         A few default values will be set here if they are not defined in the
         config file, or a config file is not loaded. They are documented below.
-
         """
         self.filename = filename
         """The config object's associated file, as noted above."""
         self.parser = ConfigParser.RawConfigParser(allow_no_value=True)
         self.parser.read(self.filename)
-        self.define_section('core', willie.config.core_section.CoreSection)
+        self.define_section('core', willie.config.core_section.CoreSection,
+                            validate=validate)
         self.get = self.parser.get
 
     @property
@@ -97,18 +97,23 @@ class Config(object):
         except ConfigParser.DuplicateSectionError:
             return False
 
-    def define_section(self, name, cls_):
+    def define_section(self, name, cls_, validate=True):
         """Define the available settings in a section.
 
         ``cls_`` must be a subclass of ``StaticSection``. If the section has
-        already been defined with a different class, ValueError is raised."""
+        already been defined with a different class, ValueError is raised.
+
+        If ``validate`` is True, the section's values will be validated, and an
+        exception raised if they are invalid. This is desirable in a module's
+        setup function, for example, but might not be in the configure function.
+        """
         if not issubclass(cls_, StaticSection):
             raise ValueError("Class must be a subclass of StaticSection.")
         current = getattr(self, name, None)
         if (current is not None and not isinstance(current, self.ConfigSection)
                 and not current.__class__ == cls_):
             raise ValueError("Can not re-define class for section.")
-        setattr(self, name, cls_(self, name))
+        setattr(self, name, cls_(self, name, validate=validate))
 
     class ConfigSection(object):
 
@@ -214,7 +219,7 @@ def _wizard(section, config=None):
             print("No config file found." +
                   " Please make one before configuring these options.")
             sys.exit(1)
-        config = Config(configpath)
+        config = Config(configpath, validate=False)
         config._modules()
 
 
@@ -240,7 +245,7 @@ def _create_config(configpath):
     print("Please answer the following questions" +
           " to create your configuration file:\n")
     try:
-        config = Config(configpath)
+        config = Config(configpath, validate=False)
         willie.config.core_section.configure(config)
         if config.option(
             'Would you like to see if there are any modules'
