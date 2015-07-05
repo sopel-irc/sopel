@@ -393,7 +393,7 @@ def recieve_cap_ack_sasl(bot):
     password = bot.config.core.auth_password
     if not password:
         return
-    mech = 'PLAIN'  # TODO configurable mechanism
+    mech = bot.config.core.auth_target or 'PLAIN'
     bot.write(('AUTHENTICATE', mech))
 
 

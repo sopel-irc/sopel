@@ -54,9 +54,10 @@ class CoreSection(StaticSection):
     """The password to use to authenticate with the server."""
 
     auth_target = ValidatedAttribute('auth_target')
-    """The user to use for nickserv authentication.
+    """The user to use for nickserv authentication, or the SASL mechanism.
 
-    May not apply, depending on ``auth_method``"""
+    May not apply, depending on ``auth_method``. Defaults to NickServ for
+    nickserv auth, and PLAIN for SASL auth."""
 
     auth_username = ValidatedAttribute('auth_username')
     """The username/account to use to authenticate with the server.
