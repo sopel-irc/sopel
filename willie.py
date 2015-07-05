@@ -1,5 +1,5 @@
 #!/usr/bin/env python2.7
-# coding=utf8
+# coding=utf-8
 """
 Willie - An IRC Bot
 Copyright 2008, Sean B. Palmer, inamidst.com

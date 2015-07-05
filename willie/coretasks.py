@@ -1,4 +1,4 @@
-# coding=utf8
+# coding=utf-8
 """
 coretasks.py - Willie Routine Core tasks
 Copyright 2008-2011, Sean B. Palmer (inamidst.com) and Michael Yanovich

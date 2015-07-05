@@ -1,4 +1,4 @@
-# coding=utf8
+# coding=utf-8
 """
 __init__.py - Willie Init Module
 Copyright 2008, Sean B. Palmer, inamidst.com
