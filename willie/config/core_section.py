@@ -197,5 +197,5 @@ class CoreSection(StaticSection):
     user = ValidatedAttribute('user', default='willie')
     """The "user" for your bot (the part before the @ in the hostname)."""
 
-    verify_ssl = ValidatedAttribute('verify_ssl', default=True)
+    verify_ssl = ValidatedAttribute('verify_ssl', bool, default=True)
     """Whether to require a trusted SSL certificate for SSL connections."""
