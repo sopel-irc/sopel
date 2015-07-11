@@ -27,6 +27,7 @@ def seen(bot, trigger):
     if timestamp:
         channel = bot.db.get_nick_value(nick, 'seen_channel')
         message = bot.db.get_nick_value(nick, 'seen_message')
+        action = bot.db.get_nick_value(nick, 'seen_action')
 
         tz = get_timezone(bot.db, bot.config, None, trigger.nick,
                           trigger.sender)
@@ -36,7 +37,10 @@ def seen(bot, trigger):
 
         msg = "I last saw {} at {}".format(nick, timestamp)
         if Identifier(channel) == trigger.sender:
-            msg = msg + " in here, saying " + message
+            if action:
+                msg = msg + " in here, doing " + nick + " " + message
+            else:
+                msg = msg + " in here, saying " + message
         else:
             msg += " in another channel."
         bot.say(str(trigger.nick) + ': ' + msg)
@@ -52,3 +56,4 @@ def note(bot, trigger):
         bot.db.set_nick_value(trigger.nick, 'seen_timestamp', time.time())
         bot.db.set_nick_value(trigger.nick, 'seen_channel', trigger.sender)
         bot.db.set_nick_value(trigger.nick, 'seen_message', trigger)
+        bot.db.set_nick_value(trigger.nick, 'seen_action', 'intent' in trigger.tags)
