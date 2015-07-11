@@ -1,3 +1,9 @@
+Changes between 5.4.0 and 5.4.1
+===============================
+This release starts preparations for Willie 6. See http://willie.dftba.net/willie_6.html
+Core changes (for users):
+* Regression which prevented SSL verification from being disabled is fixed
+
 Changes between 5.3.0 and 5.4.0
 ===============================
 This release starts preparations for Willie 6. See http://willie.dftba.net/willie_6.html
