@@ -12,14 +12,37 @@ http://willie.dftba.net/
 from __future__ import unicode_literals
 from __future__ import absolute_import
 
-import sys
+from collections import namedtuple
 import os
+import re
 import time
 import threading
 import traceback
 import signal
 
 __version__ = '5.4.1'
+
+
+def _version_info():
+    regex = re.compile(r'(\d+)\.(\d+)\.(\d+)(?:(a|b|rc)(\d+))?.*')
+    version_groups = regex.match(__version__).groups()
+    major, minor, micro = (int(piece) for piece in version_groups[0:3])
+    level = version_groups[3]
+    serial = int(version_groups[4]) or 0
+    if level == 'a':
+        level = 'alpha'
+    elif level == 'b':
+        level = 'beta'
+    elif level == 'rc':
+        level = 'candidate'
+    elif not level and not version_groups[5]:
+        level = 'final'
+    else:
+        level = 'alpha'
+    version_type = namedtuple('version_info',
+                              'major, minor, micro, releaselevel, serial')
+    return version_type(major, minor, micro, level, serial)
+version_info = _version_info()
 
 
 def run(config, pid_file, daemon=False):
