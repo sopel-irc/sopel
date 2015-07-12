@@ -1,3 +1,47 @@
+Changes between 5.x.x and 6.0.0
+===============================
+This release contains backwards-incompatible changes. See
+http://willie.dftba.net/willie_6.html for more information.
+
+This is the first release in which the bot will have a new name. Current tentative name is Sopel.
+
+Module changes:
+* chanlogs, rss, github, and radio modules are removed
+* Default in admin module is now to join on invite from anyone; the old default of only joining on invite from admins can be configured
+* Wikipedia module's per-channel default language configuration is deprecated; a database-backed option will be added in a future version
+* .seen replies on action messages now display action messages differently
+
+Core changes:
+* Deprecated login configs have been removed, in favor of the new auth_* values
+* Module reloading has been redone to enable modules to be installed from PyPI
+
+API changes:
+* Configuration has been entirely reworked. Old wizard functions and the get_list function are removed, but most other uses of the config should continue to work.
+* The reorganization of willie.tools introduced in 5.3.0 is finalized; the old import locations no longer work.
+
+Changes between 5.4.0 and 5.4.1
+===============================
+This release starts preparations for Willie 6. See http://willie.dftba.net/willie_6.html
+Core changes (for users):
+* Regression which prevented SSL verification from being disabled is fixed
+
+Changes between 5.3.0 and 5.4.0
+===============================
+This release starts preparations for Willie 6. See http://willie.dftba.net/willie_6.html
+Module changes (for users):
+* Dropping the lowest results from .dice rolls works properly
+* .blocks listing is now on one line
+* HTML entities in reddit post titles are now displayed correctly
+
+Core changes (for users):
+* DB nick group merging now works properly
+* A few combinations of authentication configuration that were broken are fixed
+
+API changes (for developers):
+* The core config section now uses a 6.0-style config definition. Deprecated attributes will give a warning.
+* Accessing core config values directly from the config object itself (rather than config.core) now appropriately prints a warning
+* @require_chanmsg now works properly
+
 Changes between 5.2.0 and 5.3.0
 ===============================
 Module changes (for users):
