@@ -239,11 +239,20 @@ def update_channel_format(bot, trigger):
                   " http://strftime.net to make one.")
 
     tz = get_timezone(bot.db, bot.config, None, None, trigger.sender)
+
+    # Get old format as back-up
+    old_format = bot.db.get_channel_value(trigger.sender, 'time_format')
+
+    # Save the new format in the database so we can test it.
+    bot.db.set_channel_value(trigger.sender, 'time_format', tformat)
+
     try:
-        timef = format_time(zone=tz)
+        timef = format_time(db=bot.db, zone=tz, channel=trigger.sender)
     except:
         bot.reply("That format doesn't work. Try using"
                   " http://strftime.net to make one.")
+        # New format doesn't work. Revert save in database.
+        bot.db.set_channel_value(trigger.sender, 'time_format', old_format)
         return
     bot.db.set_channel_value(trigger.sender, 'time_format', tformat)
     bot.reply("Got it. Times in this channel  will now appear as %s "
