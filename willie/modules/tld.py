@@ -24,13 +24,16 @@ r_tag = re.compile(r'<(?!!)[^>]+>')
 def gettld(bot, trigger):
     """Show information about the given Top Level Domain."""
     page = web.get(uri)
+    tld = trigger.group(2)
+    if tld[0] == '.':
+        tld = tld[1:]
     search = r'(?i)<td><a href="\S+" title="\S+">\.{0}</a></td>\n(<td><a href=".*</a></td>\n)?<td>([A-Za-z0-9].*?)</td>\n<td>(.*)</td>\n<td[^>]*>(.*?)</td>\n<td[^>]*>(.*?)</td>\n'
-    search = search.format(trigger.group(2))
+    search = search.format(tld)
     re_country = re.compile(search)
     matches = re_country.findall(page)
     if not matches:
         search = r'(?i)<td><a href="\S+" title="(\S+)">\.{0}</a></td>\n<td><a href=".*">(.*)</a></td>\n<td>([A-Za-z0-9].*?)</td>\n<td[^>]*>(.*?)</td>\n<td[^>]*>(.*?)</td>\n'
-        search = search.format(trigger.group(2))
+        search = search.format(tld)
         re_country = re.compile(search)
         matches = re_country.findall(page)
     if matches:
@@ -47,7 +50,7 @@ def gettld(bot, trigger):
         bot.reply(reply)
     else:
         search = r'<td><a href="\S+" title="\S+">.{0}</a></td>\n<td><span class="flagicon"><img.*?\">(.*?)</a></td>\n<td[^>]*>(.*?)</td>\n<td[^>]*>(.*?)</td>\n<td[^>]*>(.*?)</td>\n<td[^>]*>(.*?)</td>\n<td[^>]*>(.*?)</td>\n'
-        search = search.format(unicode(trigger.group(2)))
+        search = search.format(unicode(tld))
         re_country = re.compile(search)
         matches = re_country.findall(page)
         if matches:
@@ -62,5 +65,5 @@ def gettld(bot, trigger):
                 dict_val["notes"] = dict_val["notes"][:400] + "..."
             reply = "%s (%s, %s). IDN: %s, DNSSEC: %s, SLD: %s" % (dict_val["country"], dict_val["expl"], dict_val["notes"], dict_val["idn"], dict_val["dnssec"], dict_val["sld"])
         else:
-            reply = "No matches found for TLD: {0}".format(unicode(trigger.group(2)))
+            reply = "No matches found for TLD: {0}".format(unicode(tld))
         bot.reply(reply)
