@@ -221,7 +221,9 @@ class ListAttribute(BaseValidated):
 
     def serialize(self, value):
         if not isinstance(value, list):
-            raise ValueError('ListAttribute value must be a list.')
+            value = self.parse(value)
+            if not isinstance(value, list):
+                raise ValueError('ListAttribute value must be a list.')
         return ','.join(value)
 
     def configure(self, prompt, default):
