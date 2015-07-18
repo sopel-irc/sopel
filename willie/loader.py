@@ -182,7 +182,8 @@ def load_module(name, path, type_):
 
 
 def is_triggerable(obj):
-    return any(hasattr(obj, attr) for attr in ('rule', 'rule', 'intent'))
+    return any(hasattr(obj, attr) for attr in ('rule', 'rule', 'intent',
+                                               'commands'))
 
 
 def clean_module(module, config):
