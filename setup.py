@@ -1,22 +1,34 @@
 #!/usr/bin/env python
 # coding=utf8
-from __future__ import unicode_literals
+from __future__ import unicode_literals, print_function
+
+from willie import __version__
+import sys
 
 try:
     from setuptools import setup
-    python_packaging = 'crap'
 except ImportError:
-    from distutils.core import setup
-    python_packaging = 'shit'
-from willie import __version__
-import tempfile
-import sys
-import os
-import shutil
+    print(
+        'You do not have setuptools, and can not install Willie. The easiest '
+        'way to fix this is to install pip by following the instructions at '
+        'http://pip.readthedocs.org/en/latest/installing.html\n'
+        'Alternately, you can run willie without installing it by running '
+        '"python willie.py"',
+        file=sys.stderr,
+    )
+    sys.exit(1)
 
-requires = ['feedparser', 'pytz', 'lxml', 'praw', 'pyenchant', 'pygeoip']
-if sys.version_info[0] < 3:
-    requires.append('backports.ssl_match_hostname')
+try:
+    import lxml  # NOQA
+except ImportError:
+    print(
+        '----- WARNING ----- SERIOUSLY, READ THIS ----- I MEAN IT -----\n'
+        'You do not have lxml installed. This installer will attempt to '
+        'install it, but it frequently fails. Please follow the instructions '
+        'at http://lxml.de/installation.html if installation does not succeed.',
+        file=sys.stderr,
+    )
+
 if sys.version_info < (2, 7) or (
         sys.version_info[0] > 3 and sys.version_info < (3, 3)):
     # Maybe not the cleanest or best way to do this, but I'm tired of answering
@@ -24,41 +36,34 @@ if sys.version_info < (2, 7) or (
     raise ImportError('Willie requires Python 2.7+ or 3.3+.')
 
 
-def do_setup():
-    try:
-        # This special screwing is to make willie.py get installed to PATH as
-        # willie, not willie.py. Don't remove it, or you'll break it.
-        tmp_dir = tempfile.mkdtemp()
-        tmp_main_script = os.path.join(tmp_dir, 'willie')
-        shutil.copy('willie.py', tmp_main_script)
+def read_reqs(path):
+    with open(path, 'r') as fil:
+        return list(fil.readlines())
 
-        setup_args = dict(
-            name='willie',
-            version=__version__,
-            description='Simple and extendible IRC bot',
-            author='Edward Powell',
-            author_email='powell.518@gmail.com',
-            url='http://willie.dftba.net/',
-            long_description="""Willie is a simple, lightweight, open source, easy-to-use IRC Utility bot, written in Python. It's designed to be easy to use, easy to run, and easy to make new features for. """,
-            # Distutils is shit, and doesn't check if it's a list of basestring
-            # but instead requires str.
-            packages=[str('willie'), str('willie.modules'),
-                      str('willie.config'), str('willie.tools')],
-            scripts=[tmp_main_script],
-            license='Eiffel Forum License, version 2',
-            platforms='Linux x86, x86-64',
-            requires=requires
-        )
-        if python_packaging == 'crap':
-            setup_args['install_requires'] = requires
-        setup(**setup_args)
-    finally:
-        try:
-            shutil.rmtree(tmp_dir)
-        except OSError as e:
-            if e.errno != 2:  # The directory is already gone, so ignore it
-                raise
+requires = read_reqs('requirements.txt')
+if sys.version_info[0] < 3:
+    requires.append('backports.ssl_match_hostname')
+dev_requires = requires + read_reqs('dev-requirements.txt')
 
-
-if __name__ == "__main__":
-    do_setup()
+setup(
+    name='willie',
+    version=__version__,
+    description='Simple and extendible IRC bot',
+    author='Edward Powell',
+    author_email='powell.518@gmail.com',
+    url='http://willie.dftba.net/',
+    long_description=(
+        "Willie is a simple, extendible, easy-to-use IRC Utility bot, written "
+        "in Python. It's designed to be easy to use, easy to run, and easy to "
+        "make new features for."
+    ),
+    # Distutils is shit, and doesn't check if it's a list of basestring
+    # but instead requires str.
+    packages=[str('willie'), str('willie.modules'),
+              str('willie.config'), str('willie.tools')],
+    license='Eiffel Forum License, version 2',
+    platforms='Linux x86, x86-64',
+    requires=requires,
+    install_requires=requires,
+    entry_points={'console_scripts': ['willie = willie.run_script:main']},
+)

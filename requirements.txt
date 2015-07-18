@@ -1,0 +1,6 @@
+feedparser
+pytz
+lxml
+praw
+pyenchant
+pygeoip

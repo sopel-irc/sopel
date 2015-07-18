@@ -1,3 +1,0 @@
-# The main script isn't included by default, so we need this file with this
-# line to make that happen.
-include willie.py
