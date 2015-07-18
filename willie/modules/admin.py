@@ -12,7 +12,9 @@ http://willie.dftba.net
 """
 from __future__ import unicode_literals
 
-from willie.config.types import StaticSection, ValidatedAttribute
+from willie.config.types import (
+    StaticSection, ValidatedAttribute, FilenameAttribute
+)
 import willie.module
 
 
@@ -32,6 +34,7 @@ def configure(config):
 
 
 def setup(bot):
+    return
     bot.config.define_section('admin', AdminSection)
 
 
@@ -176,30 +179,46 @@ def set_config(bot, trigger):
     # Get section and option from first argument.
     arg1 = trigger.group(3).split('.')
     if len(arg1) == 1:
-        section, option = "core", arg1[0]
+        section_name, option = "core", arg1[0]
     elif len(arg1) == 2:
-        section, option = arg1
+        section_name, option = arg1
     else:
         bot.reply("Usage: .set section.option value")
+        return
+    section = getattr(bot.config, section_name)
+    static_sec = isinstance(section, StaticSection)
+
+    if static_sec and not hasattr(section, option):
+        bot.say('[{}] section has no option {}.'.format(section_name, option))
         return
 
     # Display current value if no value is given.
     value = trigger.group(4)
     if not value:
-        if not bot.config.has_option(section, option):
-            bot.reply("Option %s.%s does not exist." % (section, option))
+        if not static_sec and bot.config.parser.has_option(section, option):
+            bot.reply("Option %s.%s does not exist." % (section_name, option))
             return
         # Except if the option looks like a password. Censor those to stop them
         # from being put on log files.
         if option.endswith("password") or option.endswith("pass"):
             value = "(password censored)"
         else:
-            value = getattr(getattr(bot.config, section), option)
-        bot.reply("%s.%s = %s" % (section, option, value))
+            value = getattr(section, option)
+        bot.reply("%s.%s = %s" % (section_name, option, value))
         return
 
     # Otherwise, set the value to one given as argument 2.
-    setattr(getattr(bot.config, section), option, value)
+    if static_sec:
+        descriptor = getattr(section.__class__, option)
+        try:
+            if isinstance(descriptor, FilenameAttribute):
+                value = descriptor.parse(bot.config, descriptor, value)
+            else:
+                value = descriptor.parse(descriptor, value)
+        except ValueError as exc:
+            bot.say("Can't set attribute: " + str(exc))
+            return
+    setattr(section, option, value)
 
 
 @willie.module.require_privmsg

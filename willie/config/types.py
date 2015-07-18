@@ -66,7 +66,7 @@ class StaticSection(object):
                 if validate:
                     raise ValueError(
                         'Missing required value for {}.{}'.format(section_name,
-                                                                value)
+                                                                  value)
                     )
 
     def configure_setting(self, name, prompt=None, default=NO_DEFAULT):
@@ -322,7 +322,7 @@ class FilenameAttribute(BaseValidated):
             try:
                 open(value, 'w').close()
             except OSError:
-                raise ValueError("Value must be an exisint or creatable file.")
+                raise ValueError("Value must be an existant or creatable file.")
         return value
 
     def serialize(self, main_config, this_section, value):
