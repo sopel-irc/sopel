@@ -207,12 +207,15 @@ def check_callbacks(bot, trigger, url, run=True):
     return matched
 
 
-def find_title(url):
+def find_title(url=None, content=None):
     """Return the title for the given URL."""
-    try:
-        content, headers = web.get(url, return_headers=True, limit_bytes=max_bytes)
-    except UnicodeDecodeError:
-        return  # Fail silently when data can't be decoded
+    if (not content and not url) or (content and url):
+        raise ValueError('url *or* content needs to be provided to find_title')
+    if url:
+        try:
+            content, headers = web.get(url, return_headers=True, limit_bytes=max_bytes)
+        except UnicodeDecodeError:
+            return  # Fail silently when data can't be decoded
 
     # Some cleanup that I don't really grok, but was in the original, so
     # we'll keep it (with the compiled regexes made global) for now.
