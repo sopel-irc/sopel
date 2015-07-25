@@ -10,7 +10,7 @@ import random
 from sopel.module import rule, priority, thread
 
 
-@rule(r'(?i)(hi|hello|hey) $nickname[ \t]*$')
+@rule(r'(?i)(hi|hello|hey),? $nickname[ \t]*$')
 def hello(bot, trigger):
     if trigger.owner:
         greeting = random.choice(('Fuck off,', 'Screw you,', 'Go away'))
@@ -20,7 +20,7 @@ def hello(bot, trigger):
     bot.say(greeting + ' ' + trigger.nick + punctuation)
 
 
-@rule(r'(?i)(Fuck|Screw) you, $nickname[ \t]*$')
+@rule(r'(?i)(Fuck|Screw) you,? $nickname[ \t]*$')
 def rude(bot, trigger):
     bot.say('Watch your mouth, ' + trigger.nick + ', or I\'ll tell your mother!')
 
