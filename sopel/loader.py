@@ -1,5 +1,5 @@
 # coding=utf-8
-from __future__ import unicode_literals
+from __future__ import unicode_literals, absolute_import
 
 import imp
 import os.path
@@ -27,6 +27,15 @@ def get_module_description(path):
         return None
 
 
+def _update_modules_from_dir(modules, directory):
+    # Note that this modifies modules in place
+    for path in os.listdir(directory):
+        path = os.path.join(directory, path)
+        result = get_module_description(path)
+        if result:
+            modules[result[0]] = result[1:]
+
+
 def enumerate_modules(config, show_all=False):
     """Map the names of modules to the location of their file.
 
@@ -48,27 +57,29 @@ def enumerate_modules(config, show_all=False):
     # First, add modules from the regular modules directory
     main_dir = os.path.dirname(os.path.abspath(__file__))
     modules_dir = os.path.join(main_dir, 'modules')
+    _update_modules_from_dir(modules, modules_dir)
     for path in os.listdir(modules_dir):
-        result = get_module_description(os.path.join(modules_dir, path))
-        if result:
-            modules[result[0]] = result[1:]
+        break
+
+    # Then, find PyPI installed modules
+    # TODO does this work with all possible install mechanisms?
+    try:
+        import sopel_modules
+    except:
+        pass
+    else:
+        for directory in sopel_modules.__path__:
+            _update_modules_from_dir(modules, directory)
+
     # Next, look in ~/.sopel/modules
     home_modules_dir = os.path.join(config.homedir, 'modules')
     if not os.path.isdir(home_modules_dir):
         os.makedirs(home_modules_dir)
-    for path in os.listdir(home_modules_dir):
-        path = os.path.join(home_modules_dir, path)
-        result = get_module_description(path)
-        if result:
-            modules[result[0]] = result[1:]
+    _update_modules_from_dir(modules, home_modules_dir)
 
     # Last, look at all the extra directories.
     for directory in config.core.extra:
-        for path in os.listdir(directory):
-            path = os.path.join(directory, path)
-            result = get_module_description(path)
-            if result:
-                modules[result[0]] = result[1:]
+        _update_modules_from_dir(modules, directory)
 
     # Coretasks is special. No custom user coretasks.
     ct_path = os.path.join(main_dir, 'coretasks.py')
