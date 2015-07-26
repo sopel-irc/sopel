@@ -42,7 +42,7 @@ def do_setup():
             long_description="""Willie is a simple, lightweight, open source, easy-to-use IRC Utility bot, written in Python. It's designed to be easy to use, easy to run, and easy to make new features for. """,
             # Distutils is shit, and doesn't check if it's a list of basestring
             # but instead requires str.
-            packages=[str('willie'), str('willie.modules'),
+            packages=[str('sopel'), str('willie'), str('willie.modules'),
                       str('willie.config'), str('willie.tools')],
             scripts=[tmp_main_script],
             license='Eiffel Forum License, version 2',

@@ -10,7 +10,10 @@ http://willie.dftba.net
 from __future__ import unicode_literals
 
 from datetime import datetime
-import willie
+# Smoke test each kind of import so we know if the forward-compat is working
+import sopel
+from sopel import module
+from sopel.module import rule
 import re
 from os import path
 import json
@@ -32,10 +35,10 @@ def git_info():
                     return sha
 
 
-@willie.module.commands('version')
+@module.commands('version')
 def version(bot, trigger):
     """Display the latest commit version, if Willie is running in a git repo."""
-    release = willie.__version__
+    release = sopel.__version__
     sha = git_info()
     if not sha:
         msg = 'Willie v. ' + release
@@ -44,25 +47,25 @@ def version(bot, trigger):
         bot.reply(msg)
         return
 
-    bot.reply("Willie v. {} at commit: {}".format(willie.__version__, sha))
+    bot.reply("Willie v. {} at commit: {}".format(sopel.__version__, sha))
 
 
-@willie.module.rule('\x01VERSION\x01')
-@willie.module.rate(20)
+@rule('\x01VERSION\x01')
+@module.rate(20)
 def ctcp_version(bot, trigger):
     bot.write(('NOTICE', trigger.nick),
-              '\x01VERSION Willie IRC Bot version %s\x01' % willie.__version__)
+              '\x01VERSION Willie IRC Bot version %s\x01' % sopel.__version__)
 
 
-@willie.module.rule('\x01SOURCE\x01')
-@willie.module.rate(20)
+@rule('\x01SOURCE\x01')
+@module.rate(20)
 def ctcp_source(bot, trigger):
     bot.write(('NOTICE', trigger.nick),
               '\x01SOURCE https://github.com/Embolalia/willie/\x01')
 
 
-@willie.module.rule('\x01PING\s(.*)\x01')
-@willie.module.rate(10)
+@rule('\x01PING\s(.*)\x01')
+@module.rate(10)
 def ctcp_ping(bot, trigger):
     text = trigger.group()
     text = text.replace("PING ", "")
@@ -71,8 +74,8 @@ def ctcp_ping(bot, trigger):
               '\x01PING {0}\x01'.format(text))
 
 
-@willie.module.rule('\x01TIME\x01')
-@willie.module.rate(20)
+@rule('\x01TIME\x01')
+@module.rate(20)
 def ctcp_time(bot, trigger):
     dt = datetime.now()
     current_time = dt.strftime("%A, %d. %B %Y %I:%M%p")
