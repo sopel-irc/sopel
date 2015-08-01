@@ -132,7 +132,6 @@ def handle_names(bot, trigger):
     channel = Identifier(channels.group(1))
     if channel not in bot.privileges:
         bot.privileges[channel] = dict()
-    bot.init_ops_list(channel)
 
     # This could probably be made flexible in the future, but I don't think
     # it'd be worth it.
@@ -149,18 +148,6 @@ def handle_names(bot, trigger):
                 priv = priv | value
         nick = Identifier(name.lstrip(''.join(mapping.keys())))
         bot.privileges[channel][nick] = priv
-
-        # Old op list maintenance is down here, and should be removed at some
-        # point
-        if '@' in name or '~' in name or '&' in name:
-            bot.add_op(channel, name.lstrip('@&%+~'))
-            bot.add_halfop(channel, name.lstrip('@&%+~'))
-            bot.add_voice(channel, name.lstrip('@&%+~'))
-        elif '%' in name:
-            bot.add_halfop(channel, name.lstrip('@&%+~'))
-            bot.add_voice(channel, name.lstrip('@&%+~'))
-        elif '+' in name:
-            bot.add_voice(channel, name.lstrip('@&%+~'))
 
 
 @sopel.module.rule('(.*)')
@@ -244,20 +231,6 @@ def track_nicks(bot, trigger):
         if old in bot.privileges[channel]:
             value = bot.privileges[channel].pop(old)
             bot.privileges[channel][new] = value
-
-    # Old privilege maintenance
-    for channel in bot.halfplus:
-        if old in bot.halfplus[channel]:
-            bot.del_halfop(channel, old)
-            bot.add_halfop(channel, new)
-    for channel in bot.ops:
-        if old in bot.ops[channel]:
-            bot.del_op(channel, old)
-            bot.add_op(channel, new)
-    for channel in bot.voices:
-        if old in bot.voices[channel]:
-            bot.del_voice(channel, old)
-            bot.add_voice(channel, new)
 
 
 @sopel.module.rule('(.*)')
