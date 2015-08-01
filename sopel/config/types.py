@@ -198,6 +198,8 @@ class ValidatedAttribute(BaseValidated):
         return unicode(value)
 
     def parse(self, value):
+        if value == 'None':
+            return None
         return value
 
     def configure(self, prompt, default):
