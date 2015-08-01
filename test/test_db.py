@@ -15,9 +15,9 @@ import tempfile
 
 import pytest
 
-from willie.db import WillieDB
-from willie.test_tools import MockConfig
-from willie.tools import Identifier
+from sopel.db import SopelDB
+from sopel.test_tools import MockConfig
+from sopel.tools import Identifier
 
 db_filename = tempfile.mkstemp()[1]
 if sys.version_info.major >= 3:
@@ -36,7 +36,7 @@ else:
 def db():
     config = MockConfig()
     config.core.db_filename = db_filename
-    db = WillieDB(config)
+    db = SopelDB(config)
     # TODO add tests to ensure db creation works properly, too.
     return db
 

@@ -4,13 +4,13 @@ from __future__ import unicode_literals
 
 import pytest
 
-from willie.trigger import PreTrigger, Trigger
-from willie.tools import Identifier
+from sopel.trigger import PreTrigger, Trigger
+from sopel.tools import Identifier
 
 
 @pytest.fixture
 def nick():
-    return Identifier('Willie')
+    return Identifier('Sopel')
 
 
 def test_basic_pretrigger(nick):
