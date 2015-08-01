@@ -385,6 +385,10 @@ class Bot(asynchat.async_chat):
         pass
 
     def msg(self, recipient, text, max_messages=1):
+        # Deprecated, but way too much of a pain to remove.
+        self.say(text, recipient, max_messages)
+
+    def say(self, text, recipient, max_messages=1):
         # We're arbitrarily saying that the max is 400 bytes of text when
         # messages will be split. Otherwise, we'd have to acocunt for the bot's
         # hostmask, which is hard.
@@ -445,13 +449,23 @@ class Bot(asynchat.async_chat):
         if excess:
             self.msg(recipient, excess, max_messages - 1)
 
-    def notice(self, dest, text):
+    def notice(self, text, dest):
         """Send an IRC NOTICE to a user or a channel.
 
         See IRC protocol documentation for more information.
 
         """
         self.write(('NOTICE', dest), text)
+
+    def action(self, text, dest):
+        self.say('\001ACTION {}\001'.format(text), dest)
+
+    def reply(self, text, dest, reply_to, notice=False):
+        text = '%s: %s' % (reply_to, text)
+        if notice:
+            self.notice(text, dest)
+        else:
+            self.say(text, dest)
 
     def error(self, trigger=None):
         """Called internally when a module causes an error."""

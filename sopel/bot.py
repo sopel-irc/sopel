@@ -189,38 +189,33 @@ class Sopel(irc.Bot):
                           if not attr.startswith('__')]
             return list(self.__dict__) + classattrs + dir(self._bot)
 
-        def say(self, string, max_messages=1):
-            self._bot.msg(self._trigger.sender, string, max_messages)
-
-        def reply(self, string, notice=False):
-            if isinstance(string, str) and not py3:
-                string = string.decode('utf8')
-            if notice:
-                self.notice(
-                    '%s: %s' % (self._trigger.nick, string),
-                    self._trigger.sender
-                )
-            else:
-                self._bot.msg(
-                    self._trigger.sender,
-                    '%s: %s' % (self._trigger.nick, string)
-                )
-
-        def action(self, string, recipient=None):
-            if recipient is None:
-                recipient = self._trigger.sender
-            self._bot.msg(recipient, '\001ACTION %s\001' % string)
-
-        def notice(self, string, recipient=None):
-            if recipient is None:
-                recipient = self._trigger.sender
-            self.write(('NOTICE', recipient), string)
-
         def __getattr__(self, attr):
             return getattr(self._bot, attr)
 
         def __setattr__(self, attr, value):
             return setattr(self._bot, attr, value)
+
+        def say(self, message, destination=None, max_messages=1):
+            if destination is None:
+                destination = self._trigger.sender
+            self._bot.say(message, destination, max_messages)
+
+        def action(self, message, destination=None):
+            if destination is None:
+                destination = self._trigger.sender
+            self._bot.action(message, destination)
+
+        def notice(self, message, destination=None):
+            if destination is None:
+                destination = self._trigger.sender
+            self._bot.notice(message, destination)
+
+        def reply(self, message, destination=None, reply_to=None, notice=False):
+            if destination is None:
+                destination = self._trigger.sender
+            if reply_to is None:
+                reply_to = self._trigger.nick
+            self._bot.reply(message, destination, reply_to, notice)
 
     def call(self, func, sopel, trigger):
         nick = trigger.nick
