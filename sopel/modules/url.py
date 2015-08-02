@@ -34,7 +34,7 @@ max_bytes = 655360
 class UrlSection(StaticSection):
     # TODO some validation rules maybe?
     exclude = ValidatedAttribute('exclude')
-    exclusion_char = ValidatedAttribute('exclusion_char', '!')
+    exclusion_char = ValidatedAttribute('exclusion_char', default='!')
 
 
 def configure(config):
