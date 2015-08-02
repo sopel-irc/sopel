@@ -90,7 +90,7 @@ def get_timezone(db=None, config=None, zone=None, nick=None, channel=None):
         tz = validate_timezone(db.get_nick_value(nick, 'timezone'))
     if not tz and channel:
         tz = validate_timezone(db.get_channel_value(channel, 'timezone'))
-    if not tz and config and config.has_option('core', 'default_timezone'):
+    if not tz and config and config.core.default_timezone:
         tz = validate_timezone(config.core.default_timezone)
     return tz
 
@@ -121,8 +121,7 @@ def format_time(db=None, config=None, zone=None, nick=None, channel=None,
             tformat = db.get_nick_value(nick, 'time_format')
         if not tformat and channel:
             tformat = db.get_channel_value(channel, 'time_format')
-    if not tformat and config and config.has_option('core',
-                                                    'default_time_format'):
+    if not tformat and config and config.core.default_time_format):
         tformat = config.core.default_time_format
     if not tformat:
         tformat = '%Y-%m-%d - %T%Z'
