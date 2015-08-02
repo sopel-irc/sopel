@@ -157,6 +157,9 @@ class BaseValidated(object):
         return self.parse(value)
 
     def __set__(self, instance, value):
+        if value is None:
+            instance._parser.remove_option(instance._section_name, self.name)
+            return
         value = self.serialize(value)
         instance._parser.set(instance._section_name, self.name, value)
 
