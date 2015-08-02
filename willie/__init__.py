@@ -20,7 +20,7 @@ import threading
 import traceback
 import signal
 
-__version__ = '5.4.1'
+__version__ = '5.5.0'
 
 
 def _version_info():

@@ -1,3 +1,11 @@
+Changes between 5.4.1 and 5.5.0
+===============================
+This release starts preparations for Willie 6. See http://sopel.chat/willie_6.html
+API changes (for developers):
+* The ability to import from the sopel package, rather than willie, is added to enable forward compatibility with the rename in 6.0.
+* A version_info tuple, simmilar to Python's own sys.version_info, is added
+* An error when setting a validated config attribute to None is fixed
+
 Changes between 5.4.0 and 5.4.1
 ===============================
 This release starts preparations for Willie 6. See http://willie.dftba.net/willie_6.html
