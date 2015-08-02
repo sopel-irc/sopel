@@ -27,14 +27,14 @@ def _version_info():
     version_groups = regex.match(__version__).groups()
     major, minor, micro = (int(piece) for piece in version_groups[0:3])
     level = version_groups[3]
-    serial = int(version_groups[4]) or 0
+    serial = int(version_groups[4] or 0)
     if level == 'a':
         level = 'alpha'
     elif level == 'b':
         level = 'beta'
     elif level == 'rc':
         level = 'candidate'
-    elif not level and not version_groups[5]:
+    elif not level and version_groups[5] is None:
         level = 'final'
     else:
         level = 'alpha'
