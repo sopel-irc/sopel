@@ -26,7 +26,7 @@ import os
 import codecs
 import traceback
 from willie.logger import get_logger
-from willie.tools import stderr, Identifier
+from willie.tools import stderr, Identifier, _print_deprecation
 from willie.trigger import PreTrigger, Trigger
 try:
     import select
@@ -464,6 +464,10 @@ class Bot(asynchat.async_chat):
         See IRC protocol documentation for more information.
 
         """
+        _print_deprecation(
+            "The arguments to bot.notice() in this context will be reversed in "
+            "6.0; the message will be first, and the destination second."
+        )
         self.write(('NOTICE', dest), text)
 
     def error(self, trigger=None):
