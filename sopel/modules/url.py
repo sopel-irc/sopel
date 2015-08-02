@@ -18,7 +18,6 @@ from sopel.config.types import ValidatedAttribute, StaticSection
 
 
 url_finder = None
-exclusion_char = '!'
 # These are used to clean up the title tag before actually parsing it. Not the
 # world's best way to do this, but it'll do for now.
 title_tag_data = re.compile('<(/?)title( [^>]+)?>', re.IGNORECASE)
@@ -35,7 +34,7 @@ max_bytes = 655360
 class UrlSection(StaticSection):
     # TODO some validation rules maybe?
     exclude = ValidatedAttribute('exclude')
-    exclusion_char = ValidatedAttribute('exclusion_char')
+    exclusion_char = ValidatedAttribute('exclusion_char', '!')
 
 
 def configure(config):
@@ -51,7 +50,7 @@ def configure(config):
 
 
 def setup(bot=None):
-    global url_finder, exclusion_char
+    global url_finder
 
     # TODO figure out why this is needed, and get rid of it, because really?
     if not bot:
@@ -81,11 +80,8 @@ def setup(bot=None):
     if not bot.memory.contains('last_seen_url'):
         bot.memory['last_seen_url'] = tools.SopelMemory()
 
-    if bot.config.url.exclusion_char:
-        exclusion_char = bot.config.url.exclusion_char
-
     url_finder = re.compile(r'(?u)(%s?(?:http|https|ftp)(?:://\S+))' %
-                            (exclusion_char))
+                            (bot.config.url.exclusion_char))
 
 
 @commands('title')
@@ -150,7 +146,7 @@ def process_urls(bot, trigger, urls):
 
     results = []
     for url in urls:
-        if not url.startswith(exclusion_char):
+        if not url.startswith(bot.config.url.exclusion_char):
             # Magic stuff to account for international domain names
             try:
                 url = web.iri_to_uri(url)
