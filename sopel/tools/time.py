@@ -121,7 +121,7 @@ def format_time(db=None, config=None, zone=None, nick=None, channel=None,
             tformat = db.get_nick_value(nick, 'time_format')
         if not tformat and channel:
             tformat = db.get_channel_value(channel, 'time_format')
-    if not tformat and config and config.core.default_time_format):
+    if not tformat and config and config.core.default_time_format:
         tformat = config.core.default_time_format
     if not tformat:
         tformat = '%Y-%m-%d - %T%Z'
