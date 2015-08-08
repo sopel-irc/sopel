@@ -171,6 +171,8 @@ class Sopel(irc.Bot):
         for callbl in callables:
             for rule in callbl.rule:
                 self._callables[callbl.priority][rule].append(callbl)
+            for command, docs in callbl._docs.items():
+                self.doc[command] = docs
         for func in jobs:
             for interval in func.interval:
                 job = sopel.tools.jobs.Job(interval, func)
