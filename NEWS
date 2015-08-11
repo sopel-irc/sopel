@@ -18,6 +18,7 @@ Core changes:
 API changes:
 * Configuration has been entirely reworked. Old wizard functions and the get_list function are removed, but most other uses of the config should continue to work.
 * The reorganization of willie.tools introduced in 5.3.0 is finalized; the old import locations no longer work.
+* bot.msg is deprecated in favor of bot.say, which can now be used in un-triggered contexts with an additional recipient argument
 
 Changes between 5.4.0 and 5.4.1
 ===============================
