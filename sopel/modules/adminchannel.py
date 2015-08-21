@@ -114,7 +114,7 @@ def kick(bot, trigger):
         reasonidx = 3
     reason = ' '.join(text[reasonidx:])
     if nick != bot.config.core.nick:
-        bot.write(['KICK', channel, nick, reason])
+        bot.write(['KICK', channel, nick], reason)
 
 
 def configureHostMask(mask):
@@ -266,6 +266,7 @@ def kickban(bot, trigger):
     opt = Identifier(text[1])
     nick = opt
     mask = text[2]
+    channel = trigger.sender
     reasonidx = 3
     if not opt.is_nick():
         if argc < 5:
@@ -279,7 +280,7 @@ def kickban(bot, trigger):
     if mask == '':
         return
     bot.write(['MODE', channel, '+b', mask])
-    bot.write(['KICK', channel, nick, ' :', reason])
+    bot.write(['KICK', channel, nick], reason)
 
 
 @require_privilege(OP)
