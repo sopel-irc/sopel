@@ -20,6 +20,9 @@ else:
     import html.parser as HTMLParser
 
 
+BASE_TUMBOLIA_URI = 'https://tumbolia-two.appspot.com/'
+
+
 @commands('c', 'calc')
 @example('.c 5 + 3', '8')
 @example('.c 0.9*10', '9')
@@ -52,7 +55,7 @@ def py(bot, trigger):
         return bot.say("Need an expression to evaluate")
 
     query = trigger.group(2)
-    uri = 'http://tumbolia-hrd.appspot.com/py/'
+    uri = BASE_TUMBOLIA_URI + 'py/'
     answer = web.get(uri + web.quote(query))
     if answer:
         #bot.say can potentially lead to 3rd party commands triggering.
@@ -69,7 +72,7 @@ def wa(bot, trigger):
     if not trigger.group(2):
         return bot.reply("No search term.")
     query = trigger.group(2)
-    uri = 'http://tumbolia-hrd.appspot.com/wa/'
+    uri = BASE_TUMBOLIA_URI + 'wa/'
     try:
         answer = web.get(uri + web.quote(query.replace('+', 'plus')), 45,
                          dont_decode=True)
