@@ -22,7 +22,7 @@ import signal
 __version__ = '6.0.0a5'
 
 
-def _version_info():
+def _version_info(version=__version__):
     regex = re.compile(r'(\d+)\.(\d+)\.(\d+)(?:(a|b|rc)(\d+))?.*')
     version_groups = regex.match(__version__).groups()
     major, minor, micro = (int(piece) for piece in version_groups[0:3])
