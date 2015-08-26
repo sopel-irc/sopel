@@ -69,7 +69,7 @@ class StaticSection(object):
                                                                   value)
                     )
 
-    def configure_setting(self, name, prompt=None, default=NO_DEFAULT):
+    def configure_setting(self, name, prompt, default=NO_DEFAULT):
         """Return a validated value for this attribute from the terminal.
 
         ``prompt`` will be the docstring of the attribute if not given.
@@ -81,7 +81,6 @@ class StaticSection(object):
         not the attribute's default.
         """
         clazz = getattr(self.__class__, name)
-        prompt = prompt or clazz.__doc__
         if default is NO_DEFAULT:
             try:
                 default = getattr(self, name)
