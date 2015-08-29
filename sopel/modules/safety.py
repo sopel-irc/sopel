@@ -31,7 +31,7 @@ else:
 LOGGER = get_logger(__name__)
 
 vt_base_api_url = 'https://www.virustotal.com/vtapi/v2/url/'
-malware_domains = []
+malware_domains = set()
 known_good = []
 
 
@@ -77,7 +77,7 @@ def setup(bot):
         _download_malwaredomains_db(loc)
     with open(loc, 'r') as f:
         for line in f:
-            malware_domains.append(unicode(line).strip().lower())
+            malware_domains.add(unicode(line).strip().lower())
 
 
 def _download_malwaredomains_db(path):
