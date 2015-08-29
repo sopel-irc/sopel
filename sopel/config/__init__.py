@@ -110,9 +110,14 @@ class Config(object):
         if not issubclass(cls_, StaticSection):
             raise ValueError("Class must be a subclass of StaticSection.")
         current = getattr(self, name, None)
+        current_name = str(current.__class__)
+        new_name = str(cls_)
         if (current is not None and not isinstance(current, self.ConfigSection)
-                and not current.__class__ == cls_):
-            raise ValueError("Can not re-define class for section.")
+                and not current_name == new_name):
+            raise ValueError(
+                "Can not re-define class for section from {} to {}.".format(
+                    current_name, new_name)
+            )
         setattr(self, name, cls_(self, name, validate=validate))
 
     class ConfigSection(object):
