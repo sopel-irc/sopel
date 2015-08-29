@@ -77,7 +77,9 @@ def setup(bot):
         _download_malwaredomains_db(loc)
     with open(loc, 'r') as f:
         for line in f:
-            malware_domains.add(unicode(line).strip().lower())
+            clean_line = unicode(line).strip().lower()
+            if clean_line != '':
+                malware_domains.add(clean_line)
 
 
 def _download_malwaredomains_db(path):
