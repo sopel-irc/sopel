@@ -62,7 +62,7 @@ class Sopel(irc.Bot):
         key in version *3.2* onward. Prior to *3.2*, the name of the function
         as declared in the source code was used.
         """
-        self.commands = collections.defaultdict(list)
+        self.command_groups = collections.defaultdict(list)
         """A mapping of module names to a list of commands in it."""
         self.stats = {}
         """
@@ -185,7 +185,7 @@ class Sopel(irc.Bot):
                 # TODO doc and make decorator for this. Not sure if this is how
                 # it should work yet, so not making it public for 6.0.
                 category = getattr(callbl, 'category', module_name)
-                self.commands[category].append(callbl.commands[0])
+                self.command_groups[category].append(callbl.commands[0])
             for command, docs in callbl._docs.items():
                 self.doc[command] = docs
         for func in jobs:

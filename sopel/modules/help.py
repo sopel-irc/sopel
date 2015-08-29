@@ -49,8 +49,8 @@ def help(bot, trigger):
             trigger.nick
         )
 
-        name_length = max(6, max(len(k) for k in bot.commands.keys()))
-        for category, cmds in bot.commands.items():
+        name_length = max(6, max(len(k) for k in bot.command_groups.keys()))
+        for category, cmds in bot.command_groups.items():
             category = category.upper().ljust(name_length)
             cmds = '  '.join(cmds)
             msg = bold(category) + '  ' + cmds
