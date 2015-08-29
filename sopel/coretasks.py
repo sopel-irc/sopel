@@ -30,6 +30,8 @@ if sys.version_info.major >= 3:
 
 LOGGER = get_logger(__name__)
 
+batched_caps = {}
+
 
 def auth_after_register(bot):
     """Do NickServ/AuthServ auth"""
@@ -324,14 +326,26 @@ def recieve_cap_ls_reply(bot, trigger):
         # We're too late to do SASL, and we don't want to send CAP END before
         # the module has done what it needs to, so just return
         return
-    bot.server_capabilities = set(trigger.split(' '))
+
+    for cap in trigger.split():
+        c = cap.split('=')
+        if len(c) == 2:
+            batched_caps[c[0]] = c[1]
+        else:
+            batched_caps[c[0]] = None
+
+    # Not the last in a multi-line reply. First two args are * and LS.
+    if trigger.args[2] == '*':
+        return
+
+    bot.server_capabilities = batched_caps
 
     # If some other module requests it, we don't need to add another request.
     # If some other module prohibits it, we shouldn't request it.
     if 'multi-prefix' not in bot._cap_reqs:
         # Whether or not the server supports multi-prefix doesn't change how we
         # parse it, so we don't need to worry if it fails.
-        bot._cap_reqs['multi-prefix'] = (['', 'coretasks', None],)
+        bot._cap_reqs['multi-prefix'] = (['', 'coretasks', None, None],)
 
     for cap, reqs in iteritems(bot._cap_reqs):
         # At this point, we know mandatory and prohibited don't co-exist, but
@@ -348,9 +362,12 @@ def recieve_cap_ls_reply(bot, trigger):
         if prefix != '=' or cap in bot.server_capabilities:
             # REQs fail as a whole, so we send them one capability at a time
             bot.write(('CAP', 'REQ', entry[0] + cap))
-        elif req[2]:
-            # Server is going to fail on it, so we call the failure function
-            req[2](bot, entry[0] + cap)
+        # If it's required but not in server caps, we need to call all the
+        # callbacks
+        else:
+            for entry in reqs:
+                if entry[2] and entry[0] == '=':
+                    entry[2](bot, entry[0] + cap)
 
     # If we want to do SASL, we have to wait before we can send CAP END. So if
     # we are, wait on 903 (SASL successful) to send it.

@@ -273,7 +273,7 @@ class Bot(asynchat.async_chat):
         # Request list of server capabilities. IRCv3 servers will respond with
         # CAP * LS (which we handle in coretasks). v2 servers will respond with
         # 421 Unknown command, which we'll ignore
-        self.write(('CAP', 'LS'))
+        self.write(('CAP', 'LS', '302'))
 
         if self.config.core.auth_method == 'server':
             password = self.config.core.auth_password

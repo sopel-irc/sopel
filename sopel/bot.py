@@ -76,8 +76,12 @@ class Sopel(irc.Bot):
         """
         self.acivity = {}
 
-        self.server_capabilities = set()
-        """A set containing the IRCv3 capabilities that the server supports.
+        self.server_capabilities = {}
+        """A dict mapping supported IRCv3 capabilities to their options.
+
+        For example, if the server specifies the capability ``sasl=EXTERNAL``,
+        it will be here as ``{"sasl": "EXTERNAL"}``. Capabilities specified
+        without any options will have ``None`` as the value.
 
         For servers that do not support IRCv3, this will be an empty set."""
         self.enabled_capabilities = set()
@@ -86,8 +90,9 @@ class Sopel(irc.Bot):
         """A dictionary of capability requests
 
         Maps the capability name to a list of tuples of the prefix ('-', '=',
-        or ''), the name of the requesting module, and the function to call if
-        the request is rejected."""
+        or ''), the name of the requesting module, the function to call if the
+        the request is rejected, and the argument to the capability (or None).
+        """
 
         self.privileges = dict()
         """A dictionary of channels to their users and privilege levels
@@ -356,7 +361,7 @@ class Sopel(irc.Bot):
                     )
                 )
 
-    def cap_req(self, module_name, capability, failure_callback):
+    def cap_req(self, module_name, capability, arg=None, failure_callback=None):
         """Tell Sopel to request a capability when it starts.
 
         By prefixing the capability with `-`, it will be ensured that the
@@ -379,21 +384,27 @@ class Sopel(irc.Bot):
         request, the `failure_callback` function will be called, if provided.
         The arguments will be a `Sopel` object, and the capability which was
         rejected. This can be used to disable callables which rely on the
-        capability.
+        capability. In future versions
 
+        If ``arg`` is given, and does not exactly match what the server
+        provides or what other modules have requested for that capability, it is
+        considered a conflict.
         """
         # TODO raise better exceptions
         cap = capability[1:]
         prefix = capability[0]
 
+        entry = self._cap_reqs.get(cap, [])
+        if any((ent[3] != arg for ent in entry)):
+            raise Exception('Capability conflict')
+
         if prefix == '-':
             if self.connection_registered and cap in self.enabled_capabilities:
                 raise Exception('Can not change capabilities after server '
                                 'connection has been completed.')
-            entry = self._cap_reqs.get(cap, [])
             if any((ent[0] != '-' for ent in entry)):
                 raise Exception('Capability conflict')
-            entry.append((prefix, module_name, failure_callback))
+            entry.append((prefix, module_name, failure_callback, arg))
             self._cap_reqs[cap] = entry
         else:
             if prefix != '=':
@@ -403,10 +414,9 @@ class Sopel(irc.Bot):
                                                self.enabled_capabilities):
                 raise Exception('Can not change capabilities after server '
                                 'connection has been completed.')
-            entry = self._cap_reqs.get(cap, [])
             # Non-mandatory will callback at the same time as if the server
             # rejected it.
             if any((ent[0] == '-' for ent in entry)) and prefix == '=':
                 raise Exception('Capability conflict')
-            entry.append((prefix, module_name, failure_callback))
+            entry.append((prefix, module_name, failure_callback, arg))
             self._cap_reqs[cap] = entry
