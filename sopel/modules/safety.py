@@ -113,7 +113,7 @@ def url_handler(bot, trigger):
     if not check:
         return  # Not overriden by DB, configured default off
 
-    netloc = urlparse(trigger).netloc
+    netloc = urlparse(trigger.group(1)).netloc
     if any(regex.search(netloc) for regex in known_good):
         return  # Whitelisted
 
