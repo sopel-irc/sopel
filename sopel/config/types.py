@@ -219,7 +219,7 @@ class ListAttribute(BaseValidated):
         super(ListAttribute, self).__init__(name, default=default)
 
     def parse(self, value):
-        return value.split(',')
+        return [option.strip() for option in value.split(',')]
 
     def serialize(self, value):
         if not isinstance(value, list):
