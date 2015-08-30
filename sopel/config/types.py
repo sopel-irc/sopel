@@ -218,8 +218,11 @@ class ListAttribute(BaseValidated):
         default = default or []
         super(ListAttribute, self).__init__(name, default=default)
 
-    def parse(self, value):
-        return [option.strip() for option in value.split(',')]
+    def parse(self, value, strip = True):
+        if strip:
+            return [option.strip() for option in value.split(',')]
+        else:
+            return value.split(",")
 
     def serialize(self, value):
         if not isinstance(value, list):
