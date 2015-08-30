@@ -10,15 +10,32 @@ Module changes:
 * Default in admin module is now to join on invite from anyone; the old default of only joining on invite from admins can be configured
 * Wikipedia module's per-channel default language configuration is deprecated; a database-backed option will be added in a future version
 * .seen replies on action messages now display action messages differently
+* .kick no longer truncates the message, and .kickban works properly
 
 Core changes:
 * Deprecated login configs have been removed, in favor of the new auth_* values
 * Module reloading has been redone to enable modules to be installed from PyPI
+* IRCv3 capability negotiation is updated for v3.2
 
 API changes:
 * Configuration has been entirely reworked. Old wizard functions and the get_list function are removed, but most other uses of the config should continue to work.
 * The reorganization of willie.tools introduced in 5.3.0 is finalized; the old import locations no longer work.
 * bot.msg is deprecated in favor of bot.say, which can now be used in un-triggered contexts with an additional recipient argument
+
+Changes between 5.5.0 and 5.5.1
+===============================
+This release continues preparations for Willie 6. See http://sopel.chat/willie_6.html
+Module changes (for users):
+* The URL safety module correctly checks URLs
+* The URL for the service used for .py and .wa is updated
+
+Changes between 5.4.1 and 5.5.0
+===============================
+This release starts preparations for Willie 6. See http://sopel.chat/willie_6.html
+API changes (for developers):
+* The ability to import from the sopel package, rather than willie, is added to enable forward compatibility with the rename in 6.0.
+* A version_info tuple, simmilar to Python's own sys.version_info, is added
+* An error when setting a validated config attribute to None is fixed
 
 Changes between 5.4.0 and 5.4.1
 ===============================
