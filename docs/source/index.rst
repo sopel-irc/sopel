@@ -1,4 +1,4 @@
-.. Willie IRC Bot documentation master file, created by
+.. Sopel IRC Bot documentation master file, created by
    sphinx-quickstart on Sat Jun 16 00:18:40 2012.
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
@@ -14,12 +14,12 @@ intended to serve that goal.
 
 .. contents:: :depth: 2
 
-Getting started: Your functions, ``willie``, and ``trigger``
+Getting started: Your functions, ``sopel``, and ``trigger``
 ============================================================
 
-At its most basic, writing a Willie module involves creating a Python file with
+At its most basic, writing a Sopel module involves creating a Python file with
 some number of functions in it. Each of these functions will be passed a 
-``Willie`` object (``Phenny`` in *1.x* and ``Jenni`` in *2.x*) and a ``Trigger``
+``Sopel`` object (``Phenny`` in *1.x* and ``Jenni`` in *2.x*) and a ``Trigger``
 object (``CommandInput`` in *1.x* and *2.x*). By convention, these are named
 ``phenny`` and ``input`` in *1.x*, ``jenni`` and ``input`` in *2.x*, 
 ``willie`` and ``trigger`` in *3.x*, and ``bot`` and ``trigger`` from version
@@ -28,22 +28,22 @@ object (``CommandInput`` in *1.x* and *2.x*). By convention, these are named
 Your modules
 ------------
 
-A Willie module contains one or more ``callable``\s. It may optionally contain
+A Sopel module contains one or more ``callable``\s. It may optionally contain
 ``configure``, ``setup``, and ``shutdown`` functions. ``callable``\s are given
 a number of attributes, which determine when they will be executed. This is
-done with decorators, imported from :py:mod:`willie.module`. It may also be
+done with decorators, imported from :py:mod:`sopel.module`. It may also be
 done by adding the attributes directly, at the same indentation level as the
 function's ``def`` line, following the last line of the function; this is the
 only option in versions prior to *4.0*.
 
 .. py:method:: callable(bot, trigger)
 
-    This is the general function format, called by Willie when a command is
+    This is the general function format, called by Sopel when a command is
     used, a rule is matched, or an event is seen, as determined by the
     attributes of the function. The details of what this function does are
     entirely up to the module writer - the only hard requirement from the bot
-    is that it be callable with a ``Willie`` object and a ``Trigger`` object,
-    as noted above. Usually, methods of the Willie object will be used in reply
+    is that it be callable with a ``Sopel`` object and a ``Trigger`` object,
+    as noted above. Usually, methods of the Sopel object will be used in reply
     to the trigger, but this isn't a requirement.
 
     The return value of a callable will usually be ``None``. This doesn't need
@@ -53,26 +53,26 @@ only option in versions prior to *4.0*.
     ignored. Returning a constant instructs the bot to perform some action
     after the ``callable``'s execution. For example, returning ``NOLIMIT`` will
     suspend rate limiting on that call. These constants are defined in
-    :py:mod:`willie.module`, except in version *3.2* in which they are defined
-    as attributes of the ``Willie`` class.
+    :py:mod:`sopel.module`, except in version *3.2* in which they are defined
+    as attributes of the ``Sopel`` class.
 
     Note that the name can, and should, be anything - it doesn't need to be
     called callable.
 
     .. py:attribute:: commands
 
-        *See also:* :py:func:`willie.module.commands`
+        *See also:* :py:func:`sopel.module.commands`
 
-        A list of commands which will trigger the function. If the Willie instance
+        A list of commands which will trigger the function. If the Sopel instance
         is in a channel, or sent a PRIVMSG, where one of these strings is said,
         preceeded only by the configured prefix (a period, by default), the
         function will execute.
 
     .. py:attribute:: rule
     
-        *See also:* :py:func:`willie.module.rule`
+        *See also:* :py:func:`sopel.module.rule`
 
-        A regular expression which will trigger the function. If the Willie
+        A regular expression which will trigger the function. If the Sopel
         instance is in a channel, or sent a PRIVMSG, where a string matching
         this expression is said, the function will execute. Note that captured
         groups here will be retrievable through the ``Trigger`` object later.
@@ -88,11 +88,11 @@ only option in versions prior to *4.0*.
 
     .. py:attribute:: event
     
-        *See also:* :py:func:`willie.module.event`
+        *See also:* :py:func:`sopel.module.event`
 
         This is one of a number of events, such as ``'JOIN'``, ``'PART'``,
         ``'QUIT'``, etc. (More details can be found in `RFC 1459`_.) When the
-        Willie bot is sent one of these events, the function will execute. Note
+        Sopel bot is sent one of these events, the function will execute. Note
         that functions with an event must also be given a ``rule`` to match
         (though it may be ``'.*'``, which will always match) or they will not
         be triggered.
@@ -103,33 +103,33 @@ only option in versions prior to *4.0*.
     
         *Availability: 2+*
         
-        *See also:* :py:func:`willie.module.rate`
+        *See also:* :py:func:`sopel.module.rate`
 
         This limits the frequency with which a single user may use the
         function.  If a function is given a ``rate`` of ``20``, a single user
         may only use that function once every 20 seconds. This limit applies to
-        each user individually. Users on the ``admin`` list in Willie's
+        each user individually. Users on the ``admin`` list in Sopel's
         configuration are exempted from rate limits.
         
     .. py:attribute:: priority
     
-        *See also:* :py:func:`willie.module.priority`
+        *See also:* :py:func:`sopel.module.priority`
 
         Priority can be one of ``high``, ``medium``, ``low``. It allows you to
         control the order of callable execution, if your module needs it.
         Defaults to ``medium``
 
-.. py:method:: setup(willie)
+.. py:method:: setup(sopel)
 
     This is an optional function of a module, which will be called while the
     module is being loaded. The purpose of this function is to perform whatever
     actions are needed to allow a module to function properly (e.g, ensuring
     that the appropriate configuration variables exist and are set). Note that
     this normally occurs prior to connection to the server, so the behavior of
-    the Willie object's messaging functions is undefined.
+    the Sopel object's messaging functions is undefined.
 
     Throwing an exception from this function (such as a `ConfigurationError
-    <#willie.config.ConfigurationError>`_) will prevent any callables in the
+    <#sopel.config.ConfigurationError>`_) will prevent any callables in the
     module from being registered, and provide an error message to the user.
     This is useful when requiring the presence of configuration values or
     making other environmental requirements.
@@ -138,13 +138,13 @@ only option in versions prior to *4.0*.
     execution of this function. As such, an infinite loop (such as an
     unthreaded polling loop) will cause the bot to hang.
 
-.. py:method:: shutdown(willie)
+.. py:method:: shutdown(sopel)
 
     *Availability: 4.1+*
 
     This is an optional function of a module, which will be called while the
-    Willie is quitting. Note that this normally occurs after closing connection
-    to the server, so the behavior of the Willie object's messaging functions
+    Sopel is quitting. Note that this normally occurs after closing connection
+    to the server, so the behavior of the Sopel object's messaging functions
     is undefined. The purpose of this function is to perform whatever actions
     are needed to allow a module to properly clean up (e.g, ensuring that any
     temporary cache files are deleted).
@@ -166,10 +166,10 @@ only option in versions prior to *4.0*.
     configuration variables that the module uses. This is not currently used
     by the bot itself; it is merely convention.
 
-The ``Willie`` class
+The ``Sopel`` class
 --------------------
 
-.. autoclass:: willie.bot.Willie
+.. autoclass:: sopel.bot.Sopel
    :members:
 
 .. py:function:: reply(text, notice=False)
@@ -235,7 +235,7 @@ The ``Willie`` class
 
     Gracefully quit and shutdown, using ``message`` as the quit message.
 
-    Willie will notify modules that it is quitting should the modules have
+    Sopel will notify modules that it is quitting should the modules have
     a ``shutdown`` method.
     
 .. py:function:: part(channel)
@@ -248,19 +248,19 @@ The ``Willie`` class
 
 .. py:attribute:: nick
 
-    Willie's current nick. Changing this while Willie is running is unsupported.
+    Sopel's current nick. Changing this while Sopel is running is unsupported.
 
 .. py:attribute:: name
 
-    Willie's "real name", as used for whois.
+    Sopel's "real name", as used for whois.
 
 .. py:attribute:: password
 
-    Willie's NickServ password
+    Sopel's NickServ password
 
 .. py:attribute:: channels
 
-    A list of Willie's initial channels. This list will initially be the same
+    A list of Sopel's initial channels. This list will initially be the same
     as the one given in the config file, but is not guaranteed to be kept 
     up-to-date.
 
@@ -282,8 +282,8 @@ The ``Willie`` class
     ``text``, unlike the items in ``args`` may contain spaces (though this
     constraint is not checked by ``write``).
 
-    In other words, both ``willie.write(('PRIVMSG',), 'Hello, world!')``
-    and ``willie.write(('PRIVMSG', ':Hello, world!'))`` will send
+    In other words, both ``sopel.write(('PRIVMSG',), 'Hello, world!')``
+    and ``sopel.write(('PRIVMSG', ':Hello, world!'))`` will send
     ``PRIVMSG :Hello, world!`` to the server.
 
     Newlines and carriage returns ('\\n' and '\\r') are removed before
@@ -296,7 +296,7 @@ The ``Willie`` class
     the message in 5 or more of the last 8 calls to ``msg``, ``'...'`` will
     be sent instead. If this condition is met, and ``'...'`` is more than 3
     of the last 8 calls, no message will be sent. This is intended to prevent
-    Willie from being caught in an infinite loop with another bot, or being
+    Sopel from being caught in an infinite loop with another bot, or being
     used to spam.
     
     If ``max_messages`` argument is optional, and defaults to 1. The
@@ -311,7 +311,7 @@ The ``Willie`` class
     if no number is given), the bot will send as many bytes to the server
     as it can. The server, due to the structure of the protocol, will
     likely truncate the message further, to a length that is not
-    determinable by Willie (though you can generally rely on 400 bytes
+    determinable by Sopel (though you can generally rely on 400 bytes
     making it through).
 
     Note that when a message is split not on a space but on a byte number,
@@ -323,11 +323,11 @@ The ``Willie`` class
 
     *Availability: 3+*
     
-    Send ``text`` to Willie's configured ``debug_target``. This can be either
+    Send ``text`` to Sopel's configured ``debug_target``. This can be either
     an IRC channel (starting with ``#``) or ``stdio``. Suppress the message
-    if the given ``level`` is lower than Willie's configured ``verbose``
+    if the given ``level`` is lower than Sopel's configured ``verbose``
     setting. Acceptable values for ``level`` are ``'verbose'`` (only send if
-    Willie is in verbose mode), ``'warning'`` (send if Willie is in verbose
+    Sopel is in verbose mode), ``'warning'`` (send if Sopel is in verbose
     or warning mode), ``always`` (send debug message regardless of the configured debug level).
     Returns True if the message is sent or printed, and False if it
     is not.
@@ -369,33 +369,33 @@ The ``Willie`` class
 The ``Trigger`` class
 ---------------------
 
-.. autoclass:: willie.trigger.Trigger
+.. autoclass:: sopel.trigger.Trigger
    :members:
 
 Database functionality
 ======================
 
-.. automodule:: willie.db
+.. automodule:: sopel.db
    :members:
 
 Configuration functionality
 ===========================
 
-.. automodule:: willie.config
+.. automodule:: sopel.config
    :members:
    :undoc-members:
 
 Static configuration sections
 -----------------------------
 
-.. automodule:: willie.config.types
+.. automodule:: sopel.config.types
    :members:
    :undoc-members:
 
 The [core] configuration section
 --------------------------------
 
-.. autoclass:: willie.config.core_section.CoreSection
+.. autoclass:: sopel.config.core_section.CoreSection
    :members:
    :undoc-members:
 
@@ -404,32 +404,32 @@ Miscellaneous: ``web``, ``tools``, ``module``, ``formatting``
 
 These provide a number of useful shortcuts for common tasks.
 
-willie.web
+sopel.web
 ----------
 
-.. automodule:: willie.web
+.. automodule:: sopel.web
    :members:
 
-willie.tools
+sopel.tools
 ------------
 
-.. automodule:: willie.tools
+.. automodule:: sopel.tools
    :members:
 
-.. automodule:: willie.tools.time
+.. automodule:: sopel.tools.time
    :members:
 
-.. automodule:: willie.tools.calculation
+.. automodule:: sopel.tools.calculation
    :members:
 
-willie.module
+sopel.module
 -------------
-.. automodule:: willie.module
+.. automodule:: sopel.module
    :members:
 
-willie.formatting
+sopel.formatting
 -----------------
-.. automodule:: willie.formatting
+.. automodule:: sopel.formatting
    :members:
    :undoc-members:
 
