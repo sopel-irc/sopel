@@ -222,7 +222,7 @@ class ListAttribute(BaseValidated):
         if strip:
             return [option.strip() for option in value.split(',')]
         else:
-            return value.split(",")
+            return value.split(',')
 
     def serialize(self, value):
         if not isinstance(value, list):
