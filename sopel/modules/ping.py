@@ -12,10 +12,7 @@ from sopel.module import rule, priority, thread
 
 @rule(r'(?i)(hi|hello|hey),? $nickname[ \t]*$')
 def hello(bot, trigger):
-    if trigger.owner:
-        greeting = random.choice(('Fuck off,', 'Screw you,', 'Go away'))
-    else:
-        greeting = random.choice(('Hi', 'Hey', 'Hello'))
+    greeting = random.choice(('Hi', 'Hey', 'Hello'))
     punctuation = random.choice(('', '!'))
     bot.say(greeting + ' ' + trigger.nick + punctuation)
 
