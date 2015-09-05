@@ -417,7 +417,7 @@ def sasl_success(bot, trigger):
 def blocks(bot, trigger):
     """Manage Sopel's blocking features.
 
-    https://github.com/embolalia/sopel/wiki/Making-Sopel-ignore-people
+    https://github.com/sopel-irc/sopel/wiki/Making-Sopel-ignore-people
 
     """
     if not trigger.admin:
