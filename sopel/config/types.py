@@ -307,12 +307,13 @@ class FilenameAttribute(BaseValidated):
     def parse(self, main_config, this_section, value):
         if value is None:
             return
+
+        value = os.path.expanduser(value)
+
         if not os.path.isabs(value):
             if not self.relative:
                 raise ValueError("Value must be an absolute path.")
             value = os.path.join(main_config.homedir, value)
-
-        value = os.path.expanduser(value)
 
         if self.directory and not os.path.isdir(value):
             try:
