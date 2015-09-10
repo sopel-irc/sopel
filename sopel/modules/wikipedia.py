@@ -23,7 +23,7 @@ REDIRECT = re.compile(r'^REDIRECT (.*)')
 
 
 class WikipediaSection(StaticSection):
-    default_lang = ValidatedAttribute('default_lang')
+    default_lang = ValidatedAttribute('default_lang', default='en')
     """The default language to find articles from."""
     lang_per_channel = ValidatedAttribute('lang_per_channel')
 
