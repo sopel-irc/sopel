@@ -213,13 +213,20 @@ class ListAttribute(BaseValidated):
     """A config attribute containing a list of string values.
 
     Values are saved to the file as a comma-separated list. It does not
-    currently support commas within items in the list."""
-    def __init__(self, name, default=None):
+    currently support commas within items in the list. By default, the spaces
+    before and after each item are stripped; you can override this by passing
+    ``strip=False``."""
+    def __init__(self, name, strip=True, default=None):
         default = default or []
         super(ListAttribute, self).__init__(name, default=default)
+        self.strip = strip
 
     def parse(self, value):
-        return value.split(',')
+        value = value.split(',')
+        if self.strip:
+            return [v.strip() for v in value]
+        else:
+            return value
 
     def serialize(self, value):
         if not isinstance(value, list):
