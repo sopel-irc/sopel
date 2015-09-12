@@ -34,7 +34,7 @@ def _version_info(version=__version__):
         level = 'beta'
     elif level == 'rc':
         level = 'candidate'
-    elif not level and version_groups[5] is None:
+    elif not level and version_groups[4] is None:
         level = 'final'
     else:
         level = 'alpha'
