@@ -148,7 +148,7 @@ def ischair(nick, channel):
 def startmeeting(bot, trigger):
     """
     Start a meeting.
-    https://github.com/embolalia/sopel/wiki/Using-the-meetbot-module
+    https://github.com/sopel-irc/sopel/wiki/Using-the-meetbot-module
     """
     if ismeetingrunning(trigger.sender):
         bot.say('Can\'t do that, there is already a meeting in progress here!')
