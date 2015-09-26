@@ -24,7 +24,7 @@ Latest source
 First, either clone the repository with ``git clone
 git://github.com/sopel-irc/sopel.git`` or download a tarball from GitHub.
 
-Note: sopel requires Python 2.7 or Python 3.3 to run. On Python 2.7,
+Note: sopel requires Python 2.7.x or Python 3.3+ to run. On Python 2.7,
 sopel requires ``backports.ssl_match_hostname`` to be installed. Use
 ``pip install backports.ssl_match_hostname`` or ``yum install python-backports.ssl_match_hostname`` to install it,
 or download and install it manually `from PyPi <https://pypi.python.org/pypi/backports.ssl_match_hostname>`.
