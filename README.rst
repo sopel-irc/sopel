@@ -11,8 +11,8 @@ Installation
 
 Latest stable release
 =====================
-If you're on Fedora or Arch, the easiest way to install is through your package
-manager. The package is named ``sopel`` in both Fedora and the AUR. On other
+If you're on Arch, the easiest way to install is through your package
+manager. The package is named ``sopel`` in AUR. On other
 distros, and pretty much any operating system you can run Python on, you can
 install `pip <https://pypi.python.org/pypi/pip/>`_, and do ``pip install
 sopel``. Failing all that, you can download the latest tarball from
