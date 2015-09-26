@@ -1,4 +1,4 @@
-|status| |version| |downloads| |license| |issues| |forks| |stars| |ages| |works| |badges|
+|version| |downloads| |license| |issues| |forks| |stars| |ages| |works| |badges|
 
 Introduction
 ------------
