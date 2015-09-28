@@ -156,7 +156,7 @@ def url_handler(bot, trigger):
     if positives > 1:
         # Possibly malicious URL detected!
         confidence = '{}%'.format(round((positives / total) * 100))
-        msg = 'link posted by %s is possibliy malicious ' % bold(trigger.nick)
+        msg = 'link posted by %s is possibly malicious ' % bold(trigger.nick)
         msg += '(confidence %s - %s/%s)' % (confidence, positives, total)
         bot.say('[' + bold(color('WARNING', 'red')) + '] ' + msg)
         if strict:
