@@ -36,7 +36,7 @@ known_good = []
 
 
 class SafetySection(StaticSection):
-    enabled_by_default = ValidatedAttribute('enabled_by_default', bool, True)
+    enabled_by_default = ValidatedAttribute('enabled_by_default', bool, default=True)
     """Enable URL safety in all channels where it isn't explicitly disabled."""
     known_good = ListAttribute('known_good')
     """List of "known good" domains to ignore."""
