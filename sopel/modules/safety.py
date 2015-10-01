@@ -56,8 +56,8 @@ def configure(config):
     )
     config.safety.configure_setting(
         'vt_api_key',
-        "Optionaly, enter a VirusTotal API key to improve malicious URL "
-        "protection. Otherwise, only the Malwarebytes DB will be used."
+        "Optionally, enter a VirusTotal API key to improve malicious URL "
+        "protection.\nOtherwise, only the Malwarebytes DB will be used."
     )
 
 
