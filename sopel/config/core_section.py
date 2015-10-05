@@ -183,3 +183,16 @@ class CoreSection(StaticSection):
 
     verify_ssl = ValidatedAttribute('verify_ssl', bool, default=True)
     """Whether to require a trusted SSL certificate for SSL connections."""
+
+    bucket_burst_tokens = ValidatedAttribute('bucket_burst_tokens', int,
+                                             default=4)
+    """How many messages can be sent in burst mode."""
+
+    bucket_refill_rate = ValidatedAttribute('bucket_refill_rate', int,
+                                            default=1)
+    """How many tokens/second to add to the token bucket."""
+
+    bucket_empty_wait = ValidatedAttribute('bucket_empty_wait', float,
+                                           default=0.7)
+    """How long to wait before sending a messaging when not in burst
+    mode."""
