@@ -147,7 +147,7 @@ def clean_callable(func, config):
     doc = trim_docstring(func.__doc__)
     example = None
 
-    func.unblockable = getattr(func, 'unblockable', True)
+    func.unblockable = getattr(func, 'unblockable', False)
     func.priority = getattr(func, 'priority', 'medium')
     func.thread = getattr(func, 'thread', True)
     func.rate = getattr(func, 'rate', 0)
