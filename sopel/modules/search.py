@@ -13,6 +13,7 @@ import re
 from sopel import web
 from sopel.module import commands, example
 import json
+from urllib.parse import quote_plus
 
 
 def formatnumber(n):
@@ -53,6 +54,7 @@ def duck_api(query):
     if '!bang' in query.lower():
         return 'https://duckduckgo.com/bang.html'
 
+    query = quote_plus(query)
     uri = 'http://api.duckduckgo.com/?q=%s&format=json&no_html=1&no_redirect=1' % query
     results = json.loads(web.get(uri))
     if results['Redirect']:
