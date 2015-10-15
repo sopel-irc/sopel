@@ -54,7 +54,7 @@ def duck_api(query):
     if '!bang' in query.lower():
         return 'https://duckduckgo.com/bang.html'
     
-    # This fixes issue #85 (https://github.com/sopel-irc/sopel/issues/885)
+    # This fixes issue #885 (https://github.com/sopel-irc/sopel/issues/885)
     # It seems that duckduckgo api redirects to its Instant answer API html page 
     # if the query constains special charactares that aren't urlencoded.
     # So in order to always get a JSON response back the query is urlencoded 
