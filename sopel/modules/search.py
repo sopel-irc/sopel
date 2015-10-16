@@ -13,9 +13,13 @@ import re
 from sopel import web
 from sopel.module import commands, example
 import json
-from urllib.parse import quote_plus
+import sys
 
-
+if sys.version_info.major < 3:
+    from urllib import quote_plus
+else:
+    from urllib.parse import quote_plus
+    
 def formatnumber(n):
     """Format a number with beautiful commas."""
     parts = list(str(n))
