@@ -110,6 +110,7 @@ def findandreplace(bot, trigger):
 
     # Look back through the user's lines in the channel until you find a line
     # where the replacement works
+    new_phrase = None
     for line in reversed(search_dict[trigger.sender][rnick]):
         if line.startswith("\x01ACTION"):
             me = True  # /me command
