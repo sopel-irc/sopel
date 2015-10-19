@@ -142,7 +142,7 @@ def clean_callable(func, config):
     puts them in func._docs, and sets defaults"""
     nick = config.core.nick
     prefix = config.core.prefix
-    help_prefix = config.core.prefix
+    help_prefix = config.core.help_prefix
     func._docs = {}
     doc = trim_docstring(func.__doc__)
     example = None
@@ -173,8 +173,8 @@ def clean_callable(func, config):
         if hasattr(func, 'example'):
             example = func.example[0]["example"]
             example = example.replace('$nickname', nick)
-            if example[0] != help_prefix:
-                example = help_prefix + example[len(help_prefix):]
+            if not example.startswith(help_prefix):
+                example = help_prefix + example
         if doc or example:
             for command in func.commands:
                 func._docs[command] = (doc, example)
