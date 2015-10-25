@@ -36,7 +36,7 @@ known_good = []
 
 
 class SafetySection(StaticSection):
-    enabled_by_default = ValidatedAttribute('enabled_by_default', bool, True)
+    enabled_by_default = ValidatedAttribute('enabled_by_default', bool, default=True)
     """Enable URL safety in all channels where it isn't explicitly disabled."""
     known_good = ListAttribute('known_good')
     """List of "known good" domains to ignore."""
@@ -56,8 +56,8 @@ def configure(config):
     )
     config.safety.configure_setting(
         'vt_api_key',
-        "Optionaly, enter a VirusTotal API key to improve malicious URL "
-        "protection. Otherwise, only the Malwarebytes DB will be used."
+        "Optionally, enter a VirusTotal API key to improve malicious URL "
+        "protection.\nOtherwise, only the Malwarebytes DB will be used."
     )
 
 
