@@ -229,7 +229,7 @@ class ListAttribute(BaseValidated):
             return value
 
     def serialize(self, value):
-        if not isinstance(value, list):
+        if not isinstance(value, (list, set)):
             raise ValueError('ListAttribute value must be a list.')
         return ','.join(value)
 
