@@ -172,10 +172,16 @@ The ``Sopel`` class
 .. autoclass:: sopel.bot.Sopel
    :members:
 
-.. py:function:: reply(text, notice=False)
+.. py:function:: reply(text,  destination=None, reply_to=None, notice=False)
 
     In a module function, send ``text`` to the channel in which the function was
-    triggered, preceeded by the nick of the user who triggered it.
+    triggered, preceeded by the nick of the user who triggered it. If
+    ``reply_to`` is specified and is not ``None``, this function will preceed
+    the message with the the value of ``reply_to``.
+
+    If ``destination`` is specified and is not ``None``, this function will send
+    the message to ``destination`` instead of the originating channel.
+    ``destination`` can be either a channel or a user.
 
     If ``notice`` is set to True, this function will send the reply in an 
     IRC ``NOTICE`` instead of a regular IRC ``PRIVMSG``.
@@ -187,10 +193,14 @@ The ``Sopel`` class
     apply to ``reply`` as to ``msg``, though ``reply`` does not offer
     automatic message splitting.
 
-.. py:function:: say(text, max_messages=1)
+.. py:function:: say(text,  destination=None, max_messages=1)
 
     In a module function, send ``text`` to the channel in which the
     function was triggered.
+
+    If ``destination`` is specified and is not ``None``, this function will send
+    the message to ``destination`` instead of the originating channel.
+    ``destination`` can be either a channel or a user.
     
     This function is not available outside of module functions. It can not
     be used, for example, in a module's ``configure`` function.
@@ -198,15 +208,15 @@ The ``Sopel`` class
     The same behavior regarding loop detection and length restrictions, as
     well as message splitting, apply to ``say`` as to ``msg``.
     
-.. py:function:: action(text, recipient=None)
+.. py:function:: action(text, destination=None)
 
     In a module function, send ``text`` to the channel in which the function
     was triggered preceeded by CTCP ACTION directive (result identical to using
     /me in most clients).
 
-    If ``recipient`` is specified and is not ``None``, this function will send
-    the message to ``recipient`` instead of the originating channel.
-    ``recipient`` can be either a channel or a user.
+    If ``destination`` is specified and is not ``None``, this function will send
+    the message to ``destination`` instead of the originating channel.
+    ``destination`` can be either a channel or a user.
 
     This function is not available outside of module functions. It can not
     be used, for example, in a module's ``configure`` function.
@@ -215,14 +225,14 @@ The ``Sopel`` class
     to ``action`` as to ``msg`` and ``say``, though like ``reply`` there is
     no facility for message splitting.
 
-.. py:function:: notice(text, recipient=None)
+.. py:function:: notice(text, destination=None)
 
     In a module function, send ``text`` to the channel in which the function
     was triggered as an IRC ``NOTICE``.
 
-    If ``recipient`` is specified and is not ``None``, this function will send
-    the message to ``recipient`` instead of the originating channel.
-    ``recipient`` can be either a channel or a user.
+    If ``destination`` is specified and is not ``None``, this function will send
+    the message to ``destination`` instead of the originating channel.
+    ``destination`` can be either a channel or a user.
 
     This function is not available outside of module functions. It can not
     be used, for example, in a module's ``configure`` function.
@@ -290,9 +300,9 @@ The ``Sopel`` class
     sending. Additionally, if the message (after joining) is longer than
     than 510 characters, any remaining characters will not be sent.
 
-   .. py:function:: msg(recipient, text, max_messages=1)
+   .. py:function:: msg(destination, text, max_messages=1)
 
-    Send a PRIVMSG of ``text`` to ``recipient``. If the same ``text`` was
+    Send a PRIVMSG of ``text`` to ``destination``. If the same ``text`` was
     the message in 5 or more of the last 8 calls to ``msg``, ``'...'`` will
     be sent instead. If this condition is met, and ``'...'`` is more than 3
     of the last 8 calls, no message will be sent. This is intended to prevent
