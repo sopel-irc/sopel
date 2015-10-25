@@ -173,8 +173,8 @@ def clean_callable(func, config):
         if hasattr(func, 'example'):
             example = func.example[0]["example"]
             example = example.replace('$nickname', nick)
-            if example[0] != help_prefix:
-                example = help_prefix + example[len(help_prefix):]
+            if not example.startswith(help_prefix):
+                example = help_prefix + example
         if doc or example:
             for command in func.commands:
                 func._docs[command] = (doc, example)
