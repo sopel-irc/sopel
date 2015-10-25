@@ -13,8 +13,13 @@ import re
 from sopel import web
 from sopel.module import commands, example
 import json
+import sys
 
-
+if sys.version_info.major < 3:
+    from urllib import quote_plus
+else:
+    from urllib.parse import quote_plus
+    
 def formatnumber(n):
     """Format a number with beautiful commas."""
     parts = list(str(n))
@@ -52,7 +57,12 @@ google_search = duck_search
 def duck_api(query):
     if '!bang' in query.lower():
         return 'https://duckduckgo.com/bang.html'
-
+    
+    # This fixes issue #885 (https://github.com/sopel-irc/sopel/issues/885)
+    # It seems that duckduckgo api redirects to its Instant answer API html page 
+    # if the query constains special charactares that aren't urlencoded.
+    # So in order to always get a JSON response back the query is urlencoded 
+    query = quote_plus(query)
     uri = 'http://api.duckduckgo.com/?q=%s&format=json&no_html=1&no_redirect=1' % query
     results = json.loads(web.get(uri))
     if results['Redirect']:
