@@ -36,9 +36,7 @@ directory.
 
 Adding modules
 --------------
-The easiest place to put new modules is in ``~/.sopel/modules``. You will need
-to add a a line to the ``[core]`` section of your config file saying
-``extra = /home/yourname/.sopel/modules``.
+The easiest place to put new modules is in ``~/.sopel/modules``.
 
 Some extra modules are available in the
 `sopel-extras <https://github.com/sopel-irc/sopel-extras>`_ repository, but of
@@ -79,4 +77,4 @@ Join us in `#sopel <irc://irc.freenode.net/#sopel>`_ on Freenode.
    :target: https://github.com/sopel-irc/sopel/stargazers
 .. |ages| image:: https://img.shields.io/badge/ages-12%2B-green.svg
 .. |works| image:: https://img.shields.io/badge/works-usually-yellow.svg
-.. |badges| image:: https://img.shields.io/badge/badges-10-green.svg
+.. |badges| image:: https://img.shields.io/badge/badges-9-green.svg
