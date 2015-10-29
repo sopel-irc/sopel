@@ -6,7 +6,7 @@ Licensed under the Eiffel Forum License 2.
 """
 from __future__ import unicode_literals
 
-from lxml import etree
+import xmltodict
 import re
 from sopel import web, tools
 from sopel.module import rule
@@ -62,22 +62,22 @@ def show_bug(bot, trigger, match=None):
         return
     url = 'https://%s%sctype=xml&%s' % match.groups()
     data = web.get(url, dont_decode=True)
-    bug = etree.fromstring(data).find('bug')
+    bug = xmltodict.parse(data).get('bugzilla').get('bug')
 
     message = ('[BUGZILLA] %s | Product: %s | Component: %s | Version: %s | ' +
                'Importance: %s |  Status: %s | Assigned to: %s | ' +
                'Reported: %s | Modified: %s')
 
-    resolution = bug.find('resolution')
-    if resolution is not None and resolution.text:
-        status = bug.find('bug_status').text + ' ' + resolution.text
+    resolution = bug.get('resolution')
+    if resolution is not None:
+        status = bug.get('bug_status') + ' ' + resolution
     else:
-        status = bug.find('bug_status').text
+        status = bug.get('bug_status')
 
     message = message % (
-        bug.find('short_desc').text, bug.find('product').text,
-        bug.find('component').text, bug.find('version').text,
-        (bug.find('priority').text + ' ' + bug.find('bug_severity').text),
-        status, bug.find('assigned_to').text, bug.find('creation_ts').text,
-        bug.find('delta_ts').text)
+        bug.get('short_desc'), bug.get('product'),
+        bug.get('component'), bug.get('version'),
+        (bug.get('priority') + ' ' + bug.get('bug_severity')),
+        status, bug.get('assigned_to').get('@name'), bug.get('creation_ts'),
+        bug.get('delta_ts'))
     bot.say(message)
