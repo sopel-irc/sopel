@@ -18,17 +18,6 @@ except ImportError:
     )
     sys.exit(1)
 
-try:
-    import lxml  # NOQA
-except ImportError:
-    print(
-        '----- WARNING ----- SERIOUSLY, READ THIS ----- I MEAN IT -----\n'
-        'You do not have lxml installed. This installer will attempt to '
-        'install it, but it frequently fails. Please follow the instructions '
-        'at http://lxml.de/installation.html if installation does not succeed.',
-        file=sys.stderr,
-    )
-
 if sys.version_info < (2, 7) or (
         sys.version_info[0] > 3 and sys.version_info < (3, 3)):
     # Maybe not the cleanest or best way to do this, but I'm tired of answering
