@@ -3,7 +3,7 @@
 Copyright 2013 Edward Powell, embolalia.com
 Licensed under the Eiffel Forum License 2
 
-http://sopel.dftba.net
+http://sopel.chat
 """
 from __future__ import unicode_literals
 
