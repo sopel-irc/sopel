@@ -1,4 +1,5 @@
 feedparser
+xmltodict
 pytz
 praw
 pyenchant
