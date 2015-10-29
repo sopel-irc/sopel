@@ -164,6 +164,10 @@ def process_urls(bot, trigger, urls):
             matched = check_callbacks(bot, trigger, new_url, new_url != url)
             if matched:
                 continue
+            # Then strip any invalid chars from end of it
+            invalid_url_chars = ['"', '<', '>', '{', '}', '^', '|']
+            for i in invalid_url_chars:
+                url = url.rstrip(i)
             # Finally, actually show the URL
             title = find_title(url)
             if title:
