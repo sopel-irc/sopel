@@ -17,7 +17,6 @@ BuildRequires:  dos2unix
 BuildRequires: systemd
 
 Requires:       pytz
-Requires:       python-lxml
 Requires:       python-feedparser
 Requires:       python-enchant
 Requires:       pyOpenSSL
