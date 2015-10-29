@@ -3,17 +3,16 @@
 Copyright 2013 Edward Powell, embolalia.com
 Licensed under the Eiffel Forum License 2
 
-http://sopel.chat
+http://sopel.dftba.net
 """
 from __future__ import unicode_literals
 
 import json
-from lxml import etree
+import xmltodict
 import re
 
 from sopel import web
 from sopel.module import commands, example, NOLIMIT
-
 
 # The Canadian central bank has better exchange rate data than the Fed, the
 # Bank of England, or the European Central Bank. Who knew?
@@ -36,16 +35,15 @@ def get_rate(code):
     data, headers = web.get(base_url.format(code), dont_decode=True, return_headers=True)
     if headers['_http_status'] == 404:
         return False, False
-    xml = etree.fromstring(data)
-    namestring = xml.find('{http://purl.org/rss/1.0/}channel/'
-                          '{http://purl.org/rss/1.0/}title').text
+    namespaces = {
+        'http://www.cbwiki.net/wiki/index.php/Specification_1.1': 'cb', 
+        'http://purl.org/rss/1.0/': None, 
+        'http://www.w3.org/1999/02/22-rdf-syntax-ns#': 'rdf' }
+    xml = xmltodict.parse(data, process_namespaces=True, namespaces=namespaces).get('rdf:RDF')
+    namestring = xml.get('channel').get('title').get('#text')
     name = namestring[len('Bank of Canada noon rate: '):]
     name = re.sub(r'\s*\(noon\)\s*', '', name)
-    rate = xml.find(
-        '{http://purl.org/rss/1.0/}item/'
-        '{http://www.cbwiki.net/wiki/index.php/Specification_1.1}statistics/'
-        '{http://www.cbwiki.net/wiki/index.php/Specification_1.1}exchangeRate/'
-        '{http://www.cbwiki.net/wiki/index.php/Specification_1.1}value').text
+    rate = xml.get('item').get('cb:statistics').get('cb:exchangeRate').get('cb:value').get('#text')
     return float(rate), name
 
 
