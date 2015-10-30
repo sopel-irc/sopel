@@ -35,7 +35,7 @@ def movie(bot, trigger):
             LOGGER.warning(
                 'Got an error from the OMDb api, search phrase was %s; data was %s',
                 word, str(data))
-            message = '[MOVIE] Got an error from omdbapi'
+            message = '[MOVIE] Got an error from OMDbapi'
     else:
         message = '[MOVIE] Title: ' + data['Title'] + \
                   ' | Year: ' + data['Year'] + \
