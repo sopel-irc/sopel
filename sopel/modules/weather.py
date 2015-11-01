@@ -13,7 +13,7 @@ from sopel import web
 from sopel.module import commands, example, NOLIMIT
 
 import feedparser
-from lxml import etree
+import xmltodict
 
 
 def woeid_search(query):
@@ -25,11 +25,13 @@ def woeid_search(query):
     query = 'q=select * from geo.placefinder where text="%s"' % query
     body = web.get('http://query.yahooapis.com/v1/public/yql?' + query,
                    dont_decode=True)
-    parsed = etree.fromstring(body)
-    first_result = parsed.find('results/Result')
-    if first_result is None or len(first_result) == 0:
+    parsed = xmltodict.parse(body).get('query')
+    results = parsed.get('results')
+    if results is None or results.get('Result') is None:
         return None
-    return first_result
+    if type(results.get('Result')) is list:
+        return results.get('Result')[0]
+    return results.get('Result')
 
 
 def get_cover(parsed):
@@ -136,7 +138,7 @@ def weather(bot, trigger):
         if woeid is None:
             first_result = woeid_search(location)
             if first_result is not None:
-                woeid = first_result.find('woeid').text
+                woeid = first_result.get('woeid')
 
     if not woeid:
         return bot.reply("I don't know where that is.")
@@ -165,16 +167,16 @@ def update_woeid(bot, trigger):
     if first_result is None:
         return bot.reply("I don't know where that is.")
 
-    woeid = first_result.find('woeid').text
+    woeid = first_result.get('woeid')
 
     bot.db.set_nick_value(trigger.nick, 'woeid', woeid)
 
-    neighborhood = first_result.find('neighborhood').text or ''
+    neighborhood = first_result.get('neighborhood').text or ''
     if neighborhood:
         neighborhood += ','
-    city = first_result.find('city').text or ''
-    state = first_result.find('state').text or ''
-    country = first_result.find('country').text or ''
-    uzip = first_result.find('uzip').text or ''
+    city = first_result.get('city') or ''
+    state = first_result.get('state') or ''
+    country = first_result.get('country') or ''
+    uzip = first_result.get('uzip') or ''
     bot.reply('I now have you at WOEID %s (%s %s, %s, %s %s.)' %
               (woeid, neighborhood, city, state, country, uzip))
