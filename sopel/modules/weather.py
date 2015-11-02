@@ -12,7 +12,6 @@ from __future__ import unicode_literals
 from sopel import web
 from sopel.module import commands, example, NOLIMIT
 
-import feedparser
 import xmltodict
 
 
@@ -25,21 +24,21 @@ def woeid_search(query):
     query = 'q=select * from geo.placefinder where text="%s"' % query
     body = web.get('http://query.yahooapis.com/v1/public/yql?' + query,
                    dont_decode=True)
-    parsed = xmltodict.parse(body).get('query')
-    results = parsed.get('results')
-    if results is None or results.get('Result') is None:
+    parsed = xmltodict.parse(body)['query']
+    results = parsed['results']
+    if results is None or results['Result'] is None:
         return None
-    if type(results.get('Result')) is list:
-        return results.get('Result')[0]
-    return results.get('Result')
+    if type(results['Result']) is list:
+        return results['Result'][0]
+    return results['Result']
 
 
 def get_cover(parsed):
     try:
-        condition = parsed.entries[0]['yweather_condition']
+        condition = parsed['channel']['item']['yweather:condition']
     except KeyError:
         return 'unknown'
-    text = condition['text']
+    text = condition['@text']
     # code = int(condition['code'])
     # TODO parse code to get those little icon thingies.
     return text
@@ -47,8 +46,8 @@ def get_cover(parsed):
 
 def get_temp(parsed):
     try:
-        condition = parsed.entries[0]['yweather_condition']
-        temp = int(condition['temp'])
+        condition = parsed['channel']['item']['yweather:condition']
+        temp = int(condition['@temp'])
     except (KeyError, ValueError):
         return 'unknown'
     f = round((temp * 1.8) + 32, 2)
@@ -57,7 +56,7 @@ def get_temp(parsed):
 
 def get_humidity(parsed):
     try:
-        humidity = parsed['feed']['yweather_atmosphere']['humidity']
+        humidity = parsed['channel']['yweather:atmosphere']['@humidity']
     except (KeyError, ValueError):
         return 'unknown'
     return "Humidity: %s%%" % humidity
@@ -65,11 +64,11 @@ def get_humidity(parsed):
 
 def get_wind(parsed):
     try:
-        wind_data = parsed['feed']['yweather_wind']
-        kph = float(wind_data['speed'])
+        wind_data = parsed['channel']['yweather:wind']
+        kph = float(wind_data['@speed'])
         m_s = float(round(kph / 3.6, 1))
         speed = int(round(kph / 1.852, 0))
-        degrees = int(wind_data['direction'])
+        degrees = int(wind_data['@direction'])
     except (KeyError, ValueError):
         return 'unknown'
 
@@ -138,15 +137,15 @@ def weather(bot, trigger):
         if woeid is None:
             first_result = woeid_search(location)
             if first_result is not None:
-                woeid = first_result.get('woeid')
+                woeid = first_result['woeid']
 
     if not woeid:
         return bot.reply("I don't know where that is.")
 
     query = web.urlencode({'w': woeid, 'u': 'c'})
     url = 'http://weather.yahooapis.com/forecastrss?' + query
-    parsed = feedparser.parse(url)
-    location = parsed['feed']['title']
+    parsed = xmltodict.parse(url)['rss']
+    location = parsed['channel']['title']
 
     cover = get_cover(parsed)
     temp = get_temp(parsed)
@@ -167,16 +166,16 @@ def update_woeid(bot, trigger):
     if first_result is None:
         return bot.reply("I don't know where that is.")
 
-    woeid = first_result.get('woeid')
+    woeid = first_result['woeid']
 
     bot.db.set_nick_value(trigger.nick, 'woeid', woeid)
 
-    neighborhood = first_result.get('neighborhood').text or ''
+    neighborhood = first_result['neighborhood'] or ''
     if neighborhood:
         neighborhood += ','
-    city = first_result.get('city') or ''
-    state = first_result.get('state') or ''
-    country = first_result.get('country') or ''
-    uzip = first_result.get('uzip') or ''
+    city = first_result['city'] or ''
+    state = first_result['state'] or ''
+    country = first_result['country'] or ''
+    uzip = first_result['uzip'] or ''
     bot.reply('I now have you at WOEID %s (%s %s, %s, %s %s.)' %
               (woeid, neighborhood, city, state, country, uzip))
