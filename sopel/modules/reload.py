@@ -46,7 +46,13 @@ def f_reload(bot, trigger):
 
     old_callables = {}
     for obj_name, obj in iteritems(vars(old_module)):
-        bot.unregister(obj)
+        # This is a bit of a hacky fix, the problem is that the obj at this
+        # point could be any part of the module file, including an import
+        # or docstring or whatever. This just checks if obj is callable
+        # and then unregisters in that case. If it's not callable, we just 
+        # ignore it. (Should be safe enough to ignore)
+        if callable(obj):
+            bot.unregister(obj)
 
     # Also remove all references to sopel callables from top level of the
     # module, so that they will not get loaded again if reloading the
