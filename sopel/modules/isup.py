@@ -19,7 +19,7 @@ def isup(bot, trigger):
     if not site:
         return bot.reply("What site do you want to check?")
 
-    if site[:6] != 'http://' and site[:7] != 'https://':
+    if site[:7] != 'http://' and site[:8] != 'https://':
         if '://' in site:
             protocol = site.split('://')[0] + '://'
             return bot.reply("Try it again without the %s" % protocol)
