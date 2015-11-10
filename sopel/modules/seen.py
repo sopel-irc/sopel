@@ -35,12 +35,12 @@ def seen(bot, trigger):
         timestamp = format_time(bot.db, bot.config, tz, trigger.nick,
                                 trigger.sender, saw)
 
-        msg = "I last saw {} at {}".format(nick, timestamp)
+        msg = "I last saw {} at {} UTC".format(nick, timestamp) #UTC is hardcoded. Careful!
         if Identifier(channel) == trigger.sender:
             if action:
-                msg = msg + " in here, doing " + nick + " " + message
+                msg = msg #+ " in here, doing " + nick + " " + message
             else:
-                msg = msg + " in here, saying " + message
+                msg = msg #+ " in here, saying " + message
         else:
             msg += " in another channel."
         bot.say(str(trigger.nick) + ': ' + msg)
