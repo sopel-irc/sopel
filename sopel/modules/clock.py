@@ -28,7 +28,7 @@ class TimeSection(StaticSection):
         serialize=validate_timezone,
         default='UTC'
     )
-    """Default time zone (see http://dft.ba/-tz)"""
+    """Default time zone (see http://sopel.chat/tz)"""
     time_format = ValidatedAttribute(
         'time_format',
         parse=validate_format,
@@ -40,7 +40,7 @@ class TimeSection(StaticSection):
 def configure(config):
     config.define_section('clock', TimeSection)
     config.clock.configure_setting(
-        'tz', 'Preferred time zone (http://dft.ba/-tz)')
+        'tz', 'Preferred time zone (http://sopel.chat/tz)')
     config.clock.configure_setting(
         'time_format', 'Preferred time format (http://strftime.net)')
 
@@ -70,7 +70,7 @@ def f_time(bot, trigger):
 def update_user(bot, trigger):
     """
     Set your preferred time zone. Most timezones will work, but it's best to
-    use one from http://dft.ba/-tz
+    use one from http://sopel.chat/tz
     """
     if not pytz:
         bot.reply("Sorry, I don't have timezone support installed.")
@@ -78,16 +78,16 @@ def update_user(bot, trigger):
         tz = trigger.group(2)
         if not tz:
             bot.reply("What timezone do you want to set? Try one from "
-                      "http://dft.ba/-tz")
+                      "http://sopel.chat/tz")
             return
         if tz not in pytz.all_timezones:
             bot.reply("I don't know that time zone. Try one from "
-                      "http://dft.ba/-tz")
+                      "http://sopel.chat/tz")
             return
 
         bot.db.set_nick_value(trigger.nick, 'timezone', tz)
         if len(tz) < 7:
-            bot.say("Okay, {}, but you should use one from http://dft.ba/-tz "
+            bot.say("Okay, {}, but you should use one from http://sopel.chat/tz "
                     "if you use DST.".format(trigger.nick))
         else:
             bot.reply('I now have you in the %s time zone.' % tz)
@@ -184,16 +184,16 @@ def update_channel(bot, trigger):
         tz = trigger.group(2)
         if not tz:
             bot.reply("What timezone do you want to set? Try one from "
-                      "http://dft.ba/-tz")
+                      "http://sopel.chat/tz")
             return
         if tz not in pytz.all_timezones:
             bot.reply("I don't know that time zone. Try one from "
-                      "http://dft.ba/-tz")
+                      "http://sopel.chat/tz")
             return
 
         bot.db.set_channel_value(trigger.sender, 'timezone', tz)
         if len(tz) < 7:
-            bot.say("Okay, {}, but you should use one from http://dft.ba/-tz "
+            bot.say("Okay, {}, but you should use one from http://sopel.chat/tz "
                     "if you use DST.".format(trigger.nick))
         else:
             bot.reply(
