@@ -72,7 +72,10 @@ def get(uri, timeout=20, headers=None, return_headers=False,
     if not uri.startswith('http'):
         uri = "http://" + uri
     u = get_urllib_object(uri, timeout, headers, verify_ssl)
-    bytes = u.read(limit_bytes)
+    try:
+        bytes = u.read(limit_bytes)
+    except httplib.IncompleteRead, e:
+        bytes = e.partial        
     u.close()
     headers = dict(u.info())
     if not dont_decode:
