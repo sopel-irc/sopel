@@ -24,13 +24,13 @@ def woeid_search(query):
     query = 'q=select * from geo.placefinder where text="%s"' % query
     body = web.get('http://query.yahooapis.com/v1/public/yql?' + query,
                    dont_decode=True)
-    parsed = xmltodict.parse(body)['query']
-    results = parsed['results']
-    if results is None or results['Result'] is None:
+    parsed = xmltodict.parse(body).get('query')
+    results = parsed.get('results')
+    if results is None or results.get('Result') is None:
         return None
-    if type(results['Result']) is list:
-        return results['Result'][0]
-    return results['Result']
+    if type(results.get('Result')) is list:
+        return results.get('Result')[0]
+    return results.get('Result')
 
 
 def get_cover(parsed):
@@ -137,15 +137,15 @@ def weather(bot, trigger):
         if woeid is None:
             first_result = woeid_search(location)
             if first_result is not None:
-                woeid = first_result['woeid']
+                woeid = first_result.get('woeid')
 
     if not woeid:
         return bot.reply("I don't know where that is.")
 
     query = web.urlencode({'w': woeid, 'u': 'c'})
     url = 'http://weather.yahooapis.com/forecastrss?' + query
-    parsed = xmltodict.parse(url)['rss']
-    location = parsed['channel']['title']
+    parsed = xmltodict.parse(url).get('rss')
+    location = parsed.get('channel').get('title')
 
     cover = get_cover(parsed)
     temp = get_temp(parsed)
@@ -166,16 +166,16 @@ def update_woeid(bot, trigger):
     if first_result is None:
         return bot.reply("I don't know where that is.")
 
-    woeid = first_result['woeid']
+    woeid = first_result.get('woeid')
 
     bot.db.set_nick_value(trigger.nick, 'woeid', woeid)
 
-    neighborhood = first_result['neighborhood'] or ''
+    neighborhood = first_result.get('neighborhood') or ''
     if neighborhood:
         neighborhood += ','
-    city = first_result['city'] or ''
-    state = first_result['state'] or ''
-    country = first_result['country'] or ''
-    uzip = first_result['uzip'] or ''
+    city = first_result.get('city') or ''
+    state = first_result.get('state') or ''
+    country = first_result.get('country') or ''
+    uzip = first_result.get('uzip') or ''
     bot.reply('I now have you at WOEID %s (%s %s, %s, %s %s.)' %
               (woeid, neighborhood, city, state, country, uzip))
