@@ -4,7 +4,7 @@ imdb.py - Sopel Movie Information Module
 Copyright © 2012-2013, Elad Alfassa, <elad@fedoraproject.org>
 Licensed under the Eiffel Forum License 2.
 
-This module relies on imdbapi.com
+This module relies on omdbapi.com
 """
 from __future__ import unicode_literals
 import json
@@ -25,7 +25,7 @@ def movie(bot, trigger):
     if not trigger.group(2):
         return
     word = trigger.group(2).rstrip()
-    uri = "http://www.imdbapi.com/?t=" + word
+    uri = "http://www.omdbapi.com/?t=" + word
     u = web.get(uri, 30)
     data = json.loads(u)  # data is a Dict containing all the information we need
     if data['Response'] == 'False':
@@ -33,9 +33,9 @@ def movie(bot, trigger):
             message = '[MOVIE] %s' % data['Error']
         else:
             LOGGER.warning(
-                'Got an error from the imdb api, search phrase was %s; data was %s',
+                'Got an error from the OMDb api, search phrase was %s; data was %s',
                 word, str(data))
-            message = '[MOVIE] Got an error from imdbapi'
+            message = '[MOVIE] Got an error from OMDbapi'
     else:
         message = '[MOVIE] Title: ' + data['Title'] + \
                   ' | Year: ' + data['Year'] + \
