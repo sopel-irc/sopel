@@ -9,7 +9,7 @@ http://sopel.chat
 
 This module relies on pyenchant, on Fedora and Red Hat based system, it can be found in the package python-enchant
 """
-from __future__ import unicode_literals
+from __future__ import unicode_literals, absolute_import, print_function, division
 try:
     import enchant
 except ImportError:

@@ -7,7 +7,7 @@ Licensed under the Eiffel Forum License 2.
 
 http://sopel.dfbta.net
 """
-from __future__ import unicode_literals
+from __future__ import unicode_literals, absolute_import, print_function, division
 
 try:
     import pytz

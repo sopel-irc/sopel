@@ -6,7 +6,7 @@ About: http://sopel.chat
 
 This allows users to check if a website is up through isup.me.
 """
-from __future__ import unicode_literals
+from __future__ import unicode_literals, absolute_import, print_function, division
 
 from sopel import web
 from sopel.module import commands

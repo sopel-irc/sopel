@@ -6,8 +6,8 @@ Licensed under the Eiffel Forum License 2.
 
 This module uses virustotal.com
 """
-from __future__ import unicode_literals
-from __future__ import print_function
+from __future__ import unicode_literals, absolute_import, print_function, division
+
 import sopel.web as web
 from sopel.config.types import StaticSection, ValidatedAttribute, ListAttribute
 from sopel.formatting import color, bold

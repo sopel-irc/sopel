@@ -4,7 +4,7 @@
 Copyright 2013-2015, Embolalia, embolalia.com
 Licensed under the Eiffel Forum License 2.
 """
-from __future__ import unicode_literals
+from __future__ import unicode_literals, absolute_import, print_function, division
 
 import xmltodict
 import re

@@ -4,7 +4,7 @@
 The formatting module includes functions to apply IRC formatting to text."""
 # Copyright 2014, Edward D. Powell, embolalia.net
 # Licensed under the Eiffel Forum License 2.
-from __future__ import unicode_literals
+from __future__ import unicode_literals, absolute_import, print_function, division
 import sys
 if sys.version_info.major >= 3:
     unicode = str

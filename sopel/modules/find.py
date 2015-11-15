@@ -11,7 +11,7 @@ Contributions from: Matt Meinwald and Morgan Goose
 This module will fix spelling errors if someone corrects them
 using the sed notation (s///) commonly found in vi/vim.
 """
-from __future__ import unicode_literals
+from __future__ import unicode_literals, absolute_import, print_function, division
 
 import re
 from sopel.tools import Identifier, SopelMemory

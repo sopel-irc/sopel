@@ -13,7 +13,7 @@ This is written as a module to make it easier to extend to support more
 responses to standard IRC codes without having to shove them all into the
 dispatch function in bot.py and making it easier to maintain.
 """
-from __future__ import unicode_literals
+from __future__ import unicode_literals, absolute_import, print_function, division
 
 
 import re
