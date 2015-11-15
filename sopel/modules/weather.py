@@ -12,7 +12,6 @@ from __future__ import unicode_literals
 from sopel import web
 from sopel.module import commands, example, NOLIMIT
 
-import feedparser
 import xmltodict
 
 
@@ -36,10 +35,10 @@ def woeid_search(query):
 
 def get_cover(parsed):
     try:
-        condition = parsed.entries[0]['yweather_condition']
+        condition = parsed['channel']['item']['yweather:condition']
     except KeyError:
         return 'unknown'
-    text = condition['text']
+    text = condition['@text']
     # code = int(condition['code'])
     # TODO parse code to get those little icon thingies.
     return text
@@ -47,8 +46,8 @@ def get_cover(parsed):
 
 def get_temp(parsed):
     try:
-        condition = parsed.entries[0]['yweather_condition']
-        temp = int(condition['temp'])
+        condition = parsed['channel']['item']['yweather:condition']
+        temp = int(condition['@temp'])
     except (KeyError, ValueError):
         return 'unknown'
     f = round((temp * 1.8) + 32, 2)
@@ -57,7 +56,7 @@ def get_temp(parsed):
 
 def get_humidity(parsed):
     try:
-        humidity = parsed['feed']['yweather_atmosphere']['humidity']
+        humidity = parsed['channel']['yweather:atmosphere']['@humidity']
     except (KeyError, ValueError):
         return 'unknown'
     return "Humidity: %s%%" % humidity
@@ -65,11 +64,11 @@ def get_humidity(parsed):
 
 def get_wind(parsed):
     try:
-        wind_data = parsed['feed']['yweather_wind']
-        kph = float(wind_data['speed'])
+        wind_data = parsed['channel']['yweather:wind']
+        kph = float(wind_data['@speed'])
         m_s = float(round(kph / 3.6, 1))
         speed = int(round(kph / 1.852, 0))
-        degrees = int(wind_data['direction'])
+        degrees = int(wind_data['@direction'])
     except (KeyError, ValueError):
         return 'unknown'
 
@@ -144,9 +143,10 @@ def weather(bot, trigger):
         return bot.reply("I don't know where that is.")
 
     query = web.urlencode({'w': woeid, 'u': 'c'})
-    url = 'http://weather.yahooapis.com/forecastrss?' + query
-    parsed = feedparser.parse(url)
-    location = parsed['feed']['title']
+    raw = web.get('http://weather.yahooapis.com/forecastrss?' + query, 
+                  dont_decode=True)
+    parsed = xmltodict.parse(raw).get('rss')
+    location = parsed.get('channel').get('title')
 
     cover = get_cover(parsed)
     temp = get_temp(parsed)
@@ -171,7 +171,7 @@ def update_woeid(bot, trigger):
 
     bot.db.set_nick_value(trigger.nick, 'woeid', woeid)
 
-    neighborhood = first_result.get('neighborhood').text or ''
+    neighborhood = first_result.get('neighborhood') or ''
     if neighborhood:
         neighborhood += ','
     city = first_result.get('city') or ''
