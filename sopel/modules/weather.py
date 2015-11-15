@@ -143,8 +143,9 @@ def weather(bot, trigger):
         return bot.reply("I don't know where that is.")
 
     query = web.urlencode({'w': woeid, 'u': 'c'})
-    url = 'http://weather.yahooapis.com/forecastrss?' + query
-    parsed = xmltodict.parse(url).get('rss')
+    raw = web.get('http://weather.yahooapis.com/forecastrss?' + query, 
+                  dont_decode=True)
+    parsed = xmltodict.parse(raw).get('rss')
     location = parsed.get('channel').get('title')
 
     cover = get_cover(parsed)
