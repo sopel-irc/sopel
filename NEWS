@@ -1,3 +1,25 @@
+Changes between 6.0.0 and 6.1.0
+===============================
+If you are updating from a pre-6.0 version (i.e. Willie), there are backwards-
+incompatible changes which you should be aware of. See
+http://willie.dftba.net/willie_6.html for more information.
+
+Module changes:
+* A regression which prevented the URL safety detection from working is fixed.
+* Issues with some special characters in DuckDuckGo searches are fixed
+* lxml is no longer required by any modules, greatly simplifying the install process
+* Misc minor bugfixes and improvements
+
+Core changes:
+* A regression which disabled blocking functionality is fixed
+* Examples are no longer mangled by the .help command, and show the correct prefix
+* The listing from .commands is now separated by module
+* Issues with reloading folder modules are fixed
+
+API changes:
+* ListAttribute configs can be set to a list or set, with the same effect
+* The configure method of validated config attributes now takes the parent config and section name
+
 Changes between 5.5.1 and 6.0.0
 ===============================
 This release contains backwards-incompatible changes. See

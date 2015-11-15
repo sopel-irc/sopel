@@ -19,7 +19,7 @@ import time
 import traceback
 import signal
 
-__version__ = '6.0.0'
+__version__ = '6.1.0'
 
 
 def _version_info(version=__version__):
