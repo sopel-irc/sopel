@@ -1,4 +1,4 @@
-# coding=utf8
+# coding=utf-8
 """
 tld.py - Sopel TLD Module
 Copyright 2009-10, Michael Yanovich, yanovich.net

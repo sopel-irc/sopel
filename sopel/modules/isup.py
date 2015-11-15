@@ -1,4 +1,4 @@
-# coding=utf8
+# coding=utf-8
 """
 isup.py - Simple website status check with isup.me
 Author: Edward Powell http://embolalia.net

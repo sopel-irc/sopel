@@ -1,4 +1,4 @@
-# coding=utf8
+# coding=utf-8
 """
 reddit-info.py - Sopel Reddit module
 Author: Edward Powell, embolalia.net

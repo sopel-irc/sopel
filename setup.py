@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# coding=utf8
+# coding=utf-8
 from __future__ import unicode_literals, print_function
 
 from sopel import __version__

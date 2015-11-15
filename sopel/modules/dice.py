@@ -1,4 +1,4 @@
-# coding=utf8
+# coding=utf-8
 """
 dice.py - Dice Module
 Copyright 2010-2013, Dimitri "Tyrope" Molenaars, TyRope.nl

@@ -1,4 +1,4 @@
-# coding=utf8
+# coding=utf-8
 """Tests for the new database functionality.
 
 TODO: Most of these tests assume functionality tested in other tests. This is

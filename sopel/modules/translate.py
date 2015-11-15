@@ -1,4 +1,4 @@
-# coding=utf8
+# coding=utf-8
 """
 translate.py - Sopel Translation Module
 Copyright 2008, Sean B. Palmer, inamidst.com

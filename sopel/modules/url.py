@@ -1,4 +1,4 @@
-# coding=utf8
+# coding=utf-8
 """
 url.py - Sopel URL title module
 Copyright 2010-2011, Michael Yanovich, yanovich.net, Kenneth Sham

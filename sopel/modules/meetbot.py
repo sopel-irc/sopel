@@ -1,4 +1,4 @@
-# coding=utf8
+# coding=utf-8
 """
 meetbot.py - Sopel meeting logger module
 Copyright © 2012, Elad Alfassa, <elad@fedoraproject.org>

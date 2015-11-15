@@ -1,4 +1,4 @@
-# coding=utf8
+# coding=utf-8
 """
 ipython.py - sopel ipython console!
 Copyright © 2014, Elad Alfassa <elad@fedoraproject.org>

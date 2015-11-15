@@ -1,4 +1,4 @@
-# coding=utf8
+# coding=utf-8
 """GeoIP lookup module"""
 # Copyright 2011, Dimitri Molenaars, TyRope.nl,
 # Copyright © 2013, Elad Alfassa <elad@fedoraproject.org>

@@ -1,4 +1,4 @@
-# coding=utf8
+# coding=utf-8
 """
 clock.py - Sopel Clock Module
 Copyright 2008-9, Sean B. Palmer, inamidst.com

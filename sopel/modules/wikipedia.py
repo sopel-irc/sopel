@@ -1,4 +1,4 @@
-# coding=utf8
+# coding=utf-8
 """
 wikipedia.py - Sopel Wikipedia Module
 Copyright 2013 Edward Powell - embolalia.net

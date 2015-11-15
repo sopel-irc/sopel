@@ -1,4 +1,4 @@
-# coding=utf8
+# coding=utf-8
 """
 ping.py - Sopel Ping Module
 Author: Sean B. Palmer, inamidst.com

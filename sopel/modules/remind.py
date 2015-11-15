@@ -1,4 +1,4 @@
-# coding=utf8
+# coding=utf-8
 """
 remind.py - Sopel Reminder Module
 Copyright 2011, Sean B. Palmer, inamidst.com

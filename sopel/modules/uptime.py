@@ -1,4 +1,4 @@
-# coding=utf8
+# coding=utf-8
 """
 uptime.py - Uptime module
 Copyright 2014, Fabian Neundorf

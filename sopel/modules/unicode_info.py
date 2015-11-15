@@ -1,4 +1,4 @@
-# coding=utf8
+# coding=utf-8
 """
 codepoints.py - Sopel Codepoints Module
 Copyright 2013, Edward Powell, embolalia.net

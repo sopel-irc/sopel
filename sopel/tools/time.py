@@ -1,4 +1,4 @@
-# coding=utf8
+# coding=utf-8
 """Tools for getting and displaying the time."""
 from __future__ import unicode_literals, absolute_import, print_function, division
 

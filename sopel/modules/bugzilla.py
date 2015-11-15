@@ -1,4 +1,4 @@
-# coding=utf8
+# coding=utf-8
 """Bugzilla issue reporting module
 
 Copyright 2013-2015, Embolalia, embolalia.com

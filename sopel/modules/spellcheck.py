@@ -1,4 +1,4 @@
-# coding=utf8
+# coding=utf-8
 """
 spellcheck.py - Sopel spell check Module
 Copyright © 2012, Elad Alfassa, <elad@fedoraproject.org>

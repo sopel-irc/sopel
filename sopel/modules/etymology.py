@@ -1,4 +1,4 @@
-# coding=utf8
+# coding=utf-8
 """
 etymology.py - Sopel Etymology Module
 Copyright 2007-9, Sean B. Palmer, inamidst.com

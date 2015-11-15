@@ -1,4 +1,4 @@
-# coding=utf8
+# coding=utf-8
 """
 find.py - Sopel Spelling correction module
 Copyright 2011, Michael Yanovich, yanovich.net

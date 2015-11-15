@@ -1,4 +1,4 @@
-# coding=utf8
+# coding=utf-8
 """
 xkcd.py - XKCD Module
 Copyright 2010, Michael Yanovich (yanovich.net), and Morgan Goose

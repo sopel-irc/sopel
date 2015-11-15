@@ -1,4 +1,4 @@
-# coding=utf8
+# coding=utf-8
 """
 seen.py - Sopel Seen Module
 Copyright 2008, Sean B. Palmer, inamidst.com

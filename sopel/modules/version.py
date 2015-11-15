@@ -1,4 +1,4 @@
-# coding=utf8
+# coding=utf-8
 """
 version.py - Sopel Version Module
 Copyright 2009, Silas Baronda

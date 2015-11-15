@@ -1,4 +1,4 @@
-# coding=utf8
+# coding=utf-8
 """Types for creating section definitions.
 
 A section definition consists of a subclass of ``StaticSection``, on which any

@@ -1,4 +1,4 @@
-# coding=utf8
+# coding=utf-8
 """
 units.py - Unit conversion module for Sopel
 Copyright © 2013, Elad Alfassa, <elad@fedoraproject.org>

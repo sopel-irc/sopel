@@ -1,4 +1,4 @@
-# coding=utf8
+# coding=utf-8
 """
 countdown.py - Sopel Countdown Module
 Copyright 2011, Michael Yanovich, yanovich.net

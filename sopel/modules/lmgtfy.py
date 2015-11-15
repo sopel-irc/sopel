@@ -1,4 +1,4 @@
-# coding=utf8
+# coding=utf-8
 """
 lmgtfy.py - Sopel Let me Google that for you module
 Copyright 2013, Dimitri Molenaars http://tyrope.nl/

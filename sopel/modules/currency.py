@@ -1,4 +1,4 @@
-# coding=utf8
+# coding=utf-8
 """currency.py - Sopel Exchange Rate Module
 Copyright 2013 Edward Powell, embolalia.com
 Licensed under the Eiffel Forum License 2

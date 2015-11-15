@@ -1,4 +1,4 @@
-# coding=utf8
+# coding=utf-8
 """
 *Availability: 3+; 6+ for configuration section definitions.*
 

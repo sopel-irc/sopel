@@ -1,4 +1,4 @@
-# coding=utf8
+# coding=utf-8
 """
 admin.py - Sopel Admin Module
 Copyright 2010-2011, Michael Yanovich, Alek Rollyson, and Edward Powell
