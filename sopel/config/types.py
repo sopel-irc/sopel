@@ -92,7 +92,7 @@ class StaticSection(object):
                     default = clazz.default
         while True:
             try:
-                value = clazz.configure(prompt, default)
+                value = clazz.configure(prompt, default, self._parent, self._section_name)
             except ValueError as exc:
                 print(exc)
             else:
@@ -111,7 +111,7 @@ class BaseValidated(object):
         self.name = name
         self.default = default
 
-    def configure(self, prompt, default):
+    def configure(self, prompt, default, parent, section_name):
         """With the prompt and default, parse and return a value from terminal.
         """
         if default is not NO_DEFAULT and default is not None:
@@ -202,7 +202,7 @@ class ValidatedAttribute(BaseValidated):
     def parse(self, value):
         return value
 
-    def configure(self, prompt, default):
+    def configure(self, prompt, default, parent, section_name):
         if self.parse == _parse_boolean:
             prompt += ' (y/n)'
             default = 'y' if default else 'n'
@@ -233,7 +233,7 @@ class ListAttribute(BaseValidated):
             raise ValueError('ListAttribute value must be a list.')
         return ','.join(value)
 
-    def configure(self, prompt, default):
+    def configure(self, prompt, default, parent, section_name):
         each_prompt = '?'
         if isinstance(prompt, tuple):
             each_prompt = prompt[1]
@@ -310,6 +310,17 @@ class FilenameAttribute(BaseValidated):
         this_section = getattr(main_config, instance._section_name)
         value = self.serialize(main_config, this_section, value)
         instance._parser.set(instance._section_name, self.name, value)
+
+    def configure(self, prompt, default, parent, section_name):
+        """With the prompt and default, parse and return a value from terminal.
+        """
+        if default is not NO_DEFAULT and default is not None:
+            prompt = '{} [{}]'.format(prompt, default)
+        value = get_input(prompt + ' ')
+        if not value and default is NO_DEFAULT:
+            raise ValueError("You must provide a value for this option.")
+        value = value or default
+        return self.parse(parent, section_name, value)
 
     def parse(self, main_config, this_section, value):
         if value is None:
