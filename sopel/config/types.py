@@ -111,7 +111,7 @@ class BaseValidated(object):
         self.name = name
         self.default = default
 
-    def configure(self, prompt, default, *args):
+    def configure(self, prompt, default, parent, section_name):
         """With the prompt and default, parse and return a value from terminal.
         """
         if default is not NO_DEFAULT and default is not None:
@@ -202,7 +202,7 @@ class ValidatedAttribute(BaseValidated):
     def parse(self, value):
         return value
 
-    def configure(self, prompt, default, *args):
+    def configure(self, prompt, default, parent, section_name):
         if self.parse == _parse_boolean:
             prompt += ' (y/n)'
             default = 'y' if default else 'n'
@@ -233,7 +233,7 @@ class ListAttribute(BaseValidated):
             raise ValueError('ListAttribute value must be a list.')
         return ','.join(value)
 
-    def configure(self, prompt, default, *args):
+    def configure(self, prompt, default, parent, section_name):
         each_prompt = '?'
         if isinstance(prompt, tuple):
             each_prompt = prompt[1]
