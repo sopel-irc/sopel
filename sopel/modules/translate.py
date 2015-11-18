@@ -45,6 +45,9 @@ def translate(text, in_lang='auto', out_lang='en'):
     url = "http://translate.googleapis.com/translate_a/single?{query}".format(query=query_string)
     result = web.get(url, timeout=40, headers=headers)
 
+    if result == '[,,""]':
+        return None, in_lang
+
     while ',,' in result:
         result = result.replace(',,', ',null,')
         result = result.replace('[,', '[null,')
@@ -83,7 +86,7 @@ def tr(bot, trigger):
             msg = web.decode(msg)  # msg.replace('&#39;', "'")
             msg = '"%s" (%s to %s, translate.google.com)' % (msg, in_lang, out_lang)
         else:
-            msg = 'The %s to %s translation failed, sorry!' % (in_lang, out_lang)
+            msg = 'The %s to %s translation failed, are you sure you specified valid language abbreviations?' % (in_lang, out_lang)
 
         bot.reply(msg)
     else:
@@ -127,7 +130,7 @@ def tr2(bot, trigger):
             msg = web.decode(msg)  # msg.replace('&#39;', "'")
             msg = '"%s" (%s to %s, translate.google.com)' % (msg, src, dest)
         else:
-            msg = 'The %s to %s translation failed, sorry!' % (src, dest)
+            msg = 'The %s to %s translation failed, are you sure you specified valid language abbreviations?' % (src, dest)
 
         bot.reply(msg)
     else:
