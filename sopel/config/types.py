@@ -206,7 +206,7 @@ class ValidatedAttribute(BaseValidated):
         if self.parse == _parse_boolean:
             prompt += ' (y/n)'
             default = 'y' if default else 'n'
-        return super(ValidatedAttribute, self).configure(prompt, default)
+        return super(ValidatedAttribute, self).configure(prompt, default, parent, section_name)
 
 
 class ListAttribute(BaseValidated):
