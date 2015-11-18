@@ -16,6 +16,7 @@ dispatch function in bot.py and making it easier to maintain.
 from __future__ import unicode_literals, absolute_import, print_function, division
 
 
+from random import randint
 import re
 import sys
 import time
@@ -31,6 +32,12 @@ if sys.version_info.major >= 3:
 LOGGER = get_logger(__name__)
 
 batched_caps = {}
+who_reqs = {}
+
+
+def setup(bot):
+    bot.cap_req('coretasks', 'account-notify', None, account_cap_failed)
+    bot.cap_req('coretasks', 'extended-join', None, account_cap_failed)
 
 
 def auth_after_register(bot):
@@ -89,6 +96,51 @@ def startup(bot, trigger):
     else:
         for channel in bot.config.core.channels:
             bot.join(channel)
+
+
+@sopel.module.event('ACCOUNT')
+@sopel.module.rule('.*')
+@sopel.module.priority('high')
+@sopel.module.thread(False)
+@sopel.module.unblockable
+def account_notify(bot, trigger):
+    for channel in bot.channels:
+        if trigger.nick not in bot.accounts[channel]:
+            continue
+        if trigger.args[0] == '*':
+            del bot.accounts[channel][trigger.nick]
+            # We are deleting, skip the next part
+            return
+        bot.accounts[channel][trigger.nick] = trigger.args[0]
+
+
+def account_cap_failed(bot, cap):
+    LOGGER.warning('Failed to enable %s, this may cause issues with `bot.accounts`' % (cap,))
+
+
+@sopel.module.event('354')
+@sopel.module.rule('.*')
+@sopel.module.priority('high')
+@sopel.module.unblockable
+def recv_who(bot, trigger):
+    if len(trigger.args) < 2 or trigger.args[1] not in who_reqs:
+        # Ignored, some module probably called WHO
+        return
+    channel = who_reqs[trigger.args[1]]
+    if len(trigger.args) < 3:
+        return LOGGER.warning('While populating `bot.accounts` a WHO response was malformed.')
+    bot.accounts[channel][trigger.args[2]] = trigger.args[3]
+
+
+@sopel.module.event('315')
+@sopel.module.rule('.*')
+@sopel.module.priority('high')
+@sopel.module.unblockable
+def end_who(bot, trigger):
+    for unique in who_reqs:
+        if who_reqs[unique] == trigger.args[1]:
+            del who_reqs[unique]
+            break
 
 
 @sopel.module.event('477')
@@ -228,6 +280,12 @@ def track_nicks(bot, trigger):
         bot.msg(bot.config.core.owner, privmsg)
         return
 
+    for channel in bot.accounts:
+        channel = Identifier(channel)
+        if old in bot.accounts[channel]:
+            value = bot.accounts[channel].pop(old)
+            bot.accounts[channel][new] = value
+
     for channel in bot.privileges:
         channel = Identifier(channel)
         if old in bot.privileges[channel]:
@@ -244,11 +302,12 @@ def track_part(bot, trigger):
     if trigger.nick == bot.nick:
         bot.channels.remove(trigger.sender)
         del bot.privileges[trigger.sender]
+        del bot.accounts[trigger.sender]
     else:
-        try:
+        if trigger.nick in bot.accounts[trigger.sender]:
+            del bot.accounts[trigger.sender][trigger.nick]
+        if trigger.nick in bot.privileges[trigger.sender]:
             del bot.privileges[trigger.sender][trigger.nick]
-        except KeyError:
-            pass
 
 
 @sopel.module.rule('.*')
@@ -261,14 +320,12 @@ def track_kick(bot, trigger):
     if nick == bot.nick:
         bot.channels.remove(trigger.sender)
         del bot.privileges[trigger.sender]
+        del bot.accounts[trigger.sender]
     else:
-        # Temporary fix to stop KeyErrors from being sent to channel
-        # The privileges dict may not have all nicks stored at all times
-        # causing KeyErrors
-        try:
+        if nick in bot.accounts[trigger.sender]:
+            del bot.accounts[trigger.sender][nick]
+        if nick in bot.privileges[trigger.sender]:
             del bot.privileges[trigger.sender][nick]
-        except KeyError:
-            pass
 
 
 @sopel.module.rule('.*')
@@ -279,8 +336,19 @@ def track_kick(bot, trigger):
 def track_join(bot, trigger):
     if trigger.nick == bot.nick and trigger.sender not in bot.channels:
         bot.channels.append(trigger.sender)
+        bot.accounts[trigger.sender] = dict()
         bot.privileges[trigger.sender] = dict()
+        rand = str(randint(0, 999))
+        while rand in who_reqs:
+            rand = str(randint(0, 999))
+        who_reqs[rand] = trigger.sender
+        # WHOX syntax, see http://faerion.sourceforge.net/doc/irc/whox.var
+        # Should work on any IRCd thats supporting IRCv3.1
+        bot.write(['WHO', trigger.sender, 'a%nat,' + rand])
     bot.privileges[trigger.sender][trigger.nick] = 0
+    if len(trigger.args) > 1 and trigger.args[1] != '*': 
+        # We can assume we have extended-join if there's more than one arg
+        bot.accounts[trigger.sender][str(trigger.nick)] = trigger.args[1]
 
 
 @sopel.module.rule('.*')
@@ -289,6 +357,9 @@ def track_join(bot, trigger):
 @sopel.module.thread(False)
 @sopel.module.unblockable
 def track_quit(bot, trigger):
+    for channel in bot.accounts:
+        if trigger.nick in channel:
+            del bot.accounts[channel][trigger.nick]
     for chanprivs in bot.privileges.values():
         if trigger.nick in chanprivs:
             del chanprivs[trigger.nick]
