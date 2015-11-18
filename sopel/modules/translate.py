@@ -75,6 +75,9 @@ def tr(bot, trigger):
     if (len(phrase) > 350) and (not trigger.admin):
         return bot.reply('Phrase must be under 350 characters.')
 
+    if phrase.strip() == '':
+        return bot.reply('You need to specify a string for me to translate!')
+
     in_lang = in_lang or 'auto'
     out_lang = out_lang or 'en'
 
@@ -120,6 +123,9 @@ def tr2(bot, trigger):
 
     if (len(phrase) > 350) and (not trigger.admin):
         return bot.reply('Phrase must be under 350 characters.')
+
+    if phrase.strip() == '':
+        return bot.reply('You need to specify a string for me to translate!')
 
     src, dest = args
     if src != dest:
