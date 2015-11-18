@@ -148,7 +148,7 @@ def ischair(nick, channel):
 def startmeeting(bot, trigger):
     """
     Start a meeting.
-    https://github.com/embolalia/sopel/wiki/Using-the-meetbot-module
+    https://github.com/sopel-irc/sopel/wiki/Using-the-meetbot-module
     """
     if ismeetingrunning(trigger.sender):
         bot.say('Can\'t do that, there is already a meeting in progress here!')
@@ -156,7 +156,7 @@ def startmeeting(bot, trigger):
     if trigger.is_privmsg:
         bot.say('Can only start meetings in channels')
         return
-    if not bot.config.has_section('meetbot'):
+    if not hasattr(bot.config, 'meetbot'):
         bot.say('Meetbot not configured, make sure meeting_log_path and meeting_log_baseurl are defined')
         return
     #Start the meeting
@@ -201,7 +201,7 @@ def startmeeting(bot, trigger):
 def meetingsubject(bot, trigger):
     """
     Change the meeting subject.
-    https://github.com/embolalia/sopel/wiki/Using-the-meetbot-module
+    https://github.com/sopel-irc/sopel/wiki/Using-the-meetbot-module
     """
     if not ismeetingrunning(trigger.sender):
         bot.say('Can\'t do that, start meeting first')
@@ -226,7 +226,7 @@ def meetingsubject(bot, trigger):
 def endmeeting(bot, trigger):
     """
     End a meeting.
-    https://github.com/embolalia/sopel/wiki/Using-the-meetbot-module
+    https://github.com/sopel-irc/sopel/wiki/Using-the-meetbot-module
     """
     if not ismeetingrunning(trigger.sender):
         bot.say('Can\'t do that, start meeting first')
@@ -251,7 +251,7 @@ def endmeeting(bot, trigger):
 def chairs(bot, trigger):
     """
     Set the meeting chairs.
-    https://github.com/embolalia/sopel/wiki/Using-the-meetbot-module
+    https://github.com/sopel-irc/sopel/wiki/Using-the-meetbot-module
     """
     if not ismeetingrunning(trigger.sender):
         bot.say('Can\'t do that, start meeting first')
@@ -275,7 +275,7 @@ def chairs(bot, trigger):
 def meetingaction(bot, trigger):
     """
     Log an action in the meeting log
-    https://github.com/embolalia/sopel/wiki/Using-the-meetbot-module
+    https://github.com/sopel-irc/sopel/wiki/Using-the-meetbot-module
     """
     if not ismeetingrunning(trigger.sender):
         bot.say('Can\'t do that, start meeting first')
@@ -308,7 +308,7 @@ def listactions(bot, trigger):
 def meetingagreed(bot, trigger):
     """
     Log an agreement in the meeting log.
-    https://github.com/embolalia/sopel/wiki/Using-the-meetbot-module
+    https://github.com/sopel-irc/sopel/wiki/Using-the-meetbot-module
     """
     if not ismeetingrunning(trigger.sender):
         bot.say('Can\'t do that, start meeting first')
@@ -330,7 +330,7 @@ def meetingagreed(bot, trigger):
 def meetinglink(bot, trigger):
     """
     Log a link in the meeing log.
-    https://github.com/embolalia/sopel/wiki/Using-the-meetbot-module
+    https://github.com/sopel-irc/sopel/wiki/Using-the-meetbot-module
     """
     if not ismeetingrunning(trigger.sender):
         bot.say('Can\'t do that, start meeting first')
@@ -359,7 +359,7 @@ def meetinglink(bot, trigger):
 def meetinginfo(bot, trigger):
     """
     Log an informational item in the meeting log
-    https://github.com/embolalia/sopel/wiki/Using-the-meetbot-module
+    https://github.com/sopel-irc/sopel/wiki/Using-the-meetbot-module
     """
     if not ismeetingrunning(trigger.sender):
         bot.say('Can\'t do that, start meeting first')
@@ -395,7 +395,7 @@ def take_comment(bot, trigger):
     in the meeting.
 
     Used in private message only, as `.comment <#channel> <comment to add>`
-    https://github.com/embolalia/sopel/wiki/Using-the-meetbot-module
+    https://github.com/sopel-irc/sopel/wiki/Using-the-meetbot-module
     """
     if not trigger.sender.is_nick():
         return
@@ -418,7 +418,7 @@ def take_comment(bot, trigger):
 def show_comments(bot, trigger):
     """
     Show the comments that have been logged for this meeting with .comment.
-    https://github.com/embolalia/sopel/wiki/Using-the-meetbot-module
+    https://github.com/sopel-irc/sopel/wiki/Using-the-meetbot-module
     """
     if not ismeetingrunning(trigger.sender):
         return
