@@ -35,11 +35,6 @@ batched_caps = {}
 who_reqs = {}
 
 
-def setup(bot):
-    bot.cap_req('coretasks', 'account-notify', None, account_cap_failed)
-    bot.cap_req('coretasks', 'extended-join', None, account_cap_failed)
-
-
 def auth_after_register(bot):
     """Do NickServ/AuthServ auth"""
     if bot.config.core.auth_method == 'nickserv':
@@ -123,13 +118,22 @@ def account_cap_failed(bot, cap):
 @sopel.module.priority('high')
 @sopel.module.unblockable
 def recv_who(bot, trigger):
-    if len(trigger.args) < 2 or trigger.args[1] not in who_reqs:
+    if (len(trigger.args) < 2 or trigger.args[1] not in who_reqs or
+        ('account-notify' not in bot.enabled_capabilities or
+            'extended-join' not in bot.enabled_capabilities)):
         # Ignored, some module probably called WHO
         return
     channel = who_reqs[trigger.args[1]]
     if len(trigger.args) < 3:
         return LOGGER.warning('While populating `bot.accounts` a WHO response was malformed.')
-    bot.accounts[channel][trigger.args[2]] = trigger.args[3]
+    nick = trigger.args[2]
+    account = trigger.args[3]
+    if not account or account == '0':
+        # 0 indicates the user is not signed in to any account on most IRCds
+        if nick in bot.accounts[channel]:
+            del bot.accounts[channel][nick]
+        return
+    bot.accounts[channel][nick] = account
 
 
 @sopel.module.event('315')
@@ -137,6 +141,9 @@ def recv_who(bot, trigger):
 @sopel.module.priority('high')
 @sopel.module.unblockable
 def end_who(bot, trigger):
+    if ('account-notify' not in bot.enabled_capabilities or
+            'extended-join' not in bot.enabled_capabilities):
+        return
     for unique in who_reqs:
         if who_reqs[unique] == trigger.args[1]:
             del who_reqs[unique]
@@ -336,17 +343,21 @@ def track_kick(bot, trigger):
 def track_join(bot, trigger):
     if trigger.nick == bot.nick and trigger.sender not in bot.channels:
         bot.channels.append(trigger.sender)
-        bot.accounts[trigger.sender] = dict()
         bot.privileges[trigger.sender] = dict()
-        rand = str(randint(0, 999))
-        while rand in who_reqs:
+        if ('account-notify' in bot.enabled_capabilities and
+                'extended-join' in bot.enabled_capabilities):
+            bot.accounts[trigger.sender] = dict()
             rand = str(randint(0, 999))
-        who_reqs[rand] = trigger.sender
-        # WHOX syntax, see http://faerion.sourceforge.net/doc/irc/whox.var
-        # Should work on any IRCd thats supporting IRCv3.1
-        bot.write(['WHO', trigger.sender, 'a%nat,' + rand])
+            while rand in who_reqs:
+                rand = str(randint(0, 999))
+            who_reqs[rand] = trigger.sender
+            # WHOX syntax, see http://faerion.sourceforge.net/doc/irc/whox.var
+            # Should work on any IRCd thats supporting IRCv3.1
+            bot.write(['WHO', trigger.sender, 'a%nat,' + rand])
     bot.privileges[trigger.sender][trigger.nick] = 0
-    if len(trigger.args) > 1 and trigger.args[1] != '*': 
+    if (len(trigger.args) > 1 and trigger.args[1] != '*' and  
+            ('account-notify' in bot.enabled_capabilities and
+                'extended-join' in bot.enabled_capabilities)):
         # We can assume we have extended-join if there's more than one arg
         bot.accounts[trigger.sender][str(trigger.nick)] = trigger.args[1]
 
@@ -385,10 +396,11 @@ def recieve_cap_list(bot, trigger):
                 if req[0] and req[2]:
                     # Call it.
                     req[2](bot, req[0] + trigger)
-    # Server is acknowledinge SASL for us.
-    elif (trigger.args[0] == bot.nick and trigger.args[1] == 'ACK' and
-          'sasl' in trigger.args[2]):
-        recieve_cap_ack_sasl(bot)
+    elif trigger.args[1] == 'ACK':
+        # Server is acknowledging SASL for us.
+        if (trigger.args[0] == bot.nick and 'sasl' in trigger.args[2]):
+            recieve_cap_ack_sasl(bot)
+        bot.enabled_capabilities.add(trigger.args[2].strip())
 
 
 def recieve_cap_ls_reply(bot, trigger):
@@ -417,6 +429,14 @@ def recieve_cap_ls_reply(bot, trigger):
         # Whether or not the server supports multi-prefix doesn't change how we
         # parse it, so we don't need to worry if it fails.
         bot._cap_reqs['multi-prefix'] = (['', 'coretasks', None, None],)
+
+    if 'account-notify' not in bot._cap_reqs:
+        bot._cap_reqs['account-notify'] = (['', 'coretasks', None,
+                                            account_cap_failed],)
+
+    if 'extended-join' not in bot._cap_reqs:
+        bot._cap_reqs['extended-join'] = (['', 'coretasks', None, 
+                                           account_cap_failed],)
 
     for cap, reqs in iteritems(bot._cap_reqs):
         # At this point, we know mandatory and prohibited don't co-exist, but
