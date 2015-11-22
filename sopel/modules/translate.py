@@ -45,6 +45,9 @@ def translate(text, in_lang='auto', out_lang='en'):
     url = "http://translate.googleapis.com/translate_a/single?{query}".format(query=query_string)
     result = web.get(url, timeout=40, headers=headers)
 
+    if result == '[,,""]':
+        return None, in_lang
+
     while ',,' in result:
         result = result.replace(',,', ',null,')
         result = result.replace('[,', '[null,')
@@ -72,6 +75,9 @@ def tr(bot, trigger):
     if (len(phrase) > 350) and (not trigger.admin):
         return bot.reply('Phrase must be under 350 characters.')
 
+    if phrase.strip() == '':
+        return bot.reply('You need to specify a string for me to translate!')
+
     in_lang = in_lang or 'auto'
     out_lang = out_lang or 'en'
 
@@ -83,7 +89,7 @@ def tr(bot, trigger):
             msg = web.decode(msg)  # msg.replace('&#39;', "'")
             msg = '"%s" (%s to %s, translate.google.com)' % (msg, in_lang, out_lang)
         else:
-            msg = 'The %s to %s translation failed, sorry!' % (in_lang, out_lang)
+            msg = 'The %s to %s translation failed, are you sure you specified valid language abbreviations?' % (in_lang, out_lang)
 
         bot.reply(msg)
     else:
@@ -118,6 +124,9 @@ def tr2(bot, trigger):
     if (len(phrase) > 350) and (not trigger.admin):
         return bot.reply('Phrase must be under 350 characters.')
 
+    if phrase.strip() == '':
+        return bot.reply('You need to specify a string for me to translate!')
+
     src, dest = args
     if src != dest:
         msg, src = translate(phrase, src, dest)
@@ -127,7 +136,7 @@ def tr2(bot, trigger):
             msg = web.decode(msg)  # msg.replace('&#39;', "'")
             msg = '"%s" (%s to %s, translate.google.com)' % (msg, src, dest)
         else:
-            msg = 'The %s to %s translation failed, sorry!' % (src, dest)
+            msg = 'The %s to %s translation failed, are you sure you specified valid language abbreviations?' % (src, dest)
 
         bot.reply(msg)
     else:
