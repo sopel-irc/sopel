@@ -156,9 +156,6 @@ def startmeeting(bot, trigger):
     if trigger.is_privmsg:
         bot.say('Can only start meetings in channels')
         return
-    if not bot.config.has_section('meetbot'):
-        bot.say('Meetbot not configured, make sure meeting_log_path and meeting_log_baseurl are defined')
-        return
     #Start the meeting
     meetings_dict[trigger.sender]['start'] = time.time()
     if not trigger.group(2):
