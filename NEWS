@@ -1,3 +1,12 @@
+Changes between 6.1.0 and 6.1.1
+===============================
+If you are updating from a pre-6.0 version (i.e. Willie), there are backwards-
+incompatible changes which you should be aware of. See
+http://willie.dftba.net/willie_6.html for more information.
+
+Core changes:
+* A regression which caused the config wizard to be unusable is fixed.
+
 Changes between 6.0.0 and 6.1.0
 ===============================
 If you are updating from a pre-6.0 version (i.e. Willie), there are backwards-
