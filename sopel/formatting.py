@@ -45,11 +45,13 @@ class colors:
     PINK = '13'
     LIGHT_PURPLE = PINK
     FUCHSIA = PINK
-    # Nobody has complained that this is grey not gray yet, so go with it?
     GREY = '14'
     LIGHT_GREY = '15'
     SILVER = LIGHT_GREY
 
+    #Create aliases.
+    GRAY = GREY
+    LIGHT_GRAY = LIGHT_GREY
 
 def _get_color(color):
     if color is None:
