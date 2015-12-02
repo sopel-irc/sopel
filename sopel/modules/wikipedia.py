@@ -123,6 +123,7 @@ def wikipedia(bot, trigger):
     if args is not None:
         lang = args.group(1)
         query = args.group(2)
+        query = query.replace(' ', '_')
 
     if not query:
         bot.reply('What do you want me to look up?')
