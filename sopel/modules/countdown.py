@@ -29,9 +29,9 @@ def generic_countdown(bot, trigger):
         except:
             bot.say("Please use correct format: .countdown 2012 12 21")
             return NOLIMIT
-        bot.say(str(diff.days) + " days, " + str(diff.seconds / 60 / 60)
+        bot.say(str(diff.days) + " days, " + str(diff.seconds // 3600)
                    + " hours and "
-                   + str(diff.seconds / 60 - diff.seconds / 60 / 60 * 60)
+                   + str(diff.seconds % 3600 // 60 )
                    + " minutes until "
                    + text[0] + " " + text[1] + " " + text[2])
     else:
