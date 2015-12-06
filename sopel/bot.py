@@ -99,6 +99,17 @@ class Sopel(irc.Bot):
         bitwise integer value, determined by combining the appropriate constants
         from `module`."""
 
+        self.accounts = dict()
+        """A dictionary of channels to their users' accounts and hostmasks.
+
+        The value associated with each channel is a dictionary of hostmask
+        to account strings, determined via IRCv3.1 account-notify and
+        extended-join.
+
+        Requires the server to support IRCv3.1 `account-notify` and 
+        `extended-join`. If the server does not support these, you may see 
+        inaccurate or out-of-date information."""
+
         self.db = SopelDB(config)
         """The bot's database."""
 
