@@ -99,6 +99,9 @@ class Sopel(irc.Bot):
         bitwise integer value, determined by combining the appropriate constants
         from `module`."""
 
+        self.channels_ = dict()  # name to chan obj
+        self.users = dict() # name to user obj
+
         self.db = SopelDB(config)
         """The bot's database."""
 
