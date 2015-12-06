@@ -118,6 +118,8 @@ def ip(bot, trigger):
         response += " | Location: %s" % gi_city.country_name_by_name(query)
     except AttributeError:
         response += ' | Location: Unknown'
+    except socket.gaierror:
+        return bot.say('[IP/Host Lookup] Unable to resolve IP/Hostname')
 
     region_data = gi_city.region_by_name(query)
     try:
