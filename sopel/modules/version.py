@@ -60,7 +60,7 @@ def ctcp_version(bot, trigger):
 @sopel.module.rate(20)
 def ctcp_source(bot, trigger):
     bot.write(('NOTICE', trigger.nick),
-              '\x01SOURCE https://github.com/Embolalia/sopel/\x01')
+              '\x01SOURCE https://github.com/sopel-irc/sopel/\x01')
 
 
 @sopel.module.rule('\x01PING\s(.*)\x01')
