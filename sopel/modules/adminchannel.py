@@ -12,7 +12,7 @@ from __future__ import unicode_literals, absolute_import, print_function, divisi
 
 import re
 from sopel import formatting
-from sopel.module import commands, priority, OP, HALFOP, require_privilege
+from sopel.module import commands, priority, OP, HALFOP, require_privilege, require_chanmsg
 from sopel.tools import Identifier
 
 
@@ -25,6 +25,7 @@ def default_mask(trigger):
     return '{} {} {} {}'.format(welcome, chan, topic_, arg)
 
 
+@require_chanmsg
 @require_privilege(OP)
 @commands('op')
 def op(bot, trigger):
@@ -41,6 +42,7 @@ def op(bot, trigger):
     bot.write(['MODE', channel, "+o", nick])
 
 
+@require_chanmsg
 @require_privilege(OP)
 @commands('deop')
 def deop(bot, trigger):
@@ -57,6 +59,7 @@ def deop(bot, trigger):
     bot.write(['MODE', channel, "-o", nick])
 
 
+@require_chanmsg
 @require_privilege(OP)
 @commands('voice')
 def voice(bot, trigger):
@@ -73,6 +76,7 @@ def voice(bot, trigger):
     bot.write(['MODE', channel, "+v", nick])
 
 
+@require_chanmsg
 @require_privilege(OP)
 @commands('devoice')
 def devoice(bot, trigger):
@@ -89,6 +93,7 @@ def devoice(bot, trigger):
     bot.write(['MODE', channel, "-v", nick])
 
 
+@require_chanmsg
 @require_privilege(OP)
 @commands('kick')
 @priority('high')
@@ -139,6 +144,7 @@ def configureHostMask(mask):
     return ''
 
 
+@require_chanmsg
 @require_privilege(OP)
 @commands('ban')
 @priority('high')
@@ -167,6 +173,7 @@ def ban(bot, trigger):
     bot.write(['MODE', channel, '+b', banmask])
 
 
+@require_chanmsg
 @require_privilege(OP)
 @commands('unban')
 def unban(bot, trigger):
@@ -194,6 +201,7 @@ def unban(bot, trigger):
     bot.write(['MODE', channel, '-b', banmask])
 
 
+@require_chanmsg
 @require_privilege(OP)
 @commands('quiet')
 def quiet(bot, trigger):
@@ -221,6 +229,7 @@ def quiet(bot, trigger):
     bot.write(['MODE', channel, '+q', quietmask])
 
 
+@require_chanmsg
 @require_privilege(OP)
 @commands('unquiet')
 def unquiet(bot, trigger):
@@ -248,6 +257,7 @@ def unquiet(bot, trigger):
     bot.write(['MODE', channel, '-q', quietmask])
 
 
+@require_chanmsg
 @require_privilege(OP)
 @commands('kickban', 'kb')
 @priority('high')
@@ -283,6 +293,7 @@ def kickban(bot, trigger):
     bot.write(['KICK', channel, nick], reason)
 
 
+@require_chanmsg
 @require_privilege(OP)
 @commands('topic')
 def topic(bot, trigger):
@@ -318,6 +329,7 @@ def topic(bot, trigger):
     bot.write(('TOPIC', channel + ' :' + topic))
 
 
+@require_chanmsg
 @require_privilege(OP)
 @commands('tmask')
 def set_mask(bot, trigger):
@@ -329,6 +341,7 @@ def set_mask(bot, trigger):
     bot.say("Gotcha, " + trigger.nick)
 
 
+@require_chanmsg
 @require_privilege(OP)
 @commands('showmask')
 def show_mask(bot, trigger):
