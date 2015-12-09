@@ -5,7 +5,7 @@ Copyright 2008-9, Sean B. Palmer, inamidst.com
 Copyright 2012, Edward Powell, embolalia.net
 Licensed under the Eiffel Forum License 2.
 
-http://sopel.dfbta.net
+http://sopel.chat
 """
 from __future__ import unicode_literals, absolute_import, print_function, division
 
