@@ -184,7 +184,7 @@ def roll(bot, trigger):
     if not trigger.group(2):
         return bot.reply("No dice to roll.")
     arg_str = trigger.group(2)
-    dice_expressions = re.findall(dice_regexp, arg_str)
+    dice_expressions = re.findall(dice_regexp, arg_str, re.IGNORECASE)
     arg_str = arg_str.replace("%", "%%")
     arg_str = re.sub(dice_regexp, "%s", arg_str)
 
