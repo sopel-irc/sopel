@@ -124,10 +124,10 @@ class DicePouch:
 def _roll_dice(bot, dice_expression):
     result = re.search(
         r"""
-        (?P<dice_num>\d*)
+        (?P<dice_num>-?\d*)
         d
-        (?P<dice_type>\d+)
-        (v(?P<drop_lowest>\d+))?
+        (?P<dice_type>-?\d+)
+        (v(?P<drop_lowest>-?\d+))?
         $""",
         dice_expression,
         re.IGNORECASE | re.VERBOSE)
@@ -139,6 +139,11 @@ def _roll_dice(bot, dice_expression):
     if dice_type <= 0:
         bot.reply("I don't have any dice with %d sides. =(" % dice_type)
         return None  # Signal there was a problem
+
+    # Can't roll a negative number of dice.
+    if dice_num < 0:
+        bot.reply("I'd rather not roll a negative amount of dice. =(")
+        return None # Signal there was a problem
 
     # Upper limit for dice should be at most a million. Creating a dict with
     # more than a million elements already takes a noticeable amount of time
@@ -176,7 +181,7 @@ def roll(bot, trigger):
     """
     # This regexp is only allowed to have one captured group, because having
     # more would alter the output of re.findall.
-    dice_regexp = r"\d*d\d+(?:v\d+)?"
+    dice_regexp = r"-?\d*[dD]-?\d+(?:[vV]-?\d+)?"
 
     # Get a list of all dice expressions, evaluate them and then replace the
     # expressions in the original string with the results. Replacing is done
@@ -184,7 +189,7 @@ def roll(bot, trigger):
     if not trigger.group(2):
         return bot.reply("No dice to roll.")
     arg_str = trigger.group(2)
-    dice_expressions = re.findall(dice_regexp, arg_str, re.IGNORECASE)
+    dice_expressions = re.findall(dice_regexp, arg_str)
     arg_str = arg_str.replace("%", "%%")
     arg_str = re.sub(dice_regexp, "%s", arg_str)
 
