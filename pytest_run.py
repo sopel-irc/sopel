@@ -9,7 +9,7 @@ pytest_run.py
 Copyright 2013, Ari Koivula, <ari@koivu.la>
 Licensed under the Eiffel Forum License 2.
 
-http://willie.dfbta.net
+http://sopel.chat
 """
 from __future__ import unicode_literals
 
