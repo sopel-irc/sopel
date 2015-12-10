@@ -9,12 +9,13 @@ http://sopel.chat/
 This module looks for a greeting message defined in the config
 """
 
+from __future__ import unicode_literals
 from sopel.config.types import StaticSection, ValidatedAttribute
 from sopel.module import event, rule
 
 class GreetingSection(StaticSection):
-	join_message = ValidatedAttribute('join_message', default=None)
-	"""A message said by the bot when joining a channel."""
+    join_message = ValidatedAttribute('join_message', default=None)
+    """A message said by the bot when joining a channel."""
 
 def setup(bot):
     bot.config.define_section('greeting', GreetingSection)
@@ -29,5 +30,5 @@ def configure(config):
 @event('JOIN')
 @rule('.*')
 def greeting(bot, trigger):
-	if bot.config.core.nick == trigger.nick and bot.config.greeting and bot.config.greeting.join_message:
-		bot.say(bot.config.greeting.join_message)
+    if bot.config.core.nick == trigger.nick and bot.config.greeting and bot.config.greeting.join_message:
+        bot.say(bot.config.greeting.join_message)
