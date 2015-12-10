@@ -156,7 +156,10 @@ def _roll_dice(bot, dice_expression):
 
     if result.group('drop_lowest'):
         drop = int(result.group('drop_lowest'))
-        dice.drop_lowest(drop)
+        if drop >= 0:
+            dice.drop_lowest(drop)
+        else:
+            bot.reply("I can't drop the lowest %d dice. =(" % drop)
 
     return dice
 
