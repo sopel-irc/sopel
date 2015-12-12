@@ -561,7 +561,6 @@ def blocks(bot, trigger):
 @sopel.module.event('ACCOUNT')
 @sopel.module.rule('.*')
 def account_notify(bot, trigger):
-    print(trigger.nick)
     if trigger.nick not in bot.users:
         bot.users[trigger.nick] = User(trigger.nick, trigger.user, trigger.host)
     account = trigger.args[0]
@@ -576,14 +575,16 @@ def account_notify(bot, trigger):
 @sopel.module.unblockable
 def recv_whox(bot, trigger):
     if (len(trigger.args) < 2 or trigger.args[1] not in who_reqs or
-        not _accounts_enabled(bot)):
+            not _accounts_enabled(bot)):
         # Ignored, some module probably called WHO
-        # TODO a separate 352 handler function
         return
     if len(trigger.args) != 7:
         return LOGGER.warning('While populating `bot.accounts` a WHO response was malformed.')
-    print(trigger.args)
     _, _, channel, user, host, nick, account = trigger.args
+    _record_who(bot, channel, user, host, nick, account)
+
+
+def _record_who(bot, channel, user, host, nick, account=None):
     nick = Identifier(nick)
     channel = Identifier(channel)
     if nick not in bot.users:
@@ -596,6 +597,15 @@ def recv_whox(bot, trigger):
     if channel not in bot.channels_:
         bot.channels_[channel] = Channel(channel)
     bot.channels_[channel].add_user(user)
+
+
+@sopel.module.event('352')
+@sopel.module.rule('.*')
+@sopel.module.priority('high')
+@sopel.module.unblockable
+def recv_who(bot, trigger):
+    channel, user, host, _, nick, = trigger.args[1:6]
+    _record_who(bot, channel, user, host, nick)
 
 
 @sopel.module.event('315')

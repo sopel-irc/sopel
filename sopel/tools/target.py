@@ -46,6 +46,7 @@ class Channel(object):
         assert isinstance(user, User)
         self.users[user.nick] = user
         self.privileges[user.nick] = 0
+        user.channels[self.name] = self
 
     def rename_user(self, old, new):
         if old in self.users:
