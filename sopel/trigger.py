@@ -129,8 +129,15 @@ class Trigger(unicode):
     """
     owner = property(lambda self: self._owner)
     """True if the nick which triggered the command is the bot's owner."""
+    account = property(lambda self: self.tags.get('account', self._account))
+    """The account name of the user sending the message.
 
-    def __new__(cls, config, message, match):
+    This is only available if either the account-tag or the account-notify and
+    extended-join capabilites are available. If this isn't the case, or the user
+    sending the message isn't logged in, this will be None.
+    """
+
+    def __new__(cls, config, message, match, account=None):
         self = unicode.__new__(cls, message.args[-1] if message.args else '')
         self._pretrigger = message
         self._match = match

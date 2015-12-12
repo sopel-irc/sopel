@@ -286,7 +286,9 @@ class Sopel(irc.Bot):
                 match = regexp.match(text)
                 if not match:
                     continue
-                trigger = Trigger(self.config, pretrigger, match)
+                user_obj = self.users.get(pretrigger.nick)
+                account = user_obj.account if user_obj else None
+                trigger = Trigger(self.config, pretrigger, match, account)
                 wrapper = self.SopelWrapper(self, trigger)
 
                 for func in funcs:
