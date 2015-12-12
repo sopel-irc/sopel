@@ -405,17 +405,17 @@ def recieve_cap_ls_reply(bot, trigger):
         # Whether or not the server supports multi-prefix doesn't change how we
         # parse it, so we don't need to worry if it fails.
         bot._cap_reqs['multi-prefix'] = (['', 'coretasks', None, None],)
+    if 'away-notify' not in bot._cap_reqs:
+        bot._cap_reqs['away-notify'] = (['', 'coretasks', None, None],)
 
     def acct_warn(bot, cap):
         LOGGER.info('Server does not support {}, or it conflicts with a custom '
-                    'module. User account validation is not available.'.format(
-                        cap))
-    if 'account-notify' not in bot._cap_reqs:
-        bot._cap_reqs['account-notify'] = (['', 'coretasks', None, acct_warn],)
-    if 'extended-join' not in bot._cap_reqs:
-        bot._cap_reqs['extended-join'] = (['', 'coretasks', None, acct_warn],)
-    if 'away-notify' not in bot._cap_reqs:
-        bot._cap_reqs['away-notify'] = (['', 'coretasks', None, None],)
+                    'module. User account validation unavailable or limited.'
+                    .format(cap))
+    auth_caps = ['account-notify', 'extended-join', 'account-tag']
+    for cap in auth_caps:
+        if cap not in bot._cap_reqs:
+            bot._cap_reqs[cap] = (['', 'coretasks', None, acct_warn],)
 
     for cap, reqs in iteritems(bot._cap_reqs):
         # At this point, we know mandatory and prohibited don't co-exist, but

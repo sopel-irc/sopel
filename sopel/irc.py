@@ -366,6 +366,8 @@ class Bot(asynchat.async_chat):
         self.buffer = ''
         self.last_ping_time = datetime.now()
         pretrigger = PreTrigger(self.nick, line)
+        if 'account-tag' not in self.enabled_capabilities:
+            pretrigger.tags.pop('account', None)
 
         if pretrigger.event == 'PING':
             self.write(('PONG', pretrigger.args[-1]))
