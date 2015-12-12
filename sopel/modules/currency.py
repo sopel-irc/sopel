@@ -28,7 +28,7 @@ regex = re.compile(r'''
 def get_rate(code):
     if code.upper() == 'CAD':
         return 1, 'Canadian Dollar'
-    elif code == 'BTC':
+    elif code.upper() == 'BTC':
         rates = json.loads(web.get('https://api.bitcoinaverage.com/ticker/all'))
         return 1 / rates['CAD']['24h_avg'], 'Bitcoin—24hr average'
 
