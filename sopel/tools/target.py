@@ -20,12 +20,12 @@ class User(object):
     def __eq__(self, other):
         if not isinstance(other, User):
             return NotImplemented
-        return self.name == other.name
+        return self.nick == other.nick
 
     def __lt__(self, other):
         if not isinstance(other, User):
             return NotImplemented
-        return self.name < other.name
+        return self.nick < other.nick
 
 
 @functools.total_ordering

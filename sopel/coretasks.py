@@ -267,30 +267,25 @@ def track_kick(bot, trigger):
 
 def _remove_from_channel(bot, nick, channel):
     if nick == bot.nick:
-        del bot.privileges[channel]
+        bot.privileges.pop(channel, None)
         bot.channels.remove(channel)
-
-        if channel in bot.channels_:
-            del bot.channels_[channel]
+        bot.channels_.pop(channel, None)
 
         lost_users = []
         for nick_, user in bot.users.items():
-            if channel in user.channels:
-                del user.channels[channel]
-                if not user.channels:
-                    lost_users.append(nick_)
+            user.channels.pop(channel, None)
+            if not user.channels:
+                lost_users.append(nick_)
         for nick_ in lost_users:
-            del bot.users[nick_]
+            bot.users.pop(nick_, None)
     else:
-        if nick in bot.privileges[channel]:
-            del bot.privileges[channel][nick]
+        bot.privileges[channel].pop(nick, None)
 
         user = bot.users.get(nick)
         if user and channel in user.channels:
             bot.channels_[channel].clear_user(nick)
             if not user.channels:
-                del bot.users[nick]
-                bot.channels_[channel]
+                bot.users.pop(nick, None)
 
 
 def _accounts_enabled(bot):
@@ -324,9 +319,10 @@ def track_join(bot, trigger):
     if trigger.nick == bot.nick and trigger.sender not in bot.channels:
         bot.channels.append(trigger.sender)
         bot.privileges[trigger.sender] = dict()
-    if trigger.nick == bot.nick and trigger.sender not in bot.channels_:
+
         bot.channels_[trigger.sender] = Channel(trigger.sender)
         _send_who(bot, trigger.sender)
+
     bot.privileges[trigger.sender][trigger.nick] = 0
 
     user = bot.users.get(trigger.nick)
@@ -345,8 +341,7 @@ def track_join(bot, trigger):
 @sopel.module.unblockable
 def track_quit(bot, trigger):
     for chanprivs in bot.privileges.values():
-        if trigger.nick in chanprivs:
-            del chanprivs[trigger.nick]
+        chanprivs.pop(trigger.nick, None)
     for channel in bot.channels_.values():
         channel.clear_user(trigger.nick)
     bot.users.pop(trigger.nick, None)
@@ -608,6 +603,5 @@ def recv_whox(bot, trigger):
 @sopel.module.priority('high')
 @sopel.module.unblockable
 def end_who(bot, trigger):
-    if not _accounts_enabled(bot):
-        return
-    who_reqs.pop(trigger.args[1], None)
+    if _accounts_enabled(bot):
+        who_reqs.pop(trigger.args[1], None)
