@@ -131,10 +131,10 @@ class Trigger(unicode):
     """True if the nick which triggered the command is the bot's owner."""
 
     def __new__(cls, config, message, match):
-        self = unicode.__new__(cls, message.args[-1])
+        self = unicode.__new__(cls, message.args[-1] if message.args else '')
         self._pretrigger = message
         self._match = match
-        self._is_privmsg = message.sender.is_nick()
+        self._is_privmsg = message.sender and message.sender.is_nick()
 
         def match_host_or_nick(pattern):
             pattern = sopel.tools.get_hostmask_regex(pattern)

@@ -288,13 +288,16 @@ def _remove_from_channel(bot, nick, channel):
                 bot.users.pop(nick, None)
 
 
-def _accounts_enabled(bot):
-    return ('account-notify' in bot.enabled_capabilities and
-            'extended-join' in bot.enabled_capabilities)
+def _whox_enabled(bot):
+    # Either privilege tracking or away notification. For simplicity, both
+    # account notify and extended join must be there for account tracking.
+    return (('account-notify' in bot.enabled_capabilities and
+             'extended-join' in bot.enabled_capabilities) or
+            'away-notify' in bot.enabled_capabilities)
 
 
 def _send_who(bot, channel):
-    if _accounts_enabled(bot):
+    if _whox_enabled(bot):
         # WHOX syntax, see http://faerion.sourceforge.net/doc/irc/whox.var
         # Needed for accounts in who replies. The random integer is a param
         # to identify the reply as one from this command, because if someone
@@ -303,7 +306,7 @@ def _send_who(bot, channel):
         while rand in who_reqs:
             rand = str(randint(0, 999))
         who_reqs[rand] = channel
-        bot.write(['WHO', channel, 'a%nuacht,' + rand])
+        bot.write(['WHO', channel, 'a%nuachtf,' + rand])
     else:
         # We might be on an old network, but we still care about keeping our
         # user list updated
@@ -330,7 +333,9 @@ def track_join(bot, trigger):
         user = User(trigger.nick, trigger.user, trigger.host)
     bot.channels_[trigger.sender].add_user(user)
 
-    if len(trigger.args) > 1 and trigger.args[1] != '*' and _accounts_enabled(bot):
+    if len(trigger.args) > 1 and trigger.args[1] != '*' and (
+            'account-notify' in bot.enabled_capabilities and
+            'extended-join' in bot.enabled_capabilities):
         user.account = trigger.args[1]
 
 
@@ -409,6 +414,8 @@ def recieve_cap_ls_reply(bot, trigger):
         bot._cap_reqs['account-notify'] = (['', 'coretasks', None, acct_warn],)
     if 'extended-join' not in bot._cap_reqs:
         bot._cap_reqs['extended-join'] = (['', 'coretasks', None, acct_warn],)
+    if 'away-notify' not in bot._cap_reqs:
+        bot._cap_reqs['away-notify'] = (['', 'coretasks', None, None],)
 
     for cap, reqs in iteritems(bot._cap_reqs):
         # At this point, we know mandatory and prohibited don't co-exist, but
@@ -574,17 +581,18 @@ def account_notify(bot, trigger):
 @sopel.module.priority('high')
 @sopel.module.unblockable
 def recv_whox(bot, trigger):
-    if (len(trigger.args) < 2 or trigger.args[1] not in who_reqs or
-            not _accounts_enabled(bot)):
+    print(trigger.args)
+    if len(trigger.args) < 2 or trigger.args[1] not in who_reqs:
         # Ignored, some module probably called WHO
         return
-    if len(trigger.args) != 7:
+    if len(trigger.args) != 8:
         return LOGGER.warning('While populating `bot.accounts` a WHO response was malformed.')
-    _, _, channel, user, host, nick, account = trigger.args
-    _record_who(bot, channel, user, host, nick, account)
+    _, _, channel, user, host, nick, status, account = trigger.args
+    away = 'G' in status
+    _record_who(bot, channel, user, host, nick, account, away)
 
 
-def _record_who(bot, channel, user, host, nick, account=None):
+def _record_who(bot, channel, user, host, nick, account=None, away=None):
     nick = Identifier(nick)
     channel = Identifier(channel)
     if nick not in bot.users:
@@ -594,6 +602,7 @@ def _record_who(bot, channel, user, host, nick, account=None):
         user.account = None
     else:
         user.account = account
+    user.away = away
     if channel not in bot.channels_:
         bot.channels_[channel] = Channel(channel)
     bot.channels_[channel].add_user(user)
@@ -613,5 +622,17 @@ def recv_who(bot, trigger):
 @sopel.module.priority('high')
 @sopel.module.unblockable
 def end_who(bot, trigger):
-    if _accounts_enabled(bot):
+    if _whox_enabled(bot):
         who_reqs.pop(trigger.args[1], None)
+
+
+@sopel.module.rule('.*')
+@sopel.module.event('AWAY')
+@sopel.module.priority('high')
+@sopel.module.thread(False)
+@sopel.module.unblockable
+def track_notify(bot, trigger):
+    if trigger.nick not in bot.users:
+        bot.users[trigger.nick] = User(trigger.nick, trigger.user, trigger.host)
+    user = bot.users[trigger.nick]
+    user.away = bool(trigger.args)

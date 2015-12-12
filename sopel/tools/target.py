@@ -13,6 +13,8 @@ class User(object):
         self.user = user
         self.host = host
         self.channels = {}
+        self.account = None
+        self.away = None
 
     hostmask = property(lambda self: '{}!{}@{}'.format(self.nick, self.user,
                                                        self.host))
