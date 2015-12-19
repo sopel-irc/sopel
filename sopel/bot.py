@@ -95,12 +95,24 @@ class Sopel(irc.Bot):
         self.privileges = dict()
         """A dictionary of channels to their users and privilege levels
 
+        Deprecated from 6.2.0; use bot.channels instead.
+
         The value associated with each channel is a dictionary of Identifiers to a
         bitwise integer value, determined by combining the appropriate constants
         from `module`."""
 
-        self.channels_ = tools.SopelMemory()  # name to chan obj
+        self.channels = tools.SopelMemory()  # name to chan obj
+        """A map of the channels that Sopel is in.
+
+        The keys are Identifiers of the channel names, and map to Channel
+        objects which contain the users in the channel and their permissions.
+        """
         self.users = tools.SopelMemory() # name to user obj
+        """A map of the users that Sopel is aware of.
+
+        In order for Sopel to be aware of a user, it must be in at least one
+        channel which they are also in.
+        """
 
         self.db = SopelDB(config)
         """The bot's database."""

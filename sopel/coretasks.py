@@ -118,8 +118,6 @@ def retry_join(bot, trigger):
     time.sleep(6)
     bot.join(channel)
 
-#Functions to maintain a list of chanops in all of sopel's channels.
-
 
 @sopel.module.rule('(.*)')
 @sopel.module.event('353')
@@ -237,7 +235,7 @@ def track_nicks(bot, trigger):
             value = bot.privileges[channel].pop(old)
             bot.privileges[channel][new] = value
 
-    for channel in bot.channels_.values():
+    for channel in bot.channels.values():
         channel.rename_user(old, new)
     if old in bot.users:
         bot.users[new] = bot.users.pop(old)
@@ -268,8 +266,7 @@ def track_kick(bot, trigger):
 def _remove_from_channel(bot, nick, channel):
     if nick == bot.nick:
         bot.privileges.pop(channel, None)
-        bot.channels.remove(channel)
-        bot.channels_.pop(channel, None)
+        bot.channels.pop(channel, None)
 
         lost_users = []
         for nick_, user in bot.users.items():
@@ -283,7 +280,7 @@ def _remove_from_channel(bot, nick, channel):
 
         user = bot.users.get(nick)
         if user and channel in user.channels:
-            bot.channels_[channel].clear_user(nick)
+            bot.channels[channel].clear_user(nick)
             if not user.channels:
                 bot.users.pop(nick, None)
 
@@ -320,10 +317,8 @@ def _send_who(bot, channel):
 @sopel.module.unblockable
 def track_join(bot, trigger):
     if trigger.nick == bot.nick and trigger.sender not in bot.channels:
-        bot.channels.append(trigger.sender)
         bot.privileges[trigger.sender] = dict()
-
-        bot.channels_[trigger.sender] = Channel(trigger.sender)
+        bot.channels[trigger.sender] = Channel(trigger.sender)
         _send_who(bot, trigger.sender)
 
     bot.privileges[trigger.sender][trigger.nick] = 0
@@ -331,7 +326,7 @@ def track_join(bot, trigger):
     user = bot.users.get(trigger.nick)
     if user is None:
         user = User(trigger.nick, trigger.user, trigger.host)
-    bot.channels_[trigger.sender].add_user(user)
+    bot.channels[trigger.sender].add_user(user)
 
     if len(trigger.args) > 1 and trigger.args[1] != '*' and (
             'account-notify' in bot.enabled_capabilities and
@@ -347,7 +342,7 @@ def track_join(bot, trigger):
 def track_quit(bot, trigger):
     for chanprivs in bot.privileges.values():
         chanprivs.pop(trigger.nick, None)
-    for channel in bot.channels_.values():
+    for channel in bot.channels.values():
         channel.clear_user(trigger.nick)
     bot.users.pop(trigger.nick, None)
 
@@ -581,7 +576,6 @@ def account_notify(bot, trigger):
 @sopel.module.priority('high')
 @sopel.module.unblockable
 def recv_whox(bot, trigger):
-    print(trigger.args)
     if len(trigger.args) < 2 or trigger.args[1] not in who_reqs:
         # Ignored, some module probably called WHO
         return
@@ -603,9 +597,9 @@ def _record_who(bot, channel, user, host, nick, account=None, away=None):
     else:
         user.account = account
     user.away = away
-    if channel not in bot.channels_:
-        bot.channels_[channel] = Channel(channel)
-    bot.channels_[channel].add_user(user)
+    if channel not in bot.channels:
+        bot.channels[channel] = Channel(channel)
+    bot.channels[channel].add_user(user)
 
 
 @sopel.module.event('352')

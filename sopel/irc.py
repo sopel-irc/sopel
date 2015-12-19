@@ -64,9 +64,6 @@ class Bot(asynchat.async_chat):
         self.name = config.core.name
         """Sopel's "real name", as used for whois."""
 
-        self.channels = []
-        """The list of channels Sopel is currently in."""
-
         self.stack = {}
         self.ca_certs = ca_certs
         self.hasquit = False
@@ -78,20 +75,13 @@ class Bot(asynchat.async_chat):
         # Right now, only accounting for two op levels.
         # This might be expanded later.
         # These lists are filled in startup.py, as of right now.
+        # Are these even touched at all anymore? Remove in 7.0.
         self.ops = dict()
-        """
-        A dictionary mapping channels to a ``Identifier`` list of their operators.
-        """
+        """Deprecated. Use bot.channels instead."""
         self.halfplus = dict()
-        """
-        A dictionary mapping channels to a ``Identifier`` list of their half-ops and
-        ops.
-        """
+        """Deprecated. Use bot.channels instead."""
         self.voices = dict()
-        """
-        A dictionary mapping channels to a ``Identifier`` list of their voices,
-        half-ops and ops.
-        """
+        """Deprecated. Use bot.channels instead."""
 
         # We need this to prevent error loops in handle_error
         self.error_count = 0
