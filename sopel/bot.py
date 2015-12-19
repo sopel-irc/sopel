@@ -39,6 +39,18 @@ else:
     py3 = False
 
 
+class _CapReq(object):
+    def __init__(self, prefix, module, failure=None, arg=None, success=None):
+        def nop(bot, cap):
+            pass
+        # TODO at some point, reorder those args to be sane
+        self.prefix = prefix
+        self.module = module
+        self.arg = arg
+        self.failure = failure or nop
+        self.success = success or nop
+
+
 class Sopel(irc.Bot):
     def __init__(self, config, daemon=False):
         irc.Bot.__init__(self, config)
@@ -85,12 +97,7 @@ class Sopel(irc.Bot):
         self.enabled_capabilities = set()
         """A set containing the IRCv3 capabilities that the bot has enabled."""
         self._cap_reqs = dict()
-        """A dictionary of capability requests
-
-        Maps the capability name to a list of tuples of the prefix ('-', '=',
-        or ''), the name of the requesting module, the function to call if the
-        the request is rejected, and the argument to the capability (or None).
-        """
+        """A dictionary of capability names to a list of requests"""
 
         self.privileges = dict()
         """A dictionary of channels to their users and privilege levels
@@ -381,7 +388,8 @@ class Sopel(irc.Bot):
                     )
                 )
 
-    def cap_req(self, module_name, capability, arg=None, failure_callback=None):
+    def cap_req(self, module_name, capability, arg=None, failure_callback=None,
+                success_callback=None):
         """Tell Sopel to request a capability when it starts.
 
         By prefixing the capability with `-`, it will be ensured that the
@@ -404,7 +412,12 @@ class Sopel(irc.Bot):
         request, the `failure_callback` function will be called, if provided.
         The arguments will be a `Sopel` object, and the capability which was
         rejected. This can be used to disable callables which rely on the
-        capability. In future versions
+        capability. It will be be called either if the server NAKs the request,
+        or if the server enabled it and later DELs it.
+
+        The `success_callback` function will be called upon acknowledgement of
+        the capability from the server, whether during the initial capability
+        negotiation, or later.
 
         If ``arg`` is given, and does not exactly match what the server
         provides or what other modules have requested for that capability, it is
@@ -415,16 +428,17 @@ class Sopel(irc.Bot):
         prefix = capability[0]
 
         entry = self._cap_reqs.get(cap, [])
-        if any((ent[3] != arg for ent in entry)):
+        if any((ent.arg != arg for ent in entry)):
             raise Exception('Capability conflict')
 
         if prefix == '-':
             if self.connection_registered and cap in self.enabled_capabilities:
                 raise Exception('Can not change capabilities after server '
                                 'connection has been completed.')
-            if any((ent[0] != '-' for ent in entry)):
+            if any((ent.prefix != '-' for ent in entry)):
                 raise Exception('Capability conflict')
-            entry.append((prefix, module_name, failure_callback, arg))
+            entry.append(_CapReq(prefix, module_name, failure_callback, arg,
+                                 success_callback))
             self._cap_reqs[cap] = entry
         else:
             if prefix != '=':
@@ -436,7 +450,8 @@ class Sopel(irc.Bot):
                                 'connection has been completed.')
             # Non-mandatory will callback at the same time as if the server
             # rejected it.
-            if any((ent[0] == '-' for ent in entry)) and prefix == '=':
+            if any((ent.prefix == '-' for ent in entry)) and prefix == '=':
                 raise Exception('Capability conflict')
-            entry.append((prefix, module_name, failure_callback, arg))
+            entry.append(_CapReq(prefix, module_name, failure_callback, arg,
+                                 success_callback))
             self._cap_reqs[cap] = entry

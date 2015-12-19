@@ -22,6 +22,7 @@ import sys
 import time
 import sopel
 import sopel.module
+from sopel.bot import _CapReq
 from sopel.tools import Identifier, iteritems
 from sopel.tools.target import User, Channel
 import base64
@@ -353,25 +354,54 @@ def track_quit(bot, trigger):
 @sopel.module.priority('high')
 @sopel.module.unblockable
 def recieve_cap_list(bot, trigger):
+    cap = trigger.strip('-=~')
     # Server is listing capabilites
     if trigger.args[1] == 'LS':
         recieve_cap_ls_reply(bot, trigger)
     # Server denied CAP REQ
     elif trigger.args[1] == 'NAK':
-        entry = bot._cap_reqs.get(trigger, None)
+        entry = bot._cap_reqs.get(cap, None)
         # If it was requested with bot.cap_req
         if entry:
             for req in entry:
                 # And that request was mandatory/prohibit, and a callback was
                 # provided
-                if req[0] and req[2]:
+                if req.prefix and req.failure:
                     # Call it.
-                    req[2](bot, req[0] + trigger)
-    # Server is acknowledging SASL for us.
+                    req.failure(bot, req.prefix + cap)
+    # Server is removing a capability
+    elif trigger.args[1] == 'DEL':
+        entry = bot._cap_reqs.get(cap, None)
+        # If it was requested with bot.cap_req
+        if entry:
+            for req in entry:
+                # And that request wasn't prohibit, and a callback was
+                # provided
+                if req.prefix != '-' and req.failure:
+                    # Call it.
+                    req.failure(bot, req.prefix + cap)
+    # Server is adding new capability
+    elif trigger.args[1] == 'NEW':
+        entry = bot._cap_reqs.get(cap, None)
+        # If it was requested with bot.cap_req
+        if entry:
+            for req in entry:
+                # And that request wasn't prohibit
+                if req.prefix != '-':
+                    # Request it
+                    bot.write(('CAP', 'REQ', req.prefix + cap))
+    # Server is acknowledging a capability
     elif trigger.args[1] == 'ACK':
-        if (trigger.args[0] == bot.nick and 'sasl' in trigger.args[2]):
-            recieve_cap_ack_sasl(bot)
-        bot.enabled_capabilities.add(trigger.args[2].strip())
+        caps = trigger.args[2].split()
+        for cap in caps:
+            cap.strip('-~= ')
+            bot.enabled_capabilities.add(cap)
+            entry = bot._cap_reqs.get(cap, [])
+            for req in entry:
+                if req.success:
+                    req.success(bot, req.prefix + trigger)
+            if cap == 'sasl':  # TODO why is this not done with bot.cap_req?
+                recieve_cap_ack_sasl(bot)
 
 
 def recieve_cap_ls_reply(bot, trigger):
@@ -396,43 +426,41 @@ def recieve_cap_ls_reply(bot, trigger):
 
     # If some other module requests it, we don't need to add another request.
     # If some other module prohibits it, we shouldn't request it.
-    if 'multi-prefix' not in bot._cap_reqs:
-        # Whether or not the server supports multi-prefix doesn't change how we
-        # parse it, so we don't need to worry if it fails.
-        bot._cap_reqs['multi-prefix'] = (['', 'coretasks', None, None],)
-    if 'away-notify' not in bot._cap_reqs:
-        bot._cap_reqs['away-notify'] = (['', 'coretasks', None, None],)
+    core_caps = ['multi-prefix', 'away-notify', 'cap-notify']
+    for cap in core_caps:
+        if cap not in bot._cap_reqs:
+            bot._cap_reqs[cap] = [_CapReq('', 'coretasks')]
 
     def acct_warn(bot, cap):
         LOGGER.info('Server does not support {}, or it conflicts with a custom '
                     'module. User account validation unavailable or limited.'
-                    .format(cap))
+                    .format(cap[1:]))
     auth_caps = ['account-notify', 'extended-join', 'account-tag']
     for cap in auth_caps:
         if cap not in bot._cap_reqs:
-            bot._cap_reqs[cap] = (['', 'coretasks', None, acct_warn],)
+            bot._cap_reqs[cap] = [_CapReq('=', 'coretasks', acct_warn)]
 
     for cap, reqs in iteritems(bot._cap_reqs):
         # At this point, we know mandatory and prohibited don't co-exist, but
         # we need to call back for optionals if they're also prohibited
         prefix = ''
         for entry in reqs:
-            if prefix == '-' and entry[0] != '-':
-                entry[2](bot, entry[0] + cap)
+            if prefix == '-' and entry.prefix != '-':
+                entry.failure(bot, entry.prefix + cap)
                 continue
-            if entry[0]:
-                prefix = entry[0]
+            if entry.prefix:
+                prefix = entry.prefix
 
         # It's not required, or it's supported, so we can request it
         if prefix != '=' or cap in bot.server_capabilities:
             # REQs fail as a whole, so we send them one capability at a time
-            bot.write(('CAP', 'REQ', entry[0] + cap))
+            bot.write(('CAP', 'REQ', entry.prefix + cap))
         # If it's required but not in server caps, we need to call all the
         # callbacks
         else:
             for entry in reqs:
-                if entry[2] and entry[0] == '=':
-                    entry[2](bot, entry[0] + cap)
+                if entry.failure and entry.prefix == '=':
+                    entry.failure(bot, entry.prefix + cap)
 
     # If we want to do SASL, we have to wait before we can send CAP END. So if
     # we are, wait on 903 (SASL successful) to send it.
