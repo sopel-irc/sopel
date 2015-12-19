@@ -22,6 +22,8 @@ import codecs
 import traceback
 from collections import defaultdict
 
+from sopel.tools._events import events  # NOQA
+
 if sys.version_info.major >= 3:
     unicode = str
     iteritems = dict.items
