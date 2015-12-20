@@ -15,6 +15,7 @@ import json
 import sopel
 import sopel.module
 import sopel.web
+import sopel.tools
 
 wait_time = 24 * 60 * 60  # check once per day
 startup_check_run = False
@@ -29,7 +30,7 @@ unstable_message = (
 )
 
 
-@sopel.module.event('251')
+@sopel.module.event(sopel.tools.events.LUSERCLIENT)
 @sopel.module.rule('.*')
 def startup_version_check(bot, trigger):
     global startup_check_run

@@ -23,7 +23,7 @@ import time
 import sopel
 import sopel.module
 from sopel.bot import _CapReq
-from sopel.tools import Identifier, iteritems
+from sopel.tools import Identifier, iteritems, events
 from sopel.tools.target import User, Channel
 import base64
 from sopel.logger import get_logger
@@ -55,7 +55,7 @@ def auth_after_register(bot):
         ))
 
 
-@sopel.module.event('001', '251')
+@sopel.module.event(events.RPL_WELCOME, events.RPL_LUSERCLIENT)
 @sopel.module.rule('.*')
 @sopel.module.thread(False)
 @sopel.module.unblockable
@@ -95,7 +95,7 @@ def startup(bot, trigger):
             bot.join(channel)
 
 
-@sopel.module.event('477')
+@sopel.module.event(events.ERR_NOCHANMODES)
 @sopel.module.rule('.*')
 @sopel.module.priority('high')
 def retry_join(bot, trigger):
@@ -121,7 +121,7 @@ def retry_join(bot, trigger):
 
 
 @sopel.module.rule('(.*)')
-@sopel.module.event('353')
+@sopel.module.event(events.RPL_NAMREPLY)
 @sopel.module.priority('high')
 @sopel.module.thread(False)
 @sopel.module.unblockable
@@ -494,7 +494,7 @@ def auth_proceed(bot, trigger):
     bot.write(('AUTHENTICATE', base64.b64encode(sasl_token.encode('utf-8'))))
 
 
-@sopel.module.event('903')
+@sopel.module.event(events.RPL_SASLSUCCESS)
 @sopel.module.rule('.*')
 def sasl_success(bot, trigger):
     bot.write(('CAP', 'END'))
@@ -599,7 +599,7 @@ def account_notify(bot, trigger):
     bot.users[trigger.nick].account = account
 
 
-@sopel.module.event('354')
+@sopel.module.event(events.RPL_WHOSPCRPL)
 @sopel.module.rule('.*')
 @sopel.module.priority('high')
 @sopel.module.unblockable
@@ -630,7 +630,7 @@ def _record_who(bot, channel, user, host, nick, account=None, away=None):
     bot.channels[channel].add_user(user)
 
 
-@sopel.module.event('352')
+@sopel.module.event(events.RPL_WHOREPLY)
 @sopel.module.rule('.*')
 @sopel.module.priority('high')
 @sopel.module.unblockable
@@ -639,7 +639,7 @@ def recv_who(bot, trigger):
     _record_who(bot, channel, user, host, nick)
 
 
-@sopel.module.event('315')
+@sopel.module.event(events.RPL_ENDOFWHO)
 @sopel.module.rule('.*')
 @sopel.module.priority('high')
 @sopel.module.unblockable

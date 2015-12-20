@@ -12,6 +12,7 @@ class events(object):
     # Only add things here if they're actually in common use across multiple
     # ircds.
     RPL_ISUPPORT = '005'
+    RPL_WHOSPCRPL = '354'
 
     # ################################################################### IRC v3
     # ## 3.1
