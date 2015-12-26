@@ -25,6 +25,7 @@ from sopel.tools import get_input
 import sopel.loader
 import os
 import sys
+import codecs
 try:
     import ConfigParser
 except ImportError:
@@ -58,7 +59,7 @@ class Config(object):
         self.filename = filename
         """The config object's associated file, as noted above."""
         self.parser = ConfigParser.RawConfigParser(allow_no_value=True)
-        self.parser.read(self.filename)
+        self.parser.readfp(codecs.open(self.filename, "r", "utf8"))
         self.define_section('core', sopel.config.core_section.CoreSection,
                             validate=validate)
         self.get = self.parser.get
