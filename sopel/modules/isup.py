@@ -1,11 +1,6 @@
 # coding=utf-8
-"""
-isup.py - Simple website status check with isup.me
-Author: Edward Powell http://embolalia.net
-About: http://sopel.chat
-
-This allows users to check if a website is up through isup.me.
-"""
+"""Simple website status check with isup.me"""
+# Author: Elsie Powell http://embolalia.com
 from __future__ import unicode_literals, absolute_import, print_function, division
 
 from sopel import web

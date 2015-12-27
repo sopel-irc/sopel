@@ -38,7 +38,7 @@ setup(
     name='sopel',
     version=__version__,
     description='Simple and extendible IRC bot',
-    author='Edward Powell',
+    author='Elsie Powell',
     author_email='powell.518@gmail.com',
     url='http://sopel.chat/',
     long_description=(

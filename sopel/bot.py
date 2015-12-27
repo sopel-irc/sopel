@@ -1,14 +1,10 @@
 # coding=utf-8
-"""
-bot.py - Sopel IRC Bot
-Copyright 2008, Sean B. Palmer, inamidst.com
-Copyright 2012, Edward Powell, http://embolalia.net
-Copyright © 2012, Elad Alfassa <elad@fedoraproject.org>
+# Copyright 2008, Sean B. Palmer, inamidst.com
+# Copyright © 2012, Elad Alfassa <elad@fedoraproject.org>
+# Copyright 2012-2015, Elsie Powell, http://embolalia.com
+#
+# Licensed under the Eiffel Forum License 2.
 
-Licensed under the Eiffel Forum License 2.
-
-http://sopel.chat/
-"""
 from __future__ import unicode_literals, absolute_import, print_function, division
 
 import collections

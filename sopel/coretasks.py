@@ -1,18 +1,15 @@
 # coding=utf-8
-"""
-coretasks.py - Sopel Routine Core tasks
-Copyright 2008-2011, Sean B. Palmer (inamidst.com) and Michael Yanovich
-(yanovich.net)
-Copyright © 2012, Elad Alfassa <elad@fedoraproject.org>
-Copyright 2012, Edward Powell (embolalia.net)
-Licensed under the Eiffel Forum License 2.
-
-Sopel: http://sopel.chat/
+"""Tasks that allow the bot to run, but aren't user-facing functionality
 
 This is written as a module to make it easier to extend to support more
 responses to standard IRC codes without having to shove them all into the
 dispatch function in bot.py and making it easier to maintain.
 """
+# Copyright 2008-2011, Sean B. Palmer (inamidst.com) and Michael Yanovich
+# (yanovich.net)
+# Copyright © 2012, Elad Alfassa <elad@fedoraproject.org>
+# Copyright 2012-2015, Elsie Powell embolalia.com
+# Licensed under the Eiffel Forum License 2.
 from __future__ import unicode_literals, absolute_import, print_function, division
 
 

@@ -1,12 +1,7 @@
 # coding=utf-8
-"""
-weather.py - Sopel Yahoo! Weather Module
-Copyright 2008, Sean B. Palmer, inamidst.com
-Copyright 2012, Edward Powell, embolalia.net
-Licensed under the Eiffel Forum License 2.
-
-http://sopel.chat
-"""
+# Copyright 2008, Sean B. Palmer, inamidst.com
+# Copyright 2012, Elsie Powell, embolalia.com
+# Licensed under the Eiffel Forum License 2.
 from __future__ import unicode_literals, absolute_import, print_function, division
 
 from sopel import web
@@ -143,7 +138,7 @@ def weather(bot, trigger):
         return bot.reply("I don't know where that is.")
 
     query = web.urlencode({'w': woeid, 'u': 'c'})
-    raw = web.get('http://weather.yahooapis.com/forecastrss?' + query, 
+    raw = web.get('http://weather.yahooapis.com/forecastrss?' + query,
                   dont_decode=True)
     parsed = xmltodict.parse(raw).get('rss')
     location = parsed.get('channel').get('title')

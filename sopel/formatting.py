@@ -1,8 +1,9 @@
 # coding=utf-8
-"""*Availability: 4.5+*
+"""The formatting module includes functions to apply IRC formatting to text.
 
-The formatting module includes functions to apply IRC formatting to text."""
-# Copyright 2014, Edward D. Powell, embolalia.net
+*Availability: 4.5+*
+"""
+# Copyright 2014, Elsie Powell, embolalia.com
 # Licensed under the Eiffel Forum License 2.
 from __future__ import unicode_literals, absolute_import, print_function, division
 import sys

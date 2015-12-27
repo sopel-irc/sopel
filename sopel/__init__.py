@@ -1,14 +1,10 @@
 # coding=utf-8
-"""
-__init__.py - Sopel Init Module
-Copyright 2008, Sean B. Palmer, inamidst.com
-Copyright 2012, Edward Powell, http://embolalia.net
-Copyright © 2012, Elad Alfassa <elad@fedoraproject.org>
+# Copyright 2008, Sean B. Palmer, inamidst.com
+# Copyright 2012, Elsie Powell, http://embolalia.com
+# Copyright © 2012, Elad Alfassa <elad@fedoraproject.org>
+#
+# Licensed under the Eiffel Forum License 2.
 
-Licensed under the Eiffel Forum License 2.
-
-http://sopel.chat/
-"""
 from __future__ import unicode_literals, absolute_import, print_function, division
 
 from collections import namedtuple

@@ -1,17 +1,13 @@
 # coding=utf-8
-"""
-irc.py - An Utility IRC Bot
-Copyright 2008, Sean B. Palmer, inamidst.com
-Copyright 2012, Edward Powell, http://embolalia.net
-Copyright © 2012, Elad Alfassa <elad@fedoraproject.org>
-
-Licensed under the Eiffel Forum License 2.
-
-Sopel: http://sopel.chat/
-
-When working on core IRC protocol related features, consult protocol
-documentation at http://www.irchelp.org/irchelp/rfc/
-"""
+# irc.py - An Utility IRC Bot
+# Copyright 2008, Sean B. Palmer, inamidst.com
+# Copyright 2012, Elsie Powell, http://embolalia.com
+# Copyright © 2012, Elad Alfassa <elad@fedoraproject.org>
+#
+# Licensed under the Eiffel Forum License 2.
+#
+# When working on core IRC protocol related features, consult protocol
+# documentation at http://www.irchelp.org/irchelp/rfc/
 from __future__ import unicode_literals, absolute_import, print_function, division
 
 import sys

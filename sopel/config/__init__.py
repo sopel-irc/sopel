@@ -13,7 +13,7 @@ defined keys will be available. A section can not be given more than one
 definition. The ``[core]`` section is defined with ``CoreSection`` when the
 object is initialized.
 """
-# Copyright 2012-2015, Edward Powell, embolalia.net
+# Copyright 2012-2015, Elsie Powell, embolalia.com
 # Copyright © 2012, Elad Alfassa <elad@fedoraproject.org>
 # Licensed under the Eiffel Forum License 2.
 

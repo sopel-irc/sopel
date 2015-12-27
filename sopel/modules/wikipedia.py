@@ -1,11 +1,6 @@
 # coding=utf-8
-"""
-wikipedia.py - Sopel Wikipedia Module
-Copyright 2013 Edward Powell - embolalia.net
-Licensed under the Eiffel Forum License 2.
-
-http://sopel.chat
-"""
+# Copyright 2013 Elsie Powell - embolalia.com
+# Licensed under the Eiffel Forum License 2.
 from __future__ import unicode_literals, absolute_import, print_function, division
 from sopel import web, tools
 from sopel.config.types import StaticSection, ValidatedAttribute
