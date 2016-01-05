@@ -40,7 +40,7 @@ def f_reload(bot, trigger):
         return bot.reply('done')
 
     if name not in sys.modules:
-        return bot.reply('%s: not loaded, try the `load` command' % name)
+        return bot.reply('"%s" not loaded, try the `load` command' % name)
 
     old_module = sys.modules[name]
 
@@ -59,6 +59,8 @@ def f_reload(bot, trigger):
         delattr(old_module, "setup")
 
     modules = sopel.loader.enumerate_modules(bot.config)
+    if name not in modules:
+        return bot.reply('"%s" not loaded, try the `load` command' % name)
     path, type_ = modules[name]
     load_module(bot, name, path, type_)
 
