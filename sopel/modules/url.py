@@ -8,10 +8,12 @@
 from __future__ import unicode_literals, absolute_import, print_function, division
 
 import re
+from contextlib import closing
 from sopel import web, tools
 from sopel.module import commands, rule, example
 from sopel.config.types import ValidatedAttribute, StaticSection
 
+import requests
 
 url_finder = None
 # These are used to clean up the title tag before actually parsing it. Not the
@@ -152,33 +154,11 @@ def process_urls(bot, trigger, urls):
             matched = check_callbacks(bot, trigger, url, False)
             if matched:
                 continue
-            # Then see if it redirects anywhere
-            new_url = follow_redirects(url)
-            if not new_url:
-                continue
-            # Then see if the final URL matches anything
-            matched = check_callbacks(bot, trigger, new_url, new_url != url)
-            if matched:
-                continue
             # Finally, actually show the URL
             title = find_title(url)
             if title:
                 results.append((title, get_hostname(url)))
     return results
-
-
-def follow_redirects(url):
-    """
-    Follow HTTP 3xx redirects, and return the actual URL. Return None if
-    there's a problem.
-    """
-    try:
-        connection = web.get_urllib_object(url, 60)
-        url = connection.geturl() or url
-        connection.close()
-    except:
-        return None
-    return url
 
 
 def check_callbacks(bot, trigger, url, run=True):
@@ -201,10 +181,15 @@ def check_callbacks(bot, trigger, url, run=True):
 
 def find_title(url):
     """Return the title for the given URL."""
-    try:
-        content, headers = web.get(url, return_headers=True, limit_bytes=max_bytes)
-    except UnicodeDecodeError:
-        return  # Fail silently when data can't be decoded
+    with closing(requests.get(url, stream=True)) as response:
+        try:
+            content = ''
+            for line in response.iter_lines(decode_unicode=True):
+                content += line
+                if '</title>' in content or len(content) > max_bytes:
+                    break
+        except UnicodeDecodeError:
+            return  # Fail silently when data can't be decoded
 
     # Some cleanup that I don't really grok, but was in the original, so
     # we'll keep it (with the compiled regexes made global) for now.
