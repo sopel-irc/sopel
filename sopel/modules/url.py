@@ -181,15 +181,18 @@ def check_callbacks(bot, trigger, url, run=True):
 
 def find_title(url):
     """Return the title for the given URL."""
-    with closing(requests.get(url, stream=True)) as response:
-        try:
-            content = ''
-            for line in response.iter_lines(decode_unicode=True):
-                content += line
-                if '</title>' in content or len(content) > max_bytes:
-                    break
-        except UnicodeDecodeError:
-            return  # Fail silently when data can't be decoded
+    response = requests.get(url, stream=True)
+    try:
+        content = ''
+        for line in response.iter_lines(decode_unicode=True):
+            content += line
+            if '</title>' in content or len(content) > max_bytes:
+                break
+    except UnicodeDecodeError:
+        return  # Fail silently when data can't be decoded
+    finally:
+        # need to close the connexion because we have not read all the data
+        response.close()
 
     # Some cleanup that I don't really grok, but was in the original, so
     # we'll keep it (with the compiled regexes made global) for now.
