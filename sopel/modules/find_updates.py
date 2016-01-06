@@ -29,7 +29,7 @@ unstable_message = (
 )
 
 
-@sopel.module.event(sopel.tools.events.LUSERCLIENT)
+@sopel.module.event(sopel.tools.events.RPL_LUSERCLIENT)
 @sopel.module.rule('.*')
 def startup_version_check(bot, trigger):
     global startup_check_run
