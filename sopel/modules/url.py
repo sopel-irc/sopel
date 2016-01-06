@@ -10,7 +10,7 @@ from __future__ import unicode_literals, absolute_import, print_function, divisi
 import re
 from sopel import web, tools
 from sopel.module import commands, rule, example
-from sopel.config.types import ValidatedAttribute, StaticSection
+from sopel.config.types import ValidatedAttribute, ListAttribute, StaticSection
 
 
 url_finder = None
@@ -29,7 +29,7 @@ max_bytes = 655360
 
 class UrlSection(StaticSection):
     # TODO some validation rules maybe?
-    exclude = ValidatedAttribute('exclude')
+    exclude = ListAttribute('exclude')
     exclusion_char = ValidatedAttribute('exclusion_char', default='!')
 
 
