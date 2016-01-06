@@ -22,9 +22,10 @@ regex = re.compile(r'''
 
 
 def get_rate(code):
-    if code.upper() == 'CAD':
+    code = code.upper()
+    if code == 'CAD':
         return 1, 'Canadian Dollar'
-    elif code.upper() == 'BTC':
+    elif code == 'BTC':
         rates = json.loads(web.get('https://api.bitcoinaverage.com/ticker/all'))
         return 1 / rates['CAD']['24h_avg'], 'Bitcoin—24hr average'
 
@@ -81,8 +82,8 @@ def display(bot, amount, of, to):
         return NOLIMIT
 
     result = amount / of_rate * to_rate
-    bot.say("{} {} ({}) = {} {} ({})".format(amount, of, of_name,
-                                             result, to, to_name))
+    bot.say("{} {} ({}) = {} {} ({})".format(amount, of.upper(), of_name,
+                                             result, to.upper(), to_name))
 
 
 @commands('btc', 'bitcoin')
