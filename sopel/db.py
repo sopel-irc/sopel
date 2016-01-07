@@ -65,33 +65,22 @@ class SopelDB(object):
 
     def _create(self):
         """Create the basic database structure."""
-        # Do nothing if the db already exists.
-        try:
-            self.execute('SELECT * FROM nick_ids;')
-            self.execute('SELECT * FROM nicknames;')
-            self.execute('SELECT * FROM nick_values;')
-            self.execute('SELECT * FROM channel_values;')
-        except Exception:  # TODO: Be specific
-            pass
-        else:
-            return
-
         self.execute(
-            'CREATE TABLE nick_ids (nick_id INTEGER PRIMARY KEY AUTOINCREMENT)'
+            'CREATE TABLE IF NOT EXISTS nick_ids (nick_id INTEGER PRIMARY KEY AUTOINCREMENT)'
         )
         self.execute(
-            'CREATE TABLE nicknames '
+            'CREATE TABLE IF NOT EXISTS nicknames '
             '(nick_id INTEGER REFERENCES nick_ids, '
             'slug STRING PRIMARY KEY, canonical string)'
         )
         self.execute(
-            'CREATE TABLE nick_values '
+            'CREATE TABLE IF NOT EXISTS nick_values '
             '(nick_id INTEGER REFERENCES nick_ids(nick_id), '
             'key STRING, value STRING, '
             'PRIMARY KEY (nick_id, key))'
         )
         self.execute(
-            'CREATE TABLE channel_values '
+            'CREATE TABLE IF NOT EXISTS channel_values '
             '(channel STRING, key STRING, value STRING, '
             'PRIMARY KEY (channel, key))'
         )
