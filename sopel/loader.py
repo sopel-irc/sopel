@@ -32,11 +32,33 @@ def get_module_description(path):
 
 def _update_modules_from_dir(modules, directory):
     # Note that this modifies modules in place
-    for path in os.listdir(directory):
-        path = os.path.join(directory, path)
-        result = get_module_description(path)
-        if result:
-            modules[result[0]] = result[1:]
+    for root, dirs, files in os.walk(directory):
+        # Ignore hidden folders/files and __ prefixed (__pycache__)
+        files = [f for f in files if not f[0] == '.']
+        dirs[:] = [d for d in dirs if not d[0] == '.']
+        dirs[:] = [d for d in dirs if not d.startswith('__')]
+
+        # Test if folders are package folders. If they are, we
+        # don't need to walk into them so remove them from the
+        # `dirs` list
+        non_pkg_dirs = []
+        for folder in dirs:
+            path = os.path.join(root, folder)
+            result = get_module_description(path)
+            if result:
+                print(path)
+                modules[result[0]] = result[1:]
+            else:
+                non_pkg_dirs.append(folder)
+        dirs[:] = non_pkg_dirs
+
+        # Assuming all files are modules, try to validate
+        for module in files:
+            path = os.path.join(root, module)
+            result = get_module_description(path)
+            if result:
+                print(path)
+                modules[result[0]] = result[1:]
 
 
 def enumerate_modules(config, show_all=False):
