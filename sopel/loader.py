@@ -46,7 +46,6 @@ def _update_modules_from_dir(modules, directory):
             path = os.path.join(root, folder)
             result = get_module_description(path)
             if result:
-                print(path)
                 modules[result[0]] = result[1:]
             else:
                 non_pkg_dirs.append(folder)
@@ -57,7 +56,6 @@ def _update_modules_from_dir(modules, directory):
             path = os.path.join(root, module)
             result = get_module_description(path)
             if result:
-                print(path)
                 modules[result[0]] = result[1:]
 
 
