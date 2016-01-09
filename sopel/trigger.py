@@ -3,6 +3,7 @@ from __future__ import unicode_literals, absolute_import, print_function, divisi
 
 import re
 import sys
+import datetime
 
 import sopel.tools
 
@@ -33,6 +34,13 @@ class PreTrigger(object):
                     self.tags[tag[0]] = tag[1]
                 else:
                     self.tags[tag[0]] = None
+
+        self.time = datetime.datetime.utcnow()
+        if 'time' in self.tags:
+            try:
+                self.time = datetime.datetime.strptime(self.tags['time'], '%Y-%m-%dT%H:%M:%S.%fZ')
+            except ValueError:
+                pass # Server isn't conforming to spec, ignore the server-time
 
         # TODO note what this is doing and why
         if line.startswith(':'):
@@ -87,6 +95,11 @@ class Trigger(unicode):
     """The channel from which the message was sent.
 
     In a private message, this is the nick that sent the message."""
+    time = property(lambda self: self._pretrigger.time)
+    """A datetime object at which the message was received by the IRC server.
+
+    If the server does not support server-time, then `time` will be the time
+    that the message was received by Sopel"""
     raw = property(lambda self: self._pretrigger.line)
     """The entire message, as sent from the server. This includes the CTCP
     \\x01 bytes and command, if they were included."""
