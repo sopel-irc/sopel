@@ -142,7 +142,7 @@ class Trigger(unicode):
     """
     owner = property(lambda self: self._owner)
     """True if the nick which triggered the command is the bot's owner."""
-    account = property(lambda self: self.tags.get('account', self._account))
+    account = property(lambda self: self.tags.get('account') or self._account)
     """The account name of the user sending the message.
 
     This is only available if either the account-tag or the account-notify and
@@ -152,6 +152,7 @@ class Trigger(unicode):
 
     def __new__(cls, config, message, match, account=None):
         self = unicode.__new__(cls, message.args[-1] if message.args else '')
+        self._account = account
         self._pretrigger = message
         self._match = match
         self._is_privmsg = message.sender and message.sender.is_nick()
@@ -163,9 +164,14 @@ class Trigger(unicode):
                 pattern.match('@'.join((self.nick, self.host)))
             )
 
-        self._admin = any(match_host_or_nick(item)
-                         for item in config.core.admins)
-        self._owner = match_host_or_nick(config.core.owner)
-        self._admin = self.admin or self.owner
+        if config.core.owner_account:
+            self._owner = config.core.owner_account == self.account
+        else:
+            self._owner = match_host_or_nick(config.core.owner)
+        self._admin = (
+            self._owner or
+            self.account in config.core.admin_accounts or
+            any(match_host_or_nick(item) for item in config.core.admins)
+        )
 
         return self

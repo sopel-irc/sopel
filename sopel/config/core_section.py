@@ -43,6 +43,12 @@ class CoreSection(StaticSection):
     admins = ListAttribute('admins')
     """The list of people (other than the owner) who can administer the bot"""
 
+    admin_accounts = ListAttribute('admin_accounts')
+    """The list of accounts (other than the owner's) who can administer the bot.
+
+    This should not be set for networks that do not support IRCv3 account
+    capabilities."""
+
     auth_method = ChoiceAttribute('auth_method', choices=[
         'nickserv', 'authserv', 'sasl', 'server'])
     """The method to use to authenticate with the server.
@@ -149,6 +155,13 @@ class CoreSection(StaticSection):
 
     owner = ValidatedAttribute('owner', default=NO_DEFAULT)
     """The IRC name of the owner of the bot."""
+
+    owner_account = ValidatedAttribute('owner_account')
+    """The services account name of the owner of the bot.
+
+    This should only be set on networks which support IRCv3 account
+    capabilities.
+    """
 
     pid_dir = FilenameAttribute('pid_dir', directory=True, default='.')
     """The directory in which to put the file Sopel uses to track its process ID.

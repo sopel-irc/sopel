@@ -91,6 +91,37 @@ def startup(bot, trigger):
         for channel in bot.config.core.channels:
             bot.join(channel)
 
+    if (not bot.config.core.owner_account and
+            'account-tag' in bot.enabled_capabilities and
+            '@' not in bot.config.core.owner):
+        msg = (
+            "This network supports using network services to identify you as "
+            "my owner, rather than just matching your nickname. This is much "
+            "more secure. If you'd like to do this, make sure you're logged in "
+            "and reply with \"{}useserviceauth\""
+        ).format(bot.config.core.help_prefix)
+        bot.msg(bot.config.core.owner, msg)
+
+
+@sopel.module.require_privmsg()
+@sopel.module.require_owner()
+@sopel.module.commands('useserviceauth')
+def enable_service_auth(bot, trigger):
+    if bot.config.core.owner_account:
+        return
+    if 'account-tag' not in bot.enabled_capabilities:
+        bot.say('This server does not fully support services auth, so this '
+                'command is not available.')
+        return
+    if not trigger.account:
+        bot.say('You must be logged in to network services before using this '
+                'command.')
+        return
+    bot.config.core.owner_account = trigger.account
+    bot.config.save()
+    bot.say('Success! I will now use network services to identify you as my '
+            'owner.')
+
 
 @sopel.module.event(events.ERR_NOCHANMODES)
 @sopel.module.rule('.*')
@@ -429,9 +460,14 @@ def recieve_cap_ls_reply(bot, trigger):
             bot._cap_reqs[cap] = [_CapReq('', 'coretasks')]
 
     def acct_warn(bot, cap):
-        LOGGER.info('Server does not support {}, or it conflicts with a custom '
-                    'module. User account validation unavailable or limited.'
-                    .format(cap[1:]))
+        LOGGER.info('Server does not support %s, or it conflicts with a custom '
+                    'module. User account validation unavailable or limited.',
+                    cap[1:])
+        if bot.config.core.owner_account or bot.config.core.admin_accounts:
+            LOGGER.warning(
+                'Owner or admin accounts are configured, but %s is not '
+                'supported by the server. This may cause unexpected behavior.',
+                cap[1:])
     auth_caps = ['account-notify', 'extended-join', 'account-tag']
     for cap in auth_caps:
         if cap not in bot._cap_reqs:
