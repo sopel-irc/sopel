@@ -174,7 +174,7 @@ class Sopel(irc.Bot):
                     self.register(*relevant_parts)
                     success_count += 1
 
-        if len(modules) > 2:  # coretasks is counted
+        if len(modules) > 1:  # coretasks is counted
             stderr('\n\nRegistered %d modules,' % (success_count - 1))
             stderr('%d modules failed to load\n\n' % error_count)
         else:
