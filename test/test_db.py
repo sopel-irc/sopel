@@ -83,7 +83,6 @@ def test_get_nick_id(db):
 
 
 def test_alias_nick(db):
-    conn = sqlite3.connect(db_filename)
     nick = 'Embolalia'
     aliases = ['EmbölaliÅ', 'Embo`work', 'Embo']
 
@@ -245,11 +244,11 @@ def test_get_channel_value(db):
 def test_get_nick_or_channel_value(db):
     db.set_nick_value('asdf', 'qwer', 'poiu')
     db.set_channel_value('#asdf', 'qwer', '/.,m')
-    assert db.get_nick_or_channel_value('asdf', 'qwer', 'poiu')
-    assert db.get_nick_or_channel_value('#asdf', 'qwer', '/.,m')
+    assert db.get_nick_or_channel_value('asdf', 'qwer') == 'poiu'
+    assert db.get_nick_or_channel_value('#asdf', 'qwer') == '/.,m'
 
 
-def test_get_nick_or_channel_value(db):
+def test_get_preferred_value(db):
     db.set_nick_value('asdf', 'qwer', 'poiu')
     db.set_channel_value('#asdf', 'qwer', '/.,m')
     db.set_channel_value('#asdf', 'lkjh', '1234')
