@@ -1,2 +1,2 @@
 pytest
-pep8==1.4.6
+ipython
