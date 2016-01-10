@@ -48,6 +48,7 @@ except ImportError:
     has_ssl = False
 
 USER_AGENT = 'Sopel/{} (http://sopel.chat)'.format(__version__)
+ca_certs = None  # Will be overriden when config loads. This is for an edge case.
 
 
 # HTTP GET
@@ -170,7 +171,8 @@ class VerifiedHTTPSConnection(httplib.HTTPConnection):
             if self._tunnel_host:
                 self.sock = sock
                 self._tunnel()
-            if not os.path.exists(ca_certs):
+            if not ca_certs or not os.path.exists(ca_certs):
+                sock.close()
                 raise Exception('CA Certificate bundle %s is not readable' % ca_certs)
             self.sock = ssl.wrap_socket(sock,
                                         ca_certs=ca_certs,
