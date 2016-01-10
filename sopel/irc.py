@@ -11,7 +11,6 @@
 from __future__ import unicode_literals, absolute_import, print_function, division
 
 import sys
-import re
 import time
 import socket
 import asyncore
@@ -21,9 +20,8 @@ import codecs
 import traceback
 from sopel.logger import get_logger
 from sopel.tools import stderr, Identifier
-from sopel.trigger import PreTrigger, Trigger
+from sopel.trigger import PreTrigger
 try:
-    import select
     import ssl
     if not hasattr(ssl, 'match_hostname'):
         # Attempt to import ssl_match_hostname from python-backports
@@ -522,4 +520,3 @@ class Bot(asynchat.async_chat):
                 os._exit(1)
         self.last_error_timestamp = datetime.now()
         self.error_count = self.error_count + 1
-

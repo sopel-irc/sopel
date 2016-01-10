@@ -54,6 +54,7 @@ class colors:
     GRAY = GREY
     LIGHT_GRAY = LIGHT_GREY
 
+
 def _get_color(color):
     if color is None:
         return None

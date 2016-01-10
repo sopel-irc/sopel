@@ -25,9 +25,10 @@ from sopel.tools import get_input
 import sopel.loader
 import os
 import sys
-try:
+if sys.version_info.major < 3:
     import ConfigParser
-except ImportError:
+else:
+    basestring = str
     import configparser as ConfigParser
 import sopel.config.core_section
 from sopel.config.types import StaticSection

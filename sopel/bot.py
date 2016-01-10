@@ -110,7 +110,7 @@ class Sopel(irc.Bot):
         The keys are Identifiers of the channel names, and map to Channel
         objects which contain the users in the channel and their permissions.
         """
-        self.users = tools.SopelMemory() # name to user obj
+        self.users = tools.SopelMemory()  # name to user obj
         """A map of the users that Sopel is aware of.
 
         In order for Sopel to be aware of a user, it must be in at least one

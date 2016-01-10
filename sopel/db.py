@@ -140,7 +140,7 @@ class SopelDB(object):
         values = [nick_id, alias.lower(), alias]
         try:
             self.execute(sql, values)
-        except sqlite3.IntegrityError as e:
+        except sqlite3.IntegrityError:
             raise ValueError('Alias already exists.')
 
     def set_nick_value(self, nick, key, value):

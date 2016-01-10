@@ -40,7 +40,7 @@ class PreTrigger(object):
             try:
                 self.time = datetime.datetime.strptime(self.tags['time'], '%Y-%m-%dT%H:%M:%S.%fZ')
             except ValueError:
-                pass # Server isn't conforming to spec, ignore the server-time
+                pass  # Server isn't conforming to spec, ignore the server-time
 
         # TODO note what this is doing and why
         if line.startswith(':'):
