@@ -17,6 +17,7 @@ import sys
 if sys.version_info.major < 3:
     import HTMLParser
 else:
+    unichr = chr
     import html.parser as HTMLParser
 
 
@@ -76,7 +77,7 @@ def wa(bot, trigger):
     try:
         answer = web.get(uri + web.quote(query.replace('+', 'plus')), 45,
                          dont_decode=True)
-    except timeout as e:
+    except timeout:
         return bot.say('[WOLFRAM ERROR] Request timed out')
     if answer:
         answer = answer.decode('unicode_escape')

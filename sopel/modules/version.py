@@ -13,7 +13,6 @@ from datetime import datetime
 import sopel
 import re
 from os import path
-import json
 
 log_line = re.compile('\S+ (\S+) (.*? <.*?>) (\d+) (\S+)\tcommit[^:]*: (.+)')
 

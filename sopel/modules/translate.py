@@ -13,7 +13,6 @@ from sopel.module import rule, commands, priority, example
 import json
 import sys
 import random
-import os
 mangle_lines = {}
 if sys.version_info.major >= 3:
     unicode = str

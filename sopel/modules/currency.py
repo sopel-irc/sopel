@@ -35,7 +35,8 @@ def get_rate(code):
     namespaces = {
         'http://www.cbwiki.net/wiki/index.php/Specification_1.1': 'cb',
         'http://purl.org/rss/1.0/': None,
-        'http://www.w3.org/1999/02/22-rdf-syntax-ns#': 'rdf' }
+        'http://www.w3.org/1999/02/22-rdf-syntax-ns#': 'rdf'
+    }
     xml = xmltodict.parse(data, process_namespaces=True, namespaces=namespaces).get('rdf:RDF')
     namestring = xml.get('channel').get('title').get('#text')
     name = namestring[len('Bank of Canada noon rate: '):]
@@ -76,8 +77,7 @@ def display(bot, amount, of, to):
         if not to_name:
             bot.reply("Unknown currency: %s" % to)
             return
-    except Exception as e:
-        raise
+    except Exception:
         bot.reply("Something went wrong while I was getting the exchange rate.")
         return NOLIMIT
 

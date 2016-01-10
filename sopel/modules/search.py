@@ -15,6 +15,7 @@ if sys.version_info.major < 3:
 else:
     from urllib.parse import quote_plus
 
+
 def formatnumber(n):
     """Format a number with beautiful commas."""
     parts = list(str(n))
@@ -102,7 +103,7 @@ def search(bot, trigger):
     du = duck_search(query) or '-'
 
     if bu == du:
-        result = '%s (b, d)' % gu
+        result = '%s (b, d)' % bu
     else:
         if len(bu) > 150:
             bu = '(extremely long link)'

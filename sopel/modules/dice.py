@@ -143,7 +143,7 @@ def _roll_dice(bot, dice_expression):
     # Can't roll a negative number of dice.
     if dice_num < 0:
         bot.reply("I'd rather not roll a negative amount of dice. =(")
-        return None # Signal there was a problem
+        return None  # Signal there was a problem
 
     # Upper limit for dice should be at most a million. Creating a dict with
     # more than a million elements already takes a noticeable amount of time

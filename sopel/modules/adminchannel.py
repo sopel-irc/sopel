@@ -295,7 +295,6 @@ def topic(bot, trigger):
     This gives ops the ability to change the topic.
     The bot must be a Channel Operator for this command to work.
     """
-    purple, green, bold = '\x0306', '\x0310', '\x02'
     if bot.privileges[trigger.sender][bot.nick] < HALFOP:
         return bot.reply("I'm not a channel operator!")
     if not trigger.group(2):

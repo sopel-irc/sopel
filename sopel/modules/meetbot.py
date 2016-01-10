@@ -177,7 +177,7 @@ def startmeeting(bot, trigger):
     if not os.path.isdir(meeting_log_path + trigger.sender):
         try:
             os.makedirs(meeting_log_path + trigger.sender)
-        except Exception as e:
+        except Exception:
             bot.say("Can't create log directory for this channel, meeting not started!")
             meetings_dict[trigger.sender] = Ddict(dict)
             raise
