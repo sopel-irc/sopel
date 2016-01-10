@@ -7,17 +7,29 @@ from sopel.tools import Identifier
 
 @functools.total_ordering
 class User(object):
+    """A representation of a user Sopel is aware of."""
     def __init__(self, nick, user, host):
         assert isinstance(nick, Identifier)
         self.nick = nick
+        """The user's nickname."""
         self.user = user
+        """The user's local username."""
         self.host = host
+        """The user's hostname."""
         self.channels = {}
+        """The channels the user is in.
+
+        This maps channel name ``Identifier``\s to ``Channel`` objects."""
         self.account = None
+        """The IRC services account of the user.
+
+        This relies on IRCv3 account tracking being enabled."""
         self.away = None
+        """Whether the user is marked as away."""
 
     hostmask = property(lambda self: '{}!{}@{}'.format(self.nick, self.user,
                                                        self.host))
+    """The user's full hostmask."""
 
     def __eq__(self, other):
         if not isinstance(other, User):
@@ -32,11 +44,20 @@ class User(object):
 
 @functools.total_ordering
 class Channel(object):
+    """A representation of a channel Sopel is in."""
     def __init__(self, name):
         assert isinstance(name, Identifier)
         self.name = name
+        """The name of the channel."""
         self.users = {}
+        """The users in the channel.
+
+        This maps username ``Identifier``\s to channel objects."""
         self.privileges = {}
+        """The permissions of the users in the channel.
+
+        This maps username ``Identifier``s to bitwise integer values. This can
+        be compared to appropriate constants from ``sopel.module``."""
 
     def clear_user(self, nick):
         user = self.users[nick]

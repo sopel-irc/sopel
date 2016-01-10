@@ -46,7 +46,7 @@ class NO_DEFAULT(object):
 class StaticSection(object):
     """A configuration section with parsed and validated settings.
 
-    This class is intended to be subclassed with added ``ValidatedAttribute``s.
+    This class is intended to be subclassed with added ``ValidatedAttribute``\s.
     """
     def __init__(self, config, section_name, validate=True):
         if not config.parser.has_section(section_name):

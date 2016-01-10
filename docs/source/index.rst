@@ -432,6 +432,9 @@ sopel.tools
 .. automodule:: sopel.tools.calculation
    :members:
 
+.. automodule:: sopel.tools.target
+   :members:
+
 sopel.module
 -------------
 .. automodule:: sopel.module
