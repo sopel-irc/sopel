@@ -121,23 +121,6 @@ class Bot(asynchat.async_chat):
         return string
 
     def write(self, args, text=None):
-        """Send a command to the server.
-
-        ``args`` is an iterable of strings, which are joined by spaces.
-        ``text`` is treated as though it were the final item in ``args``, but
-        is preceeded by a ``:``. This is a special case which  means that
-        ``text``, unlike the items in ``args`` may contain spaces (though this
-        constraint is not checked by ``write``).
-
-        In other words, both ``sopel.write(('PRIVMSG',), 'Hello, world!')``
-        and ``sopel.write(('PRIVMSG', ':Hello, world!'))`` will send
-        ``PRIVMSG :Hello, world!`` to the server.
-
-        Newlines and carriage returns ('\\n' and '\\r') are removed before
-        sending. Additionally, if the message (after joining) is longer than
-        than 510 characters, any remaining characters will not be sent.
-
-        """
         args = [self.safe(arg) for arg in args]
         if text is not None:
             text = self.safe(text)
@@ -214,23 +197,6 @@ class Bot(asynchat.async_chat):
         # will release the main thread. This should be called last to avoid
         # race conditions.
         self.close()
-
-    def part(self, channel, msg=None):
-        """Part a channel."""
-        self.write(['PART', channel], msg)
-
-    def join(self, channel, password=None):
-        """Join a channel
-
-        If `channel` contains a space, and no `password` is given, the space is
-        assumed to split the argument into the channel to join and its
-        password.  `channel` should not contain a space if `password` is given.
-
-        """
-        if password is None:
-            self.write(('JOIN', channel))
-        else:
-            self.write(['JOIN', channel, password])
 
     def handle_connect(self):
         if self.config.core.use_ssl and has_ssl:
@@ -367,89 +333,6 @@ class Bot(asynchat.async_chat):
 
     def dispatch(self, pretrigger):
         pass
-
-    def msg(self, recipient, text, max_messages=1):
-        # Deprecated, but way too much of a pain to remove.
-        self.say(text, recipient, max_messages)
-
-    def say(self, text, recipient, max_messages=1):
-        # We're arbitrarily saying that the max is 400 bytes of text when
-        # messages will be split. Otherwise, we'd have to acocunt for the bot's
-        # hostmask, which is hard.
-        max_text_length = 400
-        # Encode to bytes, for propper length calculation
-        if isinstance(text, unicode):
-            encoded_text = text.encode('utf-8')
-        else:
-            encoded_text = text
-        excess = ''
-        if max_messages > 1 and len(encoded_text) > max_text_length:
-            last_space = encoded_text.rfind(' '.encode('utf-8'), 0, max_text_length)
-            if last_space == -1:
-                excess = encoded_text[max_text_length:]
-                encoded_text = encoded_text[:max_text_length]
-            else:
-                excess = encoded_text[last_space + 1:]
-                encoded_text = encoded_text[:last_space]
-        # We'll then send the excess at the end
-        # Back to unicode again, so we don't screw things up later.
-        text = encoded_text.decode('utf-8')
-        try:
-            self.sending.acquire()
-
-            # No messages within the last 3 seconds? Go ahead!
-            # Otherwise, wait so it's been at least 0.8 seconds + penalty
-
-            recipient_id = Identifier(recipient)
-
-            if recipient_id not in self.stack:
-                self.stack[recipient_id] = []
-            elif self.stack[recipient_id]:
-                elapsed = time.time() - self.stack[recipient_id][-1][0]
-                if elapsed < 3:
-                    penalty = float(max(0, len(text) - 50)) / 70
-                    wait = 0.7 + penalty
-                    if elapsed < wait:
-                        time.sleep(wait - elapsed)
-
-                # Loop detection
-                messages = [m[1] for m in self.stack[recipient_id][-8:]]
-
-                # If what we about to send repeated at least 5 times in the
-                # last 2 minutes, replace with '...'
-                if messages.count(text) >= 5 and elapsed < 120:
-                    text = '...'
-                    if messages.count('...') >= 3:
-                        # If we said '...' 3 times, discard message
-                        return
-
-            self.write(('PRIVMSG', recipient), text)
-            self.stack[recipient_id].append((time.time(), self.safe(text)))
-            self.stack[recipient_id] = self.stack[recipient_id][-10:]
-        finally:
-            self.sending.release()
-        # Now that we've sent the first part, we need to send the rest. Doing
-        # this recursively seems easier to me than iteratively
-        if excess:
-            self.msg(recipient, excess, max_messages - 1)
-
-    def notice(self, text, dest):
-        """Send an IRC NOTICE to a user or a channel.
-
-        See IRC protocol documentation for more information.
-
-        """
-        self.write(('NOTICE', dest), text)
-
-    def action(self, text, dest):
-        self.say('\001ACTION {}\001'.format(text), dest)
-
-    def reply(self, text, dest, reply_to, notice=False):
-        text = '%s: %s' % (reply_to, text)
-        if notice:
-            self.notice(text, dest)
-        else:
-            self.say(text, dest)
 
     def error(self, trigger=None):
         """Called internally when a module causes an error."""
