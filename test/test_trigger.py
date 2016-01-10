@@ -4,6 +4,7 @@ from __future__ import unicode_literals, absolute_import, print_function, divisi
 
 import re
 import pytest
+import datetime
 
 from sopel.test_tools import MockConfig
 from sopel.trigger import PreTrigger, Trigger
@@ -137,3 +138,35 @@ def test_intents_trigger(nick):
     assert trigger.tags == {'intent': 'ACTION'}
     assert trigger.admin is True
     assert trigger.owner is True
+
+def test_ircv3_account_tag_trigger(nick):
+    line = '@account=Foo :Nick_Is_Not_Foo!foo@example.com PRIVMSG #Sopel :Hello, world'
+    pretrigger = PreTrigger(nick, line)
+
+    config = MockConfig()
+    config.core.owner_account = 'Foo'
+    config.core.admins = ['Bar']
+
+    fakematch = re.match('.*', line)
+
+    trigger = Trigger(config, pretrigger, fakematch)
+    assert trigger.admin is True
+    assert trigger.owner is True
+
+def test_ircv3_server_time_trigger(nick):
+    line = '@time=2016-01-09T03:15:42.000Z :Foo!foo@example.com PRIVMSG #Sopel :Hello, world'
+    pretrigger = PreTrigger(nick, line)
+
+    config = MockConfig()
+    config.core.owner = 'Foo'
+    config.core.admins = ['Bar']
+
+    fakematch = re.match('.*', line)
+
+    trigger = Trigger(config, pretrigger, fakematch)
+    assert trigger.time == datetime.datetime(2016, 1, 9, 3, 15, 42, 0)
+
+    # Spec-breaking string
+    line = '@time=2016-01-09T04:20 :Foo!foo@example.com PRIVMSG #Sopel :Hello, world'
+    pretrigger = PreTrigger(nick, line)
+    assert pretrigger.time is not None
