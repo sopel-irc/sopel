@@ -276,7 +276,7 @@ class Bot(asynchat.async_chat):
             data = self.socket.read(buffer_size)
             if not data:
                 self.handle_close()
-                return ''
+                return b''
             return data
         except ssl.SSLError as why:
             if why[0] in (asyncore.ECONNRESET, asyncore.ENOTCONN,
@@ -285,7 +285,7 @@ class Bot(asynchat.async_chat):
                 return ''
             elif why[0] == errno.ENOENT:
                 # Required in order to keep it non-blocking
-                return ''
+                return b''
             else:
                 raise
 
