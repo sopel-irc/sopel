@@ -1,4 +1,5 @@
-.. title:: The bot and its state
+The bot and its state
+=====================
 
 .. autoclass:: sopel.bot.Sopel
     :members:

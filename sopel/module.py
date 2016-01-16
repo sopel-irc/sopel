@@ -1,20 +1,10 @@
 # coding=utf-8
-"""This module is meant to be imported from sopel modules.
-
-It defines the following decorators for defining sopel callables:
-sopel.module.rule
-sopel.module.thread
-sopel.module.commands
-sopel.module.nickname_commands
-sopel.module.priority
-sopel.module.event
-sopel.module.rate
-sopel.module.example
+"""This contains decorators and tools for creating callable plugin functions.
 """
-#Copyright 2013, Ari Koivula, <ari@koivu.la>
-#Copyright © 2013, Elad Alfassa <elad@fedoraproject.org>
-#Copyright 2013, Lior Ramati <firerogue517@gmail.com>
-#Licensed under the Eiffel Forum License 2.
+# Copyright 2013, Ari Koivula, <ari@koivu.la>
+# Copyright © 2013, Elad Alfassa <elad@fedoraproject.org>
+# Copyright 2013, Lior Ramati <firerogue517@gmail.com>
+# Licensed under the Eiffel Forum License 2.
 
 from __future__ import unicode_literals, absolute_import, print_function, division
 
@@ -24,11 +14,11 @@ import functools
 NOLIMIT = 1
 """Return value for ``callable``\s, which supresses rate limiting for the call.
 
-*Avalability: 4.0+; available as ``Sopel.NOLIMIT`` in 3.2*
-
 Returning this value means the triggering user will not be
 prevented from triggering the command again within the rate limit. This can
 be used, for example, to allow a user to rety a failed command immediately.
+
+.. versionadded:: 4.0
 """
 
 VOICE = 1
@@ -39,28 +29,25 @@ OWNER = 16
 
 
 def unblockable(function):
-    """Decorator. Equivalent to func.unblockable = True.
+    """Decorator which exempts the function from nickname and hostname blocking.
 
-    If this decorator is used, the function will be called, even if the bot has
-    been configured to ignore commands from the user. This can be used to
-    ensure events such as JOIN are always recorded.
-
+    This can be used to ensure events such as JOIN are always recorded.
     """
     function.unblockable = True
     return function
 
 
 def interval(*args):
-    """Decorator. Equivalent to func.interval.append(value).
+    """Decorates a function to be called by the bot every X seconds.
 
-    A function that uses this decorator will be called every X seconds, where X
-    is the argument. This decorator can be used multiple times for multiple
-    intervals, or all intervals can be given at once as arguments. The first
-    time the function will be called is X seconds after the bot was started.
+    This decorator can be used multiple times for multiple intervals, or all
+    intervals can be given at once as arguments. The first time the function
+    will be called is X seconds after the bot was started.
 
-    For the callable, the first argument will be the bot itself, but it will
-    not have the say, reply or action methods as would be the case when called
-    due to rule or command.
+    Unlike other plugin functions, ones decorated by interval must only take a
+    :class:`sopel.bot.Sopel` as their argument; they do not get a trigger. The
+    bot argument will not have a context, so functions like ``bot.say()`` will
+    not have a default destination.
 
     There is no guarantee that the bot is connected to a server or joined a
     channel when the function is called, so care must be taken.
@@ -85,7 +72,7 @@ def interval(*args):
 
 
 def rule(value):
-    """Decorator. Equivalent to func.rule.append(value).
+    """Decorate a function to be called when a line matches the given pattern
 
     This decorator can be used multiple times to add more rules.
 
@@ -110,7 +97,12 @@ def rule(value):
 
 
 def thread(value):
-    """Decorator. Equivalent to func.thread = value.
+    """Decorate a function to specify if it should be run in a separate thread.
+
+    Functions run in a separate thread (as is the default) will not prevent the
+    bot from executing other functions at the same time. Functions not run in a
+    separate thread may be started while other functions are still running, but
+    additional functions will not start until it is completed.
 
     Args:
         value: Either True or False. If True the function is called in
@@ -124,7 +116,7 @@ def thread(value):
 
 
 def commands(*command_list):
-    """Decorator. Sets a command list for a callable.
+    """Decorate a function to set one or more commands to trigger it.
 
     This decorator can be used to add multiple commands to one callable in a
     single line. The resulting match object will have the command as the first
@@ -157,7 +149,7 @@ def commands(*command_list):
 
 
 def nickname_commands(*command_list):
-    """Decorator. Triggers on lines starting with "$nickname: command".
+    """Decorate a function to trigger on lines starting with "$nickname: command".
 
     This decorator can be used multiple times to add multiple rules. The
     resulting match object will have the command as the first group, rest of
@@ -207,7 +199,7 @@ def nickname_commands(*command_list):
 
 
 def priority(value):
-    """Decorator. Equivalent to func.priority = value.
+    """Decorate a function to be executed with higher or lower priority.
 
     Args:
         value: Priority can be one of "high", "medium", "low". Defaults to
@@ -224,7 +216,7 @@ def priority(value):
 
 
 def event(*event_list):
-    """Decorator. Equivalent to func.event = value.
+    """Decorate a function to be triggered on specific IRC events.
 
     This is one of a number of events, such as 'JOIN', 'PART', 'QUIT', etc.
     (More details can be found in RFC 1459.) When the Sopel bot is sent one of
@@ -232,6 +224,8 @@ def event(*event_list):
     must also be given a rule to match (though it may be '.*', which will
     always match) or they will not be triggered.
 
+    :class:`sopel.tools.events` provides human-readable names for many of the
+    numeric events, which may help your code be clearer.
     """
     def add_attribute(function):
         if not hasattr(function, "event"):
@@ -242,9 +236,9 @@ def event(*event_list):
 
 
 def intent(*intent_list):
-    """Make a callable trigger on a message with any of the given intents.
+    """Decorate a callable trigger on a message with any of the given intents.
 
-    *Availability: 5.2.0+*
+    .. versionadded:: 5.2.0
     """
     def add_attribute(function):
         if not hasattr(function, "intents"):
@@ -255,18 +249,15 @@ def intent(*intent_list):
 
 
 def rate(value):
-    """Decorator. Equivalent to func.rate = value.
+    """Decorate a function to limit how often a single user may trigger it.
 
-    Availability: 2+
-
-    This limits the frequency with which a single user may use the function. If
-    a function is given a rate of 20, a single user may only use that function
-    once every 20 seconds. This limit applies to each user individually. Users
-    on the admin list in Sopel’s configuration are exempted from rate limits.
+    If a function is given a rate of 20, a single user may only use that
+    function once every 20 seconds. This limit applies to each user
+    individually. Users on the admin list in Sopel’s configuration are exempted
+    from rate limits.
 
     Rate-limited functions that use scheduled future commands should import
     threading.Timer() instead of sched, or rate limiting will not work properly.
-
     """
     def add_attribute(function):
         function.rate = value
@@ -275,11 +266,9 @@ def rate(value):
 
 
 def require_privmsg(message=None):
-    """
-    Decorator, this allows functions to specify if they should be only
-    allowed via private message.
+    """Decorate a function to only be triggerable from a private message.
 
-    If it is not, `message` will be said if given.
+    If it is triggered in a channel message, `message` will be said if given.
     """
     def actual_decorator(function):
         @functools.wraps(function)
@@ -299,11 +288,9 @@ def require_privmsg(message=None):
 
 
 def require_chanmsg(message=None):
-    """
-    Decorator, this allows functions to specify if they should be only
-    allowed via channel message.
+    """Decorate a function to only be triggerable from a channel message.
 
-    If it is not, `message` will be said if given.
+    If it is triggered in a private message, `message` will be said if given.
     """
     def actual_decorator(function):
         @functools.wraps(function)
@@ -323,8 +310,7 @@ def require_chanmsg(message=None):
 
 
 def require_privilege(level, message=None):
-    """Decorator. Require at lesat the given channel privilege level to execute
-    the function.
+    """Decorate a function to require at least the given channel permission.
 
     `level` can be one of the privilege levels defined in this module. If the
     user does not have the privilege, `message` will be said if given. If it is
@@ -344,7 +330,7 @@ def require_privilege(level, message=None):
 
 
 def require_admin(message=None):
-    """Decorator. Require the user triggering the message to be a bot admin.
+    """Decorate a function to require the triggering user to be a bot admin.
 
     If they are not, `message` will be said if given."""
     def actual_decorator(function):
@@ -363,7 +349,7 @@ def require_admin(message=None):
 
 
 def require_owner(message=None):
-    """Decorator. Require the user triggering the message to be the bot owner.
+    """Decorate a function to require the triggering user to be the bot owner.
 
     If they are not, `message` will be said if given."""
     def actual_decorator(function):
@@ -382,12 +368,11 @@ def require_owner(message=None):
 
 
 class example(object):
-    """Decorator. Add an example.
+    """Decorate a function with an example.
 
     Add an example attribute into a function and generate a test.
-
     """
-
+    # TODO dat doc doe >_<
     def __init__(self, msg, result=None, privmsg=False, admin=False,
                  owner=False, repeat=1, re=False, ignore=None):
         """Accepts arguments for the decorator.

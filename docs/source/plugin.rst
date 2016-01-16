@@ -1,4 +1,5 @@
-.. title:: Plugin structure
+Plugin structure
+================
 
 A Sopel plugin consists of a Python module containing one or more
 ``callable``\s. It may optionally also contain ``configure``, ``setup``, and
@@ -6,16 +7,16 @@ A Sopel plugin consists of a Python module containing one or more
 
 .. py:method:: callable(bot, trigger)
 
-    A callable is any function which takes as its arguments a `sopel.bot.Sopel`
-    object and a `sopel.trigger.Trigger` object, and is wrapped with
-    appropriate decorators from `sopel.module`. The ``bot`` provides the
-    ability to send messages to the network and check the state of the bot. The
-    ``trigger`` provides information about the line which triggered this
-    function to be called.
+    A callable is any function which takes as its arguments a
+    :class:`sopel.bot.Sopel` object and a :class:`sopel.trigger.Trigger`
+    object, and is wrapped with appropriate decorators from
+    :mod:`sopel.module`. The ``bot`` provides the ability to send messages to
+    the network and check the state of the bot. The ``trigger`` provides
+    information about the line which triggered this function to be called.
 
     The return value of these function is ignored, unless it is
-    `sopel.module.NOLIMIT`, in which case rate limiting will not be applied for
-    that call.
+    :const:`sopel.module.NOLIMIT`, in which case rate limiting will not be
+    applied for that call.
 
     Note that the name can, and should, be anything - it doesn't need to be
     called "callable".
@@ -27,11 +28,11 @@ A Sopel plugin consists of a Python module containing one or more
     actions are needed to allow a module to function properly (e.g, ensuring
     that the appropriate configuration variables exist and are set). Note that
     this normally occurs prior to connection to the server, so the behavior of
-    the messaging functions on the `sopel.bot.Sopel` object it's passed is
-    undefined.
+    the messaging functions on the :class:`sopel.bot.Sopel` object it's passed
+    is undefined.
 
     Throwing an exception from this function (such as a
-    `sopel.config.ConfigurationError`) will prevent any callables in the
+    :exc:`sopel.config.ConfigurationError`) will prevent any callables in the
     module from being registered, and provide an error message to the user.
     This is useful when requiring the presence of configuration values or
     making other environmental requirements.
@@ -45,9 +46,9 @@ A Sopel plugin consists of a Python module containing one or more
     This is an optional function of a module, which will be called while the
     bot is quitting. Note that this normally occurs after closing connection
     to the server, so the behavior of the messaging functions on the
-    `sopel.bot.Sopel` object it's passed is undefined. The purpose of this
-    function is to perform whatever actions are needed to allow a module to
-    properly clean up (e.g, ensuring that any temporary cache files are
+    :class:`sopel.bot.Sopel` object it's passed is undefined. The purpose of
+    this function is to perform whatever actions are needed to allow a module
+    to properly clean up (e.g, ensuring that any temporary cache files are
     deleted).
 
     The bot will not continue notifying other modules or continue quitting
@@ -60,7 +61,13 @@ A Sopel plugin consists of a Python module containing one or more
 
     This is an optional function of a module, which will be called during the
     user's setup of the bot. It's intended purpose is to use the methods of the
-    passed ``sopel.config.Config`` object in order to create the configuration
-    variables it needs to function properly.
+    passed :class:`sopel.config.Config` object in order to create the
+    configuration variables it needs to function properly.
 
     .. versionadded:: 3.0
+
+sopel.module
+------------
+.. automodule:: sopel.module
+   :members:
+

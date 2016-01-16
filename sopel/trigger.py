@@ -110,24 +110,24 @@ class Trigger(unicode):
     user = property(lambda self: self._pretrigger.user)
     """Local username of the person who sent the message"""
     nick = property(lambda self: self._pretrigger.nick)
-    """The ``Identifier`` of the person who sent the message."""
+    """The :class:`sopel.tools.Identifier` of the person who sent the message.
+    """
     host = property(lambda self: self._pretrigger.host)
     """The hostname of the person who sent the message"""
     event = property(lambda self: self._pretrigger.event)
     """The IRC event (e.g. ``PRIVMSG`` or ``MODE``) which triggered the
     message."""
     match = property(lambda self: self._match)
-    """The regular expression `MatchObject`_ for the triggering line.
-
-    .. _MatchObject: http://docs.python.org/library/re.html#match-objects"""
+    """The regular expression :class:`re.MatchObject` for the triggering line.
+    """
     group = property(lambda self: self._match.group)
     """The ``group`` function of the ``match`` attribute.
 
-    See Python `re`_ documentation for details."""
+    See Python :mod:`re` documentation for details."""
     groups = property(lambda self: self._match.groups)
     """The ``groups`` function of the ``match`` attribute.
 
-    See Python `re`_ documentation for details."""
+    See Python :mod:`re` documentation for details."""
     args = property(lambda self: self._pretrigger.args)
     """
     A tuple containing each of the arguments to an event. These are the

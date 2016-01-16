@@ -1,7 +1,5 @@
 # coding=utf-8
 """
-*Availability: 3+; 6+ for configuration section definitions.*
-
 The config object provides a simplified to access Sopel's configuration file.
 The sections of the file are attributes of the object, and the keys in the
 section are attributes of that. So, for example, the ``eggs`` attribute in the
@@ -12,6 +10,8 @@ to the config object with ``define_section``. When this is done, only the
 defined keys will be available. A section can not be given more than one
 definition. The ``[core]`` section is defined with ``CoreSection`` when the
 object is initialized.
+
+.. versionadded:: 6.0.0
 """
 # Copyright 2012-2015, Elsie Powell, embolalia.com
 # Copyright © 2012, Elad Alfassa <elad@fedoraproject.org>

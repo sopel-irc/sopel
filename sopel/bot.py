@@ -60,7 +60,7 @@ class Sopel(irc.Bot):
             'low': collections.defaultdict(list)
         }
         self.config = config
-        """The ``Config`` for the current Sopel instance."""
+        """The :class:`sopel.config.Config` for the current Sopel instance."""
         self.doc = {}
         """
         A dictionary of command names to their docstring and example, if
@@ -93,9 +93,10 @@ class Sopel(irc.Bot):
         self.privileges = dict()
         """A dictionary of channels to their users and privilege levels
 
-        The value associated with each channel is a dictionary of Identifiers to
+        The value associated with each channel is a dictionary of
+        :class:`sopel.tools.Identifier`\s to
         a bitwise integer value, determined by combining the appropriate
-        constants from `module`.
+        constants from :mod:`sopel.module`.
 
         .. deprecated:: 6.2.0
             Use :attr:`channels` instead.
@@ -104,23 +105,26 @@ class Sopel(irc.Bot):
         self.channels = tools.SopelMemory()  # name to chan obj
         """A map of the channels that Sopel is in.
 
-        The keys are Identifiers of the channel names, and map to Channel
-        objects which contain the users in the channel and their permissions.
+        The keys are Identifiers of the channel names, and map to
+        :class:`sopel.tools.target.Channel` objects which contain the users in
+        the channel and their permissions.
         """
         self.users = tools.SopelMemory()  # name to user obj
         """A map of the users that Sopel is aware of.
 
-        In order for Sopel to be aware of a user, it must be in at least one
-        channel which they are also in.
+        The keys are Identifiers of the nicknames, and map to
+        :class:`sopel.tools.target.User` instances. In order for Sopel to be
+        aware of a user, it must be in at least one channel which they are also
+        in.
         """
 
         self.db = SopelDB(config)
-        """The bot's database."""
+        """The bot's database, as a :class:`sopel.db.SopelDB` instance."""
 
         self.memory = tools.SopelMemory()
         """
         A thread-safe dict for storage of runtime data to be shared between
-        modules. See `SopelMemory <#tools.Sopel.SopelMemory>`_
+        modules. See :class:`sopel.tools.Sopel.SopelMemory`
         """
 
         self.scheduler = sopel.tools.jobs.JobScheduler(self)
