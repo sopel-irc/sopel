@@ -20,75 +20,7 @@ def default_mask(trigger):
 
 
 @require_chanmsg
-@require_privilege(OP)
-@commands('op')
-def op(bot, trigger):
-    """
-    Command to op users in a room. If no nick is given,
-    sopel will op the nick who sent the command
-    """
-    if bot.privileges[trigger.sender][bot.nick] < OP:
-        return bot.reply("I'm not a channel operator!")
-    nick = trigger.group(2)
-    channel = trigger.sender
-    if not nick:
-        nick = trigger.nick
-    bot.write(['MODE', channel, "+o", nick])
-
-
-@require_chanmsg
-@require_privilege(OP)
-@commands('deop')
-def deop(bot, trigger):
-    """
-    Command to deop users in a room. If no nick is given,
-    sopel will deop the nick who sent the command
-    """
-    if bot.privileges[trigger.sender][bot.nick] < OP:
-        return bot.reply("I'm not a channel operator!")
-    nick = trigger.group(2)
-    channel = trigger.sender
-    if not nick:
-        nick = trigger.nick
-    bot.write(['MODE', channel, "-o", nick])
-
-
-@require_chanmsg
-@require_privilege(OP)
-@commands('voice')
-def voice(bot, trigger):
-    """
-    Command to voice users in a room. If no nick is given,
-    sopel will voice the nick who sent the command
-    """
-    if bot.privileges[trigger.sender][bot.nick] < HALFOP:
-        return bot.reply("I'm not a channel operator!")
-    nick = trigger.group(2)
-    channel = trigger.sender
-    if not nick:
-        nick = trigger.nick
-    bot.write(['MODE', channel, "+v", nick])
-
-
-@require_chanmsg
-@require_privilege(OP)
-@commands('devoice')
-def devoice(bot, trigger):
-    """
-    Command to devoice users in a room. If no nick is given,
-    sopel will devoice the nick who sent the command
-    """
-    if bot.privileges[trigger.sender][bot.nick] < HALFOP:
-        return bot.reply("I'm not a channel operator!")
-    nick = trigger.group(2)
-    channel = trigger.sender
-    if not nick:
-        nick = trigger.nick
-    bot.write(['MODE', channel, "-v", nick])
-
-
-@require_chanmsg
-@require_privilege(OP)
+@require_privilege(OP, 'You are not a channel operator.')
 @commands('kick')
 @priority('high')
 def kick(bot, trigger):
@@ -139,7 +71,7 @@ def configureHostMask(mask):
 
 
 @require_chanmsg
-@require_privilege(OP)
+@require_privilege(OP, 'You are not a channel operator.')
 @commands('ban')
 @priority('high')
 def ban(bot, trigger):
@@ -168,7 +100,7 @@ def ban(bot, trigger):
 
 
 @require_chanmsg
-@require_privilege(OP)
+@require_privilege(OP, 'You are not a channel operator.')
 @commands('unban')
 def unban(bot, trigger):
     """
@@ -196,7 +128,7 @@ def unban(bot, trigger):
 
 
 @require_chanmsg
-@require_privilege(OP)
+@require_privilege(OP, 'You are not a channel operator.')
 @commands('quiet')
 def quiet(bot, trigger):
     """
@@ -224,7 +156,7 @@ def quiet(bot, trigger):
 
 
 @require_chanmsg
-@require_privilege(OP)
+@require_privilege(OP, 'You are not a channel operator.')
 @commands('unquiet')
 def unquiet(bot, trigger):
     """
@@ -252,7 +184,7 @@ def unquiet(bot, trigger):
 
 
 @require_chanmsg
-@require_privilege(OP)
+@require_privilege(OP, 'You are not a channel operator.')
 @commands('kickban', 'kb')
 @priority('high')
 def kickban(bot, trigger):
@@ -288,7 +220,7 @@ def kickban(bot, trigger):
 
 
 @require_chanmsg
-@require_privilege(OP)
+@require_privilege(OP, 'You are not a channel operator.')
 @commands('topic')
 def topic(bot, trigger):
     """
@@ -323,7 +255,7 @@ def topic(bot, trigger):
 
 
 @require_chanmsg
-@require_privilege(OP)
+@require_privilege(OP, 'You are not a channel operator.')
 @commands('tmask')
 def set_mask(bot, trigger):
     """
@@ -335,7 +267,7 @@ def set_mask(bot, trigger):
 
 
 @require_chanmsg
-@require_privilege(OP)
+@require_privilege(OP, 'You are not a channel operator.')
 @commands('showmask')
 def show_mask(bot, trigger):
     """Show the topic mask for the current channel."""
