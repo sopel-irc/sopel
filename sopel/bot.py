@@ -160,7 +160,7 @@ class Sopel(irc.Bot):
         sending. Additionally, if the message (after joining) is longer than
         than 510 characters, any remaining characters will not be sent.
         """
-        super(Sopel, self).write(args, text=None)
+        irc.Bot.write(self, args, text=text)
 
     def setup(self):
         stderr("\nWelcome to Sopel. Loading modules...\n\n")
