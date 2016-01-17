@@ -1,3 +1,25 @@
+Changes between 6.1.1 and 6.2.0
+===============================
+Module changes:
+* An error in excluding URLs from title display is fixed
+* Case sensitivity issues in currency and dice commands are fixed
+* Guards to require channel or private message are added to a number of commands, to avoid confusing errors
+* A calculation bug in the countdown command is fixed.
+* Misc minor bugfixes and improvements
+
+Core changes:
+* An occasional error with SSL connections on Python 3 is fixed
+* On servers which support IRCv3 account extensions, the services account name can be used to authenticate the owner
+* Numerous additional IRCv3 features are supported
+
+API changes:
+* bot.privileges is now deprecated in favor of bot.channels
+* bot.channels contains more information about the channels the bot is in
+* bot.users is now available with information about the users Sopel is aware of
+* sopel.web is now deprecated in favor of the third-party `requests` library
+* trigger.time is added with the current time, or server-time if the server supports it
+* sopel.tools.events is now available as an enum of IRC numeric replies
+
 Changes between 6.1.0 and 6.1.1
 ===============================
 If you are updating from a pre-6.0 version (i.e. Willie), there are backwards-
