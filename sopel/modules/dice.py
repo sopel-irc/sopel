@@ -239,9 +239,19 @@ def choose(bot, trigger):
     """
     if not trigger.group(2):
         return bot.reply('I\'d choose an option, but you didn\'t give me any.')
-    choices = re.split('[\|\\\\\/]', trigger.group(2))
+    choices = [trigger.group(2)]
+    for delim in '|\\/,':
+        choices = trigger.group(2).split(delim)
+        if len(choices) > 1:
+            break
+    # Use a different delimiter in the output, to prevent ambiguity.
+    for show_delim in ',|/\\':
+        if show_delim not in trigger.group(2):
+            show_delim += ' '
+            break
+
     pick = random.choice(choices)
-    return bot.reply('Your options: %s. My choice: %s' % (', '.join(choices), pick))
+    return bot.reply('Your options: %s. My choice: %s' % (show_delim.join(choices), pick))
 
 
 if __name__ == "__main__":
