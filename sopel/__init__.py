@@ -1,14 +1,25 @@
 # coding=utf-8
+# ASCII ONLY IN THIS FILE THOUGH!!!!!!!
+# Python does some stupid bullshit of respecting LC_ALL over the encoding on the
+# file, so in order to undo Python's ridiculous fucking idiocy, we have to have
+# our own check.
+
 # Copyright 2008, Sean B. Palmer, inamidst.com
 # Copyright 2012, Elsie Powell, http://embolalia.com
-# Copyright © 2012, Elad Alfassa <elad@fedoraproject.org>
+# Copyright 2012, Elad Alfassa <elad@fedoraproject.org>
 #
 # Licensed under the Eiffel Forum License 2.
 
 from __future__ import unicode_literals, absolute_import, print_function, division
+import os
+import sys
+if hasattr(os, "getenv") and os.getenv("LC_ALL") == "C":
+    print('WARNING!!! LC_ALL is set to "C", which makes Python do stupid '
+          'things. If you get strange errors, please unset it, or set it to '
+          'something like "en_US.UTF-8".', file=sys.stderr)
+
 
 from collections import namedtuple
-import os
 import re
 import time
 import traceback
