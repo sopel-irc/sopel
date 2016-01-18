@@ -115,6 +115,7 @@ def compile_rule(nick, pattern):
     if isinstance(pattern, _regex_type):
         return pattern
 
+    nick = re.escape(nick)
     pattern = pattern.replace('$nickname', nick)
     pattern = pattern.replace('$nick', r'{}[,:]\s+'.format(nick))
     flags = re.IGNORECASE
