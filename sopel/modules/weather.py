@@ -2,12 +2,14 @@
 # Copyright 2008, Sean B. Palmer, inamidst.com
 # Copyright 2012, Elsie Powell, embolalia.com
 # Licensed under the Eiffel Forum License 2.
+
 from __future__ import unicode_literals, absolute_import, print_function, division
 
 from sopel import web
 from sopel.module import commands, example, NOLIMIT
 
 import xmltodict
+import collections
 
 
 def woeid_search(query):
@@ -16,16 +18,27 @@ def woeid_search(query):
     node for the result, so that location data can still be retrieved. Returns
     None if there is no result, or the woeid field is empty.
     """
-    query = 'q=select * from geo.placefinder where text="%s"' % query
+    query = 'q=select woeid from geo.places where text="%s"' % query
     body = web.get('http://query.yahooapis.com/v1/public/yql?' + query,
                    dont_decode=True)
     parsed = xmltodict.parse(body).get('query')
     results = parsed.get('results')
-    if results is None or results.get('Result') is None:
+    if not results:
         return None
-    if type(results.get('Result')) is list:
-        return results.get('Result')[0]
-    return results.get('Result')
+    elif type(results) is collections.OrderedDict:
+        place = results.get('place')
+    elif type(results) is list:
+        place = results[0].get('place')
+    else:
+        return None
+    if not place:
+        return None
+    elif type(place) is collections.OrderedDict:
+        return place
+    elif type(place) is list:
+        return place[0]
+    else:
+        return None
 
 
 def get_cover(parsed):
