@@ -9,6 +9,10 @@ from sopel.module import commands, example, NOLIMIT
 
 import xmltodict
 
+LOCATION_TEMPLATE_WITH_NEIGHBORHOOD = ('%(woeid)s (%(neighborhood)s, %(city)s, '
+                                       '%(state)s, %(country)s %(zip)s)')
+LOCATION_TEMPLATE_NO_NEIGHBORHOOD = ('%(woeid)s (%(city)s, %(state)s, '
+                                     '%(country)s %(zip)s)')
 
 def woeid_search(query):
     """
@@ -16,17 +20,38 @@ def woeid_search(query):
     node for the result, so that location data can still be retrieved. Returns
     None if there is no result, or the woeid field is empty.
     """
-    query = 'q=select * from geo.placefinder where text="%s"' % query
+    query = 'q=select * from geo.places where text="%s"' % query
     body = web.get('http://query.yahooapis.com/v1/public/yql?' + query,
                    dont_decode=True)
     parsed = xmltodict.parse(body).get('query')
     results = parsed.get('results')
-    if results is None or results.get('Result') is None:
+    if results is None or results.get('place') is None:
         return None
-    if type(results.get('Result')) is list:
-        return results.get('Result')[0]
-    return results.get('Result')
+    if type(results.get('place')) is list:
+        return results.get('place')[0]
+    else:
+        return results.get('place')
 
+def get_formatted_location(place):
+    location = {
+        'woeid': place.get('woeid'),
+        'neighborhood': get_content_or_default(place.get('locality2')),
+        'city': get_content_or_default(place.get('locality1')),
+        'state': get_content_or_default(place.get('admin1')),
+        'country': get_content_or_default(place.get('country')),
+        'zip': get_content_or_default(place.get('postal'))
+    }
+
+    if location['neighborhood']:
+        return LOCATION_TEMPLATE_WITH_NEIGHBORHOOD % location
+    else:
+        return LOCATION_TEMPLATE_NO_NEIGHBORHOOD % location
+
+def get_content_or_default(element, default=''):
+    if element is None:
+        return default
+    else:
+        return element.get('#text') or default
 
 def get_cover(parsed):
     try:
@@ -166,12 +191,4 @@ def update_woeid(bot, trigger):
 
     bot.db.set_nick_value(trigger.nick, 'woeid', woeid)
 
-    neighborhood = first_result.get('neighborhood') or ''
-    if neighborhood:
-        neighborhood += ','
-    city = first_result.get('city') or ''
-    state = first_result.get('state') or ''
-    country = first_result.get('country') or ''
-    uzip = first_result.get('uzip') or ''
-    bot.reply('I now have you at WOEID %s (%s %s, %s, %s %s.)' %
-              (woeid, neighborhood, city, state, country, uzip))
+    bot.reply('I now have you at WOEID ' + get_formatted_location(first_result))
