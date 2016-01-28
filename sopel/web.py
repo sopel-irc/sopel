@@ -175,11 +175,14 @@ class VerifiedHTTPSConnection(httplib.HTTPConnection):
             if not ca_certs or not os.path.exists(ca_certs):
                 sock.close()
                 raise Exception('CA Certificate bundle %s is not readable' % ca_certs)
-            self.sock = ssl.wrap_socket(sock,
-                                        ca_certs=ca_certs,
-                                        cert_reqs=ssl.CERT_REQUIRED)
-            ssl.match_hostname(self.sock.getpeercert(), self.host)
-
+            context = ssl.SSLContext(ssl.PROTOCOL_SSLv23)
+            context.verify_mode = ssl.CERT_REQUIRED
+            context.check_hostname = True
+            context.load_verify_locations(ca_certs)
+            if ssl.HAS_SNI:
+                self.sock = context.wrap_socket(sock, server_hostname=self.host)
+            else:
+                self.sock = context.wrap_socket(sock)
 
 class VerifiedHTTPSHandler(urllib2.HTTPSHandler):
 
