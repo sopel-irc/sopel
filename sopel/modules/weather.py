@@ -16,17 +16,17 @@ def woeid_search(query):
     node for the result, so that location data can still be retrieved. Returns
     None if there is no result, or the woeid field is empty.
     """
-    query = 'q=select * from geo.placefinder where text="%s"' % query
+    query = 'q=select * from geo.places where text="%s"' % query
     body = web.get('http://query.yahooapis.com/v1/public/yql?' + query,
                    dont_decode=True)
     parsed = xmltodict.parse(body).get('query')
     results = parsed.get('results')
-    if results is None or results.get('Result') is None:
+    if results is None or results.get('place') is None:
         return None
-    if type(results.get('Result')) is list:
-        return results.get('Result')[0]
-    return results.get('Result')
-
+    if type(results.get('place')) is list:
+        return results.get('place')[0]
+    else:
+        return results.get('place')
 
 def get_cover(parsed):
     try:
