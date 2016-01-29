@@ -1,13 +1,13 @@
 %{!?python_sitelib: %global python_sitelib %(%{__python} -c "from distutils.sysconfig import get_python_lib; print(get_python_lib())")}
 %define gittag #GITTAG#
 
-Name:           willie
+Name:           sopel
 Version:        #VERSION#
 Release:        0.#BUILD#%{gittag}%{?dist}
 Summary:        Simple, lightweight and easy-to-use IRC Utility bot
 
 License:        EFL 2.0
-URL:            http://willie.dftba.net/
+URL:            http://sopel.chat/
 Source0:        %{name}-%{version}.tar
 
 BuildArch:      noarch
@@ -56,7 +56,7 @@ mkdir -p %{buildroot}/var/lib/%{name}
 %doc README.rst COPYING CREDITS NEWS docs/build/api-docs
 %config(noreplace) %{_sysconfdir}/%{name}.cfg
 %{python_sitelib}/*
-%{_bindir}/willie
+%{_bindir}/sopel
 %dir %attr(-,%{name}, %{name})/run/%{name}/
 %{_prefix}/lib/tmpfiles.d/%{name}.conf
 %{_unitdir}/%{name}.service
@@ -68,17 +68,17 @@ mkdir -p %{buildroot}/var/lib/%{name}
 getent group %{name} >/dev/null || groupadd -r %{name}
 getent passwd %{name} >/dev/null || \
 useradd -r -g %{name} -d /var/lib/%{name} -s /sbin/nologin \
-        -c "willie ircbot account " %{name}
+        -c "sopel ircbot account " %{name}
 exit 0
 
 %post
-%systemd_post willie.service
+%systemd_post sopel.service
 
 %preun
-%systemd_preun willie.service
+%systemd_preun sopel.service
 
 %postun
-%systemd_postun willie.service
+%systemd_postun sopel.service
 
 %changelog
 * #LONGDATE# Elad Alfassa <elad@fedoraproject.org> #VERSION#0.#BUILD##GITTAG#
