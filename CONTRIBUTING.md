@@ -36,9 +36,9 @@ include your changes.
   the name of the thing you're changing in at the beginning of the
   message, followed by a colon: the module name for modules, docs for documentation files,
   coretasks for coretasks.py, db for the database feature, and so on.
-* Python files should always have `#coding: utf8` as the first line (or the
+* Python files should always have `# coding=utf-8` as the first line (or the
   second, if the first is `#!/usr/bin/env python`), and
-  `from __future__ import unicode_literals` as the first line after the module
+  `from __future__ import unicode_literals, absolute_import, print_function, division` as the first line after the module
   docstring.
 
 Issue Tags
