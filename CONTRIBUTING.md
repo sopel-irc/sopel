@@ -33,9 +33,9 @@ include your changes.
 * Test your code before you commit. We don't have a formal testing plan in
   place, but you should make sure your code works as promised before you commit.
 * Make your commit messages clear and explicative. Our convention is to place
-  the name of the thing you're changing in [brackets] at the beginning of the
-  message: the module name for modules, [docs] for documentation files,
-  [coretasks] for coretasks.py, [db] for the database feature, and so on.
+  the name of the thing you're changing in at the beginning of the
+  message, followed by a colon: the module name for modules, docs for documentation files,
+  coretasks for coretasks.py, db for the database feature, and so on.
 * Python files should always have `#coding: utf8` as the first line (or the
   second, if the first is `#!/usr/bin/env python`), and
   `from __future__ import unicode_literals` as the first line after the module
