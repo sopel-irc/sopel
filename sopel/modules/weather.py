@@ -16,16 +16,16 @@ def woeid_search(query):
     node for the result, so that location data can still be retrieved. Returns
     None if there is no result, or the woeid field is empty.
     """
-    query = 'q=select * from geo.placefinder where text="%s"' % query
+    query = 'q=select * from geo.places where text="%s"' % query
     body = web.get('http://query.yahooapis.com/v1/public/yql?' + query,
                    dont_decode=True)
     parsed = xmltodict.parse(body).get('query')
     results = parsed.get('results')
-    if results is None or results.get('Result') is None:
+    if results is None or results.get('place') is None:
         return None
-    if type(results.get('Result')) is list:
-        return results.get('Result')[0]
-    return results.get('Result')
+    if type(results.get('place')) is list:
+        return results.get('place')[0]
+    return results.get('place')
 
 
 def get_cover(parsed):
@@ -166,12 +166,18 @@ def update_woeid(bot, trigger):
 
     bot.db.set_nick_value(trigger.nick, 'woeid', woeid)
 
-    neighborhood = first_result.get('neighborhood') or ''
+    neighborhood = first_result.get('locality2') or ''
     if neighborhood:
-        neighborhood += ','
-    city = first_result.get('city') or ''
-    state = first_result.get('state') or ''
-    country = first_result.get('country') or ''
-    uzip = first_result.get('uzip') or ''
-    bot.reply('I now have you at WOEID %s (%s %s, %s, %s %s.)' %
+        neighborhood = neighborhood.get('#text') + ', '
+    city = first_result.get('locality1') or ''
+    # This is to catch cases like 'Bawlf, Alberta' where the location is
+    # thought to be a "LocalAdmin" rather than a "Town"
+    if city:
+        city = city.get('#text')
+    else:
+        city = first_result.get('name')
+    state = first_result.get('admin1').get('#text') or ''
+    country = first_result.get('country').get('#text') or ''
+    uzip = first_result.get('postal').get('#text') or ''
+    bot.reply('I now have you at WOEID %s (%s%s, %s, %s %s)' %
               (woeid, neighborhood, city, state, country, uzip))
