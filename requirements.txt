@@ -3,3 +3,4 @@ pytz
 praw
 pyenchant
 pygeoip
+requests

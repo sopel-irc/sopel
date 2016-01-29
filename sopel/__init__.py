@@ -52,7 +52,6 @@ version_info = _version_info()
 
 def run(config, pid_file, daemon=False):
     import sopel.bot as bot
-    import sopel.web as web
     import sopel.logger
     from sopel.tools import stderr
     delay = 20
@@ -60,7 +59,6 @@ def run(config, pid_file, daemon=False):
     if not config.core.ca_certs:
         stderr('Could not open CA certificates file. SSL will not '
                'work properly.')
-    web.ca_certs = config.core.ca_certs
 
     def signal_handler(sig, frame):
         if sig == signal.SIGUSR1 or sig == signal.SIGTERM:
