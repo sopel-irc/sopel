@@ -13,7 +13,7 @@ import json
 
 import sopel
 import sopel.module
-import sopel.web
+import requests
 import sopel.tools
 
 wait_time = 24 * 60 * 60  # check once per day
@@ -42,7 +42,7 @@ def startup_version_check(bot, trigger):
 def check_version(bot):
     version = sopel.version_info
 
-    info = json.loads(sopel.web.get(version_url))
+    info = requests.get(version_url).json()
     if version.releaselevel == 'final':
         latest = info['version']
         notes = info['release_notes']
