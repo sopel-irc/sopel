@@ -11,15 +11,18 @@
 # Licensed under the Eiffel Forum License 2.
 
 from __future__ import unicode_literals, absolute_import, print_function, division
-import os
+import locale
 import sys
-if hasattr(os, "getenv") and os.getenv("LC_ALL") == "C":
-    print('WARNING!!! LC_ALL is set to "C", which makes Python do stupid '
+loc = locale.getlocale()
+if not loc[1] or 'UTF-8' not in loc[1]:
+    print('WARNING!!! Something is messed up in your locale environment '
+          'variables (e.g. LC_ALL is set to "C"), which makes Python do stupid '
           'things. If you get strange errors, please unset it, or set it to '
           'something like "en_US.UTF-8".', file=sys.stderr)
 
 
 from collections import namedtuple
+import os
 import re
 import time
 import traceback
