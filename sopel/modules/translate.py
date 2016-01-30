@@ -13,6 +13,7 @@ from sopel.module import rule, commands, priority, example
 import json
 import sys
 import random
+import requests
 mangle_lines = {}
 if sys.version_info.major >= 3:
     unicode = str
@@ -30,19 +31,15 @@ def translate(text, in_lang='auto', out_lang='en'):
         'Gecko/20071127 Firefox/2.0.0.11'
     }
 
-    url_query = {
+    query = {
         "client": "gtx",
         "sl": in_lang,
         "tl": out_lang,
         "dt": "t",
         "q": text,
     }
-    query_string = "&".join(
-        "{key}={value}".format(key=key, value=value)
-        for key, value in url_query.items()
-    )
-    url = "http://translate.googleapis.com/translate_a/single?{query}".format(query=query_string)
-    result = web.get(url, timeout=40, headers=headers)
+    url = "http://translate.googleapis.com/translate_a/single"
+    result = requests.get(url, params=query, timeout=40, headers=headers).text
 
     if result == '[,,""]':
         return None, in_lang
