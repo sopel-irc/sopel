@@ -32,8 +32,7 @@ def get_info(number=None):
         url = 'http://xkcd.com/{}/info.0.json'.format(number)
     else:
         url = 'http://xkcd.com/info.0.json'
-    data = web.get(url)
-    data = json.loads(data)
+    data = requests.get(url).json()
     data['url'] = 'http://xkcd.com/' + str(data['num'])
     return data
 
