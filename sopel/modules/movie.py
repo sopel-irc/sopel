@@ -7,8 +7,7 @@ Licensed under the Eiffel Forum License 2.
 This module relies on omdbapi.com
 """
 from __future__ import unicode_literals, absolute_import, print_function, division
-import json
-import sopel.web as web
+import requests
 import sopel.module
 from sopel.logger import get_logger
 
@@ -25,9 +24,8 @@ def movie(bot, trigger):
     if not trigger.group(2):
         return
     word = trigger.group(2).rstrip()
-    uri = "http://www.omdbapi.com/?t=" + word
-    u = web.get(uri, 30)
-    data = json.loads(u)  # data is a Dict containing all the information we need
+    uri = "http://www.omdbapi.com/"
+    data = requests.get(uri, params={'t': word}, timeout=30).json()
     if data['Response'] == 'False':
         if 'Error' in data:
             message = '[MOVIE] %s' % data['Error']
