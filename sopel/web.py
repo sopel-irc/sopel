@@ -135,7 +135,7 @@ def post(uri, query, limit_bytes=None, timeout=20, verify_ssl=True, return_heade
     """
     if not uri.startswith('http'):
         uri = "http://" + uri
-    u = requests.post(uri, timeout=timeout, verify=verify_ssl, data=qeury)
+    u = requests.post(uri, timeout=timeout, verify=verify_ssl, data=query)
     bytes = u.raw.read(limit_bytes)
     headers = u.headers
     u.close()
