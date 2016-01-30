@@ -58,6 +58,8 @@ class Channel(object):
 
         This maps username ``Identifier``s to bitwise integer values. This can
         be compared to appropriate constants from ``sopel.module``."""
+        self.topic = ''
+        """The topic of the channel."""
 
     def clear_user(self, nick):
         user = self.users[nick]
