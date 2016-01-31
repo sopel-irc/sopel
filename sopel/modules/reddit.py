@@ -23,7 +23,7 @@ else:
 
 
 domain = r'https?://(?:www\.|np\.)?reddit\.com'
-post_url = '(%s/r/.*?/comments/[\w-]+)' % domain
+post_url = '%s/r/.*?/comments/([\w-]+)' % domain
 user_url = '%s/u(ser)?/([\w-]+)' % domain
 post_regex = re.compile(post_url)
 user_regex = re.compile(user_url)
@@ -45,7 +45,7 @@ def shutdown(bot):
 def rpost_info(bot, trigger, match=None):
     r = praw.Reddit(user_agent=USER_AGENT)
     match = match or trigger
-    s = r.get_submission(url=match.group(1))
+    s = r.get_submission(submission_id=match.group(1))
 
     message = ('[REDDIT] {title} {link}{nsfw} | {points} points ({percent}) | '
                '{comments} comments | Posted by {author} | '
