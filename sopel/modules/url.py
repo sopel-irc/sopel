@@ -79,7 +79,7 @@ def setup(bot=None):
         bot.memory['last_seen_url'] = tools.SopelMemory()
 
     url_finder = re.compile(r'(?u)(%s?(?:http|https|ftp)(?:://\S+))' %
-                            (bot.config.url.exclusion_char))
+                            (bot.config.url.exclusion_char), re.IGNORECASE)
 
 
 @commands('title')
@@ -123,6 +123,9 @@ def title_auto(bot, trigger):
             return
 
     urls = re.findall(url_finder, trigger)
+    if len(urls) == 0:
+        return
+
     results = process_urls(bot, trigger, urls)
     bot.memory['last_seen_url'][trigger.sender] = urls[-1]
 
