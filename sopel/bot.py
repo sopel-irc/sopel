@@ -311,8 +311,8 @@ class Sopel(irc.Bot):
             elif self.stack[recipient_id]:
                 elapsed = time.time() - self.stack[recipient_id][-1][0]
                 if elapsed < 3:
-                    penalty = float(max(0, len(text) - 50)) / 70
-                    wait = 0.7 + penalty
+                    penalty = float(max(0, len(text) - 40)) / 70
+                    wait = 0.8 + penalty
                     if elapsed < wait:
                         time.sleep(wait - elapsed)
 
