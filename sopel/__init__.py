@@ -14,11 +14,12 @@ from __future__ import unicode_literals, absolute_import, print_function, divisi
 import locale
 import sys
 loc = locale.getlocale()
-if not loc[1] or 'UTF-8' not in loc[1]:
-    print('WARNING!!! Something is messed up in your locale environment '
-          'variables (e.g. LC_ALL is set to "C"), which makes Python do stupid '
-          'things. If you get strange errors, please unset it, or set it to '
-          'something like "en_US.UTF-8".', file=sys.stderr)
+if sys.version_info.major > 2:
+    if not loc[1] or 'UTF-8' not in loc[1]:
+        print('WARNING!!! You are running with a non-UTF8 locale environment '
+              'variables (e.g. LC_ALL is set to "C"), which makes Python 3 do '
+              'stupid things. If you get strange errors, please set it to '
+              'something like "en_US.UTF-8".', file=sys.stderr)
 
 
 from collections import namedtuple
