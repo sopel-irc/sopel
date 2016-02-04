@@ -83,7 +83,7 @@ def display(bot, amount, of, to):
 
     result = amount / of_rate * to_rate
     bot.say("{} {} ({}) = {} {} ({})".format(amount, of.upper(), of_name,
-                                             result, to.upper(), to_name))
+                                             round(result, 2), to.upper(), to_name))
 
 
 @commands('btc', 'bitcoin')
