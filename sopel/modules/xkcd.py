@@ -8,6 +8,7 @@ from __future__ import unicode_literals, absolute_import, print_function, divisi
 import json
 import random
 import re
+import requests
 from sopel import web
 from sopel.modules.search import google_search
 from sopel.module import commands
