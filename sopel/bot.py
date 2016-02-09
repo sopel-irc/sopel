@@ -134,7 +134,7 @@ class Sopel(irc.Bot):
         # Default to empty
         if not self.config.core.nick_blocks:
             self.config.core.nick_blocks = []
-        if not self.config.core.nick_blocks:
+        if not self.config.core.host_blocks:
             self.config.core.host_blocks = []
         self.setup()
 
