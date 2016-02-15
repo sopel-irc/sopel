@@ -399,7 +399,7 @@ class Bot(asynchat.async_chat):
         logfile.close()
         if self.error_count > 10:
             if (datetime.now() - self.last_error_timestamp).seconds < 5:
-                print >> sys.stderr, "Too many errors, can't continue"
+                stderr("Too many errors, can't continue")
                 os._exit(1)
         self.last_error_timestamp = datetime.now()
         self.error_count = self.error_count + 1
