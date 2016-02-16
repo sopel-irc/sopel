@@ -64,7 +64,8 @@ class PreTrigger(object):
         self.nick = sopel.tools.Identifier(self.nick)
 
         # If we have arguments, the first one is the sender
-        if self.args:
+        # Unless it's a QUIT event
+        if self.args and self.event != 'QUIT':
             target = sopel.tools.Identifier(self.args[0])
         else:
             target = None

@@ -44,6 +44,20 @@ def test_pm_pretrigger(nick):
     assert pretrigger.sender == Identifier('Foo')
 
 
+def test_quit_pretrigger(nick):
+    line = ':Foo!foo@example.com QUIT :quit message text'
+    pretrigger = PreTrigger(nick, line)
+    assert pretrigger.tags == {}
+    assert pretrigger.hostmask == 'Foo!foo@example.com'
+    assert pretrigger.line == line
+    assert pretrigger.args == ['quit message text']
+    assert pretrigger.event == 'QUIT'
+    assert pretrigger.nick == Identifier('Foo')
+    assert pretrigger.user == 'foo'
+    assert pretrigger.host == 'example.com'
+    assert pretrigger.sender is None
+
+
 def test_tags_pretrigger(nick):
     line = '@foo=bar;baz;sopel.chat/special=value :Foo!foo@example.com PRIVMSG #Sopel :Hello, world'
     pretrigger = PreTrigger(nick, line)
