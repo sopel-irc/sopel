@@ -188,10 +188,10 @@ def find_title(url):
     try:
         content = ''
         for byte in response.iter_content(chunk_size=512, decode_unicode=True):
-            content += str(byte)
+            content += unicode(byte,errors='ignore')
             if '</title>' in content or len(content) > max_bytes:
                 break
-    except UnicodeDecodeError:
+    except (UnicodeDecodeError, LookupError):
         return  # Fail silently when data can't be decoded
     finally:
         # need to close the connexion because we have not read all the data
