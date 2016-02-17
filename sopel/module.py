@@ -131,7 +131,7 @@ def commands(*command_list):
         attribute. If there is no commands attribute, it is added.
 
     Example:
-        @command("hello"):
+        @commands("hello"):
             If the command prefix is "\.", this would trigger on lines starting
             with ".hello".
 
