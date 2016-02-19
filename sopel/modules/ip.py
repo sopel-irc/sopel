@@ -65,29 +65,46 @@ def _find_geoip_db(bot):
     if config.ip.GeoIP_db_path:
         cities_db = os.path.join(config.ip.GeoIP_db_path, 'GeoLiteCity.dat')
         ipasnum_db = os.path.join(config.ip.GeoIP_db_path, 'GeoIPASNum.dat')
-        if os.path.isfile(cities_db) and os.path.isfile(ipasnum_db):
+        citiesv6_db = os.path.join(config.ip.GeoIP_db_path, 'GeoLiteCityv6.dat')
+        ipasnumv6_db = os.path.join(config.ip.GeoIP_db_path, 'GeoIPASNumv6.dat')
+        if (os.path.isfile(cities_db) and
+                os.path.isfile(ipasnum_db) and
+                os.path.isfile(citiesv6_db) and
+                os.path.isfile(ipasnumv6_db)):
             return config.ip.GeoIP_db_path
         else:
             LOGGER.warning(
                 'GeoIP path configured but DB not found in configured path'
             )
     if (os.path.isfile(os.path.join(bot.config.core.homedir, 'GeoLiteCity.dat')) and
-            os.path.isfile(os.path.join(bot.config.core.homedir, 'GeoIPASNum.dat'))):
+            os.path.isfile(os.path.join(bot.config.core.homedir, 'GeoIPASNum.dat')) and
+            os.path.isfile(os.path.join(bot.config.core.homedir, 'GeoLiteCityv6.dat')) and
+            os.path.isfile(os.path.join(bot.config.core.homedir, 'GeoIPASNumv6.dat'))):
         return bot.config.core.homedir
     elif (os.path.isfile(os.path.join('/usr/share/GeoIP', 'GeoLiteCity.dat')) and
-            os.path.isfile(os.path.join('/usr/share/GeoIP', 'GeoIPASNum.dat'))):
+            os.path.isfile(os.path.join('/usr/share/GeoIP', 'GeoIPASNum.dat')) and
+            os.path.isfile(os.path.join('/usr/share/GeoIP', 'GeoLiteCityv6.dat')) and
+            os.path.isfile(os.path.join('/usr/share/GeoIP', 'GeoIPASNumv6.dat'))):
         return '/usr/share/GeoIP'
     elif urlretrieve:
         LOGGER.warning('Downloading GeoIP database')
         bot.say('Downloading GeoIP database, please wait...')
         geolite_city_url = 'http://geolite.maxmind.com/download/geoip/database/GeoLiteCity.dat.gz'
         geolite_ASN_url = 'http://download.maxmind.com/download/geoip/database/asnum/GeoIPASNum.dat.gz'
+        geolite_cityv6_url = 'http://geolite.maxmind.com/download/geoip/database/GeoLiteCityv6-beta/GeoLiteCityv6.dat.gz'
+        geolite_ASNv6_url = 'http://download.maxmind.com/download/geoip/database/asnum/GeoIPASNumv6.dat.gz'
         geolite_city_filepath = os.path.join(bot.config.core.homedir, 'GeoLiteCity.dat.gz')
         geolite_ASN_filepath = os.path.join(bot.config.core.homedir, 'GeoIPASNum.dat.gz')
+        geolite_cityv6_filepath = os.path.join(bot.config.core.homedir, 'GeoLiteCityv6.dat.gz')
+        geolite_ASNv6_filepath = os.path.join(bot.config.core.homedir, 'GeoIPASNumv6.dat.gz')
         urlretrieve(geolite_city_url, geolite_city_filepath)
         urlretrieve(geolite_ASN_url, geolite_ASN_filepath)
+        urlretrieve(geolite_cityv6_url, geolite_cityv6_filepath)
+        urlretrieve(geolite_ASNv6_url, geolite_ASNv6_filepath)
         _decompress(geolite_city_filepath, geolite_city_filepath[:-3])
         _decompress(geolite_ASN_filepath, geolite_ASN_filepath[:-3])
+        _decompress(geolite_cityv6_filepath, geolite_cityv6_filepath[:-3])
+        _decompress(geolite_ASNv6_filepath, geolite_ASNv6_filepath[:-3])
         return bot.config.core.homedir
     else:
         return False
@@ -110,8 +127,18 @@ def ip(bot, trigger):
         return False
     geolite_city_filepath = os.path.join(_find_geoip_db(bot), 'GeoLiteCity.dat')
     geolite_ASN_filepath = os.path.join(_find_geoip_db(bot), 'GeoIPASNum.dat')
-    gi_city = pygeoip.GeoIP(geolite_city_filepath)
-    gi_org = pygeoip.GeoIP(geolite_ASN_filepath)
+    geolite_cityv6_filepath = os.path.join(_find_geoip_db(bot), 'GeoLiteCityv6.dat')
+    geolite_ASNv6_filepath = os.path.join(_find_geoip_db(bot), 'GeoIPASNumv6.dat')
+    try:
+        addr = socket.gethostbyaddr(query)[2][0]
+    except socket.herror:
+        addr = query
+    if ':' not in addr:
+        gi_city = pygeoip.GeoIP(geolite_city_filepath)
+        gi_org = pygeoip.GeoIP(geolite_ASN_filepath)
+    else:
+        gi_city = pygeoip.GeoIP(geolite_cityv6_filepath)
+        gi_org = pygeoip.GeoIP(geolite_ASNv6_filepath)
     host = socket.getfqdn(query)
     response = "[IP/Host Lookup] Hostname: %s" % host
     try:
