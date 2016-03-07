@@ -62,7 +62,7 @@ def main(argv=None):
         parser.add_argument('-c', '--config', metavar='filename',
                             help='use a specific configuration file')
         parser.add_argument("-d", '--fork', action="store_true",
-                            dest="deamonize", help="Deamonize sopel")
+                            dest="daemonize", help="Daemonize sopel")
         parser.add_argument("-q", '--quit', action="store_true", dest="quit",
                             help="Gracefully quit Sopel")
         parser.add_argument("-k", '--kill', action="store_true", dest="kill",
@@ -144,7 +144,7 @@ def main(argv=None):
 
         logfile = os.path.os.path.join(config_module.core.logdir, 'stdio.log')
 
-        config_module._is_deamonized = opts.deamonize
+        config_module._is_daemonized = opts.daemonize
 
         sys.stderr = tools.OutputRedirect(logfile, True, opts.quiet)
         sys.stdout = tools.OutputRedirect(logfile, False, opts.quiet)
@@ -187,7 +187,7 @@ def main(argv=None):
         elif opts.quit or opts.kill:
             stderr('Sopel is not running!')
             sys.exit(1)
-        if opts.deamonize:
+        if opts.daemonize:
             child_pid = os.fork()
             if child_pid is not 0:
                 sys.exit()
