@@ -188,7 +188,10 @@ def find_title(url):
     try:
         content = ''
         for byte in response.iter_content(chunk_size=512, decode_unicode=True):
-            content += str(byte)
+            if not isinstance(byte, bytes):
+                content += byte
+            else:
+                break
             if '</title>' in content or len(content) > max_bytes:
                 break
     except UnicodeDecodeError:
