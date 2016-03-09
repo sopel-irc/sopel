@@ -186,9 +186,9 @@ def find_title(url):
     """Return the title for the given URL."""
     response = requests.get(url, stream=True)
     try:
-        content = ''
+        content = u''
         for byte in response.iter_content(chunk_size=512, decode_unicode=True):
-            content += str(byte)
+            content += unicode(byte)
             if '</title>' in content or len(content) > max_bytes:
                 break
     except UnicodeDecodeError:
@@ -200,7 +200,7 @@ def find_title(url):
     # Some cleanup that I don't really grok, but was in the original, so
     # we'll keep it (with the compiled regexes made global) for now.
     content = title_tag_data.sub(r'<\1title>', content)
-    content = quoted_title.sub('', content)
+    content = quoted_title.sub(u'', content)
 
     start = content.find('<title>')
     end = content.find('</title>')
@@ -212,7 +212,7 @@ def find_title(url):
     title = ' '.join(title.split())  # cleanly remove multiple spaces
 
     # More cryptic regex substitutions. This one looks to be myano's invention.
-    title = re_dcc.sub('', title)
+    title = re_dcc.sub(u'', title)
 
     return title or None
 
