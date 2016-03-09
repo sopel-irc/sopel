@@ -1,3 +1,14 @@
+Changes between 6.3.0 and 6.3.1
+===============================
+Module changes:
+* The xkcd module is working again
+* Fix an issue causing unicode errors to show for some URLs when using Python 2 (but you should really switch to 3!)
+
+Core Changes:
+* Fix a bug in QUIT message parsing which caused certain users to be flooded with PMs if their nick matched the first word of a user's QUIT message (such as "disconnected" or "ping")
+* Fix a rare python 3 incompatibility bug when quitting due to too many core errors.
+* We no longer show a warning when detecting a non-unicode system locale if you're still using Python 2
+
 Changes between 6.2.0 and 6.3.0
 ===============================
 Module changes:
