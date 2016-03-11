@@ -21,3 +21,4 @@ def announce(bot, trigger):
         return
     for channel in bot.channels:
         bot.msg(channel, '[ANNOUNCEMENT] %s' % trigger.group(2))
+    bot.reply('Announce complete.')
