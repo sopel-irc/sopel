@@ -35,7 +35,7 @@ def f_reload(bot, trigger):
             'medium': collections.defaultdict(list),
             'low': collections.defaultdict(list)
         }
-        bot.command_groups = collections.defaultdict(list)
+        bot._command_groups = collections.defaultdict(list)
         bot.setup()
         return bot.reply('done')
 
