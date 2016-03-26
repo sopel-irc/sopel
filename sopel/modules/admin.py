@@ -213,7 +213,7 @@ def set_config(bot, trigger):
             if isinstance(descriptor, FilenameAttribute):
                 value = descriptor.parse(bot.config, descriptor, value)
             else:
-                value = descriptor.parse(descriptor, value)
+                value = descriptor.parse(value)
         except ValueError as exc:
             bot.say("Can't set attribute: " + str(exc))
             return
