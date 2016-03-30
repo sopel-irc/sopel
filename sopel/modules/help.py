@@ -78,6 +78,71 @@ def help(bot, trigger):
                 "<command> (e.g. {1}help time)".format(url, help_prefix))
 
 
+@example('.module help')
+@commands('module')
+@priority('low')
+def modhelp(bot, trigger):
+    """Shows a module's list of commands"""
+    if trigger.group(2):
+        name = trigger.group(2)
+        name = name.lower()
+
+        # number of lines of help to show
+        threshold = 3
+
+        if name not in bot._command_groups:
+            bot.reply("I don't know that module.")
+            return
+
+        if len(bot._command_groups[name]) > threshold:
+            if trigger.nick != trigger.sender:  # don't say that if asked in private
+                bot.reply("The documentation for this module is too long; I'm sending it to you in a private message.")
+            msgfun = lambda l: bot.msg(trigger.nick, l)
+        else:
+            msgfun = bot.reply
+
+        cmds = bot._command_groups[name]
+        for cmd in cmds:
+            cmd_names = name.upper() + ' : ' + '|'.join(cmd)
+            cmd = cmd[0] # Docs from first/only alias
+            if cmd in bot.doc:
+                msgfun(bold(cmd_names))
+                for line in bot.doc[cmd][0]:
+                    msgfun(line)
+                if bot.doc[cmd][1]:
+                    msgfun('e.g. ' + bot.doc[cmd][1])
+            else:
+                msgfun(bold(cmd_names) + ' : no documentation available for this command.')
+
+    else:
+        # This'll probably catch most cases, without having to spend the time
+        # actually creating the list first. Maybe worth storing the link and a
+        # heuristic in config, too, so it persists across restarts. Would need a
+        # command to regenerate, too...
+        if 'command-list' in bot.memory and bot.memory['command-list'][0] == len(bot.command_groups):
+            url = bot.memory['command-list'][1]
+        else:
+            bot.say("Hang on, I'm creating a list.")
+            msgs = []
+
+            name_length = max(6, max(len(k) for k in bot.command_groups.keys()))
+            for category, cmds in collections.OrderedDict(sorted(bot.command_groups.items())).items():
+                category = category.upper().ljust(name_length)
+                cmds = '  '.join(cmds)
+                msg = category + '  ' + cmds
+                indent = ' ' * (name_length + 2)
+                # Honestly not sure why this is a list here
+                msgs.append('\n'.join(textwrap.wrap(msg, subsequent_indent=indent)))
+
+            url = create_list(bot, '\n\n'.join(msgs))
+            if not url:
+                return
+            bot.memory['command-list'] = (len(bot.command_groups), url)
+        bot.say("I've posted a list of that module's commands at {} - You can see "
+                "more info about any of these commands by doing .help "
+                "<module> (e.g. .help time)".format(url))
+
+
 def create_list(bot, msg):
     msg = 'Command listing for {}@{}\n\n'.format(bot.nick, bot.config.core.host) + msg
     payload = { "content": msg }
