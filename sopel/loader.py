@@ -117,7 +117,9 @@ def compile_rule(nick, pattern, alias_nicks):
 
     nick = re.escape(nick)
     if alias_nicks:
-        nick = '(%s)' % '|'.join(alias_nicks)
+        nicks = alias_nicks
+        nicks.append(nick)
+        nick = '(%s)' % '|'.join(nicks)
     pattern = pattern.replace('$nickname', nick)
     pattern = pattern.replace('$nick', r'{}[,:]\s+'.format(nick))
     flags = re.IGNORECASE
