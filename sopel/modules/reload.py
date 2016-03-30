@@ -17,14 +17,12 @@ import sopel.module
 import subprocess
 
 
-@sopel.module.nickname_commands("reload")
+@sopel.module.commands("reload")
 @sopel.module.priority("low")
 @sopel.module.thread(False)
+@sopel.module.require_admin()
 def f_reload(bot, trigger):
     """Reloads a module, for use by admins only."""
-    if not trigger.admin:
-        return
-
     name = trigger.group(2)
 
     if not name or name == '*' or name.upper() == 'ALL THE THINGS':
@@ -33,6 +31,8 @@ def f_reload(bot, trigger):
             'medium': collections.defaultdict(list),
             'low': collections.defaultdict(list)
         }
+        bot.shutdown_methods.clear()
+        bot.scheduler.clear_jobs()
         bot._command_groups = collections.defaultdict(list)
         bot.setup()
         return bot.reply('done')
@@ -40,21 +40,8 @@ def f_reload(bot, trigger):
     if name not in sys.modules:
         return bot.reply('"%s" not loaded, try the `load` command' % name)
 
-    old_module = sys.modules[name]
-
-    old_callables = {}
-    for obj_name, obj in iteritems(vars(old_module)):
-        bot.unregister(obj)
-
-    # Also remove all references to sopel callables from top level of the
-    # module, so that they will not get loaded again if reloading the
-    # module does not override them.
-    for obj_name in old_callables.keys():
-        delattr(old_module, obj_name)
-
-    # Also delete the setup function
-    if hasattr(old_module, "setup"):
-        delattr(old_module, "setup")
+    old_module = bot._modules[name]
+    bot.unregister_module(old_module)
 
     modules = sopel.loader.enumerate_modules(bot.config)
     if name not in modules:
@@ -64,25 +51,22 @@ def f_reload(bot, trigger):
 
 
 def load_module(bot, name, path, type_):
-    module, mtime = sopel.loader.load_module(name, path, type_)
-    relevant_parts = sopel.loader.clean_module(module, bot.config)
+    try:
+        module, mtime = sopel.loader.load_module(name, path, type_)
+        bot.register_module(module)
+    except Exception as e:
+        filename, lineno = tools.get_raising_file_and_line()
+        rel_path = os.path.relpath(filename, os.path.dirname(__file__))
+        raising_stmt = "%s:%d" % (rel_path, lineno)
+        return bot.reply("Error loading %s: %s (%s)" % (name, e, raising_stmt))
+    else:
+        modified = time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime(mtime))
+        bot.reply('%r (version: %s)' % (module, modified))
 
-    bot.register(*relevant_parts)
 
-    # TODO sys.modules[name] = module
-    if hasattr(module, 'setup'):
-        module.setup(bot)
-
-    modified = time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime(mtime))
-
-    bot.reply('%r (version: %s)' % (module, modified))
-
-
-@sopel.module.nickname_commands('update')
+@sopel.module.commands('update')
+@sopel.module.require_admin()
 def f_update(bot, trigger):
-    if not trigger.admin:
-        return
-
     """Pulls the latest versions of all modules from Git"""
     proc = subprocess.Popen('/usr/bin/git pull',
                             stdout=subprocess.PIPE,
@@ -92,20 +76,18 @@ def f_update(bot, trigger):
     f_reload(bot, trigger)
 
 
-@sopel.module.nickname_commands("load")
+@sopel.module.commands("load")
 @sopel.module.priority("low")
 @sopel.module.thread(False)
+@sopel.module.require_admin()
 def f_load(bot, trigger):
     """Loads a module, for use by admins only."""
-    if not trigger.admin:
-        return
-
     name = trigger.group(2)
     path = ''
     if not name:
         return bot.reply('Load what?')
 
-    if name in sys.modules:
+    if name in bot._modules:
         return bot.reply('Module already loaded, use reload')
 
     mods = sopel.loader.enumerate_modules(bot.config)
@@ -114,28 +96,20 @@ def f_load(bot, trigger):
     path, type_ = mods[name]
     load_module(bot, name, path, type_)
 
-
-# Catch PM based messages
-@sopel.module.commands("reload")
+@sopel.module.commands("unload")
 @sopel.module.priority("low")
 @sopel.module.thread(False)
-def pm_f_reload(bot, trigger):
-    """Wrapper for allowing delivery of .reload command via PM"""
-    if trigger.is_privmsg:
-        f_reload(bot, trigger)
+@sopel.module.require_admin()
+def f_unload(bot, trigger):
+    """"Unloads" a module, for use by admins only."""
+    name = trigger.group(2)
+    path = ''
+    if name == bot.config.core.owner:
+        return bot.reply('What?')
 
+    if name not in bot._modules:
+        return bot.reply('%s: not loaded, try the `load` command' % name)
 
-@sopel.module.commands('update')
-def pm_f_update(bot, trigger):
-    """Wrapper for allowing delivery of .update command via PM"""
-    if trigger.is_privmsg:
-        f_update(bot, trigger)
-
-
-@sopel.module.commands("load")
-@sopel.module.priority("low")
-@sopel.module.thread(False)
-def pm_f_load(bot, trigger):
-    """Wrapper for allowing delivery of .load command via PM"""
-    if trigger.is_privmsg:
-        f_load(bot, trigger)
+    old_module = bot._modules[name]
+    bot.unregister_module(old_module)
+    bot.reply('done.')

@@ -17,7 +17,7 @@ import time
 from sopel import tools
 from sopel import irc
 from sopel.db import SopelDB
-from sopel.tools import stderr, Identifier
+from sopel.tools import stderr, Identifier, iteritems
 import sopel.tools.jobs
 from sopel.trigger import Trigger
 from sopel.module import NOLIMIT
@@ -89,6 +89,12 @@ class Sopel(irc.Bot):
         """A set containing the IRCv3 capabilities that the bot has enabled."""
         self._cap_reqs = dict()
         """A dictionary of capability names to a list of requests"""
+
+        self._modules = dict()
+        """A dictionary of modules currently registered by the bot. sys.modules
+        doesn't work because although del <module> removes it from the namespace,
+        it remains in sys.modules. Thus, we need another way to keep track of 
+        what has been (un)loaded."""
 
         self.privileges = dict()
         """A dictionary of channels to their users and privilege levels
@@ -177,6 +183,7 @@ class Sopel(irc.Bot):
 
             try:
                 module, _ = sopel.loader.load_module(name, path, type_)
+                self.register_module(module)
             except Exception as e:
                 error_count = error_count + 1
                 filename, lineno = tools.get_raising_file_and_line()
@@ -184,23 +191,7 @@ class Sopel(irc.Bot):
                 raising_stmt = "%s:%d" % (rel_path, lineno)
                 stderr("Error loading %s: %s (%s)" % (name, e, raising_stmt))
             else:
-                try:
-                    if hasattr(module, 'setup'):
-                        module.setup(self)
-                    relevant_parts = sopel.loader.clean_module(
-                        module, self.config)
-                except Exception as e:
-                    error_count = error_count + 1
-                    filename, lineno = tools.get_raising_file_and_line()
-                    rel_path = os.path.relpath(
-                        filename, os.path.dirname(__file__)
-                    )
-                    raising_stmt = "%s:%d" % (rel_path, lineno)
-                    stderr("Error in %s setup procedure: %s (%s)"
-                           % (name, e, raising_stmt))
-                else:
-                    self.register(*relevant_parts)
-                    success_count += 1
+                success_count += 1
 
         if len(modules) > 1:  # coretasks is counted
             stderr('\n\nRegistered %d modules,' % (success_count - 1))
@@ -208,20 +199,36 @@ class Sopel(irc.Bot):
         else:
             stderr("Warning: Couldn't load any modules")
 
+    def unregister_module(self, module):
+        for obj_name, obj in iteritems(vars(module)):
+            self.unregister(obj)
+        callables, _, _ = sopel.loader.clean_module(module, self.config)
+        if hasattr(module, "setup"):
+            delattr(module, "setup")
+        del self._modules[module.__name__]
+
     def unregister(self, obj):
         if not callable(obj):
             return
+        if hasattr(obj, 'commands'):
+            module_name = obj.__module__.rsplit('.', 1)[-1]
+            category = getattr(obj, 'category', module_name)
+            self._command_groups[category].remove(obj.commands)
+            if len(self._command_groups[category]) is 0:
+                del self._command_groups[category]
+            for command, docs in obj._docs.items():
+                del self.doc[command]
+
         if hasattr(obj, 'rule'):  # commands and intents have it added
             for rule in obj.rule:
                 callb_list = self._callables[obj.priority][rule]
                 if obj in callb_list:
                     callb_list.remove(obj)
         if hasattr(obj, 'interval'):
-            # TODO this should somehow find the right job to remove, rather than
-            # clearing the entire queue. Issue #831
-            self.scheduler.clear_jobs()
-        if (getattr(obj, '__name__', None) == 'shutdown' and
-                    obj in self.shutdown_methods):
+                job = sopel.tools.jobs.Job(obj.interval, obj)
+                self.scheduler.del_job(job)
+        if (getattr(obj, '__name__', None) == 'shutdown'
+                and obj in self.shutdown_methods):
             self.shutdown_methods.remove(obj)
 
     def register(self, callables, jobs, shutdowns, urls):
@@ -239,7 +246,7 @@ class Sopel(irc.Bot):
                 # TODO doc and make decorator for this. Not sure if this is how
                 # it should work yet, so not making it public for 6.0.
                 category = getattr(callbl, 'category', module_name)
-                self._command_groups[category].append(callbl.commands[0])
+                self._command_groups[category].append(callbl.commands)
             for command, docs in callbl._docs.items():
                 self.doc[command] = docs
         for func in jobs:
@@ -251,6 +258,17 @@ class Sopel(irc.Bot):
             self.memory['url_callbacks'] = tools.SopelMemory()
         for func in urls:
             self.memory['url_callbacks'][func.url_regex] = func
+
+    def register_module(self, module):
+        try:
+            if hasattr(module, 'setup'):
+                module.setup(self)
+        except Exception as e:
+            raise RuntimeError("Error in setup procedure: %s" % e)
+        else:
+            relevant_parts = sopel.loader.clean_module(module, self.config)
+            self.register(*relevant_parts)
+            self._modules[module.__name__] = module
 
     def part(self, channel, msg=None):
         """Part a channel."""
