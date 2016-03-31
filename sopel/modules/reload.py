@@ -26,8 +26,6 @@ def f_reload(bot, trigger):
         return
 
     name = trigger.group(2)
-    if name == bot.config.core.owner:
-        return bot.reply('What?')
 
     if not name or name == '*' or name.upper() == 'ALL THE THINGS':
         bot._callables = {
@@ -102,8 +100,8 @@ def f_load(bot, trigger):
 
     name = trigger.group(2)
     path = ''
-    if name == bot.config.core.owner:
-        return bot.reply('What?')
+    if not name:
+        return bot.reply('Load what?')
 
     if name in sys.modules:
         return bot.reply('Module already loaded, use reload')
