@@ -11,10 +11,11 @@ from __future__ import unicode_literals, absolute_import, print_function, divisi
 import collections
 import sys
 import time
-from sopel.tools import iteritems
+from sopel.tools import iteritems, get_raising_file_and_line
 import sopel.loader
 import sopel.module
 import subprocess
+import os
 
 
 @sopel.module.commands("reload")
@@ -55,7 +56,7 @@ def load_module(bot, name, path, type_):
         module, mtime = sopel.loader.load_module(name, path, type_)
         bot.register_module(module)
     except Exception as e:
-        filename, lineno = tools.get_raising_file_and_line()
+        filename, lineno = get_raising_file_and_line()
         rel_path = os.path.relpath(filename, os.path.dirname(__file__))
         raising_stmt = "%s:%d" % (rel_path, lineno)
         return bot.reply("Error loading %s: %s (%s)" % (name, e, raising_stmt))
