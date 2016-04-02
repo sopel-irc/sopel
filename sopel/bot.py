@@ -213,7 +213,8 @@ class Sopel(irc.Bot):
         if hasattr(obj, 'commands'):
             module_name = obj.__module__.rsplit('.', 1)[-1]
             category = getattr(obj, 'category', module_name)
-            self._command_groups[category].remove(obj.commands)
+            if obj.commands in self._command_groups[category]:
+                self._command_groups[category].remove(obj.commands)
             if len(self._command_groups[category]) is 0:
                 del self._command_groups[category]
             for command, docs in obj._docs.items():
@@ -225,7 +226,8 @@ class Sopel(irc.Bot):
                 if obj in callb_list:
                     callb_list.remove(obj)
         if hasattr(obj, 'interval'):
-                job = sopel.tools.jobs.Job(obj.interval, obj)
+            for interval in obj.interval:
+                job = sopel.tools.jobs.Job(interval, obj)
                 self.scheduler.del_job(job)
         if (getattr(obj, '__name__', None) == 'shutdown'
                 and obj in self.shutdown_methods):
