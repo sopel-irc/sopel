@@ -81,12 +81,10 @@ class JobScheduler(threading.Thread):
         self._jobs.put(job)
 
     def del_job(self, del_job):
-        newjobs = PriorityQueue()
-        while self._jobs.not_empty:
+        for i in range(self._jobs.qsize()):
             job = self._jobs.get()
-            if job is not del_job:
-                newjobs.put()
-        self._jobs = newjobs
+            if job and job is not del_job:
+                self._jobs.put(job)
 
     def clear_jobs(self):
         """Clear current Job queue and start fresh."""
