@@ -50,7 +50,7 @@ def interactive_shell(bot, trigger):
         bot.say('A tty is required to start the console')
         return
     if bot._daemon:
-        bot.say('Can\'t start console when running as a deamon')
+        bot.say('Can\'t start console when running as a daemon')
         return
 
     # Backup stderr/stdout wrappers
