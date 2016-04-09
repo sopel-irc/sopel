@@ -2,12 +2,13 @@
 Description=Sopel IRC bot
 Documentation=http://sopel.chat/
 After=network.target
+DefaultInstance=sopel
 
 [Service]
 Type=simple
 User=sopel
-PIDFile=/run/sopel/sopel-sopel.pid
-ExecStart=/usr/bin/sopel -c /etc/sopel.cfg
+PIDFile=/run/sopel/sopel-%i.pid
+ExecStart=/usr/bin/sopel -c /etc/sopel/%i.cfg
 Restart=on-failure
 RestartPreventExitStatus=2
 RestartSec=30
