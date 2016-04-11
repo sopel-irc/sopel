@@ -148,6 +148,7 @@ def test_intents_trigger(nick):
     assert trigger.match == fakematch
     assert trigger.group == fakematch.group
     assert trigger.groups == fakematch.groups
+    assert trigger.groupdict == fakematch.groupdict
     assert trigger.args == ['#Sopel', 'Hello, world']
     assert trigger.tags == {'intent': 'ACTION'}
     assert trigger.admin is True
