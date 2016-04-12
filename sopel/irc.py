@@ -316,7 +316,7 @@ class Bot(asynchat.async_chat):
         self.buffer = ''
         self.last_ping_time = datetime.now()
         pretrigger = PreTrigger(self.nick, line)
-        if 'account-tag' not in self.enabled_capabilities:
+        if all(cap not in self.enabled_capabilities for cap in ['account-tag', 'extended-join']):
             pretrigger.tags.pop('account', None)
 
         if pretrigger.event == 'PING':

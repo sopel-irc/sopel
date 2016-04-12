@@ -84,6 +84,11 @@ class PreTrigger(object):
                 self.tags['intent'] = intent
                 self.args[-1] = message or ''
 
+        # Populate account from extended-join messages
+        if self.event == 'JOIN' and len(self.args) == 3:
+            # Account is the second arg `...JOIN #Sopel account :realname`
+            self.tags['account'] = self.args[1]
+
 
 class Trigger(unicode):
     """A line from the server, which has matched a callable's rules.
