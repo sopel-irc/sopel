@@ -70,10 +70,8 @@ class Config(object):
         # Technically it's the other way around, so we can bootstrap filename
         # attributes in the core section, but whatever.
         configured = None
-        try:
+        if self.parser.has_option('core', 'homedir'):
             configured = self.parser.get('core', 'homedir')
-        except ConfigParser.NoOptionError:
-            pass
         if configured:
             return configured
         else:

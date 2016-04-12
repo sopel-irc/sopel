@@ -143,9 +143,9 @@ class BaseValidated(object):
             # instance here.
             return self
 
-        try:
+        if instance._parser.has_option(instance._section_name, self.name):
             value = instance._parser.get(instance._section_name, self.name)
-        except configparser.NoOptionError:
+        else:
             if self.default is not NO_DEFAULT:
                 return self.default
             raise AttributeError(
@@ -290,9 +290,9 @@ class FilenameAttribute(BaseValidated):
     def __get__(self, instance, owner=None):
         if instance is None:
             return self
-        try:
+        if instance._parser.has_option(instance._section_name, self.name):
             value = instance._parser.get(instance._section_name, self.name)
-        except configparser.NoOptionError:
+        else:
             if self.default is not NO_DEFAULT:
                 value = self.default
             else:
