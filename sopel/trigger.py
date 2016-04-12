@@ -129,6 +129,10 @@ class Trigger(unicode):
     """The ``groups`` function of the ``match`` attribute.
 
     See Python :mod:`re` documentation for details."""
+    groupdict = property(lambda self: self._match.groupdict)
+    """The ``groupdict`` function of the ``match`` attribute.
+
+    See Python :mod:`re` documentation for details."""
     args = property(lambda self: self._pretrigger.args)
     """
     A tuple containing each of the arguments to an event. These are the
