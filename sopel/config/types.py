@@ -60,7 +60,7 @@ class StaticSection(object):
             except ValueError as e:
                 raise ValueError(
                     'Invalid value for {}.{}: {}'.format(section_name, value,
-                                                         e.message)
+                                                         str(e))
                 )
             except AttributeError:
                 if validate:
