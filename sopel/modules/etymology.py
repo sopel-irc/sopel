@@ -74,7 +74,7 @@ def etymology(word):
 
 
 @commands('ety')
-@example('word')
+@example('.ety word')
 def f_etymology(bot, trigger):
     """Look up the etymology of a word"""
     word = trigger.group(2)
