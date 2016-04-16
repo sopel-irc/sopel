@@ -428,13 +428,13 @@ class Sopel(irc.Bot):
 
         if not trigger.admin and not func.unblockable:
             usertimediff = current_time - self._times[nick][func]
-            if func.user_rate > 0 and usertimediff < func.user_rate and \
+            if func.rate > 0 and usertimediff < func.rate and \
                     func in self._times[nick]:
                 self._times[nick][func] = current_time
                 LOGGER.info(
                     "%s prevented from using %s in %s due to user limit: %d < %d",
                     trigger.nick, func.__name__, trigger.sender, usertimediff,
-                    func.user_rate
+                    func.rate
                 )
                 return
             globaltimediff = current_time - self._times[self.nick][func]

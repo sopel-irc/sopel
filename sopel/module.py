@@ -248,7 +248,7 @@ def intent(*intent_list):
     return add_attribute
 
 
-def rate(user_rate, channel_rate=0, global_rate=0):
+def rate(user_rate=0, channel_rate=0, global_rate=0):
     """Decorate a function to limit how often it can be triggered. Without
     arguments, the limit defaults to per-user. The global and channel parameters
     are self-explanatory. A value of zero means no limit.
@@ -262,7 +262,7 @@ def rate(user_rate, channel_rate=0, global_rate=0):
     threading.Timer() instead of sched, or rate limiting will not work properly.
     """
     def add_attribute(function):
-        function.user_rate = user_rate
+        function.rate = user_rate
         function.channel_rate = channel_rate
         function.global_rate = global_rate
         return function
