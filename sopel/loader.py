@@ -158,7 +158,9 @@ def clean_callable(func, config):
     func.unblockable = getattr(func, 'unblockable', False)
     func.priority = getattr(func, 'priority', 'medium')
     func.thread = getattr(func, 'thread', True)
-    func.rate = getattr(func, 'rate', 0)
+    func.user_rate = getattr(func, 'user_rate', 0)
+    func.channel_rate = getattr(func, 'channel_rate', 0)
+    func.global_rate = getattr(func, 'global_rate', 0)
 
     if not hasattr(func, 'event'):
         func.event = ['PRIVMSG']
