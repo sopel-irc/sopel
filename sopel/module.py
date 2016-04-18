@@ -248,23 +248,21 @@ def intent(*intent_list):
     return add_attribute
 
 
-def rate(user_rate=0, channel_rate=0, global_rate=0):
-    """Decorate a function to limit how often it can be triggered. Without
-    arguments, the limit defaults to per-user. The global and channel parameters
-    are self-explanatory. A value of zero means no limit.
-
-    If a function is given a rate of 20, a single user may only use that
-    function once every 20 seconds. This limit applies to each user
-    individually. Users on the admin list in Sopel’s configuration are exempted
-    from rate limits.
+def rate(user=0, channel=0, server=0):
+    """Decorate a function to limit how often it can be triggered on a per-user
+    basis, in a channel, or across the server (bot). A value of zero means no 
+    limit. If a function is given a rate of 20, that function may only be used
+    once every 20 seconds in the scope corresponding to the parameter.
+    Users on the admin list in Sopel’s configuration are exempted from rate 
+    limits.
 
     Rate-limited functions that use scheduled future commands should import
     threading.Timer() instead of sched, or rate limiting will not work properly.
     """
     def add_attribute(function):
-        function.rate = user_rate
-        function.channel_rate = channel_rate
-        function.global_rate = global_rate
+        function.rate = user
+        function.channel_rate = channel
+        function.global_rate = server
         return function
     return add_attribute
 
