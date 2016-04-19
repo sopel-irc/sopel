@@ -456,7 +456,7 @@ class Sopel(irc.Bot):
                         #self._times[trigger.sender][func] = current_time
                         LOGGER.info(
                             "%s prevented from using %s in %s due to channel limit: %d < %d",
-                            trigger.nick, func.__name__, trigger.sender, timediff,
+                            trigger.nick, func.__name__, trigger.sender, chantimediff,
                             func.channel_rate
                         )
                         return
