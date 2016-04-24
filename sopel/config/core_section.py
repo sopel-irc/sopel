@@ -131,6 +131,12 @@ class CoreSection(StaticSection):
                                      'DEBUG'],
                                     'WARNING')
     """The lowest severity of logs to display."""
+    
+    message_logs = ValidatedAttribute('log_to_channel',bool,default=True)
+    """Whether to message the logging channel with thrown exceptions."""
+    
+    message_logs_sender = ValidatedAttribute('message_logs_sender',bool,default=False)
+    """Whether to message the sender of a message that triggered an error with the exception."""
 
     modes = ValidatedAttribute('modes', default='B')
     """User modes to be set on connection."""
