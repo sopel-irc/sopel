@@ -33,7 +33,7 @@ def bing_search(query, lang='en-GB'):
     if m:
         return m.group(1)
 
-r_duck = re.compile(r'nofollow" class="[^"]+" href="(.*?)">')
+r_duck = re.compile(r'nofollow" class="[^"]+" href="(?!https?:\/\/r\.search\.yahoo)(.*?)">')
 
 
 def duck_search(query):
