@@ -69,7 +69,7 @@ def test_join_pretrigger(nick):
     assert pretrigger.nick == Identifier('Foo')
     assert pretrigger.user == 'foo'
     assert pretrigger.host == 'example.com'
-    assert pretrigger.sender == Identifier('Foo')
+    assert pretrigger.sender == Identifier('#Sopel')
 
 
 def test_tags_pretrigger(nick):
@@ -143,7 +143,7 @@ def test_ctcp_data_pretrigger(nick):
 def test_ircv3_extended_join_pretrigger(nick):
     line = ':Foo!foo@example.com JOIN #Sopel bar :Real Name'
     pretrigger = PreTrigger(nick, line)
-    assert pretrigger.tags == {}
+    assert pretrigger.tags == {'account': 'bar'}
     assert pretrigger.hostmask == 'Foo!foo@example.com'
     assert pretrigger.line == line
     assert pretrigger.args == ['#Sopel', 'bar', 'Real Name']
@@ -176,7 +176,8 @@ def test_ircv3_extended_join_trigger(nick):
     assert trigger.group == fakematch.group
     assert trigger.groups == fakematch.groups
     assert trigger.args == ['#Sopel', 'bar', 'Real Name']
-    assert trigger.tags == {}
+    assert trigger.account == 'bar'
+    assert trigger.tags == {'account': 'bar'}
     assert trigger.owner is True
     assert trigger.admin is True
 
