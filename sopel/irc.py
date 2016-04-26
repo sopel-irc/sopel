@@ -368,16 +368,10 @@ class Bot(asynchat.async_chat):
                 stderr("Could not save full traceback!")
                 LOGGER.error("Could not save traceback from %s to file: %s", trigger.sender, str(e))
             
-            # Errors will pass silently otherwise, not sure how to handle this
-            if trigger and self.config.core.message_logs and self.config.core.logging_channel is not None:
-                self.msg(self.config.logging_channel, signature)
-                if self.config.core.message_logs_sender:
+            if trigger and self.config.core.reply_errors and trigger.sender is not None:
                     self.msg(trigger.sender,signature)
         except Exception as e:
-            if trigger:
-                if self.config.core.message_logs and self.config.core.logging_channel is not None:
-                    self.msg(self.config.core.logging_channel,"Got an error.")
-                    if self.config.core.message_logs_sender:
+            if trigger and self.config.core.reply_errors and trigger.sender is not None:
                         self.msg(trigger.sender,"Got an error.")
                 LOGGER.error("Exception from %s: %s", trigger.sender, str(e))
 
