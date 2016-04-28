@@ -368,10 +368,10 @@ class Bot(asynchat.async_chat):
                 stderr("Could not save full traceback!")
                 LOGGER.error("Could not save traceback from %s to file: %s", trigger.sender, str(e))
 
-            if trigger and trigger.sender is not None:
+            if trigger and self.config.core.reply_errors and trigger.sender is not None:
                 self.msg(trigger.sender, signature)
         except Exception as e:
-            if trigger and trigger.sender is not None:
+            if trigger and self.config.core.reply_errors and trigger.sender is not None:
                 self.msg(trigger.sender, "Got an error.")
                 LOGGER.error("Exception from %s: %s", trigger.sender, str(e))
 
