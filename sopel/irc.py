@@ -370,10 +370,13 @@ class Bot(asynchat.async_chat):
 
             if trigger and self.config.core.reply_errors and trigger.sender is not None:
                 self.msg(trigger.sender, signature)
+            if trigger:
+                LOGGER.error('Exception from {}: {} ({})'.format(trigger.sender, str(signature), trigger.raw))
         except Exception as e:
             if trigger and self.config.core.reply_errors and trigger.sender is not None:
                 self.msg(trigger.sender, "Got an error.")
-                LOGGER.error("Exception from %s: %s", trigger.sender, str(e))
+            if trigger:
+                LOGGER.error('Exception from {}: {} ({})'.format(trigger.sender, str(e), trigger.raw))
 
     def handle_error(self):
         """Handle any uncaptured error in the core.
