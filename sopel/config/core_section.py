@@ -178,7 +178,7 @@ class CoreSection(StaticSection):
     It is a regular expression (so the default, ``\.``, means commands start
     with a period), though using capturing groups will create problems."""
 
-    reply_errors = ValidatedAttribute('reply_errors',bool,default=False)
+    reply_errors = ValidatedAttribute('reply_errors', bool, default=True)
     """Whether to message the sender of a message that triggered an error with the exception."""
 
     throttle_join = ValidatedAttribute('throttle_join', int)
