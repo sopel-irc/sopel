@@ -83,7 +83,10 @@ def main(argv=None):
                                 'module configuration options.'))
         parser.add_argument('-v', '--version', action="store_true",
                             dest="version", help="Show version number and exit")
-        opts = parser.parse_args()
+        if argv:
+            opts = parser.parse_args(argv)
+        else:
+            opts = parser.parse_args()
 
         # Step Two: "Do not run as root" checks.
         try:
