@@ -484,6 +484,9 @@ class Sopel(irc.Bot):
                     if (hasattr(func, 'intents') and
                             trigger.tags.get('intent') not in func.intents):
                         continue
+                    if (not (hasattr(func, 'echo') and func.echo is True) and
+                            trigger.nick.lower() == self.nick.lower()):
+                        continue
                     if func.thread:
                         targs = (func, wrapper, trigger)
                         t = threading.Thread(target=self.call, args=targs)

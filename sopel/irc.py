@@ -148,6 +148,16 @@ class Bot(asynchat.async_chat):
             self.send(temp.encode('utf-8'))
         finally:
             self.writing_lock.release()
+        # Simulate echo-message
+        if 'echo-message' not in self.enabled_capabilities:
+            # Since we have no way of knowing the hostmask the IRC server uses
+            # for us, we'll just use something reasonable
+            host = 'localhost'
+            if self.config.core.bind_host:
+                host = self.config.core.bind_host
+            pretrigger = PreTrigger(self.nick, ':{0}!{1}@{2} {3}'
+                .format(self.nick, self.user, host, temp))
+            self.dispatch(pretrigger)
 
     def run(self, host, port=6667):
         try:
