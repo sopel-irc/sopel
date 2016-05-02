@@ -115,7 +115,7 @@ def thread(value):
     return add_attribute
 
 
-def echo(value=True):
+def echo(value):
     """Decorate a function to specify if it should receive echo messages.
 
     This decorator can be used to listen in on the messages that Sopel is
