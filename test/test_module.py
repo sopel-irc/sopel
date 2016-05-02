@@ -82,6 +82,13 @@ def test_thread():
     assert mock.thread is True
 
 
+def test_echo():
+    @module.echo(False)
+    def mock(bot, trigger, match):
+        return True
+    assert mock.echo is False
+
+
 def test_commands():
     @module.commands('sopel')
     def mock(bot, trigger, match):
