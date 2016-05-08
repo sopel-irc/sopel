@@ -142,6 +142,8 @@ def weather(bot, trigger):
                   dont_decode=True)
     parsed = xmltodict.parse(body).get('query')
     results = parsed.get('results')
+    if results is None:
+        return bot.reply("No forecast available. Try a more specific location.")
     location = results.get('channel').get('title')
     cover = get_cover(results)
     temp = get_temp(results)
