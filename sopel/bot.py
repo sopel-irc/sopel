@@ -453,13 +453,13 @@ class Sopel(irc.Bot):
             if not trigger.is_privmsg and func in self._times[trigger.sender]:
                 chantimediff = current_time - self._times[trigger.sender][func]
                 if func.channel_rate > 0 and chantimediff < func.channel_rate:
-                        #self._times[trigger.sender][func] = current_time
-                        LOGGER.info(
-                            "%s prevented from using %s in %s due to channel limit: %d < %d",
-                            trigger.nick, func.__name__, trigger.sender, chantimediff,
-                            func.channel_rate
-                        )
-                        return
+                    #self._times[trigger.sender][func] = current_time
+                    LOGGER.info(
+                        "%s prevented from using %s in %s due to channel limit: %d < %d",
+                        trigger.nick, func.__name__, trigger.sender, chantimediff,
+                        func.channel_rate
+                    )
+                    return
 
         try:
             exit_code = func(sopel, trigger)
