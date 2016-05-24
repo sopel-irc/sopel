@@ -60,6 +60,7 @@ class Bot(asynchat.async_chat):
 
         self.stack = {}
         self.ca_certs = ca_certs
+        self.enabled_capabilities = set()
         self.hasquit = False
 
         self.sending = threading.RLock()
@@ -189,7 +190,8 @@ class Bot(asynchat.async_chat):
     def handle_close(self):
         self.connection_registered = False
 
-        self._shutdown()
+        if hasattr(self, '_shutdown'):
+            self._shutdown()
         stderr('Closed!')
 
         # This will eventually call asyncore dispatchers close method, which
@@ -231,8 +233,10 @@ class Bot(asynchat.async_chat):
         stderr('Connected.')
         self.last_ping_time = datetime.now()
         timeout_check_thread = threading.Thread(target=self._timeout_check)
+        timeout_check_thread.daemon = True
         timeout_check_thread.start()
         ping_thread = threading.Thread(target=self._send_ping)
+        ping_thread.daemon = True
         ping_thread.start()
 
     def _timeout_check(self):
