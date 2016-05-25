@@ -357,6 +357,8 @@ def track_join(bot, trigger):
     user = bot.users.get(trigger.nick)
     if user is None:
         user = User(trigger.nick, trigger.user, trigger.host)
+        bot.users[trigger.nick] = user
+
     bot.channels[trigger.sender].add_user(user)
 
     if len(trigger.args) > 1 and trigger.args[1] != '*' and (
