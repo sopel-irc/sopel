@@ -289,7 +289,7 @@ def op(bot, trigger):
                 bot.reply("You need to specify a channel/nickname")
             elif trigger.group(4) == None:
                 bot.reply("You need to specify a channel/nickname")
-            if bot.privileges[trigger.group(3)][bot.nick] < OP:
+            elif bot.privileges[trigger.group(3)][bot.nick] < OP:
                 return bot.reply("I'm not a channel operator in that channel!")
             else:
                 return bot.write(['MODE', trigger.group(3), '+o', trigger.group(4)])
