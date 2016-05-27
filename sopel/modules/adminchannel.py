@@ -285,7 +285,10 @@ def op(bot, trigger):
     if trigger.admin:
         if bot.privileges[trigger.sender][bot.nick] < OP:
             return bot.reply("I'm not a channel operator!")
-        bot.write(['MODE', trigger.sender, '+o', trigger.group(2)])
+        elif trigger.group(2) == None:
+            return bot.reply("You need to specify a nickname for me to op")
+        else:
+            return bot.write(['MODE', trigger.sender, '+o', trigger.group(2)])
     else:
         return bot.reply("You're not a bot admin")
 
@@ -299,10 +302,12 @@ def deop(bot, trigger):
     if trigger.admin:
         if bot.privileges[trigger.sender][bot.nick] < OP:
             return bot.reply("I'm not a channel operator!")
-        bot.write(['MODE', trigger.sender, '-o', trigger.group(2)])
+        elif trigger.group(2) == None:
+            return bot.reply("You need to specify a nickname for me to deop")
+        else:
+            return bot.write(['MODE', trigger.sender, '-o', trigger.group(2)])
     else:
         return bot.reply("You're not a bot admin")
-
 
 @require_chanmsg
 @commands('voice')
@@ -314,9 +319,13 @@ def voice(bot, trigger):
     if trigger.admin:
         if bot.privileges[trigger.sender][bot.nick] < OP:
             return bot.reply("I'm not a channel operator!")
-        bot.write(['MODE', trigger.sender, '+v', trigger.group(2)])
+        elif trigger.group(2) == None:
+            return bot.reply("You need to specify a nickname for me to voice")
+        else:
+            return bot.write(['MODE', trigger.sender, '+v', trigger.group(2)])
     else:
         return bot.reply("You're not a bot admin")
+
 
 @require_chanmsg
 @commands('devoice')
@@ -328,6 +337,10 @@ def devoice(bot, trigger):
     if trigger.admin:
         if bot.privileges[trigger.sender][bot.nick] < OP:
             return bot.reply("I'm not a channel operator!")
-        bot.write(['MODE', trigger.sender, '-v', trigger.group(2)])
+        elif trigger.group(2) == None:
+            return bot.reply("You need to specify a nickname for me to devoice")
+        else:
+            return bot.write(['MODE', trigger.sender, '-v', trigger.group(2)])
     else:
         return bot.reply("You're not a bot admin")
+
