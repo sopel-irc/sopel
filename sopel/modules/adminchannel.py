@@ -275,7 +275,6 @@ def show_mask(bot, trigger):
     mask = mask or default_mask(trigger)
     bot.say(mask)
 
-@require_chanmsg
 @commands('op')
 def op(bot, trigger):
     """
@@ -299,7 +298,6 @@ def op(bot, trigger):
     else:
         return bot.reply("You're not a bot admin")
 
-@require_chanmsg
 @commands('deop')
 def deop(bot, trigger):
     """
@@ -323,7 +321,6 @@ def deop(bot, trigger):
     else:
         return bot.reply("You're not a bot admin")
 
-@require_chanmsg
 @commands('voice')
 def voice(bot, trigger):
     """
@@ -347,7 +344,6 @@ def voice(bot, trigger):
     else:
         return bot.reply("You're not a bot admin")
 
-@require_chanmsg
 @commands('devoice')
 def devoice(bot, trigger):
     """
