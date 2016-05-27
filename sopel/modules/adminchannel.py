@@ -282,8 +282,6 @@ def op(bot, trigger):
     The bot must be a Channel Operator for this command to work.
     """
     if trigger.admin:
-        if bot.privileges[trigger.sender][bot.nick] < OP:
-            return bot.reply("I'm not a channel operator!")
         elif trigger.group(2) == None:
             return bot.reply("You need to specify a nickname/channel")
         elif trigger.is_privmsg:
@@ -291,78 +289,13 @@ def op(bot, trigger):
                 bot.reply("You need to specify a channel/nickname")
             elif trigger.group(4) == None:
                 bot.reply("You need to specify a channel/nickname")
+            if bot.privileges[trigger.group(3)][bot.nick] < OP:
+                return bot.reply("I'm not a channel operator in that channel!")
             else:
                 return bot.write(['MODE', trigger.group(3), '+o', trigger.group(4)])
         else:
+            if bot.privileges[trigger.sender][bot.nick] < OP:
+                return bot.reply("I'm not a channel operator!")
             return bot.write(['MODE', trigger.sender, '+o', trigger.group(2)])
-    else:
-        return bot.reply("You're not a bot admin")
-
-@commands('deop')
-def deop(bot, trigger):
-    """
-    This gives admins the ability to deop a user.
-    The bot must be a Channel Operator for this command to work.
-    """
-    if trigger.admin:
-        if bot.privileges[trigger.sender][bot.nick] < OP:
-            return bot.reply("I'm not a channel operator!")
-        elif trigger.group(2) == None:
-            return bot.reply("You need to specify a nickname/channel")
-        elif trigger.is_privmsg:
-            if trigger.group(3) == None:
-                bot.reply("You need to specify a channel/nickname")
-            elif trigger.group(4) == None:
-                bot.reply("You need to specify a channel/nickname")
-            else:
-                return bot.write(['MODE', trigger.group(3), '-o', trigger.group(4)])
-        else:
-            return bot.write(['MODE', trigger.sender, '-o', trigger.group(2)])
-    else:
-        return bot.reply("You're not a bot admin")
-
-@commands('voice')
-def voice(bot, trigger):
-    """
-    This gives admins the ability to voice a user.
-    The bot must be a Channel Operator for this command to work.
-    """
-    if trigger.admin:
-        if bot.privileges[trigger.sender][bot.nick] < OP:
-            return bot.reply("I'm not a channel operator!")
-        elif trigger.group(2) == None:
-            return bot.reply("You need to specify a nickname/channel")
-        elif trigger.is_privmsg:
-            if trigger.group(3) == None:
-                bot.reply("You need to specify a channel/nickname")
-            elif trigger.group(4) == None:
-                bot.reply("You need to specify a channel/nickname")
-            else:
-                return bot.write(['MODE', trigger.group(3), '+v', trigger.group(4)])
-        else:
-            return bot.write(['MODE', trigger.sender, '+v', trigger.group(2)])
-    else:
-        return bot.reply("You're not a bot admin")
-
-@commands('devoice')
-def devoice(bot, trigger):
-    """
-    This gives admins the ability to devoice a user.
-    The bot must be a Channel Operator for this command to work.
-    """
-    if trigger.admin:
-        if bot.privileges[trigger.sender][bot.nick] < OP:
-            return bot.reply("I'm not a channel operator!")
-        elif trigger.group(2) == None:
-            return bot.reply("You need to specify a nickname/channel")
-        elif trigger.is_privmsg:
-            if trigger.group(3) == None:
-                bot.reply("You need to specify a channel/nickname")
-            elif trigger.group(4) == None:
-                bot.reply("You need to specify a channel/nickname")
-            else:
-                return bot.write(['MODE', trigger.group(3), '-v', trigger.group(4)])
-        else:
-            return bot.write(['MODE', trigger.sender, '-v', trigger.group(2)])
     else:
         return bot.reply("You're not a bot admin")
