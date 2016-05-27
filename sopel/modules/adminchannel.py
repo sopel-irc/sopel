@@ -282,9 +282,7 @@ def op(bot, trigger):
     The bot must be a Channel Operator for this command to work.
     """
     if trigger.admin:
-        if trigger.group(2) == None:
-            return bot.reply("You need to specify a nickname/channel")
-        elif trigger.is_privmsg:
+        if trigger.is_privmsg:
             if trigger.group(3) == None:
                 return bot.reply("You need to specify a channel/nickname")
             elif bot.privileges[trigger.group(3)][bot.nick] < OP:
@@ -297,7 +295,7 @@ def op(bot, trigger):
         else:
             if bot.privileges[trigger.sender][bot.nick] < OP:
                 return bot.reply("I'm not a channel operator!")
-            elif trigger.group(4) == None:
+            elif trigger.group(2) == None:
                 return bot.write(['MODE', trigger.sender, '+o', trigger.nick])
             return bot.write(['MODE', trigger.sender, '+o', trigger.group(2)])
     else:
