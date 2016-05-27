@@ -286,7 +286,14 @@ def op(bot, trigger):
         if bot.privileges[trigger.sender][bot.nick] < OP:
             return bot.reply("I'm not a channel operator!")
         elif trigger.group(2) == None:
-            return bot.reply("You need to specify a nickname for me to op")
+            return bot.reply("You need to specify a nickname/channel")
+        elif is_privmsg:
+            if trigger.group(3) == None:
+                bot.reply("You need to specify a channel/nickname")
+            elif trigger.group(4) == None:
+                bot.reply("You need to specify a channel/nickname")
+            else:
+                return bot.write(['MODE', trigger.group(3), '+o', trigger.group(4)])
         else:
             return bot.write(['MODE', trigger.sender, '+o', trigger.group(2)])
     else:
@@ -303,7 +310,14 @@ def deop(bot, trigger):
         if bot.privileges[trigger.sender][bot.nick] < OP:
             return bot.reply("I'm not a channel operator!")
         elif trigger.group(2) == None:
-            return bot.reply("You need to specify a nickname for me to deop")
+            return bot.reply("You need to specify a nickname/channel")
+        elif is_privmsg:
+            if trigger.group(3) == None:
+                bot.reply("You need to specify a channel/nickname")
+            elif trigger.group(4) == None:
+                bot.reply("You need to specify a channel/nickname")
+            else:
+                return bot.write(['MODE', trigger.group(3), '-o', trigger.group(4)])
         else:
             return bot.write(['MODE', trigger.sender, '-o', trigger.group(2)])
     else:
@@ -320,12 +334,18 @@ def voice(bot, trigger):
         if bot.privileges[trigger.sender][bot.nick] < OP:
             return bot.reply("I'm not a channel operator!")
         elif trigger.group(2) == None:
-            return bot.reply("You need to specify a nickname for me to voice")
+            return bot.reply("You need to specify a nickname/channel")
+        elif is_privmsg:
+            if trigger.group(3) == None:
+                bot.reply("You need to specify a channel/nickname")
+            elif trigger.group(4) == None:
+                bot.reply("You need to specify a channel/nickname")
+            else:
+                return bot.write(['MODE', trigger.group(3), '+v', trigger.group(4)])
         else:
             return bot.write(['MODE', trigger.sender, '+v', trigger.group(2)])
     else:
         return bot.reply("You're not a bot admin")
-
 
 @require_chanmsg
 @commands('devoice')
@@ -338,9 +358,15 @@ def devoice(bot, trigger):
         if bot.privileges[trigger.sender][bot.nick] < OP:
             return bot.reply("I'm not a channel operator!")
         elif trigger.group(2) == None:
-            return bot.reply("You need to specify a nickname for me to devoice")
+            return bot.reply("You need to specify a nickname/channel")
+        elif is_privmsg:
+            if trigger.group(3) == None:
+                bot.reply("You need to specify a channel/nickname")
+            elif trigger.group(4) == None:
+                bot.reply("You need to specify a channel/nickname")
+            else:
+                return bot.write(['MODE', trigger.group(3), '-v', trigger.group(4)])
         else:
             return bot.write(['MODE', trigger.sender, '-v', trigger.group(2)])
     else:
         return bot.reply("You're not a bot admin")
-
