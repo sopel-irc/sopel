@@ -288,7 +288,8 @@ def op(bot, trigger):
             elif bot.privileges[trigger.group(3)][bot.nick] < OP:
                 return bot.reply("I'm not a channel operator in that channel!")
             elif trigger.group(4) == None:
-                return bot.write(['MODE', trigger.group(3), '+o', trigger.nick])
+                bot.write(['MODE', trigger.group(3), '+o', trigger.nick])
+                return bot.reply("Done.")
             else:
                 bot.write(['MODE', trigger.group(3), '+o', trigger.group(4)])
                 return bot.reply("Done.")
