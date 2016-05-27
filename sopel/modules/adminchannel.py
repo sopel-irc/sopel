@@ -285,22 +285,7 @@ def op(bot, trigger):
     """
     if bot.privileges[trigger.sender][bot.nick] < OP:
         return bot.reply("I'm not a channel operator!")
-    text = trigger.group().split()
-    argc = len(text)
-    if argc < 2:
-        return
-    opt = Identifier(text[1])
-    opmask = opt
-    channel = trigger.sender
-    if not opt.is_nick():
-        if argc < 3:
-            return
-        opmask = text[2]
-        channel = opt
-    opmask = configureHostMask(opmask)
-    if opmask == '':
-        return
-    bot.write(['MODE', channel, '+o', opmask])
+    bot.write(['MODE', trigger.sender, '+o', trigger.group(2)])
     
 @require_chanmsg
 @require_privilege(OP, 'You are not a channel operator.')
@@ -312,22 +297,7 @@ def deop(bot, trigger):
     """
     if bot.privileges[trigger.sender][bot.nick] < OP:
         return bot.reply("I'm not a channel operator!")
-    text = trigger.group().split()
-    argc = len(text)
-    if argc < 2:
-        return
-    opt = Identifier(text[1])
-    opmask = opt
-    channel = trigger.sender
-    if not opt.is_nick():
-        if argc < 3:
-            return
-        opmask = text[2]
-        channel = opt
-    opmask = configureHostMask(opmask)
-    if opmask == '':
-        return
-    bot.write(['MODE', channel, '-o', opmask])
+    bot.write(['MODE', trigger.sender, '-o', trigger.group(2)])
     
 @require_chanmsg
 @require_privilege(OP, 'You are not a channel operator.')
@@ -339,46 +309,16 @@ def voice(bot, trigger):
     """
     if bot.privileges[trigger.sender][bot.nick] < OP:
         return bot.reply("I'm not a channel operator!")
-    text = trigger.group().split()
-    argc = len(text)
-    if argc < 2:
-        return
-    opt = Identifier(text[1])
-    voicemask = opt
-    channel = trigger.sender
-    if not opt.is_nick():
-        if argc < 3:
-            return
-        voicemask = text[2]
-        channel = opt
-    voicemask = configureHostMask(voicemask)
-    if voicemask == '':
-        return
-    bot.write(['MODE', channel, '+v', voicemask])
+    bot.write(['MODE', trigger.sender, '+v', trigger.group(2)])
     
 @require_chanmsg
 @require_privilege(OP, 'You are not a channel operator.')
-@commands('voice')
-def voice(bot, trigger):
+@commands('devoice')
+def devoice(bot, trigger):
     """
-    This gives admins the ability to voice a user.
+    This gives admins the ability to devoice a user.
     The bot must be a Channel Operator for this command to work.
     """
     if bot.privileges[trigger.sender][bot.nick] < OP:
         return bot.reply("I'm not a channel operator!")
-    text = trigger.group().split()
-    argc = len(text)
-    if argc < 2:
-        return
-    opt = Identifier(text[1])
-    voicemask = opt
-    channel = trigger.sender
-    if not opt.is_nick():
-        if argc < 3:
-            return
-        voicemask = text[2]
-        channel = opt
-    voicemask = configureHostMask(voicemask)
-    if voicemask == '':
-        return
-    bot.write(['MODE', channel, '-v', voicemask])
+    bot.write(['MODE', trigger.sender, '-v', trigger.group(2)])
