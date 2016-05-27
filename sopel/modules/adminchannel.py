@@ -282,7 +282,7 @@ def op(bot, trigger):
     The bot must be a Channel Operator for this command to work.
     """
     if trigger.admin:
-        elif trigger.group(2) == None:
+        if trigger.group(2) == None:
             return bot.reply("You need to specify a nickname/channel")
         elif trigger.is_privmsg:
             if trigger.group(3) == None:
