@@ -287,7 +287,7 @@ def op(bot, trigger):
             return bot.reply("I'm not a channel operator!")
         elif trigger.group(2) == None:
             return bot.reply("You need to specify a nickname/channel")
-        elif is_privmsg:
+        elif trigger.is_privmsg:
             if trigger.group(3) == None:
                 bot.reply("You need to specify a channel/nickname")
             elif trigger.group(4) == None:
@@ -311,7 +311,7 @@ def deop(bot, trigger):
             return bot.reply("I'm not a channel operator!")
         elif trigger.group(2) == None:
             return bot.reply("You need to specify a nickname/channel")
-        elif is_privmsg:
+        elif trigger.is_privmsg:
             if trigger.group(3) == None:
                 bot.reply("You need to specify a channel/nickname")
             elif trigger.group(4) == None:
@@ -335,7 +335,7 @@ def voice(bot, trigger):
             return bot.reply("I'm not a channel operator!")
         elif trigger.group(2) == None:
             return bot.reply("You need to specify a nickname/channel")
-        elif is_privmsg:
+        elif trigger.is_privmsg:
             if trigger.group(3) == None:
                 bot.reply("You need to specify a channel/nickname")
             elif trigger.group(4) == None:
@@ -359,7 +359,7 @@ def devoice(bot, trigger):
             return bot.reply("I'm not a channel operator!")
         elif trigger.group(2) == None:
             return bot.reply("You need to specify a nickname/channel")
-        elif is_privmsg:
+        elif trigger.is_privmsg:
             if trigger.group(3) == None:
                 bot.reply("You need to specify a channel/nickname")
             elif trigger.group(4) == None:
