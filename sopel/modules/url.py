@@ -8,7 +8,6 @@
 from __future__ import unicode_literals, absolute_import, print_function, division
 
 import re
-from contextlib import closing
 from sopel import web, tools
 from sopel.module import commands, rule, example
 from sopel.config.types import ValidatedAttribute, ListAttribute, StaticSection

@@ -17,7 +17,6 @@ from __future__ import unicode_literals, absolute_import, print_function, divisi
 import re
 import sys
 import urllib
-import os.path
 import requests
 
 from sopel import __version__

@@ -8,17 +8,12 @@ http://sopel.chat
 """
 from __future__ import unicode_literals, absolute_import, print_function, division
 
-import re
 from sopel import web
 from sopel.module import commands, example
 from sopel.tools.calculation import eval_equation
-from socket import timeout
 import sys
-if sys.version_info.major < 3:
-    import HTMLParser
-else:
+if sys.version_info.major >= 3:
     unichr = chr
-    import html.parser as HTMLParser
 
 
 BASE_TUMBOLIA_URI = 'https://tumbolia-two.appspot.com/'
