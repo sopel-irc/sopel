@@ -86,7 +86,8 @@ def get(uri, timeout=20, headers=None, return_headers=False,
     if headers is None:
         headers = default_headers
     else:
-        headers = default_headers.update(headers)
+        tmp = default_headers.copy()
+        headers = tmp.update(headers)
     u = requests.get(uri, timeout=timeout, headers=headers, verify=verify_ssl)
     bytes = u.content
     u.close()
@@ -115,7 +116,8 @@ def head(uri, timeout=20, headers=None, verify_ssl=True):
     if headers is None:
         headers = default_headers
     else:
-        headers = default_headers.update(headers)
+        tmp = default_headers.copy()
+        headers = tmp.update(headers)
     u = requests.get(uri, timeout=timeout, headers=headers, verify=verify_ssl)
     info = u.headers
     u.close()
@@ -175,7 +177,8 @@ def get_urllib_object(uri, timeout, headers=None, verify_ssl=True, data=None):
     if headers is None:
         headers = default_headers
     else:
-        headers = default_headers.update(headers)
+        tmp = default_headers.copy()
+        headers = tmp.update(headers)
     if data is not None:
         response = requests.post(uri, timeout=timeout, verify=verify_ssl,
                                  data=data, headers=headers)
