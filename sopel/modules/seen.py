@@ -23,6 +23,9 @@ def seen(bot, trigger):
         bot.say(".seen <nick> - Reports when <nick> was last seen.")
         return
     nick = trigger.group(2).strip()
+    if nick == bot.nick:
+        bot.reply("I'm right here!")
+        return
     timestamp = bot.db.get_nick_value(nick, 'seen_timestamp')
     if timestamp:
         channel = bot.db.get_nick_value(nick, 'seen_channel')
