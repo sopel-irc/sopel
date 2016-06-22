@@ -16,11 +16,14 @@ if sys.version_info.major >= 3:
 @example('.u ‽', 'U+203D INTERROBANG (‽)')
 @example('.u 203D', 'U+203D INTERROBANG (‽)')
 def codepoint(bot, trigger):
-    arg = trigger.group(2).strip()
-    if len(arg) == 0:
+    arg = trigger.group(2)
+    if not arg:
         bot.reply('What code point do you want me to look up?')
         return NOLIMIT
-    elif len(arg) > 1:
+    stripped = arg.strip()
+    if len(stripped) > 0:
+        arg = stripped
+    if len(arg) > 1:
         if arg.startswith('U+'):
             arg = arg[2:]
         try:
