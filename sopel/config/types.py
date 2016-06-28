@@ -56,6 +56,9 @@ class StaticSection(object):
         self._section_name = section_name
         for value in dir(self):
             try:
+                env_name = '%s_%s' % (self._section_name.upper(), value.upper())
+                if os.environ.get(env_name) is not None:
+                    setattr(self, value, os.environ.get(env_name))
                 getattr(self, value)
             except ValueError as e:
                 raise ValueError(
@@ -144,7 +147,9 @@ class BaseValidated(object):
             return self
 
         if instance._parser.has_option(instance._section_name, self.name):
+            env_name = '%s_%s' % (instance._section_name.upper(), self.name.upper())
             value = instance._parser.get(instance._section_name, self.name)
+            value = os.environ.get(env_name, value)
         else:
             if self.default is not NO_DEFAULT:
                 return self.default
