@@ -330,7 +330,13 @@ def main(argv=None):
             pid_file.write(str(os.getpid()))
 
         # Step Seven: Initialize and run Sopel
-        run(config_module, pid_file_path)
+        ret = run(config_module, pid_file_path)
+        os.unlink(pid_file_path)
+        if ret == -1:
+            os.execv(sys.executable, ['python'] + sys.argv)
+        else:
+            return ret
+
     except KeyboardInterrupt:
         print("\n\nInterrupted")
         return ERR_CODE

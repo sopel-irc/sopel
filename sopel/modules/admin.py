@@ -76,6 +76,19 @@ def part(bot, trigger):
 
 @sopel.module.require_privmsg
 @sopel.module.require_owner
+@sopel.module.commands('restart')
+@sopel.module.priority('low')
+def restart(bot, trigger):
+    """Restart the bot. This is an owner-only command."""
+    quit_message = trigger.group(2)
+    if not quit_message:
+        quit_message = 'Restart on command from %s' % trigger.nick
+
+    bot.restart(quit_message)
+
+
+@sopel.module.require_privmsg
+@sopel.module.require_owner
 @sopel.module.commands('quit')
 @sopel.module.priority('low')
 def quit(bot, trigger):

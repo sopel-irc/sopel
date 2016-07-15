@@ -100,6 +100,8 @@ def run(config, pid_file, daemon=False):
 
         if not isinstance(delay, int):
             break
+        if p.restart:
+            return -1
         if p.hasquit:
             break
         stderr('Warning: Disconnected. Reconnecting in %s seconds...' % delay)
