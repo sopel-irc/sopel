@@ -6,7 +6,7 @@ Please note that the 3 debs are not signed. You can follow the copy&paste instru
 dget -x http://http.debian.net/debian/pool/main/p/python-xmltodict/python-xmltodict_0.9.2-3.dsc
 cd python-xmltodict-0.9.2
 sudo mk-build-deps --install --remove && dch --local ~bpo80+ --distribution jessie-backports "Rebuild for jessie-backports." && fakeroot debian/rules binary && dpkg-buildpackage -us -uc
-sudo dpkg -i ../python3-praw_3.3.0-1~bpo80+1_all.deb
+sudo dpkg -i ../python3-xmltodict_0.9.2-3~bpo80+1_all.deb
 cd ..
 # PRAW
 dget -x http://http.debian.net/debian/pool/main/p/praw/praw_3.3.0-1.dsc
@@ -26,3 +26,13 @@ cd sopel-6.3.1
 sed -i s/3.4.2/3.4.0/g debian/control
 sudo mk-build-deps --install --remove && dch --local ~bpo80+ --distribution jessie-backports "Rebuild for jessie-backports." && fakeroot debian/rules binary && dpkg-buildpackage -us -uc
 ```
+
+If you are ok using my deb files, then simply:
+
+```
+sudo dpkg -i python3-xmltodict_0.9.2-3~bpo80+1_all.deb
+sudo dpkg -i python3-praw_3.3.0-1~bpo80+1_all.deb
+sudo dpkg -i sopel_6.3.1-1~bpo80+1_all.deb
+```
+
+and then customise ```/etc/sopel.cfg```
