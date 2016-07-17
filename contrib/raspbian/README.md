@@ -13,6 +13,9 @@ dget -x http://http.debian.net/debian/pool/main/p/praw/praw_3.3.0-1.dsc
 cd praw-3.3.0
 # correct dependences for python3-decorator in Jessie
 sed -i s/3.4.2/3.4.0/g debian/control
+sed -i s/3.4.2/3.4.0/g setup.py
+dpkg-source --commit
+# follow the instructions. We have to tell deb why we want to change the source
 sudo mk-build-deps --install --remove && dch --local ~bpo80+ --distribution jessie-backports "Rebuild for jessie-backports." && fakeroot debian/rules binary && dpkg-buildpackage -us -uc
 sudo dpkg -i ../python3-praw_3.3.0-1~bpo80+1_all.deb
 cd ..
