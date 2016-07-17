@@ -1,4 +1,4 @@
-This folder contains a Sopel backport from Debian Sid. I've also packaged 2 dependences. 
+This folder contains a Sopel backport from Debian Sid. I've also packaged 2 required packages. 
 Please note that the 3 debs are not signed. You can follow the copy&paste instruction in case you feel more confortable in creating your own:
 
 ```
