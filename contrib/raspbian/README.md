@@ -31,7 +31,7 @@ If you are ok using my deb files, then simply:
 
 ```
 sudo dpkg -i python3-xmltodict_0.9.2-3~bpo80+1_all.deb
-sudo dpkg -i python3-praw_3.3.0-1~bpo80+1_all.deb
+sudo dpkg -i python3-praw_3.3.0-1~bpo80+2_all.deb
 sudo dpkg -i sopel_6.3.1-1~bpo80+1_all.deb
 ```
 
