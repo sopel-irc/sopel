@@ -697,12 +697,16 @@ def track_notify(bot, trigger):
 
 
 @sopel.module.rule('.*')
+@sopel.module.event('TOPIC')
 @sopel.module.event(events.RPL_TOPIC)
 @sopel.module.priority('high')
 @sopel.module.thread(False)
 @sopel.module.unblockable
 def track_topic(bot, trigger):
-    channel = trigger.args[1]
+    if trigger.event != 'TOPIC':
+        channel = trigger.args[1]
+    else:
+        channel = trigger.args[0]
     if channel not in bot.channels:
         return
     bot.channels[channel].topic = trigger.args[-1]
