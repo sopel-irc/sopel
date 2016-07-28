@@ -158,7 +158,7 @@ def process_urls(bot, trigger, urls):
             if matched:
                 continue
             # Finally, actually show the URL
-            title = find_title(url)
+            title = find_title(url, verify=bot.config.core.verify_ssl)
             if title:
                 results.append((title, get_hostname(url)))
     return results
@@ -182,9 +182,9 @@ def check_callbacks(bot, trigger, url, run=True):
     return matched
 
 
-def find_title(url):
+def find_title(url, verify=True):
     """Return the title for the given URL."""
-    response = requests.get(url, stream=True)
+    response = requests.get(url, stream=True, verify=verify)
     try:
         content = ''
         for byte in response.iter_content(chunk_size=512, decode_unicode=True):
