@@ -70,7 +70,9 @@ def show_bug(bot, trigger, match=None):
     error = bug.get('@error', None)  # error="NotPermitted"
 
     if error:
-        LOGGER.warning('Bugzilla error: %s', error)
+        LOGGER.warning('Bugzilla error: %s' % error)
+        bot.say('[BUGZILLA] Unable to get infomation for '
+                'linked bug (%s)' % error)
         return
 
     message = ('[BUGZILLA] %s | Product: %s | Component: %s | Version: %s | ' +
