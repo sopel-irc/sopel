@@ -53,7 +53,7 @@ class CoreSection(StaticSection):
         'nickserv', 'authserv', 'sasl', 'server'])
     """The method to use to authenticate with the server.
 
-    Can be ``nickserv``, ``authserv``, ``sasl``, or ``server``."""
+    Can be ``nickserv``, ``authserv``, ``q``, ``sasl``, or ``server``."""
 
     auth_password = ValidatedAttribute('auth_password')
     """The password to use to authenticate with the server."""
