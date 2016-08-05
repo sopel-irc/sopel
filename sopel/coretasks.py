@@ -50,6 +50,14 @@ def auth_after_register(bot):
             'AUTHSERV auth',
             account + ' ' + password
         ))
+    
+    elif bot.config.core.auth_method.lower() == 'q':
+        account = bot.config.core.auth_username
+        password = bot.config.core.auth_password
+        bot.msg(
+            "q@cserve.quakenet.org",
+            'AUTH %s %s', % (account, password)
+            )
 
 
 @sopel.module.event(events.RPL_WELCOME, events.RPL_LUSERCLIENT)
