@@ -7,19 +7,23 @@ Licensed under the Eiffel Forum License 2.
 
 http://sopel.chat
 """
-from __future__ import unicode_literals, absolute_import, print_function, division
+from __future__ import (unicode_literals, absolute_import,
+                        print_function, division)
+import json
+import random
+import sys
+import requests
+
+
 from sopel import web
 from sopel.module import rule, commands, priority, example
-import json
-import sys
-import random
-import requests
+
 mangle_lines = {}
 if sys.version_info.major >= 3:
     unicode = str
 
 
-def translate(text, in_lang='auto', out_lang='en'):
+def translate(text, in_lang='auto', out_lang='en', verify_ssl=True):
     raw = False
     if unicode(out_lang).endswith('-raw'):
         out_lang = out_lang[:-4]
@@ -39,7 +43,8 @@ def translate(text, in_lang='auto', out_lang='en'):
         "q": text,
     }
     url = "http://translate.googleapis.com/translate_a/single"
-    result = requests.get(url, params=query, timeout=40, headers=headers).text
+    result = requests.get(url, params=query, timeout=40, headers=headers,
+                          verify=verify_ssl).text
 
     if result == '[,,""]':
         return None, in_lang
@@ -78,7 +83,8 @@ def tr(bot, trigger):
     out_lang = out_lang or 'en'
 
     if in_lang != out_lang:
-        msg, in_lang = translate(phrase, in_lang, out_lang)
+        msg, in_lang = translate(phrase, in_lang, out_lang,
+                                 verify_ssl=bot.config.core.verify_ssl)
         if sys.version_info.major < 3 and isinstance(msg, str):
             msg = msg.decode('utf-8')
         if msg:
@@ -125,7 +131,8 @@ def tr2(bot, trigger):
 
     src, dest = args
     if src != dest:
-        msg, src = translate(phrase, src, dest)
+        msg, src = translate(phrase, src, dest,
+                             verify_ssl=bot.config.core.verify_ssl)
         if sys.version_info.major < 3 and isinstance(msg, str):
             msg = msg.decode('utf-8')
         if msg:
@@ -152,6 +159,7 @@ def get_random_lang(long_list, short_list):
 @commands('mangle', 'mangle2')
 def mangle(bot, trigger):
     """Repeatedly translate the input until it makes absolutely no sense."""
+    verify_ssl = bot.config.core.verify_ssl
     global mangle_lines
     long_lang_list = ['fr', 'de', 'es', 'it', 'no', 'he', 'la', 'ja', 'cy', 'ar', 'yi', 'zh', 'nl', 'ru', 'fi', 'hi', 'af', 'jw', 'mr', 'ceb', 'cs', 'ga', 'sv', 'eo', 'el', 'ms', 'lv']
     lang_list = []
@@ -172,7 +180,8 @@ def mangle(bot, trigger):
     for lang in lang_list:
         backup = phrase
         try:
-            phrase = translate(phrase[0], 'en', lang)
+            phrase = translate(phrase[0], 'en', lang,
+                               verify_ssl=verify_ssl)
         except:
             phrase = False
         if not phrase:
@@ -180,7 +189,7 @@ def mangle(bot, trigger):
             break
 
         try:
-            phrase = translate(phrase[0], lang, 'en')
+            phrase = translate(phrase[0], lang, 'en', verify_ssl=verify_ssl)
         except:
             phrase = backup
             continue

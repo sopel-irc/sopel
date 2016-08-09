@@ -28,12 +28,12 @@ ignored_sites = [
 sites_query = ' site:xkcd.com -site:' + ' -site:'.join(ignored_sites)
 
 
-def get_info(number=None):
+def get_info(number=None, verify_ssl=True):
     if number:
         url = 'http://xkcd.com/{}/info.0.json'.format(number)
     else:
         url = 'http://xkcd.com/info.0.json'
-    data = requests.get(url).json()
+    data = requests.get(url, verify=verify_ssl).json()
     data['url'] = 'http://xkcd.com/' + str(data['num'])
     return data
 
@@ -56,14 +56,16 @@ def xkcd(bot, trigger):
     comic if the number is non-positive
     If non-numeric input is provided it will return the first google result for those keywords on the xkcd.com site
     """
+    verify_ssl = bot.config.core.verify_ssl
     # get latest comic for rand function and numeric input
-    latest = get_info()
+    latest = get_info(verify_ssl=verify_ssl)
     max_int = latest['num']
 
     # if no input is given (pre - lior's edits code)
     if not trigger.group(2):  # get rand comic
         random.seed()
-        requested = get_info(random.randint(1, max_int + 1))
+        requested = get_info(random.randint(1, max_int + 1),
+                             verify_ssl=verify_ssl)
     else:
         query = trigger.group(2).strip()
 
@@ -86,10 +88,10 @@ def xkcd(bot, trigger):
                 bot.say("404 - Not Found")  # don't error on that one
                 return
             elif query > 0:
-                requested = get_info(query)
+                requested = get_info(query, verify_ssl=verify_ssl)
             else:
                 # Negative: go back that many from current
-                requested = get_info(max_int + query)
+                requested = get_info(max_int + query, verify_ssl=verify_ssl)
         else:
             # Non-number: google.
             if (query.lower() == "latest" or query.lower() == "newest"):
@@ -99,7 +101,7 @@ def xkcd(bot, trigger):
                 if not number:
                     bot.say('Could not find any comics for that query.')
                     return
-                requested = get_info(number)
+                requested = get_info(number, verify_ssl=verify_ssl)
 
     message = '{} [{}]'.format(requested['url'], requested['title'])
     bot.say(message)
