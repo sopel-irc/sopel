@@ -52,7 +52,6 @@ setup(
               str('sopel.config'), str('sopel.tools')],
     license='Eiffel Forum License, version 2',
     platforms='Linux x86, x86-64',
-    requires=requires,
     install_requires=requires,
     entry_points={'console_scripts': ['sopel = sopel.run_script:main']},
 )
