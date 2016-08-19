@@ -16,7 +16,7 @@ class PreTrigger(object):
     """A parsed message from the server, which has not been matched against
     any rules."""
     component_regex = re.compile(r'([^!]*)!?([^@]*)@?(.*)')
-    intent_regex = re.compile('\x01(\\S+) (.*)\x01')
+    intent_regex = re.compile('\x01(\\S+) ?(.*)\x01')
 
     def __init__(self, own_nick, line):
         """own_nick is the bot's nick, needed to correctly parse sender.
