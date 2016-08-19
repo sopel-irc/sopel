@@ -194,7 +194,7 @@ def find_title(url, verify=True):
                 break
             if '</title>' in content or len(content) > max_bytes:
                 break
-    except UnicodeDecodeError:
+    except (UnicodeError, UnicodeDecodeError):
         return  # Fail silently when data can't be decoded
     finally:
         # need to close the connexion because we have not read all the data
