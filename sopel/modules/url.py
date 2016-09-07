@@ -186,16 +186,12 @@ def find_title(url, verify=True):
     """Return the title for the given URL."""
     response = requests.get(url, stream=True, verify=verify)
     try:
-        content = ''
-        for byte in response.iter_content(chunk_size=512, decode_unicode=True):
-            if not isinstance(byte, bytes):
-                content += byte
-            else:
+        content = b''
+        for byte in response.iter_content(chunk_size=512):
+            content += byte
+            if b'</title>' in content or len(content) > max_bytes:
                 break
-            if '</title>' in content or len(content) > max_bytes:
-                break
-    except UnicodeDecodeError:
-        return  # Fail silently when data can't be decoded
+        content = content.decode('utf-8', errors='ignore')
     finally:
         # need to close the connexion because we have not read all the data
         response.close()
