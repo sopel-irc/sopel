@@ -1,3 +1,22 @@
+Changes between 6.3.1 and 6.4.0
+===============================
+Module changes:
+* For some subreddits where NSFW is used to mark spoilers, an appropriate tag is shown.
+* .ddg avoids giving ad results.
+* .wa is fully removed; a replacement can be found on PyPI as sopel-modules.wolfram
+
+Core changes:
+* Support for authenticating with Quakenet's Q is added.
+* Errors from empty PID files are fixed.
+* Issues with errors not being logged to the logging channel are fixed.
+* Topic tracking is improved.
+* extended-join is supported properly
+* Error messages being reported to the triggering channel/user can be disabled.
+
+API changes:
+* Channel priliveges are no longer checked in private messages.
+* Rate limiting can now be done by channel and globally, not just per user.
+
 Changes between 6.3.0 and 6.3.1
 ===============================
 Module changes:
