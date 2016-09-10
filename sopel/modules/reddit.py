@@ -23,10 +23,14 @@ else:
 
 
 domain = r'https?://(?:www\.|np\.)?reddit\.com'
-post_url = '%s/r/.*?/comments/([\w-]+)' % domain
+post_url = '%s/r/(.*?)/comments/([\w-]+)' % domain
 user_url = '%s/u(ser)?/([\w-]+)' % domain
 post_regex = re.compile(post_url)
 user_regex = re.compile(user_url)
+spoiler_subs = [
+    'stevenuniverse',
+    'onepunchman',
+]
 
 
 def setup(bot):
@@ -45,19 +49,24 @@ def shutdown(bot):
 def rpost_info(bot, trigger, match=None):
     r = praw.Reddit(user_agent=USER_AGENT)
     match = match or trigger
-    s = r.get_submission(submission_id=match.group(1))
+    s = r.get_submission(submission_id=match.group(2))
 
     message = ('[REDDIT] {title} {link}{nsfw} | {points} points ({percent}) | '
                '{comments} comments | Posted by {author} | '
                'Created at {created}')
 
+    subreddit = s.subreddit.display_name
     if s.is_self:
-        link = '(self.{})'.format(s.subreddit.display_name)
+        link = '(self.{})'.format(subreddit)
     else:
-        link = '({}) to r/{}'.format(s.url, s.subreddit.display_name)
+        link = '({}) to r/{}'.format(s.url, subreddit)
 
     if s.over_18:
-        nsfw = bold(color(' [NSFW]', colors.RED))
+        if subreddit.lower() in spoiler_subs:
+            nsfw = bold(color(' [SPOILERS]', colors.RED))
+        else:
+            nsfw = bold(color(' [NSFW]', colors.RED))
+
         sfw = bot.db.get_channel_value(trigger.sender, 'sfw')
         if sfw:
             link = '(link hidden)'
