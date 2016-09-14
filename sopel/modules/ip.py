@@ -156,8 +156,16 @@ def ip(bot, trigger):
     if region:
         response += " | Region: %s" % region
 
+    try:
+        city = gi_city.record_by_name(query)['city']
+    except KeyError:
+        city = None
+    if city:
+        response += " | City: %s" % city
+
     isp = gi_org.org_by_name(query)
     response += " | ISP: %s" % isp
+
     bot.say(response)
 
 
