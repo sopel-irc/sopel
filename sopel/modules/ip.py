@@ -133,6 +133,8 @@ def ip(bot, trigger):
         addr = socket.gethostbyaddr(query)[2][0]
     except socket.herror:
         addr = query
+    except socket.gaierror:
+        return bot.say('[IP/Host Lookup] Unable to resolve IP/Hostname')
     if ':' not in addr:
         gi_city = pygeoip.GeoIP(geolite_city_filepath)
         gi_org = pygeoip.GeoIP(geolite_ASN_filepath)
