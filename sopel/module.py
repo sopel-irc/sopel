@@ -8,6 +8,7 @@
 
 from __future__ import unicode_literals, absolute_import, print_function, division
 
+import re
 import sopel.test_tools
 import functools
 
@@ -250,10 +251,10 @@ def intent(*intent_list):
 
 def rate(user=0, channel=0, server=0):
     """Decorate a function to limit how often it can be triggered on a per-user
-    basis, in a channel, or across the server (bot). A value of zero means no 
+    basis, in a channel, or across the server (bot). A value of zero means no
     limit. If a function is given a rate of 20, that function may only be used
     once every 20 seconds in the scope corresponding to the parameter.
-    Users on the admin list in Sopel’s configuration are exempted from rate 
+    Users on the admin list in Sopel’s configuration are exempted from rate
     limits.
 
     Rate-limited functions that use scheduled future commands should import
@@ -369,6 +370,17 @@ def require_owner(message=None):
     # Hack to allow decorator without parens
     if callable(message):
         return actual_decorator(message)
+    return actual_decorator
+
+
+def url(url_rule):
+    def actual_decorator(function):
+        @functools.wraps(function)
+        def helper(bot, trigger, match=None):
+            match = match or trigger
+            return function(bot, trigger, match)
+        helper.url_regex = re.compile(url_rule)
+        return helper
     return actual_decorator
 
 

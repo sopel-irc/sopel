@@ -221,7 +221,7 @@ class Sopel(irc.Bot):
                 and obj in self.shutdown_methods):
             self.shutdown_methods.remove(obj)
 
-    def register(self, callables, jobs, shutdowns):
+    def register(self, callables, jobs, shutdowns, urls):
         self.shutdown_methods = shutdowns
         for callbl in callables:
             for rule in callbl.rule:
@@ -238,6 +238,11 @@ class Sopel(irc.Bot):
             for interval in func.interval:
                 job = sopel.tools.jobs.Job(interval, func)
                 self.scheduler.add_job(job)
+
+        if not self.memory.contains('url_callbacks'):
+            self.memory['url_callbacks'] = tools.SopelMemory()
+        for func in urls:
+            self.memory['url_callbacks'][func.url_regex] = func
 
     def part(self, channel, msg=None):
         """Part a channel."""

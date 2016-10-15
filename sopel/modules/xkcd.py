@@ -9,7 +9,7 @@ import random
 import re
 import requests
 from sopel.modules.search import google_search
-from sopel.module import commands
+from sopel.module import commands, url
 
 ignored_sites = [
     # For google searching
@@ -70,24 +70,7 @@ def xkcd(bot, trigger):
             query = int(numbered.group(2))
             if numbered.group(1) == "-":
                 query = -query
-            if query > max_int:
-                bot.say(("Sorry, comic #{} hasn't been posted yet. "
-                         "The last comic was #{}").format(query, max_int))
-                return
-            elif query <= -max_int:
-                bot.say(("Sorry, but there were only {} comics "
-                         "released yet so far").format(max_int))
-                return
-            elif abs(query) == 0:
-                requested = latest
-            elif query == 404 or max_int + query == 404:
-                bot.say("404 - Not Found")  # don't error on that one
-                return
-            elif query > 0:
-                requested = get_info(query)
-            else:
-                # Negative: go back that many from current
-                requested = get_info(max_int + query)
+            return numbered_result(bot, query, latest)
         else:
             # Non-number: google.
             if (query.lower() == "latest" or query.lower() == "newest"):
@@ -99,5 +82,40 @@ def xkcd(bot, trigger):
                     return
                 requested = get_info(number)
 
-    message = '{} [{}]'.format(requested['url'], requested['title'])
+    say_result(bot, requested)
+
+
+def numbered_result(bot, query, latest):
+    max_int = latest['num']
+    if query > max_int:
+        bot.say(("Sorry, comic #{} hasn't been posted yet. "
+                    "The last comic was #{}").format(query, max_int))
+        return
+    elif query <= -max_int:
+        bot.say(("Sorry, but there were only {} comics "
+                    "released yet so far").format(max_int))
+        return
+    elif abs(query) == 0:
+        requested = latest
+    elif query == 404 or max_int + query == 404:
+        bot.say("404 - Not Found")  # don't error on that one
+        return
+    elif query > 0:
+        requested = get_info(query)
+    else:
+        # Negative: go back that many from current
+        requested = get_info(max_int + query)
+
+    say_result(bot, requested)
+
+
+def say_result(bot, result):
+    message = '{} | {} | Alt-text: {}'.format(result['url'], result['title'],
+                                              result['alt'])
     bot.say(message)
+
+
+@url('xkcd.com/(\d+)')
+def get_url(bot, trigger, match):
+    latest = get_info()
+    numbered_result(bot, int(match.group(1)), latest)

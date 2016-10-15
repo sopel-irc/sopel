@@ -175,7 +175,8 @@ def check_callbacks(bot, trigger, url, run=True):
     for regex, function in tools.iteritems(bot.memory['url_callbacks']):
         match = regex.search(url)
         if match:
-            if run:
+            # Always run ones from @url; they don't run on their own.
+            if run or hasattr(function, 'url_regex'):
                 function(bot, trigger, match)
             matched = True
     return matched
