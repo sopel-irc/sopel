@@ -374,6 +374,14 @@ def require_owner(message=None):
 
 
 def url(url_rule):
+    """Decorate a function to handle URLs.
+
+    This decorator takes a regex string that will be matched against URLs in a
+    message. The function it decorates, in addition to the bot and trigger,
+    must take a third argument ``match``, which is the regular expression match
+    of the url. This should be used rather than the matching in trigger, in
+    order to support e.g. the ``.title`` command.
+    """
     def actual_decorator(function):
         @functools.wraps(function)
         def helper(bot, trigger, match=None):
