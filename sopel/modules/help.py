@@ -15,7 +15,6 @@ import json
 
 import requests
 
-from sopel.formatting import bold
 from sopel.logger import get_logger
 from sopel.module import commands, rule, example, priority
 
@@ -48,21 +47,29 @@ def help(bot, trigger):
             if bot.doc[name][1]:
                 msgfun('e.g. ' + bot.doc[name][1])
     else:
-        bot.say("Hang on, I'm creating a list.")
-        msgs = []
+        # This'll probably catch most cases, without having to spend the time
+        # actually creating the list first. Maybe worth storing the link and a
+        # heuristic in config, too, so it persists across restarts. Would need a
+        # command to regenerate, too...
+        if 'command-gist' in bot.memory and bot.memory['command-gist'][0] == len(bot.command_groups):
+            url = bot.memory['command-gist'][1]
+        else:
+            bot.say("Hang on, I'm creating a list.")
+            msgs = []
 
-        name_length = max(6, max(len(k) for k in bot.command_groups.keys()))
-        for category, cmds in collections.OrderedDict(sorted(bot.command_groups.items())).items():
-            category = category.upper().ljust(name_length)
-            cmds = '  '.join(cmds)
-            msg = category + '  ' + cmds
-            indent = ' ' * (name_length + 2)
-            # Honestly not sure why this is a list here
-            msgs.append('\n'.join(textwrap.wrap(msg, subsequent_indent=indent)))
+            name_length = max(6, max(len(k) for k in bot.command_groups.keys()))
+            for category, cmds in collections.OrderedDict(sorted(bot.command_groups.items())).items():
+                category = category.upper().ljust(name_length)
+                cmds = '  '.join(cmds)
+                msg = category + '  ' + cmds
+                indent = ' ' * (name_length + 2)
+                # Honestly not sure why this is a list here
+                msgs.append('\n'.join(textwrap.wrap(msg, subsequent_indent=indent)))
 
-        url = create_gist(bot, '\n\n'.join(msgs))
-        if not url:
-            return
+            url = create_gist(bot, '\n\n'.join(msgs))
+            if not url:
+                return
+            bot.memory['command-gist'] = (len(bot.command_groups), url)
         bot.say("I've posted a list of my commands at {} - You can see "
                 "more info about any of these commands by doing .help "
                 "<command> (e.g. .help time)".format(url))
@@ -78,7 +85,6 @@ def create_gist(bot, msg):
             },
         },
     }
-    print(json.dumps(payload))
     try:
         result = requests.post('https://api.github.com/gists',
                                data=json.dumps(payload))
