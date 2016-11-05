@@ -1,4 +1,4 @@
-|version| |downloads| |license| |issues| |forks| |stars| |ages| |works| |badges|
+|version| |downloads| |license| |build| |issues| |forks| |stars| |ages| |works| |badges|
 
 Introduction
 ------------
@@ -69,6 +69,8 @@ Join us in `#sopel <irc://irc.freenode.net/#sopel>`_ on Freenode.
    :target: https://pypi.python.org/pypi/sopel
 .. |license| image:: https://img.shields.io/pypi/l/sopel.svg
    :target: https://github.com/sopel-irc/sopel/blob/master/COPYING
+.. |build| image:: https://travis-ci.org/sopel-irc/sopel.svg?branch=master
+    :target: https://travis-ci.org/sopel-irc/sopel
 .. |issues| image:: https://img.shields.io/github/issues/sopel-irc/sopel.svg
    :target: https://github.com/sopel-irc/sopel/issues
 .. |forks| image:: https://img.shields.io/github/forks/sopel-irc/sopel.svg
@@ -77,4 +79,4 @@ Join us in `#sopel <irc://irc.freenode.net/#sopel>`_ on Freenode.
    :target: https://github.com/sopel-irc/sopel/stargazers
 .. |ages| image:: https://img.shields.io/badge/ages-12%2B-green.svg
 .. |works| image:: https://img.shields.io/badge/works-usually-yellow.svg
-.. |badges| image:: https://img.shields.io/badge/badges-9-green.svg
+.. |badges| image:: https://img.shields.io/badge/badges-10-green.svg
