@@ -8,6 +8,10 @@ sudo: false  # Enables running on faster infrastructure.
 cache:
   directories:
     - $HOME/.cache/pip
+addons:
+  apt:
+    packages:
+      - enchant
 install:
   - pip install -r requirements.txt -r dev-requirements.txt
   - pip install coveralls
