@@ -52,7 +52,7 @@ class SopelDB(object):
 
     def connect(self):
         """Return a raw database connection object."""
-        return sqlite3.connect(self.filename)
+        return sqlite3.connect(self.filename, timeout=10)
 
     def execute(self, *args, **kwargs):
         """Execute an arbitrary SQL query against the database.
