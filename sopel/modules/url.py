@@ -8,12 +8,14 @@
 from __future__ import unicode_literals, absolute_import, print_function, division
 
 import re
-from sopel import web, tools
+from sopel import web, tools, __version__
 from sopel.module import commands, rule, example
 from sopel.config.types import ValidatedAttribute, ListAttribute, StaticSection
 
 import requests
 
+USER_AGENT = 'Sopel/{} (http://sopel.chat)'.format(__version__)
+default_headers = {'User-Agent': USER_AGENT}
 url_finder = None
 # These are used to clean up the title tag before actually parsing it. Not the
 # world's best way to do this, but it'll do for now.
@@ -184,7 +186,8 @@ def check_callbacks(bot, trigger, url, run=True):
 
 def find_title(url, verify=True):
     """Return the title for the given URL."""
-    response = requests.get(url, stream=True, verify=verify)
+    response = requests.get(url, stream=True, verify=verify,
+                            headers=default_headers)
     try:
         content = b''
         for byte in response.iter_content(chunk_size=512):
