@@ -1,3 +1,17 @@
+Changes between 6.4.0 and 6.5.0
+===============================
+Module changes:
+* xkcd module can now recognize xkcd.com urls
+* SSL is verified for HTTP requests when not turned off in the config
+* The command list is placed in a gist, to prevent flooding
+* Title finding uses a custom user agent, to prevent issues with some sites
+
+Core changes:
+* Intent handling is improved
+
+API changes:
+* A @url decorator is added to simplify URL handling
+
 Changes between 6.3.1 and 6.4.0
 ===============================
 Module changes:
