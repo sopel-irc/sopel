@@ -45,9 +45,13 @@ def pronouns(bot, trigger):
         pronouns = bot.db.get_nick_value(trigger.group(2), 'pronouns')
         if pronouns:
             say_pronouns(bot, trigger.nick, pronouns)
+        elif trigger.group(2) == bot.nick:
+            # You can stuff an entry into the database manually for your bot's
+            # gender, but like… it's a bot.
+            bot.say("https://twitter.com/hopefulcyborg/status/728231494116773889")
         else:
             bot.say("I don't know {}'s pronouns. They can set them with "
-                    ".setpronouns")
+                    ".setpronouns".format(trigger.group(2)))
 
 
 def say_pronouns(bot, nick, pronouns):
