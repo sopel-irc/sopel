@@ -228,7 +228,7 @@ class Bot(asynchat.async_chat):
             password = self.config.core.auth_password
             self.write(('PASS', password))
         self.write(('NICK', self.nick))
-        self.write(('USER', self.user, '+iw', self.nick), self.name)
+        self.write(('USER', self.user, '+iw', self.nick, self.name))
 
         stderr('Connected.')
         self.last_ping_time = datetime.now()
