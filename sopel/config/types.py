@@ -144,7 +144,11 @@ class BaseValidated(object):
             return self
 
         if instance._parser.has_option(instance._section_name, self.name):
-            value = instance._parser.get(instance._section_name, self.name)
+            env_name = '%s_%s' % (instance._section_name.upper(), self.name.upper())
+            if os.environ.get(env_name) is not None:
+                value = os.environ.get(env_name)
+            else:
+                value = instance._parser.get(instance._section_name, self.name)
         else:
             if self.default is not NO_DEFAULT:
                 return self.default
