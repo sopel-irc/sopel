@@ -23,7 +23,8 @@ ignored_sites = [
     'wiki.xkcd.com',
     'what-if.xkcd.com',
 ]
-sites_query = ' site:xkcd.com -site:' + ' -site:'.join(ignored_sites)
+sites_query = ' site:xkcd.com ' + ' '.join('-site:{}'.format(ignored_site)
+                                           for ignored_site in ignored_sites)
 
 
 def get_info(number=None, verify_ssl=True):
