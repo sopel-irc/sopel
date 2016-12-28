@@ -163,10 +163,12 @@ def remind(bot, trigger):
 @example('.at 13:47 Do your homework!')
 def at(bot, trigger):
     """
-    Gives you a reminder at the given time. Takes hh:mm:ssTimezone
-    message. Timezone is any timezone Sopel takes elsewhere; the best choices
+    Gives you a reminder at the given time. Takes hh:mm:ss$tz yyyy-mm-dd message
+    Timezone is any timezone Sopel takes elsewhere; the best choices
     are those from the tzdb; a list of valid options is available at
-    https://sopel.chat/tz . The seconds and timezone are optional.
+    https://sopel.chat/tz The seconds and timezone are optional.
+    Year, month, and day are also optional - if not specified, will default to
+    next occurrence of time given.
     """
     if not trigger.group(2):
         bot.say("No arguments given for reminder command.")
@@ -174,39 +176,90 @@ def at(bot, trigger):
     if trigger.group(3) and not trigger.group(4):
         bot.say("No message given for reminder.")
         return NOLIMIT
-    regex = re.compile(r'(\d+):(\d+)(?::(\d+))?([^\s\d]+)? (.*)')
+
+    regex = re.compile(r'(\d+):(\d+)'                       # Match hh:mm
+                       r'(?::(\d+))?'                       # Match optionally :ss - (?::) matches a colon but doesn't group it
+                       r'([^\s]+)?'                         # Match optionally a timezone, defined as all non-whitespace chars (e.g. UTC-6)
+                       r'(?:\s+(\d*)\W*(\d*)\W*(\d*))?'     # Big capture group to match date components, up to three
+                       r'(.*)')                             # Finally, match the message
     match = regex.match(trigger.group(2))
     if not match:
         bot.reply("Sorry, but I didn't understand your input.")
         return NOLIMIT
-    hour, minute, second, tz, message = match.groups()
-    if not second:
-        second = '0'
+    hour, minute, seconds, tz, first, second, third, message = match.groups()
+    if pytz:
+        pytz_timezone = pytz.timezone(get_timezone(bot.db, bot.config, tz,
+                                                   trigger.nick, trigger.sender))
+        now = datetime.now(pytz_timezone)
+    else:
+        now = datetime.now()
+
+    year = now.year
+    month = now.month
+    day = now.day
+
+    if not seconds:
+        seconds = '0'
+    if first and second and not third:  # Only two groups - parse as month and day
+        first = int(first)
+        second = int(second)
+
+        if first > 12 and second > 12:
+            bot.reply("Sorry, I didn't understand the date you gave. Try yyyy-mm-dd.")
+            return NOLIMIT
+        elif first <= 12 and second > 12:
+            day = first
+            month = second
+        else:   # Default is to assume that the user gave mm/dd
+            month = first
+            day = second
+    elif third:
+        first = int(first)
+        second = int(second)
+        third = int(third)
+
+        if third > 31:
+            year = third
+            if first > 12:   # If first is probably day
+                day = first
+                month = second
+            else:
+                month = first
+                day = second
+        else:   # I assume that no country uses yyyy-dd-mm.
+            year = first
+            month = second
+            day = third
 
     if pytz:
         timezone = get_timezone(bot.db, bot.config, tz,
                                 trigger.nick, trigger.sender)
         if not timezone:
             timezone = 'UTC'
-        now = datetime.now(pytz.timezone(timezone))
-        at_time = datetime(now.year, now.month, now.day,
-                           int(hour), int(minute), int(second),
-                           tzinfo=now.tzinfo)
-        timediff = at_time - now
+
+        pytz_timezone = pytz.timezone(timezone)
+        now = pytz_timezone.localize(datetime.now())
+        at_time = datetime(year, month, day,
+                           int(hour), int(minute), int(second))
+        at_time = pytz_timezone.localize(at_time)
+        timediff = pytz_timezone.normalize(at_time) - now
     else:
         if tz and tz.upper() != 'UTC':
             bot.reply("I don't have timezone support installed.")
             return NOLIMIT
         now = datetime.now()
-        at_time = datetime(now.year, now.month, now.day,
+        at_time = datetime(year, month, day,
                            int(hour), int(minute), int(second))
         timediff = at_time - now
 
-    duration = timediff.seconds
+    duration = timediff.seconds + 86400 * timediff.days
 
     if duration < 0:
         duration += 86400
-    create_reminder(bot, trigger, duration, message, timezone)
+    if timezone:
+        create_reminder(bot, trigger, duration, message, timezone)
+    else:
+        create_reminder(bot, trigger, duration, message, 'UTC')
 
 
 def create_reminder(bot, trigger, duration, message, tz):
