@@ -19,13 +19,19 @@ if sys.version_info.major >= 3:
 
 BASE_TUMBOLIA_URI = 'https://tumbolia-two.appspot.com/'
 
+
 @commands('rpn')
+@example('.rpn 5 6 7 + *')
 def rpn(bot, trigger):
+    """
+    Performs calculations entered using reverse polish notation.
+    """
     if not trigger.group(2):
         return bot.say("Nothing to calculate.")
     eqn = trigger.group(2).replace(',', '.')
     queue = deque(eqn.split(None))
     stack = []
+    operators = ['+', '-', '−', '*', '×', 'x', 'X', '/', '**', '//', '^', '!']
     while len(queue) > 0:
         symbol = queue.popleft()
         try:
@@ -40,7 +46,7 @@ def rpn(bot, trigger):
                 else:
                     stack.append(float(symbol))
         except ValueError:
-            if symbol not in ['+','-','−','*','×','x','X','/','**','//','^','!']:
+            if symbol not in operators:
                 bot.say("Unknown symbol: ".format(symbol))
                 return
 
@@ -55,7 +61,8 @@ def rpn(bot, trigger):
                 stack.append(math.factorial(num))
                 continue
             elif len(stack) < 2:
-                bot.say('Too few values for operator {0}: {1}'.format(symbol, stack))
+                bot.say('Too few values for operator {0}: {1}'
+                        .format(symbol, stack))
                 return
             else:
                 val2 = stack.pop()
@@ -66,10 +73,10 @@ def rpn(bot, trigger):
 
             elif symbol == '-' or symbol == '−':
                 result = val1 - val2
-            
-            elif symbol in ['*','×','x','X']:
+
+            elif symbol in ['*', '×', 'x', 'X']:
                 result = val1 * val2
-                            
+
             elif symbol == '^' or symbol == '**':
                 result = math.pow(val1, val2)
 
@@ -79,15 +86,16 @@ def rpn(bot, trigger):
             elif symbol == '//':
                 result = val1 // val2
 
-            if isinstance(result,int) or result.is_integer():
+            if isinstance(result, int) or result.is_integer():
                 stack.append(int(result))
             else:
                 stack.append(result)
-    
+
     if len(stack) is not 1:
         bot.say("Error: values still on stack: {0}".format(stack))
     else:
         bot.say('{0}'.format(stack.pop()))
+
 
 @commands('c', 'calc')
 @example('.c 5 + 3', '8')
@@ -124,7 +132,7 @@ def py(bot, trigger):
     uri = BASE_TUMBOLIA_URI + 'py/'
     answer = web.get(uri + web.quote(query))
     if answer:
-        #bot.say can potentially lead to 3rd party commands triggering.
+        # bot.say can potentially lead to 3rd party commands triggering.
         bot.reply(answer)
     else:
         bot.reply('Sorry, no result.')
