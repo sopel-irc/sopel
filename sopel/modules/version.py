@@ -46,11 +46,9 @@ def version(bot, trigger):
     bot.reply("Sopel v. {} at commit: {}".format(sopel.__version__, sha))
 
 
-@sopel.module.intent('VERSION')
+@sopel.module.rule('\x01VERSION\x01')
 @sopel.module.rate(20)
-@sopel.module.rule('.*')
 def ctcp_version(bot, trigger):
-    print('wat')
     bot.write(('NOTICE', trigger.nick),
               '\x01VERSION Sopel IRC Bot version %s\x01' % sopel.__version__)
 
