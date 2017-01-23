@@ -87,6 +87,7 @@ def get(uri, timeout=20, headers=None, return_headers=False,
     else:
         tmp = default_headers.copy()
         tmp.update(headers)
+        headers = tmp
     u = requests.get(uri, timeout=timeout, headers=headers, verify=verify_ssl)
     bytes = u.content
     u.close()
@@ -116,7 +117,8 @@ def head(uri, timeout=20, headers=None, verify_ssl=True):
         headers = default_headers
     else:
         tmp = default_headers.copy()
-        headers = tmp.update(headers)
+        tmp.update(headers)
+        headers = tmp
     u = requests.get(uri, timeout=timeout, headers=headers, verify=verify_ssl)
     info = u.headers
     u.close()
