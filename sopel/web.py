@@ -179,7 +179,8 @@ def get_urllib_object(uri, timeout, headers=None, verify_ssl=True, data=None):
         headers = default_headers
     else:
         tmp = default_headers.copy()
-        headers = tmp.update(headers)
+        tmp.update(headers)
+        headers = tmp
     if data is not None:
         response = requests.post(uri, timeout=timeout, verify=verify_ssl,
                                  data=data, headers=headers)
