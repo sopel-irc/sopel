@@ -117,9 +117,23 @@ def _find_geoip_db(bot):
          ignore='Downloading GeoIP database, please wait...')
 def ip(bot, trigger):
     """IP Lookup tool"""
+    # Check if there is input at all
     if not trigger.group(2):
         return bot.reply("No search term.")
-    query = trigger.group(2)
+    # Check whether the input is an IP or hostmask or a nickname
+    decide = ['.', ':']
+    if any(x in trigger.group(2) for x in decide):
+        # It's an IP/hostname!
+        query = trigger.group(2).strip()
+    else:
+        # Need to get the host for the username
+        username = trigger.group(2).strip()
+        user_in_botdb = bot.users.get(username)
+        if user_in_botdb is not None:
+            query = user_in_botdb.host
+        else:
+            return bot.say("I am not aware of this user.")
+
     db_path = _find_geoip_db(bot)
     if db_path is False:
         LOGGER.error('Can\'t find (or download) usable GeoIP database')
