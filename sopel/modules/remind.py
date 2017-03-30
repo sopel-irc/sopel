@@ -205,7 +205,7 @@ def at(bot, trigger):
 
     if duration < 0:
         duration += 86400
-    create_reminder(bot, trigger, duration, message, 'UTC')
+    create_reminder(bot, trigger, duration, message, timezone)
 
 
 def create_reminder(bot, trigger, duration, message, tz):
