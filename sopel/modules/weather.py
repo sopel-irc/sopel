@@ -113,6 +113,33 @@ def get_wind(parsed):
     return description + ' ' + str(m_s) + 'm/s (' + degrees + ')'
 
 
+def get_tomorrow_high(parsed):
+    try:
+        tomorrow_high = parsed['channel']['item']['yweather:forecast'][2]['@high']
+    except (KeyError, ValueError):
+        return 'unknown'
+    return ('High: %s\u00B0C' % (tomorrow_high))
+
+
+def get_tomorrow_low(parsed):
+    try:
+        tomorrow_low = parsed['channel']['item']['yweather:forecast'][2]['@low']
+    except (KeyError, ValueError):
+        return 'unknown'
+    return ('Low: %s\u00B0C' % (tomorrow_low))
+
+
+def get_tomorrow_cover(parsed):
+    try:
+        tomorrow_cover = parsed['channel']['item']['yweather:forecast'][2]
+    except KeyError:
+        return 'unknown'
+    tomorrow_text = tomorrow_cover['@text']
+    # code = int(condition['code'])
+    # TODO parse code to get those little icon thingies.
+    return ('Tomorrow: %s,' % (tomorrow_text))
+
+
 @commands('weather', 'wea')
 @example('.weather London')
 def weather(bot, trigger):
@@ -148,6 +175,43 @@ def weather(bot, trigger):
     humidity = get_humidity(results)
     wind = get_wind(results)
     bot.say(u'%s: %s, %s, %s, %s' % (location, cover, temp, humidity, wind))
+
+
+@commands('forecast')
+@example('.forecast Montreal, QC')
+def forecast(bot, trigger):
+    """.forecast location - Show the weather forecast for tomorrow at the given location."""
+
+    location = trigger.group(2)
+    woeid = ''
+    if not location:
+        woeid = bot.db.get_nick_value(trigger.nick, 'woeid')
+        if not woeid:
+            return bot.msg(trigger.sender, "I don't know where you live. " +
+                           'Give me a location, like .forecast London, or tell me where you live by saying .setlocation London, for example.')
+    else:
+        location = location.strip()
+        woeid = bot.db.get_nick_value(location, 'woeid')
+        if woeid is None:
+            first_result = woeid_search(location)
+            if first_result is not None:
+                woeid = first_result.get('woeid')
+
+    if not woeid:
+        return bot.reply("I don't know where that is.")
+
+    query = 'q=select * from weather.forecast where woeid="%s" and u=\'c\'' % woeid
+    body = web.get('http://query.yahooapis.com/v1/public/yql?' + query,
+                  dont_decode=True)
+    parsed = xmltodict.parse(body).get('query')
+    results = parsed.get('results')
+    if results is None:
+        return bot.reply("No forecast available. Try a more specific location.")
+    location = results.get('channel').get('title')
+    tomorrow_high = get_tomorrow_high(results)
+    tomorrow_low = get_tomorrow_low(results)
+    tomorrow_text = get_tomorrow_cover(results)
+    bot.say(u'%s: %s %s %s' % (location, tomorrow_text, tomorrow_high, tomorrow_low))
 
 
 @commands('setlocation', 'setwoeid')
