@@ -87,7 +87,7 @@ def xkcd(bot, trigger):
     say_result(bot, requested)
 
 
-def numbered_result(bot, query, latest, verify_ssl):
+def numbered_result(bot, query, latest, verify_ssl=True):
     max_int = latest['num']
     if query > max_int:
         bot.say(("Sorry, comic #{} hasn't been posted yet. "
