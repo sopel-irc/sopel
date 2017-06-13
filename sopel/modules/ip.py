@@ -41,7 +41,7 @@ def configure(config):
                                 'Path of the GeoIP db files')
 
 
-def setup(bot=None):
+def setup(bot):
     if not bot:
         return  # Because of some weird pytest thing?
 

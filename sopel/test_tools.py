@@ -155,6 +155,19 @@ def get_example_test(tested_func, msg, results, privmsg, admin,
     return test
 
 
+def get_disable_setup():
+    import pytest
+    import py
+
+    @pytest.fixture(autouse=True)
+    def disable_setup(request, monkeypatch):
+        setup = getattr(request.module, "setup", None)
+        isfixture = hasattr(setup, "_pytestfixturefunction")
+        if setup is not None and not isfixture and py.builtin.callable(setup):
+            monkeypatch.setattr(setup, "_pytestfixturefunction", pytest.fixture(), raising=False)
+    return disable_setup
+
+
 def insert_into_module(func, module_name, base_name, prefix):
     """Add a function into a module."""
     func.__module__ = module_name
