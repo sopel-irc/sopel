@@ -12,6 +12,7 @@ import requests
 import sopel.module
 from sopel.logger import get_logger
 import re
+from urllib.parse import quote 
 
 LOGGER = get_logger(__name__)
 
@@ -49,34 +50,39 @@ def movie(bot, trigger):
     bot.say(run_omdb_query(params, bot.config.core.verify_ssl, True))
 
 def run_omdb_query(params, verify_ssl, add_url=True):
-    uri = "http://www.omdbapi.com/"
-#    data = requests.get(uri, params={'t': word}, timeout=30,
-#                        verify=bot.config.core.verify_ssl).json()
-    data = requests.get(uri, params=params, timeout=30,
-                        verify=verify_ssl).json()
-    if data['Response'] == 'False':
-        if 'Error' in data:
-            message = '[MOVIE] %s' % data['Error']
-        else:
-            LOGGER.warning(
-                'Got an error from the OMDb api, search phrase was %s; data was %s',
-                word, str(data))
-            message = '[MOVIE] Got an error from OMDbapi'
+    uri = "https://theimdbapi.org/api/find/movie?"
+    if 'i' in params:
+        uri = uri.replace("/find","")
+        data = requests.get(uri + "movie_id={}".format(params['i']), timeout=30,
+                        verify=verify_ssl)
+    elif 'y' in params:
+        data = requests.get(uri + "title={}&year={}".format(quote(params['t']), params['y']), timeout=30,
+                        verify=verify_ssl)
     else:
-        message = '[MOVIE] Title: ' + data['Title'] + \
-                  ' | Year: ' + data['Year'] + \
-                  ' | Rating: ' + data['imdbRating'] + \
-                  ' | Genre: ' + data['Genre'] + \
+        data = requests.get(uri + "title={}".format(quote(params['t'])), timeout=30,
+                        verify=verify_ssl)
+
+    if data.text == 'null':
+        message = '[MOVIE] Nothing found'
+    else:
+        data = data.json()
+        if 't' in params:
+            data = data[0]
+        message = '[MOVIE] Title: ' + data['title'] + \
+                  ' | Year: ' + data['year'] + \
+                  ' | Rating: ' + data['rating'] + \
+                  ' | Genre: ' + '/'.join(data['genre']) + \
                   ' | Plot: {}'
         if add_url:
-            message += ' | IMDB Link: http://imdb.com/title/' + data['imdbID']
+            message += ' | IMDB Link: http://imdb.com/title/' + data['imdb_id']
 
-        plot = data['Plot']
+        plot = data['description']
         if len(message.format(plot)) > 300:
             cliplen = 300 - (len(message) - 2 + 3) # remove {} add […]
             plot = plot[:cliplen] + '[…]'
+        message = message.format(plot)
 
-    return message.format(plot)
+    return message
 
 @sopel.module.rule('.*(imdb\.com\/title\/)(tt[0-9]+).*')
 def imdb_url(bot, trigger, found_match=None):
