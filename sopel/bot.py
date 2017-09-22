@@ -13,6 +13,7 @@ import re
 import sys
 import threading
 import time
+from ast import literal_eval
 
 from sopel import tools
 from sopel import irc
@@ -465,6 +466,28 @@ class Sopel(irc.Bot):
                         func.channel_rate
                     )
                     return
+
+        # if channel have own settings sections, we're checking for excluded modules/modules methods
+        if trigger.sender in self.config:
+            channel_config = self.config[trigger.sender]
+
+            # disable listed modules completely on provided channel
+            if 'disable_modules' in channel_config:
+                disabled_modules = channel_config.disable_modules.split(',')
+
+                # if "!" is used, we are disabling all modules on provided channel
+                if '!' in disabled_modules:
+                    return
+                if func.__module__ in disabled_modules:
+                    return
+
+            # disable chosen methods from modules
+            if 'disable_commands' in channel_config:
+                disabled_commands = literal_eval(channel_config.disable_commands)
+
+                if func.__module__ in disabled_commands:
+                    if func.__name__ in disabled_commands[func.__module__]:
+                        return
 
         try:
             exit_code = func(sopel, trigger)
