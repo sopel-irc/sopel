@@ -42,9 +42,9 @@ def pronouns(bot, trigger):
             bot.reply("I don't know your pronouns! You can set them with "
                       ".setpronouns")
     else:
-        pronouns = bot.db.get_nick_value(trigger.group(2), 'pronouns')
+        pronouns = bot.db.get_nick_value(trigger.group(2).replace(" ", ""), 'pronouns')
         if pronouns:
-            say_pronouns(bot, trigger.nick, pronouns)
+            say_pronouns(bot, trigger.group(2).replace(" ", ""), pronouns)
         elif trigger.group(2) == bot.nick:
             # You can stuff an entry into the database manually for your bot's
             # gender, but like… it's a bot.
@@ -55,7 +55,7 @@ def pronouns(bot, trigger):
             )
         else:
             bot.say("I don't know {}'s pronouns. They can set them with "
-                    ".setpronouns".format(trigger.group(2)))
+                    ".setpronouns".format(trigger.group(2).replace(" ", "")))
 
 
 def say_pronouns(bot, nick, pronouns):
@@ -71,23 +71,26 @@ def say_pronouns(bot, nick, pronouns):
 @commands('setpronouns')
 @example('.setpronouns they/them/their/theirs/themselves')
 def set_pronouns(bot, trigger):
-    pronouns = trigger.group(2)
-    disambig = ''
-    if pronouns == 'they':
-        disambig = ' You can also use they/.../themself, if you prefer.'
-        pronouns = KNOWN_SETS.get(pronouns)
-    elif pronouns == 'ze':
-        disambig = ' I have ze/hir. If you meant ze/zir, you can use that instead.'
-        pronouns = KNOWN_SETS.get(pronouns)
-    elif len(pronouns.split('/')) != 5:
-        pronouns = KNOWN_SETS.get(pronouns)
-        if not pronouns:
-            bot.say(
+    if trigger.group(2):
+        pronouns = trigger.group(2)    
+        disambig = ''
+        if pronouns == 'they':
+            disambig = ' You can also use they/.../themself, if you prefer.'
+            pronouns = KNOWN_SETS.get(pronouns)
+        elif pronouns == 'ze':
+            disambig = ' I have ze/hir. If you meant ze/zir, you can use that instead.'
+            pronouns = KNOWN_SETS.get(pronouns)
+        elif len(pronouns.split('/')) != 5:
+            pronouns = KNOWN_SETS.get(pronouns)
+            if not pronouns:
+                bot.say(
                 "I'm sorry, I don't know those pronouns. You can give me a set "
                 "I don't know by formatting it "
                 "subject/object/possessive-determiner/posessive-pronoun/"
                 "reflexive, as in they/them/their/theirs/themselves"
-            )
-            return
-    bot.db.set_nick_value(trigger.nick, 'pronouns', pronouns)
-    bot.reply("Thanks for telling me!" + disambig)
+                )
+                return
+        bot.db.set_nick_value(trigger.nick, 'pronouns', pronouns)
+        bot.reply("Thanks for telling me!" + disambig)
+    else:
+        bot.reply("What?")
