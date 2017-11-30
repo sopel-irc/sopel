@@ -166,9 +166,9 @@ def message(bot, trigger):
 
     for remkey in remkeys:
         if not remkey.endswith('*') or remkey.endswith(':'):
-            if tellee == remkey:
+            if tellee.lower() == remkey.lower():
                 reminders.extend(getReminders(bot, channel, remkey, tellee))
-        elif tellee.startswith(remkey.rstrip('*:')):
+        elif tellee.lower().startswith(remkey.lower().rstrip('*:')):
             reminders.extend(getReminders(bot, channel, remkey, tellee))
 
     for line in reminders[:maximum]:
