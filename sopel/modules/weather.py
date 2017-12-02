@@ -4,9 +4,9 @@
 # Licensed under the Eiffel Forum License 2.
 from __future__ import unicode_literals, absolute_import, print_function, division
 
+from sopel import web
 from sopel.module import commands, example, NOLIMIT
 
-import requests
 import xmltodict
 
 
@@ -17,8 +17,9 @@ def woeid_search(query):
     None if there is no result, or the woeid field is empty.
     """
     query = 'q=select * from geo.places where text="%s"' % query
-    body = requests.get('http://query.yahooapis.com/v1/public/yql?' + query)
-    parsed = xmltodict.parse(body.text).get('query')
+    body = web.get('http://query.yahooapis.com/v1/public/yql?' + query,
+                   dont_decode=True)
+    parsed = xmltodict.parse(body).get('query')
     results = parsed.get('results')
     if results is None or results.get('place') is None:
         return None
@@ -139,8 +140,9 @@ def weather(bot, trigger):
         return bot.reply("I don't know where that is.")
 
     query = 'q=select * from weather.forecast where woeid="%s" and u=\'c\'' % woeid
-    body = requests.get('http://query.yahooapis.com/v1/public/yql?' + query)
-    parsed = xmltodict.parse(body.text).get('query')
+    body = web.get('http://query.yahooapis.com/v1/public/yql?' + query,
+                  dont_decode=True)
+    parsed = xmltodict.parse(body).get('query')
     results = parsed.get('results')
     if results is None:
         return bot.reply("No forecast available. Try a more specific location.")
