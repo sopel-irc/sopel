@@ -4,9 +4,9 @@
 # Licensed under the Eiffel Forum License 2.
 from __future__ import unicode_literals, absolute_import, print_function, division
 
-from sopel import web
 from sopel.module import commands, example, NOLIMIT
 
+import requests
 import xmltodict
 
 
@@ -17,9 +17,8 @@ def woeid_search(query):
     None if there is no result, or the woeid field is empty.
     """
     query = 'q=select * from geo.places where text="%s"' % query
-    body = web.get('http://query.yahooapis.com/v1/public/yql?' + query,
-                   dont_decode=True)
-    parsed = xmltodict.parse(body).get('query')
+    body = requests.get('http://query.yahooapis.com/v1/public/yql?' + query)
+    parsed = xmltodict.parse(body.text).get('query')
     results = parsed.get('results')
     if results is None or results.get('place') is None:
         return None
@@ -124,10 +123,8 @@ def weather(bot, trigger):
     if not location:
         woeid = bot.db.get_nick_value(trigger.nick, 'woeid')
         if not woeid:
-            prefix = bot.config.core.help_prefix or '.'
-            return bot.msg(trigger.sender,
-                           "I don't know where you live. Give me a location, like {pfx}weather London, or tell me "
-                           "where you live by saying {pfx}setlocation London, for example.".format(pfx=prefix))
+            return bot.msg(trigger.sender, "I don't know where you live. " +
+                           'Give me a location, like .weather London, or tell me where you live by saying .setlocation London, for example.')
     else:
         location = location.strip()
         woeid = bot.db.get_nick_value(location, 'woeid')
@@ -140,9 +137,8 @@ def weather(bot, trigger):
         return bot.reply("I don't know where that is.")
 
     query = 'q=select * from weather.forecast where woeid="%s" and u=\'c\'' % woeid
-    body = web.get('http://query.yahooapis.com/v1/public/yql?' + query,
-                  dont_decode=True)
-    parsed = xmltodict.parse(body).get('query')
+    body = requests.get('http://query.yahooapis.com/v1/public/yql?' + query)
+    parsed = xmltodict.parse(body.text).get('query')
     results = parsed.get('results')
     if results is None:
         return bot.reply("No forecast available. Try a more specific location.")
