@@ -115,7 +115,11 @@ def url_handler(bot, trigger):
     if not check:
         return  # Not overriden by DB, configured default off
 
-    netloc = urlparse(trigger.group(1)).netloc
+    try:
+        netloc = urlparse(trigger.group(1)).netloc
+    except ValueError:
+        return  # Invalid IPv6 URL
+
     if any(regex.search(netloc) for regex in known_good):
         return  # Whitelisted
 
