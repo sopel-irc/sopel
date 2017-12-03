@@ -53,7 +53,7 @@ def rpost_info(bot, trigger, match=None):
         client_secret=None,
     )
     match = match or trigger
-    s = r.get_submission(submission_id=match.group(2))
+    s = r.submission(id=match.group(2))
 
     message = ('[REDDIT] {title} {link}{nsfw} | {points} points ({percent}) | '
                '{comments} comments | Posted by {author} | '
