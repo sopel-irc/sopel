@@ -7,7 +7,8 @@ Licensed under the Eiffel Forum License 2.
 http://sopel.chat
 """
 from __future__ import unicode_literals, absolute_import, print_function, division
-
+from collections import deque
+import math
 from sopel import web
 from sopel.module import commands, example
 from sopel.tools.calculation import eval_equation
@@ -17,6 +18,83 @@ if sys.version_info.major >= 3:
 
 
 BASE_TUMBOLIA_URI = 'https://tumbolia-two.appspot.com/'
+
+
+@commands('rpn')
+@example('.rpn 5 6 7 + *')
+def rpn(bot, trigger):
+    """
+    Performs calculations entered using reverse polish notation.
+    """
+    if not trigger.group(2):
+        return bot.say("Nothing to calculate.")
+    eqn = trigger.group(2).replace(',', '.')
+    queue = deque(eqn.split(None))
+    stack = []
+    operators = ['+', '-', '−', '*', '×', 'x', 'X', '/', '**', '//', '^', '!']
+    while len(queue) > 0:
+        symbol = queue.popleft()
+        try:
+            if symbol == 'e':
+                stack.append(math.e)
+            elif symbol == 'pi' or symbol == 'π':
+                stack.append(math.pi)
+            else:
+                value = float(symbol)
+                if value.is_integer():
+                    stack.append(int(value))
+                else:
+                    stack.append(float(symbol))
+        except ValueError:
+            if symbol not in operators:
+                bot.say("Unknown symbol: ".format(symbol))
+                return
+
+            if symbol == '!':
+                if len(stack) == 0:
+                    bot.say("Error: operator without value!")
+                    return
+                num = stack.pop()
+                if not isinstance(num, int):
+                    bot.say("Factorial is only defined for integers.")
+                    return
+                stack.append(math.factorial(num))
+                continue
+            elif len(stack) < 2:
+                bot.say('Too few values for operator {0}: {1}'
+                        .format(symbol, stack))
+                return
+            else:
+                val2 = stack.pop()
+                val1 = stack.pop()
+
+            if symbol == '+':
+                result = val1 + val2
+
+            elif symbol == '-' or symbol == '−':
+                result = val1 - val2
+
+            elif symbol in ['*', '×', 'x', 'X']:
+                result = val1 * val2
+
+            elif symbol == '^' or symbol == '**':
+                result = math.pow(val1, val2)
+
+            elif symbol == '/':
+                result = val1 / val2
+
+            elif symbol == '//':
+                result = val1 // val2
+
+            if isinstance(result, int) or result.is_integer():
+                stack.append(int(result))
+            else:
+                stack.append(result)
+
+    if len(stack) is not 1:
+        bot.say("Error: values still on stack: {0}".format(stack))
+    else:
+        bot.say('{0}'.format(stack.pop()))
 
 
 @commands('c', 'calc')
@@ -30,7 +108,7 @@ BASE_TUMBOLIA_URI = 'https://tumbolia-two.appspot.com/'
 def c(bot, trigger):
     """Evaluate some calculation."""
     if not trigger.group(2):
-        return bot.reply("Nothing to calculate.")
+        return bot.say("Nothing to calculate.")
     # Account for the silly non-Anglophones and their silly radix point.
     eqn = trigger.group(2).replace(',', '.')
     try:
@@ -54,7 +132,7 @@ def py(bot, trigger):
     uri = BASE_TUMBOLIA_URI + 'py/'
     answer = web.get(uri + web.quote(query))
     if answer:
-        #bot.say can potentially lead to 3rd party commands triggering.
+        # bot.say can potentially lead to 3rd party commands triggering.
         bot.reply(answer)
     else:
         bot.reply('Sorry, no result.')
