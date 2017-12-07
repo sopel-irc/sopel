@@ -43,6 +43,15 @@ def auth_after_register(bot):
             'IDENTIFY %s' % bot.config.core.auth_password
         )
 
+    elif bot.config.core.auth_method == 'userserv':
+        userserv_name = bot.config.core.auth_target or 'UserServ'
+        account = bot.config.core.auth_username
+        password = bot.config.core.auth_password
+        bot.msg(
+            userserv_name,
+            'LOGIN %s %s' % (account, password)
+        )
+
     elif bot.config.core.auth_method == 'authserv':
         account = bot.config.core.auth_username
         password = bot.config.core.auth_password
@@ -50,7 +59,7 @@ def auth_after_register(bot):
             'AUTHSERV auth',
             account + ' ' + password
         ))
-    
+
     elif bot.config.core.auth_method == 'Q':
         account = bot.config.core.auth_username
         password = bot.config.core.auth_password

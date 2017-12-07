@@ -50,10 +50,10 @@ class CoreSection(StaticSection):
     capabilities."""
 
     auth_method = ChoiceAttribute('auth_method', choices=[
-        'nickserv', 'authserv', 'Q', 'sasl', 'server'])
+        'nickserv', 'authserv', 'userserv', 'Q', 'sasl', 'server'])
     """The method to use to authenticate with the server.
 
-    Can be ``nickserv``, ``authserv``, ``Q``, ``sasl``, or ``server``."""
+    Can be ``nickserv``, ``authserv``, ``userserv``, ``Q``, ``sasl``, or ``server``."""
 
     auth_password = ValidatedAttribute('auth_password')
     """The password to use to authenticate with the server."""
