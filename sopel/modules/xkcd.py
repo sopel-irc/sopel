@@ -72,7 +72,7 @@ def xkcd(bot, trigger):
             query = int(numbered.group(2))
             if numbered.group(1) == "-":
                 query = -query
-            return numbered_result(bot, query, latest)
+            return numbered_result(bot, query, latest, verify_ssl)
         else:
             # Non-number: google.
             if (query.lower() == "latest" or query.lower() == "newest"):
@@ -121,4 +121,4 @@ def say_result(bot, result):
 def get_url(bot, trigger, match):
     verify_ssl = bot.config.core.verify_ssl
     latest = get_info(verify_ssl=verify_ssl)
-    numbered_result(bot, int(match.group(1)), latest)
+    numbered_result(bot, int(match.group(1)), latest, verify_ssl)
