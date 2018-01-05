@@ -189,6 +189,8 @@ def clean_callable(func, config):
             for command in func.commands:
                 func._docs[command] = (doc, example)
 
+    if hasattr(func, 'intents'):
+        func.intents = [re.compile(intent, re.IGNORECASE) for intent in func.intents]
 
 def load_module(name, path, type_):
     """Load a module, and sort out the callables and shutdowns"""
@@ -203,7 +205,7 @@ def load_module(name, path, type_):
 
 
 def is_triggerable(obj):
-    return any(hasattr(obj, attr) for attr in ('rule', 'intent', 'commands'))
+    return any(hasattr(obj, attr) for attr in ('rule', 'intents', 'commands'))
 
 
 def clean_module(module, config):
