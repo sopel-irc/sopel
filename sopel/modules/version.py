@@ -10,7 +10,8 @@ http://sopel.chat
 from __future__ import unicode_literals, absolute_import, print_function, division
 
 from datetime import datetime
-import sopel
+from sopel import __version__ as release
+from sopel.module import commands, intent, rate
 import re
 from os import path
 
@@ -31,10 +32,9 @@ def git_info():
                     return sha
 
 
-@sopel.module.commands('version')
+@commands('version')
 def version(bot, trigger):
     """Display the latest commit version, if Sopel is running in a git repo."""
-    release = sopel.__version__
     sha = git_info()
     if not sha:
         msg = 'Sopel v. ' + release
@@ -43,25 +43,25 @@ def version(bot, trigger):
         bot.reply(msg)
         return
 
-    bot.reply("Sopel v. {} at commit: {}".format(sopel.__version__, sha))
+    bot.reply("Sopel v. {} at commit: {}".format(release, sha))
 
 
-@sopel.module.intent('VERSION')
-@sopel.module.rate(20)
+@intent('VERSION')
+@rate(20)
 def ctcp_version(bot, trigger):
     bot.write(('NOTICE', trigger.nick),
-              '\x01VERSION Sopel IRC Bot version %s\x01' % sopel.__version__)
+              '\x01VERSION Sopel IRC Bot version %s\x01' % release)
 
 
-@sopel.module.intent('SOURCE')
-@sopel.module.rate(20)
+@intent('SOURCE')
+@rate(20)
 def ctcp_source(bot, trigger):
     bot.write(('NOTICE', trigger.nick),
               '\x01SOURCE https://github.com/sopel-irc/sopel/\x01')
 
 
-@sopel.module.intent('PING')
-@sopel.module.rate(10)
+@intent('PING')
+@rate(10)
 def ctcp_ping(bot, trigger):
     text = trigger.group()
     text = text.replace("PING ", "")
@@ -70,8 +70,8 @@ def ctcp_ping(bot, trigger):
               '\x01PING {0}\x01'.format(text))
 
 
-@sopel.module.intent('TIME')
-@sopel.module.rate(20)
+@intent('TIME')
+@rate(20)
 def ctcp_time(bot, trigger):
     dt = datetime.now()
     current_time = dt.strftime("%A, %d. %B %Y %I:%M%p")
