@@ -14,6 +14,13 @@ from sopel.config.types import ValidatedAttribute, ListAttribute, StaticSection
 
 import requests
 
+try:
+    # Python 3.x
+    from html.parser import HTMLParser
+except ImportError:
+    # Python 2.x
+    from HTMLParser import HTMLParser
+
 USER_AGENT = 'Sopel/{} (http://sopel.chat)'.format(__version__)
 default_headers = {'User-Agent': USER_AGENT}
 url_finder = None
@@ -34,6 +41,20 @@ class UrlSection(StaticSection):
     # TODO some validation rules maybe?
     exclude = ListAttribute('exclude')
     exclusion_char = ValidatedAttribute('exclusion_char', default='!')
+
+class TitleParser(HTMLParser):
+    def __init__(self):
+        HTMLParser.__init__(self)
+        self.match = False
+        self.title = ''
+
+    def handle_starttag(self, tag, attributes):
+        self.match = True if tag == 'title' else False
+
+    def handle_data(self, data):
+        if self.match:
+            self.title = data
+            self.match = False
 
 
 def configure(config):
@@ -185,41 +206,13 @@ def check_callbacks(bot, trigger, url, run=True):
 
 
 def find_title(url, verify=True):
-    """Return the title for the given URL."""
     try:
-        response = requests.get(url, stream=True, verify=verify,
-                                headers=default_headers)
-        content = b''
-        for byte in response.iter_content(chunk_size=512):
-            content += byte
-            if b'</title>' in content or len(content) > max_bytes:
-                break
-        content = content.decode('utf-8', errors='ignore')
-        # Need to close the connection because we have not read all
-        # the data
-        response.close()
-    except requests.exceptions.ConnectionError:
+        content = requests.get(url, verify=verify, headers=default_headers).text
+        parser = TitleParser()
+        parser.feed(content)
+    except:
         return None
-
-    # Some cleanup that I don't really grok, but was in the original, so
-    # we'll keep it (with the compiled regexes made global) for now.
-    content = title_tag_data.sub(r'<\1title>', content)
-    content = quoted_title.sub('', content)
-
-    start = content.rfind('<title>')
-    end = content.rfind('</title>')
-    if start == -1 or end == -1:
-        return
-    title = web.decode(content[start + 7:end])
-    title = title.strip()[:200]
-
-    title = ' '.join(title.split())  # cleanly remove multiple spaces
-
-    # More cryptic regex substitutions. This one looks to be myano's invention.
-    title = re_dcc.sub('', title)
-
-    return title or None
-
+    return parser.title
 
 def get_hostname(url):
     idx = 7
