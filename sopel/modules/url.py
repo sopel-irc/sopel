@@ -8,6 +8,7 @@
 from __future__ import unicode_literals, absolute_import, print_function, division
 
 import re
+from cgi import parse_header
 from sopel import web, tools, __version__
 from sopel.module import commands, rule, example
 from sopel.config.types import ValidatedAttribute, ListAttribute, StaticSection
@@ -24,12 +25,7 @@ except ImportError:
 USER_AGENT = 'Sopel/{} (http://sopel.chat)'.format(__version__)
 default_headers = {'User-Agent': USER_AGENT}
 url_finder = None
-# These are used to clean up the title tag before actually parsing it. Not the
-# world's best way to do this, but it'll do for now.
-title_tag_data = re.compile('<(/?)title( [^>]+)?>', re.IGNORECASE)
-quoted_title = re.compile('[\'"]<title>[\'"]', re.IGNORECASE)
-# This is another regex that presumably does something important.
-re_dcc = re.compile(r'(?i)dcc\ssend')
+
 # This sets the maximum number of bytes that should be read in order to find
 # the title. We don't want it too high, or a link to a big file/stream will
 # just keep downloading until there's no more memory. 640k ought to be enough
@@ -42,19 +38,39 @@ class UrlSection(StaticSection):
     exclude = ListAttribute('exclude')
     exclusion_char = ValidatedAttribute('exclusion_char', default='!')
 
+
 class TitleParser(HTMLParser):
     def __init__(self):
-        HTMLParser.__init__(self)
+        HTMLParser.__init__(self, convert_charrefs=True)
         self.match = False
+        self.in_head = False
         self.title = ''
+        self.encoding = None
 
     def handle_starttag(self, tag, attributes):
-        self.match = True if tag == 'title' else False
+        self.match = True if tag == 'title' and self.in_head else False
+        if tag == 'head':
+            self.in_head = True
+
+        # Look for a tag like "<meta http-equiv="Content-Type" content="text/html; charset=utf-8">"
+        if tag == 'meta' and any([a[0].lower() == 'http-equiv' for a in attributes]):
+            for a in attributes:
+                if a[0].lower() == 'content':
+                    _, enc = parse_header(a[1])
+                    self.encoding = enc.get('charset')
+
+    def handle_endtag(self, tag):
+        if tag == 'title':
+            self.match = False
+        if tag == 'head':
+            self.in_head = False
 
     def handle_data(self, data):
-        if self.match:
-            self.title = data
+        if self.match and not self.title:
             self.match = False
+            self.title = data.strip()
+            if self.encoding:
+                self.title.encode().decode(self.encoding)
 
 
 def configure(config):
@@ -207,12 +223,18 @@ def check_callbacks(bot, trigger, url, run=True):
 
 def find_title(url, verify=True):
     try:
-        content = requests.get(url, verify=verify, headers=default_headers).text
+        r = requests.get(url, verify=verify, headers=default_headers)
+        r.encoding = 'utf-8'
         parser = TitleParser()
-        parser.feed(content)
+        parser.feed(r.text)
     except:
         return None
-    return parser.title
+
+    # Truncate long titles with ellipsis
+    title = parser.title
+    if len(title) > 200:
+        title = title[:200] + '...'
+    return title
 
 def get_hostname(url):
     idx = 7
