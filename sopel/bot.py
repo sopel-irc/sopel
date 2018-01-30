@@ -127,6 +127,9 @@ class Sopel(irc.Bot):
         modules. See :class:`sopel.tools.Sopel.SopelMemory`
         """
 
+        self.shutdown_methods = []
+        """List of methods to call on shutdown"""
+
         self.scheduler = sopel.tools.jobs.JobScheduler(self)
         self.scheduler.start()
 
@@ -222,7 +225,9 @@ class Sopel(irc.Bot):
             self.shutdown_methods.remove(obj)
 
     def register(self, callables, jobs, shutdowns, urls):
-        self.shutdown_methods = shutdowns
+        # Append module's shutdown function to the bot's list of functions to
+        # call on shutdown
+        self.shutdown_methods += shutdowns
         for callbl in callables:
             for rule in callbl.rule:
                 self._callables[callbl.priority][rule].append(callbl)
