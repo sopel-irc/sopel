@@ -42,13 +42,24 @@ class PreTrigger(object):
             except ValueError:
                 pass  # Server isn't conforming to spec, ignore the server-time
 
-        # TODO note what this is doing and why
+        # Grabs hostmask from line.
+        # Example: line = ':Sopel!foo@bar PRIVMSG #sopel :foobar!'
+        #          print(hostmask)  # Sopel!foo@bar
+        # All lines start with ":" except PING.
         if line.startswith(':'):
             self.hostmask, line = line[1:].split(' ', 1)
         else:
             self.hostmask = None
 
-        # TODO note what this is doing and why
+        # Parses the line into a list of arguments.
+        # Some events like MODE don't have a secondary string argument, i.e. no ' :' inside the line.
+        # Example 1:  line = ':nick!ident@domain PRIVMSG #sopel :foo bar!'
+        #             print(text)    # 'foo bar!'
+        #             print(argstr)  # ':nick!ident@domain PRIVMSG #sopel'
+        #             print(args)    # [':nick!ident@domain', 'PRIVMSG', '#sopel', 'foo bar!']
+        # Example 2:  line = 'irc.freenode.net MODE Sopel +i'
+        #             print(text)    # '+i'
+        #             print(args)    # ['irc.freenode.net', 'MODE', 'Sopel', '+i']
         if ' :' in line:
             argstr, text = line.split(' :', 1)
             self.args = argstr.split(' ')
