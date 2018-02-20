@@ -21,6 +21,7 @@ def _find_certs():
     locations = [
         '/etc/pki/tls/cert.pem',  # best first guess
         '/etc/ssl/certs/ca-certificates.crt',  # Debian
+        '/etc/ssl/cert.pem',  # FreeBSD
         ]
     for certs in locations:
         if os.path.isfile(certs):
