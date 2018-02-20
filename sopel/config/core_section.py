@@ -25,6 +25,7 @@ def _find_certs():
         '/usr/local/openssl/cert.pem',  # FreeBSD userland OpenSSL
         '/etc/pki/tls/certs/ca-bundle.crt',  # RHEL 6 / Fedora
         '/etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem',  # RHEL 7 / CentOS
+        '/etc/pki/tls/cacert.pem',  # OpenELEC
         ]
     for certs in locations:
         if os.path.isfile(certs):
