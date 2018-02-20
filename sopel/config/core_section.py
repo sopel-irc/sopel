@@ -12,6 +12,11 @@ from sopel.tools import Identifier
 
 
 def _find_certs():
+    """
+    Find the TLS root CA store.
+
+    :returns: str (path to file)
+    """
     certs = '/etc/pki/tls/cert.pem'
     if not os.path.isfile(certs):
         certs = '/etc/ssl/certs/ca-certificates.crt'
