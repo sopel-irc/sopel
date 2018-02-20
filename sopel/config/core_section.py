@@ -17,12 +17,15 @@ def _find_certs():
 
     :returns: str (path to file)
     """
-    certs = '/etc/pki/tls/cert.pem'
-    if not os.path.isfile(certs):
-        certs = '/etc/ssl/certs/ca-certificates.crt'
-        if not os.path.isfile(certs):
-            return None
-    return certs
+    # check if the root CA store is at a known location
+    locations = [
+        '/etc/pki/tls/cert.pem',  # best first guess
+        '/etc/ssl/certs/ca-certificates.crt',  # Debian
+        ]
+    for certs in locations:
+        if os.path.isfile(certs):
+            return certs
+    return None
 
 
 def configure(config):
