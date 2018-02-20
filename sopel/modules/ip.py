@@ -95,7 +95,7 @@ def _find_geoip_db(bot):
 
 @commands('iplookup', 'ip')
 @example('.ip 8.8.8.8',
-         r'[IP/Host Lookup] Hostname: google-public-dns-a.google.com | Location: United States | ISP: AS15169 Google Inc.',
+         r'[IP/Host Lookup] Hostname: google-public-dns-a.google.com | Location: United States | ISP: AS15169 Google LLC',
          re=True,
          ignore='Downloading GeoIP database, please wait...')
 def ip(bot, trigger):
