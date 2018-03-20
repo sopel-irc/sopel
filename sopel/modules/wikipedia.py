@@ -62,7 +62,7 @@ def mw_search(server, query, num):
 
 def say_snippet(bot, server, query, show_url=True):
     page_name = query.replace('_', ' ')
-    query = query.replace(' ', '_')
+    query = quote(query.replace(' ', '_'))
     try:
         snippet = mw_snippet(server, query)
     except KeyError:
@@ -83,7 +83,7 @@ def mw_snippet(server, query):
     snippet_url = ('https://' + server + '/w/api.php?format=json'
                    '&action=query&prop=extracts&exintro&explaintext'
                    '&exchars=300&redirects&titles=')
-    snippet_url += quote(query)
+    snippet_url += query
     snippet = json.loads(web.get(snippet_url))
     snippet = snippet['query']['pages']
 
