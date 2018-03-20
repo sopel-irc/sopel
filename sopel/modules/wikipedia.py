@@ -10,10 +10,12 @@ import re
 
 import sys
 if sys.version_info.major < 3:
+    from urllib import quote as _quote
     from urlparse import unquote as _unquote
+    quote = lambda s: _quote(s.encode('utf-8')).decode('utf-8')
     unquote = lambda s: _unquote(s.encode('utf-8')).decode('utf-8')
 else:
-    from urllib.parse import unquote
+    from urllib.parse import quote, unquote
 
 REDIRECT = re.compile(r'^REDIRECT (.*)')
 
@@ -81,7 +83,7 @@ def mw_snippet(server, query):
     snippet_url = ('https://' + server + '/w/api.php?format=json'
                    '&action=query&prop=extracts&exintro&explaintext'
                    '&exchars=300&redirects&titles=')
-    snippet_url += query
+    snippet_url += quote(query)
     snippet = json.loads(web.get(snippet_url))
     snippet = snippet['query']['pages']
 
