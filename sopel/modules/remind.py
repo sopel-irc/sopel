@@ -194,7 +194,7 @@ def at(bot, trigger):
         timediff = at_time - now
     else:
         if tz and tz.upper() != 'UTC':
-            bot.reply("I don't have timzeone support installed.")
+            bot.reply("I don't have timezone support installed.")
             return NOLIMIT
         now = datetime.now()
         at_time = datetime(now.year, now.month, now.day,
