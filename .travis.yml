@@ -18,7 +18,7 @@ install:
   - pip install flake8
 script:
   - ./checkstyle.sh || true
-  - coverage run --source sopel -m py.test -v . --ignore=sopel.py
+  - coverage run --source sopel -m py.test -v .
   - coverage report --show-missing
 after_success:
   coveralls
