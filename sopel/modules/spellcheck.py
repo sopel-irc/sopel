@@ -27,6 +27,31 @@ def add_command(bot, trigger):
     else:
         bot.say('I only trust {0} to add words >:c'.format(bot.config.core.owner))
 
+def check_multiple(bot, words):
+    mistakes = []
+
+    c = aspell.Speller('lang', 'en')
+    for word in words:
+        if not c.check(word):
+            mistakes.append(word)
+
+    if len(mistakes) == 0:
+        bot.say("Nothing seems to be misspelled.")
+    else:
+        bot.say('The following word(s) seem to be misspelled: {0}'.format(', '.join(['"{0}"'.format(w) for w in mistakes])))
+
+def check_one(bot, word):
+    c = aspell.Speller('lang', 'en')
+    if c.check(word):
+        bot.say("I don't see any problems with that word.")
+        return
+    else:
+        suggestions = c.suggest(word)[:5]
+    
+    if len(suggestions) == 0:
+        bot.say("That doesn't seem to be correct.")
+    else:
+        bot.say("That doesn't seem to be correct. Try {0}.".format(', '.join(['"{0}"'.format(s) for s in suggestions])))
 
 @commands('spell')
 def spellchecker(bot, trigger):
@@ -41,24 +66,9 @@ def spellchecker(bot, trigger):
         bot.say('Hey, that\'s my name! Nothing wrong with it.')
         return
 
-    if len(trigger.group(2).split(' ')) > 1:
-        bot.say('One word at a time, please.')
-        return
+    words = trigger.group(2).split(None)
 
-    c = aspell.Speller('lang', 'en')
-    if c.check(trigger.group(2)):
-        bot.say("I don't see any problems with that word.")
-        return
-
-    suggestions = c.suggest(trigger.group(2))
-    count = 0
-    suggestion = ''
-    for word in suggestions:
-        if count < 5:
-            suggestion += '"{0}", '.format(word)
-            count += 1
-
-    if len(suggestion) == 0:
-        bot.say("That doesn't seem to be correct.")
+    if len(words) > 1:
+        check_multiple(bot, words)
     else:
-        bot.say("That doesn't seem to be correct. Try {0}.".format(suggestion[:-2]))
+        check_one(bot, trigger.group(2))
