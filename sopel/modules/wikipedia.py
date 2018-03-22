@@ -61,6 +61,8 @@ def mw_search(server, query, num):
 def say_snippet(bot, server, query, show_url=True):
     page_name = query.replace('_', ' ')
     query = query.replace(' ', '_')
+    query = query.replace('+', '%2B')
+    query = query.replace('&', '%26')
     snippet = mw_snippet(server, query)
     msg = '[WIKIPEDIA] {} | "{}"'.format(page_name, snippet)
     if show_url:
