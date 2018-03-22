@@ -5,8 +5,8 @@ MANIFEST
 doc/build/*
 logs/*
 tests
-willie.wiki/*
-willie.egg-info/*
+sopel.wiki/*
+sopel.egg-info/*
 *.db
 *.pyc
 *.pyo
@@ -25,3 +25,9 @@ willie.egg-info/*
 .settings
 .project
 .pydevproject
+
+.cache
+.coverage
+
+# macOS
+*.DS_Store

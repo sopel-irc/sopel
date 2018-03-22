@@ -1,4 +1,4 @@
-# coding=utf8
+# coding=utf-8
 """
 dice.py - Dice Module
 Copyright 2010-2013, Dimitri "Tyrope" Molenaars, TyRope.nl
@@ -7,7 +7,7 @@ Licensed under the Eiffel Forum License 2.
 
 http://sopel.chat/
 """
-from __future__ import unicode_literals
+from __future__ import unicode_literals, absolute_import, print_function, division
 import random
 import re
 import operator
@@ -124,10 +124,10 @@ class DicePouch:
 def _roll_dice(bot, dice_expression):
     result = re.search(
         r"""
-        (?P<dice_num>\d*)
+        (?P<dice_num>-?\d*)
         d
-        (?P<dice_type>\d+)
-        (v(?P<drop_lowest>\d+))?
+        (?P<dice_type>-?\d+)
+        (v(?P<drop_lowest>-?\d+))?
         $""",
         dice_expression,
         re.IGNORECASE | re.VERBOSE)
@@ -138,6 +138,11 @@ def _roll_dice(bot, dice_expression):
     # Dice can't have zero or a negative number of sides.
     if dice_type <= 0:
         bot.reply("I don't have any dice with %d sides. =(" % dice_type)
+        return None  # Signal there was a problem
+
+    # Can't roll a negative number of dice.
+    if dice_num < 0:
+        bot.reply("I'd rather not roll a negative amount of dice. =(")
         return None  # Signal there was a problem
 
     # Upper limit for dice should be at most a million. Creating a dict with
@@ -151,7 +156,10 @@ def _roll_dice(bot, dice_expression):
 
     if result.group('drop_lowest'):
         drop = int(result.group('drop_lowest'))
-        dice.drop_lowest(drop)
+        if drop >= 0:
+            dice.drop_lowest(drop)
+        else:
+            bot.reply("I can't drop the lowest %d dice. =(" % drop)
 
     return dice
 
@@ -176,7 +184,7 @@ def roll(bot, trigger):
     """
     # This regexp is only allowed to have one captured group, because having
     # more would alter the output of re.findall.
-    dice_regexp = r"\d*d\d+(?:v\d+)?"
+    dice_regexp = r"-?\d*[dD]-?\d+(?:[vV]-?\d+)?"
 
     # Get a list of all dice expressions, evaluate them and then replace the
     # expressions in the original string with the results. Replacing is done
@@ -231,9 +239,19 @@ def choose(bot, trigger):
     """
     if not trigger.group(2):
         return bot.reply('I\'d choose an option, but you didn\'t give me any.')
-    choices = re.split('[\|\\\\\/]', trigger.group(2))
+    choices = [trigger.group(2)]
+    for delim in '|\\/,':
+        choices = trigger.group(2).split(delim)
+        if len(choices) > 1:
+            break
+    # Use a different delimiter in the output, to prevent ambiguity.
+    for show_delim in ',|/\\':
+        if show_delim not in trigger.group(2):
+            show_delim += ' '
+            break
+
     pick = random.choice(choices)
-    return bot.reply('Your options: %s. My choice: %s' % (', '.join(choices), pick))
+    return bot.reply('Your options: %s. My choice: %s' % (show_delim.join(choices), pick))
 
 
 if __name__ == "__main__":

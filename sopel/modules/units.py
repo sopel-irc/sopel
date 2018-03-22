@@ -1,4 +1,4 @@
-# coding=utf8
+# coding=utf-8
 """
 units.py - Unit conversion module for Sopel
 Copyright © 2013, Elad Alfassa, <elad@fedoraproject.org>
@@ -6,7 +6,7 @@ Copyright © 2013, Dimitri Molenaars, <tyrope@tyrope.nl>
 Licensed under the Eiffel Forum License 2.
 
 """
-from __future__ import unicode_literals, division
+from __future__ import unicode_literals, absolute_import, print_function, division
 from sopel.module import commands, example, NOLIMIT
 import re
 

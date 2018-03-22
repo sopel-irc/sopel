@@ -28,7 +28,8 @@ from sopel import __version__
 
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
-extensions = ['sphinx.ext.autodoc']
+extensions = ['sphinx.ext.autodoc', 'sphinx.ext.intersphinx']
+intersphinx_mapping = {'python': ('https://docs.python.org/3', None)}
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -44,7 +45,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'Sopel IRC Bot'
-copyright = u'2012, E. Powell, et al.'
+copyright = u'2012-2015, Elsie Powell, et al.'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -187,7 +188,7 @@ latex_elements = {
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
   ('index', 'sopel.tex', u'Sopel IRC Bot Documentation',
-   u'E. Powell, et al.', 'manual'),
+   u'Elsie Powell, et al.', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -217,7 +218,7 @@ latex_documents = [
 # (source start file, name, description, authors, manual section).
 man_pages = [
     ('index', 'sopel', u'Sopel IRC Bot Documentation',
-     [u'E. Powell, et al.'], 1)
+     [u'Elsie Powell, et al.'], 1)
 ]
 
 # If true, show URL addresses after external links.
@@ -231,7 +232,7 @@ man_pages = [
 #  dir menu entry, description, category)
 texinfo_documents = [
   ('index', 'sopel', u'Sopel IRC Bot Documentation',
-   u'E. Powell, et al.', 'SopelIRCBot', 'One line description of project.',
+   u'Elsie Powell, et al.', 'SopelIRCBot', 'One line description of project.',
    'Miscellaneous'),
 ]
 

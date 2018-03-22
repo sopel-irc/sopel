@@ -1,3 +1,124 @@
+Changes between 6.5.0 and 6.5.1
+===============================
+Module changes:
+* A module to track users' pronouns is added
+* A few bug and regression fixes
+
+Changes between 6.4.0 and 6.5.0
+===============================
+Module changes:
+* xkcd module can now recognize xkcd.com urls
+* SSL is verified for HTTP requests when not turned off in the config
+* The command list is placed in a gist, to prevent flooding
+* Title finding uses a custom user agent, to prevent issues with some sites
+
+Core changes:
+* Intent handling is improved
+
+API changes:
+* A @url decorator is added to simplify URL handling
+
+Changes between 6.3.1 and 6.4.0
+===============================
+Module changes:
+* For some subreddits where NSFW is used to mark spoilers, an appropriate tag is shown.
+* .ddg avoids giving ad results.
+* .wa is fully removed; a replacement can be found on PyPI as sopel-modules.wolfram
+
+Core changes:
+* Support for authenticating with Quakenet's Q is added.
+* Errors from empty PID files are fixed.
+* Issues with errors not being logged to the logging channel are fixed.
+* Topic tracking is improved.
+* extended-join is supported properly
+* Error messages being reported to the triggering channel/user can be disabled.
+
+API changes:
+* Channel priliveges are no longer checked in private messages.
+* Rate limiting can now be done by channel and globally, not just per user.
+
+Changes between 6.3.0 and 6.3.1
+===============================
+Module changes:
+* The xkcd module is working again
+* Fix an issue causing unicode errors to show for some URLs when using Python 2 (but you should really switch to 3!)
+
+Core Changes:
+* Fix a bug in QUIT message parsing which caused certain users to be flooded with PMs if their nick matched the first word of a user's QUIT message (such as "disconnected" or "ping")
+* Fix a rare python 3 incompatibility bug when quitting due to too many core errors.
+* We no longer show a warning when detecting a non-unicode system locale if you're still using Python 2
+
+Changes between 6.2.0 and 6.3.0
+===============================
+Module changes:
+* Many modules ported to use requests package for stability and security.
+* Weather location lookup is fixed.
+* Confusing and unnecessary commands like .op were removed.
+* Splitting of options in .choice is now more intuitive.
+* Some edge cases in reddit post information were fixed.
+
+Core changes:
+* A check is added to warn about an obscure environment issue that can cause strange errors.
+* Regex characters in the bot's nick no longer cause issues when a rule has the nickname added.
+* Rate limiting is tweaked slightly, which should reduce the severity of the .commands flood bug until a proper solution is found.
+
+API changes:
+* The current topic of a channel is now available as the Channel object's topic attribute.
+* sopel.web has been reworked as a wrapper around requests; it remains deprecated.
+
+Changes between 6.1.1 and 6.2.0
+===============================
+Module changes:
+* An error in excluding URLs from title display is fixed
+* Case sensitivity issues in currency and dice commands are fixed
+* Guards to require channel or private message are added to a number of commands, to avoid confusing errors
+* A calculation bug in the countdown command is fixed.
+* Misc minor bugfixes and improvements
+
+Core changes:
+* An occasional error with SSL connections on Python 3 is fixed
+* On servers which support IRCv3 account extensions, the services account name can be used to authenticate the owner
+* Numerous additional IRCv3 features are supported
+
+API changes:
+* bot.privileges is now deprecated in favor of bot.channels
+* bot.channels contains more information about the channels the bot is in
+* bot.users is now available with information about the users Sopel is aware of
+* sopel.web is now deprecated in favor of the third-party `requests` library
+* trigger.time is added with the current time, or server-time if the server supports it
+* sopel.tools.events is now available as an enum of IRC numeric replies
+
+Changes between 6.1.0 and 6.1.1
+===============================
+If you are updating from a pre-6.0 version (i.e. Willie), there are backwards-
+incompatible changes which you should be aware of. See
+http://willie.dftba.net/willie_6.html for more information.
+
+Core changes:
+* A regression which caused the config wizard to be unusable is fixed.
+
+Changes between 6.0.0 and 6.1.0
+===============================
+If you are updating from a pre-6.0 version (i.e. Willie), there are backwards-
+incompatible changes which you should be aware of. See
+http://willie.dftba.net/willie_6.html for more information.
+
+Module changes:
+* A regression which prevented the URL safety detection from working is fixed.
+* Issues with some special characters in DuckDuckGo searches are fixed
+* lxml is no longer required by any modules, greatly simplifying the install process
+* Misc minor bugfixes and improvements
+
+Core changes:
+* A regression which disabled blocking functionality is fixed
+* Examples are no longer mangled by the .help command, and show the correct prefix
+* The listing from .commands is now separated by module
+* Issues with reloading folder modules are fixed
+
+API changes:
+* ListAttribute configs can be set to a list or set, with the same effect
+* The configure method of validated config attributes now takes the parent config and section name
+
 Changes between 5.5.1 and 6.0.0
 ===============================
 This release contains backwards-incompatible changes. See

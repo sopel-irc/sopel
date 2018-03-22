@@ -1,5 +1,5 @@
 # coding=utf-8
-from __future__ import unicode_literals, absolute_import
+from __future__ import unicode_literals, absolute_import, print_function, division
 
 import imp
 import os.path
@@ -10,6 +10,9 @@ from sopel.tools import itervalues, get_command_regexp
 
 if sys.version_info.major >= 3:
     basestring = (str, bytes)
+
+# Can be implementation-dependent
+_regex_type = type(re.compile(''))
 
 
 def get_module_description(path):
@@ -108,6 +111,11 @@ def enumerate_modules(config, show_all=False):
 
 
 def compile_rule(nick, pattern):
+    # Not sure why this happens on reloads, but it shouldn't cause problems…
+    if isinstance(pattern, _regex_type):
+        return pattern
+
+    nick = re.escape(nick)
     pattern = pattern.replace('$nickname', nick)
     pattern = pattern.replace('$nick', r'{}[,:]\s+'.format(nick))
     flags = re.IGNORECASE
@@ -151,6 +159,8 @@ def clean_callable(func, config):
     func.priority = getattr(func, 'priority', 'medium')
     func.thread = getattr(func, 'thread', True)
     func.rate = getattr(func, 'rate', 0)
+    func.channel_rate = getattr(func, 'channel_rate', 0)
+    func.global_rate = getattr(func, 'global_rate', 0)
 
     if not hasattr(func, 'event'):
         func.event = ['PRIVMSG']
@@ -173,7 +183,7 @@ def clean_callable(func, config):
         if hasattr(func, 'example'):
             example = func.example[0]["example"]
             example = example.replace('$nickname', nick)
-            if example[0] != help_prefix:
+            if example[0] != help_prefix and not example.startswith(nick):
                 example = help_prefix + example[len(help_prefix):]
         if doc or example:
             for command in func.commands:
@@ -193,14 +203,14 @@ def load_module(name, path, type_):
 
 
 def is_triggerable(obj):
-    return any(hasattr(obj, attr) for attr in ('rule', 'rule', 'intent',
-                                               'commands'))
+    return any(hasattr(obj, attr) for attr in ('rule', 'intent', 'commands'))
 
 
 def clean_module(module, config):
     callables = []
     shutdowns = []
     jobs = []
+    urls = []
     for obj in itervalues(vars(module)):
         if callable(obj):
             if getattr(obj, '__name__', None) == 'shutdown':
@@ -211,4 +221,6 @@ def clean_module(module, config):
             elif hasattr(obj, 'interval'):
                 clean_callable(obj, config)
                 jobs.append(obj)
-    return callables, jobs, shutdowns
+            elif hasattr(obj, 'url_regex'):
+                urls.append(obj)
+    return callables, jobs, shutdowns, urls

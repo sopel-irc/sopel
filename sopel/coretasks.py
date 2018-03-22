@@ -1,27 +1,27 @@
 # coding=utf-8
-"""
-coretasks.py - Sopel Routine Core tasks
-Copyright 2008-2011, Sean B. Palmer (inamidst.com) and Michael Yanovich
-(yanovich.net)
-Copyright © 2012, Elad Alfassa <elad@fedoraproject.org>
-Copyright 2012, Edward Powell (embolalia.net)
-Licensed under the Eiffel Forum License 2.
-
-Sopel: http://sopel.chat/
+"""Tasks that allow the bot to run, but aren't user-facing functionality
 
 This is written as a module to make it easier to extend to support more
 responses to standard IRC codes without having to shove them all into the
 dispatch function in bot.py and making it easier to maintain.
 """
-from __future__ import unicode_literals
+# Copyright 2008-2011, Sean B. Palmer (inamidst.com) and Michael Yanovich
+# (yanovich.net)
+# Copyright © 2012, Elad Alfassa <elad@fedoraproject.org>
+# Copyright 2012-2015, Elsie Powell embolalia.com
+# Licensed under the Eiffel Forum License 2.
+from __future__ import unicode_literals, absolute_import, print_function, division
 
 
+from random import randint
 import re
 import sys
 import time
 import sopel
 import sopel.module
-from sopel.tools import Identifier, iteritems
+from sopel.bot import _CapReq
+from sopel.tools import Identifier, iteritems, events
+from sopel.tools.target import User, Channel
 import base64
 from sopel.logger import get_logger
 
@@ -31,6 +31,7 @@ if sys.version_info.major >= 3:
 LOGGER = get_logger(__name__)
 
 batched_caps = {}
+who_reqs = {}  # Keeps track of reqs coming from this module, rather than others
 
 
 def auth_after_register(bot):
@@ -49,9 +50,17 @@ def auth_after_register(bot):
             'AUTHSERV auth',
             account + ' ' + password
         ))
+    
+    elif bot.config.core.auth_method == 'Q':
+        account = bot.config.core.auth_username
+        password = bot.config.core.auth_password
+        bot.write((
+            'AUTH',
+            account + ' ' + password
+        ))
 
 
-@sopel.module.event('001', '251')
+@sopel.module.event(events.RPL_WELCOME, events.RPL_LUSERCLIENT)
 @sopel.module.rule('.*')
 @sopel.module.thread(False)
 @sopel.module.unblockable
@@ -90,8 +99,39 @@ def startup(bot, trigger):
         for channel in bot.config.core.channels:
             bot.join(channel)
 
+    if (not bot.config.core.owner_account and
+            'account-tag' in bot.enabled_capabilities and
+            '@' not in bot.config.core.owner):
+        msg = (
+            "This network supports using network services to identify you as "
+            "my owner, rather than just matching your nickname. This is much "
+            "more secure. If you'd like to do this, make sure you're logged in "
+            "and reply with \"{}useserviceauth\""
+        ).format(bot.config.core.help_prefix)
+        bot.msg(bot.config.core.owner, msg)
 
-@sopel.module.event('477')
+
+@sopel.module.require_privmsg()
+@sopel.module.require_owner()
+@sopel.module.commands('useserviceauth')
+def enable_service_auth(bot, trigger):
+    if bot.config.core.owner_account:
+        return
+    if 'account-tag' not in bot.enabled_capabilities:
+        bot.say('This server does not fully support services auth, so this '
+                'command is not available.')
+        return
+    if not trigger.account:
+        bot.say('You must be logged in to network services before using this '
+                'command.')
+        return
+    bot.config.core.owner_account = trigger.account
+    bot.config.save()
+    bot.say('Success! I will now use network services to identify you as my '
+            'owner.')
+
+
+@sopel.module.event(events.ERR_NOCHANMODES)
 @sopel.module.rule('.*')
 @sopel.module.priority('high')
 def retry_join(bot, trigger):
@@ -115,11 +155,9 @@ def retry_join(bot, trigger):
     time.sleep(6)
     bot.join(channel)
 
-#Functions to maintain a list of chanops in all of sopel's channels.
-
 
 @sopel.module.rule('(.*)')
-@sopel.module.event('353')
+@sopel.module.event(events.RPL_NAMREPLY)
 @sopel.module.priority('high')
 @sopel.module.thread(False)
 @sopel.module.unblockable
@@ -234,6 +272,11 @@ def track_nicks(bot, trigger):
             value = bot.privileges[channel].pop(old)
             bot.privileges[channel][new] = value
 
+    for channel in bot.channels.values():
+        channel.rename_user(old, new)
+    if old in bot.users:
+        bot.users[new] = bot.users.pop(old)
+
 
 @sopel.module.rule('(.*)')
 @sopel.module.event('PART')
@@ -241,14 +284,9 @@ def track_nicks(bot, trigger):
 @sopel.module.thread(False)
 @sopel.module.unblockable
 def track_part(bot, trigger):
-    if trigger.nick == bot.nick:
-        bot.channels.remove(trigger.sender)
-        del bot.privileges[trigger.sender]
-    else:
-        try:
-            del bot.privileges[trigger.sender][trigger.nick]
-        except KeyError:
-            pass
+    nick = trigger.nick
+    channel = trigger.sender
+    _remove_from_channel(bot, nick, channel)
 
 
 @sopel.module.rule('.*')
@@ -258,17 +296,55 @@ def track_part(bot, trigger):
 @sopel.module.unblockable
 def track_kick(bot, trigger):
     nick = Identifier(trigger.args[1])
+    channel = trigger.sender
+    _remove_from_channel(bot, nick, channel)
+
+
+def _remove_from_channel(bot, nick, channel):
     if nick == bot.nick:
-        bot.channels.remove(trigger.sender)
-        del bot.privileges[trigger.sender]
+        bot.privileges.pop(channel, None)
+        bot.channels.pop(channel, None)
+
+        lost_users = []
+        for nick_, user in bot.users.items():
+            user.channels.pop(channel, None)
+            if not user.channels:
+                lost_users.append(nick_)
+        for nick_ in lost_users:
+            bot.users.pop(nick_, None)
     else:
-        # Temporary fix to stop KeyErrors from being sent to channel
-        # The privileges dict may not have all nicks stored at all times
-        # causing KeyErrors
-        try:
-            del bot.privileges[trigger.sender][nick]
-        except KeyError:
-            pass
+        bot.privileges[channel].pop(nick, None)
+
+        user = bot.users.get(nick)
+        if user and channel in user.channels:
+            bot.channels[channel].clear_user(nick)
+            if not user.channels:
+                bot.users.pop(nick, None)
+
+
+def _whox_enabled(bot):
+    # Either privilege tracking or away notification. For simplicity, both
+    # account notify and extended join must be there for account tracking.
+    return (('account-notify' in bot.enabled_capabilities and
+             'extended-join' in bot.enabled_capabilities) or
+            'away-notify' in bot.enabled_capabilities)
+
+
+def _send_who(bot, channel):
+    if _whox_enabled(bot):
+        # WHOX syntax, see http://faerion.sourceforge.net/doc/irc/whox.var
+        # Needed for accounts in who replies. The random integer is a param
+        # to identify the reply as one from this command, because if someone
+        # else sent it, we have no fucking way to know what the format is.
+        rand = str(randint(0, 999))
+        while rand in who_reqs:
+            rand = str(randint(0, 999))
+        who_reqs[rand] = channel
+        bot.write(['WHO', channel, 'a%nuachtf,' + rand])
+    else:
+        # We might be on an old network, but we still care about keeping our
+        # user list updated
+        bot.write(['WHO', channel])
 
 
 @sopel.module.rule('.*')
@@ -278,9 +354,24 @@ def track_kick(bot, trigger):
 @sopel.module.unblockable
 def track_join(bot, trigger):
     if trigger.nick == bot.nick and trigger.sender not in bot.channels:
-        bot.channels.append(trigger.sender)
+        bot.write(('TOPIC', trigger.sender))
+
         bot.privileges[trigger.sender] = dict()
+        bot.channels[trigger.sender] = Channel(trigger.sender)
+        _send_who(bot, trigger.sender)
+
     bot.privileges[trigger.sender][trigger.nick] = 0
+
+    user = bot.users.get(trigger.nick)
+    if user is None:
+        user = User(trigger.nick, trigger.user, trigger.host)
+        bot.users[trigger.nick] = user
+    bot.channels[trigger.sender].add_user(user)
+
+    if len(trigger.args) > 1 and trigger.args[1] != '*' and (
+            'account-notify' in bot.enabled_capabilities and
+            'extended-join' in bot.enabled_capabilities):
+        user.account = trigger.args[1]
 
 
 @sopel.module.rule('.*')
@@ -290,8 +381,10 @@ def track_join(bot, trigger):
 @sopel.module.unblockable
 def track_quit(bot, trigger):
     for chanprivs in bot.privileges.values():
-        if trigger.nick in chanprivs:
-            del chanprivs[trigger.nick]
+        chanprivs.pop(trigger.nick, None)
+    for channel in bot.channels.values():
+        channel.clear_user(trigger.nick)
+    bot.users.pop(trigger.nick, None)
 
 
 @sopel.module.rule('.*')
@@ -300,24 +393,54 @@ def track_quit(bot, trigger):
 @sopel.module.priority('high')
 @sopel.module.unblockable
 def recieve_cap_list(bot, trigger):
+    cap = trigger.strip('-=~')
     # Server is listing capabilites
     if trigger.args[1] == 'LS':
         recieve_cap_ls_reply(bot, trigger)
     # Server denied CAP REQ
     elif trigger.args[1] == 'NAK':
-        entry = bot._cap_reqs.get(trigger, None)
+        entry = bot._cap_reqs.get(cap, None)
         # If it was requested with bot.cap_req
         if entry:
             for req in entry:
                 # And that request was mandatory/prohibit, and a callback was
                 # provided
-                if req[0] and req[2]:
+                if req.prefix and req.failure:
                     # Call it.
-                    req[2](bot, req[0] + trigger)
-    # Server is acknowledinge SASL for us.
-    elif (trigger.args[0] == bot.nick and trigger.args[1] == 'ACK' and
-          'sasl' in trigger.args[2]):
-        recieve_cap_ack_sasl(bot)
+                    req.failure(bot, req.prefix + cap)
+    # Server is removing a capability
+    elif trigger.args[1] == 'DEL':
+        entry = bot._cap_reqs.get(cap, None)
+        # If it was requested with bot.cap_req
+        if entry:
+            for req in entry:
+                # And that request wasn't prohibit, and a callback was
+                # provided
+                if req.prefix != '-' and req.failure:
+                    # Call it.
+                    req.failure(bot, req.prefix + cap)
+    # Server is adding new capability
+    elif trigger.args[1] == 'NEW':
+        entry = bot._cap_reqs.get(cap, None)
+        # If it was requested with bot.cap_req
+        if entry:
+            for req in entry:
+                # And that request wasn't prohibit
+                if req.prefix != '-':
+                    # Request it
+                    bot.write(('CAP', 'REQ', req.prefix + cap))
+    # Server is acknowledging a capability
+    elif trigger.args[1] == 'ACK':
+        caps = trigger.args[2].split()
+        for cap in caps:
+            cap.strip('-~= ')
+            bot.enabled_capabilities.add(cap)
+            entry = bot._cap_reqs.get(cap, [])
+            for req in entry:
+                if req.success:
+                    req.success(bot, req.prefix + trigger)
+            if cap == 'sasl':  # TODO why is this not done with bot.cap_req?
+                recieve_cap_ack_sasl(bot)
 
 
 def recieve_cap_ls_reply(bot, trigger):
@@ -342,32 +465,46 @@ def recieve_cap_ls_reply(bot, trigger):
 
     # If some other module requests it, we don't need to add another request.
     # If some other module prohibits it, we shouldn't request it.
-    if 'multi-prefix' not in bot._cap_reqs:
-        # Whether or not the server supports multi-prefix doesn't change how we
-        # parse it, so we don't need to worry if it fails.
-        bot._cap_reqs['multi-prefix'] = (['', 'coretasks', None, None],)
+    core_caps = ['multi-prefix', 'away-notify', 'cap-notify', 'server-time']
+    for cap in core_caps:
+        if cap not in bot._cap_reqs:
+            bot._cap_reqs[cap] = [_CapReq('', 'coretasks')]
+
+    def acct_warn(bot, cap):
+        LOGGER.info('Server does not support %s, or it conflicts with a custom '
+                    'module. User account validation unavailable or limited.',
+                    cap[1:])
+        if bot.config.core.owner_account or bot.config.core.admin_accounts:
+            LOGGER.warning(
+                'Owner or admin accounts are configured, but %s is not '
+                'supported by the server. This may cause unexpected behavior.',
+                cap[1:])
+    auth_caps = ['account-notify', 'extended-join', 'account-tag']
+    for cap in auth_caps:
+        if cap not in bot._cap_reqs:
+            bot._cap_reqs[cap] = [_CapReq('=', 'coretasks', acct_warn)]
 
     for cap, reqs in iteritems(bot._cap_reqs):
         # At this point, we know mandatory and prohibited don't co-exist, but
         # we need to call back for optionals if they're also prohibited
         prefix = ''
         for entry in reqs:
-            if prefix == '-' and entry[0] != '-':
-                entry[2](bot, entry[0] + cap)
+            if prefix == '-' and entry.prefix != '-':
+                entry.failure(bot, entry.prefix + cap)
                 continue
-            if entry[0]:
-                prefix = entry[0]
+            if entry.prefix:
+                prefix = entry.prefix
 
         # It's not required, or it's supported, so we can request it
         if prefix != '=' or cap in bot.server_capabilities:
             # REQs fail as a whole, so we send them one capability at a time
-            bot.write(('CAP', 'REQ', entry[0] + cap))
+            bot.write(('CAP', 'REQ', entry.prefix + cap))
         # If it's required but not in server caps, we need to call all the
         # callbacks
         else:
             for entry in reqs:
-                if entry[2] and entry[0] == '=':
-                    entry[2](bot, entry[0] + cap)
+                if entry.failure and entry.prefix == '=':
+                    entry.failure(bot, entry.prefix + cap)
 
     # If we want to do SASL, we have to wait before we can send CAP END. So if
     # we are, wait on 903 (SASL successful) to send it.
@@ -401,7 +538,7 @@ def auth_proceed(bot, trigger):
     bot.write(('AUTHENTICATE', base64.b64encode(sasl_token.encode('utf-8'))))
 
 
-@sopel.module.event('903')
+@sopel.module.event(events.RPL_SASLSUCCESS)
 @sopel.module.rule('.*')
 def sasl_success(bot, trigger):
     bot.write(('CAP', 'END'))
@@ -493,3 +630,91 @@ def blocks(bot, trigger):
             return
     else:
         bot.reply(STRINGS['huh'])
+
+
+@sopel.module.event('ACCOUNT')
+@sopel.module.rule('.*')
+def account_notify(bot, trigger):
+    if trigger.nick not in bot.users:
+        bot.users[trigger.nick] = User(trigger.nick, trigger.user, trigger.host)
+    account = trigger.args[0]
+    if account == '*':
+        account = None
+    bot.users[trigger.nick].account = account
+
+
+@sopel.module.event(events.RPL_WHOSPCRPL)
+@sopel.module.rule('.*')
+@sopel.module.priority('high')
+@sopel.module.unblockable
+def recv_whox(bot, trigger):
+    if len(trigger.args) < 2 or trigger.args[1] not in who_reqs:
+        # Ignored, some module probably called WHO
+        return
+    if len(trigger.args) != 8:
+        return LOGGER.warning('While populating `bot.accounts` a WHO response was malformed.')
+    _, _, channel, user, host, nick, status, account = trigger.args
+    away = 'G' in status
+    _record_who(bot, channel, user, host, nick, account, away)
+
+
+def _record_who(bot, channel, user, host, nick, account=None, away=None):
+    nick = Identifier(nick)
+    channel = Identifier(channel)
+    if nick not in bot.users:
+        bot.users[nick] = User(nick, user, host)
+    user = bot.users[nick]
+    if account == '0':
+        user.account = None
+    else:
+        user.account = account
+    user.away = away
+    if channel not in bot.channels:
+        bot.channels[channel] = Channel(channel)
+    bot.channels[channel].add_user(user)
+
+
+@sopel.module.event(events.RPL_WHOREPLY)
+@sopel.module.rule('.*')
+@sopel.module.priority('high')
+@sopel.module.unblockable
+def recv_who(bot, trigger):
+    channel, user, host, _, nick, = trigger.args[1:6]
+    _record_who(bot, channel, user, host, nick)
+
+
+@sopel.module.event(events.RPL_ENDOFWHO)
+@sopel.module.rule('.*')
+@sopel.module.priority('high')
+@sopel.module.unblockable
+def end_who(bot, trigger):
+    if _whox_enabled(bot):
+        who_reqs.pop(trigger.args[1], None)
+
+
+@sopel.module.rule('.*')
+@sopel.module.event('AWAY')
+@sopel.module.priority('high')
+@sopel.module.thread(False)
+@sopel.module.unblockable
+def track_notify(bot, trigger):
+    if trigger.nick not in bot.users:
+        bot.users[trigger.nick] = User(trigger.nick, trigger.user, trigger.host)
+    user = bot.users[trigger.nick]
+    user.away = bool(trigger.args)
+
+
+@sopel.module.rule('.*')
+@sopel.module.event('TOPIC')
+@sopel.module.event(events.RPL_TOPIC)
+@sopel.module.priority('high')
+@sopel.module.thread(False)
+@sopel.module.unblockable
+def track_topic(bot, trigger):
+    if trigger.event != 'TOPIC':
+        channel = trigger.args[1]
+    else:
+        channel = trigger.args[0]
+    if channel not in bot.channels:
+        return
+    bot.channels[channel].topic = trigger.args[-1]

@@ -1,18 +1,24 @@
 language: python
 python:
   - "2.7"
-  - "3.3"
+  - "3.4"
 git:
   submodules: false
 sudo: false  # Enables running on faster infrastructure.
 cache:
   directories:
     - $HOME/.cache/pip
+addons:
+  apt:
+    packages:
+      - enchant
 install:
   - pip install -r requirements.txt -r dev-requirements.txt
   - pip install coveralls
-  - pip install pep8
+  - pip install flake8
 script:
-  - ./checkstyle.sh
-  - coverage run --source willie -m py.test .
+  - ./checkstyle.sh || true
+  - coverage run --source sopel -m py.test -v .
   - coverage report --show-missing
+after_success:
+  coveralls

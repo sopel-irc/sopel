@@ -1,4 +1,4 @@
-# coding=utf8
+# coding=utf-8
 """
 remind.py - Sopel Reminder Module
 Copyright 2011, Sean B. Palmer, inamidst.com
@@ -6,7 +6,7 @@ Licensed under the Eiffel Forum License 2.
 
 http://sopel.chat
 """
-from __future__ import unicode_literals
+from __future__ import unicode_literals, absolute_import, print_function, division
 
 import os
 import re
@@ -194,7 +194,7 @@ def at(bot, trigger):
         timediff = at_time - now
     else:
         if tz and tz.upper() != 'UTC':
-            bot.reply("I don't have timzeone support installed.")
+            bot.reply("I don't have timezone support installed.")
             return NOLIMIT
         now = datetime.now()
         at_time = datetime(now.year, now.month, now.day,

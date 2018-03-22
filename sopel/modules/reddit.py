@@ -1,15 +1,8 @@
-# coding=utf8
-"""
-reddit-info.py - Sopel Reddit module
-Author: Edward Powell, embolalia.net
-About: http://sopel.chat
+# coding=utf-8
+# Author: Elsie Powell, embolalia.com
+from __future__ import unicode_literals, absolute_import, print_function, division
 
-This module provides special tools for reddit, namely showing detailed
-info about reddit posts
-"""
-from __future__ import unicode_literals
-
-from sopel.module import commands, rule, example, NOLIMIT, OP
+from sopel.module import commands, rule, example, require_chanmsg, NOLIMIT, OP
 from sopel.formatting import bold, color, colors
 from sopel.web import USER_AGENT
 from sopel.tools import SopelMemory, time
@@ -30,10 +23,14 @@ else:
 
 
 domain = r'https?://(?:www\.|np\.)?reddit\.com'
-post_url = '(%s/r/.*?/comments/[\w-]+)' % domain
+post_url = '%s/r/(.*?)/comments/([\w-]+)' % domain
 user_url = '%s/u(ser)?/([\w-]+)' % domain
 post_regex = re.compile(post_url)
 user_regex = re.compile(user_url)
+spoiler_subs = [
+    'stevenuniverse',
+    'onepunchman',
+]
 
 
 def setup(bot):
@@ -50,21 +47,30 @@ def shutdown(bot):
 
 @rule('.*%s.*' % post_url)
 def rpost_info(bot, trigger, match=None):
-    r = praw.Reddit(user_agent=USER_AGENT)
+    r = praw.Reddit(
+        user_agent=USER_AGENT,
+        client_id='6EiphT6SSQq7FQ',
+        client_secret=None,
+    )
     match = match or trigger
-    s = r.get_submission(url=match.group(1))
+    s = r.submission(id=match.group(2))
 
     message = ('[REDDIT] {title} {link}{nsfw} | {points} points ({percent}) | '
                '{comments} comments | Posted by {author} | '
                'Created at {created}')
 
+    subreddit = s.subreddit.display_name
     if s.is_self:
-        link = '(self.{})'.format(s.subreddit.display_name)
+        link = '(self.{})'.format(subreddit)
     else:
-        link = '({}) to r/{}'.format(s.url, s.subreddit.display_name)
+        link = '({}) to r/{}'.format(s.url, subreddit)
 
     if s.over_18:
-        nsfw = bold(color(' [NSFW]', colors.RED))
+        if subreddit.lower() in spoiler_subs:
+            nsfw = bold(color(' [SPOILERS]', colors.RED))
+        else:
+            nsfw = bold(color(' [NSFW]', colors.RED))
+
         sfw = bot.db.get_channel_value(trigger.sender, 'sfw')
         if sfw:
             link = '(link hidden)'
@@ -105,7 +111,11 @@ def rpost_info(bot, trigger, match=None):
 def redditor_info(bot, trigger, match=None):
     """Show information about the given Redditor"""
     commanded = re.match(bot.config.core.prefix + 'redditor', trigger)
-    r = praw.Reddit(user_agent=USER_AGENT)
+    r = praw.Reddit(
+        user_agent=USER_AGENT,
+        client_id='6EiphT6SSQq7FQ',
+        client_secret=None,
+    )
     match = match or trigger
     try:
         u = r.get_redditor(match.group(2))
@@ -153,6 +163,7 @@ def auto_redditor_info(bot, trigger):
     redditor_info(bot, trigger)
 
 
+@require_chanmsg('.setsfw is only permitted in channels')
 @commands('setsafeforwork', 'setsfw')
 @example('.setsfw true')
 @example('.setsfw false')
@@ -164,7 +175,10 @@ def update_channel(bot, trigger):
     if bot.privileges[trigger.sender][trigger.nick] < OP:
         return
     else:
-        sfw = trigger.group(3).strip().lower() == 'true'
+        param = 'true'
+        if trigger.group(2) and trigger.group(3):
+            param = trigger.group(3).strip().lower()
+        sfw = param == 'true'
         bot.db.set_channel_value(trigger.sender, 'sfw', sfw)
         if sfw:
             bot.reply('Got it. %s is now flagged as SFW.' % trigger.sender)
@@ -182,6 +196,8 @@ def get_channel_sfw(bot, trigger):
     channel = trigger.group(2)
     if not channel:
         channel = trigger.sender
+        if channel.is_nick():
+            return bot.say('.getsfw with no channel param is only permitted in channels')
 
     channel = channel.strip()
 

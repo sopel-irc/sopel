@@ -1,4 +1,4 @@
-# coding=utf8
+# coding=utf-8
 """
 etymology.py - Sopel Etymology Module
 Copyright 2007-9, Sean B. Palmer, inamidst.com
@@ -6,8 +6,16 @@ Licensed under the Eiffel Forum License 2.
 
 http://sopel.chat
 """
-from __future__ import unicode_literals
+from __future__ import unicode_literals, absolute_import, print_function, division
 
+try:
+    from html import unescape
+except ImportError:
+    from HTMLParser import HTMLParser
+
+    # pep8 dictates a blank line here...
+    def unescape(s):
+        return HTMLParser.unescape.__func__(HTMLParser, s)
 import re
 from sopel import web
 from sopel.module import commands, example, NOLIMIT
@@ -27,13 +35,6 @@ abbrs = [
 ]
 t_sentence = r'^.*?(?<!%s)(?:\.(?= [A-Z0-9]|\Z)|\Z)'
 r_sentence = re.compile(t_sentence % ')(?<!'.join(abbrs))
-
-
-def unescape(s):
-    s = s.replace('&gt;', '>')
-    s = s.replace('&lt;', '<')
-    s = s.replace('&amp;', '&')
-    return s
 
 
 def text(html):
@@ -74,7 +75,7 @@ def etymology(word):
 
 
 @commands('ety')
-@example('word')
+@example('.ety word')
 def f_etymology(bot, trigger):
     """Look up the etymology of a word"""
     word = trigger.group(2)

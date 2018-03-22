@@ -1,17 +1,14 @@
-# coding=utf8
-"""
-find.py - Sopel Spelling correction module
-Copyright 2011, Michael Yanovich, yanovich.net
-Copyright 2013, Edward Powell, embolalia.net
-Licensed under the Eiffel Forum License 2.
+# coding=utf-8
+"""Sopel Spelling correction module
 
-http://sopel.chat
-
-Contributions from: Matt Meinwald and Morgan Goose
 This module will fix spelling errors if someone corrects them
 using the sed notation (s///) commonly found in vi/vim.
 """
-from __future__ import unicode_literals
+# Copyright 2011, Michael Yanovich, yanovich.net
+# Copyright 2013, Elsie Powell, embolalia.com
+# Licensed under the Eiffel Forum License 2.
+# Contributions from: Matt Meinwald and Morgan Goose
+from __future__ import unicode_literals, absolute_import, print_function, division
 
 import re
 from sopel.tools import Identifier, SopelMemory

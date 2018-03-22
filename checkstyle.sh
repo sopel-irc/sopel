@@ -6,15 +6,22 @@ find_source_files() {
 files=$(find_source_files)
 # These are acceptable (for now). 128 and 127 should be removed eventually.
 ignore='--ignore=E501,E128,E127'
+# These are forbidding certain __future__ imports. The plugin has errors both
+# for having and not having them; we want to always have them, so we ignore
+# the having them errors and keep the not having them errors.
+ignore=$ignore',FI50,FI51,FI52,FI53,FI54,FI55'
+# F12 is with_statement, which is already in 2.7. F15 requires and F55 forbids
+# generator_stop, which should probably be made mandatory at some point.
+ignore=$ignore',F12,F15,F55'
 # These are rules that are relatively new or have had their definitions tweaked
 # recently, so we'll forgive them until versions of PEP8 in various developers'
-#distros are updated
+# distros are updated
 ignore=$ignore',E265,E713,E111,E113,E402,E731'
 # For now, go through all the checking stages and only die at the end
 exit_code=0
 
-if ! pep8 $ignore --filename=*.py $(find_source_files); then
-    echo "ERROR: PEP8 does not pass."
+if ! flake8 $ignore --filename=*.py $(find_source_files); then
+    echo "ERROR: flake8 does not pass."
     exit_code=1
 fi
 
@@ -48,30 +55,5 @@ if $fail_py3_unicode; then
     echo "ERROR: Above files use unicode() but do not make it safe for Python 3."
     exit_code=1
 fi
-
-check_future () {
-    fail_unicode_literals=false
-    for file in $files; do
-        if ! grep -L "from __future__ import $1" $file; then
-            fail_unicode_literals=true
-        fi
-    done
-    if $fail_unicode_literals; then
-        if $2; then
-            echo "ERROR: Above files do not have $1 import."
-            exit_code=1
-        else
-            echo "WARNING: Above files do not have $1 import."
-        fi
-    fi
-}
-for mandatory in unicode_literals
-do
-    check_future $mandatory true
-done
-for optional in division print_function absolute_import
-do
-    check_future $optional false
-done
 
 exit $exit_code

@@ -1,19 +1,23 @@
-# coding=utf8
+# coding=utf-8
 """Bugzilla issue reporting module
 
 Copyright 2013-2015, Embolalia, embolalia.com
 Licensed under the Eiffel Forum License 2.
 """
-from __future__ import unicode_literals
+from __future__ import unicode_literals, absolute_import, print_function, division
+
+import re
 
 import xmltodict
-import re
+
 from sopel import web, tools
-from sopel.module import rule
 from sopel.config.types import StaticSection, ListAttribute
+from sopel.logger import get_logger
+from sopel.module import rule
 
 
 regex = None
+LOGGER = get_logger(__name__)
 
 
 class BugzillaSection(StaticSection):
@@ -63,6 +67,13 @@ def show_bug(bot, trigger, match=None):
     url = 'https://%s%sctype=xml&%s' % match.groups()
     data = web.get(url, dont_decode=True)
     bug = xmltodict.parse(data).get('bugzilla').get('bug')
+    error = bug.get('@error', None)  # error="NotPermitted"
+
+    if error:
+        LOGGER.warning('Bugzilla error: %s' % error)
+        bot.say('[BUGZILLA] Unable to get infomation for '
+                'linked bug (%s)' % error)
+        return
 
     message = ('[BUGZILLA] %s | Product: %s | Component: %s | Version: %s | ' +
                'Importance: %s |  Status: %s | Assigned to: %s | ' +
@@ -74,10 +85,14 @@ def show_bug(bot, trigger, match=None):
     else:
         status = bug.get('bug_status')
 
+    assigned_to = bug.get('assigned_to')
+    if isinstance(assigned_to, dict):
+        assigned_to = assigned_to.get('@name')
+
     message = message % (
         bug.get('short_desc'), bug.get('product'),
         bug.get('component'), bug.get('version'),
         (bug.get('priority') + ' ' + bug.get('bug_severity')),
-        status, bug.get('assigned_to').get('@name'), bug.get('creation_ts'),
+        status, assigned_to, bug.get('creation_ts'),
         bug.get('delta_ts'))
     bot.say(message)

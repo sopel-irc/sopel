@@ -1,8 +1,9 @@
 # coding=utf-8
-from __future__ import unicode_literals
+from __future__ import unicode_literals, absolute_import, print_function, division
 
 import re
 import sys
+import datetime
 
 import sopel.tools
 
@@ -15,7 +16,7 @@ class PreTrigger(object):
     """A parsed message from the server, which has not been matched against
     any rules."""
     component_regex = re.compile(r'([^!]*)!?([^@]*)@?(.*)')
-    intent_regex = re.compile('\x01(\\S+) (.*)\x01')
+    intent_regex = re.compile('\x01(\\S+) ?(.*)\x01')
 
     def __init__(self, own_nick, line):
         """own_nick is the bot's nick, needed to correctly parse sender.
@@ -33,6 +34,13 @@ class PreTrigger(object):
                     self.tags[tag[0]] = tag[1]
                 else:
                     self.tags[tag[0]] = None
+
+        self.time = datetime.datetime.utcnow()
+        if 'time' in self.tags:
+            try:
+                self.time = datetime.datetime.strptime(self.tags['time'], '%Y-%m-%dT%H:%M:%S.%fZ')
+            except ValueError:
+                pass  # Server isn't conforming to spec, ignore the server-time
 
         # TODO note what this is doing and why
         if line.startswith(':'):
@@ -56,7 +64,8 @@ class PreTrigger(object):
         self.nick = sopel.tools.Identifier(self.nick)
 
         # If we have arguments, the first one is the sender
-        if self.args:
+        # Unless it's a QUIT event
+        if self.args and self.event != 'QUIT':
             target = sopel.tools.Identifier(self.args[0])
         else:
             target = None
@@ -75,6 +84,11 @@ class PreTrigger(object):
                 self.tags['intent'] = intent
                 self.args[-1] = message or ''
 
+        # Populate account from extended-join messages
+        if self.event == 'JOIN' and len(self.args) == 3:
+            # Account is the second arg `...JOIN #Sopel account :realname`
+            self.tags['account'] = self.args[1]
+
 
 class Trigger(unicode):
     """A line from the server, which has matched a callable's rules.
@@ -87,6 +101,11 @@ class Trigger(unicode):
     """The channel from which the message was sent.
 
     In a private message, this is the nick that sent the message."""
+    time = property(lambda self: self._pretrigger.time)
+    """A datetime object at which the message was received by the IRC server.
+
+    If the server does not support server-time, then `time` will be the time
+    that the message was received by Sopel"""
     raw = property(lambda self: self._pretrigger.line)
     """The entire message, as sent from the server. This includes the CTCP
     \\x01 bytes and command, if they were included."""
@@ -97,24 +116,28 @@ class Trigger(unicode):
     user = property(lambda self: self._pretrigger.user)
     """Local username of the person who sent the message"""
     nick = property(lambda self: self._pretrigger.nick)
-    """The ``Identifier`` of the person who sent the message."""
+    """The :class:`sopel.tools.Identifier` of the person who sent the message.
+    """
     host = property(lambda self: self._pretrigger.host)
     """The hostname of the person who sent the message"""
     event = property(lambda self: self._pretrigger.event)
     """The IRC event (e.g. ``PRIVMSG`` or ``MODE``) which triggered the
     message."""
     match = property(lambda self: self._match)
-    """The regular expression `MatchObject`_ for the triggering line.
-
-    .. _MatchObject: http://docs.python.org/library/re.html#match-objects"""
+    """The regular expression :class:`re.MatchObject` for the triggering line.
+    """
     group = property(lambda self: self._match.group)
     """The ``group`` function of the ``match`` attribute.
 
-    See Python `re`_ documentation for details."""
+    See Python :mod:`re` documentation for details."""
     groups = property(lambda self: self._match.groups)
     """The ``groups`` function of the ``match`` attribute.
 
-    See Python `re`_ documentation for details."""
+    See Python :mod:`re` documentation for details."""
+    groupdict = property(lambda self: self._match.groupdict)
+    """The ``groupdict`` function of the ``match`` attribute.
+
+    See Python :mod:`re` documentation for details."""
     args = property(lambda self: self._pretrigger.args)
     """
     A tuple containing each of the arguments to an event. These are the
@@ -129,12 +152,20 @@ class Trigger(unicode):
     """
     owner = property(lambda self: self._owner)
     """True if the nick which triggered the command is the bot's owner."""
+    account = property(lambda self: self.tags.get('account') or self._account)
+    """The account name of the user sending the message.
 
-    def __new__(cls, config, message, match):
-        self = unicode.__new__(cls, message.args[-1])
+    This is only available if either the account-tag or the account-notify and
+    extended-join capabilites are available. If this isn't the case, or the user
+    sending the message isn't logged in, this will be None.
+    """
+
+    def __new__(cls, config, message, match, account=None):
+        self = unicode.__new__(cls, message.args[-1] if message.args else '')
+        self._account = account
         self._pretrigger = message
         self._match = match
-        self._is_privmsg = message.sender.is_nick()
+        self._is_privmsg = message.sender and message.sender.is_nick()
 
         def match_host_or_nick(pattern):
             pattern = sopel.tools.get_hostmask_regex(pattern)
@@ -143,9 +174,14 @@ class Trigger(unicode):
                 pattern.match('@'.join((self.nick, self.host)))
             )
 
-        self._admin = any(match_host_or_nick(item)
-                         for item in config.core.admins)
-        self._owner = match_host_or_nick(config.core.owner)
-        self._admin = self.admin or self.owner
+        if config.core.owner_account:
+            self._owner = config.core.owner_account == self.account
+        else:
+            self._owner = match_host_or_nick(config.core.owner)
+        self._admin = (
+            self._owner or
+            self.account in config.core.admin_accounts or
+            any(match_host_or_nick(item) for item in config.core.admins)
+        )
 
         return self

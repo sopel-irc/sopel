@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# coding=utf8
+# coding=utf-8
 from __future__ import unicode_literals, print_function
 
 from sopel import __version__
@@ -38,7 +38,7 @@ setup(
     name='sopel',
     version=__version__,
     description='Simple and extendible IRC bot',
-    author='Edward Powell',
+    author='Elsie Powell',
     author_email='powell.518@gmail.com',
     url='http://sopel.chat/',
     long_description=(
@@ -52,7 +52,6 @@ setup(
               str('sopel.config'), str('sopel.tools')],
     license='Eiffel Forum License, version 2',
     platforms='Linux x86, x86-64',
-    requires=requires,
     install_requires=requires,
     entry_points={'console_scripts': ['sopel = sopel.run_script:main']},
 )

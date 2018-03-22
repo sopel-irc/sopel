@@ -16,13 +16,13 @@ build = '0'
 if len(sys.argv)>1:
     build = sys.argv[1]
 print 'Generating archive...'
-f = open('willie-%s.tar' % version, 'w')
-repo.archive(f, prefix='willie-%s/' % version)
+f = open('sopel-%s.tar' % version, 'w')
+repo.archive(f, prefix='sopel-%s/' % version)
 f.close()
 
 print 'Building spec file..'
-spec_in = open('willie.spec.in', 'r')
-spec_out = open('willie.spec', 'w')
+spec_in = open('sopel.spec.in', 'r')
+spec_out = open('sopel.spec', 'w')
 for line in spec_in:
     newline = line.replace('#GITTAG#', head_hash)
     newline = newline.replace('#BUILD#', build)
@@ -32,12 +32,12 @@ for line in spec_in:
 spec_in.close()
 spec_out.close()
 print 'Starting rpmbuild...'
-cmdline = 'rpmbuild --define="%_specdir @wd@" --define="%_rpmdir @wd@" --define="%_srcrpmdir @wd@" --define="%_sourcedir @wd@" -ba willie.spec'.replace('@wd@', os.getcwd())
+cmdline = 'rpmbuild --define="%_specdir @wd@" --define="%_rpmdir @wd@" --define="%_srcrpmdir @wd@" --define="%_sourcedir @wd@" -ba sopel.spec'.replace('@wd@', os.getcwd())
 p = call(cmdline, shell=True)
 for item in os.listdir('noarch'):
     os.rename(os.path.join('noarch', item), item)
 print 'Cleaning...'
 os.removedirs('noarch')
-os.remove('willie.spec')
-os.remove('willie-%s.tar' % version)
+os.remove('sopel.spec')
+os.remove('sopel-%s.tar' % version)
 print 'Done'

@@ -1,4 +1,4 @@
-# coding=utf8
+# coding=utf-8
 """
 tell.py - Sopel Tell and Ask Module
 Copyright 2008, Sean B. Palmer, inamidst.com
@@ -6,7 +6,7 @@ Licensed under the Eiffel Forum License 2.
 
 http://sopel.chat
 """
-from __future__ import unicode_literals
+from __future__ import unicode_literals, absolute_import, print_function, division
 
 import os
 import time
@@ -80,7 +80,7 @@ def setup(self):
 
 @commands('tell', 'ask')
 @nickname_commands('tell', 'ask')
-@example('Sopel, tell Embolalia he broke something again.')
+@example('$nickname, tell Embolalia he broke something again.')
 def f_remind(bot, trigger):
     """Give someone a message the next time they're seen"""
     teller = trigger.nick
@@ -166,9 +166,9 @@ def message(bot, trigger):
 
     for remkey in remkeys:
         if not remkey.endswith('*') or remkey.endswith(':'):
-            if tellee == remkey:
+            if tellee.lower() == remkey.lower():
                 reminders.extend(getReminders(bot, channel, remkey, tellee))
-        elif tellee.startswith(remkey.rstrip('*:')):
+        elif tellee.lower().startswith(remkey.lower().rstrip('*:')):
             reminders.extend(getReminders(bot, channel, remkey, tellee))
 
     for line in reminders[:maximum]:

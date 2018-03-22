@@ -1,14 +1,13 @@
-# coding=utf8
+# coding=utf-8
 """
 imdb.py - Sopel Movie Information Module
 Copyright © 2012-2013, Elad Alfassa, <elad@fedoraproject.org>
 Licensed under the Eiffel Forum License 2.
 
-This module relies on imdbapi.com
+This module relies on omdbapi.com
 """
-from __future__ import unicode_literals
-import json
-import sopel.web as web
+from __future__ import unicode_literals, absolute_import, print_function, division
+import requests
 import sopel.module
 from sopel.logger import get_logger
 
@@ -25,17 +24,17 @@ def movie(bot, trigger):
     if not trigger.group(2):
         return
     word = trigger.group(2).rstrip()
-    uri = "http://www.imdbapi.com/?t=" + word
-    u = web.get(uri, 30)
-    data = json.loads(u)  # data is a Dict containing all the information we need
+    uri = "http://www.omdbapi.com/"
+    data = requests.get(uri, params={'t': word}, timeout=30,
+                        verify=bot.config.core.verify_ssl).json()
     if data['Response'] == 'False':
         if 'Error' in data:
             message = '[MOVIE] %s' % data['Error']
         else:
             LOGGER.warning(
-                'Got an error from the imdb api, search phrase was %s; data was %s',
+                'Got an error from the OMDb api, search phrase was %s; data was %s',
                 word, str(data))
-            message = '[MOVIE] Got an error from imdbapi'
+            message = '[MOVIE] Got an error from OMDbapi'
     else:
         message = '[MOVIE] Title: ' + data['Title'] + \
                   ' | Year: ' + data['Year'] + \

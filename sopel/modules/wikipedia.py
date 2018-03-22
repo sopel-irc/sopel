@@ -1,12 +1,7 @@
-# coding=utf8
-"""
-wikipedia.py - Sopel Wikipedia Module
-Copyright 2013 Edward Powell - embolalia.net
-Licensed under the Eiffel Forum License 2.
-
-http://sopel.chat
-"""
-from __future__ import unicode_literals
+# coding=utf-8
+# Copyright 2013 Elsie Powell - embolalia.com
+# Licensed under the Eiffel Forum License 2.
+from __future__ import unicode_literals, absolute_import, print_function, division
 from sopel import web, tools
 from sopel.config.types import StaticSection, ValidatedAttribute
 from sopel.module import NOLIMIT, commands, example, rule
@@ -15,7 +10,8 @@ import re
 
 import sys
 if sys.version_info.major < 3:
-    from urlparse import unquote
+    from urlparse import unquote as _unquote
+    unquote = lambda s: _unquote(s.encode('utf-8')).decode('utf-8')
 else:
     from urllib.parse import unquote
 
@@ -91,7 +87,7 @@ def mw_snippet(server, query):
     return snippet['extract']
 
 
-@rule('.*/([a-z]+\.wikipedia.org)/wiki/([^ ]+).*')
+@rule('.*\/([a-z]+\.wikipedia.org)\/wiki\/((?!File\:)[^ ]+).*')
 def mw_info(bot, trigger, found_match=None):
     """
     Retrives a snippet of the specified length from the given page on the given

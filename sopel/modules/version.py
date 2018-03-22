@@ -1,4 +1,4 @@
-# coding=utf8
+# coding=utf-8
 """
 version.py - Sopel Version Module
 Copyright 2009, Silas Baronda
@@ -7,13 +7,12 @@ Licensed under the Eiffel Forum License 2.
 
 http://sopel.chat
 """
-from __future__ import unicode_literals
+from __future__ import unicode_literals, absolute_import, print_function, division
 
 from datetime import datetime
 import sopel
 import re
 from os import path
-import json
 
 log_line = re.compile('\S+ (\S+) (.*? <.*?>) (\d+) (\S+)\tcommit[^:]*: (.+)')
 
@@ -60,7 +59,7 @@ def ctcp_version(bot, trigger):
 @sopel.module.rate(20)
 def ctcp_source(bot, trigger):
     bot.write(('NOTICE', trigger.nick),
-              '\x01SOURCE https://github.com/Embolalia/sopel/\x01')
+              '\x01SOURCE https://github.com/sopel-irc/sopel/\x01')
 
 
 @sopel.module.rule('\x01PING\s(.*)\x01')

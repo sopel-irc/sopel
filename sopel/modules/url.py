@@ -1,22 +1,21 @@
-# coding=utf8
-"""
-url.py - Sopel URL title module
-Copyright 2010-2011, Michael Yanovich, yanovich.net, Kenneth Sham
-Copyright 2012-2013 Edward Powell
-Copyright 2013      Lior Ramati (firerogue517@gmail.com)
-Copyright © 2014 Elad Alfassa <elad@fedoraproject.org>
-Licensed under the Eiffel Forum License 2.
-
-http://sopel.chat
-"""
-from __future__ import unicode_literals
+# coding=utf-8
+"""URL title module"""
+# Copyright 2010-2011, Michael Yanovich, yanovich.net, Kenneth Sham
+# Copyright 2012-2013 Elsie Powell
+# Copyright 2013      Lior Ramati (firerogue517@gmail.com)
+# Copyright © 2014 Elad Alfassa <elad@fedoraproject.org>
+# Licensed under the Eiffel Forum License 2.
+from __future__ import unicode_literals, absolute_import, print_function, division
 
 import re
-from sopel import web, tools
+from sopel import web, tools, __version__
 from sopel.module import commands, rule, example
-from sopel.config.types import ValidatedAttribute, StaticSection
+from sopel.config.types import ValidatedAttribute, ListAttribute, StaticSection
 
+import requests
 
+USER_AGENT = 'Sopel/{} (http://sopel.chat)'.format(__version__)
+default_headers = {'User-Agent': USER_AGENT}
 url_finder = None
 # These are used to clean up the title tag before actually parsing it. Not the
 # world's best way to do this, but it'll do for now.
@@ -33,7 +32,7 @@ max_bytes = 655360
 
 class UrlSection(StaticSection):
     # TODO some validation rules maybe?
-    exclude = ValidatedAttribute('exclude')
+    exclude = ListAttribute('exclude')
     exclusion_char = ValidatedAttribute('exclusion_char', default='!')
 
 
@@ -81,7 +80,7 @@ def setup(bot=None):
         bot.memory['last_seen_url'] = tools.SopelMemory()
 
     url_finder = re.compile(r'(?u)(%s?(?:http|https|ftp)(?:://\S+))' %
-                            (bot.config.url.exclusion_char))
+                            (bot.config.url.exclusion_char), re.IGNORECASE)
 
 
 @commands('title')
@@ -125,6 +124,9 @@ def title_auto(bot, trigger):
             return
 
     urls = re.findall(url_finder, trigger)
+    if len(urls) == 0:
+        return
+
     results = process_urls(bot, trigger, urls)
     bot.memory['last_seen_url'][trigger.sender] = urls[-1]
 
@@ -156,33 +158,11 @@ def process_urls(bot, trigger, urls):
             matched = check_callbacks(bot, trigger, url, False)
             if matched:
                 continue
-            # Then see if it redirects anywhere
-            new_url = follow_redirects(url)
-            if not new_url:
-                continue
-            # Then see if the final URL matches anything
-            matched = check_callbacks(bot, trigger, new_url, new_url != url)
-            if matched:
-                continue
             # Finally, actually show the URL
-            title = find_title(url)
+            title = find_title(url, verify=bot.config.core.verify_ssl)
             if title:
                 results.append((title, get_hostname(url)))
     return results
-
-
-def follow_redirects(url):
-    """
-    Follow HTTP 3xx redirects, and return the actual URL. Return None if
-    there's a problem.
-    """
-    try:
-        connection = web.get_urllib_object(url, 60)
-        url = connection.geturl() or url
-        connection.close()
-    except:
-        return None
-    return url
 
 
 def check_callbacks(bot, trigger, url, run=True):
@@ -197,18 +177,29 @@ def check_callbacks(bot, trigger, url, run=True):
     for regex, function in tools.iteritems(bot.memory['url_callbacks']):
         match = regex.search(url)
         if match:
-            if run:
+            # Always run ones from @url; they don't run on their own.
+            if run or hasattr(function, 'url_regex'):
                 function(bot, trigger, match)
             matched = True
     return matched
 
 
-def find_title(url):
+def find_title(url, verify=True):
     """Return the title for the given URL."""
     try:
-        content, headers = web.get(url, return_headers=True, limit_bytes=max_bytes)
-    except UnicodeDecodeError:
-        return  # Fail silently when data can't be decoded
+        response = requests.get(url, stream=True, verify=verify,
+                                headers=default_headers)
+        content = b''
+        for byte in response.iter_content(chunk_size=512):
+            content += byte
+            if b'</title>' in content or len(content) > max_bytes:
+                break
+        content = content.decode('utf-8', errors='ignore')
+        # Need to close the connection because we have not read all
+        # the data
+        response.close()
+    except requests.exceptions.ConnectionError:
+        return None
 
     # Some cleanup that I don't really grok, but was in the original, so
     # we'll keep it (with the compiled regexes made global) for now.

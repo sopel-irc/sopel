@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# coding=utf8
+# coding=utf-8
 """This is a script for running pytest from the command line.
 
 This script exists so that the project directory gets added to sys.path, which
@@ -9,7 +9,7 @@ pytest_run.py
 Copyright 2013, Ari Koivula, <ari@koivu.la>
 Licensed under the Eiffel Forum License 2.
 
-http://willie.dfbta.net
+http://sopel.chat
 """
 from __future__ import unicode_literals
 

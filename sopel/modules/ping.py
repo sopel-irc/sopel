@@ -1,10 +1,10 @@
-# coding=utf8
+# coding=utf-8
 """
 ping.py - Sopel Ping Module
 Author: Sean B. Palmer, inamidst.com
 About: http://sopel.chat
 """
-from __future__ import unicode_literals
+from __future__ import unicode_literals, absolute_import, print_function, division
 
 import random
 from sopel.module import rule, priority, thread

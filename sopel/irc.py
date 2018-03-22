@@ -1,23 +1,16 @@
 # coding=utf-8
-"""
-irc.py - An Utility IRC Bot
-Copyright 2008, Sean B. Palmer, inamidst.com
-Copyright 2012, Edward Powell, http://embolalia.net
-Copyright © 2012, Elad Alfassa <elad@fedoraproject.org>
-
-Licensed under the Eiffel Forum License 2.
-
-Sopel: http://sopel.chat/
-
-When working on core IRC protocol related features, consult protocol
-documentation at http://www.irchelp.org/irchelp/rfc/
-"""
-from __future__ import unicode_literals
-from __future__ import print_function
-from __future__ import absolute_import
+# irc.py - An Utility IRC Bot
+# Copyright 2008, Sean B. Palmer, inamidst.com
+# Copyright 2012, Elsie Powell, http://embolalia.com
+# Copyright © 2012, Elad Alfassa <elad@fedoraproject.org>
+#
+# Licensed under the Eiffel Forum License 2.
+#
+# When working on core IRC protocol related features, consult protocol
+# documentation at http://www.irchelp.org/irchelp/rfc/
+from __future__ import unicode_literals, absolute_import, print_function, division
 
 import sys
-import re
 import time
 import socket
 import asyncore
@@ -27,9 +20,8 @@ import codecs
 import traceback
 from sopel.logger import get_logger
 from sopel.tools import stderr, Identifier
-from sopel.trigger import PreTrigger, Trigger
+from sopel.trigger import PreTrigger
 try:
-    import select
     import ssl
     if not hasattr(ssl, 'match_hostname'):
         # Attempt to import ssl_match_hostname from python-backports
@@ -66,11 +58,9 @@ class Bot(asynchat.async_chat):
         self.name = config.core.name
         """Sopel's "real name", as used for whois."""
 
-        self.channels = []
-        """The list of channels Sopel is currently in."""
-
         self.stack = {}
         self.ca_certs = ca_certs
+        self.enabled_capabilities = set()
         self.hasquit = False
 
         self.sending = threading.RLock()
@@ -80,20 +70,13 @@ class Bot(asynchat.async_chat):
         # Right now, only accounting for two op levels.
         # This might be expanded later.
         # These lists are filled in startup.py, as of right now.
+        # Are these even touched at all anymore? Remove in 7.0.
         self.ops = dict()
-        """
-        A dictionary mapping channels to a ``Identifier`` list of their operators.
-        """
+        """Deprecated. Use bot.channels instead."""
         self.halfplus = dict()
-        """
-        A dictionary mapping channels to a ``Identifier`` list of their half-ops and
-        ops.
-        """
+        """Deprecated. Use bot.channels instead."""
         self.voices = dict()
-        """
-        A dictionary mapping channels to a ``Identifier`` list of their voices,
-        half-ops and ops.
-        """
+        """Deprecated. Use bot.channels instead."""
 
         # We need this to prevent error loops in handle_error
         self.error_count = 0
@@ -139,23 +122,6 @@ class Bot(asynchat.async_chat):
         return string
 
     def write(self, args, text=None):
-        """Send a command to the server.
-
-        ``args`` is an iterable of strings, which are joined by spaces.
-        ``text`` is treated as though it were the final item in ``args``, but
-        is preceeded by a ``:``. This is a special case which  means that
-        ``text``, unlike the items in ``args`` may contain spaces (though this
-        constraint is not checked by ``write``).
-
-        In other words, both ``sopel.write(('PRIVMSG',), 'Hello, world!')``
-        and ``sopel.write(('PRIVMSG', ':Hello, world!'))`` will send
-        ``PRIVMSG :Hello, world!`` to the server.
-
-        Newlines and carriage returns ('\\n' and '\\r') are removed before
-        sending. Additionally, if the message (after joining) is longer than
-        than 510 characters, any remaining characters will not be sent.
-
-        """
         args = [self.safe(arg) for arg in args]
         if text is not None:
             text = self.safe(text)
@@ -189,7 +155,6 @@ class Bot(asynchat.async_chat):
             self.initiate_connect(host, port)
         except socket.error as e:
             stderr('Connection error: %s' % e)
-            self.hasquit = True
 
     def initiate_connect(self, host, port):
         stderr('Connecting to %s:%s...' % (host, port))
@@ -225,30 +190,14 @@ class Bot(asynchat.async_chat):
     def handle_close(self):
         self.connection_registered = False
 
-        self._shutdown()
+        if hasattr(self, '_shutdown'):
+            self._shutdown()
         stderr('Closed!')
 
         # This will eventually call asyncore dispatchers close method, which
         # will release the main thread. This should be called last to avoid
         # race conditions.
         self.close()
-
-    def part(self, channel, msg=None):
-        """Part a channel."""
-        self.write(['PART', channel], msg)
-
-    def join(self, channel, password=None):
-        """Join a channel
-
-        If `channel` contains a space, and no `password` is given, the space is
-        assumed to split the argument into the channel to join and its
-        password.  `channel` should not contain a space if `password` is given.
-
-        """
-        if password is None:
-            self.write(('JOIN', channel))
-        else:
-            self.write(['JOIN', channel, password])
 
     def handle_connect(self):
         if self.config.core.use_ssl and has_ssl:
@@ -284,8 +233,10 @@ class Bot(asynchat.async_chat):
         stderr('Connected.')
         self.last_ping_time = datetime.now()
         timeout_check_thread = threading.Thread(target=self._timeout_check)
+        timeout_check_thread.daemon = True
         timeout_check_thread.start()
         ping_thread = threading.Thread(target=self._send_ping)
+        ping_thread.daemon = True
         ping_thread.start()
 
     def _timeout_check(self):
@@ -328,7 +279,7 @@ class Bot(asynchat.async_chat):
             data = self.socket.read(buffer_size)
             if not data:
                 self.handle_close()
-                return ''
+                return b''
             return data
         except ssl.SSLError as why:
             if why[0] in (asyncore.ECONNRESET, asyncore.ENOTCONN,
@@ -337,7 +288,7 @@ class Bot(asynchat.async_chat):
                 return ''
             elif why[0] == errno.ENOENT:
                 # Required in order to keep it non-blocking
-                return ''
+                return b''
             else:
                 raise
 
@@ -368,6 +319,8 @@ class Bot(asynchat.async_chat):
         self.buffer = ''
         self.last_ping_time = datetime.now()
         pretrigger = PreTrigger(self.nick, line)
+        if all(cap not in self.enabled_capabilities for cap in ['account-tag', 'extended-join']):
+            pretrigger.tags.pop('account', None)
 
         if pretrigger.event == 'PING':
             self.write(('PONG', pretrigger.args[-1]))
@@ -383,89 +336,6 @@ class Bot(asynchat.async_chat):
 
     def dispatch(self, pretrigger):
         pass
-
-    def msg(self, recipient, text, max_messages=1):
-        # Deprecated, but way too much of a pain to remove.
-        self.say(text, recipient, max_messages)
-
-    def say(self, text, recipient, max_messages=1):
-        # We're arbitrarily saying that the max is 400 bytes of text when
-        # messages will be split. Otherwise, we'd have to acocunt for the bot's
-        # hostmask, which is hard.
-        max_text_length = 400
-        # Encode to bytes, for propper length calculation
-        if isinstance(text, unicode):
-            encoded_text = text.encode('utf-8')
-        else:
-            encoded_text = text
-        excess = ''
-        if max_messages > 1 and len(encoded_text) > max_text_length:
-            last_space = encoded_text.rfind(' '.encode('utf-8'), 0, max_text_length)
-            if last_space == -1:
-                excess = encoded_text[max_text_length:]
-                encoded_text = encoded_text[:max_text_length]
-            else:
-                excess = encoded_text[last_space + 1:]
-                encoded_text = encoded_text[:last_space]
-        # We'll then send the excess at the end
-        # Back to unicode again, so we don't screw things up later.
-        text = encoded_text.decode('utf-8')
-        try:
-            self.sending.acquire()
-
-            # No messages within the last 3 seconds? Go ahead!
-            # Otherwise, wait so it's been at least 0.8 seconds + penalty
-
-            recipient_id = Identifier(recipient)
-
-            if recipient_id not in self.stack:
-                self.stack[recipient_id] = []
-            elif self.stack[recipient_id]:
-                elapsed = time.time() - self.stack[recipient_id][-1][0]
-                if elapsed < 3:
-                    penalty = float(max(0, len(text) - 50)) / 70
-                    wait = 0.7 + penalty
-                    if elapsed < wait:
-                        time.sleep(wait - elapsed)
-
-                # Loop detection
-                messages = [m[1] for m in self.stack[recipient_id][-8:]]
-
-                # If what we about to send repeated at least 5 times in the
-                # last 2 minutes, replace with '...'
-                if messages.count(text) >= 5 and elapsed < 120:
-                    text = '...'
-                    if messages.count('...') >= 3:
-                        # If we said '...' 3 times, discard message
-                        return
-
-            self.write(('PRIVMSG', recipient), text)
-            self.stack[recipient_id].append((time.time(), self.safe(text)))
-            self.stack[recipient_id] = self.stack[recipient_id][-10:]
-        finally:
-            self.sending.release()
-        # Now that we've sent the first part, we need to send the rest. Doing
-        # this recursively seems easier to me than iteratively
-        if excess:
-            self.msg(recipient, excess, max_messages - 1)
-
-    def notice(self, text, dest):
-        """Send an IRC NOTICE to a user or a channel.
-
-        See IRC protocol documentation for more information.
-
-        """
-        self.write(('NOTICE', dest), text)
-
-    def action(self, text, dest):
-        self.say('\001ACTION {}\001'.format(text), dest)
-
-    def reply(self, text, dest, reply_to, notice=False):
-        text = '%s: %s' % (reply_to, text)
-        if notice:
-            self.notice(text, dest)
-        else:
-            self.say(text, dest)
 
     def error(self, trigger=None):
         """Called internally when a module causes an error."""
@@ -501,12 +371,15 @@ class Bot(asynchat.async_chat):
                 stderr("Could not save full traceback!")
                 LOGGER.error("Could not save traceback from %s to file: %s", trigger.sender, str(e))
 
-            if trigger:
+            if trigger and self.config.core.reply_errors and trigger.sender is not None:
                 self.msg(trigger.sender, signature)
-        except Exception as e:
             if trigger:
+                LOGGER.error('Exception from {}: {} ({})'.format(trigger.sender, str(signature), trigger.raw))
+        except Exception as e:
+            if trigger and self.config.core.reply_errors and trigger.sender is not None:
                 self.msg(trigger.sender, "Got an error.")
-                LOGGER.error("Exception from %s: %s", trigger.sender, str(e))
+            if trigger:
+                LOGGER.error('Exception from {}: {} ({})'.format(trigger.sender, str(e), trigger.raw))
 
     def handle_error(self):
         """Handle any uncaptured error in the core.
@@ -532,8 +405,7 @@ class Bot(asynchat.async_chat):
         logfile.close()
         if self.error_count > 10:
             if (datetime.now() - self.last_error_timestamp).seconds < 5:
-                print >> sys.stderr, "Too many errors, can't continue"
+                stderr("Too many errors, can't continue")
                 os._exit(1)
         self.last_error_timestamp = datetime.now()
         self.error_count = self.error_count + 1
-
