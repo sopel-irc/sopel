@@ -5,27 +5,21 @@ spellcheck.py - Sopel spelling checker module
 Copyright © 2016, Alan Huang
 Licensed under the Eiffel Forum License 2.
 http://sopel.chat
-
-This module relies on aspell-python-py2 or py3, available through pypi or
-https://github.com/WojciechMula/aspell-python
 """
 from __future__ import unicode_literals, absolute_import, print_function, division
 import aspell
-from sopel.module import commands
-
+from sopel.module import commands, example, require_admin
 
 @commands('add')
+@require_admin('I only trust admins to add words.')
 def add_command(bot, trigger):
     """
     Add words to the bot's personal dictionary
     """
-    if(trigger.owner):
-        c = aspell.Speller('lang', 'en')
-        c.addtoPersonal(trigger.group(2))
-        c.saveAllwords()
-        bot.say('Added {0}.'.format(trigger.group(2)))
-    else:
-        bot.say('I only trust {0} to add words >:c'.format(bot.config.core.owner))
+    c = aspell.Speller('lang', 'en')
+    c.addtoPersonal(trigger.group(2))
+    c.saveAllwords()
+    bot.say('Added {0}.'.format(trigger.group(2)))
 
 def check_multiple(bot, words):
     mistakes = []
@@ -54,6 +48,7 @@ def check_one(bot, word):
         bot.say("That doesn't seem to be correct. Try {0}.".format(', '.join(['"{0}"'.format(s) for s in suggestions])))
 
 @commands('spell')
+@example('.spell stuff')
 def spellchecker(bot, trigger):
     """
     Checks if the given word is spelled correctly, and suggests corrections.
