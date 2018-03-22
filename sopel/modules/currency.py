@@ -74,7 +74,7 @@ def display(bot, amount, of, to):
         return NOLIMIT
 
     result = amount / of_rate * to_rate
-    bot.say("{} {} ({}) = {} {} ({})".format(amount, of.upper(), of_name,
+    bot.say("{:.2f} {} ({}) = {:.2f} {} ({})".format(amount, of.upper(), of_name,
                                              result, to.upper(), to_name))
 
 
