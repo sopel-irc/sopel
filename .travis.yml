@@ -15,7 +15,9 @@ cache:
 addons:
   apt:
     packages:
-      - enchant
+      - aspell
+      - aspell-en
+      - libaspell-dev
 install:
   - pip install -r requirements.txt -r dev-requirements.txt
 script:
