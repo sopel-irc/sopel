@@ -1,3 +1,1 @@
 pytest
-ipython<6.0; python_version < '3.3'
-ipython>=6.0; python_version >= '3.3'
