@@ -41,7 +41,11 @@ class UrlSection(StaticSection):
 
 class TitleParser(HTMLParser):
     def __init__(self):
-        HTMLParser.__init__(self, convert_charrefs=True)
+        try:
+            HTMLParser.__init__(self, convert_charrefs=False)
+        except TypeError:
+            HTMLParser.__init__(self)
+
         self.match = False
         self.in_head = False
         self.title = ''
@@ -222,12 +226,14 @@ def check_callbacks(bot, trigger, url, run=True):
 
 
 def find_title(url, verify=True):
+    parser = TitleParser()
     try:
-        r = requests.get(url, verify=verify, headers=default_headers)
-        r.encoding = 'utf-8'
-        parser = TitleParser()
-        parser.feed(r.text)
-    except:
+        with requests.get(url, verify=verify, headers=default_headers, timeout=2, stream=True) as r:
+            r.encoding = 'utf-8'
+            chunk = next(r.iter_content(max_bytes, decode_unicode=True))
+            parser.feed(chunk)
+    except Exception as e:
+        # If we had a logger, this would be a place to use it
         return None
 
     # Truncate long titles with ellipsis
