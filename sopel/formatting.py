@@ -50,7 +50,7 @@ class colors:
     LIGHT_GREY = '15'
     SILVER = LIGHT_GREY
 
-    #Create aliases.
+    # Create aliases.
     GRAY = GREY
     LIGHT_GRAY = LIGHT_GREY
 

@@ -54,7 +54,7 @@ def py(bot, trigger):
     uri = BASE_TUMBOLIA_URI + 'py/'
     answer = web.get(uri + web.quote(query))
     if answer:
-        #bot.say can potentially lead to 3rd party commands triggering.
+        # bot.say can potentially lead to 3rd party commands triggering.
         bot.reply(answer)
     else:
         bot.reply('Sorry, no result.')

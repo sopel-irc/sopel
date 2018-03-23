@@ -81,7 +81,7 @@ def display(bot, amount, of, to):
 @commands('btc', 'bitcoin')
 @example('.btc 20 EUR')
 def bitcoin(bot, trigger):
-    #if 2 args, 1st is number and 2nd is currency. If 1 arg, it's either the number or the currency.
+    # if 2 args, 1st is number and 2nd is currency. If 1 arg, it's either the number or the currency.
     to = trigger.group(4)
     amount = trigger.group(3)
     if not to:

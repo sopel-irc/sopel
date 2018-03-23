@@ -102,7 +102,7 @@ def mw_info(bot, trigger, found_match=None):
 def wikipedia(bot, trigger):
     lang = bot.config.wikipedia.default_lang
 
-    #change lang if channel has custom language set
+    # change lang if channel has custom language set
     if (trigger.sender and not trigger.sender.is_nick() and
             bot.config.wikipedia.lang_per_channel):
         customlang = re.search('(' + trigger.sender + '):(\w+)',

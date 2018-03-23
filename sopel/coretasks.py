@@ -165,7 +165,7 @@ def handle_names(bot, trigger):
     """Handle NAMES response, happens when joining to channels."""
     names = trigger.split()
 
-    #TODO specific to one channel type. See issue 281.
+    # TODO specific to one channel type. See issue 281.
     channels = re.search('(#\S*)', trigger.raw)
     if not channels:
         return
@@ -544,7 +544,7 @@ def sasl_success(bot, trigger):
     bot.write(('CAP', 'END'))
 
 
-#Live blocklist editing
+# Live blocklist editing
 
 
 @sopel.module.commands('blocks')

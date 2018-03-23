@@ -51,11 +51,11 @@ def collectlines(bot, trigger):
     bot.memory['find_lines'][trigger.sender][Identifier(trigger.nick)] = templist
 
 
-#Match nick, s/find/replace/flags. Flags and nick are optional, nick can be
-#followed by comma or colon, anything after the first space after the third
-#slash is ignored, you can escape slashes with backslashes, and if you want to
-#search for an actual backslash followed by an actual slash, you're shit out of
-#luck because this is the fucking regex of death as it is.
+# Match nick, s/find/replace/flags. Flags and nick are optional, nick can be
+# followed by comma or colon, anything after the first space after the third
+# slash is ignored, you can escape slashes with backslashes, and if you want to
+# search for an actual backslash followed by an actual slash, you're shit out of
+# luck because this is the fucking regex of death as it is.
 @rule(r"""(?:
             (\S+)           # Catch a nick in group 1
           [:,]\s+)?         # Followed by colon/comma and whitespace, if given
@@ -83,8 +83,8 @@ def findandreplace(bot, trigger):
     if Identifier(rnick) not in search_dict[trigger.sender]:
         return
 
-    #TODO rest[0] is find, rest[1] is replace. These should be made variables of
-    #their own at some point.
+    # TODO rest[0] is find, rest[1] is replace. These should be made variables of
+    # their own at some point.
     rest = [trigger.group(2), trigger.group(3)]
     rest[0] = rest[0].replace(r'\/', '/')
     rest[1] = rest[1].replace(r'\/', '/')
