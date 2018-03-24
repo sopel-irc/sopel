@@ -216,9 +216,17 @@ class Bot(asynchat.async_chat):
                                            suppress_ragged_eofs=True,
                                            cert_reqs=ssl.CERT_REQUIRED,
                                            ca_certs=self.ca_certs)
-                try:
-                    ssl.match_hostname(self.ssl.getpeercert(), self.config.core.host)
-                except ssl.CertificateError:
+                # try to handle both names in config, certificate and CNAMEs
+                hosts_to_match = [self.config.core.host] + self._get_cnames(self.config.core.host)
+                has_matched = False
+                for hostname in hosts_to_match:
+                    try:
+                        ssl.match_hostname(self.ssl.getpeercert(), hostname)
+                        has_matched = True
+                        break
+                    except ssl.CertificateError:
+                        pass
+                if not has_matched:
                     stderr("Invalid certficate, hostname mismatch!")
                     os.unlink(self.config.core.pid_file_path)
                     os._exit(1)
