@@ -228,7 +228,8 @@ class Bot(asynchat.async_chat):
                         pass
                 if not has_matched:
                     stderr("Invalid certficate, hostname mismatch!")
-                    os.unlink(self.config.core.pid_file_path)
+                    if hasattr(self.config.core, 'pid_file_path'):
+                        os.unlink(self.config.core.pid_file_path)
                     os._exit(1)
             self.set_socket(self.ssl)
 
