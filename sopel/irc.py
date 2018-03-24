@@ -246,6 +246,26 @@ class Bot(asynchat.async_chat):
         ping_thread.daemon = True
         ping_thread.start()
 
+    def _get_cnames(self, domain):
+        """
+        Determine the CNAMEs for a given domain.
+
+        :param domain: domain to check
+        :type domain: str
+        :returns: list (of str)
+        """
+        import dns.resolver
+        cnames = []
+        try:
+            answer = dns.resolver.query(domain, "CNAME")
+        except dns.resolver.NoAnswer:
+            return []
+        for data in answer:
+            if isinstance(data, dns.rdtypes.ANY.CNAME.CNAME):
+                cname = data.to_text()[:-1]
+                cnames.append(cname)
+        return cnames
+
     def _timeout_check(self):
         while self.connected or self.connecting:
             if (datetime.now() - self.last_ping_time).seconds > int(self.config.core.timeout):
