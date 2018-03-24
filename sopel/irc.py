@@ -200,6 +200,11 @@ class Bot(asynchat.async_chat):
         self.close()
 
     def handle_connect(self):
+        """
+        Connect to IRC server, handle TLS and authenticate
+        user if an account exists.
+        """
+        # handle potential TLS connection
         if self.config.core.use_ssl and has_ssl:
             if not self.config.core.verify_ssl:
                 self.ssl = ssl.wrap_socket(self.socket,
@@ -224,12 +229,14 @@ class Bot(asynchat.async_chat):
         # 421 Unknown command, which we'll ignore
         self.write(('CAP', 'LS', '302'))
 
+        # authenticate account if needed
         if self.config.core.auth_method == 'server':
             password = self.config.core.auth_password
             self.write(('PASS', password))
         self.write(('NICK', self.nick))
         self.write(('USER', self.user, '+iw', self.nick), self.name)
 
+        # maintain connection
         stderr('Connected.')
         self.last_ping_time = datetime.now()
         timeout_check_thread = threading.Thread(target=self._timeout_check)
