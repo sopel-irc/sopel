@@ -1,4 +1,4 @@
 [submodule "docs/wiki"]
 	path = docs/wiki
-	url = git://github.com/embolalia/willie.wiki.git
+	url = git://github.com/sopel-irc/sopel.wiki.git
 	branch = master
