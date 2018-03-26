@@ -9,4 +9,4 @@ def invite(bot, trigger):
         return bot.reply("I'm not a channel operator!")
     if not trigger.group(3) or not trigger.group(4):
         return bot.reply("Usage: .invite user #channel (the bot must be operator and in the invited channel)")
-    bot.invite(trigger.group(3), trigger.group(4))
+    bot.write(['INVITE', trigger.group(3), trigger.group(4)])
