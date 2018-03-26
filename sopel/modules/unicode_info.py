@@ -4,6 +4,7 @@
 # Copyright 2008, Sean B. Palmer, inamidst.com
 # Licensed under the Eiffel Forum License 2.
 from __future__ import unicode_literals, absolute_import, print_function, division
+
 import unicodedata
 import sys
 from sopel.module import commands, example, NOLIMIT
