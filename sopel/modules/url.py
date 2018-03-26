@@ -31,6 +31,7 @@ url_finder = None
 # just keep downloading until there's no more memory. 640k ought to be enough
 # for anybody.
 max_bytes = 655360
+chunk_size = 65536
 
 
 class UrlSection(StaticSection):
@@ -226,15 +227,31 @@ def check_callbacks(bot, trigger, url, run=True):
 
 
 def find_title(url, verify=True):
+    """
+    Return the title for the given URL.
+    Will read ``chunk_size`` bytes of data until the title is found by parsing
+    the HTML or we hit ``max_bytes`` read total.
+    """
+
+    length = 0
     parser = TitleParser()
+
     try:
-        with requests.get(url, verify=verify, headers=default_headers, timeout=2, stream=True) as r:
-            r.encoding = 'utf-8'
-            chunk = next(r.iter_content(max_bytes, decode_unicode=True))
+        r = requests.get(url, verify=verify, headers=default_headers, timeout=2, stream=True)
+        r.encoding = 'utf-8'
+        stream = r.iter_content(chunk_size, decode_unicode=True)
+
+        for chunk in stream:
             parser.feed(chunk)
+            length += chunk_size
+            if parser.title or length > max_bytes:
+                break
+
     except Exception as e:
         # If we had a logger, this would be a place to use it
         return None
+    finally:
+        r.close()
 
     # Truncate long titles with ellipsis
     title = parser.title
