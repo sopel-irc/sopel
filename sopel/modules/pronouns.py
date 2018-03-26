@@ -48,7 +48,6 @@ def pronouns(bot, trigger):
         elif trigger.group(2) == bot.nick:
             # You can stuff an entry into the database manually for your bot's
             # gender, but like… it's a bot.
-            # https://twitter.com/hopefulcyborg/status/728231494116773889
             bot.say(
                 "I am a bot. Beep boop. My pronouns are it/it/its/its/itself. "
                 "See http://pronoun.is/it for examples."
