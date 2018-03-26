@@ -11,10 +11,23 @@ from __future__ import unicode_literals, absolute_import, print_function, divisi
 from sopel.module import commands, example, OP
 
 @commands('invite')
+@example('.invite jenny')
 @example('.invite converge #sopel')
 def invite(bot, trigger):
-    if bot.privileges[trigger.sender][bot.nick] < OP:
-        return bot.reply("I'm not a channel operator!")
-    if not trigger.group(3) or not trigger.group(4):
-        return bot.reply("Usage: .invite user #channel (the bot must be operator and in the invited channel)")
-    bot.write(['INVITE', trigger.group(3), trigger.group(4)])
+    """
+    Invite the given user to the current channel, or (with optional
+    second argument) another channel that Sopel is in.
+    """
+    if not trigger.group(3):
+        return bot.reply("Who should I invite?")
+    nick = trigger.group(3)
+    if trigger.group(4):
+        channel = trigger.group(4)
+    else:
+        channel = trigger.sender
+    try:
+        if bot.privileges[channel][bot.nick] < OP:
+            return bot.reply("I'm not a channel operator!")
+    except KeyError:
+        return bot.reply("I'm not in {}!".format(channel))
+    bot.write(['INVITE', nick, channel])
