@@ -1,7 +1,5 @@
-|version| |build| |issues| |coverage-status| |license|
-
-Introduction
-------------
+Introduction |version| |build| |issues| |coverage-status| |license|
+-------------------------------------------------------------------
 
 Sopel is a simple, lightweight, open source, easy-to-use IRC Utility bot,
 written in Python. It's designed to be easy to use, run and extend.
