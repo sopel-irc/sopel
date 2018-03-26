@@ -249,10 +249,6 @@ class Sopel(irc.Bot):
         for func in urls:
             self.memory['url_callbacks'][func.url_regex] = func
 
-    def invite(self, nick, channel):
-        """Invite nickname to the bots channel"""
-        self.write(['INVITE', nick, channel])
-
     def part(self, channel, msg=None):
         """Part a channel."""
         self.write(['PART', channel], msg)
