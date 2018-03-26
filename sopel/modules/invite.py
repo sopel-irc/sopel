@@ -8,9 +8,10 @@ https://sopel.chat
 """
 from __future__ import unicode_literals, absolute_import, print_function, division
 
-from sopel.module import commands, require_owner, OP
+from sopel.module import commands, example, OP
 
 @commands('invite')
+@example('.invite converge #sopel')
 def invite(bot, trigger):
     if bot.privileges[trigger.sender][bot.nick] < OP:
         return bot.reply("I'm not a channel operator!")
