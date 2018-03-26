@@ -28,7 +28,7 @@ from sopel import __version__
 
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
-extensions = ['sphinx.ext.autodoc', 'sphinx.ext.intersphinx']
+extensions = ['sphinx.ext.autodoc', 'sphinx.ext.intersphinx', 'sphinxcontrib.autoprogram']
 intersphinx_mapping = {'python': ('https://docs.python.org/3', None)}
 
 # Add any paths that contain templates here, relative to this directory.
@@ -218,6 +218,8 @@ latex_documents = [
 # (source start file, name, description, authors, manual section).
 man_pages = [
     ('index', 'sopel', u'Sopel IRC Bot Documentation',
+     [u'Elsie Powell, et al.'], 3),
+    ('cmd', 'sopel', u'Sopel IRC Bot',
      [u'Elsie Powell, et al.'], 1)
 ]
 

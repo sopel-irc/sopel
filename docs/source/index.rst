@@ -22,7 +22,8 @@ Documentation
 
 .. toctree::
     :titlesonly:
-
+    
+    cmd
     plugin
     bot
     trigger

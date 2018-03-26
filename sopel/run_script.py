@@ -52,37 +52,42 @@ def find_config(name, extension='.cfg'):
 
     return os.path.join(homedir, name)
 
+    
+def command_parser():
+    parser = argparse.ArgumentParser(description='Sopel IRC Bot',
+                                     usage='%(prog)s [options]')
+    parser.add_argument('-c', '--config', metavar='filename',
+                        help='use a specific configuration file')
+    parser.add_argument("-d", '--fork', action="store_true",
+                        dest="daemonize", help="Daemonize sopel")
+    parser.add_argument("-q", '--quit', action="store_true", dest="quit",
+                        help="Gracefully quit Sopel")
+    parser.add_argument("-k", '--kill', action="store_true", dest="kill",
+                        help="Kill Sopel")
+    parser.add_argument("-l", '--list', action="store_true",
+                        dest="list_configs",
+                        help="List all config files found")
+    parser.add_argument("-m", '--migrate', action="store_true",
+                        dest="migrate_configs",
+                        help="Migrate config files to the new format")
+    parser.add_argument('--quiet', action="store_true", dest="quiet",
+                        help="Supress all output")
+    parser.add_argument('-w', '--configure-all', action='store_true',
+                        dest='wizard', help='Run the configuration wizard.')
+    parser.add_argument('--configure-modules', action='store_true',
+                        dest='mod_wizard', help=(
+                            'Run the configuration wizard, but only for the '
+                            'module configuration options.'))
+    parser.add_argument('-v', '--version', action="store_true",
+                        dest="version", help="Show version number and exit")
+    return parser
+
 
 def main(argv=None):
     global homedir
     # Step One: Parse The Command Line
     try:
-        parser = argparse.ArgumentParser(description='Sopel IRC Bot',
-                                         usage='%(prog)s [options]')
-        parser.add_argument('-c', '--config', metavar='filename',
-                            help='use a specific configuration file')
-        parser.add_argument("-d", '--fork', action="store_true",
-                            dest="daemonize", help="Daemonize sopel")
-        parser.add_argument("-q", '--quit', action="store_true", dest="quit",
-                            help="Gracefully quit Sopel")
-        parser.add_argument("-k", '--kill', action="store_true", dest="kill",
-                            help="Kill Sopel")
-        parser.add_argument("-l", '--list', action="store_true",
-                            dest="list_configs",
-                            help="List all config files found")
-        parser.add_argument("-m", '--migrate', action="store_true",
-                            dest="migrate_configs",
-                            help="Migrate config files to the new format")
-        parser.add_argument('--quiet', action="store_true", dest="quiet",
-                            help="Supress all output")
-        parser.add_argument('-w', '--configure-all', action='store_true',
-                            dest='wizard', help='Run the configuration wizard.')
-        parser.add_argument('--configure-modules', action='store_true',
-                            dest='mod_wizard', help=(
-                                'Run the configuration wizard, but only for the '
-                                'module configuration options.'))
-        parser.add_argument('-v', '--version', action="store_true",
-                            dest="version", help="Show version number and exit")
+        parser = command_parser()
         if argv:
             opts = parser.parse_args(argv)
         else:
