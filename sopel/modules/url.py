@@ -206,8 +206,8 @@ def find_title(url, verify=True):
     content = title_tag_data.sub(r'<\1title>', content)
     content = quoted_title.sub('', content)
 
-    start = content.find('<title>')
-    end = content.find('</title>')
+    start = content.rfind('<title>')
+    end = content.rfind('</title>')
     if start == -1 or end == -1:
         return
     title = web.decode(content[start + 7:end])
