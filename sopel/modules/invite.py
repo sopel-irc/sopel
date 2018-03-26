@@ -24,6 +24,8 @@ def invite(bot, trigger):
     if trigger.group(4):
         channel = trigger.group(4)
     else:
+        if trigger.is_privmsg:
+            return bot.say("Channel is required (.invite user #channel) when inviting from queries.")
         channel = trigger.sender
     try:
         if bot.privileges[channel][bot.nick] < OP:
