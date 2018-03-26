@@ -64,9 +64,9 @@ def say_snippet(bot, server, query, show_url=True):
     try:
         snippet = mw_snippet(server, query)
     except KeyError:
-        if not show_url:
-            return
-        return bot.say("[WIKIPEDIA] Error fetching snippet for \"{}\".".format(page_name))
+        if show_url:
+            bot.say("[WIKIPEDIA] Error fetching snippet for \"{}\".".format(page_name))
+        return
     msg = '[WIKIPEDIA] {} | "{}"'.format(page_name, snippet)
     if show_url:
         msg = msg + ' | https://{}/wiki/{}'.format(server, query)
