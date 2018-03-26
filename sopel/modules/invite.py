@@ -1,5 +1,12 @@
 # coding=utf-8
-# Invite module developed by João Vanzuita - https://github.com/converge/
+"""
+invite.py - Sopel invite module
+Copyright © 2016, João Vanzuita, https://github.com/converge
+Licensed under the Eiffel Forum License 2.
+
+http://sopel.chat
+"""
+from __future__ import unicode_literals, absolute_import, print_function, division
 
 from sopel.module import commands, require_owner, OP
 
