@@ -60,7 +60,7 @@ def translate(text, in_lang='auto', out_lang='en', verify_ssl=True):
 
     try:
         language = data[2]  # -2][0][0]
-    except:
+    except IndexError:
         language = '?'
 
     return ''.join(x[0] for x in data[0]), language
@@ -169,7 +169,7 @@ def mangle(bot, trigger):
     if trigger.group(2) is None:
         try:
             phrase = (mangle_lines[trigger.sender.lower()], '')
-        except:
+        except KeyError:
             bot.reply("What do you want me to mangle?")
             return
     else:
@@ -182,7 +182,7 @@ def mangle(bot, trigger):
         try:
             phrase = translate(phrase[0], 'en', lang,
                                verify_ssl=verify_ssl)
-        except:
+        except Exception:  # TODO: Be specific
             phrase = False
         if not phrase:
             phrase = backup
@@ -190,7 +190,7 @@ def mangle(bot, trigger):
 
         try:
             phrase = translate(phrase[0], lang, 'en', verify_ssl=verify_ssl)
-        except:
+        except Exception:  # TODO: Be specific
             phrase = backup
             continue
 

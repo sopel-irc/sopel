@@ -152,7 +152,7 @@ def process_urls(bot, trigger, urls):
             # Magic stuff to account for international domain names
             try:
                 url = web.iri_to_uri(url)
-            except:
+            except Exception:  # TODO: Be specific
                 pass
             # First, check that the URL we got doesn't match
             matched = check_callbacks(bot, trigger, url, False)
@@ -232,6 +232,7 @@ def get_hostname(url):
     if slash != -1:
         hostname = hostname[:slash]
     return hostname
+
 
 if __name__ == "__main__":
     from sopel.test_tools import run_example_tests

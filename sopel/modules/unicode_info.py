@@ -29,7 +29,7 @@ def codepoint(bot, trigger):
             arg = arg[2:]
         try:
             arg = unichr(int(arg, 16))
-        except:
+        except Exception:  # TODO: Be specific
             bot.reply("That's not a valid code point.")
             return NOLIMIT
 
@@ -47,6 +47,7 @@ def codepoint(bot, trigger):
     else:
         template = 'U+%s %s (\xe2\x97\x8c%s)'
     bot.say(template % (point, name, arg))
+
 
 if __name__ == "__main__":
     from sopel.test_tools import run_example_tests

@@ -147,7 +147,7 @@ def url_handler(bot, trigger):
                 result = bot.memory['safety_cache'][trigger]
             positives = result['positives']
             total = result['total']
-    except Exception:
+    except Exception:  # TODO: Be specific
         LOGGER.debug('Error from checking URL with VT.', exc_info=True)
         pass  # Ignoring exceptions with VT so MalwareDomains will always work
 

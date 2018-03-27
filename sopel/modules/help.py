@@ -19,9 +19,11 @@ from sopel.module import commands, rule, example, priority
 
 logger = get_logger(__name__)
 
+
 def setup(bot):
     global help_prefix
     help_prefix = bot.config.core.help_prefix
+
 
 @rule('$nick' '(?i)(help|doc) +([A-Za-z]+)(?:\?+)?$')
 @example('.help tell')
@@ -80,9 +82,9 @@ def help(bot, trigger):
 
 def create_list(bot, msg):
     msg = 'Command listing for {}@{}\n\n'.format(bot.nick, bot.config.core.host) + msg
-    payload = { "content": msg }
+    payload = {"content": msg}
     headers = {'Content-type': 'application/json', 'Accept': 'application/json'}
-    
+
     try:
         result = requests.post('https://ptpb.pw/', json=payload, headers=headers)
     except requests.RequestException:
@@ -104,5 +106,5 @@ def help2(bot, trigger):
         "Hi, I'm a bot. Say {1}commands to me in private for a list "
         "of my commands, or see http://sopel.chat for more "
         "general details. My owner is {0}."
-    .format(bot.config.core.owner, help_prefix))
+        .format(bot.config.core.owner, help_prefix))
     bot.reply(response)

@@ -30,11 +30,6 @@ import os.path
 import sys
 from sopel.tools import get_input
 
-try:
-    import configparser
-except ImportError:
-    import ConfigParser as configparser
-
 if sys.version_info.major >= 3:
     unicode = str
     basestring = (str, bytes)

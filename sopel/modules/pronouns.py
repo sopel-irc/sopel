@@ -71,7 +71,7 @@ def say_pronouns(bot, nick, pronouns):
 @example('.setpronouns they/them/their/theirs/themselves')
 def set_pronouns(bot, trigger):
     if trigger.group(2):
-        pronouns = trigger.group(2)    
+        pronouns = trigger.group(2)
         disambig = ''
         if pronouns == 'they':
             disambig = ' You can also use they/.../themself, if you prefer.'
@@ -83,10 +83,10 @@ def set_pronouns(bot, trigger):
             pronouns = KNOWN_SETS.get(pronouns)
             if not pronouns:
                 bot.say(
-                "I'm sorry, I don't know those pronouns. You can give me a set "
-                "I don't know by formatting it "
-                "subject/object/possessive-determiner/posessive-pronoun/"
-                "reflexive, as in they/them/their/theirs/themselves"
+                    "I'm sorry, I don't know those pronouns. You can give me a set "
+                    "I don't know by formatting it "
+                    "subject/object/possessive-determiner/posessive-pronoun/"
+                    "reflexive, as in they/them/their/theirs/themselves"
                 )
                 return
         bot.db.set_nick_value(trigger.nick, 'pronouns', pronouns)

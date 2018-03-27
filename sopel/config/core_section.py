@@ -27,7 +27,7 @@ def _find_certs():
         '/etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem',  # RHEL 7 / CentOS
         '/etc/pki/tls/cacert.pem',  # OpenELEC
         '/etc/ssl/ca-bundle.pem',  # OpenSUSE
-        ]
+    ]
     for certs in locations:
         if os.path.isfile(certs):
             return certs

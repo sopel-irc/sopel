@@ -26,7 +26,7 @@ def isup(bot, trigger):
 
     try:
         response = web.get(site)
-    except Exception:
+    except Exception:  # TODO: Be specific
         bot.say(site + ' looks down from here.')
         return
 

@@ -62,6 +62,7 @@ def wikt(word):
             break
     return etymology, definitions
 
+
 parts = ('preposition', 'particle', 'noun', 'verb',
     'adjective', 'adverb', 'interjection')
 

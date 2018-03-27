@@ -49,7 +49,7 @@ def auth_after_register(bot):
             'AUTHSERV auth',
             account + ' ' + password
         ))
-    
+
     elif bot.config.core.auth_method == 'Q':
         account = bot.config.core.auth_username
         password = bot.config.core.auth_password

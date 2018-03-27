@@ -52,6 +52,8 @@ def _version_info(version=__version__):
     version_type = namedtuple('version_info',
                               'major, minor, micro, releaselevel, serial')
     return version_type(major, minor, micro, level, serial)
+
+
 version_info = _version_info()
 
 
@@ -80,11 +82,11 @@ def run(config, pid_file, daemon=False):
             p.run(config.core.host, int(config.core.port))
         except KeyboardInterrupt:
             break
-        except Exception:
+        except Exception:  # TODO: Be specific
             trace = traceback.format_exc()
             try:
                 stderr(trace)
-            except:
+            except Exception:  # TODO: Be specific
                 pass
             logfile = open(os.path.join(config.core.logdir, 'exceptions.log'), 'a')
             logfile.write('Critical exception in core')

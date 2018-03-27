@@ -182,6 +182,7 @@ def mass(bot, trigger):
 
     bot.reply('{} = {}'.format(metric_part, stupid_part))
 
+
 if __name__ == "__main__":
     from sopel.test_tools import run_example_tests
     run_example_tests(__file__)
