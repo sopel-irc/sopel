@@ -60,7 +60,7 @@ def temperature(bot, trigger):
     if kelvin >= 0:
         bot.reply("{:.2f}°C = {:.2f}°F = {:.2f}K".format(celsius, fahrenheit, kelvin))
     else:
-        bot.reply("Physically impossible temperature. Do you live in an imaginary world?")
+        bot.reply("Physically impossible temperature.")
 
 
 @commands('length', 'distance')
