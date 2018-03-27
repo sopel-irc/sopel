@@ -19,6 +19,9 @@ from sopel.module import commands, rule, example, priority
 
 logger = get_logger(__name__)
 
+def setup(bot):
+    global help_prefix
+    help_prefix = bot.config.core.help_prefix
 
 @rule('$nick' '(?i)(help|doc) +([A-Za-z]+)(?:\?+)?$')
 @example('.help tell')
@@ -70,9 +73,9 @@ def help(bot, trigger):
             if not url:
                 return
             bot.memory['command-list'] = (len(bot.command_groups), url)
-        bot.say("I've posted a list of my commands at {} - You can see "
-                "more info about any of these commands by doing .help "
-                "<command> (e.g. .help time)".format(url))
+        bot.say("I've posted a list of my commands at {0} - You can see "
+                "more info about any of these commands by doing {1}help "
+                "<command> (e.g. {1}help time)".format(url, help_prefix))
 
 
 def create_list(bot, msg):
@@ -98,8 +101,8 @@ def create_list(bot, msg):
 @priority('low')
 def help2(bot, trigger):
     response = (
-        'Hi, I\'m a bot. Say ".commands" to me in private for a list ' +
-        'of my commands, or see http://sopel.chat for more ' +
-        'general details. My owner is %s.'
-    ) % bot.config.core.owner
+        "Hi, I'm a bot. Say {1}commands to me in private for a list "
+        "of my commands, or see http://sopel.chat for more "
+        "general details. My owner is {0}."
+    .format(bot.config.core.owner, help_prefix))
     bot.reply(response)
