@@ -10,10 +10,12 @@ import re
 
 import sys
 if sys.version_info.major < 3:
+    from urllib import quote as _quote
     from urlparse import unquote as _unquote
+    quote = lambda s: _quote(s.encode('utf-8')).decode('utf-8')
     unquote = lambda s: _unquote(s.encode('utf-8')).decode('utf-8')
 else:
-    from urllib.parse import unquote
+    from urllib.parse import quote, unquote
 
 REDIRECT = re.compile(r'^REDIRECT (.*)')
 
@@ -60,7 +62,7 @@ def mw_search(server, query, num):
 
 def say_snippet(bot, server, query, show_url=True):
     page_name = query.replace('_', ' ')
-    query = query.replace(' ', '_')
+    query = quote(query.replace(' ', '_'))
     try:
         snippet = mw_snippet(server, query)
     except KeyError:
