@@ -222,7 +222,7 @@ class ListAttribute(BaseValidated):
         self.strip = strip
 
     def parse(self, value):
-        value = value.split(',')
+        value = list(filter(None, value.split(',')))
         if self.strip:
             return [v.strip() for v in value]
         else:
