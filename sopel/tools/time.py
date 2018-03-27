@@ -5,8 +5,26 @@ from __future__ import unicode_literals, absolute_import, print_function, divisi
 import datetime
 try:
     import pytz
+    utc = pytz.timezone('UTC')
 except:
     pytz = False
+
+    class _UTC(datetime.tzinfo):
+        """UTC default implementation.
+
+        Using this as a tzinfo over None has the advantage, that it has the correct
+        timezone abbreviation"""
+
+        def utcoffset(self, dt):
+            return datetime.datetime.timedelta(0)
+
+        def tzname(self, dt):
+            return "UTC"
+
+        def dst(self, dt):
+            return datetime.datetime.timedelta(0)
+
+    utc = _UTC()
 
 
 def validate_timezone(zone):
@@ -43,7 +61,7 @@ def validate_timezone(zone):
 def validate_format(tformat):
     """Returns the format, if valid, else None"""
     try:
-        time = datetime.datetime.utcnow()
+        time = datetime.datetime.now(utc)
         time.strftime(tformat)
     except:
         raise ValueError('Invalid time format')
@@ -132,13 +150,10 @@ def format_time(db=None, config=None, zone=None, nick=None, channel=None,
         tformat = '%Y-%m-%d - %T%Z'
 
     if not time:
-        time = datetime.datetime.utcnow()
+        time = datetime.datetime.now(utc)
 
-    if not pytz or not zone:
-        return time.strftime(tformat)
-    else:
-        if not time.tzinfo:
-            utc = pytz.timezone('UTC')
-            time = utc.localize(time)
+    if pytz and zone:
         zone = pytz.timezone(zone)
-        return time.astimezone(zone).strftime(tformat)
+    if not zone:
+        zone = utc
+    return time.astimezone(zone).strftime(tformat)
