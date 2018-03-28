@@ -34,7 +34,7 @@ def etymology(word):
         sentence = ' '.join(words) + ' [...]'
 
     sentence = '"' + sentence.replace('"', "'") + '"'
-    return sentence + ' - ' + (etyuri % word)
+    return sentence + ' - ' + (ETYURI % word)
 
 
 @commands('ety')
@@ -46,7 +46,7 @@ def f_etymology(bot, trigger):
     try:
         result = etymology(word)
     except IOError:
-        msg = "Can't connect to etymonline.com (%s)" % (etyuri % word)
+        msg = "Can't connect to etymonline.com (%s)" % (ETYURI % word)
         bot.msg(trigger.sender, msg)
         return NOLIMIT
     except (AttributeError, TypeError):
