@@ -93,7 +93,7 @@ def f_remind(bot, trigger):
     tellee = trigger.group(3).rstrip('.,:;')
     msg = trigger.group(2).lstrip(tellee).lstrip()
 
-    if not msg:
+    if not msg or len(msg) < 1:
         bot.reply("%s %s what?" % (verb, tellee))
         return
 
