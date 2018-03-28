@@ -12,7 +12,6 @@ dispatch function in bot.py and making it easier to maintain.
 # Licensed under the Eiffel Forum License 2.
 from __future__ import unicode_literals, absolute_import, print_function, division
 
-
 from random import randint
 import re
 import sys

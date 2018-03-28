@@ -7,6 +7,7 @@ Licensed under the Eiffel Forum License 2.
 This module is an attempt to implement at least some of the functionallity of Debian's meetbot
 """
 from __future__ import unicode_literals, absolute_import, print_function, division
+
 import time
 import os
 from sopel.config.types import (

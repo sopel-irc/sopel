@@ -25,6 +25,7 @@ As an example, if one wanted to define the ``[spam]`` section as having an
 """
 
 from __future__ import unicode_literals, absolute_import, print_function, division
+
 import os.path
 import sys
 from sopel.tools import get_input

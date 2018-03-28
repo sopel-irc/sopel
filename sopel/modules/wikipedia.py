@@ -2,6 +2,7 @@
 # Copyright 2013 Elsie Powell - embolalia.com
 # Licensed under the Eiffel Forum License 2.
 from __future__ import unicode_literals, absolute_import, print_function, division
+
 from sopel import web, tools
 from sopel.config.types import StaticSection, ValidatedAttribute
 from sopel.module import NOLIMIT, commands, example, rule
