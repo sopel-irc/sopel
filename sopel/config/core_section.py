@@ -12,12 +12,26 @@ from sopel.tools import Identifier
 
 
 def _find_certs():
-    certs = '/etc/pki/tls/cert.pem'
-    if not os.path.isfile(certs):
-        certs = '/etc/ssl/certs/ca-certificates.crt'
-        if not os.path.isfile(certs):
-            return None
-    return certs
+    """
+    Find the TLS root CA store.
+
+    :returns: str (path to file)
+    """
+    # check if the root CA store is at a known location
+    locations = [
+        '/etc/pki/tls/cert.pem',  # best first guess
+        '/etc/ssl/certs/ca-certificates.crt',  # Debian
+        '/etc/ssl/cert.pem',  # FreeBSD base OpenSSL
+        '/usr/local/openssl/cert.pem',  # FreeBSD userland OpenSSL
+        '/etc/pki/tls/certs/ca-bundle.crt',  # RHEL 6 / Fedora
+        '/etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem',  # RHEL 7 / CentOS
+        '/etc/pki/tls/cacert.pem',  # OpenELEC
+        '/etc/ssl/ca-bundle.pem',  # OpenSUSE
+        ]
+    for certs in locations:
+        if os.path.isfile(certs):
+            return certs
+    return None
 
 
 def configure(config):
