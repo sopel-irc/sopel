@@ -23,6 +23,7 @@ def formatnumber(n):
         parts.insert(i, ',')
     return ''.join(parts)
 
+
 r_bing = re.compile(r'<h3><a href="([^"]+)"')
 
 
@@ -33,19 +34,21 @@ def bing_search(query, lang='en-GB'):
     if m:
         return m.group(1)
 
+
 r_duck = re.compile(r'nofollow" class="[^"]+" href="(?!(?:https?:\/\/r\.search\.yahoo)|(?:https?:\/\/duckduckgo\.com\/y\.js))(?:\/l\/\?kh=-1&amp;uddg=)(.*?)">')
 
 
 def duck_search(query):
     query = query.replace('!', '')
     uri = 'http://duckduckgo.com/html/?q=%s&kl=uk-en' % query
-    bytes = web.get(uri,headers={'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.87 Safari/537.36'})
+    bytes = web.get(uri, headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.87 Safari/537.36'})
     if 'web-result' in bytes:  # filter out the adds on top of the page
         bytes = bytes.split('web-result')[1]
     m = r_duck.search(bytes)
     if m:
         unquoted_m = unquote(m.group(1))
         return web.decode(unquoted_m)
+
 
 # Alias google_search to duck_search
 google_search = duck_search

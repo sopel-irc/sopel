@@ -52,8 +52,10 @@ def exchange(bot, trigger):
     amount, of, to = match.groups()
     try:
         amount = float(amount)
-    except:
+    except ValueError:
         bot.reply("Sorry, I didn't understand the input.")
+    except OverflowError:
+        bot.reply("Sorry, input amount was out of range.")
     display(bot, amount, of, to)
 
 
@@ -69,7 +71,7 @@ def display(bot, amount, of, to):
         if not to_name:
             bot.reply("Unknown currency: %s" % to)
             return
-    except Exception:
+    except Exception:  # TODO: Be specific
         bot.reply("Something went wrong while I was getting the exchange rate.")
         return NOLIMIT
 
@@ -90,8 +92,11 @@ def bitcoin(bot, trigger):
 
     try:
         amount = float(amount)
-    except:
+    except ValueError:
         bot.reply("Sorry, I didn't understand the input.")
+        return NOLIMIT
+    except OverflowError:
+        bot.reply("Sorry, input amount was out of range.")
         return NOLIMIT
 
     display(bot, amount, 'BTC', to)

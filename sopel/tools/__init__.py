@@ -229,7 +229,7 @@ class OutputRedirect(object):
                     sys.__stderr__.write(string)
                 else:
                     sys.__stdout__.write(string)
-            except:
+            except Exception:  # TODO: Be specific
                 pass
 
         with codecs.open(self.logpath, 'ab', encoding="utf8",

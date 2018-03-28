@@ -21,7 +21,7 @@ from sopel.tools.time import get_timezone, format_time
 
 try:
     import pytz
-except:
+except ImportError:
     pytz = None
 
 
@@ -79,6 +79,7 @@ def setup(bot):
     targs = (bot,)
     t = threading.Thread(target=monitor, args=targs)
     t.start()
+
 
 scaling = collections.OrderedDict([
     ('years', 365.25 * 24 * 3600),

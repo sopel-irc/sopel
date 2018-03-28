@@ -16,7 +16,7 @@ class IrcLoggingHandler(logging.Handler):
             self._bot.msg(self._channel, msg)
         except (KeyboardInterrupt, SystemExit):
             raise
-        except:
+        except Exception:  # TODO: Be specific
             self.handleError(record)
 
 

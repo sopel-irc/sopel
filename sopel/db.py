@@ -23,7 +23,7 @@ def _deserialize(value):
     # ignore json parsing errors
     try:
         value = json.loads(value)
-    except:
+    except ValueError:
         pass
     return value
 
@@ -71,7 +71,7 @@ class SopelDB(object):
             self.execute('SELECT * FROM nicknames;')
             self.execute('SELECT * FROM nick_values;')
             self.execute('SELECT * FROM channel_values;')
-        except:
+        except Exception:  # TODO: Be specific
             pass
         else:
             return

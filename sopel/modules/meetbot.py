@@ -128,7 +128,7 @@ def ismeetingrunning(channel):
             return True
         else:
             return False
-    except:
+    except KeyError:
         return False
 
 
@@ -139,7 +139,7 @@ def ischair(nick, channel):
             return True
         else:
             return False
-    except:
+    except KeyError:
         return False
 
 
@@ -178,7 +178,7 @@ def startmeeting(bot, trigger):
     if not os.path.isdir(meeting_log_path + trigger.sender):
         try:
             os.makedirs(meeting_log_path + trigger.sender)
-        except Exception:
+        except Exception:  # TODO: Be specific
             bot.say("Can't create log directory for this channel, meeting not started!")
             meetings_dict[trigger.sender] = Ddict(dict)
             raise
@@ -344,7 +344,7 @@ def meetinglink(bot, trigger):
         link = "http://" + link
     try:
         title = find_title(link, verify=bot.config.core.verify_ssl)
-    except:
+    except Exception:  # TODO: Be specific
         title = ''
     logplain('LINK: %s [%s]' % (link, title), trigger.sender)
     logHTML_listitem('<a href="%s">%s</a>' % (link, title), trigger.sender)

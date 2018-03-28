@@ -126,8 +126,8 @@ class Bot(asynchat.async_chat):
         if text is not None:
             text = self.safe(text)
         try:
-            self.writing_lock.acquire()  # Blocking lock, can't send two things
-                                         # at a time
+            # Blocking lock, can't send two things at a time
+            self.writing_lock.acquire()
 
             # From RFC2812 Internet Relay Chat: Client Protocol
             # Section 2.3
@@ -304,7 +304,7 @@ class Bot(asynchat.async_chat):
                 # Okay, let's try ISO8859-1
                 try:
                     data = unicode(data, encoding='iso8859-1')
-                except:
+                except UnicodeDecodeError:
                     # Discard line if encoding is unknown
                     return
 

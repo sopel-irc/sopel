@@ -220,8 +220,8 @@ class Sopel(irc.Bot):
             # TODO this should somehow find the right job to remove, rather than
             # clearing the entire queue. Issue #831
             self.scheduler.clear_jobs()
-        if (getattr(obj, '__name__', None) == 'shutdown'
-                and obj in self.shutdown_methods):
+        if (getattr(obj, '__name__', None) == 'shutdown' and
+                    obj in self.shutdown_methods):
             self.shutdown_methods.remove(obj)
 
     def register(self, callables, jobs, shutdowns, urls):
@@ -473,7 +473,7 @@ class Sopel(irc.Bot):
 
         try:
             exit_code = func(sopel, trigger)
-        except Exception:
+        except Exception:  # TODO: Be specific
             exit_code = None
             self.error(trigger)
 

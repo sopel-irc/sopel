@@ -16,8 +16,8 @@ _regex_type = type(re.compile(''))
 
 
 def get_module_description(path):
-    good_file = (os.path.isfile(path) and path.endswith('.py')
-                 and not path.startswith('_'))
+    good_file = (os.path.isfile(path) and
+                 path.endswith('.py') and not path.startswith('_'))
     good_dir = (os.path.isdir(path) and
                 os.path.isfile(os.path.join(path, '__init__.py')))
     if good_file:
@@ -68,7 +68,7 @@ def enumerate_modules(config, show_all=False):
     # TODO does this work with all possible install mechanisms?
     try:
         import sopel_modules
-    except:
+    except Exception:  # TODO: Be specific
         pass
     else:
         for directory in sopel_modules.__path__:

@@ -133,7 +133,7 @@ def update_user_format(bot, trigger):
 
     try:
         timef = format_time(db=bot.db, zone=tz, nick=trigger.nick)
-    except:
+    except Exception:  # TODO: Be specific
         bot.reply("That format doesn't work. Try using"
                   " http://strftime.net to make one.")
         # New format doesn't work. Revert save in database.
@@ -243,7 +243,7 @@ def update_channel_format(bot, trigger):
 
     try:
         timef = format_time(db=bot.db, zone=tz, channel=trigger.sender)
-    except:
+    except Exception:  # TODO: Be specific
         bot.reply("That format doesn't work. Try using"
                   " http://strftime.net to make one.")
         # New format doesn't work. Revert save in database.

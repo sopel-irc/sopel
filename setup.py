@@ -29,6 +29,7 @@ def read_reqs(path):
     with open(path, 'r') as fil:
         return list(fil.readlines())
 
+
 requires = read_reqs('requirements.txt')
 if sys.version_info[0] < 3:
     requires.append('backports.ssl_match_hostname')
