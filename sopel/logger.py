@@ -23,7 +23,7 @@ class IrcLoggingHandler(logging.Handler):
 class ChannelOutputFormatter(logging.Formatter):
     def __init__(self):
         super(ChannelOutputFormatter, self).__init__(
-            fmt='[%(filename)s] %(msg)s'
+            fmt='[%(filename)s] %(message)s'
         )
 
     def formatException(self, exc_info):
