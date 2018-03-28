@@ -51,9 +51,6 @@ def configure(config):
 def setup(bot):
     global url_finder
 
-    # TODO figure out why this is needed, and get rid of it, because really?
-    if not bot:
-        return
     bot.config.define_section('url', UrlSection)
 
     if bot.config.url.exclude:

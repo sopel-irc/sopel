@@ -42,9 +42,6 @@ def configure(config):
 
 
 def setup(bot):
-    if not bot:
-        return  # Because of some weird pytest thing?
-
     bot.config.define_section('ip', GeoipSection)
 
 
