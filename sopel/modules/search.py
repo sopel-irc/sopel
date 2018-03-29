@@ -71,7 +71,8 @@ def duck_api(query):
 
 
 @commands('duck', 'ddg', 'g')
-@example('.duck privacy or .duck !mcwiki obsidian')
+@example('.duck sopel bot', 'https://sopel.chat/')
+@example('.duck wikipedia', 'https://www.wikipedia.org/')
 def duck(bot, trigger):
     """Queries Duck Duck Go for the specified input."""
     query = trigger.group(2)
@@ -96,7 +97,8 @@ def duck(bot, trigger):
 
 
 @commands('search')
-@example('.search nerdfighter')
+@example('.search sopel bot', '- (b), https://sopel.chat/ (d)')
+@example('.search wikipedia', '- (b), https://www.wikipedia.org/ (d)')
 def search(bot, trigger):
     """Searches Bing and Duck Duck Go."""
     if not trigger.group(2):
