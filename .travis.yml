@@ -4,6 +4,10 @@ python:
   - "3.4"
 git:
   submodules: false
+branches:
+  only:
+    - master
+    - /^v?\d+\.\d+(\.\d+)?(-\S*)?$/  # allows building version tags
 sudo: false  # Enables running on faster infrastructure.
 cache:
   directories:
