@@ -16,7 +16,7 @@ if sys.version_info.major >= 3:
     unichr = chr
 
 
-BASE_TUMBOLIA_URI = 'https://tumbolia-two.appspot.com/'
+BASE_TUMBOLIA_URI = 'https://tumbolia-sopel.appspot.com/'
 
 
 @commands('c', 'calc')
