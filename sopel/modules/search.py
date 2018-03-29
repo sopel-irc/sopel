@@ -8,6 +8,7 @@ import re
 from sopel import web
 from sopel.module import commands, example
 import json
+import xmltodict
 import sys
 
 if sys.version_info.major < 3:
@@ -118,13 +119,24 @@ def search(bot, trigger):
 
 
 @commands('suggest')
+@example('.suggest wikip', 'wikipedia')
+@example('.suggest ', 'No query term.')
+@example('.suggest lkashdfiauwgeaef', 'Sorry, no result.')
 def suggest(bot, trigger):
     """Suggest terms starting with given input"""
     if not trigger.group(2):
         return bot.reply("No query term.")
     query = trigger.group(2)
-    uri = 'http://websitedev.de/temp-bin/suggest.pl?q='
-    answer = web.get(uri + query.replace('+', '%2B'))
+    # Using Google isn't necessarily ideal, but at most they'll be able to build
+    # a composite profile of all users on a given instance, not a profile of any
+    # single user. This can be switched out as soon as someone finds (or builds)
+    # an alternative suggestion API.
+    uri = 'https://suggestqueries.google.com/complete/search?output=toolbar&hl=en&q='
+    answer = xmltodict.parse(web.get(uri + query.replace('+', '%2B')))['toplevel']
+    try:
+        answer = answer['CompleteSuggestion'][0]['suggestion']['@data']
+    except TypeError:
+        answer = None
     if answer:
         bot.say(answer)
     else:
