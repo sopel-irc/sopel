@@ -3,10 +3,10 @@
 # Licensed under the Eiffel Forum License 2.
 from __future__ import unicode_literals, absolute_import, print_function, division
 
-from sopel import web, tools
+from sopel import tools
 from sopel.config.types import StaticSection, ValidatedAttribute
 from sopel.module import NOLIMIT, commands, example, rule
-import json
+from requests import get
 import re
 
 import sys
@@ -53,7 +53,7 @@ def mw_search(server, query, num):
                   '&list=search&srlimit=%d&srprop=timestamp&srwhat=text'
                   '&srsearch=') % (server, num)
     search_url += query
-    query = json.loads(web.get(search_url))
+    query = get(search_url).json()
     if 'query' in query:
         query = query['query']['search']
         return [r['title'] for r in query]
@@ -85,7 +85,7 @@ def mw_snippet(server, query):
                    '&action=query&prop=extracts&exintro&explaintext'
                    '&exchars=300&redirects&titles=')
     snippet_url += query
-    snippet = json.loads(web.get(snippet_url))
+    snippet = get(snippet_url).json()
     snippet = snippet['query']['pages']
 
     # For some reason, the API gives the page *number* as the key, so we just
