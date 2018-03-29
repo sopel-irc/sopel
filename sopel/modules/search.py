@@ -28,7 +28,7 @@ r_bing = re.compile(r'<h3><a href="([^"]+)"')
 
 
 def bing_search(query, lang='en-GB'):
-    base = 'http://www.bing.com/search?mkt=%s&q=' % lang
+    base = 'https://www.bing.com/search?mkt=%s&q=' % lang
     bytes = web.get(base + query)
     m = r_bing.search(bytes)
     if m:
@@ -40,7 +40,7 @@ r_duck = re.compile(r'nofollow" class="[^"]+" href="(?!https?:\/\/r\.search\.yah
 
 def duck_search(query):
     query = query.replace('!', '')
-    uri = 'http://duckduckgo.com/html/?q=%s&kl=uk-en' % query
+    uri = 'https://duckduckgo.com/html/?q=%s&kl=us-en' % query
     bytes = web.get(uri, headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.87 Safari/537.36'})
     if 'web-result' in bytes:  # filter out the adds on top of the page
         bytes = bytes.split('web-result')[1]
@@ -62,7 +62,7 @@ def duck_api(query):
     # if the query constains special charactares that aren't urlencoded.
     # So in order to always get a JSON response back the query is urlencoded
     query = quote_plus(query)
-    uri = 'http://api.duckduckgo.com/?q=%s&format=json&no_html=1&no_redirect=1' % query
+    uri = 'https://api.duckduckgo.com/?q=%s&format=json&no_html=1&no_redirect=1' % query
     results = json.loads(web.get(uri))
     if results['Redirect']:
         return results['Redirect']
