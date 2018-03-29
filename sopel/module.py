@@ -449,6 +449,9 @@ class example(object):
             sopel.test_tools.insert_into_module(
                 test, func.__module__, func.__name__, 'test_example'
             )
+            sopel.test_tools.insert_into_module(
+                sopel.test_tools.get_disable_setup(), func.__module__, func.__name__, 'disable_setup'
+            )
 
         record = {
             "example": self.msg,
