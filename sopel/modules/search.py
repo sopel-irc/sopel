@@ -11,9 +11,9 @@ import json
 import sys
 
 if sys.version_info.major < 3:
-    from urllib import quote_plus, unquote
+    from urllib import quote_plus
 else:
-    from urllib.parse import quote_plus, unquote
+    from urllib.parse import quote_plus
 
 
 def formatnumber(n):
@@ -35,7 +35,7 @@ def bing_search(query, lang='en-GB'):
         return m.group(1)
 
 
-r_duck = re.compile(r'nofollow" class="[^"]+" href="(?!(?:https?:\/\/r\.search\.yahoo)|(?:https?:\/\/duckduckgo\.com\/y\.js))(?:\/l\/\?kh=-1&amp;uddg=)(.*?)">')
+r_duck = re.compile(r'nofollow" class="[^"]+" href="(?!https?:\/\/r\.search\.yahoo)(.*?)">')
 
 
 def duck_search(query):
@@ -46,8 +46,7 @@ def duck_search(query):
         bytes = bytes.split('web-result')[1]
     m = r_duck.search(bytes)
     if m:
-        unquoted_m = unquote(m.group(1))
-        return web.decode(unquoted_m)
+        return web.decode(m.group(1))
 
 
 # Alias google_search to duck_search
