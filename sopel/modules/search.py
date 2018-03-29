@@ -24,10 +24,10 @@ def formatnumber(n):
     return ''.join(parts)
 
 
-r_bing = re.compile(r'<h3><a href="([^"]+)"')
+r_bing = re.compile(r'<h2(?: class=" b_topTitle")?><a href="([^"]+)"')
 
 
-def bing_search(query, lang='en-GB'):
+def bing_search(query, lang='en-US'):
     base = 'https://www.bing.com/search?mkt=%s&q=' % lang
     bytes = web.get(base + query)
     m = r_bing.search(bytes)
@@ -95,8 +95,22 @@ def duck(bot, trigger):
         bot.reply("No results found for '%s'." % query)
 
 
+@commands('bing')
+@example('.bing sopel bot', 'https://sopel.chat/')
+def bing(bot, trigger):
+    """Queries Bing for the specified input."""
+    if not trigger.group(2):
+        return bot.reply('.bing what?')
+    query = trigger.group(2)
+    result = bing_search(query)
+    if result:
+        bot.say(result)
+    else:
+        bot.reply("No results found for '%s'." % query)
+
+
 @commands('search')
-@example('.search sopel bot', '- (b), https://sopel.chat/ (d)')
+@example('.search sopel bot', 'https://sopel.chat/ (b, d)')
 def search(bot, trigger):
     """Searches Bing and Duck Duck Go."""
     if not trigger.group(2):
