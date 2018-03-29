@@ -27,6 +27,7 @@ sopel.egg-info/*
 .pydevproject
 
 .cache
+.pytest_cache
 .coverage
 
 # macOS
