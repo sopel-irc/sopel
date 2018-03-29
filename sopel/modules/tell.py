@@ -69,7 +69,7 @@ def setup(self):
     if not os.path.exists(self.tell_filename):
         try:
             f = open(self.tell_filename, 'w')
-        except OSError:
+        except (OSError, IOError):  # Remove IOError when dropping py2 support
             pass
         else:
             f.write('')
