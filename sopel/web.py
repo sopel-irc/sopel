@@ -130,8 +130,9 @@ def head(uri, timeout=20, headers=None, verify_ssl=True):
 def post(uri, query, limit_bytes=None, timeout=20, verify_ssl=True, return_headers=False):
     """Execute an HTTP POST query. Deprecated.
 
-    `uri` is the target URI, and `query` is the POST data. `headers` is a dict
-    of HTTP headers to send with the request.
+    `uri` is the target URI, and `query` is the POST data.
+
+    If `return_headers` is true, returns a tuple of (bytes, headers).
 
     `limit_bytes` is ignored.
 
