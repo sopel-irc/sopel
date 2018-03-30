@@ -61,7 +61,7 @@ def mw_search(server, query, num):
         return None
 
 
-def say_snippet(bot, server, query, show_url=True):
+def say_snippet(bot, trigger, server, query, show_url=True):
     page_name = query.replace('_', ' ')
     query = quote(query.replace(' ', '_'))
     try:
@@ -71,8 +71,11 @@ def say_snippet(bot, server, query, show_url=True):
             bot.say("[WIKIPEDIA] Error fetching snippet for \"{}\".".format(page_name))
         return
     msg = '[WIKIPEDIA] {} | "{}"'.format(page_name, snippet)
+    msg_url = msg + ' | https://{}/wiki/{}'.format(server, query)
+    if msg_url == trigger:  # prevents triggering on another instance of Sopel
+        return
     if show_url:
-        msg = msg + ' | https://{}/wiki/{}'.format(server, query)
+        msg = msg_url
     bot.say(msg)
 
 
@@ -102,7 +105,7 @@ def mw_info(bot, trigger, found_match=None):
     server.
     """
     match = found_match or trigger
-    say_snippet(bot, match.group(1), unquote(match.group(2)), show_url=False)
+    say_snippet(bot, trigger, match.group(1), unquote(match.group(2)), show_url=False)
 
 
 @commands('w', 'wiki', 'wik')
@@ -138,4 +141,4 @@ def wikipedia(bot, trigger):
         return NOLIMIT
     else:
         query = query[0]
-    say_snippet(bot, server, query)
+    say_snippet(bot, trigger, server, query)
