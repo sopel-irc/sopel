@@ -1,3 +1,45 @@
+Changes between 6.5.1 and 6.5.2
+===============================
+Larger than the usual "patch" release because it's been so long since the last
+version and a number of bugs crept in. New maintainer (dgw) says hi.
+
+To reduce the "dependency hell" of installing things that Sopel doesn't need unless
+specific modules are used, the spellcheck and ipython modules will likely be removed
+from core and published separately in a future release (tentatively, Sopel 7).
+
+Module changes:
+* Added (restored) .bing command to search module, and fixed Bing results
+* Updated DDG ad filtering, and converted query URLs in search module to HTTPS
+* Fixed search module .suggest command using Google suggestions API
+* Fixed reddit and updated PRAW version requirement
+* reload module no longer tries to reload nonexistent modules when passed the name of a system package (e.g. "time" or "re")
+* remind module will now give the reminder time in the correct timezone when using .at
+* wikipedia module ignores File: namespace links, and output from other Sopel bots' wikipedia modules
+* Fixed retrieving xkcd comics by number
+* Fixed currency module (updated API URLs)
+* Tweaked url module's title finder to reduce garbage from Gawker/Kinja sites
+* help module now filters out duplicate commands from its command list
+* Fixed wikipedia module's handling of special characters like &
+* Prevent wikipedia module spewing an error if someone posts a link to an article that doesn't exist
+* help module now sends the command list to ptpb.pw, as GitHub removed the anonymous Gist API
+* Switched calc module to use new backend service for .py command, to reduce outages
+* Added physical temperature limit to units module
+* Tweaked argument handling in pronouns module
+
+Core changes:
+* Logger bug squashed
+* Shutdown method handling fixed
+* Added documentation in a few places
+* Made finding the system SSL/TLS certificate trust store more robust
+* Modules with example tests no longer need to hack around pytest running their setup() routines
+* Corrected IPython dependency for ipython module (now installs with Sopel automatically)
+* Widened acceptable requests version range
+
+API changes:
+* Module shutdown() methods should fire correctly now
+* ListAttribute config values now return [] (empty list) when blank instead of [""] (empty string in list)
+* Updated documentation for (still deprecated) sopel.web - the documentation for post() included a nonexistent kwarg 'headers'
+
 Changes between 6.5.0 and 6.5.1
 ===============================
 Module changes:
