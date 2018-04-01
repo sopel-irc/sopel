@@ -14,7 +14,7 @@ manager. The package is named ``sopel`` in [community] repository. On other
 distros, and pretty much any operating system you can run Python on, you can
 install `pip <https://pypi.python.org/pypi/pip/>`_, and do ``pip install
 sopel``. Failing all that, you can download the latest tarball from
-http://sopel.chat and follow the steps for installing from the latest
+https://sopel.chat and follow the steps for installing from the latest
 source below.
 
 Latest source
@@ -40,14 +40,14 @@ Some extra modules are available in the
 `sopel-extras <https://github.com/sopel-irc/sopel-extras>`_ repository, but of
 course you can also write new modules. A `tutorial <https://github.com/sopel-irc/sopel/wiki/Sopel-tutorial,-Part-2>`_
 for creating new modules is available on the wiki.
-API documentation can be found online at http://sopel.chat/docs, or
+API documentation can be found online at https://sopel.chat/docs, or
 you can create a local version by running ``make html`` in the ``doc``
 directory.
 
 Further documentation
 ---------------------
 
-In addition to the `official website <http://sopel.chat>`_, there is also a
+In addition to the `official website <https://sopel.chat>`_, there is also a
 `wiki <http://github.com/sopel-irc/sopel/wiki>`_ which includes valuable
 information including a full listing of
 `commands <https://github.com/sopel-irc/sopel/wiki/Commands>`_.

@@ -46,7 +46,7 @@ try:
 except ImportError:
     has_ssl = False
 
-USER_AGENT = 'Sopel/{} (http://sopel.chat)'.format(__version__)
+USER_AGENT = 'Sopel/{} (https://sopel.chat)'.format(__version__)
 default_headers = {'User-Agent': USER_AGENT}
 ca_certs = None  # Will be overriden when config loads. This is for an edge case.
 

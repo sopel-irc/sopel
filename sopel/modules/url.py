@@ -14,7 +14,7 @@ from sopel.config.types import ValidatedAttribute, ListAttribute, StaticSection
 
 import requests
 
-USER_AGENT = 'Sopel/{} (http://sopel.chat)'.format(__version__)
+USER_AGENT = 'Sopel/{} (https://sopel.chat)'.format(__version__)
 default_headers = {'User-Agent': USER_AGENT}
 url_finder = None
 # These are used to clean up the title tag before actually parsing it. Not the

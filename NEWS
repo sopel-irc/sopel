@@ -145,14 +145,14 @@ API changes:
 
 Changes between 5.5.0 and 5.5.1
 ===============================
-This release continues preparations for Willie 6. See http://sopel.chat/willie_6.html
+This release continues preparations for Willie 6. See https://sopel.chat/willie_6.html
 Module changes (for users):
 * The URL safety module correctly checks URLs
 * The URL for the service used for .py and .wa is updated
 
 Changes between 5.4.1 and 5.5.0
 ===============================
-This release starts preparations for Willie 6. See http://sopel.chat/willie_6.html
+This release starts preparations for Willie 6. See https://sopel.chat/willie_6.html
 API changes (for developers):
 * The ability to import from the sopel package, rather than willie, is added to enable forward compatibility with the rename in 6.0.
 * A version_info tuple, simmilar to Python's own sys.version_info, is added

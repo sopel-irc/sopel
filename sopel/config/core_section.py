@@ -149,7 +149,7 @@ class CoreSection(StaticSection):
     modes = ValidatedAttribute('modes', default='B')
     """User modes to be set on connection."""
 
-    name = ValidatedAttribute('name', default='Sopel: http://sopel.chat')
+    name = ValidatedAttribute('name', default='Sopel: https://sopel.chat')
     """The "real name" of your bot for WHOIS responses."""
 
     nick = ValidatedAttribute('nick', Identifier, default=Identifier('Sopel'))

@@ -4,7 +4,7 @@ ipython.py - sopel ipython console!
 Copyright © 2014, Elad Alfassa <elad@fedoraproject.org>
 Licensed under the Eiffel Forum License 2.
 
-Sopel: http://sopel.chat/
+Sopel: https://sopel.chat/
 """
 from __future__ import unicode_literals, absolute_import, print_function, division
 

@@ -6,7 +6,7 @@ Copyright © 2013, Elad Alfassa, <elad@fedoraproject.org>
 Copyright © 2018, Adam Erdman, pandorah.org
 Licensed under the Eiffel Forum License 2.
 
-http://sopel.chat
+https://sopel.chat
 """
 from __future__ import unicode_literals, absolute_import, print_function, division
 
@@ -104,7 +104,7 @@ def create_list(bot, msg):
 def help2(bot, trigger):
     response = (
         "Hi, I'm a bot. Say {1}commands to me in private for a list "
-        "of my commands, or see http://sopel.chat for more "
+        "of my commands, or see https://sopel.chat for more "
         "general details. My owner is {0}."
         .format(bot.config.core.owner, help_prefix))
     bot.reply(response)

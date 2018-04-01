@@ -41,7 +41,7 @@ setup(
     description='Simple and extendible IRC bot',
     author='Elsie Powell',
     author_email='powell.518@gmail.com',
-    url='http://sopel.chat/',
+    url='https://sopel.chat/',
     long_description=(
         "Sopel is a simple, extendible, easy-to-use IRC Utility bot, written "
         "in Python. It's designed to be easy to use, easy to run, and easy to "

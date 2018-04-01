@@ -3,7 +3,7 @@
 Sopel IRC Bot
 =============
 
-`Sopel <http://sopel.chat>`_ is a Python IRC bot framework. It is designed to
+`Sopel <https://sopel.chat>`_ is a Python IRC bot framework. It is designed to
 enable easily writing new utilities and features for your IRC channels. 
 
 Quick links

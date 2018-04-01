@@ -4,7 +4,7 @@ tld.py - Sopel TLD Module
 Copyright 2009-10, Michael Yanovich, yanovich.net
 Licensed under the Eiffel Forum License 2.
 
-http://sopel.chat
+https://sopel.chat
 """
 from __future__ import unicode_literals, absolute_import, print_function, division
 
