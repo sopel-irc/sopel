@@ -1,5 +1,6 @@
 # Sample conf file from http://nedbatchelder.com/code/coverage/config.html
 [run]
+source = sopel
 branch = True
 
 [report]
@@ -20,6 +21,8 @@ exclude_lines =
     if 0:
     if False:
     if __name__ == .__main__.:
+    
+show_missing = True
 
 [html]
 directory = coverage_html_report
