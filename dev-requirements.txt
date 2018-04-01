@@ -1,2 +1,4 @@
 pytest
 ipython
+Sphinx
+sphinxcontrib-autoprogram
