@@ -1,5 +1,3 @@
-.. title:: Sopel IRC Bot
-
 Sopel IRC Bot
 =============
 
@@ -23,10 +21,5 @@ Documentation
 .. toctree::
     :titlesonly:
     
-    cmd
-    plugin
-    bot
-    trigger
-    config
-    db
-    api
+    command/index
+    modules/index

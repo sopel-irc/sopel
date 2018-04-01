@@ -124,7 +124,7 @@ html_theme = 'alabaster'
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ['_static']
+#html_static_path = ['_static']
 
 # If not '', a 'Last updated on:' timestamp is inserted at every page bottom,
 # using the given strftime format.
@@ -217,10 +217,10 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    ('index', 'sopel', u'Sopel IRC Bot Documentation',
-     [u'Elsie Powell, et al.'], 3),
-    ('cmd', 'sopel', u'Sopel IRC Bot',
-     [u'Elsie Powell, et al.'], 1)
+    ('command/index', 'sopel', u'Sopel IRC Bot',
+     [u'Elsie Powell, et al.'], 1),
+    ('modules/index', 'sopel', u'Sopel IRC Bot Modules API',
+     [u'Elsie Powell, et al.'], 3)
 ]
 
 # If true, show URL addresses after external links.
