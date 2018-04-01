@@ -232,7 +232,7 @@ man_pages = [
 #  dir menu entry, description, category)
 texinfo_documents = [
   ('index', 'sopel', u'Sopel IRC Bot Documentation',
-   u'Elsie Powell, et al.', 'SopelIRCBot', 'One line description of project.',
+   u'Elsie Powell, et al.', 'SopelIRCBot', 'Simple, extendible IRC bot.',
    'Miscellaneous'),
 ]
 
