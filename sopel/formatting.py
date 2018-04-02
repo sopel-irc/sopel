@@ -19,6 +19,8 @@ CONTROL_COLOR = '\x03'
 """The control code to start or end color formatting"""
 CONTROL_UNDERLINE = '\x1f'
 """The control code to start or end underlining"""
+CONTROL_ITALIC = '\x1d'
+"""The control code to start or end italic formatting"""
 CONTROL_BOLD = '\x02'
 """The control code to start or end bold formatting"""
 
@@ -101,6 +103,11 @@ def color(text, fg=None, bg=None):
 def bold(text):
     """Return the text, with bold IRC formatting."""
     return ''.join([CONTROL_BOLD, text, CONTROL_BOLD])
+
+
+def italic(text):
+    """Return the text, with italic IRC formatting."""
+    return ''.join([CONTROL_ITALIC, text, CONTROL_ITALIC])
 
 
 def underline(text):
