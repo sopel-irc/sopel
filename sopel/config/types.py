@@ -339,7 +339,7 @@ class FilenameAttribute(BaseValidated):
             try:
                 open(value, 'w').close()
             except OSError:
-                raise ValueError("Value must be an existant or creatable file.")
+                raise ValueError("Value must be an existing or creatable file.")
         return value
 
     def serialize(self, main_config, this_section, value):
