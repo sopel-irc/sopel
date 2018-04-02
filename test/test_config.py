@@ -19,8 +19,9 @@ class FakeConfigSection(types.StaticSection):
 
 
 class ConfigFunctionalTest(unittest.TestCase):
-    def read_config(self):
-        configo = config.Config(self.filename)
+    @classmethod
+    def read_config(cls):
+        configo = config.Config(cls.filename)
         configo.define_section('fake', FakeConfigSection)
         return configo
 
@@ -34,7 +35,7 @@ class ConfigFunctionalTest(unittest.TestCase):
                 "homedir={}".format(os.path.expanduser('~/.sopel'))
             )
 
-        cls.config = cls.read_config(cls)
+        cls.config = cls.read_config()
 
         cls.testfile = open(os.path.expanduser('~/.sopel/test.tmp'), 'w+').name
         cls.testdir = os.path.expanduser('~/.sopel/test.d/')
