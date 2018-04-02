@@ -441,7 +441,14 @@ class example(object):
         if not hasattr(func, "example"):
             func.example = []
 
-        if self.result:
+        try:
+            import pytest
+            has_pytest = True
+        except ImportError:
+            has_pytest = False
+            pass
+
+        if has_pytest and self.result:
             test = sopel.test_tools.get_example_test(
                 func, self.msg, self.result, self.privmsg, self.admin,
                 self.owner, self.repeat, self.use_re, self.ignore
