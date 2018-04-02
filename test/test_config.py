@@ -24,25 +24,27 @@ class ConfigFunctionalTest(unittest.TestCase):
         configo.define_section('fake', FakeConfigSection)
         return configo
 
-    def setUp(self):
-        self.filename = tempfile.mkstemp()[1]
-        with open(self.filename, 'w') as fileo:
+    @classmethod
+    def setUpClass(cls):
+        cls.filename = tempfile.mkstemp()[1]
+        with open(cls.filename, 'w') as fileo:
             fileo.write(
                 "[core]\n"
                 "owner=dgw\n"
                 "homedir={}".format(os.path.expanduser('~/.sopel'))
             )
 
-        self.config = self.read_config()
+        cls.config = cls.read_config(cls)
 
-        self.testfile = open(os.path.expanduser('~/.sopel/test.tmp'), 'w+').name
-        self.testdir = os.path.expanduser('~/.sopel/test.d/')
-        os.mkdir(self.testdir)
+        cls.testfile = open(os.path.expanduser('~/.sopel/test.tmp'), 'w+').name
+        cls.testdir = os.path.expanduser('~/.sopel/test.d/')
+        os.mkdir(cls.testdir)
 
-    def tearDown(self):
-        os.remove(self.filename)
-        os.remove(self.testfile)
-        os.rmdir(self.testdir)
+    @classmethod
+    def tearDownClass(cls):
+        os.remove(cls.filename)
+        os.remove(cls.testfile)
+        os.rmdir(cls.testdir)
 
     def test_validated_string_when_none(self):
         self.config.fake.valattr = None
