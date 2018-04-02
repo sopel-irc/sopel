@@ -17,12 +17,12 @@ CONTROL_NORMAL = '\x0f'
 """The control code to reset formatting"""
 CONTROL_COLOR = '\x03'
 """The control code to start or end color formatting"""
-CONTROL_UNDERLINE = '\x1f'
-"""The control code to start or end underlining"""
-CONTROL_ITALIC = '\x1d'
-"""The control code to start or end italic formatting"""
 CONTROL_BOLD = '\x02'
 """The control code to start or end bold formatting"""
+CONTROL_ITALIC = '\x1d'
+"""The control code to start or end italic formatting"""
+CONTROL_UNDERLINE = '\x1f'
+"""The control code to start or end underlining"""
 
 
 # TODO when we can move to 3.3+ completely, make this an Enum.
