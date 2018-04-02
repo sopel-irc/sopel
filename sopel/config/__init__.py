@@ -260,4 +260,4 @@ def _create_config(configpath):
               " This shouldn't happen. Check permissions.")
         raise
         sys.exit(1)
-    print("Config file written sucessfully!")
+    print("Config file written successfully!")

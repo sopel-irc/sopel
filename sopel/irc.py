@@ -325,7 +325,7 @@ class Bot(asynchat.async_chat):
         if pretrigger.event == 'PING':
             self.write(('PONG', pretrigger.args[-1]))
         elif pretrigger.event == 'ERROR':
-            LOGGER.error("ERROR recieved from server: %s", pretrigger.args[-1])
+            LOGGER.error("ERROR received from server: %s", pretrigger.args[-1])
             if self.hasquit:
                 self.close_when_done()
         elif pretrigger.event == '433':

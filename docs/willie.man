@@ -30,7 +30,7 @@ willie - A highly customizable Internet Relay Chat bot
 
 .SH DESCRIPTION
 .B willie
-runs a bot that provides some usefull (and some useless) commands in one or more
+runs a bot that provides some useful (and some useless) commands in one or more
 Internet Relay Chat channels. It reads configuration options, such as the
 network to connect to, channels to join, and more from a config file specified
 by the 

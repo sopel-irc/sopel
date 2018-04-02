@@ -13,11 +13,11 @@ import sopel.test_tools
 import functools
 
 NOLIMIT = 1
-"""Return value for ``callable``\s, which supresses rate limiting for the call.
+"""Return value for ``callable``\s, which suppresses rate limiting for the call.
 
 Returning this value means the triggering user will not be
 prevented from triggering the command again within the rate limit. This can
-be used, for example, to allow a user to rety a failed command immediately.
+be used, for example, to allow a user to retry a failed command immediately.
 
 .. versionadded:: 4.0
 """
@@ -122,7 +122,7 @@ def commands(*command_list):
     This decorator can be used to add multiple commands to one callable in a
     single line. The resulting match object will have the command as the first
     group, rest of the line, excluding leading whitespace, as the second group.
-    Parameters 1 through 4, seperated by whitespace, will be groups 3-6.
+    Parameters 1 through 4, separated by whitespace, will be groups 3-6.
 
     Args:
         command: A string, which can be a regular expression.
@@ -155,7 +155,7 @@ def nickname_commands(*command_list):
     This decorator can be used multiple times to add multiple rules. The
     resulting match object will have the command as the first group, rest of
     the line, excluding leading whitespace, as the second group. Parameters 1
-    through 4, seperated by whitespace, will be groups 3-6.
+    through 4, separated by whitespace, will be groups 3-6.
 
     Args:
         command: A string, which can be a regular expression.
@@ -379,7 +379,7 @@ def url(url_rule):
     This decorator takes a regex string that will be matched against URLs in a
     message. The function it decorates, in addition to the bot and trigger,
     must take a third argument ``match``, which is the regular expression match
-    of the url. This should be used rather than the matching in trigger, in
+    of the URL. This should be used rather than the matching in trigger, in
     order to support e.g. the ``.title`` command.
     """
     def actual_decorator(function):
@@ -410,7 +410,7 @@ class example(object):
                 come from a channel.
             admin - Bool. Make the message appear to have come from an admin.
             owner - Bool. Make the message appear to have come from an owner.
-            repeat - How many times to repeat the test. Usefull for tests that
+            repeat - How many times to repeat the test. Useful for tests that
                 return random stuff.
             re - Bool. If true, result is interpreted as a regular expression.
             ignore - a list of outputs to ignore.

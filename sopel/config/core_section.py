@@ -132,7 +132,7 @@ class CoreSection(StaticSection):
     Regular expression syntax is used"""
 
     log_raw = ValidatedAttribute('log_raw', bool, default=True)
-    """Whether a log of raw lines as sent and recieved should be kept."""
+    """Whether a log of raw lines as sent and received should be kept."""
 
     logdir = FilenameAttribute('logdir', directory=True, default='logs')
     """Directory in which to place logs."""

@@ -101,7 +101,7 @@ def get_example_test(tested_func, msg, results, privmsg, admin,
             channel.
         admin - If true, make the message appear to have come from an admin.
         owner - If true, make the message appear to have come from an owner.
-        repeat - How many times to repeat the test. Usefull for tests that
+        repeat - How many times to repeat the test. Useful for tests that
             return random stuff.
         use_regexp = Bool. If true, results is in regexp format.
         ignore - List of strings to ignore.
