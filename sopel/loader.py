@@ -7,6 +7,10 @@ import re
 import sys
 
 from sopel.tools import compile_rule, itervalues, get_command_regexp, get_nickname_command_regexp
+from sopel.config import core_section
+
+default_prefix = core_section.CoreSection.help_prefix.default
+del core_section
 
 if sys.version_info.major >= 3:
     basestring = (str, bytes)
@@ -171,7 +175,7 @@ def clean_callable(func, config):
             example = func.example[0]["example"]
             example = example.replace('$nickname', nick)
             if example[0] != help_prefix and not example.startswith(nick):
-                example = help_prefix + example[len(help_prefix):]
+                example = example.replace(default_prefix, help_prefix, 1)
         if doc or example:
             cmds = []
             cmds.extend(getattr(func, 'commands', []))

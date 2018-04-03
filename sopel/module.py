@@ -377,27 +377,39 @@ def url(url_rule):
 class example(object):
     """Decorate a function with an example.
 
-    Add an example attribute into a function and generate a test.
+    Args:
+        msg:
+            (required) The example command as sent by a user on IRC. If it is
+            a prefixed command, the command prefix used in the example must
+            match the default `config.core.help_prefix` for compatibility with
+            the built-in help module.
+        result:
+            What the example command is expected to output. If given, a test is
+            generated using `msg` as input. The test behavior can be modified
+            by the remaining optional arguments.
+        privmsg:
+            If true, the test will behave as if the input was sent to the bot
+            in a private message. If false (default), the test will treat the
+            input as having come from a channel.
+        admin:
+            Whether to treat the test message as having been sent by a bot
+            admin (`trigger.admin == True`).
+        owner:
+            Whether to treat the test message as having been sent by the bot's
+            owner (`trigger.owner == True`).
+        repeat:
+            Integer number of times to repeat the test. Useful for commands
+            that return random results.
+        re:
+            If true, `result` is parsed as a regular expression. Also useful
+            for commands that return random results, or that call an external
+            API that doesn't always return the same value.
+        ignore:
+            List of outputs to ignore. Strings in this list are always
+            interpreted as regular expressions.
     """
-    # TODO dat doc doe >_<
     def __init__(self, msg, result=None, privmsg=False, admin=False,
                  owner=False, repeat=1, re=False, ignore=None):
-        """Accepts arguments for the decorator.
-
-        Args:
-            msg - The example message to give to the function as input.
-            result - Resulting output from calling the function with msg.
-            privmsg - If true, make the message appear to have sent in a
-                private message to the bot. If false, make it appear to have
-                come from a channel.
-            admin - Bool. Make the message appear to have come from an admin.
-            owner - Bool. Make the message appear to have come from an owner.
-            repeat - How many times to repeat the test. Useful for tests that
-                return random stuff.
-            re - Bool. If true, result is interpreted as a regular expression.
-            ignore - a list of outputs to ignore.
-
-        """
         # Wrap result into a list for get_example_test
         if isinstance(result, list):
             self.result = result
