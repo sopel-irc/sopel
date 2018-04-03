@@ -40,7 +40,9 @@ def help(bot, trigger):
         threshold = 3
 
         if name in bot.doc:
-            if len(bot.doc[name][0]) + (1 if bot.doc[name][1] else 0) > threshold:
+            # count lines we're going to send
+            # lines in command docstring, plus one line for example(s) if present (they're sent all on one line)
+            if len(bot.doc[name][0]) + int(bool(bot.doc[name][1])) > threshold:
                 if trigger.nick != trigger.sender:  # don't say that if asked in private
                     bot.reply('The documentation for this command is too long; I\'m sending it to you in a private message.')
 
@@ -52,7 +54,9 @@ def help(bot, trigger):
             for line in bot.doc[name][0]:
                 msgfun(line)
             if bot.doc[name][1]:
-                msgfun('e.g. ' + bot.doc[name][1])
+                # Build a nice, grammatically-correct list of examples
+                examples = ', '.join(bot.doc[name][1][:-2] + [' or '.join(bot.doc[name][1][-2:])])
+                msgfun('e.g. ' + examples)
     else:
         # This'll probably catch most cases, without having to spend the time
         # actually creating the list first. Maybe worth storing the link and a
