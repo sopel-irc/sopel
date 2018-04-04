@@ -102,7 +102,7 @@ def f_remind(bot, trigger):
     if not os.path.exists(bot.tell_filename):
         return
 
-    if len(tellee) > 20:
+    if len(tellee) > 30:
         return bot.reply('That nickname is too long.')
     if tellee == bot.nick:
         return bot.reply("I'm here now, you can tell me whatever you want!")
