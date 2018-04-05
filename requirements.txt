@@ -3,5 +3,6 @@ pytz
 praw>=4.0.0,<6.0.0
 pyenchant
 pygeoip
-ipython
+ipython<6.0; python_version < '3.3'
+ipython>=6.0,<7.0; python_version >= '3.3'
 requests>=2.0.0,<3.0.0
