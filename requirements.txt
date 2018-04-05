@@ -1,6 +1,6 @@
 xmltodict
 pytz
-praw>=4.0.0,<6.0.0
+praw<6.0.0
 pyenchant
 pygeoip
 ipython<6.0; python_version < '3.3'
