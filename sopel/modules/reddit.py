@@ -47,13 +47,17 @@ def shutdown(bot):
 
 @rule('.*%s.*' % post_url)
 def rpost_info(bot, trigger, match=None):
-    r = praw.Reddit(
-        user_agent=USER_AGENT,
-        client_id='6EiphT6SSQq7FQ',
-        client_secret=None,
-    )
     match = match or trigger
-    s = r.submission(id=match.group(2))
+    try:
+        r = praw.Reddit(
+            user_agent=USER_AGENT,
+            client_id='6EiphT6SSQq7FQ',
+            client_secret=None,
+        )
+        s = r.submission(id=match.group(2))
+    except Exception:
+        r = praw.Reddit(user_agent=USER_AGENT)
+        s = r.get_submission(submission_id=match.group(2))
 
     message = ('[REDDIT] {title} {link}{nsfw} | {points} points ({percent}) | '
                '{comments} comments | Posted by {author} | '
