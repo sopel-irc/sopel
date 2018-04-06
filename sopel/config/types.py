@@ -332,13 +332,13 @@ class FilenameAttribute(BaseValidated):
         if self.directory and not os.path.isdir(value):
             try:
                 os.makedirs(value)
-            except OSError:
+            except (IOError, OSError):
                 raise ValueError(
                     "Value must be an existing or creatable directory.")
         if not self.directory and not os.path.isfile(value):
             try:
                 open(value, 'w').close()
-            except OSError:
+            except (IOError, OSError):
                 raise ValueError("Value must be an existing or creatable file.")
         return value
 
