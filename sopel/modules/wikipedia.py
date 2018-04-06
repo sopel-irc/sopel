@@ -23,6 +23,43 @@ else:
 REDIRECT = re.compile(r'^REDIRECT (.*)')
 
 
+class WikiParser(HTMLParser):
+    def __init__(self):
+        HTMLParser.__init__(self)
+        self.consume = True
+        self.citations = False
+        self.span_depth = 0
+        self.result = ''
+    
+    def handle_starttag(self, tag, attrs):
+        if tag == 'h3' or tag == 'sup': # don't consume the header or anything in superscript (citation-related tags)
+            self.consume = False
+        elif tag == 'span':
+            if self.span_depth:
+                self.span_depth += 1
+            else:
+                for attr in attrs:  # remove 'edit' tags, and keep track of depth
+                    if attr[0] == 'class' and 'edit' in attr[1]:
+                        self.span_depth += 1
+        elif tag == 'ol':
+            for attr in attrs:
+                if attr[0] == 'class' and 'references' in attr[1]:
+                    self.citations = True   # once we hit citations, we can stop
+    
+    def handle_endtag(self, tag):
+        if not self.consume and (tag == 'h3' or tag == 'sup'):
+            self.consume = True
+        if self.span_depth and tag == 'span':
+            self.span_depth -= 1
+    
+    def handle_data(self, data):
+        if self.consume and not self.citations and not self.span_depth:
+            self.result += data
+    
+    def get_result(self):
+        return self.result
+
+
 class WikipediaSection(StaticSection):
     default_lang = ValidatedAttribute('default_lang', default='en')
     """The default language to find articles from."""
@@ -101,13 +138,77 @@ def mw_snippet(server, query):
 
 
 @rule(r'.*\/([a-z]+\.wikipedia\.org)\/wiki\/((?!File\:)[^ ]+).*')
+def say_section(bot, trigger, server, query, section):
+    page_name = query.replace('_', ' ')
+    query = quote(query.replace(' ', '_'))
+    section = section.replace('_', ' ')
+    
+    snippet = mw_section(server, query, section)
+    if not snippet:
+        bot.say("[WIKIPEDIA] Error fetching section \"{}\" for page \"{}\".".format(section, page_name))
+        return
+
+    msg = '[WIKIPEDIA] {} - {} | "{}"'.format(page_name, section, snippet)
+    bot.say(msg)
+
+
+def mw_section(server, query, section):
+    """
+    Retrives a snippet from the specified section from the given page 
+    on the given server.
+    """
+    print('getting section {} for page {}'.format(section, query))
+    sections_url = ('https://{0}/w/api.php?format=json'
+                    '&action=parse&prop=sections&page={1}')\
+                    .format(server, query)
+    sections = get(sections_url).json()
+
+    section_number = None
+
+    for entry in sections['parse']['sections']:
+        if entry['line'] == section:
+            section_number = entry['index']
+            break
+    
+    if not section_number:
+        return None
+
+    snippet_url = ('https://{0}/w/api.php?format=json'
+                   '&action=parse&page={1}&prop=text'
+                   '&section={2}').format(server, query, section_number)
+
+    data = get(snippet_url).json()
+    print(data)
+
+    parser = WikiParser()
+    parser.feed(data['parse']['text']['*'])
+    text = parser.get_result()
+    text = ' '.join(text.split())   # collapse multiple whitespace chars
+    print(text)
+
+    trimmed = False
+
+    while len(text) > (420 - len(query) - len(section) - 18):
+        text = text.rsplit(None, 1)[0]
+        trimmed = True
+    if trimmed:
+        text += '...'
+
+    return text
+
+
+@rule('.*\/([a-z]+\.wikipedia\.org)\/wiki\/((?!File\:)[^ #]+)#?([^ ]*).*')
 def mw_info(bot, trigger, found_match=None):
     """
     Retrives a snippet of the specified length from the given page on the given
     server.
     """
     match = found_match or trigger
-    say_snippet(bot, trigger, match.group(1), unquote(match.group(2)), show_url=False)
+    if trigger.group(3):
+        print('section')
+        say_section(bot, trigger, match.group(1), unquote(match.group(2)), match.group(3))
+    else:
+        say_snippet(bot, trigger, match.group(1), unquote(match.group(2)), show_url=False)
 
 
 @commands('w', 'wiki', 'wik')
