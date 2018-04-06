@@ -174,6 +174,8 @@ def handle_names(bot, trigger):
 
     # This could probably be made flexible in the future, but I don't think
     # it'd be worth it.
+    # If this ever needs to be updated, remember to change the mode handling in
+    # the WHO-handler functions below, too.
     mapping = {'+': sopel.module.VOICE,
                '%': sopel.module.HALFOP,
                '@': sopel.module.OP,
@@ -654,10 +656,11 @@ def recv_whox(bot, trigger):
         return LOGGER.warning('While populating `bot.accounts` a WHO response was malformed.')
     _, _, channel, user, host, nick, status, account = trigger.args
     away = 'G' in status
-    _record_who(bot, channel, user, host, nick, account, away)
+    modes = ''.join([c for c in status if c in '~&@%+'])
+    _record_who(bot, channel, user, host, nick, account, away, modes)
 
 
-def _record_who(bot, channel, user, host, nick, account=None, away=None):
+def _record_who(bot, channel, user, host, nick, account=None, away=None, modes=None):
     nick = Identifier(nick)
     channel = Identifier(channel)
     if nick not in bot.users:
@@ -671,6 +674,16 @@ def _record_who(bot, channel, user, host, nick, account=None, away=None):
     if channel not in bot.channels:
         bot.channels[channel] = Channel(channel)
     bot.channels[channel].add_user(user)
+    if modes:  # do this after the user is added because add_user() always sets privileges to 0
+        mapping = {'+': sopel.module.VOICE,
+           '%': sopel.module.HALFOP,
+           '@': sopel.module.OP,
+           '&': sopel.module.ADMIN,
+           '~': sopel.module.OWNER}
+        priv = 0
+        for c in modes:
+            priv = priv | mapping[c]
+        bot.channels[channel].privileges[user.nick] = priv
 
 
 @sopel.module.event(events.RPL_WHOREPLY)
@@ -678,8 +691,9 @@ def _record_who(bot, channel, user, host, nick, account=None, away=None):
 @sopel.module.priority('high')
 @sopel.module.unblockable
 def recv_who(bot, trigger):
-    channel, user, host, _, nick, = trigger.args[1:6]
-    _record_who(bot, channel, user, host, nick)
+    channel, user, host, _, nick, status = trigger.args[1:7]
+    modes = ''.join([c for c in status if c in '~&@%+'])
+    _record_who(bot, channel, user, host, nick, modes=modes)
 
 
 @sopel.module.event(events.RPL_ENDOFWHO)
