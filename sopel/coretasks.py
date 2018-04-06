@@ -678,19 +678,18 @@ def _record_who(bot, channel, user, host, nick, account=None, away=None, modes=N
     else:
         user.account = account
     user.away = away
-    if channel not in bot.channels:
-        bot.channels[channel] = Channel(channel)
-    bot.channels[channel].add_user(user)
-    if modes:  # do this after the user is added because add_user() always sets privileges to 0
+    priv = 0
+    if modes:
         mapping = {'+': sopel.module.VOICE,
            '%': sopel.module.HALFOP,
            '@': sopel.module.OP,
            '&': sopel.module.ADMIN,
            '~': sopel.module.OWNER}
-        priv = 0
         for c in modes:
             priv = priv | mapping[c]
-        bot.channels[channel].privileges[user.nick] = priv
+    if channel not in bot.channels:
+        bot.channels[channel] = Channel(channel)
+    bot.channels[channel].add_user(user, privs=priv)
 
 
 @sopel.module.event(events.RPL_WHOREPLY)
