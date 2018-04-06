@@ -1,3 +1,14 @@
+Changes between 6.5.2 and 6.5.3
+===============================
+Module changes:
+* tell module takes nicknames up to 30 characters long now (previously 20)
+* reddit module (and Sopel, by extension) once again accepts any installed version of PRAW
+
+Core changes:
+* Specified which IPython versions pip should give Sopel depending on Python version in use
+* Fixed trying to use pytest stuff in production
+* Various testing tweaks
+
 Changes between 6.5.1 and 6.5.2
 ===============================
 Larger than the usual "patch" release because it's been so long since the last
