@@ -8,15 +8,17 @@ from sopel.config.types import StaticSection, ValidatedAttribute
 from sopel.module import NOLIMIT, commands, example, rule
 from requests import get
 import re
-
 import sys
+
 if sys.version_info.major < 3:
     from urllib import quote as _quote
     from urlparse import unquote as _unquote
     quote = lambda s: _quote(s.encode('utf-8')).decode('utf-8')
     unquote = lambda s: _unquote(s.encode('utf-8')).decode('utf-8')
+    import HTMLParser
 else:
     from urllib.parse import quote, unquote
+    from html.parser import HTMLParser
 
 REDIRECT = re.compile(r'^REDIRECT (.*)')
 
