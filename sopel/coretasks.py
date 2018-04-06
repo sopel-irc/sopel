@@ -230,7 +230,13 @@ def track_modes(bot, trigger):
         else:
             arg = Identifier(arg)
             for mode in modes:
-                priv = bot.privileges[channel].get(arg, 0)
+                priv = bot.channels[channel].privileges.get(arg, 0)
+                # Throw an exception if the two privilege-tracking data
+                # structures get out of sync. That should never happen.
+                # This is a good place to check that bot.channels is doing
+                # what it's supposed to do before ultimately removing the old,
+                # deprecated bot.privileges structure completely.
+                assert priv == bot.privileges[channel].get(arg, 0)
                 value = mapping.get(mode[1])
                 if value is not None:
                     if mode[0] == '+':
@@ -238,6 +244,7 @@ def track_modes(bot, trigger):
                     else:
                         priv = priv & ~value
                     bot.privileges[channel][arg] = priv
+                    bot.channels[channel].privileges[arg] = priv
 
 
 @sopel.module.rule('.*')
