@@ -18,12 +18,10 @@ addons:
       - enchant
 install:
   - pip install -r requirements.txt -r dev-requirements.txt
-  - pip install coveralls
-  - pip install flake8
 script:
   - ./checkstyle.sh
-  - coverage run --source sopel -m py.test -v .
-  - coverage report --show-missing
+  - coverage run -m py.test -v .
+  - coverage report
 after_success:
   coveralls
 deploy:
