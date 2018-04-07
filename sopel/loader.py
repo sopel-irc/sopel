@@ -179,7 +179,12 @@ def clean_callable(func, config):
         func.rule = getattr(func, 'rule', [])
         for command in func.commands:
             regexp = get_command_regexp(prefix, command)
-            func.rule.append(regexp)
+            if regexp not in func.rule:
+                # list.append() ALWAYS adds the value, even if it already exists
+                # Checking first prevents duplicating triggers on module reloads
+                # See issue 1056
+                # TODO: Maybe func.rule should be a set() instead?
+                func.rule.append(regexp)
         if hasattr(func, 'example'):
             example = func.example[0]["example"]
             example = example.replace('$nickname', nick)
