@@ -8,7 +8,6 @@ This module uses virustotal.com
 """
 from __future__ import unicode_literals, absolute_import, print_function, division
 
-import sopel.web as web
 from sopel.config.types import StaticSection, ValidatedAttribute, ListAttribute
 from sopel.formatting import color, bold
 from sopel.logger import get_logger
@@ -19,6 +18,7 @@ import json
 import time
 import os.path
 import re
+import requests
 
 if sys.version_info.major > 2:
     unicode = str
@@ -131,7 +131,7 @@ def url_handler(bot, trigger):
                        'scan': '1'}
 
             if trigger not in bot.memory['safety_cache']:
-                result = web.post(vt_base_api_url + 'report', payload)
+                result = requests.post(vt_base_api_url + 'report', data=payload)
                 if sys.version_info.major > 2:
                     result = result.decode('utf-8')
                 result = json.loads(result)
