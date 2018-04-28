@@ -9,6 +9,7 @@ https://sopel.chat
 from __future__ import unicode_literals, absolute_import, print_function, division
 
 import re
+import requests
 from sopel import web
 from sopel.module import commands, example
 
@@ -27,7 +28,7 @@ def text(html):
 
 
 def wikt(word):
-    bytes = web.get(uri % web.quote(word))
+    bytes = requests.get(uri % web.quote(word)).text
     bytes = r_ul.sub('', bytes)
 
     mode = None
