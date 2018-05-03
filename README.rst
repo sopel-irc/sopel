@@ -1,4 +1,4 @@
-Introduction |version| |build| |issues| |coverage-status| |license|
+Introduction |version| |build| |issues| |coverage-status| |license| |ocbackers| |ocsponsors|
 -------------------------------------------------------------------
 
 Sopel is a simple, lightweight, open source, easy-to-use IRC Utility bot,
@@ -57,6 +57,39 @@ Questions?
 
 Join us in `#sopel <irc://irc.freenode.net/#sopel>`_ on Freenode.
 
+Credits
++++++++
+
+Contributors
+------------
+
+This project exists thanks to all the people who contribute! `Become a contributor`__.
+
+.. image:: https://opencollective.com/sopel/contributors.svg?width=890&button=false
+    :target: https://github.com/sopel-irc/sopel/graphs/contributors
+
+Backers
+-------
+
+Thank you to all our backers! `Become a backer`__.
+
+.. image:: https://opencollective.com/sopel/backers.svg?width=890
+    :target: https://opencollective.com/sopel#backers
+
+__ Backer_
+.. _Backer: https://opencollective.com/sopel#backer
+
+Sponsors
+--------
+
+Support Sopel by becoming a sponsor. Your logo will show up here with a link to your website. `Become a sponsor`__.
+
+.. image:: https://opencollective.com/sopel/sponsor/0/avatar.svg
+    :target: https://opencollective.com/sopel/sponsor/0/website
+
+__ Sponsor_
+.. _Sponsor: https://opencollective.com/sopel#sponsor
+
 .. |version| image:: https://img.shields.io/pypi/v/sopel.svg
    :target: https://pypi.python.org/pypi/sopel
 .. |build| image:: https://travis-ci.org/sopel-irc/sopel.svg?branch=master
@@ -67,3 +100,9 @@ Join us in `#sopel <irc://irc.freenode.net/#sopel>`_ on Freenode.
    :target: https://coveralls.io/github/sopel-irc/sopel?branch=master
 .. |license| image:: https://img.shields.io/pypi/l/sopel.svg
    :target: https://github.com/sopel-irc/sopel/blob/master/COPYING
+.. |ocbackers| image:: https://opencollective.com/sopel/backers/badge.svg
+    :alt: Backers on Open Collective
+    :target: #backers
+.. |ocsponsors| image:: https://opencollective.com/sopel/sponsors/badge.svg
+    :alt: Sponsors on Open Collective
+    :target: #sponsors
