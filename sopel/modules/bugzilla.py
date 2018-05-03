@@ -52,7 +52,12 @@ def setup(bot):
 
 
 def shutdown(bot):
-    del bot.memory['url_callbacks'][regex]
+    try:
+        del bot.memory['url_callbacks'][regex]
+    except KeyError:
+        # bot.config.bugzilla.domains was probably just empty on startup
+        # everything's daijoubu
+        pass
 
 
 @rule(r'.*https?://(\S+?)'
