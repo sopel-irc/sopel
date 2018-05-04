@@ -11,7 +11,7 @@ from __future__ import unicode_literals, absolute_import, print_function, divisi
 import collections
 import sys
 import time
-from sopel.tools import iteritems
+from sopel.tools import itervalues
 import sopel.loader
 import sopel.module
 import subprocess
@@ -41,16 +41,8 @@ def f_reload(bot, trigger):
         return bot.reply('"%s" not loaded, try the `load` command' % name)
 
     old_module = sys.modules[name]
-
-    old_callables = {}
-    for obj_name, obj in iteritems(vars(old_module)):
-        bot.unregister(obj)
-
-    # Also remove all references to sopel callables from top level of the
-    # module, so that they will not get loaded again if reloading the
-    # module does not override them.
-    for obj_name in old_callables.keys():
-        delattr(old_module, obj_name)
+    for module_obj in itervalues(vars(old_module)):
+        bot.unregister(module_obj)
 
     # Also delete the setup function
     if hasattr(old_module, "setup"):
