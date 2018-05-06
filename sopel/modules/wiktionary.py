@@ -36,7 +36,7 @@ def wikt(word):
     etymology = None
     definitions = {}
     for line in bytes.splitlines():
-        if 'id="Etymology"' in line:
+        if 'id="Etymology"' in line or 'id="Etymology_1"' in line:
             mode = 'etymology'
         elif 'id="Noun"' in line:
             mode = 'noun'
@@ -55,7 +55,7 @@ def wikt(word):
         elif 'id="' in line:
             mode = None
 
-        elif (mode == 'etmyology') and ('<p>' in line):
+        elif (mode == 'etymology') and ('<p>' in line):
             etymology = text(line)
         elif (mode is not None) and ('<li>' in line):
             definitions.setdefault(mode, []).append(text(line))
@@ -98,6 +98,27 @@ def wiktionary(bot, trigger):
         result = format(word, definitions, 3)
     if len(result) < 150:
         result = format(word, definitions, 5)
+
+    if len(result) > 300:
+        result = result[:295] + '[...]'
+    bot.say(result)
+
+
+@commands('ety')
+@example('.ety bailiwick')
+def wiktionary_ety(bot, trigger):
+    """Look up a word's etymology on Wiktionary."""
+    word = trigger.group(2)
+    if word is None:
+        bot.reply('You must give me a word!')
+        return
+
+    etymology, _definitions = wikt(word)
+    if not etymology:
+        bot.say("Couldn't get the etymology for %s." % word)
+        return
+
+    result = "{}: {}".format(word, etymology)
 
     if len(result) > 300:
         result = result[:295] + '[...]'
