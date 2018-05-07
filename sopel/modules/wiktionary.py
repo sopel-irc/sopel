@@ -80,7 +80,7 @@ def format(result, definitions, number=2):
 
 
 @commands('wt', 'define', 'dict')
-@example('.wt bailiwick')
+@example('.wt bailiwick', "bailiwick — noun: 1. The district within which a bailie or bailiff has jurisdiction, 2. A person's concern or sphere of operations, their area of skill or authority")
 def wiktionary(bot, trigger):
     """Look up a word on Wiktionary."""
     word = trigger.group(2)
@@ -105,7 +105,7 @@ def wiktionary(bot, trigger):
 
 
 @commands('ety')
-@example('.ety bailiwick')
+@example('.ety bailiwick', "bailiwick: From bailie (“bailiff”) and wick (“dwelling”), from Old English wīc.")
 def wiktionary_ety(bot, trigger):
     """Look up a word's etymology on Wiktionary."""
     word = trigger.group(2)
