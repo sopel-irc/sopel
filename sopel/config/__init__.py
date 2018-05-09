@@ -214,12 +214,12 @@ class Config(object):
 
 
 def _wizard(section, config=None):
-    dotdir = os.path.expanduser('~/.sopel')
+    dotdir = os.path.dirname(config) if config is not None else os.path.expanduser('~/.sopel')
     configpath = os.path.join(dotdir, ((config or 'default.cfg') + ('.cfg' if config and not config.endswith('.cfg') else '')))
     if section == 'all':
         _create_config(configpath)
     elif section == 'mod':
-        _check_dir(False)
+        _check_dir(dotdir, False)
         if not os.path.isfile(configpath):
             print("No config file found." +
                   " Please make one before configuring these options.")
@@ -228,15 +228,14 @@ def _wizard(section, config=None):
         config._modules()
 
 
-def _check_dir(create=True):
-    dotdir = os.path.join(os.path.expanduser('~'), '.sopel')
-    if not os.path.isdir(dotdir):
+def _check_dir(path=os.path.expanduser('~/.sopel'), create=True):
+    if not os.path.isdir(path):
         if create:
-            print('Creating a config directory at ~/.sopel...')
+            print('Creating a config directory at {}...'.format(path))
             try:
-                os.makedirs(dotdir)
+                os.makedirs(path)
             except Exception as e:
-                print('There was a problem creating %s:' % dotdir, file=sys.stderr)
+                print('There was a problem creating %s:' % path, file=sys.stderr)
                 print('%s, %s' % (e.__class__, str(e)), file=sys.stderr)
                 print('Please fix this and then run Sopel again.', file=sys.stderr)
                 sys.exit(1)
@@ -246,7 +245,7 @@ def _check_dir(create=True):
 
 
 def _create_config(configpath):
-    _check_dir()
+    _check_dir(os.path.dirname(configpath))
     print("Please answer the following questions" +
           " to create your configuration file:\n")
     try:
