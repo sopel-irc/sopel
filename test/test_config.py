@@ -27,7 +27,8 @@ class ConfigFunctionalTest(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.filename = tempfile.mkstemp()[1]
+        _handle, cls.filename = tempfile.mkstemp()
+        os.close(_handle)  # Tests fail on AppVeyor without doing this
         with open(cls.filename, 'w') as fileo:
             fileo.write(
                 "[core]\n"

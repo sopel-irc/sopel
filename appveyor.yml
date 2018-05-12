@@ -1,0 +1,45 @@
+build: false
+
+version: "{build}"
+
+branches:
+  only:
+    - master
+    - appveyor  # for testing config changes
+
+skip_tags: true
+
+skip_branch_with_pr: true
+
+environment:
+  matrix:
+    - PYTHON: "C:\\Python27"
+      PYTHON_VERSION: "2.7.x"
+      PYTHON_ARCH: "32"
+
+    - PYTHON: "C:\\Python27-x64"
+      PYTHON_VERSION: "2.7.x"
+      PYTHON_ARCH: "64"
+
+    - PYTHON: "C:\\Python34"
+      PYTHON_VERSION: "3.4.x"
+      PYTHON_ARCH: "32"
+
+    - PYTHON: "C:\\Python34-x64"
+      PYTHON_VERSION: "3.4.x"
+      PYTHON_ARCH: "64"
+
+cache:
+  - '%LOCALAPPDATA%\pip\Cache'
+
+init:
+  - echo %PYTHON% %PYTHON_VERSION% %PYTHON_ARCH%
+  - >-
+    python -c "import struct; print struct.calcsize('P') * 8"
+
+install:
+  - "python -m pip install --upgrade pip"  # to avoid pip warning that it's outdated
+  - "python -m pip install -r requirements.txt -r dev-requirements.txt"
+
+test_script:
+  - "coverage run -m py.test -v ."

@@ -82,7 +82,8 @@ def start_server(rpl_function=None):
 def bot(request):
     cfg_dir = tempfile.mkdtemp()
     print(cfg_dir)
-    filename = tempfile.mkstemp(dir=cfg_dir)[1]
+    _handle, filename = tempfile.mkstemp(dir=cfg_dir)
+    os.close(_handle)  # Tests fail on AppVeyor without doing this
     os.mkdir(os.path.join(cfg_dir, 'modules'))
 
     def fin():

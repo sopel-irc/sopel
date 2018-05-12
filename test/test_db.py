@@ -18,7 +18,8 @@ from sopel.db import SopelDB
 from sopel.test_tools import MockConfig
 from sopel.tools import Identifier
 
-db_filename = tempfile.mkstemp()[1]
+_handle, db_filename = tempfile.mkstemp()
+os.close(_handle)  # Tests fail on AppVeyor without doing this
 if sys.version_info.major >= 3:
     unicode = str
     basestring = str
