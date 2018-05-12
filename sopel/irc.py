@@ -216,21 +216,30 @@ class Bot(asynchat.async_chat):
                                            suppress_ragged_eofs=True,
                                            cert_reqs=ssl.CERT_REQUIRED,
                                            ca_certs=self.ca_certs)
-                # try to handle both names in config, certificate and CNAMEs
-                hosts_to_match = [self.config.core.host] + self._get_cnames(self.config.core.host)
-                has_matched = False
-                for hostname in hosts_to_match:
-                    try:
-                        ssl.match_hostname(self.ssl.getpeercert(), hostname)
-                        has_matched = True
-                        break
-                    except ssl.CertificateError:
-                        pass
-                if not has_matched:
-                    stderr("Invalid certficate, hostname mismatch!")
-                    if hasattr(self.config.core, 'pid_file_path'):
-                        os.unlink(self.config.core.pid_file_path)
-                    os._exit(1)
+                # connect to host specified in config first
+                try:
+                    ssl.match_hostname(self.ssl.getpeercert(), self.config.core.host)
+                except ssl.CertificateError:
+                    # the host in config and certificate don't match
+                    LOGGER.error("hostname mismatch between configuration and certificate")
+                    # check (via exception) if a CNAME matches as a fallback
+                    has_matched = False
+                    for hostname in self._get_cnames(self.config.core.host):
+                        try:
+                            ssl.match_hostname(self.ssl.getpeercert(), hostname)
+                            LOGGER.warning("using {0} instead of {1} for TLS connection"
+                                           .format(hostname, self.config.core.host))
+                            has_matched = True
+                            break
+                        except ssl.CertificateError:
+                            pass
+                    if not has_matched:
+                        # everything is broken
+                        stderr("Invalid certificate, hostname mismatch!")
+                        LOGGER.error("invalid certificate, no hostname matches")
+                        if hasattr(self.config.core, 'pid_file_path'):
+                            os.unlink(self.config.core.pid_file_path)
+                            os._exit(1)
             self.set_socket(self.ssl)
 
         # Request list of server capabilities. IRCv3 servers will respond with
