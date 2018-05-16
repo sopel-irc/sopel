@@ -98,7 +98,7 @@ class SopelDB(object):
 
     def get_uri(self):
         """Returns a URL for the database, usable to connect with SQLAlchemy."""
-        return 'sqlite://{}'.format(self.filename)
+        return 'sqlite:///{}'.format(self.filename)
 
     # NICK FUNCTIONS
 
