@@ -57,7 +57,7 @@ def _version_info(version=__version__):
 version_info = _version_info()
 
 
-def run(config, pid_file, daemon=False):
+def run(config, daemon=False):
     import sopel.bot as bot
     import sopel.logger
     from sopel.tools import stderr
@@ -93,14 +93,14 @@ def run(config, pid_file, daemon=False):
             logfile.write(trace)
             logfile.write('----------------------------------------\n\n')
             logfile.close()
-            os.unlink(pid_file)
-            os._exit(1)
+            return 1
 
         if not isinstance(delay, int):
             break
+        if p.restart:
+            return -1
         if p.hasquit:
             break
         stderr('Warning: Disconnected. Reconnecting in %s seconds...' % delay)
         time.sleep(delay)
-    os.unlink(pid_file)
-    os._exit(0)
+    return 0

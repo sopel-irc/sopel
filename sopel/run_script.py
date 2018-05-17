@@ -197,11 +197,18 @@ def main(argv=None):
             pid_file.write(str(os.getpid()))
 
         # Step Five: Initialise And Run sopel
-        run(config_module, pid_file_path)
+        ret = run(config_module)
+        os.unlink(pid_file_path)
+        if ret == -1:
+            print(sys.argv)
+            os.execv(sys.executable, ['python'] + sys.argv)
+        else:
+            os._exit(ret)
+        
     except KeyboardInterrupt:
         print("\n\nInterrupted")
         os._exit(1)
 
 
 if __name__ == '__main__':
-    main()
+    main(sys.argv)
