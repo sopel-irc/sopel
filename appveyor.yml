@@ -12,6 +12,9 @@ skip_tags: true
 skip_branch_with_pr: true
 
 environment:
+  appveyor_rdp_password:
+    secure: sgXez5pCWaCHJAgXDENSvg==
+      
   matrix:
     - PYTHON: "C:\\Python27"
       PYTHON_VERSION: "2.7.x"
@@ -33,6 +36,7 @@ cache:
   - '%LOCALAPPDATA%\pip\Cache'
 
 init:
+  - ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
   - echo %PYTHON% %PYTHON_VERSION% %PYTHON_ARCH%
   - >-
     python -c "import struct; print struct.calcsize('P') * 8"
