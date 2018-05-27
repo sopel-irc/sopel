@@ -1,0 +1,3 @@
+[flake8]
+application-import-names=sopel
+import-order-style=google
