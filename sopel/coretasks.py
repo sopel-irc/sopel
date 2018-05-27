@@ -10,7 +10,7 @@ dispatch function in bot.py and making it easier to maintain.
 # Copyright © 2012, Elad Alfassa <elad@fedoraproject.org>
 # Copyright 2012-2015, Elsie Powell embolalia.com
 # Licensed under the Eiffel Forum License 2.
-from __future__ import unicode_literals, absolute_import, print_function, division
+from __future__ import absolute_import, division, print_function, unicode_literals
 
 from random import randint
 import re

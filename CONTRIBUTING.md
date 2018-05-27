@@ -38,8 +38,8 @@ include your changes.
   coretasks for coretasks.py, db for the database feature, and so on.
 * Python files should always have `# coding=utf-8` as the first line (or the
   second, if the first is `#!/usr/bin/env python`), and
-  `from __future__ import unicode_literals, absolute_import, print_function, division` as the first line after the module
-  docstring.
+  `from __future__ import absolute_import, division, print_function, unicode_literals`
+  as the first line after the module docstring.
 
 Issue Tags
 ----------

@@ -8,7 +8,7 @@
 #
 # When working on core IRC protocol related features, consult protocol
 # documentation at http://www.irchelp.org/irchelp/rfc/
-from __future__ import unicode_literals, absolute_import, print_function, division
+from __future__ import absolute_import, division, print_function, unicode_literals
 
 import sys
 import time

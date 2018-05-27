@@ -8,7 +8,7 @@ using the sed notation (s///) commonly found in vi/vim.
 # Copyright 2013, Elsie Powell, embolalia.com
 # Licensed under the Eiffel Forum License 2.
 # Contributions from: Matt Meinwald and Morgan Goose
-from __future__ import unicode_literals, absolute_import, print_function, division
+from __future__ import absolute_import, division, print_function, unicode_literals
 
 import re
 from sopel.tools import Identifier, SopelMemory
