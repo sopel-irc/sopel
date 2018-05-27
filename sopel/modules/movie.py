@@ -9,8 +9,9 @@ This module relies on omdbapi.com
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 import requests
-import sopel.module
+
 from sopel.logger import get_logger
+import sopel.module
 
 LOGGER = get_logger(__name__)
 

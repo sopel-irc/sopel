@@ -6,7 +6,7 @@ import os.path
 import re
 import sys
 
-from sopel.tools import itervalues, get_command_regexp
+from sopel.tools import get_command_regexp, itervalues
 
 if sys.version_info.major >= 3:
     basestring = (str, bytes)

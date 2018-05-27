@@ -9,12 +9,13 @@ https://sopel.chat
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 import collections
+import subprocess
 import sys
 import time
-from sopel.tools import iteritems
+
 import sopel.loader
 import sopel.module
-import subprocess
+from sopel.tools import iteritems
 
 
 @sopel.module.nickname_commands("reload")

@@ -10,7 +10,14 @@ https://sopel.chat
 """
 from __future__ import absolute_import, division, print_function, unicode_literals
 
+import argparse
+import os
+import signal
 import sys
+
+from sopel.__init__ import __version__, run
+from sopel.config import _create_config, _wizard, Config, ConfigurationError
+import sopel.tools as tools
 from sopel.tools import stderr
 
 if sys.version_info < (2, 7):
@@ -19,14 +26,6 @@ if sys.version_info < (2, 7):
 if sys.version_info.major == 3 and sys.version_info.minor < 3:
     stderr('Error: When running on Python 3, Python 3.3 is required.')
     sys.exit(1)
-
-import os
-import argparse
-import signal
-
-from sopel.__init__ import run, __version__
-from sopel.config import Config, _create_config, ConfigurationError, _wizard
-import sopel.tools as tools
 
 homedir = os.path.join(os.path.expanduser('~'), '.sopel')
 

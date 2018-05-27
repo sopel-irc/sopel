@@ -9,7 +9,9 @@ https://sopel.chat
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 import re
+
 import requests
+
 from sopel import web
 from sopel.module import commands, example
 

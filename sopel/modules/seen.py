@@ -9,11 +9,12 @@ https://sopel.chat
 """
 from __future__ import absolute_import, division, print_function, unicode_literals
 
-import time
 import datetime
+import time
+
+from sopel.module import commands, priority, rule, thread
 from sopel.tools import Identifier
-from sopel.tools.time import get_timezone, format_time
-from sopel.module import commands, rule, priority, thread
+from sopel.tools.time import format_time, get_timezone
 
 
 @commands('seen')

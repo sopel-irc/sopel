@@ -8,10 +8,13 @@ https://sopel.chat
 """
 from __future__ import absolute_import, division, print_function, unicode_literals
 
-from sopel.module import commands, example
-import requests
 import re
 import sys
+
+import requests
+
+from sopel.module import commands, example
+
 if sys.version_info.major >= 3:
     unicode = str
 

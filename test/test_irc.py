@@ -2,18 +2,18 @@
 """Tests for message formatting"""
 from __future__ import absolute_import, division, print_function, unicode_literals
 
-import pytest
-
 import asynchat
+import asyncore
 import os
 import shutil
 import socket
 import tempfile
-import asyncore
 
+import pytest
+
+from sopel import config as conf
 from sopel import irc
 from sopel.tools import Identifier
-import sopel.config as conf
 
 
 HOST = '127.0.0.1'

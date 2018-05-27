@@ -14,15 +14,15 @@ import sys
 import threading
 import time
 
-from sopel import tools
 from sopel import irc
+from sopel import tools
 from sopel.db import SopelDB
-from sopel.tools import stderr, Identifier
+import sopel.loader
+from sopel.logger import get_logger
+from sopel.module import NOLIMIT
+from sopel.tools import Identifier, stderr
 import sopel.tools.jobs
 from sopel.trigger import Trigger
-from sopel.module import NOLIMIT
-from sopel.logger import get_logger
-import sopel.loader
 
 
 LOGGER = get_logger(__name__)

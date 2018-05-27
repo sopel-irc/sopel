@@ -8,16 +8,18 @@ This module uses virustotal.com
 """
 from __future__ import absolute_import, division, print_function, unicode_literals
 
-from sopel.config.types import StaticSection, ValidatedAttribute, ListAttribute
-from sopel.formatting import color, bold
+import os.path
+import re
+import sys
+import time
+
+import requests
+
+from sopel.config.types import ListAttribute, StaticSection, ValidatedAttribute
+from sopel.formatting import bold, color
 from sopel.logger import get_logger
 from sopel.module import OP
 import sopel.tools
-import sys
-import time
-import os.path
-import re
-import requests
 
 try:
     # This is done separately from the below version if/else because JSONDecodeError

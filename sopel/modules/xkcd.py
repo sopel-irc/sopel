@@ -7,9 +7,11 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 import random
 import re
+
 import requests
-from sopel.modules.search import google_search
+
 from sopel.module import commands, url
+from sopel.modules.search import google_search
 
 ignored_sites = [
     # For google searching

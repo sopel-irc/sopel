@@ -5,8 +5,9 @@
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 import re
+
 from sopel import formatting
-from sopel.module import commands, priority, OP, HALFOP, require_privilege, require_chanmsg
+from sopel.module import commands, HALFOP, OP, priority, require_chanmsg, require_privilege
 from sopel.tools import Identifier
 
 

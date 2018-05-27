@@ -9,11 +9,11 @@ try:
 except ImportError:
     pytz = None
 
+from sopel.config.types import StaticSection, ValidatedAttribute
 from sopel.module import commands, example, OP
 from sopel.tools.time import (
-    get_timezone, format_time, validate_format, validate_timezone
+    format_time, get_timezone, validate_format, validate_timezone
 )
-from sopel.config.types import StaticSection, ValidatedAttribute
 
 
 class TimeSection(StaticSection):

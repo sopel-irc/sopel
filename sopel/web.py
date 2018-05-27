@@ -17,6 +17,7 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 import re
 import sys
 import urllib
+
 import requests
 
 from sopel import __version__

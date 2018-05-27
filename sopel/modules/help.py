@@ -10,12 +10,13 @@ https://sopel.chat
 """
 from __future__ import absolute_import, division, print_function, unicode_literals
 
-import textwrap
 import collections
+import textwrap
+
 import requests
 
 from sopel.logger import get_logger
-from sopel.module import commands, rule, example, priority
+from sopel.module import commands, example, priority, rule
 
 logger = get_logger(__name__)
 

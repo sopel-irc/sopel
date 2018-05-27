@@ -11,9 +11,10 @@ using the sed notation (s///) commonly found in vi/vim.
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 import re
-from sopel.tools import Identifier, SopelMemory
-from sopel.module import rule, priority
+
 from sopel.formatting import bold
+from sopel.module import priority, rule
+from sopel.tools import Identifier, SopelMemory
 
 
 def setup(bot):

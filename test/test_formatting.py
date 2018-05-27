@@ -4,7 +4,7 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 import pytest
 
-from sopel.formatting import colors, color, bold, underline
+from sopel.formatting import bold, color, colors, underline
 
 
 def test_color():

@@ -10,17 +10,22 @@
 # documentation at http://www.irchelp.org/irchelp/rfc/
 from __future__ import absolute_import, division, print_function, unicode_literals
 
-import sys
-import time
-import socket
-import asyncore
 import asynchat
-import os
+import asyncore
 import codecs
+from datetime import datetime
+import errno
+import os
+import socket
+import sys
+import threading
+import time
 import traceback
+
 from sopel.logger import get_logger
-from sopel.tools import stderr, Identifier
+from sopel.tools import Identifier, stderr
 from sopel.trigger import PreTrigger
+
 try:
     import ssl
     if not hasattr(ssl, 'match_hostname'):
@@ -33,9 +38,6 @@ except ImportError:
     # no SSL support
     has_ssl = False
 
-import errno
-import threading
-from datetime import datetime
 if sys.version_info.major >= 3:
     unicode = str
 

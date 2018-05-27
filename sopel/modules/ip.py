@@ -6,10 +6,11 @@
 
 from __future__ import absolute_import, division, print_function, unicode_literals
 
-import pygeoip
-import socket
-import os
 import gzip
+import os
+import socket
+
+import pygeoip
 
 urlretrieve = None
 try:
@@ -23,9 +24,9 @@ except ImportError:
     except ImportError:
         pass
 
-from sopel.config.types import StaticSection, FilenameAttribute
-from sopel.module import commands, example
+from sopel.config.types import FilenameAttribute, StaticSection
 from sopel.logger import get_logger
+from sopel.module import commands, example
 
 LOGGER = get_logger(__name__)
 

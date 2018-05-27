@@ -5,11 +5,13 @@
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 import re
-from sopel import web
-from sopel.module import commands, example
+import sys
+
 import requests
 import xmltodict
-import sys
+
+from sopel import web
+from sopel.module import commands, example
 
 if sys.version_info.major < 3:
     from urllib import quote_plus, unquote

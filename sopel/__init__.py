@@ -12,8 +12,17 @@
 
 from __future__ import absolute_import, division, print_function, unicode_literals
 
+from collections import namedtuple
 import locale
+import os
+import re
+import signal
 import sys
+import time
+import traceback
+
+__version__ = '6.5.3'
+
 loc = locale.getlocale()
 if sys.version_info.major > 2:
     if not loc[1] or 'UTF-8' not in loc[1]:
@@ -21,16 +30,6 @@ if sys.version_info.major > 2:
               'variables (e.g. LC_ALL is set to "C"), which makes Python 3 do '
               'stupid things. If you get strange errors, please set it to '
               'something like "en_US.UTF-8".', file=sys.stderr)
-
-
-from collections import namedtuple
-import os
-import re
-import time
-import traceback
-import signal
-
-__version__ = '6.5.3'
 
 
 def _version_info(version=__version__):

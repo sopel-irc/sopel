@@ -8,9 +8,10 @@
 
 from __future__ import absolute_import, division, print_function, unicode_literals
 
-import re
-import sopel.test_tools
 import functools
+import re
+
+import sopel.test_tools
 
 NOLIMIT = 1
 """Return value for ``callable``\s, which suppresses rate limiting for the call.

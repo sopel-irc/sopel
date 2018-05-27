@@ -12,11 +12,11 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 import json
 import random
 import sys
+
 import requests
 
-
 from sopel import web
-from sopel.module import rule, commands, priority, example
+from sopel.module import commands, example, priority, rule
 
 mangle_lines = {}
 if sys.version_info.major >= 3:

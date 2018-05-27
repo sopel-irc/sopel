@@ -8,16 +8,17 @@ This module is an attempt to implement at least some of the functionallity of De
 """
 from __future__ import absolute_import, division, print_function, unicode_literals
 
-import time
-import os
-from sopel.config.types import (
-    StaticSection, FilenameAttribute, ValidatedAttribute
-)
-from sopel.web import quote
-from sopel.modules.url import find_title
-from sopel.module import example, commands, rule, priority
-from sopel.tools import Ddict, Identifier
 import codecs
+import os
+import time
+
+from sopel.config.types import (
+    FilenameAttribute, StaticSection, ValidatedAttribute
+)
+from sopel.module import commands, example, priority, rule
+from sopel.modules.url import find_title
+from sopel.tools import Ddict, Identifier
+from sopel.web import quote
 
 
 class MeetbotSection(StaticSection):

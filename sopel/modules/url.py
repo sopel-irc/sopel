@@ -8,11 +8,12 @@
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 import re
-from sopel import web, tools, __version__
-from sopel.module import commands, rule, example
-from sopel.config.types import ValidatedAttribute, ListAttribute, StaticSection
 
 import requests
+
+from sopel import __version__, tools, web
+from sopel.config.types import ListAttribute, StaticSection, ValidatedAttribute
+from sopel.module import commands, example, rule
 
 USER_AGENT = 'Sopel/{} (https://sopel.chat)'.format(__version__)
 default_headers = {'User-Agent': USER_AGENT}

@@ -9,9 +9,10 @@ Sopel website.
 # Licensed under the Eiffel Forum License 2.
 from __future__ import absolute_import, division, print_function, unicode_literals
 
+import requests
+
 import sopel
 import sopel.module
-import requests
 import sopel.tools
 
 wait_time = 24 * 60 * 60  # check once per day

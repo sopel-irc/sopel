@@ -7,7 +7,8 @@ About: https://sopel.chat
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 import random
-from sopel.module import rule, priority, thread
+
+from sopel.module import priority, rule, thread
 
 
 @rule(r'(?i)(hi|hello|hey),? $nickname[ \t]*$')

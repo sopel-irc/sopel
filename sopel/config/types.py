@@ -28,6 +28,7 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 import os.path
 import sys
+
 from sopel.tools import get_input
 
 if sys.version_info.major >= 3:

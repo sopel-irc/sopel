@@ -7,12 +7,12 @@ Licensed under the Eiffel Forum License 2.
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 import re
-import requests
 
+import requests
 import xmltodict
 
 from sopel import tools
-from sopel.config.types import StaticSection, ListAttribute
+from sopel.config.types import ListAttribute, StaticSection
 from sopel.logger import get_logger
 from sopel.module import rule
 

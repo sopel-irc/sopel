@@ -8,8 +8,10 @@ Sopel: https://sopel.chat/
 """
 from __future__ import absolute_import, division, print_function, unicode_literals
 
-import sopel
 import sys
+
+import sopel
+
 if sys.version_info.major >= 3:
     # Backup stderr/stdout wrappers
     old_stdout = sys.stdout

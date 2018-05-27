@@ -9,9 +9,9 @@ https://sopel.chat/
 """
 from __future__ import absolute_import, division, print_function, unicode_literals
 
+import operator
 import random
 import re
-import operator
 
 import sopel.module
 from sopel.tools.calculation import eval_equation

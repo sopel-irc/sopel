@@ -4,10 +4,10 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 import pytest
 
-from sopel.trigger import PreTrigger, Trigger
+from sopel import module
 from sopel.test_tools import MockSopel, MockSopelWrapper
 from sopel.tools import Identifier
-from sopel import module
+from sopel.trigger import PreTrigger, Trigger
 
 
 @pytest.fixture

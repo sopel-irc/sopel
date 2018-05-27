@@ -3,12 +3,7 @@
 # Licensed under the Eiffel Forum License 2.
 from __future__ import absolute_import, division, print_function, unicode_literals
 
-from sopel import tools
-from sopel.config.types import StaticSection, ValidatedAttribute
-from sopel.module import NOLIMIT, commands, example, rule
-from requests import get
 import re
-
 import sys
 if sys.version_info.major < 3:
     from urllib import quote as _quote
@@ -17,6 +12,12 @@ if sys.version_info.major < 3:
     unquote = lambda s: _unquote(s.encode('utf-8')).decode('utf-8')
 else:
     from urllib.parse import quote, unquote
+
+from requests import get
+
+from sopel import tools
+from sopel.config.types import StaticSection, ValidatedAttribute
+from sopel.module import commands, example, NOLIMIT, rule
 
 REDIRECT = re.compile(r'^REDIRECT (.*)')
 

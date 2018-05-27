@@ -5,8 +5,9 @@
 # Licensed under the Eiffel Forum License 2.
 from __future__ import absolute_import, division, print_function, unicode_literals
 
-import unicodedata
 import sys
+import unicodedata
+
 from sopel.module import commands, example, NOLIMIT
 
 if sys.version_info.major >= 3:

@@ -6,6 +6,7 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 import re
 
 from requests import get
+
 from sopel.module import commands, example, NOLIMIT
 
 # The Canadian central bank has better exchange rate data than the Fed, the

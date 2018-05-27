@@ -12,17 +12,18 @@ dispatch function in bot.py and making it easier to maintain.
 # Licensed under the Eiffel Forum License 2.
 from __future__ import absolute_import, division, print_function, unicode_literals
 
+import base64
 from random import randint
 import re
 import sys
 import time
+
 import sopel
-import sopel.module
 from sopel.bot import _CapReq
-from sopel.tools import Identifier, iteritems, events
-from sopel.tools.target import User, Channel
-import base64
 from sopel.logger import get_logger
+import sopel.module
+from sopel.tools import events, Identifier, iteritems
+from sopel.tools.target import Channel, User
 
 if sys.version_info.major >= 3:
     unicode = str

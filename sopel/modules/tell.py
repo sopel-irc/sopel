@@ -9,12 +9,13 @@ https://sopel.chat
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 import os
-import time
-import threading
 import sys
+import threading
+import time
+
+from sopel.module import commands, example, nickname_commands, priority, rule
 from sopel.tools import Identifier, iterkeys
-from sopel.tools.time import get_timezone, format_time
-from sopel.module import commands, nickname_commands, rule, priority, example
+from sopel.tools.time import format_time, get_timezone
 
 maximum = 4
 

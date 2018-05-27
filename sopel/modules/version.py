@@ -10,9 +10,10 @@ https://sopel.chat
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 from datetime import datetime
-import sopel
-import re
 from os import path
+import re
+
+import sopel
 
 log_line = re.compile('\S+ (\S+) (.*? <.*?>) (\d+) (\S+)\tcommit[^:]*: (.+)')
 

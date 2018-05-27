@@ -17,7 +17,9 @@ except ImportError:
     def unescape(s):
         return HTMLParser.unescape.__func__(HTMLParser, s)
 import re
+
 import requests
+
 from sopel.module import commands, example, NOLIMIT
 
 etyuri = 'http://etymonline.com/?term=%s'

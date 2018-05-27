@@ -8,16 +8,17 @@ https://sopel.chat
 """
 from __future__ import absolute_import, division, print_function, unicode_literals
 
+import codecs
+import collections
+from datetime import datetime
 import os
 import re
-import time
 import threading
-import collections
-import codecs
-from datetime import datetime
+import time
+
 from sopel.module import commands, example, NOLIMIT
 import sopel.tools
-from sopel.tools.time import get_timezone, format_time
+from sopel.tools.time import format_time, get_timezone
 
 try:
     import pytz

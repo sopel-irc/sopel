@@ -2,14 +2,17 @@
 # Author: Elsie Powell, embolalia.com
 from __future__ import absolute_import, division, print_function, unicode_literals
 
-from sopel.module import commands, rule, example, require_chanmsg, NOLIMIT, OP
-from sopel.formatting import bold, color, colors
-from sopel.web import USER_AGENT
-from sopel.tools import SopelMemory, time
 import datetime as dt
-import praw
 import re
 import sys
+
+import praw
+
+from sopel.formatting import bold, color, colors
+from sopel.module import commands, example, NOLIMIT, OP, require_chanmsg, rule
+from sopel.tools import SopelMemory, time
+from sopel.web import USER_AGENT
+
 if sys.version_info.major >= 3:
     unicode = str
     if sys.version_info.minor >= 4:
