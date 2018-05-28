@@ -62,7 +62,7 @@ class Bot(asynchat.async_chat):
         self.ca_certs = ca_certs
         self.enabled_capabilities = set()
         self.hasquit = False
-        self.restart = False
+        self.wantsrestart = False
 
         self.sending = threading.RLock()
         self.writing_lock = threading.Lock()
@@ -180,7 +180,7 @@ class Bot(asynchat.async_chat):
     def restart(self, message):
         """Disconnect from IRC and restart the bot."""
         self.write(['QUIT'], message)
-        self.restart = True
+        self.wantsrestart = True
         self.hasquit = True
 
     def quit(self, message):

@@ -100,7 +100,7 @@ def run(config, pid_file, daemon=False):
 
         if not isinstance(delay, int):
             break
-        if p.restart:
+        if p.wantsrestart:
             return -1
         if p.hasquit:
             break
