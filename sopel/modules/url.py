@@ -57,12 +57,15 @@ class TitleParser(HTMLParser):
         if tag == 'head':
             self.in_head = True
 
-        # Look for a tag like "<meta http-equiv="Content-Type" content="text/html; charset=utf-8">"
-        if tag == 'meta' and any([a[0].lower() == 'http-equiv' for a in attributes]):
+        # Look for a tag like <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+        # or the newer version, <meta charset="UTF-8">
+        if tag == 'meta':
             for a in attributes:
                 if a[0].lower() == 'content':
                     _, enc = parse_header(a[1])
                     self.encoding = enc.get('charset')
+                if a[0].lower() == 'charset':
+                    self.encoding = a[1]
 
     def handle_endtag(self, tag):
         if tag == 'title':
@@ -247,11 +250,18 @@ def find_title(url, verify=True):
             if parser.title or length > max_bytes:
                 break
 
-    except Exception as e:
-        # If we had a logger, this would be a place to use it
+    except (requests.exceptions.Timeout, requests.exceptions.TooManyRedirects):
+        # We're not going to retry since this is isn't very useful if it takes forever
+        # and we want to just fail fast
         return None
-    finally:
+    except requests.exceptions.RequestException as e:
+        # Unspecified error from requests module, just bail
+        return None
+    except Exception as e:
+        # Something went wrong in parsing the stream, this would be a good place
+        # for logging if we had any
         r.close()
+        return None
 
     # Truncate long titles with ellipsis
     title = parser.title
