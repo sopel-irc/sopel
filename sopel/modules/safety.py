@@ -8,17 +8,23 @@ This module uses virustotal.com
 """
 from __future__ import unicode_literals, absolute_import, print_function, division
 
-import sopel.web as web
 from sopel.config.types import StaticSection, ValidatedAttribute, ListAttribute
 from sopel.formatting import color, bold
 from sopel.logger import get_logger
 from sopel.module import OP
 import sopel.tools
 import sys
-import json
 import time
 import os.path
 import re
+import requests
+
+try:
+    # This is done separately from the below version if/else because JSONDecodeError
+    # didn't appear until Python 3.5, but Sopel claims support for 3.3+
+    from json import JSONDecodeError as InvalidJSONResponse
+except ImportError:
+    InvalidJSONResponse = ValueError
 
 if sys.version_info.major > 2:
     unicode = str
@@ -131,10 +137,9 @@ def url_handler(bot, trigger):
                        'scan': '1'}
 
             if trigger not in bot.memory['safety_cache']:
-                result = web.post(vt_base_api_url + 'report', payload)
-                if sys.version_info.major > 2:
-                    result = result.decode('utf-8')
-                result = json.loads(result)
+                r = requests.post(vt_base_api_url + 'report', data=payload)
+                r.raise_for_status()
+                result = r.json()
                 age = time.time()
                 data = {'positives': result['positives'],
                         'total': result['total'],
@@ -147,8 +152,11 @@ def url_handler(bot, trigger):
                 result = bot.memory['safety_cache'][trigger]
             positives = result['positives']
             total = result['total']
-    except Exception:
-        LOGGER.debug('Error from checking URL with VT.', exc_info=True)
+    except requests.exceptions.RequestException:
+        LOGGER.debug('[VirusTotal] Error obtaining response.', exc_info=True)
+        pass  # Ignoring exceptions with VT so MalwareDomains will always work
+    except InvalidJSONResponse:
+        LOGGER.debug('[VirusTotal] Malformed response (invalid JSON).', exc_info=True)
         pass  # Ignoring exceptions with VT so MalwareDomains will always work
 
     if unicode(netloc).lower() in malware_domains:

@@ -7,7 +7,7 @@ Release:        0.#BUILD#%{gittag}%{?dist}
 Summary:        Simple, lightweight and easy-to-use IRC Utility bot
 
 License:        EFL 2.0
-URL:            http://sopel.chat/
+URL:            https://sopel.chat/
 Source0:        %{name}-%{version}.tar
 
 BuildArch:      noarch

@@ -46,7 +46,7 @@ try:
 except ImportError:
     has_ssl = False
 
-USER_AGENT = 'Sopel/{} (http://sopel.chat)'.format(__version__)
+USER_AGENT = 'Sopel/{} (https://sopel.chat)'.format(__version__)
 default_headers = {'User-Agent': USER_AGENT}
 ca_certs = None  # Will be overriden when config loads. This is for an edge case.
 
@@ -130,8 +130,9 @@ def head(uri, timeout=20, headers=None, verify_ssl=True):
 def post(uri, query, limit_bytes=None, timeout=20, verify_ssl=True, return_headers=False):
     """Execute an HTTP POST query. Deprecated.
 
-    `uri` is the target URI, and `query` is the POST data. `headers` is a dict
-    of HTTP headers to send with the request.
+    `uri` is the target URI, and `query` is the POST data.
+
+    If `return_headers` is true, returns a tuple of (bytes, headers).
 
     `limit_bytes` is ignored.
 
@@ -147,6 +148,7 @@ def post(uri, query, limit_bytes=None, timeout=20, verify_ssl=True, return_heade
     else:
         headers['_http_status'] = u.status_code
         return (bytes, headers)
+
 
 r_entity = re.compile(r'&([^;\s]+);')
 

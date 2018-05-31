@@ -4,12 +4,12 @@ tld.py - Sopel TLD Module
 Copyright 2009-10, Michael Yanovich, yanovich.net
 Licensed under the Eiffel Forum License 2.
 
-http://sopel.chat
+https://sopel.chat
 """
 from __future__ import unicode_literals, absolute_import, print_function, division
 
-from sopel import web
 from sopel.module import commands, example
+import requests
 import re
 import sys
 if sys.version_info.major >= 3:
@@ -23,7 +23,7 @@ r_tag = re.compile(r'<(?!!)[^>]+>')
 @example('.tld ru')
 def gettld(bot, trigger):
     """Show information about the given Top Level Domain."""
-    page = web.get(uri)
+    page = requests.get(uri).text
     tld = trigger.group(2)
     if tld[0] == '.':
         tld = tld[1:]

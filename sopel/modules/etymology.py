@@ -4,7 +4,7 @@ etymology.py - Sopel Etymology Module
 Copyright 2007-9, Sean B. Palmer, inamidst.com
 Licensed under the Eiffel Forum License 2.
 
-http://sopel.chat
+https://sopel.chat
 """
 from __future__ import unicode_literals, absolute_import, print_function, division
 
@@ -17,7 +17,7 @@ except ImportError:
     def unescape(s):
         return HTMLParser.unescape.__func__(HTMLParser, s)
 import re
-from sopel import web
+import requests
 from sopel.module import commands, example, NOLIMIT
 
 etyuri = 'http://etymonline.com/?term=%s'
@@ -51,7 +51,7 @@ def etymology(word):
         raise ValueError("Word too long: %s[...]" % word[:10])
     word = {'axe': 'ax/axe'}.get(word, word)
 
-    bytes = web.get(etyuri % word)
+    bytes = requests.get(etyuri % word).text
     definitions = r_definition.findall(bytes)
 
     if not definitions:

@@ -7,6 +7,7 @@ Licensed under the Eiffel Forum License 2.
 
 """
 from __future__ import unicode_literals, absolute_import, print_function, division
+
 from sopel.module import commands, example, NOLIMIT
 import re
 
@@ -56,7 +57,11 @@ def temperature(bot, trigger):
 
     kelvin = c_to_k(celsius)
     fahrenheit = c_to_f(celsius)
-    bot.reply("{:.2f}°C = {:.2f}°F = {:.2f}K".format(celsius, fahrenheit, kelvin))
+
+    if kelvin >= 0:
+        bot.reply("{:.2f}°C = {:.2f}°F = {:.2f}K".format(celsius, fahrenheit, kelvin))
+    else:
+        bot.reply("Physically impossible temperature.")
 
 
 @commands('length', 'distance')
@@ -180,6 +185,7 @@ def mass(bot, trigger):
         stupid_part = '{:.2f} oz'.format(ounce)
 
     bot.reply('{} = {}'.format(metric_part, stupid_part))
+
 
 if __name__ == "__main__":
     from sopel.test_tools import run_example_tests

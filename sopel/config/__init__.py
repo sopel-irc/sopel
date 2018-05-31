@@ -109,8 +109,8 @@ class Config(object):
         current = getattr(self, name, None)
         current_name = str(current.__class__)
         new_name = str(cls_)
-        if (current is not None and not isinstance(current, self.ConfigSection)
-                and not current_name == new_name):
+        if (current is not None and not isinstance(current, self.ConfigSection) and
+                not current_name == new_name):
             raise ValueError(
                 "Can not re-define class for section from {} to {}.".format(
                     current_name, new_name)
@@ -255,9 +255,9 @@ def _create_config(configpath):
         ):
             config._modules()
         config.save()
-    except Exception:
+    except Exception:  # TODO: Be specific
         print("Encountered an error while writing the config file." +
               " This shouldn't happen. Check permissions.")
         raise
         sys.exit(1)
-    print("Config file written sucessfully!")
+    print("Config file written successfully!")

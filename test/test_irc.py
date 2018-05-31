@@ -1,6 +1,6 @@
-# coding=utf8
+# coding=utf-8
 """Tests for message formatting"""
-from __future__ import unicode_literals
+from __future__ import unicode_literals, absolute_import, print_function, division
 
 import pytest
 
@@ -8,14 +8,11 @@ import asynchat
 import os
 import shutil
 import socket
-import select
 import tempfile
-import threading
-import time
 import asyncore
 
 from sopel import irc
-from sopel.tools import stderr, Identifier
+from sopel.tools import Identifier
 import sopel.config as conf
 
 
@@ -42,6 +39,7 @@ class BasicServer(asyncore.dispatcher):
 
     def handle_close(self):
         self.close()
+
 
 class BasicHandler(asynchat.async_chat):
     ac_in_buffer_size = 512
@@ -75,7 +73,7 @@ def start_server(rpl_function=None):
     if rpl_function is None:
         rpl_function = rpl_func
 
-    address = ('localhost', 0) # let the kernel give us a port
+    address = ('localhost', 0)  # let the kernel give us a port
     server = BasicServer(address, rpl_function)
     return server
 
@@ -86,6 +84,7 @@ def bot(request):
     print(cfg_dir)
     filename = tempfile.mkstemp(dir=cfg_dir)[1]
     os.mkdir(os.path.join(cfg_dir, 'modules'))
+
     def fin():
         print('teardown config file')
         shutil.rmtree(cfg_dir)
@@ -122,7 +121,7 @@ def basic_irc_replies(server, msg):
         # Quit here because good enough
         server.close()
     elif msg.startswith('PING'):
-        return 'PONG{}'.format(msg.replace('PING','',1))
+        return 'PONG{}'.format(msg.replace('PING', '', 1))
     elif msg.startswith('CAP'):
         return 'CAP * :'
     elif msg.startswith('QUIT'):

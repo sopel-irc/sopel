@@ -2,18 +2,21 @@
 # Copyright 2013 Elsie Powell - embolalia.com
 # Licensed under the Eiffel Forum License 2.
 from __future__ import unicode_literals, absolute_import, print_function, division
-from sopel import web, tools
+
+from sopel import tools
 from sopel.config.types import StaticSection, ValidatedAttribute
 from sopel.module import NOLIMIT, commands, example, rule
-import json
+from requests import get
 import re
 
 import sys
 if sys.version_info.major < 3:
+    from urllib import quote as _quote
     from urlparse import unquote as _unquote
+    quote = lambda s: _quote(s.encode('utf-8')).decode('utf-8')
     unquote = lambda s: _unquote(s.encode('utf-8')).decode('utf-8')
 else:
-    from urllib.parse import unquote
+    from urllib.parse import quote, unquote
 
 REDIRECT = re.compile(r'^REDIRECT (.*)')
 
@@ -50,7 +53,7 @@ def mw_search(server, query, num):
                   '&list=search&srlimit=%d&srprop=timestamp&srwhat=text'
                   '&srsearch=') % (server, num)
     search_url += query
-    query = json.loads(web.get(search_url))
+    query = get(search_url).json()
     if 'query' in query:
         query = query['query']['search']
         return [r['title'] for r in query]
@@ -58,13 +61,21 @@ def mw_search(server, query, num):
         return None
 
 
-def say_snippet(bot, server, query, show_url=True):
+def say_snippet(bot, trigger, server, query, show_url=True):
     page_name = query.replace('_', ' ')
-    query = query.replace(' ', '_')
-    snippet = mw_snippet(server, query)
+    query = quote(query.replace(' ', '_'))
+    try:
+        snippet = mw_snippet(server, query)
+    except KeyError:
+        if show_url:
+            bot.say("[WIKIPEDIA] Error fetching snippet for \"{}\".".format(page_name))
+        return
     msg = '[WIKIPEDIA] {} | "{}"'.format(page_name, snippet)
+    msg_url = msg + ' | https://{}/wiki/{}'.format(server, query)
+    if msg_url == trigger:  # prevents triggering on another instance of Sopel
+        return
     if show_url:
-        msg = msg + ' | https://{}/wiki/{}'.format(server, query)
+        msg = msg_url
     bot.say(msg)
 
 
@@ -77,7 +88,7 @@ def mw_snippet(server, query):
                    '&action=query&prop=extracts&exintro&explaintext'
                    '&exchars=300&redirects&titles=')
     snippet_url += query
-    snippet = json.loads(web.get(snippet_url))
+    snippet = get(snippet_url).json()
     snippet = snippet['query']['pages']
 
     # For some reason, the API gives the page *number* as the key, so we just
@@ -87,14 +98,14 @@ def mw_snippet(server, query):
     return snippet['extract']
 
 
-@rule('.*\/([a-z]+\.wikipedia.org)\/wiki\/((?!File\:)[^ ]+).*')
+@rule('.*\/([a-z]+\.wikipedia\.org)\/wiki\/((?!File\:)[^ ]+).*')
 def mw_info(bot, trigger, found_match=None):
     """
     Retrives a snippet of the specified length from the given page on the given
     server.
     """
     match = found_match or trigger
-    say_snippet(bot, match.group(1), unquote(match.group(2)), show_url=False)
+    say_snippet(bot, trigger, match.group(1), unquote(match.group(2)), show_url=False)
 
 
 @commands('w', 'wiki', 'wik')
@@ -130,4 +141,4 @@ def wikipedia(bot, trigger):
         return NOLIMIT
     else:
         query = query[0]
-    say_snippet(bot, server, query)
+    say_snippet(bot, trigger, server, query)

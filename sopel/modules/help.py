@@ -3,22 +3,26 @@
 help.py - Sopel Help Module
 Copyright 2008, Sean B. Palmer, inamidst.com
 Copyright © 2013, Elad Alfassa, <elad@fedoraproject.org>
+Copyright © 2018, Adam Erdman, pandorah.org
 Licensed under the Eiffel Forum License 2.
 
-http://sopel.chat
+https://sopel.chat
 """
 from __future__ import unicode_literals, absolute_import, print_function, division
 
 import textwrap
 import collections
-import json
-
 import requests
 
 from sopel.logger import get_logger
 from sopel.module import commands, rule, example, priority
 
 logger = get_logger(__name__)
+
+
+def setup(bot):
+    global help_prefix
+    help_prefix = bot.config.core.help_prefix
 
 
 @rule('$nick' '(?i)(help|doc) +([A-Za-z]+)(?:\?+)?$')
@@ -51,8 +55,8 @@ def help(bot, trigger):
         # actually creating the list first. Maybe worth storing the link and a
         # heuristic in config, too, so it persists across restarts. Would need a
         # command to regenerate, too...
-        if 'command-gist' in bot.memory and bot.memory['command-gist'][0] == len(bot.command_groups):
-            url = bot.memory['command-gist'][1]
+        if 'command-list' in bot.memory and bot.memory['command-list'][0] == len(bot.command_groups):
+            url = bot.memory['command-list'][1]
         else:
             bot.say("Hang on, I'm creating a list.")
             msgs = []
@@ -67,51 +71,40 @@ def help(bot, trigger):
                 # Honestly not sure why this is a list here
                 msgs.append('\n'.join(textwrap.wrap(msg, subsequent_indent=indent)))
 
-            url = create_gist(bot, '\n\n'.join(msgs))
+            url = create_list(bot, '\n\n'.join(msgs))
             if not url:
                 return
-            bot.memory['command-gist'] = (len(bot.command_groups), url)
-        bot.say("I've posted a list of my commands at {} - You can see "
-                "more info about any of these commands by doing .help "
-                "<command> (e.g. .help time)".format(url))
+            bot.memory['command-list'] = (len(bot.command_groups), url)
+        bot.say("I've posted a list of my commands at {0} - You can see "
+                "more info about any of these commands by doing {1}help "
+                "<command> (e.g. {1}help time)".format(url, help_prefix))
 
 
-def create_gist(bot, msg):
-    payload = {
-        'description': 'Command listing for {}@{}'.format(bot.nick, bot.config.core.host),
-        'public': 'true',
-        'files': {
-            'commands.txt': {
-                "content": msg,
-            },
-        },
-    }
+def create_list(bot, msg):
+    msg = 'Command listing for {}@{}\n\n'.format(bot.nick, bot.config.core.host) + msg
+    payload = {"content": msg}
+    headers = {'Content-type': 'application/json', 'Accept': 'application/json'}
+
     try:
-        result = requests.post('https://api.github.com/gists',
-                               data=json.dumps(payload))
+        result = requests.post('https://ptpb.pw/', json=payload, headers=headers)
     except requests.RequestException:
         bot.say("Sorry! Something went wrong.")
-        logger.exception("Error posting commands gist")
-        return
-    if not result.status_code != '201':
-        bot.say("Sorry! Something went wrong.")
-        logger.error("Error %s posting commands gist: %s",
-                     result.status_code, result.text)
+        logger.exception("Error posting commands")
         return
     result = result.json()
-    if 'html_url' not in result:
+    if 'url' not in result:
         bot.say("Sorry! Something went wrong.")
         logger.error("Invalid result %s", result)
         return
-    return result['html_url']
+    return result['url']
 
 
 @rule('$nick' r'(?i)help(?:[?!]+)?$')
 @priority('low')
 def help2(bot, trigger):
     response = (
-        'Hi, I\'m a bot. Say ".commands" to me in private for a list ' +
-        'of my commands, or see http://sopel.chat for more ' +
-        'general details. My owner is %s.'
-    ) % bot.config.core.owner
+        "Hi, I'm a bot. Say {1}commands to me in private for a list "
+        "of my commands, or see https://sopel.chat for more "
+        "general details. My owner is {0}."
+        .format(bot.config.core.owner, help_prefix))
     bot.reply(response)

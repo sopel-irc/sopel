@@ -4,8 +4,7 @@
 TODO: Most of these tests assume functionality tested in other tests. This is
 enough to get everything working (and is better than nothing), but best
 practice would probably be not to do that."""
-from __future__ import unicode_literals
-from __future__ import absolute_import
+from __future__ import unicode_literals, absolute_import, print_function, division
 
 import json
 import os

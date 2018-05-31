@@ -5,11 +5,12 @@ Copyright © 2012, Elad Alfassa, <elad@fedoraproject.org>
 Copyright © 2012, Lior Ramati
 Licensed under the Eiffel Forum License 2.
 
-http://sopel.chat
+https://sopel.chat
 
 This module relies on pyenchant, on Fedora and Red Hat based system, it can be found in the package python-enchant
 """
 from __future__ import unicode_literals, absolute_import, print_function, division
+
 try:
     import enchant
 except ImportError:

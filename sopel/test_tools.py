@@ -101,7 +101,7 @@ def get_example_test(tested_func, msg, results, privmsg, admin,
             channel.
         admin - If true, make the message appear to have come from an admin.
         owner - If true, make the message appear to have come from an owner.
-        repeat - How many times to repeat the test. Usefull for tests that
+        repeat - How many times to repeat the test. Useful for tests that
             return random stuff.
         use_regexp = Bool. If true, results is in regexp format.
         ignore - List of strings to ignore.
@@ -153,6 +153,19 @@ def get_example_test(tested_func, msg, results, privmsg, admin,
                     assert result == output
 
     return test
+
+
+def get_disable_setup():
+    import pytest
+    import py
+
+    @pytest.fixture(autouse=True)
+    def disable_setup(request, monkeypatch):
+        setup = getattr(request.module, "setup", None)
+        isfixture = hasattr(setup, "_pytestfixturefunction")
+        if setup is not None and not isfixture and py.builtin.callable(setup):
+            monkeypatch.setattr(setup, "_pytestfixturefunction", pytest.fixture(), raising=False)
+    return disable_setup
 
 
 def insert_into_module(func, module_name, base_name, prefix):

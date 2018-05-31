@@ -93,12 +93,9 @@ def configure(config):
     )
 
 
-def setup(bot=None):
+def setup(bot):
     global url_finder
 
-    # TODO figure out why this is needed, and get rid of it, because really?
-    if not bot:
-        return
     bot.config.define_section('url', UrlSection)
 
     if bot.config.url.exclude:
@@ -197,7 +194,7 @@ def process_urls(bot, trigger, urls):
             # Magic stuff to account for international domain names
             try:
                 url = web.iri_to_uri(url)
-            except:
+            except Exception:  # TODO: Be specific
                 pass
             # First, check that the URL we got doesn't match
             matched = check_callbacks(bot, trigger, url, False)
@@ -280,6 +277,7 @@ def get_hostname(url):
     if slash != -1:
         hostname = hostname[:slash]
     return hostname
+
 
 if __name__ == "__main__":
     from sopel.test_tools import run_example_tests

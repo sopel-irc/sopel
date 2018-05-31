@@ -149,6 +149,8 @@ class Identifier(unicode):
     @staticmethod
     def _lower(identifier):
         """Returns `identifier` in lower case per RFC 2812."""
+        if isinstance(identifier, Identifier):
+            return identifier._lowered
         # The tilde replacement isn't needed for identifiers, but is for
         # channels, which may be useful at some point in the future.
         low = identifier.lower().replace('{', '[').replace('}', ']')
@@ -165,29 +167,29 @@ class Identifier(unicode):
         return self._lowered.__hash__()
 
     def __lt__(self, other):
-        if isinstance(other, Identifier):
-            return self._lowered < other._lowered
-        return self._lowered < Identifier._lower(other)
+        if isinstance(other, unicode):
+            other = Identifier._lower(other)
+        return unicode.__lt__(self._lowered, other)
 
     def __le__(self, other):
-        if isinstance(other, Identifier):
-            return self._lowered <= other._lowered
-        return self._lowered <= Identifier._lower(other)
+        if isinstance(other, unicode):
+            other = Identifier._lower(other)
+        return unicode.__le__(self._lowered, other)
 
     def __gt__(self, other):
-        if isinstance(other, Identifier):
-            return self._lowered > other._lowered
-        return self._lowered > Identifier._lower(other)
+        if isinstance(other, unicode):
+            other = Identifier._lower(other)
+        return unicode.__gt__(self._lowered, other)
 
     def __ge__(self, other):
-        if isinstance(other, Identifier):
-            return self._lowered >= other._lowered
-        return self._lowered >= Identifier._lower(other)
+        if isinstance(other, unicode):
+            other = Identifier._lower(other)
+        return unicode.__ge__(self._lowered, other)
 
     def __eq__(self, other):
-        if isinstance(other, Identifier):
-            return self._lowered == other._lowered
-        return self._lowered == Identifier._lower(other)
+        if isinstance(other, unicode):
+            other = Identifier._lower(other)
+        return unicode.__eq__(self._lowered, other)
 
     def __ne__(self, other):
         return not (self == other)
@@ -229,7 +231,7 @@ class OutputRedirect(object):
                     sys.__stderr__.write(string)
                 else:
                     sys.__stdout__.write(string)
-            except:
+            except Exception:  # TODO: Be specific
                 pass
 
         with codecs.open(self.logpath, 'ab', encoding="utf8",
