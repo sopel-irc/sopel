@@ -95,7 +95,7 @@ class JobScheduler(threading.Thread):
         while True:
             try:
                 self._do_next_job()
-            except Exception:
+            except Exception:  # TODO: Be specific
                 # Modules exceptions are caught earlier, so this is a bit
                 # more serious. Options are to either stop the main thread
                 # or continue this thread and hope that it won't happen
@@ -140,7 +140,7 @@ class JobScheduler(threading.Thread):
         # Sopel.bot.call is way too specialized to be used instead.
         try:
             func(self.bot)
-        except Exception:
+        except Exception:  # TODO: Be specific
             self.bot.error()
 
 

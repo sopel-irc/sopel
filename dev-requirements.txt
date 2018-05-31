@@ -1,2 +1,3 @@
 pytest
-ipython
+coveralls
+flake8

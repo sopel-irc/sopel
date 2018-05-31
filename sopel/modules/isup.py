@@ -3,7 +3,7 @@
 # Author: Elsie Powell http://embolalia.com
 from __future__ import unicode_literals, absolute_import, print_function, division
 
-from sopel import web
+import requests
 from sopel.module import commands
 
 
@@ -25,8 +25,8 @@ def isup(bot, trigger):
         site += ".com"
 
     try:
-        response = web.get(site)
-    except Exception:
+        response = requests.head(site).headers
+    except Exception:  # TODO: Be specific
         bot.say(site + ' looks down from here.')
         return
 

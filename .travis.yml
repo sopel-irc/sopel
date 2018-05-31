@@ -4,6 +4,10 @@ python:
   - "3.4"
 git:
   submodules: false
+branches:
+  only:
+    - master
+    - /^v?\d+\.\d+(\.\d+)?(-\S*)?$/  # allows building version tags
 sudo: false  # Enables running on faster infrastructure.
 cache:
   directories:
@@ -14,11 +18,18 @@ addons:
       - enchant
 install:
   - pip install -r requirements.txt -r dev-requirements.txt
-  - pip install coveralls
-  - pip install flake8
 script:
-  - ./checkstyle.sh || true
-  - coverage run --source sopel -m py.test -v .
-  - coverage report --show-missing
+  - ./checkstyle.sh
+  - coverage run -m py.test -v .
+  - coverage report
 after_success:
   coveralls
+deploy:
+  provider: pypi
+  username: dgw
+  password:
+    secure: U9XLRA5fYRmII/pyJGDIT0BQ4p0zP8yZJtxUSUO9arFKozgYZu0ldvoLjKnzPMPQNCGs+q4f0hNuXgN+u/FgfRPF/Q3wtUj58uIC4JFnn7u2D2pv7RqzZkGi9Hr8+SS7dChlx9bVbhC1Y0md0XlrsT6rbNKKW457Jei05+vpjvg=
+  on:
+    tags: true
+    python: "3.4"
+  allow_failure: true

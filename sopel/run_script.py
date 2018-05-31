@@ -6,7 +6,7 @@ Copyright 2008, Sean B. Palmer, inamidst.com
 Copyright © 2012-2014, Elad Alfassa <elad@fedoraproject.org>
 Licensed under the Eiffel Forum License 2.
 
-http://sopel.chat
+https://sopel.chat
 """
 from __future__ import unicode_literals, absolute_import, print_function, division
 
@@ -74,7 +74,7 @@ def main(argv=None):
                             dest="migrate_configs",
                             help="Migrate config files to the new format")
         parser.add_argument('--quiet', action="store_true", dest="quiet",
-                            help="Supress all output")
+                            help="Suppress all output")
         parser.add_argument('-w', '--configure-all', action='store_true',
                             dest='wizard', help='Run the configuration wizard.')
         parser.add_argument('--configure-modules', action='store_true',
@@ -105,7 +105,7 @@ def main(argv=None):
                                    sys.version_info.minor,
                                    sys.version_info.micro)
             print('Sopel %s (running on python %s)' % (__version__, py_ver))
-            print('http://sopel.chat/')
+            print('https://sopel.chat/')
             return
         elif opts.wizard:
             _wizard('all', opts.config)
@@ -201,5 +201,7 @@ def main(argv=None):
     except KeyboardInterrupt:
         print("\n\nInterrupted")
         os._exit(1)
+
+
 if __name__ == '__main__':
     main()

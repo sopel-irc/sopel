@@ -4,7 +4,7 @@ remind.py - Sopel Reminder Module
 Copyright 2011, Sean B. Palmer, inamidst.com
 Licensed under the Eiffel Forum License 2.
 
-http://sopel.chat
+https://sopel.chat
 """
 from __future__ import unicode_literals, absolute_import, print_function, division
 
@@ -21,7 +21,7 @@ from sopel.tools.time import get_timezone, format_time
 
 try:
     import pytz
-except:
+except ImportError:
     pytz = None
 
 
@@ -79,6 +79,7 @@ def setup(bot):
     targs = (bot,)
     t = threading.Thread(target=monitor, args=targs)
     t.start()
+
 
 scaling = collections.OrderedDict([
     ('years', 365.25 * 24 * 3600),
@@ -165,7 +166,7 @@ def at(bot, trigger):
     Gives you a reminder at the given time. Takes hh:mm:ssTimezone
     message. Timezone is any timezone Sopel takes elsewhere; the best choices
     are those from the tzdb; a list of valid options is available at
-    http://sopel.chat/tz . The seconds and timezone are optional.
+    https://sopel.chat/tz . The seconds and timezone are optional.
     """
     if not trigger.group(2):
         bot.say("No arguments given for reminder command.")
@@ -205,7 +206,7 @@ def at(bot, trigger):
 
     if duration < 0:
         duration += 86400
-    create_reminder(bot, trigger, duration, message, 'UTC')
+    create_reminder(bot, trigger, duration, message, timezone)
 
 
 def create_reminder(bot, trigger, duration, message, tz):

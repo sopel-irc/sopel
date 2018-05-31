@@ -4,7 +4,7 @@ pronouns.py - Sopel Pronouns Module
 Copyright © 2016, Elsie Powell
 Licensed under the Eiffel Forum License 2.
 
-http://sopel.chat
+https://sopel.chat
 """
 from __future__ import unicode_literals, absolute_import, print_function, division
 
@@ -34,7 +34,7 @@ KNOWN_SETS = {
 @commands('pronouns')
 @example('.pronouns Embolalia')
 def pronouns(bot, trigger):
-    if not trigger.group(2):
+    if not trigger.group(3):
         pronouns = bot.db.get_nick_value(trigger.nick, 'pronouns')
         if pronouns:
             say_pronouns(bot, trigger.nick, pronouns)
@@ -42,10 +42,10 @@ def pronouns(bot, trigger):
             bot.reply("I don't know your pronouns! You can set them with "
                       ".setpronouns")
     else:
-        pronouns = bot.db.get_nick_value(trigger.group(2).replace(" ", ""), 'pronouns')
+        pronouns = bot.db.get_nick_value(trigger.group(3), 'pronouns')
         if pronouns:
-            say_pronouns(bot, trigger.group(2).replace(" ", ""), pronouns)
-        elif trigger.group(2) == bot.nick:
+            say_pronouns(bot, trigger.group(3), pronouns)
+        elif trigger.group(3) == bot.nick:
             # You can stuff an entry into the database manually for your bot's
             # gender, but like… it's a bot.
             bot.say(
@@ -54,7 +54,7 @@ def pronouns(bot, trigger):
             )
         else:
             bot.say("I don't know {}'s pronouns. They can set them with "
-                    ".setpronouns".format(trigger.group(2).replace(" ", "")))
+                    ".setpronouns".format(trigger.group(3)))
 
 
 def say_pronouns(bot, nick, pronouns):
@@ -71,7 +71,7 @@ def say_pronouns(bot, nick, pronouns):
 @example('.setpronouns they/them/their/theirs/themselves')
 def set_pronouns(bot, trigger):
     if trigger.group(2):
-        pronouns = trigger.group(2)    
+        pronouns = trigger.group(2)
         disambig = ''
         if pronouns == 'they':
             disambig = ' You can also use they/.../themself, if you prefer.'
@@ -83,10 +83,10 @@ def set_pronouns(bot, trigger):
             pronouns = KNOWN_SETS.get(pronouns)
             if not pronouns:
                 bot.say(
-                "I'm sorry, I don't know those pronouns. You can give me a set "
-                "I don't know by formatting it "
-                "subject/object/possessive-determiner/posessive-pronoun/"
-                "reflexive, as in they/them/their/theirs/themselves"
+                    "I'm sorry, I don't know those pronouns. You can give me a set "
+                    "I don't know by formatting it "
+                    "subject/object/possessive-determiner/posessive-pronoun/"
+                    "reflexive, as in they/them/their/theirs/themselves"
                 )
                 return
         bot.db.set_nick_value(trigger.nick, 'pronouns', pronouns)

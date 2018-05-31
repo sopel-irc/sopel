@@ -7,6 +7,7 @@ Licensed under the Eiffel Forum License 2.
 This module relies on omdbapi.com
 """
 from __future__ import unicode_literals, absolute_import, print_function, division
+
 import requests
 import sopel.module
 from sopel.logger import get_logger

@@ -12,12 +12,26 @@ from sopel.tools import Identifier
 
 
 def _find_certs():
-    certs = '/etc/pki/tls/cert.pem'
-    if not os.path.isfile(certs):
-        certs = '/etc/ssl/certs/ca-certificates.crt'
-        if not os.path.isfile(certs):
-            return None
-    return certs
+    """
+    Find the TLS root CA store.
+
+    :returns: str (path to file)
+    """
+    # check if the root CA store is at a known location
+    locations = [
+        '/etc/pki/tls/cert.pem',  # best first guess
+        '/etc/ssl/certs/ca-certificates.crt',  # Debian
+        '/etc/ssl/cert.pem',  # FreeBSD base OpenSSL
+        '/usr/local/openssl/cert.pem',  # FreeBSD userland OpenSSL
+        '/etc/pki/tls/certs/ca-bundle.crt',  # RHEL 6 / Fedora
+        '/etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem',  # RHEL 7 / CentOS
+        '/etc/pki/tls/cacert.pem',  # OpenELEC
+        '/etc/ssl/ca-bundle.pem',  # OpenSUSE
+    ]
+    for certs in locations:
+        if os.path.isfile(certs):
+            return certs
+    return None
 
 
 def configure(config):
@@ -118,7 +132,7 @@ class CoreSection(StaticSection):
     Regular expression syntax is used"""
 
     log_raw = ValidatedAttribute('log_raw', bool, default=True)
-    """Whether a log of raw lines as sent and recieved should be kept."""
+    """Whether a log of raw lines as sent and received should be kept."""
 
     logdir = FilenameAttribute('logdir', directory=True, default='logs')
     """Directory in which to place logs."""
@@ -135,7 +149,7 @@ class CoreSection(StaticSection):
     modes = ValidatedAttribute('modes', default='B')
     """User modes to be set on connection."""
 
-    name = ValidatedAttribute('name', default='Sopel: http://sopel.chat')
+    name = ValidatedAttribute('name', default='Sopel: https://sopel.chat')
     """The "real name" of your bot for WHOIS responses."""
 
     nick = ValidatedAttribute('nick', Identifier, default=Identifier('Sopel'))

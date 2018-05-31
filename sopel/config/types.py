@@ -25,14 +25,10 @@ As an example, if one wanted to define the ``[spam]`` section as having an
 """
 
 from __future__ import unicode_literals, absolute_import, print_function, division
+
 import os.path
 import sys
 from sopel.tools import get_input
-
-try:
-    import configparser
-except ImportError:
-    import ConfigParser as configparser
 
 if sys.version_info.major >= 3:
     unicode = str
@@ -222,7 +218,7 @@ class ListAttribute(BaseValidated):
         self.strip = strip
 
     def parse(self, value):
-        value = value.split(',')
+        value = list(filter(None, value.split(',')))
         if self.strip:
             return [v.strip() for v in value]
         else:
@@ -336,14 +332,14 @@ class FilenameAttribute(BaseValidated):
         if self.directory and not os.path.isdir(value):
             try:
                 os.makedirs(value)
-            except OSError:
+            except (IOError, OSError):
                 raise ValueError(
                     "Value must be an existing or creatable directory.")
         if not self.directory and not os.path.isfile(value):
             try:
                 open(value, 'w').close()
-            except OSError:
-                raise ValueError("Value must be an existant or creatable file.")
+            except (IOError, OSError):
+                raise ValueError("Value must be an existing or creatable file.")
         return value
 
     def serialize(self, main_config, this_section, value):

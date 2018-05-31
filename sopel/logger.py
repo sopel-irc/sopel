@@ -16,14 +16,14 @@ class IrcLoggingHandler(logging.Handler):
             self._bot.msg(self._channel, msg)
         except (KeyboardInterrupt, SystemExit):
             raise
-        except:
+        except Exception:  # TODO: Be specific
             self.handleError(record)
 
 
 class ChannelOutputFormatter(logging.Formatter):
     def __init__(self):
         super(ChannelOutputFormatter, self).__init__(
-            fmt='[%(filename)s] %(msg)s'
+            fmt='[%(filename)s] %(message)s'
         )
 
     def formatException(self, exc_info):

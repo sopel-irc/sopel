@@ -64,7 +64,7 @@ class Channel(object):
     def clear_user(self, nick):
         user = self.users.pop(nick, None)
         self.privileges.pop(nick, None)
-        if user != None:
+        if user is not None:
             user.channels.pop(self.name, None)
 
     def add_user(self, user):

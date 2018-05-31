@@ -23,7 +23,7 @@ def _deserialize(value):
     # ignore json parsing errors
     try:
         value = json.loads(value)
-    except:
+    except ValueError:
         pass
     return value
 
@@ -65,41 +65,29 @@ class SopelDB(object):
 
     def _create(self):
         """Create the basic database structure."""
-        # Do nothing if the db already exists.
-        try:
-            self.execute('SELECT * FROM nick_ids;')
-            self.execute('SELECT * FROM nicknames;')
-            self.execute('SELECT * FROM nick_values;')
-            self.execute('SELECT * FROM channel_values;')
-        except:
-            pass
-        else:
-            return
-
         self.execute(
-            'CREATE TABLE nick_ids (nick_id INTEGER PRIMARY KEY AUTOINCREMENT)'
+            'CREATE TABLE IF NOT EXISTS nick_ids (nick_id INTEGER PRIMARY KEY AUTOINCREMENT)'
         )
         self.execute(
-            'CREATE TABLE nicknames '
+            'CREATE TABLE IF NOT EXISTS nicknames '
             '(nick_id INTEGER REFERENCES nick_ids, '
             'slug STRING PRIMARY KEY, canonical string)'
         )
         self.execute(
-            'CREATE TABLE nick_values '
+            'CREATE TABLE IF NOT EXISTS nick_values '
             '(nick_id INTEGER REFERENCES nick_ids(nick_id), '
             'key STRING, value STRING, '
             'PRIMARY KEY (nick_id, key))'
         )
         self.execute(
-            'CREATE TABLE channel_values '
+            'CREATE TABLE IF NOT EXISTS channel_values '
             '(channel STRING, key STRING, value STRING, '
             'PRIMARY KEY (channel, key))'
         )
 
     def get_uri(self):
-        """Returns a URL for the database, usable to connect with SQLAlchemy.
-        """
-        return 'sqlite://{}'.format(self.filename)
+        """Returns a URL for the database, usable to connect with SQLAlchemy."""
+        return 'sqlite:///{}'.format(self.filename)
 
     # NICK FUNCTIONS
 
@@ -179,8 +167,7 @@ class SopelDB(object):
         self.execute('DELETE FROM nicknames WHERE slug = ?', [alias.lower()])
 
     def delete_nick_group(self, nick):
-        """Removes a nickname, and all associated aliases and settings.
-        """
+        """Removes a nickname, and all associated aliases and settings."""
         nick = Identifier(nick)
         nick_id = self.get_nick_id(nick, False)
         self.execute('DELETE FROM nicknames WHERE nick_id = ?', [nick_id])
@@ -209,6 +196,7 @@ class SopelDB(object):
     # CHANNEL FUNCTIONS
 
     def set_channel_value(self, channel, key, value):
+        """Sets the value for a given key to be associated with the channel."""
         channel = Identifier(channel).lower()
         value = json.dumps(value, ensure_ascii=False)
         self.execute('INSERT OR REPLACE INTO channel_values VALUES (?, ?, ?)',
@@ -228,8 +216,7 @@ class SopelDB(object):
     # NICK AND CHANNEL FUNCTIONS
 
     def get_nick_or_channel_value(self, name, key):
-        """Gets the value `key` associated to the nick or channel  `name`.
-        """
+        """Gets the value `key` associated to the nick or channel  `name`."""
         name = Identifier(name)
         if name.is_nick():
             return self.get_nick_value(name, key)

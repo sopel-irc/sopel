@@ -4,11 +4,12 @@ wiktionary.py - Sopel Wiktionary Module
 Copyright 2009, Sean B. Palmer, inamidst.com
 Licensed under the Eiffel Forum License 2.
 
-http://sopel.chat
+https://sopel.chat
 """
 from __future__ import unicode_literals, absolute_import, print_function, division
 
 import re
+import requests
 from sopel import web
 from sopel.module import commands, example
 
@@ -27,7 +28,7 @@ def text(html):
 
 
 def wikt(word):
-    bytes = web.get(uri % web.quote(word))
+    bytes = requests.get(uri % web.quote(word)).text
     bytes = r_ul.sub('', bytes)
 
     mode = None
@@ -61,6 +62,7 @@ def wikt(word):
         if '<hr' in line:
             break
     return etymology, definitions
+
 
 parts = ('preposition', 'particle', 'noun', 'verb',
     'adjective', 'adverb', 'interjection')

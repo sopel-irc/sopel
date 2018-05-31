@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # coding=utf-8
-from __future__ import unicode_literals, print_function
+from __future__ import unicode_literals, absolute_import, print_function, division
 
 from sopel import __version__
 import sys
@@ -29,6 +29,7 @@ def read_reqs(path):
     with open(path, 'r') as fil:
         return list(fil.readlines())
 
+
 requires = read_reqs('requirements.txt')
 if sys.version_info[0] < 3:
     requires.append('backports.ssl_match_hostname')
@@ -40,7 +41,7 @@ setup(
     description='Simple and extendible IRC bot',
     author='Elsie Powell',
     author_email='powell.518@gmail.com',
-    url='http://sopel.chat/',
+    url='https://sopel.chat/',
     long_description=(
         "Sopel is a simple, extendible, easy-to-use IRC Utility bot, written "
         "in Python. It's designed to be easy to use, easy to run, and easy to "
@@ -53,5 +54,6 @@ setup(
     license='Eiffel Forum License, version 2',
     platforms='Linux x86, x86-64',
     install_requires=requires,
+    extras_require={'dev': dev_requires},
     entry_points={'console_scripts': ['sopel = sopel.run_script:main']},
 )

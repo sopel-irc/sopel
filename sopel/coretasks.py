@@ -12,7 +12,6 @@ dispatch function in bot.py and making it easier to maintain.
 # Licensed under the Eiffel Forum License 2.
 from __future__ import unicode_literals, absolute_import, print_function, division
 
-
 from random import randint
 import re
 import sys
@@ -50,7 +49,7 @@ def auth_after_register(bot):
             'AUTHSERV auth',
             account + ' ' + password
         ))
-    
+
     elif bot.config.core.auth_method == 'Q':
         account = bot.config.core.auth_username
         password = bot.config.core.auth_password
@@ -482,7 +481,7 @@ def recieve_cap_ls_reply(bot, trigger):
     auth_caps = ['account-notify', 'extended-join', 'account-tag']
     for cap in auth_caps:
         if cap not in bot._cap_reqs:
-            bot._cap_reqs[cap] = [_CapReq('=', 'coretasks', acct_warn)]
+            bot._cap_reqs[cap] = [_CapReq('', 'coretasks', acct_warn)]
 
     for cap, reqs in iteritems(bot._cap_reqs):
         # At this point, we know mandatory and prohibited don't co-exist, but

@@ -4,19 +4,26 @@ calc.py - Sopel Calculator Module
 Copyright 2008, Sean B. Palmer, inamidst.com
 Licensed under the Eiffel Forum License 2.
 
-http://sopel.chat
+https://sopel.chat
 """
 from __future__ import unicode_literals, absolute_import, print_function, division
 
-from sopel import web
 from sopel.module import commands, example
 from sopel.tools.calculation import eval_equation
+from requests import get
 import sys
+
+if sys.version_info.major < 3:
+    from urllib import quote as _quote
+    quote = lambda s: _quote(s.encode('utf-8')).decode('utf-8')
+else:
+    from urllib.parse import quote
+
 if sys.version_info.major >= 3:
     unichr = chr
 
 
-BASE_TUMBOLIA_URI = 'https://tumbolia-two.appspot.com/'
+BASE_TUMBOLIA_URI = 'https://tumbolia-sopel.appspot.com/'
 
 
 @commands('c', 'calc')
@@ -52,7 +59,7 @@ def py(bot, trigger):
 
     query = trigger.group(2)
     uri = BASE_TUMBOLIA_URI + 'py/'
-    answer = web.get(uri + web.quote(query))
+    answer = get(uri + quote(query)).text
     if answer:
         # bot.say can potentially lead to 3rd party commands triggering.
         bot.reply(answer)
