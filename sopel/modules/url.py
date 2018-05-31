@@ -254,7 +254,7 @@ def find_title(url, verify=True):
     except requests.exceptions.RequestException:
         # Unspecified error from requests module, just bail
         return None
-    except Exception as e:
+    except Exception:
         # Something went wrong in parsing the stream, this would be a good place
         # for logging if we had any
         r.close()
