@@ -254,7 +254,7 @@ def find_title(url, verify=True):
         # We're not going to retry since this is isn't very useful if it takes forever
         # and we want to just fail fast
         return None
-    except requests.exceptions.RequestException as e:
+    except requests.exceptions.RequestException:
         # Unspecified error from requests module, just bail
         return None
     except Exception as e:
@@ -268,6 +268,7 @@ def find_title(url, verify=True):
     if len(title) > 200:
         title = title[:200] + '...'
     return title
+
 
 def get_hostname(url):
     idx = 7
