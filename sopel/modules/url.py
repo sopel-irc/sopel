@@ -8,32 +8,77 @@
 from __future__ import unicode_literals, absolute_import, print_function, division
 
 import re
+from cgi import parse_header
 from sopel import web, tools, __version__
 from sopel.module import commands, rule, example
 from sopel.config.types import ValidatedAttribute, ListAttribute, StaticSection
 
 import requests
 
-USER_AGENT = 'Sopel/{} (https://sopel.chat)'.format(__version__)
+try:
+    # Python 3.x
+    from html.parser import HTMLParser
+except ImportError:
+    # Python 2.x
+    from HTMLParser import HTMLParser
+
+USER_AGENT = 'Sopel/{} (http://sopel.chat)'.format(__version__)
 default_headers = {'User-Agent': USER_AGENT}
 url_finder = None
-# These are used to clean up the title tag before actually parsing it. Not the
-# world's best way to do this, but it'll do for now.
-title_tag_data = re.compile('<(/?)title( [^>]+)?>', re.IGNORECASE)
-quoted_title = re.compile('[\'"]<title>[\'"]', re.IGNORECASE)
-# This is another regex that presumably does something important.
-re_dcc = re.compile(r'(?i)dcc\ssend')
+
 # This sets the maximum number of bytes that should be read in order to find
 # the title. We don't want it too high, or a link to a big file/stream will
 # just keep downloading until there's no more memory. 640k ought to be enough
 # for anybody.
 max_bytes = 655360
+chunk_size = 65536
 
 
 class UrlSection(StaticSection):
     # TODO some validation rules maybe?
     exclude = ListAttribute('exclude')
     exclusion_char = ValidatedAttribute('exclusion_char', default='!')
+
+
+class TitleParser(HTMLParser):
+    def __init__(self):
+        try:
+            HTMLParser.__init__(self, convert_charrefs=False)
+        except TypeError:
+            HTMLParser.__init__(self)
+
+        self.match = False
+        self.in_head = False
+        self.title = ''
+        self.encoding = None
+
+    def handle_starttag(self, tag, attributes):
+        self.match = True if tag == 'title' and self.in_head else False
+        if tag == 'head':
+            self.in_head = True
+
+        # Look for a tag like <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+        # or the newer version, <meta charset="UTF-8">
+        if tag == 'meta':
+            for a in attributes:
+                if a[0].lower() == 'content':
+                    _, enc = parse_header(a[1])
+                    self.encoding = enc.get('charset')
+                if a[0].lower() == 'charset':
+                    self.encoding = a[1]
+
+    def handle_endtag(self, tag):
+        if tag == 'title':
+            self.match = False
+        if tag == 'head':
+            self.in_head = False
+
+    def handle_data(self, data):
+        if self.match and not self.title:
+            self.match = False
+            self.title = data.strip()
+            if self.encoding:
+                self.title.encode().decode(self.encoding)
 
 
 def configure(config):
@@ -182,40 +227,44 @@ def check_callbacks(bot, trigger, url, run=True):
 
 
 def find_title(url, verify=True):
-    """Return the title for the given URL."""
+    """
+    Return the title for the given URL.
+    Will read ``chunk_size`` bytes of data until the title is found by parsing
+    the HTML or we hit ``max_bytes`` read total.
+    """
+
+    length = 0
+    parser = TitleParser()
+
     try:
-        response = requests.get(url, stream=True, verify=verify,
-                                headers=default_headers)
-        content = b''
-        for byte in response.iter_content(chunk_size=512):
-            content += byte
-            if b'</title>' in content or len(content) > max_bytes:
+        r = requests.get(url, verify=verify, headers=default_headers, timeout=2, stream=True)
+        r.encoding = 'utf-8'
+        stream = r.iter_content(chunk_size, decode_unicode=True)
+
+        for chunk in stream:
+            parser.feed(chunk)
+            length += chunk_size
+            if parser.title or length > max_bytes:
                 break
-        content = content.decode('utf-8', errors='ignore')
-        # Need to close the connection because we have not read all
-        # the data
-        response.close()
-    except requests.exceptions.ConnectionError:
+
+    except (requests.exceptions.Timeout, requests.exceptions.TooManyRedirects):
+        # We're not going to retry since this is isn't very useful if it takes forever
+        # and we want to just fail fast
+        return None
+    except requests.exceptions.RequestException:
+        # Unspecified error from requests module, just bail
+        return None
+    except Exception:
+        # Something went wrong in parsing the stream, this would be a good place
+        # for logging if we had any
+        r.close()
         return None
 
-    # Some cleanup that I don't really grok, but was in the original, so
-    # we'll keep it (with the compiled regexes made global) for now.
-    content = title_tag_data.sub(r'<\1title>', content)
-    content = quoted_title.sub('', content)
-
-    start = content.rfind('<title>')
-    end = content.rfind('</title>')
-    if start == -1 or end == -1:
-        return
-    title = web.decode(content[start + 7:end])
-    title = title.strip()[:200]
-
-    title = ' '.join(title.split())  # cleanly remove multiple spaces
-
-    # More cryptic regex substitutions. This one looks to be myano's invention.
-    title = re_dcc.sub('', title)
-
-    return title or None
+    # Truncate long titles with ellipsis
+    title = parser.title
+    if len(title) > 200:
+        title = title[:200] + '...'
+    return title
 
 
 def get_hostname(url):
