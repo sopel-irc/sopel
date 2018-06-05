@@ -192,6 +192,7 @@ def clean_callable(func, config):
     if hasattr(func, 'intents'):
         func.intents = [re.compile(intent, re.IGNORECASE) for intent in func.intents]
 
+
 def load_module(name, path, type_):
     """Load a module, and sort out the callables and shutdowns"""
     if type_ == imp.PY_SOURCE:
