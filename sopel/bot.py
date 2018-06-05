@@ -229,8 +229,11 @@ class Sopel(irc.Bot):
         # call on shutdown
         self.shutdown_methods += shutdowns
         for callbl in callables:
-            for rule in callbl.rule:
-                self._callables[callbl.priority][rule].append(callbl)
+            if hasattr(callbl, 'rule'):
+                for rule in callbl.rule:
+                    self._callables[callbl.priority][rule].append(callbl)
+            else:
+                self._callables[callbl.priority][re.compile('.*')].append(callbl)
             if hasattr(callbl, 'commands'):
                 module_name = callbl.__module__.rsplit('.', 1)[-1]
                 # TODO doc and make decorator for this. Not sure if this is how
@@ -518,9 +521,15 @@ class Sopel(irc.Bot):
 
                     if event not in func.event:
                         continue
-                    if (hasattr(func, 'intents') and
-                            trigger.tags.get('intent') not in func.intents):
-                        continue
+                    if hasattr(func, 'intents'):
+                        if not trigger.tags.get('intent'):
+                            continue
+                        match = False
+                        for intent in func.intents:
+                            if intent.match(trigger.tags.get('intent')):
+                                match = True
+                        if not match:
+                            continue
                     if func.thread:
                         targs = (func, wrapper, trigger)
                         t = threading.Thread(target=self.call, args=targs)
