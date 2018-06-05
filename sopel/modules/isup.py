@@ -6,11 +6,14 @@ from __future__ import unicode_literals, absolute_import, print_function, divisi
 import requests
 from sopel.module import commands
 
+from requests.exceptions import SSLError
 
-@commands('isup')
+
+@commands('isup', 'isupinsecure')
 def isup(bot, trigger):
     """isup.me website status checker"""
     site = trigger.group(2)
+    secure = trigger.group(1).lower() != 'isupinsecure'
     if not site:
         return bot.reply("What site do you want to check?")
 
@@ -25,8 +28,11 @@ def isup(bot, trigger):
         site += ".com"
 
     try:
-        response = requests.head(site).headers
-    except Exception:  # TODO: Be specific
+        response = requests.head(site, verify=secure).headers
+    except SSLError:
+        bot.say(site + ' looks down from here. Try using %sisupinsecure' % bot.config.core.help_prefix)
+        return
+    except Exception:
         bot.say(site + ' looks down from here.')
         return
 
