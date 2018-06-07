@@ -4,7 +4,7 @@ from __future__ import unicode_literals, absolute_import, print_function, divisi
 
 import pytest
 
-from sopel.formatting import colors, color, bold, underline
+from sopel.formatting import colors, color, bold, italic, underline
 
 
 def test_color():
@@ -19,6 +19,11 @@ def test_color():
 def test_bold():
     text = 'Hello World'
     assert bold(text) == '\x02' + text + '\x02'
+
+
+def test_italic():
+    text = 'Hello World'
+    assert italic(text) == '\x1d' + text + '\x1d'
 
 
 def test_underline():
