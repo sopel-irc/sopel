@@ -110,12 +110,19 @@ def enumerate_modules(config, show_all=False):
     return modules
 
 
-def compile_rule(nick, pattern):
+def compile_rule(nick, pattern, alias_nicks):
     # Not sure why this happens on reloads, but it shouldn't cause problems…
     if isinstance(pattern, _regex_type):
         return pattern
 
-    nick = re.escape(nick)
+    if alias_nicks:
+        nicks = alias_nicks.copy()
+        nicks.append(nick)
+        nicks = map(re.escape, nicks)
+        nick = '(%s)' % '|'.join(nicks)
+    else:
+        nick = re.escape(nick)
+
     pattern = pattern.replace('$nickname', nick)
     pattern = pattern.replace('$nick', r'{}[,:]\s+'.format(nick))
     flags = re.IGNORECASE
@@ -149,6 +156,7 @@ def clean_callable(func, config):
     """Compiles the regexes, moves commands into func.rule, fixes up docs and
     puts them in func._docs, and sets defaults"""
     nick = config.core.nick
+    alias_nicks = config.core.alias_nicks
     prefix = config.core.prefix
     help_prefix = config.core.help_prefix
     func._docs = {}
@@ -173,7 +181,7 @@ def clean_callable(func, config):
     if hasattr(func, 'rule'):
         if isinstance(func.rule, basestring):
             func.rule = [func.rule]
-        func.rule = [compile_rule(nick, rule) for rule in func.rule]
+        func.rule = [compile_rule(nick, rule, alias_nicks) for rule in func.rule]
 
     if hasattr(func, 'commands'):
         func.rule = getattr(func, 'rule', [])
