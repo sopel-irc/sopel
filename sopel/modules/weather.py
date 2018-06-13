@@ -201,9 +201,8 @@ def forecast(bot, trigger):
         return bot.reply("I don't know where that is.")
 
     query = 'q=select * from weather.forecast where woeid="%s" and u=\'c\'' % woeid
-    body = web.get('http://query.yahooapis.com/v1/public/yql?' + query,
-                  dont_decode=True)
-    parsed = xmltodict.parse(body).get('query')
+    body = requests.get('http://query.yahooapis.com/v1/public/yql?' + query)
+    parsed = xmltodict.parse(body.text).get('query')
     results = parsed.get('results')
     if results is None:
         return bot.reply("No forecast available. Try a more specific location.")
