@@ -119,7 +119,7 @@ def compile_rule(nick, pattern, alias_nicks):
         nicks = alias_nicks.copy()
         nicks.append(nick)
         nicks = map(re.escape, nicks)
-        nick = '(%s)' % '|'.join(nicks)
+        nick = '(?:%s)' % '|'.join(nicks)
     else:
         nick = re.escape(nick)
 
