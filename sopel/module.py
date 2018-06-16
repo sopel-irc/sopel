@@ -171,31 +171,13 @@ def nickname_commands(*command_list):
             "$nickname hello! p1 p2 p3 p4 p5 p6 p7 p8 p9".
         @nickname_commands(".*"):
             Would trigger on anything starting with "$nickname[:,]? ", and
-            would have never have any additional parameters, as the command
-            would match the rest of the line.
+            would never have any additional parameters, as the command would
+            match the rest of the line.
 
     """
     def add_attribute(function):
-        if not hasattr(function, "rule"):
-            function.rule = []
-        rule = r"""
-        ^
-        $nickname[:,]? # Nickname.
-        \s+({command}) # Command as group 1.
-        (?:\s+         # Whitespace to end command.
-        (              # Rest of the line as group 2.
-        (?:(\S+))?     # Parameters 1-4 as groups 3-6.
-        (?:\s+(\S+))?
-        (?:\s+(\S+))?
-        (?:\s+(\S+))?
-        .*             # Accept anything after the parameters. Leave it up to
-                       # the module to parse the line.
-        ))?            # Group 1 must be None, if there are no parameters.
-        $              # EoL, so there are no partial matches.
-        """.format(command='|'.join(command_list))
-        function.rule.append(rule)
+        function.nickname_commands = [cmd for cmd in command_list]
         return function
-
     return add_attribute
 
 

@@ -37,6 +37,9 @@ else:
 
 _channel_prefixes = ('#', '&', '+', '!')
 
+# Can be implementation-dependent
+_regex_type = type(re.compile(''))
+
 
 def get_input(prompt):
     """Get decoded input from the terminal (equivalent to python 3's ``input``).
@@ -61,6 +64,31 @@ def get_raising_file_and_line(tb=None):
     return filename, lineno
 
 
+def compile_rule(nick, pattern, alias_nicks):
+    """
+    Return a compiled rule regex, replacing placeholders for ``$nick`` and
+    ``$nickname`` with the values defined in the bot's config at startup.
+    """
+    # Not sure why this happens on reloads, but it shouldn't cause problems…
+    if isinstance(pattern, _regex_type):
+        return pattern
+
+    if alias_nicks:
+        nicks = alias_nicks.copy()
+        nicks.append(nick)
+        nicks = map(re.escape, nicks)
+        nick = '(?:%s)' % '|'.join(nicks)
+    else:
+        nick = re.escape(nick)
+
+    pattern = pattern.replace('$nickname', nick)
+    pattern = pattern.replace('$nick', r'{}[,:]\s+'.format(nick))
+    flags = re.IGNORECASE
+    if '\n' in pattern:
+        flags |= re.VERBOSE
+    return re.compile(pattern, flags)
+
+
 def get_command_regexp(prefix, command):
     """Return a compiled regexp object that implements the command."""
     # Escape all whitespace with a single backslash. This ensures that regexp
@@ -68,11 +96,17 @@ def get_command_regexp(prefix, command):
     # to use the verbose syntax.
     prefix = re.sub(r"(\s)", r"\\\1", prefix)
 
-    # This regexp match equivalently and produce the same
+    pattern = get_command_pattern(prefix, command)
+    return re.compile(pattern, re.IGNORECASE | re.VERBOSE)
+
+
+def get_command_pattern(prefix, command):
+    """Return the uncompiled regex pattern for standard commands."""
+    # This regexp matches equivalently and produces the same
     # groups 1 and 2 as the old regexp: r'^%s(%s)(?: +(.*))?$'
     # The only differences should be handling all whitespace
     # like spaces and the addition of groups 3-6.
-    pattern = r"""
+    return r"""
         (?:{prefix})({command}) # Command as group 1.
         (?:\s+              # Whitespace to end command.
         (                   # Rest of the line as group 2.
@@ -87,7 +121,35 @@ def get_command_regexp(prefix, command):
                             # parameters.
         $                   # EoL, so there are no partial matches.
         """.format(prefix=prefix, command=command)
-    return re.compile(pattern, re.IGNORECASE | re.VERBOSE)
+
+
+def get_nickname_command_regexp(nick, command, alias_nicks):
+    """Return a compiled regexp object that implements the nickname command."""
+    if isinstance(alias_nicks, unicode):
+        alias_nicks = [alias_nicks]
+    elif not isinstance(alias_nicks, list):
+        raise ValueError('A list or string is required.')
+
+    return compile_rule(nick, get_nickname_command_pattern(command), alias_nicks)
+
+
+def get_nickname_command_pattern(command):
+    """Return the uncompiled regex pattern for nickname commands."""
+    return r"""
+        ^
+        $nickname[:,]? # Nickname.
+        \s+({command}) # Command as group 1.
+        (?:\s+         # Whitespace to end command.
+        (              # Rest of the line as group 2.
+        (?:(\S+))?     # Parameters 1-4 as groups 3-6.
+        (?:\s+(\S+))?
+        (?:\s+(\S+))?
+        (?:\s+(\S+))?
+        .*             # Accept anything after the parameters. Leave it up to
+                       # the module to parse the line.
+        ))?            # Group 1 must be None, if there are no parameters.
+        $              # EoL, so there are no partial matches.
+        """.format(command=command)
 
 
 def deprecated(old):
