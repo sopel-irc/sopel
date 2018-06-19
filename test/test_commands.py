@@ -65,10 +65,23 @@ def test_command_groups(prefix, command, groups, command_line):
     assert match.group(6) == groups[6]
 
 
-def test_nickname_command_groups(command, nick, alias_nicks, groups, nickname_command_line):
-    regex = get_nickname_command_regexp(nick, command, alias_nicks)
+def test_nickname_command_groups(command, nick, groups, nickname_command_line):
+    regex = get_nickname_command_regexp(nick, command, [])
     match = re.match(regex, nickname_command_line)
     assert match.group(0) == nickname_command_line
+    assert match.group(1) == command
+    assert match.group(2) == ' '.join(groups.values())
+    assert match.group(3) == groups[3]
+    assert match.group(4) == groups[4]
+    assert match.group(5) == groups[5]
+    assert match.group(6) == groups[6]
+
+
+def test_nickname_command_aliased(command, nick, alias_nicks, groups, nickname_command_line):
+    aliased_command_line = nickname_command_line.replace(nick, alias_nicks[0])
+    regex = get_nickname_command_regexp(nick, command, alias_nicks)
+    match = re.match(regex, aliased_command_line)
+    assert match.group(0) == aliased_command_line
     assert match.group(1) == command
     assert match.group(2) == ' '.join(groups.values())
     assert match.group(3) == groups[3]
