@@ -74,7 +74,7 @@ def compile_rule(nick, pattern, alias_nicks):
         return pattern
 
     if alias_nicks:
-        nicks = alias_nicks.copy()
+        nicks = list(alias_nicks)  # alias_nicks.copy() doesn't work in py2
         nicks.append(nick)
         nicks = map(re.escape, nicks)
         nick = '(?:%s)' % '|'.join(nicks)
