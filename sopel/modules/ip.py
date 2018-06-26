@@ -7,6 +7,7 @@
 from __future__ import unicode_literals, absolute_import, print_function, division
 
 import pygeoip
+import struct
 import socket
 import os
 import gzip
@@ -127,9 +128,16 @@ def ip(bot, trigger):
         username = trigger.group(2).strip()
         user_in_botdb = bot.users.get(username)
         if user_in_botdb is not None:
-            query = user_in_botdb.host
+            # Mibbit on not webirc-enabled networks https://wiki.mibbit.com/index.php/Hexip#What_is_shown_when_connected_to_an_IRC_Network_that_is_not_Enabled
+            if user_in_botdb.hostmask.endswith(".mibbit.com"):
+                hexip = user_in_botdb.hostmask.split("!")[1].split("@")[0]
+                # Stolen from https://stackoverflow.com/a/2198052, converts hexip to dotted quad
+                addr_long = int(hexip, 16)
+                query = socket.inet_ntoa(struct.pack(">L", addr_long))
+            else:
+                query = user_in_botdb.host
         else:
-            return bot.say("I am not aware of this user.")
+            return bot.say("I\'m not aware of this user.")
 
     db_path = _find_geoip_db(bot)
     if db_path is False:
