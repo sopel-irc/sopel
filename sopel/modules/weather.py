@@ -140,18 +140,19 @@ def get_tomorrow_cover(parsed):
     return ('Tomorrow: %s,' % (tomorrow_text))
 
 
-@commands('weather', 'wea')
-@example('.weather London')
-def weather(bot, trigger):
-    """.weather location - Show the weather at the given location."""
-
+def say_info(bot, trigger, mode):
+    if mode not in ['weather', 'forecast']:  # Unnecessary safeguard, but whatever
+        return bot.say("Sorry, I got confused. Please report this error to my owner.")
+    # most of the logic is common to both modes
     location = trigger.group(2)
     woeid = ''
     if not location:
         woeid = bot.db.get_nick_value(trigger.nick, 'woeid')
         if not woeid:
-            return bot.msg(trigger.sender, "I don't know where you live. " +
-                           'Give me a location, like .weather London, or tell me where you live by saying .setlocation London, for example.')
+            return bot.reply("I don't know where you live. "
+                             "Give me a location, like .{command} London, "
+                             "or tell me where you live by saying .setlocation "
+                             "London, for example.".format(command=trigger.group(1)))
     else:
         location = location.strip()
         woeid = bot.db.get_nick_value(location, 'woeid')
@@ -164,53 +165,41 @@ def weather(bot, trigger):
         return bot.reply("I don't know where that is.")
 
     query = 'q=select * from weather.forecast where woeid="%s" and u=\'c\'' % woeid
-    body = requests.get('http://query.yahooapis.com/v1/public/yql?' + query)
+    body = requests.get('https://query.yahooapis.com/v1/public/yql?' + query)
     parsed = xmltodict.parse(body.text).get('query')
     results = parsed.get('results')
     if results is None:
         return bot.reply("No forecast available. Try a more specific location.")
     location = results.get('channel').get('title')
-    cover = get_cover(results)
-    temp = get_temp(results)
-    humidity = get_humidity(results)
-    wind = get_wind(results)
-    bot.say(u'%s: %s, %s, %s, %s' % (location, cover, temp, humidity, wind))
+
+    # Mode-specific behavior, finally!
+    if mode == 'weather':
+        cover = get_cover(results)
+        temp = get_temp(results)
+        humidity = get_humidity(results)
+        wind = get_wind(results)
+        return bot.say(u'%s: %s, %s, %s, %s' % (location, cover, temp, humidity, wind))
+    if mode == 'forecast':
+        tomorrow_high = get_tomorrow_high(results)
+        tomorrow_low = get_tomorrow_low(results)
+        tomorrow_text = get_tomorrow_cover(results)
+        return bot.say(u'%s: %s %s %s' % (location, tomorrow_text, tomorrow_high, tomorrow_low))
+
+    return  # Another unnecessary safeguard, mostly to prevent linters complaining
+
+
+@commands('weather', 'wea')
+@example('.weather London')
+def weather_command(bot, trigger):
+    """.weather location - Show the weather at the given location."""
+    say_info(bot, trigger, 'weather')
 
 
 @commands('forecast')
 @example('.forecast Montreal, QC')
-def forecast(bot, trigger):
+def forecast_command(bot, trigger):
     """.forecast location - Show the weather forecast for tomorrow at the given location."""
-
-    location = trigger.group(2)
-    woeid = ''
-    if not location:
-        woeid = bot.db.get_nick_value(trigger.nick, 'woeid')
-        if not woeid:
-            return bot.msg(trigger.sender, "I don't know where you live. " +
-                           'Give me a location, like .forecast London, or tell me where you live by saying .setlocation London, for example.')
-    else:
-        location = location.strip()
-        woeid = bot.db.get_nick_value(location, 'woeid')
-        if woeid is None:
-            first_result = woeid_search(location)
-            if first_result is not None:
-                woeid = first_result.get('woeid')
-
-    if not woeid:
-        return bot.reply("I don't know where that is.")
-
-    query = 'q=select * from weather.forecast where woeid="%s" and u=\'c\'' % woeid
-    body = requests.get('http://query.yahooapis.com/v1/public/yql?' + query)
-    parsed = xmltodict.parse(body.text).get('query')
-    results = parsed.get('results')
-    if results is None:
-        return bot.reply("No forecast available. Try a more specific location.")
-    location = results.get('channel').get('title')
-    tomorrow_high = get_tomorrow_high(results)
-    tomorrow_low = get_tomorrow_low(results)
-    tomorrow_text = get_tomorrow_cover(results)
-    bot.say(u'%s: %s %s %s' % (location, tomorrow_text, tomorrow_high, tomorrow_low))
+    say_info(bot, trigger, 'forecast')
 
 
 @commands('setlocation', 'setwoeid')
