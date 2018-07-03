@@ -24,6 +24,7 @@ def text(html):
     text = text.replace('\r', '')
     text = text.replace('(intransitive', '(intr.')
     text = text.replace('(transitive', '(trans.')
+    text = web.decode(text)
     return text
 
 
