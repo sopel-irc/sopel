@@ -5,6 +5,7 @@
 from __future__ import unicode_literals, absolute_import, print_function, division
 
 from sopel.module import commands, example, NOLIMIT
+from sopel.modules.units import c_to_f
 
 import requests
 import xmltodict
@@ -44,8 +45,7 @@ def get_temp(parsed):
         temp = int(condition['@temp'])
     except (KeyError, ValueError):
         return 'unknown'
-    f = round((temp * 1.8) + 32, 2)
-    return (u'%d\u00B0C (%d\u00B0F)' % (temp, f))
+    return (u'%d\u00B0C (%d\u00B0F)' % (temp, c_to_f(temp)))
 
 
 def get_humidity(parsed):
@@ -115,18 +115,18 @@ def get_wind(parsed):
 
 def get_tomorrow_high(parsed):
     try:
-        tomorrow_high = parsed['channel']['item']['yweather:forecast'][2]['@high']
+        tomorrow_high = int(parsed['channel']['item']['yweather:forecast'][2]['@high'])
     except (KeyError, ValueError):
         return 'unknown'
-    return ('High: %s\u00B0C' % (tomorrow_high))
+    return ('High: %s\u00B0C (%s\u00B0F)' % (tomorrow_high, c_to_f(tomorrow_high)))
 
 
 def get_tomorrow_low(parsed):
     try:
-        tomorrow_low = parsed['channel']['item']['yweather:forecast'][2]['@low']
+        tomorrow_low = int(parsed['channel']['item']['yweather:forecast'][2]['@low'])
     except (KeyError, ValueError):
         return 'unknown'
-    return ('Low: %s\u00B0C' % (tomorrow_low))
+    return ('Low: %s\u00B0C (%s\u00B0F)' % (tomorrow_low, c_to_f(tomorrow_low)))
 
 
 def get_tomorrow_cover(parsed):
