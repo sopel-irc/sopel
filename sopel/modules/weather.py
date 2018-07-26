@@ -5,6 +5,7 @@
 from __future__ import unicode_literals, absolute_import, print_function, division
 
 from sopel.module import commands, example, NOLIMIT
+from sopel.modules.units import c_to_f
 
 import requests
 import xmltodict
@@ -44,8 +45,7 @@ def get_temp(parsed):
         temp = int(condition['@temp'])
     except (KeyError, ValueError):
         return 'unknown'
-    f = round((temp * 1.8) + 32, 2)
-    return (u'%d\u00B0C (%d\u00B0F)' % (temp, f))
+    return (u'%d\u00B0C (%d\u00B0F)' % (temp, c_to_f(temp)))
 
 
 def get_humidity(parsed):
@@ -113,18 +113,46 @@ def get_wind(parsed):
     return description + ' ' + str(m_s) + 'm/s (' + degrees + ')'
 
 
-@commands('weather', 'wea')
-@example('.weather London')
-def weather(bot, trigger):
-    """.weather location - Show the weather at the given location."""
+def get_tomorrow_high(parsed):
+    try:
+        tomorrow_high = int(parsed['channel']['item']['yweather:forecast'][2]['@high'])
+    except (KeyError, ValueError):
+        return 'unknown'
+    return ('High: %s\u00B0C (%s\u00B0F)' % (tomorrow_high, c_to_f(tomorrow_high)))
 
+
+def get_tomorrow_low(parsed):
+    try:
+        tomorrow_low = int(parsed['channel']['item']['yweather:forecast'][2]['@low'])
+    except (KeyError, ValueError):
+        return 'unknown'
+    return ('Low: %s\u00B0C (%s\u00B0F)' % (tomorrow_low, c_to_f(tomorrow_low)))
+
+
+def get_tomorrow_cover(parsed):
+    try:
+        tomorrow_cover = parsed['channel']['item']['yweather:forecast'][2]
+    except KeyError:
+        return 'unknown'
+    tomorrow_text = tomorrow_cover['@text']
+    # code = int(condition['code'])
+    # TODO parse code to get those little icon thingies.
+    return ('Tomorrow: %s,' % (tomorrow_text))
+
+
+def say_info(bot, trigger, mode):
+    if mode not in ['weather', 'forecast']:  # Unnecessary safeguard, but whatever
+        return bot.say("Sorry, I got confused. Please report this error to my owner.")
+    # most of the logic is common to both modes
     location = trigger.group(2)
     woeid = ''
     if not location:
         woeid = bot.db.get_nick_value(trigger.nick, 'woeid')
         if not woeid:
-            return bot.msg(trigger.sender, "I don't know where you live. " +
-                           'Give me a location, like .weather London, or tell me where you live by saying .setlocation London, for example.')
+            return bot.reply("I don't know where you live. "
+                             "Give me a location, like .{command} London, "
+                             "or tell me where you live by saying .setlocation "
+                             "London, for example.".format(command=trigger.group(1)))
     else:
         location = location.strip()
         woeid = bot.db.get_nick_value(location, 'woeid')
@@ -137,17 +165,41 @@ def weather(bot, trigger):
         return bot.reply("I don't know where that is.")
 
     query = 'q=select * from weather.forecast where woeid="%s" and u=\'c\'' % woeid
-    body = requests.get('http://query.yahooapis.com/v1/public/yql?' + query)
+    body = requests.get('https://query.yahooapis.com/v1/public/yql?' + query)
     parsed = xmltodict.parse(body.text).get('query')
     results = parsed.get('results')
     if results is None:
         return bot.reply("No forecast available. Try a more specific location.")
     location = results.get('channel').get('title')
-    cover = get_cover(results)
-    temp = get_temp(results)
-    humidity = get_humidity(results)
-    wind = get_wind(results)
-    bot.say(u'%s: %s, %s, %s, %s' % (location, cover, temp, humidity, wind))
+
+    # Mode-specific behavior, finally!
+    if mode == 'weather':
+        cover = get_cover(results)
+        temp = get_temp(results)
+        humidity = get_humidity(results)
+        wind = get_wind(results)
+        return bot.say(u'%s: %s, %s, %s, %s' % (location, cover, temp, humidity, wind))
+    if mode == 'forecast':
+        tomorrow_high = get_tomorrow_high(results)
+        tomorrow_low = get_tomorrow_low(results)
+        tomorrow_text = get_tomorrow_cover(results)
+        return bot.say(u'%s: %s %s %s' % (location, tomorrow_text, tomorrow_high, tomorrow_low))
+
+    return  # Another unnecessary safeguard, mostly to prevent linters complaining
+
+
+@commands('weather', 'wea')
+@example('.weather London')
+def weather_command(bot, trigger):
+    """.weather location - Show the weather at the given location."""
+    say_info(bot, trigger, 'weather')
+
+
+@commands('forecast')
+@example('.forecast Montreal, QC')
+def forecast_command(bot, trigger):
+    """.forecast location - Show the weather forecast for tomorrow at the given location."""
+    say_info(bot, trigger, 'forecast')
 
 
 @commands('setlocation', 'setwoeid')
