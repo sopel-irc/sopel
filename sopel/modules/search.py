@@ -105,7 +105,7 @@ def duck(bot, trigger):
 
 
 @commands('bing')
-@example('.bing sopel irc bot', r'https?:\/\/sopel\.chat\/?', re=True)
+@example('.bing sopel irc bot')
 def bing(bot, trigger):
     """Queries Bing for the specified input."""
     if not trigger.group(2):
@@ -119,7 +119,7 @@ def bing(bot, trigger):
 
 
 @commands('search')
-@example('.search sopel irc bot', r'(https?:\/\/sopel\.chat\/? \(b, d\)|https?:\/\/sopel\.chat\/? \(b\), https?:\/\/sopel\.chat\/? \(d\))', re=True)
+@example('.search sopel irc bot')
 def search(bot, trigger):
     """Searches Bing and Duck Duck Go."""
     if not trigger.group(2):
