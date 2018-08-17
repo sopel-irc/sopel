@@ -1,4 +1,11 @@
 # coding=utf-8
+"""
+emoticons.py - Sopel Emoticons Module
+Copyright 2018, brasstax
+Licensed under the Eiffel Forum License 2
+
+https://sopel.chat
+"""
 from __future__ import unicode_literals, absolute_import
 from sopel.module import commands, example
 
