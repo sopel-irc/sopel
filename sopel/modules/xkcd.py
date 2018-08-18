@@ -28,11 +28,11 @@ sites_query = ' site:xkcd.com -site:' + ' -site:'.join(ignored_sites)
 
 def get_info(number=None, verify_ssl=True):
     if number:
-        url = 'http://xkcd.com/{}/info.0.json'.format(number)
+        url = 'https://xkcd.com/{}/info.0.json'.format(number)
     else:
-        url = 'http://xkcd.com/info.0.json'
+        url = 'https://xkcd.com/info.0.json'
     data = requests.get(url, verify=verify_ssl).json()
-    data['url'] = 'http://xkcd.com/' + str(data['num'])
+    data['url'] = 'https://xkcd.com/' + str(data['num'])
     return data
 
 
