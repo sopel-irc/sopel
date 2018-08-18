@@ -127,7 +127,7 @@ def f_load(bot, trigger):
 
     for name in name.split():
         if name in bot._modules:
-            bot.reply('Module already loaded, use reload')
+            bot.reply("Module '%s' already loaded, use reload" % name)
         elif name not in modules:
             bot.reply("Module '%s' not found." % name)
         else:
@@ -162,7 +162,7 @@ def f_unload(bot, trigger):
     for name in name.split():
         module = bot._modules.get(name)
         if module is None:
-            bot.reply('%s: not loaded, try the `load` command' % name)
+            bot.reply("Module '%s' is not loaded, try the `load` command" % name)
         else:
             try:
                 bot.unregister_module(module)

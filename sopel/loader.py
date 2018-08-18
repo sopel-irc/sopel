@@ -234,7 +234,8 @@ def clean_module(module, config):
 
 
 # https://github.com/thodnev/reload_all
-def reload_all(top_module, max_depth=20, pre_reload=None, reload_if=None):
+def reload_all(top_module, max_depth=20, raise_immediately=False,
+               pre_reload=None, reload_if=None):
     '''
     A reload function, which recursively traverses through
     all submodules of top_module and reloads them from most-
@@ -250,7 +251,6 @@ def reload_all(top_module, max_depth=20, pre_reload=None, reload_if=None):
     for_reload = dict()
 
     def trace_reload(module, depth):  # recursive
-        nonlocal for_reload
         depth += 1
 
         if type(module) is ModuleType and depth < max_depth:
@@ -278,6 +278,8 @@ def reload_all(top_module, max_depth=20, pre_reload=None, reload_if=None):
         try:
             _reload(module)
         except Exception:  # catch and write all errors
+            if raise_immediately:
+                raise
             not_reloaded[module] = sys.exc_info()[0]
 
     return not_reloaded
