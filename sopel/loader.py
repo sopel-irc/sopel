@@ -2,14 +2,25 @@
 from __future__ import unicode_literals, absolute_import, print_function, division
 
 import imp
+import importlib
 import os.path
 import re
 import sys
+from types import ModuleType
 
 from sopel.tools import compile_rule, itervalues, get_command_regexp, get_nickname_command_regexp
 
 if sys.version_info.major >= 3:
     basestring = (str, bytes)
+
+
+try:
+    _reload = reload
+except NameError:
+    try:
+        _reload = importlib.reload
+    except AttributeError:
+        _reload = imp.reload
 
 
 def get_module_description(path):
@@ -192,6 +203,7 @@ def load_module(name, path, type_):
         module = imp.load_module(name, None, path, ('', '', type_))
     else:
         raise TypeError('Unsupported module type')
+
     return module, os.path.getmtime(path)
 
 
@@ -204,6 +216,7 @@ def clean_module(module, config):
     shutdowns = []
     jobs = []
     urls = []
+
     for obj in itervalues(vars(module)):
         if callable(obj):
             if getattr(obj, '__name__', None) == 'shutdown':
@@ -216,4 +229,55 @@ def clean_module(module, config):
                 jobs.append(obj)
             elif hasattr(obj, 'url_regex'):
                 urls.append(obj)
+
     return callables, jobs, shutdowns, urls
+
+
+# https://github.com/thodnev/reload_all
+def reload_all(top_module, max_depth=20, pre_reload=None, reload_if=None):
+    '''
+    A reload function, which recursively traverses through
+    all submodules of top_module and reloads them from most-
+    nested to least-nested. Only modules containing __file__
+    attribute could be reloaded.
+
+    Returns a dict of not reloaded(due to errors) modules:
+      key = module, value = exception
+    Optional attribute max_depth defines maximum recursion
+    limit to avoid infinite loops while tracing
+    '''
+    # modules to reload: K=module, V=depth
+    for_reload = dict()
+
+    def trace_reload(module, depth):  # recursive
+        nonlocal for_reload
+        depth += 1
+
+        if type(module) is ModuleType and depth < max_depth:
+            # check condition if provided
+            if reload_if is not None and not reload_if(module, depth):
+                return
+
+            # if module is deeper and could be reloaded
+            if for_reload.get(module, 0) < depth and hasattr(module, '__file__'):
+                for_reload[module] = depth
+
+            # trace through all attributes recursively
+            for name, attr in module.__dict__.items():
+                trace_reload(attr, depth)
+
+    # start tracing
+    trace_reload(top_module, 0)
+    reload_list = sorted(for_reload, reverse=True, key=lambda k: for_reload[k])
+    not_reloaded = dict()
+
+    for module in reload_list:
+        if pre_reload is not None:
+            pre_reload(module)
+
+        try:
+            _reload(module)
+        except Exception:  # catch and write all errors
+            not_reloaded[module] = sys.exc_info()[0]
+
+    return not_reloaded

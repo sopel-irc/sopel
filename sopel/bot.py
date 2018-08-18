@@ -239,25 +239,33 @@ class Sopel(irc.Bot):
             self._modules[module.__name__] = module
 
     def unregister(self, callables, jobs, shutdowns, urls):
+        re_dotstar = re.compile('.*')
+
         for shutdown in shutdowns:
-            if shutdown in self.shutdown_methods:
-                self.shutdown_methods.remove(shutdowns)
+            try:
+                self.shutdown_methods.remove(shutdown)
+            except ValueError:
+                pass
 
         for callbl in callables:
             if hasattr(callbl, 'rule'):
                 for rule in callbl.rule:
-                    if callbl in self._callables[callbl.priority][rule]:
+                    try:
                         self._callables[callbl.priority][rule].remove(callbl)
+                    except ValueError:
+                        pass
             else:
-                pattern = re.compile('.*')
-                if callbl in self._callables[callbl.priority][pattern]:
-                    self._callables[callbl.priority][pattern].remove(callbl)
+                try:
+                    self._callables[callbl.priority][re_dotstar].remove(callbl)
+                except ValueError:
+                    pass
 
             if hasattr(callbl, 'commands'):
                 module_name = callbl.__module__.rsplit('.', 1)[-1]
                 # TODO doc and make decorator for this. Not sure if this is how
                 # it should work yet, so not making it public for 6.0.
                 category = getattr(callbl, 'category', module_name)
+
                 if callbl.commands[0] in self._command_groups[category]:
                     self._command_groups[category].remove(callbl.commands[0])
 
@@ -278,7 +286,7 @@ class Sopel(irc.Bot):
         if hasattr(module, "teardown"):
             module.teardown(self)
 
-        del self._modules[module.__name__]
+        self._modules.pop(module.__name__, None)
 
     def part(self, channel, msg=None):
         """Part a channel."""

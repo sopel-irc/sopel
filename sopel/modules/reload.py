@@ -8,12 +8,15 @@ https://sopel.chat
 """
 from __future__ import unicode_literals, absolute_import, print_function, division
 
-import time
-from sopel.tools import get_raising_file_and_line
-import sopel.loader
-import sopel.module
-import subprocess
 import os
+import subprocess
+import sys
+import time
+
+import sopel.loader
+from sopel.loader import reload_all
+import sopel.module
+from sopel.tools import get_raising_file_and_line
 
 
 @sopel.module.nickname_commands("reload")
@@ -21,45 +24,63 @@ import os
 @sopel.module.thread(False)
 @sopel.module.require_admin()
 def f_reload(bot, trigger):
-    """Reloads a module, for use by admins only."""
+    """Reloads one or more modules, for use by admins only."""
     name = trigger.group(2)
 
     if not name or name == '*' or name.upper() == 'ALL THE THINGS':
-        modules = sopel.loader.enumerate_modules(bot.config)
-        names = []
-        ok_names = []
-        failed_names = []
-
-        for name, module in bot._modules.items():
-            names.append(name)
-            try:
-                bot.unregister_module(module)
-            except Exception:
-                failed_names.append(name)
-                continue
-
-            if name not in modules:
-                failed_names.append(name)
-                continue
-
-            path, type_ = modules[name]
-            load_module(bot, name, path, type_)
-            ok_names.append(name)
-
-        return bot.say('Reloaded: %s\nFailed to reload: %s'
-                       % (','.join(l) for l in (ok_names, failed_names)))
+        names = set(bot._modules)
+        names.pop('__init__', None)
     else:
-        if name not in bot._modules:
-            return bot.reply('"%s" not loaded, try the `load` command' % name)
+        names = [s.strip() for s in name.split()]
 
-        old_module = bot._modules[name]
-        bot.unregister_module(old_module)
+    modules = sopel.loader.enumerate_modules(bot.config)
+    ok_names = []
+    failed_names = []
 
-        modules = sopel.loader.enumerate_modules(bot.config)
+    for name in names:
+        module = bot._modules.get(name)
+
+        if module is None:
+            bot.reply('"%s" is not loaded, load it first with `load`.' % name)
+            continue
+
+        def reload_check(module, depth):
+            # reload everything in the top level or any n-deep submodules
+            return (depth < 2 or
+                    module.__name__ == name or
+                    module.__name__.startswith(name + '.')) \
+                and module.__name__ not in sys.builtin_module_names
+
+        def pre_reload(module):
+            if module.__name__ == name or module.__name__.startswith(name + '.'):
+                bot.unregister_module(module)
+
+        try:
+            bot.unregister_module(module)
+            reload_all(module, pre_reload=pre_reload, reload_if=reload_check)
+        except Exception as e:
+            filename, lineno = get_raising_file_and_line()
+            rel_path = os.path.relpath(filename, os.path.dirname(__file__))
+            raising_stmt = "%s:%d" % (rel_path, lineno)
+            bot.reply("Error unloading %s: %s (%s)" % (name, e, raising_stmt))
+            failed_names.append(name)
+            continue
+
         if name not in modules:
-            return bot.reply('Module %s not found, was it deleted?' % name)
+            bot.reply('Module %s not found, was it deleted?' % name)
+            continue
+
         path, type_ = modules[name]
-        load_module(bot, name, path, type_)
+
+        if load_module(bot, name, path, type_):
+            ok_names.append(name)
+        else:
+            failed_names.append(name)
+
+    if ok_names:
+        bot.say('Reloaded: %s' % (', '.join(ok_names)))
+    if failed_names:
+        bot.say('Failed to reload: %s' % ', '.join(failed_names))
 
 
 def load_module(bot, name, path, type_):
@@ -70,10 +91,12 @@ def load_module(bot, name, path, type_):
         filename, lineno = get_raising_file_and_line()
         rel_path = os.path.relpath(filename, os.path.dirname(__file__))
         raising_stmt = "%s:%d" % (rel_path, lineno)
-        return bot.reply("Error loading %s: %s (%s)" % (name, e, raising_stmt))
+        bot.reply("Error loading %s: %s (%s)" % (name, e, raising_stmt))
+        return False
     else:
         modified = time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime(mtime))
         bot.reply('%r (version: %s)' % (module, modified))
+        return module
 
 
 @sopel.module.nickname_commands('update')
@@ -93,20 +116,32 @@ def f_update(bot, trigger):
 @sopel.module.thread(False)
 @sopel.module.require_admin()
 def f_load(bot, trigger):
-    """Loads a module, for use by admins only."""
+    """Loads one or more modules, for use by admins only."""
     name = trigger.group(2)
-    path = ''
+    ok_names = []
+    failed_names = []
+    modules = sopel.loader.enumerate_modules(bot.config)
+
     if not name:
         return bot.reply('Load what?')
 
-    if name in bot._modules:
-        return bot.reply('Module already loaded, use reload')
+    for name in name.split():
+        if name in bot._modules:
+            bot.reply('Module already loaded, use reload')
+        elif name not in modules:
+            bot.reply("Module '%s' not found." % name)
+        else:
+            path, type_ = modules[name]
 
-    mods = sopel.loader.enumerate_modules(bot.config)
-    if name not in mods:
-        return bot.reply('Module %s not found' % name)
-    path, type_ = mods[name]
-    load_module(bot, name, path, type_)
+            if load_module(bot, name, path, type_):
+                ok_names.append(name)
+            else:
+                failed_names.append(name)
+
+    if ok_names:
+        bot.say('Loaded: %s' % (', '.join(ok_names)))
+    if failed_names:
+        bot.say('Failed to load: %s' % ', '.join(failed_names))
 
 
 @sopel.module.nickname_commands("unload")
@@ -114,17 +149,35 @@ def f_load(bot, trigger):
 @sopel.module.thread(False)
 @sopel.module.require_admin()
 def f_unload(bot, trigger):
-    """"Unloads" a module, for use by admins only."""
+    """"Unloads" one or more modules, for use by admins only."""
     name = trigger.group(2)
-    if name == bot.config.core.owner:
+    ok_names = []
+    failed_names = []
+
+    if not name:
+        return bot.reply('Reload what?')
+    elif name == bot.config.core.owner:
         return bot.reply('What?')
 
-    if name not in bot._modules:
-        return bot.reply('%s: not loaded, try the `load` command' % name)
+    for name in name.split():
+        module = bot._modules.get(name)
+        if module is None:
+            bot.reply('%s: not loaded, try the `load` command' % name)
+        else:
+            try:
+                bot.unregister_module(module)
+            except Exception as e:
+                filename, lineno = get_raising_file_and_line()
+                rel_path = os.path.relpath(filename, os.path.dirname(__file__))
+                raising_stmt = "%s:%d" % (rel_path, lineno)
+                bot.reply("Error unloading %s: %s (%s)" % (name, e, raising_stmt))
+                failed_names.append(name)
+                continue
 
-    old_module = bot._modules[name]
-    bot.unregister_module(old_module)
-    bot.reply('done.')
+    if ok_names:
+        bot.say('Unloaded: %s' % (', '.join(ok_names)))
+    if failed_names:
+        bot.say('Failed to unload: %s' % ', '.join(failed_names))
 
 
 # Catch PM based messages
