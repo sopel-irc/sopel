@@ -82,13 +82,13 @@ class JobScheduler(threading.Thread):
 
     def del_job(self, del_job):
         """Iterates through the job queue and re-adds all but the given job"""
-        for i in range(self._jobs.qsize()):
+        while self._jobs.qsize():
             job = self._jobs.get()
             if job is not del_job:
                 self._jobs.put(job)
 
     def del_job_by_params(self, interval, func):
-        for i in range(self._jobs.qsize()):
+        while self._jobs.qsize():
             job = self._jobs.get()
             if job.func is not func or job.interval != interval:
                 self._jobs.put(job)

@@ -253,7 +253,7 @@ def reload_all(top_module, max_depth=20, raise_immediately=False,
     def trace_reload(module, depth):  # recursive
         depth += 1
 
-        if type(module) is ModuleType and depth < max_depth:
+        if isinstance(module, ModuleType) and depth < max_depth:
             # check condition if provided
             if reload_if is not None and not reload_if(module, depth):
                 return
@@ -263,7 +263,7 @@ def reload_all(top_module, max_depth=20, raise_immediately=False,
                 for_reload[module] = depth
 
             # trace through all attributes recursively
-            for name, attr in module.__dict__.items():
+            for attr in module.__dict__.values():
                 trace_reload(attr, depth)
 
     # start tracing

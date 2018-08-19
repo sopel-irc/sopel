@@ -269,7 +269,7 @@ class Sopel(irc.Bot):
                 if callbl.commands[0] in self._command_groups[category]:
                     self._command_groups[category].remove(callbl.commands[0])
 
-            for command, docs in callbl._docs.items():
+            for command in callbl._docs:
                 self.doc.pop(command, None)
 
         for func in jobs:
