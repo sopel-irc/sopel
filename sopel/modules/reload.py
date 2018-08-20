@@ -68,6 +68,7 @@ def reload_module_tree(bot, name, seen=None, silent=False):
     for obj_name, obj in iteritems(vars(old_module)):
         if callable(obj):
             bot.unregister(obj)
+            old_callables[obj_name] = obj
         elif (type(obj) is ModuleType and
               obj.__name__.startswith(name + '.') and
               obj.__name__ not in sys.builtin_module_names):
