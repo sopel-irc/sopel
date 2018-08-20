@@ -280,7 +280,7 @@ class Sopel(irc.Bot):
             self.memory['url_callbacks'].pop(func.url_regex, None)
 
     def unregister_module(self, module):
-        relevant_parts = sopel.loader.clean_module(module, self.config)
+        relevant_parts = sopel.loader.clean_module(module, self.config, modify=False)
         self.unregister(*relevant_parts)
 
         if hasattr(module, "teardown"):

@@ -55,6 +55,11 @@ def f_reload(bot, trigger):
             if module.__name__ == name or module.__name__.startswith(name + '.'):
                 bot.unregister_module(module)
 
+                try:
+                    del sys.modules[module.__name__]
+                except Exception:
+                    pass
+
         try:
             bot.unregister_module(module)
             reload_all(module, pre_reload=pre_reload, reload_if=reload_check)
@@ -155,7 +160,7 @@ def f_unload(bot, trigger):
     failed_names = []
 
     if not name:
-        return bot.reply('Reload what?')
+        return bot.reply('Unload what?')
     elif name == bot.config.core.owner:
         return bot.reply('What?')
 
@@ -166,6 +171,7 @@ def f_unload(bot, trigger):
         else:
             try:
                 bot.unregister_module(module)
+                ok_names.append(name)
             except Exception as e:
                 filename, lineno = get_raising_file_and_line()
                 rel_path = os.path.relpath(filename, os.path.dirname(__file__))

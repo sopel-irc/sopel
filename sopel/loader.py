@@ -211,7 +211,7 @@ def is_triggerable(obj):
     return any(hasattr(obj, attr) for attr in ('rule', 'intents', 'commands', 'nickname_commands'))
 
 
-def clean_module(module, config):
+def clean_module(module, config, modify=True):
     callables = []
     shutdowns = []
     jobs = []
@@ -222,10 +222,12 @@ def clean_module(module, config):
             if getattr(obj, '__name__', None) == 'shutdown':
                 shutdowns.append(obj)
             elif is_triggerable(obj):
-                clean_callable(obj, config)
+                if modify:
+                    clean_callable(obj, config)
                 callables.append(obj)
             elif hasattr(obj, 'interval'):
-                clean_callable(obj, config)
+                if modify:
+                    clean_callable(obj, config)
                 jobs.append(obj)
             elif hasattr(obj, 'url_regex'):
                 urls.append(obj)
@@ -271,10 +273,11 @@ def reload_all(top_module, max_depth=20, raise_immediately=False,
     reload_list = sorted(for_reload, reverse=True, key=lambda k: for_reload[k])
     not_reloaded = dict()
 
-    for module in reload_list:
-        if pre_reload is not None:
+    if pre_reload is not None:
+        for module in reload_list:
             pre_reload(module)
 
+    for module in reload_list:
         try:
             _reload(module)
         except Exception:  # catch and write all errors
