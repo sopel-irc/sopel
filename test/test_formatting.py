@@ -4,7 +4,7 @@ from __future__ import unicode_literals, absolute_import, print_function, divisi
 
 import pytest
 
-from sopel.formatting import colors, color, bold, italic, underline, strikethrough, monospace
+from sopel.formatting import colors, color, hex_color, bold, italic, underline, strikethrough, monospace
 
 
 def test_color():
@@ -14,6 +14,16 @@ def test_color():
     assert color(text, colors.PINK, colors.TEAL) == '\x0313,10' + text + '\x03'
     pytest.raises(ValueError, color, text, 100)
     pytest.raises(ValueError, color, text, 'INVALID')
+
+
+def test_hex_color():
+    text = 'Hello World'
+    assert hex_color(text) == text
+    assert hex_color(text, '369') == '\x04336699' + text + '\x04'
+    assert hex_color(text, '246', '987654') == '\x04224466,987654' + text + '\x04'
+    pytest.raises(ValueError, hex_color, text, 0x224466)
+    pytest.raises(ValueError, hex_color, text, '1234')
+    pytest.raises(ValueError, hex_color, text, 'sixchr')
 
 
 def test_bold():
