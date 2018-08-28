@@ -10,7 +10,7 @@ from sopel.module import commands, example, NOLIMIT
 
 # The Canadian central bank has better exchange rate data than the Fed, the
 # Bank of England, or the European Central Bank. Who knew?
-base_url = 'http://www.bankofcanada.ca/stats/assets/rates_rss/noon/en_{}.xml'
+base_url = 'https://www.bankofcanada.ca/valet/observations/FX{}CAD/json'
 regex = re.compile(r'''
     (\d+(?:\.\d+)?)        # Decimal number
     \s*([a-zA-Z]{3})       # 3-letter currency code
@@ -28,7 +28,7 @@ def get_rate(code):
         rates = btc_rate.json()
         return 1 / rates['averages']['day'], 'Bitcoin—24hr average'
 
-    data = get("http://www.bankofcanada.ca/valet/observations/FX{}CAD/json".format(code))
+    data = get(base_url.format(code))
     name = data.json()['seriesDetail']['FX{}CAD'.format(code)]['description']
     name = name.split(" to Canadian")[0]
     json = data.json()['observations']
