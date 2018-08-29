@@ -150,7 +150,7 @@ def redditor_info(bot, trigger, match=None):
     if is_cakeday:
         message = message + ' | 13Cake day'
     if commanded:
-        message = message + ' | http://reddit.com/u/' + u.name
+        message = message + ' | https://reddit.com/u/' + u.name
     if u.is_gold:
         message = message + ' | 08Gold'
     if u.is_mod:
