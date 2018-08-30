@@ -90,7 +90,7 @@ def setup(bot):
 
 def _download_malwaredomains_db(path):
     print('Downloading malwaredomains db...')
-    urlretrieve('http://mirror1.malwaredomains.com/files/justdomains', path)
+    urlretrieve('https://mirror1.malwaredomains.com/files/justdomains', path)
 
 
 @sopel.module.rule('(?u).*(https?://\S+).*')
