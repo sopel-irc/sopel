@@ -4,7 +4,7 @@ from __future__ import unicode_literals, absolute_import, print_function, divisi
 
 import pytest
 
-from sopel.formatting import colors, color, hex_color, bold, italic, underline, strikethrough, monospace
+from sopel.formatting import colors, color, hex_color, bold, italic, underline, strikethrough, monospace, reverse
 
 
 def test_color():
@@ -49,3 +49,8 @@ def test_strikethrough():
 def test_monospace():
     text = 'Hello World'
     assert monospace(text) == '\x11' + text + '\x11'
+
+
+def test_reverse():
+    text = 'Hello World'
+    assert reverse(text) == '\x16' + text + '\x16'
