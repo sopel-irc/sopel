@@ -104,6 +104,13 @@ def title_command(bot, trigger):
     for title, domain in results[:4]:
         bot.reply('[ %s ] - %s' % (title, domain))
 
+    # Nice to have different failure messages for one-and-only requested URL
+    # failed vs. one-of-many failed.
+    if len(urls) == 1 and not results:
+        bot.reply('Sorry, fetching that title failed. Make sure the site is working.')
+    elif len(urls) > len(results):
+        bot.reply('I couldn\'t get all of the titles, but I fetched what I could!')
+
 
 @rule('(?u).*(https?://\S+).*')
 def title_auto(bot, trigger):
