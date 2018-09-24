@@ -150,9 +150,10 @@ def say_info(bot, trigger, mode):
         woeid = bot.db.get_nick_value(trigger.nick, 'woeid')
         if not woeid:
             return bot.reply("I don't know where you live. "
-                             "Give me a location, like .{command} London, "
-                             "or tell me where you live by saying .setlocation "
-                             "London, for example.".format(command=trigger.group(1)))
+                             "Give me a location, like {pfx}{command} London, "
+                             "or tell me where you live by saying {pfx}setlocation "
+                             "London, for example.".format(command=trigger.group(1),
+                                pfx=bot.config.core.help_prefix))
     else:
         location = location.strip()
         woeid = bot.db.get_nick_value(location, 'woeid')
