@@ -191,9 +191,13 @@ def set_config(bot, trigger):
         bot.say('[{}] section has no option {}.'.format(section_name, option))
         return
 
+    delim = trigger.group(2).find(' ')
+    # Skip preceeding whitespaces, if any.
+    while delim > 0 and delim < len(trigger.group(2)) and trigger.group(2)[delim] == ' ':
+        delim = delim + 1
+
     # Display current value if no value is given.
-    value = trigger.group(4)
-    if not value:
+    if delim == -1 or delim == len(trigger.group(2)):
         if not static_sec and bot.config.parser.has_option(section, option):
             bot.reply("Option %s.%s does not exist." % (section_name, option))
             return
@@ -207,6 +211,7 @@ def set_config(bot, trigger):
         return
 
     # Otherwise, set the value to one given as argument 2.
+    value = trigger.group(2)[delim:]
     if static_sec:
         descriptor = getattr(section.__class__, option)
         try:
