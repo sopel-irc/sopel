@@ -142,7 +142,8 @@ def get_tomorrow_cover(parsed):
 
 def say_info(bot, trigger, mode):
     if mode not in ['weather', 'forecast']:  # Unnecessary safeguard, but whatever
-        return bot.say("Sorry, I got confused. Please report this error to my owner.")
+        return bot.say("Sorry, I got confused. Please report this error to {owner}."
+                       .format(owner=bot.config.core.owner))
     # most of the logic is common to both modes
     location = trigger.group(2)
     woeid = ''
