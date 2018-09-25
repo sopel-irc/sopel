@@ -222,8 +222,8 @@ def roll(bot, trigger):
     # wrong with the syntax than a generic error message.
     try:
         result = eval_equation(eval_str)
-    except Exception as e:
-        bot.reply("SyntaxError, eval(%s), %s" % (eval_str, e))
+    except SyntaxError:
+        bot.reply("What a weird dice you gave me. How do I throw it?")
         return
 
     bot.reply("You roll %s: %s = %d" % (
