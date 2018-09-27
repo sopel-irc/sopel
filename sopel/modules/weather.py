@@ -118,7 +118,7 @@ def get_tomorrow_high(parsed):
         tomorrow_high = int(parsed['channel']['item']['yweather:forecast'][2]['@high'])
     except (KeyError, ValueError):
         return 'unknown'
-    return ('High: %s\u00B0C (%s\u00B0F)' % (tomorrow_high, c_to_f(tomorrow_high)))
+    return ('High: %d\u00B0C (%d\u00B0F)' % (tomorrow_high, c_to_f(tomorrow_high)))
 
 
 def get_tomorrow_low(parsed):
@@ -126,7 +126,7 @@ def get_tomorrow_low(parsed):
         tomorrow_low = int(parsed['channel']['item']['yweather:forecast'][2]['@low'])
     except (KeyError, ValueError):
         return 'unknown'
-    return ('Low: %s\u00B0C (%s\u00B0F)' % (tomorrow_low, c_to_f(tomorrow_low)))
+    return ('Low: %d\u00B0C (%d\u00B0F)' % (tomorrow_low, c_to_f(tomorrow_low)))
 
 
 def get_tomorrow_cover(parsed):
