@@ -43,12 +43,11 @@ def run_pipe(command):
             pipe[i] = Popen(command_part.split(), stdout=PIPE)
         else:
             pipe[i] = Popen(command_part.split(),
-                            stdin=pipe[i-1].stdout, stdout=PIPE)
+                            stdin=pipe[i - 1].stdout, stdout=PIPE)
         i = i + 1
-    (output, _status) = pipe[i-1].communicate()
-    exit_code = pipe[i-1].wait()
+    (output, _status) = pipe[i - 1].communicate()
+    exit_code = pipe[i - 1].wait()
     return output, exit_code
-
 
 
 def run_and_forget(command):
@@ -86,7 +85,6 @@ def run_command(bot, trigger):
             bot.say('<<END')
     else:
         bot.reply('Status: %i, Stdout: <<EMPTY' % status)
-
 
 
 @require_admin(message='Insufficient rights')
