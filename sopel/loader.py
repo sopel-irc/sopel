@@ -6,13 +6,10 @@ import os.path
 import re
 import sys
 
-from sopel.tools import itervalues, get_command_regexp
+from sopel.tools import compile_rule, itervalues, get_command_regexp, get_nickname_command_regexp
 
 if sys.version_info.major >= 3:
     basestring = (str, bytes)
-
-# Can be implementation-dependent
-_regex_type = type(re.compile(''))
 
 
 def get_module_description(path):
@@ -110,20 +107,6 @@ def enumerate_modules(config, show_all=False):
     return modules
 
 
-def compile_rule(nick, pattern):
-    # Not sure why this happens on reloads, but it shouldn't cause problems…
-    if isinstance(pattern, _regex_type):
-        return pattern
-
-    nick = re.escape(nick)
-    pattern = pattern.replace('$nickname', nick)
-    pattern = pattern.replace('$nick', r'{}[,:]\s+'.format(nick))
-    flags = re.IGNORECASE
-    if '\n' in pattern:
-        flags |= re.VERBOSE
-    return re.compile(pattern, flags)
-
-
 def trim_docstring(doc):
     """Get the docstring as a series of lines that can be sent"""
     if not doc:
@@ -149,6 +132,7 @@ def clean_callable(func, config):
     """Compiles the regexes, moves commands into func.rule, fixes up docs and
     puts them in func._docs, and sets defaults"""
     nick = config.core.nick
+    alias_nicks = config.core.alias_nicks
     prefix = config.core.prefix
     help_prefix = config.core.help_prefix
     func._docs = {}
@@ -173,11 +157,11 @@ def clean_callable(func, config):
     if hasattr(func, 'rule'):
         if isinstance(func.rule, basestring):
             func.rule = [func.rule]
-        func.rule = [compile_rule(nick, rule) for rule in func.rule]
+        func.rule = [compile_rule(nick, rule, alias_nicks) for rule in func.rule]
 
-    if hasattr(func, 'commands'):
+    if hasattr(func, 'commands') or hasattr(func, 'nickname_commands'):
         func.rule = getattr(func, 'rule', [])
-        for command in func.commands:
+        for command in getattr(func, 'commands', []):
             regexp = get_command_regexp(prefix, command)
             if regexp not in func.rule:
                 # list.append() ALWAYS adds the value, even if it already exists
@@ -191,8 +175,14 @@ def clean_callable(func, config):
             if example[0] != help_prefix and not example.startswith(nick):
                 example = help_prefix + example[len(help_prefix):]
         if doc or example:
-            for command in func.commands:
+            cmds = []
+            cmds.extend(getattr(func, 'commands', []))
+            cmds.extend(getattr(func, 'nickname_commands', []))
+            for command in cmds:
                 func._docs[command] = (doc, example)
+
+    if hasattr(func, 'intents'):
+        func.intents = [re.compile(intent, re.IGNORECASE) for intent in func.intents]
 
 
 def load_module(name, path, type_):
@@ -208,7 +198,7 @@ def load_module(name, path, type_):
 
 
 def is_triggerable(obj):
-    return any(hasattr(obj, attr) for attr in ('rule', 'intent', 'commands'))
+    return any(hasattr(obj, attr) for attr in ('rule', 'intents', 'commands', 'nickname_commands'))
 
 
 def clean_module(module, config):

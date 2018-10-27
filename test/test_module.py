@@ -89,25 +89,11 @@ def test_commands():
     assert mock.commands == ['sopel']
 
 
-def test_nick_commands():
+def test_nickname_commands():
     @module.nickname_commands('sopel')
     def mock(bot, trigger, match):
         return True
-    assert mock.rule == ["""
-        ^
-        $nickname[:,]? # Nickname.
-        \s+(sopel) # Command as group 1.
-        (?:\s+         # Whitespace to end command.
-        (              # Rest of the line as group 2.
-        (?:(\S+))?     # Parameters 1-4 as groups 3-6.
-        (?:\s+(\S+))?
-        (?:\s+(\S+))?
-        (?:\s+(\S+))?
-        .*             # Accept anything after the parameters. Leave it up to
-                       # the module to parse the line.
-        ))?            # Group 1 must be None, if there are no parameters.
-        $              # EoL, so there are no partial matches.
-        """]
+    assert mock.nickname_commands == ['sopel']
 
 
 def test_priority():

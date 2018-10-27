@@ -7,10 +7,11 @@ Licensed under the Eiffel Forum License 2.
 from __future__ import unicode_literals, absolute_import, print_function, division
 
 import re
+import requests
 
 import xmltodict
 
-from sopel import web, tools
+from sopel import tools
 from sopel.config.types import StaticSection, ListAttribute
 from sopel.logger import get_logger
 from sopel.module import rule
@@ -52,7 +53,12 @@ def setup(bot):
 
 
 def shutdown(bot):
-    del bot.memory['url_callbacks'][regex]
+    try:
+        del bot.memory['url_callbacks'][regex]
+    except KeyError:
+        # bot.config.bugzilla.domains was probably just empty on startup
+        # everything's daijoubu
+        pass
 
 
 @rule(r'.*https?://(\S+?)'
@@ -65,7 +71,7 @@ def show_bug(bot, trigger, match=None):
     if domain not in bot.config.bugzilla.domains:
         return
     url = 'https://%s%sctype=xml&%s' % match.groups()
-    data = web.get(url, dont_decode=True)
+    data = requests.get(url).content
     bug = xmltodict.parse(data).get('bugzilla').get('bug')
     error = bug.get('@error', None)  # error="NotPermitted"
 

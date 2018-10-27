@@ -7,12 +7,13 @@ from __future__ import unicode_literals, absolute_import, print_function, divisi
 import re
 from sopel import web
 from sopel.module import commands, example
-import json
+import requests
 import xmltodict
 import sys
 
 if sys.version_info.major < 3:
-    from urllib import quote_plus, unquote
+    from urllib import quote_plus, unquote as _unquote
+    unquote = lambda s: _unquote(s.encode('utf-8')).decode('utf-8')
 else:
     from urllib.parse import quote_plus, unquote
 
@@ -30,7 +31,7 @@ r_bing = re.compile(r'<h2(?: class=" b_topTitle")?><a href="([^"]+)"')
 
 def bing_search(query, lang='en-US'):
     base = 'https://www.bing.com/search?mkt=%s&q=' % lang
-    bytes = web.get(base + query)
+    bytes = requests.get(base + query).text
     m = r_bing.search(bytes)
     if m:
         return m.group(1)
@@ -42,7 +43,7 @@ r_duck = re.compile(r'nofollow" class="[^"]+" href="(?!(?:https?:\/\/r\.search\.
 def duck_search(query):
     query = query.replace('!', '')
     uri = 'https://duckduckgo.com/html/?q=%s&kl=us-en' % query
-    bytes = web.get(uri, headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.87 Safari/537.36'})
+    bytes = requests.get(uri, headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.87 Safari/537.36'}).text
     if 'web-result' in bytes:  # filter out the adds on top of the page
         bytes = bytes.split('web-result')[1]
     m = r_duck.search(bytes)
@@ -65,7 +66,10 @@ def duck_api(query):
     # So in order to always get a JSON response back the query is urlencoded
     query = quote_plus(query)
     uri = 'https://api.duckduckgo.com/?q=%s&format=json&no_html=1&no_redirect=1' % query
-    results = json.loads(web.get(uri))
+    try:
+        results = requests.get(uri).json()
+    except ValueError:
+        return None
     if results['Redirect']:
         return results['Redirect']
     else:
@@ -73,7 +77,10 @@ def duck_api(query):
 
 
 @commands('duck', 'ddg', 'g')
-@example('.duck sopel bot', r'https?:\/\/sopel\.chat\/?', re=True)
+# test for bad Unicode handling in py2
+@example('.duck grandorder.wiki chulainn alter', 'https://grandorder.wiki/Cú_Chulainn_(Alter)')
+# the last example is what .help displays
+@example('.duck sopel irc bot', r'https?:\/\/sopel\.chat\/?', re=True)
 def duck(bot, trigger):
     """Queries Duck Duck Go for the specified input."""
     query = trigger.group(2)
@@ -98,7 +105,7 @@ def duck(bot, trigger):
 
 
 @commands('bing')
-@example('.bing sopel bot', r'https?:\/\/sopel\.chat\/?', re=True)
+@example('.bing sopel irc bot')
 def bing(bot, trigger):
     """Queries Bing for the specified input."""
     if not trigger.group(2):
@@ -112,7 +119,7 @@ def bing(bot, trigger):
 
 
 @commands('search')
-@example('.search sopel bot', r'(https?:\/\/sopel\.chat\/? \(b, d\)|https?:\/\/sopel\.chat\/? \(b\), https?:\/\/sopel\.chat\/? \(d\))', re=True)
+@example('.search sopel irc bot')
 def search(bot, trigger):
     """Searches Bing and Duck Duck Go."""
     if not trigger.group(2):
@@ -147,7 +154,7 @@ def suggest(bot, trigger):
     # single user. This can be switched out as soon as someone finds (or builds)
     # an alternative suggestion API.
     uri = 'https://suggestqueries.google.com/complete/search?output=toolbar&hl=en&q='
-    answer = xmltodict.parse(web.get(uri + query.replace('+', '%2B')))['toplevel']
+    answer = xmltodict.parse(requests.get(uri + query.replace('+', '%2B')).text)['toplevel']
     try:
         answer = answer['CompleteSuggestion'][0]['suggestion']['@data']
     except TypeError:

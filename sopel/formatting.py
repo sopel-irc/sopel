@@ -17,10 +17,16 @@ CONTROL_NORMAL = '\x0f'
 """The control code to reset formatting"""
 CONTROL_COLOR = '\x03'
 """The control code to start or end color formatting"""
-CONTROL_UNDERLINE = '\x1f'
-"""The control code to start or end underlining"""
 CONTROL_BOLD = '\x02'
 """The control code to start or end bold formatting"""
+CONTROL_ITALIC = '\x1d'
+"""The control code to start or end italic formatting"""
+CONTROL_UNDERLINE = '\x1f'
+"""The control code to start or end underlining"""
+CONTROL_STRIKETHROUGH = '\x1e'
+"""The control code to start or end strikethrough formatting"""
+CONTROL_MONOSPACE = '\x11'
+"""The control code to start or end monospace formatting"""
 
 
 # TODO when we can move to 3.3+ completely, make this an Enum.
@@ -103,6 +109,29 @@ def bold(text):
     return ''.join([CONTROL_BOLD, text, CONTROL_BOLD])
 
 
+def italic(text):
+    """Return the text, with italic IRC formatting."""
+    return ''.join([CONTROL_ITALIC, text, CONTROL_ITALIC])
+
+
 def underline(text):
     """Return the text, with underline IRC formatting."""
     return ''.join([CONTROL_UNDERLINE, text, CONTROL_UNDERLINE])
+
+
+def strikethrough(text):
+    """Return the text, with strikethrough IRC formatting.
+
+    Note: This is a relatively new addition to IRC formatting conventions.
+    Use only when you can afford to have its meaning lost, as not many clients
+    support it yet."""
+    return ''.join([CONTROL_STRIKETHROUGH, text, CONTROL_STRIKETHROUGH])
+
+
+def monospace(text):
+    """Return the text, with monospace IRC formatting.
+
+    Note: This is a relatively new addition to IRC formatting conventions.
+    Use only when you can afford to have its meaning lost, as not many clients
+    support it yet."""
+    return ''.join([CONTROL_MONOSPACE, text, CONTROL_MONOSPACE])

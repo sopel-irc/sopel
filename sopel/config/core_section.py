@@ -63,11 +63,15 @@ class CoreSection(StaticSection):
     This should not be set for networks that do not support IRCv3 account
     capabilities."""
 
+    alias_nicks = ListAttribute('alias_nicks')
+    """List of alternate names recognized as the bot's nick for $nick and
+    $nickname regex substitutions"""
+
     auth_method = ChoiceAttribute('auth_method', choices=[
-        'nickserv', 'authserv', 'Q', 'sasl', 'server'])
+        'nickserv', 'authserv', 'Q', 'sasl', 'server', 'userserv'])
     """The method to use to authenticate with the server.
 
-    Can be ``nickserv``, ``authserv``, ``Q``, ``sasl``, or ``server``."""
+    Can be ``nickserv``, ``authserv``, ``Q``, ``sasl``, or ``server`` or ``userserv``."""
 
     auth_password = ValidatedAttribute('auth_password')
     """The password to use to authenticate with the server."""
@@ -131,7 +135,7 @@ class CoreSection(StaticSection):
 
     Regular expression syntax is used"""
 
-    log_raw = ValidatedAttribute('log_raw', bool, default=True)
+    log_raw = ValidatedAttribute('log_raw', bool, default=False)
     """Whether a log of raw lines as sent and received should be kept."""
 
     logdir = FilenameAttribute('logdir', directory=True, default='logs')
