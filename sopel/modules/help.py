@@ -25,7 +25,7 @@ def setup(bot):
     help_prefix = bot.config.core.help_prefix
 
 
-@rule('$nick' '(?i)(help|doc) +([A-Za-z]+)(?:\?+)?$')
+@rule('$nick' r'(?i)(help|doc) +([A-Za-z]+)(?:\?+)?$')
 @example('.help tell')
 @commands('help', 'commands')
 @priority('low')

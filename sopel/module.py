@@ -13,7 +13,7 @@ import sopel.test_tools
 import functools
 
 NOLIMIT = 1
-"""Return value for ``callable``\s, which suppresses rate limiting for the call.
+"""Return value for ``callable``\\s, which suppresses rate limiting for the call.
 
 Returning this value means the triggering user will not be
 prevented from triggering the command again within the rate limit. This can
@@ -133,11 +133,11 @@ def commands(*command_list):
 
     Example:
         @commands("hello"):
-            If the command prefix is "\.", this would trigger on lines starting
+            If the command prefix is "\\.", this would trigger on lines starting
             with ".hello".
 
         @commands('j', 'join')
-            If the command prefix is "\.", this would trigger on lines starting
+            If the command prefix is "\\.", this would trigger on lines starting
             with either ".j" or ".join".
 
     """

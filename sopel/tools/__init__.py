@@ -171,7 +171,7 @@ class Ddict(dict):
 
     """Class for multi-dimensional ``dict``.
 
-    A simple helper class to ease the creation of multi-dimensional ``dict``\s.
+    A simple helper class to ease the creation of multi-dimensional ``dict``\\s.
 
     """
 

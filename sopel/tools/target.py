@@ -19,7 +19,7 @@ class User(object):
         self.channels = {}
         """The channels the user is in.
 
-        This maps channel name ``Identifier``\s to ``Channel`` objects."""
+        This maps channel name ``Identifier``\\s to ``Channel`` objects."""
         self.account = None
         """The IRC services account of the user.
 
@@ -52,7 +52,7 @@ class Channel(object):
         self.users = {}
         """The users in the channel.
 
-        This maps username ``Identifier``\s to channel objects."""
+        This maps username ``Identifier``\\s to channel objects."""
         self.privileges = {}
         """The permissions of the users in the channel.
 

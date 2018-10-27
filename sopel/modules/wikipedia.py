@@ -98,7 +98,7 @@ def mw_snippet(server, query):
     return snippet['extract']
 
 
-@rule('.*\/([a-z]+\.wikipedia\.org)\/wiki\/((?!File\:)[^ ]+).*')
+@rule(r'.*\/([a-z]+\.wikipedia\.org)\/wiki\/((?!File\:)[^ ]+).*')
 def mw_info(bot, trigger, found_match=None):
     """
     Retrives a snippet of the specified length from the given page on the given
@@ -116,7 +116,7 @@ def wikipedia(bot, trigger):
     # change lang if channel has custom language set
     if (trigger.sender and not trigger.sender.is_nick() and
             bot.config.wikipedia.lang_per_channel):
-        customlang = re.search('(' + trigger.sender + '):(\w+)',
+        customlang = re.search('(' + trigger.sender + r'):(\w+)',
                                bot.config.wikipedia.lang_per_channel)
         if customlang is not None:
             lang = customlang.group(2)

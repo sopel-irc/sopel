@@ -15,7 +15,7 @@ from sopel.module import commands, intent, rate
 import re
 from os import path
 
-log_line = re.compile('\S+ (\S+) (.*? <.*?>) (\d+) (\S+)\tcommit[^:]*: (.+)')
+log_line = re.compile(r'\S+ (\S+) (.*? <.*?>) (\d+) (\S+)\tcommit[^:]*: (.+)')
 
 
 def git_info():

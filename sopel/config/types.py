@@ -42,7 +42,7 @@ class NO_DEFAULT(object):
 class StaticSection(object):
     """A configuration section with parsed and validated settings.
 
-    This class is intended to be subclassed with added ``ValidatedAttribute``\s.
+    This class is intended to be subclassed with added ``ValidatedAttribute``\\s.
     """
     def __init__(self, config, section_name, validate=True):
         if not config.parser.has_section(section_name):
@@ -123,13 +123,13 @@ class BaseValidated(object):
 
         Must be implemented in subclasses.
         """
-        raise NotImplemented("Serialize method must be implemented in subclass")
+        raise NotImplementedError("Serialize method must be implemented in subclass")
 
     def parse(self, value):
         """Take a string from the file, and return the appropriate object.
 
         Must be implemented in subclasses."""
-        raise NotImplemented("Parse method must be implemented in subclass")
+        raise NotImplementedError("Parse method must be implemented in subclass")
 
     def __get__(self, instance, owner=None):
         if instance is None:
