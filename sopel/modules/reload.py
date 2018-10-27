@@ -6,7 +6,8 @@ Licensed under the Eiffel Forum License 2.
 
 https://sopel.chat
 """
-from __future__ import unicode_literals, absolute_import, print_function, division
+from __future__ import unicode_literals, absolute_import, print_function, \
+    division
 
 import collections
 import sys
@@ -45,7 +46,8 @@ def f_reload(bot, trigger):
         bot.setup()
         return bot.reply('done')
 
-    if (name not in sys.modules and name not in sopel.loader.enumerate_modules(bot.config)):
+    if name not in sys.modules and name not in sopel.loader.enumerate_modules(
+            bot.config):
         return bot.reply('"%s" not loaded, try the `load` command' % name)
 
     reload_module_tree(bot, name)
@@ -63,7 +65,16 @@ def reload_module_tree(bot, name, seen=None):
 
     old_callables = {}
     for obj_name, obj in iteritems(vars(old_module)):
-        if callable(obj):
+        # If a callable was imported like 'from .module import *', the recursion
+        # below will catch the callable twice. The first time around, when the
+        # arg:name has the format module.submodule, the callable `obj` for some
+        # weird reason only has strings of the regexp rules, and causes issues
+        # for any trigger (basically immediately). The second time around,
+        # arg:name is just the root module name, and now the rule has been
+        # compiled. Haven't gotten a chance to trace through the code to see
+        # why this happens, but I know that my change below fixes the problem
+        # for now.
+        if callable(obj) and '.' not in name:
             bot.unregister(obj)
         elif (type(obj) is ModuleType and
               obj.__name__.startswith(name + '.') and
