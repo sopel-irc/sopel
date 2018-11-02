@@ -11,9 +11,9 @@ from sopel.module import commands, example
 
 
 @commands('shrug')
-@example('.shrug', '¯\_(ツ)_/¯')
+@example('.shrug', r'¯\_(ツ)_/¯')
 def shrug(bot, trigger):
-    bot.say('¯\_(ツ)_/¯')
+    bot.say('¯\\_(ツ)_/¯')
 
 
 @commands('happy')

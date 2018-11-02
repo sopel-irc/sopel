@@ -46,8 +46,8 @@ def setup(bot):
 
     domains = '|'.join(bot.config.bugzilla.domains)
     regex = re.compile((r'https?://(%s)'
-                        '(/show_bug.cgi\?\S*?)'
-                        '(id=\d+)')
+                        r'(/show_bug.cgi\?\S*?)'
+                        r'(id=\d+)')
                        % domains)
     bot.memory['url_callbacks'][regex] = show_bug
 
@@ -62,8 +62,8 @@ def shutdown(bot):
 
 
 @rule(r'.*https?://(\S+?)'
-      '(/show_bug.cgi\?\S*?)'
-      '(id=\d+).*')
+      r'(/show_bug.cgi\?\S*?)'
+      r'(id=\d+).*')
 def show_bug(bot, trigger, match=None):
     """Show information about a Bugzilla bug."""
     match = match or trigger

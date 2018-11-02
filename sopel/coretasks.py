@@ -172,7 +172,7 @@ def handle_names(bot, trigger):
     names = trigger.split()
 
     # TODO specific to one channel type. See issue 281.
-    channels = re.search('(#\S*)', trigger.raw)
+    channels = re.search(r'(#\S*)', trigger.raw)
     if not channels:
         return
     channel = Identifier(channels.group(1))

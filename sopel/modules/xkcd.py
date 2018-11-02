@@ -40,7 +40,7 @@ def google(query):
     url = google_search(query + sites_query)
     if not url:
         return None
-    match = re.match('(?:https?://)?xkcd.com/(\d+)/?', url)
+    match = re.match(r'(?:https?://)?xkcd.com/(\d+)/?', url)
     if match:
         return match.group(1)
 
@@ -117,7 +117,7 @@ def say_result(bot, result):
     bot.say(message)
 
 
-@url('xkcd.com/(\d+)')
+@url(r'xkcd.com/(\d+)')
 def get_url(bot, trigger, match):
     verify_ssl = bot.config.core.verify_ssl
     latest = get_info(verify_ssl=verify_ssl)

@@ -6,6 +6,8 @@ find_source_files() {
 files=$(find_source_files)
 # These are acceptable (for now). 128 and 127 should be removed eventually.
 ignore='--ignore=E501,E128,E127'
+# These are ignored by default (and we want to keep them ignored)
+ignore=$ignore',W504'
 # These are forbidding certain __future__ imports. The plugin has errors both
 # for having and not having them; we want to always have them, so we ignore
 # the having them errors and keep the not having them errors.
