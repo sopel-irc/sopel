@@ -55,7 +55,7 @@ def translate(text, in_lang='auto', out_lang='en', verify_ssl=True):
 
     try:
         data = json.loads(result)
-    except json.decoder.JSONDecodeError:
+    except ValueError:
         return None, None
 
     if raw:
