@@ -200,6 +200,11 @@ class Bot(asynchat.async_chat):
         self.close()
 
     def handle_connect(self):
+        """
+        Connect to IRC server, handle TLS and authenticate
+        user if an account exists.
+        """
+        # handle potential TLS connection
         if self.config.core.use_ssl and has_ssl:
             if not self.config.core.verify_ssl:
                 self.ssl = ssl.wrap_socket(self.socket,
@@ -211,12 +216,30 @@ class Bot(asynchat.async_chat):
                                            suppress_ragged_eofs=True,
                                            cert_reqs=ssl.CERT_REQUIRED,
                                            ca_certs=self.ca_certs)
+                # connect to host specified in config first
                 try:
                     ssl.match_hostname(self.ssl.getpeercert(), self.config.core.host)
                 except ssl.CertificateError:
-                    stderr("Invalid certficate, hostname mismatch!")
-                    os.unlink(self.config.core.pid_file_path)
-                    os._exit(1)
+                    # the host in config and certificate don't match
+                    LOGGER.error("hostname mismatch between configuration and certificate")
+                    # check (via exception) if a CNAME matches as a fallback
+                    has_matched = False
+                    for hostname in self._get_cnames(self.config.core.host):
+                        try:
+                            ssl.match_hostname(self.ssl.getpeercert(), hostname)
+                            LOGGER.warning("using {0} instead of {1} for TLS connection"
+                                           .format(hostname, self.config.core.host))
+                            has_matched = True
+                            break
+                        except ssl.CertificateError:
+                            pass
+                    if not has_matched:
+                        # everything is broken
+                        stderr("Invalid certificate, hostname mismatch!")
+                        LOGGER.error("invalid certificate, no hostname matches")
+                        if hasattr(self.config.core, 'pid_file_path'):
+                            os.unlink(self.config.core.pid_file_path)
+                            os._exit(1)
             self.set_socket(self.ssl)
 
         # Request list of server capabilities. IRCv3 servers will respond with
@@ -224,12 +247,14 @@ class Bot(asynchat.async_chat):
         # 421 Unknown command, which we'll ignore
         self.write(('CAP', 'LS', '302'))
 
+        # authenticate account if needed
         if self.config.core.auth_method == 'server':
             password = self.config.core.auth_password
             self.write(('PASS', password))
         self.write(('NICK', self.nick))
         self.write(('USER', self.user, '+iw', self.nick), self.name)
 
+        # maintain connection
         stderr('Connected.')
         self.last_ping_time = datetime.now()
         timeout_check_thread = threading.Thread(target=self._timeout_check)
@@ -238,6 +263,26 @@ class Bot(asynchat.async_chat):
         ping_thread = threading.Thread(target=self._send_ping)
         ping_thread.daemon = True
         ping_thread.start()
+
+    def _get_cnames(self, domain):
+        """
+        Determine the CNAMEs for a given domain.
+
+        :param domain: domain to check
+        :type domain: str
+        :returns: list (of str)
+        """
+        import dns.resolver
+        cnames = []
+        try:
+            answer = dns.resolver.query(domain, "CNAME")
+        except dns.resolver.NoAnswer:
+            return []
+        for data in answer:
+            if isinstance(data, dns.rdtypes.ANY.CNAME.CNAME):
+                cname = data.to_text()[:-1]
+                cnames.append(cname)
+        return cnames
 
     def _timeout_check(self):
         while self.connected or self.connecting:
