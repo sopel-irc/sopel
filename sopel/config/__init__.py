@@ -26,10 +26,10 @@ import sopel.loader
 import os
 import sys
 if sys.version_info.major < 3:
-    import ConfigParser
+    import ConfigParser as configparser
 else:
     basestring = str
-    import configparser as ConfigParser
+    import configparser
 import sopel.config.core_section
 from sopel.config.types import StaticSection
 
@@ -70,8 +70,34 @@ class Config(object):
         """
         self.filename = filename
         """The config object's associated file, as noted above."""
-        self.parser = ConfigParser.RawConfigParser(allow_no_value=True)
+        parserparams = {'allow_no_value': True}
+        self.parser = configparser.RawConfigParser(**parserparams)
         self.parser.read(self.filename)
+        # Check if interpolation is desired.
+        try:
+            basic = self.parser.getboolean('core', 'interpolation')
+        except (configparser.NoSectionError, configparser.NoOptionError):
+            basic = False
+        except ValueError:
+            stderr("interpolation set to invalid value, use True/False")
+            basic = False
+        try:
+            extended = self.parser.getboolean('core', 'interpolation_extended')
+        except (configparser.NoSectionError, configparser.NoOptionError):
+            extended = False
+        except ValueError:
+            stderr("interpolation_extended set to invalid value, use True/False")
+            extended = False
+        if basic or extended:
+            if extended:
+                try:
+                    parserparams['interpolation'] = configparser.ExtendedInterpolation()
+                except AttributeError:
+                    msg = "Cannot use extended interpolation format config with Python2"
+                    stderr(msg)
+                    raise RuntimeError(msg)
+            self.parser = configparser.ConfigParser(**parserparams)
+            self.parser.read(self.filename)
         self.define_section('core', sopel.config.core_section.CoreSection,
                             validate=validate)
         self.get = self.parser.get
@@ -103,7 +129,7 @@ class Config(object):
         """
         try:
             return self.parser.add_section(name)
-        except ConfigParser.DuplicateSectionError:
+        except configparser.DuplicateSectionError:
             return False
 
     def define_section(self, name, cls_, validate=True):

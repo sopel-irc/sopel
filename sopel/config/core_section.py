@@ -135,6 +135,20 @@ class CoreSection(StaticSection):
 
     Regular expression syntax is used"""
 
+    interpolation = ValidatedAttribute('interpolation', bool, default=False)
+    """Whether to parse the config file with basic interpolation enabled."""
+
+    interpolation_extended = ValidatedAttribute('interpolation_extended', bool, default=False)
+    """Whether to parse the config file with extended interpolation enabled.
+
+    As basic and extended interpolation are not compatible, and extended
+    interpolation is only available with Python3, if this is enabled
+    when running under Python2, a RuntimeError is generated.
+
+    For details on config file interpolation see:
+    https://docs.python.org/3/library/configparser.html#interpolation-of-values
+    """
+
     log_raw = ValidatedAttribute('log_raw', bool, default=False)
     """Whether a log of raw lines as sent and received should be kept."""
 
