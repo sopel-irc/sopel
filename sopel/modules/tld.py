@@ -25,6 +25,9 @@ def gettld(bot, trigger):
     """Show information about the given Top Level Domain."""
     page = requests.get(uri).text
     tld = trigger.group(2)
+    if not tld:
+        bot.reply("You must provide a top-level domain to search.")
+        return  # Stop if no tld argument is provided
     if tld[0] == '.':
         tld = tld[1:]
     search = r'(?i)<td><a href="\S+" title="\S+">\.{0}</a></td>\n(<td><a href=".*</a></td>\n)?<td>([A-Za-z0-9].*?)</td>\n<td>(.*)</td>\n<td[^>]*>(.*?)</td>\n<td[^>]*>(.*?)</td>\n'
