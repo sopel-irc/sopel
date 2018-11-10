@@ -42,7 +42,7 @@ def translate(text, in_lang='auto', out_lang='en', verify_ssl=True):
         "dt": "t",
         "q": text,
     }
-    url = "http://translate.googleapis.com/translate_a/single"
+    url = "https://translate.googleapis.com/translate_a/single"
     result = requests.get(url, params=query, timeout=40, headers=headers,
                           verify=verify_ssl).text
 
