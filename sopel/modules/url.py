@@ -262,7 +262,10 @@ def get_hostname(url):
 def get_tinyurl(url):
     """ Returns a shortened tinyURL link of the URL. """
     tinyurl = "https://tinyurl.com/api-create.php?url=%s" % url
-    res = requests.get(tinyurl)
+    try:
+        res = requests.get(tinyurl)
+    except requests.exceptions.ConnectionError:
+        return None
     # Replace text output with https instead of http to make the
     # result an HTTPS link.
     return res.text.replace("http://", "https://")
