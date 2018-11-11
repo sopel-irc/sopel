@@ -14,12 +14,14 @@ from sopel import web
 from sopel.module import commands, example
 
 uri = 'https://en.wiktionary.org/w/index.php?title=%s&printable=yes'
+r_sup = re.compile(r'<sup[^>]+>.+</sup>')  # Superscripts that are references only, not ordinal indicators, etc...
 r_tag = re.compile(r'<[^>]+>')
 r_ul = re.compile(r'(?ims)<ul>.*?</ul>')
 
 
 def text(html):
-    text = r_tag.sub('', html).strip()
+    text = r_sup.sub('', html)  # Remove superscripts that are references from definition
+    text = r_tag.sub('', text).strip()
     text = text.replace('\n', ' ')
     text = text.replace('\r', '')
     text = text.replace('(intransitive', '(intr.')
@@ -56,7 +58,9 @@ def wikt(word):
             mode = 'prefix'
         elif 'id="Suffix"' in line:
             mode = 'suffix'
-        elif 'id="' in line:
+        # 'id="' can occur in definition lines <li> when <sup> tag is used for references;
+        # make sure those are not excluded (see e.g., abecedarian).
+        elif ('id="' in line) and ('<li>' not in line):
             mode = None
 
         elif (mode == 'etmyology') and ('<p>' in line):
