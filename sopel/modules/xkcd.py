@@ -8,7 +8,7 @@ from __future__ import unicode_literals, absolute_import, print_function, divisi
 import random
 import re
 import requests
-from sopel.modules.search import google_search
+from sopel.modules.search import bing_search
 from sopel.module import commands, url
 
 ignored_sites = [
@@ -37,7 +37,7 @@ def get_info(number=None, verify_ssl=True):
 
 
 def google(query):
-    url = google_search(query + sites_query)
+    url = bing_search(query + sites_query)
     if not url:
         return None
     match = re.match(r'(?:https?://)?xkcd.com/(\d+)/?', url)
