@@ -16,7 +16,7 @@ import requests
 
 USER_AGENT = 'Sopel/{} (https://sopel.chat)'.format(__version__)
 default_headers = {'User-Agent': USER_AGENT}
-url_finder = None
+find_urls = None
 # These are used to clean up the title tag before actually parsing it. Not the
 # world's best way to do this, but it'll do for now.
 title_tag_data = re.compile('<(/?)title( [^>]+)?>', re.IGNORECASE)
@@ -57,7 +57,7 @@ def configure(config):
 
 
 def setup(bot):
-    global url_finder
+    global find_urls
 
     bot.config.define_section('url', UrlSection)
 
@@ -84,8 +84,15 @@ def setup(bot):
     if not bot.memory.contains('last_seen_url'):
         bot.memory['last_seen_url'] = tools.SopelMemory()
 
-    url_finder = re.compile(r'(?u)(%s?(?:http|https|ftp)(?:://\S+))' %
-                            (bot.config.url.exclusion_char), re.IGNORECASE)
+    def find_func(text):
+        re_url = r'(?u)((?<!%s)(?:http|https|ftp)(?::\/\/\S+))'\
+            % (bot.config.url.exclusion_char)
+        r = re.compile(re_url, re.IGNORECASE)
+
+        urls = re.findall(r, text)
+        return urls
+
+    find_urls = find_func
 
 
 @commands('title')
@@ -106,7 +113,7 @@ def title_command(bot, trigger):
         else:
             urls = [bot.memory['last_seen_url'][trigger.sender]]
     else:
-        urls = re.findall(url_finder, trigger)
+        urls = find_urls(trigger)
 
     results = process_urls(bot, trigger, urls)
     for title, domain, tinyurl in results[:4]:
@@ -131,7 +138,7 @@ def title_auto(bot, trigger):
         if bot.memory['safety_cache'][trigger]['positives'] > 1:
             return
 
-    urls = re.findall(url_finder, trigger)
+    urls = find_urls(trigger)
     if len(urls) == 0:
         return
 
