@@ -22,6 +22,7 @@ else:
 
 REDIRECT = re.compile(r'^REDIRECT (.*)')
 
+
 class WikiParser(HTMLParser):
     def __init__(self, section_name):
         HTMLParser.__init__(self)
@@ -36,7 +37,7 @@ class WikiParser(HTMLParser):
         self.result = ''
 
     def handle_starttag(self, tag, attrs):
-        if tag == 'sup': # don't consume anything in superscript (citation-related tags)
+        if tag == 'sup':    # don't consume anything in superscript (citation-related tags)
             self.consume = False
 
         elif re.match(r'^h\d$', tag):
@@ -173,7 +174,7 @@ def say_section(bot, trigger, server, query, section):
 
 def mw_section(server, query, section):
     """
-    Retrives a snippet from the specified section from the given page 
+    Retrives a snippet from the specified section from the given page
     on the given server.
     """
     sections_url = ('https://{0}/w/api.php?format=json&redirects'
@@ -212,8 +213,9 @@ def mw_section(server, query, section):
 
     return text
 
+
 # Get a wikipedia page (excluding spaces and #, but not /File: links), with a separate optional field for the section
-@rule('.*\/([a-z]+\.wikipedia\.org)\/wiki\/((?!File\:)[^ #]+)#?([^ ]*).*')
+@rule(r'.*\/([a-z]+\.wikipedia\.org)\/wiki\/((?!File\:)[^ #]+)#?([^ ]*).*')
 def mw_info(bot, trigger, found_match=None):
     """
     Retrives a snippet of the specified length from the given page on the given
@@ -221,7 +223,7 @@ def mw_info(bot, trigger, found_match=None):
     """
     match = found_match or trigger
     if match.group(3):
-        if match.group(3).startswith('cite_note-'): # Don't bother trying to retrieve a snippet when cite-note is linked
+        if match.group(3).startswith('cite_note-'):  # Don't bother trying to retrieve a snippet when cite-note is linked
             say_snippet(bot, trigger, match.group(1), unquote(match.group(2)), show_url=False)
         else:
             say_section(bot, trigger, match.group(1), unquote(match.group(2)), unquote(match.group(3)))
