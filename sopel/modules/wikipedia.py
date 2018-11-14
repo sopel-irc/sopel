@@ -22,40 +22,60 @@ else:
 
 REDIRECT = re.compile(r'^REDIRECT (.*)')
 
-
 class WikiParser(HTMLParser):
-    def __init__(self):
+    def __init__(self, section_name):
         HTMLParser.__init__(self)
         self.consume = True
+        self.is_header = False
+        self.section_name = section_name
+
         self.citations = False
         self.span_depth = 0
+        self.div_depth = 0
+
         self.result = ''
-    
+
     def handle_starttag(self, tag, attrs):
-        if tag == 'h3' or tag == 'sup': # don't consume the header or anything in superscript (citation-related tags)
+        if tag == 'sup': # don't consume anything in superscript (citation-related tags)
             self.consume = False
+
+        elif re.match(r'^h\d$', tag):
+            self.is_header = True
+
         elif tag == 'span':
             if self.span_depth:
                 self.span_depth += 1
             else:
-                for attr in attrs:  # remove 'edit' tags, and keep track of depth
+                for attr in attrs:  # remove 'edit' tags, and keep track of depth for nested <span> tags
                     if attr[0] == 'class' and 'edit' in attr[1]:
                         self.span_depth += 1
+
+        elif tag == 'div':  # We want to skip thumbnail text and the inexplicable table of contents, and as such also need to track div depth
+            if self.div_depth:
+                self.div_depth += 1
+            else:
+                for attr in attrs:
+                    if attr[0] == 'class' and ('thumb' in attr[1] or attr[1] == 'toc'):
+                        self.div_depth += 1
+
         elif tag == 'ol':
             for attr in attrs:
                 if attr[0] == 'class' and 'references' in attr[1]:
                     self.citations = True   # once we hit citations, we can stop
-    
+
     def handle_endtag(self, tag):
-        if not self.consume and (tag == 'h3' or tag == 'sup'):
+        if not self.consume and tag in ['h2', 'h3', 'sup']:
             self.consume = True
         if self.span_depth and tag == 'span':
             self.span_depth -= 1
-    
+        if self.div_depth and tag == 'div':
+            self.div_depth -= 1
+
     def handle_data(self, data):
-        if self.consume and not self.citations and not self.span_depth:
-            self.result += data
-    
+        if self.consume and not any([self.citations, self.span_depth, self.div_depth]):
+            if not (self.is_header and data == self.section_name):  # Skip the initial header info only
+                self.result += data
+
     def get_result(self):
         return self.result
 
