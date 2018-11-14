@@ -157,12 +157,11 @@ def mw_snippet(server, query):
     return snippet['extract']
 
 
-@rule(r'.*\/([a-z]+\.wikipedia\.org)\/wiki\/((?!File\:)[^ ]+).*')
 def say_section(bot, trigger, server, query, section):
     page_name = query.replace('_', ' ')
     query = quote(query.replace(' ', '_'))
     section = section.replace('_', ' ')
-    
+
     snippet = mw_section(server, query, section)
     if not snippet:
         bot.say("[WIKIPEDIA] Error fetching section \"{}\" for page \"{}\".".format(section, page_name))
@@ -177,8 +176,7 @@ def mw_section(server, query, section):
     Retrives a snippet from the specified section from the given page 
     on the given server.
     """
-    print('getting section {} for page {}'.format(section, query))
-    sections_url = ('https://{0}/w/api.php?format=json'
+    sections_url = ('https://{0}/w/api.php?format=json&redirects'
                     '&action=parse&prop=sections&page={1}')\
                     .format(server, query)
     sections = get(sections_url).json()
@@ -189,22 +187,20 @@ def mw_section(server, query, section):
         if entry['line'] == section:
             section_number = entry['index']
             break
-    
+
     if not section_number:
         return None
 
-    snippet_url = ('https://{0}/w/api.php?format=json'
+    snippet_url = ('https://{0}/w/api.php?format=json&redirects'
                    '&action=parse&page={1}&prop=text'
                    '&section={2}').format(server, query, section_number)
 
     data = get(snippet_url).json()
-    print(data)
 
-    parser = WikiParser()
+    parser = WikiParser(section)
     parser.feed(data['parse']['text']['*'])
     text = parser.get_result()
     text = ' '.join(text.split())   # collapse multiple whitespace chars
-    print(text)
 
     trimmed = False
 
@@ -216,7 +212,7 @@ def mw_section(server, query, section):
 
     return text
 
-
+# Get a wikipedia page (excluding spaces and #, but not /File: links), with a separate optional field for the section
 @rule('.*\/([a-z]+\.wikipedia\.org)\/wiki\/((?!File\:)[^ #]+)#?([^ ]*).*')
 def mw_info(bot, trigger, found_match=None):
     """
@@ -224,9 +220,11 @@ def mw_info(bot, trigger, found_match=None):
     server.
     """
     match = found_match or trigger
-    if trigger.group(3):
-        print('section')
-        say_section(bot, trigger, match.group(1), unquote(match.group(2)), match.group(3))
+    if match.group(3):
+        if match.group(3).startswith('cite_note-'): # Don't bother trying to retrieve a snippet when cite-note is linked
+            say_snippet(bot, trigger, match.group(1), unquote(match.group(2)), show_url=False)
+        else:
+            say_section(bot, trigger, match.group(1), unquote(match.group(2)), unquote(match.group(3)))
     else:
         say_snippet(bot, trigger, match.group(1), unquote(match.group(2)), show_url=False)
 
