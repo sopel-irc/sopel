@@ -84,12 +84,20 @@ def setup(bot):
     if not bot.memory.contains('last_seen_url'):
         bot.memory['last_seen_url'] = tools.SopelMemory()
 
-    def find_func(text):
+    def find_func(text, clean=False):
+        def trim_url(url):
+            # clean trailing sentence- or clause-ending punctuation
+            while url[-1] in '.,?!\'":;':
+                url = url[:-1]
+            return url
+
         re_url = r'(?u)((?<!%s)(?:http|https|ftp)(?::\/\/\S+))'\
             % (bot.config.url.exclusion_char)
         r = re.compile(re_url, re.IGNORECASE)
 
         urls = re.findall(r, text)
+        if clean:
+            urls = [trim_url(url) for url in urls]
         return urls
 
     find_urls = find_func
