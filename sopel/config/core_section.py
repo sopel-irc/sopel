@@ -144,11 +144,49 @@ class CoreSection(StaticSection):
     logging_channel = ValidatedAttribute('logging_channel', Identifier)
     """The channel to send logging messages to."""
 
+    logging_channel_datefmt = ValidatedAttribute('logging_channel_datefmt')
+    """The logging format string to use for timestamps in IRC channel logs.
+
+    If not specified, this falls back to using ``logging_datefmt``.
+    """
+
+    logging_channel_format = ValidatedAttribute('logging_channel_format')
+    """The logging format string to use in IRC channel logs.
+
+    If not specified, this falls back to using ``logging_format``.
+    """
+
+    logging_channel_level = ChoiceAttribute('logging_channel_level',
+                                            ['CRITICAL', 'ERROR', 'WARNING',
+                                             'INFO', 'DEBUG'],
+                                            'WARNING')
+    """The lowest severity of logs to display in IRC channel logs.
+
+    If not specified, this falls back to using ``logging_level``.
+    """
+
+    logging_datefmt = ValidatedAttribute('logging_datefmt')
+    """The logging format string to use for timestamps in logs.
+
+    If not specified, the datefmt is not provided, and logging will use
+    the Python default.
+    """
+
+    logging_format = ValidatedAttribute('logging_format')
+    """The logging format string to use for logs.
+
+    If not specified, the format is not provided, and logging will use
+    the Python default.
+    """
+
     logging_level = ChoiceAttribute('logging_level',
                                     ['CRITICAL', 'ERROR', 'WARNING', 'INFO',
                                      'DEBUG'],
                                     'WARNING')
-    """The lowest severity of logs to display."""
+    """The lowest severity of logs to display.
+
+    If not specified, this defaults to WARNING.
+    """
 
     modes = ValidatedAttribute('modes', default='B')
     """User modes to be set on connection."""
