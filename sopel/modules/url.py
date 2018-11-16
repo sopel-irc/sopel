@@ -89,6 +89,12 @@ def setup(bot):
             # clean trailing sentence- or clause-ending punctuation
             while url[-1] in '.,?!\'":;':
                 url = url[:-1]
+
+            # clean unmatched parentheses/braces/brackets
+            for (opener, closer) in [('(', ')'), ('[', ']'), ('{', '}'), ('<', '>')]:
+                if url[-1] is closer and url.count(opener) < url.count(closer):
+                    url = url[:-1]
+
             return url
 
         re_url = r'(?u)((?<!%s)(?:http|https|ftp)(?::\/\/\S+))'\
