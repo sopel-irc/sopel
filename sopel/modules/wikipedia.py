@@ -15,7 +15,7 @@ if sys.version_info.major < 3:
     from urlparse import unquote as _unquote
     quote = lambda s: _quote(s.encode('utf-8')).decode('utf-8')
     unquote = lambda s: _unquote(s.encode('utf-8')).decode('utf-8')
-    import HTMLParser
+    from HTMLParser import HTMLParser
 else:
     from urllib.parse import quote, unquote
     from html.parser import HTMLParser
