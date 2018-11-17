@@ -65,8 +65,10 @@ class WikiParser(HTMLParser):
                     self.citations = True   # once we hit citations, we can stop
 
     def handle_endtag(self, tag):
-        if not self.consume and tag in ['h2', 'h3', 'sup']:
+        if not self.consume and tag == 'sup':
             self.consume = True
+        if self.is_header and re.match(r'^h\d$', tag):
+            self.is_header = False
         if self.span_depth and tag == 'span':
             self.span_depth -= 1
         if self.div_depth and tag == 'div':
