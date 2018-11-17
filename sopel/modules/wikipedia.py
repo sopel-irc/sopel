@@ -161,14 +161,13 @@ def mw_snippet(server, query):
 def say_section(bot, trigger, server, query, section):
     page_name = query.replace('_', ' ')
     query = quote(query.replace(' ', '_'))
-    section = section.replace('_', ' ')
 
     snippet = mw_section(server, query, section)
     if not snippet:
         bot.say("[WIKIPEDIA] Error fetching section \"{}\" for page \"{}\".".format(section, page_name))
         return
 
-    msg = '[WIKIPEDIA] {} - {} | "{}"'.format(page_name, section, snippet)
+    msg = '[WIKIPEDIA] {} - {} | "{}"'.format(page_name, section.replace('_', ' '), snippet)
     bot.say(msg)
 
 
@@ -185,7 +184,7 @@ def mw_section(server, query, section):
     section_number = None
 
     for entry in sections['parse']['sections']:
-        if entry['line'] == section:
+        if entry['anchor'] == section:
             section_number = entry['index']
             break
 
@@ -198,7 +197,7 @@ def mw_section(server, query, section):
 
     data = get(snippet_url).json()
 
-    parser = WikiParser(section)
+    parser = WikiParser(section.replace('_', ' '))
     parser.feed(data['parse']['text']['*'])
     text = parser.get_result()
     text = ' '.join(text.split())   # collapse multiple whitespace chars
