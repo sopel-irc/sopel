@@ -1,5 +1,5 @@
 Introduction |version| |build| |issues| |coverage-status| |license| |ocbackers| |ocsponsors|
--------------------------------------------------------------------
+--------------------------------------------------------------------------------------------
 
 Sopel is a simple, lightweight, open source, easy-to-use IRC Utility bot,
 written in Python. It's designed to be easy to use, run and extend.
@@ -58,18 +58,21 @@ Questions?
 Join us in `#sopel <irc://irc.freenode.net/#sopel>`_ on Freenode.
 
 Credits
-+++++++
+-------
 
 Contributors
-------------
+============
 
 This project exists thanks to all the people who contribute! `Become a contributor`__.
 
 .. image:: https://opencollective.com/sopel/contributors.svg?width=890&button=false
     :target: https://github.com/sopel-irc/sopel/graphs/contributors
 
+__ Contributor_
+.. _Contributor: https://github.com/sopel-irc/sopel/blob/master/CONTRIBUTING.md
+
 Backers
--------
+=======
 
 Thank you to all our backers! `Become a backer`__.
 
@@ -80,7 +83,7 @@ __ Backer_
 .. _Backer: https://opencollective.com/sopel#backer
 
 Sponsors
---------
+========
 
 Support Sopel by becoming a sponsor. Your logo will show up here with a link to your website. `Become a sponsor`__.
 
