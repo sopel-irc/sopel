@@ -50,7 +50,7 @@ def pronouns(bot, trigger):
             # gender, but like… it's a bot.
             bot.say(
                 "I am a bot. Beep boop. My pronouns are it/it/its/its/itself. "
-                "See http://pronoun.is/it for examples."
+                "See https://pronoun.is/it for examples."
             )
         else:
             bot.say("I don't know {}'s pronouns. They can set them with "
@@ -63,7 +63,7 @@ def say_pronouns(bot, nick, pronouns):
             break
         short = pronouns
 
-    bot.say("{}'s pronouns are {}. See http://pronoun.is/{} for "
+    bot.say("{}'s pronouns are {}. See https://pronoun.is/{} for "
             "examples.".format(nick, pronouns, short))
 
 
