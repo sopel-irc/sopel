@@ -13,7 +13,7 @@ import requests
 from sopel import web
 from sopel.module import commands, example
 
-uri = 'http://en.wiktionary.org/w/index.php?title=%s&printable=yes'
+uri = 'https://en.wiktionary.org/w/index.php?title=%s&printable=yes'
 r_tag = re.compile(r'<[^>]+>')
 r_ul = re.compile(r'(?ims)<ul>.*?</ul>')
 
