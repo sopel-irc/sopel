@@ -49,7 +49,7 @@ def mw_search(server, query, num):
     Searches the specified MediaWiki server for the given query, and returns
     the specified number of results.
     """
-    search_url = ('http://%s/w/api.php?format=json&action=query'
+    search_url = ('https://%s/w/api.php?format=json&action=query'
                   '&list=search&srlimit=%d&srprop=timestamp&srwhat=text'
                   '&srsearch=') % (server, num)
     search_url += query
