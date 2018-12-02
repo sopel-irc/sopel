@@ -76,6 +76,7 @@ class Channel(object):
     def rename_user(self, old, new):
         if old in self.users:
             self.users[new] = self.users.pop(old)
+            self.users[new].nick = new
         if old in self.privileges:
             self.privileges[new] = self.privileges.pop(old)
 
