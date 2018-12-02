@@ -101,7 +101,12 @@ def duck(bot, trigger):
         if 'last_seen_url' in bot.memory:
             bot.memory['last_seen_url'][trigger.sender] = uri
     else:
-        bot.reply("No results found for '%s'." % query)
+        msg = "No results found for '%s'." % query
+        if query.count('site:') >= 2:
+            # This check exists because of issue #1415. The git.io link will take the user there.
+            # (Better a sopel.chat link, but it's not set up to do that. This is shorter anyway.)
+            msg += " Try again with at most one 'site:' operator. See https://git.io/fpKtP for why."
+        bot.reply(msg)
 
 
 @commands('bing')
