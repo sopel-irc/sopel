@@ -18,7 +18,7 @@ def woeid_search(query):
     None if there is no result, or the woeid field is empty.
     """
     query = 'q=select * from geo.places where text="%s"' % query
-    body = requests.get('http://query.yahooapis.com/v1/public/yql?' + query)
+    body = requests.get('https://query.yahooapis.com/v1/public/yql?' + query)
     parsed = xmltodict.parse(body.text).get('query')
     results = parsed.get('results')
     if results is None or results.get('place') is None:
