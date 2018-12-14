@@ -30,6 +30,8 @@ CONTROL_STRIKETHROUGH = '\x1e'
 """The control code to start or end strikethrough formatting"""
 CONTROL_MONOSPACE = '\x11'
 """The control code to start or end monospace formatting"""
+CONTROL_REVERSE = '\x16'
+"""The control code to start or end reverse-color formatting"""
 
 
 # TODO when we can move to 3.3+ completely, make this an Enum.
@@ -176,3 +178,11 @@ def monospace(text):
     Use only when you can afford to have its meaning lost, as not many clients
     support it yet."""
     return ''.join([CONTROL_MONOSPACE, text, CONTROL_MONOSPACE])
+
+
+def reverse(text):
+    """Return the text, with reverse-color IRC formatting.
+
+    Note: This code isn't super well supported, and its behavior even in clients
+    that understand it (e.g. mIRC) can be unpredictable. Use it carefully."""
+    return ''.join([CONTROL_REVERSE, text, CONTROL_REVERSE])
