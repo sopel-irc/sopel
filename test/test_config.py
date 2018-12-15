@@ -49,27 +49,27 @@ class ConfigFunctionalTest(unittest.TestCase):
 
     def test_validated_string_when_none(self):
         self.config.fake.valattr = None
-        self.assertEquals(self.config.fake.valattr, None)
+        self.assertEqual(self.config.fake.valattr, None)
 
     def test_listattribute_when_empty(self):
         self.config.fake.listattr = []
-        self.assertEquals(self.config.fake.listattr, [])
+        self.assertEqual(self.config.fake.listattr, [])
 
     def test_listattribute_with_one_value(self):
         self.config.fake.listattr = ['foo']
-        self.assertEquals(self.config.fake.listattr, ['foo'])
+        self.assertEqual(self.config.fake.listattr, ['foo'])
 
     def test_listattribute_with_multiple_values(self):
         self.config.fake.listattr = ['egg', 'sausage', 'bacon']
-        self.assertEquals(self.config.fake.listattr, ['egg', 'sausage', 'bacon'])
+        self.assertEqual(self.config.fake.listattr, ['egg', 'sausage', 'bacon'])
 
     def test_listattribute_with_value_containing_comma(self):
         self.config.fake.listattr = ['spam, egg, sausage', 'bacon']
-        self.assertEquals(self.config.fake.listattr, ['spam', 'egg', 'sausage', 'bacon'])
+        self.assertEqual(self.config.fake.listattr, ['spam', 'egg', 'sausage', 'bacon'])
 
     def test_choiceattribute_when_none(self):
         self.config.fake.choiceattr = None
-        self.assertEquals(self.config.fake.choiceattr, None)
+        self.assertEqual(self.config.fake.choiceattr, None)
 
     def test_choiceattribute_when_not_in_set(self):
         with self.assertRaises(ValueError):
@@ -77,16 +77,16 @@ class ConfigFunctionalTest(unittest.TestCase):
 
     def test_choiceattribute_when_valid(self):
         self.config.fake.choiceattr = 'bacon'
-        self.assertEquals(self.config.fake.choiceattr, 'bacon')
+        self.assertEqual(self.config.fake.choiceattr, 'bacon')
 
     def test_fileattribute_valid_absolute_file_path(self):
         self.config.fake.af_fileattr = self.testfile
-        self.assertEquals(self.config.fake.af_fileattr, self.testfile)
+        self.assertEqual(self.config.fake.af_fileattr, self.testfile)
 
     def test_fileattribute_valid_absolute_dir_path(self):
         testdir = self.testdir
         self.config.fake.ad_fileattr = testdir
-        self.assertEquals(self.config.fake.ad_fileattr, testdir)
+        self.assertEqual(self.config.fake.ad_fileattr, testdir)
 
     def test_fileattribute_given_relative_when_absolute(self):
         with self.assertRaises(ValueError):
@@ -94,7 +94,7 @@ class ConfigFunctionalTest(unittest.TestCase):
 
     def test_fileattribute_given_absolute_when_relative(self):
         self.config.fake.rf_fileattr = self.testfile
-        self.assertEquals(self.config.fake.rf_fileattr, self.testfile)
+        self.assertEqual(self.config.fake.rf_fileattr, self.testfile)
 
     def test_fileattribute_given_dir_when_file(self):
         with self.assertRaises(ValueError):
