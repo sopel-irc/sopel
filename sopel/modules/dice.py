@@ -218,12 +218,20 @@ def roll(bot, trigger):
     eval_str = arg_str % (tuple(map(_get_eval_str, dice)))
     pretty_str = arg_str % (tuple(map(_get_pretty_str, dice)))
 
-    # Showing the actual error will hopefully give a better hint of what is
-    # wrong with the syntax than a generic error message.
     try:
         result = eval_equation(eval_str)
-    except Exception as e:
-        bot.reply("SyntaxError, eval(%s), %s" % (eval_str, e))
+    except TypeError:
+        bot.reply("The type of this equation is, apparently, not a string. " +
+            "How did you do that, anyway?")
+    except ValueError:
+        # As it seems that ValueError is raised if the resulting equation would
+        # be too big, give a semi-serious answer to reflect on this.
+        bot.reply("You roll %s: %s = very big" % (
+            trigger.group(2), pretty_str))
+        return
+    except (SyntaxError, eval_equation.Error):
+        bot.reply("I don't know how to process that. " +
+            "Are the dice as well as the algorithms correct?")
         return
 
     bot.reply("You roll %s: %s = %d" % (
