@@ -118,7 +118,7 @@ def get_tomorrow_high(parsed):
         tomorrow_high = int(parsed['channel']['item']['yweather:forecast'][2]['@high'])
     except (KeyError, ValueError):
         return 'unknown'
-    return ('High: %s\u00B0C (%s\u00B0F)' % (tomorrow_high, c_to_f(tomorrow_high)))
+    return ('High: %d\u00B0C (%d\u00B0F)' % (tomorrow_high, c_to_f(tomorrow_high)))
 
 
 def get_tomorrow_low(parsed):
@@ -126,7 +126,7 @@ def get_tomorrow_low(parsed):
         tomorrow_low = int(parsed['channel']['item']['yweather:forecast'][2]['@low'])
     except (KeyError, ValueError):
         return 'unknown'
-    return ('Low: %s\u00B0C (%s\u00B0F)' % (tomorrow_low, c_to_f(tomorrow_low)))
+    return ('Low: %d\u00B0C (%d\u00B0F)' % (tomorrow_low, c_to_f(tomorrow_low)))
 
 
 def get_tomorrow_cover(parsed):
@@ -142,7 +142,8 @@ def get_tomorrow_cover(parsed):
 
 def say_info(bot, trigger, mode):
     if mode not in ['weather', 'forecast']:  # Unnecessary safeguard, but whatever
-        return bot.say("Sorry, I got confused. Please report this error to my owner.")
+        return bot.say("Sorry, I got confused. Please report this error to {owner}."
+                       .format(owner=bot.config.core.owner))
     # most of the logic is common to both modes
     location = trigger.group(2)
     woeid = ''
@@ -150,9 +151,10 @@ def say_info(bot, trigger, mode):
         woeid = bot.db.get_nick_value(trigger.nick, 'woeid')
         if not woeid:
             return bot.reply("I don't know where you live. "
-                             "Give me a location, like .{command} London, "
-                             "or tell me where you live by saying .setlocation "
-                             "London, for example.".format(command=trigger.group(1)))
+                             "Give me a location, like {pfx}{command} London, "
+                             "or tell me where you live by saying {pfx}setlocation "
+                             "London, for example.".format(command=trigger.group(1),
+                                pfx=bot.config.core.help_prefix))
     else:
         location = location.strip()
         woeid = bot.db.get_nick_value(location, 'woeid')
