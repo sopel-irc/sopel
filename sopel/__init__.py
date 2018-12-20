@@ -68,7 +68,7 @@ def run(config, pid_file, daemon=False):
                'work properly.')
 
     def signal_handler(sig, frame):
-        if sig == signal.SIGUSR1 or sig == signal.SIGTERM:
+        if sig == signal.SIGUSR1 or sig == signal.SIGTERM or sig == signal.SIGINT:
             stderr('Got quit signal, shutting down.')
             p.quit('Closing')
     while True:
@@ -78,6 +78,8 @@ def run(config, pid_file, daemon=False):
                 signal.signal(signal.SIGUSR1, signal_handler)
             if hasattr(signal, 'SIGTERM'):
                 signal.signal(signal.SIGTERM, signal_handler)
+            if hasattr(signal, 'SIGINT'):
+                signal.signal(signal.SIGINT, signal_handler)
             sopel.logger.setup_logging(p)
             p.run(config.core.host, int(config.core.port))
         except KeyboardInterrupt:
