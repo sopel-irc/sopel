@@ -155,6 +155,7 @@ class Bot(asynchat.async_chat):
             self.initiate_connect(host, port)
         except socket.error as e:
             stderr('Connection error: %s' % e)
+            self.handle_close()
 
     def initiate_connect(self, host, port):
         stderr('Connecting to %s:%s...' % (host, port))
