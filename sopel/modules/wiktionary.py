@@ -52,6 +52,10 @@ def wikt(word):
             mode = 'particle'
         elif 'id="Preposition"' in line:
             mode = 'preposition'
+        elif 'id="Prefix"' in line:
+            mode = 'prefix'
+        elif 'id="Suffix"' in line:
+            mode = 'suffix'
         elif 'id="' in line:
             mode = None
 
@@ -66,7 +70,8 @@ def wikt(word):
 
 
 parts = ('preposition', 'particle', 'noun', 'verb',
-    'adjective', 'adverb', 'interjection')
+         'adjective', 'adverb', 'interjection',
+         'prefix', 'suffix')
 
 
 def format(result, definitions, number=2):
