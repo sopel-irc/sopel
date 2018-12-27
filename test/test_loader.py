@@ -138,3 +138,136 @@ def ignored():
     assert test_mod.ignored not in jobs
     assert test_mod.ignored not in shutdowns
     assert test_mod.ignored not in urls
+
+
+def test_clean_callable_default(tmpconfig):
+    def func():
+        pass
+    loader.clean_callable(func, tmpconfig)
+
+    # Default values
+    assert hasattr(func, 'unblockable')
+    assert func.unblockable is False
+    assert hasattr(func, 'priority')
+    assert func.priority == 'medium'
+    assert hasattr(func, 'thread')
+    assert func.thread is True
+    assert hasattr(func, 'rate')
+    assert func.rate == 0
+    assert hasattr(func, 'channel_rate')
+    assert func.rate == 0
+    assert hasattr(func, 'global_rate')
+    assert func.global_rate == 0
+    assert hasattr(func, 'event')
+    assert func.event == ['PRIVMSG']
+
+    # Not added by default
+    assert not hasattr(func, 'rule')
+    assert not hasattr(func, 'commands')
+    assert not hasattr(func, 'intents')
+
+
+def test_clean_callable_event(tmpconfig):
+    def func():
+        pass
+
+    setattr(func, 'event', ['low', 'UP', 'MiXeD'])
+    loader.clean_callable(func, tmpconfig)
+
+    assert hasattr(func, 'event')
+    assert func.event == ['LOW', 'UP', 'MIXED']
+
+
+def test_clean_callable_event_string(tmpconfig):
+    def func():
+        pass
+
+    setattr(func, 'event', 'some')
+    loader.clean_callable(func, tmpconfig)
+
+    assert hasattr(func, 'event')
+    assert func.event == ['SOME']
+
+
+def test_clean_callable_rule(tmpconfig):
+    def func():
+        pass
+    setattr(func, 'rule', [r'abc'])
+    loader.clean_callable(func, tmpconfig)
+
+    assert hasattr(func, 'rule')
+    assert len(func.rule) == 1
+
+    # Test the regex is compiled properly
+    regex = func.rule[0]
+    assert regex.match('abc')
+    assert regex.match('abcd')
+    assert not regex.match('efg')
+
+
+def test_clean_callable_rule_string(tmpconfig):
+    def func():
+        pass
+    setattr(func, 'rule', r'abc')
+    loader.clean_callable(func, tmpconfig)
+
+    assert hasattr(func, 'rule')
+    assert len(func.rule) == 1
+
+    # Test the regex is compiled properly
+    regex = func.rule[0]
+    assert regex.match('abc')
+    assert regex.match('abcd')
+    assert not regex.match('efg')
+
+
+def test_clean_callable_rule_nick(tmpconfig):
+    """Assert ``$nick`` in a rule will match ``Sopel: `` or ``Sopel, ``."""
+    def func():
+        pass
+    setattr(func, 'rule', [r'$nickhello'])
+    loader.clean_callable(func, tmpconfig)
+
+    assert hasattr(func, 'rule')
+    assert len(func.rule) == 1
+
+    # Test the regex is compiled properly
+    regex = func.rule[0]
+    assert regex.match('Sopel: hello')
+    assert regex.match('Sopel, hello')
+    assert not regex.match('Sopel not hello')
+
+
+def test_clean_callable_rule_nickname(tmpconfig):
+    """Assert ``$nick`` in a rule will match ``Sopel``."""
+    def func():
+        pass
+    setattr(func, 'rule', [r'$nickname\s+hello'])
+    loader.clean_callable(func, tmpconfig)
+
+    assert hasattr(func, 'rule')
+    assert len(func.rule) == 1
+
+    # Test the regex is compiled properly
+    regex = func.rule[0]
+    assert regex.match('Sopel hello')
+    assert not regex.match('Sopel not hello')
+
+
+def test_clean_callable_nickname_command(tmpconfig):
+    def func():
+        pass
+    setattr(func, 'nickname_commands', ['hello!'])
+    loader.clean_callable(func, tmpconfig)
+
+    assert hasattr(func, 'nickname_commands')
+    assert len(func.nickname_commands) == 1
+    assert func.nickname_commands == ['hello!']
+    assert hasattr(func, 'rule')
+    assert len(func.rule) == 1
+
+    regex = func.rule[0]
+    assert regex.match('Sopel hello!')
+    assert regex.match('Sopel, hello!')
+    assert regex.match('Sopel: hello!')
+    assert not regex.match('Sopel not hello')
