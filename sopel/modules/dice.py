@@ -246,6 +246,7 @@ def roll(bot, trigger):
 @sopel.module.example(".choose a | b | c", r'Your options: a, b, c. My choice: (a|b|c)', re=True)
 @sopel.module.example(".choose a,b,c", r'Your options: a, b, c. My choice: (a|b|c)', re=True)
 @sopel.module.example(".choose a|b|c", r'Your options: a, b, c. My choice: (a|b|c)', re=True)
+@sopel.module.example(".choose a b c", r'Your options: a, b, c. My choice: (a|b|c)', re=True)
 @sopel.module.example(".choose a, b | just a",
                       r'Your options: "a, b", just a. My choice: ((a, b)|(just a))',
                       re=True)
@@ -257,7 +258,7 @@ def choose(bot, trigger):
     if not trigger.group(2):
         return bot.reply('I\'d choose an option, but you didn\'t give me any.')
     choices = [trigger.group(2)]
-    for delim in '|\\/,':
+    for delim in '|\\/, ':
         choices = trigger.group(2).split(delim)
         if len(choices) > 1:
             break
