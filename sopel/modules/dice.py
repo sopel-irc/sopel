@@ -242,6 +242,14 @@ def roll(bot, trigger):
 @sopel.module.commands("ch")
 @sopel.module.commands("choose")
 @sopel.module.priority("medium")
+@sopel.module.example(".choose a, b, c", r'Your options: a, b, c. My choice: (a|b|c)', re=True)
+@sopel.module.example(".choose a | b | c", r'Your options: a, b, c. My choice: (a|b|c)', re=True)
+@sopel.module.example(".choose a,b,c", r'Your options: a, b, c. My choice: (a|b|c)', re=True)
+@sopel.module.example(".choose a|b|c", r'Your options: a, b, c. My choice: (a|b|c)', re=True)
+@sopel.module.example(".choose a, b | just a",
+                      r'Your options: "a, b", just a. My choice: ((a, b)|(just a))',
+                      re=True)
+@sopel.module.example(".choose a", 'Your options: a. My choice: a')
 def choose(bot, trigger):
     """
     .choice option1|option2|option3 - Makes a difficult choice easy.
@@ -254,14 +262,14 @@ def choose(bot, trigger):
         if len(choices) > 1:
             break
     choices = [choice.strip() for choice in choices]
-    # Use a different delimiter in the output, to prevent ambiguity.
-    for show_delim in ',|/\\':
-        if show_delim not in trigger.group(2):
-            show_delim += ' '
-            break
-
     pick = random.choice(choices)
-    return bot.reply('Your options: %s. My choice: %s' % (show_delim.join(choices), pick))
+
+    # Always use a comma in the output
+    display_options = ', '.join(
+        choice if ',' not in choice else '"%s"' % choice
+        for choice in choices
+    )
+    return bot.reply('Your options: %s. My choice: %s' % (display_options, pick))
 
 
 if __name__ == "__main__":
