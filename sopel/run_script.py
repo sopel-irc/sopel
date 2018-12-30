@@ -135,23 +135,34 @@ def build_parser():
     return parser
 
 
-def main(argv=None):
-    # Step One: Parse The Command Line
+def check_not_root():
+    """Check if root is running the bot.
+
+    It raises a ``RuntimeError`` if the user has root privileges on Linux or
+    if it is the ``Administrator`` account on Windows.
+    """
     try:
+        # Linux/Mac
+        if os.getuid() == 0 or os.geteuid() == 0:
+            raise RuntimeError('Error: Do not run Sopel with root privileges.')
+    except AttributeError:
+        # Windows
+        if os.environ.get("USERNAME") == "Administrator":
+            raise RuntimeError('Error: Do not run Sopel as Administrator.')
+
+
+def main(argv=None):
+    try:
+        # Step One: Parse The Command Line
         parser = build_parser()
         opts = parser.parse_args(argv or None)
 
         # Step Two: "Do not run as root" checks.
         try:
-            # Linux/Mac
-            if os.getuid() == 0 or os.geteuid() == 0:
-                stderr('Error: Do not run Sopel with root privileges.')
-                return 1
-        except AttributeError:
-            # Windows
-            if os.environ.get("USERNAME") == "Administrator":
-                stderr('Error: Do not run Sopel as Administrator.')
-                return 1
+            check_not_root()
+        except RuntimeError as err:
+            stderr('%s' % err)
+            return 1
 
         if opts.version:
             py_ver = '%s.%s.%s' % (sys.version_info.major,
