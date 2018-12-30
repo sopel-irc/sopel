@@ -51,15 +51,12 @@ def enumerate_configs(config_dir, extension='.cfg'):
         ['extra.ini']
 
     """
-    configfiles = []
     if not os.path.isdir(config_dir):
-        return configfiles
+        return
 
     for item in os.listdir(config_dir):
         if item.endswith(extension):
-            configfiles.append(item)
-
-    return configfiles
+            yield item
 
 
 def find_config(config_dir, name, extension='.cfg'):
@@ -96,9 +93,10 @@ def find_config(config_dir, name, extension='.cfg'):
     """
     if os.path.isfile(name):
         return name
-    configs = enumerate_configs(config_dir, extension)
-    if name + extension in configs:
-        name = name + extension
+    name_ext = name + extension
+    for config in enumerate_configs(config_dir, extension):
+        if name_ext == config:
+            return os.path.join(config_dir, name_ext)
 
     return os.path.join(config_dir, name)
 
@@ -167,11 +165,12 @@ def main(argv=None):
         if opts.list_configs:
             configs = enumerate_configs(homedir)
             print('Config files in ~/.sopel:')
-            if len(configs) is 0:
+            config = None
+            for config in configs:
+                print('\t%s' % config)
+            if not config:
                 print('\tNone found')
-            else:
-                for config in configs:
-                    print('\t%s' % config)
+
             print('-------------------------')
             return
 
