@@ -262,5 +262,6 @@ def _create_config(configpath):
         print("Encountered an error while writing the config file." +
               " This shouldn't happen. Check permissions.")
         raise
-        sys.exit(1)
+
     print("Config file written successfully!")
+    return config.filename

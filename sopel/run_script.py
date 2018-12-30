@@ -173,19 +173,46 @@ def print_config():
     print('-------------------------')
 
 
+def get_configuration(options):
+    """Get an instance of configuration from options.
+
+    This may raise a ``sopel.config.ConfigurationError`` if the file is an
+    invalid configuration file.
+    """
+    config_name = options.config or 'default'
+    config_path = find_config(DEFAULT_HOMEDIR, config_name)
+
+    if not os.path.isfile(config_path):
+        print(
+            "Welcome to Sopel!\n"
+            "I can't seem to find the configuration file, "
+            "so let's generate it!\n")
+
+        if not config_path.endswith('.cfg'):
+            config_path = config_path + '.cfg'
+
+        config_path = _create_config(config_path)
+
+    bot_config = Config(config_path)
+    bot_config._is_daemonized = options.daemonize
+
+    return bot_config
+
+
 def main(argv=None):
     try:
         # Step One: Parse The Command Line
         parser = build_parser()
         opts = parser.parse_args(argv or None)
 
-        # Step Two: "Do not run as root" checks.
+        # Step Two: "Do not run as root" checks
         try:
             check_not_root()
         except RuntimeError as err:
             stderr('%s' % err)
             return 1
 
+        # Step Three: no-config required options
         if opts.version:
             print_version()
             return
@@ -202,17 +229,9 @@ def main(argv=None):
             print_config()
             return
 
-        config_name = opts.config or 'default'
-
-        configpath = find_config(DEFAULT_HOMEDIR, config_name)
-        if not os.path.isfile(configpath):
-            print("Welcome to Sopel!\nI can't seem to find the configuration file, so let's generate it!\n")
-            if not configpath.endswith('.cfg'):
-                configpath = configpath + '.cfg'
-            _create_config(configpath)
-            configpath = find_config(DEFAULT_HOMEDIR, config_name)
+        # Step Four: get the configuration file and prepare to run
         try:
-            config_module = Config(configpath)
+            config_module = get_configuration(opts)
         except ConfigurationError as e:
             stderr(e)
             return 2
@@ -222,10 +241,8 @@ def main(argv=None):
             # exit with code 2 to prevent auto restart on fail by systemd
             return 2
 
+        # Manage logfile, stdout and stderr
         logfile = os.path.os.path.join(config_module.core.logdir, 'stdio.log')
-
-        config_module._is_daemonized = opts.daemonize
-
         sys.stderr = tools.OutputRedirect(logfile, True, opts.quiet)
         sys.stdout = tools.OutputRedirect(logfile, False, opts.quiet)
 
