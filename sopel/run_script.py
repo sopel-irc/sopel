@@ -151,6 +151,15 @@ def check_not_root():
             raise RuntimeError('Error: Do not run Sopel as Administrator.')
 
 
+def print_version():
+    """Print Python version and Sopel version on stdout."""
+    py_ver = '%s.%s.%s' % (sys.version_info.major,
+                           sys.version_info.minor,
+                           sys.version_info.micro)
+    print('Sopel %s (running on python %s)' % (__version__, py_ver))
+    print('https://sopel.chat/')
+
+
 def main(argv=None):
     try:
         # Step One: Parse The Command Line
@@ -165,16 +174,14 @@ def main(argv=None):
             return 1
 
         if opts.version:
-            py_ver = '%s.%s.%s' % (sys.version_info.major,
-                                   sys.version_info.minor,
-                                   sys.version_info.micro)
-            print('Sopel %s (running on python %s)' % (__version__, py_ver))
-            print('https://sopel.chat/')
+            print_version()
             return
-        elif opts.wizard:
+
+        if opts.wizard:
             _wizard('all', opts.config)
             return
-        elif opts.mod_wizard:
+
+        if opts.mod_wizard:
             _wizard('mod', opts.config)
             return
 
