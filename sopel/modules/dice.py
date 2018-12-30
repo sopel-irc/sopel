@@ -253,6 +253,7 @@ def choose(bot, trigger):
         choices = trigger.group(2).split(delim)
         if len(choices) > 1:
             break
+    choices = [choice.strip() for choice in choices]
     # Use a different delimiter in the output, to prevent ambiguity.
     for show_delim in ',|/\\':
         if show_delim not in trigger.group(2):
