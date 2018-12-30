@@ -62,15 +62,45 @@ def enumerate_configs(config_dir, extension='.cfg'):
     return configfiles
 
 
-def find_config(name, extension='.cfg'):
+def find_config(config_dir, name, extension='.cfg'):
+    """Build the absolute path for the given configuration file ``name``
+
+    :param str config_dir: path to the configuration directory
+    :param str name: configuration file ``name``
+    :param str extension: configuration file's extension (default to ``.cfg``)
+    :return: the path of the configuration file, either in the current
+             directory or from the ``config_dir`` directory
+
+    This function tries different locations:
+
+    * the current directory
+    * the ``config_dir`` directory with the ``extension`` suffix
+    * the ``config_dir`` directory without a suffix
+
+    Example::
+
+        >>> from sopel import run_script
+        >>> os.listdir()
+        ['local.cfg', 'extra.ini']
+        >>> os.listdir(run_script.homedir)
+        ['config.cfg', 'extra.ini', 'module.cfg', 'README']
+        >>> run_script.find_config(run_script.homedir, 'local.cfg')
+        'local.cfg'
+        >>> run_script.find_config(run_script.homedir, 'local')
+        '/home/username/.sopel/local'
+        >>> run_script.find_config(run_script.homedir, 'config')
+        '/home/username/.sopel/config.cfg'
+        >>> run_script.find_config(run_script.homedir, 'extra', '.ini')
+        '/home/username/.sopel/extra.ini'
+
+    """
     if os.path.isfile(name):
         return name
-    configs = enumerate_configs(homedir, extension)
-    if name in configs or name + extension in configs:
-        if name + extension in configs:
-            name = name + extension
+    configs = enumerate_configs(config_dir, extension)
+    if name + extension in configs:
+        name = name + extension
 
-    return os.path.join(homedir, name)
+    return os.path.join(config_dir, name)
 
 
 def main(argv=None):
@@ -147,13 +177,13 @@ def main(argv=None):
 
         config_name = opts.config or 'default'
 
-        configpath = find_config(config_name)
+        configpath = find_config(homedir, config_name)
         if not os.path.isfile(configpath):
             print("Welcome to Sopel!\nI can't seem to find the configuration file, so let's generate it!\n")
             if not configpath.endswith('.cfg'):
                 configpath = configpath + '.cfg'
             _create_config(configpath)
-            configpath = find_config(config_name)
+            configpath = find_config(homedir, config_name)
         try:
             config_module = Config(configpath)
         except ConfigurationError as e:
