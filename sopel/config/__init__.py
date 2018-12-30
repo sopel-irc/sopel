@@ -34,6 +34,9 @@ import sopel.config.core_section
 from sopel.config.types import StaticSection
 
 
+DEFAULT_HOMEDIR = os.path.join(os.path.expanduser('~'), '.sopel')
+
+
 class ConfigurationError(Exception):
     """ Exception type for configuration errors """
 

@@ -25,10 +25,14 @@ import argparse
 import signal
 
 from sopel.__init__ import run, __version__
-from sopel.config import Config, _create_config, ConfigurationError, _wizard
+from sopel.config import (
+    Config,
+    _create_config,
+    ConfigurationError,
+    DEFAULT_HOMEDIR,
+    _wizard
+)
 import sopel.tools as tools
-
-homedir = os.path.join(os.path.expanduser('~'), '.sopel')
 
 
 def enumerate_configs(config_dir, extension='.cfg'):
@@ -42,12 +46,12 @@ def enumerate_configs(config_dir, extension='.cfg'):
 
     Example::
 
-        >>> from sopel import run_script
-        >>> os.listdir(run_script.homedir)
+        >>> from sopel import run_script, config
+        >>> os.listdir(config.DEFAULT_HOMEDIR)
         ['config.cfg', 'extra.ini', 'module.cfg', 'README']
-        >>> run_script.enumerate_configs(run_script.homedir)
+        >>> run_script.enumerate_configs(config.DEFAULT_HOMEDIR)
         ['config.cfg', 'module.cfg']
-        >>> run_script.enumerate_configs(run_script.homedir, '.ini')
+        >>> run_script.enumerate_configs(config.DEFAULT_HOMEDIR, '.ini')
         ['extra.ini']
 
     """
@@ -79,15 +83,15 @@ def find_config(config_dir, name, extension='.cfg'):
         >>> from sopel import run_script
         >>> os.listdir()
         ['local.cfg', 'extra.ini']
-        >>> os.listdir(run_script.homedir)
+        >>> os.listdir(config.DEFAULT_HOMEDIR)
         ['config.cfg', 'extra.ini', 'module.cfg', 'README']
-        >>> run_script.find_config(run_script.homedir, 'local.cfg')
+        >>> run_script.find_config(config.DEFAULT_HOMEDIR, 'local.cfg')
         'local.cfg'
-        >>> run_script.find_config(run_script.homedir, 'local')
+        >>> run_script.find_config(config.DEFAULT_HOMEDIR, 'local')
         '/home/username/.sopel/local'
-        >>> run_script.find_config(run_script.homedir, 'config')
+        >>> run_script.find_config(config.DEFAULT_HOMEDIR, 'config')
         '/home/username/.sopel/config.cfg'
-        >>> run_script.find_config(run_script.homedir, 'extra', '.ini')
+        >>> run_script.find_config(config.DEFAULT_HOMEDIR, 'extra', '.ini')
         '/home/username/.sopel/extra.ini'
 
     """
@@ -102,7 +106,6 @@ def find_config(config_dir, name, extension='.cfg'):
 
 
 def main(argv=None):
-    global homedir
     # Step One: Parse The Command Line
     try:
         parser = argparse.ArgumentParser(description='Sopel IRC Bot',
@@ -163,7 +166,7 @@ def main(argv=None):
             return
 
         if opts.list_configs:
-            configs = enumerate_configs(homedir)
+            configs = enumerate_configs(DEFAULT_HOMEDIR)
             print('Config files in ~/.sopel:')
             config = None
             for config in configs:
@@ -176,13 +179,13 @@ def main(argv=None):
 
         config_name = opts.config or 'default'
 
-        configpath = find_config(homedir, config_name)
+        configpath = find_config(DEFAULT_HOMEDIR, config_name)
         if not os.path.isfile(configpath):
             print("Welcome to Sopel!\nI can't seem to find the configuration file, so let's generate it!\n")
             if not configpath.endswith('.cfg'):
                 configpath = configpath + '.cfg'
             _create_config(configpath)
-            configpath = find_config(homedir, config_name)
+            configpath = find_config(DEFAULT_HOMEDIR, config_name)
         try:
             config_module = Config(configpath)
         except ConfigurationError as e:
