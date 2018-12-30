@@ -160,6 +160,19 @@ def print_version():
     print('https://sopel.chat/')
 
 
+def print_config():
+    """Print list of available configurations from default homedir."""
+    configs = enumerate_configs(DEFAULT_HOMEDIR)
+    print('Config files in %s:' % DEFAULT_HOMEDIR)
+    config = None
+    for config in configs:
+        print('\t%s' % config)
+    if not config:
+        print('\tNone found')
+
+    print('-------------------------')
+
+
 def main(argv=None):
     try:
         # Step One: Parse The Command Line
@@ -186,15 +199,7 @@ def main(argv=None):
             return
 
         if opts.list_configs:
-            configs = enumerate_configs(DEFAULT_HOMEDIR)
-            print('Config files in ~/.sopel:')
-            config = None
-            for config in configs:
-                print('\t%s' % config)
-            if not config:
-                print('\tNone found')
-
-            print('-------------------------')
+            print_config()
             return
 
         config_name = opts.config or 'default'
