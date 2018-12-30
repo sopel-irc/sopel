@@ -31,13 +31,33 @@ import sopel.tools as tools
 homedir = os.path.join(os.path.expanduser('~'), '.sopel')
 
 
-def enumerate_configs(extension='.cfg'):
+def enumerate_configs(config_dir, extension='.cfg'):
+    """List configuration file from ``config_dir`` with ``extension``
+
+    :param str config_dir: path to the configuration directory
+    :param str extension: configuration file's extension (default to ``.cfg``)
+    :return: a list of configuration filename found in ``config_dir`` with
+             the correct ``extension``
+    :rtype: list
+
+    Example::
+
+        >>> from sopel import run_script
+        >>> os.listdir(run_script.homedir)
+        ['config.cfg', 'extra.ini', 'module.cfg', 'README']
+        >>> run_script.enumerate_configs(run_script.homedir)
+        ['config.cfg', 'module.cfg']
+        >>> run_script.enumerate_configs(run_script.homedir, '.ini')
+        ['extra.ini']
+
+    """
     configfiles = []
-    if os.path.isdir(homedir):
-        sopel_dotdirfiles = os.listdir(homedir)  # Preferred
-        for item in sopel_dotdirfiles:
-            if item.endswith(extension):
-                configfiles.append(item)
+    if not os.path.isdir(config_dir):
+        return configfiles
+
+    for item in os.listdir(config_dir):
+        if item.endswith(extension):
+            configfiles.append(item)
 
     return configfiles
 
@@ -45,7 +65,7 @@ def enumerate_configs(extension='.cfg'):
 def find_config(name, extension='.cfg'):
     if os.path.isfile(name):
         return name
-    configs = enumerate_configs(extension)
+    configs = enumerate_configs(homedir, extension)
     if name in configs or name + extension in configs:
         if name + extension in configs:
             name = name + extension
@@ -115,7 +135,7 @@ def main(argv=None):
             return
 
         if opts.list_configs:
-            configs = enumerate_configs()
+            configs = enumerate_configs(homedir)
             print('Config files in ~/.sopel:')
             if len(configs) is 0:
                 print('\tNone found')
