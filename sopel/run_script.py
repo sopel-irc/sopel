@@ -24,7 +24,7 @@ import os
 import argparse
 import signal
 
-from sopel.__init__ import run, __version__
+from sopel import run, tools, __version__
 from sopel.config import (
     Config,
     _create_config,
@@ -32,7 +32,6 @@ from sopel.config import (
     DEFAULT_HOMEDIR,
     _wizard
 )
-import sopel.tools as tools
 
 
 def enumerate_configs(config_dir, extension='.cfg'):
@@ -144,12 +143,12 @@ def main(argv=None):
             # Linux/Mac
             if os.getuid() == 0 or os.geteuid() == 0:
                 stderr('Error: Do not run Sopel with root privileges.')
-                sys.exit(1)
+                return 1
         except AttributeError:
             # Windows
             if os.environ.get("USERNAME") == "Administrator":
                 stderr('Error: Do not run Sopel as Administrator.')
-                sys.exit(1)
+                return 1
 
         if opts.version:
             py_ver = '%s.%s.%s' % (sys.version_info.major,
@@ -190,12 +189,12 @@ def main(argv=None):
             config_module = Config(configpath)
         except ConfigurationError as e:
             stderr(e)
-            sys.exit(2)
+            return 2
 
         if config_module.core.not_configured:
             stderr('Bot is not configured, can\'t start')
             # exit with code 2 to prevent auto restart on fail by systemd
-            sys.exit(2)
+            return 2
 
         logfile = os.path.os.path.join(config_module.core.logdir, 'stdio.log')
 
@@ -223,28 +222,28 @@ def main(argv=None):
                 if not opts.quit and not opts.kill:
                     stderr('There\'s already a Sopel instance running with this config file')
                     stderr('Try using the --quit or the --kill options')
-                    sys.exit(1)
+                    return 1
                 elif opts.kill:
                     stderr('Killing the sopel')
                     os.kill(old_pid, signal.SIGKILL)
-                    sys.exit(0)
+                    return
                 elif opts.quit:
                     stderr('Signaling Sopel to stop gracefully')
                     if hasattr(signal, 'SIGUSR1'):
                         os.kill(old_pid, signal.SIGUSR1)
                     else:
                         os.kill(old_pid, signal.SIGTERM)
-                    sys.exit(0)
+                    return
             elif opts.kill or opts.quit:
                 stderr('Sopel is not running!')
-                sys.exit(1)
+                return 1
         elif opts.quit or opts.kill:
             stderr('Sopel is not running!')
-            sys.exit(1)
+            return 1
         if opts.daemonize:
             child_pid = os.fork()
             if child_pid is not 0:
-                sys.exit()
+                return
         with open(pid_file_path, 'w') as pid_file:
             pid_file.write(str(os.getpid()))
 
@@ -252,8 +251,8 @@ def main(argv=None):
         run(config_module, pid_file_path)
     except KeyboardInterrupt:
         print("\n\nInterrupted")
-        os._exit(1)
+        return 1
 
 
 if __name__ == '__main__':
-    main()
+    sys.exit(main())
