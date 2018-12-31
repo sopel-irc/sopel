@@ -199,6 +199,27 @@ def get_configuration(options):
     return bot_config
 
 
+def get_pid_filename(options, pid_dir):
+    """Get the pid file name in ``pid_dir`` from the given ``options``.
+
+    :param options: command line options
+    :param str pid_dir: path to the pid directory
+    :return: absolute filename of the pid file
+
+    By default, it's ``sopel.pid``, but if a configuration filename is given
+    in the ``options``, its basename is used to generate the filename, as:
+    ``sopel-{basename}.pid`` instead.
+    """
+    name = 'sopel.pid'
+    if options.config:
+        basename = os.path.basename(options.config)
+        if basename.endswith('.cfg'):
+            basename = basename[:-4]
+        name = 'sopel-%s.pid' % basename
+
+    return os.path.abspath(os.path.join(pid_dir, name))
+
+
 def main(argv=None):
     try:
         # Step One: Parse The Command Line
@@ -212,7 +233,7 @@ def main(argv=None):
             stderr('%s' % err)
             return 1
 
-        # Step Three: no-config required options
+        # Step Three: Handle "No config needed" options
         if opts.version:
             print_version()
             return
@@ -229,7 +250,7 @@ def main(argv=None):
             print_config()
             return
 
-        # Step Four: get the configuration file and prepare to run
+        # Step Four: Get the configuration file and prepare to run
         try:
             config_module = get_configuration(opts)
         except ConfigurationError as e:
@@ -241,48 +262,43 @@ def main(argv=None):
             # exit with code 2 to prevent auto restart on fail by systemd
             return 2
 
-        # Manage logfile, stdout and stderr
+        # Step Five: Manage logfile, stdout and stderr
         logfile = os.path.os.path.join(config_module.core.logdir, 'stdio.log')
         sys.stderr = tools.OutputRedirect(logfile, True, opts.quiet)
         sys.stdout = tools.OutputRedirect(logfile, False, opts.quiet)
 
-        # Handle --quit, --kill and saving the PID to file
+        # Step Six: Handle process-lifecycle options and manage the PID file
         pid_dir = config_module.core.pid_dir
-        if opts.config is None:
-            pid_file_path = os.path.join(pid_dir, 'sopel.pid')
-        else:
-            basename = os.path.basename(opts.config)
-            if basename.endswith('.cfg'):
-                basename = basename[:-4]
-            pid_file_path = os.path.join(pid_dir, 'sopel-%s.pid' % basename)
+        pid_file_path = get_pid_filename(opts, pid_dir)
+
+        old_pid = None
         if os.path.isfile(pid_file_path):
             with open(pid_file_path, 'r') as pid_file:
                 try:
                     old_pid = int(pid_file.read())
                 except ValueError:
-                    old_pid = None
-            if old_pid is not None and tools.check_pid(old_pid):
-                if not opts.quit and not opts.kill:
-                    stderr('There\'s already a Sopel instance running with this config file')
-                    stderr('Try using the --quit or the --kill options')
-                    return 1
-                elif opts.kill:
-                    stderr('Killing the sopel')
-                    os.kill(old_pid, signal.SIGKILL)
-                    return
-                elif opts.quit:
-                    stderr('Signaling Sopel to stop gracefully')
-                    if hasattr(signal, 'SIGUSR1'):
-                        os.kill(old_pid, signal.SIGUSR1)
-                    else:
-                        os.kill(old_pid, signal.SIGTERM)
-                    return
-            elif opts.kill or opts.quit:
-                stderr('Sopel is not running!')
+                    pass
+
+        if old_pid is not None and tools.check_pid(old_pid):
+            if not opts.quit and not opts.kill:
+                stderr('There\'s already a Sopel instance running with this config file')
+                stderr('Try using the --quit or the --kill options')
                 return 1
-        elif opts.quit or opts.kill:
+            elif opts.kill:
+                stderr('Killing the Sopel')
+                os.kill(old_pid, signal.SIGKILL)
+                return
+            elif opts.quit:
+                stderr('Signaling Sopel to stop gracefully')
+                if hasattr(signal, 'SIGUSR1'):
+                    os.kill(old_pid, signal.SIGUSR1)
+                else:
+                    os.kill(old_pid, signal.SIGTERM)
+                return
+        elif opts.kill or opts.quit:
             stderr('Sopel is not running!')
             return 1
+
         if opts.daemonize:
             child_pid = os.fork()
             if child_pid is not 0:
@@ -290,7 +306,7 @@ def main(argv=None):
         with open(pid_file_path, 'w') as pid_file:
             pid_file.write(str(os.getpid()))
 
-        # Step Five: Initialise And Run sopel
+        # Step Seven: Initialize and run Sopel
         run(config_module, pid_file_path)
     except KeyboardInterrupt:
         print("\n\nInterrupted")
