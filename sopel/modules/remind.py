@@ -238,16 +238,16 @@ def at(bot, trigger):
             timezone = 'UTC'
 
         pytz_timezone = pytz.timezone(timezone)
-        now = pytz_timezone.localize(datetime.now())
+        now = pytz.utc.localize(datetime.utcnow())
         at_time = datetime(year, month, day,
                            int(hour), int(minute), int(second))
         at_time = pytz_timezone.localize(at_time)
-        timediff = pytz_timezone.normalize(at_time) - now
+        timediff = at_time - now
     else:
         if tz and tz.upper() != 'UTC':
             bot.reply("I don't have timezone support installed.")
             return NOLIMIT
-        now = datetime.now()
+        now = datetime.utcnow()
         at_time = datetime(year, month, day,
                            int(hour), int(minute), int(second))
         timediff = at_time - now
