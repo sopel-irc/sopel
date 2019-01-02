@@ -113,3 +113,41 @@ def test_get_configuration(tmpdir):
         result = run_script.get_configuration(options)
         assert isinstance(result, config.Config)
         assert result.core.owner == 'TestName'
+
+
+def test_get_pid_filename_default():
+    """Assert function returns the default filename from given ``pid_dir``"""
+    pid_dir = '/pid'
+    parser = run_script.build_parser()
+    options = parser.parse_args([])
+
+    result = run_script.get_pid_filename(options, pid_dir)
+    assert result == pid_dir + '/sopel.pid'
+
+
+def test_get_pid_filename_named():
+    """Assert function returns a specific filename when config (with extension) is set"""
+    pid_dir = '/pid'
+    parser = run_script.build_parser()
+
+    # With extension
+    options = parser.parse_args(['-c', 'test.cfg'])
+
+    result = run_script.get_pid_filename(options, pid_dir)
+    assert result == pid_dir + '/sopel-test.pid'
+
+    # Without extension
+    options = parser.parse_args(['-c', 'test'])
+
+    result = run_script.get_pid_filename(options, pid_dir)
+    assert result == pid_dir + '/sopel-test.pid'
+
+
+def test_get_pid_filename_ext_not_cfg():
+    """Assert function keeps the config file extension when it is not cfg"""
+    pid_dir = '/pid'
+    parser = run_script.build_parser()
+    options = parser.parse_args(['-c', 'test.ini'])
+
+    result = run_script.get_pid_filename(options, pid_dir)
+    assert result == pid_dir + '/sopel-test.ini.pid'
