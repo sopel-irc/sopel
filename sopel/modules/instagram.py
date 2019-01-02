@@ -18,7 +18,7 @@ from requests import get
 from datetime import datetime
 import re
 
-instagram_regex = r'.*(https?:\/\/(?:www\.){0,1}instagram\.com\/p\/[a-zA-Z0-9_-]+)\s?.*'
+instagram_regex = r'.*(https?:\/\/(?:www\.){0,1}instagram\.com\/([a-zA-Z0-9_\.]{,30}\/)?p\/[a-zA-Z0-9_-]+)\s?.*'
 instagram_pattern = re.compile(instagram_regex)
 
 
