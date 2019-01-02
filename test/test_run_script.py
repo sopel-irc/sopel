@@ -2,7 +2,20 @@
 """Tests for command handling"""
 from __future__ import unicode_literals, absolute_import, print_function, division
 
+from contextlib import contextmanager
+import os
+
 from sopel import run_script
+
+
+@contextmanager
+def cd(newdir):
+    prevdir = os.getcwd()
+    os.chdir(os.path.expanduser(newdir))
+    try:
+        yield
+    finally:
+        os.chdir(prevdir)
 
 
 def test_enumerate_configs(tmpdir):
@@ -35,3 +48,51 @@ def test_enumerate_configs_extension(tmpdir):
     assert 'extra.ini' in results
     assert 'README' not in results
     assert len(results) == 1
+
+
+def test_find_config_local(tmpdir):
+    """Assert function retrieves configuration file from working dir first"""
+    working_dir = tmpdir.mkdir("working")
+    working_dir.join('local.cfg').write('')
+    config_dir = tmpdir.mkdir("config")
+
+    with cd(working_dir.strpath):
+        found_config = run_script.find_config(config_dir.strpath, 'local.cfg')
+        assert found_config == 'local.cfg'
+
+        found_config = run_script.find_config(config_dir.strpath, 'local')
+        assert found_config == config_dir.join('local').strpath
+
+
+def test_find_config_default(tmpdir):
+    """Assert function retrieves configuration file from given config dir"""
+    working_dir = tmpdir.mkdir("working")
+    working_dir.join('local.cfg').write('')
+    config_dir = tmpdir.mkdir("config")
+    config_dir.join('config.cfg').write('')
+    config_dir.join('extra.ini').write('')
+    config_dir.join('module.cfg').write('')
+    config_dir.join('README').write('')
+
+    with cd(working_dir.strpath):
+        found_config = run_script.find_config(config_dir.strpath, 'config')
+        assert found_config == config_dir.join('config.cfg').strpath
+
+        found_config = run_script.find_config(config_dir.strpath, 'config.cfg')
+        assert found_config == config_dir.join('config.cfg').strpath
+
+
+def test_find_config_extension(tmpdir):
+    """Assert function retrieves configuration file with the given extension"""
+    working_dir = tmpdir.mkdir("working")
+    working_dir.join('local.cfg').write('')
+    config_dir = tmpdir.mkdir("config")
+    config_dir.join('config.cfg').write('')
+    config_dir.join('extra.ini').write('')
+    config_dir.join('module.cfg').write('')
+    config_dir.join('README').write('')
+
+    with cd(working_dir.strpath):
+        found_config = run_script.find_config(
+            config_dir.strpath, 'extra', '.ini')
+        assert found_config == config_dir.join('extra.ini').strpath
