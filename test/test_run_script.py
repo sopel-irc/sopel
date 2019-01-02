@@ -5,7 +5,7 @@ from __future__ import unicode_literals, absolute_import, print_function, divisi
 from contextlib import contextmanager
 import os
 
-from sopel import run_script
+from sopel import run_script, config
 
 
 @contextmanager
@@ -96,3 +96,20 @@ def test_find_config_extension(tmpdir):
         found_config = run_script.find_config(
             config_dir.strpath, 'extra', '.ini')
         assert found_config == config_dir.join('extra.ini').strpath
+
+
+def test_get_configuration(tmpdir):
+    """Assert function returns a Sopel ``Config`` object"""
+    working_dir = tmpdir.mkdir("working")
+    working_dir.join('default.cfg').write('\n'.join([
+        '[core]',
+        'owner = TestName'
+    ]))
+
+    parser = run_script.build_parser()
+    options = parser.parse_args(['-c', 'default.cfg'])
+
+    with cd(working_dir.strpath):
+        result = run_script.get_configuration(options)
+        assert isinstance(result, config.Config)
+        assert result.core.owner == 'TestName'
