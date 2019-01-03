@@ -72,5 +72,10 @@ setup(
     platforms='Linux x86, x86-64',
     install_requires=requires,
     extras_require={'dev': dev_requires},
-    entry_points={'console_scripts': ['sopel = sopel.run_script:main']},
+    entry_points={
+        'console_scripts': [
+            'sopel = sopel.run_script:main',
+            'sopel-module = sopel.cli.modules:main',
+        ],
+    },
 )
