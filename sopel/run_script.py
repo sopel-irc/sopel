@@ -220,6 +220,27 @@ def get_pid_filename(options, pid_dir):
     return os.path.abspath(os.path.join(pid_dir, name))
 
 
+def get_running_pid(filename):
+    """Retrieve the PID number from the given ``filename``.
+
+    :param str filename: path to file to read the PID from
+    :return: the PID number of a Sopel instance if running, ``None`` otherwise
+    :rtype: integer
+
+    This function tries to retrieve a PID number from the given ``filename``,
+    as an integer, and returns ``None`` if the file is not found or if the
+    content is not an integer.
+    """
+    if not os.path.isfile(filename):
+        return
+
+    with open(filename, 'r') as pid_file:
+        try:
+            return int(pid_file.read())
+        except ValueError:
+            pass
+
+
 def main(argv=None):
     try:
         # Step One: Parse The Command Line
@@ -270,14 +291,7 @@ def main(argv=None):
         # Step Six: Handle process-lifecycle options and manage the PID file
         pid_dir = config_module.core.pid_dir
         pid_file_path = get_pid_filename(opts, pid_dir)
-
-        old_pid = None
-        if os.path.isfile(pid_file_path):
-            with open(pid_file_path, 'r') as pid_file:
-                try:
-                    old_pid = int(pid_file.read())
-                except ValueError:
-                    pass
+        old_pid = get_running_pid(pid_file_path)
 
         if old_pid is not None and tools.check_pid(old_pid):
             if not opts.quit and not opts.kill:

@@ -151,3 +151,34 @@ def test_get_pid_filename_ext_not_cfg():
 
     result = run_script.get_pid_filename(options, pid_dir)
     assert result == pid_dir + '/sopel-test.ini.pid'
+
+
+def test_get_running_pid(tmpdir):
+    """Assert function retrieves an integer from a given filename"""
+    pid_file = tmpdir.join('sopel.pid')
+    pid_file.write('7814')
+
+    result = run_script.get_running_pid(pid_file.strpath)
+    assert result == 7814
+
+
+def test_get_running_pid_not_integer(tmpdir):
+    """Assert function returns None when the content is not an Integer"""
+    pid_file = tmpdir.join('sopel.pid')
+    pid_file.write('')
+
+    result = run_script.get_running_pid(pid_file.strpath)
+    assert result is None
+
+    pid_file.write('abcdefg')
+
+    result = run_script.get_running_pid(pid_file.strpath)
+    assert result is None
+
+
+def test_get_running_pid_no_file(tmpdir):
+    """Assert function returns None when there is no such file"""
+    pid_file = tmpdir.join('sopel.pid')
+
+    result = run_script.get_running_pid(pid_file.strpath)
+    assert result is None
