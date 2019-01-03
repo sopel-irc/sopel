@@ -42,6 +42,12 @@ def main():
               '`p` for package directory, '
               '`m` for module file, '
               '`?` for unknown'))
+    list_parser.add_argument(
+        '-a', '--all',
+        action='store_true',
+        dest='show_all',
+        default=False,
+        help='Show all available module, enabled or not')
 
     options = parser.parse_args()
     action = options.action or 'list'
@@ -49,7 +55,7 @@ def main():
     if action == 'list':
         config_filename = run_script.find_config('default')
         settings = config.Config(config_filename)
-        modules = loader.enumerate_modules(settings)
+        modules = loader.enumerate_modules(settings, show_all=options.show_all)
         modules = sorted(
             modules.items(),
             key=lambda arg: arg[0])
