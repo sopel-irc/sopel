@@ -22,7 +22,7 @@ else:
     unescape = HTMLParser().unescape
 
 
-domain = r'https?://(?:www\.|np\.|old\.)?reddit\.com'
+domain = r'https?://(?:www\.|old\.|pay\.|ssl\.|[a-z]{2}\.)?reddit\.com'
 post_url = r'%s/r/(.*?)/comments/([\w-]+)' % domain
 user_url = r'%s/u(ser)?/([\w-]+)' % domain
 post_regex = re.compile(post_url)
