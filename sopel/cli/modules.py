@@ -4,8 +4,9 @@ from __future__ import unicode_literals, absolute_import, print_function, divisi
 
 import argparse
 import imp
+import inspect
 
-from sopel import loader, run_script, config
+from sopel import loader, run_script, config, tools
 
 
 DISPLAY_TYPE = {
@@ -21,6 +22,13 @@ def main():
     subparsers = parser.add_subparsers(
         help='Actions to perform (default to list)',
         dest='action')
+
+    # Configure SHOW action
+    show_parser = subparsers.add_parser(
+        'show',
+        help='Show a sopel module\'s details',
+        description='Show a sopel module\'s details')
+    show_parser.add_argument('module')
 
     # Configure LIST action
     list_parser = subparsers.add_parser(
@@ -51,10 +59,10 @@ def main():
 
     options = parser.parse_args()
     action = options.action or 'list'
+    config_filename = run_script.find_config('default')
+    settings = config.Config(config_filename)
 
     if action == 'list':
-        config_filename = run_script.find_config('default')
-        settings = config.Config(config_filename)
         modules = loader.enumerate_modules(settings, show_all=options.show_all)
         modules = sorted(
             modules.items(),
@@ -83,3 +91,71 @@ def main():
             ))
 
         return
+
+    if action == 'show':
+        module_name = options.module
+        availables = loader.enumerate_modules(settings, show_all=True)
+        if module_name not in availables:
+            tools.stderr('No module named %s' % module_name)
+            return 1
+
+        module_path, module_type = availables[module_name]
+        module, last_modified = loader.load_module(
+            module_name, module_path, module_type)
+        module_info = loader.clean_module(module, settings)
+
+        if not any(module_info):
+            print('Module %s does not define any Sopel trigger' % module_name)
+            return 1
+
+        callables, jobs, shutdowns, urls = module_info
+
+        print('# Module Information')
+        print('')
+        print('Module name: %s' % module_name)
+        print('Path: %s' % module_path)
+        print('Last modified at: %s' % last_modified)
+        print('Has shutdown: %s' % ('yes' if shutdowns else 'no'))
+        print('Has job: %s' % ('yes' if jobs else 'no'))
+
+        if callables:
+            rule_callables = []
+            print('')
+            print('# Module Commands')
+            for command in callables:
+                print('')
+
+                if command._docs.keys():
+                    print('## %s' % ', '.join(command._docs.keys()))
+                elif command.rule:
+                    # display rules afters normal commands
+                    rule_callables.append(command)
+                    continue
+
+                docstring = inspect.cleandoc(
+                    command.__doc__ or 'No documentation provided.'
+                ).splitlines()
+                for line in docstring:
+                    print('\t%s' % line)
+
+            if rule_callables:
+                print('')
+                print('# Module Rules')
+
+                for command in rule_callables:
+                    print('')
+                    for rule in command.rule:
+                        print(rule.pattern)
+
+                    docstring = inspect.cleandoc(
+                        command.__doc__ or 'No documentation provided.'
+                    ).splitlines()
+                    for line in docstring:
+                        print('\t%s' % line)
+
+        if urls:
+            print('')
+            print('# URL Patterns')
+
+            for url in urls:
+                print('\t%s' % url.url_regex.pattern)
