@@ -97,7 +97,10 @@ def main():
                 modules = [
                     (name, info)
                     for name, info in modules
-                    if name not in settings.core.enable
+                    # Remove enabled modules...
+                    # ... unless they are in the excluded list.
+                    if name in settings.core.exclude or
+                    name not in settings.core.enable
                 ]
 
             if settings.core.exclude:
