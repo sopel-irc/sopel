@@ -55,18 +55,20 @@ def main():
               '`p` for package directory, '
               '`m` for module file, '
               '`?` for unknown'))
-    list_parser.add_argument(
+
+    list_group = list_parser.add_mutually_exclusive_group()
+    list_group.add_argument(
         '-a', '--all',
         action='store_true',
         dest='show_all',
         default=False,
         help='Show all available module, enabled or not')
-    list_parser.add_argument(
+    list_group.add_argument(
         '-e', '--excluded',
         action='store_true',
         dest='show_excluded',
         default=False,
-        help='Show only excluded module (incompatible with -a/--all)')
+        help='Show only excluded module')
 
     options = parser.parse_args()
     action = options.action or 'list'
