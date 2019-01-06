@@ -9,6 +9,11 @@ import inspect
 from sopel import loader, run_script, config, tools
 
 
+DISPLAY_ENABLE = {
+    True: 'E',
+    False: 'X',
+}
+
 DISPLAY_TYPE = {
     imp.PKG_DIRECTORY: 'p',
     imp.PY_SOURCE: 'm'
@@ -56,6 +61,12 @@ def main():
         dest='show_all',
         default=False,
         help='Show all available module, enabled or not')
+    list_parser.add_argument(
+        '-e', '--excluded',
+        action='store_true',
+        dest='show_excluded',
+        default=False,
+        help='Show only excluded module (incompatible with -a/--all)')
 
     options = parser.parse_args()
     action = options.action or 'list'
@@ -63,31 +74,69 @@ def main():
     settings = config.Config(config_filename)
 
     if action == 'list':
-        modules = loader.enumerate_modules(settings, show_all=options.show_all)
+        # Line formatting
+        template = '{name}'  # Default display: only the module name
+        name_template = '{name}'  # Default: no padding
+        col_sep = '\t'  # Separator between displayed columns
+
+        # Get modules
+        show_all = options.show_all or options.show_excluded
+        modules = loader.enumerate_modules(settings, show_all=show_all).items()
+
+        # Show All
+        if show_all:
+            # If all are shown, add the "enabled" column
+            template = col_sep.join([template, '{enabled}'])
+
+        # Show Excluded Only
+        if options.show_excluded:
+            if settings.core.enable:
+                # Get all but enabled
+                modules = [
+                    (name, info)
+                    for name, info in modules
+                    if name not in settings.core.enable
+                ]
+
+            if settings.core.exclude:
+                # Get only excluded
+                modules = [
+                    (name, info)
+                    for name, info in modules
+                    if name in settings.core.exclude
+                ]
+
+        # Sort modules
         modules = sorted(
-            modules.items(),
+            modules,
             key=lambda arg: arg[0])
 
-        col_sep = '\t'
-        template = '{name}'
+        # Show Module Path
         if options.show_path:
             # Get the maximum length of module names for display purpose
             max_length = max(len(info[0]) for info in modules)
+            name_template = '{name:<' + str(max_length) + '}'
+            # Add the path at the end of the line
+            template = col_sep.join([template, '{path}'])
 
-            template = col_sep.join([
-                '{name:<' + str(max_length) + '}',
-                '{path}',
-            ])
-
+        # Show Module Type (package or python module)
         if options.show_type:
             template = col_sep.join(['{module_type}', template])
 
+        # Display list of modules with the line template
         for name, info in modules:
             path, module_type = info
+            enabled = True
+            if settings.core.enable:
+                enabled = name in settings.core.enable
+            if settings.core.exclude:
+                enabled = name not in settings.core.exclude
+
             print(template.format(
-                name=name,
+                name=name_template.format(name=name),
                 path=path,
                 module_type=DISPLAY_TYPE.get(module_type, '?'),
+                enabled=DISPLAY_ENABLE.get(enabled),
             ))
 
         return
