@@ -1,6 +1,7 @@
 # coding=utf-8
 # Copyright 2008, Sean B. Palmer, inamidst.com
 # Copyright 2012, Elsie Powell, embolalia.com
+# Copyright 2019, Nobel geht die Welt zugrunde
 # Licensed under the Eiffel Forum License 2.
 from __future__ import unicode_literals, absolute_import, print_function, division
 
@@ -8,7 +9,6 @@ from sopel.module import commands, example, NOLIMIT
 from sopel.modules.units import c_to_f
 
 import requests
-import xmltodict
 
 
 def woeid_search(query):
@@ -17,23 +17,20 @@ def woeid_search(query):
     node for the result, so that location data can still be retrieved. Returns
     None if there is no result, or the woeid field is empty.
     """
-    query = 'q=select * from geo.places where text="%s"' % query
-    body = requests.get('https://query.yahooapis.com/v1/public/yql?' + query)
-    parsed = xmltodict.parse(body.text).get('query')
-    results = parsed.get('results')
-    if results is None or results.get('place') is None:
+    query = query.replace(" ", "+")
+    body = requests.get('https://www.metaweather.com/api/location/search/?query=' + query)
+    results = body.json()
+    if results is None or results == []:
         return None
-    if type(results.get('place')) is list:
-        return results.get('place')[0]
-    return results.get('place')
+    return results[0]["woeid"]
 
 
 def get_cover(parsed):
     try:
-        condition = parsed['channel']['item']['yweather:condition']
+        condition = parsed["consolidated_weather"][0]["weather_state_name"]
     except KeyError:
         return 'unknown'
-    text = condition['@text']
+    text = condition
     # code = int(condition['code'])
     # TODO parse code to get those little icon thingies.
     return text
@@ -41,8 +38,8 @@ def get_cover(parsed):
 
 def get_temp(parsed):
     try:
-        condition = parsed['channel']['item']['yweather:condition']
-        temp = int(condition['@temp'])
+        condition = parsed["consolidated_weather"][0]["the_temp"]
+        temp = int(condition)
     except (KeyError, ValueError):
         return 'unknown'
     return (u'%d\u00B0C (%d\u00B0F)' % (temp, c_to_f(temp)))
@@ -50,7 +47,7 @@ def get_temp(parsed):
 
 def get_humidity(parsed):
     try:
-        humidity = parsed['channel']['yweather:atmosphere']['@humidity']
+        humidity = parsed["consolidated_weather"][0]["humidity"]
     except (KeyError, ValueError):
         return 'unknown'
     return "Humidity: %s%%" % humidity
@@ -58,11 +55,12 @@ def get_humidity(parsed):
 
 def get_wind(parsed):
     try:
-        wind_data = parsed['channel']['yweather:wind']
-        kph = float(wind_data['@speed'])
+        wind_data = parsed["consolidated_weather"][0]["wind_speed"]
+        wind_direction = parsed["consolidated_weather"][0]["wind_direction"]
+        kph = float(wind_data)
         m_s = float(round(kph / 3.6, 1))
         speed = int(round(kph / 1.852, 0))
-        degrees = int(wind_data['@direction'])
+        degrees = int(wind_direction)
     except (KeyError, ValueError):
         return 'unknown'
 
@@ -115,7 +113,7 @@ def get_wind(parsed):
 
 def get_tomorrow_high(parsed):
     try:
-        tomorrow_high = int(parsed['channel']['item']['yweather:forecast'][2]['@high'])
+        tomorrow_high = int(parsed["consolidated_weather"][1]["max_temp"])
     except (KeyError, ValueError):
         return 'unknown'
     return ('High: %d\u00B0C (%d\u00B0F)' % (tomorrow_high, c_to_f(tomorrow_high)))
@@ -123,7 +121,7 @@ def get_tomorrow_high(parsed):
 
 def get_tomorrow_low(parsed):
     try:
-        tomorrow_low = int(parsed['channel']['item']['yweather:forecast'][2]['@low'])
+        tomorrow_low = int(parsed["consolidated_weather"][1]["min_temp"])
     except (KeyError, ValueError):
         return 'unknown'
     return ('Low: %d\u00B0C (%d\u00B0F)' % (tomorrow_low, c_to_f(tomorrow_low)))
@@ -131,10 +129,10 @@ def get_tomorrow_low(parsed):
 
 def get_tomorrow_cover(parsed):
     try:
-        tomorrow_cover = parsed['channel']['item']['yweather:forecast'][2]
+        tomorrow_cover = parsed["consolidated_weather"][1]["weather_state_name"]
     except KeyError:
         return 'unknown'
-    tomorrow_text = tomorrow_cover['@text']
+    tomorrow_text = tomorrow_cover
     # code = int(condition['code'])
     # TODO parse code to get those little icon thingies.
     return ('Tomorrow: %s,' % (tomorrow_text))
@@ -161,18 +159,17 @@ def say_info(bot, trigger, mode):
         if woeid is None:
             first_result = woeid_search(location)
             if first_result is not None:
-                woeid = first_result.get('woeid')
+                woeid = first_result
 
     if not woeid:
         return bot.reply("I don't know where that is.")
 
-    query = 'q=select * from weather.forecast where woeid="%s" and u=\'c\'' % woeid
-    body = requests.get('https://query.yahooapis.com/v1/public/yql?' + query)
-    parsed = xmltodict.parse(body.text).get('query')
-    results = parsed.get('results')
+    query = woeid
+    body = requests.get('https://www.metaweather.com/api/location/' + str(query))
+    results = body.json()
     if results is None:
         return bot.reply("No forecast available. Try a more specific location.")
-    location = results.get('channel').get('title')
+    location = results["title"]
 
     # Mode-specific behavior, finally!
     if mode == 'weather':
