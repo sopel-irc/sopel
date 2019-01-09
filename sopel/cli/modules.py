@@ -175,13 +175,18 @@ def handle_show(options, settings):
         print('')
         print('# Module Commands')
         for command in callables:
-            print('')
-
             if command._docs.keys():
+                print('')
                 print('## %s' % ', '.join(command._docs.keys()))
-            elif command.rule:
+            elif getattr(command, 'rule', None):
                 # display rules afters normal commands
                 rule_callables.append(command)
+                continue
+            elif getattr(command, 'intents', None):
+                rule_callables.append(command)
+                continue
+            else:
+                # nothing to display right now
                 continue
 
             docstring = inspect.cleandoc(
@@ -196,7 +201,9 @@ def handle_show(options, settings):
 
             for command in rule_callables:
                 print('')
-                for rule in command.rule:
+                for intent in getattr(command, 'intents', []):
+                    print('[INTENT]', intent.pattern)
+                for rule in getattr(command, 'rule', []):
                     print(rule.pattern)
 
                 docstring = inspect.cleandoc(
