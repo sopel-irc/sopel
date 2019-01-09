@@ -113,8 +113,7 @@ def handle_list(options, settings):
                 if name in settings.core.exclude or
                 name not in settings.core.enable
             ]
-
-        if settings.core.exclude:
+        else:
             # Get only excluded
             modules = [
                 (name, info)
@@ -130,7 +129,9 @@ def handle_list(options, settings):
     # Show Module Path
     if options.show_path:
         # Get the maximum length of module names for display purpose
-        max_length = max(len(info[0]) for info in modules)
+        max_length = 0
+        if modules:
+            max_length = max(len(info[0]) for info in modules)
         name_template = '{name:<' + str(max_length) + '}'
         # Add the path at the end of the line
         template = col_sep.join([template, '{path}'])
