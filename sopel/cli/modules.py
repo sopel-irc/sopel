@@ -69,6 +69,13 @@ def build_parser():
         default=False,
         help='Show only excluded module')
 
+    # Configure DISABLE action
+    disable_parser = subparsers.add_parser(
+        'disable',
+        help='Disable a sopel module',
+        description='Disable a sopel module')
+    disable_parser.add_argument('module')
+
     return parser
 
 
@@ -220,6 +227,25 @@ def handle_show(options, settings):
             print('\t%s' % url.url_regex.pattern)
 
 
+def handle_disable(options, settings):
+    module_name = options.module
+    modules = loader.enumerate_modules(settings, show_all=True)
+
+    if module_name not in modules:
+        tools.stderr('No module named %s' % module_name)
+        return 1
+
+    disabled = settings.core.exclude
+    if module_name in disabled:
+        tools.stderr('Module %s already disabled' % module_name)
+        return 0
+
+    settings.core.exclude = disabled + [module_name]
+    settings.save()
+
+    print('Module %s disabled' % module_name)
+
+
 def main():
     """Console entry point for ``sopel-module``"""
     parser = build_parser()
@@ -233,3 +259,6 @@ def main():
 
     if action == 'show':
         return handle_show(options, settings)
+
+    if action == 'disable':
+        return handle_disable(options, settings)
