@@ -20,8 +20,7 @@ DISPLAY_TYPE = {
 }
 
 
-def main():
-    """Console entry point for ``sopel-module``"""
+def build_parser():
     parser = argparse.ArgumentParser(
         description='Experimental Sopel Module tool')
     subparsers = parser.add_subparsers(
@@ -70,121 +69,135 @@ def main():
         default=False,
         help='Show only excluded module')
 
-    options = parser.parse_args()
-    action = options.action or 'list'
-    config_filename = run_script.find_config('default')
-    settings = config.Config(config_filename)
+    return parser
 
-    if action == 'list':
-        # Line formatting
-        template = '{name}'  # Default display: only the module name
-        name_template = '{name}'  # Default: no padding
-        col_sep = '\t'  # Separator between displayed columns
 
-        # Get modules
-        show_all = options.show_all or options.show_excluded
-        modules = loader.enumerate_modules(settings, show_all=show_all).items()
+def handle_list(options, settings):
+    # Line formatting
+    template = '{name}'  # Default display: only the module name
+    name_template = '{name}'  # Default: no padding
+    col_sep = '\t'  # Separator between displayed columns
 
-        # Show All
-        if show_all:
-            # If all are shown, add the "enabled" column
-            template = col_sep.join([template, '{enabled}'])
+    # Get modules
+    show_all = options.show_all or options.show_excluded
+    modules = loader.enumerate_modules(settings, show_all=show_all).items()
 
-        # Show Excluded Only
-        if options.show_excluded:
-            if settings.core.enable:
-                # Get all but enabled
-                modules = [
-                    (name, info)
-                    for name, info in modules
-                    # Remove enabled modules...
-                    # ... unless they are in the excluded list.
-                    if name in settings.core.exclude or
-                    name not in settings.core.enable
-                ]
+    # Show All
+    if show_all:
+        # If all are shown, add the "enabled" column
+        template = col_sep.join([template, '{enabled}'])
 
-            if settings.core.exclude:
-                # Get only excluded
-                modules = [
-                    (name, info)
-                    for name, info in modules
-                    if name in settings.core.exclude
-                ]
+    # Show Excluded Only
+    if options.show_excluded:
+        if settings.core.enable:
+            # Get all but enabled
+            modules = [
+                (name, info)
+                for name, info in modules
+                # Remove enabled modules...
+                # ... unless they are in the excluded list.
+                if name in settings.core.exclude or
+                name not in settings.core.enable
+            ]
 
-        # Sort modules
-        modules = sorted(
-            modules,
-            key=lambda arg: arg[0])
+        if settings.core.exclude:
+            # Get only excluded
+            modules = [
+                (name, info)
+                for name, info in modules
+                if name in settings.core.exclude
+            ]
 
-        # Show Module Path
-        if options.show_path:
-            # Get the maximum length of module names for display purpose
-            max_length = max(len(info[0]) for info in modules)
-            name_template = '{name:<' + str(max_length) + '}'
-            # Add the path at the end of the line
-            template = col_sep.join([template, '{path}'])
+    # Sort modules
+    modules = sorted(
+        modules,
+        key=lambda arg: arg[0])
 
-        # Show Module Type (package or python module)
-        if options.show_type:
-            template = col_sep.join(['{module_type}', template])
+    # Show Module Path
+    if options.show_path:
+        # Get the maximum length of module names for display purpose
+        max_length = max(len(info[0]) for info in modules)
+        name_template = '{name:<' + str(max_length) + '}'
+        # Add the path at the end of the line
+        template = col_sep.join([template, '{path}'])
 
-        # Display list of modules with the line template
-        for name, info in modules:
-            path, module_type = info
-            enabled = True
-            if settings.core.enable:
-                enabled = name in settings.core.enable
-            if settings.core.exclude:
-                enabled = name not in settings.core.exclude
+    # Show Module Type (package or python module)
+    if options.show_type:
+        template = col_sep.join(['{module_type}', template])
 
-            print(template.format(
-                name=name_template.format(name=name),
-                path=path,
-                module_type=DISPLAY_TYPE.get(module_type, '?'),
-                enabled=DISPLAY_ENABLE.get(enabled),
-            ))
+    # Display list of modules with the line template
+    for name, info in modules:
+        path, module_type = info
+        enabled = True
+        if settings.core.enable:
+            enabled = name in settings.core.enable
+        if settings.core.exclude:
+            enabled = name not in settings.core.exclude
 
-        return
+        print(template.format(
+            name=name_template.format(name=name),
+            path=path,
+            module_type=DISPLAY_TYPE.get(module_type, '?'),
+            enabled=DISPLAY_ENABLE.get(enabled),
+        ))
 
-    if action == 'show':
-        module_name = options.module
-        availables = loader.enumerate_modules(settings, show_all=True)
-        if module_name not in availables:
-            tools.stderr('No module named %s' % module_name)
-            return 1
+    return
 
-        module_path, module_type = availables[module_name]
-        module, last_modified = loader.load_module(
-            module_name, module_path, module_type)
-        module_info = loader.clean_module(module, settings)
 
-        if not any(module_info):
-            print('Module %s does not define any Sopel trigger' % module_name)
-            return 1
+def handle_show(options, settings):
+    module_name = options.module
+    availables = loader.enumerate_modules(settings, show_all=True)
+    if module_name not in availables:
+        tools.stderr('No module named %s' % module_name)
+        return 1
 
-        callables, jobs, shutdowns, urls = module_info
+    module_path, module_type = availables[module_name]
+    module, last_modified = loader.load_module(
+        module_name, module_path, module_type)
+    module_info = loader.clean_module(module, settings)
 
-        print('# Module Information')
+    if not any(module_info):
+        print('Module %s does not define any Sopel trigger' % module_name)
+        return 1
+
+    callables, jobs, shutdowns, urls = module_info
+
+    print('# Module Information')
+    print('')
+    print('Module name: %s' % module_name)
+    print('Path: %s' % module_path)
+    print('Last modified at: %s' % last_modified)
+    print('Has shutdown: %s' % ('yes' if shutdowns else 'no'))
+    print('Has job: %s' % ('yes' if jobs else 'no'))
+
+    if callables:
+        rule_callables = []
         print('')
-        print('Module name: %s' % module_name)
-        print('Path: %s' % module_path)
-        print('Last modified at: %s' % last_modified)
-        print('Has shutdown: %s' % ('yes' if shutdowns else 'no'))
-        print('Has job: %s' % ('yes' if jobs else 'no'))
-
-        if callables:
-            rule_callables = []
+        print('# Module Commands')
+        for command in callables:
             print('')
-            print('# Module Commands')
-            for command in callables:
-                print('')
 
-                if command._docs.keys():
-                    print('## %s' % ', '.join(command._docs.keys()))
-                elif command.rule:
-                    # display rules afters normal commands
-                    rule_callables.append(command)
-                    continue
+            if command._docs.keys():
+                print('## %s' % ', '.join(command._docs.keys()))
+            elif command.rule:
+                # display rules afters normal commands
+                rule_callables.append(command)
+                continue
+
+            docstring = inspect.cleandoc(
+                command.__doc__ or 'No documentation provided.'
+            ).splitlines()
+            for line in docstring:
+                print('\t%s' % line)
+
+        if rule_callables:
+            print('')
+            print('# Module Rules')
+
+            for command in rule_callables:
+                print('')
+                for rule in command.rule:
+                    print(rule.pattern)
 
                 docstring = inspect.cleandoc(
                     command.__doc__ or 'No documentation provided.'
@@ -192,24 +205,24 @@ def main():
                 for line in docstring:
                     print('\t%s' % line)
 
-            if rule_callables:
-                print('')
-                print('# Module Rules')
+    if urls:
+        print('')
+        print('# URL Patterns')
 
-                for command in rule_callables:
-                    print('')
-                    for rule in command.rule:
-                        print(rule.pattern)
+        for url in urls:
+            print('\t%s' % url.url_regex.pattern)
 
-                    docstring = inspect.cleandoc(
-                        command.__doc__ or 'No documentation provided.'
-                    ).splitlines()
-                    for line in docstring:
-                        print('\t%s' % line)
 
-        if urls:
-            print('')
-            print('# URL Patterns')
+def main():
+    """Console entry point for ``sopel-module``"""
+    parser = build_parser()
+    options = parser.parse_args()
+    action = options.action or 'list'
+    config_filename = run_script.find_config('default')
+    settings = config.Config(config_filename)
 
-            for url in urls:
-                print('\t%s' % url.url_regex.pattern)
+    if action == 'list':
+        return handle_list(options, settings)
+
+    if action == 'show':
+        return handle_show(options, settings)
