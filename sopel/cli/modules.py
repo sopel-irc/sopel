@@ -69,6 +69,13 @@ def build_parser():
         default=False,
         help='Show only excluded module')
 
+    # Configure ENABLE action
+    enable_parser = subparsers.add_parser(
+        'enable',
+        help='Enable a sopel module',
+        description='Enable a sopel module')
+    enable_parser.add_argument('module')
+
     # Configure DISABLE action
     disable_parser = subparsers.add_parser(
         'disable',
@@ -227,6 +234,43 @@ def handle_show(options, settings):
             print('\t%s' % url.url_regex.pattern)
 
 
+def handle_enable(options, settings):
+    module_name = options.module
+    modules = loader.enumerate_modules(settings, show_all=True)
+
+    if module_name not in modules:
+        tools.stderr('No module named %s' % module_name)
+        return 1
+
+    is_excluded = module_name in settings.core.exclude
+
+    # Check if the enabled module list is used or not
+    if settings.core.enable:
+        is_enabled = module_name in settings.core.enable
+        if is_enabled and not is_excluded:
+            # Already enabled and not excluded, so it's fully activated
+            tools.stderr('Module %s already enabled' % module_name)
+            return 0
+        elif not is_enabled:
+            # Must be added to the enable list
+            settings.core.enable = settings.core.enable + [module_name]
+    elif not is_excluded:
+        # There is no enabled module list, and the module is not excluded
+        # so the module is already activated!
+        tools.stderr('Module %s already enabled' % module_name)
+        return 0
+
+    # Always filter out from excluded modules
+    settings.core.exclude = [
+        name
+        for name in settings.core.exclude
+        if name != module_name
+    ]
+    settings.save()
+
+    print('Module %s enabled' % module_name)
+
+
 def handle_disable(options, settings):
     module_name = options.module
     modules = loader.enumerate_modules(settings, show_all=True)
@@ -259,6 +303,9 @@ def main():
 
     if action == 'show':
         return handle_show(options, settings)
+
+    if action == 'enable':
+        return handle_enable(options, settings)
 
     if action == 'disable':
         return handle_disable(options, settings)
