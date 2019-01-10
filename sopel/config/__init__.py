@@ -48,6 +48,7 @@ class NotFound(ConfigurationError):
     """Configuration file not found."""
     def __init__(self, filename):
         self.filename = filename
+        """Path to the configuration file not found"""
 
     def __str__(self):
         return 'Unable to find the configuration file %s' % self.filename
