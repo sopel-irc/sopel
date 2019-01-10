@@ -44,6 +44,15 @@ class ConfigurationError(Exception):
         return 'ConfigurationError: %s' % self.value
 
 
+class NotFound(ConfigurationError):
+    """Configuration file not found."""
+    def __init__(self, filename):
+        self.filename = filename
+
+    def __str__(self):
+        return 'Unable to find the configuration file %s' % self.filename
+
+
 class Config(object):
     def __init__(self, filename, validate=True):
         """The bot's configuration.

@@ -9,6 +9,7 @@ import inspect
 import os
 
 from sopel import loader, run_script, config, tools
+from sopel.cli import utils
 
 
 DISPLAY_ENABLE = {
@@ -20,12 +21,6 @@ DISPLAY_TYPE = {
     imp.PKG_DIRECTORY: 'p',
     imp.PY_SOURCE: 'm'
 }
-
-
-def add_config_option(subparser):
-    subparser.add_argument(
-        '-c', '--config', default=None, metavar='filename', dest='config',
-        help='Use a specific configuration file')
 
 
 def build_parser():
@@ -40,7 +35,7 @@ def build_parser():
         'show',
         help='Show a sopel module\'s details',
         description='Show a sopel module\'s details')
-    add_config_option(show_parser)
+    utils.add_config_arguments(show_parser)
     show_parser.add_argument('module')
 
     # Configure LIST action
@@ -48,7 +43,7 @@ def build_parser():
         'list',
         help='List availables sopel modules',
         description='List availables sopel modules')
-    add_config_option(list_parser)
+    utils.add_config_arguments(list_parser)
     list_parser.add_argument(
         '-p', '--path',
         action='store_true',
@@ -84,7 +79,7 @@ def build_parser():
         'enable',
         help='Enable a sopel module',
         description='Enable a sopel module')
-    add_config_option(enable_parser)
+    utils.add_config_arguments(enable_parser)
     enable_parser.add_argument('module')
 
     # Configure DISABLE action
@@ -92,7 +87,7 @@ def build_parser():
         'disable',
         help='Disable a sopel module',
         description='Disable a sopel module')
-    add_config_option(disable_parser)
+    utils.add_config_arguments(disable_parser)
     disable_parser.add_argument('module')
 
     return parser
@@ -318,15 +313,9 @@ def main():
     parser = build_parser()
     options = parser.parse_args()
     action = options.action or 'list'
-    config_filename = run_script.find_config(options.config or 'default')
-
-    if not os.path.isfile(config_filename):
-        tools.stderr(
-            'Unable to find the configuration file %s' % config_filename)
-        return 2
 
     try:
-        settings = config.Config(config_filename)
+        settings = utils.load_settings(options)
     except config.ConfigurationError as error:
         tools.stderr(error)
         return 2
