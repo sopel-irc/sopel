@@ -104,7 +104,7 @@ __ Sponsor_
 .. |build| image:: https://travis-ci.org/sopel-irc/sopel.svg?branch=master
    :target: https://travis-ci.org/sopel-irc/sopel
 .. |issues| image:: https://img.shields.io/github/issues/sopel-irc/sopel.svg
-   :target: https://github.com/sopel-irc/issues
+   :target: https://github.com/sopel-irc/sopel/issues
 .. |coverage-status| image:: https://coveralls.io/repos/github/sopel-irc/sopel/badge.svg?branch=master
    :target: https://coveralls.io/github/sopel-irc/sopel?branch=master
 .. |license| image:: https://img.shields.io/pypi/l/sopel.svg
