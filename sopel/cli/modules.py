@@ -6,9 +6,8 @@ import argparse
 import datetime
 import imp
 import inspect
-import os
 
-from sopel import loader, run_script, config, tools
+from sopel import loader, config, tools
 from sopel.cli import utils
 
 

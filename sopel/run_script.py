@@ -25,32 +25,10 @@ import argparse
 import signal
 
 from sopel.__init__ import run, __version__
-from sopel.config import Config, _create_config, ConfigurationError, _wizard
+from sopel.config import _create_config, ConfigurationError, _wizard, NotFound
+from sopel.cli import utils
+from sopel.cli.utils import enumerate_configs
 import sopel.tools as tools
-
-homedir = os.path.join(os.path.expanduser('~'), '.sopel')
-
-
-def enumerate_configs(extension='.cfg'):
-    configfiles = []
-    if os.path.isdir(homedir):
-        sopel_dotdirfiles = os.listdir(homedir)  # Preferred
-        for item in sopel_dotdirfiles:
-            if item.endswith(extension):
-                configfiles.append(item)
-
-    return configfiles
-
-
-def find_config(name, extension='.cfg'):
-    if os.path.isfile(name):
-        return name
-    configs = enumerate_configs(extension)
-    if name in configs or name + extension in configs:
-        if name + extension in configs:
-            name = name + extension
-
-    return os.path.join(homedir, name)
 
 
 def main(argv=None):
@@ -125,19 +103,18 @@ def main(argv=None):
             print('-------------------------')
             return
 
-        config_name = opts.config or 'default'
-
-        configpath = find_config(config_name)
-        if not os.path.isfile(configpath):
+        try:
+            config_module = utils.load_settings(opts)
+        except NotFound as error:
             print("Welcome to Sopel!\nI can't seem to find the configuration file, so let's generate it!\n")
+            configpath = error.filename
             if not configpath.endswith('.cfg'):
                 configpath = configpath + '.cfg'
             _create_config(configpath)
-            configpath = find_config(config_name)
-        try:
-            config_module = Config(configpath)
-        except ConfigurationError as e:
-            stderr(e)
+            # Try to reload now that it's created
+            config_module = utils.load_settings(opts)
+        except ConfigurationError as error:
+            tools.stderr(error)
             sys.exit(2)
 
         if config_module.core.not_configured:

@@ -3,7 +3,32 @@
 from __future__ import unicode_literals, absolute_import, print_function, division
 import os
 
-from sopel import config, run_script
+from sopel import config
+
+
+homedir = os.path.join(os.path.expanduser('~'), '.sopel')
+
+
+def enumerate_configs(extension='.cfg'):
+    configfiles = []
+    if os.path.isdir(homedir):
+        sopel_dotdirfiles = os.listdir(homedir)  # Preferred
+        for item in sopel_dotdirfiles:
+            if item.endswith(extension):
+                configfiles.append(item)
+
+    return configfiles
+
+
+def find_config(name, extension='.cfg'):
+    if os.path.isfile(name):
+        return name
+    configs = enumerate_configs(extension)
+    if name in configs or name + extension in configs:
+        if name + extension in configs:
+            name = name + extension
+
+    return os.path.join(homedir, name)
 
 
 def add_config_arguments(parser):
@@ -59,7 +84,7 @@ def load_settings(options):
     elif 'SOPEL_CONFIG' in os.environ:
         name = os.environ['SOPEL_CONFIG'] or name
 
-    config_filename = run_script.find_config(name)
+    config_filename = find_config(name)
 
     if not os.path.isfile(config_filename):
         raise config.NotFound(filename=config_filename)
