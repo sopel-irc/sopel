@@ -5,6 +5,7 @@ from __future__ import unicode_literals, absolute_import, print_function, divisi
 import argparse
 import imp
 import inspect
+import os
 
 from sopel import loader, run_script, config, tools
 
@@ -20,6 +21,12 @@ DISPLAY_TYPE = {
 }
 
 
+def add_config_option(subparser):
+    subparser.add_argument(
+        '-c', '--config', default=None, metavar='filename', dest='config',
+        help='Use a specific configuration file')
+
+
 def build_parser():
     parser = argparse.ArgumentParser(
         description='Experimental Sopel Module tool')
@@ -32,6 +39,7 @@ def build_parser():
         'show',
         help='Show a sopel module\'s details',
         description='Show a sopel module\'s details')
+    add_config_option(show_parser)
     show_parser.add_argument('module')
 
     # Configure LIST action
@@ -39,6 +47,7 @@ def build_parser():
         'list',
         help='List availables sopel modules',
         description='List availables sopel modules')
+    add_config_option(list_parser)
     list_parser.add_argument(
         '-p', '--path',
         action='store_true',
@@ -74,6 +83,7 @@ def build_parser():
         'enable',
         help='Enable a sopel module',
         description='Enable a sopel module')
+    add_config_option(enable_parser)
     enable_parser.add_argument('module')
 
     # Configure DISABLE action
@@ -81,6 +91,7 @@ def build_parser():
         'disable',
         help='Disable a sopel module',
         description='Disable a sopel module')
+    add_config_option(disable_parser)
     disable_parser.add_argument('module')
 
     return parser
@@ -296,7 +307,13 @@ def main():
     parser = build_parser()
     options = parser.parse_args()
     action = options.action or 'list'
-    config_filename = run_script.find_config('default')
+    config_filename = run_script.find_config(options.config or 'default')
+
+    if not os.path.isfile(config_filename):
+        tools.stderr(
+            'Unable to find the configuration file %s' % config_filename)
+        return 2
+
     settings = config.Config(config_filename)
 
     if action == 'list':
