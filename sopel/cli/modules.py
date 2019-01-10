@@ -314,7 +314,11 @@ def main():
             'Unable to find the configuration file %s' % config_filename)
         return 2
 
-    settings = config.Config(config_filename)
+    try:
+        settings = config.Config(config_filename)
+    except config.ConfigurationError as error:
+        tools.stderr(error)
+        return 2
 
     if action == 'list':
         return handle_list(options, settings)
