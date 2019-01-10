@@ -58,7 +58,7 @@ def wikt(word):
     definitions = {}
     for line in bytes.splitlines():
         is_new_mode = False
-        if 'id="Etymology"' in line:
+        if 'id="Etymology' in line:
             mode = 'etymology'
             is_new_mode = True
         else:
@@ -83,9 +83,7 @@ def wikt(word):
     return etymology, definitions
 
 
-parts = ('preposition', 'particle', 'noun', 'verb',
-         'adjective', 'adverb', 'interjection',
-         'prefix', 'suffix')
+parts = [pos.lower() for pos in PARTS_OF_SPEECH]
 
 
 def format(result, definitions, number=2):
