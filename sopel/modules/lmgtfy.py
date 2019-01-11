@@ -8,11 +8,14 @@ https://sopel.chat/
 """
 from __future__ import unicode_literals, absolute_import, print_function, division
 
-from sopel.module import commands
+from sopel.module import commands, example
 from sopel.web import quote
 
 
 @commands('lmgtfy', 'lmgify', 'gify', 'gtfy')
+@example('.lmgtfy sopel', 'https://lmgtfy.com/?q=sopel')
+@example('.lmgtfy sopel bot', 'https://lmgtfy.com/?q=sopel+bot')
+@example('.lmgtfy', 'https://www.google.com/')
 def googleit(bot, trigger):
     """Let me just... google that for you."""
     # No input
