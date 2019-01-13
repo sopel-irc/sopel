@@ -290,27 +290,15 @@ class Sopel(irc.Bot):
         message will contain the entire remainder, which may be truncated by
         the server.
         """
-        # We're arbitrarily saying that the max is 400 bytes of text when
-        # messages will be split. Otherwise, we'd have to acocunt for the bot's
-        # hostmask, which is hard.
-        max_text_length = 400
-        # Encode to bytes, for propper length calculation
-        if isinstance(text, unicode):
-            encoded_text = text.encode('utf-8')
-        else:
-            encoded_text = text
         excess = ''
-        if max_messages > 1 and len(encoded_text) > max_text_length:
-            last_space = encoded_text.rfind(' '.encode('utf-8'), 0, max_text_length)
-            if last_space == -1:
-                excess = encoded_text[max_text_length:]
-                encoded_text = encoded_text[:max_text_length]
-            else:
-                excess = encoded_text[last_space + 1:]
-                encoded_text = encoded_text[:last_space]
-        # We'll then send the excess at the end
-        # Back to unicode again, so we don't screw things up later.
-        text = encoded_text.decode('utf-8')
+        if not isinstance(text, unicode):
+            # Make sure we are dealing with unicode string
+            text = text.decode('utf-8')
+
+        if max_messages > 1:
+            # Manage multi-line only when needed
+            text, excess = tools.get_sendable_message(text)
+
         try:
             self.sending.acquire()
 
