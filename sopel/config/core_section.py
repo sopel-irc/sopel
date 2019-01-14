@@ -103,7 +103,7 @@ class CoreSection(StaticSection):
                                              default='%Y-%m-%d - %T%Z')
     """The default format to use for time in messages."""
 
-    default_timezone = ValidatedAttribute('default_timezone')
+    default_timezone = ValidatedAttribute('default_timezone', default='UTC')
     """The default timezone to use for time in messages."""
 
     enable = ListAttribute('enable')
