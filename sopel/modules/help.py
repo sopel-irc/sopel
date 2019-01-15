@@ -13,6 +13,7 @@ from __future__ import unicode_literals, absolute_import, print_function, divisi
 import textwrap
 import collections
 import requests
+import socket
 
 from sopel.logger import get_logger
 from sopel.module import commands, rule, example, priority
@@ -21,7 +22,7 @@ from sopel.config.types import (
 )
 
 class HelpSection(StaticSection):
-    output = ChoiceAttribute('output', ["ptpb"], default='ptpb')
+    output = ChoiceAttribute('output', ["ptpb", "0x0", "hastebin", "termbin"], default='ptpb')
 
 def configure(config):
     config.define_section('help', HelpSection)
@@ -113,6 +114,33 @@ def post_to_ptpb(bot, msg):
         raise PostingException()
     
     return result['url']
+
+def post_to_0x0(bot, msg):
+    payload = {'file':msg}
+    result = requests.post('http://0x0.st', files = payload)
+    return result.text
+
+def post_to_hastebin(bot, msg):
+    result = requests.post('https://hastebin.com/documents', data = msg)
+    result = result.json()
+    if 'key' not in result:
+        logger.error("Invalid result %s", result)
+        raise PostingException()
+    return "https://hastebin.com/" + result['key']
+
+def post_to_termbin(bot, msg):
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s.connect(('termbin.com', 9999))
+    s.sendall(msg)
+    s.shutdown(socket.SHUT_WR)
+    response = ""
+    while 1:
+        data = s.recv(1024)
+        if data == "":
+            break
+        response += data
+    s.close()
+    return response.strip(u'\x00\n')
 
 class PostingException(Exception):
     pass
