@@ -21,11 +21,14 @@ from sopel.config.types import (
     StaticSection, ChoiceAttribute
 )
 
+
 class HelpSection(StaticSection):
     output = ChoiceAttribute('output', ["ptpb", "0x0", "hastebin", "termbin"], default='ptpb')
 
+
 def configure(config):
     config.define_section('help', HelpSection)
+
 
 logger = get_logger(__name__)
 
@@ -102,31 +105,35 @@ def create_list(bot, msg):
         return
     return result
 
+
 def post_to_ptpb(bot, msg):
     payload = {"content": msg}
     headers = {'Content-type': 'application/json', 'Accept': 'application/json'}
-    
+
     result = requests.post('https://ptpb.pw/', json=payload, headers=headers)
     result = result.json()
-    
+
     if 'url' not in result:
         logger.error("Invalid result %s", result)
         raise PostingException()
-    
+
     return result['url']
 
+
 def post_to_0x0(bot, msg):
-    payload = {'file':msg}
-    result = requests.post('http://0x0.st', files = payload)
+    payload = {'file': msg}
+    result = requests.post('http://0x0.st', files=payload)
     return result.text
 
+
 def post_to_hastebin(bot, msg):
-    result = requests.post('https://hastebin.com/documents', data = msg)
+    result = requests.post('https://hastebin.com/documents', data=msg)
     result = result.json()
     if 'key' not in result:
         logger.error("Invalid result %s", result)
         raise PostingException()
     return "https://hastebin.com/" + result['key']
+
 
 def post_to_termbin(bot, msg):
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -142,9 +149,11 @@ def post_to_termbin(bot, msg):
     s.close()
     return response.strip(u'\x00\n')
 
+
 class PostingException(Exception):
     pass
-        
+
+
 @rule('$nick' r'(?i)help(?:[?!]+)?$')
 @priority('low')
 def help2(bot, trigger):
