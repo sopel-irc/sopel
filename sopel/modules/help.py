@@ -16,6 +16,15 @@ import requests
 
 from sopel.logger import get_logger
 from sopel.module import commands, rule, example, priority
+from sopel.config.types import (
+    StaticSection, ChoiceAttribute
+)
+
+class HelpSection(StaticSection):
+    output = ChoiceAttribute('output', ["ptpb"], default='ptpb')
+
+def configure(config):
+    config.define_section('help', HelpSection)
 
 logger = get_logger(__name__)
 
@@ -23,6 +32,7 @@ logger = get_logger(__name__)
 def setup(bot):
     global help_prefix
     help_prefix = bot.config.core.help_prefix
+    bot.config.define_section('help', HelpSection)
 
 
 @rule('$nick' r'(?i)(help|doc) +([A-Za-z]+)(?:\?+)?$')
@@ -82,23 +92,31 @@ def help(bot, trigger):
 
 def create_list(bot, msg):
     msg = 'Command listing for {}@{}\n\n'.format(bot.nick, bot.config.core.host) + msg
-    payload = {"content": msg}
-    headers = {'Content-type': 'application/json', 'Accept': 'application/json'}
 
     try:
-        result = requests.post('https://ptpb.pw/', json=payload, headers=headers)
-    except requests.RequestException:
+        result = globals()['post_to_' + bot.config.help.output](bot, msg)
+    except (requests.RequestException, PostingException):
         bot.say("Sorry! Something went wrong.")
         logger.exception("Error posting commands")
         return
+    return result
+
+def post_to_ptpb(bot, msg):
+    payload = {"content": msg}
+    headers = {'Content-type': 'application/json', 'Accept': 'application/json'}
+    
+    result = requests.post('https://ptpb.pw/', json=payload, headers=headers)
     result = result.json()
+    
     if 'url' not in result:
-        bot.say("Sorry! Something went wrong.")
         logger.error("Invalid result %s", result)
-        return
+        raise PostingException()
+    
     return result['url']
 
-
+class PostingException(Exception):
+    pass
+        
 @rule('$nick' r'(?i)help(?:[?!]+)?$')
 @priority('low')
 def help2(bot, trigger):
