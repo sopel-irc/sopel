@@ -16,6 +16,17 @@ import textwrap
 
 from sopel.logger import get_logger
 from sopel.module import commands, rule, example, priority
+from sopel.config.types import (
+    StaticSection, ChoiceAttribute
+)
+
+
+class HelpSection(StaticSection):
+    output = ChoiceAttribute('output', ["clbin"], default='clbin')
+
+
+def configure(config):
+    config.define_section('help', HelpSection)
 
 
 LOGGER = get_logger(__name__)
@@ -24,6 +35,7 @@ LOGGER = get_logger(__name__)
 def setup(bot):
     global help_prefix
     help_prefix = bot.config.core.help_prefix
+    bot.config.define_section('help', HelpSection)
 
 
 @rule('$nick' r'(?i)(help|doc) +([A-Za-z]+)(?:\?+)?$')
@@ -87,18 +99,27 @@ def create_list(bot, msg):
     msg = 'Command listing for {}@{}\n\n'.format(bot.nick, bot.config.core.host) + msg
 
     try:
-        result = requests.post('https://clbin.com/', data={'clbin': msg})
-    except requests.RequestException:
+        result = globals()['post_to_' + bot.config.help.output](bot, msg)
+    except (requests.RequestException, PostingException):
         bot.say("Sorry! Something went wrong.")
         LOGGER.exception("Error posting commands")
         return
+    return result
+
+
+def post_to_clbin(bot, msg):
+    result = requests.post('https://clbin.com/', data={'clbin': msg})
     result = result.text
-    if "https://clbin.com/" in result:
+
+    if 'https://clbin.com/' in result:
         return result
     else:
-        bot.say("Sorry! Something went wrong.")
         LOGGER.error("Invalid result %s", result)
-        return
+        raise PostingException()
+
+
+class PostingException(Exception):
+    pass
 
 
 @rule('$nick' r'(?i)help(?:[?!]+)?$')
