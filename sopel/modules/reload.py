@@ -42,7 +42,10 @@ def f_reload(bot, trigger):
             'low': collections.defaultdict(list)
         }
         bot._command_groups = collections.defaultdict(list)
-        bot.setup()
+
+        for m in sopel.loader.enumerate_modules(bot.config):
+            reload_module_tree(bot, m, silent=True)
+
         return bot.reply('done')
 
     if (name not in sys.modules and name not in sopel.loader.enumerate_modules(bot.config)):
@@ -51,7 +54,7 @@ def f_reload(bot, trigger):
     reload_module_tree(bot, name)
 
 
-def reload_module_tree(bot, name, seen=None):
+def reload_module_tree(bot, name, seen=None, silent=False):
     from types import ModuleType
 
     old_module = sys.modules[name]
@@ -72,7 +75,7 @@ def reload_module_tree(bot, name, seen=None):
             if obj not in seen[name]:
                 seen[name].append(obj)
                 reload(obj)
-                reload_module_tree(bot, obj.__name__, seen)
+                reload_module_tree(bot, obj.__name__, seen, silent)
 
     modules = sopel.loader.enumerate_modules(bot.config)
     if name not in modules:
@@ -90,10 +93,10 @@ def reload_module_tree(bot, name, seen=None):
         delattr(old_module, "setup")
 
     path, type_ = modules[name]
-    load_module(bot, name, path, type_)
+    load_module(bot, name, path, type_, silent)
 
 
-def load_module(bot, name, path, type_):
+def load_module(bot, name, path, type_, silent=False):
     module, mtime = sopel.loader.load_module(name, path, type_)
     relevant_parts = sopel.loader.clean_module(module, bot.config)
 
@@ -105,7 +108,8 @@ def load_module(bot, name, path, type_):
 
     modified = time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime(mtime))
 
-    bot.reply('%r (version: %s)' % (module, modified))
+    if not silent:
+        bot.reply('%r (version: %s)' % (module, modified))
 
 
 @sopel.module.nickname_commands('update')
