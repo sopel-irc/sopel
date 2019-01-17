@@ -16,6 +16,14 @@ import sopel.loader
 import sopel.module
 import subprocess
 
+try:
+    from importlib import reload
+except ImportError:
+    try:
+        from imp import reload
+    except ImportError:
+        pass  # fallback to builtin if neither module is available
+
 
 @sopel.module.nickname_commands("reload")
 @sopel.module.priority("low")
@@ -34,17 +42,44 @@ def f_reload(bot, trigger):
             'low': collections.defaultdict(list)
         }
         bot._command_groups = collections.defaultdict(list)
-        bot.setup()
+
+        for m in sopel.loader.enumerate_modules(bot.config):
+            reload_module_tree(bot, m, silent=True)
+
         return bot.reply('done')
 
-    if name not in sys.modules:
+    if (name not in sys.modules and name not in sopel.loader.enumerate_modules(bot.config)):
         return bot.reply('"%s" not loaded, try the `load` command' % name)
+
+    reload_module_tree(bot, name)
+
+
+def reload_module_tree(bot, name, seen=None, silent=False):
+    from types import ModuleType
 
     old_module = sys.modules[name]
 
+    if seen is None:
+        seen = {}
+    if name not in seen:
+        seen[name] = []
+
     old_callables = {}
     for obj_name, obj in iteritems(vars(old_module)):
-        bot.unregister(obj)
+        if callable(obj):
+            bot.unregister(obj)
+        elif (type(obj) is ModuleType and
+              obj.__name__.startswith(name + '.') and
+              obj.__name__ not in sys.builtin_module_names):
+            # recurse into submodules, see issue 1056
+            if obj not in seen[name]:
+                seen[name].append(obj)
+                reload(obj)
+                reload_module_tree(bot, obj.__name__, seen, silent)
+
+    modules = sopel.loader.enumerate_modules(bot.config)
+    if name not in modules:
+        return  # Only reload the top-level module, once recursion is finished
 
     # Also remove all references to sopel callables from top level of the
     # module, so that they will not get loaded again if reloading the
@@ -53,17 +88,15 @@ def f_reload(bot, trigger):
         delattr(old_module, obj_name)
 
     # Also delete the setup function
+    # Sub-modules shouldn't have setup functions, so do after the recursion check
     if hasattr(old_module, "setup"):
         delattr(old_module, "setup")
 
-    modules = sopel.loader.enumerate_modules(bot.config)
-    if name not in modules:
-        return bot.reply('"%s" not loaded, try the `load` command' % name)
     path, type_ = modules[name]
-    load_module(bot, name, path, type_)
+    load_module(bot, name, path, type_, silent)
 
 
-def load_module(bot, name, path, type_):
+def load_module(bot, name, path, type_, silent=False):
     module, mtime = sopel.loader.load_module(name, path, type_)
     relevant_parts = sopel.loader.clean_module(module, bot.config)
 
@@ -75,7 +108,8 @@ def load_module(bot, name, path, type_):
 
     modified = time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime(mtime))
 
-    bot.reply('%r (version: %s)' % (module, modified))
+    if not silent:
+        bot.reply('%r (version: %s)' % (module, modified))
 
 
 @sopel.module.nickname_commands('update')
