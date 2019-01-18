@@ -1,3 +1,145 @@
+Changes between 6.5.3 and 6.6.0
+===============================
+Sopel 6.6.0 has been a long time coming, but it contains a metric ton of fixes
+and enhancements. The big stuff is yet to come in Sopel 7, though; stay tuned!
+(You can get some hints by browsing the GitHub milestones.)
+
+View and contribute toward Sopel's budgetary needs by visiting the project's
+new Open Collective page: https://opencollective.com/sopel
+
+Now that Sopel 6.6.0 is released, the focus will shift from preparing the new
+release to migrating the website and documentation off of Embolalia's personal
+infrastructure. Once this migration is complete, Sopel's documentation will be
+updated to reflect the changes/additions listed below. Questions about the new
+(and old) API methods are welcome in #sopel on Freenode, of course, as always.
+Thank you for bearing with this transitional period!
+
+Importantly, a couple of broken modules have been removed in this release. For
+easy reference, they and their functional replacements (available on PyPI) are
+listed near the top of the "Module changes" section.
+
+Because this is the last release planned before Sopel 7, it's important to note
+some upcoming changes. They're mostly for module developers, or for bot owners
+who run unmaintained third-party modules (which might need manual updating).
+
+But first, a user-facing change.
+
+Sopel is drifting toward a more streamlined release model, which will see most
+of the core module library split out into separate packages. Moving modules to
+their own packages will enable faster fixes when APIs change, and easier module
+adoption by members of the community.
+
+Further process details will appear in future changelogs as modules are moved
+out of core, but the plan is to have Sopel "require" modules it used to include
+for a release or two after their removal. Existing installations should thereby
+have a smooth transition, as long as they get updated reasonably often.
+
+To discuss this plan, visit: https://github.com/sopel-irc/sopel/issues/1291
+
+And now, for the developer stuff.
+
+There will be some attention given to how Identifier objects work in Sopel 7. In
+particular, the way lowercase works appears to have been wrong for some time.
+Subscribe to https://github.com/sopel-irc/sopel/issues/1389 for updates, or to
+join the discussion on the best plan for addressing this.
+
+Also in Sopel 7, the following deprecated functions in sopel.web will be removed:
+get(), head(), post(), get_urllib_object()
+Module authors should replace these with equivalent code using requests. If you
+don't know what that is, you're in for a treat: https://pypi.org/project/requests/
+
+Remaining sopel.web functions might also move in a future major release. See
+https://github.com/sopel-irc/sopel/issues/1318 and comment your opinion if you
+are a module developer. There is still plenty of time to give feedback; nothing
+will happen before Sopel 8 at the earliest.
+
+Support for multiple help examples on each module command is planned for Sopel 7
+and will allow for clearer command and argument documentation. The current help
+system uses a deterministic but unintuitive method to choose a single example to
+output. The current plan is to make the new multi-example behavior opt-in, so
+only help for modules that are explicitly updated to support it will change.
+Follow this initiative at https://github.com/sopel-irc/sopel/issues/1200
+
+Bot owners and admins might appreciate the new ignore system proposal, which
+would (among other things) make "hostmask" blocks actually block hostmasks!
+See https://github.com/sopel-irc/sopel/issues/1355 to participate in the design
+process; this change is tentatively planned for Sopel 7 but may be pushed back.
+
+And finally, for users who hate SQLite with a passion: Work on bringing back
+alternate DB support has begun! It's unclear how soon this will be ready, but
+users who want to switch off SQLite to another database engine might be able to
+do so as early as Sopel 7. Follow the ups and downs of this long-awaited
+journey at https://github.com/sopel-irc/sopel/pull/1446 for the time being.
+
+Module changes:
+* Added emoticons module: includes .shrug, .tableflip, .lenny, and other common kaomoji
+* Added instagram module: displays information about Instagram links in chat
+* Removed movie: The OMDb API went private some time ago (Q2 2017)
+  * See sopel-modules.imdb on PyPI for a functional replacement
+* Removed weather: Yahoo deprecated its weather service, the last known keyless weather API
+  * See sopel-modules.weather on PyPI for a functional replacement that also adds the forecast
+    command originally planned to launch with Sopel 6.6.0.
+* admin module's .set command handles spaces properly now
+* bugzilla no longer spits out an error on shutdown if its domain list is empty
+* dice module's .roll/.dice/.d command gives friendlier errors, and its .choice/.choose/.ch command
+  has cleaner output (will be further improved in a later release)
+* etymology module updated to work with etymonline.com's changes
+* ip module can now look up nicknames (user's hostname) & IPv6 addresses
+* ip module switched from deprecated GeoIP database to GeoIP2
+* isup module can be forced to ignore untrusted/broken HTTPS with a new command alias, .isupinsecure
+* lmgtfy module gained improved output URLs (HTTPS, encoded query) and help examples
+* reddit module now picks up links under all commonly used subdomains
+* reload's habit of duplicating packaged modules' command output has been significantly curtailed
+  * There are still some edge cases (like reloading a module with a removed function) that might
+    still cause problems, but the majority of module updates should be OK now.
+  * This feature will continue to improve over the next few releases.
+* search module should behave better when encountering Unicode in URLs on Python 2
+* search now warns .ddg/.g users of a bug affecting multiple "site:" operators in a single query
+  * This is a bug in DuckDuckGo's plain-HTML SERP, and they have ignored all attempts to report it.
+    Sopel's DuckDuckGo code might be rewritten to use an unaffected interface in the future.
+* tld module gracefully handles missing arguments now
+* translate now handles API failures gracefully
+* url module can now create a short URL for convenience when fetching title
+  * only URLs longer than configured minimum length
+  * off by default
+* url module will say an error if .title command fails
+* url module's URL finder will ignore suspicious trailing punctuation, making the auto-title feature
+  more reliable when links are included in sentences
+* version module no longer prints "wat" to the console/log when answering CTCP VERSION requests
+* wiktionary module now decodes HTML entities in its output before sending, and it should also now
+  give correct results for affixes & definitions containing reference tags
+* xkcd fetching by comic title should work again (switched back-end search provider)
+* Many modules updated to use HTTPS in both API calls and output
+
+Core changes:
+* Added userserv option for auth_method
+* Added default value of 'UTC' to default_timezone
+* Added alias_nicks option
+  * Lets Sopel respond to (a) nickname(s) other than the name it uses for its IRC nick
+* Made handling CNAME'd TLS hostnames more forgiving
+* Raw logging is no longer enabled by default
+* Comparisons between Identifiers and other types were improved
+* Sopel no longer sends the sticky modifier for capabilities
+* Database tables are now created using "IF NOT EXISTS" to reduce error potential
+* Deprecated sopel.web calls in various modules updated to use requests instead
+* Intents/CTCP handling fixed
+* Fixed more cases where module shutdown routines weren't running
+
+API changes:
+* New formatting methods: italic, strikethrough, monospace, hex_color, reverse (inverted video)
+  * With the exception of italics, these are all "niche" formatting codes that
+    have relatively limited client support, but they are included for completeness.
+* sopel.db.get_uri() was returning an incorrectly formatted result, now fixed
+* Fixed populating bot.channels privileges dicts on connect
+* Fixed updating User objects when receiving NICK events from the server
+* Documentation added/corrected in several places
+* Command prefix in examples is now assumed to match the default regex pattern (currently '\.')
+  * This fixes some issues with incorrect help output, but might cause new problems in modules that
+    use non-standard prefixes in their command examples.
+  * Sopel's maintenance team regrets not providing advance warning of this change, but the potential
+    impact is limited to perhaps a few misplaced characters in help output, at most -- same as the
+    bug itself, but likely with a much lower incidence.
+
 Changes between 6.5.2 and 6.5.3
 ===============================
 Module changes:
