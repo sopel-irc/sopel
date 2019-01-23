@@ -1,10 +1,50 @@
 # coding=utf-8
 """Test for the ``sopel.loader`` module."""
 import imp
+import os
 
 import pytest
 
 from sopel import loader, config
+
+
+MOCK_MODULE_CONTENT = """# coding=utf-8
+import sopel.module
+
+
+@sopel.module.commands("first")
+def first_command(bot, trigger):
+    pass
+
+
+@sopel.module.commands("second")
+def second_command(bot, trigger):
+    pass
+
+
+@sopel.module.interval(5)
+def interval5s(bot):
+    pass
+
+
+@sopel.module.interval(10)
+def interval10s(bot):
+    pass
+
+
+@sopel.module.url(r'.\\.example\\.com')
+def example_url(bot):
+    pass
+
+
+def shutdown():
+    pass
+
+
+def ignored():
+    pass
+
+"""
 
 
 @pytest.fixture
@@ -78,45 +118,7 @@ def test_get_module_description_bad_dir_no_init(tmpdir):
 def test_clean_module_commands(tmpdir, tmpconfig):
     root = tmpdir.mkdir('loader_mods')
     mod_file = root.join('file_mod.py')
-    mod_file.write("""
-# coding=utf-8
-
-import sopel.module
-
-
-@sopel.module.commands("first")
-def first_command(bot, trigger):
-    pass
-
-
-@sopel.module.commands("second")
-def second_command(bot, trigger):
-    pass
-
-
-@sopel.module.interval(5)
-def interval5s(bot):
-    pass
-
-
-@sopel.module.interval(10)
-def interval10s(bot):
-    pass
-
-
-@sopel.module.url(r'.\\.example\\.com')
-def example_url(bot):
-    pass
-
-
-def shutdown():
-    pass
-
-
-def ignored():
-    pass
-
-""")
+    mod_file.write(MOCK_MODULE_CONTENT)
 
     test_mod, _ = loader.load_module('file_mod', mod_file.strpath, imp.PY_SOURCE)
     callables, jobs, shutdowns, urls = loader.clean_module(
@@ -271,3 +273,51 @@ def test_clean_callable_nickname_command(tmpconfig):
     assert regex.match('Sopel, hello!')
     assert regex.match('Sopel: hello!')
     assert not regex.match('Sopel not hello')
+
+
+def test_load_module_pymod(tmpdir):
+    root = tmpdir.mkdir('loader_mods')
+    mod_file = root.join('file_mod.py')
+    mod_file.write(MOCK_MODULE_CONTENT)
+
+    test_mod, timeinfo = loader.load_module(
+        'file_mod', mod_file.strpath, imp.PY_SOURCE)
+
+    assert hasattr(test_mod, 'first_command')
+    assert hasattr(test_mod, 'second_command')
+    assert hasattr(test_mod, 'interval5s')
+    assert hasattr(test_mod, 'interval10s')
+    assert hasattr(test_mod, 'example_url')
+    assert hasattr(test_mod, 'shutdown')
+    assert hasattr(test_mod, 'ignored')
+
+    assert timeinfo == os.path.getmtime(mod_file.strpath)
+
+
+def test_load_module_pypackage(tmpdir):
+    root = tmpdir.mkdir('loader_mods')
+    package_dir = root.mkdir('dir_mod')
+    mod_file = package_dir.join('__init__.py')
+    mod_file.write(MOCK_MODULE_CONTENT)
+
+    test_mod, timeinfo = loader.load_module(
+        'dir_mod', package_dir.strpath, imp.PKG_DIRECTORY)
+
+    assert hasattr(test_mod, 'first_command')
+    assert hasattr(test_mod, 'second_command')
+    assert hasattr(test_mod, 'interval5s')
+    assert hasattr(test_mod, 'interval10s')
+    assert hasattr(test_mod, 'example_url')
+    assert hasattr(test_mod, 'shutdown')
+    assert hasattr(test_mod, 'ignored')
+
+    assert timeinfo == os.path.getmtime(package_dir.strpath)
+
+
+def test_load_module_error(tmpdir):
+    root = tmpdir.mkdir('loader_mods')
+    mod_file = root.join('file_mod.py')
+    mod_file.write(MOCK_MODULE_CONTENT)
+
+    with pytest.raises(TypeError):
+        loader.load_module('file_mod', mod_file.strpath, None)
