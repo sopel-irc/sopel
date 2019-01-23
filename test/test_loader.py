@@ -37,6 +37,11 @@ def example_url(bot):
     pass
 
 
+@sopel.module.event('TOPIC')
+def on_topic_command(bot):
+    pass
+
+
 def shutdown():
     pass
 
@@ -45,6 +50,15 @@ def ignored():
     pass
 
 """
+
+
+@pytest.fixture
+def func():
+    """Pytest fixture to get a function that will return True all the time"""
+    def bot_command():
+        """Test callable defined as a pytest fixture."""
+        return True
+    return bot_command
 
 
 @pytest.fixture
@@ -120,7 +134,8 @@ def test_clean_module_commands(tmpdir, tmpconfig):
     mod_file = root.join('file_mod.py')
     mod_file.write(MOCK_MODULE_CONTENT)
 
-    test_mod, _ = loader.load_module('file_mod', mod_file.strpath, imp.PY_SOURCE)
+    test_mod, _ = loader.load_module(
+        'file_mod', mod_file.strpath, imp.PY_SOURCE)
     callables, jobs, shutdowns, urls = loader.clean_module(
         test_mod, tmpconfig)
 
@@ -142,9 +157,7 @@ def test_clean_module_commands(tmpdir, tmpconfig):
     assert test_mod.ignored not in urls
 
 
-def test_clean_callable_default(tmpconfig):
-    def func():
-        pass
+def test_clean_callable_default(tmpconfig, func):
     loader.clean_callable(func, tmpconfig)
 
     # Default values
@@ -169,10 +182,7 @@ def test_clean_callable_default(tmpconfig):
     assert not hasattr(func, 'intents')
 
 
-def test_clean_callable_event(tmpconfig):
-    def func():
-        pass
-
+def test_clean_callable_event(tmpconfig, func):
     setattr(func, 'event', ['low', 'UP', 'MiXeD'])
     loader.clean_callable(func, tmpconfig)
 
@@ -180,10 +190,7 @@ def test_clean_callable_event(tmpconfig):
     assert func.event == ['LOW', 'UP', 'MIXED']
 
 
-def test_clean_callable_event_string(tmpconfig):
-    def func():
-        pass
-
+def test_clean_callable_event_string(tmpconfig, func):
     setattr(func, 'event', 'some')
     loader.clean_callable(func, tmpconfig)
 
@@ -191,9 +198,7 @@ def test_clean_callable_event_string(tmpconfig):
     assert func.event == ['SOME']
 
 
-def test_clean_callable_rule(tmpconfig):
-    def func():
-        pass
+def test_clean_callable_rule(tmpconfig, func):
     setattr(func, 'rule', [r'abc'])
     loader.clean_callable(func, tmpconfig)
 
@@ -207,9 +212,7 @@ def test_clean_callable_rule(tmpconfig):
     assert not regex.match('efg')
 
 
-def test_clean_callable_rule_string(tmpconfig):
-    def func():
-        pass
+def test_clean_callable_rule_string(tmpconfig, func):
     setattr(func, 'rule', r'abc')
     loader.clean_callable(func, tmpconfig)
 
@@ -223,10 +226,8 @@ def test_clean_callable_rule_string(tmpconfig):
     assert not regex.match('efg')
 
 
-def test_clean_callable_rule_nick(tmpconfig):
+def test_clean_callable_rule_nick(tmpconfig, func):
     """Assert ``$nick`` in a rule will match ``Sopel: `` or ``Sopel, ``."""
-    def func():
-        pass
     setattr(func, 'rule', [r'$nickhello'])
     loader.clean_callable(func, tmpconfig)
 
@@ -240,10 +241,8 @@ def test_clean_callable_rule_nick(tmpconfig):
     assert not regex.match('Sopel not hello')
 
 
-def test_clean_callable_rule_nickname(tmpconfig):
+def test_clean_callable_rule_nickname(tmpconfig, func):
     """Assert ``$nick`` in a rule will match ``Sopel``."""
-    def func():
-        pass
     setattr(func, 'rule', [r'$nickname\s+hello'])
     loader.clean_callable(func, tmpconfig)
 
@@ -256,9 +255,7 @@ def test_clean_callable_rule_nickname(tmpconfig):
     assert not regex.match('Sopel not hello')
 
 
-def test_clean_callable_nickname_command(tmpconfig):
-    def func():
-        pass
+def test_clean_callable_nickname_command(tmpconfig, func):
     setattr(func, 'nickname_commands', ['hello!'])
     loader.clean_callable(func, tmpconfig)
 
@@ -273,6 +270,40 @@ def test_clean_callable_nickname_command(tmpconfig):
     assert regex.match('Sopel, hello!')
     assert regex.match('Sopel: hello!')
     assert not regex.match('Sopel not hello')
+
+
+def test_clean_callable_events(tmpconfig, func):
+    setattr(func, 'event', ['TOPIC'])
+    loader.clean_callable(func, tmpconfig)
+
+    assert hasattr(func, 'event')
+    assert func.event == ['TOPIC']
+
+    setattr(func, 'event', ['TOPIC', 'JOIN'])
+    loader.clean_callable(func, tmpconfig)
+
+    assert hasattr(func, 'event')
+    assert func.event == ['TOPIC', 'JOIN']
+
+    setattr(func, 'event', ['TOPIC', 'join', 'Nick'])
+    loader.clean_callable(func, tmpconfig)
+
+    assert hasattr(func, 'event')
+    assert func.event == ['TOPIC', 'JOIN', 'NICK']
+
+
+def test_clean_callable_events_basetring(tmpconfig, func):
+    setattr(func, 'event', 'topic')
+    loader.clean_callable(func, tmpconfig)
+
+    assert hasattr(func, 'event')
+    assert func.event == ['TOPIC']
+
+    setattr(func, 'event', 'JOIN')
+    loader.clean_callable(func, tmpconfig)
+
+    assert hasattr(func, 'event')
+    assert func.event == ['JOIN']
 
 
 def test_load_module_pymod(tmpdir):
