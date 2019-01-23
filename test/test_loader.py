@@ -1,11 +1,12 @@
 # coding=utf-8
 """Test for the ``sopel.loader`` module."""
 import imp
+import inspect
 import os
 
 import pytest
 
-from sopel import loader, config
+from sopel import loader, config, module
 
 
 MOCK_MODULE_CONTENT = """# coding=utf-8
@@ -304,6 +305,112 @@ def test_clean_callable_events_basetring(tmpconfig, func):
 
     assert hasattr(func, 'event')
     assert func.event == ['JOIN']
+
+
+def test_clean_callable_example(tmpconfig, func):
+    module.commands('test')(func)
+    module.example('.test hello')(func)
+
+    loader.clean_callable(func, tmpconfig)
+
+    assert hasattr(func, '_docs')
+    assert len(func._docs) == 1
+    assert 'test' in func._docs
+
+    docs = func._docs['test']
+    assert len(docs) == 2
+    assert docs[0] == inspect.cleandoc(func.__doc__).splitlines()
+    assert docs[1] == '.test hello'
+
+
+def test_clean_callable_example_multi_commands(tmpconfig, func):
+    module.commands('test')(func)
+    module.commands('unit')(func)
+    module.example('.test hello')(func)
+
+    loader.clean_callable(func, tmpconfig)
+
+    assert hasattr(func, '_docs')
+    assert len(func._docs) == 2
+    assert 'test' in func._docs
+    assert 'unit' in func._docs
+
+    test_docs = func._docs['test']
+    unit_docs = func._docs['unit']
+    assert len(test_docs) == 2
+    assert test_docs == unit_docs
+
+    assert test_docs[0] == inspect.cleandoc(func.__doc__).splitlines()
+    assert test_docs[1] == '.test hello'
+
+
+def test_clean_callable_example_first_only(tmpconfig, func):
+    module.commands('test')(func)
+    module.example('.test hello')(func)
+    module.example('.test bonjour')(func)
+
+    loader.clean_callable(func, tmpconfig)
+
+    assert len(func._docs) == 1
+    assert 'test' in func._docs
+
+    docs = func._docs['test']
+    assert len(docs) == 2
+    assert docs[0] == inspect.cleandoc(func.__doc__).splitlines()
+    assert docs[1] == '.test hello'
+
+
+def test_clean_callable_example_first_only_multi_commands(tmpconfig, func):
+    module.commands('test')(func)
+    module.commands('unit')(func)
+    module.example('.test hello')(func)
+    module.example('.test bonjour')(func)
+
+    loader.clean_callable(func, tmpconfig)
+
+    assert hasattr(func, '_docs')
+    assert len(func._docs) == 2
+    assert 'test' in func._docs
+    assert 'unit' in func._docs
+
+    test_docs = func._docs['test']
+    unit_docs = func._docs['unit']
+    assert len(test_docs) == 2
+    assert test_docs == unit_docs
+
+    assert test_docs[0] == inspect.cleandoc(func.__doc__).splitlines()
+    assert test_docs[1] == '.test hello'
+
+
+def test_clean_callable_example_default_prefix(tmpconfig, func):
+    module.commands('test')(func)
+    module.example('.test hello')(func)
+
+    tmpconfig.core.help_prefix = '!'
+    loader.clean_callable(func, tmpconfig)
+
+    assert len(func._docs) == 1
+    assert 'test' in func._docs
+
+    docs = func._docs['test']
+    assert len(docs) == 2
+    assert docs[0] == inspect.cleandoc(func.__doc__).splitlines()
+    assert docs[1] == '!test hello'
+
+
+def test_clean_callable_example_nickname(tmpconfig, func):
+    module.commands('test')(func)
+    module.example('$nickname: hello')(func)
+
+    loader.clean_callable(func, tmpconfig)
+
+    assert len(func._docs) == 1
+    assert 'test' in func._docs
+
+    docs = func._docs['test']
+    assert len(docs) == 2
+    assert docs[0] == inspect.cleandoc(func.__doc__).splitlines()
+    assert docs[1] == 'Sopel: hello'
 
 
 def test_load_module_pymod(tmpdir):
