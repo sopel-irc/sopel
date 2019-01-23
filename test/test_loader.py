@@ -413,6 +413,22 @@ def test_clean_callable_example_nickname(tmpconfig, func):
     assert docs[1] == 'Sopel: hello'
 
 
+def test_clean_callable_intents(tmpconfig, func):
+    setattr(func, 'intents', [r'abc'])
+    loader.clean_callable(func, tmpconfig)
+
+    assert hasattr(func, 'intents')
+    assert len(func.intents) == 1
+
+    # Test the regex is compiled properly
+    regex = func.intents[0]
+    assert regex.match('abc')
+    assert regex.match('abcd')
+    assert regex.match('ABC')
+    assert regex.match('AbCdE')
+    assert not regex.match('efg')
+
+
 def test_load_module_pymod(tmpdir):
     root = tmpdir.mkdir('loader_mods')
     mod_file = root.join('file_mod.py')
