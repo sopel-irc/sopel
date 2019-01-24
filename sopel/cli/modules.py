@@ -11,8 +11,8 @@ from sopel import loader, run_script, config, tools
 
 
 DISPLAY_ENABLE = {
-    True: 'E',
-    False: 'X',
+    True: 'e',
+    False: 'x',
 }
 
 DISPLAY_TYPE = {
@@ -107,11 +107,6 @@ def handle_list(options, settings):
     show_all = options.show_all or options.show_excluded
     modules = loader.enumerate_modules(settings, show_all=show_all).items()
 
-    # Show All
-    if show_all:
-        # If all are shown, add the "enabled" column
-        template = col_sep.join([template, '{enabled}'])
-
     # Show Excluded Only
     if options.show_excluded:
         if settings.core.enable:
@@ -137,12 +132,19 @@ def handle_list(options, settings):
         modules,
         key=lambda arg: arg[0])
 
+    # Get the maximum length of module names for display purpose
+    max_length = 0
+    if modules:
+        max_length = max(len(info[0]) for info in modules)
+
+    # Show All
+    if show_all:
+        name_template = '{name:<' + str(max_length) + '}'
+        # If all are shown, add the "enabled" column
+        template = col_sep.join(['{enabled}', template])
+
     # Show Module Path
     if options.show_path:
-        # Get the maximum length of module names for display purpose
-        max_length = 0
-        if modules:
-            max_length = max(len(info[0]) for info in modules)
         name_template = '{name:<' + str(max_length) + '}'
         # Add the path at the end of the line
         template = col_sep.join([template, '{path}'])
