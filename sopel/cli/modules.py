@@ -3,6 +3,7 @@
 from __future__ import unicode_literals, absolute_import, print_function, division
 
 import argparse
+import datetime
 import imp
 import inspect
 import os
@@ -189,33 +190,38 @@ def handle_show(options, settings):
         return 1
 
     callables, jobs, shutdowns, urls = module_info
+    last_modified_display = datetime.datetime.fromtimestamp(
+        last_modified
+    ).strftime('%Y-%m-%d %H:%M:%S')
 
     print('# Module Information')
     print('')
     print('Module name: %s' % module_name)
     print('Path: %s' % module_path)
-    print('Last modified at: %s' % last_modified)
+    print('Last modified at: %s' % last_modified_display)
     print('Has shutdown: %s' % ('yes' if shutdowns else 'no'))
     print('Has job: %s' % ('yes' if jobs else 'no'))
 
+    rule_callables = []
+    command_callables = []
+
     if callables:
-        rule_callables = []
-        print('')
-        print('# Module Commands')
         for command in callables:
             if command._docs.keys():
-                print('')
-                print('## %s' % ', '.join(command._docs.keys()))
+                command_callables.append(command)
             elif getattr(command, 'rule', None):
                 # display rules afters normal commands
                 rule_callables.append(command)
-                continue
             elif getattr(command, 'intents', None):
                 rule_callables.append(command)
-                continue
-            else:
-                # nothing to display right now
-                continue
+
+    if command_callables:
+        print('')
+        print('# Module Commands')
+
+        for command in command_callables:
+            print('')
+            print('## %s' % ', '.join(command._docs.keys()))
 
             docstring = inspect.cleandoc(
                 command.__doc__ or 'No documentation provided.'
@@ -223,22 +229,25 @@ def handle_show(options, settings):
             for line in docstring:
                 print('\t%s' % line)
 
-        if rule_callables:
+    if rule_callables:
+        print('')
+        print('# Module Rules')
+
+        for command in rule_callables:
             print('')
-            print('# Module Rules')
+            for intent in getattr(command, 'intents', []):
+                print('[INTENT]', intent.pattern)
+            for rule in getattr(command, 'rule', []):
+                print(rule.pattern)
 
-            for command in rule_callables:
-                print('')
-                for intent in getattr(command, 'intents', []):
-                    print('[INTENT]', intent.pattern)
-                for rule in getattr(command, 'rule', []):
-                    print(rule.pattern)
+            for event in getattr(command, 'event', []):
+                print('[EVENT]', event)
 
-                docstring = inspect.cleandoc(
-                    command.__doc__ or 'No documentation provided.'
-                ).splitlines()
-                for line in docstring:
-                    print('\t%s' % line)
+            docstring = inspect.cleandoc(
+                command.__doc__ or 'No documentation provided.'
+            ).splitlines()
+            for line in docstring:
+                print('\t%s' % line)
 
     if urls:
         print('')
