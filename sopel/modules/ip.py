@@ -40,7 +40,7 @@ def configure(config):
     """
     | name | example | purpose |
     | ---- | ------- | ------- |
-    | GeoIP\_db\_path | /home/sopel/GeoIP/ | Path to the GeoIP database files |
+    | GeoIP\\_db\\_path | /home/sopel/GeoIP/ | Path to the GeoIP database files |
     """
     config.define_section('ip', GeoipSection)
     config.ip.configure_setting('GeoIP_db_path',

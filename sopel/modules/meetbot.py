@@ -37,8 +37,8 @@ def configure(config):
     """
     | name | example | purpose |
     | ---- | ------- | ------- |
-    | meeting\_log\_path | /home/sopel/www/meetings | Path to meeting logs storage directory (should be an absolute path, accessible on a webserver) |
-    | meeting\_log\_baseurl | http://example.com/~sopel/meetings | Base URL for the meeting logs directory |
+    | meeting\\_log\\_path | /home/sopel/www/meetings | Path to meeting logs storage directory (should be an absolute path, accessible on a webserver) |
+    | meeting\\_log\\_baseurl | http://example.com/~sopel/meetings | Base URL for the meeting logs directory |
     """
     config.define_section('meetbot', MeetbotSection)
     config.meetbot.configure_setting(

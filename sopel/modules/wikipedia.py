@@ -40,8 +40,8 @@ def configure(config):
     """
     | name | example | purpose |
     | ---- | ------- | ------- |
-    | default\_lang | en | The default language to find articles from (same as Wikipedia language subdomain) |
-    | lang\_per\_channel | #YourPants:en,#TusPantalones:es | List of #channel:langcode pairs to define Wikipedia language per channel |
+    | default\\_lang | en | The default language to find articles from (same as Wikipedia language subdomain) |
+    | lang\\_per\\_channel | #YourPants:en,#TusPantalones:es | List of #channel:langcode pairs to define Wikipedia language per channel |
     """
     config.define_section('wikipedia', WikipediaSection)
     config.wikipedia.configure_setting(

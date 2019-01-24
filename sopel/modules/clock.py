@@ -37,7 +37,7 @@ def configure(config):
     | name | example | purpose |
     | ---- | ------- | ------- |
     | tz | America/Chicago | Preferred time zone (see <https://sopel.chat/tz>); defaults to UTC |
-    | time\_format | %Y-%m-%d - %T%Z | Preferred time format (see <http://strftime.net>) |
+    | time\\_format | %Y-%m-%d - %T%Z | Preferred time format (see <http://strftime.net>) |
     """
     config.define_section('clock', TimeSection)
     config.clock.configure_setting(

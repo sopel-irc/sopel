@@ -43,8 +43,8 @@ def configure(config):
     | name | example | purpose |
     | ---- | ------- | ------- |
     | exclude | https?://git\\\\.io/.* | A list of regular expressions for URLs for which the title should not be shown. |
-    | exclusion\_char | ! | A character (or string) which, when immediately preceding a URL, will stop the URL's title from being shown. |
-    | shorten\_url\_length | 72 | If greater than 0, the title fetcher will include a TinyURL version of links longer than this many characters. |
+    | exclusion\\_char | ! | A character (or string) which, when immediately preceding a URL, will stop the URL's title from being shown. |
+    | shorten\\_url\\_length | 72 | If greater than 0, the title fetcher will include a TinyURL version of links longer than this many characters. |
     """
     config.define_section('url', UrlSection)
     config.url.configure_setting(
