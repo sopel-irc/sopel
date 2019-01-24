@@ -27,6 +27,11 @@ class BugzillaSection(StaticSection):
 
 
 def configure(config):
+    """
+    | name | example | purpose |
+    | ---- | ------- | ------- |
+    | domains | bugzilla.redhat.com,bugzilla.mozilla.org | A list of Bugzilla issue tracker domains |
+    """
     config.define_section('bugzilla', BugzillaSection)
     config.bugzilla.configure_setting(
         'domains',

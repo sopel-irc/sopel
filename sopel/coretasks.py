@@ -567,9 +567,9 @@ def sasl_success(bot, trigger):
 @sopel.module.thread(False)
 @sopel.module.unblockable
 def blocks(bot, trigger):
-    """Manage Sopel's blocking features.
-
-    https://github.com/sopel-irc/sopel/wiki/Making-Sopel-ignore-people
+    """
+    Manage Sopel's blocking features.\
+    See [ignore system documentation]({% link _usage/ignoring-people.md %}).
 
     """
     if not trigger.admin:

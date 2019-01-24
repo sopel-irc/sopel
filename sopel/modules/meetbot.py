@@ -34,6 +34,12 @@ class MeetbotSection(StaticSection):
 
 
 def configure(config):
+    """
+    | name | example | purpose |
+    | ---- | ------- | ------- |
+    | meeting\_log\_path | /home/sopel/www/meetings | Path to meeting logs storage directory (should be an absolute path, accessible on a webserver) |
+    | meeting\_log\_baseurl | http://example.com/~sopel/meetings | Base URL for the meeting logs directory |
+    """
     config.define_section('meetbot', MeetbotSection)
     config.meetbot.configure_setting(
         'meeting_log_path',
@@ -148,8 +154,8 @@ def ischair(nick, channel):
 @example('.startmeeting title or .startmeeting')
 def startmeeting(bot, trigger):
     """
-    Start a meeting.
-    https://github.com/sopel-irc/sopel/wiki/Using-the-meetbot-module
+    Start a meeting.\
+    See [meetbot module usage]({% link _usage/meetbot-module.md %})
     """
     if ismeetingrunning(trigger.sender):
         bot.say('Can\'t do that, there is already a meeting in progress here!')
@@ -198,8 +204,8 @@ def startmeeting(bot, trigger):
 @example('.subject roll call')
 def meetingsubject(bot, trigger):
     """
-    Change the meeting subject.
-    https://github.com/sopel-irc/sopel/wiki/Using-the-meetbot-module
+    Change the meeting subject.\
+    See [meetbot module usage]({% link _usage/meetbot-module.md %})
     """
     if not ismeetingrunning(trigger.sender):
         bot.say('Can\'t do that, start meeting first')
@@ -223,8 +229,8 @@ def meetingsubject(bot, trigger):
 @example('.endmeeting')
 def endmeeting(bot, trigger):
     """
-    End a meeting.
-    https://github.com/sopel-irc/sopel/wiki/Using-the-meetbot-module
+    End a meeting.\
+    See [meetbot module usage]({% link _usage/meetbot-module.md %})
     """
     if not ismeetingrunning(trigger.sender):
         bot.say('Can\'t do that, start meeting first')
@@ -248,8 +254,8 @@ def endmeeting(bot, trigger):
 @example('.chairs Tyrope Jason elad')
 def chairs(bot, trigger):
     """
-    Set the meeting chairs.
-    https://github.com/sopel-irc/sopel/wiki/Using-the-meetbot-module
+    Set the meeting chairs.\
+    See [meetbot module usage]({% link _usage/meetbot-module.md %})
     """
     if not ismeetingrunning(trigger.sender):
         bot.say('Can\'t do that, start meeting first')
@@ -272,8 +278,8 @@ def chairs(bot, trigger):
 @example('.action elad will develop a meetbot')
 def meetingaction(bot, trigger):
     """
-    Log an action in the meeting log
-    https://github.com/sopel-irc/sopel/wiki/Using-the-meetbot-module
+    Log an action in the meeting log.\
+    See [meetbot module usage]({% link _usage/meetbot-module.md %})
     """
     if not ismeetingrunning(trigger.sender):
         bot.say('Can\'t do that, start meeting first')
@@ -305,8 +311,8 @@ def listactions(bot, trigger):
 @example('.agreed Bowties are cool')
 def meetingagreed(bot, trigger):
     """
-    Log an agreement in the meeting log.
-    https://github.com/sopel-irc/sopel/wiki/Using-the-meetbot-module
+    Log an agreement in the meeting log.\
+    See [meetbot module usage]({% link _usage/meetbot-module.md %})
     """
     if not ismeetingrunning(trigger.sender):
         bot.say('Can\'t do that, start meeting first')
@@ -327,8 +333,8 @@ def meetingagreed(bot, trigger):
 @example('.link http://example.com')
 def meetinglink(bot, trigger):
     """
-    Log a link in the meeing log.
-    https://github.com/sopel-irc/sopel/wiki/Using-the-meetbot-module
+    Log a link in the meeing log.\
+    See [meetbot module usage]({% link _usage/meetbot-module.md %})
     """
     if not ismeetingrunning(trigger.sender):
         bot.say('Can\'t do that, start meeting first')
@@ -356,8 +362,8 @@ def meetinglink(bot, trigger):
 @example('.info all board members present')
 def meetinginfo(bot, trigger):
     """
-    Log an informational item in the meeting log
-    https://github.com/sopel-irc/sopel/wiki/Using-the-meetbot-module
+    Log an informational item in the meeting log.\
+    See [meetbot module usage]({% link _usage/meetbot-module.md %})
     """
     if not ismeetingrunning(trigger.sender):
         bot.say('Can\'t do that, start meeting first')
@@ -393,7 +399,8 @@ def take_comment(bot, trigger):
     in the meeting.
 
     Used in private message only, as `.comment <#channel> <comment to add>`
-    https://github.com/sopel-irc/sopel/wiki/Using-the-meetbot-module
+
+    See [meetbot module usage]({% link _usage/meetbot-module.md %})
     """
     if not trigger.sender.is_nick():
         return
@@ -416,7 +423,8 @@ def take_comment(bot, trigger):
 def show_comments(bot, trigger):
     """
     Show the comments that have been logged for this meeting with .comment.
-    https://github.com/sopel-irc/sopel/wiki/Using-the-meetbot-module
+
+    See [meetbot module usage]({% link _usage/meetbot-module.md %})
     """
     if not ismeetingrunning(trigger.sender):
         return

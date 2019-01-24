@@ -163,10 +163,10 @@ def remind(bot, trigger):
 @example('.at 13:47 Do your homework!')
 def at(bot, trigger):
     """
-    Gives you a reminder at the given time. Takes hh:mm:ssTimezone
-    message. Timezone is any timezone Sopel takes elsewhere; the best choices
-    are those from the tzdb; a list of valid options is available at
-    https://sopel.chat/tz . The seconds and timezone are optional.
+    Gives you a reminder at the given time. Takes `hh:mm:ssTimezone message`.
+    Timezone is any timezone Sopel takes elsewhere; the best choices are those
+    from the tzdb; a list of valid options is available at
+    <https://sopel.chat/tz>. The seconds and timezone are optional.
     """
     if not trigger.group(2):
         bot.say("No arguments given for reminder command.")

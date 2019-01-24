@@ -26,6 +26,12 @@ class AdminSection(StaticSection):
 
 
 def configure(config):
+    """
+    | name | example | purpose |
+    | ---- | ------- | ------- |
+    | hold\_ground | False | Auto-rejoin the channel after being kicked. |
+    | auto\_accept\_invite | True | Auto-join channels when invited. |
+    """
     config.define_section('admin', AdminSection)
     config.admin.configure_setting('hold_ground',
                                    "Automatically re-join after being kicked?")
