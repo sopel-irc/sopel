@@ -10,6 +10,7 @@ from __future__ import unicode_literals, absolute_import, print_function, divisi
 import aspell
 from sopel.module import commands, example, require_admin
 
+
 @commands('add')
 @require_admin('I only trust admins to add words.')
 def add_command(bot, trigger):
@@ -20,6 +21,7 @@ def add_command(bot, trigger):
     c.addtoPersonal(trigger.group(2))
     c.saveAllwords()
     bot.say('Added {0}.'.format(trigger.group(2)))
+
 
 def check_multiple(bot, words):
     mistakes = []
@@ -34,6 +36,7 @@ def check_multiple(bot, words):
     else:
         bot.say('The following word(s) seem to be misspelled: {0}'.format(', '.join(['"{0}"'.format(w) for w in mistakes])))
 
+
 def check_one(bot, word):
     c = aspell.Speller('lang', 'en')
     if c.check(word):
@@ -41,11 +44,12 @@ def check_one(bot, word):
         return
     else:
         suggestions = c.suggest(word)[:5]
-    
+
     if len(suggestions) == 0:
         bot.say("That doesn't seem to be correct.")
     else:
         bot.say("That doesn't seem to be correct. Try {0}.".format(', '.join(['"{0}"'.format(s) for s in suggestions])))
+
 
 @commands('spell')
 @example('.spell stuff')
