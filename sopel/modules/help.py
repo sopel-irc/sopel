@@ -22,8 +22,62 @@ from sopel.config.types import (
 )
 
 
+# Pastebin handlers
+
+
+def post_to_clbin(bot, msg):
+    result = requests.post('https://clbin.com/', data={'clbin': msg})
+    result = result.text
+
+    if 'https://clbin.com/' in result:
+        return result
+    else:
+        LOGGER.error("Invalid result %s", result)
+        raise PostingException()
+
+
+def post_to_0x0(bot, msg):
+    payload = {'file': msg}
+    result = requests.post('https://0x0.st', files=payload)
+    return result.text
+
+
+def post_to_hastebin(bot, msg):
+    result = requests.post('https://hastebin.com/documents', data=msg)
+    result = result.json()
+    if 'key' not in result:
+        LOGGER.error("Invalid result %s", result)
+        raise PostingException()
+    return "https://hastebin.com/" + result['key']
+
+
+def post_to_termbin(bot, msg):
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s.connect(('termbin.com', 9999))
+    s.sendall(msg)
+    s.shutdown(socket.SHUT_WR)
+    response = ""
+    while 1:
+        data = s.recv(1024)
+        if data == "":
+            break
+        response += data
+    s.close()
+    return response.strip(u'\x00\n')
+
+
+_pastebin_providers = {
+    'clbin': post_to_clbin,
+    '0x0': post_to_0x0,
+    'hastebin': post_to_hastebin,
+    'termbin': post_to_termbin
+}
+
+
 class HelpSection(StaticSection):
-    output = ChoiceAttribute('output', ["clbin", "0x0", "hastebin", "termbin"], default='clbin')
+    output = ChoiceAttribute('output',
+                             list(_pastebin_providers),
+                             default='clbin')
 
 
 def configure(config):
@@ -100,53 +154,12 @@ def create_list(bot, msg):
     msg = 'Command listing for {}@{}\n\n'.format(bot.nick, bot.config.core.host) + msg
 
     try:
-        result = globals()['post_to_' + bot.config.help.output](bot, msg)
+        result = _pastebin_providers[bot.config.help.output](bot, msg)
     except (requests.RequestException, PostingException):
         bot.say("Sorry! Something went wrong.")
         LOGGER.exception("Error posting commands")
         return
     return result
-
-
-def post_to_clbin(bot, msg):
-    result = requests.post('https://clbin.com/', data={'clbin': msg})
-    result = result.text
-
-    if 'https://clbin.com/' in result:
-        return result
-    else:
-        LOGGER.error("Invalid result %s", result)
-        raise PostingException()
-
-
-def post_to_0x0(bot, msg):
-    payload = {'file': msg}
-    result = requests.post('https://0x0.st', files=payload)
-    return result.text
-
-
-def post_to_hastebin(bot, msg):
-    result = requests.post('https://hastebin.com/documents', data=msg)
-    result = result.json()
-    if 'key' not in result:
-        LOGGER.error("Invalid result %s", result)
-        raise PostingException()
-    return "https://hastebin.com/" + result['key']
-
-
-def post_to_termbin(bot, msg):
-    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s.connect(('termbin.com', 9999))
-    s.sendall(msg)
-    s.shutdown(socket.SHUT_WR)
-    response = ""
-    while 1:
-        data = s.recv(1024)
-        if data == "":
-            break
-        response += data
-    s.close()
-    return response.strip(u'\x00\n')
 
 
 class PostingException(Exception):
