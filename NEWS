@@ -1,3 +1,11 @@
+Changes between 6.6.0 and 6.6.1
+===============================
+Module changes:
+* spellcheck's pyenchant dependency is no longer required for py3.7+
+  * This should alleviate a lot of installation problems due to pyenchant being
+    unmaintained. If use of the spellcheck module is desired, the necessary
+    libraries may be installed manually.
+
 Changes between 6.5.3 and 6.6.0
 ===============================
 Sopel 6.6.0 has been a long time coming, but it contains a metric ton of fixes
