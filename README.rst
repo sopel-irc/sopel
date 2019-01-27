@@ -51,19 +51,19 @@ written by other users can be found using your favorite search engine.
 
 Some older, unmaintained modules are available in the
 `sopel-extras <https://github.com/sopel-irc/sopel-extras>`_ repository, but of
-course you can also write your own. A `tutorial <https://github.com/sopel-irc/sopel/wiki/Sopel-tutorial,-Part-2>`_
-for creating new modules is available on the wiki.
-API documentation can be found online at https://sopel.chat/docs, or
-you can create a local version by running ``make html`` in the ``doc``
+course you can also write your own. A `tutorial <https://sopel.chat/tutorials/part-2-writing-modules/>`_
+for creating new modules is available on Sopel's website.
+API documentation can be found online at https://sopel.chat/docs/, or
+you can create a local version by running ``make html`` in the ``docs``
 directory.
 
 Further documentation
 ---------------------
 
-In addition to the `official website <https://sopel.chat>`_, there is also a
-`wiki <http://github.com/sopel-irc/sopel/wiki>`_ which includes valuable
-information including a full listing of
-`commands <https://github.com/sopel-irc/sopel/wiki/Commands>`_.
+The `official website <https://sopel.chat/>`_ includes such valuable information
+as a full listing of built-in `commands <https://sopel.chat/usage/commands/>`_,
+`tutorials <https://sopel.chat/tutorials/>`_, `API documentation <https://sopel.chat/docs/>`_,
+and other `usage information <https://sopel.chat/usage/>`_.
 
 Questions?
 ----------

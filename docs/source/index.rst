@@ -11,7 +11,7 @@ Quick links
 
 * `Latest releases <https://github.com/sopel-irc/sopel/releases>`_
 * `Source code <https://github.com/sopel-irc/sopel>`_
-* `Wiki <https://github.com/sopel-irc/sopel/wiki>`_
+* `Tutorials <https://sopel.chat/tutorials/>`_
 
 ..
     Eventually, add install instructions and Hello world here, and move the
