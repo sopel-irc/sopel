@@ -212,13 +212,34 @@ class ListAttribute(BaseValidated):
     currently support commas within items in the list. By default, the spaces
     before and after each item are stripped; you can override this by passing
     ``strip=False``."""
+
+    ESCAPE_CHARACTER = '\\'
+    DELIMITER = ','
+
     def __init__(self, name, strip=True, default=None):
         default = default or []
         super(ListAttribute, self).__init__(name, default=default)
         self.strip = strip
 
     def parse(self, value):
-        value = list(filter(None, value.split(',')))
+        items = []
+        is_escape_on = False
+        current_token = []
+        for char in value:
+            if not is_escape_on:
+                if char == ListAttribute.ESCAPE_CHARACTER:
+                    is_escape_on = True
+                elif char == ListAttribute.DELIMITER:
+                    items.append(''.join(current_token))
+                    current_token = []
+                else:
+                    current_token.append(char)
+            else:
+                current_token.append(char)
+                is_escape_on = False
+        items.append(''.join(current_token))
+
+        value = list(filter(None, items))
         if self.strip:
             return [v.strip() for v in value]
         else:
@@ -227,7 +248,16 @@ class ListAttribute(BaseValidated):
     def serialize(self, value):
         if not isinstance(value, (list, set)):
             raise ValueError('ListAttribute value must be a list.')
-        return ','.join(value)
+
+        items = []
+        for item in value:
+            current_token = []
+            for char in item:
+                if char in [ListAttribute.ESCAPE_CHARACTER, ListAttribute.DELIMITER]:
+                    current_token.append(ListAttribute.ESCAPE_CHARACTER)
+                current_token.append(char)
+            items.append(''.join(current_token))
+        return ','.join(items)
 
     def configure(self, prompt, default, parent, section_name):
         each_prompt = '?'
