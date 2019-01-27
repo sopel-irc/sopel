@@ -23,6 +23,7 @@ from sopel.config.types import (
 
 # Pastebin handlers
 
+
 def post_to_ptpb(bot, msg):
     payload = {"content": msg}
     headers = {'Content-type': 'application/json', 'Accept': 'application/json'}
