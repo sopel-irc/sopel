@@ -83,6 +83,11 @@ class HelpSection(StaticSection):
 
 def configure(config):
     config.define_section('help', HelpSection)
+    provider_list = ', '.join(_pastebin_providers)
+    config.help.configure_setting(
+        'output',
+        'Pick a pastebin provider: {}: '.format(provider_list)
+    )
 
 
 logger = get_logger(__name__)
