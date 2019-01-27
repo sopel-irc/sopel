@@ -44,8 +44,8 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'Sopel IRC Bot'
-copyright = u'2012-2018, Elsie Powell, et al.'
+project = u'Sopel'
+copyright = u'2012-2019, Sopel contributors'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -100,7 +100,16 @@ html_theme = 'alabaster'
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
 # documentation.
-#html_theme_options = {}
+html_theme_options = {
+    'logo': 'sopel.png',
+    'logo_name': True,
+    'logo_text_align': 'center',
+    'description': 'A Python IRC bot framework.',
+    'donate_url': 'https://opencollective.com/sopel',
+    'extra_nav_links': {
+        'Back to main site': 'https://sopel.chat/',
+    }
+}
 
 # Add any paths that contain custom themes here, relative to this directory.
 #html_theme_path = []
@@ -119,7 +128,7 @@ html_theme = 'alabaster'
 # The name of an image file (within the static path) to use as favicon of the
 # docs.  This file should be a Windows icon file (.ico) being 16x16 or 32x32
 # pixels large.
-#html_favicon = None
+html_favicon = '_static/favicon.ico'
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
@@ -151,7 +160,7 @@ html_static_path = ['_static']
 #html_split_index = False
 
 # If true, links to the reST sources are added to the pages.
-#html_show_sourcelink = True
+html_show_sourcelink = False
 
 # If true, "Created using Sphinx" is shown in the HTML footer. Default is True.
 #html_show_sphinx = True
@@ -188,7 +197,7 @@ latex_elements = {
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
   ('index', 'sopel.tex', u'Sopel IRC Bot Documentation',
-   u'Elsie Powell, et al.', 'manual'),
+   u'Sopel contributors', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -218,7 +227,7 @@ latex_documents = [
 # (source start file, name, description, authors, manual section).
 man_pages = [
     ('index', 'sopel', u'Sopel IRC Bot Documentation',
-     [u'Elsie Powell, et al.'], 1)
+     [u'Sopel contributors'], 1)
 ]
 
 # If true, show URL addresses after external links.
@@ -232,7 +241,7 @@ man_pages = [
 #  dir menu entry, description, category)
 texinfo_documents = [
   ('index', 'sopel', u'Sopel IRC Bot Documentation',
-   u'Elsie Powell, et al.', 'SopelIRCBot', 'Simple, extendible IRC bot.',
+   u'Sopel contributors', 'SopelIRCBot', 'Simple, extendible IRC bot.',
    'Miscellaneous'),
 ]
 
