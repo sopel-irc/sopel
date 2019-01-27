@@ -130,7 +130,11 @@ def help(bot, trigger):
         # actually creating the list first. Maybe worth storing the link and a
         # heuristic in the DB, too, so it persists across restarts. Would need a
         # command to regenerate, too...
-        if 'command-list' in bot.memory and bot.memory['command-list'][0] == len(bot.command_groups):
+        if (
+                'command-list' in bot.memory and
+                bot.memory['command-list'][0] == len(bot.command_groups) and
+                bot.memory['command-list'][2] == bot.config.help.output
+        ):
             url = bot.memory['command-list'][1]
         else:
             bot.say("Hang on, I'm creating a list.")
@@ -149,7 +153,9 @@ def help(bot, trigger):
             url = create_list(bot, '\n\n'.join(msgs))
             if not url:
                 return
-            bot.memory['command-list'] = (len(bot.command_groups), url)
+            bot.memory['command-list'] = (len(bot.command_groups),
+                                          url,
+                                          bot.config.help.output)
         bot.say("I've posted a list of my commands at {0} - You can see "
                 "more info about any of these commands by doing {1}help "
                 "<command> (e.g. {1}help time)".format(url, help_prefix))
