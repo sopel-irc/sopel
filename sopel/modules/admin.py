@@ -23,6 +23,7 @@ class AdminSection(StaticSection):
     """Auto re-join on kick"""
     auto_accept_invite = ValidatedAttribute('auto_accept_invite', bool,
                                             default=True)
+    """Auto-join channels when invited"""
 
 
 def configure(config):

@@ -33,7 +33,7 @@ LOGGER = get_logger(__name__)
 
 class GeoipSection(StaticSection):
     GeoIP_db_path = FilenameAttribute('GeoIP_db_path', directory=True)
-    """Path of the directory containing the GeoIP db files."""
+    """Path of the directory containing the GeoIP database files."""
 
 
 def configure(config):
