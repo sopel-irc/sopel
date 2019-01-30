@@ -32,6 +32,14 @@ def build_parser():
         description='Initialize sopel configuration file')
     add_config_option(init_parser)
 
+    get_parser = subparsers.add_parser(
+        'get',
+        help='Get a configuration option\'s value',
+        description='Get a configuration option\'s value',
+    )
+    get_parser.add_argument('section')
+    get_parser.add_argument('key')
+
     return parser
 
 
@@ -76,6 +84,24 @@ def handle_init(options):
     config._wizard('all', config_name)
 
 
+def handle_get(options, settings):
+    """Read the settings to display the value of <section> <key>"""
+    section = options.section
+    option = options.option
+
+    # Making sure the section.option exists
+    if not settings.parser.has_section(section):
+        tools.stderr('Section %s does not exist' % section)
+        return 1
+    if not settings.parser.has_option(section, option):
+        tools.stderr(
+            'Section %s does not have a %s option' % (section, option))
+        return 1
+
+    # Display the value
+    print(settings.get(section, option))
+
+
 def main():
     """Console entry point for ``sopel-config``"""
     parser = build_parser()
@@ -91,5 +117,8 @@ def main():
     except Exception as error:
         tools.stderr(error)
         return 2
+
+    if options.action == 'get':
+        return handle_get(options, settings)
 
     print('Configuration file at: %s' % settings.filename)
