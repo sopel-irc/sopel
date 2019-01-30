@@ -68,6 +68,7 @@ def tmpconfig(tmpdir):
     conf_file.write("\n".join([
         "[core]",
         "owner=testnick",
+        "nick = TestBot",
         ""
     ]))
     return config.Config(conf_file.strpath)
@@ -228,7 +229,7 @@ def test_clean_callable_rule_string(tmpconfig, func):
 
 
 def test_clean_callable_rule_nick(tmpconfig, func):
-    """Assert ``$nick`` in a rule will match ``Sopel: `` or ``Sopel, ``."""
+    """Assert ``$nick`` in a rule will match ``TestBot: `` or ``TestBot, ``."""
     setattr(func, 'rule', [r'$nickhello'])
     loader.clean_callable(func, tmpconfig)
 
@@ -237,13 +238,13 @@ def test_clean_callable_rule_nick(tmpconfig, func):
 
     # Test the regex is compiled properly
     regex = func.rule[0]
-    assert regex.match('Sopel: hello')
-    assert regex.match('Sopel, hello')
-    assert not regex.match('Sopel not hello')
+    assert regex.match('TestBot: hello')
+    assert regex.match('TestBot, hello')
+    assert not regex.match('TestBot not hello')
 
 
 def test_clean_callable_rule_nickname(tmpconfig, func):
-    """Assert ``$nick`` in a rule will match ``Sopel``."""
+    """Assert ``$nick`` in a rule will match ``TestBot``."""
     setattr(func, 'rule', [r'$nickname\s+hello'])
     loader.clean_callable(func, tmpconfig)
 
@@ -252,8 +253,8 @@ def test_clean_callable_rule_nickname(tmpconfig, func):
 
     # Test the regex is compiled properly
     regex = func.rule[0]
-    assert regex.match('Sopel hello')
-    assert not regex.match('Sopel not hello')
+    assert regex.match('TestBot hello')
+    assert not regex.match('TestBot not hello')
 
 
 def test_clean_callable_nickname_command(tmpconfig, func):
@@ -267,10 +268,10 @@ def test_clean_callable_nickname_command(tmpconfig, func):
     assert len(func.rule) == 1
 
     regex = func.rule[0]
-    assert regex.match('Sopel hello!')
-    assert regex.match('Sopel, hello!')
-    assert regex.match('Sopel: hello!')
-    assert not regex.match('Sopel not hello')
+    assert regex.match('TestBot hello!')
+    assert regex.match('TestBot, hello!')
+    assert regex.match('TestBot: hello!')
+    assert not regex.match('TestBot not hello')
 
 
 def test_clean_callable_events(tmpconfig, func):
@@ -410,7 +411,7 @@ def test_clean_callable_example_nickname(tmpconfig, func):
     docs = func._docs['test']
     assert len(docs) == 2
     assert docs[0] == inspect.cleandoc(func.__doc__).splitlines()
-    assert docs[1] == 'Sopel: hello'
+    assert docs[1] == 'TestBot: hello'
 
 
 def test_clean_callable_intents(tmpconfig, func):
