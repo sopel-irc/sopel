@@ -34,6 +34,16 @@ from sopel.config import (
 )
 
 
+ERR_CODE = 1
+"""Error code: program exited with an error"""
+ERR_CODE_NO_RESTART = 2
+"""Error code: program exited with an error and should not be restarted
+
+This error code is used to prevent systemd from restarting the bot when it
+encounter such error case.
+"""
+
+
 def enumerate_configs(config_dir, extension='.cfg'):
     """List configuration file from ``config_dir`` with ``extension``
 
@@ -252,7 +262,7 @@ def main(argv=None):
             check_not_root()
         except RuntimeError as err:
             stderr('%s' % err)
-            return 1
+            return ERR_CODE
 
         # Step Three: Handle "No config needed" options
         if opts.version:
@@ -276,12 +286,11 @@ def main(argv=None):
             config_module = get_configuration(opts)
         except ConfigurationError as e:
             stderr(e)
-            return 2
+            return ERR_CODE_NO_RESTART
 
         if config_module.core.not_configured:
             stderr('Bot is not configured, can\'t start')
-            # exit with code 2 to prevent auto restart on fail by systemd
-            return 2
+            return ERR_CODE_NO_RESTART
 
         # Step Five: Manage logfile, stdout and stderr
         logfile = os.path.os.path.join(config_module.core.logdir, 'stdio.log')
@@ -297,7 +306,7 @@ def main(argv=None):
             if not opts.quit and not opts.kill:
                 stderr('There\'s already a Sopel instance running with this config file')
                 stderr('Try using the --quit or the --kill options')
-                return 1
+                return ERR_CODE
             elif opts.kill:
                 stderr('Killing the Sopel')
                 os.kill(old_pid, signal.SIGKILL)
@@ -311,7 +320,7 @@ def main(argv=None):
                 return
         elif opts.kill or opts.quit:
             stderr('Sopel is not running!')
-            return 1
+            return ERR_CODE
 
         if opts.daemonize:
             child_pid = os.fork()
@@ -324,7 +333,7 @@ def main(argv=None):
         run(config_module, pid_file_path)
     except KeyboardInterrupt:
         print("\n\nInterrupted")
-        return 1
+        return ERR_CODE
 
 
 if __name__ == '__main__':
