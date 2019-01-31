@@ -117,7 +117,7 @@ def find_config(config_dir, name, extension='.cfg'):
 def build_parser():
     """Build an ``argparse.ArgumentParser`` for the bot"""
     parser = argparse.ArgumentParser(description='Sopel IRC Bot',
-                                        usage='%(prog)s [options]')
+                                     usage='%(prog)s [options]')
     parser.add_argument('-c', '--config', metavar='filename',
                         help='use a specific configuration file')
     parser.add_argument("-d", '--fork', action="store_true",
@@ -126,6 +126,8 @@ def build_parser():
                         help="Gracefully quit Sopel")
     parser.add_argument("-k", '--kill', action="store_true", dest="kill",
                         help="Kill Sopel")
+    parser.add_argument("-r", '--restart', action="store_true", dest="restart",
+                        help="Restart Sopel")
     parser.add_argument("-l", '--list', action="store_true",
                         dest="list_configs",
                         help="List all config files found")
@@ -303,9 +305,9 @@ def main(argv=None):
         old_pid = get_running_pid(pid_file_path)
 
         if old_pid is not None and tools.check_pid(old_pid):
-            if not opts.quit and not opts.kill:
+            if not opts.quit and not opts.kill and not opts.restart:
                 stderr('There\'s already a Sopel instance running with this config file')
-                stderr('Try using the --quit or the --kill options')
+                stderr('Try using either the --quit, --restart, or --kill option')
                 return ERR_CODE
             elif opts.kill:
                 stderr('Killing the Sopel')
@@ -316,9 +318,20 @@ def main(argv=None):
                 if hasattr(signal, 'SIGUSR1'):
                     os.kill(old_pid, signal.SIGUSR1)
                 else:
+                    # Windows will not generate SIGTERM itself
+                    # https://docs.microsoft.com/en-us/cpp/c-runtime-library/reference/signal
                     os.kill(old_pid, signal.SIGTERM)
                 return
-        elif opts.kill or opts.quit:
+            elif opts.restart:
+                stderr('Asking Sopel to restart')
+                if hasattr(signal, 'SIGUSR2'):
+                    os.kill(old_pid, signal.SIGUSR2)
+                else:
+                    # Windows will not generate SIGILL itself
+                    # https://docs.microsoft.com/en-us/cpp/c-runtime-library/reference/signal
+                    os.kill(old_pid, signal.SIGILL)
+                return
+        elif opts.kill or opts.quit or opts.restart:
             stderr('Sopel is not running!')
             return ERR_CODE
 
@@ -330,7 +343,13 @@ def main(argv=None):
             pid_file.write(str(os.getpid()))
 
         # Step Seven: Initialize and run Sopel
-        run(config_module, pid_file_path)
+        ret = run(config_module, pid_file_path)
+        os.unlink(pid_file_path)
+        if ret == -1:
+            os.execv(sys.executable, ['python'] + sys.argv)
+        else:
+            return ret
+
     except KeyboardInterrupt:
         print("\n\nInterrupted")
         return ERR_CODE
