@@ -138,13 +138,24 @@ class Bot(asynchat.async_chat):
             # CR-LF (Carriage Return - Line Feed) pair, and these messages SHALL
             # NOT exceed 512 characters in length, counting all characters
             # including the trailing CR-LF. Thus, there are 510 characters
-            # maximum allowed for the command and its parameters.  There is no
+            # maximum allowed for the command and its parameters. There is no
             # provision for continuation of message lines.
 
+            max_length = unicode_max_length = 510
             if text is not None:
-                temp = (' '.join(args) + ' :' + text)[:510] + '\r\n'
+                temp = (' '.join(args) + ' :' + text)
             else:
-                temp = ' '.join(args)[:510] + '\r\n'
+                temp = ' '.join(args)
+
+            # The max length of 512 is in bytes, not unicode
+            while len(temp.encode('utf-8')) > max_length:
+                temp = temp[:unicode_max_length]
+                unicode_max_length = unicode_max_length - 1
+
+            # Ends the message with CR-LF
+            temp = temp + '\r\n'
+
+            # Log and output the message
             self.log_raw(temp, '>>')
             self.send(temp.encode('utf-8'))
         finally:

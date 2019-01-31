@@ -152,6 +152,40 @@ def get_nickname_command_pattern(command):
         """.format(command=command)
 
 
+def get_sendable_message(text, max_length=400):
+    """Get a sendable ``text`` message, with its excess when needed.
+
+    :param str txt: unicode string of text to send
+    :param int max_length: maximum length of the message to be sendable
+    :return: a tuple of two values, the sendable text and its excess text
+
+    We're arbitrarily saying that the max is 400 bytes of text when
+    messages will be split. Otherwise, we'd have to account for the bot's
+    hostmask, which is hard.
+
+    The `max_length` is the max length of text in **bytes**, but we take
+    care of unicode 2-bytes characters, by working on the unicode string,
+    then making sure the bytes version is smaller than the max length.
+    """
+    unicode_max_length = max_length
+    excess = ''
+
+    while len(text.encode('utf-8')) > max_length:
+        last_space = text.rfind(' ', 0, unicode_max_length)
+        if last_space == -1:
+            # No last space, just split where it is possible
+            excess = text[unicode_max_length:] + excess
+            text = text[:unicode_max_length]
+            # Decrease max length for the unicode string
+            unicode_max_length = unicode_max_length - 1
+        else:
+            # Split at the last best space found
+            excess = text[last_space:]
+            text = text[:last_space]
+
+    return text, excess.lstrip()
+
+
 def deprecated(old):
     def new(*args, **kwargs):
         print('Function %s is deprecated.' % old.__name__, file=sys.stderr)
