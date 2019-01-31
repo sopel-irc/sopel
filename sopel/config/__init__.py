@@ -34,6 +34,9 @@ import sopel.config.core_section
 from sopel.config.types import StaticSection
 
 
+DEFAULT_HOMEDIR = os.path.join(os.path.expanduser('~'), '.sopel')
+
+
 class ConfigurationError(Exception):
     """ Exception type for configuration errors """
 
@@ -259,5 +262,6 @@ def _create_config(configpath):
         print("Encountered an error while writing the config file." +
               " This shouldn't happen. Check permissions.")
         raise
-        sys.exit(1)
+
     print("Config file written successfully!")
+    return config.filename

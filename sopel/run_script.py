@@ -24,184 +24,317 @@ import os
 import argparse
 import signal
 
-from sopel.__init__ import run, __version__
-from sopel.config import Config, _create_config, ConfigurationError, _wizard
-import sopel.tools as tools
-
-homedir = os.path.join(os.path.expanduser('~'), '.sopel')
-
-
-def enumerate_configs(extension='.cfg'):
-    configfiles = []
-    if os.path.isdir(homedir):
-        sopel_dotdirfiles = os.listdir(homedir)  # Preferred
-        for item in sopel_dotdirfiles:
-            if item.endswith(extension):
-                configfiles.append(item)
-
-    return configfiles
+from sopel import run, tools, __version__
+from sopel.config import (
+    Config,
+    _create_config,
+    ConfigurationError,
+    DEFAULT_HOMEDIR,
+    _wizard
+)
 
 
-def find_config(name, extension='.cfg'):
+ERR_CODE = 1
+"""Error code: program exited with an error"""
+ERR_CODE_NO_RESTART = 2
+"""Error code: program exited with an error and should not be restarted
+
+This error code is used to prevent systemd from restarting the bot when it
+encounter such error case.
+"""
+
+
+def enumerate_configs(config_dir, extension='.cfg'):
+    """List configuration file from ``config_dir`` with ``extension``
+
+    :param str config_dir: path to the configuration directory
+    :param str extension: configuration file's extension (default to ``.cfg``)
+    :return: a list of configuration filename found in ``config_dir`` with
+             the correct ``extension``
+    :rtype: list
+
+    Example::
+
+        >>> from sopel import run_script, config
+        >>> os.listdir(config.DEFAULT_HOMEDIR)
+        ['config.cfg', 'extra.ini', 'module.cfg', 'README']
+        >>> run_script.enumerate_configs(config.DEFAULT_HOMEDIR)
+        ['config.cfg', 'module.cfg']
+        >>> run_script.enumerate_configs(config.DEFAULT_HOMEDIR, '.ini')
+        ['extra.ini']
+
+    """
+    if not os.path.isdir(config_dir):
+        return
+
+    for item in os.listdir(config_dir):
+        if item.endswith(extension):
+            yield item
+
+
+def find_config(config_dir, name, extension='.cfg'):
+    """Build the absolute path for the given configuration file ``name``
+
+    :param str config_dir: path to the configuration directory
+    :param str name: configuration file ``name``
+    :param str extension: configuration file's extension (default to ``.cfg``)
+    :return: the path of the configuration file, either in the current
+             directory or from the ``config_dir`` directory
+
+    This function tries different locations:
+
+    * the current directory
+    * the ``config_dir`` directory with the ``extension`` suffix
+    * the ``config_dir`` directory without a suffix
+
+    Example::
+
+        >>> from sopel import run_script
+        >>> os.listdir()
+        ['local.cfg', 'extra.ini']
+        >>> os.listdir(config.DEFAULT_HOMEDIR)
+        ['config.cfg', 'extra.ini', 'module.cfg', 'README']
+        >>> run_script.find_config(config.DEFAULT_HOMEDIR, 'local.cfg')
+        'local.cfg'
+        >>> run_script.find_config(config.DEFAULT_HOMEDIR, 'local')
+        '/home/username/.sopel/local'
+        >>> run_script.find_config(config.DEFAULT_HOMEDIR, 'config')
+        '/home/username/.sopel/config.cfg'
+        >>> run_script.find_config(config.DEFAULT_HOMEDIR, 'extra', '.ini')
+        '/home/username/.sopel/extra.ini'
+
+    """
     if os.path.isfile(name):
         return name
-    configs = enumerate_configs(extension)
-    if name in configs or name + extension in configs:
-        if name + extension in configs:
-            name = name + extension
+    name_ext = name + extension
+    for config in enumerate_configs(config_dir, extension):
+        if name_ext == config:
+            return os.path.join(config_dir, name_ext)
 
-    return os.path.join(homedir, name)
+    return os.path.join(config_dir, name)
+
+
+def build_parser():
+    """Build an ``argparse.ArgumentParser`` for the bot"""
+    parser = argparse.ArgumentParser(description='Sopel IRC Bot',
+                                        usage='%(prog)s [options]')
+    parser.add_argument('-c', '--config', metavar='filename',
+                        help='use a specific configuration file')
+    parser.add_argument("-d", '--fork', action="store_true",
+                        dest="daemonize", help="Daemonize Sopel")
+    parser.add_argument("-q", '--quit', action="store_true", dest="quit",
+                        help="Gracefully quit Sopel")
+    parser.add_argument("-k", '--kill', action="store_true", dest="kill",
+                        help="Kill Sopel")
+    parser.add_argument("-l", '--list', action="store_true",
+                        dest="list_configs",
+                        help="List all config files found")
+    parser.add_argument("-m", '--migrate', action="store_true",
+                        dest="migrate_configs",
+                        help="Migrate config files to the new format")
+    parser.add_argument('--quiet', action="store_true", dest="quiet",
+                        help="Suppress all output")
+    parser.add_argument('-w', '--configure-all', action='store_true',
+                        dest='wizard', help='Run the configuration wizard.')
+    parser.add_argument('--configure-modules', action='store_true',
+                        dest='mod_wizard', help=(
+                            'Run the configuration wizard, but only for the '
+                            'module configuration options.'))
+    parser.add_argument('-v', '--version', action="store_true",
+                        dest="version", help="Show version number and exit")
+    return parser
+
+
+def check_not_root():
+    """Check if root is running the bot.
+
+    It raises a ``RuntimeError`` if the user has root privileges on Linux or
+    if it is the ``Administrator`` account on Windows.
+    """
+    try:
+        # Linux/Mac
+        if os.getuid() == 0 or os.geteuid() == 0:
+            raise RuntimeError('Error: Do not run Sopel with root privileges.')
+    except AttributeError:
+        # Windows
+        if os.environ.get("USERNAME") == "Administrator":
+            raise RuntimeError('Error: Do not run Sopel as Administrator.')
+
+
+def print_version():
+    """Print Python version and Sopel version on stdout."""
+    py_ver = '%s.%s.%s' % (sys.version_info.major,
+                           sys.version_info.minor,
+                           sys.version_info.micro)
+    print('Sopel %s (running on python %s)' % (__version__, py_ver))
+    print('https://sopel.chat/')
+
+
+def print_config():
+    """Print list of available configurations from default homedir."""
+    configs = enumerate_configs(DEFAULT_HOMEDIR)
+    print('Config files in %s:' % DEFAULT_HOMEDIR)
+    config = None
+    for config in configs:
+        print('\t%s' % config)
+    if not config:
+        print('\tNone found')
+
+    print('-------------------------')
+
+
+def get_configuration(options):
+    """Get an instance of configuration from options.
+
+    This may raise a ``sopel.config.ConfigurationError`` if the file is an
+    invalid configuration file.
+    """
+    config_name = options.config or 'default'
+    config_path = find_config(DEFAULT_HOMEDIR, config_name)
+
+    if not os.path.isfile(config_path):
+        print(
+            "Welcome to Sopel!\n"
+            "I can't seem to find the configuration file, "
+            "so let's generate it!\n")
+
+        if not config_path.endswith('.cfg'):
+            config_path = config_path + '.cfg'
+
+        config_path = _create_config(config_path)
+
+    bot_config = Config(config_path)
+    bot_config._is_daemonized = options.daemonize
+
+    return bot_config
+
+
+def get_pid_filename(options, pid_dir):
+    """Get the pid file name in ``pid_dir`` from the given ``options``.
+
+    :param options: command line options
+    :param str pid_dir: path to the pid directory
+    :return: absolute filename of the pid file
+
+    By default, it's ``sopel.pid``, but if a configuration filename is given
+    in the ``options``, its basename is used to generate the filename, as:
+    ``sopel-{basename}.pid`` instead.
+    """
+    name = 'sopel.pid'
+    if options.config:
+        basename = os.path.basename(options.config)
+        if basename.endswith('.cfg'):
+            basename = basename[:-4]
+        name = 'sopel-%s.pid' % basename
+
+    return os.path.abspath(os.path.join(pid_dir, name))
+
+
+def get_running_pid(filename):
+    """Retrieve the PID number from the given ``filename``.
+
+    :param str filename: path to file to read the PID from
+    :return: the PID number of a Sopel instance if running, ``None`` otherwise
+    :rtype: integer
+
+    This function tries to retrieve a PID number from the given ``filename``,
+    as an integer, and returns ``None`` if the file is not found or if the
+    content is not an integer.
+    """
+    if not os.path.isfile(filename):
+        return
+
+    with open(filename, 'r') as pid_file:
+        try:
+            return int(pid_file.read())
+        except ValueError:
+            pass
 
 
 def main(argv=None):
-    global homedir
-    # Step One: Parse The Command Line
     try:
-        parser = argparse.ArgumentParser(description='Sopel IRC Bot',
-                                         usage='%(prog)s [options]')
-        parser.add_argument('-c', '--config', metavar='filename',
-                            help='use a specific configuration file')
-        parser.add_argument("-d", '--fork', action="store_true",
-                            dest="daemonize", help="Daemonize sopel")
-        parser.add_argument("-q", '--quit', action="store_true", dest="quit",
-                            help="Gracefully quit Sopel")
-        parser.add_argument("-k", '--kill', action="store_true", dest="kill",
-                            help="Kill Sopel")
-        parser.add_argument("-l", '--list', action="store_true",
-                            dest="list_configs",
-                            help="List all config files found")
-        parser.add_argument("-m", '--migrate', action="store_true",
-                            dest="migrate_configs",
-                            help="Migrate config files to the new format")
-        parser.add_argument('--quiet', action="store_true", dest="quiet",
-                            help="Suppress all output")
-        parser.add_argument('-w', '--configure-all', action='store_true',
-                            dest='wizard', help='Run the configuration wizard.')
-        parser.add_argument('--configure-modules', action='store_true',
-                            dest='mod_wizard', help=(
-                                'Run the configuration wizard, but only for the '
-                                'module configuration options.'))
-        parser.add_argument('-v', '--version', action="store_true",
-                            dest="version", help="Show version number and exit")
-        if argv:
-            opts = parser.parse_args(argv)
-        else:
-            opts = parser.parse_args()
+        # Step One: Parse The Command Line
+        parser = build_parser()
+        opts = parser.parse_args(argv or None)
 
-        # Step Two: "Do not run as root" checks.
+        # Step Two: "Do not run as root" checks
         try:
-            # Linux/Mac
-            if os.getuid() == 0 or os.geteuid() == 0:
-                stderr('Error: Do not run Sopel with root privileges.')
-                sys.exit(1)
-        except AttributeError:
-            # Windows
-            if os.environ.get("USERNAME") == "Administrator":
-                stderr('Error: Do not run Sopel as Administrator.')
-                sys.exit(1)
+            check_not_root()
+        except RuntimeError as err:
+            stderr('%s' % err)
+            return ERR_CODE
 
+        # Step Three: Handle "No config needed" options
         if opts.version:
-            py_ver = '%s.%s.%s' % (sys.version_info.major,
-                                   sys.version_info.minor,
-                                   sys.version_info.micro)
-            print('Sopel %s (running on python %s)' % (__version__, py_ver))
-            print('https://sopel.chat/')
+            print_version()
             return
-        elif opts.wizard:
+
+        if opts.wizard:
             _wizard('all', opts.config)
             return
-        elif opts.mod_wizard:
+
+        if opts.mod_wizard:
             _wizard('mod', opts.config)
             return
 
         if opts.list_configs:
-            configs = enumerate_configs()
-            print('Config files in ~/.sopel:')
-            if len(configs) is 0:
-                print('\tNone found')
-            else:
-                for config in configs:
-                    print('\t%s' % config)
-            print('-------------------------')
+            print_config()
             return
 
-        config_name = opts.config or 'default'
-
-        configpath = find_config(config_name)
-        if not os.path.isfile(configpath):
-            print("Welcome to Sopel!\nI can't seem to find the configuration file, so let's generate it!\n")
-            if not configpath.endswith('.cfg'):
-                configpath = configpath + '.cfg'
-            _create_config(configpath)
-            configpath = find_config(config_name)
+        # Step Four: Get the configuration file and prepare to run
         try:
-            config_module = Config(configpath)
+            config_module = get_configuration(opts)
         except ConfigurationError as e:
             stderr(e)
-            sys.exit(2)
+            return ERR_CODE_NO_RESTART
 
         if config_module.core.not_configured:
             stderr('Bot is not configured, can\'t start')
-            # exit with code 2 to prevent auto restart on fail by systemd
-            sys.exit(2)
+            return ERR_CODE_NO_RESTART
 
+        # Step Five: Manage logfile, stdout and stderr
         logfile = os.path.os.path.join(config_module.core.logdir, 'stdio.log')
-
-        config_module._is_daemonized = opts.daemonize
-
         sys.stderr = tools.OutputRedirect(logfile, True, opts.quiet)
         sys.stdout = tools.OutputRedirect(logfile, False, opts.quiet)
 
-        # Handle --quit, --kill and saving the PID to file
+        # Step Six: Handle process-lifecycle options and manage the PID file
         pid_dir = config_module.core.pid_dir
-        if opts.config is None:
-            pid_file_path = os.path.join(pid_dir, 'sopel.pid')
-        else:
-            basename = os.path.basename(opts.config)
-            if basename.endswith('.cfg'):
-                basename = basename[:-4]
-            pid_file_path = os.path.join(pid_dir, 'sopel-%s.pid' % basename)
-        if os.path.isfile(pid_file_path):
-            with open(pid_file_path, 'r') as pid_file:
-                try:
-                    old_pid = int(pid_file.read())
-                except ValueError:
-                    old_pid = None
-            if old_pid is not None and tools.check_pid(old_pid):
-                if not opts.quit and not opts.kill:
-                    stderr('There\'s already a Sopel instance running with this config file')
-                    stderr('Try using the --quit or the --kill options')
-                    sys.exit(1)
-                elif opts.kill:
-                    stderr('Killing the sopel')
-                    os.kill(old_pid, signal.SIGKILL)
-                    sys.exit(0)
-                elif opts.quit:
-                    stderr('Signaling Sopel to stop gracefully')
-                    if hasattr(signal, 'SIGUSR1'):
-                        os.kill(old_pid, signal.SIGUSR1)
-                    else:
-                        os.kill(old_pid, signal.SIGTERM)
-                    sys.exit(0)
-            elif opts.kill or opts.quit:
-                stderr('Sopel is not running!')
-                sys.exit(1)
-        elif opts.quit or opts.kill:
+        pid_file_path = get_pid_filename(opts, pid_dir)
+        old_pid = get_running_pid(pid_file_path)
+
+        if old_pid is not None and tools.check_pid(old_pid):
+            if not opts.quit and not opts.kill:
+                stderr('There\'s already a Sopel instance running with this config file')
+                stderr('Try using the --quit or the --kill options')
+                return ERR_CODE
+            elif opts.kill:
+                stderr('Killing the Sopel')
+                os.kill(old_pid, signal.SIGKILL)
+                return
+            elif opts.quit:
+                stderr('Signaling Sopel to stop gracefully')
+                if hasattr(signal, 'SIGUSR1'):
+                    os.kill(old_pid, signal.SIGUSR1)
+                else:
+                    os.kill(old_pid, signal.SIGTERM)
+                return
+        elif opts.kill or opts.quit:
             stderr('Sopel is not running!')
-            sys.exit(1)
+            return ERR_CODE
+
         if opts.daemonize:
             child_pid = os.fork()
             if child_pid is not 0:
-                sys.exit()
+                return
         with open(pid_file_path, 'w') as pid_file:
             pid_file.write(str(os.getpid()))
 
-        # Step Five: Initialise And Run sopel
+        # Step Seven: Initialize and run Sopel
         run(config_module, pid_file_path)
     except KeyboardInterrupt:
         print("\n\nInterrupted")
-        os._exit(1)
+        return ERR_CODE
 
 
 if __name__ == '__main__':
-    main()
+    sys.exit(main())
