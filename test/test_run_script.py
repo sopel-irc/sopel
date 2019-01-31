@@ -5,6 +5,8 @@ from __future__ import unicode_literals, absolute_import, print_function, divisi
 from contextlib import contextmanager
 import os
 
+import pytest
+
 from sopel import run_script, config
 
 
@@ -18,13 +20,20 @@ def cd(newdir):
         os.chdir(prevdir)
 
 
-def test_enumerate_configs(tmpdir):
+@pytest.fixture
+def config_dir(tmpdir):
+    """Pytest fixture used to generate a temporary configuration directory"""
+    test_dir = tmpdir.mkdir("config")
+    test_dir.join('config.cfg').write('')
+    test_dir.join('extra.ini').write('')
+    test_dir.join('module.cfg').write('')
+    test_dir.join('README').write('')
+
+    return test_dir
+
+
+def test_enumerate_configs(config_dir):
     """Assert function retrieves only .cfg files by default"""
-    config_dir = tmpdir.mkdir("config")
-    config_dir.join('config.cfg').write('')
-    config_dir.join('extra.ini').write('')
-    config_dir.join('module.cfg').write('')
-    config_dir.join('README').write('')
     results = list(run_script.enumerate_configs(config_dir.strpath))
 
     assert 'config.cfg' in results
@@ -34,13 +43,8 @@ def test_enumerate_configs(tmpdir):
     assert len(results) == 2
 
 
-def test_enumerate_configs_extension(tmpdir):
+def test_enumerate_configs_extension(config_dir):
     """Assert function retrieves only files with the given extension"""
-    config_dir = tmpdir.mkdir("config")
-    config_dir.join('config.cfg').write('')
-    config_dir.join('extra.ini').write('')
-    config_dir.join('module.cfg').write('')
-    config_dir.join('README').write('')
     results = list(run_script.enumerate_configs(config_dir.strpath, '.ini'))
 
     assert 'config.cfg' not in results
@@ -50,11 +54,10 @@ def test_enumerate_configs_extension(tmpdir):
     assert len(results) == 1
 
 
-def test_find_config_local(tmpdir):
+def test_find_config_local(tmpdir, config_dir):
     """Assert function retrieves configuration file from working dir first"""
     working_dir = tmpdir.mkdir("working")
     working_dir.join('local.cfg').write('')
-    config_dir = tmpdir.mkdir("config")
 
     with cd(working_dir.strpath):
         found_config = run_script.find_config(config_dir.strpath, 'local.cfg')
@@ -64,15 +67,10 @@ def test_find_config_local(tmpdir):
         assert found_config == config_dir.join('local').strpath
 
 
-def test_find_config_default(tmpdir):
+def test_find_config_default(tmpdir, config_dir):
     """Assert function retrieves configuration file from given config dir"""
     working_dir = tmpdir.mkdir("working")
     working_dir.join('local.cfg').write('')
-    config_dir = tmpdir.mkdir("config")
-    config_dir.join('config.cfg').write('')
-    config_dir.join('extra.ini').write('')
-    config_dir.join('module.cfg').write('')
-    config_dir.join('README').write('')
 
     with cd(working_dir.strpath):
         found_config = run_script.find_config(config_dir.strpath, 'config')
@@ -82,15 +80,10 @@ def test_find_config_default(tmpdir):
         assert found_config == config_dir.join('config.cfg').strpath
 
 
-def test_find_config_extension(tmpdir):
+def test_find_config_extension(tmpdir, config_dir):
     """Assert function retrieves configuration file with the given extension"""
     working_dir = tmpdir.mkdir("working")
     working_dir.join('local.cfg').write('')
-    config_dir = tmpdir.mkdir("config")
-    config_dir.join('config.cfg').write('')
-    config_dir.join('extra.ini').write('')
-    config_dir.join('module.cfg').write('')
-    config_dir.join('README').write('')
 
     with cd(working_dir.strpath):
         found_config = run_script.find_config(
