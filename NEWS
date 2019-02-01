@@ -1,3 +1,16 @@
+Changes between 6.6.1 and 6.6.2
+===============================
+Module changes:
+* wiktionary tries harder to get a valid result before erroring out
+
+Core changes:
+* Fixed an inconsistency between interpretations of the --config option in
+  normal operation vs. wizard mode
+* Requirement specifiers tightened up to reduce/prevent pip trying to install
+  incompatible dependency versions (IPython, dnspython)
+* SASL token is now split when required according to spec
+* Multi-byte Unicode characters are now handled correctly when splitting lines
+
 Changes between 6.6.0 and 6.6.1
 ===============================
 Module changes:
