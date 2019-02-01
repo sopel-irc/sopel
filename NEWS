@@ -23,10 +23,27 @@ Each section MUST start with a Setext-style top-level heading (underlined using
 `=`). There SHOULD always be two blank lines before and one blank line after
 this release heading. The text MUST read `Changes between a.b.c and x.y.z` (it
 is used to break this single file into one-page-per-version for the website).
+Example release section heading, including blank line spacing:
+
+```
+
+
+Changes between 1.0.0 and 1.0.1
+===============================
+
+```
 
 After that, there MAY be an optional prose section for general notes about the
 release, notices about upcoming changes, migration instructions, etc. If
-present, this section SHOULD end with a horizontal rule (`----`).
+present, this section SHOULD end with a horizontal rule (`----`). Example:
+
+```
+Sopel 1.0.1 is a bugfix release with numerous small changes that add up to a big
+improvement in the user experience when combined.
+
+----
+
+```
 
 Each version's section SHOULD be subdivided into "Module changes", "Core
 changes", and "API changes"—in that order. The three subsections MUST be marked
@@ -53,13 +70,37 @@ readability of the generated HTML pages. And some things (for example,
 sequential hyphens in change entries about CLI options like `--config`) will
 come out wrong without the backticks.
 
+Example subsections and placeholder change entries:
+
+```
+
+Module changes
+--------------
+
+* foo module's `.bar` command won't baz any more
+* eggs module removed
+  * replaced by a new bacon module
+
+Core changes
+------------
+
+* IRC `foo` intent handled correctly
+
+API changes
+-----------
+
+* `sopel.spam` is now deprecated and will be removed in Sopel 2.0. Use the new
+  tools in `sopel.sausage` introduced in 0.9.0 instead.
+
+```
+
 Links MAY be included anywhere it is appropriate, using any Markdown link style.
 Implicitly referenced links (like `[link text][]`) are preferred because they
 make the text easier to read; however, explicit references (`[link text][id]`)
 are OK too if the same link is used in multiple places.
 
 Link reference definitions SHOULD be placed at the end of the subsection where
-they are first used, before any horizontal rule (`----`) or heading.
+they are first used, before any horizontal rule or heading.
 
 Link reference definitions SHOULD be indented with two spaces:
 
