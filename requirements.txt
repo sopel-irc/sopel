@@ -6,4 +6,6 @@ geoip2
 ipython<6.0; python_version < '3.3'
 ipython>=6.0,<7.0; python_version >= '3.3'
 requests>=2.0.0,<3.0.0
-dnspython
+dnspython<2.0; python_version >= '2.7' and python_version < '3.0'
+dnspython<1.16.0; python_version == '3.3'
+dnspython<3.0; python_version >= '3.4'
