@@ -539,6 +539,37 @@ def recieve_cap_ack_sasl(bot):
     bot.write(('AUTHENTICATE', mech))
 
 
+def send_authenticate(bot, token):
+    """Send ``AUTHENTICATE`` command to server with the given ``token``.
+
+    :param bot: instance of IRC bot that must authenticate
+    :param str token: authentication token
+
+    In case the ``token`` is more than 400 bytes, we need to split it and send
+    as many ``AUTHENTICATE`` commands as needed. If the last chunk is 400 bytes
+    long, we must also send a last empty command (`AUTHENTICATE +` is for empty
+    line), so the server knows we are done with ``AUTHENTICATE``.
+
+    .. seealso::
+
+        https://ircv3.net/specs/extensions/sasl-3.1.html#the-authenticate-command
+
+    """
+    # payload is a base64 encoded token
+    payload = base64.b64encode(token.encode('utf-8'))
+
+    # split the payload into chunks of at most 400 bytes
+    chunk_size = 400
+    for i in range(0, len(payload), chunk_size):
+        offset = i + chunk_size
+        chunk = payload[i:offset]
+        bot.write(('AUTHENTICATE', chunk))
+
+    # send empty (+) AUTHENTICATE when payload's length is a multiple of 400
+    if len(payload) % chunk_size == 0:
+        bot.write(('AUTHENTICATE', '+'))
+
+
 @sopel.module.event('AUTHENTICATE')
 @sopel.module.rule('.*')
 def auth_proceed(bot, trigger):
@@ -549,8 +580,7 @@ def auth_proceed(bot, trigger):
     sasl_username = bot.config.core.auth_username or bot.nick
     sasl_password = bot.config.core.auth_password
     sasl_token = '\0'.join((sasl_username, sasl_username, sasl_password))
-    # Spec says we do a base 64 encode on the SASL stuff
-    bot.write(('AUTHENTICATE', base64.b64encode(sasl_token.encode('utf-8'))))
+    send_authenticate(bot, sasl_token)
 
 
 @sopel.module.event(events.RPL_SASLSUCCESS)

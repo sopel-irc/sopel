@@ -215,7 +215,7 @@ class Config(object):
 
 def _wizard(section, config=None):
     dotdir = os.path.expanduser('~/.sopel')
-    configpath = os.path.join(dotdir, (config or 'default') + '.cfg')
+    configpath = os.path.join(dotdir, ((config or 'default.cfg') + ('.cfg' if config and not config.endswith('.cfg') else '')))
     if section == 'all':
         _create_config(configpath)
     elif section == 'mod':
