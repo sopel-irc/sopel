@@ -139,7 +139,10 @@ class BaseValidated(object):
             # instance here.
             return self
 
-        if instance._parser.has_option(instance._section_name, self.name):
+        env_name = 'SOPEL_%s_%s' % (instance._section_name.upper(), self.name.upper())
+        if env_name in os.environ:
+            value = os.environ.get(env_name)
+        elif instance._parser.has_option(instance._section_name, self.name):
             value = instance._parser.get(instance._section_name, self.name)
         else:
             if self.default is not NO_DEFAULT:
@@ -286,7 +289,10 @@ class FilenameAttribute(BaseValidated):
     def __get__(self, instance, owner=None):
         if instance is None:
             return self
-        if instance._parser.has_option(instance._section_name, self.name):
+        env_name = 'SOPEL_%s_%s' % (instance._section_name.upper(), self.name.upper())
+        if env_name in os.environ:
+            value = os.environ.get(env_name)
+        elif instance._parser.has_option(instance._section_name, self.name):
             value = instance._parser.get(instance._section_name, self.name)
         else:
             if self.default is not NO_DEFAULT:
