@@ -9,12 +9,16 @@ checks:
 
   file-lines:
     enabled: true
+    config:
+      threshold: 500
 
   identical-code:
     enabled: true
 
   method-complexity:
     enabled: true
+    config:
+      threshold: 20
 
   method-count:
     enabled: true
@@ -106,7 +110,7 @@ plugins:
     enabled: false
 
   pep8:
-    enabled: true
+    enabled: false
 
   phan:
     enabled: false
@@ -122,6 +126,8 @@ plugins:
 
   radon:
     enabled: true
+    config:
+      threshold: "C"
 
   reek:
     enabled: false
