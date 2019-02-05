@@ -1,38 +1,37 @@
 version: 2
 
-checks: 
-  argument-count: 
+checks:
+  argument-count:
     enabled: true
-  
-  complex-logic: 
-    enabled: true
-  
-  file-lines: 
-    enabled: true
-  
-  identical-code: 
-    enabled: true
-  
-  method-complexity: 
-    enabled: true
-  
-  method-count: 
-    enabled: true
-  
-  method-lines: 
-    enabled: true
-  
-  nested-control-flow: 
-    enabled: true
-  
-  return-statements: 
-    enabled: true
-  
-  similar-code: 
-    enabled: true
-  
 
-exclude_patterns: 
+  complex-logic:
+    enabled: true
+
+  file-lines:
+    enabled: true
+
+  identical-code:
+    enabled: true
+
+  method-complexity:
+    enabled: true
+
+  method-count:
+    enabled: true
+
+  method-lines:
+    enabled: true
+
+  nested-control-flow:
+    enabled: true
+
+  return-statements:
+    enabled: true
+
+  similar-code:
+    enabled: true
+
+exclude_patterns:
   - config/
   - db/
   - dist/
@@ -47,129 +46,129 @@ exclude_patterns:
   - "**/*_test.go"
   - "**/*.d.ts"
 
-plugins: 
-  apexmetrics: 
+plugins:
+  apexmetrics:
     enabled: false
-  
-  brakeman: 
+
+  brakeman:
     enabled: false
-  
-  brakeman-pro: 
+
+  brakeman-pro:
     enabled: false
-  
-  bundler-audit: 
+
+  bundler-audit:
     enabled: false
-  
-  checkstyle: 
+
+  checkstyle:
     enabled: false
-  
-  coffeelint: 
+
+  coffeelint:
     enabled: false
-  
-  csslint: 
+
+  csslint:
     enabled: false
-  
-  eslint: 
+
+  eslint:
     enabled: false
-  
-  fixme: 
-    enabled: false
-  
-  flog: 
-    enabled: false
-  
-  foodcritic: 
-    enabled: false
-  
-  git-legal: 
-    enabled: false
-  
-  gnu-complexity: 
-    enabled: false
-  
-  gofmt: 
-    enabled: false
-  
-  golint: 
-    enabled: false
-  
-  govet: 
-    enabled: false
-  
-  grep: 
-    enabled: false
-  
-  haxe-checkstyle: 
-    enabled: false
-  
-  hlint: 
-    enabled: false
-  
-  kibit: 
-    enabled: false
-  
-  markdownlint: 
-    enabled: false
-  
-  nodesecurity: 
-    enabled: false
-  
-  pep8: 
-    enabled: false
-  
-  phan: 
-    enabled: false
-  
-  phpcodesniffer: 
-    enabled: false
-  
-  phpmd: 
-    enabled: false
-  
-  pmd: 
-    enabled: false
-  
-  radon: 
+
+  fixme:
     enabled: true
-  
-  reek: 
+
+  flog:
     enabled: false
-  
-  rubocop: 
+
+  foodcritic:
     enabled: false
-  
-  rubymotion: 
+
+  git-legal:
     enabled: false
-  
-  shellcheck: 
+
+  gnu-complexity:
     enabled: false
-  
-  scss-lint: 
+
+  gofmt:
     enabled: false
-  
-  sonar-java: 
+
+  golint:
     enabled: false
-  
-  sonar-php: 
+
+  govet:
     enabled: false
-  
-  sonar-python: 
+
+  grep:
+    enabled: false
+
+  haxe-checkstyle:
+    enabled: false
+
+  hlint:
+    enabled: false
+
+  kibit:
+    enabled: false
+
+  markdownlint:
+    enabled: false
+
+  nodesecurity:
+    enabled: false
+
+  pep8:
     enabled: true
-  
-  stylelint: 
+
+  phan:
     enabled: false
-  
-  swiftlint: 
+
+  phpcodesniffer:
     enabled: false
-  
-  tailor: 
+
+  phpmd:
     enabled: false
-  
-  tslint: 
+
+  pmd:
     enabled: false
-  
-  vint: 
+
+  radon:
+    enabled: true
+
+  reek:
     enabled: false
-  
-  watson: 
+
+  rubocop:
+    enabled: false
+
+  rubymotion:
+    enabled: false
+
+  shellcheck:
+    enabled: false
+
+  scss-lint:
+    enabled: false
+
+  sonar-java:
+    enabled: false
+
+  sonar-php:
+    enabled: false
+
+  sonar-python:
+    enabled: true
+
+  stylelint:
+    enabled: false
+
+  swiftlint:
+    enabled: false
+
+  tailor:
+    enabled: false
+
+  tslint:
+    enabled: false
+
+  vint:
+    enabled: false
+
+  watson:
     enabled: false
