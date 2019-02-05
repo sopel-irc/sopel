@@ -1,0 +1,172 @@
+version: 2
+
+checks:
+  argument-count:
+    enabled: true
+
+  complex-logic:
+    enabled: true
+
+  file-lines:
+    enabled: true
+    config:
+      threshold: 500
+
+  identical-code:
+    enabled: true
+
+  method-complexity:
+    enabled: true
+    config:
+      threshold: 20
+
+  method-count:
+    enabled: true
+
+  method-lines:
+    enabled: true
+
+  nested-control-flow:
+    enabled: true
+
+  return-statements:
+    enabled: true
+
+  similar-code:
+    enabled: true
+
+exclude_patterns:
+  - contrib/
+  - "**/test/"
+
+plugins:
+  apexmetrics:
+    enabled: false
+
+  bandit:
+    enabled: true
+
+  brakeman:
+    enabled: false
+
+  brakeman-pro:
+    enabled: false
+
+  bundler-audit:
+    enabled: false
+
+  checkstyle:
+    enabled: false
+
+  coffeelint:
+    enabled: false
+
+  csslint:
+    enabled: false
+
+  eslint:
+    enabled: false
+
+  fixme:
+    enabled: true
+
+  flog:
+    enabled: false
+
+  foodcritic:
+    enabled: false
+
+  git-legal:
+    enabled: false
+
+  gnu-complexity:
+    enabled: false
+
+  gofmt:
+    enabled: false
+
+  golint:
+    enabled: false
+
+  govet:
+    enabled: false
+
+  grep:
+    enabled: false
+
+  haxe-checkstyle:
+    enabled: false
+
+  hlint:
+    enabled: false
+
+  kibit:
+    enabled: false
+
+  markdownlint:
+    enabled: false
+
+  nodesecurity:
+    enabled: false
+
+  pep8:
+    enabled: false
+
+  phan:
+    enabled: false
+
+  phpcodesniffer:
+    enabled: false
+
+  phpmd:
+    enabled: false
+
+  pmd:
+    enabled: false
+
+  radon:
+    enabled: true
+    config:
+      threshold: "C"
+
+  reek:
+    enabled: false
+
+  rubocop:
+    enabled: false
+
+  rubymotion:
+    enabled: false
+
+  shellcheck:
+    enabled: false
+
+  scss-lint:
+    enabled: false
+
+  sonar-java:
+    enabled: false
+
+  sonar-php:
+    enabled: false
+
+  sonar-python:
+    enabled: true
+
+  stylelint:
+    enabled: false
+
+  swiftlint:
+    enabled: false
+
+  tailor:
+    enabled: false
+
+  tslint:
+    enabled: false
+
+  vint:
+    enabled: false
+
+  watson:
+    enabled: false
