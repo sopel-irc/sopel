@@ -32,23 +32,15 @@ checks:
     enabled: true
 
 exclude_patterns:
-  - config/
-  - db/
-  - dist/
-  - features/
-  - "**/node_modules/"
-  - script/
-  - "**/spec/"
+  - contrib/
   - "**/test/"
-  - "**/tests/"
-  - Tests/
-  - "**/vendor/"
-  - "**/*_test.go"
-  - "**/*.d.ts"
 
 plugins:
   apexmetrics:
     enabled: false
+
+  bandit:
+    enabled: true
 
   brakeman:
     enabled: false
