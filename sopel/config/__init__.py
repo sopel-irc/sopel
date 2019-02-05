@@ -214,7 +214,7 @@ class Config(object):
 
 
 def _wizard(section, config=None):
-    dotdir = os.path.dirname(config) if config is not None else os.path.expanduser('~/.sopel')
+    dotdir = os.path.dirname(config) if config is not None else DEFAULT_HOMEDIR
     configpath = os.path.join(dotdir, ((config or 'default.cfg') + ('.cfg' if config and not config.endswith('.cfg') else '')))
     if section == 'all':
         _create_config(configpath)
@@ -228,7 +228,7 @@ def _wizard(section, config=None):
         config._modules()
 
 
-def _check_dir(path=os.path.expanduser('~/.sopel'), create=True):
+def _check_dir(path=DEFAULT_HOMEDIR, create=True):
     if not os.path.isdir(path):
         if create:
             print('Creating a config directory at {}...'.format(path))
