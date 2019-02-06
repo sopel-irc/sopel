@@ -2,12 +2,13 @@
 """Tests for sopel.cli.utils"""
 from __future__ import unicode_literals, absolute_import, print_function, division
 
+import argparse
 from contextlib import contextmanager
 import os
 
 import pytest
 
-from sopel.cli.utils import enumerate_configs, find_config
+from sopel.cli.utils import enumerate_configs, find_config, add_config_arguments
 
 
 @contextmanager
@@ -89,3 +90,37 @@ def test_find_config_extension(tmpdir, config_dir):
         found_config = find_config(
             config_dir.strpath, 'extra', '.ini')
         assert found_config == config_dir.join('extra.ini').strpath
+
+
+def test_add_config_arguments():
+    """Assert function adds the -c/--config option."""
+    parser = argparse.ArgumentParser()
+    add_config_arguments(parser)
+
+    options = parser.parse_args([])
+    assert hasattr(options, 'config')
+    assert options.config is None
+
+    options = parser.parse_args(['-c', 'test-short'])
+    assert options.config == 'test-short'
+
+    options = parser.parse_args(['--config', 'test-long'])
+    assert options.config == 'test-long'
+
+
+def test_add_config_arguments_subparser():
+    """Assert function adds the -c/--config option on a subparser."""
+    parser = argparse.ArgumentParser()
+    subparsers = parser.add_subparsers(dest='action')
+    sub = subparsers.add_parser('sub')
+    add_config_arguments(sub)
+
+    options = parser.parse_args(['sub'])
+    assert hasattr(options, 'config')
+    assert options.config is None
+
+    options = parser.parse_args(['sub', '-c', 'test-short'])
+    assert options.config == 'test-short'
+
+    options = parser.parse_args(['sub', '--config', 'test-long'])
+    assert options.config == 'test-long'

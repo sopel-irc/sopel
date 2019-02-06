@@ -72,3 +72,30 @@ def find_config(config_dir, name, extension='.cfg'):
             return os.path.join(config_dir, name_ext)
 
     return os.path.join(config_dir, name)
+
+
+def add_config_arguments(parser):
+    """Add configuration-related argument to a ``parser``.
+
+    :param parser: Argument parser (or subparser)
+    :type parser: argparse.ArgumentParser
+
+    This function adds the proper argument to the ``parser`` given in order to
+    have a standard way to define a configuration filename in all of Sopel's
+    command line interfaces.
+
+    This can be used on an argument parser, or an argument subparser, to handle
+    these cases::
+
+        [sopel-command] -c [filename]
+        [sopel-command] [action] -c [filename]
+
+    Then, when the parser parses the command line arguments, it will expose
+    a ``config`` option to be used to find and load Sopel's settings.
+    """
+    parser.add_argument(
+        '-c', '--config',
+        default=None,
+        metavar='filename',
+        dest='config',
+        help='Use a specific configuration file')
