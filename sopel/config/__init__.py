@@ -38,13 +38,22 @@ DEFAULT_HOMEDIR = os.path.join(os.path.expanduser('~'), '.sopel')
 
 
 class ConfigurationError(Exception):
-    """ Exception type for configuration errors """
-
+    """Exception type for configuration errors"""
     def __init__(self, value):
         self.value = value
 
     def __str__(self):
         return 'ConfigurationError: %s' % self.value
+
+
+class ConfigurationNotFound(ConfigurationError):
+    """Configuration file not found."""
+    def __init__(self, filename):
+        self.filename = filename
+        """Path to the configuration file not found"""
+
+    def __str__(self):
+        return 'Unable to find the configuration file %s' % self.filename
 
 
 class Config(object):

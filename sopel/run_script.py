@@ -31,6 +31,7 @@ from sopel.config import (
     Config,
     _create_config,
     ConfigurationError,
+    ConfigurationNotFound,
     DEFAULT_HOMEDIR,
     _wizard
 )
@@ -122,23 +123,23 @@ def get_configuration(options):
     This may raise a ``sopel.config.ConfigurationError`` if the file is an
     invalid configuration file.
     """
-    config_name = options.config or 'default'
-    config_path = utils.find_config(DEFAULT_HOMEDIR, config_name)
-
-    if not os.path.isfile(config_path):
+    try:
+        bot_config = utils.load_settings(options)
+    except ConfigurationNotFound as error:
         print(
             "Welcome to Sopel!\n"
             "I can't seem to find the configuration file, "
             "so let's generate it!\n")
 
+        config_path = error.filename
         if not config_path.endswith('.cfg'):
             config_path = config_path + '.cfg'
 
         config_path = _create_config(config_path)
+        # try to reload it now that it's created
+        bot_config = Config(config_path)
 
-    bot_config = Config(config_path)
     bot_config._is_daemonized = options.daemonize
-
     return bot_config
 
 

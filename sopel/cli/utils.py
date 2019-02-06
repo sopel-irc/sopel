@@ -3,6 +3,8 @@ from __future__ import unicode_literals, absolute_import, print_function, divisi
 
 import os
 
+from sopel import config
+
 
 def enumerate_configs(config_dir, extension='.cfg'):
     """List configuration files from ``config_dir`` with ``extension``
@@ -67,8 +69,8 @@ def find_config(config_dir, name, extension='.cfg'):
     if os.path.isfile(name):
         return name
     name_ext = name + extension
-    for config in enumerate_configs(config_dir, extension):
-        if name_ext == config:
+    for filename in enumerate_configs(config_dir, extension):
+        if name_ext == filename:
             return os.path.join(config_dir, name_ext)
 
     return os.path.join(config_dir, name)
@@ -99,3 +101,41 @@ def add_config_arguments(parser):
         metavar='filename',
         dest='config',
         help='Use a specific configuration file')
+
+
+def load_settings(options):
+    """Load Sopel's settings using the command line's ``options``.
+
+    :param options: parsed arguments
+    :return: sopel configuration
+    :rtype: :class:`sopel.config.Config`
+    :raise sopel.config.ConfigurationNotFound: raised when configuration file
+                                               is not found
+    :raise sopel.config.ConfigurationError: raised when configuration is
+                                            invalid
+
+    This function loads Sopel's settings from one of these sources:
+
+    * value of ``options.config``, if given,
+    * or the ``default`` configuration is loaded,
+
+    then loads the settings and returns it as a :class:`~sopel.config.Config`
+    object.
+
+    If the configuration file can not be found, a
+    :exc:`sopel.config.ConfigurationNotFound` error will be raised.
+
+    .. note::
+
+        To use this function effectively, the
+        :func:`sopel.cli.utils.add_config_arguments` function should be used to
+        add the proper option to the argument parser.
+
+    """
+    name = options.config or 'default'
+    filename = find_config(config.DEFAULT_HOMEDIR, name)
+
+    if not os.path.isfile(filename):
+        raise config.ConfigurationNotFound(filename=filename)
+
+    return config.Config(filename)
