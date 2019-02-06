@@ -32,28 +32,6 @@ def config_dir(tmpdir):
     return test_dir
 
 
-def test_enumerate_configs(config_dir):
-    """Assert function retrieves only .cfg files by default"""
-    results = list(run_script.enumerate_configs(config_dir.strpath))
-
-    assert 'config.cfg' in results
-    assert 'module.cfg' in results
-    assert 'extra.ini' not in results
-    assert 'README' not in results
-    assert len(results) == 2
-
-
-def test_enumerate_configs_extension(config_dir):
-    """Assert function retrieves only files with the given extension"""
-    results = list(run_script.enumerate_configs(config_dir.strpath, '.ini'))
-
-    assert 'config.cfg' not in results
-    assert 'module.cfg' not in results
-    assert 'extra.ini' in results
-    assert 'README' not in results
-    assert len(results) == 1
-
-
 def test_find_config_local(tmpdir, config_dir):
     """Assert function retrieves configuration file from working dir first"""
     working_dir = tmpdir.mkdir("working")

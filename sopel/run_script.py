@@ -11,6 +11,8 @@ https://sopel.chat
 from __future__ import unicode_literals, absolute_import, print_function, division
 
 import sys
+
+from sopel.cli import utils
 from sopel.tools import stderr
 
 if sys.version_info < (2, 7):
@@ -42,34 +44,6 @@ ERR_CODE_NO_RESTART = 2
 This error code is used to prevent systemd from restarting the bot when it
 encounter such error case.
 """
-
-
-def enumerate_configs(config_dir, extension='.cfg'):
-    """List configuration file from ``config_dir`` with ``extension``
-
-    :param str config_dir: path to the configuration directory
-    :param str extension: configuration file's extension (default to ``.cfg``)
-    :return: a list of configuration filename found in ``config_dir`` with
-             the correct ``extension``
-    :rtype: list
-
-    Example::
-
-        >>> from sopel import run_script, config
-        >>> os.listdir(config.DEFAULT_HOMEDIR)
-        ['config.cfg', 'extra.ini', 'module.cfg', 'README']
-        >>> run_script.enumerate_configs(config.DEFAULT_HOMEDIR)
-        ['config.cfg', 'module.cfg']
-        >>> run_script.enumerate_configs(config.DEFAULT_HOMEDIR, '.ini')
-        ['extra.ini']
-
-    """
-    if not os.path.isdir(config_dir):
-        return
-
-    for item in os.listdir(config_dir):
-        if item.endswith(extension):
-            yield item
 
 
 def find_config(config_dir, name, extension='.cfg'):
@@ -107,7 +81,7 @@ def find_config(config_dir, name, extension='.cfg'):
     if os.path.isfile(name):
         return name
     name_ext = name + extension
-    for config in enumerate_configs(config_dir, extension):
+    for config in utils.enumerate_configs(config_dir, extension):
         if name_ext == config:
             return os.path.join(config_dir, name_ext)
 
@@ -174,7 +148,7 @@ def print_version():
 
 def print_config():
     """Print list of available configurations from default homedir."""
-    configs = enumerate_configs(DEFAULT_HOMEDIR)
+    configs = utils.enumerate_configs(DEFAULT_HOMEDIR)
     print('Config files in %s:' % DEFAULT_HOMEDIR)
     config = None
     for config in configs:
