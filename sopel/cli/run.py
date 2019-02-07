@@ -12,7 +12,6 @@ from __future__ import unicode_literals, absolute_import, print_function, divisi
 
 import sys
 
-from sopel.cli import utils
 from sopel.tools import stderr
 
 if sys.version_info < (2, 7):
@@ -36,6 +35,7 @@ from sopel.config import (
     DEFAULT_HOMEDIR,
     _wizard
 )
+from . import utils
 
 
 ERR_CODE = 1
