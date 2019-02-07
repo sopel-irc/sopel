@@ -5,6 +5,14 @@ import os
 
 from sopel import config
 
+# Allow clean import *
+__all__ = [
+    'enumerate_configs',
+    'find_config',
+    'add_config_arguments',
+    'load_settings',
+]
+
 
 def enumerate_configs(config_dir, extension='.cfg'):
     """List configuration files from ``config_dir`` with ``extension``
