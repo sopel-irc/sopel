@@ -13,13 +13,19 @@ from re import sub
 from requests import get
 from sopel.module import commands, example, NOLIMIT
 try:
-    # Python 2.6-2.7
+    # Python 2.7
     from HTMLParser import HTMLParser
     h = HTMLParser()
     unescape = h.unescape
 except ImportError:
-    # Python 3
-    from html import unescape  # https://stackoverflow.com/a/2087433
+    try:
+        # Python 3.4+
+        from html import unescape  # https://stackoverflow.com/a/2087433
+    except ImportError:
+        # Python 3.3... sigh
+        from html.parser import HTMLParser
+        h = HTMLParser()
+        unescape = h.unescape
 
 
 ETYURI = 'https://www.etymonline.com/word/%s'
