@@ -51,7 +51,7 @@ def build_parser():
     """Build an ``argparse.ArgumentParser`` for the bot"""
     parser = argparse.ArgumentParser(description='Sopel IRC Bot',
                                      usage='%(prog)s [options]')
-    utils.add_config_arguments(parser)
+    utils.add_common_arguments(parser)
     parser.add_argument("-d", '--fork', action="store_true",
                         dest="daemonize", help="Daemonize Sopel")
     parser.add_argument("-q", '--quit', action="store_true", dest="quit",

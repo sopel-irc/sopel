@@ -9,7 +9,7 @@ from sopel import config
 __all__ = [
     'enumerate_configs',
     'find_config',
-    'add_config_arguments',
+    'add_common_arguments',
     'load_settings',
 ]
 
@@ -84,15 +84,15 @@ def find_config(config_dir, name, extension='.cfg'):
     return os.path.join(config_dir, name)
 
 
-def add_config_arguments(parser):
-    """Add configuration-related argument to a ``parser``.
+def add_common_arguments(parser):
+    """Add common and configuration-related arguments to a ``parser``.
 
     :param parser: Argument parser (or subparser)
     :type parser: argparse.ArgumentParser
 
-    This function adds the proper argument to the ``parser`` given in order to
-    have a standard way to define a configuration filename in all of Sopel's
-    command line interfaces.
+    This functions adds the common arguments for Sopel's command line tools.
+    At the moment, this functions adds only one argument to the parser: the
+    argument used as the standard way to define a configuration filename.
 
     This can be used on an argument parser, or an argument subparser, to handle
     these cases::
@@ -102,6 +102,12 @@ def add_config_arguments(parser):
 
     Then, when the parser parses the command line arguments, it will expose
     a ``config`` option to be used to find and load Sopel's settings.
+
+    .. seealso::
+
+        The :func:`sopel.cli.utils.load_settings` function uses an ``options``
+        object from a parser configured with such arguments.
+
     """
     parser.add_argument(
         '-c', '--config',
@@ -136,7 +142,7 @@ def load_settings(options):
     .. note::
 
         To use this function effectively, the
-        :func:`sopel.cli.utils.add_config_arguments` function should be used to
+        :func:`sopel.cli.utils.add_common_arguments` function should be used to
         add the proper option to the argument parser.
 
     """

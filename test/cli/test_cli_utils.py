@@ -8,7 +8,7 @@ import os
 
 import pytest
 
-from sopel.cli.utils import enumerate_configs, find_config, add_config_arguments
+from sopel.cli.utils import enumerate_configs, find_config, add_common_arguments
 
 
 @contextmanager
@@ -92,10 +92,10 @@ def test_find_config_extension(tmpdir, config_dir):
         assert found_config == config_dir.join('extra.ini').strpath
 
 
-def test_add_config_arguments():
+def test_add_common_arguments():
     """Assert function adds the -c/--config option."""
     parser = argparse.ArgumentParser()
-    add_config_arguments(parser)
+    add_common_arguments(parser)
 
     options = parser.parse_args([])
     assert hasattr(options, 'config')
@@ -108,12 +108,12 @@ def test_add_config_arguments():
     assert options.config == 'test-long'
 
 
-def test_add_config_arguments_subparser():
+def test_add_common_arguments_subparser():
     """Assert function adds the -c/--config option on a subparser."""
     parser = argparse.ArgumentParser()
     subparsers = parser.add_subparsers(dest='action')
     sub = subparsers.add_parser('sub')
-    add_config_arguments(sub)
+    add_common_arguments(sub)
 
     options = parser.parse_args(['sub'])
     assert hasattr(options, 'config')
