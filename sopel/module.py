@@ -23,10 +23,19 @@ be used, for example, to allow a user to retry a failed command immediately.
 """
 
 VOICE = 1
+"""Privilege level for the +v channel permission"""
+
 HALFOP = 2
+"""Privilege level for the +h channel permission"""
+
 OP = 4
+"""Privilege level for the +o channel permission"""
+
 ADMIN = 8
+"""Privilege level for the +a channel permission"""
+
 OWNER = 16
+"""Privilege level for the +q channel permission"""
 
 
 def unblockable(function):
