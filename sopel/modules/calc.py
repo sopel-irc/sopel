@@ -59,7 +59,7 @@ def py(bot, trigger):
 
     query = trigger.group(2)
     uri = BASE_TUMBOLIA_URI + 'py/'
-    answer = get(uri + quote(query)).text
+    answer = get(uri + quote(query)).content.decode('utf-8')
     if answer:
         # bot.say can potentially lead to 3rd party commands triggering.
         bot.reply(answer)
