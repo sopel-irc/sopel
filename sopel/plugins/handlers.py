@@ -152,3 +152,38 @@ class PyModulePlugin(AbstractPluginHandler):
 
     def has_configure(self):
         return hasattr(self._module, 'configure')
+
+
+class PyFilePlugin(PyModulePlugin):
+    """Sopel's Plugin loaded from the filesystem outside of the Python Path
+
+    This plugin handler can be used to load a Sopel's Plugin from the
+    filesystem, being a Python ``.py`` file or a directory containing an
+    ``__init__.py`` file, and behaves like a :class:`PyModulePlugin`::
+
+        >>> from sopel.plugins.handlers import PyFilePlugin
+        >>> plugin = PyFilePlugin('/home/sopel/.sopel/modules/custom.py')
+        >>> plugin.load()
+        >>> plugin.name
+        'custom'
+
+    In this example, the plugin ``custom`` is loaded from its filename albeit
+    it is not in the Python path.
+    """
+    def __init__(self, filename):
+        result = loader.get_module_description(filename)
+        if result is None:
+            # TODO: throw more specific exception
+            raise Exception('Invalid Sopel plugin: %s' % filename)
+
+        name, path, module_type = result
+        self.filename = filename
+        self.path = path
+        self.module_type = module_type
+
+        super(PyFilePlugin, self).__init__(name)
+
+    def load(self):
+        self._module, _ = loader.load_module(
+            self.name, self.path, self.module_type
+        )
