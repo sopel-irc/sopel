@@ -15,8 +15,7 @@ import sys
 import threading
 import time
 
-from sopel import tools
-from sopel import irc
+from sopel import irc, plugins, tools
 from sopel.db import SopelDB
 from sopel.tools import stderr, Identifier
 import sopel.tools.jobs
@@ -179,44 +178,48 @@ class Sopel(irc.Bot):
 
     def setup(self):
         stderr("\nWelcome to Sopel. Loading modules...\n\n")
+        plugins_info = plugins.enumerate_plugins(self.config)
 
-        modules = sopel.loader.enumerate_modules(self.config)
-
-        error_count = 0
-        success_count = 0
-        for name in modules:
-            path, type_ = modules[name]
+        load_success = 0
+        load_error = 0
+        load_disabled = 0
+        for plugin, is_enabled in plugins_info:
+            name = plugin.name
+            if not is_enabled:
+                load_disabled = load_disabled + 1
+                continue
 
             try:
-                module, _ = sopel.loader.load_module(name, path, type_)
+                plugin.load()
             except Exception as e:
-                error_count = error_count + 1
+                load_error = load_error + 1
                 filename, lineno = tools.get_raising_file_and_line()
                 rel_path = os.path.relpath(filename, os.path.dirname(__file__))
                 raising_stmt = "%s:%d" % (rel_path, lineno)
                 stderr("Error loading %s: %s (%s)" % (name, e, raising_stmt))
             else:
                 try:
-                    if hasattr(module, 'setup'):
-                        module.setup(self)
-                    relevant_parts = sopel.loader.clean_module(
-                        module, self.config)
+                    if plugin.has_setup():
+                        plugin.setup(self)
+                    plugin.register(self)
                 except Exception as e:
-                    error_count = error_count + 1
+                    load_error = load_error + 1
                     filename, lineno = tools.get_raising_file_and_line()
                     rel_path = os.path.relpath(
                         filename, os.path.dirname(__file__)
                     )
                     raising_stmt = "%s:%d" % (rel_path, lineno)
                     stderr("Error in %s setup procedure: %s (%s)"
-                           % (name, e, raising_stmt))
+                        % (name, e, raising_stmt))
                 else:
-                    self.register(*relevant_parts)
-                    success_count += 1
+                    load_success = load_success + 1
+                    print('Loaded: %s' % name)
 
-        if len(modules) > 1:  # coretasks is counted
-            stderr('\n\nRegistered %d modules,' % (success_count - 1))
-            stderr('%d modules failed to load\n\n' % error_count)
+        total = sum([load_success, load_error, load_disabled])
+        if total and load_success:
+            stderr('\n\nRegistered %d modules,' % (load_success - 1))
+            stderr('%d modules failed to load\n\n' % load_error)
+            stderr('%d modules disabled\n\n' % load_disabled)
         else:
             stderr("Warning: Couldn't load any modules")
 
