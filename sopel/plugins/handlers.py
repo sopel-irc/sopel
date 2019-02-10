@@ -1,6 +1,10 @@
 # coding=utf-8
 from __future__ import unicode_literals, absolute_import, print_function, division
 
+import importlib
+
+from sopel import loader
+
 
 class AbstractPluginHandler(object):
     """Base class for plugin handlers.
@@ -81,3 +85,70 @@ class AbstractPluginHandler(object):
         :rtype: boolean
         """
         raise NotImplementedError
+
+
+class PyModulePlugin(AbstractPluginHandler):
+    """Sopel's Plugin loaded from a Python module or package
+
+    A :class:`sopel.plugins.handlers.PyModulePlugin` represents a Sopel's
+    Plugin that is a Python module (or package) that can be imported directly.
+
+    This::
+
+        >>> import sys
+        >>> from sopel.plugins.handlers import PyModulePlugin
+        >>> plugin = PyModulePlugin('xkcd', 'sopel.modules')
+        >>> plugin.module_name
+        'sopel.modules.xkcd'
+        >>> plugin.load()
+        >>> plugin.module_name in sys.modules
+        True
+
+    Is the same as this::
+
+        >>> import sys
+        >>> from sopel.modules import xkcd
+        >>> 'sopel.modules.xkcd' in sys.modules
+        True
+
+    """
+    def __init__(self, name, package=None):
+        self.name = name
+        self.package = package
+        if package:
+            self.module_name = self.package + '.' + self.name
+        else:
+            self.module_name = name
+
+        self._module = None
+
+    def load(self):
+        self._module = importlib.import_module(self.module_name)
+
+    def is_loaded(self):
+        return self._module is not None
+
+    def setup(self, bot):
+        if self.has_setup():
+            self._module.setup(bot)
+
+    def has_setup(self):
+        return hasattr(self._module, 'setup')
+
+    def register(self, bot):
+        relevant_parts = loader.clean_module(self._module, bot.config)
+        bot.register(*relevant_parts)
+
+    def shutdown(self, bot):
+        if self.has_shutdown():
+            self._module.shutdown(bot)
+
+    def has_shutdown(self):
+        return hasattr(self._module, 'shutdown')
+
+    def configure(self, settings):
+        if self.has_configure():
+            self._module.configure(settings)
+
+    def has_configure(self):
+        return hasattr(self._module, 'configure')
