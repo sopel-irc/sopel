@@ -1,4 +1,16 @@
 # coding=utf-8
+"""Sopel's plugins interface
+
+.. versionadded:: 7.0
+
+Sopel uses plugins (also called "modules") and uses what are called
+Plugin Handlers as an interface between the bot and its plugins. This interface
+is defined by the :class:`~.handlers.AbstractPluginHandler` abstract class.
+
+To find all available plugins, the :func:`~.enumerate_plugins` function can be
+used. For a more fine-grained search, ``find_*`` functions exists for each
+type of plugins.
+"""
 from __future__ import unicode_literals, absolute_import, print_function, division
 
 import imp
@@ -27,7 +39,7 @@ def _list_plugin_filenames(directory):
 def find_internal_plugins():
     """List internal plugins
 
-    :return: Yield instance of :class:`sopel.plugins.handlers.PyModulePlugin`
+    :return: Yield instance of :class:`~.handlers.PyModulePlugin`
              configured for ``sopel.modules.*``
     """
     plugin_dir = imp.find_module(
@@ -42,7 +54,7 @@ def find_internal_plugins():
 def find_sopel_modules_plugins():
     """List plugins from ``sopel_modules.*``
 
-    :return: Yield instance of :class:`sopel.plugins.handlers.PyModulePlugin`
+    :return: Yield instance of :class:`~.handlers.PyModulePlugin`
              configured for ``sopel_modules.*``
     """
     try:
@@ -58,7 +70,7 @@ def find_sopel_modules_plugins():
 def find_directory_plugins(directory):
     """List plugins from a ``directory``
 
-    :return: Yield instance of :class:`sopel.plugins.handlers.PyFilePlugin`
+    :return: Yield instance of :class:`~.handlers.PyFilePlugin`
              found in ``directory``
     """
     for _, abspath in _list_plugin_filenames(directory):
@@ -71,8 +83,8 @@ def enumerate_plugins(settings):
     :param settings: Sopel's configuration
     :type settings: :class:`sopel.config.Config`
     :return: yield 2-values tuple: an instance of
-             :class:`sopel.plugins.handlers.AbstractPluginHandler`, and
-             if the plugin is active or not
+             :class:`~.handlers.AbstractPluginHandler`, and if the plugin is
+             active or not
 
     This function uses the find functions to find all the available Sopel's
     plugins. It uses the bot's ``settings`` to determine if the plugin is
