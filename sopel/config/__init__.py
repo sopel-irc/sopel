@@ -24,9 +24,9 @@ import sys
 
 import sopel.config.core_section
 from sopel.config.types import StaticSection
-import sopel.loader
 import sopel.tools
-from sopel.tools import get_input, iteritems, stderr
+from sopel.tools import get_input, stderr
+from sopel import plugins
 
 if sys.version_info.major < 3:
     import ConfigParser
@@ -204,31 +204,28 @@ class Config(object):
         return ans.lower() == 'y'
 
     def _modules(self):
-        home = os.getcwd()
-        modules_dir = os.path.join(home, 'modules')
-        filenames = sopel.loader.enumerate_modules(self)
-        os.sys.path.insert(0, modules_dir)
-        for name, mod_spec in iteritems(filenames):
-            path, type_ = mod_spec
+        for plugin, is_enabled in plugins.enumerate_plugins(self):
+            if not is_enabled:
+                # Do not configure non-enabled modules
+                continue
+
+            name = plugin.name
             try:
-                module, _ = sopel.loader.load_module(name, path, type_)
+                plugin.load()
             except Exception as e:
                 filename, lineno = sopel.tools.get_raising_file_and_line()
                 rel_path = os.path.relpath(filename, os.path.dirname(__file__))
                 raising_stmt = "%s:%d" % (rel_path, lineno)
                 stderr("Error loading %s: %s (%s)" % (name, e, raising_stmt))
             else:
-                if hasattr(module, 'configure'):
-                    prompt = name + ' module'
-                    if module.__doc__:
-                        doc = module.__doc__.split('\n', 1)[0]
-                        if doc:
-                            prompt = doc
-                    prompt = 'Configure {} (y/n)? [n]'.format(prompt)
+                if plugin.has_configure():
+                    prompt = 'Configure {} (y/n)? [n]'.format(
+                        plugin.get_label())
                     do_configure = get_input(prompt)
                     do_configure = do_configure and do_configure.lower() == 'y'
                     if do_configure:
-                        module.configure(self)
+                        plugin.configure(self)
+
         self.save()
 
 
