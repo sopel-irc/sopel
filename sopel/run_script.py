@@ -154,11 +154,12 @@ def check_not_root():
     It raises a ``RuntimeError`` if the user has root privileges on Linux or
     if it is the ``Administrator`` account on Windows.
     """
-    if platform.system() in ["Linux", "Darwin"]:
+    opersystem = platform.system()
+    if opersystem in ["Linux", "Darwin"]:
         # Linux/Mac
         if os.getuid() == 0 or os.geteuid() == 0:
             raise RuntimeError('Error: Do not run Sopel with root privileges.')
-    elif platform.system() in ["Windows"]:
+    elif opersystem in ["Windows"]:
         # Windows
         if os.environ.get("USERNAME") == "Administrator":
             raise RuntimeError('Error: Do not run Sopel as Administrator.')
