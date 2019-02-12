@@ -23,6 +23,7 @@ if sys.version_info.major == 3 and sys.version_info.minor < 3:
 import os
 import argparse
 import signal
+import platform
 
 from sopel import run, tools, __version__
 from sopel.config import (
@@ -148,19 +149,22 @@ def build_parser():
 
 
 def check_not_root():
+
     """Check if root is running the bot.
 
     It raises a ``RuntimeError`` if the user has root privileges on Linux or
     if it is the ``Administrator`` account on Windows.
     """
-    try:
+    if platform.system() in ["Linux", "Darwin"]:
         # Linux/Mac
         if os.getuid() == 0 or os.geteuid() == 0:
             raise RuntimeError('Error: Do not run Sopel with root privileges.')
-    except AttributeError:
+    elif platform.system() in ["Windows"]:
         # Windows
         if os.environ.get("USERNAME") == "Administrator":
             raise RuntimeError('Error: Do not run Sopel as Administrator.')
+    else:
+        raise RuntimeError('Error: Could not detect Operating Sytem Type, or it is unsupported.')
 
 
 def print_version():
