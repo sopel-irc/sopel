@@ -24,7 +24,7 @@ import os
 import argparse
 import signal
 import platform
-import warning
+import warnings
 
 from sopel import run, tools, __version__
 from sopel.config import (
