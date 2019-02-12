@@ -24,6 +24,7 @@ import os
 import argparse
 import signal
 import platform
+import warning
 
 from sopel import run, tools, __version__
 from sopel.config import (
@@ -164,7 +165,7 @@ def check_not_root():
         if os.environ.get("USERNAME") == "Administrator":
             raise RuntimeError('Error: Do not run Sopel as Administrator.')
     else:
-        stderr('Warning: Operating System is uncommon. Contact Sopel Devs.')
+        warning.warn('Warning: Operating System is uncommon. Contact Sopel Devs.', warning.RuntimeWarning)
 
 
 def print_version():
