@@ -1,4 +1,33 @@
 # coding=utf-8
+"""Sopel's plugin handlers
+
+.. versionadded:: 7.0
+
+Between a plugin and Sopel's core, Plugin Handlers are used. It is an interface
+(defined by the :class:`AbstractPluginHandler` abstract class), that acts as a
+proxy between Sopel and the plugin, making a clear separation between
+how the bot behave and how the plugins works.
+
+From the :class:`~sopel.bot.Sopel` class, a plugin must be:
+
+* loaded, using :meth:`~AbstractPluginHandler.load`
+* setup (if required), using :meth:`~AbstractPluginHandler.setup`
+* and eventually registered using :meth:`~AbstractPluginHandler.register`
+
+Each subclass of :class:`AbstractPluginHandler` must implement its methods in
+order to be used in the application.
+
+At the moment, only two types of plugin are handled:
+
+* :class:`PyModulePlugin`: manage plugins that can be imported as Python
+  module from a python package, ie. where ``from package import name`` works
+* :class:`PyFilePlugin`: manage plugins that are Python files on the filesystem
+  or Python directory (with an ``__init__.py`` file inside), that can not be
+  directly imported and extra steps are necessary
+
+Both exposes the same interface and hide the internal implementation to the
+rest of the application.
+"""
 from __future__ import unicode_literals, absolute_import, print_function, division
 
 import inspect
@@ -14,8 +43,8 @@ class AbstractPluginHandler(object):
     configure, load, shutdown, etc. a Sopel's plugin (or "module").
 
     It is through this interface that Sopel will interact with its plugin,
-    being internals (from `sopel.modules`) or externals (from the python files
-    in a directory, to ``sopel_modules.*` subpackages).
+    being internals (from ``sopel.modules``) or externals (from the python
+    files in a directory, to ``sopel_modules.*`` subpackages).
 
     A "Plugin Handler" will be created by Sopel's loader for each plugin it
     finds, and it'll delegate it to load the plugin, to list its functions
@@ -52,7 +81,11 @@ class AbstractPluginHandler(object):
         raise NotImplementedError
 
     def setup(self, bot):
-        """Setup the plugin with the ``bot``"""
+        """Setup the plugin with the ``bot``
+
+        :param bot: instance of Sopel
+        :type bot: :class:`sopel.bot.Sopel`
+        """
         raise NotImplementedError
 
     def has_setup(self):
@@ -64,11 +97,19 @@ class AbstractPluginHandler(object):
         raise NotImplementedError
 
     def register(self, bot):
-        """Register the plugin with the ``bot``"""
+        """Register the plugin with the ``bot``
+
+        :param bot: instance of Sopel
+        :type bot: :class:`sopel.bot.Sopel`
+        """
         raise NotImplementedError
 
     def shutdown(self, bot):
-        """Take action on bot's shutdown"""
+        """Take action on bot's shutdown
+
+        :param bot: instance of Sopel
+        :type bot: :class:`sopel.bot.Sopel`
+        """
         raise NotImplementedError
 
     def has_shutdown(self):
@@ -101,8 +142,8 @@ class AbstractPluginHandler(object):
 class PyModulePlugin(AbstractPluginHandler):
     """Sopel's Plugin loaded from a Python module or package
 
-    A :class:`sopel.plugins.handlers.PyModulePlugin` represents a Sopel's
-    Plugin that is a Python module (or package) that can be imported directly.
+    A :class:`PyModulePlugin` represents a Sopel's Plugin that is a Python
+    module (or package) that can be imported directly.
 
     This::
 
