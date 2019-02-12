@@ -1,6 +1,7 @@
 # coding=utf-8
 from __future__ import unicode_literals, absolute_import, print_function, division
 
+import inspect
 import importlib
 
 from sopel import loader
@@ -26,6 +27,16 @@ class AbstractPluginHandler(object):
 
         This method must be called first, in order to setup, register, shutdown
         or configure the plugin later.
+        """
+        raise NotImplementedError
+
+    def get_label(self):
+        """Retrieve a display label for the plugin
+
+        :return: A human readable label for display purpose
+        :rtype: str
+
+        This method should, at least, return ``module_name + S + "module"``.
         """
         raise NotImplementedError
 
@@ -121,6 +132,16 @@ class PyModulePlugin(AbstractPluginHandler):
             self.module_name = name
 
         self._module = None
+
+    def get_label(self):
+        default_label = '%s module' % self.name
+        module_doc = getattr(self._module, '__doc__', None)
+
+        if not self.is_loaded() or not module_doc:
+            return default_label
+
+        lines = inspect.cleandoc(module_doc).splitlines()
+        return default_label if not lines else lines[0]
 
     def load(self):
         self._module = importlib.import_module(self.module_name)
