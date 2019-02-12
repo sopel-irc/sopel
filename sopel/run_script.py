@@ -149,7 +149,6 @@ def build_parser():
 
 
 def check_not_root():
-
     """Check if root is running the bot.
 
     It raises a ``RuntimeError`` if the user has root privileges on Linux or
