@@ -165,7 +165,7 @@ def check_not_root():
         if os.environ.get("USERNAME") == "Administrator":
             raise RuntimeError('Error: Do not run Sopel as Administrator.')
     else:
-        warnings.warn('Warning: Operating System is uncommon. Contact Sopel Devs.', warnings.RuntimeWarning)
+        warnings.warn('Warning: Operating System is uncommon. Contact Sopel Devs regarding %s' % name, warnings.RuntimeWarning)
 
 
 def print_version():
