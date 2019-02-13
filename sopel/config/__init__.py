@@ -22,11 +22,8 @@ from __future__ import unicode_literals, absolute_import, print_function, divisi
 import os
 import sys
 
-import sopel.config.core_section
-from sopel.config.types import StaticSection
-import sopel.tools
-from sopel.tools import get_input, stderr
-from sopel import plugins
+from sopel import tools
+from . import core_section, types
 
 if sys.version_info.major < 3:
     import ConfigParser
@@ -73,7 +70,7 @@ class Config(object):
         """The config object's associated file, as noted above."""
         self.parser = ConfigParser.RawConfigParser(allow_no_value=True)
         self.parser.read(self.filename)
-        self.define_section('core', sopel.config.core_section.CoreSection,
+        self.define_section('core', core_section.CoreSection,
                             validate=validate)
         self.get = self.parser.get
 
@@ -117,7 +114,7 @@ class Config(object):
         exception raised if they are invalid. This is desirable in a module's
         setup function, for example, but might not be in the configure function.
         """
-        if not issubclass(cls_, StaticSection):
+        if not issubclass(cls_, types.StaticSection):
             raise ValueError("Class must be a subclass of StaticSection.")
         current = getattr(self, name, None)
         current_name = str(current.__class__)
@@ -198,12 +195,20 @@ class Config(object):
         d = 'n'
         if default:
             d = 'y'
-        ans = get_input(question + ' (y/n)? [' + d + '] ')
+        ans = tools.get_input(question + ' (y/n)? [' + d + '] ')
         if not ans:
             ans = d
         return ans.lower() == 'y'
 
     def _modules(self):
+        # Avoid circular import:
+        # - sopel.plugins use sopel.loader
+        # - sopel.config use sopel.plugins
+        # - sopel.loader use sopel.config
+        # TODO: Module configuration should not be in sopel.config
+        # removing module configuration from sopel.config would also remove
+        # the unecessary circular import
+        from sopel import plugins
         for plugin, is_enabled in plugins.enumerate_plugins(self):
             if not is_enabled:
                 # Do not configure non-enabled modules
@@ -213,15 +218,15 @@ class Config(object):
             try:
                 plugin.load()
             except Exception as e:
-                filename, lineno = sopel.tools.get_raising_file_and_line()
+                filename, lineno = tools.get_raising_file_and_line()
                 rel_path = os.path.relpath(filename, os.path.dirname(__file__))
                 raising_stmt = "%s:%d" % (rel_path, lineno)
-                stderr("Error loading %s: %s (%s)" % (name, e, raising_stmt))
+                tools.stderr("Error loading %s: %s (%s)" % (name, e, raising_stmt))
             else:
                 if plugin.has_configure():
                     prompt = 'Configure {} (y/n)? [n]'.format(
                         plugin.get_label())
-                    do_configure = get_input(prompt)
+                    do_configure = tools.get_input(prompt)
                     do_configure = do_configure and do_configure.lower() == 'y'
                     if do_configure:
                         plugin.configure(self)
@@ -266,7 +271,7 @@ def _create_config(configpath):
           " to create your configuration file:\n")
     try:
         config = Config(configpath, validate=False)
-        sopel.config.core_section.configure(config)
+        core_section.configure(config)
         if config.option(
             'Would you like to see if there are any modules'
             ' that need configuring'
