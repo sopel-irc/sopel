@@ -12,10 +12,10 @@ import xmltodict
 import sys
 
 if sys.version_info.major < 3:
-    from urllib import quote_plus, unquote as _unquote
+    from urllib import unquote as _unquote
     unquote = lambda s: _unquote(s.encode('utf-8')).decode('utf-8')
 else:
-    from urllib.parse import quote_plus, unquote
+    from urllib.parse import unquote
 
 
 def formatnumber(n):
@@ -46,8 +46,15 @@ r_duck = re.compile(r'nofollow" class="[^"]+" href="(?!(?:https?:\/\/r\.search\.
 
 def duck_search(query):
     query = query.replace('!', '')
-    uri = 'https://duckduckgo.com/html/?q=%s&kl=us-en' % query
-    bytes = requests.get(uri, headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.87 Safari/537.36'}).text
+    base = 'https://duckduckgo.com/html/'
+    parameters = {
+        'kl': 'us-en',
+        'q': query,
+    }
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.87 Safari/537.36'
+    }
+    bytes = requests.get(base, parameters, headers=headers).text
     if 'web-result' in bytes:  # filter out the adds on top of the page
         bytes = bytes.split('web-result')[1]
     m = r_duck.search(bytes)
@@ -64,14 +71,15 @@ def duck_api(query):
     if '!bang' in query.lower():
         return 'https://duckduckgo.com/bang.html'
 
-    # This fixes issue #885 (https://github.com/sopel-irc/sopel/issues/885)
-    # It seems that duckduckgo api redirects to its Instant answer API html page
-    # if the query constains special charactares that aren't urlencoded.
-    # So in order to always get a JSON response back the query is urlencoded
-    query = quote_plus(query)
-    uri = 'https://api.duckduckgo.com/?q=%s&format=json&no_html=1&no_redirect=1' % query
+    base = 'https://api.duckduckgo.com/'
+    parameters = {
+        'format': 'json',
+        'no_html': '1',
+        'no_redirect': '1',
+        'q': query,
+    }
     try:
-        results = requests.get(uri).json()
+        results = requests.get(base, parameters).json()
     except ValueError:
         return None
     if results['Redirect']:
