@@ -5,10 +5,6 @@
 from __future__ import unicode_literals, absolute_import, print_function, division
 
 import re
-from sopel import web
-from sopel.module import commands, example
-import requests
-import xmltodict
 import sys
 
 if sys.version_info.major < 3:
@@ -16,6 +12,12 @@ if sys.version_info.major < 3:
     unquote = lambda s: _unquote(s.encode('utf-8')).decode('utf-8')
 else:
     from urllib.parse import unquote
+
+import requests
+import xmltodict
+
+from sopel import web
+from sopel.module import commands, example
 
 
 def formatnumber(n):
