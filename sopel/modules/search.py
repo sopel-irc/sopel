@@ -162,8 +162,14 @@ def suggest(bot, trigger):
     # a composite profile of all users on a given instance, not a profile of any
     # single user. This can be switched out as soon as someone finds (or builds)
     # an alternative suggestion API.
-    uri = 'https://suggestqueries.google.com/complete/search?output=toolbar&hl=en&q='
-    answer = xmltodict.parse(requests.get(uri + query.replace('+', '%2B')).text)['toplevel']
+    base = 'https://suggestqueries.google.com/complete/search'
+    parameters = {
+        'output': 'toolbar',
+        'hl': 'en',
+        'q': query,
+    }
+    response = requests.get(base, parameters)
+    answer = xmltodict.parse(response.text)['toplevel']
     try:
         answer = answer['CompleteSuggestion'][0]['suggestion']['@data']
     except TypeError:
