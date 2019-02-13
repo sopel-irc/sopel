@@ -30,9 +30,13 @@ r_bing = re.compile(r'<h2(?: class=" b_topTitle")?><a href="([^"]+)"')
 
 
 def bing_search(query, lang='en-US'):
-    base = 'https://www.bing.com/search?mkt=%s&q=' % lang
-    bytes = requests.get(base + query).text
-    m = r_bing.search(bytes)
+    base = 'https://www.bing.com/search'
+    parameters = {
+        'mkt': lang,
+        'q': query,
+    }
+    response = requests.get(base, parameters)
+    m = r_bing.search(response.text)
     if m:
         return m.group(1)
 
