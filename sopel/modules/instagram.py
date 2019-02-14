@@ -8,15 +8,19 @@ https://sopel.chat
 """
 from __future__ import unicode_literals, absolute_import, print_function, division
 
+import re
+from datetime import datetime
+
+from requests import get
+
+from sopel.module import rule
+from sopel.tools import SopelMemory
+
 try:
     from ujson import loads
 except ImportError:
     from json import loads
-from sopel.module import rule
-from sopel.tools import SopelMemory
-from requests import get
-from datetime import datetime
-import re
+
 
 instagram_regex = r'.*(https?:\/\/(?:www\.){0,1}instagram\.com\/([a-zA-Z0-9_\.]{,30}\/)?p\/[a-zA-Z0-9_-]+)\s?.*'
 instagram_pattern = re.compile(instagram_regex)
