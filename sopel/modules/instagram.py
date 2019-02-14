@@ -72,7 +72,7 @@ def parse_insta_json(json):
         # Strip newlines
         icap = icap.replace('\n', ' ')
         # Truncate caption
-        icap = (icap[:256] + u'…') if len(icap) > 256 else icap
+        icap = (icap[:256] + '…') if len(icap) > 256 else icap
     except Exception:  # TODO: be specific
         icap = False
 
@@ -86,10 +86,10 @@ def parse_insta_json(json):
     else:
         botmessage += "%s (@%s)" % (ifname, iuser)
     if icap is not False:
-        botmessage += u" | " + icap
-    botmessage += u" | " + str(iwidth) + "x" + str(iheight)
-    botmessage += u" | Likes: {:,} | Comments: {:,}".format(ilikes, icomms)
-    botmessage += u" | Uploaded: " + pubdate
+        botmessage += " | " + icap
+    botmessage += " | " + str(iwidth) + "x" + str(iheight)
+    botmessage += " | Likes: {:,} | Comments: {:,}".format(ilikes, icomms)
+    botmessage += " | Uploaded: " + pubdate
 
     # Ta-da!
     return botmessage
