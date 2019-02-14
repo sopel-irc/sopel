@@ -13,8 +13,7 @@ from datetime import datetime
 
 from requests import get
 
-from sopel.module import rule
-from sopel.tools import SopelMemory
+from sopel import module, tools
 
 try:
     from ujson import loads
@@ -28,7 +27,7 @@ instagram_pattern = re.compile(instagram_regex)
 
 def setup(bot):
     if not bot.memory.contains('url_callbacks'):
-        bot.memory['url_callbacks'] = SopelMemory()
+        bot.memory['url_callbacks'] = tools.SopelMemory()
     bot.memory['url_callbacks'][instagram_pattern] = instaparse
 
 
@@ -38,7 +37,7 @@ def shutdown(bot):
 # TODO: Parse Instagram profile page
 
 
-@rule(instagram_regex)
+@module.rule(instagram_regex)
 def instaparse(bot, trigger):
     # Get the embedded JSON
     json = get_insta_json(trigger.group(1))
