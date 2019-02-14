@@ -29,7 +29,7 @@ def codepoint(bot, trigger):
             arg = arg[2:]
         try:
             arg = unichr(int(arg, 16))
-        except Exception:  # TODO: Be specific
+        except (ValueError, TypeError):
             bot.reply("That's not a valid code point.")
             return NOLIMIT
 
