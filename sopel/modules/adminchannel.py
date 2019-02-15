@@ -27,7 +27,7 @@ def kick(bot, trigger):
     """
     Kick a user from the channel.
     """
-    if bot.privileges[trigger.sender][bot.nick] < HALFOP:
+    if bot.channels[trigger.sender].privileges[bot.nick] < HALFOP:
         return bot.reply("I'm not a channel operator!")
     text = trigger.group().split()
     argc = len(text)
@@ -79,7 +79,7 @@ def ban(bot, trigger):
     This give admins the ability to ban a user.
     The bot must be a Channel Operator for this command to work.
     """
-    if bot.privileges[trigger.sender][bot.nick] < HALFOP:
+    if bot.channels[trigger.sender].privileges[bot.nick] < HALFOP:
         return bot.reply("I'm not a channel operator!")
     text = trigger.group().split()
     argc = len(text)
@@ -107,7 +107,7 @@ def unban(bot, trigger):
     This give admins the ability to unban a user.
     The bot must be a Channel Operator for this command to work.
     """
-    if bot.privileges[trigger.sender][bot.nick] < HALFOP:
+    if bot.channels[trigger.sender].privileges[bot.nick] < HALFOP:
         return bot.reply("I'm not a channel operator!")
     text = trigger.group().split()
     argc = len(text)
@@ -135,7 +135,7 @@ def quiet(bot, trigger):
     This gives admins the ability to quiet a user.
     The bot must be a Channel Operator for this command to work.
     """
-    if bot.privileges[trigger.sender][bot.nick] < OP:
+    if bot.channels[trigger.sender].privileges[bot.nick] < OP:
         return bot.reply("I'm not a channel operator!")
     text = trigger.group().split()
     argc = len(text)
@@ -163,7 +163,7 @@ def unquiet(bot, trigger):
     This gives admins the ability to unquiet a user.
     The bot must be a Channel Operator for this command to work.
     """
-    if bot.privileges[trigger.sender][bot.nick] < OP:
+    if bot.channels[trigger.sender].privileges[bot.nick] < OP:
         return bot.reply("I'm not a channel operator!")
     text = trigger.group().split()
     argc = len(text)
@@ -193,7 +193,7 @@ def kickban(bot, trigger):
     The bot must be a Channel Operator for this command to work.
     .kickban [#chan] user1 user!*@* get out of here
     """
-    if bot.privileges[trigger.sender][bot.nick] < HALFOP:
+    if bot.channels[trigger.sender].privileges[bot.nick] < HALFOP:
         return bot.reply("I'm not a channel operator!")
     text = trigger.group().split()
     argc = len(text)
@@ -227,7 +227,7 @@ def topic(bot, trigger):
     This gives ops the ability to change the topic.
     The bot must be a Channel Operator for this command to work.
     """
-    if bot.privileges[trigger.sender][bot.nick] < HALFOP:
+    if bot.channels[trigger.sender].privileges[bot.nick] < HALFOP:
         return bot.reply("I'm not a channel operator!")
     if not trigger.group(2):
         return

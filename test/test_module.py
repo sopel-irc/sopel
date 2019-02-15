@@ -20,9 +20,7 @@ def sopel():
 @pytest.fixture
 def bot(sopel, pretrigger):
     bot = MockSopelWrapper(sopel, pretrigger)
-    bot.privileges = dict()
-    bot.privileges[Identifier('#Sopel')] = dict()
-    bot.privileges[Identifier('#Sopel')][Identifier('Foo')] = module.VOICE
+    bot.channels[Identifier('#Sopel')].privileges[Identifier('Foo')] = module.VOICE
     return bot
 
 

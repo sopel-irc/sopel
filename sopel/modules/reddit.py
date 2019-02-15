@@ -176,7 +176,7 @@ def update_channel(bot, trigger):
     Sets the Safe for Work status (true or false) for the current
     channel. Defaults to false.
     """
-    if bot.privileges[trigger.sender][trigger.nick] < OP:
+    if bot.channels[trigger.sender].privileges[trigger.nick] < OP:
         return
     else:
         param = 'true'
