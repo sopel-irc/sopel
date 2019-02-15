@@ -23,6 +23,7 @@ if sys.version_info.major == 3 and sys.version_info.minor < 3:
 import os
 import argparse
 import signal
+import platform
 
 from sopel import run, tools, __version__
 from sopel.config import (
@@ -153,14 +154,18 @@ def check_not_root():
     It raises a ``RuntimeError`` if the user has root privileges on Linux or
     if it is the ``Administrator`` account on Windows.
     """
-    try:
+    opersystem = platform.system()
+    if opersystem in ["Linux", "Darwin"]:
         # Linux/Mac
         if os.getuid() == 0 or os.geteuid() == 0:
             raise RuntimeError('Error: Do not run Sopel with root privileges.')
-    except AttributeError:
+    elif opersystem in ["Windows"]:
         # Windows
         if os.environ.get("USERNAME") == "Administrator":
             raise RuntimeError('Error: Do not run Sopel as Administrator.')
+    else:
+        stderr("Warning: %s is an uncommon operating system platform. Sopel should still work, "
+               "but please contact Sopel's developers if you experience issues." % opersystem)
 
 
 def print_version():
