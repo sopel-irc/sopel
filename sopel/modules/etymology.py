@@ -11,15 +11,22 @@ from __future__ import unicode_literals, absolute_import, print_function, divisi
 
 from re import sub
 from requests import get
+from sopel import web
 from sopel.module import commands, example, NOLIMIT
 try:
-    # Python 2.6-2.7
+    # Python 2.7
     from HTMLParser import HTMLParser
     h = HTMLParser()
     unescape = h.unescape
 except ImportError:
-    # Python 3
-    from html import unescape  # https://stackoverflow.com/a/2087433
+    try:
+        # Python 3.4+
+        from html import unescape  # https://stackoverflow.com/a/2087433
+    except ImportError:
+        # Python 3.3... sigh
+        from html.parser import HTMLParser
+        h = HTMLParser()
+        unescape = h.unescape
 
 
 ETYURI = 'https://www.etymonline.com/word/%s'
@@ -33,7 +40,7 @@ def etymology(word):
     if len(word) > 25:
         raise ValueError("Word too long: %s[…]" % word[:10])
 
-    ety = get(ETYURI % word)
+    ety = get(ETYURI % web.quote(word))
     if ety.status_code != 200:
         return None
 
@@ -54,7 +61,7 @@ def etymology(word):
         sentence = ' '.join(words) + ' […]'
 
     sentence = '"' + sentence.replace('"', "'") + '"'
-    return sentence + ' - ' + (ETYURI % word)
+    return sentence + ' - ' + (ETYURI % web.quote(word))
 
 
 @commands('ety')
@@ -66,7 +73,7 @@ def f_etymology(bot, trigger):
     try:
         result = etymology(word)
     except IOError:
-        msg = "Can't connect to etymonline.com (%s)" % (ETYURI % word)
+        msg = "Can't connect to etymonline.com (%s)" % (ETYURI % web.quote(word))
         bot.msg(trigger.sender, msg)
         return NOLIMIT
     except (AttributeError, TypeError):
@@ -77,7 +84,7 @@ def f_etymology(bot, trigger):
     if result is not None:
         bot.msg(trigger.sender, result)
     else:
-        uri = ETYSEARCH % word
+        uri = ETYSEARCH % web.quote(word)
         msg = 'Can\'t find the etymology for "%s". Try %s' % (word, uri)
         bot.msg(trigger.sender, msg)
         return NOLIMIT

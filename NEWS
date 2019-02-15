@@ -2,6 +2,22 @@ This file is used to auto-generate the "Changelog" section of Sopel's website.
 When adding new entries, follow the style guide in NEWS.spec.md to avoid causing
 problems with the site build.
 
+Changes between 6.6.2 and 6.6.3
+===============================
+
+Module changes
+--------------
+
+* Fixed loading etymology module on Python 3.3
+* Added Unicode support to calc module's `.py` output
+* Correctly quote URL parameters in etymology and search modules
+
+Core changes
+------------
+
+* Added docstrings to the privilege level constants in `sopel.module`
+
+
 Changes between 6.6.1 and 6.6.2
 ===============================
 
