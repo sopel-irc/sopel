@@ -35,6 +35,12 @@ import importlib
 
 from sopel import loader
 
+try:
+    from importlib import reload
+except ImportError:
+    # py2: no reload function
+    from imp import reload
+
 
 class AbstractPluginHandler(object):
     """Base class for plugin handlers.
@@ -56,6 +62,14 @@ class AbstractPluginHandler(object):
 
         This method must be called first, in order to setup, register, shutdown
         or configure the plugin later.
+        """
+        raise NotImplementedError
+
+    def reload(self):
+        """Reload the plugin
+
+        This method can be called once the plugin is already loaded. It will
+        take care of reloading the plugin from its source.
         """
         raise NotImplementedError
 
@@ -187,6 +201,9 @@ class PyModulePlugin(AbstractPluginHandler):
     def load(self):
         self._module = importlib.import_module(self.module_name)
 
+    def reload(self):
+        self._module = reload(self._module)
+
     def is_loaded(self):
         return self._module is not None
 
@@ -245,7 +262,34 @@ class PyFilePlugin(PyModulePlugin):
 
         super(PyFilePlugin, self).__init__(name)
 
-    def load(self):
-        self._module, _ = loader.load_module(
+    def _load(self):
+        # The current implementation of `sopel.loader.load_module` uses the
+        # `imp.load_module` to perform the load action, which also reload the
+        # module. However, `imp` is deprecated in Python 3, so that might need
+        # to be changed when the support for Python 2 is dropped.
+        #
+        # However, the solution for Python 3 is non-trivial, since the
+        # `importlib` built-in module does not have a similar function,
+        # therefore requires to dive into its public internals
+        # (``importlib.machinery`` and ``importlib.util``).
+        #
+        # All of that is doable, but represent a lot of works. As long as
+        # Python 2 is supported, we can keep it for now.
+        #
+        # TODO: switch to ``importlib`` when Python2 support is dropped.
+        mod, _ = loader.load_module(
             self.name, self.path, self.module_type
         )
+        return mod
+
+    def load(self):
+        self._module = self._load()
+
+    def reload(self):
+        """Reload the plugin
+
+        Unlike :class:`PyModulePlugin`, it is not possible to use the
+        ``reload`` function (either from `imp` or `importlib`), because the
+        module might not be available through ``sys.path``.
+        """
+        self._module = self._load()
