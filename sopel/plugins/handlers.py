@@ -118,6 +118,14 @@ class AbstractPluginHandler(object):
         """
         raise NotImplementedError
 
+    def unregister(self, bot):
+        """Unregister the plugin from the ``bot``
+
+        :param bot: instance of Sopel
+        :type bot: :class:`sopel.bot.Sopel`
+        """
+        raise NotImplementedError
+
     def shutdown(self, bot):
         """Take action on bot's shutdown
 
@@ -216,7 +224,11 @@ class PyModulePlugin(AbstractPluginHandler):
 
     def register(self, bot):
         relevant_parts = loader.clean_module(self._module, bot.config)
-        bot.register(*relevant_parts)
+        bot.add_plugin(self, *relevant_parts)
+
+    def unregister(self, bot):
+        relevant_parts = loader.clean_module(self._module, bot.config)
+        bot.remove_plugin(self, *relevant_parts)
 
     def shutdown(self, bot):
         if self.has_shutdown():

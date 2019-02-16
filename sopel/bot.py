@@ -8,6 +8,7 @@
 from __future__ import unicode_literals, absolute_import, print_function, division
 
 import collections
+import itertools
 import os
 import re
 import sys
@@ -58,6 +59,7 @@ class Sopel(irc.Bot):
             'medium': collections.defaultdict(list),
             'low': collections.defaultdict(list)
         }
+        self._plugins = {}
         self.config = config
         """The :class:`sopel.config.Config` for the current Sopel instance."""
         self.doc = {}
@@ -220,6 +222,75 @@ class Sopel(irc.Bot):
             stderr('%d modules disabled\n\n' % load_disabled)
         else:
             stderr("Warning: Couldn't load any modules")
+
+    def reload_plugin(self, name):
+        if name not in self._plugins:
+            # TODO: raise more specific exception
+            raise Exception('Plugin %s is not loaded' % name)
+
+        plugin = self._plugins[name]
+        # tear down
+        plugin.shutdown(self)
+        plugin.unregister(self)
+        print('Unloaded: %s' % name)
+        # reload & setup
+        plugin.reload()
+        plugin.setup(self)
+        plugin.register(self)
+        print('Reloaded: %s' % name)
+
+    def reload_plugins(self):
+        """Reload all plugins
+
+        First, it shutdown & unregister all plugins, then it reload, setup, and
+        register all of them.
+        """
+        registered = list(self._plugins.items())
+        # tear down all plugins
+        for name, plugin in registered:
+            plugin.shutdown(self)
+            plugin.unregister(self)
+            print('Unloaded: %s' % name)
+
+        # reload & setup all plugins
+        for name, plugin in registered:
+            plugin.reload()
+            plugin.setup(self)
+            plugin.register(self)
+            print('Reloaded: %s' % name)
+
+    def add_plugin(self, plugin, callables, jobs, shutdowns, urls):
+        """Add a loaded plugin to the bot's registry"""
+        self._plugins[plugin.name] = plugin
+        self.register(callables, jobs, shutdowns, urls)
+
+    def remove_plugin(self, plugin, callables, jobs, shutdowns, urls):
+        """Remove a loaded plugin from the bot's registry"""
+        name = plugin.name
+        if name not in self._plugins:
+            # TODO: raise more specific exception
+            raise Exception('Plugin %s is not loaded' % name)
+
+        try:
+            # remove commands, jobs, and shutdown functions
+            for func in itertools.chain(callables, jobs, shutdowns):
+                self.unregister(func)
+
+            # remove URL callback handlers
+            for func in urls:
+                regex = func.url_regex
+                if func == self.memory['url_callbacks'].get(regex):
+                    del self.memory['url_callbacks'][regex]
+        except:  # noqa
+            # TODO: consider logging?
+            raise  # re-raised
+        else:
+            # remove plugin from registry
+            del self._plugins[name]
+
+    def has_plugin(self, name):
+        """Tell if the bot has registered this plugin by its name"""
+        return name in self._plugins
 
     def unregister(self, obj):
         if not callable(obj):
