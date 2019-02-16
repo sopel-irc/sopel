@@ -8,22 +8,27 @@ https://sopel.chat
 """
 from __future__ import unicode_literals, absolute_import, print_function, division
 
-import collections
+import os
 import subprocess
-import sys
-import time
 
-from sopel.tools import stderr, itervalues
-import sopel.loader
 import sopel.module
+from sopel import plugins, tools
 
-try:
-    from importlib import reload
-except ImportError:
+
+def _load(bot, plugin):
+    # handle loading's errors (if any)
     try:
-        from imp import reload
-    except ImportError:
-        pass  # fallback to builtin if neither module is available
+        plugin.load()
+        if plugin.has_setup():
+            plugin.setup(bot)
+        plugin.register(bot)
+    except Exception as e:
+        filename, lineno = tools.get_raising_file_and_line()
+        rel_path = os.path.relpath(filename, os.path.dirname(__file__))
+        raising_stmt = "%s:%d" % (rel_path, lineno)
+        tools.stderr(
+            "Error loading %s: %s (%s)" % (plugin.name, e, raising_stmt))
+        raise
 
 
 @sopel.module.nickname_commands("reload")
@@ -35,89 +40,14 @@ def f_reload(bot, trigger):
     name = trigger.group(2)
 
     if not name or name == '*' or name.upper() == 'ALL THE THINGS':
-        bot._callables = {
-            'high': collections.defaultdict(list),
-            'medium': collections.defaultdict(list),
-            'low': collections.defaultdict(list)
-        }
-        bot._command_groups = collections.defaultdict(list)
-
-        for m in sopel.loader.enumerate_modules(bot.config):
-            reload_module_tree(bot, m, silent=True)
-
+        bot.reload_plugins()
         return bot.reply('done')
 
-    if (name not in sys.modules and name not in sopel.loader.enumerate_modules(bot.config)):
+    if not bot.has_plugin(name):
         return bot.reply('"%s" not loaded, try the `load` command' % name)
 
-    reload_module_tree(bot, name)
-
-
-def reload_module_tree(bot, name, seen=None, silent=False):
-    from types import ModuleType
-
-    old_module = sys.modules[name]
-
-    if seen is None:
-        seen = {}
-    if name not in seen:
-        seen[name] = []
-
-    for obj in itervalues(vars(old_module)):
-        if callable(obj):
-            if (getattr(obj, '__name__', None) == 'shutdown' and
-                        obj in bot.shutdown_methods):
-                # If this is a shutdown method, call it first.
-                try:
-                    stderr(
-                        "calling %s.%s" % (
-                            obj.__module__, obj.__name__,
-                        )
-                    )
-                    obj(bot)
-                except Exception as e:
-                    stderr(
-                        "Error calling shutdown method for module %s:%s" % (
-                            obj.__module__, e
-                        )
-                    )
-            bot.unregister(obj)
-        elif (type(obj) is ModuleType and
-              obj.__name__.startswith(name + '.') and
-              obj.__name__ not in sys.builtin_module_names):
-            # recurse into submodules, see issue 1056
-            if obj not in seen[name]:
-                seen[name].append(obj)
-                reload(obj)
-                reload_module_tree(bot, obj.__name__, seen, silent)
-
-    modules = sopel.loader.enumerate_modules(bot.config)
-    if name not in modules:
-        return  # Only reload the top-level module, once recursion is finished
-
-    # Also delete the setup function
-    # Sub-modules shouldn't have setup functions, so do after the recursion check
-    if hasattr(old_module, "setup"):
-        delattr(old_module, "setup")
-
-    path, type_ = modules[name]
-    load_module(bot, name, path, type_, silent)
-
-
-def load_module(bot, name, path, type_, silent=False):
-    module, mtime = sopel.loader.load_module(name, path, type_)
-    relevant_parts = sopel.loader.clean_module(module, bot.config)
-
-    bot.register(*relevant_parts)
-
-    # TODO sys.modules[name] = module
-    if hasattr(module, 'setup'):
-        module.setup(bot)
-
-    modified = time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime(mtime))
-
-    if not silent:
-        bot.reply('%r (version: %s)' % (module, modified))
+    bot.reload_plugin(name)
+    return bot.reply('done: %s reloaded' % name)
 
 
 @sopel.module.nickname_commands('update')
@@ -139,18 +69,28 @@ def f_update(bot, trigger):
 def f_load(bot, trigger):
     """Loads a module (for use by admins only)."""
     name = trigger.group(2)
-    path = ''
     if not name:
         return bot.reply('Load what?')
 
-    if name in sys.modules:
+    if bot.has_plugin(name):
         return bot.reply('Module already loaded, use reload')
 
-    mods = sopel.loader.enumerate_modules(bot.config)
-    if name not in mods:
-        return bot.reply('Module %s not found' % name)
-    path, type_ = mods[name]
-    load_module(bot, name, path, type_)
+    for plugin, is_enabled in plugins.enumerate_plugins(bot.config):
+        if plugin.name == name:
+            if is_enabled:
+                try:
+                    _load(bot, plugin)
+                    bot.reply('Module %s loaded' % name)
+                except Exception as error:
+                    bot.reply(
+                        'Module %s can not be loaded: %s' % (name, error))
+            else:
+                bot.reply('Module %s is disabled' % name)
+
+            break
+    else:
+        # Will be triggered only if "break" is not found
+        bot.reply('Module %s not found' % name)
 
 
 # Catch private messages
