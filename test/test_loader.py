@@ -193,12 +193,20 @@ def test_clean_callable_event(tmpconfig, func):
     assert hasattr(func, 'event')
     assert func.event == ['LOW', 'UP', 'MIXED']
 
+    # idempotency
+    loader.clean_callable(func, tmpconfig)
+    assert func.event == ['LOW', 'UP', 'MIXED']
+
 
 def test_clean_callable_event_string(tmpconfig, func):
     setattr(func, 'event', 'some')
     loader.clean_callable(func, tmpconfig)
 
     assert hasattr(func, 'event')
+    assert func.event == ['SOME']
+
+    # idempotency
+    loader.clean_callable(func, tmpconfig)
     assert func.event == ['SOME']
 
 
@@ -215,6 +223,11 @@ def test_clean_callable_rule(tmpconfig, func):
     assert regex.match('abcd')
     assert not regex.match('efg')
 
+    # idempotency
+    loader.clean_callable(func, tmpconfig)
+    assert len(func.rule) == 1
+    assert regex in func.rule
+
 
 def test_clean_callable_rule_string(tmpconfig, func):
     setattr(func, 'rule', r'abc')
@@ -228,6 +241,11 @@ def test_clean_callable_rule_string(tmpconfig, func):
     assert regex.match('abc')
     assert regex.match('abcd')
     assert not regex.match('efg')
+
+    # idempotency
+    loader.clean_callable(func, tmpconfig)
+    assert len(func.rule) == 1
+    assert regex in func.rule
 
 
 def test_clean_callable_rule_nick(tmpconfig, func):
@@ -244,6 +262,11 @@ def test_clean_callable_rule_nick(tmpconfig, func):
     assert regex.match('TestBot, hello')
     assert not regex.match('TestBot not hello')
 
+    # idempotency
+    loader.clean_callable(func, tmpconfig)
+    assert len(func.rule) == 1
+    assert regex in func.rule
+
 
 def test_clean_callable_rule_nickname(tmpconfig, func):
     """Assert ``$nick`` in a rule will match ``TestBot``."""
@@ -257,6 +280,11 @@ def test_clean_callable_rule_nickname(tmpconfig, func):
     regex = func.rule[0]
     assert regex.match('TestBot hello')
     assert not regex.match('TestBot not hello')
+
+    # idempotency
+    loader.clean_callable(func, tmpconfig)
+    assert len(func.rule) == 1
+    assert regex in func.rule
 
 
 def test_clean_callable_nickname_command(tmpconfig, func):
@@ -274,6 +302,11 @@ def test_clean_callable_nickname_command(tmpconfig, func):
     assert regex.match('TestBot, hello!')
     assert regex.match('TestBot: hello!')
     assert not regex.match('TestBot not hello')
+
+    # idempotency
+    loader.clean_callable(func, tmpconfig)
+    assert len(func.rule) == 1
+    assert regex in func.rule
 
 
 def test_clean_callable_events(tmpconfig, func):
@@ -508,6 +541,11 @@ def test_clean_callable_intents(tmpconfig, func):
     assert regex.match('ABC')
     assert regex.match('AbCdE')
     assert not regex.match('efg')
+
+    # idempotency
+    loader.clean_callable(func, tmpconfig)
+    assert len(func.intents) == 1
+    assert regex in func.intents
 
 
 def test_load_module_pymod(tmpdir):

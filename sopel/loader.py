@@ -168,10 +168,12 @@ def clean_callable(func, config):
         func.rule = getattr(func, 'rule', [])
         for command in getattr(func, 'commands', []):
             regexp = get_command_regexp(prefix, command)
-            func.rule.append(regexp)
+            if regexp not in func.rule:
+                func.rule.append(regexp)
         for command in getattr(func, 'nickname_commands', []):
             regexp = get_nickname_command_regexp(nick, command, alias_nicks)
-            func.rule.append(regexp)
+            if regexp not in func.rule:
+                func.rule.append(regexp)
         if hasattr(func, 'example'):
             # If no examples are flagged as user-facing, just show the first one like Sopel<7 did
             examples = [rec["example"] for rec in func.example if rec["help"]] or [func.example[0]["example"]]
@@ -188,7 +190,14 @@ def clean_callable(func, config):
                 func._docs[command] = (doc, examples)
 
     if hasattr(func, 'intents'):
-        func.intents = [re.compile(intent, re.IGNORECASE) for intent in func.intents]
+        # Can be implementation-dependent
+        _regex_type = type(re.compile(''))
+        func.intents = [
+            (intent
+                if isinstance(intent, _regex_type)
+                else re.compile(intent, re.IGNORECASE))
+            for intent in func.intents
+        ]
 
 
 def load_module(name, path, type_):
