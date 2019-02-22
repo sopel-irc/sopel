@@ -5,13 +5,13 @@ using the NEWS file to make HTML changelog pages. Since the file was already
 Markdown-like, parsing it with a script became the chosen method.
 
 What follows is a description of the syntax conventions used to keep NEWS
-easily consumable by the [website build script][clg]. It uses the common all-
+easily consumable by the [website build script][dvs]. It uses the common all-
 caps RFC terms "MUST", "SHOULD", etc. according to the usual RFC conventions.
 Anything set off by one of these is important to follow as it might affect the
 website build script's ability to read this file correctly, or effectively
 translate it into HTML pages.
 
-  [clg]: https://github.com/sopel-irc/sopel-website/blob/master/generate_changelogs.py
+  [dvs]: https://github.com/sopel-irc/sopel.chat/blob/master/document_versions.py
 
 ----
 
