@@ -66,7 +66,7 @@ setup(
     # Distutils is shit, and doesn't check if it's a list of basestring
     # but instead requires str.
     packages=[str('sopel'), str('sopel.modules'),
-              str('sopel.config'), str('sopel.tools')],
+              str('sopel.cli'), str('sopel.config'), str('sopel.tools')],
     classifiers=classifiers,
     license='Eiffel Forum License, version 2',
     platforms='Linux x86, x86-64',

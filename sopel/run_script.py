@@ -11,6 +11,8 @@ https://sopel.chat
 from __future__ import unicode_literals, absolute_import, print_function, division
 
 import sys
+
+from sopel.cli import utils
 from sopel.tools import stderr
 
 if sys.version_info < (2, 7):
@@ -30,6 +32,7 @@ from sopel.config import (
     Config,
     _create_config,
     ConfigurationError,
+    ConfigurationNotFound,
     DEFAULT_HOMEDIR,
     _wizard
 )
@@ -45,82 +48,11 @@ encounter such error case.
 """
 
 
-def enumerate_configs(config_dir, extension='.cfg'):
-    """List configuration file from ``config_dir`` with ``extension``
-
-    :param str config_dir: path to the configuration directory
-    :param str extension: configuration file's extension (default to ``.cfg``)
-    :return: a list of configuration filename found in ``config_dir`` with
-             the correct ``extension``
-    :rtype: list
-
-    Example::
-
-        >>> from sopel import run_script, config
-        >>> os.listdir(config.DEFAULT_HOMEDIR)
-        ['config.cfg', 'extra.ini', 'module.cfg', 'README']
-        >>> run_script.enumerate_configs(config.DEFAULT_HOMEDIR)
-        ['config.cfg', 'module.cfg']
-        >>> run_script.enumerate_configs(config.DEFAULT_HOMEDIR, '.ini')
-        ['extra.ini']
-
-    """
-    if not os.path.isdir(config_dir):
-        return
-
-    for item in os.listdir(config_dir):
-        if item.endswith(extension):
-            yield item
-
-
-def find_config(config_dir, name, extension='.cfg'):
-    """Build the absolute path for the given configuration file ``name``
-
-    :param str config_dir: path to the configuration directory
-    :param str name: configuration file ``name``
-    :param str extension: configuration file's extension (default to ``.cfg``)
-    :return: the path of the configuration file, either in the current
-             directory or from the ``config_dir`` directory
-
-    This function tries different locations:
-
-    * the current directory
-    * the ``config_dir`` directory with the ``extension`` suffix
-    * the ``config_dir`` directory without a suffix
-
-    Example::
-
-        >>> from sopel import run_script
-        >>> os.listdir()
-        ['local.cfg', 'extra.ini']
-        >>> os.listdir(config.DEFAULT_HOMEDIR)
-        ['config.cfg', 'extra.ini', 'module.cfg', 'README']
-        >>> run_script.find_config(config.DEFAULT_HOMEDIR, 'local.cfg')
-        'local.cfg'
-        >>> run_script.find_config(config.DEFAULT_HOMEDIR, 'local')
-        '/home/username/.sopel/local'
-        >>> run_script.find_config(config.DEFAULT_HOMEDIR, 'config')
-        '/home/username/.sopel/config.cfg'
-        >>> run_script.find_config(config.DEFAULT_HOMEDIR, 'extra', '.ini')
-        '/home/username/.sopel/extra.ini'
-
-    """
-    if os.path.isfile(name):
-        return name
-    name_ext = name + extension
-    for config in enumerate_configs(config_dir, extension):
-        if name_ext == config:
-            return os.path.join(config_dir, name_ext)
-
-    return os.path.join(config_dir, name)
-
-
 def build_parser():
     """Build an ``argparse.ArgumentParser`` for the bot"""
     parser = argparse.ArgumentParser(description='Sopel IRC Bot',
                                      usage='%(prog)s [options]')
-    parser.add_argument('-c', '--config', metavar='filename',
-                        help='use a specific configuration file')
+    utils.add_common_arguments(parser)
     parser.add_argument("-d", '--fork', action="store_true",
                         dest="daemonize", help="Daemonize Sopel")
     parser.add_argument("-q", '--quit', action="store_true", dest="quit",
@@ -179,7 +111,7 @@ def print_version():
 
 def print_config():
     """Print list of available configurations from default homedir."""
-    configs = enumerate_configs(DEFAULT_HOMEDIR)
+    configs = utils.enumerate_configs(DEFAULT_HOMEDIR)
     print('Config files in %s:' % DEFAULT_HOMEDIR)
     config = None
     for config in configs:
@@ -196,23 +128,23 @@ def get_configuration(options):
     This may raise a ``sopel.config.ConfigurationError`` if the file is an
     invalid configuration file.
     """
-    config_name = options.config or 'default'
-    config_path = find_config(DEFAULT_HOMEDIR, config_name)
-
-    if not os.path.isfile(config_path):
+    try:
+        bot_config = utils.load_settings(options)
+    except ConfigurationNotFound as error:
         print(
             "Welcome to Sopel!\n"
             "I can't seem to find the configuration file, "
             "so let's generate it!\n")
 
+        config_path = error.filename
         if not config_path.endswith('.cfg'):
             config_path = config_path + '.cfg'
 
         config_path = _create_config(config_path)
+        # try to reload it now that it's created
+        bot_config = Config(config_path)
 
-    bot_config = Config(config_path)
     bot_config._is_daemonized = options.daemonize
-
     return bot_config
 
 
