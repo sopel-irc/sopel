@@ -56,7 +56,11 @@ def join(bot, trigger):
         return
     elif not key:
         bot.join(channel)
+        if channel not in bot.config.core.channels:
+            bot.config.core.channels = bot.config.core.channels + [channel]
+            bot.config.save()
     else:
+        # TODO: a way to store a channel's key in configuration
         bot.join(channel, key)
 
 
