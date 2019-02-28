@@ -2,8 +2,9 @@
 from __future__ import unicode_literals, absolute_import, print_function, division
 
 import os
+import sys
 
-from sopel import config
+from sopel import config, tools
 
 # Allow clean import *
 __all__ = [
@@ -11,6 +12,7 @@ __all__ = [
     'find_config',
     'add_common_arguments',
     'load_settings',
+    'redirect_outputs',
 ]
 
 
@@ -153,3 +155,17 @@ def load_settings(options):
         raise config.ConfigurationNotFound(filename=filename)
 
     return config.Config(filename)
+
+
+def redirect_outputs(settings, is_quiet=False):
+    """Redirect ``sys``'s outputs using Sopel's settings.
+
+    :param settings: Sopel's configuration
+    :type settings: :class:`sopel.config.Config`
+    :param bool is_quiet: Optional, set to True to make Sopel's outputs quiet
+
+    Both ``sys.stderr`` and ``sys.stdout`` are redirected to a logfile.
+    """
+    logfile = os.path.os.path.join(settings.core.logdir, 'stdio.log')
+    sys.stderr = tools.OutputRedirect(logfile, True, is_quiet)
+    sys.stdout = tools.OutputRedirect(logfile, False, is_quiet)

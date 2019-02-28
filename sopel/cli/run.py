@@ -256,9 +256,7 @@ def command_legacy(opts):
         return ERR_CODE_NO_RESTART
 
     # Step Five: Manage logfile, stdout and stderr
-    logfile = os.path.os.path.join(config_module.core.logdir, 'stdio.log')
-    sys.stderr = tools.OutputRedirect(logfile, True, opts.quiet)
-    sys.stdout = tools.OutputRedirect(logfile, False, opts.quiet)
+    utils.redirect_outputs(config_module, opts.quiet)
 
     # Step Six: Handle process-lifecycle options and manage the PID file
     pid_dir = config_module.core.pid_dir
