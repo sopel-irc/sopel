@@ -48,11 +48,7 @@ encounter such error case.
 """
 
 
-def build_parser():
-    """Build an ``argparse.ArgumentParser`` for the bot"""
-    parser = argparse.ArgumentParser(description='Sopel IRC Bot',
-                                     usage='%(prog)s [options]')
-    utils.add_common_arguments(parser)
+def add_legacy_options(parser):
     parser.add_argument("-d", '--fork', action="store_true",
                         dest="daemonize", help="Daemonize Sopel")
     parser.add_argument("-q", '--quit', action="store_true", dest="quit",
@@ -77,6 +73,23 @@ def build_parser():
                             'module configuration options.'))
     parser.add_argument('-v', '--version', action="store_true",
                         dest="version", help="Show version number and exit")
+
+
+def build_parser():
+    """Build an ``argparse.ArgumentParser`` for the bot"""
+    parser = argparse.ArgumentParser(description='Sopel IRC Bot',
+                                     usage='%(prog)s [options]')
+    subparsers = parser.add_subparsers(
+        title='sub-commands',
+        description='List of Sopel\'s sub-commands',
+        dest='action')
+
+    # manage `legacy` sub-command
+    parser_legacy = subparsers.add_parser(
+        'legacy', help='Launch Sopel\'s legacy command line')
+    add_legacy_options(parser_legacy)
+    utils.add_common_arguments(parser_legacy)
+
     return parser
 
 
@@ -190,11 +203,105 @@ def get_running_pid(filename):
             pass
 
 
+def command_legacy(opts):
+    # Step Three: Handle "No config needed" options
+    if opts.version:
+        print_version()
+        return
+
+    if opts.wizard:
+        _wizard('all', opts.config)
+        return
+
+    if opts.mod_wizard:
+        _wizard('mod', opts.config)
+        return
+
+    if opts.list_configs:
+        print_config()
+        return
+
+    # Step Four: Get the configuration file and prepare to run
+    try:
+        config_module = get_configuration(opts)
+    except ConfigurationError as e:
+        stderr(e)
+        return ERR_CODE_NO_RESTART
+
+    if config_module.core.not_configured:
+        stderr('Bot is not configured, can\'t start')
+        return ERR_CODE_NO_RESTART
+
+    # Step Five: Manage logfile, stdout and stderr
+    logfile = os.path.os.path.join(config_module.core.logdir, 'stdio.log')
+    sys.stderr = tools.OutputRedirect(logfile, True, opts.quiet)
+    sys.stdout = tools.OutputRedirect(logfile, False, opts.quiet)
+
+    # Step Six: Handle process-lifecycle options and manage the PID file
+    pid_dir = config_module.core.pid_dir
+    pid_file_path = get_pid_filename(opts, pid_dir)
+    old_pid = get_running_pid(pid_file_path)
+
+    if old_pid is not None and tools.check_pid(old_pid):
+        if not opts.quit and not opts.kill and not opts.restart:
+            stderr('There\'s already a Sopel instance running with this config file')
+            stderr('Try using either the --quit, --restart, or --kill option')
+            return ERR_CODE
+        elif opts.kill:
+            stderr('Killing the Sopel')
+            os.kill(old_pid, signal.SIGKILL)
+            return
+        elif opts.quit:
+            stderr('Signaling Sopel to stop gracefully')
+            if hasattr(signal, 'SIGUSR1'):
+                os.kill(old_pid, signal.SIGUSR1)
+            else:
+                # Windows will not generate SIGTERM itself
+                # https://docs.microsoft.com/en-us/cpp/c-runtime-library/reference/signal
+                os.kill(old_pid, signal.SIGTERM)
+            return
+        elif opts.restart:
+            stderr('Asking Sopel to restart')
+            if hasattr(signal, 'SIGUSR2'):
+                os.kill(old_pid, signal.SIGUSR2)
+            else:
+                # Windows will not generate SIGILL itself
+                # https://docs.microsoft.com/en-us/cpp/c-runtime-library/reference/signal
+                os.kill(old_pid, signal.SIGILL)
+            return
+    elif opts.kill or opts.quit or opts.restart:
+        stderr('Sopel is not running!')
+        return ERR_CODE
+
+    if opts.daemonize:
+        child_pid = os.fork()
+        if child_pid is not 0:
+            return
+    with open(pid_file_path, 'w') as pid_file:
+        pid_file.write(str(os.getpid()))
+
+    # Step Seven: Initialize and run Sopel
+    ret = run(config_module, pid_file_path)
+    os.unlink(pid_file_path)
+    if ret == -1:
+        os.execv(sys.executable, ['python'] + sys.argv)
+    else:
+        return ret
+
+
 def main(argv=None):
     try:
         # Step One: Parse The Command Line
         parser = build_parser()
-        opts = parser.parse_args(argv or None)
+
+        # make sure to have an action first (`legacy` by default)
+        argv = argv or sys.argv[1:]
+        if not argv:
+            argv = ['legacy']
+        elif argv[0].startswith('-') and argv[0] not in ['-h', '--help']:
+            argv = ['legacy'] + argv
+
+        opts = parser.parse_args(argv)
 
         # Step Two: "Do not run as root" checks
         try:
@@ -203,90 +310,11 @@ def main(argv=None):
             stderr('%s' % err)
             return ERR_CODE
 
-        # Step Three: Handle "No config needed" options
-        if opts.version:
-            print_version()
-            return
-
-        if opts.wizard:
-            _wizard('all', opts.config)
-            return
-
-        if opts.mod_wizard:
-            _wizard('mod', opts.config)
-            return
-
-        if opts.list_configs:
-            print_config()
-            return
-
-        # Step Four: Get the configuration file and prepare to run
-        try:
-            config_module = get_configuration(opts)
-        except ConfigurationError as e:
-            stderr(e)
-            return ERR_CODE_NO_RESTART
-
-        if config_module.core.not_configured:
-            stderr('Bot is not configured, can\'t start')
-            return ERR_CODE_NO_RESTART
-
-        # Step Five: Manage logfile, stdout and stderr
-        logfile = os.path.os.path.join(config_module.core.logdir, 'stdio.log')
-        sys.stderr = tools.OutputRedirect(logfile, True, opts.quiet)
-        sys.stdout = tools.OutputRedirect(logfile, False, opts.quiet)
-
-        # Step Six: Handle process-lifecycle options and manage the PID file
-        pid_dir = config_module.core.pid_dir
-        pid_file_path = get_pid_filename(opts, pid_dir)
-        old_pid = get_running_pid(pid_file_path)
-
-        if old_pid is not None and tools.check_pid(old_pid):
-            if not opts.quit and not opts.kill and not opts.restart:
-                stderr('There\'s already a Sopel instance running with this config file')
-                stderr('Try using either the --quit, --restart, or --kill option')
-                return ERR_CODE
-            elif opts.kill:
-                stderr('Killing the Sopel')
-                os.kill(old_pid, signal.SIGKILL)
-                return
-            elif opts.quit:
-                stderr('Signaling Sopel to stop gracefully')
-                if hasattr(signal, 'SIGUSR1'):
-                    os.kill(old_pid, signal.SIGUSR1)
-                else:
-                    # Windows will not generate SIGTERM itself
-                    # https://docs.microsoft.com/en-us/cpp/c-runtime-library/reference/signal
-                    os.kill(old_pid, signal.SIGTERM)
-                return
-            elif opts.restart:
-                stderr('Asking Sopel to restart')
-                if hasattr(signal, 'SIGUSR2'):
-                    os.kill(old_pid, signal.SIGUSR2)
-                else:
-                    # Windows will not generate SIGILL itself
-                    # https://docs.microsoft.com/en-us/cpp/c-runtime-library/reference/signal
-                    os.kill(old_pid, signal.SIGILL)
-                return
-        elif opts.kill or opts.quit or opts.restart:
-            stderr('Sopel is not running!')
-            return ERR_CODE
-
-        if opts.daemonize:
-            child_pid = os.fork()
-            if child_pid is not 0:
-                return
-        with open(pid_file_path, 'w') as pid_file:
-            pid_file.write(str(os.getpid()))
-
-        # Step Seven: Initialize and run Sopel
-        ret = run(config_module, pid_file_path)
-        os.unlink(pid_file_path)
-        if ret == -1:
-            os.execv(sys.executable, ['python'] + sys.argv)
-        else:
-            return ret
-
+        action = getattr(opts, 'action', 'legacy')
+        command = {
+            'legacy': command_legacy,
+        }.get(action)
+        return command(opts)
     except KeyboardInterrupt:
         print("\n\nInterrupted")
         return ERR_CODE
