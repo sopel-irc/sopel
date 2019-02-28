@@ -217,9 +217,7 @@ class Sopel(irc.Bot):
                 if obj in callb_list:
                     callb_list.remove(obj)
         if hasattr(obj, 'interval'):
-            # TODO this should somehow find the right job to remove, rather than
-            # clearing the entire queue. Issue #831
-            self.scheduler.clear_jobs()
+            self.scheduler.remove_callable_job(obj)
         if (getattr(obj, '__name__', None) == 'shutdown' and
                     obj in self.shutdown_methods):
             self.shutdown_methods.remove(obj)

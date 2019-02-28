@@ -90,6 +90,19 @@ class JobScheduler(threading.Thread):
             self._cleared = True
             self._jobs = PriorityQueue()
 
+    def remove_callable_job(self, callable):
+        """Removes specific callable from job queue"""
+        with self._mutex:
+            new_queue = PriorityQueue()
+            while True:
+                try:
+                    job = self._jobs.get(False)
+                    if job.func != callable:
+                        new_queue.put(job)
+                except Queue.Empty:
+                    break
+            self._jobs = new_queue
+
     def run(self):
         """Run forever."""
         while True:
