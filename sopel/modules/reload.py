@@ -41,7 +41,6 @@ def f_reload(bot, trigger):
             'medium': collections.defaultdict(list),
             'low': collections.defaultdict(list)
         }
-        bot._shutdown()
         bot._command_groups = collections.defaultdict(list)
 
         for m in sopel.loader.enumerate_modules(bot.config):
