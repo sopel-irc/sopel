@@ -86,6 +86,18 @@ def temporary_join(bot, trigger):
     _join(bot, channel, key, save=False)
 
 
+def _part(bot, channel, msg=None, save=True):
+    bot.part(channel, msg or None)
+
+    if save and channel in bot.config.core.channels:
+        bot.config.core.channels = [
+            chan
+            for chan in bot.config.core.channels
+            if chan != channel
+        ]
+        bot.config.save()
+
+
 @sopel.module.require_privmsg
 @sopel.module.require_admin
 @sopel.module.commands('part')
@@ -94,18 +106,22 @@ def temporary_join(bot, trigger):
 def part(bot, trigger):
     """Part the specified channel. This is an admin-only command."""
     channel, _sep, part_msg = trigger.group(2).partition(' ')
-    if part_msg:
-        bot.part(channel, part_msg)
-    else:
-        bot.part(channel)
+    _part(bot, channel, part_msg)
 
-    if channel in bot.config.core.channels:
-        bot.config.core.channels = [
-            chan
-            for chan in bot.config.core.channels
-            if chan != channel
-        ]
-        bot.config.save()
+
+@sopel.module.require_privmsg
+@sopel.module.require_admin
+@sopel.module.commands('tmppart')
+@sopel.module.priority('low')
+@sopel.module.example('.tmppart #example')
+def temporary_part(bot, trigger):
+    """Like ``part``, without saving. This is an admin-only command.
+
+    Unlike the ``part`` command, ``tmppart`` will rejoin the channel upon
+    restarting the bot.
+    """
+    channel, _sep, part_msg = trigger.group(2).partition(' ')
+    _part(bot, channel, part_msg, save=False)
 
 
 @sopel.module.require_privmsg
