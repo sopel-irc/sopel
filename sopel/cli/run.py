@@ -112,6 +112,13 @@ def build_parser():
         help='Kill Sopel without a graceful quit')
     utils.add_common_arguments(parser_stop)
 
+    # manage `restart` sub-command
+    parser_restart = subparsers.add_parser(
+        'restart',
+        description='Restart a running Sopel instance',
+        help='Restart a running Sopel instance')
+    utils.add_common_arguments(parser_restart)
+
     return parser
 
 
@@ -270,6 +277,38 @@ def command_stop(opts):
         os.kill(pid, signal.SIGTERM)
 
 
+def command_restart(opts):
+    # Get Configuration
+    try:
+        settings = utils.load_settings(opts)
+    except ConfigurationNotFound as error:
+        tools.stderr('Configuration "%s" not found' % error.filename)
+        return ERR_CODE
+
+    if settings.core.not_configured:
+        stderr('Sopel is not configured, can\'t stop')
+        return ERR_CODE
+
+    # Redirect Outputs
+    utils.redirect_outputs(settings, False)
+
+    # Get Sopel's PID
+    filename = get_pid_filename(opts, settings.core.pid_dir)
+    pid = get_running_pid(filename)
+
+    if pid is None or not tools.check_pid(pid):
+        stderr('Sopel is not running!')
+        return ERR_CODE
+
+    stderr('Asking Sopel to restart')
+    if hasattr(signal, 'SIGUSR2'):
+        os.kill(pid, signal.SIGUSR2)
+    else:
+        # Windows will not generate SIGILL itself
+        # https://docs.microsoft.com/en-us/cpp/c-runtime-library/reference/signal
+        os.kill(pid, signal.SIGILL)
+
+
 def command_legacy(opts):
     # Step Three: Handle "No config needed" options
     if opts.version:
@@ -338,6 +377,9 @@ def command_legacy(opts):
                 os.kill(old_pid, signal.SIGTERM)
             return
         elif opts.restart:
+            tools.stderr(
+                'options --restart is deprecated, '
+                'use `sopel restart` instead')
             stderr('Asking Sopel to restart')
             if hasattr(signal, 'SIGUSR2'):
                 os.kill(old_pid, signal.SIGUSR2)
@@ -392,6 +434,7 @@ def main(argv=None):
             'legacy': command_legacy,
             'configure': command_configure,
             'stop': command_stop,
+            'restart': command_restart,
         }.get(action)
         return command(opts)
     except KeyboardInterrupt:
