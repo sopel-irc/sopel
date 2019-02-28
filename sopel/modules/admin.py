@@ -44,6 +44,23 @@ def setup(bot):
     bot.config.define_section('admin', AdminSection)
 
 
+def _get_config_channels(channels):
+    """List"""
+    for channel_info in channels:
+        if ' ' in channel_info:
+            yield channel_info.split(' ', 1)
+        else:
+            yield (channel_info, None)
+
+
+def _set_config_channels(bot, channels):
+    bot.config.core.channels = [
+        ' '.join([part for part in items if part])
+        for items in channels.items()
+    ]
+    bot.config.save()
+
+
 def _join(bot, channel, key=None, save=True):
     if not channel:
         return
@@ -51,13 +68,24 @@ def _join(bot, channel, key=None, save=True):
     if not key:
         bot.join(channel)
     else:
-        # TODO: a way to store a channel's key in configuration
-        save = False
         bot.join(channel, key)
 
-    if save and channel not in bot.config.core.channels:
-        bot.config.core.channels = bot.config.core.channels + [channel]
-        bot.config.save()
+    if save:
+        channels = dict(_get_config_channels(bot.config.core.channels))
+        # save only if channel is new or key has been changed
+        if channel not in channels or channels[channel] != key:
+            channels[channel] = key
+            _set_config_channels(bot, channels)
+
+
+def _part(bot, channel, msg=None, save=True):
+    bot.part(channel, msg or None)
+
+    if save:
+        channels = dict(_get_config_channels(bot.config.core.channels))
+        if channel in channels:
+            del channels[channel]
+            _set_config_channels(bot, channels)
 
 
 @sopel.module.require_privmsg
@@ -84,18 +112,6 @@ def temporary_join(bot, trigger):
     """
     channel, key = trigger.group(3), trigger.group(4)
     _join(bot, channel, key, save=False)
-
-
-def _part(bot, channel, msg=None, save=True):
-    bot.part(channel, msg or None)
-
-    if save and channel in bot.config.core.channels:
-        bot.config.core.channels = [
-            chan
-            for chan in bot.config.core.channels
-            if chan != channel
-        ]
-        bot.config.save()
 
 
 @sopel.module.require_privmsg
