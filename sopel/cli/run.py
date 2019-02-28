@@ -44,7 +44,7 @@ ERR_CODE_NO_RESTART = 2
 """Error code: program exited with an error and should not be restarted
 
 This error code is used to prevent systemd from restarting the bot when it
-encounter such error case.
+encounters such an error case.
 """
 
 
@@ -255,6 +255,7 @@ def get_running_pid(filename):
 
 
 def command_start(opts):
+    """Start a Sopel instance"""
     # Step One: Get the configuration file and prepare to run
     try:
         config_module = get_configuration(opts)
@@ -302,6 +303,7 @@ def command_start(opts):
 
 
 def command_configure(opts):
+    """Sopel Configuration Wizard"""
     if getattr(opts, 'modules', False):
         _wizard('mod', opts.config)
     else:
@@ -309,6 +311,7 @@ def command_configure(opts):
 
 
 def command_stop(opts):
+    """Stop a running Sopel instance"""
     # Get Configuration
     try:
         settings = utils.load_settings(opts)
@@ -347,6 +350,7 @@ def command_stop(opts):
 
 
 def command_restart(opts):
+    """Restart a running Sopel instance"""
     # Get Configuration
     try:
         settings = utils.load_settings(opts)
@@ -379,7 +383,29 @@ def command_restart(opts):
 
 
 def command_legacy(opts):
-    # Step Three: Handle "No config needed" options
+    """Legacy Sopel run script
+
+    The ``legacy`` command manages the old-style ``sopel`` command line tool.
+    Most of its features are replaced by the following commands:
+
+    * ``sopel start`` replaces the default behavior (run the bot)
+    * ``sopel stop`` replaces the ``--quit/--kill`` options
+    * ``sopel restart`` replaces the ``--restart`` option
+    * ``sopel configure`` replaces the
+      ``-w/--configure-all/--configure-modules`` options
+
+    The ``-v`` option for "version" is deprecated, ``-V/--version`` should be
+    used instead.
+
+    .. seealso::
+
+       The github issue `#1471`__ tracks various changes requested for future
+       versions of Sopel, some of them related to this legacy command.
+
+       .. __: https://github.com/sopel-irc/sopel/issues/1471
+
+    """
+    # Step One: Handle "No config needed" options
     if opts.version:
         print_version()
         return
@@ -408,7 +434,7 @@ def command_legacy(opts):
         print_config()
         return
 
-    # Step Four: Get the configuration file and prepare to run
+    # Step Two: Get the configuration file and prepare to run
     try:
         config_module = get_configuration(opts)
     except ConfigurationError as e:
@@ -419,10 +445,10 @@ def command_legacy(opts):
         stderr('Bot is not configured, can\'t start')
         return ERR_CODE_NO_RESTART
 
-    # Step Five: Manage logfile, stdout and stderr
+    # Step Three: Manage logfile, stdout and stderr
     utils.redirect_outputs(config_module, opts.quiet)
 
-    # Step Six: Handle process-lifecycle options and manage the PID file
+    # Step Four: Handle process-lifecycle options and manage the PID file
     pid_dir = config_module.core.pid_dir
     pid_file_path = get_pid_filename(opts, pid_dir)
     old_pid = get_running_pid(pid_file_path)
@@ -474,7 +500,7 @@ def command_legacy(opts):
     with open(pid_file_path, 'w') as pid_file:
         pid_file.write(str(os.getpid()))
 
-    # Step Seven: Initialize and run Sopel
+    # Step Five: Initialize and run Sopel
     ret = run(config_module, pid_file_path)
     os.unlink(pid_file_path)
     if ret == -1:
@@ -484,6 +510,7 @@ def command_legacy(opts):
 
 
 def main(argv=None):
+    """Sopel run script entry point"""
     try:
         # Step One: Parse The Command Line
         parser = build_parser()
