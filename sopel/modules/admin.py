@@ -77,6 +77,14 @@ def part(bot, trigger):
     else:
         bot.part(channel)
 
+    if channel in bot.config.core.channels:
+        bot.config.core.channels = [
+            chan
+            for chan in bot.config.core.channels
+            if chan != channel
+        ]
+        bot.config.save()
+
 
 @sopel.module.require_privmsg
 @sopel.module.require_owner
