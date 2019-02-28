@@ -71,8 +71,12 @@ def add_legacy_options(parser):
                         dest='mod_wizard', help=(
                             'Run the configuration wizard, but only for the '
                             'module configuration options.'))
-    parser.add_argument('-v', '--version', action="store_true",
-                        dest="version", help="Show version number and exit")
+    parser.add_argument('-v', action="store_true",
+                        dest='version_legacy',
+                        help="Show version number and exit")
+    parser.add_argument('-V', '--version', action='store_true',
+                        dest='version',
+                        help='Show version number and exit')
 
 
 def build_parser():
@@ -312,6 +316,12 @@ def command_restart(opts):
 def command_legacy(opts):
     # Step Three: Handle "No config needed" options
     if opts.version:
+        print_version()
+        return
+    elif opts.version_legacy:
+        tools.stderr(
+            'option -v is deprecated, '
+            'use `sopel -V/--version` instead')
         print_version()
         return
 
