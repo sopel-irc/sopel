@@ -100,6 +100,18 @@ def build_parser():
         dest='modules')
     utils.add_common_arguments(parser_configure)
 
+    # manage `stop` sub-command
+    parser_stop = subparsers.add_parser(
+        'stop',
+        description='Stop a running Sopel instance',
+        help='Stop a running Sopel instance')
+    parser_stop.add_argument(
+        '-k', '--kill',
+        action='store_true',
+        default=False,
+        help='Kill Sopel without a graceful quit')
+    utils.add_common_arguments(parser_stop)
+
     return parser
 
 
@@ -220,6 +232,44 @@ def command_configure(opts):
         _wizard('all', opts.config)
 
 
+def command_stop(opts):
+    # Get Configuration
+    try:
+        settings = utils.load_settings(opts)
+    except ConfigurationNotFound as error:
+        tools.stderr('Configuration "%s" not found' % error.filename)
+        return ERR_CODE
+
+    if settings.core.not_configured:
+        stderr('Sopel is not configured, can\'t stop')
+        return ERR_CODE
+
+    # Redirect Outputs
+    utils.redirect_outputs(settings, False)
+
+    # Get Sopel's PID
+    filename = get_pid_filename(opts, settings.core.pid_dir)
+    pid = get_running_pid(filename)
+
+    if pid is None or not tools.check_pid(pid):
+        stderr('Sopel is not running!')
+        return ERR_CODE
+
+    # Stop Sopel
+    if opts.kill:
+        stderr('Killing the Sopel')
+        os.kill(pid, signal.SIGKILL)
+        return
+
+    stderr('Signaling Sopel to stop gracefully')
+    if hasattr(signal, 'SIGUSR1'):
+        os.kill(pid, signal.SIGUSR1)
+    else:
+        # Windows will not generate SIGTERM itself
+        # https://docs.microsoft.com/en-us/cpp/c-runtime-library/reference/signal
+        os.kill(pid, signal.SIGTERM)
+
+
 def command_legacy(opts):
     # Step Three: Handle "No config needed" options
     if opts.version:
@@ -266,13 +316,19 @@ def command_legacy(opts):
     if old_pid is not None and tools.check_pid(old_pid):
         if not opts.quit and not opts.kill and not opts.restart:
             stderr('There\'s already a Sopel instance running with this config file')
-            stderr('Try using either the --quit, --restart, or --kill option')
+            stderr('Try using either the `sopel stop` command or the `--restart` option')
             return ERR_CODE
         elif opts.kill:
+            tools.stderr(
+                'option -k/--kill is deprecated, '
+                'use `sopel stop --kill` instead')
             stderr('Killing the Sopel')
             os.kill(old_pid, signal.SIGKILL)
             return
         elif opts.quit:
+            tools.stderr(
+                'options -q/--quit is deprecated, '
+                'use `sopel stop` instead')
             stderr('Signaling Sopel to stop gracefully')
             if hasattr(signal, 'SIGUSR1'):
                 os.kill(old_pid, signal.SIGUSR1)
@@ -335,6 +391,7 @@ def main(argv=None):
         command = {
             'legacy': command_legacy,
             'configure': command_configure,
+            'stop': command_stop,
         }.get(action)
         return command(opts)
     except KeyboardInterrupt:
