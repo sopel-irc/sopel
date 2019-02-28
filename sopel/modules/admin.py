@@ -44,6 +44,22 @@ def setup(bot):
     bot.config.define_section('admin', AdminSection)
 
 
+def _join(bot, channel, key=None, save=True):
+    if not channel:
+        return
+
+    if not key:
+        bot.join(channel)
+    else:
+        # TODO: a way to store a channel's key in configuration
+        save = False
+        bot.join(channel, key)
+
+    if save and channel not in bot.config.core.channels:
+        bot.config.core.channels = bot.config.core.channels + [channel]
+        bot.config.save()
+
+
 @sopel.module.require_privmsg
 @sopel.module.require_admin
 @sopel.module.commands('join')
@@ -52,16 +68,22 @@ def setup(bot):
 def join(bot, trigger):
     """Join the specified channel. This is an admin-only command."""
     channel, key = trigger.group(3), trigger.group(4)
-    if not channel:
-        return
-    elif not key:
-        bot.join(channel)
-        if channel not in bot.config.core.channels:
-            bot.config.core.channels = bot.config.core.channels + [channel]
-            bot.config.save()
-    else:
-        # TODO: a way to store a channel's key in configuration
-        bot.join(channel, key)
+    _join(bot, channel, key)
+
+
+@sopel.module.require_privmsg
+@sopel.module.require_admin
+@sopel.module.commands('tmpjoin')
+@sopel.module.priority('low')
+@sopel.module.example('.tmpjoin #example or .tmpjoin #example key')
+def temporary_join(bot, trigger):
+    """Like ``join``, without saving. This is an admin-only command.
+
+    Unlike the ``join`` command, ``tmpjoin`` won't remember the channel upon
+    restarting the bot.
+    """
+    channel, key = trigger.group(3), trigger.group(4)
+    _join(bot, channel, key, save=False)
 
 
 @sopel.module.require_privmsg
