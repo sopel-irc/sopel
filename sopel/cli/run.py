@@ -94,6 +94,24 @@ def build_parser():
     add_legacy_options(parser_legacy)
     utils.add_common_arguments(parser_legacy)
 
+    # manage `start` sub-command
+    parser_start = subparsers.add_parser(
+        'start',
+        description='Start a Sopel instance',
+        help='Start a Sopel instance')
+    parser_start.add_argument(
+        '-d', '--fork',
+        dest='daemonize',
+        action='store_true',
+        default=False,
+        help='Run Sopel as a daemon (fork)')
+    parser_start.add_argument(
+        '--quiet',
+        action="store_true",
+        dest="quiet",
+        help="Suppress all output")
+    utils.add_common_arguments(parser_start)
+
     # manage `configure` sub-command
     parser_configure = subparsers.add_parser(
         'configure', help='Sopel\'s Wizard tool')
@@ -234,6 +252,53 @@ def get_running_pid(filename):
             return int(pid_file.read())
         except ValueError:
             pass
+
+
+def command_start(opts):
+    # Step One: Get the configuration file and prepare to run
+    try:
+        config_module = get_configuration(opts)
+    except ConfigurationError as e:
+        stderr(e)
+        return ERR_CODE_NO_RESTART
+
+    if config_module.core.not_configured:
+        stderr('Bot is not configured, can\'t start')
+        return ERR_CODE_NO_RESTART
+
+    # Step Two: Manage logfile, stdout and stderr
+    utils.redirect_outputs(config_module, opts.quiet)
+
+    # Step Three: Handle process-lifecycle options and manage the PID file
+    pid_dir = config_module.core.pid_dir
+    pid_file_path = get_pid_filename(opts, pid_dir)
+    pid = get_running_pid(pid_file_path)
+
+    if pid is not None and tools.check_pid(pid):
+        stderr('There\'s already a Sopel instance running with this config file')
+        stderr('Try using either the `sopel stop` or the `sopel restart` command')
+        return ERR_CODE
+
+    if opts.daemonize:
+        child_pid = os.fork()
+        if child_pid is not 0:
+            return
+
+    with open(pid_file_path, 'w') as pid_file:
+        pid_file.write(str(os.getpid()))
+
+    # Step Four: Run Sopel
+    ret = run(config_module, pid_file_path)
+
+    # Step Five: Shutdown Clean-Up
+    os.unlink(pid_file_path)
+
+    if ret == -1:
+        # Restart
+        os.execv(sys.executable, ['python'] + sys.argv)
+    else:
+        # Quit
+        return ret
 
 
 def command_configure(opts):
@@ -439,9 +504,11 @@ def main(argv=None):
             stderr('%s' % err)
             return ERR_CODE
 
+        # Step Three: Handle command
         action = getattr(opts, 'action', 'legacy')
         command = {
             'legacy': command_legacy,
+            'start': command_start,
             'configure': command_configure,
             'stop': command_stop,
             'restart': command_restart,
