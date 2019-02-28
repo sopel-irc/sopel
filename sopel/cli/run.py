@@ -90,6 +90,16 @@ def build_parser():
     add_legacy_options(parser_legacy)
     utils.add_common_arguments(parser_legacy)
 
+    # manage `configure` sub-command
+    parser_configure = subparsers.add_parser(
+        'configure', help='Sopel\'s Wizard tool')
+    parser_configure.add_argument(
+        '--modules',
+        action='store_true',
+        default=False,
+        dest='modules')
+    utils.add_common_arguments(parser_configure)
+
     return parser
 
 
@@ -203,6 +213,13 @@ def get_running_pid(filename):
             pass
 
 
+def command_configure(opts):
+    if getattr(opts, 'modules', False):
+        _wizard('mod', opts.config)
+    else:
+        _wizard('all', opts.config)
+
+
 def command_legacy(opts):
     # Step Three: Handle "No config needed" options
     if opts.version:
@@ -210,10 +227,16 @@ def command_legacy(opts):
         return
 
     if opts.wizard:
+        tools.stderr(
+            'option -w/--configure-all is deprecated, '
+            'use `sopel configure` instead')
         _wizard('all', opts.config)
         return
 
     if opts.mod_wizard:
+        tools.stderr(
+            'option --configure-modules is deprecated, '
+            'use `sopel configure --modules` instead')
         _wizard('mod', opts.config)
         return
 
@@ -313,6 +336,7 @@ def main(argv=None):
         action = getattr(opts, 'action', 'legacy')
         command = {
             'legacy': command_legacy,
+            'configure': command_configure,
         }.get(action)
         return command(opts)
     except KeyboardInterrupt:
