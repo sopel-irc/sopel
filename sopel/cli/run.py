@@ -142,7 +142,9 @@ def add_legacy_options(parser):
                             'module configuration options.'))
     parser.add_argument('-v', action="store_true",
                         dest='version_legacy',
-                        help="Show version number and exit")
+                        help=(
+                            "Show version number and exit (deprecated, and will be "
+                            "removed in Sopel 8; use -V/--version instead)"))
     parser.add_argument('-V', '--version', action='store_true',
                         dest='version',
                         help='Show version number and exit')
@@ -485,21 +487,21 @@ def command_legacy(opts):
         return
     elif opts.version_legacy:
         tools.stderr(
-            'option -v is deprecated, '
+            'WARNING: option -v is deprecated; '
             'use `sopel -V/--version` instead')
         print_version()
         return
 
     if opts.wizard:
         tools.stderr(
-            'option -w/--configure-all is deprecated, '
+            'WARNING: option -w/--configure-all is deprecated; '
             'use `sopel configure` instead')
         _wizard('all', opts.config)
         return
 
     if opts.mod_wizard:
         tools.stderr(
-            'option --configure-modules is deprecated, '
+            'WARNING: option --configure-modules is deprecated; '
             'use `sopel configure --modules` instead')
         _wizard('mod', opts.config)
         return
@@ -536,14 +538,14 @@ def command_legacy(opts):
             return ERR_CODE
         elif opts.kill:
             tools.stderr(
-                'option -k/--kill is deprecated, '
+                'WARNING: option -k/--kill is deprecated; '
                 'use `sopel stop --kill` instead')
             tools.stderr('Killing the Sopel')
             os.kill(old_pid, signal.SIGKILL)
             return
         elif opts.quit:
             tools.stderr(
-                'options -q/--quit is deprecated, '
+                'WARNING: options -q/--quit is deprecated; '
                 'use `sopel stop` instead')
             tools.stderr('Signaling Sopel to stop gracefully')
             if hasattr(signal, 'SIGUSR1'):
@@ -555,7 +557,7 @@ def command_legacy(opts):
             return
         elif opts.restart:
             tools.stderr(
-                'options --restart is deprecated, '
+                'WARNING: options --restart is deprecated; '
                 'use `sopel restart` instead')
             tools.stderr('Asking Sopel to restart')
             if hasattr(signal, 'SIGUSR2'):
