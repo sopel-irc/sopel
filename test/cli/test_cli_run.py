@@ -47,7 +47,7 @@ def test_get_configuration(tmpdir):
     ]))
 
     parser = build_parser()
-    options = parser.parse_args(['-c', 'default.cfg'])
+    options = parser.parse_args(['legacy', '-c', 'default.cfg'])
 
     with cd(working_dir.strpath):
         result = get_configuration(options)
@@ -59,7 +59,7 @@ def test_get_pid_filename_default():
     """Assert function returns the default filename from given ``pid_dir``"""
     pid_dir = '/pid'
     parser = build_parser()
-    options = parser.parse_args([])
+    options = parser.parse_args(['legacy'])
 
     result = get_pid_filename(options, pid_dir)
     assert result == pid_dir + '/sopel.pid'
@@ -71,13 +71,13 @@ def test_get_pid_filename_named():
     parser = build_parser()
 
     # With extension
-    options = parser.parse_args(['-c', 'test.cfg'])
+    options = parser.parse_args(['legacy', '-c', 'test.cfg'])
 
     result = get_pid_filename(options, pid_dir)
     assert result == pid_dir + '/sopel-test.pid'
 
     # Without extension
-    options = parser.parse_args(['-c', 'test'])
+    options = parser.parse_args(['legacy', '-c', 'test'])
 
     result = get_pid_filename(options, pid_dir)
     assert result == pid_dir + '/sopel-test.pid'
@@ -87,7 +87,7 @@ def test_get_pid_filename_ext_not_cfg():
     """Assert function keeps the config file extension when it is not cfg"""
     pid_dir = '/pid'
     parser = build_parser()
-    options = parser.parse_args(['-c', 'test.ini'])
+    options = parser.parse_args(['legacy', '-c', 'test.ini'])
 
     result = get_pid_filename(options, pid_dir)
     assert result == pid_dir + '/sopel-test.ini.pid'
