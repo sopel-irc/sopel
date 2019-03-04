@@ -278,10 +278,22 @@ def print_config():
 
 
 def get_configuration(options):
-    """Get an instance of configuration from options.
+    """Get or create a configuration object from ``options``.
 
-    This may raise a ``sopel.config.ConfigurationError`` if the file is an
-    invalid configuration file.
+    :param options: argument parser's options
+    :type options: ``argparse.Namespace``
+    :return: a configuration object
+    :rtype: :class:`sopel.config.Config`
+
+    This may raise a :exc:`sopel.config.ConfigurationError` if the
+    configuration file is invalid.
+
+    .. seealso::
+
+       The configuration file is loaded by
+       :func:`~sopel.cli.run.utils.load_settings` or created using the
+       configuration wizard.
+
     """
     try:
         bot_config = utils.load_settings(options)
