@@ -121,11 +121,20 @@ def add_legacy_options(parser):
     parser.add_argument("-d", '--fork', action="store_true",
                         dest="daemonize", help="Daemonize Sopel")
     parser.add_argument("-q", '--quit', action="store_true", dest="quit",
-                        help="Gracefully quit Sopel")
+                        help=(
+                            "Gracefully quit Sopel "
+                            "(deprecated, and will be removed in Sopel 8; "
+                            "use `sopel stop` instead)"))
     parser.add_argument("-k", '--kill', action="store_true", dest="kill",
-                        help="Kill Sopel")
+                        help=(
+                            "Kill Sopel "
+                            "(deprecated, and will be removed in Sopel 8; "
+                            "use `sopel stop --kill` instead)"))
     parser.add_argument("-r", '--restart', action="store_true", dest="restart",
-                        help="Restart Sopel")
+                        help=(
+                            "Restart Sopel "
+                            "(deprecated, and will be removed in Sopel 8; "
+                            "use `sopel restart` instead)"))
     parser.add_argument("-l", '--list', action="store_true",
                         dest="list_configs",
                         help="List all config files found")
@@ -135,16 +144,24 @@ def add_legacy_options(parser):
     parser.add_argument('--quiet', action="store_true", dest="quiet",
                         help="Suppress all output")
     parser.add_argument('-w', '--configure-all', action='store_true',
-                        dest='wizard', help='Run the configuration wizard.')
+                        dest='wizard',
+                        help=(
+                            "Run the configuration wizard "
+                            "(deprecated, and will be removed in Sopel 8; "
+                            "use `sopel configure` instead)"))
     parser.add_argument('--configure-modules', action='store_true',
-                        dest='mod_wizard', help=(
-                            'Run the configuration wizard, but only for the '
-                            'module configuration options.'))
+                        dest='mod_wizard',
+                        help=(
+                            "Run the configuration wizard, but only for the "
+                            "module configuration options "
+                            "(deprecated, and will be removed in Sopel 8; "
+                            "use `sopel configure --modules` instead)"))
     parser.add_argument('-v', action="store_true",
                         dest='version_legacy',
                         help=(
-                            "Show version number and exit (deprecated, and will be "
-                            "removed in Sopel 8; use -V/--version instead)"))
+                            "Show version number and exit "
+                            "(deprecated, and will be removed in Sopel 8; "
+                            "use -V/--version instead)"))
     parser.add_argument('-V', '--version', action='store_true',
                         dest='version',
                         help='Show version number and exit')
