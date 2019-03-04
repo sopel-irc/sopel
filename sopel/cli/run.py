@@ -54,15 +54,15 @@ def run(config, pid_file, daemon=False):
     delay = 20
     # Inject ca_certs from config to web for SSL validation of web requests
     if not config.core.ca_certs:
-        stderr('Could not open CA certificates file. SSL will not '
-               'work properly!')
+        tools.stderr(
+            'Could not open CA certificates file. SSL will not work properly!')
 
     def signal_handler(sig, frame):
         if sig == signal.SIGUSR1 or sig == signal.SIGTERM or sig == signal.SIGINT:
-            stderr('Got quit signal, shutting down.')
+            tools.stderr('Got quit signal, shutting down.')
             p.quit('Closing')
         elif sig == signal.SIGUSR2 or sig == signal.SIGILL:
-            stderr('Got restart signal.')
+            tools.stderr('Got restart signal.')
             p.restart('Restarting')
 
     while True:
@@ -85,7 +85,7 @@ def run(config, pid_file, daemon=False):
         except Exception:  # TODO: Be specific
             trace = traceback.format_exc()
             try:
-                stderr(trace)
+                tools.stderr(trace)
             except Exception:  # TODO: Be specific
                 pass
             logfile = open(os.path.join(config.core.logdir, 'exceptions.log'), 'a')
@@ -107,7 +107,8 @@ def run(config, pid_file, daemon=False):
             return -1
         if p.hasquit:
             break
-        stderr('Warning: Disconnected. Reconnecting in %s seconds...' % delay)
+        tools.stderr(
+            'Warning: Disconnected. Reconnecting in %s seconds...' % delay)
         time.sleep(delay)
     # TODO: This should be handled by command_start
     # All we should need here is a return value, but making this
@@ -228,8 +229,11 @@ def check_not_root():
         if os.environ.get("USERNAME") == "Administrator":
             raise RuntimeError('Error: Do not run Sopel as Administrator.')
     else:
-        stderr("Warning: %s is an uncommon operating system platform. Sopel should still work, "
-               "but please contact Sopel's developers if you experience issues." % opersystem)
+        tools.stderr(
+            "Warning: %s is an uncommon operating system platform. "
+            "Sopel should still work, but please contact Sopel's developers "
+            "if you experience issues."
+            % opersystem)
 
 
 def print_version():
@@ -328,11 +332,11 @@ def command_start(opts):
     try:
         config_module = get_configuration(opts)
     except ConfigurationError as e:
-        stderr(e)
+        tools.stderr(e)
         return ERR_CODE_NO_RESTART
 
     if config_module.core.not_configured:
-        stderr('Bot is not configured, can\'t start')
+        tools.stderr('Bot is not configured, can\'t start')
         return ERR_CODE_NO_RESTART
 
     # Step Two: Manage logfile, stdout and stderr
@@ -344,8 +348,10 @@ def command_start(opts):
     pid = get_running_pid(pid_file_path)
 
     if pid is not None and tools.check_pid(pid):
-        stderr('There\'s already a Sopel instance running with this config file')
-        stderr('Try using either the `sopel stop` or the `sopel restart` command')
+        tools.stderr('There\'s already a Sopel instance running '
+                     'with this config file.')
+        tools.stderr('Try using either the `sopel stop` '
+                     'or the `sopel restart` command.')
         return ERR_CODE
 
     if opts.daemonize:
@@ -388,7 +394,7 @@ def command_stop(opts):
         return ERR_CODE
 
     if settings.core.not_configured:
-        stderr('Sopel is not configured, can\'t stop')
+        tools.stderr('Sopel is not configured, can\'t stop')
         return ERR_CODE
 
     # Redirect Outputs
@@ -399,16 +405,16 @@ def command_stop(opts):
     pid = get_running_pid(filename)
 
     if pid is None or not tools.check_pid(pid):
-        stderr('Sopel is not running!')
+        tools.stderr('Sopel is not running!')
         return ERR_CODE
 
     # Stop Sopel
     if opts.kill:
-        stderr('Killing the Sopel')
+        tools.stderr('Killing the Sopel')
         os.kill(pid, signal.SIGKILL)
         return
 
-    stderr('Signaling Sopel to stop gracefully')
+    tools.stderr('Signaling Sopel to stop gracefully')
     if hasattr(signal, 'SIGUSR1'):
         os.kill(pid, signal.SIGUSR1)
     else:
@@ -427,7 +433,7 @@ def command_restart(opts):
         return ERR_CODE
 
     if settings.core.not_configured:
-        stderr('Sopel is not configured, can\'t stop')
+        tools.stderr('Sopel is not configured, can\'t stop')
         return ERR_CODE
 
     # Redirect Outputs
@@ -438,10 +444,10 @@ def command_restart(opts):
     pid = get_running_pid(filename)
 
     if pid is None or not tools.check_pid(pid):
-        stderr('Sopel is not running!')
+        tools.stderr('Sopel is not running!')
         return ERR_CODE
 
-    stderr('Asking Sopel to restart')
+    tools.stderr('Asking Sopel to restart')
     if hasattr(signal, 'SIGUSR2'):
         os.kill(pid, signal.SIGUSR2)
     else:
@@ -506,11 +512,11 @@ def command_legacy(opts):
     try:
         config_module = get_configuration(opts)
     except ConfigurationError as e:
-        stderr(e)
+        tools.stderr(e)
         return ERR_CODE_NO_RESTART
 
     if config_module.core.not_configured:
-        stderr('Bot is not configured, can\'t start')
+        tools.stderr('Bot is not configured, can\'t start')
         return ERR_CODE_NO_RESTART
 
     # Step Three: Manage logfile, stdout and stderr
@@ -523,21 +529,23 @@ def command_legacy(opts):
 
     if old_pid is not None and tools.check_pid(old_pid):
         if not opts.quit and not opts.kill and not opts.restart:
-            stderr('There\'s already a Sopel instance running with this config file')
-            stderr('Try using either the `sopel stop` command or the `--restart` option')
+            tools.stderr(
+                'There\'s already a Sopel instance running with this config file')
+            tools.stderr(
+                'Try using either the `sopel stop` command or the `sopel restart` command')
             return ERR_CODE
         elif opts.kill:
             tools.stderr(
                 'option -k/--kill is deprecated, '
                 'use `sopel stop --kill` instead')
-            stderr('Killing the Sopel')
+            tools.stderr('Killing the Sopel')
             os.kill(old_pid, signal.SIGKILL)
             return
         elif opts.quit:
             tools.stderr(
                 'options -q/--quit is deprecated, '
                 'use `sopel stop` instead')
-            stderr('Signaling Sopel to stop gracefully')
+            tools.stderr('Signaling Sopel to stop gracefully')
             if hasattr(signal, 'SIGUSR1'):
                 os.kill(old_pid, signal.SIGUSR1)
             else:
@@ -549,7 +557,7 @@ def command_legacy(opts):
             tools.stderr(
                 'options --restart is deprecated, '
                 'use `sopel restart` instead')
-            stderr('Asking Sopel to restart')
+            tools.stderr('Asking Sopel to restart')
             if hasattr(signal, 'SIGUSR2'):
                 os.kill(old_pid, signal.SIGUSR2)
             else:
@@ -558,7 +566,7 @@ def command_legacy(opts):
                 os.kill(old_pid, signal.SIGILL)
             return
     elif opts.kill or opts.quit or opts.restart:
-        stderr('Sopel is not running!')
+        tools.stderr('Sopel is not running!')
         return ERR_CODE
 
     if opts.daemonize:
@@ -596,7 +604,7 @@ def main(argv=None):
         try:
             check_not_root()
         except RuntimeError as err:
-            stderr('%s' % err)
+            tools.stderr('%s' % err)
             return ERR_CODE
 
         # Step Three: Handle command
