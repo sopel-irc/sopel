@@ -243,7 +243,7 @@ def print_version():
     py_ver = '%s.%s.%s' % (sys.version_info.major,
                            sys.version_info.minor,
                            sys.version_info.micro)
-    print('Sopel %s (running on python %s)' % (__version__, py_ver))
+    print('Sopel %s (running on Python %s)' % (__version__, py_ver))
     print('https://sopel.chat/')
 
 
