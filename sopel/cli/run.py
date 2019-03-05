@@ -12,13 +12,13 @@ from __future__ import unicode_literals, absolute_import, print_function, divisi
 
 import sys
 
-from sopel.tools import stderr
+from sopel import tools
 
 if sys.version_info < (2, 7):
-    stderr('Error: Requires Python 2.7 or later. Try python2.7 sopel')
+    tools.stderr('Error: Requires Python 2.7 or later. Try python2.7 sopel')
     sys.exit(1)
 if sys.version_info.major == 3 and sys.version_info.minor < 3:
-    stderr('Error: When running on Python 3, Python 3.3 is required.')
+    tools.stderr('Error: When running on Python 3, Python 3.3 is required.')
     sys.exit(1)
 
 import argparse
@@ -28,7 +28,7 @@ import signal
 import time
 import traceback
 
-from sopel import bot, logger, tools, __version__
+from sopel import bot, logger, __version__
 from sopel.config import (
     Config,
     _create_config,
