@@ -220,6 +220,11 @@ def build_parser():
         action='store_true',
         default=False,
         help='Kill Sopel without a graceful quit')
+    parser_stop.add_argument(
+        '--quiet',
+        action="store_true",
+        dest="quiet",
+        help="Suppress all output")
     utils.add_common_arguments(parser_stop)
 
     # manage `restart` sub-command
@@ -227,6 +232,11 @@ def build_parser():
         'restart',
         description='Restart a running Sopel instance',
         help='Restart a running Sopel instance')
+    parser_restart.add_argument(
+        '--quiet',
+        action="store_true",
+        dest="quiet",
+        help="Suppress all output")
     utils.add_common_arguments(parser_restart)
 
     return parser
@@ -429,7 +439,7 @@ def command_stop(opts):
         return ERR_CODE
 
     # Redirect Outputs
-    utils.redirect_outputs(settings, False)
+    utils.redirect_outputs(settings, opts.quiet)
 
     # Get Sopel's PID
     filename = get_pid_filename(opts, settings.core.pid_dir)
@@ -468,7 +478,7 @@ def command_restart(opts):
         return ERR_CODE
 
     # Redirect Outputs
-    utils.redirect_outputs(settings, False)
+    utils.redirect_outputs(settings, opts.quiet)
 
     # Get Sopel's PID
     filename = get_pid_filename(opts, settings.core.pid_dir)
