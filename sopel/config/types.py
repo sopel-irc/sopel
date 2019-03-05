@@ -266,17 +266,22 @@ class ListAttribute(BaseValidated):
             prompt = prompt[0]
 
         if default is not NO_DEFAULT:
-            default = ','.join(default)
-            prompt = '{} [{}]'.format(prompt, default)
+            default_prompt = ','.join(['"{}"'.format(item) for item in default])
+            prompt = '{} [{}]'.format(prompt, default_prompt)
         else:
-            default = ''
+            default = []
         print(prompt)
         values = []
         value = get_input(each_prompt + ' ') or default
+        if (value == default) and not default:
+            value = ''
         while value:
-            values.append(value)
+            if value == default:
+                values.extend(value)
+            else:
+                values.append(value)
             value = get_input(each_prompt + ' ')
-        return self.parse(','.join(values))
+        return self.parse(self.serialize(values))
 
 
 class ChoiceAttribute(BaseValidated):
