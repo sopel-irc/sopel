@@ -168,14 +168,17 @@ def build_parser():
     """Build an ``argparse.ArgumentParser`` for the bot"""
     parser = argparse.ArgumentParser(description='Sopel IRC Bot',
                                      usage='%(prog)s [options]')
+    add_legacy_options(parser)
+    utils.add_common_arguments(parser)
+
     subparsers = parser.add_subparsers(
         title='sub-commands',
         description='List of Sopel\'s sub-commands',
-        dest='action')
+        dest='action',
+        metavar='{start,configure,stop,restart}')
 
     # manage `legacy` sub-command
-    parser_legacy = subparsers.add_parser(
-        'legacy', help='Launch Sopel\'s legacy command line')
+    parser_legacy = subparsers.add_parser('legacy')
     add_legacy_options(parser_legacy)
     utils.add_common_arguments(parser_legacy)
 
