@@ -138,9 +138,6 @@ def add_legacy_options(parser):
     parser.add_argument("-l", '--list', action="store_true",
                         dest="list_configs",
                         help="List all config files found")
-    parser.add_argument("-m", '--migrate', action="store_true",
-                        dest="migrate_configs",
-                        help="Migrate config files to the new format")
     parser.add_argument('--quiet', action="store_true", dest="quiet",
                         help="Suppress all output")
     parser.add_argument('-w', '--configure-all', action='store_true',
