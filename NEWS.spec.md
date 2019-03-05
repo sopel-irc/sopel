@@ -25,7 +25,7 @@ this release heading. The text MUST read `Changes between a.b.c and x.y.z` (it
 is used to break this single file into one-page-per-version for the website).
 Example release section heading, including blank line spacing:
 
-```
+```Markdown
 
 
 Changes between 1.0.0 and 1.0.1
@@ -37,7 +37,7 @@ After that, there MAY be an optional prose section for general notes about the
 release, notices about upcoming changes, migration instructions, etc. If
 present, this section SHOULD end with a horizontal rule (`----`). Example:
 
-```
+```Markdown
 Sopel 1.0.1 is a bugfix release with numerous small changes that add up to a big
 improvement in the user experience when combined.
 
@@ -72,7 +72,7 @@ come out wrong without the backticks.
 
 Example subsections and placeholder change entries:
 
-```
+```Markdown
 
 Module changes
 --------------
@@ -104,7 +104,7 @@ they are first used, before any horizontal rule or heading.
 
 Link reference definitions SHOULD be indented with two spaces:
 
-```
+```Markdown
   [link text]: https://sopel.chat/ "Optional title"
 ```
 
