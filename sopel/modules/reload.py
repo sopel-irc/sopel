@@ -28,11 +28,9 @@ except ImportError:
 @sopel.module.nickname_commands("reload")
 @sopel.module.priority("low")
 @sopel.module.thread(False)
+@sopel.module.require_admin
 def f_reload(bot, trigger):
     """Reloads a module, for use by admins only."""
-    if not trigger.admin:
-        return
-
     name = trigger.group(2)
 
     if not name or name == '*' or name.upper() == 'ALL THE THINGS':
@@ -113,10 +111,8 @@ def load_module(bot, name, path, type_, silent=False):
 
 
 @sopel.module.nickname_commands('update')
+@sopel.module.require_admin
 def f_update(bot, trigger):
-    if not trigger.admin:
-        return
-
     """Pulls the latest versions of all modules from Git"""
     proc = subprocess.Popen('/usr/bin/git pull',
                             stdout=subprocess.PIPE,
@@ -129,11 +125,9 @@ def f_update(bot, trigger):
 @sopel.module.nickname_commands("load")
 @sopel.module.priority("low")
 @sopel.module.thread(False)
+@sopel.module.require_admin
 def f_load(bot, trigger):
     """Loads a module, for use by admins only."""
-    if not trigger.admin:
-        return
-
     name = trigger.group(2)
     path = ''
     if not name:

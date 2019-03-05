@@ -36,14 +36,12 @@ console = None
 
 
 @sopel.module.commands('console')
+@sopel.module.require_admin('Only admins can start the interactive console')
 def interactive_shell(bot, trigger):
     """
     Starts an interactive IPython console
     """
     global console
-    if not trigger.admin:
-        bot.say('Only admins can start the interactive console')
-        return
     if 'iconsole_running' in bot.memory and bot.memory['iconsole_running']:
         bot.say('Console already running')
         return
