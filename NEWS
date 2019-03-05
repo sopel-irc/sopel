@@ -2,6 +2,16 @@ This file is used to auto-generate the "Changelog" section of Sopel's website.
 When adding new entries, follow the style guide in NEWS.spec.md to avoid causing
 problems with the site build.
 
+Changes between 6.x.x and 7.0.0
+===============================
+
+API changes
+-----------
+
+* `module.require_admin()` now takes an optional boolean parameter `reply`
+  * Default is `False`, so existing uses will not change.
+  * Setting it `True` will send the error message as if via `bot.reply()`.
+
 Changes between 6.6.2 and 6.6.3
 ===============================
 
