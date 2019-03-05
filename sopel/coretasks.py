@@ -596,15 +596,13 @@ def sasl_success(bot, trigger):
 @sopel.module.priority('low')
 @sopel.module.thread(False)
 @sopel.module.unblockable
+@sopel.module.require_admin
 def blocks(bot, trigger):
     """
     Manage Sopel's blocking features.\
     See [ignore system documentation]({% link _usage/ignoring-people.md %}).
 
     """
-    if not trigger.admin:
-        return
-
     STRINGS = {
         "success_del": "Successfully deleted block: %s",
         "success_add": "Successfully added block: %s",

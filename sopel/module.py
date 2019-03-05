@@ -341,22 +341,33 @@ def require_privilege(level, message=None):
     return actual_decorator
 
 
-def require_admin(message=None):
+def require_admin(message=None, reply=False):
     """Decorate a function to require the triggering user to be a bot admin.
 
-    If they are not, `message` will be said if given."""
+    :param str message: optional message said to non-admin user
+    :param bool reply: use `reply` instead of `say` when true, default to false
+
+    When the triggering user is not an admin, the command is not run, and the
+    bot will say the ``message`` if given. By default, it uses ``bot.say``,
+    but when ``reply`` is true, then it uses ``bot.reply`` instead.
+    """
     def actual_decorator(function):
         @functools.wraps(function)
         def guarded(bot, trigger, *args, **kwargs):
             if not trigger.admin:
                 if message and not callable(message):
-                    bot.say(message)
+                    if reply:
+                        bot.reply(message)
+                    else:
+                        bot.say(message)
             else:
                 return function(bot, trigger, *args, **kwargs)
         return guarded
+
     # Hack to allow decorator without parens
     if callable(message):
         return actual_decorator(message)
+
     return actual_decorator
 
 
