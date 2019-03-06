@@ -2,6 +2,7 @@
 """Tests for command handling"""
 from __future__ import unicode_literals, absolute_import, print_function, division
 
+import argparse
 from contextlib import contextmanager
 import os
 
@@ -36,6 +37,93 @@ def config_dir(tmpdir):
     test_dir.join('README').write('')
 
     return test_dir
+
+
+def test_build_parser_legacy():
+    """Assert parser's namespace exposes legacy's options (default values)"""
+    parser = build_parser()
+    options = parser.parse_args(['legacy'])
+
+    assert isinstance(options, argparse.Namespace)
+    assert hasattr(options, 'config')
+    assert hasattr(options, 'daemonize')
+    assert hasattr(options, 'quiet')
+    assert hasattr(options, 'quit')
+    assert hasattr(options, 'kill')
+    assert hasattr(options, 'restart')
+    assert hasattr(options, 'version')
+    assert hasattr(options, 'version_legacy')
+    assert hasattr(options, 'wizard')
+    assert hasattr(options, 'mod_wizard')
+    assert hasattr(options, 'list_configs')
+
+    assert options.config is None
+    assert options.daemonize is False
+    assert options.quiet is False
+    assert options.quit is False
+    assert options.kill is False
+    assert options.restart is False
+    assert options.version is False
+    assert options.version_legacy is False
+    assert options.wizard is False
+    assert options.mod_wizard is False
+    assert options.list_configs is False
+
+
+def test_build_parser_start():
+    """Assert parser's namespace exposes start's options (default values)"""
+    parser = build_parser()
+    options = parser.parse_args(['start'])
+
+    assert isinstance(options, argparse.Namespace)
+    assert hasattr(options, 'config')
+    assert hasattr(options, 'daemonize')
+    assert hasattr(options, 'quiet')
+
+    assert options.config is None
+    assert options.daemonize is False
+    assert options.quiet is False
+
+
+def test_build_parser_stop():
+    """Assert parser's namespace exposes stop's options (default values)"""
+    parser = build_parser()
+    options = parser.parse_args(['stop'])
+
+    assert isinstance(options, argparse.Namespace)
+    assert hasattr(options, 'config')
+    assert hasattr(options, 'kill')
+    assert hasattr(options, 'quiet')
+
+    assert options.config is None
+    assert options.kill is False
+    assert options.quiet is False
+
+
+def test_build_parser_restart():
+    """Assert parser's namespace exposes restart's options (default values)"""
+    parser = build_parser()
+    options = parser.parse_args(['restart'])
+
+    assert isinstance(options, argparse.Namespace)
+    assert hasattr(options, 'config')
+    assert hasattr(options, 'quiet')
+
+    assert options.config is None
+    assert options.quiet is False
+
+
+def test_build_parser_configure():
+    """Assert parser's namespace exposes configure's options (default values)"""
+    parser = build_parser()
+    options = parser.parse_args(['configure'])
+
+    assert isinstance(options, argparse.Namespace)
+    assert hasattr(options, 'config')
+    assert hasattr(options, 'modules')
+
+    assert options.config is None
+    assert options.modules is False
 
 
 def test_get_configuration(tmpdir):
