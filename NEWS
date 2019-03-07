@@ -9,6 +9,20 @@ Module changes
 --------------
 
 * Python version is now included in `.version` command output
+* Readability of `.choose` command output is significantly improved
+
+Core changes
+------------
+
+* Sopel no longer assumes its home directory is `~/.sopel` on first run
+* Restarting Sopel via CLI is added
+* Config options can be set/overridden via environment variables
+  * Variable naming format: `SOPEL_SECTION_OPTION`
+  * Underscores in `SECTION` and `OPTION` names are preserved, e.g.
+    `SOPEL_CORE_AUTH_PASSWORD`
+* Running Sopel on an unknown OS platform will output a warning encouraging the
+  user to report any issues (because test coverage on an unrecognized platform
+  name is likely to be nil)
 
 API changes
 -----------
