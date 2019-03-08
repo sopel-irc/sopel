@@ -178,6 +178,8 @@ def handle_names(bot, trigger):
     channel = Identifier(channels.group(1))
     if channel not in bot.privileges:
         bot.privileges[channel] = dict()
+    if channel not in bot.channels:
+        bot.channels[channel] = Channel(channel)
 
     # This could probably be made flexible in the future, but I don't think
     # it'd be worth it.
@@ -196,6 +198,15 @@ def handle_names(bot, trigger):
                 priv = priv | value
         nick = Identifier(name.lstrip(''.join(mapping.keys())))
         bot.privileges[channel][nick] = priv
+        user = bot.users.get(nick)
+        if user is None:
+            # It's not possible to set the username/hostname from info received
+            # in a NAMES reply, unfortunately.
+            # Fortunately, the user should already exist in bot.users by the
+            # time this code runs, so this is 99.9% ass-covering.
+            user = User(nick, None, None)
+            bot.users[nick] = user
+        bot.channels[channel].add_user(user, privs=priv)
 
 
 @sopel.module.rule('(.*)')
@@ -238,12 +249,17 @@ def track_modes(bot, trigger):
             arg = Identifier(arg)
             for mode in modes:
                 priv = bot.channels[channel].privileges.get(arg, 0)
-                # Throw an exception if the two privilege-tracking data
-                # structures get out of sync. That should never happen.
-                # This is a good place to check that bot.channels is doing
+                # Log a warning if the two privilege-tracking data structures
+                # get out of sync. That should never happen.
+                # This is a good place to verify that bot.channels is doing
                 # what it's supposed to do before ultimately removing the old,
                 # deprecated bot.privileges structure completely.
-                assert priv == bot.privileges[channel].get(arg, 0)
+                ppriv = bot.privileges[channel].get(arg, 0)
+                if priv != ppriv:
+                    LOGGER.warning("Privilege data error! Please share Sopel's"
+                                   "raw log with the developers, if enabled. "
+                                   "(Expected {} == {} for {} in {}.)"
+                                   .format(priv, ppriv, arg, channel))
                 value = mapping.get(mode[1])
                 if value is not None:
                     if mode[0] == '+':
@@ -727,6 +743,9 @@ def _record_who(bot, channel, user, host, nick, account=None, away=None, modes=N
     if channel not in bot.channels:
         bot.channels[channel] = Channel(channel)
     bot.channels[channel].add_user(user, privs=priv)
+    if channel not in bot.privileges:
+        bot.privileges[channel] = dict()
+    bot.privileges[channel][nick] = priv
 
 
 @sopel.module.event(events.RPL_WHOREPLY)
