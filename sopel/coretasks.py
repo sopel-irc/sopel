@@ -254,10 +254,12 @@ def track_modes(bot, trigger):
                 # This is a good place to verify that bot.channels is doing
                 # what it's supposed to do before ultimately removing the old,
                 # deprecated bot.privileges structure completely.
-                if priv != bot.privileges[channel].get(arg, 0):
-                    LOGGER.warning("Privilege tracking mismatch in {}! Please "
-                                   "share a raw log with Sopel's developers, if"
-                                   " available".format(channel))
+                ppriv = bot.privileges[channel].get(arg, 0)
+                if priv != ppriv:
+                    LOGGER.warning("Privilege data error! Please share Sopel's"
+                                   "raw log with the developers, if enabled. "
+                                   "(Expected {} == {} for {} in {}.)"
+                                   .format(priv, ppriv, arg, channel))
                 value = mapping.get(mode[1])
                 if value is not None:
                     if mode[0] == '+':
