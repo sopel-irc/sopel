@@ -205,6 +205,7 @@ def handle_names(bot, trigger):
             # Fortunately, the user should already exist in bot.users by the
             # time this code runs, so this is 99.9% ass-covering.
             user = User(nick, None, None)
+            bot.users[nick] = user
         bot.channels[channel].add_user(user, privs=priv)
 
 
