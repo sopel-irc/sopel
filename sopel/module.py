@@ -330,7 +330,7 @@ def require_privilege(level, message=None):
             # If this is a privmsg, ignore privilege requirements
             if trigger.is_privmsg:
                 return function(bot, trigger, *args, **kwargs)
-            channel_privs = bot.privileges[trigger.sender]
+            channel_privs = bot.channels[trigger.sender].privileges
             allowed = channel_privs.get(trigger.nick, 0) >= level
             if not trigger.is_privmsg and not allowed:
                 if message and not callable(message):
