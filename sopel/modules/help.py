@@ -82,21 +82,20 @@ def help(bot, trigger):
 
 def create_list(bot, msg):
     msg = 'Command listing for {}@{}\n\n'.format(bot.nick, bot.config.core.host) + msg
-    payload = {"content": msg}
-    headers = {'Content-type': 'application/json', 'Accept': 'application/json'}
 
     try:
-        result = requests.post('https://ptpb.pw/', json=payload, headers=headers)
+        result = requests.post('https://clbin.com/', data={'clbin': msg})
     except requests.RequestException:
         bot.say("Sorry! Something went wrong.")
         logger.exception("Error posting commands")
         return
-    result = result.json()
-    if 'url' not in result:
+    result = result.text
+    if "https://clbin.com/" in result:
+        return result
+    else:
         bot.say("Sorry! Something went wrong.")
         logger.error("Invalid result %s", result)
         return
-    return result['url']
 
 
 @rule('$nick' r'(?i)help(?:[?!]+)?$')

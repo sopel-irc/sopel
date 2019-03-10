@@ -177,7 +177,7 @@ def update_channel(bot, trigger):
     """
     Set the preferred timezone for the channel.
     """
-    if bot.privileges[trigger.sender][trigger.nick] < OP:
+    if bot.channels[trigger.sender].privileges[trigger.nick] < OP:
         return
     elif not pytz:
         bot.reply("Sorry, I don't have timezone support installed.")
@@ -231,7 +231,7 @@ def update_channel_format(bot, trigger):
     Sets your preferred format for time. Uses the standard strftime format. You
     can use <http://strftime.net> or your favorite search engine to learn more.
     """
-    if bot.privileges[trigger.sender][trigger.nick] < OP:
+    if bot.channels[trigger.sender].privileges[trigger.nick] < OP:
         return
 
     tformat = trigger.group(2)

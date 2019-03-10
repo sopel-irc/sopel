@@ -2,6 +2,28 @@ This file is used to auto-generate the "Changelog" section of Sopel's website.
 When adding new entries, follow the style guide in NEWS.spec.md to avoid causing
 problems with the site build.
 
+Changes between 6.6.3 and 6.6.4
+===============================
+
+Module changes
+--------------
+
+* Replaced `help` pastebin with `clbin.com`
+  * `ptpb.pw` shut down due to abuse — see [ptpb/pb#246](
+    https://github.com/ptpb/pb/issues/246) for more
+  * More news on this front (reducing Sopel's dependence on specific pastebins)
+    in a future release. Several ideas are under consideration.
+* Cleaned up code in `instagram` and `unicode` modules
+* Core modules now use `bot.channels` instead of deprecated `bot.privileges`
+
+Core changes
+------------
+
+* Privilege tracking now always updates both `bot.channels` & `bot.privileges`,
+  where before some handlers only updated one or the other
+  * This *should* have zero effect on behavior, but do report any observed.
+
+
 Changes between 6.6.2 and 6.6.3
 ===============================
 

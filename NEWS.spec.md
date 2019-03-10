@@ -5,13 +5,13 @@ using the NEWS file to make HTML changelog pages. Since the file was already
 Markdown-like, parsing it with a script became the chosen method.
 
 What follows is a description of the syntax conventions used to keep NEWS
-easily consumable by the [website build script][clg]. It uses the common all-
+easily consumable by the [website build script][dvs]. It uses the common all-
 caps RFC terms "MUST", "SHOULD", etc. according to the usual RFC conventions.
 Anything set off by one of these is important to follow as it might affect the
 website build script's ability to read this file correctly, or effectively
 translate it into HTML pages.
 
-  [clg]: https://github.com/sopel-irc/sopel-website/blob/master/generate_changelogs.py
+  [dvs]: https://github.com/sopel-irc/sopel.chat/blob/master/document_versions.py
 
 ----
 
@@ -25,7 +25,7 @@ this release heading. The text MUST read `Changes between a.b.c and x.y.z` (it
 is used to break this single file into one-page-per-version for the website).
 Example release section heading, including blank line spacing:
 
-```
+```Markdown
 
 
 Changes between 1.0.0 and 1.0.1
@@ -37,7 +37,7 @@ After that, there MAY be an optional prose section for general notes about the
 release, notices about upcoming changes, migration instructions, etc. If
 present, this section SHOULD end with a horizontal rule (`----`). Example:
 
-```
+```Markdown
 Sopel 1.0.1 is a bugfix release with numerous small changes that add up to a big
 improvement in the user experience when combined.
 
@@ -72,7 +72,7 @@ come out wrong without the backticks.
 
 Example subsections and placeholder change entries:
 
-```
+```Markdown
 
 Module changes
 --------------
@@ -104,7 +104,7 @@ they are first used, before any horizontal rule or heading.
 
 Link reference definitions SHOULD be indented with two spaces:
 
-```
+```Markdown
   [link text]: https://sopel.chat/ "Optional title"
 ```
 

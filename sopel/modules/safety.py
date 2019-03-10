@@ -186,7 +186,7 @@ def url_handler(bot, trigger):
 @sopel.module.commands('safety')
 def toggle_safety(bot, trigger):
     """ Set safety setting for channel """
-    if not trigger.admin and bot.privileges[trigger.sender][trigger.nick] < OP:
+    if not trigger.admin and bot.channels[trigger.sender].privileges[trigger.nick] < OP:
         bot.reply('Only channel operators can change safety settings')
         return
     allowed_states = ['strict', 'on', 'off', 'local', 'local strict']

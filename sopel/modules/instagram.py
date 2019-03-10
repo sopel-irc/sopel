@@ -8,15 +8,18 @@ https://sopel.chat
 """
 from __future__ import unicode_literals, absolute_import, print_function, division
 
+import re
+from datetime import datetime
+
+from requests import get
+
+from sopel import module, tools
+
 try:
     from ujson import loads
 except ImportError:
     from json import loads
-from sopel.module import rule
-from sopel.tools import SopelMemory
-from requests import get
-from datetime import datetime
-import re
+
 
 instagram_regex = r'.*(https?:\/\/(?:www\.){0,1}instagram\.com\/([a-zA-Z0-9_\.]{,30}\/)?p\/[a-zA-Z0-9_-]+)\s?.*'
 instagram_pattern = re.compile(instagram_regex)
@@ -24,7 +27,7 @@ instagram_pattern = re.compile(instagram_regex)
 
 def setup(bot):
     if not bot.memory.contains('url_callbacks'):
-        bot.memory['url_callbacks'] = SopelMemory()
+        bot.memory['url_callbacks'] = tools.SopelMemory()
     bot.memory['url_callbacks'][instagram_pattern] = instaparse
 
 
@@ -34,7 +37,7 @@ def shutdown(bot):
 # TODO: Parse Instagram profile page
 
 
-@rule(instagram_regex)
+@module.rule(instagram_regex)
 def instaparse(bot, trigger):
     # Get the embedded JSON
     json = get_insta_json(trigger.group(1))
@@ -72,7 +75,7 @@ def parse_insta_json(json):
         # Strip newlines
         icap = icap.replace('\n', ' ')
         # Truncate caption
-        icap = (icap[:256] + u'…') if len(icap) > 256 else icap
+        icap = (icap[:256] + '…') if len(icap) > 256 else icap
     except Exception:  # TODO: be specific
         icap = False
 
@@ -86,10 +89,10 @@ def parse_insta_json(json):
     else:
         botmessage += "%s (@%s)" % (ifname, iuser)
     if icap is not False:
-        botmessage += u" | " + icap
-    botmessage += u" | " + str(iwidth) + "x" + str(iheight)
-    botmessage += u" | Likes: {:,} | Comments: {:,}".format(ilikes, icomms)
-    botmessage += u" | Uploaded: " + pubdate
+        botmessage += " | " + icap
+    botmessage += " | " + str(iwidth) + "x" + str(iheight)
+    botmessage += " | Likes: {:,} | Comments: {:,}".format(ilikes, icomms)
+    botmessage += " | Uploaded: " + pubdate
 
     # Ta-da!
     return botmessage
