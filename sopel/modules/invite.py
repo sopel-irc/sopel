@@ -10,6 +10,7 @@ from __future__ import unicode_literals, absolute_import, print_function, divisi
 
 from sopel.module import commands, example, OP
 
+
 @commands('invite')
 @example('.invite jenny')
 @example('.invite converge #sopel')
@@ -25,7 +26,9 @@ def invite(bot, trigger):
         channel = trigger.group(4)
     else:
         if trigger.is_privmsg:
-            return bot.say("Channel is required (.invite user #channel) when inviting from queries.")
+            return bot.say(
+                "Channel is required ({}invite user #channel) when inviting from queries."
+                .format(bot.config.core.help_prefix))
         channel = trigger.sender
     try:
         if bot.privileges[channel][bot.nick] < OP:
