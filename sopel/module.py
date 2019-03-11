@@ -274,10 +274,15 @@ def rate(user=0, channel=0, server=0):
     return add_attribute
 
 
-def require_privmsg(message=None):
+def require_privmsg(message=None, reply=False):
     """Decorate a function to only be triggerable from a private message.
 
-    If it is triggered in a channel message, `message` will be said if given.
+    :param str message: optional message said if triggered in a channel
+    :param bool reply: use `reply` instead of `say` when true, default to false
+
+    If it is triggered in a channel message, ``message`` will be said if given.
+    By default, it uses ``bot.say``, but when ``reply`` is true, then it uses
+    ``bot.reply`` instead.
     """
     def actual_decorator(function):
         @functools.wraps(function)
@@ -288,8 +293,12 @@ def require_privmsg(message=None):
                 return function(*args, **kwargs)
             else:
                 if message and not callable(message):
-                    bot.say(message)
+                    if reply:
+                        bot.reply(message)
+                    else:
+                        bot.say(message)
         return _nop
+
     # Hack to allow decorator without parens
     if callable(message):
         return actual_decorator(message)
