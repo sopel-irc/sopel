@@ -122,7 +122,7 @@ def get_example_test(tested_func, msg, results, privmsg, admin,
         assert match, "Example did not match any command."
 
         sender = bot.nick if privmsg else "#channel"
-        hostmask = "%s!%s@%s " % (bot.nick, "UserName", "example.com")
+        hostmask = "%s!%s@%s" % (bot.nick, "UserName", "example.com")
         # TODO enable message tags
         full_message = ':{} PRIVMSG {} :{}'.format(hostmask, sender, msg)
 
