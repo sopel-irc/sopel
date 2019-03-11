@@ -318,12 +318,20 @@ def require_chanmsg(message=None):
     return actual_decorator
 
 
-def require_privilege(level, message=None):
+def require_privilege(level, message=None, reply=False):
     """Decorate a function to require at least the given channel permission.
 
-    `level` can be one of the privilege levels defined in this module. If the
-    user does not have the privilege, `message` will be said if given. If it is
-    a private message, no checking will be done."""
+    :param int level: required privilege level to use this command
+    :param str message: optional message said to insufficiently privileged user
+    :param bool reply: use `reply` instead of `say` when true, default to false
+
+    ``level`` can be one of the privilege level constants defined in this
+    module. If the user does not have the privilege, the bot will say
+    ``message`` if given. By default, it uses ``bot.say``, but when ``reply``
+    is true, then it uses ``bot.reply`` instead.
+
+    Privilege requirements are ignored in private messages.
+    """
     def actual_decorator(function):
         @functools.wraps(function)
         def guarded(bot, trigger, *args, **kwargs):
@@ -334,7 +342,10 @@ def require_privilege(level, message=None):
             allowed = channel_privs.get(trigger.nick, 0) >= level
             if not trigger.is_privmsg and not allowed:
                 if message and not callable(message):
-                    bot.say(message)
+                    if reply:
+                        bot.reply(message)
+                    else:
+                        bot.say(message)
             else:
                 return function(bot, trigger, *args, **kwargs)
         return guarded
