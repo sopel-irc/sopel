@@ -8,32 +8,53 @@ Changes between 6.x.x and 7.0.0
 Module changes
 --------------
 
-* Python version is now included in `.version` command output
-* Readability of `.choose` command output is significantly improved
-* A `.restart` command is added (admin-only, just like `.quit`)
+* Python version is now included in `.version` command output [[#1462][]]
+* Readability of `.choose` command output is significantly improved [[#1425][]]
+* A `.restart` command is added [[#1333][]]
+  * admin-only, just like `.quit`
 
 Core changes
 ------------
 
-* Sopel no longer assumes its home directory is `~/.sopel` on first run
-* Restarting Sopel via CLI is added
-* Config options can be set/overridden via environment variables
+* Sopel no longer assumes on first run that its home directory is `~/.sopel`
+  [[#1404][]]
+* Restarting Sopel via CLI is added [[#1333][]]
+* Config options can be set/overridden via environment variables [[#1096][]]
   * Variable naming format: `SOPEL_SECTION_OPTION`
   * Underscores in `SECTION` and `OPTION` names are preserved, e.g.
     `SOPEL_CORE_AUTH_PASSWORD`
 * Example service unit files now include a multi-instance template for systemd
+  [[#1059][]]
 * Running Sopel on an unknown OS platform will output a warning encouraging the
   user to report any issues (because test coverage on an unrecognized platform
-  name is likely to be nil)
-* Large amounts of internal refactoring
+  name is likely to be nil) [[#1487][]]
+* Large amounts of internal refactoring [[#1424][], [#1429][], [#1456][],
+  [#1458][], [#1472][]]
 
 API changes
 -----------
 
 * `module.require_admin()` now takes an optional boolean parameter `reply`
+  [[#1456][]]
   * Default is `False`, so existing uses will not change.
   * Setting it `True` will send the error message as if via `bot.reply()`.
 * The `@example` decorator no longer generates invalid raw lines in tests
+  [[#1499][]]
+
+
+  [#1059]: https://github.com/sopel-irc/sopel/pull/1059
+  [#1096]: https://github.com/sopel-irc/sopel/pull/1096
+  [#1333]: https://github.com/sopel-irc/sopel/pull/1333
+  [#1404]: https://github.com/sopel-irc/sopel/pull/1404
+  [#1424]: https://github.com/sopel-irc/sopel/pull/1424
+  [#1425]: https://github.com/sopel-irc/sopel/pull/1425
+  [#1429]: https://github.com/sopel-irc/sopel/pull/1429
+  [#1456]: https://github.com/sopel-irc/sopel/pull/1456
+  [#1458]: https://github.com/sopel-irc/sopel/pull/1458
+  [#1462]: https://github.com/sopel-irc/sopel/pull/1462
+  [#1472]: https://github.com/sopel-irc/sopel/pull/1472
+  [#1487]: https://github.com/sopel-irc/sopel/pull/1487
+  [#1499]: https://github.com/sopel-irc/sopel/pull/1499
 
 
 Changes between 6.6.2 and 6.6.3
