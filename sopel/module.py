@@ -283,6 +283,9 @@ def require_privmsg(message=None, reply=False):
     If it is triggered in a channel message, ``message`` will be said if given.
     By default, it uses ``bot.say``, but when ``reply`` is true, then it uses
     ``bot.reply`` instead.
+
+    .. versionchanged:: 7.0.0
+        Added the ``reply`` parameter.
     """
     def actual_decorator(function):
         @functools.wraps(function)
@@ -314,6 +317,9 @@ def require_chanmsg(message=None, reply=False):
     If it is triggered in a private message, ``message`` will be said if given.
     By default, it uses ``bot.say``, but when ``reply`` is true, then it uses
     ``bot.reply`` instead.
+
+    .. versionchanged:: 7.0.0
+        Added the ``reply`` parameter.
     """
     def actual_decorator(function):
         @functools.wraps(function)
@@ -349,6 +355,9 @@ def require_privilege(level, message=None, reply=False):
     is true, then it uses ``bot.reply`` instead.
 
     Privilege requirements are ignored in private messages.
+
+    .. versionchanged:: 7.0.0
+        Added the ``reply`` parameter.
     """
     def actual_decorator(function):
         @functools.wraps(function)
@@ -379,6 +388,9 @@ def require_admin(message=None, reply=False):
     When the triggering user is not an admin, the command is not run, and the
     bot will say the ``message`` if given. By default, it uses ``bot.say``,
     but when ``reply`` is true, then it uses ``bot.reply`` instead.
+
+    .. versionchanged:: 7.0.0
+        Added the ``reply`` parameter.
     """
     def actual_decorator(function):
         @functools.wraps(function)
@@ -409,6 +421,9 @@ def require_owner(message=None, reply=False):
     When the triggering user is not the bot's owner, the command is not run,
     and the bot will say ``message`` if given. By default, it uses ``bot.say``,
     but when ``reply`` is true, then it uses ``bot.reply`` instead.
+
+    .. versionchanged:: 7.0.0
+        Added the ``reply`` parameter.
     """
     def actual_decorator(function):
         @functools.wraps(function)
