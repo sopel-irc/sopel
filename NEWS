@@ -33,6 +33,7 @@ API changes
 * `module.require_admin()` now takes an optional boolean parameter `reply`
   * Default is `False`, so existing uses will not change.
   * Setting it `True` will send the error message as if via `bot.reply()`.
+* The `@example` decorator no longer generates invalid raw lines in tests
 
 
 Changes between 6.6.2 and 6.6.3
