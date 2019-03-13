@@ -11,7 +11,7 @@ from __future__ import unicode_literals, absolute_import, print_function, divisi
 import collections
 import sys
 import time
-from sopel.tools import iteritems
+from sopel.tools import stderr, iteritems
 import sopel.loader
 import sopel.module
 import subprocess
@@ -67,6 +67,22 @@ def reload_module_tree(bot, name, seen=None, silent=False):
     old_callables = {}
     for obj_name, obj in iteritems(vars(old_module)):
         if callable(obj):
+            if (getattr(obj, '__name__', None) == 'shutdown' and
+                        obj in bot.shutdown_methods):
+                # If this is a shutdown method, call it first.
+                try:
+                    stderr(
+                        "calling %s.%s" % (
+                            obj.__module__, obj.__name__,
+                        )
+                    )
+                    obj(bot)
+                except Exception as e:
+                    stderr(
+                        "Error calling shutdown method for module %s:%s" % (
+                            obj.__module__, e
+                        )
+                    )
             bot.unregister(obj)
         elif (type(obj) is ModuleType and
               obj.__name__.startswith(name + '.') and

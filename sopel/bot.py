@@ -580,6 +580,8 @@ class Sopel(irc.Bot):
                         shutdown_method.__module__, e
                     )
                 )
+        # Avoid calling shutdown methods if we already have.
+        self.shutdown_methods = []
 
     def cap_req(self, module_name, capability, arg=None, failure_callback=None,
                 success_callback=None):
