@@ -2,6 +2,7 @@
 """
 invite.py - Sopel invite module
 Copyright © 2016, João Vanzuita, https://github.com/converge
+Copyright © 2019, dgw, https://github.com/dgw
 Licensed under the Eiffel Forum License 2.
 
 https://sopel.chat
@@ -20,7 +21,7 @@ def invite(bot, trigger):
     second argument) another channel that Sopel is in.
     """
     if not trigger.group(3):
-        return bot.reply("Who should I invite?")
+        return bot.reply("Whom should I invite?")
     nick = trigger.group(3)
     if trigger.group(4):
         channel = trigger.group(4)
@@ -31,7 +32,7 @@ def invite(bot, trigger):
                 .format(bot.config.core.help_prefix))
         channel = trigger.sender
     try:
-        if bot.privileges[channel][bot.nick] < OP:
+        if bot.channels[channel].privileges[bot.nick] < OP:
             return bot.reply("I'm not a channel operator!")
     except KeyError:
         return bot.reply("I'm not in {}!".format(channel))
