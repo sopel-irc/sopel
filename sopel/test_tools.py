@@ -25,6 +25,10 @@ import sopel.tools
 import sopel.trigger
 
 
+if sys.version_info.major >= 3:
+    basestring = str
+
+
 class MockConfig(sopel.config.Config):
     def __init__(self):
         self.filename = tempfile.mkstemp()[1]
@@ -52,6 +56,7 @@ class MockSopel(object):
         self.channels[channel] = sopel.tools.target.Channel(channel)
 
         self.memory = sopel.tools.SopelMemory()
+        self.memory['url_callbacks'] = sopel.tools.SopelMemory()
 
         self.ops = {}
         self.halfplus = {}
@@ -73,6 +78,27 @@ class MockSopel(object):
         if not os.path.exists(home_dir):
             os.mkdir(home_dir)
         cfg.parser.set('core', 'homedir', home_dir)
+
+    def register_url_callback(self, pattern, callback):
+        if isinstance(pattern, basestring):
+            pattern = re.compile(pattern)
+
+        self.memory['url_callbacks'][pattern] = callback
+
+    def unregister_url_callback(self, pattern):
+        if isinstance(pattern, basestring):
+            pattern = re.compile(pattern)
+
+        try:
+            del self.memory['url_callbacks'][pattern]
+        except KeyError:
+            pass
+
+    def search_url_callbacks(self, url):
+        for regex, function in sopel.tools.iteritems(self.memory['url_callbacks']):
+            match = regex.search(url)
+            if match:
+                yield function, match
 
 
 class MockSopelWrapper(object):
