@@ -70,6 +70,96 @@ def test_build_parser_legacy():
     assert options.list_configs is False
 
 
+def test_build_parser_legacy_config():
+    parser = build_parser()
+    options = parser.parse_args(['legacy', '-c', 'custom'])
+    assert options.config == 'custom'
+
+    options = parser.parse_args(['legacy', '--config', 'custom'])
+    assert options.config == 'custom'
+
+
+def test_build_parser_legacy_daemonize():
+    parser = build_parser()
+    options = parser.parse_args(['legacy', '-d'])
+    assert options.daemonize is True
+
+    options = parser.parse_args(['legacy', '--fork'])
+    assert options.daemonize is True
+
+
+def test_build_parser_legacy_quiet():
+    parser = build_parser()
+    options = parser.parse_args(['legacy', '--quiet'])
+    assert options.quiet is True
+
+
+def test_build_parser_legacy_quit():
+    parser = build_parser()
+    options = parser.parse_args(['legacy', '-q'])
+    assert options.quit is True
+
+    options = parser.parse_args(['legacy', '--quit'])
+    assert options.quit is True
+
+
+def test_build_parser_legacy_kill():
+    parser = build_parser()
+    options = parser.parse_args(['legacy', '-k'])
+    assert options.kill is True
+
+    options = parser.parse_args(['legacy', '--kill'])
+    assert options.kill is True
+
+
+def test_build_parser_legacy_restart():
+    parser = build_parser()
+    options = parser.parse_args(['legacy', '-r'])
+    assert options.restart is True
+
+    options = parser.parse_args(['legacy', '--restart'])
+    assert options.restart is True
+
+
+def test_build_parser_legacy_version():
+    parser = build_parser()
+    options = parser.parse_args(['legacy', '-v'])
+    assert options.version is False
+    assert options.version_legacy is True
+
+    options = parser.parse_args(['legacy', '-V'])
+    assert options.version is True
+    assert options.version_legacy is False
+
+    options = parser.parse_args(['legacy', '--version'])
+    assert options.version is True
+    assert options.version_legacy is False
+
+
+def test_build_parser_legacy_wizard():
+    parser = build_parser()
+    options = parser.parse_args(['legacy', '-w'])
+    assert options.wizard is True
+    assert options.mod_wizard is False
+
+    options = parser.parse_args(['legacy', '--configure-all'])
+    assert options.wizard is True
+    assert options.mod_wizard is False
+
+    options = parser.parse_args(['legacy', '--configure-modules'])
+    assert options.wizard is False
+    assert options.mod_wizard is True
+
+
+def test_build_parser_legacy_list_config():
+    parser = build_parser()
+    options = parser.parse_args(['legacy', '-l'])
+    assert options.list_configs is True
+
+    options = parser.parse_args(['legacy', '--list'])
+    assert options.list_configs is True
+
+
 def test_build_parser_start():
     """Assert parser's namespace exposes start's options (default values)"""
     parser = build_parser()
