@@ -217,6 +217,33 @@ def test_build_parser_stop():
     assert options.quiet is False
 
 
+def test_build_parser_stop_config():
+    parser = build_parser()
+
+    options = parser.parse_args(['stop', '-c', 'custom'])
+    assert options.config == 'custom'
+
+    options = parser.parse_args(['stop', '--config', 'custom'])
+    assert options.config == 'custom'
+
+
+def test_build_parser_stop_kill():
+    parser = build_parser()
+
+    options = parser.parse_args(['stop', '-k'])
+    assert options.kill is True
+
+    options = parser.parse_args(['stop', '--kill'])
+    assert options.kill is True
+
+
+def test_build_parser_stop_quiet():
+    parser = build_parser()
+
+    options = parser.parse_args(['stop', '--quiet'])
+    assert options.quiet is True
+
+
 def test_build_parser_restart():
     """Assert parser's namespace exposes restart's options (default values)"""
     parser = build_parser()
