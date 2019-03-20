@@ -257,6 +257,23 @@ def test_build_parser_restart():
     assert options.quiet is False
 
 
+def test_build_parser_restart_config():
+    parser = build_parser()
+
+    options = parser.parse_args(['restart', '-c', 'custom'])
+    assert options.config == 'custom'
+
+    options = parser.parse_args(['restart', '--config', 'custom'])
+    assert options.config == 'custom'
+
+
+def test_build_parser_restart_quiet():
+    parser = build_parser()
+
+    options = parser.parse_args(['restart', '--quiet'])
+    assert options.quiet is True
+
+
 def test_build_parser_configure():
     """Assert parser's namespace exposes configure's options (default values)"""
     parser = build_parser()
