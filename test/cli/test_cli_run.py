@@ -287,6 +287,23 @@ def test_build_parser_configure():
     assert options.modules is False
 
 
+def test_build_parser_configure_config():
+    parser = build_parser()
+
+    options = parser.parse_args(['configure', '-c', 'custom'])
+    assert options.config == 'custom'
+
+    options = parser.parse_args(['configure', '--config', 'custom'])
+    assert options.config == 'custom'
+
+
+def test_build_parser_configure_modules():
+    parser = build_parser()
+
+    options = parser.parse_args(['configure', '--modules'])
+    assert options.modules is True
+
+
 def test_get_configuration(tmpdir):
     """Assert function returns a Sopel ``Config`` object"""
     working_dir = tmpdir.mkdir("working")
