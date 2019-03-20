@@ -175,6 +175,33 @@ def test_build_parser_start():
     assert options.quiet is False
 
 
+def test_build_parser_start_config():
+    parser = build_parser()
+
+    options = parser.parse_args(['start', '-c', 'custom'])
+    assert options.config == 'custom'
+
+    options = parser.parse_args(['start', '--config', 'custom'])
+    assert options.config == 'custom'
+
+
+def test_build_parser_start_daemonize():
+    parser = build_parser()
+
+    options = parser.parse_args(['start', '-d'])
+    assert options.daemonize is True
+
+    options = parser.parse_args(['start', '--fork'])
+    assert options.daemonize is True
+
+
+def test_build_parser_start_quiet():
+    parser = build_parser()
+
+    options = parser.parse_args(['start', '--quiet'])
+    assert options.quiet is True
+
+
 def test_build_parser_stop():
     """Assert parser's namespace exposes stop's options (default values)"""
     parser = build_parser()
