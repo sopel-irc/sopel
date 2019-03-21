@@ -288,8 +288,9 @@ class Bot(asynchat.async_chat):
 
         # authenticate account if needed
         if self.config.core.auth_method == 'server':
-            password = self.config.core.auth_password
-            self.write(('PASS', password))
+            self.write(('PASS', self.config.core.auth_password))
+        elif self.config.core.server_auth_method == 'server':
+            self.write(('PASS', self.config.core.server_auth_password))
         self.write(('NICK', self.nick))
         self.write(('USER', self.user, '+iw', self.nick), self.name)
 
