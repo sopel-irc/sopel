@@ -11,7 +11,6 @@ import requests
 
 import xmltodict
 
-from sopel import tools
 from sopel.config.types import StaticSection, ListAttribute
 from sopel.logger import get_logger
 from sopel.module import rule
@@ -46,24 +45,17 @@ def setup(bot):
 
     if not bot.config.bugzilla.domains:
         return
-    if not bot.memory.contains('url_callbacks'):
-        bot.memory['url_callbacks'] = tools.SopelMemory()
 
     domains = '|'.join(bot.config.bugzilla.domains)
     regex = re.compile((r'https?://(%s)'
                         r'(/show_bug.cgi\?\S*?)'
                         r'(id=\d+)')
                        % domains)
-    bot.memory['url_callbacks'][regex] = show_bug
+    bot.register_url_callback(regex, show_bug)
 
 
 def shutdown(bot):
-    try:
-        del bot.memory['url_callbacks'][regex]
-    except KeyError:
-        # bot.config.bugzilla.domains was probably just empty on startup
-        # everything's daijoubu
-        pass
+    bot.unregister_url_callback(regex)
 
 
 @rule(r'.*https?://(\S+?)'

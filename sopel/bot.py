@@ -247,10 +247,8 @@ class Sopel(irc.Bot):
                 job = sopel.tools.jobs.Job(interval, func)
                 self.scheduler.add_job(job)
 
-        if not self.memory.contains('url_callbacks'):
-            self.memory['url_callbacks'] = tools.SopelMemory()
         for func in urls:
-            self.memory['url_callbacks'][func.url_regex] = func
+            self.register_url_callback(func.url_regex, func)
 
     def part(self, channel, msg=None):
         """Part a channel."""
@@ -648,3 +646,97 @@ class Sopel(irc.Bot):
             entry.append(_CapReq(prefix, module_name, failure_callback, arg,
                                  success_callback))
             self._cap_reqs[cap] = entry
+
+    def register_url_callback(self, pattern, callback):
+        """Register a ``callback`` for URLs matching the regex ``pattern``
+
+        :param pattern: compiled regex pattern to register
+        :param callback: callable object to handle matching URLs
+
+        .. versionadded:: 7.0
+
+            This method replaces manual management of ``url_callbacks`` in
+            Sopel's plugins, so instead of doing this in ``setup()``::
+
+                if not bot.memory.contains('url_callbacks'):
+                    bot.memory['url_callbacks'] = tools.SopelMemory()
+
+                regex = re.compile(r'http://example.com/path/.*')
+                bot.memory['url_callbacks'][regex] = callback
+
+            use this much more concise pattern::
+
+                regex = re.compile(r'http://example.com/path/.*')
+                bot.register_url_callback(regex, callback)
+
+        """
+        if not self.memory.contains('url_callbacks'):
+            self.memory['url_callbacks'] = tools.SopelMemory()
+
+        if isinstance(pattern, basestring):
+            pattern = re.compile(pattern)
+
+        self.memory['url_callbacks'][pattern] = callback
+
+    def unregister_url_callback(self, pattern):
+        """Unregister the callback for URLs matching the regex ``pattern``
+
+        :param pattern: compiled regex pattern to unregister callback
+
+        .. versionadded:: 7.0
+
+            This method replaces manual management of ``url_callbacks`` in
+            Sopel's plugins, so instead of doing this in ``shutdown()``::
+
+                regex = re.compile(r'http://example.com/path/.*')
+                try:
+                    del bot.memory['url_callbacks'][regex]
+                except KeyError:
+                    pass
+
+            use this much more concise pattern::
+
+                regex = re.compile(r'http://example.com/path/.*')
+                bot.unregister_url_callback(regex)
+
+        """
+        if not self.memory.contains('url_callbacks'):
+            # nothing to unregister
+            return
+
+        if isinstance(pattern, basestring):
+            pattern = re.compile(pattern)
+
+        try:
+            del self.memory['url_callbacks'][pattern]
+        except KeyError:
+            pass
+
+    def search_url_callbacks(self, url):
+        """Yield callbacks found for ``url`` matching their regex pattern
+
+        :param str url: URL found in a trigger
+        :return: yield 2-value tuples of ``(callback, match)``
+
+        For each pattern that matches the ``url`` parameter, it yields a
+        2-value tuple of ``(callable, match)`` for that pattern.
+
+        The ``callable`` is the one registered with
+        :meth:`register_url_callback`, and the ``match`` is the result of
+        the regex pattern's ``search`` method.
+
+        .. versionadded:: 7.0
+
+        .. seealso::
+
+            The Python documentation for the `re.search`__ function and
+            the `match object`__.
+
+        .. __: https://docs.python.org/3.6/library/re.html#re.search
+        .. __: https://docs.python.org/3.6/library/re.html#match-objects
+
+        """
+        for regex, function in tools.iteritems(self.memory['url_callbacks']):
+            match = regex.search(url)
+            if match:
+                yield function, match

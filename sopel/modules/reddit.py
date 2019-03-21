@@ -5,7 +5,7 @@ from __future__ import unicode_literals, absolute_import, print_function, divisi
 from sopel.module import commands, rule, example, require_chanmsg, NOLIMIT, OP
 from sopel.formatting import bold, color, colors
 from sopel.web import USER_AGENT
-from sopel.tools import SopelMemory, time
+from sopel.tools import time
 import datetime as dt
 import praw
 import re
@@ -34,15 +34,13 @@ spoiler_subs = [
 
 
 def setup(bot):
-    if not bot.memory.contains('url_callbacks'):
-        bot.memory['url_callbacks'] = SopelMemory()
-    bot.memory['url_callbacks'][post_regex] = rpost_info
-    bot.memory['url_callbacks'][user_regex] = redditor_info
+    bot.register_url_callback(post_regex, rpost_info)
+    bot.register_url_callback(user_regex, redditor_info)
 
 
 def shutdown(bot):
-    del bot.memory['url_callbacks'][post_regex]
-    del bot.memory['url_callbacks'][user_regex]
+    bot.unregister_url_callback(post_regex)
+    bot.unregister_url_callback(user_regex)
 
 
 @rule('.*%s.*' % post_url)

@@ -13,7 +13,7 @@ from datetime import datetime
 
 from requests import get
 
-from sopel import module, tools
+from sopel import module
 
 try:
     from ujson import loads
@@ -26,13 +26,11 @@ instagram_pattern = re.compile(instagram_regex)
 
 
 def setup(bot):
-    if not bot.memory.contains('url_callbacks'):
-        bot.memory['url_callbacks'] = tools.SopelMemory()
-    bot.memory['url_callbacks'][instagram_pattern] = instaparse
+    bot.register_url_callback(instagram_pattern, instaparse)
 
 
 def shutdown(bot):
-    del bot.memory['url_callbacks'][instagram_pattern]
+    bot.unregister_url_callback(instagram_pattern)
 
 # TODO: Parse Instagram profile page
 

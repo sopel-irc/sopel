@@ -88,9 +88,7 @@ def setup(bot):
             exclude.extend(regexes)
         bot.memory['url_exclude'] = exclude
 
-    # Ensure that url_callbacks and last_seen_url are in memory
-    if not bot.memory.contains('url_callbacks'):
-        bot.memory['url_callbacks'] = tools.SopelMemory()
+    # Ensure last_seen_url is in memory
     if not bot.memory.contains('last_seen_url'):
         bot.memory['last_seen_url'] = tools.SopelMemory()
 
@@ -237,13 +235,11 @@ def check_callbacks(bot, trigger, url, run=True):
     # Check if it matches the exclusion list first
     matched = any(regex.search(url) for regex in bot.memory['url_exclude'])
     # Then, check if there's anything in the callback list
-    for regex, function in tools.iteritems(bot.memory['url_callbacks']):
-        match = regex.search(url)
-        if match:
-            # Always run ones from @url; they don't run on their own.
-            if run or hasattr(function, 'url_regex'):
-                function(bot, trigger, match)
-            matched = True
+    for function, match in bot.search_url_callbacks(url):
+        # Always run ones from @url; they don't run on their own.
+        if run or hasattr(function, 'url_regex'):
+            function(bot, trigger, match)
+        matched = True
     return matched
 
 
