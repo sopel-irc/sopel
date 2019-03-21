@@ -19,6 +19,11 @@ Core changes
 * Sopel no longer assumes on first run that its home directory is `~/.sopel`
   [[#1404][]]
 * Restarting Sopel via CLI is added [[#1333][]]
+* Sopel's CLI is restructured [[#1493][]]
+  * New subcommands (`start`, `stop`, `restart`, and `configure`) replace many
+    of the old `--option`s, cleaning up the syntax
+  * The legacy `--option`s will continue to work for the life of Sopel 7.x, and
+    will be removed in Sopel 8
 * Config options can be set/overridden via environment variables [[#1096][]]
   * Variable naming format: `SOPEL_SECTION_OPTION`
   * Underscores in `SECTION` and `OPTION` names are preserved, e.g.
@@ -34,6 +39,13 @@ Core changes
 API changes
 -----------
 
+* Added a set of methods in the `bot` object to manipulate URL callbacks:
+  `bot.register_url_callback`, `bot.unregister_url_callback`, and
+  `bot.search_url_callbacks` [[#1508][]]
+  * Modules should switch to using these new API methods instead of directly
+    accessing `bot.memory['url_callbacks']`
+  * There are no definite plans to remove `bot.memory['url_callbacks']`, but it
+    should be considered deprecated
 * `module.require_admin()` now takes an optional boolean parameter `reply`
   [[#1456][]]
   * Default is `False`, so existing uses will not change.
@@ -54,7 +66,9 @@ API changes
   [#1462]: https://github.com/sopel-irc/sopel/pull/1462
   [#1472]: https://github.com/sopel-irc/sopel/pull/1472
   [#1487]: https://github.com/sopel-irc/sopel/pull/1487
+  [#1493]: https://github.com/sopel-irc/sopel/pull/1493
   [#1499]: https://github.com/sopel-irc/sopel/pull/1499
+  [#1508]: https://github.com/sopel-irc/sopel/pull/1508
 
 
 Changes between 6.6.2 and 6.6.3
