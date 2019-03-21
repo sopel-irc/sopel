@@ -133,9 +133,8 @@ def title_command(bot, trigger):
     if not trigger.group(2):
         if trigger.sender not in bot.memory['last_seen_url']:
             return
-        matched = check_callbacks(bot, trigger,
-                                  bot.memory['last_seen_url'][trigger.sender],
-                                  True)
+        matched = check_callbacks(
+            bot, trigger, bot.memory['last_seen_url'][trigger.sender])
         if matched:
             return
         else:
@@ -208,8 +207,7 @@ def process_urls(bot, trigger, urls):
             except Exception:  # TODO: Be specific
                 pass
             # First, check that the URL we got doesn't match
-            matched = check_callbacks(bot, trigger, url, False)
-            if matched:
+            if check_callbacks(bot, trigger, url):
                 continue
             # If the URL is over bot.config.url.shorten_url_length,
             # shorten the URL
@@ -232,21 +230,33 @@ def process_urls(bot, trigger, urls):
     return results
 
 
-def check_callbacks(bot, trigger, url, run=True):
-    """
-    Check the given URL against the callbacks list. If it matches, and ``run``
-    is given as ``True``, run the callback function, otherwise pass. Returns
-    ``True`` if the URL matched anything in the callbacks list.
+def check_callbacks(bot, trigger, url):
+    """Check if ``url`` is excluded or matches any URL callback patterns.
+
+    :param bot: Sopel instance
+    :param trigger: IRC line
+    :param str url: URL to check
+    :return: True if ``url`` is excluded or matches any URL Callback pattern
+
+    This function looks at the ``bot.memory`` for ``url_exclude`` patterns and
+    it returns ``True`` if any matches the given ``url``. Otherwise, it looks
+    at the ``bot``'s URL Callback patterns, and it returns ``True`` if any
+    matches, ``False`` otherwise.
+
+    .. seealso::
+
+        The :func:`~sopel.modules.url.setup` function that defines the
+        ``url_exclude`` in ``bot.memory``.
+
+    .. versionchanged:: 7.0
+
+        This function **does not** trigger URL callbacks anymore when ``url``
+        matches a pattern.
+
     """
     # Check if it matches the exclusion list first
     matched = any(regex.search(url) for regex in bot.memory['url_exclude'])
-    # Then, check if there's anything in the callback list
-    for function, match in bot.search_url_callbacks(url):
-        # Always run ones from @url; they don't run on their own.
-        if run or hasattr(function, 'url_regex'):
-            function(bot, trigger, match)
-        matched = True
-    return matched
+    return matched or any(bot.search_url_callbacks(url))
 
 
 def find_title(url, verify=True):
