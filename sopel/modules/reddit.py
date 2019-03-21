@@ -121,8 +121,10 @@ def redditor_info(bot, trigger, match=None):
         client_secret=None,
     )
     match = match or trigger
-    try:
+    try:  # praw <4.0 style
         u = r.get_redditor(match.group(2))
+    except AttributeError:  # praw >=4.0 style
+        u = r.redditor(match.group(2))
     except Exception:  # TODO: Be specific
         if commanded:
             bot.say('No such Redditor.')
