@@ -22,7 +22,6 @@ from sopel.module import commands, rule, example
 
 USER_AGENT = 'Sopel/{} (https://sopel.chat)'.format(__version__)
 default_headers = {'User-Agent': USER_AGENT}
-find_urls = None
 # These are used to clean up the title tag before actually parsing it. Not the
 # world's best way to do this, but it'll do for now.
 title_tag_data = re.compile('<(/?)title( [^>]+)?>', re.IGNORECASE)
@@ -73,8 +72,6 @@ def configure(config):
 
 
 def setup(bot):
-    global find_urls
-
     bot.config.define_section('url', UrlSection)
 
     if bot.config.url.exclude:
@@ -98,30 +95,6 @@ def setup(bot):
     if not bot.memory.contains('last_seen_url'):
         bot.memory['last_seen_url'] = tools.SopelMemory()
 
-    def find_func(text, clean=False):
-        def trim_url(url):
-            # clean trailing sentence- or clause-ending punctuation
-            while url[-1] in '.,?!\'":;':
-                url = url[:-1]
-
-            # clean unmatched parentheses/braces/brackets
-            for (opener, closer) in [('(', ')'), ('[', ']'), ('{', '}'), ('<', '>')]:
-                if (url[-1] == closer) and (url.count(opener) < url.count(closer)):
-                    url = url[:-1]
-
-            return url
-
-        re_url = r'(?u)((?<!%s)(?:http|https|ftp)(?::\/\/\S+))'\
-            % (bot.config.url.exclusion_char)
-        r = re.compile(re_url, re.IGNORECASE)
-
-        urls = re.findall(r, text)
-        if clean:
-            urls = [trim_url(url) for url in urls]
-        return urls
-
-    find_urls = find_func
-
 
 @commands('title')
 @example('.title http://google.com', '[ Google ] - google.com')
@@ -140,7 +113,12 @@ def title_command(bot, trigger):
         else:
             urls = [bot.memory['last_seen_url'][trigger.sender]]
     else:
-        urls = find_urls(trigger)
+        urls = list(
+            web.search_urls(
+                trigger,
+                exclusion_char=bot.config.url.exclusion_char
+            )
+        )
 
     results = process_urls(bot, trigger, urls)
     for title, domain, tinyurl in results[:4]:
@@ -172,8 +150,10 @@ def title_auto(bot, trigger):
         if bot.memory['safety_cache'][trigger]['positives'] > 1:
             return
 
-    urls = find_urls(trigger, clean=True)
-    if len(urls) == 0:
+    urls = list(
+        web.search_urls(trigger, exclusion_char=bot.config.url.exclusion_char))
+
+    if not urls:
         return
 
     results = process_urls(bot, trigger, urls)
@@ -196,16 +176,10 @@ def process_urls(bot, trigger, urls):
     Return a list of (title, hostname) tuples for each URL which is not handled
     by another module.
     """
-
     results = []
     shorten_url_length = bot.config.url.shorten_url_length
     for url in urls:
         if not url.startswith(bot.config.url.exclusion_char):
-            # Magic stuff to account for international domain names
-            try:
-                url = web.iri_to_uri(url)
-            except Exception:  # TODO: Be specific
-                pass
             # First, check that the URL we got doesn't match
             if check_callbacks(bot, trigger, url):
                 continue
