@@ -35,6 +35,11 @@ Core changes
   name is likely to be nil) [[#1487][]]
 * Large amounts of internal refactoring [[#1424][], [#1429][], [#1456][],
   [#1458][], [#1472][]]
+* Sopel 7 will emit warnings when run under Python 2, as Python 2.7 has an
+  end-of-support date of January 1, 2020 [[#1488][]]
+  * While Sopel 7 is intended to remain compatible with Python 2, future
+    compatibility is not guaranteed, and users should plan for Sopel 8 to
+    officially drop Python 2 support (see [upgrade notes][sopel-7-migration])
 
 API changes
 -----------
@@ -66,9 +71,12 @@ API changes
   [#1462]: https://github.com/sopel-irc/sopel/pull/1462
   [#1472]: https://github.com/sopel-irc/sopel/pull/1472
   [#1487]: https://github.com/sopel-irc/sopel/pull/1487
+  [#1488]: https://github.com/sopel-irc/sopel/pull/1488
   [#1493]: https://github.com/sopel-irc/sopel/pull/1493
   [#1499]: https://github.com/sopel-irc/sopel/pull/1499
   [#1508]: https://github.com/sopel-irc/sopel/pull/1508
+
+  [sopel-7-migration]: https://sopel.chat/sopel_7.html
 
 
 Changes between 6.6.2 and 6.6.3
