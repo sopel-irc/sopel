@@ -23,6 +23,8 @@ if sys.version_info < (2, 7) or (
     # Maybe not the cleanest or best way to do this, but I'm tired of answering
     # this fucking question, and if you get here you should go RTGDMFM.
     raise ImportError('Sopel requires Python 2.7+ or 3.3+.')
+if sys.version_info.major == 2:
+    print('Warning: Python 2.x is near end of life. Sopel support at that point is TBD.', file=sys.stderr)
 
 
 def read_reqs(path):

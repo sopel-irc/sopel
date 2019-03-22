@@ -17,6 +17,8 @@ from sopel import tools
 if sys.version_info < (2, 7):
     tools.stderr('Error: Requires Python 2.7 or later. Try python2.7 sopel')
     sys.exit(1)
+if sys.version_info.major == 2:
+    tools.stderr('Warning: Python 2.x is near end of life. Sopel support at that point is TBD.')
 if sys.version_info.major == 3 and sys.version_info.minor < 3:
     tools.stderr('Error: When running on Python 3, Python 3.3 is required.')
     sys.exit(1)
