@@ -5,6 +5,15 @@ problems with the site build.
 Changes between 6.x.x and 7.0.0
 ===============================
 
+Sopel 7.0 contains numerous fixes, tweaks, new features, and internal
+improvements. While we maintain no official statistics on such things, it's
+probably the biggest release the project has ever seen.
+
+The full, detailed list of changes is below, but you can just read the
+[migration guide][sopel-7-migration] if all you care about is the really
+important stuff. All breaking changes (including those planned for the *next*
+release) are explained there.
+
 Module changes
 --------------
 
