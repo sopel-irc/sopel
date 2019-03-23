@@ -239,19 +239,20 @@ else:
     urlencode = urllib.parse.urlencode
 
 
-def search_urls(text, exclusion_char=None, clean=False):
-    def trim_url(url):
-        # clean trailing sentence- or clause-ending punctuation
-        while url[-1] in '.,?!\'":;':
+def trim_url(url):
+    # clean trailing sentence- or clause-ending punctuation
+    while url[-1] in '.,?!\'":;':
+        url = url[:-1]
+
+    # clean unmatched parentheses/braces/brackets
+    for (opener, closer) in [('(', ')'), ('[', ']'), ('{', '}'), ('<', '>')]:
+        if url[-1] is closer and url.count(opener) < url.count(closer):
             url = url[:-1]
 
-        # clean unmatched parentheses/braces/brackets
-        for (opener, closer) in [('(', ')'), ('[', ']'), ('{', '}'), ('<', '>')]:
-            if url[-1] is closer and url.count(opener) < url.count(closer):
-                url = url[:-1]
+    return url
 
-        return url
 
+def search_urls(text, exclusion_char=None, clean=False):
     re_url = r'((?:http|https|ftp)(?::\/\/\S+))'
     if exclusion_char is not None:
         re_url = r'((?<!%s)(?:http|https|ftp)(?::\/\/\S+))' % (exclusion_char)
