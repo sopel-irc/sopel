@@ -151,7 +151,10 @@ def title_auto(bot, trigger):
             return
 
     urls = list(
-        web.search_urls(trigger, exclusion_char=bot.config.url.exclusion_char))
+        web.search_urls(
+            trigger,
+            exclusion_char=bot.config.url.exclusion_char,
+            clean=True))
 
     if not urls:
         return
