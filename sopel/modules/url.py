@@ -166,7 +166,7 @@ def title_auto(bot, trigger):
         if bot.memory['safety_cache'][trigger]['positives'] > 1:
             return
 
-    urls = find_urls(trigger)
+    urls = find_urls(trigger, clean=True)
     if len(urls) == 0:
         return
 
