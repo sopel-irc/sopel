@@ -246,7 +246,7 @@ def trim_url(url):
 
     # clean unmatched parentheses/braces/brackets
     for (opener, closer) in [('(', ')'), ('[', ']'), ('{', '}'), ('<', '>')]:
-        if url[-1] is closer and url.count(opener) < url.count(closer):
+        if url[-1] == closer and url.count(opener) < url.count(closer):
             url = url[:-1]
 
     return url
