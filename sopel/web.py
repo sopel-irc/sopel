@@ -2,51 +2,48 @@
 """
 *Availability: 3+, deprecated in 6.2.0*
 
-The web class contains essential web-related functions for interaction with web
-applications or websites in your modules. It supports HTTP GET, HTTP POST and
-HTTP HEAD.
+This web class will be removed in Sopel 8.0. As of Sopel 7, non-deprecated
+functions are available in a new package, ``sopel.tools.web``.
 """
 # Copyright © 2008, Sean B. Palmer, inamidst.com
 # Copyright © 2009, Michael Yanovich <yanovich.1@osu.edu>
 # Copyright © 2012, Dimitri Molenaars, Tyrope.nl.
 # Copyright © 2012-2013, Elad Alfassa, <elad@fedoraproject.org>
+# Copyright © 2019, dgw, technobabbl.es
 # Licensed under the Eiffel Forum License 2.
 
 from __future__ import unicode_literals, absolute_import, print_function, division
 
-import re
 import sys
-import urllib
+
 import requests
 
-from sopel import __version__
-from sopel.tools import deprecated
+from .tools import deprecated
 
 if sys.version_info.major < 3:
     import httplib
-    from htmlentitydefs import name2codepoint
-    from urlparse import urlparse
-    from urlparse import urlunparse
 else:
     import http.client as httplib
-    from html.entities import name2codepoint
-    from urllib.parse import urlparse
-    from urllib.parse import urlunparse
-    unichr = chr
-    unicode = str
 
-try:
-    import ssl
-    if not hasattr(ssl, 'match_hostname'):
-        # Attempt to import ssl_match_hostname from python-backports
-        import backports.ssl_match_hostname
-        ssl.match_hostname = backports.ssl_match_hostname.match_hostname
-        ssl.CertificateError = backports.ssl_match_hostname.CertificateError
-    has_ssl = True
-except ImportError:
-    has_ssl = False
+# Imports to facilitate transition from sopel.web to sopel.tools.web
+from .tools.web import (  # noqa
+    USER_AGENT,
+    DEFAULT_HEADERS as default_headers,
+    entity,
+    decode,
+    quote,
+    quote_query,
+    urlencode_non_ascii,
+    iri_to_uri,
+    urlencode,
+    trim_url,
+    search_urls,
+)
 
 __all__ = [
+    'USER_AGENT',
+    'default_headers',
+    'ca_certs',
     'decode',
     'entity',
     'iri_to_uri',
@@ -56,25 +53,16 @@ __all__ = [
     'trim_url',
     'urlencode',
     'urlencode_non_ascii',
+    'MockHttpResponse',
 ]
 
-USER_AGENT = 'Sopel/{} (https://sopel.chat)'.format(__version__)
-default_headers = {'User-Agent': USER_AGENT}
-ca_certs = None  # Will be overriden when config loads. This is for an edge case.
 
+# Deprecated sopel.web methods are not moved, so they won't be accessible from the
+# new module location (to discourage new code from using them).
 
-class MockHttpResponse(httplib.HTTPResponse):
-    "Mock HTTPResponse with data that comes from requests."
-    def __init__(self, response):
-        self.headers = response.headers
-        self.status = response.status_code
-        self.reason = response.reason
-        self.close = response.close
-        self.read = response.raw.read
-        self.url = response.url
-
-    def geturl(self):
-        return self.url
+ca_certs = None
+# This doesn't appear to be used anywhere any more, so it lives in the to-be-removed
+# version of sopel.web. At some point it was used to cover an SSL edge case, long ago.
 
 
 # HTTP GET
@@ -162,22 +150,19 @@ def post(uri, query, limit_bytes=None, timeout=20, verify_ssl=True, return_heade
         return (bytes, headers)
 
 
-r_entity = re.compile(r'&([^;\s]+);')
+# solely for use by get_urllib_object()
+class MockHttpResponse(httplib.HTTPResponse):
+    "Mock HTTPResponse with data that comes from requests."
+    def __init__(self, response):
+        self.headers = response.headers
+        self.status = response.status_code
+        self.reason = response.reason
+        self.close = response.close
+        self.read = response.raw.read
+        self.url = response.url
 
-
-def entity(match):
-    value = match.group(1).lower()
-    if value.startswith('#x'):
-        return unichr(int(value[2:], 16))
-    elif value.startswith('#'):
-        return unichr(int(value[1:]))
-    elif value in name2codepoint:
-        return unichr(name2codepoint[value])
-    return '[' + value + ']'
-
-
-def decode(html):
-    return r_entity.sub(entity, html)
+    def geturl(self):
+        return self.url
 
 
 # For internal use in web.py, (modules can use this if they need a urllib
@@ -202,90 +187,3 @@ def get_urllib_object(uri, timeout, headers=None, verify_ssl=True, data=None):  
         response = requests.get(uri, timeout=timeout, verify=verify_ssl,
                                 headers=headers)
     return MockHttpResponse(response)
-
-
-# Identical to urllib2.quote
-def quote(string, safe='/'):
-    """Like urllib2.quote but handles unicode properly."""
-    if sys.version_info.major < 3:
-        if isinstance(string, unicode):
-            string = string.encode('utf8')
-        string = urllib.quote(string, safe.encode('utf8'))
-    else:
-        string = urllib.parse.quote(str(string), safe)
-    return string
-
-
-def quote_query(string):
-    """Quotes the query parameters."""
-    parsed = urlparse(string)
-    string = string.replace(parsed.query, quote(parsed.query, "/=&"), 1)
-    return string
-
-
-# Functions for international domain name magic
-
-def urlencode_non_ascii(b):
-    regex = '[\x80-\xFF]'
-    if sys.version_info.major > 2:
-        regex = b'[\x80-\xFF]'
-    return re.sub(regex, lambda c: '%%%02x' % ord(c.group(0)), b)
-
-
-def iri_to_uri(iri):
-    parts = urlparse(iri)
-    parts_seq = (part.encode('idna') if parti == 1 else urlencode_non_ascii(part.encode('utf-8')) for parti, part in enumerate(parts))
-    if sys.version_info.major > 2:
-        parts_seq = list(parts_seq)
-
-    parsed = urlunparse(parts_seq)
-    if sys.version_info.major > 2:
-        return parsed.decode()
-    else:
-        return parsed
-
-
-if sys.version_info.major < 3:
-    urlencode = urllib.urlencode
-else:
-    urlencode = urllib.parse.urlencode
-
-
-def trim_url(url):
-    # clean trailing sentence- or clause-ending punctuation
-    while url[-1] in '.,?!\'":;':
-        url = url[:-1]
-
-    # clean unmatched parentheses/braces/brackets
-    for (opener, closer) in [('(', ')'), ('[', ']'), ('{', '}'), ('<', '>')]:
-        if url[-1] == closer and url.count(opener) < url.count(closer):
-            url = url[:-1]
-
-    return url
-
-
-def search_urls(text, exclusion_char=None, clean=False, schemes=None):
-    schemes = schemes or ['http', 'https', 'ftp']
-    schemes_patterns = '|'.join(re.escape(scheme) for scheme in schemes)
-    re_url = r'((?:%s)(?::\/\/\S+))' % schemes_patterns
-    if exclusion_char is not None:
-        re_url = r'((?<!%s)(?:%s)(?::\/\/\S+))' % (
-            exclusion_char, schemes_patterns)
-
-    r = re.compile(re_url, re.IGNORECASE | re.UNICODE)
-
-    urls = re.findall(r, text)
-    if clean:
-        urls = (trim_url(url) for url in urls)
-
-    # yield unique URLs in their order of appearance
-    seen = set()
-    for url in urls:
-        try:
-            url = iri_to_uri(url)
-        except Exception:  # TODO: Be specific
-            pass
-
-        if url not in seen:
-            seen.add(url)
-            yield url
