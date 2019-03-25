@@ -7,12 +7,25 @@ Sopel uses plugins (also called "modules") and uses what are called
 Plugin Handlers as an interface between the bot and its plugins. This interface
 is defined by the :class:`~.handlers.AbstractPluginHandler` abstract class.
 
-To find all available plugins, the :func:`~.enumerate_plugins` function can be
-used. For a more fine-grained search, ``find_*`` functions exists for each
-type of plugins.
+Plugins that can be used by Sopel are provided by :func:`~.get_usable_plugins`
+in an ordered dict. This dict contains one and only one plugin per unique name,
+using a specific order:
+
+* extra directories defined in the settings
+* homedir's modules directory
+* ``sopel_modules``'s subpackages
+* ``sopel.modules``'s core plugins
+
+and the ``coretasks`` plugin is always the one from ``sopel.coretasks`` and
+can not be overridden.
+
+To find all plugins (no matter their sources), the :func:`~.enumerate_plugins`
+function can be used. For a more fine-grained search, ``find_*`` functions
+exists for each type of plugins.
 """
 from __future__ import unicode_literals, absolute_import, print_function, division
 
+import collections
 import imp
 import itertools
 import os
@@ -131,3 +144,45 @@ def enumerate_plugins(settings):
 
     # And always yield coretasks
     yield handlers.PyModulePlugin('coretasks', 'sopel'), True
+
+
+def get_usable_plugins(settings):
+    """Get usable plugins, unique per name
+
+    :param settings: Sopel's configuration
+    :type settings: :class:`sopel.config.Config`
+    :return: an ordered dict of usable plugins
+    :rtype: collections.OrderedDict
+
+    This function provides the plugins Sopel can use to load, enable,
+    or disable, as an ordered dict. This dict contains one and only one plugin
+    per unique name, using a specific order:
+
+    * extra directories defined in the settings
+    * homedir's modules directory
+    * ``sopel_modules``'s subpackages
+    * ``sopel.modules``'s core plugins
+
+    and the ``coretasks`` plugin is always the one from ``sopel.coretasks`` and
+    can not be overridden.
+
+    .. seealso::
+
+        The :func:`~.enumerate_plugins` function is used to generate a list
+        of all possible plugins, and its return value is used to populate
+        the ordered dict.
+
+    """
+    # Use an OrderedDict to get one and only one plugin per name
+    # based on what plugins.enumerate_plugins does, external plugins are
+    # allowed to override internal plugins
+    plugins_info = collections.OrderedDict(
+        (plugin.name, (plugin, is_enabled))
+        for plugin, is_enabled in enumerate_plugins(settings))
+    # reset coretasks's position at the end of the loading queue
+    # Python 2's OrderedDict does not have a `move_to_end` method
+    # TODO: replace by plugins_info.move_to_end('coretasks') for Python 3
+    core_info = plugins_info.pop('coretasks')
+    plugins_info['coretasks'] = core_info
+
+    return plugins_info

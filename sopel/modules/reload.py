@@ -75,22 +75,22 @@ def f_load(bot, trigger):
     if bot.has_plugin(name):
         return bot.reply('Module already loaded, use reload')
 
-    for plugin, is_enabled in plugins.enumerate_plugins(bot.config):
-        if plugin.name == name:
-            if is_enabled:
-                try:
-                    _load(bot, plugin)
-                    bot.reply('Module %s loaded' % name)
-                except Exception as error:
-                    bot.reply(
-                        'Module %s can not be loaded: %s' % (name, error))
-            else:
-                bot.reply('Module %s is disabled' % name)
-
-            break
-    else:
-        # Will be triggered only if "break" is not found
+    usable_plugins = plugins.get_usable_plugins(bot.config)
+    if name not in usable_plugins:
         bot.reply('Module %s not found' % name)
+        return
+
+    plugin, is_enabled = usable_plugins[name]
+    if not is_enabled:
+        bot.reply('Module %s is disabled' % name)
+        return
+
+    try:
+        _load(bot, plugin)
+        bot.reply('Module %s loaded' % name)
+    except Exception as error:
+        bot.reply(
+            'Module %s can not be loaded: %s' % (name, error))
 
 
 # Catch private messages

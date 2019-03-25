@@ -179,23 +179,13 @@ class Sopel(irc.Bot):
         irc.Bot.write(self, args, text=text)
 
     def setup(self):
-        stderr("\nWelcome to Sopel. Loading modules...\n\n")
-        # Use an OrderedDict to get one and only one plugin per name
-        # based on what plugins.enumerate_plugins does, external plugins are
-        # allowed to override internal plugins
-        plugins_info = collections.OrderedDict(
-            (plugin.name, (plugin, is_enabled))
-            for plugin, is_enabled in plugins.enumerate_plugins(self.config))
-        # reset coretasks's position at the end of the loading queue
-        # Python 2's OrderedDict does not have a `move_to_end` method
-        # TODO: replace by plugins_info.move_to_end('coretasks') for Python 3
-        core_info = plugins_info.pop('coretasks')
-        plugins_info['coretasks'] = core_info
-
         load_success = 0
         load_error = 0
         load_disabled = 0
-        for name, info in plugins_info.items():
+
+        stderr("\nWelcome to Sopel. Loading modules...\n\n")
+        usable_plugins = plugins.get_usable_plugins(self.config)
+        for name, info in usable_plugins.items():
             plugin, is_enabled = info
             if not is_enabled:
                 load_disabled = load_disabled + 1
