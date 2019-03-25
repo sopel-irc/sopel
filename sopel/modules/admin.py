@@ -182,7 +182,11 @@ def set_config(bot, trigger):
     If value is None, the option will be deleted.
     """
     # Get section and option from first argument.
-    arg1 = trigger.group(3).split('.')
+    match = trigger.group(3)
+    if match is None:
+        bot.reply("Usage: .set section.option value")
+        return
+    arg1 = match.split('.')
     if len(arg1) == 1:
         section_name, option = "core", arg1[0]
     elif len(arg1) == 2:
