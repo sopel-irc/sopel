@@ -31,7 +31,9 @@ rest of the application.
 from __future__ import unicode_literals, absolute_import, print_function, division
 
 import inspect
+import imp
 import importlib
+import os
 
 from sopel import loader
 
@@ -262,23 +264,36 @@ class PyFilePlugin(PyModulePlugin):
     it is not in the Python path.
     """
     def __init__(self, filename):
-        result = loader.get_module_description(filename)
-        if result is None:
+        good_file = (
+            os.path.isfile(filename) and
+            filename.endswith('.py') and not filename.startswith('_')
+        )
+        good_dir = (
+            os.path.isdir(filename) and
+            os.path.isfile(os.path.join(filename, '__init__.py'))
+        )
+
+        if good_file:
+            name = os.path.basename(filename)[:-3]
+            module_type = imp.PY_SOURCE
+        elif good_dir:
+            name = os.path.basename(filename)
+            module_type = imp.PKG_DIRECTORY
+        else:
             # TODO: throw more specific exception
             raise Exception('Invalid Sopel plugin: %s' % filename)
 
-        name, path, module_type = result
         self.filename = filename
-        self.path = path
+        self.path = filename
         self.module_type = module_type
 
         super(PyFilePlugin, self).__init__(name)
 
     def _load(self):
-        # The current implementation of `sopel.loader.load_module` uses the
-        # `imp.load_module` to perform the load action, which also reload the
-        # module. However, `imp` is deprecated in Python 3, so that might need
-        # to be changed when the support for Python 2 is dropped.
+        # The current implementation uses the `imp.load_module` to perform
+        # the load action, which also reload the module. However, `imp` is
+        # deprecated in Python 3, so that might need to be changed when the
+        # support for Python 2 is dropped.
         #
         # However, the solution for Python 3 is non-trivial, since the
         # `importlib` built-in module does not have a similar function,
@@ -289,9 +304,16 @@ class PyFilePlugin(PyModulePlugin):
         # Python 2 is supported, we can keep it for now.
         #
         # TODO: switch to ``importlib`` when Python2 support is dropped.
-        mod, _ = loader.load_module(
-            self.name, self.path, self.module_type
-        )
+        if self.module_type == imp.PY_SOURCE:
+            with open(self.path) as mod:
+                description = ('.py', 'U', self.module_type)
+                mod = imp.load_module(self.name, mod, self.path, description)
+        elif self.module_type == imp.PKG_DIRECTORY:
+            description = ('', '', self.module_type)
+            mod = imp.load_module(self.name, None, self.path, description)
+        else:
+            raise TypeError('Unsupported module type')
+
         return mod
 
     def load(self):
