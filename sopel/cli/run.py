@@ -18,14 +18,13 @@ import sys
 import time
 import traceback
 
-from sopel import bot, logger, tools, __version__
+from sopel import bot, logger, plugins, tools, __version__
 from sopel.config import (
     Config,
-    _create_config,
     ConfigurationError,
     ConfigurationNotFound,
     DEFAULT_HOMEDIR,
-    _wizard
+    core_section
 )
 from . import utils
 
@@ -244,6 +243,106 @@ def build_parser():
     return parser
 
 
+def wizard(filename):
+    """Global Configuration Wizard
+
+    :param str filename: path to create
+    :return: the created configuration object
+
+    This wizard function helps the creation of a Sopel's configuration file,
+    with its core section and its plugins's sections.
+    """
+    homedir = os.path.dirname(filename)
+    try:
+        if not os.path.isdir(homedir):
+            print('Creating config directory at {}'.format(homedir))
+            os.makedirs(homedir)
+            print('Config directory created')
+    except Exception:
+        tools.stderr('There was a problem creating {}'.format(homedir))
+        raise
+
+    name, ext = os.path.splitext(filename)
+    if not ext:
+        # Always add .cfg if filename does not have an extension
+        filename = name + '.cfg'
+    elif ext != '.cfg':
+        # It is possible to use a non-cfg file for Sopel
+        # but the wizard does not allow it at the moment
+        raise ConfigurationError(
+            'Sopel uses ".cfg" configuration file, not "%s".' % ext)
+
+    settings = Config(filename, validate=False)
+
+    print("Please answer the following questions"
+          " to create your configuration file (%s):\n" % filename)
+    core_section.configure(settings)
+    if settings.option(
+        'Would you like to see if there are any modules'
+        ' that need configuring'
+    ):
+        _plugins_wizard(settings)
+
+    try:
+        settings.save()
+    except Exception:  # TODO: Be specific
+        tools.stderr("Encountered an error while writing the config file."
+               " This shouldn't happen. Check permissions.")
+        raise
+
+    print("Config file written successfully!")
+    return settings
+
+
+def plugins_wizard(filename):
+    """Plugins Configuration Wizard
+
+    :param str filename: path to an existing Sopel configuration
+    :return: the configuration object
+
+    This wizard function helps to configure plugins for an existing Sopel
+    configuration.
+    """
+    if not os.path.isfile(filename):
+        raise ConfigurationNotFound(filename)
+
+    settings = Config(filename, validate=False)
+    _plugins_wizard(settings)
+
+    try:
+        settings.save()
+    except Exception:  # TODO: Be specific
+        tools.stderr("Encountered an error while writing the config file."
+                     " This shouldn't happen. Check permissions.")
+        raise
+
+    return settings
+
+
+def _plugins_wizard(settings):
+    usable_plugins = plugins.get_usable_plugins(settings)
+    for plugin, is_enabled in usable_plugins.values():
+        if not is_enabled:
+            # Do not configure non-enabled modules
+            continue
+
+        name = plugin.name
+        try:
+            _plugin_wizard(settings, plugin)
+        except Exception as e:
+            filename, lineno = tools.get_raising_file_and_line()
+            rel_path = os.path.relpath(filename, os.path.dirname(__file__))
+            raising_stmt = "%s:%d" % (rel_path, lineno)
+            tools.stderr("Error loading %s: %s (%s)" % (name, e, raising_stmt))
+
+
+def _plugin_wizard(settings, plugin):
+    plugin.load()
+    prompt = 'Configure {} (y/n)? [n]'.format(plugin.get_label())
+    if plugin.has_configure() and settings.option(prompt):
+        plugin.configure(settings)
+
+
 def check_not_root():
     """Check if root is running the bot.
 
@@ -308,23 +407,16 @@ def get_configuration(options):
 
     """
     try:
-        bot_config = utils.load_settings(options)
+        settings = utils.load_settings(options)
     except ConfigurationNotFound as error:
         print(
             "Welcome to Sopel!\n"
             "I can't seem to find the configuration file, "
             "so let's generate it!\n")
+        settings = wizard(error.filename)
 
-        config_path = error.filename
-        if not config_path.endswith('.cfg'):
-            config_path = config_path + '.cfg'
-
-        config_path = _create_config(config_path)
-        # try to reload it now that it's created
-        bot_config = Config(config_path)
-
-    bot_config._is_daemonized = options.daemonize
-    return bot_config
+    settings._is_daemonized = options.daemonize
+    return settings
 
 
 def get_pid_filename(options, pid_dir):
@@ -421,10 +513,11 @@ def command_start(opts):
 
 def command_configure(opts):
     """Sopel Configuration Wizard"""
+    configpath = utils.find_config(DEFAULT_HOMEDIR, opts.config or 'default')
     if getattr(opts, 'modules', False):
-        _wizard('mod', opts.config)
+        plugins_wizard(configpath)
     else:
-        _wizard('all', opts.config)
+        wizard(configpath)
 
 
 def command_stop(opts):
@@ -533,18 +626,21 @@ def command_legacy(opts):
         print_version()
         return
 
+    # TODO: allow to use a different homedir
+    configpath = utils.find_config(DEFAULT_HOMEDIR, opts.config or 'default')
+
     if opts.wizard:
         tools.stderr(
             'WARNING: option -w/--configure-all is deprecated; '
             'use `sopel configure` instead')
-        _wizard('all', opts.config)
+        wizard(configpath)
         return
 
     if opts.mod_wizard:
         tools.stderr(
             'WARNING: option --configure-modules is deprecated; '
             'use `sopel configure --modules` instead')
-        _wizard('mod', opts.config)
+        plugins_wizard(configpath)
         return
 
     if opts.list_configs:
