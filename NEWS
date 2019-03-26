@@ -33,6 +33,8 @@ Core changes
     of the old `--option`s, cleaning up the syntax
   * The legacy `--option`s will continue to work for the life of Sopel 7.x, and
     will be removed in Sopel 8
+* The config file Sopel should use can be specified via the `SOPEL_CONFIG`
+  environment variable [[#1473][]]
 * Config options can be set/overridden via environment variables [[#1096][]]
   * Variable naming format: `SOPEL_SECTION_OPTION`
   * Underscores in `SECTION` and `OPTION` names are preserved, e.g.
@@ -79,6 +81,7 @@ API changes
 [#1458]: https://github.com/sopel-irc/sopel/pull/1458
 [#1462]: https://github.com/sopel-irc/sopel/pull/1462
 [#1472]: https://github.com/sopel-irc/sopel/pull/1472
+[#1473]: https://github.com/sopel-irc/sopel/pull/1473
 [#1487]: https://github.com/sopel-irc/sopel/pull/1487
 [#1488]: https://github.com/sopel-irc/sopel/pull/1488
 [#1493]: https://github.com/sopel-irc/sopel/pull/1493
