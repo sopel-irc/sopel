@@ -4,25 +4,10 @@ find_source_files() {
     find . -name '*.py' -size +0 -print | grep -ve './docs' -e 'env' -e './contrib' -e './conftest.py'
 }
 files=$(find_source_files)
-# These are acceptable (for now). 128 and 127 should be removed eventually.
-ignore='--ignore=E501,E128,E127'
-# These are ignored by default (and we want to keep them ignored)
-ignore=$ignore',W504'
-# These are forbidding certain __future__ imports. The plugin has errors both
-# for having and not having them; we want to always have them, so we ignore
-# the having them errors and keep the not having them errors.
-ignore=$ignore',FI50,FI51,FI52,FI53,FI54,FI55'
-# F12 is with_statement, which is already in 2.7. F15 requires and F55 forbids
-# generator_stop, which should probably be made mandatory at some point.
-ignore=$ignore',F12,F15,F55'
-# These are rules that are relatively new or have had their definitions tweaked
-# recently, so we'll forgive them until versions of PEP8 in various developers'
-# distros are updated
-ignore=$ignore',E265,E713,E111,E113,E402,E731'
 # For now, go through all the checking stages and only die at the end
 exit_code=0
 
-if ! flake8 $ignore --filename=*.py $(find_source_files); then
+if ! flake8; then
     echo "ERROR: flake8 does not pass."
     exit_code=1
 fi
