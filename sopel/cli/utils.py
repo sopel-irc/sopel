@@ -133,7 +133,8 @@ def load_settings(options):
     This function loads Sopel's settings from one of these sources:
 
     * value of ``options.config``, if given,
-    * or the ``default`` configuration is loaded,
+    * ``SOPEL_CONFIG`` environment variable, if no option is given,
+    * otherwise the ``default`` configuration is loaded,
 
     then loads the settings and returns it as a :class:`~sopel.config.Config`
     object.
@@ -148,7 +149,13 @@ def load_settings(options):
         add the proper option to the argument parser.
 
     """
-    name = options.config or 'default'
+    # Default if no options.config or no env var or if they are empty
+    name = 'default'
+    if options.config:
+        name = options.config
+    elif 'SOPEL_CONFIG' in os.environ:
+        name = os.environ['SOPEL_CONFIG'] or name  # use default if empty
+
     filename = find_config(config.DEFAULT_HOMEDIR, name)
 
     if not os.path.isfile(filename):
