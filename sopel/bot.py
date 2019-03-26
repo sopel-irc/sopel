@@ -397,28 +397,26 @@ class Sopel(irc.Bot):
 
             recipient_id = Identifier(recipient)
 
-            reciprec = self.stack.get(recipient_id)
-            if not reciprec:
-                reciprec = self.stack[recipient_id] = {
-                    'messages': [],
-                    'burst': self.config.core.bucket_burst_tokens,
-                }
+            recipient_stack = self.stack.setdefault(recipient_id, {
+                'messages': [],
+                'flood_left': self.config.core.flood_burst_lines,
+            })
 
-            if not reciprec['burst']:
-                elapsed = time.time() - reciprec['messages'][-1][0]
-                reciprec['burst'] = min(
-                    self.config.core.bucket_burst_tokens,
-                    int(elapsed) * self.config.core.bucket_refill_rate)
+            if not recipient_stack['flood_left']:
+                elapsed = time.time() - recipient_stack['messages'][-1][0]
+                recipient_stack['flood_left'] = min(
+                    self.config.core.flood_burst_lines,
+                    int(elapsed) * self.config.core.flood_refill_rate)
 
-            if not reciprec['burst']:
-                elapsed = time.time() - reciprec['messages'][-1][0]
+            if not recipient_stack['flood_left']:
+                elapsed = time.time() - recipient_stack['messages'][-1][0]
                 penalty = float(max(0, len(text) - 50)) / 70
                 wait = min(self.config.core.flood_empty_wait + penalty, 2)  # Maximum wait time is 2 sec
                 if elapsed < wait:
                     time.sleep(wait - elapsed)
 
                 # Loop detection
-                messages = [m[1] for m in reciprec['messages'][-8:]]
+                messages = [m[1] for m in recipient_stack['messages'][-8:]]
 
                 # If what we about to send repeated at least 5 times in the
                 # last 2 minutes, replace with '...'
@@ -429,9 +427,9 @@ class Sopel(irc.Bot):
                         return
 
             self.write(('PRIVMSG', recipient), text)
-            reciprec['burst'] = max(0, reciprec['burst'] - 1)
-            reciprec['messages'].append((time.time(), self.safe(text)))
-            reciprec['messages'] = reciprec['messages'][-10:]
+            recipient_stack['flood_left'] = max(0, recipient_stack['flood_left'] - 1)
+            recipient_stack['messages'].append((time.time(), self.safe(text)))
+            recipient_stack['messages'] = recipient_stack['messages'][-10:]
         finally:
             self.sending.release()
         # Now that we've sent the first part, we need to send the rest. Doing
