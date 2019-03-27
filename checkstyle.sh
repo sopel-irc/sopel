@@ -12,22 +12,6 @@ if ! flake8; then
     exit_code=1
 fi
 
-fail_coding=false
-for file in $(find_source_files); do
-    line=$(head -n 1 $file)
-    if echo $line | grep -q '#!/usr/bin/env python'; then
-        line=$(head -n 2 $file | tail -n 1)
-    fi
-    if ! echo $line | grep -q '# coding=utf-8'; then
-        echo $file
-        fail_coding=true
-    fi
-done
-if $fail_coding; then
-    echo "ERROR: Above files do not have utf-8 coding declared."
-    exit_code=1
-fi
-
 # Find files which use the unicode type but (heuristically) don't make it py3
 # safe
 fail_py3_unicode=false
