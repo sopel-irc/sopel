@@ -15,10 +15,8 @@ import re
 
 import requests
 
-from sopel import web, tools, __version__
-from sopel.config.types import ValidatedAttribute, ListAttribute, StaticSection
-from sopel.module import commands, rule, example
-
+from sopel import __version__, module, tools, web
+from sopel.config.types import ListAttribute, StaticSection, ValidatedAttribute
 
 USER_AGENT = 'Sopel/{} (https://sopel.chat)'.format(__version__)
 default_headers = {'User-Agent': USER_AGENT}
@@ -100,8 +98,8 @@ def setup(bot):
         bot.memory['shortened_urls'] = tools.SopelMemory()
 
 
-@commands('title')
-@example('.title http://google.com', '[ Google ] - google.com')
+@module.commands('title')
+@module.example('.title https://www.google.com', '[ Google ] - www.google.com')
 def title_command(bot, trigger):
     """
     Show the title or URL information for the given URL, or the last URL seen
@@ -139,7 +137,7 @@ def title_command(bot, trigger):
         bot.reply('I couldn\'t get all of the titles, but I fetched what I could!')
 
 
-@rule(r'(?u).*(https?://\S+).*')
+@module.rule(r'(?u).*(https?://\S+).*')
 def title_auto(bot, trigger):
     """
     Automatically show titles for URLs. For shortened URLs/redirects, find
