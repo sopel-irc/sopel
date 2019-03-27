@@ -109,7 +109,7 @@ def title_command(bot, trigger):
         if trigger.sender not in bot.memory['last_seen_url']:
             return
         matched = check_callbacks(
-            bot, trigger, bot.memory['last_seen_url'][trigger.sender])
+            bot, bot.memory['last_seen_url'][trigger.sender])
         if matched:
             return
         else:
@@ -185,7 +185,7 @@ def process_urls(bot, trigger, urls):
             continue
 
         # Check the URL does not match an existing URL callback
-        if check_callbacks(bot, trigger, url):
+        if check_callbacks(bot, url):
             continue
 
         # Call the URL to get a title, if possible
@@ -202,11 +202,10 @@ def process_urls(bot, trigger, urls):
         yield (url, title, get_hostname(url), tinyurl)
 
 
-def check_callbacks(bot, trigger, url):
+def check_callbacks(bot, url):
     """Check if ``url`` is excluded or matches any URL callback patterns.
 
     :param bot: Sopel instance
-    :param trigger: IRC line
     :param str url: URL to check
     :return: True if ``url`` is excluded or matches any URL Callback pattern
 
