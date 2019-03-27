@@ -28,11 +28,14 @@ Core changes
 * Sopel no longer assumes on first run that its home directory is `~/.sopel`
   [[#1404][]]
 * Restarting Sopel via CLI is added [[#1333][]]
-* Sopel's CLI is restructured [[#1493][]]
+* Sopel's CLI is restructured [[#1493][], [#1509][]]
   * New subcommands (`start`, `stop`, `restart`, and `configure`) replace many
     of the old `--option`s, cleaning up the syntax
   * The legacy `--option`s will continue to work for the life of Sopel 7.x, and
     will be removed in Sopel 8
+* Added a new `sopel-config` command for working with config files [[#1507][]]
+  * Currently supports `list` (existing files), `init` (new config file), and
+    `get` (config value) actions
 * The config file Sopel should use can be specified via the `SOPEL_CONFIG`
   environment variable [[#1473][]]
 * Config options can be set/overridden via environment variables [[#1096][]]
@@ -41,6 +44,8 @@ Core changes
     `SOPEL_CORE_AUTH_PASSWORD`
 * Example service unit files now include a multi-instance template for systemd
   [[#1059][]]
+* Example systemd unit files wait until networking is connected before starting
+  Sopel [[#1511][]]
 * Running Sopel on an unknown OS platform will output a warning encouraging the
   user to report any issues (because test coverage on an unrecognized platform
   name is likely to be nil) [[#1487][]]
@@ -86,9 +91,12 @@ API changes
 [#1488]: https://github.com/sopel-irc/sopel/pull/1488
 [#1493]: https://github.com/sopel-irc/sopel/pull/1493
 [#1499]: https://github.com/sopel-irc/sopel/pull/1499
+[#1507]: https://github.com/sopel-irc/sopel/pull/1507
 [#1508]: https://github.com/sopel-irc/sopel/pull/1508
+[#1509]: https://github.com/sopel-irc/sopel/pull/1509
+[#1511]: https://github.com/sopel-irc/sopel/pull/1511
 
-[sopel-7-migration]: https://sopel.chat/sopel_7.html
+[sopel-7-migration]: https://sopel.chat/usage/installing/upgrading-to-sopel-7/
 
 
 Changes between 6.6.2 and 6.6.3
