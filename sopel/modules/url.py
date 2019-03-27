@@ -124,8 +124,8 @@ def title_command(bot, trigger):
             )
         )
 
-    results = process_urls(bot, trigger, urls)
-    for title, domain, tinyurl in results[:4]:
+    results = list(process_urls(bot, trigger, urls))
+    for _url, title, domain, tinyurl in results[:4]:
         message = '[ %s ] - %s' % (title, domain)
         if tinyurl:
             message += ' ( %s )' % tinyurl
@@ -154,25 +154,22 @@ def title_auto(bot, trigger):
         if bot.memory['safety_cache'][trigger]['positives'] > 1:
             return
 
-    urls = list(
-        web.search_urls(
-            trigger,
-            exclusion_char=bot.config.url.exclusion_char,
-            clean=True))
+    urls = web.search_urls(
+        trigger, exclusion_char=bot.config.url.exclusion_char, clean=True)
 
-    if not urls:
-        return
-
-    results = process_urls(bot, trigger, urls)
-    bot.memory['last_seen_url'][trigger.sender] = urls[-1]
-
-    for title, domain, tinyurl in results[:4]:
+    for i, info in enumerate(process_urls(bot, trigger, urls)):
+        url, title, domain, tinyurl = info
         message = '[ %s ] - %s' % (title, domain)
         if tinyurl:
             message += ' ( %s )' % tinyurl
         # Guard against responding to other instances of this bot.
         if message != trigger:
             bot.say(message)
+            bot.memory['last_seen_url'][trigger.sender] = url
+
+        # stop at 4th iteration
+        if i == 3:
+            break
 
 
 def process_urls(bot, trigger, urls):
@@ -183,29 +180,28 @@ def process_urls(bot, trigger, urls):
     Return a list of (title, hostname) tuples for each URL which is not handled
     by another module.
     """
-    results = []
     shorten_url_length = bot.config.url.shorten_url_length
     for url in urls:
-        if not url.startswith(bot.config.url.exclusion_char):
-            # First, check that the URL we got doesn't match
-            if check_callbacks(bot, trigger, url):
-                continue
-            # If the URL is over bot.config.url.shorten_url_length,
-            # shorten the URL
-            tinyurl = None
-            if (shorten_url_length > 0) and (len(url) > shorten_url_length):
-                # Check bot memory to see if the shortened URL is already in
-                # memory
-                if bot.memory['shortened_urls'].contains(url):
-                    tinyurl = bot.memory['shortened_urls'][url]
-                else:
-                    tinyurl = get_tinyurl(url)
-                    bot.memory['shortened_urls'][url] = tinyurl
-            # Finally, actually show the URL
-            title = find_title(url, verify=bot.config.core.verify_ssl)
-            if title:
-                results.append((title, get_hostname(url), tinyurl))
-    return results
+        # Exclude URLs that start with the exclusion char
+        if url.startswith(bot.config.url.exclusion_char):
+            continue
+
+        # Check the URL does not match an existing URL callback
+        if check_callbacks(bot, trigger, url):
+            continue
+
+        # Call the URL to get a title, if possible
+        title = find_title(url, verify=bot.config.core.verify_ssl)
+        if not title:
+            # No title found: don't handle this URL
+            continue
+
+        # If the URL is over bot.config.url.shorten_url_length, shorten the URL
+        tinyurl = None
+        if (shorten_url_length > 0) and (len(url) > shorten_url_length):
+            tinyurl = get_or_create_shorturl(bot, url)
+
+        yield (url, title, get_hostname(url), tinyurl)
 
 
 def check_callbacks(bot, trigger, url):
@@ -287,9 +283,32 @@ def get_hostname(url):
     return hostname
 
 
+def get_or_create_shorturl(bot, url):
+    """Get or create a short URL for ``url``
+
+    :param bot: Sopel instance
+    :param str url: URL to get or create a short URL for
+    :return: A short URL
+    :rtype: str
+
+    It gets the short URL for ``url`` from the bot's memory if it exists.
+    Otherwise, it creates a short URL (see :func:`get_tinyurl`), stores it
+    into the bot's memory, then returns it.
+    """
+    # Check bot memory to see if the shortened URL is already in
+    # memory
+    if bot.memory['shortened_urls'].contains(url):
+        return bot.memory['shortened_urls'][url]
+
+    tinyurl = get_tinyurl(url)
+    bot.memory['shortened_urls'][url] = tinyurl
+    return tinyurl
+
+
 def get_tinyurl(url):
-    """ Returns a shortened tinyURL link of the URL. """
-    tinyurl = "https://tinyurl.com/api-create.php?url=%s" % url
+    """Returns a shortened tinyURL link of the URL"""
+    base_url = "https://tinyurl.com/api-create.php"
+    tinyurl = "%s?%s" % (base_url, web.urlencode({'url': url}))
     try:
         res = requests.get(tinyurl)
         res.raise_for_status()
