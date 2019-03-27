@@ -100,13 +100,17 @@ make the text easier to read; however, explicit references (`[link text][id]`)
 are OK too if the same link is used in multiple places.
 
 Link reference definitions SHOULD be placed at the end of the subsection where
-they are first used, before any horizontal rule or heading.
+they are first used, before any following horizontal rule or heading.
 
-Link reference definitions SHOULD be indented with two spaces:
+Link reference definitions SHOULD be indented with two spaces, EXCEPT directly
+after lists:
 
 ```Markdown
   [link text]: https://sopel.chat/ "Optional title"
 ```
+
+After a list, DO NOT indent link references. The last list item will be
+incorrectly formatted when the HTML for Sopel's website is rendered.
 
 Link references MUST be defined within each release section, even if you are
 reusing a previously defined link, because nothing outside the release section

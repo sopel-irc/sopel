@@ -13,10 +13,10 @@ Module changes
 * Fixed `.redditor` command with newer `praw` versions (4.0+) [[#1506][]]
 * Reloading modules now runs their `shutdown()` routines [[#1412][]]
 
-  [#1412]: https://github.com/sopel-irc/sopel/pull/1412
-  [#1506]: https://github.com/sopel-irc/sopel/pull/1506
-  [#1515]: https://github.com/sopel-irc/sopel/pull/1515
-  [#1517]: https://github.com/sopel-irc/sopel/pull/1517
+[#1412]: https://github.com/sopel-irc/sopel/pull/1412
+[#1506]: https://github.com/sopel-irc/sopel/pull/1506
+[#1515]: https://github.com/sopel-irc/sopel/pull/1515
+[#1517]: https://github.com/sopel-irc/sopel/pull/1517
 
 
 Changes between 6.6.3 and 6.6.4
