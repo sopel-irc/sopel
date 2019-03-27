@@ -95,6 +95,10 @@ def setup(bot):
     if not bot.memory.contains('last_seen_url'):
         bot.memory['last_seen_url'] = tools.SopelMemory()
 
+    # Initialize shortened_urls as a dict if it doesn't exist.
+    if not bot.memory.contains('shortened_urls'):
+        bot.memory['shortened_urls'] = tools.SopelMemory()
+
 
 @commands('title')
 @example('.title http://google.com', '[ Google ] - google.com')
@@ -192,9 +196,6 @@ def process_urls(bot, trigger, urls):
             if (shorten_url_length > 0) and (len(url) > shorten_url_length):
                 # Check bot memory to see if the shortened URL is already in
                 # memory
-                if not bot.memory.contains('shortened_urls'):
-                    # Initialize shortened_urls as a dict if it doesn't exist.
-                    bot.memory['shortened_urls'] = tools.SopelMemory()
                 if bot.memory['shortened_urls'].contains(url):
                     tinyurl = bot.memory['shortened_urls'][url]
                 else:
