@@ -267,14 +267,18 @@ class Sopel(irc.Bot):
         else:
             self.write(['JOIN', channel, password])
 
-    def msg(self, recipient, text, max_messages=1):
+    def msg(self, recipients, text, max_messages=1):
         # Deprecated, but way too much of a pain to remove.
-        self.say(text, recipient, max_messages)
 
-    def say(self, text, recipient, max_messages=1):
-        """Send ``text`` as a PRIVMSG to ``recipient``.
+        if not isinstance(recipients, list):
+            recipients = [recipients]
+        for recipient in recipients:
+            self.say(text, recipient, max_messages)
 
-        In the context of a triggered callable, the ``recipient`` defaults to
+    def say(self, text, recipients, max_messages=1):
+        """Send ``text`` as a PRIVMSG to ``recipients``.
+
+        In the context of a triggered callable, the ``recipients`` defaults to
         the channel (or nickname, if a private message) from which the message
         was received.
 
@@ -297,55 +301,62 @@ class Sopel(irc.Bot):
             # Manage multi-line only when needed
             text, excess = tools.get_sendable_message(text)
 
-        try:
-            self.sending.acquire()
+        if not isinstance(recipients, list):
+            recipients = [recipients]
+        for recipient in recipients:
 
-            # No messages within the last 3 seconds? Go ahead!
-            # Otherwise, wait so it's been at least 0.8 seconds + penalty
+            try:
+                self.sending.acquire()
 
-            recipient_id = Identifier(recipient)
+                # No messages within the last 3 seconds? Go ahead!
+                # Otherwise, wait so it's been at least 0.8 seconds + penalty
 
-            if recipient_id not in self.stack:
-                self.stack[recipient_id] = []
-            elif self.stack[recipient_id]:
-                elapsed = time.time() - self.stack[recipient_id][-1][0]
-                if elapsed < 3:
-                    penalty = float(max(0, len(text) - 40)) / 70
-                    wait = 0.8 + penalty
-                    if elapsed < wait:
-                        time.sleep(wait - elapsed)
+                recipient_id = Identifier(recipient)
 
-                # Loop detection
-                messages = [m[1] for m in self.stack[recipient_id][-8:]]
+                if recipient_id not in self.stack:
+                    self.stack[recipient_id] = []
+                elif self.stack[recipient_id]:
+                    elapsed = time.time() - self.stack[recipient_id][-1][0]
+                    if elapsed < 3:
+                        penalty = float(max(0, len(text) - 40)) / 70
+                        wait = 0.8 + penalty
+                        if elapsed < wait:
+                            time.sleep(wait - elapsed)
 
-                # If what we about to send repeated at least 5 times in the
-                # last 2 minutes, replace with '...'
-                if messages.count(text) >= 5 and elapsed < 120:
-                    text = '...'
-                    if messages.count('...') >= 3:
-                        # If we said '...' 3 times, discard message
-                        return
+                    # Loop detection
+                    messages = [m[1] for m in self.stack[recipient_id][-8:]]
 
-            self.write(('PRIVMSG', recipient), text)
-            self.stack[recipient_id].append((time.time(), self.safe(text)))
-            self.stack[recipient_id] = self.stack[recipient_id][-10:]
-        finally:
-            self.sending.release()
-        # Now that we've sent the first part, we need to send the rest. Doing
-        # this recursively seems easier to me than iteratively
-        if excess:
-            self.msg(recipient, excess, max_messages - 1)
+                    # If what we about to send repeated at least 5 times in the
+                    # last 2 minutes, replace with '...'
+                    if messages.count(text) >= 5 and elapsed < 120:
+                        text = '...'
+                        if messages.count('...') >= 3:
+                            # If we said '...' 3 times, discard message
+                            return
 
-    def notice(self, text, dest):
+                self.write(('PRIVMSG', recipient), text)
+                self.stack[recipient_id].append((time.time(), self.safe(text)))
+                self.stack[recipient_id] = self.stack[recipient_id][-10:]
+            finally:
+                self.sending.release()
+            # Now that we've sent the first part, we need to send the rest. Doing
+            # this recursively seems easier to me than iteratively
+            if excess:
+                self.msg(recipient, excess, max_messages - 1)
+
+    def notice(self, text, dests):
         """Send an IRC NOTICE to a user or a channel.
 
         Within the context of a triggered callable, ``dest`` will default to
         the channel (or nickname, if a private message), in which the trigger
         happened.
         """
-        self.write(('NOTICE', dest), text)
+        if not isinstance(dests, list):
+            dests = [dests]
+        for dest in dests:
+            self.write(('NOTICE', dest), text)
 
-    def action(self, text, dest):
+    def action(self, text, dests):
         """Send ``text`` as a CTCP ACTION PRIVMSG to ``dest``.
 
         The same loop detection and length restrictions apply as with
@@ -355,9 +366,12 @@ class Sopel(irc.Bot):
         the channel (or nickname, if a private message), in which the trigger
         happened.
         """
-        self.say('\001ACTION {}\001'.format(text), dest)
+        if not isinstance(dests, list):
+            dests = [dests]
+        for dest in dests:
+            self.say('\001ACTION {}\001'.format(text), dest)
 
-    def reply(self, text, dest, reply_to, notice=False):
+    def reply(self, text, dests, reply_to, notice=False):
         """Prepend ``reply_to`` to ``text``, and send as a PRIVMSG to ``dest``.
 
         If ``notice`` is ``True``, send a NOTICE rather than a PRIVMSG.
@@ -371,10 +385,12 @@ class Sopel(irc.Bot):
         happened.
         """
         text = '%s: %s' % (reply_to, text)
+        if not isinstance(dests, list):
+            dests = [dests]
         if notice:
-            self.notice(text, dest)
+            self.notice(text, dests)
         else:
-            self.say(text, dest)
+            self.say(text, dests)
 
     class SopelWrapper(object):
         def __init__(self, sopel, trigger):
