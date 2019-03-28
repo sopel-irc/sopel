@@ -326,6 +326,21 @@ def test_clean_callable_example(tmpconfig, func):
     assert docs[1] == ['.test hello']
 
 
+def test_clean_callable_example_not_set(tmpconfig, func):
+    module.commands('test')(func)
+
+    loader.clean_callable(func, tmpconfig)
+
+    assert hasattr(func, '_docs')
+    assert len(func._docs) == 1
+    assert 'test' in func._docs
+
+    docs = func._docs['test']
+    assert len(docs) == 2
+    assert docs[0] == inspect.cleandoc(func.__doc__).splitlines()
+    assert docs[1] == []
+
+
 def test_clean_callable_example_multi_commands(tmpconfig, func):
     module.commands('test')(func)
     module.commands('unit')(func)
@@ -385,6 +400,53 @@ def test_clean_callable_example_first_only_multi_commands(tmpconfig, func):
     assert test_docs[1] == ['.test hello']
 
 
+def test_clean_callable_example_user_help(tmpconfig, func):
+    module.commands('test')(func)
+    module.example('.test hello', user_help=True)(func)
+
+    loader.clean_callable(func, tmpconfig)
+
+    assert len(func._docs) == 1
+    assert 'test' in func._docs
+
+    docs = func._docs['test']
+    assert len(docs) == 2
+    assert docs[0] == inspect.cleandoc(func.__doc__).splitlines()
+    assert docs[1] == ['.test hello']
+
+
+def test_clean_callable_example_user_help_multi(tmpconfig, func):
+    module.commands('test')(func)
+    module.example('.test hello', user_help=True)(func)
+    module.example('.test bonjour', user_help=True)(func)
+
+    loader.clean_callable(func, tmpconfig)
+
+    assert len(func._docs) == 1
+    assert 'test' in func._docs
+
+    docs = func._docs['test']
+    assert len(docs) == 2
+    assert docs[0] == inspect.cleandoc(func.__doc__).splitlines()
+    assert docs[1] == ['.test hello', '.test bonjour']
+
+
+def test_clean_callable_example_user_help_mixed(tmpconfig, func):
+    module.commands('test')(func)
+    module.example('.test hello')(func)
+    module.example('.test bonjour', user_help=True)(func)
+
+    loader.clean_callable(func, tmpconfig)
+
+    assert len(func._docs) == 1
+    assert 'test' in func._docs
+
+    docs = func._docs['test']
+    assert len(docs) == 2
+    assert docs[0] == inspect.cleandoc(func.__doc__).splitlines()
+    assert docs[1] == ['.test bonjour']
+
+
 def test_clean_callable_example_default_prefix(tmpconfig, func):
     module.commands('test')(func)
     module.example('.test hello')(func)
@@ -405,6 +467,22 @@ def test_clean_callable_example_nickname(tmpconfig, func):
     module.commands('test')(func)
     module.example('$nickname: hello')(func)
 
+    loader.clean_callable(func, tmpconfig)
+
+    assert len(func._docs) == 1
+    assert 'test' in func._docs
+
+    docs = func._docs['test']
+    assert len(docs) == 2
+    assert docs[0] == inspect.cleandoc(func.__doc__).splitlines()
+    assert docs[1] == ['TestBot: hello']
+
+
+def test_clean_callable_example_nickname_custom_prefix(tmpconfig, func):
+    module.commands('test')(func)
+    module.example('$nickname: hello')(func)
+
+    tmpconfig.core.help_prefix = '!'
     loader.clean_callable(func, tmpconfig)
 
     assert len(func._docs) == 1
