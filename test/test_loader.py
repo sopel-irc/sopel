@@ -323,7 +323,7 @@ def test_clean_callable_example(tmpconfig, func):
     docs = func._docs['test']
     assert len(docs) == 2
     assert docs[0] == inspect.cleandoc(func.__doc__).splitlines()
-    assert docs[1] == '.test hello'
+    assert docs[1] == ['.test hello']
 
 
 def test_clean_callable_example_multi_commands(tmpconfig, func):
@@ -344,7 +344,7 @@ def test_clean_callable_example_multi_commands(tmpconfig, func):
     assert test_docs == unit_docs
 
     assert test_docs[0] == inspect.cleandoc(func.__doc__).splitlines()
-    assert test_docs[1] == '.test hello'
+    assert test_docs[1] == ['.test hello']
 
 
 def test_clean_callable_example_first_only(tmpconfig, func):
@@ -360,7 +360,7 @@ def test_clean_callable_example_first_only(tmpconfig, func):
     docs = func._docs['test']
     assert len(docs) == 2
     assert docs[0] == inspect.cleandoc(func.__doc__).splitlines()
-    assert docs[1] == '.test hello'
+    assert docs[1] == ['.test hello']
 
 
 def test_clean_callable_example_first_only_multi_commands(tmpconfig, func):
@@ -382,7 +382,7 @@ def test_clean_callable_example_first_only_multi_commands(tmpconfig, func):
     assert test_docs == unit_docs
 
     assert test_docs[0] == inspect.cleandoc(func.__doc__).splitlines()
-    assert test_docs[1] == '.test hello'
+    assert test_docs[1] == ['.test hello']
 
 
 def test_clean_callable_example_default_prefix(tmpconfig, func):
@@ -398,7 +398,7 @@ def test_clean_callable_example_default_prefix(tmpconfig, func):
     docs = func._docs['test']
     assert len(docs) == 2
     assert docs[0] == inspect.cleandoc(func.__doc__).splitlines()
-    assert docs[1] == '!test hello'
+    assert docs[1] == ['!test hello']
 
 
 def test_clean_callable_example_nickname(tmpconfig, func):
@@ -413,7 +413,7 @@ def test_clean_callable_example_nickname(tmpconfig, func):
     docs = func._docs['test']
     assert len(docs) == 2
     assert docs[0] == inspect.cleandoc(func.__doc__).splitlines()
-    assert docs[1] == 'TestBot: hello'
+    assert docs[1] == ['TestBot: hello']
 
 
 def test_clean_callable_intents(tmpconfig, func):
