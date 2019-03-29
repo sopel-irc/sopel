@@ -44,6 +44,50 @@ def setup(bot):
     bot.config.define_section('admin', AdminSection)
 
 
+def _get_config_channels(channels):
+    """List"""
+    for channel_info in channels:
+        if ' ' in channel_info:
+            yield channel_info.split(' ', 1)
+        else:
+            yield (channel_info, None)
+
+
+def _set_config_channels(bot, channels):
+    bot.config.core.channels = [
+        ' '.join([part for part in items if part])
+        for items in channels.items()
+    ]
+    bot.config.save()
+
+
+def _join(bot, channel, key=None, save=True):
+    if not channel:
+        return
+
+    if not key:
+        bot.join(channel)
+    else:
+        bot.join(channel, key)
+
+    if save:
+        channels = dict(_get_config_channels(bot.config.core.channels))
+        # save only if channel is new or key has been changed
+        if channel not in channels or channels[channel] != key:
+            channels[channel] = key
+            _set_config_channels(bot, channels)
+
+
+def _part(bot, channel, msg=None, save=True):
+    bot.part(channel, msg or None)
+
+    if save:
+        channels = dict(_get_config_channels(bot.config.core.channels))
+        if channel in channels:
+            del channels[channel]
+            _set_config_channels(bot, channels)
+
+
 @sopel.module.require_privmsg
 @sopel.module.require_admin
 @sopel.module.commands('join')
@@ -52,12 +96,22 @@ def setup(bot):
 def join(bot, trigger):
     """Join the specified channel. This is an admin-only command."""
     channel, key = trigger.group(3), trigger.group(4)
-    if not channel:
-        return
-    elif not key:
-        bot.join(channel)
-    else:
-        bot.join(channel, key)
+    _join(bot, channel, key)
+
+
+@sopel.module.require_privmsg
+@sopel.module.require_admin
+@sopel.module.commands('tmpjoin')
+@sopel.module.priority('low')
+@sopel.module.example('.tmpjoin #example or .tmpjoin #example key')
+def temporary_join(bot, trigger):
+    """Like ``join``, without saving. This is an admin-only command.
+
+    Unlike the ``join`` command, ``tmpjoin`` won't remember the channel upon
+    restarting the bot.
+    """
+    channel, key = trigger.group(3), trigger.group(4)
+    _join(bot, channel, key, save=False)
 
 
 @sopel.module.require_privmsg
@@ -68,10 +122,22 @@ def join(bot, trigger):
 def part(bot, trigger):
     """Part the specified channel. This is an admin-only command."""
     channel, _sep, part_msg = trigger.group(2).partition(' ')
-    if part_msg:
-        bot.part(channel, part_msg)
-    else:
-        bot.part(channel)
+    _part(bot, channel, part_msg)
+
+
+@sopel.module.require_privmsg
+@sopel.module.require_admin
+@sopel.module.commands('tmppart')
+@sopel.module.priority('low')
+@sopel.module.example('.tmppart #example')
+def temporary_part(bot, trigger):
+    """Like ``part``, without saving. This is an admin-only command.
+
+    Unlike the ``part`` command, ``tmppart`` will rejoin the channel upon
+    restarting the bot.
+    """
+    channel, _sep, part_msg = trigger.group(2).partition(' ')
+    _part(bot, channel, part_msg, save=False)
 
 
 @sopel.module.require_privmsg
