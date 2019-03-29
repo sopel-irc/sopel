@@ -21,6 +21,8 @@ Module changes
 * Readability of `.choose` command output is significantly improved [[#1425][]]
 * A `.restart` command is added [[#1333][]]
   * admin-only, just like `.quit`
+* The `admin` module auto-saves channels when using `.join`/`.part`, and added
+  `.tmpjoin`/`.tmppart` commands to bypass this behavior [[#1492][]]
 
 Core changes
 ------------
@@ -89,6 +91,7 @@ API changes
 [#1473]: https://github.com/sopel-irc/sopel/pull/1473
 [#1487]: https://github.com/sopel-irc/sopel/pull/1487
 [#1488]: https://github.com/sopel-irc/sopel/pull/1488
+[#1492]: https://github.com/sopel-irc/sopel/pull/1492
 [#1493]: https://github.com/sopel-irc/sopel/pull/1493
 [#1499]: https://github.com/sopel-irc/sopel/pull/1499
 [#1507]: https://github.com/sopel-irc/sopel/pull/1507
