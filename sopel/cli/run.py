@@ -390,12 +390,15 @@ def command_start(opts):
     pid_file_path = get_pid_filename(opts, pid_dir)
     pid = get_running_pid(pid_file_path)
 
-    if pid is not None and tools.check_pid(pid):
-        tools.stderr('There\'s already a Sopel instance running '
-                     'with this config file.')
-        tools.stderr('Try using either the `sopel stop` '
-                     'or the `sopel restart` command.')
-        return ERR_CODE
+    # Check if current process ID equals process ID in file. 
+    # If equals don't check for existing instance, if not throw error.
+    if os.getpid() != pid:
+        if pid is not None and tools.check_pid(pid):
+            tools.stderr('There\'s already a Sopel instance running '
+                        'with this config file.')
+            tools.stderr('Try using either the `sopel stop` '
+                        'or the `sopel restart` command.')
+            return ERR_CODE
 
     if opts.daemonize:
         child_pid = os.fork()
