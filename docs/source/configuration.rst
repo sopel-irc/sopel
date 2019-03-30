@@ -223,7 +223,47 @@ policy.
    options have been added: ``flood_burst_lines``, ``flood_empty_wait``, and
    ``flood_refill_rate``.
 
+Perform commands on connect
+---------------------------
 
+The bot can be configured to send custom commands upon successful connection to
+the IRC server. This can be used in situations where the bot's built-in
+capabilities are not sufficient, or further automation is desired. The list of
+commands to send is set with :attr:`~CoreSection.commands_on_connect`.
+
+For example, the following configuration:
+
+.. code-block:: ini
+
+    [core]
+    commands_on_connect = PRIVMSG X@Channels.undernet.org :LOGIN MyUserName A$_Strong\,*pasSWord,PRIVMSG IDLEBOT :login IdleUsername idLEPasswoRD
+
+
+will, upon connection:
+    
+    1) identify to Undernet services
+    2) login with ``IDLEBOT``
+
+.. important::
+
+    Commas are used to delimit separate commands, so any comma found within a
+    command must be escaped with ``\``. In the example above, the password
+    ``A$_Strong,*pasSWord`` is escaped as ``A$_Strong\,pasSWord`` (note the
+    escaped comma in the middle of the password, but not immediately following,
+    which is delimiting the next command).
+
+    No other text needs to be escaped.
+
+.. 
+    TODO: update this note (and the example config) once #1628 is merged in,
+    changing the delimiter to newlines (from commas).
+
+.. seealso::
+    
+    This functionality is analogous to ZNC's ``perform`` module:
+    https://wiki.znc.in/Perform
+    
+    
 Authentication
 ==============
 

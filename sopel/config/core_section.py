@@ -49,6 +49,10 @@ def configure(config):
         'channels',
         'Enter the channels to connect to at startup, separated by commas.'
     )
+    config.core.configure_setting(
+        'commands_on_connect',
+        'Enter commands to perform on successful connection to server (one per \'?\' prompt).'
+    )
 
 
 class CoreSection(StaticSection):
@@ -346,6 +350,19 @@ class CoreSection(StaticSection):
     This should only be set on networks which support IRCv3 account
     capabilities.
     """
+
+    commands_on_connect = ListAttribute('commands_on_connect')
+    r"""A list of commands to perform upon successful connection to IRC server.
+
+    When entered using the config wizard, commas will be escaped automatically.
+    Otherwise, commas must be escaped, e.g.: ``PRIVMSG Q@CServe.quakenet.org
+    :AUTH my_username MyPassword\,HasAComma@#$%!`` Nothing else needs to be
+    escaped.
+
+    .. versionadded:: 7.0
+    """
+    # TODO: update the docstring above in/after #1628 removes commas as
+    # delimiters for `ListAttribute`s.
 
     pid_dir = FilenameAttribute('pid_dir', directory=True, default='.')
     """The directory in which to put the file Sopel uses to track its process ID.
