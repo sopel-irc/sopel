@@ -189,7 +189,8 @@ class Bot(asynchat.async_chat):
 
     def quit(self, message):
         """Disconnect from IRC and close the bot."""
-        self.write(['QUIT'], message)
+        if self.connected:  # Only send QUIT message if socket is open
+            self.write(['QUIT'], message)
         self.hasquit = True
         # Wait for acknowledgement from the server. By RFC 2812 it should be
         # an ERROR msg, but many servers just close the connection. Either way
