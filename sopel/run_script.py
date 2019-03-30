@@ -168,21 +168,22 @@ def main(argv=None):
                 except ValueError:
                     old_pid = None
             if old_pid is not None and tools.check_pid(old_pid):
-                if not opts.quit and not opts.kill:
-                    stderr('There\'s already a Sopel instance running with this config file')
-                    stderr('Try using the --quit or the --kill options')
-                    sys.exit(1)
-                elif opts.kill:
-                    stderr('Killing the sopel')
-                    os.kill(old_pid, signal.SIGKILL)
-                    sys.exit(0)
-                elif opts.quit:
-                    stderr('Signaling Sopel to stop gracefully')
-                    if hasattr(signal, 'SIGUSR1'):
-                        os.kill(old_pid, signal.SIGUSR1)
-                    else:
-                        os.kill(old_pid, signal.SIGTERM)
-                    sys.exit(0)
+                if os.getpid() != old_pid:
+                    if not opts.quit and not opts.kill:
+                        stderr('There\'s already a Sopel instance running with this config file')
+                        stderr('Try using the --quit or the --kill options')
+                        sys.exit(1)
+                    elif opts.kill:
+                        stderr('Killing the sopel')
+                        os.kill(old_pid, signal.SIGKILL)
+                        sys.exit(0)
+                    elif opts.quit:
+                        stderr('Signaling Sopel to stop gracefully')
+                        if hasattr(signal, 'SIGUSR1'):
+                            os.kill(old_pid, signal.SIGUSR1)
+                        else:
+                            os.kill(old_pid, signal.SIGTERM)
+                        sys.exit(0)
             elif opts.kill or opts.quit:
                 stderr('Sopel is not running!')
                 sys.exit(1)
