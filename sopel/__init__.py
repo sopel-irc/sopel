@@ -71,7 +71,12 @@ def run(config, pid_file, daemon=False):
         if sig == signal.SIGUSR1 or sig == signal.SIGTERM or sig == signal.SIGINT:
             stderr('Got quit signal, shutting down.')
             p.quit('Closing')
+
+    # Define empty variable `p` for bot
+    p = None
     while True:
+        if p and p.hasquit:  # Check if `hasquit` was set for bot during disconnected phase
+            break
         try:
             p = bot.Sopel(config, daemon=daemon)
             if hasattr(signal, 'SIGUSR1'):
