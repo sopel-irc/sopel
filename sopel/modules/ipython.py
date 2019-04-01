@@ -9,6 +9,7 @@ Sopel: https://sopel.chat/
 from __future__ import unicode_literals, absolute_import, print_function, division
 
 import sopel
+import sopel.module
 import sys
 if sys.version_info.major >= 3:
     # Backup stderr/stdout wrappers
