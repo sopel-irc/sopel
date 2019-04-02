@@ -141,6 +141,17 @@ class Sopel(irc.Bot):
             self.config.core.host_blocks = []
         self.setup()
 
+    @property
+    def hostmask(self):
+        """str: the current hostmask for the bot :class:`sopel.tools.target.User`
+
+        Bot must be connected and in at least one channel.
+        """
+        if not self.users or not self.users.contains(self.nick):
+            raise KeyError("'hostmask' not available: bot must be connected and in at least one channel.")
+
+        return self.users.get(self.nick).hostmask
+
     # Backwards-compatibility aliases to attributes made private in 6.2. Remove
     # these in 7.0
     times = property(lambda self: getattr(self, '_times'))
