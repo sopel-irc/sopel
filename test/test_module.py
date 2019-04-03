@@ -83,10 +83,14 @@ def test_thread():
 
 
 def test_echo():
-    @module.echo(False)
+    @module.echo()
     def mock(bot, trigger, match):
         return True
-    assert mock.echo is False
+    assert mock.echo is True
+
+    def mock(bot, trigger, match):
+        return True
+    assert not hasattr(mock, 'echo')
 
 
 def test_commands():

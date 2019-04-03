@@ -150,7 +150,8 @@ class Bot(asynchat.async_chat):
         finally:
             self.writing_lock.release()
         # Simulate echo-message
-        if 'echo-message' not in self.enabled_capabilities:
+        if ('echo-message' not in self.enabled_capabilities and
+                args[0].upper() in ['PRIVMSG', 'NOTICE']):
             # Since we have no way of knowing the hostmask the IRC server uses
             # for us, we'll just use something reasonable
             host = 'localhost'
