@@ -14,10 +14,13 @@ BuildArch:      noarch
 BuildRequires:  python2-devel
 BuildRequires:  python-sphinx
 BuildRequires:  dos2unix
-BuildRequires: systemd
+BuildRequires:  systemd
+BuildRequires:  aspell
+BuildRequires:  aspell-devel
+BuildRequires:  aspell-en
 
 Requires:       pytz
-Requires:       python-enchant
+Requires:       aspell-python-py2
 Requires:       pyOpenSSL
 Requires:       python-praw
 Requires:       python-backports-ssl_match_hostname
