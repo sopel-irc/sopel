@@ -82,7 +82,7 @@ class MockSopelWrapper(object):
         self.pretrigger = pretrigger
         self.output = []
 
-    def _store(self, string, recipent=None):
+    def _store(self, string, recipent=None, **kwargs):
         self.output.append(string.strip())
 
     say = reply = action = _store
