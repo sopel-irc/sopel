@@ -72,6 +72,10 @@ API changes
     accessing `bot.memory['url_callbacks']`
   * There are no definite plans to remove `bot.memory['url_callbacks']`, but it
     should be considered deprecated
+* Added `bot.hostmask` property (read-only) [[#1537][]]
+  * Is a shortcut for `bot.users.get(bot.nick).hostmask`, so will throw an error
+    if the bot is not connected and joined to at least one channel. Basically,
+    don't try to use this in module `setup()` or `shutdown()` methods.
 * `module.require_admin()` now takes an optional boolean parameter `reply`
   [[#1456][]]
   * Default is `False`, so existing uses will not change.
@@ -102,6 +106,7 @@ API changes
 [#1508]: https://github.com/sopel-irc/sopel/pull/1508
 [#1509]: https://github.com/sopel-irc/sopel/pull/1509
 [#1511]: https://github.com/sopel-irc/sopel/pull/1511
+[#1537]: https://github.com/sopel-irc/sopel/pull/1537
 
 [sopel-7-migration]: https://sopel.chat/usage/installing/upgrading-to-sopel-7/
 
