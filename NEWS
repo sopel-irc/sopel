@@ -17,6 +17,9 @@ release) are explained there.
 Module changes
 --------------
 
+* The `spellcheck` module now uses `aspell`, and gained a custom word list
+  * Custom word list is managed via a suite of new commands: `.scadd`,
+    `.scsave`, `.scpending`, `.scdel`, and `.scclear`) [[#1164][]]
 * Python version is now included in `.version` command output [[#1462][]]
 * Readability of `.choose` command output is significantly improved [[#1425][]]
 * A `.restart` command is added [[#1333][]]
@@ -79,6 +82,7 @@ API changes
 
 [#1059]: https://github.com/sopel-irc/sopel/pull/1059
 [#1096]: https://github.com/sopel-irc/sopel/pull/1096
+[#1164]: https://github.com/sopel-irc/sopel/pull/1164
 [#1333]: https://github.com/sopel-irc/sopel/pull/1333
 [#1404]: https://github.com/sopel-irc/sopel/pull/1404
 [#1424]: https://github.com/sopel-irc/sopel/pull/1424
