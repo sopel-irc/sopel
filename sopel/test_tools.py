@@ -110,7 +110,7 @@ class MockSopelWrapper(object):
     def _store(self, string, recipent=None):
         self.output.append(string.strip())
 
-    msg = say = notice = action = reply = _store
+    write = msg = say = notice = action = reply = _store
 
     def __getattr__(self, attr):
         return getattr(self.bot, attr)
