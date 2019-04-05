@@ -89,7 +89,7 @@ def startup(bot, trigger):
     auth_after_register(bot)
 
     modes = bot.config.core.modes
-    bot.write(('MODE ', '%s +%s' % (bot.nick, modes)))
+    bot.write(('MODE', '%s +%s' % (bot.nick, modes)))
 
     bot.memory['retry_join'] = dict()
 
