@@ -12,7 +12,7 @@ from __future__ import unicode_literals, absolute_import, print_function, divisi
 
 import re
 from sopel.tools import Identifier, SopelMemory
-from sopel.module import rule, priority
+from sopel.module import rule, priority, echo
 from sopel.formatting import bold
 
 
@@ -20,6 +20,7 @@ def setup(bot):
     bot.memory['find_lines'] = SopelMemory()
 
 
+@echo
 @rule('.*')
 @priority('low')
 def collectlines(bot, trigger):
