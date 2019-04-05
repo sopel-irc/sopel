@@ -527,6 +527,9 @@ class Sopel(irc.Bot):
                                 match = True
                         if not match:
                             continue
+                    if (trigger.nick.lower() == self.nick.lower() and
+                            not func.echo):
+                        continue
                     if func.thread:
                         targs = (func, wrapper, trigger)
                         t = threading.Thread(target=self.call, args=targs)

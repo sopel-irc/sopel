@@ -423,11 +423,11 @@ def track_quit(bot, trigger):
 @sopel.module.thread(False)
 @sopel.module.priority('high')
 @sopel.module.unblockable
-def recieve_cap_list(bot, trigger):
+def receive_cap_list(bot, trigger):
     cap = trigger.strip('-=~')
     # Server is listing capabilites
     if trigger.args[1] == 'LS':
-        recieve_cap_ls_reply(bot, trigger)
+        receive_cap_ls_reply(bot, trigger)
     # Server denied CAP REQ
     elif trigger.args[1] == 'NAK':
         entry = bot._cap_reqs.get(cap, None)
@@ -471,10 +471,10 @@ def recieve_cap_list(bot, trigger):
                 if req.success:
                     req.success(bot, req.prefix + trigger)
             if cap == 'sasl':  # TODO why is this not done with bot.cap_req?
-                recieve_cap_ack_sasl(bot)
+                receive_cap_ack_sasl(bot)
 
 
-def recieve_cap_ls_reply(bot, trigger):
+def receive_cap_ls_reply(bot, trigger):
     if bot.server_capabilities:
         # We've already seen the results, so someone sent CAP LS from a module.
         # We're too late to do SASL, and we don't want to send CAP END before
@@ -496,7 +496,13 @@ def recieve_cap_ls_reply(bot, trigger):
 
     # If some other module requests it, we don't need to add another request.
     # If some other module prohibits it, we shouldn't request it.
-    core_caps = ['multi-prefix', 'away-notify', 'cap-notify', 'server-time']
+    core_caps = [
+        'echo-message',
+        'multi-prefix',
+        'away-notify',
+        'cap-notify',
+        'server-time',
+    ]
     for cap in core_caps:
         if cap not in bot._cap_reqs:
             bot._cap_reqs[cap] = [_CapReq('', 'coretasks')]
@@ -545,7 +551,7 @@ def recieve_cap_ls_reply(bot, trigger):
         bot.write(('CAP', 'END'))
 
 
-def recieve_cap_ack_sasl(bot):
+def receive_cap_ack_sasl(bot):
     # Presumably we're only here if we said we actually *want* sasl, but still
     # check anyway.
     password = bot.config.core.auth_password

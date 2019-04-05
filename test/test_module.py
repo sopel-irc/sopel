@@ -80,6 +80,27 @@ def test_thread():
     assert mock.thread is True
 
 
+def test_echo():
+    # test decorator with parentheses
+    @module.echo()
+    def mock(bot, trigger, match):
+        return True
+    assert mock.echo is True
+
+    # test decorator without parentheses
+    @module.echo
+    def mock(bot, trigger, match):
+        return True
+    assert mock.echo is True
+
+    # test without decorator
+    def mock(bot, trigger, match):
+        return True
+    # on undecorated callables, the attr only exists after the loader loads them
+    # so this cannot `assert mock.echo is False` here
+    assert not hasattr(mock, 'echo')
+
+
 def test_commands():
     @module.commands('sopel')
     def mock(bot, trigger, match):

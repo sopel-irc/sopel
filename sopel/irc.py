@@ -162,6 +162,24 @@ class Bot(asynchat.async_chat):
         finally:
             self.writing_lock.release()
 
+        # Simulate echo-message
+        if ('echo-message' not in self.enabled_capabilities and
+                args[0].upper() in ['PRIVMSG', 'NOTICE']):
+            # Use the hostmask we think the IRC server is using for us,
+            # or something reasonable if that's not available
+            host = 'localhost'
+            if self.config.core.bind_host:
+                host = self.config.core.bind_host
+            else:
+                try:
+                    host = self.hostmask
+                except KeyError:
+                    pass  # we tried, and that's good enough
+
+            pretrigger = PreTrigger(self.nick, ':{0}!{1}@{2} {3}'
+                .format(self.nick, self.user, host, temp))
+            self.dispatch(pretrigger)
+
     def run(self, host, port=6667):
         try:
             self.initiate_connect(host, port)

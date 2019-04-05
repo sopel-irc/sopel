@@ -140,6 +140,22 @@ def thread(value):
     return add_attribute
 
 
+def echo(function=None):
+    """Decorate a function to specify if it should receive echo messages.
+
+    This decorator can be used to listen in on the messages that Sopel is
+    sending and react accordingly.
+    """
+    def add_attribute(function):
+        function.echo = True
+        return function
+
+    # hack to allow both @echo and @echo() to work
+    if callable(function):
+        return add_attribute(function)
+    return add_attribute
+
+
 def commands(*command_list):
     """Decorate a function to set one or more commands to trigger it.
 
