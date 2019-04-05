@@ -26,6 +26,8 @@ Module changes
   * admin-only, just like `.quit`
 * The `admin` module auto-saves channels when using `.join`/`.part`, and added
   `.tmpjoin`/`.tmppart` commands to bypass this behavior [[#1492][]]
+* `find` also collects Sopel's own messages now, so users can "correct" the bot
+  if they wish to be extra cheeky [[#1470][]]
 
 Core changes
 ------------
@@ -61,6 +63,8 @@ Core changes
   * While Sopel 7 is intended to remain compatible with Python 2, future
     compatibility is not guaranteed, and users should plan for Sopel 8 to
     officially drop Python 2 support (see [upgrade notes][sopel-7-migration])
+* Added support for IRCv3 `echo-message` capability, which Sopel will now
+  request upon connecting to an IRC server [[#1470][]]
 
 API changes
 -----------
@@ -76,6 +80,10 @@ API changes
   * Is a shortcut for `bot.users.get(bot.nick).hostmask`, so will throw an error
     if the bot is not connected and joined to at least one channel. Basically,
     don't try to use this in module `setup()` or `shutdown()` methods.
+* Added `module.echo` decorator [[#1470][]]
+  * Decorated callables will receive messages that Sopel itself sends,
+    regardless of whether the IRC server actually supports `echo-message`
+  * Avoid sending output from `@echo`-decorated callables; this will cause loops
 * `module.require_admin()` now takes an optional boolean parameter `reply`
   [[#1456][]]
   * Default is `False`, so existing uses will not change.
@@ -95,6 +103,7 @@ API changes
 [#1456]: https://github.com/sopel-irc/sopel/pull/1456
 [#1458]: https://github.com/sopel-irc/sopel/pull/1458
 [#1462]: https://github.com/sopel-irc/sopel/pull/1462
+[#1470]: https://github.com/sopel-irc/sopel/pull/1470
 [#1472]: https://github.com/sopel-irc/sopel/pull/1472
 [#1473]: https://github.com/sopel-irc/sopel/pull/1473
 [#1487]: https://github.com/sopel-irc/sopel/pull/1487
