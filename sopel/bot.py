@@ -376,47 +376,6 @@ class Sopel(irc.Bot):
         else:
             self.say(text, dest)
 
-    class SopelWrapper(object):
-        def __init__(self, sopel, trigger):
-            # The custom __setattr__ for this class sets the attribute on the
-            # original bot object. We don't want that for these, so we set them
-            # with the normal __setattr__.
-            object.__setattr__(self, '_bot', sopel)
-            object.__setattr__(self, '_trigger', trigger)
-
-        def __dir__(self):
-            classattrs = [attr for attr in self.__class__.__dict__
-                          if not attr.startswith('__')]
-            return list(self.__dict__) + classattrs + dir(self._bot)
-
-        def __getattr__(self, attr):
-            return getattr(self._bot, attr)
-
-        def __setattr__(self, attr, value):
-            return setattr(self._bot, attr, value)
-
-        def say(self, message, destination=None, max_messages=1):
-            if destination is None:
-                destination = self._trigger.sender
-            self._bot.say(message, destination, max_messages)
-
-        def action(self, message, destination=None):
-            if destination is None:
-                destination = self._trigger.sender
-            self._bot.action(message, destination)
-
-        def notice(self, message, destination=None):
-            if destination is None:
-                destination = self._trigger.sender
-            self._bot.notice(message, destination)
-
-        def reply(self, message, destination=None, reply_to=None, notice=False):
-            if destination is None:
-                destination = self._trigger.sender
-            if reply_to is None:
-                reply_to = self._trigger.nick
-            self._bot.reply(message, destination, reply_to, notice)
-
     def call(self, func, sopel, trigger):
         nick = trigger.nick
         current_time = time.time()
@@ -493,7 +452,7 @@ class Sopel(irc.Bot):
                 user_obj = self.users.get(pretrigger.nick)
                 account = user_obj.account if user_obj else None
                 trigger = Trigger(self.config, pretrigger, match, account)
-                wrapper = self.SopelWrapper(self, trigger)
+                wrapper = SopelWrapper(self, trigger)
 
                 for func in funcs:
                     if (not trigger.admin and
@@ -742,3 +701,45 @@ class Sopel(irc.Bot):
             match = regex.search(url)
             if match:
                 yield function, match
+
+
+class SopelWrapper(object):
+        def __init__(self, sopel, trigger):
+            # The custom __setattr__ for this class sets the attribute on the
+            # original bot object. We don't want that for these, so we set them
+            # with the normal __setattr__.
+            object.__setattr__(self, '_bot', sopel)
+            object.__setattr__(self, '_trigger', trigger)
+
+        def __dir__(self):
+            classattrs = [attr for attr in self.__class__.__dict__
+                          if not attr.startswith('__')]
+            return list(self.__dict__) + classattrs + dir(self._bot)
+
+        def __getattr__(self, attr):
+            return getattr(self._bot, attr)
+
+        def __setattr__(self, attr, value):
+            return setattr(self._bot, attr, value)
+
+        def say(self, message, destination=None, max_messages=1):
+            if destination is None:
+                destination = self._trigger.sender
+            self._bot.say(message, destination, max_messages)
+
+        def action(self, message, destination=None):
+            if destination is None:
+                destination = self._trigger.sender
+            self._bot.action(message, destination)
+
+        def notice(self, message, destination=None):
+            if destination is None:
+                destination = self._trigger.sender
+            self._bot.notice(message, destination)
+
+        def reply(self, message, destination=None, reply_to=None, notice=False):
+            if destination is None:
+                destination = self._trigger.sender
+            if reply_to is None:
+                reply_to = self._trigger.nick
+            self._bot.reply(message, destination, reply_to, notice)
