@@ -1,4 +1,4 @@
-.PHONY: quality test coverage_html coverage_report travis clean_doc build_doc
+.PHONY: quality test coverage_html coverage_report travis clean_doc build_doc install-hooks uninstall-hooks
 
 quality:
 	./checkstyle.sh
@@ -25,3 +25,9 @@ build_doc:
 	$(MAKE) -C docs html
 
 doc: clean_doc build_doc
+
+install-hooks:
+	@./contrib/githooks/install-hooks.sh
+
+uninstall-hooks:
+	@./contrib/githooks/uninstall-hooks.sh
