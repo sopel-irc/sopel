@@ -150,6 +150,9 @@ class Config(object):
         def __getattr__(self, name):
             return None
 
+        def __contains__(self, name):
+            return name in vars(self)
+
         def __setattr__(self, name, value):
             object.__setattr__(self, name, value)
             if type(value) is list:
@@ -175,6 +178,12 @@ class Config(object):
         else:
             raise AttributeError("%r object has no attribute %r"
                                  % (type(self).__name__, name))
+
+    def __getitem__(self, name):
+        return self.__getattr__(name)
+
+    def __contains__(self, name):
+        return name in self.parser.sections()
 
     def option(self, question, default=False):
         """Ask "y/n" and return the corresponding boolean answer.
