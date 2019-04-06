@@ -32,6 +32,11 @@ include your changes.
   the rest of the rules.
 * Test your code before you commit. We don't have a formal testing plan in
   place, but you should make sure your code works as promised before you commit.
+* If you have cloned the repository to your personal computer, you can use our
+  provided git hooks to automatically check whether your code style is up to
+  Sopel's requirements and that tests still pass, before committing your code.
+  The git hooks can be enabled by running `make install-hooks`, and disabled by
+  running `make uninstall-hooks`,  in your root `sopel` folder.
 * Make your commit messages clear and explicative. Our convention is to place
   the name of the thing you're changing in at the beginning of the
   message, followed by a colon: the module name for modules, docs for documentation files,
