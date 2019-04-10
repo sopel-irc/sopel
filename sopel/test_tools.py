@@ -66,10 +66,17 @@ class MockSopel(object):
         self.config = MockConfig()
         self._init_config()
 
+        self.output = []
+
         if admin:
             self.config.core.admins = [self.nick]
         if owner:
             self.config.core.owner = self.nick
+
+    def _store(self, string, *args, **kwargs):
+        self.output.append(string.strip())
+
+    write = msg = say = notice = action = reply = _store
 
     def _init_config(self):
         cfg = self.config
