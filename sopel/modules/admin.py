@@ -164,7 +164,7 @@ def hold_ground(bot, trigger):
 def mode(bot, trigger):
     """Set a user mode on Sopel. Can only be done in privmsg by an admin."""
     mode = trigger.group(3)
-    bot.write(('MODE ', bot.nick + ' ' + mode))
+    bot.write(('MODE', bot.nick + ' ' + mode))
 
 
 @sopel.module.require_privmsg("This command only works as a private message.")
