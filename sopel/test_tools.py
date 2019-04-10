@@ -163,11 +163,13 @@ def get_example_test(tested_func, msg, results, privmsg, admin,
                     return False
             return True
 
+        expected_output_count = 0
         for _i in range(repeat):
+            expected_output_count += len(results)
             wrapper = MockSopelWrapper(bot, trigger)
             tested_func(wrapper, trigger)
             wrapper.output = list(filter(isnt_ignored, wrapper.output))
-            assert len(wrapper.output) == len(results)
+            assert len(wrapper.output) == expected_output_count
             for result, output in zip(results, wrapper.output):
                 if type(output) is bytes:
                     output = output.decode('utf-8')
