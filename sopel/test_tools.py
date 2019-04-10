@@ -19,6 +19,7 @@ try:
 except ImportError:
     import configparser as ConfigParser
 
+from sopel.bot import SopelWrapper
 import sopel.config
 import sopel.config.core_section
 import sopel.tools
@@ -101,19 +102,8 @@ class MockSopel(object):
                 yield function, match
 
 
-class MockSopelWrapper(object):
-    def __init__(self, bot, pretrigger):
-        self.bot = bot
-        self.pretrigger = pretrigger
-        self.output = []
-
-    def _store(self, string, recipent=None):
-        self.output.append(string.strip())
-
-    say = reply = action = _store
-
-    def __getattr__(self, attr):
-        return getattr(self.bot, attr)
+class MockSopelWrapper(SopelWrapper):
+    pass
 
 
 def get_example_test(tested_func, msg, results, privmsg, admin,
