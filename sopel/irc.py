@@ -210,7 +210,8 @@ class Bot(asynchat.async_chat):
         # This will eventually call asyncore dispatchers close method, which
         # will release the main thread. This should be called last to avoid
         # race conditions.
-        self.close()
+        if self.socket:
+            self.close()
 
     def handle_connect(self):
         """
