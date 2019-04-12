@@ -2,6 +2,8 @@
 """Tests for Job Scheduler"""
 from __future__ import unicode_literals, absolute_import, print_function, division
 
+import time
+
 import pytest
 
 from sopel import test_tools
@@ -21,3 +23,11 @@ def test_jobscheduler_stop(sopel):
 
     scheduler.stop()
     assert scheduler.stopping.is_set(), 'Stopping must have been set'
+
+
+def test_job_is_ready_to_run():
+    now = time.time()
+    job = jobs.Job(5, None)
+
+    assert job.is_ready_to_run(now + 20)
+    assert not job.is_ready_to_run(now - 20)
