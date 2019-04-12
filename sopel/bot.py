@@ -279,10 +279,11 @@ class Sopel(irc.Bot):
                 self.unregister(func)
 
             # remove URL callback handlers
-            for func in urls:
-                regex = func.url_regex
-                if func == self.memory['url_callbacks'].get(regex):
-                    del self.memory['url_callbacks'][regex]
+            if self.memory.contains('url_callbacks'):
+                for func in urls:
+                    regex = func.url_regex
+                    if func == self.memory['url_callbacks'].get(regex):
+                        self.unregister_url_callback(regex)
         except:  # noqa
             # TODO: consider logging?
             raise  # re-raised
