@@ -68,6 +68,7 @@ class JobScheduler(threading.Thread):
         """Requires bot as argument for logging."""
         threading.Thread.__init__(self)
         self.bot = bot
+        self.stopping = threading.Event()
         self._jobs = PriorityQueue()
         # While PriorityQueue it self is thread safe, this mutex is needed
         # to stop old jobs being put into new queue after clearing the
@@ -90,9 +91,18 @@ class JobScheduler(threading.Thread):
             self._cleared = True
             self._jobs = PriorityQueue()
 
+    def stop(self):
+        """Ask the job scheduler to stop.
+
+        The scheduler thread will stop its loop over jobs to process, but it
+        won't join the thread, or clear its queue—this has to be done
+        separately by the calling thread.
+        """
+        self.stopping.set()
+
     def run(self):
         """Run forever."""
-        while True:
+        while not self.stopping.is_set():
             try:
                 self._do_next_job()
             except Exception:  # TODO: Be specific
@@ -110,7 +120,7 @@ class JobScheduler(threading.Thread):
         with self._mutex:
             # Wait until the next job should be executed.
             # This has to be a loop, because signals stop time.sleep().
-            while True:
+            while not self.stopping.is_set():
                 job = self._jobs.peek()
                 difference = job.next_time - time.time()
                 duration = min(difference, self.min_reaction_time)
