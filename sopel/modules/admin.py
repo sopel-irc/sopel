@@ -322,7 +322,7 @@ def set_config(bot, trigger):
     try:
         section, section_name, static_sec, option, value = parse_section_option_value(bot.config, trigger)
     except ValueError:
-        bot.reply('Usage: .set section.option [value]')
+        bot.reply('Usage: {}set section.option [value]'.format(bot.config.core.help_prefix))
         return
     except (InvalidSection, InvalidSectionOption) as exc:
         bot.say(exc.args[1])
@@ -356,6 +356,37 @@ def set_config(bot, trigger):
             bot.say("Can't set attribute: " + str(exc))
             return
     setattr(section, option, value)
+
+
+@sopel.module.require_privmsg("This command only works as a private message.")
+@sopel.module.require_admin("This command requires admin privileges.")
+@sopel.module.commands('unset')
+@sopel.module.example('.unset core.owner')
+def unset_config(bot, trigger):
+    """Unset value of Sopel's config object.
+
+    Unsetting a value will reset it to the default specified in the config
+    definition.
+
+    Trigger args:
+        arg1 - section and option, in the form "section.option"
+
+    If there is no section, section will default to "core".
+    """
+    try:
+        section, section_name, static_sec, option, value = parse_section_option_value(bot.config, trigger)
+    except ValueError:
+        bot.reply('Usage: {}unset section.option [value]'.format(bot.config.core.help_prefix))
+        return
+    except (InvalidSection, InvalidSectionOption) as exc:
+        bot.say(exc.args[1])
+        return
+
+    if value:
+        bot.reply('Invalid command; no value should be provided to unset.')
+        return
+
+    setattr(section, option, None)
 
 
 @sopel.module.require_privmsg
