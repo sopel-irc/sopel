@@ -386,7 +386,10 @@ def unset_config(bot, trigger):
         bot.reply('Invalid command; no value should be provided to unset.')
         return
 
-    setattr(section, option, None)
+    try:
+        setattr(section, option, None)
+    except ValueError:
+        bot.reply('Cannot unset {}.{}; it is a required option.'.format(section_name, option))
 
 
 @sopel.module.require_privmsg
