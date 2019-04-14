@@ -57,7 +57,7 @@ Core changes
   user to report any issues (because test coverage on an unrecognized platform
   name is likely to be nil) [[#1487][]]
 * Large amounts of internal refactoring [[#1424][], [#1429][], [#1456][],
-  [#1458][], [#1472][]]
+  [#1458][], [#1472][], [#1542][]]
 * Sopel 7 will emit warnings when run under Python 2, as Python 2.7 has an
   end-of-support date of January 1, 2020 [[#1488][]]
   * While Sopel 7 is intended to remain compatible with Python 2, future
@@ -120,6 +120,7 @@ API changes
 [#1509]: https://github.com/sopel-irc/sopel/pull/1509
 [#1511]: https://github.com/sopel-irc/sopel/pull/1511
 [#1537]: https://github.com/sopel-irc/sopel/pull/1537
+[#1542]: https://github.com/sopel-irc/sopel/pull/1542
 
 [sopel-7-migration]: https://sopel.chat/usage/installing/upgrading-to-sopel-7/
 [per-channel-conf]: https://sopel.chat/usage/per-channel-configuration/
