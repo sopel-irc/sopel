@@ -19,19 +19,20 @@ object is initialized.
 
 from __future__ import unicode_literals, absolute_import, print_function, division
 
-from sopel.tools import iteritems, stderr
-import sopel.tools
-from sopel.tools import get_input
-import sopel.loader
 import os
 import sys
+
+import sopel.config.core_section
+from sopel.config.types import StaticSection
+import sopel.loader
+import sopel.tools
+from sopel.tools import get_input, iteritems, stderr
+
 if sys.version_info.major < 3:
     import ConfigParser
 else:
     basestring = str
     import configparser as ConfigParser
-import sopel.config.core_section
-from sopel.config.types import StaticSection
 
 
 DEFAULT_HOMEDIR = os.path.join(os.path.expanduser('~'), '.sopel')

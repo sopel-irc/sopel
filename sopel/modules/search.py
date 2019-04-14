@@ -7,17 +7,17 @@ from __future__ import unicode_literals, absolute_import, print_function, divisi
 import re
 import sys
 
-if sys.version_info.major < 3:
-    from urllib import unquote as _unquote
-    unquote = lambda s: _unquote(s.encode('utf-8')).decode('utf-8')
-else:
-    from urllib.parse import unquote
-
 import requests
 import xmltodict
 
 from sopel import web
 from sopel.module import commands, example
+
+if sys.version_info.major < 3:
+    from urllib import unquote as _unquote
+    unquote = lambda s: _unquote(s.encode('utf-8')).decode('utf-8')
+else:
+    from urllib.parse import unquote
 
 
 def formatnumber(n):
