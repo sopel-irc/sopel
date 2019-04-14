@@ -15,7 +15,9 @@ from sopel.module import commands, example
 
 if sys.version_info.major < 3:
     from urllib import unquote as _unquote
-    unquote = lambda s: _unquote(s.encode('utf-8')).decode('utf-8')
+
+    def unquote(s):
+        return _unquote(s.encode('utf-8')).decode('utf-8')
 else:
     from urllib.parse import unquote
 

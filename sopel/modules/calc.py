@@ -15,7 +15,9 @@ import sys
 
 if sys.version_info.major < 3:
     from urllib import quote as _quote
-    quote = lambda s: _quote(s.encode('utf-8')).decode('utf-8')
+
+    def quote(s):
+        return _quote(s.encode('utf-8')).decode('utf-8')
 else:
     from urllib.parse import quote
 

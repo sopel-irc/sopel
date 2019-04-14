@@ -102,9 +102,12 @@ def findandreplace(bot, trigger):
     # off case sensitivity. re.U turns on unicode replacement.
     if 'i' in flags:
         regex = re.compile(re.escape(rest[0]), re.U | re.I)
-        repl = lambda s: re.sub(regex, rest[1], s, count == 1)
+
+        def repl(s):
+            return re.sub(regex, rest[1], s, count == 1)
     else:
-        repl = lambda s: s.replace(rest[0], rest[1], count)
+        def repl(s):
+            return s.replace(rest[0], rest[1], count)
 
     # Look back through the user's lines in the channel until you find a line
     # where the replacement works
