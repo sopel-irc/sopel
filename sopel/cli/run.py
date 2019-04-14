@@ -631,7 +631,7 @@ def main(argv=None):
         parser = build_parser()
 
         # make sure to have an action first (`legacy` by default)
-        # TODO: `start` should be the default in Sopel 8
+        # TODO: `start` should be the default in Sopel 8
         argv = argv or sys.argv[1:]
         if not argv:
             argv = ['legacy']
