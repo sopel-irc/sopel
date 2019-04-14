@@ -9,7 +9,6 @@
 from __future__ import unicode_literals, absolute_import, print_function, division
 
 import re
-import sopel.test_tools
 import functools
 
 NOLIMIT = 1
@@ -487,6 +486,8 @@ class example(object):
             func.example = []
 
         import sys
+
+        import sopel.test_tools  # TODO: fix circular import with sopel.bot and sopel.test_tools
 
         # only inject test-related stuff if we're running tests
         # see https://stackoverflow.com/a/44595269/5991

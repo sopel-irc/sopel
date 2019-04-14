@@ -19,6 +19,7 @@ try:
 except ImportError:
     import configparser as ConfigParser
 
+from sopel.bot import SopelWrapper
 import sopel.config
 import sopel.config.core_section
 import sopel.tools
@@ -65,10 +66,17 @@ class MockSopel(object):
         self.config = MockConfig()
         self._init_config()
 
+        self.output = []
+
         if admin:
             self.config.core.admins = [self.nick]
         if owner:
             self.config.core.owner = self.nick
+
+    def _store(self, string, *args, **kwargs):
+        self.output.append(string.strip())
+
+    write = msg = say = notice = action = reply = _store
 
     def _init_config(self):
         cfg = self.config
@@ -101,19 +109,8 @@ class MockSopel(object):
                 yield function, match
 
 
-class MockSopelWrapper(object):
-    def __init__(self, bot, pretrigger):
-        self.bot = bot
-        self.pretrigger = pretrigger
-        self.output = []
-
-    def _store(self, string, recipent=None):
-        self.output.append(string.strip())
-
-    say = reply = action = _store
-
-    def __getattr__(self, attr):
-        return getattr(self.bot, attr)
+class MockSopelWrapper(SopelWrapper):
+    pass
 
 
 def get_example_test(tested_func, msg, results, privmsg, admin,
@@ -166,11 +163,13 @@ def get_example_test(tested_func, msg, results, privmsg, admin,
                     return False
             return True
 
+        expected_output_count = 0
         for _i in range(repeat):
+            expected_output_count += len(results)
             wrapper = MockSopelWrapper(bot, trigger)
             tested_func(wrapper, trigger)
             wrapper.output = list(filter(isnt_ignored, wrapper.output))
-            assert len(wrapper.output) == len(results)
+            assert len(wrapper.output) == expected_output_count
             for result, output in zip(results, wrapper.output):
                 if type(output) is bytes:
                     output = output.decode('utf-8')
