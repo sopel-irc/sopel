@@ -741,42 +741,42 @@ class Sopel(irc.Bot):
 
 
 class SopelWrapper(object):
-        def __init__(self, sopel, trigger):
-            # The custom __setattr__ for this class sets the attribute on the
-            # original bot object. We don't want that for these, so we set them
-            # with the normal __setattr__.
-            object.__setattr__(self, '_bot', sopel)
-            object.__setattr__(self, '_trigger', trigger)
+    def __init__(self, sopel, trigger):
+        # The custom __setattr__ for this class sets the attribute on the
+        # original bot object. We don't want that for these, so we set them
+        # with the normal __setattr__.
+        object.__setattr__(self, '_bot', sopel)
+        object.__setattr__(self, '_trigger', trigger)
 
-        def __dir__(self):
-            classattrs = [attr for attr in self.__class__.__dict__
-                          if not attr.startswith('__')]
-            return list(self.__dict__) + classattrs + dir(self._bot)
+    def __dir__(self):
+        classattrs = [attr for attr in self.__class__.__dict__
+                      if not attr.startswith('__')]
+        return list(self.__dict__) + classattrs + dir(self._bot)
 
-        def __getattr__(self, attr):
-            return getattr(self._bot, attr)
+    def __getattr__(self, attr):
+        return getattr(self._bot, attr)
 
-        def __setattr__(self, attr, value):
-            return setattr(self._bot, attr, value)
+    def __setattr__(self, attr, value):
+        return setattr(self._bot, attr, value)
 
-        def say(self, message, destination=None, max_messages=1):
-            if destination is None:
-                destination = self._trigger.sender
-            self._bot.say(message, destination, max_messages)
+    def say(self, message, destination=None, max_messages=1):
+        if destination is None:
+            destination = self._trigger.sender
+        self._bot.say(message, destination, max_messages)
 
-        def action(self, message, destination=None):
-            if destination is None:
-                destination = self._trigger.sender
-            self._bot.action(message, destination)
+    def action(self, message, destination=None):
+        if destination is None:
+            destination = self._trigger.sender
+        self._bot.action(message, destination)
 
-        def notice(self, message, destination=None):
-            if destination is None:
-                destination = self._trigger.sender
-            self._bot.notice(message, destination)
+    def notice(self, message, destination=None):
+        if destination is None:
+            destination = self._trigger.sender
+        self._bot.notice(message, destination)
 
-        def reply(self, message, destination=None, reply_to=None, notice=False):
-            if destination is None:
-                destination = self._trigger.sender
-            if reply_to is None:
-                reply_to = self._trigger.nick
-            self._bot.reply(message, destination, reply_to, notice)
+    def reply(self, message, destination=None, reply_to=None, notice=False):
+        if destination is None:
+            destination = self._trigger.sender
+        if reply_to is None:
+            reply_to = self._trigger.nick
+        self._bot.reply(message, destination, reply_to, notice)
