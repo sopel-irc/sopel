@@ -21,7 +21,10 @@ import re
 import sys
 import threading
 import traceback
-from collections import defaultdict
+if sys.version_info.major >= 3:
+    from collections import defaultdict, abc
+else:
+    from collections import defaultdict
 
 from sopel.tools._events import events  # NOQA
 
@@ -225,6 +228,108 @@ def get_sendable_message(text, max_length=400):
             text = text[:last_space]
 
     return text, excess.lstrip()
+
+
+def get_message_recipientgroups(bot, recipients, text_method):
+    """
+    Split recipients into groups based on server capabilities.
+    This defaults to 4
+
+    Input can be
+        * unicode string
+        * a comma-seperated unicode string
+        * list
+        * dict_keys handy for bot.channels.keys()
+    """
+
+    if sys.version_info.major >= 3:
+        if isinstance(recipients, abc.KeysView):
+            recipients = list(recipients)
+    if isinstance(recipients, dict):
+        recipients = list(recipients.keys())
+
+    if not isinstance(recipients, list):
+        recipients = recipients.split(",")
+
+    if not len(recipients):
+        raise ValueError("Recipients list empty.")
+
+    maxtargets = 4
+    # TODO bot.server_capabilities.targmax (or whatever it gets called)
+    # if text_method == 'NOTICE':
+    #    maxtargets = bot.server_capabilities.targmax.notice
+    # elif text_method in ['PRIVMSG', 'ACTION']:
+    #    maxtargets = bot.server_capabilities.targmax.privmsg
+    # maxtargets = int(maxtargets)
+
+    recipientgroups = []
+    while len(recipients):
+        recipients_part = ','.join(x for x in recipients[-maxtargets:])
+        recipientgroups.append(recipients_part)
+        del recipients[-maxtargets:]
+
+    return recipientgroups
+
+
+def get_available_message_bytes(bot, recipientgroups):
+    """
+    Get total available bytes for sending a message line
+
+    Total sendable bytes is 512
+        * 15 are reserved for basic IRC NOTICE/PRIVMSG and a small buffer.
+        * The bots hostmask plays a role in this count
+            Note: if unavailable, we calculate the maximum length of a hostmask
+        * The recipients we send to also is a factor. Multiple recipients reduces
+          sendable message length
+    """
+
+    available_bytes = 512
+    reserved_irc_bytes = 15
+    available_bytes -= reserved_irc_bytes
+    try:
+        hostmaskbytes = len((bot.users.get(bot.nick).hostmask).encode('utf-8'))
+    except AttributeError:
+        hostmaskbytes = len((bot.nick).encode('utf-8')) + 12 + 63
+    available_bytes -= hostmaskbytes
+
+    groupbytes = []
+    for recipients_part in recipientgroups:
+        groupbytes.append(len((recipients_part).encode('utf-8')))
+
+    max_recipients_bytes = max(groupbytes)
+    available_bytes -= max_recipients_bytes
+
+    return available_bytes
+
+
+def get_sendable_message_list(text, max_length=400):
+    """Get a sendable ``text`` message list.
+    :param str txt: unicode string of text to send
+    :param int max_length: maximum length of the message to be sendable
+    :return: a tuple of two values, the sendable text and its excess text
+    We're arbitrarily saying that the max is 400 bytes of text when
+    messages will be split. Otherwise, we'd have to account for the bot's
+    hostmask, which is hard.
+    The `max_length` is the max length of text in **bytes**, but we take
+    care of unicode 2-bytes characters, by working on the unicode string,
+    then making sure the bytes version is smaller than the max length.
+    """
+    text_list = []
+
+    while len(text.encode('utf-8')) > max_length:
+        last_space = text.rfind(' ', 0, max_length)
+        if last_space == -1:
+            # No last space, just split where it is possible
+            text_list.append(text[:max_length])
+            text = text[max_length:]
+        else:
+            # Split at the last best space found
+            text_list.append(text[:last_space])
+            text = text[last_space:]
+    if len(text.encode('utf-8')):
+        text_list.append(text)
+
+    return text_list
 
 
 def deprecated(old):
