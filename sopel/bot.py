@@ -227,8 +227,7 @@ class Sopel(irc.Bot):
 
     def reload_plugin(self, name):
         if name not in self._plugins:
-            # TODO: raise more specific exception
-            raise Exception('Plugin %s is not loaded' % name)
+            raise plugins.exceptions.PluginNotRegistered(name)
 
         plugin = self._plugins[name]
         # tear down
@@ -270,8 +269,7 @@ class Sopel(irc.Bot):
         """Remove a loaded plugin from the bot's registry"""
         name = plugin.name
         if name not in self._plugins:
-            # TODO: raise more specific exception
-            raise Exception('Plugin %s is not loaded' % name)
+            raise plugins.exceptions.PluginNotRegistered(name)
 
         try:
             # remove commands, jobs, and shutdown functions

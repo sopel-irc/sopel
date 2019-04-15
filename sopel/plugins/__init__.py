@@ -30,7 +30,7 @@ import imp
 import itertools
 import os
 
-from . import handlers  # noqa
+from . import exceptions, handlers  # noqa
 
 
 def _list_plugin_filenames(directory):
