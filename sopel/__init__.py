@@ -26,7 +26,7 @@ if sys.version_info.major > 2:
 from collections import namedtuple
 import re
 
-__version__ = '6.6.5'
+__version__ = '6.6.6'
 
 
 def _version_info(version=__version__):

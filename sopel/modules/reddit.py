@@ -69,9 +69,9 @@ def rpost_info(bot, trigger, match=None):
 
     if s.over_18:
         if subreddit.lower() in spoiler_subs:
-            nsfw = bold(color(' [SPOILERS]', colors.RED))
+            nsfw = ' ' + bold(color('[SPOILERS]', colors.RED))
         else:
-            nsfw = bold(color(' [NSFW]', colors.RED))
+            nsfw = ' ' + bold(color('[NSFW]', colors.RED))
 
         sfw = bot.db.get_channel_value(trigger.sender, 'sfw')
         if sfw:
@@ -148,13 +148,13 @@ def redditor_info(bot, trigger, match=None):
         is_cakeday = cakeday_start <= now <= cakeday_start + day
 
     if is_cakeday:
-        message = message + ' | 13Cake day'
+        message = message + ' | ' + bold(color('Cake day', colors.LIGHT_PURPLE))
     if commanded:
         message = message + ' | https://reddit.com/u/' + u.name
     if u.is_gold:
-        message = message + ' | 08Gold'
+        message = message + ' | ' + bold(color('Gold', colors.YELLOW))
     if u.is_mod:
-        message = message + ' | 05Mod'
+        message = message + ' | ' + bold(color('Mod', colors.GREEN))
     message = message + (' | Link: ' + str(u.link_karma) +
                          ' | Comment: ' + str(u.comment_karma))
 

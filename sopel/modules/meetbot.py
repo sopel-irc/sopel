@@ -13,6 +13,7 @@ import os
 from sopel.config.types import (
     StaticSection, FilenameAttribute, ValidatedAttribute
 )
+from sopel.formatting import bold
 from sopel.web import quote
 from sopel.modules.url import find_title
 from sopel.module import example, commands, rule, priority
@@ -193,7 +194,9 @@ def startmeeting(bot, trigger):
     logplain('Meeting started by ' + trigger.nick.lower(), trigger.sender)
     logHTML_start(trigger.sender)
     meeting_actions[trigger.sender] = []
-    bot.say('Meeting started! use .action, .agreed, .info, .chairs, .subject and .comments to control the meeting. to end the meeting, type .endmeeting')
+    bot.say(bold('Meeting started!') + ' use .action, .agreed, .info, '
+            '.chairs, .subject and .comments to control the meeting. to end '
+            'the meeting, type .endmeeting')
     bot.say('Users without speaking permission can use .comment ' +
             trigger.sender + ' followed by their comment in a PM with me to '
             'vocalize themselves.')
@@ -221,7 +224,7 @@ def meetingsubject(bot, trigger):
     logfile.write('</ul><h3>' + trigger.group(2) + '</h3><ul>')
     logfile.close()
     logplain('Current subject: ' + trigger.group(2) + ', (set by ' + trigger.nick + ')', trigger.sender)
-    bot.say('Current subject: ' + trigger.group(2))
+    bot.say(bold('Current subject:') + ' ' + trigger.group(2))
 
 
 # End the meeting
@@ -240,7 +243,7 @@ def endmeeting(bot, trigger):
         return
     meeting_length = time.time() - meetings_dict[trigger.sender]['start']
     # TODO: Humanize time output
-    bot.say("Meeting ended! total meeting length %d seconds" % meeting_length)
+    bot.say(bold("Meeting ended!") + " total meeting length %d seconds" % meeting_length)
     logHTML_end(trigger.sender)
     htmllog_url = meeting_log_baseurl + quote(trigger.sender + '/' + figure_logfile_name(trigger.sender) + '.html')
     logplain('Meeting ended by %s, total meeting length %d seconds' % (trigger.nick, meeting_length), trigger.sender)
@@ -268,7 +271,7 @@ def chairs(bot, trigger):
         chairs_readable = trigger.group(2).lower().replace(' ', ', ')
         logplain('Meeting chairs are: ' + chairs_readable, trigger.sender)
         logHTML_listitem('<span style="font-weight: bold">Meeting chairs are: </span>' + chairs_readable, trigger.sender)
-        bot.say('Meeting chairs are: ' + chairs_readable)
+        bot.say(bold('Meeting chairs are:') + ' ' + chairs_readable)
     else:
         bot.say("Only meeting head can set chairs")
 
@@ -293,7 +296,7 @@ def meetingaction(bot, trigger):
     logplain('ACTION: ' + trigger.group(2), trigger.sender)
     logHTML_listitem('<span style="font-weight: bold">Action: </span>' + trigger.group(2), trigger.sender)
     meeting_actions[trigger.sender].append(trigger.group(2))
-    bot.say('ACTION: ' + trigger.group(2))
+    bot.say(bold('ACTION:') + ' ' + trigger.group(2))
 
 
 @commands('listactions')
@@ -303,7 +306,7 @@ def listactions(bot, trigger):
         bot.say('Can\'t do that, start meeting first')
         return
     for action in meeting_actions[trigger.sender]:
-        bot.say('ACTION: ' + action)
+        bot.say(bold('ACTION:') + ' ' + action)
 
 
 # Log agreed item in the HTML log
@@ -325,7 +328,7 @@ def meetingagreed(bot, trigger):
         return
     logplain('AGREED: ' + trigger.group(2), trigger.sender)
     logHTML_listitem('<span style="font-weight: bold">Agreed: </span>' + trigger.group(2), trigger.sender)
-    bot.say('AGREED: ' + trigger.group(2))
+    bot.say(bold('AGREED:') + ' ' + trigger.group(2))
 
 
 # Log link item in the HTML log
@@ -354,7 +357,7 @@ def meetinglink(bot, trigger):
         title = ''
     logplain('LINK: %s [%s]' % (link, title), trigger.sender)
     logHTML_listitem('<a href="%s">%s</a>' % (link, title), trigger.sender)
-    bot.say('LINK: ' + link)
+    bot.say(bold('LINK:') + ' ' + link)
 
 
 # Log informational item in the HTML log
@@ -376,7 +379,7 @@ def meetinginfo(bot, trigger):
         return
     logplain('INFO: ' + trigger.group(2), trigger.sender)
     logHTML_listitem(trigger.group(2), trigger.sender)
-    bot.say('INFO: ' + trigger.group(2))
+    bot.say(bold('INFO:') + ' ' + trigger.group(2))
 
 
 # called for every single message

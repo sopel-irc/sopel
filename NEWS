@@ -2,6 +2,67 @@ This file is used to auto-generate the "Changelog" section of Sopel's website.
 When adding new entries, follow the style guide in NEWS.spec.md to avoid causing
 problems with the site build.
 
+Changes between 6.6.5 and 6.6.6
+===============================
+
+This slightly cursed version of Sopel is brought to you by the following happy
+coincidences. When this release cycle began:
+
+  * 6.6.6 was the next patch version number
+  * Tax Day (in the U.S.) was just a few weeks off — the perfect release date
+
+As it happens, the [v6.6.6 GitHub milestone][ms-666] ended up with 13 closed
+issues/PRs in total. We *definitely* didn't try to *plan* any of this. Promise.
+
+[ms-666]: https://github.com/sopel-irc/sopel/milestone/21?closed=1
+
+Module changes
+--------------
+
+* Potential denial-of-service via repeated long output in the `.py` and `.calc`
+  commands was mitigated [[#1552][]]
+* `admin` module's `.set` command no longer throws an exception if missing
+  arguments [[#1520][]]
+* Fixed `admin` module's `.mode` command sending invalid raw line [[#1549][]]
+* Tweaked output-formatting code in the `meetbot` & `reddit` modules [[#1516][]]
+  * The most visible effect of this is that moderators' names will now appear
+    green in `reddit`'s output, like on the site, instead of the old brown/purple
+* Updated example/test output for `.ip` command [[#1523][]]
+
+Core changes
+------------
+
+* Flood protection delay is now capped at 2 seconds [[#1552][]]
+  * The flood delay penalty is calculated using the message length before
+    truncation. Very long command output could thus "hang" the bot for many
+    minutes at a time, meaning some modules could be used to DoS the bot.
+  * Sopel 7 will add configuration for flood protection and perhaps reorganize
+    the logic to reduce silly bugs like this. (See: [#1518][], [#1559][])
+* Fixed a few cases where keyboard interrupt (Control + C) wasn't handled
+  correctly [[#1534][], [#1558][]]
+* Fixed invalid `MODE` command sent during connection phase [[#1544][]]
+
+API changes
+-----------
+
+* Fixed a regression in testing modules by running them directly [[#1529][]]
+* Fixed that `bot` output methods (`say`, `reply`, etc.) would cause errors
+  during tests if passed certain keyword arguments [[#1538][]]
+
+[#1516]: https://github.com/sopel-irc/sopel/pull/1516
+[#1518]: https://github.com/sopel-irc/sopel/pull/1518
+[#1520]: https://github.com/sopel-irc/sopel/pull/1520
+[#1523]: https://github.com/sopel-irc/sopel/pull/1523
+[#1529]: https://github.com/sopel-irc/sopel/pull/1529
+[#1534]: https://github.com/sopel-irc/sopel/pull/1534
+[#1538]: https://github.com/sopel-irc/sopel/pull/1538
+[#1544]: https://github.com/sopel-irc/sopel/pull/1544
+[#1549]: https://github.com/sopel-irc/sopel/pull/1549
+[#1552]: https://github.com/sopel-irc/sopel/pull/1552
+[#1558]: https://github.com/sopel-irc/sopel/pull/1558
+[#1559]: https://github.com/sopel-irc/sopel/issues/1559
+
+
 Changes between 6.6.4 and 6.6.5
 ===============================
 

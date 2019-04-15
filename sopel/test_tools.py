@@ -23,6 +23,7 @@ from sopel.bot import SopelWrapper
 import sopel.config
 import sopel.config.core_section
 import sopel.tools
+import sopel.tools.target
 import sopel.trigger
 
 
