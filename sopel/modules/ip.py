@@ -1,8 +1,12 @@
 # coding=utf-8
-"""GeoIP lookup module"""
-# Copyright 2011, Dimitri Molenaars, TyRope.nl,
-# Copyright © 2013, Elad Alfassa <elad@fedoraproject.org>
-# Licensed under the Eiffel Forum License 2.
+"""
+ip.py - Sopel GeoIP Lookup Module
+Copyright 2011, Dimitri Molenaars, TyRope.nl,
+Copyright © 2013, Elad Alfassa <elad@fedoraproject.org>
+Licensed under the Eiffel Forum License 2.
+
+https://sopel.chat
+"""
 
 from __future__ import unicode_literals, absolute_import, print_function, division
 
@@ -28,6 +32,7 @@ except ImportError:
     except ImportError:
         pass
 
+
 LOGGER = get_logger(__name__)
 
 
@@ -52,7 +57,7 @@ def setup(bot):
 
 
 def _decompress(source, target, delete_after_decompression=True):
-    """ Decompress just the database from the archive """
+    """Decompress just the database from the archive"""
     # https://stackoverflow.com/a/16452962
     tar = tarfile.open(source)
     for member in tar.getmembers():
@@ -64,7 +69,7 @@ def _decompress(source, target, delete_after_decompression=True):
 
 
 def _find_geoip_db(bot):
-    """ Find the GeoIP database """
+    """Find the GeoIP database"""
     config = bot.config
     if config.ip.GeoIP_db_path:
         cities_db = os.path.join(config.ip.GeoIP_db_path, 'GeoLite2-City.mmdb')
