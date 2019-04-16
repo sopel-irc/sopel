@@ -197,7 +197,9 @@ def roll(bot, trigger):
     arg_str = arg_str.replace("%", "%%")
     arg_str = re.sub(dice_regexp, "%s", arg_str)
 
-    f = lambda dice_expr: _roll_dice(bot, dice_expr)
+    def f(dice_expr):
+        return _roll_dice(bot, dice_expr)
+
     dice = list(map(f, dice_expressions))
 
     if None in dice:

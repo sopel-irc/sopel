@@ -10,27 +10,15 @@ https://sopel.chat
 """
 from __future__ import unicode_literals, absolute_import, print_function, division
 
-import sys
-
-from sopel import tools
-
-if sys.version_info < (2, 7):
-    tools.stderr('Error: Requires Python 2.7 or later. Try python2.7 sopel')
-    sys.exit(1)
-if sys.version_info.major == 2:
-    tools.stderr('Warning: Python 2.x is near end of life. Sopel support at that point is TBD.')
-if sys.version_info.major == 3 and sys.version_info.minor < 3:
-    tools.stderr('Error: When running on Python 3, Python 3.3 is required.')
-    sys.exit(1)
-
 import argparse
 import os
 import platform
 import signal
+import sys
 import time
 import traceback
 
-from sopel import bot, logger, __version__
+from sopel import bot, logger, tools, __version__
 from sopel.config import (
     Config,
     _create_config,
@@ -41,6 +29,14 @@ from sopel.config import (
 )
 from . import utils
 
+if sys.version_info < (2, 7):
+    tools.stderr('Error: Requires Python 2.7 or later. Try python2.7 sopel')
+    sys.exit(1)
+if sys.version_info.major == 2:
+    tools.stderr('Warning: Python 2.x is near end of life. Sopel support at that point is TBD.')
+if sys.version_info.major == 3 and sys.version_info.minor < 3:
+    tools.stderr('Error: When running on Python 3, Python 3.3 is required.')
+    sys.exit(1)
 
 ERR_CODE = 1
 """Error code: program exited with an error"""
@@ -635,7 +631,7 @@ def main(argv=None):
         parser = build_parser()
 
         # make sure to have an action first (`legacy` by default)
-        # TODO: `start` should be the default in Sopel 8
+        # TODO: `start` should be the default in Sopel 8
         argv = argv or sys.argv[1:]
         if not argv:
             argv = ['legacy']

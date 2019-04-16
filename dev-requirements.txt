@@ -3,4 +3,5 @@ coveralls
 flake8<3.6.0; python_version == '3.3'
 flake8>=3.6.0,<3.7.0; python_version != '3.3'
 flake8-coding
+flake8-future-import
 setuptools<40.0; python_version == '3.3'

@@ -1,5 +1,7 @@
 # coding=utf-8
-"""Test for the ``sopel.loader`` module."""
+"""Tests for the ``sopel.loader`` module."""
+from __future__ import unicode_literals, absolute_import, print_function, division
+
 import imp
 import inspect
 import os

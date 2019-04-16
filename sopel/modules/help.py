@@ -42,7 +42,9 @@ def help(bot, trigger):
             if len(bot.doc[name][0]) + (1 if bot.doc[name][1] else 0) > threshold:
                 if trigger.nick != trigger.sender:  # don't say that if asked in private
                     bot.reply('The documentation for this command is too long; I\'m sending it to you in a private message.')
-                msgfun = lambda l: bot.msg(trigger.nick, l)
+
+                def msgfun(l):
+                    bot.msg(trigger.nick, l)
             else:
                 msgfun = bot.reply
 

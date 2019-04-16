@@ -107,12 +107,12 @@ def f_remind(bot, trigger):
     if tellee == bot.nick:
         return bot.reply("I'm here now, you can tell me whatever you want!")
 
-    if not tellee in (Identifier(teller), bot.nick, 'me'):
+    if tellee not in (Identifier(teller), bot.nick, 'me'):
         tz = get_timezone(bot.db, bot.config, None, tellee)
         timenow = format_time(bot.db, bot.config, tz, tellee)
         bot.memory['tell_lock'].acquire()
         try:
-            if not tellee in bot.memory['reminders']:
+            if tellee not in bot.memory['reminders']:
                 bot.memory['reminders'][tellee] = [(teller, verb, timenow, msg)]
             else:
                 bot.memory['reminders'][tellee].append((teller, verb, timenow, msg))

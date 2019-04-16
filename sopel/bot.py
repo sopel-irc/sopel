@@ -402,7 +402,6 @@ class Sopel(irc.Bot):
             if func in self._times[nick]:
                 usertimediff = current_time - self._times[nick][func]
                 if func.rate > 0 and usertimediff < func.rate:
-                    #self._times[nick][func] = current_time
                     LOGGER.info(
                         "%s prevented from using %s in %s due to user limit: %d < %d",
                         trigger.nick, func.__name__, trigger.sender, usertimediff,
@@ -412,7 +411,6 @@ class Sopel(irc.Bot):
             if func in self._times[self.nick]:
                 globaltimediff = current_time - self._times[self.nick][func]
                 if func.global_rate > 0 and globaltimediff < func.global_rate:
-                    #self._times[self.nick][func] = current_time
                     LOGGER.info(
                         "%s prevented from using %s in %s due to global limit: %d < %d",
                         trigger.nick, func.__name__, trigger.sender, globaltimediff,
@@ -423,7 +421,6 @@ class Sopel(irc.Bot):
             if not trigger.is_privmsg and func in self._times[trigger.sender]:
                 chantimediff = current_time - self._times[trigger.sender][func]
                 if func.channel_rate > 0 and chantimediff < func.channel_rate:
-                    #self._times[trigger.sender][func] = current_time
                     LOGGER.info(
                         "%s prevented from using %s in %s due to channel limit: %d < %d",
                         trigger.nick, func.__name__, trigger.sender, chantimediff,
