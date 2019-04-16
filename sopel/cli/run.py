@@ -63,7 +63,11 @@ def run(config, pid_file, daemon=False):
             tools.stderr('Got restart signal.')
             p.restart('Restarting')
 
+    # Define empty variable `p` for bot
+    p = None
     while True:
+        if p and p.hasquit:  # Check if `hasquit` was set for bot during disconnected phase
+            break
         try:
             p = bot.Sopel(config, daemon=daemon)
             if hasattr(signal, 'SIGUSR1'):
