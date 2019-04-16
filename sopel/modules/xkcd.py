@@ -1,18 +1,26 @@
 # coding=utf-8
-# Copyright 2010, Michael Yanovich (yanovich.net), and Morgan Goose
-# Copyright 2012, Lior Ramati
-# Copyright 2013, Elsie Powell (embolalia.com)
-# Licensed under the Eiffel Forum License 2.
+"""
+xkcd.py - Sopel xkcd Module
+Copyright 2010, Michael Yanovich (yanovich.net), and Morgan Goose
+Copyright 2012, Lior Ramati
+Copyright 2013, Elsie Powell (embolalia.com)
+Licensed under the Eiffel Forum License 2.
+
+https://sopel.chat
+"""
 from __future__ import unicode_literals, absolute_import, print_function, division
 
 import random
 import re
+
 import requests
+
 from sopel.modules.search import bing_search
 from sopel.module import commands, url
 
+
 ignored_sites = [
-    # For google searching
+    # For searching the web
     'almamater.xkcd.com',
     'blog.xkcd.com',
     'blag.xkcd.com',
@@ -36,7 +44,7 @@ def get_info(number=None, verify_ssl=True):
     return data
 
 
-def google(query):
+def web_search(query):
     url = bing_search(query + sites_query)
     if not url:
         return None
@@ -47,12 +55,15 @@ def google(query):
 
 @commands('xkcd')
 def xkcd(bot, trigger):
-    """
-    .xkcd - Finds an xkcd comic strip. Takes one of 3 inputs:
-    If no input is provided it will return a random comic
-    If numeric input is provided it will return that comic, or the nth-latest
-    comic if the number is non-positive
-    If non-numeric input is provided it will return the first google result for those keywords on the xkcd.com site
+    """.xkcd - Finds an xkcd comic strip.
+
+    Takes one of 3 inputs:
+
+      * If no input is provided it will return a random comic
+      * If numeric input is provided it will return that comic, or the
+        nth-latest comic if the number is non-positive
+      * If non-numeric input is provided it will return the first search result
+        for those keywords on the xkcd.com site
     """
     verify_ssl = bot.config.core.verify_ssl
     # get latest comic for rand function and numeric input
@@ -74,11 +85,11 @@ def xkcd(bot, trigger):
                 query = -query
             return numbered_result(bot, query, latest)
         else:
-            # Non-number: google.
+            # Non-number: search the web.
             if (query.lower() == "latest" or query.lower() == "newest"):
                 requested = latest
             else:
-                number = google(query)
+                number = web_search(query)
                 if not number:
                     bot.say('Could not find any comics for that query.')
                     return
