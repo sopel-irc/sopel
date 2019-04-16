@@ -1,14 +1,16 @@
 # coding=utf-8
-"""Bugzilla issue reporting module
-
+"""
+bugzilla.py - Sopel Bugzilla Module
 Copyright 2013-2015, Embolalia, embolalia.com
 Licensed under the Eiffel Forum License 2.
+
+https://sopel.chat
 """
 from __future__ import unicode_literals, absolute_import, print_function, division
 
 import re
-import requests
 
+import requests
 import xmltodict
 
 from sopel.config.types import StaticSection, ListAttribute
