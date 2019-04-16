@@ -1,12 +1,17 @@
 # coding=utf-8
-"""Simple website status check with isup.me"""
-# Author: Elsie Powell http://embolalia.com
+"""
+isup.py - Sopel Website Status Check Module
+Copyright 2011, Elsie Powell http://embolalia.com
+Licensed under the Eiffel Forum License 2.
+
+https://sopel.chat
+"""
 from __future__ import unicode_literals, absolute_import, print_function, division
 
 import requests
-from sopel.module import commands
-
 from requests.exceptions import SSLError
+
+from sopel.module import commands
 
 
 @commands('isup', 'isupinsecure')
