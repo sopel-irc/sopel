@@ -10,14 +10,15 @@ https://sopel.chat
 """
 from __future__ import unicode_literals, absolute_import, print_function, division
 
-import textwrap
 import collections
 import requests
+import textwrap
 
 from sopel.logger import get_logger
 from sopel.module import commands, rule, example, priority
 
-logger = get_logger(__name__)
+
+LOGGER = get_logger(__name__)
 
 
 def setup(bot):
@@ -55,7 +56,7 @@ def help(bot, trigger):
     else:
         # This'll probably catch most cases, without having to spend the time
         # actually creating the list first. Maybe worth storing the link and a
-        # heuristic in config, too, so it persists across restarts. Would need a
+        # heuristic in the DB, too, so it persists across restarts. Would need a
         # command to regenerate, too...
         if 'command-list' in bot.memory and bot.memory['command-list'][0] == len(bot.command_groups):
             url = bot.memory['command-list'][1]
@@ -89,14 +90,14 @@ def create_list(bot, msg):
         result = requests.post('https://clbin.com/', data={'clbin': msg})
     except requests.RequestException:
         bot.say("Sorry! Something went wrong.")
-        logger.exception("Error posting commands")
+        LOGGER.exception("Error posting commands")
         return
     result = result.text
     if "https://clbin.com/" in result:
         return result
     else:
         bot.say("Sorry! Something went wrong.")
-        logger.error("Invalid result %s", result)
+        LOGGER.error("Invalid result %s", result)
         return
 
 
