@@ -1,24 +1,26 @@
 # coding=utf-8
 """
-meetbot.py - Sopel meeting logger module
+meetbot.py - Sopel Meeting Logger Module
+This module is an attempt to implement at least some of the functionality of Debian's meetbot
 Copyright © 2012, Elad Alfassa, <elad@fedoraproject.org>
 Licensed under the Eiffel Forum License 2.
 
-This module is an attempt to implement at least some of the functionallity of Debian's meetbot
+https://sopel.chat
 """
 from __future__ import unicode_literals, absolute_import, print_function, division
 
-import time
+import codecs
 import os
+import time
+
 from sopel.config.types import (
     StaticSection, FilenameAttribute, ValidatedAttribute
 )
 from sopel.formatting import bold
-from sopel.web import quote
-from sopel.modules.url import find_title
 from sopel.module import example, commands, rule, priority
+from sopel.modules.url import find_title
 from sopel.tools import Ddict, Identifier
-import codecs
+from sopel.web import quote
 
 
 class MeetbotSection(StaticSection):
