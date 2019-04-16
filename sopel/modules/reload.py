@@ -9,12 +9,13 @@ https://sopel.chat
 from __future__ import unicode_literals, absolute_import, print_function, division
 
 import collections
+import subprocess
 import sys
 import time
+
 from sopel.tools import stderr, itervalues
 import sopel.loader
 import sopel.module
-import subprocess
 
 try:
     from importlib import reload
@@ -30,7 +31,7 @@ except ImportError:
 @sopel.module.thread(False)
 @sopel.module.require_admin
 def f_reload(bot, trigger):
-    """Reloads a module, for use by admins only."""
+    """Reloads a module (for use by admins only)."""
     name = trigger.group(2)
 
     if not name or name == '*' or name.upper() == 'ALL THE THINGS':
@@ -122,7 +123,7 @@ def load_module(bot, name, path, type_, silent=False):
 @sopel.module.nickname_commands('update')
 @sopel.module.require_admin
 def f_update(bot, trigger):
-    """Pulls the latest versions of all modules from Git"""
+    """Pulls the latest versions of all modules from Git (for use by admins only)."""
     proc = subprocess.Popen('/usr/bin/git pull',
                             stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE, shell=True)
@@ -136,7 +137,7 @@ def f_update(bot, trigger):
 @sopel.module.thread(False)
 @sopel.module.require_admin
 def f_load(bot, trigger):
-    """Loads a module, for use by admins only."""
+    """Loads a module (for use by admins only)."""
     name = trigger.group(2)
     path = ''
     if not name:
@@ -152,7 +153,7 @@ def f_load(bot, trigger):
     load_module(bot, name, path, type_)
 
 
-# Catch PM based messages
+# Catch private messages
 @sopel.module.commands("reload")
 @sopel.module.priority("low")
 @sopel.module.thread(False)
