@@ -10,10 +10,11 @@ https://sopel.chat
 from __future__ import unicode_literals, absolute_import, print_function, division
 
 from datetime import datetime
-from sopel import __version__ as release
-from sopel.module import commands, intent, rate
 from os import path
 import platform
+
+from sopel import __version__ as release
+from sopel.module import commands, intent, rate
 
 
 def git_info():
