@@ -1,15 +1,25 @@
 # coding=utf-8
-# Author: Elsie Powell, embolalia.com
+"""
+reddit.py - Sopel Reddit Module
+Copyright 2012, Elsie Powell, embolalia.com
+Licensed under the Eiffel Forum License 2.
+
+https://sopel.chat
+"""
 from __future__ import unicode_literals, absolute_import, print_function, division
 
-from sopel.module import commands, rule, example, require_chanmsg, NOLIMIT, OP
-from sopel.formatting import bold, color, colors
-from sopel.web import USER_AGENT
-from sopel.tools import time
 import datetime as dt
-import praw
 import re
 import sys
+
+import praw
+
+from sopel.formatting import bold, color, colors
+from sopel.module import commands, rule, example, require_chanmsg, NOLIMIT, OP
+from sopel.tools import time
+from sopel.web import USER_AGENT
+
+# clean up all of this when dropping py2/old py3 versions
 if sys.version_info.major >= 3:
     unicode = str
     if sys.version_info.minor >= 4:
@@ -111,7 +121,7 @@ def rpost_info(bot, trigger, match=None):
 @commands('redditor')
 @example('.redditor poem_for_your_sprog')
 def redditor_info(bot, trigger, match=None):
-    """Show information about the given Redditor"""
+    """Shows information about the given Redditor"""
     commanded = re.match(bot.config.core.prefix + 'redditor', trigger)
     r = praw.Reddit(
         user_agent=USER_AGENT,
