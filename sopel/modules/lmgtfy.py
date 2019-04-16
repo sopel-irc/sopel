@@ -1,6 +1,6 @@
 # coding=utf-8
 """
-lmgtfy.py - Sopel Let me Google that for you module
+lmgtfy.py - Sopel Let Me Google That For You Module
 Copyright 2013, Dimitri Molenaars http://tyrope.nl/
 Licensed under the Eiffel Forum License 2.
 
@@ -17,8 +17,7 @@ from sopel.web import quote
 @example('.lmgtfy sopel bot', 'https://lmgtfy.com/?q=sopel+bot')
 @example('.lmgtfy', 'https://www.google.com/')
 def googleit(bot, trigger):
-    """Let me just... google that for you."""
-    # No input
-    if not trigger.group(2):
+    """Let me just… Google that for you."""
+    if not trigger.group(2):  # No input
         return bot.say('https://www.google.com/')
     bot.say('https://lmgtfy.com/?q=' + quote(trigger.group(2).replace(' ', '+'), '+'))
