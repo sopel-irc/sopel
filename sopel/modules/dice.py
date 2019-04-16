@@ -1,17 +1,17 @@
 # coding=utf-8
 """
-dice.py - Dice Module
+dice.py - Sopel Dice Module
 Copyright 2010-2013, Dimitri "Tyrope" Molenaars, TyRope.nl
 Copyright 2013, Ari Koivula, <ari@koivu.la>
 Licensed under the Eiffel Forum License 2.
 
-https://sopel.chat/
+https://sopel.chat
 """
 from __future__ import unicode_literals, absolute_import, print_function, division
 
+import operator
 import random
 import re
-import operator
 
 import sopel.module
 from sopel.tools.calculation import eval_equation
@@ -183,7 +183,7 @@ def roll(bot, trigger):
     number of lowest dice to be dropped from the result. N is the constant to
     be applied to the end result.
     """
-    # This regexp is only allowed to have one captured group, because having
+    # This regexp is only allowed to have one capture group, because having
     # more would alter the output of re.findall.
     dice_regexp = r"-?\d*[dD]-?\d+(?:[vV]-?\d+)?"
 
@@ -254,9 +254,7 @@ def roll(bot, trigger):
                       re=True)
 @sopel.module.example(".choose a", 'Your options: a. My choice: a')
 def choose(bot, trigger):
-    """
-    .choice option1|option2|option3 - Makes a difficult choice easy.
-    """
+    """.choice option1|option2|option3 - Makes a difficult choice easy."""
     if not trigger.group(2):
         return bot.reply('I\'d choose an option, but you didn\'t give me any.')
     choices = [trigger.group(2)]
