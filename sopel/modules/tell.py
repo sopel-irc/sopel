@@ -12,11 +12,13 @@ import os
 import time
 import threading
 import sys
+
+from sopel.module import commands, nickname_commands, rule, priority, example
 from sopel.tools import Identifier, iterkeys
 from sopel.tools.time import get_timezone, format_time
-from sopel.module import commands, nickname_commands, rule, priority, example
 
-maximum = 4
+
+MAXIMUM = 4
 
 
 def loadReminders(fn, lock):
@@ -80,7 +82,7 @@ def setup(self):
 
 @commands('tell', 'ask')
 @nickname_commands('tell', 'ask')
-@example('$nickname, tell Embolalia he broke something again.')
+@example('$nickname, tell dgw he broke something again.')
 def f_remind(bot, trigger):
     """Give someone a message the next time they're seen"""
     teller = trigger.nick
@@ -102,10 +104,10 @@ def f_remind(bot, trigger):
     if not os.path.exists(bot.tell_filename):
         return
 
-    if len(tellee) > 30:
+    if len(tellee) > 30:  # TODO: use server NICKLEN here when available
         return bot.reply('That nickname is too long.')
     if tellee == bot.nick:
-        return bot.reply("I'm here now, you can tell me whatever you want!")
+        return bot.reply("I'm here now; you can tell me whatever you want!")
 
     if tellee not in (Identifier(teller), bot.nick, 'me'):
         tz = get_timezone(bot.db, bot.config, None, tellee)
@@ -145,7 +147,7 @@ def getReminders(bot, channel, key, tellee):
         try:
             del bot.memory['reminders'][key]
         except KeyError:
-            bot.msg(channel, 'Er...')
+            bot.msg(channel, 'Er…')
     finally:
         bot.memory['tell_lock'].release()
     return lines
@@ -171,12 +173,12 @@ def message(bot, trigger):
         elif tellee.lower().startswith(remkey.lower().rstrip('*:')):
             reminders.extend(getReminders(bot, channel, remkey, tellee))
 
-    for line in reminders[:maximum]:
+    for line in reminders[:MAXIMUM]:
         bot.say(line)
 
-    if reminders[maximum:]:
+    if reminders[MAXIMUM:]:
         bot.say('Further messages sent privately')
-        for line in reminders[maximum:]:
+        for line in reminders[MAXIMUM:]:
             bot.msg(tellee, line)
 
     if len(bot.memory['reminders'].keys()) != remkeys:
