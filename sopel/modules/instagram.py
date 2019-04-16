@@ -1,6 +1,6 @@
 # coding=utf-8
 """
-instagram.py - API-key-less Instagram module for Sopel
+instagram.py - Sopel Instagram Module
 Copyright 2018, Sopel contributors
 Licensed under the Eiffel Forum License 2.
 
@@ -8,8 +8,8 @@ https://sopel.chat
 """
 from __future__ import unicode_literals, absolute_import, print_function, division
 
-import re
 from datetime import datetime
+import re
 
 from requests import get
 
