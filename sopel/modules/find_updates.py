@@ -1,18 +1,22 @@
 # coding=utf-8
-"""Update checking module for Sopel.
-
+"""
+find_updates.py - Sopel Update Check Module
 This is separated from version.py, so that it can be easily overridden by
 distribution packagers, and they can check their repositories rather than the
 Sopel website.
+Copyright 2014, Elsie Powell, embolalia.com
+Licensed under the Eiffel Forum License 2.
+
+https://sopel.chat
 """
-# Copyright 2014, Elsie Powell, embolalia.com
-# Licensed under the Eiffel Forum License 2.
 from __future__ import unicode_literals, absolute_import, print_function, division
+
+import requests
 
 import sopel
 import sopel.module
-import requests
 import sopel.tools
+
 
 wait_time = 24 * 60 * 60  # check once per day
 startup_check_run = False
