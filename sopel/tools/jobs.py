@@ -1,44 +1,21 @@
 # coding=utf-8
+"""Sopel's Job Scheduler: internal tool for job management.
+
+.. note::
+
+    As of Sopel 5.3, :mod:`sopel.tools.jobs` is an internal tool. Therefore,
+    it is not shown in the public documentation.
+
+"""
 from __future__ import unicode_literals, absolute_import, print_function, division
 
-import copy
 import datetime
 import sys
 import threading
 import time
 
-if sys.version_info.major >= 3:
-    unicode = str
-    basestring = str
-    py3 = True
-else:
-    py3 = False
 
-try:
-    import Queue
-except ImportError:
-    import queue as Queue
-
-
-class PriorityQueue(Queue.PriorityQueue):
-    """A priority queue with a peek method.
-
-    .. deprecated:: 7.0
-
-        This will be removed in Sopel 8. Use Python's built-in
-        :class:`queue.PriorityQueue` instead.
-    """
-    def peek(self):
-        """Return a copy of the first element without removing it."""
-        self.not_empty.acquire()
-        try:
-            while not self._qsize():
-                self.not_empty.wait()
-            # Return a copy to avoid corrupting the heap. This is important
-            # for thread safety if the object is mutable.
-            return copy.deepcopy(self.queue[0])
-        finally:
-            self.not_empty.release()
+py3 = sys.version_info.major >= 3
 
 
 class JobScheduler(threading.Thread):
@@ -205,28 +182,13 @@ class Job(object):
 
         return self
 
-    def __cmp__(self, other):
-        """Compare Job objects according to attribute next_time."""
-        return self.next_time - other.next_time
-
-    if py3:
-        def __lt__(self, other):
-            return self.next_time < other.next_time
-
-        def __gt__(self, other):
-            return self.next_time > other.next_time
-
     def __str__(self):
         """Return a string representation of the Job object.
 
-        Example result:
+        Example result::
+
             <Job(2013-06-14 11:01:36.884000, 20s, <function upper at 0x02386BF0>)>
 
         """
-        iso_time = str(datetime.fromtimestamp(self.next_time))
-        return "<Job(%s, %ss, %s)>" % \
-            (iso_time, self.interval, self.func)
-
-    def __iter__(self):
-        """This is an iterator. Never stops though."""
-        return self
+        iso_time = str(datetime.datetime.fromtimestamp(self.next_time))
+        return "<Job(%s, %ss, %s)>" % (iso_time, self.interval, self.func)

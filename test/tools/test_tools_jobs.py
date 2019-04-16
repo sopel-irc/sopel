@@ -2,6 +2,7 @@
 """Tests for Job Scheduler"""
 from __future__ import unicode_literals, absolute_import, print_function, division
 
+import datetime
 import time
 
 import pytest
@@ -31,3 +32,13 @@ def test_job_is_ready_to_run():
 
     assert job.is_ready_to_run(now + 20)
     assert not job.is_ready_to_run(now - 20)
+
+
+def test_job_string_representation():
+    timestamp = 523549800
+    job = jobs.Job(5, None)
+    job.next_time = timestamp
+    test_date = str(datetime.datetime.fromtimestamp(timestamp))
+    expected = '<Job(%s, 5s, None)>' % test_date
+
+    assert str(job) == expected
