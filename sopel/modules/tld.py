@@ -8,12 +8,16 @@ https://sopel.chat
 """
 from __future__ import unicode_literals, absolute_import, print_function, division
 
-from sopel.module import commands, example
-import requests
 import re
 import sys
+
+import requests
+
+from sopel.module import commands, example
+
 if sys.version_info.major >= 3:
     unicode = str
+
 
 uri = 'https://en.wikipedia.org/wiki/List_of_Internet_top-level_domains'
 r_tag = re.compile(r'<(?!!)[^>]+>')
