@@ -1,14 +1,16 @@
 # coding=utf-8
-
 """
 spellcheck.py - Sopel spelling checker module
 Copyright © 2016, Alan Huang
 Copyright © 2019, dgw
 Licensed under the Eiffel Forum License 2.
+
 https://sopel.chat
 """
 from __future__ import unicode_literals, absolute_import, print_function, division
+
 import aspell
+
 from sopel.module import commands, example, require_admin
 
 
@@ -26,9 +28,7 @@ def shutdown(bot):
 @commands('scadd')
 @require_admin('I only trust admins to add words.')
 def add_command(bot, trigger):
-    """
-    Stage a word to be added to the bot's personal dictionary.
-    """
+    """Stage a word to be added to the bot's personal dictionary."""
     bot.memory['spellcheck_pending_adds'].append(trigger.group(2))
     bot.say('Added "{0}". (To review pending words, use {1}scpending. '
             'To commit changes, use {1}scsave.)'
@@ -37,9 +37,7 @@ def add_command(bot, trigger):
 
 @commands('scpending')
 def pending_command(bot, trigger):
-    """
-    List words that are waiting to be saved to the bot's personal dictionary.
-    """
+    """List words that are waiting to be saved to the bot's personal dictionary."""
     bot.say('Ready to save: "{0}". (To remove a word before saving, use {1}scdel '
             'word, or clear the list with {1}scclear.)'
             .format('", "'.join(bot.memory['spellcheck_pending_adds']),
@@ -49,9 +47,7 @@ def pending_command(bot, trigger):
 @commands('scdel')
 @require_admin('Only admins may cancel a word-list addition.')
 def del_command(bot, trigger):
-    """
-    Remove a word from the list of pending personal dictionary additions.
-    """
+    """Remove a word from the list of pending personal dictionary additions."""
     try:
         bot.memory['spellcheck_pending_adds'].remove(trigger.group(2))
     except ValueError:
@@ -71,9 +67,7 @@ def del_command(bot, trigger):
 @commands('scclear')
 @require_admin('Only admins may clear the pending word list.')
 def clear_command(bot, trigger):
-    """
-    Clear the list of words pending addition to the bot's personal dictionary.
-    """
+    """Clear the list of words pending addition to the bot's personal dictionary."""
     count = len(bot.memory['spellcheck_pending_adds'])
     del bot.memory['spellcheck_pending_adds'][:]  # list.clear() is py3.3+ only :(
     bot.say('Cleared pending word list ({0} items).'.format(count))
@@ -82,9 +76,10 @@ def clear_command(bot, trigger):
 @commands('scsave')
 @require_admin('Only admins may commit word-list changes.')
 def save_command(bot, trigger):
-    """
-    Commit pending changes to the bot's personal dictionary. This action cannot be undone,
-    except by manually editing the aspell dictionary file.
+    """Commit pending changes to the bot's personal dictionary.
+
+    This action cannot be undone, except by manually editing the aspell
+    dictionary file.
     """
     for word in bot.memory['spellcheck_pending_adds']:
         if word != word.strip() and trigger.group(2) != 'force':
@@ -112,7 +107,8 @@ def check_multiple(bot, words):
     if len(mistakes) == 0:
         bot.say("Nothing seems to be misspelled.")
     else:
-        bot.say('The following word(s) seem to be misspelled: {0}'.format(', '.join(['"{0}"'.format(w) for w in mistakes])))
+        bot.say('The following word(s) seem to be misspelled: {0}'
+                .format(', '.join(['"{0}"'.format(w) for w in mistakes])))
 
 
 def check_one(bot, word):
@@ -126,15 +122,14 @@ def check_one(bot, word):
     if len(suggestions) == 0:
         bot.say("That doesn't seem to be correct.")
     else:
-        bot.say("That doesn't seem to be correct. Try {0}.".format(', '.join(['"{0}"'.format(s) for s in suggestions])))
+        bot.say("That doesn't seem to be correct. Try {0}.".format(', '.join(['"{0}"'
+                .format(s) for s in suggestions])))
 
 
 @commands('spellcheck', 'spell', 'sc')
 @example('.spellcheck wrod')
 def spellchecker(bot, trigger):
-    """
-    Checks if the given word is spelled correctly, and suggests corrections.
-    """
+    """Checks if the given word is spelled correctly, and suggests corrections."""
     if not trigger.group(2):
         bot.say('What word am I checking?')
         return
