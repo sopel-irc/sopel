@@ -8,10 +8,12 @@ https://sopel.chat
 """
 from __future__ import unicode_literals, absolute_import, print_function, division
 
+import sys
+
+from requests import get
+
 from sopel.module import commands, example
 from sopel.tools.calculation import eval_equation
-from requests import get
-import sys
 
 if sys.version_info.major < 3:
     from urllib import quote as _quote
