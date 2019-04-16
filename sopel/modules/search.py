@@ -1,7 +1,12 @@
 # coding=utf-8
-# Copyright 2008-9, Sean B. Palmer, inamidst.com
-# Copyright 2012, Elsie Powell, embolalia.com
-# Licensed under the Eiffel Forum License 2.
+"""
+search.py - Sopel Search Engine Module
+Copyright 2008-9, Sean B. Palmer, inamidst.com
+Copyright 2012, Elsie Powell, embolalia.com
+Licensed under the Eiffel Forum License 2.
+
+https://sopel.chat
+"""
 from __future__ import unicode_literals, absolute_import, print_function, division
 
 import re
@@ -95,10 +100,10 @@ def duck_api(query):
 @commands('duck', 'ddg', 'g')
 # test for bad Unicode handling in py2
 @example('.duck grandorder.wiki chulainn alter', 'https://grandorder.wiki/Cú_Chulainn_(Alter)')
-# the last example is what .help displays
+# the last example (in source line order) is what .help displays
 @example('.duck sopel irc bot', r'https?:\/\/sopel\.chat\/?', re=True)
 def duck(bot, trigger):
-    """Queries Duck Duck Go for the specified input."""
+    """Queries DuckDuckGo for the specified input."""
     query = trigger.group(2)
     if not query:
         return bot.reply('.ddg what?')
@@ -109,7 +114,7 @@ def duck(bot, trigger):
         bot.reply(result)
         return
 
-    # Otherwise, look it up on the HTMl version
+    # Otherwise, look it up on the HTML version
     uri = duck_search(query)
 
     if uri:
@@ -142,7 +147,7 @@ def bing(bot, trigger):
 @commands('search')
 @example('.search sopel irc bot')
 def search(bot, trigger):
-    """Searches Bing and Duck Duck Go."""
+    """Searches both Bing and DuckDuckGo."""
     if not trigger.group(2):
         return bot.reply('.search for what?')
     query = trigger.group(2)
@@ -166,7 +171,7 @@ def search(bot, trigger):
 @example('.suggest ', 'No query term.')
 @example('.suggest lkashdfiauwgeaef', 'Sorry, no result.')
 def suggest(bot, trigger):
-    """Suggest terms starting with given input"""
+    """Suggests terms starting with given input"""
     if not trigger.group(2):
         return bot.reply("No query term.")
     query = trigger.group(2)
