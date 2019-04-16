@@ -10,9 +10,12 @@ https://sopel.chat
 from __future__ import unicode_literals, absolute_import, print_function, division
 
 from re import sub
+
 from requests import get
+
 from sopel import web
 from sopel.module import commands, example, NOLIMIT
+
 try:
     # Python 2.7
     from HTMLParser import HTMLParser
