@@ -5,7 +5,7 @@ Copyright 2010-2011, Sean B. Palmer (inamidst.com) and Michael Yanovich
 (yanovich.net)
 Copyright © 2012, Elad Alfassa, <elad@fedoraproject.org>
 Copyright 2013, Ari Koivula <ari@koivu.la>
-
+Copyright 2019, Florian Strzelecki, https://github.com/Exirel
 Licensed under the Eiffel Forum License 2.
 
 https://sopel.chat
@@ -212,9 +212,7 @@ def me(bot, trigger):
 @sopel.module.rule('.*')
 @sopel.module.priority('low')
 def invite_join(bot, trigger):
-    """
-    Join a channel Sopel is invited to, if the inviter is an admin.
-    """
+    """Join a channel Sopel is invited to, if the inviter is an admin."""
     if trigger.admin or bot.config.admin.auto_accept_invite:
         bot.join(trigger.args[1])
         return
