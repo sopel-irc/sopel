@@ -5,11 +5,14 @@ Copyright © 2013, Elad Alfassa, <elad@fedoraproject.org>
 Copyright © 2013, Dimitri Molenaars, <tyrope@tyrope.nl>
 Licensed under the Eiffel Forum License 2.
 
+https://sopel.chat
 """
 from __future__ import unicode_literals, absolute_import, print_function, division
 
-from sopel.module import commands, example, NOLIMIT
 import re
+
+from sopel.module import commands, example, NOLIMIT
+
 
 find_temp = re.compile(r'(-?[0-9]*\.?[0-9]*)[ °]*(K|C|F)', re.IGNORECASE)
 find_length = re.compile(r'([0-9]*\.?[0-9]*)[ ]*(mile[s]?|mi|inch|in|foot|feet|ft|yard[s]?|yd|(?:milli|centi|kilo|)meter[s]?|[mkc]?m|ly|light-year[s]?|au|astronomical unit[s]?|parsec[s]?|pc)', re.IGNORECASE)
@@ -37,9 +40,7 @@ def k_to_c(temp):
 @example('.temp 100C', '100.00°C = 212.00°F = 373.15K')
 @example('.temp 100K', '-173.15°C = -279.67°F = 100.00K')
 def temperature(bot, trigger):
-    """
-    Convert temperatures
-    """
+    """Convert temperatures"""
     try:
         source = find_temp.match(trigger.group(2)).groups()
     except (AttributeError, TypeError):
@@ -76,9 +77,7 @@ def temperature(bot, trigger):
 @example('.length 3 au', '448793612.10km = 278867421.71 miles')
 @example('.length 3 parsec', '92570329129020.20km = 57520535754731.61 miles')
 def distance(bot, trigger):
-    """
-    Convert distances
-    """
+    """Convert distances"""
     try:
         source = find_length.match(trigger.group(2)).groups()
     except (AttributeError, TypeError):
@@ -148,9 +147,7 @@ def distance(bot, trigger):
 
 @commands('weight', 'mass')
 def mass(bot, trigger):
-    """
-    Convert mass
-    """
+    """Convert mass"""
     try:
         source = find_mass.match(trigger.group(2)).groups()
     except (AttributeError, TypeError):
