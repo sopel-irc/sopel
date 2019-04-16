@@ -2,7 +2,7 @@
 """
 translate.py - Sopel Translation Module
 Copyright 2008, Sean B. Palmer, inamidst.com
-Copyright © 2013-2014, Elad Alfassa <elad@fedoraproject.org>
+Copyright 2013-2014, Elad Alfassa <elad@fedoraproject.org>
 Licensed under the Eiffel Forum License 2.
 
 https://sopel.chat
@@ -12,15 +12,17 @@ from __future__ import unicode_literals, absolute_import, print_function, divisi
 import json
 import random
 import sys
-import requests
 
+import requests
 
 from sopel import web
 from sopel.module import rule, commands, priority, example
 
-mangle_lines = {}
 if sys.version_info.major >= 3:
     unicode = str
+
+
+mangle_lines = {}
 
 
 def translate(text, in_lang='auto', out_lang='en', verify_ssl=True):
@@ -93,7 +95,7 @@ def tr(bot, trigger):
         if sys.version_info.major < 3 and isinstance(msg, str):
             msg = msg.decode('utf-8')
         if msg:
-            msg = web.decode(msg)  # msg.replace('&#39;', "'")
+            msg = web.decode(msg)
             msg = '"%s" (%s to %s, translate.google.com)' % (msg, in_lang, out_lang)
         else:
             msg = 'The %s to %s translation failed, are you sure you specified valid language abbreviations?' % (in_lang, out_lang)
