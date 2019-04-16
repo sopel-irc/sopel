@@ -8,12 +8,11 @@ https://sopel.chat
 """
 from __future__ import unicode_literals, absolute_import, print_function, division
 
-from sopel.logger import get_logger
 from sopel.module import commands, example
 
-logger = get_logger(__name__)
+
 # Copied from pronoun.is, leaving a *lot* out. If
-# https://github.com/witch-house/pronoun.is/pull/40 gets merged, using that
+# https://github.com/witch-house/pronoun.is/pull/96 gets merged, using that
 # would be a lot easier.
 KNOWN_SETS = {
     'ze': 'ze/hir/hir/hirs/hirself',
@@ -40,7 +39,7 @@ def pronouns(bot, trigger):
             say_pronouns(bot, trigger.nick, pronouns)
         else:
             bot.reply("I don't know your pronouns! You can set them with "
-                      ".setpronouns")
+                      "{}setpronouns".format(bot.config.core.help_prefix))
     else:
         pronouns = bot.db.get_nick_value(trigger.group(3), 'pronouns')
         if pronouns:
@@ -54,7 +53,8 @@ def pronouns(bot, trigger):
             )
         else:
             bot.say("I don't know {}'s pronouns. They can set them with "
-                    ".setpronouns".format(trigger.group(3)))
+                    "{}setpronouns".format(trigger.group(3),
+                                           bot.config.core.help_prefix))
 
 
 def say_pronouns(bot, nick, pronouns):
@@ -85,8 +85,8 @@ def set_pronouns(bot, trigger):
                 bot.say(
                     "I'm sorry, I don't know those pronouns. You can give me a set "
                     "I don't know by formatting it "
-                    "subject/object/possessive-determiner/posessive-pronoun/"
-                    "reflexive, as in they/them/their/theirs/themselves"
+                    "subject/object/possessive-determiner/possessive-pronoun/"
+                    "reflexive, as in: they/them/their/theirs/themselves"
                 )
                 return
         bot.db.set_nick_value(trigger.nick, 'pronouns', pronouns)
