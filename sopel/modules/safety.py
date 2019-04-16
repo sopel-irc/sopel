@@ -8,20 +8,23 @@ This module uses virustotal.com
 """
 from __future__ import unicode_literals, absolute_import, print_function, division
 
+import sys
+import time
+import os.path
+import re
+
+import requests
+
 from sopel.config.types import StaticSection, ValidatedAttribute, ListAttribute
 from sopel.formatting import color, bold
 from sopel.logger import get_logger
 from sopel.module import OP
 import sopel.tools
-import sys
-import time
-import os.path
-import re
-import requests
 
 try:
     # This is done separately from the below version if/else because JSONDecodeError
     # didn't appear until Python 3.5, but Sopel claims support for 3.3+
+    # Redo this whole block of nonsense when dropping py2/old py3 support
     from json import JSONDecodeError as InvalidJSONResponse
 except ImportError:
     InvalidJSONResponse = ValueError
@@ -33,6 +36,7 @@ if sys.version_info.major > 2:
 else:
     from urllib import urlretrieve
     from urlparse import urlparse
+
 
 LOGGER = get_logger(__name__)
 
@@ -84,7 +88,7 @@ def setup(bot):
     loc = os.path.join(bot.config.homedir, 'malwaredomains.txt')
     if os.path.isfile(loc):
         if os.path.getmtime(loc) < time.time() - 24 * 60 * 60 * 7:
-            # File exists but older than one week, update
+            # File exists but older than one week — update it
             _download_malwaredomains_db(loc)
     else:
         _download_malwaredomains_db(loc)
@@ -103,7 +107,7 @@ def _download_malwaredomains_db(path):
 @sopel.module.rule(r'(?u).*(https?://\S+).*')
 @sopel.module.priority('high')
 def url_handler(bot, trigger):
-    """ Check for malicious URLs """
+    """Checks for malicious URLs"""
     check = True    # Enable URL checking
     strict = False  # Strict mode: kick on malicious URL
     positives = 0   # Number of engines saying it's malicious
@@ -126,7 +130,7 @@ def url_handler(bot, trigger):
             use_vt = False
 
     if not check:
-        return  # Not overriden by DB, configured default off
+        return  # Not overridden by DB, configured default off
 
     try:
         netloc = urlparse(trigger.group(1)).netloc
@@ -168,7 +172,7 @@ def url_handler(bot, trigger):
 
     if unicode(netloc).lower() in malware_domains:
         # malwaredomains is more trustworthy than some VT engines
-        # therefor it gets a weight of 10 engines when calculating confidence
+        # therefore it gets a weight of 10 engines when calculating confidence
         positives += 10
         total += 10
 
@@ -185,7 +189,7 @@ def url_handler(bot, trigger):
 
 @sopel.module.commands('safety')
 def toggle_safety(bot, trigger):
-    """ Set safety setting for channel """
+    """Set safety setting for channel"""
     if not trigger.admin and bot.channels[trigger.sender].privileges[trigger.nick] < OP:
         bot.reply('Only channel operators can change safety settings')
         return
@@ -200,12 +204,12 @@ def toggle_safety(bot, trigger):
     bot.reply('Safety is now set to "%s" on this channel' % trigger.group(2))
 
 
-# Clean the cache every day, also when > 1024 entries
+# Clean the cache every day
+# Code above also calls this if there are too many cache entries
 @sopel.module.interval(24 * 60 * 60)
 def _clean_cache(bot):
-    """ Cleanup old entries in URL cache """
-    # TODO probably should be using locks here, to make sure stuff doesn't
-    # explode
+    """Cleans up old entries in URL cache"""
+    # TODO: probably should use locks here, to make sure stuff doesn't explode
     oldest_key_age = 0
     oldest_key = ''
     for key, data in sopel.tools.iteritems(bot.memory['safety_cache']):
