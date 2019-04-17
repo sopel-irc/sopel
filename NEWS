@@ -28,6 +28,7 @@ Module changes
   `.tmpjoin`/`.tmppart` commands to bypass this behavior [[#1492][]]
 * `find` also collects Sopel's own messages now, so users can "correct" the bot
   if they wish to be extra cheeky [[#1470][]]
+* General code cleanup all around [[#1402][]]
 
 Core changes
 ------------
@@ -56,8 +57,8 @@ Core changes
 * Running Sopel on an unknown OS platform will output a warning encouraging the
   user to report any issues (because test coverage on an unrecognized platform
   name is likely to be nil) [[#1487][]]
-* Large amounts of internal refactoring [[#1424][], [#1429][], [#1456][],
-  [#1458][], [#1472][], [#1542][]]
+* Large amounts of internal refactoring and cleanup [[#1424][], [#1429][],
+  [#1456][], [#1458][], [#1472][], [#1527][], [#1542][], [#1561][]]
 * Sopel 7 will emit warnings when run under Python 2, as Python 2.7 has an
   end-of-support date of January 1, 2020 [[#1488][]]
   * While Sopel 7 is intended to remain compatible with Python 2, future
@@ -100,6 +101,7 @@ API changes
 [#1164]: https://github.com/sopel-irc/sopel/pull/1164
 [#1235]: https://github.com/sopel-irc/sopel/pull/1235
 [#1333]: https://github.com/sopel-irc/sopel/pull/1333
+[#1402]: https://github.com/sopel-irc/sopel/pull/1402
 [#1404]: https://github.com/sopel-irc/sopel/pull/1404
 [#1424]: https://github.com/sopel-irc/sopel/pull/1424
 [#1425]: https://github.com/sopel-irc/sopel/pull/1425
@@ -119,8 +121,10 @@ API changes
 [#1508]: https://github.com/sopel-irc/sopel/pull/1508
 [#1509]: https://github.com/sopel-irc/sopel/pull/1509
 [#1511]: https://github.com/sopel-irc/sopel/pull/1511
+[#1527]: https://github.com/sopel-irc/sopel/pull/1527
 [#1537]: https://github.com/sopel-irc/sopel/pull/1537
 [#1542]: https://github.com/sopel-irc/sopel/pull/1542
+[#1561]: https://github.com/sopel-irc/sopel/pull/1561
 
 [sopel-7-migration]: https://sopel.chat/usage/installing/upgrading-to-sopel-7/
 [per-channel-conf]: https://sopel.chat/usage/per-channel-configuration/
