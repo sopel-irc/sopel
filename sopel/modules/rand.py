@@ -8,9 +8,10 @@ https://sopel.chat
 """
 from __future__ import unicode_literals, absolute_import, print_function, division
 
-from sopel.module import commands, example
 import random
 import sys
+
+from sopel.module import commands, example
 
 
 @commands('rand')
@@ -35,7 +36,7 @@ def rand(bot, trigger):
             low = 0
             high = sys.maxsize
     except (ValueError, TypeError):
-        return bot.reply("Arguments must be of integer type")
+        return bot.reply("Arguments must be integers.")
 
     if low > high:
         low, high = high, low

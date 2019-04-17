@@ -1,13 +1,16 @@
 # coding=utf-8
-"""Sopel Spelling correction module
-
+"""
+find.py - Sopel Spelling Correction Module
 This module will fix spelling errors if someone corrects them
 using the sed notation (s///) commonly found in vi/vim.
+
+Copyright 2011, Michael Yanovich, yanovich.net
+Copyright 2013, Elsie Powell, embolalia.com
+Includes contributions from: dgw, Matt Meinwald, and Morgan Goose
+Licensed under the Eiffel Forum License 2.
+
+https://sopel.chat
 """
-# Copyright 2011, Michael Yanovich, yanovich.net
-# Copyright 2013, Elsie Powell, embolalia.com
-# Licensed under the Eiffel Forum License 2.
-# Contributions from: Matt Meinwald and Morgan Goose
 from __future__ import unicode_literals, absolute_import, print_function, division
 
 import re
@@ -25,10 +28,8 @@ def setup(bot):
 @priority('low')
 def collectlines(bot, trigger):
     """Create a temporary log of what people say"""
-
-    # Don't log things in PM
     if trigger.is_privmsg:
-        return
+        return  # Don't log things in PM
 
     # Add a log for the channel and nick, if there isn't already one
     if trigger.sender not in bot.memory['find_lines']:
@@ -84,11 +85,8 @@ def findandreplace(bot, trigger):
     if Identifier(rnick) not in search_dict[trigger.sender]:
         return
 
-    # TODO rest[0] is find, rest[1] is replace. These should be made variables of
-    # their own at some point.
-    rest = [trigger.group(2), trigger.group(3)]
-    rest[0] = rest[0].replace(r'\/', '/')
-    rest[1] = rest[1].replace(r'\/', '/')
+    old = trigger.group(2).replace(r'\/', '/')
+    new = trigger.group(3).replace(r'\/', '/')
     me = False  # /me command
     flags = (trigger.group(4) or '')
 
@@ -98,16 +96,16 @@ def findandreplace(bot, trigger):
     else:
         count = 1
 
-    # repl is a lambda function which performs the substitution. i flag turns
-    # off case sensitivity. re.U turns on unicode replacement.
+    # repl is a dynamically defined function which performs the substitution.
+    # i flag turns off case sensitivity. re.U turns on unicode replacement.
     if 'i' in flags:
-        regex = re.compile(re.escape(rest[0]), re.U | re.I)
+        regex = re.compile(re.escape(old), re.U | re.I)
 
         def repl(s):
-            return re.sub(regex, rest[1], s, count == 1)
+            return re.sub(regex, new, s, count == 1)
     else:
         def repl(s):
-            return s.replace(rest[0], rest[1], count)
+            return s.replace(old, new, count)
 
     # Look back through the user's lines in the channel until you find a line
     # where the replacement works

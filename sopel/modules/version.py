@@ -10,14 +10,11 @@ https://sopel.chat
 from __future__ import unicode_literals, absolute_import, print_function, division
 
 from datetime import datetime
-from sopel import __version__ as release
-from sopel.module import commands, intent, rate
-import re
 from os import path
 import platform
 
-
-log_line = re.compile(r'\S+ (\S+) (.*? <.*?>) (\d+) (\S+)\tcommit[^:]*: (.+)')
+from sopel import __version__ as release
+from sopel.module import commands, intent, rate
 
 
 def git_info():

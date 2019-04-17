@@ -1,8 +1,12 @@
 # coding=utf-8
-"""Codepoints Module"""
-# Copyright 2013, Elsie Powell, embolalia.com
-# Copyright 2008, Sean B. Palmer, inamidst.com
-# Licensed under the Eiffel Forum License 2.
+"""
+unicode_info.py - Sopel Codepoints Module
+Copyright 2013, Elsie Powell, embolalia.com
+Copyright 2008, Sean B. Palmer, inamidst.com
+Licensed under the Eiffel Forum License 2.
+
+https://sopel.chat
+"""
 from __future__ import unicode_literals, absolute_import, print_function, division
 
 import sys
@@ -22,7 +26,7 @@ if sys.version_info.major >= 3:
 
 
 def get_codepoint_name(char):
-    """Retrieve the codepoint and name if possible from a character"""
+    """Retrieve the code point (and name, if possible) for a given character"""
     # Get the hex value for the code point, and drop the 0x from the front
     point = unicode(hex(ord(char)))[2:]
 
@@ -43,6 +47,7 @@ def get_codepoint_name(char):
 @module.example('.u ‽', 'U+203D INTERROBANG (‽)')
 @module.example('.u 203D', 'U+203D INTERROBANG (‽)')
 def codepoint(bot, trigger):
+    """Look up a Unicode character or a hexadecimal code point."""
     arg = trigger.group(2)
     if not arg:
         bot.reply('What code point do you want me to look up?')

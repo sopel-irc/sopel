@@ -1,19 +1,24 @@
 # coding=utf-8
-# Copyright 2008-9, Sean B. Palmer, inamidst.com
-# Copyright 2012, Elsie Powell, embolalia.com
-# Licensed under the Eiffel Forum License 2.
-from __future__ import unicode_literals, absolute_import, print_function, division
+"""
+clock.py - Sopel Clock Module
+Copyright 2008-9, Sean B. Palmer, inamidst.com
+Copyright 2012, Elsie Powell, embolalia.com
+Licensed under the Eiffel Forum License 2.
 
-try:
-    import pytz
-except ImportError:
-    pytz = None
+https://sopel.chat
+"""
+from __future__ import unicode_literals, absolute_import, print_function, division
 
 from sopel.module import commands, example, OP
 from sopel.tools.time import (
     get_timezone, format_time, validate_format, validate_timezone
 )
 from sopel.config.types import StaticSection, ValidatedAttribute
+
+try:
+    import pytz
+except ImportError:
+    pytz = None
 
 
 class TimeSection(StaticSection):
@@ -97,9 +102,7 @@ def update_user(bot, trigger):
 @commands('gettz', 'gettimezone')
 @example('.gettz [nick]')
 def get_user_tz(bot, trigger):
-    """
-    Gets a user's preferred time zone; will show yours if no user specified.
-    """
+    """Gets a user's preferred time zone; will show yours if no user specified."""
     if not pytz:
         bot.reply("Sorry, I don't have timezone support installed.")
     else:
@@ -125,8 +128,8 @@ def update_user_format(bot, trigger):
     """
     tformat = trigger.group(2)
     if not tformat:
-        bot.reply("What format do you want me to use? Try using"
-                  " http://strftime.net to make one.")
+        bot.reply("What format do you want me to use? Try using "
+                  "http://strftime.net to make one.")
         return
 
     tz = get_timezone(bot.db, bot.config, None, trigger.nick, trigger.sender)
@@ -140,8 +143,8 @@ def update_user_format(bot, trigger):
     try:
         timef = format_time(db=bot.db, zone=tz, nick=trigger.nick)
     except Exception:  # TODO: Be specific
-        bot.reply("That format doesn't work. Try using"
-                  " http://strftime.net to make one.")
+        bot.reply("That format doesn't work. Try using "
+                  "http://strftime.net to make one.")
         # New format doesn't work. Revert save in database.
         bot.db.set_nick_value(trigger.nick, 'time_format', old_format)
         return
@@ -153,9 +156,7 @@ def update_user_format(bot, trigger):
 @commands('gettimeformat', 'gettf')
 @example('.gettf [nick]')
 def get_user_format(bot, trigger):
-    """
-    Gets a user's preferred time format; will show yours if no user specified.
-    """
+    """Gets a user's preferred time format; will show yours if no user specified."""
     nick = trigger.group(2)
     if not nick:
         nick = trigger.nick
@@ -174,9 +175,7 @@ def get_user_format(bot, trigger):
 @commands('setchanneltz', 'setctz')
 @example('.setctz America/New_York')
 def update_channel(bot, trigger):
-    """
-    Set the preferred timezone for the channel.
-    """
+    """Set the preferred timezone for the channel."""
     if bot.channels[trigger.sender].privileges[trigger.nick] < OP:
         return
     elif not pytz:
@@ -236,8 +235,8 @@ def update_channel_format(bot, trigger):
 
     tformat = trigger.group(2)
     if not tformat:
-        bot.reply("What format do you want me to use? Try using"
-                  " http://strftime.net to make one.")
+        bot.reply("What format do you want me to use? Try using "
+                  "http://strftime.net to make one.")
 
     tz = get_timezone(bot.db, bot.config, None, None, trigger.sender)
 

@@ -1,12 +1,19 @@
 # coding=utf-8
-# Copyright 2013 Elsie Powell, embolalia.com
-# Licensed under the Eiffel Forum License 2
+"""
+currency.py - Sopel Currency Conversion Module
+Copyright 2013, Elsie Powell, embolalia.com
+Licensed under the Eiffel Forum License 2.
+
+https://sopel.chat
+"""
 from __future__ import unicode_literals, absolute_import, print_function, division
 
 import re
 
 from requests import get
+
 from sopel.module import commands, example, NOLIMIT
+
 
 # The Canadian central bank has better exchange rate data than the Fed, the
 # Bank of England, or the European Central Bank. Who knew?
@@ -83,6 +90,7 @@ def display(bot, amount, of, to):
 @commands('btc', 'bitcoin')
 @example('.btc 20 EUR')
 def bitcoin(bot, trigger):
+    """Convert between Bitcoin and a fiat currency"""
     # if 2 args, 1st is number and 2nd is currency. If 1 arg, it's either the number or the currency.
     to = trigger.group(4)
     amount = trigger.group(3)

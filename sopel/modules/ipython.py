@@ -1,16 +1,18 @@
 # coding=utf-8
 """
-ipython.py - sopel ipython console!
+ipython.py - Sopel IPython Console Module
 Copyright © 2014, Elad Alfassa <elad@fedoraproject.org>
 Licensed under the Eiffel Forum License 2.
 
-Sopel: https://sopel.chat/
+https://sopel.chat
 """
 from __future__ import unicode_literals, absolute_import, print_function, division
 
+import sys
+
 import sopel
 import sopel.module
-import sys
+
 if sys.version_info.major >= 3:
     # Backup stderr/stdout wrappers
     old_stdout = sys.stdout
@@ -33,17 +35,16 @@ finally:
         sys.stdout = old_stdout
         sys.stderr = old_stderr
 
+
 console = None
 
 
 @sopel.module.commands('console')
 @sopel.module.require_admin('Only admins can start the interactive console')
 def interactive_shell(bot, trigger):
-    """
-    Starts an interactive IPython console
-    """
+    """Starts an interactive IPython console"""
     global console
-    if 'iconsole_running' in bot.memory and bot.memory['iconsole_running']:
+    if bot.memory.get('iconsole_running', False):
         bot.say('Console already running')
         return
     if not sys.__stdout__.isatty():

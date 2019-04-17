@@ -9,9 +9,12 @@ https://sopel.chat
 from __future__ import unicode_literals, absolute_import, print_function, division
 
 import re
+
 import requests
+
 from sopel import web
 from sopel.module import commands, example
+
 
 uri = 'https://en.wiktionary.org/w/index.php?title=%s&printable=yes'
 r_sup = re.compile(r'<sup[^>]+>.+</sup>')  # Superscripts that are references only, not ordinal indicators, etc...
@@ -112,5 +115,5 @@ def wiktionary(bot, trigger):
         result = format(word, definitions, 5)
 
     if len(result) > 300:
-        result = result[:295] + '[...]'
+        result = result[:295] + '[…]'
     bot.say(result)

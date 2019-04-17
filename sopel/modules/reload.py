@@ -9,12 +9,13 @@ https://sopel.chat
 from __future__ import unicode_literals, absolute_import, print_function, division
 
 import collections
+import subprocess
 import sys
 import time
-from sopel.tools import stderr, iteritems
+
+from sopel.tools import stderr, itervalues
 import sopel.loader
 import sopel.module
-import subprocess
 
 try:
     from importlib import reload
@@ -30,7 +31,7 @@ except ImportError:
 @sopel.module.thread(False)
 @sopel.module.require_admin
 def f_reload(bot, trigger):
-    """Reloads a module, for use by admins only."""
+    """Reloads a module (for use by admins only)."""
     name = trigger.group(2)
 
     if not name or name == '*' or name.upper() == 'ALL THE THINGS':
@@ -62,8 +63,7 @@ def reload_module_tree(bot, name, seen=None, silent=False):
     if name not in seen:
         seen[name] = []
 
-    old_callables = {}
-    for obj_name, obj in iteritems(vars(old_module)):
+    for obj in itervalues(vars(old_module)):
         if callable(obj):
             if (getattr(obj, '__name__', None) == 'shutdown' and
                         obj in bot.shutdown_methods):
@@ -95,12 +95,6 @@ def reload_module_tree(bot, name, seen=None, silent=False):
     if name not in modules:
         return  # Only reload the top-level module, once recursion is finished
 
-    # Also remove all references to sopel callables from top level of the
-    # module, so that they will not get loaded again if reloading the
-    # module does not override them.
-    for obj_name in old_callables.keys():
-        delattr(old_module, obj_name)
-
     # Also delete the setup function
     # Sub-modules shouldn't have setup functions, so do after the recursion check
     if hasattr(old_module, "setup"):
@@ -129,7 +123,7 @@ def load_module(bot, name, path, type_, silent=False):
 @sopel.module.nickname_commands('update')
 @sopel.module.require_admin
 def f_update(bot, trigger):
-    """Pulls the latest versions of all modules from Git"""
+    """Pulls the latest versions of all modules from Git (for use by admins only)."""
     proc = subprocess.Popen('/usr/bin/git pull',
                             stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE, shell=True)
@@ -143,7 +137,7 @@ def f_update(bot, trigger):
 @sopel.module.thread(False)
 @sopel.module.require_admin
 def f_load(bot, trigger):
-    """Loads a module, for use by admins only."""
+    """Loads a module (for use by admins only)."""
     name = trigger.group(2)
     path = ''
     if not name:
@@ -159,7 +153,7 @@ def f_load(bot, trigger):
     load_module(bot, name, path, type_)
 
 
-# Catch PM based messages
+# Catch private messages
 @sopel.module.commands("reload")
 @sopel.module.priority("low")
 @sopel.module.thread(False)

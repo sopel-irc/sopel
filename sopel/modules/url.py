@@ -1,18 +1,24 @@
 # coding=utf-8
-"""URL title module"""
-# Copyright 2010-2011, Michael Yanovich, yanovich.net, Kenneth Sham
-# Copyright 2012-2013 Elsie Powell
-# Copyright 2013      Lior Ramati (firerogue517@gmail.com)
-# Copyright © 2014 Elad Alfassa <elad@fedoraproject.org>
-# Licensed under the Eiffel Forum License 2.
+"""
+url.py - Sopel URL Title Module
+Copyright 2010-2011, Michael Yanovich (yanovich.net) & Kenneth Sham
+Copyright 2012-2013, Elsie Powell
+Copyright 2013, Lior Ramati <firerogue517@gmail.com>
+Copyright 2014, Elad Alfassa <elad@fedoraproject.org>
+Licensed under the Eiffel Forum License 2.
+
+https://sopel.chat
+"""
 from __future__ import unicode_literals, absolute_import, print_function, division
 
 import re
-from sopel import web, tools, __version__
-from sopel.module import commands, rule, example
-from sopel.config.types import ValidatedAttribute, ListAttribute, StaticSection
 
 import requests
+
+from sopel import web, tools, __version__
+from sopel.config.types import ValidatedAttribute, ListAttribute, StaticSection
+from sopel.module import commands, rule, example
+
 
 USER_AGENT = 'Sopel/{} (https://sopel.chat)'.format(__version__)
 default_headers = {'User-Agent': USER_AGENT}
@@ -188,8 +194,8 @@ def process_urls(bot, trigger, urls):
     For each URL in the list, ensure that it isn't handled by another module.
     If not, find where it redirects to, if anywhere. If that redirected URL
     should be handled by another module, dispatch the callback for it.
-    Return a list of (title, hostname) tuples for each URL which is not handled by
-    another module.
+    Return a list of (title, hostname) tuples for each URL which is not handled
+    by another module.
     """
 
     results = []
@@ -230,7 +236,7 @@ def check_callbacks(bot, trigger, url, run=True):
     """
     Check the given URL against the callbacks list. If it matches, and ``run``
     is given as ``True``, run the callback function, otherwise pass. Returns
-    ``True`` if the url matched anything in the callbacks list.
+    ``True`` if the URL matched anything in the callbacks list.
     """
     # Check if it matches the exclusion list first
     matched = any(regex.search(url) for regex in bot.memory['url_exclude'])
