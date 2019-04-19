@@ -4,6 +4,8 @@ help.py - Sopel Help Module
 Copyright 2008, Sean B. Palmer, inamidst.com
 Copyright © 2013, Elad Alfassa, <elad@fedoraproject.org>
 Copyright © 2018, Adam Erdman, pandorah.org
+Copyright © 2019, Tomasz Kurcz, github.com/uint
+Copyright © 2019, dgw, technobabbl.es
 Licensed under the Eiffel Forum License 2.
 
 https://sopel.chat
@@ -11,9 +13,10 @@ https://sopel.chat
 from __future__ import unicode_literals, absolute_import, print_function, division
 
 import collections
-import requests
 import socket
 import textwrap
+
+import requests
 
 from sopel.logger import get_logger
 from sopel.module import commands, rule, example, priority
