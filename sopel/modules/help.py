@@ -130,9 +130,11 @@ _pastebin_providers = {
 
 
 class HelpSection(StaticSection):
+    """Configuration section for this module."""
     output = ChoiceAttribute('output',
                              list(_pastebin_providers),
                              default='clbin')
+    """The pastebin provider to use for help output."""
 
 
 def configure(config):
@@ -158,7 +160,7 @@ def setup(bot):
 @commands('help', 'commands')
 @priority('low')
 def help(bot, trigger):
-    """Shows a command's documentation, and possibly an example."""
+    """Shows a command's documentation, and an example if available. With no arguments, lists all commands."""
     if trigger.group(2):
         name = trigger.group(2)
         name = name.lower()
@@ -217,6 +219,10 @@ def help(bot, trigger):
 
 
 def create_list(bot, msg):
+    """Creates & uploads the command list.
+
+    Returns the URL from the chosen pastebin provider.
+    """
     msg = 'Command listing for {}@{}\n\n'.format(bot.nick, bot.config.core.host) + msg
 
     try:
@@ -229,6 +235,7 @@ def create_list(bot, msg):
 
 
 class PostingException(Exception):
+    """Custom exception type for errors posting help to the chosen pastebin."""
     pass
 
 
