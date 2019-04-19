@@ -115,26 +115,15 @@ def title_command(bot, trigger):
         else:
             urls = [bot.memory['last_seen_url'][trigger.sender]]
     else:
-        urls = list(
-            web.search_urls(
-                trigger,
-                exclusion_char=bot.config.url.exclusion_char
-            )
-        )
+        urls = web.search_urls(
+            trigger,
+            exclusion_char=bot.config.url.exclusion_char)
 
-    results = list(process_urls(bot, trigger, urls))
-    for _url, title, domain, tinyurl in results[:4]:
+    for _url, title, domain, tinyurl in process_urls(bot, trigger, urls):
         message = '[ %s ] - %s' % (title, domain)
         if tinyurl:
             message += ' ( %s )' % tinyurl
         bot.reply(message)
-
-    # Nice to have different failure messages for one-and-only requested URL
-    # failed vs. one-of-many failed.
-    if len(urls) == 1 and not results:
-        bot.reply('Sorry, fetching that title failed. Make sure the site is working.')
-    elif len(urls) > len(results):
-        bot.reply('I couldn\'t get all of the titles, but I fetched what I could!')
 
 
 @module.rule(r'(?u).*(https?://\S+).*')
@@ -155,8 +144,7 @@ def title_auto(bot, trigger):
     urls = web.search_urls(
         trigger, exclusion_char=bot.config.url.exclusion_char, clean=True)
 
-    for i, info in enumerate(process_urls(bot, trigger, urls)):
-        url, title, domain, tinyurl = info
+    for url, title, domain, tinyurl in process_urls(bot, trigger, urls):
         message = '[ %s ] - %s' % (title, domain)
         if tinyurl:
             message += ' ( %s )' % tinyurl
@@ -164,10 +152,6 @@ def title_auto(bot, trigger):
         if message != trigger:
             bot.say(message)
             bot.memory['last_seen_url'][trigger.sender] = url
-
-        # stop at 4th iteration
-        if i == 3:
-            break
 
 
 def process_urls(bot, trigger, urls):
