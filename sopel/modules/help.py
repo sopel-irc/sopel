@@ -25,7 +25,7 @@ from sopel.config.types import (
 # Pastebin handlers
 
 
-def post_to_clbin(bot, msg):
+def post_to_clbin(msg):
     result = requests.post('https://clbin.com/', data={'clbin': msg})
     result = result.text
 
@@ -36,13 +36,13 @@ def post_to_clbin(bot, msg):
         raise PostingException()
 
 
-def post_to_0x0(bot, msg):
+def post_to_0x0(msg):
     payload = {'file': msg}
     result = requests.post('https://0x0.st', files=payload)
     return result.text
 
 
-def post_to_hastebin(bot, msg):
+def post_to_hastebin(msg):
     result = requests.post('https://hastebin.com/documents', data=msg)
     result = result.json()
     if 'key' not in result:
@@ -51,7 +51,7 @@ def post_to_hastebin(bot, msg):
     return "https://hastebin.com/" + result['key']
 
 
-def post_to_termbin(bot, msg):
+def post_to_termbin(msg):
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.connect(('termbin.com', 9999))
     s.sendall(msg)
@@ -165,7 +165,7 @@ def create_list(bot, msg):
     msg = 'Command listing for {}@{}\n\n'.format(bot.nick, bot.config.core.host) + msg
 
     try:
-        result = _pastebin_providers[bot.config.help.output](bot, msg)
+        result = _pastebin_providers[bot.config.help.output](msg)
     except (requests.RequestException, PostingException):
         bot.say("Sorry! Something went wrong.")
         LOGGER.exception("Error posting commands")
