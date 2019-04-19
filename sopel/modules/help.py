@@ -55,8 +55,10 @@ def post_to_clbin(msg):
         raise
 
     result = result.text
-    if 'https://clbin.com/' in result:
-        return result
+    if '://clbin.com/' in result:
+        # find/replace just in case the site tries to be sneaky and save on SSL overhead,
+        # though it will probably send us an HTTPS link without any tricks.
+        return result.replace('http://', 'https://', 1)
     else:
         LOGGER.error("Invalid result %s", result)
         raise PostingException('clbin result did not contain expected URL base.')
@@ -69,8 +71,10 @@ def post_to_0x0(msg):
         raise
 
     result = result.text
-    if 'https://0x0.st' in result:
-        return result
+    if '://0x0.st' in result:
+        # find/replace just in case the site tries to be sneaky and save on SSL overhead,
+        # though it will probably send us an HTTPS link without any tricks.
+        return result.replace('http://', 'https://', 1)
     else:
         LOGGER.error('Invalid result %s', result)
         raise PostingException('0x0.st result did not contain expected URL base.')
@@ -112,7 +116,9 @@ def post_to_termbin(msg):
         LOGGER.exception('Error during communication with termbin')
         raise PostingException('Error uploading to termbin')
 
-    return response.strip(u'\x00\n')
+    # find/replace just in case the site tries to be sneaky and save on SSL overhead,
+    # though it will probably send us an HTTPS link without any tricks.
+    return response.strip(u'\x00\n').replace('http://', 'https://', 1)
 
 
 _pastebin_providers = {
