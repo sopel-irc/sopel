@@ -4,6 +4,8 @@ help.py - Sopel Help Module
 Copyright 2008, Sean B. Palmer, inamidst.com
 Copyright © 2013, Elad Alfassa, <elad@fedoraproject.org>
 Copyright © 2018, Adam Erdman, pandorah.org
+Copyright © 2019, Tomasz Kurcz, github.com/uint
+Copyright © 2019, dgw, technobabbl.es
 Licensed under the Eiffel Forum License 2.
 
 https://sopel.chat
@@ -11,19 +13,151 @@ https://sopel.chat
 from __future__ import unicode_literals, absolute_import, print_function, division
 
 import collections
-import requests
+import socket
 import textwrap
+
+import requests
 
 from sopel.logger import get_logger
 from sopel.module import commands, rule, example, priority
+from sopel.config.types import (
+    StaticSection, ChoiceAttribute
+)
 
 
 LOGGER = get_logger(__name__)
 
 
+class PostingException(Exception):
+    """Custom exception type for errors posting help to the chosen pastebin."""
+    pass
+
+
+# Pastebin handlers
+
+
+def _requests_post_catch_errors(*args, **kwargs):
+    try:
+        response = requests.post(*args, **kwargs)
+        response.raise_for_status()
+    except (
+            requests.exceptions.Timeout,
+            requests.exceptions.TooManyRedirects,
+            requests.exceptions.RequestException,
+            requests.exceptions.HTTPError
+    ):
+        # We re-raise all expected exception types to a generic "posting error"
+        # that's easy for callers to expect, and then we pass the original
+        # exception through to provide some debugging info
+        LOGGER.exception('Error during POST request')
+        raise PostingException('Could not communicate with remote service')
+
+    # remaining handling (e.g. errors inside the response) is left to the caller
+    return response
+
+
+def post_to_clbin(msg):
+    try:
+        result = _requests_post_catch_errors('https://clbin.com/', data={'clbin': msg})
+    except PostingException:
+        raise
+
+    result = result.text
+    if '://clbin.com/' in result:
+        # find/replace just in case the site tries to be sneaky and save on SSL overhead,
+        # though it will probably send us an HTTPS link without any tricks.
+        return result.replace('http://', 'https://', 1)
+    else:
+        LOGGER.error("Invalid result %s", result)
+        raise PostingException('clbin result did not contain expected URL base.')
+
+
+def post_to_0x0(msg):
+    try:
+        result = _requests_post_catch_errors('https://0x0.st', files={'file': msg})
+    except PostingException:
+        raise
+
+    result = result.text
+    if '://0x0.st' in result:
+        # find/replace just in case the site tries to be sneaky and save on SSL overhead,
+        # though it will probably send us an HTTPS link without any tricks.
+        return result.replace('http://', 'https://', 1)
+    else:
+        LOGGER.error('Invalid result %s', result)
+        raise PostingException('0x0.st result did not contain expected URL base.')
+
+
+def post_to_hastebin(msg):
+    try:
+        result = _requests_post_catch_errors('https://hastebin.com/documents', data=msg)
+    except PostingException:
+        raise
+
+    try:
+        result = result.json()
+    except ValueError:
+        LOGGER.error("Invalid Hastebin response %s", result)
+        raise PostingException('Could not parse response from Hastebin!')
+
+    if 'key' not in result:
+        LOGGER.error("Invalid result %s", result)
+        raise PostingException('Hastebin result did not contain expected URL base.')
+    return "https://hastebin.com/" + result['key']
+
+
+def post_to_termbin(msg):
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    sock.settimeout(10)  # the bot may NOT wait forever for a response; that would be bad
+    try:
+        sock.connect(('termbin.com', 9999))
+        sock.sendall(msg)
+        sock.shutdown(socket.SHUT_WR)
+        response = ""
+        while 1:
+            data = sock.recv(1024)
+            if data == "":
+                break
+            response += data
+        sock.close()
+    except socket.error:
+        LOGGER.exception('Error during communication with termbin')
+        raise PostingException('Error uploading to termbin')
+
+    # find/replace just in case the site tries to be sneaky and save on SSL overhead,
+    # though it will probably send us an HTTPS link without any tricks.
+    return response.strip('\x00\n').replace('http://', 'https://', 1)
+
+
+PASTEBIN_PROVIDERS = {
+    'clbin': post_to_clbin,
+    '0x0': post_to_0x0,
+    'hastebin': post_to_hastebin,
+    'termbin': post_to_termbin,
+}
+
+
+class HelpSection(StaticSection):
+    """Configuration section for this module."""
+    output = ChoiceAttribute('output',
+                             list(PASTEBIN_PROVIDERS),
+                             default='clbin')
+    """The pastebin provider to use for help output."""
+
+
+def configure(config):
+    config.define_section('help', HelpSection)
+    provider_list = ', '.join(PASTEBIN_PROVIDERS)
+    config.help.configure_setting(
+        'output',
+        'Pick a pastebin provider: {}: '.format(provider_list)
+    )
+
+
 def setup(bot):
     global help_prefix
     help_prefix = bot.config.core.help_prefix
+    bot.config.define_section('help', HelpSection)
 
 
 @rule('$nick' r'(?i)(help|doc) +([A-Za-z]+)(?:\?+)?$')
@@ -31,7 +165,7 @@ def setup(bot):
 @commands('help', 'commands')
 @priority('low')
 def help(bot, trigger):
-    """Shows a command's documentation, and possibly an example."""
+    """Shows a command's documentation, and an example if available. With no arguments, lists all commands."""
     if trigger.group(2):
         name = trigger.group(2)
         name = name.lower()
@@ -58,7 +192,11 @@ def help(bot, trigger):
         # actually creating the list first. Maybe worth storing the link and a
         # heuristic in the DB, too, so it persists across restarts. Would need a
         # command to regenerate, too...
-        if 'command-list' in bot.memory and bot.memory['command-list'][0] == len(bot.command_groups):
+        if (
+                'command-list' in bot.memory and
+                bot.memory['command-list'][0] == len(bot.command_groups) and
+                bot.memory['command-list'][2] == bot.config.help.output
+        ):
             url = bot.memory['command-list'][1]
         else:
             bot.say("Hang on, I'm creating a list.")
@@ -77,28 +215,28 @@ def help(bot, trigger):
             url = create_list(bot, '\n\n'.join(msgs))
             if not url:
                 return
-            bot.memory['command-list'] = (len(bot.command_groups), url)
+            bot.memory['command-list'] = (len(bot.command_groups),
+                                          url,
+                                          bot.config.help.output)
         bot.say("I've posted a list of my commands at {0} - You can see "
                 "more info about any of these commands by doing {1}help "
                 "<command> (e.g. {1}help time)".format(url, help_prefix))
 
 
 def create_list(bot, msg):
+    """Creates & uploads the command list.
+
+    Returns the URL from the chosen pastebin provider.
+    """
     msg = 'Command listing for {}@{}\n\n'.format(bot.nick, bot.config.core.host) + msg
 
     try:
-        result = requests.post('https://clbin.com/', data={'clbin': msg})
-    except requests.RequestException:
+        result = PASTEBIN_PROVIDERS[bot.config.help.output](msg)
+    except PostingException:
         bot.say("Sorry! Something went wrong.")
         LOGGER.exception("Error posting commands")
         return
-    result = result.text
-    if "https://clbin.com/" in result:
-        return result
-    else:
-        bot.say("Sorry! Something went wrong.")
-        LOGGER.error("Invalid result %s", result)
-        return
+    return result
 
 
 @rule('$nick' r'(?i)help(?:[?!]+)?$')
