@@ -25,6 +25,14 @@ from sopel.config.types import (
 )
 
 
+LOGGER = get_logger(__name__)
+
+
+class PostingException(Exception):
+    """Custom exception type for errors posting help to the chosen pastebin."""
+    pass
+
+
 # Pastebin handlers
 
 
@@ -118,14 +126,14 @@ def post_to_termbin(msg):
 
     # find/replace just in case the site tries to be sneaky and save on SSL overhead,
     # though it will probably send us an HTTPS link without any tricks.
-    return response.strip(u'\x00\n').replace('http://', 'https://', 1)
+    return response.strip('\x00\n').replace('http://', 'https://', 1)
 
 
 PASTEBIN_PROVIDERS = {
     'clbin': post_to_clbin,
     '0x0': post_to_0x0,
     'hastebin': post_to_hastebin,
-    'termbin': post_to_termbin
+    'termbin': post_to_termbin,
 }
 
 
@@ -144,9 +152,6 @@ def configure(config):
         'output',
         'Pick a pastebin provider: {}: '.format(provider_list)
     )
-
-
-LOGGER = get_logger(__name__)
 
 
 def setup(bot):
@@ -232,11 +237,6 @@ def create_list(bot, msg):
         LOGGER.exception("Error posting commands")
         return
     return result
-
-
-class PostingException(Exception):
-    """Custom exception type for errors posting help to the chosen pastebin."""
-    pass
 
 
 @rule('$nick' r'(?i)help(?:[?!]+)?$')
