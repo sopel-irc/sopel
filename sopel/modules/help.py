@@ -25,44 +25,90 @@ from sopel.config.types import (
 # Pastebin handlers
 
 
-def post_to_clbin(msg):
-    result = requests.post('https://clbin.com/', data={'clbin': msg})
-    result = result.text
+def _requests_post_catch_errors(*args, **kwargs):
+    try:
+        response = requests.post(*args, **kwargs)
+        response.raise_for_status()
+    except (
+            requests.exceptions.Timeout,
+            requests.exceptions.TooManyRedirects,
+            requests.exceptions.RequestException,
+            requests.exceptions.HTTPError
+    ):
+        # We re-raise all expected exception types to a generic "posting error"
+        # that's easy for callers to expect, and then we pass the original
+        # exception through to provide some debugging info
+        LOGGER.exception('Error during POST request')
+        raise PostingException('Could not communicate with remote service')
 
+    # remaining handling (e.g. errors inside the response) is left to the caller
+    return response
+
+
+def post_to_clbin(msg):
+    try:
+        result = _requests_post_catch_errors('https://clbin.com/', data={'clbin': msg})
+    except PostingException:
+        raise
+
+    result = result.text
     if 'https://clbin.com/' in result:
         return result
     else:
         LOGGER.error("Invalid result %s", result)
-        raise PostingException()
+        raise PostingException('clbin result did not contain expected URL base.')
 
 
 def post_to_0x0(msg):
-    payload = {'file': msg}
-    result = requests.post('https://0x0.st', files=payload)
-    return result.text
+    try:
+        result = _requests_post_catch_errors('https://0x0.st', files={'file': msg})
+    except PostingException:
+        raise
+
+    result = result.text
+    if 'https://0x0.st' in result:
+        return result
+    else:
+        LOGGER.error('Invalid result %s', result)
+        raise PostingException('0x0.st result did not contain expected URL base.')
 
 
 def post_to_hastebin(msg):
-    result = requests.post('https://hastebin.com/documents', data=msg)
-    result = result.json()
+    try:
+        result = _requests_post_catch_errors('https://hastebin.com/documents', data=msg)
+    except PostingException:
+        raise
+
+    try:
+        result = result.json()
+    except ValueError:
+        LOGGER.error("Invalid Hastebin response %s", result)
+        raise PostingException('Could not parse response from Hastebin!')
+
     if 'key' not in result:
         LOGGER.error("Invalid result %s", result)
-        raise PostingException()
+        raise PostingException('Hastebin result did not contain expected URL base.')
     return "https://hastebin.com/" + result['key']
 
 
 def post_to_termbin(msg):
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s.connect(('termbin.com', 9999))
-    s.sendall(msg)
-    s.shutdown(socket.SHUT_WR)
-    response = ""
-    while 1:
-        data = s.recv(1024)
-        if data == "":
-            break
-        response += data
-    s.close()
+    s.settimeout(10)  # the bot may NOT wait forever for a response; that would be bad
+    try:
+        s.connect(('termbin.com', 9999))
+        s.sendall(msg)
+        s.shutdown(socket.SHUT_WR)
+        response = ""
+        while 1:
+            data = s.recv(1024)
+            if data == "":
+                break
+            response += data
+        s.close()
+    except socket.error:
+        LOGGER.exception('Error during communication with termbin')
+        raise PostingException('Error uploading to termbin')
+
     return response.strip(u'\x00\n')
 
 
@@ -166,7 +212,7 @@ def create_list(bot, msg):
 
     try:
         result = _pastebin_providers[bot.config.help.output](msg)
-    except (requests.RequestException, PostingException):
+    except PostingException:
         bot.say("Sorry! Something went wrong.")
         LOGGER.exception("Error posting commands")
         return
