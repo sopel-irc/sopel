@@ -99,19 +99,19 @@ def post_to_hastebin(msg):
 
 
 def post_to_termbin(msg):
-    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s.settimeout(10)  # the bot may NOT wait forever for a response; that would be bad
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    sock.settimeout(10)  # the bot may NOT wait forever for a response; that would be bad
     try:
-        s.connect(('termbin.com', 9999))
-        s.sendall(msg)
-        s.shutdown(socket.SHUT_WR)
+        sock.connect(('termbin.com', 9999))
+        sock.sendall(msg)
+        sock.shutdown(socket.SHUT_WR)
         response = ""
         while 1:
-            data = s.recv(1024)
+            data = sock.recv(1024)
             if data == "":
                 break
             response += data
-        s.close()
+        sock.close()
     except socket.error:
         LOGGER.exception('Error during communication with termbin')
         raise PostingException('Error uploading to termbin')
@@ -121,7 +121,7 @@ def post_to_termbin(msg):
     return response.strip(u'\x00\n').replace('http://', 'https://', 1)
 
 
-_pastebin_providers = {
+PASTEBIN_PROVIDERS = {
     'clbin': post_to_clbin,
     '0x0': post_to_0x0,
     'hastebin': post_to_hastebin,
@@ -132,14 +132,14 @@ _pastebin_providers = {
 class HelpSection(StaticSection):
     """Configuration section for this module."""
     output = ChoiceAttribute('output',
-                             list(_pastebin_providers),
+                             list(PASTEBIN_PROVIDERS),
                              default='clbin')
     """The pastebin provider to use for help output."""
 
 
 def configure(config):
     config.define_section('help', HelpSection)
-    provider_list = ', '.join(_pastebin_providers)
+    provider_list = ', '.join(PASTEBIN_PROVIDERS)
     config.help.configure_setting(
         'output',
         'Pick a pastebin provider: {}: '.format(provider_list)
@@ -226,7 +226,7 @@ def create_list(bot, msg):
     msg = 'Command listing for {}@{}\n\n'.format(bot.nick, bot.config.core.host) + msg
 
     try:
-        result = _pastebin_providers[bot.config.help.output](msg)
+        result = PASTEBIN_PROVIDERS[bot.config.help.output](msg)
     except PostingException:
         bot.say("Sorry! Something went wrong.")
         LOGGER.exception("Error posting commands")
