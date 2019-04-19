@@ -800,7 +800,7 @@ def track_topic(bot, trigger):
     bot.channels[channel].topic = trigger.args[-1]
 
 
-@sopel.module.rule(r'(?u).*(https?://\S+).*')
+@sopel.module.rule(r'(?u).*(.+://\S+).*')
 @sopel.module.unblockable
 def handle_url_callbacks(bot, trigger):
     """Dispatch callbacks on URLs
@@ -808,8 +808,9 @@ def handle_url_callbacks(bot, trigger):
     For each URL found in the trigger, trigger the URL callback registered by
     the ``@url`` decorator.
     """
+    schemes = bot.config.core.auto_url_schemes
     # find URLs in the trigger
-    for url in sopel.web.search_urls(trigger):
+    for url in sopel.web.search_urls(trigger, schemes=schemes):
         # find callbacks for said URL
         for function, match in bot.search_url_callbacks(url):
             # trigger callback defined by the `@url` decorator

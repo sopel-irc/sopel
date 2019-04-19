@@ -252,10 +252,13 @@ def trim_url(url):
     return url
 
 
-def search_urls(text, exclusion_char=None, clean=False):
-    re_url = r'((?:http|https|ftp)(?::\/\/\S+))'
+def search_urls(text, exclusion_char=None, clean=False, schemes=None):
+    schemes = schemes or ['http', 'https', 'ftp']
+    schemes_patterns = '|'.join(re.escape(scheme) for scheme in schemes)
+    re_url = r'((?:%s)(?::\/\/\S+))' % schemes_patterns
     if exclusion_char is not None:
-        re_url = r'((?<!%s)(?:http|https|ftp)(?::\/\/\S+))' % (exclusion_char)
+        re_url = r'((?<!%s)(?:%s)(?::\/\/\S+))' % (
+            exclusion_char, schemes_patterns)
 
     r = re.compile(re_url, re.IGNORECASE | re.UNICODE)
 

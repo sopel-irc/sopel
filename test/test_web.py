@@ -96,6 +96,30 @@ def test_search_urls_exclusion_char_only_once():
     assert 'http://b.com' in urls
 
 
+def test_search_urls_default_schemes():
+    urls = list(search_urls('http://a.com ftp://b.com https://c.com'))
+    assert len(urls) == 3, 'Must find all three URLs'
+    assert 'http://a.com' in urls
+    assert 'ftp://b.com' in urls
+    assert 'https://c.com' in urls
+
+
+@pytest.mark.parametrize('scheme', ['http', 'https', 'ftp', 'steam'])
+def test_search_urls_defined_schemes(scheme):
+    expected = {
+        'http': 'http://a.com',
+        'https': 'https://c.com',
+        'ftp': 'ftp://b.com',
+        'steam': 'steam://portal2',
+    }.get(scheme)
+
+    urls = list(
+        search_urls('http://a.com ftp://b.com https://c.com steam://portal2',
+        schemes=[scheme]))
+    assert len(urls) == 1, 'Only %s URLs must be found' % scheme
+    assert expected in urls
+
+
 TRAILING_CHARS = list('.,?!\'":;')
 ENCLOSING_PAIRS = [('(', ')'), ('[', ']'), ('{', '}'), ('<', '>')]
 
