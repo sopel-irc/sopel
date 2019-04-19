@@ -119,11 +119,12 @@ def title_command(bot, trigger):
             trigger,
             exclusion_char=bot.config.url.exclusion_char)
 
-    for _url, title, domain, tinyurl in process_urls(bot, trigger, urls):
+    for url, title, domain, tinyurl in process_urls(bot, trigger, urls):
         message = '[ %s ] - %s' % (title, domain)
         if tinyurl:
             message += ' ( %s )' % tinyurl
         bot.reply(message)
+        bot.memory['last_seen_url'][trigger.sender] = url
 
 
 @module.rule(r'(?u).*(https?://\S+).*')
