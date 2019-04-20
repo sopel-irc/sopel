@@ -141,7 +141,7 @@ def clean_callable(func, config):
     help_prefix = config.core.help_prefix
     func._docs = {}
     doc = trim_docstring(func.__doc__)
-    example = None
+    examples = []
 
     func.unblockable = getattr(func, 'unblockable', False)
     func.echo = getattr(func, 'echo', False)
@@ -173,16 +173,19 @@ def clean_callable(func, config):
             regexp = get_nickname_command_regexp(nick, command, alias_nicks)
             func.rule.append(regexp)
         if hasattr(func, 'example'):
-            example = func.example[0]["example"]
-            example = example.replace('$nickname', nick)
-            if example[0] != help_prefix and not example.startswith(nick):
-                example = example.replace(default_prefix, help_prefix, 1)
-        if doc or example:
+            # If no examples are flagged as user-facing, just show the first one like Sopel<7 did
+            examples = [rec["example"] for rec in func.example if rec["help"]] or [func.example[0]["example"]]
+            for i, example in enumerate(examples):
+                example = example.replace('$nickname', nick)
+                if example[0] != help_prefix and not example.startswith(nick):
+                    example = example.replace(default_prefix, help_prefix, 1)
+                examples[i] = example
+        if doc or examples:
             cmds = []
             cmds.extend(getattr(func, 'commands', []))
             cmds.extend(getattr(func, 'nickname_commands', []))
             for command in cmds:
-                func._docs[command] = (doc, example)
+                func._docs[command] = (doc, examples)
 
     if hasattr(func, 'intents'):
         func.intents = [re.compile(intent, re.IGNORECASE) for intent in func.intents]

@@ -92,7 +92,8 @@ def _part(bot, channel, msg=None, save=True):
 @sopel.module.require_admin
 @sopel.module.commands('join')
 @sopel.module.priority('low')
-@sopel.module.example('.join #example or .join #example key')
+@sopel.module.example('.join #example key', user_help=True)
+@sopel.module.example('.join #example', user_help=True)
 def join(bot, trigger):
     """Join the specified channel. This is an admin-only command."""
     channel, key = trigger.group(3), trigger.group(4)

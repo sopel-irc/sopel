@@ -457,9 +457,12 @@ class example(object):
         ignore:
             List of outputs to ignore. Strings in this list are always
             interpreted as regular expressions.
+        user_help:
+            Whether this example should be displayed in user-facing help output
+            such as `.help command`.
     """
     def __init__(self, msg, result=None, privmsg=False, admin=False,
-                 owner=False, repeat=1, re=False, ignore=None):
+                 owner=False, repeat=1, re=False, ignore=None, user_help=False):
         # Wrap result into a list for get_example_test
         if isinstance(result, list):
             self.result = result
@@ -480,6 +483,8 @@ class example(object):
             self.ignore = [ignore]
         else:
             self.ignore = []
+
+        self.user_help = user_help
 
     def __call__(self, func):
         if not hasattr(func, "example"):
@@ -508,6 +513,7 @@ class example(object):
             "result": self.result,
             "privmsg": self.privmsg,
             "admin": self.admin,
+            "help": self.user_help,
         }
         func.example.append(record)
         return func
