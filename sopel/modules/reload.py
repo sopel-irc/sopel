@@ -87,10 +87,10 @@ def f_load(bot, trigger):
 
     try:
         _load(bot, plugin)
-        bot.reply('Module %s loaded' % name)
     except Exception as error:
-        bot.reply(
-            'Module %s can not be loaded: %s' % (name, error))
+        bot.reply('Could not load module %s: %s' % (name, error))
+    else:
+        bot.reply('Module %s loaded' % name)
 
 
 # Catch private messages
