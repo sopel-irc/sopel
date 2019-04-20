@@ -91,7 +91,13 @@ class CoreSection(StaticSection):
         'auto_url_schemes',
         strip=True,
         default=['http', 'https', 'ftp'])
-    """List of URL schemes that will trigger URL callbacks."""
+    """List of URL schemes that will trigger URL callbacks.
+
+    Used by the URL callbacks feature; see :func:`sopel.module.url` decorator
+    for plugins.
+
+    The default value allows ``http``, ``https``, and ``ftp``.
+    """
 
     bind_host = ValidatedAttribute('bind_host')
     """Bind the connection to a specific IP"""

@@ -408,11 +408,31 @@ def require_owner(message=None):
 def url(url_rule):
     """Decorate a function to handle URLs.
 
+    :param str url_rule: regex pattern to match URLs
+
     This decorator takes a regex string that will be matched against URLs in a
     message. The function it decorates, in addition to the bot and trigger,
     must take a third argument ``match``, which is the regular expression match
-    of the URL. This should be used rather than the matching in trigger, in
-    order to support e.g. the ``.title`` command.
+    of the URL::
+
+        from sopel import module
+
+        @module.url(r'https://example.com/bugs/([a-z0-9]+)')
+        def handle_example_bugs(bot, trigger, match):
+            bot.reply('Found bug ID #%s' % match.group(1))
+
+    This should be used rather than the matching in trigger, in order to
+    support e.g. the ``.title`` command.
+
+    Under the hood, when Sopel collects the decorated handler it uses
+    :meth:`sopel.bot.Sopel.register_url_callback` to register the handler.
+
+    .. seealso::
+
+        To detect URLs, Sopel uses a matching pattern built from a list of URL
+        schemes, configured by
+        :attr:`~sopel.config.core_section.CoreSection.auto_url_schemes`.
+
     """
     def actual_decorator(function):
         @functools.wraps(function)
