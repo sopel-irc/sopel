@@ -226,7 +226,7 @@ class Sopel(irc.Bot):
             stderr("Warning: Couldn't load any modules")
 
     def reload_plugin(self, name):
-        if name not in self._plugins:
+        if not self.has_plugin(name):
             raise plugins.exceptions.PluginNotRegistered(name)
 
         plugin = self._plugins[name]
@@ -268,7 +268,7 @@ class Sopel(irc.Bot):
     def remove_plugin(self, plugin, callables, jobs, shutdowns, urls):
         """Remove a loaded plugin from the bot's registry"""
         name = plugin.name
-        if name not in self._plugins:
+        if not self.has_plugin(name):
             raise plugins.exceptions.PluginNotRegistered(name)
 
         try:
