@@ -36,6 +36,7 @@ import importlib
 import os
 
 from sopel import loader
+from . import exceptions
 
 try:
     from importlib import reload
@@ -283,8 +284,7 @@ class PyFilePlugin(PyModulePlugin):
             name = os.path.basename(filename)
             module_type = imp.PKG_DIRECTORY
         else:
-            # TODO: throw more specific exception
-            raise Exception('Invalid Sopel plugin: %s' % filename)
+            raise exceptions.PluginError('Invalid Sopel plugin: %s' % filename)
 
         self.filename = filename
         self.path = filename
