@@ -72,7 +72,7 @@ def find_sopel_modules_plugins():
     """
     try:
         import sopel_modules
-    except:  # noqa
+    except ImportError:
         return
 
     for plugin_dir in set(sopel_modules.__path__):
