@@ -6,7 +6,7 @@
 Between a plugin and Sopel's core, Plugin Handlers are used. It is an interface
 (defined by the :class:`AbstractPluginHandler` abstract class), that acts as a
 proxy between Sopel and the plugin, making a clear separation between
-how the bot behave and how the plugins works.
+how the bot behaves and how the plugins work.
 
 From the :class:`~sopel.bot.Sopel` class, a plugin must be:
 
@@ -20,9 +20,9 @@ order to be used in the application.
 At the moment, only two types of plugin are handled:
 
 * :class:`PyModulePlugin`: manage plugins that can be imported as Python
-  module from a python package, ie. where ``from package import name`` works
+  module from a Python package, i.e. where ``from package import name`` works
 * :class:`PyFilePlugin`: manage plugins that are Python files on the filesystem
-  or Python directory (with an ``__init__.py`` file inside), that can not be
+  or Python directory (with an ``__init__.py`` file inside), that cannot be
   directly imported and extra steps are necessary
 
 Both exposes the same interface and hide the internal implementation to the
@@ -47,11 +47,11 @@ except ImportError:
 class AbstractPluginHandler(object):
     """Base class for plugin handlers.
 
-    This abstract class defines the Sopel's interface to handle plugins to:
-    configure, load, shutdown, etc. a Sopel's plugin (or "module").
+    This abstract class defines the interface Sopel uses to
+    configure, load, shutdown, etc. a Sopel plugin (or "module").
 
-    It is through this interface that Sopel will interact with its plugin,
-    being internals (from ``sopel.modules``) or externals (from the python
+    It is through this interface that Sopel will interact with its plugins,
+    whether internal (from ``sopel.modules``) or external (from the Python
     files in a directory, to ``sopel_modules.*`` subpackages).
 
     A "Plugin Handler" will be created by Sopel's loader for each plugin it
@@ -62,7 +62,7 @@ class AbstractPluginHandler(object):
     def load(self):
         """Load the plugin
 
-        This method must be called first, in order to setup, register, shutdown
+        This method must be called first, in order to setup, register, shutdown,
         or configure the plugin later.
         """
         raise NotImplementedError
@@ -150,7 +150,7 @@ class AbstractPluginHandler(object):
         :param settings: Sopel's configuration
         :type settings: :class:`sopel.config.Config`
 
-        This method will be called by the Sopel's configuration wizard.
+        This method will be called by Sopel's configuration wizard.
         """
         raise NotImplementedError
 
@@ -164,9 +164,9 @@ class AbstractPluginHandler(object):
 
 
 class PyModulePlugin(AbstractPluginHandler):
-    """Sopel's Plugin loaded from a Python module or package
+    """Sopel plugin loaded from a Python module or package
 
-    A :class:`PyModulePlugin` represents a Sopel's Plugin that is a Python
+    A :class:`PyModulePlugin` represents a Sopel plugin that is a Python
     module (or package) that can be imported directly.
 
     This::
@@ -248,10 +248,10 @@ class PyModulePlugin(AbstractPluginHandler):
 
 
 class PyFilePlugin(PyModulePlugin):
-    """Sopel's Plugin loaded from the filesystem outside of the Python Path
+    """Sopel plugin loaded from the filesystem outside of the Python path
 
-    This plugin handler can be used to load a Sopel's Plugin from the
-    filesystem, being a Python ``.py`` file or a directory containing an
+    This plugin handler can be used to load a Sopel plugin from the
+    filesystem, either a Python ``.py`` file or a directory containing an
     ``__init__.py`` file, and behaves like a :class:`PyModulePlugin`::
 
         >>> from sopel.plugins.handlers import PyFilePlugin
@@ -260,8 +260,8 @@ class PyFilePlugin(PyModulePlugin):
         >>> plugin.name
         'custom'
 
-    In this example, the plugin ``custom`` is loaded from its filename albeit
-    it is not in the Python path.
+    In this example, the plugin ``custom`` is loaded from its filename despite
+    not being in the Python path.
     """
     def __init__(self, filename):
         good_file = (
@@ -290,8 +290,8 @@ class PyFilePlugin(PyModulePlugin):
         super(PyFilePlugin, self).__init__(name)
 
     def _load(self):
-        # The current implementation uses the `imp.load_module` to perform
-        # the load action, which also reload the module. However, `imp` is
+        # The current implementation uses `imp.load_module` to perform the
+        # load action, which also reload the module. However, `imp` is
         # deprecated in Python 3, so that might need to be changed when the
         # support for Python 2 is dropped.
         #
@@ -300,7 +300,7 @@ class PyFilePlugin(PyModulePlugin):
         # therefore requires to dive into its public internals
         # (``importlib.machinery`` and ``importlib.util``).
         #
-        # All of that is doable, but represent a lot of works. As long as
+        # All of that is doable, but represents a lot of work. As long as
         # Python 2 is supported, we can keep it for now.
         #
         # TODO: switch to ``importlib`` when Python2 support is dropped.

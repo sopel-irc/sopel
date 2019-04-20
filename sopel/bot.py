@@ -212,14 +212,14 @@ class Sopel(irc.Bot):
                     )
                     raising_stmt = "%s:%d" % (rel_path, lineno)
                     stderr("Error in %s setup procedure: %s (%s)"
-                        % (name, e, raising_stmt))
+                           % (name, e, raising_stmt))
                 else:
                     load_success = load_success + 1
                     print('Loaded: %s' % name)
 
         total = sum([load_success, load_error, load_disabled])
         if total and load_success:
-            stderr('\n\nRegistered %d modules,' % (load_success - 1))
+            stderr('\n\nRegistered %d modules\n\n' % (load_success - 1))
             stderr('%d modules failed to load\n\n' % load_error)
             stderr('%d modules disabled\n\n' % load_disabled)
         else:
@@ -243,8 +243,9 @@ class Sopel(irc.Bot):
     def reload_plugins(self):
         """Reload all plugins
 
-        First, it shutdown & unregister all plugins, then it reload, setup, and
-        register all of them.
+        First it runs all plugin shutdown routines & unregisters all plugins.
+        Then it reloads them, runs their setup routines, and registers them
+        again.
         """
         registered = list(self._plugins.items())
         # tear down all plugins

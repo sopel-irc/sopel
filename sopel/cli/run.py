@@ -246,11 +246,11 @@ def build_parser():
 def wizard(filename):
     """Global Configuration Wizard
 
-    :param str filename: path to create
+    :param str filename: name of the new file to be created
     :return: the created configuration object
 
-    This wizard function helps the creation of a Sopel's configuration file,
-    with its core section and its plugins's sections.
+    This wizard function helps the creation of a Sopel configuration file,
+    with its core section and its plugins' sections.
     """
     homedir = os.path.dirname(filename)
     try:
@@ -270,24 +270,24 @@ def wizard(filename):
         # It is possible to use a non-cfg file for Sopel
         # but the wizard does not allow it at the moment
         raise ConfigurationError(
-            'Sopel uses ".cfg" configuration file, not "%s".' % ext)
+            'Sopel uses ".cfg" as configuration file extension, not "%s".' % ext)
 
     settings = Config(filename, validate=False)
 
-    print("Please answer the following questions"
-          " to create your configuration file (%s):\n" % filename)
+    print("Please answer the following questions "
+          "to create your configuration file (%s):\n" % filename)
     core_section.configure(settings)
     if settings.option(
-        'Would you like to see if there are any modules'
-        ' that need configuring'
+        'Would you like to see if there are any modules '
+        'that need configuring'
     ):
         _plugins_wizard(settings)
 
     try:
         settings.save()
     except Exception:  # TODO: Be specific
-        tools.stderr("Encountered an error while writing the config file."
-               " This shouldn't happen. Check permissions.")
+        tools.stderr("Encountered an error while writing the config file. "
+                     "This shouldn't happen. Check permissions.")
         raise
 
     print("Config file written successfully!")
@@ -301,7 +301,7 @@ def plugins_wizard(filename):
     :return: the configuration object
 
     This wizard function helps to configure plugins for an existing Sopel
-    configuration.
+    config file.
     """
     if not os.path.isfile(filename):
         raise ConfigurationNotFound(filename)
@@ -312,8 +312,8 @@ def plugins_wizard(filename):
     try:
         settings.save()
     except Exception:  # TODO: Be specific
-        tools.stderr("Encountered an error while writing the config file."
-                     " This shouldn't happen. Check permissions.")
+        tools.stderr("Encountered an error while writing the config file. "
+                     "This shouldn't happen. Check permissions.")
         raise
 
     return settings

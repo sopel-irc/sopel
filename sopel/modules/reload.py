@@ -16,7 +16,7 @@ from sopel import plugins, tools
 
 
 def _load(bot, plugin):
-    # handle loading's errors (if any)
+    # handle errors while loading (if any)
     try:
         plugin.load()
         if plugin.has_setup():

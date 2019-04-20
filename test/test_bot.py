@@ -40,7 +40,7 @@ def test_remove_plugin_unregistered_plugin(tmpconfig):
 
     # Unregister the plugin
     plugin.unregister(sopel)
-    # And now it must raises
+    # And now it must raise an exception
     with pytest.raises(plugins.exceptions.PluginNotRegistered):
         sopel.remove_plugin(plugin, [], [], [], [])
 

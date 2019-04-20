@@ -21,7 +21,7 @@ can not be overridden.
 
 To find all plugins (no matter their sources), the :func:`~.enumerate_plugins`
 function can be used. For a more fine-grained search, ``find_*`` functions
-exists for each type of plugins.
+exist for each type of plugin.
 """
 from __future__ import unicode_literals, absolute_import, print_function, division
 
@@ -35,7 +35,7 @@ from . import exceptions, handlers  # noqa
 
 def _list_plugin_filenames(directory):
     # list plugin filenames from a directory
-    # yield 2-values tuples: (name, absolute path)
+    # yield 2-value tuples: (name, absolute path)
     base = os.path.abspath(directory)
     for filename in os.listdir(base):
         abspath = os.path.join(base, filename)
@@ -83,6 +83,7 @@ def find_sopel_modules_plugins():
 def find_directory_plugins(directory):
     """List plugins from a ``directory``
 
+    :param str directory: Directory path to search
     :return: Yield instance of :class:`~.handlers.PyFilePlugin`
              found in ``directory``
     """
@@ -95,11 +96,11 @@ def enumerate_plugins(settings):
 
     :param settings: Sopel's configuration
     :type settings: :class:`sopel.config.Config`
-    :return: yield 2-values tuple: an instance of
+    :return: yield 2-value tuple: an instance of
              :class:`~.handlers.AbstractPluginHandler`, and if the plugin is
              active or not
 
-    This function uses the find functions to find all the available Sopel's
+    This function uses the find functions to find all of Sopel's available
     plugins. It uses the bot's ``settings`` to determine if the plugin is
     enabled or disabled.
 
@@ -108,7 +109,7 @@ def enumerate_plugins(settings):
        The find functions used are:
 
        * :func:`find_internal_plugins` for internal plugins
-       * :func:`find_sopel_modules_plugins` for sopel_modules.* plugins
+       * :func:`find_sopel_modules_plugins` for ``sopel_modules.*`` plugins
        * :func:`find_directory_plugins` for modules in ``$homedir/modules``
          and in extra directories, as defined by ``settings.core.extra``
 
@@ -132,11 +133,11 @@ def enumerate_plugins(settings):
         from_sopel_modules,
         *from_directories)
 
-    # Get setting's details
+    # Get module settings
     enabled = settings.core.enable
     disabled = settings.core.exclude
 
-    # Yield all found plugins with their enable status (yes/no)
+    # Yield all found plugins with their enabled status (True/False)
     for plugin in all_plugins:
         name = plugin.name
         is_enabled = name not in disabled and (not enabled or name in enabled)
@@ -159,7 +160,7 @@ def get_usable_plugins(settings):
     per unique name, using a specific order:
 
     * extra directories defined in the settings
-    * homedir's modules directory
+    * homedir's ``modules`` directory
     * ``sopel_modules``'s subpackages
     * ``sopel.modules``'s core plugins
 
