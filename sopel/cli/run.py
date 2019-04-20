@@ -252,7 +252,11 @@ def wizard(filename):
     This wizard function helps the creation of a Sopel configuration file,
     with its core section and its plugins' sections.
     """
-    homedir = os.path.dirname(filename)
+    homedir, basename = os.path.split(filename)
+    if not basename:
+        raise ConfigurationError(
+            'Sopel requires a filename for its configuration, not a directory')
+
     try:
         if not os.path.isdir(homedir):
             print('Creating config directory at {}'.format(homedir))
@@ -262,10 +266,10 @@ def wizard(filename):
         tools.stderr('There was a problem creating {}'.format(homedir))
         raise
 
-    name, ext = os.path.splitext(filename)
+    name, ext = os.path.splitext(basename)
     if not ext:
         # Always add .cfg if filename does not have an extension
-        filename = name + '.cfg'
+        filename = os.path.join(homedir, name + '.cfg')
     elif ext != '.cfg':
         # It is possible to use a non-cfg file for Sopel
         # but the wizard does not allow it at the moment
