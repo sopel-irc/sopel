@@ -3,10 +3,10 @@
 
 .. versionadded:: 7.0
 
-Between a plugin and Sopel's core, Plugin Handlers are used. It is an interface
-(defined by the :class:`AbstractPluginHandler` abstract class), that acts as a
-proxy between Sopel and the plugin, making a clear separation between
-how the bot behaves and how the plugins work.
+Between a plugin (or "module") and Sopel's core, Plugin Handlers are used. It
+is an interface (defined by the :class:`AbstractPluginHandler` abstract class),
+that acts as a proxy between Sopel and the plugin, making a clear separation
+between how the bot behaves and how the plugins work.
 
 From the :class:`~sopel.bot.Sopel` class, a plugin must be:
 
@@ -25,8 +25,8 @@ At the moment, only two types of plugin are handled:
   or Python directory (with an ``__init__.py`` file inside), that cannot be
   directly imported and extra steps are necessary
 
-Both exposes the same interface and hide the internal implementation to the
-rest of the application.
+Both expose the same interface and thereby abstract the internal implementation
+away from the rest of the application.
 """
 from __future__ import unicode_literals, absolute_import, print_function, division
 
@@ -41,6 +41,7 @@ try:
     from importlib import reload
 except ImportError:
     # py2: no reload function
+    # TODO: imp is deprecated, to be removed when py2 support is dropped
     from imp import reload
 
 
@@ -54,10 +55,10 @@ class AbstractPluginHandler(object):
     whether internal (from ``sopel.modules``) or external (from the Python
     files in a directory, to ``sopel_modules.*`` subpackages).
 
-    A "Plugin Handler" will be created by Sopel's loader for each plugin it
-    finds, and it'll delegate it to load the plugin, to list its functions
-    (commands, jobs, etc.), to configure it, and to take any required actions
-    on shutdown.
+    Sopel's loader will create a "Plugin Handler" for each plugin it finds, to
+    which it then delegates loading the plugin, listing its functions
+    (commands, jobs, etc.), configuring it, and running any required actions
+    on shutdown (either upon exiting Sopel or unloading that plugin).
     """
     def load(self):
         """Load the plugin
@@ -139,7 +140,8 @@ class AbstractPluginHandler(object):
     def has_shutdown(self):
         """Tell if the plugin has a shutdown action
 
-        :return: ``True`` if the plugin has a shutdown, ``False`` otherwise
+        :return: ``True`` if the plugin has a ``shutdown`` action, ``False``
+                 otherwise
         :rtype: boolean
         """
         raise NotImplementedError
@@ -157,7 +159,8 @@ class AbstractPluginHandler(object):
     def has_configure(self):
         """Tell if the plugin has a configure action
 
-        :return: ``True`` if the plugin has a configure, ``False`` otherwise
+        :return: ``True`` if the plugin has a ``configure`` action, ``False``
+                 otherwise
         :rtype: boolean
         """
         raise NotImplementedError

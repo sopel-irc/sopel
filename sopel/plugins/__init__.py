@@ -8,16 +8,16 @@ Plugin Handlers as an interface between the bot and its plugins. This interface
 is defined by the :class:`~.handlers.AbstractPluginHandler` abstract class.
 
 Plugins that can be used by Sopel are provided by :func:`~.get_usable_plugins`
-in an ordered dict. This dict contains one and only one plugin per unique name,
-using a specific order:
+in an :class:`ordered dict<collections.OrderedDict>`. This dict contains one
+and only one plugin per unique name, using a specific order:
 
 * extra directories defined in the settings
-* homedir's modules directory
+* homedir's ``modules`` directory
 * ``sopel_modules``'s subpackages
 * ``sopel.modules``'s core plugins
 
-and the ``coretasks`` plugin is always the one from ``sopel.coretasks`` and
-can not be overridden.
+(The ``coretasks`` plugin is *always* the one from ``sopel.coretasks`` and
+cannot be overridden.)
 
 To find all plugins (no matter their sources), the :func:`~.enumerate_plugins`
 function can be used. For a more fine-grained search, ``find_*`` functions
@@ -156,22 +156,22 @@ def get_usable_plugins(settings):
     :rtype: collections.OrderedDict
 
     This function provides the plugins Sopel can use to load, enable,
-    or disable, as an ordered dict. This dict contains one and only one plugin
-    per unique name, using a specific order:
+    or disable, as an :class:`ordered dict<collections.OrderedDict>`. This dict
+    contains one and only one plugin per unique name, using a specific order:
 
     * extra directories defined in the settings
     * homedir's ``modules`` directory
     * ``sopel_modules``'s subpackages
     * ``sopel.modules``'s core plugins
 
-    and the ``coretasks`` plugin is always the one from ``sopel.coretasks`` and
-    can not be overridden.
+    (The ``coretasks`` plugin is *always* the one from ``sopel.coretasks`` and
+    cannot be overridden.)
 
     .. seealso::
 
         The :func:`~.enumerate_plugins` function is used to generate a list
         of all possible plugins, and its return value is used to populate
-        the ordered dict.
+        the :class:`ordered dict<collections.OrderedDict>`.
 
     """
     # Use an OrderedDict to get one and only one plugin per name
