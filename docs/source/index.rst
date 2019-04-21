@@ -29,3 +29,4 @@ Documentation
     config
     db
     api
+    cli
