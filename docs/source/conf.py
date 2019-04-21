@@ -229,9 +229,20 @@ latex_documents = [
 
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
+# Note from `man 7 man-pages`
+# 1: User commands (Programs)
+# 2: System calls
+# 3: Library calls
+# 4: Special files (devices)
+# 5: File formats and configuration files
+# 6: Games
+# 7: Overview, conventions, and miscellaneous
+# 8: System management commands
 man_pages = [
+    ('cmd', 'sopel', u'Sopel IRC Bot command line',
+     [u'Sopel contributors'], 1),
     ('index', 'sopel', u'Sopel IRC Bot Documentation',
-     [u'Sopel contributors'], 1)
+     [u'Sopel contributors'], 3),
 ]
 
 # If true, show URL addresses after external links.
