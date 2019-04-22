@@ -14,11 +14,12 @@
 
 from __future__ import unicode_literals, absolute_import, print_function, division
 
-import sys
+import codecs
+import functools
 import os
 import re
+import sys
 import threading
-import codecs
 import traceback
 from collections import defaultdict
 
@@ -42,7 +43,11 @@ _regex_type = type(re.compile(''))
 
 
 def get_input(prompt):
-    """Get decoded input from the terminal (equivalent to python 3's ``input``).
+    """Get decoded input from the terminal (equivalent to Python 3's ``input``).
+
+    :param str prompt: what to display as a prompt on the terminal
+    :return: the user's input
+    :rtype: str
     """
     if sys.version_info.major >= 3:
         return input(prompt)
@@ -51,10 +56,11 @@ def get_input(prompt):
 
 
 def get_raising_file_and_line(tb=None):
-    """Return the file and line number of the statement that raised the tb.
+    """Get the file and line number where an exception happened.
 
-    Returns: (filename, lineno) tuple
-
+    :param tb: the traceback (uses the most recent exception if not given)
+    :return: a tuple of the filename and line number
+    :rtype: (str, int)
     """
     if not tb:
         tb = sys.exc_info()[2]
@@ -65,9 +71,18 @@ def get_raising_file_and_line(tb=None):
 
 
 def compile_rule(nick, pattern, alias_nicks):
-    """
-    Return a compiled rule regex, replacing placeholders for ``$nick`` and
-    ``$nickname`` with the values defined in the bot's config at startup.
+    """Compile a rule regex and fill in nickname placeholders.
+
+    :param str nick: the nickname to use when replacing ``$nick`` and
+                     ``$nickname`` placeholders in the ``pattern``
+    :param str pattern: the rule regex pattern
+    :param list alias_nicks: a list of alternatives that should also be accepted
+                             instead of ``nick``
+    :return: the compiled regex ``pattern``, with placeholders for ``$nick`` and
+             ``$nickname`` filled in
+    :rtype: :py:class:`re.Pattern`
+
+    Will not recompile an already compiled pattern.
     """
     # Not sure why this happens on reloads, but it shouldn't cause problems…
     if isinstance(pattern, _regex_type):
@@ -90,7 +105,13 @@ def compile_rule(nick, pattern, alias_nicks):
 
 
 def get_command_regexp(prefix, command):
-    """Return a compiled regexp object that implements the command."""
+    """Get a compiled regexp object that implements the command.
+
+    :param str prefix: the command prefix (interpreted as regex)
+    :param str command: the name of the command
+    :return: a compiled regexp object that implements the command
+    :rtype: :py:class:`re.Pattern`
+    """
     # Escape all whitespace with a single backslash. This ensures that regexp
     # in the prefix is treated as it was before the actual regexp was changed
     # to use the verbose syntax.
@@ -101,7 +122,13 @@ def get_command_regexp(prefix, command):
 
 
 def get_command_pattern(prefix, command):
-    """Return the uncompiled regex pattern for standard commands."""
+    """Get the uncompiled regex pattern for standard commands.
+
+    :param str prefix: the command prefix (interpreted as regex)
+    :param str command: the command name
+    :return: a regex pattern that will match the given command
+    :rtype: str
+    """
     # This regexp matches equivalently and produces the same
     # groups 1 and 2 as the old regexp: r'^%s(%s)(?: +(.*))?$'
     # The only differences should be handling all whitespace
@@ -124,7 +151,15 @@ def get_command_pattern(prefix, command):
 
 
 def get_nickname_command_regexp(nick, command, alias_nicks):
-    """Return a compiled regexp object that implements the nickname command."""
+    """Get a compiled regexp object that implements the nickname command.
+
+    :param str nick: the bot's nickname
+    :param str command: the command name
+    :param list alias_nicks: a list of alternatives that should also be accepted
+                             instead of ``nick``
+    :return: a compiled regex pattern that implements the given nickname command
+    :rtype: :py:class:`re.Pattern`
+    """
     if isinstance(alias_nicks, unicode):
         alias_nicks = [alias_nicks]
     elif not isinstance(alias_nicks, list):
@@ -134,7 +169,12 @@ def get_nickname_command_regexp(nick, command, alias_nicks):
 
 
 def get_nickname_command_pattern(command):
-    """Return the uncompiled regex pattern for nickname commands."""
+    """Get the uncompiled regex pattern for a nickname command.
+
+    :param str command: the command name
+    :return: a regex pattern that will match the given nickname command
+    :rtype: str
+    """
     return r"""
         ^
         $nickname[:,]? # Nickname.
@@ -155,16 +195,17 @@ def get_nickname_command_pattern(command):
 def get_sendable_message(text, max_length=400):
     """Get a sendable ``text`` message, with its excess when needed.
 
-    :param str txt: unicode string of text to send
+    :param str txt: text to send (expects Unicode-encoded string)
     :param int max_length: maximum length of the message to be sendable
     :return: a tuple of two values, the sendable text and its excess text
+    :rtype: (str, str)
 
     We're arbitrarily saying that the max is 400 bytes of text when
     messages will be split. Otherwise, we'd have to account for the bot's
     hostmask, which is hard.
 
-    The `max_length` is the max length of text in **bytes**, but we take
-    care of unicode 2-bytes characters, by working on the unicode string,
+    The ``max_length`` is the max length of text in **bytes**, but we take
+    care of Unicode 2-byte characters by working on the Unicode string,
     then making sure the bytes version is smaller than the max length.
     """
     unicode_max_length = max_length
@@ -187,28 +228,27 @@ def get_sendable_message(text, max_length=400):
 
 
 def deprecated(old):
+    """Decorator to mark deprecated functions in Sopel's API
+
+    Any time a decorated function is used, a deprecation warning will be printed
+    to the console/log-file.
+    """
+    @functools.wraps(old)
     def new(*args, **kwargs):
         print('Function %s is deprecated.' % old.__name__, file=sys.stderr)
         trace = traceback.extract_stack()
         for line in traceback.format_list(trace[:-1]):
             stderr(line[:-1])
         return old(*args, **kwargs)
-    new.__doc__ = old.__doc__
-    new.__name__ = old.__name__
     return new
 
 
-# from
+# This class was taken from the page below, which no longer exists. The current
+# site has nothing related to it, and it was never captured by archive.org.
+# Maybe the original author can provide a current link (asked on Twitter)
 # http://parand.com/say/index.php/2007/07/13/simple-multi-dimensional-dictionaries-in-python/
-# A simple class to make mutli dimensional dict easy to use
 class Ddict(dict):
-
-    """Class for multi-dimensional ``dict``.
-
-    A simple helper class to ease the creation of multi-dimensional ``dict``\\s.
-
-    """
-
+    """A simple class to make multi-dimensional ``dict``\\s easy to use."""
     def __init__(self, default=None):
         self.default = default
 
@@ -227,6 +267,9 @@ class Identifier(unicode):
     This case insensitivity includes the case convention conventions regarding
     ``[]``, ``{}``, ``|``, ``\\``, ``^`` and ``~`` described in RFC 2812.
     """
+    # May want to tweak this and update documentation accordingly when dropping
+    # Python 2 support, since in py3 plain str is Unicode and a "unicode" type
+    # no longer exists. Probably lots of code will need tweaking, tbh.
 
     def __new__(cls, identifier):
         # According to RFC2812, identifiers have to be in the ASCII range.
@@ -239,12 +282,22 @@ class Identifier(unicode):
         return s
 
     def lower(self):
-        """Return the identifier converted to lower-case per RFC 2812."""
+        """Get the RFC 2812-compliant lowercase version of this identifier.
+
+        :return: RFC 2812-compliant lowercase version of the
+                 :py:class:`Identifier` instance
+        :rtype: str
+        """
         return self._lowered
 
     @staticmethod
     def _lower(identifier):
-        """Returns `identifier` in lower case per RFC 2812."""
+        """Convert an identifier to lowercase per RFC 2812.
+
+        :param str identifier: the identifier (nickname or channel) to convert
+        :return: RFC 2812-compliant lowercase version of ``identifier``
+        :rtype: str
+        """
         if isinstance(identifier, Identifier):
             return identifier._lowered
         # The tilde replacement isn't needed for identifiers, but is for
@@ -291,36 +344,41 @@ class Identifier(unicode):
         return not (self == other)
 
     def is_nick(self):
-        """Returns True if the Identifier is a nickname (as opposed to channel)
+        """Check if the Identifier is a nickname (i.e. not a channel)
+
+        :return: ``True`` if this :py:class:`Identifier` is a nickname;
+                 ``False`` if it appears to be a channel
         """
         return self and not self.startswith(_channel_prefixes)
 
 
 class OutputRedirect(object):
-
-    """Redirect te output to the terminal and a log file.
+    """Redirect the output to the terminal and a log file.
 
     A simplified object used to write to both the terminal and a log file.
-
     """
 
     def __init__(self, logpath, stderr=False, quiet=False):
-        """Create an object which will to to a file and the terminal.
+        """Create an object which will log to both a file and the terminal.
+
+        :param str logpath: path to the log file
+        :param bool stderr: write output to stderr if ``True``, or to stdout
+                            otherwise
+        :param bool quiet: write to the log file only if ``True`` (and not to
+                           the terminal)
 
         Create an object which will log to the file at ``logpath`` as well as
         the terminal.
-        If ``stderr`` is given and true, it will write to stderr rather than
-        stdout.
-        If ``quiet`` is given and True, data will be written to the log file
-        only, but not the terminal.
-
         """
         self.logpath = logpath
         self.stderr = stderr
         self.quiet = quiet
 
     def write(self, string):
-        """Write the given ``string`` to the logfile and terminal."""
+        """Write the given ``string`` to the logfile and terminal.
+
+        :param str string: the string to write
+        """
         if not self.quiet:
             try:
                 if self.stderr:
@@ -339,6 +397,7 @@ class OutputRedirect(object):
                 logfile.write(unicode(string, 'utf8', errors="replace"))
 
     def flush(self):
+        """Flush the file writing buffer."""
         if self.stderr:
             sys.__stderr__.flush()
         else:
@@ -356,8 +415,9 @@ def stdout(string):
 def stderr(string):
     """Print the given ``string`` to stderr.
 
-    This is equivalent to ``print >> sys.stderr, string``
+    :param str string: the string to output
 
+    This is equivalent to ``print >> sys.stderr, string``
     """
     print(string, file=sys.stderr)
 
@@ -365,10 +425,16 @@ def stderr(string):
 def check_pid(pid):
     """Check if a process is running with the given ``PID``.
 
-    *Availability: Only on POSIX systems*
+    :param int pid: PID to check
+    :return bool: ``True`` if the given PID is running, ``False`` otherwise
 
-    Return ``True`` if there is a process running with the given ``PID``.
+    *Availability: POSIX systems only.*
 
+    .. note::
+        Matching the :py:func:`os.kill` behavior this function needs on Windows
+        was rejected in
+        `Python issue #14480 <https://bugs.python.org/issue14480>`_, so
+        :py:func:`check_pid` cannot be used on Windows systems.
     """
     try:
         os.kill(pid, 0)
@@ -379,28 +445,40 @@ def check_pid(pid):
 
 
 def get_hostmask_regex(mask):
-    """Return a compiled `re.RegexObject` for an IRC hostmask"""
+    """Get a compiled regex pattern for an IRC hostmask
+
+    :param str mask: the hostmask that the pattern should match
+    :return: a compiled regex pattern matching the given ``mask``
+    :rtype: :py:class:`re.Pattern`
+    """
     mask = re.escape(mask)
     mask = mask.replace(r'\*', '.*')
     return re.compile(mask + '$', re.I)
 
 
 class SopelMemory(dict):
-
-    """A simple thread-safe dict implementation.
-
-    *Availability: 4.0; available as ``Sopel.SopelMemory`` in 3.1.0 - 3.2.0*
+    """A simple thread-safe ``dict`` implementation.
 
     In order to prevent exceptions when iterating over the values and changing
-    them at the same time from different threads, we use a blocking lock on
+    them at the same time from different threads, we use a blocking lock in
     ``__setitem__`` and ``contains``.
 
+    .. versionadded:: 3.1
+        As ``Willie.WillieMemory``
+    .. versionchanged:: 4.0
+        Moved to ``tools.WillieMemory``
+    .. versionchanged:: 6.0
+        Renamed from ``WillieMemory`` to ``SopelMemory``
     """
     def __init__(self, *args):
         dict.__init__(self, *args)
         self.lock = threading.Lock()
 
     def __setitem__(self, key, value):
+        """Set a key equal to a value.
+
+        The dict is locked for other writes while doing so.
+        """
         self.lock.acquire()
         result = dict.__setitem__(self, key, value)
         self.lock.release()
@@ -409,26 +487,43 @@ class SopelMemory(dict):
     def __contains__(self, key):
         """Check if a key is in the dict.
 
-        It locks it for writes when doing so.
-
+        The dict is locked for writes while doing so.
         """
         self.lock.acquire()
         result = dict.__contains__(self, key)
         self.lock.release()
         return result
 
+    @deprecated
     def contains(self, key):
-        """Backwards compatability with 3.x, use `in` operator instead."""
+        """Check if ``key`` is in the memory
+
+        :param str key: key to check for
+
+        .. deprecated:: 7.0
+            Will be removed in Sopel 8. If you aren't already using the ``in``
+            operator, you should be.
+        """
         return self.__contains__(key)
 
 
 class SopelMemoryWithDefault(defaultdict):
-    """Same as SopelMemory, but subclasses from collections.defaultdict."""
+    """Same as SopelMemory, but subclasses from collections.defaultdict.
+
+    .. versionadded:: 4.3
+        As ``WillieMemoryWithDefault``
+    .. versionchanged:: 6.0
+        Renamed to ``SopelMemoryWithDefault``
+    """
     def __init__(self, *args):
         defaultdict.__init__(self, *args)
         self.lock = threading.Lock()
 
     def __setitem__(self, key, value):
+        """Set a key equal to a value.
+
+        The dict is locked for other writes while doing so.
+        """
         self.lock.acquire()
         result = defaultdict.__setitem__(self, key, value)
         self.lock.release()
@@ -437,14 +532,21 @@ class SopelMemoryWithDefault(defaultdict):
     def __contains__(self, key):
         """Check if a key is in the dict.
 
-        It locks it for writes when doing so.
-
+        The dict is locked for writes while doing so.
         """
         self.lock.acquire()
         result = defaultdict.__contains__(self, key)
         self.lock.release()
         return result
 
+    @deprecated
     def contains(self, key):
-        """Backwards compatability with 3.x, use `in` operator instead."""
+        """Check if ``key`` is in the memory
+
+        :param str key: key to check for
+
+        .. deprecated:: 7.0
+            Will be removed in Sopel 8. If you aren't already using the ``in``
+            operator, you should be.
+        """
         return self.__contains__(key)
