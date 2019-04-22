@@ -14,11 +14,12 @@
 
 from __future__ import unicode_literals, absolute_import, print_function, division
 
-import sys
+import codecs
+import functools
 import os
 import re
+import sys
 import threading
-import codecs
 import traceback
 from collections import defaultdict
 
@@ -232,14 +233,13 @@ def deprecated(old):
     Any time a decorated function is used, a deprecation warning will be printed
     to the console/log-file.
     """
+    @functools.wraps(old)
     def new(*args, **kwargs):
         print('Function %s is deprecated.' % old.__name__, file=sys.stderr)
         trace = traceback.extract_stack()
         for line in traceback.format_list(trace[:-1]):
             stderr(line[:-1])
         return old(*args, **kwargs)
-    new.__doc__ = old.__doc__
-    new.__name__ = old.__name__
     return new
 
 
