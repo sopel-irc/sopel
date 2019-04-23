@@ -65,7 +65,50 @@ class ConfigFunctionalTest(unittest.TestCase):
 
     def test_listattribute_with_value_containing_comma(self):
         self.config.fake.listattr = ['spam, egg, sausage', 'bacon']
-        self.assertEqual(self.config.fake.listattr, ['spam', 'egg', 'sausage', 'bacon'])
+        self.assertEqual(self.config.fake.listattr, ['spam, egg, sausage', 'bacon'])
+
+    def test_listattribute_with_value_containing_nonescape_backslash(self):
+        self.config.fake.listattr = ['spam', r'egg\sausage', 'bacon']
+        self.assertEqual(self.config.fake.listattr, ['spam', r'egg\sausage', 'bacon'])
+
+        self.config.fake.listattr = ['spam', r'egg\tacos', 'bacon']
+        self.assertEqual(self.config.fake.listattr, ['spam', r'egg\tacos', 'bacon'])
+
+    def test_listattribute_with_value_containing_standard_escape_sequence(self):
+        self.config.fake.listattr = ['spam', 'egg\tsausage', 'bacon']
+        self.assertEqual(self.config.fake.listattr, ['spam', 'egg\tsausage', 'bacon'])
+
+        self.config.fake.listattr = ['spam', 'egg\nsausage', 'bacon']
+        self.assertEqual(self.config.fake.listattr, ['spam', 'egg\nsausage', 'bacon'])
+
+        self.config.fake.listattr = ['spam', 'egg\\sausage', 'bacon']
+        self.assertEqual(self.config.fake.listattr, ['spam', 'egg\\sausage', 'bacon'])
+
+    def test_listattribute_with_value_ending_in_special_chars(self):
+        self.config.fake.listattr = ['spam', 'egg', 'sausage\\', 'bacon']
+        self.assertEqual(self.config.fake.listattr, ['spam', 'egg', 'sausage\\', 'bacon'])
+
+        self.config.fake.listattr = ['spam', 'egg', 'sausage,', 'bacon']
+        self.assertEqual(self.config.fake.listattr, ['spam', 'egg', 'sausage,', 'bacon'])
+
+        self.config.fake.listattr = ['spam', 'egg', 'sausage,,', 'bacon']
+        self.assertEqual(self.config.fake.listattr, ['spam', 'egg', 'sausage,,', 'bacon'])
+
+    def test_listattribute_with_value_containing_adjacent_special_chars(self):
+        self.config.fake.listattr = ['spam', r'egg\,sausage', 'bacon']
+        self.assertEqual(self.config.fake.listattr, ['spam', r'egg\,sausage', 'bacon'])
+
+        self.config.fake.listattr = ['spam', r'egg\,\sausage', 'bacon']
+        self.assertEqual(self.config.fake.listattr, ['spam', r'egg\,\sausage', 'bacon'])
+
+        self.config.fake.listattr = ['spam', r'egg,\,sausage', 'bacon']
+        self.assertEqual(self.config.fake.listattr, ['spam', r'egg,\,sausage', 'bacon'])
+
+        self.config.fake.listattr = ['spam', 'egg,,sausage', 'bacon']
+        self.assertEqual(self.config.fake.listattr, ['spam', 'egg,,sausage', 'bacon'])
+
+        self.config.fake.listattr = ['spam', r'egg\\sausage', 'bacon']
+        self.assertEqual(self.config.fake.listattr, ['spam', r'egg\\sausage', 'bacon'])
 
     def test_choiceattribute_when_none(self):
         self.config.fake.choiceattr = None
