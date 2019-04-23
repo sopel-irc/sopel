@@ -54,6 +54,10 @@ Core changes
   * Variable naming format: `SOPEL_SECTION_OPTION`
   * Underscores in `SECTION` and `OPTION` names are preserved, e.g.
     `SOPEL_CORE_AUTH_PASSWORD`
+* `ListAttribute` config values can now contain commas [[#1460][]]
+  * If manually editing the config file, any comma (`,`) that are part of the
+    value (not an item delimiter) should be escaped with a backslash (`\`) as
+    `\,`, and `\` itself should be escaped as `\\`
 * Example service unit files now include a multi-instance template for systemd
   [[#1059][]]
 * Example systemd unit files wait until networking is connected before starting
@@ -77,6 +81,11 @@ Core changes
 API changes
 -----------
 
+* [API documentation][api-docs] has been overhauled [[#1563][]]
+  * More consistent style
+  * Better use of Sphinx features (e.g. parameter definitions, return value
+    notes, & version annotations)
+  * General cleanup and copy-editing
 * Added a set of methods in the `bot` object to manipulate URL callbacks:
   `bot.register_url_callback`, `bot.unregister_url_callback`, and
   `bot.search_url_callbacks` [[#1508][]]
@@ -92,6 +101,9 @@ API changes
   * Decorated callables will receive messages that Sopel itself sends,
     regardless of whether the IRC server actually supports `echo-message`
   * Avoid sending output from `@echo`-decorated callables; this will cause loops
+* Officially deprecated the methods `SopelMemory.contains()` and
+  `SopelMemoryWithDefault.contains()`, to be removed in Sopel 8 [[#1563][]]
+  * Use the `in` operator instead
 * Added a new `user_help` kwarg to `@module.example` decorator [[#1403][]]
   * This allows multiple help examples per command, as requested in [#1200][]
   * See the [Sopel 7 migration guide][sopel-7-migration] for details on using
@@ -119,6 +131,7 @@ API changes
 [#1451]: https://github.com/sopel-irc/sopel/pull/1451
 [#1456]: https://github.com/sopel-irc/sopel/pull/1456
 [#1458]: https://github.com/sopel-irc/sopel/pull/1458
+[#1460]: https://github.com/sopel-irc/sopel/pull/1460
 [#1462]: https://github.com/sopel-irc/sopel/pull/1462
 [#1470]: https://github.com/sopel-irc/sopel/pull/1470
 [#1472]: https://github.com/sopel-irc/sopel/pull/1472
@@ -136,9 +149,11 @@ API changes
 [#1537]: https://github.com/sopel-irc/sopel/pull/1537
 [#1542]: https://github.com/sopel-irc/sopel/pull/1542
 [#1561]: https://github.com/sopel-irc/sopel/pull/1561
+[#1563]: https://github.com/sopel-irc/sopel/pull/1563
 
-[sopel-7-migration]: https://sopel.chat/usage/installing/upgrading-to-sopel-7/
+[api-docs]: https://sopel.chat/docs/
 [per-channel-conf]: https://sopel.chat/usage/per-channel-configuration/
+[sopel-7-migration]: https://sopel.chat/usage/installing/upgrading-to-sopel-7/
 
 
 Changes between 6.6.2 and 6.6.3
