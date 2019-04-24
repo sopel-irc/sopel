@@ -68,7 +68,8 @@ Core changes
   user to report any issues (because test coverage on an unrecognized platform
   name is likely to be nil) [[#1487][]]
 * Large amounts of internal refactoring and cleanup [[#1424][], [#1429][],
-  [#1456][], [#1458][], [#1472][], [#1510][], [#1527][], [#1542][], [#1561][]]
+  [#1456][], [#1458][], [#1472][], [#1510][], [#1527][], [#1542][], [#1561][],
+  [#1567][]]
 * Sopel 7 will emit warnings when run under Python 2, as Python 2.7 has an
   end-of-support date of January 1, 2020 [[#1488][]]
   * While Sopel 7 is intended to remain compatible with Python 2, future
@@ -79,6 +80,10 @@ Core changes
 * Added support for disabling commands (or entire modules) on a per-channel
   basis [[#1235][]]
   * See how it works: [Per-channel configuration][per-channel-conf]
+* Removed unnecessary detail from the warning printed when a deprecated
+  function is used [[#1568][]]
+  * Typical length of output for each deprecated function call reduced from
+    roughly 15 lines to 3 (warning, file/line, and offending code snippet)
 
 API changes
 -----------
@@ -155,6 +160,8 @@ API changes
 [#1542]: https://github.com/sopel-irc/sopel/pull/1542
 [#1561]: https://github.com/sopel-irc/sopel/pull/1561
 [#1563]: https://github.com/sopel-irc/sopel/pull/1563
+[#1567]: https://github.com/sopel-irc/sopel/pull/1567
+[#1568]: https://github.com/sopel-irc/sopel/pull/1568
 
 [api-docs]: https://sopel.chat/docs/
 [per-channel-conf]: https://sopel.chat/usage/per-channel-configuration/
