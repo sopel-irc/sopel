@@ -98,6 +98,17 @@ def setup(bot):
         bot.memory['shortened_urls'] = tools.SopelMemory()
 
 
+def shutdown(bot):
+    # Unset `url_exclude` and `last_seen_url`, but not `shortened_urls`;
+    # clearing `shortened_urls` will increase API calls. Leaving it in memory
+    # should not lead to unexpected behavior.
+    for key in ['url_exclude', 'last_seen_url']:
+        try:
+            del bot.memory[key]
+        except KeyError:
+            pass
+
+
 @module.commands('title')
 @module.example('.title https://www.google.com', '[ Google ] - www.google.com')
 def title_command(bot, trigger):
