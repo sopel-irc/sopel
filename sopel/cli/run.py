@@ -113,17 +113,21 @@ def run(settings, pid_file, daemon=False):
 
 def add_legacy_options(parser):
     parser.add_argument("-d", '--fork', action="store_true",
-                        dest="daemonize", help="Daemonize Sopel")
+                        dest="daemonize",
+                        help=(
+                            "Daemonize Sopel. "
+                            "(deprecated, and will be removed in Sopel 8; "
+                            "use ``sopel start -d`` instead)"))
     parser.add_argument("-q", '--quit', action="store_true", dest="quit",
                         help=(
                             "Gracefully quit Sopel "
                             "(deprecated, and will be removed in Sopel 8; "
-                            "use `sopel stop` instead)"))
+                            "use ``sopel stop`` instead)"))
     parser.add_argument("-k", '--kill', action="store_true", dest="kill",
                         help=(
                             "Kill Sopel "
                             "(deprecated, and will be removed in Sopel 8; "
-                            "use `sopel stop --kill` instead)"))
+                            "use ``sopel stop --kill`` instead)"))
     parser.add_argument("-r", '--restart', action="store_true", dest="restart",
                         help=(
                             "Restart Sopel "
@@ -179,14 +183,19 @@ def build_parser():
     # manage `start` sub-command
     parser_start = subparsers.add_parser(
         'start',
-        description='Start a Sopel instance',
+        description='Start a Sopel instance. '
+                    'This command requires an existing configuration file '
+                    'that can be generated with ``sopel configure``.',
         help='Start a Sopel instance')
     parser_start.add_argument(
         '-d', '--fork',
         dest='daemonize',
         action='store_true',
         default=False,
-        help='Run Sopel as a daemon (fork)')
+        help='Run Sopel as a daemon (fork). This bot will safely run in the '
+             'background. The instance will be named after the name of the '
+             'configuration file used to run it. '
+             'To stop it, use ``sopel stop`` (with the same configuration).')
     parser_start.add_argument(
         '--quiet',
         action="store_true",
@@ -196,18 +205,30 @@ def build_parser():
 
     # manage `configure` sub-command
     parser_configure = subparsers.add_parser(
-        'configure', help='Sopel\'s Wizard tool')
+        'configure',
+        description='Run the configuration wizard. It can be used to create '
+                    'a new configuration file or to update an existing one.',
+        help='Sopel\'s Wizard tool')
     parser_configure.add_argument(
         '--modules',
         action='store_true',
         default=False,
-        dest='modules')
+        dest='modules',
+        help='Check for Sopel plugins that requires configuration, and run '
+             'their configuration wizard.')
     utils.add_common_arguments(parser_configure)
 
     # manage `stop` sub-command
     parser_stop = subparsers.add_parser(
         'stop',
-        description='Stop a running Sopel instance',
+        description='Stop a running Sopel instance. '
+                    'This command determines the instance to quit by the name '
+                    'of the configuration file used ("default", or the one '
+                    'from the ``-c/--config`` option). '
+                    'This command should be used when the bot is running in '
+                    'the background from ``sopel start -d``, and should not '
+                    'be used when Sopel is managed by a process manager '
+                    '(like systemd or supervisor).',
         help='Stop a running Sopel instance')
     parser_stop.add_argument(
         '-k', '--kill',
