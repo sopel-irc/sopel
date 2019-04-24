@@ -81,7 +81,7 @@ def setup(bot):
     # callbacks list because 1, it's easier to deal with modules that are still
     # using this list, and not the newer callbacks list and 2, having a lambda
     # just to pass is kinda ugly.
-    if not bot.memory.contains('url_exclude'):
+    if 'url_exclude' not in bot.memory:
         bot.memory['url_exclude'] = regexes
     else:
         exclude = bot.memory['url_exclude']
@@ -90,11 +90,11 @@ def setup(bot):
         bot.memory['url_exclude'] = exclude
 
     # Ensure last_seen_url is in memory
-    if not bot.memory.contains('last_seen_url'):
+    if 'last_seen_url' not in bot.memory:
         bot.memory['last_seen_url'] = tools.SopelMemory()
 
     # Initialize shortened_urls as a dict if it doesn't exist.
-    if not bot.memory.contains('shortened_urls'):
+    if 'shortened_urls' not in bot.memory:
         bot.memory['shortened_urls'] = tools.SopelMemory()
 
 
@@ -279,7 +279,7 @@ def get_or_create_shorturl(bot, url):
     """
     # Check bot memory to see if the shortened URL is already in
     # memory
-    if bot.memory['shortened_urls'].contains(url):
+    if url in bot.memory['shortened_urls']:
         return bot.memory['shortened_urls'][url]
 
     tinyurl = get_tinyurl(url)

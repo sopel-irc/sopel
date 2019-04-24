@@ -148,7 +148,7 @@ class Sopel(irc.Bot):
 
         Bot must be connected and in at least one channel.
         """
-        if not self.users or not self.users.contains(self.nick):
+        if not self.users or self.nick not in self.users:
             raise KeyError("'hostmask' not available: bot must be connected and in at least one channel.")
 
         return self.users.get(self.nick).hostmask
@@ -653,7 +653,7 @@ class Sopel(irc.Bot):
             This method replaces manual management of ``url_callbacks`` in
             Sopel's plugins, so instead of doing this in ``setup()``::
 
-                if not bot.memory.contains('url_callbacks'):
+                if 'url_callbacks' not in bot.memory:
                     bot.memory['url_callbacks'] = tools.SopelMemory()
 
                 regex = re.compile(r'http://example.com/path/.*')
@@ -665,7 +665,7 @@ class Sopel(irc.Bot):
                 bot.register_url_callback(regex, callback)
 
         """
-        if not self.memory.contains('url_callbacks'):
+        if 'url_callbacks' not in self.memory:
             self.memory['url_callbacks'] = tools.SopelMemory()
 
         if isinstance(pattern, basestring):
@@ -695,7 +695,7 @@ class Sopel(irc.Bot):
                 bot.unregister_url_callback(regex)
 
         """
-        if not self.memory.contains('url_callbacks'):
+        if 'url_callbacks' not in self.memory:
             # nothing to unregister
             return
 
