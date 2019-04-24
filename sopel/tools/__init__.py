@@ -235,7 +235,7 @@ def deprecated(old):
     """
     @functools.wraps(old)
     def new(*args, **kwargs):
-        print('Function %s is deprecated.' % old.__name__, file=sys.stderr)
+        print('Function "%s" is deprecated.' % old.__name__, file=sys.stderr)
         trace = traceback.extract_stack()
         for line in traceback.format_list(trace[:-1]):
             stderr(line[:-1])
