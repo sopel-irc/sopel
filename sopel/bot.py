@@ -65,20 +65,26 @@ class Sopel(irc.Bot):
         self._plugins = {}
         self.config = config
         """The :class:`sopel.config.Config` for the current Sopel instance."""
+
         self.doc = {}
+        """A dictionary of command names to their documentation.
+
+        Each command is mapped to its docstring and any available examples, if
+        declared in the module's code.
+
+        .. versionchanged:: 3.2
+            Use the first item in each callable's commands list as the key,
+            instead of the function name as declared in the source code.
         """
-        A dictionary of command names to their docstring and example, if
-        declared. The first item in a callable's commands list is used as the
-        key in version *3.2* onward. Prior to *3.2*, the name of the function
-        as declared in the source code was used.
-        """
+
         self._command_groups = collections.defaultdict(list)
         """A mapping of module names to a list of commands in it."""
+
         self.stats = {}  # deprecated, remove in 7.0
         self._times = {}
         """
-        A dictionary mapping lower-case'd nicks to dictionaries which map
-        funtion names to the time which they were last used by that nick.
+        A dictionary mapping lowercased nicks to dictionaries which map
+        function names to the time which they were last used by that nick.
         """
 
         self.server_capabilities = {}
@@ -88,14 +94,17 @@ class Sopel(irc.Bot):
         it will be here as ``{"sasl": "EXTERNAL"}``. Capabilities specified
         without any options will have ``None`` as the value.
 
-        For servers that do not support IRCv3, this will be an empty set."""
+        For servers that do not support IRCv3, this will be an empty set.
+        """
+
         self.enabled_capabilities = set()
         """A set containing the IRCv3 capabilities that the bot has enabled."""
+
         self._cap_reqs = dict()
-        """A dictionary of capability names to a list of requests"""
+        """A dictionary of capability names to a list of requests."""
 
         self.privileges = dict()
-        """A dictionary of channels to their users and privilege levels
+        """A dictionary of channels to their users and privilege levels.
 
         The value associated with each channel is a dictionary of
         :class:`sopel.tools.Identifier`\\s to
@@ -109,17 +118,18 @@ class Sopel(irc.Bot):
         self.channels = tools.SopelMemory()  # name to chan obj
         """A map of the channels that Sopel is in.
 
-        The keys are Identifiers of the channel names, and map to
-        :class:`sopel.tools.target.Channel` objects which contain the users in
-        the channel and their permissions.
+        The keys are :class:`sopel.tools.Identifier`\\s of the channel names,
+        and map to :class:`sopel.tools.target.Channel` objects which contain
+        the users in the channel and their permissions.
         """
+
         self.users = tools.SopelMemory()  # name to user obj
         """A map of the users that Sopel is aware of.
 
-        The keys are Identifiers of the nicknames, and map to
-        :class:`sopel.tools.target.User` instances. In order for Sopel to be
-        aware of a user, it must be in at least one channel which they are also
-        in.
+        The keys are :class:`sopel.tools.Identifier`\\s of the nicknames, and
+        map to :class:`sopel.tools.target.User` instances. In order for Sopel
+        to be aware of a user, it must be in at least one channel which they
+        are also in.
         """
 
         self.db = SopelDB(config)
@@ -128,11 +138,11 @@ class Sopel(irc.Bot):
         self.memory = tools.SopelMemory()
         """
         A thread-safe dict for storage of runtime data to be shared between
-        modules. See :class:`sopel.tools.Sopel.SopelMemory`
+        modules. See :class:`sopel.tools.SopelMemory`.
         """
 
         self.shutdown_methods = []
-        """List of methods to call on shutdown"""
+        """List of methods to call on shutdown."""
 
         self.scheduler = sopel.tools.jobs.JobScheduler(self)
         self.scheduler.start()
@@ -147,7 +157,10 @@ class Sopel(irc.Bot):
 
     @property
     def hostmask(self):
-        """str: the current hostmask for the bot :class:`sopel.tools.target.User`
+        """The current hostmask for the bot :class:`sopel.tools.target.User`.
+
+        :return: the bot's current hostmask
+        :rtype: str
 
         Bot must be connected and in at least one channel.
         """
@@ -164,6 +177,11 @@ class Sopel(irc.Bot):
     def write(self, args, text=None):  # Shim this in here for autodocs
         """Send a command to the server.
 
+        :param args: an iterable of strings, which will be joined by spaces
+        :type args: :term:`iterable`
+        :param str text: a string that will be prepended with a ``:`` and added
+                         to the end of the command
+
         ``args`` is an iterable of strings, which are joined by spaces.
         ``text`` is treated as though it were the final item in ``args``, but
         is preceeded by a ``:``. This is a special case which  means that
@@ -174,13 +192,14 @@ class Sopel(irc.Bot):
         and ``sopel.write(('PRIVMSG', ':Hello, world!'))`` will send
         ``PRIVMSG :Hello, world!`` to the server.
 
-        Newlines and carriage returns ('\\n' and '\\r') are removed before
-        sending. Additionally, if the message (after joining) is longer than
-        than 510 characters, any remaining characters will not be sent.
+        Newlines and carriage returns (``'\\n'`` and ``'\\r'``) are removed
+        before sending. Additionally, if the message (after joining) is longer
+        than than 510 characters, any remaining characters will not be sent.
         """
         irc.Bot.write(self, args, text=text)
 
     def setup(self):
+        """Set up the Sopel instance."""
         load_success = 0
         load_error = 0
         load_disabled = 0
@@ -305,6 +324,11 @@ class Sopel(irc.Bot):
         return name in self._plugins
 
     def unregister(self, obj):
+        """Unregister a callable.
+
+        :param obj: the callable to unregister
+        :type obj: :term:`object`
+        """
         if not callable(obj):
             return
         if hasattr(obj, 'rule'):  # commands and intents have it added
@@ -321,6 +345,17 @@ class Sopel(irc.Bot):
             self.shutdown_methods.remove(obj)
 
     def register(self, callables, jobs, shutdowns, urls):
+        """Register a callable.
+
+        :param callables: an iterable of callables to register
+        :type callables: :term:`iterable`
+        :param jobs: an iterable of functions to periodically invoke
+        :type jobs: :term:`iterable`
+        :param shutdowns: an iterable of functions to call on shutdown
+        :type shutdowns: :term:`iterable`
+        :param urls: an iterable of functions to call when matched against a URL
+        :type urls: :term:`iterable`
+        """
         # Append module's shutdown function to the bot's list of functions to
         # call on shutdown
         self.shutdown_methods += shutdowns
@@ -347,16 +382,23 @@ class Sopel(irc.Bot):
             self.register_url_callback(func.url_regex, func)
 
     def part(self, channel, msg=None):
-        """Part a channel."""
+        """Leave a channel.
+
+        :param str channel: the channel to leave
+        :param str msg: the message to display when leaving a channel
+        """
         self.write(['PART', channel], msg)
 
     def join(self, channel, password=None):
-        """Join a channel
+        """Join a channel.
 
-        If `channel` contains a space, and no `password` is given, the space is
-        assumed to split the argument into the channel to join and its
-        password.  `channel` should not contain a space if `password` is given.
+        :param str channel: the channel to join
+        :param str password: an optional channel password
 
+        If ``channel`` contains a space, and no ``password`` is given, the
+        space is assumed to split the argument into the channel to join and its
+        password. ``channel`` should not contain a space if ``password``
+        is given.
         """
         if password is None:
             self.write(('JOIN', channel))
@@ -372,7 +414,12 @@ class Sopel(irc.Bot):
         self.say(text, recipient, max_messages)
 
     def say(self, text, recipient, max_messages=1):
-        """Send ``text`` as a PRIVMSG to ``recipient``.
+        """Send a PRIVMSG to a user or channel.
+
+        :param str text: the text to send
+        :param str recipient: the message recipient
+        :param int max_messages: the maximum number of messages to break the
+                                 text into
 
         In the context of a triggered callable, the ``recipient`` defaults to
         the channel (or nickname, if a private message) from which the message
@@ -450,7 +497,10 @@ class Sopel(irc.Bot):
             self.say(excess, max_messages - 1, recipient)
 
     def notice(self, text, dest):
-        """Send an IRC NOTICE to a user or a channel.
+        """Send an IRC NOTICE to a user or channel.
+
+        :param str text: the text to send in the NOTICE
+        :param str dest: the destination of the NOTICE
 
         Within the context of a triggered callable, ``dest`` will default to
         the channel (or nickname, if a private message), in which the trigger
@@ -459,7 +509,10 @@ class Sopel(irc.Bot):
         self.write(('NOTICE', dest), text)
 
     def action(self, text, dest):
-        """Send ``text`` as a CTCP ACTION PRIVMSG to ``dest``.
+        """Send a CTCP ACTION PRIVMSG to a user or channel.
+
+        :param str text: the text to send in the CTCP ACTION
+        :param str dest: the destination of the CTCP ACTION
 
         The same loop detection and length restrictions apply as with
         :func:`say`, though automatic message splitting is not available.
@@ -471,7 +524,13 @@ class Sopel(irc.Bot):
         self.say('\001ACTION {}\001'.format(text), dest)
 
     def reply(self, text, dest, reply_to, notice=False):
-        """Prepend ``reply_to`` to ``text``, and send as a PRIVMSG to ``dest``.
+        """Send a PRIVMSG to a user or channel, prepended with ``reply_to``.
+
+        :param str text: the text of the reply
+        :param str dest: the destination of the reply
+        :param str reply_to: the nickname that the reply will be prepended with
+        :param bool notice: whether to send the reply as a NOTICE or not,
+                            defaults to ``False``
 
         If ``notice`` is ``True``, send a NOTICE rather than a PRIVMSG.
 
@@ -500,6 +559,15 @@ class Sopel(irc.Bot):
         self.write(['KICK', channel, nick], text)
 
     def call(self, func, sopel, trigger):
+        """Call a function, applying any rate-limiting or restrictions.
+
+        :param func: the function to call
+        :type func: :term:`function`
+        :param sopel: a SopelWrapper instance
+        :type sopel: :class:`SopelWrapper`
+        :param Trigger trigger: the Trigger object for the line from the server
+                                that triggered this call
+        """
         nick = trigger.nick
         current_time = time.time()
         if nick not in self._times:
@@ -574,6 +642,10 @@ class Sopel(irc.Bot):
                 self._times[trigger.sender][func] = current_time
 
     def dispatch(self, pretrigger):
+        """Dispatch a parsed message to any registered callables.
+
+        :param PreTrigger pretrigger: a parsed message from the server
+        """
         args = pretrigger.args
         text = args[-1] if args else ''
         event = pretrigger.event
@@ -712,9 +784,20 @@ class Sopel(irc.Bot):
                 success_callback=None):
         """Tell Sopel to request a capability when it starts.
 
-        By prefixing the capability with `-`, it will be ensured that the
-        capability is not enabled. Simmilarly, by prefixing the capability with
-        `=`, it will be ensured that the capability is enabled. Requiring and
+        :param str module_name: the module requesting the capability
+        :param str capability: the capability requested, optionally prefixed
+                               with ``+`` or ``=``
+        :param str arg: arguments for the capability request
+        :param failure_callback: a function that will be called if the
+                                 capability request fails
+        :type failure_callback: :term:`function`
+        :param success_callback: a function that will be called if the
+                                 capability is successfully requested
+        :type success_callback: :term:`function`
+
+        By prefixing the capability with ``-``, it will be ensured that the
+        capability is not enabled. Similarly, by prefixing the capability with
+        ``=``, it will be ensured that the capability is enabled. Requiring and
         disabling is "first come, first served"; if one module requires a
         capability, and another prohibits it, this function will raise an
         exception in whichever module loads second. An exception will also be
@@ -722,22 +805,22 @@ class Sopel(irc.Bot):
         and the request would change the set of enabled capabilities.
 
         If the capability is not prefixed, and no other module prohibits it, it
-        will be requested.  Otherwise, it will not be requested. Since
+        will be requested. Otherwise, it will not be requested. Since
         capability requests that are not mandatory may be rejected by the
         server, as well as by other modules, a module which makes such a
         request should account for that possibility.
 
         The actual capability request to the server is handled after the
         completion of this function. In the event that the server denies a
-        request, the `failure_callback` function will be called, if provided.
-        The arguments will be a `Sopel` object, and the capability which was
-        rejected. This can be used to disable callables which rely on the
-        capability. It will be be called either if the server NAKs the request,
-        or if the server enabled it and later DELs it.
+        request, the ``failure_callback`` function will be called, if provided.
+        The arguments will be a :class:`sopel.bot.Sopel` object, and the
+        capability which was rejected. This can be used to disable callables
+        which rely on the capability. It will be be called either if the server
+        NAKs the request, or if the server enabled it and later DELs it.
 
-        The `success_callback` function will be called upon acknowledgement of
-        the capability from the server, whether during the initial capability
-        negotiation, or later.
+        The ``success_callback`` function will be called upon acknowledgement
+        of the capability from the server, whether during the initial
+        capability negotiation, or later.
 
         If ``arg`` is given, and does not exactly match what the server
         provides or what other modules have requested for that capability, it is
@@ -777,10 +860,12 @@ class Sopel(irc.Bot):
             self._cap_reqs[cap] = entry
 
     def register_url_callback(self, pattern, callback):
-        """Register a ``callback`` for URLs matching the regex ``pattern``
+        """Register a ``callback`` for URLs matching the regex ``pattern``.
 
         :param pattern: compiled regex pattern to register
+        :type pattern: :ref:`re.Pattern <python:re-objects>`
         :param callback: callable object to handle matching URLs
+        :type callback: :term:`function`
 
         .. versionadded:: 7.0
 
@@ -808,9 +893,10 @@ class Sopel(irc.Bot):
         self.memory['url_callbacks'][pattern] = callback
 
     def unregister_url_callback(self, pattern):
-        """Unregister the callback for URLs matching the regex ``pattern``
+        """Unregister the callback for URLs matching the regex ``pattern``.
 
         :param pattern: compiled regex pattern to unregister callback
+        :type pattern: :ref:`re.Pattern <python:re-objects>`
 
         .. versionadded:: 7.0
 
@@ -842,7 +928,7 @@ class Sopel(irc.Bot):
             pass
 
     def search_url_callbacks(self, url):
-        """Yield callbacks found for ``url`` matching their regex pattern
+        """Yield callbacks found for ``url`` matching their regex pattern.
 
         :param str url: URL found in a trigger
         :return: yield 2-value tuples of ``(callback, match)``
