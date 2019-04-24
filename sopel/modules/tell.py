@@ -76,8 +76,18 @@ def setup(bot):
         else:
             f.write('')
             f.close()
-    bot.memory['tell_lock'] = threading.Lock()
-    bot.memory['reminders'] = loadReminders(bot.tell_filename, bot.memory['tell_lock'])
+    if 'tell_lock' not in bot.memory:
+        bot.memory['tell_lock'] = threading.Lock()
+    if 'reminders' not in bot.memory:
+        bot.memory['reminders'] = loadReminders(bot.tell_filename, bot.memory['tell_lock'])
+
+
+def shutdown(bot):
+    for key in ['tell_lock', 'reminders']:
+        try:
+            del bot.memory[key]
+        except KeyError:
+            pass
 
 
 @commands('tell', 'ask')
