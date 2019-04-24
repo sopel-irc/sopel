@@ -237,3 +237,43 @@ if sys.version_info.major < 3:
     urlencode = urllib.urlencode
 else:
     urlencode = urllib.parse.urlencode
+
+
+def trim_url(url):
+    # clean trailing sentence- or clause-ending punctuation
+    while url[-1] in '.,?!\'":;':
+        url = url[:-1]
+
+    # clean unmatched parentheses/braces/brackets
+    for (opener, closer) in [('(', ')'), ('[', ']'), ('{', '}'), ('<', '>')]:
+        if url[-1] == closer and url.count(opener) < url.count(closer):
+            url = url[:-1]
+
+    return url
+
+
+def search_urls(text, exclusion_char=None, clean=False, schemes=None):
+    schemes = schemes or ['http', 'https', 'ftp']
+    schemes_patterns = '|'.join(re.escape(scheme) for scheme in schemes)
+    re_url = r'((?:%s)(?::\/\/\S+))' % schemes_patterns
+    if exclusion_char is not None:
+        re_url = r'((?<!%s)(?:%s)(?::\/\/\S+))' % (
+            exclusion_char, schemes_patterns)
+
+    r = re.compile(re_url, re.IGNORECASE | re.UNICODE)
+
+    urls = re.findall(r, text)
+    if clean:
+        urls = (trim_url(url) for url in urls)
+
+    # yield unique URLs in their order of appearance
+    seen = set()
+    for url in urls:
+        try:
+            url = iri_to_uri(url)
+        except Exception:  # TODO: Be specific
+            pass
+
+        if url not in seen:
+            seen.add(url)
+            yield url

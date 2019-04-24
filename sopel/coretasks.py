@@ -18,6 +18,7 @@ import sys
 import time
 import sopel
 import sopel.module
+import sopel.web
 from sopel.bot import _CapReq
 from sopel.tools import Identifier, iteritems, events
 from sopel.tools.target import User, Channel
@@ -797,3 +798,21 @@ def track_topic(bot, trigger):
     if channel not in bot.channels:
         return
     bot.channels[channel].topic = trigger.args[-1]
+
+
+@sopel.module.rule(r'(?u).*(.+://\S+).*')
+@sopel.module.unblockable
+def handle_url_callbacks(bot, trigger):
+    """Dispatch callbacks on URLs
+
+    For each URL found in the trigger, trigger the URL callback registered by
+    the ``@url`` decorator.
+    """
+    schemes = bot.config.core.auto_url_schemes
+    # find URLs in the trigger
+    for url in sopel.web.search_urls(trigger, schemes=schemes):
+        # find callbacks for said URL
+        for function, match in bot.search_url_callbacks(url):
+            # trigger callback defined by the `@url` decorator
+            if hasattr(function, 'url_regex'):
+                function(bot, trigger, match=match)
