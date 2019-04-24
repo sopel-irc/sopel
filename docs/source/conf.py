@@ -239,10 +239,12 @@ latex_documents = [
 # 7: Overview, conventions, and miscellaneous
 # 8: System management commands
 man_pages = [
-    ('cmd', 'sopel', u'Sopel IRC Bot command line',
+    ('cli', 'sopel', u'Sopel IRC Bot Command Line',
      [u'Sopel contributors'], 1),
-    ('index', 'sopel', u'Sopel IRC Bot Documentation',
+    ('package', 'sopel', u'Sopel IRC Bot Documentation',
      [u'Sopel contributors'], 3),
+    ('configure', 'sopel', u'Sopel IRC Bot Configuration',
+     [u'Sopel contributors'], 5),
 ]
 
 # If true, show URL addresses after external links.
