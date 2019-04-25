@@ -200,13 +200,13 @@ def setup(bot):
 
 
 def update_cache(bot):
-    for section, setting_names_list in help_track_settings.iteritems():
+    for section, setting_names_list in help_track_settings.items():
         for setting_name in setting_names_list:
             bot.memory[HELP_CACHE_NAMESPACE][section][setting_name] = getattr(getattr(bot.config, section), setting_name)
 
 
 def is_cache_valid(bot):
-    for section, setting_names_list in help_track_settings.iteritems():
+    for section, setting_names_list in help_track_settings.items():
         for setting_name in setting_names_list:
             if bot.memory[HELP_CACHE_NAMESPACE][section][setting_name] != getattr(getattr(bot.config, section), setting_name):
                 return False
