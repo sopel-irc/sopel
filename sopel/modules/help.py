@@ -148,6 +148,12 @@ class HelpSection(StaticSection):
 
 
 def configure(config):
+    """
+    | name | example | purpose |
+    | ---- | ------- | ------- |
+    | output | clbin | The pastebin provider to use for help output |
+    | show\\_server\\_host | True | Whether to show the IRC server's hostname/IP at the top of command listings |
+    """
     config.define_section('help', HelpSection)
     provider_list = ', '.join(PASTEBIN_PROVIDERS)
     config.help.configure_setting(
