@@ -24,8 +24,19 @@ from sopel.module import commands, rule, example, priority
 from sopel.tools import SopelMemory
 
 
-HELP_CACHE_NAMESPACE = 'help-setting-cache'  # Set top-level memory key name
+SETTING_CACHE_NAMESPACE = 'help-setting-cache'  # Set top-level memory key name
 LOGGER = get_logger(__name__)
+
+# Settings that should require the help listing to be regenerated, or
+# re-POSTed to paste, if they are changed during runtime.
+# Keys are module names, and values are lists of setting names
+# specific to that module.
+TRACKED_SETTINGS = {
+    'help': [
+        'output',
+        'show_server_host',
+    ]
+}
 
 
 class PostingException(Exception):
@@ -167,48 +178,32 @@ def configure(config):
 
 
 def setup(bot):
-    global help_prefix, help_track_settings
-
     bot.config.define_section('help', HelpSection)
 
-    # Put name of settings that should be tracked in cache validation in
-    # 'help-track-settings' dict below; i.e., those that will require the help
-    # listing to be regenerated, or re-POSTed to paste.
-    # Keys are module names, and values are lists containing setting names
-    # specific to that module; e.g. for this (help.py) module
-    # [help]
-    # show_server_host = ...
-    help_track_settings = {
-        'help': [
-            'output',
-            'show_server_host',
-        ]
-    }
-
     # Initialize memory
-    if not bot.memory.contains(HELP_CACHE_NAMESPACE):
-        bot.memory[HELP_CACHE_NAMESPACE] = SopelMemory()
+    if SETTING_CACHE_NAMESPACE not in bot.memory:
+        bot.memory[SETTING_CACHE_NAMESPACE] = SopelMemory()
 
-    for section in help_track_settings:
-        if section not in bot.memory[HELP_CACHE_NAMESPACE]:
-            bot.memory[HELP_CACHE_NAMESPACE][section] = SopelMemory()
+    # Initialize settings cache
+    for section in TRACKED_SETTINGS:
+        if section not in bot.memory[SETTING_CACHE_NAMESPACE]:
+            bot.memory[SETTING_CACHE_NAMESPACE][section] = SopelMemory()
 
-    update_cache(bot)  # Initialize cache with first call
+    update_cache(bot)  # Populate cache
 
-    help_prefix = bot.config.core.help_prefix
     bot.config.define_section('help', HelpSection)
 
 
 def update_cache(bot):
-    for section, setting_names_list in help_track_settings.iteritems():
+    for section, setting_names_list in TRACKED_SETTINGS.items():
         for setting_name in setting_names_list:
-            bot.memory[HELP_CACHE_NAMESPACE][section][setting_name] = getattr(getattr(bot.config, section), setting_name)
+            bot.memory[SETTING_CACHE_NAMESPACE][section][setting_name] = getattr(getattr(bot.config, section), setting_name)
 
 
 def is_cache_valid(bot):
-    for section, setting_names_list in help_track_settings.iteritems():
+    for section, setting_names_list in TRACKED_SETTINGS.items():
         for setting_name in setting_names_list:
-            if bot.memory[HELP_CACHE_NAMESPACE][section][setting_name] != getattr(getattr(bot.config, section), setting_name):
+            if bot.memory[SETTING_CACHE_NAMESPACE][section][setting_name] != getattr(getattr(bot.config, section), setting_name):
                 return False
     return True
 
@@ -231,7 +226,8 @@ def help(bot, trigger):
             # lines in command docstring, plus one line for example(s) if present (they're sent all on one line)
             if len(bot.doc[name][0]) + int(bool(bot.doc[name][1])) > threshold:
                 if trigger.nick != trigger.sender:  # don't say that if asked in private
-                    bot.reply('The documentation for this command is too long; I\'m sending it to you in a private message.')
+                    bot.reply('The documentation for this command is too long; '
+                              'I\'m sending it to you in a private message.')
 
                 def msgfun(l):
                     bot.msg(trigger.nick, l)
@@ -276,7 +272,8 @@ def help(bot, trigger):
             update_cache(bot)
         bot.say("I've posted a list of my commands at {0} - You can see "
                 "more info about any of these commands by doing {1}help "
-                "<command> (e.g. {1}help time)".format(url, help_prefix))
+                "<command> (e.g. {1}help time)"
+                .format(url, bot.config.core.help_prefix))
 
 
 def create_list(bot, msg):
@@ -305,5 +302,5 @@ def help2(bot, trigger):
         "Hi, I'm a bot. Say {1}commands to me in private for a list "
         "of my commands, or see https://sopel.chat for more "
         "general details. My owner is {0}."
-        .format(bot.config.core.owner, help_prefix))
+        .format(bot.config.core.owner, bot.config.core.help_prefix))
     bot.reply(response)
