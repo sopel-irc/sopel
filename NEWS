@@ -24,6 +24,7 @@ Module changes
   * This is intended mostly for resilience (so one pastebin service going
     down, as ptpb did during the 6.6.x life-cycle, won't force a new Sopel
     release), but it's also just good to have choices.
+* Optionally hide IRC server name/address in `help` command listing [[#1459][]]
 * Python version is now included in `.version` command output [[#1462][]]
 * Readability of `.choose` command output is significantly improved [[#1425][]]
 * A `.restart` command is added [[#1333][]]
@@ -140,6 +141,7 @@ API changes
 [#1451]: https://github.com/sopel-irc/sopel/pull/1451
 [#1456]: https://github.com/sopel-irc/sopel/pull/1456
 [#1458]: https://github.com/sopel-irc/sopel/pull/1458
+[#1459]: https://github.com/sopel-irc/sopel/pull/1459
 [#1460]: https://github.com/sopel-irc/sopel/pull/1460
 [#1462]: https://github.com/sopel-irc/sopel/pull/1462
 [#1470]: https://github.com/sopel-irc/sopel/pull/1470
