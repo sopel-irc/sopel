@@ -18,13 +18,13 @@ import textwrap
 
 import requests
 
+from sopel.config.types import ChoiceAttribute, ValidatedAttribute, StaticSection
 from sopel.logger import get_logger
 from sopel.module import commands, rule, example, priority
-from sopel.config.types import (
-    StaticSection, ChoiceAttribute
-)
+from sopel.tools import SopelMemory
 
 
+HELP_CACHE_NAMESPACE = 'help-setting-cache'  # Set top-level memory key name
 LOGGER = get_logger(__name__)
 
 
@@ -143,21 +143,74 @@ class HelpSection(StaticSection):
                              list(PASTEBIN_PROVIDERS),
                              default='clbin')
     """The pastebin provider to use for help output."""
+    show_server_host = ValidatedAttribute('show_server_host', bool, default=True)
+    """Show the IRC server's hostname/IP in the first line of the help listing?"""
 
 
 def configure(config):
+    """
+    | name | example | purpose |
+    | ---- | ------- | ------- |
+    | output | clbin | The pastebin provider to use for help output |
+    | show\\_server\\_host | True | Whether to show the IRC server's hostname/IP at the top of command listings |
+    """
     config.define_section('help', HelpSection)
     provider_list = ', '.join(PASTEBIN_PROVIDERS)
     config.help.configure_setting(
         'output',
         'Pick a pastebin provider: {}: '.format(provider_list)
     )
+    config.help.configure_setting(
+        'show_server_host',
+        'Should the help command show the IRC server\'s hostname/IP in the listing?'
+    )
 
 
 def setup(bot):
-    global help_prefix
+    global help_prefix, help_track_settings
+
+    bot.config.define_section('help', HelpSection)
+
+    # Put name of settings that should be tracked in cache validation in
+    # 'help-track-settings' dict below; i.e., those that will require the help
+    # listing to be regenerated, or re-POSTed to paste.
+    # Keys are module names, and values are lists containing setting names
+    # specific to that module; e.g. for this (help.py) module
+    # [help]
+    # show_server_host = ...
+    help_track_settings = {
+        'help': [
+            'output',
+            'show_server_host',
+        ]
+    }
+
+    # Initialize memory
+    if not bot.memory.contains(HELP_CACHE_NAMESPACE):
+        bot.memory[HELP_CACHE_NAMESPACE] = SopelMemory()
+
+    for section in help_track_settings:
+        if section not in bot.memory[HELP_CACHE_NAMESPACE]:
+            bot.memory[HELP_CACHE_NAMESPACE][section] = SopelMemory()
+
+    update_cache(bot)  # Initialize cache with first call
+
     help_prefix = bot.config.core.help_prefix
     bot.config.define_section('help', HelpSection)
+
+
+def update_cache(bot):
+    for section, setting_names_list in help_track_settings.iteritems():
+        for setting_name in setting_names_list:
+            bot.memory[HELP_CACHE_NAMESPACE][section][setting_name] = getattr(getattr(bot.config, section), setting_name)
+
+
+def is_cache_valid(bot):
+    for section, setting_names_list in help_track_settings.iteritems():
+        for setting_name in setting_names_list:
+            if bot.memory[HELP_CACHE_NAMESPACE][section][setting_name] != getattr(getattr(bot.config, section), setting_name):
+                return False
+    return True
 
 
 @rule('$nick' r'(?i)(help|doc) +([A-Za-z]+)(?:\?+)?$')
@@ -197,9 +250,9 @@ def help(bot, trigger):
         # heuristic in the DB, too, so it persists across restarts. Would need a
         # command to regenerate, too...
         if (
-                'command-list' in bot.memory and
-                bot.memory['command-list'][0] == len(bot.command_groups) and
-                bot.memory['command-list'][2] == bot.config.help.output
+            'command-list' in bot.memory and
+            bot.memory['command-list'][0] == len(bot.command_groups) and
+            is_cache_valid(bot)
         ):
             url = bot.memory['command-list'][1]
         else:
@@ -219,9 +272,8 @@ def help(bot, trigger):
             url = create_list(bot, '\n\n'.join(msgs))
             if not url:
                 return
-            bot.memory['command-list'] = (len(bot.command_groups),
-                                          url,
-                                          bot.config.help.output)
+            bot.memory['command-list'] = (len(bot.command_groups), url)
+            update_cache(bot)
         bot.say("I've posted a list of my commands at {0} - You can see "
                 "more info about any of these commands by doing {1}help "
                 "<command> (e.g. {1}help time)".format(url, help_prefix))
@@ -232,7 +284,10 @@ def create_list(bot, msg):
 
     Returns the URL from the chosen pastebin provider.
     """
-    msg = 'Command listing for {}@{}\n\n'.format(bot.nick, bot.config.core.host) + msg
+    msg = 'Command listing for {}{}\n\n{}'.format(
+        bot.nick,
+        ('@' + bot.config.core.host) if bot.config.help.show_server_host else '',
+        msg)
 
     try:
         result = PASTEBIN_PROVIDERS[bot.config.help.output](msg)
