@@ -1,6 +1,7 @@
 # coding=utf-8
 from __future__ import unicode_literals, absolute_import, print_function, division
 
+import errno
 import json
 import os.path
 import sys
@@ -87,8 +88,9 @@ class SopelDB(object):
     database. It simplifies those common operations, and allows direct access
     to the database, wherever the user has configured it to be.
 
-    When configured with a relative filename, it is assumed to be in the same
-    directory as the config."""
+    When configured with a relative filename, it is assumed to be in the directory
+    set (or defaulted to) in the core setting ``homedir``.
+    """
 
     def __init__(self, config):
         # MySQL - mysql://username:password@localhost/db
@@ -98,13 +100,19 @@ class SopelDB(object):
         # Handle SQLite explicitly as a default
         if db_type == 'sqlite':
             path = config.core.db_filename
-            config_dir, config_file = os.path.split(config.filename)
-            config_name, _ = os.path.splitext(config_file)
             if path is None:
-                path = os.path.join(config_dir, config_name + '.db')
+                path = os.path.join(config.core.homedir, config.basename + '.db')
             path = os.path.expanduser(path)
             if not os.path.isabs(path):
-                path = os.path.normpath(os.path.join(config_dir, path))
+                path = os.path.normpath(os.path.join(config.core.homedir, path))
+            if not os.path.isdir(os.path.dirname(path)):
+                raise OSError(
+                    errno.ENOENT,
+                    'Cannot create database file. '
+                    'No such directory: "{}". Check that configuration setting '
+                    'core.db_filename is valid'.format(os.path.dirname(path)),
+                    path
+                )
             self.filename = path
             self.url = 'sqlite:///%s' % path
         # Otherwise, handle all other database engines
