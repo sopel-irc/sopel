@@ -1,10 +1,10 @@
 # coding=utf-8
 """Types for creating section definitions.
 
-A section definition consists of a subclass of ``StaticSection``, on which any
-number of subclasses of ``BaseValidated`` (a few common ones of which are
-available in this module) are assigned as attributes. These descriptors define
-how to read values from, and write values to, the config file.
+A section definition consists of a subclass of :class:`StaticSection`, on which
+any number of subclasses of :class:`BaseValidated` (a few common ones of which
+are available in this module) are assigned as attributes. These descriptors
+define how to read values from, and write values to, the config file.
 
 As an example, if one wanted to define the ``[spam]`` section as having an
 ``eggs`` option, which contains a list of values, they could do this:

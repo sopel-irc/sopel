@@ -1,15 +1,43 @@
 # coding=utf-8
-"""
-The config object provides a simplified to access Sopel's configuration file.
-The sections of the file are attributes of the object, and the keys in the
-section are attributes of that. So, for example, the ``eggs`` attribute in the
-``[spam]`` section can be accessed from ``config.spam.eggs``.
+"""Sopel's configuration module.
 
-Section definitions (see "Section configuration sections" below) can be added
-to the config object with ``define_section``. When this is done, only the
-defined keys will be available. A section can not be given more than one
-definition. The ``[core]`` section is defined with ``CoreSection`` when the
-object is initialized.
+The :class:`sopel.config.Config` object provides an interface to access Sopel's
+configuration file. It exposes the configuration's sections through its
+attributes as object, and these objects expose their directives through their
+attributes.
+
+For example this is how to access ``core.nick`` on a :class:`Config` object::
+
+    >>> from sopel import config
+    >>> settings = config.Config('/sopel/config.cfg')
+    >>> settings.core.nick
+    'Sopel'
+
+The configuration file being::
+
+    [core]
+    nick = Sopel
+    host = irc.freenode.org
+    use_ssl = false
+    port = 6667
+    owner = dgw
+    channels = #sopel
+
+A section can be represented by a subclass of
+:class:`~sopel.config.types.StaticSection`; for example a ``[spam]`` section
+with ``eggs`` and ``bacon`` can be defined like this::
+
+    from sopel import config
+
+    class SpamSection(config.types.StaticSection):
+        eggs = config.types.ListAttribute('eggs')
+        bacon = config.types.ValidatedAttribute('bacon')
+
+The ``[core]`` section itself is represented by the
+:class:`sopel.config.core_section.CoreSection`, which is a subclass of
+:class:`~sopel.config.types.StaticSection`. It is automatically added when
+the :class:`Config` object is instanciated; it uses
+:meth:`Config.define_section` for that purpose.
 
 .. versionadded:: 6.0.0
 """
