@@ -3,7 +3,9 @@
 from __future__ import unicode_literals, absolute_import, print_function, division
 
 
+from datetime import timedelta
 from sopel import tools
+from sopel.tools.time import seconds_to_human
 
 
 def test_get_sendable_message_default():
@@ -91,3 +93,17 @@ def test_get_sendable_message_two_bytes():
     text, excess = tools.get_sendable_message('ααα α', 4)
     assert text == 'αα'
     assert excess == 'α α'
+
+
+def test_time_timedelta_formatter():
+    payload = 10000
+    assert seconds_to_human(payload) == '2 hours, 46 minutes ago'
+
+    payload = -2938124
+    assert seconds_to_human(payload) == 'in 1 month, 3 days'
+
+    payload = timedelta(hours=4)
+    assert seconds_to_human(payload) == '4 hours ago'
+
+    payload = timedelta(hours=-4)
+    assert seconds_to_human(payload) == 'in 4 hours'
