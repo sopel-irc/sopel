@@ -217,13 +217,33 @@ def handle_names(bot, trigger):
 def track_modes(bot, trigger):
     """Track usermode changes and keep our lists of ops up to date."""
     # Mode message format: <channel> *( ( "-" / "+" ) *<modes> *<modeparams> )
-    channel = Identifier(trigger.args[0])
-    line = trigger.args[1:]
+    if len(trigger.args) < 3:
+        # We need at least [channel, mode, nickname] to do anything useful
+        # MODE messages with fewer args won't help us
+        LOGGER.info("Received an apparently useless MODE message: {}"
+                    .format(trigger.raw))
+        return
+    # Our old MODE parsing code checked if any of the args was empty.
+    # Somewhere around here would be a good place to re-implement that if it's
+    # actually necessary to guard against some non-compliant IRCd. But for now
+    # let's just log malformed lines to the debug log.
+    if not all(trigger.args):
+        LOGGER.debug("The server sent a possibly malformed MODE message: {}"
+                     .format(trigger.raw))
 
+    # From here on, we will make a (possibly dangerous) assumption that the
+    # received MODE message is more-or-less compliant
+    channel = Identifier(trigger.args[0])
     # If the first character of where the mode is being set isn't a #
     # then it's a user mode, not a channel mode, so we'll ignore it.
+    # TODO: Handle CHANTYPES from ISUPPORT numeric (005)
+    # (Actually, most of this function should be rewritten again when we parse
+    # ISUPPORT...)
     if channel.is_nick():
         return
+
+    modestring = trigger.args[1]
+    nicks = [Identifier(nick) for nick in trigger.args[2:]]
 
     mapping = {'v': sopel.module.VOICE,
                'h': sopel.module.HALFOP,
@@ -231,43 +251,49 @@ def track_modes(bot, trigger):
                'a': sopel.module.ADMIN,
                'q': sopel.module.OWNER}
 
+    # Parse modes before doing anything else
     modes = []
-    for arg in line:
-        if len(arg) == 0:
-            continue
-        if arg[0] in '+-':
-            # There was a comment claiming IRC allows e.g. MODE +aB-c foo, but
-            # I don't see it in any RFCs. Leaving in the extra parsing for now.
-            sign = ''
-            modes = []
-            for char in arg:
-                if char == '+' or char == '-':
-                    sign = char
-                else:
-                    modes.append(sign + char)
-        else:
-            arg = Identifier(arg)
-            for mode in modes:
-                priv = bot.channels[channel].privileges.get(arg, 0)
-                # Log a warning if the two privilege-tracking data structures
-                # get out of sync. That should never happen.
-                # This is a good place to verify that bot.channels is doing
-                # what it's supposed to do before ultimately removing the old,
-                # deprecated bot.privileges structure completely.
-                ppriv = bot.privileges[channel].get(arg, 0)
-                if priv != ppriv:
-                    LOGGER.warning("Privilege data error! Please share Sopel's"
-                                   "raw log with the developers, if enabled. "
-                                   "(Expected {} == {} for {} in {}.)"
-                                   .format(priv, ppriv, arg, channel))
-                value = mapping.get(mode[1])
-                if value is not None:
-                    if mode[0] == '+':
-                        priv = priv | value
-                    else:
-                        priv = priv & ~value
-                    bot.privileges[channel][arg] = priv
-                    bot.channels[channel].privileges[arg] = priv
+    sign = ''
+    for char in modestring:
+        # There was a comment claiming IRC allows e.g. MODE +aB-c foo, but it
+        # doesn't seem to appear in any RFCs. But modern.ircdocs.horse shows
+        # it, so we'll leave in the extra parsing for now.
+        if char in '+-':
+            sign = char
+        elif char in mapping:
+            # Filter out unexpected modes and hope they don't have parameters
+            modes.append(sign + char)
+
+    # Try to map modes to arguments, after sanity-checking
+    if len(modes) != len(nicks) or not all([nick.is_nick() for nick in nicks]):
+        # Something fucky happening, like unusual batching of non-privilege
+        # modes together with the ones we expect. Way easier to just re-WHO
+        # than try to account for non-standard parameter-taking modes.
+        _send_who(bot, channel)
+        return
+    pairs = dict(zip(modes, nicks))
+
+    for (mode, nick) in pairs.items():
+        priv = bot.channels[channel].privileges.get(nick, 0)
+        # Log a warning if the two privilege-tracking data structures
+        # get out of sync. That should never happen.
+        # This is a good place to verify that bot.channels is doing
+        # what it's supposed to do before ultimately removing the old,
+        # deprecated bot.privileges structure completely.
+        ppriv = bot.privileges[channel].get(nick, 0)
+        if priv != ppriv:
+            LOGGER.warning("Privilege data error! Please share Sopel's"
+                           "raw log with the developers, if enabled. "
+                           "(Expected {} == {} for {} in {}.)"
+                           .format(priv, ppriv, nick, channel))
+        value = mapping.get(mode[1])
+        if value is not None:
+            if mode[0] == '+':
+                priv = priv | value
+            else:
+                priv = priv & ~value
+            bot.privileges[channel][nick] = priv
+            bot.channels[channel].privileges[nick] = priv
 
 
 @sopel.module.rule('.*')
