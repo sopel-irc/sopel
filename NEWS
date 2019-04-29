@@ -35,7 +35,7 @@ Module changes
   if they wish to be extra cheeky [[#1470][]]
 * Fixed that the `url` module had to be enabled or some link-handling
   functions didn't work [[#1510][]]
-* General code cleanup all around [[#1402][]]
+* General code cleanup all around [[#1402][], [#1573][]]
 
 Core changes
 ------------
@@ -69,8 +69,8 @@ Core changes
   user to report any issues (because test coverage on an unrecognized platform
   name is likely to be nil) [[#1487][]]
 * Large amounts of internal refactoring and cleanup [[#1424][], [#1429][],
-  [#1456][], [#1458][], [#1472][], [#1510][], [#1527][], [#1542][], [#1561][],
-  [#1567][]]
+  [#1456][], [#1458][], [#1472][], [#1510][], [#1527][], [#1542][], [#1557][],
+  [#1561][], [#1567][]]
 * Sopel 7 will emit warnings when run under Python 2, as Python 2.7 has an
   end-of-support date of January 1, 2020 [[#1488][]]
   * While Sopel 7 is intended to remain compatible with Python 2, future
@@ -160,10 +160,12 @@ API changes
 [#1527]: https://github.com/sopel-irc/sopel/pull/1527
 [#1537]: https://github.com/sopel-irc/sopel/pull/1537
 [#1542]: https://github.com/sopel-irc/sopel/pull/1542
+[#1557]: https://github.com/sopel-irc/sopel/pull/1557
 [#1561]: https://github.com/sopel-irc/sopel/pull/1561
 [#1563]: https://github.com/sopel-irc/sopel/pull/1563
 [#1567]: https://github.com/sopel-irc/sopel/pull/1567
 [#1568]: https://github.com/sopel-irc/sopel/pull/1568
+[#1573]: https://github.com/sopel-irc/sopel/pull/1573
 
 [api-docs]: https://sopel.chat/docs/
 [per-channel-conf]: https://sopel.chat/usage/per-channel-configuration/
