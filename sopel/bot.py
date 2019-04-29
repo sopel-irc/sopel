@@ -183,7 +183,7 @@ class Sopel(irc.Bot):
         load_error = 0
         load_disabled = 0
 
-        stderr("\nWelcome to Sopel. Loading modules...\n\n")
+        stderr("Welcome to Sopel. Loading modules...")
         usable_plugins = plugins.get_usable_plugins(self.config)
         for name, info in usable_plugins.items():
             plugin, is_enabled = info
@@ -219,13 +219,21 @@ class Sopel(irc.Bot):
 
         total = sum([load_success, load_error, load_disabled])
         if total and load_success:
-            stderr('\n\nRegistered %d modules\n\n' % (load_success - 1))
-            stderr('%d modules failed to load\n\n' % load_error)
-            stderr('%d modules disabled\n\n' % load_disabled)
+            stderr('Registered %d modules' % (load_success - 1))
+            stderr('%d modules failed to load' % load_error)
+            stderr('%d modules disabled' % load_disabled)
         else:
             stderr("Warning: Couldn't load any modules")
 
     def reload_plugin(self, name):
+        """Reload a plugin
+
+        :param str name: name of the plugin to reload
+        :raise PluginNotRegistered: when there is no ``name`` plugin registered
+
+        It runs the plugin's shutdown routine and unregisters it. Then it
+        reloads it, runs its setup routines, and registers it again.
+        """
         if not self.has_plugin(name):
             raise plugins.exceptions.PluginNotRegistered(name)
 
@@ -243,8 +251,8 @@ class Sopel(irc.Bot):
     def reload_plugins(self):
         """Reload all plugins
 
-        First it runs all plugin shutdown routines & unregisters all plugins.
-        Then it reloads them, runs their setup routines, and registers them
+        First, run all plugin shutdown routines and unregister all plugins.
+        Then reload all plugins, run their setup routines, and register them
         again.
         """
         registered = list(self._plugins.items())
