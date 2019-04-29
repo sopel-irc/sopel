@@ -553,10 +553,23 @@ class Sopel(irc.Bot):
         return False
 
     def _shutdown(self):
+        # Stop Job Scheduler
+        stderr('Stopping the Job Scheduler.')
+        self.scheduler.stop()
+
+        try:
+            self.scheduler.join(timeout=15)
+        except RuntimeError:
+            stderr('Unable to stop the Job Scheduler.')
+        else:
+            stderr('Job Scheduler stopped.')
+
+        self.scheduler.clear_jobs()
+
+        # Shutdown plugins
         stderr(
             'Calling shutdown for %d modules.' % (len(self.shutdown_methods),)
         )
-
         for shutdown_method in self.shutdown_methods:
             try:
                 stderr(
