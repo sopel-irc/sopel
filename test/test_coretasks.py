@@ -17,16 +17,7 @@ def sopel():
     return bot
 
 
-@pytest.fixture
-def sopel_bot(sopel):
-    pretrigger = PreTrigger(Identifier("Foo"), "PING abc")
-    bot = MockSopelWrapper(sopel, pretrigger)
-    bot.privileges = dict()
-    bot.users = dict()
-    return bot
-
-
-def test_bot_mixed_modes(sopel_bot):
+def test_bot_mixed_modes(sopel):
     """
     Ensure mixed modes like +vha are tracked correctly.
     Sopel 6.6.6 and older would assign all modes to all users. #1575
@@ -37,22 +28,22 @@ def test_bot_mixed_modes(sopel_bot):
         pretrigger = PreTrigger(
             "Foo", ":test.example.com 353 Foo = #test :Foo %s" % user
         )
-        trigger = Trigger(sopel_bot.config, pretrigger, None)
-        coretasks.handle_names(sopel_bot, trigger)
+        trigger = Trigger(sopel.config, pretrigger, None)
+        coretasks.handle_names(MockSopelWrapper(sopel, trigger), trigger)
 
     pretrigger = PreTrigger("Foo", "MODE #test +qvhao Uowner Uvoice Uhalfop Uadmin Uop")
-    trigger = Trigger(sopel_bot.config, pretrigger, None)
-    coretasks.track_modes(sopel_bot, trigger)
+    trigger = Trigger(sopel.config, pretrigger, None)
+    coretasks.track_modes(MockSopelWrapper(sopel, trigger), trigger)
 
-    assert sopel_bot.channels["#test"].privileges[Identifier("Unothing")] == 0
-    assert sopel_bot.channels["#test"].privileges[Identifier("Uvoice")] == VOICE
-    assert sopel_bot.channels["#test"].privileges[Identifier("Uhalfop")] == HALFOP
-    assert sopel_bot.channels["#test"].privileges[Identifier("Uop")] == OP
-    assert sopel_bot.channels["#test"].privileges[Identifier("Uadmin")] == ADMIN
-    assert sopel_bot.channels["#test"].privileges[Identifier("Uowner")] == OWNER
+    assert sopel.channels["#test"].privileges[Identifier("Unothing")] == 0
+    assert sopel.channels["#test"].privileges[Identifier("Uvoice")] == VOICE
+    assert sopel.channels["#test"].privileges[Identifier("Uhalfop")] == HALFOP
+    assert sopel.channels["#test"].privileges[Identifier("Uop")] == OP
+    assert sopel.channels["#test"].privileges[Identifier("Uadmin")] == ADMIN
+    assert sopel.channels["#test"].privileges[Identifier("Uowner")] == OWNER
 
 
-def test_bot_mixed_mode_removal(sopel_bot):
+def test_bot_mixed_mode_removal(sopel):
     """
     Ensure mixed mode types like -h+a are handled
     Sopel 6.6.6 and older did not handle this correctly. #1575
@@ -63,24 +54,24 @@ def test_bot_mixed_mode_removal(sopel_bot):
         pretrigger = PreTrigger(
             "Foo", ":test.example.com 353 Foo = #test :Foo %s" % user
         )
-        trigger = Trigger(sopel_bot.config, pretrigger, None)
-        coretasks.handle_names(sopel_bot, trigger)
+        trigger = Trigger(sopel.config, pretrigger, None)
+        coretasks.handle_names(MockSopelWrapper(sopel, trigger), trigger)
 
     pretrigger = PreTrigger("Foo", "MODE #test +qao Uvoice Uvoice Uvoice")
-    trigger = Trigger(sopel_bot.config, pretrigger, None)
-    coretasks.track_modes(sopel_bot, trigger)
+    trigger = Trigger(sopel.config, pretrigger, None)
+    coretasks.track_modes(MockSopelWrapper(sopel, trigger), trigger)
 
     pretrigger = PreTrigger(
         "Foo", "MODE #test -o+o-qa+v Uvoice Uop Uvoice Uvoice Uvoice"
     )
-    trigger = Trigger(sopel_bot.config, pretrigger, None)
-    coretasks.track_modes(sopel_bot, trigger)
+    trigger = Trigger(sopel.config, pretrigger, None)
+    coretasks.track_modes(MockSopelWrapper(sopel, trigger), trigger)
 
-    assert sopel_bot.channels["#test"].privileges[Identifier("Uvoice")] == VOICE
-    assert sopel_bot.channels["#test"].privileges[Identifier("Uop")] == OP
+    assert sopel.channels["#test"].privileges[Identifier("Uvoice")] == VOICE
+    assert sopel.channels["#test"].privileges[Identifier("Uop")] == OP
 
 
-def test_bot_mixed_mode_types(sopel_bot):
+def test_bot_mixed_mode_types(sopel):
     """
     Ensure mixed argument- and non-argument- modes are handled
     Sopel 6.6.6 and older did not behave well. #1575
@@ -91,29 +82,29 @@ def test_bot_mixed_mode_types(sopel_bot):
         pretrigger = PreTrigger(
             "Foo", ":test.example.com 353 Foo = #test :Foo %s" % user
         )
-        trigger = Trigger(sopel_bot.config, pretrigger, None)
-        coretasks.handle_names(sopel_bot, trigger)
+        trigger = Trigger(sopel.config, pretrigger, None)
+        coretasks.handle_names(MockSopelWrapper(sopel, trigger), trigger)
 
     # Non-attribute-requiring non-permission mode
     pretrigger = PreTrigger("Foo", "MODE #test +amov Uadmin Uop Uvoice")
-    trigger = Trigger(sopel_bot.config, pretrigger, None)
-    coretasks.track_modes(sopel_bot, trigger)
+    trigger = Trigger(sopel.config, pretrigger, None)
+    coretasks.track_modes(MockSopelWrapper(sopel, trigger), trigger)
 
-    assert sopel_bot.channels["#test"].privileges[Identifier("Uvoice")] == VOICE
-    assert sopel_bot.channels["#test"].privileges[Identifier("Uop")] == OP
-    assert sopel_bot.channels["#test"].privileges[Identifier("Uadmin")] == ADMIN
+    assert sopel.channels["#test"].privileges[Identifier("Uvoice")] == VOICE
+    assert sopel.channels["#test"].privileges[Identifier("Uop")] == OP
+    assert sopel.channels["#test"].privileges[Identifier("Uadmin")] == ADMIN
 
     # Attribute-requiring non-permission modes
     # This results in a _send_who, which isn't supported in MockSopel or this
     # test, so we just make sure it results in an exception instead of privesc.
     pretrigger = PreTrigger("Foo", "MODE #test +abov Uadmin2 x!y@z Uop2 Uvoice2")
-    trigger = Trigger(sopel_bot.config, pretrigger, None)
+    trigger = Trigger(sopel.config, pretrigger, None)
     try:
-        coretasks.track_modes(sopel_bot, trigger)
+        coretasks.track_modes(MockSopelWrapper(sopel, trigger), trigger)
     except AttributeError as e:
         if e.args[0] == "'MockSopel' object has no attribute 'enabled_capabilities'":
             return
 
-    assert sopel_bot.channels["#test"].privileges[Identifier("Uvoice2")] == VOICE
-    assert sopel_bot.channels["#test"].privileges[Identifier("Uop2")] == OP
-    assert sopel_bot.channels["#test"].privileges[Identifier("Uadmin2")] == ADMIN
+    assert sopel.channels["#test"].privileges[Identifier("Uvoice2")] == VOICE
+    assert sopel.channels["#test"].privileges[Identifier("Uop2")] == OP
+    assert sopel.channels["#test"].privileges[Identifier("Uadmin2")] == ADMIN
