@@ -18,14 +18,7 @@ import sys
 import time
 import traceback
 
-from sopel import bot, logger, plugins, tools, __version__
-from sopel.config import (
-    Config,
-    ConfigurationError,
-    ConfigurationNotFound,
-    DEFAULT_HOMEDIR,
-    core_section
-)
+from sopel import bot, config, logger, tools, __version__
 from . import utils
 
 if sys.version_info < (2, 7):
@@ -47,10 +40,10 @@ encounters such an error case.
 """
 
 
-def run(config, pid_file, daemon=False):
+def run(settings, pid_file, daemon=False):
     delay = 20
     # Inject ca_certs from config to web for SSL validation of web requests
-    if not config.core.ca_certs:
+    if not settings.core.ca_certs:
         tools.stderr(
             'Could not open CA certificates file. SSL will not work properly!')
 
@@ -68,7 +61,7 @@ def run(config, pid_file, daemon=False):
         if p and p.hasquit:  # Check if `hasquit` was set for bot during disconnected phase
             break
         try:
-            p = bot.Sopel(config, daemon=daemon)
+            p = bot.Sopel(settings, daemon=daemon)
             if hasattr(signal, 'SIGUSR1'):
                 signal.signal(signal.SIGUSR1, signal_handler)
             if hasattr(signal, 'SIGTERM'):
@@ -80,7 +73,7 @@ def run(config, pid_file, daemon=False):
             if hasattr(signal, 'SIGILL'):
                 signal.signal(signal.SIGILL, signal_handler)
             logger.setup_logging(p)
-            p.run(config.core.host, int(config.core.port))
+            p.run(settings.core.host, int(settings.core.port))
         except KeyboardInterrupt:
             break
         except Exception:  # TODO: Be specific
@@ -89,7 +82,7 @@ def run(config, pid_file, daemon=False):
                 tools.stderr(trace)
             except Exception:  # TODO: Be specific
                 pass
-            logfile = open(os.path.join(config.core.logdir, 'exceptions.log'), 'a')
+            logfile = open(os.path.join(settings.core.logdir, 'exceptions.log'), 'a')
             logfile.write('Critical exception in core')
             logfile.write(trace)
             logfile.write('----------------------------------------\n\n')
@@ -243,110 +236,6 @@ def build_parser():
     return parser
 
 
-def wizard(filename):
-    """Global Configuration Wizard
-
-    :param str filename: name of the new file to be created
-    :return: the created configuration object
-
-    This wizard function helps the creation of a Sopel configuration file,
-    with its core section and its plugins' sections.
-    """
-    homedir, basename = os.path.split(filename)
-    if not basename:
-        raise ConfigurationError(
-            'Sopel requires a filename for its configuration, not a directory')
-
-    try:
-        if not os.path.isdir(homedir):
-            print('Creating config directory at {}'.format(homedir))
-            os.makedirs(homedir)
-            print('Config directory created')
-    except Exception:
-        tools.stderr('There was a problem creating {}'.format(homedir))
-        raise
-
-    name, ext = os.path.splitext(basename)
-    if not ext:
-        # Always add .cfg if filename does not have an extension
-        filename = os.path.join(homedir, name + '.cfg')
-    elif ext != '.cfg':
-        # It is possible to use a non-cfg file for Sopel
-        # but the wizard does not allow it at the moment
-        raise ConfigurationError(
-            'Sopel uses ".cfg" as configuration file extension, not "%s".' % ext)
-
-    settings = Config(filename, validate=False)
-
-    print("Please answer the following questions "
-          "to create your configuration file (%s):\n" % filename)
-    core_section.configure(settings)
-    if settings.option(
-        'Would you like to see if there are any modules '
-        'that need configuring'
-    ):
-        _plugins_wizard(settings)
-
-    try:
-        settings.save()
-    except Exception:  # TODO: Be specific
-        tools.stderr("Encountered an error while writing the config file. "
-                     "This shouldn't happen. Check permissions.")
-        raise
-
-    print("Config file written successfully!")
-    return settings
-
-
-def plugins_wizard(filename):
-    """Plugins Configuration Wizard
-
-    :param str filename: path to an existing Sopel configuration
-    :return: the configuration object
-
-    This wizard function helps to configure plugins for an existing Sopel
-    config file.
-    """
-    if not os.path.isfile(filename):
-        raise ConfigurationNotFound(filename)
-
-    settings = Config(filename, validate=False)
-    _plugins_wizard(settings)
-
-    try:
-        settings.save()
-    except Exception:  # TODO: Be specific
-        tools.stderr("Encountered an error while writing the config file. "
-                     "This shouldn't happen. Check permissions.")
-        raise
-
-    return settings
-
-
-def _plugins_wizard(settings):
-    usable_plugins = plugins.get_usable_plugins(settings)
-    for plugin, is_enabled in usable_plugins.values():
-        if not is_enabled:
-            # Do not configure non-enabled modules
-            continue
-
-        name = plugin.name
-        try:
-            _plugin_wizard(settings, plugin)
-        except Exception as e:
-            filename, lineno = tools.get_raising_file_and_line()
-            rel_path = os.path.relpath(filename, os.path.dirname(__file__))
-            raising_stmt = "%s:%d" % (rel_path, lineno)
-            tools.stderr("Error loading %s: %s (%s)" % (name, e, raising_stmt))
-
-
-def _plugin_wizard(settings, plugin):
-    plugin.load()
-    prompt = 'Configure {} (y/n)? [n]'.format(plugin.get_label())
-    if plugin.has_configure() and settings.option(prompt):
-        plugin.configure(settings)
-
-
 def check_not_root():
     """Check if root is running the bot.
 
@@ -381,12 +270,12 @@ def print_version():
 
 def print_config():
     """Print list of available configurations from default homedir."""
-    configs = utils.enumerate_configs(DEFAULT_HOMEDIR)
-    print('Config files in %s:' % DEFAULT_HOMEDIR)
-    config = None
-    for config in configs:
-        print('\t%s' % config)
-    if not config:
+    configs = utils.enumerate_configs(config.DEFAULT_HOMEDIR)
+    print('Config files in %s:' % config.DEFAULT_HOMEDIR)
+    configfile = None
+    for configfile in configs:
+        print('\t%s' % configfile)
+    if not configfile:
         print('\tNone found')
 
     print('-------------------------')
@@ -412,12 +301,12 @@ def get_configuration(options):
     """
     try:
         settings = utils.load_settings(options)
-    except ConfigurationNotFound as error:
+    except config.ConfigurationNotFound as error:
         print(
             "Welcome to Sopel!\n"
             "I can't seem to find the configuration file, "
             "so let's generate it!\n")
-        settings = wizard(error.filename)
+        settings = utils.wizard(error.filename)
 
     settings._is_daemonized = options.daemonize
     return settings
@@ -470,7 +359,7 @@ def command_start(opts):
     # Step One: Get the configuration file and prepare to run
     try:
         config_module = get_configuration(opts)
-    except ConfigurationError as e:
+    except config.ConfigurationError as e:
         tools.stderr(e)
         return ERR_CODE_NO_RESTART
 
@@ -517,11 +406,12 @@ def command_start(opts):
 
 def command_configure(opts):
     """Sopel Configuration Wizard"""
-    configpath = utils.find_config(DEFAULT_HOMEDIR, opts.config or 'default')
+    configpath = utils.find_config(
+        config.DEFAULT_HOMEDIR, opts.config or 'default')
     if getattr(opts, 'modules', False):
-        plugins_wizard(configpath)
+        utils.plugins_wizard(configpath)
     else:
-        wizard(configpath)
+        utils.wizard(configpath)
 
 
 def command_stop(opts):
@@ -529,7 +419,7 @@ def command_stop(opts):
     # Get Configuration
     try:
         settings = utils.load_settings(opts)
-    except ConfigurationNotFound as error:
+    except config.ConfigurationNotFound as error:
         tools.stderr('Configuration "%s" not found' % error.filename)
         return ERR_CODE
 
@@ -568,7 +458,7 @@ def command_restart(opts):
     # Get Configuration
     try:
         settings = utils.load_settings(opts)
-    except ConfigurationNotFound as error:
+    except config.ConfigurationNotFound as error:
         tools.stderr('Configuration "%s" not found' % error.filename)
         return ERR_CODE
 
@@ -631,20 +521,21 @@ def command_legacy(opts):
         return
 
     # TODO: allow to use a different homedir
-    configpath = utils.find_config(DEFAULT_HOMEDIR, opts.config or 'default')
+    configpath = utils.find_config(
+        config.DEFAULT_HOMEDIR, opts.config or 'default')
 
     if opts.wizard:
         tools.stderr(
             'WARNING: option -w/--configure-all is deprecated; '
             'use `sopel configure` instead')
-        wizard(configpath)
+        utils.wizard(configpath)
         return
 
     if opts.mod_wizard:
         tools.stderr(
             'WARNING: option --configure-modules is deprecated; '
             'use `sopel configure --modules` instead')
-        plugins_wizard(configpath)
+        utils.plugins_wizard(configpath)
         return
 
     if opts.list_configs:
@@ -654,7 +545,7 @@ def command_legacy(opts):
     # Step Two: Get the configuration file and prepare to run
     try:
         config_module = get_configuration(opts)
-    except ConfigurationError as e:
+    except config.ConfigurationError as e:
         tools.stderr(e)
         return ERR_CODE_NO_RESTART
 
