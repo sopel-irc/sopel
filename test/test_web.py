@@ -114,8 +114,11 @@ def test_search_urls_defined_schemes(scheme):
     }.get(scheme)
 
     urls = list(
-        search_urls('http://a.com ftp://b.com https://c.com steam://portal2',
-        schemes=[scheme]))
+        search_urls(
+            'http://a.com ftp://b.com https://c.com steam://portal2',
+            schemes=[scheme]
+        )
+    )
     assert len(urls) == 1, 'Only %s URLs must be found' % scheme
     assert expected in urls
 

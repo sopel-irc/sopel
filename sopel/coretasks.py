@@ -180,11 +180,13 @@ def handle_names(bot, trigger):
     # it'd be worth it.
     # If this ever needs to be updated, remember to change the mode handling in
     # the WHO-handler functions below, too.
-    mapping = {'+': sopel.module.VOICE,
-               '%': sopel.module.HALFOP,
-               '@': sopel.module.OP,
-               '&': sopel.module.ADMIN,
-               '~': sopel.module.OWNER}
+    mapping = {
+        "+": sopel.module.VOICE,
+        "%": sopel.module.HALFOP,
+        "@": sopel.module.OP,
+        "&": sopel.module.ADMIN,
+        "~": sopel.module.OWNER,
+    }
 
     for name in names:
         priv = 0
@@ -240,11 +242,13 @@ def track_modes(bot, trigger):
     modestring = trigger.args[1]
     nicks = [Identifier(nick) for nick in trigger.args[2:]]
 
-    mapping = {'v': sopel.module.VOICE,
-               'h': sopel.module.HALFOP,
-               'o': sopel.module.OP,
-               'a': sopel.module.ADMIN,
-               'q': sopel.module.OWNER}
+    mapping = {
+        "v": sopel.module.VOICE,
+        "h": sopel.module.HALFOP,
+        "o": sopel.module.OP,
+        "a": sopel.module.ADMIN,
+        "q": sopel.module.OWNER,
+    }
 
     # Parse modes before doing anything else
     modes = []
@@ -303,17 +307,17 @@ def track_nicks(bot, trigger):
 
     # Give debug mssage, and PM the owner, if the bot's own nick changes.
     if old == bot.nick and new != bot.nick:
-        privmsg = ("Hi, I'm your bot, %s."
-                   "Something has made my nick change. "
-                   "This can cause some problems for me, "
-                   "and make me do weird things. "
-                   "You'll probably want to restart me, "
-                   "and figure out what made that happen "
-                   "so you can stop it happening again. "
-                   "(Usually, it means you tried to give me a nick "
-                   "that's protected by NickServ.)") % bot.nick
-        debug_msg = ("Nick changed by server. "
-            "This can cause unexpected behavior. Please restart the bot.")
+        privmsg = (
+            "Hi, I'm your bot, %s. Something has made my nick change. This "
+            "can cause some problems for me, and make me do weird things. "
+            "You'll probably want to restart me, and figure out what made "
+            "that happen so you can stop it happening again. (Usually, it "
+            "means you tried to give me a nick that's protected by NickServ.)"
+        ) % bot.nick
+        debug_msg = (
+            "Nick changed by server. This can cause unexpected behavior. "
+            "Please restart the bot."
+        )
         LOGGER.critical(debug_msg)
         bot.say(privmsg, bot.config.core.owner)
         return
@@ -779,11 +783,13 @@ def _record_who(bot, channel, user, host, nick, account=None, away=None, modes=N
     usr.away = away
     priv = 0
     if modes:
-        mapping = {'+': sopel.module.VOICE,
-           '%': sopel.module.HALFOP,
-           '@': sopel.module.OP,
-           '&': sopel.module.ADMIN,
-           '~': sopel.module.OWNER}
+        mapping = {
+            "+": sopel.module.VOICE,
+            "%": sopel.module.HALFOP,
+            "@": sopel.module.OP,
+            "&": sopel.module.ADMIN,
+            "~": sopel.module.OWNER,
+        }
         for c in modes:
             priv = priv | mapping[c]
     if channel not in bot.channels:

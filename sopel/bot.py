@@ -312,8 +312,10 @@ class Sopel(irc.Bot):
                     callb_list.remove(obj)
         if hasattr(obj, 'interval'):
             self.scheduler.remove_callable_job(obj)
-        if (getattr(obj, '__name__', None) == 'shutdown' and
-                    obj in self.shutdown_methods):
+        if (
+                getattr(obj, "__name__", None) == "shutdown" and
+                obj in self.shutdown_methods
+        ):
             self.shutdown_methods.remove(obj)
 
     def register(self, callables, jobs, shutdowns, urls):
