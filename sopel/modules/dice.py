@@ -176,12 +176,13 @@ def _roll_dice(bot, dice_expression):
 @sopel.module.example(".roll 1001d1", 'I only have 1000 dice. =(')
 @sopel.module.example(".roll 1d1 + 1d1", 'You roll 1d1 + 1d1: (1) + (1) = 2')
 @sopel.module.example(".roll 1d1+1d1", 'You roll 1d1+1d1: (1)+(1) = 2')
+@sopel.module.example(".roll 1d6 # initiative", r'You roll 1d6: \(\d\) = \d', re=True)
 def roll(bot, trigger):
-    """.dice XdY[vZ][+N], rolls dice and reports the result.
+    """.dice XdY[vZ][+N][#COMMENT], rolls dice and reports the result.
 
     X is the number of dice. Y is the number of faces in the dice. Z is the
     number of lowest dice to be dropped from the result. N is the constant to
-    be applied to the end result.
+    be applied to the end result. Comment is for easily noting the purpose.
     """
     # This regexp is only allowed to have one capture group, because having
     # more would alter the output of re.findall.
@@ -192,9 +193,9 @@ def roll(bot, trigger):
     # using string formatting, so %-characters must be escaped.
     if not trigger.group(2):
         return bot.reply("No dice to roll.")
-    arg_str = trigger.group(2)
-    dice_expressions = re.findall(dice_regexp, arg_str)
-    arg_str = arg_str.replace("%", "%%")
+    arg_str_raw = trigger.group(2).split("#", 1)[0].strip()
+    dice_expressions = re.findall(dice_regexp, arg_str_raw)
+    arg_str = arg_str_raw.replace("%", "%%")
     arg_str = re.sub(dice_regexp, "%s", arg_str)
 
     def f(dice_expr):
@@ -229,7 +230,7 @@ def roll(bot, trigger):
         # As it seems that ValueError is raised if the resulting equation would
         # be too big, give a semi-serious answer to reflect on this.
         bot.reply("You roll %s: %s = very big" % (
-            trigger.group(2), pretty_str))
+            arg_str_raw, pretty_str))
         return
     except (SyntaxError, eval_equation.Error):
         bot.reply("I don't know how to process that. " +
@@ -237,7 +238,7 @@ def roll(bot, trigger):
         return
 
     bot.reply("You roll %s: %s = %d" % (
-        trigger.group(2), pretty_str, result))
+        arg_str_raw, pretty_str, result))
 
 
 @sopel.module.commands("choice")
