@@ -1,7 +1,7 @@
 # coding=utf-8
 """
 meetbot.py - Sopel Meeting Logger Module
-This module is an attempt to implement at least some of the functionality of Debian's meetbot
+This module is an attempt to implement some of the functionality of Debian's meetbot
 Copyright © 2012, Elad Alfassa, <elad@fedoraproject.org>
 Licensed under the Eiffel Forum License 2.
 
@@ -11,27 +11,30 @@ from __future__ import unicode_literals, absolute_import, print_function, divisi
 
 import codecs
 import os
+import re
+from string import punctuation, whitespace
 import time
 
-from sopel.config.types import (
-    StaticSection, FilenameAttribute, ValidatedAttribute
-)
-from sopel.formatting import bold
-from sopel.module import example, commands, rule, priority
+from sopel.config.types import StaticSection, FilenameAttribute, ValidatedAttribute
+from sopel import formatting, module, tools, web
 from sopel.modules.url import find_title
-from sopel.tools import Ddict, Identifier
-from sopel.web import quote
+
+
+UNTITLED_MEETING = "Untitled meeting"
 
 
 class MeetbotSection(StaticSection):
-    meeting_log_path = FilenameAttribute('meeting_log_path', directory=True,
-                                         default='~/www/meetings')
+    """Configuration file section definition"""
+
+    meeting_log_path = FilenameAttribute(
+        "meeting_log_path", directory=True, default="~/www/meetings"
+    )
     """Path to meeting logs storage directory
 
     This should be an absolute path, accessible on a webserver."""
+
     meeting_log_baseurl = ValidatedAttribute(
-        'meeting_log_baseurl',
-        default='http://localhost/~sopel/meetings'
+        "meeting_log_baseurl", default="http://localhost/~sopel/meetings"
     )
     """Base URL for the meeting logs directory"""
 
@@ -43,22 +46,20 @@ def configure(config):
     | meeting\\_log\\_path | /home/sopel/www/meetings | Path to meeting logs storage directory (should be an absolute path, accessible on a webserver) |
     | meeting\\_log\\_baseurl | http://example.com/~sopel/meetings | Base URL for the meeting logs directory |
     """
-    config.define_section('meetbot', MeetbotSection)
+    config.define_section("meetbot", MeetbotSection)
     config.meetbot.configure_setting(
-        'meeting_log_path',
-        'Enter the directory to store logs in.'
+        "meeting_log_path", "Enter the directory to store logs in."
     )
     config.meetbot.configure_setting(
-        'meeting_log_baseurl',
-        'Enter the base URL for the meeting logs.',
+        "meeting_log_baseurl", "Enter the base URL for the meeting logs."
     )
 
 
 def setup(bot):
-    bot.config.define_section('meetbot', MeetbotSection)
+    bot.config.define_section("meetbot", MeetbotSection)
 
 
-meetings_dict = Ddict(dict)  # Saves metadata about currently running meetings
+meetings_dict = tools.Ddict(dict)  # Saves metadata about currently running meetings
 """
 meetings_dict is a 2D dict.
 
@@ -71,284 +72,359 @@ title
 current subject
 comments (what people who aren't voiced want to add)
 
-Using channel as the meeting ID as there can't be more than one meeting in a channel at the same time.
+Using channel as the meeting ID as there can't be more than one meeting in a
+channel at the same time.
 """
-meeting_log_path = ''  # To be defined on meeting start as part of sanity checks, used by logging functions so we don't have to pass them bot
-meeting_log_baseurl = ''  # To be defined on meeting start as part of sanity checks, used by logging functions so we don't have to pass them bot
-meeting_actions = {}  # A dict of channels to the actions that have been created in them. This way we can have .listactions spit them back out later on.
+
+# To be defined on meeting start as part of sanity checks, used by logging
+# functions so we don't have to pass them bot
+meeting_log_path = ""
+meeting_log_baseurl = ""
+
+# A dict of channels to the actions that have been created in them. This way
+# we can have .listactions spit them back out later on.
+meeting_actions = {}
 
 
 # Get the logfile name for the meeting in the requested channel
-# Used by all logging functions
+# Used by all logging functions and web path
 def figure_logfile_name(channel):
-    if meetings_dict[channel]['title'] is 'Untitled meeting':
-        name = 'untitled'
+    if meetings_dict[channel]["title"] == UNTITLED_MEETING:
+        name = "untitled"
     else:
-        name = meetings_dict[channel]['title']
-    # Real simple sluggifying. This bunch of characters isn't exhaustive, but
-    # whatever. It's close enough for most situations, I think.
-    for c in ' ./\\:*?"<>|&*`':
-        name = name.replace(c, '-')
-    timestring = time.strftime('%Y-%m-%d-%H:%M', time.gmtime(meetings_dict[channel]['start']))
-    filename = timestring + '_' + name
+        name = meetings_dict[channel]["title"]
+    # Real simple sluggifying.
+    # May not handle unicode or unprintables well. Close enough.
+    for character in punctuation + whitespace:
+        name = name.replace(character, "-")
+    name = name.strip("-")
+    timestring = time.strftime(
+        "%Y-%m-%d-%H:%M", time.gmtime(meetings_dict[channel]["start"])
+    )
+    filename = timestring + "_" + name
     return filename
 
 
 # Start HTML log
-def logHTML_start(channel):
-    logfile = codecs.open(meeting_log_path + channel + '/' + figure_logfile_name(channel) + '.html', 'a', encoding='utf-8')
-    timestring = time.strftime('%Y-%m-%d %H:%M', time.gmtime(meetings_dict[channel]['start']))
-    title = '%s at %s, %s' % (meetings_dict[channel]['title'], channel, timestring)
-    logfile.write('<!doctype html>\n<html>\n<head>\n<meta charset="utf-8">\n<title>%TITLE%</title>\n</head>\n<body>\n<h1>%TITLE%</h1>\n'.replace('%TITLE%', title))
-    logfile.write('<h4>Meeting started by %s</h4><ul>\n' % meetings_dict[channel]['head'])
+def log_html_start(channel):
+    logfile_filename = os.path.join(
+        meeting_log_path + channel, figure_logfile_name(channel) + ".html"
+    )
+    logfile = codecs.open(logfile_filename, "a", encoding="utf-8")
+    timestring = time.strftime(
+        "%Y-%m-%d %H:%M", time.gmtime(meetings_dict[channel]["start"])
+    )
+    title = "%s at %s, %s" % (meetings_dict[channel]["title"], channel, timestring)
+    logfile.write(
+        (
+            "<!doctype html><html><head><meta charset='utf-8'>\n"
+            "<title>{title}</title>\n</head><body>\n<h1>{title}</h1>\n"
+        ).format(title=title)
+    )
+    logfile.write(
+        "<h4>Meeting started by %s</h4><ul>\n" % meetings_dict[channel]["head"]
+    )
     logfile.close()
 
 
 # Write a list item in the HTML log
-def logHTML_listitem(item, channel):
-    logfile = codecs.open(meeting_log_path + channel + '/' + figure_logfile_name(channel) + '.html', 'a', encoding='utf-8')
-    logfile.write('<li>' + item + '</li>\n')
+def log_html_listitem(item, channel):
+    logfile_filename = os.path.join(
+        meeting_log_path + channel, figure_logfile_name(channel) + ".html"
+    )
+    logfile = codecs.open(logfile_filename, "a", encoding="utf-8")
+    logfile.write("<li>" + item + "</li>\n")
     logfile.close()
 
 
 # End the HTML log
-def logHTML_end(channel):
-    logfile = codecs.open(meeting_log_path + channel + '/' + figure_logfile_name(channel) + '.html', 'a', encoding='utf-8')
-    current_time = time.strftime('%H:%M:%S', time.gmtime())
-    logfile.write('</ul>\n<h4>Meeting ended at %s UTC</h4>\n' % current_time)
-    plainlog_url = meeting_log_baseurl + quote(channel + '/' + figure_logfile_name(channel) + '.log')
+def log_html_end(channel):
+    logfile_filename = os.path.join(
+        meeting_log_path + channel, figure_logfile_name(channel) + ".html"
+    )
+    logfile = codecs.open(logfile_filename, "a", encoding="utf-8")
+    current_time = time.strftime("%H:%M:%S", time.gmtime())
+    logfile.write("</ul>\n<h4>Meeting ended at %s UTC</h4>\n" % current_time)
+    plainlog_url = meeting_log_baseurl + web.quote(
+        channel + "/" + figure_logfile_name(channel) + ".log"
+    )
     logfile.write('<a href="%s">Full log</a>' % plainlog_url)
-    logfile.write('\n</body>\n</html>')
+    logfile.write("\n</body>\n</html>\n")
     logfile.close()
 
 
 # Write a string to the plain text log
-def logplain(item, channel):
-    current_time = time.strftime('%H:%M:%S', time.gmtime())
-    logfile = codecs.open(meeting_log_path + channel + '/' + figure_logfile_name(channel) + '.log', 'a', encoding='utf-8')
-    logfile.write('[' + current_time + '] ' + item + '\r\n')
+def log_plain(item, channel):
+    logfile_filename = os.path.join(
+        meeting_log_path + channel, figure_logfile_name(channel) + ".log"
+    )
+    logfile = codecs.open(logfile_filename, "a", encoding="utf-8")
+    current_time = time.strftime("%H:%M:%S", time.gmtime())
+    logfile.write("[" + current_time + "] " + item + "\r\n")
     logfile.close()
 
 
 # Check if a meeting is currently running
-def ismeetingrunning(channel):
+def is_meeting_running(channel):
     try:
-        if meetings_dict[channel]['running']:
-            return True
-        else:
-            return False
+        return meetings_dict[channel]["running"]
     except KeyError:
         return False
 
 
 # Check if nick is a chair or head of the meeting
-def ischair(nick, channel):
+def is_chair(nick, channel):
     try:
-        if nick.lower() == meetings_dict[channel]['head'] or nick.lower() in meetings_dict[channel]['chairs']:
-            return True
-        else:
-            return False
+        return (
+            nick.lower() == meetings_dict[channel]["head"] or
+            nick.lower() in meetings_dict[channel]["chairs"]
+        )
     except KeyError:
         return False
 
 
-# Start meeting (also preforms all required sanity checks)
-@commands('startmeeting')
-@example('.startmeeting title or .startmeeting')
+# Start meeting (also performs all required sanity checks)
+@module.commands("startmeeting")
+@module.example(".startmeeting")
+@module.example(".startmeeting Meeting Title")
+@module.require_chanmsg("Meetings can only be started in channels")
 def startmeeting(bot, trigger):
     """
     Start a meeting.\
     See [meetbot module usage]({% link _usage/meetbot-module.md %})
     """
-    if ismeetingrunning(trigger.sender):
-        bot.say('Can\'t do that, there is already a meeting in progress here!')
-        return
-    if trigger.is_privmsg:
-        bot.say('Can only start meetings in channels')
+    if is_meeting_running(trigger.sender):
+        bot.say("There is already an active meeting here!")
         return
     # Start the meeting
-    meetings_dict[trigger.sender]['start'] = time.time()
+    meetings_dict[trigger.sender]["start"] = time.time()
     if not trigger.group(2):
-        meetings_dict[trigger.sender]['title'] = 'Untitled meeting'
+        meetings_dict[trigger.sender]["title"] = UNTITLED_MEETING
     else:
-        meetings_dict[trigger.sender]['title'] = trigger.group(2)
-    meetings_dict[trigger.sender]['head'] = trigger.nick.lower()
-    meetings_dict[trigger.sender]['running'] = True
-    meetings_dict[trigger.sender]['comments'] = []
+        meetings_dict[trigger.sender]["title"] = trigger.group(2)
+    meetings_dict[trigger.sender]["head"] = trigger.nick.lower()
+    meetings_dict[trigger.sender]["running"] = True
+    meetings_dict[trigger.sender]["comments"] = []
 
+    # Set up paths and URLs
     global meeting_log_path
     meeting_log_path = bot.config.meetbot.meeting_log_path
-    if not meeting_log_path.endswith('/'):
-        meeting_log_path = meeting_log_path + '/'
+    if not meeting_log_path.endswith(os.sep):
+        meeting_log_path += os.sep
+
     global meeting_log_baseurl
     meeting_log_baseurl = bot.config.meetbot.meeting_log_baseurl
-    if not meeting_log_baseurl.endswith('/'):
-        meeting_log_baseurl = meeting_log_baseurl + '/'
-    if not os.path.isdir(meeting_log_path + trigger.sender):
+    if not meeting_log_baseurl.endswith("/"):
+        meeting_log_baseurl = meeting_log_baseurl + "/"
+
+    channel_log_path = meeting_log_path + trigger.sender
+    if not os.path.isdir(channel_log_path):
         try:
-            os.makedirs(meeting_log_path + trigger.sender)
+            os.makedirs(channel_log_path)
         except Exception:  # TODO: Be specific
-            bot.say("Can't create log directory for this channel, meeting not started!")
-            meetings_dict[trigger.sender] = Ddict(dict)
+            bot.say(
+                "Meeting not started: Couldn't create log directory for this channel"
+            )
+            meetings_dict[trigger.sender] = tools.Ddict(dict)
             raise
-            return
     # Okay, meeting started!
-    logplain('Meeting started by ' + trigger.nick.lower(), trigger.sender)
-    logHTML_start(trigger.sender)
+    log_plain("Meeting started by " + trigger.nick.lower(), trigger.sender)
+    log_html_start(trigger.sender)
     meeting_actions[trigger.sender] = []
-    bot.say(bold('Meeting started!') + ' use .action, .agreed, .info, '
-            '.chairs, .subject and .comments to control the meeting. to end '
-            'the meeting, type .endmeeting')
-    bot.say('Users without speaking permission can use .comment ' +
-            trigger.sender + ' followed by their comment in a PM with me to '
-            'vocalize themselves.')
+    bot.say(
+        (
+            formatting.bold("Meeting started!") + " use {0}action, {0}agreed, "
+            "{0}info, {0}link, {0}chairs, {0}subject, and {0}comments to "
+            "control the meeting. To end the meeting, type {0}endmeeting"
+        ).format(bot.config.core.help_prefix)
+    )
+    bot.say(
+        (
+            "Users without speaking permission can participate by sending me "
+            "a PM with `{0}comment {1}` followed by their comment."
+        ).format(bot.config.core.help_prefix, trigger.sender)
+    )
 
 
 # Change the current subject (will appear as <h3> in the HTML log)
-@commands('subject')
-@example('.subject roll call')
+@module.commands("subject")
+@module.example(".subject roll call")
 def meetingsubject(bot, trigger):
     """
     Change the meeting subject.\
     See [meetbot module usage]({% link _usage/meetbot-module.md %})
     """
-    if not ismeetingrunning(trigger.sender):
-        bot.say('Can\'t do that, start meeting first')
+    if not is_meeting_running(trigger.sender):
+        bot.say("There is no active meeting")
         return
     if not trigger.group(2):
-        bot.say('what is the subject?')
+        bot.say("What is the subject?")
         return
-    if not ischair(trigger.nick, trigger.sender):
-        bot.say('Only meeting head or chairs can do that')
+    if not is_chair(trigger.nick, trigger.sender):
+        bot.say("Only meeting head or chairs can do that")
         return
-    meetings_dict[trigger.sender]['current_subject'] = trigger.group(2)
-    logfile = codecs.open(meeting_log_path + trigger.sender + '/' + figure_logfile_name(trigger.sender) + '.html', 'a', encoding='utf-8')
-    logfile.write('</ul><h3>' + trigger.group(2) + '</h3><ul>')
+    meetings_dict[trigger.sender]["current_subject"] = trigger.group(2)
+    logfile_filename = os.path.join(
+        meeting_log_path + trigger.sender, figure_logfile_name(trigger.sender) + ".html"
+    )
+    logfile = codecs.open(logfile_filename, "a", encoding="utf-8")
+    logfile.write("</ul><h3>" + trigger.group(2) + "</h3><ul>")
     logfile.close()
-    logplain('Current subject: ' + trigger.group(2) + ', (set by ' + trigger.nick + ')', trigger.sender)
-    bot.say(bold('Current subject:') + ' ' + trigger.group(2))
+    log_plain(
+        "Current subject: {} (set by {})".format(trigger.group(2), trigger.nick),
+        trigger.sender,
+    )
+    bot.say(formatting.bold("Current subject:") + " " + trigger.group(2))
 
 
 # End the meeting
-@commands('endmeeting')
-@example('.endmeeting')
+@module.commands("endmeeting")
+@module.example(".endmeeting")
 def endmeeting(bot, trigger):
     """
     End a meeting.\
     See [meetbot module usage]({% link _usage/meetbot-module.md %})
     """
-    if not ismeetingrunning(trigger.sender):
-        bot.say('Can\'t do that, start meeting first')
+    if not is_meeting_running(trigger.sender):
+        bot.say("There is no active meeting")
         return
-    if not ischair(trigger.nick, trigger.sender):
-        bot.say('Only meeting head or chairs can do that')
+    if not is_chair(trigger.nick, trigger.sender):
+        bot.say("Only meeting head or chairs can do that")
         return
-    meeting_length = time.time() - meetings_dict[trigger.sender]['start']
-    # TODO: Humanize time output
-    bot.say(bold("Meeting ended!") + " total meeting length %d seconds" % meeting_length)
-    logHTML_end(trigger.sender)
-    htmllog_url = meeting_log_baseurl + quote(trigger.sender + '/' + figure_logfile_name(trigger.sender) + '.html')
-    logplain('Meeting ended by %s, total meeting length %d seconds' % (trigger.nick, meeting_length), trigger.sender)
-    bot.say('Meeting minutes: ' + htmllog_url)
-    meetings_dict[trigger.sender] = Ddict(dict)
+    meeting_length = time.time() - meetings_dict[trigger.sender]["start"]
+    bot.say(
+        formatting.bold("Meeting ended!") +
+        " Total meeting length %d minutes" % (meeting_length // 60)
+    )
+    log_html_end(trigger.sender)
+    htmllog_url = meeting_log_baseurl + web.quote(
+        trigger.sender + "/" + figure_logfile_name(trigger.sender) + ".html"
+    )
+    log_plain(
+        "Meeting ended by %s. Total meeting length: %d minutes"
+        % (trigger.nick, meeting_length // 60),
+        trigger.sender,
+    )
+    bot.say("Meeting minutes: " + htmllog_url)
+    meetings_dict[trigger.sender] = tools.Ddict(dict)
     del meeting_actions[trigger.sender]
 
 
 # Set meeting chairs (people who can control the meeting)
-@commands('chairs')
-@example('.chairs Tyrope Jason elad')
+@module.commands("chairs")
+@module.example(".chairs Tyrope Jason elad")
 def chairs(bot, trigger):
     """
     Set the meeting chairs.\
     See [meetbot module usage]({% link _usage/meetbot-module.md %})
     """
-    if not ismeetingrunning(trigger.sender):
-        bot.say('Can\'t do that, start meeting first')
+    if not is_meeting_running(trigger.sender):
+        bot.say("There is no active meeting")
         return
     if not trigger.group(2):
-        bot.say('Who are the chairs?')
+        bot.say(
+            "Who are the chairs? Try `{}chairs Alice Bob Cindy`".format(
+                bot.config.core.help_prefix
+            )
+        )
         return
-    if trigger.nick.lower() == meetings_dict[trigger.sender]['head']:
-        meetings_dict[trigger.sender]['chairs'] = trigger.group(2).lower().split(' ')
-        chairs_readable = trigger.group(2).lower().replace(' ', ', ')
-        logplain('Meeting chairs are: ' + chairs_readable, trigger.sender)
-        logHTML_listitem('<span style="font-weight: bold">Meeting chairs are: </span>' + chairs_readable, trigger.sender)
-        bot.say(bold('Meeting chairs are:') + ' ' + chairs_readable)
+    if trigger.nick.lower() == meetings_dict[trigger.sender]["head"]:
+        meetings_dict[trigger.sender]["chairs"] = trigger.group(2).lower().split(" ")
+        chairs_readable = trigger.group(2).lower().replace(" ", ", ")
+        log_plain("Meeting chairs are: " + chairs_readable, trigger.sender)
+        log_html_listitem(
+            "<span style='font-weight: bold'>Meeting chairs are:</span> %s"
+            % chairs_readable,
+            trigger.sender,
+        )
+        bot.say(formatting.bold("Meeting chairs are:") + " " + chairs_readable)
     else:
         bot.say("Only meeting head can set chairs")
 
 
 # Log action item in the HTML log
-@commands('action')
-@example('.action elad will develop a meetbot')
+@module.commands("action")
+@module.example(".action elad will develop a meetbot")
 def meetingaction(bot, trigger):
     """
     Log an action in the meeting log.\
     See [meetbot module usage]({% link _usage/meetbot-module.md %})
     """
-    if not ismeetingrunning(trigger.sender):
-        bot.say('Can\'t do that, start meeting first')
+    if not is_meeting_running(trigger.sender):
+        bot.say("There is no active meeting")
         return
     if not trigger.group(2):
-        bot.say('try .action someone will do something')
+        bot.say(
+            "Try `{}action Bob will do something`".format(bot.config.core.help_prefix)
+        )
         return
-    if not ischair(trigger.nick, trigger.sender):
-        bot.say('Only meeting head or chairs can do that')
+    if not is_chair(trigger.nick, trigger.sender):
+        bot.say("Only meeting head or chairs can do that")
         return
-    logplain('ACTION: ' + trigger.group(2), trigger.sender)
-    logHTML_listitem('<span style="font-weight: bold">Action: </span>' + trigger.group(2), trigger.sender)
+    log_plain("ACTION: " + trigger.group(2), trigger.sender)
+    log_html_listitem(
+        "<span style='font-weight: bold'>Action: </span>" + trigger.group(2),
+        trigger.sender,
+    )
     meeting_actions[trigger.sender].append(trigger.group(2))
-    bot.say(bold('ACTION:') + ' ' + trigger.group(2))
+    bot.say(formatting.bold("ACTION:") + " " + trigger.group(2))
 
 
-@commands('listactions')
-@example('.listactions')
+@module.commands("listactions")
+@module.example(".listactions")
 def listactions(bot, trigger):
-    if not ismeetingrunning(trigger.sender):
-        bot.say('Can\'t do that, start meeting first')
+    if not is_meeting_running(trigger.sender):
+        bot.say("There is no active meeting")
         return
     for action in meeting_actions[trigger.sender]:
-        bot.say(bold('ACTION:') + ' ' + action)
+        bot.say(formatting.bold("ACTION:") + " " + action)
 
 
 # Log agreed item in the HTML log
-@commands('agreed')
-@example('.agreed Bowties are cool')
+@module.commands("agreed")
+@module.example(".agreed Bowties are cool")
 def meetingagreed(bot, trigger):
     """
     Log an agreement in the meeting log.\
     See [meetbot module usage]({% link _usage/meetbot-module.md %})
     """
-    if not ismeetingrunning(trigger.sender):
-        bot.say('Can\'t do that, start meeting first')
+    if not is_meeting_running(trigger.sender):
+        bot.say("There is no active meeting")
         return
     if not trigger.group(2):
-        bot.say('try .action someone will do something')
+        bot.say("Try `{}agreed Bowties are cool`".format(bot.config.core.help_prefix))
         return
-    if not ischair(trigger.nick, trigger.sender):
-        bot.say('Only meeting head or chairs can do that')
+    if not is_chair(trigger.nick, trigger.sender):
+        bot.say("Only meeting head or chairs can do that")
         return
-    logplain('AGREED: ' + trigger.group(2), trigger.sender)
-    logHTML_listitem('<span style="font-weight: bold">Agreed: </span>' + trigger.group(2), trigger.sender)
-    bot.say(bold('AGREED:') + ' ' + trigger.group(2))
+    log_plain("AGREED: " + trigger.group(2), trigger.sender)
+    log_html_listitem(
+        "<span style='font-weight: bold'>Agreed: </span>" + trigger.group(2),
+        trigger.sender,
+    )
+    bot.say(formatting.bold("AGREED:") + " " + trigger.group(2))
 
 
 # Log link item in the HTML log
-@commands('link')
-@example('.link http://example.com')
+@module.commands("link")
+@module.example(".link http://example.com")
 def meetinglink(bot, trigger):
     """
     Log a link in the meeing log.\
     See [meetbot module usage]({% link _usage/meetbot-module.md %})
     """
-    if not ismeetingrunning(trigger.sender):
-        bot.say('Can\'t do that, start meeting first')
+    if not is_meeting_running(trigger.sender):
+        bot.say("There is no active meeting")
         return
     if not trigger.group(2):
-        bot.say('try .action someone will do something')
+        bot.say(
+            "Try `{}link https://relevant-website.example/`".format(
+                bot.config.core.help_prefix
+            )
+        )
         return
-    if not ischair(trigger.nick, trigger.sender):
-        bot.say('Only meeting head or chairs can do that')
+    if not is_chair(trigger.nick, trigger.sender):
+        bot.say("Only meeting head or chairs can do that")
         return
     link = trigger.group(2)
     if not link.startswith("http"):
@@ -356,47 +432,74 @@ def meetinglink(bot, trigger):
     try:
         title = find_title(link, verify=bot.config.core.verify_ssl)
     except Exception:  # TODO: Be specific
-        title = ''
-    logplain('LINK: %s [%s]' % (link, title), trigger.sender)
-    logHTML_listitem('<a href="%s">%s</a>' % (link, title), trigger.sender)
-    bot.say(bold('LINK:') + ' ' + link)
+        title = ""
+    log_plain("LINK: %s [%s]" % (link, title), trigger.sender)
+    log_html_listitem('<a href="%s">%s</a>' % (link, title), trigger.sender)
+    bot.say(formatting.bold("LINK:") + " " + link)
 
 
 # Log informational item in the HTML log
-@commands('info')
-@example('.info all board members present')
+@module.commands("info")
+@module.example(".info all board members present")
 def meetinginfo(bot, trigger):
     """
     Log an informational item in the meeting log.\
     See [meetbot module usage]({% link _usage/meetbot-module.md %})
     """
-    if not ismeetingrunning(trigger.sender):
-        bot.say('Can\'t do that, start meeting first')
+    if not is_meeting_running(trigger.sender):
+        bot.say("There is no active meeting")
         return
     if not trigger.group(2):
-        bot.say('try .info some informative thing')
+        bot.say(
+            "Try `{}info some informative thing`".format(bot.config.core.help_prefix)
+        )
         return
-    if not ischair(trigger.nick, trigger.sender):
-        bot.say('Only meeting head or chairs can do that')
+    if not is_chair(trigger.nick, trigger.sender):
+        bot.say("Only meeting head or chairs can do that")
         return
-    logplain('INFO: ' + trigger.group(2), trigger.sender)
-    logHTML_listitem(trigger.group(2), trigger.sender)
-    bot.say(bold('INFO:') + ' ' + trigger.group(2))
+    log_plain("INFO: " + trigger.group(2), trigger.sender)
+    log_html_listitem(trigger.group(2), trigger.sender)
+    bot.say(formatting.bold("INFO:") + " " + trigger.group(2))
 
 
 # called for every single message
 # Will log to plain text only
-@rule('(.*)')
-@priority('low')
+@module.rule("(.*)")
+@module.priority("low")
 def log_meeting(bot, trigger):
-    if not ismeetingrunning(trigger.sender):
+    if not is_meeting_running(trigger.sender):
         return
-    if trigger.startswith('.endmeeting') or trigger.startswith('.chairs') or trigger.startswith('.action') or trigger.startswith('.info') or trigger.startswith('.startmeeting') or trigger.startswith('.agreed') or trigger.startswith('.link') or trigger.startswith('.subject'):
+
+    # Handle live prefix changes with cached regex
+    if (
+        "meetbot_prefix" not in bot.memory or
+        bot.memory["meetbot_prefix"] != bot.config.core.prefix
+    ):
+        commands = [
+            "startmeeting",
+            "subject",
+            "endmeeting",
+            "chairs",
+            "action",
+            "listactions",
+            "agreed",
+            "link",
+            "info",
+            "comments",
+        ]
+
+        bot.memory["meetbot_command_regex"] = re.compile(
+            "{}({})( |$)".format(bot.config.core.prefix, "|".join(commands))
+        )
+        bot.memory["meetbot_prefix"] = bot.config.core.prefix
+
+    if bot.memory["meetbot_command_regex"].match(trigger):
         return
-    logplain('<' + trigger.nick + '> ' + trigger, trigger.sender)
+    log_plain("<" + trigger.nick + "> " + trigger, trigger.sender)
 
 
-@commands('comment')
+@module.commands("comment")
+@module.require_privmsg()
 def take_comment(bot, trigger):
     """
     Log a comment, to be shown with other comments when a chair uses .comments.
@@ -407,44 +510,50 @@ def take_comment(bot, trigger):
 
     See [meetbot module usage]({% link _usage/meetbot-module.md %})
     """
-    if not trigger.sender.is_nick():
-        return
     if not trigger.group(4):  # <2 arguements were given
-        bot.say('Usage: .comment <#channel> <comment to add>')
+        bot.say(
+            "Usage: {}comment <#channel> <comment to add>".format(
+                bot.config.core.help_prefix
+            )
+        )
         return
 
     target, message = trigger.group(2).split(None, 1)
-    target = Identifier(target)
-    if not ismeetingrunning(target):
-        bot.say("There's not currently a meeting in that channel.")
+    target = tools.Identifier(target)
+    if not is_meeting_running(target):
+        bot.say("There is no active meeting in that channel.")
     else:
-        meetings_dict[trigger.group(3)]['comments'].append((trigger.nick, message))
-        bot.say("Your comment has been recorded. It will be shown when the"
-                " chairs tell me to show the comments.")
-        bot.say("A new comment has been recorded.", meetings_dict[trigger.group(3)]['head'])
+        meetings_dict[trigger.group(3)]["comments"].append((trigger.nick, message))
+        bot.say(
+            "Your comment has been recorded. It will be shown when the "
+            "chairs tell me to show the comments."
+        )
+        bot.say(
+            "A new comment has been recorded.", meetings_dict[trigger.group(3)]["head"]
+        )
 
 
-@commands('comments')
+@module.commands("comments")
 def show_comments(bot, trigger):
     """
     Show the comments that have been logged for this meeting with .comment.
 
     See [meetbot module usage]({% link _usage/meetbot-module.md %})
     """
-    if not ismeetingrunning(trigger.sender):
+    if not is_meeting_running(trigger.sender):
         return
-    if not ischair(trigger.nick, trigger.sender):
-        bot.say('Only meeting head or chairs can do that')
+    if not is_chair(trigger.nick, trigger.sender):
+        bot.say("Only meeting head or chairs can do that")
         return
-    comments = meetings_dict[trigger.sender]['comments']
+    comments = meetings_dict[trigger.sender]["comments"]
     if comments:
-        msg = 'The following comments were made:'
+        msg = "The following comments were made:"
         bot.say(msg)
-        logplain('<%s> %s' % (bot.nick, msg), trigger.sender)
+        log_plain("<%s> %s" % (bot.nick, msg), trigger.sender)
         for comment in comments:
-            msg = '<%s> %s' % comment
+            msg = "<%s> %s" % comment
             bot.say(msg)
-            logplain('<%s> %s' % (bot.nick, msg), trigger.sender)
-        meetings_dict[trigger.sender]['comments'] = []
+            log_plain("<%s> %s" % (bot.nick, msg), trigger.sender)
+        meetings_dict[trigger.sender]["comments"] = []
     else:
-        bot.say('No comments have been logged.')
+        bot.say("No comments have been recorded")
