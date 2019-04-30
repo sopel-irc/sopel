@@ -114,7 +114,7 @@ class Bot(asynchat.async_chat):
     def safe(self, string):
         """Remove newlines from a string."""
         if sys.version_info.major >= 3 and isinstance(string, bytes):
-                string = string.decode('utf8')
+            string = string.decode('utf8')
         elif sys.version_info.major < 3:
             if not isinstance(string, unicode):
                 string = unicode(string, encoding='utf8')

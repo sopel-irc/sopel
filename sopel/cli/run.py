@@ -384,7 +384,7 @@ def command_start(opts):
 
     if opts.daemonize:
         child_pid = os.fork()
-        if child_pid is not 0:
+        if child_pid != 0:
             return
 
     with open(pid_file_path, 'w') as pid_file:
@@ -605,7 +605,7 @@ def command_legacy(opts):
 
     if opts.daemonize:
         child_pid = os.fork()
-        if child_pid is not 0:
+        if child_pid != 0:
             return
     with open(pid_file_path, 'w') as pid_file:
         pid_file.write(str(os.getpid()))
