@@ -330,3 +330,62 @@ class PyFilePlugin(PyModulePlugin):
         module might not be available through ``sys.path``.
         """
         self._module = self._load()
+
+
+class EntryPointPlugin(PyModulePlugin):
+    """Sopel plugin loaded from a ``setuptools`` entry point
+
+    :param entry_point: a ``setuptools`` entry point object
+
+    This handler loads a Sopel plugin exposed by a ``setuptools`` entry point.
+    It expects to be able to load a module object from the entry point, and to
+    work as a :class:`~.PyModulePlugin` from that module.
+
+    By default, Sopel uses the entry point ``sopel.plugins``. To use that for
+    their plugin, developers must define an entry point either in their
+    ``setup.py`` file or their ``setup.cfg`` file::
+
+        # in setup.py file
+        setup(
+            name='my_plugin',
+            version='1.0'
+            entry_points={
+                'sopel.plugins': [
+                    'custom = my_plugin.path.to.plugin',
+                ],
+            }
+        )
+
+    And this plugin can be loaded with::
+
+        >>> from pkg_resources import iter_entry_points
+        >>> from sopel.plugins.handlers import EntryPointPlugin
+        >>> plugin = [
+        ...     EntryPointPlugin(ep)
+        ...     for ep in iter_entry_points('sopel.plugins', 'custom')
+        ... ][0]
+        >>> plugin.load()
+        >>> plugin.name
+        'custom'
+
+    In this example, the plugin ``custom`` is loaded from an entry point.
+    Unlike the :class:`~.PyModulePlugin`, the name is not derived from the
+    actual python module, but from its entry point's name.
+
+    .. seealso::
+
+        Sopel uses the :func:`~sopel.plugins.find_entry_point_plugins` function
+        internally to search entry points.
+
+        Entry point is a `standard feature of setuptools`__ for Python, used
+        by other applications (like ``pytest``) for their plugins.
+
+        .. __: https://setuptools.readthedocs.io/en/stable/setuptools.html#dynamic-discovery-of-services-and-plugins
+
+    """
+    def __init__(self, entry_point):
+        self.entry_point = entry_point
+        super(EntryPointPlugin, self).__init__(entry_point.name)
+
+    def load(self):
+        self._module = self.entry_point.load()
