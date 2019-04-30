@@ -2,6 +2,21 @@ This file is used to auto-generate the "Changelog" section of Sopel's website.
 When adding new entries, follow the style guide in NEWS.spec.md to avoid causing
 problems with the site build.
 
+Changes between 6.6.6 and 6.6.7
+===============================
+
+Fixing this bug, which was discovered after the previous release, serves to
+exorcise the curse brought upon us by version 6.6.6.
+
+Core changes
+------------
+
+* Fixed incorrect `MODE` message parsing that could lead to Sopel thinking
+  some users had higher channel privileges than they did [[#1575][]]
+
+[#1575]: https://github.com/sopel-irc/sopel/pull/1575
+
+
 Changes between 6.6.5 and 6.6.6
 ===============================
 
