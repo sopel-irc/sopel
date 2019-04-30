@@ -52,6 +52,9 @@ class MockSopel(object):
         self.channels = sopel.tools.SopelMemory()
         self.channels[channel] = sopel.tools.target.Channel(channel)
 
+        self.users = sopel.tools.SopelMemory()
+        self.privileges = sopel.tools.SopelMemory()
+
         self.memory = sopel.tools.SopelMemory()
 
         self.ops = {}
