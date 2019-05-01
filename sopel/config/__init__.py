@@ -32,6 +32,15 @@ else:
     import configparser as ConfigParser
 
 
+__all__ = [
+    'core_section',
+    'types',
+    'DEFAULT_HOMEDIR',
+    'ConfigurationError',
+    'ConfigurationNotFound',
+    'Config',
+]
+
 DEFAULT_HOMEDIR = os.path.join(os.path.expanduser('~'), '.sopel')
 
 
