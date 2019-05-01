@@ -132,6 +132,24 @@ def test_load_database_tabs(tmpdir):
     assert ('#sopel', 'Admin', 'message\textra') in result[839169010]
 
 
+def test_load_database_weirdo(tmpdir):
+    tmpfile = tmpdir.join('remind.db')
+    weird_message = (
+        '( •ᴗ•)ψ( •ᴗ•)ψ( •ᴗ•)ψ( •ᴗ•)ψ( •ᴗ•)ψ'
+        '( •ᴗ ^B^]^_ITS CARDBACK TIME!!!!!!!!!!!!!!!!!!!!!!!^B^]^_'
+        '( •ᴗ•)ψ( •ᴗ•)ψ( •ᴗ•)ψ( •ᴗ•)ψ( •ᴗ•)ψ( •ᴗ•)ψ')
+    tmpfile.write_text(
+        '523549810.0\t#sopel\tAdmin\t%s\n' % weird_message,
+        encoding='utf-8')
+
+    result = remind.load_database(tmpfile.strpath)
+    assert len(result.keys()) == 1
+    # first timestamp
+    assert 523549810 in result
+    assert len(result[523549810]) == 1
+    assert ('#sopel', 'Admin', weird_message) in result[523549810]
+
+
 def test_load_multiple_reminders_same_timestamp(tmpdir):
     tmpfile = tmpdir.join('remind.db')
     tmpfile.write(
@@ -164,6 +182,10 @@ def test_load_multiple_reminders_same_timestamp_microseconds_ignored(tmpdir):
 
 def test_dump_database(tmpdir):
     tmpfile = tmpdir.join('remind.db')
+    weird_message = (
+        '( •ᴗ•)ψ( •ᴗ•)ψ( •ᴗ•)ψ( •ᴗ•)ψ( •ᴗ•)ψ'
+        '( •ᴗ ^B^]^_ITS CARDBACK TIME!!!!!!!!!!!!!!!!!!!!!!!^B^]^_'
+        '( •ᴗ•)ψ( •ᴗ•)ψ( •ᴗ•)ψ( •ᴗ•)ψ( •ᴗ•)ψ( •ᴗ•)ψ')
     test_data = {
         523549810: [
             ('#sopel', 'Admin', 'message'),
@@ -175,14 +197,20 @@ def test_dump_database(tmpdir):
         555169010: [
             ('#sopel', 'Admin', 'oops\tanother\tmessage'),
         ],
+        666169010: [
+            ('#sopel', 'Admin', weird_message),
+        ]
     }
     remind.dump_database(tmpfile.strpath, test_data)
 
-    content = tmpfile.read()
+    content = tmpfile.read_text(encoding='utf-8')
     assert content.endswith('\n')
     lines = content.strip().split('\n')
-    assert len(lines) == 4, 'There should be 4 lines, found %d' % len(lines)
+    assert len(lines) == 5, 'There should be 5 lines, found %d' % len(lines)
     assert '523549810\t#sopel\tAdmin\tmessage' in lines
     assert '523549810\t#sopel\tAdmin\tanother message' in lines
     assert '839169010\t#sopel\tAdmin\tthe last message' in lines
     assert '555169010\t#sopel\tAdmin\toops\tanother\tmessage' in lines
+
+    weird_line = '666169010\t#sopel\tAdmin\t%s' % weird_message
+    assert weird_line in lines
