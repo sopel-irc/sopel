@@ -30,6 +30,16 @@ VALID_MATCH_LINES = (
     # Make sure numbers are not confused with anything else
     ('13:37:00 10 message',
      TimeReminder('13', '37', '00', None, '10 message')),
+    # Weird stuff
+    ('13:37:00 message\tanother one',
+     TimeReminder('13', '37', '00', None, 'message\tanother one')),
+    ('13:37:00 ( •ᴗ•)ψ( •ᴗ•)ψ( •ᴗ•)ψ( •ᴗ•)ψ( •ᴗ•)ψ'
+     '( •ᴗ ^B^]^_ITS CARDBACK TIME!!!!!!!!!!!!!!!!!!!!!!!^B^]^_'
+     '( •ᴗ•)ψ( •ᴗ•)ψ( •ᴗ•)ψ( •ᴗ•)ψ( •ᴗ•)ψ( •ᴗ•)ψ',
+     TimeReminder('13', '37', '00', None,
+        '( •ᴗ•)ψ( •ᴗ•)ψ( •ᴗ•)ψ( •ᴗ•)ψ( •ᴗ•)ψ'
+        '( •ᴗ ^B^]^_ITS CARDBACK TIME!!!!!!!!!!!!!!!!!!!!!!!^B^]^_'
+        '( •ᴗ•)ψ( •ᴗ•)ψ( •ᴗ•)ψ( •ᴗ•)ψ( •ᴗ•)ψ( •ᴗ•)ψ')),
     # Timezone
     ('13:37Europe/Paris message',
      TimeReminder('13', '37', None, 'Europe/Paris', 'message')),
@@ -104,6 +114,24 @@ def test_load_database(tmpdir):
     assert ('#sopel', 'Admin', 'another message') in result[839169010]
 
 
+def test_load_database_tabs(tmpdir):
+    tmpfile = tmpdir.join('remind.db')
+    tmpfile.write(
+        '523549810.0\t#sopel\tAdmin\tmessage\n'
+        '839169010.0\t#sopel\tAdmin\tmessage\textra\n')
+    result = remind.load_database(tmpfile.strpath)
+    assert len(result.keys()) == 2
+    # first timestamp
+    assert 523549810 in result
+    assert len(result[523549810]) == 1
+    assert ('#sopel', 'Admin', 'message') in result[523549810]
+
+    # second timestamp
+    assert 839169010 in result
+    assert len(result[839169010]) == 1
+    assert ('#sopel', 'Admin', 'message\textra') in result[839169010]
+
+
 def test_load_multiple_reminders_same_timestamp(tmpdir):
     tmpfile = tmpdir.join('remind.db')
     tmpfile.write(
@@ -142,14 +170,19 @@ def test_dump_database(tmpdir):
             ('#sopel', 'Admin', 'another message'),
         ],
         839169010: [
-            ('#sopel', 'Admin', 'the last message')
-        ]
+            ('#sopel', 'Admin', 'the last message'),
+        ],
+        555169010: [
+            ('#sopel', 'Admin', 'oops\tanother\tmessage'),
+        ],
     }
     remind.dump_database(tmpfile.strpath, test_data)
 
     content = tmpfile.read()
+    assert content.endswith('\n')
     lines = content.strip().split('\n')
-    assert len(lines) == 3, 'There should be 3 lines, found %d' % len(lines)
+    assert len(lines) == 4, 'There should be 4 lines, found %d' % len(lines)
     assert '523549810\t#sopel\tAdmin\tmessage' in lines
     assert '523549810\t#sopel\tAdmin\tanother message' in lines
     assert '839169010\t#sopel\tAdmin\tthe last message' in lines
+    assert '555169010\t#sopel\tAdmin\toops\tanother\tmessage' in lines
