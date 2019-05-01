@@ -8,55 +8,122 @@ https://sopel.chat
 """
 from __future__ import unicode_literals, absolute_import, print_function, division
 
+import codecs
+import collections
+from datetime import datetime
 import os
 import re
 import time
 import threading
-import collections
-import codecs
-from datetime import datetime
-from sopel.module import commands, example, NOLIMIT
-import sopel.tools
+
+import pytz
+
+from sopel import tools, module
 from sopel.tools.time import get_timezone, format_time
 
-try:
-    import pytz
-except ImportError:
-    pytz = None
+
+def get_filename(bot):
+    """Get the remind database's filename
+
+    :param bot: instance of Sopel
+    :type bot: :class:`sopel.bot.Sopel`
+    :return: the remind database's filename
+    :rtype: str
+
+    The remind database filename is based on the bot's nick and its
+    configured ``core.host``, and it is located in the ``bot``'s ``homedir``.
+    """
+    name = bot.nick + '-' + bot.config.core.host + '.reminders.db'
+    return os.path.join(bot.config.core.homedir, name)
 
 
-def filename(self):
-    name = self.nick + '-' + self.config.core.host + '.reminders.db'
-    return os.path.join(self.config.core.homedir, name)
+def load_database(filename):
+    """Load the remind database from a file
 
+    :param str filename: absolute path to the remind database file
+    :return: a :class:`dict` of reminders stored by timestamp
+    :rtype: dict
 
-def load_database(name):
+    The remind database is a plain text file (utf-8 encoded) with tab-separated
+    columns of data: time, channel, nick, and message. This function reads this
+    file and outputs a :class:`dict` where keys are the timestamps of the
+    reminders, and values are list of 3-value tuple of reminder data:
+    ``(channel, nick, message)``.
+
+    .. note::
+
+        This function ignores microseconds from the timestamp, if any, meaning
+        that ``523549800.245`` will be read as ``523549800``.
+
+    .. note::
+
+        If ``filename`` is not an existing file, this function returns an
+        empty :class:`dict`.
+
+    """
+    if not os.path.isfile(filename):
+        # no file to read
+        return {}
+
     data = {}
-    if os.path.isfile(name):
-        f = codecs.open(name, 'r', encoding='utf-8')
-        for line in f:
-            unixtime, channel, nick, message = line.split('\t')
+    with codecs.open(filename, 'r', encoding='utf-8') as database:
+        for line in database:
+            unixtime, channel, nick, message = line.split('\t', 3)
             message = message.rstrip('\n')
-            t = int(float(unixtime))  # WTFs going on here?
+            timestamp = int(float(unixtime))  # ignore microseconds
             reminder = (channel, nick, message)
             try:
-                data[t].append(reminder)
+                data[timestamp].append(reminder)
             except KeyError:
-                data[t] = [reminder]
-        f.close()
+                data[timestamp] = [reminder]
     return data
 
 
-def dump_database(name, data):
-    f = codecs.open(name, 'w', encoding='utf-8')
-    for unixtime, reminders in sopel.tools.iteritems(data):
-        for channel, nick, message in reminders:
-            f.write('%s\t%s\t%s\t%s\n' % (unixtime, channel, nick, message))
-    f.close()
+def dump_database(filename, data):
+    """Dump the remind database into a file
+
+    :param str filename: absolute path to the remind database file
+    :param dict data: remind database to dump
+
+    The remind database is dumped into a plain text file (utf-8 encoded) as
+    tab-separated columns of data: unixtime, channel, nick, and message.
+
+    If the file does not exist, it is created.
+    """
+    with codecs.open(filename, 'w', encoding='utf-8') as database:
+        for unixtime, reminders in tools.iteritems(data):
+            for channel, nick, message in reminders:
+                line = '%s\t%s\t%s\t%s\n' % (unixtime, channel, nick, message)
+                database.write(line)
+
+
+def create_reminder(bot, trigger, duration, message, timezone):
+    """Create a reminder into the ``bot``'s database and reply to the sender"""
+    timestamp = int(time.time()) + duration
+    reminder = (trigger.sender, trigger.nick, message)
+    try:
+        bot.rdb[timestamp].append(reminder)
+    except KeyError:
+        bot.rdb[timestamp] = [reminder]
+
+    dump_database(bot.rfn, bot.rdb)
+
+    if duration >= 60:
+        human_time = format_time(
+            bot.db,
+            bot.config,
+            timezone,
+            trigger.nick,
+            trigger.sender,
+            datetime.utcfromtimestamp(timestamp))
+        bot.reply('Okay, will remind at %s' % human_time)
+    else:
+        bot.reply('Okay, will remind in %s secs' % duration)
 
 
 def setup(bot):
-    bot.rfn = filename(bot)
+    """Setup the remind database and the remind monitoring"""
+    bot.rfn = get_filename(bot)
     bot.rdb = load_database(bot.rfn)
 
     def monitor(bot):
@@ -77,11 +144,11 @@ def setup(bot):
             time.sleep(2.5)
 
     targs = (bot,)
-    t = threading.Thread(target=monitor, args=targs)
-    t.start()
+    monitoring = threading.Thread(target=monitor, args=targs)
+    monitoring.start()
 
 
-scaling = collections.OrderedDict([
+SCALING = collections.OrderedDict([
     ('years', 365.25 * 24 * 3600),
     ('year', 365.25 * 24 * 3600),
     ('yrs', 365.25 * 24 * 3600),
@@ -120,21 +187,21 @@ scaling = collections.OrderedDict([
     ('s', 1),
 ])
 
-periods = '|'.join(scaling.keys())
+PERIODS = '|'.join(SCALING.keys())
 
 
-@commands('in')
-@example('.in 3h45m Go to class')
-def remind(bot, trigger):
+@module.commands('in')
+@module.example('.in 3h45m Go to class')
+def remind_in(bot, trigger):
     """Gives you a reminder in the given amount of time."""
     if not trigger.group(2):
         bot.say("Missing arguments for reminder command.")
-        return NOLIMIT
+        return module.NOLIMIT
     if trigger.group(3) and not trigger.group(4):
         bot.say("No message given for reminder.")
-        return NOLIMIT
+        return module.NOLIMIT
     duration = 0
-    message = filter(None, re.split(r'(\d+(?:\.\d+)? ?(?:(?i)' + periods + ')) ?',
+    message = filter(None, re.split(r'(\d+(?:\.\d+)? ?(?:(?i)' + PERIODS + ')) ?',
                                     trigger.group(2))[1:])
     reminder = ''
     stop = False
@@ -142,7 +209,7 @@ def remind(bot, trigger):
         grp = re.match(r'(\d+(?:\.\d+)?) ?(.*) ?', piece)
         if grp and not stop:
             length = float(grp.group(1))
-            factor = scaling.get(grp.group(2).lower(), 60)
+            factor = SCALING.get(grp.group(2).lower(), 60)
             duration += length * factor
         else:
             reminder = reminder + piece
@@ -159,9 +226,12 @@ def remind(bot, trigger):
     create_reminder(bot, trigger, duration, reminder, timezone)
 
 
-@commands('at')
-@example('.at 13:47 Do your homework!')
-def at(bot, trigger):
+REGEX_AT = re.compile(r'(\d+):(\d+)(?::(\d+))?([^\s\d]+)? (.*)')
+
+
+@module.commands('at')
+@module.example('.at 13:47 Do your homework!')
+def remind_at(bot, trigger):
     """
     Gives you a reminder at the given time. Takes `hh:mm:ssTimezone message`.
     Timezone is any timezone Sopel takes elsewhere; the best choices are those
@@ -170,60 +240,30 @@ def at(bot, trigger):
     """
     if not trigger.group(2):
         bot.say("No arguments given for reminder command.")
-        return NOLIMIT
+        return module.NOLIMIT
     if trigger.group(3) and not trigger.group(4):
         bot.say("No message given for reminder.")
-        return NOLIMIT
-    regex = re.compile(r'(\d+):(\d+)(?::(\d+))?([^\s\d]+)? (.*)')
-    match = regex.match(trigger.group(2))
+        return module.NOLIMIT
+    match = REGEX_AT.match(trigger.group(2))
     if not match:
         bot.reply("Sorry, but I didn't understand your input.")
-        return NOLIMIT
-    hour, minute, second, tz, message = match.groups()
+        return module.NOLIMIT
+    hour, minute, second, timezone, message = match.groups()
     if not second:
         second = '0'
 
-    if pytz:
-        timezone = get_timezone(bot.db, bot.config, tz,
-                                trigger.nick, trigger.sender)
-        if not timezone:
-            timezone = 'UTC'
-        now = datetime.now(pytz.timezone(timezone))
-        at_time = datetime(now.year, now.month, now.day,
-                           int(hour), int(minute), int(second),
-                           tzinfo=now.tzinfo)
-        timediff = at_time - now
-    else:
-        if tz and tz.upper() != 'UTC':
-            bot.reply("I don't have timezone support installed.")
-            return NOLIMIT
-        now = datetime.now()
-        at_time = datetime(now.year, now.month, now.day,
-                           int(hour), int(minute), int(second))
-        timediff = at_time - now
+    timezone = get_timezone(bot.db, bot.config, timezone,
+                            trigger.nick, trigger.sender)
+    if not timezone:
+        timezone = 'UTC'
 
+    now = datetime.now(pytz.timezone(timezone))
+    at_time = datetime(now.year, now.month, now.day,
+                       int(hour), int(minute), int(second),
+                       tzinfo=now.tzinfo)
+    timediff = at_time - now
     duration = timediff.seconds
 
     if duration < 0:
         duration += 86400
     create_reminder(bot, trigger, duration, message, timezone)
-
-
-def create_reminder(bot, trigger, duration, message, tz):
-    t = int(time.time()) + duration
-    reminder = (trigger.sender, trigger.nick, message)
-    try:
-        bot.rdb[t].append(reminder)
-    except KeyError:
-        bot.rdb[t] = [reminder]
-
-    dump_database(bot.rfn, bot.rdb)
-
-    if duration >= 60:
-        remind_at = datetime.utcfromtimestamp(t)
-        timef = format_time(bot.db, bot.config, tz, trigger.nick,
-                            trigger.sender, remind_at)
-
-        bot.reply('Okay, will remind at %s' % timef)
-    else:
-        bot.reply('Okay, will remind in %s secs' % duration)
