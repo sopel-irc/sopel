@@ -14,7 +14,6 @@ from datetime import datetime
 import os
 import re
 import time
-import threading
 
 import pytz
 
@@ -122,30 +121,34 @@ def create_reminder(bot, trigger, duration, message, timezone):
 
 
 def setup(bot):
-    """Setup the remind database and the remind monitoring"""
+    """Load the remind database"""
     bot.rfn = get_filename(bot)
     bot.rdb = load_database(bot.rfn)
 
-    def monitor(bot):
-        time.sleep(5)
-        while True:
-            now = int(time.time())
-            unixtimes = [int(key) for key in bot.rdb]
-            oldtimes = [t for t in unixtimes if t <= now]
-            if oldtimes:
-                for oldtime in oldtimes:
-                    for (channel, nick, message) in bot.rdb[oldtime]:
-                        if message:
-                            bot.msg(channel, nick + ': ' + message)
-                        else:
-                            bot.msg(channel, nick + '!')
-                    del bot.rdb[oldtime]
-                dump_database(bot.rfn, bot.rdb)
-            time.sleep(2.5)
 
-    targs = (bot,)
-    monitoring = threading.Thread(target=monitor, args=targs)
-    monitoring.start()
+def shutdown(bot):
+    """Dump the remind database before shutdown"""
+    dump_database(bot.rfn, bot.rdb)
+    bot.rdb = {}
+    del bot.rfn
+    del bot.rdb
+
+
+@module.interval(2.5)
+def remind_monitoring(bot):
+    """Check for reminder"""
+    now = int(time.time())
+    unixtimes = [int(key) for key in bot.rdb]
+    oldtimes = [t for t in unixtimes if t <= now]
+    if oldtimes:
+        for oldtime in oldtimes:
+            for (channel, nick, message) in bot.rdb[oldtime]:
+                if message:
+                    bot.msg(channel, nick + ': ' + message)
+                else:
+                    bot.msg(channel, nick + '!')
+            del bot.rdb[oldtime]
+        dump_database(bot.rfn, bot.rdb)
 
 
 SCALING = collections.OrderedDict([
