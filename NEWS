@@ -20,6 +20,10 @@ Module changes
 * The `spellcheck` module now uses `aspell`, and gained a custom word list
   * Custom word list is managed via a suite of new commands: `.scadd`,
     `.scsave`, `.scpending`, `.scdel`, and `.scclear`) [[#1164][]]
+* The `currency` module changed data sources to support more currencies, and can
+  optionally use Fixer.io to support even *more* [[#1430][]]
+  * Fixer.io requires a free API key, which gives plenty of calls per month (the
+    module caches exchange rates for 24 hours)
 * Choose from any of four pastebin services for `help` output [[#1451][]]
   * This is intended mostly for resilience (so one pastebin service going
     down, as ptpb did during the 6.6.x life-cycle, won't force a new Sopel
@@ -138,6 +142,7 @@ API changes
 [#1424]: https://github.com/sopel-irc/sopel/pull/1424
 [#1425]: https://github.com/sopel-irc/sopel/pull/1425
 [#1429]: https://github.com/sopel-irc/sopel/pull/1429
+[#1430]: https://github.com/sopel-irc/sopel/pull/1430
 [#1451]: https://github.com/sopel-irc/sopel/pull/1451
 [#1456]: https://github.com/sopel-irc/sopel/pull/1456
 [#1458]: https://github.com/sopel-irc/sopel/pull/1458
