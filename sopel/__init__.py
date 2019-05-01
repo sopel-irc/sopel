@@ -18,6 +18,20 @@ import pkg_resources
 import re
 import sys
 
+__all__ = [
+    'bot',
+    'config',
+    'db',
+    'formatting',
+    'irc',
+    'loader',
+    'logger',
+    'module',
+    'tools',
+    'trigger',
+    'version_info',
+]
+
 loc = locale.getlocale()
 if sys.version_info.major > 2:
     if not loc[1] or 'UTF-8' not in loc[1]:
