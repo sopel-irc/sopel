@@ -1,9 +1,9 @@
 # coding=utf-8
 """
-*Availability: 3+, depreacted in 6.2.0*
+*Availability: 3+, deprecated in 6.2.0*
 
 The web class contains essential web-related functions for interaction with web
-applications or websites in your modules.  It supports HTTP GET, HTTP POST and
+applications or websites in your modules. It supports HTTP GET, HTTP POST and
 HTTP HEAD.
 """
 # Copyright © 2008, Sean B. Palmer, inamidst.com
@@ -45,6 +45,18 @@ try:
     has_ssl = True
 except ImportError:
     has_ssl = False
+
+__all__ = [
+    'decode',
+    'entity',
+    'iri_to_uri',
+    'quote',
+    'quote_query',
+    'search_urls',
+    'trim_url',
+    'urlencode',
+    'urlencode_non_ascii',
+]
 
 USER_AGENT = 'Sopel/{} (https://sopel.chat)'.format(__version__)
 default_headers = {'User-Agent': USER_AGENT}

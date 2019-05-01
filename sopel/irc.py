@@ -39,6 +39,9 @@ from datetime import datetime
 if sys.version_info.major >= 3:
     unicode = str
 
+
+__all__ = ['Bot']
+
 LOGGER = get_logger(__name__)
 
 
