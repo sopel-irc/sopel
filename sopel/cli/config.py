@@ -117,7 +117,7 @@ def handle_init(options):
         return 1
 
     print('Starting Sopel config wizard for: %s' % config_filename)
-    config._wizard('all', config_name)
+    utils.wizard(config_name)
 
 
 def handle_get(options):

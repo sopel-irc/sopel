@@ -56,6 +56,14 @@ class JobScheduler(threading.Thread):
         """
         self.stopping.set()
 
+    def remove_callable_job(self, callable):
+        """Removes specific callable from job queue"""
+        with self._mutex:
+            self._jobs = [
+                job for job in self._jobs
+                if job.func != callable
+            ]
+
     def run(self):
         """Run forever until :attr:`stopping` event is set."""
         while not self.stopping.is_set():

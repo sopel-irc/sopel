@@ -9,14 +9,14 @@ from __future__ import unicode_literals, absolute_import, print_function, divisi
 
 from ast import literal_eval
 import collections
+import itertools
 import os
 import re
 import sys
 import threading
 import time
 
-from sopel import tools
-from sopel import irc
+from sopel import irc, plugins, tools
 from sopel.db import SopelDB
 from sopel.tools import stderr, Identifier
 import sopel.tools.jobs
@@ -60,6 +60,7 @@ class Sopel(irc.Bot):
             'medium': collections.defaultdict(list),
             'low': collections.defaultdict(list)
         }
+        self._plugins = {}
         self.config = config
         """The :class:`sopel.config.Config` for the current Sopel instance."""
         self.doc = {}
@@ -178,31 +179,33 @@ class Sopel(irc.Bot):
         irc.Bot.write(self, args, text=text)
 
     def setup(self):
-        stderr("\nWelcome to Sopel. Loading modules...\n\n")
+        load_success = 0
+        load_error = 0
+        load_disabled = 0
 
-        modules = sopel.loader.enumerate_modules(self.config)
-
-        error_count = 0
-        success_count = 0
-        for name in modules:
-            path, type_ = modules[name]
+        stderr("Welcome to Sopel. Loading modules...")
+        usable_plugins = plugins.get_usable_plugins(self.config)
+        for name, info in usable_plugins.items():
+            plugin, is_enabled = info
+            if not is_enabled:
+                load_disabled = load_disabled + 1
+                continue
 
             try:
-                module, _ = sopel.loader.load_module(name, path, type_)
+                plugin.load()
             except Exception as e:
-                error_count = error_count + 1
+                load_error = load_error + 1
                 filename, lineno = tools.get_raising_file_and_line()
                 rel_path = os.path.relpath(filename, os.path.dirname(__file__))
                 raising_stmt = "%s:%d" % (rel_path, lineno)
                 stderr("Error loading %s: %s (%s)" % (name, e, raising_stmt))
             else:
                 try:
-                    if hasattr(module, 'setup'):
-                        module.setup(self)
-                    relevant_parts = sopel.loader.clean_module(
-                        module, self.config)
+                    if plugin.has_setup():
+                        plugin.setup(self)
+                    plugin.register(self)
                 except Exception as e:
-                    error_count = error_count + 1
+                    load_error = load_error + 1
                     filename, lineno = tools.get_raising_file_and_line()
                     rel_path = os.path.relpath(
                         filename, os.path.dirname(__file__)
@@ -211,14 +214,93 @@ class Sopel(irc.Bot):
                     stderr("Error in %s setup procedure: %s (%s)"
                            % (name, e, raising_stmt))
                 else:
-                    self.register(*relevant_parts)
-                    success_count += 1
+                    load_success = load_success + 1
+                    print('Loaded: %s' % name)
 
-        if len(modules) > 1:  # coretasks is counted
-            stderr('\n\nRegistered %d modules,' % (success_count - 1))
-            stderr('%d modules failed to load\n\n' % error_count)
+        total = sum([load_success, load_error, load_disabled])
+        if total and load_success:
+            stderr('Registered %d modules' % (load_success - 1))
+            stderr('%d modules failed to load' % load_error)
+            stderr('%d modules disabled' % load_disabled)
         else:
             stderr("Warning: Couldn't load any modules")
+
+    def reload_plugin(self, name):
+        """Reload a plugin
+
+        :param str name: name of the plugin to reload
+        :raise PluginNotRegistered: when there is no ``name`` plugin registered
+
+        It runs the plugin's shutdown routine and unregisters it. Then it
+        reloads it, runs its setup routines, and registers it again.
+        """
+        if not self.has_plugin(name):
+            raise plugins.exceptions.PluginNotRegistered(name)
+
+        plugin = self._plugins[name]
+        # tear down
+        plugin.shutdown(self)
+        plugin.unregister(self)
+        print('Unloaded: %s' % name)
+        # reload & setup
+        plugin.reload()
+        plugin.setup(self)
+        plugin.register(self)
+        print('Reloaded: %s' % name)
+
+    def reload_plugins(self):
+        """Reload all plugins
+
+        First, run all plugin shutdown routines and unregister all plugins.
+        Then reload all plugins, run their setup routines, and register them
+        again.
+        """
+        registered = list(self._plugins.items())
+        # tear down all plugins
+        for name, plugin in registered:
+            plugin.shutdown(self)
+            plugin.unregister(self)
+            print('Unloaded: %s' % name)
+
+        # reload & setup all plugins
+        for name, plugin in registered:
+            plugin.reload()
+            plugin.setup(self)
+            plugin.register(self)
+            print('Reloaded: %s' % name)
+
+    def add_plugin(self, plugin, callables, jobs, shutdowns, urls):
+        """Add a loaded plugin to the bot's registry"""
+        self._plugins[plugin.name] = plugin
+        self.register(callables, jobs, shutdowns, urls)
+
+    def remove_plugin(self, plugin, callables, jobs, shutdowns, urls):
+        """Remove a loaded plugin from the bot's registry"""
+        name = plugin.name
+        if not self.has_plugin(name):
+            raise plugins.exceptions.PluginNotRegistered(name)
+
+        try:
+            # remove commands, jobs, and shutdown functions
+            for func in itertools.chain(callables, jobs, shutdowns):
+                self.unregister(func)
+
+            # remove URL callback handlers
+            if self.memory.contains('url_callbacks'):
+                for func in urls:
+                    regex = func.url_regex
+                    if func == self.memory['url_callbacks'].get(regex):
+                        self.unregister_url_callback(regex)
+        except:  # noqa
+            # TODO: consider logging?
+            raise  # re-raised
+        else:
+            # remove plugin from registry
+            del self._plugins[name]
+
+    def has_plugin(self, name):
+        """Tell if the bot has registered this plugin by its name"""
+        return name in self._plugins
 
     def unregister(self, obj):
         if not callable(obj):
@@ -229,9 +311,7 @@ class Sopel(irc.Bot):
                 if obj in callb_list:
                     callb_list.remove(obj)
         if hasattr(obj, 'interval'):
-            # TODO this should somehow find the right job to remove, rather than
-            # clearing the entire queue. Issue #831
-            self.scheduler.clear_jobs()
+            self.scheduler.remove_callable_job(obj)
         if (getattr(obj, '__name__', None) == 'shutdown' and
                     obj in self.shutdown_methods):
             self.shutdown_methods.remove(obj)

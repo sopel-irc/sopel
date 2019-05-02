@@ -18,15 +18,7 @@ import sys
 import time
 import traceback
 
-from sopel import bot, logger, tools, __version__
-from sopel.config import (
-    Config,
-    _create_config,
-    ConfigurationError,
-    ConfigurationNotFound,
-    DEFAULT_HOMEDIR,
-    _wizard
-)
+from sopel import bot, config, logger, tools, __version__
 from . import utils
 
 if sys.version_info < (2, 7):
@@ -48,10 +40,10 @@ encounters such an error case.
 """
 
 
-def run(config, pid_file, daemon=False):
+def run(settings, pid_file, daemon=False):
     delay = 20
     # Inject ca_certs from config to web for SSL validation of web requests
-    if not config.core.ca_certs:
+    if not settings.core.ca_certs:
         tools.stderr(
             'Could not open CA certificates file. SSL will not work properly!')
 
@@ -69,7 +61,7 @@ def run(config, pid_file, daemon=False):
         if p and p.hasquit:  # Check if `hasquit` was set for bot during disconnected phase
             break
         try:
-            p = bot.Sopel(config, daemon=daemon)
+            p = bot.Sopel(settings, daemon=daemon)
             if hasattr(signal, 'SIGUSR1'):
                 signal.signal(signal.SIGUSR1, signal_handler)
             if hasattr(signal, 'SIGTERM'):
@@ -81,7 +73,7 @@ def run(config, pid_file, daemon=False):
             if hasattr(signal, 'SIGILL'):
                 signal.signal(signal.SIGILL, signal_handler)
             logger.setup_logging(p)
-            p.run(config.core.host, int(config.core.port))
+            p.run(settings.core.host, int(settings.core.port))
         except KeyboardInterrupt:
             break
         except Exception:  # TODO: Be specific
@@ -90,7 +82,7 @@ def run(config, pid_file, daemon=False):
                 tools.stderr(trace)
             except Exception:  # TODO: Be specific
                 pass
-            logfile = open(os.path.join(config.core.logdir, 'exceptions.log'), 'a')
+            logfile = open(os.path.join(settings.core.logdir, 'exceptions.log'), 'a')
             logfile.write('Critical exception in core')
             logfile.write(trace)
             logfile.write('----------------------------------------\n\n')
@@ -278,12 +270,12 @@ def print_version():
 
 def print_config():
     """Print list of available configurations from default homedir."""
-    configs = utils.enumerate_configs(DEFAULT_HOMEDIR)
-    print('Config files in %s:' % DEFAULT_HOMEDIR)
-    config = None
-    for config in configs:
-        print('\t%s' % config)
-    if not config:
+    configs = utils.enumerate_configs(config.DEFAULT_HOMEDIR)
+    print('Config files in %s:' % config.DEFAULT_HOMEDIR)
+    configfile = None
+    for configfile in configs:
+        print('\t%s' % configfile)
+    if not configfile:
         print('\tNone found')
 
     print('-------------------------')
@@ -308,23 +300,16 @@ def get_configuration(options):
 
     """
     try:
-        bot_config = utils.load_settings(options)
-    except ConfigurationNotFound as error:
+        settings = utils.load_settings(options)
+    except config.ConfigurationNotFound as error:
         print(
             "Welcome to Sopel!\n"
             "I can't seem to find the configuration file, "
             "so let's generate it!\n")
+        settings = utils.wizard(error.filename)
 
-        config_path = error.filename
-        if not config_path.endswith('.cfg'):
-            config_path = config_path + '.cfg'
-
-        config_path = _create_config(config_path)
-        # try to reload it now that it's created
-        bot_config = Config(config_path)
-
-    bot_config._is_daemonized = options.daemonize
-    return bot_config
+    settings._is_daemonized = options.daemonize
+    return settings
 
 
 def get_pid_filename(options, pid_dir):
@@ -374,7 +359,7 @@ def command_start(opts):
     # Step One: Get the configuration file and prepare to run
     try:
         config_module = get_configuration(opts)
-    except ConfigurationError as e:
+    except config.ConfigurationError as e:
         tools.stderr(e)
         return ERR_CODE_NO_RESTART
 
@@ -421,10 +406,12 @@ def command_start(opts):
 
 def command_configure(opts):
     """Sopel Configuration Wizard"""
+    configpath = utils.find_config(
+        config.DEFAULT_HOMEDIR, opts.config or 'default')
     if getattr(opts, 'modules', False):
-        _wizard('mod', opts.config)
+        utils.plugins_wizard(configpath)
     else:
-        _wizard('all', opts.config)
+        utils.wizard(configpath)
 
 
 def command_stop(opts):
@@ -432,7 +419,7 @@ def command_stop(opts):
     # Get Configuration
     try:
         settings = utils.load_settings(opts)
-    except ConfigurationNotFound as error:
+    except config.ConfigurationNotFound as error:
         tools.stderr('Configuration "%s" not found' % error.filename)
         return ERR_CODE
 
@@ -471,7 +458,7 @@ def command_restart(opts):
     # Get Configuration
     try:
         settings = utils.load_settings(opts)
-    except ConfigurationNotFound as error:
+    except config.ConfigurationNotFound as error:
         tools.stderr('Configuration "%s" not found' % error.filename)
         return ERR_CODE
 
@@ -533,18 +520,22 @@ def command_legacy(opts):
         print_version()
         return
 
+    # TODO: allow to use a different homedir
+    configpath = utils.find_config(
+        config.DEFAULT_HOMEDIR, opts.config or 'default')
+
     if opts.wizard:
         tools.stderr(
             'WARNING: option -w/--configure-all is deprecated; '
             'use `sopel configure` instead')
-        _wizard('all', opts.config)
+        utils.wizard(configpath)
         return
 
     if opts.mod_wizard:
         tools.stderr(
             'WARNING: option --configure-modules is deprecated; '
             'use `sopel configure --modules` instead')
-        _wizard('mod', opts.config)
+        utils.plugins_wizard(configpath)
         return
 
     if opts.list_configs:
@@ -554,7 +545,7 @@ def command_legacy(opts):
     # Step Two: Get the configuration file and prepare to run
     try:
         config_module = get_configuration(opts)
-    except ConfigurationError as e:
+    except config.ConfigurationError as e:
         tools.stderr(e)
         return ERR_CODE_NO_RESTART
 

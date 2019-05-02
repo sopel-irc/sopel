@@ -5,10 +5,15 @@ A Sopel plugin consists of a Python module containing one or more
 ``callable``\s. It may optionally also contain ``configure``, ``setup``, and
 ``shutdown`` hooks.
 
-.. py:method:: callable(bot, trigger)
+.. py:function:: callable(bot, trigger)
+
+    :param bot: the bot's instance
+    :type bot: :class:`sopel.bot.SopelWrapper`
+    :param trigger: the object that triggered the call
+    :type trigger: :class:`sopel.trigger.Trigger`
 
     A callable is any function which takes as its arguments a
-    :class:`sopel.bot.Sopel` object and a :class:`sopel.trigger.Trigger`
+    :class:`sopel.bot.SopelWrapper` object and a :class:`sopel.trigger.Trigger`
     object, and is wrapped with appropriate decorators from
     :mod:`sopel.module`. The ``bot`` provides the ability to send messages to
     the network and check the state of the bot. The ``trigger`` provides
@@ -21,7 +26,10 @@ A Sopel plugin consists of a Python module containing one or more
     Note that the name can, and should, be anything - it doesn't need to be
     called "callable".
 
-.. py:method:: setup(bot)
+.. py:function:: setup(bot)
+
+    :param bot: the bot's instance
+    :type bot: :class:`sopel.bot.Sopel`
 
     This is an optional function of a plugin, which will be called while the
     module is being loaded. The purpose of this function is to perform whatever
@@ -41,7 +49,10 @@ A Sopel plugin consists of a Python module containing one or more
     execution of this function. As such, an infinite loop (such as an
     unthreaded polling loop) will cause the bot to hang.
 
-.. py:method:: shutdown(bot)
+.. py:function:: shutdown(bot)
+
+    :param bot: the bot's instance
+    :type bot: :class:`sopel.bot.Sopel`
 
     This is an optional function of a module, which will be called while the
     bot is quitting. Note that this normally occurs after closing connection
@@ -57,7 +68,10 @@ A Sopel plugin consists of a Python module containing one or more
 
     .. versionadded:: 4.1
 
-.. py:method:: configure(config)
+.. py:function:: configure(config)
+
+    :param bot: the bot's configuration object
+    :type bot: :class:`sopel.config.Config`
 
     This is an optional function of a module, which will be called during the
     user's setup of the bot. It's intended purpose is to use the methods of the
@@ -71,3 +85,12 @@ sopel.module
 .. automodule:: sopel.module
    :members:
 
+sopel.plugins
+-------------
+.. automodule:: sopel.plugins
+   :members:
+
+sopel.plugins.handlers
+----------------------
+.. automodule:: sopel.plugins.handlers
+   :members:
