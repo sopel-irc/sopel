@@ -62,7 +62,7 @@ def test_find_config_local(tmpdir, config_dir):
 
     with cd(working_dir.strpath):
         found_config = find_config(config_dir.strpath, 'local.cfg')
-        assert found_config == 'local.cfg'
+        assert found_config == working_dir.join('local.cfg').strpath
 
         found_config = find_config(config_dir.strpath, 'local')
         assert found_config == config_dir.join('local').strpath

@@ -183,7 +183,7 @@ def find_config(config_dir, name, extension='.cfg'):
 
     """
     if os.path.isfile(name):
-        return name
+        return os.path.abspath(name)
     name_ext = name + extension
     for filename in enumerate_configs(config_dir, extension):
         if name_ext == filename:
