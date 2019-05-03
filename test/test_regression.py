@@ -16,16 +16,7 @@ def sopel():
     return bot
 
 
-@pytest.fixture
-def sopel_bot(sopel):
-    pretrigger = PreTrigger(Identifier("Foo"), "PING abc")
-    bot = MockSopelWrapper(sopel, pretrigger)
-    bot.privileges = dict()
-    bot.users = dict()
-    return bot
-
-
-def test_bot_legacy_permissions(sopel_bot):
+def test_bot_legacy_permissions(sopel):
     """
     Make sure permissions match after being updated from both RPL_NAMREPLY
     and RPL_WHOREPLY, #1482
@@ -35,25 +26,19 @@ def test_bot_legacy_permissions(sopel_bot):
 
     # RPL_NAMREPLY
     pretrigger = PreTrigger("Foo", ":test.example.com 353 Foo = #test :Foo ~@Admin")
-    trigger = Trigger(sopel_bot.config, pretrigger, None)
-    coretasks.handle_names(sopel_bot, trigger)
+    trigger = Trigger(sopel.config, pretrigger, None)
+    coretasks.handle_names(MockSopelWrapper(sopel, trigger), trigger)
 
-    assert (
-        sopel_bot.channels["#test"].privileges[nick] ==
-        sopel_bot.privileges["#test"][nick]
-    )
+    assert sopel.channels["#test"].privileges[nick] == sopel.privileges["#test"][nick]
 
     # RPL_WHOREPLY
     pretrigger = PreTrigger(
         "Foo",
         ":test.example.com 352 Foo #test ~Admin adminhost test.example.com Admin Hr~ :0 Admin",
     )
-    trigger = Trigger(sopel_bot.config, pretrigger, None)
-    coretasks.recv_who(sopel_bot, trigger)
+    trigger = Trigger(sopel.config, pretrigger, None)
+    coretasks.recv_who(MockSopelWrapper(sopel, trigger), trigger)
 
-    assert (
-        sopel_bot.channels["#test"].privileges[nick] ==
-        sopel_bot.privileges["#test"][nick]
-    )
+    assert sopel.channels["#test"].privileges[nick] == sopel.privileges["#test"][nick]
 
-    assert sopel_bot.users.get(nick) is not None
+    assert sopel.users.get(nick) is not None
