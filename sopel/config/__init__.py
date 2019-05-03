@@ -67,6 +67,7 @@ class Config(object):
         config file, or a config file is not loaded. They are documented below.
         """
         self.filename = filename
+        self.basename = os.path.basename(filename).rsplit('.', 1)[0]
         """The config object's associated file, as noted above."""
         self.parser = ConfigParser.RawConfigParser(allow_no_value=True)
         self.parser.read(self.filename)

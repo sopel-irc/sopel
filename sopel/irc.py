@@ -102,7 +102,7 @@ class Bot(asynchat.async_chat):
                 stderr('%s %s' % (str(e.__class__), str(e)))
                 stderr('Please fix this and then run Sopel again.')
                 os._exit(1)
-        f = codecs.open(os.path.join(self.config.core.logdir, 'raw.log'),
+        f = codecs.open(os.path.join(self.config.core.logdir, self.config.basename + '.raw.log'),
                         'a', encoding='utf-8')
         f.write(prefix + unicode(time.time()) + "\t")
         temp = line.replace('\n', '')
@@ -441,7 +441,7 @@ class Bot(asynchat.async_chat):
 
                 signature = '%s (%s)' % (report[0], report[1])
                 # TODO: make not hardcoded
-                log_filename = os.path.join(self.config.core.logdir, 'exceptions.log')
+                log_filename = os.path.join(self.config.core.logdir, self.config.basename + '.exceptions.log')
                 with codecs.open(log_filename, 'a', encoding='utf-8') as logfile:
                     logfile.write('Signature: %s\n' % signature)
                     if trigger:
@@ -476,7 +476,7 @@ class Bot(asynchat.async_chat):
         LOGGER.error('Fatal error in core, please review exception log')
         # TODO: make not hardcoded
         logfile = codecs.open(
-            os.path.join(self.config.core.logdir, 'exceptions.log'),
+            os.path.join(self.config.core.logdir, self.config.basename + '.exceptions.log'),
             'a',
             encoding='utf-8'
         )

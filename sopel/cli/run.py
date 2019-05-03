@@ -82,7 +82,7 @@ def run(settings, pid_file, daemon=False):
                 tools.stderr(trace)
             except Exception:  # TODO: Be specific
                 pass
-            logfile = open(os.path.join(settings.core.logdir, 'exceptions.log'), 'a')
+            logfile = open(os.path.join(settings.core.logdir, settings.basename + '.exceptions.log'), 'a')
             logfile.write('Critical exception in core')
             logfile.write(trace)
             logfile.write('----------------------------------------\n\n')
