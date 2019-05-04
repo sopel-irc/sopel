@@ -63,6 +63,7 @@ setup(
         'console_scripts': [
             'sopel = sopel.cli.run:main',
             'sopel-config = sopel.cli.config:main',
+            'sopel-plugins = sopel.cli.plugins:main',
         ],
     },
     python_requires='>=2.7, !=3.0.*, !=3.1.*, !=3.2.*, <4',
