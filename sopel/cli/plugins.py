@@ -73,6 +73,30 @@ def build_parser():
             Remove from ``core.enable`` list if applicable.
         """)
 
+    # sopel-plugin enable
+    enable_parser = subparsers.add_parser(
+        'enable',
+        help="Enable a Sopel plugins",
+        description="""
+            Enable a Sopel plugin by its name, no matter where it comes from.
+            The ``coretasks`` plugin is always enabled. By default, a plugin
+            that is not excluded is enabled, unless at least one plugin is
+            defined in the ``core.enable`` list. In that case, Sopel uses
+            a "allow-only" policy for plugins, and enabled plugins must be
+            added to this list.
+        """)
+    utils.add_common_arguments(enable_parser)
+    enable_parser.add_argument('name', help='Name of the plugin to enable')
+    enable_parser.add_argument(
+        '-a', '--allow-only',
+        dest='allow_only',
+        action='store_true',
+        default=False,
+        help="""
+            Enforce allow-only policy, adding the plugin to the ``core.enable``
+            list.
+        """)
+
     return parser
 
 
@@ -151,6 +175,59 @@ def handle_disable(options):
     print('Plugin %s disabled' % plugin_name)
 
 
+def handle_enable(options):
+    """Enable a Sopel plugin"""
+    plugin_name = options.name
+    settings = utils.load_settings(options)
+    usable_plugins = plugins.get_usable_plugins(settings)
+    enabled = settings.core.enable
+    excluded = settings.core.exclude
+
+    # coretasks is sacred
+    if plugin_name == 'coretasks':
+        tools.stderr('Plugin coretasks is always enabled')
+        return 0
+
+    # plugin does not exist
+    if plugin_name not in usable_plugins:
+        tools.stderr('No plugin named %s' % plugin_name)
+        return 1
+
+    # is it already enabled, but should we enforce anything?
+    is_enabled = usable_plugins[plugin_name][1]
+    if is_enabled and not options.allow_only:
+        # already enabled, and no allow-only option: all good
+        if plugin_name not in enabled:
+            tools.stderr(
+                'Plugin %s is enabled; '
+                'use option -a/--allow-only to enforce allow only policy'
+                % plugin_name)
+        return 0
+
+    # not enabled, or options.allow_only to enforce
+    if plugin_name in excluded:
+        # remove from excluded
+        settings.core.exclude = [
+            name
+            for name in settings.core.exclude
+            if name != plugin_name
+        ]
+    elif plugin_name in enabled:
+        # not excluded, and already in enabled list: all good
+        tools.stderr('Plugin %s is already enabled' % plugin_name)
+        return 0
+
+    if plugin_name not in enabled:
+        if enabled or options.allow_only:
+            # not excluded, but not enabled either: allow-only mode required
+            # either because of the current configuration, or by request
+            settings.core.enable = enabled + [plugin_name]
+
+    settings.save()
+    tools.stderr('Plugin %s enabled' % plugin_name)
+    return 0
+
+
 def main():
     """Console entry point for ``sopel-plugins``"""
     parser = build_parser()
@@ -165,3 +242,5 @@ def main():
         return handle_list(options)
     elif action == 'disable':
         return handle_disable(options)
+    elif action == 'enable':
+        return handle_enable(options)
