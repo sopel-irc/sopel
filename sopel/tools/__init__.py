@@ -389,7 +389,7 @@ class SopelMemory(dict):
 
     """A simple thread-safe dict implementation.
 
-    *Availability: 4.0; available as ``Sopel.SopelMemory`` in 3.1.0 - 3.2.0*
+    *Availability: 4.0; available as ``Willie.WillieMemory`` in 3.1.0 - 3.2.0*
 
     In order to prevent exceptions when iterating over the values and changing
     them at the same time from different threads, we use a blocking lock on
