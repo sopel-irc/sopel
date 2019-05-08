@@ -18,7 +18,7 @@ import time
 import pytz
 
 from sopel import tools, module
-from sopel.tools.time import get_timezone, format_time
+from sopel.tools.time import get_timezone, format_time, validate_timezone
 
 
 def get_filename(bot):
@@ -96,8 +96,19 @@ def dump_database(filename, data):
                 database.write(line)
 
 
-def create_reminder(bot, trigger, duration, message, timezone):
-    """Create a reminder into the ``bot``'s database and reply to the sender"""
+def create_reminder(bot, trigger, duration, message):
+    """Create a reminder into the ``bot``'s database and reply to the sender
+
+    :param bot: the bot's instance
+    :type bot: :class:`~sopel.bot.SopelWrapper`
+    :param trigger: the object that triggered the call
+    :type trigger: :class:`~sopel.trigger.Trigger`
+    :param int duration: duration from now, in seconds, until ``message``
+                         must be reminded
+    :param str message: message to be reminded
+    :return: the reminder's timestamp
+    :rtype: :class:`int`
+    """
     timestamp = int(time.time()) + duration
     reminder = (trigger.sender, trigger.nick, message)
     try:
@@ -106,18 +117,7 @@ def create_reminder(bot, trigger, duration, message, timezone):
         bot.rdb[timestamp] = [reminder]
 
     dump_database(bot.rfn, bot.rdb)
-
-    if duration >= 60:
-        human_time = format_time(
-            bot.db,
-            bot.config,
-            timezone,
-            trigger.nick,
-            trigger.sender,
-            datetime.utcfromtimestamp(timestamp))
-        bot.reply('Okay, will remind at %s' % human_time)
-    else:
-        bot.reply('Okay, will remind in %s secs' % duration)
+    return timestamp
 
 
 def setup(bot):
@@ -226,20 +226,188 @@ def remind_in(bot, trigger):
         duration = int(duration)
     timezone = get_timezone(
         bot.db, bot.config, None, trigger.nick, trigger.sender)
-    create_reminder(bot, trigger, duration, reminder, timezone)
+    timestamp = create_reminder(bot, trigger, duration, reminder)
+
+    if duration >= 60:
+        human_time = format_time(
+            bot.db,
+            bot.config,
+            timezone,
+            trigger.nick,
+            trigger.sender,
+            datetime.utcfromtimestamp(timestamp))
+        bot.reply('Okay, will remind at %s' % human_time)
+    else:
+        bot.reply('Okay, will remind in %s secs' % duration)
 
 
-REGEX_AT = re.compile(r'(\d+):(\d+)(?::(\d+))?([^\s\d]+)? (.*)')
+REGEX_AT = re.compile(
+    # hours:minutes
+    r'(?P<hours>\d+):(?P<minutes>\d+)'
+    # optional seconds
+    r'(?::(?P<seconds>\d+))?'
+    # optional timezone
+    r'(?P<tz>[^\s\d]+)?'
+    # optional date (start)
+    r'(?:\s+'
+    # - date 1 (at least one digit)
+    r'(?P<date1>\d{1,4})'
+    # - separator (one character)
+    r'(?P<sep>[./-])'
+    # - date 2 (at least one digit)
+    r'(?P<date2>\d{1,4})'
+    # - optional sep + date 3 (at least one digit)
+    r'(?:(?P=sep)(?P<date3>\d{1,4}))?'
+    r')?'  # (end)
+    # at least one space + message
+    r'\s+(?P<message>.*)'
+)
+
+
+class TimeReminder(object):
+    """Time reminder for the ``at`` command"""
+    def __init__(self,
+                 hour,
+                 minute,
+                 second,
+                 timezone,
+                 date1,
+                 date2,
+                 date3,
+                 message):
+        self.hour = hour
+        self.minute = minute
+        self.second = second
+        self.timezone = pytz.timezone(timezone)
+        self.message = message
+
+        year = None
+        month = None
+        day = None
+
+        if date1 and date2 and date3:
+            if len(date1) == 4:
+                # YYYY-mm-dd
+                year = int(date1)
+                month = int(date2)
+                day = int(date3)
+            else:
+                # dd-mm-YYYY or dd/mm/YY
+                year = int(date3)
+                month = int(date2)
+                day = int(date1)
+        elif date1 and date2:
+            if len(date1) == 4:
+                # YYYY-mm
+                year = int(date1)
+                month = int(date2)
+            elif len(date2) == 4:
+                # mm-YYYY
+                year = int(date2)
+                month = int(date1)
+            else:
+                # dd/mm
+                month = int(date2)
+                day = int(date1)
+
+        self.year = year
+        self.month = month
+        self.day = day
+
+    def __eq__(self, other):
+        return all(
+            getattr(self, attr) == getattr(other, attr, None)
+            for attr in [
+                'hour',
+                'minute',
+                'second',
+                'timezone',
+                'year',
+                'month',
+                'day',
+                'message',
+            ]
+        )
+
+    def get_duration(self, today=None):
+        """Get the duration between the reminder and ``today``
+
+        :param today: aware datetime to compare to; defaults to current time in UTC
+        :type today: aware :class:`datetime.datetime`
+        :return: The duration, in second, between ``today`` and the reminder.
+        :rtype: :class:`int`
+
+        This method returns the number of seconds given by the
+        :class:`datetime.timedelta` obtained by the difference between the
+        reminder and ``today``.
+
+        If the delta between the reminder and ``today`` is negative, Python
+        will represent it as a negative number of days, and a positive number
+        of seconds: since it returns the number of seconds, any past reminder
+        will be transformed into a future reminder the next day.
+        """
+        if not today:
+            today = datetime.now(self.timezone)
+        else:
+            today = today.astimezone(self.timezone)
+
+        year = self.year if self.year is not None else today.year
+        month = self.month if self.month is not None else today.month
+        day = self.day if self.day is not None else today.day
+
+        at_time = datetime(
+            year, month, day,
+            self.hour, self.minute, self.second,
+            tzinfo=today.tzinfo)
+
+        timediff = at_time - today
+        duration = timediff.seconds
+
+        if timediff.days > 0:
+            duration = duration + (86400 * timediff.days)
+
+        return duration
+
+
+def parse_regex_match(match, default_timezone=None):
+    """Parse a time reminder from ``match``
+
+    :param match: :obj:`~.REGEX_AT`'s matching result
+    :param default_timezone: Default trigger's timezone
+                             (from the nick's, channel's, or config's timezone)
+    :rtype: :class:`TimeReminder`
+    """
+    try:
+        timezone = validate_timezone(match.group('tz') or 'UTC')
+    except ValueError:
+        timezone = default_timezone or 'UTC'
+
+    return TimeReminder(
+        int(match.group('hours')),
+        int(match.group('minutes')),
+        int(match.group('seconds') or '0'),
+        timezone,
+        match.group('date1'),
+        match.group('date2'),
+        match.group('date3'),
+        match.group('message')
+    )
 
 
 @module.commands('at')
 @module.example('.at 13:47 Do your homework!')
 def remind_at(bot, trigger):
-    """
-    Gives you a reminder at the given time. Takes `hh:mm:ssTimezone message`.
+    """Gives you a reminder at the given time.
+
+    Takes ``hh:mm:ssTimezone Date message`` where seconds, Timezone, and Date
+    are optional.
+
     Timezone is any timezone Sopel takes elsewhere; the best choices are those
     from the tzdb; a list of valid options is available at
-    <https://sopel.chat/tz>. The seconds and timezone are optional.
+    <https://sopel.chat/tz>.
+
+    The Date can be expressed in one of these formats: YYYY-mm-dd, dd-mm-YYYY,
+    dd-mm-YY, or dd-mm. The separator can be ``.``, ``-``, or ``/``.
     """
     if not trigger.group(2):
         bot.say("No arguments given for reminder command.")
@@ -247,26 +415,35 @@ def remind_at(bot, trigger):
     if trigger.group(3) and not trigger.group(4):
         bot.say("No message given for reminder.")
         return module.NOLIMIT
+
     match = REGEX_AT.match(trigger.group(2))
     if not match:
         bot.reply("Sorry, but I didn't understand your input.")
         return module.NOLIMIT
-    hour, minute, second, timezone, message = match.groups()
-    if not second:
-        second = '0'
 
-    timezone = get_timezone(bot.db, bot.config, timezone,
-                            trigger.nick, trigger.sender)
-    if not timezone:
-        timezone = 'UTC'
+    default_timezone = get_timezone(bot.db, bot.config, None,
+                                    trigger.nick, trigger.sender)
 
-    now = datetime.now(pytz.timezone(timezone))
-    at_time = datetime(now.year, now.month, now.day,
-                       int(hour), int(minute), int(second),
-                       tzinfo=now.tzinfo)
-    timediff = at_time - now
-    duration = timediff.seconds
+    reminder = parse_regex_match(match, default_timezone)
 
-    if duration < 0:
-        duration += 86400
-    create_reminder(bot, trigger, duration, message, timezone)
+    try:
+        duration = reminder.get_duration()
+    except ValueError as error:
+        bot.reply(
+            "Sorry, but I didn't understand your input: %s" % str(error))
+        return module.NOLIMIT
+
+    # save reminder
+    timestamp = create_reminder(bot, trigger, duration, reminder.message)
+
+    if duration >= 60:
+        human_time = format_time(
+            bot.db,
+            bot.config,
+            reminder.timezone.zone,
+            trigger.nick,
+            trigger.sender,
+            datetime.utcfromtimestamp(timestamp))
+        bot.reply('Okay, will remind at %s' % human_time)
+    else:
+        bot.reply('Okay, will remind in %s secs' % duration)
