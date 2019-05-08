@@ -93,9 +93,10 @@ def _get_color(color):
 def color(text, fg=None, bg=None):
     """Return the text, with the given colors applied in IRC formatting.
 
-    The color can be a string of the color name, or an integer between 0 and
-    99. The known color names can be found in the `colors` class of this
-    module."""
+    The color can be a string of the color name, or an integer between 0 and 99.
+    The known color names can be found in the :class:`colors` class of this
+    module.
+    """
     if not fg and not bg:
         return text
 
@@ -133,7 +134,8 @@ def hex_color(text, fg=None, bg=None):
 
     The color can be provided with a string of either 3 or 6 hexadecimal digits.
     As in CSS, 3-digit colors will be interpreted as if they were 6-digit colors
-    with each digit repeated (e.g. color `c90` is identical to `cc9900`)."""
+    with each digit repeated (e.g. color ``c90`` is identical to ``cc9900``).
+    """
     if not fg and not bg:
         return text
 
