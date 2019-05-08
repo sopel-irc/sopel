@@ -19,11 +19,14 @@ class User(object):
         self.channels = {}
         """The channels the user is in.
 
-        This maps channel name ``Identifier``\\s to ``Channel`` objects."""
+        This maps channel name :class:`~sopel.tools.Identifier`\\s to
+        :class:`Channel` objects.
+        """
         self.account = None
         """The IRC services account of the user.
 
-        This relies on IRCv3 account tracking being enabled."""
+        This relies on IRCv3 account tracking being enabled.
+        """
         self.away = None
         """Whether the user is marked as away."""
 
@@ -52,12 +55,16 @@ class Channel(object):
         self.users = {}
         """The users in the channel.
 
-        This maps username ``Identifier``\\s to channel objects."""
+        This maps nickname :class:`~sopel.tools.Identifier`\\s to :class:`User`
+        objects.
+        """
         self.privileges = {}
         """The permissions of the users in the channel.
 
-        This maps username ``Identifier``s to bitwise integer values. This can
-        be compared to appropriate constants from ``sopel.module``."""
+        This maps nickname :class:`~sopel.tools.Identifier`\\s to bitwise
+        integer values. This can be compared to appropriate constants from
+        :mod:`sopel.module`.
+        """
         self.topic = ''
         """The topic of the channel."""
 
