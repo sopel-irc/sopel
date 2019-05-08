@@ -5,8 +5,8 @@ from __future__ import unicode_literals, absolute_import, print_function, divisi
 class events(object):
     """An enumeration of all the standardized and notable IRC numeric events
 
-    This allows you to do, for example, @module.event(events.RPL_WELCOME)
-    rather than @module.event('001')
+    This allows you to do, for example, ``@module.event(events.RPL_WELCOME)``
+    rather than ``@module.event('001')``
     """
     # ###################################################### Non-RFC / Non-IRCv3
     # Only add things here if they're actually in common use across multiple
