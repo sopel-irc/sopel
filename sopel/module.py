@@ -289,10 +289,21 @@ def rate(user=0, channel=0, server=0):
     return add_attribute
 
 
-def require_privmsg(message=None):
+def require_privmsg(message=None, reply=False):
     """Decorate a function to only be triggerable from a private message.
 
-    If it is triggered in a channel message, `message` will be said if given.
+    :param str message: optional message said if triggered in a channel
+    :param bool reply: use :meth:`~sopel.bot.Sopel.reply` instead of
+                       :meth:`~sopel.bot.Sopel.say` when ``True``; defaults to
+                       ``False``
+
+    If it is triggered in a channel message, ``message`` will be said if
+    given. By default, it uses :meth:`bot.say() <.bot.Sopel.say>`, but when
+    ``reply`` is true, then it     uses :meth:`bot.reply() <.bot.Sopel.reply>`
+    instead.
+
+    .. versionchanged:: 7.0.0
+        Added the ``reply`` parameter.
     """
     def actual_decorator(function):
         @functools.wraps(function)
@@ -303,18 +314,33 @@ def require_privmsg(message=None):
                 return function(*args, **kwargs)
             else:
                 if message and not callable(message):
-                    bot.say(message)
+                    if reply:
+                        bot.reply(message)
+                    else:
+                        bot.say(message)
         return _nop
+
     # Hack to allow decorator without parens
     if callable(message):
         return actual_decorator(message)
     return actual_decorator
 
 
-def require_chanmsg(message=None):
+def require_chanmsg(message=None, reply=False):
     """Decorate a function to only be triggerable from a channel message.
 
-    If it is triggered in a private message, `message` will be said if given.
+    :param str message: optional message said if triggered in private message
+    :param bool reply: use :meth:`~.bot.Sopel.reply` instead of
+                       :meth:`~.bot.Sopel.say` when ``True``; defaults to
+                       ``False``
+
+    If it is triggered in a private message, ``message`` will be said if
+    given. By default, it uses :meth:`bot.say() <.bot.Sopel.say>`, but when
+    ``reply`` is true, then it uses :meth:`bot.reply() <.bot.Sopel.reply>`
+    instead.
+
+    .. versionchanged:: 7.0.0
+        Added the ``reply`` parameter.
     """
     def actual_decorator(function):
         @functools.wraps(function)
@@ -325,20 +351,38 @@ def require_chanmsg(message=None):
                 return function(*args, **kwargs)
             else:
                 if message and not callable(message):
-                    bot.say(message)
+                    if reply:
+                        bot.reply(message)
+                    else:
+                        bot.say(message)
         return _nop
+
     # Hack to allow decorator without parens
     if callable(message):
         return actual_decorator(message)
     return actual_decorator
 
 
-def require_privilege(level, message=None):
+def require_privilege(level, message=None, reply=False):
     """Decorate a function to require at least the given channel permission.
 
-    `level` can be one of the privilege levels defined in this module. If the
-    user does not have the privilege, `message` will be said if given. If it is
-    a private message, no checking will be done."""
+    :param int level: required privilege level to use this command
+    :param str message: optional message said to insufficiently privileged user
+    :param bool reply: use :meth:`~.bot.Sopel.reply` instead of
+                       :meth:`~.bot.Sopel.say` when ``True``; defaults to
+                       ``False``
+
+    ``level`` can be one of the privilege level constants defined in this
+    module. If the user does not have the privilege, the bot will say
+    ``message`` if given. By default, it uses :meth:`bot.say()
+    <.bot.Sopel.say>`, but when ``reply`` is true, then it uses
+    :meth:`bot.reply() <.bot.Sopel.reply>` instead.
+
+    Privilege requirements are ignored in private messages.
+
+    .. versionchanged:: 7.0.0
+        Added the ``reply`` parameter.
+    """
     def actual_decorator(function):
         @functools.wraps(function)
         def guarded(bot, trigger, *args, **kwargs):
@@ -349,7 +393,10 @@ def require_privilege(level, message=None):
             allowed = channel_privs.get(trigger.nick, 0) >= level
             if not trigger.is_privmsg and not allowed:
                 if message and not callable(message):
-                    bot.say(message)
+                    if reply:
+                        bot.reply(message)
+                    else:
+                        bot.say(message)
             else:
                 return function(bot, trigger, *args, **kwargs)
         return guarded
@@ -360,11 +407,17 @@ def require_admin(message=None, reply=False):
     """Decorate a function to require the triggering user to be a bot admin.
 
     :param str message: optional message said to non-admin user
-    :param bool reply: use `reply` instead of `say` when true, default to false
+    :param bool reply: use :meth:`~.bot.Sopel.reply` instead of
+                       :meth:`~.bot.Sopel.say` when ``True``; defaults to
+                       ``False``
 
     When the triggering user is not an admin, the command is not run, and the
-    bot will say the ``message`` if given. By default, it uses ``bot.say``,
-    but when ``reply`` is true, then it uses ``bot.reply`` instead.
+    bot will say the ``message`` if given. By default, it uses
+    :meth:`bot.say() <.bot.Sopel.say>`, but when ``reply`` is true, then it
+    uses :meth:`bot.reply() <.bot.Sopel.reply>` instead.
+
+    .. versionchanged:: 7.0.0
+        Added the ``reply`` parameter.
     """
     def actual_decorator(function):
         @functools.wraps(function)
@@ -386,19 +439,35 @@ def require_admin(message=None, reply=False):
     return actual_decorator
 
 
-def require_owner(message=None):
+def require_owner(message=None, reply=False):
     """Decorate a function to require the triggering user to be the bot owner.
 
-    If they are not, `message` will be said if given."""
+    :param str message: optional message said to non-owner user
+    :param bool reply: use :meth:`~.bot.Sopel.reply` instead of
+                       :meth:`~.bot.Sopel.say` when ``True``; defaults to
+                       ``False``
+
+    When the triggering user is not the bot's owner, the command is not run,
+    and the bot will say ``message`` if given. By default, it uses
+    :meth:`bot.say() <.bot.Sopel.say>`, but when ``reply`` is true, then it
+    uses :meth:`bot.reply() <.bot.Sopel.reply>` instead.
+
+    .. versionchanged:: 7.0.0
+        Added the ``reply`` parameter.
+    """
     def actual_decorator(function):
         @functools.wraps(function)
         def guarded(bot, trigger, *args, **kwargs):
             if not trigger.owner:
                 if message and not callable(message):
-                    bot.say(message)
+                    if reply:
+                        bot.reply(message)
+                    else:
+                        bot.say(message)
             else:
                 return function(bot, trigger, *args, **kwargs)
         return guarded
+
     # Hack to allow decorator without parens
     if callable(message):
         return actual_decorator(message)
