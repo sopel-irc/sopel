@@ -2,6 +2,27 @@ This file is used to auto-generate the "Changelog" section of Sopel's website.
 When adding new entries, follow the style guide in NEWS.spec.md to avoid causing
 problems with the site build.
 
+Changes between 6.6.7 and 6.6.8
+===============================
+
+Module changes
+--------------
+
+* `admin` module no longer allows setting `core.owner` value [[#1587][]]
+  * Allowing any bot admin to change the owner opened Sopel to a
+    privilege-escalation attack
+  * Even with this patch, you still should add only users you really trust to
+    the `admins` list, for obvious reasons
+
+API changes
+-----------
+
+* Fixed some content & formatting errors in documentation [[#1589][]]
+
+[#1587]: https://github.com/sopel-irc/sopel/pull/1587
+[#1589]: https://github.com/sopel-irc/sopel/pull/1589
+
+
 Changes between 6.6.6 and 6.6.7
 ===============================
 
