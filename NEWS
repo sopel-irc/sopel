@@ -29,6 +29,11 @@ Module changes
     down, as ptpb did during the 6.6.x life-cycle, won't force a new Sopel
     release), but it's also just good to have choices.
 * Optionally hide IRC server name/address in `help` command listing [[#1459][]]
+* `wiktionary` now supports many more parts of speech [[#1443][]]
+  * Definitions can be retrieved for things like proper nouns, prepositional
+    phrases, and punctuation marks—things that were unsupported in Sopel 6.x
+  * This means that the `wiktionary` module is now somewhat case-sensitive, to
+    account for common and proper nouns that differ only in capitalization
 * Python version is now included in `.version` command output [[#1462][]]
 * Readability of `.choose` command output is significantly improved [[#1425][]]
 * A `.restart` command is added [[#1333][]]
@@ -105,6 +110,12 @@ API changes
     accessing `bot.memory['url_callbacks']`
   * There are no definite plans to remove `bot.memory['url_callbacks']`, but it
     should be considered deprecated
+* `module.require_*()` decorators (all five of them) now accept an optional
+  boolean parameter `reply` [[#1456][], [#1500][]]
+  * Passing `reply=True` will send the error message as if via `bot.reply()`,
+    prefixing it with the name of the calling user to get their attention
+  * Passing `reply=False` (or omitting the argument) will behave exactly as
+    before, with the error message sent as if via `bot.say()`
 * Fixed the `@module.url` decorator to work always, regardless of whether the
   `url` module is enabled [[#1510][]]
 * Added `bot.hostmask` property (read-only) [[#1537][]]
@@ -122,10 +133,6 @@ API changes
   * This allows multiple help examples per command, as requested in [#1200][]
   * See the [Sopel 7 migration guide][sopel-7-migration] for details on using
     this new parameter, and about backwards compatibility
-* `module.require_admin()` now takes an optional boolean parameter `reply`
-  [[#1456][]]
-  * Default is `False`, so existing uses will not change.
-  * Setting it `True` will send the error message as if via `bot.reply()`.
 * The `@example` decorator no longer generates invalid raw lines in tests
   [[#1499][]]
 
@@ -143,6 +150,7 @@ API changes
 [#1425]: https://github.com/sopel-irc/sopel/pull/1425
 [#1429]: https://github.com/sopel-irc/sopel/pull/1429
 [#1430]: https://github.com/sopel-irc/sopel/pull/1430
+[#1443]: https://github.com/sopel-irc/sopel/pull/1443
 [#1451]: https://github.com/sopel-irc/sopel/pull/1451
 [#1456]: https://github.com/sopel-irc/sopel/pull/1456
 [#1458]: https://github.com/sopel-irc/sopel/pull/1458
@@ -158,6 +166,7 @@ API changes
 [#1492]: https://github.com/sopel-irc/sopel/pull/1492
 [#1493]: https://github.com/sopel-irc/sopel/pull/1493
 [#1499]: https://github.com/sopel-irc/sopel/pull/1499
+[#1500]: https://github.com/sopel-irc/sopel/pull/1500
 [#1507]: https://github.com/sopel-irc/sopel/pull/1507
 [#1508]: https://github.com/sopel-irc/sopel/pull/1508
 [#1509]: https://github.com/sopel-irc/sopel/pull/1509
