@@ -8,86 +8,72 @@ from sopel import tools
 
 def test_get_sendable_message_default():
     initial = 'aaaa'
-    text, excess = tools.get_sendable_message(initial)
+    text_list = tools.get_sendable_message(initial)
 
-    assert text == initial
-    assert excess == ''
+    assert text_list == [initial]
 
 
 def test_get_sendable_message_limit():
     initial = 'a' * 400
-    text, excess = tools.get_sendable_message(initial)
+    text_list = tools.get_sendable_message(initial)
 
-    assert text == initial
-    assert excess == ''
+    assert text_list == [initial]
 
 
 def test_get_sendable_message_excess():
     initial = 'a' * 401
-    text, excess = tools.get_sendable_message(initial)
+    text_list = tools.get_sendable_message(initial)
 
-    assert text == 'a' * 400
-    assert excess == 'a'
+    assert text_list == ['a' * 400, 'a']
 
 
 def test_get_sendable_message_excess_space():
     # aaa...aaa bbb...bbb
     initial = ' '.join(['a' * 200, 'b' * 200])
-    text, excess = tools.get_sendable_message(initial)
+    text_list = tools.get_sendable_message(initial)
 
-    assert text == 'a' * 200
-    assert excess == 'b' * 200
+    assert text_list == ['a' * 200, ' b' + 'b' * 199]
 
 
 def test_get_sendable_message_excess_space_limit():
     # aaa...aaa bbb...bbb
     initial = ' '.join(['a' * 400, 'b' * 200])
-    text, excess = tools.get_sendable_message(initial)
+    text_list = tools.get_sendable_message(initial)
 
-    assert text == 'a' * 400
-    assert excess == 'b' * 200
+    assert text_list == ['a' * 400, ' b' + 'b' * 199]
 
 
 def test_get_sendable_message_excess_bigger():
     # aaa...aaa bbb...bbb
     initial = ' '.join(['a' * 401, 'b' * 1000])
-    text, excess = tools.get_sendable_message(initial)
+    text_list = tools.get_sendable_message(initial)
 
-    assert text == 'a' * 400
-    assert excess == 'a ' + 'b' * 1000
+    assert text_list == ['a' * 400, 'a b' + 'b' * 197, 'b' * 400, 'b' * 202]
 
 
 def test_get_sendable_message_optional():
-    text, excess = tools.get_sendable_message('aaaa', 3)
-    assert text == 'aaa'
-    assert excess == 'a'
+    text_list = tools.get_sendable_message('aaaa', 3)
+    assert text_list == ['aaa', 'a']
 
-    text, excess = tools.get_sendable_message('aaa bbb', 3)
-    assert text == 'aaa'
-    assert excess == 'bbb'
+    text_list = tools.get_sendable_message('aaa bbb', 3)
+    assert text_list == ['aaa', 'bbb']
 
-    text, excess = tools.get_sendable_message('aa bb cc', 3)
-    assert text == 'aa'
-    assert excess == 'bb cc'
+    text_list = tools.get_sendable_message('aa bb cc', 3)
+    assert text_list == ['aa', 'bb cc']
 
 
 def test_get_sendable_message_two_bytes():
-    text, excess = tools.get_sendable_message('αααα', 4)
-    assert text == 'αα'
-    assert excess == 'αα'
+    text_list = tools.get_sendable_message('αααα', 4)
+    assert text_list == ['αα', 'αα']
 
-    text, excess = tools.get_sendable_message('αααα', 5)
-    assert text == 'αα'
-    assert excess == 'αα'
+    text_list = tools.get_sendable_message('αααα', 5)
+    assert text_list == ['αα', 'αα']
 
-    text, excess = tools.get_sendable_message('α ααα', 4)
-    assert text == 'α'
-    assert excess == 'ααα'
+    text_list = tools.get_sendable_message('α ααα', 4)
+    assert text_list == ['α', 'ααα']
 
-    text, excess = tools.get_sendable_message('αα αα', 4)
-    assert text == 'αα'
-    assert excess == 'αα'
+    text_list = tools.get_sendable_message('αα αα', 4)
+    assert text_list == ['αα', 'αα']
 
-    text, excess = tools.get_sendable_message('ααα α', 4)
-    assert text == 'αα'
-    assert excess == 'α α'
+    text_list = tools.get_sendable_message('ααα α', 4)
+    assert text_list == ['αα', 'α α']

@@ -380,53 +380,50 @@ class Sopel(irc.Bot):
         message will contain the entire remainder, which may be truncated by
         the server.
         """
-        excess = ''
         if not isinstance(text, unicode):
             # Make sure we are dealing with unicode string
             text = text.decode('utf-8')
 
-        if max_messages > 1:
-            # Manage multi-line only when needed
-            text, excess = tools.get_sendable_message(text)
+        messages_list = tools.get_sendable_message(text)
+        if max_messages >= 1:
+            messages_list = messages_list[:max_messages]
 
-        try:
-            self.sending.acquire()
+        for text_line in messages_list:
 
-            # No messages within the last 3 seconds? Go ahead!
-            # Otherwise, wait so it's been at least 0.8 seconds + penalty
+            try:
+                self.sending.acquire()
 
-            recipient_id = Identifier(recipient)
+                # No messages within the last 3 seconds? Go ahead!
+                # Otherwise, wait so it's been at least 0.8 seconds + penalty
 
-            if recipient_id not in self.stack:
-                self.stack[recipient_id] = []
-            elif self.stack[recipient_id]:
-                elapsed = time.time() - self.stack[recipient_id][-1][0]
-                if elapsed < 3:
-                    penalty = float(max(0, len(text) - 40)) / 70
-                    wait = min(0.8 + penalty, 2)  # Never wait more than 2 seconds
-                    if elapsed < wait:
-                        time.sleep(wait - elapsed)
+                recipient_id = Identifier(recipient)
 
-                # Loop detection
-                messages = [m[1] for m in self.stack[recipient_id][-8:]]
+                if recipient_id not in self.stack:
+                    self.stack[recipient_id] = []
+                elif self.stack[recipient_id]:
+                    elapsed = time.time() - self.stack[recipient_id][-1][0]
+                    if elapsed < 3:
+                        penalty = float(max(0, len(text_line) - 40)) / 70
+                        wait = min(0.8 + penalty, 2)  # Never wait more than 2 seconds
+                        if elapsed < wait:
+                            time.sleep(wait - elapsed)
 
-                # If what we about to send repeated at least 5 times in the
-                # last 2 minutes, replace with '...'
-                if messages.count(text) >= 5 and elapsed < 120:
-                    text = '...'
-                    if messages.count('...') >= 3:
-                        # If we said '...' 3 times, discard message
-                        return
+                    # Loop detection
+                    messages = [m[1] for m in self.stack[recipient_id][-8:]]
 
-            self.write(('PRIVMSG', recipient), text)
-            self.stack[recipient_id].append((time.time(), self.safe(text)))
-            self.stack[recipient_id] = self.stack[recipient_id][-10:]
-        finally:
-            self.sending.release()
-        # Now that we've sent the first part, we need to send the rest. Doing
-        # this recursively seems easier to me than iteratively
-        if excess:
-            self.msg(recipient, excess, max_messages - 1)
+                    # If what we about to send repeated at least 5 times in the
+                    # last 2 minutes, replace with '...'
+                    if messages.count(text_line) >= 5 and elapsed < 120:
+                        text_line = '...'
+                        if messages.count('...') >= 3:
+                            # If we said '...' 3 times, discard message
+                            return
+
+                self.write(('PRIVMSG', recipient), text_line)
+                self.stack[recipient_id].append((time.time(), self.safe(text_line)))
+                self.stack[recipient_id] = self.stack[recipient_id][-10:]
+            finally:
+                self.sending.release()
 
     def notice(self, text, dest):
         """Send an IRC NOTICE to a user or a channel.
