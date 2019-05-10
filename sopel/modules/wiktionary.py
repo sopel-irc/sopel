@@ -21,6 +21,25 @@ r_sup = re.compile(r'<sup[^>]+>.+</sup>')  # Superscripts that are references on
 r_tag = re.compile(r'<[^>]+>')
 r_ul = re.compile(r'(?ims)<ul>.*?</ul>')
 
+# From https://en.wiktionary.org/wiki/Wiktionary:Entry_layout#Part_of_speech
+PARTS_OF_SPEECH = [
+    # Parts of speech
+    'Adjective', 'Adverb', 'Ambiposition', 'Article', 'Circumposition',
+    'Classifier', 'Conjunction', 'Contraction', 'Counter', 'Determiner',
+    'Ideophone', 'Interjection', 'Noun', 'Numeral', 'Participle', 'Particle',
+    'Postposition', 'Preposition', 'Pronoun', 'Proper noun', 'Verb',
+    # Morphemes
+    'Circumfix', 'Combining form', 'Infix', 'Interfix', 'Prefix', 'Root', 'Suffix',
+    # Symbols and characters
+    'Diacritical mark', 'Letter', 'Ligature', 'Number', 'Punctuation mark', 'Syllable', 'Symbol',
+    # Phrases
+    'Phrase', 'Proverb', 'Prepositional phrase',
+    # Han characters and language-specific varieties
+    'Han character', 'Hanzi', 'Kanji', 'Hanja',
+    # Other
+    'Romanization',
+]
+
 
 def text(html):
     text = r_sup.sub('', html)  # Remove superscripts that are references from definition
@@ -41,44 +60,33 @@ def wikt(word):
     etymology = None
     definitions = {}
     for line in bytes.splitlines():
-        if 'id="Etymology"' in line:
+        is_new_mode = False
+        if 'id="Etymology' in line:
             mode = 'etymology'
-        elif 'id="Noun"' in line:
-            mode = 'noun'
-        elif 'id="Verb"' in line:
-            mode = 'verb'
-        elif 'id="Adjective"' in line:
-            mode = 'adjective'
-        elif 'id="Adverb"' in line:
-            mode = 'adverb'
-        elif 'id="Interjection"' in line:
-            mode = 'interjection'
-        elif 'id="Particle"' in line:
-            mode = 'particle'
-        elif 'id="Preposition"' in line:
-            mode = 'preposition'
-        elif 'id="Prefix"' in line:
-            mode = 'prefix'
-        elif 'id="Suffix"' in line:
-            mode = 'suffix'
-        # 'id="' can occur in definition lines <li> when <sup> tag is used for references;
-        # make sure those are not excluded (see e.g., abecedarian).
-        elif ('id="' in line) and ('<li>' not in line):
-            mode = None
+            is_new_mode = True
+        else:
+            for pos in PARTS_OF_SPEECH:
+                if 'id="{}"'.format(pos.replace(' ', '_')) in line:
+                    mode = pos.lower()
+                    is_new_mode = True
+                    break
 
-        elif (mode == 'etmyology') and ('<p>' in line):
-            etymology = text(line)
-        elif (mode is not None) and ('<li>' in line):
-            definitions.setdefault(mode, []).append(text(line))
+        if not is_new_mode:
+            # 'id="' can occur in definition lines <li> when <sup> tag is used for references;
+            # make sure those are not excluded (see e.g., abecedarian).
+            if ('id="' in line) and ('<li>' not in line):
+                mode = None
+            elif (mode == 'etmyology') and ('<p>' in line):
+                etymology = text(line)
+            elif (mode is not None) and ('<li>' in line):
+                definitions.setdefault(mode, []).append(text(line))
 
         if '<hr' in line:
             break
     return etymology, definitions
 
 
-parts = ('preposition', 'particle', 'noun', 'verb',
-         'adjective', 'adverb', 'interjection',
-         'prefix', 'suffix')
+parts = [pos.lower() for pos in PARTS_OF_SPEECH]
 
 
 def format(result, definitions, number=2):
