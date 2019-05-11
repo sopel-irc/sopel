@@ -22,8 +22,6 @@ def tmpconfig(tmpdir):
 
 def test_register_unregister_plugin(tmpconfig):
     sopel = bot.Sopel(tmpconfig, daemon=False)
-    sopel.scheduler.stop()
-    sopel.scheduler.join(timeout=10)
 
     # since `setup` hasn't been run, there is no registered plugin
     assert not sopel.has_plugin('coretasks')
@@ -43,8 +41,6 @@ def test_register_unregister_plugin(tmpconfig):
 
 def test_remove_plugin_unknown_plugin(tmpconfig):
     sopel = bot.Sopel(tmpconfig, daemon=False)
-    sopel.scheduler.stop()
-    sopel.scheduler.join(timeout=10)
 
     plugin = plugins.handlers.PyModulePlugin('admin', 'sopel.modules')
     with pytest.raises(plugins.exceptions.PluginNotRegistered):
@@ -53,8 +49,6 @@ def test_remove_plugin_unknown_plugin(tmpconfig):
 
 def test_remove_plugin_unregistered_plugin(tmpconfig):
     sopel = bot.Sopel(tmpconfig, daemon=False)
-    sopel.scheduler.stop()
-    sopel.scheduler.join(timeout=10)
 
     # register the plugin
     plugin = plugins.handlers.PyModulePlugin('coretasks', 'sopel')
@@ -71,8 +65,6 @@ def test_remove_plugin_unregistered_plugin(tmpconfig):
 
 def test_reload_plugin_unregistered_plugin(tmpconfig):
     sopel = bot.Sopel(tmpconfig, daemon=False)
-    sopel.scheduler.stop()
-    sopel.scheduler.join(timeout=10)
 
     # register the plugin
     plugin = plugins.handlers.PyModulePlugin('coretasks', 'sopel')

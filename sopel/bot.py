@@ -16,19 +16,18 @@ import sys
 import threading
 import time
 
-from sopel import irc, plugins, tools
+from sopel import irc, logger, plugins, tools
 from sopel.db import SopelDB
 from sopel.tools import stderr, Identifier, deprecated
 import sopel.tools.jobs
 from sopel.trigger import Trigger
 from sopel.module import NOLIMIT
-from sopel.logger import get_logger
 import sopel.loader
 
 
 __all__ = ['Sopel', 'SopelWrapper']
 
-LOGGER = get_logger(__name__)
+LOGGER = logger.get_logger(__name__)
 
 if sys.version_info.major >= 3:
     unicode = str
@@ -145,7 +144,7 @@ class Sopel(irc.Bot):
         """List of methods to call on shutdown."""
 
         self.scheduler = sopel.tools.jobs.JobScheduler(self)
-        self.scheduler.start()
+        """Job Scheduler. See :func:`sopel.module.interval`."""
 
         # Set up block lists
         # Default to empty
@@ -198,7 +197,23 @@ class Sopel(irc.Bot):
         irc.Bot.write(self, args, text=text)
 
     def setup(self):
-        """Set up the Sopel instance."""
+        """Set up Sopel bot before it can run
+
+        The setup phase manages to:
+
+        * setup logging (configure Python's built-in :mod:`logging`),
+        * setup the bot's plugins (load, setup, and register)
+        * start the job scheduler
+
+        """
+        self.setup_logging()
+        self.setup_plugins()
+        self.scheduler.start()
+
+    def setup_logging(self):
+        logger.setup_logging(self)
+
+    def setup_plugins(self):
         load_success = 0
         load_error = 0
         load_disabled = 0
