@@ -395,7 +395,10 @@ def parse_regex_match(match, default_timezone=None):
 
 
 @module.commands('at')
-@module.example('.at 13:47 Do your homework!')
+@module.example('.at 13:47 Do your homework!', user_help=True)
+@module.example('.at 03:14:07 2038-01-19 End of signed 32-bit int timestamp',
+                user_help=True)
+@module.example('.at 00:01 25/12 Open your gift!', user_help=True)
 def remind_at(bot, trigger):
     """Gives you a reminder at the given time.
 
