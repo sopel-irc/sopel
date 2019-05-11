@@ -869,7 +869,7 @@ class SopelWrapper(object):
     """Wrapper around a Sopel instance and a Trigger
 
     :param sopel: Sopel instance
-    :type sopel: :class:`sopel.bot.Sopel`
+    :type sopel: :class:`~sopel.bot.Sopel`
     :param trigger: IRC Trigger line
     :type trigger: :class:`sopel.trigger.Trigger`
 
@@ -897,43 +897,59 @@ class SopelWrapper(object):
         return setattr(self._bot, attr, value)
 
     def say(self, message, destination=None, max_messages=1):
-        """Override :meth:`sopel.bot.Sopel.say` to send message to sender
+        """Override ``Sopel.say`` to send message to sender
 
         :param str message: message to say
         :param str destination: channel or person; defaults to trigger's sender
         :param int max_messages: max number of message splits
+
+        .. seealso::
+
+            :meth:`sopel.bot.Sopel.say`
         """
         if destination is None:
             destination = self._trigger.sender
         self._bot.say(message, destination, max_messages)
 
     def action(self, message, destination=None):
-        """Override :meth:`sopel.bot.Sopel.action` to send action to sender
+        """Override ``Sopel.action`` to send action to sender
 
         :param str message: action message
         :param str destination: channel or person; defaults to trigger's sender
+
+        .. seealso::
+
+            :meth:`sopel.bot.Sopel.action`
         """
         if destination is None:
             destination = self._trigger.sender
         self._bot.action(message, destination)
 
     def notice(self, message, destination=None):
-        """Override :meth:`sopel.bot.Sopel.notice` to send a notice to sender
+        """Override ``Sopel.notice`` to send a notice to sender
 
         :param str message: notice message
         :param str destination: channel or person; defaults to trigger's sender
+
+        .. seealso::
+
+            :meth:`sopel.bot.Sopel.notice`
         """
         if destination is None:
             destination = self._trigger.sender
         self._bot.notice(message, destination)
 
     def reply(self, message, destination=None, reply_to=None, notice=False):
-        """Override :meth:`sopel.bot.Sopel.reply` to reply to someone
+        """Override ``Sopel.reply`` to reply to someone
 
         :param str message: reply message
         :param str destination: channel or person; defaults to trigger's sender
         :param str reply_to: person to reply to; defaults to trigger's nick
         :param bool notice: reply as an IRC notice or with a simple message
+
+        .. seealso::
+
+            :meth:`sopel.bot.Sopel.reply`
         """
         if destination is None:
             destination = self._trigger.sender
