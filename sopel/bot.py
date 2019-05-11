@@ -153,7 +153,6 @@ class Sopel(irc.Bot):
             self.config.core.nick_blocks = []
         if not self.config.core.host_blocks:
             self.config.core.host_blocks = []
-        self.setup()
 
     @property
     def hostmask(self):

@@ -72,6 +72,7 @@ def run(settings, pid_file, daemon=False):
                 signal.signal(signal.SIGUSR2, signal_handler)
             if hasattr(signal, 'SIGILL'):
                 signal.signal(signal.SIGILL, signal_handler)
+            p.setup()
             logger.setup_logging(p)
             p.run(settings.core.host, int(settings.core.port))
         except KeyboardInterrupt:
