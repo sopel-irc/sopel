@@ -332,7 +332,7 @@ class TimeReminder(object):
     def get_duration(self, today=None):
         """Get the duration between the reminder and ``today``
 
-        :param today: aware datetime to compare to; defaults to current time in UTC
+        :param today: aware datetime to compare to; defaults to current time
         :type today: aware :class:`datetime.datetime`
         :return: The duration, in second, between ``today`` and the reminder.
         :rtype: :class:`int`
@@ -345,6 +345,12 @@ class TimeReminder(object):
         will represent it as a negative number of days, and a positive number
         of seconds: since it returns the number of seconds, any past reminder
         will be transformed into a future reminder the next day.
+
+        .. seealso::
+
+            The :mod:`datetime` built-in module's documentation explains what
+            is an "aware" datetime.
+
         """
         if not today:
             today = datetime.now(self.timezone)
@@ -373,8 +379,8 @@ def parse_regex_match(match, default_timezone=None):
     """Parse a time reminder from ``match``
 
     :param match: :obj:`~.REGEX_AT`'s matching result
-    :param default_timezone: Default trigger's timezone
-                             (from the nick's, channel's, or config's timezone)
+    :param default_timezone: timezone used when ``match`` doesn't have one;
+                             defaults to ``UTC``
     :rtype: :class:`TimeReminder`
     """
     try:
