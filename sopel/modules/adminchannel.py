@@ -29,6 +29,74 @@ def default_mask(trigger):
 
 @require_chanmsg
 @require_privilege(OP, 'You are not a channel operator.')
+@commands('op')
+def op(bot, trigger):
+    """
+    Command to op users in a room. If no nick is given,
+    Sopel will op the nick who sent the command
+    """
+    if bot.channels[trigger.sender].privileges[bot.nick] < OP:
+        return bot.reply("I'm not a channel operator!")
+    nick = trigger.group(2)
+    channel = trigger.sender
+    if not nick:
+        nick = trigger.nick
+    bot.write(['MODE', channel, "+o", nick])
+
+
+@require_chanmsg
+@require_privilege(OP, 'You are not a channel operator.')
+@commands('deop')
+def deop(bot, trigger):
+    """
+    Command to deop users in a room. If no nick is given,
+    Sopel will deop the nick who sent the command
+    """
+    if bot.channels[trigger.sender].privileges[bot.nick] < OP:
+        return bot.reply("I'm not a channel operator!")
+    nick = trigger.group(2)
+    channel = trigger.sender
+    if not nick:
+        nick = trigger.nick
+    bot.write(['MODE', channel, "-o", nick])
+
+
+@require_chanmsg
+@require_privilege(OP, 'You are not a channel operator.')
+@commands('voice')
+def voice(bot, trigger):
+    """
+    Command to voice users in a room. If no nick is given,
+    Sopel will voice the nick who sent the command
+    """
+    if bot.channels[trigger.sender].privileges[bot.nick] < HALFOP:
+        return bot.reply("I'm not a channel operator!")
+    nick = trigger.group(2)
+    channel = trigger.sender
+    if not nick:
+        nick = trigger.nick
+    bot.write(['MODE', channel, "+v", nick])
+
+
+@require_chanmsg
+@require_privilege(OP, 'You are not a channel operator.')
+@commands('devoice')
+def devoice(bot, trigger):
+    """
+    Command to devoice users in a room. If no nick is given,
+    Sopel will devoice the nick who sent the command
+    """
+    if bot.channels[trigger.sender].privileges[bot.nick] < HALFOP:
+        return bot.reply("I'm not a channel operator!")
+    nick = trigger.group(2)
+    channel = trigger.sender
+    if not nick:
+        nick = trigger.nick
+    bot.write(['MODE', channel, "-v", nick])
+
+
+@require_chanmsg
+@require_privilege(OP, 'You are not a channel operator.')
 @commands('kick')
 @priority('high')
 def kick(bot, trigger):
