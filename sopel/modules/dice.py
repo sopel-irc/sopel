@@ -224,7 +224,7 @@ def roll(bot, trigger):
         result = eval_equation(eval_str)
     except TypeError:
         bot.reply(
-            "The type of this equation is, apparently, not a string. " +
+            "The type of this equation is, apparently, not a string. "
             "How did you do that, anyway?"
         )
     except ValueError:
@@ -235,7 +235,7 @@ def roll(bot, trigger):
         return
     except (SyntaxError, eval_equation.Error):
         bot.reply(
-            "I don't know how to process that. " +
+            "I don't know how to process that. "
             "Are the dice as well as the algorithms correct?"
         )
         return
