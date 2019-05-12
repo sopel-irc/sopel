@@ -27,7 +27,7 @@ Module changes
 * Choose from any of four pastebin services for `help` output [[#1451][]]
   * This is intended mostly for resilience (so one pastebin service going
     down, as ptpb did during the 6.6.x life-cycle, won't force a new Sopel
-    release), but it's also just good to have choices.
+    release), but it's also just good to have choices
 * Optionally hide IRC server name/address in `help` command listing [[#1459][]]
 * `wiktionary` now supports many more parts of speech [[#1443][]]
   * Definitions can be retrieved for things like proper nouns, prepositional
@@ -40,11 +40,15 @@ Module changes
   * admin-only, just like `.quit`
 * The `admin` module auto-saves channels when using `.join`/`.part`, and added
   `.tmpjoin`/`.tmppart` commands to bypass this behavior [[#1492][]]
+* Restored commands in `adminchannel` module for managing op/voice [[#1498][]]
+  * These were removed some time ago, seemingly without reason, by the project's
+    previous maintainers
+  * Since there was some desire from users to have them back, we restored them
 * `find` also collects Sopel's own messages now, so users can "correct" the bot
   if they wish to be extra cheeky [[#1470][]]
 * Fixed that the `url` module had to be enabled or some link-handling
   functions didn't work [[#1510][]]
-* General code cleanup all around [[#1402][], [#1573][]]
+* General code cleanup all around [[#1402][], [#1573][], [#1581][]]
 
 Core changes
 ------------
@@ -165,6 +169,7 @@ API changes
 [#1488]: https://github.com/sopel-irc/sopel/pull/1488
 [#1492]: https://github.com/sopel-irc/sopel/pull/1492
 [#1493]: https://github.com/sopel-irc/sopel/pull/1493
+[#1498]: https://github.com/sopel-irc/sopel/pull/1498
 [#1499]: https://github.com/sopel-irc/sopel/pull/1499
 [#1500]: https://github.com/sopel-irc/sopel/pull/1500
 [#1507]: https://github.com/sopel-irc/sopel/pull/1507
@@ -182,6 +187,7 @@ API changes
 [#1568]: https://github.com/sopel-irc/sopel/pull/1568
 [#1573]: https://github.com/sopel-irc/sopel/pull/1573
 [#1580]: https://github.com/sopel-irc/sopel/pull/1580
+[#1581]: https://github.com/sopel-irc/sopel/pull/1581
 [#1583]: https://github.com/sopel-irc/sopel/pull/1583
 
 [api-docs]: https://sopel.chat/docs/
