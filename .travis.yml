@@ -38,8 +38,14 @@ script:
   - ./checkstyle.sh
   - coverage run -m py.test -v .
   - coverage report
+env:
+  - COVERALLS_PARALLEL=true
 after_success:
   coveralls
+notifications:
+  webhooks:
+    urls:
+      - https://coveralls.io/webhook
 deploy:
   provider: pypi
   username: dgw
