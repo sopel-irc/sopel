@@ -1,8 +1,20 @@
+dist: xenial  # required for newer (>= 3.7) Python versions
 language: python
-python:
-  - "2.7"
-  - "3.3"
-  - "3.4"
+matrix:
+  include:
+    - name: "Python 2.7 on Xenial"
+      python: 2.7
+    - name: "Python 3.3 on Trusty"
+      python: 3.3
+      dist: trusty  # xenial does not support py3.3
+    - name: "Python 3.4 on Xenial"
+      python: 3.4
+    - name: "Python 3.5 on Xenial"
+      python: 3.5
+    - name: "Python 3.6 on Xenial"
+      python: 3.6
+    - name: "Python 3.7 on Xenial"
+      python: 3.7
 git:
   submodules: false
 branches:
@@ -23,11 +35,15 @@ addons:
 install:
   - pip install -r requirements.txt -r dev-requirements.txt
 script:
-  - ./checkstyle.sh
-  - coverage run -m py.test -v .
-  - coverage report
+  - make travis
+env:
+  - COVERALLS_PARALLEL=true
 after_success:
   coveralls
+notifications:
+  webhooks:
+    urls:
+      - https://coveralls.io/webhook
 deploy:
   provider: pypi
   username: dgw
@@ -35,5 +51,5 @@ deploy:
     secure: U9XLRA5fYRmII/pyJGDIT0BQ4p0zP8yZJtxUSUO9arFKozgYZu0ldvoLjKnzPMPQNCGs+q4f0hNuXgN+u/FgfRPF/Q3wtUj58uIC4JFnn7u2D2pv7RqzZkGi9Hr8+SS7dChlx9bVbhC1Y0md0XlrsT6rbNKKW457Jei05+vpjvg=
   on:
     tags: true
-    python: "3.4"
+    python: "3.6"
   allow_failure: true
