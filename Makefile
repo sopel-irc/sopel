@@ -1,4 +1,4 @@
-.PHONY: quality test coverage clean_doc build_doc
+.PHONY: quality test coverage_html coverage_report travis clean_doc build_doc
 
 quality:
 	./checkstyle.sh
@@ -6,11 +6,17 @@ quality:
 test:
 	coverage run -m py.test -v .
 
-coverage:
+coverage_report:
 	coverage report
+
+coverage_html:
 	coverage html
 
-qa: quality test coverage
+coverages: coverage_report coverage_html
+
+qa: quality test coverages
+
+travis: quality test coverage_report
 
 clean_doc:
 	$(MAKE) -C docs clean

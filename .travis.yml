@@ -35,9 +35,7 @@ addons:
 install:
   - pip install -r requirements.txt -r dev-requirements.txt
 script:
-  - ./checkstyle.sh
-  - coverage run -m py.test -v .
-  - coverage report
+  - make travis
 env:
   - COVERALLS_PARALLEL=true
 after_success:
