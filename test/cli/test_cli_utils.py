@@ -8,6 +8,7 @@ import os
 
 import pytest
 
+from sopel import config
 from sopel.cli.utils import (
     add_common_arguments,
     enumerate_configs,
@@ -104,13 +105,28 @@ def test_add_common_arguments():
 
     options = parser.parse_args([])
     assert hasattr(options, 'config')
-    assert options.config is None
+    assert hasattr(options, 'configdir')
+    assert options.config == 'default'
+    assert options.configdir == config.DEFAULT_HOMEDIR
 
     options = parser.parse_args(['-c', 'test-short'])
     assert options.config == 'test-short'
 
     options = parser.parse_args(['--config', 'test-long'])
     assert options.config == 'test-long'
+
+    options = parser.parse_args(['--config-dir', 'test-long'])
+    assert options.configdir == 'test-long'
+
+    options = parser.parse_args(
+        ['-c', 'test-short', '--config-dir', 'test-long-dir'])
+    assert options.config == 'test-short'
+    assert options.configdir == 'test-long-dir'
+
+    options = parser.parse_args(
+        ['--config', 'test-long', '--config-dir', 'test-long-dir'])
+    assert options.config == 'test-long'
+    assert options.configdir == 'test-long-dir'
 
 
 def test_add_common_arguments_subparser():
@@ -122,13 +138,28 @@ def test_add_common_arguments_subparser():
 
     options = parser.parse_args(['sub'])
     assert hasattr(options, 'config')
-    assert options.config is None
+    assert hasattr(options, 'configdir')
+    assert options.config == 'default'
+    assert options.configdir == config.DEFAULT_HOMEDIR
 
     options = parser.parse_args(['sub', '-c', 'test-short'])
     assert options.config == 'test-short'
 
     options = parser.parse_args(['sub', '--config', 'test-long'])
     assert options.config == 'test-long'
+
+    options = parser.parse_args(['sub', '--config-dir', 'test-long'])
+    assert options.configdir == 'test-long'
+
+    options = parser.parse_args(
+        ['sub', '-c', 'test-short', '--config-dir', 'test-long-dir'])
+    assert options.config == 'test-short'
+    assert options.configdir == 'test-long-dir'
+
+    options = parser.parse_args(
+        ['sub', '--config', 'test-long', '--config-dir', 'test-long-dir'])
+    assert options.config == 'test-long'
+    assert options.configdir == 'test-long-dir'
 
 
 MANY_TEXTS = (

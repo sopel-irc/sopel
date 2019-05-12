@@ -137,7 +137,10 @@ def add_legacy_options(parser):
                             "use `sopel restart` instead)"))
     parser.add_argument("-l", '--list', action="store_true",
                         dest="list_configs",
-                        help="List all config files found")
+                        help=(
+                            "List all config files found"
+                            "(deprecated, and will be removed in Sopel 8; "
+                            "use `sopel-config list` instead)"))
     parser.add_argument('--quiet', action="store_true", dest="quiet",
                         help="Suppress all output")
     parser.add_argument('-w', '--configure-all', action='store_true',
@@ -291,10 +294,10 @@ def print_version():
     print('https://sopel.chat/')
 
 
-def print_config():
-    """Print list of available configurations from default homedir."""
-    configs = utils.enumerate_configs(config.DEFAULT_HOMEDIR)
-    print('Config files in %s:' % config.DEFAULT_HOMEDIR)
+def print_config(configdir):
+    """Print list of available configurations from default config directory."""
+    configs = utils.enumerate_configs(configdir)
+    print('Config files in %s:' % configdir)
     configfile = None
     for configfile in configs:
         print('\t%s' % configfile)
@@ -347,7 +350,7 @@ def get_pid_filename(options, pid_dir):
     ``sopel-{basename}.pid`` instead.
     """
     name = 'sopel.pid'
-    if options.config:
+    if options.config and options.config != 'default':
         basename = os.path.basename(options.config)
         if basename.endswith('.cfg'):
             basename = basename[:-4]
@@ -429,9 +432,8 @@ def command_start(opts):
 
 def command_configure(opts):
     """Sopel Configuration Wizard"""
-    configpath = utils.find_config(
-        config.DEFAULT_HOMEDIR, opts.config or 'default')
-    if getattr(opts, 'modules', False):
+    configpath = utils.find_config(opts.configdir, opts.config)
+    if opts.modules:
         utils.plugins_wizard(configpath)
     else:
         utils.wizard(configpath)
@@ -543,9 +545,7 @@ def command_legacy(opts):
         print_version()
         return
 
-    # TODO: allow to use a different homedir
-    configpath = utils.find_config(
-        config.DEFAULT_HOMEDIR, opts.config or 'default')
+    configpath = utils.find_config(opts.configdir, opts.config)
 
     if opts.wizard:
         tools.stderr(
@@ -562,7 +562,10 @@ def command_legacy(opts):
         return
 
     if opts.list_configs:
-        print_config()
+        tools.stderr(
+            'WARNING: option --list is deprecated; '
+            'use `sopel-config list` instead')
+        print_config(opts.configdir)
         return
 
     # Step Two: Get the configuration file and prepare to run

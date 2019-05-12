@@ -5,7 +5,7 @@ from __future__ import unicode_literals, absolute_import, print_function, divisi
 import argparse
 import os
 
-from sopel import tools, config
+from sopel import tools
 from . import utils
 
 
@@ -22,11 +22,13 @@ def build_parser():
     # sopel-config list
     list_parser = subparsers.add_parser(
         'list',
-        help="List available configurations from Sopel's homedir",
+        help="List available configurations from Sopel's config directory",
         description="""
-            List available configurations from Sopel's homedir ({homedir})
-            with the extension "{ext}".
-        """.format(homedir=config.DEFAULT_HOMEDIR, ext='.cfg'))
+            List available configurations from Sopel's config directory
+            with the extension "{ext}". Use option --config-dir to use a
+            specific config directory.
+        """.format(ext='.cfg'))
+    utils.add_common_arguments(list_parser)
     list_parser.add_argument(
         '-e', '--ext', '--extension',
         dest='extension',
@@ -60,13 +62,13 @@ def build_parser():
 
 
 def handle_list(options):
-    """Display a list of configuration available from Sopel's homedir
+    """Display a list of configuration available from Sopel's config directory
 
     :param options: parsed arguments
     :type options: ``argparse.Namespace``
 
     This command displays an unordered list of config names from Sopel's
-    default homedir, without their extensions::
+    default config directory, without their extensions::
 
         $ sopel-config list
         default
@@ -75,15 +77,16 @@ def handle_list(options):
     It is possible to filter by extension using the ``-e/--ext/--extension``
     option; default is ``.cfg`` (the ``.`` prefix is not required).
     """
-    display_path = getattr(options, 'display_path', False)
-    extension = getattr(options, 'extension', '.cfg')
+    configdir = options.configdir
+    display_path = options.display_path
+    extension = options.extension
     if not extension.startswith('.'):
         extension = '.' + extension
-    configs = utils.enumerate_configs(config.DEFAULT_HOMEDIR, extension)
+    configs = utils.enumerate_configs(configdir, extension)
 
     for config_filename in configs:
         if display_path:
-            print(os.path.join(config.DEFAULT_HOMEDIR, config_filename))
+            print(os.path.join(configdir, config_filename))
         else:
             name, _ = os.path.splitext(config_filename)
             print(name)
@@ -101,9 +104,7 @@ def handle_init(options):
        extension **must be** ``.cfg``.
 
     """
-    config_filename = utils.find_config(
-        config.DEFAULT_HOMEDIR,
-        getattr(options, 'config', None) or 'default')
+    config_filename = utils.find_config(options.configdir, options.config)
     config_name, ext = os.path.splitext(config_filename)
 
     if ext and ext != '.cfg':
