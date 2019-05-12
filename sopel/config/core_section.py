@@ -108,8 +108,38 @@ class CoreSection(StaticSection):
     channels = ListAttribute('channels')
     """List of channels for the bot to join when it connects"""
 
+    db_type = ChoiceAttribute('db_type', choices=[
+        'sqlite', 'mysql', 'postgres', 'mssql', 'oracle', 'firebird', 'sybase'], default='sqlite')
+    """The type of database to use for Sopel's database.
+
+    mysql - pip install mysql-python (Python 2) or pip install mysqlclient (Python 3)
+    postgres - pip install psycopg2
+    mssql - pip install pymssql
+
+    See https://docs.sqlalchemy.org/en/latest/dialects/ for a full list of dialects"""
+
     db_filename = ValidatedAttribute('db_filename')
-    """The filename for Sopel's database."""
+    """The filename for Sopel's database. (SQLite only)"""
+
+    db_driver = ValidatedAttribute('db_driver')
+    """The driver for Sopel's database.
+    This is optional, but can be specified if user wants to use a different driver
+    https://docs.sqlalchemy.org/en/latest/core/engines.html"""
+
+    db_user = ValidatedAttribute('db_user')
+    """The user for Sopel's database."""
+
+    db_pass = ValidatedAttribute('db_pass')
+    """The password for Sopel's database."""
+
+    db_host = ValidatedAttribute('db_host')
+    """The host for Sopel's database."""
+
+    db_port = ValidatedAttribute('db_port')
+    """The port for Sopel's database."""
+
+    db_name = ValidatedAttribute('db_name')
+    """The name of Sopel's database."""
 
     default_time_format = ValidatedAttribute('default_time_format',
                                              default='%Y-%m-%d - %T%Z')
