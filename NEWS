@@ -34,6 +34,7 @@ Module changes
     phrases, and punctuation marks—things that were unsupported in Sopel 6.x
   * This means that the `wiktionary` module is now somewhat case-sensitive, to
     account for common and proper nouns that differ only in capitalization
+* Short `redd.it` links are now detected by the `reddit` module [[#1503][]]
 * Python version is now included in `.version` command output [[#1462][]]
 * Readability of `.choose` command output is significantly improved [[#1425][]]
 * A `.restart` command is added [[#1333][]]
@@ -53,6 +54,13 @@ Module changes
 Core changes
 ------------
 
+* Alternative database types are once again supported [[#1446][]]
+  * See the [README][readme-db] or [installation instructions][install-guide-db]
+    for details on getting non-SQLite options up and running
+  * You will probably need to install additional dependencies if you wish to use
+    something other than SQLite
+  * Migrating an existing database from SQLite to your chosen option is probably
+    easy, but we do not offer instructions for doing so
 * Sopel no longer assumes on first run that its home directory is `~/.sopel`
   [[#1404][]]
 * Restarting Sopel via CLI is added [[#1333][]]
@@ -155,6 +163,7 @@ API changes
 [#1429]: https://github.com/sopel-irc/sopel/pull/1429
 [#1430]: https://github.com/sopel-irc/sopel/pull/1430
 [#1443]: https://github.com/sopel-irc/sopel/pull/1443
+[#1446]: https://github.com/sopel-irc/sopel/pull/1446
 [#1451]: https://github.com/sopel-irc/sopel/pull/1451
 [#1456]: https://github.com/sopel-irc/sopel/pull/1456
 [#1458]: https://github.com/sopel-irc/sopel/pull/1458
@@ -172,6 +181,7 @@ API changes
 [#1498]: https://github.com/sopel-irc/sopel/pull/1498
 [#1499]: https://github.com/sopel-irc/sopel/pull/1499
 [#1500]: https://github.com/sopel-irc/sopel/pull/1500
+[#1503]: https://github.com/sopel-irc/sopel/pull/1503
 [#1507]: https://github.com/sopel-irc/sopel/pull/1507
 [#1508]: https://github.com/sopel-irc/sopel/pull/1508
 [#1509]: https://github.com/sopel-irc/sopel/pull/1509
@@ -191,7 +201,9 @@ API changes
 [#1583]: https://github.com/sopel-irc/sopel/pull/1583
 
 [api-docs]: https://sopel.chat/docs/
+[install-guide-db]: https://sopel.chat/usage/installing/#configuring-the-database-optional
 [per-channel-conf]: https://sopel.chat/usage/per-channel-configuration/
+[readme-db]: https://github.com/sopel-irc/sopel/blob/v7.0.0/README.rst#database-support
 [sopel-7-migration]: https://sopel.chat/usage/installing/upgrading-to-sopel-7/
 
 
