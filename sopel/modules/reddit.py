@@ -33,9 +33,11 @@ else:
 
 
 domain = r'https?://(?:www\.|old\.|pay\.|ssl\.|[a-z]{2}\.)?reddit\.com'
-post_url = r'%s/r/(.*?)/comments/([\w-]+)' % domain
+post_url = r'%s/r/.*?/comments/([\w-]+)' % domain
+short_post_url = r'https?://redd.it/([\w-]+)'
 user_url = r'%s/u(ser)?/([\w-]+)' % domain
 post_regex = re.compile(post_url)
+short_post_regex = re.compile(short_post_url)
 user_regex = re.compile(user_url)
 spoiler_subs = [
     'stevenuniverse',
@@ -45,15 +47,18 @@ spoiler_subs = [
 
 def setup(bot):
     bot.register_url_callback(post_regex, rpost_info)
+    bot.register_url_callback(short_post_regex, rpost_info)
     bot.register_url_callback(user_regex, redditor_info)
 
 
 def shutdown(bot):
     bot.unregister_url_callback(post_regex)
+    bot.unregister_url_callback(short_post_regex)
     bot.unregister_url_callback(user_regex)
 
 
 @rule('.*%s.*' % post_url)
+@rule('.*%s.*' % short_post_url)
 def rpost_info(bot, trigger, match=None):
     match = match or trigger
     try:
@@ -62,10 +67,10 @@ def rpost_info(bot, trigger, match=None):
             client_id='6EiphT6SSQq7FQ',
             client_secret=None,
         )
-        s = r.submission(id=match.group(2))
+        s = r.submission(id=match.group(1))
     except Exception:
         r = praw.Reddit(user_agent=USER_AGENT)
-        s = r.get_submission(submission_id=match.group(2))
+        s = r.get_submission(submission_id=match.group(1))
 
     message = ('[REDDIT] {title} {link}{nsfw} | {points} points ({percent}) | '
                '{comments} comments | Posted by {author} | '
