@@ -50,8 +50,8 @@ class Nicknames(BASE):
     """
     __tablename__ = 'nicknames'
     nick_id = Column(Integer, ForeignKey('nick_ids.nick_id'), primary_key=True)
-    slug = Column(String, primary_key=True)
-    canonical = Column(String)
+    slug = Column(String(255), primary_key=True)
+    canonical = Column(String(255))
 
 
 class NickValues(BASE):
