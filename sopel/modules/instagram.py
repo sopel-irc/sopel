@@ -9,7 +9,6 @@ https://sopel.chat
 from __future__ import unicode_literals, absolute_import, print_function, division
 
 from datetime import datetime
-import re
 
 from requests import get
 
@@ -21,24 +20,16 @@ except ImportError:
     from json import loads
 
 
-instagram_regex = r'.*(https?:\/\/(?:www\.){0,1}instagram\.com\/([a-zA-Z0-9_\.]{,30}\/)?p\/[a-zA-Z0-9_-]+)\s?.*'
-instagram_pattern = re.compile(instagram_regex)
+INSTAGRAM_REGEX = r'(https?:\/\/(?:www\.){0,1}instagram\.com\/([a-zA-Z0-9_\.]{,30}\/)?p\/[a-zA-Z0-9_-]+)'
 
-
-def setup(bot):
-    bot.register_url_callback(instagram_pattern, instaparse)
-
-
-def shutdown(bot):
-    bot.unregister_url_callback(instagram_pattern)
 
 # TODO: Parse Instagram profile page
 
 
-@module.rule(instagram_regex)
-def instaparse(bot, trigger):
+@module.url(INSTAGRAM_REGEX)
+def instaparse(bot, trigger, match):
     # Get the embedded JSON
-    json = get_insta_json(trigger.group(1))
+    json = get_insta_json(match.group(1))
     bot.say(parse_insta_json(json))
 
 
