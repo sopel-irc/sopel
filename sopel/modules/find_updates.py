@@ -59,4 +59,4 @@ def check_version(bot):
     msg = message.format(latest, sopel.__version__, notes)
 
     if version < latest_version:
-        bot.msg(bot.config.core.owner, msg)
+        bot.say(msg, bot.config.core.owner)

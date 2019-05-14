@@ -230,7 +230,7 @@ def help(bot, trigger):
                               'I\'m sending it to you in a private message.')
 
                 def msgfun(l):
-                    bot.msg(trigger.nick, l)
+                    bot.say(l, trigger.nick)
             else:
                 msgfun = bot.reply
 

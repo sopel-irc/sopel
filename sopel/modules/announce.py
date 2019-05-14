@@ -18,5 +18,5 @@ from sopel.module import commands, example, require_admin
 def announce(bot, trigger):
     """Send an announcement to all channels the bot is in"""
     for channel in bot.channels:
-        bot.msg(channel, '[ANNOUNCEMENT] %s' % trigger.group(2))
+        bot.say('[ANNOUNCEMENT] %s' % trigger.group(2), channel)
     bot.reply('Announce complete.')

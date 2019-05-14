@@ -38,9 +38,9 @@ def auth_after_register(bot):
     """Do NickServ/AuthServ auth"""
     if bot.config.core.auth_method == 'nickserv':
         nickserv_name = bot.config.core.auth_target or 'NickServ'
-        bot.msg(
-            nickserv_name,
-            'IDENTIFY %s' % bot.config.core.auth_password
+        bot.say(
+            'IDENTIFY %s' % bot.config.core.auth_password,
+            nickserv_name
         )
 
     elif bot.config.core.auth_method == 'authserv':
@@ -63,8 +63,8 @@ def auth_after_register(bot):
         userserv_name = bot.config.core.auth_target or 'UserServ'
         account = bot.config.core.auth_username
         password = bot.config.core.auth_password
-        bot.msg(userserv_name, "LOGIN {account} {password}".format(
-                account=account, password=password))
+        bot.say("LOGIN {account} {password}".format(
+                account=account, password=password), userserv_name)
 
 
 @sopel.module.event(events.RPL_WELCOME, events.RPL_LUSERCLIENT)
@@ -115,7 +115,7 @@ def startup(bot, trigger):
             "more secure. If you'd like to do this, make sure you're logged in "
             "and reply with \"{}useserviceauth\""
         ).format(bot.config.core.help_prefix)
-        bot.msg(bot.config.core.owner, msg)
+        bot.say(msg, bot.config.core.owner)
 
 
 @sopel.module.require_privmsg()
@@ -321,7 +321,7 @@ def track_nicks(bot, trigger):
         debug_msg = ("Nick changed by server. "
             "This can cause unexpected behavior. Please restart the bot.")
         LOGGER.critical(debug_msg)
-        bot.msg(bot.config.core.owner, privmsg)
+        bot.say(privmsg, bot.config.core.owner)
         return
 
     for channel in bot.privileges:
