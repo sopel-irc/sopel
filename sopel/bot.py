@@ -101,7 +101,7 @@ class Sopel(irc.Bot):
         constants from :mod:`sopel.module`.
 
         .. deprecated:: 6.2.0
-            Use :attr:`channels` instead.
+            Use :attr:`channels` instead. Will be removed in Sopel 8.
         """
 
         self.channels = tools.SopelMemory()  # name to chan obj
@@ -362,8 +362,8 @@ class Sopel(irc.Bot):
     @deprecated
     def msg(self, recipient, text, max_messages=1):
         """
-        .. deprecated:: v6.0.0a5
-            Will be removed in Sopel 8.
+        .. deprecated:: 6.0
+            Use :meth:`say` instead. Will be removed in Sopel 8.
         """
         self.say(text, recipient, max_messages)
 
