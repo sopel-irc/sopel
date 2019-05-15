@@ -421,7 +421,7 @@ def take_comment(bot, trigger):
         meetings_dict[trigger.group(3)]['comments'].append((trigger.nick, message))
         bot.say("Your comment has been recorded. It will be shown when the"
                 " chairs tell me to show the comments.")
-        bot.msg(meetings_dict[trigger.group(3)]['head'], "A new comment has been recorded.")
+        bot.say("A new comment has been recorded.", meetings_dict[trigger.group(3)]['head'])
 
 
 @commands('comments')

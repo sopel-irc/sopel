@@ -77,7 +77,7 @@ def f_etymology(bot, trigger):
         result = etymology(word)
     except IOError:
         msg = "Can't connect to etymonline.com (%s)" % (ETYURI % web.quote(word))
-        bot.msg(trigger.sender, msg)
+        bot.say(msg, trigger.sender)
         return NOLIMIT
     except (AttributeError, TypeError):
         result = None
@@ -85,9 +85,9 @@ def f_etymology(bot, trigger):
         result = str(ve)
 
     if result is not None:
-        bot.msg(trigger.sender, result)
+        bot.say(result, trigger.sender)
     else:
         uri = ETYSEARCH % web.quote(word)
         msg = 'Can\'t find the etymology for "%s". Try %s' % (word, uri)
-        bot.msg(trigger.sender, msg)
+        bot.say(msg, trigger.sender)
         return NOLIMIT

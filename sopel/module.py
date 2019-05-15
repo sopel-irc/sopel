@@ -82,7 +82,7 @@ def interval(*args):
         @sopel.module.interval(5)
         def spam_every_5s(bot):
             if "#here" in bot.channels:
-                bot.msg("#here", "It has been five seconds!")
+                bot.say("It has been five seconds!", "#here")
 
     """
     def add_attribute(function):

@@ -147,7 +147,7 @@ def getReminders(bot, channel, key, tellee):
         try:
             del bot.memory['reminders'][key]
         except KeyError:
-            bot.msg(channel, 'Er…')
+            bot.say('Er…', channel)
     finally:
         bot.memory['tell_lock'].release()
     return lines
@@ -179,7 +179,7 @@ def message(bot, trigger):
     if reminders[MAXIMUM:]:
         bot.say('Further messages sent privately')
         for line in reminders[MAXIMUM:]:
-            bot.msg(tellee, line)
+            bot.say(line, tellee)
 
     if len(bot.memory['reminders'].keys()) != remkeys:
         dumpReminders(bot.tell_filename, bot.memory['reminders'], bot.memory['tell_lock'])  # @@ tell

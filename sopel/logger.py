@@ -13,7 +13,7 @@ class IrcLoggingHandler(logging.Handler):
     def emit(self, record):
         try:
             msg = self.format(record)
-            self._bot.msg(self._channel, msg)
+            self._bot.say(msg, self._channel)
         except (KeyboardInterrupt, SystemExit):
             raise
         except Exception:  # TODO: Be specific

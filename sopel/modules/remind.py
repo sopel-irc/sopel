@@ -144,9 +144,9 @@ def remind_monitoring(bot):
         for oldtime in oldtimes:
             for (channel, nick, message) in bot.rdb[oldtime]:
                 if message:
-                    bot.msg(channel, nick + ': ' + message)
+                    bot.say(nick + ': ' + message, channel)
                 else:
-                    bot.msg(channel, nick + '!')
+                    bot.say(nick + '!', channel)
             del bot.rdb[oldtime]
         dump_database(bot.rfn, bot.rdb)
 

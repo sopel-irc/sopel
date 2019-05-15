@@ -169,10 +169,10 @@ def quit(bot, trigger):
 
 @sopel.module.require_privmsg
 @sopel.module.require_admin
-@sopel.module.commands('msg')
+@sopel.module.commands('say', 'msg')
 @sopel.module.priority('low')
-@sopel.module.example('.msg #YourPants Does anyone else smell neurotoxin?')
-def msg(bot, trigger):
+@sopel.module.example('.say #YourPants Does anyone else smell neurotoxin?')
+def say(bot, trigger):
     """
     Send a message to a given channel or nick. Can only be done in privmsg by
     an admin.
@@ -185,7 +185,7 @@ def msg(bot, trigger):
     if not channel or not message:
         return
 
-    bot.msg(channel, message)
+    bot.say(message, channel)
 
 
 @sopel.module.require_privmsg
@@ -206,7 +206,7 @@ def me(bot, trigger):
         return
 
     msg = '\x01ACTION %s\x01' % action
-    bot.msg(channel, msg)
+    bot.say(msg, channel)
 
 
 @sopel.module.event('INVITE')
