@@ -18,7 +18,7 @@ import time
 
 from sopel import irc, plugins, tools
 from sopel.db import SopelDB
-from sopel.tools import stderr, Identifier
+from sopel.tools import stderr, Identifier, deprecated
 import sopel.tools.jobs
 from sopel.trigger import Trigger
 from sopel.module import NOLIMIT
@@ -359,8 +359,12 @@ class Sopel(irc.Bot):
         else:
             self.write(['JOIN', channel, password])
 
+    @deprecated
     def msg(self, recipient, text, max_messages=1):
-        # Deprecated, but way too much of a pain to remove.
+        """
+        .. deprecated:: v6.0.0a5
+            Will be removed in Sopel 8.
+        """
         self.say(text, recipient, max_messages)
 
     def say(self, text, recipient, max_messages=1):
