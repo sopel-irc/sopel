@@ -39,6 +39,8 @@ Module changes
 * Readability of `.choose` command output is significantly improved [[#1425][]]
 * A `.restart` command is added [[#1333][]]
   * admin-only, just like `.quit`
+* The `.msg` command (admin-only, in PM only) is now known as `.say` [[#1606][]]
+  * `.msg` will continue to work for now
 * The `admin` module auto-saves channels when using `.join`/`.part`, and added
   `.tmpjoin`/`.tmppart` commands to bypass this behavior [[#1492][]]
 * Restored commands in `adminchannel` module for managing op/voice [[#1498][]]
@@ -49,7 +51,7 @@ Module changes
   if they wish to be extra cheeky [[#1470][]]
 * Fixed that the `url` module had to be enabled or some link-handling
   functions didn't work [[#1510][]]
-* General code cleanup all around [[#1402][], [#1573][], [#1581][]]
+* General code cleanup all around [[#1402][], [#1573][], [#1581][], [#1606][]]
 
 Core changes
 ------------
@@ -141,6 +143,10 @@ API changes
 * Officially deprecated the methods `SopelMemory.contains()` and
   `SopelMemoryWithDefault.contains()`, to be removed in Sopel 8 [[#1563][]]
   * Use the `in` operator instead
+* Officially deprecated the `bot.msg()` method [[#1606][]]
+  * Adds a warning to Sopel's output for any third-party code that is still
+    using `bot.msg()` (which was declared deprecated and removed from the API
+    docs in 6.0) instead of `bot.say()`
 * Added a new `user_help` kwarg to `@module.example` decorator [[#1403][]]
   * This allows multiple help examples per command, as requested in [#1200][]
   * See the [Sopel 7 migration guide][sopel-7-migration] for details on using
@@ -199,6 +205,7 @@ API changes
 [#1580]: https://github.com/sopel-irc/sopel/pull/1580
 [#1581]: https://github.com/sopel-irc/sopel/pull/1581
 [#1583]: https://github.com/sopel-irc/sopel/pull/1583
+[#1606]: https://github.com/sopel-irc/sopel/pull/1606
 
 [api-docs]: https://sopel.chat/docs/
 [install-guide-db]: https://sopel.chat/usage/installing/#configuring-the-database-optional
