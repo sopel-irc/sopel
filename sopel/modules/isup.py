@@ -14,11 +14,16 @@ from requests.exceptions import SSLError
 from sopel.module import commands
 
 
-@commands('isup', 'isupinsecure')
-def isup(bot, trigger):
-    """isup.me website status checker"""
+def handle_isup(bot, trigger, secure=True):
+    """Handle the ``bot`` command from ``trigger``
+
+    :param bot: Sopel instance
+    :type bot: :class:`sopel.bot.SopelWrapper`
+    :param trigger: Command's trigger instance
+    :type trigger: :class:`sopel.trigger.Trigger`
+    :param bool secure: Check SSL error if ``True`` (the default)
+    """
     site = trigger.group(2)
-    secure = trigger.group(1).lower() != 'isupinsecure'
     if not site:
         return bot.reply("What site do you want to check?")
 
@@ -45,3 +50,15 @@ def isup(bot, trigger):
         bot.say(site + ' looks fine to me.')
     else:
         bot.say(site + ' is down from here.')
+
+
+@commands('isupinsecure')
+def isup_insecure(bot, trigger):
+    """isup.me website status checker without SSL check"""
+    handle_isup(bot, trigger, secure=False)
+
+
+@commands('isup')
+def isup(bot, trigger):
+    """isup.me website status checker"""
+    handle_isup(bot, trigger, secure=True)
