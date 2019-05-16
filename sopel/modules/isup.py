@@ -9,9 +9,9 @@ https://sopel.chat
 from __future__ import unicode_literals, absolute_import, print_function, division
 
 import requests
-from requests.exceptions import SSLError
+from requests import exceptions as request_errors
 
-from sopel.module import commands
+from sopel import module
 
 
 def get_site_url(site):
@@ -58,7 +58,7 @@ def handle_isup(bot, trigger, secure=True):
         response = requests.head(site, verify=secure).headers
     except ValueError as error:
         bot.reply(str(error))
-    except SSLError:
+    except request_errors.SSLError:
         bot.say(
             '%s looks down from here. Try using %sisupinsecure'
             % (site, bot.config.core.help_prefix))
@@ -71,13 +71,13 @@ def handle_isup(bot, trigger, secure=True):
             bot.say(site + ' is down from here.')
 
 
-@commands('isupinsecure')
+@module.commands('isupinsecure')
 def isup_insecure(bot, trigger):
-    """isup.me website status checker without SSL check"""
+    """website status checker (without SSL check)"""
     handle_isup(bot, trigger, secure=False)
 
 
-@commands('isup')
+@module.commands('isup')
 def isup(bot, trigger):
-    """isup.me website status checker"""
+    """website status checker"""
     handle_isup(bot, trigger, secure=True)
