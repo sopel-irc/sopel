@@ -35,8 +35,8 @@ def get_site_url(site):
         if '://' in site:
             protocol = site.split('://')[0] + '://'
             raise ValueError('Try it again without the %s' % protocol)
-        else:
-            site = 'http://' + site
+
+        site = 'http://' + site
 
     if '.' not in site:
         site += ".com"
@@ -53,26 +53,22 @@ def handle_isup(bot, trigger, secure=True):
     :type trigger: :class:`sopel.trigger.Trigger`
     :param bool secure: Check SSL error if ``True`` (the default)
     """
-    site = trigger.group(2)
-
     try:
         site = get_site_url(trigger.group(2))
-    except ValueError as error:
-        return bot.reply(str(error))
-
-    try:
         response = requests.head(site, verify=secure).headers
+    except ValueError as error:
+        bot.reply(str(error))
     except SSLError:
-        bot.say(site + ' looks down from here. Try using %sisupinsecure' % bot.config.core.help_prefix)
-        return
-    except Exception:
-        bot.say(site + ' looks down from here.')
-        return
-
-    if response:
-        bot.say(site + ' looks fine to me.')
+        bot.say(
+            '%s looks down from here. Try using %sisupinsecure'
+            % (site, bot.config.core.help_prefix))
+    except requests.RequestException:
+        bot.say('%s looks down from here.' % site)
     else:
-        bot.say(site + ' is down from here.')
+        if response:
+            bot.say(site + ' looks fine to me.')
+        else:
+            bot.say(site + ' is down from here.')
 
 
 @commands('isupinsecure')
