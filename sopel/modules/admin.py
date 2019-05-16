@@ -220,11 +220,11 @@ def set_config(bot, trigger):
         bot.reply("%s.%s = %s" % (section_name, option, value))
         return
 
-    # 'core.owner' cannot be set by the bot. Any changes to this setting must be
-    # made manually in the config file.
-    if section_name == 'core' and option == 'owner':
-        bot.say('\'core.owner\' cannot be set by the bot. '
-                'This setting must be changed manually in the configuration file.')
+    # Owner-related settings cannot be modified interactively. Any changes to these
+    # settings must be made directly in the config file.
+    if section_name == 'core' and option in ['owner', 'owner_account']:
+        bot.say("Changing '{}.{}' requires manually editing the configuration file."
+                .format(section_name, option))
         return
 
     # Otherwise, set the value to one given as argument 2.
