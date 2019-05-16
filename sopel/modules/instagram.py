@@ -64,7 +64,7 @@ def parse_insta_json(json):
     iuser = needed['owner']['username']
     ifname = needed['owner']['full_name']
     ilikes = needed['edge_media_preview_like']['count']
-    icomms = needed['edge_media_to_comment']['count']
+    icomms = needed['edge_media_to_parent_comment']['count']
     idate = needed['taken_at_timestamp']
     pubdate = datetime.utcfromtimestamp(idate).strftime('%Y-%m-%d %H:%M:%S')
     ivideo = needed['is_video']
