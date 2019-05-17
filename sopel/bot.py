@@ -569,10 +569,10 @@ class Sopel(irc.Bot):
                 match = regexp.match(text)
                 if not match:
                     continue
-                trigger = Trigger(self.config, pretrigger, match, account)
-                wrapper = SopelWrapper(self, trigger)
 
                 for func in funcs:
+                    trigger = Trigger(self.config, pretrigger, match, account)
+
                     # check blocked nick/host
                     if blocked and not func.unblockable and not trigger.admin:
                         function_name = "%s.%s" % (
@@ -602,6 +602,7 @@ class Sopel(irc.Bot):
                         continue
 
                     # call triggered function
+                    wrapper = SopelWrapper(self, trigger)
                     if func.thread:
                         targs = (func, wrapper, trigger)
                         t = threading.Thread(target=self.call, args=targs)
