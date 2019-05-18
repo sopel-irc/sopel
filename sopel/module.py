@@ -549,9 +549,12 @@ class example(object):
         user_help:
             Whether this example should be displayed in user-facing help output
             such as `.help command`.
+        online:
+            If true, pytest will mark it as "online".
     """
     def __init__(self, msg, result=None, privmsg=False, admin=False,
-                 owner=False, repeat=1, re=False, ignore=None, user_help=False):
+                 owner=False, repeat=1, re=False, ignore=None,
+                 user_help=False, online=True):
         # Wrap result into a list for get_example_test
         if isinstance(result, list):
             self.result = result
@@ -565,6 +568,7 @@ class example(object):
         self.admin = admin
         self.owner = owner
         self.repeat = repeat
+        self.online = online
 
         if isinstance(ignore, list):
             self.ignore = ignore
@@ -580,6 +584,7 @@ class example(object):
             func.example = []
 
         import sys
+        import pytest
 
         import sopel.test_tools  # TODO: fix circular import with sopel.bot and sopel.test_tools
 
@@ -590,6 +595,10 @@ class example(object):
                 func, self.msg, self.result, self.privmsg, self.admin,
                 self.owner, self.repeat, self.use_re, self.ignore
             )
+
+            if self.online:
+                test = pytest.mark.online(test)
+
             sopel.test_tools.insert_into_module(
                 test, func.__module__, func.__name__, 'test_example'
             )

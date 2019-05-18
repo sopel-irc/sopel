@@ -106,7 +106,8 @@ def _find_geoip_db(bot):
 @example('.ip 8.8.8.8',
          r'\[IP\/Host Lookup\] Hostname: \S*dns\S*\.google\S* \| Location: United States \| ISP: AS15169 Google LLC',
          re=True,
-         ignore='Downloading GeoIP database, please wait...')
+         ignore='Downloading GeoIP database, please wait...',
+         online=True)
 def ip(bot, trigger):
     """IP Lookup tool"""
     # Check if there is input at all
