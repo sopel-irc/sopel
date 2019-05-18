@@ -9,6 +9,7 @@ https://sopel.chat
 from __future__ import unicode_literals, absolute_import, print_function, division
 
 from sopel.module import commands, example
+from sopel import web
 import requests
 import re
 import sys
@@ -50,7 +51,6 @@ def gettld(bot, trigger):
             desc = desc[:400] + "..."
         reply = "%s -- %s. IDN: %s, DNSSEC: %s" % (matches[1], desc,
                 matches[3], matches[4])
-        bot.reply(reply)
     else:
         search = r'<td><a href="\S+" title="\S+">.{0}</a></td>\n<td><span class="flagicon"><img.*?\">(.*?)</a></td>\n<td[^>]*>(.*?)</td>\n<td[^>]*>(.*?)</td>\n<td[^>]*>(.*?)</td>\n<td[^>]*>(.*?)</td>\n<td[^>]*>(.*?)</td>\n'
         search = search.format(unicode(tld))
@@ -69,4 +69,6 @@ def gettld(bot, trigger):
             reply = "%s (%s, %s). IDN: %s, DNSSEC: %s, SLD: %s" % (dict_val["country"], dict_val["expl"], dict_val["notes"], dict_val["idn"], dict_val["dnssec"], dict_val["sld"])
         else:
             reply = "No matches found for TLD: {0}".format(unicode(tld))
-        bot.reply(reply)
+    # Final touches + output
+    reply = web.decode(reply)
+    bot.reply(reply)
