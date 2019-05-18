@@ -554,7 +554,7 @@ class example(object):
     """
     def __init__(self, msg, result=None, privmsg=False, admin=False,
                  owner=False, repeat=1, re=False, ignore=None,
-                 user_help=False, online=True):
+                 user_help=False, online=False):
         # Wrap result into a list for get_example_test
         if isinstance(result, list):
             self.result = result
