@@ -7,16 +7,18 @@ Licensed under the Eiffel Forum License 2.
 
 https://sopel.chat
 """
-from __future__ import unicode_literals, absolute_import, print_function, division
+from __future__ import absolute_import, division, print_function, unicode_literals
 
 import codecs
+import collections
 import os
 import re
-from string import punctuation, whitespace
 import time
+from string import punctuation, whitespace
 
-from sopel.config.types import StaticSection, FilenameAttribute, ValidatedAttribute
 from sopel import formatting, module, tools, web
+from sopel.config.types import (FilenameAttribute, StaticSection,
+                                ValidatedAttribute)
 from sopel.modules.url import find_title
 
 
@@ -59,7 +61,7 @@ def setup(bot):
     bot.config.define_section("meetbot", MeetbotSection)
 
 
-meetings_dict = tools.Ddict(dict)  # Saves metadata about currently running meetings
+meetings_dict = collections.defaultdict(dict)  # Saves metadata about currently running meetings
 """
 meetings_dict is a 2D dict.
 
@@ -225,7 +227,7 @@ def startmeeting(bot, trigger):
             bot.say(
                 "Meeting not started: Couldn't create log directory for this channel"
             )
-            meetings_dict[trigger.sender] = tools.Ddict(dict)
+            meetings_dict[trigger.sender] = collections.defaultdict(dict)
             raise
     # Okay, meeting started!
     log_plain("Meeting started by " + trigger.nick.lower(), trigger.sender)
@@ -306,7 +308,7 @@ def endmeeting(bot, trigger):
         trigger.sender,
     )
     bot.say("Meeting minutes: " + htmllog_url)
-    meetings_dict[trigger.sender] = tools.Ddict(dict)
+    meetings_dict[trigger.sender] = collections.defaultdict(dict)
     del meeting_actions[trigger.sender]
 
 
