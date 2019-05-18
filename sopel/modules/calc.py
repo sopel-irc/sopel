@@ -55,7 +55,7 @@ def c(bot, trigger):
 
 
 @commands('py')
-@example('.py len([1,2,3])', '3')
+@example('.py len([1,2,3])', '3', online=True)
 def py(bot, trigger):
     """Evaluate a Python expression."""
     if not trigger.group(2):

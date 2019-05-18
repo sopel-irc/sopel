@@ -99,9 +99,16 @@ def duck_api(query):
 
 @commands('duck', 'ddg', 'g')
 # test for bad Unicode handling in py2
-@example('.duck grandorder.wiki chulainn alter', 'https://grandorder.wiki/Cú_Chulainn_(Alter)')
+@example(
+    '.duck grandorder.wiki chulainn alter',
+    'https://grandorder.wiki/Cú_Chulainn_(Alter)',
+    online=True)
 # the last example (in source line order) is what .help displays
-@example('.duck sopel irc bot', r'https?:\/\/sopel\.chat\/?', re=True)
+@example(
+    '.duck sopel irc bot',
+    r'https?:\/\/sopel\.chat\/?',
+    re=True,
+    online=True)
 def duck(bot, trigger):
     """Queries DuckDuckGo for the specified input."""
     query = trigger.group(2)
@@ -167,9 +174,9 @@ def search(bot, trigger):
 
 
 @commands('suggest')
-@example('.suggest wikip', 'wikipedia')
-@example('.suggest ', 'No query term.')
-@example('.suggest lkashdfiauwgeaef', 'Sorry, no result.')
+@example('.suggest wikip', 'wikipedia', online=True)
+@example('.suggest ', 'No query term.', online=True)
+@example('.suggest lkashdfiauwgeaef', 'Sorry, no result.', online=True)
 def suggest(bot, trigger):
     """Suggests terms starting with given input"""
     if not trigger.group(2):

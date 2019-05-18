@@ -99,7 +99,10 @@ def setup(bot):
 
 
 @module.commands('title')
-@module.example('.title https://www.google.com', '[ Google ] - www.google.com')
+@module.example(
+    '.title https://www.google.com',
+    '[ Google ] - www.google.com',
+    online=True)
 def title_command(bot, trigger):
     """
     Show the title or URL information for the given URL, or the last URL seen
