@@ -104,7 +104,7 @@ def handle_list(options):
     """List Sopel plugins"""
     settings = utils.load_settings(options)
     for name, info in plugins.get_usable_plugins(settings).items():
-        _, is_enabled = info
+        plugin, is_enabled = info
 
         if options.enabled_only and not is_enabled:
             # hide disabled plugins when displaying enabled only
@@ -113,12 +113,42 @@ def handle_list(options):
             # hide enabled plugins when displaying disabled only
             continue
 
-        if options.no_color:
-            print(name)
-        elif is_enabled:
-            print(utils.green(name))
-        else:
-            print(utils.red(name))
+        description = {
+            'name': name,
+            'status': 'enabled' if is_enabled else 'disabled',
+        }
+
+        # option meta description from the plugin itself
+        try:
+            plugin.load()
+            description.update(plugin.get_meta_description())
+
+            # colorize name for display purpose
+            if not options.no_color:
+                if is_enabled:
+                    description['name'] = utils.green(name)
+                else:
+                    description['name'] = utils.red(name)
+        except Exception as error:
+            label = ('%s' % error) or 'unknown loading exception'
+            error_status = 'error'
+            description.update({
+                'label': 'Error: %s' % label,
+                'type': 'unknown',
+                'source': 'unknown',
+                'status': error_status,
+            })
+            if not options.no_color:
+                if is_enabled:
+                    # yellow instead of green
+                    description['name'] = utils.yellow(name)
+                else:
+                    # keep it red for disabled plugins
+                    description['name'] = utils.red(name)
+                description['status'] = utils.red(error_status)
+
+        template = '{name}/{type} {label} ({source}) [{status}]'
+        print(template.format(**description))
 
 
 def handle_disable(options):

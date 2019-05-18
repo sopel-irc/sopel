@@ -17,6 +17,7 @@ __all__ = [
     'plugins_wizard',
     # colors
     'green',
+    'yellow',
     'red',
 ]
 
@@ -24,6 +25,7 @@ __all__ = [
 RESET = '\033[0m'
 RED = '\033[31m'
 GREEN = '\033[32m'
+YELLOW = '\033[33m'
 
 
 def _colored(text, color, reset=True):
@@ -44,12 +46,23 @@ def green(text, reset=True):
     return _colored(text, GREEN, reset)
 
 
+def yellow(text, reset=True):
+    """Add ANSI escape sequences to make the text yellow in term
+
+    :param str text: text to colorized in yellow
+    :param bool reset: if the text color must be reset after (default ``True``)
+    :return: text with ANSI escape sequences for yellow color
+    :rtype: str
+    """
+    return _colored(text, YELLOW, reset)
+
+
 def red(text, reset=True):
     """Add ANSI escape sequences to make the text red in term
 
-    :param str text: text to colorized in green
+    :param str text: text to colorized in red
     :param bool reset: if the text color must be reset after (default ``True``)
-    :return: text with ANSI escape sequences for green color
+    :return: text with ANSI escape sequences for red color
     :rtype: str
     """
     return _colored(text, RED, reset)
