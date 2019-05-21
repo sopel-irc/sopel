@@ -408,7 +408,7 @@ class Sopel(irc.Bot):
                 if elapsed < 3:
                     penalty = float(max(0, len(text) - 40)) / 70
                     wait = min(0.8 + penalty, 2)  # Never wait more than 2 seconds
-                    if elapsed < wait:
+                    if elapsed < wait and self.config.core.message_throttle:
                         time.sleep(wait - elapsed)
 
                 # Loop detection
@@ -416,7 +416,7 @@ class Sopel(irc.Bot):
 
                 # If what we about to send repeated at least 5 times in the
                 # last 2 minutes, replace with '...'
-                if messages.count(text) >= 5 and elapsed < 120:
+                if messages.count(text) >= 5 and elapsed < 120 and self.config.core.message_loop_detection:
                     text = '...'
                     if messages.count('...') >= 3:
                         # If we said '...' 3 times, discard message

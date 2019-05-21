@@ -192,6 +192,12 @@ class CoreSection(StaticSection):
                                     'WARNING')
     """The lowest severity of logs to display."""
 
+    message_throttle = ValidatedAttribute('message_throttle', bool, default=True)
+    """Whether messages will be throttled if too many are sent in a short time."""
+
+    message_loop_detection = ValidatedAttribute('message_loop_detection', bool, default=True)
+    """Whether repeated messages will be replaced with '...', then dropped."""
+
     modes = ValidatedAttribute('modes', default='B')
     """User modes to be set on connection."""
 
