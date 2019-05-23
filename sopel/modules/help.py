@@ -12,6 +12,7 @@ https://sopel.chat
 """
 from __future__ import unicode_literals, absolute_import, print_function, division
 
+import re
 import collections
 import socket
 import textwrap
@@ -140,11 +141,31 @@ def post_to_termbin(msg):
     return response.strip('\x00\n').replace('http://', 'https://', 1)
 
 
+def post_to_ubuntu(msg):
+    data = {
+        'poster': 'sopel',
+        'syntax': 'text',
+        'expiration': '',
+        'content': msg,
+    }
+    try:
+        result = _requests_post_catch_errors('https://pastebin.ubuntu.com/', data=data)
+    except PostingException:
+        raise
+
+    if not re.match(r'https://pastebin.ubuntu.com/p/[^/]+/', result.url):
+        LOGGER.error("Invalid Ubuntu pastebin response url %s", result.url)
+        raise PostingException('Invalid response from Ubuntu pastebin: %s' % result.url)
+
+    return result.url
+
+
 PASTEBIN_PROVIDERS = {
     'clbin': post_to_clbin,
     '0x0': post_to_0x0,
     'hastebin': post_to_hastebin,
     'termbin': post_to_termbin,
+    'ubuntu': post_to_ubuntu,
 }
 
 
