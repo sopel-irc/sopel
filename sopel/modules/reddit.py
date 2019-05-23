@@ -15,7 +15,7 @@ import sys
 import praw
 
 from sopel.formatting import bold, color, colors
-from sopel.module import commands, rule, example, require_chanmsg, NOLIMIT, OP
+from sopel.module import commands, example, require_chanmsg, url, NOLIMIT, OP
 from sopel.tools import time
 from sopel.web import USER_AGENT
 
@@ -36,30 +36,15 @@ domain = r'https?://(?:www\.|old\.|pay\.|ssl\.|[a-z]{2}\.)?reddit\.com'
 post_url = r'%s/r/.*?/comments/([\w-]+)' % domain
 short_post_url = r'https?://redd.it/([\w-]+)'
 user_url = r'%s/u(ser)?/([\w-]+)' % domain
-post_regex = re.compile(post_url)
-short_post_regex = re.compile(short_post_url)
-user_regex = re.compile(user_url)
 spoiler_subs = [
     'stevenuniverse',
     'onepunchman',
 ]
 
 
-def setup(bot):
-    bot.register_url_callback(post_regex, rpost_info)
-    bot.register_url_callback(short_post_regex, rpost_info)
-    bot.register_url_callback(user_regex, redditor_info)
-
-
-def shutdown(bot):
-    bot.unregister_url_callback(post_regex)
-    bot.unregister_url_callback(short_post_regex)
-    bot.unregister_url_callback(user_regex)
-
-
-@rule('.*%s.*' % post_url)
-@rule('.*%s.*' % short_post_url)
-def rpost_info(bot, trigger, match=None):
+@url(post_url)
+@url(short_post_url)
+def rpost_info(bot, trigger, match):
     match = match or trigger
     try:
         r = praw.Reddit(
@@ -142,9 +127,8 @@ def redditor_info(bot, trigger, match=None):
         if commanded:
             bot.say('No such Redditor.')
             return NOLIMIT
-        else:
-            return
         # Fail silently if it wasn't an explicit command.
+        return
 
     message = '[REDDITOR] ' + u.name
     now = dt.datetime.utcnow()
@@ -156,7 +140,7 @@ def redditor_info(bot, trigger, match=None):
     year_div_by_4 = now.year % 4 == 0
     is_leap = year_div_by_400 or ((not year_div_by_100) and year_div_by_4)
     if (not is_leap) and ((cakeday_start.month, cakeday_start.day) == (2, 29)):
-        # If cake day is 2/29 and it's not a leap year, cake day is 1/3.
+        # If cake day is 2/29 and it's not a leap year, cake day is 3/1.
         # Cake day begins at exact account creation time.
         is_cakeday = cakeday_start + day <= now <= cakeday_start + (2 * day)
     else:
@@ -177,9 +161,9 @@ def redditor_info(bot, trigger, match=None):
 
 
 # If you change the groups here, you'll have to change some things above.
-@rule('.*%s.*' % user_url)
-def auto_redditor_info(bot, trigger):
-    redditor_info(bot, trigger)
+@url(user_url)
+def auto_redditor_info(bot, trigger, match):
+    redditor_info(bot, trigger, match)
 
 
 @require_chanmsg('.setsfw is only permitted in channels')
