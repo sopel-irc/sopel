@@ -13,6 +13,7 @@ import re
 import sys
 
 import praw
+import prawcore
 
 from sopel.formatting import bold, color, colors
 from sopel.module import commands, example, require_chanmsg, url, NOLIMIT, OP
@@ -53,58 +54,58 @@ def rpost_info(bot, trigger, match):
             client_secret=None,
         )
         s = r.submission(id=match.group(1))
-    except Exception:
-        r = praw.Reddit(user_agent=USER_AGENT)
-        s = r.get_submission(submission_id=match.group(1))
 
-    message = ('[REDDIT] {title} {link}{nsfw} | {points} points ({percent}) | '
-               '{comments} comments | Posted by {author} | '
-               'Created at {created}')
+        message = ('[REDDIT] {title} {link}{nsfw} | {points} points ({percent}) | '
+                   '{comments} comments | Posted by {author} | '
+                   'Created at {created}')
 
-    subreddit = s.subreddit.display_name
-    if s.is_self:
-        link = '(self.{})'.format(subreddit)
-    else:
-        link = '({}) to r/{}'.format(s.url, subreddit)
-
-    if s.over_18:
-        if subreddit.lower() in spoiler_subs:
-            nsfw = ' ' + bold(color('[SPOILERS]', colors.RED))
+        subreddit = s.subreddit.display_name
+        if s.is_self:
+            link = '(self.{})'.format(subreddit)
         else:
-            nsfw = ' ' + bold(color('[NSFW]', colors.RED))
+            link = '({}) to r/{}'.format(s.url, subreddit)
 
-        sfw = bot.db.get_channel_value(trigger.sender, 'sfw')
-        if sfw:
-            link = '(link hidden)'
-            bot.write(['KICK', trigger.sender, trigger.nick,
-                       'Linking to NSFW content in a SFW channel.'])
-    else:
-        nsfw = ''
+        if s.over_18:
+            if subreddit.lower() in spoiler_subs:
+                nsfw = ' ' + bold(color('[SPOILERS]', colors.RED))
+            else:
+                nsfw = ' ' + bold(color('[NSFW]', colors.RED))
 
-    if s.author:
-        author = s.author.name
-    else:
-        author = '[deleted]'
+            sfw = bot.db.get_channel_value(trigger.sender, 'sfw')
+            if sfw:
+                link = '(link hidden)'
+                bot.write(['KICK', trigger.sender, trigger.nick,
+                           'Linking to NSFW content in a SFW channel.'])
+        else:
+            nsfw = ''
 
-    tz = time.get_timezone(bot.db, bot.config, None, trigger.nick,
-                           trigger.sender)
-    time_created = dt.datetime.utcfromtimestamp(s.created_utc)
-    created = time.format_time(bot.db, bot.config, tz, trigger.nick,
-                               trigger.sender, time_created)
+        if s.author:
+            author = s.author.name
+        else:
+            author = '[deleted]'
 
-    if s.score > 0:
-        point_color = colors.GREEN
-    else:
-        point_color = colors.RED
+        tz = time.get_timezone(bot.db, bot.config, None, trigger.nick,
+                               trigger.sender)
+        time_created = dt.datetime.utcfromtimestamp(s.created_utc)
+        created = time.format_time(bot.db, bot.config, tz, trigger.nick,
+                                   trigger.sender, time_created)
 
-    percent = color(unicode(s.upvote_ratio * 100) + '%', point_color)
+        if s.score > 0:
+            point_color = colors.GREEN
+        else:
+            point_color = colors.RED
 
-    title = unescape(s.title)
-    message = message.format(
-        title=title, link=link, nsfw=nsfw, points=s.score, percent=percent,
-        comments=s.num_comments, author=author, created=created)
+        percent = color(unicode(s.upvote_ratio * 100) + '%', point_color)
 
-    bot.say(message)
+        title = unescape(s.title)
+        message = message.format(
+            title=title, link=link, nsfw=nsfw, points=s.score, percent=percent,
+            comments=s.num_comments, author=author, created=created)
+
+        bot.say(message)
+    except prawcore.exceptions.NotFound:
+        bot.say('No such post.')
+        return NOLIMIT
 
 
 # If you change this, you'll have to change some other things...
@@ -119,45 +120,41 @@ def redditor_info(bot, trigger, match=None):
         client_secret=None,
     )
     match = match or trigger
-    try:  # praw <4.0 style
-        u = r.get_redditor(match.group(2))
-    except AttributeError:  # praw >=4.0 style
+    try:
         u = r.redditor(match.group(2))
-    except Exception:  # TODO: Be specific
+        message = '[REDDITOR] ' + u.name
+        now = dt.datetime.utcnow()
+        cakeday_start = dt.datetime.utcfromtimestamp(u.created_utc)
+        cakeday_start = cakeday_start.replace(year=now.year)
+        day = dt.timedelta(days=1)
+        year_div_by_400 = now.year % 400 == 0
+        year_div_by_100 = now.year % 100 == 0
+        year_div_by_4 = now.year % 4 == 0
+        is_leap = year_div_by_400 or ((not year_div_by_100) and year_div_by_4)
+        if (not is_leap) and ((cakeday_start.month, cakeday_start.day) == (2, 29)):
+            # If cake day is 2/29 and it's not a leap year, cake day is 3/1.
+            # Cake day begins at exact account creation time.
+            is_cakeday = cakeday_start + day <= now <= cakeday_start + (2 * day)
+        else:
+            is_cakeday = cakeday_start <= now <= cakeday_start + day
+
+        if is_cakeday:
+            message = message + ' | ' + bold(color('Cake day', colors.LIGHT_PURPLE))
+        if commanded:
+            message = message + ' | https://reddit.com/u/' + u.name
+        if u.is_gold:
+            message = message + ' | ' + bold(color('Gold', colors.YELLOW))
+        if u.is_mod:
+            message = message + ' | ' + bold(color('Mod', colors.GREEN))
+        message = message + (' | Link: ' + str(u.link_karma) +
+                             ' | Comment: ' + str(u.comment_karma))
+
+        bot.say(message)
+    except prawcore.exceptions.NotFound:
         if commanded:
             bot.say('No such Redditor.')
-            return NOLIMIT
         # Fail silently if it wasn't an explicit command.
-        return
-
-    message = '[REDDITOR] ' + u.name
-    now = dt.datetime.utcnow()
-    cakeday_start = dt.datetime.utcfromtimestamp(u.created_utc)
-    cakeday_start = cakeday_start.replace(year=now.year)
-    day = dt.timedelta(days=1)
-    year_div_by_400 = now.year % 400 == 0
-    year_div_by_100 = now.year % 100 == 0
-    year_div_by_4 = now.year % 4 == 0
-    is_leap = year_div_by_400 or ((not year_div_by_100) and year_div_by_4)
-    if (not is_leap) and ((cakeday_start.month, cakeday_start.day) == (2, 29)):
-        # If cake day is 2/29 and it's not a leap year, cake day is 3/1.
-        # Cake day begins at exact account creation time.
-        is_cakeday = cakeday_start + day <= now <= cakeday_start + (2 * day)
-    else:
-        is_cakeday = cakeday_start <= now <= cakeday_start + day
-
-    if is_cakeday:
-        message = message + ' | ' + bold(color('Cake day', colors.LIGHT_PURPLE))
-    if commanded:
-        message = message + ' | https://reddit.com/u/' + u.name
-    if u.is_gold:
-        message = message + ' | ' + bold(color('Gold', colors.YELLOW))
-    if u.is_mod:
-        message = message + ' | ' + bold(color('Mod', colors.GREEN))
-    message = message + (' | Link: ' + str(u.link_karma) +
-                         ' | Comment: ' + str(u.comment_karma))
-
-    bot.say(message)
+        return NOLIMIT
 
 
 # If you change the groups here, you'll have to change some things above.
