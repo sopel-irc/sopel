@@ -13,10 +13,18 @@ from __future__ import unicode_literals, absolute_import, print_function, divisi
 
 import re
 
+import dns.resolver
+import ipaddress
 import requests
 
 from sopel import __version__, module, tools, web
 from sopel.config.types import ListAttribute, StaticSection, ValidatedAttribute
+
+# Python3 vs Python2
+try:
+    from urllib.parse import urlparse
+except ImportError:
+    from urlparse import urlparse
 
 USER_AGENT = 'Sopel/{} (https://sopel.chat)'.format(__version__)
 default_headers = {'User-Agent': USER_AGENT}
@@ -42,6 +50,10 @@ class UrlSection(StaticSection):
     shorten_url_length = ValidatedAttribute(
         'shorten_url_length', int, default=0)
     """If greater than 0, the title fetcher will include a TinyURL version of links longer than this many characters."""
+    enable_private_resolution = ValidatedAttribute(
+        'enable_private_resolution', bool, default=False)
+    enable_dns_resolution = ValidatedAttribute(
+        'enable_dns_resolution', bool, default=False)
 
 
 def configure(config):
@@ -66,6 +78,14 @@ def configure(config):
         'Enter how many characters a URL should be before the bot puts a'
         ' shorter version of the URL in the title as a TinyURL link'
         ' (0 to disable)'
+    )
+    config.url.configure_setting(
+        'enable_private_resolution',
+        'Enable URL lookups for RFC1918 addresses?'
+    )
+    config.url.configure_setting(
+        'enable_dns_resolution',
+        'Enable DNS resolution for all domains to validate if there are RFC1918 resolutions?'
     )
 
 
@@ -175,6 +195,26 @@ def process_urls(bot, trigger, urls):
         # Check the URL does not match an existing URL callback
         if check_callbacks(bot, url):
             continue
+
+        # Prevent private addresses form being queried if enable_private_resolution is False
+        if not bot.config.url.enable_private_resolution:
+            parsed = urlparse(url)
+            # Check if it's an address like http://192.168.1.1
+            try:
+                if ipaddress.ip_address(parsed.hostname).is_private or ipaddress.ip_address(parsed.hostname).is_loopback:
+                    continue
+            except ValueError:
+                pass
+
+            # Check if domains are RFC1918 addresses if enable_dns_resolutions is set
+            if bot.config.url.enable_dns_resolution:
+                private = False
+                for result in dns.resolver.query(parsed.hostname):
+                    if ipaddress.ip_address(result).is_private:
+                        private = True
+                        break
+                if private:
+                    continue
 
         # Call the URL to get a title, if possible
         title = find_title(url, verify=bot.config.core.verify_ssl)
