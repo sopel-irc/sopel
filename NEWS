@@ -34,6 +34,14 @@ Module changes
     phrases, and punctuation marks—things that were unsupported in Sopel 6.x
   * This means that the `wiktionary` module is now somewhat case-sensitive, to
     account for common and proper nouns that differ only in capitalization
+* `url` will now ignore "private" addresses by default [[#1439][], [#1622][]]
+  * New config settings for the `url` module allow overriding the checks, in
+    cases where loading previews of e.g. LAN servers is safe
+  * The default is off, so users don't unwittingly open themselves to attackers
+    fishing for running HTTP services on the local machine or network
+  * Note/TODO: #1622 is an issue listing remaining things that need doing to
+    make this feature consistent, and should be replaced by the PR implementing
+    them when it's merged.
 * Short `redd.it` links are now detected by the `reddit` module [[#1503][]]
 * Python version is now included in `.version` command output [[#1462][]]
 * Readability of `.choose` command output is significantly improved [[#1425][]]
@@ -51,8 +59,8 @@ Module changes
   if they wish to be extra cheeky [[#1470][]]
 * Fixed that the `url` module had to be enabled or some link-handling
   functions didn't work [[#1510][]]
-* General code cleanup all around [[#1402][], [#1486][], [#1573][], [#1581][],
-  [#1606][]]
+* General code cleanup all around [[#1402][], [#1486][], [#1505][], [#1573][],
+  [#1581][], [#1606][]]
 
 Core changes
 ------------
@@ -175,6 +183,7 @@ API changes
 [#1425]: https://github.com/sopel-irc/sopel/pull/1425
 [#1429]: https://github.com/sopel-irc/sopel/pull/1429
 [#1430]: https://github.com/sopel-irc/sopel/pull/1430
+[#1439]: https://github.com/sopel-irc/sopel/pull/1439
 [#1443]: https://github.com/sopel-irc/sopel/pull/1443
 [#1446]: https://github.com/sopel-irc/sopel/pull/1446
 [#1451]: https://github.com/sopel-irc/sopel/pull/1451
@@ -196,6 +205,7 @@ API changes
 [#1499]: https://github.com/sopel-irc/sopel/pull/1499
 [#1500]: https://github.com/sopel-irc/sopel/pull/1500
 [#1503]: https://github.com/sopel-irc/sopel/pull/1503
+[#1505]: https://github.com/sopel-irc/sopel/pull/1505
 [#1507]: https://github.com/sopel-irc/sopel/pull/1507
 [#1508]: https://github.com/sopel-irc/sopel/pull/1508
 [#1509]: https://github.com/sopel-irc/sopel/pull/1509
@@ -215,6 +225,7 @@ API changes
 [#1581]: https://github.com/sopel-irc/sopel/pull/1581
 [#1583]: https://github.com/sopel-irc/sopel/pull/1583
 [#1606]: https://github.com/sopel-irc/sopel/pull/1606
+[#1622]: https://github.com/sopel-irc/sopel/issues/1622
 
 [api-docs]: https://sopel.chat/docs/
 [install-guide-db]: https://sopel.chat/usage/installing/#configuring-the-database-optional
