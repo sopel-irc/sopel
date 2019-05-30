@@ -2,6 +2,8 @@
 """Tests for message formatting"""
 from __future__ import unicode_literals, absolute_import, print_function, division
 
+import re
+
 import pytest
 
 from sopel.trigger import PreTrigger, Trigger
@@ -78,6 +80,21 @@ def test_thread():
     def mock(bot, trigger, match):
         return True
     assert mock.thread is True
+
+
+def test_url():
+    @module.url('pattern')
+    def mock(bot, trigger, match):
+        return True
+    assert mock.url_regex == [re.compile('pattern')]
+
+
+def test_url_multiple():
+    @module.url('first')
+    @module.url('second')
+    def mock(bot, trigger, match):
+        return True
+    assert mock.url_regex == [re.compile('second'), re.compile('first')]
 
 
 def test_echo():

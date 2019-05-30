@@ -487,6 +487,7 @@ def url(url_rule):
         from sopel import module
 
         @module.url(r'https://example.com/bugs/([a-z0-9]+)')
+        @module.url(r'https://short.com/([a-z0-9]+)')
         def handle_example_bugs(bot, trigger, match):
             bot.reply('Found bug ID #%s' % match.group(1))
 
@@ -495,6 +496,11 @@ def url(url_rule):
 
     Under the hood, when Sopel collects the decorated handler it uses
     :meth:`sopel.bot.Sopel.register_url_callback` to register the handler.
+
+    .. versionchanged:: 7.0
+
+        The same function can be decorated multiple times with :func:`url`
+        to register different URL patterns.
 
     .. seealso::
 
@@ -508,7 +514,9 @@ def url(url_rule):
         def helper(bot, trigger, match=None):
             match = match or trigger
             return function(bot, trigger, match)
-        helper.url_regex = re.compile(url_rule)
+        if not hasattr(helper, 'url_regex'):
+            helper.url_regex = []
+        helper.url_regex.append(re.compile(url_rule))
         return helper
     return actual_decorator
 
