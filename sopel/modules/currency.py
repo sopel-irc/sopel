@@ -165,8 +165,10 @@ def exchange(bot, match):
         amount = float(amount)
     except ValueError:
         bot.reply(UNRECOGNIZED_INPUT)
+        return NOLIMIT
     except OverflowError:
         bot.reply("Sorry, input amount was out of range.")
+        return NOLIMIT
 
     if not amount:
         bot.reply("Zero is zero, no matter what country you're in.")
