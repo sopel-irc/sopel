@@ -16,6 +16,19 @@ homedir={homedir}
 """
 
 
+MULTILINE_CONFIG = FAKE_CONFIG + """
+[spam]
+eggs = one, two, three, four, and a half
+bacons = grilled
+    burn out
+    greasy, fat, and tasty
+cheese =   
+    cheddar
+      reblochon   
+  camembert
+"""  # noqa (trailing whitespaces are intended)
+
+
 class FakeConfigSection(types.StaticSection):
     valattr = types.ValidatedAttribute('valattr')
     listattr = types.ListAttribute('listattr')
@@ -26,17 +39,39 @@ class FakeConfigSection(types.StaticSection):
     rd_fileattr = types.FilenameAttribute('rd_fileattr', relative=True, directory=True)
 
 
+class SpamSection(types.StaticSection):
+    eggs = types.ListAttribute('eggs')
+    bacons = types.ListAttribute('bacons', strip=False)
+    cheese = types.ListAttribute('cheese')
+
+
 @pytest.fixture
-def fakeconfig(tmpdir):
+def tmphomedir(tmpdir):
     sopel_homedir = tmpdir.join('.sopel')
     sopel_homedir.mkdir()
     sopel_homedir.join('test.tmp').write('')
     sopel_homedir.join('test.d').mkdir()
-    conf_file = sopel_homedir.join('conf.cfg')
-    conf_file.write(FAKE_CONFIG.format(homedir=sopel_homedir.strpath))
+    return sopel_homedir
+
+
+@pytest.fixture
+def fakeconfig(tmphomedir):
+    conf_file = tmphomedir.join('conf.cfg')
+    conf_file.write(FAKE_CONFIG.format(homedir=tmphomedir.strpath))
 
     test_settings = config.Config(conf_file.strpath)
     test_settings.define_section('fake', FakeConfigSection)
+    return test_settings
+
+
+@pytest.fixture
+def multi_fakeconfig(tmphomedir):
+    conf_file = tmphomedir.join('conf.cfg')
+    conf_file.write(MULTILINE_CONFIG.format(homedir=tmphomedir.strpath))
+
+    test_settings = config.Config(conf_file.strpath)
+    test_settings.define_section('fake', FakeConfigSection)
+    test_settings.define_section('spam', SpamSection)
     return test_settings
 
 
@@ -78,7 +113,9 @@ def test_listattribute_with_value_containing_standard_escape_sequence(fakeconfig
     assert fakeconfig.fake.listattr == ['spam', 'egg\tsausage', 'bacon']
 
     fakeconfig.fake.listattr = ['spam', 'egg\nsausage', 'bacon']
-    assert fakeconfig.fake.listattr == ['spam', 'egg\nsausage', 'bacon']
+    assert fakeconfig.fake.listattr == [
+        'spam', 'egg', 'sausage', 'bacon'
+    ], 'Line break are always converted to new item'
 
     fakeconfig.fake.listattr = ['spam', 'egg\\sausage', 'bacon']
     assert fakeconfig.fake.listattr == ['spam', 'egg\\sausage', 'bacon']
@@ -160,3 +197,93 @@ def test_fileattribute_given_file_when_dir(fakeconfig):
     testfile = os.path.join(fakeconfig.core.homedir, 'test.tmp')
     with pytest.raises(ValueError):
         fakeconfig.fake.ad_fileattr = testfile
+
+
+def test_configparser_multi_lines(multi_fakeconfig):
+    # spam
+    assert multi_fakeconfig.spam.eggs == [
+        'one',
+        'two',
+        'three',
+        'four',
+        'and a half',  # no-breakline + comma
+    ], 'Comma separated line: "four" and "and a half" must be separated'
+    assert multi_fakeconfig.spam.bacons == [
+        'grilled',
+        'burn out',
+        'greasy, fat, and tasty',
+    ]
+    assert multi_fakeconfig.spam.cheese == [
+        'cheddar',
+        'reblochon',
+        'camembert',
+    ]
+
+
+def test_save_unmodified_config(multi_fakeconfig):
+    """Assert type attributes are kept as they should be"""
+    multi_fakeconfig.save()
+    saved_config = config.Config(multi_fakeconfig.filename)
+    saved_config.define_section('fake', FakeConfigSection)
+    saved_config.define_section('spam', SpamSection)
+
+    # core
+    assert saved_config.core.owner == 'dgw'
+
+    # fake
+    assert saved_config.fake.valattr is None
+    assert saved_config.fake.listattr == []
+    assert saved_config.fake.choiceattr is None
+    assert saved_config.fake.af_fileattr is None
+    assert saved_config.fake.ad_fileattr is None
+    assert saved_config.fake.rf_fileattr is None
+    assert saved_config.fake.rd_fileattr is None
+
+    # spam
+    assert saved_config.spam.eggs == [
+        'one',
+        'two',
+        'three',
+        'four',
+        'and a half',  # no-breakline + comma
+    ], 'Comma separated line: "four" and "and a half" must be separated'
+    assert saved_config.spam.bacons == [
+        'grilled',
+        'burn out',
+        'greasy, fat, and tasty',
+    ]
+    assert saved_config.spam.cheese == [
+        'cheddar',
+        'reblochon',
+        'camembert',
+    ]
+
+
+def test_save_modified_config(multi_fakeconfig):
+    """Assert modified values are restored properly"""
+    multi_fakeconfig.fake.choiceattr = 'spam'
+    multi_fakeconfig.spam.eggs = [
+        'one',
+        'two',
+    ]
+    multi_fakeconfig.spam.cheese = [
+        'camembert, reblochon, and cheddar',
+    ]
+
+    multi_fakeconfig.save()
+
+    with open(multi_fakeconfig.filename) as fd:
+        print(fd.read())  # used for debug purpose if an assert fails
+
+    saved_config = config.Config(multi_fakeconfig.filename)
+    saved_config.define_section('fake', FakeConfigSection)
+    saved_config.define_section('spam', SpamSection)
+
+    assert saved_config.fake.choiceattr == 'spam'
+    assert saved_config.spam.eggs == ['one', 'two']
+    assert saved_config.spam.cheese == [
+        'camembert, reblochon, and cheddar',
+    ], (
+        'ListAttribute with one line only, with commas, must *not* be split '
+        'differently from what was expected, ie. into one (and only one) value'
+    )
