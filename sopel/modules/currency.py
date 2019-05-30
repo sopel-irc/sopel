@@ -21,7 +21,7 @@ from sopel.module import commands, example, NOLIMIT, rule
 
 FIAT_URL = 'https://api.exchangeratesapi.io/latest?base=EUR'
 FIXER_URL = 'http://data.fixer.io/api/latest?base=EUR&access_key={}'
-CRYPTO_URL = 'https://apiv2.bitcoinaverage.com/indices/global/ticker/short?crypto=BTC'
+CRYPTO_URL = 'https://api.coingecko.com/api/v3/exchange_rates'
 EXCHANGE_REGEX = re.compile(r'''
     ^(\d+(?:\.\d+)?)                                            # Decimal number
     \s*([a-zA-Z]{3})                                            # 3-letter currency code
@@ -32,8 +32,7 @@ LOGGER = get_logger(__name__)
 UNSUPPORTED_CURRENCY = "Sorry, {} isn't currently supported."
 UNRECOGNIZED_INPUT = "Sorry, I didn't understand the input."
 
-rates_fiat_json = {}
-rates_btc_json = {}
+rates = {}
 rates_updated = 0.0
 
 
@@ -73,7 +72,7 @@ class UnsupportedCurrencyError(Exception):
 
 
 def update_rates(bot):
-    global rates_fiat_json, rates_btc_json, rates_updated
+    global rates, rates_updated
 
     # If we have data that is less than 24h old, return
     if time.time() - rates_updated < 24 * 60 * 60:
@@ -82,7 +81,7 @@ def update_rates(bot):
     # Update crypto rates
     response = requests.get(CRYPTO_URL)
     response.raise_for_status()
-    rates_btc_json = response.json()
+    rates_crypto = response.json()
 
     # Update fiat rates
     if bot.config.currency.fixer_io_key is not None:
@@ -93,41 +92,30 @@ def update_rates(bot):
         response = requests.get(FIAT_URL)
 
     response.raise_for_status()
-    rates_fiat_json = response.json()
+    rates_fiat = response.json()
     rates_updated = time.time()
-    rates_fiat_json['rates']['EUR'] = 1.0  # Put this here to make logic easier
+
+    rates = rates_fiat['rates']
+    rates['EUR'] = 1.0  # Put this here to make logic easier
+
+    eur_btc_rate = 1 / rates_crypto['rates']['eur']['value']
+
+    for rate in rates_crypto['rates']:
+        if rate.upper() not in rates:
+            rates[rate.upper()] = rates_crypto['rates'][rate]['value'] * eur_btc_rate
 
 
-def btc_rate(code, reverse=False):
-    search = 'BTC{}'.format(code)
+def get_rate(base, target):
+    base = base.upper()
+    target = target.upper()
 
-    if search in rates_btc_json:
-        rate = rates_btc_json[search]['averages']['day']
-    else:
-        raise UnsupportedCurrencyError(code)
+    if base not in rates:
+        raise UnsupportedCurrencyError(base)
 
-    if reverse:
-        return 1 / rate
-    else:
-        return rate
+    if target not in rates:
+        raise UnsupportedCurrencyError(target)
 
-
-def get_rate(of, to):
-    of = of.upper()
-    to = to.upper()
-
-    if of == 'BTC':
-        return btc_rate(to, False)
-    elif to == 'BTC':
-        return btc_rate(of, True)
-
-    if of not in rates_fiat_json['rates']:
-        raise UnsupportedCurrencyError(of)
-
-    if to not in rates_fiat_json['rates']:
-        raise UnsupportedCurrencyError(to)
-
-    return (1 / rates_fiat_json['rates'][of]) * rates_fiat_json['rates'][to]
+    return (1 / rates[base]) * rates[target]
 
 
 def exchange(bot, match):
@@ -153,13 +141,13 @@ def exchange(bot, match):
 
     query = match.string
 
-    others = query.split()
-    amount = others.pop(0)
-    of = others.pop(0)
-    others.pop(0)
+    targets = query.split()
+    amount = targets.pop(0)
+    base = targets.pop(0)
+    targets.pop(0)
 
     # TODO: Use this instead after dropping Python 2 support
-    # amount, of, _, *others = query.split()
+    # amount, base, _, *targets = query.split()
 
     try:
         amount = float(amount)
@@ -172,11 +160,12 @@ def exchange(bot, match):
         bot.reply("Zero is zero, no matter what country you're in.")
         return NOLIMIT
 
-    out_string = '{} {} is'.format(amount, of.upper())
+    out_string = '{} {} is'.format(amount, base.upper())
 
-    for to in others:
+    unsupported_currencies = []
+    for target in targets:
         try:
-            out_string = build_reply(amount, of.upper(), to.upper(), out_string)
+            out_string = build_reply(amount, base.upper(), target.upper(), out_string)
         except ValueError:
             LOGGER.error("Raw rate wasn't a float")
             return NOLIMIT
@@ -185,17 +174,26 @@ def exchange(bot, match):
             LOGGER.error("No key: {} in json".format(err))
             return NOLIMIT
         except UnsupportedCurrencyError as cur:
-            bot.reply(UNSUPPORTED_CURRENCY.format(cur))
-            return NOLIMIT
+            unsupported_currencies.append(cur)
 
-    bot.reply(out_string[0:-1])
+    if unsupported_currencies:
+        out_string = out_string + ' (unsupported:'
+        for target in unsupported_currencies:
+            out_string = out_string + ' {},'.format(target)
+        out_string = out_string[0:-1] + ')'
+    else:
+        out_string = out_string[0:-1]
+
+    bot.reply(out_string)
 
 
 @commands('cur', 'currency', 'exchange')
 @example('.cur 100 usd in btc cad eur',
          r'100\.0 USD is [\d\.]+ BTC, [\d\.]+ CAD, [\d\.]+ EUR',
          re=True)
-@example('.cur 3 can in one day', 'Sorry, CAN isn\'t currently supported.')
+@example('.cur 100 usd in btc cad eur can aux',
+         r'100\.0 USD is [\d\.]+ BTC, [\d\.]+ CAD, [\d\.]+ EUR, \(unsupported: CAN, AUX\)',
+         re=True)
 def exchange_cmd(bot, trigger):
     if not trigger.group(2):
         return bot.reply("No search term. Usage: {}cur 100 usd in btc cad eur"
@@ -213,12 +211,12 @@ def exchange_re(bot, trigger):
         exchange(bot, match)
 
 
-def build_reply(amount, of, to, out_string):
-    rate_raw = get_rate(of, to)
+def build_reply(amount, base, target, out_string):
+    rate_raw = get_rate(base, target)
     rate = float(rate_raw)
     result = float(rate * amount)
 
-    if to == 'BTC':
-        return out_string + ' {:.5f} {},'.format(result, to)
+    if target == 'BTC':
+        return out_string + ' {:.5f} {},'.format(result, target)
 
-    return out_string + ' {:.2f} {},'.format(result, to)
+    return out_string + ' {:.2f} {},'.format(result, target)
