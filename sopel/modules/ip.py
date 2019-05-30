@@ -118,6 +118,10 @@ def ip(bot, trigger):
         user_in_botdb = bot.users.get(username)
         if user_in_botdb is not None:
             query = user_in_botdb.host
+
+            # Sanity check - sometimes user information isn't populated yet
+            if query is None:
+                return bot.say("I don't know that user's host.")
         else:
             return bot.say("I\'m not aware of this user.")
 
