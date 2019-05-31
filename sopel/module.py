@@ -535,17 +535,13 @@ def url(*url_rules):
 
     """
     def actual_decorator(function):
-        @functools.wraps(function)
-        def helper(bot, trigger, match=None):
-            match = match or trigger
-            return function(bot, trigger, match)
-        if not hasattr(helper, 'url_regex'):
-            helper.url_regex = []
+        if not hasattr(function, 'url_regex'):
+            function.url_regex = []
         for url_rule in url_rules:
             url_regex = re.compile(url_rule)
-            if url_regex not in helper.url_regex:
-                helper.url_regex.append(url_regex)
-        return helper
+            if url_regex not in function.url_regex:
+                function.url_regex.append(url_regex)
+        return function
     return actual_decorator
 
 
