@@ -25,7 +25,7 @@ if sys.version_info.major > 2:
               'stupid things. If you get strange errors, please set it to '
               'something like "en_US.UTF-8".', file=sys.stderr)
 
-__version__ = '6.6.8'
+__version__ = '6.6.9'
 
 
 def _version_info(version=__version__):

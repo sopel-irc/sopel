@@ -755,13 +755,20 @@ def _record_who(bot, channel, user, host, nick, account=None, away=None, modes=N
     nick = Identifier(nick)
     channel = Identifier(channel)
     if nick not in bot.users:
-        bot.users[nick] = User(nick, user, host)
-    user = bot.users[nick]
-    if account == '0':
-        user.account = None
+        usr = User(nick, user, host)
+        bot.users[nick] = usr
     else:
-        user.account = account
-    user.away = away
+        usr = bot.users[nick]
+        # check for & fill in sparse User added by handle_names()
+        if usr.host is None and host:
+            usr.host = host
+        if usr.user is None and user:
+            usr.user = user
+    if account == '0':
+        usr.account = None
+    else:
+        usr.account = account
+    usr.away = away
     priv = 0
     if modes:
         mapping = {'+': sopel.module.VOICE,
@@ -773,7 +780,7 @@ def _record_who(bot, channel, user, host, nick, account=None, away=None, modes=N
             priv = priv | mapping[c]
     if channel not in bot.channels:
         bot.channels[channel] = Channel(channel)
-    bot.channels[channel].add_user(user, privs=priv)
+    bot.channels[channel].add_user(usr, privs=priv)
     if channel not in bot.privileges:
         bot.privileges[channel] = dict()
     bot.privileges[channel][nick] = priv
