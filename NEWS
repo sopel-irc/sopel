@@ -2,6 +2,30 @@ This file is used to auto-generate the "Changelog" section of Sopel's website.
 When adding new entries, follow the style guide in NEWS.spec.md to avoid causing
 problems with the site build.
 
+Changes between 6.6.8 and 6.6.9
+===============================
+
+Module changes
+--------------
+
+* Also block changing `core.owner_account` setting in `admin` plugin [[#1599][]]
+* Fixed `instagram` parsing after changes to the website [[#1608][]]
+* `tld` plugin decodes HTML entities before output [[#1612][]]
+* Handle an error condition when querying `ip` module using nickname [[#1631][]]
+
+Core changes
+------------
+
+* Fixed populating `user` & `host` in the bot's user database when `NAMES` reply
+  arrives first [[#1630][]]
+
+[#1599]: https://github.com/sopel-irc/sopel/pull/1599
+[#1608]: https://github.com/sopel-irc/sopel/pull/1608
+[#1612]: https://github.com/sopel-irc/sopel/pull/1612
+[#1630]: https://github.com/sopel-irc/sopel/pull/1630
+[#1631]: https://github.com/sopel-irc/sopel/pull/1631
+
+
 Changes between 6.6.7 and 6.6.8
 ===============================
 
