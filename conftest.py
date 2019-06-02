@@ -17,3 +17,10 @@ def pytest_collection_modifyitems(config, items):
     for item in items:
         if 'online' in item.keywords:
             item.add_marker(skip_online)
+
+
+def pytest_configure(config):
+    config.addinivalue_line(
+        'markers',
+        'online: for tests that require online access. '
+        'Use --offline to skip them.')
