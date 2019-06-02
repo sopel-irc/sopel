@@ -19,7 +19,7 @@ import prawcore
 from sopel.formatting import bold, color, colors
 from sopel.module import commands, example, require_chanmsg, url, NOLIMIT, OP
 from sopel.tools import time
-from sopel.web import USER_AGENT
+from sopel.tools.web import USER_AGENT
 
 # clean up all of this when dropping py2/old py3 versions
 if sys.version_info.major >= 3:

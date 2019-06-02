@@ -13,8 +13,8 @@ from re import sub
 
 from requests import get
 
-from sopel import web
 from sopel.module import commands, example, NOLIMIT
+from sopel.tools import web
 
 try:
     # Python 2.7

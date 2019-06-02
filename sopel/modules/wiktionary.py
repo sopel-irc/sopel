@@ -12,8 +12,8 @@ import re
 
 import requests
 
-from sopel import web
 from sopel.module import commands, example
+from sopel.tools import web
 
 
 uri = 'https://en.wiktionary.org/w/index.php?title=%s&printable=yes'

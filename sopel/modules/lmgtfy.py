@@ -9,7 +9,7 @@ https://sopel.chat/
 from __future__ import unicode_literals, absolute_import, print_function, division
 
 from sopel.module import commands, example
-from sopel.web import quote
+from sopel.tools.web import quote
 
 
 @commands('lmgtfy', 'lmgify', 'gify', 'gtfy')

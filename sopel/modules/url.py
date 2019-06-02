@@ -17,8 +17,9 @@ import dns.resolver
 import ipaddress
 import requests
 
-from sopel import __version__, module, tools, web
+from sopel import __version__, module, tools
 from sopel.config.types import ListAttribute, StaticSection, ValidatedAttribute
+from sopel.tools import web
 
 # Python3 vs Python2
 try:
