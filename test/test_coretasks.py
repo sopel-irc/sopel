@@ -108,3 +108,24 @@ def test_bot_mixed_mode_types(sopel):
     assert sopel.channels["#test"].privileges[Identifier("Uvoice2")] == VOICE
     assert sopel.channels["#test"].privileges[Identifier("Uop2")] == OP
     assert sopel.channels["#test"].privileges[Identifier("Uadmin2")] == ADMIN
+
+
+def test_mode_colon(sopel):
+    """
+    Ensure mode messages with colons are parsed properly
+    """
+
+    # RPL_NAMREPLY to create Users and (zeroed) privs
+    for user in set("Uvoice Uadmin".split(" ")):
+        pretrigger = PreTrigger(
+            "Foo", ":test.example.com 353 Foo = #test :Foo %s" % user
+        )
+        trigger = Trigger(sopel.config, pretrigger, None)
+        coretasks.handle_names(MockSopelWrapper(sopel, trigger), trigger)
+
+    pretrigger = PreTrigger("Foo", "MODE #test +av Uadmin :Uvoice")
+    trigger = Trigger(sopel.config, pretrigger, None)
+    coretasks.track_modes(MockSopelWrapper(sopel, trigger), trigger)
+
+    assert sopel.channels["#test"].privileges[Identifier("Uvoice")] == VOICE
+    assert sopel.channels["#test"].privileges[Identifier("Uadmin")] == ADMIN
