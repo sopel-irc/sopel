@@ -273,7 +273,11 @@ class ListAttribute(BaseValidated):
             multi-line string.
         """
         if "\n" in value:
-            items = value.splitlines()
+            items = [
+                # remove trailing comma
+                # because `value,\nother` is valid in Sopel 7.x
+                item.strip(self.DELIMITER).strip()
+                for item in value.splitlines()]
         else:
             # this behavior will be:
             # - Discouraged in Sopel 7.x (in the documentation)
@@ -282,7 +286,7 @@ class ListAttribute(BaseValidated):
             items = value.split(self.DELIMITER)
 
         value = list(filter(None, items))
-        if self.strip:
+        if self.strip:  # deprecate strip option in Sopel 8.x
             return [v.strip() for v in value]
         else:
             return value

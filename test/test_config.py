@@ -20,8 +20,8 @@ MULTILINE_CONFIG = FAKE_CONFIG + """
 [spam]
 eggs = one, two, three, four, and a half
 bacons = grilled
-    burn out
-    greasy, fat, and tasty
+    burn out, 
+    , greasy, fat, and tasty
 cheese =   
     cheddar
       reblochon   
@@ -126,10 +126,10 @@ def test_listattribute_with_value_ending_in_special_chars(fakeconfig):
     assert fakeconfig.fake.listattr == ['spam', 'egg', 'sausage\\', 'bacon']
 
     fakeconfig.fake.listattr = ['spam', 'egg', 'sausage,', 'bacon']
-    assert fakeconfig.fake.listattr == ['spam', 'egg', 'sausage,', 'bacon']
+    assert fakeconfig.fake.listattr == ['spam', 'egg', 'sausage', 'bacon']
 
     fakeconfig.fake.listattr = ['spam', 'egg', 'sausage,,', 'bacon']
-    assert fakeconfig.fake.listattr == ['spam', 'egg', 'sausage,,', 'bacon']
+    assert fakeconfig.fake.listattr == ['spam', 'egg', 'sausage', 'bacon']
 
 
 def test_listattribute_with_value_containing_adjacent_special_chars(fakeconfig):
