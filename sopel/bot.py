@@ -392,22 +392,21 @@ class Sopel(irc.Bot):
         try:
             self.sending.acquire()
 
-            # No messages within the last 3 seconds? Go ahead!
-            # Otherwise, wait so it's been at least 0.8 seconds + penalty
-
             recipient_id = Identifier(recipient)
-
             recipient_stack = self.stack.setdefault(recipient_id, {
                 'messages': [],
                 'flood_left': self.config.core.flood_burst_lines,
             })
 
+            # If flood bucket is empty, refill the appropriate number of lines
+            # based on how long it's been since our last message to recipient
             if not recipient_stack['flood_left']:
                 elapsed = time.time() - recipient_stack['messages'][-1][0]
                 recipient_stack['flood_left'] = min(
                     self.config.core.flood_burst_lines,
                     int(elapsed) * self.config.core.flood_refill_rate)
 
+            # If it's too soon to send another message, wait
             if not recipient_stack['flood_left']:
                 elapsed = time.time() - recipient_stack['messages'][-1][0]
                 penalty = float(max(0, len(text) - 50)) / 70
@@ -415,16 +414,16 @@ class Sopel(irc.Bot):
                 if elapsed < wait:
                     time.sleep(wait - elapsed)
 
-                # Loop detection
-                messages = [m[1] for m in recipient_stack['messages'][-8:]]
+            # Loop detection
+            messages = [m[1] for m in recipient_stack['messages'][-8:]]
 
-                # If what we about to send repeated at least 5 times in the
-                # last 2 minutes, replace with '...'
-                if messages.count(text) >= 5 and elapsed < 120:
-                    text = '...'
-                    if messages.count('...') >= 3:
-                        # If we said '...' 3 times, discard message
-                        return
+            # If what we're about to send repeated at least 5 times in the last
+            # two minutes, replace it with '...'
+            if messages.count(text) >= 5 and elapsed < 120:
+                text = '...'
+                if messages.count('...') >= 3:
+                    # If we've already said '...' 3 times, discard message
+                    return
 
             self.write(('PRIVMSG', recipient), text)
             recipient_stack['flood_left'] = max(0, recipient_stack['flood_left'] - 1)
