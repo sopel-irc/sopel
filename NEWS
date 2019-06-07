@@ -72,6 +72,9 @@ Core changes
     something other than SQLite
   * Migrating an existing database from SQLite to your chosen option is probably
     easy, but we do not offer instructions for doing so
+* Sopel's own rate-limiting & flood protection parameters are now configurable,
+  and can even be turned off entirely if Sopel is behind a bouncer or other IRC
+  proxy that handles flood protection itself [[#1518][]]
 * Sopel no longer assumes on first run that its home directory is `~/.sopel`
   [[#1404][]]
 * Restarting Sopel via CLI is added [[#1333][]]
@@ -211,6 +214,7 @@ API changes
 [#1509]: https://github.com/sopel-irc/sopel/pull/1509
 [#1510]: https://github.com/sopel-irc/sopel/pull/1510
 [#1511]: https://github.com/sopel-irc/sopel/pull/1511
+[#1518]: https://github.com/sopel-irc/sopel/pull/1518
 [#1527]: https://github.com/sopel-irc/sopel/pull/1527
 [#1537]: https://github.com/sopel-irc/sopel/pull/1537
 [#1542]: https://github.com/sopel-irc/sopel/pull/1542
