@@ -258,3 +258,12 @@ class CoreSection(StaticSection):
 
     verify_ssl = ValidatedAttribute('verify_ssl', bool, default=True)
     """Whether to require a trusted SSL certificate for SSL connections."""
+
+    flood_burst_lines = ValidatedAttribute('flood_burst_lines', int, default=4)
+    """How many messages can be sent in burst mode."""
+
+    flood_empty_wait = ValidatedAttribute('flood_empty_wait', float, default=0.7)
+    """How long to wait between sending messages when not in burst mode, in seconds."""
+
+    flood_refill_rate = ValidatedAttribute('flood_refill_rate', int, default=1)
+    """How quickly burst mode recovers, in messages per second."""

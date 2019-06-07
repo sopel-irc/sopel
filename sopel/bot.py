@@ -396,35 +396,43 @@ class Sopel(irc.Bot):
         try:
             self.sending.acquire()
 
-            # No messages within the last 3 seconds? Go ahead!
-            # Otherwise, wait so it's been at least 0.8 seconds + penalty
-
             recipient_id = Identifier(recipient)
+            recipient_stack = self.stack.setdefault(recipient_id, {
+                'messages': [],
+                'flood_left': self.config.core.flood_burst_lines,
+            })
 
-            if recipient_id not in self.stack:
-                self.stack[recipient_id] = []
-            elif self.stack[recipient_id]:
-                elapsed = time.time() - self.stack[recipient_id][-1][0]
-                if elapsed < 3:
-                    penalty = float(max(0, len(text) - 40)) / 70
-                    wait = min(0.8 + penalty, 2)  # Never wait more than 2 seconds
-                    if elapsed < wait:
-                        time.sleep(wait - elapsed)
+            # If flood bucket is empty, refill the appropriate number of lines
+            # based on how long it's been since our last message to recipient
+            if not recipient_stack['flood_left']:
+                elapsed = time.time() - recipient_stack['messages'][-1][0]
+                recipient_stack['flood_left'] = min(
+                    self.config.core.flood_burst_lines,
+                    int(elapsed) * self.config.core.flood_refill_rate)
 
-                # Loop detection
-                messages = [m[1] for m in self.stack[recipient_id][-8:]]
+            # If it's too soon to send another message, wait
+            if not recipient_stack['flood_left']:
+                elapsed = time.time() - recipient_stack['messages'][-1][0]
+                penalty = float(max(0, len(text) - 50)) / 70
+                wait = min(self.config.core.flood_empty_wait + penalty, 2)  # Maximum wait time is 2 sec
+                if elapsed < wait:
+                    time.sleep(wait - elapsed)
 
-                # If what we about to send repeated at least 5 times in the
-                # last 2 minutes, replace with '...'
-                if messages.count(text) >= 5 and elapsed < 120:
-                    text = '...'
-                    if messages.count('...') >= 3:
-                        # If we said '...' 3 times, discard message
-                        return
+            # Loop detection
+            messages = [m[1] for m in recipient_stack['messages'][-8:]]
+
+            # If what we're about to send repeated at least 5 times in the last
+            # two minutes, replace it with '...'
+            if messages.count(text) >= 5 and elapsed < 120:
+                text = '...'
+                if messages.count('...') >= 3:
+                    # If we've already said '...' 3 times, discard message
+                    return
 
             self.write(('PRIVMSG', recipient), text)
-            self.stack[recipient_id].append((time.time(), self.safe(text)))
-            self.stack[recipient_id] = self.stack[recipient_id][-10:]
+            recipient_stack['flood_left'] = max(0, recipient_stack['flood_left'] - 1)
+            recipient_stack['messages'].append((time.time(), self.safe(text)))
+            recipient_stack['messages'] = recipient_stack['messages'][-10:]
         finally:
             self.sending.release()
         # Now that we've sent the first part, we need to send the rest. Doing
