@@ -402,17 +402,22 @@ class Sopel(irc.Bot):
                 'flood_left': self.config.core.flood_burst_lines,
             })
 
+            if recipient_stack['messages']:
+                elapsed = time.time() - recipient_stack['messages'][-1][0]
+            else:
+                # Default to a high enough value that we won't care.
+                # Five minutes should be enough not to matter anywhere below.
+                elapsed = 300
+
             # If flood bucket is empty, refill the appropriate number of lines
             # based on how long it's been since our last message to recipient
             if not recipient_stack['flood_left']:
-                elapsed = time.time() - recipient_stack['messages'][-1][0]
                 recipient_stack['flood_left'] = min(
                     self.config.core.flood_burst_lines,
                     int(elapsed) * self.config.core.flood_refill_rate)
 
             # If it's too soon to send another message, wait
             if not recipient_stack['flood_left']:
-                elapsed = time.time() - recipient_stack['messages'][-1][0]
                 penalty = float(max(0, len(text) - 50)) / 70
                 wait = min(self.config.core.flood_empty_wait + penalty, 2)  # Maximum wait time is 2 sec
                 if elapsed < wait:
