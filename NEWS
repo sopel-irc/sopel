@@ -45,6 +45,8 @@ Module changes
 * Short `redd.it` links are now detected by the `reddit` module [[#1503][]]
 * Python version is now included in `.version` command output [[#1462][]]
 * Readability of `.choose` command output is significantly improved [[#1425][]]
+* Sopel can now invite users to a channel with new `.invite` command [[#1497][]]
+  * Both Sopel and the inviting user must have privileges in the target channel
 * A `.restart` command is added [[#1333][]]
   * admin-only, just like `.quit`
 * The `.msg` command (admin-only, in PM only) is now known as `.say` [[#1606][]]
@@ -204,6 +206,7 @@ API changes
 [#1488]: https://github.com/sopel-irc/sopel/pull/1488
 [#1492]: https://github.com/sopel-irc/sopel/pull/1492
 [#1493]: https://github.com/sopel-irc/sopel/pull/1493
+[#1497]: https://github.com/sopel-irc/sopel/pull/1497
 [#1498]: https://github.com/sopel-irc/sopel/pull/1498
 [#1499]: https://github.com/sopel-irc/sopel/pull/1499
 [#1500]: https://github.com/sopel-irc/sopel/pull/1500
