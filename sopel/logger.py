@@ -21,10 +21,8 @@ class IrcLoggingHandler(logging.Handler):
 
 
 class ChannelOutputFormatter(logging.Formatter):
-    def __init__(self):
-        super(ChannelOutputFormatter, self).__init__(
-            fmt='[%(filename)s] %(message)s'
-        )
+    def __init__(self, fmt='[%(filename)s] %(message)s', datefmt=None):
+        super(ChannelOutputFormatter, self).__init__(fmt=fmt, datefmt=datefmt)
 
     def formatException(self, exc_info):
         # logging will through a newline between the message and this, but
@@ -33,12 +31,28 @@ class ChannelOutputFormatter(logging.Formatter):
 
 
 def setup_logging(bot):
-    level = bot.config.core.logging_level or 'WARNING'
-    logging.basicConfig(level=level)
+    base_level = bot.config.core.logging_level or 'WARNING'
+    base_format = bot.config.core.logging_format
+    base_datefmt = bot.config.core.logging_datefmt
+    base_params = {'level': base_level}
+    if base_format:
+        base_params['format'] = base_format
+    if base_datefmt:
+        base_params['datefmt'] = base_datefmt
+    logging.basicConfig(**base_params)
     logger = logging.getLogger('sopel')
     if bot.config.core.logging_channel:
-        handler = IrcLoggingHandler(bot, level)
-        handler.setFormatter(ChannelOutputFormatter())
+        channel_level = bot.config.core.logging_channel_level or base_level
+        channel_format = bot.config.core.logging_channel_format or base_format
+        channel_datefmt = bot.config.core.logging_channel_datefmt or base_datefmt
+        channel_params = {}
+        if channel_format:
+            channel_params['fmt'] = channel_format
+        if channel_datefmt:
+            channel_params['datefmt'] = channel_datefmt
+        formatter = ChannelOutputFormatter(**channel_params)
+        handler = IrcLoggingHandler(bot, channel_level)
+        handler.setFormatter(formatter)
         logger.addHandler(handler)
 
 
