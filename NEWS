@@ -77,6 +77,8 @@ Core changes
 * Sopel's own rate-limiting & flood protection parameters are now configurable,
   and can even be turned off entirely if Sopel is behind a bouncer or other IRC
   proxy that handles flood protection itself [[#1518][], [#1638][]]
+* Log timestamp and log line formats are now configurable [[#1512][]]
+  * See details in [the logging configuration docs][logging-config-docs]
 * Sopel no longer assumes on first run that its home directory is `~/.sopel`
   [[#1404][]]
 * Restarting Sopel via CLI is added [[#1333][]]
@@ -217,6 +219,7 @@ API changes
 [#1509]: https://github.com/sopel-irc/sopel/pull/1509
 [#1510]: https://github.com/sopel-irc/sopel/pull/1510
 [#1511]: https://github.com/sopel-irc/sopel/pull/1511
+[#1512]: https://github.com/sopel-irc/sopel/pull/1512
 [#1518]: https://github.com/sopel-irc/sopel/pull/1518
 [#1527]: https://github.com/sopel-irc/sopel/pull/1527
 [#1537]: https://github.com/sopel-irc/sopel/pull/1537
@@ -237,6 +240,7 @@ API changes
 
 [api-docs]: https://sopel.chat/docs/
 [install-guide-db]: https://sopel.chat/usage/installing/#configuring-the-database-optional
+[logging-config-docs]: https://sopel.chat/docs/configure.html#Logging
 [per-channel-conf]: https://sopel.chat/usage/per-channel-configuration/
 [readme-db]: https://github.com/sopel-irc/sopel/blob/v7.0.0/README.rst#database-support
 [sopel-7-migration]: https://sopel.chat/usage/installing/upgrading-to-sopel-7/
