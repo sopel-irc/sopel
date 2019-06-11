@@ -127,7 +127,11 @@ def check_one(bot, word):
 
 
 @commands('spellcheck', 'spell', 'sc')
-@example('.spellcheck wrod')
+@example('.spellcheck word', 'I don\'t see any problems with that word.')
+@example('.spellcheck wrod', r'That doesn\'t seem to be correct. Try .*', re=True)
+@example('.spellcheck word trigger', 'Nothing seems to be misspelled.')
+@example('.spellcheck word triger', 'The following word(s) seem to be misspelled: "triger"')
+@example('.spellcheck wrod triger', 'The following word(s) seem to be misspelled: "wrod", "triger"')
 def spellchecker(bot, trigger):
     """Checks if the given word is spelled correctly, and suggests corrections."""
     if not trigger.group(2):
