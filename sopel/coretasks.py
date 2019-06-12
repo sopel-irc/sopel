@@ -36,35 +36,29 @@ who_reqs = {}  # Keeps track of reqs coming from this module, rather than others
 
 def auth_after_register(bot):
     """Do NickServ/AuthServ auth"""
-    if bot.config.core.auth_method == 'nickserv':
-        nickserv_name = bot.config.core.auth_target or 'NickServ'
-        bot.say(
-            'IDENTIFY %s' % bot.config.core.auth_password,
-            nickserv_name
-        )
+    if bot.config.core.auth_method:
+        auth_method = bot.config.core.auth_method
+        auth_username = bot.config.core.auth_username
+        auth_password = bot.config.core.auth_password
+        auth_target = bot.config.core.auth_target
+    elif bot.config.core.nick_auth_method:
+        auth_method = bot.config.core.nick_auth_method
+        auth_username = (bot.config.core.nick_auth_username or
+                         bot.config.core.nick)
+        auth_password = bot.config.core.nick_auth_password
+        auth_target = bot.config.core.nick_auth_target
+    else:
+        return
 
-    elif bot.config.core.auth_method == 'authserv':
-        account = bot.config.core.auth_username
-        password = bot.config.core.auth_password
-        bot.write((
-            'AUTHSERV auth',
-            account + ' ' + password
-        ))
-
-    elif bot.config.core.auth_method == 'Q':
-        account = bot.config.core.auth_username
-        password = bot.config.core.auth_password
-        bot.write((
-            'AUTH',
-            account + ' ' + password
-        ))
-
-    elif bot.config.core.auth_method == 'userserv':
-        userserv_name = bot.config.core.auth_target or 'UserServ'
-        account = bot.config.core.auth_username
-        password = bot.config.core.auth_password
-        bot.say("LOGIN {account} {password}".format(
-                account=account, password=password), userserv_name)
+    if auth_method == 'nickserv':
+        bot.say('IDENTIFY %s' % auth_password, auth_target or 'NickServ')
+    elif auth_method == 'authserv':
+        bot.write(('AUTHSERV auth', auth_username + ' ' + auth_password))
+    elif auth_method == 'Q':
+        bot.write(('AUTH', auth_username + ' ' + auth_password))
+    elif auth_method == 'userserv':
+        bot.say("LOGIN %s %s" % (auth_username, auth_password),
+                auth_target or 'UserServ')
 
 
 @sopel.module.event(events.RPL_WELCOME, events.RPL_LUSERCLIENT)
@@ -572,7 +566,7 @@ def receive_cap_ls_reply(bot, trigger):
 
     # If we want to do SASL, we have to wait before we can send CAP END. So if
     # we are, wait on 903 (SASL successful) to send it.
-    if bot.config.core.auth_method == 'sasl':
+    if bot.config.core.auth_method == 'sasl' or bot.config.core.server_auth_method == 'sasl':
         bot.write(('CAP', 'REQ', 'sasl'))
     else:
         bot.write(('CAP', 'END'))
@@ -581,10 +575,17 @@ def receive_cap_ls_reply(bot, trigger):
 def receive_cap_ack_sasl(bot):
     # Presumably we're only here if we said we actually *want* sasl, but still
     # check anyway.
-    password = bot.config.core.auth_password
+    password = None
+    mech = None
+    if bot.config.core.auth_method == 'sasl':
+        password = bot.config.core.auth_password
+        mech = bot.config.core.auth_target
+    elif bot.config.core.server_auth_method == 'sasl':
+        password = bot.config.core.server_auth_password
+        mech = bot.config.core.server_auth_sasl_mech
     if not password:
         return
-    mech = bot.config.core.auth_target or 'PLAIN'
+    mech = mech or 'PLAIN'
     bot.write(('AUTHENTICATE', mech))
 
 
@@ -626,8 +627,15 @@ def auth_proceed(bot, trigger):
         # How did we get here? I am not good with computer.
         return
     # Is this right?
-    sasl_username = bot.config.core.auth_username or bot.nick
-    sasl_password = bot.config.core.auth_password
+    if bot.config.core.auth_method == 'sasl':
+        sasl_username = bot.config.core.auth_username
+        sasl_password = bot.config.core.auth_password
+    elif bot.config.core.server_auth_method == 'sasl':
+        sasl_username = bot.config.core.server_auth_username
+        sasl_password = bot.config.core.server_auth_password
+    else:
+        return
+    sasl_username = sasl_username or bot.nick
     sasl_token = '\0'.join((sasl_username, sasl_username, sasl_password))
     send_authenticate(bot, sasl_token)
 

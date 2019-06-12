@@ -69,9 +69,17 @@ class CoreSection(StaticSection):
 
     auth_method = ChoiceAttribute('auth_method', choices=[
         'nickserv', 'authserv', 'Q', 'sasl', 'server', 'userserv'])
-    """The method to use to authenticate with the server.
+    """Simple method to authenticate with the server.
 
-    Can be ``nickserv``, ``authserv``, ``Q``, ``sasl``, or ``server`` or ``userserv``."""
+    Can be ``nickserv``, ``authserv``, ``Q``, ``sasl``, or ``server`` or ``userserv``.
+
+    This allows only a single authentication method; to use both a server-based
+    authentication method as well as a nick-based authentication method, see
+    ``server_auth_method`` and ``nick_auth_method``.
+
+    If this is specified, both ``server_auth_method`` and ``nick_auth_method``
+    will be ignored.
+    """
 
     auth_password = ValidatedAttribute('auth_password')
     """The password to use to authenticate with the server."""
@@ -239,6 +247,32 @@ class CoreSection(StaticSection):
     nick = ValidatedAttribute('nick', Identifier, default=Identifier('Sopel'))
     """The nickname for the bot"""
 
+    nick_auth_method = ChoiceAttribute('nick_auth_method', choices=[
+        'nickserv', 'authserv', 'Q', 'userserv'])
+    """The nick authentication method.
+
+    Can be ``nickserv``, ``authserv``, ``Q``, or ``userserv``.
+    """
+
+    nick_auth_password = ValidatedAttribute('nick_auth_password')
+    """The password to use to authenticate your nick."""
+
+    nick_auth_target = ValidatedAttribute('nick_auth_target')
+    """The target user for nick authentication.
+
+    May not apply, depending on ``nick_auth_method``.
+
+    Defaults to NickServ for nickserv, and UserServ for userserv.
+    """
+
+    nick_auth_username = ValidatedAttribute('nick_auth_username')
+    """The username/account to use for nick authentication.
+
+    May not apply, depending on ``nick_auth_method``.
+
+    Defaults to the value of ``nick``.
+    """
+
     nick_blocks = ListAttribute('nick_blocks')
     """A list of nicks which Sopel should ignore.
 
@@ -278,6 +312,24 @@ class CoreSection(StaticSection):
 
     reply_errors = ValidatedAttribute('reply_errors', bool, default=True)
     """Whether to message the sender of a message that triggered an error with the exception."""
+
+    server_auth_method = ChoiceAttribute('server_auth_method', choices=['sasl', 'server'])
+    """The server authentication method.
+
+    Can be ``sasl`` or ``server``.
+    """
+
+    server_auth_password = ValidatedAttribute('server_auth_password')
+    """The password to use to authenticate with the server."""
+
+    server_auth_sasl_mech = ValidatedAttribute('server_auth_sasl_mech')
+    """The SASL mechanism.
+
+    Defaults to PLAIN.
+    """
+
+    server_auth_username = ValidatedAttribute('server_auth_username')
+    """The username/account to use to authenticate with the server."""
 
     throttle_join = ValidatedAttribute('throttle_join', int)
     """Slow down the initial join of channels to prevent getting kicked.
