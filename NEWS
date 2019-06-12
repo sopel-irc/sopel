@@ -74,6 +74,8 @@ Core changes
     something other than SQLite
   * Migrating an existing database from SQLite to your chosen option is probably
     easy, but we do not offer instructions for doing so
+* Added separate server & nickname authentication options [[#1513][]]
+  * See [authentication configuration docs][auth-config-docs]
 * Sopel's own rate-limiting & flood protection parameters are now configurable,
   and can even be turned off entirely if Sopel is behind a bouncer or other IRC
   proxy that handles flood protection itself [[#1518][], [#1638][]]
@@ -220,6 +222,7 @@ API changes
 [#1510]: https://github.com/sopel-irc/sopel/pull/1510
 [#1511]: https://github.com/sopel-irc/sopel/pull/1511
 [#1512]: https://github.com/sopel-irc/sopel/pull/1512
+[#1513]: https://github.com/sopel-irc/sopel/pull/1513
 [#1518]: https://github.com/sopel-irc/sopel/pull/1518
 [#1527]: https://github.com/sopel-irc/sopel/pull/1527
 [#1537]: https://github.com/sopel-irc/sopel/pull/1537
@@ -240,6 +243,7 @@ API changes
 [#1638]: https://github.com/sopel-irc/sopel/pull/1638
 
 [api-docs]: https://sopel.chat/docs/
+[auth-config-docs]: https://sopel.chat/docs/configure.html#Authentication
 [install-guide-db]: https://sopel.chat/usage/installing/#configuring-the-database-optional
 [logging-config-docs]: https://sopel.chat/docs/configure.html#Logging
 [per-channel-conf]: https://sopel.chat/usage/per-channel-configuration/
