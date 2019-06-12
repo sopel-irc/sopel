@@ -120,10 +120,62 @@ To ignore hosts & nicks:
 Logging
 =======
 
-* :attr:`~CoreSection.logdir`
-* :attr:`~CoreSection.logging_level`
-* :attr:`~CoreSection.log_raw`
-* :attr:`~CoreSection.logging_channel`
+Sopel's outputs are redirected to a file named ``stdio.log``, located in the
+**log directory**, which is configured by :attr:`~CoreSection.logdir`.
+
+It uses the built-in :func:`logging.basicConfig` function to configure its
+logs with the following arguments:
+
+* ``format``: set to :attr:`~CoreSection.logging_format` if configured
+* ``datefmt``: set to :attr:`~CoreSection.logging_datefmt` if configured
+* ``level``: set to :attr:`~CoreSection.logging_level`, default to ``WARNING``
+  (see the Python documentation for available `logging level`__)
+
+.. __: https://docs.python.org/3/library/logging.html#logging-levels
+
+Example of configuration for logging:
+
+.. code-block:: ini
+
+   [core]
+   logging_level = INFO
+   logging_format = [%(asctime)s] %(levelname)s - %(message)s
+   logging_datefmt = %Y-%m-%d %H:%M:%S
+
+
+Log to a channel
+----------------
+
+It is possible to send logs to an IRC channel, by configuring
+:attr:`~CoreSection.logging_channel`. By default, its uses the same log level,
+format, and date-format parameters as console logs. This can be overridden
+with these:
+
+* ``format`` with :attr:`~CoreSection.logging_channel_format`
+* ``datefmt`` with :attr:`~CoreSection.logging_channel_datefmt`
+* ``level`` with :attr:`~CoreSection.logging_level`
+
+Example of configuration to log errors only in the ``##bot_logs`` channel:
+
+.. code-block:: ini
+
+   [core]
+   logging_level = INFO
+   logging_format = [%(asctime)s] %(levelname)s - %(message)s
+   logging_datefmt = %Y-%m-%d %H:%M:%S
+   logging_channel = ##bot_logs
+   logging_channel_level = ERROR
+   logging_channel_format = %(message)s
+
+
+Raw Logs
+--------
+
+It is possible to store raw logs of what Sopel receives and sends by setting
+the flag :attr:`~CoreSection.log_raw` to true.
+
+In that case, IRC messages received and sent are stored into a file named
+``raw.log``, located in the log directory.
 
 
 Misc
