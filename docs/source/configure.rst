@@ -71,6 +71,35 @@ For IRC connection:
 * :attr:`~CoreSection.timeout`
 * :attr:`~CoreSection.modes`
 
+Flood prevention
+----------------
+
+In order to prevent Sopel from flooding the server, a flood prevention
+mechanism has been implemented. It can be controlled with several directives:
+
+* :attr:`~CoreSection.flood_burst_lines`: it defines the number of message
+  that can be sent before triggering the throttle mechanism.
+* :attr:`~CoreSection.flood_empty_wait`: time to wait once burst limit has been
+  reach before sending a new message.
+* :attr:`~CoreSection.flood_refill_rate`: how much time (in second) must be
+  spent before recovering flood limit.
+
+For example this configuration:
+
+.. code-block:: ini
+
+   [core]
+   flood_burst_lines = 10
+   flood_empty_wait = 0.5
+   flood_refill_rate = 2
+
+will allow 10 messages at once before triggering the throttle mechanism, then
+it'll wait 0.5s before sending a new message, and refill the burst limit every
+2 seconds.
+
+The default configuration works fine with most tested network, but bot's owners
+are invited to tweak as necessary to respect their network's flood policy.
+
 
 Authentification
 ================
