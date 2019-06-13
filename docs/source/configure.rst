@@ -28,6 +28,7 @@ This file can be generated from a :doc:`console wizard<cli>` using
 
 .. contents::
     :local:
+    :depth: 2
 
 
 Identity & Admins
@@ -100,6 +101,12 @@ it'll wait 0.5s before sending a new message, and refill the burst limit every
 The default configuration works fine with most tested network, but bot's owners
 are invited to tweak as necessary to respect their network's flood policy.
 
+.. versionadded:: 7.0
+
+   Flood prevention has been modified in Sopel 7.0 and these configuration
+   options have been added: ``flood_burst_lines``, ``flood_empty_wait``, and
+   ``flood_refill_rate``.
+
 
 Authentication
 ==============
@@ -154,6 +161,10 @@ nick-based.
    If ``auth_method`` is defined then ``nick_auth_method`` (and its options)
    will be ignored.
 
+.. versionadded:: 7.0
+
+   The multi-methods authentication has been added in Sopel 7.0 with its
+   configuration options.
 
 Server-based
 ............
@@ -239,6 +250,10 @@ Example of configuration for logging:
    logging_format = [%(asctime)s] %(levelname)s - %(message)s
    logging_datefmt = %Y-%m-%d %H:%M:%S
 
+.. versionadded:: 7.0
+
+   Configuration options ``logging_format`` and ``logging_datefmt`` has been
+   added to extend logging configuration.
 
 Log to a channel
 ----------------
@@ -264,6 +279,11 @@ Example of configuration to log errors only in the ``##bot_logs`` channel:
    logging_channel_level = ERROR
    logging_channel_format = %(message)s
 
+.. versionadded:: 7.0
+
+   Configuration options ``logging_channel_level``, ``logging_channel_format``
+   and ``logging_channel_datefmt`` has been added to extend logging
+   configuration.
 
 Raw Logs
 --------
