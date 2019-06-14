@@ -14,6 +14,7 @@ from __future__ import unicode_literals, absolute_import, print_function, divisi
 
 from collections import namedtuple
 import locale
+import pkg_resources
 import re
 import sys
 
@@ -25,7 +26,8 @@ if sys.version_info.major > 2:
               'stupid things. If you get strange errors, please set it to '
               'something like "en_US.UTF-8".', file=sys.stderr)
 
-__version__ = '6.6.9'
+
+__version__ = pkg_resources.get_distribution('sopel').version
 
 
 def _version_info(version=__version__):
