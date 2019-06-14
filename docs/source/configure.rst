@@ -194,14 +194,52 @@ used are:
 Database
 ========
 
-* :attr:`~CoreSection.db_type`
-* :attr:`~CoreSection.db_driver`
-* :attr:`~CoreSection.db_filename`
+Sopel uses SQLAlchemy to connect and query its database. To configure the type
+of database, set :attr:`~CoreSection.db_type` to one of these values:
+
+* ``sqlite`` (default)
+* ``mysql``
+* ``postgres``
+* ``mssql``
+* ``oracle``
+* ``firebird``
+* ``sybase``
+
+SQLite
+------
+
+There is only one options for SQLite, :attr:`~CoreSection.db_filename`, which
+configures the path to the SQLite database file. Other options are ignored
+when ``db_type`` is set to ``sqlite``.
+
+Other Database
+--------------
+
+When ``db_type`` is one of the other type of database, the following options
+are available:
+
 * :attr:`~CoreSection.db_host`
-* :attr:`~CoreSection.db_port`
-* :attr:`~CoreSection.db_name`
 * :attr:`~CoreSection.db_user`
 * :attr:`~CoreSection.db_pass`
+* :attr:`~CoreSection.db_port` (optional)
+* :attr:`~CoreSection.db_name` (optional)
+* :attr:`~CoreSection.db_driver` (optional)
+
+Both ``db_port`` and ``db_name`` are optional, depending on your setup and the
+type of your database.
+
+In all cases, Sopel uses a database driver specific to each type. This driver
+can be configured manually with the ``db_driver`` options. See the SQLAlchemy
+documentation for more information about `database drivers`__, and how to
+install them.
+
+.. __: https://docs.sqlalchemy.org/en/latest/dialects/
+
+.. versionadded:: 7.0
+
+   SQLAlchemy for Database has been added in Sopel 7.0, which support multiple
+   type of databases. The configuration options required for these new types
+   has been added at the same time.
 
 
 Commands & Plugins
