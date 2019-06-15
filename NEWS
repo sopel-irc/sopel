@@ -81,6 +81,8 @@ Core changes
   proxy that handles flood protection itself [[#1518][], [#1638][]]
 * Log timestamp and log line formats are now configurable [[#1512][]]
   * See details in [the logging configuration docs][logging-config-docs]
+* Log filenames now include the config name, to help keep track of logs from
+  multiple Sopel instances [[#1547][]]
 * Sopel no longer assumes on first run that its home directory is `~/.sopel`
   [[#1404][]]
 * Restarting Sopel via CLI is added [[#1333][]]
@@ -110,8 +112,8 @@ Core changes
   user to report any issues (because test coverage on an unrecognized platform
   name is likely to be nil) [[#1487][]]
 * Large amounts of internal refactoring and cleanup [[#1424][], [#1429][],
-  [#1456][], [#1458][], [#1472][], [#1479][], [#1510][], [#1527][], [#1542][],
-  [#1557][], [#1561][], [#1567][], [#1580][], [#1583][]]
+  [#1456][], [#1458][], [#1472][], [#1479][], [#1510][], [#1522][], [#1527][],
+  [#1542][], [#1557][], [#1561][], [#1567][], [#1580][], [#1583][]]
 * Sopel 7 will emit warnings when run under Python 2, as Python 2.7 has an
   end-of-support date of January 1, 2020 [[#1488][]]
   * While Sopel 7 is intended to remain compatible with Python 2, future
@@ -224,10 +226,12 @@ API changes
 [#1512]: https://github.com/sopel-irc/sopel/pull/1512
 [#1513]: https://github.com/sopel-irc/sopel/pull/1513
 [#1518]: https://github.com/sopel-irc/sopel/pull/1518
+[#1522]: https://github.com/sopel-irc/sopel/pull/1522
 [#1527]: https://github.com/sopel-irc/sopel/pull/1527
 [#1537]: https://github.com/sopel-irc/sopel/pull/1537
 [#1542]: https://github.com/sopel-irc/sopel/pull/1542
 [#1545]: https://github.com/sopel-irc/sopel/pull/1545
+[#1547]: https://github.com/sopel-irc/sopel/pull/1547
 [#1555]: https://github.com/sopel-irc/sopel/pull/1555
 [#1557]: https://github.com/sopel-irc/sopel/pull/1557
 [#1561]: https://github.com/sopel-irc/sopel/pull/1561
