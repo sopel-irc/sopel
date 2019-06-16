@@ -81,7 +81,8 @@ def configure(config):
 def setup(bot):
     bot.config.define_section('safety', SafetySection)
 
-    bot.memory['safety_cache'] = sopel.tools.SopelMemory()
+    if 'safety_cache' not in bot.memory:
+        bot.memory['safety_cache'] = sopel.tools.SopelMemory()
     for item in bot.config.safety.known_good:
         known_good.append(re.compile(item, re.I))
 
@@ -97,6 +98,13 @@ def setup(bot):
             clean_line = unicode(line).strip().lower()
             if clean_line != '':
                 malware_domains.add(clean_line)
+
+
+def shutdown(bot):
+    try:
+        del bot.memory['safety_cache']
+    except KeyError:
+        pass
 
 
 def _download_malwaredomains_db(path):

@@ -20,7 +20,15 @@ from sopel.formatting import bold
 
 
 def setup(bot):
-    bot.memory['find_lines'] = SopelMemory()
+    if 'find_lines' not in bot.memory:
+        bot.memory['find_lines'] = SopelMemory()
+
+
+def shutdown(bot):
+    try:
+        del bot.memory['find_lines']
+    except KeyError:
+        pass
 
 
 @echo

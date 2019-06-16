@@ -65,19 +65,29 @@ def dumpReminders(fn, data, lock):
     return True
 
 
-def setup(self):
-    fn = self.nick + '-' + self.config.core.host + '.tell.db'
-    self.tell_filename = os.path.join(self.config.core.homedir, fn)
-    if not os.path.exists(self.tell_filename):
+def setup(bot):
+    fn = bot.nick + '-' + bot.config.core.host + '.tell.db'
+    bot.tell_filename = os.path.join(bot.config.core.homedir, fn)
+    if not os.path.exists(bot.tell_filename):
         try:
-            f = open(self.tell_filename, 'w')
-        except (OSError, IOError):  # Remove IOError when dropping py2 support
+            f = open(bot.tell_filename, 'w')
+        except (OSError, IOError):  # TODO: Remove IOError when dropping py2 support
             pass
         else:
             f.write('')
             f.close()
-    self.memory['tell_lock'] = threading.Lock()
-    self.memory['reminders'] = loadReminders(self.tell_filename, self.memory['tell_lock'])
+    if 'tell_lock' not in bot.memory:
+        bot.memory['tell_lock'] = threading.Lock()
+    if 'reminders' not in bot.memory:
+        bot.memory['reminders'] = loadReminders(bot.tell_filename, bot.memory['tell_lock'])
+
+
+def shutdown(bot):
+    for key in ['tell_lock', 'reminders']:
+        try:
+            del bot.memory[key]
+        except KeyError:
+            pass
 
 
 @commands('tell', 'ask')
