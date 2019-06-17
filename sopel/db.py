@@ -5,6 +5,7 @@ import errno
 import json
 import os.path
 import sys
+import threading
 
 from sopel.tools import Identifier
 
@@ -174,6 +175,8 @@ class SopelDB(object):
 
         self.ssession = scoped_session(sessionmaker(bind=self.engine))
 
+        self.nick_id_lock = threading.Lock()
+
     def connect(self):
         """Return a raw database connection object."""
         return self.engine.connect()
@@ -201,6 +204,7 @@ class SopelDB(object):
         session = self.ssession()
         slug = nick.lower()
         try:
+            self.nick_id_lock.acquire()
             nickname = session.query(Nicknames) \
                 .filter(Nicknames.slug == slug) \
                 .one_or_none()
@@ -223,6 +227,7 @@ class SopelDB(object):
             raise
         finally:
             session.close()
+            self.nick_id_lock.release()
 
     def alias_nick(self, nick, alias):
         """Create an alias for a nick.
