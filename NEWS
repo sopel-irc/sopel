@@ -144,6 +144,10 @@ API changes
     accessing `bot.memory['url_callbacks']`
   * There are no definite plans to remove `bot.memory['url_callbacks']`, but it
     should be considered deprecated
+* Added `kick()` method to `bot` object [[#1539][]]
+  * `bot.kick(nick, channel, optional_message)` is shorthand for the pattern
+    `bot.write(['KICK', channel, nick], optional_message)`, used by a number
+    of both core and third-party plugins
 * `module.require_*()` decorators (all five of them) now accept an optional
   boolean parameter `reply` [[#1456][], [#1500][]]
   * Passing `reply=True` will send the error message as if via `bot.reply()`,
@@ -229,6 +233,7 @@ API changes
 [#1522]: https://github.com/sopel-irc/sopel/pull/1522
 [#1527]: https://github.com/sopel-irc/sopel/pull/1527
 [#1537]: https://github.com/sopel-irc/sopel/pull/1537
+[#1539]: https://github.com/sopel-irc/sopel/pull/1539
 [#1542]: https://github.com/sopel-irc/sopel/pull/1542
 [#1545]: https://github.com/sopel-irc/sopel/pull/1545
 [#1547]: https://github.com/sopel-irc/sopel/pull/1547
