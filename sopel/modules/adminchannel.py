@@ -119,7 +119,7 @@ def kick(bot, trigger):
         reasonidx = 3
     reason = ' '.join(text[reasonidx:])
     if nick != bot.config.core.nick:
-        bot.write(['KICK', channel, nick], reason)
+        bot.kick(nick, channel, reason)
 
 
 def configureHostMask(mask):
@@ -290,7 +290,7 @@ def kickban(bot, trigger):
     if mask == '':
         return
     bot.write(['MODE', channel, '+b', mask])
-    bot.write(['KICK', channel, nick], reason)
+    bot.kick(nick, channel, reason)
 
 
 @require_chanmsg

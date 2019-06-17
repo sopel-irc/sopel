@@ -191,8 +191,7 @@ def url_handler(bot, trigger):
         msg += '(confidence %s - %s/%s)' % (confidence, positives, total)
         bot.say('[' + bold(color('WARNING', 'red')) + '] ' + msg)
         if strict:
-            bot.write(['KICK', trigger.sender, trigger.nick,
-                       'Posted a malicious link'])
+            bot.kick(trigger.nick, trigger.sender, 'Posted a malicious link')
 
 
 @sopel.module.commands('safety')

@@ -485,6 +485,16 @@ class Sopel(irc.Bot):
         else:
             self.say(text, dest)
 
+    def kick(self, nick, channel, text=None):
+        """Send an IRC KICK command.
+        Within the context of a triggered callable, ``channel`` will default to the
+        channel in which the call was triggered. If triggered from a private message,
+        ``channel`` is required (or the call to ``kick()`` will be ignored).
+        The bot must be a channel operator in specified channel for this to work.
+        .. versionadded:: 7.0
+        """
+        self.write(['KICK', channel, nick], text)
+
     def call(self, func, sopel, trigger):
         nick = trigger.nick
         current_time = time.time()
@@ -887,3 +897,13 @@ class SopelWrapper(object):
         if reply_to is None:
             reply_to = self._trigger.nick
         self._bot.reply(message, destination, reply_to, notice)
+
+    def kick(self, nick, channel=None, message=None):
+        if channel is None:
+            if self._trigger.is_privmsg:
+                raise RuntimeError('Error: KICK requires a channel.')
+            else:
+                channel = self._trigger.sender
+        if nick is None:
+            raise RuntimeError('Error: KICK requires a nick.')
+        self._bot.kick(nick, channel, message)
