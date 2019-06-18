@@ -851,6 +851,10 @@ class Sopel(irc.Bot):
         .. __: https://docs.python.org/3.6/library/re.html#match-objects
 
         """
+        if 'url_callbacks' not in self.memory:
+            # nothing to search
+            return
+
         for regex, function in tools.iteritems(self.memory['url_callbacks']):
             match = regex.search(url)
             if match:
