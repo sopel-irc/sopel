@@ -155,7 +155,7 @@ API changes
   * Passing `reply=False` (or omitting the argument) will behave exactly as
     before, with the error message sent as if via `bot.say()`
 * Fixed the `@module.url` decorator to work always, regardless of whether the
-  `url` module is enabled [[#1510][]]
+  `url` module (or any of the core set at all) is enabled [[#1510][], [#1576][]]
 * Added `bot.hostmask` property (read-only) [[#1537][]]
   * Is a shortcut for `bot.users.get(bot.nick).hostmask`, so will throw an error
     if the bot is not connected and joined to at least one channel. Basically,
@@ -245,6 +245,7 @@ API changes
 [#1568]: https://github.com/sopel-irc/sopel/pull/1568
 [#1569]: https://github.com/sopel-irc/sopel/pull/1569
 [#1573]: https://github.com/sopel-irc/sopel/pull/1573
+[#1576]: https://github.com/sopel-irc/sopel/pull/1576
 [#1580]: https://github.com/sopel-irc/sopel/pull/1580
 [#1581]: https://github.com/sopel-irc/sopel/pull/1581
 [#1583]: https://github.com/sopel-irc/sopel/pull/1583
