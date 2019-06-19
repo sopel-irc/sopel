@@ -1,0 +1,21 @@
+#!/bin/bash
+
+set -e
+
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+export _GIT_COMMAND=push
+
+if [ -z "${SKIP_CHECKSTYLE}" ]; then
+    # Run checkstyle by default
+    checkstyle_var="SKIP_$(echo ${_GIT_COMMAND} | tr a-z A-Z)_CHECKSTYLE"
+    export SKIP_CHECKSTYLE=$([ "${!checkstyle_var}" = "1" ] && echo "1" || echo "0")
+fi
+
+if [ -z "${SKIP_PYTEST}" ]; then
+    # Run pytest by default
+    pytest_var="SKIP_$(echo ${_GIT_COMMAND} | tr a-z A-Z)_PYTEST"
+    export SKIP_PYTEST=$([ "${!pytest_var}" = "1" ] && echo "1" || echo "0")
+fi
+
+${DIR}/main-hook.sh
+exit "${?}"
