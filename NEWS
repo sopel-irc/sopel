@@ -62,7 +62,7 @@ Module changes
 * Fixed that the `url` module had to be enabled or some link-handling
   functions didn't work [[#1510][]]
 * General code cleanup all around [[#1402][], [#1486][], [#1505][], [#1545][],
-  [#1569][], [#1573][], [#1581][], [#1606][]]
+  [#1569][], [#1573][], [#1578][], [#1581][], [#1606][]]
 
 Core changes
 ------------
@@ -246,6 +246,7 @@ API changes
 [#1569]: https://github.com/sopel-irc/sopel/pull/1569
 [#1573]: https://github.com/sopel-irc/sopel/pull/1573
 [#1576]: https://github.com/sopel-irc/sopel/pull/1576
+[#1578]: https://github.com/sopel-irc/sopel/pull/1578
 [#1580]: https://github.com/sopel-irc/sopel/pull/1580
 [#1581]: https://github.com/sopel-irc/sopel/pull/1581
 [#1583]: https://github.com/sopel-irc/sopel/pull/1583
