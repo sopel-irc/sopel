@@ -205,8 +205,7 @@ def me(bot, trigger):
     if not channel or not action:
         return
 
-    msg = '\x01ACTION %s\x01' % action
-    bot.say(msg, channel)
+    bot.action(action, channel)
 
 
 @sopel.module.event('INVITE')
