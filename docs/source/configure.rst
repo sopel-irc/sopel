@@ -34,18 +34,27 @@ This file can be generated from a :doc:`console wizard<cli>` using
 Identity & Admins
 =================
 
-For the bot:
+Your bot's identity is configured by the following options:
 
-* :attr:`~CoreSection.nick`
-* :attr:`~CoreSection.name`
-* :attr:`~CoreSection.user`
+* :attr:`~CoreSection.nick`: this is your bot's nick, as it will appear to
+  other users on the server
+* :attr:`~CoreSection.name` (optional)
+* :attr:`~CoreSection.user` (optional)
 
-For its owners and admins:
+Owner & Admins
+--------------
 
-* :attr:`~CoreSection.owner`
-* :attr:`~CoreSection.owner_account`
-* :attr:`~CoreSection.admins`
-* :attr:`~CoreSection.admin_accounts`
+A Sopel instance must have exactly one owner. This is configured either by
+:attr:`~CoreSection.owner_account` if the IRC server support IRC v3 Account; or
+by :attr:`~CoreSection.owner`. If ``owner_account`` is set, ``owner`` will be
+ignored.
+
+The same instance can have multiple admins. The same way, it can be configured
+by :attr:`~CoreSection.admin_accounts` or by :attr:`~CoreSection.admins`. If
+``admin_accounts`` is set, ``admins`` will be ignored.
+
+Both ``owner_account`` and ``admin_accounts`` are safer to use than a
+nick-based management.
 
 
 IRC Server
