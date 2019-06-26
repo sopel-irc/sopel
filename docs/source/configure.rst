@@ -315,23 +315,62 @@ install them.
 Commands & Plugins
 ==================
 
-To configure commands & triggers options:
+Users can interact with Sopel throught its commands, from Sopel's core or
+from Sopel's plugins. A command is a prefix with a name. The prefix can be
+configured with :attr:`~CoreSection.prefix`.
 
-* :attr:`~CoreSection.prefix`
-* :attr:`~CoreSection.help_prefix`
-* :attr:`~CoreSection.alias_nicks`
-* :attr:`~CoreSection.auto_url_schemes`
+.. code-block:: ini
 
-To configure loaded plugins:
+   [core]
+   prefix = \.
 
-* :attr:`~CoreSection.enable`
-* :attr:`~CoreSection.exclude`
-* :attr:`~CoreSection.extra`
+.. note::
 
-To ignore hosts & nicks:
+   This directive expect a **regex** pattern, so special regex characters must
+   be escaped, as shown is the example above.
+
+Other directives include:
+
+* :attr:`~CoreSection.help_prefix`: the prefix used in help messages
+* :attr:`~CoreSection.alias_nicks`: variable name for nick substitution,
+  used by nick-based commands
+* :attr:`~CoreSection.auto_url_schemes`: URL scheme (like ``http`` or ``ftp``)
+  used to trigger the detection of URLs in messages.
+
+Plugins
+-------
+
+By default, Sopel will load all available plugins. To exclude a plugins, you
+can put its name in the :attr:`~CoreSection.exclude` directive. Here, the
+``reload`` and ``meetbot`` plugins are disabled:
+
+.. code-block:: ini
+
+   [core]
+   exclude = reload, meetbot
+
+Alternatively, you can define a list of allowed plugins with
+:attr:`~CoreSection.enable`: plugins not in this list will be ignored. In this
+example, only the ``bugzilla`` and ``remind`` plugins are enabled (because
+the ``meetbot`` is still excluded):
+
+.. code-block:: ini
+
+   [core]
+   enable = bugzilla, remind, meetbot
+   exclude = reload, meetbot
+
+To load plugins from extra directories, use the :attr:`~CoreSection.extra`
+option.
+
+Ignore User
+-----------
+
+To ignore users based on their hosts and/or nicks, you can use these options:
 
 * :attr:`~CoreSection.host_blocks`
 * :attr:`~CoreSection.nick_blocks`
+
 
 Logging
 =======
