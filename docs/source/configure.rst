@@ -375,8 +375,9 @@ To ignore users based on their hosts and/or nicks, you can use these options:
 Logging
 =======
 
-Sopel's outputs are redirected to a file named ``stdio.log``, located in the
-**log directory**, which is configured by :attr:`~CoreSection.logdir`.
+Sopel's outputs are redirected to a file named ``<base>.stdio.log``, located in
+the **log directory**, which is configured by :attr:`~CoreSection.logdir`; and
+where ``<base>`` is the configuration's basename (usually ``default``).
 
 It uses the built-in :func:`logging.basicConfig` function to configure its
 logs with the following arguments:
@@ -401,6 +402,11 @@ Example of configuration for logging:
 
    Configuration options ``logging_format`` and ``logging_datefmt`` has been
    added to extend logging configuration.
+
+.. versionchanged:: 7.0
+
+   The log filename has been renamed from ``stdio.log`` to ``<base>.stdio.log``
+   to prevent conflict when running more than one instance of Sopel.
 
 Log to a channel
 ----------------
@@ -439,7 +445,12 @@ It is possible to store raw logs of what Sopel receives and sends by setting
 the flag :attr:`~CoreSection.log_raw` to true.
 
 In that case, IRC messages received and sent are stored into a file named
-``raw.log``, located in the log directory.
+``<base>.raw.log``, located in the log directory.
+
+.. versionchanged:: 7.0
+
+   The log filename has been renamed from ``raw.log`` to ``<base>.raw.log``
+   to prevent conflict when running more than one instance of Sopel.
 
 
 Misc
