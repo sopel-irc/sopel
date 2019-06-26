@@ -8,7 +8,7 @@ A typical configuration file looks like this::
 
     [core]
     nick = Sopel
-    host = irc.freenode.org
+    host = chat.freenode.net
     use_ssl = false
     port = 6667
     owner = dgw
@@ -41,6 +41,24 @@ Your bot's identity is configured by the following options:
 * :attr:`~CoreSection.name` (optional)
 * :attr:`~CoreSection.user` (optional)
 
+User Modes
+----------
+
+To configure User modes, the :attr:`~CoreSection.modes` can be used:
+
+.. code-block:: ini
+
+   [core]
+   mode = BpR
+
+In this example, upon connection to the IRC server, Sopel will send this::
+
+   MODE Sopel +BpR
+
+Which means: this is a Bot (B), don't show channels it is in (p), and only
+registered users (R) can send it messages. The list of supported modes depends
+on the IRC server the bot connects to.
+
 Owner & Admins
 --------------
 
@@ -60,26 +78,69 @@ nick-based management.
 IRC Server
 ==========
 
-These directives are used to configure how the bot connect to an IRC server.
+To connect to a server, your bot needs these directives:
 
-For the socket configuration:
+* :attr:`~CoreSection.host`: the server's hostname. Can be a domain name
+  (like ``chat.freenode.net``) or an IP address.
+* :attr:`~CoreSection.port`: optional, the port to connect to. Usually 6697,
+  this is the default value the bot will use to connet to the server.
 
-* :attr:`~CoreSection.host`
-* :attr:`~CoreSection.port`
-* :attr:`~CoreSection.bind_host`
+.. code-block:: ini
 
-For SSL connection:
+   [core]
+   host = chat.freenode.net
+   port = 6667
 
-* :attr:`~CoreSection.use_ssl`
-* :attr:`~CoreSection.verify_ssl`
-* :attr:`~CoreSection.ca_certs`
+You can also configure the host the bot will connect from with
+:attr:`~CoreSection.bind_host`.
 
-For IRC connection:
+Ping timeout
+------------
 
-* :attr:`~CoreSection.channels`
-* :attr:`~CoreSection.throttle_join`
-* :attr:`~CoreSection.timeout`
-* :attr:`~CoreSection.modes`
+By default, if Sopel doesn't get a Ping from the server every 120s, it will
+consider that the connection has timed out. This amount of time can be modified
+with the :attr:`~CoreSection.timeout` directive.
+
+SSL Connection
+--------------
+
+It is possible to connect to an IRC server with an SSL connection. For that,
+you need to set :attr:`~CoreSection.use_ssl` to true:
+
+.. code-block:: ini
+
+   [core]
+   use_ssl = yes
+   verify_ssl = yes
+   ca_certs = path/to/sopel/ca_certs.pem
+
+In that case:
+
+* default port to connect to IRC will be 6697
+* certificate will be verified if :attr:`~CoreSection.verify_ssl` is set to
+  true, and its location can be configured with :attr:`~CoreSection.ca_certs`.
+
+.. seealso::
+
+   Sopel uses the built-in :func:`ssl.wrap_socket` function to wrap the socket
+   used for the IRC connection.
+
+   Certificate is required if and only if :attr:`~CoreSection.verify_ssl` is
+   set to true.
+
+Channels
+--------
+
+By default, Sopel won't connect to any channels. The list of channels to
+connect to is configured by :attr:`~CoreSection.channels`:
+
+.. code-block:: ini
+
+   [core]
+   channels = #sopel, #sopelunkers
+
+It is possible to slow down the initial join of channels using
+:attr:`~CoreSection.throttle_join`.
 
 Flood prevention
 ----------------
