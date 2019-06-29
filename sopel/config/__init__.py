@@ -107,7 +107,7 @@ class Config(object):
         """The config object's associated file."""
         basename, _ = os.path.splitext(os.path.basename(filename))
         self.basename = basename
-        """The config's base filename, ie. the filename without the extension.
+        """The config's base filename, i.e. the filename without the extension.
 
         If the filename is ``freenode.config.cfg``, then the ``basename`` will
         be ``freenode.config``.
