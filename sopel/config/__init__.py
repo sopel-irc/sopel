@@ -104,8 +104,14 @@ class Config(object):
         config file, or a config file is not loaded. They are documented below.
         """
         self.filename = filename
-        self.basename = os.path.basename(filename).rsplit('.', 1)[0]
-        """The config object's associated file, as noted above."""
+        """The config object's associated file."""
+        basename, _ = os.path.splitext(os.path.basename(filename))
+        self.basename = basename
+        """The config's base filename, ie. the filename without the extension.
+
+        If the filename is ``freenode.config.cfg``, then the ``basename`` will
+        be ``freenode.config``.
+        """
         self.parser = ConfigParser.RawConfigParser(allow_no_value=True)
         self.parser.read(self.filename)
         self.define_section('core', core_section.CoreSection,
