@@ -216,8 +216,8 @@ def build_parser():
         action='store_true',
         default=False,
         dest='modules',
-        help='Check for Sopel plugins that requires configuration, and run '
-             'their configuration wizard.')
+        help='Check for Sopel plugins that require configuration, and run '
+             'their configuration wizards.')
     utils.add_common_arguments(parser_configure)
 
     # manage `stop` sub-command
@@ -226,7 +226,7 @@ def build_parser():
         description='Stop a running Sopel instance. '
                     'This command determines the instance to quit by the name '
                     'of the configuration file used ("default", or the one '
-                    'from the ``-c/--config`` option). '
+                    'from the ``-c``/``--config`` option). '
                     'This command should be used when the bot is running in '
                     'the background from ``sopel start -d``, and should not '
                     'be used when Sopel is managed by a process manager '

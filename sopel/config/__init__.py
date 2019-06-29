@@ -1,9 +1,9 @@
 # coding=utf-8
 """Sopel's configuration module.
 
-The :class:`sopel.config.Config` object provides an interface to access Sopel's
+The :class:`~sopel.config.Config` object provides an interface to access Sopel's
 configuration file. It exposes the configuration's sections through its
-attributes as object, and these objects expose their directives through their
+attributes as objects, which in turn expose their directives through *their*
 attributes.
 
 For example this is how to access ``core.nick`` on a :class:`Config` object::
@@ -34,9 +34,9 @@ with ``eggs`` and ``bacon`` can be defined like this::
         bacon = config.types.ValidatedAttribute('bacon')
 
 The ``[core]`` section itself is represented by the
-:class:`sopel.config.core_section.CoreSection`, which is a subclass of
+:class:`~sopel.config.core_section.CoreSection` class, which is a subclass of
 :class:`~sopel.config.types.StaticSection`. It is automatically added when
-the :class:`Config` object is instanciated; it uses
+the :class:`Config` object is instantiated; it uses
 :meth:`Config.define_section` for that purpose.
 
 .. versionadded:: 6.0.0

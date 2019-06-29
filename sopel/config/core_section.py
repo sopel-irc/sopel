@@ -184,7 +184,7 @@ class CoreSection(StaticSection):
     """A list of other directories you'd like to include modules from."""
 
     help_prefix = ValidatedAttribute('help_prefix', default='.')
-    """The prefix to use in help."""
+    """The prefix to use in help output."""
 
     @property
     def homedir(self):
@@ -286,7 +286,7 @@ class CoreSection(StaticSection):
     """
 
     nick_auth_password = ValidatedAttribute('nick_auth_password')
-    """The password to use to authenticate your nick.
+    """The password to use to authenticate the bot's nick.
 
     .. versionadded:: 7.0
     """
