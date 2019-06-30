@@ -74,8 +74,10 @@ def rpost_info(bot, trigger, match):
             sfw = bot.db.get_channel_value(trigger.sender, 'sfw')
             if sfw:
                 link = '(link hidden)'
-                bot.kick(trigger.nick, trigger.sender,
-                     'Linking to NSFW content in a SFW channel.')
+                bot.kick(
+                    trigger.nick, trigger.sender,
+                    'Linking to NSFW content in a SFW channel.'
+                )
         else:
             nsfw = ''
 

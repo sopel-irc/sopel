@@ -28,23 +28,35 @@ VALID_MATCH_LINES = (
     ('13:37 message', TimeReminder('13', '37', None, None, 'message')),
     ('13:37:00 message', TimeReminder('13', '37', '00', None, 'message')),
     # Make sure numbers are not confused with anything else
-    ('13:37:00 10 message',
-     TimeReminder('13', '37', '00', None, '10 message')),
+    (
+        '13:37:00 10 message',
+        TimeReminder('13', '37', '00', None, '10 message')
+    ),
     # Weird stuff
-    ('13:37:00 message\tanother one',
-     TimeReminder('13', '37', '00', None, 'message\tanother one')),
-    ('13:37:00 ( •ᴗ•)ψ( •ᴗ•)ψ( •ᴗ•)ψ( •ᴗ•)ψ( •ᴗ•)ψ'
-     '( •ᴗ ^B^]^_ITS CARDBACK TIME!!!!!!!!!!!!!!!!!!!!!!!^B^]^_'
-     '( •ᴗ•)ψ( •ᴗ•)ψ( •ᴗ•)ψ( •ᴗ•)ψ( •ᴗ•)ψ( •ᴗ•)ψ',
-     TimeReminder('13', '37', '00', None,
-        '( •ᴗ•)ψ( •ᴗ•)ψ( •ᴗ•)ψ( •ᴗ•)ψ( •ᴗ•)ψ'
+    (
+        '13:37:00 message\tanother one',
+        TimeReminder('13', '37', '00', None, 'message\tanother one')
+    ),
+    (
+        '13:37:00 ( •ᴗ•)ψ( •ᴗ•)ψ( •ᴗ•)ψ( •ᴗ•)ψ( •ᴗ•)ψ'
         '( •ᴗ ^B^]^_ITS CARDBACK TIME!!!!!!!!!!!!!!!!!!!!!!!^B^]^_'
-        '( •ᴗ•)ψ( •ᴗ•)ψ( •ᴗ•)ψ( •ᴗ•)ψ( •ᴗ•)ψ( •ᴗ•)ψ')),
+        '( •ᴗ•)ψ( •ᴗ•)ψ( •ᴗ•)ψ( •ᴗ•)ψ( •ᴗ•)ψ( •ᴗ•)ψ',
+        TimeReminder(
+            '13', '37', '00', None,
+            '( •ᴗ•)ψ( •ᴗ•)ψ( •ᴗ•)ψ( •ᴗ•)ψ( •ᴗ•)ψ'
+            '( •ᴗ ^B^]^_ITS CARDBACK TIME!!!!!!!!!!!!!!!!!!!!!!!^B^]^_'
+            '( •ᴗ•)ψ( •ᴗ•)ψ( •ᴗ•)ψ( •ᴗ•)ψ( •ᴗ•)ψ( •ᴗ•)ψ'
+        )
+    ),
     # Timezone
-    ('13:37Europe/Paris message',
-     TimeReminder('13', '37', None, 'Europe/Paris', 'message')),
-    ('13:37:00Europe/Paris message',
-     TimeReminder('13', '37', '00', 'Europe/Paris', 'message')),
+    (
+        '13:37Europe/Paris message',
+        TimeReminder('13', '37', None, 'Europe/Paris', 'message')
+    ),
+    (
+        '13:37:00Europe/Paris message',
+        TimeReminder('13', '37', '00', 'Europe/Paris', 'message')
+    ),
     # these should not pass, but they do at the moment
     ('13:7 message', TimeReminder('13', '7', None, None, 'message')),
     ('0000:20 message', TimeReminder('0000', '20', None, None, 'message')),

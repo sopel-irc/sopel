@@ -17,7 +17,8 @@ fi
 fail_py3_unicode=false
 for file in $(find_source_files); do
     if grep -qle 'unicode(' -e 'class .*(unicode)' $file; then
-        if ! grep -L 'unicode = str' $file; then
+        if ! grep -ql 'unicode = str' $file; then
+            echo "Suspicious 'unicode' use: $file"
             fail_py3_unicode=true
         fi
     fi

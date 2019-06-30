@@ -102,11 +102,11 @@ def numbered_result(bot, query, latest, verify_ssl=True):
     max_int = latest['num']
     if query > max_int:
         bot.say(("Sorry, comic #{} hasn't been posted yet. "
-                    "The last comic was #{}").format(query, max_int))
+                 "The last comic was #{}").format(query, max_int))
         return
     elif query <= -max_int:
         bot.say(("Sorry, but there were only {} comics "
-                    "released yet so far").format(max_int))
+                 "released yet so far").format(max_int))
         return
     elif abs(query) == 0:
         requested = latest

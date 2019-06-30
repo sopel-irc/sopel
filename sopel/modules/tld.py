@@ -53,8 +53,9 @@ def gettld(bot, trigger):
         desc = matches[2]
         if len(desc) > 400:
             desc = desc[:400] + "..."
-        reply = "%s -- %s. IDN: %s, DNSSEC: %s" % (matches[1], desc,
-                matches[3], matches[4])
+        reply = "%s -- %s. IDN: %s, DNSSEC: %s" % (
+            matches[1], desc, matches[3], matches[4]
+        )
     else:
         search = r'<td><a href="\S+" title="\S+">.{0}</a></td>\n<td><span class="flagicon"><img.*?\">(.*?)</a></td>\n<td[^>]*>(.*?)</td>\n<td[^>]*>(.*?)</td>\n<td[^>]*>(.*?)</td>\n<td[^>]*>(.*?)</td>\n<td[^>]*>(.*?)</td>\n'
         search = search.format(unicode(tld))

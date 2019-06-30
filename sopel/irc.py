@@ -114,7 +114,7 @@ class Bot(asynchat.async_chat):
     def safe(self, string):
         """Remove newlines from a string."""
         if sys.version_info.major >= 3 and isinstance(string, bytes):
-                string = string.decode('utf8')
+            string = string.decode("utf8")
         elif sys.version_info.major < 3:
             if not isinstance(string, unicode):
                 string = unicode(string, encoding='utf8')
@@ -176,8 +176,10 @@ class Bot(asynchat.async_chat):
                 except KeyError:
                     pass  # we tried, and that's good enough
 
-            pretrigger = PreTrigger(self.nick, ':{0}!{1}@{2} {3}'
-                .format(self.nick, self.user, host, temp))
+            pretrigger = PreTrigger(
+                self.nick,
+                ":{0}!{1}@{2} {3}".format(self.nick, self.user, host, temp)
+            )
             self.dispatch(pretrigger)
 
     def run(self, host, port=6667):
