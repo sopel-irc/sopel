@@ -247,6 +247,26 @@ class SopelDB(object):
         finally:
             session.close()
 
+    def delete_nick_value(self, nick, key):
+        """Deletes the value for a given key associated with a nick."""
+        nick = Identifier(nick)
+        nick_id = self.get_nick_id(nick)
+        session = self.ssession()
+        try:
+            result = session.query(NickValues) \
+                .filter(NickValues.nick_id == nick_id) \
+                .filter(NickValues.key == key) \
+                .one_or_none()
+            # NickValue exists, delete
+            if result:
+                session.delete(result)
+                session.commit()
+        except SQLAlchemyError:
+            session.rollback()
+            raise
+        finally:
+            session.close()
+
     def get_nick_value(self, nick, key):
         """Retrieves the value for a given key associated with a nick."""
         nick = Identifier(nick)
@@ -360,6 +380,25 @@ class SopelDB(object):
             else:
                 new_channelvalue = ChannelValues(channel=channel, key=key, value=value)
                 session.add(new_channelvalue)
+                session.commit()
+        except SQLAlchemyError:
+            session.rollback()
+            raise
+        finally:
+            session.close()
+
+    def delete_channel_value(self, channel, key):
+        """Deletes the value for a given key associated with a channel."""
+        channel = Identifier(channel).lower()
+        session = self.ssession()
+        try:
+            result = session.query(ChannelValues) \
+                .filter(ChannelValues.channel == channel)\
+                .filter(ChannelValues.key == key) \
+                .one_or_none()
+            # ChannelValue exists, delete
+            if result:
+                session.delete(result)
                 session.commit()
         except SQLAlchemyError:
             session.rollback()

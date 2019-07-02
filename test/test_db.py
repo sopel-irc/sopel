@@ -151,6 +151,14 @@ def test_get_nick_value(db):
         assert found_value == value
 
 
+def test_delete_nick_value(db):
+    nick = 'Embolalia'
+    db.set_nick_value(nick, 'wasd', 'uldr')
+    assert db.get_nick_value(nick, 'wasd') == 'uldr'
+    db.delete_nick_value(nick, 'wasd')
+    assert db.get_nick_value(nick, 'wasd') is None
+
+
 def test_unalias_nick(db):
     conn = sqlite3.connect(db_filename)
     nick = 'Embolalia'
@@ -230,6 +238,13 @@ def test_set_channel_value(db):
         'SELECT value FROM channel_values WHERE channel = ? and key = ?',
         ['#asdf', 'qwer']).fetchone()[0]
     assert result == '"zxcv"'
+
+
+def test_delete_channel_value(db):
+    db.set_channel_value('#asdf', 'wasd', 'uldr')
+    assert db.get_channel_value('#asdf', 'wasd') == 'uldr'
+    db.delete_channel_value('#asdf', 'wasd')
+    assert db.get_channel_value('#asdf', 'wasd') is None
 
 
 def test_get_channel_value(db):
