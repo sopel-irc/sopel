@@ -153,6 +153,7 @@ API changes
   * `bot.kick(nick, channel, optional_message)` is shorthand for the pattern
     `bot.write(['KICK', channel, nick], optional_message)`, used by a number
     of both core and third-party plugins
+* Added `delete_{nick,channel}_value` methods in `bot.db` [[#1526][]]
 * `module.require_*()` decorators (all five of them) now accept an optional
   boolean parameter `reply` [[#1456][], [#1500][]]
   * Passing `reply=True` will send the error message as if via `bot.reply()`,
@@ -236,6 +237,7 @@ API changes
 [#1513]: https://github.com/sopel-irc/sopel/pull/1513
 [#1518]: https://github.com/sopel-irc/sopel/pull/1518
 [#1522]: https://github.com/sopel-irc/sopel/pull/1522
+[#1526]: https://github.com/sopel-irc/sopel/pull/1526
 [#1527]: https://github.com/sopel-irc/sopel/pull/1527
 [#1537]: https://github.com/sopel-irc/sopel/pull/1537
 [#1539]: https://github.com/sopel-irc/sopel/pull/1539
