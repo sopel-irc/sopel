@@ -2,6 +2,9 @@
 """Test for the ``sopel.plugins`` module."""
 from __future__ import unicode_literals, absolute_import, print_function, division
 
+import sys
+
+import pkg_resources
 import pytest
 
 from sopel import plugins
@@ -123,3 +126,34 @@ def test_plugin_load_pypackage_bad_dir_no_init(tmpdir):
 
     with pytest.raises(Exception):
         plugins.handlers.PyFilePlugin(package_dir.strpath)
+
+
+def test_plugin_load_entry_point(tmpdir):
+    root = tmpdir.mkdir('loader_mods')
+    mod_file = root.join('file_mod.py')
+    mod_file.write(MOCK_MODULE_CONTENT)
+
+    # generate setuptools Distribution object
+    distrib = pkg_resources.Distribution(root.strpath)
+    sys.path.append(root.strpath)
+
+    # load the entry point
+    try:
+        entry_point = pkg_resources.EntryPoint(
+            'test_plugin', 'file_mod', dist=distrib)
+        plugin = plugins.handlers.EntryPointPlugin(entry_point)
+        plugin.load()
+    finally:
+        sys.path.remove(root.strpath)
+
+    assert plugin.name == 'test_plugin'
+
+    test_mod = plugin._module
+
+    assert hasattr(test_mod, 'first_command')
+    assert hasattr(test_mod, 'second_command')
+    assert hasattr(test_mod, 'interval5s')
+    assert hasattr(test_mod, 'interval10s')
+    assert hasattr(test_mod, 'example_url')
+    assert hasattr(test_mod, 'shutdown')
+    assert hasattr(test_mod, 'ignored')

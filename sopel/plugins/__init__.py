@@ -13,6 +13,7 @@ and only one plugin per unique name, using a specific order:
 
 * extra directories defined in the settings
 * homedir's ``modules`` directory
+* ``sopel.plugins`` setuptools entry points
 * ``sopel_modules``'s subpackages
 * ``sopel.modules``'s core plugins
 
@@ -29,6 +30,8 @@ import collections
 import imp
 import itertools
 import os
+
+import pkg_resources
 
 from . import exceptions, handlers  # noqa
 
@@ -80,6 +83,18 @@ def find_sopel_modules_plugins():
             yield handlers.PyModulePlugin(name, 'sopel_modules')
 
 
+def find_entry_point_plugins(group='sopel.plugins'):
+    """List plugins from a setuptools entry point group
+
+    :param str group: setuptools entry point group to look for
+                      (defaults to ``sopel.plugins``)
+    :return: Yield instance of :class:`~.handlers.EntryPointPlugin`
+             created from setuptools entry point given ``group``
+    """
+    for entry_point in pkg_resources.iter_entry_points(group):
+        yield handlers.EntryPointPlugin(entry_point)
+
+
 def find_directory_plugins(directory):
     """List plugins from a ``directory``
 
@@ -110,12 +125,15 @@ def enumerate_plugins(settings):
 
        * :func:`find_internal_plugins` for internal plugins
        * :func:`find_sopel_modules_plugins` for ``sopel_modules.*`` plugins
+       * :func:`find_entry_point_plugins` for plugins exposed by setuptools
+         entry points
        * :func:`find_directory_plugins` for modules in ``$homedir/modules``
          and in extra directories, as defined by ``settings.core.extra``
 
     """
     from_internals = find_internal_plugins()
     from_sopel_modules = find_sopel_modules_plugins()
+    from_entry_points = find_entry_point_plugins()
     # load from directories
     source_dirs = [os.path.join(settings.homedir, 'modules')]
     if settings.core.extra:
@@ -131,6 +149,7 @@ def enumerate_plugins(settings):
     all_plugins = itertools.chain(
         from_internals,
         from_sopel_modules,
+        from_entry_points,
         *from_directories)
 
     # Get module settings
@@ -161,6 +180,7 @@ def get_usable_plugins(settings):
 
     * extra directories defined in the settings
     * homedir's ``modules`` directory
+    * ``sopel.plugins`` setuptools entry points
     * ``sopel_modules``'s subpackages
     * ``sopel.modules``'s core plugins
 
