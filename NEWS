@@ -137,6 +137,11 @@ API changes
   * Better use of Sphinx features (e.g. parameter definitions, return value
     notes, & version annotations)
   * General cleanup and copy-editing
+* Plugins can register themselves via `setuptools` entry points [[#1585][]]
+  * This feature is an evolution of the previous mechanism to install plugins
+    via PyPI packages, which required a specific directory structure and
+    package name format (`sopel_modules.plugin_name`)
+  * See [the entry point plugin documentation][entry-point-plugin] for more
 * Added a set of methods in the `bot` object to manipulate URL callbacks:
   `bot.register_url_callback`, `bot.unregister_url_callback`, and
   `bot.search_url_callbacks` [[#1508][]]
@@ -251,6 +256,7 @@ API changes
 [#1580]: https://github.com/sopel-irc/sopel/pull/1580
 [#1581]: https://github.com/sopel-irc/sopel/pull/1581
 [#1583]: https://github.com/sopel-irc/sopel/pull/1583
+[#1585]: https://github.com/sopel-irc/sopel/pull/1585
 [#1606]: https://github.com/sopel-irc/sopel/pull/1606
 [#1607]: https://github.com/sopel-irc/sopel/pull/1607
 [#1622]: https://github.com/sopel-irc/sopel/issues/1622
@@ -258,6 +264,7 @@ API changes
 
 [api-docs]: https://sopel.chat/docs/
 [auth-config-docs]: https://sopel.chat/docs/configure.html#Authentication
+[entry-point-plugin]: https://sopel.chat/docs/plugin.html#sopel.plugins.handlers.EntryPointPlugin
 [install-guide-db]: https://sopel.chat/usage/installing/#configuring-the-database-optional
 [logging-config-docs]: https://sopel.chat/docs/configure.html#Logging
 [per-channel-conf]: https://sopel.chat/usage/per-channel-configuration/
