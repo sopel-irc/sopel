@@ -34,6 +34,9 @@ def _deserialize(value):
 
 
 BASE = declarative_base()
+MYSQL_TABLE_ARGS = {'mysql_engine': 'InnoDB',
+                    'mysql_charset': 'utf8mb4',
+                    'mysql_collate': 'utf8mb4_unicode_ci'}
 
 
 class NickIDs(BASE):
@@ -49,6 +52,7 @@ class Nicknames(BASE):
     Nicknames SQLAlchemy Class
     """
     __tablename__ = 'nicknames'
+    __table_args__ = MYSQL_TABLE_ARGS
     nick_id = Column(Integer, ForeignKey('nick_ids.nick_id'), primary_key=True)
     slug = Column(String(255), primary_key=True)
     canonical = Column(String(255))
@@ -59,6 +63,7 @@ class NickValues(BASE):
     NickValues SQLAlchemy Class
     """
     __tablename__ = 'nick_values'
+    __table_args__ = MYSQL_TABLE_ARGS
     nick_id = Column(Integer, ForeignKey('nick_ids.nick_id'), primary_key=True)
     key = Column(String(255), primary_key=True)
     value = Column(String(255))
@@ -69,6 +74,7 @@ class ChannelValues(BASE):
     ChannelValues SQLAlchemy Class
     """
     __tablename__ = 'channel_values'
+    __table_args__ = MYSQL_TABLE_ARGS
     channel = Column(String(255), primary_key=True)
     key = Column(String(255), primary_key=True)
     value = Column(String(255))
@@ -103,8 +109,10 @@ class SopelDB(object):
             self.url = 'sqlite:///%s' % path
         # Otherwise, handle all other database engines
         else:
+            query = {}
             if db_type == 'mysql':
                 drivername = config.core.db_driver or 'mysql'
+                query = {'charset': 'utf8mb4'}
             elif db_type == 'postgres':
                 drivername = config.core.db_driver or 'postgresql'
             elif db_type == 'oracle':
@@ -129,8 +137,9 @@ class SopelDB(object):
                 raise Exception('Please make sure the following core '
                                 'configuration values are defined: '
                                 'db_user, db_pass, db_host')
-            self.url = URL(drivername=drivername, username=db_user, password=db_pass,
-                           host=db_host, port=db_port, database=db_name)
+            self.url = URL(drivername=drivername, username=db_user,
+                           password=db_pass, host=db_host, port=db_port,
+                           database=db_name, query=query)
 
         self.engine = create_engine(self.url)
 
