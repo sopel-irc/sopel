@@ -67,7 +67,7 @@ Module changes
 Core changes
 ------------
 
-* Alternative database types are once again supported [[#1446][]]
+* Alternative database types are once again supported [[#1446][], [#1652][]]
   * See the [README][readme-db] or [installation instructions][install-guide-db]
     for details on getting non-SQLite options up and running
   * You will probably need to install additional dependencies if you wish to use
@@ -263,6 +263,7 @@ API changes
 [#1607]: https://github.com/sopel-irc/sopel/pull/1607
 [#1622]: https://github.com/sopel-irc/sopel/issues/1622
 [#1638]: https://github.com/sopel-irc/sopel/pull/1638
+[#1652]: https://github.com/sopel-irc/sopel/pull/1652
 
 [api-docs]: https://sopel.chat/docs/
 [auth-config-docs]: https://sopel.chat/docs/configure.html#Authentication
