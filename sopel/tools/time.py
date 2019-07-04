@@ -142,3 +142,57 @@ def format_time(db=None, config=None, zone=None, nick=None, channel=None,
             time = utc.localize(time)
         zone = pytz.timezone(zone)
         return time.astimezone(zone).strftime(tformat)
+
+
+def seconds_to_human(secs):
+    """Return a human readable string that is more readable than the built-in
+    str(timedelta).
+
+    Inspiration for function structure from:
+    https://gist.github.com/Highstaker/280a09591df4a5fb1363b0bbaf858f0d
+
+    Example outputs are:
+    2 years, 1 month ago
+    in 4 hours, 45 minutes
+    in 8 days, 5 hours
+    1 year ago"""
+
+    if isinstance(secs, datetime.timedelta):
+        secs = secs.total_seconds()
+
+    future = False
+    if secs < 0:
+        future = True
+
+    secs = int(secs)
+    secs = abs(secs)
+
+    years = secs // 31536000
+    months = (secs - years * 31536000) // 2635200
+    days = (secs - years * 31536000 - months * 2635200) // 86400
+    hours = (secs - years * 31536000 - months * 2635200 - days * 86400) // 3600
+    minutes = (secs - years * 31536000 - months * 2635200 - days * 86400 - hours * 3600) // 60
+    seconds = secs - years * 31536000 - months * 2635200 - days * 86400 - hours * 3600 - minutes * 60
+
+    years_text = "year{}".format("s" if years != 1 else "")
+    months_text = "month{}".format("s" if months != 1 else "")
+    days_text = "day{}".format("s" if days != 1 else "")
+    hours_text = "hour{}".format("s" if hours != 1 else "")
+    minutes_text = "minute{}".format("s" if minutes != 1 else "")
+    seconds_text = "second{}".format("s" if seconds != 1 else "")
+
+    result = ", ".join(filter(lambda x: bool(x), [
+        "{0} {1}".format(years, years_text) if years else "",
+        "{0} {1}".format(months, months_text) if months else "",
+        "{0} {1}".format(days, days_text) if days else "",
+        "{0} {1}".format(hours, hours_text) if hours else "",
+        "{0} {1}".format(minutes, minutes_text) if minutes else "",
+        "{0} {1}".format(seconds, seconds_text) if seconds else ""
+    ]))
+    # Granularity
+    result = ", ".join(result.split(", ")[:2])
+    if future is False:
+        result += " ago"
+    else:
+        result = "in " + result
+    return result
