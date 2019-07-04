@@ -187,6 +187,8 @@ API changes
   * This facilitates running only offline-safe module tests, by passing
     `--offline` to pytest, if an Internet connection is unavailable
   * Outside of the test suite, this parameter has no effect
+* Added `tools.time.seconds_to_human()` for generating human-readable fuzzy
+  relative timestamps from `timedelta` or raw number of seconds [[#1560][]]
 * The `@example` decorator no longer generates invalid raw lines in tests
   [[#1499][]]
 
@@ -246,6 +248,7 @@ API changes
 [#1547]: https://github.com/sopel-irc/sopel/pull/1547
 [#1555]: https://github.com/sopel-irc/sopel/pull/1555
 [#1557]: https://github.com/sopel-irc/sopel/pull/1557
+[#1560]: https://github.com/sopel-irc/sopel/pull/1560
 [#1561]: https://github.com/sopel-irc/sopel/pull/1561
 [#1563]: https://github.com/sopel-irc/sopel/pull/1563
 [#1567]: https://github.com/sopel-irc/sopel/pull/1567
