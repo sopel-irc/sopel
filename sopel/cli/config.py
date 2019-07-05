@@ -25,7 +25,7 @@ def build_parser():
         help="List available configurations from Sopel's config directory",
         description="""
             List available configurations from Sopel's config directory
-            with the extension "{ext}". Use option --config-dir to use a
+            with the extension "{ext}". Use option ``--config-dir`` to use a
             specific config directory.
         """.format(ext='.cfg'))
     utils.add_common_arguments(list_parser)
@@ -74,7 +74,7 @@ def handle_list(options):
         default
         custom
 
-    It is possible to filter by extension using the ``-e/--ext/--extension``
+    It is possible to filter by extension using the ``-e``/``--ext``/``--extension``
     option; default is ``.cfg`` (the ``.`` prefix is not required).
     """
     configdir = options.configdir

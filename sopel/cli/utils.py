@@ -252,8 +252,8 @@ def add_common_arguments(parser):
     This functions adds the common arguments for Sopel's command line tools.
     It adds the following arguments:
 
-    * ``-c/--config``: the name of the Sopel config, or its absolute path
-    * ``--config-dir``: the directory to look for Sopel config
+    * ``-c``/``--config``: the name of the Sopel config, or its absolute path
+    * ``--config-dir``: the directory to scan for config files
 
     This can be used on an argument parser, or an argument subparser, to handle
     these cases::
@@ -288,7 +288,7 @@ def add_common_arguments(parser):
         '--config-dir',
         default=config.DEFAULT_HOMEDIR,
         dest='configdir',
-        help='Look for configuration from this Sopel config directory.')
+        help='Look for configuration files in this directory.')
 
 
 def load_settings(options):
