@@ -269,3 +269,27 @@ def test_get_preferred_value(db):
     names = ['asdf', '#asdf']
     assert db.get_preferred_value(names, 'qwer') == 'poiu'
     assert db.get_preferred_value(names, 'lkjh') == '1234'
+
+
+def test_set_server_value(db):
+    conn = sqlite3.connect(db_filename)
+    db.set_server_value('freenode', 'qwer', 'zxcv')
+    result = conn.execute(
+        'SELECT value FROM server_values WHERE server = ? and key = ?',
+        ['freenode', 'qwer']).fetchone()[0]
+    assert result == '"zxcv"'
+
+
+def test_delete_server_value(db):
+    db.set_server_value('freenode', 'wasd', 'uldr')
+    assert db.get_server_value('freenode', 'wasd') == 'uldr'
+    db.delete_server_value('freenode', 'wasd')
+    assert db.get_server_value('freenode', 'wasd') is None
+
+
+def test_get_server_value(db):
+    conn = sqlite3.connect(db_filename)
+    conn.execute("INSERT INTO server_values VALUES ('freenode', 'qwer', '\"zxcv\"')")
+    conn.commit()
+    result = db.get_server_value('freenode', 'qwer')
+    assert result == 'zxcv'

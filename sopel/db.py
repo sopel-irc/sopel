@@ -80,6 +80,17 @@ class ChannelValues(BASE):
     value = Column(String(255))
 
 
+class ServerValues(BASE):
+    """
+    ServerValues SQLAlchemy Class
+    """
+    __tablename__ = 'server_values'
+    __table_args__ = MYSQL_TABLE_ARGS
+    server = Column(String(255), primary_key=True)
+    key = Column(String(255), primary_key=True)
+    value = Column(String(255))
+
+
 class SopelDB(object):
     """*Availability: 5.0+*
 
@@ -423,6 +434,70 @@ class SopelDB(object):
             result = session.query(ChannelValues) \
                 .filter(ChannelValues.channel == channel)\
                 .filter(ChannelValues.key == key) \
+                .one_or_none()
+            if result is not None:
+                result = result.value
+            return _deserialize(result)
+        except SQLAlchemyError:
+            session.rollback()
+            raise
+        finally:
+            session.close()
+
+    # SERVER FUNCTIONS
+
+    def set_server_value(self, server, key, value):
+        """Sets the value for a given key to be associated with a server."""
+        server = server.lower()
+        value = json.dumps(value, ensure_ascii=False)
+        session = self.ssession()
+        try:
+            result = session.query(ServerValues) \
+                .filter(ServerValues.server == server)\
+                .filter(ServerValues.key == key) \
+                .one_or_none()
+            # ServerValues exists, update
+            if result:
+                result.value = value
+                session.commit()
+            # DNE - Insert
+            else:
+                new_servervalue = ServerValues(server=server, key=key, value=value)
+                session.add(new_servervalue)
+                session.commit()
+        except SQLAlchemyError:
+            session.rollback()
+            raise
+        finally:
+            session.close()
+
+    def delete_server_value(self, server, key):
+        """Deletes the value for a given key to be associated with a server."""
+        server = server.lower()
+        session = self.ssession()
+        try:
+            result = session.query(ServerValues) \
+                .filter(ServerValues.server == server)\
+                .filter(ServerValues.key == key) \
+                .one_or_none()
+            # ServerValues exists, update
+            if result:
+                session.delete(result)
+                session.commit()
+        except SQLAlchemyError:
+            session.rollback()
+            raise
+        finally:
+            session.close()
+
+    def get_server_value(self, server, key):
+        """Retrieves the value for a given key associated with a server."""
+        server = server.lower()
+        session = self.ssession()
+        try:
+            result = session.query(ServerValues) \
+                .filter(ServerValues.server == server)\
+                .filter(ServerValues.key == key) \
                 .one_or_none()
             if result is not None:
                 result = result.value
