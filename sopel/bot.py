@@ -218,7 +218,7 @@ class Sopel(irc.Bot):
         load_error = 0
         load_disabled = 0
 
-        stderr("Welcome to Sopel. Loading modules...")
+        stderr("Loading plugins...")
         usable_plugins = plugins.get_usable_plugins(self.config)
         for name, info in usable_plugins.items():
             plugin, is_enabled = info
