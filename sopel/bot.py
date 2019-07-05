@@ -573,51 +573,61 @@ class Sopel(irc.Bot):
 
     def dispatch(self, pretrigger):
         args = pretrigger.args
-        event, args, text = pretrigger.event, args, args[-1] if args else ''
+        text = args[-1] if args else ''
+        event = pretrigger.event
+        intent = pretrigger.tags.get('intent')
+        nick = pretrigger.nick
+        is_echo_message = nick.lower() == self.nick.lower()
+        user_obj = self.users.get(nick)
+        account = user_obj.account if user_obj else None
 
         if self.config.core.nick_blocks or self.config.core.host_blocks:
             nick_blocked = self._nick_blocked(pretrigger.nick)
             host_blocked = self._host_blocked(pretrigger.host)
         else:
             nick_blocked = host_blocked = None
+        blocked = bool(nick_blocked or host_blocked)
 
         list_of_blocked_functions = []
         for priority in ('high', 'medium', 'low'):
-            items = self._callables[priority].items()
-
-            for regexp, funcs in items:
+            for regexp, funcs in self._callables[priority].items():
                 match = regexp.match(text)
                 if not match:
                     continue
-                user_obj = self.users.get(pretrigger.nick)
-                account = user_obj.account if user_obj else None
-                trigger = Trigger(self.config, pretrigger, match, account)
-                wrapper = SopelWrapper(self, trigger)
 
                 for func in funcs:
-                    if (not trigger.admin and
-                            not func.unblockable and
-                            (nick_blocked or host_blocked)):
+                    trigger = Trigger(self.config, pretrigger, match, account)
+
+                    # check blocked nick/host
+                    if blocked and not func.unblockable and not trigger.admin:
                         function_name = "%s.%s" % (
                             func.__module__, func.__name__
                         )
                         list_of_blocked_functions.append(function_name)
                         continue
 
+                    # check event
                     if event not in func.event:
                         continue
+
+                    # check intents
                     if hasattr(func, 'intents'):
-                        if not trigger.tags.get('intent'):
+                        if not intent:
                             continue
-                        match = False
-                        for intent in func.intents:
-                            if intent.match(trigger.tags.get('intent')):
-                                match = True
+
+                        match = any(
+                            func_intent.match(intent)
+                            for func_intent in func.intents
+                        )
                         if not match:
                             continue
-                    if (trigger.nick.lower() == self.nick.lower() and
-                            not func.echo):
+
+                    # check echo-message feature
+                    if is_echo_message and not func.echo:
                         continue
+
+                    # call triggered function
+                    wrapper = SopelWrapper(self, trigger)
                     if func.thread:
                         targs = (func, wrapper, trigger)
                         t = threading.Thread(target=self.call, args=targs)
@@ -635,7 +645,7 @@ class Sopel(irc.Bot):
             LOGGER.info(
                 "[%s]%s prevented from using %s.",
                 block_type,
-                trigger.nick,
+                nick,
                 ', '.join(list_of_blocked_functions)
             )
 
