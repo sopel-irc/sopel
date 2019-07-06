@@ -138,6 +138,8 @@ API changes
   * Better use of Sphinx features (e.g. parameter definitions, return value
     notes, & version annotations)
   * General cleanup and copy-editing
+* Most of Sopel's submodules now define `__all__`, limiting namespace pollution
+  from using `*` in imports [[#1582][]]
 * Plugins can register themselves via `setuptools` entry points [[#1585][]]
   * This feature is an evolution of the previous mechanism to install plugins
     via PyPI packages, which required a specific directory structure and
@@ -261,6 +263,7 @@ API changes
 [#1579]: https://github.com/sopel-irc/sopel/pull/1579
 [#1580]: https://github.com/sopel-irc/sopel/pull/1580
 [#1581]: https://github.com/sopel-irc/sopel/pull/1581
+[#1582]: https://github.com/sopel-irc/sopel/pull/1582
 [#1583]: https://github.com/sopel-irc/sopel/pull/1583
 [#1585]: https://github.com/sopel-irc/sopel/pull/1585
 [#1606]: https://github.com/sopel-irc/sopel/pull/1606
