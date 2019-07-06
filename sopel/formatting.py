@@ -31,6 +31,8 @@ __all__ = [
     'strikethrough',
     'monospace',
     'reverse',
+    # utility class
+    'colors',
 ]
 
 if sys.version_info.major >= 3:
