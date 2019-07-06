@@ -27,6 +27,16 @@ import sopel.tools.target
 import sopel.trigger
 
 
+__all__ = [
+    'MockConfig',
+    'MockSopel',
+    'MockSopelWrapper',
+    'get_example_test',
+    'get_disable_setup',
+    'insert_into_module',
+    'run_example_tests',
+]
+
 if sys.version_info.major >= 3:
     basestring = str
 

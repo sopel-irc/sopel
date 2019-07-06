@@ -1,11 +1,18 @@
 # coding=utf-8
+"""Sopel IRC Trigger Lines"""
 from __future__ import unicode_literals, absolute_import, print_function, division
 
 import re
 import sys
 import datetime
 
-import sopel.tools
+from sopel import tools
+
+
+__all__ = [
+    'PreTrigger',
+    'Trigger',
+]
 
 if sys.version_info.major >= 3:
     unicode = str
@@ -72,12 +79,12 @@ class PreTrigger(object):
         self.args = self.args[1:]
         components = PreTrigger.component_regex.match(self.hostmask or '').groups()
         self.nick, self.user, self.host = components
-        self.nick = sopel.tools.Identifier(self.nick)
+        self.nick = tools.Identifier(self.nick)
 
         # If we have arguments, the first one is the sender
         # Unless it's a QUIT event
         if self.args and self.event != 'QUIT':
-            target = sopel.tools.Identifier(self.args[0])
+            target = tools.Identifier(self.args[0])
         else:
             target = None
 
@@ -179,7 +186,7 @@ class Trigger(unicode):
         self._is_privmsg = message.sender and message.sender.is_nick()
 
         def match_host_or_nick(pattern):
-            pattern = sopel.tools.get_hostmask_regex(pattern)
+            pattern = tools.get_hostmask_regex(pattern)
             return bool(
                 pattern.match(self.nick) or
                 pattern.match('@'.join((self.nick, self.host)))

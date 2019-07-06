@@ -11,6 +11,30 @@ from __future__ import unicode_literals, absolute_import, print_function, divisi
 import re
 import functools
 
+__all__ = [
+    # constants
+    'NOLIMIT', 'VOICE', 'HALFOP', 'OP', 'ADMIN', 'OWNER',
+    # decorators
+    'commands',
+    'echo',
+    'example',
+    'intent',
+    'interval',
+    'nickname_commands',
+    'priority',
+    'rate',
+    'require_admin',
+    'require_chanmsg',
+    'require_owner',
+    'require_privilege',
+    'require_privmsg',
+    'rule',
+    'thread',
+    'unblockable',
+    'url',
+]
+
+
 NOLIMIT = 1
 """Return value for ``callable``\\s, which suppresses rate limiting for the call.
 

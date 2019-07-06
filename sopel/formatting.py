@@ -9,6 +9,32 @@ from __future__ import unicode_literals, absolute_import, print_function, divisi
 
 import string
 import sys
+
+
+__all__ = [
+    # control chars
+    'CONTROL_NORMAL',
+    'CONTROL_COLOR',
+    'CONTROL_HEX_COLOR',
+    'CONTROL_BOLD',
+    'CONTROL_ITALIC',
+    'CONTROL_UNDERLINE',
+    'CONTROL_STRIKETHROUGH',
+    'CONTROL_MONOSPACE',
+    'CONTROL_REVERSE',
+    # utility functions
+    'color',
+    'hex_color',
+    'bold',
+    'italic',
+    'underline',
+    'strikethrough',
+    'monospace',
+    'reverse',
+    # utility class
+    'colors',
+]
+
 if sys.version_info.major >= 3:
     unicode = str
 

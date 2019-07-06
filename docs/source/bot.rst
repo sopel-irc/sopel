@@ -16,3 +16,7 @@ The bot and its state
     .. py:attribute:: name
 
         Sopel's "real name", as used for whois.
+
+
+.. autoclass:: sopel.bot.SopelWrapper
+    :members:
