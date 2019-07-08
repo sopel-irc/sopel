@@ -49,6 +49,12 @@ def build_parser():
         dest='disabled_only',
         action='store_true',
         default=False)
+    list_parser.add_argument(
+        '-n', '--name-only',
+        help='Display only plugin names',
+        dest='name_only',
+        action='store_true',
+        default=False)
 
     # sopel-plugin disable
     disable_parser = subparsers.add_parser(
@@ -103,13 +109,18 @@ def build_parser():
 def handle_list(options):
     """List Sopel plugins"""
     settings = utils.load_settings(options)
+    no_color = options.no_color
+    name_only = options.name_only
+    enabled_only = options.enabled_only
+    disabled_only = options.disabled_only
+
     for name, info in plugins.get_usable_plugins(settings).items():
         plugin, is_enabled = info
 
-        if options.enabled_only and not is_enabled:
+        if enabled_only and not is_enabled:
             # hide disabled plugins when displaying enabled only
             continue
-        elif options.disabled_only and is_enabled:
+        elif disabled_only and is_enabled:
             # hide enabled plugins when displaying disabled only
             continue
 
@@ -124,7 +135,7 @@ def handle_list(options):
             description.update(plugin.get_meta_description())
 
             # colorize name for display purpose
-            if not options.no_color:
+            if not no_color:
                 if is_enabled:
                     description['name'] = utils.green(name)
                 else:
@@ -138,7 +149,7 @@ def handle_list(options):
                 'source': 'unknown',
                 'status': error_status,
             })
-            if not options.no_color:
+            if not no_color:
                 if is_enabled:
                     # yellow instead of green
                     description['name'] = utils.yellow(name)
@@ -148,6 +159,9 @@ def handle_list(options):
                 description['status'] = utils.red(error_status)
 
         template = '{name}/{type} {label} ({source}) [{status}]'
+        if name_only:
+            template = '{name}'
+
         print(template.format(**description))
 
 
