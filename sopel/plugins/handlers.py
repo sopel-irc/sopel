@@ -418,9 +418,18 @@ class EntryPointPlugin(PyModulePlugin):
         .. __: https://setuptools.readthedocs.io/en/stable/setuptools.html#dynamic-discovery-of-services-and-plugins
 
     """
+    PLUGIN_TYPE = 'setup-entrypoint'
+
     def __init__(self, entry_point):
         self.entry_point = entry_point
         super(EntryPointPlugin, self).__init__(entry_point.name)
 
     def load(self):
         self._module = self.entry_point.load()
+
+    def get_meta_description(self):
+        data = super(EntryPointPlugin, self).get_meta_description()
+        data.update({
+            'source': str(self.entry_point),
+        })
+        return data
