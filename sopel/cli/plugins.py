@@ -19,6 +19,13 @@ def build_parser():
         help='Action to perform',
         dest='action')
 
+    # sopel-plugins show <name>
+    show_parser = subparsers.add_parser(
+        'show',
+        help="Show plugin details")
+    utils.add_common_arguments(show_parser)
+    show_parser.add_argument('name', help='Plugin name')
+
     # sopel-plugins list
     list_parser = subparsers.add_parser(
         'list',
@@ -165,6 +172,44 @@ def handle_list(options):
         print(template.format(**description))
 
 
+def handle_show(options):
+    """Show plugin details"""
+    plugin_name = options.name
+    settings = utils.load_settings(options)
+    usable_plugins = plugins.get_usable_plugins(settings)
+
+    # plugin does not exist
+    if plugin_name not in usable_plugins:
+        tools.stderr('No plugin named %s' % plugin_name)
+        return 1
+
+    plugin, is_enabled = usable_plugins[plugin_name]
+    description = {
+        'name': plugin_name,
+        'status': 'enabled' if is_enabled else 'disabled',
+    }
+
+    # option meta description from the plugin itself
+    try:
+        plugin.load()
+        description.update(plugin.get_meta_description())
+    except Exception as error:
+        label = ('%s' % error) or 'unknown loading exception'
+        error_status = 'error'
+        description.update({
+            'label': 'Error: %s' % label,
+            'type': 'unknown',
+            'source': 'unknown',
+            'status': error_status,
+        })
+
+    print('Plugin:', description['name'])
+    print('Status:', description['status'])
+    print('Type:', description['type'])
+    print('Source:', description['source'])
+    print('Label:', description['label'])
+
+
 def handle_disable(options):
     """Disable a Sopel plugin"""
     plugin_name = options.name
@@ -284,6 +329,8 @@ def main():
 
     if action == 'list':
         return handle_list(options)
+    elif action == 'show':
+        return handle_show(options)
     elif action == 'disable':
         return handle_disable(options)
     elif action == 'enable':
