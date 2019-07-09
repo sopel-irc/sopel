@@ -190,9 +190,11 @@ def handle_show(options):
     }
 
     # option meta description from the plugin itself
+    loaded = False
     try:
         plugin.load()
         description.update(plugin.get_meta_description())
+        loaded = True
     except Exception as error:
         label = ('%s' % error) or 'unknown loading exception'
         error_status = 'error'
@@ -208,6 +210,15 @@ def handle_show(options):
     print('Type:', description['type'])
     print('Source:', description['source'])
     print('Label:', description['label'])
+
+    if not loaded:
+        print('Loading failed')
+        return 1
+
+    print('Loaded successfully')
+    print('Setup:', 'yes' if plugin.has_setup() else 'no')
+    print('Shutdown:', 'yes' if plugin.has_shutdown() else 'no')
+    print('Configure:', 'yes' if plugin.has_configure() else 'no')
 
 
 def handle_disable(options):
