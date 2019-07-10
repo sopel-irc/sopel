@@ -22,9 +22,23 @@ def build_parser():
     # sopel-plugins show <name>
     show_parser = subparsers.add_parser(
         'show',
-        help="Show plugin details")
+        help="Show plugin details",
+        description="""
+            Show detailed information about a plugin.
+        """)
     utils.add_common_arguments(show_parser)
     show_parser.add_argument('name', help='Plugin name')
+
+    # sopel-plugins configure <name>
+    config_parser = subparsers.add_parser(
+        'configure',
+        help="Configure plugin with a config wizard",
+        description="""
+            Run a config wizard to configure a plugin. This can be used whether
+            the plugin is enabled or not.
+        """)
+    utils.add_common_arguments(config_parser)
+    config_parser.add_argument('name', help='Plugin name')
 
     # sopel-plugins list
     list_parser = subparsers.add_parser(
@@ -221,6 +235,39 @@ def handle_show(options):
     print('Configure:', 'yes' if plugin.has_configure() else 'no')
 
 
+def handle_configure(options):
+    """Configure a Sopel plugin with a config wizard"""
+    plugin_name = options.name
+    settings = utils.load_settings(options)
+    usable_plugins = plugins.get_usable_plugins(settings)
+
+    # plugin does not exist
+    if plugin_name not in usable_plugins:
+        tools.stderr('No plugin named %s' % plugin_name)
+        return 1
+
+    plugin, is_enabled = usable_plugins[plugin_name]
+    try:
+        plugin.load()
+    except Exception as error:
+        tools.stderr('Cannot load plugin %s: %s' % (plugin_name, error))
+        return 1
+
+    if not plugin.has_configure():
+        tools.stderr('Nothing to configure for plugin %s' % plugin_name)
+        return 0  # nothing to configure is not exactly an error case
+
+    print('Configure %s' % plugin.get_label())
+    plugin.configure(settings)
+    settings.save()
+
+    if not is_enabled:
+        tools.stderr(
+            "Plugin {0} has been configured but is not enabled. "
+            "Use 'sopel-plugins enable {0}' to enable it".format(plugin_name)
+        )
+
+
 def handle_disable(options):
     """Disable a Sopel plugin"""
     plugin_name = options.name
@@ -342,6 +389,8 @@ def main():
         return handle_list(options)
     elif action == 'show':
         return handle_show(options)
+    elif action == 'configure':
+        return handle_configure(options)
     elif action == 'disable':
         return handle_disable(options)
     elif action == 'enable':
