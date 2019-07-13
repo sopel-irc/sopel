@@ -112,12 +112,14 @@ def run(settings, pid_file, daemon=False):
 
 
 def add_legacy_options(parser):
+    # TL;DR: option -d/--fork is not deprecated.
+    # When the legacy action is replaced in Sopel 8, 'start' will become the
+    # new default action, with its arguments.
+    # The option -d/--fork is used by both actions (start and legacy),
+    # and it has the same meaning and behavior, therefore it is not deprecated.
     parser.add_argument("-d", '--fork', action="store_true",
                         dest="daemonize",
-                        help=(
-                            "Daemonize Sopel. "
-                            "(deprecated, and will be removed in Sopel 8; "
-                            "use ``sopel start -d`` instead)"))
+                        help=("Daemonize Sopel."))
     parser.add_argument("-q", '--quit', action="store_true", dest="quit",
                         help=(
                             "Gracefully quit Sopel "
