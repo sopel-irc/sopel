@@ -7,12 +7,12 @@ Once installed, you can configure and start a Sopel IRC Bot instance::
    # ... configuration wizard ...
    $ sopel start
 
-The ``configure`` sub-command will run a brief configuration wizard to set up
+The ``configure`` subcommand will run a brief configuration wizard to set up
 the basic options: the bot's nick, its admin's nick, the IRC server to connect
 to, and channels to join. By default, it creates the file
 ``~/.sopel/default.cfg`` (creating the homedir directory if necessary.)
 
-Once this is done, the ``start`` sub-command runs the bot, using this
+Once this is done, the ``start`` subcommand runs the bot, using this
 configuration file unless one is provided using the ``-c``/``--config`` option.
 
 

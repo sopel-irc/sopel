@@ -172,17 +172,17 @@ def build_parser():
     utils.add_common_arguments(parser)
 
     subparsers = parser.add_subparsers(
-        title='sub-commands',
-        description='List of Sopel\'s sub-commands',
+        title='subcommands',
+        description='List of Sopel\'s subcommands',
         dest='action',
         metavar='{start,configure,stop,restart}')
 
-    # manage `legacy` sub-command
+    # manage `legacy` subcommand
     parser_legacy = subparsers.add_parser('legacy')
     add_legacy_options(parser_legacy)
     utils.add_common_arguments(parser_legacy)
 
-    # manage `start` sub-command
+    # manage `start` subcommand
     parser_start = subparsers.add_parser(
         'start',
         description='Start a Sopel instance. '
@@ -205,7 +205,7 @@ def build_parser():
         help="Suppress all output")
     utils.add_common_arguments(parser_start)
 
-    # manage `configure` sub-command
+    # manage `configure` subcommand
     parser_configure = subparsers.add_parser(
         'configure',
         description='Run the configuration wizard. It can be used to create '
@@ -220,7 +220,7 @@ def build_parser():
              'their configuration wizards.')
     utils.add_common_arguments(parser_configure)
 
-    # manage `stop` sub-command
+    # manage `stop` subcommand
     parser_stop = subparsers.add_parser(
         'stop',
         description='Stop a running Sopel instance. '
@@ -244,7 +244,7 @@ def build_parser():
         help="Suppress all output")
     utils.add_common_arguments(parser_stop)
 
-    # manage `restart` sub-command
+    # manage `restart` subcommand
     parser_restart = subparsers.add_parser(
         'restart',
         description='Restart a running Sopel instance',
