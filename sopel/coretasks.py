@@ -780,7 +780,8 @@ def _record_who(bot, channel, user, host, nick, account=None, away=None, modes=N
         usr.account = None
     else:
         usr.account = account
-    usr.away = away
+    if away is not None:
+        usr.away = away
     priv = 0
     if modes:
         mapping = {
