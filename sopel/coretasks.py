@@ -403,6 +403,13 @@ def _send_who(bot, channel):
         bot.write(['WHO', channel])
 
 
+@sopel.module.interval(30)
+def _periodic_send_who(bot):
+    """Periodically send a WHO request to keep user information up-to-date."""
+    for channel in bot.channels:
+        _send_who(bot, channel)
+
+
 @sopel.module.rule('.*')
 @sopel.module.event('JOIN')
 @sopel.module.priority('high')
