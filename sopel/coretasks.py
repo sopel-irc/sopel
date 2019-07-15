@@ -806,8 +806,9 @@ def _record_who(bot, channel, user, host, nick, account=None, away=None, modes=N
 @sopel.module.unblockable
 def recv_who(bot, trigger):
     channel, user, host, _, nick, status = trigger.args[1:7]
+    away = 'G' in status
     modes = ''.join([c for c in status if c in '~&@%+'])
-    _record_who(bot, channel, user, host, nick, modes=modes)
+    _record_who(bot, channel, user, host, nick, away=away, modes=modes)
 
 
 @sopel.module.event(events.RPL_ENDOFWHO)
