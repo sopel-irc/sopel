@@ -13,6 +13,7 @@ dispatch function in bot.py and making it easier to maintain.
 from __future__ import unicode_literals, absolute_import, print_function, division
 
 from random import randint
+import datetime
 import re
 import sys
 import time
@@ -401,7 +402,7 @@ def _send_who(bot, channel):
         # We might be on an old network, but we still care about keeping our
         # user list updated
         bot.write(['WHO', channel])
-    channel.last_who = int(time.time())
+    channel.last_who = datetime.datetime.utcnow()
 
 
 @sopel.module.interval(30)
@@ -409,19 +410,17 @@ def _periodic_send_who(bot):
     """Periodically send a WHO request to keep user information up-to-date."""
     if 'away-notify' in bot.enabled_capabilities:
         return
-    # Loops through the channels to find the one that has the longest time since the last WHO request,
-    # and issues a WHO request only if the last request for the channel was more than
-    # 'minimum_seconds_between_who_requests_per_channel' seconds ago.
-    current_time = int(time.time())
-    oldest_who_channel = None
-    oldest_who_time = current_time
-    minimum_seconds_between_who_requests_per_channel = 120
+    # Loops through the channels to find the one that has the longest time since the last WHO
+    # request, and issues a WHO request only if the last request for the channel was more than
+    # 'who_trigger_interval' seconds ago.
+    who_trigger_interval = 120
+    who_trigger_time = datetime.datetime.utcnow() - datetime.timedelta(seconds=who_trigger_interval)
+    selected_channel = None
     for channel in bot.channels:
-        if (channel.last_who is None) or (channel.last_who < oldest_who_time):
-            oldest_who_channel = channel
-            oldest_who_time = 1 if channel.last_who is None else channel.last_who
-    if oldest_who_channel is not None and (current_time - oldest_who_time) > minimum_seconds_between_who_requests_per_channel:
-        _send_who(bot, oldest_who_channel)
+        if (selected_channel is None) or (channel.last_who is None) or ((selected_channel.last_who is not None) and (channel.last_who < selected_channel.last_who)):
+            selected_channel = channel
+    if (selected_channel is not None) and ((selected_channel.last_who is None) or (selected_channel.last_who < who_trigger_time)):
+        _send_who(bot, selected_channel)
 
 
 @sopel.module.rule('.*')
