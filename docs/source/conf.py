@@ -243,7 +243,7 @@ man_pages = [
      [u'Sopel contributors'], 1),
     ('package', 'sopel', u'Sopel IRC Bot Documentation',
      [u'Sopel contributors'], 3),
-    ('configure', 'sopel', u'Sopel IRC Bot Configuration',
+    ('configuration', 'sopel', u'Sopel IRC Bot Configuration',
      [u'Sopel contributors'], 5),
 ]
 
