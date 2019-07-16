@@ -87,7 +87,7 @@ The same instance can have multiple admins. Similarly, it can be configured
 by :attr:`~CoreSection.admin_accounts` or by :attr:`~CoreSection.admins`. If
 ``admin_accounts`` is set, ``admins`` will be ignored.
 
-Both ``owner_account`` and ``admin_accounts`` are safer to use than a
+Both ``owner_account`` and ``admin_accounts`` are safer to use than
 nick-based matching, but the IRC server must support accounts.
 (Most, sadly, do not as of mid-2019.)
 
@@ -319,7 +319,7 @@ type of database, set :attr:`~CoreSection.db_type` to one of these values:
 SQLite
 ------
 
-There is only one options for SQLite, :attr:`~CoreSection.db_filename`, which
+There is only one option for SQLite, :attr:`~CoreSection.db_filename`, which
 configures the path to the SQLite database file. Other options are ignored
 when ``db_type`` is set to ``sqlite``.
 
@@ -381,7 +381,7 @@ Other directives include:
 Plugins
 -------
 
-By default, Sopel will load all available plugins. To exclude a plugins, you
+By default, Sopel will load all available plugins. To exclude a plugin, you
 can put its name in the :attr:`~CoreSection.exclude` directive. Here, the
 ``reload`` and ``meetbot`` plugins are disabled:
 

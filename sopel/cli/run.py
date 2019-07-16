@@ -119,7 +119,7 @@ def add_legacy_options(parser):
     # and it has the same meaning and behavior, therefore it is not deprecated.
     parser.add_argument("-d", '--fork', action="store_true",
                         dest="daemonize",
-                        help=("Daemonize Sopel."))
+                        help="Daemonize Sopel.")
     parser.add_argument("-q", '--quit', action="store_true", dest="quit",
                         help=(
                             "Gracefully quit Sopel "
