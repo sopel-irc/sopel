@@ -9,8 +9,8 @@ A typical configuration file looks like this::
     [core]
     nick = Sopel
     host = chat.freenode.net
-    use_ssl = false
-    port = 6667
+    use_ssl = true
+    port = 6697
     owner = dgw
     channels = #sopel
 
@@ -99,14 +99,17 @@ To connect to a server, your bot needs these directives:
 
 * :attr:`~CoreSection.host`: the server's hostname. Can be a domain name
   (like ``chat.freenode.net``) or an IP address.
-* :attr:`~CoreSection.port`: optional, the port to connect to. Usually 6697,
-  the default value the bot will use to connect to the server.
+* :attr:`~CoreSection.port`: optional, the port to connect to. Usually 6697 for
+  SSL connection and 6667 for unsecure connection, the default value the bot
+  will use to connect to the server.
+* :attr:`~CoreSection.use_ssl`: connect using SSL (see below)
 
 .. code-block:: ini
 
    [core]
    host = chat.freenode.net
-   port = 6667
+   port = 6697
+   use_ssl = true
 
 You can also configure the host the bot will connect from with
 :attr:`~CoreSection.bind_host`.

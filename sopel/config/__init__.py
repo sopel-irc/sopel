@@ -18,8 +18,8 @@ The configuration file being::
     [core]
     nick = Sopel
     host = irc.freenode.org
-    use_ssl = false
-    port = 6667
+    use_ssl = true
+    port = 6697
     owner = dgw
     channels = #sopel
 
