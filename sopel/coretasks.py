@@ -417,10 +417,18 @@ def _periodic_send_who(bot):
     who_trigger_time = datetime.datetime.utcnow() - datetime.timedelta(seconds=who_trigger_interval)
     selected_channel = None
     for channel in bot.channels:
-        if (selected_channel is None) or (channel.last_who is None) or ((selected_channel.last_who is not None) and (channel.last_who < selected_channel.last_who)):
+        if channel.last_who is None:
             selected_channel = channel
-    if (selected_channel is not None) and ((selected_channel.last_who is None) or (selected_channel.last_who < who_trigger_time)):
-        _send_who(bot, selected_channel)
+            break
+        if selected_channel is None:
+            selected_channel = channel
+        elif channel.last_who < selected_channel.last_who:
+            selected_channel = channel
+    if (selected_channel is not None):
+        if selected_channel.last_who is None:
+            _send_who(bot, selected_channel)
+        elif selected_channel.last_who < who_trigger_time:
+            _send_who(bot, selected_channel)
 
 
 @sopel.module.rule('.*')
