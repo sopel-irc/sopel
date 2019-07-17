@@ -409,26 +409,27 @@ def _send_who(bot, channel):
 def _periodic_send_who(bot):
     """Periodically send a WHO request to keep user information up-to-date."""
     if 'away-notify' in bot.enabled_capabilities:
+        # WHO not needed to update 'away' status
         return
+
     # Loops through the channels to find the one that has the longest time since the last WHO
     # request, and issues a WHO request only if the last request for the channel was more than
-    # 'who_trigger_interval' seconds ago.
-    who_trigger_interval = 120
-    who_trigger_time = datetime.datetime.utcnow() - datetime.timedelta(seconds=who_trigger_interval)
+    # 120 seconds ago.
+    who_trigger_time = datetime.datetime.utcnow() - datetime.timedelta(seconds=120)
     selected_channel = None
     for channel in bot.channels:
         if channel.last_who is None:
+            # WHO was never sent yet to this channel: stop here
             selected_channel = channel
             break
-        if selected_channel is None:
+        if channel.last_who < who_trigger_time:
+            # this channel's last who request is the most outdated one at the moment
             selected_channel = channel
-        elif channel.last_who < selected_channel.last_who:
-            selected_channel = channel
+            who_trigger_time = channel.last_who
+
     if (selected_channel is not None):
-        if selected_channel.last_who is None:
-            _send_who(bot, selected_channel)
-        elif selected_channel.last_who < who_trigger_time:
-            _send_who(bot, selected_channel)
+        # selected_channel's last who is either none or the oldest valid
+        _send_who(bot, selected_channel)
 
 
 @sopel.module.rule('.*')
