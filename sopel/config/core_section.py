@@ -12,8 +12,7 @@ from sopel.tools import Identifier
 
 
 def _find_certs():
-    """
-    Find the TLS root CA store.
+    """Find the TLS root CA store.
 
     :returns: str (path to file)
     """
@@ -54,31 +53,40 @@ def configure(config):
 
 class CoreSection(StaticSection):
     """The config section used for configuring the bot itself."""
+
     admins = ListAttribute('admins')
-    """The list of people (other than the owner) who can administer the bot"""
+    """The list of people (other than the owner) who can administer the bot."""
 
     admin_accounts = ListAttribute('admin_accounts')
-    """The list of accounts (other than the owner's) who can administer the bot.
+    """The list of admin accounts other than the owner's.
+
+    Each account is allowed to administer the bot and can perform commands
+    that are restricted to admins.
 
     This should not be set for networks that do not support IRCv3 account
-    capabilities."""
+    capabilities.
+    """
 
     alias_nicks = ListAttribute('alias_nicks')
-    """List of alternate names recognized as the bot's nick for $nick and
-    $nickname regex substitutions"""
+    """List of alternate names for regex substitutions.
+
+    These aliases are used as the bot's nick for ``$nick`` and ``$nickname``
+    regex substitutions.
+    """
 
     auth_method = ChoiceAttribute('auth_method', choices=[
         'nickserv', 'authserv', 'Q', 'sasl', 'server', 'userserv'])
     """Simple method to authenticate with the server.
 
-    Can be ``nickserv``, ``authserv``, ``Q``, ``sasl``, or ``server`` or ``userserv``.
+    Can be ``nickserv``, ``authserv``, ``Q``, ``sasl``, or ``server`` or
+    ``userserv``.
 
     This allows only a single authentication method; to use both a server-based
     authentication method as well as a nick-based authentication method, see
     ``server_auth_method`` and ``nick_auth_method``.
 
-    If this is specified, both ``server_auth_method`` and ``nick_auth_method``
-    will be ignored.
+    If this is specified, ``nick_auth_method`` will be ignored, and it takes
+    precedence over ``server_auth_method``.
     """
 
     auth_password = ValidatedAttribute('auth_password')
@@ -88,12 +96,14 @@ class CoreSection(StaticSection):
     """The user to use for nickserv authentication, or the SASL mechanism.
 
     May not apply, depending on ``auth_method``. Defaults to NickServ for
-    nickserv auth, and PLAIN for SASL auth."""
+    nickserv auth, and PLAIN for SASL auth.
+    """
 
     auth_username = ValidatedAttribute('auth_username')
     """The username/account to use to authenticate with the server.
 
-    May not apply, depending on ``auth_method``."""
+    May not apply, depending on ``auth_method``.
+    """
 
     auto_url_schemes = ListAttribute(
         'auto_url_schemes',
@@ -108,13 +118,13 @@ class CoreSection(StaticSection):
     """
 
     bind_host = ValidatedAttribute('bind_host')
-    """Bind the connection to a specific IP"""
+    """Bind the connection to a specific IP."""
 
     ca_certs = FilenameAttribute('ca_certs', default=_find_certs())
-    """The path of the CA certs pem file"""
+    """The path of the CA certs pem file."""
 
     channels = ListAttribute('channels')
-    """List of channels for the bot to join when it connects"""
+    """List of channels for the bot to join when it connects."""
 
     db_type = ChoiceAttribute('db_type', choices=[
         'sqlite', 'mysql', 'postgres', 'mssql', 'oracle', 'firebird', 'sybase'], default='sqlite')
@@ -124,15 +134,23 @@ class CoreSection(StaticSection):
     postgres - pip install psycopg2
     mssql - pip install pymssql
 
-    See https://docs.sqlalchemy.org/en/latest/dialects/ for a full list of dialects"""
+    See https://docs.sqlalchemy.org/en/latest/dialects/ for a full list of
+    dialects.
+    """
 
     db_filename = ValidatedAttribute('db_filename')
     """The filename for Sopel's database. (SQLite only)"""
 
     db_driver = ValidatedAttribute('db_driver')
     """The driver for Sopel's database.
-    This is optional, but can be specified if user wants to use a different driver
-    https://docs.sqlalchemy.org/en/latest/core/engines.html"""
+
+    This is optional, but can be specified if user wants to use a different
+    driver.
+
+    .. seealso::
+
+        https://docs.sqlalchemy.org/en/latest/core/engines.html
+    """
 
     db_user = ValidatedAttribute('db_user')
     """The user for Sopel's database."""
@@ -166,7 +184,7 @@ class CoreSection(StaticSection):
     """A list of other directories you'd like to include modules from."""
 
     help_prefix = ValidatedAttribute('help_prefix', default='.')
-    """The prefix to use in help"""
+    """The prefix to use in help output."""
 
     @property
     def homedir(self):
@@ -183,7 +201,8 @@ class CoreSection(StaticSection):
     host_blocks = ListAttribute('host_blocks')
     """A list of hostmasks which Sopel should ignore.
 
-    Regular expression syntax is used"""
+    Regular expression syntax is used.
+    """
 
     log_raw = ValidatedAttribute('log_raw', bool, default=False)
     """Whether a log of raw lines as sent and received should be kept."""
@@ -198,12 +217,16 @@ class CoreSection(StaticSection):
     """The logging format string to use for timestamps in IRC channel logs.
 
     If not specified, this falls back to using ``logging_datefmt``.
+
+    .. versionadded:: 7.0
     """
 
     logging_channel_format = ValidatedAttribute('logging_channel_format')
     """The logging format string to use in IRC channel logs.
 
     If not specified, this falls back to using ``logging_format``.
+
+    .. versionadded:: 7.0
     """
 
     logging_channel_level = ChoiceAttribute('logging_channel_level',
@@ -213,6 +236,8 @@ class CoreSection(StaticSection):
     """The lowest severity of logs to display in IRC channel logs.
 
     If not specified, this falls back to using ``logging_level``.
+
+    .. versionadded:: 7.0
     """
 
     logging_datefmt = ValidatedAttribute('logging_datefmt')
@@ -220,6 +245,8 @@ class CoreSection(StaticSection):
 
     If not specified, the datefmt is not provided, and logging will use
     the Python default.
+
+    .. versionadded:: 7.0
     """
 
     logging_format = ValidatedAttribute('logging_format')
@@ -227,6 +254,8 @@ class CoreSection(StaticSection):
 
     If not specified, the format is not provided, and logging will use
     the Python default.
+
+    .. versionadded:: 7.0
     """
 
     logging_level = ChoiceAttribute('logging_level',
@@ -235,34 +264,42 @@ class CoreSection(StaticSection):
                                     'WARNING')
     """The lowest severity of logs to display.
 
-    If not specified, this defaults to WARNING.
+    If not specified, this defaults to ``WARNING``.
     """
 
     modes = ValidatedAttribute('modes', default='B')
     """User modes to be set on connection."""
 
     name = ValidatedAttribute('name', default='Sopel: https://sopel.chat')
-    """The "real name" of your bot for WHOIS responses."""
+    """The "real name" of your bot for ``WHOIS`` responses."""
 
     nick = ValidatedAttribute('nick', Identifier, default=Identifier('Sopel'))
-    """The nickname for the bot"""
+    """The nickname for the bot."""
 
     nick_auth_method = ChoiceAttribute('nick_auth_method', choices=[
         'nickserv', 'authserv', 'Q', 'userserv'])
     """The nick authentication method.
 
     Can be ``nickserv``, ``authserv``, ``Q``, or ``userserv``.
+
+    .. versionadded:: 7.0
     """
 
     nick_auth_password = ValidatedAttribute('nick_auth_password')
-    """The password to use to authenticate your nick."""
+    """The password to use to authenticate the bot's nick.
+
+    .. versionadded:: 7.0
+    """
 
     nick_auth_target = ValidatedAttribute('nick_auth_target')
     """The target user for nick authentication.
 
     May not apply, depending on ``nick_auth_method``.
 
-    Defaults to NickServ for nickserv, and UserServ for userserv.
+    Defaults to ``NickServ`` for ``nickserv``, and ``UserServ`` for
+    ``userserv``.
+
+    .. versionadded:: 7.0
     """
 
     nick_auth_username = ValidatedAttribute('nick_auth_username')
@@ -271,19 +308,23 @@ class CoreSection(StaticSection):
     May not apply, depending on ``nick_auth_method``.
 
     Defaults to the value of ``nick``.
+
+    .. versionadded:: 7.0
     """
 
     nick_blocks = ListAttribute('nick_blocks')
     """A list of nicks which Sopel should ignore.
 
-    Regular expression syntax is used."""
+    Regular expression syntax is used.
+    """
 
     not_configured = ValidatedAttribute('not_configured', bool, default=False)
     """For package maintainers. Not used in normal configurations.
 
     This allows software packages to install a default config file, with this
     set to true, so that the bot will not run until it has been properly
-    configured."""
+    configured.
+    """
 
     owner = ValidatedAttribute('owner', default=NO_DEFAULT)
     """The IRC name of the owner of the bot."""
@@ -299,7 +340,8 @@ class CoreSection(StaticSection):
     """The directory in which to put the file Sopel uses to track its process ID.
 
     You probably do not need to change this unless you're managing Sopel with
-    systemd or similar."""
+    ``systemd`` or similar.
+    """
 
     port = ValidatedAttribute('port', int, default=6667)
     """The port to connect on."""
@@ -308,7 +350,8 @@ class CoreSection(StaticSection):
     """The prefix to add to the beginning of commands.
 
     It is a regular expression (so the default, ``\\.``, means commands start
-    with a period), though using capturing groups will create problems."""
+    with a period), though using capturing groups will create problems.
+    """
 
     reply_errors = ValidatedAttribute('reply_errors', bool, default=True)
     """Whether to message the sender of a message that triggered an error with the exception."""
@@ -317,25 +360,36 @@ class CoreSection(StaticSection):
     """The server authentication method.
 
     Can be ``sasl`` or ``server``.
+
+    .. versionadded:: 7.0
     """
 
     server_auth_password = ValidatedAttribute('server_auth_password')
-    """The password to use to authenticate with the server."""
+    """The password to use to authenticate with the server.
+
+    .. versionadded:: 7.0
+    """
 
     server_auth_sasl_mech = ValidatedAttribute('server_auth_sasl_mech')
     """The SASL mechanism.
 
     Defaults to PLAIN.
+
+    .. versionadded:: 7.0
     """
 
     server_auth_username = ValidatedAttribute('server_auth_username')
-    """The username/account to use to authenticate with the server."""
+    """The username/account to use to authenticate with the server.
+
+    .. versionadded:: 7.0
+    """
 
     throttle_join = ValidatedAttribute('throttle_join', int)
     """Slow down the initial join of channels to prevent getting kicked.
 
     Sopel will only join this many channels at a time, sleeping for a second
-    between each batch. This is unnecessary on most networks."""
+    between each batch. This is unnecessary on most networks.
+    """
 
     timeout = ValidatedAttribute('timeout', int, default=120)
     """The amount of time acceptable between pings before timing out."""
@@ -350,10 +404,19 @@ class CoreSection(StaticSection):
     """Whether to require a trusted SSL certificate for SSL connections."""
 
     flood_burst_lines = ValidatedAttribute('flood_burst_lines', int, default=4)
-    """How many messages can be sent in burst mode."""
+    """How many messages can be sent in burst mode.
+
+    .. versionadded:: 7.0
+    """
 
     flood_empty_wait = ValidatedAttribute('flood_empty_wait', float, default=0.7)
-    """How long to wait between sending messages when not in burst mode, in seconds."""
+    """How long to wait between sending messages when not in burst mode, in seconds.
+
+    .. versionadded:: 7.0
+    """
 
     flood_refill_rate = ValidatedAttribute('flood_refill_rate', int, default=1)
-    """How quickly burst mode recovers, in messages per second."""
+    """How quickly burst mode recovers, in messages per second.
+
+    .. versionadded:: 7.0
+    """

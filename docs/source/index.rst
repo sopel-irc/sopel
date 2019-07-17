@@ -23,9 +23,5 @@ Documentation
 .. toctree::
     :titlesonly:
 
-    plugin
-    bot
-    trigger
-    config
-    db
-    api
+    run
+    package

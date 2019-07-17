@@ -222,7 +222,11 @@ def add_common_arguments(parser):
         default=None,
         metavar='filename',
         dest='config',
-        help='Use a specific configuration file')
+        help='Use a specific configuration file. '
+             'A config name can be given and the configuration file will be '
+             'found in Sopel\'s homedir (defaults to ``~/.sopel/default.cfg``). '
+             'An absolute pathname can be provided instead to use an '
+             'arbitrary location.')
 
 
 def load_settings(options):

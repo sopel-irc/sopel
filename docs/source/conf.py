@@ -28,7 +28,11 @@ from sopel import __version__
 
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
-extensions = ['sphinx.ext.autodoc', 'sphinx.ext.intersphinx']
+extensions = [
+    'sphinx.ext.autodoc',
+    'sphinx.ext.intersphinx',
+    'sphinxcontrib.autoprogram',
+]
 intersphinx_mapping = {'python': ('https://docs.python.org/3', None)}
 
 # Add any paths that contain templates here, relative to this directory.
@@ -225,9 +229,22 @@ latex_documents = [
 
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
+# Note from `man 7 man-pages`
+# 1: User commands (Programs)
+# 2: System calls
+# 3: Library calls
+# 4: Special files (devices)
+# 5: File formats and configuration files
+# 6: Games
+# 7: Overview, conventions, and miscellaneous
+# 8: System management commands
 man_pages = [
-    ('index', 'sopel', u'Sopel IRC Bot Documentation',
-     [u'Sopel contributors'], 1)
+    ('cli', 'sopel', u'Sopel IRC Bot Command Line',
+     [u'Sopel contributors'], 1),
+    ('package', 'sopel', u'Sopel IRC Bot Documentation',
+     [u'Sopel contributors'], 3),
+    ('configuration', 'sopel', u'Sopel IRC Bot Configuration',
+     [u'Sopel contributors'], 5),
 ]
 
 # If true, show URL addresses after external links.
