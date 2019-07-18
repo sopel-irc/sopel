@@ -427,7 +427,7 @@ def _periodic_send_who(bot):
             selected_channel = channel
             who_trigger_time = channel.last_who
 
-    if (selected_channel is not None):
+    if selected_channel is not None:
         # selected_channel's last who is either none or the oldest valid
         _send_who(bot, selected_channel)
 
