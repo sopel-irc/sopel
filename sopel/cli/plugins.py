@@ -3,6 +3,7 @@
 from __future__ import unicode_literals, absolute_import, print_function, division
 
 import argparse
+import inspect
 
 from sopel import plugins, tools
 
@@ -22,34 +23,38 @@ def build_parser():
     # sopel-plugins show <name>
     show_parser = subparsers.add_parser(
         'show',
+        formatter_class=argparse.RawTextHelpFormatter,
         help="Show plugin details",
-        description="""
-            Show detailed information about a plugin.
-        """)
+        description="Show detailed information about a plugin.")
     utils.add_common_arguments(show_parser)
     show_parser.add_argument('name', help='Plugin name')
 
     # sopel-plugins configure <name>
     config_parser = subparsers.add_parser(
         'configure',
+        formatter_class=argparse.RawTextHelpFormatter,
         help="Configure plugin with a config wizard",
-        description="""
-            Run a config wizard to configure a plugin. This can be used whether
-            the plugin is enabled or not.
-        """)
+        description=inspect.cleandoc("""
+            Run a config wizard to configure a plugin.
+
+            This can be used whether the plugin is enabled or not.
+        """))
     utils.add_common_arguments(config_parser)
     config_parser.add_argument('name', help='Plugin name')
 
     # sopel-plugins list
     list_parser = subparsers.add_parser(
         'list',
+        formatter_class=argparse.RawTextHelpFormatter,
         help="List available Sopel plugins",
-        description="""
-            List available Sopel plugins from all possible sources: built-in,
-            from ``sopel_modules.*``, from ``sopel.plugins`` entry points,
-            or Sopel's plugin directories. Enabled plugins are displayed in
-            green; disabled, in red.
-        """)
+        description=inspect.cleandoc("""
+            List available Sopel plugins from all possible sources.
+
+            Plugin sources are: built-in, from ``sopel_modules.*``,
+            from ``sopel.plugins`` entry points, or Sopel's plugin directories.
+
+            Enabled plugins are displayed in green; disabled, in red.
+        """))
     utils.add_common_arguments(list_parser)
     list_parser.add_argument(
         '-C', '--no-color',
@@ -80,38 +85,42 @@ def build_parser():
     # sopel-plugin disable
     disable_parser = subparsers.add_parser(
         'disable',
+        formatter_class=argparse.RawTextHelpFormatter,
         help="Disable a Sopel plugins",
-        description="""
+        description=inspect.cleandoc("""
             Disable a Sopel plugin by its name, no matter where it comes from.
+
             It is not possible to disable the ``coretasks`` plugin.
-        """)
+        """))
     utils.add_common_arguments(disable_parser)
     disable_parser.add_argument('name', help='Name of the plugin to disable')
     disable_parser.add_argument(
         '-f', '--force', action='store_true', default=False,
-        help="""
-            Force exclusion of the plugin. When ``core.enable`` is defined, a
-            plugin may be disabled without being excluded. In this case, use
-            this option to force its exclusion.
-        """)
+        help=inspect.cleandoc("""
+            Force exclusion of the plugin.
+            When ``core.enable`` is defined, a plugin may be disabled without
+            being excluded. In this case, use this option to force
+            its exclusion.
+        """))
     disable_parser.add_argument(
         '-r', '--remove', action='store_true', default=False,
-        help="""
-            Remove from ``core.enable`` list if applicable.
-        """)
+        help="Remove from ``core.enable`` list if applicable.")
 
     # sopel-plugin enable
     enable_parser = subparsers.add_parser(
         'enable',
-        help="Enable a Sopel plugins",
-        description="""
+        formatter_class=argparse.RawTextHelpFormatter,
+        help="Enable a Sopel plugin",
+        description=inspect.cleandoc("""
             Enable a Sopel plugin by its name, no matter where it comes from.
-            The ``coretasks`` plugin is always enabled. By default, a plugin
-            that is not excluded is enabled, unless at least one plugin is
-            defined in the ``core.enable`` list. In that case, Sopel uses
-            a "allow-only" policy for plugins, and enabled plugins must be
-            added to this list.
-        """)
+
+            The ``coretasks`` plugin is always enabled.
+
+            By default, a plugin that is not excluded is enabled, unless at
+            least one plugin is defined in the ``core.enable`` list.
+            In that case, Sopel uses an "allow-only" policy for plugins, and
+            all desired plugins must be added to this list.
+        """))
     utils.add_common_arguments(enable_parser)
     enable_parser.add_argument('name', help='Name of the plugin to enable')
     enable_parser.add_argument(
@@ -119,10 +128,10 @@ def build_parser():
         dest='allow_only',
         action='store_true',
         default=False,
-        help="""
-            Enforce allow-only policy, adding the plugin to the ``core.enable``
-            list.
-        """)
+        help=inspect.cleandoc("""
+            Enforce allow-only policy.
+            It makes sure the plugin is added to the ``core.enable`` list.
+        """))
 
     return parser
 
@@ -150,7 +159,7 @@ def handle_list(options):
             'status': 'enabled' if is_enabled else 'disabled',
         }
 
-        # option meta description from the plugin itself
+        # optional meta description from the plugin itself
         try:
             plugin.load()
             description.update(plugin.get_meta_description())
@@ -203,7 +212,7 @@ def handle_show(options):
         'status': 'enabled' if is_enabled else 'disabled',
     }
 
-    # option meta description from the plugin itself
+    # optional meta description from the plugin itself
     loaded = False
     try:
         plugin.load()
