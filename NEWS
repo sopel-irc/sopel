@@ -42,6 +42,9 @@ Module changes
   * Note/TODO: #1622 is an issue listing remaining things that need doing to
     make this feature consistent, and should be replaced by the PR implementing
     them when it's merged.
+* The `.at` command (from `remind`) understands dates now [[#1590][]]
+  * Finally, it's possible to set a reminder more than 24 hours ahead without
+    first converting the future date/time to a duration for use with `.in`!
 * Short `redd.it` links are now detected by the `reddit` module [[#1503][]]
 * Python version is now included in `.version` command output [[#1462][]]
 * Readability of `.choose` command output is significantly improved [[#1425][]]
@@ -133,11 +136,13 @@ Core changes
 API changes
 -----------
 
-* [API documentation][api-docs] has been overhauled [[#1563][], [#1566][]]
+* [API documentation][api-docs] has been overhauled [[#1563][], [#1566][],
+  [#1646][]]
   * More consistent style
   * Better use of Sphinx features (e.g. parameter definitions, return value
     notes, & version annotations)
   * General cleanup and copy-editing
+  * Much more detail and examples to help new bot users and plugin authors
 * Most of Sopel's submodules now define `__all__`, limiting namespace pollution
   from using `*` in imports [[#1582][]]
 * Plugins can register themselves via `setuptools` entry points [[#1585][]]
@@ -267,11 +272,13 @@ API changes
 [#1582]: https://github.com/sopel-irc/sopel/pull/1582
 [#1583]: https://github.com/sopel-irc/sopel/pull/1583
 [#1585]: https://github.com/sopel-irc/sopel/pull/1585
+[#1590]: https://github.com/sopel-irc/sopel/pull/1590
 [#1606]: https://github.com/sopel-irc/sopel/pull/1606
 [#1607]: https://github.com/sopel-irc/sopel/pull/1607
 [#1610]: https://github.com/sopel-irc/sopel/pull/1610
 [#1622]: https://github.com/sopel-irc/sopel/issues/1622
 [#1638]: https://github.com/sopel-irc/sopel/pull/1638
+[#1646]: https://github.com/sopel-irc/sopel/pull/1646
 [#1652]: https://github.com/sopel-irc/sopel/pull/1652
 
 [api-docs]: https://sopel.chat/docs/
