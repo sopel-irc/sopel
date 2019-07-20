@@ -129,7 +129,13 @@ def build_parser():
             all desired plugins must be added to this list.
         """))
     utils.add_common_arguments(enable_parser)
-    enable_parser.add_argument('name', help='Name of the plugin to enable')
+    enable_parser.add_argument(
+        'names', metavar='name', nargs='+',
+        help=inspect.cleandoc("""
+            Name of the plugin to enable.
+            Can be used multiple times to enable multiple plugins at once.
+            In case of error, configuration is not modified.
+        """))
     enable_parser.add_argument(
         '-a', '--allow-only',
         dest='allow_only',
@@ -328,6 +334,19 @@ def _handle_disable_plugin(settings, plugin_name, force):
     return True
 
 
+def display_unknown_plugins(unknown_plugins):
+    # at least one of the plugins does not exist
+    unknown_count = len(unknown_plugins)
+    if unknown_count == 1:
+        tools.stderr('No plugin named %s.' % unknown_plugins[0])
+    elif unknown_count == 2:
+        tools.stderr('No plugin named %s or %s.' % unknown_plugins)
+    else:
+        left = ', '.join(unknown_plugins[:-1])
+        last = unknown_plugins[-1]
+        tools.stderr('No plugin named %s, or %s.' % (left, last))
+
+
 def handle_disable(options):
     """Disable Sopel plugins"""
     plugin_names = options.names
@@ -348,17 +367,7 @@ def handle_disable(options):
         if name not in usable_plugins
     ]
     if unknown_plugins:
-        # at least one of the plugins does not exist
-        unknown_count = len(unknown_plugins)
-        if unknown_count == 1:
-            tools.stderr('No plugin named %s.' % unknown_plugins[0])
-        elif unknown_count == 2:
-            tools.stderr('No plugin named %s or %s.' % unknown_plugins)
-        else:
-            left = ', '.join(unknown_plugins[:-1])
-            last = unknown_plugins[-1]
-            tools.stderr('No plugin named %s, or %s.' % (left, last))
-
+        display_unknown_plugins(unknown_plugins)
         return 1  # do nothing and return an error code
 
     # remove from enabled if asked
@@ -397,56 +406,91 @@ def handle_disable(options):
     return 0
 
 
-def handle_enable(options):
-    """Enable a Sopel plugin"""
-    plugin_name = options.name
-    settings = utils.load_settings(options)
-    usable_plugins = plugins.get_usable_plugins(settings)
+def _handle_enable_plugin(settings, usable_plugins, plugin_name, allow_only):
     enabled = settings.core.enable
     excluded = settings.core.exclude
 
     # coretasks is sacred
     if plugin_name == 'coretasks':
-        tools.stderr('Plugin coretasks is always enabled')
-        return 0
-
-    # plugin does not exist
-    if plugin_name not in usable_plugins:
-        tools.stderr('No plugin named %s' % plugin_name)
-        return 1
+        tools.stderr('Plugin coretasks is always enabled.')
+        return False
 
     # is it already enabled, but should we enforce anything?
     is_enabled = usable_plugins[plugin_name][1]
-    if is_enabled and not options.allow_only:
+    if is_enabled and not allow_only:
         # already enabled, and no allow-only option: all good
-        if plugin_name not in enabled:
+        if plugin_name in enabled:
+            tools.stderr('Plugin %s is already enabled.' % plugin_name)
+        else:
+            # suggest to use --allow-only option
             tools.stderr(
                 'Plugin %s is enabled; '
-                'use option -a/--allow-only to enforce allow only policy'
+                'use option -a/--allow-only to enforce allow only policy.'
                 % plugin_name)
-        return 0
 
-    # not enabled, or options.allow_only to enforce
+        return False
+
+    # not enabled, or option allow_only to enforce
     if plugin_name in excluded:
         # remove from excluded
         settings.core.exclude = [
             name
             for name in settings.core.exclude
-            if name != plugin_name
+            if plugin_name != name
         ]
     elif plugin_name in enabled:
         # not excluded, and already in enabled list: all good
         tools.stderr('Plugin %s is already enabled' % plugin_name)
-        return 0
+        return False
 
-    if plugin_name not in enabled:
-        if enabled or options.allow_only:
-            # not excluded, but not enabled either: allow-only mode required
-            # either because of the current configuration, or by request
-            settings.core.enable = enabled + [plugin_name]
+    if plugin_name not in enabled and (enabled or allow_only):
+        # not excluded, but not enabled either: allow-only mode required
+        # either because of the current configuration, or by request
+        settings.core.enable = enabled + [plugin_name]
 
-    settings.save()
-    tools.stderr('Plugin %s enabled' % plugin_name)
+    return True
+
+
+def handle_enable(options):
+    """Enable a Sopel plugin"""
+    plugin_names = options.names
+    allow_only = options.allow_only
+    settings = utils.load_settings(options)
+    usable_plugins = plugins.get_usable_plugins(settings)
+
+    # plugin does not exist
+    unknown_plugins = [
+        name
+        for name in plugin_names
+        if name not in usable_plugins
+    ]
+    if unknown_plugins:
+        display_unknown_plugins(unknown_plugins)
+        return 1  # do nothing and return an error code
+
+    actually_enabled = tuple(
+        name
+        for name in plugin_names
+        if _handle_enable_plugin(settings, usable_plugins, name, allow_only)
+    )
+
+    # save if required
+    if actually_enabled:
+        settings.save()
+    else:
+        return 0  # nothing to disable or save, but not an error case
+
+    # display plugins actually disabled by the command
+    plugins_count = len(actually_enabled)
+    if plugins_count == 1:
+        print('Plugin %s enabled.' % actually_enabled[0])
+    elif plugins_count == 2:
+        print('Plugin %s and %s enabled.' % actually_enabled)
+    else:
+        left = ', '.join(actually_enabled[:-1])
+        last = actually_enabled[-1]
+        print('Plugin %s, and %s enabled.' % (left, last))
+
     return 0
 
 
