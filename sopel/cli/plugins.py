@@ -4,6 +4,7 @@ from __future__ import unicode_literals, absolute_import, print_function, divisi
 
 import argparse
 import inspect
+import operator
 
 from sopel import plugins, tools
 
@@ -82,7 +83,7 @@ def build_parser():
         action='store_true',
         default=False)
 
-    # sopel-plugin disable
+    # sopel-plugins disable
     disable_parser = subparsers.add_parser(
         'disable',
         formatter_class=argparse.RawTextHelpFormatter,
@@ -106,7 +107,7 @@ def build_parser():
         '-r', '--remove', action='store_true', default=False,
         help="Remove from ``core.enable`` list if applicable.")
 
-    # sopel-plugin enable
+    # sopel-plugins enable
     enable_parser = subparsers.add_parser(
         'enable',
         formatter_class=argparse.RawTextHelpFormatter,
@@ -144,16 +145,32 @@ def handle_list(options):
     enabled_only = options.enabled_only
     disabled_only = options.disabled_only
 
-    for name, info in plugins.get_usable_plugins(settings).items():
-        plugin, is_enabled = info
+    # get usable plugins
+    items = (
+        (name, info[0], info[1])
+        for name, info in plugins.get_usable_plugins(settings).items()
+    )
+    items = (
+        (name, plugin, is_enabled)
+        for name, plugin, is_enabled in items
+    )
+    # filter on enabled/disabled if required
+    if enabled_only:
+        items = (
+            (name, plugin, is_enabled)
+            for name, plugin, is_enabled in items
+            if is_enabled
+        )
+    elif disabled_only:
+        items = (
+            (name, plugin, is_enabled)
+            for name, plugin, is_enabled in items
+            if not is_enabled
+        )
+    # sort plugins
+    items = sorted(items, key=operator.itemgetter(0))
 
-        if enabled_only and not is_enabled:
-            # hide disabled plugins when displaying enabled only
-            continue
-        elif disabled_only and is_enabled:
-            # hide enabled plugins when displaying disabled only
-            continue
-
+    for name, plugin, is_enabled in items:
         description = {
             'name': name,
             'status': 'enabled' if is_enabled else 'disabled',
