@@ -339,3 +339,23 @@ def redirect_outputs(settings, is_quiet=False):
     logfile = os.path.os.path.join(settings.core.logdir, settings.basename + '.stdio.log')
     sys.stderr = tools.OutputRedirect(logfile, True, is_quiet)
     sys.stdout = tools.OutputRedirect(logfile, False, is_quiet)
+
+
+def get_many_text(items, one, two, many):
+    """Get the right text based on the number of ``items``."""
+    message = ''
+    if not items:
+        return message
+
+    items_count = len(items)
+
+    if items_count == 1:
+        message = one.format(item=items[0], items=items)
+    elif items_count == 2:
+        message = two.format(first=items[0], second=items[1], items=items)
+    else:
+        left = ', '.join(items[:-1])
+        last = items[-1]
+        message = many.format(left=left, last=last, items=items)
+
+    return message

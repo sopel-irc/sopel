@@ -8,7 +8,12 @@ import os
 
 import pytest
 
-from sopel.cli.utils import enumerate_configs, find_config, add_common_arguments
+from sopel.cli.utils import (
+    add_common_arguments,
+    enumerate_configs,
+    find_config,
+    get_many_text,
+)
 
 
 @contextmanager
@@ -124,3 +129,22 @@ def test_add_common_arguments_subparser():
 
     options = parser.parse_args(['sub', '--config', 'test-long'])
     assert options.config == 'test-long'
+
+
+MANY_TEXTS = (
+    ([], ''),
+    (['a'], 'the a element'),
+    (['a', 'b'], 'elements a and b'),
+    (['a', 'b', 'c'], 'elements a, b, and c'),
+    (['a', 'b', 'c', 'd'], 'elements a, b, c, and d'),
+)
+
+
+@pytest.mark.parametrize('items, expected', MANY_TEXTS)
+def test_get_many_text(items, expected):
+    result = get_many_text(
+        items,
+        'the {item} element',
+        'elements {first} and {second}',
+        'elements {left}, and {last}')
+    assert result == expected

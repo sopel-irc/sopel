@@ -336,15 +336,12 @@ def _handle_disable_plugin(settings, plugin_name, force):
 
 def display_unknown_plugins(unknown_plugins):
     # at least one of the plugins does not exist
-    unknown_count = len(unknown_plugins)
-    if unknown_count == 1:
-        tools.stderr('No plugin named %s.' % unknown_plugins[0])
-    elif unknown_count == 2:
-        tools.stderr('No plugin named %s or %s.' % unknown_plugins)
-    else:
-        left = ', '.join(unknown_plugins[:-1])
-        last = unknown_plugins[-1]
-        tools.stderr('No plugin named %s, or %s.' % (left, last))
+    tools.stderr(utils.get_many_text(
+        unknown_plugins,
+        one='No plugin named {item}.',
+        two='No plugin named {first} or {second}.',
+        many='No plugin named {left}, or {last}.'
+    ))
 
 
 def handle_disable(options):
@@ -393,15 +390,12 @@ def handle_disable(options):
         return 0  # nothing to disable or save, but not an error case
 
     # display plugins actually disabled by the command
-    plugins_count = len(actually_disabled)
-    if plugins_count == 1:
-        print('Plugin %s disabled.' % actually_disabled[0])
-    elif plugins_count == 2:
-        print('Plugin %s and %s disabled.' % actually_disabled)
-    else:
-        left = ', '.join(actually_disabled[:-1])
-        last = actually_disabled[-1]
-        print('Plugin %s, and %s disabled.' % (left, last))
+    print(utils.get_many_text(
+        actually_disabled,
+        one='Plugin {item} disabled.',
+        two='Plugins {first} and {second} disabled.',
+        many='Plugins {left}, and {last} disabled.'
+    ))
 
     return 0
 
@@ -481,16 +475,12 @@ def handle_enable(options):
         return 0  # nothing to disable or save, but not an error case
 
     # display plugins actually disabled by the command
-    plugins_count = len(actually_enabled)
-    if plugins_count == 1:
-        print('Plugin %s enabled.' % actually_enabled[0])
-    elif plugins_count == 2:
-        print('Plugin %s and %s enabled.' % actually_enabled)
-    else:
-        left = ', '.join(actually_enabled[:-1])
-        last = actually_enabled[-1]
-        print('Plugin %s, and %s enabled.' % (left, last))
-
+    print(utils.get_many_text(
+        actually_enabled,
+        one='Plugin {item} enabled.',
+        two='Plugins {first} and {second} enabled.',
+        many='Plugins {left}, and {last} enabled.'
+    ))
     return 0
 
 
