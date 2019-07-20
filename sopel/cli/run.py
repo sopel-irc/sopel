@@ -18,7 +18,7 @@ import sys
 import time
 import traceback
 
-from sopel import bot, config, logger, tools, __version__
+from sopel import bot, config, tools, __version__
 from . import utils
 
 if sys.version_info < (2, 7):
@@ -72,7 +72,7 @@ def run(settings, pid_file, daemon=False):
                 signal.signal(signal.SIGUSR2, signal_handler)
             if hasattr(signal, 'SIGILL'):
                 signal.signal(signal.SIGILL, signal_handler)
-            logger.setup_logging(p)
+            p.setup()
             p.run(settings.core.host, int(settings.core.port))
         except KeyboardInterrupt:
             break
