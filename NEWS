@@ -98,6 +98,8 @@ Core changes
 * Added a new `sopel-config` command for working with config files [[#1507][]]
   * Currently supports `list` (existing files), `init` (new config file), and
     `get` (config value) actions
+  * The old `--list` argument to `sopel` is considered deprecated, and will be
+    removed in Sopel 8
 * The config file Sopel should use can be specified via the `SOPEL_CONFIG`
   environment variable [[#1473][]]
 * Config options can be set/overridden via environment variables [[#1096][]]
@@ -118,7 +120,7 @@ Core changes
 * Large amounts of internal refactoring and cleanup [[#1424][], [#1429][],
   [#1456][], [#1458][], [#1472][], [#1479][], [#1510][], [#1522][], [#1527][],
   [#1542][], [#1557][], [#1561][], [#1567][], [#1579][], [#1580][], [#1583][],
-  [#1610][]]
+  [#1597][], [#1610][]]
 * Sopel 7 will emit warnings when run under Python 2, as Python 2.7 has an
   end-of-support date of January 1, 2020 [[#1488][]]
   * While Sopel 7 is intended to remain compatible with Python 2, future
@@ -274,6 +276,7 @@ API changes
 [#1583]: https://github.com/sopel-irc/sopel/pull/1583
 [#1585]: https://github.com/sopel-irc/sopel/pull/1585
 [#1590]: https://github.com/sopel-irc/sopel/pull/1590
+[#1597]: https://github.com/sopel-irc/sopel/pull/1597
 [#1606]: https://github.com/sopel-irc/sopel/pull/1606
 [#1607]: https://github.com/sopel-irc/sopel/pull/1607
 [#1609]: https://github.com/sopel-irc/sopel/pull/1609
