@@ -94,7 +94,13 @@ def build_parser():
             It is not possible to disable the ``coretasks`` plugin.
         """))
     utils.add_common_arguments(disable_parser)
-    disable_parser.add_argument('name', help='Name of the plugin to disable')
+    disable_parser.add_argument(
+        'names', metavar='name', nargs='+',
+        help=inspect.cleandoc("""
+            Name of the plugin to disable.
+            Can be used multiple times to disable multiple plugins at once.
+            In case of error, configuration is not modified.
+        """))
     disable_parser.add_argument(
         '-f', '--force', action='store_true', default=False,
         help=inspect.cleandoc("""
@@ -294,39 +300,15 @@ def handle_configure(options):
         )
 
 
-def handle_disable(options):
-    """Disable a Sopel plugin"""
-    plugin_name = options.name
-    settings = utils.load_settings(options)
-    usable_plugins = plugins.get_usable_plugins(settings)
+def _handle_disable_plugin(settings, plugin_name, force):
     excluded = settings.core.exclude
-
-    # coretasks is sacred
-    if plugin_name == 'coretasks':
-        tools.stderr('Plugin coretasks cannot be disabled')
-        return 1
-
-    # plugin does not exist
-    if plugin_name not in usable_plugins:
-        tools.stderr('No plugin named %s' % plugin_name)
-        return 1
-
-    # remove from enabled if asked
-    if options.remove and plugin_name in settings.core.enable:
-        settings.core.enable = [
-            name
-            for name in settings.core.enable
-            if name != plugin_name
-        ]
-        settings.save()
-
     # nothing left to do if already excluded
     if plugin_name in excluded:
-        tools.stderr('Plugin %s already disabled' % plugin_name)
-        return 0
+        tools.stderr('Plugin %s already disabled.' % plugin_name)
+        return False
 
     # recalculate state: at the moment, the plugin is not in the excluded list
-    # however, with options.remove, the enable list may be empty, so we have
+    # however, with ensure_remove, the enable list may be empty, so we have
     # to compute the plugin's state here, and not use what comes from
     # plugins.get_usable_plugins
     is_enabled = (
@@ -335,17 +317,84 @@ def handle_disable(options):
     )
 
     # if not enabled at this point, exclude if options.force is used
-    if not is_enabled and not options.force:
+    if not is_enabled and not force:
         tools.stderr(
             'Plugin %s is disabled but not excluded; '
-            'use -f/--force to force its exclusion'
+            'use -f/--force to force its exclusion.'
             % plugin_name)
-        return 0
+        return False
 
     settings.core.exclude = excluded + [plugin_name]
-    settings.save()
+    return True
 
-    print('Plugin %s disabled' % plugin_name)
+
+def handle_disable(options):
+    """Disable Sopel plugins"""
+    plugin_names = options.names
+    force = options.force
+    ensure_remove = options.remove
+    settings = utils.load_settings(options)
+    usable_plugins = plugins.get_usable_plugins(settings)
+    actually_disabled = []
+
+    # coretasks is sacred
+    if 'coretasks' in plugin_names:
+        tools.stderr('Plugin coretasks cannot be disabled.')
+        return 1  # do nothing and return an error code
+
+    unknown_plugins = [
+        name
+        for name in plugin_names
+        if name not in usable_plugins
+    ]
+    if unknown_plugins:
+        # at least one of the plugins does not exist
+        unknown_count = len(unknown_plugins)
+        if unknown_count == 1:
+            tools.stderr('No plugin named %s.' % unknown_plugins[0])
+        elif unknown_count == 2:
+            tools.stderr('No plugin named %s or %s.' % unknown_plugins)
+        else:
+            left = ', '.join(unknown_plugins[:-1])
+            last = unknown_plugins[-1]
+            tools.stderr('No plugin named %s, or %s.' % (left, last))
+
+        return 1  # do nothing and return an error code
+
+    # remove from enabled if asked
+    if ensure_remove:
+        settings.core.enable = [
+            name
+            for name in settings.core.enable
+            if name not in plugin_names
+        ]
+        settings.save()
+
+    # disable plugin (when needed)
+    actually_disabled = tuple(
+        name
+        for name in plugin_names
+        if _handle_disable_plugin(settings, name, force)
+    )
+
+    # save if required
+    if actually_disabled:
+        settings.save()
+    else:
+        return 0  # nothing to disable or save, but not an error case
+
+    # display plugins actually disabled by the command
+    plugins_count = len(actually_disabled)
+    if plugins_count == 1:
+        print('Plugin %s disabled.' % actually_disabled[0])
+    elif plugins_count == 2:
+        print('Plugin %s and %s disabled.' % actually_disabled)
+    else:
+        left = ', '.join(actually_disabled[:-1])
+        last = actually_disabled[-1]
+        print('Plugin %s, and %s disabled.' % (left, last))
+
+    return 0
 
 
 def handle_enable(options):
