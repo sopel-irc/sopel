@@ -100,6 +100,13 @@ Core changes
     `get` (config value) actions
   * The old `--list` argument to `sopel` is considered deprecated, and will be
     removed in Sopel 8
+  * See detailed usage in your terminal with `sopel-config --help`, or review
+    [the online CLI docs][docs-cli-config] at our website
+* Added a new `sopel-plugins` command for managing plugins/modules [[#1588][]]
+  * Currently supports `list` (available plugins), `show` (plugin details &
+    status), `enable` & `disable` (edits config on the user's behalf)
+  * See detailed usage in your terminal with `sopel-plugins --help`, or review
+    [the online CLI docs][docs-cli-plugins] at our website
 * The config file Sopel should use can be specified via the `SOPEL_CONFIG`
   environment variable [[#1473][]]
 * Config options can be set/overridden via environment variables [[#1096][]]
@@ -275,6 +282,7 @@ API changes
 [#1582]: https://github.com/sopel-irc/sopel/pull/1582
 [#1583]: https://github.com/sopel-irc/sopel/pull/1583
 [#1585]: https://github.com/sopel-irc/sopel/pull/1585
+[#1588]: https://github.com/sopel-irc/sopel/pull/1588
 [#1590]: https://github.com/sopel-irc/sopel/pull/1590
 [#1597]: https://github.com/sopel-irc/sopel/pull/1597
 [#1606]: https://github.com/sopel-irc/sopel/pull/1606
@@ -288,6 +296,8 @@ API changes
 
 [api-docs]: https://sopel.chat/docs/
 [auth-config-docs]: https://sopel.chat/docs/configure.html#Authentication
+[docs-cli-config]: https://sopel.chat/docs/cli.html#the-sopel-config-command
+[docs-cli-plugins]: https://sopel.chat/docs/cli.html#the-sopel-plugins-command
 [entry-point-plugin]: https://sopel.chat/docs/plugin.html#sopel.plugins.handlers.EntryPointPlugin
 [install-guide-db]: https://sopel.chat/usage/installing/#configuring-the-database-optional
 [logging-config-docs]: https://sopel.chat/docs/configure.html#Logging
