@@ -1,6 +1,7 @@
 # coding=utf-8
 from __future__ import unicode_literals, absolute_import, print_function, division
 
+import inspect
 import os
 import sys
 
@@ -15,7 +16,57 @@ __all__ = [
     'redirect_outputs',
     'wizard',
     'plugins_wizard',
+    # colors
+    'green',
+    'yellow',
+    'red',
 ]
+
+
+RESET = '\033[0m'
+RED = '\033[31m'
+GREEN = '\033[32m'
+YELLOW = '\033[33m'
+
+
+def _colored(text, color, reset=True):
+    text = color + text
+    if reset:
+        return text + RESET
+    return text
+
+
+def green(text, reset=True):
+    """Add ANSI escape sequences to make the text green in term
+
+    :param str text: text to colorized in green
+    :param bool reset: if the text color must be reset after (default ``True``)
+    :return: text with ANSI escape sequences for green color
+    :rtype: str
+    """
+    return _colored(text, GREEN, reset)
+
+
+def yellow(text, reset=True):
+    """Add ANSI escape sequences to make the text yellow in term
+
+    :param str text: text to colorized in yellow
+    :param bool reset: if the text color must be reset after (default ``True``)
+    :return: text with ANSI escape sequences for yellow color
+    :rtype: str
+    """
+    return _colored(text, YELLOW, reset)
+
+
+def red(text, reset=True):
+    """Add ANSI escape sequences to make the text red in term
+
+    :param str text: text to colorized in red
+    :param bool reset: if the text color must be reset after (default ``True``)
+    :return: text with ANSI escape sequences for red color
+    :rtype: str
+    """
+    return _colored(text, RED, reset)
 
 
 def wizard(filename):
@@ -222,11 +273,13 @@ def add_common_arguments(parser):
         default=None,
         metavar='filename',
         dest='config',
-        help='Use a specific configuration file. '
-             'A config name can be given and the configuration file will be '
-             'found in Sopel\'s homedir (defaults to ``~/.sopel/default.cfg``). '
-             'An absolute pathname can be provided instead to use an '
-             'arbitrary location.')
+        help=inspect.cleandoc("""
+            Use a specific configuration file.
+            A config name can be given and the configuration file will be
+            found in Sopel\'s homedir (defaults to ``~/.sopel/default.cfg``).
+            An absolute pathname can be provided instead to use an
+            arbitrary location.
+        """))
 
 
 def load_settings(options):
@@ -286,3 +339,23 @@ def redirect_outputs(settings, is_quiet=False):
     logfile = os.path.os.path.join(settings.core.logdir, settings.basename + '.stdio.log')
     sys.stderr = tools.OutputRedirect(logfile, True, is_quiet)
     sys.stdout = tools.OutputRedirect(logfile, False, is_quiet)
+
+
+def get_many_text(items, one, two, many):
+    """Get the right text based on the number of ``items``."""
+    message = ''
+    if not items:
+        return message
+
+    items_count = len(items)
+
+    if items_count == 1:
+        message = one.format(item=items[0], items=items)
+    elif items_count == 2:
+        message = two.format(first=items[0], second=items[1], items=items)
+    else:
+        left = ', '.join(items[:-1])
+        last = items[-1]
+        message = many.format(left=left, last=last, items=items)
+
+    return message

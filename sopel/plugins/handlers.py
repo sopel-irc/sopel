@@ -87,6 +87,22 @@ class AbstractPluginHandler(object):
         """
         raise NotImplementedError
 
+    def get_meta_description(self):
+        """Retrieve a meta description for the plugin
+
+        :return: meta description information
+        :rtype: :class:`dict`
+
+        The expected keys are:
+
+        * name: a short name for the plugin
+        * label: a descriptive label for the plugin
+        * type: the plugin's type
+        * source: the plugin's source
+          (filesystem path, python import path, etc.)
+        """
+        raise NotImplementedError
+
     def is_loaded(self):
         """Tell if the plugin is loaded or not
 
@@ -192,6 +208,8 @@ class PyModulePlugin(AbstractPluginHandler):
         True
 
     """
+    PLUGIN_TYPE = 'python-module'
+
     def __init__(self, name, package=None):
         self.name = name
         self.package = package
@@ -211,6 +229,14 @@ class PyModulePlugin(AbstractPluginHandler):
 
         lines = inspect.cleandoc(module_doc).splitlines()
         return default_label if not lines else lines[0]
+
+    def get_meta_description(self):
+        return {
+            'label': self.get_label(),
+            'type': self.PLUGIN_TYPE,
+            'name': self.name,
+            'source': self.module_name,
+        }
 
     def load(self):
         self._module = importlib.import_module(self.module_name)
@@ -267,6 +293,8 @@ class PyFilePlugin(PyModulePlugin):
     In this example, the plugin ``custom`` is loaded from its filename despite
     not being in the Python path.
     """
+    PLUGIN_TYPE = 'python-file'
+
     def __init__(self, filename):
         good_file = (
             os.path.isfile(filename) and
@@ -318,6 +346,13 @@ class PyFilePlugin(PyModulePlugin):
             raise TypeError('Unsupported module type')
 
         return mod
+
+    def get_meta_description(self):
+        data = super(PyFilePlugin, self).get_meta_description()
+        data.update({
+            'source': self.path,
+        })
+        return data
 
     def load(self):
         self._module = self._load()
@@ -383,9 +418,18 @@ class EntryPointPlugin(PyModulePlugin):
         .. __: https://setuptools.readthedocs.io/en/stable/setuptools.html#dynamic-discovery-of-services-and-plugins
 
     """
+    PLUGIN_TYPE = 'setup-entrypoint'
+
     def __init__(self, entry_point):
         self.entry_point = entry_point
         super(EntryPointPlugin, self).__init__(entry_point.name)
 
     def load(self):
         self._module = self.entry_point.load()
+
+    def get_meta_description(self):
+        data = super(EntryPointPlugin, self).get_meta_description()
+        data.update({
+            'source': str(self.entry_point),
+        })
+        return data
