@@ -1,4 +1,4 @@
-.. py:module:: sopel.config.core_section
+.. py:currentmodule:: sopel.config.core_section
 
 ================================
 The [core] configuration section
