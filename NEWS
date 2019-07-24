@@ -138,10 +138,14 @@ Core changes
 * Added support for disabling commands (or entire modules) on a per-channel
   basis [[#1235][]]
   * See how it works: [Per-channel configuration][per-channel-conf]
-* Removed unnecessary detail from the warning printed when a deprecated
-  function is used [[#1568][]]
+* Greatly improved the warning printed when a deprecated function is used,
+  adding detail and removing unnecessary traceback lines [[#1568][], [#1613][]]
   * Typical length of output for each deprecated function call reduced from
     roughly 15 lines to 3 (warning, file/line, and offending code snippet)
+  * Added optional `@deprecated` decorator arguments:
+    * `reason`: why this item was deprecated
+    * `version`: the version in which the deprecation happened
+    * `removed_in`: the version in which the deprecated item will be removed
 
 API changes
 -----------
@@ -289,6 +293,7 @@ API changes
 [#1607]: https://github.com/sopel-irc/sopel/pull/1607
 [#1609]: https://github.com/sopel-irc/sopel/pull/1609
 [#1610]: https://github.com/sopel-irc/sopel/pull/1610
+[#1613]: https://github.com/sopel-irc/sopel/pull/1613
 [#1622]: https://github.com/sopel-irc/sopel/issues/1622
 [#1638]: https://github.com/sopel-irc/sopel/pull/1638
 [#1646]: https://github.com/sopel-irc/sopel/pull/1646
