@@ -2,6 +2,7 @@
 """
 reddit.py - Sopel Reddit Module
 Copyright 2012, Elsie Powell, embolalia.com
+Copyright 2019, dgw, technobabbl.es
 Licensed under the Eiffel Forum License 2.
 
 https://sopel.chat
@@ -37,10 +38,6 @@ domain = r'https?://(?:www\.|old\.|pay\.|ssl\.|[a-z]{2}\.)?reddit\.com'
 post_url = r'%s/r/.*?/comments/([\w-]+)' % domain
 short_post_url = r'https?://redd.it/([\w-]+)'
 user_url = r'%s/u(ser)?/([\w-]+)' % domain
-spoiler_subs = [
-    'stevenuniverse',
-    'onepunchman',
-]
 
 
 @url(post_url)
@@ -65,11 +62,9 @@ def rpost_info(bot, trigger, match):
         else:
             link = '({}) to r/{}'.format(s.url, subreddit)
 
+        nsfw = ''
         if s.over_18:
-            if subreddit.lower() in spoiler_subs:
-                nsfw = ' ' + bold(color('[SPOILERS]', colors.RED))
-            else:
-                nsfw = ' ' + bold(color('[NSFW]', colors.RED))
+            nsfw += ' ' + bold(color('[NSFW]', colors.RED))
 
             sfw = bot.db.get_channel_value(trigger.sender, 'sfw')
             if sfw:
@@ -78,8 +73,16 @@ def rpost_info(bot, trigger, match):
                     trigger.nick, trigger.sender,
                     'Linking to NSFW content in a SFW channel.'
                 )
-        else:
-            nsfw = ''
+        if s.spoiler:
+            nsfw += ' ' + bold(color('[SPOILER]', colors.GRAY))
+
+            spoiler_free = bot.db.get_channel_value(trigger.sender, 'spoiler_free')
+            if spoiler_free:
+                link = '(link hidden)'
+                bot.kick(
+                    trigger.nick, trigger.sender,
+                    'Linking to spoiler content in a spoiler-free channel.'
+                )
 
         if s.author:
             author = s.author.name
@@ -169,7 +172,7 @@ def auto_redditor_info(bot, trigger, match):
 @commands('setsafeforwork', 'setsfw')
 @example('.setsfw true')
 @example('.setsfw false')
-def update_channel(bot, trigger):
+def set_channel_sfw(bot, trigger):
     """
     Sets the Safe for Work status (true or false) for the current
     channel. Defaults to false.
@@ -199,7 +202,8 @@ def get_channel_sfw(bot, trigger):
     if not channel:
         channel = trigger.sender
         if channel.is_nick():
-            return bot.say('.getsfw with no channel param is only permitted in channels')
+            return bot.say('{}getsfw with no channel param is only permitted in '
+                           'channels'.format(bot.config.core.help_prefix))
 
     channel = channel.strip()
 
@@ -208,3 +212,49 @@ def get_channel_sfw(bot, trigger):
         bot.say('%s is flagged as SFW' % channel)
     else:
         bot.say('%s is flagged as NSFW' % channel)
+
+
+@require_chanmsg('.setspoilfree is only permitted in channels')
+@commands('setspoilerfree', 'setspoilfree')
+@example('.setspoilfree true')
+@example('.setspoilfree false')
+def set_channel_spoiler_free(bot, trigger):
+    """
+    Sets the Spoiler-Free status (true or false) for the current channel.
+    Defaults to false.
+    """
+    if bot.channels[trigger.sender].privileges[trigger.nick] < OP:
+        return
+    else:
+        param = 'true'
+        if trigger.group(2) and trigger.group(3):
+            param = trigger.group(3).strip().lower()
+        spoiler_free = param == 'true'
+        bot.db.set_channel_value(trigger.sender, 'spoiler_free', spoiler_free)
+        if spoiler_free:
+            bot.reply('Got it. %s is now flagged as spoiler-free.' % trigger.sender)
+        else:
+            bot.reply('Got it. %s is now flagged as spoilers-allowed.' % trigger.sender)
+
+
+@commands('getspoilerfree', 'getspoilfree')
+@example('.getspoilfree [channel]')
+def get_channel_spoiler_free(bot, trigger):
+    """
+    Gets the channel's Spoiler-Free status, or the current channel's
+    status if no channel given.
+    """
+    channel = trigger.group(2)
+    if not channel:
+        channel = trigger.sender
+        if channel.is_nick():
+            return bot.say('{}getspoilfree with no channel param is only permitted '
+                           'in channels'.format(bot.config.core.help_prefix))
+
+    channel = channel.strip()
+
+    spoiler_free = bot.db.get_channel_value(channel, 'spoiler_free')
+    if spoiler_free:
+        bot.say('%s is flagged as spoiler-free' % channel)
+    else:
+        bot.say('%s is flagged as spoilers-allowed' % channel)
