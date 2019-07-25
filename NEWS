@@ -46,6 +46,9 @@ Module changes
   * Finally, it's possible to set a reminder more than 24 hours ahead without
     first converting the future date/time to a duration for use with `.in`!
 * Short `redd.it` links are now detected by the `reddit` module [[#1503][]]
+* Spoilers & NSFW are now separate concepts in the `reddit` plugin [[#1620][]]
+  * Reddit implemented spoilers as a distinct post flag some time ago. Sopel's
+    plugin supports independently setting channels as "SFW" or "spoiler-free".
 * Python version is now included in `.version` command output [[#1462][]]
 * Readability of `.choose` command output is significantly improved [[#1425][]]
 * Sopel can now invite users to a channel with new `.invite` command [[#1497][]]
@@ -294,6 +297,7 @@ API changes
 [#1609]: https://github.com/sopel-irc/sopel/pull/1609
 [#1610]: https://github.com/sopel-irc/sopel/pull/1610
 [#1613]: https://github.com/sopel-irc/sopel/pull/1613
+[#1620]: https://github.com/sopel-irc/sopel/pull/1620
 [#1622]: https://github.com/sopel-irc/sopel/issues/1622
 [#1638]: https://github.com/sopel-irc/sopel/pull/1638
 [#1646]: https://github.com/sopel-irc/sopel/pull/1646
