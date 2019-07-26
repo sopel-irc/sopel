@@ -5,9 +5,8 @@ Sopel includes a number of additional functions that are useful for various
 common IRC tasks.
 
 Note that ``sopel.web`` was deprecated in 6.2.0, and is not included in this
-documentation, but is still in use in many modules. It's highly recommended
-that you switch to `requests <http://docs.python-requests.org/en/latest/>`_
-instead.
+documentation; it will be removed completely in Sopel 8. Plugins should use
+`requests <https://github.com/psf/requests>`_ directly.
 
 .. contents::
 
@@ -15,6 +14,12 @@ sopel.tools
 ------------
 
 .. automodule:: sopel.tools
+   :members:
+
+sopel.tools.web
+---------------
+
+.. automodule:: sopel.tools.web
    :members:
 
 sopel.tools.time
