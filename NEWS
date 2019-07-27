@@ -167,6 +167,11 @@ API changes
     via PyPI packages, which required a specific directory structure and
     package name format (`sopel_modules.plugin_name`)
   * See [the entry point plugin documentation][entry-point-plugin] for more
+* New package `sopel.tools.web` replaces deprecated `sopel.web` [[#1616][]]
+  * Both old and new import locations will work until Sopel 7 end-of-life
+  * The `sopel.web` package will be removed completely in Sopel 8
+  * Functions marked as deprecated in the old location (e.g. `web.get()`) do
+    *not* carry forward to the new package namespace; they remain deprecated
 * Added a set of methods in the `bot` object to manipulate URL callbacks:
   `bot.register_url_callback`, `bot.unregister_url_callback`, and
   `bot.search_url_callbacks` [[#1508][]]
@@ -297,6 +302,7 @@ API changes
 [#1609]: https://github.com/sopel-irc/sopel/pull/1609
 [#1610]: https://github.com/sopel-irc/sopel/pull/1610
 [#1613]: https://github.com/sopel-irc/sopel/pull/1613
+[#1616]: https://github.com/sopel-irc/sopel/pull/1616
 [#1620]: https://github.com/sopel-irc/sopel/pull/1620
 [#1622]: https://github.com/sopel-irc/sopel/issues/1622
 [#1638]: https://github.com/sopel-irc/sopel/pull/1638
