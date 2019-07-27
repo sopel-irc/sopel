@@ -15,8 +15,8 @@ import sys
 import requests
 import xmltodict
 
-from sopel import web
 from sopel.module import commands, example
+from sopel.tools import web
 
 if sys.version_info.major < 3:
     from urllib import unquote as _unquote

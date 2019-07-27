@@ -15,8 +15,8 @@ import sys
 
 import requests
 
-from sopel import web
 from sopel.module import rule, commands, priority, example
+from sopel.tools import web
 
 if sys.version_info.major >= 3:
     unicode = str

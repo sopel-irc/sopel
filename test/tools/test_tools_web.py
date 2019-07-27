@@ -4,7 +4,7 @@ from __future__ import unicode_literals, absolute_import, print_function, divisi
 
 import pytest
 
-from sopel.web import search_urls, trim_url
+from sopel.tools.web import search_urls, trim_url
 
 
 def test_search_urls():

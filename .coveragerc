@@ -2,6 +2,8 @@
 [run]
 source = sopel
 branch = True
+omit =
+    sopel/web.py
 
 [report]
 # Regexes for lines to exclude from consideration

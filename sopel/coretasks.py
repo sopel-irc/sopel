@@ -18,7 +18,7 @@ import sys
 import time
 import sopel
 import sopel.module
-import sopel.web
+import sopel.tools.web
 from sopel.bot import _CapReq
 from sopel.tools import Identifier, iteritems, events
 from sopel.tools.target import User, Channel
@@ -857,7 +857,7 @@ def handle_url_callbacks(bot, trigger):
     """
     schemes = bot.config.core.auto_url_schemes
     # find URLs in the trigger
-    for url in sopel.web.search_urls(trigger, schemes=schemes):
+    for url in sopel.tools.web.search_urls(trigger, schemes=schemes):
         # find callbacks for said URL
         for function, match in bot.search_url_callbacks(url):
             # trigger callback defined by the `@url` decorator

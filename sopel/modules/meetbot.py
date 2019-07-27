@@ -16,7 +16,7 @@ import re
 import time
 from string import punctuation, whitespace
 
-from sopel import formatting, module, tools, web
+from sopel import formatting, module, tools
 from sopel.config.types import (FilenameAttribute, StaticSection,
                                 ValidatedAttribute)
 from sopel.modules.url import find_title
@@ -147,7 +147,7 @@ def log_html_end(channel):
     logfile = codecs.open(logfile_filename, "a", encoding="utf-8")
     current_time = time.strftime("%H:%M:%S", time.gmtime())
     logfile.write("</ul>\n<h4>Meeting ended at %s UTC</h4>\n" % current_time)
-    plainlog_url = meeting_log_baseurl + web.quote(
+    plainlog_url = meeting_log_baseurl + tools.web.quote(
         channel + "/" + figure_logfile_name(channel) + ".log"
     )
     logfile.write('<a href="%s">Full log</a>' % plainlog_url)
@@ -299,7 +299,7 @@ def endmeeting(bot, trigger):
         " Total meeting length %d minutes" % (meeting_length // 60)
     )
     log_html_end(trigger.sender)
-    htmllog_url = meeting_log_baseurl + web.quote(
+    htmllog_url = meeting_log_baseurl + tools.web.quote(
         trigger.sender + "/" + figure_logfile_name(trigger.sender) + ".html"
     )
     log_plain(

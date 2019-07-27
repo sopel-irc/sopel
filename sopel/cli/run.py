@@ -42,7 +42,7 @@ encounters such an error case.
 
 def run(settings, pid_file, daemon=False):
     delay = 20
-    # Inject ca_certs from config to web for SSL validation of web requests
+
     if not settings.core.ca_certs:
         tools.stderr(
             'Could not open CA certificates file. SSL will not work properly!')
