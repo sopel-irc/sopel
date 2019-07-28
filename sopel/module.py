@@ -15,7 +15,7 @@ import re
 
 __all__ = [
     # constants
-    'NOLIMIT', 'VOICE', 'HALFOP', 'OP', 'ADMIN', 'OWNER',
+    'NOLIMIT', 'VOICE', 'HALFOP', 'OP', 'ADMIN', 'OWNER', 'OPER',
     # decorators
     'action_commands',
     'commands',
@@ -79,6 +79,13 @@ OWNER = 16
 """Privilege level for the +q channel permission
 
 .. versionadded:: 4.1
+"""
+
+OPER = 32
+"""Privilege level for the +y channel permission
+Note: Sopel does not track OPER status except through the +y channel mode
+
+.. versionadded:: 7.0.0
 """
 
 
