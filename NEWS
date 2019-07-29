@@ -386,8 +386,8 @@ the new (and old) API methods are welcome in [#sopel][] on Freenode, of course,
 as always. Thank you for bearing with this transitional period!
 
 Importantly, a couple of broken modules have been removed in this release. For
-easy reference, they and their PyPI-installable replacements are listed near the
-top of the "[Module changes](#module-changes)" section.
+easy reference, they and their PyPI-installable replacements are listed near
+the top of the "[Module changes](#module-changes)" section.
 
 Because this is the last release planned before Sopel 7, it's important to note
 some upcoming changes. They're mostly for module developers, or for bot owners
@@ -395,8 +395,8 @@ who run unmaintained third-party modules (which might need manual updating).
 
 But first, a user-facing change. Sopel is drifting toward a more streamlined
 release model, which will see most of the core module library split out into
-separate packages. Moving modules to their own packages will enable faster fixes
-when APIs change, and easier module adoption by members of the community.
+separate packages. Moving modules to their own packages will enable faster
+fixes when APIs change, and easier module adoption by members of the community.
 
 Further process details will appear in future changelogs as modules are moved
 out of core, but the plan is to have Sopel "require" modules it used to include
@@ -407,9 +407,9 @@ discuss this plan, visit issue [#1291][].
 And now, for the developer stuff.
 
 There will be some attention given to how `Identifier` objects work in Sopel 7.
-In particular, the way lowercase works appears to have been wrong for some time.
-Subscribe to issue [#1389][] for updates, or to join the discussion on the best
-plan for addressing this.
+In particular, the way lowercase works appears to have been wrong for some
+time. Subscribe to issue [#1389][] for updates, or to join the discussion on
+the best plan for addressing this.
 
 Also in Sopel 7, the following deprecated functions in `sopel.web` will be
 removed: `get()`, `head()`, `post()`, `get_urllib_object()`. Module authors
@@ -417,16 +417,16 @@ should replace these with equivalent code using `requests`. If you don't know
 what that is, you're in for a treat: <https://pypi.org/project/requests/>
 
 Remaining `sopel.web` functions might also move in a future major release. See
-[#1318][] and comment your opinion if you are a module developer. There is still
-plenty of time to give feedback; nothing will happen before Sopel 8 at the
-earliest.
+[#1318][] and comment your opinion if you are a module developer. There is
+still plenty of time to give feedback; nothing will happen before Sopel 8 at
+the earliest.
 
-Support for multiple help examples on each module command is planned for Sopel 7
-and will allow for clearer command and argument documentation. The current help
-system uses a deterministic but unintuitive method to choose a single example to
-output. The current plan is to make the new multi-example behavior opt-in, so
-only help for modules that are explicitly updated to support it will change.
-Follow this initiative in [#1200][].
+Support for multiple help examples on each module command is planned for Sopel
+7 and will allow for clearer command and argument documentation. The current
+help system uses a deterministic but unintuitive method to choose a single
+example to output. The current plan is to make the new multi-example behavior
+opt-in, so only help for modules that are explicitly updated to support it will
+change. Follow this initiative in [#1200][].
 
 Bot owners and admins might appreciate the new ignore system proposal, which
 would (among other things) make "hostmask" blocks actually block hostmasks! See
@@ -460,15 +460,16 @@ Module changes
 * Added instagram module: displays information about Instagram links in chat
 * Removed movie: The OMDb API went private some time ago (Q2 2017)
   * See [`sopel-modules.imdb`][pypi-imdb] on PyPI for a functional replacement
-* Removed weather: Yahoo deprecated its weather service, the last known keyless weather API
+* Removed weather: Yahoo deprecated its weather service, the last known keyless
+  weather API
   * See [`sopel-modules.weather`][pypi-weather] on PyPI for a functional
-    replacement that also adds the forecast command originally planned to launch
-    with Sopel 6.6.0.
+    replacement that also adds the forecast command originally planned to
+    launch with Sopel 6.6.0.
 * admin module's `.set` command handles spaces properly now
 * bugzilla no longer spits out an error on shutdown if its domain list is empty
 * dice module's `.roll`/`.dice`/`.d` command gives friendlier errors, and its
-  `.choice`/`.choose`/`.ch` command has cleaner output (will be further improved
-  in a later release)
+  `.choice`/`.choose`/`.ch` command has cleaner output (will be further
+  improved in a later release)
 * etymology module updated to work with etymonline.com's changes
 * ip module can now look up nicknames (user's hostname) & IPv6 addresses
 * ip module switched from deprecated GeoIP database to GeoIP2
@@ -521,7 +522,8 @@ Core changes
 * Raw logging is no longer enabled by default
 * Comparisons between Identifiers and other types were improved
 * Sopel no longer sends the sticky modifier for capabilities
-* Database tables are now created using "IF NOT EXISTS" to reduce error potential
+* Database tables are now created using "IF NOT EXISTS" to reduce error
+  potential
 * Deprecated `sopel.web` calls in various modules updated to use `requests`
   instead
 * Intents/CTCP handling fixed
@@ -530,7 +532,8 @@ Core changes
 API changes
 -----------
 
-* New formatting methods: `italic`, `strikethrough`, `monospace`, `hex_color`, `reverse` (inverted video)
+* New formatting methods: `italic`, `strikethrough`, `monospace`, `hex_color`,
+  `reverse` (inverted video)
   * With the exception of italics, these are all "niche" formatting codes that
     have relatively limited client support, but they are included for
     completeness.
@@ -538,13 +541,14 @@ API changes
 * Fixed populating `bot.channels` privileges dicts on connect
 * Fixed updating `User` objects when receiving `NICK` events from the server
 * Documentation added/corrected in several places
-* Command prefix in examples is now assumed to match the default regex pattern (currently `\.`)
+* Command prefix in examples is now assumed to match the default regex pattern
+  (currently `\.`)
   * This fixes some issues with incorrect help output, but might cause new
     problems in modules that use non-standard prefixes in their examples.
   * Sopel's maintenance team regrets not providing advance warning of this
     change, but the potential impact is limited to perhaps a few misplaced
-    characters in help output, at most—same as the bug itself, but likely with a
-    much lower incidence.
+    characters in help output, at most—same as the bug itself, but likely with
+    a much lower incidence.
 
 
 Changes between 6.5.2 and 6.5.3
@@ -667,8 +671,8 @@ Changes between 6.3.1 and 6.4.0
 Module changes
 --------------
 
-* For some subreddits where NSFW is used to mark spoilers, an appropriate tag is
-  shown.
+* For some subreddits where NSFW is used to mark spoilers, an appropriate tag
+  is shown.
 * `.ddg` avoids giving ad results.
 * `.wa` is fully removed
   * See [`sopel-modules.wolfram`][pypi-wolfram] on PyPI for a replacement
@@ -826,7 +830,8 @@ API changes
 -----------
 
 * `ListAttribute` configs can be set to a list or set, with the same effect
-* The configure method of validated config attributes now takes the parent config and section name
+* The configure method of validated config attributes now takes the parent
+  config and section name
 
 
 Changes between 5.5.1 and 6.0.0
@@ -854,7 +859,8 @@ Module changes
 Core changes
 ------------
 
-* Deprecated login configs have been removed in favor of the new `auth_*` values
+* Deprecated login configs have been removed in favor of the new `auth_*`
+  values
 * Module reloading has been redone to enable modules to be installed from PyPI
 * IRCv3 capability negotiation is updated for v3.2
 
@@ -864,8 +870,8 @@ API changes
 * Configuration has been entirely reworked. Old wizard functions and the
   `get_list()` function are removed, but most other uses of the config should
   continue to work.
-* The reorganization of `willie.tools` introduced in 5.3.0 is finalized; the old
-  import locations no longer work.
+* The reorganization of `willie.tools` introduced in 5.3.0 is finalized; the
+  old import locations no longer work.
 * `bot.msg` is deprecated in favor of `bot.say`, which can now be used in
   un-triggered contexts with an additional `recipient` argument
 
@@ -896,8 +902,8 @@ This release starts preparations for Willie 6. See
 API changes
 -----------
 
-* The ability to import from the `sopel` package, rather than `willie`, is added
-  to enable forward compatibility with the rename in 6.0
+* The ability to import from the `sopel` package, rather than `willie`, is
+  added to enable forward compatibility with the rename in 6.0
 * A `version_info` tuple, similar to Python's own `sys.version_info`, is added
 * An error when setting a validated config attribute to `None` is fixed
 
@@ -963,8 +969,8 @@ API changes
 -----------
 
 * Time and calculation tools are split out into multiple modules. The moved
-  things will also be available in `tools` itself until 6.0, whereupon they will
-  only be available in their new locations.
+  things will also be available in `tools` itself until 6.0, whereupon they
+  will only be available in their new locations.
 * Functions and classes used internally for scheduling jobs are moved. They are
   still available in their old location, but are no longer documented and will
   not be considered part of the public API in 6.0.
@@ -1004,7 +1010,8 @@ Module changes
 * Channel logs can now use the bot's preferred time zone
 * Getter and setter methods for timezone and format are more consistently named
 * `.seen` persists across bot restarts
-* `.seen` no longer shows message or channel unless used within the same channel
+* `.seen` no longer shows message or channel unless used within the same
+  channel
 * Special characters in Wikipedia URLs are handled correctly
 
 Core changes
@@ -1031,7 +1038,8 @@ This release contains backwards-incompatible changes. See
 Module changes
 --------------
 
-* YouTube no longer shows bizarre lengths when the bot is running under Python 3
+* YouTube no longer shows bizarre lengths when the bot is running under Python
+  3
 * When Wikipedia links are posted, a snippet of the article is shown
 
 Core changes
@@ -1138,8 +1146,8 @@ API changes
 -----------
 
 * Numerous functions were added to the db to ease the transition to Willie 5
-* `tools.Nick` has been renamed to `tools.Identifier`. `Nick` will be removed in
-  Willie 5
+* `tools.Nick` has been renamed to `tools.Identifier`. `Nick` will be removed
+  in Willie 5
 * `willie.web` functions now specify a meaningful default user agent
 * `web.post` now supports dicts as the payload, and can optionally return
   headers
@@ -1167,8 +1175,8 @@ Module changes
 
 * Willie will now alert the owner at startup, and every 24 hours, when a new
   version is available
-* `.calc` will now time out on excessively long calculations, and is less likely
-  to error out
+* `.calc` will now time out on excessively long calculations, and is less
+  likely to error out
 * `.help` now works properly for command aliases
 * `.help` will now output multi-line help in multiple messages, rather than all
   at once
@@ -1236,7 +1244,8 @@ Core changes
 
 * Channel joins at bot startup can be rate limited with the `throttle_joins`
   option in the `[core]` config section to work around server limits
-* Added the ability for SASL login where the nickname and username are different
+* Added the ability for SASL login where the nickname and username are
+  different
 * Improved loop protection and rate limiting
 * Fixed multiple Python 3 errors
 * Enable logging the bot in to Authserv at startup
@@ -1270,8 +1279,8 @@ Core changes
 API changes
 -----------
 
-* Nick instances now have an `is_nick` attribute, which is `True` when the value
-  is a valid nickname (as opposed to a channel)
+* Nick instances now have an `is_nick` attribute, which is `True` when the
+  value is a valid nickname (as opposed to a channel)
 
 
 Changes between 4.1.0 and 4.2.0
@@ -1284,7 +1293,8 @@ Module changes
 * `.c` can now understand a comma used as a radix point (rather than a period)
 * `.w` can now look in the Wikipedia for a specified (or configurable default)
   language
-* Timezones are now more user-friendly, and used more consistently across modules
+* Timezones are now more user-friendly, and used more consistently across
+  modules
 * Misc. bugfixes
 
 Core changes
@@ -1324,8 +1334,8 @@ Module changes
   * Module is overall better-behaved and less buggy
 * Traceback can now be attached to a GitHub issue from Willie's logs
 * GitHub module no longer puts "IRC" tag on issues it creates
-* A `.listactions` command is added to allow actions to be listed before the end
-  of a meeting
+* A `.listactions` command is added to allow actions to be listed before the
+  end of a meeting
 * Dice now limits itself to 1000 dice, and output is cleaned up
 * Willie now joins channels when invited
 * Reddit module no longer gives an error if the submitter's account has been
