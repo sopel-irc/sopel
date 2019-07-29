@@ -166,7 +166,7 @@ API changes
     via PyPI packages, which required a specific directory structure and
     package name format (`sopel_modules.plugin_name`)
   * See [the entry point plugin documentation][entry-point-plugin] for more
-* New package `sopel.tools.web` replaces deprecated `sopel.web` [[#1616][]]
+* Added `sopel.tools.web` (replaces `sopel.web`) [[#1616][], [#1670][]]
   * Both old and new import locations will work until Sopel 7 end-of-life
   * The `sopel.web` package will be removed completely in Sopel 8
   * Functions marked as deprecated in the old location (e.g. `web.get()`) do
@@ -308,6 +308,7 @@ API changes
 [#1638]: https://github.com/sopel-irc/sopel/pull/1638
 [#1646]: https://github.com/sopel-irc/sopel/pull/1646
 [#1652]: https://github.com/sopel-irc/sopel/pull/1652
+[#1670]: https://github.com/sopel-irc/sopel/pull/1670
 
 [api-docs]: https://sopel.chat/docs/
 [auth-config-docs]: https://sopel.chat/docs/configure.html#Authentication
