@@ -1,6 +1,6 @@
 This file is used to auto-generate the "Changelog" section of Sopel's website.
-When adding new entries, follow the style guide in NEWS.spec.md to avoid causing
-problems with the site build.
+When adding new entries, follow the style guide in NEWS.spec.md to avoid
+causing problems with the site build.
 
 Changes between 6.x.x and 7.0.0
 ===============================
@@ -20,10 +20,10 @@ Module changes
 * The `spellcheck` module now uses `aspell`, and gained a custom word list
   * Custom word list is managed via a suite of new commands: `.scadd`,
     `.scsave`, `.scpending`, `.scdel`, and `.scclear`) [[#1164][]]
-* The `currency` module changed data sources to support more currencies, and can
-  optionally use Fixer.io to support even *more* [[#1430][]]
-  * Fixer.io requires a free API key, which gives plenty of calls per month (the
-    module caches exchange rates for 24 hours)
+* The `currency` module changed data sources to support more currencies, and
+  can optionally use Fixer.io to support even *more* [[#1430][]]
+  * Fixer.io requires a free API key, which gives plenty of calls per month
+    (the module caches exchange rates for 24 hours)
 * Choose from any of four pastebin services for `help` output [[#1451][]]
   * This is intended mostly for resilience (so one pastebin service going
     down, as ptpb did during the 6.6.x life-cycle, won't force a new Sopel
@@ -51,17 +51,17 @@ Module changes
     plugin supports independently setting channels as "SFW" or "spoiler-free".
 * Python version is now included in `.version` command output [[#1462][]]
 * Readability of `.choose` command output is significantly improved [[#1425][]]
-* Sopel can now invite users to a channel with new `.invite` command [[#1497][]]
+* Added `.invite` command [[#1497][]]
   * Both Sopel and the inviting user must have privileges in the target channel
 * A `.restart` command is added [[#1333][]]
-  * admin-only, just like `.quit`
-* The `.msg` command (admin-only, in PM only) is now known as `.say` [[#1606][]]
-  * `.msg` will continue to work for now
+  * Usable by admins only, just like `.quit`
+* The `.msg` command is now known as `.say` [[#1606][]]
+  * `.msg` will continue to work for now, likely until being removed in Sopel 8
 * The `admin` module auto-saves channels when using `.join`/`.part`, and added
   `.tmpjoin`/`.tmppart` commands to bypass this behavior [[#1492][]]
 * Restored commands in `adminchannel` module for managing op/voice [[#1498][]]
-  * These were removed some time ago, seemingly without reason, by the project's
-    previous maintainers
+  * These were removed some time ago, seemingly without reason, by the
+    project's previous maintainers
   * Since there was some desire from users to have them back, we restored them
 * `find` also collects Sopel's own messages now, so users can "correct" the bot
   if they wish to be extra cheeky [[#1470][]]
@@ -75,12 +75,12 @@ Core changes
 ------------
 
 * Alternative database types are once again supported [[#1446][], [#1652][]]
-  * See the [README][readme-db] or [installation instructions][install-guide-db]
-    for details on getting non-SQLite options up and running
-  * You will probably need to install additional dependencies if you wish to use
-    something other than SQLite
-  * Migrating an existing database from SQLite to your chosen option is probably
-    easy, but we do not offer instructions for doing so
+  * For details on using non-SQLite databases, see the [README][readme-db] or
+    [installation instructions][install-guide-db]
+  * You will probably need to install additional dependencies if you wish to
+    use something other than SQLite
+  * Migrating an existing database from SQLite to your chosen option is
+    probably easy, but we do not offer instructions for doing so
 * Added separate server & nickname authentication options [[#1513][]]
   * See [authentication configuration docs][auth-config-docs]
 * Sopel's own rate-limiting & flood protection parameters are now configurable,
@@ -90,8 +90,7 @@ Core changes
   * See details in [the logging configuration docs][logging-config-docs]
 * Log filenames now include the config name, to help keep track of logs from
   multiple Sopel instances [[#1547][]]
-* Sopel no longer assumes on first run that its home directory is `~/.sopel`
-  [[#1404][]]
+* Home directory is no longer assumed to be `~/.sopel` on first run [[#1404][]]
 * Restarting Sopel via CLI is added [[#1333][]]
 * Sopel's CLI is restructured [[#1493][], [#1509][]]
   * New subcommands (`start`, `stop`, `restart`, and `configure`) replace many
@@ -190,16 +189,17 @@ API changes
     prefixing it with the name of the calling user to get their attention
   * Passing `reply=False` (or omitting the argument) will behave exactly as
     before, with the error message sent as if via `bot.say()`
-* Fixed the `@module.url` decorator to work always, regardless of whether the
-  `url` module (or any of the core set at all) is enabled [[#1510][], [#1576][]]
+* Fixed the `@module.url` decorator to work always, regardless of whether any
+  core plugins are enabled [[#1510][], [#1576][]]
 * Added `bot.hostmask` property (read-only) [[#1537][]]
-  * Is a shortcut for `bot.users.get(bot.nick).hostmask`, so will throw an error
-    if the bot is not connected and joined to at least one channel. Basically,
-    don't try to use this in module `setup()` or `shutdown()` methods.
+  * This property is a shortcut for `bot.users.get(bot.nick).hostmask`, so it
+    will throw an error if the bot is not connected to a network **and** joined
+    to at least one channel. Basically, don't try to use it in plugin `setup()`
+    or `shutdown()` methods.
 * Added `module.echo` decorator [[#1470][]]
   * Decorated callables will receive messages that Sopel itself sends,
     regardless of whether the IRC server actually supports `echo-message`
-  * Avoid sending output from `@echo`-decorated callables; this will cause loops
+  * Don't send output from `@echo`-decorated callables; this will cause loops
 * Officially deprecated the methods `SopelMemory.contains()` and
   `SopelMemoryWithDefault.contains()`, to be removed in Sopel 8 [[#1563][]]
   * Use the `in` operator instead
