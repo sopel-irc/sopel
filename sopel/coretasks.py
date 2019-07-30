@@ -208,6 +208,13 @@ def handle_isupport_value(bot, param, value, is_single=True):
 @sopel.module.unblockable
 def parse_reply_isupport(bot, trigger):
     """Parse RPL_ISUPPORT (005) and store features advertised by server."""
+    # Make sure this is not a `005 RPL_BOUNCE`, since the numeric is (sometimes)
+    # the same. A `RPL_BOUNCE` will say "Try server <server name>, port <port
+    # number>", unlike `RPL_ISUPPORT`, which always says "are supported by this
+    # server".
+    if trigger.args[-1] != 'are supported by this server':
+        return
+
     tokens = trigger.args[1:-1]  # Skip client/misc text (first/last items)
     for tok in tokens:
         if tok.startswith('-'):  # Negate parameter
