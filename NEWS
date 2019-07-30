@@ -34,14 +34,11 @@ Module changes
     phrases, and punctuation marks—things that were unsupported in Sopel 6.x
   * This means that the `wiktionary` module is now somewhat case-sensitive, to
     account for common and proper nouns that differ only in capitalization
-* `url` will now ignore "private" addresses by default [[#1439][], [#1622][]]
+* `url` will now ignore "private" addresses by default [[#1439][], [#1624][]]
   * New config settings for the `url` module allow overriding the checks, in
     cases where loading previews of e.g. LAN servers is safe
   * The default is off, so users don't unwittingly open themselves to attackers
     fishing for running HTTP services on the local machine or network
-  * Note/TODO: #1622 is an issue listing remaining things that need doing to
-    make this feature consistent, and should be replaced by the PR implementing
-    them when it's merged.
 * The `.at` command (from `remind`) understands dates now [[#1590][]]
   * Finally, it's possible to set a reminder more than 24 hours ahead without
     first converting the future date/time to a duration for use with `.in`!
@@ -304,7 +301,7 @@ API changes
 [#1613]: https://github.com/sopel-irc/sopel/pull/1613
 [#1616]: https://github.com/sopel-irc/sopel/pull/1616
 [#1620]: https://github.com/sopel-irc/sopel/pull/1620
-[#1622]: https://github.com/sopel-irc/sopel/issues/1622
+[#1624]: https://github.com/sopel-irc/sopel/pull/1624
 [#1638]: https://github.com/sopel-irc/sopel/pull/1638
 [#1646]: https://github.com/sopel-irc/sopel/pull/1646
 [#1652]: https://github.com/sopel-irc/sopel/pull/1652
