@@ -302,6 +302,12 @@ class Sopel(irc.Bot):
 
         return self.users.get(self.nick).hostmask
 
+    @property
+    def server_network(self):
+        """IRC network name from `RPL_ISUPPORT`, if present, else ``None``."""
+        network = self.server_isupport['NETWORK']
+        return network if network != isupport.NOT_ADVERTISED else None
+
     # Backwards-compatibility aliases to attributes made private in 6.2. Remove
     # these in 7.0
     times = property(lambda self: getattr(self, '_times'))
