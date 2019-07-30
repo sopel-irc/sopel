@@ -102,6 +102,15 @@ class Sopel(irc.Bot):
         self._cap_reqs = dict()
         """A dictionary of capability names to a list of requests."""
 
+        self.server_hostname = None
+        """A string of the server's hostname parsed from ``RPL_MYINFO`` response.
+
+        A value will only be set upon successful completion of the bot's
+        registration process with the IRC server.
+
+        .. versionadded:: 7.0
+        """
+
         self.privileges = dict()
         """A dictionary of channels to their users and privilege levels.
 

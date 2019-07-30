@@ -157,6 +157,16 @@ def retry_join(bot, trigger):
     bot.join(channel)
 
 
+@sopel.module.rule('.*')
+@sopel.module.event(events.RPL_MYINFO)
+@sopel.module.priority('high')
+@sopel.module.thread(False)
+@sopel.module.unblockable
+def parse_reply_myinfo(bot, trigger):
+    """Parse RPL_MYINFO (004) for pertinent tokens."""
+    bot.server_hostname = trigger.args[1]
+
+
 @sopel.module.rule('(.*)')
 @sopel.module.event(events.RPL_NAMREPLY)
 @sopel.module.priority('high')
