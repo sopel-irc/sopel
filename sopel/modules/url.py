@@ -53,8 +53,10 @@ class UrlSection(StaticSection):
     """If greater than 0, the title fetcher will include a TinyURL version of links longer than this many characters."""
     enable_private_resolution = ValidatedAttribute(
         'enable_private_resolution', bool, default=False)
+    """Enable URL lookups for RFC1918 addresses"""
     enable_dns_resolution = ValidatedAttribute(
         'enable_dns_resolution', bool, default=False)
+    """Enable DNS resolution for all domains to validate if there are RFC1918 resolutions"""
 
 
 def configure(config):
@@ -64,6 +66,8 @@ def configure(config):
     | exclude | https?://git\\\\.io/.* | A list of regular expressions for URLs for which the title should not be shown. |
     | exclusion\\_char | ! | A character (or string) which, when immediately preceding a URL, will stop the URL's title from being shown. |
     | shorten\\_url\\_length | 72 | If greater than 0, the title fetcher will include a TinyURL version of links longer than this many characters. |
+    | enable\\_private\\_resolution | False | Enable URL lookups for RFC1918 addresses. |
+    | enable\\_dns\\_resolution | False | Enable DNS resolution for all domains to validate if there are RFC1918 resolutions. |
     """
     config.define_section('url', UrlSection)
     config.url.configure_setting(
@@ -208,7 +212,7 @@ def process_urls(bot, trigger, urls):
         if check_callbacks(bot, url):
             continue
 
-        # Prevent private addresses form being queried if enable_private_resolution is False
+        # Prevent private addresses from being queried if enable_private_resolution is False
         if not bot.config.url.enable_private_resolution:
             parsed = urlparse(url)
             # Check if it's an address like http://192.168.1.1
@@ -222,7 +226,7 @@ def process_urls(bot, trigger, urls):
             if bot.config.url.enable_dns_resolution:
                 private = False
                 for result in dns.resolver.query(parsed.hostname):
-                    if ipaddress.ip_address(result).is_private:
+                    if ipaddress.ip_address(result).is_private or ipaddress.ip_address(parsed.hostname).is_loopback:
                         private = True
                         break
                 if private:
