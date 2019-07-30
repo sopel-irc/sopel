@@ -24,6 +24,7 @@ import traceback
 from collections import defaultdict
 
 from sopel.tools._events import events  # NOQA
+from sopel.tools._rpl_isupport import isupport  # NOQA
 
 if sys.version_info.major >= 3:
     raw_input = input

@@ -18,7 +18,7 @@ import time
 
 from sopel import irc, logger, plugins, tools
 from sopel.db import SopelDB
-from sopel.tools import stderr, Identifier, deprecated
+from sopel.tools import deprecated, Identifier, isupport, stderr
 import sopel.tools.jobs
 from sopel.trigger import Trigger
 from sopel.module import NOLIMIT
@@ -47,6 +47,80 @@ class _CapReq(object):
         self.arg = arg
         self.failure = failure or nop
         self.success = success or nop
+
+
+class ServerISupport(object):  # Eventually, this can become a Python 3 data class
+    """A dictionary-like data object for ``RPL_ISUPPORT`` information.
+
+    This object exposes the features advertised by the server in the ``005
+    RPL_ISUPPORT`` response. Values are stored in the `_data` attribute by the
+    parser in a basic format. Properties are used to return parameters with
+    a pre-defined special structure (e.g., ``EXTBAN`` and ``CHANMODES``).
+    """
+    def __init__(self):
+        self._data = {}
+
+    def __getitem__(self, name):
+        """Allow features to be accessed as dictionary items."""
+        if not isinstance(name, basestring):
+            raise TypeError("{}({}): ISUPPORT parameter must be a string.".format(name, type(name).__name__))
+
+        return getattr(self, name)
+
+    def __getattr__(self, name):
+        return self._data.get(name, isupport.NOT_ADVERTISED)
+
+    def __iter__(self):
+        """Prevent iteration; required because `__getitem__` is used."""
+        raise NotImplementedError
+
+    @property
+    def CHANMODES(self):
+        """A dictionary of ``CHANMODES`` by mode type.
+
+        .. seealso::
+            The specification for the `CHANMODES parameter`__.
+
+        .. __: https://modern.ircdocs.horse/#chanmodes-parameter
+        """
+        if 'CHANMODES' not in self._data:
+            return isupport.NOT_ADVERTISED
+
+        return dict(zip(
+            'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
+            self._data['CHANMODES']
+        ))
+
+    @property
+    def EXTBAN(self):
+        """A dictionary of ``EXTBAN`` with prefix and types.
+
+        .. seealso::
+            The specification for the `EXTBAN parameter`__.
+
+        .. __: https://modern.ircdocs.horse/#extban-parameter
+        """
+        if 'EXTBAN' not in self._data:
+            return isupport.NOT_ADVERTISED
+
+        return dict(zip(('prefix', 'types'), self._data['EXTBAN']))
+
+    @property
+    def PREFIX(self):
+        """A dictionary of ``PREFIX`` with modes and prefixes.
+
+        .. seealso::
+            The specification for the `PREFIX parameter`__.
+
+        .. __: https://modern.ircdocs.horse/#prefix-parameter
+        """
+        if 'PREFIX' not in self._data:
+            return isupport.NOT_ADVERTISED
+
+        if self._data['PREFIX'] is None:
+            return None
+
+        return dict(zip(('modes', 'prefixes'), self._data['PREFIX'][1:].split(')')))
 
 
 class Sopel(irc.Bot):
@@ -109,6 +183,58 @@ class Sopel(irc.Bot):
         registration process with the IRC server.
 
         .. versionadded:: 7.0
+        """
+
+        self.server_isupport = ServerISupport()
+        """A dictionary-like object of features advertised by the server in
+        ``RPL_ISUPPORT``.
+
+        Parameters that have value ``None`` have a special meaning as defined in
+        the `specifications`_. The bot SHOULD NOT assume a server supports a
+        feature unless it has been advertised in ``RPL_ISUPPORT``. Parameters
+        for features that are not advertised will have value
+        ``sopel.tools.isupport.NOT_ADVERTISED``::
+
+            >>> bot.server_isupport['AWAYLEN'] is None
+            True
+            # `None` here indicates "no limit".
+            >>> bot.server_isupport['PREFIX'] is None
+            True
+            # `None` here indicates "NO channel membership prefixes are supported by the server".
+            >>> bot.server_isupport['OVERRIDE'] is sopel.tools.isupport.NOT_ADVERTISED
+            True
+            # This feature is not advertised, and the bot SHOULD NOT assume the server supports it.
+
+        Features can be accessed with dictionary-item syntax::
+
+            >>> bot.server_isupport['NICKLEN']
+            31
+
+        or with object-attribute syntax::
+
+            >>> bot.server_isupport.CALLERID
+            'g'
+
+        Features with special formats (e.g., ``EXTBAN`` and ``CHANMODES``) are
+        returned with the appropriate data parsed::
+
+            >>> bot.server_isupport['EXTBAN']
+            {'prefix': '~', 'types': 'cqnr'}
+            >>> bot.server_isupport['CHANMODES']
+            {'A': 'b', 'B': 'k', 'C': 'l', 'D': 'imnpst'}
+
+        .. versionadded:: 7.0
+
+        .. important::
+            Parameter names are case-sensitive. The ``RPL_ISUPPORT``
+            `specifications`_ indicate that servers MUST send the parameter as
+            upper-case text, so you should reference parameters similarly.
+
+        .. _specifications: https://modern.ircdocs.horse/#rplisupport-005
+
+        .. seealso::
+            The canonical copy of ``RPL_ISUPPORT`` tokens here:
+            https://defs.ircdocs.horse/defs/isupport.html
         """
 
         self.privileges = dict()

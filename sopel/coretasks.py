@@ -20,7 +20,7 @@ import sopel
 import sopel.module
 import sopel.web
 from sopel.bot import _CapReq
-from sopel.tools import Identifier, iteritems, events
+from sopel.tools import events, Identifier, isupport, iteritems
 from sopel.tools.target import User, Channel
 import base64
 from sopel.logger import get_logger
@@ -165,6 +165,77 @@ def retry_join(bot, trigger):
 def parse_reply_myinfo(bot, trigger):
     """Parse RPL_MYINFO (004) for pertinent tokens."""
     bot.server_hostname = trigger.args[1]
+
+
+def handle_isupport_value(bot, param, value, is_single=True):
+    """Store RPL_ISUPPORT parameter value under proper structure.
+
+    :param bot: bot instance in which to store isupport values
+    :param str param: parameter name
+    :param str value: parameter value string to be parsed and stored
+    :param bool is_single: whether the value should be treated as a single
+        entry (``True``) or as an item in a list, defaults to ``True``
+    """
+    if (':' in value) and (param != 'SSL'):  # SSL parameter can have ':'s
+        parts = value.split(':')
+        if param not in bot.server_isupport._data:
+            bot.server_isupport._data[param] = {}
+        # `None` value is not the same as NOT_ADVERTISED. See spec for
+        # expectation of parameter where value is not defined (often, but not
+        # always this means there is "no limit").
+        bot.server_isupport._data[param][parts[0]] = int(parts[1]) if parts[1] else None
+        return
+
+    if value == '':
+        parsed_value = None
+    else:
+        parsed_value = value if param not in isupport.VALUES_CAST_TO else isupport.VALUES_CAST_TO[param](value)
+
+    if not is_single:
+        if param not in bot.server_isupport._data:
+            bot.server_isupport._data[param] = []
+        bot.server_isupport._data[param].append(parsed_value)
+        return
+
+    bot.server_isupport._data[param] = parsed_value
+    return
+
+
+@sopel.module.rule('.*')
+@sopel.module.event(events.RPL_ISUPPORT)
+@sopel.module.priority('high')
+@sopel.module.thread(False)
+@sopel.module.unblockable
+def parse_reply_isupport(bot, trigger):
+    """Parse RPL_ISUPPORT (005) and store features advertised by server."""
+    tokens = trigger.args[1:-1]  # Skip client/misc text (first/last items)
+    for tok in tokens:
+        if tok.startswith('-'):  # Negate parameter
+            param = tok[1:]
+            try:
+                del bot.server_isupport._data[param]
+            except KeyError:
+                # Parameter has not (yet?) been specified by server. This should
+                # not really happen, as the server should not be negating
+                # parameters that have not been advertised.
+                raise Exception('Server is trying to negate unadvertised '
+                                'parameter: {}'.format(param))
+            return
+
+        if '=' not in tok:
+            bot.server_isupport._data[tok] = isupport.DEFAULT_VALUES.get(tok, True)
+            continue
+
+        # Parameter has associated value
+        param, raw_value = tok.split('=')
+        if ',' not in raw_value:
+            handle_isupport_value(bot, param, raw_value)
+            continue
+
+        values = raw_value.split(',')
+        for val in values:
+            handle_isupport_value(bot, param, val, is_single=False)
+    return
 
 
 @sopel.module.rule('(.*)')
