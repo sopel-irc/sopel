@@ -665,7 +665,10 @@ class Sopel(irc.Bot):
         event = pretrigger.event
         intent = pretrigger.tags.get('intent')
         nick = pretrigger.nick
-        is_echo_message = nick.lower() == self.nick.lower()
+        is_echo_message = (
+            nick.lower() == self.nick.lower() and
+            event in ["PRIVMSG", "NOTICE"]
+        )
         user_obj = self.users.get(nick)
         account = user_obj.account if user_obj else None
 
