@@ -7,7 +7,7 @@ import pytest
 from sopel import coretasks
 from sopel.bot import ServerISupport
 from sopel.module import VOICE, HALFOP, OP, ADMIN, OWNER
-from sopel.tools import Identifier, isupport
+from sopel.tools import Identifier
 from sopel.test_tools import MockSopel, MockSopelWrapper
 from sopel.trigger import PreTrigger, Trigger
 
@@ -151,31 +151,35 @@ def test_parse_reply_isupport(sopel):
     trigger = Trigger(sopel.config, pretrigger, None)
     coretasks.parse_reply_isupport(MockSopelWrapper(sopel, trigger), trigger)
 
-    assert len(sopel.server_isupport._data) == 0
+    assert len(sopel.server_isupport) == 0
 
     # Test normal parsing of various tokens
     pretrigger = PreTrigger('Foo', ':test.example.com 005 Sopel {} :are supported by this server'.format(' '.join(tokens)))
     trigger = Trigger(sopel.config, pretrigger, None)
     coretasks.parse_reply_isupport(MockSopelWrapper(sopel, trigger), trigger)
 
-    assert sopel.server_isupport.FAKE_PARAMETER == isupport.NOT_ADVERTISED
-    assert sopel.server_isupport.SAFELIST is True
-    assert sopel.server_isupport.SILENCE is None
-    assert sopel.server_isupport.EXCEPTS == 'e'
-    assert sopel.server_isupport.INVEX == 'n'
-    assert sopel.server_isupport.AWAYLEN == 200
-    assert sopel.server_isupport.MAXTARGETS is None
-    assert sopel.server_isupport.MAXLIST == {'b': 60, 'e': 60, 'I': 60}
-    assert sopel.server_isupport.TARGMAX['JOIN'] is None
-    assert sopel.server_isupport.CHANMODES == {
+    # raise `KeyError` for unadvertised parameter
+    with pytest.raises(KeyError):
+        sopel.server_isupport['FAKE_PARAMETER']
+
+    assert sopel.server_isupport['SAFELIST'] is True
+    assert sopel.server_isupport['SILENCE'] is None
+    assert sopel.server_isupport['EXCEPTS'] == 'e'
+    assert sopel.server_isupport['INVEX'] == 'n'
+    assert sopel.server_isupport['AWAYLEN'] == 200
+    assert sopel.server_isupport['MAXTARGETS'] is None
+    assert sopel.server_isupport['MAXLIST'] == {'b': 60, 'e': 60, 'I': 60}
+    assert sopel.server_isupport['TARGMAX']['JOIN'] is None
+    assert sopel.server_isupport['CHANMODES'] == {
         'A': 'beI', 'B': 'k', 'C': 'l', 'D': 'BCMNORScimnpstz'
     }
-    assert sopel.server_isupport.EXTBAN == {'prefix': '~', 'types': 'cqnr'}
-    assert sopel.server_isupport.PREFIX == {'modes': 'ov', 'prefixes': '@+'}
+    assert sopel.server_isupport['EXTBAN'] == {'prefix': '~', 'types': 'cqnr'}
+    assert sopel.server_isupport['PREFIX'] == {'modes': 'ov', 'prefixes': '@+'}
 
     # Negate a feature (TARGMAX)
     pretrigger = PreTrigger('Foo', ':test.example.com 005 Sopel -TARGMAX :are supported by this server')
     trigger = Trigger(sopel.config, pretrigger, None)
     coretasks.parse_reply_isupport(MockSopelWrapper(sopel, trigger), trigger)
 
-    assert sopel.server_isupport.TARGMAX == isupport.NOT_ADVERTISED
+    with pytest.raises(KeyError):
+        sopel.server_isupport['TARGMAX']
