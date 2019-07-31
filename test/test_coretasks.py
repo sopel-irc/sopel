@@ -181,5 +181,11 @@ def test_parse_reply_isupport(sopel):
     trigger = Trigger(sopel.config, pretrigger, None)
     coretasks.parse_reply_isupport(MockSopelWrapper(sopel, trigger), trigger)
 
+    # raise `Exception` when negating an unadvertised parameter
+    pretrigger = PreTrigger('Foo', ':test.example.com 005 Sopel -UNADVERTISED :are supported by this server')
+    trigger = Trigger(sopel.config, pretrigger, None)
+    with pytest.raises(Exception, match='Server is trying to negate unadvertised parameter: .*'):
+        coretasks.parse_reply_isupport(MockSopelWrapper(sopel, trigger), trigger)
+
     with pytest.raises(KeyError):
         sopel.server_isupport['TARGMAX']
