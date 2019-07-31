@@ -38,6 +38,11 @@ sopel.tools.events
    :members:
    :undoc-members:
 
+sopel.tools.isupport
+--------------------
+.. autoclass:: sopel.tools.isupport
+  :members:
+
 sopel.formatting
 -----------------
 .. automodule:: sopel.formatting
