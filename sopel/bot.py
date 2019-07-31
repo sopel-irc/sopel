@@ -193,7 +193,7 @@ class Sopel(irc.Bot):
         the `specifications`_. The bot SHOULD NOT assume a server supports a
         feature unless it has been advertised in ``RPL_ISUPPORT``. Parameters
         for features that are not advertised will have value
-        :py:data:`~sopel.tools.isupport.NOT_ADVERTISED`::
+        ``sopel.tools.isupport.NOT_ADVERTISED``::
 
             >>> bot.server_isupport['AWAYLEN'] is None
             True

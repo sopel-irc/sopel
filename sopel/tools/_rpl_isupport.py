@@ -3,13 +3,10 @@ from __future__ import unicode_literals, absolute_import, print_function, divisi
 
 
 class isupport(object):
-    """Constants used for various ``RPL_ISUPPORT`` functionality.
-
-    .. versionadded:: 7.0
-    """
+    """Constants used for various ``RPL_ISUPPORT`` functionality."""
     NOT_ADVERTISED = 'NOT_ADVERTISED'
-    """Used to distinguish between parameters with *no value provided* from
-    parameters that are *not present* in a response at all (not advertised).
+    """Used to distinguish between parameters with no value provided from
+    parameters that are not present in a response at all (not advertised).
     """
 
     DEFAULT_VALUES = {  # Default values for RPL_ISUPPORT parameters
