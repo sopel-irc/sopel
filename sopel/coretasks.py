@@ -178,12 +178,9 @@ def handle_isupport_value(bot, param, value, is_single=True):
     """
     if (':' in value) and (param != 'SSL'):  # SSL parameter can have ':'s
         parts = value.split(':')
-        if param not in bot.server_isupport._data:
-            bot.server_isupport._data[param] = {}
-        # `None` value is not the same as NOT_ADVERTISED. See spec for
-        # expectation of parameter where value is not defined (often, but not
-        # always this means there is "no limit").
-        bot.server_isupport._data[param][parts[0]] = int(parts[1]) if parts[1] else None
+        # See spec for expectation of parameter where value is `None` (often,
+        # but not always this means there is "no limit").
+        bot.server_isupport.store_value_in_dict(param, parts[0], int(parts[1]) if parts[1] else None)
         return
 
     if value == '':
@@ -192,12 +189,10 @@ def handle_isupport_value(bot, param, value, is_single=True):
         parsed_value = value if param not in isupport.VALUES_CAST_TO else isupport.VALUES_CAST_TO[param](value)
 
     if not is_single:
-        if param not in bot.server_isupport._data:
-            bot.server_isupport._data[param] = []
-        bot.server_isupport._data[param].append(parsed_value)
+        bot.server_isupport.append_value_to_list(param, parsed_value)
         return
 
-    bot.server_isupport._data[param] = parsed_value
+    bot.server_isupport.store_value(param, parsed_value)
     return
 
 
@@ -220,7 +215,7 @@ def parse_reply_isupport(bot, trigger):
         if tok.startswith('-'):  # Negate parameter
             param = tok[1:]
             try:
-                del bot.server_isupport._data[param]
+                del bot.server_isupport[param]
             except KeyError:
                 # Parameter has not (yet?) been specified by server. This should
                 # not really happen, as the server should not be negating
@@ -230,7 +225,7 @@ def parse_reply_isupport(bot, trigger):
             return
 
         if '=' not in tok:
-            bot.server_isupport._data[tok] = isupport.DEFAULT_VALUES.get(tok, True)
+            bot.server_isupport.store_value(tok, isupport.DEFAULT_VALUES.get(tok, True))
             continue
 
         # Parameter has associated value

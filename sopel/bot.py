@@ -18,7 +18,7 @@ import time
 
 from sopel import irc, logger, plugins, tools
 from sopel.db import SopelDB
-from sopel.tools import deprecated, Identifier, isupport, stderr
+from sopel.tools import stderr, Identifier, deprecated
 import sopel.tools.jobs
 from sopel.trigger import Trigger
 from sopel.module import NOLIMIT
@@ -49,30 +49,42 @@ class _CapReq(object):
         self.success = success or nop
 
 
-class ServerISupport(object):  # Eventually, this can become a Python 3 data class
-    """A dictionary-like data object for ``RPL_ISUPPORT`` information.
+class ServerISupport(dict):
+    """A dictionary data object for ``RPL_ISUPPORT`` information.
 
     This object exposes the features advertised by the server in the ``005
-    RPL_ISUPPORT`` response. Values are stored in the `_data` attribute by the
-    parser in a basic format. Properties are used to return parameters with
-    a pre-defined special structure (e.g., ``EXTBAN`` and ``CHANMODES``).
+    RPL_ISUPPORT`` response. Values are stored in the dict by the parser in a
+    basic format. Properties are used to return parameters with a pre-defined
+    special structure (e.g., ``EXTBAN`` and ``CHANMODES``).
     """
-    def __init__(self):
-        self._data = {}
-
     def __getitem__(self, name):
-        """Allow features to be accessed as dictionary items."""
         if not isinstance(name, basestring):
             raise TypeError("{}({}): ISUPPORT parameter must be a string.".format(name, type(name).__name__))
 
-        return getattr(self, name)
+        if hasattr(self, name):  # Special properties
+            return getattr(self, name)
 
-    def __getattr__(self, name):
-        return self._data.get(name, isupport.NOT_ADVERTISED)
+        return dict.__getitem__(self, name)
 
-    def __iter__(self):
-        """Prevent iteration; required because `__getitem__` is used."""
-        raise NotImplementedError
+    def store_value(self, param, value):
+        """Prevents get/set recursion from ``__getitem__`` use of ``getattr``.
+
+        That is, setting the value for a parameter that has an associated
+        ``property`` getter would create chaos.
+        """
+        dict.__setitem__(self, param, value)
+
+    def store_value_in_dict(self, param, key, value):
+        """Prevents get/set recursion from ``__getitem__`` use of ``getattr``."""
+        if param not in self:
+            self.store_value(param, {})
+        dict.__getitem__(self, param)[key] = value
+
+    def append_value_to_list(self, param, value):
+        """Prevents get/set recursion from ``__getitem__`` use of ``getattr``."""
+        if param not in self:
+            self.store_value(param, [])
+        dict.__getitem__(self, param).append(value)
 
     @property
     def CHANMODES(self):
@@ -83,12 +95,9 @@ class ServerISupport(object):  # Eventually, this can become a Python 3 data cla
 
         .. __: https://modern.ircdocs.horse/#chanmodes-parameter
         """
-        if 'CHANMODES' not in self._data:
-            return isupport.NOT_ADVERTISED
-
         return dict(zip(
             'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
-            self._data['CHANMODES']
+            dict.__getitem__(self, 'CHANMODES')
         ))
 
     @property
@@ -100,10 +109,7 @@ class ServerISupport(object):  # Eventually, this can become a Python 3 data cla
 
         .. __: https://modern.ircdocs.horse/#extban-parameter
         """
-        if 'EXTBAN' not in self._data:
-            return isupport.NOT_ADVERTISED
-
-        return dict(zip(('prefix', 'types'), self._data['EXTBAN']))
+        return dict(zip(('prefix', 'types'), dict.__getitem__(self, 'EXTBAN')))
 
     @property
     def PREFIX(self):
@@ -114,13 +120,10 @@ class ServerISupport(object):  # Eventually, this can become a Python 3 data cla
 
         .. __: https://modern.ircdocs.horse/#prefix-parameter
         """
-        if 'PREFIX' not in self._data:
-            return isupport.NOT_ADVERTISED
-
-        if self._data['PREFIX'] is None:
+        if dict.__getitem__(self, 'PREFIX') is None:
             return None
 
-        return dict(zip(('modes', 'prefixes'), self._data['PREFIX'][1:].split(')')))
+        return dict(zip(('modes', 'prefixes'), dict.__getitem__(self, 'PREFIX')[1:].split(')')))
 
 
 class Sopel(irc.Bot):
@@ -186,14 +189,13 @@ class Sopel(irc.Bot):
         """
 
         self.server_isupport = ServerISupport()
-        """A dictionary-like object of features advertised by the server in
-        ``RPL_ISUPPORT``.
+        """A dictionary of features advertised by the server in ``RPL_ISUPPORT``.
 
         Parameters that have value ``None`` have a special meaning as defined in
         the `specifications`_. The bot SHOULD NOT assume a server supports a
         feature unless it has been advertised in ``RPL_ISUPPORT``. Parameters
-        for features that are not advertised will have value
-        ``sopel.tools.isupport.NOT_ADVERTISED``::
+        for features that are not advertised will not be found in the
+        dictionary and raise a :py:exc:`KeyError`::
 
             >>> bot.server_isupport['AWAYLEN'] is None
             True
@@ -201,19 +203,9 @@ class Sopel(irc.Bot):
             >>> bot.server_isupport['PREFIX'] is None
             True
             # `None` here indicates "NO channel membership prefixes are supported by the server".
-            >>> bot.server_isupport['OVERRIDE'] is sopel.tools.isupport.NOT_ADVERTISED
-            True
+            >>> bot.server_isupport['OVERRIDE']
+            KeyError: 'OVERRIDE'
             # This feature is not advertised, and the bot SHOULD NOT assume the server supports it.
-
-        Features can be accessed with dictionary-item syntax::
-
-            >>> bot.server_isupport['NICKLEN']
-            31
-
-        or with object-attribute syntax::
-
-            >>> bot.server_isupport.CALLERID
-            'g'
 
         Features with special formats (e.g., ``EXTBAN`` and ``CHANMODES``) are
         returned with the appropriate data parsed::
@@ -305,8 +297,7 @@ class Sopel(irc.Bot):
     @property
     def server_network(self):
         """IRC network name from `RPL_ISUPPORT`, if present, else ``None``."""
-        network = self.server_isupport['NETWORK']
-        return network if network != isupport.NOT_ADVERTISED else None
+        return self.server_isupport.get('NETWORK', None)
 
     # Backwards-compatibility aliases to attributes made private in 6.2. Remove
     # these in 7.0
