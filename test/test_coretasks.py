@@ -5,8 +5,9 @@ from __future__ import unicode_literals, absolute_import, print_function, divisi
 import pytest
 
 from sopel import coretasks
+from sopel.bot import ServerISupport
 from sopel.module import VOICE, HALFOP, OP, ADMIN, OWNER
-from sopel.tools import Identifier
+from sopel.tools import Identifier, isupport
 from sopel.test_tools import MockSopel, MockSopelWrapper
 from sopel.trigger import PreTrigger, Trigger
 
@@ -14,6 +15,8 @@ from sopel.trigger import PreTrigger, Trigger
 @pytest.fixture
 def sopel():
     bot = MockSopel("Sopel")
+    bot.server_hostname = None
+    bot.server_isupport = ServerISupport()
     return bot
 
 
@@ -108,3 +111,71 @@ def test_bot_mixed_mode_types(sopel):
     assert sopel.channels["#test"].privileges[Identifier("Uvoice2")] == VOICE
     assert sopel.channels["#test"].privileges[Identifier("Uop2")] == OP
     assert sopel.channels["#test"].privileges[Identifier("Uadmin2")] == ADMIN
+
+
+def test_parse_reply_myinfo(sopel):
+    pretrigger = PreTrigger('Foo', ':test.example.com 004 Sopel test.example.com SomeIRCd-v0 uSeRmOdEs cHaNnElMoDeS')
+    trigger = Trigger(sopel.config, pretrigger, None)
+    coretasks.parse_reply_myinfo(MockSopelWrapper(sopel, trigger), trigger)
+
+    assert sopel.server_hostname == 'test.example.com'
+
+
+def test_parse_reply_isupport(sopel):
+    tokens = [
+        # Parameter only (flag)
+        'SAFELIST',
+        # Non-flag parameter only
+        'SILENCE',  # Indicates the server does not support the command
+        # Parameter with optional value.(The value is OPTIONAL and when not
+        # specified indicates that the letter "e" is used as the channel mode
+        # for ban exceptions; see `tools.isupport.DEFAULT_VALUES`).
+        'EXCEPTS',
+        # Parameter with optional value (Provide "n" instead of default "I").
+        'INVEX=n',
+        # Parameter with required value. Value is cast to specific type (int).
+        'AWAYLEN=200',
+        # Parameter with no limit
+        'MAXTARGETS=',
+        # Parameters with list of values, containing limits (required/optional).
+        'MAXLIST=b:60,e:60,I:60',
+        'TARGMAX=PRIVMSG:3,WHOIS:1,JOIN:',
+        # Special parameters.
+        'CHANMODES=beI,k,l,BCMNORScimnpstz',
+        'EXTBAN=~,cqnr',
+        'PREFIX=(ov)@+'
+    ]
+
+    # Ensure `005 RPL_BOUNCE` is not parsed as `RPL_ISUPPORT`
+    pretrigger = PreTrigger('Foo', ':test.example.com 005 Sopel go_here.example.com 1234 :Try this other server... or not.')
+    trigger = Trigger(sopel.config, pretrigger, None)
+    coretasks.parse_reply_isupport(MockSopelWrapper(sopel, trigger), trigger)
+
+    assert len(sopel.server_isupport._data) == 0
+
+    # Test normal parsing of various tokens
+    pretrigger = PreTrigger('Foo', ':test.example.com 005 Sopel {} :are supported by this server'.format(' '.join(tokens)))
+    trigger = Trigger(sopel.config, pretrigger, None)
+    coretasks.parse_reply_isupport(MockSopelWrapper(sopel, trigger), trigger)
+
+    assert sopel.server_isupport.FAKE_PARAMETER == isupport.NOT_ADVERTISED
+    assert sopel.server_isupport.SAFELIST is True
+    assert sopel.server_isupport.SILENCE is None
+    assert sopel.server_isupport.EXCEPTS == 'e'
+    assert sopel.server_isupport.INVEX == 'n'
+    assert sopel.server_isupport.AWAYLEN == 200
+    assert sopel.server_isupport.MAXTARGETS is None
+    assert sopel.server_isupport.MAXLIST == {'b': 60, 'e': 60, 'I': 60}
+    assert sopel.server_isupport.TARGMAX['JOIN'] is None
+    assert sopel.server_isupport.CHANMODES == {
+        'A': 'beI', 'B': 'k', 'C': 'l', 'D': 'BCMNORScimnpstz'
+    }
+    assert sopel.server_isupport.EXTBAN == {'prefix': '~', 'types': 'cqnr'}
+    assert sopel.server_isupport.PREFIX == {'modes': 'ov', 'prefixes': '@+'}
+
+    # Negate a feature (TARGMAX)
+    pretrigger = PreTrigger('Foo', ':test.example.com 005 Sopel -TARGMAX :are supported by this server')
+    trigger = Trigger(sopel.config, pretrigger, None)
+    coretasks.parse_reply_isupport(MockSopelWrapper(sopel, trigger), trigger)
+
+    assert sopel.server_isupport.TARGMAX == isupport.NOT_ADVERTISED
