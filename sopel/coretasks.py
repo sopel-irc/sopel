@@ -363,6 +363,7 @@ def track_modes(bot, trigger):
         "a": module.ADMIN,
         "q": module.OWNER,
         "y": module.OPER,
+        "Y": module.OPER,
     }
 
     # Parse modes before doing anything else
