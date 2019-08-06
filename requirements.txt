@@ -2,8 +2,6 @@ xmltodict
 pytz
 praw>=4.0.0,<6.0.0
 geoip2
-aspell-python-py2; python_version < '3'
-aspell-python-py3; python_version >= '3'
 ipaddress<2.0; python_version < '3.3'
 ipython<6.0; python_version < '3.3'
 ipython>=6.0,<7.0; python_version >= '3.3' and python_version < '3.5'

@@ -15,18 +15,14 @@ BuildRequires:  python2-devel
 BuildRequires:  python-sphinx
 BuildRequires:  dos2unix
 BuildRequires:  systemd
-BuildRequires:  aspell
-BuildRequires:  aspell-devel
-BuildRequires:  aspell-en
 
 Requires:       pytz
-Requires:       aspell-python-py2
 Requires:       pyOpenSSL
 Requires:       python-praw
 Requires:       python-backports-ssl_match_hostname
 
 %description
-Willie is a simple, lightweight, open source, easy-to-use IRC Utility bot.
+Sopel is a simple, lightweight, open source, easy-to-use IRC Utility bot.
 It is designed to be easy to use, run and extend.
 
 %prep
