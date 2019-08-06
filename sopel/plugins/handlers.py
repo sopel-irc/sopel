@@ -386,7 +386,7 @@ class EntryPointPlugin(PyModulePlugin):
         # in setup.py file
         setup(
             name='my_plugin',
-            version='1.0'
+            version='1.0',
             entry_points={
                 'sopel.plugins': [
                     'custom = my_plugin.path.to.plugin',
