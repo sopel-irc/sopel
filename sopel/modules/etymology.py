@@ -40,6 +40,9 @@ def etymology(word):
     # @@ <nsh> sbp, would it be possible to have a flag for .ety to get 2nd/etc
     # entries? - http://swhack.com/logs/2006-07-19#T15-05-29
 
+    if not word:
+        raise ValueError("No word to look for.")
+
     if len(word) > 25:
         raise ValueError("Word too long: %s[…]" % word[:10])
 
