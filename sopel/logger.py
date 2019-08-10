@@ -49,21 +49,31 @@ def setup_logging(bot):
             },
         },
         'loggers': {
+            # all purpose, sopel root logger
             'sopel': {
                 'level': base_level,
                 'handlers': ['console', 'logfile', 'errorfile'],
             },
+            # raw IRC log
             'sopel.raw': {
                 'level': 'DEBUG',
                 'propagate': False,
                 'handlers': ['raw'],
             },
+            # asynchat exception logger
+            'sopel.exceptions': {
+                'level': 'INFO',
+                'propagate': False,
+                'handlers': ['exceptionfile'],
+            },
         },
         'handlers': {
+            # output on stderr
             'console': {
                 'level': 'DEBUG',
                 'class': 'logging.StreamHandler',
             },
+            # generic purpose log file
             'logfile': {
                 'level': 'DEBUG',
                 'class': 'logging.handlers.TimedRotatingFileHandler',
@@ -71,6 +81,7 @@ def setup_logging(bot):
                     log_directory, bot.config.basename + '.sopel.log'),
                 'when': 'midnight',
             },
+            # catched error log file
             'errorfile': {
                 'level': 'ERROR',
                 'class': 'logging.handlers.TimedRotatingFileHandler',
@@ -78,6 +89,15 @@ def setup_logging(bot):
                     log_directory, bot.config.basename + '.error.log'),
                 'when': 'midnight',
             },
+            # uncaught error file
+            'exceptionfile': {
+                'level': 'ERROR',
+                'class': 'logging.handlers.TimedRotatingFileHandler',
+                'filename': os.path.join(
+                    log_directory, bot.config.basename + '.exceptions.log'),
+                'when': 'midnight',
+            },
+            # raw IRC log file
             'raw': {
                 'level': 'DEBUG',
                 'class': 'logging.handlers.TimedRotatingFileHandler',

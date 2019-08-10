@@ -413,75 +413,47 @@ class Bot(asynchat.async_chat):
     def dispatch(self, pretrigger):
         pass
 
-    def error(self, trigger=None):
+    def error(self, trigger=None, exception=None):
         """Called internally when a module causes an error."""
-        try:
-            trace = traceback.format_exc()
-            if sys.version_info.major < 3:
-                trace = trace.decode('utf-8', errors='xmlcharrefreplace')
-            stderr(trace)
-            try:
-                lines = list(reversed(trace.splitlines()))
-                report = [lines[0].strip()]
-                for line in lines:
-                    line = line.strip()
-                    if line.startswith('File "'):
-                        report.append(line[0].lower() + line[1:])
-                        break
-                else:
-                    report.append('source unknown')
+        message = 'Unexpected error'
+        if exception:
+            message = '{} ({})'.format(message, exception)
 
-                signature = '%s (%s)' % (report[0], report[1])
-                # TODO: make not hardcoded
-                log_filename = os.path.join(self.config.core.logdir, self.config.basename + '.exceptions.log')
-                with codecs.open(log_filename, 'a', encoding='utf-8') as logfile:
-                    logfile.write('Signature: %s\n' % signature)
-                    if trigger:
-                        logfile.write('from {} at {}. Message was: {}\n'.format(
-                            trigger.nick, str(datetime.now()), trigger.group(0)))
-                    logfile.write(trace)
-                    logfile.write(
-                        '----------------------------------------\n\n'
-                    )
-            except Exception as e:
-                stderr("Could not save full traceback!")
-                LOGGER.error("Could not save traceback from %s to file: %s", trigger.sender, str(e))
+        if trigger:
+            message = '{} from {} at {}. Message was: {}'.format(
+                message, trigger.nick, str(datetime.now()), trigger.group(0)
+            )
 
-            if trigger and self.config.core.reply_errors and trigger.sender is not None:
-                self.say(signature, trigger.sender)
-            if trigger:
-                LOGGER.error('Exception from {}: {} ({})'.format(trigger.sender, str(signature), trigger.raw))
-        except Exception as e:
-            if trigger and self.config.core.reply_errors and trigger.sender is not None:
-                self.say("Got an error.", trigger.sender)
-            if trigger:
-                LOGGER.error('Exception from {}: {} ({})'.format(trigger.sender, str(e), trigger.raw))
+        LOGGER.exception(message)
+
+        if trigger and self.config.core.reply_errors and trigger.sender is not None:
+            self.say(message, trigger.sender)
 
     def handle_error(self):
         """Handle any uncaptured error in the core.
 
-        Overrides asyncore's handle_error.
-
+        This method is an override of :meth:`asyncore.dispatcher.handle_error`,
+        the :class:`asynchat.async_chat` being a subclass of
+        :class:`asyncore.dispatcher`.
         """
-        trace = traceback.format_exc()
-        stderr(trace)
-        LOGGER.error('Fatal error in core, please review exception log')
-        # TODO: make not hardcoded
-        logfile = codecs.open(
-            os.path.join(self.config.core.logdir, self.config.basename + '.exceptions.log'),
-            'a',
-            encoding='utf-8'
+        LOGGER.error('Fatal error in core, please review exceptions logs.')
+
+        err_log = logging.getLogger('sopel.exceptions')
+        err_log.error(
+            'Fatal error in core, handle_error() was called.\n'
+            'Last raw line was: %s\n'
+            'Buffer:\n%s\n',
+            self.raw, self.buffer
         )
-        logfile.write('Fatal error in core, handle_error() was called\n')
-        logfile.write('last raw line was %s' % self.raw)
-        logfile.write(trace)
-        logfile.write('Buffer:\n')
-        logfile.write(self.buffer)
-        logfile.write('----------------------------------------\n\n')
-        logfile.close()
+        err_log.exception('Fatal error traceback')
+        err_log.error('----------------------------------------')
+
         if self.error_count > 10:
+            # quit if too many errors
             if (datetime.now() - self.last_error_timestamp).seconds < 5:
-                stderr("Too many errors, can't continue")
+                LOGGER.error('Too many errors, can\'t continue')
                 os._exit(1)
+            # TODO: should we reset error_count?
+
         self.last_error_timestamp = datetime.now()
         self.error_count = self.error_count + 1

@@ -648,9 +648,9 @@ class Sopel(irc.Bot):
 
         try:
             exit_code = func(sopel, trigger)
-        except Exception:  # TODO: Be specific
+        except Exception as error:  # TODO: Be specific
             exit_code = None
-            self.error(trigger)
+            self.error(trigger, exception=error)
 
         if exit_code != NOLIMIT:
             self._times[nick][func] = current_time

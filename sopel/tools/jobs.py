@@ -82,12 +82,12 @@ class JobScheduler(threading.Thread):
             except KeyboardInterrupt:
                 # Do not block on KeyboardInterrupt
                 raise
-            except Exception:  # TODO: Be specific
+            except Exception as error:  # TODO: Be specific
                 # Modules exceptions are caught earlier, so this is a bit
                 # more serious. Options are to either stop the main thread
                 # or continue this thread and hope that it won't happen
                 # again.
-                self.bot.error()
+                self.bot.error(exception=error)
                 # Sleep a bit to guard against busy-looping and filling
                 # the log with useless error messages.
                 time.sleep(10.0)  # seconds
@@ -115,8 +115,8 @@ class JobScheduler(threading.Thread):
         except KeyboardInterrupt:
             # Do not block on KeyboardInterrupt
             raise
-        except Exception:  # TODO: Be specific
-            self.bot.error()
+        except Exception as error:  # TODO: Be specific
+            self.bot.error(exception=error)
 
 
 class Job(object):
