@@ -13,28 +13,11 @@ import sys
 import sopel
 import sopel.module
 
-if sys.version_info.major >= 3:
-    # Backup stderr/stdout wrappers
-    old_stdout = sys.stdout
-    old_stderr = sys.stderr
-
-    # IPython wants actual stderr and stdout. In Python 2, it only needed that
-    # when actually starting the console, but in Python 3 it seems to need that
-    # on import as well
-    sys.stdout = sys.__stdout__
-    sys.stderr = sys.__stderr__
-try:
-    import IPython
-    if hasattr(IPython, 'terminal'):
-        from IPython.terminal.embed import InteractiveShellEmbed
-    else:
-        from IPython.frontend.terminal.embed import InteractiveShellEmbed
-finally:
-    if sys.version_info.major >= 3:
-        # Restore stderr/stdout wrappers
-        sys.stdout = old_stdout
-        sys.stderr = old_stderr
-
+import IPython
+if hasattr(IPython, 'terminal'):
+    from IPython.terminal.embed import InteractiveShellEmbed
+else:
+    from IPython.frontend.terminal.embed import InteractiveShellEmbed
 
 console = None
 
