@@ -2,6 +2,8 @@
 from __future__ import unicode_literals, absolute_import, print_function, division
 
 import logging
+import os
+from logging.config import dictConfig
 
 
 class IrcLoggingHandler(logging.Handler):
@@ -31,16 +33,61 @@ class ChannelOutputFormatter(logging.Formatter):
 
 
 def setup_logging(bot):
-    base_level = bot.config.core.logging_level or 'WARNING'
+    log_directory = bot.config.core.logdir
+    base_level = bot.config.core.logging_level or 'INFO'
     base_format = bot.config.core.logging_format
     base_datefmt = bot.config.core.logging_datefmt
-    base_params = {'level': base_level}
-    if base_format:
-        base_params['format'] = base_format
-    if base_datefmt:
-        base_params['datefmt'] = base_datefmt
-    logging.basicConfig(**base_params)
-    logger = logging.getLogger('sopel')
+
+    logging_config = {
+        'version': 1,
+        'formatters': {
+            'sopel': {
+                'format': base_format,
+                'datefmt': base_datefmt,
+            },
+        },
+        'loggers': {
+            'sopel': {
+                'level': base_level,
+                'handlers': ['console', 'logfile', 'errorfile'],
+            },
+            'sopel.raw': {
+                'level': 'DEBUG',
+                'propagate': False,
+                'handlers': ['raw'],
+            },
+        },
+        'handlers': {
+            'console': {
+                'level': 'DEBUG',
+                'class': 'logging.StreamHandler',
+            },
+            'logfile': {
+                'level': 'DEBUG',
+                'class': 'logging.handlers.TimedRotatingFileHandler',
+                'filename': os.path.join(
+                    log_directory, bot.config.basename + '.sopel.log'),
+                'when': 'midnight',
+            },
+            'errorfile': {
+                'level': 'ERROR',
+                'class': 'logging.handlers.TimedRotatingFileHandler',
+                'filename': os.path.join(
+                    log_directory, bot.config.basename + '.error.log'),
+                'when': 'midnight',
+            },
+            'raw': {
+                'level': 'DEBUG',
+                'class': 'logging.handlers.TimedRotatingFileHandler',
+                'filename': os.path.join(
+                    log_directory, bot.config.basename + '.raw.log'),
+                'when': 'midnight',
+            },
+        },
+    }
+    dictConfig(logging_config)
+
+    # configure channel logging if required by configuration
     if bot.config.core.logging_channel:
         channel_level = bot.config.core.logging_channel_level or base_level
         channel_format = bot.config.core.logging_channel_format or base_format
@@ -53,6 +100,9 @@ def setup_logging(bot):
         formatter = ChannelOutputFormatter(**channel_params)
         handler = IrcLoggingHandler(bot, channel_level)
         handler.setFormatter(formatter)
+
+        # set channel handler to `sopel` logger
+        logger = logging.getLogger('sopel')
         logger.addHandler(handler)
 
 

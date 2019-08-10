@@ -17,8 +17,8 @@ import asyncore
 import asynchat
 import os
 import codecs
+import logging
 import traceback
-from sopel.logger import get_logger
 from sopel.tools import stderr, Identifier
 from sopel.trigger import PreTrigger
 try:
@@ -42,7 +42,7 @@ if sys.version_info.major >= 3:
 
 __all__ = ['Bot']
 
-LOGGER = get_logger(__name__)
+LOGGER = logging.getLogger(__name__)
 
 
 class Bot(asynchat.async_chat):
@@ -97,22 +97,8 @@ class Bot(asynchat.async_chat):
         """Log raw line to the raw log."""
         if not self.config.core.log_raw:
             return
-        if not os.path.isdir(self.config.core.logdir):
-            try:
-                os.mkdir(self.config.core.logdir)
-            except Exception as e:
-                stderr('There was a problem creating the logs directory.')
-                stderr('%s %s' % (str(e.__class__), str(e)))
-                stderr('Please fix this and then run Sopel again.')
-                os._exit(1)
-        f = codecs.open(os.path.join(self.config.core.logdir, self.config.basename + '.raw.log'),
-                        'a', encoding='utf-8')
-        f.write(prefix + unicode(time.time()) + "\t")
-        temp = line.replace('\n', '')
-
-        f.write(temp)
-        f.write("\n")
-        f.close()
+        logger = logging.getLogger('sopel.raw')
+        logger.info('\t'.join([prefix, line.strip()]))
 
     def safe(self, string):
         """Remove newlines from a string."""
