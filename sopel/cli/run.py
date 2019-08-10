@@ -11,12 +11,12 @@ https://sopel.chat
 from __future__ import unicode_literals, absolute_import, print_function, division
 
 import argparse
+import logging
 import os
 import platform
 import signal
 import sys
 import time
-import traceback
 
 from sopel import bot, config, logger, tools, __version__
 from . import utils
@@ -29,6 +29,8 @@ if sys.version_info.major == 2:
 if sys.version_info.major == 3 and sys.version_info.minor < 3:
     tools.stderr('Error: When running on Python 3, Python 3.3 is required.')
     sys.exit(1)
+
+LOGGER = logging.getLogger(__name__)
 
 ERR_CODE = 1
 """Error code: program exited with an error"""
@@ -49,7 +51,7 @@ def run(settings, pid_file, daemon=False):
 
     def signal_handler(sig, frame):
         if sig == signal.SIGUSR1 or sig == signal.SIGTERM or sig == signal.SIGINT:
-            tools.stderr('Got quit signal, shutting down.')
+            LOGGER.warning('Got quit signal, shutting down.')
             p.quit('Closing')
         elif sig == signal.SIGUSR2 or sig == signal.SIGILL:
             tools.stderr('Got restart signal.')
@@ -73,20 +75,26 @@ def run(settings, pid_file, daemon=False):
             if hasattr(signal, 'SIGILL'):
                 signal.signal(signal.SIGILL, signal_handler)
             p.setup()
+        except KeyboardInterrupt:
+            break
+        except Exception:
+            # In that case, there is nothing we can do.
+            # If the bot can't setup itself, then it won't run.
+            # This is a critical case scenario, where the user should have
+            # directly access to the exception traceback right in the console
+            # Beside, we can't know if logging has been set-up or not, so
+            # we can't rely on that here.
+            tools.stderr('Unexpected error in bot setup')
+            raise
+
+        try:
             p.run(settings.core.host, int(settings.core.port))
         except KeyboardInterrupt:
             break
-        except Exception:  # TODO: Be specific
-            trace = traceback.format_exc()
-            try:
-                tools.stderr(trace)
-            except Exception:  # TODO: Be specific
-                pass
-            logfile = open(os.path.join(settings.core.logdir, settings.basename + '.exceptions.log'), 'a')
-            logfile.write('Critical exception in core')
-            logfile.write(trace)
-            logfile.write('----------------------------------------\n\n')
-            logfile.close()
+        except Exception:
+            err_log = logging.getLogger('sopel.exceptions')
+            err_log.exception('Critical exception in core')
+            err_log.error('----------------------------------------')
             # TODO: This should be handled by command_start
             # All we should need here is a return value, but replacing the
             # os._exit() call below (at the end) broke ^C.

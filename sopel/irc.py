@@ -17,7 +17,7 @@ import asyncore
 import asynchat
 import os
 import logging
-from sopel.tools import stderr, Identifier
+from sopel.tools import Identifier
 from sopel.trigger import PreTrigger
 try:
     import ssl
@@ -173,11 +173,11 @@ class Bot(asynchat.async_chat):
         try:
             self.initiate_connect(host, port)
         except socket.error as e:
-            stderr('Connection error: %s' % e)
+            LOGGER.exception('Connection error: %s', e)
             self.handle_close()
 
     def initiate_connect(self, host, port):
-        stderr('Connecting to %s:%s...' % (host, port))
+        LOGGER.info('Connecting to: %s:%s', host, port)
         source_address = ((self.config.core.bind_host, 0)
                           if self.config.core.bind_host else None)
         self.set_socket(socket.create_connection((host, port),
@@ -186,13 +186,14 @@ class Bot(asynchat.async_chat):
             self.send = self._ssl_send
             self.recv = self._ssl_recv
         elif not has_ssl and self.config.core.use_ssl:
-            stderr('SSL is not avilable on your system, attempting connection '
-                   'without it')
+            LOGGER.warning(
+                'SSL is not avilable on your system, '
+                'attempting connection without it')
         self.connect((host, port))
         try:
             asyncore.loop()
         except KeyboardInterrupt:
-            print('KeyboardInterrupt')
+            LOGGER.warning('KeyboardInterrupt')
             self.quit('KeyboardInterrupt')
 
     def restart(self, message):
@@ -219,13 +220,15 @@ class Bot(asynchat.async_chat):
 
         if hasattr(self, '_shutdown'):
             self._shutdown()
-        stderr('Closed!')
 
         # This will eventually call asyncore dispatchers close method, which
         # will release the main thread. This should be called last to avoid
         # race conditions.
         if self.socket:
+            LOGGER.debug('Closing socket')
             self.close()
+
+        LOGGER.info('Closed!')
 
     def handle_connect(self):
         """
@@ -263,7 +266,6 @@ class Bot(asynchat.async_chat):
                             pass
                     if not has_matched:
                         # everything is broken
-                        stderr("Invalid certificate, hostname mismatch!")
                         LOGGER.error("invalid certificate, no hostname matches")
                         if hasattr(self.config.core, 'pid_file_path'):
                             os.unlink(self.config.core.pid_file_path)
@@ -284,7 +286,7 @@ class Bot(asynchat.async_chat):
         self.write(('USER', self.user, '+iw', self.nick), self.name)
 
         # maintain connection
-        stderr('Connected.')
+        LOGGER.info('Connected.')
         self.last_ping_time = datetime.now()
         timeout_check_thread = threading.Thread(target=self._timeout_check)
         timeout_check_thread.daemon = True
@@ -316,7 +318,10 @@ class Bot(asynchat.async_chat):
     def _timeout_check(self):
         while self.connected or self.connecting:
             if (datetime.now() - self.last_ping_time).seconds > int(self.config.core.timeout):
-                stderr('Ping timeout reached after %s seconds, closing connection' % self.config.core.timeout)
+                LOGGER.warning(
+                    'Ping timeout reached after %s seconds, '
+                    'closing connection',
+                    self.config.core.timeout)
                 self.handle_close()
                 break
             else:
@@ -403,7 +408,7 @@ class Bot(asynchat.async_chat):
             if self.hasquit:
                 self.close_when_done()
         elif pretrigger.event == '433':
-            stderr('Nickname already in use!')
+            LOGGER.error('Nickname already in use!')
             self.handle_close()
 
         self.dispatch(pretrigger)

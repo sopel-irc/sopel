@@ -8,11 +8,14 @@ https://sopel.chat
 """
 from __future__ import unicode_literals, absolute_import, print_function, division
 
-import os
+import logging
 import subprocess
 
 import sopel.module
-from sopel import plugins, tools
+from sopel import plugins
+
+
+LOGGER = logging.getLogger(__name__)
 
 
 def _load(bot, plugin):
@@ -23,11 +26,7 @@ def _load(bot, plugin):
             plugin.setup(bot)
         plugin.register(bot)
     except Exception as e:
-        filename, lineno = tools.get_raising_file_and_line()
-        rel_path = os.path.relpath(filename, os.path.dirname(__file__))
-        raising_stmt = "%s:%d" % (rel_path, lineno)
-        tools.stderr(
-            "Error loading %s: %s (%s)" % (plugin.name, e, raising_stmt))
+        LOGGER.exception('Error loading %s: %s', plugin.name, e)
         raise
 
 

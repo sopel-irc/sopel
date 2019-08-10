@@ -36,7 +36,7 @@ class ChannelOutputFormatter(logging.Formatter):
 
 def setup_logging(settings):
     log_directory = settings.core.logdir
-    base_level = settings.core.logging_level or 'INFO'
+    base_level = settings.core.logging_level or 'WARNING'
     base_format = settings.core.logging_format
     base_datefmt = settings.core.logging_datefmt
 
@@ -45,6 +45,10 @@ def setup_logging(settings):
         'formatters': {
             'sopel': {
                 'format': base_format,
+                'datefmt': base_datefmt,
+            },
+            'raw': {
+                'format': '%(asctime)s %(message)s',
                 'datefmt': base_datefmt,
             },
         },
@@ -72,6 +76,7 @@ def setup_logging(settings):
             'console': {
                 'level': 'DEBUG',
                 'class': 'logging.StreamHandler',
+                'formatter': 'sopel',
             },
             # generic purpose log file
             'logfile': {
@@ -80,6 +85,7 @@ def setup_logging(settings):
                 'filename': os.path.join(
                     log_directory, settings.basename + '.sopel.log'),
                 'when': 'midnight',
+                'formatter': 'sopel',
             },
             # catched error log file
             'errorfile': {
@@ -88,6 +94,7 @@ def setup_logging(settings):
                 'filename': os.path.join(
                     log_directory, settings.basename + '.error.log'),
                 'when': 'midnight',
+                'formatter': 'sopel',
             },
             # uncaught error file
             'exceptionfile': {
@@ -96,6 +103,7 @@ def setup_logging(settings):
                 'filename': os.path.join(
                     log_directory, settings.basename + '.exceptions.log'),
                 'when': 'midnight',
+                'formatter': 'sopel',
             },
             # raw IRC log file
             'raw': {
@@ -104,6 +112,7 @@ def setup_logging(settings):
                 'filename': os.path.join(
                     log_directory, settings.basename + '.raw.log'),
                 'when': 'midnight',
+                'formatter': 'raw',
             },
         },
     }

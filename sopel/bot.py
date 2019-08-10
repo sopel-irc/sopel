@@ -11,7 +11,6 @@ from ast import literal_eval
 import collections
 import itertools
 import logging
-import os
 import re
 import sys
 import threading
@@ -19,7 +18,7 @@ import time
 
 from sopel import irc, logger, plugins, tools
 from sopel.db import SopelDB
-from sopel.tools import stderr, Identifier, deprecated
+from sopel.tools import Identifier, deprecated
 import sopel.tools.jobs
 from sopel.trigger import Trigger
 from sopel.module import NOLIMIT
@@ -240,7 +239,7 @@ class Sopel(irc.Bot):
         load_error = 0
         load_disabled = 0
 
-        stderr("Loading plugins...")
+        LOGGER.info('Loading plugins...')
         usable_plugins = plugins.get_usable_plugins(self.config)
         for name, info in usable_plugins.items():
             plugin, is_enabled = info
@@ -252,10 +251,7 @@ class Sopel(irc.Bot):
                 plugin.load()
             except Exception as e:
                 load_error = load_error + 1
-                filename, lineno = tools.get_raising_file_and_line()
-                rel_path = os.path.relpath(filename, os.path.dirname(__file__))
-                raising_stmt = "%s:%d" % (rel_path, lineno)
-                stderr("Error loading %s: %s (%s)" % (name, e, raising_stmt))
+                LOGGER.exception('Error loading %s: %s', name, e)
             else:
                 try:
                     if plugin.has_setup():
@@ -263,24 +259,20 @@ class Sopel(irc.Bot):
                     plugin.register(self)
                 except Exception as e:
                     load_error = load_error + 1
-                    filename, lineno = tools.get_raising_file_and_line()
-                    rel_path = os.path.relpath(
-                        filename, os.path.dirname(__file__)
-                    )
-                    raising_stmt = "%s:%d" % (rel_path, lineno)
-                    stderr("Error in %s setup procedure: %s (%s)"
-                           % (name, e, raising_stmt))
+                    LOGGER.exception('Error in %s setup: %s', name, e)
                 else:
                     load_success = load_success + 1
-                    print('Loaded: %s' % name)
+                    LOGGER.debug('Plugin loaded: %s', name)
 
         total = sum([load_success, load_error, load_disabled])
         if total and load_success:
-            stderr('Registered %d modules' % (load_success - 1))
-            stderr('%d modules failed to load' % load_error)
-            stderr('%d modules disabled' % load_disabled)
+            LOGGER.info(
+                'Registered %d modules, %d failed, %d disabled',
+                (load_success - 1),
+                load_error,
+                load_disabled)
         else:
-            stderr("Warning: Couldn't load any modules")
+            LOGGER.warning("Warning: Couldn't load any modules")
 
     def reload_plugin(self, name):
         """Reload a plugin
@@ -298,12 +290,12 @@ class Sopel(irc.Bot):
         # tear down
         plugin.shutdown(self)
         plugin.unregister(self)
-        print('Unloaded: %s' % name)
+        LOGGER.info('Unloaded plugin %s', name)
         # reload & setup
         plugin.reload()
         plugin.setup(self)
         plugin.register(self)
-        print('Reloaded: %s' % name)
+        LOGGER.info('Reloaded plugin %s', name)
 
     def reload_plugins(self):
         """Reload all plugins
@@ -317,14 +309,14 @@ class Sopel(irc.Bot):
         for name, plugin in registered:
             plugin.shutdown(self)
             plugin.unregister(self)
-            print('Unloaded: %s' % name)
+            LOGGER.info('Unloaded plugin %s', name)
 
         # reload & setup all plugins
         for name, plugin in registered:
             plugin.reload()
             plugin.setup(self)
             plugin.register(self)
-            print('Reloaded: %s' % name)
+            LOGGER.info('Reloaded plugin %s', name)
 
     def add_plugin(self, plugin, callables, jobs, shutdowns, urls):
         """Add a loaded plugin to the bot's registry"""
@@ -349,12 +341,13 @@ class Sopel(irc.Bot):
                     for regex in regexes:
                         if func == self.memory['url_callbacks'].get(regex):
                             self.unregister_url_callback(regex)
+                            LOGGER.debug('URL Callback unregistered %r', regex)
         except:  # noqa
-            # TODO: consider logging?
-            raise  # re-raised
+            raise
         else:
             # remove plugin from registry
             del self._plugins[name]
+            LOGGER.info('Plugin removed %s', name)
 
     def has_plugin(self, name):
         """Tell if the bot has registered this plugin by its name"""
@@ -367,6 +360,7 @@ class Sopel(irc.Bot):
         :type obj: :term:`object`
         """
         if not callable(obj):
+            LOGGER.warning('Cannot unregister obj %r: not a callabled', obj)
             return
         if hasattr(obj, 'rule'):  # commands and intents have it added
             for rule in obj.rule:
@@ -785,36 +779,32 @@ class Sopel(irc.Bot):
 
     def _shutdown(self):
         # Stop Job Scheduler
-        stderr('Stopping the Job Scheduler.')
+        LOGGER.info('Stopping the Job Scheduler.')
         self.scheduler.stop()
 
         try:
             self.scheduler.join(timeout=15)
         except RuntimeError:
-            stderr('Unable to stop the Job Scheduler.')
+            LOGGER.exception('Unable to stop the Job Scheduler.')
         else:
-            stderr('Job Scheduler stopped.')
+            LOGGER.info('Job Scheduler stopped.')
 
         self.scheduler.clear_jobs()
 
         # Shutdown plugins
-        stderr(
-            'Calling shutdown for %d modules.' % (len(self.shutdown_methods),)
-        )
+        LOGGER.info(
+            'Calling shutdown for %d modules.', len(self.shutdown_methods))
+
         for shutdown_method in self.shutdown_methods:
             try:
-                stderr(
-                    "calling %s.%s" % (
-                        shutdown_method.__module__, shutdown_method.__name__,
-                    )
-                )
+                LOGGER.debug(
+                    'Calling %s.%s',
+                    shutdown_method.__module__,
+                    shutdown_method.__name__)
                 shutdown_method(self)
             except Exception as e:
-                stderr(
-                    "Error calling shutdown method for module %s:%s" % (
-                        shutdown_method.__module__, e
-                    )
-                )
+                LOGGER.exception('Error calling shutdown method: %s', e)
+
         # Avoid calling shutdown methods if we already have.
         self.shutdown_methods = []
 

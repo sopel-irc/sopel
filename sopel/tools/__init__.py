@@ -55,21 +55,6 @@ def get_input(prompt):
         return raw_input(prompt).decode('utf8')
 
 
-def get_raising_file_and_line(tb=None):
-    """Get the file and line number where an exception happened.
-
-    :param tb: the traceback (uses the most recent exception if not given)
-    :return: a tuple of the filename and line number
-    :rtype: (str, int)
-    """
-    if not tb:
-        tb = sys.exc_info()[2]
-
-    filename, lineno, _context, _line = traceback.extract_tb(tb)[-1]
-
-    return filename, lineno
-
-
 def compile_rule(nick, pattern, alias_nicks):
     """Compile a rule regex and fill in nickname placeholders.
 
@@ -643,3 +628,25 @@ class SopelMemoryWithDefault(defaultdict):
             operator, you should be.
         """
         return self.__contains__(key)
+
+
+@deprecated(version='7.0', removed_in='8.0')
+def get_raising_file_and_line(tb=None):
+    """Get the file and line number where an exception happened.
+
+    :param tb: the traceback (uses the most recent exception if not given)
+    :return: a tuple of the filename and line number
+    :rtype: (str, int)
+
+    .. deprecated:: 7.0
+
+        Use Python built-in logging system, with the ``logger.exception``
+        method. This method makes sure to log the exception with the traceback
+        and the relevant information (filename, line number, etc.).
+    """
+    if not tb:
+        tb = sys.exc_info()[2]
+
+    filename, lineno, _context, _line = traceback.extract_tb(tb)[-1]
+
+    return filename, lineno

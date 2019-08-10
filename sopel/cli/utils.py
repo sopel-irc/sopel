@@ -2,6 +2,7 @@
 from __future__ import unicode_literals, absolute_import, print_function, division
 
 import inspect
+import logging
 import os
 import sys
 
@@ -22,6 +23,7 @@ __all__ = [
     'red',
 ]
 
+LOGGER = logging.getLogger(__name__)
 
 RESET = '\033[0m'
 RED = '\033[31m'
@@ -160,10 +162,7 @@ def _plugins_wizard(settings):
         try:
             _plugin_wizard(settings, plugin)
         except Exception as e:
-            filename, lineno = tools.get_raising_file_and_line()
-            rel_path = os.path.relpath(filename, os.path.dirname(__file__))
-            raising_stmt = "%s:%d" % (rel_path, lineno)
-            tools.stderr("Error loading %s: %s (%s)" % (name, e, raising_stmt))
+            LOGGER.exception('Error loading %s: %s', name, e)
 
 
 def _plugin_wizard(settings, plugin):
