@@ -483,9 +483,9 @@ class OutputRedirect(object):
 
 
 # These seems to trace back to when we thought we needed a try/except on prints,
-# because it looked like that was why we were having problems. We'll drop it in
-# 4.0^H^H^H5.0^H^H^H6.0^H^H^Hsome version when someone can be bothered.
-@deprecated
+# because it looked like that was why we were having problems.
+# We'll drop it in Sopel 8.0 because it has been here for far too long already.
+@deprecated('Use `print()` instead of sopel.tools.stdout', removed_in='8.0')
 def stdout(string):
     print(string)
 
