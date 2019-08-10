@@ -8,18 +8,18 @@ https://sopel.chat
 """
 from __future__ import unicode_literals, absolute_import, print_function, division
 
+import logging
 import re
 
 import requests
 import xmltodict
 
 from sopel.config.types import StaticSection, ListAttribute
-from sopel.logger import get_logger
 from sopel.module import rule
 
 
 regex = None
-LOGGER = get_logger(__name__)
+LOGGER = logging.getLogger(__name__)
 
 
 class BugzillaSection(StaticSection):

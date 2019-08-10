@@ -9,13 +9,13 @@ https://sopel.chat
 """
 from __future__ import unicode_literals, absolute_import, print_function, division
 
+import logging
 import re
 import time
 
 import requests
 
 from sopel.config.types import StaticSection, ValidatedAttribute
-from sopel.logger import get_logger
 from sopel.module import commands, example, NOLIMIT, rule
 
 
@@ -28,7 +28,7 @@ EXCHANGE_REGEX = re.compile(r'''
     \s+(?:in|as|of|to)\s+                                       # preposition
     (([a-zA-Z]{3}$)|([a-zA-Z]{3})\s)+$                          # one or more 3-letter currency code
 ''', re.VERBOSE)
-LOGGER = get_logger(__name__)
+LOGGER = logging.getLogger(__name__)
 UNSUPPORTED_CURRENCY = "Sorry, {} isn't currently supported."
 UNRECOGNIZED_INPUT = "Sorry, I didn't understand the input."
 

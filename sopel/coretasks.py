@@ -12,6 +12,7 @@ dispatch function in bot.py and making it easier to maintain.
 # Licensed under the Eiffel Forum License 2.
 from __future__ import unicode_literals, absolute_import, print_function, division
 
+import logging
 from random import randint
 import datetime
 import re
@@ -24,12 +25,11 @@ from sopel.bot import _CapReq
 from sopel.tools import Identifier, iteritems, events
 from sopel.tools.target import User, Channel
 import base64
-from sopel.logger import get_logger
 
 if sys.version_info.major >= 3:
     unicode = str
 
-LOGGER = get_logger(__name__)
+LOGGER = logging.getLogger(__name__)
 
 batched_caps = {}
 who_reqs = {}  # Keeps track of reqs coming from this module, rather than others

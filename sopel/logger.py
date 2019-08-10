@@ -5,6 +5,8 @@ import logging
 import os
 from logging.config import dictConfig
 
+from .tools import deprecated
+
 
 class IrcLoggingHandler(logging.Handler):
     def __init__(self, bot, level):
@@ -106,6 +108,10 @@ def setup_logging(bot):
         logger.addHandler(handler)
 
 
+@deprecated(
+    'use logging.getLogger(__name__) instead',
+    version='7.0',
+    removed_in='8.0')
 def get_logger(name=None):
     """Return a logger for a module, if the name is given.
 

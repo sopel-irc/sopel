@@ -10,6 +10,7 @@ from __future__ import unicode_literals, absolute_import, print_function, divisi
 from ast import literal_eval
 import collections
 import itertools
+import logging
 import os
 import re
 import sys
@@ -27,7 +28,7 @@ import sopel.loader
 
 __all__ = ['Sopel', 'SopelWrapper']
 
-LOGGER = logger.get_logger(__name__)
+LOGGER = logging.getLogger(__name__)
 
 if sys.version_info.major >= 3:
     unicode = str

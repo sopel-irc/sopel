@@ -10,6 +10,7 @@ https://sopel.chat
 
 from __future__ import unicode_literals, absolute_import, print_function, division
 
+import logging
 import os
 import socket
 import tarfile
@@ -17,7 +18,6 @@ import tarfile
 import geoip2.database
 
 from sopel.config.types import FilenameAttribute, StaticSection
-from sopel.logger import get_logger
 from sopel.module import commands, example
 
 urlretrieve = None
@@ -33,7 +33,7 @@ except ImportError:
         pass
 
 
-LOGGER = get_logger(__name__)
+LOGGER = logging.getLogger(__name__)
 
 
 class GeoipSection(StaticSection):
