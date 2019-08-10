@@ -108,8 +108,9 @@ def shutdown(bot):
 
 
 def _download_malwaredomains_db(path):
-    print('Downloading malwaredomains db...')
-    urlretrieve('https://mirror1.malwaredomains.com/files/justdomains', path)
+    url = 'https://mirror1.malwaredomains.com/files/justdomains'
+    LOGGER.info('Downloading malwaredomains db from %s', url)
+    urlretrieve(url, path)
 
 
 @sopel.module.rule(r'(?u).*(https?://\S+).*')

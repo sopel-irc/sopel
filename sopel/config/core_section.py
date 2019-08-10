@@ -261,10 +261,10 @@ class CoreSection(StaticSection):
     logging_level = ChoiceAttribute('logging_level',
                                     ['CRITICAL', 'ERROR', 'WARNING', 'INFO',
                                      'DEBUG'],
-                                    'WARNING')
+                                    'INFO')
     """The lowest severity of logs to display.
 
-    If not specified, this defaults to ``WARNING``.
+    If not specified, this defaults to ``INFO``.
     """
 
     modes = ValidatedAttribute('modes', default='B')
