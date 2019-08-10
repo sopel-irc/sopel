@@ -34,11 +34,11 @@ class ChannelOutputFormatter(logging.Formatter):
         return ' - ' + repr(exc_info[1])
 
 
-def setup_logging(bot):
-    log_directory = bot.config.core.logdir
-    base_level = bot.config.core.logging_level or 'INFO'
-    base_format = bot.config.core.logging_format
-    base_datefmt = bot.config.core.logging_datefmt
+def setup_logging(settings):
+    log_directory = settings.core.logdir
+    base_level = settings.core.logging_level or 'INFO'
+    base_format = settings.core.logging_format
+    base_datefmt = settings.core.logging_datefmt
 
     logging_config = {
         'version': 1,
@@ -78,7 +78,7 @@ def setup_logging(bot):
                 'level': 'DEBUG',
                 'class': 'logging.handlers.TimedRotatingFileHandler',
                 'filename': os.path.join(
-                    log_directory, bot.config.basename + '.sopel.log'),
+                    log_directory, settings.basename + '.sopel.log'),
                 'when': 'midnight',
             },
             # catched error log file
@@ -86,7 +86,7 @@ def setup_logging(bot):
                 'level': 'ERROR',
                 'class': 'logging.handlers.TimedRotatingFileHandler',
                 'filename': os.path.join(
-                    log_directory, bot.config.basename + '.error.log'),
+                    log_directory, settings.basename + '.error.log'),
                 'when': 'midnight',
             },
             # uncaught error file
@@ -94,7 +94,7 @@ def setup_logging(bot):
                 'level': 'ERROR',
                 'class': 'logging.handlers.TimedRotatingFileHandler',
                 'filename': os.path.join(
-                    log_directory, bot.config.basename + '.exceptions.log'),
+                    log_directory, settings.basename + '.exceptions.log'),
                 'when': 'midnight',
             },
             # raw IRC log file
@@ -102,30 +102,12 @@ def setup_logging(bot):
                 'level': 'DEBUG',
                 'class': 'logging.handlers.TimedRotatingFileHandler',
                 'filename': os.path.join(
-                    log_directory, bot.config.basename + '.raw.log'),
+                    log_directory, settings.basename + '.raw.log'),
                 'when': 'midnight',
             },
         },
     }
     dictConfig(logging_config)
-
-    # configure channel logging if required by configuration
-    if bot.config.core.logging_channel:
-        channel_level = bot.config.core.logging_channel_level or base_level
-        channel_format = bot.config.core.logging_channel_format or base_format
-        channel_datefmt = bot.config.core.logging_channel_datefmt or base_datefmt
-        channel_params = {}
-        if channel_format:
-            channel_params['fmt'] = channel_format
-        if channel_datefmt:
-            channel_params['datefmt'] = channel_datefmt
-        formatter = ChannelOutputFormatter(**channel_params)
-        handler = IrcLoggingHandler(bot, channel_level)
-        handler.setFormatter(formatter)
-
-        # set channel handler to `sopel` logger
-        logger = logging.getLogger('sopel')
-        logger.addHandler(handler)
 
 
 @deprecated(
@@ -135,10 +117,17 @@ def setup_logging(bot):
 def get_logger(name=None):
     """Return a logger for a module, if the name is given.
 
-    This is equivalent to `logging.getLogger('sopel.modules.' + name)` when
-    name is given, and `logging.getLogger('sopel')` when it is not. The latter
-    case is intended for use in Sopel's core; modules should call
-    `get_logger(__name__)` to get a logger."""
+    This is equivalent to ``logging.getLogger('sopel.modules.' + name)`` when
+    name is given, and ``logging.getLogger('sopel')`` when it is not.
+    The latter case is intended for use in Sopel's core; modules should call
+    ``get_logger(__name__)`` to get a logger.
+
+    .. deprecated:: 7.0
+
+        Use ``logging.getLogger(__name__)`` instead, or
+        ``logging.getLogger('sopel.plugins.YOURPLUGINNAME')``.
+
+    """
     if name:
         return logging.getLogger('sopel.modules.' + name)
     else:

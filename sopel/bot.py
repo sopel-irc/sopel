@@ -212,7 +212,28 @@ class Sopel(irc.Bot):
         self.scheduler.start()
 
     def setup_logging(self):
-        logger.setup_logging(self)
+        logger.setup_logging(self.config)
+        base_level = self.config.core.logging_level or 'INFO'
+        base_format = self.config.core.logging_format
+        base_datefmt = self.config.core.logging_datefmt
+
+        # configure channel logging if required by configuration
+        if self.config.core.logging_channel:
+            channel_level = self.config.core.logging_channel_level or base_level
+            channel_format = self.config.core.logging_channel_format or base_format
+            channel_datefmt = self.config.core.logging_channel_datefmt or base_datefmt
+            channel_params = {}
+            if channel_format:
+                channel_params['fmt'] = channel_format
+            if channel_datefmt:
+                channel_params['datefmt'] = channel_datefmt
+            formatter = logger.ChannelOutputFormatter(**channel_params)
+            handler = logger.IrcLoggingHandler(self, channel_level)
+            handler.setFormatter(formatter)
+
+            # set channel handler to `sopel` logger
+            LOGGER = logging.getLogger('sopel')
+            LOGGER.addHandler(handler)
 
     def setup_plugins(self):
         load_success = 0

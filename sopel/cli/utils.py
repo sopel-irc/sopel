@@ -338,6 +338,7 @@ def load_settings(options):
     return config.Config(filename)
 
 
+@tools.deprecated(version='7.0', removed_in='8.0')
 def redirect_outputs(settings, is_quiet=False):
     """Redirect ``sys``'s outputs using Sopel's settings.
 
@@ -346,8 +347,15 @@ def redirect_outputs(settings, is_quiet=False):
     :param bool is_quiet: Optional, set to True to make Sopel's outputs quiet
 
     Both ``sys.stderr`` and ``sys.stdout`` are redirected to a logfile.
+
+    .. deprecated:: 7.0
+
+        Sopel now use the built-in logging system for its output, and this
+        function is now deprecated.
+
     """
-    logfile = os.path.os.path.join(settings.core.logdir, settings.basename + '.stdio.log')
+    logfile = os.path.os.path.join(
+        settings.core.logdir, settings.basename + '.stdio.log')
     sys.stderr = tools.OutputRedirect(logfile, True, is_quiet)
     sys.stdout = tools.OutputRedirect(logfile, False, is_quiet)
 

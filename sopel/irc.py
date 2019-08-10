@@ -16,9 +16,7 @@ import socket
 import asyncore
 import asynchat
 import os
-import codecs
 import logging
-import traceback
 from sopel.tools import stderr, Identifier
 from sopel.trigger import PreTrigger
 try:

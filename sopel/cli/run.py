@@ -18,7 +18,7 @@ import sys
 import time
 import traceback
 
-from sopel import bot, config, tools, __version__
+from sopel import bot, config, logger, tools, __version__
 from . import utils
 
 if sys.version_info < (2, 7):
@@ -393,10 +393,7 @@ def command_start(opts):
         tools.stderr('Bot is not configured, can\'t start')
         return ERR_CODE_NO_RESTART
 
-    # Step Two: Manage logfile, stdout and stderr
-    utils.redirect_outputs(config_module, opts.quiet)
-
-    # Step Three: Handle process-lifecycle options and manage the PID file
+    # Step Two: Handle process-lifecycle options and manage the PID file
     pid_dir = config_module.core.pid_dir
     pid_file_path = get_pid_filename(opts, pid_dir)
     pid = get_running_pid(pid_file_path)
@@ -416,10 +413,10 @@ def command_start(opts):
     with open(pid_file_path, 'w') as pid_file:
         pid_file.write(str(os.getpid()))
 
-    # Step Four: Run Sopel
+    # Step Three: Run Sopel
     ret = run(config_module, pid_file_path)
 
-    # Step Five: Shutdown Clean-Up
+    # Step Four: Shutdown Clean-Up
     os.unlink(pid_file_path)
 
     if ret == -1:
@@ -452,8 +449,8 @@ def command_stop(opts):
         tools.stderr('Sopel is not configured, can\'t stop')
         return ERR_CODE
 
-    # Redirect Outputs
-    utils.redirect_outputs(settings, opts.quiet)
+    # Configure logging
+    logger.setup_logging(settings)
 
     # Get Sopel's PID
     filename = get_pid_filename(opts, settings.core.pid_dir)
@@ -491,8 +488,8 @@ def command_restart(opts):
         tools.stderr('Sopel is not configured, can\'t stop')
         return ERR_CODE
 
-    # Redirect Outputs
-    utils.redirect_outputs(settings, opts.quiet)
+    # Configure logging
+    logger.setup_logging(settings)
 
     # Get Sopel's PID
     filename = get_pid_filename(opts, settings.core.pid_dir)
@@ -579,10 +576,7 @@ def command_legacy(opts):
         tools.stderr('Bot is not configured, can\'t start')
         return ERR_CODE_NO_RESTART
 
-    # Step Three: Manage logfile, stdout and stderr
-    utils.redirect_outputs(config_module, opts.quiet)
-
-    # Step Four: Handle process-lifecycle options and manage the PID file
+    # Step Three: Handle process-lifecycle options and manage the PID file
     pid_dir = config_module.core.pid_dir
     pid_file_path = get_pid_filename(opts, pid_dir)
     old_pid = get_running_pid(pid_file_path)
@@ -636,7 +630,7 @@ def command_legacy(opts):
     with open(pid_file_path, 'w') as pid_file:
         pid_file.write(str(os.getpid()))
 
-    # Step Five: Initialize and run Sopel
+    # Step Four: Initialize and run Sopel
     ret = run(config_module, pid_file_path)
     os.unlink(pid_file_path)
     if ret == -1:
