@@ -44,8 +44,21 @@ Your bot's identity is configured by the following options:
 
 * :attr:`~CoreSection.nick`: this is your bot's nick, as it will appear to
   other users on the server
-* :attr:`~CoreSection.name` (optional)
-* :attr:`~CoreSection.user` (optional)
+* :attr:`~CoreSection.user` (optional): this is your bot's user name, as the
+  server will see it
+* :attr:`~CoreSection.name` (optional): the name of the bot as it will appear
+  to a ``WHOIS <nick>`` request
+
+For example, given the following hostmask ``Sopel!sopelbot@address``, then
+``Sopel`` is the value from :attr:`~CoreSection.nick`, and ``sopelbot`` is the
+value from :attr:`~CoreSection.user`::
+
+    [core]
+    nick = Sopel
+    user = sopelbot
+    name = Sopel 7.0
+
+In that case, a ``WHOIS Sopel`` request will give ``Sopel 7.0`` for its name.
 
 User Modes
 ----------
