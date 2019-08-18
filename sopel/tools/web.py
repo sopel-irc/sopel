@@ -127,9 +127,14 @@ def decode(html):
 def quote(string, safe='/'):
     """Safely encodes a string for use in a URL.
 
-    :param str string: the string to quote
-    :param str safe: a list of characters that should not be quoted
+    :param str string: the string to encode
+    :param str safe: a list of characters that should not be quoted; defaults
+                     to ``'/'``
     :return str: the ``string`` with special characters URL-encoded
+
+    .. note::
+        This is a shim to make writing cross-compatible plugins for both
+        Python 2 and Python 3 easier.
     """
     if sys.version_info.major < 3:
         if isinstance(string, unicode):
