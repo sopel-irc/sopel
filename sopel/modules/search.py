@@ -10,21 +10,12 @@ https://sopel.chat
 from __future__ import unicode_literals, absolute_import, print_function, division
 
 import re
-import sys
 
 import requests
 import xmltodict
 
 from sopel.module import commands, example
 from sopel.tools import web
-
-if sys.version_info.major < 3:
-    from urllib import unquote as _unquote
-
-    def unquote(s):
-        return _unquote(s.encode('utf-8')).decode('utf-8')
-else:
-    from urllib.parse import unquote
 
 
 def formatnumber(n):
@@ -68,7 +59,7 @@ def duck_search(query):
         bytes = bytes.split('web-result')[1]
     m = r_duck.search(bytes)
     if m:
-        unquoted_m = unquote(m.group(1))
+        unquoted_m = web.unquote(m.group(1))
         return web.decode(unquoted_m)
 
 
