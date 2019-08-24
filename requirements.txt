@@ -5,9 +5,6 @@ geoip2
 aspell-python-py2; python_version < '3'
 aspell-python-py3; python_version >= '3'
 ipaddress<2.0; python_version < '3.3'
-ipython<6.0; python_version < '3.3'
-ipython>=6.0,<7.0; python_version >= '3.3' and python_version < '3.5'
-ipython>=7.0,<8.0; python_version >= '3.5'
 requests>=2.0.0,<3.0.0
 dnspython<2.0; python_version >= '2.7' and python_version < '3.0'
 dnspython<1.16.0; python_version == '3.3'
