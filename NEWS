@@ -21,7 +21,7 @@ Module changes
   * Custom word list is managed via a suite of new commands: `.scadd`,
     `.scsave`, `.scpending`, `.scdel`, and `.scclear`) [[#1164][]]
 * The `currency` module changed data sources to support more currencies, and
-  can optionally use Fixer.io to support even *more* [[#1430][]]
+  can optionally use Fixer.io to support even *more* [[#1430][], [#1627][]]
   * Fixer.io requires a free API key, which gives plenty of calls per month
     (the module caches exchange rates for 24 hours)
 * Choose from any of four pastebin services for `help` output [[#1451][]]
@@ -64,6 +64,7 @@ Module changes
   if they wish to be extra cheeky [[#1470][]]
 * Fixed that the `url` module had to be enabled or some link-handling
   functions didn't work [[#1510][]]
+* Fixed `etymology` module error with empty argument [[#1677][]]
 * General code cleanup all around [[#1402][], [#1486][], [#1505][], [#1545][],
   [#1569][], [#1573][], [#1578][], [#1579][], [#1581][], [#1606][], [#1607][],
   [#1609][]]
@@ -78,6 +79,9 @@ Core changes
     use something other than SQLite
   * Migrating an existing database from SQLite to your chosen option is
     probably easy, but we do not offer instructions for doing so
+* The `db_filename` config setting (for SQLite) is now interpreted as relative
+  to the config's `homedir` setting [[#1574][]]
+  * `homedir` itself has a default value that will be used if not set
 * Added separate server & nickname authentication options [[#1513][]]
   * See [authentication configuration docs][auth-config-docs]
 * Sopel's own rate-limiting & flood protection parameters are now configurable,
@@ -126,7 +130,7 @@ Core changes
 * Large amounts of internal refactoring and cleanup [[#1424][], [#1429][],
   [#1456][], [#1458][], [#1472][], [#1479][], [#1510][], [#1522][], [#1527][],
   [#1542][], [#1557][], [#1561][], [#1567][], [#1579][], [#1580][], [#1583][],
-  [#1597][], [#1610][]]
+  [#1597][], [#1610][], [#1685][]]
 * Sopel 7 will emit warnings when run under Python 2, as Python 2.7 has an
   end-of-support date of January 1, 2020 [[#1488][]]
   * While Sopel 7 is intended to remain compatible with Python 2, future
@@ -150,7 +154,7 @@ API changes
 -----------
 
 * [API documentation][api-docs] has been overhauled [[#1563][], [#1566][],
-  [#1646][]]
+  [#1646][], [#1668][]]
   * More consistent style
   * Better use of Sphinx features (e.g. parameter definitions, return value
     notes, & version annotations)
@@ -283,6 +287,7 @@ API changes
 [#1568]: https://github.com/sopel-irc/sopel/pull/1568
 [#1569]: https://github.com/sopel-irc/sopel/pull/1569
 [#1573]: https://github.com/sopel-irc/sopel/pull/1573
+[#1574]: https://github.com/sopel-irc/sopel/pull/1574
 [#1576]: https://github.com/sopel-irc/sopel/pull/1576
 [#1578]: https://github.com/sopel-irc/sopel/pull/1578
 [#1579]: https://github.com/sopel-irc/sopel/pull/1579
@@ -302,10 +307,14 @@ API changes
 [#1616]: https://github.com/sopel-irc/sopel/pull/1616
 [#1620]: https://github.com/sopel-irc/sopel/pull/1620
 [#1624]: https://github.com/sopel-irc/sopel/pull/1624
+[#1627]: https://github.com/sopel-irc/sopel/pull/1627
 [#1638]: https://github.com/sopel-irc/sopel/pull/1638
 [#1646]: https://github.com/sopel-irc/sopel/pull/1646
 [#1652]: https://github.com/sopel-irc/sopel/pull/1652
+[#1668]: https://github.com/sopel-irc/sopel/pull/1668
 [#1670]: https://github.com/sopel-irc/sopel/pull/1670
+[#1677]: https://github.com/sopel-irc/sopel/pull/1677
+[#1685]: https://github.com/sopel-irc/sopel/pull/1685
 
 [api-docs]: https://sopel.chat/docs/
 [auth-config-docs]: https://sopel.chat/docs/configure.html#Authentication
