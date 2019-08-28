@@ -347,6 +347,4 @@ def set_mask(bot, trigger):
 @commands('showmask')
 def show_mask(bot, trigger):
     """Show the topic mask for the current channel."""
-    mask = bot.db.get_channel_value(trigger.sender, 'topic_mask')
-    mask = mask or default_mask(trigger)
-    bot.say(mask)
+    bot.say(bot.db.get_channel_value(trigger.sender, 'topic_mask', default_mask(trigger)))
