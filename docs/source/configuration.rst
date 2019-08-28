@@ -228,21 +228,25 @@ Perform commands on connect
 
 The bot can be configured to send custom commands upon successful connection to
 the IRC server. This can be used in situations where the bot's built-in
-capabilities are not sufficient, or further automation is desired. The list of
-commands to send is set with :attr:`~CoreSection.commands_on_connect`.
+capabilities are not sufficient, or further automation is desired.
+``$nickname`` can be used in a command as a placeholder, and it will be
+replaced with the bot's nickname, as specified in the configuration
+(:attr:`~CoreSection.nick`). 
 
-For example, the following configuration:
+The list of commands to send is set with
+:attr:`~CoreSection.commands_on_connect`. For example, the following
+configuration:
 
 .. code-block:: ini
 
     [core]
-    commands_on_connect = PRIVMSG X@Channels.undernet.org :LOGIN MyUserName A$_Strong\,*pasSWord,PRIVMSG IDLEBOT :login IdleUsername idLEPasswoRD
+    commands_on_connect = PRIVMSG X@Channels.undernet.org :LOGIN MyUserName A$_Strong\,*pasSWord,PRIVMSG IDLEBOT :login $nickname idLEPasswoRD
 
 
 will, upon connection:
     
-    1) identify to Undernet services
-    2) login with ``IDLEBOT``
+    1) identify to Undernet services (``PRIVMSG X@Channels...``)
+    2) login with ``IDLEBOT`` using the bot's nickname (``PRIVMSG IDLEBOT ...``)
 
 .. important::
 

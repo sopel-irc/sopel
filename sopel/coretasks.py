@@ -70,6 +70,7 @@ def execute_perform(bot):
 
     LOGGER.debug('{} commands to execute:'.format(len(bot.config.core.commands_on_connect)))
     for i, command in enumerate(bot.config.core.commands_on_connect):
+        command = command.replace('$nickname', bot.config.core.nick)
         LOGGER.debug(command)
         bot.write((command,))
 

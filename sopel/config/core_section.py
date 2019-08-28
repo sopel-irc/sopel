@@ -359,6 +359,9 @@ class CoreSection(StaticSection):
     :AUTH my_username MyPassword\,HasAComma@#$%!`` Nothing else needs to be
     escaped.
 
+    ``$nickname`` can be used in a command as a placeholder, and it will be
+    replaced with the bot's :attr:`~CoreSection.nick`; e.g., ``MODE $nickname +Xxw``.
+
     .. versionadded:: 7.0
     """
     # TODO: update the docstring above in/after #1628 removes commas as

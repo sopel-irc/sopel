@@ -136,3 +136,15 @@ def test_execute_perform_send_commands(mockbot):
 
     coretasks.execute_perform(mockbot)
     assert mockbot.backend.message_sent == rawlist(*commands)
+
+
+def test_execute_perform_replaces_nickname(mockbot):
+    """Confirm that bot replaces ``$nickname`` placeholder in commands."""
+    command = 'MODE $nickname +Xxw'
+    sent_command = 'MODE {} +Xxw'.format(mockbot.config.core.nick)
+
+    mockbot.config.core.commands_on_connect = [command, ]
+    mockbot.connection_registered = True  # For testing, simulate connected
+
+    coretasks.execute_perform(mockbot)
+    assert mockbot.backend.message_sent == rawlist(sent_command)
