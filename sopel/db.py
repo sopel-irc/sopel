@@ -81,6 +81,17 @@ class ChannelValues(BASE):
     value = Column(String(255))
 
 
+class PluginValues(BASE):
+    """
+    PluginValues SQLAlchemy Class
+    """
+    __tablename__ = 'plugin_values'
+    __table_args__ = MYSQL_TABLE_ARGS
+    plugin = Column(String(255), primary_key=True)
+    key = Column(String(255), primary_key=True)
+    value = Column(String(255))
+
+
 class SopelDB(object):
     """*Availability: 5.0+*
 
@@ -431,6 +442,70 @@ class SopelDB(object):
             result = session.query(ChannelValues) \
                 .filter(ChannelValues.channel == channel)\
                 .filter(ChannelValues.key == key) \
+                .one_or_none()
+            if result is not None:
+                result = result.value
+            return _deserialize(result)
+        except SQLAlchemyError:
+            session.rollback()
+            raise
+        finally:
+            session.close()
+
+    # PLUGIN FUNCTIONS
+
+    def set_plugin_value(self, plugin, key, value):
+        """Sets the value for a given key to be associated with a plugin."""
+        plugin = plugin.lower()
+        value = json.dumps(value, ensure_ascii=False)
+        session = self.ssession()
+        try:
+            result = session.query(PluginValues) \
+                .filter(PluginValues.plugin == plugin)\
+                .filter(PluginValues.key == key) \
+                .one_or_none()
+            # PluginValue exists, update
+            if result:
+                result.value = value
+                session.commit()
+            # DNE - Insert
+            else:
+                new_pluginvalue = PluginValues(plugin=plugin, key=key, value=value)
+                session.add(new_pluginvalue)
+                session.commit()
+        except SQLAlchemyError:
+            session.rollback()
+            raise
+        finally:
+            session.close()
+
+    def delete_plugin_value(self, plugin, key):
+        """Deletes the value for a given key associated with a plugin."""
+        plugin = plugin.lower()
+        session = self.ssession()
+        try:
+            result = session.query(PluginValues) \
+                .filter(PluginValues.plugin == plugin)\
+                .filter(PluginValues.key == key) \
+                .one_or_none()
+            # PluginValue exists, update
+            if result:
+                session.delete(result)
+                session.commit()
+        except SQLAlchemyError:
+            session.rollback()
+            raise
+        finally:
+            session.close()
+
+    def get_plugin_value(self, plugin, key):
+        """Retrieves the value for a given key associated with a plugin."""
+        plugin = plugin.lower()
+        session = self.ssession()
+        try:
+            result = session.query(PluginValues) \
+                .filter(PluginValues.plugin == plugin)\
+                .filter(PluginValues.key == key) \
                 .one_or_none()
             if result is not None:
                 result = result.value

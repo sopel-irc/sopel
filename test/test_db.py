@@ -269,3 +269,27 @@ def test_get_preferred_value(db):
     names = ['asdf', '#asdf']
     assert db.get_preferred_value(names, 'qwer') == 'poiu'
     assert db.get_preferred_value(names, 'lkjh') == '1234'
+
+
+def test_set_plugin_value(db):
+    conn = sqlite3.connect(db_filename)
+    db.set_plugin_value('plugname', 'qwer', 'zxcv')
+    result = conn.execute(
+        'SELECT value FROM plugin_values WHERE plugin = ? and key = ?',
+        ['plugname', 'qwer']).fetchone()[0]
+    assert result == '"zxcv"'
+
+
+def test_get_plugin_value(db):
+    conn = sqlite3.connect(db_filename)
+    conn.execute("INSERT INTO plugin_values VALUES ('plugname', 'qwer', '\"zxcv\"')")
+    conn.commit()
+    result = db.get_plugin_value('plugname', 'qwer')
+    assert result == 'zxcv'
+
+
+def test_delete_plugin_value(db):
+    db.set_plugin_value('plugin', 'wasd', 'uldr')
+    assert db.get_plugin_value('plugin', 'wasd') == 'uldr'
+    db.delete_plugin_value('plugin', 'wasd')
+    assert db.get_plugin_value('plugin', 'wasd') is None
