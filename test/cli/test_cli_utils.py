@@ -130,7 +130,10 @@ def test_add_common_arguments():
 
 
 def test_add_common_arguments_subparser():
-    """Assert function adds the -c/--config option on a subparser."""
+    """Assert function adds the multiple options on a subparser.
+
+    The expected options are -c/--config and --config-dir.
+    """
     parser = argparse.ArgumentParser()
     subparsers = parser.add_subparsers(dest='action')
     sub = subparsers.add_parser('sub')

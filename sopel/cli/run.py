@@ -295,7 +295,7 @@ def print_version():
 
 
 def print_config(configdir):
-    """Print list of available configurations from default config directory."""
+    """Print list of available configurations from config directory."""
     configs = utils.enumerate_configs(configdir)
     print('Config files in %s:' % configdir)
     configfile = None

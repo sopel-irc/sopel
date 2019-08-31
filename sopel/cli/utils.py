@@ -316,9 +316,11 @@ def load_settings(options):
 
     .. note::
 
-        To use this function effectively, the
-        :func:`sopel.cli.utils.add_common_arguments` function should be used to
-        add the proper option to the argument parser.
+        This function expects that ``options`` exposes two attributes:
+        ``config`` and ``configdir``.
+
+        The :func:`sopel.cli.utils.add_common_arguments` function should be
+        used to add these options to the argument parser.
 
     """
     # Default if no options.config or no env var or if they are empty
@@ -328,8 +330,7 @@ def load_settings(options):
     elif 'SOPEL_CONFIG' in os.environ:
         name = os.environ['SOPEL_CONFIG'] or name  # use default if empty
 
-    filename = find_config(
-        getattr(options, 'configdir', config.DEFAULT_HOMEDIR), name)
+    filename = find_config(options.configdir, name)
 
     if not os.path.isfile(filename):
         raise config.ConfigurationNotFound(filename=filename)

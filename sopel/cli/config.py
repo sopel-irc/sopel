@@ -62,20 +62,24 @@ def build_parser():
 
 
 def handle_list(options):
-    """Display a list of configuration available from Sopel's config directory
+    """Display a list of configurations available in Sopel's config directory.
 
     :param options: parsed arguments
     :type options: ``argparse.Namespace``
 
     This command displays an unordered list of config names from Sopel's
-    default config directory, without their extensions::
+    config directory, without their extensions::
 
         $ sopel-config list
         default
         custom
 
-    It is possible to filter by extension using the ``-e``/``--ext``/``--extension``
-    option; default is ``.cfg`` (the ``.`` prefix is not required).
+    By default, the config directory is ``~/.sopel``. To select a different
+    config directory, options ``--config-dir`` can be used.
+
+    It is possible to filter by extension using the
+    ``-e``/``--ext``/``--extension`` option; default is ``.cfg``
+    (the ``.`` prefix is not required).
     """
     configdir = options.configdir
     display_path = options.display_path
