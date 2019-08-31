@@ -22,7 +22,7 @@ eggs = one, two, three, four, and a half
 bacons = grilled
     burn out, 
     , greasy, fat, and tasty
-cheese =   
+cheeses =   
     cheddar
       reblochon   
   camembert
@@ -42,7 +42,7 @@ class FakeConfigSection(types.StaticSection):
 class SpamSection(types.StaticSection):
     eggs = types.ListAttribute('eggs')
     bacons = types.ListAttribute('bacons', strip=False)
-    cheese = types.ListAttribute('cheese')
+    cheeses = types.ListAttribute('cheeses')
 
 
 @pytest.fixture
@@ -206,14 +206,14 @@ def test_configparser_multi_lines(multi_fakeconfig):
         'two',
         'three',
         'four',
-        'and a half',  # no-breakline + comma
+        'and a half',  # no-newline + comma
     ], 'Comma separated line: "four" and "and a half" must be separated'
     assert multi_fakeconfig.spam.bacons == [
         'grilled',
         'burn out',
         'greasy, fat, and tasty',
     ]
-    assert multi_fakeconfig.spam.cheese == [
+    assert multi_fakeconfig.spam.cheeses == [
         'cheddar',
         'reblochon',
         'camembert',
@@ -245,14 +245,14 @@ def test_save_unmodified_config(multi_fakeconfig):
         'two',
         'three',
         'four',
-        'and a half',  # no-breakline + comma
+        'and a half',  # no-newline + comma
     ], 'Comma separated line: "four" and "and a half" must be separated'
     assert saved_config.spam.bacons == [
         'grilled',
         'burn out',
         'greasy, fat, and tasty',
     ]
-    assert saved_config.spam.cheese == [
+    assert saved_config.spam.cheeses == [
         'cheddar',
         'reblochon',
         'camembert',
@@ -266,7 +266,7 @@ def test_save_modified_config(multi_fakeconfig):
         'one',
         'two',
     ]
-    multi_fakeconfig.spam.cheese = [
+    multi_fakeconfig.spam.cheeses = [
         'camembert, reblochon, and cheddar',
     ]
 
@@ -281,9 +281,9 @@ def test_save_modified_config(multi_fakeconfig):
 
     assert saved_config.fake.choiceattr == 'spam'
     assert saved_config.spam.eggs == ['one', 'two']
-    assert saved_config.spam.cheese == [
+    assert saved_config.spam.cheeses == [
         'camembert, reblochon, and cheddar',
     ], (
         'ListAttribute with one line only, with commas, must *not* be split '
-        'differently from what was expected, ie. into one (and only one) value'
+        'differently from what was expected, i.e. into one (and only one) value'
     )

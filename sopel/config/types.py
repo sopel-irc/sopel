@@ -214,38 +214,38 @@ class ListAttribute(BaseValidated):
     From this :class:`StaticSection`::
 
         class SpamSection(StaticSection):
-            cheese = ListAttribute('cheese')
+            cheeses = ListAttribute('cheeses')
 
     the option will be exposed as a Python :class:`list`::
 
-        >>> config.spam.cheese
-         ['camembert', 'cheddar', 'reblochon']
+        >>> config.spam.cheeses
+        ['camembert', 'cheddar', 'reblochon']
 
     which come from this configuration file::
 
         [spam]
-        cheese = camembert
-                 cheddar
-                 reblochon
+        cheeses = camembert
+                  cheddar
+                  reblochon
 
     .. versionchanged:: 7.0
 
-        The option's value will be split by breakline by default. In this
+        The option's value will be split on newlines by default. In this
         case, the ``strip`` parameter has no effect.
 
         See the :meth:`parse` method for more information.
 
     .. note::
 
-        **About**: backward compatibility with comma separated values.
+        **About:** backward compatibility with comma-separated values.
 
         A :class:`ListAttribute` option allows to write, on a single line,
         the values separated by commas. As of Sopel 7.x this behavior is
         discouraged. It will be deprecated in Sopel 8.x, then removed in
         Sopel 9.x.
 
-        Bot's owners are encouraged to update their configuration to use
-        breaklines instead of commas.
+        Bot owners are encouraged to update their configurations to use
+        newlines instead of commas.
 
         The comma delimiter fallback does not support commas within items in
         the list.
@@ -266,10 +266,10 @@ class ListAttribute(BaseValidated):
 
         .. versionchanged:: 7.0
 
-            The value is now split by breaklines, and fallback on comma
-            when there is no breakline delimiter in ``value``.
+            The value is now split on newlines, with fallback to comma
+            when there is no newline in ``value``.
 
-            When modified and save to a file, items will be stored as a
+            When modified and saved to a file, items will be stored as a
             multi-line string.
         """
         if "\n" in value:
@@ -296,9 +296,9 @@ class ListAttribute(BaseValidated):
         if not isinstance(value, (list, set)):
             raise ValueError('ListAttribute value must be a list.')
 
-        # we ensure to read a breakline, even with one value list
+        # we ensure to read a newline, even with only one value in the list
         # this way, comma will be ignored when the configuration file
-        # will be read again later
+        # is read again later
         return '\n' + '\n'.join(value)
 
     def configure(self, prompt, default, parent, section_name):
