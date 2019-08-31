@@ -173,7 +173,9 @@ join is configured by :attr:`~CoreSection.channels`:
 .. code-block:: ini
 
    [core]
-   channels = #sopel, #sopelunkers
+   channels =
+       #sopel
+       #sopelunkers
 
 It is possible to slow down the initial joining of channels using
 :attr:`~CoreSection.throttle_join`, for example if the IRC network kicks
@@ -388,7 +390,9 @@ can put its name in the :attr:`~CoreSection.exclude` directive. Here, the
 .. code-block:: ini
 
    [core]
-   exclude = reload, meetbot
+   exclude =
+       reload
+       meetbot
 
 Alternatively, you can define a list of allowed plugins with
 :attr:`~CoreSection.enable`: plugins not in this list will be ignored. In this
@@ -398,8 +402,13 @@ example, only the ``bugzilla`` and ``remind`` plugins are enabled (because
 .. code-block:: ini
 
    [core]
-   enable = bugzilla, remind, meetbot
-   exclude = reload, meetbot
+   enable =
+       bugzilla
+       remind
+       meetbot
+   exclude =
+       reload
+       meetbot
 
 To detect plugins from extra directories, use the :attr:`~CoreSection.extra`
 option.
