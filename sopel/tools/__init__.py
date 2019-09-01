@@ -640,7 +640,7 @@ def get_raising_file_and_line(tb=None):
 
     .. deprecated:: 7.0
 
-        Use Python built-in logging system, with the ``logger.exception``
+        Use Python's built-in logging system, with the ``logger.exception``
         method. This method makes sure to log the exception with the traceback
         and the relevant information (filename, line number, etc.).
     """

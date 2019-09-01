@@ -120,7 +120,7 @@ def setup_logging(settings):
 
 
 @deprecated(
-    'use logging.getLogger(__name__) instead',
+    'Use logging.getLogger(__name__) instead',
     version='7.0',
     removed_in='8.0')
 def get_logger(name=None):

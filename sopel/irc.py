@@ -177,7 +177,7 @@ class Bot(asynchat.async_chat):
             self.handle_close()
 
     def initiate_connect(self, host, port):
-        LOGGER.info('Connecting to: %s:%s', host, port)
+        LOGGER.info('Connecting to %s:%s...', host, port)
         source_address = ((self.config.core.bind_host, 0)
                           if self.config.core.bind_host else None)
         self.set_socket(socket.create_connection((host, port),
@@ -187,7 +187,7 @@ class Bot(asynchat.async_chat):
             self.recv = self._ssl_recv
         elif not has_ssl and self.config.core.use_ssl:
             LOGGER.warning(
-                'SSL is not avilable on your system, '
+                'SSL is not available on your system; '
                 'attempting connection without it')
         self.connect((host, port))
         try:
@@ -319,7 +319,7 @@ class Bot(asynchat.async_chat):
         while self.connected or self.connecting:
             if (datetime.now() - self.last_ping_time).seconds > int(self.config.core.timeout):
                 LOGGER.warning(
-                    'Ping timeout reached after %s seconds, '
+                    'Ping timeout reached after %s seconds; '
                     'closing connection',
                     self.config.core.timeout)
                 self.handle_close()

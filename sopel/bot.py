@@ -347,7 +347,7 @@ class Sopel(irc.Bot):
         else:
             # remove plugin from registry
             del self._plugins[name]
-            LOGGER.info('Plugin removed %s', name)
+            LOGGER.info('Plugin removed: %s', name)
 
     def has_plugin(self, name):
         """Tell if the bot has registered this plugin by its name"""
@@ -360,7 +360,7 @@ class Sopel(irc.Bot):
         :type obj: :term:`object`
         """
         if not callable(obj):
-            LOGGER.warning('Cannot unregister obj %r: not a callabled', obj)
+            LOGGER.warning('Cannot unregister obj %r: not a callable', obj)
             return
         if hasattr(obj, 'rule'):  # commands and intents have it added
             for rule in obj.rule:

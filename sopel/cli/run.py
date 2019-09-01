@@ -81,8 +81,8 @@ def run(settings, pid_file, daemon=False):
             # In that case, there is nothing we can do.
             # If the bot can't setup itself, then it won't run.
             # This is a critical case scenario, where the user should have
-            # directly access to the exception traceback right in the console
-            # Beside, we can't know if logging has been set-up or not, so
+            # direct access to the exception traceback right in the console.
+            # Besides, we can't know if logging has been set up or not, so
             # we can't rely on that here.
             tools.stderr('Unexpected error in bot setup')
             raise

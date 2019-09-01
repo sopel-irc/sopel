@@ -349,7 +349,7 @@ def redirect_outputs(settings, is_quiet=False):
 
     .. deprecated:: 7.0
 
-        Sopel now use the built-in logging system for its output, and this
+        Sopel now uses the built-in logging system for its output, and this
         function is now deprecated.
 
     """
