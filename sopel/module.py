@@ -8,8 +8,8 @@
 
 from __future__ import unicode_literals, absolute_import, print_function, division
 
-import re
 import functools
+import re
 
 __all__ = [
     # constants
@@ -85,7 +85,7 @@ def unblockable(function):
     return function
 
 
-def interval(*args):
+def interval(*intervals):
     """Decorates a function to be called by the bot every X seconds.
 
     This decorator can be used multiple times for multiple intervals, or all
@@ -100,10 +100,11 @@ def interval(*args):
     There is no guarantee that the bot is connected to a server or joined a
     channel when the function is called, so care must be taken.
 
-    Example:::
+    Example::
 
-        import sopel.module
-        @sopel.module.interval(5)
+        from sopel import module
+
+        @module.interval(5)
         def spam_every_5s(bot):
             if "#here" in bot.channels:
                 bot.say("It has been five seconds!", "#here")
@@ -112,20 +113,20 @@ def interval(*args):
     def add_attribute(function):
         if not hasattr(function, "interval"):
             function.interval = []
-        for arg in args:
-            function.interval.append(arg)
+        for arg in intervals:
+            if arg not in function.interval:
+                function.interval.append(arg)
         return function
 
     return add_attribute
 
 
-def rule(value):
+def rule(*patterns):
     """Decorate a function to be called when a line matches the given pattern
 
-    This decorator can be used multiple times to add more rules.
+    Each argument is a regular expression which will trigger the function.
 
-    Args:
-        value: A regular expression which will trigger the function.
+    This decorator can be used multiple times to add more rules.
 
     If the Sopel instance is in a channel, or sent a PRIVMSG, where a string
     matching this expression is said, the function will execute. Note that
@@ -134,11 +135,20 @@ def rule(value):
     Inside the regular expression, some special directives can be used. $nick
     will be replaced with the nick of the bot and , or :, and $nickname will be
     replaced with the nick of the bot.
+
+    .. versionchanged:: 7.0
+
+        The :func:`rule` decorator can be called with multiple positional
+        arguments, each used to add a rule. This is equivalent to decorating
+        the same function multiple times with this decorator.
+
     """
     def add_attribute(function):
         if not hasattr(function, "rule"):
             function.rule = []
-        function.rule.append(value)
+        for value in patterns:
+            if value not in function.rule:
+                function.rule.append(value)
         return function
 
     return add_attribute
@@ -147,19 +157,20 @@ def rule(value):
 def thread(value):
     """Decorate a function to specify if it should be run in a separate thread.
 
+    :param bool value: if true, the function is called in a separate thread;
+                       otherwise from the bot's main thread
+
     Functions run in a separate thread (as is the default) will not prevent the
     bot from executing other functions at the same time. Functions not run in a
     separate thread may be started while other functions are still running, but
     additional functions will not start until it is completed.
-
-    Args:
-        value: Either True or False. If True the function is called in
-            a separate thread. If False from the main thread.
-
     """
+    threaded = bool(value)
+
     def add_attribute(function):
-        function.thread = value
+        function.thread = threaded
         return function
+
     return add_attribute
 
 
@@ -207,7 +218,9 @@ def commands(*command_list):
     def add_attribute(function):
         if not hasattr(function, "commands"):
             function.commands = []
-        function.commands.extend(command_list)
+        for command in command_list:
+            if command not in function.commands:
+                function.commands.append(command)
         return function
     return add_attribute
 
@@ -239,7 +252,11 @@ def nickname_commands(*command_list):
 
     """
     def add_attribute(function):
-        function.nickname_commands = [cmd for cmd in command_list]
+        if not hasattr(function, 'nickname_commands'):
+            function.nickname_commands = []
+        for cmd in command_list:
+            if cmd not in function.nickname_commands:
+                function.nickname_commands.append(cmd)
         return function
     return add_attribute
 
@@ -276,7 +293,9 @@ def event(*event_list):
     def add_attribute(function):
         if not hasattr(function, "event"):
             function.event = []
-        function.event.extend(event_list)
+        for name in event_list:
+            if name not in function.event:
+                function.event.append(name)
         return function
     return add_attribute
 
@@ -289,7 +308,9 @@ def intent(*intent_list):
     def add_attribute(function):
         if not hasattr(function, "intents"):
             function.intents = []
-        function.intents.extend(intent_list)
+        for name in intent_list:
+            if name not in function.intents:
+                function.intents.append(name)
         return function
     return add_attribute
 
@@ -498,7 +519,7 @@ def require_owner(message=None, reply=False):
     return actual_decorator
 
 
-def url(url_rule):
+def url(*url_rules):
     """Decorate a function to handle URLs.
 
     :param str url_rule: regex pattern to match URLs
@@ -511,6 +532,7 @@ def url(url_rule):
         from sopel import module
 
         @module.url(r'https://example.com/bugs/([a-z0-9]+)')
+        @module.url(r'https://short.com/([a-z0-9]+)')
         def handle_example_bugs(bot, trigger, match):
             bot.reply('Found bug ID #%s' % match.group(1))
 
@@ -520,6 +542,15 @@ def url(url_rule):
     Under the hood, when Sopel collects the decorated handler it uses
     :meth:`sopel.bot.Sopel.register_url_callback` to register the handler.
 
+    .. versionchanged:: 7.0
+
+        The same function can be decorated multiple times with :func:`url`
+        to register different URL patterns.
+
+    .. versionchanged:: 7.0
+
+        More than one pattern can be provided as positional argument at once.
+
     .. seealso::
 
         To detect URLs, Sopel uses a matching pattern built from a list of URL
@@ -528,12 +559,13 @@ def url(url_rule):
 
     """
     def actual_decorator(function):
-        @functools.wraps(function)
-        def helper(bot, trigger, match=None):
-            match = match or trigger
-            return function(bot, trigger, match)
-        helper.url_regex = re.compile(url_rule)
-        return helper
+        if not hasattr(function, 'url_regex'):
+            function.url_regex = []
+        for url_rule in url_rules:
+            url_regex = re.compile(url_rule)
+            if url_regex not in function.url_regex:
+                function.url_regex.append(url_regex)
+        return function
     return actual_decorator
 
 

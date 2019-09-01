@@ -323,9 +323,10 @@ class Sopel(irc.Bot):
             # remove URL callback handlers
             if "url_callbacks" in self.memory:
                 for func in urls:
-                    regex = func.url_regex
-                    if func == self.memory['url_callbacks'].get(regex):
-                        self.unregister_url_callback(regex)
+                    regexes = func.url_regex
+                    for regex in regexes:
+                        if func == self.memory['url_callbacks'].get(regex):
+                            self.unregister_url_callback(regex)
         except:  # noqa
             # TODO: consider logging?
             raise  # re-raised
@@ -393,7 +394,8 @@ class Sopel(irc.Bot):
                 self.scheduler.add_job(job)
 
         for func in urls:
-            self.register_url_callback(func.url_regex, func)
+            for regex in func.url_regex:
+                self.register_url_callback(regex, func)
 
     def part(self, channel, msg=None):
         """Leave a channel.

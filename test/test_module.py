@@ -2,6 +2,8 @@
 """Tests for message formatting"""
 from __future__ import unicode_literals, absolute_import, print_function, division
 
+import re
+
 import pytest
 
 from sopel.trigger import PreTrigger, Trigger
@@ -66,6 +68,22 @@ def test_interval():
     assert mock.interval == [5]
 
 
+def test_interval_args():
+    @module.interval(5, 10)
+    def mock(bot, trigger, match):
+        return True
+    assert mock.interval == [5, 10]
+
+
+def test_interval_multiple():
+    @module.interval(5, 10)
+    @module.interval(5)
+    @module.interval(20)
+    def mock(bot, trigger, match):
+        return True
+    assert mock.interval == [20, 5, 10]
+
+
 def test_rule():
     @module.rule('.*')
     def mock(bot, trigger, match):
@@ -73,11 +91,54 @@ def test_rule():
     assert mock.rule == ['.*']
 
 
+def test_rule_args():
+    @module.rule('.*', r'\d+')
+    def mock(bot, trigger, match):
+        return True
+    assert mock.rule == ['.*', r'\d+']
+
+
+def test_rule_multiple():
+    @module.rule('.*', r'\d+')
+    @module.rule('.*')
+    @module.rule(r'\w+')
+    def mock(bot, trigger, match):
+        return True
+    assert mock.rule == [r'\w+', '.*', r'\d+']
+
+
 def test_thread():
     @module.thread(True)
     def mock(bot, trigger, match):
         return True
     assert mock.thread is True
+
+
+def test_url():
+    @module.url('pattern')
+    def mock(bot, trigger, match):
+        return True
+    assert mock.url_regex == [re.compile('pattern')]
+
+
+def test_url_args():
+    @module.url('first', 'second')
+    def mock(bot, trigger, match):
+        return True
+    assert mock.url_regex == [re.compile('first'), re.compile('second')]
+
+
+def test_url_multiple():
+    @module.url('first', 'second')
+    @module.url('second')
+    @module.url('third')
+    def mock(bot, trigger, match):
+        return True
+    assert mock.url_regex == [
+        re.compile('third'),
+        re.compile('second'),
+        re.compile('first')
+    ]
 
 
 def test_echo():
@@ -108,11 +169,43 @@ def test_commands():
     assert mock.commands == ['sopel']
 
 
+def test_commands_args():
+    @module.commands('sopel', 'bot')
+    def mock(bot, trigger, match):
+        return True
+    assert mock.commands == ['sopel', 'bot']
+
+
+def test_commands_multiple():
+    @module.commands('sopel', 'bot')
+    @module.commands('bot')
+    @module.commands('robot')
+    def mock(bot, trigger, match):
+        return True
+    assert mock.commands == ['robot', 'bot', 'sopel']
+
+
 def test_nickname_commands():
     @module.nickname_commands('sopel')
     def mock(bot, trigger, match):
         return True
     assert mock.nickname_commands == ['sopel']
+
+
+def test_nickname_commands_args():
+    @module.nickname_commands('sopel', 'bot')
+    def mock(bot, trigger, match):
+        return True
+    assert mock.nickname_commands == ['sopel', 'bot']
+
+
+def test_nickname_commands_multiple():
+    @module.nickname_commands('sopel', 'bot')
+    @module.nickname_commands('bot')
+    @module.nickname_commands('robot')
+    def mock(bot, trigger, match):
+        return True
+    assert mock.nickname_commands == ['robot', 'bot', 'sopel']
 
 
 def test_priority():
@@ -129,11 +222,43 @@ def test_event():
     assert mock.event == ['301']
 
 
+def test_event_args():
+    @module.event('301', '302')
+    def mock(bot, trigger, match):
+        return True
+    assert mock.event == ['301', '302']
+
+
+def test_event_multiple():
+    @module.event('301', '302')
+    @module.event('301')
+    @module.event('466')
+    def mock(bot, trigger, match):
+        return True
+    assert mock.event == ['466', '301', '302']
+
+
 def test_intent():
     @module.intent('ACTION')
     def mock(bot, trigger, match):
         return True
     assert mock.intents == ['ACTION']
+
+
+def test_intent_args():
+    @module.intent('ACTION', 'OTHER')
+    def mock(bot, trigger, match):
+        return True
+    assert mock.intents == ['ACTION', 'OTHER']
+
+
+def test_intent_multiple():
+    @module.intent('ACTION', 'OTHER')
+    @module.intent('OTHER')
+    @module.intent('PING',)
+    def mock(bot, trigger, match):
+        return True
+    assert mock.intents == ['PING', 'OTHER', 'ACTION']
 
 
 def test_rate():
