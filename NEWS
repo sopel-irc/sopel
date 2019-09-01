@@ -188,6 +188,9 @@ API changes
   * Functionally identical to "nick" and "channel" values, but in a separate
     namespace intended for plugins' use to store key-value data that isn't
     associated with a nick or channel and doesn't belong in the config file
+* `sopel.module` decorators work much more consistently [[#1632][]]
+  * All relevant decorators accept multiple arguments at once, and will work
+    properly if used multiple times on the same function
 * `module.require_*()` decorators (all five of them) now accept an optional
   boolean parameter `reply` [[#1456][], [#1500][]]
   * Passing `reply=True` will send the error message as if via `bot.reply()`,
@@ -313,6 +316,7 @@ API changes
 [#1621]: https://github.com/sopel-irc/sopel/pull/1621
 [#1624]: https://github.com/sopel-irc/sopel/pull/1624
 [#1627]: https://github.com/sopel-irc/sopel/pull/1627
+[#1632]: https://github.com/sopel-irc/sopel/pull/1632
 [#1638]: https://github.com/sopel-irc/sopel/pull/1638
 [#1646]: https://github.com/sopel-irc/sopel/pull/1646
 [#1652]: https://github.com/sopel-irc/sopel/pull/1652
