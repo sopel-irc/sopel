@@ -4,6 +4,8 @@
 The [core] configuration section
 ================================
 
+.. highlight:: ini
+
 A typical configuration file looks like this::
 
     [core]
