@@ -21,7 +21,7 @@ Module changes
   * Custom word list is managed via a suite of new commands: `.scadd`,
     `.scsave`, `.scpending`, `.scdel`, and `.scclear`) [[#1164][]]
 * The `currency` module changed data sources to support more currencies, and
-  can optionally use Fixer.io to support even *more* [[#1430][], [#1627][]]
+  can optionally use Fixer.io for even *more* [[#1430][], [#1627][], [#1629][]]
   * Fixer.io requires a free API key, which gives plenty of calls per month
     (the module caches exchange rates for 24 hours)
 * Choose from any of four pastebin services for `help` output [[#1451][]]
@@ -316,6 +316,7 @@ API changes
 [#1621]: https://github.com/sopel-irc/sopel/pull/1621
 [#1624]: https://github.com/sopel-irc/sopel/pull/1624
 [#1627]: https://github.com/sopel-irc/sopel/pull/1627
+[#1629]: https://github.com/sopel-irc/sopel/pull/1629
 [#1632]: https://github.com/sopel-irc/sopel/pull/1632
 [#1638]: https://github.com/sopel-irc/sopel/pull/1638
 [#1646]: https://github.com/sopel-irc/sopel/pull/1646
