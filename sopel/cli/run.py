@@ -140,7 +140,7 @@ def add_legacy_options(parser):
                         help=(
                             "List all config files found"
                             "(deprecated, and will be removed in Sopel 8; "
-                            "use `sopel-config list` instead)"))
+                            "use ``sopel-config list`` instead)"))
     parser.add_argument('--quiet', action="store_true", dest="quiet",
                         help="Suppress all output")
     parser.add_argument('-w', '--configure-all', action='store_true',
@@ -155,13 +155,13 @@ def add_legacy_options(parser):
                             "Run the configuration wizard, but only for the "
                             "module configuration options "
                             "(deprecated, and will be removed in Sopel 8; "
-                            "use `sopel configure --modules` instead)"))
+                            "use ``sopel configure --modules`` instead)"))
     parser.add_argument('-v', action="store_true",
                         dest='version_legacy',
                         help=(
                             "Show version number and exit "
                             "(deprecated, and will be removed in Sopel 8; "
-                            "use -V/--version instead)"))
+                            "use ``-V/--version`` instead)"))
     parser.add_argument('-V', '--version', action='store_true',
                         dest='version',
                         help='Show version number and exit')

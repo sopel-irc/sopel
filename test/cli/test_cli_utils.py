@@ -99,7 +99,8 @@ def test_find_config_extension(tmpdir, config_dir):
 
 
 def test_add_common_arguments():
-    """Assert function adds the -c/--config option."""
+    """Assert function adds the ``-c``/``--config`` and ``--configdir`` options
+    """
     parser = argparse.ArgumentParser()
     add_common_arguments(parser)
 
@@ -132,7 +133,7 @@ def test_add_common_arguments():
 def test_add_common_arguments_subparser():
     """Assert function adds the multiple options on a subparser.
 
-    The expected options are -c/--config and --config-dir.
+    The expected options are ``-c``/``--config`` and ``--config-dir``.
     """
     parser = argparse.ArgumentParser()
     subparsers = parser.add_subparsers(dest='action')
