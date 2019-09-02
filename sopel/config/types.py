@@ -221,12 +221,13 @@ class ListAttribute(BaseValidated):
         >>> config.spam.cheeses
         ['camembert', 'cheddar', 'reblochon']
 
-    which come from this configuration file::
+    which comes from this configuration file::
 
         [spam]
-        cheeses = camembert
-                  cheddar
-                  reblochon
+        cheeses =
+            camembert
+            cheddar
+            reblochon
 
     .. versionchanged:: 7.0
 
