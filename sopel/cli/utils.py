@@ -337,7 +337,9 @@ def load_settings(options):
     return config.Config(filename)
 
 
-@tools.deprecated(version='7.0', removed_in='8.0')
+@tools.deprecated(reason='Obsoleted by modernized logging.',
+                  version='7.0',
+                  removed_in='8.0')
 def redirect_outputs(settings, is_quiet=False):
     """Redirect ``sys``'s outputs using Sopel's settings.
 
