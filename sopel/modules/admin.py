@@ -334,7 +334,7 @@ def set_config(bot, trigger):
             value = "(password censored)"
         else:
             value = getattr(section, option)
-        bot.reply("%s.%s = %s" % (section_name, option, value))
+        bot.reply("%s.%s = %s (%s)" % (section_name, option, value, type(value).__name__))
         return
 
     # Owner-related settings cannot be modified interactively. Any changes to these
@@ -356,6 +356,7 @@ def set_config(bot, trigger):
             bot.say("Can't set attribute: " + str(exc))
             return
     setattr(section, option, value)
+    bot.say("OK. Set '{}.{}' successfully.".format(section_name, option))
 
 
 @sopel.module.require_privmsg("This command only works as a private message.")
@@ -388,6 +389,7 @@ def unset_config(bot, trigger):
 
     try:
         setattr(section, option, None)
+        bot.say("OK. Unset '{}.{}' successfully.".format(section_name, option))
     except ValueError:
         bot.reply('Cannot unset {}.{}; it is a required option.'.format(section_name, option))
 
