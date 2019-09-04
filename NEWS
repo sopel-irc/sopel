@@ -98,6 +98,7 @@ Core changes
     of the old `--option`s, cleaning up the syntax
   * The legacy `--option`s will continue to work for the life of Sopel 7.x, and
     will be removed in Sopel 8
+* New `--config-dir` common option [[#1598][]]
 * Added a new `sopel-config` command for working with config files [[#1507][]]
   * Currently supports `list` (existing files), `init` (new config file), and
     `get` (config value) actions
@@ -306,6 +307,7 @@ API changes
 [#1588]: https://github.com/sopel-irc/sopel/pull/1588
 [#1590]: https://github.com/sopel-irc/sopel/pull/1590
 [#1597]: https://github.com/sopel-irc/sopel/pull/1597
+[#1598]: https://github.com/sopel-irc/sopel/pull/1598
 [#1606]: https://github.com/sopel-irc/sopel/pull/1606
 [#1607]: https://github.com/sopel-irc/sopel/pull/1607
 [#1609]: https://github.com/sopel-irc/sopel/pull/1609
