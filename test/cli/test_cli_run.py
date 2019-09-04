@@ -46,6 +46,7 @@ def test_build_parser_legacy():
 
     assert isinstance(options, argparse.Namespace)
     assert hasattr(options, 'config')
+    assert hasattr(options, 'configdir')
     assert hasattr(options, 'daemonize')
     assert hasattr(options, 'quiet')
     assert hasattr(options, 'quit')
@@ -57,7 +58,8 @@ def test_build_parser_legacy():
     assert hasattr(options, 'mod_wizard')
     assert hasattr(options, 'list_configs')
 
-    assert options.config is None
+    assert options.config == 'default'
+    assert options.configdir == config.DEFAULT_HOMEDIR
     assert options.daemonize is False
     assert options.quiet is False
     assert options.quit is False
@@ -77,6 +79,13 @@ def test_build_parser_legacy_config():
 
     options = parser.parse_args(['legacy', '--config', 'custom'])
     assert options.config == 'custom'
+
+
+def test_build_parser_legacy_configdir():
+    parser = build_parser()
+
+    options = parser.parse_args(['legacy', '--config-dir', 'custom'])
+    assert options.configdir == 'custom'
 
 
 def test_build_parser_legacy_daemonize():
@@ -167,10 +176,12 @@ def test_build_parser_start():
 
     assert isinstance(options, argparse.Namespace)
     assert hasattr(options, 'config')
+    assert hasattr(options, 'configdir')
     assert hasattr(options, 'daemonize')
     assert hasattr(options, 'quiet')
 
-    assert options.config is None
+    assert options.config == 'default'
+    assert options.configdir == config.DEFAULT_HOMEDIR
     assert options.daemonize is False
     assert options.quiet is False
 
@@ -183,6 +194,13 @@ def test_build_parser_start_config():
 
     options = parser.parse_args(['start', '--config', 'custom'])
     assert options.config == 'custom'
+
+
+def test_build_parser_start_configdir():
+    parser = build_parser()
+
+    options = parser.parse_args(['start', '--config-dir', 'custom'])
+    assert options.configdir == 'custom'
 
 
 def test_build_parser_start_daemonize():
@@ -209,10 +227,12 @@ def test_build_parser_stop():
 
     assert isinstance(options, argparse.Namespace)
     assert hasattr(options, 'config')
+    assert hasattr(options, 'configdir')
     assert hasattr(options, 'kill')
     assert hasattr(options, 'quiet')
 
-    assert options.config is None
+    assert options.config == 'default'
+    assert options.configdir == config.DEFAULT_HOMEDIR
     assert options.kill is False
     assert options.quiet is False
 
@@ -225,6 +245,13 @@ def test_build_parser_stop_config():
 
     options = parser.parse_args(['stop', '--config', 'custom'])
     assert options.config == 'custom'
+
+
+def test_build_parser_stop_configdir():
+    parser = build_parser()
+
+    options = parser.parse_args(['stop', '--config-dir', 'custom'])
+    assert options.configdir == 'custom'
 
 
 def test_build_parser_stop_kill():
@@ -251,9 +278,11 @@ def test_build_parser_restart():
 
     assert isinstance(options, argparse.Namespace)
     assert hasattr(options, 'config')
+    assert hasattr(options, 'configdir')
     assert hasattr(options, 'quiet')
 
-    assert options.config is None
+    assert options.config == 'default'
+    assert options.configdir == config.DEFAULT_HOMEDIR
     assert options.quiet is False
 
 
@@ -265,6 +294,13 @@ def test_build_parser_restart_config():
 
     options = parser.parse_args(['restart', '--config', 'custom'])
     assert options.config == 'custom'
+
+
+def test_build_parser_restart_configdir():
+    parser = build_parser()
+
+    options = parser.parse_args(['restart', '--config-dir', 'custom'])
+    assert options.configdir == 'custom'
 
 
 def test_build_parser_restart_quiet():
@@ -281,9 +317,11 @@ def test_build_parser_configure():
 
     assert isinstance(options, argparse.Namespace)
     assert hasattr(options, 'config')
+    assert hasattr(options, 'configdir')
     assert hasattr(options, 'modules')
 
-    assert options.config is None
+    assert options.config == 'default'
+    assert options.configdir == config.DEFAULT_HOMEDIR
     assert options.modules is False
 
 
@@ -295,6 +333,13 @@ def test_build_parser_configure_config():
 
     options = parser.parse_args(['configure', '--config', 'custom'])
     assert options.config == 'custom'
+
+
+def test_build_parser_configure_configdir():
+    parser = build_parser()
+
+    options = parser.parse_args(['configure', '--config-dir', 'custom'])
+    assert options.configdir == 'custom'
 
 
 def test_build_parser_configure_modules():

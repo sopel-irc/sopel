@@ -78,24 +78,24 @@ def wizard(filename):
     This wizard function helps the creation of a Sopel configuration file,
     with its core section and its plugins' sections.
     """
-    homedir, basename = os.path.split(filename)
+    configdir, basename = os.path.split(filename)
     if not basename:
         raise config.ConfigurationError(
             'Sopel requires a filename for its configuration, not a directory')
 
     try:
-        if not os.path.isdir(homedir):
-            print('Creating config directory at {}'.format(homedir))
-            os.makedirs(homedir)
+        if not os.path.isdir(configdir):
+            print('Creating config directory at {}'.format(configdir))
+            os.makedirs(configdir)
             print('Config directory created')
     except Exception:
-        tools.stderr('There was a problem creating {}'.format(homedir))
+        tools.stderr('There was a problem creating {}'.format(configdir))
         raise
 
     name, ext = os.path.splitext(basename)
     if not ext:
         # Always add .cfg if filename does not have an extension
-        filename = os.path.join(homedir, name + '.cfg')
+        filename = os.path.join(configdir, name + '.cfg')
     elif ext != '.cfg':
         # It is possible to use a non-cfg file for Sopel
         # but the wizard does not allow it at the moment
@@ -250,17 +250,21 @@ def add_common_arguments(parser):
     :type parser: argparse.ArgumentParser
 
     This functions adds the common arguments for Sopel's command line tools.
-    At the moment, this functions adds only one argument to the parser: the
-    argument used as the standard way to define a configuration filename.
+    It adds the following arguments:
+
+    * ``-c``/``--config``: the name of the Sopel config, or its absolute path
+    * ``--config-dir``: the directory to scan for config files
 
     This can be used on an argument parser, or an argument subparser, to handle
     these cases::
 
         [sopel-command] -c [filename]
         [sopel-command] [action] -c [filename]
+        [sopel-command] --config-dir [directory] -c [name]
 
     Then, when the parser parses the command line arguments, it will expose
-    a ``config`` option to be used to find and load Sopel's settings.
+    ``config`` and ``configdir`` options that can be used to find and load
+    Sopel's settings.
 
     .. seealso::
 
@@ -270,7 +274,7 @@ def add_common_arguments(parser):
     """
     parser.add_argument(
         '-c', '--config',
-        default=None,
+        default='default',
         metavar='filename',
         dest='config',
         help=inspect.cleandoc("""
@@ -280,6 +284,11 @@ def add_common_arguments(parser):
             An absolute pathname can be provided instead to use an
             arbitrary location.
         """))
+    parser.add_argument(
+        '--config-dir',
+        default=config.DEFAULT_HOMEDIR,
+        dest='configdir',
+        help='Look for configuration files in this directory.')
 
 
 def load_settings(options):
@@ -307,9 +316,11 @@ def load_settings(options):
 
     .. note::
 
-        To use this function effectively, the
-        :func:`sopel.cli.utils.add_common_arguments` function should be used to
-        add the proper option to the argument parser.
+        This function expects that ``options`` exposes two attributes:
+        ``config`` and ``configdir``.
+
+        The :func:`sopel.cli.utils.add_common_arguments` function should be
+        used to add these options to the argument parser.
 
     """
     # Default if no options.config or no env var or if they are empty
@@ -319,7 +330,7 @@ def load_settings(options):
     elif 'SOPEL_CONFIG' in os.environ:
         name = os.environ['SOPEL_CONFIG'] or name  # use default if empty
 
-    filename = find_config(config.DEFAULT_HOMEDIR, name)
+    filename = find_config(options.configdir, name)
 
     if not os.path.isfile(filename):
         raise config.ConfigurationNotFound(filename=filename)
