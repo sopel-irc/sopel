@@ -66,14 +66,12 @@ User Modes
 To have Sopel set additional user modes upon connection, use the
 :attr:`~CoreSection.modes` setting:
 
-.. code-block:: ini
-
-   [core]
-   modes = BpR
+    [core]
+    modes = BpR
 
 In this example, upon connection to the IRC server, Sopel will send this::
 
-   MODE Sopel +BpR
+    MODE Sopel +BpR
 
 Which means: this is a Bot (B), don't show channels it is in (p), and only
 registered users (R) can send it messages. The list of supported modes depends
@@ -119,12 +117,10 @@ To connect to a server, your bot needs these directives:
   will use to connect to the server.
 * :attr:`~CoreSection.use_ssl`: connect using SSL (see below)
 
-.. code-block:: ini
-
-   [core]
-   host = chat.freenode.net
-   port = 6697
-   use_ssl = true
+    [core]
+    host = chat.freenode.net
+    port = 6697
+    use_ssl = true
 
 You can also configure the host the bot will connect from with
 :attr:`~CoreSection.bind_host`.
@@ -142,12 +138,10 @@ SSL Connection
 It is possible to connect to an IRC server with an SSL connection. For that,
 you need to set :attr:`~CoreSection.use_ssl` to true:
 
-.. code-block:: ini
-
-   [core]
-   use_ssl = yes
-   verify_ssl = yes
-   ca_certs = path/to/sopel/ca_certs.pem
+    [core]
+    use_ssl = yes
+    verify_ssl = yes
+    ca_certs = path/to/sopel/ca_certs.pem
 
 In that case:
 
@@ -185,12 +179,10 @@ Channels
 By default, Sopel won't join any channels. The list of channels to
 join is configured by :attr:`~CoreSection.channels`:
 
-.. code-block:: ini
-
-   [core]
-   channels =
-       #sopel
-       #sopelunkers
+    [core]
+    channels =
+        #sopel
+        #sopelunkers
 
 It is possible to slow down the initial joining of channels using
 :attr:`~CoreSection.throttle_join`, for example if the IRC network kicks
@@ -211,12 +203,10 @@ mechanism. It can be controlled with several directives:
 
 For example this configuration:
 
-.. code-block:: ini
-
-   [core]
-   flood_burst_lines = 10
-   flood_empty_wait = 0.5
-   flood_refill_rate = 2
+    [core]
+    flood_burst_lines = 10
+    flood_empty_wait = 0.5
+    flood_refill_rate = 2
 
 will allow 10 messages at once before triggering the throttle mechanism, then
 it'll wait 0.5s before sending a new message, and refill the burst limit every
@@ -377,10 +367,8 @@ Users can interact with Sopel through its commands, from Sopel's core or
 from Sopel's plugins. A command is a prefix with a name. The prefix can be
 configured with :attr:`~CoreSection.prefix`.
 
-.. code-block:: ini
-
-   [core]
-   prefix = \.
+    [core]
+    prefix = \.
 
 .. note::
 
@@ -402,28 +390,24 @@ By default, Sopel will load all available plugins. To exclude a plugin, you
 can put its name in the :attr:`~CoreSection.exclude` directive. Here, the
 ``reload`` and ``meetbot`` plugins are disabled:
 
-.. code-block:: ini
-
-   [core]
-   exclude =
-       reload
-       meetbot
+    [core]
+    exclude =
+        reload
+        meetbot
 
 Alternatively, you can define a list of allowed plugins with
 :attr:`~CoreSection.enable`: plugins not in this list will be ignored. In this
 example, only the ``bugzilla`` and ``remind`` plugins are enabled (because
 ``meetbot`` is still excluded):
 
-.. code-block:: ini
-
-   [core]
-   enable =
-       bugzilla
-       remind
-       meetbot
-   exclude =
-       reload
-       meetbot
+    [core]
+    enable =
+        bugzilla
+        remind
+        meetbot
+    exclude =
+        reload
+        meetbot
 
 To detect plugins from extra directories, use the :attr:`~CoreSection.extra`
 option.
@@ -458,12 +442,10 @@ logs with the following arguments:
 
 Example of configuration for logging:
 
-.. code-block:: ini
-
-   [core]
-   logging_level = INFO
-   logging_format = [%(asctime)s] %(levelname)s - %(message)s
-   logging_datefmt = %Y-%m-%d %H:%M:%S
+    [core]
+    logging_level = INFO
+    logging_format = [%(asctime)s] %(levelname)s - %(message)s
+    logging_datefmt = %Y-%m-%d %H:%M:%S
 
 .. versionadded:: 7.0
 
@@ -489,15 +471,13 @@ with these settings:
 
 Example of configuration to log errors only in the ``##bot_logs`` channel:
 
-.. code-block:: ini
-
-   [core]
-   logging_level = INFO
-   logging_format = [%(asctime)s] %(levelname)s - %(message)s
-   logging_datefmt = %Y-%m-%d %H:%M:%S
-   logging_channel = ##bot_logs
-   logging_channel_level = ERROR
-   logging_channel_format = %(message)s
+    [core]
+    logging_level = INFO
+    logging_format = [%(asctime)s] %(levelname)s - %(message)s
+    logging_datefmt = %Y-%m-%d %H:%M:%S
+    logging_channel = ##bot_logs
+    logging_channel_level = ERROR
+    logging_channel_format = %(message)s
 
 .. versionadded:: 7.0
 
