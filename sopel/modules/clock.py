@@ -58,15 +58,72 @@ def setup(bot):
 @module.example('.t Exirel')
 @module.example('.t #sopel')
 def f_time(bot, trigger):
-    """Returns the current time."""
-    if trigger.group(2):
-        zone = get_timezone(bot.db, bot.config, trigger.group(2).strip(), None, None)
-        if not zone:
-            bot.say('Could not find timezone %s.' % trigger.group(2).strip())
-            return
+    """Return the current time.
+
+    The command takes an optional parameter: it will try to guess if it's a
+    nick, a channel, or a timezone (in that order).
+
+    If it's a known nick or channel but there is no configured timezone, then
+    it will complain. If nothing can be found, it'll complain that the argument
+    is not a valid timezone.
+
+    .. seealso::
+
+        Function :func:`~sopel.tools.time.format_time` is used to format
+        the current datetime according to the timezone (if found).
+
+    """
+    argument = trigger.group(2)
+
+    if not argument:
+        # get default timezone from nick, or sender, or bot, or UTC
+        zone = get_timezone(
+            bot.db, bot.config, None, trigger.nick, trigger.sender)
     else:
-        zone = get_timezone(bot.db, bot.config, None, trigger.nick,
-                            trigger.sender)
+        # guess if the argument is a nick, a channel, or a timezone
+        zone = None
+        argument = argument.strip()
+        channel_or_nick = tools.Identifier(argument)
+
+        # first, try to get nick or channel's timezone
+        help_prefix = bot.config.core.help_prefix
+        if channel_or_nick.is_nick():
+            zone = get_nick_timezone(bot.db, channel_or_nick)
+            if zone is None and channel_or_nick in bot.users:
+                # zone not found for a known nick: error case
+                set_command = '%ssettz <zone>' % help_prefix
+                if channel_or_nick != trigger.nick:
+                    bot.say(
+                        'Could not find a timezone for this nick. '
+                        '%s can set a timezone with `%s`'
+                        % (argument, set_command))
+                else:
+                    bot.say(
+                        'Could not find a timezone for you. '
+                        'You can set your timezone with `%s`'
+                        % set_command)
+                return
+        else:
+            zone = get_channel_timezone(bot.db, channel_or_nick)
+            if zone is None and channel_or_nick in bot.channels:
+                # zone not found for an existing channel: error case
+                set_command = '%ssetctz <zone>' % help_prefix
+                bot.say(
+                    'Could not find timezone for channel %s. '
+                    'It can be set with `.setctz <zone>`. '
+                    '(requires OP privileges)'
+                    % argument)
+                return
+
+        # then, fallback on timezone detection
+        if zone is None:
+            # argument not found as nick or channel timezone
+            try:
+                zone = validate_timezone(argument)
+            except ValueError:
+                bot.say('Could not find timezone "%s".' % argument)
+                return
+
     time = format_time(bot.db, bot.config, zone, trigger.nick, trigger.sender)
     bot.say(time)
 
