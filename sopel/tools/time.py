@@ -56,6 +56,42 @@ def validate_format(tformat):
     return tformat
 
 
+def get_nick_timezone(db, nick):
+    """Get a nick's timezone from database.
+
+    :param db: Bot's database handler (usually ``bot.db``)
+    :type db: :class:`~sopel.db.SopelDB`
+    :param nick: IRC nickname
+    :type nick: :class:`~sopel.tools.Identifier`
+    :return: the timezone associated with the ``nick``
+
+    If a timezone cannot be found for ``nick``, or if it is invalid, ``None``
+    will be returned.
+    """
+    try:
+        return validate_timezone(db.get_nick_value(nick, 'timezone'))
+    except ValueError:
+        return None
+
+
+def get_channel_timezone(db, channel):
+    """Get a channel's timezone from database.
+
+    :param db: Bot's database handler (usually ``bot.db``)
+    :type db: :class:`~sopel.db.SopelDB`
+    :param channel: IRC channel name
+    :type channel: :class:`~sopel.tools.Identifier`
+    :return: the timezone associated with the ``channel``
+
+    If a timezone cannot be found for ``channel``, or if it is invalid,
+    ``None`` will be returned.
+    """
+    try:
+        return validate_timezone(db.get_channel_value(channel, 'timezone'))
+    except ValueError:
+        return None
+
+
 def get_timezone(db=None, config=None, zone=None, nick=None, channel=None):
     """Find, and return, the approriate timezone
 
