@@ -128,6 +128,32 @@ def f_time(bot, trigger):
     bot.say(time)
 
 
+@module.commands('tz', 'timez')
+@module.example('.tz America/New_York')
+def f_time_zone(bot, trigger):
+    """Return the current time in a timezone.
+
+    Unlike the ``.t`` command, it requires an argument, and that argument
+    must be a valid timezone.
+    """
+    argument = trigger.group(2)
+    if not argument:
+        bot.say('Please provide a timezone.')
+        return
+
+    zone = None
+    argument = argument.strip()
+    try:
+        zone = validate_timezone(argument)
+    except ValueError:
+        bot.say(
+            'Cannot display time: "%s" is not a valid timezone.' % argument)
+        return
+
+    time = format_time(bot.db, bot.config, zone, trigger.nick, trigger.sender)
+    bot.say(time)
+
+
 @module.commands('settz', 'settimezone')
 @module.example('.settz America/New_York')
 def update_user(bot, trigger):
