@@ -211,12 +211,46 @@ class ValidatedAttribute(BaseValidated):
 class ListAttribute(BaseValidated):
     """A config attribute containing a list of string values.
 
-    Values are saved to the file as a comma-separated list. It does not
-    currently support commas within items in the list. By default, the spaces
-    before and after each item are stripped; you can override this by passing
-    ``strip=False``."""
+    From this :class:`StaticSection`::
 
-    ESCAPE_CHARACTER = '\\'
+        class SpamSection(StaticSection):
+            cheeses = ListAttribute('cheeses')
+
+    the option will be exposed as a Python :class:`list`::
+
+        >>> config.spam.cheeses
+        ['camembert', 'cheddar', 'reblochon']
+
+    which comes from this configuration file::
+
+        [spam]
+        cheeses =
+            camembert
+            cheddar
+            reblochon
+
+    .. versionchanged:: 7.0
+
+        The option's value will be split on newlines by default. In this
+        case, the ``strip`` parameter has no effect.
+
+        See the :meth:`parse` method for more information.
+
+    .. note::
+
+        **About:** backward compatibility with comma-separated values.
+
+        A :class:`ListAttribute` option allows to write, on a single line,
+        the values separated by commas. As of Sopel 7.x this behavior is
+        discouraged. It will be deprecated in Sopel 8.x, then removed in
+        Sopel 9.x.
+
+        Bot owners are encouraged to update their configurations to use
+        newlines instead of commas.
+
+        The comma delimiter fallback does not support commas within items in
+        the list.
+    """
     DELIMITER = ','
 
     def __init__(self, name, strip=True, default=None):
@@ -225,42 +259,48 @@ class ListAttribute(BaseValidated):
         self.strip = strip
 
     def parse(self, value):
-        items = []
-        is_escape_on = False
-        current_token = []
-        for char in value:
-            if not is_escape_on:
-                if char == ListAttribute.ESCAPE_CHARACTER:
-                    is_escape_on = True
-                elif char == ListAttribute.DELIMITER:
-                    items.append(''.join(current_token))
-                    current_token = []
-                else:
-                    current_token.append(char)
-            else:
-                current_token.append(char)
-                is_escape_on = False
-        items.append(''.join(current_token))
+        """Parse ``value`` into a list.
+
+        :param str value: a multi-line string of values to parse into a list
+        :return: a list of items from ``value``
+        :rtype: :class:`list`
+
+        .. versionchanged:: 7.0
+
+            The value is now split on newlines, with fallback to comma
+            when there is no newline in ``value``.
+
+            When modified and saved to a file, items will be stored as a
+            multi-line string.
+        """
+        if "\n" in value:
+            items = [
+                # remove trailing comma
+                # because `value,\nother` is valid in Sopel 7.x
+                item.strip(self.DELIMITER).strip()
+                for item in value.splitlines()]
+        else:
+            # this behavior will be:
+            # - Discouraged in Sopel 7.x (in the documentation)
+            # - Deprecated in Sopel 8.x
+            # - Removed from Sopel 9.x
+            items = value.split(self.DELIMITER)
 
         value = list(filter(None, items))
-        if self.strip:
+        if self.strip:  # deprecate strip option in Sopel 8.x
             return [v.strip() for v in value]
         else:
             return value
 
     def serialize(self, value):
+        """Serialize ``value`` into a multi-line string."""
         if not isinstance(value, (list, set)):
             raise ValueError('ListAttribute value must be a list.')
 
-        items = []
-        for item in value:
-            current_token = []
-            for char in item:
-                if char in [ListAttribute.ESCAPE_CHARACTER, ListAttribute.DELIMITER]:
-                    current_token.append(ListAttribute.ESCAPE_CHARACTER)
-                current_token.append(char)
-            items.append(''.join(current_token))
-        return ','.join(items)
+        # we ensure to read a newline, even with only one value in the list
+        # this way, comma will be ignored when the configuration file
+        # is read again later
+        return '\n' + '\n'.join(value)
 
     def configure(self, prompt, default, parent, section_name):
         each_prompt = '?'
