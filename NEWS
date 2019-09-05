@@ -113,6 +113,9 @@ Core changes
     [the online CLI docs][docs-cli-plugins] at our website
 * The config file Sopel should use can be specified via the `SOPEL_CONFIG`
   environment variable [[#1473][]]
+* List values in config can be separated by newlines [[#1628][]]
+  * Find more details in [the `ListAttribute` documentation][docs-listattr]
+  * Comma-separated value support will end someday, but likely not till Sopel 9
 * Config options can be set/overridden via environment variables [[#1096][]]
   * Variable naming format: `SOPEL_SECTION_OPTION`
   * Underscores in `SECTION` and `OPTION` names are preserved, e.g.
@@ -318,6 +321,7 @@ API changes
 [#1621]: https://github.com/sopel-irc/sopel/pull/1621
 [#1624]: https://github.com/sopel-irc/sopel/pull/1624
 [#1627]: https://github.com/sopel-irc/sopel/pull/1627
+[#1628]: https://github.com/sopel-irc/sopel/pull/1628
 [#1629]: https://github.com/sopel-irc/sopel/pull/1629
 [#1632]: https://github.com/sopel-irc/sopel/pull/1632
 [#1638]: https://github.com/sopel-irc/sopel/pull/1638
@@ -332,6 +336,7 @@ API changes
 [auth-config-docs]: https://sopel.chat/docs/configure.html#Authentication
 [docs-cli-config]: https://sopel.chat/docs/cli.html#the-sopel-config-command
 [docs-cli-plugins]: https://sopel.chat/docs/cli.html#the-sopel-plugins-command
+[docs-listattr]: https://sopel.chat/docs/config.html#sopel.config.types.ListAttribute
 [entry-point-plugin]: https://sopel.chat/docs/plugin.html#sopel.plugins.handlers.EntryPointPlugin
 [install-guide-db]: https://sopel.chat/usage/installing/#configuring-the-database-optional
 [logging-config-docs]: https://sopel.chat/docs/configure.html#Logging
