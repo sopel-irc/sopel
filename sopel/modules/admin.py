@@ -44,6 +44,19 @@ def setup(bot):
     bot.config.define_section('admin', AdminSection)
 
 
+class InvalidSection(Exception):
+    def __init__(self, section):
+        super(InvalidSection, self).__init__(self, 'Section [{}] does not exist.'.format(section))
+        self.section = section
+
+
+class InvalidSectionOption(Exception):
+    def __init__(self, section, option):
+        super(InvalidSectionOption, self).__init__(self, 'Section [{}] does not have option \'{}\'.'.format(section, option))
+        self.section = section
+        self.option = option
+
+
 def _get_config_channels(channels):
     """List"""
     for channel_info in channels:
@@ -245,6 +258,53 @@ def mode(bot, trigger):
     bot.write(('MODE', bot.nick + ' ' + mode))
 
 
+def parse_section_option_value(config, trigger):
+    """Parse trigger for set/unset to get relevant config elements.
+
+    :param config: Sopel's config
+    :param trigger: IRC line trigger
+    :return: A tuple with ``(section, section_name, static_sec, option, value)``
+    :raises InvalidSection: section does not exist
+    :raises InvalidSectionOption: option does not exist for section
+
+    The ``value`` is optional and can be returned as ``None`` if omitted from command.
+    """
+    match = trigger.group(3)
+    if match is None:
+        raise ValueError  # Invalid command
+
+    # Get section and option from first argument.
+    arg1 = match.split('.')
+    if len(arg1) == 1:
+        section_name, option = "core", arg1[0]
+    elif len(arg1) == 2:
+        section_name, option = arg1
+    else:
+        raise ValueError  # invalid command format
+
+    section = getattr(config, section_name, False)
+    if not section:
+        raise InvalidSection(section_name)
+    static_sec = isinstance(section, StaticSection)
+
+    if static_sec and not hasattr(section, option):
+        raise InvalidSectionOption(section_name, option)  # Option not found in section
+
+    if not static_sec and not config.parser.has_option(section_name, option):
+        raise InvalidSectionOption(section_name, option)  # Option not found in section
+
+    delim = trigger.group(2).find(' ')
+    # Skip preceding whitespaces, if any.
+    while delim > 0 and delim < len(trigger.group(2)) and trigger.group(2)[delim] == ' ':
+        delim = delim + 1
+
+    value = trigger.group(2)[delim:]
+    if delim == -1 or delim == len(trigger.group(2)):
+        value = None
+
+    return (section, section_name, static_sec, option, value)
+
+
 @sopel.module.require_privmsg("This command only works as a private message.")
 @sopel.module.require_admin("This command requires admin privileges.")
 @sopel.module.commands('set')
@@ -257,45 +317,24 @@ def set_config(bot, trigger):
         arg2 - value
 
     If there is no section, section will default to "core".
-    If value is None, the option will be deleted.
+    If value is not provided, the current value will be displayed.
     """
-    # Get section and option from first argument.
-    match = trigger.group(3)
-    if match is None:
-        bot.reply("Usage: .set section.option value")
+    try:
+        section, section_name, static_sec, option, value = parse_section_option_value(bot.config, trigger)
+    except ValueError:
+        bot.reply('Usage: {}set section.option [value]'.format(bot.config.core.help_prefix))
         return
-    arg1 = match.split('.')
-    if len(arg1) == 1:
-        section_name, option = "core", arg1[0]
-    elif len(arg1) == 2:
-        section_name, option = arg1
-    else:
-        bot.reply("Usage: .set section.option value")
-        return
-    section = getattr(bot.config, section_name)
-    static_sec = isinstance(section, StaticSection)
-
-    if static_sec and not hasattr(section, option):
-        bot.say('[{}] section has no option {}.'.format(section_name, option))
+    except (InvalidSection, InvalidSectionOption) as exc:
+        bot.say(exc.args[1])
         return
 
-    delim = trigger.group(2).find(' ')
-    # Skip preceding whitespaces, if any.
-    while delim > 0 and delim < len(trigger.group(2)) and trigger.group(2)[delim] == ' ':
-        delim = delim + 1
-
-    # Display current value if no value is given.
-    if delim == -1 or delim == len(trigger.group(2)):
-        if not static_sec and bot.config.parser.has_option(section, option):
-            bot.reply("Option %s.%s does not exist." % (section_name, option))
-            return
-        # Except if the option looks like a password. Censor those to stop them
-        # from being put on log files.
+    # Display current value if no value is given
+    if not value:
         if option.endswith("password") or option.endswith("pass"):
             value = "(password censored)"
         else:
             value = getattr(section, option)
-        bot.reply("%s.%s = %s" % (section_name, option, value))
+        bot.reply("%s.%s = %s (%s)" % (section_name, option, value, type(value).__name__))
         return
 
     # Owner-related settings cannot be modified interactively. Any changes to these
@@ -305,8 +344,7 @@ def set_config(bot, trigger):
                 .format(section_name, option))
         return
 
-    # Otherwise, set the value to one given as argument 2.
-    value = trigger.group(2)[delim:]
+    # Otherwise, set the value to one given
     if static_sec:
         descriptor = getattr(section.__class__, option)
         try:
@@ -318,6 +356,42 @@ def set_config(bot, trigger):
             bot.say("Can't set attribute: " + str(exc))
             return
     setattr(section, option, value)
+    bot.say("OK. Set '{}.{}' successfully.".format(section_name, option))
+
+
+@sopel.module.require_privmsg("This command only works as a private message.")
+@sopel.module.require_admin("This command requires admin privileges.")
+@sopel.module.commands('unset')
+@sopel.module.example('.unset core.owner')
+def unset_config(bot, trigger):
+    """Unset value of Sopel's config object.
+
+    Unsetting a value will reset it to the default specified in the config
+    definition.
+
+    Trigger args:
+        arg1 - section and option, in the form "section.option"
+
+    If there is no section, section will default to "core".
+    """
+    try:
+        section, section_name, static_sec, option, value = parse_section_option_value(bot.config, trigger)
+    except ValueError:
+        bot.reply('Usage: {}unset section.option [value]'.format(bot.config.core.help_prefix))
+        return
+    except (InvalidSection, InvalidSectionOption) as exc:
+        bot.say(exc.args[1])
+        return
+
+    if value:
+        bot.reply('Invalid command; no value should be provided to unset.')
+        return
+
+    try:
+        setattr(section, option, None)
+        bot.say("OK. Unset '{}.{}' successfully.".format(section_name, option))
+    except ValueError:
+        bot.reply('Cannot unset {}.{}; it is a required option.'.format(section_name, option))
 
 
 @sopel.module.require_privmsg

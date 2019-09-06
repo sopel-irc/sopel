@@ -156,6 +156,8 @@ class BaseValidated(object):
 
     def __set__(self, instance, value):
         if value is None:
+            if self.default == NO_DEFAULT:
+                raise ValueError('Cannot unset an option with a required value.')
             instance._parser.remove_option(instance._section_name, self.name)
             return
         value = self.serialize(value)
