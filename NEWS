@@ -56,6 +56,7 @@ Module changes
   * `.msg` will continue to work for now, likely until being removed in Sopel 8
 * The `admin` module auto-saves channels when using `.join`/`.part`, and added
   `.tmpjoin`/`.tmppart` commands to bypass this behavior [[#1492][]]
+* Added command to `.unset` config values in the `admin` module [[#1556][]]
 * Restored commands in `adminchannel` module for managing op/voice [[#1498][]]
   * These were removed some time ago, seemingly without reason, by the
     project's previous maintainers
@@ -289,6 +290,7 @@ API changes
 [#1545]: https://github.com/sopel-irc/sopel/pull/1545
 [#1547]: https://github.com/sopel-irc/sopel/pull/1547
 [#1555]: https://github.com/sopel-irc/sopel/pull/1555
+[#1556]: https://github.com/sopel-irc/sopel/pull/1556
 [#1557]: https://github.com/sopel-irc/sopel/pull/1557
 [#1560]: https://github.com/sopel-irc/sopel/pull/1560
 [#1561]: https://github.com/sopel-irc/sopel/pull/1561
