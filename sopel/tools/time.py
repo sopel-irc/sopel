@@ -3,31 +3,37 @@
 from __future__ import unicode_literals, absolute_import, print_function, division
 
 import datetime
-try:
-    import pytz
-except ImportError:
-    pytz = False
+
+import pytz
 
 
 def validate_timezone(zone):
     """Return an IETF timezone from the given IETF zone or common abbreviation.
 
-    If the length of the zone is 4 or less, it will be upper-cased before being
-    looked up; otherwise it will be title-cased. This is the expected
-    case-insensitivity behavior in the majority of cases. For example, ``'edt'``
-    and ``'america/new_york'`` will both return ``'America/New_York'``.
+    :param string zone: in a strict or a human-friendly format
+    :return: the valid IETF timezone properly formatted
+    :raise ValueError: when ``zone`` is not a valid timezone
 
-    If the zone is not valid, ``ValueError`` will be raised. If ``pytz`` is not
-    available, and the given zone is anything other than ``'UTC'``,
-    ``ValueError`` will be raised.
+    Prior to checking timezones, two transformations are made to make the zone
+    names more human-friendly:
+
+    1. the string is split on ``', '``, the pieces reversed, and then joined
+       with ``/`` (*"New York, America"* becomes *"America/New York"*)
+    2. Remaining spaces are replaced with ``_``
+    3. Finally, strings longer than 4 characters are made title-case,
+       and those 4 characters and shorter are made upper-case.
+
+    This means ``new york, america`` becomes ``America/New_York``, and ``utc``
+    becomes ``UTC``.
+
+    This is the expected case-insensitivity behavior in the majority of cases.
+    For example, ``edt`` and ``america/new_york`` will both return
+    ``America/New_York``.
+
+    If the zone is not valid, ``ValueError`` will be raised.
     """
     if zone is None:
         return None
-    if not pytz:
-        if zone.upper() != 'UTC':
-            raise ValueError('Only UTC available, since pytz is not installed.')
-        else:
-            return zone
 
     zone = '/'.join(reversed(zone.split(', '))).replace(' ', '_')
     if len(zone) <= 4:
@@ -50,31 +56,66 @@ def validate_format(tformat):
     return tformat
 
 
+def get_nick_timezone(db, nick):
+    """Get a nick's timezone from database.
+
+    :param db: Bot's database handler (usually ``bot.db``)
+    :type db: :class:`~sopel.db.SopelDB`
+    :param nick: IRC nickname
+    :type nick: :class:`~sopel.tools.Identifier`
+    :return: the timezone associated with the ``nick``
+
+    If a timezone cannot be found for ``nick``, or if it is invalid, ``None``
+    will be returned.
+    """
+    try:
+        return validate_timezone(db.get_nick_value(nick, 'timezone'))
+    except ValueError:
+        return None
+
+
+def get_channel_timezone(db, channel):
+    """Get a channel's timezone from database.
+
+    :param db: Bot's database handler (usually ``bot.db``)
+    :type db: :class:`~sopel.db.SopelDB`
+    :param channel: IRC channel name
+    :type channel: :class:`~sopel.tools.Identifier`
+    :return: the timezone associated with the ``channel``
+
+    If a timezone cannot be found for ``channel``, or if it is invalid,
+    ``None`` will be returned.
+    """
+    try:
+        return validate_timezone(db.get_channel_value(channel, 'timezone'))
+    except ValueError:
+        return None
+
+
 def get_timezone(db=None, config=None, zone=None, nick=None, channel=None):
     """Find, and return, the approriate timezone
 
     Time zone is pulled in the following priority:
-    1. `zone`, if it is valid
-    2. The timezone for the channel or nick `zone` in `db` if one is set and
-    valid.
-    3. The timezone for the nick `nick` in `db`, if one is set and valid.
-    4. The timezone for the channel  `channel` in `db`, if one is set and valid.
-    5. The default timezone in `config`, if one is set and valid.
 
-    If `db` is not given, or given but not set up, steps 2 and 3 will be
-    skipped. If `config` is not given, step 4 will be skipped. If no step
-    yeilds a valid timezone, `None` is returned.
+    1. ``zone``, if it is valid
+    2. The timezone for the channel or nick ``zone`` in ``db`` if one is set
+       and valid.
+    3. The timezone for the nick ``nick`` in ``db``, if one is set and valid.
+    4. The timezone for the channel ``channel`` in ``db``, if one is set and
+       valid.
+    5. The default timezone in ``config``, if one is set and valid.
 
-    Valid timezones are those present in the IANA Time Zone Database. Prior to
-    checking timezones, two translations are made to make the zone names more
-    human-friendly. First, the string is split on `', '`, the pieces reversed,
-    and then joined with `'/'`. Next, remaining spaces are replaced with `'_'`.
-    Finally, strings longer than 4 characters are made title-case, and those 4
-    characters and shorter are made upper-case. This means "new york, america"
-    becomes "America/New_York", and "utc" becomes "UTC".
+    If ``db`` is not given, or given but not set up, steps 2 and 3 will be
+    skipped. If ``config`` is not given, step 4 will be skipped. If no step
+    yeilds a valid timezone, ``None`` is returned.
 
-    This function relies on `pytz` being available. If it is not available,
-    `None` will always be returned.
+    Valid timezones are those present in the IANA Time Zone Database.
+
+    .. seealso::
+
+       The :func:`validate_timezone` function handles the validation and
+       formatting of the timezone.
+
     """
     def _check(zone):
         try:
@@ -82,8 +123,6 @@ def get_timezone(db=None, config=None, zone=None, nick=None, channel=None):
         except ValueError:
             return None
 
-    if not pytz:
-        return None
     tz = None
 
     if zone:
@@ -104,22 +143,23 @@ def format_time(db=None, config=None, zone=None, nick=None, channel=None,
                 time=None):
     """Return a formatted string of the given time in the given zone.
 
-    `time`, if given, should be a naive `datetime.datetime` object and will be
-    treated as being in the UTC timezone. If it is not given, the current time
-    will be used. If `zone` is given and `pytz` is available, `zone` must be
-    present in the IANA Time Zone Database; `get_timezone` can be helpful for
-    this. If `zone` is not given or `pytz` is not available, UTC will be
-    assumed.
+    ``time``, if given, should be a naive ``datetime.datetime`` object and will
+    be treated as being in the UTC timezone. If it is not given, the current
+    time will be used. If ``zone`` is given it must be present in the IANA Time
+    Zone Database; ``get_timezone`` can be helpful for this. If ``zone`` is not
+    given, UTC will be assumed.
 
     The format for the string is chosen in the following order:
 
-    1. The format for the nick `nick` in `db`, if one is set and valid.
-    2. The format for the channel `channel` in `db`, if one is set and valid.
-    3. The default format in `config`, if one is set and valid.
+    1. The format for the nick ``nick`` in ``db``, if one is set and valid.
+    2. The format for the channel ``channel`` in ``db``, if one is set and
+       valid.
+    3. The default format in ``config``, if one is set and valid.
     4. ISO-8601
 
-    If `db` is not given or is not set up, steps 1 and 2 are skipped. If config
-    is not given, step 3 will be skipped."""
+    If ``db`` is not given or is not set up, steps 1 and 2 are skipped. If
+    config is not given, step 3 will be skipped.
+    """
     tformat = None
     if db:
         if nick:
@@ -134,7 +174,7 @@ def format_time(db=None, config=None, zone=None, nick=None, channel=None,
     if not time:
         time = datetime.datetime.utcnow()
 
-    if not pytz or not zone:
+    if not zone:
         return time.strftime(tformat)
     else:
         if not time.tzinfo:
@@ -151,12 +191,14 @@ def seconds_to_human(secs):
     Inspiration for function structure from:
     https://gist.github.com/Highstaker/280a09591df4a5fb1363b0bbaf858f0d
 
-    Example outputs are:
-    2 years, 1 month ago
-    in 4 hours, 45 minutes
-    in 8 days, 5 hours
-    1 year ago"""
+    Example outputs are::
 
+        2 years, 1 month ago
+        in 4 hours, 45 minutes
+        in 8 days, 5 hours
+        1 year ago
+
+    """
     if isinstance(secs, datetime.timedelta):
         secs = secs.total_seconds()
 
