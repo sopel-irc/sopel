@@ -39,6 +39,11 @@ Module changes
     cases where loading previews of e.g. LAN servers is safe
   * The default is off, so users don't unwittingly open themselves to attackers
     fishing for running HTTP services on the local machine or network
+* Various improvements to the `clock` functions [[#1592][]]
+  * Improved guessing in `.t`/`.time` command, which no longer falls back all
+    the way to the bot's default timezone if given an unrecognized argument
+  * New `.tz` command, to explicitly get time for a timezone name (in case of
+    conflict between a known nick and a timezone name)
 * The `.at` command (from `remind`) understands dates now [[#1590][]]
   * Finally, it's possible to set a reminder more than 24 hours ahead without
     first converting the future date/time to a duration for use with `.in`!
@@ -67,8 +72,8 @@ Module changes
   functions didn't work [[#1510][]]
 * Fixed `etymology` module error with empty argument [[#1677][]]
 * General code cleanup all around [[#1402][], [#1486][], [#1505][], [#1545][],
-  [#1569][], [#1573][], [#1578][], [#1579][], [#1581][], [#1606][], [#1607][],
-  [#1609][]]
+  [#1569][], [#1573][], [#1578][], [#1579][], [#1581][], [#1592][], [#1606][],
+  [#1607][], [#1609][]]
 
 Core changes
 ------------
@@ -230,8 +235,12 @@ API changes
   * This facilitates running only offline-safe module tests, by passing
     `--offline` to pytest, if an Internet connection is unavailable
   * Outside of the test suite, this parameter has no effect
-* Added `tools.time.seconds_to_human()` for generating human-readable fuzzy
-  relative timestamps from `timedelta` or raw number of seconds [[#1560][]]
+* Added more utilities to `tools.time`:
+  * `tools.time.seconds_to_human()`, for generating human-readable fuzzy
+    relative timestamps from `timedelta` or raw number of seconds [[#1560][]]
+  * `tools.time.get_nick_timezone()` and `tools.time.get_channel_timezone()`,
+    for cases where the fallback behavior(s) of `tools.time.get_timezone()`
+    would be undesired [[#1592][]]
 * The `@example` decorator no longer generates invalid raw lines in tests
   [[#1499][]]
 
@@ -311,6 +320,7 @@ API changes
 [#1585]: https://github.com/sopel-irc/sopel/pull/1585
 [#1588]: https://github.com/sopel-irc/sopel/pull/1588
 [#1590]: https://github.com/sopel-irc/sopel/pull/1590
+[#1592]: https://github.com/sopel-irc/sopel/pull/1592
 [#1597]: https://github.com/sopel-irc/sopel/pull/1597
 [#1598]: https://github.com/sopel-irc/sopel/pull/1598
 [#1606]: https://github.com/sopel-irc/sopel/pull/1606
