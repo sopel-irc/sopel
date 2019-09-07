@@ -299,6 +299,9 @@ class ListAttribute(BaseValidated):
         if not isinstance(value, (list, set)):
             raise ValueError('ListAttribute value must be a list.')
 
+        # empty list should not create a blank line in the config file
+        if not value:
+            return ''
         # we ensure to read a newline, even with only one value in the list
         # this way, comma will be ignored when the configuration file
         # is read again later
