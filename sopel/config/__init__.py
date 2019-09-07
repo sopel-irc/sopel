@@ -112,7 +112,8 @@ class Config(object):
         If the filename is ``freenode.config.cfg``, then the ``basename`` will
         be ``freenode.config``.
         """
-        self.parser = ConfigParser.RawConfigParser(allow_no_value=True)
+        self.parser = ConfigParser.RawConfigParser(
+            allow_no_value=True, comment_prefixes=('//'))
         self.parser.read(self.filename)
         self.define_section('core', core_section.CoreSection,
                             validate=validate)
