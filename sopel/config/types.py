@@ -42,7 +42,8 @@ class NO_DEFAULT(object):
 class StaticSection(object):
     """A configuration section with parsed and validated settings.
 
-    This class is intended to be subclassed with added ``ValidatedAttribute``\\s.
+    This class is intended to be subclassed and customized with added
+    attributes containing :class:`BaseValidated`-based objects.
     """
     def __init__(self, config, section_name, validate=True):
         if not config.parser.has_section(section_name):
@@ -68,7 +69,10 @@ class StaticSection(object):
     def configure_setting(self, name, prompt, default=NO_DEFAULT):
         """Return a validated value for this attribute from the terminal.
 
-        ``prompt`` will be the docstring of the attribute if not given.
+        :param str name: the name of the attribute to configure
+        :param str prompt: the prompt text to display in the terminal
+        :param default: the value to be used if the user does not enter one
+        :type default: depends on subclass
 
         If ``default`` is passed, it will be used if no value is given by the
         user. If it is not passed, the current value of the setting, or the
@@ -97,18 +101,26 @@ class StaticSection(object):
 
 
 class BaseValidated(object):
-    """The base type for a descriptor in a ``StaticSection``."""
+    """The base type for a setting descriptor in a :class:`StaticSection`
+
+    :param str name: the attribute name to use in the config file
+    :param default: the value to be returned if the setting has no value;
+                    if not specified, defaults to :obj:`None`
+    :type default: str, optional
+
+    ``default`` also can be set to :const:`sopel.config.types.NO_DEFAULT`, if
+    the value *must* be configured by the user (i.e. there is no suitable
+    default value). Trying to read an empty ``NO_DEFAULT`` value will raise
+    :class:`AttributeError`.
+    """
     def __init__(self, name, default=None):
-        """
-        ``name`` is the name of the setting in the section.
-        ``default`` is the value to be returned if the setting is not set. If
-        not given, AttributeError will be raised instead.
-        """
         self.name = name
         self.default = default
 
     def configure(self, prompt, default, parent, section_name):
-        """With the prompt and default, parse and return a value from terminal.
+        """
+        With the ``prompt`` and ``default``, parse and return a value from
+        terminal.
         """
         if default is not NO_DEFAULT and default is not None:
             prompt = '{} [{}]'.format(prompt, default)
@@ -180,14 +192,19 @@ def _serialize_boolean(value):
 
 
 class ValidatedAttribute(BaseValidated):
-    def __init__(self, name, parse=None, serialize=None, default=None):
-        """A descriptor for settings in a ``StaticSection``
+    """A descriptor for settings in a ``StaticSection``
 
-        ``parse`` is the function to be used to read the string and create the
-        appropriate object. If not given, return the string as-is.
-        ``serialize`` takes an object, and returns the value to be written to
-        the file. If not given, defaults to ``unicode``.
-        """
+    :param str name: the attribute name to use in the config file
+    :param parse: a function to be used to read the string and create the
+                  appropriate object; the string value will be returned
+                  as-is if not set
+    :type parse: :term:`function`, optional
+    :param serialize: a function that, given an object, should return a string
+                      that can be written to the config file safely; defaults
+                      to :class:`str`
+    :type serialize: :term:`function`, optional
+    """
+    def __init__(self, name, parse=None, serialize=None, default=None):
         self.name = name
         if parse == bool:
             parse = _parse_boolean
@@ -198,12 +215,26 @@ class ValidatedAttribute(BaseValidated):
         self.default = default
 
     def serialize(self, value):
+        """Returns the ``value`` as a Unicode string.
+
+        :param value: the option value
+        :rtype: str
+        """
         return unicode(value)
 
     def parse(self, value):
+        """No-op: simply returns the given `value``, unchanged.
+
+        :param str value: the string read from the config file
+        :rtype: str
+        """
         return value
 
     def configure(self, prompt, default, parent, section_name):
+        """
+        With the ``prompt`` and ``default``, parse and return a value from
+        terminal.
+        """
         if self.parse == _parse_boolean:
             prompt += ' (y/n)'
             default = 'y' if default else 'n'
@@ -212,6 +243,19 @@ class ValidatedAttribute(BaseValidated):
 
 class ListAttribute(BaseValidated):
     """A config attribute containing a list of string values.
+
+    :param str name: the attribute name to use in the config file
+    :param strip: whether to strip whitespace from around each value (applies
+                  only to legacy comma-separated lists; multi-line lists are
+                  always stripped)
+    :type strip: bool, optional
+    :param quote: whether to "escape" the values by quoting them (useful if
+                  values might start with ``#`` or ``;``)
+    :type quote: bool, optional
+    :param default: the default value if the config file does not define a
+                    value for this option; to require explicit configuration,
+                    use :const:`sopel.config.types.NO_DEFAULT`
+    :type default: list, optional
 
     From this :class:`StaticSection`::
 
@@ -237,6 +281,10 @@ class ListAttribute(BaseValidated):
         case, the ``strip`` parameter has no effect.
 
         See the :meth:`parse` method for more information.
+
+    .. versionadded:: 7.0
+
+        The ``quote`` parameter.
 
     .. note::
 
@@ -266,7 +314,7 @@ class ListAttribute(BaseValidated):
 
         :param str value: a multi-line string of values to parse into a list
         :return: a list of items from ``value``
-        :rtype: :class:`list`
+        :rtype: list
 
         .. versionchanged:: 7.0
 
@@ -274,7 +322,7 @@ class ListAttribute(BaseValidated):
             when there is no newline in ``value``.
 
             When modified and saved to a file, items will be stored as a
-            multi-line string.
+            multi-line string (see :meth:`serialize`).
         """
         if "\n" in value:
             items = [
@@ -299,7 +347,12 @@ class ListAttribute(BaseValidated):
             return value
 
     def serialize(self, value):
-        """Serialize ``value`` into a multi-line string."""
+        """Serialize ``value`` into a multi-line string.
+
+        :param list value: the input list
+        :rtype: str
+        :raise ValueError: if ``value`` is the wrong type (i.e. not a list)
+        """
         if not isinstance(value, (list, set)):
             raise ValueError('ListAttribute value must be a list.')
 
@@ -313,6 +366,10 @@ class ListAttribute(BaseValidated):
         return '\n' + '\n'.join(value)
 
     def configure(self, prompt, default, parent, section_name):
+        """
+        With the ``prompt`` and ``default``, parse and return a value from
+        terminal.
+        """
         each_prompt = '?'
         if isinstance(prompt, tuple):
             each_prompt = prompt[1]
@@ -340,18 +397,39 @@ class ListAttribute(BaseValidated):
 class ChoiceAttribute(BaseValidated):
     """A config attribute which must be one of a set group of options.
 
-    Currently, the choices can only be strings."""
+    :param str name: the attribute name to use in the config file
+    :param choices: acceptable values; currently, only strings are supported
+    :type choices: list or tuple
+    :param default: which choice to use if none is set in the config file; to
+                    require explicit configuration, use
+                    :const:`sopel.config.types.NO_DEFAULT`
+    :type default: str, optional
+    """
     def __init__(self, name, choices, default=None):
         super(ChoiceAttribute, self).__init__(name, default=default)
         self.choices = choices
 
     def parse(self, value):
+        """Checks the loaded ``value`` against the valid ``choices``
+
+        :param str value: the value loaded from the config file
+        :return: the ``value``, if it is valid
+        :rtype: str
+        :raise ValueError: if ``value`` is not one of the valid ``choices``
+        """
         if value in self.choices:
             return value
         else:
             raise ValueError('Value must be in {}'.format(self.choices))
 
     def serialize(self, value):
+        """Make sure ``value`` is valid and safe to write in the config file
+
+        :param str value: the value needing to be saved
+        :return: the ``value``, if it is valid
+        :rtype: str
+        :raise ValueError: if ``value`` is not one of the valid ``choices``
+        """
         if value in self.choices:
             return value
         else:
@@ -359,14 +437,21 @@ class ChoiceAttribute(BaseValidated):
 
 
 class FilenameAttribute(BaseValidated):
-    """A config attribute which must be a file or directory."""
+    """A config attribute which must be a file or directory.
+
+    :param str name: the attribute name to use in the config file
+    :param relative: whether the path should be relative to the location of
+                     the config file (absolute paths will still be absolute)
+    :type relative: bool, optional
+    :param directory: whether the path should indicate a directory, rather
+                      than a file
+    :type directory: bool, optional
+    :param default: the value to use if none is defined in the config file; to
+                    require explicit configuration, use
+                    :const:`sopel.config.types.NO_DEFAULT`
+    :type default: str, optional
+    """
     def __init__(self, name, relative=True, directory=False, default=None):
-        """
-        ``relative`` is whether the path should be relative to the location
-        of the config file (absolute paths will still be absolute). If
-        ``directory`` is True, the path must indicate a directory, rather than
-        a file.
-        """
         super(FilenameAttribute, self).__init__(name, default=default)
         self.relative = relative
         self.directory = directory
@@ -399,7 +484,9 @@ class FilenameAttribute(BaseValidated):
         instance._parser.set(instance._section_name, self.name, value)
 
     def configure(self, prompt, default, parent, section_name):
-        """With the prompt and default, parse and return a value from terminal.
+        """
+        With the ``prompt`` and ``default``, parse and return a value from
+        terminal.
         """
         if default is not NO_DEFAULT and default is not None:
             prompt = '{} [{}]'.format(prompt, default)
@@ -410,6 +497,16 @@ class FilenameAttribute(BaseValidated):
         return self.parse(parent, section_name, value)
 
     def parse(self, main_config, this_section, value):
+        """Used to validate ``value`` when loading the config
+
+        :param main_config: the config object which contains this attribute
+        :type main_config: :class:`~sopel.config.Config`
+        :param this_section: the config section which contains this attribute
+        :type this_section: :class:`~StaticSection`
+        :return: the ``value``, if it is valid
+        :rtype: str
+        :raise ValueError: if the ``value`` is not valid
+        """
         if value is None:
             return
 
@@ -434,5 +531,15 @@ class FilenameAttribute(BaseValidated):
         return value
 
     def serialize(self, main_config, this_section, value):
+        """Used to validate ``value`` when it is changed at runtime
+
+        :param main_config: the config object which contains this attribute
+        :type main_config: :class:`~sopel.config.Config`
+        :param this_section: the config section which contains this attribute
+        :type this_section: :class:`~StaticSection`
+        :return: the ``value``, if it is valid
+        :rtype: str
+        :raise ValueError: if the ``value`` is not valid
+        """
         self.parse(main_config, this_section, value)
         return value  # So that it's still relative
