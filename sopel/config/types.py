@@ -255,10 +255,11 @@ class ListAttribute(BaseValidated):
     """
     DELIMITER = ','
 
-    def __init__(self, name, strip=True, default=None):
+    def __init__(self, name, strip=True, quote=False, default=None):
         default = default or []
         super(ListAttribute, self).__init__(name, default=default)
         self.strip = strip
+        self.quote = quote
 
     def parse(self, value):
         """Parse ``value`` into a list.
@@ -289,6 +290,9 @@ class ListAttribute(BaseValidated):
             items = value.split(self.DELIMITER)
 
         value = list(filter(None, items))
+        if self.quote:
+            value = [v.strip('"') for v in value]
+
         if self.strip:  # deprecate strip option in Sopel 8.x
             return [v.strip() for v in value]
         else:
@@ -298,6 +302,10 @@ class ListAttribute(BaseValidated):
         """Serialize ``value`` into a multi-line string."""
         if not isinstance(value, (list, set)):
             raise ValueError('ListAttribute value must be a list.')
+
+        # either all values should be quoted, or none
+        if self.quote:
+            value = ['"{}"'.format(v) for v in value]
 
         # we ensure to read a newline, even with only one value in the list
         # this way, comma will be ignored when the configuration file

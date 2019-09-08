@@ -123,7 +123,7 @@ class CoreSection(StaticSection):
     ca_certs = FilenameAttribute('ca_certs', default=_find_certs())
     """The path of the CA certs pem file."""
 
-    channels = ListAttribute('channels')
+    channels = ListAttribute('channels', quote=True)
     """List of channels for the bot to join when it connects."""
 
     db_type = ChoiceAttribute('db_type', choices=[

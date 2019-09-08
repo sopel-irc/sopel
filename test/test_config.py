@@ -26,6 +26,10 @@ cheeses =
     cheddar
       reblochon   
   camembert
+beers = 
+    "Lager"
+  "Stout"     
+      "#pisswasser"
 """  # noqa (trailing whitespaces are intended)
 
 
@@ -43,6 +47,7 @@ class SpamSection(types.StaticSection):
     eggs = types.ListAttribute('eggs')
     bacons = types.ListAttribute('bacons', strip=False)
     cheeses = types.ListAttribute('cheeses')
+    beers = types.ListAttribute('beers', quote=True)
 
 
 @pytest.fixture
@@ -218,6 +223,11 @@ def test_configparser_multi_lines(multi_fakeconfig):
         'reblochon',
         'camembert',
     ]
+    assert multi_fakeconfig.spam.beers == [
+        'Lager',
+        'Stout',
+        '#pisswasser',
+    ]
 
 
 def test_save_unmodified_config(multi_fakeconfig):
@@ -257,6 +267,11 @@ def test_save_unmodified_config(multi_fakeconfig):
         'reblochon',
         'camembert',
     ]
+    assert saved_config.spam.beers == [
+        'Lager',
+        'Stout',
+        '#pisswasser',
+    ]
 
 
 def test_save_modified_config(multi_fakeconfig):
@@ -268,6 +283,11 @@ def test_save_modified_config(multi_fakeconfig):
     ]
     multi_fakeconfig.spam.cheeses = [
         'camembert, reblochon, and cheddar',
+    ]
+    multi_fakeconfig.spam.beers = [
+        'Dark Lager',
+        'Dark Stout',
+        '#pisswasser',
     ]
 
     multi_fakeconfig.save()
@@ -287,3 +307,8 @@ def test_save_modified_config(multi_fakeconfig):
         'ListAttribute with one line only, with commas, must *not* be split '
         'differently from what was expected, i.e. into one (and only one) value'
     )
+    assert saved_config.spam.beers == [
+        'Dark Lager',
+        'Dark Stout',
+        '#pisswasser',
+    ]
