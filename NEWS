@@ -52,6 +52,7 @@ Module changes
   * Reddit implemented spoilers as a distinct post flag some time ago. Sopel's
     plugin supports independently setting channels as "SFW" or "spoiler-free".
 * Python version is now included in `.version` command output [[#1462][]]
+* The `.version` command's output format is improved [[#1633][]]
 * Readability of `.choose` command output is significantly improved [[#1425][]]
 * Added `.invite` command [[#1497][]]
   * Both Sopel and the inviting user must have privileges in the target channel
@@ -332,6 +333,7 @@ API changes
 [#1628]: https://github.com/sopel-irc/sopel/pull/1628
 [#1629]: https://github.com/sopel-irc/sopel/pull/1629
 [#1632]: https://github.com/sopel-irc/sopel/pull/1632
+[#1633]: https://github.com/sopel-irc/sopel/pull/1633
 [#1638]: https://github.com/sopel-irc/sopel/pull/1638
 [#1646]: https://github.com/sopel-irc/sopel/pull/1646
 [#1652]: https://github.com/sopel-irc/sopel/pull/1652
