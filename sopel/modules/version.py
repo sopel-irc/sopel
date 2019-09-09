@@ -36,13 +36,13 @@ def version(bot, trigger):
     """Display the latest commit version, if Sopel is running in a git repo."""
     sha = git_info()
     if not sha:
-        msg = 'Sopel v. ' + release + ' (Python {})'.format(platform.python_version())
+        msg = 'Sopel v' + release + ' (Python {})'.format(platform.python_version())
         if release[-4:] == '-git':
             msg += ' at unknown commit.'
         bot.reply(msg)
         return
 
-    bot.reply("Sopel v. {} (Python {}) at commit: {}".format(release, platform.python_version(), sha))
+    bot.reply("Sopel v{} (Python {}) at commit: {}".format(release, platform.python_version(), sha))
 
 
 @intent('VERSION')
