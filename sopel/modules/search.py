@@ -105,7 +105,7 @@ def duck_api(query):
     online=True)
 # the last example (in source line order) is what .help displays
 @example(
-    '.duck sopel irc bot',
+    '.duck sopel.chat irc bot',
     r'https?:\/\/sopel\.chat\/?',
     re=True,
     online=True)
