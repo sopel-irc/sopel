@@ -2,6 +2,7 @@
 from __future__ import unicode_literals, division, print_function, absolute_import
 
 import os
+import sys
 
 import pytest
 
@@ -26,7 +27,42 @@ cheeses =
     cheddar
       reblochon   
   camembert
+channels =
+    "#sopel"
+    &peculiar
+# regular comment
+    # python 3 only comment
+    "#private"
+    "#startquote
+    &endquote"
+    "&quoted"
 """  # noqa (trailing whitespaces are intended)
+
+TEST_CHANNELS = [
+    '#sopel',
+    '&peculiar',
+    '#private',
+    '"#startquote',  # start quote without end quote: kept
+    '&endquote"',
+    '"&quoted"',  # quoted, but no #: quotes kept
+]
+
+if sys.version_info.major < 3:
+    # Python 2.7's ConfigParser interprets as comment
+    # a line that starts with # or ;.
+    # Python 3, on the other hand, allows comments to be indented.
+    # As a result, the same config file will result in a different
+    # config object depending on the Python version used.
+    # TODO: Deprecated with Python 2.7.
+    TEST_CHANNELS = [
+        '#sopel',
+        '&peculiar',
+        '# python 3 only comment',  # indented lines cannot be comments in Py2
+        '#private',
+        '"#startquote',
+        '&endquote"',
+        '"&quoted"',
+    ]
 
 
 class FakeConfigSection(types.StaticSection):
@@ -43,6 +79,7 @@ class SpamSection(types.StaticSection):
     eggs = types.ListAttribute('eggs')
     bacons = types.ListAttribute('bacons', strip=False)
     cheeses = types.ListAttribute('cheeses')
+    channels = types.ListAttribute('channels')
 
 
 @pytest.fixture
@@ -219,6 +256,8 @@ def test_configparser_multi_lines(multi_fakeconfig):
         'camembert',
     ]
 
+    assert multi_fakeconfig.spam.channels == TEST_CHANNELS
+
 
 def test_save_unmodified_config(multi_fakeconfig):
     """Assert type attributes are kept as they should be"""
@@ -257,6 +296,7 @@ def test_save_unmodified_config(multi_fakeconfig):
         'reblochon',
         'camembert',
     ]
+    assert saved_config.spam.channels == TEST_CHANNELS
 
 
 def test_save_modified_config(multi_fakeconfig):
@@ -268,6 +308,14 @@ def test_save_modified_config(multi_fakeconfig):
     ]
     multi_fakeconfig.spam.cheeses = [
         'camembert, reblochon, and cheddar',
+    ]
+    multi_fakeconfig.spam.channels = [
+        '#sopel',
+        '#private',
+        '&peculiar',
+        '"#startquote',
+        '&endquote"',
+        '"&quoted"',
     ]
 
     multi_fakeconfig.save()
@@ -287,3 +335,11 @@ def test_save_modified_config(multi_fakeconfig):
         'ListAttribute with one line only, with commas, must *not* be split '
         'differently from what was expected, i.e. into one (and only one) value'
     )
+    assert saved_config.spam.channels == [
+        '#sopel',
+        '#private',
+        '&peculiar',
+        '"#startquote',  # start quote without end quote: kept
+        '&endquote"',
+        '"&quoted"',  # doesn't start with a # so it isn't escaped
+    ]

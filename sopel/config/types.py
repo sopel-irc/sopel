@@ -27,6 +27,7 @@ As an example, if one wanted to define the ``[spam]`` section as having an
 from __future__ import unicode_literals, absolute_import, print_function, division
 
 import os.path
+import re
 import sys
 from sopel.tools import get_input
 
@@ -221,7 +222,7 @@ class ListAttribute(BaseValidated):
     the option will be exposed as a Python :class:`list`::
 
         >>> config.spam.cheeses
-        ['camembert', 'cheddar', 'reblochon']
+        ['camembert', 'cheddar', 'reblochon', '#brie']
 
     which comes from this configuration file::
 
@@ -230,6 +231,12 @@ class ListAttribute(BaseValidated):
             camembert
             cheddar
             reblochon
+            "#brie"
+
+    Note that the ``#brie`` item starts with a ``#``, hence the double quote:
+    without these quotation marks, the config parser would think it's a
+    comment. The quote/unquote is managed automatically by this field, and
+    if and only if it's necessary (see :meth:`parse` and :meth:`serialize`).
 
     .. versionchanged:: 7.0
 
@@ -254,6 +261,13 @@ class ListAttribute(BaseValidated):
         the list.
     """
     DELIMITER = ','
+    QUOTE_REGEX = re.compile(r'^"(?P<value>#.*)"$')
+    """Regex pattern to match value that requires quotation marks.
+
+    This pattern matches values that start with ``#`` inside quotation marks
+    only: ``"#sopel"`` will match, but ``"sopel"`` won't, and neither will any
+    variant that doesn't conform to this pattern.
+    """
 
     def __init__(self, name, strip=True, default=None):
         default = default or []
@@ -276,11 +290,11 @@ class ListAttribute(BaseValidated):
             multi-line string.
         """
         if "\n" in value:
-            items = [
+            items = (
                 # remove trailing comma
                 # because `value,\nother` is valid in Sopel 7.x
                 item.strip(self.DELIMITER).strip()
-                for item in value.splitlines()]
+                for item in value.splitlines())
         else:
             # this behavior will be:
             # - Discouraged in Sopel 7.x (in the documentation)
@@ -288,21 +302,52 @@ class ListAttribute(BaseValidated):
             # - Removed from Sopel 9.x
             items = value.split(self.DELIMITER)
 
-        value = list(filter(None, items))
-        if self.strip:  # deprecate strip option in Sopel 8.x
-            return [v.strip() for v in value]
-        else:
-            return value
+        items = (self.parse_item(item) for item in items if item)
+        if self.strip:
+            return [item.strip() for item in items]
+
+        return list(items)
+
+    def parse_item(self, item):
+        """Parse one ``item`` from the list.
+
+        :param str item: one item from the list to parse
+        :rtype: str
+
+        If ``item`` matches the :attr:`QUOTE_REGEX` pattern, then it will be
+        unquoted. Otherwise it's returned as-is.
+        """
+        result = self.QUOTE_REGEX.match(item)
+        if result:
+            return result.group('value')
+        return item
 
     def serialize(self, value):
         """Serialize ``value`` into a multi-line string."""
         if not isinstance(value, (list, set)):
             raise ValueError('ListAttribute value must be a list.')
+        elif not value:
+            # return an empty string when there is no value
+            return ''
 
         # we ensure to read a newline, even with only one value in the list
         # this way, comma will be ignored when the configuration file
         # is read again later
-        return '\n' + '\n'.join(value)
+        return '\n' + '\n'.join(self.serialize_item(item) for item in value)
+
+    def serialize_item(self, item):
+        """Serialize an ``item`` from the list value.
+
+        :param str item: one item of the list to serialize
+        :rtype: str
+
+        If ``item`` starts with a ``#`` it will be quoted in order to prevent
+        the config parser from thinking it's a comment.
+        """
+        if item.startswith('#'):
+            # we need to protect item that would otherwise appear as comment
+            return '"%s"' % item
+        return item
 
     def configure(self, prompt, default, parent, section_name):
         each_prompt = '?'
