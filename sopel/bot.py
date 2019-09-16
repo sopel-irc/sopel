@@ -262,17 +262,17 @@ class Sopel(irc.Bot):
                     LOGGER.exception('Error in %s setup: %s', name, e)
                 else:
                     load_success = load_success + 1
-                    LOGGER.debug('Plugin loaded: %s', name)
+                    LOGGER.info('Plugin loaded: %s', name)
 
         total = sum([load_success, load_error, load_disabled])
         if total and load_success:
             LOGGER.info(
-                'Registered %d modules, %d failed, %d disabled',
+                'Registered %d plugins, %d failed, %d disabled',
                 (load_success - 1),
                 load_error,
                 load_disabled)
         else:
-            LOGGER.warning("Warning: Couldn't load any modules")
+            LOGGER.warning("Warning: Couldn't load any plugin")
 
     def reload_plugin(self, name):
         """Reload a plugin
@@ -329,25 +329,21 @@ class Sopel(irc.Bot):
         if not self.has_plugin(name):
             raise plugins.exceptions.PluginNotRegistered(name)
 
-        try:
-            # remove commands, jobs, and shutdown functions
-            for func in itertools.chain(callables, jobs, shutdowns):
-                self.unregister(func)
+        # remove commands, jobs, and shutdown functions
+        for func in itertools.chain(callables, jobs, shutdowns):
+            self.unregister(func)
 
-            # remove URL callback handlers
-            if "url_callbacks" in self.memory:
-                for func in urls:
-                    regexes = func.url_regex
-                    for regex in regexes:
-                        if func == self.memory['url_callbacks'].get(regex):
-                            self.unregister_url_callback(regex)
-                            LOGGER.debug('URL Callback unregistered %r', regex)
-        except:  # noqa
-            raise
-        else:
-            # remove plugin from registry
-            del self._plugins[name]
-            LOGGER.info('Plugin removed: %s', name)
+        # remove URL callback handlers
+        if "url_callbacks" in self.memory:
+            for func in urls:
+                regexes = func.url_regex
+                for regex in regexes:
+                    if func == self.memory['url_callbacks'].get(regex):
+                        self.unregister_url_callback(regex)
+                        LOGGER.debug('URL Callback unregistered: %r', regex)
+
+        # remove plugin from registry
+        del self._plugins[name]
 
     def has_plugin(self, name):
         """Tell if the bot has registered this plugin by its name"""
@@ -362,21 +358,27 @@ class Sopel(irc.Bot):
         if not callable(obj):
             LOGGER.warning('Cannot unregister obj %r: not a callable', obj)
             return
+        callable_name = getattr(obj, "__name__", 'UNKNOWN')
+
         if hasattr(obj, 'rule'):  # commands and intents have it added
             for rule in obj.rule:
                 callb_list = self._callables[obj.priority][rule]
                 if obj in callb_list:
                     callb_list.remove(obj)
+            LOGGER.debug(
+                'Rule callable "%s" unregistered',
+                callable_name,
+                rule.pattern)
+
         if hasattr(obj, 'interval'):
             self.scheduler.remove_callable_job(obj)
-        if (
-                getattr(obj, "__name__", None) == "shutdown" and
-                obj in self.shutdown_methods
-        ):
+            LOGGER.debug('Job callable removed: %s', callable_name)
+
+        if callable_name == "shutdown" and obj in self.shutdown_methods:
             self.shutdown_methods.remove(obj)
 
     def register(self, callables, jobs, shutdowns, urls):
-        """Register a callable.
+        """Register rules, jobs, shutdown methods, and URL callbacks.
 
         :param callables: an iterable of callables to register
         :type callables: :term:`iterable`
@@ -386,32 +388,98 @@ class Sopel(irc.Bot):
         :type shutdowns: :term:`iterable`
         :param urls: an iterable of functions to call when matched against a URL
         :type urls: :term:`iterable`
+
+        The ``callables`` argument contains a list of "callable objects", i.e.
+        objects for which :func:`callable` will return ``True``. They can be:
+
+        * a callable with rules (will match triggers with a regex pattern)
+        * a callable without rules (will match any triggers, such as events)
+        * a callable with commands
+        * a callable with nick commands
+
+        It is possible to have a callable with rules, commands, and nick
+        commands configured. It should not be possible to have a callable with
+        commands or nick commands but without rules. Callable without rules
+        are usually event handlers.
         """
         # Append module's shutdown function to the bot's list of functions to
         # call on shutdown
         self.shutdown_methods += shutdowns
+        match_any = re.compile('.*')
         for callbl in callables:
-            if hasattr(callbl, 'rule'):
-                for rule in callbl.rule:
+            callable_name = getattr(callbl, "__name__", 'UNKNOWN')
+            rules = getattr(callbl, 'rule', [])
+            commands = getattr(callbl, 'commands', [])
+            nick_commands = getattr(callbl, 'nickname_commands', [])
+            events = getattr(callbl, 'event', [])
+            is_rule_only = rules and not commands and not nick_commands
+
+            if rules:
+                for rule in rules:
                     self._callables[callbl.priority][rule].append(callbl)
+                    if is_rule_only:
+                        # Command & Nick Command are logged later:
+                        # here we log rule only callable
+                        LOGGER.debug(
+                            'Rule callable "%s" registered for "%s"',
+                            callable_name,
+                            rule.pattern)
+                if commands:
+                    LOGGER.debug(
+                        'Command callable "%s" registered for "%s"',
+                        callable_name,
+                        '|'.join(commands))
+                if nick_commands:
+                    LOGGER.debug(
+                        'Nick command callable "%s" registered for "%s"',
+                        callable_name,
+                        '|'.join(nick_commands))
+                if events:
+                    LOGGER.debug(
+                        'Event callable "%s" registered for "%s"',
+                        callable_name,
+                        '|'.join(events))
             else:
-                self._callables[callbl.priority][re.compile('.*')].append(callbl)
-            if hasattr(callbl, 'commands'):
+                self._callables[callbl.priority][match_any].append(callbl)
+                if events:
+                    LOGGER.debug(
+                        'Event callable "%s" registered '
+                        'with "match any" rule for "%s"',
+                        callable_name,
+                        '|'.join(events))
+                else:
+                    LOGGER.debug(
+                        'Rule callable "%s" registered with "match any" rule',
+                        callable_name)
+
+            if commands:
                 module_name = callbl.__module__.rsplit('.', 1)[-1]
                 # TODO doc and make decorator for this. Not sure if this is how
                 # it should work yet, so not making it public for 6.0.
                 category = getattr(callbl, 'category', module_name)
-                self._command_groups[category].append(callbl.commands[0])
+                self._command_groups[category].append(commands[0])
+
             for command, docs in callbl._docs.items():
                 self.doc[command] = docs
+
         for func in jobs:
             for interval in func.interval:
                 job = sopel.tools.jobs.Job(interval, func)
                 self.scheduler.add_job(job)
+                callable_name = getattr(func, "__name__", 'UNKNOWN')
+                LOGGER.debug(
+                    'Job added "%s", will run every %d seconds',
+                    callable_name,
+                    interval)
 
         for func in urls:
             for regex in func.url_regex:
                 self.register_url_callback(regex, func)
+                callable_name = getattr(func, "__name__", 'UNKNOWN')
+                LOGGER.debug(
+                    'URL Callback added "%s" for URL pattern "%s"',
+                    callable_name,
+                    regex)
 
     def part(self, channel, msg=None):
         """Leave a channel.
