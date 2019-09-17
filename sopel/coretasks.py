@@ -62,7 +62,6 @@ def auth_after_register(bot):
 
 
 @sopel.module.event(events.RPL_WELCOME, events.RPL_LUSERCLIENT)
-@sopel.module.rule('.*')
 @sopel.module.thread(False)
 @sopel.module.unblockable
 def startup(bot, trigger):
@@ -133,7 +132,6 @@ def enable_service_auth(bot, trigger):
 
 
 @sopel.module.event(events.ERR_NOCHANMODES)
-@sopel.module.rule('.*')
 @sopel.module.priority('high')
 def retry_join(bot, trigger):
     """Give NickServer enough time to identify on a +R channel.
@@ -295,7 +293,6 @@ def track_modes(bot, trigger):
             bot.channels[channel].privileges[nick] = priv
 
 
-@sopel.module.rule('.*')
 @sopel.module.event('NICK')
 @sopel.module.priority('high')
 @sopel.module.thread(False)
@@ -345,7 +342,6 @@ def track_part(bot, trigger):
     _remove_from_channel(bot, nick, channel)
 
 
-@sopel.module.rule('.*')
 @sopel.module.event('KICK')
 @sopel.module.priority('high')
 @sopel.module.thread(False)
@@ -403,7 +399,6 @@ def _send_who(bot, channel):
         bot.write(['WHO', channel])
 
 
-@sopel.module.rule('.*')
 @sopel.module.event('JOIN')
 @sopel.module.priority('high')
 @sopel.module.thread(False)
@@ -430,7 +425,6 @@ def track_join(bot, trigger):
         user.account = trigger.args[1]
 
 
-@sopel.module.rule('.*')
 @sopel.module.event('QUIT')
 @sopel.module.priority('high')
 @sopel.module.thread(False)
@@ -443,7 +437,6 @@ def track_quit(bot, trigger):
     bot.users.pop(trigger.nick, None)
 
 
-@sopel.module.rule('.*')
 @sopel.module.event('CAP')
 @sopel.module.thread(False)
 @sopel.module.priority('high')
@@ -625,7 +618,6 @@ def send_authenticate(bot, token):
 
 
 @sopel.module.event('AUTHENTICATE')
-@sopel.module.rule('.*')
 def auth_proceed(bot, trigger):
     if trigger.args[0] != '+':
         # How did we get here? I am not good with computer.
@@ -645,7 +637,6 @@ def auth_proceed(bot, trigger):
 
 
 @sopel.module.event(events.RPL_SASLSUCCESS)
-@sopel.module.rule('.*')
 def sasl_success(bot, trigger):
     bot.write(('CAP', 'END'))
 
@@ -737,7 +728,6 @@ def blocks(bot, trigger):
 
 
 @sopel.module.event('ACCOUNT')
-@sopel.module.rule('.*')
 def account_notify(bot, trigger):
     if trigger.nick not in bot.users:
         bot.users[trigger.nick] = User(trigger.nick, trigger.user, trigger.host)
@@ -748,7 +738,6 @@ def account_notify(bot, trigger):
 
 
 @sopel.module.event(events.RPL_WHOSPCRPL)
-@sopel.module.rule('.*')
 @sopel.module.priority('high')
 @sopel.module.unblockable
 def recv_whox(bot, trigger):
@@ -801,7 +790,6 @@ def _record_who(bot, channel, user, host, nick, account=None, away=None, modes=N
 
 
 @sopel.module.event(events.RPL_WHOREPLY)
-@sopel.module.rule('.*')
 @sopel.module.priority('high')
 @sopel.module.unblockable
 def recv_who(bot, trigger):
@@ -811,7 +799,6 @@ def recv_who(bot, trigger):
 
 
 @sopel.module.event(events.RPL_ENDOFWHO)
-@sopel.module.rule('.*')
 @sopel.module.priority('high')
 @sopel.module.unblockable
 def end_who(bot, trigger):
@@ -819,7 +806,6 @@ def end_who(bot, trigger):
         who_reqs.pop(trigger.args[1], None)
 
 
-@sopel.module.rule('.*')
 @sopel.module.event('AWAY')
 @sopel.module.priority('high')
 @sopel.module.thread(False)
@@ -831,7 +817,6 @@ def track_notify(bot, trigger):
     user.away = bool(trigger.args)
 
 
-@sopel.module.rule('.*')
 @sopel.module.event('TOPIC')
 @sopel.module.event(events.RPL_TOPIC)
 @sopel.module.priority('high')
