@@ -175,6 +175,9 @@ API changes
     via PyPI packages, which required a specific directory structure and
     package name format (`sopel_modules.plugin_name`)
   * See [the entry point plugin documentation][entry-point-plugin] for more
+* `module.event()` decorator no longer requires a rule to work [[#1693][]]
+  * Since 99% (unscientific guesstimate) of event decorators were paired with
+    `@module.rule('.*')`, that's now implied if no rule decorator is present
 * Added `sopel.tools.web` (replaces `sopel.web`) [[#1616][], [#1670][]]
   * Both old and new import locations will work until Sopel 7 end-of-life
   * The `sopel.web` package will be removed completely in Sopel 8
@@ -342,6 +345,7 @@ API changes
 [#1670]: https://github.com/sopel-irc/sopel/pull/1670
 [#1677]: https://github.com/sopel-irc/sopel/pull/1677
 [#1685]: https://github.com/sopel-irc/sopel/pull/1685
+[#1693]: https://github.com/sopel-irc/sopel/pull/1693
 
 [api-docs]: https://sopel.chat/docs/
 [auth-config-docs]: https://sopel.chat/docs/configure.html#Authentication
