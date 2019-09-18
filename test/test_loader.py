@@ -86,9 +86,10 @@ def test_clean_module_commands(tmpdir, tmpconfig):
     callables, jobs, shutdowns, urls = loader.clean_module(
         test_mod, tmpconfig)
 
-    assert len(callables) == 2
+    assert len(callables) == 3
     assert test_mod.first_command in callables
     assert test_mod.second_command in callables
+    assert test_mod.on_topic_command in callables
     assert len(jobs) == 2
     assert test_mod.interval5s in jobs
     assert test_mod.interval10s in jobs
@@ -272,7 +273,7 @@ def test_clean_callable_events(tmpconfig, func):
     assert func.event == ['TOPIC', 'JOIN', 'NICK']
 
 
-def test_clean_callable_events_basetring(tmpconfig, func):
+def test_clean_callable_events_basestring(tmpconfig, func):
     setattr(func, 'event', 'topic')
     loader.clean_callable(func, tmpconfig)
 

@@ -222,7 +222,6 @@ def me(bot, trigger):
 
 
 @sopel.module.event('INVITE')
-@sopel.module.rule('.*')
 @sopel.module.priority('low')
 def invite_join(bot, trigger):
     """Join a channel Sopel is invited to, if the inviter is an admin."""
@@ -232,7 +231,6 @@ def invite_join(bot, trigger):
 
 
 @sopel.module.event('KICK')
-@sopel.module.rule(r'.*')
 @sopel.module.priority('low')
 def hold_ground(bot, trigger):
     """

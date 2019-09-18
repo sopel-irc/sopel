@@ -104,7 +104,10 @@ def clean_callable(func, config):
 
 
 def is_triggerable(obj):
-    return any(hasattr(obj, attr) for attr in ('rule', 'intents', 'commands', 'nickname_commands'))
+    return any(
+        hasattr(obj, attr)
+        for attr in ('rule', 'event', 'intents', 'commands',
+                     'nickname_commands'))
 
 
 def clean_module(module, config):
