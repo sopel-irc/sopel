@@ -120,7 +120,7 @@ def setup_logging(settings):
 
 
 @deprecated(
-    'Use logging.getLogger(__name__) instead',
+    'Use `sopel.logger.get_plugin_logger` instead',
     version='7.0',
     removed_in='8.0')
 def get_logger(name=None):
@@ -133,11 +133,35 @@ def get_logger(name=None):
 
     .. deprecated:: 7.0
 
-        Use ``logging.getLogger(__name__)`` instead, or
-        ``logging.getLogger('sopel.plugins.YOURPLUGINNAME')``.
+        Use ``logging.getLogger(__name__)`` in Sopel's code instead, and
+        :func:`get_plugin_logger` for external plugins.
 
     """
     if name:
         return logging.getLogger('sopel.modules.' + name)
     else:
         return logging.getLogger('sopel')
+
+
+def get_plugin_logger(plugin_name):
+    """Return a logger for a plugin.
+
+    :param str plugin_name: name of the plugin
+    :return: the logger for the given plugin
+
+    This::
+
+        from sopel import logger
+        LOGGER = logger.get_plugin_logger('my_custom_plugin')
+
+    is equivalent to this::
+
+        import logging
+        LOGGER = logging.getLogger('sopel.externals.my_custom_plugin')
+
+    Internally, Sopel configures logging for the ``sopel`` namespace, so
+    external plugins can't benefit from it with ``logging.getLogger(__name__)``
+    as they won't be in the same namespace. This function use the
+    ``plugin_name`` with a prefix inside this namespace.
+    """
+    return logging.getLogger('sopel.externals.%s' % plugin_name)
