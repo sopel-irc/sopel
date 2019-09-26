@@ -8,78 +8,70 @@ https://sopel.chat
 """
 from __future__ import unicode_literals, absolute_import, print_function, division
 
+import io
 import os
 import time
 import threading
-import sys
+from collections import defaultdict
 
 from sopel.module import commands, nickname_commands, rule, priority, example
-from sopel.tools import Identifier, iterkeys
+from sopel.tools import Identifier
 from sopel.tools.time import get_timezone, format_time
 
 
 MAXIMUM = 4
 
 
-def loadReminders(fn, lock):
-    lock.acquire()
-    try:
-        result = {}
-        f = open(fn)
-        for line in f:
+def load_reminders(filename):
+    """Load tell/ask reminders from a ``filename``.
+
+    :param str filename: path to the tell/ask reminders file
+    :return: a dict with the tell/asl reminders
+    :rtype: dict
+    """
+    result = defaultdict(list)
+    with io.open(filename, 'r', encoding='utf-8') as fd:
+        for line in fd:
             line = line.strip()
-            if sys.version_info.major < 3:
-                line = line.decode('utf-8')
             if line:
                 try:
                     tellee, teller, verb, timenow, msg = line.split('\t', 4)
                 except ValueError:
-                    continue  # @@ hmm
-                result.setdefault(tellee, []).append((teller, verb, timenow, msg))
-        f.close()
-    finally:
-        lock.release()
+                    continue  # TODO: Add warning log about malformed reminder
+                result[tellee].append((teller, verb, timenow, msg))
+
     return result
 
 
-def dumpReminders(fn, data, lock):
-    lock.acquire()
-    try:
-        f = open(fn, 'w')
-        for tellee in iterkeys(data):
-            for remindon in data[tellee]:
-                line = '\t'.join((tellee,) + remindon)
-                try:
-                    to_write = line + '\n'
-                    if sys.version_info.major < 3:
-                        to_write = to_write.encode('utf-8')
-                    f.write(to_write)
-                except IOError:
-                    break
-        try:
-            f.close()
-        except IOError:
-            pass
-    finally:
-        lock.release()
+def dump_reminders(filename, data):
+    """Dump tell/ask reminders (``data``) into a ``filename``.
+
+    :param str filename: path to the tell/ask reminders file
+    :param dict data: tell/ask reminders ``dict``
+    """
+    with io.open(filename, 'w', encoding='utf-8') as fd:
+        for tellee, reminders in data.items():
+            for reminder in reminders:
+                line = '\t'.join((tellee,) + tuple(reminder))
+                fd.write(line + '\n')
     return True
 
 
 def setup(bot):
     fn = bot.nick + '-' + bot.config.core.host + '.tell.db'
     bot.tell_filename = os.path.join(bot.config.core.homedir, fn)
+
     if not os.path.exists(bot.tell_filename):
-        try:
-            f = open(bot.tell_filename, 'w')
-        except (OSError, IOError):  # TODO: Remove IOError when dropping py2 support
-            pass
-        else:
-            f.write('')
-            f.close()
+        with io.open(bot.tell_filename, 'w', encoding='utf-8') as fd:
+            # if we can't open/write into the file, the tell plugin can't work
+            fd.write('')
+
     if 'tell_lock' not in bot.memory:
         bot.memory['tell_lock'] = threading.Lock()
+
     if 'reminders' not in bot.memory:
-        bot.memory['reminders'] = loadReminders(bot.tell_filename, bot.memory['tell_lock'])
+        with bot.memory['tell_lock']:
+            bot.memory['reminders'] = load_reminders(bot.tell_filename)
 
 
 def shutdown(bot):
@@ -122,24 +114,20 @@ def f_remind(bot, trigger):
     if tellee not in (Identifier(teller), bot.nick, 'me'):
         tz = get_timezone(bot.db, bot.config, None, tellee)
         timenow = format_time(bot.db, bot.config, tz, tellee)
-        bot.memory['tell_lock'].acquire()
-        try:
+        with bot.memory['tell_lock']:
             if tellee not in bot.memory['reminders']:
                 bot.memory['reminders'][tellee] = [(teller, verb, timenow, msg)]
             else:
                 bot.memory['reminders'][tellee].append((teller, verb, timenow, msg))
-        finally:
-            bot.memory['tell_lock'].release()
+            # save the reminders
+            dump_reminders(bot.tell_filename, bot.memory['reminders'])
 
         response = "I'll pass that on when %s is around." % tellee
-
         bot.reply(response)
     elif Identifier(teller) == tellee:
         bot.say('You can %s yourself that.' % verb)
     else:
         bot.say("Hey, I'm not as stupid as Monty you know!")
-
-    dumpReminders(bot.tell_filename, bot.memory['reminders'], bot.memory['tell_lock'])  # @@ tell
 
 
 def getReminders(bot, channel, key, tellee):
@@ -192,4 +180,5 @@ def message(bot, trigger):
             bot.say(line, tellee)
 
     if len(bot.memory['reminders'].keys()) != remkeys:
-        dumpReminders(bot.tell_filename, bot.memory['reminders'], bot.memory['tell_lock'])  # @@ tell
+        with bot.memory['tell_lock']:
+            dump_reminders(bot.tell_filename, bot.memory['reminders'])  # @@ tell
