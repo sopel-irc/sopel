@@ -14,12 +14,37 @@ import time
 import threading
 from collections import defaultdict
 
+from sopel.config.types import StaticSection, ValidatedAttribute
 from sopel.module import commands, nickname_commands, rule, priority, example
 from sopel.tools import Identifier
 from sopel.tools.time import get_timezone, format_time
 
 
-MAXIMUM = 4
+class TellSection(StaticSection):
+    use_private_reminder = ValidatedAttribute(
+        'use_private_reminder', parse=bool, default=False)
+    """When set to ``true``, Sopel will send reminder as private message."""
+    maximum_public = ValidatedAttribute(
+        'maximum_public', parse=int, default=4)
+    """How many Sopel can send in public before using private message."""
+
+
+def configure(config):
+    """
+    | name | example | purpose |
+    | ---- | ------- | ------- |
+    | use_private_reminder | false | Send reminders as private message |
+    | maximum_public | 4 | Send up to this amount of reminders in public |
+    """
+    config.define_section('tell', TellSection)
+    config.tell.configure_setting(
+        'use_private_reminder',
+        'Should Sopel send tell/ask reminders as private message only?')
+    if not config.tell.use_private_reminder:
+        config.tell.configure_setting(
+            'maximum_public',
+            'How many tell/ask reminders Sopel will send as public message '
+            'before sending them as private messages?')
 
 
 def load_reminders(filename):
@@ -58,6 +83,7 @@ def dump_reminders(filename, data):
 
 
 def setup(bot):
+    bot.config.define_section('tell', TellSection)
     fn = bot.nick + '-' + bot.config.core.host + '.tell.db'
     bot.tell_filename = os.path.join(bot.config.core.homedir, fn)
 
@@ -193,7 +219,7 @@ def message(bot, trigger):
     )))
 
     with bot.memory['tell_lock']:
-        # Pop reminders for nick
+        # pop reminders for nick
         reminders = list(
             reminder
             for tellee in tellees
@@ -201,17 +227,27 @@ def message(bot, trigger):
                 bot.memory['reminders'].pop(tellee, []), nick)
         )
 
-    # send up to MAXIMUM reminders to the channel
-    for line in reminders[:MAXIMUM]:
-        bot.say(line)
+    # check if there are reminders to send
+    if not reminders:
+        return  # nothing to do
 
-    # send other reminders directly to nick as private message
-    if reminders[MAXIMUM:]:
-        bot.say('Further messages sent privately')
-        for line in reminders[MAXIMUM:]:
+    # then send reminders (as public and/or private messages)
+    if bot.config.tell.use_private_reminder:
+        # send reminders with private messages
+        for line in reminders:
             bot.say(line, nick)
+    else:
+        # send up to 'maximum_public' reminders to the channel
+        max_public = bot.config.tell.maximum_public
+        for line in reminders[:max_public]:
+            bot.say(line)
+
+        # send other reminders directly to nick as private message
+        if reminders[max_public:]:
+            bot.say('Further messages sent privately')
+            for line in reminders[max_public:]:
+                bot.say(line, nick)
 
     # save reminders left in memory
-    if reminders:
-        with bot.memory['tell_lock']:
-            dump_reminders(bot.tell_filename, bot.memory['reminders'])
+    with bot.memory['tell_lock']:
+        dump_reminders(bot.tell_filename, bot.memory['reminders'])
