@@ -130,55 +130,88 @@ def f_remind(bot, trigger):
         bot.say("Hey, I'm not as stupid as Monty you know!")
 
 
-def getReminders(bot, channel, key, tellee):
+def get_nick_reminders(reminders, nick):
     lines = []
     template = "%s: %s <%s> %s %s %s"
     today = time.strftime('%d %b', time.gmtime())
 
-    bot.memory['tell_lock'].acquire()
-    try:
-        for (teller, verb, datetime, msg) in bot.memory['reminders'][key]:
-            if datetime.startswith(today):
-                datetime = datetime[len(today) + 1:]
-            lines.append(template % (tellee, datetime, teller, verb, tellee, msg))
+    for (teller, verb, datetime, msg) in reminders:
+        if datetime.startswith(today):
+            datetime = datetime[len(today) + 1:]
+        lines.append(template % (nick, datetime, teller, verb, nick, msg))
 
-        try:
-            del bot.memory['reminders'][key]
-        except KeyError:
-            bot.say('Er…', channel)
-    finally:
-        bot.memory['tell_lock'].release()
     return lines
+
+
+def nick_match_tellee(nick, tellee):
+    """Tell if a ``nick`` matches a ``tellee``.
+
+    :param str nick: Nick seen by the bot
+    :param str tellee: Tellee name or pattern
+
+    The check between ``nick`` and ``tellee`` is case-insensitive::
+
+        >>> nick_match_tellee('Exirel', 'exirel')
+        True
+        >>> nick_match_tellee('exirel', 'EXIREL')
+        True
+        >>> nick_match_tellee('exirel', 'dgw')
+        False
+
+    If ``tellee`` ends with a wildcard token (``*`` or ``:``), then ``nick``
+    matches if it starts with ``tellee`` (without the token)::
+
+        >>> nick_match_tellee('Exirel', 'Exi*')
+        True
+        >>> nick_match_tellee('Exirel', 'exi:')
+        True
+        >>> nick_match_tellee('Exirel', 'Exi')
+        False
+
+    Note that this is still case-insensitive.
+    """
+    if tellee[-1] in ['*', ':']:  # these are wildcard token
+        return nick.lower().startswith(tellee.lower().rstrip('*:'))
+    return nick.lower() == tellee.lower()
 
 
 @rule('(.*)')
 @priority('low')
 def message(bot, trigger):
-
-    tellee = trigger.nick
-    channel = trigger.sender
+    nick = trigger.nick
 
     if not os.path.exists(bot.tell_filename):
+        # plugin can't work without its storage file
         return
 
+    # get all matching reminders
     reminders = []
-    remkeys = list(reversed(sorted(bot.memory['reminders'].keys())))
+    tellees = list(reversed(sorted(
+        tellee
+        for tellee in bot.memory['reminders']
+        if nick_match_tellee(nick, tellee)
+    )))
 
-    for remkey in remkeys:
-        if not remkey.endswith('*') or remkey.endswith(':'):
-            if tellee.lower() == remkey.lower():
-                reminders.extend(getReminders(bot, channel, remkey, tellee))
-        elif tellee.lower().startswith(remkey.lower().rstrip('*:')):
-            reminders.extend(getReminders(bot, channel, remkey, tellee))
+    with bot.memory['tell_lock']:
+        # Pop reminders for nick
+        reminders = list(
+            reminder
+            for tellee in tellees
+            for reminder in get_nick_reminders(
+                bot.memory['reminders'].pop(tellee, []), nick)
+        )
 
+    # send up to MAXIMUM reminders to the channel
     for line in reminders[:MAXIMUM]:
         bot.say(line)
 
+    # send other reminders directly to nick as private message
     if reminders[MAXIMUM:]:
         bot.say('Further messages sent privately')
         for line in reminders[MAXIMUM:]:
-            bot.say(line, tellee)
+            bot.say(line, nick)
 
-    if len(bot.memory['reminders'].keys()) != remkeys:
+    # save reminders left in memory
+    if reminders:
         with bot.memory['tell_lock']:
-            dump_reminders(bot.tell_filename, bot.memory['reminders'])  # @@ tell
+            dump_reminders(bot.tell_filename, bot.memory['reminders'])

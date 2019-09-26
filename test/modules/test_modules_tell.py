@@ -2,6 +2,7 @@
 """Tests for Sopel's ``tell`` plugin"""
 from __future__ import unicode_literals, absolute_import, print_function, division
 
+import datetime
 import io
 import os
 
@@ -153,3 +154,44 @@ def test_dump_reminders_multiple_tellees(tmpdir):
         'There should be 1 message for %s' % tellee_2)
     assert (teller, verb, timenow, msg) in results[tellee_1]
     assert (teller, verb, timenow, msg) in results[tellee_2]
+
+
+def test_nick_match_tellee():
+    assert tell.nick_match_tellee('Exirel', 'exirel')
+    assert tell.nick_match_tellee('exirel', 'EXIREL')
+    assert not tell.nick_match_tellee('exirel', 'dgw')
+
+
+def test_nick_match_tellee_wildcards():
+    assert tell.nick_match_tellee('Exirel', 'Exirel*')
+    assert tell.nick_match_tellee('Exirel', 'Exi*')
+    assert tell.nick_match_tellee('Exirel', 'exi*')
+    assert tell.nick_match_tellee('exirel', 'EXI*')
+    assert tell.nick_match_tellee('Exirel', 'Exi:')
+    assert tell.nick_match_tellee('Exirel', 'exi:')
+    assert tell.nick_match_tellee('exirel', 'EXI:')
+    assert tell.nick_match_tellee('Exirel', 'Exirel:')
+    assert not tell.nick_match_tellee('Exirel', 'dgw:')
+    assert not tell.nick_match_tellee('Exirel', 'dgw*')
+
+
+def test_get_reminders():
+    today = datetime.datetime.now().date().strftime('%Y-%m-%d')
+    reminders = [
+        ('dgw', 'tell', '2019-09-25 - 14:34:08UTC', 'Let\'s fix all the things!'),
+        ('HumorBaby', 'tell', '%s - 14:35:55UTC' % today, 'Thanks for the review.'),
+    ]
+
+    lines = tell.get_nick_reminders(reminders, 'Exirel')
+
+    assert len(lines) == 2, (
+        'There should be as many lines as there are reminders, found %d'
+        % len(lines))
+    assert lines[0] == (
+        'Exirel: '
+        '2019-09-25 - 14:34:08UTC '
+        '<dgw> tell Exirel Let\'s fix all the things!')
+    assert lines[1] == (
+        'Exirel: '
+        '%s - 14:35:55UTC '
+        '<HumorBaby> tell Exirel Thanks for the review.' % today)
