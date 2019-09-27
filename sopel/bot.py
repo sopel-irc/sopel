@@ -2,6 +2,7 @@
 # Copyright 2008, Sean B. Palmer, inamidst.com
 # Copyright © 2012, Elad Alfassa <elad@fedoraproject.org>
 # Copyright 2012-2015, Elsie Powell, http://embolalia.com
+# Copyright 2019, Florian Strzelecki <florian.strzelecki@gmail.com>
 #
 # Licensed under the Eiffel Forum License 2.
 
@@ -9,6 +10,7 @@ from __future__ import unicode_literals, absolute_import, print_function, divisi
 
 from ast import literal_eval
 import collections
+from datetime import datetime
 import itertools
 import logging
 import re
@@ -37,22 +39,12 @@ else:
     py3 = False
 
 
-class _CapReq(object):
-    def __init__(self, prefix, module, failure=None, arg=None, success=None):
-        def nop(bot, cap):
-            pass
-        # TODO at some point, reorder those args to be sane
-        self.prefix = prefix
-        self.module = module
-        self.arg = arg
-        self.failure = failure or nop
-        self.success = success or nop
-
-
-class Sopel(irc.Bot):
+class Sopel(irc.AbstractBot):
     def __init__(self, config, daemon=False):
-        irc.Bot.__init__(self, config)
+        super(Sopel, self).__init__(config)
         self._daemon = daemon  # Used for iPython. TODO something saner here
+        self.wantsrestart = False
+
         # `re.compile('.*') is re.compile('.*')` because of caching, so we need
         # to associate a list with each regex, since they are unexpectedly
         # indistinct.
@@ -62,8 +54,6 @@ class Sopel(irc.Bot):
             'low': collections.defaultdict(list)
         }
         self._plugins = {}
-        self.config = config
-        """The :class:`sopel.config.Config` for the current Sopel instance."""
 
         self.doc = {}
         """A dictionary of command names to their documentation.
@@ -95,12 +85,6 @@ class Sopel(irc.Bot):
 
         For servers that do not support IRCv3, this will be an empty set.
         """
-
-        self.enabled_capabilities = set()
-        """A set containing the IRCv3 capabilities that the bot has enabled."""
-
-        self._cap_reqs = dict()
-        """A dictionary of capability names to a list of requests."""
 
         self.privileges = dict()
         """A dictionary of channels to their users and privilege levels.
@@ -148,10 +132,16 @@ class Sopel(irc.Bot):
 
         # Set up block lists
         # Default to empty
-        if not self.config.core.nick_blocks:
-            self.config.core.nick_blocks = []
-        if not self.config.core.host_blocks:
-            self.config.core.host_blocks = []
+        if not self.settings.core.nick_blocks:
+            self.settings.core.nick_blocks = []
+        if not self.settings.core.host_blocks:
+            self.settings.core.host_blocks = []
+
+    @property
+    def command_groups(self):
+        """A mapping of module names to a list of commands in it."""
+        # This was supposed to be deprecated, but the help command uses this
+        return self._command_groups
 
     @property
     def hostmask(self):
@@ -166,35 +156,6 @@ class Sopel(irc.Bot):
             raise KeyError("'hostmask' not available: bot must be connected and in at least one channel.")
 
         return self.users.get(self.nick).hostmask
-
-    # Backwards-compatibility aliases to attributes made private in 6.2. Remove
-    # these in 7.0
-    times = property(lambda self: getattr(self, '_times'))
-    command_groups = property(lambda self: getattr(self, '_command_groups'))
-
-    def write(self, args, text=None):  # Shim this in here for autodocs
-        """Send a command to the server.
-
-        :param args: an iterable of strings, which will be joined by spaces
-        :type args: :term:`iterable`
-        :param str text: a string that will be prepended with a ``:`` and added
-                         to the end of the command
-
-        ``args`` is an iterable of strings, which are joined by spaces.
-        ``text`` is treated as though it were the final item in ``args``, but
-        is preceeded by a ``:``. This is a special case which  means that
-        ``text``, unlike the items in ``args`` may contain spaces (though this
-        constraint is not checked by ``write``).
-
-        In other words, both ``sopel.write(('PRIVMSG',), 'Hello, world!')``
-        and ``sopel.write(('PRIVMSG', ':Hello, world!'))`` will send
-        ``PRIVMSG :Hello, world!`` to the server.
-
-        Newlines and carriage returns (``'\\n'`` and ``'\\r'``) are removed
-        before sending. Additionally, if the message (after joining) is longer
-        than than 510 characters, any remaining characters will not be sent.
-        """
-        irc.Bot.write(self, args, text=text)
 
     def setup(self):
         """Set up Sopel bot before it can run
@@ -211,16 +172,16 @@ class Sopel(irc.Bot):
         self.scheduler.start()
 
     def setup_logging(self):
-        logger.setup_logging(self.config)
-        base_level = self.config.core.logging_level or 'INFO'
-        base_format = self.config.core.logging_format
-        base_datefmt = self.config.core.logging_datefmt
+        logger.setup_logging(self.settings)
+        base_level = self.settings.core.logging_level or 'INFO'
+        base_format = self.settings.core.logging_format
+        base_datefmt = self.settings.core.logging_datefmt
 
         # configure channel logging if required by configuration
-        if self.config.core.logging_channel:
-            channel_level = self.config.core.logging_channel_level or base_level
-            channel_format = self.config.core.logging_channel_format or base_format
-            channel_datefmt = self.config.core.logging_channel_datefmt or base_datefmt
+        if self.settings.core.logging_channel:
+            channel_level = self.settings.core.logging_channel_level or base_level
+            channel_format = self.settings.core.logging_channel_format or base_format
+            channel_datefmt = self.settings.core.logging_channel_datefmt or base_datefmt
             channel_params = {}
             if channel_format:
                 channel_params['fmt'] = channel_format
@@ -240,7 +201,7 @@ class Sopel(irc.Bot):
         load_disabled = 0
 
         LOGGER.info('Loading plugins...')
-        usable_plugins = plugins.get_usable_plugins(self.config)
+        usable_plugins = plugins.get_usable_plugins(self.settings)
         for name, info in usable_plugins.items():
             plugin, is_enabled = info
             if not is_enabled:
@@ -481,30 +442,6 @@ class Sopel(irc.Bot):
                     callable_name,
                     regex)
 
-    def part(self, channel, msg=None):
-        """Leave a channel.
-
-        :param str channel: the channel to leave
-        :param str msg: the message to display when leaving a channel
-        """
-        self.write(['PART', channel], msg)
-
-    def join(self, channel, password=None):
-        """Join a channel.
-
-        :param str channel: the channel to join
-        :param str password: an optional channel password
-
-        If ``channel`` contains a space, and no ``password`` is given, the
-        space is assumed to split the argument into the channel to join and its
-        password. ``channel`` should not contain a space if ``password``
-        is given.
-        """
-        if password is None:
-            self.write(('JOIN', channel))
-        else:
-            self.write(['JOIN', channel, password])
-
     @deprecated
     def msg(self, recipient, text, max_messages=1):
         """
@@ -512,151 +449,6 @@ class Sopel(irc.Bot):
             Use :meth:`say` instead. Will be removed in Sopel 8.
         """
         self.say(text, recipient, max_messages)
-
-    def say(self, text, recipient, max_messages=1):
-        """Send a PRIVMSG to a user or channel.
-
-        :param str text: the text to send
-        :param str recipient: the message recipient
-        :param int max_messages: the maximum number of messages to break the
-                                 text into
-
-        In the context of a triggered callable, the ``recipient`` defaults to
-        the channel (or nickname, if a private message) from which the message
-        was received.
-
-        By default, this will attempt to send the entire ``text`` in one
-        message. If the text is too long for the server, it may be truncated.
-        If ``max_messages`` is given, the ``text`` will be split into at most
-        that many messages, each no more than 400 bytes. The split is made at
-        the last space character before the 400th byte, or at the 400th byte if
-        no such space exists. If the ``text`` is too long to fit into the
-        specified number of messages using the above splitting, the final
-        message will contain the entire remainder, which may be truncated by
-        the server.
-        """
-        excess = ''
-        if not isinstance(text, unicode):
-            # Make sure we are dealing with unicode string
-            text = text.decode('utf-8')
-
-        if max_messages > 1:
-            # Manage multi-line only when needed
-            text, excess = tools.get_sendable_message(text)
-
-        try:
-            self.sending.acquire()
-
-            recipient_id = Identifier(recipient)
-            recipient_stack = self.stack.setdefault(recipient_id, {
-                'messages': [],
-                'flood_left': self.config.core.flood_burst_lines,
-            })
-
-            if recipient_stack['messages']:
-                elapsed = time.time() - recipient_stack['messages'][-1][0]
-            else:
-                # Default to a high enough value that we won't care.
-                # Five minutes should be enough not to matter anywhere below.
-                elapsed = 300
-
-            # If flood bucket is empty, refill the appropriate number of lines
-            # based on how long it's been since our last message to recipient
-            if not recipient_stack['flood_left']:
-                recipient_stack['flood_left'] = min(
-                    self.config.core.flood_burst_lines,
-                    int(elapsed) * self.config.core.flood_refill_rate)
-
-            # If it's too soon to send another message, wait
-            if not recipient_stack['flood_left']:
-                penalty = float(max(0, len(text) - 50)) / 70
-                wait = min(self.config.core.flood_empty_wait + penalty, 2)  # Maximum wait time is 2 sec
-                if elapsed < wait:
-                    time.sleep(wait - elapsed)
-
-            # Loop detection
-            messages = [m[1] for m in recipient_stack['messages'][-8:]]
-
-            # If what we're about to send repeated at least 5 times in the last
-            # two minutes, replace it with '...'
-            if messages.count(text) >= 5 and elapsed < 120:
-                text = '...'
-                if messages.count('...') >= 3:
-                    # If we've already said '...' 3 times, discard message
-                    return
-
-            self.write(('PRIVMSG', recipient), text)
-            recipient_stack['flood_left'] = max(0, recipient_stack['flood_left'] - 1)
-            recipient_stack['messages'].append((time.time(), self.safe(text)))
-            recipient_stack['messages'] = recipient_stack['messages'][-10:]
-        finally:
-            self.sending.release()
-        # Now that we've sent the first part, we need to send the rest. Doing
-        # this recursively seems easier to me than iteratively
-        if excess:
-            self.say(excess, max_messages - 1, recipient)
-
-    def notice(self, text, dest):
-        """Send an IRC NOTICE to a user or channel.
-
-        :param str text: the text to send in the NOTICE
-        :param str dest: the destination of the NOTICE
-
-        Within the context of a triggered callable, ``dest`` will default to
-        the channel (or nickname, if a private message), in which the trigger
-        happened.
-        """
-        self.write(('NOTICE', dest), text)
-
-    def action(self, text, dest):
-        """Send a CTCP ACTION PRIVMSG to a user or channel.
-
-        :param str text: the text to send in the CTCP ACTION
-        :param str dest: the destination of the CTCP ACTION
-
-        The same loop detection and length restrictions apply as with
-        :func:`say`, though automatic message splitting is not available.
-
-        Within the context of a triggered callable, ``dest`` will default to
-        the channel (or nickname, if a private message), in which the trigger
-        happened.
-        """
-        self.say('\001ACTION {}\001'.format(text), dest)
-
-    def reply(self, text, dest, reply_to, notice=False):
-        """Send a PRIVMSG to a user or channel, prepended with ``reply_to``.
-
-        :param str text: the text of the reply
-        :param str dest: the destination of the reply
-        :param str reply_to: the nickname that the reply will be prepended with
-        :param bool notice: whether to send the reply as a NOTICE or not,
-                            defaults to ``False``
-
-        If ``notice`` is ``True``, send a NOTICE rather than a PRIVMSG.
-
-        The same loop detection and length restrictions apply as with
-        :func:`say`, though automatic message splitting is not available.
-
-        Within the context of a triggered callable, ``reply_to`` will default to
-        the nickname of the user who triggered the call, and ``dest`` to the
-        channel (or nickname, if a private message), in which the trigger
-        happened.
-        """
-        text = '%s: %s' % (reply_to, text)
-        if notice:
-            self.notice(text, dest)
-        else:
-            self.say(text, dest)
-
-    def kick(self, nick, channel, text=None):
-        """Send an IRC KICK command.
-        Within the context of a triggered callable, ``channel`` will default to the
-        channel in which the call was triggered. If triggered from a private message,
-        ``channel`` is required (or the call to ``kick()`` will be ignored).
-        The bot must be a channel operator in specified channel for this to work.
-        .. versionadded:: 7.0
-        """
-        self.write(['KICK', channel, nick], text)
 
     def call(self, func, sopel, trigger):
         """Call a function, applying any rate-limiting or restrictions.
@@ -823,6 +615,40 @@ class Sopel(irc.Bot):
                 ', '.join(list_of_blocked_functions)
             )
 
+    def on_scheduler_error(self, scheduler, exc):
+        """Called when the Job Scheduler fails.
+
+        .. seealso::
+
+            :meth:`error`
+        """
+        self.error(exception=exc)
+
+    def on_job_error(self, scheduler, job, exc):
+        """Called when a job from the Job Scheduler fails.
+
+        .. seealso::
+
+            :meth:`error`
+        """
+        self.error(exception=exc)
+
+    def error(self, trigger=None, exception=None):
+        """Called internally when a module causes an error."""
+        message = 'Unexpected error'
+        if exception:
+            message = '{} ({})'.format(message, exception)
+
+        if trigger:
+            message = '{} from {} at {}. Message was: {}'.format(
+                message, trigger.nick, str(datetime.now()), trigger.group(0)
+            )
+
+        LOGGER.exception(message)
+
+        if trigger and self.settings.core.reply_errors and trigger.sender is not None:
+            self.say(message, trigger.sender)
+
     def _host_blocked(self, host):
         bad_masks = self.config.core.host_blocks
         for bad_mask in bad_masks:
@@ -875,85 +701,6 @@ class Sopel(irc.Bot):
 
         # Avoid calling shutdown methods if we already have.
         self.shutdown_methods = []
-
-    def cap_req(self, module_name, capability, arg=None, failure_callback=None,
-                success_callback=None):
-        """Tell Sopel to request a capability when it starts.
-
-        :param str module_name: the module requesting the capability
-        :param str capability: the capability requested, optionally prefixed
-                               with ``+`` or ``=``
-        :param str arg: arguments for the capability request
-        :param failure_callback: a function that will be called if the
-                                 capability request fails
-        :type failure_callback: :term:`function`
-        :param success_callback: a function that will be called if the
-                                 capability is successfully requested
-        :type success_callback: :term:`function`
-
-        By prefixing the capability with ``-``, it will be ensured that the
-        capability is not enabled. Similarly, by prefixing the capability with
-        ``=``, it will be ensured that the capability is enabled. Requiring and
-        disabling is "first come, first served"; if one module requires a
-        capability, and another prohibits it, this function will raise an
-        exception in whichever module loads second. An exception will also be
-        raised if the module is being loaded after the bot has already started,
-        and the request would change the set of enabled capabilities.
-
-        If the capability is not prefixed, and no other module prohibits it, it
-        will be requested. Otherwise, it will not be requested. Since
-        capability requests that are not mandatory may be rejected by the
-        server, as well as by other modules, a module which makes such a
-        request should account for that possibility.
-
-        The actual capability request to the server is handled after the
-        completion of this function. In the event that the server denies a
-        request, the ``failure_callback`` function will be called, if provided.
-        The arguments will be a :class:`sopel.bot.Sopel` object, and the
-        capability which was rejected. This can be used to disable callables
-        which rely on the capability. It will be be called either if the server
-        NAKs the request, or if the server enabled it and later DELs it.
-
-        The ``success_callback`` function will be called upon acknowledgement
-        of the capability from the server, whether during the initial
-        capability negotiation, or later.
-
-        If ``arg`` is given, and does not exactly match what the server
-        provides or what other modules have requested for that capability, it is
-        considered a conflict.
-        """
-        # TODO raise better exceptions
-        cap = capability[1:]
-        prefix = capability[0]
-
-        entry = self._cap_reqs.get(cap, [])
-        if any((ent.arg != arg for ent in entry)):
-            raise Exception('Capability conflict')
-
-        if prefix == '-':
-            if self.connection_registered and cap in self.enabled_capabilities:
-                raise Exception('Can not change capabilities after server '
-                                'connection has been completed.')
-            if any((ent.prefix != '-' for ent in entry)):
-                raise Exception('Capability conflict')
-            entry.append(_CapReq(prefix, module_name, failure_callback, arg,
-                                 success_callback))
-            self._cap_reqs[cap] = entry
-        else:
-            if prefix != '=':
-                cap = capability
-                prefix = ''
-            if self.connection_registered and (cap not in
-                                               self.enabled_capabilities):
-                raise Exception('Can not change capabilities after server '
-                                'connection has been completed.')
-            # Non-mandatory will callback at the same time as if the server
-            # rejected it.
-            if any((ent.prefix == '-' for ent in entry)) and prefix == '=':
-                raise Exception('Capability conflict')
-            entry.append(_CapReq(prefix, module_name, failure_callback, arg,
-                                 success_callback))
-            self._cap_reqs[cap] = entry
 
     def register_url_callback(self, pattern, callback):
         """Register a ``callback`` for URLs matching the regex ``pattern``.
@@ -1055,6 +802,11 @@ class Sopel(irc.Bot):
             match = regex.search(url)
             if match:
                 yield function, match
+
+    def restart(self, message):
+        """Disconnect from IRC and restart the bot."""
+        self.wantsrestart = True
+        self.quit(message)
 
 
 class SopelWrapper(object):
