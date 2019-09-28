@@ -3,6 +3,7 @@
 seen.py - Sopel Seen Module
 Copyright 2008, Sean B. Palmer, inamidst.com
 Copyright © 2012, Elad Alfassa <elad@fedoraproject.org>
+Copyright 2019, Sopel contributors
 Licensed under the Eiffel Forum License 2.
 
 https://sopel.chat
@@ -14,7 +15,7 @@ import time
 
 from sopel.module import commands, rule, priority, thread
 from sopel.tools import Identifier
-from sopel.tools.time import get_timezone, format_time
+from sopel.tools.time import seconds_to_human
 
 
 @commands('seen')
@@ -33,23 +34,25 @@ def seen(bot, trigger):
         message = bot.db.get_nick_value(nick, 'seen_message')
         action = bot.db.get_nick_value(nick, 'seen_action')
 
-        tz = get_timezone(bot.db, bot.config, None, trigger.nick,
-                          trigger.sender)
         saw = datetime.datetime.utcfromtimestamp(timestamp)
-        timestamp = format_time(bot.db, bot.config, tz, trigger.nick,
-                                trigger.sender, saw)
+        delta = seconds_to_human((trigger.time - saw).total_seconds())
 
-        msg = "I last saw {} at {}".format(nick, timestamp)
+        msg = "I last saw " + nick
         if Identifier(channel) == trigger.sender:
             if action:
-                msg = msg + " in here, doing " + nick + " " + message
+                msg += " in here {since}, doing: {nick} {action}".format(
+                    since=delta,
+                    nick=nick,
+                    action=message)
             else:
-                msg = msg + " in here, saying " + message
+                msg += " in here {since}, saying: {message}".format(
+                    since=delta,
+                    message=message)
         else:
-            msg += " in another channel."
-        bot.say(str(trigger.nick) + ': ' + msg)
+            msg += " in another channel {since}.".format(since=delta)
+        bot.reply(msg)
     else:
-        bot.say("Sorry, I haven't seen {} around.".format(nick))
+        bot.say("Sorry, I haven't seen {nick} around.".format(nick=nick))
 
 
 @thread(False)
