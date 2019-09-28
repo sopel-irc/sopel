@@ -53,6 +53,7 @@ Module changes
     plugin supports independently setting channels as "SFW" or "spoiler-free".
 * Python version is now included in `.version` command output [[#1462][]]
 * The `.version` command's output format is improved [[#1633][]]
+* The `.seen` command's output now uses relative time [[#1661][]]
 * Readability of `.choose` command output is significantly improved [[#1425][]]
 * Added `.invite` command [[#1497][]]
   * Both Sopel and the inviting user must have privileges in the target channel
@@ -342,6 +343,7 @@ API changes
 [#1646]: https://github.com/sopel-irc/sopel/pull/1646
 [#1651]: https://github.com/sopel-irc/sopel/pull/1651
 [#1652]: https://github.com/sopel-irc/sopel/pull/1652
+[#1661]: https://github.com/sopel-irc/sopel/pull/1661
 [#1668]: https://github.com/sopel-irc/sopel/pull/1668
 [#1670]: https://github.com/sopel-irc/sopel/pull/1670
 [#1677]: https://github.com/sopel-irc/sopel/pull/1677
