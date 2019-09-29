@@ -150,6 +150,8 @@ Core changes
 * Added support for disabling commands (or entire modules) on a per-channel
   basis [[#1235][]]
   * See how it works: [Per-channel configuration][per-channel-conf]
+* Fix tracking `away` status of users [[#1663][], [#1664][]]
+* User information is now periodically updated [[#1664][]]
 * Greatly improved the warning printed when a deprecated function is used,
   adding detail and removing unnecessary traceback lines [[#1568][], [#1613][]]
   * Typical length of output for each deprecated function call reduced from
@@ -344,6 +346,8 @@ API changes
 [#1651]: https://github.com/sopel-irc/sopel/pull/1651
 [#1652]: https://github.com/sopel-irc/sopel/pull/1652
 [#1661]: https://github.com/sopel-irc/sopel/pull/1661
+[#1663]: https://github.com/sopel-irc/sopel/pull/1663
+[#1664]: https://github.com/sopel-irc/sopel/pull/1664
 [#1668]: https://github.com/sopel-irc/sopel/pull/1668
 [#1670]: https://github.com/sopel-irc/sopel/pull/1670
 [#1677]: https://github.com/sopel-irc/sopel/pull/1677
