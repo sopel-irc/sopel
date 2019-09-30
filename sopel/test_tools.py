@@ -20,6 +20,7 @@ except ImportError:
     import configparser as ConfigParser
 
 from sopel.bot import SopelWrapper
+from sopel.irc.abstract_backends import AbstractIRCBackend
 import sopel.config
 import sopel.config.core_section
 import sopel.tools
@@ -31,6 +32,7 @@ __all__ = [
     'MockConfig',
     'MockSopel',
     'MockSopelWrapper',
+    'MockIRCBackend',
     'get_example_test',
     'get_disable_setup',
     'insert_into_module',
@@ -39,6 +41,15 @@ __all__ = [
 
 if sys.version_info.major >= 3:
     basestring = str
+
+
+class MockIRCBackend(AbstractIRCBackend):
+    def __init__(self, *args, **kwargs):
+        super(MockIRCBackend, self).__init__(*args, **kwargs)
+        self.message_sent = []
+
+    def send(self, data):
+        self.message_sent.append(data)
 
 
 class MockConfig(sopel.config.Config):
