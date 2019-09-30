@@ -272,7 +272,7 @@ class Sopel(irc.Bot):
                 load_error,
                 load_disabled)
         else:
-            LOGGER.warning("Warning: Couldn't load any plugin")
+            LOGGER.warning("Warning: Couldn't load any plugins")
 
     def reload_plugin(self, name):
         """Reload a plugin
@@ -399,7 +399,7 @@ class Sopel(irc.Bot):
 
         It is possible to have a callable with rules, commands, and nick
         commands configured. It should not be possible to have a callable with
-        commands or nick commands but without rules. Callable without rules
+        commands or nick commands but without rules. Callables without rules
         are usually event handlers.
         """
         # Append module's shutdown function to the bot's list of functions to
