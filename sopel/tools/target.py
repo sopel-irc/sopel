@@ -68,6 +68,9 @@ class Channel(object):
         self.topic = ''
         """The topic of the channel."""
 
+        self.last_who = None
+        """The last time a WHO was requested for the channel."""
+
     def clear_user(self, nick):
         user = self.users.pop(nick, None)
         self.privileges.pop(nick, None)
