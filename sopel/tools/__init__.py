@@ -16,6 +16,7 @@ from __future__ import unicode_literals, absolute_import, print_function, divisi
 
 import codecs
 import functools
+import logging
 import os
 import re
 import sys
@@ -532,6 +533,30 @@ def get_hostmask_regex(mask):
     mask = re.escape(mask)
     mask = mask.replace(r'\*', '.*')
     return re.compile(mask + '$', re.I)
+
+
+def get_logger(plugin_name):
+    """Return a logger for a plugin.
+
+    :param str plugin_name: name of the plugin
+    :return: the logger for the given plugin
+
+    This::
+
+        from sopel import plugins
+        LOGGER = plugins.get_logger('my_custom_plugin')
+
+    is equivalent to this::
+
+        import logging
+        LOGGER = logging.getLogger('sopel.externals.my_custom_plugin')
+
+    Internally, Sopel configures logging for the ``sopel`` namespace, so
+    external plugins can't benefit from it with ``logging.getLogger(__name__)``
+    as they won't be in the same namespace. This function uses the
+    ``plugin_name`` with a prefix inside this namespace.
+    """
+    return logging.getLogger('sopel.externals.%s' % plugin_name)
 
 
 class SopelMemory(dict):

@@ -5,7 +5,7 @@ import logging
 import os
 from logging.config import dictConfig
 
-from .tools import deprecated
+from sopel import tools
 
 
 class IrcLoggingHandler(logging.Handler):
@@ -119,49 +119,23 @@ def setup_logging(settings):
     dictConfig(logging_config)
 
 
-@deprecated(
-    'Use `sopel.logger.get_plugin_logger` instead',
-    version='7.0',
-    removed_in='8.0')
 def get_logger(name=None):
     """Return a logger for a module, if the name is given.
-
-    This is equivalent to ``logging.getLogger('sopel.modules.' + name)`` when
-    name is given, and ``logging.getLogger('sopel')`` when it is not.
-    The latter case is intended for use in Sopel's core; modules should call
-    ``get_logger(__name__)`` to get a logger.
 
     .. deprecated:: 7.0
 
         Use ``logging.getLogger(__name__)`` in Sopel's code instead, and
-        :func:`get_plugin_logger` for external plugins.
+        :func:`sopel.tools.get_logger` for external plugins.
+
+        This will warn a deprecation warning in Sopel 8.0 then removed in 9.0.
 
     """
-    if name:
-        return logging.getLogger('sopel.modules.' + name)
-    else:
+    if not name:
         return logging.getLogger('sopel')
 
+    parts = name.strip().split('.')
+    if len(parts) > 1 or parts[0] in ['sopel', 'sopel_modules']:
+        return logging.getLogger(name)
 
-def get_plugin_logger(plugin_name):
-    """Return a logger for a plugin.
-
-    :param str plugin_name: name of the plugin
-    :return: the logger for the given plugin
-
-    This::
-
-        from sopel import logger
-        LOGGER = logger.get_plugin_logger('my_custom_plugin')
-
-    is equivalent to this::
-
-        import logging
-        LOGGER = logging.getLogger('sopel.externals.my_custom_plugin')
-
-    Internally, Sopel configures logging for the ``sopel`` namespace, so
-    external plugins can't benefit from it with ``logging.getLogger(__name__)``
-    as they won't be in the same namespace. This function uses the
-    ``plugin_name`` with a prefix inside this namespace.
-    """
-    return logging.getLogger('sopel.externals.%s' % plugin_name)
+    # assume it's a plugin name, as intended by the original get_logger
+    return tools.get_logger(name)
