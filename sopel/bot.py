@@ -510,7 +510,7 @@ class Sopel(irc.Bot):
         # Now that we've sent the first part, we need to send the rest. Doing
         # this recursively seems easier to me than iteratively
         if excess:
-            self.say(excess, max_messages - 1, recipient)
+            self.say(excess, recipient, max_messages - 1)
 
     def notice(self, text, dest):
         """Send an IRC NOTICE to a user or channel.
