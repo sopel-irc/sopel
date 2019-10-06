@@ -15,6 +15,7 @@ from sopel.modules import remind
 @pytest.fixture
 def sopel():
     bot = test_tools.MockSopel('Sopel')
+    bot.config.basename = 'default'
     bot.config.core.owner = 'Admin'
     bot.config.core.host = 'chat.freenode.net'
     return bot
@@ -316,7 +317,7 @@ def test_get_filename(sopel):
     filename = remind.get_filename(sopel)
     assert filename == os.path.join(
         sopel.config.core.homedir,
-        'Sopel-chat.freenode.net.reminders.db')
+        'default.reminders.db')
 
 
 def test_load_database_empty(tmpdir):

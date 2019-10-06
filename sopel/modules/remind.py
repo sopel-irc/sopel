@@ -2,6 +2,7 @@
 """
 remind.py - Sopel Reminder Module
 Copyright 2011, Sean B. Palmer, inamidst.com
+Copyright 2019, dgw, technobabbl.es
 Licensed under the Eiffel Forum License 2.
 
 https://sopel.chat
@@ -11,6 +12,7 @@ from __future__ import unicode_literals, absolute_import, print_function, divisi
 import codecs
 import collections
 from datetime import datetime
+import logging
 import os
 import re
 import time
@@ -19,6 +21,9 @@ import pytz
 
 from sopel import tools, module
 from sopel.tools.time import get_timezone, format_time, validate_timezone
+
+
+LOGGER = logging.getLogger(__name__)
 
 
 def get_filename(bot):
@@ -32,7 +37,7 @@ def get_filename(bot):
     The remind database filename is based on the bot's nick and its
     configured ``core.host``, and it is located in the ``bot``'s ``homedir``.
     """
-    name = bot.nick + '-' + bot.config.core.host + '.reminders.db'
+    name = bot.config.basename + '.reminders.db'
     return os.path.join(bot.config.core.homedir, name)
 
 
@@ -123,6 +128,25 @@ def create_reminder(bot, trigger, duration, message):
 def setup(bot):
     """Load the remind database"""
     bot.rfn = get_filename(bot)
+
+    # Pre-7.0 migration logic. Remove in 8.0 or 9.0.
+    old = bot.nick + '-' + bot.config.core.host + '.reminders.db'
+    old = os.path.join(bot.config.core.homedir, old)
+    if os.path.isfile(old):
+        LOGGER.info("Attempting to migrate old 'remind' database {}..."
+                    .format(old))
+        try:
+            os.rename(old, bot.rfn)
+        except OSError:
+            LOGGER.error("Migration failed!")
+            LOGGER.error("Old filename: {}".format(old))
+            LOGGER.error("New filename: {}".format(bot.rfn))
+            LOGGER.error(
+                "See https://sopel.chat/usage/installing/upgrading-to-sopel-7/#reminder-db-migration")
+        else:
+            LOGGER.info("Migration finished!")
+    # End migration logic
+
     bot.rdb = load_database(bot.rfn)
 
 
