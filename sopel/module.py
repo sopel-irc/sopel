@@ -21,6 +21,7 @@ __all__ = [
     'intent',
     'interval',
     'nickname_commands',
+    'output_prefix',
     'priority',
     'rate',
     'require_admin',
@@ -674,3 +675,22 @@ class example(object):
         }
         func.example.append(record)
         return func
+
+
+def output_prefix(prefix):
+    """Decorate a function to add a prefix on its output.
+
+    :param str prefix: the prefix to add (must include trailing whitespace if
+                       desired; Sopel does not assume it should add anything)
+
+    Prefix will be added to text sent through:
+
+    * :meth:`bot.say <sopel.bot.SopelWrapper.say>`
+    * :meth:`bot.reply <sopel.bot.SopelWrapper.reply>`
+    * :meth:`bot.notice <sopel.bot.SopelWrapper.notice>`
+
+    """
+    def add_attribute(function):
+        function.output_prefix = prefix
+        return function
+    return add_attribute
