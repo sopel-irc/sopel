@@ -167,6 +167,11 @@ PASTEBIN_PROVIDERS = {
     'termbin': post_to_termbin,
     'ubuntu': post_to_ubuntu,
 }
+REPLY_METHODS = [
+    'channel',
+    'query',
+    'notice',
+]
 
 
 class HelpSection(StaticSection):
@@ -175,6 +180,10 @@ class HelpSection(StaticSection):
                              list(PASTEBIN_PROVIDERS),
                              default='clbin')
     """The pastebin provider to use for help output."""
+    reply_method = ChoiceAttribute('reply_method',
+                                   REPLY_METHODS,
+                                   default='channel')
+    """Where/how to reply to help commands (public/private)."""
     show_server_host = ValidatedAttribute('show_server_host', bool, default=True)
     """Show the IRC server's hostname/IP in the first line of the help listing?"""
 
@@ -184,13 +193,19 @@ def configure(config):
     | name | example | purpose |
     | ---- | ------- | ------- |
     | output | clbin | The pastebin provider to use for help output |
+    | reply\\_method | channel | How/where help output should be sent |
     | show\\_server\\_host | True | Whether to show the IRC server's hostname/IP at the top of command listings |
     """
     config.define_section('help', HelpSection)
     provider_list = ', '.join(PASTEBIN_PROVIDERS)
+    reply_method_list = ', '.join(REPLY_METHODS)
     config.help.configure_setting(
         'output',
         'Pick a pastebin provider: {}: '.format(provider_list)
+    )
+    config.help.configure_setting(
+        'reply_method',
+        'How/where should help command replies be sent: {}? '.format(reply_method_list)
     )
     config.help.configure_setting(
         'show_server_host',
@@ -235,6 +250,16 @@ def is_cache_valid(bot):
 @priority('low')
 def help(bot, trigger):
     """Shows a command's documentation, and an example if available. With no arguments, lists all commands."""
+    if bot.config.help.reply_method == 'query':
+        def respond(text):
+            bot.say(text, trigger.nick)
+    elif bot.config.help.reply_method == 'notice':
+        def respond(text):
+            bot.notice(text, trigger.nick)
+    else:
+        def respond(text):
+            bot.say(text, trigger.sender)
+
     if trigger.group(2):
         name = trigger.group(2)
         name = name.lower()
@@ -253,7 +278,7 @@ def help(bot, trigger):
                 def msgfun(l):
                     bot.say(l, trigger.nick)
             else:
-                msgfun = bot.reply
+                msgfun = respond
 
             for line in bot.doc[name][0]:
                 msgfun(line)
@@ -273,7 +298,7 @@ def help(bot, trigger):
         ):
             url = bot.memory['command-list'][1]
         else:
-            bot.say("Hang on, I'm creating a list.")
+            respond("Hang on, I'm creating a list.")
             msgs = []
 
             name_length = max(6, max(len(k) for k in bot.command_groups.keys()))
@@ -291,7 +316,7 @@ def help(bot, trigger):
                 return
             bot.memory['command-list'] = (len(bot.command_groups), url)
             update_cache(bot)
-        bot.say("I've posted a list of my commands at {0} - You can see "
+        respond("I've posted a list of my commands at {0} - You can see "
                 "more info about any of these commands by doing {1}help "
                 "<command> (e.g. {1}help time)"
                 .format(url, bot.config.core.help_prefix))
