@@ -80,6 +80,7 @@ class events(object):
     ERR_NOTREGISTERED = '451'
     ERR_NEEDMOREPARAMS = '461'
     ERR_ALREADYREGISTRED = '462'
+    ERR_ALREADYREGISTERED = '462'  # corrected spelling used in some tutorials
     ERR_NOPERMFORHOST = '463'
     ERR_PASSWDMISMATCH = '464'
     ERR_YOUREBANNEDCREEP = '465'
