@@ -245,6 +245,10 @@ API changes
   * `tools.time.get_nick_timezone()` and `tools.time.get_channel_timezone()`,
     for cases where the fallback behavior(s) of `tools.time.get_timezone()`
     would be undesired [[#1592][]]
+* Added alias for 462 numeric in `tools.events` [[#1665][]]
+  * [RFC 2812][] defined an incorrect spelling, `ERR_ALREADYREGISTRED`, and
+    Sopel copied it verbatim
+  * The spelling `ERR_ALREADYREGISTERED` can be used now, too
 * The `@example` decorator no longer generates invalid raw lines in tests
   [[#1499][]]
 
@@ -348,6 +352,7 @@ API changes
 [#1661]: https://github.com/sopel-irc/sopel/pull/1661
 [#1663]: https://github.com/sopel-irc/sopel/pull/1663
 [#1664]: https://github.com/sopel-irc/sopel/pull/1664
+[#1665]: https://github.com/sopel-irc/sopel/pull/1665
 [#1668]: https://github.com/sopel-irc/sopel/pull/1668
 [#1670]: https://github.com/sopel-irc/sopel/pull/1670
 [#1677]: https://github.com/sopel-irc/sopel/pull/1677
@@ -365,6 +370,8 @@ API changes
 [per-channel-conf]: https://sopel.chat/usage/per-channel-configuration/
 [readme-db]: https://github.com/sopel-irc/sopel/blob/v7.0.0/README.rst#database-support
 [sopel-7-migration]: https://sopel.chat/usage/installing/upgrading-to-sopel-7/
+
+[RFC 2812]: https://tools.ietf.org/html/rfc2812
 
 
 Changes between 6.6.2 and 6.6.3
