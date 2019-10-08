@@ -75,7 +75,7 @@ Module changes
 * Fixed `etymology` module error with empty argument [[#1677][]]
 * General code cleanup all around [[#1402][], [#1486][], [#1505][], [#1545][],
   [#1569][], [#1573][], [#1578][], [#1579][], [#1581][], [#1592][], [#1606][],
-  [#1607][], [#1609][]]
+  [#1607][], [#1609][], [#1678][]]
 
 Core changes
 ------------
@@ -139,7 +139,7 @@ Core changes
 * Large amounts of internal refactoring and cleanup [[#1424][], [#1429][],
   [#1456][], [#1458][], [#1472][], [#1479][], [#1510][], [#1522][], [#1527][],
   [#1542][], [#1557][], [#1561][], [#1567][], [#1579][], [#1580][], [#1583][],
-  [#1597][], [#1610][], [#1635][], [#1685][]]
+  [#1597][], [#1610][], [#1635][], [#1678][], [#1685][]]
 * Sopel 7 will emit warnings when run under Python 2, as Python 2.7 has an
   end-of-support date of January 1, 2020 [[#1488][]]
   * While Sopel 7 is intended to remain compatible with Python 2, future
@@ -178,6 +178,11 @@ API changes
     via PyPI packages, which required a specific directory structure and
     package name format (`sopel_modules.plugin_name`)
   * See [the entry point plugin documentation][entry-point-plugin] for more
+* Logging has been reworked [[#1678][]]
+  * The `sopel.logger.get_logger()` function is deprecated in favor of a new
+    `sopel.tools.get_logger()` utility with plugin-specific behavior
+  * `sopel.logger.get_logger()` will begin emitting deprecation warnings in
+    version 8.0, and will be removed in 9.0
 * `module.event()` decorator no longer requires a rule to work [[#1693][]]
   * Since 99% (unscientific guesstimate) of event decorators were paired with
     `@module.rule('.*')`, that's now implied if no rule decorator is present
@@ -356,6 +361,7 @@ API changes
 [#1668]: https://github.com/sopel-irc/sopel/pull/1668
 [#1670]: https://github.com/sopel-irc/sopel/pull/1670
 [#1677]: https://github.com/sopel-irc/sopel/pull/1677
+[#1678]: https://github.com/sopel-irc/sopel/pull/1678
 [#1685]: https://github.com/sopel-irc/sopel/pull/1685
 [#1693]: https://github.com/sopel-irc/sopel/pull/1693
 
