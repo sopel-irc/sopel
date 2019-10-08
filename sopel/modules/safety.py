@@ -8,16 +8,16 @@ This module uses virustotal.com
 """
 from __future__ import unicode_literals, absolute_import, print_function, division
 
-import sys
-import time
+import logging
 import os.path
 import re
+import sys
+import time
 
 import requests
 
 from sopel.config.types import StaticSection, ValidatedAttribute, ListAttribute
 from sopel.formatting import color, bold
-from sopel.logger import get_logger
 from sopel.module import OP
 import sopel.tools
 
@@ -38,7 +38,7 @@ else:
     from urlparse import urlparse
 
 
-LOGGER = get_logger(__name__)
+LOGGER = logging.getLogger(__name__)
 
 vt_base_api_url = 'https://www.virustotal.com/vtapi/v2/url/'
 malware_domains = set()
@@ -108,8 +108,9 @@ def shutdown(bot):
 
 
 def _download_malwaredomains_db(path):
-    print('Downloading malwaredomains db...')
-    urlretrieve('https://mirror1.malwaredomains.com/files/justdomains', path)
+    url = 'https://mirror1.malwaredomains.com/files/justdomains'
+    LOGGER.info('Downloading malwaredomains db from %s', url)
+    urlretrieve(url, path)
 
 
 @sopel.module.rule(r'(?u).*(https?://\S+).*')

@@ -2,6 +2,10 @@
 from __future__ import unicode_literals, absolute_import, print_function, division
 
 import logging
+import os
+from logging.config import dictConfig
+
+from sopel import tools
 
 
 class IrcLoggingHandler(logging.Handler):
@@ -30,40 +34,108 @@ class ChannelOutputFormatter(logging.Formatter):
         return ' - ' + repr(exc_info[1])
 
 
-def setup_logging(bot):
-    base_level = bot.config.core.logging_level or 'WARNING'
-    base_format = bot.config.core.logging_format
-    base_datefmt = bot.config.core.logging_datefmt
-    base_params = {'level': base_level}
-    if base_format:
-        base_params['format'] = base_format
-    if base_datefmt:
-        base_params['datefmt'] = base_datefmt
-    logging.basicConfig(**base_params)
-    logger = logging.getLogger('sopel')
-    if bot.config.core.logging_channel:
-        channel_level = bot.config.core.logging_channel_level or base_level
-        channel_format = bot.config.core.logging_channel_format or base_format
-        channel_datefmt = bot.config.core.logging_channel_datefmt or base_datefmt
-        channel_params = {}
-        if channel_format:
-            channel_params['fmt'] = channel_format
-        if channel_datefmt:
-            channel_params['datefmt'] = channel_datefmt
-        formatter = ChannelOutputFormatter(**channel_params)
-        handler = IrcLoggingHandler(bot, channel_level)
-        handler.setFormatter(formatter)
-        logger.addHandler(handler)
+def setup_logging(settings):
+    log_directory = settings.core.logdir
+    base_level = settings.core.logging_level or 'WARNING'
+    base_format = settings.core.logging_format
+    base_datefmt = settings.core.logging_datefmt
+
+    logging_config = {
+        'version': 1,
+        'formatters': {
+            'sopel': {
+                'format': base_format,
+                'datefmt': base_datefmt,
+            },
+            'raw': {
+                'format': '%(asctime)s %(message)s',
+                'datefmt': base_datefmt,
+            },
+        },
+        'loggers': {
+            # all purpose, sopel root logger
+            'sopel': {
+                'level': base_level,
+                'handlers': ['console', 'logfile', 'errorfile'],
+            },
+            # raw IRC log
+            'sopel.raw': {
+                'level': 'DEBUG',
+                'propagate': False,
+                'handlers': ['raw'],
+            },
+            # asynchat exception logger
+            'sopel.exceptions': {
+                'level': 'INFO',
+                'propagate': False,
+                'handlers': ['exceptionfile'],
+            },
+        },
+        'handlers': {
+            # output on stderr
+            'console': {
+                'level': 'DEBUG',
+                'class': 'logging.StreamHandler',
+                'formatter': 'sopel',
+            },
+            # generic purpose log file
+            'logfile': {
+                'level': 'DEBUG',
+                'class': 'logging.handlers.TimedRotatingFileHandler',
+                'filename': os.path.join(
+                    log_directory, settings.basename + '.sopel.log'),
+                'when': 'midnight',
+                'formatter': 'sopel',
+            },
+            # catched error log file
+            'errorfile': {
+                'level': 'ERROR',
+                'class': 'logging.handlers.TimedRotatingFileHandler',
+                'filename': os.path.join(
+                    log_directory, settings.basename + '.error.log'),
+                'when': 'midnight',
+                'formatter': 'sopel',
+            },
+            # uncaught error file
+            'exceptionfile': {
+                'level': 'ERROR',
+                'class': 'logging.handlers.TimedRotatingFileHandler',
+                'filename': os.path.join(
+                    log_directory, settings.basename + '.exceptions.log'),
+                'when': 'midnight',
+                'formatter': 'sopel',
+            },
+            # raw IRC log file
+            'raw': {
+                'level': 'DEBUG',
+                'class': 'logging.handlers.TimedRotatingFileHandler',
+                'filename': os.path.join(
+                    log_directory, settings.basename + '.raw.log'),
+                'when': 'midnight',
+                'formatter': 'raw',
+            },
+        },
+    }
+    dictConfig(logging_config)
 
 
 def get_logger(name=None):
     """Return a logger for a module, if the name is given.
 
-    This is equivalent to `logging.getLogger('sopel.modules.' + name)` when
-    name is given, and `logging.getLogger('sopel')` when it is not. The latter
-    case is intended for use in Sopel's core; modules should call
-    `get_logger(__name__)` to get a logger."""
-    if name:
-        return logging.getLogger('sopel.modules.' + name)
-    else:
+    .. deprecated:: 7.0
+
+        Use ``logging.getLogger(__name__)`` in Sopel's code instead, and
+        :func:`sopel.tools.get_logger` for external plugins.
+
+        This will warn a deprecation warning in Sopel 8.0 then removed in 9.0.
+
+    """
+    if not name:
         return logging.getLogger('sopel')
+
+    parts = name.strip().split('.')
+    if len(parts) > 1 or parts[0] in ['sopel', 'sopel_modules']:
+        return logging.getLogger(name)
+
+    # assume it's a plugin name, as intended by the original get_logger
+    return tools.get_logger(name)

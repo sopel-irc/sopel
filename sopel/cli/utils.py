@@ -2,6 +2,7 @@
 from __future__ import unicode_literals, absolute_import, print_function, division
 
 import inspect
+import logging
 import os
 import sys
 
@@ -22,6 +23,7 @@ __all__ = [
     'red',
 ]
 
+LOGGER = logging.getLogger(__name__)
 
 RESET = '\033[0m'
 RED = '\033[31m'
@@ -160,10 +162,7 @@ def _plugins_wizard(settings):
         try:
             _plugin_wizard(settings, plugin)
         except Exception as e:
-            filename, lineno = tools.get_raising_file_and_line()
-            rel_path = os.path.relpath(filename, os.path.dirname(__file__))
-            raising_stmt = "%s:%d" % (rel_path, lineno)
-            tools.stderr("Error loading %s: %s (%s)" % (name, e, raising_stmt))
+            LOGGER.exception('Error loading %s: %s', name, e)
 
 
 def _plugin_wizard(settings, plugin):
@@ -338,6 +337,9 @@ def load_settings(options):
     return config.Config(filename)
 
 
+@tools.deprecated(reason='Obsoleted by modernized logging.',
+                  version='7.0',
+                  removed_in='8.0')
 def redirect_outputs(settings, is_quiet=False):
     """Redirect ``sys``'s outputs using Sopel's settings.
 
@@ -346,8 +348,15 @@ def redirect_outputs(settings, is_quiet=False):
     :param bool is_quiet: Optional, set to True to make Sopel's outputs quiet
 
     Both ``sys.stderr`` and ``sys.stdout`` are redirected to a logfile.
+
+    .. deprecated:: 7.0
+
+        Sopel now uses the built-in logging system for its output, and this
+        function is now deprecated.
+
     """
-    logfile = os.path.os.path.join(settings.core.logdir, settings.basename + '.stdio.log')
+    logfile = os.path.os.path.join(
+        settings.core.logdir, settings.basename + '.stdio.log')
     sys.stderr = tools.OutputRedirect(logfile, True, is_quiet)
     sys.stdout = tools.OutputRedirect(logfile, False, is_quiet)
 

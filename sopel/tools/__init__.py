@@ -16,6 +16,7 @@ from __future__ import unicode_literals, absolute_import, print_function, divisi
 
 import codecs
 import functools
+import logging
 import os
 import re
 import sys
@@ -53,21 +54,6 @@ def get_input(prompt):
         return input(prompt)
     else:
         return raw_input(prompt).decode('utf8')
-
-
-def get_raising_file_and_line(tb=None):
-    """Get the file and line number where an exception happened.
-
-    :param tb: the traceback (uses the most recent exception if not given)
-    :return: a tuple of the filename and line number
-    :rtype: (str, int)
-    """
-    if not tb:
-        tb = sys.exc_info()[2]
-
-    filename, lineno, _context, _line = traceback.extract_tb(tb)[-1]
-
-    return filename, lineno
 
 
 def compile_rule(nick, pattern, alias_nicks):
@@ -498,9 +484,9 @@ class OutputRedirect(object):
 
 
 # These seems to trace back to when we thought we needed a try/except on prints,
-# because it looked like that was why we were having problems. We'll drop it in
-# 4.0^H^H^H5.0^H^H^H6.0^H^H^Hsome version when someone can be bothered.
-@deprecated
+# because it looked like that was why we were having problems.
+# We'll drop it in Sopel 8.0 because it has been here for far too long already.
+@deprecated('Use `print()` instead of sopel.tools.stdout', removed_in='8.0')
 def stdout(string):
     print(string)
 
@@ -547,6 +533,30 @@ def get_hostmask_regex(mask):
     mask = re.escape(mask)
     mask = mask.replace(r'\*', '.*')
     return re.compile(mask + '$', re.I)
+
+
+def get_logger(plugin_name):
+    """Return a logger for a plugin.
+
+    :param str plugin_name: name of the plugin
+    :return: the logger for the given plugin
+
+    This::
+
+        from sopel import plugins
+        LOGGER = plugins.get_logger('my_custom_plugin')
+
+    is equivalent to this::
+
+        import logging
+        LOGGER = logging.getLogger('sopel.externals.my_custom_plugin')
+
+    Internally, Sopel configures logging for the ``sopel`` namespace, so
+    external plugins can't benefit from it with ``logging.getLogger(__name__)``
+    as they won't be in the same namespace. This function uses the
+    ``plugin_name`` with a prefix inside this namespace.
+    """
+    return logging.getLogger('sopel.externals.%s' % plugin_name)
 
 
 class SopelMemory(dict):
@@ -643,3 +653,25 @@ class SopelMemoryWithDefault(defaultdict):
             operator, you should be.
         """
         return self.__contains__(key)
+
+
+@deprecated(version='7.0', removed_in='8.0')
+def get_raising_file_and_line(tb=None):
+    """Get the file and line number where an exception happened.
+
+    :param tb: the traceback (uses the most recent exception if not given)
+    :return: a tuple of the filename and line number
+    :rtype: (str, int)
+
+    .. deprecated:: 7.0
+
+        Use Python's built-in logging system, with the ``logger.exception``
+        method. This method makes sure to log the exception with the traceback
+        and the relevant information (filename, line number, etc.).
+    """
+    if not tb:
+        tb = sys.exc_info()[2]
+
+    filename, lineno, _context, _line = traceback.extract_tb(tb)[-1]
+
+    return filename, lineno

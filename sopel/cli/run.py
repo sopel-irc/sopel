@@ -11,14 +11,14 @@ https://sopel.chat
 from __future__ import unicode_literals, absolute_import, print_function, division
 
 import argparse
+import logging
 import os
 import platform
 import signal
 import sys
 import time
-import traceback
 
-from sopel import bot, config, tools, __version__
+from sopel import bot, config, logger, tools, __version__
 from . import utils
 
 if sys.version_info < (2, 7):
@@ -29,6 +29,8 @@ if sys.version_info.major == 2:
 if sys.version_info.major == 3 and sys.version_info.minor < 3:
     tools.stderr('Error: When running on Python 3, Python 3.3 is required.')
     sys.exit(1)
+
+LOGGER = logging.getLogger(__name__)
 
 ERR_CODE = 1
 """Error code: program exited with an error"""
@@ -49,10 +51,10 @@ def run(settings, pid_file, daemon=False):
 
     def signal_handler(sig, frame):
         if sig == signal.SIGUSR1 or sig == signal.SIGTERM or sig == signal.SIGINT:
-            tools.stderr('Got quit signal, shutting down.')
+            LOGGER.warning('Got quit signal, shutting down.')
             p.quit('Closing')
         elif sig == signal.SIGUSR2 or sig == signal.SIGILL:
-            tools.stderr('Got restart signal.')
+            LOGGER.warning('Got restart signal, shutting down and restarting.')
             p.restart('Restarting')
 
     # Define empty variable `p` for bot
@@ -73,20 +75,26 @@ def run(settings, pid_file, daemon=False):
             if hasattr(signal, 'SIGILL'):
                 signal.signal(signal.SIGILL, signal_handler)
             p.setup()
+        except KeyboardInterrupt:
+            break
+        except Exception:
+            # In that case, there is nothing we can do.
+            # If the bot can't setup itself, then it won't run.
+            # This is a critical case scenario, where the user should have
+            # direct access to the exception traceback right in the console.
+            # Besides, we can't know if logging has been set up or not, so
+            # we can't rely on that here.
+            tools.stderr('Unexpected error in bot setup')
+            raise
+
+        try:
             p.run(settings.core.host, int(settings.core.port))
         except KeyboardInterrupt:
             break
-        except Exception:  # TODO: Be specific
-            trace = traceback.format_exc()
-            try:
-                tools.stderr(trace)
-            except Exception:  # TODO: Be specific
-                pass
-            logfile = open(os.path.join(settings.core.logdir, settings.basename + '.exceptions.log'), 'a')
-            logfile.write('Critical exception in core')
-            logfile.write(trace)
-            logfile.write('----------------------------------------\n\n')
-            logfile.close()
+        except Exception:
+            err_log = logging.getLogger('sopel.exceptions')
+            err_log.exception('Critical exception in core')
+            err_log.error('----------------------------------------')
             # TODO: This should be handled by command_start
             # All we should need here is a return value, but replacing the
             # os._exit() call below (at the end) broke ^C.
@@ -101,8 +109,7 @@ def run(settings, pid_file, daemon=False):
             return -1
         if p.hasquit:
             break
-        tools.stderr(
-            'Warning: Disconnected. Reconnecting in %s seconds...' % delay)
+        LOGGER.warning('Disconnected. Reconnecting in %s seconds...', delay)
         time.sleep(delay)
     # TODO: This should be handled by command_start
     # All we should need here is a return value, but making this
@@ -393,10 +400,7 @@ def command_start(opts):
         tools.stderr('Bot is not configured, can\'t start')
         return ERR_CODE_NO_RESTART
 
-    # Step Two: Manage logfile, stdout and stderr
-    utils.redirect_outputs(config_module, opts.quiet)
-
-    # Step Three: Handle process-lifecycle options and manage the PID file
+    # Step Two: Handle process-lifecycle options and manage the PID file
     pid_dir = config_module.core.pid_dir
     pid_file_path = get_pid_filename(opts, pid_dir)
     pid = get_running_pid(pid_file_path)
@@ -416,10 +420,10 @@ def command_start(opts):
     with open(pid_file_path, 'w') as pid_file:
         pid_file.write(str(os.getpid()))
 
-    # Step Four: Run Sopel
+    # Step Three: Run Sopel
     ret = run(config_module, pid_file_path)
 
-    # Step Five: Shutdown Clean-Up
+    # Step Four: Shutdown Clean-Up
     os.unlink(pid_file_path)
 
     if ret == -1:
@@ -452,8 +456,8 @@ def command_stop(opts):
         tools.stderr('Sopel is not configured, can\'t stop')
         return ERR_CODE
 
-    # Redirect Outputs
-    utils.redirect_outputs(settings, opts.quiet)
+    # Configure logging
+    logger.setup_logging(settings)
 
     # Get Sopel's PID
     filename = get_pid_filename(opts, settings.core.pid_dir)
@@ -491,8 +495,8 @@ def command_restart(opts):
         tools.stderr('Sopel is not configured, can\'t stop')
         return ERR_CODE
 
-    # Redirect Outputs
-    utils.redirect_outputs(settings, opts.quiet)
+    # Configure logging
+    logger.setup_logging(settings)
 
     # Get Sopel's PID
     filename = get_pid_filename(opts, settings.core.pid_dir)
@@ -579,10 +583,7 @@ def command_legacy(opts):
         tools.stderr('Bot is not configured, can\'t start')
         return ERR_CODE_NO_RESTART
 
-    # Step Three: Manage logfile, stdout and stderr
-    utils.redirect_outputs(config_module, opts.quiet)
-
-    # Step Four: Handle process-lifecycle options and manage the PID file
+    # Step Three: Handle process-lifecycle options and manage the PID file
     pid_dir = config_module.core.pid_dir
     pid_file_path = get_pid_filename(opts, pid_dir)
     old_pid = get_running_pid(pid_file_path)
@@ -636,7 +637,7 @@ def command_legacy(opts):
     with open(pid_file_path, 'w') as pid_file:
         pid_file.write(str(os.getpid()))
 
-    # Step Five: Initialize and run Sopel
+    # Step Four: Initialize and run Sopel
     ret = run(config_module, pid_file_path)
     os.unlink(pid_file_path)
     if ret == -1:

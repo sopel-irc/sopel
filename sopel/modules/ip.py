@@ -10,6 +10,7 @@ https://sopel.chat
 
 from __future__ import unicode_literals, absolute_import, print_function, division
 
+import logging
 import os
 import socket
 import tarfile
@@ -17,7 +18,6 @@ import tarfile
 import geoip2.database
 
 from sopel.config.types import FilenameAttribute, StaticSection
-from sopel.logger import get_logger
 from sopel.module import commands, example
 
 urlretrieve = None
@@ -33,7 +33,7 @@ except ImportError:
         pass
 
 
-LOGGER = get_logger(__name__)
+LOGGER = logging.getLogger(__name__)
 
 
 class GeoipSection(StaticSection):
@@ -78,8 +78,8 @@ def _find_geoip_db(bot):
             return config.ip.GeoIP_db_path
         else:
             LOGGER.warning(
-                'GeoIP path configured but DB not found in configured path'
-            )
+                'GeoIP path configured but DB not found in configured path')
+
     if (os.path.isfile(os.path.join(config.core.homedir, 'GeoLite2-City.mmdb')) and
             os.path.isfile(os.path.join(config.core.homedir, 'GeoLite2-ASN.mmdb'))):
         return config.core.homedir
@@ -87,13 +87,14 @@ def _find_geoip_db(bot):
             os.path.isfile(os.path.join('/usr/share/GeoIP', 'GeoLite2-ASN.mmdb'))):
         return '/usr/share/GeoIP'
     elif urlretrieve:
-        LOGGER.warning('Downloading GeoIP database')
+        LOGGER.info('Downloading GeoIP database')
         bot.say('Downloading GeoIP database, please wait...')
         geolite_urls = [
             'https://geolite.maxmind.com/download/geoip/database/GeoLite2-City.tar.gz',
             'https://geolite.maxmind.com/download/geoip/database/GeoLite2-ASN.tar.gz'
         ]
         for url in geolite_urls:
+            LOGGER.debug('GeoIP Source URL: %s', url)
             full_path = os.path.join(config.core.homedir, url.split("/")[-1])
             urlretrieve(url, full_path)
             _decompress(full_path, config.core.homedir)

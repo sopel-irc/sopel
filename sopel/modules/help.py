@@ -14,19 +14,19 @@ from __future__ import unicode_literals, absolute_import, print_function, divisi
 
 import re
 import collections
+import logging
 import socket
 import textwrap
 
 import requests
 
 from sopel.config.types import ChoiceAttribute, ValidatedAttribute, StaticSection
-from sopel.logger import get_logger
 from sopel.module import commands, rule, example, priority
 from sopel.tools import SopelMemory
 
 
 SETTING_CACHE_NAMESPACE = 'help-setting-cache'  # Set top-level memory key name
-LOGGER = get_logger(__name__)
+LOGGER = logging.getLogger(__name__)
 
 # Settings that should require the help listing to be regenerated, or
 # re-POSTed to paste, if they are changed during runtime.

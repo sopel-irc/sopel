@@ -12,6 +12,7 @@ dispatch function in bot.py and making it easier to maintain.
 # Licensed under the Eiffel Forum License 2.
 from __future__ import unicode_literals, absolute_import, print_function, division
 
+import logging
 from random import randint
 import datetime
 import re
@@ -24,12 +25,11 @@ from sopel.bot import _CapReq
 from sopel.tools import Identifier, iteritems, events
 from sopel.tools.target import User, Channel
 import base64
-from sopel.logger import get_logger
 
 if sys.version_info.major >= 3:
     unicode = str
 
-LOGGER = get_logger(__name__)
+LOGGER = logging.getLogger(__name__)
 
 batched_caps = {}
 who_reqs = {}  # Keeps track of reqs coming from this module, rather than others
@@ -216,8 +216,8 @@ def track_modes(bot, trigger):
     if len(trigger.args) < 3:
         # We need at least [channel, mode, nickname] to do anything useful
         # MODE messages with fewer args won't help us
-        LOGGER.info("Received an apparently useless MODE message: {}"
-                    .format(trigger.raw))
+        LOGGER.debug("Received an apparently useless MODE message: {}"
+                     .format(trigger.raw))
         return
     # Our old MODE parsing code checked if any of the args was empty.
     # Somewhere around here would be a good place to re-implement that if it's

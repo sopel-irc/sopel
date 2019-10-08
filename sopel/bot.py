@@ -10,7 +10,7 @@ from __future__ import unicode_literals, absolute_import, print_function, divisi
 from ast import literal_eval
 import collections
 import itertools
-import os
+import logging
 import re
 import sys
 import threading
@@ -18,7 +18,7 @@ import time
 
 from sopel import irc, logger, plugins, tools
 from sopel.db import SopelDB
-from sopel.tools import stderr, Identifier, deprecated
+from sopel.tools import Identifier, deprecated
 import sopel.tools.jobs
 from sopel.trigger import Trigger
 from sopel.module import NOLIMIT
@@ -27,7 +27,7 @@ import sopel.loader
 
 __all__ = ['Sopel', 'SopelWrapper']
 
-LOGGER = logger.get_logger(__name__)
+LOGGER = logging.getLogger(__name__)
 
 if sys.version_info.major >= 3:
     unicode = str
@@ -211,14 +211,35 @@ class Sopel(irc.Bot):
         self.scheduler.start()
 
     def setup_logging(self):
-        logger.setup_logging(self)
+        logger.setup_logging(self.config)
+        base_level = self.config.core.logging_level or 'INFO'
+        base_format = self.config.core.logging_format
+        base_datefmt = self.config.core.logging_datefmt
+
+        # configure channel logging if required by configuration
+        if self.config.core.logging_channel:
+            channel_level = self.config.core.logging_channel_level or base_level
+            channel_format = self.config.core.logging_channel_format or base_format
+            channel_datefmt = self.config.core.logging_channel_datefmt or base_datefmt
+            channel_params = {}
+            if channel_format:
+                channel_params['fmt'] = channel_format
+            if channel_datefmt:
+                channel_params['datefmt'] = channel_datefmt
+            formatter = logger.ChannelOutputFormatter(**channel_params)
+            handler = logger.IrcLoggingHandler(self, channel_level)
+            handler.setFormatter(formatter)
+
+            # set channel handler to `sopel` logger
+            LOGGER = logging.getLogger('sopel')
+            LOGGER.addHandler(handler)
 
     def setup_plugins(self):
         load_success = 0
         load_error = 0
         load_disabled = 0
 
-        stderr("Loading plugins...")
+        LOGGER.info('Loading plugins...')
         usable_plugins = plugins.get_usable_plugins(self.config)
         for name, info in usable_plugins.items():
             plugin, is_enabled = info
@@ -230,10 +251,7 @@ class Sopel(irc.Bot):
                 plugin.load()
             except Exception as e:
                 load_error = load_error + 1
-                filename, lineno = tools.get_raising_file_and_line()
-                rel_path = os.path.relpath(filename, os.path.dirname(__file__))
-                raising_stmt = "%s:%d" % (rel_path, lineno)
-                stderr("Error loading %s: %s (%s)" % (name, e, raising_stmt))
+                LOGGER.exception('Error loading %s: %s', name, e)
             else:
                 try:
                     if plugin.has_setup():
@@ -241,24 +259,20 @@ class Sopel(irc.Bot):
                     plugin.register(self)
                 except Exception as e:
                     load_error = load_error + 1
-                    filename, lineno = tools.get_raising_file_and_line()
-                    rel_path = os.path.relpath(
-                        filename, os.path.dirname(__file__)
-                    )
-                    raising_stmt = "%s:%d" % (rel_path, lineno)
-                    stderr("Error in %s setup procedure: %s (%s)"
-                           % (name, e, raising_stmt))
+                    LOGGER.exception('Error in %s setup: %s', name, e)
                 else:
                     load_success = load_success + 1
-                    print('Loaded: %s' % name)
+                    LOGGER.info('Plugin loaded: %s', name)
 
         total = sum([load_success, load_error, load_disabled])
         if total and load_success:
-            stderr('Registered %d modules' % (load_success - 1))
-            stderr('%d modules failed to load' % load_error)
-            stderr('%d modules disabled' % load_disabled)
+            LOGGER.info(
+                'Registered %d plugins, %d failed, %d disabled',
+                (load_success - 1),
+                load_error,
+                load_disabled)
         else:
-            stderr("Warning: Couldn't load any modules")
+            LOGGER.warning("Warning: Couldn't load any plugins")
 
     def reload_plugin(self, name):
         """Reload a plugin
@@ -276,12 +290,12 @@ class Sopel(irc.Bot):
         # tear down
         plugin.shutdown(self)
         plugin.unregister(self)
-        print('Unloaded: %s' % name)
+        LOGGER.info('Unloaded plugin %s', name)
         # reload & setup
         plugin.reload()
         plugin.setup(self)
         plugin.register(self)
-        print('Reloaded: %s' % name)
+        LOGGER.info('Reloaded plugin %s', name)
 
     def reload_plugins(self):
         """Reload all plugins
@@ -295,14 +309,14 @@ class Sopel(irc.Bot):
         for name, plugin in registered:
             plugin.shutdown(self)
             plugin.unregister(self)
-            print('Unloaded: %s' % name)
+            LOGGER.info('Unloaded plugin %s', name)
 
         # reload & setup all plugins
         for name, plugin in registered:
             plugin.reload()
             plugin.setup(self)
             plugin.register(self)
-            print('Reloaded: %s' % name)
+            LOGGER.info('Reloaded plugin %s', name)
 
     def add_plugin(self, plugin, callables, jobs, shutdowns, urls):
         """Add a loaded plugin to the bot's registry"""
@@ -315,24 +329,21 @@ class Sopel(irc.Bot):
         if not self.has_plugin(name):
             raise plugins.exceptions.PluginNotRegistered(name)
 
-        try:
-            # remove commands, jobs, and shutdown functions
-            for func in itertools.chain(callables, jobs, shutdowns):
-                self.unregister(func)
+        # remove commands, jobs, and shutdown functions
+        for func in itertools.chain(callables, jobs, shutdowns):
+            self.unregister(func)
 
-            # remove URL callback handlers
-            if "url_callbacks" in self.memory:
-                for func in urls:
-                    regexes = func.url_regex
-                    for regex in regexes:
-                        if func == self.memory['url_callbacks'].get(regex):
-                            self.unregister_url_callback(regex)
-        except:  # noqa
-            # TODO: consider logging?
-            raise  # re-raised
-        else:
-            # remove plugin from registry
-            del self._plugins[name]
+        # remove URL callback handlers
+        if "url_callbacks" in self.memory:
+            for func in urls:
+                regexes = func.url_regex
+                for regex in regexes:
+                    if func == self.memory['url_callbacks'].get(regex):
+                        self.unregister_url_callback(regex)
+                        LOGGER.debug('URL Callback unregistered: %r', regex)
+
+        # remove plugin from registry
+        del self._plugins[name]
 
     def has_plugin(self, name):
         """Tell if the bot has registered this plugin by its name"""
@@ -345,22 +356,29 @@ class Sopel(irc.Bot):
         :type obj: :term:`object`
         """
         if not callable(obj):
+            LOGGER.warning('Cannot unregister obj %r: not a callable', obj)
             return
+        callable_name = getattr(obj, "__name__", 'UNKNOWN')
+
         if hasattr(obj, 'rule'):  # commands and intents have it added
             for rule in obj.rule:
                 callb_list = self._callables[obj.priority][rule]
                 if obj in callb_list:
                     callb_list.remove(obj)
+            LOGGER.debug(
+                'Rule callable "%s" unregistered',
+                callable_name,
+                rule.pattern)
+
         if hasattr(obj, 'interval'):
             self.scheduler.remove_callable_job(obj)
-        if (
-                getattr(obj, "__name__", None) == "shutdown" and
-                obj in self.shutdown_methods
-        ):
+            LOGGER.debug('Job callable removed: %s', callable_name)
+
+        if callable_name == "shutdown" and obj in self.shutdown_methods:
             self.shutdown_methods.remove(obj)
 
     def register(self, callables, jobs, shutdowns, urls):
-        """Register a callable.
+        """Register rules, jobs, shutdown methods, and URL callbacks.
 
         :param callables: an iterable of callables to register
         :type callables: :term:`iterable`
@@ -370,32 +388,98 @@ class Sopel(irc.Bot):
         :type shutdowns: :term:`iterable`
         :param urls: an iterable of functions to call when matched against a URL
         :type urls: :term:`iterable`
+
+        The ``callables`` argument contains a list of "callable objects", i.e.
+        objects for which :func:`callable` will return ``True``. They can be:
+
+        * a callable with rules (will match triggers with a regex pattern)
+        * a callable without rules (will match any triggers, such as events)
+        * a callable with commands
+        * a callable with nick commands
+
+        It is possible to have a callable with rules, commands, and nick
+        commands configured. It should not be possible to have a callable with
+        commands or nick commands but without rules. Callables without rules
+        are usually event handlers.
         """
         # Append module's shutdown function to the bot's list of functions to
         # call on shutdown
         self.shutdown_methods += shutdowns
+        match_any = re.compile('.*')
         for callbl in callables:
-            if hasattr(callbl, 'rule'):
-                for rule in callbl.rule:
+            callable_name = getattr(callbl, "__name__", 'UNKNOWN')
+            rules = getattr(callbl, 'rule', [])
+            commands = getattr(callbl, 'commands', [])
+            nick_commands = getattr(callbl, 'nickname_commands', [])
+            events = getattr(callbl, 'event', [])
+            is_rule_only = rules and not commands and not nick_commands
+
+            if rules:
+                for rule in rules:
                     self._callables[callbl.priority][rule].append(callbl)
+                    if is_rule_only:
+                        # Command & Nick Command are logged later:
+                        # here we log rule only callable
+                        LOGGER.debug(
+                            'Rule callable "%s" registered for "%s"',
+                            callable_name,
+                            rule.pattern)
+                if commands:
+                    LOGGER.debug(
+                        'Command callable "%s" registered for "%s"',
+                        callable_name,
+                        '|'.join(commands))
+                if nick_commands:
+                    LOGGER.debug(
+                        'Nick command callable "%s" registered for "%s"',
+                        callable_name,
+                        '|'.join(nick_commands))
+                if events:
+                    LOGGER.debug(
+                        'Event callable "%s" registered for "%s"',
+                        callable_name,
+                        '|'.join(events))
             else:
-                self._callables[callbl.priority][re.compile('.*')].append(callbl)
-            if hasattr(callbl, 'commands'):
+                self._callables[callbl.priority][match_any].append(callbl)
+                if events:
+                    LOGGER.debug(
+                        'Event callable "%s" registered '
+                        'with "match any" rule for "%s"',
+                        callable_name,
+                        '|'.join(events))
+                else:
+                    LOGGER.debug(
+                        'Rule callable "%s" registered with "match any" rule',
+                        callable_name)
+
+            if commands:
                 module_name = callbl.__module__.rsplit('.', 1)[-1]
                 # TODO doc and make decorator for this. Not sure if this is how
                 # it should work yet, so not making it public for 6.0.
                 category = getattr(callbl, 'category', module_name)
-                self._command_groups[category].append(callbl.commands[0])
+                self._command_groups[category].append(commands[0])
+
             for command, docs in callbl._docs.items():
                 self.doc[command] = docs
+
         for func in jobs:
             for interval in func.interval:
                 job = sopel.tools.jobs.Job(interval, func)
                 self.scheduler.add_job(job)
+                callable_name = getattr(func, "__name__", 'UNKNOWN')
+                LOGGER.debug(
+                    'Job added "%s", will run every %d seconds',
+                    callable_name,
+                    interval)
 
         for func in urls:
             for regex in func.url_regex:
                 self.register_url_callback(regex, func)
+                callable_name = getattr(func, "__name__", 'UNKNOWN')
+                LOGGER.debug(
+                    'URL Callback added "%s" for URL pattern "%s"',
+                    callable_name,
+                    regex)
 
     def part(self, channel, msg=None):
         """Leave a channel.
@@ -647,9 +731,9 @@ class Sopel(irc.Bot):
 
         try:
             exit_code = func(sopel, trigger)
-        except Exception:  # TODO: Be specific
+        except Exception as error:  # TODO: Be specific
             exit_code = None
-            self.error(trigger)
+            self.error(trigger, exception=error)
 
         if exit_code != NOLIMIT:
             self._times[nick][func] = current_time
@@ -763,36 +847,32 @@ class Sopel(irc.Bot):
 
     def _shutdown(self):
         # Stop Job Scheduler
-        stderr('Stopping the Job Scheduler.')
+        LOGGER.info('Stopping the Job Scheduler.')
         self.scheduler.stop()
 
         try:
             self.scheduler.join(timeout=15)
         except RuntimeError:
-            stderr('Unable to stop the Job Scheduler.')
+            LOGGER.exception('Unable to stop the Job Scheduler.')
         else:
-            stderr('Job Scheduler stopped.')
+            LOGGER.info('Job Scheduler stopped.')
 
         self.scheduler.clear_jobs()
 
         # Shutdown plugins
-        stderr(
-            'Calling shutdown for %d modules.' % (len(self.shutdown_methods),)
-        )
+        LOGGER.info(
+            'Calling shutdown for %d modules.', len(self.shutdown_methods))
+
         for shutdown_method in self.shutdown_methods:
             try:
-                stderr(
-                    "calling %s.%s" % (
-                        shutdown_method.__module__, shutdown_method.__name__,
-                    )
-                )
+                LOGGER.debug(
+                    'Calling %s.%s',
+                    shutdown_method.__module__,
+                    shutdown_method.__name__)
                 shutdown_method(self)
             except Exception as e:
-                stderr(
-                    "Error calling shutdown method for module %s:%s" % (
-                        shutdown_method.__module__, e
-                    )
-                )
+                LOGGER.exception('Error calling shutdown method: %s', e)
+
         # Avoid calling shutdown methods if we already have.
         self.shutdown_methods = []
 
