@@ -439,11 +439,11 @@ class Bot(asynchat.async_chat):
         the :class:`asynchat.async_chat` being a subclass of
         :class:`asyncore.dispatcher`.
         """
-        LOGGER.error('Fatal error in core, please review exceptions logs.')
+        LOGGER.error('Fatal error in core; please review exception log.')
 
         err_log = logging.getLogger('sopel.exceptions')
         err_log.error(
-            'Fatal error in core, handle_error() was called.\n'
+            'Fatal error in core; handle_error() was called.\n'
             'Last raw line was: %s\n'
             'Buffer:\n%s\n',
             self.raw, self.buffer
@@ -454,7 +454,7 @@ class Bot(asynchat.async_chat):
         if self.error_count > 10:
             # quit if too many errors
             if (datetime.now() - self.last_error_timestamp).seconds < 5:
-                LOGGER.error('Too many errors, can\'t continue')
+                LOGGER.error("Too many errors; can't continue")
                 os._exit(1)
             # TODO: should we reset error_count?
 
