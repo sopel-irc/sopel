@@ -43,6 +43,21 @@ if sys.version_info.major >= 3:
     basestring = str
 
 
+def rawlist(*args):
+    """Build a list of IRC raw messages from the lines given as ``*args``.
+
+    :return: a list of IRC raw messages as seen by the bot
+
+    This is a helper function to build a list of messages without having to
+    care about encoding or this pesky carriage return::
+
+        >>> rawlist('PRIVMSG :Hello!')
+        [b'PRIVMSG :Hello!\r\n']
+
+    """
+    return ['{0}\r\n'.format(arg).encode('utf-8') for arg in args]
+
+
 class MockIRCBackend(AbstractIRCBackend):
     def __init__(self, *args, **kwargs):
         super(MockIRCBackend, self).__init__(*args, **kwargs)
