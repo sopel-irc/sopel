@@ -54,7 +54,7 @@ def run(settings, pid_file, daemon=False):
             LOGGER.warning('Got quit signal, shutting down.')
             p.quit('Closing')
         elif sig == signal.SIGUSR2 or sig == signal.SIGILL:
-            tools.stderr('Got restart signal.')
+            LOGGER.warning('Got restart signal, shutting down and restarting.')
             p.restart('Restarting')
 
     # Define empty variable `p` for bot
@@ -109,8 +109,7 @@ def run(settings, pid_file, daemon=False):
             return -1
         if p.hasquit:
             break
-        tools.stderr(
-            'Warning: Disconnected. Reconnecting in %s seconds...' % delay)
+        LOGGER.warning('Disconnected. Reconnecting in %s seconds...', delay)
         time.sleep(delay)
     # TODO: This should be handled by command_start
     # All we should need here is a return value, but making this
