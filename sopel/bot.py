@@ -847,6 +847,9 @@ class SopelWrapper(object):
         :param str destination: channel or person; defaults to trigger's sender
         :param int max_messages: max number of message splits
 
+        The ``destination`` will default to the channel (or nickname, if a
+        private message), in which the trigger happened.
+
         .. seealso::
 
             :meth:`sopel.bot.Sopel.say`
@@ -861,6 +864,9 @@ class SopelWrapper(object):
         :param str message: action message
         :param str destination: channel or person; defaults to trigger's sender
 
+        The ``destination`` will default to the channel (or nickname, if a
+        private message), in which the trigger happened.
+
         .. seealso::
 
             :meth:`sopel.bot.Sopel.action`
@@ -874,6 +880,9 @@ class SopelWrapper(object):
 
         :param str message: notice message
         :param str destination: channel or person; defaults to trigger's sender
+
+        The ``destination`` will default to the channel (or nickname, if a
+        private message), in which the trigger happened.
 
         .. seealso::
 
@@ -891,6 +900,12 @@ class SopelWrapper(object):
         :param str reply_to: person to reply to; defaults to trigger's nick
         :param bool notice: reply as an IRC notice or with a simple message
 
+        The ``destination`` will default to the channel (or nickname, if a
+        private message), in which the trigger happened.
+
+        The ``reply_to`` will default to the nickname by which the trigger
+        happened.
+
         .. seealso::
 
             :meth:`sopel.bot.Sopel.reply`
@@ -902,6 +917,20 @@ class SopelWrapper(object):
         self._bot.reply(message, destination, reply_to, notice)
 
     def kick(self, nick, channel=None, message=None):
+        """Override ``Sopel.kick`` to kick in a channel
+
+        :param str nick: Nick to kick out of the ``channel``
+        :param str channel: Optional channel to kick ``nick`` from
+        :param str message: Optional message for the kick
+
+        The ``channel`` will default to the channel in which the call was
+        triggered. If triggered from a private message, ``channel`` is
+        required.
+
+        .. seealso::
+
+            :meth:`sopel.bot.Sopel.kick`
+        """
         if channel is None:
             if self._trigger.is_privmsg:
                 raise RuntimeError('Error: KICK requires a channel.')

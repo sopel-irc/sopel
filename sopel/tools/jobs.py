@@ -7,6 +7,9 @@
     it is not shown in the public documentation.
 
 """
+# Copyright 2019, Florian Strzelecki <florian.strzelecki@gmail.com>
+#
+# Licensed under the Eiffel Forum License 2.
 from __future__ import unicode_literals, absolute_import, print_function, division
 
 import datetime

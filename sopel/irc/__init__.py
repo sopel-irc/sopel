@@ -1,13 +1,28 @@
 # coding=utf-8
-# irc.py - An Utility IRC Bot
+""":mod:`sopel.irc` is the core IRC module for Sopel.
+
+This sub-package contains everything that is related to the IRC protocol
+(connection, commands, abstract client, etc.) and that can be used to implement
+the Sopel bot.
+
+In particular, it defines the interface for the
+:class:`IRC backend<sopel.irc.abstract_backends.AbstractIRCBackend>`, and the
+interface for the :class:`bot itself<sopel.irc.AbstractBot>`. This is all
+internal code that isn't supposed to be used directly by a plugin developer,
+which should knows about :class:`sopel.bot.Sopel` only.
+
+.. important::
+
+    When working on core IRC protocol related features, consult protocol
+    documentation at https://www.irchelp.org/protocol/rfc/
+
+"""
 # Copyright 2008, Sean B. Palmer, inamidst.com
 # Copyright 2012, Elsie Powell, http://embolalia.com
 # Copyright © 2012, Elad Alfassa <elad@fedoraproject.org>
+# Copyright 2019, Florian Strzelecki <florian.strzelecki@gmail.com>
 #
 # Licensed under the Eiffel Forum License 2.
-#
-# When working on core IRC protocol related features, consult protocol
-# documentation at http://www.irchelp.org/irchelp/rfc/
 from __future__ import unicode_literals, absolute_import, print_function, division
 
 import sys
@@ -45,6 +60,7 @@ LOGGER = logging.getLogger(__name__)
 
 
 class AbstractBot(object):
+    """Abstract definition of the Sopel's interface."""
     def __init__(self, settings):
         # private properties: access as read-only properties
         self._nick = tools.Identifier(settings.core.nick)
@@ -376,15 +392,11 @@ class AbstractBot(object):
 
         The same loop detection and length restrictions apply as with
         :func:`say`, though automatic message splitting is not available.
-
-        Within the context of a triggered callable, ``dest`` will default to
-        the channel (or nickname, if a private message), in which the trigger
-        happened.
         """
         self.say('\001ACTION {}\001'.format(text), dest)
 
     def join(self, channel, password=None):
-        """Join a channel.
+        """Join a ``channel``.
 
         :param str channel: the channel to join
         :param str password: an optional channel password
@@ -397,24 +409,24 @@ class AbstractBot(object):
         self.backend.send_join(channel, password=password)
 
     def kick(self, nick, channel, text=None):
-        """Send an IRC KICK command.
-        Within the context of a triggered callable, ``channel`` will default to the
-        channel in which the call was triggered. If triggered from a private message,
-        ``channel`` is required (or the call to ``kick()`` will be ignored).
-        The bot must be a channel operator in specified channel for this to work.
+        """Kick a ``nick`` from a ``channel``.
+
+        :param str nick: Nick to kick out of the ``channel``
+        :param str channel: Channel to kick ``nick`` from
+        :param str text: Optional text for the kick
+
+        The bot must be a channel operator in specified channel for this to
+        work.
+
         .. versionadded:: 7.0
         """
         self.backend.send_kick(channel, nick, reason=text)
 
     def notice(self, text, dest):
-        """Send an IRC NOTICE to a user or channel.
+        """Send an IRC NOTICE to a user or channel (``dest``).
 
         :param str text: the text to send in the NOTICE
         :param str dest: the destination of the NOTICE
-
-        Within the context of a triggered callable, ``dest`` will default to
-        the channel (or nickname, if a private message), in which the trigger
-        happened.
         """
         self.backend.send_notice(dest, text)
 
@@ -450,12 +462,7 @@ class AbstractBot(object):
         If ``notice`` is ``True``, send a NOTICE rather than a PRIVMSG.
 
         The same loop detection and length restrictions apply as with
-        :func:`say`, though automatic message splitting is not available.
-
-        Within the context of a triggered callable, ``reply_to`` will default to
-        the nickname of the user who triggered the call, and ``dest`` to the
-        channel (or nickname, if a private message), in which the trigger
-        happened.
+        :meth:`say`, though automatic message splitting is not available.
         """
         text = '%s: %s' % (reply_to, text)
         if notice:
@@ -470,10 +477,6 @@ class AbstractBot(object):
         :param str recipient: the message recipient
         :param int max_messages: the maximum number of messages to break the
                                  text into
-
-        In the context of a triggered callable, the ``recipient`` defaults to
-        the channel (or nickname, if a private message) from which the message
-        was received.
 
         By default, this will attempt to send the entire ``text`` in one
         message. If the text is too long for the server, it may be truncated.
