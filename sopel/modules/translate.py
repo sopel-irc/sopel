@@ -25,7 +25,7 @@ if sys.version_info.major >= 3:
 mangle_lines = {}
 
 
-def translate(text, in_lang='auto', out_lang='en', verify_ssl=True):
+def translate(text, in_lang='auto', out_lang='en'):
     raw = False
     if unicode(out_lang).endswith('-raw'):
         out_lang = out_lang[:-4]
@@ -45,8 +45,7 @@ def translate(text, in_lang='auto', out_lang='en', verify_ssl=True):
         "q": text,
     }
     url = "https://translate.googleapis.com/translate_a/single"
-    result = requests.get(url, params=query, timeout=40, headers=headers,
-                          verify=verify_ssl).text
+    result = requests.get(url, params=query, timeout=40, headers=headers).text
 
     if result == '[,,""]':
         return None, in_lang
@@ -88,8 +87,7 @@ def tr(bot, trigger):
     out_lang = out_lang or 'en'
 
     if in_lang != out_lang:
-        msg, in_lang = translate(phrase, in_lang, out_lang,
-                                 verify_ssl=bot.config.core.verify_ssl)
+        msg, in_lang = translate(phrase, in_lang, out_lang)
         if not in_lang:
             return bot.say("Translation failed, probably because of a rate-limit.")
         if sys.version_info.major < 3 and isinstance(msg, str):
@@ -142,8 +140,7 @@ def tr2(bot, trigger):
 
     src, dest = args
     if src != dest:
-        msg, src = translate(phrase, src, dest,
-                             verify_ssl=bot.config.core.verify_ssl)
+        msg, src = translate(phrase, src, dest)
         if not src:
             return bot.say("Translation failed, probably because of a rate-limit.")
         if sys.version_info.major < 3 and isinstance(msg, str):
@@ -172,7 +169,6 @@ def get_random_lang(long_list, short_list):
 @commands('mangle', 'mangle2')
 def mangle(bot, trigger):
     """Repeatedly translate the input until it makes absolutely no sense."""
-    verify_ssl = bot.config.core.verify_ssl
     global mangle_lines
     long_lang_list = ['fr', 'de', 'es', 'it', 'no', 'he', 'la', 'ja', 'cy', 'ar', 'yi', 'zh', 'nl', 'ru', 'fi', 'hi', 'af', 'jw', 'mr', 'ceb', 'cs', 'ga', 'sv', 'eo', 'el', 'ms', 'lv']
     lang_list = []
@@ -193,8 +189,7 @@ def mangle(bot, trigger):
     for lang in lang_list:
         backup = phrase
         try:
-            phrase = translate(phrase[0], 'en', lang,
-                               verify_ssl=verify_ssl)
+            phrase = translate(phrase[0], 'en', lang)
         except Exception:  # TODO: Be specific
             phrase = False
         if not phrase:
@@ -202,7 +197,7 @@ def mangle(bot, trigger):
             break
 
         try:
-            phrase = translate(phrase[0], lang, 'en', verify_ssl=verify_ssl)
+            phrase = translate(phrase[0], lang, 'en')
         except Exception:  # TODO: Be specific
             phrase = backup
             continue

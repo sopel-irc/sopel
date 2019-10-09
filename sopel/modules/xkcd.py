@@ -34,12 +34,12 @@ ignored_sites = [
 sites_query = ' site:xkcd.com -site:' + ' -site:'.join(ignored_sites)
 
 
-def get_info(number=None, verify_ssl=True):
+def get_info(number=None):
     if number:
         url = 'https://xkcd.com/{}/info.0.json'.format(number)
     else:
         url = 'https://xkcd.com/info.0.json'
-    data = requests.get(url, verify=verify_ssl).json()
+    data = requests.get(url).json()
     data['url'] = 'https://xkcd.com/' + str(data['num'])
     return data
 
@@ -65,16 +65,14 @@ def xkcd(bot, trigger):
       * If non-numeric input is provided it will return the first search result
         for those keywords on the xkcd.com site
     """
-    verify_ssl = bot.config.core.verify_ssl
     # get latest comic for rand function and numeric input
-    latest = get_info(verify_ssl=verify_ssl)
+    latest = get_info()
     max_int = latest['num']
 
     # if no input is given (pre - lior's edits code)
     if not trigger.group(2):  # get rand comic
         random.seed()
-        requested = get_info(random.randint(1, max_int + 1),
-                             verify_ssl=verify_ssl)
+        requested = get_info(random.randint(1, max_int + 1))
     else:
         query = trigger.group(2).strip()
 
@@ -93,12 +91,12 @@ def xkcd(bot, trigger):
                 if not number:
                     bot.say('Could not find any comics for that query.')
                     return
-                requested = get_info(number, verify_ssl=verify_ssl)
+                requested = get_info(number)
 
     say_result(bot, requested)
 
 
-def numbered_result(bot, query, latest, verify_ssl=True):
+def numbered_result(bot, query, latest):
     max_int = latest['num']
     if query > max_int:
         bot.say(("Sorry, comic #{} hasn't been posted yet. "
@@ -114,10 +112,10 @@ def numbered_result(bot, query, latest, verify_ssl=True):
         bot.say("404 - Not Found")  # don't error on that one
         return
     elif query > 0:
-        requested = get_info(query, verify_ssl=verify_ssl)
+        requested = get_info(query)
     else:
         # Negative: go back that many from current
-        requested = get_info(max_int + query, verify_ssl=verify_ssl)
+        requested = get_info(max_int + query)
 
     say_result(bot, requested)
 
@@ -130,6 +128,5 @@ def say_result(bot, result):
 
 @url(r'xkcd.com/(\d+)')
 def get_url(bot, trigger, match):
-    verify_ssl = bot.config.core.verify_ssl
-    latest = get_info(verify_ssl=verify_ssl)
+    latest = get_info()
     numbered_result(bot, int(match.group(1)), latest)
