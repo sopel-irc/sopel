@@ -15,6 +15,7 @@ __all__ = [
     # constants
     'NOLIMIT', 'VOICE', 'HALFOP', 'OP', 'ADMIN', 'OWNER',
     # decorators
+    'action_commands',
     'commands',
     'echo',
     'example',
@@ -282,9 +283,11 @@ def action_commands(*command_list):
     """
     def add_attribute(function):
         function.intents = ['ACTION']
-        if not hasattr(function, "action_commands"):
+        if not hasattr(function, 'action_commands'):
             function.action_commands = []
-        function.action_commands.extend(command_list)
+        for cmd in command_list:
+            if cmd not in function.action_commands:
+                function.action_commands.append(cmd)
         return function
     return add_attribute
 

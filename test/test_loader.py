@@ -192,6 +192,8 @@ def test_clean_callable_default(tmpconfig, func):
     # Not added by default
     assert not hasattr(func, 'rule')
     assert not hasattr(func, 'commands')
+    assert not hasattr(func, 'nickname_commands')
+    assert not hasattr(func, 'action_commands')
     assert not hasattr(func, 'intents')
 
 
@@ -311,6 +313,26 @@ def test_clean_callable_nickname_command(tmpconfig, func):
     assert regex.match('TestBot, hello!')
     assert regex.match('TestBot: hello!')
     assert not regex.match('TestBot not hello')
+
+    # idempotency
+    loader.clean_callable(func, tmpconfig)
+    assert len(func.rule) == 1
+    assert regex in func.rule
+
+
+def test_clean_callable_action_command(tmpconfig, func):
+    setattr(func, 'action_commands', ['bots'])
+    loader.clean_callable(func, tmpconfig)
+
+    assert hasattr(func, 'action_commands')
+    assert len(func.action_commands) == 1
+    assert func.action_commands == ['bots']
+    assert hasattr(func, 'rule')
+    assert len(func.rule) == 1
+
+    regex = func.rule[0]
+    assert regex.match('bots bottingly')
+    assert not regex.match('spams spammingly')
 
     # idempotency
     loader.clean_callable(func, tmpconfig)
