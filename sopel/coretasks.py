@@ -398,7 +398,7 @@ def _send_who(bot, channel):
         # We might be on an old network, but we still care about keeping our
         # user list updated
         bot.write(['WHO', channel])
-    channel.last_who = datetime.datetime.utcnow()
+    bot.channels[Identifier(channel)].last_who = datetime.datetime.utcnow()
 
 
 @sopel.module.interval(30)
@@ -413,14 +413,14 @@ def _periodic_send_who(bot):
     # 120 seconds ago.
     who_trigger_time = datetime.datetime.utcnow() - datetime.timedelta(seconds=120)
     selected_channel = None
-    for channel in bot.channels:
+    for channel_name, channel in bot.channels.items():
         if channel.last_who is None:
             # WHO was never sent yet to this channel: stop here
-            selected_channel = channel
+            selected_channel = channel_name
             break
         if channel.last_who < who_trigger_time:
             # this channel's last who request is the most outdated one at the moment
-            selected_channel = channel
+            selected_channel = channel_name
             who_trigger_time = channel.last_who
 
     if selected_channel is not None:
