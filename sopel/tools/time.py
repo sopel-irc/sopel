@@ -35,8 +35,7 @@ def validate_timezone(zone):
         tz = pytz.timezone(zone)
     except pytz.exceptions.UnknownTimeZoneError:
         raise ValueError('Invalid time zone.')
-    else:
-        return tz.zone
+    return tz.zone
 
 
 def validate_format(tformat):
@@ -44,7 +43,7 @@ def validate_format(tformat):
     try:
         time = datetime.datetime.utcnow()
         time.strftime(tformat)
-    except Exception:  # TODO: Be specific
+    except (ValueError, TypeError):
         raise ValueError('Invalid time format.')
     return tformat
 
