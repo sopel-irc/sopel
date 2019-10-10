@@ -39,7 +39,12 @@ def validate_timezone(zone):
 
 
 def validate_format(tformat):
-    """Returns the format, if valid, else None"""
+    """Validate a time format string.
+
+    :param string tformat: the format string to validate
+    :return: the format string, if valid
+    :raise ValueError: when ``tformat`` is not a valid time format string
+    """
     try:
         time = datetime.datetime.utcnow()
         time.strftime(tformat)
