@@ -115,9 +115,9 @@ def is_triggerable(obj):
     :return: ``True`` if ``obj`` can handle the bot's triggers
 
     A triggerable is a callable that will be used by the bot to handle a
-    particular trigger (i.e. an IRC message): it can be a regex rule, an event,
-    an intent, a command, or a nickname command. However, it must not be a job
-    or a URL callback.
+    particular trigger (i.e. an IRC message): it can be a regex rule, an
+    event, an intent, a command, a nickname command, or an action command.
+    However, it must not be a job or a URL callback.
 
     .. seealso::
 
