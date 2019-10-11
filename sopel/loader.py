@@ -104,10 +104,37 @@ def clean_callable(func, config):
 
 
 def is_triggerable(obj):
-    return any(
-        hasattr(obj, attr)
-        for attr in ('rule', 'event', 'intents', 'commands',
-                     'nickname_commands'))
+    """Check if ``obj`` can handle the bot's triggers.
+
+    :param obj: any :term:`function` to check
+    :return: ``True`` if ``obj`` can handle the bot's triggers
+
+    A triggerable is a callable that will be used by the bot to handle a
+    particular trigger (i.e. an IRC message): it can be a regex rule, an event,
+    an intent, a command, or a nickname command. However, it must not be a job
+    or a URL callback.
+
+    .. seealso::
+
+        Many of the decorators defined in :mod:`sopel.module` make the
+        decorated function a triggerable object.
+    """
+    forbidden_attrs = (
+        'interval',
+        'url_regex',
+    )
+    forbidden = any(hasattr(obj, attr) for attr in forbidden_attrs)
+
+    allowed_attrs = (
+        'rule',
+        'event',
+        'intents',
+        'commands',
+        'nickname_commands',
+    )
+    allowed = any(hasattr(obj, attr) for attr in allowed_attrs)
+
+    return allowed and not forbidden
 
 
 def clean_module(module, config):

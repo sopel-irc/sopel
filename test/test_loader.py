@@ -74,14 +74,34 @@ def tmpconfig(tmpdir):
     return config.Config(conf_file.strpath)
 
 
-def test_clean_module_commands(tmpdir, tmpconfig):
+@pytest.fixture
+def testplugin(tmpdir):
     root = tmpdir.mkdir('loader_mods')
     mod_file = root.join('file_mod.py')
     mod_file.write(MOCK_MODULE_CONTENT)
 
-    plugin = plugins.handlers.PyFilePlugin(mod_file.strpath)
-    plugin.load()
-    test_mod = plugin._module
+    return plugins.handlers.PyFilePlugin(mod_file.strpath)
+
+
+def test_is_triggerable(testplugin):
+    """Test is_triggerable behavior before clean_module is called."""
+    testplugin.load()
+    test_mod = testplugin._module
+
+    assert loader.is_triggerable(test_mod.first_command)
+    assert loader.is_triggerable(test_mod.second_command)
+    assert loader.is_triggerable(test_mod.on_topic_command)
+
+    assert not loader.is_triggerable(test_mod.interval5s)
+    assert not loader.is_triggerable(test_mod.interval10s)
+
+    assert not loader.is_triggerable(test_mod.shutdown)
+    assert not loader.is_triggerable(test_mod.example_url)
+
+
+def test_clean_module(testplugin, tmpconfig):
+    testplugin.load()
+    test_mod = testplugin._module
 
     callables, jobs, shutdowns, urls = loader.clean_module(
         test_mod, tmpconfig)
@@ -98,11 +118,56 @@ def test_clean_module_commands(tmpdir, tmpconfig):
     assert len(urls) == 1
     assert test_mod.example_url in urls
 
+    # assert is_triggerable behavior *after* clean_module has been called
+    assert loader.is_triggerable(test_mod.first_command)
+    assert loader.is_triggerable(test_mod.second_command)
+    assert loader.is_triggerable(test_mod.on_topic_command)
+
+    assert not loader.is_triggerable(test_mod.interval5s)
+    assert not loader.is_triggerable(test_mod.interval10s)
+
+    assert not loader.is_triggerable(test_mod.shutdown)
+    assert not loader.is_triggerable(test_mod.example_url)
+
     # ignored function is ignored
     assert test_mod.ignored not in callables
     assert test_mod.ignored not in jobs
     assert test_mod.ignored not in shutdowns
     assert test_mod.ignored not in urls
+
+
+def test_clean_module_idempotency(testplugin, tmpconfig):
+    testplugin.load()
+    test_mod = testplugin._module
+
+    callables, jobs, shutdowns, urls = loader.clean_module(
+        test_mod, tmpconfig)
+
+    # sanity assertions: check test_clean_module if any of these fails
+    assert len(callables) == 3
+    assert len(jobs) == 2
+    assert len(shutdowns) == 1
+    assert len(urls) == 1
+
+    # recall clean_module, we should have the same result
+    new_callables, new_jobs, new_shutdowns, new_urls = loader.clean_module(
+        test_mod, tmpconfig)
+
+    assert new_callables == callables
+    assert new_jobs == jobs
+    assert new_shutdowns == shutdowns
+    assert new_urls == new_urls
+
+    # assert is_triggerable behavior
+    assert loader.is_triggerable(test_mod.first_command)
+    assert loader.is_triggerable(test_mod.second_command)
+    assert loader.is_triggerable(test_mod.on_topic_command)
+
+    assert not loader.is_triggerable(test_mod.interval5s)
+    assert not loader.is_triggerable(test_mod.interval10s)
+
+    assert not loader.is_triggerable(test_mod.shutdown)
+    assert not loader.is_triggerable(test_mod.example_url)
 
 
 def test_clean_callable_default(tmpconfig, func):
