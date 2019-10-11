@@ -68,7 +68,7 @@ def clean_callable(func, config):
             func.rule = [func.rule]
         func.rule = [compile_rule(nick, rule, alias_nicks) for rule in func.rule]
 
-    if hasattr(func, 'commands') or hasattr(func, 'nickname_commands') or hasattr(func, 'action_commands'):
+    if any(hasattr(func, attr) for attr in ['commands', 'nickname_commands', 'action_commands']):
         func.rule = getattr(func, 'rule', [])
         for command in getattr(func, 'commands', []):
             regexp = get_command_regexp(prefix, command)
