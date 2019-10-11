@@ -396,6 +396,7 @@ class Sopel(irc.Bot):
         * a callable without rules (will match any triggers, such as events)
         * a callable with commands
         * a callable with nick commands
+        * a callable with action commands
 
         It is possible to have a callable with rules, commands, and nick
         commands configured. It should not be possible to have a callable with
@@ -411,6 +412,7 @@ class Sopel(irc.Bot):
             rules = getattr(callbl, 'rule', [])
             commands = getattr(callbl, 'commands', [])
             nick_commands = getattr(callbl, 'nickname_commands', [])
+            action_commands = getattr(callbl, 'action_commands', [])
             events = getattr(callbl, 'event', [])
             is_rule_only = rules and not commands and not nick_commands
 
@@ -434,6 +436,11 @@ class Sopel(irc.Bot):
                         'Nick command callable "%s" registered for "%s"',
                         callable_name,
                         '|'.join(nick_commands))
+                if action_commands:
+                    LOGGER.debug(
+                        'Action command callable "%s" registered for "%s"',
+                        callable_name,
+                        '|'.join(action_commands))
                 if events:
                     LOGGER.debug(
                         'Event callable "%s" registered for "%s"',
