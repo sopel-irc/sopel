@@ -686,7 +686,6 @@ def output_prefix(prefix):
     Prefix will be added to text sent through:
 
     * :meth:`bot.say <sopel.bot.SopelWrapper.say>`
-    * :meth:`bot.reply <sopel.bot.SopelWrapper.reply>`
     * :meth:`bot.notice <sopel.bot.SopelWrapper.notice>`
 
     """

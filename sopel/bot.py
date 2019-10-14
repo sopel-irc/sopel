@@ -985,6 +985,8 @@ class SopelWrapper(object):
     :type sopel: :class:`~sopel.bot.Sopel`
     :param trigger: IRC Trigger line
     :type trigger: :class:`sopel.trigger.Trigger`
+    :param string output_prefix: prefix for messages sent through this wrapper
+                                 (e.g. plugin tag)
 
     This wrapper will be used to call Sopel's triggered commands and rules as
     their ``bot`` argument. It acts as a proxy to :meth:`send messages<say>` to
@@ -1072,7 +1074,7 @@ class SopelWrapper(object):
             destination = self._trigger.sender
         if reply_to is None:
             reply_to = self._trigger.nick
-        self._bot.reply(self._out_pfx + message, destination, reply_to, notice)
+        self._bot.reply(message, destination, reply_to, notice)
 
     def kick(self, nick, channel=None, message=None):
         if channel is None:
