@@ -14,7 +14,7 @@ from sopel.module import commands, example
 from sopel.tools.web import quote
 
 
-BASE_TUMBOLIA_URI = 'https://tumbolia-sopel.appspot.com/'
+BASE_TUMBOLIA_URI = 'https://oblique.sopel.chat/'
 
 
 @commands('py')
