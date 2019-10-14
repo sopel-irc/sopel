@@ -22,7 +22,7 @@ BASE_TUMBOLIA_URI = 'https://oblique.sopel.chat/'
 def py(bot, trigger):
     """Evaluate a Python expression."""
     if not trigger.group(2):
-        return bot.say("Need an expression to evaluate")
+        return bot.reply('I need an expression to evaluate.')
 
     query = trigger.group(2)
     uri = BASE_TUMBOLIA_URI + 'py/'
