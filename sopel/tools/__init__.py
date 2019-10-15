@@ -178,6 +178,45 @@ def get_nickname_command_pattern(command):
         """.format(command=command)
 
 
+def get_action_command_regexp(command):
+    """Get a compiled regexp object that implements the command.
+
+    :param str command: the name of the command
+    :return: a compiled regexp object that implements the command
+    :rtype: :py:class:`re.Pattern`
+    """
+    pattern = get_action_command_pattern(command)
+    return re.compile(pattern, re.IGNORECASE | re.VERBOSE)
+
+
+def get_action_command_pattern(command):
+    """Get the uncompiled regex pattern for action commands.
+
+    :param str command: the command name
+    :return: a regex pattern that will match the given command
+    :rtype: str
+    """
+    # This regexp matches equivalently and produces the same
+    # groups 1 and 2 as the old regexp: r'^%s(%s)(?: +(.*))?$'
+    # The only differences should be handling all whitespace
+    # like spaces and the addition of groups 3-6.
+    return r"""
+        ({command}) # Command as group 1.
+        (?:\s+              # Whitespace to end command.
+        (                   # Rest of the line as group 2.
+        (?:(\S+))?          # Parameters 1-4 as groups 3-6.
+        (?:\s+(\S+))?
+        (?:\s+(\S+))?
+        (?:\s+(\S+))?
+        .*                  # Accept anything after the parameters.
+                            # Leave it up to the module to parse
+                            # the line.
+        ))?                 # Group 2 must be None, if there are no
+                            # parameters.
+        $                   # EoL, so there are no partial matches.
+        """.format(command=command)
+
+
 def get_sendable_message(text, max_length=400):
     """Get a sendable ``text`` message, with its excess when needed.
 

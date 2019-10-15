@@ -4,7 +4,8 @@ from __future__ import unicode_literals, absolute_import, print_function, divisi
 import re
 import sys
 
-from sopel.tools import compile_rule, itervalues, get_command_regexp, get_nickname_command_regexp
+from sopel.tools import (compile_rule, itervalues, get_command_regexp,
+                         get_nickname_command_regexp, get_action_command_regexp)
 from sopel.config import core_section
 
 default_prefix = core_section.CoreSection.help_prefix.default
@@ -67,7 +68,7 @@ def clean_callable(func, config):
             func.rule = [func.rule]
         func.rule = [compile_rule(nick, rule, alias_nicks) for rule in func.rule]
 
-    if hasattr(func, 'commands') or hasattr(func, 'nickname_commands'):
+    if any(hasattr(func, attr) for attr in ['commands', 'nickname_commands', 'action_commands']):
         func.rule = getattr(func, 'rule', [])
         for command in getattr(func, 'commands', []):
             regexp = get_command_regexp(prefix, command)
@@ -75,6 +76,10 @@ def clean_callable(func, config):
                 func.rule.append(regexp)
         for command in getattr(func, 'nickname_commands', []):
             regexp = get_nickname_command_regexp(nick, command, alias_nicks)
+            if regexp not in func.rule:
+                func.rule.append(regexp)
+        for command in getattr(func, 'action_commands', []):
+            regexp = get_action_command_regexp(command)
             if regexp not in func.rule:
                 func.rule.append(regexp)
         if hasattr(func, 'example'):
@@ -110,9 +115,9 @@ def is_triggerable(obj):
     :return: ``True`` if ``obj`` can handle the bot's triggers
 
     A triggerable is a callable that will be used by the bot to handle a
-    particular trigger (i.e. an IRC message): it can be a regex rule, an event,
-    an intent, a command, or a nickname command. However, it must not be a job
-    or a URL callback.
+    particular trigger (i.e. an IRC message): it can be a regex rule, an
+    event, an intent, a command, a nickname command, or an action command.
+    However, it must not be a job or a URL callback.
 
     .. seealso::
 
@@ -131,6 +136,7 @@ def is_triggerable(obj):
         'intents',
         'commands',
         'nickname_commands',
+        'action_commands',
     )
     allowed = any(hasattr(obj, attr) for attr in allowed_attrs)
 

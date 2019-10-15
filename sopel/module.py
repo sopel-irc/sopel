@@ -15,6 +15,7 @@ __all__ = [
     # constants
     'NOLIMIT', 'VOICE', 'HALFOP', 'OP', 'ADMIN', 'OWNER',
     # decorators
+    'action_commands',
     'commands',
     'echo',
     'example',
@@ -257,6 +258,36 @@ def nickname_commands(*command_list):
         for cmd in command_list:
             if cmd not in function.nickname_commands:
                 function.nickname_commands.append(cmd)
+        return function
+    return add_attribute
+
+
+def action_commands(*command_list):
+    """Decorate a function to trigger on CTCP ACTION lines.
+
+    This decorator can be used multiple times to add multiple rules. The
+    resulting match object will have the command as the first group, rest of
+    the line, excluding leading whitespace, as the second group. Parameters 1
+    through 4, separated by whitespace, will be groups 3-6.
+
+    Args:
+        command: A string, which can be a regular expression.
+
+    Returns:
+        A function with a new regular expression appended to the rule
+        attribute. If there is no rule attribute, it is added.
+
+    Example:
+        @action_commands("hello!"):
+            Would trigger on "/me hello!"
+    """
+    def add_attribute(function):
+        function.intents = ['ACTION']
+        if not hasattr(function, 'action_commands'):
+            function.action_commands = []
+        for cmd in command_list:
+            if cmd not in function.action_commands:
+                function.action_commands.append(cmd)
         return function
     return add_attribute
 
