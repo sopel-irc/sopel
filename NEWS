@@ -227,6 +227,12 @@ API changes
   * Decorated callables will receive messages that Sopel itself sends,
     regardless of whether the IRC server actually supports `echo-message`
   * Don't send output from `@echo`-decorated callables; this will cause loops
+* Added `module.action_commands` decorator [[#1660][]]
+  * This presently conflicts with other command/trigger decorators because of
+    internal implementation details, but fixing that is on our to-do list
+  * If you want both `action_commands` and another command type (`commands`,
+    `nickname_commands`, etc.), use `@action_commands('foo')` to decorate a
+    wrapper function that simply calls the main one
 * Officially deprecated the methods `SopelMemory.contains()` and
   `SopelMemoryWithDefault.contains()`, to be removed in Sopel 8 [[#1563][]]
   * Use the `in` operator instead
@@ -354,6 +360,7 @@ API changes
 [#1646]: https://github.com/sopel-irc/sopel/pull/1646
 [#1651]: https://github.com/sopel-irc/sopel/pull/1651
 [#1652]: https://github.com/sopel-irc/sopel/pull/1652
+[#1660]: https://github.com/sopel-irc/sopel/pull/1660
 [#1661]: https://github.com/sopel-irc/sopel/pull/1661
 [#1663]: https://github.com/sopel-irc/sopel/pull/1663
 [#1664]: https://github.com/sopel-irc/sopel/pull/1664
