@@ -59,8 +59,7 @@ def duck_search(query):
         bytes = bytes.split('web-result')[1]
     m = r_duck.search(bytes)
     if m:
-        unquoted_m = web.unquote(m.group(1))
-        return web.decode(unquoted_m)
+        return web.decode(m.group(1))
 
 
 # Alias google_search to duck_search
@@ -92,7 +91,7 @@ def duck_api(query):
 # test for bad Unicode handling in py2
 @example(
     '.duck grandorder.wiki chulainn alter',
-    'https://grandorder.wiki/Cú_Chulainn_(Alter)',
+    r'https://grandorder.wiki/C%C3%BA_Chulainn_(Alter)',
     online=True)
 # the last example (in source line order) is what .help displays
 @example(
