@@ -254,10 +254,19 @@ class CoreSection(StaticSection):
         default='[%(asctime)s] %(name)-20s %(levelname)-8s - %(message)s')
     """The logging format string to use for logs.
 
-    If not specified, the format is not provided, and logging will use
-    the Python default.
+    If not specified, the default format is::
+
+        [%(asctime)s] %(name)-20s %(levelname)-8s - %(message)s
+
+    which will output the timestamp, the package that generated the log line,
+    the log level of the line, and (finally) the actual message. For example::
+
+        [2019-10-21 12:47:44,272] sopel.irc            INFO     - Connected.
 
     .. versionadded:: 7.0
+    .. seealso::
+        Python's logging format documentation:
+        https://docs.python.org/3/library/logging.html#logrecord-attributes
     """
 
     logging_level = ChoiceAttribute('logging_level',
