@@ -249,7 +249,9 @@ class CoreSection(StaticSection):
     .. versionadded:: 7.0
     """
 
-    logging_format = ValidatedAttribute('logging_format')
+    logging_format = ValidatedAttribute(
+        'logging_format',
+        default='[%(asctime)s] %(name)-20s %(levelname)-8s - %(message)s')
     """The logging format string to use for logs.
 
     If not specified, the format is not provided, and logging will use
