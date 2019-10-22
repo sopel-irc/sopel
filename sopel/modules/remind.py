@@ -198,10 +198,10 @@ PERIODS = '|'.join(SCALING.keys())
 def remind_in(bot, trigger):
     """Gives you a reminder in the given amount of time."""
     if not trigger.group(2):
-        bot.say("Missing arguments for reminder command.")
+        bot.reply("Missing arguments for reminder command.")
         return module.NOLIMIT
     if trigger.group(3) and not trigger.group(4):
-        bot.say("No message given for reminder.")
+        bot.reply("No message given for reminder.")
         return module.NOLIMIT
     duration = 0
     message = filter(None, re.split(r'(\d+(?:\.\d+)? ?(?:(?i)' + PERIODS + ')) ?',
@@ -419,10 +419,10 @@ def remind_at(bot, trigger):
     dd-mm-YY, or dd-mm. The separator can be ``.``, ``-``, or ``/``.
     """
     if not trigger.group(2):
-        bot.say("No arguments given for reminder command.")
+        bot.reply("No arguments given for reminder command.")
         return module.NOLIMIT
     if trigger.group(3) and not trigger.group(4):
-        bot.say("No message given for reminder.")
+        bot.reply("No message given for reminder.")
         return module.NOLIMIT
 
     match = REGEX_AT.match(trigger.group(2))
