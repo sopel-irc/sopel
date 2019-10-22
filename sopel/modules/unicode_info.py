@@ -44,8 +44,8 @@ def get_codepoint_name(char):
 
 
 @module.commands('u')
-@module.example('.u ‽', 'U+203D INTERROBANG (‽)')
-@module.example('.u 203D', 'U+203D INTERROBANG (‽)')
+@module.example('.u ‽', 'U+203D INTERROBANG (‽)', user_help=True)
+@module.example('.u 203D', 'U+203D INTERROBANG (‽)', user_help=True)
 def codepoint(bot, trigger):
     """Look up a Unicode character or a hexadecimal code point."""
     arg = trigger.group(2)

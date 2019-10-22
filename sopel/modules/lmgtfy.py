@@ -14,8 +14,8 @@ from sopel.tools.web import quote
 
 @commands('lmgtfy', 'lmgify', 'gify', 'gtfy')
 @example('.lmgtfy sopel', 'https://lmgtfy.com/?q=sopel')
-@example('.lmgtfy sopel bot', 'https://lmgtfy.com/?q=sopel+bot')
-@example('.lmgtfy', 'https://www.google.com/')
+@example('.lmgtfy sopel bot', 'https://lmgtfy.com/?q=sopel+bot', user_help=True)
+@example('.lmgtfy', 'https://www.google.com/', user_help=True)
 def googleit(bot, trigger):
     """Let me just… Google that for you."""
     if not trigger.group(2):  # No input

@@ -117,7 +117,8 @@ def join(bot, trigger):
 @sopel.module.require_admin
 @sopel.module.commands('tmpjoin')
 @sopel.module.priority('low')
-@sopel.module.example('.tmpjoin #example or .tmpjoin #example key')
+@sopel.module.example('.tmpjoin #example key', user_help=True)
+@sopel.module.example('.tmpjoin #example', user_help=True)
 def temporary_join(bot, trigger):
     """Like ``join``, without saving. This is an admin-only command.
 
@@ -306,7 +307,7 @@ def parse_section_option_value(config, trigger):
 @sopel.module.require_privmsg("This command only works as a private message.")
 @sopel.module.require_admin("This command requires admin privileges.")
 @sopel.module.commands('set')
-@sopel.module.example('.set core.owner Me')
+@sopel.module.example('.set core.owner MyNick')
 def set_config(bot, trigger):
     """See and modify values of Sopel's config object.
 

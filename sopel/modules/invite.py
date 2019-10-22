@@ -53,8 +53,8 @@ def invite_handler(bot, sender, user, channel):
 
 
 @module.commands('invite')
-@module.example('.invite jenny')
-@module.example('.invite converge #sopel')
+@module.example('.invite jenny', user_help=True)
+@module.example('.invite converge #sopel', user_help=True)
 def invite(bot, trigger):
     """
     Invite the given user to the current channel, or (with optional
