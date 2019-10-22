@@ -45,6 +45,9 @@ encounters such an error case.
 def run(settings, pid_file, daemon=False):
     delay = 20
 
+    # Acts as a welcome message, showing the program and platform version at start
+    print_version()
+
     if not settings.core.ca_certs:
         tools.stderr(
             'Could not open CA certificates file. SSL will not work properly!')
