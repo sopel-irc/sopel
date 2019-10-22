@@ -92,6 +92,11 @@ Core changes
   * `homedir` itself has a default value that will be used if not set
 * Added separate server & nickname authentication options [[#1513][]]
   * See [authentication configuration docs][auth-config-docs]
+* Log files have become *much* more configurable [[#1678][], [[#1714][]]]
+  * Logs are named based on the config name
+  * Many, many new settings added to customize logging
+  * The default log format includes timestamp, source package, & level (which
+    will make logs *much* more useful when reporting bugs)
 * Sopel's own rate-limiting & flood protection parameters are now configurable,
   and can even be turned off entirely if Sopel is behind a bouncer or other IRC
   proxy that handles flood protection itself [[#1518][], [#1638][]]
@@ -139,7 +144,7 @@ Core changes
 * Large amounts of internal refactoring and cleanup [[#1424][], [#1429][],
   [#1456][], [#1458][], [#1472][], [#1479][], [#1510][], [#1522][], [#1527][],
   [#1542][], [#1557][], [#1561][], [#1567][], [#1579][], [#1580][], [#1583][],
-  [#1597][], [#1610][], [#1635][], [#1678][], [#1685][], [#1708][]]
+  [#1597][], [#1610][], [#1635][], [#1685][], [#1708][]]
 * Sopel 7 will emit warnings when run under Python 2, as Python 2.7 has an
   end-of-support date of January 1, 2020 [[#1488][]]
   * While Sopel 7 is intended to remain compatible with Python 2, future
@@ -373,6 +378,7 @@ API changes
 [#1693]: https://github.com/sopel-irc/sopel/pull/1693
 [#1703]: https://github.com/sopel-irc/sopel/pull/1703
 [#1708]: https://github.com/sopel-irc/sopel/pull/1708
+[#1714]: https://github.com/sopel-irc/sopel/pull/1714
 
 [api-docs]: https://sopel.chat/docs/
 [auth-config-docs]: https://sopel.chat/docs/configure.html#Authentication
