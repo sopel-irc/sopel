@@ -126,7 +126,7 @@ Core changes
     [the online CLI docs][docs-cli-plugins] at our website
 * The config file Sopel should use can be specified via the `SOPEL_CONFIG`
   environment variable [[#1473][]]
-* List values in config can be separated by newlines [[#1628][]]
+* List values in config can be separated by newlines [[#1628][], [#1690][]]
   * Newline-separated values support commas within each value
   * Comma-separated value support will end someday, but likely not till Sopel 9
   * Find more details in [the `ListAttribute` documentation][docs-listattr]
@@ -375,6 +375,7 @@ API changes
 [#1677]: https://github.com/sopel-irc/sopel/pull/1677
 [#1678]: https://github.com/sopel-irc/sopel/pull/1678
 [#1685]: https://github.com/sopel-irc/sopel/pull/1685
+[#1690]: https://github.com/sopel-irc/sopel/pull/1690
 [#1693]: https://github.com/sopel-irc/sopel/pull/1693
 [#1703]: https://github.com/sopel-irc/sopel/pull/1703
 [#1708]: https://github.com/sopel-irc/sopel/pull/1708
