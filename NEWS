@@ -51,6 +51,7 @@ Module changes
 * Spoilers & NSFW are now separate concepts in the `reddit` plugin [[#1620][]]
   * Reddit implemented spoilers as a distinct post flag some time ago. Sopel's
     plugin supports independently setting channels as "SFW" or "spoiler-free".
+* Rolling `.dice` now officially supports trailing `# comments` [[#1577][]]
 * Python version is now included in `.version` command output [[#1462][]]
 * The `.version` command's output format is improved [[#1633][]]
 * The `.seen` command's output now uses relative time [[#1661][]]
@@ -334,6 +335,7 @@ API changes
 [#1573]: https://github.com/sopel-irc/sopel/pull/1573
 [#1574]: https://github.com/sopel-irc/sopel/pull/1574
 [#1576]: https://github.com/sopel-irc/sopel/pull/1576
+[#1577]: https://github.com/sopel-irc/sopel/pull/1577
 [#1578]: https://github.com/sopel-irc/sopel/pull/1578
 [#1579]: https://github.com/sopel-irc/sopel/pull/1579
 [#1580]: https://github.com/sopel-irc/sopel/pull/1580
