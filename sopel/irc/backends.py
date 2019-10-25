@@ -205,7 +205,7 @@ class SSLAsynchatBackend(AsynchatBackend):
 
                 if not has_matched:
                     # everything is broken
-                    LOGGER.error("invalid certificate, no hostname matches")
+                    LOGGER.error("Invalid certificate, no hostname matches.")
                     # TODO: refactor access to bot's settings
                     if hasattr(self.bot.settings.core, 'pid_file_path'):
                         # TODO: refactor to quit properly (no "os._exit")

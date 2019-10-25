@@ -228,7 +228,7 @@ class AbstractBot(object):
         the :class:`asynchat.async_chat` being a subclass of
         :class:`asyncore.dispatcher`.
         """
-        LOGGER.error('Fatal error in core, please review exceptions logs.')
+        LOGGER.error('Fatal error in core, please review exceptions log.')
 
         err_log = logging.getLogger('sopel.exceptions')
         err_log.error(
