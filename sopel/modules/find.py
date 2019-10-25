@@ -15,7 +15,7 @@ from __future__ import unicode_literals, absolute_import, print_function, divisi
 
 import re
 from sopel.tools import Identifier, SopelMemory
-from sopel.module import rule, priority, echo
+from sopel.module import rule, priority, echo, event
 from sopel.formatting import bold
 
 
@@ -59,6 +59,54 @@ def collectlines(bot, trigger):
     del templist[:-10]  # Keep the log to 10 lines per person
 
     bot.memory['find_lines'][trigger.sender][Identifier(trigger.nick)] = templist
+
+
+def _cleanup_channel(bot, channel):
+    bot.memory['find_lines'].pop(channel, None)
+
+
+def _cleanup_nickname(bot, nick, channel=None):
+    if channel:
+        bot.memory['find_lines'].get(channel, {}).pop(nick, None)
+    else:
+        for channel in bot.memory['find_lines'].keys():
+            bot.memory['find_lines'][channel].pop(nick, None)
+
+
+@echo
+@event('PART')
+@priority('low')
+def part_cleanup(bot, trigger):
+    """Clean up cached data when a user leaves a channel."""
+    if trigger.nick == bot.nick:
+        # Nuke the whole channel cache, boys, we're outta here!
+        _cleanup_channel(bot, trigger.sender)
+    else:
+        # Someone else left; clean up after them
+        _cleanup_nickname(bot, trigger.nick, trigger.sender)
+
+
+@echo
+@event('QUIT')
+@priority('low')
+def quit_cleanup(bot, trigger):
+    """Clean up cached data after a user quits IRC."""
+    # If Sopel itself quits, shutdown() will handle the cleanup.
+    _cleanup_nickname(bot, trigger.nick)
+
+
+@echo
+@event('KICK')
+@priority('low')
+def kick_cleanup(bot, trigger):
+    """Clean up cached data when a user is kicked from a channel."""
+    nick = Identifier(trigger.args[1])
+    if nick == bot.nick:
+        # We got kicked! Nuke the whole channel.
+        _cleanup_channel(bot, trigger.sender)
+    else:
+        # Clean up after the poor sod (or more likely, spammer) who got the boot
+        _cleanup_nickname(bot, nick, trigger.sender)
 
 
 # Match nick, s/find/replace/flags. Flags and nick are optional, nick can be
