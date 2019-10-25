@@ -233,7 +233,7 @@ def test_say_safe(bot):
 
 
 def test_say_long_fit(bot):
-    """Test a long message that fit into the 512 bytes limit."""
+    """Test a long message that fits into the 512 bytes limit."""
     text = 'a' * (512 - len('PRIVMSG #sopel :\r\n'))
     bot.say(text, '#sopel')
 
@@ -308,7 +308,7 @@ def test_say_no_repeat_protection(bot):
         'PRIVMSG #sopel :...',
     )
 
-    # but at some point it just stop talking
+    # but at some point it just stops talking
     bot.say('hello', '#sopel')
 
     assert bot.backend.message_sent == rawlist(
