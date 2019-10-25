@@ -23,6 +23,7 @@ try:
     import ssl
     if not hasattr(ssl, 'match_hostname'):
         # Attempt to import ssl_match_hostname from python-backports
+        # TODO: Remove when dropping Python 2 support
         import backports.ssl_match_hostname
         ssl.match_hostname = backports.ssl_match_hostname.match_hostname
         ssl.CertificateError = backports.ssl_match_hostname.CertificateError
@@ -232,7 +233,8 @@ class SSLAsynchatBackend(AsynchatBackend):
     def recv(self, buffer_size):
         """Replacement for self.recv() during SSL connections.
 
-        From a (now deleted) blog post by Evan "K7FOS" Fosmark.
+        From a (now deleted) blog post by Evan "K7FOS" Fosmark:
+        https://k7fos.com/2010/09/ssl-support-in-asynchatasync_chat
         """
         try:
             data = self.socket.read(buffer_size)

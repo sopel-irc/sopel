@@ -9,7 +9,7 @@ In particular, it defines the interface for the
 :class:`IRC backend<sopel.irc.abstract_backends.AbstractIRCBackend>`, and the
 interface for the :class:`bot itself<sopel.irc.AbstractBot>`. This is all
 internal code that isn't supposed to be used directly by a plugin developer,
-which should knows about :class:`sopel.bot.Sopel` only.
+who should worry about :class:`sopel.bot.Sopel` only.
 
 .. important::
 
@@ -34,6 +34,7 @@ try:
     import ssl
     if not hasattr(ssl, 'match_hostname'):
         # Attempt to import ssl_match_hostname from python-backports
+        # TODO: Remove when dropping Python 2 support
         import backports.ssl_match_hostname
         ssl.match_hostname = backports.ssl_match_hostname.match_hostname
         ssl.CertificateError = backports.ssl_match_hostname.CertificateError
@@ -258,7 +259,7 @@ class AbstractBot(object):
     def _shutdown(self):
         pass
 
-    # Feature
+    # Features
 
     def dispatch(self, pretrigger):
         raise NotImplementedError
@@ -411,12 +412,11 @@ class AbstractBot(object):
     def kick(self, nick, channel, text=None):
         """Kick a ``nick`` from a ``channel``.
 
-        :param str nick: Nick to kick out of the ``channel``
-        :param str channel: Channel to kick ``nick`` from
-        :param str text: Optional text for the kick
+        :param str nick: nick to kick out of the ``channel``
+        :param str channel: channel to kick ``nick`` from
+        :param str text: optional text for the kick
 
-        The bot must be a channel operator in specified channel for this to
-        work.
+        The bot must be operator in the specified channel for this to work.
 
         .. versionadded:: 7.0
         """

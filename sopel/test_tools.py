@@ -44,9 +44,9 @@ if sys.version_info.major >= 3:
 
 
 def rawlist(*args):
-    """Build a list of IRC raw messages from the lines given as ``*args``.
+    """Build a list of raw IRC messages from the lines given as ``*args``.
 
-    :return: a list of IRC raw messages as seen by the bot
+    :return: a list of raw IRC messages as seen by the bot
 
     This is a helper function to build a list of messages without having to
     care about encoding or this pesky carriage return::

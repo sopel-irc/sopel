@@ -15,9 +15,9 @@ class AbstractIRCBackend(object):
         self.writing_lock = threading.RLock()
 
     def send_command(self, *args, **kwargs):
-        """Send a command through the IRC Connection.
+        """Send a command through the IRC connection.
 
-        :param * args: IRC command to send with its argument
+        :param * args: IRC command to send with its argument(s)
         :param str text: optional keyword argument; text to send
 
         Example::
@@ -83,7 +83,7 @@ class AbstractIRCBackend(object):
     def send_ping(self, host):
         """Send a ``PING`` command to the server.
 
-        :param str host: IRC Server host
+        :param str host: IRC server host
 
         A ``PING`` command should be sent at a regular interval to make sure
         the server knows the IRC connection is still active.
@@ -93,7 +93,7 @@ class AbstractIRCBackend(object):
     def send_pong(self, host):
         """Send a ``PONG`` command to the server.
 
-        :param str host: IRC Server host
+        :param str host: IRC server host
 
         A ``PONG`` command must be sent each time the server send a ``PING``
         command to the client.
@@ -103,7 +103,7 @@ class AbstractIRCBackend(object):
     def send_nick(self, nick):
         """Send a ``NICK`` command with a ``nick``.
 
-        :param str nick: Nick to take
+        :param str nick: nickname to take
         """
         self.send_command('NICK', safe(nick))
 
@@ -111,23 +111,23 @@ class AbstractIRCBackend(object):
         """Send a ``USER`` command with a ``user``.
 
         :param str user: IRC username
-        :param str mode: List of mode to send for the user
-        :param str nick: Nick associated with this user
-        :param str name: Name for the user
+        :param str mode: mode(s) to send for the user
+        :param str nick: nickname associated with this user
+        :param str name: "real name" for the user
         """
         self.send_command('USER', safe(user), mode, safe(nick), text=name)
 
     def send_pass(self, password):
         """Send a ``PASS`` command with a ``password``.
 
-        :param str password: Password for authentication
+        :param str password: password for authentication
         """
         self.send_command('PASS', safe(password))
 
     def send_join(self, channel, password=None):
         """Send a ``JOIN`` command to ``channel`` with optional ``password``.
 
-        :param str channel: Channel to join
+        :param str channel: channel to join
         :param str password: optional password for protected channels
         """
         if password is None:
@@ -138,7 +138,7 @@ class AbstractIRCBackend(object):
     def send_part(self, channel, reason=None):
         """Send a ``PART`` command to ``channel``.
 
-        :param str channel: Channel to part
+        :param str channel: the channel to part
         :param str text: optional text for leaving the channel
         """
         self.send_command('PART', safe(channel), text=reason)
@@ -156,8 +156,8 @@ class AbstractIRCBackend(object):
     def send_kick(self, channel, nick, reason=None):
         """Send a ``KICK`` command for ``nick`` in ``channel`` .
 
-        :param str channel: Channel name from which to kick ``nick``
-        :param str nick: Nick to kick from the ``channel``
+        :param str channel: the channel from which to kick ``nick``
+        :param str nick: nickname to kick from the ``channel``
         :param str reason: optional reason for the kick
         """
         self.send_command('KICK', safe(channel), safe(nick), text=reason)
@@ -165,15 +165,15 @@ class AbstractIRCBackend(object):
     def send_privmsg(self, dest, text):
         """Send a ``PRIVMSG`` command to ``dest`` with ``text``.
 
-        :param str dest: Channel name or Nick name
-        :param str text: Text to send
+        :param str dest: nickname or channel name
+        :param str text: the text to send
         """
         self.send_command('PRIVMSG', safe(dest), text=text)
 
     def send_notice(self, dest, text):
         """Send a ``NOTICE`` command to ``dest`` with ``text``.
 
-        :param str dest: Channel name or Nick name
-        :param str text: Text to send
+        :param str dest: nickname or channel name
+        :param str text: the text to send
         """
         self.send_command('NOTICE', dest, text=text)

@@ -634,7 +634,7 @@ class Sopel(irc.AbstractBot):
         self.error(exception=exc)
 
     def error(self, trigger=None, exception=None):
-        """Called internally when a module causes an error."""
+        """Called internally when a plugin causes an error."""
         message = 'Unexpected error'
         if exception:
             message = '{} ({})'.format(message, exception)
@@ -847,8 +847,8 @@ class SopelWrapper(object):
         :param str destination: channel or person; defaults to trigger's sender
         :param int max_messages: max number of message splits
 
-        The ``destination`` will default to the channel (or nickname, if a
-        private message), in which the trigger happened.
+        The ``destination`` will default to the channel in which the
+        trigger happened (or nickname, if received in a private message).
 
         .. seealso::
 
@@ -864,8 +864,8 @@ class SopelWrapper(object):
         :param str message: action message
         :param str destination: channel or person; defaults to trigger's sender
 
-        The ``destination`` will default to the channel (or nickname, if a
-        private message), in which the trigger happened.
+        The ``destination`` will default to the channel in which the
+        trigger happened (or nickname, if received in a private message).
 
         .. seealso::
 
@@ -881,8 +881,8 @@ class SopelWrapper(object):
         :param str message: notice message
         :param str destination: channel or person; defaults to trigger's sender
 
-        The ``destination`` will default to the channel (or nickname, if a
-        private message), in which the trigger happened.
+        The ``destination`` will default to the channel in which the
+        trigger happened (or nickname, if received in a private message).
 
         .. seealso::
 
@@ -900,11 +900,10 @@ class SopelWrapper(object):
         :param str reply_to: person to reply to; defaults to trigger's nick
         :param bool notice: reply as an IRC notice or with a simple message
 
-        The ``destination`` will default to the channel (or nickname, if a
-        private message), in which the trigger happened.
+        The ``destination`` will default to the channel in which the
+        trigger happened (or nickname, if received in a private message).
 
-        The ``reply_to`` will default to the nickname by which the trigger
-        happened.
+        ``reply_to`` will default to the nickname who sent the trigger.
 
         .. seealso::
 
@@ -919,9 +918,9 @@ class SopelWrapper(object):
     def kick(self, nick, channel=None, message=None):
         """Override ``Sopel.kick`` to kick in a channel
 
-        :param str nick: Nick to kick out of the ``channel``
-        :param str channel: Optional channel to kick ``nick`` from
-        :param str message: Optional message for the kick
+        :param str nick: nick to kick out of the ``channel``
+        :param str channel: optional channel to kick ``nick`` from
+        :param str message: optional message for the kick
 
         The ``channel`` will default to the channel in which the call was
         triggered. If triggered from a private message, ``channel`` is
