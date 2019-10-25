@@ -12,6 +12,7 @@ from __future__ import unicode_literals, absolute_import, print_function, divisi
 import datetime as dt
 import re
 import sys
+import textwrap
 
 import praw
 import prawcore
@@ -35,9 +36,10 @@ else:
 
 
 domain = r'https?://(?:www\.|old\.|pay\.|ssl\.|[a-z]{2}\.)?reddit\.com'
-post_url = r'%s/r/.*?/comments/([\w-]+)' % domain
+post_url = r'%s/r/.*?/comments/([\w-]+)/?$' % domain
 short_post_url = r'https?://redd.it/([\w-]+)'
 user_url = r'%s/u(ser)?/([\w-]+)' % domain
+comment_url = r'%s/r/.*?/comments/.*?/.*?/([\w-]+)' % domain
 
 
 @url(post_url)
@@ -111,6 +113,47 @@ def rpost_info(bot, trigger, match):
     except prawcore.exceptions.NotFound:
         bot.say('No such post.')
         return NOLIMIT
+
+
+@url(comment_url)
+def comment_info(bot, trigger, match):
+    """Shows information about the linked comment"""
+    r = praw.Reddit(
+        user_agent=USER_AGENT,
+        client_id='6EiphT6SSQq7FQ',
+        client_secret=None,
+    )
+
+    try:
+        c = r.comment(match.group(1))
+    except prawcore.exceptions.NotFound:
+        bot.say('No such comment.')
+        return NOLIMIT
+
+    message = ('[REDDIT] Comment by {author} | {points} points | '
+               'Posted at {posted} | {comment}')
+
+    if c.author:
+        author = c.author.name
+    else:
+        author = '[deleted]'
+
+    tz = time.get_timezone(bot.db, bot.config, None, trigger.nick,
+                           trigger.sender)
+    time_posted = dt.datetime.utcfromtimestamp(c.created_utc)
+    posted = time.format_time(bot.db, bot.config, tz, trigger.nick,
+                              trigger.sender, time_posted)
+
+    # stolen from the function I (dgw) wrote for our github plugin
+    lines = [line for line in c.body.splitlines() if line and line[0] != '>']
+    short = textwrap.wrap(lines[0], 250)[0]
+    if len(lines) > 1 or short != lines[0]:
+        short += ' […]'
+
+    message = message.format(
+        author=author, points=c.score, posted=posted, comment=short)
+
+    bot.say(message)
 
 
 # If you change this, you'll have to change some other things...
