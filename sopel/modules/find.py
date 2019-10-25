@@ -42,23 +42,21 @@ def collectlines(bot, trigger):
     # Add a log for the channel and nick, if there isn't already one
     if trigger.sender not in bot.memory['find_lines']:
         bot.memory['find_lines'][trigger.sender] = SopelMemory()
-    if Identifier(trigger.nick) not in bot.memory['find_lines'][trigger.sender]:
-        bot.memory['find_lines'][trigger.sender][Identifier(trigger.nick)] = list()
+    if trigger.nick not in bot.memory['find_lines'][trigger.sender]:
+        bot.memory['find_lines'][trigger.sender][trigger.nick] = list()
 
-    # Create a temporary list of the user's lines in a channel
-    templist = bot.memory['find_lines'][trigger.sender][Identifier(trigger.nick)]
+    # Update in-memory list of the user's lines in the channel
+    line_list = bot.memory['find_lines'][trigger.sender][trigger.nick]
     line = trigger.group()
     if line.startswith("s/"):  # Don't remember substitutions
         return
     elif line.startswith("\x01ACTION"):  # For /me messages
         line = line[:-1]
-        templist.append(line)
+        line_list.append(line)
     else:
-        templist.append(line)
+        line_list.append(line)
 
-    del templist[:-10]  # Keep the log to 10 lines per person
-
-    bot.memory['find_lines'][trigger.sender][Identifier(trigger.nick)] = templist
+    del line_list[:-10]  # Keep the log to 10 lines per person
 
 
 def _cleanup_channel(bot, channel):
@@ -134,11 +132,9 @@ def findandreplace(bot, trigger):
     # Correcting other person vs self.
     rnick = Identifier(trigger.group(1) or trigger.nick)
 
-    search_dict = bot.memory['find_lines']
     # only do something if there is conversation to work with
-    if trigger.sender not in search_dict:
-        return
-    if Identifier(rnick) not in search_dict[trigger.sender]:
+    history = bot.memory['find_lines'].get(trigger.sender, {}).get(rnick, [])
+    if not history:
         return
 
     old = trigger.group(2).replace(r'\/', '/')
@@ -166,7 +162,7 @@ def findandreplace(bot, trigger):
     # Look back through the user's lines in the channel until you find a line
     # where the replacement works
     new_phrase = None
-    for line in reversed(search_dict[trigger.sender][rnick]):
+    for line in reversed(history):
         if line.startswith("\x01ACTION"):
             me = True  # /me command
             line = line[8:]
@@ -181,10 +177,8 @@ def findandreplace(bot, trigger):
 
     # Save the new "edited" message.
     action = (me and '\x01ACTION ') or ''  # If /me message, prepend \x01ACTION
-    templist = search_dict[trigger.sender][rnick]
-    templist.append(action + new_phrase)
-    search_dict[trigger.sender][rnick] = templist
-    bot.memory['find_lines'] = search_dict
+    history.append(action + new_phrase)
+    del history[:-10]
 
     # output
     if not me:
