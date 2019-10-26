@@ -36,6 +36,7 @@ def shutdown(bot):
 @module.rule('.*')
 @module.priority('low')
 @module.require_chanmsg
+@module.unblockable
 def collectlines(bot, trigger):
     """Create a temporary log of what people say"""
     # Add a log for the channel and nick, if there isn't already one
@@ -73,6 +74,7 @@ def _cleanup_nickname(bot, nick, channel=None):
 @module.echo
 @module.event('PART')
 @module.priority('low')
+@module.unblockable
 def part_cleanup(bot, trigger):
     """Clean up cached data when a user leaves a channel."""
     if trigger.nick == bot.nick:
@@ -86,6 +88,7 @@ def part_cleanup(bot, trigger):
 @module.echo
 @module.event('QUIT')
 @module.priority('low')
+@module.unblockable
 def quit_cleanup(bot, trigger):
     """Clean up cached data after a user quits IRC."""
     # If Sopel itself quits, shutdown() will handle the cleanup.
@@ -95,6 +98,7 @@ def quit_cleanup(bot, trigger):
 @module.echo
 @module.event('KICK')
 @module.priority('low')
+@module.unblockable
 def kick_cleanup(bot, trigger):
     """Clean up cached data when a user is kicked from a channel."""
     nick = Identifier(trigger.args[1])
