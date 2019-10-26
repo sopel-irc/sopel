@@ -16,13 +16,22 @@ import sys
 import requests
 
 from sopel.module import rule, commands, priority, example, unblockable
-from sopel.tools import web
+from sopel.tools import web, SopelMemory
 
 if sys.version_info.major >= 3:
     unicode = str
 
 
-mangle_lines = {}
+def setup(bot):
+    if 'mangle_lines' not in bot.memory:
+        bot.memory['mangle_lines'] = SopelMemory()
+
+
+def shutdown(bot):
+    try:
+        del bot.memory['mangle_lines']
+    except KeyError:
+        pass
 
 
 def translate(text, in_lang='auto', out_lang='en'):
@@ -169,7 +178,6 @@ def get_random_lang(long_list, short_list):
 @commands('mangle', 'mangle2')
 def mangle(bot, trigger):
     """Repeatedly translate the input until it makes absolutely no sense."""
-    global mangle_lines
     long_lang_list = ['fr', 'de', 'es', 'it', 'no', 'he', 'la', 'ja', 'cy', 'ar', 'yi', 'zh', 'nl', 'ru', 'fi', 'hi', 'af', 'jw', 'mr', 'ceb', 'cs', 'ga', 'sv', 'eo', 'el', 'ms', 'lv']
     lang_list = []
     for __ in range(0, 8):
@@ -177,7 +185,7 @@ def mangle(bot, trigger):
     random.shuffle(lang_list)
     if trigger.group(2) is None:
         try:
-            phrase = (mangle_lines[trigger.sender.lower()], '')
+            phrase = (bot.memory['mangle_lines'][trigger.sender.lower()], '')
         except KeyError:
             bot.reply("What do you want me to mangle?")
             return
@@ -212,8 +220,7 @@ def mangle(bot, trigger):
 @priority('low')
 @unblockable
 def collect_mangle_lines(bot, trigger):
-    global mangle_lines
-    mangle_lines[trigger.sender.lower()] = "%s said '%s'" % (trigger.nick, (trigger.group(0).strip()))
+    bot.memory['mangle_lines'][trigger.sender.lower()] = "%s said '%s'" % (trigger.nick, (trigger.group(0).strip()))
 
 
 if __name__ == "__main__":
