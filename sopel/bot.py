@@ -571,14 +571,6 @@ class Sopel(irc.AbstractBot):
                 for func in funcs:
                     trigger = Trigger(self.config, pretrigger, match, account)
 
-                    # check blocked nick/host
-                    if blocked and not func.unblockable and not trigger.admin:
-                        function_name = "%s.%s" % (
-                            func.__module__, func.__name__
-                        )
-                        list_of_blocked_functions.append(function_name)
-                        continue
-
                     # check event
                     if event not in func.event:
                         continue
@@ -597,6 +589,17 @@ class Sopel(irc.AbstractBot):
 
                     # check echo-message feature
                     if is_echo_message and not func.echo:
+                        continue
+
+                    # check blocked nick/host
+                    # done after we know the trigger would have matched so we
+                    # don't spam logs with "prevented from using" entries about
+                    # functions that weren't going to run anyway
+                    if blocked and not func.unblockable and not trigger.admin:
+                        function_name = "%s.%s" % (
+                            func.__module__, func.__name__
+                        )
+                        list_of_blocked_functions.append(function_name)
                         continue
 
                     # call triggered function
