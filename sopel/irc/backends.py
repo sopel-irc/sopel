@@ -175,7 +175,7 @@ class SSLAsynchatBackend(AsynchatBackend):
 
     def handle_connect(self):
         # handle potential TLS connection
-        if self.verify_ssl:
+        if not self.verify_ssl:
             self.ssl = ssl.wrap_socket(self.socket,
                                        do_handshake_on_connect=True,
                                        suppress_ragged_eofs=True)
