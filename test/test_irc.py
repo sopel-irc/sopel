@@ -1,146 +1,324 @@
 # coding=utf-8
-"""Tests for message formatting"""
+"""Tests for core ``sopel.irc``"""
 from __future__ import unicode_literals, absolute_import, print_function, division
 
 import pytest
 
-import asynchat
-import os
-import shutil
-import socket
-import tempfile
-import asyncore
-
-from sopel import irc
-from sopel.tools import Identifier
-import sopel.config as conf
-
-
-HOST = '127.0.0.1'
-SERVER_QUIT = 'QUIT'
-
-
-class BasicServer(asyncore.dispatcher):
-    def __init__(self, address, handler):
-        asyncore.dispatcher.__init__(self)
-        self.response_handler = handler
-        self.create_socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.bind(address)
-        self.address = self.socket.getsockname()
-        self.listen(1)
-        return
-
-    def handle_accept(self):
-        # Called when a client connects to our socket
-        client_info = self.accept()
-        BasicHandler(sock=client_info[0], handler=self.response_handler)
-        self.handle_close()
-        return
-
-    def handle_close(self):
-        self.close()
-
-
-class BasicHandler(asynchat.async_chat):
-    ac_in_buffer_size = 512
-    ac_out_buffer_size = 512
-
-    def __init__(self, sock, handler):
-        self.received_data = []
-        asynchat.async_chat.__init__(self, sock)
-        self.handler_function = handler
-        self.set_terminator(b'\n')
-        return
-
-    def collect_incoming_data(self, data):
-        self.received_data.append(data.decode('utf-8'))
-
-    def found_terminator(self):
-        self._process_command()
-
-    def _process_command(self):
-        command = ''.join(self.received_data)
-        response = self.handler_function(self, command)
-        self.push(':fake.server {}\n'.format(response).encode())
-        self.received_data = []
-
-
-def start_server(rpl_function=None):
-    def rpl_func(msg):
-        print(msg)
-        return msg
-
-    if rpl_function is None:
-        rpl_function = rpl_func
-
-    address = ('localhost', 0)  # let the kernel give us a port
-    server = BasicServer(address, rpl_function)
-    return server
+from sopel import config
+from sopel.irc import AbstractBot
+from sopel.test_tools import MockIRCBackend, rawlist
 
 
 @pytest.fixture
-def bot(request):
-    cfg_dir = tempfile.mkdtemp()
-    print(cfg_dir)
-    filename = tempfile.mkstemp(dir=cfg_dir)[1]
-    os.mkdir(os.path.join(cfg_dir, 'modules'))
-
-    def fin():
-        print('teardown config file')
-        shutil.rmtree(cfg_dir)
-    request.addfinalizer(fin)
-
-    def gen(data):
-        with open(filename, 'w') as fileo:
-            fileo.write(data)
-        cfg = conf.Config(filename)
-        irc_bot = irc.Bot(cfg)
-        irc_bot.config = cfg
-        return irc_bot
-
-    return gen
+def tmpconfig(tmpdir):
+    conf_file = tmpdir.join('conf.ini')
+    conf_file.write("\n".join([
+        "[core]",
+        "owner = Exirel",
+        "nick = Sopel",
+        "user = sopel",
+        "name = Sopel (https://sopel.chat)",
+        "flood_burst_lines = 1000",  # we don't want flood protection here
+    ]))
+    return config.Config(conf_file.strpath)
 
 
-def test_bot_init(bot):
-    test_bot = bot(
-        '[core]\n'
-        'owner=Baz\n'
-        'nick=Foo\n'
-        'user=Bar\n'
-        'name=Sopel\n'
+@pytest.fixture
+def bot(tmpconfig):
+    bot = MockBot(tmpconfig)
+    bot.backend = bot.get_irc_backend()
+    return bot
+
+
+class MockBot(AbstractBot):
+    hostmask = 'test.hostmask.localhost'
+
+    def get_irc_backend(self):
+        return MockIRCBackend(self)
+
+    def dispatch(self, pretrigger):
+        # override to prevent RuntimeError
+        pass
+
+
+def test_on_connect(bot):
+    bot.on_connect()
+
+    assert bot.backend.message_sent == rawlist(
+        'CAP LS 302',
+        'NICK Sopel',
+        'USER sopel +iw Sopel :Sopel (https://sopel.chat)'
     )
-    assert test_bot.nick == Identifier('Foo')
-    assert test_bot.user == 'Bar'
-    assert test_bot.name == 'Sopel'
 
 
-def basic_irc_replies(server, msg):
-    if msg.startswith('NICK'):
-        return '001 Foo :Hello'
-    elif msg.startswith('USER'):
-        # Quit here because good enough
-        server.close()
-    elif msg.startswith('PING'):
-        return 'PONG{}'.format(msg.replace('PING', '', 1))
-    elif msg.startswith('CAP'):
-        return 'CAP * :'
-    elif msg.startswith('QUIT'):
-        server.close()
-    else:
-        return '421 {} :Unknown command'.format(msg)
+def test_on_connect_auth_password(bot):
+    bot.settings.core.auth_method = 'server'
+    bot.settings.core.auth_password = 'auth_secret'
+    bot.on_connect()
 
-
-def test_bot_connect(bot):
-    test_bot = bot(
-        '[core]\n'
-        'owner=Baz\n'
-        'nick=Foo\n'
-        'user=Bar\n'
-        'name=Sopel\n'
-        'host=127.0.0.1\n'
-        'timeout=10\n'
+    assert bot.backend.message_sent == rawlist(
+        'CAP LS 302',
+        'PASS auth_secret',
+        'NICK Sopel',
+        'USER sopel +iw Sopel :Sopel (https://sopel.chat)'
     )
-    s = start_server(basic_irc_replies)
 
-    # Do main run
-    test_bot.run(HOST, s.address[1])
+
+def test_on_connect_server_auth_password(bot):
+    bot.settings.core.server_auth_method = 'server'
+    bot.settings.core.server_auth_password = 'server_secret'
+    bot.on_connect()
+
+    assert bot.backend.message_sent == rawlist(
+        'CAP LS 302',
+        'PASS server_secret',
+        'NICK Sopel',
+        'USER sopel +iw Sopel :Sopel (https://sopel.chat)'
+    )
+
+
+def test_on_connect_auth_password_override_server_auth(bot):
+    bot.settings.core.auth_method = 'server'
+    bot.settings.core.auth_password = 'auth_secret'
+    bot.settings.core.server_auth_method = 'server'
+    bot.settings.core.server_auth_password = 'server_secret'
+    bot.on_connect()
+
+    assert bot.backend.message_sent == rawlist(
+        'CAP LS 302',
+        'PASS auth_secret',
+        'NICK Sopel',
+        'USER sopel +iw Sopel :Sopel (https://sopel.chat)'
+    )
+
+
+def test_write(bot):
+    bot.write(['INFO'])
+
+    assert bot.backend.message_sent == rawlist('INFO')
+
+
+def test_write_args(bot):
+    bot.write(['NICK', 'Sopel'])
+
+    assert bot.backend.message_sent == rawlist('NICK Sopel')
+
+
+def test_write_text(bot):
+    bot.write(['HELP'], '?')
+
+    assert bot.backend.message_sent == rawlist('HELP :?')
+
+
+def test_write_args_text_safe(bot):
+    bot.write(['CMD\nUNSAFE'], 'Unsafe\rtext')
+
+    assert bot.backend.message_sent == rawlist('CMDUNSAFE :Unsafetext')
+
+
+def test_write_args_many(bot):
+    bot.write(['NICK', 'Sopel'])
+    bot.write(['JOIN', '#sopel'])
+
+    assert bot.backend.message_sent == rawlist(
+        'NICK Sopel',
+        'JOIN #sopel',
+    )
+
+
+def test_write_text_many(bot):
+    bot.write(['NICK', 'Sopel'])
+    bot.write(['HELP'], '?')
+
+    assert bot.backend.message_sent == rawlist(
+        'NICK Sopel',
+        'HELP :?',
+    )
+
+
+def test_action(bot):
+    bot.action('is doing some tests', '#sopel')
+
+    assert bot.backend.message_sent == rawlist(
+        'PRIVMSG #sopel :\001ACTION is doing some tests\001',
+    )
+
+
+def test_join(bot):
+    bot.join('#sopel')
+
+    assert bot.backend.message_sent == rawlist(
+        'JOIN #sopel',
+    )
+
+
+def test_join_password(bot):
+    bot.join('#sopel', 'secret_password')
+
+    assert bot.backend.message_sent == rawlist(
+        'JOIN #sopel secret_password',
+    )
+
+
+def test_kick(bot):
+    bot.kick('spambot', '#channel')
+
+    assert bot.backend.message_sent == rawlist(
+        'KICK #channel spambot',
+    )
+
+
+def test_kick_reason(bot):
+    bot.kick('spambot', '#channel', 'Flood!')
+
+    assert bot.backend.message_sent == rawlist(
+        'KICK #channel spambot :Flood!',
+    )
+
+
+def test_notice(bot):
+    bot.notice('Hello world!', '#sopel')
+
+    assert bot.backend.message_sent == rawlist(
+        'NOTICE #sopel :Hello world!',
+    )
+
+
+def test_part(bot):
+    bot.part('#channel')
+
+    assert bot.backend.message_sent == rawlist(
+        'PART #channel',
+    )
+
+
+def test_part_reason(bot):
+    bot.part('#channel', 'Bye!')
+
+    assert bot.backend.message_sent == rawlist(
+        'PART #channel :Bye!',
+    )
+
+
+def test_reply(bot):
+    bot.reply('Thank you!', '#sopel', 'dgw')
+
+    assert bot.backend.message_sent == rawlist(
+        'PRIVMSG #sopel :dgw: Thank you!',
+    )
+
+
+def test_reply_notice(bot):
+    bot.reply('Thank you!', '#sopel', 'dgw', notice=True)
+
+    assert bot.backend.message_sent == rawlist(
+        'NOTICE #sopel :dgw: Thank you!',
+    )
+
+
+def test_say(bot):
+    bot.say('Hello world!', '#sopel')
+
+    assert bot.backend.message_sent == rawlist(
+        'PRIVMSG #sopel :Hello world!',
+    )
+
+
+def test_say_safe(bot):
+    bot.say('Hello\r\nworld!\r\n', '#sopel')
+
+    assert bot.backend.message_sent == rawlist(
+        'PRIVMSG #sopel :Helloworld!',
+    )
+
+
+def test_say_long_fit(bot):
+    """Test a long message that fits into the 512 bytes limit."""
+    text = 'a' * (512 - len('PRIVMSG #sopel :\r\n'))
+    bot.say(text, '#sopel')
+
+    assert bot.backend.message_sent == rawlist(
+        'PRIVMSG #sopel :%s' % text,
+    )
+
+
+def test_say_long_extra(bot):
+    """Test a long message that doesn't fit into the 512 bytes limit."""
+    text = 'a' * (512 - len('PRIVMSG #sopel :\r\n'))
+    bot.say(text + 'b', '#sopel')
+
+    assert bot.backend.message_sent == rawlist(
+        'PRIVMSG #sopel :%s' % text,  # the 'b' is truncated out
+    )
+
+
+def test_say_long_extra_multi_message(bot):
+    """Test a long message that doesn't fit, with split allowed."""
+    text = 'a' * 400
+    bot.say(text + 'b', '#sopel', max_messages=2)
+
+    assert bot.backend.message_sent == rawlist(
+        'PRIVMSG #sopel :%s' % text,  # the 'b' is split from message
+        'PRIVMSG #sopel :b',
+    )
+
+
+def test_say_no_repeat_protection(bot):
+    # five is fine
+    bot.say('hello', '#sopel')
+    bot.say('hello', '#sopel')
+    bot.say('hello', '#sopel')
+    bot.say('hello', '#sopel')
+    bot.say('hello', '#sopel')
+
+    assert bot.backend.message_sent == rawlist(
+        'PRIVMSG #sopel :hello',
+        'PRIVMSG #sopel :hello',
+        'PRIVMSG #sopel :hello',
+        'PRIVMSG #sopel :hello',
+        'PRIVMSG #sopel :hello',
+    )
+
+    # six: replaced by '...'
+    bot.say('hello', '#sopel')
+
+    assert bot.backend.message_sent == rawlist(
+        'PRIVMSG #sopel :hello',
+        'PRIVMSG #sopel :hello',
+        'PRIVMSG #sopel :hello',
+        'PRIVMSG #sopel :hello',
+        'PRIVMSG #sopel :hello',
+        # the extra hello is replaced by '...'
+        'PRIVMSG #sopel :...',
+    )
+
+    # these one will add more '...'
+    bot.say('hello', '#sopel')
+    bot.say('hello', '#sopel')
+
+    assert bot.backend.message_sent == rawlist(
+        'PRIVMSG #sopel :hello',
+        'PRIVMSG #sopel :hello',
+        'PRIVMSG #sopel :hello',
+        'PRIVMSG #sopel :hello',
+        'PRIVMSG #sopel :hello',
+        'PRIVMSG #sopel :...',
+        # the new ones are also replaced by '...'
+        'PRIVMSG #sopel :...',
+        'PRIVMSG #sopel :...',
+    )
+
+    # but at some point it just stops talking
+    bot.say('hello', '#sopel')
+
+    assert bot.backend.message_sent == rawlist(
+        'PRIVMSG #sopel :hello',
+        'PRIVMSG #sopel :hello',
+        'PRIVMSG #sopel :hello',
+        'PRIVMSG #sopel :hello',
+        'PRIVMSG #sopel :hello',
+        #  three time, then stop
+        'PRIVMSG #sopel :...',
+        'PRIVMSG #sopel :...',
+        'PRIVMSG #sopel :...',
+    )

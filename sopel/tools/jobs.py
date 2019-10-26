@@ -7,15 +7,18 @@
     it is not shown in the public documentation.
 
 """
+# Copyright 2019, Florian Strzelecki <florian.strzelecki@gmail.com>
+#
+# Licensed under the Eiffel Forum License 2.
 from __future__ import unicode_literals, absolute_import, print_function, division
 
 import datetime
-import sys
+import logging
 import threading
 import time
 
 
-py3 = sys.version_info.major >= 3
+LOGGER = logging.getLogger(__name__)
 
 
 class JobScheduler(threading.Thread):
@@ -29,10 +32,9 @@ class JobScheduler(threading.Thread):
     It runs forever until the :attr:`stopping` event is set using the
     :meth:`stop` method.
     """
-    def __init__(self, bot):
-        """Requires bot as argument for logging."""
+    def __init__(self, manager):
         threading.Thread.__init__(self)
-        self.bot = bot
+        self.manager = manager
         self.stopping = threading.Event()
         self._jobs = []
         self._mutex = threading.Lock()
@@ -81,13 +83,15 @@ class JobScheduler(threading.Thread):
                     time.sleep(wait_time)
             except KeyboardInterrupt:
                 # Do not block on KeyboardInterrupt
+                LOGGER.debug('Job scheduler stopped by KeyboardInterrupt')
                 raise
             except Exception as error:  # TODO: Be specific
+                LOGGER.error('Error in job scheduler: %s', error)
                 # Modules exceptions are caught earlier, so this is a bit
                 # more serious. Options are to either stop the main thread
                 # or continue this thread and hope that it won't happen
                 # again.
-                self.bot.error(exception=error)
+                self.manager.on_scheduler_error(self, error)
                 # Sleep a bit to guard against busy-looping and filling
                 # the log with useless error messages.
                 time.sleep(10.0)  # seconds
@@ -101,22 +105,23 @@ class JobScheduler(threading.Thread):
     def _run_job(self, job):
         if job.func.thread:
             t = threading.Thread(
-                target=self._call, args=(job.func,)
+                target=self._call, args=(job,)
             )
             t.start()
         else:
-            self._call(job.func)
+            self._call(job)
         job.next()
 
-    def _call(self, func):
+    def _call(self, job):
         """Wrapper for collecting errors from modules."""
         try:
-            func(self.bot)
+            job.func(self.manager)
         except KeyboardInterrupt:
             # Do not block on KeyboardInterrupt
             raise
         except Exception as error:  # TODO: Be specific
-            self.bot.error(exception=error)
+            LOGGER.error('Error while processing job: %s', error)
+            self.manager.on_job_error(self, job, error)
 
 
 class Job(object):

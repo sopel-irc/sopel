@@ -21,7 +21,7 @@ import time
 import sopel
 import sopel.module
 import sopel.tools.web
-from sopel.bot import _CapReq
+from sopel.irc.utils import CapReq
 from sopel.tools import Identifier, iteritems, events
 from sopel.tools.target import User, Channel
 import base64
@@ -552,7 +552,7 @@ def receive_cap_ls_reply(bot, trigger):
     ]
     for cap in core_caps:
         if cap not in bot._cap_reqs:
-            bot._cap_reqs[cap] = [_CapReq('', 'coretasks')]
+            bot._cap_reqs[cap] = [CapReq('', 'coretasks')]
 
     def acct_warn(bot, cap):
         LOGGER.info('Server does not support %s, or it conflicts with a custom '
@@ -566,7 +566,7 @@ def receive_cap_ls_reply(bot, trigger):
     auth_caps = ['account-notify', 'extended-join', 'account-tag']
     for cap in auth_caps:
         if cap not in bot._cap_reqs:
-            bot._cap_reqs[cap] = [_CapReq('', 'coretasks', acct_warn)]
+            bot._cap_reqs[cap] = [CapReq('', 'coretasks', acct_warn)]
 
     for cap, reqs in iteritems(bot._cap_reqs):
         # At this point, we know mandatory and prohibited don't co-exist, but

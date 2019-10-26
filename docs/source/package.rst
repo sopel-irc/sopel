@@ -11,3 +11,4 @@ Sopel Package API
     config
     db
     api
+    irc
