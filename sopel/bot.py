@@ -539,10 +539,36 @@ class Sopel(irc.AbstractBot):
             if not trigger.is_privmsg:
                 self._times[trigger.sender][func] = current_time
 
-    def dispatch(self, pretrigger):
-        """Dispatch a parsed message to any registered callables.
+    def get_triggered_callables(self, priority, pretrigger, blocked):
+        """Get triggered callables by priority.
 
-        :param PreTrigger pretrigger: a parsed message from the server
+        :param str priority: priority to retrieve callables
+        :param pretrigger: Sopel pretrigger object
+        :type pretrigger: :class:`~sopel.trigger.PreTrigger`
+        :param bool blocked: true if nick or channel is blocked from triggering
+                             callables
+        :return: a tuple with the callable, the trigger, and if it's blocked
+        :rtype: :class:`tuple`
+
+        This methods retrieves all triggered callables for this ``priority``
+        level. It yields each function with its
+        :class:`trigger<sopel.trigger.Trigger>` object and a boolean
+        flag to tell if this callable is blocked or not.
+
+        To be triggered, a callable must match the ``pretrigger`` using a regex
+        pattern. Then it must comply with other criteria (if any) such as
+        event, intents, and echo-message filters.
+
+        A triggered callable won't actually be invoked by Sopel if the nickname
+        or hostname is ``blocked``, *unless* the nickname is an admin or
+        the callable is marked as "unblockable".
+
+        .. seealso::
+
+            Sopel invokes triggered callables in its :meth:`~.dispatch` method.
+            The priority of a callable can be set with the
+            :func:`sopel.module.priority` decorator. Other decorators from
+            :mod:`sopel.module` provide additional criteria and conditions.
         """
         args = pretrigger.args
         text = args[-1] if args else ''
@@ -556,63 +582,100 @@ class Sopel(irc.AbstractBot):
         user_obj = self.users.get(nick)
         account = user_obj.account if user_obj else None
 
-        if self.config.core.nick_blocks or self.config.core.host_blocks:
+        # get a copy of the list of (regex, function) to prevent race-condition
+        # e.g. when a callable wants to remove callable (other or itself)
+        # from the bot, Python won't (and must not) allow to modify a dict
+        # while it iterates over this very same dict.
+        items = list(self._callables[priority].items())
+
+        for regexp, funcs in items:
+            match = regexp.match(text)
+            if not match:
+                continue
+
+            for func in funcs:
+                trigger = Trigger(
+                    self.settings, pretrigger, match, account)
+
+                # check event
+                if event not in func.event:
+                    continue
+
+                # check intents
+                if hasattr(func, 'intents'):
+                    if not intent:
+                        continue
+
+                    match = any(
+                        func_intent.match(intent)
+                        for func_intent in func.intents
+                    )
+                    if not match:
+                        continue
+
+                # check echo-message feature
+                if is_echo_message and not func.echo:
+                    continue
+
+                is_unblockable = func.unblockable or trigger.admin
+                is_blocked = blocked and not is_unblockable
+                yield (func, trigger, is_blocked)
+
+    def _is_pretrigger_blocked(self, pretrigger):
+        if self.settings.core.nick_blocks or self.settings.core.host_blocks:
             nick_blocked = self._nick_blocked(pretrigger.nick)
             host_blocked = self._host_blocked(pretrigger.host)
         else:
             nick_blocked = host_blocked = None
-        blocked = bool(nick_blocked or host_blocked)
 
+        return (nick_blocked, host_blocked)
+
+    def dispatch(self, pretrigger):
+        """Dispatch a parsed message to any registered callables.
+
+        :param PreTrigger pretrigger: a parsed message from the server
+
+        The ``pretrigger`` (a parsed message) is used to find matching callables:
+        it will retrieve them by order of priority, and run them. It runs
+        triggered callables in separate threads, unless they are marked
+        otherwise with the :func:`sopel.module.thread` decorator.
+
+        However, it won't run triggered callables at all when they can't be run
+        for blocked nickname or hostname (unless marked "unblockable" with
+        the :func:`sopel.module.unblockable` decorator).
+
+        .. seealso::
+
+            To get a list of triggered callables by priority, it uses
+            :meth:`~get_triggered_callables`. This method is also responsible
+            for telling ``dispatch`` if the function is blocked or not.
+        """
+        # nickname/hostname blocking
+        nick_blocked = host_blocked = self._is_pretrigger_blocked(pretrigger)
+        blocked = bool(nick_blocked or host_blocked)
         list_of_blocked_functions = []
+
+        # trigger by priority
         for priority in ('high', 'medium', 'low'):
-            for regexp, funcs in self._callables[priority].items():
-                match = regexp.match(text)
-                if not match:
+            items = self.get_triggered_callables(priority, pretrigger, blocked)
+            for func, trigger, is_blocked in items:
+                # skip running blocked functions, but track them for logging
+                if is_blocked:
+                    function_name = "%s.%s" % (
+                        func.__module__, func.__name__
+                    )
+                    list_of_blocked_functions.append(function_name)
                     continue
 
-                for func in funcs:
-                    trigger = Trigger(self.config, pretrigger, match, account)
-
-                    # check event
-                    if event not in func.event:
-                        continue
-
-                    # check intents
-                    if hasattr(func, 'intents'):
-                        if not intent:
-                            continue
-
-                        match = any(
-                            func_intent.match(intent)
-                            for func_intent in func.intents
-                        )
-                        if not match:
-                            continue
-
-                    # check echo-message feature
-                    if is_echo_message and not func.echo:
-                        continue
-
-                    # check blocked nick/host
-                    # done after we know the trigger would have matched so we
-                    # don't spam logs with "prevented from using" entries about
-                    # functions that weren't going to run anyway
-                    if blocked and not func.unblockable and not trigger.admin:
-                        function_name = "%s.%s" % (
-                            func.__module__, func.__name__
-                        )
-                        list_of_blocked_functions.append(function_name)
-                        continue
-
-                    # call triggered function
-                    wrapper = SopelWrapper(
-                        self, trigger, output_prefix=func.output_prefix)
-                    if func.thread:
-                        targs = (func, wrapper, trigger)
-                        t = threading.Thread(target=self.call, args=targs)
-                        t.start()
-                    else:
-                        self.call(func, wrapper, trigger)
+                # call triggered function
+                wrapper = SopelWrapper(
+                    self, trigger, output_prefix=func.output_prefix)
+                if func.thread:
+                    targs = (func, wrapper, trigger)
+                    t = threading.Thread(target=self.call, args=targs)
+                    t.start()
+                else:
+                    self.call(func, wrapper, trigger)
 
         if list_of_blocked_functions:
             if nick_blocked and host_blocked:
@@ -624,7 +687,7 @@ class Sopel(irc.AbstractBot):
             LOGGER.info(
                 "[%s]%s prevented from using %s.",
                 block_type,
-                nick,
+                pretrigger.nick,
                 ', '.join(list_of_blocked_functions)
             )
 
