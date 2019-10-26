@@ -17,7 +17,7 @@ import threading
 from collections import defaultdict
 
 from sopel.config.types import StaticSection, ValidatedAttribute
-from sopel.module import commands, nickname_commands, rule, priority, example
+from sopel import module
 from sopel.tools import Identifier
 from sopel.tools.time import get_timezone, format_time
 
@@ -131,9 +131,9 @@ def shutdown(bot):
             pass
 
 
-@commands('tell', 'ask')
-@nickname_commands('tell', 'ask')
-@example('$nickname, tell dgw he broke something again.')
+@module.commands('tell', 'ask')
+@module.nickname_commands('tell', 'ask')
+@module.example('$nickname, tell dgw he broke something again.')
 def f_remind(bot, trigger):
     """Give someone a message the next time they're seen"""
     teller = trigger.nick
@@ -224,8 +224,9 @@ def nick_match_tellee(nick, tellee):
     return nick.lower() == tellee.lower()
 
 
-@rule('(.*)')
-@priority('low')
+@module.rule('(.*)')
+@module.priority('low')
+@module.unblockable
 def message(bot, trigger):
     nick = trigger.nick
 
