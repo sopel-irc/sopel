@@ -27,8 +27,9 @@ class PreTrigger(object):
 
     def __init__(self, own_nick, line):
         """own_nick is the bot's nick, needed to correctly parse sender.
-        line is the full line from the server."""
-        line = line.strip('\r')
+        line is the full line from the server or from simulated echo
+        message."""
+        line = line.strip('\r\n')
         self.line = line
 
         # Break off IRCv3 message tags, if present
