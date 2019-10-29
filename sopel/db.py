@@ -160,7 +160,7 @@ class SopelDB(object):
                            password=db_pass, host=db_host, port=db_port,
                            database=db_name, query=query)
 
-        self.engine = create_engine(self.url)
+        self.engine = create_engine(self.url, pool_recycle=3600)
 
         # Catch any errors connecting to database
         try:
