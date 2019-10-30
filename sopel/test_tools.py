@@ -97,10 +97,6 @@ class MockSopel(object):
         self.memory = sopel.tools.SopelMemory()
         self.memory['url_callbacks'] = sopel.tools.SopelMemory()
 
-        self.ops = {}
-        self.halfplus = {}
-        self.voices = {}
-
         self.config = MockConfig()
         self._init_config()
 
