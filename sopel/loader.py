@@ -83,7 +83,7 @@ def clean_callable(func, config):
             if regexp not in func.rule:
                 func.rule.append(regexp)
         if hasattr(func, 'example'):
-            # If no examples are flagged as user-facing, just show the first one like Sopel<7 did
+            # If no examples are flagged as user-facing, just show the first one like Sopel<7.0 did
             examples = [rec["example"] for rec in func.example if rec["help"]] or [func.example[0]["example"]]
             for i, example in enumerate(examples):
                 example = example.replace('$nickname', nick)
