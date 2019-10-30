@@ -69,7 +69,6 @@ class Sopel(irc.AbstractBot):
         self._command_groups = collections.defaultdict(list)
         """A mapping of module names to a list of commands in it."""
 
-        self.stats = {}  # deprecated, remove in 7.0
         self._times = {}
         """
         A dictionary mapping lowercased nicks to dictionaries which map
