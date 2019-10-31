@@ -5,8 +5,7 @@ from __future__ import unicode_literals, absolute_import, print_function, divisi
 import pytest
 
 from sopel import config
-from sopel.irc import AbstractBot
-from sopel.test_tools import MockIRCBackend, rawlist
+from sopel.tests import rawlist
 
 
 @pytest.fixture
@@ -24,21 +23,8 @@ def tmpconfig(tmpdir):
 
 
 @pytest.fixture
-def bot(tmpconfig):
-    bot = MockBot(tmpconfig)
-    bot.backend = bot.get_irc_backend()
-    return bot
-
-
-class MockBot(AbstractBot):
-    hostmask = 'test.hostmask.localhost'
-
-    def get_irc_backend(self):
-        return MockIRCBackend(self)
-
-    def dispatch(self, pretrigger):
-        # override to prevent RuntimeError
-        pass
+def bot(tmpconfig, botfactory):
+    return botfactory(tmpconfig)
 
 
 def test_on_connect(bot):

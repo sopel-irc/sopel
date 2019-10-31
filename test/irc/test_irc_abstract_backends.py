@@ -4,7 +4,7 @@ from __future__ import unicode_literals, absolute_import, print_function, divisi
 
 
 from sopel.irc.abstract_backends import AbstractIRCBackend
-from sopel.test_tools import MockIRCBackend
+from sopel.tests.mocks import MockIRCBackend
 
 
 class BotCollector:

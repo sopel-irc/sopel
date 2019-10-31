@@ -4,7 +4,6 @@ env/
 MANIFEST
 doc/build/*
 logs/*
-tests
 sopel.egg-info/*
 *.db
 *.pyc

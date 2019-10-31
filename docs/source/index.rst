@@ -25,3 +25,4 @@ Documentation
 
     run
     package
+    tests
