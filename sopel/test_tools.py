@@ -120,20 +120,23 @@ class MockSopelWrapper(SopelWrapper):
 
 def get_example_test(tested_func, msg, results, privmsg, admin,
                      owner, repeat, use_regexp, ignore=[]):
-    """Get a function that calls tested_func with fake wrapper and trigger.
+    """Get a function that calls ``tested_func`` with fake wrapper and trigger.
 
-    :param tested_func: A sopel callable that accepts SopelWrapper and Trigger.
-    :param msg: Message that is supposed to trigger the command.
-    :param results: Expected output from the callable.
-    :param privmsg: If true, make the message appear to have sent in a private
-                    message to the bot. If false, make it appear to have come
-                    from a channel.
-    :param admin: If true, make the message appear to have come from an admin.
-    :param owner: If true, make the message appear to have come from an owner.
-    :param repeat: How many times to repeat the test. Useful for tests that
-                   return random stuff.
-    :param use_regexp: Bool. If true, results is in regexp format.
-    :param ignore: List of strings to ignore.
+    :param callable tested_func: a Sopel callable that accepts a
+                                 ``SopelWrapper`` and a ``Trigger``
+    :param str msg: message that is supposed to trigger the command
+    :param list results: expected output from the callable
+    :param bool privmsg: if ``True``, make the message appear to have arrived
+                         in a private message to the bot; otherwise make it
+                         appear to have come from a channel
+    :param bool admin: make the message appear to have come from an admin
+    :param bool owner: make the message appear to have come from an owner
+    :param int repeat: how many times to repeat the test; useful for tests that
+                       return random stuff
+    :param bool use_regexp: pass ``True`` if ``results`` are in regexp format
+    :param list ignore: strings to ignore
+    :return: a test function for ``tested_func``
+    :rtype: ``callable``
     """
     def test():
         bot = MockSopel("NickName", admin=admin, owner=owner)
