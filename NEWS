@@ -183,7 +183,7 @@ API changes
   * General cleanup and copy-editing
   * Much more detail and examples to help new bot users and plugin authors
 * Most of Sopel's submodules now define `__all__`, limiting namespace pollution
-  from using `*` in imports [[#1582][]]
+  from using `*` in imports [[#1582][], [#1727][]]
 * Plugins can register themselves via `setuptools` entry points [[#1585][]]
   * This feature is an evolution of the previous mechanism to install plugins
     via PyPI packages, which required a specific directory structure and
@@ -194,7 +194,7 @@ API changes
     `sopel.tools.get_logger()` utility with plugin-specific behavior
   * `sopel.logger.get_logger()` will begin emitting deprecation warnings in
     version 8.0, and will be removed in 9.0
-* `module.event()` decorator no longer requires a rule to work [[#1693][]]
+* `module.event()` decorator no longer requires a rule [[#1693][], [#1727][]]
   * Since 99% (unscientific guesstimate) of event decorators were paired with
     `@module.rule('.*')`, that's now implied if no rule decorator is present
 * Added `sopel.tools.web` (replaces `sopel.web`) [[#1616][], [#1670][]]
@@ -395,6 +395,7 @@ API changes
 [#1703]: https://github.com/sopel-irc/sopel/pull/1703
 [#1708]: https://github.com/sopel-irc/sopel/pull/1708
 [#1714]: https://github.com/sopel-irc/sopel/pull/1714
+[#1727]: https://github.com/sopel-irc/sopel/pull/1727
 
 [api-docs]: https://sopel.chat/docs/
 [auth-config-docs]: https://sopel.chat/docs/configure.html#Authentication
