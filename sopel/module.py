@@ -18,6 +18,7 @@ __all__ = [
     'action_commands',
     'commands',
     'echo',
+    'event',
     'example',
     'intent',
     'interval',
@@ -314,9 +315,9 @@ def event(*event_list):
 
     This is one of a number of events, such as 'JOIN', 'PART', 'QUIT', etc.
     (More details can be found in RFC 1459.) When the Sopel bot is sent one of
-    these events, the function will execute. Note that functions with an event
-    must also be given a rule to match (though it may be '.*', which will
-    always match) or they will not be triggered.
+    these events, the function will execute. Note that the default
+    :meth:`rule` (``.*``) will match *any* line of the correct event type(s).
+    If any rule is explicitly specified, it overrides the default.
 
     :class:`sopel.tools.events` provides human-readable names for many of the
     numeric events, which may help your code be clearer.
