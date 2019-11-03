@@ -385,18 +385,16 @@ def require_privmsg(message=None, reply=False):
     """
     def actual_decorator(function):
         @functools.wraps(function)
-        def _nop(*args, **kwargs):
-            # Assign trigger and bot for easy access later
-            bot, trigger = args[0:2]
+        def guarded(bot, trigger, *args, **kwargs):
             if trigger.is_privmsg:
-                return function(*args, **kwargs)
+                return function(bot, trigger, *args, **kwargs)
             else:
                 if message and not callable(message):
                     if reply:
                         bot.reply(message)
                     else:
                         bot.say(message)
-        return _nop
+        return guarded
 
     # Hack to allow decorator without parens
     if callable(message):
@@ -422,18 +420,16 @@ def require_chanmsg(message=None, reply=False):
     """
     def actual_decorator(function):
         @functools.wraps(function)
-        def _nop(*args, **kwargs):
-            # Assign trigger and bot for easy access later
-            bot, trigger = args[0:2]
+        def guarded(bot, trigger, *args, **kwargs):
             if not trigger.is_privmsg:
-                return function(*args, **kwargs)
+                return function(bot, trigger, *args, **kwargs)
             else:
                 if message and not callable(message):
                     if reply:
                         bot.reply(message)
                     else:
                         bot.say(message)
-        return _nop
+        return guarded
 
     # Hack to allow decorator without parens
     if callable(message):
