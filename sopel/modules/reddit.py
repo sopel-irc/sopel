@@ -16,6 +16,7 @@ import textwrap
 
 import praw
 import prawcore
+import requests
 
 from sopel.formatting import bold, color, colors
 from sopel.module import commands, example, require_chanmsg, url, NOLIMIT, OP
@@ -40,6 +41,32 @@ post_url = r'%s/r/.*?/comments/([\w-]+)/?$' % domain
 short_post_url = r'https?://redd.it/([\w-]+)'
 user_url = r'%s/u(ser)?/([\w-]+)' % domain
 comment_url = r'%s/r/.*?/comments/.*?/.*?/([\w-]+)' % domain
+image_url = r'https?://i.redd.it/\S+'
+video_url = r'https?://v.redd.it/([\w-]+)'
+
+
+@url(image_url)
+def image_info(bot, trigger, match):
+    url = match.group(0)
+    r = praw.Reddit(
+        user_agent=USER_AGENT,
+        client_id='6EiphT6SSQq7FQ',
+        client_secret=None,
+    )
+    results = list(r.subreddit('all').search('url:{}'.format(url), sort='new'))
+    oldest = results[-1]
+    submission_link = 'https://www.reddit.com/r/{}/comments/{}/'.format(
+        oldest.subreddit.name, oldest.id)
+    return rpost_info(bot, trigger, re.match(post_url, submission_link))
+
+
+@url(video_url)
+def video_info(bot, trigger, match):
+    # Get the video URL with a cheeky hack
+    url = requests.head(
+        'https://www.reddit.com/video/{}'.format(match.group(1)),
+        timeout=(10.0, 4.0)).headers['Location']
+    return rpost_info(bot, trigger, re.match(post_url, url))
 
 
 @url(post_url)
