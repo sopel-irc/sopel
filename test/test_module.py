@@ -323,8 +323,8 @@ def test_require_chanmsg(bot, trigger, trigger_pm):
     @module.require_chanmsg
     def mock_(bot, trigger, match=None):
         return True
-    assert mock(bot, trigger) is True
-    assert mock(bot, trigger_pm) is not True
+    assert mock_(bot, trigger) is True
+    assert mock_(bot, trigger_pm) is not True
 
 
 def test_require_privilege(bot, trigger):
