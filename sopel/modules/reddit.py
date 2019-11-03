@@ -69,9 +69,7 @@ def image_info(bot, trigger, match):
         .search('url:{}'.format(url), sort='new')
     )
     oldest = results[-1]
-    submission_link = 'https://www.reddit.com/r/{}/comments/{}/'.format(
-        oldest.subreddit.name, oldest.id)
-    return rpost_info(bot, trigger, re.match(post_url, submission_link))
+    return say_post_info(bot, trigger, oldest.id)
 
 
 @url(video_url)
@@ -80,15 +78,19 @@ def video_info(bot, trigger, match):
     url = requests.head(
         'https://www.reddit.com/video/{}'.format(match.group(1)),
         timeout=(10.0, 4.0)).headers['Location']
-    return rpost_info(bot, trigger, re.match(post_url, url))
+    return say_post_info(bot, trigger, re.match(post_url, url).group(1))
 
 
 @url(post_url)
 @url(short_post_url)
 def rpost_info(bot, trigger, match):
     match = match or trigger
+    return say_post_info(bot, trigger, match.group(1))
+
+
+def say_post_info(bot, trigger, id_):
     try:
-        s = bot.memory['reddit_praw'].submission(id=match.group(1))
+        s = bot.memory['reddit_praw'].submission(id=id_)
 
         message = ('[REDDIT] {title} {link}{nsfw} | {points} points ({percent}) | '
                    '{comments} comments | Posted by {author} | '
