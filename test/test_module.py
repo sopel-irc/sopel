@@ -43,6 +43,12 @@ def trigger_owner(bot):
 
 
 @pytest.fixture
+def trigger_account(bot):
+    line = '@account=egg :egg!egg@eg.gs PRIVMSG #Sopel :Hello, world'
+    return Trigger(bot.config, PreTrigger(Identifier('egg'), line), None, 'egg')
+
+
+@pytest.fixture
 def trigger(bot, pretrigger):
     return Trigger(bot.config, pretrigger, None)
 
@@ -325,6 +331,20 @@ def test_require_chanmsg(bot, trigger, trigger_pm):
         return True
     assert mock_(bot, trigger) is True
     assert mock_(bot, trigger_pm) is not True
+
+
+def test_require_account(bot, trigger, trigger_account):
+    @module.require_account('You need to authenticate to services first.')
+    def mock(bot, trigger, match=None):
+        return True
+    assert mock(bot, trigger) is not True
+    assert mock(bot, trigger_account) is True
+
+    @module.require_account
+    def mock_(bot, trigger, match=None):
+        return True
+    assert mock_(bot, trigger) is not True
+    assert mock_(bot, trigger_account) is True
 
 
 def test_require_privilege(bot, trigger):
