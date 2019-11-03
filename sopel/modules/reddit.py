@@ -45,15 +45,29 @@ image_url = r'https?://i.redd.it/\S+'
 video_url = r'https?://v.redd.it/([\w-]+)'
 
 
+def setup(bot):
+    if 'reddit_praw' not in bot.memory:
+        # Create a PRAW instance just once, at load time
+        bot.memory['reddit_praw'] = praw.Reddit(
+            user_agent=USER_AGENT,
+            client_id='6EiphT6SSQq7FQ',
+            client_secret=None,
+        )
+
+
+def shutdown(bot):
+    # Clean up shared PRAW instance
+    bot.memory.pop('reddit_praw', None)
+
+
 @url(image_url)
 def image_info(bot, trigger, match):
     url = match.group(0)
-    r = praw.Reddit(
-        user_agent=USER_AGENT,
-        client_id='6EiphT6SSQq7FQ',
-        client_secret=None,
+    results = list(
+        bot.memory['reddit_praw']
+        .subreddit('all')
+        .search('url:{}'.format(url), sort='new')
     )
-    results = list(r.subreddit('all').search('url:{}'.format(url), sort='new'))
     oldest = results[-1]
     submission_link = 'https://www.reddit.com/r/{}/comments/{}/'.format(
         oldest.subreddit.name, oldest.id)
@@ -74,12 +88,7 @@ def video_info(bot, trigger, match):
 def rpost_info(bot, trigger, match):
     match = match or trigger
     try:
-        r = praw.Reddit(
-            user_agent=USER_AGENT,
-            client_id='6EiphT6SSQq7FQ',
-            client_secret=None,
-        )
-        s = r.submission(id=match.group(1))
+        s = bot.memory['reddit_praw'].submission(id=match.group(1))
 
         message = ('[REDDIT] {title} {link}{nsfw} | {points} points ({percent}) | '
                    '{comments} comments | Posted by {author} | '
@@ -145,14 +154,8 @@ def rpost_info(bot, trigger, match):
 @url(comment_url)
 def comment_info(bot, trigger, match):
     """Shows information about the linked comment"""
-    r = praw.Reddit(
-        user_agent=USER_AGENT,
-        client_id='6EiphT6SSQq7FQ',
-        client_secret=None,
-    )
-
     try:
-        c = r.comment(match.group(1))
+        c = bot.memory['reddit_praw'].comment(match.group(1))
     except prawcore.exceptions.NotFound:
         bot.say('No such comment.')
         return NOLIMIT
@@ -189,14 +192,9 @@ def comment_info(bot, trigger, match):
 def redditor_info(bot, trigger, match=None):
     """Shows information about the given Redditor"""
     commanded = re.match(bot.config.core.prefix + 'redditor', trigger)
-    r = praw.Reddit(
-        user_agent=USER_AGENT,
-        client_id='6EiphT6SSQq7FQ',
-        client_secret=None,
-    )
     match = match or trigger
     try:
-        u = r.redditor(match.group(2))
+        u = bot.memory['reddit_praw'].redditor(match.group(2))
         message = '[REDDITOR] ' + u.name
         now = dt.datetime.utcnow()
         cakeday_start = dt.datetime.utcfromtimestamp(u.created_utc)
