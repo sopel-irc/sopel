@@ -25,6 +25,7 @@ __all__ = [
     'nickname_commands',
     'priority',
     'rate',
+    'require_account',
     'require_admin',
     'require_chanmsg',
     'require_owner',
@@ -437,6 +438,51 @@ def require_chanmsg(message=None, reply=False):
     # Hack to allow decorator without parens
     if callable(message):
         return actual_decorator(message)
+    return actual_decorator
+
+
+def require_account(message=None, reply=False):
+    """Decorate a function to require services/NickServ authentication.
+
+    :param str message: optional message to say if a user without
+                        authentication tries to trigger this function
+    :param bool reply: use :meth:`~.bot.Sopel.reply` instead of
+                       :meth:`~.bot.Sopel.say` when ``True``; defaults to
+                       ``False``
+
+    .. versionadded:: 7.0.0
+    .. note::
+
+        Only some networks support services authentication, and not all of
+        those implement the standards required for clients like Sopel to
+        determine authentication status. This decorator will block *all* use
+        of functions it decorates on networks that lack the relevant features.
+
+    .. seealso::
+
+        The value of the :class:`trigger<.trigger.Trigger>`'s
+        :meth:`account<.trigger.Trigger.account>` property determines whether
+        this requirement is satisfied, and the property's documentation
+        includes up-to-date details on what features a network must
+        support to allow Sopel to fetch account information.
+    """
+    def actual_decorator(function):
+        @functools.wraps(function)
+        def guarded(bot, trigger, *args, **kwargs):
+            if not trigger.account:
+                if message and not callable(message):
+                    if reply:
+                        bot.reply(message)
+                    else:
+                        bot.say(message)
+            else:
+                return function(bot, trigger, *args, **kwargs)
+        return guarded
+
+    # Hack to allow decorator without parens
+    if callable(message):
+        return actual_decorator(message)
+
     return actual_decorator
 
 
