@@ -83,7 +83,9 @@ OWNER = 16
 
 OPER = 32
 """Privilege level for the +y/+Y channel permissions
-Note: Sopel does not track OPER status except through these channel modes
+
+Note: Except for these (non-standard) channel modes, Sopel does not monitor or
+store any user's OPER status.
 
 .. versionadded:: 7.0.0
 """
