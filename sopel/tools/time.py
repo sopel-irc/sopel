@@ -93,7 +93,7 @@ def get_channel_timezone(db, channel):
 
 
 def get_timezone(db=None, config=None, zone=None, nick=None, channel=None):
-    """Find, and return, the approriate timezone
+    """Find, and return, the appropriate timezone
 
     Time zone is pulled in the following priority:
 
@@ -107,7 +107,7 @@ def get_timezone(db=None, config=None, zone=None, nick=None, channel=None):
 
     If ``db`` is not given, or given but not set up, steps 2 and 3 will be
     skipped. If ``config`` is not given, step 4 will be skipped. If no step
-    yeilds a valid timezone, ``None`` is returned.
+    yields a valid timezone, ``None`` is returned.
 
     Valid timezones are those present in the IANA Time Zone Database.
 

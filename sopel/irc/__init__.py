@@ -360,7 +360,7 @@ class AbstractBot(object):
 
         ``args`` is an iterable of strings, which are joined by spaces.
         ``text`` is treated as though it were the final item in ``args``, but
-        is preceeded by a ``:``. This is a special case which  means that
+        is preceded by a ``:``. This is a special case which  means that
         ``text``, unlike the items in ``args`` may contain spaces (though this
         constraint is not checked by ``write``).
 

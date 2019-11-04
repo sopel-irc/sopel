@@ -472,7 +472,7 @@ def track_quit(bot, trigger):
 @sopel.module.unblockable
 def receive_cap_list(bot, trigger):
     cap = trigger.strip('-=~')
-    # Server is listing capabilites
+    # Server is listing capabilities
     if trigger.args[1] == 'LS':
         receive_cap_ls_reply(bot, trigger)
     # Server denied CAP REQ

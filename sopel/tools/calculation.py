@@ -98,7 +98,7 @@ def guarded_mul(left, right):
 def pow_complexity(num, exp):
     """Estimate the worst case time pow(num, exp) takes to calculate.
 
-    This function is based on experimetal data from the time it takes to
+    This function is based on experimental data from the time it takes to
     calculate "num**exp" on laptop with i7-2670QM processor on a 32 bit
     CPython 2.7.6 interpreter on Windows.
 
@@ -123,7 +123,7 @@ def pow_complexity(num, exp):
 
     The function number were selected by starting with the theoretical
     complexity of exp * log2(num)**2 and fiddling with the exponents
-    untill it more or less matched with the table.
+    until it more or less matched with the table.
 
     Because this function is based on a limited set of data it might
     not give accurate results outside these boundaries. The results
@@ -146,7 +146,7 @@ def guarded_pow(left, right):
     elif not isinstance(right, numbers.Integral):
         pass
     elif pow_complexity(left, right) < 0.5:
-        # Value 0.5 is arbitary and based on a estimated runtime of 0.5s
+        # Value 0.5 is arbitrary and based on an estimated runtime of 0.5s
         # on a fairly decent laptop processor.
         pass
     else:
