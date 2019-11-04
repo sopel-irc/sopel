@@ -245,39 +245,6 @@ def roll(bot, trigger):
         arg_str_raw, pretty_str, result))
 
 
-@sopel.module.commands("choice")
-@sopel.module.commands("ch")
-@sopel.module.commands("choose")
-@sopel.module.priority("medium")
-@sopel.module.example(".choose a, b, c", r'Your options: a, b, c. My choice: (a|b|c)', re=True)
-@sopel.module.example(".choose a | b | c", r'Your options: a, b, c. My choice: (a|b|c)', re=True)
-@sopel.module.example(".choose a,b,c", r'Your options: a, b, c. My choice: (a|b|c)', re=True)
-@sopel.module.example(".choose a|b|c", r'Your options: a, b, c. My choice: (a|b|c)', re=True)
-@sopel.module.example(".choose a b c", r'Your options: a, b, c. My choice: (a|b|c)', re=True)
-@sopel.module.example(".choose a, b | just a",
-                      r'Your options: "a, b", just a. My choice: ((a, b)|(just a))',
-                      re=True)
-@sopel.module.example(".choose a", 'Your options: a. My choice: a')
-def choose(bot, trigger):
-    """.choice option1|option2|option3 - Makes a difficult choice easy."""
-    if not trigger.group(2):
-        return bot.reply('I\'d choose an option, but you didn\'t give me any.')
-    choices = [trigger.group(2)]
-    for delim in '|\\/, ':
-        choices = trigger.group(2).split(delim)
-        if len(choices) > 1:
-            break
-    choices = [choice.strip() for choice in choices]
-    pick = random.choice(choices)
-
-    # Always use a comma in the output
-    display_options = ', '.join(
-        choice if ',' not in choice else '"%s"' % choice
-        for choice in choices
-    )
-    return bot.reply('Your options: %s. My choice: %s' % (display_options, pick))
-
-
 if __name__ == "__main__":
     from sopel.test_tools import run_example_tests
     run_example_tests(__file__)
