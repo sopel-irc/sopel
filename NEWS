@@ -178,7 +178,7 @@ API changes
 -----------
 
 * [API documentation][api-docs] has been overhauled [[#1563][], [#1566][],
-  [#1646][], [#1668][], [#1669][]]
+  [#1646][], [#1668][], [#1669][], [#1680][]]
   * More consistent style
   * Better use of Sphinx features (e.g. parameter definitions, return value
     notes, & version annotations)
@@ -390,6 +390,7 @@ API changes
 [#1677]: https://github.com/sopel-irc/sopel/pull/1677
 [#1678]: https://github.com/sopel-irc/sopel/pull/1678
 [#1679]: https://github.com/sopel-irc/sopel/pull/1679
+[#1680]: https://github.com/sopel-irc/sopel/pull/1680
 [#1684]: https://github.com/sopel-irc/sopel/pull/1684
 [#1685]: https://github.com/sopel-irc/sopel/pull/1685
 [#1690]: https://github.com/sopel-irc/sopel/pull/1690
