@@ -83,7 +83,7 @@ Module changes
 * Fixed `etymology` module error with empty argument [[#1677][]]
 * General code cleanup all around [[#1402][], [#1486][], [#1505][], [#1569][],
   [#1573][], [#1578][], [#1579][], [#1581][], [#1592][], [#1606][], [#1607][],
-  [#1609][], [#1678][]]
+  [#1609][], [#1678][], [#1681][]]
 
 Core changes
 ------------
@@ -204,6 +204,8 @@ API changes
   * The `sopel.web` package will be removed completely in Sopel 8
   * Functions marked as deprecated in the old location (e.g. `web.get()`) do
     *not* carry forward to the new package namespace; they remain deprecated
+* Added `tools.web.unquote()`, the reverse of `tools.web.quote()` [[#1681][]]
+  * Note: This is not available in the `sopel.web` compatibility layer
 * Added a set of methods in the `bot` object to manipulate URL callbacks:
   `bot.register_url_callback`, `bot.unregister_url_callback`, and
   `bot.search_url_callbacks` [[#1508][]]
@@ -391,6 +393,7 @@ API changes
 [#1678]: https://github.com/sopel-irc/sopel/pull/1678
 [#1679]: https://github.com/sopel-irc/sopel/pull/1679
 [#1680]: https://github.com/sopel-irc/sopel/pull/1680
+[#1681]: https://github.com/sopel-irc/sopel/pull/1681
 [#1684]: https://github.com/sopel-irc/sopel/pull/1684
 [#1685]: https://github.com/sopel-irc/sopel/pull/1685
 [#1690]: https://github.com/sopel-irc/sopel/pull/1690
