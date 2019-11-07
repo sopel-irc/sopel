@@ -14,14 +14,7 @@ from requests import get
 
 from sopel.module import commands, example
 from sopel.tools.calculation import eval_equation
-
-if sys.version_info.major < 3:
-    from urllib import quote as _quote
-
-    def quote(s):
-        return _quote(s.encode('utf-8')).decode('utf-8')
-else:
-    from urllib.parse import quote
+from sopel.tools.web import quote
 
 if sys.version_info.major >= 3:
     unichr = chr

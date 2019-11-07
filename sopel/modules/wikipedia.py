@@ -9,24 +9,12 @@ https://sopel.chat
 from __future__ import unicode_literals, absolute_import, print_function, division
 
 import re
-import sys
 
 from requests import get
 
 from sopel.config.types import StaticSection, ValidatedAttribute
 from sopel.module import NOLIMIT, commands, example, url
-
-if sys.version_info.major < 3:
-    from urllib import quote as _quote
-    from urlparse import unquote as _unquote
-
-    def quote(s):
-        return _quote(s.encode('utf-8')).decode('utf-8')
-
-    def unquote(s):
-        return _unquote(s.encode('utf-8')).decode('utf-8')
-else:
-    from urllib.parse import quote, unquote
+from sopel.tools.web import quote, unquote
 
 
 REDIRECT = re.compile(r'^REDIRECT (.*)')

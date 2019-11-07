@@ -41,6 +41,7 @@ __all__ = [
     'entity',
     'iri_to_uri',
     'quote',
+    'unquote',
     'quote_query',
     'search_urls',
     'trim_url',
@@ -143,6 +144,23 @@ def quote(string, safe='/'):
     else:
         string = urllib.parse.quote(str(string), safe)
     return string
+
+
+# six-like shim for Unicode safety
+def unquote(string):
+    """Decodes a URL-encoded string.
+
+    :param str string: the string to decode
+    :return str: the decoded ``string``
+
+    .. note::
+        This is a shim to make writing cross-compatible plugins for both
+        Python 2 and Python 3 easier.
+    """
+    if sys.version_info.major < 3:
+        return urllib.unquote(string.encode('utf-8')).decode('utf-8')
+    else:
+        return urllib.parse.unquote(string)
 
 
 def quote_query(string):

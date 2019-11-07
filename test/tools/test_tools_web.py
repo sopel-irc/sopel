@@ -4,7 +4,40 @@ from __future__ import unicode_literals, absolute_import, print_function, divisi
 
 import pytest
 
-from sopel.tools.web import search_urls, trim_url
+from sopel.tools.web import quote, search_urls, trim_url, unquote
+
+
+QUOTED_STRINGS = [
+    'C%C3%BA_Chulainn',
+    'Q%C4%B1zmeydan',
+    'G%C3%BCn%C9%99%C5%9Fli%2C_Saatly',
+    'Rozst%C4%99pniewo',
+    'Two%20Blank%20Spaces',
+    'with%2Bplus%2Bsigns',
+    'Exclamatory%21',
+    'either/or',
+    'questioning...%3F',
+    '100%25',
+]
+UNQUOTED_STRINGS = [
+    'Cú_Chulainn',
+    'Qızmeydan',
+    'Günəşli,_Saatly',
+    'Rozstępniewo',
+    'Two Blank Spaces',
+    'with+plus+signs',
+    'Exclamatory!',
+    'either/or',
+    'questioning...?',
+    '100%',
+]
+QUOTE_PAIRS = tuple(zip(UNQUOTED_STRINGS, QUOTED_STRINGS))
+UNQUOTE_PAIRS = tuple(zip(QUOTED_STRINGS, UNQUOTED_STRINGS))
+
+
+@pytest.mark.parametrize('text, result', QUOTE_PAIRS)
+def test_quote(text, result):
+    assert quote(text) == result
 
 
 def test_search_urls():
@@ -168,3 +201,8 @@ def test_trim_url_trailing_char_and_enclosing(trailing_char, left, right):
     # assert the trailing char is kept if there is something else
     test_url = 'http://example.com/' + trailing_char
     assert test_url == trim_url(test_url + right)
+
+
+@pytest.mark.parametrize('text, result', UNQUOTE_PAIRS)
+def test_unquote(text, result):
+    assert unquote(text) == result
