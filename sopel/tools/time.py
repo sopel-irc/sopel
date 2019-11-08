@@ -20,15 +20,10 @@ def validate_timezone(zone):
     1. the string is split on ``', '``, the pieces reversed, and then joined
        with ``/`` (*"New York, America"* becomes *"America/New York"*)
     2. Remaining spaces are replaced with ``_``
-    3. Finally, strings longer than 4 characters are made title-case,
-       and those 4 characters and shorter are made upper-case.
 
     This means ``new york, america`` becomes ``America/New_York``, and ``utc``
-    becomes ``UTC``.
-
-    This is the expected case-insensitivity behavior in the majority of cases.
-    For example, ``edt`` and ``america/new_york`` will both return
-    ``America/New_York``.
+    becomes ``UTC``. In the majority of user-facing interactions, such
+    case-insensitivity will be expected.
 
     If the zone is not valid, ``ValueError`` will be raised.
     """
@@ -36,23 +31,25 @@ def validate_timezone(zone):
         return None
 
     zone = '/'.join(reversed(zone.split(', '))).replace(' ', '_')
-    if len(zone) <= 4:
-        zone = zone.upper()
-    else:
-        zone = zone.title()
-    if zone in pytz.all_timezones:
-        return zone
-    else:
-        raise ValueError("Invalid time zone.")
+    try:
+        tz = pytz.timezone(zone)
+    except pytz.exceptions.UnknownTimeZoneError:
+        raise ValueError('Invalid time zone.')
+    return tz.zone
 
 
 def validate_format(tformat):
-    """Returns the format, if valid, else None"""
+    """Validate a time format string.
+
+    :param string tformat: the format string to validate
+    :return: the format string, if valid
+    :raise ValueError: when ``tformat`` is not a valid time format string
+    """
     try:
         time = datetime.datetime.utcnow()
         time.strftime(tformat)
-    except Exception:  # TODO: Be specific
-        raise ValueError('Invalid time format')
+    except (ValueError, TypeError):
+        raise ValueError('Invalid time format.')
     return tformat
 
 
@@ -93,7 +90,7 @@ def get_channel_timezone(db, channel):
 
 
 def get_timezone(db=None, config=None, zone=None, nick=None, channel=None):
-    """Find, and return, the approriate timezone
+    """Find, and return, the appropriate timezone
 
     Time zone is pulled in the following priority:
 
@@ -107,7 +104,7 @@ def get_timezone(db=None, config=None, zone=None, nick=None, channel=None):
 
     If ``db`` is not given, or given but not set up, steps 2 and 3 will be
     skipped. If ``config`` is not given, step 4 will be skipped. If no step
-    yeilds a valid timezone, ``None`` is returned.
+    yields a valid timezone, ``None`` is returned.
 
     Valid timezones are those present in the IANA Time Zone Database.
 
