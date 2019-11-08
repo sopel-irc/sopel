@@ -270,9 +270,8 @@ def track_modes(bot, trigger):
         # than try to account for non-standard parameter-taking modes.
         _send_who(bot, channel)
         return
-    pairs = dict(zip(modes, nicks))
 
-    for (mode, nick) in pairs.items():
+    for (mode, nick) in zip(modes, nicks):
         priv = bot.channels[channel].privileges.get(nick, 0)
         # Log a warning if the two privilege-tracking data structures
         # get out of sync. That should never happen.
