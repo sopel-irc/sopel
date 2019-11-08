@@ -51,7 +51,7 @@ Module changes
     the way to the bot's default timezone if given an unrecognized argument
   * New `.tz` command, to explicitly get time for a timezone name (in case of
     conflict between a known nick and a timezone name)
-* The `.at` command (from `remind`) understands dates now [[#1590][]]
+* The `.at` command (in `remind`) understands dates now [[#1590][], [#1736][]]
   * Finally, it's possible to set a reminder more than 24 hours ahead without
     first converting the future date/time to a duration for use with `.in`!
 * Short `redd.it` links are now detected by the `reddit` module [[#1503][]]
@@ -271,6 +271,7 @@ API changes
   * `tools.time.get_nick_timezone()` and `tools.time.get_channel_timezone()`,
     for cases where the fallback behavior(s) of `tools.time.get_timezone()`
     would be undesired [[#1592][]]
+* Made `tools.time.validate_timezone()` more robust [[#1707][]]
 * Added alias for 462 numeric in `tools.events` [[#1665][]]
   * [RFC 2812][] defined an incorrect spelling, `ERR_ALREADYREGISTRED`, and
     Sopel copied it verbatim
@@ -400,9 +401,11 @@ API changes
 [#1693]: https://github.com/sopel-irc/sopel/pull/1693
 [#1697]: https://github.com/sopel-irc/sopel/pull/1697
 [#1703]: https://github.com/sopel-irc/sopel/pull/1703
+[#1707]: https://github.com/sopel-irc/sopel/pull/1707
 [#1708]: https://github.com/sopel-irc/sopel/pull/1708
 [#1714]: https://github.com/sopel-irc/sopel/pull/1714
 [#1727]: https://github.com/sopel-irc/sopel/pull/1727
+[#1736]: https://github.com/sopel-irc/sopel/pull/1736
 
 [api-docs]: https://sopel.chat/docs/
 [auth-config-docs]: https://sopel.chat/docs/configure.html#Authentication
