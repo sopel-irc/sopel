@@ -2,7 +2,7 @@
  Sopel
 =======
 
-|version| |build| |issues| |coverage-status| |license| |ocbackers| |ocsponsors|
+|version| |build| |issues| |alerts| |coverage-status| |license|
 
 Introduction
 ------------
@@ -124,13 +124,9 @@ __ Sponsor_
    :target: https://travis-ci.org/sopel-irc/sopel
 .. |issues| image:: https://img.shields.io/github/issues/sopel-irc/sopel.svg
    :target: https://github.com/sopel-irc/sopel/issues
+.. |alerts| image:: https://img.shields.io/lgtm/alerts/g/sopel-irc/sopel.svg
+   :target: https://lgtm.com/projects/g/sopel-irc/sopel/alerts/
 .. |coverage-status| image:: https://coveralls.io/repos/github/sopel-irc/sopel/badge.svg?branch=master
    :target: https://coveralls.io/github/sopel-irc/sopel?branch=master
 .. |license| image:: https://img.shields.io/pypi/l/sopel.svg
    :target: https://github.com/sopel-irc/sopel/blob/master/COPYING
-.. |ocbackers| image:: https://opencollective.com/sopel/backers/badge.svg
-    :alt: Backers on Open Collective
-    :target: #backers
-.. |ocsponsors| image:: https://opencollective.com/sopel/sponsors/badge.svg
-    :alt: Sponsors on Open Collective
-    :target: #sponsors
