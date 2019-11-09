@@ -512,7 +512,7 @@ def take_comment(bot, trigger):
 
     See [meetbot module usage]({% link _usage/meetbot-module.md %})
     """
-    if not trigger.group(4):  # <2 arguements were given
+    if not trigger.group(4):  # <2 arguments were given
         bot.say(
             "Usage: {}comment <#channel> <comment to add>".format(
                 bot.config.core.help_prefix

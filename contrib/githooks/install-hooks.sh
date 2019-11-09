@@ -25,7 +25,7 @@ SYMLINKED_FILES=()
 symlink_file () {
     [ "$(${READLINK_CMD} ${2})" = "${1}" ] \
         && {
-            echo -e "\033[90mSkipping '\033[33m$(basename ${1})\033[90m'... Alread linked."
+            echo -e "\033[90mSkipping '\033[33m$(basename ${1})\033[90m'... Already linked."
             return 0
         } || true
 
@@ -75,5 +75,5 @@ for file_to_link in "${TO_LINK[@]}"; do
         }
 done
 
-echo -e "\033[42mGit hooks installed succesfully.\033[0m"
+echo -e "\033[42mGit hooks installed successfully.\033[0m"
 exit 0

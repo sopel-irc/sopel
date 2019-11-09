@@ -15,10 +15,10 @@ VALID_SITE_URLS = (
     # with scheme
     ('http://example.com', 'http://example.com'),
     ('https://example.com', 'https://example.com'),
-    # wich scheme and URL path
+    # with scheme and URL path
     ('http://example.com/path', 'http://example.com/path'),
     ('https://example.com/path', 'https://example.com/path'),
-    # wich scheme, URL path, and query string
+    # with scheme, URL path, and query string
     ('http://example.com/path?p=val', 'http://example.com/path?p=val'),
     ('https://example.com/path?p=val', 'https://example.com/path?p=val'),
     # not .com TLD

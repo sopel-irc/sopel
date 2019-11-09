@@ -175,7 +175,7 @@ class Trigger(unicode):
     """The account name of the user sending the message.
 
     This is only available if either the account-tag or the account-notify and
-    extended-join capabilites are available. If this isn't the case, or the user
+    extended-join capabilities are available. If this isn't the case, or the user
     sending the message isn't logged in, this will be None.
     """
 

@@ -87,7 +87,7 @@ def setup_logging(settings):
                 'when': 'midnight',
                 'formatter': 'sopel',
             },
-            # catched error log file
+            # caught error log file
             'errorfile': {
                 'level': 'ERROR',
                 'class': 'logging.handlers.TimedRotatingFileHandler',

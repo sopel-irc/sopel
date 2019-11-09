@@ -76,7 +76,7 @@ def show_bug(bot, trigger, match=None):
 
     if error:
         LOGGER.warning('Bugzilla error: %s' % error)
-        bot.say('[BUGZILLA] Unable to get infomation for '
+        bot.say('[BUGZILLA] Unable to get information for '
                 'linked bug (%s)' % error)
         return
 
