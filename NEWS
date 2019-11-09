@@ -83,12 +83,12 @@ Module changes
 * Fixed `etymology` module error with empty argument [[#1677][]]
 * General code cleanup all around [[#1402][], [#1486][], [#1505][], [#1569][],
   [#1573][], [#1578][], [#1579][], [#1581][], [#1592][], [#1606][], [#1607][],
-  [#1609][], [#1678][], [#1681][]]
+  [#1609][], [#1678][], [#1681][], [#1735][]]
 
 Core changes
 ------------
 
-* Alternative database types are once again supported [[#1446][], [#1652][]]
+* More database types are supported again [[#1446][], [#1652][], [#1729][]]
   * For details on using non-SQLite databases, see the [README][readme-db] or
     [installation instructions][install-guide-db]
   * You will probably need to install additional dependencies if you wish to
@@ -152,7 +152,7 @@ Core changes
 * Large amounts of internal refactoring and cleanup [[#1424][], [#1429][],
   [#1456][], [#1458][], [#1472][], [#1479][], [#1510][], [#1522][], [#1527][],
   [#1542][], [#1557][], [#1561][], [#1567][], [#1579][], [#1580][], [#1583][],
-  [#1597][], [#1610][], [#1635][], [#1685][], [#1697][], [#1708][]]
+  [#1597][], [#1610][], [#1635][], [#1685][], [#1697][], [#1708][], [#1735][]]
 * Sopel 7 will emit warnings when run under Python 2, as Python 2.7 has an
   end-of-support date of January 1, 2020 [[#1488][]]
   * While Sopel 7 is intended to remain compatible with Python 2, future
@@ -163,8 +163,9 @@ Core changes
 * Added support for disabling commands (or entire modules) on a per-channel
   basis [[#1235][]]
   * See how it works: [Per-channel configuration][per-channel-conf]
-* Fix tracking users' `away` status [[#1663][], [#1664][], [#1666][], [#1703][]]
+* Fixed tracking users' `away` status [[#1663][], [#1664][], [#1666][], [#1703][]]
 * User information is now periodically updated [[#1664][]]
+* Fixed a case in which MODE tracking could break [[#1737][]]
 * Greatly improved the warning printed when a deprecated function is used,
   adding detail and removing unnecessary traceback lines [[#1568][], [#1613][]]
   * Typical length of output for each deprecated function call reduced from
@@ -178,7 +179,7 @@ API changes
 -----------
 
 * [API documentation][api-docs] has been overhauled [[#1563][], [#1566][],
-  [#1646][], [#1668][], [#1669][], [#1680][]]
+  [#1646][], [#1668][], [#1669][], [#1680][], [#1735][]]
   * More consistent style
   * Better use of Sphinx features (e.g. parameter definitions, return value
     notes, & version annotations)
@@ -405,7 +406,10 @@ API changes
 [#1708]: https://github.com/sopel-irc/sopel/pull/1708
 [#1714]: https://github.com/sopel-irc/sopel/pull/1714
 [#1727]: https://github.com/sopel-irc/sopel/pull/1727
+[#1729]: https://github.com/sopel-irc/sopel/pull/1729
+[#1735]: https://github.com/sopel-irc/sopel/pull/1735
 [#1736]: https://github.com/sopel-irc/sopel/pull/1736
+[#1737]: https://github.com/sopel-irc/sopel/pull/1737
 
 [api-docs]: https://sopel.chat/docs/
 [auth-config-docs]: https://sopel.chat/docs/configure.html#Authentication
