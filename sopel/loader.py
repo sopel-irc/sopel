@@ -47,10 +47,17 @@ def clean_callable(func, config):
     doc = trim_docstring(func.__doc__)
     examples = []
 
+    func.thread = getattr(func, 'thread', True)
+
+    if not is_triggerable(func):
+        # Rate-limiting, priority, etc. doesn't apply to non-triggerable functions.
+        # Adding the default attributes below is a waste of memory, as well as
+        # potentially confusing to other code.
+        return
+
     func.unblockable = getattr(func, 'unblockable', False)
     func.echo = getattr(func, 'echo', False)
     func.priority = getattr(func, 'priority', 'medium')
-    func.thread = getattr(func, 'thread', True)
     func.rate = getattr(func, 'rate', 0)
     func.channel_rate = getattr(func, 'channel_rate', 0)
     func.global_rate = getattr(func, 'global_rate', 0)

@@ -174,6 +174,28 @@ def test_clean_callable_default(tmpconfig, func):
     loader.clean_callable(func, tmpconfig)
 
     # Default values
+    assert hasattr(func, 'thread')
+    assert func.thread is True
+
+    # Not added by default
+    assert not hasattr(func, 'unblockable')
+    assert not hasattr(func, 'priority')
+    assert not hasattr(func, 'rate')
+    assert not hasattr(func, 'channel_rate')
+    assert not hasattr(func, 'global_rate')
+    assert not hasattr(func, 'event')
+    assert not hasattr(func, 'rule')
+    assert not hasattr(func, 'commands')
+    assert not hasattr(func, 'nickname_commands')
+    assert not hasattr(func, 'action_commands')
+    assert not hasattr(func, 'intents')
+
+
+def test_clean_callable_command(tmpconfig, func):
+    setattr(func, 'commands', ['test'])
+    loader.clean_callable(func, tmpconfig)
+
+    # Default values
     assert hasattr(func, 'unblockable')
     assert func.unblockable is False
     assert hasattr(func, 'priority')
@@ -183,18 +205,13 @@ def test_clean_callable_default(tmpconfig, func):
     assert hasattr(func, 'rate')
     assert func.rate == 0
     assert hasattr(func, 'channel_rate')
-    assert func.rate == 0
+    assert func.channel_rate == 0
     assert hasattr(func, 'global_rate')
     assert func.global_rate == 0
     assert hasattr(func, 'event')
     assert func.event == ['PRIVMSG']
-
-    # Not added by default
-    assert not hasattr(func, 'rule')
-    assert not hasattr(func, 'commands')
-    assert not hasattr(func, 'nickname_commands')
-    assert not hasattr(func, 'action_commands')
-    assert not hasattr(func, 'intents')
+    assert hasattr(func, 'rule')
+    assert len(func.rule) == 1
 
 
 def test_clean_callable_event(tmpconfig, func):
@@ -204,9 +221,30 @@ def test_clean_callable_event(tmpconfig, func):
     assert hasattr(func, 'event')
     assert func.event == ['LOW', 'UP', 'MIXED']
 
+    # Default values
+    assert hasattr(func, 'unblockable')
+    assert func.unblockable is False
+    assert hasattr(func, 'priority')
+    assert func.priority == 'medium'
+    assert hasattr(func, 'thread')
+    assert func.thread is True
+    assert hasattr(func, 'rate')
+    assert func.rate == 0
+    assert hasattr(func, 'channel_rate')
+    assert func.channel_rate == 0
+    assert hasattr(func, 'global_rate')
+    assert func.global_rate == 0
+
     # idempotency
     loader.clean_callable(func, tmpconfig)
     assert func.event == ['LOW', 'UP', 'MIXED']
+
+    assert func.unblockable is False
+    assert func.priority == 'medium'
+    assert func.thread is True
+    assert func.rate == 0
+    assert func.channel_rate == 0
+    assert func.global_rate == 0
 
 
 def test_clean_callable_event_string(tmpconfig, func):
@@ -234,10 +272,31 @@ def test_clean_callable_rule(tmpconfig, func):
     assert regex.match('abcd')
     assert not regex.match('efg')
 
+    # Default values
+    assert hasattr(func, 'unblockable')
+    assert func.unblockable is False
+    assert hasattr(func, 'priority')
+    assert func.priority == 'medium'
+    assert hasattr(func, 'thread')
+    assert func.thread is True
+    assert hasattr(func, 'rate')
+    assert func.rate == 0
+    assert hasattr(func, 'channel_rate')
+    assert func.channel_rate == 0
+    assert hasattr(func, 'global_rate')
+    assert func.global_rate == 0
+
     # idempotency
     loader.clean_callable(func, tmpconfig)
     assert len(func.rule) == 1
     assert regex in func.rule
+
+    assert func.unblockable is False
+    assert func.priority == 'medium'
+    assert func.thread is True
+    assert func.rate == 0
+    assert func.channel_rate == 0
+    assert func.global_rate == 0
 
 
 def test_clean_callable_rule_string(tmpconfig, func):
@@ -314,10 +373,31 @@ def test_clean_callable_nickname_command(tmpconfig, func):
     assert regex.match('TestBot: hello!')
     assert not regex.match('TestBot not hello')
 
+    # Default values
+    assert hasattr(func, 'unblockable')
+    assert func.unblockable is False
+    assert hasattr(func, 'priority')
+    assert func.priority == 'medium'
+    assert hasattr(func, 'thread')
+    assert func.thread is True
+    assert hasattr(func, 'rate')
+    assert func.rate == 0
+    assert hasattr(func, 'channel_rate')
+    assert func.channel_rate == 0
+    assert hasattr(func, 'global_rate')
+    assert func.global_rate == 0
+
     # idempotency
     loader.clean_callable(func, tmpconfig)
     assert len(func.rule) == 1
     assert regex in func.rule
+
+    assert func.unblockable is False
+    assert func.priority == 'medium'
+    assert func.thread is True
+    assert func.rate == 0
+    assert func.channel_rate == 0
+    assert func.global_rate == 0
 
 
 def test_clean_callable_action_command(tmpconfig, func):
@@ -573,7 +653,28 @@ def test_clean_callable_intents(tmpconfig, func):
     assert regex.match('AbCdE')
     assert not regex.match('efg')
 
+    # Default values
+    assert hasattr(func, 'unblockable')
+    assert func.unblockable is False
+    assert hasattr(func, 'priority')
+    assert func.priority == 'medium'
+    assert hasattr(func, 'thread')
+    assert func.thread is True
+    assert hasattr(func, 'rate')
+    assert func.rate == 0
+    assert hasattr(func, 'channel_rate')
+    assert func.channel_rate == 0
+    assert hasattr(func, 'global_rate')
+    assert func.global_rate == 0
+
     # idempotency
     loader.clean_callable(func, tmpconfig)
     assert len(func.intents) == 1
     assert regex in func.intents
+
+    assert func.unblockable is False
+    assert func.priority == 'medium'
+    assert func.thread is True
+    assert func.rate == 0
+    assert func.channel_rate == 0
+    assert func.global_rate == 0
