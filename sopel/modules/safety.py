@@ -173,11 +173,11 @@ def url_handler(bot, trigger):
             positives = result['positives']
             total = result['total']
     except requests.exceptions.RequestException:
+        # Ignoring exceptions with VT so MalwareDomains will always work
         LOGGER.debug('[VirusTotal] Error obtaining response.', exc_info=True)
-        pass  # Ignoring exceptions with VT so MalwareDomains will always work
     except InvalidJSONResponse:
+        # Ignoring exceptions with VT so MalwareDomains will always work
         LOGGER.debug('[VirusTotal] Malformed response (invalid JSON).', exc_info=True)
-        pass  # Ignoring exceptions with VT so MalwareDomains will always work
 
     if unicode(netloc).lower() in malware_domains:
         # malwaredomains is more trustworthy than some VT engines
