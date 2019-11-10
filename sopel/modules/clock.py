@@ -76,9 +76,8 @@ def f_time(bot, trigger):
                 set_command = '%ssetctz <zone>' % help_prefix
                 bot.say(
                     'Could not find timezone for channel %s. '
-                    'It can be set with `.setctz <zone>`. '
-                    '(requires OP privileges)'
-                    % argument)
+                    'It can be set with `%s`. (requires OP privileges)'
+                    % (argument, set_command))
                 return
 
         # then, fallback on timezone detection
