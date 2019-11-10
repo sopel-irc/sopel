@@ -226,9 +226,7 @@ class SSLAsynchatBackend(AsynchatBackend):
         except ssl.SSLError as why:
             if why[0] in (asyncore.EWOULDBLOCK, errno.ESRCH):
                 return 0
-            else:
-                raise why
-            return 0
+            raise why
 
     def recv(self, buffer_size):
         """Replacement for self.recv() during SSL connections.
