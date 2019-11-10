@@ -84,6 +84,7 @@ class ConfigurationError(Exception):
 class ConfigurationNotFound(ConfigurationError):
     """Configuration file not found."""
     def __init__(self, filename):
+        super(ConfigurationNotFound, self).__init__(None)
         self.filename = filename
         """Path to the configuration file not found"""
 
