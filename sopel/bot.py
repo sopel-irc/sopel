@@ -328,7 +328,7 @@ class Sopel(irc.AbstractBot):
                 if obj in callb_list:
                     callb_list.remove(obj)
             LOGGER.debug(
-                'Rule callable "%s" unregistered',
+                'Rule callable "%s" unregistered for "%s"',
                 callable_name,
                 rule.pattern)
 
