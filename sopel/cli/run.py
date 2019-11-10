@@ -160,9 +160,9 @@ def add_legacy_options(parser):
                         dest='mod_wizard',
                         help=(
                             "Run the configuration wizard, but only for the "
-                            "module configuration options "
+                            "plugin configuration options "
                             "(deprecated, and will be removed in Sopel 8; "
-                            "use ``sopel configure --modules`` instead)"))
+                            "use ``sopel configure --plugins`` instead)"))
     parser.add_argument('-v', action="store_true",
                         dest='version_legacy',
                         help=(
@@ -222,10 +222,10 @@ def build_parser():
                     'a new configuration file or to update an existing one.',
         help='Sopel\'s Wizard tool')
     parser_configure.add_argument(
-        '--modules',
+        '--plugins',
         action='store_true',
         default=False,
-        dest='modules',
+        dest='plugins',
         help='Check for Sopel plugins that require configuration, and run '
              'their configuration wizards.')
     utils.add_common_arguments(parser_configure)
@@ -437,7 +437,7 @@ def command_start(opts):
 def command_configure(opts):
     """Sopel Configuration Wizard"""
     configpath = utils.find_config(opts.configdir, opts.config)
-    if opts.modules:
+    if opts.plugins:
         utils.plugins_wizard(configpath)
     else:
         utils.wizard(configpath)
@@ -561,7 +561,7 @@ def command_legacy(opts):
     if opts.mod_wizard:
         tools.stderr(
             'WARNING: option --configure-modules is deprecated; '
-            'use `sopel configure --modules` instead')
+            'use `sopel configure --plugins` instead')
         utils.plugins_wizard(configpath)
         return
 

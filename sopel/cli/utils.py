@@ -110,7 +110,7 @@ def wizard(filename):
           "to create your configuration file (%s):\n" % filename)
     config.core_section.configure(settings)
     if settings.option(
-        'Would you like to see if there are any modules '
+        'Would you like to see if there are any plugins '
         'that need configuring'
     ):
         _plugins_wizard(settings)
@@ -155,7 +155,7 @@ def _plugins_wizard(settings):
     usable_plugins = plugins.get_usable_plugins(settings)
     for plugin, is_enabled in usable_plugins.values():
         if not is_enabled:
-            # Do not configure non-enabled modules
+            # Do not configure non-enabled plugins
             continue
 
         name = plugin.name
@@ -185,9 +185,9 @@ def enumerate_configs(config_dir, extension='.cfg'):
 
         >>> from sopel import cli, config
         >>> os.listdir(config.DEFAULT_HOMEDIR)
-        ['config.cfg', 'extra.ini', 'module.cfg', 'README']
+        ['config.cfg', 'extra.ini', 'plugin.cfg', 'README']
         >>> cli.enumerate_configs(config.DEFAULT_HOMEDIR)
-        ['config.cfg', 'module.cfg']
+        ['config.cfg', 'plugin.cfg']
         >>> cli.enumerate_configs(config.DEFAULT_HOMEDIR, '.ini')
         ['extra.ini']
 
@@ -221,7 +221,7 @@ def find_config(config_dir, name, extension='.cfg'):
         >>> os.listdir()
         ['local.cfg', 'extra.ini']
         >>> os.listdir(config.DEFAULT_HOMEDIR)
-        ['config.cfg', 'extra.ini', 'module.cfg', 'README']
+        ['config.cfg', 'extra.ini', 'plugin.cfg', 'README']
         >>> run_script.find_config(config.DEFAULT_HOMEDIR, 'local.cfg')
         'local.cfg'
         >>> run_script.find_config(config.DEFAULT_HOMEDIR, 'local')
