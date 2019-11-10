@@ -83,7 +83,7 @@ Module changes
 * Fixed `etymology` module error with empty argument [[#1677][]]
 * General code cleanup all around [[#1402][], [#1486][], [#1505][], [#1569][],
   [#1573][], [#1578][], [#1579][], [#1581][], [#1592][], [#1606][], [#1607][],
-  [#1609][], [#1678][], [#1681][], [#1735][]]
+  [#1609][], [#1678][], [#1681][], [#1717][], [#1735][]]
 
 Core changes
 ------------
@@ -179,7 +179,7 @@ API changes
 -----------
 
 * [API documentation][api-docs] has been overhauled [[#1563][], [#1566][],
-  [#1646][], [#1668][], [#1669][], [#1680][], [#1735][]]
+  [#1646][], [#1668][], [#1669][], [#1680][], [#1719][], [#1727][], [#1735][]]
   * More consistent style
   * Better use of Sphinx features (e.g. parameter definitions, return value
     notes, & version annotations)
@@ -197,7 +197,7 @@ API changes
     `sopel.tools.get_logger()` utility with plugin-specific behavior
   * `sopel.logger.get_logger()` will begin emitting deprecation warnings in
     version 8.0, and will be removed in 9.0
-* `module.event()` decorator no longer requires a rule [[#1693][], [#1727][]]
+* `module.event()` decorator no longer requires a rule [[#1693][], [#1709][]]
   * Since 99% (unscientific guesstimate) of event decorators were paired with
     `@module.rule('.*')`, that's now implied if no rule decorator is present
 * Added `sopel.tools.web` (replaces `sopel.web`) [[#1616][], [#1670][]]
@@ -404,7 +404,10 @@ API changes
 [#1703]: https://github.com/sopel-irc/sopel/pull/1703
 [#1707]: https://github.com/sopel-irc/sopel/pull/1707
 [#1708]: https://github.com/sopel-irc/sopel/pull/1708
+[#1709]: https://github.com/sopel-irc/sopel/pull/1709
 [#1714]: https://github.com/sopel-irc/sopel/pull/1714
+[#1717]: https://github.com/sopel-irc/sopel/pull/1717
+[#1719]: https://github.com/sopel-irc/sopel/pull/1719
 [#1727]: https://github.com/sopel-irc/sopel/pull/1727
 [#1729]: https://github.com/sopel-irc/sopel/pull/1729
 [#1735]: https://github.com/sopel-irc/sopel/pull/1735
