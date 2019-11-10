@@ -148,14 +148,13 @@ def post_to_ubuntu(msg):
         'expiration': '',
         'content': msg,
     }
-    try:
-        result = _requests_post_catch_errors('https://pastebin.ubuntu.com/', data=data)
-    except PostingException:
-        raise
+    result = _requests_post_catch_errors(
+        'https://pastebin.ubuntu.com/', data=data)
 
-    if not re.match(r'https://pastebin.ubuntu.com/p/[^/]+/', result.url):
+    if not re.match(r'https://pastebin\.ubuntu\.com/p/[^/]+/', result.url):
         LOGGER.error("Invalid Ubuntu pastebin response url %s", result.url)
-        raise PostingException('Invalid response from Ubuntu pastebin: %s' % result.url)
+        raise PostingException(
+            'Invalid response from Ubuntu pastebin: %s' % result.url)
 
     return result.url
 
