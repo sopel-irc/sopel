@@ -187,8 +187,8 @@ def is_chair(nick, channel):
 
 # Start meeting (also performs all required sanity checks)
 @module.commands("startmeeting")
-@module.example(".startmeeting")
-@module.example(".startmeeting Meeting Title")
+@module.example(".startmeeting", user_help=True)
+@module.example(".startmeeting Meeting Title", user_help=True)
 @module.require_chanmsg("Meetings can only be started in channels")
 def startmeeting(bot, trigger):
     """

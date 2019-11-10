@@ -171,7 +171,7 @@ def _roll_dice(bot, dice_expression):
 @sopel.module.priority("medium")
 @sopel.module.example(".roll 3d1+1", 'You roll 3d1+1: (1+1+1)+1 = 4')
 @sopel.module.example(".roll 3d1v2+1", 'You roll 3d1v2+1: (1[+1+1])+1 = 2')
-@sopel.module.example(".roll 2d4", r'You roll 2d4: \(\d\+\d\) = \d', re=True)
+@sopel.module.example(".roll 2d4", r'You roll 2d4: \(\d\+\d\) = \d', re=True, user_help=True)
 @sopel.module.example(".roll 100d1", r'[^:]*: \(100x1\) = 100', re=True)
 @sopel.module.example(".roll 1001d1", 'I only have 1000 dice. =(')
 @sopel.module.example(".roll 1d1 + 1d1", 'You roll 1d1 + 1d1: (1) + (1) = 2')
