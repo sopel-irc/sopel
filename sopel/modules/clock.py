@@ -10,47 +10,13 @@ https://sopel.chat
 from __future__ import unicode_literals, absolute_import, print_function, division
 
 from sopel import module, tools
-from sopel.config.types import StaticSection, ValidatedAttribute
 from sopel.tools.time import (
     format_time,
     get_channel_timezone,
     get_nick_timezone,
     get_timezone,
-    validate_format,
     validate_timezone
 )
-
-
-class TimeSection(StaticSection):
-    tz = ValidatedAttribute(
-        'tz',
-        parse=validate_timezone,
-        serialize=validate_timezone,
-        default='UTC')
-    """Default time zone (see https://sopel.chat/tz)"""
-    time_format = ValidatedAttribute(
-        'time_format',
-        parse=validate_format,
-        default='%Y-%m-%d - %T%Z')
-    """Default time format (see http://strftime.net)"""
-
-
-def configure(config):
-    """
-    | name | example | purpose |
-    | ---- | ------- | ------- |
-    | tz | America/Chicago | Preferred time zone (see <https://sopel.chat/tz>); defaults to UTC |
-    | time\\_format | %Y-%m-%d - %T%Z | Preferred time format (see <http://strftime.net>) |
-    """
-    config.define_section('clock', TimeSection)
-    config.clock.configure_setting(
-        'tz', 'Preferred time zone (https://sopel.chat/tz)')
-    config.clock.configure_setting(
-        'time_format', 'Preferred time format (http://strftime.net)')
-
-
-def setup(bot):
-    bot.config.define_section('clock', TimeSection)
 
 
 @module.commands('t', 'time')
