@@ -80,10 +80,15 @@ Module changes
   if they wish to be extra cheeky [[#1470][]]
 * Fixed that the `url` module had to be enabled or some link-handling
   functions didn't work [[#1510][]]
+* Tweaked `.ddg` command output so it's less likely to mangle URLs [[#1713][]]
+* `remind` commands now "reply" with error messages [[#1715][]]
 * Fixed `etymology` module error with empty argument [[#1677][]]
+* Fixed an uncaught exception in `instagram` plugin [[#1702][]]
+* Removed nonsensical uses of the `core.verify_ssl` setting [[#1706][]]
+* Unused `clock` plugin settings have been removed [[#1696][]]
 * General code cleanup all around [[#1402][], [#1486][], [#1505][], [#1569][],
   [#1573][], [#1578][], [#1579][], [#1581][], [#1592][], [#1606][], [#1607][],
-  [#1609][], [#1678][], [#1681][], [#1717][], [#1735][]]
+  [#1609][], [#1678][], [#1681][], [#1696][], [#1717][], [#1735][]]
 
 Core changes
 ------------
@@ -400,12 +405,17 @@ API changes
 [#1685]: https://github.com/sopel-irc/sopel/pull/1685
 [#1690]: https://github.com/sopel-irc/sopel/pull/1690
 [#1693]: https://github.com/sopel-irc/sopel/pull/1693
+[#1696]: https://github.com/sopel-irc/sopel/pull/1696
 [#1697]: https://github.com/sopel-irc/sopel/pull/1697
+[#1702]: https://github.com/sopel-irc/sopel/pull/1702
 [#1703]: https://github.com/sopel-irc/sopel/pull/1703
+[#1706]: https://github.com/sopel-irc/sopel/pull/1706
 [#1707]: https://github.com/sopel-irc/sopel/pull/1707
 [#1708]: https://github.com/sopel-irc/sopel/pull/1708
 [#1709]: https://github.com/sopel-irc/sopel/pull/1709
+[#1713]: https://github.com/sopel-irc/sopel/pull/1713
 [#1714]: https://github.com/sopel-irc/sopel/pull/1714
+[#1715]: https://github.com/sopel-irc/sopel/pull/1715
 [#1717]: https://github.com/sopel-irc/sopel/pull/1717
 [#1719]: https://github.com/sopel-irc/sopel/pull/1719
 [#1727]: https://github.com/sopel-irc/sopel/pull/1727
