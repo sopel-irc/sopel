@@ -233,7 +233,7 @@ def process_urls(bot, trigger, urls):
                     continue
 
         # Call the URL to get a title, if possible
-        title = find_title(url, verify=bot.config.core.verify_ssl)
+        title = find_title(url)
         if not title:
             # No title found: don't handle this URL
             continue

@@ -432,7 +432,7 @@ def meetinglink(bot, trigger):
     if not link.startswith("http"):
         link = "http://" + link
     try:
-        title = find_title(link, verify=bot.config.core.verify_ssl)
+        title = find_title(link)
     except Exception:  # TODO: Be specific
         title = ""
     log_plain("LINK: %s [%s]" % (link, title), trigger.sender)
