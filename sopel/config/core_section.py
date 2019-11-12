@@ -175,13 +175,13 @@ class CoreSection(StaticSection):
     """The default timezone to use for time in messages."""
 
     enable = ListAttribute('enable')
-    """A whitelist of the only modules you want to enable."""
+    """A whitelist of the only plugins you want to enable."""
 
     exclude = ListAttribute('exclude')
-    """A list of modules which should not be loaded."""
+    """A list of plugins which should not be loaded."""
 
     extra = ListAttribute('extra')
-    """A list of other directories you'd like to include modules from."""
+    """A list of other directories you'd like to include plugins from."""
 
     help_prefix = ValidatedAttribute('help_prefix', default='.')
     """The prefix to use in help output."""

@@ -59,7 +59,7 @@ class Sopel(irc.AbstractBot):
         """A dictionary of command names to their documentation.
 
         Each command is mapped to its docstring and any available examples, if
-        declared in the module's code.
+        declared in the plugin's code.
 
         .. versionchanged:: 3.2
             Use the first item in each callable's commands list as the key,
@@ -67,7 +67,7 @@ class Sopel(irc.AbstractBot):
         """
 
         self._command_groups = collections.defaultdict(list)
-        """A mapping of module names to a list of commands in it."""
+        """A mapping of plugin names to a list of commands in it."""
 
         self.stats = {}  # deprecated, remove in 7.0
         self._times = {}
@@ -121,7 +121,7 @@ class Sopel(irc.AbstractBot):
         self.memory = tools.SopelMemory()
         """
         A thread-safe dict for storage of runtime data to be shared between
-        modules. See :class:`sopel.tools.SopelMemory`.
+        plugins. See :class:`sopel.tools.SopelMemory`.
         """
 
         self.shutdown_methods = []
@@ -139,7 +139,7 @@ class Sopel(irc.AbstractBot):
 
     @property
     def command_groups(self):
-        """A mapping of module names to a list of commands in it."""
+        """A mapping of plugin names to a list of commands in it."""
         # This was supposed to be deprecated, but the help command uses this
         return self._command_groups
 
@@ -364,7 +364,7 @@ class Sopel(irc.AbstractBot):
         commands or nick commands but without rules. Callables without rules
         are usually event handlers.
         """
-        # Append module's shutdown function to the bot's list of functions to
+        # Append plugin's shutdown function to the bot's list of functions to
         # call on shutdown
         self.shutdown_methods += shutdowns
         match_any = re.compile('.*')
@@ -421,10 +421,10 @@ class Sopel(irc.AbstractBot):
                         callable_name)
 
             if commands:
-                module_name = callbl.__module__.rsplit('.', 1)[-1]
+                plugin_name = callbl.__module__.rsplit('.', 1)[-1]
                 # TODO doc and make decorator for this. Not sure if this is how
                 # it should work yet, so not making it public for 6.0.
-                category = getattr(callbl, 'category', module_name)
+                category = getattr(callbl, 'category', plugin_name)
                 self._command_groups[category].append(commands[0])
 
             for command, docs in callbl._docs.items():
@@ -506,21 +506,21 @@ class Sopel(irc.AbstractBot):
                     )
                     return
 
-        # if channel has its own config section, check for excluded modules/modules methods
+        # if channel has its own config section, check for excluded plugins/plugin methods
         if trigger.sender in self.config:
             channel_config = self.config[trigger.sender]
 
-            # disable listed modules completely on provided channel
-            if 'disable_modules' in channel_config:
-                disabled_modules = channel_config.disable_modules.split(',')
+            # disable listed plugins completely on provided channel
+            if 'disable_plugins' in channel_config:
+                disabled_plugins = channel_config.disable_plugins.split(',')
 
-                # if "*" is used, we are disabling all modules on provided channel
-                if '*' in disabled_modules:
+                # if "*" is used, we are disabling all plugins on provided channel
+                if '*' in disabled_plugins:
                     return
-                if func.__module__ in disabled_modules:
+                if func.__module__ in disabled_plugins:
                     return
 
-            # disable chosen methods from modules
+            # disable chosen methods from plugins
             if 'disable_commands' in channel_config:
                 disabled_commands = literal_eval(channel_config.disable_commands)
 
@@ -700,7 +700,7 @@ class Sopel(irc.AbstractBot):
 
         # Shutdown plugins
         LOGGER.info(
-            'Calling shutdown for %d modules.', len(self.shutdown_methods))
+            'Calling shutdown for %d plugins.', len(self.shutdown_methods))
 
         for shutdown_method in self.shutdown_methods:
             try:

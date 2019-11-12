@@ -155,7 +155,7 @@ class Config(object):
         already been defined with a different class, ValueError is raised.
 
         If ``validate`` is True, the section's values will be validated, and an
-        exception raised if they are invalid. This is desirable in a module's
+        exception raised if they are invalid. This is desirable in a plugin's
         setup function, for example, but might not be in the configure function.
         """
         if not issubclass(cls_, types.StaticSection):
