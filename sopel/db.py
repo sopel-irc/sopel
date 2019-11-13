@@ -206,6 +206,16 @@ class SopelDB(object):
                 .one_or_none()
 
             if nickname is None:
+                # see if it needs case-mapping migration
+                nickname = session.query(Nicknames) \
+                    .filter(Nicknames.slug == Identifier._lower_swapped(nick)) \
+                    .one_or_none()
+                if nickname is not None:
+                    # it does!
+                    nickname.slug = slug
+                    session.commit()
+
+            if nickname is None:  # "is /* still */ None", if Python had inline comments
                 if not create:
                     raise ValueError('No ID exists for the given nick')
                 # Generate a new ID
