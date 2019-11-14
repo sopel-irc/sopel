@@ -7,25 +7,30 @@ Licensed under the Eiffel Forum License 2.
 
 https://sopel.chat
 """
-from __future__ import unicode_literals, absolute_import, print_function, division
+from __future__ import (
+    absolute_import,
+    division,
+    print_function,
+    unicode_literals
+)
 
 import os
 import re
 import sys
 import tempfile
 
-try:
-    import ConfigParser
-except ImportError:
-    import configparser as ConfigParser
-
-from sopel.bot import SopelWrapper
-from sopel.irc.abstract_backends import AbstractIRCBackend
 import sopel.config
 import sopel.config.core_section
 import sopel.tools
 import sopel.tools.target
 import sopel.trigger
+from sopel.bot import SopelWrapper
+from sopel.irc.abstract_backends import AbstractIRCBackend
+
+try:
+    import ConfigParser
+except ImportError:
+    import configparser as ConfigParser
 
 
 __all__ = [

@@ -1,12 +1,22 @@
 # coding=utf-8
-from __future__ import unicode_literals, absolute_import, print_function, division
+from __future__ import (
+    absolute_import,
+    division,
+    print_function,
+    unicode_literals
+)
 
 import re
 import sys
 
-from sopel.tools import (compile_rule, itervalues, get_command_regexp,
-                         get_nickname_command_regexp, get_action_command_regexp)
 from sopel.config import core_section
+from sopel.tools import (
+    compile_rule,
+    get_action_command_regexp,
+    get_command_regexp,
+    get_nickname_command_regexp,
+    itervalues
+)
 
 default_prefix = core_section.CoreSection.help_prefix.default
 del core_section

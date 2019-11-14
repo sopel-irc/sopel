@@ -12,31 +12,35 @@ functions are available in a new package, ``sopel.tools.web``.
 # Copyright © 2019, dgw, technobabbl.es
 # Licensed under the Eiffel Forum License 2.
 
-from __future__ import unicode_literals, absolute_import, print_function, division
+from __future__ import (
+    absolute_import,
+    division,
+    print_function,
+    unicode_literals
+)
 
 import sys
 
 import requests
 
 from .tools import deprecated
+# Imports to facilitate transition from sopel.web to sopel.tools.web
+from .tools.web import DEFAULT_HEADERS as default_headers  # noqa
+from .tools.web import (
+    USER_AGENT,
+    decode,
+    entity,
+    iri_to_uri,
+    quote,
+    quote_query,
+    urlencode,
+    urlencode_non_ascii
+)
 
 if sys.version_info.major < 3:
     import httplib
 else:
     import http.client as httplib
-
-# Imports to facilitate transition from sopel.web to sopel.tools.web
-from .tools.web import (  # noqa
-    USER_AGENT,
-    DEFAULT_HEADERS as default_headers,
-    entity,
-    decode,
-    quote,
-    quote_query,
-    urlencode_non_ascii,
-    iri_to_uri,
-    urlencode,
-)
 
 __all__ = [
     'USER_AGENT',

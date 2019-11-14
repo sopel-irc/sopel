@@ -10,13 +10,19 @@
 #
 # Licensed under the Eiffel Forum License 2.
 
-from __future__ import unicode_literals, absolute_import, print_function, division
+from __future__ import (
+    absolute_import,
+    division,
+    print_function,
+    unicode_literals
+)
 
-from collections import namedtuple
 import locale
-import pkg_resources
 import re
 import sys
+from collections import namedtuple
+
+import pkg_resources
 
 __all__ = [
     'bot',

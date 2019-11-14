@@ -10,21 +10,27 @@ dispatch function in bot.py and making it easier to maintain.
 # Copyright © 2012, Elad Alfassa <elad@fedoraproject.org>
 # Copyright 2012-2015, Elsie Powell embolalia.com
 # Licensed under the Eiffel Forum License 2.
-from __future__ import unicode_literals, absolute_import, print_function, division
+from __future__ import (
+    absolute_import,
+    division,
+    print_function,
+    unicode_literals
+)
 
-import logging
-from random import randint
+import base64
 import datetime
+import logging
 import re
 import sys
 import time
+from random import randint
+
 import sopel
 import sopel.module
 import sopel.tools.web
 from sopel.irc.utils import CapReq
-from sopel.tools import Identifier, iteritems, events
-from sopel.tools.target import User, Channel
-import base64
+from sopel.tools import Identifier, events, iteritems
+from sopel.tools.target import Channel, User
 
 if sys.version_info.major >= 3:
     unicode = str
