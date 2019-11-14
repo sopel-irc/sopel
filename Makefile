@@ -1,7 +1,11 @@
 .PHONY: quality test coverage_html coverage_report travis clean_doc build_doc install-hooks uninstall-hooks
 
 quality:
+	isort -c -rc sopel
 	./checkstyle.sh
+
+isort:
+	isort -rc sopel
 
 test:
 	coverage run -m py.test -v .

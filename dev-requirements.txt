@@ -8,3 +8,4 @@ flake8-future-import<0.4.6
 setuptools<40.0; python_version == '3.3'
 sphinx
 sphinxcontrib-autoprogram
+isort
