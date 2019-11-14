@@ -51,9 +51,13 @@ Module changes
     the way to the bot's default timezone if given an unrecognized argument
   * New `.tz` command, to explicitly get time for a timezone name (in case of
     conflict between a known nick and a timezone name)
+* The `tell` & `remind` plugins' ".db" files have changed names [[#1699][]]
+  * Both will attempt automatic migration of existing files, if they exist,
+    and output debugging information if the migration fails
 * The `.at` command (in `remind`) understands dates now [[#1590][], [#1736][]]
   * Finally, it's possible to set a reminder more than 24 hours ahead without
     first converting the future date/time to a duration for use with `.in`!
+* A new `tell` plugin setting allows delivering messages privately [[#1694][]]
 * Short `redd.it` links are now detected by the `reddit` module [[#1503][]]
 * Spoilers & NSFW are now separate concepts in the `reddit` plugin [[#1620][]]
   * Reddit implemented spoilers as a distinct post flag some time ago. Sopel's
@@ -405,8 +409,10 @@ API changes
 [#1685]: https://github.com/sopel-irc/sopel/pull/1685
 [#1690]: https://github.com/sopel-irc/sopel/pull/1690
 [#1693]: https://github.com/sopel-irc/sopel/pull/1693
+[#1694]: https://github.com/sopel-irc/sopel/pull/1694
 [#1696]: https://github.com/sopel-irc/sopel/pull/1696
 [#1697]: https://github.com/sopel-irc/sopel/pull/1697
+[#1699]: https://github.com/sopel-irc/sopel/pull/1699
 [#1702]: https://github.com/sopel-irc/sopel/pull/1702
 [#1703]: https://github.com/sopel-irc/sopel/pull/1703
 [#1706]: https://github.com/sopel-irc/sopel/pull/1706
