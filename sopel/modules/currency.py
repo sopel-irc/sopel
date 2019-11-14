@@ -7,7 +7,12 @@ Licensed under the Eiffel Forum License 2.
 
 https://sopel.chat
 """
-from __future__ import unicode_literals, absolute_import, print_function, division
+from __future__ import (
+    absolute_import,
+    division,
+    print_function,
+    unicode_literals
+)
 
 import logging
 import re
@@ -16,8 +21,7 @@ import time
 import requests
 
 from sopel.config.types import StaticSection, ValidatedAttribute
-from sopel.module import commands, example, NOLIMIT, rule
-
+from sopel.module import NOLIMIT, commands, example, rule
 
 FIAT_URL = 'https://api.exchangeratesapi.io/latest?base=EUR'
 FIXER_URL = 'http://data.fixer.io/api/latest?base=EUR&access_key={}'

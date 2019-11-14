@@ -7,13 +7,24 @@ Licensed under the Eiffel Forum License 2.
 
 https://sopel.chat
 """
-from __future__ import unicode_literals, absolute_import, print_function, division
+from __future__ import (
+    absolute_import,
+    division,
+    print_function,
+    unicode_literals
+)
 
 import re
 
 from sopel import formatting
 from sopel.module import (
-    commands, example, priority, OP, HALFOP, require_privilege, require_chanmsg
+    HALFOP,
+    OP,
+    commands,
+    example,
+    priority,
+    require_chanmsg,
+    require_privilege
 )
 from sopel.tools import Identifier
 

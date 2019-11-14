@@ -7,11 +7,16 @@ Licensed under the Eiffel Forum License 2.
 
 https://sopel.chat
 """
-from __future__ import unicode_literals, absolute_import, print_function, division
+from __future__ import (
+    absolute_import,
+    division,
+    print_function,
+    unicode_literals
+)
 
+import platform
 from datetime import datetime
 from os import path
-import platform
 
 from sopel import __version__ as release
 from sopel.module import commands, intent, rate

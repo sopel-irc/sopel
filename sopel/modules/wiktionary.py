@@ -6,7 +6,12 @@ Licensed under the Eiffel Forum License 2.
 
 https://sopel.chat
 """
-from __future__ import unicode_literals, absolute_import, print_function, division
+from __future__ import (
+    absolute_import,
+    division,
+    print_function,
+    unicode_literals
+)
 
 import re
 
@@ -14,7 +19,6 @@ import requests
 
 from sopel.module import commands, example
 from sopel.tools import web
-
 
 uri = 'https://en.wiktionary.org/w/index.php?title=%s&printable=yes'
 r_sup = re.compile(r'<sup[^>]+>.+</sup>')  # Superscripts that are references only, not ordinal indicators, etc...

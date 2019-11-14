@@ -6,10 +6,14 @@ Licensed under the Eiffel Forum License 2.
 
 https://sopel.chat
 """
-from __future__ import unicode_literals, absolute_import, print_function, division
+from __future__ import (
+    absolute_import,
+    division,
+    print_function,
+    unicode_literals
+)
 
 from sopel.module import commands, example
-
 
 # Copied from pronoun.is, leaving a *lot* out. If
 # https://github.com/witch-house/pronoun.is/pull/96 gets merged, using that

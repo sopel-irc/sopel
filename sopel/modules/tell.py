@@ -7,20 +7,24 @@ Licensed under the Eiffel Forum License 2.
 
 https://sopel.chat
 """
-from __future__ import unicode_literals, absolute_import, print_function, division
+from __future__ import (
+    absolute_import,
+    division,
+    print_function,
+    unicode_literals
+)
 
 import io
 import logging
 import os
-import time
 import threading
+import time
 from collections import defaultdict
 
 from sopel.config.types import StaticSection, ValidatedAttribute
-from sopel.module import commands, nickname_commands, rule, priority, example
+from sopel.module import commands, example, nickname_commands, priority, rule
 from sopel.tools import Identifier
-from sopel.tools.time import get_timezone, format_time
-
+from sopel.tools.time import format_time, get_timezone
 
 LOGGER = logging.getLogger(__name__)
 

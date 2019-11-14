@@ -10,20 +10,28 @@ Licensed under the Eiffel Forum License 2.
 
 https://sopel.chat
 """
-from __future__ import unicode_literals, absolute_import, print_function, division
+from __future__ import (
+    absolute_import,
+    division,
+    print_function,
+    unicode_literals
+)
 
-import re
 import collections
 import logging
+import re
 import socket
 import textwrap
 
 import requests
 
-from sopel.config.types import ChoiceAttribute, ValidatedAttribute, StaticSection
-from sopel.module import commands, rule, example, priority
+from sopel.config.types import (
+    ChoiceAttribute,
+    StaticSection,
+    ValidatedAttribute
+)
+from sopel.module import commands, example, priority, rule
 from sopel.tools import SopelMemory
-
 
 SETTING_CACHE_NAMESPACE = 'help-setting-cache'  # Set top-level memory key name
 LOGGER = logging.getLogger(__name__)

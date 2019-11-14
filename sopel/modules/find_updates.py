@@ -9,14 +9,18 @@ Licensed under the Eiffel Forum License 2.
 
 https://sopel.chat
 """
-from __future__ import unicode_literals, absolute_import, print_function, division
+from __future__ import (
+    absolute_import,
+    division,
+    print_function,
+    unicode_literals
+)
 
 import requests
 
 import sopel
 import sopel.module
 import sopel.tools
-
 
 wait_time = 24 * 60 * 60  # check once per day
 startup_check_run = False

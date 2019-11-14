@@ -7,7 +7,12 @@ Licensed under the Eiffel Forum License 2.
 
 https://sopel.chat
 """
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import (
+    absolute_import,
+    division,
+    print_function,
+    unicode_literals
+)
 
 import codecs
 import collections
@@ -17,10 +22,12 @@ import time
 from string import punctuation, whitespace
 
 from sopel import formatting, module, tools
-from sopel.config.types import (FilenameAttribute, StaticSection,
-                                ValidatedAttribute)
+from sopel.config.types import (
+    FilenameAttribute,
+    StaticSection,
+    ValidatedAttribute
+)
 from sopel.modules.url import find_title
-
 
 UNTITLED_MEETING = "Untitled meeting"
 

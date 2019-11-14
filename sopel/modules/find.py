@@ -11,12 +11,18 @@ Licensed under the Eiffel Forum License 2.
 
 https://sopel.chat
 """
-from __future__ import unicode_literals, absolute_import, print_function, division
+from __future__ import (
+    absolute_import,
+    division,
+    print_function,
+    unicode_literals
+)
 
 import re
-from sopel.tools import Identifier, SopelMemory
-from sopel.module import rule, priority, echo
+
 from sopel.formatting import bold
+from sopel.module import echo, priority, rule
+from sopel.tools import Identifier, SopelMemory
 
 
 def setup(bot):

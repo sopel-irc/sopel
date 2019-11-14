@@ -8,16 +8,20 @@ Licensed under the Eiffel Forum License 2.
 
 https://sopel.chat
 """
-from __future__ import unicode_literals, absolute_import, print_function, division
+from __future__ import (
+    absolute_import,
+    division,
+    print_function,
+    unicode_literals
+)
 
 import random
 import re
 
 import requests
 
-from sopel.modules.search import bing_search
 from sopel.module import commands, url
-
+from sopel.modules.search import bing_search
 
 ignored_sites = [
     # For searching the web

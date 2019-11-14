@@ -7,21 +7,25 @@ Licensed under the Eiffel Forum License 2.
 
 https://sopel.chat
 """
-from __future__ import unicode_literals, absolute_import, print_function, division
+from __future__ import (
+    absolute_import,
+    division,
+    print_function,
+    unicode_literals
+)
 
 import codecs
 import collections
-from datetime import datetime
 import logging
 import os
 import re
 import time
+from datetime import datetime
 
 import pytz
 
-from sopel import tools, module
-from sopel.tools.time import get_timezone, format_time, validate_timezone
-
+from sopel import module, tools
+from sopel.tools.time import format_time, get_timezone, validate_timezone
 
 LOGGER = logging.getLogger(__name__)
 
