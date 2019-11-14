@@ -4,7 +4,12 @@
 # Licensed under the Eiffel Forum License 2.
 # When working on core IRC protocol related features, consult protocol
 # documentation at http://www.irchelp.org/irchelp/rfc/
-from __future__ import unicode_literals, absolute_import, print_function, division
+from __future__ import (
+    absolute_import,
+    division,
+    print_function,
+    unicode_literals
+)
 
 import asynchat
 import asyncore
@@ -15,7 +20,8 @@ import os
 import socket
 import sys
 
-from sopel.tools.jobs import JobScheduler, Job
+from sopel.tools.jobs import Job, JobScheduler
+
 from .abstract_backends import AbstractIRCBackend
 from .utils import get_cnames
 
