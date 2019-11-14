@@ -24,6 +24,9 @@ To find all plugins (no matter their sources), the :func:`~.enumerate_plugins`
 function can be used. For a more fine-grained search, ``find_*`` functions
 exist for each type of plugin.
 """
+# Copyright 2019, Florian Strzelecki <florian.strzelecki@gmail.com>
+#
+# Licensed under the Eiffel Forum License 2.
 from __future__ import unicode_literals, absolute_import, print_function, division
 
 import collections
