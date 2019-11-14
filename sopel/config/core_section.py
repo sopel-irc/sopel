@@ -1,12 +1,21 @@
 # coding=utf-8
 
-from __future__ import unicode_literals, absolute_import, print_function, division
+from __future__ import (
+    absolute_import,
+    division,
+    print_function,
+    unicode_literals
+)
 
 import os.path
 
 from sopel.config.types import (
-    StaticSection, ValidatedAttribute, ListAttribute, ChoiceAttribute,
-    FilenameAttribute, NO_DEFAULT
+    NO_DEFAULT,
+    ChoiceAttribute,
+    FilenameAttribute,
+    ListAttribute,
+    StaticSection,
+    ValidatedAttribute
 )
 from sopel.tools import Identifier
 
