@@ -9,21 +9,27 @@ dispatch function in bot.py and making it easier to maintain.
 # (yanovich.net)
 # Copyright © 2012, Elad Alfassa <elad@fedoraproject.org>
 # Copyright 2012-2015, Elsie Powell embolalia.com
+# Copyright 2019, Florian Strzelecki <florian.strzelecki@gmail.com>
+#
 # Licensed under the Eiffel Forum License 2.
 from __future__ import unicode_literals, absolute_import, print_function, division
 
 import logging
 from random import randint
+import collections
 import datetime
 import re
 import sys
 import time
+
 import sopel
 import sopel.module
 import sopel.tools.web
+from sopel import loader
 from sopel.irc.utils import CapReq
 from sopel.tools import Identifier, iteritems, events
 from sopel.tools.target import User, Channel
+from sopel.tools.jobs import Job
 import base64
 
 if sys.version_info.major >= 3:
@@ -33,6 +39,46 @@ LOGGER = logging.getLogger(__name__)
 
 batched_caps = {}
 who_reqs = {}  # Keeps track of reqs coming from this module, rather than others
+
+
+def setup(bot):
+    bot.memory['join_events_queue'] = collections.deque()
+
+    # Manage JOIN flood protection
+    if bot.settings.core.throttle_join:
+        wait_interval = max(bot.settings.core.throttle_wait, 1)
+
+        @sopel.module.interval(wait_interval)
+        def processing_job(bot):
+            _join_event_processing(bot)
+
+        loader.clean_callable(processing_job, bot.settings)
+        bot.scheduler.add_job(Job(wait_interval, processing_job))
+
+
+def shutdown(bot):
+    try:
+        bot.memory['join_events_queue'].clear()
+    except KeyError:
+        pass
+
+
+def _join_event_processing(bot):
+    """Process a batch of JOIN event from the ``join_events_queue`` queue.
+
+    Every time this function is executed, it processes at most
+    ``throttle_join`` JOIN events. For each JOIN, it sends a WHO request to
+    know more about the channel. This will prevent an excess of flood when
+    there are too many channels to join at once.
+    """
+    batch_size = max(bot.settings.core.throttle_join, 1)
+    for _ in range(batch_size):
+        try:
+            channel = bot.memory['join_events_queue'].popleft()
+        except IndexError:
+            break
+        LOGGER.debug('Sending WHO after channel JOIN: %s', channel)
+        _send_who(bot, channel)
 
 
 def auth_after_register(bot):
@@ -83,6 +129,7 @@ def execute_perform(bot, trigger):
     _execute_perform(bot)
 
 
+@sopel.module.priority('high')
 @sopel.module.event(events.RPL_WELCOME, events.RPL_LUSERCLIENT)
 @sopel.module.thread(False)
 @sopel.module.unblockable
@@ -109,15 +156,33 @@ def startup(bot, trigger):
 
     bot.memory['retry_join'] = dict()
 
-    if bot.config.core.throttle_join:
+    channels = bot.config.core.channels
+    if not channels:
+        LOGGER.info('No initial channels to JOIN.')
+    elif bot.config.core.throttle_join:
         throttle_rate = int(bot.config.core.throttle_join)
+        throttle_wait = max(bot.config.core.throttle_wait, 1)
         channels_joined = 0
-        for channel in bot.config.core.channels:
+
+        LOGGER.info(
+            'Joining %d channels (with JOIN throttle ON); '
+            'this may take a moment.',
+            len(channels))
+
+        for channel in channels:
             channels_joined += 1
             if not channels_joined % throttle_rate:
-                time.sleep(1)
+                LOGGER.debug(
+                    'Waiting %ds before next JOIN batch.',
+                    throttle_wait)
+                time.sleep(throttle_wait)
             bot.join(channel)
     else:
+        LOGGER.info(
+            'Joining %d channels (with JOIN throttle OFF); '
+            'this may take a moment.',
+            len(channels))
+
         for channel in bot.config.core.channels:
             bot.join(channel)
 
@@ -158,11 +223,10 @@ def enable_service_auth(bot, trigger):
 @sopel.module.event(events.ERR_NOCHANMODES)
 @sopel.module.priority('high')
 def retry_join(bot, trigger):
-    """Give NickServer enough time to identify on a +R channel.
+    """Give NickServ enough time to identify on a +R channel.
 
     Give NickServ enough time to identify, and retry rejoining an
     identified-only (+R) channel. Maximum of ten rejoin attempts.
-
     """
     channel = trigger.args[1]
     if channel in bot.memory['retry_join'].keys():
@@ -290,6 +354,7 @@ def track_modes(bot, trigger):
         # Something fucky happening, like unusual batching of non-privilege
         # modes together with the ones we expect. Way easier to just re-WHO
         # than try to account for non-standard parameter-taking modes.
+        LOGGER.debug('Sending WHO for channel: %s', channel)
         _send_who(bot, channel)
         return
 
@@ -447,6 +512,7 @@ def _periodic_send_who(bot):
 
     if selected_channel is not None:
         # selected_channel's last who is either none or the oldest valid
+        LOGGER.debug('Sending WHO for channel: %s', selected_channel)
         _send_who(bot, selected_channel)
 
 
@@ -455,18 +521,31 @@ def _periodic_send_who(bot):
 @sopel.module.thread(False)
 @sopel.module.unblockable
 def track_join(bot, trigger):
-    if trigger.nick == bot.nick and trigger.sender not in bot.channels:
-        bot.privileges[trigger.sender] = dict()
-        bot.channels[trigger.sender] = Channel(trigger.sender)
-        _send_who(bot, trigger.sender)
+    channel = trigger.sender
 
-    bot.privileges[trigger.sender][trigger.nick] = 0
+    # is it a new channel?
+    if channel not in bot.channels:
+        LOGGER.info('Channel joined: %s', channel)
+        bot.privileges[channel] = dict()
+        bot.channels[channel] = Channel(channel)
+
+    # did *we* just join?
+    if trigger.nick == bot.nick:
+        if bot.settings.core.throttle_join:
+            LOGGER.debug('JOIN event added to queue for channel: %s', channel)
+            bot.memory['join_events_queue'].append(channel)
+        else:
+            LOGGER.debug('Send direct WHO for channel: %s', channel)
+            _send_who(bot, channel)
+
+    # set initial values
+    bot.privileges[channel][trigger.nick] = 0
 
     user = bot.users.get(trigger.nick)
     if user is None:
         user = User(trigger.nick, trigger.user, trigger.host)
         bot.users[trigger.nick] = user
-    bot.channels[trigger.sender].add_user(user)
+    bot.channels[channel].add_user(user)
 
     if len(trigger.args) > 1 and trigger.args[1] != '*' and (
             'account-notify' in bot.enabled_capabilities and
