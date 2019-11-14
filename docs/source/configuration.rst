@@ -14,7 +14,8 @@ A typical configuration file looks like this::
     use_ssl = true
     port = 6697
     owner = dgw
-    channels = #sopel
+    channels =
+        "#sopel"
 
 which tells the bot what its name is, who its owner is, which server to
 connect to, and which channels to join.
@@ -64,7 +65,7 @@ User Modes
 ----------
 
 To have Sopel set additional user modes upon connection, use the
-:attr:`~CoreSection.modes` setting:
+:attr:`~CoreSection.modes` setting::
 
     [core]
     modes = BpR
@@ -115,7 +116,7 @@ To connect to a server, your bot needs these directives:
 * :attr:`~CoreSection.port`: optional, the port to connect to. Usually 6697 for
   SSL connection and 6667 for unsecure connection, the default value the bot
   will use to connect to the server.
-* :attr:`~CoreSection.use_ssl`: connect using SSL (see below)
+* :attr:`~CoreSection.use_ssl`: connect using SSL (see below)::
 
     [core]
     host = chat.freenode.net
@@ -136,7 +137,7 @@ SSL Connection
 --------------
 
 It is possible to connect to an IRC server with an SSL connection. For that,
-you need to set :attr:`~CoreSection.use_ssl` to true:
+you need to set :attr:`~CoreSection.use_ssl` to true::
 
     [core]
     use_ssl = yes
@@ -177,12 +178,12 @@ Channels
 --------
 
 By default, Sopel won't join any channels. The list of channels to
-join is configured by :attr:`~CoreSection.channels`:
+join is configured by :attr:`~CoreSection.channels`::
 
     [core]
     channels =
-        #sopel
-        #sopelunkers
+        "#sopel"
+        "#sopelunkers"
 
 It is possible to slow down the initial joining of channels using
 :attr:`~CoreSection.throttle_join`, for example if the IRC network kicks
@@ -201,7 +202,7 @@ mechanism. It can be controlled with several directives:
 * :attr:`~CoreSection.flood_refill_rate`: how much time (in seconds) must be
   spent before recovering flood limit.
 
-For example this configuration:
+For example this configuration::
 
     [core]
     flood_burst_lines = 10
@@ -365,7 +366,7 @@ Commands & Plugins
 
 Users can interact with Sopel through its commands, from Sopel's core or
 from Sopel's plugins. A command is a prefix with a name. The prefix can be
-configured with :attr:`~CoreSection.prefix`.
+configured with :attr:`~CoreSection.prefix`::
 
     [core]
     prefix = \.
@@ -388,7 +389,7 @@ Plugins
 
 By default, Sopel will load all available plugins. To exclude a plugin, you
 can put its name in the :attr:`~CoreSection.exclude` directive. Here, the
-``reload`` and ``meetbot`` plugins are disabled:
+``reload`` and ``meetbot`` plugins are disabled::
 
     [core]
     exclude =
@@ -398,7 +399,7 @@ can put its name in the :attr:`~CoreSection.exclude` directive. Here, the
 Alternatively, you can define a list of allowed plugins with
 :attr:`~CoreSection.enable`: plugins not in this list will be ignored. In this
 example, only the ``bugzilla`` and ``remind`` plugins are enabled (because
-``meetbot`` is still excluded):
+``meetbot`` is still excluded)::
 
     [core]
     enable =
@@ -469,7 +470,7 @@ with these settings:
 * ``datefmt`` with :attr:`~CoreSection.logging_channel_datefmt`
 * ``level`` with :attr:`~CoreSection.logging_channel_level`
 
-Example of configuration to log errors only in the ``##bot_logs`` channel:
+Example of configuration to log errors only in the ``##bot_logs`` channel::
 
     [core]
     logging_level = INFO

@@ -13,7 +13,9 @@ For example this is how to access ``core.nick`` on a :class:`Config` object::
     >>> settings.core.nick
     'Sopel'
 
-The configuration file being::
+The configuration file being:
+
+.. code-block:: ini
 
     [core]
     nick = Sopel
@@ -21,7 +23,8 @@ The configuration file being::
     use_ssl = true
     port = 6697
     owner = dgw
-    channels = #sopel
+    channels =
+        "#sopel"
 
 A section can be represented by a subclass of
 :class:`~sopel.config.types.StaticSection`; for example a ``[spam]`` section
