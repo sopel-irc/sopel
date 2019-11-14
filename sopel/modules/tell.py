@@ -8,78 +8,96 @@ https://sopel.chat
 """
 from __future__ import unicode_literals, absolute_import, print_function, division
 
+import io
 import os
 import time
 import threading
-import sys
+from collections import defaultdict
 
+from sopel.config.types import StaticSection, ValidatedAttribute
 from sopel.module import commands, nickname_commands, rule, priority, example
-from sopel.tools import Identifier, iterkeys
+from sopel.tools import Identifier
 from sopel.tools.time import get_timezone, format_time
 
 
-MAXIMUM = 4
+class TellSection(StaticSection):
+    use_private_reminder = ValidatedAttribute(
+        'use_private_reminder', parse=bool, default=False)
+    """When set to ``true``, Sopel will send reminder as private message."""
+    maximum_public = ValidatedAttribute(
+        'maximum_public', parse=int, default=4)
+    """How many Sopel can send in public before using private message."""
 
 
-def loadReminders(fn, lock):
-    lock.acquire()
-    try:
-        result = {}
-        f = open(fn)
-        for line in f:
+def configure(config):
+    """
+    | name | example | purpose |
+    | ---- | ------- | ------- |
+    | use_private_reminder | false | Send reminders as private message |
+    | maximum_public | 4 | Send up to this amount of reminders in public |
+    """
+    config.define_section('tell', TellSection)
+    config.tell.configure_setting(
+        'use_private_reminder',
+        'Should Sopel send tell/ask reminders as private message only?')
+    if not config.tell.use_private_reminder:
+        config.tell.configure_setting(
+            'maximum_public',
+            'How many tell/ask reminders Sopel will send as public message '
+            'before sending them as private messages?')
+
+
+def load_reminders(filename):
+    """Load tell/ask reminders from a ``filename``.
+
+    :param str filename: path to the tell/ask reminders file
+    :return: a dict with the tell/asl reminders
+    :rtype: dict
+    """
+    result = defaultdict(list)
+    with io.open(filename, 'r', encoding='utf-8') as fd:
+        for line in fd:
             line = line.strip()
-            if sys.version_info.major < 3:
-                line = line.decode('utf-8')
             if line:
                 try:
                     tellee, teller, verb, timenow, msg = line.split('\t', 4)
                 except ValueError:
-                    continue  # @@ hmm
-                result.setdefault(tellee, []).append((teller, verb, timenow, msg))
-        f.close()
-    finally:
-        lock.release()
+                    continue  # TODO: Add warning log about malformed reminder
+                result[tellee].append((teller, verb, timenow, msg))
+
     return result
 
 
-def dumpReminders(fn, data, lock):
-    lock.acquire()
-    try:
-        f = open(fn, 'w')
-        for tellee in iterkeys(data):
-            for remindon in data[tellee]:
-                line = '\t'.join((tellee,) + remindon)
-                try:
-                    to_write = line + '\n'
-                    if sys.version_info.major < 3:
-                        to_write = to_write.encode('utf-8')
-                    f.write(to_write)
-                except IOError:
-                    break
-        try:
-            f.close()
-        except IOError:
-            pass
-    finally:
-        lock.release()
+def dump_reminders(filename, data):
+    """Dump tell/ask reminders (``data``) into a ``filename``.
+
+    :param str filename: path to the tell/ask reminders file
+    :param dict data: tell/ask reminders ``dict``
+    """
+    with io.open(filename, 'w', encoding='utf-8') as fd:
+        for tellee, reminders in data.items():
+            for reminder in reminders:
+                line = '\t'.join((tellee,) + tuple(reminder))
+                fd.write(line + '\n')
     return True
 
 
 def setup(bot):
+    bot.config.define_section('tell', TellSection)
     fn = bot.nick + '-' + bot.config.core.host + '.tell.db'
     bot.tell_filename = os.path.join(bot.config.core.homedir, fn)
+
     if not os.path.exists(bot.tell_filename):
-        try:
-            f = open(bot.tell_filename, 'w')
-        except (OSError, IOError):  # TODO: Remove IOError when dropping py2 support
-            pass
-        else:
-            f.write('')
-            f.close()
+        with io.open(bot.tell_filename, 'w', encoding='utf-8') as fd:
+            # if we can't open/write into the file, the tell plugin can't work
+            fd.write('')
+
     if 'tell_lock' not in bot.memory:
         bot.memory['tell_lock'] = threading.Lock()
+
     if 'reminders' not in bot.memory:
-        bot.memory['reminders'] = loadReminders(bot.tell_filename, bot.memory['tell_lock'])
+        with bot.memory['tell_lock']:
+            bot.memory['reminders'] = load_reminders(bot.tell_filename)
 
 
 def shutdown(bot):
@@ -122,74 +140,114 @@ def f_remind(bot, trigger):
     if tellee not in (Identifier(teller), bot.nick, 'me'):
         tz = get_timezone(bot.db, bot.config, None, tellee)
         timenow = format_time(bot.db, bot.config, tz, tellee)
-        bot.memory['tell_lock'].acquire()
-        try:
+        with bot.memory['tell_lock']:
             if tellee not in bot.memory['reminders']:
                 bot.memory['reminders'][tellee] = [(teller, verb, timenow, msg)]
             else:
                 bot.memory['reminders'][tellee].append((teller, verb, timenow, msg))
-        finally:
-            bot.memory['tell_lock'].release()
+            # save the reminders
+            dump_reminders(bot.tell_filename, bot.memory['reminders'])
 
         response = "I'll pass that on when %s is around." % tellee
-
         bot.reply(response)
     elif Identifier(teller) == tellee:
         bot.say('You can %s yourself that.' % verb)
     else:
         bot.say("Hey, I'm not as stupid as Monty you know!")
 
-    dumpReminders(bot.tell_filename, bot.memory['reminders'], bot.memory['tell_lock'])  # @@ tell
 
-
-def getReminders(bot, channel, key, tellee):
+def get_nick_reminders(reminders, nick):
     lines = []
     template = "%s: %s <%s> %s %s %s"
     today = time.strftime('%d %b', time.gmtime())
 
-    bot.memory['tell_lock'].acquire()
-    try:
-        for (teller, verb, datetime, msg) in bot.memory['reminders'][key]:
-            if datetime.startswith(today):
-                datetime = datetime[len(today) + 1:]
-            lines.append(template % (tellee, datetime, teller, verb, tellee, msg))
+    for (teller, verb, datetime, msg) in reminders:
+        if datetime.startswith(today):
+            datetime = datetime[len(today) + 1:]
+        lines.append(template % (nick, datetime, teller, verb, nick, msg))
 
-        try:
-            del bot.memory['reminders'][key]
-        except KeyError:
-            bot.say('Er…', channel)
-    finally:
-        bot.memory['tell_lock'].release()
     return lines
+
+
+def nick_match_tellee(nick, tellee):
+    """Tell if a ``nick`` matches a ``tellee``.
+
+    :param str nick: Nick seen by the bot
+    :param str tellee: Tellee name or pattern
+
+    The check between ``nick`` and ``tellee`` is case-insensitive::
+
+        >>> nick_match_tellee('Exirel', 'exirel')
+        True
+        >>> nick_match_tellee('exirel', 'EXIREL')
+        True
+        >>> nick_match_tellee('exirel', 'dgw')
+        False
+
+    If ``tellee`` ends with a wildcard token (``*`` or ``:``), then ``nick``
+    matches if it starts with ``tellee`` (without the token)::
+
+        >>> nick_match_tellee('Exirel', 'Exi*')
+        True
+        >>> nick_match_tellee('Exirel', 'exi:')
+        True
+        >>> nick_match_tellee('Exirel', 'Exi')
+        False
+
+    Note that this is still case-insensitive.
+    """
+    if tellee[-1] in ['*', ':']:  # these are wildcard token
+        return nick.lower().startswith(tellee.lower().rstrip('*:'))
+    return nick.lower() == tellee.lower()
 
 
 @rule('(.*)')
 @priority('low')
 def message(bot, trigger):
-
-    tellee = trigger.nick
-    channel = trigger.sender
+    nick = trigger.nick
 
     if not os.path.exists(bot.tell_filename):
+        # plugin can't work without its storage file
         return
 
+    # get all matching reminders
     reminders = []
-    remkeys = list(reversed(sorted(bot.memory['reminders'].keys())))
+    tellees = list(reversed(sorted(
+        tellee
+        for tellee in bot.memory['reminders']
+        if nick_match_tellee(nick, tellee)
+    )))
 
-    for remkey in remkeys:
-        if not remkey.endswith('*') or remkey.endswith(':'):
-            if tellee.lower() == remkey.lower():
-                reminders.extend(getReminders(bot, channel, remkey, tellee))
-        elif tellee.lower().startswith(remkey.lower().rstrip('*:')):
-            reminders.extend(getReminders(bot, channel, remkey, tellee))
+    with bot.memory['tell_lock']:
+        # pop reminders for nick
+        reminders = list(
+            reminder
+            for tellee in tellees
+            for reminder in get_nick_reminders(
+                bot.memory['reminders'].pop(tellee, []), nick)
+        )
 
-    for line in reminders[:MAXIMUM]:
-        bot.say(line)
+    # check if there are reminders to send
+    if not reminders:
+        return  # nothing to do
 
-    if reminders[MAXIMUM:]:
-        bot.say('Further messages sent privately')
-        for line in reminders[MAXIMUM:]:
-            bot.say(line, tellee)
+    # then send reminders (as public and/or private messages)
+    if bot.config.tell.use_private_reminder:
+        # send reminders with private messages
+        for line in reminders:
+            bot.say(line, nick)
+    else:
+        # send up to 'maximum_public' reminders to the channel
+        max_public = bot.config.tell.maximum_public
+        for line in reminders[:max_public]:
+            bot.say(line)
 
-    if len(bot.memory['reminders'].keys()) != remkeys:
-        dumpReminders(bot.tell_filename, bot.memory['reminders'], bot.memory['tell_lock'])  # @@ tell
+        # send other reminders directly to nick as private message
+        if reminders[max_public:]:
+            bot.say('Further messages sent privately')
+            for line in reminders[max_public:]:
+                bot.say(line, nick)
+
+    # save reminders left in memory
+    with bot.memory['tell_lock']:
+        dump_reminders(bot.tell_filename, bot.memory['reminders'])
