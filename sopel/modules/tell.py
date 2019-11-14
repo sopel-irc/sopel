@@ -2,6 +2,7 @@
 """
 tell.py - Sopel Tell and Ask Module
 Copyright 2008, Sean B. Palmer, inamidst.com
+Copyright 2019, dgw, technobabbl.es
 Licensed under the Eiffel Forum License 2.
 
 https://sopel.chat
@@ -9,6 +10,7 @@ https://sopel.chat
 from __future__ import unicode_literals, absolute_import, print_function, division
 
 import io
+import logging
 import os
 import time
 import threading
@@ -18,6 +20,9 @@ from sopel.config.types import StaticSection, ValidatedAttribute
 from sopel.module import commands, nickname_commands, rule, priority, example
 from sopel.tools import Identifier
 from sopel.tools.time import get_timezone, format_time
+
+
+LOGGER = logging.getLogger(__name__)
 
 
 class TellSection(StaticSection):
@@ -51,7 +56,7 @@ def load_reminders(filename):
     """Load tell/ask reminders from a ``filename``.
 
     :param str filename: path to the tell/ask reminders file
-    :return: a dict with the tell/asl reminders
+    :return: a dict with the tell/ask reminders
     :rtype: dict
     """
     result = defaultdict(list)
@@ -84,8 +89,26 @@ def dump_reminders(filename, data):
 
 def setup(bot):
     bot.config.define_section('tell', TellSection)
-    fn = bot.nick + '-' + bot.config.core.host + '.tell.db'
+    fn = bot.config.basename + '.tell.db'
     bot.tell_filename = os.path.join(bot.config.core.homedir, fn)
+
+    # Pre-7.0 migration logic. Remove in 8.0 or 9.0.
+    old = bot.nick + '-' + bot.config.core.host + '.tell.db'
+    old = os.path.join(bot.config.core.homedir, old)
+    if os.path.isfile(old):
+        LOGGER.info("Attempting to migrate old 'tell' database {}..."
+                    .format(old))
+        try:
+            os.rename(old, bot.tell_filename)
+        except OSError:
+            LOGGER.error("Migration failed!")
+            LOGGER.error("Old filename: {}".format(old))
+            LOGGER.error("New filename: {}".format(bot.tell_filename))
+            LOGGER.error(
+                "See https://sopel.chat/usage/installing/upgrading-to-sopel-7/#reminder-db-migration")
+        else:
+            LOGGER.info("Migration finished!")
+    # End migration logic
 
     if not os.path.exists(bot.tell_filename):
         with io.open(bot.tell_filename, 'w', encoding='utf-8') as fd:
