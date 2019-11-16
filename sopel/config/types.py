@@ -206,14 +206,13 @@ class ValidatedAttribute(BaseValidated):
     :type serialize: :term:`function`, optional
     """
     def __init__(self, name, parse=None, serialize=None, default=None):
-        self.name = name
+        super(ValidatedAttribute, self).__init__(name, default=default)
         if parse == bool:
             parse = _parse_boolean
             if not serialize or serialize == bool:
                 serialize = _serialize_boolean
         self.parse = parse or self.parse
         self.serialize = serialize or self.serialize
-        self.default = default
 
     def serialize(self, value):
         """Return the ``value`` as a Unicode string.

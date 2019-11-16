@@ -11,7 +11,7 @@ if sys.version_info.major >= 3:
     unicode = str
 
 
-def get_cnames(self, domain):
+def get_cnames(domain):
     """Determine the CNAMEs for a given domain.
 
     :param str domain: domain to check

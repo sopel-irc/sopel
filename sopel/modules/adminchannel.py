@@ -307,7 +307,6 @@ def topic(bot, trigger):
         return
     channel = trigger.sender.lower()
 
-    narg = 1
     mask = None
     mask = bot.db.get_channel_value(channel, 'topic_mask')
     mask = mask or default_mask(trigger)
