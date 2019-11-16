@@ -123,7 +123,7 @@ Core changes
   multiple Sopel instances [[#1547][]]
 * Home directory is no longer assumed to be `~/.sopel` on first run [[#1404][]]
 * Restarting Sopel via CLI is added [[#1333][]]
-* Sopel's CLI is restructured [[#1493][], [#1509][]]
+* Sopel's CLI is restructured [[#1493][], [#1509][], [#1718][]]
   * New subcommands (`start`, `stop`, `restart`, and `configure`) replace many
     of the old `--option`s, cleaning up the syntax
   * The legacy `--option`s will continue to work for the life of Sopel 7.x, and
@@ -161,7 +161,8 @@ Core changes
 * Large amounts of internal refactoring and cleanup [[#1424][], [#1429][],
   [#1456][], [#1458][], [#1472][], [#1479][], [#1510][], [#1522][], [#1527][],
   [#1542][], [#1557][], [#1561][], [#1567][], [#1579][], [#1580][], [#1583][],
-  [#1597][], [#1610][], [#1635][], [#1685][], [#1697][], [#1708][], [#1735][]]
+  [#1597][], [#1610][], [#1635][], [#1685][], [#1697][], [#1708][], [#1730][],
+  [#1735][], [#1741][]]
 * Sopel 7 will emit warnings when run under Python 2, as Python 2.7 has an
   end-of-support date of January 1, 2020 [[#1488][]]
   * While Sopel 7 is intended to remain compatible with Python 2, future
@@ -188,7 +189,8 @@ API changes
 -----------
 
 * [API documentation][api-docs] has been overhauled [[#1563][], [#1566][],
-  [#1646][], [#1668][], [#1669][], [#1680][], [#1719][], [#1727][], [#1735][]]
+  [#1646][], [#1668][], [#1669][], [#1680][], [#1719][], [#1727][], [#1735][],
+  [#1750][]]
   * More consistent style
   * Better use of Sphinx features (e.g. parameter definitions, return value
     notes, & version annotations)
@@ -423,12 +425,16 @@ API changes
 [#1714]: https://github.com/sopel-irc/sopel/pull/1714
 [#1715]: https://github.com/sopel-irc/sopel/pull/1715
 [#1717]: https://github.com/sopel-irc/sopel/pull/1717
+[#1718]: https://github.com/sopel-irc/sopel/pull/1718
 [#1719]: https://github.com/sopel-irc/sopel/pull/1719
 [#1727]: https://github.com/sopel-irc/sopel/pull/1727
 [#1729]: https://github.com/sopel-irc/sopel/pull/1729
+[#1730]: https://github.com/sopel-irc/sopel/pull/1730
 [#1735]: https://github.com/sopel-irc/sopel/pull/1735
 [#1736]: https://github.com/sopel-irc/sopel/pull/1736
 [#1737]: https://github.com/sopel-irc/sopel/pull/1737
+[#1741]: https://github.com/sopel-irc/sopel/pull/1741
+[#1750]: https://github.com/sopel-irc/sopel/pull/1750
 
 [api-docs]: https://sopel.chat/docs/
 [auth-config-docs]: https://sopel.chat/docs/configure.html#Authentication
