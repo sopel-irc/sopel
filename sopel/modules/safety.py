@@ -12,6 +12,7 @@ import logging
 import os.path
 import re
 import sys
+import threading
 import time
 
 import requests
@@ -43,6 +44,7 @@ LOGGER = logging.getLogger(__name__)
 vt_base_api_url = 'https://www.virustotal.com/vtapi/v2/url/'
 malware_domains = set()
 known_good = []
+cache_limit = 512
 
 
 class SafetySection(StaticSection):
@@ -83,6 +85,8 @@ def setup(bot):
 
     if 'safety_cache' not in bot.memory:
         bot.memory['safety_cache'] = sopel.tools.SopelMemory()
+    if 'safety_cache_lock' not in bot.memory:
+        bot.memory['safety_cache_lock'] = threading.Lock()
     for item in bot.config.safety.known_good:
         known_good.append(re.compile(item, re.I))
 
@@ -101,10 +105,8 @@ def setup(bot):
 
 
 def shutdown(bot):
-    try:
-        del bot.memory['safety_cache']
-    except KeyError:
-        pass
+    bot.memory.pop('safety_cache', None)
+    bot.memory.pop('safety_cache_lock', None)
 
 
 def _download_malwaredomains_db(path):
@@ -160,12 +162,12 @@ def url_handler(bot, trigger):
                 r = requests.post(vt_base_api_url + 'report', data=payload)
                 r.raise_for_status()
                 result = r.json()
-                age = time.time()
+                fetched = time.time()
                 data = {'positives': result['positives'],
                         'total': result['total'],
-                        'age': age}
+                        'fetched': fetched}
                 bot.memory['safety_cache'][trigger] = data
-                if len(bot.memory['safety_cache']) > 1024:
+                if len(bot.memory['safety_cache']) >= (2 * cache_limit):
                     _clean_cache(bot)
             else:
                 print('using cache')
@@ -216,13 +218,31 @@ def toggle_safety(bot, trigger):
 # Code above also calls this if there are too many cache entries
 @sopel.module.interval(24 * 60 * 60)
 def _clean_cache(bot):
-    """Cleans up old entries in URL cache"""
-    # TODO: probably should use locks here, to make sure stuff doesn't explode
-    oldest_key_age = 0
-    oldest_key = ''
-    for key, data in sopel.tools.iteritems(bot.memory['safety_cache']):
-        if data['age'] > oldest_key_age:
-            oldest_key_age = data['age']
-            oldest_key = key
-    if oldest_key in bot.memory['safety_cache']:
-        del bot.memory['safety_cache'][oldest_key]
+    """Cleans up old entries in URL safety cache."""
+    if bot.memory['safety_cache_lock'].acquire(False):
+        LOGGER.info('Starting safety cache cleanup...')
+        # clean up by age first
+        cutoff = time.time() - (7 * 24 * 60 * 60)  # 7 days ago
+        old_keys = []
+        for key, data in sopel.tools.iteritems(bot.memory['safety_cache']):
+            if data['fetched'] <= cutoff:
+                old_keys.append(key)
+        for key in old_keys:
+            bot.memory['safety_cache'].pop(key, None)
+
+        # clean up more values if the cache is still too big
+        overage = bot.memory['safety_cache'] - cache_limit
+        if overage > 0:
+            extra_keys = sorted(
+                (data.fetched, key)
+                for (key, data)
+                in bot.memory['safety_cache'].items())[:overage]
+            for (_, key) in extra_keys:
+                bot.memory['safety_cache'].pop(key, None)
+
+        LOGGER.info('Safety cache cleanup finished.')
+        bot.memory['safety_cache_lock'].release()
+    else:
+        LOGGER.info(
+            'Skipping safety cache cleanup: Cache is locked, '
+            'cleanup already running.')
