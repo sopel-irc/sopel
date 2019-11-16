@@ -264,7 +264,9 @@ class ListAttribute(BaseValidated):
         >>> config.spam.cheeses
         ['camembert', 'cheddar', 'reblochon', '#brie']
 
-    which comes from this configuration file::
+    which comes from this configuration file:
+
+    .. code-block:: ini
 
         [spam]
         cheeses =
