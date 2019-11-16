@@ -6,7 +6,6 @@ import os
 import os.path
 import time
 from subprocess import *
-import shutil
 
 repo = git.Repo(os.getcwd())
 head_hash = repo.head.commit.hexsha[:7]
