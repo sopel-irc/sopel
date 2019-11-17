@@ -42,11 +42,11 @@ from sopel import loader
 from . import exceptions
 
 try:
-    from importlib import reload
-except ImportError:
+    reload = importlib.reload
+except AttributeError:
     # py2: no reload function
     # TODO: imp is deprecated, to be removed when py2 support is dropped
-    from imp import reload
+    reload = imp.reload
 
 
 class AbstractPluginHandler(object):
