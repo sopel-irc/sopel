@@ -353,6 +353,25 @@ class TimeReminder(object):
             ]
         )
 
+    def __ne__(self, other):
+        return any(
+            getattr(self, attr) != getattr(other, attr, None)
+            for attr in [
+                'hour',
+                'minute',
+                'second',
+                'timezone',
+                'year',
+                'month',
+                'day',
+                'message',
+            ]
+        )
+
+    # Mutable objects probably shouldn't be made hashable
+    # https://docs.python.org/3/reference/datamodel.html#object.__hash__
+    __hash__ = None
+
     def get_duration(self, today=None):
         """Get the duration between the reminder and ``today``
 
