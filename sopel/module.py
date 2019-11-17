@@ -438,7 +438,7 @@ def require_chanmsg(message=None, reply=False):
     return actual_decorator
 
 
-def require_account(message=None, reply=False):
+def require_account(message=None, reply=False):  # lgtm [py/similar-function]
     """Decorate a function to require services/NickServ authentication.
 
     :param str message: optional message to say if a user without
@@ -523,7 +523,7 @@ def require_privilege(level, message=None, reply=False):
     return actual_decorator
 
 
-def require_admin(message=None, reply=False):
+def require_admin(message=None, reply=False):  # lgtm [py/similar-function]
     """Decorate a function to require the triggering user to be a bot admin.
 
     :param str message: optional message said to non-admin user
@@ -559,7 +559,7 @@ def require_admin(message=None, reply=False):
     return actual_decorator
 
 
-def require_owner(message=None, reply=False):
+def require_owner(message=None, reply=False):  # lgtm [py/similar-function]
     """Decorate a function to require the triggering user to be the bot owner.
 
     :param str message: optional message said to non-owner user
