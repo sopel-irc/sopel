@@ -75,7 +75,7 @@ def post_to_clbin(msg):
         raise
 
     result = result.text
-    if '://clbin.com/' in result:
+    if re.match(r'https?://clbin\.com/', result):
         # find/replace just in case the site tries to be sneaky and save on SSL overhead,
         # though it will probably send us an HTTPS link without any tricks.
         return result.replace('http://', 'https://', 1)
@@ -91,7 +91,7 @@ def post_to_0x0(msg):
         raise
 
     result = result.text
-    if '://0x0.st' in result:
+    if re.match(r'https?://0x0\.st/', result):
         # find/replace just in case the site tries to be sneaky and save on SSL overhead,
         # though it will probably send us an HTTPS link without any tricks.
         return result.replace('http://', 'https://', 1)
