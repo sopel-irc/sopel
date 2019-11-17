@@ -175,12 +175,19 @@ class SSLAsynchatBackend(AsynchatBackend):
 
     def handle_connect(self):
         # handle potential TLS connection
+        # TODO: Refactor to use SSLContext and an appropriate PROTOCOL_* constant
+        # See https://lgtm.com/rules/1507225275976/
+        # These warnings are ignored for now, because we can't easily fix them
+        # while maintaining compatibility with py2.7 AND 3.3+, but in Sopel 8
+        # the supported range should narrow sufficiently to fix these for real.
+        # Each Python version still generally selects the most secure protocol
+        # version(s) it supports.
         if not self.verify_ssl:
-            self.ssl = ssl.wrap_socket(self.socket,
+            self.ssl = ssl.wrap_socket(self.socket,  # lgtm [py/insecure-default-protocol]
                                        do_handshake_on_connect=True,
                                        suppress_ragged_eofs=True)
         else:
-            self.ssl = ssl.wrap_socket(self.socket,
+            self.ssl = ssl.wrap_socket(self.socket,  # lgtm [py/insecure-default-protocol]
                                        do_handshake_on_connect=True,
                                        suppress_ragged_eofs=True,
                                        cert_reqs=ssl.CERT_REQUIRED,
