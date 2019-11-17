@@ -636,6 +636,12 @@ class SopelMemory(dict):
         self.lock.release()
         return result
 
+    # Needed to make it explicit that we don't care about the `lock` attribute
+    # when comparing/hashing SopelMemory objects.
+    __eq__ = dict.__eq__
+    __ne__ = dict.__ne__
+    __hash__ = dict.__hash__
+
     @deprecated
     def contains(self, key):
         """Check if ``key`` is in the memory
