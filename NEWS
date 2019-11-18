@@ -36,6 +36,7 @@ Module changes
     down, as ptpb did during the 6.6.x life-cycle, won't force a new Sopel
     release), but it's also just good to have choices
 * Optionally hide IRC server name/address in `help` command listing [[#1459][]]
+* New `help` plugin setting, `reply_method` [[#1700][]]
 * `wiktionary` now supports many more parts of speech [[#1443][]]
   * Definitions can be retrieved for things like proper nouns, prepositional
     phrases, and punctuation marks—things that were unsupported in Sopel 6.x
@@ -234,11 +235,18 @@ API changes
   * Functionally identical to "nick" and "channel" values, but in a separate
     namespace intended for plugins' use to store key-value data that isn't
     associated with a nick or channel and doesn't belong in the config file
+* New `sopel.module.output_prefix` decorator [[#1701][]]
+  * Defines a prefix for all output sent from the decorated callable via
+    `bot.say` or `bot.notice` (`bot.action` & `bot.reply` don't fit the use
+    cases this feature is intended to address)
+* New `sopel.module.require_account` decorator [[#1733][]]
+  * This is useful to require services login on networks where Sopel can track
+    users' authentication status, but will block *all* use of the decorated
+    callable on networks without the necessary features
 * `sopel.module` decorators work much more consistently [[#1632][]]
   * All relevant decorators accept multiple arguments at once, and will work
     properly if used multiple times on the same function
-* `module.require_*()` decorators (all five of them) now accept an optional
-  boolean parameter `reply` [[#1456][], [#1500][]]
+* Added `reply` option to `module.require_*` decorators [[#1456][], [#1500][]]
   * Passing `reply=True` will send the error message as if via `bot.reply()`,
     prefixing it with the name of the calling user to get their attention
   * Passing `reply=False` (or omitting the argument) will behave exactly as
@@ -415,6 +423,8 @@ API changes
 [#1696]: https://github.com/sopel-irc/sopel/pull/1696
 [#1697]: https://github.com/sopel-irc/sopel/pull/1697
 [#1699]: https://github.com/sopel-irc/sopel/pull/1699
+[#1700]: https://github.com/sopel-irc/sopel/pull/1700
+[#1701]: https://github.com/sopel-irc/sopel/pull/1701
 [#1702]: https://github.com/sopel-irc/sopel/pull/1702
 [#1703]: https://github.com/sopel-irc/sopel/pull/1703
 [#1706]: https://github.com/sopel-irc/sopel/pull/1706
@@ -430,6 +440,7 @@ API changes
 [#1727]: https://github.com/sopel-irc/sopel/pull/1727
 [#1729]: https://github.com/sopel-irc/sopel/pull/1729
 [#1730]: https://github.com/sopel-irc/sopel/pull/1730
+[#1733]: https://github.com/sopel-irc/sopel/pull/1733
 [#1735]: https://github.com/sopel-irc/sopel/pull/1735
 [#1736]: https://github.com/sopel-irc/sopel/pull/1736
 [#1737]: https://github.com/sopel-irc/sopel/pull/1737
