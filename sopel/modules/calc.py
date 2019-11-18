@@ -8,19 +8,8 @@ https://sopel.chat
 """
 from __future__ import unicode_literals, absolute_import, print_function, division
 
-import sys
-
-from requests import get
-
 from sopel.module import commands, example
 from sopel.tools.calculation import eval_equation
-from sopel.tools.web import quote
-
-if sys.version_info.major >= 3:
-    unichr = chr
-
-
-BASE_TUMBOLIA_URI = 'https://tumbolia-sopel.appspot.com/'
 
 
 @commands('c', 'calc')
@@ -45,23 +34,6 @@ def c(bot, trigger):
     except Exception as e:
         result = "{error}: {msg}".format(error=type(e), msg=e)
     bot.reply(result)
-
-
-@commands('py')
-@example('.py len([1,2,3])', '3', online=True)
-def py(bot, trigger):
-    """Evaluate a Python expression."""
-    if not trigger.group(2):
-        return bot.say("Need an expression to evaluate")
-
-    query = trigger.group(2)
-    uri = BASE_TUMBOLIA_URI + 'py/'
-    answer = get(uri + quote(query)).content.decode('utf-8')
-    if answer:
-        # bot.say can potentially lead to 3rd party commands triggering.
-        bot.reply(answer)
-    else:
-        bot.reply('Sorry, no result.')
 
 
 if __name__ == "__main__":
