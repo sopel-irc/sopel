@@ -605,7 +605,8 @@ class Sopel(irc.AbstractBot):
                         continue
 
                     # call triggered function
-                    wrapper = SopelWrapper(self, trigger)
+                    wrapper = SopelWrapper(
+                        self, trigger, output_prefix=func.output_prefix)
                     if func.thread:
                         targs = (func, wrapper, trigger)
                         t = threading.Thread(target=self.call, args=targs)
@@ -828,18 +829,24 @@ class SopelWrapper(object):
     :type sopel: :class:`~sopel.bot.Sopel`
     :param trigger: IRC Trigger line
     :type trigger: :class:`sopel.trigger.Trigger`
+    :param string output_prefix: prefix for messages sent through this wrapper
+                                 (e.g. plugin tag)
 
     This wrapper will be used to call Sopel's triggered commands and rules as
     their ``bot`` argument. It acts as a proxy to :meth:`send messages<say>` to
     the sender (either a channel or in a private message) and even to
     :meth:`reply to someone<reply>` in a channel.
     """
-    def __init__(self, sopel, trigger):
+    def __init__(self, sopel, trigger, output_prefix=''):
+        if not output_prefix:
+            # Just in case someone passes in False, None, etc.
+            output_prefix = ''
         # The custom __setattr__ for this class sets the attribute on the
         # original bot object. We don't want that for these, so we set them
         # with the normal __setattr__.
         object.__setattr__(self, '_bot', sopel)
         object.__setattr__(self, '_trigger', trigger)
+        object.__setattr__(self, '_out_pfx', output_prefix)
 
     def __dir__(self):
         classattrs = [attr for attr in self.__class__.__dict__
@@ -868,7 +875,7 @@ class SopelWrapper(object):
         """
         if destination is None:
             destination = self._trigger.sender
-        self._bot.say(message, destination, max_messages)
+        self._bot.say(self._out_pfx + message, destination, max_messages)
 
     def action(self, message, destination=None):
         """Override ``Sopel.action`` to send action to sender
@@ -902,7 +909,7 @@ class SopelWrapper(object):
         """
         if destination is None:
             destination = self._trigger.sender
-        self._bot.notice(message, destination)
+        self._bot.notice(self._out_pfx + message, destination)
 
     def reply(self, message, destination=None, reply_to=None, notice=False):
         """Override ``Sopel.reply`` to reply to someone

@@ -61,6 +61,7 @@ def clean_callable(func, config):
     func.rate = getattr(func, 'rate', 0)
     func.channel_rate = getattr(func, 'channel_rate', 0)
     func.global_rate = getattr(func, 'global_rate', 0)
+    func.output_prefix = getattr(func, 'output_prefix', '')
 
     if not hasattr(func, 'event'):
         func.event = ['PRIVMSG']

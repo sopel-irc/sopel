@@ -389,3 +389,11 @@ def test_example(bot, trigger):
     def mock(bot, trigger, match=None):
         return True
     assert mock(bot, trigger) is True
+
+
+def test_output_prefix():
+    @module.commands('mock')
+    @module.output_prefix('[MOCK] ')
+    def mock(bot, trigger, match):
+        return True
+    assert mock.output_prefix == '[MOCK] '
