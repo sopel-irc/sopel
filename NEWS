@@ -27,6 +27,7 @@ Module changes
   * Find the new `sopel-ipython` package [on PyPI][ipython-pypi]
 * The `.choose`/`.choice` command has been moved from `dice` into a standalone
   plugin, aptly named `choose` [[#1679][]]
+* Moved `.py` into its own plugin (`py`), separate from `calc` [[#1710][]]
 * The `currency` module changed data sources to support more currencies, and
   can optionally use Fixer.io for even *more* [[#1430][], [#1627][], [#1629][]]
   * Fixer.io requires a free API key, which gives plenty of calls per month
@@ -91,9 +92,9 @@ Module changes
 * Fixed an uncaught exception in `instagram` plugin [[#1702][]]
 * Removed nonsensical uses of the `core.verify_ssl` setting [[#1706][]]
 * Unused `clock` plugin settings have been removed [[#1696][]]
-* General code cleanup all around [[#1402][], [#1486][], [#1505][], [#1569][],
-  [#1573][], [#1578][], [#1579][], [#1581][], [#1592][], [#1606][], [#1607][],
-  [#1609][], [#1678][], [#1681][], [#1696][], [#1717][], [#1735][]]
+* General code cleanup [[#1402][], [#1486][], [#1505][], [#1569][], [#1573][],
+  [#1578][], [#1579][], [#1581][], [#1592][], [#1606][], [#1607][], [#1609][],
+  [#1678][], [#1681][], [#1696][], [#1717][], [#1735][], [#1741][], [#1754][]]
 
 Core changes
 ------------
@@ -162,8 +163,8 @@ Core changes
 * Large amounts of internal refactoring and cleanup [[#1424][], [#1429][],
   [#1456][], [#1458][], [#1472][], [#1479][], [#1510][], [#1522][], [#1527][],
   [#1542][], [#1557][], [#1561][], [#1567][], [#1579][], [#1580][], [#1583][],
-  [#1597][], [#1610][], [#1635][], [#1685][], [#1697][], [#1708][], [#1730][],
-  [#1735][], [#1741][]]
+  [#1597][], [#1610][], [#1635][], [#1685][], [#1697][], [#1708][], [#1716][],
+  [#1730][], [#1735][], [#1741][], [#1754][]]
 * Sopel 7 will emit warnings when run under Python 2, as Python 2.7 has an
   end-of-support date of January 1, 2020 [[#1488][]]
   * While Sopel 7 is intended to remain compatible with Python 2, future
@@ -431,9 +432,11 @@ API changes
 [#1707]: https://github.com/sopel-irc/sopel/pull/1707
 [#1708]: https://github.com/sopel-irc/sopel/pull/1708
 [#1709]: https://github.com/sopel-irc/sopel/pull/1709
+[#1710]: https://github.com/sopel-irc/sopel/pull/1710
 [#1713]: https://github.com/sopel-irc/sopel/pull/1713
 [#1714]: https://github.com/sopel-irc/sopel/pull/1714
 [#1715]: https://github.com/sopel-irc/sopel/pull/1715
+[#1716]: https://github.com/sopel-irc/sopel/pull/1716
 [#1717]: https://github.com/sopel-irc/sopel/pull/1717
 [#1718]: https://github.com/sopel-irc/sopel/pull/1718
 [#1719]: https://github.com/sopel-irc/sopel/pull/1719
@@ -446,6 +449,7 @@ API changes
 [#1737]: https://github.com/sopel-irc/sopel/pull/1737
 [#1741]: https://github.com/sopel-irc/sopel/pull/1741
 [#1750]: https://github.com/sopel-irc/sopel/pull/1750
+[#1754]: https://github.com/sopel-irc/sopel/pull/1754
 
 [api-docs]: https://sopel.chat/docs/
 [auth-config-docs]: https://sopel.chat/docs/configure.html#Authentication
