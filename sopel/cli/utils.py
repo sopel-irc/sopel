@@ -370,12 +370,12 @@ def get_many_text(items, one, two, many):
     items_count = len(items)
 
     if items_count == 1:
-        message = one.format(item=items[0], items=items)
+        message = one.format(item=items[0])
     elif items_count == 2:
-        message = two.format(first=items[0], second=items[1], items=items)
+        message = two.format(first=items[0], second=items[1])
     else:
         left = ', '.join(items[:-1])
         last = items[-1]
-        message = many.format(left=left, last=last, items=items)
+        message = many.format(left=left, last=last)
 
     return message

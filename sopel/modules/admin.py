@@ -348,7 +348,7 @@ def set_config(bot, trigger):
         descriptor = getattr(section.__class__, option)
         try:
             if isinstance(descriptor, FilenameAttribute):
-                value = descriptor.parse(bot.config, descriptor, value)
+                value = descriptor.parse(value, bot.config, descriptor)
             else:
                 value = descriptor.parse(value)
         except ValueError as exc:

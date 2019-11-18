@@ -223,6 +223,8 @@ def handle_list(options):
 
         print(template.format(**description))
 
+    return 0  # successful operation
+
 
 def handle_show(options):
     """Show plugin details"""
@@ -271,6 +273,7 @@ def handle_show(options):
     print('Setup:', 'yes' if plugin.has_setup() else 'no')
     print('Shutdown:', 'yes' if plugin.has_shutdown() else 'no')
     print('Configure:', 'yes' if plugin.has_configure() else 'no')
+    return 0  # successful operation
 
 
 def handle_configure(options):
@@ -304,6 +307,8 @@ def handle_configure(options):
             "Plugin {0} has been configured but is not enabled. "
             "Use 'sopel-plugins enable {0}' to enable it".format(plugin_name)
         )
+
+    return 0  # successful operation
 
 
 def _handle_disable_plugin(settings, plugin_name, force):

@@ -101,6 +101,9 @@ class StaticSection(object):
         setattr(self, name, value)
 
 
+# TODO: Make this a proper abstract class when dropping Python 2 support.
+# Abstract classes are much simpler to deal with once we only need to worry
+# about Python 3.4 or newer. (https://stackoverflow.com/a/13646263/5991)
 class BaseValidated(object):
     """The base type for a setting descriptor in a :class:`StaticSection`.
 
@@ -131,14 +134,14 @@ class BaseValidated(object):
         value = value or default
         return self.parse(value)
 
-    def serialize(self, value):
+    def serialize(self, value, *args, **kwargs):
         """Take some object, and return the string to be saved to the file.
 
         Must be implemented in subclasses.
         """
         raise NotImplementedError("Serialize method must be implemented in subclass")
 
-    def parse(self, value):
+    def parse(self, value, *args, **kwargs):
         """Take a string from the file, and return the appropriate object.
 
         Must be implemented in subclasses."""
@@ -506,12 +509,12 @@ class FilenameAttribute(BaseValidated):
                 )
         main_config = instance._parent
         this_section = getattr(main_config, instance._section_name)
-        return self.parse(main_config, this_section, value)
+        return self.parse(value, main_config, this_section)
 
     def __set__(self, instance, value):
         main_config = instance._parent
         this_section = getattr(main_config, instance._section_name)
-        value = self.serialize(main_config, this_section, value)
+        value = self.serialize(value, main_config, this_section)
         instance._parser.set(instance._section_name, self.name, value)
 
     def configure(self, prompt, default, parent, section_name):
@@ -525,9 +528,9 @@ class FilenameAttribute(BaseValidated):
         if not value and default is NO_DEFAULT:
             raise ValueError("You must provide a value for this option.")
         value = value or default
-        return self.parse(parent, section_name, value)
+        return self.parse(value, parent, section_name)
 
-    def parse(self, main_config, this_section, value):
+    def parse(self, value, main_config, this_section):
         """Used to validate ``value`` when loading the config.
 
         :param main_config: the config object which contains this attribute
@@ -561,7 +564,7 @@ class FilenameAttribute(BaseValidated):
                 raise ValueError("Value must be an existing or creatable file.")
         return value
 
-    def serialize(self, main_config, this_section, value):
+    def serialize(self, value, main_config, this_section):
         """Used to validate ``value`` when it is changed at runtime.
 
         :param main_config: the config object which contains this attribute
@@ -572,5 +575,5 @@ class FilenameAttribute(BaseValidated):
         :rtype: str
         :raise ValueError: if the ``value`` is not valid
         """
-        self.parse(main_config, this_section, value)
+        self.parse(value, main_config, this_section)
         return value  # So that it's still relative

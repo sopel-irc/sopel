@@ -95,6 +95,8 @@ def handle_list(options):
             name, _ = os.path.splitext(config_filename)
             print(name)
 
+    return 0  # successful operation
+
 
 def handle_init(options):
     """Use config wizard to initialize a new configuration file for the bot
@@ -123,6 +125,7 @@ def handle_init(options):
 
     print('Starting Sopel config wizard for: %s' % config_filename)
     utils.wizard(config_name)
+    return 0  # successful operation
 
 
 def handle_get(options):
@@ -147,6 +150,7 @@ def handle_get(options):
 
     # Display the value
     print(settings.get(section, option))
+    return 0  # successful operation
 
 
 def main():
