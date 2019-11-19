@@ -10,15 +10,16 @@ from __future__ import unicode_literals, absolute_import, print_function, divisi
 
 from requests import get
 
-from sopel.module import commands, example
+from sopel import module
 from sopel.tools.web import quote
 
 
 BASE_TUMBOLIA_URI = 'https://oblique.sopel.chat/'
 
 
-@commands('py')
-@example('.py len([1,2,3])', '3', online=True)
+@module.commands('py')
+@module.output_prefix('[py] ')
+@module.example('.py len([1,2,3])', '3', online=True)
 def py(bot, trigger):
     """Evaluate a Python expression."""
     if not trigger.group(2):
@@ -28,8 +29,7 @@ def py(bot, trigger):
     uri = BASE_TUMBOLIA_URI + 'py/'
     answer = get(uri + quote(query)).content.decode('utf-8')
     if answer:
-        # bot.say can potentially lead to 3rd party commands triggering.
-        bot.reply(answer)
+        bot.say(answer)
     else:
         bot.reply('Sorry, no result.')
 
