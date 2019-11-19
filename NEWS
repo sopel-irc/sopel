@@ -27,7 +27,9 @@ Module changes
   * Find the new `sopel-ipython` package [on PyPI][ipython-pypi]
 * The `.choose`/`.choice` command has been moved from `dice` into a standalone
   plugin, aptly named `choose` [[#1679][]]
-* Moved `.py` into its own plugin (`py`), separate from `calc` [[#1710][]]
+* Moved `.py` into its own plugin, named `py` [[#1710][], [#1711][], [#1712][]]
+  * In case of issues with our "official" instance, there's now a setting to
+    configure the address of your own [Oblique][oblique] service
 * The `currency` module changed data sources to support more currencies, and
   can optionally use Fixer.io for even *more* [[#1430][], [#1627][], [#1629][]]
   * Fixer.io requires a free API key, which gives plenty of calls per month
@@ -60,7 +62,8 @@ Module changes
   * Finally, it's possible to set a reminder more than 24 hours ahead without
     first converting the future date/time to a duration for use with `.in`!
 * A new `tell` plugin setting allows delivering messages privately [[#1694][]]
-* Short `redd.it` links are now detected by the `reddit` module [[#1503][]]
+* The `reddit` plugin now also handles short `redd.it` links, direct links to
+  comments, & reddit-hosted image/video links [[#1503][], [#1720][], [#1734][]]
 * Spoilers & NSFW are now separate concepts in the `reddit` plugin [[#1620][]]
   * Reddit implemented spoilers as a distinct post flag some time ago. Sopel's
     plugin supports independently setting channels as "SFW" or "spoiler-free".
@@ -433,6 +436,8 @@ API changes
 [#1708]: https://github.com/sopel-irc/sopel/pull/1708
 [#1709]: https://github.com/sopel-irc/sopel/pull/1709
 [#1710]: https://github.com/sopel-irc/sopel/pull/1710
+[#1711]: https://github.com/sopel-irc/sopel/pull/1711
+[#1712]: https://github.com/sopel-irc/sopel/pull/1712
 [#1713]: https://github.com/sopel-irc/sopel/pull/1713
 [#1714]: https://github.com/sopel-irc/sopel/pull/1714
 [#1715]: https://github.com/sopel-irc/sopel/pull/1715
@@ -440,10 +445,12 @@ API changes
 [#1717]: https://github.com/sopel-irc/sopel/pull/1717
 [#1718]: https://github.com/sopel-irc/sopel/pull/1718
 [#1719]: https://github.com/sopel-irc/sopel/pull/1719
+[#1720]: https://github.com/sopel-irc/sopel/pull/1720
 [#1727]: https://github.com/sopel-irc/sopel/pull/1727
 [#1729]: https://github.com/sopel-irc/sopel/pull/1729
 [#1730]: https://github.com/sopel-irc/sopel/pull/1730
 [#1733]: https://github.com/sopel-irc/sopel/pull/1733
+[#1734]: https://github.com/sopel-irc/sopel/pull/1734
 [#1735]: https://github.com/sopel-irc/sopel/pull/1735
 [#1736]: https://github.com/sopel-irc/sopel/pull/1736
 [#1737]: https://github.com/sopel-irc/sopel/pull/1737
@@ -462,6 +469,8 @@ API changes
 [per-channel-conf]: https://sopel.chat/usage/per-channel-configuration/
 [readme-db]: https://github.com/sopel-irc/sopel/blob/v7.0.0/README.rst#database-support
 [sopel-7-migration]: https://sopel.chat/usage/installing/upgrading-to-sopel-7/
+
+[oblique]: https://github.com/sopel-irc/oblique
 
 [ipython-pypi]: https://pypi.org/project/sopel-ipython/
 [spellcheck-pypi]: https://pypi.org/project/sopel-spellcheck/
