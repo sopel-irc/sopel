@@ -13,7 +13,7 @@ from __future__ import unicode_literals, absolute_import, print_function, divisi
 import datetime
 import time
 
-from sopel.module import commands, rule, priority, thread
+from sopel.module import commands, rule, priority, thread, unblockable
 from sopel.tools import Identifier
 from sopel.tools.time import seconds_to_human
 
@@ -58,6 +58,7 @@ def seen(bot, trigger):
 @thread(False)
 @rule('(.*)')
 @priority('low')
+@unblockable
 def note(bot, trigger):
     if not trigger.is_privmsg:
         bot.db.set_nick_value(trigger.nick, 'seen_timestamp', time.time())
