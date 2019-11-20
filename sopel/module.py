@@ -81,9 +81,24 @@ OWNER = 16
 
 
 def unblockable(function):
-    """Decorator which exempts the function from nickname and hostname blocking.
+    """Decorator to exempt ``function`` from nickname and hostname blocking.
 
-    This can be used to ensure events such as JOIN are always recorded.
+    This can be used to ensure events such as ``JOIN`` are always recorded::
+
+        from sopel import module
+
+        @module.event('JOIN')
+        @module.unblockable
+        def on_join_callable(bot, trigger):
+            # do something when a user JOIN a channel
+            # a blocked nickname or hostname *will* trigger this
+            pass
+
+    .. seealso::
+
+        Sopel's :meth:`~sopel.bot.Sopel.dispatch` and
+        :meth:`~sopel.bot.Sopel.get_triggered_callables` methods.
+
     """
     function.unblockable = True
     return function
