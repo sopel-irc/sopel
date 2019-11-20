@@ -3,6 +3,7 @@
 reddit.py - Sopel Reddit Module
 Copyright 2012, Elsie Powell, embolalia.com
 Copyright 2019, dgw, technobabbl.es
+Copyright 2019, deathbybandaid, deathbybandaid.net
 Licensed under the Eiffel Forum License 2.
 
 https://sopel.chat
@@ -19,7 +20,7 @@ import prawcore
 import requests
 
 from sopel.formatting import bold, color, colors
-from sopel.module import commands, example, require_chanmsg, url, NOLIMIT, OP
+from sopel.module import commands, example, require_chanmsg, rule, url, NOLIMIT, OP
 from sopel.tools import time
 from sopel.tools.web import USER_AGENT
 
@@ -37,6 +38,7 @@ else:
 
 
 domain = r'https?://(?:www\.|old\.|pay\.|ssl\.|[a-z]{2}\.)?reddit\.com'
+subreddit_url = r'%s/r/([\w-]+)/?$' % domain
 post_url = r'%s/r/.*?/comments/([\w-]+)/?$' % domain
 short_post_url = r'https?://redd.it/([\w-]+)'
 user_url = r'%s/u(ser)?/([\w-]+)' % domain
@@ -58,6 +60,17 @@ def setup(bot):
 def shutdown(bot):
     # Clean up shared PRAW instance
     bot.memory.pop('reddit_praw', None)
+
+
+def get_time_created(bot, trigger, entrytime):
+    tz = time.get_timezone(
+        bot.db, bot.config, None, trigger.nick, trigger.sender)
+    time_created = dt.datetime.utcfromtimestamp(entrytime)
+    created = time.format_time(bot.db,
+                               bot.config, tz,
+                               trigger.nick, trigger.sender,
+                               time_created)
+    return created
 
 
 @url(image_url)
@@ -129,11 +142,7 @@ def say_post_info(bot, trigger, id_):
         else:
             author = '[deleted]'
 
-        tz = time.get_timezone(bot.db, bot.config, None, trigger.nick,
-                               trigger.sender)
-        time_created = dt.datetime.utcfromtimestamp(s.created_utc)
-        created = time.format_time(bot.db, bot.config, tz, trigger.nick,
-                                   trigger.sender, time_created)
+        created = get_time_created(bot, trigger, s.created_utc)
 
         if s.score > 0:
             point_color = colors.GREEN
@@ -170,11 +179,7 @@ def comment_info(bot, trigger, match):
     else:
         author = '[deleted]'
 
-    tz = time.get_timezone(bot.db, bot.config, None, trigger.nick,
-                           trigger.sender)
-    time_posted = dt.datetime.utcfromtimestamp(c.created_utc)
-    posted = time.format_time(bot.db, bot.config, tz, trigger.nick,
-                              trigger.sender, time_posted)
+    posted = get_time_created(bot, trigger, c.created_utc)
 
     # stolen from the function I (dgw) wrote for our github plugin
     lines = [line for line in c.body.splitlines() if line and line[0] != '>']
@@ -188,15 +193,56 @@ def comment_info(bot, trigger, match):
     bot.say(message)
 
 
-# If you change this, you'll have to change some other things...
-@commands('redditor')
-@example('.redditor poem_for_your_sprog')
-def redditor_info(bot, trigger, match=None):
-    """Shows information about the given Redditor"""
-    commanded = re.match(bot.config.core.prefix + 'redditor', trigger)
-    match = match or trigger
+def subreddit_info(bot, trigger, match, commanded=False):
+    """Shows information about the given subreddit"""
+    r = bot.memory['reddit_praw']
     try:
-        u = bot.memory['reddit_praw'].redditor(match.group(2))
+        r.subreddits.search_by_name(match, exact=True)
+    except prawcore.exceptions.NotFound:
+        if commanded:
+            bot.say('No such subreddit.')
+        # Fail silently if it wasn't an explicit command.
+        return NOLIMIT
+
+    try:
+        s = r.subreddit(match)
+        s.subreddit_type
+    except prawcore.exceptions.Forbidden:
+        bot.say("r/" + match + " appears to be a private subreddit!")
+        return NOLIMIT
+    except prawcore.exceptions.NotFound:
+        bot.say("r/" + match + " appears to be a banned subreddit!")
+        return NOLIMIT
+
+    link = "https://reddit.com/r/" + s.display_name
+
+    created = get_time_created(bot, trigger, s.created_utc)
+
+    message = ('[REDDIT] {link}{nsfw} | {subscribers} subscribers | '
+               'Created at {created} | {public_description}')
+
+    nsfw = ''
+    if s.over18:
+        nsfw += ' ' + bold(color('[NSFW]', colors.RED))
+
+        sfw = bot.db.get_channel_value(trigger.sender, 'sfw')
+        if sfw:
+            link = '(link hidden)'
+            bot.kick(
+                trigger.nick, trigger.sender,
+                'Linking to NSFW content in a SFW channel.'
+            )
+
+    message = message.format(
+        link=link, nsfw=nsfw, subscribers='{:,}'.format(s.subscribers),
+        created=created, public_description=s.public_description)
+    bot.say(message)
+
+
+def redditor_info(bot, trigger, match, commanded=False):
+    """Shows information about the given Redditor"""
+    try:
+        u = bot.memory['reddit_praw'].redditor(match)
         message = '[REDDITOR] ' + u.name
         now = dt.datetime.utcnow()
         cakeday_start = dt.datetime.utcfromtimestamp(u.created_utc)
@@ -232,10 +278,14 @@ def redditor_info(bot, trigger, match=None):
         return NOLIMIT
 
 
-# If you change the groups here, you'll have to change some things above.
 @url(user_url)
 def auto_redditor_info(bot, trigger, match):
-    redditor_info(bot, trigger, match)
+    redditor_info(bot, trigger, match.group(2))
+
+
+@url(subreddit_url)
+def auto_subreddit_info(bot, trigger, match):
+    subreddit_info(bot, trigger, match.group(1))
 
 
 @require_chanmsg('.setsfw is only permitted in channels')
@@ -328,3 +378,37 @@ def get_channel_spoiler_free(bot, trigger):
         bot.say('%s is flagged as spoiler-free' % channel)
     else:
         bot.say('%s is flagged as spoilers-allowed' % channel)
+
+
+@rule(r'.*(?<!\S)/?(?P<prefix>r|u)/(?P<id>[a-zA-Z0-9-_]+)\b.*')
+def reddit_slash_info(bot, trigger):
+    searchtype = trigger.group('prefix').lower()
+    match = trigger.group('id')
+    if searchtype == "r":
+        return subreddit_info(bot, trigger, match, commanded=True)
+    elif searchtype == "u":
+        return redditor_info(bot, trigger, match, commanded=True)
+
+
+@commands('subreddit')
+@example('.subreddit plex')
+def subreddit_command(bot, trigger):
+    # require input
+    if not trigger.group(2):
+        return bot.reply('You must provide a subreddit name.')
+
+    # subreddit names do not contain spaces
+    match = trigger.group(3)
+    return subreddit_info(bot, trigger, match, commanded=True)
+
+
+@commands('redditor')
+@example('.redditor poem_for_your_sprog')
+def redditor_command(bot, trigger):
+    # require input
+    if not trigger.group(2):
+        return bot.reply('You must provide a Redditor name.')
+
+    # Redditor names do not contain spaces
+    match = trigger.group(3)
+    return redditor_info(bot, trigger, match, commanded=True)
