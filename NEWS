@@ -95,9 +95,10 @@ Module changes
 * Fixed an uncaught exception in `instagram` plugin [[#1702][]]
 * Removed nonsensical uses of the `core.verify_ssl` setting [[#1706][]]
 * Unused `clock` plugin settings have been removed [[#1696][]]
-* General code cleanup [[#1402][], [#1486][], [#1505][], [#1569][], [#1573][],
-  [#1578][], [#1579][], [#1581][], [#1592][], [#1606][], [#1607][], [#1609][],
-  [#1678][], [#1681][], [#1696][], [#1717][], [#1735][], [#1741][], [#1754][]]
+* General code cleanup and tweaks all around [[#1402][], [#1486][], [#1505][],
+  [#1569][], [#1573][], [#1578][], [#1579][], [#1581][], [#1592][], [#1606][],
+  [#1607][], [#1609][], [#1678][], [#1681][], [#1696][], [#1717][], [#1721][],
+  [#1725][], [#1735][], [#1741][], [#1754][]]
 
 Core changes
 ------------
@@ -167,7 +168,7 @@ Core changes
   [#1456][], [#1458][], [#1472][], [#1479][], [#1510][], [#1522][], [#1527][],
   [#1542][], [#1557][], [#1561][], [#1567][], [#1579][], [#1580][], [#1583][],
   [#1597][], [#1610][], [#1635][], [#1685][], [#1697][], [#1708][], [#1716][],
-  [#1730][], [#1735][], [#1741][], [#1754][]]
+  [#1723][], [#1724][], [#1728][], [#1730][], [#1735][], [#1741][], [#1754][]]
 * Sopel 7 will emit warnings when run under Python 2, as Python 2.7 has an
   end-of-support date of January 1, 2020 [[#1488][]]
   * While Sopel 7 is intended to remain compatible with Python 2, future
@@ -446,7 +447,12 @@ API changes
 [#1718]: https://github.com/sopel-irc/sopel/pull/1718
 [#1719]: https://github.com/sopel-irc/sopel/pull/1719
 [#1720]: https://github.com/sopel-irc/sopel/pull/1720
+[#1721]: https://github.com/sopel-irc/sopel/pull/1721
+[#1723]: https://github.com/sopel-irc/sopel/pull/1723
+[#1724]: https://github.com/sopel-irc/sopel/pull/1724
+[#1725]: https://github.com/sopel-irc/sopel/pull/1725
 [#1727]: https://github.com/sopel-irc/sopel/pull/1727
+[#1728]: https://github.com/sopel-irc/sopel/pull/1728
 [#1729]: https://github.com/sopel-irc/sopel/pull/1729
 [#1730]: https://github.com/sopel-irc/sopel/pull/1730
 [#1733]: https://github.com/sopel-irc/sopel/pull/1733
