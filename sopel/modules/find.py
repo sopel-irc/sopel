@@ -14,8 +14,9 @@ https://sopel.chat
 from __future__ import unicode_literals, absolute_import, print_function, division
 
 import re
+
 from sopel.tools import Identifier, SopelMemory
-from sopel.module import rule, priority, echo
+from sopel import module
 from sopel.formatting import bold
 
 
@@ -31,34 +32,82 @@ def shutdown(bot):
         pass
 
 
-@echo
-@rule('.*')
-@priority('low')
+@module.echo
+@module.rule('.*')
+@module.priority('low')
+@module.require_chanmsg
+@module.unblockable
 def collectlines(bot, trigger):
     """Create a temporary log of what people say"""
-    if trigger.is_privmsg:
-        return  # Don't log things in PM
-
     # Add a log for the channel and nick, if there isn't already one
     if trigger.sender not in bot.memory['find_lines']:
         bot.memory['find_lines'][trigger.sender] = SopelMemory()
-    if Identifier(trigger.nick) not in bot.memory['find_lines'][trigger.sender]:
-        bot.memory['find_lines'][trigger.sender][Identifier(trigger.nick)] = list()
+    if trigger.nick not in bot.memory['find_lines'][trigger.sender]:
+        bot.memory['find_lines'][trigger.sender][trigger.nick] = list()
 
-    # Create a temporary list of the user's lines in a channel
-    templist = bot.memory['find_lines'][trigger.sender][Identifier(trigger.nick)]
+    # Update in-memory list of the user's lines in the channel
+    line_list = bot.memory['find_lines'][trigger.sender][trigger.nick]
     line = trigger.group()
     if line.startswith("s/"):  # Don't remember substitutions
         return
     elif line.startswith("\x01ACTION"):  # For /me messages
         line = line[:-1]
-        templist.append(line)
+        line_list.append(line)
     else:
-        templist.append(line)
+        line_list.append(line)
 
-    del templist[:-10]  # Keep the log to 10 lines per person
+    del line_list[:-10]  # Keep the log to 10 lines per person
 
-    bot.memory['find_lines'][trigger.sender][Identifier(trigger.nick)] = templist
+
+def _cleanup_channel(bot, channel):
+    bot.memory['find_lines'].pop(channel, None)
+
+
+def _cleanup_nickname(bot, nick, channel=None):
+    if channel:
+        bot.memory['find_lines'].get(channel, {}).pop(nick, None)
+    else:
+        for channel in bot.memory['find_lines'].keys():
+            bot.memory['find_lines'][channel].pop(nick, None)
+
+
+@module.echo
+@module.event('PART')
+@module.priority('low')
+@module.unblockable
+def part_cleanup(bot, trigger):
+    """Clean up cached data when a user leaves a channel."""
+    if trigger.nick == bot.nick:
+        # Nuke the whole channel cache, boys, we're outta here!
+        _cleanup_channel(bot, trigger.sender)
+    else:
+        # Someone else left; clean up after them
+        _cleanup_nickname(bot, trigger.nick, trigger.sender)
+
+
+@module.echo
+@module.event('QUIT')
+@module.priority('low')
+@module.unblockable
+def quit_cleanup(bot, trigger):
+    """Clean up cached data after a user quits IRC."""
+    # If Sopel itself quits, shutdown() will handle the cleanup.
+    _cleanup_nickname(bot, trigger.nick)
+
+
+@module.echo
+@module.event('KICK')
+@module.priority('low')
+@module.unblockable
+def kick_cleanup(bot, trigger):
+    """Clean up cached data when a user is kicked from a channel."""
+    nick = Identifier(trigger.args[1])
+    if nick == bot.nick:
+        # We got kicked! Nuke the whole channel.
+        _cleanup_channel(bot, trigger.sender)
+    else:
+        # Clean up after the poor sod (or more likely, spammer) who got the boot
+        _cleanup_nickname(bot, nick, trigger.sender)
 
 
 # Match nick, s/find/replace/flags. Flags and nick are optional, nick can be
@@ -66,7 +115,7 @@ def collectlines(bot, trigger):
 # slash is ignored, you can escape slashes with backslashes, and if you want to
 # search for an actual backslash followed by an actual slash, you're shit out of
 # luck because this is the fucking regex of death as it is.
-@rule(r"""(?:
+@module.rule(r"""(?:
             (\S+)           # Catch a nick in group 1
           [:,]\s+)?         # Followed by colon/comma and whitespace, if given
           s/                # The literal s/
@@ -77,7 +126,7 @@ def collectlines(bot, trigger):
           )
           (?:/(\S+))?       # Optional slash, followed by group 4 (flags)
           """)
-@priority('high')
+@module.priority('high')
 def findandreplace(bot, trigger):
     # Don't bother in PM
     if trigger.is_privmsg:
@@ -86,11 +135,9 @@ def findandreplace(bot, trigger):
     # Correcting other person vs self.
     rnick = Identifier(trigger.group(1) or trigger.nick)
 
-    search_dict = bot.memory['find_lines']
     # only do something if there is conversation to work with
-    if trigger.sender not in search_dict:
-        return
-    if Identifier(rnick) not in search_dict[trigger.sender]:
+    history = bot.memory['find_lines'].get(trigger.sender, {}).get(rnick, [])
+    if not history:
         return
 
     old = trigger.group(2).replace(r'\/', '/')
@@ -118,7 +165,7 @@ def findandreplace(bot, trigger):
     # Look back through the user's lines in the channel until you find a line
     # where the replacement works
     new_phrase = None
-    for line in reversed(search_dict[trigger.sender][rnick]):
+    for line in reversed(history):
         if line.startswith("\x01ACTION"):
             me = True  # /me command
             line = line[8:]
@@ -133,10 +180,8 @@ def findandreplace(bot, trigger):
 
     # Save the new "edited" message.
     action = (me and '\x01ACTION ') or ''  # If /me message, prepend \x01ACTION
-    templist = search_dict[trigger.sender][rnick]
-    templist.append(action + new_phrase)
-    search_dict[trigger.sender][rnick] = templist
-    bot.memory['find_lines'] = search_dict
+    history.append(action + new_phrase)
+    del history[:-10]
 
     # output
     if not me:
