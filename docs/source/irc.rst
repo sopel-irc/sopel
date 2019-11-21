@@ -43,6 +43,13 @@ Backends
     :show-inheritance:
 
 
+ISUPPORT
+========
+
+.. automodule:: sopel.irc.isupport
+    :members:
+
+
 Utility
 =======
 
