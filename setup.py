@@ -3,6 +3,7 @@
 from __future__ import unicode_literals, absolute_import, print_function, division
 
 import sys
+import time
 
 try:
     from setuptools import setup, __version__ as setuptools_version
@@ -38,7 +39,11 @@ if sys.version_info < (2, 7) or (
     # this fucking question, and if you get here you should go RTGDMFM.
     raise ImportError('Sopel requires Python 2.7+ or 3.3+.')
 if sys.version_info.major == 2:
-    print('Warning: Python 2.x is near end of life. Sopel support at that point is TBD.', file=sys.stderr)
+    if time.time() >= 1577836800:  # 2020-01-01 00:00:00 UTC
+        state = 'is near end of life'
+    else:
+        state = 'has reached end of life and will receive no further updates'
+    print('Warning: Python 2.x %s. Sopel will drop support in version 8.0.' % state, file=sys.stderr)
 
 
 def read_reqs(path):

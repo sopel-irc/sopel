@@ -37,7 +37,7 @@ Sopel requires ``backports.ssl_match_hostname`` to be installed. Use
 ``yum install python-backports.ssl_match_hostname`` to install it, or download
 and install it manually `from PyPI <https://pypi.org/project/backports.ssl_match_hostname>`_.
 
-Note: Python 2.x is near end of life. Sopel support at that point is TBD.
+Note: Python 2.x is near end of life. Sopel will drop support in version 8.0.
 
 In the source directory (whether cloned or from the tarball) run
 ``setup.py install``. You can then run ``sopel`` to configure and start the
