@@ -4,22 +4,23 @@ from __future__ import unicode_literals, absolute_import, print_function, divisi
 
 import pytest
 
-from sopel import config
 from sopel.tests import rawlist
 
 
+TMP_CONFIG = """
+[core]
+owner = Exirel
+nick = Sopel
+user = sopel
+name = Sopel (https://sopel.chat)
+# we don't want flood protection here
+flood_burst_lines = 1000
+"""
+
+
 @pytest.fixture
-def tmpconfig(tmpdir):
-    conf_file = tmpdir.join('conf.ini')
-    conf_file.write("\n".join([
-        "[core]",
-        "owner = Exirel",
-        "nick = Sopel",
-        "user = sopel",
-        "name = Sopel (https://sopel.chat)",
-        "flood_burst_lines = 1000",  # we don't want flood protection here
-    ]))
-    return config.Config(conf_file.strpath)
+def tmpconfig(configfactory):
+    return configfactory('conf.ini', TMP_CONFIG)
 
 
 @pytest.fixture

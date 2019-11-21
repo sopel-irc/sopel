@@ -10,15 +10,17 @@ from sopel import bot, plugins
 from sopel.tests import rawlist
 
 
+TMP_CONFIG = """
+[core]
+owner = testnick
+nick = TestBot
+enable = coretasks
+"""
+
+
 @pytest.fixture
 def tmpconfig(configfactory):
-    return configfactory('test.cfg', "\n".join([
-        "[core]",
-        "owner = testnick",
-        "nick = TestBot",
-        "enable = coretasks"
-        ""
-    ]))
+    return configfactory('test.cfg', TMP_CONFIG)
 
 
 @pytest.fixture

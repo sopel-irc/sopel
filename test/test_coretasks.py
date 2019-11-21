@@ -4,23 +4,22 @@ from __future__ import unicode_literals, absolute_import, print_function, divisi
 
 import pytest
 
-from sopel import config
 from sopel.module import VOICE, HALFOP, OP, ADMIN, OWNER
 from sopel.tools import Identifier
 from sopel.tests import rawlist
 
 
+TMP_CONFIG = """
+[core]
+owner = Uowner
+nick = TestBot
+enable = coretasks
+"""
+
+
 @pytest.fixture
-def tmpconfig(tmpdir):
-    conf_file = tmpdir.join('conf.ini')
-    conf_file.write("\n".join([
-        "[core]",
-        "owner = Uowner",
-        "nick = TestBot",
-        "enable = coretasks"
-        ""
-    ]))
-    return config.Config(conf_file.strpath)
+def tmpconfig(configfactory):
+    return configfactory('conf.ini', TMP_CONFIG)
 
 
 @pytest.fixture
