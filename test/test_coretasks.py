@@ -34,7 +34,7 @@ def test_bot_mixed_modes(mockbot, ircfactory):
 
     .. seealso::
 
-        GitHub issue #1575.
+        GitHub issue #1575 (https://github.com/sopel-irc/sopel/pull/1575).
     """
     irc = ircfactory(mockbot)
     irc.channel_joined('#test', [
@@ -57,7 +57,7 @@ def test_bot_mixed_mode_removal(mockbot, ircfactory):
 
     .. seealso::
 
-        GitHub issue #1575.
+        GitHub issue #1575 (https://github.com/sopel-irc/sopel/pull/1575).
     """
     irc = ircfactory(mockbot)
     irc.channel_joined('#test', ['Uvoice', 'Uop'])
@@ -82,7 +82,7 @@ def test_bot_mixed_mode_types(mockbot, ircfactory):
 
     .. seealso::
 
-        GitHub issue #1575.
+        GitHub issue #1575 (https://github.com/sopel-irc/sopel/pull/1575).
     """
     irc = ircfactory(mockbot)
     irc.channel_joined('#test', [
