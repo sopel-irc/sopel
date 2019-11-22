@@ -655,7 +655,7 @@ class Sopel(irc.AbstractBot):
         # list of commands running in separate threads for this dispatch
         running_triggers = []
         # nickname/hostname blocking
-        nick_blocked = host_blocked = self._is_pretrigger_blocked(pretrigger)
+        nick_blocked, host_blocked = self._is_pretrigger_blocked(pretrigger)
         blocked = bool(nick_blocked or host_blocked)
         list_of_blocked_functions = []
 
