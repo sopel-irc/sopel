@@ -295,7 +295,7 @@ class SopelDB(object):
         finally:
             session.close()
 
-    def get_nick_value(self, nick, key):
+    def get_nick_value(self, nick, key, default=None):
         """Retrieves the value for a given key associated with a nick."""
         nick = Identifier(nick)
         session = self.ssession()
@@ -307,6 +307,8 @@ class SopelDB(object):
                 .one_or_none()
             if result is not None:
                 result = result.value
+            elif default is not None:
+                result = default
             return _deserialize(result)
         except SQLAlchemyError:
             session.rollback()
@@ -434,7 +436,7 @@ class SopelDB(object):
         finally:
             session.close()
 
-    def get_channel_value(self, channel, key):
+    def get_channel_value(self, channel, key, default=None):
         """Retrieves the value for a given key associated with a channel."""
         channel = Identifier(channel).lower()
         session = self.ssession()
@@ -445,6 +447,8 @@ class SopelDB(object):
                 .one_or_none()
             if result is not None:
                 result = result.value
+            elif default is not None:
+                result = default
             return _deserialize(result)
         except SQLAlchemyError:
             session.rollback()
@@ -498,7 +502,7 @@ class SopelDB(object):
         finally:
             session.close()
 
-    def get_plugin_value(self, plugin, key):
+    def get_plugin_value(self, plugin, key, default=None):
         """Retrieves the value for a given key associated with a plugin."""
         plugin = plugin.lower()
         session = self.ssession()
@@ -509,6 +513,8 @@ class SopelDB(object):
                 .one_or_none()
             if result is not None:
                 result = result.value
+            elif default is not None:
+                result = default
             return _deserialize(result)
         except SQLAlchemyError:
             session.rollback()
@@ -518,13 +524,13 @@ class SopelDB(object):
 
     # NICK AND CHANNEL FUNCTIONS
 
-    def get_nick_or_channel_value(self, name, key):
+    def get_nick_or_channel_value(self, name, key, default=None):
         """Gets the value `key` associated to the nick or channel  `name`."""
         name = Identifier(name)
         if name.is_nick():
-            return self.get_nick_value(name, key)
+            return self.get_nick_value(name, key, default)
         else:
-            return self.get_channel_value(name, key)
+            return self.get_channel_value(name, key, default)
 
     def get_preferred_value(self, names, key):
         """Gets the value for the first name which has it set.

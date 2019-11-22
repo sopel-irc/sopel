@@ -151,6 +151,11 @@ def test_get_nick_value(db):
         assert found_value == value
 
 
+def test_get_nick_value_default(db):
+    assert db.get_nick_value("TestUser", "DoesntExist") is None
+    assert db.get_nick_value("TestUser", "DoesntExist", "MyDefault") == "MyDefault"
+
+
 def test_delete_nick_value(db):
     nick = 'Embolalia'
     db.set_nick_value(nick, 'wasd', 'uldr')
@@ -255,11 +260,21 @@ def test_get_channel_value(db):
     assert result == 'zxcv'
 
 
+def test_get_channel_value_default(db):
+    assert db.get_channel_value("TestChan", "DoesntExist") is None
+    assert db.get_channel_value("TestChan", "DoesntExist", "MyDefault") == "MyDefault"
+
+
 def test_get_nick_or_channel_value(db):
     db.set_nick_value('asdf', 'qwer', 'poiu')
     db.set_channel_value('#asdf', 'qwer', '/.,m')
     assert db.get_nick_or_channel_value('asdf', 'qwer') == 'poiu'
     assert db.get_nick_or_channel_value('#asdf', 'qwer') == '/.,m'
+
+
+def test_get_nick_or_channel_value_default(db):
+    assert db.get_nick_or_channel_value("Test", "DoesntExist") is None
+    assert db.get_nick_or_channel_value("Test", "DoesntExist", "MyDefault") == "MyDefault"
 
 
 def test_get_preferred_value(db):
@@ -286,6 +301,11 @@ def test_get_plugin_value(db):
     conn.commit()
     result = db.get_plugin_value('plugname', 'qwer')
     assert result == 'zxcv'
+
+
+def test_get_plugin_value_default(db):
+    assert db.get_plugin_value("TestPlugin", "DoesntExist") is None
+    assert db.get_plugin_value("TestPlugin", "DoesntExist", "MyDefault") == "MyDefault"
 
 
 def test_delete_plugin_value(db):
