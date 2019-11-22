@@ -6,7 +6,7 @@ import inspect
 
 import pytest
 
-from sopel import loader, config, module, plugins
+from sopel import loader, module, plugins
 
 
 MOCK_MODULE_CONTENT = """# coding=utf-8
@@ -62,16 +62,16 @@ def func():
     return bot_command
 
 
+TMP_CONFIG = """
+[core]
+owner = testnick
+nick = TestBot
+"""
+
+
 @pytest.fixture
-def tmpconfig(tmpdir):
-    conf_file = tmpdir.join('conf.ini')
-    conf_file.write("\n".join([
-        "[core]",
-        "owner=testnick",
-        "nick = TestBot",
-        ""
-    ]))
-    return config.Config(conf_file.strpath)
+def tmpconfig(configfactory):
+    return configfactory('conf.ini', TMP_CONFIG)
 
 
 @pytest.fixture

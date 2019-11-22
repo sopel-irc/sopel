@@ -65,6 +65,9 @@ setup(
             'sopel-config = sopel.cli.config:main',
             'sopel-plugins = sopel.cli.plugins:main',
         ],
+        'pytest11': [
+            'pytest-sopel = sopel.tests.pytest_plugin',
+        ],
     },
     python_requires='>=2.7, !=3.0.*, !=3.1.*, !=3.2.*, <4',
 )

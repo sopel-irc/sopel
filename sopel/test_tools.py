@@ -1,12 +1,8 @@
 # coding=utf-8
-"""This module has classes and functions that can help in writing tests.
-
-test_tools.py - Sopel misc tools
-Copyright 2013, Ari Koivula, <ari@koivu.la>
-Licensed under the Eiffel Forum License 2.
-
-https://sopel.chat
-"""
+"""This module has classes and functions that can help in writing tests."""
+# Copyright 2013, Ari Koivula, <ari@koivu.la>
+# Copyright 2019, Florian Strzelecki <florian.strzelecki@gmail.com>
+# Licensed under the Eiffel Forum License 2.
 from __future__ import unicode_literals, absolute_import, print_function, division
 
 import os
@@ -20,9 +16,9 @@ except ImportError:
     import configparser as ConfigParser
 
 from sopel.bot import SopelWrapper
-from sopel.irc.abstract_backends import AbstractIRCBackend
 import sopel.config
 import sopel.config.core_section
+import sopel.plugins
 import sopel.tools
 import sopel.tools.target
 import sopel.trigger
@@ -32,7 +28,6 @@ __all__ = [
     'MockConfig',
     'MockSopel',
     'MockSopelWrapper',
-    'MockIRCBackend',
     'get_example_test',
     'get_disable_setup',
     'insert_into_module',
@@ -41,30 +36,6 @@ __all__ = [
 
 if sys.version_info.major >= 3:
     basestring = str
-
-
-def rawlist(*args):
-    """Build a list of raw IRC messages from the lines given as ``*args``.
-
-    :return: a list of raw IRC messages as seen by the bot
-
-    This is a helper function to build a list of messages without having to
-    care about encoding or this pesky carriage return::
-
-        >>> rawlist('PRIVMSG :Hello!')
-        [b'PRIVMSG :Hello!\r\n']
-
-    """
-    return ['{0}\r\n'.format(arg).encode('utf-8') for arg in args]
-
-
-class MockIRCBackend(AbstractIRCBackend):
-    def __init__(self, *args, **kwargs):
-        super(MockIRCBackend, self).__init__(*args, **kwargs)
-        self.message_sent = []
-
-    def send(self, data):
-        self.message_sent.append(data)
 
 
 class MockConfig(sopel.config.Config):
@@ -149,22 +120,23 @@ class MockSopelWrapper(SopelWrapper):
 
 def get_example_test(tested_func, msg, results, privmsg, admin,
                      owner, repeat, use_regexp, ignore=[]):
-    """Get a function that calls tested_func with fake wrapper and trigger.
+    """Get a function that calls ``tested_func`` with fake wrapper and trigger.
 
-    Args:
-        tested_func - A sopel callable that accepts SopelWrapper and Trigger.
-        msg - Message that is supposed to trigger the command.
-        results - Expected output from the callable.
-        privmsg - If true, make the message appear to have sent in a private
-            message to the bot. If false, make it appear to have come from a
-            channel.
-        admin - If true, make the message appear to have come from an admin.
-        owner - If true, make the message appear to have come from an owner.
-        repeat - How many times to repeat the test. Useful for tests that
-            return random stuff.
-        use_regexp = Bool. If true, results is in regexp format.
-        ignore - List of strings to ignore.
-
+    :param callable tested_func: a Sopel callable that accepts a
+                                 ``SopelWrapper`` and a ``Trigger``
+    :param str msg: message that is supposed to trigger the command
+    :param list results: expected output from the callable
+    :param bool privmsg: if ``True``, make the message appear to have arrived
+                         in a private message to the bot; otherwise make it
+                         appear to have come from a channel
+    :param bool admin: make the message appear to have come from an admin
+    :param bool owner: make the message appear to have come from an owner
+    :param int repeat: how many times to repeat the test; useful for tests that
+                       return random stuff
+    :param bool use_regexp: pass ``True`` if ``results`` are in regexp format
+    :param list ignore: strings to ignore
+    :return: a test function for ``tested_func``
+    :rtype: ``callable``
     """
     def test():
         bot = MockSopel("NickName", admin=admin, owner=owner)
