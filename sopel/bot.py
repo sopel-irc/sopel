@@ -44,6 +44,8 @@ class Sopel(irc.AbstractBot):
         super(Sopel, self).__init__(config)
         self._daemon = daemon  # Used for iPython. TODO something saner here
         self.wantsrestart = False
+        self._running_triggers = []
+        self._running_triggers_lock = threading.Lock()
 
         # `re.compile('.*') is re.compile('.*')` because of caching, so we need
         # to associate a list with each regex, since they are unexpectedly
@@ -650,6 +652,8 @@ class Sopel(irc.AbstractBot):
             :meth:`~get_triggered_callables`. This method is also responsible
             for telling ``dispatch`` if the function is blocked or not.
         """
+        # list of commands running in separate threads for this dispatch
+        running_triggers = []
         # nickname/hostname blocking
         nick_blocked = host_blocked = self._is_pretrigger_blocked(pretrigger)
         blocked = bool(nick_blocked or host_blocked)
@@ -659,11 +663,9 @@ class Sopel(irc.AbstractBot):
         for priority in ('high', 'medium', 'low'):
             items = self.get_triggered_callables(priority, pretrigger, blocked)
             for func, trigger, is_blocked in items:
+                function_name = "%s.%s" % (func.__module__, func.__name__)
                 # skip running blocked functions, but track them for logging
                 if is_blocked:
-                    function_name = "%s.%s" % (
-                        func.__module__, func.__name__
-                    )
                     list_of_blocked_functions.append(function_name)
                     continue
 
@@ -671,25 +673,62 @@ class Sopel(irc.AbstractBot):
                 wrapper = SopelWrapper(
                     self, trigger, output_prefix=func.output_prefix)
                 if func.thread:
+                    # run in a separate thread
                     targs = (func, wrapper, trigger)
                     t = threading.Thread(target=self.call, args=targs)
+                    t.name = '%s-%s' % (t.name, function_name)
                     t.start()
+                    running_triggers.append(t)
                 else:
+                    # direct call
                     self.call(func, wrapper, trigger)
 
+        # log blocked functions
         if list_of_blocked_functions:
             if nick_blocked and host_blocked:
-                block_type = 'both'
+                block_type = 'both blocklists'
             elif nick_blocked:
-                block_type = 'nick'
+                block_type = 'nick blocklist'
             else:
-                block_type = 'host'
-            LOGGER.info(
-                "[%s]%s prevented from using %s.",
-                block_type,
+                block_type = 'host blocklist'
+            LOGGER.debug(
+                "%s prevented from using %s by %s.",
                 pretrigger.nick,
-                ', '.join(list_of_blocked_functions)
+                ', '.join(list_of_blocked_functions),
+                block_type,
             )
+
+        # update currently running triggers
+        self._update_running_triggers(running_triggers)
+
+    @property
+    def running_triggers(self):
+        """Current active threads for triggers.
+
+        This read-only list contains the currently running thread processing
+        a trigger. This is for testing and debugging purposes only.
+        """
+        with self._running_triggers_lock:
+            return [t for t in self._running_triggers if t.is_alive()]
+
+    def _update_running_triggers(self, running_triggers):
+        """Update list of running triggers.
+
+        :param list running_triggers: new started threads
+
+        We want to keep track of running triggers, mostly for testing and
+        debugging purposes. For instance, it'll help make sure, in tests, that
+        a bot plugin has finished processing a trigger, by manually joining
+        all running threads.
+
+        This is kept private, as this is pure internal machinery and isn't
+        meant to be manipulated by outside code.
+        """
+        # update bot's global running triggers
+        with self._running_triggers_lock:
+            running_triggers = running_triggers + self._running_triggers
+            self._running_triggers = [
+                t for t in running_triggers if t.is_alive()]
 
     def on_scheduler_error(self, scheduler, exc):
         """Called when the Job Scheduler fails.
