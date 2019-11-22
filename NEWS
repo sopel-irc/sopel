@@ -168,7 +168,8 @@ Core changes
   [#1456][], [#1458][], [#1472][], [#1479][], [#1510][], [#1522][], [#1527][],
   [#1542][], [#1557][], [#1561][], [#1567][], [#1579][], [#1580][], [#1583][],
   [#1597][], [#1610][], [#1635][], [#1685][], [#1697][], [#1708][], [#1716][],
-  [#1723][], [#1724][], [#1728][], [#1730][], [#1735][], [#1741][], [#1754][]]
+  [#1723][], [#1724][], [#1728][], [#1730][], [#1731][], [#1732][], [#1735][],
+  [#1741][], [#1754][]]
 * Sopel 7 will emit warnings when run under Python 2, as Python 2.7 has an
   end-of-support date of January 1, 2020 [[#1488][]]
   * While Sopel 7 is intended to remain compatible with Python 2, future
@@ -179,7 +180,7 @@ Core changes
 * Added support for disabling commands (or entire modules) on a per-channel
   basis [[#1235][]]
   * See how it works: [Per-channel configuration][per-channel-conf]
-* Fixed tracking users' `away` status [[#1663][], [#1664][], [#1666][], [#1703][]]
+* Fixed tracking user `away` state [[#1663][], [#1664][], [#1666][], [#1703][]]
 * User information is now periodically updated [[#1664][]]
 * Fixed a case in which MODE tracking could break [[#1737][]]
 * Greatly improved the warning printed when a deprecated function is used,
@@ -214,6 +215,11 @@ API changes
     `sopel.tools.get_logger()` utility with plugin-specific behavior
   * `sopel.logger.get_logger()` will begin emitting deprecation warnings in
     version 8.0, and will be removed in 9.0
+* Test tools have been overhauled [[#1731][], [#1732][]]
+  * Much better mocking support
+  * The bot keeps track of running triggered threads, so tests can be sure that
+    processing has finished before evaluating results
+  * Sopel also now exports a `pytest` plugin, for convenience
 * `module.event()` decorator no longer requires a rule [[#1693][], [#1709][]]
   * Since 99% (unscientific guesstimate) of event decorators were paired with
     `@module.rule('.*')`, that's now implied if no rule decorator is present
@@ -240,6 +246,8 @@ API changes
   * Functionally identical to "nick" and "channel" values, but in a separate
     namespace intended for plugins' use to store key-value data that isn't
     associated with a nick or channel and doesn't belong in the config file
+* Added optional `default` kwarg to `db.get_*_value()` functions [[#1673][]]
+  * This allows streamlining some uses of values fetched from the database
 * New `sopel.module.output_prefix` decorator [[#1701][]]
   * Defines a prefix for all output sent from the decorated callable via
     `bot.say` or `bot.notice` (`bot.action` & `bot.reply` don't fit the use
@@ -413,6 +421,7 @@ API changes
 [#1669]: https://github.com/sopel-irc/sopel/pull/1669
 [#1670]: https://github.com/sopel-irc/sopel/pull/1670
 [#1672]: https://github.com/sopel-irc/sopel/pull/1672
+[#1673]: https://github.com/sopel-irc/sopel/pull/1673
 [#1674]: https://github.com/sopel-irc/sopel/pull/1674
 [#1675]: https://github.com/sopel-irc/sopel/pull/1675
 [#1677]: https://github.com/sopel-irc/sopel/pull/1677
@@ -455,6 +464,8 @@ API changes
 [#1728]: https://github.com/sopel-irc/sopel/pull/1728
 [#1729]: https://github.com/sopel-irc/sopel/pull/1729
 [#1730]: https://github.com/sopel-irc/sopel/pull/1730
+[#1731]: https://github.com/sopel-irc/sopel/pull/1731
+[#1732]: https://github.com/sopel-irc/sopel/pull/1732
 [#1733]: https://github.com/sopel-irc/sopel/pull/1733
 [#1734]: https://github.com/sopel-irc/sopel/pull/1734
 [#1735]: https://github.com/sopel-irc/sopel/pull/1735
