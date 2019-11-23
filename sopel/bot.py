@@ -257,7 +257,9 @@ class Sopel(irc.AbstractBot):
         plugin.reload()
         plugin.setup(self)
         plugin.register(self)
-        LOGGER.info('Reloaded plugin %s', name)
+        meta = plugin.get_meta_description()
+        LOGGER.info('Reloaded %s plugin %s from %s',
+                    meta['type'], name, meta['source'])
 
     def reload_plugins(self):
         """Reload all plugins
@@ -278,7 +280,9 @@ class Sopel(irc.AbstractBot):
             plugin.reload()
             plugin.setup(self)
             plugin.register(self)
-            LOGGER.info('Reloaded plugin %s', name)
+            meta = plugin.get_meta_description()
+            LOGGER.info('Reloaded %s plugin %s from %s',
+                        meta['type'], name, meta['source'])
 
     def add_plugin(self, plugin, callables, jobs, shutdowns, urls):
         """Add a loaded plugin to the bot's registry"""
