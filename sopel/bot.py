@@ -311,6 +311,20 @@ class Sopel(irc.AbstractBot):
         """Tell if the bot has registered this plugin by its name"""
         return name in self._plugins
 
+    def get_plugin_meta(self, name):
+        """Get info about a registered plugin by its name.
+
+        :param str name: name of the plugin about which to get info
+        :return: the plugin's metadata
+                 (see :meth:`~.plugins.handlers.AbstractPluginHandler.get_meta_description`)
+        :rtype: :class:`dict`
+        :raise PluginNotRegistered: when there is no ``name`` plugin registered
+        """
+        if not self.has_plugin(name):
+            raise plugins.exceptions.PluginNotRegistered(name)
+
+        return self._plugins[name].get_meta_description()
+
     def unregister(self, obj):
         """Unregister a callable.
 
