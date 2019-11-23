@@ -39,12 +39,12 @@ else:
 
 domain = r'https?://(?:www\.|old\.|pay\.|ssl\.|[a-z]{2}\.)?reddit\.com'
 subreddit_url = r'%s/r/([\w-]+)/?$' % domain
-post_url = r'%s/r/.*?/comments/([\w-]+)/?$' % domain
-short_post_url = r'https?://redd.it/([\w-]+)'
-user_url = r'%s/u(ser)?/([\w-]+)' % domain
-comment_url = r'%s/r/.*?/comments/.*?/.*?/([\w-]+)' % domain
-image_url = r'https?://i.redd.it/\S+'
-video_url = r'https?://v.redd.it/([\w-]+)'
+post_url = r'%s/r/\S+?/comments/([\w-]+)(?:/[\w]+)?/?$' % domain
+short_post_url = r'https?://redd\.it/([\w-]+)'
+user_url = r'%s/u(?:ser)?/([\w-]+)' % domain
+comment_url = r'%s/r/\S+?/comments/\S+?/\S+?/([\w-]+)' % domain
+image_url = r'https?://i\.redd\.it/\S+'
+video_url = r'https?://v\.redd\.it/([\w-]+)'
 
 
 def setup(bot):
@@ -91,7 +91,11 @@ def video_info(bot, trigger, match):
     url = requests.head(
         'https://www.reddit.com/video/{}'.format(match.group(1)),
         timeout=(10.0, 4.0)).headers['Location']
-    return say_post_info(bot, trigger, re.match(post_url, url).group(1))
+    try:
+        return say_post_info(bot, trigger, re.match(post_url, url).group(1))
+    except AttributeError:
+        # Fail silently if we can't map the video link to a submission
+        pass
 
 
 @url(post_url)
@@ -280,7 +284,7 @@ def redditor_info(bot, trigger, match, commanded=False):
 
 @url(user_url)
 def auto_redditor_info(bot, trigger, match):
-    redditor_info(bot, trigger, match.group(2))
+    redditor_info(bot, trigger, match.group(1))
 
 
 @url(subreddit_url)
