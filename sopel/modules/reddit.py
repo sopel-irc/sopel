@@ -79,7 +79,7 @@ def image_info(bot, trigger, match):
     results = list(
         bot.memory['reddit_praw']
         .subreddit('all')
-        .search('url:{}'.format(url), sort='new')
+        .search('url:{}'.format(url), sort='new', params={'include_over_18': 'on'})
     )
     oldest = results[-1]
     return say_post_info(bot, trigger, oldest.id)
