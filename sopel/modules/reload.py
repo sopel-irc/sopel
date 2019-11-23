@@ -46,7 +46,9 @@ def f_reload(bot, trigger):
         return bot.reply('"%s" not loaded, try the `load` command' % name)
 
     bot.reload_plugin(name)
-    return bot.reply('done: %s reloaded' % name)
+    plugin_meta = bot.get_plugin_meta(name)
+    return bot.reply('done: %s reloaded (%s from %s)' %
+                     (name, plugin_meta['type'], plugin_meta['source']))
 
 
 @sopel.module.nickname_commands('update')
