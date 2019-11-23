@@ -63,7 +63,8 @@ Module changes
     first converting the future date/time to a duration for use with `.in`!
 * A new `tell` plugin setting allows delivering messages privately [[#1694][]]
 * The `reddit` plugin now also handles short `redd.it` links, direct links to
-  comments, & reddit-hosted image/video links [[#1503][], [#1720][], [#1734][]]
+  comments, inline `u/` and `r/` references, & reddit-hosted image/video links
+  [[#1503][], [#1720][], [#1722][], [#1734][], [#1760][]]
 * Spoilers & NSFW are now separate concepts in the `reddit` plugin [[#1620][]]
   * Reddit implemented spoilers as a distinct post flag some time ago. Sopel's
     plugin supports independently setting channels as "SFW" or "spoiler-free".
@@ -457,6 +458,7 @@ API changes
 [#1719]: https://github.com/sopel-irc/sopel/pull/1719
 [#1720]: https://github.com/sopel-irc/sopel/pull/1720
 [#1721]: https://github.com/sopel-irc/sopel/pull/1721
+[#1722]: https://github.com/sopel-irc/sopel/pull/1722
 [#1723]: https://github.com/sopel-irc/sopel/pull/1723
 [#1724]: https://github.com/sopel-irc/sopel/pull/1724
 [#1725]: https://github.com/sopel-irc/sopel/pull/1725
@@ -475,6 +477,7 @@ API changes
 [#1750]: https://github.com/sopel-irc/sopel/pull/1750
 [#1754]: https://github.com/sopel-irc/sopel/pull/1754
 [#1759]: https://github.com/sopel-irc/sopel/pull/1759
+[#1760]: https://github.com/sopel-irc/sopel/pull/1760
 
 [api-docs]: https://sopel.chat/docs/
 [auth-config-docs]: https://sopel.chat/docs/configure.html#Authentication
