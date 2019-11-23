@@ -205,6 +205,23 @@ def comment_info(bot, trigger, match):
 
 def subreddit_info(bot, trigger, match, commanded=False):
     """Shows information about the given subreddit"""
+    match_lower = match.lower()
+    if match_lower in ['all', 'popular']:
+        message = ('[REDDIT] {link}{nsfw} | {public_description}')
+        nsfw = ' ' + bold(color('[Possible NSFW]', colors.ORANGE))
+        link = "https://reddit.com/r/" + match_lower
+        public_description = ''
+        if match_lower == 'all':
+            public_description = ('Today\'s top content from hundreds of '
+                                  'thousands of Reddit communities.')
+        elif match_lower == 'popular':
+            public_description = ('The top trending content from some of '
+                                  'Reddit\'s most popular communities')
+        message = message.format(
+            link=link, nsfw=nsfw, public_description=public_description)
+        bot.say(message)
+        return NOLIMIT
+
     r = bot.memory['reddit_praw']
     try:
         r.subreddits.search_by_name(match, exact=True)
