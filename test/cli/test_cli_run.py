@@ -318,11 +318,11 @@ def test_build_parser_configure():
     assert isinstance(options, argparse.Namespace)
     assert hasattr(options, 'config')
     assert hasattr(options, 'configdir')
-    assert hasattr(options, 'modules')
+    assert hasattr(options, 'plugins')
 
     assert options.config == 'default'
     assert options.configdir == config.DEFAULT_HOMEDIR
-    assert options.modules is False
+    assert options.plugins is False
 
 
 def test_build_parser_configure_config():
@@ -345,8 +345,8 @@ def test_build_parser_configure_configdir():
 def test_build_parser_configure_modules():
     parser = build_parser()
 
-    options = parser.parse_args(['configure', '--modules'])
-    assert options.modules is True
+    options = parser.parse_args(['configure', '--plugins'])
+    assert options.plugins is True
 
 
 def test_get_configuration(tmpdir):
