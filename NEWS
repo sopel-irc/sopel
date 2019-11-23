@@ -148,6 +148,9 @@ Core changes
     status), `enable` & `disable` (edits config on the user's behalf)
   * See detailed usage in your terminal with `sopel-plugins --help`, or review
     [the online CLI docs][docs-cli-plugins] at our website
+* Sopel now also looks for plugins in `$HOMEDIR/plugins` [[#1747][]]
+  * This is part of a longer-term plan to reduce confusion over the term
+    "module", which Sopel has been using in conflicting ways; see [[#1738][]]
 * The config file Sopel should use can be specified via the `SOPEL_CONFIG`
   environment variable [[#1473][]]
 * List values in config can be separated by newlines [[#1628][], [#1690][]]
@@ -170,7 +173,7 @@ Core changes
   [#1542][], [#1557][], [#1561][], [#1567][], [#1579][], [#1580][], [#1583][],
   [#1597][], [#1610][], [#1635][], [#1685][], [#1697][], [#1708][], [#1716][],
   [#1723][], [#1724][], [#1728][], [#1730][], [#1731][], [#1732][], [#1735][],
-  [#1741][], [#1754][], [#1759][]]
+  [#1741][], [#1742][], [#1743][], [#1754][], [#1759][]]
 * Sopel 7 will emit warnings when run under Python 2, as Python 2.7 has an
   end-of-support date of January 1, 2020 [[#1488][]]
   * While Sopel 7 is intended to remain compatible with Python 2, future
@@ -473,7 +476,11 @@ API changes
 [#1735]: https://github.com/sopel-irc/sopel/pull/1735
 [#1736]: https://github.com/sopel-irc/sopel/pull/1736
 [#1737]: https://github.com/sopel-irc/sopel/pull/1737
+[#1738]: https://github.com/sopel-irc/sopel/issues/1738
 [#1741]: https://github.com/sopel-irc/sopel/pull/1741
+[#1742]: https://github.com/sopel-irc/sopel/pull/1742
+[#1743]: https://github.com/sopel-irc/sopel/pull/1743
+[#1747]: https://github.com/sopel-irc/sopel/pull/1747
 [#1750]: https://github.com/sopel-irc/sopel/pull/1750
 [#1754]: https://github.com/sopel-irc/sopel/pull/1754
 [#1759]: https://github.com/sopel-irc/sopel/pull/1759
