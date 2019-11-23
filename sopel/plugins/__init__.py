@@ -12,6 +12,7 @@ in an :class:`ordered dict<collections.OrderedDict>`. This dict contains one
 and only one plugin per unique name, using a specific order:
 
 * extra directories defined in the settings
+* homedir's ``plugins`` directory
 * homedir's ``modules`` directory
 * ``sopel.plugins`` setuptools entry points
 * ``sopel_modules``'s subpackages
@@ -130,15 +131,25 @@ def enumerate_plugins(settings):
        * :func:`find_sopel_modules_plugins` for ``sopel_modules.*`` plugins
        * :func:`find_entry_point_plugins` for plugins exposed by setuptools
          entry points
-       * :func:`find_directory_plugins` for modules in ``$homedir/modules``
-         and in extra directories, as defined by ``settings.core.extra``
+       * :func:`find_directory_plugins` for plugins in ``$homedir/modules``,
+         ``$homedir/plugins``, and in extra directories, as defined by
+         ``settings.core.extra``
+
+    .. versionchanged:: 7.0
+
+       Previously, plugins were called "modules", so this would load plugins
+       from the ``$homedir/modules`` directory. Now it also loads plugins
+       from the ``$homedir/plugins`` directory.
 
     """
     from_internals = find_internal_plugins()
     from_sopel_modules = find_sopel_modules_plugins()
     from_entry_points = find_entry_point_plugins()
     # load from directories
-    source_dirs = [os.path.join(settings.homedir, 'modules')]
+    source_dirs = [
+        os.path.join(settings.homedir, 'modules'),
+        os.path.join(settings.homedir, 'plugins'),
+    ]
     if settings.core.extra:
         source_dirs = source_dirs + list(settings.core.extra)
 
@@ -155,7 +166,7 @@ def enumerate_plugins(settings):
         from_entry_points,
         *from_directories)
 
-    # Get module settings
+    # Get plugin settings
     enabled = settings.core.enable
     disabled = settings.core.exclude
 
