@@ -81,7 +81,11 @@ def image_info(bot, trigger, match):
         .subreddit('all')
         .search('url:{}'.format(url), sort='new', params={'include_over_18': 'on'})
     )
-    oldest = results[-1]
+    try:
+        oldest = results[-1]
+    except IndexError:
+        # Fail silently if the image link can't be mapped to a submission
+        return NOLIMIT
     return say_post_info(bot, trigger, oldest.id)
 
 
@@ -95,7 +99,7 @@ def video_info(bot, trigger, match):
         return say_post_info(bot, trigger, re.match(post_url, url).group(1))
     except AttributeError:
         # Fail silently if we can't map the video link to a submission
-        pass
+        return NOLIMIT
 
 
 @url(post_url)
