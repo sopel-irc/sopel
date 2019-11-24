@@ -221,27 +221,30 @@ def _clean_cache(bot):
     """Cleans up old entries in URL safety cache."""
     if bot.memory['safety_cache_lock'].acquire(False):
         LOGGER.info('Starting safety cache cleanup...')
-        # clean up by age first
-        cutoff = time.time() - (7 * 24 * 60 * 60)  # 7 days ago
-        old_keys = []
-        for key, data in sopel.tools.iteritems(bot.memory['safety_cache']):
-            if data['fetched'] <= cutoff:
-                old_keys.append(key)
-        for key in old_keys:
-            bot.memory['safety_cache'].pop(key, None)
-
-        # clean up more values if the cache is still too big
-        overage = bot.memory['safety_cache'] - cache_limit
-        if overage > 0:
-            extra_keys = sorted(
-                (data.fetched, key)
-                for (key, data)
-                in bot.memory['safety_cache'].items())[:overage]
-            for (_, key) in extra_keys:
+        try:
+            # clean up by age first
+            cutoff = time.time() - (7 * 24 * 60 * 60)  # 7 days ago
+            old_keys = []
+            for key, data in sopel.tools.iteritems(bot.memory['safety_cache']):
+                if data['fetched'] <= cutoff:
+                    old_keys.append(key)
+            for key in old_keys:
                 bot.memory['safety_cache'].pop(key, None)
 
+            # clean up more values if the cache is still too big
+            overage = bot.memory['safety_cache'] - cache_limit
+            if overage > 0:
+                extra_keys = sorted(
+                    (data.fetched, key)
+                    for (key, data)
+                    in bot.memory['safety_cache'].items())[:overage]
+                for (_, key) in extra_keys:
+                    bot.memory['safety_cache'].pop(key, None)
+        finally:
+            # No matter what errors happen (or not), release the lock
+            bot.memory['safety_cache_lock'].release()
+
         LOGGER.info('Safety cache cleanup finished.')
-        bot.memory['safety_cache_lock'].release()
     else:
         LOGGER.info(
             'Skipping safety cache cleanup: Cache is locked, '
