@@ -173,7 +173,7 @@ Core changes
   [#1542][], [#1557][], [#1561][], [#1567][], [#1579][], [#1580][], [#1583][],
   [#1597][], [#1610][], [#1635][], [#1685][], [#1697][], [#1708][], [#1716][],
   [#1723][], [#1724][], [#1728][], [#1730][], [#1731][], [#1732][], [#1735][],
-  [#1741][], [#1742][], [#1743][], [#1754][], [#1759][]]
+  [#1739][], [#1740][], [#1741][], [#1742][], [#1743][], [#1754][], [#1759][]]
 * Sopel 7 will emit warnings when run under Python 2, as Python 2.7 has an
   end-of-support date of January 1, 2020 [[#1488][]]
   * While Sopel 7 is intended to remain compatible with Python 2, future
@@ -187,6 +187,8 @@ Core changes
 * Fixed tracking user `away` state [[#1663][], [#1664][], [#1666][], [#1703][]]
 * User information is now periodically updated [[#1664][]]
 * Fixed a case in which MODE tracking could break [[#1737][]]
+* Stopped sending TOPIC command on JOIN [[#1749][]]
+  * IRC servers should send the topic on join without being asked, per spec
 * Greatly improved the warning printed when a deprecated function is used,
   adding detail and removing unnecessary traceback lines [[#1568][], [#1613][]]
   * Typical length of output for each deprecated function call reduced from
@@ -477,10 +479,13 @@ API changes
 [#1736]: https://github.com/sopel-irc/sopel/pull/1736
 [#1737]: https://github.com/sopel-irc/sopel/pull/1737
 [#1738]: https://github.com/sopel-irc/sopel/issues/1738
+[#1739]: https://github.com/sopel-irc/sopel/pull/1739
+[#1740]: https://github.com/sopel-irc/sopel/pull/1740
 [#1741]: https://github.com/sopel-irc/sopel/pull/1741
 [#1742]: https://github.com/sopel-irc/sopel/pull/1742
 [#1743]: https://github.com/sopel-irc/sopel/pull/1743
 [#1747]: https://github.com/sopel-irc/sopel/pull/1747
+[#1749]: https://github.com/sopel-irc/sopel/pull/1749
 [#1750]: https://github.com/sopel-irc/sopel/pull/1750
 [#1754]: https://github.com/sopel-irc/sopel/pull/1754
 [#1759]: https://github.com/sopel-irc/sopel/pull/1759
