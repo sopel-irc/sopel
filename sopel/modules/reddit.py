@@ -73,6 +73,24 @@ def get_time_created(bot, trigger, entrytime):
     return created
 
 
+def get_is_cakeday(entrytime):
+    now = dt.datetime.utcnow()
+    cakeday_start = dt.datetime.utcfromtimestamp(entrytime)
+    cakeday_start = cakeday_start.replace(year=now.year)
+    day = dt.timedelta(days=1)
+    year_div_by_400 = now.year % 400 == 0
+    year_div_by_100 = now.year % 100 == 0
+    year_div_by_4 = now.year % 4 == 0
+    is_leap = year_div_by_400 or ((not year_div_by_100) and year_div_by_4)
+    if (not is_leap) and ((cakeday_start.month, cakeday_start.day) == (2, 29)):
+        # If cake day is 2/29 and it's not a leap year, cake day is 3/1.
+        # Cake day begins at exact account creation time.
+        is_cakeday = cakeday_start + day <= now <= cakeday_start + (2 * day)
+    else:
+        is_cakeday = cakeday_start <= now <= cakeday_start + day
+    return is_cakeday
+
+
 @url(image_url)
 def image_info(bot, trigger, match):
     url = match.group(0)
@@ -253,39 +271,30 @@ def redditor_info(bot, trigger, match, commanded=False):
     """Shows information about the given Redditor"""
     try:
         u = bot.memory['reddit_praw'].redditor(match)
-        message = '[REDDITOR] ' + u.name
-        now = dt.datetime.utcnow()
-        cakeday_start = dt.datetime.utcfromtimestamp(u.created_utc)
-        cakeday_start = cakeday_start.replace(year=now.year)
-        day = dt.timedelta(days=1)
-        year_div_by_400 = now.year % 400 == 0
-        year_div_by_100 = now.year % 100 == 0
-        year_div_by_4 = now.year % 4 == 0
-        is_leap = year_div_by_400 or ((not year_div_by_100) and year_div_by_4)
-        if (not is_leap) and ((cakeday_start.month, cakeday_start.day) == (2, 29)):
-            # If cake day is 2/29 and it's not a leap year, cake day is 3/1.
-            # Cake day begins at exact account creation time.
-            is_cakeday = cakeday_start + day <= now <= cakeday_start + (2 * day)
-        else:
-            is_cakeday = cakeday_start <= now <= cakeday_start + day
-
-        if is_cakeday:
-            message = message + ' | ' + bold(color('Cake day', colors.LIGHT_PURPLE))
-        if commanded:
-            message = message + ' | https://reddit.com/u/' + u.name
-        if u.is_gold:
-            message = message + ' | ' + bold(color('Gold', colors.YELLOW))
-        if u.is_mod:
-            message = message + ' | ' + bold(color('Mod', colors.GREEN))
-        message = message + (' | Link: ' + str(u.link_karma) +
-                             ' | Comment: ' + str(u.comment_karma))
-
-        bot.say(message)
+        u.id  # shortcut to check if the user exists or not
     except prawcore.exceptions.NotFound:
         if commanded:
             bot.say('No such Redditor.')
         # Fail silently if it wasn't an explicit command.
         return NOLIMIT
+
+    message = '[REDDITOR] ' + u.name
+    is_cakeday = get_is_cakeday(u.created_utc)
+
+    if is_cakeday:
+        message = message + ' | ' + bold(color('Cake day', colors.LIGHT_PURPLE))
+    if commanded:
+        message = message + ' | https://reddit.com/u/' + u.name
+    if u.is_gold:
+        message = message + ' | ' + bold(color('Gold', colors.YELLOW))
+    if u.is_employee:
+        message = message + ' | ' + bold(color('Employee', colors.RED))
+    if u.is_mod:
+        message = message + ' | ' + bold(color('Mod', colors.GREEN))
+    message = message + (' | Link: ' + str(u.link_karma) +
+                         ' | Comment: ' + str(u.comment_karma))
+
+    bot.say(message)
 
 
 @url(user_url)
