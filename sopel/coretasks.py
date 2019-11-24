@@ -433,8 +433,6 @@ def _periodic_send_who(bot):
 @sopel.module.unblockable
 def track_join(bot, trigger):
     if trigger.nick == bot.nick and trigger.sender not in bot.channels:
-        bot.write(('TOPIC', trigger.sender))
-
         bot.privileges[trigger.sender] = dict()
         bot.channels[trigger.sender] = Channel(trigger.sender)
         _send_who(bot, trigger.sender)
