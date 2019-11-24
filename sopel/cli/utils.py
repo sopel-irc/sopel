@@ -167,7 +167,7 @@ def _plugins_wizard(settings):
 
 def _plugin_wizard(settings, plugin):
     plugin.load()
-    prompt = 'Configure {} (y/n)? [n]'.format(plugin.get_label())
+    prompt = "Configure {}".format(plugin.get_label())
     if plugin.has_configure() and settings.option(prompt):
         plugin.configure(settings)
 
