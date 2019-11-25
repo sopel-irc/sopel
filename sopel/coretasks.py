@@ -14,23 +14,18 @@ dispatch function in bot.py and making it easier to maintain.
 # Licensed under the Eiffel Forum License 2.
 from __future__ import unicode_literals, absolute_import, print_function, division
 
-import logging
-from random import randint
+import base64
 import collections
 import datetime
+import logging
 import re
 import sys
 import time
+from random import randint
 
-import sopel
-import sopel.module
-import sopel.tools.web
-from sopel import loader
+from sopel import loader, module
 from sopel.irc.utils import CapReq
-from sopel.tools import Identifier, iteritems, events
-from sopel.tools.target import User, Channel
-from sopel.tools.jobs import Job
-import base64
+from sopel.tools import Identifier, events, iteritems, jobs, target, web
 
 if sys.version_info.major >= 3:
     unicode = str
@@ -48,12 +43,12 @@ def setup(bot):
     if bot.settings.core.throttle_join:
         wait_interval = max(bot.settings.core.throttle_wait, 1)
 
-        @sopel.module.interval(wait_interval)
+        @module.interval(wait_interval)
         def processing_job(bot):
             _join_event_processing(bot)
 
         loader.clean_callable(processing_job, bot.settings)
-        bot.scheduler.add_job(Job(wait_interval, processing_job))
+        bot.scheduler.add_job(jobs.Job(wait_interval, processing_job))
 
 
 def shutdown(bot):
@@ -121,18 +116,18 @@ def _execute_perform(bot):
         bot.write((command,))
 
 
-@sopel.module.require_privmsg("This command only works as a private message.")
-@sopel.module.require_admin("This command requires admin privileges.")
-@sopel.module.commands('execute')
+@module.require_privmsg("This command only works as a private message.")
+@module.require_admin("This command requires admin privileges.")
+@module.commands('execute')
 def execute_perform(bot, trigger):
     """Execute commands specified to perform on IRC server connect."""
     _execute_perform(bot)
 
 
-@sopel.module.priority('high')
-@sopel.module.event(events.RPL_WELCOME, events.RPL_LUSERCLIENT)
-@sopel.module.thread(False)
-@sopel.module.unblockable
+@module.priority('high')
+@module.event(events.RPL_WELCOME, events.RPL_LUSERCLIENT)
+@module.thread(False)
+@module.unblockable
 def startup(bot, trigger):
     """Do tasks related to connecting to the network.
 
@@ -200,9 +195,9 @@ def startup(bot, trigger):
     _execute_perform(bot)
 
 
-@sopel.module.require_privmsg()
-@sopel.module.require_owner()
-@sopel.module.commands('useserviceauth')
+@module.require_privmsg()
+@module.require_owner()
+@module.commands('useserviceauth')
 def enable_service_auth(bot, trigger):
     if bot.config.core.owner_account:
         return
@@ -220,8 +215,8 @@ def enable_service_auth(bot, trigger):
             'owner.')
 
 
-@sopel.module.event(events.ERR_NOCHANMODES)
-@sopel.module.priority('high')
+@module.event(events.ERR_NOCHANMODES)
+@module.priority('high')
 def retry_join(bot, trigger):
     """Give NickServ enough time to identify on a +R channel.
 
@@ -243,11 +238,11 @@ def retry_join(bot, trigger):
     bot.join(channel)
 
 
-@sopel.module.rule('(.*)')
-@sopel.module.event(events.RPL_NAMREPLY)
-@sopel.module.priority('high')
-@sopel.module.thread(False)
-@sopel.module.unblockable
+@module.rule('(.*)')
+@module.event(events.RPL_NAMREPLY)
+@module.priority('high')
+@module.thread(False)
+@module.unblockable
 def handle_names(bot, trigger):
     """Handle NAMES response, happens when joining to channels."""
     names = trigger.split()
@@ -260,18 +255,18 @@ def handle_names(bot, trigger):
     if channel not in bot.privileges:
         bot.privileges[channel] = dict()
     if channel not in bot.channels:
-        bot.channels[channel] = Channel(channel)
+        bot.channels[channel] = target.Channel(channel)
 
     # This could probably be made flexible in the future, but I don't think
     # it'd be worth it.
     # If this ever needs to be updated, remember to change the mode handling in
     # the WHO-handler functions below, too.
     mapping = {
-        "+": sopel.module.VOICE,
-        "%": sopel.module.HALFOP,
-        "@": sopel.module.OP,
-        "&": sopel.module.ADMIN,
-        "~": sopel.module.OWNER,
+        "+": module.VOICE,
+        "%": module.HALFOP,
+        "@": module.OP,
+        "&": module.ADMIN,
+        "~": module.OWNER,
     }
 
     for name in names:
@@ -287,16 +282,16 @@ def handle_names(bot, trigger):
             # in a NAMES reply, unfortunately.
             # Fortunately, the user should already exist in bot.users by the
             # time this code runs, so this is 99.9% ass-covering.
-            user = User(nick, None, None)
+            user = target.User(nick, None, None)
             bot.users[nick] = user
         bot.channels[channel].add_user(user, privs=priv)
 
 
-@sopel.module.rule('(.*)')
-@sopel.module.event('MODE')
-@sopel.module.priority('high')
-@sopel.module.thread(False)
-@sopel.module.unblockable
+@module.rule('(.*)')
+@module.event('MODE')
+@module.priority('high')
+@module.thread(False)
+@module.unblockable
 def track_modes(bot, trigger):
     """Track usermode changes and keep our lists of ops up to date."""
     # Mode message format: <channel> *( ( "-" / "+" ) *<modes> *<modeparams> )
@@ -329,11 +324,11 @@ def track_modes(bot, trigger):
     nicks = [Identifier(nick) for nick in trigger.args[2:]]
 
     mapping = {
-        "v": sopel.module.VOICE,
-        "h": sopel.module.HALFOP,
-        "o": sopel.module.OP,
-        "a": sopel.module.ADMIN,
-        "q": sopel.module.OWNER,
+        "v": module.VOICE,
+        "h": module.HALFOP,
+        "o": module.OP,
+        "a": module.ADMIN,
+        "q": module.OWNER,
     }
 
     # Parse modes before doing anything else
@@ -381,10 +376,10 @@ def track_modes(bot, trigger):
             bot.channels[channel].privileges[nick] = priv
 
 
-@sopel.module.event('NICK')
-@sopel.module.priority('high')
-@sopel.module.thread(False)
-@sopel.module.unblockable
+@module.event('NICK')
+@module.priority('high')
+@module.thread(False)
+@module.unblockable
 def track_nicks(bot, trigger):
     """Track nickname changes and maintain our chanops list accordingly."""
     old = trigger.nick
@@ -419,21 +414,21 @@ def track_nicks(bot, trigger):
         bot.users[new] = bot.users.pop(old)
 
 
-@sopel.module.rule('(.*)')
-@sopel.module.event('PART')
-@sopel.module.priority('high')
-@sopel.module.thread(False)
-@sopel.module.unblockable
+@module.rule('(.*)')
+@module.event('PART')
+@module.priority('high')
+@module.thread(False)
+@module.unblockable
 def track_part(bot, trigger):
     nick = trigger.nick
     channel = trigger.sender
     _remove_from_channel(bot, nick, channel)
 
 
-@sopel.module.event('KICK')
-@sopel.module.priority('high')
-@sopel.module.thread(False)
-@sopel.module.unblockable
+@module.event('KICK')
+@module.priority('high')
+@module.thread(False)
+@module.unblockable
 def track_kick(bot, trigger):
     nick = Identifier(trigger.args[1])
     channel = trigger.sender
@@ -488,7 +483,7 @@ def _send_who(bot, channel):
     bot.channels[Identifier(channel)].last_who = datetime.datetime.utcnow()
 
 
-@sopel.module.interval(30)
+@module.interval(30)
 def _periodic_send_who(bot):
     """Periodically send a WHO request to keep user information up-to-date."""
     if 'away-notify' in bot.enabled_capabilities:
@@ -516,10 +511,10 @@ def _periodic_send_who(bot):
         _send_who(bot, selected_channel)
 
 
-@sopel.module.event('JOIN')
-@sopel.module.priority('high')
-@sopel.module.thread(False)
-@sopel.module.unblockable
+@module.event('JOIN')
+@module.priority('high')
+@module.thread(False)
+@module.unblockable
 def track_join(bot, trigger):
     channel = trigger.sender
 
@@ -527,7 +522,7 @@ def track_join(bot, trigger):
     if channel not in bot.channels:
         LOGGER.info('Channel joined: %s', channel)
         bot.privileges[channel] = dict()
-        bot.channels[channel] = Channel(channel)
+        bot.channels[channel] = target.Channel(channel)
 
     # did *we* just join?
     if trigger.nick == bot.nick:
@@ -543,7 +538,7 @@ def track_join(bot, trigger):
 
     user = bot.users.get(trigger.nick)
     if user is None:
-        user = User(trigger.nick, trigger.user, trigger.host)
+        user = target.User(trigger.nick, trigger.user, trigger.host)
         bot.users[trigger.nick] = user
     bot.channels[channel].add_user(user)
 
@@ -553,10 +548,10 @@ def track_join(bot, trigger):
         user.account = trigger.args[1]
 
 
-@sopel.module.event('QUIT')
-@sopel.module.priority('high')
-@sopel.module.thread(False)
-@sopel.module.unblockable
+@module.event('QUIT')
+@module.priority('high')
+@module.thread(False)
+@module.unblockable
 def track_quit(bot, trigger):
     for chanprivs in bot.privileges.values():
         chanprivs.pop(trigger.nick, None)
@@ -565,10 +560,10 @@ def track_quit(bot, trigger):
     bot.users.pop(trigger.nick, None)
 
 
-@sopel.module.event('CAP')
-@sopel.module.thread(False)
-@sopel.module.priority('high')
-@sopel.module.unblockable
+@module.event('CAP')
+@module.thread(False)
+@module.priority('high')
+@module.unblockable
 def receive_cap_list(bot, trigger):
     cap = trigger.strip('-=~')
     # Server is listing capabilities
@@ -745,7 +740,7 @@ def send_authenticate(bot, token):
         bot.write(('AUTHENTICATE', '+'))
 
 
-@sopel.module.event('AUTHENTICATE')
+@module.event('AUTHENTICATE')
 def auth_proceed(bot, trigger):
     if trigger.args[0] != '+':
         # How did we get here? I am not good with computer.
@@ -764,7 +759,7 @@ def auth_proceed(bot, trigger):
     send_authenticate(bot, sasl_token)
 
 
-@sopel.module.event(events.RPL_SASLSUCCESS)
+@module.event(events.RPL_SASLSUCCESS)
 def sasl_success(bot, trigger):
     bot.write(('CAP', 'END'))
 
@@ -772,11 +767,11 @@ def sasl_success(bot, trigger):
 # Live blocklist editing
 
 
-@sopel.module.commands('blocks')
-@sopel.module.priority('low')
-@sopel.module.thread(False)
-@sopel.module.unblockable
-@sopel.module.require_admin
+@module.commands('blocks')
+@module.priority('low')
+@module.thread(False)
+@module.unblockable
+@module.require_admin
 def blocks(bot, trigger):
     """
     Manage Sopel's blocking features.\
@@ -855,19 +850,20 @@ def blocks(bot, trigger):
         bot.reply(STRINGS['huh'])
 
 
-@sopel.module.event('ACCOUNT')
+@module.event('ACCOUNT')
 def account_notify(bot, trigger):
     if trigger.nick not in bot.users:
-        bot.users[trigger.nick] = User(trigger.nick, trigger.user, trigger.host)
+        bot.users[trigger.nick] = target.User(
+            trigger.nick, trigger.user, trigger.host)
     account = trigger.args[0]
     if account == '*':
         account = None
     bot.users[trigger.nick].account = account
 
 
-@sopel.module.event(events.RPL_WHOSPCRPL)
-@sopel.module.priority('high')
-@sopel.module.unblockable
+@module.event(events.RPL_WHOSPCRPL)
+@module.priority('high')
+@module.unblockable
 def recv_whox(bot, trigger):
     if len(trigger.args) < 2 or trigger.args[1] not in who_reqs:
         # Ignored, some module probably called WHO
@@ -884,7 +880,7 @@ def _record_who(bot, channel, user, host, nick, account=None, away=None, modes=N
     nick = Identifier(nick)
     channel = Identifier(channel)
     if nick not in bot.users:
-        usr = User(nick, user, host)
+        usr = target.User(nick, user, host)
         bot.users[nick] = usr
     else:
         usr = bot.users[nick]
@@ -902,25 +898,25 @@ def _record_who(bot, channel, user, host, nick, account=None, away=None, modes=N
     priv = 0
     if modes:
         mapping = {
-            "+": sopel.module.VOICE,
-            "%": sopel.module.HALFOP,
-            "@": sopel.module.OP,
-            "&": sopel.module.ADMIN,
-            "~": sopel.module.OWNER,
+            "+": module.VOICE,
+            "%": module.HALFOP,
+            "@": module.OP,
+            "&": module.ADMIN,
+            "~": module.OWNER,
         }
         for c in modes:
             priv = priv | mapping[c]
     if channel not in bot.channels:
-        bot.channels[channel] = Channel(channel)
+        bot.channels[channel] = target.Channel(channel)
     bot.channels[channel].add_user(usr, privs=priv)
     if channel not in bot.privileges:
         bot.privileges[channel] = dict()
     bot.privileges[channel][nick] = priv
 
 
-@sopel.module.event(events.RPL_WHOREPLY)
-@sopel.module.priority('high')
-@sopel.module.unblockable
+@module.event(events.RPL_WHOREPLY)
+@module.priority('high')
+@module.unblockable
 def recv_who(bot, trigger):
     channel, user, host, _, nick, status = trigger.args[1:7]
     away = 'G' in status
@@ -928,30 +924,31 @@ def recv_who(bot, trigger):
     _record_who(bot, channel, user, host, nick, away=away, modes=modes)
 
 
-@sopel.module.event(events.RPL_ENDOFWHO)
-@sopel.module.priority('high')
-@sopel.module.unblockable
+@module.event(events.RPL_ENDOFWHO)
+@module.priority('high')
+@module.unblockable
 def end_who(bot, trigger):
     if _whox_enabled(bot):
         who_reqs.pop(trigger.args[1], None)
 
 
-@sopel.module.event('AWAY')
-@sopel.module.priority('high')
-@sopel.module.thread(False)
-@sopel.module.unblockable
+@module.event('AWAY')
+@module.priority('high')
+@module.thread(False)
+@module.unblockable
 def track_notify(bot, trigger):
     if trigger.nick not in bot.users:
-        bot.users[trigger.nick] = User(trigger.nick, trigger.user, trigger.host)
+        bot.users[trigger.nick] = target.User(
+            trigger.nick, trigger.user, trigger.host)
     user = bot.users[trigger.nick]
     user.away = bool(trigger.args)
 
 
-@sopel.module.event('TOPIC')
-@sopel.module.event(events.RPL_TOPIC)
-@sopel.module.priority('high')
-@sopel.module.thread(False)
-@sopel.module.unblockable
+@module.event('TOPIC')
+@module.event(events.RPL_TOPIC)
+@module.priority('high')
+@module.thread(False)
+@module.unblockable
 def track_topic(bot, trigger):
     if trigger.event != 'TOPIC':
         channel = trigger.args[1]
@@ -962,8 +959,8 @@ def track_topic(bot, trigger):
     bot.channels[channel].topic = trigger.args[-1]
 
 
-@sopel.module.rule(r'(?u).*(.+://\S+).*')
-@sopel.module.unblockable
+@module.rule(r'(?u).*(.+://\S+).*')
+@module.unblockable
 def handle_url_callbacks(bot, trigger):
     """Dispatch callbacks on URLs
 
@@ -972,7 +969,7 @@ def handle_url_callbacks(bot, trigger):
     """
     schemes = bot.config.core.auto_url_schemes
     # find URLs in the trigger
-    for url in sopel.tools.web.search_urls(trigger, schemes=schemes):
+    for url in web.search_urls(trigger, schemes=schemes):
         # find callbacks for said URL
         for function, match in bot.search_url_callbacks(url):
             # trigger callback defined by the `@url` decorator
