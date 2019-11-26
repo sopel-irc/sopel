@@ -29,8 +29,8 @@ def test_isupport_apply():
     assert new_removed['NICKLEN'] == 31
 
 
-def test_isupport_apply_ci():
-    """Test removed parameters are case-insensitives."""
+def test_isupport_apply_case_insensitive():
+    """Test removed parameters are case-insensitive."""
     instance = isupport.ISupport()
     new = instance.apply(awaylen=50, NICKLEN=31, channellen=16)
     new_removed = new.apply(**{
@@ -88,7 +88,7 @@ def test_isupport_getitem():
         instance['UNKNOWN']
 
 
-def test_isupport_getitem_ci():
+def test_isupport_getitem_case_insensitive():
     """Test access to parameters is case insensitive."""
     instance = isupport.ISupport(awaylen=50)
 
@@ -96,6 +96,27 @@ def test_isupport_getitem_ci():
     assert 'awaylen' in instance
     assert instance['AWAYLEN'] == 50
     assert instance['awaylen'] == 50
+
+
+def test_isupport_getattr():
+    """Test using ISUPPORT parameters as read-only attributes."""
+    instance = isupport.ISupport(awaylen=50)
+
+    assert hasattr(instance, 'AWAYLEN')
+    assert not hasattr(instance, 'awaylen'), 'attributes are ALL_UPPERCASE'
+    assert not hasattr(instance, 'UNKNOWN')
+
+    assert instance.AWAYLEN == 50
+
+    # you can't set attributes yourself
+    with pytest.raises(AttributeError):
+        instance.AWAYLEN = 20
+
+    with pytest.raises(AttributeError):
+        instance.awaylen = 20
+
+    with pytest.raises(AttributeError):
+        instance.UNKNOWN = 'not possible'
 
 
 def test_isupport_setitem():

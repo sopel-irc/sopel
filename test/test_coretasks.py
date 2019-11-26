@@ -148,3 +148,75 @@ def test_execute_perform_replaces_nickname(mockbot):
 
     coretasks._execute_perform(mockbot)
     assert mockbot.backend.message_sent == rawlist(sent_command)
+
+
+def test_handle_isupport(mockbot):
+    mockbot.on_message(
+        ':irc.example.com 005 Sopel '
+        'CHANTYPES=# EXCEPTS INVEX CHANMODES=eIbq,k,flj,CFLMPQScgimnprstz '
+        'CHANLIMIT=#:120 PREFIX=(ov)@+ MAXLIST=bqeI:100 MODES=4 '
+        'NETWORK=example STATUSMSG=@+ CALLERID=g CASEMAPPING=rfc1459 '
+        ':are supported by this server')
+
+    assert hasattr(mockbot, 'isupport')
+    assert 'CHANTYPES' in mockbot.isupport
+    assert 'EXCEPTS' in mockbot.isupport
+    assert 'INVEX' in mockbot.isupport
+    assert 'CHANMODES' in mockbot.isupport
+    assert 'CHANLIMIT' in mockbot.isupport
+    assert 'PREFIX' in mockbot.isupport
+    assert 'NETWORK' in mockbot.isupport
+    assert 'STATUSMSG' in mockbot.isupport
+    assert 'CALLERID' in mockbot.isupport
+    assert 'CASEMAPPING' in mockbot.isupport
+
+    assert mockbot.isupport['CHANTYPES'] == ('#',)
+    assert mockbot.isupport['EXCEPTS'] == 'e'
+    assert mockbot.isupport['INVEX'] == 'I'
+    assert mockbot.isupport['CHANMODES'] == (
+        'eIbq', 'k', 'flj', 'CFLMPQScgimnprstz', tuple())
+    assert hasattr(mockbot.isupport, 'CHANMODES')
+    assert mockbot.isupport.CHANMODES == {
+        'A': 'eIbq',
+        'B': 'k',
+        'C': 'flj',
+        'D': 'CFLMPQScgimnprstz',
+    }
+    assert mockbot.isupport['CHANLIMIT'] == (('#', 120),)
+    assert mockbot.isupport['PREFIX'] == (('o', '@'), ('v', '+'))
+    assert mockbot.isupport['NETWORK'] == 'example'
+
+    # not yet advertised
+    assert 'CHARSET' not in mockbot.isupport
+
+    # update
+    mockbot.on_message(
+        ':irc.example.com 005 Sopel '
+        'CHARSET=ascii NICKLEN=16 CHANNELLEN=50 TOPICLEN=390 DEAF=D FNC '
+        'TARGMAX=NAMES:1,LIST:1,KICK:1,WHOIS:1,PRIVMSG:4,NOTICE:4,ACCEPT:,'
+        'MONITOR: EXTBAN=$,ajrxz CLIENTVER=3.0 ETRACE WHOX KNOCK '
+        ':are supported by this server')
+
+    # now they are advertised
+    assert 'CHARSET' in mockbot.isupport
+    assert 'NICKLEN' in mockbot.isupport
+    assert 'CHANNELLEN' in mockbot.isupport
+    assert 'TOPICLEN' in mockbot.isupport
+    assert 'DEAF' in mockbot.isupport
+    assert 'FNC' in mockbot.isupport
+    assert 'TARGMAX' in mockbot.isupport
+    assert 'EXTBAN' in mockbot.isupport
+    assert 'CLIENTVER' in mockbot.isupport
+    assert 'ETRACE' in mockbot.isupport
+    assert 'WHOX' in mockbot.isupport
+    assert 'KNOCK' in mockbot.isupport
+
+    mockbot.on_message(
+        ':irc.example.com 005 Sopel '
+        'SAFELIST ELIST=CTU CPRIVMSG CNOTICE '
+        ':are supported by this server')
+
+    assert 'SAFELIST' in mockbot.isupport
+    assert 'ELIST' in mockbot.isupport
+    assert 'CPRIVMSG' in mockbot.isupport
+    assert 'CNOTICE' in mockbot.isupport

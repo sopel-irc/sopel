@@ -50,6 +50,7 @@ from sopel import tools
 from sopel.trigger import PreTrigger
 
 from .backends import AsynchatBackend, SSLAsynchatBackend
+from .isupport import ISupport
 from .utils import safe, CapReq
 
 if sys.version_info.major >= 3:
@@ -67,6 +68,7 @@ class AbstractBot(object):
         self._nick = tools.Identifier(settings.core.nick)
         self._user = settings.core.user
         self._name = settings.core.name
+        self._isupport = ISupport()
 
         self.backend = None
         """IRC Connection Backend."""
@@ -107,6 +109,14 @@ class AbstractBot(object):
         """The :class:`sopel.config.Config` for the current Sopel instance."""
         # TODO: Deprecate config, replaced by settings
         return self.settings
+
+    @property
+    def isupport(self):
+        """Features advertised by the server.
+
+        :type: :class:`~.isupport.ISupport` instance
+        """
+        return self._isupport
 
     # Connection
 

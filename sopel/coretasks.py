@@ -24,8 +24,10 @@ import time
 from random import randint
 
 from sopel import loader, module
+from sopel.irc import isupport
 from sopel.irc.utils import CapReq
 from sopel.tools import Identifier, events, iteritems, jobs, target, web
+
 
 if sys.version_info.major >= 3:
     unicode = str
@@ -193,6 +195,25 @@ def startup(bot, trigger):
         bot.say(msg, bot.config.core.owner)
 
     _execute_perform(bot)
+
+
+@module.priority('high')
+@module.event(events.RPL_ISUPPORT)
+@module.thread(False)
+@module.unblockable
+@module.rule('are supported by this server')
+def handle_isupport(bot, trigger):
+    """Handle ``RPL_ISUPPORT`` events."""
+    parameters = {}
+    for arg in trigger.args:
+        try:
+            key, value = isupport.parse_parameter(arg)
+            parameters[key] = value
+        except ValueError:
+            # ignore malformed parameter: log a warning and continue
+            LOGGER.warning('Unable to parse ISUPPORT parameter: %r', arg)
+
+    bot._isupport = bot._isupport.apply(**parameters)
 
 
 @module.require_privmsg()

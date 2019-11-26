@@ -2,7 +2,7 @@
 """IRC Tools for ISUPPORT management.
 
 When a server wants to advertise its features and settings, it can use the
-``RPL_ISUPPORT`` command with a list of arguments.
+``RPL_ISUPPORT`` command (``005`` numeric) with a list of arguments.
 
 .. seealso::
 
@@ -62,7 +62,7 @@ def _parse_chanmodes(value):
     if len(items) < 4:
         raise ValueError('Not enough channel types to unpack from %r.' % value)
 
-    # add extra channel type's modes to their own tuple
+    # add extra channel mode types to their own tuple
     # result in (A, B, C, D, (E, F, G, H, ..., Z))
     # where A, B, C, D = result[:4]
     # and extras = result[4]
@@ -140,7 +140,7 @@ def parse_parameter(arg):
         # ignore value for removed parameters
         return (key, None)
 
-    parser = ISUPPORT_PARSER.get(key, str)
+    parser = ISUPPORT_PARSER.get(key, _optional(str))
     return (key, parser(value))
 
 
@@ -186,6 +186,23 @@ class ISupport(object):
 
     def __contains__(self, key):
         return key.upper() in self.__isupport
+
+    def __getattr__(self, name):
+        if name not in self.__isupport:
+            raise AttributeError(name)
+
+        return self.__isupport[name]
+
+    def __setattr__(self, name, value):
+        # make sure you can't set the value of any ISUPPORT attribute yourself
+        if name == '_ISupport__isupport':
+            # allow to set self.__isupport inside of the class
+            super(ISupport, self).__setattr__(name, value)
+        elif name in self.__isupport:
+            # reject any modification of __isupport
+            raise AttributeError("Can't set value for %r" % name)
+        elif name not in self.__dict__:
+            raise AttributeError('Unknown attribute')
 
     def apply(self, **kwargs):
         """Build a new instance of :class:`ISupport`.
@@ -249,7 +266,7 @@ class ISupport(object):
     def CHANMODES(self):
         """Expose ``CHANMODES`` as a dict, if advertised by the server.
 
-        This exposes information about 4 types of channel::
+        This exposes information about 4 types of channel modes::
 
             >>> isupport.CHANMODES
             {
@@ -277,7 +294,7 @@ class ISupport(object):
     def MAXLIST(self):
         """Expose ``MAXLIST`` as a dict, if advertised by the server.
 
-        This exposes information about maximum combination of modes::
+        This exposes information about maximums for combinations of modes::
 
             >>> isupport.MAXLIST
             {
@@ -304,7 +321,8 @@ class ISupport(object):
     def PREFIX(self):
         """Expose ``PREFIX`` as a dict, if advertised by the server.
 
-        This exposes information about prefix used for user privileges::
+        This exposes information about the modes and nick prefixes used for
+        user privileges in channels::
 
             >>> isupport.PREFIX
             {
