@@ -69,6 +69,7 @@ class AbstractBot(object):
         self._user = settings.core.user
         self._name = settings.core.name
         self._isupport = ISupport()
+        self._myinfo = None
 
         self.backend = None
         """IRC Connection Backend."""
@@ -117,6 +118,18 @@ class AbstractBot(object):
         :type: :class:`~.isupport.ISupport` instance
         """
         return self._isupport
+
+    @property
+    def myinfo(self):
+        """Server/network information.
+
+        :type: :class:`~.utils.MyInfo` instance
+
+        .. versionadded:: 7.0
+        """
+        if self._myinfo is None:
+            raise AttributeError('myinfo')
+        return self._myinfo
 
     # Connection
 

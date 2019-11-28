@@ -4,11 +4,15 @@
 # Licensed under the Eiffel Forum License 2.
 from __future__ import unicode_literals, absolute_import, print_function, division
 
+import collections
 import sys
 from dns import resolver, rdtypes
 
 if sys.version_info.major >= 3:
     unicode = str
+
+
+MYINFO_ARGS = ['client', 'servername', 'version']
 
 
 def get_cnames(domain):
@@ -51,3 +55,15 @@ class CapReq(object):
         self.arg = arg
         self.failure = failure or nop
         self.success = success or nop
+
+
+class MyInfo(collections.namedtuple('MyInfo', MYINFO_ARGS)):
+    """Store client, servername, and version from ``RPL_MYINFO`` events.
+
+    .. seealso::
+
+        https://modern.ircdocs.horse/#rplmyinfo-004
+
+    """
+    # TODO: replace by a class using typing.NamedTuple (new in Python 3.5+)
+    # probably in Sopel 8.0 (due to drop most old Python versions)

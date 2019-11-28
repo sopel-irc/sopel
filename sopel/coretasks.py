@@ -25,7 +25,7 @@ from random import randint
 
 from sopel import loader, module
 from sopel.irc import isupport
-from sopel.irc.utils import CapReq
+from sopel.irc.utils import CapReq, MyInfo
 from sopel.tools import Identifier, events, iteritems, jobs, target, web
 
 
@@ -214,6 +214,17 @@ def handle_isupport(bot, trigger):
             LOGGER.warning('Unable to parse ISUPPORT parameter: %r', arg)
 
     bot._isupport = bot._isupport.apply(**parameters)
+
+
+@module.priority('high')
+@module.event(events.RPL_MYINFO)
+@module.thread(False)
+@module.unblockable
+def parse_reply_myinfo(bot, trigger):
+    """Handle ``RPL_MYINFO`` events."""
+    # keep <client> <servername> <version> only
+    # the trailing parameters (mode types) should be read from ISUPPORT
+    bot._myinfo = MyInfo(*trigger.args[0:3])
 
 
 @module.require_privmsg()
