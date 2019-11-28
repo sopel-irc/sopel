@@ -1,9 +1,11 @@
 # coding=utf-8
-"""This contains decorators and tools for creating callable plugin functions.
-"""
+"""This contains decorators and other tools for creating Sopel plugins."""
 # Copyright 2013, Ari Koivula, <ari@koivu.la>
 # Copyright © 2013, Elad Alfassa <elad@fedoraproject.org>
 # Copyright 2013, Lior Ramati <firerogue517@gmail.com>
+# Copyright 2019, deathbybandaid, deathbybandaid.net
+# Copyright 2019, dgw, technobabbl.es
+# Copyright 2019, Florian Strzelecki <florian.strzelecki@gmail.com>
 # Licensed under the Eiffel Forum License 2.
 
 from __future__ import unicode_literals, absolute_import, print_function, division
@@ -40,11 +42,11 @@ __all__ = [
 
 
 NOLIMIT = 1
-"""Return value for ``callable``\\s, which suppresses rate limiting for the call.
+"""Return value for ``callable``\\s, which suppresses rate limiting.
 
-Returning this value means the triggering user will not be
-prevented from triggering the command again within the rate limit. This can
-be used, for example, to allow a user to retry a failed command immediately.
+Returning this value means the triggering user will not be prevented from
+triggering the same callable again within the rate limit. This can be used,
+for example, to allow a user to retry a failed command immediately.
 
 .. versionadded:: 4.0
 """
@@ -81,9 +83,10 @@ OWNER = 16
 
 
 def unblockable(function):
-    """Decorator to exempt ``function`` from nickname and hostname blocking.
+    """Decorate a function to exempt it from the ignore/blocks system.
 
-    This can be used to ensure events such as ``JOIN`` are always recorded::
+    For example, this can be used to ensure that important events such as
+    ``JOIN`` are always recorded::
 
         from sopel import module
 
@@ -105,19 +108,21 @@ def unblockable(function):
 
 
 def interval(*intervals):
-    """Decorates a function to be called by the bot every X seconds.
+    """Decorate a function to be called by the bot every *n* seconds.
 
-    This decorator can be used multiple times for multiple intervals, or all
-    intervals can be given at once as arguments. The first time the function
-    will be called is X seconds after the bot was started.
+    :param int intervals: one or more duration(s), in seconds
 
-    Unlike other plugin functions, ones decorated by interval must only take a
-    :class:`sopel.bot.Sopel` as their argument; they do not get a trigger. The
-    bot argument will not have a context, so functions like ``bot.say()`` will
-    not have a default destination.
+    This decorator can be used multiple times for multiple intervals, or
+    multiple intervals can be given in multiple arguments. The first time the
+    function will be called is *n* seconds after the bot was started.
 
-    There is no guarantee that the bot is connected to a server or joined a
-    channel when the function is called, so care must be taken.
+    Plugin functions decorated by ``interval`` must only take
+    :class:`bot <sopel.bot.Sopel>` as their argument; they do not get a ``trigger``.
+    The ``bot`` argument will not have a context, so functions like
+    ``bot.say()`` will not have a default destination.
+
+    There is no guarantee that the bot is connected to a server or in any
+    channels when the function is called, so care must be taken.
 
     Example::
 
@@ -141,7 +146,9 @@ def interval(*intervals):
 
 
 def rule(*patterns):
-    """Decorate a function to be called when a line matches the given pattern
+    """Decorate a function to be called when a line matches the given pattern.
+
+    :param str patterns: one or more regular expression(s)
 
     Each argument is a regular expression which will trigger the function.
 
@@ -161,6 +168,17 @@ def rule(*patterns):
         arguments, each used to add a rule. This is equivalent to decorating
         the same function multiple times with this decorator.
 
+    .. note::
+
+        A regex rule can match only once per line. A future version of Sopel
+        will (hopefully) remove this limitation.
+
+    .. note::
+
+        The regex match must start at the beginning of the line. To match
+        anywhere in a line, surround the actual pattern with ``.*``. A future
+        version of Sopel may remove this requirement.
+
     """
     def add_attribute(function):
         if not hasattr(function, "rule"):
@@ -176,8 +194,8 @@ def rule(*patterns):
 def thread(value):
     """Decorate a function to specify if it should be run in a separate thread.
 
-    :param bool value: if true, the function is called in a separate thread;
-                       otherwise from the bot's main thread
+    :param bool value: if ``True``, the function is called in a separate thread;
+                       otherwise, from the bot's main thread
 
     Functions run in a separate thread (as is the default) will not prevent the
     bot from executing other functions at the same time. Functions not run in a
@@ -194,7 +212,7 @@ def thread(value):
 
 
 def echo(function=None):
-    """Decorate a function to specify if it should receive echo messages.
+    """Decorate a function to specify that it should receive echo messages.
 
     This decorator can be used to listen in on the messages that Sopel is
     sending and react accordingly.
@@ -210,28 +228,25 @@ def echo(function=None):
 
 
 def commands(*command_list):
-    """Decorate a function to set one or more commands to trigger it.
+    """Decorate a function to set one or more commands that should trigger it.
+
+    :param str command_list: one or more command name(s) to match
+                             (can be regular expressions)
 
     This decorator can be used to add multiple commands to one callable in a
     single line. The resulting match object will have the command as the first
-    group, rest of the line, excluding leading whitespace, as the second group.
-    Parameters 1 through 4, separated by whitespace, will be groups 3-6.
+    group; the rest of the line, excluding leading whitespace, as the second
+    group; and parameters 1 through 4, separated by whitespace, as groups 3-6.
 
-    Args:
-        command: A string, which can be a regular expression.
+    Example::
 
-    Returns:
-        A function with a new command appended to the commands
-        attribute. If there is no commands attribute, it is added.
-
-    Example:
-        @commands("hello"):
-            If the command prefix is "\\.", this would trigger on lines starting
-            with ".hello".
+        @commands("hello")
+            # If the command prefix is "\\.", this would trigger on lines
+            # starting with ".hello".
 
         @commands('j', 'join')
-            If the command prefix is "\\.", this would trigger on lines starting
-            with either ".j" or ".join".
+            # If the command prefix is "\\.", this would trigger on lines
+            # starting with either ".j" or ".join".
 
     """
     def add_attribute(function):
@@ -247,27 +262,25 @@ def commands(*command_list):
 def nickname_commands(*command_list):
     """Decorate a function to trigger on lines starting with "$nickname: command".
 
-    This decorator can be used multiple times to add multiple rules. The
-    resulting match object will have the command as the first group, rest of
-    the line, excluding leading whitespace, as the second group. Parameters 1
-    through 4, separated by whitespace, will be groups 3-6.
+    :param str command_list: one or more command name(s) to match
+                             (can be regular expressions)
 
-    Args:
-        command: A string, which can be a regular expression.
+    This decorator can be used to add multiple commands to one callable in a
+    single line. The resulting match object will have the command as the first
+    group; the rest of the line, excluding leading whitespace, as the second
+    group; and parameters 1 through 4, separated by whitespace, as groups 3-6.
 
-    Returns:
-        A function with a new regular expression appended to the rule
-        attribute. If there is no rule attribute, it is added.
+    Example::
 
-    Example:
-        @nickname_commands("hello!"):
-            Would trigger on "$nickname: hello!", "$nickname,   hello!",
-            "$nickname hello!", "$nickname hello! parameter1" and
-            "$nickname hello! p1 p2 p3 p4 p5 p6 p7 p8 p9".
-        @nickname_commands(".*"):
-            Would trigger on anything starting with "$nickname[:,]? ", and
-            would never have any additional parameters, as the command would
-            match the rest of the line.
+        @nickname_commands("hello!")
+            # Would trigger on "$nickname: hello!", "$nickname,   hello!",
+            # "$nickname hello!", "$nickname hello! parameter1" and
+            # "$nickname hello! p1 p2 p3 p4 p5 p6 p7 p8 p9".
+
+        @nickname_commands(".*")
+            # Would trigger on anything starting with "$nickname[:,]? ",
+            # and would never have any additional parameters, as the
+            # command would match the rest of the line.
 
     """
     def add_attribute(function):
@@ -283,21 +296,31 @@ def nickname_commands(*command_list):
 def action_commands(*command_list):
     """Decorate a function to trigger on CTCP ACTION lines.
 
-    This decorator can be used multiple times to add multiple rules. The
-    resulting match object will have the command as the first group, rest of
-    the line, excluding leading whitespace, as the second group. Parameters 1
-    through 4, separated by whitespace, will be groups 3-6.
+    :param str command_list: one or more command name(s) to match
+                             (can be regular expressions)
 
-    Args:
-        command: A string, which can be a regular expression.
+    This decorator can be used to add multiple commands to one callable in a
+    single line. The resulting match object will have the command as the first
+    group; the rest of the line, excluding leading whitespace, as the second
+    group; and parameters 1 through 4, separated by whitespace, as groups 3-6.
 
-    Returns:
-        A function with a new regular expression appended to the rule
-        attribute. If there is no rule attribute, it is added.
+    Example::
 
-    Example:
-        @action_commands("hello!"):
-            Would trigger on "/me hello!"
+        @action_commands("hello!")
+            # Would trigger on "/me hello!"
+
+    .. versionadded:: 7.0
+
+    .. important::
+
+        This decorator will prevent the other command types from working on
+        the same callable. Normally only one command type is used per
+        function, but if you need to trigger the same command with e.g. both
+        action and nickname commands, use a main function called from
+        decorated wrappers.
+
+        Hopefully, a future version of Sopel will remove this limitation.
+
     """
     def add_attribute(function):
         function.intents = ['ACTION']
@@ -313,13 +336,11 @@ def action_commands(*command_list):
 def priority(value):
     """Decorate a function to be executed with higher or lower priority.
 
-    Args:
-        value: Priority can be one of "high", "medium", "low". Defaults to
-            medium.
+    :param str value: one of ``high``, ``medium``, or ``low``;
+                      defaults to ``medium``
 
-    Priority allows you to control the order of callable execution, if your
-    module needs it.
-
+    The priority allows you to control the order of callable execution, if your
+    plugin needs it.
     """
     def add_attribute(function):
         function.priority = value
@@ -330,14 +351,19 @@ def priority(value):
 def event(*event_list):
     """Decorate a function to be triggered on specific IRC events.
 
+    :param str event_list: one or more event name(s) on which to trigger
+
     This is one of a number of events, such as 'JOIN', 'PART', 'QUIT', etc.
     (More details can be found in RFC 1459.) When the Sopel bot is sent one of
     these events, the function will execute. Note that the default
     :meth:`rule` (``.*``) will match *any* line of the correct event type(s).
     If any rule is explicitly specified, it overrides the default.
 
-    :class:`sopel.tools.events` provides human-readable names for many of the
-    numeric events, which may help your code be clearer.
+    .. seealso::
+
+        :class:`sopel.tools.events` provides human-readable names for many of the
+        numeric events, which may help your code be clearer.
+
     """
     def add_attribute(function):
         if not hasattr(function, "event"):
@@ -350,9 +376,18 @@ def event(*event_list):
 
 
 def intent(*intent_list):
-    """Decorate a callable trigger on a message with any of the given intents.
+    """Decorate a callable to trigger on a message with any of the given intents.
+
+    :param str intent_list: one or more intent(s) on which to trigger (really,
+                            the only useful value is ``action``)
 
     .. versionadded:: 5.2.0
+
+    .. note::
+
+        This system will be replaced and marked deprecated in or before Sopel
+        8.0, then removed in Sopel 9.0, as the IRCv3 spec for intents is dead.
+
     """
     def add_attribute(function):
         if not hasattr(function, "intents"):
@@ -365,15 +400,25 @@ def intent(*intent_list):
 
 
 def rate(user=0, channel=0, server=0):
-    """Decorate a function to limit how often it can be triggered on a per-user
-    basis, in a channel, or across the server (bot). A value of zero means no
-    limit. If a function is given a rate of 20, that function may only be used
-    once every 20 seconds in the scope corresponding to the parameter.
-    Users on the admin list in Sopel’s configuration are exempted from rate
-    limits.
+    """Decorate a function to be rate-limited.
+
+    :param int user: seconds between permitted calls of this function by the
+                     same user
+    :param int channel: seconds between permitted calls of this function in
+                        the same channel, regardless of triggering user
+    :param int server: seconds between permitted calls of this function no
+                       matter who triggered it or where
+
+    How often a function can be triggered on a per-user basis, in a channel,
+    or across the server (bot) can be controlled with this decorator. A value
+    of ``0`` means no limit. If a function is given a rate of 20, that
+    function may only be used once every 20 seconds in the scope corresponding
+    to the parameter. Users on the admin list in Sopel’s configuration are
+    exempted from rate limits.
 
     Rate-limited functions that use scheduled future commands should import
-    threading.Timer() instead of sched, or rate limiting will not work properly.
+    :class:`threading.Timer` instead of :mod:`sched`, or rate limiting will
+    not work properly.
     """
     def add_attribute(function):
         function.rate = user
@@ -391,12 +436,12 @@ def require_privmsg(message=None, reply=False):
                        :meth:`~sopel.bot.Sopel.say` when ``True``; defaults to
                        ``False``
 
-    If it is triggered in a channel message, ``message`` will be said if
-    given. By default, it uses :meth:`bot.say() <.bot.Sopel.say>`, but when
-    ``reply`` is true, then it     uses :meth:`bot.reply() <.bot.Sopel.reply>`
-    instead.
+    If the decorated function is triggered by a channel message, ``message``
+    will be said if given. By default, it uses :meth:`bot.say()
+    <.bot.Sopel.say>`, but when ``reply`` is true, then it uses
+    :meth:`bot.reply() <.bot.Sopel.reply>` instead.
 
-    .. versionchanged:: 7.0.0
+    .. versionchanged:: 7.0
         Added the ``reply`` parameter.
     """
     def actual_decorator(function):
@@ -426,12 +471,12 @@ def require_chanmsg(message=None, reply=False):
                        :meth:`~.bot.Sopel.say` when ``True``; defaults to
                        ``False``
 
-    If it is triggered in a private message, ``message`` will be said if
-    given. By default, it uses :meth:`bot.say() <.bot.Sopel.say>`, but when
-    ``reply`` is true, then it uses :meth:`bot.reply() <.bot.Sopel.reply>`
-    instead.
+    If the decorated function is triggered by a private message, ``message``
+    will be said if given. By default, it uses :meth:`bot.say()
+    <.bot.Sopel.say>`, but when ``reply`` is true, then it uses
+    :meth:`bot.reply() <.bot.Sopel.reply>` instead.
 
-    .. versionchanged:: 7.0.0
+    .. versionchanged:: 7.0
         Added the ``reply`` parameter.
     """
     def actual_decorator(function):
@@ -462,7 +507,7 @@ def require_account(message=None, reply=False):  # lgtm [py/similar-function]
                        :meth:`~.bot.Sopel.say` when ``True``; defaults to
                        ``False``
 
-    .. versionadded:: 7.0.0
+    .. versionadded:: 7.0
     .. note::
 
         Only some networks support services authentication, and not all of
@@ -477,6 +522,7 @@ def require_account(message=None, reply=False):  # lgtm [py/similar-function]
         this requirement is satisfied, and the property's documentation
         includes up-to-date details on what features a network must
         support to allow Sopel to fetch account information.
+
     """
     def actual_decorator(function):
         @functools.wraps(function)
@@ -515,7 +561,7 @@ def require_privilege(level, message=None, reply=False):
 
     Privilege requirements are ignored in private messages.
 
-    .. versionchanged:: 7.0.0
+    .. versionchanged:: 7.0
         Added the ``reply`` parameter.
     """
     def actual_decorator(function):
@@ -551,7 +597,7 @@ def require_admin(message=None, reply=False):  # lgtm [py/similar-function]
     :meth:`bot.say() <.bot.Sopel.say>`, but when ``reply`` is true, then it
     uses :meth:`bot.reply() <.bot.Sopel.reply>` instead.
 
-    .. versionchanged:: 7.0.0
+    .. versionchanged:: 7.0
         Added the ``reply`` parameter.
     """
     def actual_decorator(function):
@@ -587,7 +633,7 @@ def require_owner(message=None, reply=False):  # lgtm [py/similar-function]
     :meth:`bot.say() <.bot.Sopel.say>`, but when ``reply`` is true, then it
     uses :meth:`bot.reply() <.bot.Sopel.reply>` instead.
 
-    .. versionchanged:: 7.0.0
+    .. versionchanged:: 7.0
         Added the ``reply`` parameter.
     """
     def actual_decorator(function):
@@ -612,7 +658,7 @@ def require_owner(message=None, reply=False):  # lgtm [py/similar-function]
 def url(*url_rules):
     """Decorate a function to handle URLs.
 
-    :param str url_rule: regex pattern to match URLs
+    :param str url_rules: one or more regex pattern(s) to match URLs
 
     This decorator takes a regex string that will be matched against URLs in a
     message. The function it decorates, in addition to the bot and trigger,
@@ -626,7 +672,7 @@ def url(*url_rules):
         def handle_example_bugs(bot, trigger, match):
             bot.reply('Found bug ID #%s' % match.group(1))
 
-    This should be used rather than the matching in trigger, in order to
+    This should be used rather than the matching in ``trigger``, in order to
     support e.g. the ``.title`` command.
 
     Under the hood, when Sopel collects the decorated handler it uses
@@ -660,43 +706,56 @@ def url(*url_rules):
 
 
 class example(object):
-    """Decorate a function with an example.
+    """Decorate a function with an example, and optionally test output.
 
-    Args:
-        msg:
-            (required) The example command as sent by a user on IRC. If it is
-            a prefixed command, the command prefix used in the example must
-            match the default `config.core.help_prefix` for compatibility with
-            the built-in help module.
-        result:
-            What the example command is expected to output. If given, a test is
-            generated using `msg` as input. The test behavior can be modified
-            by the remaining optional arguments.
-        privmsg:
-            If true, the test will behave as if the input was sent to the bot
-            in a private message. If false (default), the test will treat the
-            input as having come from a channel.
-        admin:
-            Whether to treat the test message as having been sent by a bot
-            admin (`trigger.admin == True`).
-        owner:
-            Whether to treat the test message as having been sent by the bot's
-            owner (`trigger.owner == True`).
-        repeat:
-            Integer number of times to repeat the test. Useful for commands
-            that return random results.
-        re:
-            If true, `result` is parsed as a regular expression. Also useful
-            for commands that return random results, or that call an external
-            API that doesn't always return the same value.
-        ignore:
-            List of outputs to ignore. Strings in this list are always
-            interpreted as regular expressions.
-        user_help:
-            Whether this example should be displayed in user-facing help output
-            such as `.help command`.
-        online:
-            If true, pytest will mark it as "online".
+    :param str msg: the example command (required; see below)
+    :param str result: the command's expected output (optional; see below)
+    :param bool privmsg: if ``True``, the example will be tested as if it was
+                         received in a private message to the bot; otherwise,
+                         in a channel (optional; default ``False``)
+    :param bool admin: whether to treat the test message as having come from a
+                       bot admin (optional; default ``False``)
+    :param bool owner: whether to treat the test message as having come from
+                       the bot's owner (optional; default ``False``)
+    :param int repeat: how many times to repeat the test; useful for commands
+                       that return random results (optional; default ``1``)
+    :param bool re: if ``True``, the ``result`` is interpreted as a regular
+                    expression and used to match the command's output
+                    (optional; see below)
+    :param list ignore: :class:`list` of regular expression patterns to match
+                        ignored output (optional; see below)
+    :param bool user_help: whether this example should be included in
+                           user-facing help output such as `.help command`
+                           (optional; default ``False``; see below)
+    :param bool online: if ``True``, :mod:`pytest` will mark this example as
+                        "online" (optional; default ``False``; see below)
+
+    ``msg`` must use the default :attr:`~sopel.config.core_section.help_prefix`
+    if it is a prefixed command, for compatibility with the built-in help
+    plugin. Other command types should give example invocations that work with
+    Sopel on its default settings, especially if using the "example test"
+    functionality to automatically generate a test(s) for the function.
+
+    The presence of a ``result`` will generate tests automatically when Sopel's
+    test suite is run, using ``msg`` as input. The exact behavior of the tests
+    depends on the remaining optional ``example`` arguments.
+
+    Passing ``re=True``, in particular, is useful for matching ``result``\\s
+    that are random and/or dependent on an external API. This way, an example
+    test can check the format of the result without caring about the exact data.
+
+    Giving a list of ``ignore``d patterns is helpful for commands that may
+    return intermittent errors (mostly calls to an external API that isn't
+    necessarily stable), especially when coupled with the ``repeat`` parameter.
+
+    By default, Sopel's help plugin will display only one example (the one
+    closest to the function's `def` statement, due to how decorators work). You
+    can override this choice or include multiple examples by passing
+    ``user_help=True`` to one or more ``example`` decorator(s).
+
+    Finally, passing ``online=True`` makes that particular example skippable if
+    Sopel's test suite is run in offline mode, which is mostly useful to make
+    life easier for other developers working on Sopel without Internet access.
     """
     def __init__(self, msg, result=None, privmsg=False, admin=False,
                  owner=False, repeat=1, re=False, ignore=None,
