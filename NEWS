@@ -99,7 +99,7 @@ Module changes
 * General code cleanup and tweaks all around [[#1402][], [#1486][], [#1505][],
   [#1569][], [#1573][], [#1578][], [#1579][], [#1581][], [#1592][], [#1606][],
   [#1607][], [#1609][], [#1678][], [#1681][], [#1696][], [#1717][], [#1721][],
-  [#1725][], [#1735][], [#1741][], [#1754][]]
+  [#1725][], [#1735][], [#1741][], [#1753][], [#1754][]]
 
 Core changes
 ------------
@@ -487,6 +487,7 @@ API changes
 [#1747]: https://github.com/sopel-irc/sopel/pull/1747
 [#1749]: https://github.com/sopel-irc/sopel/pull/1749
 [#1750]: https://github.com/sopel-irc/sopel/pull/1750
+[#1753]: https://github.com/sopel-irc/sopel/pull/1753
 [#1754]: https://github.com/sopel-irc/sopel/pull/1754
 [#1759]: https://github.com/sopel-irc/sopel/pull/1759
 [#1760]: https://github.com/sopel-irc/sopel/pull/1760
