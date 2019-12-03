@@ -400,9 +400,47 @@ class SopelDB(object):
 
     # CHANNEL FUNCTIONS
 
+    def get_channel_slug(self, chan):
+        """Return the case-normalized representation of ``channel``.
+
+        :param str channel: the channel name to normalize, with prefix
+                            (required)
+        :return str: the case-normalized channel name (or "slug"
+                     representation)
+
+        This is useful to make sure that a channel name is stored consistently
+        in both the bot's own database and third-party plugins'
+        databases/files, without regard for variation in case between
+        different clients and/or servers on the network.
+        """
+        chan = Identifier(chan)
+        slug = chan.lower()
+        session = self.ssession()
+        try:
+            count = session.query(ChannelValues) \
+                .filter(ChannelValues.channel == slug) \
+                .count()
+
+            if count == 0:
+                # see if it needs case-mapping migration
+                old_rows = session.query(ChannelValues) \
+                    .filter(ChannelValues.channel == Identifier._lower_swapped(chan))
+                old_count = old_rows.count()
+                if old_count > 0:
+                    # it does!
+                    old_rows.update({ChannelValues.channel: slug})
+                    session.commit()
+
+            return slug
+        except SQLAlchemyError:
+            session.rollback()
+            raise
+        finally:
+            self.ssession.remove()
+
     def set_channel_value(self, channel, key, value):
         """Sets the value for a given key to be associated with the channel."""
-        channel = Identifier(channel).lower()
+        channel = self.get_channel_slug(channel)
         value = json.dumps(value, ensure_ascii=False)
         session = self.ssession()
         try:
@@ -427,7 +465,7 @@ class SopelDB(object):
 
     def delete_channel_value(self, channel, key):
         """Deletes the value for a given key associated with a channel."""
-        channel = Identifier(channel).lower()
+        channel = self.get_channel_slug(channel)
         session = self.ssession()
         try:
             result = session.query(ChannelValues) \
@@ -446,7 +484,7 @@ class SopelDB(object):
 
     def get_channel_value(self, channel, key):
         """Retrieves the value for a given key associated with a channel."""
-        channel = Identifier(channel).lower()
+        channel = self.get_channel_slug(channel)
         session = self.ssession()
         try:
             result = session.query(ChannelValues) \
