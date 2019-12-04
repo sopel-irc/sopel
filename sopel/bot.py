@@ -131,13 +131,6 @@ class Sopel(irc.AbstractBot):
         self.scheduler = sopel.tools.jobs.JobScheduler(self)
         """Job Scheduler. See :func:`sopel.module.interval`."""
 
-        # Set up block lists
-        # Default to empty
-        if not self.settings.core.nick_blocks:
-            self.settings.core.nick_blocks = []
-        if not self.settings.core.host_blocks:
-            self.settings.core.host_blocks = []
-
     @property
     def command_groups(self):
         """A mapping of plugin names to a list of commands in it."""
