@@ -10,6 +10,14 @@ from .utils import safe
 
 
 class AbstractIRCBackend(object):
+    """Abstract class defining the interface and basic logic of an IRC backend.
+
+    :param bot: a Sopel instance
+    :type bot: :class:`sopel.bot.Sopel`
+
+    Some methods of this class **MUST** be overridden by a subclass, or the
+    backend implementation will not function correctly.
+    """
     def __init__(self, bot):
         self.bot = bot
         self.writing_lock = threading.RLock()
@@ -18,7 +26,7 @@ class AbstractIRCBackend(object):
         """Send a command through the IRC connection.
 
         :param * args: IRC command to send with its argument(s)
-        :param str text: optional keyword argument; text to send
+        :param str text: the text to send (optional keyword argument)
 
         Example::
 
@@ -57,7 +65,7 @@ class AbstractIRCBackend(object):
             provision for continuation of message lines.
 
         The length in the RFC refers to the length in *bytes*, which can be
-        bigger than the length of the unicode string. This method cuts the
+        bigger than the length of the Unicode string. This method cuts the
         message until its length fits within this limit of 510 bytes.
 
         The returned message contains the CR-LF pair required at the end,
@@ -70,9 +78,9 @@ class AbstractIRCBackend(object):
             raw_command = '{args} :{text}'.format(args=raw_command,
                                                   text=safe(text))
 
-        # The max length of 512 is in bytes, not unicode:
-        # we can't cut the message in bytes, or we may cut in the middle of a
-        # multi bytes characters.
+        # The max length of 512 is in bytes, not Unicode characters:
+        # we can't split the message on bytes, or we may cut in the middle of a
+        # multi-byte character.
         while len(raw_command.encode('utf-8')) > max_length:
             raw_command = raw_command[:unicode_max_length]
             unicode_max_length = unicode_max_length - 1
@@ -95,7 +103,7 @@ class AbstractIRCBackend(object):
 
         :param str host: IRC server host
 
-        A ``PONG`` command must be sent each time the server send a ``PING``
+        A ``PONG`` command must be sent each time the server sends a ``PING``
         command to the client.
         """
         self.send_command('PONG', safe(host))

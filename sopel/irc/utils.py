@@ -42,6 +42,26 @@ def safe(string):
 
 
 class CapReq(object):
+    """Represents a pending CAP REQ request.
+
+    :param str prefix: either ``=`` (must be enabled)
+                       or ``-`` (must **not** be enabled)
+    :param str module: the requesting package/module name
+    :param failure: function to call if this capability request fails
+    :type failure: :term:`function`
+    :param str arg: optional capability value; the request will fail if
+                    the server's value is different
+    :param success: function to call if this capability request succeeds
+    :type success: :term:`function`
+
+    The ``success`` and ``failure`` callbacks must accept two arguments:
+    ``bot`` (a :class:`~sopel.bot.Sopel` instance) and ``cap`` (the name of
+    the requested capability, as a string).
+
+    .. seealso::
+        For more information on how capability requests work, see the
+        documentation for :meth:`sopel.irc.AbstractBot.cap_req`.
+    """
     def __init__(self, prefix, module, failure=None, arg=None, success=None):
         def nop(bot, cap):
             pass
