@@ -9,12 +9,26 @@ from sopel import tools
 
 
 class IrcLoggingHandler(logging.Handler):
+    """Logging handler for output to an IRC channel.
+
+    :param bot: a Sopel instance
+    :type bot: :class:`sopel.bot.Sopel`
+    :param level: minimum level of log messages to report through this handler
+    :type level: :ref:`logging level <levels>`
+
+    Implementation of a :class:`logging.Handler`.
+    """
     def __init__(self, bot, level):
         super(IrcLoggingHandler, self).__init__(level)
         self._bot = bot
         self._channel = bot.config.core.logging_channel
 
     def emit(self, record):
+        """Emit a log ``record`` to the IRC channel.
+
+        :param record: the log record to output
+        :type record: :class:`logging.LogRecord`
+        """
         try:
             msg = self.format(record)
             self._bot.say(msg, self._channel)
@@ -25,16 +39,35 @@ class IrcLoggingHandler(logging.Handler):
 
 
 class ChannelOutputFormatter(logging.Formatter):
+    """Output formatter for log messages destined for an IRC channel.
+
+    :param fmt: log line format
+    :type fmt: :ref:`format string <formatstrings>`
+    :param datefmt: date format
+    :type datefmt: :ref:`format string <formatstrings>`
+
+    Implementation of a :class:`logging.Formatter`.
+    """
     def __init__(self, fmt='[%(filename)s] %(message)s', datefmt=None):
         super(ChannelOutputFormatter, self).__init__(fmt=fmt, datefmt=datefmt)
 
     def formatException(self, exc_info):
-        # logging will through a newline between the message and this, but
+        """Format the exception info as a string for output.
+
+        :param tuple exc_info: standard exception information returned by
+                               :func:`~sys.exc_info`
+        """
+        # logging will throw a newline between the message and this, but
         # that's fine because Sopel will strip it back out anyway
         return ' - ' + repr(exc_info[1])
 
 
 def setup_logging(settings):
+    """Set up logging based on the bot's configuration ``settings``.
+
+    :param settings: configuration settings object
+    :type settings: :class:`sopel.config.Config`
+    """
     log_directory = settings.core.logdir
     base_level = settings.core.logging_level or 'WARNING'
     base_format = settings.core.logging_format
@@ -124,10 +157,12 @@ def get_logger(name=None):
 
     .. deprecated:: 7.0
 
-        Use ``logging.getLogger(__name__)`` in Sopel's code instead, and
-        :func:`sopel.tools.get_logger` for external plugins.
+        Sopel's own code should use :func:`logging.getLogger(__name__)
+        <logging.getLogger>` instead, and external plugins should use
+        :func:`sopel.tools.get_logger`.
 
-        This will warn a deprecation warning in Sopel 8.0 then removed in 9.0.
+        This will emit a deprecation warning in Sopel 8.0, and it will be
+        removed in Sopel 9.0.
 
     """
     if not name:

@@ -11,7 +11,7 @@ documentation; it will be removed completely in Sopel 8. Plugins should use
 .. contents::
 
 sopel.tools
-------------
+-----------
 
 .. automodule:: sopel.tools
    :members:
@@ -44,7 +44,14 @@ sopel.tools.events
    :undoc-members:
 
 sopel.formatting
------------------
+----------------
 .. automodule:: sopel.formatting
+   :members:
+   :undoc-members:
+
+sopel.logger
+------------
+
+.. automodule:: sopel.logger
    :members:
    :undoc-members:
