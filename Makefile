@@ -18,13 +18,15 @@ qa: quality test coverages
 
 travis: quality test coverage_report
 
-clean_doc:
+clean_docs:
 	$(MAKE) -C docs clean
 
-build_doc:
+build_docs:
 	$(MAKE) -C docs html
 
-doc: clean_doc build_doc
+docs: build_docs
+
+cleandoc: clean_docs build_docs
 
 install-hooks:
 	@./contrib/githooks/install-hooks.sh
