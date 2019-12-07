@@ -103,7 +103,7 @@ by :attr:`~CoreSection.admin_accounts` or by :attr:`~CoreSection.admins`. If
 
 Both ``owner_account`` and ``admin_accounts`` are safer to use than
 nick-based matching, but the IRC server must support accounts.
-(Most, sadly, do not as of mid-2019.)
+(Most, sadly, do not as of late 2019.)
 
 
 IRC Server
