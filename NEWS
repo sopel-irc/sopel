@@ -104,7 +104,8 @@ Module changes
 Core changes
 ------------
 
-* More database types are supported again [[#1446][], [#1652][], [#1729][]]
+* Brought back support for non-SQLite databases with SQLAlchemy [[#1446][],
+  [#1652][], [#1729][], [#1755][], [#1774][]]
   * For details on using non-SQLite databases, see the [README][readme-db] or
     [installation instructions][install-guide-db]
   * You will probably need to install additional dependencies if you wish to
@@ -197,6 +198,7 @@ Core changes
     * `reason`: why this item was deprecated
     * `version`: the version in which the deprecation happened
     * `removed_in`: the version in which the deprecated item will be removed
+* The end-of-life warning for users on Python 2.x is now date-aware [[#1756][]]
 
 API changes
 -----------
@@ -489,8 +491,11 @@ API changes
 [#1750]: https://github.com/sopel-irc/sopel/pull/1750
 [#1753]: https://github.com/sopel-irc/sopel/pull/1753
 [#1754]: https://github.com/sopel-irc/sopel/pull/1754
+[#1755]: https://github.com/sopel-irc/sopel/pull/1755
+[#1756]: https://github.com/sopel-irc/sopel/pull/1756
 [#1759]: https://github.com/sopel-irc/sopel/pull/1759
 [#1760]: https://github.com/sopel-irc/sopel/pull/1760
+[#1774]: https://github.com/sopel-irc/sopel/pull/1774
 
 [api-docs]: https://sopel.chat/docs/
 [auth-config-docs]: https://sopel.chat/docs/configure.html#Authentication
