@@ -222,7 +222,7 @@ class SopelDB(object):
             session.rollback()
             raise
         finally:
-            session.close()
+            self.ssession.remove()
 
     def alias_nick(self, nick, alias):
         """Create an alias for a nick.
@@ -247,7 +247,7 @@ class SopelDB(object):
             session.rollback()
             raise
         finally:
-            session.close()
+            self.ssession.remove()
 
     def set_nick_value(self, nick, key, value):
         """Sets the value for a given key to be associated with the nick."""
@@ -273,7 +273,7 @@ class SopelDB(object):
             session.rollback()
             raise
         finally:
-            session.close()
+            self.ssession.remove()
 
     def delete_nick_value(self, nick, key):
         """Deletes the value for a given key associated with a nick."""
@@ -293,7 +293,7 @@ class SopelDB(object):
             session.rollback()
             raise
         finally:
-            session.close()
+            self.ssession.remove()
 
     def get_nick_value(self, nick, key, default=None):
         """Retrieves the value for a given key associated with a nick."""
@@ -314,7 +314,7 @@ class SopelDB(object):
             session.rollback()
             raise
         finally:
-            session.close()
+            self.ssession.remove()
 
     def unalias_nick(self, alias):
         """Removes an alias.
@@ -337,7 +337,7 @@ class SopelDB(object):
             session.rollback()
             raise
         finally:
-            session.close()
+            self.ssession.remove()
 
     def delete_nick_group(self, nick):
         """Removes a nickname, and all associated aliases and settings."""
@@ -352,7 +352,7 @@ class SopelDB(object):
             session.rollback()
             raise
         finally:
-            session.close()
+            self.ssession.remove()
 
     def merge_nick_groups(self, first_nick, second_nick):
         """Merges the nick groups for the specified nicks.
@@ -388,7 +388,7 @@ class SopelDB(object):
             session.rollback()
             raise
         finally:
-            session.close()
+            self.ssession.remove()
 
     # CHANNEL FUNCTIONS
 
@@ -415,7 +415,7 @@ class SopelDB(object):
             session.rollback()
             raise
         finally:
-            session.close()
+            self.ssession.remove()
 
     def delete_channel_value(self, channel, key):
         """Deletes the value for a given key associated with a channel."""
@@ -434,7 +434,7 @@ class SopelDB(object):
             session.rollback()
             raise
         finally:
-            session.close()
+            self.ssession.remove()
 
     def get_channel_value(self, channel, key, default=None):
         """Retrieves the value for a given key associated with a channel."""
@@ -454,7 +454,7 @@ class SopelDB(object):
             session.rollback()
             raise
         finally:
-            session.close()
+            self.ssession.remove()
 
     # PLUGIN FUNCTIONS
 
@@ -481,7 +481,7 @@ class SopelDB(object):
             session.rollback()
             raise
         finally:
-            session.close()
+            self.ssession.remove()
 
     def delete_plugin_value(self, plugin, key):
         """Deletes the value for a given key associated with a plugin."""
@@ -500,7 +500,7 @@ class SopelDB(object):
             session.rollback()
             raise
         finally:
-            session.close()
+            self.ssession.remove()
 
     def get_plugin_value(self, plugin, key, default=None):
         """Retrieves the value for a given key associated with a plugin."""
@@ -520,7 +520,7 @@ class SopelDB(object):
             session.rollback()
             raise
         finally:
-            session.close()
+            self.ssession.remove()
 
     # NICK AND CHANNEL FUNCTIONS
 
