@@ -222,13 +222,16 @@ class ISupport(object):
             False
 
         """
-        kwargs_ci = dict((key.upper(), value) for key, value in kwargs.items())
+        kwargs_upper = dict(
+            (key.upper(), value)
+            for key, value in kwargs.items()
+        )
         kept = (
             (key, value)
             for key, value in self.__isupport.items()
-            if ('-%s' % key) not in kwargs_ci
+            if ('-%s' % key) not in kwargs_upper
         )
-        updated = dict(itertools.chain(kept, kwargs_ci.items()))
+        updated = dict(itertools.chain(kept, kwargs_upper.items()))
 
         return self.__class__(**updated)
 
