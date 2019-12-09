@@ -39,13 +39,45 @@ def startup_version_check(bot, trigger):
         check_version(bot)
 
 
+def _check_succeeded(bot):
+    bot.memory['update_failures'] = 0
+
+
+def _check_failed(bot):
+    bot.memory['update_failures'] = 1 + bot.memory.get('update_failures', 0)
+
+
 @sopel.module.interval(wait_time)
 def check_version(bot):
     version = sopel.version_info
+    success = False
 
-    # TODO: Python3 specific. Disable urllib warning from config file.
-    # requests.packages.urllib3.disable_warnings()
-    info = requests.get(version_url).json()
+    try:
+        r = requests.get(version_url, timeout=(5, 5))
+    except requests.exceptions.RequestException:
+        _check_failed(bot)
+    else:
+        success = True
+
+    try:
+        if success:
+            info = r.json()
+    except ValueError:
+        # TODO: use JSONDecodeError when dropping Pythons < 3.5
+        _check_failed(bot)
+
+    if not success and bot.memory.get('update_failures', 0) > 4:
+        bot.say("I haven't been able to check for updates in a while. "
+                "Please verify that {} is working and I can reach it."
+                .format(version_url), bot.config.core.owner)
+        bot.say("If this issue persists, please alert the Sopel dev team in "
+                "#sopel on freenode, or open a GitHub issue: "
+                "https://github.com/sopel-irc/sopel/issues",
+                bot.config.core.owner)
+        return
+
+    _check_succeeded(bot)
+
     if version.releaselevel == 'final':
         latest = info['version']
         notes = info['release_notes']
