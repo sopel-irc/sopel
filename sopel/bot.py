@@ -257,7 +257,9 @@ class Sopel(irc.AbstractBot):
         plugin.reload()
         plugin.setup(self)
         plugin.register(self)
-        LOGGER.info('Reloaded plugin %s', name)
+        meta = plugin.get_meta_description()
+        LOGGER.info('Reloaded %s plugin %s from %s',
+                    meta['type'], name, meta['source'])
 
     def reload_plugins(self):
         """Reload all plugins
@@ -278,7 +280,9 @@ class Sopel(irc.AbstractBot):
             plugin.reload()
             plugin.setup(self)
             plugin.register(self)
-            LOGGER.info('Reloaded plugin %s', name)
+            meta = plugin.get_meta_description()
+            LOGGER.info('Reloaded %s plugin %s from %s',
+                        meta['type'], name, meta['source'])
 
     def add_plugin(self, plugin, callables, jobs, shutdowns, urls):
         """Add a loaded plugin to the bot's registry"""
@@ -310,6 +314,20 @@ class Sopel(irc.AbstractBot):
     def has_plugin(self, name):
         """Tell if the bot has registered this plugin by its name"""
         return name in self._plugins
+
+    def get_plugin_meta(self, name):
+        """Get info about a registered plugin by its name.
+
+        :param str name: name of the plugin about which to get info
+        :return: the plugin's metadata
+                 (see :meth:`~.plugins.handlers.AbstractPluginHandler.get_meta_description`)
+        :rtype: :class:`dict`
+        :raise PluginNotRegistered: when there is no ``name`` plugin registered
+        """
+        if not self.has_plugin(name):
+            raise plugins.exceptions.PluginNotRegistered(name)
+
+        return self._plugins[name].get_meta_description()
 
     def unregister(self, obj):
         """Unregister a callable.

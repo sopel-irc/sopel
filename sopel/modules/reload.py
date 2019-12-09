@@ -46,7 +46,9 @@ def f_reload(bot, trigger):
         return bot.reply('"%s" not loaded, try the `load` command' % name)
 
     bot.reload_plugin(name)
-    return bot.reply('done: %s reloaded' % name)
+    plugin_meta = bot.get_plugin_meta(name)
+    return bot.reply('done: %s reloaded (%s from %s)' %
+                     (name, plugin_meta['type'], plugin_meta['source']))
 
 
 @sopel.module.nickname_commands('update')
@@ -72,24 +74,26 @@ def f_load(bot, trigger):
         return bot.reply('Load what?')
 
     if bot.has_plugin(name):
-        return bot.reply('Module already loaded, use reload')
+        return bot.reply('Plugin already loaded, use reload')
 
     usable_plugins = plugins.get_usable_plugins(bot.config)
     if name not in usable_plugins:
-        bot.reply('Module %s not found' % name)
+        bot.reply('Plugin %s not found' % name)
         return
 
     plugin, is_enabled = usable_plugins[name]
     if not is_enabled:
-        bot.reply('Module %s is disabled' % name)
+        bot.reply('Plugin %s is disabled' % name)
         return
 
     try:
         _load(bot, plugin)
     except Exception as error:
-        bot.reply('Could not load module %s: %s' % (name, error))
+        bot.reply('Could not load plugin %s: %s' % (name, error))
     else:
-        bot.reply('Module %s loaded' % name)
+        meta = bot.get_plugin_meta(name)
+        bot.reply('Plugin %s loaded (%s from %s)' %
+                  (name, meta['type'], meta['source']))
 
 
 # Catch private messages
