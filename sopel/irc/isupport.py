@@ -101,7 +101,7 @@ def _parse_prefix(value):
     return tuple(sorted(zip(modes, prefixes)))
 
 
-ISUPPORT_PARSER = {
+ISUPPORT_PARSERS = {
     'AWAYLEN': int,
     'CASEMAPPING': str,
     'CHANLIMIT': _map_items(int),
@@ -140,7 +140,7 @@ def parse_parameter(arg):
         # ignore value for removed parameters
         return (key, None)
 
-    parser = ISUPPORT_PARSER.get(key, _optional(str))
+    parser = ISUPPORT_PARSERS.get(key, _optional(str))
     return (key, parser(value))
 
 
