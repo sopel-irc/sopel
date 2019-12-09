@@ -86,7 +86,7 @@ def image_info(bot, trigger, match):
     except IndexError:
         # Fail silently if the image link can't be mapped to a submission
         return NOLIMIT
-    return say_post_info(bot, trigger, oldest.id)
+    return say_post_info(bot, trigger, oldest.id, False)
 
 
 @url(video_url)
@@ -96,7 +96,7 @@ def video_info(bot, trigger, match):
         'https://www.reddit.com/video/{}'.format(match.group(1)),
         timeout=(10.0, 4.0)).headers['Location']
     try:
-        return say_post_info(bot, trigger, re.match(post_url, url).group(1))
+        return say_post_info(bot, trigger, re.match(post_url, url).group(1), False)
     except AttributeError:
         # Fail silently if we can't map the video link to a submission
         return NOLIMIT
@@ -109,7 +109,7 @@ def rpost_info(bot, trigger, match):
     return say_post_info(bot, trigger, match.group(1))
 
 
-def say_post_info(bot, trigger, id_):
+def say_post_info(bot, trigger, id_, show_link=True):
     try:
         s = bot.memory['reddit_praw'].submission(id=id_)
 
@@ -118,7 +118,9 @@ def say_post_info(bot, trigger, id_):
                    'Created at {created}')
 
         subreddit = s.subreddit.display_name
-        if s.is_self:
+        if not show_link:
+            link = 'to r/{}'.format(subreddit)
+        elif s.is_self:
             link = '(self.{})'.format(subreddit)
         else:
             link = '({}) to r/{}'.format(s.url, subreddit)
