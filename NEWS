@@ -64,13 +64,14 @@ Module changes
 * A new `tell` plugin setting allows delivering messages privately [[#1694][]]
 * The `reddit` plugin now also handles short `redd.it` links, direct links to
   comments, inline `u/` and `r/` references, & reddit-hosted image/video links
-  [[#1503][], [#1720][], [#1722][], [#1734][], [#1760][]]
+  [[#1503][], [#1720][], [#1722][], [#1734][], [#1760][], [#1773][]]
 * Spoilers & NSFW are now separate concepts in the `reddit` plugin [[#1620][]]
   * Reddit implemented spoilers as a distinct post flag some time ago. Sopel's
     plugin supports independently setting channels as "SFW" or "spoiler-free".
 * Rolling `.dice` now officially supports trailing `# comments` [[#1577][]]
 * Python version is now included in `.version` command output [[#1462][]]
 * The `.version` command's output format is improved [[#1633][]]
+* Using the `.reload` command shows the specific file reloaded [[#1762][]]
 * The `.seen` command's output now uses relative time [[#1661][]]
 * Readability of `.choose` command output is significantly improved [[#1425][]]
 * Added `.invite` command [[#1497][]]
@@ -94,6 +95,7 @@ Module changes
 * `remind` commands now "reply" with error messages [[#1715][]]
 * Fixed `etymology` module error with empty argument [[#1677][]]
 * Fixed an uncaught exception in `instagram` plugin [[#1702][]]
+* Handle JSON fetch/parse errors in `find_updates` plugin [[#1779][]]
 * Removed nonsensical uses of the `core.verify_ssl` setting [[#1706][]]
 * Unused `clock` plugin settings have been removed [[#1696][]]
 * General code cleanup and tweaks all around [[#1402][], [#1486][], [#1505][],
@@ -122,6 +124,9 @@ Core changes
   * Many, many new settings added to customize logging
   * The default log format includes timestamp, source package, & level (which
     will make logs *much* more useful when reporting bugs)
+* Logs now have information about which plugin file was reloaded [[#1762][]]
+  * This is helpful for owners of Sopel instances with multiple versions of a
+    plugin available for testing or development purposes
 * Sopel's own rate-limiting & flood protection parameters are now configurable,
   and can even be turned off entirely if Sopel is behind a bouncer or other IRC
   proxy that handles flood protection itself [[#1518][], [#1638][]]
@@ -279,6 +284,7 @@ API changes
     will throw an error if the bot is not connected to a network **and** joined
     to at least one channel. Basically, don't try to use it in plugin `setup()`
     or `shutdown()` methods.
+* Added `bot.get_plugin_meta()` method to fetch plugin information [[#1762][]]
 * Added `module.echo` decorator [[#1470][]]
   * Decorated callables will receive messages that Sopel itself sends,
     regardless of whether the IRC server actually supports `echo-message`
@@ -495,7 +501,10 @@ API changes
 [#1756]: https://github.com/sopel-irc/sopel/pull/1756
 [#1759]: https://github.com/sopel-irc/sopel/pull/1759
 [#1760]: https://github.com/sopel-irc/sopel/pull/1760
+[#1762]: https://github.com/sopel-irc/sopel/pull/1762
+[#1773]: https://github.com/sopel-irc/sopel/pull/1773
 [#1774]: https://github.com/sopel-irc/sopel/pull/1774
+[#1779]: https://github.com/sopel-irc/sopel/pull/1779
 
 [api-docs]: https://sopel.chat/docs/
 [auth-config-docs]: https://sopel.chat/docs/configure.html#Authentication
