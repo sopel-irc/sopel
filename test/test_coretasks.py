@@ -117,7 +117,7 @@ def test_mode_colon(mockbot, ircfactory):
 def test_execute_perform_raise_not_connected(mockbot):
     """Ensure bot will not execute ``commands_on_connect`` unless connected."""
     with pytest.raises(Exception):
-        coretasks.execute_perform(mockbot)
+        coretasks._execute_perform(mockbot)
 
 
 def test_execute_perform_send_commands(mockbot):
@@ -134,7 +134,7 @@ def test_execute_perform_send_commands(mockbot):
     mockbot.config.core.commands_on_connect = commands
     mockbot.connection_registered = True
 
-    coretasks.execute_perform(mockbot)
+    coretasks._execute_perform(mockbot)
     assert mockbot.backend.message_sent == rawlist(*commands)
 
 
@@ -146,5 +146,5 @@ def test_execute_perform_replaces_nickname(mockbot):
     mockbot.config.core.commands_on_connect = [command, ]
     mockbot.connection_registered = True  # For testing, simulate connected
 
-    coretasks.execute_perform(mockbot)
+    coretasks._execute_perform(mockbot)
     assert mockbot.backend.message_sent == rawlist(sent_command)

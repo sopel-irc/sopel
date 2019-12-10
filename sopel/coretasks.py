@@ -62,7 +62,7 @@ def auth_after_register(bot):
                 auth_target or 'UserServ')
 
 
-def execute_perform(bot):
+def _execute_perform(bot):
     """Execute commands specified to perform on IRC server connect."""
     if not bot.connection_registered:
         # How did you even get this command, bot?
@@ -78,9 +78,9 @@ def execute_perform(bot):
 @sopel.module.require_privmsg("This command only works as a private message.")
 @sopel.module.require_admin("This command requires admin privileges.")
 @sopel.module.commands('execute')
-def _execute_perform(bot, trigger):
+def execute_perform(bot, trigger):
     """Execute commands specified to perform on IRC server connect."""
-    execute_perform(bot)
+    _execute_perform(bot)
 
 
 @sopel.module.event(events.RPL_WELCOME, events.RPL_LUSERCLIENT)
@@ -132,7 +132,7 @@ def startup(bot, trigger):
         ).format(bot.config.core.help_prefix)
         bot.say(msg, bot.config.core.owner)
 
-    execute_perform(bot)
+    _execute_perform(bot)
 
 
 @sopel.module.require_privmsg()
