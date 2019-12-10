@@ -4,6 +4,7 @@ from __future__ import unicode_literals, absolute_import, print_function, divisi
 
 import pytest
 
+from sopel import coretasks
 from sopel.module import VOICE, HALFOP, OP, ADMIN, OWNER
 from sopel.tools import Identifier
 from sopel.tests import rawlist
@@ -111,3 +112,39 @@ def test_mode_colon(mockbot, ircfactory):
 
     assert mockbot.channels["#test"].privileges[Identifier("Uvoice")] == VOICE
     assert mockbot.channels["#test"].privileges[Identifier("Uadmin")] == ADMIN
+
+
+def test_execute_perform_raise_not_connected(mockbot):
+    """Ensure bot will not execute ``commands_on_connect`` unless connected."""
+    with pytest.raises(Exception):
+        coretasks._execute_perform(mockbot)
+
+
+def test_execute_perform_send_commands(mockbot):
+    """Ensure bot sends ``commands_on_connect`` as specified in config."""
+    commands = [
+        # Example command for identifying to services on Undernet
+        'PRIVMSG X@Channels.undernet.org :LOGIN my_username my_password',
+        # Set modes on connect
+        'MODE some_nick +Xx',
+        # Oper on connect
+        'OPER oper_username oper_password',
+    ]
+
+    mockbot.config.core.commands_on_connect = commands
+    mockbot.connection_registered = True
+
+    coretasks._execute_perform(mockbot)
+    assert mockbot.backend.message_sent == rawlist(*commands)
+
+
+def test_execute_perform_replaces_nickname(mockbot):
+    """Confirm that bot replaces ``$nickname`` placeholder in commands."""
+    command = 'MODE $nickname +Xxw'
+    sent_command = 'MODE {} +Xxw'.format(mockbot.config.core.nick)
+
+    mockbot.config.core.commands_on_connect = [command, ]
+    mockbot.connection_registered = True  # For testing, simulate connected
+
+    coretasks._execute_perform(mockbot)
+    assert mockbot.backend.message_sent == rawlist(sent_command)

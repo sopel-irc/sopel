@@ -49,6 +49,10 @@ def configure(config):
         'channels',
         'Enter the channels to connect to at startup, separated by commas.'
     )
+    config.core.configure_setting(
+        'commands_on_connect',
+        'Enter commands to perform on successful connection to server (one per \'?\' prompt).'
+    )
 
 
 class CoreSection(StaticSection):
@@ -345,6 +349,23 @@ class CoreSection(StaticSection):
 
     This should only be set on networks which support IRCv3 account
     capabilities.
+    """
+
+    commands_on_connect = ListAttribute('commands_on_connect')
+    """A list of commands to perform upon successful connection to IRC server.
+
+    Each line is a message that will be sent to the server once connected.
+    Example::
+
+        PRIVMSG Q@CServe.quakenet.org :AUTH my_username MyPassword,@#$%!
+        PRIVMSG MyOwner :I'm here!
+
+    ``$nickname`` can be used in a command as a placeholder, and it will be
+    replaced with the bot's :attr:`~CoreSection.nick`. For example when the
+    nick is ``Sopel``, then this ``MODE $nickname +Xxw`` will become
+    ``MODE Sopel +Xxw``.
+
+    .. versionadded:: 7.0
     """
 
     pid_dir = FilenameAttribute('pid_dir', directory=True, default='.')
