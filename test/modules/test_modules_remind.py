@@ -8,17 +8,18 @@ import os
 import pytest
 import pytz
 
-from sopel import test_tools
 from sopel.modules import remind
 
 
-@pytest.fixture
-def sopel():
-    bot = test_tools.MockSopel('Sopel')
-    bot.config.basename = 'default'
-    bot.config.core.owner = 'Admin'
-    bot.config.core.host = 'chat.freenode.net'
-    return bot
+TMP_CONFIG = """
+[core]
+owner = Admin
+nick = Sopel
+enable =
+    coretasks
+    remind
+host = chat.freenode.net
+"""
 
 
 WEIRD_MESSAGE = (
@@ -313,10 +314,13 @@ def test_timereminder_get_duration_error(date1, date2, date3):
         reminder.get_duration(test_today)
 
 
-def test_get_filename(sopel):
-    filename = remind.get_filename(sopel)
+def test_get_filename(configfactory, botfactory):
+    tmpconfig = configfactory('default.ini', TMP_CONFIG)
+    mockbot = botfactory(tmpconfig)
+
+    filename = remind.get_filename(mockbot)
     assert filename == os.path.join(
-        sopel.config.core.homedir,
+        mockbot.config.core.homedir,
         'default.reminders.db')
 
 

@@ -15,7 +15,6 @@ import tempfile
 import pytest
 
 from sopel.db import SopelDB
-from sopel.test_tools import MockConfig
 from sopel.tools import Identifier
 
 db_filename = tempfile.mkstemp()[1]
@@ -31,11 +30,18 @@ else:
     iterkeys = dict.iterkeys
 
 
+TMP_CONFIG = """
+[core]
+owner = Embolalia
+db_filename = {db_filename}
+"""
+
+
 @pytest.fixture
-def db():
-    config = MockConfig()
-    config.core.db_filename = db_filename
-    db = SopelDB(config)
+def db(configfactory):
+    content = TMP_CONFIG.format(db_filename=db_filename)
+    settings = configfactory('default.cfg', content)
+    db = SopelDB(settings)
     # TODO add tests to ensure db creation works properly, too.
     return db
 

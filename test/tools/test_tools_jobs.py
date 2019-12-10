@@ -5,21 +5,20 @@ from __future__ import unicode_literals, absolute_import, print_function, divisi
 import datetime
 import time
 
-import pytest
-
-from sopel import test_tools
 from sopel.tools import jobs
 
 
-@pytest.fixture
-def sopel():
-    bot = test_tools.MockSopel('Sopel')
-    bot.config.core.owner = 'Bar'
-    return bot
+TMP_CONFIG = """
+[core]
+owner = Bar
+nick = Sopel
+enable = coretasks
+"""
 
 
-def test_jobscheduler_stop(sopel):
-    scheduler = jobs.JobScheduler(sopel)
+def test_jobscheduler_stop(configfactory, botfactory):
+    mockbot = botfactory(configfactory('config.cfg', TMP_CONFIG))
+    scheduler = jobs.JobScheduler(mockbot)
     assert not scheduler.stopping.is_set(), 'Stopping must not be set at init'
 
     scheduler.stop()
