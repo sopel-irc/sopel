@@ -231,43 +231,28 @@ the IRC server. This can be used in situations where the bot's built-in
 capabilities are not sufficient, or further automation is desired.
 ``$nickname`` can be used in a command as a placeholder, and it will be
 replaced with the bot's nickname, as specified in the configuration
-(:attr:`~CoreSection.nick`). 
+(:attr:`~CoreSection.nick`).
 
 The list of commands to send is set with
 :attr:`~CoreSection.commands_on_connect`. For example, the following
-configuration:
-
-.. code-block:: ini
+configuration::
 
     [core]
-    commands_on_connect = PRIVMSG X@Channels.undernet.org :LOGIN MyUserName A$_Strong\,*pasSWord,PRIVMSG IDLEBOT :login $nickname idLEPasswoRD
-
+    commands_on_connect =
+        PRIVMSG X@Channels.undernet.org :LOGIN MyUserName A$_Strong,*pasSWord
+        PRIVMSG IDLEBOT :login $nickname idLEPasswoRD
 
 will, upon connection:
-    
-    1) identify to Undernet services (``PRIVMSG X@Channels...``)
-    2) login with ``IDLEBOT`` using the bot's nickname (``PRIVMSG IDLEBOT ...``)
 
-.. important::
-
-    Commas are used to delimit separate commands, so any comma found within a
-    command must be escaped with ``\``. In the example above, the password
-    ``A$_Strong,*pasSWord`` is escaped as ``A$_Strong\,pasSWord`` (note the
-    escaped comma in the middle of the password, but not immediately following,
-    which is delimiting the next command).
-
-    No other text needs to be escaped.
-
-.. 
-    TODO: update this note (and the example config) once #1628 is merged in,
-    changing the delimiter to newlines (from commas).
+1) identify to Undernet services (``PRIVMSG X@Channels...``)
+2) login with ``IDLEBOT`` using the bot's nickname (``PRIVMSG IDLEBOT ...``)
 
 .. seealso::
-    
-    This functionality is analogous to ZNC's ``perform`` module:
-    https://wiki.znc.in/Perform
-    
-    
+
+   This functionality is analogous to ZNC's ``perform`` module:
+   https://wiki.znc.in/Perform
+
+
 Authentication
 ==============
 

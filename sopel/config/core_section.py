@@ -352,20 +352,21 @@ class CoreSection(StaticSection):
     """
 
     commands_on_connect = ListAttribute('commands_on_connect')
-    r"""A list of commands to perform upon successful connection to IRC server.
+    """A list of commands to perform upon successful connection to IRC server.
 
-    When entered using the config wizard, commas will be escaped automatically.
-    Otherwise, commas must be escaped, e.g.: ``PRIVMSG Q@CServe.quakenet.org
-    :AUTH my_username MyPassword\,HasAComma@#$%!`` Nothing else needs to be
-    escaped.
+    Each line is a message that will be sent to the server once connected.
+    Example::
+
+        PRIVMSG Q@CServe.quakenet.org :AUTH my_username MyPassword,@#$%!
+        PRIVMSG MyOwner :I'm here!
 
     ``$nickname`` can be used in a command as a placeholder, and it will be
-    replaced with the bot's :attr:`~CoreSection.nick`; e.g., ``MODE $nickname +Xxw``.
+    replaced with the bot's :attr:`~CoreSection.nick`. For example when the
+    nick is ``Sopel``, then this ``MODE $nickname +Xxw`` will become
+    ``MODE Sopel +Xxw``.
 
     .. versionadded:: 7.0
     """
-    # TODO: update the docstring above in/after #1628 removes commas as
-    # delimiters for `ListAttribute`s.
 
     pid_dir = FilenameAttribute('pid_dir', directory=True, default='.')
     """The directory in which to put the file Sopel uses to track its process ID.
