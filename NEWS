@@ -119,6 +119,8 @@ Core changes
   * `homedir` itself has a default value that will be used if not set
 * Added separate server & nickname authentication options [[#1513][]]
   * See [authentication configuration docs][auth-config-docs]
+* Added `commands_on_connect` setting to send a list of commands automatically
+  when Sopel's IRC connection is successfully established [[#1528][]]
 * Log files have become *much* more configurable [[#1678][], [[#1714][]]]
   * Logs are named based on the config name
   * Many, many new settings added to customize logging
@@ -375,6 +377,7 @@ API changes
 [#1522]: https://github.com/sopel-irc/sopel/pull/1522
 [#1526]: https://github.com/sopel-irc/sopel/pull/1526
 [#1527]: https://github.com/sopel-irc/sopel/pull/1527
+[#1528]: https://github.com/sopel-irc/sopel/pull/1528
 [#1537]: https://github.com/sopel-irc/sopel/pull/1537
 [#1539]: https://github.com/sopel-irc/sopel/pull/1539
 [#1542]: https://github.com/sopel-irc/sopel/pull/1542
