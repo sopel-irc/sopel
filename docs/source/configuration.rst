@@ -186,8 +186,20 @@ join is configured by :attr:`~CoreSection.channels`::
         "#sopelunkers"
 
 It is possible to slow down the initial joining of channels using
-:attr:`~CoreSection.throttle_join`, for example if the IRC network kicks
-clients that join too many channels too quickly.
+:attr:`~CoreSection.throttle_join` and :attr:`~CoreSection.throttle_wait`, for
+example if the IRC network kicks clients that join too many channels too
+quickly::
+
+    [core]
+    channels =
+        "#sopel"
+        "#sopelunkers"
+        # ... too many channels ...
+        "#justonemore"
+    throttle_join = 4
+    throttle_wait = 2
+
+In that example, Sopel will send ``JOIN`` and ``WHO`` commands 4 by 4 every 2s.
 
 Flood Prevention
 ----------------

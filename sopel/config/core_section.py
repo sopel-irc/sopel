@@ -416,11 +416,33 @@ class CoreSection(StaticSection):
     .. versionadded:: 7.0
     """
 
-    throttle_join = ValidatedAttribute('throttle_join', int)
+    throttle_join = ValidatedAttribute('throttle_join', int, default=0)
     """Slow down the initial join of channels to prevent getting kicked.
 
     Sopel will only join this many channels at a time, sleeping for a second
     between each batch. This is unnecessary on most networks.
+
+    If not set, or set to 0, Sopel won't slow down the initial join.
+
+    .. seealso::
+
+       :attr:`throttle_wait` controls the time Sopel waits between batches
+       of channels.
+
+    """
+
+    throttle_wait = ValidatedAttribute('throttle_wait', int, default=1)
+    """Time in seconds Sopel waits at the initial join of channels.
+
+    By default, it waits 1s between batches.
+
+    For example, with ``throttle_join = 2`` and ``throttle_wait = 5`` it will
+    wait 5s every 2 channels it joins.
+
+    .. seealso::
+
+        :attr:`throttle_join` controls channel batch size.
+
     """
 
     timeout = ValidatedAttribute('timeout', int, default=120)
