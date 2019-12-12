@@ -220,3 +220,30 @@ def test_handle_isupport(mockbot):
     assert 'ELIST' in mockbot.isupport
     assert 'CPRIVMSG' in mockbot.isupport
     assert 'CNOTICE' in mockbot.isupport
+
+
+def test_handle_rpl_myinfo(mockbot):
+    """Test handling RPL_MYINFO events."""
+    assert not hasattr(mockbot, 'myinfo'), (
+        'Attribute myinfo is not available until the server sends RPL_MYINFO')
+
+    rpl_myinfo = ' '.join([
+        ':niven.freenode.net',
+        '004',
+        'TestName',
+        'irc.example.net',
+        'example-1.2.3',
+        # modes for channels and users are ignored by Sopel
+        # we prefer to use RPL_ISUPPORT for that
+        'DOQRSZaghilopsuwz',
+        'CFILMPQSbcefgijklmnopqrstuvz',
+        'bkloveqjfI',
+        # text is ignored for RPL_MYINFO
+        ':Some random text',
+    ])
+    mockbot.on_message(rpl_myinfo)
+
+    assert hasattr(mockbot, 'myinfo')
+    assert mockbot.myinfo.client == 'TestName'
+    assert mockbot.myinfo.servername == 'irc.example.net'
+    assert mockbot.myinfo.version == 'example-1.2.3'
