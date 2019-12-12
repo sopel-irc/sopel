@@ -132,6 +132,8 @@ Core changes
 * Sopel's own rate-limiting & flood protection parameters are now configurable,
   and can even be turned off entirely if Sopel is behind a bouncer or other IRC
   proxy that handles flood protection itself [[#1518][], [#1638][]]
+* Added more control over JOIN throttling [[#1751][]]
+  * Includes a new `throttle_wait` setting instead of a hard-coded time value
 * Log timestamp and log line formats are now configurable [[#1512][]]
   * See details in [the logging configuration docs][logging-config-docs]
 * Log filenames now include the config name, to help keep track of logs from
@@ -256,6 +258,14 @@ API changes
   * `bot.kick(nick, channel, optional_message)` is shorthand for the pattern
     `bot.write(['KICK', channel, nick], optional_message)`, used by a number
     of both core and third-party plugins
+* Added `bot.myinfo`, containing the server's RPL_MYINFO (004) data [[#1769][]]
+  * More information in [the MYINFO documentation][docs-myinfo]
+* Added `bot.isupport`, exposing network-specific settings and properties from
+  the server's RPL_ISUPPORT (005) data [[#1758][]]
+  * This includes useful things like the network's maximum nickname length
+    (`NICKLEN`), maximum topic length (`TOPICLEN`), number of targets allowed
+    per command (`TARGMAX`), and channel-privilege mappings (`PREFIX`)
+  * More information in [the ISUPPORT documentation][docs-isupport]
 * Added `delete_{nick,channel}_value` methods in `bot.db` [[#1526][]]
 * Added "plugin value" API to `bot.db` [[#1621][]]
   * Functionally identical to "nick" and "channel" values, but in a separate
@@ -498,13 +508,16 @@ API changes
 [#1747]: https://github.com/sopel-irc/sopel/pull/1747
 [#1749]: https://github.com/sopel-irc/sopel/pull/1749
 [#1750]: https://github.com/sopel-irc/sopel/pull/1750
+[#1751]: https://github.com/sopel-irc/sopel/pull/1751
 [#1753]: https://github.com/sopel-irc/sopel/pull/1753
 [#1754]: https://github.com/sopel-irc/sopel/pull/1754
 [#1755]: https://github.com/sopel-irc/sopel/pull/1755
 [#1756]: https://github.com/sopel-irc/sopel/pull/1756
+[#1758]: https://github.com/sopel-irc/sopel/pull/1758
 [#1759]: https://github.com/sopel-irc/sopel/pull/1759
 [#1760]: https://github.com/sopel-irc/sopel/pull/1760
 [#1762]: https://github.com/sopel-irc/sopel/pull/1762
+[#1769]: https://github.com/sopel-irc/sopel/pull/1769
 [#1773]: https://github.com/sopel-irc/sopel/pull/1773
 [#1774]: https://github.com/sopel-irc/sopel/pull/1774
 [#1779]: https://github.com/sopel-irc/sopel/pull/1779
@@ -513,7 +526,9 @@ API changes
 [auth-config-docs]: https://sopel.chat/docs/configure.html#Authentication
 [docs-cli-config]: https://sopel.chat/docs/cli.html#the-sopel-config-command
 [docs-cli-plugins]: https://sopel.chat/docs/cli.html#the-sopel-plugins-command
+[docs-isupport]: https://sopel.chat/docs/irc.html#module-sopel.irc.isupport
 [docs-listattr]: https://sopel.chat/docs/config.html#sopel.config.types.ListAttribute
+[docs-myinfo]: https://sopel.chat/docs/irc.html#sopel.irc.utils.MyInfo
 [entry-point-plugin]: https://sopel.chat/docs/plugin.html#sopel.plugins.handlers.EntryPointPlugin
 [install-guide-db]: https://sopel.chat/usage/installing/#configuring-the-database-optional
 [logging-config-docs]: https://sopel.chat/docs/configure.html#Logging
