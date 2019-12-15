@@ -5,47 +5,59 @@ from __future__ import unicode_literals, absolute_import, print_function, divisi
 import pytest
 
 from sopel.trigger import PreTrigger, Trigger
-from sopel.test_tools import MockSopel, MockSopelWrapper
-from sopel.tools import Identifier
-from sopel import module
+from sopel import module, tools
+
+
+TMP_CONFIG = """
+[core]
+owner = Bar
+nick = Sopel
+enable = coretasks
+"""
+
+
+FOO_MESSAGE = ':Foo!foo@example.com PRIVMSG #Sopel :Hello, world'
+FOO_PRIV_MESSAGE = ':Foo!foo@example.com PRIVMSG Sopel :Hello, world'
 
 
 @pytest.fixture
-def sopel():
-    bot = MockSopel('Sopel')
-    bot.config.core.owner = 'Bar'
-    return bot
+def bot(configfactory, botfactory, triggerfactory, ircfactory):
+    settings = configfactory('default.cfg', TMP_CONFIG)
+    mockbot = botfactory.preloaded(settings)
+    mockserver = ircfactory(mockbot)
 
+    bot = triggerfactory.wrapper(mockbot, FOO_MESSAGE)
+    mockserver.channel_joined('#Sopel')
+    mockserver.join('Foo', '#Sopel')
+    mockserver.mode_set('#Sopel', '+v', ['Foo'])
 
-@pytest.fixture
-def bot(sopel, pretrigger):
-    bot = MockSopelWrapper(sopel, pretrigger)
-    bot.channels[Identifier('#Sopel')].privileges[Identifier('Foo')] = module.VOICE
     return bot
 
 
 @pytest.fixture
 def pretrigger():
-    line = ':Foo!foo@example.com PRIVMSG #Sopel :Hello, world'
-    return PreTrigger(Identifier('Foo'), line)
+    return PreTrigger(tools.Identifier('Foo'), FOO_MESSAGE)
 
 
 @pytest.fixture
 def pretrigger_pm():
-    line = ':Foo!foo@example.com PRIVMSG Sopel :Hello, world'
-    return PreTrigger(Identifier('Foo'), line)
+    return PreTrigger(tools.Identifier('Foo'), FOO_PRIV_MESSAGE)
 
 
 @pytest.fixture
 def trigger_owner(bot):
     line = ':Bar!bar@example.com PRIVMSG #Sopel :Hello, world'
-    return Trigger(bot.config, PreTrigger(Identifier('Bar'), line), None)
+    return Trigger(bot.config, PreTrigger(tools.Identifier('Bar'), line), None)
 
 
 @pytest.fixture
 def trigger_account(bot):
     line = '@account=egg :egg!egg@eg.gs PRIVMSG #Sopel :Hello, world'
-    return Trigger(bot.config, PreTrigger(Identifier('egg'), line), None, 'egg')
+    return Trigger(
+        bot.config,
+        PreTrigger(tools.Identifier('egg'), line),
+        None,
+        'egg')
 
 
 @pytest.fixture

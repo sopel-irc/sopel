@@ -2,43 +2,50 @@
 """Regression tests"""
 from __future__ import unicode_literals, absolute_import, print_function, division
 
-import pytest
-
-from sopel import coretasks
-from sopel.tools import Identifier
-from sopel.test_tools import MockSopel, MockSopelWrapper
-from sopel.trigger import PreTrigger, Trigger
+from sopel import coretasks, tools
 
 
-@pytest.fixture
-def sopel():
-    bot = MockSopel("Sopel")
-    return bot
+TMP_CONFIG = """
+[core]
+owner = testnick
+nick = Sopel
+enable = coretasks
+"""
 
 
-def test_bot_legacy_permissions(sopel):
+def test_bot_legacy_permissions(configfactory, botfactory, triggerfactory):
     """
     Make sure permissions match after being updated from both RPL_NAMREPLY
     and RPL_WHOREPLY, #1482
     """
-
-    nick = Identifier("Admin")
+    mockbot = botfactory(configfactory('default.cfg', TMP_CONFIG))
+    nick = tools.Identifier("Admin")
 
     # RPL_NAMREPLY
-    pretrigger = PreTrigger("Foo", ":test.example.com 353 Foo = #test :Foo ~@Admin")
-    trigger = Trigger(sopel.config, pretrigger, None)
-    coretasks.handle_names(MockSopelWrapper(sopel, trigger), trigger)
+    mockwrapper = triggerfactory.wrapper(
+        mockbot, ":test.example.com 353 Foo = #test :Foo ~@Admin")
+    coretasks.handle_names(mockwrapper, mockwrapper._trigger)
 
-    assert sopel.channels["#test"].privileges[nick] == sopel.privileges["#test"][nick]
+    assert '#test' in mockbot.channels
+    assert nick in mockbot.channels["#test"].privileges
+
+    assert '#test' in mockbot.privileges
+    assert nick in mockbot.privileges["#test"]
+
+    channel_privileges = mockbot.channels["#test"].privileges[nick]
+    privileges = mockbot.privileges["#test"][nick]
+
+    assert channel_privileges == privileges
 
     # RPL_WHOREPLY
-    pretrigger = PreTrigger(
-        "Foo",
-        ":test.example.com 352 Foo #test ~Admin adminhost test.example.com Admin Hr~ :0 Admin",
-    )
-    trigger = Trigger(sopel.config, pretrigger, None)
-    coretasks.recv_who(MockSopelWrapper(sopel, trigger), trigger)
+    mockwrapper = triggerfactory.wrapper(
+        mockbot,
+        ":test.example.com 352 Foo #test "
+        "~Admin adminhost test.example.com Admin Hr~ :0 Admin")
+    coretasks.recv_who(mockwrapper, mockwrapper._trigger)
 
-    assert sopel.channels["#test"].privileges[nick] == sopel.privileges["#test"][nick]
+    channel_privileges = mockbot.channels["#test"].privileges[nick]
+    privileges = mockbot.privileges["#test"][nick]
 
-    assert sopel.users.get(nick) is not None
+    assert channel_privileges == privileges
+    assert mockbot.users.get(nick) is not None

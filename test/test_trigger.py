@@ -6,9 +6,25 @@ import re
 import pytest
 import datetime
 
-from sopel.test_tools import MockConfig
 from sopel.trigger import PreTrigger, Trigger
 from sopel.tools import Identifier
+
+
+TMP_CONFIG = """
+[core]
+owner = Foo
+admins =
+    Bar
+"""
+
+
+TMP_CONFIG_ACCOUNT = """
+[core]
+owner = Foo
+owner_account = bar
+admins =
+    Bar
+"""
 
 
 @pytest.fixture
@@ -154,12 +170,11 @@ def test_ircv3_extended_join_pretrigger(nick):
     assert pretrigger.sender == Identifier('#Sopel')
 
 
-def test_ircv3_extended_join_trigger(nick):
+def test_ircv3_extended_join_trigger(nick, configfactory):
     line = ':Foo!foo@example.com JOIN #Sopel bar :Real Name'
     pretrigger = PreTrigger(nick, line)
 
-    config = MockConfig()
-    config.core.owner_account = 'bar'
+    config = configfactory('default.cfg', TMP_CONFIG)
 
     fakematch = re.match('.*', line)
 
@@ -182,22 +197,19 @@ def test_ircv3_extended_join_trigger(nick):
     assert trigger.admin is True
 
 
-def test_ircv3_intents_trigger(nick):
-    line = '@intent=ACTION :Foo!foo@example.com PRIVMSG #Sopel :Hello, world'
+def test_ircv3_intents_trigger(nick, configfactory):
+    line = '@intent=ACTION :Foo!bar@example.com PRIVMSG #Sopel :Hello, world'
     pretrigger = PreTrigger(nick, line)
 
-    config = MockConfig()
-    config.core.owner = 'Foo'
-    config.core.admins = ['Bar']
-
+    config = configfactory('default.cfg', TMP_CONFIG)
     fakematch = re.match('.*', line)
 
     trigger = Trigger(config, pretrigger, fakematch)
     assert trigger.sender == '#Sopel'
     assert trigger.raw == line
     assert trigger.is_privmsg is False
-    assert trigger.hostmask == 'Foo!foo@example.com'
-    assert trigger.user == 'foo'
+    assert trigger.hostmask == 'Foo!bar@example.com'
+    assert trigger.user == 'bar'
     assert trigger.nick == Identifier('Foo')
     assert trigger.host == 'example.com'
     assert trigger.event == 'PRIVMSG'
@@ -207,18 +219,16 @@ def test_ircv3_intents_trigger(nick):
     assert trigger.groupdict == fakematch.groupdict
     assert trigger.args == ['#Sopel', 'Hello, world']
     assert trigger.tags == {'intent': 'ACTION'}
+    assert trigger.account is None
     assert trigger.admin is True
     assert trigger.owner is True
 
 
-def test_ircv3_account_tag_trigger(nick):
-    line = '@account=Foo :Nick_Is_Not_Foo!foo@example.com PRIVMSG #Sopel :Hello, world'
+def test_ircv3_account_tag_trigger(nick, configfactory):
+    line = '@account=bar :Nick_Is_Not_Foo!foo@example.com PRIVMSG #Sopel :Hello, world'
     pretrigger = PreTrigger(nick, line)
 
-    config = MockConfig()
-    config.core.owner_account = 'Foo'
-    config.core.admins = ['Bar']
-
+    config = configfactory('default.cfg', TMP_CONFIG_ACCOUNT)
     fakematch = re.match('.*', line)
 
     trigger = Trigger(config, pretrigger, fakematch)
@@ -226,14 +236,10 @@ def test_ircv3_account_tag_trigger(nick):
     assert trigger.owner is True
 
 
-def test_ircv3_server_time_trigger(nick):
+def test_ircv3_server_time_trigger(nick, configfactory):
     line = '@time=2016-01-09T03:15:42.000Z :Foo!foo@example.com PRIVMSG #Sopel :Hello, world'
     pretrigger = PreTrigger(nick, line)
-
-    config = MockConfig()
-    config.core.owner = 'Foo'
-    config.core.admins = ['Bar']
-
+    config = configfactory('default.cfg', TMP_CONFIG)
     fakematch = re.match('.*', line)
 
     trigger = Trigger(config, pretrigger, fakematch)

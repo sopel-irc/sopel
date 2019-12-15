@@ -39,6 +39,7 @@ if sys.version_info.major >= 3:
 
 
 class MockConfig(sopel.config.Config):
+    @sopel.tools.deprecated('use configfactory fixture instead', '7.0', '8.0')
     def __init__(self):
         self.filename = tempfile.mkstemp()[1]
         self.parser = ConfigParser.RawConfigParser(allow_no_value=True)
@@ -54,6 +55,7 @@ class MockConfig(sopel.config.Config):
 
 
 class MockSopel(object):
+    @sopel.tools.deprecated('use botfactory fixture instead', '7.0', '8.0')
     def __init__(self, nick, admin=False, owner=False):
         self.nick = nick
         self.user = "sopel"
@@ -115,7 +117,17 @@ class MockSopel(object):
 
 
 class MockSopelWrapper(SopelWrapper):
-    pass
+    @sopel.tools.deprecated('use sopel.bot.SopelWrapper instead', '7.0', '8.0')
+    def __init__(self, *args, **kwargs):
+        super(MockSopelWrapper, self).__init__(*args, **kwargs)
+
+
+TEST_CONFIG = """
+[core]
+nick = {name}
+owner = {owner}
+admin = {admin}
+"""
 
 
 def get_example_test(tested_func, msg, results, privmsg, admin,
@@ -138,8 +150,16 @@ def get_example_test(tested_func, msg, results, privmsg, admin,
     :return: a test function for ``tested_func``
     :rtype: ``callable``
     """
-    def test():
-        bot = MockSopel("NickName", admin=admin, owner=owner)
+    def test(configfactory, botfactory, ircfactory):
+        test_config = TEST_CONFIG.format(
+            name='NickName',
+            admin=admin,
+            owner=owner,
+        )
+        settings = configfactory('default.cfg', test_config)
+        bot = botfactory(settings)
+        server = ircfactory(bot)
+        server.channel_joined('#Sopel')
 
         match = None
         if hasattr(tested_func, "commands"):
@@ -152,38 +172,51 @@ def get_example_test(tested_func, msg, results, privmsg, admin,
 
         sender = bot.nick if privmsg else "#channel"
         hostmask = "%s!%s@%s" % (bot.nick, "UserName", "example.com")
+
         # TODO enable message tags
         full_message = ':{} PRIVMSG {} :{}'.format(hostmask, sender, msg)
-
         pretrigger = sopel.trigger.PreTrigger(bot.nick, full_message)
-        trigger = sopel.trigger.Trigger(bot.config, pretrigger, match)
+        trigger = sopel.trigger.Trigger(bot.settings, pretrigger, match)
+        pattern = re.compile(r'^%s: ' % re.escape(bot.nick))
 
+        # setup module
         module = sys.modules[tested_func.__module__]
         if hasattr(module, 'setup'):
             module.setup(bot)
 
         def isnt_ignored(value):
             """Return True if value doesn't match any re in ignore list."""
-            for ignored_line in ignore:
-                if re.match(ignored_line, value):
-                    return False
-            return True
+            return not any(
+                re.match(ignored_line, value)
+                for ignored_line in ignore)
 
         expected_output_count = 0
         for _i in range(repeat):
             expected_output_count += len(results)
-            wrapper = MockSopelWrapper(bot, trigger)
+            wrapper = SopelWrapper(bot, trigger)
             tested_func(wrapper, trigger)
-            wrapper.output = list(filter(isnt_ignored, wrapper.output))
-            assert len(wrapper.output) == expected_output_count
-            for result, output in zip(results, wrapper.output):
-                if type(output) is bytes:
-                    output = output.decode('utf-8')
+
+            output_triggers = (
+                sopel.trigger.PreTrigger(bot.nick, message.decode('utf-8'))
+                for message in wrapper.backend.message_sent
+            )
+            output_texts = (
+                # subtract "Sopel: " when necessary
+                pattern.sub('', output_trigger.args[-1])
+                for output_trigger in output_triggers
+            )
+            outputs = [text for text in output_texts if isnt_ignored(text)]
+
+            # output length
+            assert len(outputs) == expected_output_count
+
+            # output content
+            for expected, output in zip(results, outputs):
                 if use_regexp:
-                    if not re.match(result, output):
-                        assert result == output
+                    if not re.match(expected, output):
+                        assert expected == output
                 else:
-                    assert result == output
+                    assert expected == output
 
     return test
 
