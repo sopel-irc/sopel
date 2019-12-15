@@ -106,8 +106,8 @@ Module changes
 Core changes
 ------------
 
-* Brought back support for non-SQLite databases with SQLAlchemy [[#1446][],
-  [#1652][], [#1729][], [#1755][], [#1774][]]
+* Brought back support for non-SQLite databases by switching to SQLAlchemy
+  [[#1446][], [#1652][], [#1729][], [#1755][], [#1774][], [#1777][]]
   * For details on using non-SQLite databases, see the [README][readme-db] or
     [installation instructions][install-guide-db]
   * You will probably need to install additional dependencies if you wish to
@@ -232,8 +232,12 @@ API changes
     `sopel.tools.get_logger()` utility with plugin-specific behavior
   * `sopel.logger.get_logger()` will begin emitting deprecation warnings in
     version 8.0, and will be removed in 9.0
-* Test tools have been overhauled [[#1731][], [#1732][]]
-  * Much better mocking support
+* Testing tools have been overhauled [[#1731][], [#1732][], [#1781][]]
+  * The old "Mock" classes in `sopel.test_tools` are now deprecated:
+    * `MockConfig`
+    * `MockSopel`
+    * `MockSopelWrapper`
+  * New pytest fixtures make the real objects usable in tests directly
   * The bot keeps track of running triggered threads, so tests can be sure that
     processing has finished before evaluating results
   * Sopel also now exports a `pytest` plugin, for convenience
@@ -520,7 +524,9 @@ API changes
 [#1769]: https://github.com/sopel-irc/sopel/pull/1769
 [#1773]: https://github.com/sopel-irc/sopel/pull/1773
 [#1774]: https://github.com/sopel-irc/sopel/pull/1774
+[#1777]: https://github.com/sopel-irc/sopel/pull/1777
 [#1779]: https://github.com/sopel-irc/sopel/pull/1779
+[#1781]: https://github.com/sopel-irc/sopel/pull/1781
 
 [api-docs]: https://sopel.chat/docs/
 [auth-config-docs]: https://sopel.chat/docs/configure.html#Authentication
