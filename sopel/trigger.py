@@ -136,9 +136,9 @@ class PreTrigger(object):
         #             print(text)    # '+i'
         #             print(args)    # ['irc.freenode.net', 'MODE', 'Sopel', '+i']
         if ' :' in line:
-            argstr, text = line.split(' :', 1)
+            argstr, self.text = line.split(' :', 1)
             self.args = argstr.split(' ')
-            self.args.append(text)
+            self.args.append(self.text)
         else:
             self.args = line.split(' ')
             self.text = self.args[-1]
