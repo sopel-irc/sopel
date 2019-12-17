@@ -183,8 +183,7 @@ class SopelDB(object):
 
         Returns a cursor object, on which things like `.fetchall()` can be
         called per PEP 249."""
-        with self.connect() as conn:
-            return conn.execute(*args, **kwargs)
+        return self.engine.execute(*args, **kwargs)
 
     def get_uri(self):
         """Returns a URL for the database, usable to connect with SQLAlchemy."""
