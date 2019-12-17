@@ -212,14 +212,18 @@ Core changes
 API changes
 -----------
 
-* [API documentation][api-docs] has been overhauled [[#1563][], [#1566][],
-  [#1646][], [#1668][], [#1669][], [#1680][], [#1719][], [#1727][], [#1735][],
-  [#1750][]]
-  * More consistent style
-  * Better use of Sphinx features (e.g. parameter definitions, return value
-    notes, & version annotations)
-  * General cleanup and copy-editing
-  * Much more detail and examples to help new bot users and plugin authors
+* [API documentation][api-docs] has been almost entirely overhauled [[#1563][],
+  [#1566][], [#1646][], [#1668][], [#1669][], [#1680][], [#1719][], [#1727][],
+  [#1735][], [#1750][], [#1766][], [#1770][], [#1771][], [#1772][], [#1775][],
+  [#1776][], [#1778][], [#1782][]]
+  * Nearly every file, both for the public API and Sopel's internals, was
+    reviewed in its entirety to make these improvements globally:
+    * More consistent style
+    * Better use of Sphinx features (e.g. parameter definitions, return value
+      notes, & version annotations)
+    * General cleanup and copy-editing
+    * Add more detail and examples to help new bot users and plugin authors
+    * Remove or correct outdated information left over from previous versions
 * Most of Sopel's submodules now define `__all__`, limiting namespace pollution
   from using `*` in imports [[#1582][], [#1727][]]
 * Plugins can register themselves via `setuptools` entry points [[#1585][]]
@@ -526,12 +530,20 @@ API changes
 [#1759]: https://github.com/sopel-irc/sopel/pull/1759
 [#1760]: https://github.com/sopel-irc/sopel/pull/1760
 [#1762]: https://github.com/sopel-irc/sopel/pull/1762
+[#1766]: https://github.com/sopel-irc/sopel/pull/1766
 [#1769]: https://github.com/sopel-irc/sopel/pull/1769
+[#1770]: https://github.com/sopel-irc/sopel/pull/1770
+[#1771]: https://github.com/sopel-irc/sopel/pull/1771
+[#1772]: https://github.com/sopel-irc/sopel/pull/1772
 [#1773]: https://github.com/sopel-irc/sopel/pull/1773
 [#1774]: https://github.com/sopel-irc/sopel/pull/1774
+[#1775]: https://github.com/sopel-irc/sopel/pull/1775
+[#1776]: https://github.com/sopel-irc/sopel/pull/1776
 [#1777]: https://github.com/sopel-irc/sopel/pull/1777
+[#1778]: https://github.com/sopel-irc/sopel/pull/1778
 [#1779]: https://github.com/sopel-irc/sopel/pull/1779
 [#1781]: https://github.com/sopel-irc/sopel/pull/1781
+[#1782]: https://github.com/sopel-irc/sopel/pull/1782
 [#1783]: https://github.com/sopel-irc/sopel/pull/1783
 
 [api-docs]: https://sopel.chat/docs/
