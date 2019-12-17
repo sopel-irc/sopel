@@ -54,7 +54,7 @@ def test_get_nick_id(db):
     tests = [
         [None, 'embolalia', Identifier('Embolalia')],
         # Ensures case conversion is handled properly
-        [None, '[][]', Identifier('[]{}')],
+        [None, '{}{}', Identifier('[]{}')],
         # Unicode, just in case
         [None, 'embölaliå', Identifier('EmbölaliÅ')],
     ]

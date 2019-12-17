@@ -420,6 +420,26 @@ class Identifier(unicode):
             return identifier._lowered
         # The tilde replacement isn't needed for identifiers, but is for
         # channels, which may be useful at some point in the future.
+        low = identifier.lower().replace('[', '{').replace(']', '}')
+        low = low.replace('\\', '|').replace('~', '^')
+        return low
+
+    @staticmethod
+    def _lower_swapped(identifier):
+        """Backward-compatible version of :meth:`_lower`.
+
+        :param str identifier: the identifier (nickname or channel) to convert
+        :return: RFC 2812-non-compliant lowercase version of ``identifier``
+        :rtype str:
+
+        This is what the old ``_lower()`` function did before Sopel 7.0. It maps
+        ``{}``, ``[]``, ``|``, ``\\``, ``^``, and ``~`` incorrectly.
+
+        You shouldn't use this unless you need to migrate stored values from the
+        previous, incorrect "lowercase" representation to the correct one.
+        """
+        # The tilde replacement isn't needed for identifiers, but is for
+        # channels, which may be useful at some point in the future.
         low = identifier.lower().replace('{', '[').replace('}', ']')
         low = low.replace('|', '\\').replace('^', '~')
         return low
