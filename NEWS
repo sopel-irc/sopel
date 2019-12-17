@@ -107,7 +107,7 @@ Core changes
 ------------
 
 * Brought back support for non-SQLite databases by switching to SQLAlchemy
-  [[#1446][], [#1652][], [#1729][], [#1755][], [#1774][], [#1777][]]
+  [[#1446][], [#1652][], [#1729][], [#1755][], [#1774][], [#1777][], [#1783][]]
   * For details on using non-SQLite databases, see the [README][readme-db] or
     [installation instructions][install-guide-db]
   * You will probably need to install additional dependencies if you wish to
@@ -328,6 +328,10 @@ API changes
   * This facilitates running only offline-safe module tests, by passing
     `--offline` to pytest, if an Internet connection is unavailable
   * Outside of the test suite, this parameter has no effect
+* Corrected case-mapping in `tools.Identifier` class [[#1744][]]
+  * See [the Sopel 7 migration guide][sopel-7-migration] for details,
+    particularly if your plugin interacts with the database and/or user/channel
+    identifiers in their lowercase form
 * Added more utilities to `tools.time`:
   * `tools.time.seconds_to_human()`, for generating human-readable fuzzy
     relative timestamps from `timedelta` or raw number of seconds [[#1560][]]
@@ -509,6 +513,7 @@ API changes
 [#1741]: https://github.com/sopel-irc/sopel/pull/1741
 [#1742]: https://github.com/sopel-irc/sopel/pull/1742
 [#1743]: https://github.com/sopel-irc/sopel/pull/1743
+[#1744]: https://github.com/sopel-irc/sopel/pull/1744
 [#1747]: https://github.com/sopel-irc/sopel/pull/1747
 [#1749]: https://github.com/sopel-irc/sopel/pull/1749
 [#1750]: https://github.com/sopel-irc/sopel/pull/1750
@@ -527,6 +532,7 @@ API changes
 [#1777]: https://github.com/sopel-irc/sopel/pull/1777
 [#1779]: https://github.com/sopel-irc/sopel/pull/1779
 [#1781]: https://github.com/sopel-irc/sopel/pull/1781
+[#1783]: https://github.com/sopel-irc/sopel/pull/1783
 
 [api-docs]: https://sopel.chat/docs/
 [auth-config-docs]: https://sopel.chat/docs/configure.html#Authentication
