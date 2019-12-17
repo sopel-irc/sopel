@@ -4,6 +4,7 @@
 *Availability: 4.5+*
 """
 # Copyright 2014, Elsie Powell, embolalia.com
+# Copyright 2019, dgw, technobabbl.es
 # Licensed under the Eiffel Forum License 2.
 from __future__ import unicode_literals, absolute_import, print_function, division
 
@@ -41,23 +42,23 @@ if sys.version_info.major >= 3:
 # Color names are as specified at http://www.mirc.com/colors.html
 
 CONTROL_NORMAL = '\x0f'
-"""The control code to reset formatting"""
+"""The control code to reset formatting."""
 CONTROL_COLOR = '\x03'
-"""The control code to start or end color formatting"""
+"""The control code to start or end color formatting."""
 CONTROL_HEX_COLOR = '\x04'
-"""The control code to start or end hexadecimal color formatting"""
+"""The control code to start or end hexadecimal color formatting."""
 CONTROL_BOLD = '\x02'
-"""The control code to start or end bold formatting"""
+"""The control code to start or end bold formatting."""
 CONTROL_ITALIC = '\x1d'
-"""The control code to start or end italic formatting"""
+"""The control code to start or end italic formatting."""
 CONTROL_UNDERLINE = '\x1f'
-"""The control code to start or end underlining"""
+"""The control code to start or end underlining."""
 CONTROL_STRIKETHROUGH = '\x1e'
-"""The control code to start or end strikethrough formatting"""
+"""The control code to start or end strikethrough formatting."""
 CONTROL_MONOSPACE = '\x11'
-"""The control code to start or end monospace formatting"""
+"""The control code to start or end monospace formatting."""
 CONTROL_REVERSE = '\x16'
-"""The control code to start or end reverse-color formatting"""
+"""The control code to start or end reverse-color formatting."""
 
 
 # TODO when we can move to 3.3+ completely, make this an Enum.
@@ -119,9 +120,13 @@ def _get_color(color):
 def color(text, fg=None, bg=None):
     """Return the text, with the given colors applied in IRC formatting.
 
-    The color can be a string of the color name, or an integer between 0 and 99.
-    The known color names can be found in the :class:`colors` class of this
-    module.
+    :param str text: the text to format
+    :param mixed fg: the foreground color
+    :param mixed bg: the background color
+
+    The color can be a string of the color name, or an integer in the range
+    0-99. The known color names can be found in the :class:`colors` class of
+    this module.
     """
     if not fg and not bg:
         return text
@@ -158,9 +163,18 @@ def _get_hex_color(color):
 def hex_color(text, fg=None, bg=None):
     """Return the text, with the given colors applied in IRC formatting.
 
+    :param str text: the text to format
+    :param str fg: the foreground color
+    :param str bg: the background color
+
     The color can be provided with a string of either 3 or 6 hexadecimal digits.
     As in CSS, 3-digit colors will be interpreted as if they were 6-digit colors
-    with each digit repeated (e.g. color ``c90`` is identical to ``cc9900``).
+    with each digit repeated (e.g. color ``c90`` is identical to ``cc9900``). Do
+    not include the leading ``#`` symbol.
+
+    .. note::
+        This is a relatively new IRC formatting convention. Use only when you
+        can afford to have its meaning lost, as not many clients support it yet.
     """
     if not fg and not bg:
         return text
@@ -176,41 +190,60 @@ def hex_color(text, fg=None, bg=None):
 
 
 def bold(text):
-    """Return the text, with bold IRC formatting."""
+    """Return the text, with bold IRC formatting.
+
+    :param str text: the text to format
+    """
     return ''.join([CONTROL_BOLD, text, CONTROL_BOLD])
 
 
 def italic(text):
-    """Return the text, with italic IRC formatting."""
+    """Return the text, with italic IRC formatting.
+
+    :param str text: the text to format
+    """
     return ''.join([CONTROL_ITALIC, text, CONTROL_ITALIC])
 
 
 def underline(text):
-    """Return the text, with underline IRC formatting."""
+    """Return the text, with underline IRC formatting.
+
+    :param str text: the text to format
+    """
     return ''.join([CONTROL_UNDERLINE, text, CONTROL_UNDERLINE])
 
 
 def strikethrough(text):
     """Return the text, with strikethrough IRC formatting.
 
-    Note: This is a relatively new addition to IRC formatting conventions.
-    Use only when you can afford to have its meaning lost, as not many clients
-    support it yet."""
+    :param str text: the text to format
+
+    .. note::
+        This is a relatively new IRC formatting convention. Use only when you
+        can afford to have its meaning lost, as not many clients support it yet.
+    """
     return ''.join([CONTROL_STRIKETHROUGH, text, CONTROL_STRIKETHROUGH])
 
 
 def monospace(text):
     """Return the text, with monospace IRC formatting.
 
-    Note: This is a relatively new addition to IRC formatting conventions.
-    Use only when you can afford to have its meaning lost, as not many clients
-    support it yet."""
+    :param str text: the text to format
+
+    .. note::
+        This is a relatively new IRC formatting convention. Use only when you
+        can afford to have its meaning lost, as not many clients support it yet.
+    """
     return ''.join([CONTROL_MONOSPACE, text, CONTROL_MONOSPACE])
 
 
 def reverse(text):
     """Return the text, with reverse-color IRC formatting.
 
-    Note: This code isn't super well supported, and its behavior even in clients
-    that understand it (e.g. mIRC) can be unpredictable. Use it carefully."""
+    :param str text: the text to format
+
+    .. note::
+        This code isn't super well supported, and its behavior even in clients
+        that understand it (e.g. mIRC) can be unpredictable. Use it carefully.
+    """
     return ''.join([CONTROL_REVERSE, text, CONTROL_REVERSE])
