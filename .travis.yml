@@ -24,6 +24,7 @@ branches:
     - master
     - /^\d+\.\d+\.x$/  # allows building maintenance branches
     - /^v?\d+\.\d+(\.\d+)?(-\S*)?$/  # allows building version tags
+    - /^travis-.+$/  # allows branch names intended to test Travis changes/problems
 sudo: false  # Enables running on faster infrastructure.
 cache:
   directories:
