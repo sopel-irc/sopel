@@ -116,7 +116,7 @@ def tr(bot, trigger):
 @example('.tr :en :fr my dog',
          '"mon chien" (en to fr, translate.google.com)',
          online=True)
-@example('.tr היי', '"Hi" (iw to en, translate.google.com)', online=True)
+@example('.tr מחשב', '"computer" (iw to en, translate.google.com)', online=True)
 @example('.tr mon chien',
          '"my dog" (fr to en, translate.google.com)',
          online=True)
