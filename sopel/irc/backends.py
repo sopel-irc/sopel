@@ -65,6 +65,13 @@ _check_timeout.thread = False
 
 
 class AsynchatBackend(AbstractIRCBackend, asynchat.async_chat):
+    """IRC backend implementation using :mod:`asynchat` (:mod:`asyncore`).
+
+    :param bot: a Sopel instance
+    :type bot: :class:`sopel.bot.Sopel`
+    :param int server_timeout: connection timeout in seconds
+    :param int ping_timeout: ping timeout in seconds
+    """
     def __init__(self, bot, server_timeout=None, ping_timeout=None, **kwargs):
         AbstractIRCBackend.__init__(self, bot)
         asynchat.async_chat.__init__(self)
@@ -85,9 +92,17 @@ class AsynchatBackend(AbstractIRCBackend, asynchat.async_chat):
         self.timeout_scheduler.add_job(timeout_job)
 
     def run_forever(self):
+        """Run forever."""
         asyncore.loop()
 
     def initiate_connect(self, host, port, source_address):
+        """Initiate IRC connection.
+
+        :param str host: IRC server hostname
+        :param int port: IRC server port
+        :param str source_address: the source address from which to initiate
+                                   the connection attempt
+        """
         self.host = host
         self.port = port
         self.source_address = source_address
@@ -110,7 +125,7 @@ class AsynchatBackend(AbstractIRCBackend, asynchat.async_chat):
         self.bot.on_connect()
 
     def handle_close(self):
-        """Called when the socket is closed"""
+        """Called when the socket is closed."""
         self.timeout_scheduler.stop()
         self.timeout_scheduler.join(timeout=15)
 
@@ -129,15 +144,22 @@ class AsynchatBackend(AbstractIRCBackend, asynchat.async_chat):
         self.bot.on_error()
 
     def collect_incoming_data(self, data):
-        # We can't trust clients to pass valid unicode.
+        """Try to make sense of incoming data as Unicode.
+
+        :param bytes data: the incoming raw bytes
+
+        The incoming line is discarded (and thus ignored) if guessing the text
+        encoding and decoding it fails.
+        """
+        # We can't trust clients to pass valid Unicode.
         try:
             data = unicode(data, encoding='utf-8')
         except UnicodeDecodeError:
-            # not unicode, let's try cp1252
+            # not Unicode; let's try CP-1252
             try:
                 data = unicode(data, encoding='cp1252')
             except UnicodeDecodeError:
-                # Okay, let's try ISO8859-1
+                # Okay, let's try ISO 8859-1
                 try:
                     data = unicode(data, encoding='iso8859-1')
                 except UnicodeDecodeError:
@@ -149,6 +171,7 @@ class AsynchatBackend(AbstractIRCBackend, asynchat.async_chat):
         self.last_event_at = datetime.datetime.utcnow()
 
     def found_terminator(self):
+        """Handle the end of an incoming message."""
         line = self.buffer
         if line.endswith('\r'):
             line = line[:-1]
@@ -167,6 +190,15 @@ class AsynchatBackend(AbstractIRCBackend, asynchat.async_chat):
 
 
 class SSLAsynchatBackend(AsynchatBackend):
+    """SSL-aware extension of :class:`AsynchatBackend`.
+
+    :param bot: a Sopel instance
+    :type bot: :class:`sopel.bot.Sopel`
+    :param bool verify_ssl: whether to validate the IRC server's certificate
+                            (default ``True``, for good reason)
+    :param str ca_certs: filesystem path to a CA Certs file containing trusted
+                         root certificates
+    """
     def __init__(self, bot, verify_ssl=True, ca_certs=None, **kwargs):
         AsynchatBackend.__init__(self, bot, **kwargs)
         self.verify_ssl = verify_ssl
@@ -174,7 +206,7 @@ class SSLAsynchatBackend(AsynchatBackend):
         self.ca_certs = ca_certs
 
     def handle_connect(self):
-        # handle potential TLS connection
+        """Handle potential TLS connection."""
         # TODO: Refactor to use SSLContext and an appropriate PROTOCOL_* constant
         # See https://lgtm.com/rules/1507225275976/
         # These warnings are ignored for now, because we can't easily fix them
@@ -226,7 +258,7 @@ class SSLAsynchatBackend(AsynchatBackend):
         self.bot.on_connect()
 
     def send(self, data):
-        """Replacement for self.send() during SSL connections."""
+        """SSL-aware override for :meth:`~asyncore.dispatcher.send`."""
         try:
             result = self.socket.send(data)
             return result
@@ -236,7 +268,7 @@ class SSLAsynchatBackend(AsynchatBackend):
             raise why
 
     def recv(self, buffer_size):
-        """Replacement for self.recv() during SSL connections.
+        """SSL-aware override for :meth:`~asyncore.dispatcher.recv`.
 
         From a (now deleted) blog post by Evan "K7FOS" Fosmark:
         https://k7fos.com/2010/09/ssl-support-in-asynchatasync_chat

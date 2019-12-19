@@ -69,7 +69,7 @@ class Sopel(irc.AbstractBot):
         """
 
         self._command_groups = collections.defaultdict(list)
-        """A mapping of plugin names to a list of commands in it."""
+        """A mapping of plugin names to lists of their commands."""
 
         self._times = {}
         """
@@ -91,9 +91,9 @@ class Sopel(irc.AbstractBot):
         """A dictionary of channels to their users and privilege levels.
 
         The value associated with each channel is a dictionary of
-        :class:`sopel.tools.Identifier`\\s to
-        a bitwise integer value, determined by combining the appropriate
-        constants from :mod:`sopel.module`.
+        :class:`sopel.tools.Identifier`\\s to a bitwise integer value,
+        determined by combining the appropriate constants from
+        :mod:`sopel.module`.
 
         .. deprecated:: 6.2.0
             Use :attr:`channels` instead. Will be removed in Sopel 8.
@@ -112,8 +112,7 @@ class Sopel(irc.AbstractBot):
 
         The keys are :class:`sopel.tools.Identifier`\\s of the nicknames, and
         map to :class:`sopel.tools.target.User` instances. In order for Sopel
-        to be aware of a user, it must be in at least one channel which they
-        are also in.
+        to be aware of a user, it must share at least one mutual channel.
         """
 
         self.db = SopelDB(config)
@@ -131,17 +130,10 @@ class Sopel(irc.AbstractBot):
         self.scheduler = sopel.tools.jobs.JobScheduler(self)
         """Job Scheduler. See :func:`sopel.module.interval`."""
 
-        # Set up block lists
-        # Default to empty
-        if not self.settings.core.nick_blocks:
-            self.settings.core.nick_blocks = []
-        if not self.settings.core.host_blocks:
-            self.settings.core.host_blocks = []
-
     @property
     def command_groups(self):
-        """A mapping of plugin names to a list of commands in it."""
-        # This was supposed to be deprecated, but the help command uses this
+        """A mapping of plugin names to lists of their commands."""
+        # This was supposed to be deprecated, but the built-in help plugin needs it
         return self._command_groups
 
     @property
@@ -159,20 +151,20 @@ class Sopel(irc.AbstractBot):
         return self.users.get(self.nick).hostmask
 
     def setup(self):
-        """Set up Sopel bot before it can run
+        """Set up Sopel bot before it can run.
 
-        The setup phase manages to:
+        The setup phase is in charge of:
 
-        * setup logging (configure Python's built-in :mod:`logging`),
-        * setup the bot's plugins (load, setup, and register)
-        * start the job scheduler
-
+        * setting up logging (configure Python's built-in :mod:`logging`)
+        * setting up the bot's plugins (load, setup, and register)
+        * starting the job scheduler
         """
         self.setup_logging()
         self.setup_plugins()
         self.scheduler.start()
 
     def setup_logging(self):
+        """Set up logging based on config options."""
         logger.setup_logging(self.settings)
         base_level = self.settings.core.logging_level or 'INFO'
         base_format = self.settings.core.logging_format
@@ -197,6 +189,7 @@ class Sopel(irc.AbstractBot):
             LOGGER.addHandler(handler)
 
     def setup_plugins(self):
+        """Load plugins into the bot."""
         load_success = 0
         load_error = 0
         load_disabled = 0
@@ -237,13 +230,14 @@ class Sopel(irc.AbstractBot):
             LOGGER.warning("Warning: Couldn't load any plugins")
 
     def reload_plugin(self, name):
-        """Reload a plugin
+        """Reload a plugin.
 
         :param str name: name of the plugin to reload
         :raise PluginNotRegistered: when there is no ``name`` plugin registered
 
-        It runs the plugin's shutdown routine and unregisters it. Then it
-        reloads it, runs its setup routines, and registers it again.
+        This function runs the plugin's shutdown routine and unregisters the
+        plugin from the bot. Then this function reloads the plugin, runs its
+        setup routines, and registers it again.
         """
         if not self.has_plugin(name):
             raise plugins.exceptions.PluginNotRegistered(name)
@@ -262,11 +256,11 @@ class Sopel(irc.AbstractBot):
                     meta['type'], name, meta['source'])
 
     def reload_plugins(self):
-        """Reload all plugins
+        """Reload all registered plugins.
 
-        First, run all plugin shutdown routines and unregister all plugins.
-        Then reload all plugins, run their setup routines, and register them
-        again.
+        First, this function runs all plugin shutdown routines and unregisters
+        all plugins. Then it reloads all plugins, runs their setup routines, and
+        registers them again.
         """
         registered = list(self._plugins.items())
         # tear down all plugins
@@ -285,12 +279,42 @@ class Sopel(irc.AbstractBot):
                         meta['type'], name, meta['source'])
 
     def add_plugin(self, plugin, callables, jobs, shutdowns, urls):
-        """Add a loaded plugin to the bot's registry"""
+        """Add a loaded plugin to the bot's registry.
+
+        :param plugin: loaded plugin to add
+        :type plugin: :class:`sopel.plugins.handlers.AbstractPluginHandler`
+        :param callables: an iterable of callables from the ``plugin``
+        :type callables: :term:`iterable`
+        :param jobs: an iterable of functions from the ``plugin`` that are
+                     periodically invoked
+        :type jobs: :term:`iterable`
+        :param shutdowns: an iterable of functions from the ``plugin`` that
+                          should be called on shutdown
+        :type shutdowns: :term:`iterable`
+        :param urls: an iterable of functions from the ``plugin`` to call when
+                     matched against a URL
+        :type urls: :term:`iterable`
+        """
         self._plugins[plugin.name] = plugin
         self.register(callables, jobs, shutdowns, urls)
 
     def remove_plugin(self, plugin, callables, jobs, shutdowns, urls):
-        """Remove a loaded plugin from the bot's registry"""
+        """Remove a loaded plugin from the bot's registry.
+
+        :param plugin: loaded plugin to remove
+        :type plugin: :class:`sopel.plugins.handlers.AbstractPluginHandler`
+        :param callables: an iterable of callables from the ``plugin``
+        :type callables: :term:`iterable`
+        :param jobs: an iterable of functions from the ``plugin`` that are
+                     periodically invoked
+        :type jobs: :term:`iterable`
+        :param shutdowns: an iterable of functions from the ``plugin`` that
+                          should be called on shutdown
+        :type shutdowns: :term:`iterable`
+        :param urls: an iterable of functions from the ``plugin`` to call when
+                     matched against a URL
+        :type urls: :term:`iterable`
+        """
         name = plugin.name
         if not self.has_plugin(name):
             raise plugins.exceptions.PluginNotRegistered(name)
@@ -312,7 +336,12 @@ class Sopel(irc.AbstractBot):
         del self._plugins[name]
 
     def has_plugin(self, name):
-        """Tell if the bot has registered this plugin by its name"""
+        """Check if the bot has registered a plugin of the specified name.
+
+        :param str name: name of the plugin to check for
+        :return: whether the bot has a plugin named ``name`` registered
+        :rtype: bool
+        """
         return name in self._plugins
 
     def get_plugin_meta(self, name):
@@ -380,8 +409,7 @@ class Sopel(irc.AbstractBot):
 
         It is possible to have a callable with rules, commands, and nick
         commands configured. It should not be possible to have a callable with
-        commands or nick commands but without rules. Callables without rules
-        are usually event handlers.
+        commands or nick commands but without rules.
         """
         # Append plugin's shutdown function to the bot's list of functions to
         # call on shutdown
@@ -468,16 +496,25 @@ class Sopel(irc.AbstractBot):
                     callable_name,
                     regex)
 
-    @deprecated
+    @deprecated(
+        reason="Replaced by `say` method.",
+        version='6.0',
+        removed_in='8.0')
     def msg(self, recipient, text, max_messages=1):
-        """
+        """Old way to make the bot say something on IRC.
+
+        :param str recipient: nickname or channel to which to send message
+        :param str text: message to send
+        :param int max_messages: split ``text`` into at most this many messages
+                                 if it is too long to fit in one (optional)
+
         .. deprecated:: 6.0
             Use :meth:`say` instead. Will be removed in Sopel 8.
         """
         self.say(text, recipient, max_messages)
 
     def call(self, func, sopel, trigger):
-        """Call a function, applying any rate-limiting or restrictions.
+        """Call a function, applying any rate limits or other restrictions.
 
         :param func: the function to call
         :type func: :term:`function`
@@ -571,9 +608,9 @@ class Sopel(irc.AbstractBot):
         :rtype: :class:`tuple`
 
         This methods retrieves all triggered callables for this ``priority``
-        level. It yields each function with its
-        :class:`trigger<sopel.trigger.Trigger>` object and a boolean
-        flag to tell if this callable is blocked or not.
+        level. It yields each function with its :class:`trigger
+        <sopel.trigger.Trigger>` object and a boolean flag to tell if this
+        callable is blocked or not.
 
         To be triggered, a callable must match the ``pretrigger`` using a regex
         pattern. Then it must comply with other criteria (if any) such as
@@ -653,9 +690,10 @@ class Sopel(irc.AbstractBot):
     def dispatch(self, pretrigger):
         """Dispatch a parsed message to any registered callables.
 
-        :param PreTrigger pretrigger: a parsed message from the server
+        :param pretrigger: a parsed message from the server
+        :type pretrigger: :class:`~sopel.trigger.PreTrigger`
 
-        The ``pretrigger`` (a parsed message) is used to find matching callables:
+        The ``pretrigger`` (a parsed message) is used to find matching callables;
         it will retrieve them by order of priority, and run them. It runs
         triggered callables in separate threads, unless they are marked
         otherwise with the :func:`sopel.module.thread` decorator.
@@ -723,8 +761,10 @@ class Sopel(irc.AbstractBot):
     def running_triggers(self):
         """Current active threads for triggers.
 
-        This read-only list contains the currently running thread processing
-        a trigger. This is for testing and debugging purposes only.
+        :return: the running thread(s) currently processing trigger(s)
+        :rtype: :term:`iterable`
+
+        This is for testing and debugging purposes only.
         """
         with self._running_triggers_lock:
             return [t for t in self._running_triggers if t.is_alive()]
@@ -732,14 +772,14 @@ class Sopel(irc.AbstractBot):
     def _update_running_triggers(self, running_triggers):
         """Update list of running triggers.
 
-        :param list running_triggers: new started threads
+        :param list running_triggers: newly started threads
 
         We want to keep track of running triggers, mostly for testing and
         debugging purposes. For instance, it'll help make sure, in tests, that
         a bot plugin has finished processing a trigger, by manually joining
         all running threads.
 
-        This is kept private, as this is pure internal machinery and isn't
+        This is kept private, as it's purely internal machinery and isn't
         meant to be manipulated by outside code.
         """
         # update bot's global running triggers
@@ -751,23 +791,39 @@ class Sopel(irc.AbstractBot):
     def on_scheduler_error(self, scheduler, exc):
         """Called when the Job Scheduler fails.
 
+        :param scheduler: the JobScheduler that errored
+        :type scheduler: :class:`sopel.tools.jobs.JobScheduler`
+        :param Exception exc: the raised exception
+
         .. seealso::
 
-            :meth:`error`
+            :meth:`Sopel.error`
         """
         self.error(exception=exc)
 
     def on_job_error(self, scheduler, job, exc):
         """Called when a job from the Job Scheduler fails.
 
+        :param scheduler: the JobScheduler responsible for the errored ``job``
+        :type scheduler: :class:`sopel.tools.jobs.JobScheduler`
+        :param job: the Job that errored
+        :type job: :class:`sopel.tools.jobs.Job`
+        :param Exception exc: the raised exception
+
         .. seealso::
 
-            :meth:`error`
+            :meth:`Sopel.error`
         """
         self.error(exception=exc)
 
     def error(self, trigger=None, exception=None):
-        """Called internally when a plugin causes an error."""
+        """Called internally when a plugin causes an error.
+
+        :param trigger: the ``Trigger``\\ing line (if available)
+        :type trigger: :class:`sopel.trigger.Trigger`
+        :param Exception exception: the exception raised by the error (if
+                                    available)
+        """
         message = 'Unexpected error'
         if exception:
             message = '{} ({})'.format(message, exception)
@@ -783,6 +839,10 @@ class Sopel(irc.AbstractBot):
             self.say(message, trigger.sender)
 
     def _host_blocked(self, host):
+        """Check if a hostname is blocked.
+
+        :param str host: the hostname to check
+        """
         bad_masks = self.config.core.host_blocks
         for bad_mask in bad_masks:
             bad_mask = bad_mask.strip()
@@ -794,6 +854,10 @@ class Sopel(irc.AbstractBot):
         return False
 
     def _nick_blocked(self, nick):
+        """Check if a nickname is blocked.
+
+        :param str nick: the nickname to check
+        """
         bad_nicks = self.config.core.nick_blocks
         for bad_nick in bad_nicks:
             bad_nick = bad_nick.strip()
@@ -805,6 +869,7 @@ class Sopel(irc.AbstractBot):
         return False
 
     def _shutdown(self):
+        """Internal bot shutdown method."""
         # Stop Job Scheduler
         LOGGER.info('Stopping the Job Scheduler.')
         self.scheduler.stop()
@@ -859,6 +924,8 @@ class Sopel(irc.AbstractBot):
                 regex = re.compile(r'http://example.com/path/.*')
                 bot.register_url_callback(regex, callback)
 
+        It's also possible to completely avoid manual management of URL
+        callbacks through the use of :func:`sopel.module.url`.
         """
         if 'url_callbacks' not in self.memory:
             self.memory['url_callbacks'] = tools.SopelMemory()
@@ -890,6 +957,8 @@ class Sopel(irc.AbstractBot):
                 regex = re.compile(r'http://example.com/path/.*')
                 bot.unregister_url_callback(regex)
 
+        It's also possible to completely avoid manual management of URL
+        callbacks through the use of :func:`sopel.module.url`.
         """
         if 'url_callbacks' not in self.memory:
             # nothing to unregister
@@ -904,7 +973,7 @@ class Sopel(irc.AbstractBot):
             pass
 
     def search_url_callbacks(self, url):
-        """Yield callbacks found for ``url`` matching their regex pattern.
+        """Yield callbacks whose regex pattern matches the ``url``.
 
         :param str url: URL found in a trigger
         :return: yield 2-value tuples of ``(callback, match)``
@@ -937,24 +1006,27 @@ class Sopel(irc.AbstractBot):
                 yield function, match
 
     def restart(self, message):
-        """Disconnect from IRC and restart the bot."""
+        """Disconnect from IRC and restart the bot.
+
+        :param str message: QUIT message to send (e.g. "Be right back!")
+        """
         self.wantsrestart = True
         self.quit(message)
 
 
 class SopelWrapper(object):
-    """Wrapper around a Sopel instance and a Trigger
+    """Wrapper around a Sopel instance and a Trigger.
 
     :param sopel: Sopel instance
     :type sopel: :class:`~sopel.bot.Sopel`
     :param trigger: IRC Trigger line
-    :type trigger: :class:`sopel.trigger.Trigger`
-    :param string output_prefix: prefix for messages sent through this wrapper
-                                 (e.g. plugin tag)
+    :type trigger: :class:`~sopel.trigger.Trigger`
+    :param str output_prefix: prefix for messages sent through this wrapper
+                              (e.g. plugin tag)
 
     This wrapper will be used to call Sopel's triggered commands and rules as
-    their ``bot`` argument. It acts as a proxy to :meth:`send messages<say>` to
-    the sender (either a channel or in a private message) and even to
+    their ``bot`` argument. It acts as a proxy to :meth:`send messages<say>`
+    to the sender (either a channel or in a private message) and even to
     :meth:`reply to someone<reply>` in a channel.
     """
     def __init__(self, sopel, trigger, output_prefix=''):
@@ -980,11 +1052,13 @@ class SopelWrapper(object):
         return setattr(self._bot, attr, value)
 
     def say(self, message, destination=None, max_messages=1):
-        """Override ``Sopel.say`` to send message to sender
+        """Override ``Sopel.say`` to use trigger source by default.
 
         :param str message: message to say
-        :param str destination: channel or person; defaults to trigger's sender
-        :param int max_messages: max number of message splits
+        :param str destination: channel or nickname; defaults to
+            :attr:`trigger.sender <sopel.trigger.Trigger.sender>`
+        :param int max_messages: split ``text`` into at most this many messages
+                                 if it is too long to fit in one (optional)
 
         The ``destination`` will default to the channel in which the
         trigger happened (or nickname, if received in a private message).
@@ -998,10 +1072,11 @@ class SopelWrapper(object):
         self._bot.say(self._out_pfx + message, destination, max_messages)
 
     def action(self, message, destination=None):
-        """Override ``Sopel.action`` to send action to sender
+        """Override ``Sopel.action`` to use trigger source by default.
 
         :param str message: action message
-        :param str destination: channel or person; defaults to trigger's sender
+        :param str destination: channel or nickname; defaults to
+            :attr:`trigger.sender <sopel.trigger.Trigger.sender>`
 
         The ``destination`` will default to the channel in which the
         trigger happened (or nickname, if received in a private message).
@@ -1015,10 +1090,11 @@ class SopelWrapper(object):
         self._bot.action(message, destination)
 
     def notice(self, message, destination=None):
-        """Override ``Sopel.notice`` to send a notice to sender
+        """Override ``Sopel.notice`` to use trigger source by default.
 
         :param str message: notice message
-        :param str destination: channel or person; defaults to trigger's sender
+        :param str destination: channel or nickname; defaults to
+            :attr:`trigger.sender <sopel.trigger.Trigger.sender>`
 
         The ``destination`` will default to the channel in which the
         trigger happened (or nickname, if received in a private message).
@@ -1032,11 +1108,13 @@ class SopelWrapper(object):
         self._bot.notice(self._out_pfx + message, destination)
 
     def reply(self, message, destination=None, reply_to=None, notice=False):
-        """Override ``Sopel.reply`` to reply to someone
+        """Override ``Sopel.reply`` to ``reply_to`` sender by default.
 
         :param str message: reply message
-        :param str destination: channel or person; defaults to trigger's sender
-        :param str reply_to: person to reply to; defaults to trigger's nick
+        :param str destination: channel or nickname; defaults to
+            :attr:`trigger.sender <sopel.trigger.Trigger.sender>`
+        :param str reply_to: person to reply to; defaults to
+            :attr:`trigger.nick <sopel.trigger.Trigger.nick>`
         :param bool notice: reply as an IRC notice or with a simple message
 
         The ``destination`` will default to the channel in which the

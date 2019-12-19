@@ -62,7 +62,7 @@ LOGGER = logging.getLogger(__name__)
 
 
 class AbstractBot(object):
-    """Abstract definition of the Sopel's interface."""
+    """Abstract definition of Sopel's interface."""
     def __init__(self, settings):
         # private properties: access as read-only properties
         self._nick = tools.Identifier(settings.core.nick)
@@ -102,7 +102,7 @@ class AbstractBot(object):
 
     @property
     def name(self):
-        """Sopel's "real name", as used for whois."""
+        """Sopel's "real name", to be displayed in WHOIS responses."""
         return self._name
 
     @property
@@ -134,6 +134,12 @@ class AbstractBot(object):
     # Connection
 
     def get_irc_backend(self):
+        """Set up the IRC backend based on the bot's settings.
+
+        :return: the initialized IRC backend object
+        :rtype: an object implementing the interface of
+                :class:`~sopel.irc.abstract_backends.AbstractIRCBackend`
+        """
         timeout = int(self.settings.core.timeout)
         ping_timeout = timeout / 2
         backend_class = AsynchatBackend
@@ -158,7 +164,11 @@ class AbstractBot(object):
         return backend_class(*backend_args, **backend_kwargs)
 
     def run(self, host, port=6667):
-        """Connect to IRC Server then run the bot forever."""
+        """Connect to IRC server and run the bot forever.
+
+        :param str host: the IRC server hostname
+        :param int port: the IRC server port
+        """
         source_address = ((self.settings.core.bind_host, 0)
                           if self.settings.core.bind_host else None)
 
@@ -173,6 +183,7 @@ class AbstractBot(object):
     # Connection Events
 
     def on_connect(self):
+        """Handle successful establishment of IRC connection."""
         # Request list of server capabilities. IRCv3 servers will respond with
         # CAP * LS (which we handle in coretasks). v2 servers will respond with
         # 421 Unknown command, which we'll ignore
@@ -190,6 +201,10 @@ class AbstractBot(object):
         LOGGER.info('Connected.')
 
     def on_message(self, message):
+        """Handle an incoming IRC message.
+
+        :param str message: the received raw IRC message
+        """
         self.last_raw_line = message
 
         pretrigger = PreTrigger(self.nick, message)
@@ -246,7 +261,7 @@ class AbstractBot(object):
             self.dispatch(pretrigger)
 
     def on_error(self):
-        """Handle any uncaptured error in the core.
+        """Handle any uncaptured error in the bot itself.
 
         This method is an override of :meth:`asyncore.dispatcher.handle_error`,
         the :class:`asynchat.async_chat` being a subclass of
@@ -280,15 +295,33 @@ class AbstractBot(object):
         self._shutdown()
 
     def _shutdown(self):
+        """Handle shutdown tasks.
+
+        Must be overridden by subclasses to do anything useful.
+        """
         pass
 
     # Features
 
     def dispatch(self, pretrigger):
+        """Handle running the appropriate callables for an incoming message.
+
+        :param pretrigger: Sopel PreTrigger object
+        :type pretrigger: :class:`sopel.trigger.PreTrigger`
+        :raise NotImplementedError: if the subclass does not implement this
+                                    required method
+
+        .. important::
+            This method **MUST** be implemented by concrete subclasses.
+        """
         raise NotImplementedError
 
     def log_raw(self, line, prefix):
-        """Log raw line to the raw log."""
+        """Log raw line to the raw log.
+
+        :param str line: the raw line
+        :param str prefix: additional information to prepend to the log line
+        """
         if not self.settings.core.log_raw:
             return
         logger = logging.getLogger('sopel.raw')
@@ -300,7 +333,7 @@ class AbstractBot(object):
 
         :param str module_name: the module requesting the capability
         :param str capability: the capability requested, optionally prefixed
-                               with ``+`` or ``=``
+                               with ``-`` or ``=``
         :param str arg: arguments for the capability request
         :param failure_callback: a function that will be called if the
                                  capability request fails
@@ -327,12 +360,12 @@ class AbstractBot(object):
         The actual capability request to the server is handled after the
         completion of this function. In the event that the server denies a
         request, the ``failure_callback`` function will be called, if provided.
-        The arguments will be a :class:`sopel.bot.Sopel` object, and the
+        The arguments will be a :class:`~sopel.bot.Sopel` object, and the
         capability which was rejected. This can be used to disable callables
         which rely on the capability. It will be be called either if the server
         NAKs the request, or if the server enabled it and later DELs it.
 
-        The ``success_callback`` function will be called upon acknowledgement
+        The ``success_callback`` function will be called upon acknowledgment
         of the capability from the server, whether during the initial
         capability negotiation, or later.
 
@@ -383,8 +416,8 @@ class AbstractBot(object):
 
         ``args`` is an iterable of strings, which are joined by spaces.
         ``text`` is treated as though it were the final item in ``args``, but
-        is preceded by a ``:``. This is a special case which  means that
-        ``text``, unlike the items in ``args`` may contain spaces (though this
+        is preceded by a ``:``. This is a special case which means that
+        ``text``, unlike the items in ``args``, may contain spaces (though this
         constraint is not checked by ``write``).
 
         In other words, both ``sopel.write(('PRIVMSG',), 'Hello, world!')``
@@ -397,8 +430,8 @@ class AbstractBot(object):
 
         .. seealso::
 
-            The connection backend is responsible to format and send the
-            message through the IRC connection. See the
+            The connection backend is responsible for formatting and sending
+            the message through the IRC connection. See the
             :meth:`sopel.irc.abstract_backends.AbstractIRCBackend.send_command`
             method for more information.
 
@@ -465,13 +498,13 @@ class AbstractBot(object):
         """Disconnect from IRC and close the bot."""
         self.backend.send_quit(reason=message)
         self.hasquit = True
-        # Wait for acknowledgement from the server. By RFC 2812 it should be
-        # an ERROR msg, but many servers just close the connection. Either way
-        # is fine by us.
-        # Closing the connection now would mean that stuff in the buffers that
-        # has not yet been processed would never be processed. It would also
-        # release the main thread, which is problematic because whomever called
-        # quit might still want to do something before main thread quits.
+        # Wait for acknowledgment from the server. Per RFC 2812 it should be
+        # an ERROR message, but many servers just close the connection.
+        # Either way is fine by us. Closing the connection now would mean that
+        # stuff in the buffers that has not yet been processed would never be
+        # processed. It would also release the main thread, which is
+        # problematic because whomever called quit might still want to do
+        # something before the main thread quits.
 
     def reply(self, text, dest, reply_to, notice=False):
         """Send a PRIVMSG to a user or channel, prepended with ``reply_to``.
@@ -498,22 +531,24 @@ class AbstractBot(object):
 
         :param str text: the text to send
         :param str recipient: the message recipient
-        :param int max_messages: the maximum number of messages to break the
-                                 text into
+        :param int max_messages: split ``text`` into at most this many messages
+                                 if it is too long to fit in one (optional)
 
         By default, this will attempt to send the entire ``text`` in one
         message. If the text is too long for the server, it may be truncated.
+
         If ``max_messages`` is given, the ``text`` will be split into at most
         that many messages, each no more than 400 bytes. The split is made at
-        the last space character before the 400th byte, or at the 400th byte if
-        no such space exists. If the ``text`` is too long to fit into the
-        specified number of messages using the above splitting, the final
-        message will contain the entire remainder, which may be truncated by
-        the server.
+        the last space character before the 400th byte, or at the 400th byte
+        if no such space exists.
+
+        If the ``text`` is too long to fit into the specified number of
+        messages using the above splitting, the final message will contain the
+        entire remainder, which may be truncated by the server.
         """
         excess = ''
         if not isinstance(text, unicode):
-            # Make sure we are dealing with unicode string
+            # Make sure we are dealing with a Unicode string
             text = text.decode('utf-8')
 
         if max_messages > 1:
