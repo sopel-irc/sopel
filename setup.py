@@ -58,9 +58,9 @@ dev_requires = requires + read_reqs('dev-requirements.txt')
 
 setup(
     long_description=(
-        "Sopel is a simple, extendible, easy-to-use IRC Utility bot, written "
-        "in Python. It's designed to be easy to use, easy to run, and easy to "
-        "make new features for."
+        "Sopel is a simple, extensible IRC Utility bot, written in Python. "
+        "It's designed to be easy to use, easy to run, and easy to develop "
+        "new features for using its plugin system."
     ),
     install_requires=requires,
     extras_require={'dev': dev_requires},
