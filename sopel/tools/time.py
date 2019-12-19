@@ -90,9 +90,17 @@ def get_channel_timezone(db, channel):
 
 
 def get_timezone(db=None, config=None, zone=None, nick=None, channel=None):
-    """Find, and return, the appropriate timezone
+    """Find, and return, the appropriate timezone.
 
-    Time zone is pulled in the following priority:
+    :param db: bot database object (optional)
+    :type db: :class:`~.db.SopelDB`
+    :param config: bot config object (optional)
+    :type config: :class:`~.config.Config`
+    :param str zone: preferred timezone name (optional)
+    :param str nick: nick whose timezone to use, if set (optional)
+    :param str channel: channel whose timezone to use, if set (optional)
+
+    Timezone is pulled in the following priority:
 
     1. ``zone``, if it is valid
     2. The timezone for the channel or nick ``zone`` in ``db`` if one is set
@@ -140,6 +148,16 @@ def format_time(db=None, config=None, zone=None, nick=None, channel=None,
                 time=None):
     """Return a formatted string of the given time in the given zone.
 
+    :param db: bot database object (optional)
+    :type db: :class:`~.db.SopelDB`
+    :param config: bot config object (optional)
+    :type config: :class:`~.config.Config`
+    :param str zone: name of timezone to use (optional)
+    :param str nick: nick whose time format to use, if set (optional)
+    :param str channel: channel whose time format to use, if set (optional)
+    :param time: the time value to format (optional)
+    :type time: :class:`~datetime.datetime`
+
     ``time``, if given, should be a naive ``datetime.datetime`` object and will
     be treated as being in the UTC timezone. If it is not given, the current
     time will be used. If ``zone`` is given it must be present in the IANA Time
@@ -182,8 +200,10 @@ def format_time(db=None, config=None, zone=None, nick=None, channel=None,
 
 
 def seconds_to_human(secs):
-    """Return a human readable string that is more readable than the built-in
-    str(timedelta).
+    """Format :class:`~datetime.timedelta` as a human-readable relative time.
+
+    :param secs: time difference to format
+    :type secs: :class:`~datetime.timedelta` or integer
 
     Inspiration for function structure from:
     https://gist.github.com/Highstaker/280a09591df4a5fb1363b0bbaf858f0d

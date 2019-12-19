@@ -430,9 +430,9 @@ class Identifier(unicode):
 
         :param str identifier: the identifier (nickname or channel) to convert
         :return: RFC 2812-non-compliant lowercase version of ``identifier``
-        :rtype str:
+        :rtype: str
 
-        This is what the old ``_lower()`` function did before Sopel 7.0. It maps
+        This is what the old :meth:`_lower` function did before Sopel 7.0. It maps
         ``{}``, ``[]``, ``|``, ``\\``, ``^``, and ``~`` incorrectly.
 
         You shouldn't use this unless you need to migrate stored values from the

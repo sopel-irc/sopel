@@ -7,7 +7,13 @@ from sopel.tools import Identifier
 
 @functools.total_ordering
 class User(object):
-    """A representation of a user Sopel is aware of."""
+    """A representation of a user Sopel is aware of.
+
+    :param nick: the user's nickname
+    :type nick: :class:`~.tools.Identifier`
+    :param str user: the user's local username ("user" in `user@host.name`)
+    :param str host: the user's hostname ("host.name" in `user@host.name`)
+    """
     def __init__(self, nick, user, host):
         assert isinstance(nick, Identifier)
         self.nick = nick
@@ -47,7 +53,11 @@ class User(object):
 
 @functools.total_ordering
 class Channel(object):
-    """A representation of a channel Sopel is in."""
+    """A representation of a channel Sopel is in.
+
+    :param name: the channel name
+    :type name: :class:`~.tools.Identifier`
+    """
     def __init__(self, name):
         assert isinstance(name, Identifier)
         self.name = name
@@ -72,18 +82,43 @@ class Channel(object):
         """The last time a WHO was requested for the channel."""
 
     def clear_user(self, nick):
+        """Remove ``nick`` from this channel.
+
+        :param nick: the nickname of the user to remove
+        :type nick: :class:`~.tools.Identifier`
+
+        Called after a user leaves the channel via PART, KICK, QUIT, etc.
+        """
         user = self.users.pop(nick, None)
         self.privileges.pop(nick, None)
         if user is not None:
             user.channels.pop(self.name, None)
 
     def add_user(self, user, privs=0):
+        """Add ``user`` to this channel.
+
+        :param user: the new user to add
+        :type user: :class:`User`
+        :param int privs: privilege bitmask (see constants in
+                          :mod:`sopel.module`)
+
+        Called when a new user JOINs the channel.
+        """
         assert isinstance(user, User)
         self.users[user.nick] = user
         self.privileges[user.nick] = privs
         user.channels[self.name] = self
 
     def rename_user(self, old, new):
+        """Rename a user.
+
+        :param old: the user's old nickname
+        :type old: :class:`~.tools.Identifier`
+        :param new: the user's new nickname
+        :type new: :class:`~.tools.Identifier`
+
+        Called on NICK events.
+        """
         if old in self.users:
             self.users[new] = self.users.pop(old)
             self.users[new].nick = new

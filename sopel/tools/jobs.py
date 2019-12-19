@@ -59,7 +59,7 @@ class JobScheduler(threading.Thread):
         self.stopping.set()
 
     def remove_callable_job(self, callable):
-        """Removes specific callable from job queue"""
+        """Remove ``callable`` from the job queue."""
         with self._mutex:
             self._jobs = [
                 job for job in self._jobs
@@ -125,17 +125,19 @@ class JobScheduler(threading.Thread):
 
 
 class Job(object):
-    """Hold information about when a function should be called next.
+    """Holds information about when a function should be called next.
 
-    Job is a simple structure that hold information about when a function
-    should be called next.
-    They can be put in a priority queue, in which case the Job that should
-    be executed next is returned.
+    :param int interval: number of seconds between calls to ``func``
+    :param func: function to be called
+    :type func: :term:`function`
 
-    Calling the method next modifies the Job object for the next time it
-    should be executed. Current time is used to decide when the job should
-    be executed next so it should only be called right after the function
-    was called.
+    Job is a simple structure that holds information about when a function
+    should be called next. They can be put in a priority queue, in which case
+    the Job that should be executed next is returned.
+
+    Calling :meth:`next` modifies the Job object with the next time it should
+    execute. Current time is used to decide when the job should be executed
+    next so it should only be called right after the function was called.
     """
 
     max_catchup = 5
@@ -147,13 +149,6 @@ class Job(object):
     """
 
     def __init__(self, interval, func):
-        """Initialize Job.
-
-        Args:
-            interval: number of seconds between calls to func
-            func: function to be called
-
-        """
         self.next_time = time.time() + interval
         self.interval = interval
         self.func = func
@@ -169,10 +164,9 @@ class Job(object):
         return (self.next_time - at_time) <= 0
 
     def next(self):
-        """Update self.next_time with the assumption func was just called.
+        """Update ``self.next_time``, assuming ``func`` was just called.
 
-        Returns: A modified job object.
-
+        :return: a modified job object
         """
         last_time = self.next_time
         current_time = time.time()
