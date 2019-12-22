@@ -6,7 +6,7 @@ configuration file. It exposes the configuration's sections through its
 attributes as objects, which in turn expose their directives through *their*
 attributes.
 
-For example this is how to access ``core.nick`` on a :class:`Config` object::
+For example, this is how to access ``core.nick`` on a :class:`Config` object::
 
     >>> from sopel import config
     >>> settings = config.Config('/sopel/config.cfg')
@@ -76,7 +76,10 @@ DEFAULT_HOMEDIR = os.path.join(os.path.expanduser('~'), '.sopel')
 
 
 class ConfigurationError(Exception):
-    """Exception type for configuration errors"""
+    """Exception type for configuration errors.
+
+    :param str value: a description of the error that has occurred
+    """
     def __init__(self, value):
         self.value = value
 
@@ -85,28 +88,37 @@ class ConfigurationError(Exception):
 
 
 class ConfigurationNotFound(ConfigurationError):
-    """Configuration file not found."""
+    """Exception type for use when the configuration file cannot be found.
+
+    :param str filename: file path that could not be found
+    """
     def __init__(self, filename):
         super(ConfigurationNotFound, self).__init__(None)
         self.filename = filename
-        """Path to the configuration file not found"""
+        """Path to the configuration file that could not be found."""
 
     def __str__(self):
         return 'Unable to find the configuration file %s' % self.filename
 
 
 class Config(object):
+    """The bot's configuration.
+
+    :param str filename: the configuration file to load and use to populate this
+                         ``Config`` instance
+    :param bool validate: if ``True``, validate values in the ``[core]`` section
+                          when it is loaded (optional; ``True`` by default)
+
+    The configuration object will load sections (see :class:`ConfigSection`)
+    from the file at ``filename`` during initialization. Calling :meth:`save`
+    writes any runtime changes to the loaded settings back to the same file.
+
+    Only the ``[core]`` section (see :class:`~.core_section.CoreSection`) is
+    added and made available by default; it is the only section required for
+    Sopel to run. All other sections must be defined later, by the code that
+    needs them, using :meth:`define_section`.
+    """
     def __init__(self, filename, validate=True):
-        """The bot's configuration.
-
-        The given filename will be associated with the configuration, and is
-        the file which will be written if write() is called. If load is not
-        given or True, the configuration object will load the attributes from
-        the file at filename.
-
-        A few default values will be set here if they are not defined in the
-        config file, or a config file is not loaded. They are documented below.
-        """
         self.filename = filename
         """The config object's associated file."""
         basename, _ = os.path.splitext(os.path.basename(filename))
@@ -117,16 +129,28 @@ class Config(object):
         be ``freenode.config``.
         """
         self.parser = ConfigParser.RawConfigParser(allow_no_value=True)
+        """The configuration parser object that does the heavy lifting.
+
+        .. seealso::
+
+            Python's built-in :mod:`configparser` module and its
+            :class:`~configparser.RawConfigParser` class.
+
+        """
         self.parser.read(self.filename)
         self.define_section('core', core_section.CoreSection,
                             validate=validate)
         self.get = self.parser.get
+        """Shortcut to :meth:`parser.get`."""
 
     @property
     def homedir(self):
-        """An alias to config.core.homedir"""
-        # Technically it's the other way around, so we can bootstrap filename
-        # attributes in the core section, but whatever.
+        """The config file's home directory.
+
+        If the :meth:`core.homedir <.core_section.CoreSection.homedir>` setting
+        is available, that value is used. Otherwise, the default ``homedir`` is
+        the directory portion of the :class:`Config`'s :attr:`filename`.
+        """
         configured = None
         if self.parser.has_option('core', 'homedir'):
             configured = self.parser.get('core', 'homedir')
@@ -136,16 +160,40 @@ class Config(object):
             return os.path.dirname(self.filename)
 
     def save(self):
-        """Save all changes to the config file."""
+        """Write all changes to the config file.
+
+        .. note::
+
+            Saving the config file will remove any comments that might have
+            existed, as Python's :mod:`configparser` ignores them when parsing.
+
+            This will become less and less important as we continue to improve
+            Sopel's tools for making automated changes to config files and
+            eliminate most users' need to ever manually edit the text, but it's
+            still worth keeping in mind.
+
+        """
         cfgfile = open(self.filename, 'w')
         self.parser.write(cfgfile)
         cfgfile.flush()
         cfgfile.close()
 
     def add_section(self, name):
-        """Add a section to the config file.
+        """Add a new, empty section to the config file.
 
-        Returns ``False`` if already exists.
+        :param str name: name of the new section
+        :return: ``None`` if successful; ``False`` if a section named ``name``
+                 already exists
+
+        .. note::
+
+            Plugin authors very rarely want or need to use this method.
+
+            You will almost always want to define (and optionally validate
+            values within) a section with specific attributes using
+            :meth:`define_section` and a child class of
+            :class:`~.types.StaticSection`.
+
         """
         try:
             return self.parser.add_section(name)
@@ -155,12 +203,19 @@ class Config(object):
     def define_section(self, name, cls_, validate=True):
         """Define the available settings in a section.
 
-        ``cls_`` must be a subclass of ``StaticSection``. If the section has
-        already been defined with a different class, ValueError is raised.
+        :param str name: name of the new section
+        :param cls\\_: :term:`class` defining the settings within the section
+        :type cls\\_: subclass of :class:`~.types.StaticSection`
+        :param bool validate: whether to validate the section's values
+                              (optional; defaults to ``True``)
+        :raise ValueError: if the section ``name`` has been defined already with
+                           a different ``cls_``
 
-        If ``validate`` is True, the section's values will be validated, and an
-        exception raised if they are invalid. This is desirable in a plugin's
-        setup function, for example, but might not be in the configure function.
+        If ``validate`` is ``True``, the section's values will be validated, and
+        an exception (usually :class:`ValueError` or :class:`AttributeError`)
+        raised if they are invalid. This is desirable in a plugin's
+        :func:`setup` function, for example, but might not be in the
+        :func:`configure` function.
         """
         if not issubclass(cls_, types.StaticSection):
             raise ValueError("Class must be a subclass of StaticSection.")
@@ -176,13 +231,16 @@ class Config(object):
         setattr(self, name, cls_(self, name, validate=validate))
 
     class ConfigSection(object):
-
         """Represents a section of the config file.
 
-        Contains all keys in thesection as attributes.
+        :param str name: name of this section
+        :param items: key-value pairs
+        :type items: :term:`iterable` of two-item :class:`tuple`\\s
+        :param parent: this section's containing object
+        :type parent: :class:`Config`
 
+        Contains all keys in the section as attributes.
         """
-
         def __init__(self, name, items, parent):
             object.__setattr__(self, '_name', name)
             object.__setattr__(self, '_parent', parent)
@@ -205,7 +263,20 @@ class Config(object):
                 value = ','.join(value)
             self._parent.parser.set(self._name, name, value)
 
+        @tools.deprecated(
+            'No longer used; replaced by a dedicated ListAttribute type.'
+            '7.0', '8.0')
         def get_list(self, name):
+            """Legacy way of getting a list from a config value.
+
+            :param str name: name of the attribute to fetch and interpret as a list
+            :return: the value of ``name`` as a list
+            :rtype: list
+
+            .. deprecated:: 7.0
+                Use :class:`~.types.ListAttribute` when storing a list value.
+                This legacy method will be removed in Sopel 8.0.
+            """
             value = getattr(self, name)
             if not value:
                 return []
@@ -232,13 +303,18 @@ class Config(object):
         return name in self.parser.sections()
 
     def option(self, question, default=False):
-        """Ask "y/n" and return the corresponding boolean answer.
+        """Ask the user a "y/n" question.
 
-        Show user in terminal a "y/n" prompt, and return true or false based on
-        the response. If default is passed as true, the default will be shown
-        as ``[y]``, else it will be ``[n]``. ``question`` should be phrased as
-        a question, but without a question mark at the end.
+        :param str question: the question to ask the user
+        :param bool default: ``True`` to show ``[y]`` as the default choice;
+                             ``False`` to show ``[n]`` (optional; defaults to
+                             ``False``)
+        :return: the Boolean value corresponding to the user's choice
+        :rtype: bool
 
+        This will show a "y/n" prompt in the user's terminal, and return
+        ``True`` or ``False`` based on the response. ``question`` should be
+        phrased as a question, but without a question mark at the end.
         """
         d = 'n'
         if default:
