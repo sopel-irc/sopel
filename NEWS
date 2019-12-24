@@ -2,7 +2,7 @@ This file is used to auto-generate the "Changelog" section of Sopel's website.
 When adding new entries, follow the style guide in NEWS.spec.md to avoid
 causing problems with the site build.
 
-Changes between 6.x.x and 7.0.0
+Changes between 6.6.9 and 7.0.0
 ===============================
 
 Sopel 7.0 contains numerous fixes, tweaks, new features, and internal
