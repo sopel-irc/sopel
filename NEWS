@@ -50,6 +50,7 @@ Module changes
     cases where loading previews of e.g. LAN servers is safe
   * The default is off, so users don't unwittingly open themselves to attackers
     fishing for running HTTP services on the local machine or network
+* `url` now correctly ignores invalid URLs (e.g. `http://*\.com`) [[#1788][]]
 * Various improvements to the `clock` functions [[#1592][]]
   * Improved guessing in `.t`/`.time` command, which no longer falls back all
     the way to the bot's default timezone if given an unrecognized argument
@@ -347,8 +348,8 @@ API changes
   * [RFC 2812][] defined an incorrect spelling, `ERR_ALREADYREGISTRED`, and
     Sopel copied it verbatim
   * The spelling `ERR_ALREADYREGISTERED` can be used now, too
-* The `@example` decorator no longer generates invalid raw lines in tests
-  [[#1499][]]
+* Fixed invalid raw lines in generated `@example` tests [[#1499][]]
+* Fixed `PreTrigger` objects missing the `text` attribute sometimes [[#1782][]]
 
 
 [#1059]: https://github.com/sopel-irc/sopel/pull/1059
@@ -545,6 +546,7 @@ API changes
 [#1781]: https://github.com/sopel-irc/sopel/pull/1781
 [#1782]: https://github.com/sopel-irc/sopel/pull/1782
 [#1783]: https://github.com/sopel-irc/sopel/pull/1783
+[#1788]: https://github.com/sopel-irc/sopel/pull/1788
 
 [api-docs]: https://sopel.chat/docs/
 [auth-config-docs]: https://sopel.chat/docs/configure.html#Authentication
