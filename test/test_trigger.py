@@ -39,6 +39,7 @@ def test_basic_pretrigger(nick):
     assert pretrigger.hostmask == 'Foo!foo@example.com'
     assert pretrigger.line == line
     assert pretrigger.args == ['#Sopel', 'Hello, world']
+    assert pretrigger.text == 'Hello, world'
     assert pretrigger.event == 'PRIVMSG'
     assert pretrigger.nick == Identifier('Foo')
     assert pretrigger.user == 'foo'
@@ -53,6 +54,7 @@ def test_pm_pretrigger(nick):
     assert pretrigger.hostmask == 'Foo!foo@example.com'
     assert pretrigger.line == line
     assert pretrigger.args == ['Sopel', 'Hello, world']
+    assert pretrigger.text == 'Hello, world'
     assert pretrigger.event == 'PRIVMSG'
     assert pretrigger.nick == Identifier('Foo')
     assert pretrigger.user == 'foo'
@@ -67,6 +69,7 @@ def test_quit_pretrigger(nick):
     assert pretrigger.hostmask == 'Foo!foo@example.com'
     assert pretrigger.line == line
     assert pretrigger.args == ['quit message text']
+    assert pretrigger.text == 'quit message text'
     assert pretrigger.event == 'QUIT'
     assert pretrigger.nick == Identifier('Foo')
     assert pretrigger.user == 'foo'
@@ -81,6 +84,7 @@ def test_join_pretrigger(nick):
     assert pretrigger.hostmask == 'Foo!foo@example.com'
     assert pretrigger.line == line
     assert pretrigger.args == ['#Sopel']
+    assert pretrigger.text == '#Sopel'
     assert pretrigger.event == 'JOIN'
     assert pretrigger.nick == Identifier('Foo')
     assert pretrigger.user == 'foo'
@@ -97,6 +101,7 @@ def test_tags_pretrigger(nick):
     assert pretrigger.hostmask == 'Foo!foo@example.com'
     assert pretrigger.line == line
     assert pretrigger.args == ['#Sopel', 'Hello, world']
+    assert pretrigger.text == 'Hello, world'
     assert pretrigger.event == 'PRIVMSG'
     assert pretrigger.nick == Identifier('Foo')
     assert pretrigger.user == 'foo'
@@ -111,6 +116,7 @@ def test_intents_pretrigger(nick):
     assert pretrigger.hostmask == 'Foo!foo@example.com'
     assert pretrigger.line == line
     assert pretrigger.args == ['#Sopel', 'Hello, world']
+    assert pretrigger.text == 'Hello, world'
     assert pretrigger.event == 'PRIVMSG'
     assert pretrigger.nick == Identifier('Foo')
     assert pretrigger.user == 'foo'
@@ -125,6 +131,7 @@ def test_unusual_pretrigger(nick):
     assert pretrigger.hostmask is None
     assert pretrigger.line == line
     assert pretrigger.args == []
+    assert pretrigger.text == 'PING'
     assert pretrigger.event == 'PING'
 
 
@@ -135,6 +142,7 @@ def test_ctcp_intent_pretrigger(nick):
     assert pretrigger.hostmask == 'Foo!foo@example.com'
     assert pretrigger.line == line
     assert pretrigger.args == ['Sopel', '']
+    assert pretrigger.text == '\x01VERSION\x01'
     assert pretrigger.event == 'PRIVMSG'
     assert pretrigger.nick == Identifier('Foo')
     assert pretrigger.user == 'foo'
@@ -149,6 +157,7 @@ def test_ctcp_data_pretrigger(nick):
     assert pretrigger.hostmask == 'Foo!foo@example.com'
     assert pretrigger.line == line
     assert pretrigger.args == ['Sopel', '1123321']
+    assert pretrigger.text == '\x01PING 1123321\x01'
     assert pretrigger.event == 'PRIVMSG'
     assert pretrigger.nick == Identifier('Foo')
     assert pretrigger.user == 'foo'
@@ -163,6 +172,7 @@ def test_ircv3_extended_join_pretrigger(nick):
     assert pretrigger.hostmask == 'Foo!foo@example.com'
     assert pretrigger.line == line
     assert pretrigger.args == ['#Sopel', 'bar', 'Real Name']
+    assert pretrigger.text == 'Real Name'
     assert pretrigger.event == 'JOIN'
     assert pretrigger.nick == Identifier('Foo')
     assert pretrigger.user == 'foo'
