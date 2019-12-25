@@ -141,6 +141,9 @@ def configureHostMask(mask):
     m = re.match('^([^!@]+)!(^[!@]+)@?$', mask)
     if m is not None:
         return '%s!%s@*' % (m.group(1), m.group(2))
+
+    if re.match(r'^\S+[!]\S+[@]\S+$', mask) is not None:
+        return mask
     return ''
 
 
