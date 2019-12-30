@@ -50,6 +50,46 @@ include your changes.
   unicode_literals, absolute_import, print_function, division` as the first
   line after the module docstring.
 
+Documenting Code
+----------------
+
+Hopefully you're documenting new code as you write it. We like to use these
+guidelines for writing docstrings. Let's start with an example:
+
+```
+def scramble_eggs(eggs, bacon=None, spam=False):
+"""Scramble eggs, with optional bacon and/or SPAM.
+
+:param int eggs: how many eggs to scramble
+:param bacon: optional bacon to put in the ``eggs``
+:type bacon: :class:`sopel.tools.breakfast.Bacon`
+:param bool spam: whether to put SPAM in the scrambled ``eggs``
+:return: the scrambled eggs
+:rtype: :term:`iterable` of :class:`sopel.tools.breakfast.Egg`
+
+You should create and customize your own :class:`~sopel.tools.bacon.Bacon`
+object to pass in. See that class's documentation to learn how to make the
+bacon extra crispy, chopped, diced, etc.
+
+This function will generate SPAM as needed, since it is not customizable.
+
+.. versionadded:: 7.1
+.. seealso::
+
+   To make an omelet, use :func:`make_omelet`.
+
+"""
+# <function body>
+```
+
+The basic components of the ideal Sopel function docstring are:
+
+* A one-line description, as an imperative sentence (ending in a period)
+* Function parameters, described in brief, with type annotations
+* Description and type of return value
+* Longer notes on function parameters and behavior, if needed
+* Sphinx annotations and cross-references
+
 Issue Tags
 ----------
 
