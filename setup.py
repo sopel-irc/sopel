@@ -34,16 +34,22 @@ else:
         sys.exit(1)
 
 if sys.version_info < (2, 7) or (
-        sys.version_info[0] > 3 and sys.version_info < (3, 3)):
-    # Maybe not the cleanest or best way to do this, but I'm tired of answering
-    # this fucking question, and if you get here you should go RTGDMFM.
+    sys.version_info.major >= 3 and sys.version_info < (3, 3)
+):
+    # Maybe not the best way to do this, but this question is tiring.
     raise ImportError('Sopel requires Python 2.7+ or 3.3+.')
+# Py2 EOL: https://www.python.org/dev/peps/pep-0373/#maintenance-releases
 if sys.version_info.major == 2:
     if time.time() >= 1577836800:  # 2020-01-01 00:00:00 UTC
         state = 'is near end of life'
     else:
-        state = 'has reached end of life and will receive no further updates'
-    print('Warning: Python 2.x %s. Sopel will drop support in version 8.0.' % state, file=sys.stderr)
+        state = "has reached end of life"
+    if time.time() >= 1588291200:  # 2020-05-01 00:00:00 UTC
+        state += " and will receive no further updates"
+    print(
+        "Warning: Python 2 %s. Sopel 8.0 will drop support for it." % state,
+        file=sys.stderr,
+    )
 
 
 def read_reqs(path):
