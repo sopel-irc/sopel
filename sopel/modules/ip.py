@@ -19,6 +19,7 @@ import geoip2.database
 
 from sopel.config.types import FilenameAttribute, StaticSection
 from sopel.module import commands, example
+from sopel.tools import web
 
 urlretrieve = None
 try:
@@ -89,10 +90,19 @@ def _find_geoip_db(bot):
     elif urlretrieve:
         LOGGER.info('Downloading GeoIP database')
         bot.say('Downloading GeoIP database, please wait...')
-        geolite_urls = [
-            'https://geolite.maxmind.com/download/geoip/database/GeoLite2-City.tar.gz',
-            'https://geolite.maxmind.com/download/geoip/database/GeoLite2-ASN.tar.gz'
-        ]
+
+        common_params = {'license_key': 'JXBEmLjOzislFnh4', 'suffix': 'tar.gz'}
+        base_url = 'https://download.maxmind.com/app/geoip_download'
+        geolite_urls = []
+
+        for edition in ['ASN', 'City']:
+            geolite_urls.append(
+                '{base}?{params}'.format(
+                    base=base_url,
+                    params=web.urlencode(dict(common_params, **{'edition_id': 'GeoLite2-%s' % edition})),
+                )
+            )
+
         for url in geolite_urls:
             LOGGER.debug('GeoIP Source URL: %s', url)
             full_path = os.path.join(config.core.homedir, url.split("/")[-1])
