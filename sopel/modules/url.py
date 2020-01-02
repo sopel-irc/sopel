@@ -288,7 +288,11 @@ def find_title(url, verify=True):
         # Need to close the connection because we have not read all
         # the data
         response.close()
-    except requests.exceptions.ConnectionError:
+    except (
+        requests.exceptions.ConnectionError,
+        requests.exceptions.InvalidURL,  # e.g. http:///
+        UnicodeError,  # e.g. http://.example.com
+    ):
         return None
 
     # Some cleanup that I don't really grok, but was in the original, so
