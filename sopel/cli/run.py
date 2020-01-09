@@ -21,10 +21,13 @@ import time
 from sopel import bot, config, logger, tools, __version__
 from . import utils
 
-# We check Python's version ourselves in case someone installed Sopel on an
-# old version of pip (<9.0.0), which doesn't know about `python_requires`.
-if sys.version_info < (2, 7):
-    tools.stderr('Error: Requires Python 2.7 or later. Try python2.7 sopel')
+# This is in case someone somehow manages to install Sopel on an old version
+# of pip (<9.0.0), which doesn't know about `python_requires`, or tries to run
+# from source on an unsupported version of Python.
+if sys.version_info < (2, 7) or (
+    sys.version_info.major >= 3 and sys.version_info < (3, 3)
+):
+    tools.stderr('Error: Sopel requires Python 2.7+ or 3.3+.')
     sys.exit(1)
 if sys.version_info.major == 2:
     now = time.time()
@@ -32,9 +35,6 @@ if sys.version_info.major == 2:
     if now >= 1588291200:  # 2020-05-01 00:00:00 UTC
         state += ' and will receive no further updates'
     tools.stderr('Warning: Python 2.x %s. Sopel 8.0 will drop support for it.' % state)
-if sys.version_info.major == 3 and sys.version_info.minor < 3:
-    tools.stderr('Error: When running on Python 3, Python 3.3 is required.')
-    sys.exit(1)
 
 LOGGER = logging.getLogger(__name__)
 
