@@ -28,10 +28,7 @@ if sys.version_info < (2, 7):
     sys.exit(1)
 if sys.version_info.major == 2:
     now = time.time()
-    if now >= 1577836800:  # 2020-01-01 00:00:00 UTC
-        state = 'is near end of life'
-    else:
-        state = 'has reached end of life'
+    state = 'has reached end of life'
     if now >= 1588291200:  # 2020-05-01 00:00:00 UTC
         state += ' and will receive no further updates'
     tools.stderr('Warning: Python 2.x %s. Sopel 8.0 will drop support for it.' % state)
