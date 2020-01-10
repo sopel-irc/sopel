@@ -6,9 +6,9 @@ The original creator: Sean B. Palmer (sbp) deserves the most credit for
 originally creating phenny. He has done an extraordinary job at producing this
 project; without him this fork would not exist.
 
-The Jenni years: Michael Yanovich (yano) carried the torch onward, making tons
-of improvements and shaping what would become Sopel several years later. There
-must exist an alternate timeline wherein Jenni (and thus Sopel) never happened.
+The Jenni years: yano carried the torch onward, making tons of improvements
+and shaping what would become Sopel several years later. There must exist an
+alternate timeline wherein Jenni (and thus Sopel) never happened.
 
 The Willie-Sopel years: Elsie Powell, with Elad Alfassa and Dimitri Molenaars,
 pressed on through two project renames to build what became Sopel 6.x. Thanks
@@ -28,7 +28,7 @@ Please feel free to add your name if you have added to this project in any way.
 List of contributors:
 
 Sean B. Palmer (sbp)
-Michael Yanovich (yano)
+yano
 Matt Meinwald (meinwald)
 Silas Baronda (sifi)
 Morgan Goose (goosemo)
