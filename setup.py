@@ -63,22 +63,5 @@ if sys.version_info[0] < 3:
 dev_requires = requires + read_reqs('dev-requirements.txt')
 
 setup(
-    long_description=(
-        "Sopel is a simple, extendible, easy-to-use IRC Utility bot, written "
-        "in Python. It's designed to be easy to use, easy to run, and easy to "
-        "make new features for."
-    ),
-    install_requires=requires,
-    extras_require={'dev': dev_requires},
-    entry_points={
-        'console_scripts': [
-            'sopel = sopel.cli.run:main',
-            'sopel-config = sopel.cli.config:main',
-            'sopel-plugins = sopel.cli.plugins:main',
-        ],
-        'pytest11': [
-            'pytest-sopel = sopel.tests.pytest_plugin',
-        ],
-    },
-    python_requires='>=2.7, !=3.0.*, !=3.1.*, !=3.2.*, <4',
+    install_requires=requires, extras_require={"dev": dev_requires},
 )
