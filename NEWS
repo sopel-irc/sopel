@@ -88,6 +88,7 @@ Module changes
   * These were removed some time ago, seemingly without reason, by the
     project's previous maintainers
   * Since there was some desire from users to have them back, we restored them
+* Fixed/tweaked hostmask handling in `adminchannel` ban functions [[#1791][]]
 * `find` also collects Sopel's own messages now, so users can "correct" the bot
   if they wish to be extra cheeky [[#1470][]]
 * Fixed that the `url` module had to be enabled or some link-handling
@@ -99,6 +100,7 @@ Module changes
 * Handle JSON fetch/parse errors in `find_updates` plugin [[#1779][]]
 * Removed nonsensical uses of the `core.verify_ssl` setting [[#1706][]]
 * Unused `clock` plugin settings have been removed [[#1696][]]
+* Updated MaxMind database handling in `ip` plugin [[#1797][]]
 * General code cleanup and tweaks all around [[#1402][], [#1486][], [#1505][],
   [#1569][], [#1573][], [#1578][], [#1579][], [#1581][], [#1592][], [#1606][],
   [#1607][], [#1609][], [#1678][], [#1681][], [#1696][], [#1717][], [#1721][],
@@ -179,14 +181,16 @@ Core changes
 * Running Sopel on an unknown OS platform will output a warning encouraging the
   user to report any issues (because test coverage on an unrecognized platform
   name is likely to be nil) [[#1487][]]
-* Large amounts of internal refactoring and cleanup [[#1424][], [#1429][],
-  [#1456][], [#1458][], [#1472][], [#1479][], [#1510][], [#1522][], [#1527][],
-  [#1542][], [#1557][], [#1561][], [#1567][], [#1579][], [#1580][], [#1583][],
-  [#1597][], [#1610][], [#1635][], [#1685][], [#1697][], [#1708][], [#1716][],
-  [#1723][], [#1724][], [#1728][], [#1730][], [#1731][], [#1732][], [#1735][],
-  [#1739][], [#1740][], [#1741][], [#1742][], [#1743][], [#1754][], [#1759][]]
-* Sopel 7 will emit warnings when run under Python 2, as Python 2.7 has an
-  end-of-support date of January 1, 2020 [[#1488][]]
+* Cleaned up or refactored a bunch of places [[#1424][], [#1429][], [#1456][],
+  [#1458][], [#1472][], [#1479][], [#1510][], [#1522][], [#1527][], [#1542][],
+  [#1557][], [#1561][], [#1567][], [#1579][], [#1580][], [#1583][], [#1597][],
+  [#1610][], [#1635][], [#1685][], [#1697][], [#1708][], [#1716][], [#1723][],
+  [#1724][], [#1728][], [#1730][], [#1731][], [#1732][], [#1735][], [#1739][],
+  [#1740][], [#1741][], [#1742][], [#1743][], [#1754][], [#1759][], [#1787][]]
+* Sopel 7 will emit warnings when run under Python 2, as Python 2.7 support
+  officially ended on January 1, 2020 [[#1488][], [#1795][], [#1800][]]
+  * Sopel's warnings are set to become more dire around the time when Python's
+    maintainers plan to release the final version of 2.7
   * While Sopel 7 is intended to remain compatible with Python 2, future
     compatibility is not guaranteed, and users should plan for Sopel 8 to
     officially drop Python 2 support (see [upgrade notes][sopel-7-migration])
@@ -198,6 +202,11 @@ Core changes
 * Fixed tracking user `away` state [[#1663][], [#1664][], [#1666][], [#1703][]]
 * User information is now periodically updated [[#1664][]]
 * Fixed a case in which MODE tracking could break [[#1737][]]
+* Handle non-standard `+y`/`+Y` OPER modes [[#1671][]]
+  * A new `OPER` constant in `sopel.module` now exists for these channel modes,
+    which (at least on InspIRCd) use the privilege prefix `!`
+  * This is a stopgap for one specific case; we are working on further changes
+    to support dynamic parsing of privilege modes/prefixes at connect time
 * Stopped sending TOPIC command on JOIN [[#1749][]]
   * IRC servers should send the topic on join without being asked, per spec
 * Greatly improved the warning printed when a deprecated function is used,
@@ -460,6 +469,7 @@ API changes
 [#1668]: https://github.com/sopel-irc/sopel/pull/1668
 [#1669]: https://github.com/sopel-irc/sopel/pull/1669
 [#1670]: https://github.com/sopel-irc/sopel/pull/1670
+[#1671]: https://github.com/sopel-irc/sopel/pull/1671
 [#1672]: https://github.com/sopel-irc/sopel/pull/1672
 [#1673]: https://github.com/sopel-irc/sopel/pull/1673
 [#1674]: https://github.com/sopel-irc/sopel/pull/1674
@@ -546,7 +556,12 @@ API changes
 [#1781]: https://github.com/sopel-irc/sopel/pull/1781
 [#1782]: https://github.com/sopel-irc/sopel/pull/1782
 [#1783]: https://github.com/sopel-irc/sopel/pull/1783
+[#1787]: https://github.com/sopel-irc/sopel/pull/1787
 [#1788]: https://github.com/sopel-irc/sopel/pull/1788
+[#1791]: https://github.com/sopel-irc/sopel/pull/1791
+[#1795]: https://github.com/sopel-irc/sopel/pull/1795
+[#1797]: https://github.com/sopel-irc/sopel/pull/1797
+[#1800]: https://github.com/sopel-irc/sopel/pull/1800
 
 [api-docs]: https://sopel.chat/docs/
 [auth-config-docs]: https://sopel.chat/docs/configure.html#Authentication
