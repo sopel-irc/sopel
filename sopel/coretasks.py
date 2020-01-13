@@ -299,6 +299,7 @@ def handle_names(bot, trigger):
         "@": module.OP,
         "&": module.ADMIN,
         "~": module.OWNER,
+        "!": module.OPER,
     }
 
     for name in names:
@@ -361,6 +362,8 @@ def track_modes(bot, trigger):
         "o": module.OP,
         "a": module.ADMIN,
         "q": module.OWNER,
+        "y": module.OPER,
+        "Y": module.OPER,
     }
 
     # Parse modes before doing anything else
@@ -904,7 +907,7 @@ def recv_whox(bot, trigger):
         return LOGGER.warning('While populating `bot.accounts` a WHO response was malformed.')
     _, _, channel, user, host, nick, status, account = trigger.args
     away = 'G' in status
-    modes = ''.join([c for c in status if c in '~&@%+'])
+    modes = ''.join([c for c in status if c in '~&@%+!'])
     _record_who(bot, channel, user, host, nick, account, away, modes)
 
 
@@ -935,6 +938,7 @@ def _record_who(bot, channel, user, host, nick, account=None, away=None, modes=N
             "@": module.OP,
             "&": module.ADMIN,
             "~": module.OWNER,
+            "!": module.OPER,
         }
         for c in modes:
             priv = priv | mapping[c]
@@ -952,7 +956,7 @@ def _record_who(bot, channel, user, host, nick, account=None, away=None, modes=N
 def recv_who(bot, trigger):
     channel, user, host, _, nick, status = trigger.args[1:7]
     away = 'G' in status
-    modes = ''.join([c for c in status if c in '~&@%+'])
+    modes = ''.join([c for c in status if c in '~&@%+!'])
     _record_who(bot, channel, user, host, nick, away=away, modes=modes)
 
 
