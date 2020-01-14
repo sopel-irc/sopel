@@ -232,7 +232,7 @@ def _clean_cache(bot):
                 bot.memory['safety_cache'].pop(key, None)
 
             # clean up more values if the cache is still too big
-            overage = bot.memory['safety_cache'] - cache_limit
+            overage = len(bot.memory['safety_cache']) - cache_limit
             if overage > 0:
                 extra_keys = sorted(
                     (data.fetched, key)
