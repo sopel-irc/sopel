@@ -101,10 +101,11 @@ Module changes
 * Removed nonsensical uses of the `core.verify_ssl` setting [[#1706][]]
 * Unused `clock` plugin settings have been removed [[#1696][]]
 * Updated MaxMind database handling in `ip` plugin [[#1797][]]
+* Reworked `safety` plugin's cache management [[#1753][], [#1802][]]
 * General code cleanup and tweaks all around [[#1402][], [#1486][], [#1505][],
   [#1569][], [#1573][], [#1578][], [#1579][], [#1581][], [#1592][], [#1606][],
   [#1607][], [#1609][], [#1678][], [#1681][], [#1696][], [#1717][], [#1721][],
-  [#1725][], [#1735][], [#1741][], [#1753][], [#1754][]]
+  [#1725][], [#1735][], [#1741][], [#1754][]]
 
 Core changes
 ------------
@@ -562,6 +563,7 @@ API changes
 [#1795]: https://github.com/sopel-irc/sopel/pull/1795
 [#1797]: https://github.com/sopel-irc/sopel/pull/1797
 [#1800]: https://github.com/sopel-irc/sopel/pull/1800
+[#1802]: https://github.com/sopel-irc/sopel/pull/1802
 
 [api-docs]: https://sopel.chat/docs/
 [auth-config-docs]: https://sopel.chat/docs/configure.html#Authentication
