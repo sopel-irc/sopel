@@ -1,6 +1,591 @@
 This file is used to auto-generate the "Changelog" section of Sopel's website.
-When adding new entries, follow the style guide in NEWS.spec.md to avoid causing
-problems with the site build.
+When adding new entries, follow the style guide in NEWS.spec.md to avoid
+causing problems with the site build.
+
+Changes between 6.6.9 and 7.0.0
+===============================
+
+Sopel 7.0 contains numerous fixes, tweaks, new features, and internal
+improvements. While we maintain no official statistics on such things, it's
+probably the biggest release the project has ever seen.
+
+The full, detailed list of changes is below, but you can just read the
+[migration guide][sopel-7-migration] if all you care about is the really
+important stuff. All breaking changes (including those planned for the *next*
+release) are explained there.
+
+Module changes
+--------------
+
+* The `spellcheck` plugin has been removed to simplify dependencies [[#1675][]]
+  * An updated version with added features and tweaks, based on `aspell`, is
+    installable separately [from PyPI][spellcheck-pypi] [[#1164][] & [#1545][]]
+  * See [#1142][] & [#1642][] for background on why we decided to separate
+    `spellcheck` into a separate package (tl;dr: dependency hell)
+* Similarly, the `ipython` plugin is now an external package, eliminating from
+  Sopel itself a dependency which most users will never need [[#1684][]]
+  * Find the new `sopel-ipython` package [on PyPI][ipython-pypi]
+* The `.choose`/`.choice` command has been moved from `dice` into a standalone
+  plugin, aptly named `choose` [[#1679][]]
+* Moved `.py` into its own plugin, named `py` [[#1710][], [#1711][], [#1712][]]
+  * In case of issues with our "official" instance, there's now a setting to
+    configure the address of your own [Oblique][oblique] service
+* The `currency` module changed data sources to support more currencies, and
+  can optionally use Fixer.io for even *more* [[#1430][], [#1627][], [#1629][]]
+  * Fixer.io requires a free API key, which gives plenty of calls per month
+    (the module caches exchange rates for 24 hours)
+* Choose any of five pastebin services for `help` output [[#1451][], [#1651][]]
+  * This is intended mostly for resilience (so one pastebin service going
+    down, as ptpb did during the 6.6.x life-cycle, won't force a new Sopel
+    release), but it's also just good to have choices
+* Optionally hide IRC server name/address in `help` command listing [[#1459][]]
+* New `help` plugin setting, `reply_method` [[#1700][]]
+* `wiktionary` now supports many more parts of speech [[#1443][]]
+  * Definitions can be retrieved for things like proper nouns, prepositional
+    phrases, and punctuation marks—things that were unsupported in Sopel 6.x
+  * This means that the `wiktionary` module is now somewhat case-sensitive, to
+    account for common and proper nouns that differ only in capitalization
+* `url` will now ignore "private" addresses by default [[#1439][], [#1624][]]
+  * New config settings for the `url` module allow overriding the checks, in
+    cases where loading previews of e.g. LAN servers is safe
+  * The default is off, so users don't unwittingly open themselves to attackers
+    fishing for running HTTP services on the local machine or network
+* `url` now correctly ignores invalid URLs (e.g. `http://*\.com`) [[#1788][]]
+* Various improvements to the `clock` functions [[#1592][]]
+  * Improved guessing in `.t`/`.time` command, which no longer falls back all
+    the way to the bot's default timezone if given an unrecognized argument
+  * New `.tz` command, to explicitly get time for a timezone name (in case of
+    conflict between a known nick and a timezone name)
+* The `tell` & `remind` plugins' ".db" files have changed names [[#1699][]]
+  * Both will attempt automatic migration of existing files, if they exist,
+    and output debugging information if the migration fails
+* The `.at` command (in `remind`) understands dates now [[#1590][], [#1736][]]
+  * Finally, it's possible to set a reminder more than 24 hours ahead without
+    first converting the future date/time to a duration for use with `.in`!
+* A new `tell` plugin setting allows delivering messages privately [[#1694][]]
+* The `reddit` plugin now also handles short `redd.it` links, direct links to
+  comments, inline `u/` and `r/` references, & reddit-hosted image/video links
+  [[#1503][], [#1720][], [#1722][], [#1734][], [#1760][], [#1773][]]
+* Spoilers & NSFW are now separate concepts in the `reddit` plugin [[#1620][]]
+  * Reddit implemented spoilers as a distinct post flag some time ago. Sopel's
+    plugin supports independently setting channels as "SFW" or "spoiler-free".
+* Rolling `.dice` now officially supports trailing `# comments` [[#1577][]]
+* Python version is now included in `.version` command output [[#1462][]]
+* The `.version` command's output format is improved [[#1633][]]
+* Using the `.reload` command shows the specific file reloaded [[#1762][]]
+* The `.seen` command's output now uses relative time [[#1661][]]
+* Readability of `.choose` command output is significantly improved [[#1425][]]
+* Added `.invite` command [[#1497][]]
+  * Both Sopel and the inviting user must have privileges in the target channel
+* A `.restart` command is added [[#1333][]]
+  * Usable by admins only, just like `.quit`
+* The `.msg` command is now known as `.say` [[#1606][]]
+  * `.msg` will continue to work for now, likely until being removed in Sopel 8
+* The `admin` module auto-saves channels when using `.join`/`.part`, and added
+  `.tmpjoin`/`.tmppart` commands to bypass this behavior [[#1492][]]
+* Added command to `.unset` config values in the `admin` module [[#1556][]]
+* Restored commands in `adminchannel` module for managing op/voice [[#1498][]]
+  * These were removed some time ago, seemingly without reason, by the
+    project's previous maintainers
+  * Since there was some desire from users to have them back, we restored them
+* Fixed/tweaked hostmask handling in `adminchannel` ban functions [[#1791][]]
+* `find` also collects Sopel's own messages now, so users can "correct" the bot
+  if they wish to be extra cheeky [[#1470][]]
+* Fixed that the `url` module had to be enabled or some link-handling
+  functions didn't work [[#1510][]]
+* Tweaked `.ddg` command output so it's less likely to mangle URLs [[#1713][]]
+* `remind` commands now "reply" with error messages [[#1715][]]
+* Fixed `etymology` module error with empty argument [[#1677][]]
+* Fixed an uncaught exception in `instagram` plugin [[#1702][]]
+* Handle JSON fetch/parse errors in `find_updates` plugin [[#1779][]]
+* Removed nonsensical uses of the `core.verify_ssl` setting [[#1706][]]
+* Unused `clock` plugin settings have been removed [[#1696][]]
+* Updated MaxMind database handling in `ip` plugin [[#1797][]]
+* Reworked `safety` plugin's cache management [[#1753][], [#1802][]]
+* General code cleanup and tweaks all around [[#1402][], [#1486][], [#1505][],
+  [#1569][], [#1573][], [#1578][], [#1579][], [#1581][], [#1592][], [#1606][],
+  [#1607][], [#1609][], [#1678][], [#1681][], [#1696][], [#1717][], [#1721][],
+  [#1725][], [#1735][], [#1741][], [#1754][]]
+
+Core changes
+------------
+
+* Brought back support for non-SQLite databases by switching to SQLAlchemy
+  [[#1446][], [#1652][], [#1729][], [#1755][], [#1774][], [#1777][], [#1783][]]
+  * For details on using non-SQLite databases, see the [README][readme-db] or
+    [installation instructions][install-guide-db]
+  * You will probably need to install additional dependencies if you wish to
+    use something other than SQLite
+  * Migrating an existing database from SQLite to your chosen option is
+    probably easy, but we do not offer instructions for doing so
+* The `db_filename` config setting (for SQLite) is now interpreted as relative
+  to the config's `homedir` setting [[#1574][]]
+  * `homedir` itself has a default value that will be used if not set
+* Added separate server & nickname authentication options [[#1513][]]
+  * See [authentication configuration docs][auth-config-docs]
+* Added `commands_on_connect` setting to send a list of commands automatically
+  when Sopel's IRC connection is successfully established [[#1528][]]
+* Log files have become *much* more configurable [[#1678][], [[#1714][]]]
+  * Logs are named based on the config name
+  * Many, many new settings added to customize logging
+  * The default log format includes timestamp, source package, & level (which
+    will make logs *much* more useful when reporting bugs)
+* Logs now have information about which plugin file was reloaded [[#1762][]]
+  * This is helpful for owners of Sopel instances with multiple versions of a
+    plugin available for testing or development purposes
+* Sopel's own rate-limiting & flood protection parameters are now configurable,
+  and can even be turned off entirely if Sopel is behind a bouncer or other IRC
+  proxy that handles flood protection itself [[#1518][], [#1638][]]
+* Added more control over JOIN throttling [[#1751][]]
+  * Includes a new `throttle_wait` setting instead of a hard-coded time value
+* Log timestamp and log line formats are now configurable [[#1512][]]
+  * See details in [the logging configuration docs][logging-config-docs]
+* Log filenames now include the config name, to help keep track of logs from
+  multiple Sopel instances [[#1547][]]
+* Home directory is no longer assumed to be `~/.sopel` on first run [[#1404][]]
+* Restarting Sopel via CLI is added [[#1333][]]
+* Sopel's CLI is restructured [[#1493][], [#1509][], [#1718][]]
+  * New subcommands (`start`, `stop`, `restart`, and `configure`) replace many
+    of the old `--option`s, cleaning up the syntax
+  * The legacy `--option`s will continue to work for the life of Sopel 7.x, and
+    will be removed in Sopel 8
+* New `--config-dir` common option [[#1598][]]
+* Added a new `sopel-config` command for working with config files [[#1507][]]
+  * Currently supports `list` (existing files), `init` (new config file), and
+    `get` (config value) actions
+  * The old `--list` argument to `sopel` is considered deprecated, and will be
+    removed in Sopel 8
+  * See detailed usage in your terminal with `sopel-config --help`, or review
+    [the online CLI docs][docs-cli-config] at our website
+* Added a new `sopel-plugins` command for managing plugins/modules [[#1588][]]
+  * Currently supports `list` (available plugins), `show` (plugin details &
+    status), `enable` & `disable` (edits config on the user's behalf)
+  * See detailed usage in your terminal with `sopel-plugins --help`, or review
+    [the online CLI docs][docs-cli-plugins] at our website
+* Sopel now also looks for plugins in `$HOMEDIR/plugins` [[#1747][]]
+  * This is part of a longer-term plan to reduce confusion over the term
+    "module", which Sopel has been using in conflicting ways; see [[#1738][]]
+* The config file Sopel should use can be specified via the `SOPEL_CONFIG`
+  environment variable [[#1473][]]
+* List values in config can be separated by newlines [[#1628][], [#1690][]]
+  * Newline-separated values support commas within each value
+  * Comma-separated value support will end someday, but likely not till Sopel 9
+  * Find more details in [the `ListAttribute` documentation][docs-listattr]
+* Config options can be set/overridden via environment variables [[#1096][]]
+  * Variable naming format: `SOPEL_SECTION_OPTION`
+  * Underscores in `SECTION` and `OPTION` names are preserved, e.g.
+    `SOPEL_CORE_AUTH_PASSWORD`
+* Example service unit files now include a multi-instance template for systemd
+  [[#1059][]]
+* Example systemd unit files wait until networking is connected before starting
+  Sopel [[#1511][]]
+* Running Sopel on an unknown OS platform will output a warning encouraging the
+  user to report any issues (because test coverage on an unrecognized platform
+  name is likely to be nil) [[#1487][]]
+* Cleaned up or refactored a bunch of places [[#1424][], [#1429][], [#1456][],
+  [#1458][], [#1472][], [#1479][], [#1510][], [#1522][], [#1527][], [#1542][],
+  [#1557][], [#1561][], [#1567][], [#1579][], [#1580][], [#1583][], [#1597][],
+  [#1610][], [#1635][], [#1685][], [#1697][], [#1708][], [#1716][], [#1723][],
+  [#1724][], [#1728][], [#1730][], [#1731][], [#1732][], [#1735][], [#1739][],
+  [#1740][], [#1741][], [#1742][], [#1743][], [#1754][], [#1759][], [#1787][]]
+* Sopel 7 will emit warnings when run under Python 2, as Python 2.7 support
+  officially ended on January 1, 2020 [[#1488][], [#1795][], [#1800][]]
+  * Sopel's warnings are set to become more dire around the time when Python's
+    maintainers plan to release the final version of 2.7
+  * While Sopel 7 is intended to remain compatible with Python 2, future
+    compatibility is not guaranteed, and users should plan for Sopel 8 to
+    officially drop Python 2 support (see [upgrade notes][sopel-7-migration])
+* Added support for IRCv3 `echo-message` capability, which Sopel will now
+  request upon connecting to an IRC server [[#1470][], [#1672][], [#1674][]]
+* Added support for disabling commands (or entire modules) on a per-channel
+  basis [[#1235][]]
+  * See how it works: [Per-channel configuration][per-channel-conf]
+* Fixed tracking user `away` state [[#1663][], [#1664][], [#1666][], [#1703][]]
+* User information is now periodically updated [[#1664][]]
+* Fixed a case in which MODE tracking could break [[#1737][]]
+* Handle non-standard `+y`/`+Y` OPER modes [[#1671][]]
+  * A new `OPER` constant in `sopel.module` now exists for these channel modes,
+    which (at least on InspIRCd) use the privilege prefix `!`
+  * This is a stopgap for one specific case; we are working on further changes
+    to support dynamic parsing of privilege modes/prefixes at connect time
+* Stopped sending TOPIC command on JOIN [[#1749][]]
+  * IRC servers should send the topic on join without being asked, per spec
+* Greatly improved the warning printed when a deprecated function is used,
+  adding detail and removing unnecessary traceback lines [[#1568][], [#1613][]]
+  * Typical length of output for each deprecated function call reduced from
+    roughly 15 lines to 3 (warning, file/line, and offending code snippet)
+  * Added optional `@deprecated` decorator arguments:
+    * `reason`: why this item was deprecated
+    * `version`: the version in which the deprecation happened
+    * `removed_in`: the version in which the deprecated item will be removed
+* The end-of-life warning for users on Python 2.x is now date-aware [[#1756][]]
+
+API changes
+-----------
+
+* [API documentation][api-docs] has been almost entirely overhauled [[#1563][],
+  [#1566][], [#1646][], [#1668][], [#1669][], [#1680][], [#1719][], [#1727][],
+  [#1735][], [#1750][], [#1766][], [#1770][], [#1771][], [#1772][], [#1775][],
+  [#1776][], [#1778][], [#1782][]]
+  * Nearly every file, both for the public API and Sopel's internals, was
+    reviewed in its entirety to make these improvements globally:
+    * More consistent style
+    * Better use of Sphinx features (e.g. parameter definitions, return value
+      notes, & version annotations)
+    * General cleanup and copy-editing
+    * Add more detail and examples to help new bot users and plugin authors
+    * Remove or correct outdated information left over from previous versions
+* Most of Sopel's submodules now define `__all__`, limiting namespace pollution
+  from using `*` in imports [[#1582][], [#1727][]]
+* Plugins can register themselves via `setuptools` entry points [[#1585][]]
+  * This feature is an evolution of the previous mechanism to install plugins
+    via PyPI packages, which required a specific directory structure and
+    package name format (`sopel_modules.plugin_name`)
+  * See [the entry point plugin documentation][entry-point-plugin] for more
+* Logging has been reworked [[#1678][]]
+  * The `sopel.logger.get_logger()` function is deprecated in favor of a new
+    `sopel.tools.get_logger()` utility with plugin-specific behavior
+  * `sopel.logger.get_logger()` will begin emitting deprecation warnings in
+    version 8.0, and will be removed in 9.0
+* Testing tools have been overhauled [[#1731][], [#1732][], [#1781][]]
+  * The old "Mock" classes in `sopel.test_tools` are now deprecated:
+    * `MockConfig`
+    * `MockSopel`
+    * `MockSopelWrapper`
+  * New pytest fixtures make the real objects usable in tests directly
+  * The bot keeps track of running triggered threads, so tests can be sure that
+    processing has finished before evaluating results
+  * Sopel also now exports a `pytest` plugin, for convenience
+* `module.event()` decorator no longer requires a rule [[#1693][], [#1709][]]
+  * Since 99% (unscientific guesstimate) of event decorators were paired with
+    `@module.rule('.*')`, that's now implied if no rule decorator is present
+* Added `sopel.tools.web` (replaces `sopel.web`) [[#1616][], [#1670][]]
+  * Both old and new import locations will work until Sopel 7 end-of-life
+  * The `sopel.web` package will be removed completely in Sopel 8
+  * Functions marked as deprecated in the old location (e.g. `web.get()`) do
+    *not* carry forward to the new package namespace; they remain deprecated
+* Added `tools.web.unquote()`, the reverse of `tools.web.quote()` [[#1681][]]
+  * Note: This is not available in the `sopel.web` compatibility layer
+* Added a set of methods in the `bot` object to manipulate URL callbacks:
+  `bot.register_url_callback`, `bot.unregister_url_callback`, and
+  `bot.search_url_callbacks` [[#1508][]]
+  * Modules should switch to using these new API methods instead of directly
+    accessing `bot.memory['url_callbacks']`
+  * There are no definite plans to remove `bot.memory['url_callbacks']`, but it
+    should be considered deprecated
+* Added `kick()` method to `bot` object [[#1539][]]
+  * `bot.kick(nick, channel, optional_message)` is shorthand for the pattern
+    `bot.write(['KICK', channel, nick], optional_message)`, used by a number
+    of both core and third-party plugins
+* Added `bot.myinfo`, containing the server's RPL_MYINFO (004) data [[#1769][]]
+  * More information in [the MYINFO documentation][docs-myinfo]
+* Added `bot.isupport`, exposing network-specific settings and properties from
+  the server's RPL_ISUPPORT (005) data [[#1758][]]
+  * This includes useful things like the network's maximum nickname length
+    (`NICKLEN`), maximum topic length (`TOPICLEN`), number of targets allowed
+    per command (`TARGMAX`), and channel-privilege mappings (`PREFIX`)
+  * More information in [the ISUPPORT documentation][docs-isupport]
+* Added `delete_{nick,channel}_value` methods in `bot.db` [[#1526][]]
+* Added "plugin value" API to `bot.db` [[#1621][]]
+  * Functionally identical to "nick" and "channel" values, but in a separate
+    namespace intended for plugins' use to store key-value data that isn't
+    associated with a nick or channel and doesn't belong in the config file
+* Added optional `default` kwarg to `db.get_*_value()` functions [[#1673][]]
+  * This allows streamlining some uses of values fetched from the database
+* New `sopel.module.output_prefix` decorator [[#1701][]]
+  * Defines a prefix for all output sent from the decorated callable via
+    `bot.say` or `bot.notice` (`bot.action` & `bot.reply` don't fit the use
+    cases this feature is intended to address)
+* New `sopel.module.require_account` decorator [[#1733][]]
+  * This is useful to require services login on networks where Sopel can track
+    users' authentication status, but will block *all* use of the decorated
+    callable on networks without the necessary features
+* `sopel.module` decorators work much more consistently [[#1632][]]
+  * All relevant decorators accept multiple arguments at once, and will work
+    properly if used multiple times on the same function
+* Added `reply` option to `module.require_*` decorators [[#1456][], [#1500][]]
+  * Passing `reply=True` will send the error message as if via `bot.reply()`,
+    prefixing it with the name of the calling user to get their attention
+  * Passing `reply=False` (or omitting the argument) will behave exactly as
+    before, with the error message sent as if via `bot.say()`
+* Fixed the `@module.url` decorator to work always, regardless of whether any
+  core plugins are enabled [[#1510][], [#1576][]]
+* Added `bot.hostmask` property (read-only) [[#1537][]]
+  * This property is a shortcut for `bot.users.get(bot.nick).hostmask`, so it
+    will throw an error if the bot is not connected to a network **and** joined
+    to at least one channel. Basically, don't try to use it in plugin `setup()`
+    or `shutdown()` methods.
+* Added `bot.get_plugin_meta()` method to fetch plugin information [[#1762][]]
+* Added `module.echo` decorator [[#1470][]]
+  * Decorated callables will receive messages that Sopel itself sends,
+    regardless of whether the IRC server actually supports `echo-message`
+  * Don't send output from `@echo`-decorated callables; this will cause loops
+* Added `module.action_commands` decorator [[#1660][]]
+  * This presently conflicts with other command/trigger decorators because of
+    internal implementation details, but fixing that is on our to-do list
+  * If you want both `action_commands` and another command type (`commands`,
+    `nickname_commands`, etc.), use `@action_commands('foo')` to decorate a
+    wrapper function that simply calls the main one
+* Officially deprecated the methods `SopelMemory.contains()` and
+  `SopelMemoryWithDefault.contains()`, to be removed in Sopel 8 [[#1563][]]
+  * Use the `in` operator instead
+* Officially deprecated the `bot.msg()` method [[#1606][]]
+  * Adds a warning to Sopel's output for any third-party code that is still
+    using `bot.msg()` (which was declared deprecated and removed from the API
+    docs in 6.0) instead of `bot.say()`
+* Added a new `user_help` kwarg to `@module.example` decorator [[#1403][]]
+  * This allows multiple help examples per command, as requested in [#1200][]
+  * See the [Sopel 7 migration guide][sopel-7-migration] for details on using
+    this new parameter, and about backwards compatibility
+* Added a new `online` kwarg to `@module.example` decorator [[#1555][]]
+  * Example tests that require an Internet connection may be marked with
+    `online=True` to indicate this fact (the default is `False`)
+  * This facilitates running only offline-safe module tests, by passing
+    `--offline` to pytest, if an Internet connection is unavailable
+  * Outside of the test suite, this parameter has no effect
+* Corrected case-mapping in `tools.Identifier` class [[#1744][]]
+  * See [the Sopel 7 migration guide][sopel-7-migration] for details,
+    particularly if your plugin interacts with the database and/or user/channel
+    identifiers in their lowercase form
+* Added more utilities to `tools.time`:
+  * `tools.time.seconds_to_human()`, for generating human-readable fuzzy
+    relative timestamps from `timedelta` or raw number of seconds [[#1560][]]
+  * `tools.time.get_nick_timezone()` and `tools.time.get_channel_timezone()`,
+    for cases where the fallback behavior(s) of `tools.time.get_timezone()`
+    would be undesired [[#1592][]]
+* Made `tools.time.validate_timezone()` more robust [[#1707][]]
+* Added alias for 462 numeric in `tools.events` [[#1665][]]
+  * [RFC 2812][] defined an incorrect spelling, `ERR_ALREADYREGISTRED`, and
+    Sopel copied it verbatim
+  * The spelling `ERR_ALREADYREGISTERED` can be used now, too
+* Fixed invalid raw lines in generated `@example` tests [[#1499][]]
+* Fixed `PreTrigger` objects missing the `text` attribute sometimes [[#1782][]]
+
+
+[#1059]: https://github.com/sopel-irc/sopel/pull/1059
+[#1096]: https://github.com/sopel-irc/sopel/pull/1096
+[#1142]: https://github.com/sopel-irc/sopel/issues/1142
+[#1164]: https://github.com/sopel-irc/sopel/pull/1164
+[#1200]: https://github.com/sopel-irc/sopel/issues/1200
+[#1235]: https://github.com/sopel-irc/sopel/pull/1235
+[#1333]: https://github.com/sopel-irc/sopel/pull/1333
+[#1402]: https://github.com/sopel-irc/sopel/pull/1402
+[#1403]: https://github.com/sopel-irc/sopel/pull/1403
+[#1404]: https://github.com/sopel-irc/sopel/pull/1404
+[#1424]: https://github.com/sopel-irc/sopel/pull/1424
+[#1425]: https://github.com/sopel-irc/sopel/pull/1425
+[#1429]: https://github.com/sopel-irc/sopel/pull/1429
+[#1430]: https://github.com/sopel-irc/sopel/pull/1430
+[#1439]: https://github.com/sopel-irc/sopel/pull/1439
+[#1443]: https://github.com/sopel-irc/sopel/pull/1443
+[#1446]: https://github.com/sopel-irc/sopel/pull/1446
+[#1451]: https://github.com/sopel-irc/sopel/pull/1451
+[#1456]: https://github.com/sopel-irc/sopel/pull/1456
+[#1458]: https://github.com/sopel-irc/sopel/pull/1458
+[#1459]: https://github.com/sopel-irc/sopel/pull/1459
+[#1462]: https://github.com/sopel-irc/sopel/pull/1462
+[#1470]: https://github.com/sopel-irc/sopel/pull/1470
+[#1472]: https://github.com/sopel-irc/sopel/pull/1472
+[#1473]: https://github.com/sopel-irc/sopel/pull/1473
+[#1479]: https://github.com/sopel-irc/sopel/pull/1479
+[#1486]: https://github.com/sopel-irc/sopel/pull/1486
+[#1487]: https://github.com/sopel-irc/sopel/pull/1487
+[#1488]: https://github.com/sopel-irc/sopel/pull/1488
+[#1492]: https://github.com/sopel-irc/sopel/pull/1492
+[#1493]: https://github.com/sopel-irc/sopel/pull/1493
+[#1497]: https://github.com/sopel-irc/sopel/pull/1497
+[#1498]: https://github.com/sopel-irc/sopel/pull/1498
+[#1499]: https://github.com/sopel-irc/sopel/pull/1499
+[#1500]: https://github.com/sopel-irc/sopel/pull/1500
+[#1503]: https://github.com/sopel-irc/sopel/pull/1503
+[#1505]: https://github.com/sopel-irc/sopel/pull/1505
+[#1507]: https://github.com/sopel-irc/sopel/pull/1507
+[#1508]: https://github.com/sopel-irc/sopel/pull/1508
+[#1509]: https://github.com/sopel-irc/sopel/pull/1509
+[#1510]: https://github.com/sopel-irc/sopel/pull/1510
+[#1511]: https://github.com/sopel-irc/sopel/pull/1511
+[#1512]: https://github.com/sopel-irc/sopel/pull/1512
+[#1513]: https://github.com/sopel-irc/sopel/pull/1513
+[#1518]: https://github.com/sopel-irc/sopel/pull/1518
+[#1522]: https://github.com/sopel-irc/sopel/pull/1522
+[#1526]: https://github.com/sopel-irc/sopel/pull/1526
+[#1527]: https://github.com/sopel-irc/sopel/pull/1527
+[#1528]: https://github.com/sopel-irc/sopel/pull/1528
+[#1537]: https://github.com/sopel-irc/sopel/pull/1537
+[#1539]: https://github.com/sopel-irc/sopel/pull/1539
+[#1542]: https://github.com/sopel-irc/sopel/pull/1542
+[#1545]: https://github.com/sopel-irc/sopel/pull/1545
+[#1547]: https://github.com/sopel-irc/sopel/pull/1547
+[#1555]: https://github.com/sopel-irc/sopel/pull/1555
+[#1556]: https://github.com/sopel-irc/sopel/pull/1556
+[#1557]: https://github.com/sopel-irc/sopel/pull/1557
+[#1560]: https://github.com/sopel-irc/sopel/pull/1560
+[#1561]: https://github.com/sopel-irc/sopel/pull/1561
+[#1563]: https://github.com/sopel-irc/sopel/pull/1563
+[#1566]: https://github.com/sopel-irc/sopel/pull/1566
+[#1567]: https://github.com/sopel-irc/sopel/pull/1567
+[#1568]: https://github.com/sopel-irc/sopel/pull/1568
+[#1569]: https://github.com/sopel-irc/sopel/pull/1569
+[#1573]: https://github.com/sopel-irc/sopel/pull/1573
+[#1574]: https://github.com/sopel-irc/sopel/pull/1574
+[#1576]: https://github.com/sopel-irc/sopel/pull/1576
+[#1577]: https://github.com/sopel-irc/sopel/pull/1577
+[#1578]: https://github.com/sopel-irc/sopel/pull/1578
+[#1579]: https://github.com/sopel-irc/sopel/pull/1579
+[#1580]: https://github.com/sopel-irc/sopel/pull/1580
+[#1581]: https://github.com/sopel-irc/sopel/pull/1581
+[#1582]: https://github.com/sopel-irc/sopel/pull/1582
+[#1583]: https://github.com/sopel-irc/sopel/pull/1583
+[#1585]: https://github.com/sopel-irc/sopel/pull/1585
+[#1588]: https://github.com/sopel-irc/sopel/pull/1588
+[#1590]: https://github.com/sopel-irc/sopel/pull/1590
+[#1592]: https://github.com/sopel-irc/sopel/pull/1592
+[#1597]: https://github.com/sopel-irc/sopel/pull/1597
+[#1598]: https://github.com/sopel-irc/sopel/pull/1598
+[#1606]: https://github.com/sopel-irc/sopel/pull/1606
+[#1607]: https://github.com/sopel-irc/sopel/pull/1607
+[#1609]: https://github.com/sopel-irc/sopel/pull/1609
+[#1610]: https://github.com/sopel-irc/sopel/pull/1610
+[#1613]: https://github.com/sopel-irc/sopel/pull/1613
+[#1616]: https://github.com/sopel-irc/sopel/pull/1616
+[#1620]: https://github.com/sopel-irc/sopel/pull/1620
+[#1621]: https://github.com/sopel-irc/sopel/pull/1621
+[#1624]: https://github.com/sopel-irc/sopel/pull/1624
+[#1627]: https://github.com/sopel-irc/sopel/pull/1627
+[#1628]: https://github.com/sopel-irc/sopel/pull/1628
+[#1629]: https://github.com/sopel-irc/sopel/pull/1629
+[#1632]: https://github.com/sopel-irc/sopel/pull/1632
+[#1633]: https://github.com/sopel-irc/sopel/pull/1633
+[#1635]: https://github.com/sopel-irc/sopel/pull/1635
+[#1638]: https://github.com/sopel-irc/sopel/pull/1638
+[#1646]: https://github.com/sopel-irc/sopel/pull/1646
+[#1651]: https://github.com/sopel-irc/sopel/pull/1651
+[#1652]: https://github.com/sopel-irc/sopel/pull/1652
+[#1660]: https://github.com/sopel-irc/sopel/pull/1660
+[#1661]: https://github.com/sopel-irc/sopel/pull/1661
+[#1663]: https://github.com/sopel-irc/sopel/pull/1663
+[#1664]: https://github.com/sopel-irc/sopel/pull/1664
+[#1665]: https://github.com/sopel-irc/sopel/pull/1665
+[#1666]: https://github.com/sopel-irc/sopel/pull/1666
+[#1668]: https://github.com/sopel-irc/sopel/pull/1668
+[#1669]: https://github.com/sopel-irc/sopel/pull/1669
+[#1670]: https://github.com/sopel-irc/sopel/pull/1670
+[#1671]: https://github.com/sopel-irc/sopel/pull/1671
+[#1672]: https://github.com/sopel-irc/sopel/pull/1672
+[#1673]: https://github.com/sopel-irc/sopel/pull/1673
+[#1674]: https://github.com/sopel-irc/sopel/pull/1674
+[#1675]: https://github.com/sopel-irc/sopel/pull/1675
+[#1677]: https://github.com/sopel-irc/sopel/pull/1677
+[#1678]: https://github.com/sopel-irc/sopel/pull/1678
+[#1679]: https://github.com/sopel-irc/sopel/pull/1679
+[#1680]: https://github.com/sopel-irc/sopel/pull/1680
+[#1681]: https://github.com/sopel-irc/sopel/pull/1681
+[#1684]: https://github.com/sopel-irc/sopel/pull/1684
+[#1685]: https://github.com/sopel-irc/sopel/pull/1685
+[#1690]: https://github.com/sopel-irc/sopel/pull/1690
+[#1693]: https://github.com/sopel-irc/sopel/pull/1693
+[#1694]: https://github.com/sopel-irc/sopel/pull/1694
+[#1696]: https://github.com/sopel-irc/sopel/pull/1696
+[#1697]: https://github.com/sopel-irc/sopel/pull/1697
+[#1699]: https://github.com/sopel-irc/sopel/pull/1699
+[#1700]: https://github.com/sopel-irc/sopel/pull/1700
+[#1701]: https://github.com/sopel-irc/sopel/pull/1701
+[#1702]: https://github.com/sopel-irc/sopel/pull/1702
+[#1703]: https://github.com/sopel-irc/sopel/pull/1703
+[#1706]: https://github.com/sopel-irc/sopel/pull/1706
+[#1707]: https://github.com/sopel-irc/sopel/pull/1707
+[#1708]: https://github.com/sopel-irc/sopel/pull/1708
+[#1709]: https://github.com/sopel-irc/sopel/pull/1709
+[#1710]: https://github.com/sopel-irc/sopel/pull/1710
+[#1711]: https://github.com/sopel-irc/sopel/pull/1711
+[#1712]: https://github.com/sopel-irc/sopel/pull/1712
+[#1713]: https://github.com/sopel-irc/sopel/pull/1713
+[#1714]: https://github.com/sopel-irc/sopel/pull/1714
+[#1715]: https://github.com/sopel-irc/sopel/pull/1715
+[#1716]: https://github.com/sopel-irc/sopel/pull/1716
+[#1717]: https://github.com/sopel-irc/sopel/pull/1717
+[#1718]: https://github.com/sopel-irc/sopel/pull/1718
+[#1719]: https://github.com/sopel-irc/sopel/pull/1719
+[#1720]: https://github.com/sopel-irc/sopel/pull/1720
+[#1721]: https://github.com/sopel-irc/sopel/pull/1721
+[#1722]: https://github.com/sopel-irc/sopel/pull/1722
+[#1723]: https://github.com/sopel-irc/sopel/pull/1723
+[#1724]: https://github.com/sopel-irc/sopel/pull/1724
+[#1725]: https://github.com/sopel-irc/sopel/pull/1725
+[#1727]: https://github.com/sopel-irc/sopel/pull/1727
+[#1728]: https://github.com/sopel-irc/sopel/pull/1728
+[#1729]: https://github.com/sopel-irc/sopel/pull/1729
+[#1730]: https://github.com/sopel-irc/sopel/pull/1730
+[#1731]: https://github.com/sopel-irc/sopel/pull/1731
+[#1732]: https://github.com/sopel-irc/sopel/pull/1732
+[#1733]: https://github.com/sopel-irc/sopel/pull/1733
+[#1734]: https://github.com/sopel-irc/sopel/pull/1734
+[#1735]: https://github.com/sopel-irc/sopel/pull/1735
+[#1736]: https://github.com/sopel-irc/sopel/pull/1736
+[#1737]: https://github.com/sopel-irc/sopel/pull/1737
+[#1738]: https://github.com/sopel-irc/sopel/issues/1738
+[#1739]: https://github.com/sopel-irc/sopel/pull/1739
+[#1740]: https://github.com/sopel-irc/sopel/pull/1740
+[#1741]: https://github.com/sopel-irc/sopel/pull/1741
+[#1742]: https://github.com/sopel-irc/sopel/pull/1742
+[#1743]: https://github.com/sopel-irc/sopel/pull/1743
+[#1744]: https://github.com/sopel-irc/sopel/pull/1744
+[#1747]: https://github.com/sopel-irc/sopel/pull/1747
+[#1749]: https://github.com/sopel-irc/sopel/pull/1749
+[#1750]: https://github.com/sopel-irc/sopel/pull/1750
+[#1751]: https://github.com/sopel-irc/sopel/pull/1751
+[#1753]: https://github.com/sopel-irc/sopel/pull/1753
+[#1754]: https://github.com/sopel-irc/sopel/pull/1754
+[#1755]: https://github.com/sopel-irc/sopel/pull/1755
+[#1756]: https://github.com/sopel-irc/sopel/pull/1756
+[#1758]: https://github.com/sopel-irc/sopel/pull/1758
+[#1759]: https://github.com/sopel-irc/sopel/pull/1759
+[#1760]: https://github.com/sopel-irc/sopel/pull/1760
+[#1762]: https://github.com/sopel-irc/sopel/pull/1762
+[#1766]: https://github.com/sopel-irc/sopel/pull/1766
+[#1769]: https://github.com/sopel-irc/sopel/pull/1769
+[#1770]: https://github.com/sopel-irc/sopel/pull/1770
+[#1771]: https://github.com/sopel-irc/sopel/pull/1771
+[#1772]: https://github.com/sopel-irc/sopel/pull/1772
+[#1773]: https://github.com/sopel-irc/sopel/pull/1773
+[#1774]: https://github.com/sopel-irc/sopel/pull/1774
+[#1775]: https://github.com/sopel-irc/sopel/pull/1775
+[#1776]: https://github.com/sopel-irc/sopel/pull/1776
+[#1777]: https://github.com/sopel-irc/sopel/pull/1777
+[#1778]: https://github.com/sopel-irc/sopel/pull/1778
+[#1779]: https://github.com/sopel-irc/sopel/pull/1779
+[#1781]: https://github.com/sopel-irc/sopel/pull/1781
+[#1782]: https://github.com/sopel-irc/sopel/pull/1782
+[#1783]: https://github.com/sopel-irc/sopel/pull/1783
+[#1787]: https://github.com/sopel-irc/sopel/pull/1787
+[#1788]: https://github.com/sopel-irc/sopel/pull/1788
+[#1791]: https://github.com/sopel-irc/sopel/pull/1791
+[#1795]: https://github.com/sopel-irc/sopel/pull/1795
+[#1797]: https://github.com/sopel-irc/sopel/pull/1797
+[#1800]: https://github.com/sopel-irc/sopel/pull/1800
+[#1802]: https://github.com/sopel-irc/sopel/pull/1802
+
+[api-docs]: https://sopel.chat/docs/
+[auth-config-docs]: https://sopel.chat/docs/configure.html#Authentication
+[docs-cli-config]: https://sopel.chat/docs/cli.html#the-sopel-config-command
+[docs-cli-plugins]: https://sopel.chat/docs/cli.html#the-sopel-plugins-command
+[docs-isupport]: https://sopel.chat/docs/irc.html#module-sopel.irc.isupport
+[docs-listattr]: https://sopel.chat/docs/config.html#sopel.config.types.ListAttribute
+[docs-myinfo]: https://sopel.chat/docs/irc.html#sopel.irc.utils.MyInfo
+[entry-point-plugin]: https://sopel.chat/docs/plugin.html#sopel.plugins.handlers.EntryPointPlugin
+[install-guide-db]: https://sopel.chat/usage/installing/#configuring-the-database-optional
+[logging-config-docs]: https://sopel.chat/docs/configure.html#Logging
+[per-channel-conf]: https://sopel.chat/usage/per-channel-configuration/
+[readme-db]: https://github.com/sopel-irc/sopel/blob/v7.0.0/README.rst#database-support
+[sopel-7-migration]: https://sopel.chat/usage/installing/upgrading-to-sopel-7/
+
+[oblique]: https://github.com/sopel-irc/oblique
+
+[ipython-pypi]: https://pypi.org/project/sopel-ipython/
+[spellcheck-pypi]: https://pypi.org/project/sopel-spellcheck/
+
+[RFC 2812]: https://tools.ietf.org/html/rfc2812
+
 
 Changes between 6.6.8 and 6.6.9
 ===============================
@@ -227,8 +812,8 @@ the new (and old) API methods are welcome in [#sopel][] on Freenode, of course,
 as always. Thank you for bearing with this transitional period!
 
 Importantly, a couple of broken modules have been removed in this release. For
-easy reference, they and their PyPI-installable replacements are listed near the
-top of the "[Module changes](#module-changes)" section.
+easy reference, they and their PyPI-installable replacements are listed near
+the top of the "[Module changes](#module-changes)" section.
 
 Because this is the last release planned before Sopel 7, it's important to note
 some upcoming changes. They're mostly for module developers, or for bot owners
@@ -236,8 +821,8 @@ who run unmaintained third-party modules (which might need manual updating).
 
 But first, a user-facing change. Sopel is drifting toward a more streamlined
 release model, which will see most of the core module library split out into
-separate packages. Moving modules to their own packages will enable faster fixes
-when APIs change, and easier module adoption by members of the community.
+separate packages. Moving modules to their own packages will enable faster
+fixes when APIs change, and easier module adoption by members of the community.
 
 Further process details will appear in future changelogs as modules are moved
 out of core, but the plan is to have Sopel "require" modules it used to include
@@ -248,9 +833,9 @@ discuss this plan, visit issue [#1291][].
 And now, for the developer stuff.
 
 There will be some attention given to how `Identifier` objects work in Sopel 7.
-In particular, the way lowercase works appears to have been wrong for some time.
-Subscribe to issue [#1389][] for updates, or to join the discussion on the best
-plan for addressing this.
+In particular, the way lowercase works appears to have been wrong for some
+time. Subscribe to issue [#1389][] for updates, or to join the discussion on
+the best plan for addressing this.
 
 Also in Sopel 7, the following deprecated functions in `sopel.web` will be
 removed: `get()`, `head()`, `post()`, `get_urllib_object()`. Module authors
@@ -258,16 +843,16 @@ should replace these with equivalent code using `requests`. If you don't know
 what that is, you're in for a treat: <https://pypi.org/project/requests/>
 
 Remaining `sopel.web` functions might also move in a future major release. See
-[#1318][] and comment your opinion if you are a module developer. There is still
-plenty of time to give feedback; nothing will happen before Sopel 8 at the
-earliest.
+[#1318][] and comment your opinion if you are a module developer. There is
+still plenty of time to give feedback; nothing will happen before Sopel 8 at
+the earliest.
 
-Support for multiple help examples on each module command is planned for Sopel 7
-and will allow for clearer command and argument documentation. The current help
-system uses a deterministic but unintuitive method to choose a single example to
-output. The current plan is to make the new multi-example behavior opt-in, so
-only help for modules that are explicitly updated to support it will change.
-Follow this initiative in [#1200][].
+Support for multiple help examples on each module command is planned for Sopel
+7 and will allow for clearer command and argument documentation. The current
+help system uses a deterministic but unintuitive method to choose a single
+example to output. The current plan is to make the new multi-example behavior
+opt-in, so only help for modules that are explicitly updated to support it will
+change. Follow this initiative in [#1200][].
 
 Bot owners and admins might appreciate the new ignore system proposal, which
 would (among other things) make "hostmask" blocks actually block hostmasks! See
@@ -301,15 +886,16 @@ Module changes
 * Added instagram module: displays information about Instagram links in chat
 * Removed movie: The OMDb API went private some time ago (Q2 2017)
   * See [`sopel-modules.imdb`][pypi-imdb] on PyPI for a functional replacement
-* Removed weather: Yahoo deprecated its weather service, the last known keyless weather API
+* Removed weather: Yahoo deprecated its weather service, the last known keyless
+  weather API
   * See [`sopel-modules.weather`][pypi-weather] on PyPI for a functional
-    replacement that also adds the forecast command originally planned to launch
-    with Sopel 6.6.0.
+    replacement that also adds the forecast command originally planned to
+    launch with Sopel 6.6.0.
 * admin module's `.set` command handles spaces properly now
 * bugzilla no longer spits out an error on shutdown if its domain list is empty
 * dice module's `.roll`/`.dice`/`.d` command gives friendlier errors, and its
-  `.choice`/`.choose`/`.ch` command has cleaner output (will be further improved
-  in a later release)
+  `.choice`/`.choose`/`.ch` command has cleaner output (will be further
+  improved in a later release)
 * etymology module updated to work with etymonline.com's changes
 * ip module can now look up nicknames (user's hostname) & IPv6 addresses
 * ip module switched from deprecated GeoIP database to GeoIP2
@@ -362,7 +948,8 @@ Core changes
 * Raw logging is no longer enabled by default
 * Comparisons between Identifiers and other types were improved
 * Sopel no longer sends the sticky modifier for capabilities
-* Database tables are now created using "IF NOT EXISTS" to reduce error potential
+* Database tables are now created using "IF NOT EXISTS" to reduce error
+  potential
 * Deprecated `sopel.web` calls in various modules updated to use `requests`
   instead
 * Intents/CTCP handling fixed
@@ -371,7 +958,8 @@ Core changes
 API changes
 -----------
 
-* New formatting methods: `italic`, `strikethrough`, `monospace`, `hex_color`, `reverse` (inverted video)
+* New formatting methods: `italic`, `strikethrough`, `monospace`, `hex_color`,
+  `reverse` (inverted video)
   * With the exception of italics, these are all "niche" formatting codes that
     have relatively limited client support, but they are included for
     completeness.
@@ -379,13 +967,14 @@ API changes
 * Fixed populating `bot.channels` privileges dicts on connect
 * Fixed updating `User` objects when receiving `NICK` events from the server
 * Documentation added/corrected in several places
-* Command prefix in examples is now assumed to match the default regex pattern (currently `\.`)
+* Command prefix in examples is now assumed to match the default regex pattern
+  (currently `\.`)
   * This fixes some issues with incorrect help output, but might cause new
     problems in modules that use non-standard prefixes in their examples.
   * Sopel's maintenance team regrets not providing advance warning of this
     change, but the potential impact is limited to perhaps a few misplaced
-    characters in help output, at most—same as the bug itself, but likely with a
-    much lower incidence.
+    characters in help output, at most—same as the bug itself, but likely with
+    a much lower incidence.
 
 
 Changes between 6.5.2 and 6.5.3
@@ -508,8 +1097,8 @@ Changes between 6.3.1 and 6.4.0
 Module changes
 --------------
 
-* For some subreddits where NSFW is used to mark spoilers, an appropriate tag is
-  shown.
+* For some subreddits where NSFW is used to mark spoilers, an appropriate tag
+  is shown.
 * `.ddg` avoids giving ad results.
 * `.wa` is fully removed
   * See [`sopel-modules.wolfram`][pypi-wolfram] on PyPI for a replacement
@@ -667,7 +1256,8 @@ API changes
 -----------
 
 * `ListAttribute` configs can be set to a list or set, with the same effect
-* The configure method of validated config attributes now takes the parent config and section name
+* The configure method of validated config attributes now takes the parent
+  config and section name
 
 
 Changes between 5.5.1 and 6.0.0
@@ -695,7 +1285,8 @@ Module changes
 Core changes
 ------------
 
-* Deprecated login configs have been removed in favor of the new `auth_*` values
+* Deprecated login configs have been removed in favor of the new `auth_*`
+  values
 * Module reloading has been redone to enable modules to be installed from PyPI
 * IRCv3 capability negotiation is updated for v3.2
 
@@ -705,8 +1296,8 @@ API changes
 * Configuration has been entirely reworked. Old wizard functions and the
   `get_list()` function are removed, but most other uses of the config should
   continue to work.
-* The reorganization of `willie.tools` introduced in 5.3.0 is finalized; the old
-  import locations no longer work.
+* The reorganization of `willie.tools` introduced in 5.3.0 is finalized; the
+  old import locations no longer work.
 * `bot.msg` is deprecated in favor of `bot.say`, which can now be used in
   un-triggered contexts with an additional `recipient` argument
 
@@ -737,8 +1328,8 @@ This release starts preparations for Willie 6. See
 API changes
 -----------
 
-* The ability to import from the `sopel` package, rather than `willie`, is added
-  to enable forward compatibility with the rename in 6.0
+* The ability to import from the `sopel` package, rather than `willie`, is
+  added to enable forward compatibility with the rename in 6.0
 * A `version_info` tuple, similar to Python's own `sys.version_info`, is added
 * An error when setting a validated config attribute to `None` is fixed
 
@@ -804,8 +1395,8 @@ API changes
 -----------
 
 * Time and calculation tools are split out into multiple modules. The moved
-  things will also be available in `tools` itself until 6.0, whereupon they will
-  only be available in their new locations.
+  things will also be available in `tools` itself until 6.0, whereupon they
+  will only be available in their new locations.
 * Functions and classes used internally for scheduling jobs are moved. They are
   still available in their old location, but are no longer documented and will
   not be considered part of the public API in 6.0.
@@ -845,7 +1436,8 @@ Module changes
 * Channel logs can now use the bot's preferred time zone
 * Getter and setter methods for timezone and format are more consistently named
 * `.seen` persists across bot restarts
-* `.seen` no longer shows message or channel unless used within the same channel
+* `.seen` no longer shows message or channel unless used within the same
+  channel
 * Special characters in Wikipedia URLs are handled correctly
 
 Core changes
@@ -872,7 +1464,8 @@ This release contains backwards-incompatible changes. See
 Module changes
 --------------
 
-* YouTube no longer shows bizarre lengths when the bot is running under Python 3
+* YouTube no longer shows bizarre lengths when the bot is running under Python
+  3
 * When Wikipedia links are posted, a snippet of the article is shown
 
 Core changes
@@ -979,8 +1572,8 @@ API changes
 -----------
 
 * Numerous functions were added to the db to ease the transition to Willie 5
-* `tools.Nick` has been renamed to `tools.Identifier`. `Nick` will be removed in
-  Willie 5
+* `tools.Nick` has been renamed to `tools.Identifier`. `Nick` will be removed
+  in Willie 5
 * `willie.web` functions now specify a meaningful default user agent
 * `web.post` now supports dicts as the payload, and can optionally return
   headers
@@ -1008,8 +1601,8 @@ Module changes
 
 * Willie will now alert the owner at startup, and every 24 hours, when a new
   version is available
-* `.calc` will now time out on excessively long calculations, and is less likely
-  to error out
+* `.calc` will now time out on excessively long calculations, and is less
+  likely to error out
 * `.help` now works properly for command aliases
 * `.help` will now output multi-line help in multiple messages, rather than all
   at once
@@ -1077,7 +1670,8 @@ Core changes
 
 * Channel joins at bot startup can be rate limited with the `throttle_joins`
   option in the `[core]` config section to work around server limits
-* Added the ability for SASL login where the nickname and username are different
+* Added the ability for SASL login where the nickname and username are
+  different
 * Improved loop protection and rate limiting
 * Fixed multiple Python 3 errors
 * Enable logging the bot in to Authserv at startup
@@ -1111,8 +1705,8 @@ Core changes
 API changes
 -----------
 
-* Nick instances now have an `is_nick` attribute, which is `True` when the value
-  is a valid nickname (as opposed to a channel)
+* Nick instances now have an `is_nick` attribute, which is `True` when the
+  value is a valid nickname (as opposed to a channel)
 
 
 Changes between 4.1.0 and 4.2.0
@@ -1125,7 +1719,8 @@ Module changes
 * `.c` can now understand a comma used as a radix point (rather than a period)
 * `.w` can now look in the Wikipedia for a specified (or configurable default)
   language
-* Timezones are now more user-friendly, and used more consistently across modules
+* Timezones are now more user-friendly, and used more consistently across
+  modules
 * Misc. bugfixes
 
 Core changes
@@ -1165,8 +1760,8 @@ Module changes
   * Module is overall better-behaved and less buggy
 * Traceback can now be attached to a GitHub issue from Willie's logs
 * GitHub module no longer puts "IRC" tag on issues it creates
-* A `.listactions` command is added to allow actions to be listed before the end
-  of a meeting
+* A `.listactions` command is added to allow actions to be listed before the
+  end of a meeting
 * Dice now limits itself to 1000 dice, and output is cleaned up
 * Willie now joins channels when invited
 * Reddit module no longer gives an error if the submitter's account has been
