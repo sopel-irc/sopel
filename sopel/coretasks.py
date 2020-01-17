@@ -996,7 +996,6 @@ def track_topic(bot, trigger):
 
 
 @module.rule(r'(?u).*(.+://\S+).*')
-@module.unblockable
 def handle_url_callbacks(bot, trigger):
     """Dispatch callbacks on URLs
 
