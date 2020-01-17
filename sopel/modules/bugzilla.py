@@ -57,7 +57,7 @@ def setup(bot):
 
 
 def shutdown(bot):
-    bot.unregister_url_callback(regex)
+    bot.unregister_url_callback(regex, show_bug)
 
 
 @rule(r'.*https?://(\S+?)'
