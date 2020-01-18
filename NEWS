@@ -219,6 +219,7 @@ Core changes
     * `version`: the version in which the deprecation happened
     * `removed_in`: the version in which the deprecated item will be removed
 * The end-of-life warning for users on Python 2.x is now date-aware [[#1756][]]
+* Tightened up some more dependency version specifiers [[#1807][]]
 
 API changes
 -----------
@@ -564,6 +565,7 @@ API changes
 [#1797]: https://github.com/sopel-irc/sopel/pull/1797
 [#1800]: https://github.com/sopel-irc/sopel/pull/1800
 [#1802]: https://github.com/sopel-irc/sopel/pull/1802
+[#1807]: https://github.com/sopel-irc/sopel/pull/1807
 
 [api-docs]: https://sopel.chat/docs/
 [auth-config-docs]: https://sopel.chat/docs/configure.html#Authentication
