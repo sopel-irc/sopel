@@ -329,7 +329,7 @@ class Sopel(irc.AbstractBot):
                 regexes = func.url_regex
                 for regex in regexes:
                     if func == self.memory['url_callbacks'].get(regex):
-                        self.unregister_url_callback(regex)
+                        self.unregister_url_callback(regex, func)
                         LOGGER.debug('URL Callback unregistered: %r', regex)
 
         # remove plugin from registry
@@ -924,7 +924,7 @@ class Sopel(irc.AbstractBot):
                 regex = re.compile(r'http://example.com/path/.*')
                 bot.register_url_callback(regex, callback)
 
-        It's also possible to completely avoid manual management of URL
+        It's recommended you completely avoid manual management of URL
         callbacks through the use of :func:`sopel.module.url`.
         """
         if 'url_callbacks' not in self.memory:
@@ -935,11 +935,13 @@ class Sopel(irc.AbstractBot):
 
         self.memory['url_callbacks'][pattern] = callback
 
-    def unregister_url_callback(self, pattern):
+    def unregister_url_callback(self, pattern, callback):
         """Unregister the callback for URLs matching the regex ``pattern``.
 
         :param pattern: compiled regex pattern to unregister callback
         :type pattern: :ref:`re.Pattern <python:re-objects>`
+        :param callback: callable object to remove
+        :type callback: :term:`function`
 
         .. versionadded:: 7.0
 
@@ -955,9 +957,9 @@ class Sopel(irc.AbstractBot):
             use this much more concise pattern::
 
                 regex = re.compile(r'http://example.com/path/.*')
-                bot.unregister_url_callback(regex)
+                bot.unregister_url_callback(regex, callback)
 
-        It's also possible to completely avoid manual management of URL
+        It's recommended you completely avoid manual management of URL
         callbacks through the use of :func:`sopel.module.url`.
         """
         if 'url_callbacks' not in self.memory:
