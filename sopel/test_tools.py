@@ -100,7 +100,7 @@ class MockSopel(object):
 
         self.memory['url_callbacks'][pattern] = callback
 
-    def unregister_url_callback(self, pattern):
+    def unregister_url_callback(self, pattern, callback):
         if isinstance(pattern, basestring):
             pattern = re.compile(pattern)
 
