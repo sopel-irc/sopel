@@ -77,7 +77,7 @@ class MockSopel(object):
         self.privileges = sopel.tools.SopelMemory()
 
         self.memory = sopel.tools.SopelMemory()
-        self.memory['url_callbacks'] = sopel.tools.SopelMemory()
+        self._url_callbacks = sopel.tools.SopelMemory()
 
         self.config = MockConfig()
         self._init_config()
@@ -107,15 +107,17 @@ class MockSopel(object):
         if isinstance(pattern, basestring):
             pattern = re.compile(pattern)
 
-        self.memory['url_callbacks'][pattern] = callback
+        if pattern not in self._url_callbacks:
+            self._url_callbacks[pattern] = []
+        self._url_callbacks[pattern].append(callback)
 
     def unregister_url_callback(self, pattern, callback):
         if isinstance(pattern, basestring):
             pattern = re.compile(pattern)
 
         try:
-            del self.memory['url_callbacks'][pattern]
-        except KeyError:
+            self._url_callbacks[pattern].remove(callback)
+        except ValueError:
             pass
 
     def search_url_callbacks(self, url):

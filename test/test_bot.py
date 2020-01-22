@@ -276,6 +276,31 @@ def test_search_url_callbacks_pattern(tmpconfig):
     assert url_handler in results[0]
 
 
+# Remove once manual callback management is deprecated (8.0)
+def test_search_url_callbacks_legacy(tmpconfig):
+    """Test search_url_callback for selectivity for the legacy way"""
+    test_pattern = r"https://(www\.)?example\.com"
+    test_pattern2 = r"https://(www\.)?otherexample\.com"
+
+    def url_handler(*args, **kwargs):
+        return None
+
+    def url_handler2(*args, **kwargs):
+        return None
+
+    sopel = bot.Sopel(tmpconfig, daemon=False)
+    sopel.memory["url_callbacks"] = SopelMemory()
+
+    # register both
+    sopel.memory["url_callbacks"][re.compile(test_pattern)] = url_handler
+    sopel.memory["url_callbacks"][re.compile(test_pattern2)] = url_handler2
+
+    results = list(sopel.search_url_callbacks("https://www.example.com"))
+    handlers = [x[0] for x in results]
+    assert url_handler in handlers, "Correct callback must be present"
+    assert url_handler2 not in handlers, "Incorrect callback must not be present"
+
+
 def test_search_url_callbacks_compiled_pattern(tmpconfig):
     """Test search_url_callbacks for a registered compiled regex pattern."""
     sopel = bot.Sopel(tmpconfig, daemon=False)
@@ -310,83 +335,105 @@ def test_search_url_callbacks_not_found(tmpconfig):
 
 
 def test_register_url_callback_multiple(tmpconfig):
-    """Test register_url_callback replace URL callbacks for a pattern."""
+    """Test register_url_callback adding multiple callbacks for a pattern."""
     test_pattern = r'https://(www\.)?example\.com'
 
     def url_handler(*args, **kwargs):
         return None
 
-    def url_handler_replacement(*args, **kwargs):
+    def url_handler2(*args, **kwargs):
         return None
 
     sopel = bot.Sopel(tmpconfig, daemon=False)
+
     sopel.register_url_callback(test_pattern, url_handler)
+    sopel.register_url_callback(test_pattern, url_handler2)
 
     results = list(sopel.search_url_callbacks('https://www.example.com'))
-    assert url_handler in results[0]
-
-    sopel.register_url_callback(test_pattern, url_handler_replacement)
-
-    results = list(sopel.search_url_callbacks('https://www.example.com'))
-    assert len(results) == 1, 'There must be one and only one callback'
-    assert url_handler_replacement in results[0], (
-        'Handler must have been replaced')
+    handlers = [x[0] for x in results]
+    assert url_handler in handlers, "First handler must be registered"
+    assert url_handler2 in handlers, "Second handler must be registered"
 
 
 def test_unregister_url_callback(tmpconfig):
-    """Test unregister_url_callback removes URL callback for a pattern."""
+    """Test unregister_url_callback removes a specific callback for a pattern."""
     test_pattern = r'https://(www\.)?example\.com'
 
     def url_handler(*args, **kwargs):
         return None
 
+    def url_handler2(*args, **kwargs):
+        return None
+
     sopel = bot.Sopel(tmpconfig, daemon=False)
 
-    # now register a pattern, make sure it still work
+    # register callbacks for the pattern
     sopel.register_url_callback(test_pattern, url_handler)
-    assert list(sopel.search_url_callbacks('https://www.example.com'))
+    sopel.register_url_callback(test_pattern, url_handler2)
+    assert len(list(sopel.search_url_callbacks("https://www.example.com"))) == 2
 
-    # unregister this pattern
+    # unregister one
     sopel.unregister_url_callback(test_pattern, url_handler)
 
-    # now it is not possible to find a callback for this pattern
-    results = list(sopel.search_url_callbacks('https://www.example.com'))
-    assert not results, 'Unregistered URL callback must not work anymore'
-
-
-def test_unregister_url_callback_no_memory(tmpconfig):
-    """Test unregister_url_callback behavior when bot.memory empty"""
-    test_pattern = r'https://(www\.)?example\.com'
-
-    def url_handler(*args, **kwargs):
-        return None
-
-    sopel = bot.Sopel(tmpconfig, daemon=False)
-    sopel.unregister_url_callback(test_pattern, url_handler)
-    # no exception implies success
+    # make sure only the expected one remains
+    results = list(sopel.search_url_callbacks("https://www.example.com"))
+    handlers = [x[0] for x in results]
+    assert url_handler not in handlers, "Unregistered URL callback must be absent"
+    assert url_handler2 in handlers, "Other URL callback must still be present"
 
 
 # Remove once manual callback management is deprecated (8.0)
-def test_unregister_url_callback_manual(tmpconfig):
-    """Test unregister_url_callback removes a specific callback that was added manually"""
-    test_pattern = r'https://(www\.)?example\.com'
+def test_register_url_callback_legacy(tmpconfig):
+    """Test unregister_url_callback updates the old (manual) way and the new way"""
+    test_pattern = r"https://(www\.)?example\.com"
 
     def url_handler(*args, **kwargs):
+        return None
+
+    def url_handler2(*args, **kwargs):
         return None
 
     sopel = bot.Sopel(tmpconfig, daemon=False)
     sopel.memory["url_callbacks"] = SopelMemory()
 
-    # register a callback manually
+    # register the manual one
     sopel.memory["url_callbacks"][re.compile(test_pattern)] = url_handler
     results = list(sopel.search_url_callbacks("https://www.example.com"))
-    assert results[0][0] == url_handler, "Callback must be present"
+    assert results[0][0] == url_handler, "Manually-added callback must exist"
 
-    # unregister it
-    sopel.unregister_url_callback(test_pattern, url_handler)
+    # register another though the function
+    sopel.register_url_callback(test_pattern, url_handler2)
+
+    # make sure both exist
+    results = list(sopel.search_url_callbacks("https://www.example.com"))
+    handlers = [x[0] for x in results]
+    assert url_handler in handlers, "Manually-added callback must still exist"
+    assert url_handler2 in handlers, "Function-added callback must work"
+
+
+def test_unregister_url_callback_wrong_callback(tmpconfig):
+    """Test unregister_url_callback does not remove non-matching callbacks"""
+    test_pattern = r"https://(www\.)?example\.com"
+
+    def url_handler(*args, **kwargs):
+        return None
+
+    def url_handler2(*args, **kwargs):
+        return None
+
+    sopel = bot.Sopel(tmpconfig, daemon=False)
+
+    # register a callback
+    sopel.register_url_callback(test_pattern, url_handler)
 
     results = list(sopel.search_url_callbacks("https://www.example.com"))
-    assert not results, "Callback should have been removed"
+    assert results[0][0] == url_handler, "Handler must be present"
+
+    # unregister nonsense
+    sopel.unregister_url_callback(test_pattern, url_handler2)
+
+    results = list(sopel.search_url_callbacks("https://www.example.com"))
+    assert results[0][0] == url_handler, "Handler must still be present"
 
 
 def test_unregister_url_callback_unknown_pattern(tmpconfig):
@@ -429,7 +476,7 @@ def test_unregister_url_callback_compiled_pattern(tmpconfig):
     assert not list(sopel.search_url_callbacks('https://www.example.com'))
 
 
-def test_multiple_url_callback(tmpconfig):
+def test_search_url_callbacks_overlapping_patterns(tmpconfig):
     """Test multiple URL callbacks for the same URL."""
     test_pattern_example = r'https://(www\.)?example\.com'
     test_pattern_global = r'https://.*\.com'

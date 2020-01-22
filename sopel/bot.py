@@ -57,6 +57,11 @@ class Sopel(irc.AbstractBot):
         }
         self._plugins = {}
 
+        self._url_callbacks = tools.SopelMemory()
+        """A mapping of compiled regexes to lists of callables.
+        Regexes are matched against found URLs, and each callable called.
+        """
+
         self.doc = {}
         """A dictionary of command names to their documentation.
 
@@ -325,13 +330,20 @@ class Sopel(irc.AbstractBot):
             self.unregister(func)
 
         # remove URL callback handlers
+        for func in urls:
+            regexes = func.url_regex
+            for regex in regexes:
+                if func in self._url_callbacks.get(regex, []):  # can .get ever fail?
+                    self.unregister_url_callback(regex, func)
+                    LOGGER.debug('URL Callback unregistered: %r', regex)
+        # and the old way, until 8.0
         if "url_callbacks" in self.memory:
             for func in urls:
                 regexes = func.url_regex
                 for regex in regexes:
                     if func == self.memory['url_callbacks'].get(regex):
                         self.unregister_url_callback(regex, func)
-                        LOGGER.debug('URL Callback unregistered: %r', regex)
+                        LOGGER.warning('Legacy URL Callback unregistered: %r', regex)
 
         # remove plugin from registry
         del self._plugins[name]
@@ -945,13 +957,14 @@ class Sopel(irc.AbstractBot):
         It's recommended you completely avoid manual management of URL
         callbacks through the use of :func:`sopel.module.url`.
         """
-        if 'url_callbacks' not in self.memory:
-            self.memory['url_callbacks'] = tools.SopelMemory()
-
         if isinstance(pattern, basestring):
             pattern = re.compile(pattern)
 
-        self.memory['url_callbacks'][pattern] = callback
+        if pattern not in self._url_callbacks:
+            # TODO: Ideally this would be a list version of SopelMemory
+            self._url_callbacks[pattern] = []
+
+        self._url_callbacks[pattern].append(callback)
 
     def unregister_url_callback(self, pattern, callback):
         """Unregister the callback for URLs matching the regex ``pattern``.
@@ -980,16 +993,16 @@ class Sopel(irc.AbstractBot):
         It's recommended you completely avoid manual management of URL
         callbacks through the use of :func:`sopel.module.url`.
         """
-        if 'url_callbacks' not in self.memory:
-            # nothing to unregister
-            return
-
         if isinstance(pattern, basestring):
             pattern = re.compile(pattern)
 
+        if pattern not in self._url_callbacks:
+            # nothing to unregister
+            return
+
         try:
-            del self.memory['url_callbacks'][pattern]
-        except KeyError:
+            self._url_callbacks[pattern].remove(callback)
+        except ValueError:  # callback not present
             pass
 
     def search_url_callbacks(self, url):
@@ -1016,10 +1029,17 @@ class Sopel(irc.AbstractBot):
         .. __: https://docs.python.org/3.6/library/re.html#match-objects
 
         """
+
+        for regex, functions in tools.iteritems(self._url_callbacks):
+            match = regex.search(url)
+            if match:
+                for function in functions:
+                    yield function, match
+
+        # legacy, remove in 8.0
         if 'url_callbacks' not in self.memory:
             # nothing to search
             return
-
         for regex, function in tools.iteritems(self.memory['url_callbacks']):
             match = regex.search(url)
             if match:
