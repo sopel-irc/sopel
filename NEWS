@@ -219,6 +219,7 @@ Core changes
     * `version`: the version in which the deprecation happened
     * `removed_in`: the version in which the deprecated item will be removed
 * The end-of-life warning for users on Python 2.x is now date-aware [[#1756][]]
+* Made sure ignored users cannot trigger URL handlers [[#1806][]]
 * Tightened up some more dependency version specifiers [[#1807][]]
 
 API changes
@@ -269,7 +270,7 @@ API changes
   * Note: This is not available in the `sopel.web` compatibility layer
 * Added a set of methods in the `bot` object to manipulate URL callbacks:
   `bot.register_url_callback`, `bot.unregister_url_callback`, and
-  `bot.search_url_callbacks` [[#1508][]]
+  `bot.search_url_callbacks` [[#1508][], [#1808][]]
   * Modules should switch to using these new API methods instead of directly
     accessing `bot.memory['url_callbacks']`
   * There are no definite plans to remove `bot.memory['url_callbacks']`, but it
@@ -565,7 +566,9 @@ API changes
 [#1797]: https://github.com/sopel-irc/sopel/pull/1797
 [#1800]: https://github.com/sopel-irc/sopel/pull/1800
 [#1802]: https://github.com/sopel-irc/sopel/pull/1802
+[#1806]: https://github.com/sopel-irc/sopel/pull/1806
 [#1807]: https://github.com/sopel-irc/sopel/pull/1807
+[#1808]: https://github.com/sopel-irc/sopel/pull/1808
 
 [api-docs]: https://sopel.chat/docs/
 [auth-config-docs]: https://sopel.chat/docs/configure.html#Authentication
