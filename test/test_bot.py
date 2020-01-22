@@ -1058,6 +1058,34 @@ def test_unregister_url_callback_no_memory(tmpconfig):
     # no exception implies success
 
 
+# Remove once manual callback management is gone (8.0)
+def test_register_url_callback_manual_warning(tmpconfig, caplog):
+    """Test that manually registering a callback produces a deprecation warning"""
+    test_pattern = r'https://(www\.)?example\.com'
+
+    def url_handler(*args, **kwargs):
+        return None
+
+    sopel = bot.Sopel(tmpconfig, daemon=False)
+    sopel.memory["url_callbacks"] = SopelMemory()
+
+    # register a callback manually
+    sopel.memory["url_callbacks"][re.compile(test_pattern)] = url_handler
+    results = list(sopel.search_url_callbacks("https://www.example.com"))
+    assert results[0][0] == url_handler, "Callback must be present"
+
+    if isinstance(caplog.records, list):
+        records = caplog.records
+    else:
+        # python 3.3
+        records = caplog.records()
+    for record in records:
+        if "url_callbacks" in record.message and "deprecated" in record.message:
+            # success
+            return
+    raise Exception("No deprecation warning was found")
+
+
 # Remove once manual callback management is deprecated (8.0)
 def test_unregister_url_callback_manual(tmpconfig):
     """Test unregister_url_callback removes a specific callback that was added manually"""
