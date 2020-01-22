@@ -30,10 +30,10 @@ Module changes
 * Moved `.py` into its own plugin, named `py` [[#1710][], [#1711][], [#1712][]]
   * In case of issues with our "official" instance, there's now a setting to
     configure the address of your own [Oblique][oblique] service
-* The `currency` module changed data sources to support more currencies, and
+* The `currency` plugin changed data sources to support more currencies, and
   can optionally use Fixer.io for even *more* [[#1430][], [#1627][], [#1629][]]
   * Fixer.io requires a free API key, which gives plenty of calls per month
-    (the module caches exchange rates for 24 hours)
+    (the plugin caches exchange rates for 24 hours)
 * Choose any of five pastebin services for `help` output [[#1451][], [#1651][]]
   * This is intended mostly for resilience (so one pastebin service going
     down, as ptpb did during the 6.6.x life-cycle, won't force a new Sopel
@@ -43,10 +43,10 @@ Module changes
 * `wiktionary` now supports many more parts of speech [[#1443][]]
   * Definitions can be retrieved for things like proper nouns, prepositional
     phrases, and punctuation marks—things that were unsupported in Sopel 6.x
-  * This means that the `wiktionary` module is now somewhat case-sensitive, to
+  * This means that the `wiktionary` plugin is now somewhat case-sensitive, to
     account for common and proper nouns that differ only in capitalization
 * `url` will now ignore "private" addresses by default [[#1439][], [#1624][]]
-  * New config settings for the `url` module allow overriding the checks, in
+  * New config settings for the `url` plugin allow overriding the checks, in
     cases where loading previews of e.g. LAN servers is safe
   * The default is off, so users don't unwittingly open themselves to attackers
     fishing for running HTTP services on the local machine or network
@@ -81,21 +81,21 @@ Module changes
   * Usable by admins only, just like `.quit`
 * The `.msg` command is now known as `.say` [[#1606][]]
   * `.msg` will continue to work for now, likely until being removed in Sopel 8
-* The `admin` module auto-saves channels when using `.join`/`.part`, and added
+* The `admin` plugin auto-saves channels when using `.join`/`.part`, and added
   `.tmpjoin`/`.tmppart` commands to bypass this behavior [[#1492][]]
-* Added command to `.unset` config values in the `admin` module [[#1556][]]
-* Restored commands in `adminchannel` module for managing op/voice [[#1498][]]
+* Added command to `.unset` config values in the `admin` plugin [[#1556][]]
+* Restored commands in `adminchannel` plugin for managing op/voice [[#1498][]]
   * These were removed some time ago, seemingly without reason, by the
     project's previous maintainers
   * Since there was some desire from users to have them back, we restored them
 * Fixed/tweaked hostmask handling in `adminchannel` ban functions [[#1791][]]
 * `find` also collects Sopel's own messages now, so users can "correct" the bot
   if they wish to be extra cheeky [[#1470][]]
-* Fixed that the `url` module had to be enabled or some link-handling
-  functions didn't work [[#1510][]]
+* Fixed that the `url` plugin had to be enabled or some link-handling functions
+  wouldn't work [[#1510][]]
 * Tweaked `.ddg` command output so it's less likely to mangle URLs [[#1713][]]
 * `remind` commands now "reply" with error messages [[#1715][]]
-* Fixed `etymology` module error with empty argument [[#1677][]]
+* Fixed `etymology` plugin error with empty argument [[#1677][]]
 * Fixed an uncaught exception in `instagram` plugin [[#1702][]]
 * Handle JSON fetch/parse errors in `find_updates` plugin [[#1779][]]
 * Removed nonsensical uses of the `core.verify_ssl` setting [[#1706][]]
@@ -157,7 +157,7 @@ Core changes
     removed in Sopel 8
   * See detailed usage in your terminal with `sopel-config --help`, or review
     [the online CLI docs][docs-cli-config] at our website
-* Added a new `sopel-plugins` command for managing plugins/modules [[#1588][]]
+* Added a new `sopel-plugins` command for managing plugins [[#1588][]]
   * Currently supports `list` (available plugins), `show` (plugin details &
     status), `enable` & `disable` (edits config on the user's behalf)
   * See detailed usage in your terminal with `sopel-plugins --help`, or review
@@ -197,7 +197,7 @@ Core changes
     officially drop Python 2 support (see [upgrade notes][sopel-7-migration])
 * Added support for IRCv3 `echo-message` capability, which Sopel will now
   request upon connecting to an IRC server [[#1470][], [#1672][], [#1674][]]
-* Added support for disabling commands (or entire modules) on a per-channel
+* Added support for disabling commands (or entire plugins) on a per-channel
   basis [[#1235][]]
   * See how it works: [Per-channel configuration][per-channel-conf]
 * Fixed tracking user `away` state [[#1663][], [#1664][], [#1666][], [#1703][]]
@@ -342,7 +342,7 @@ API changes
 * Added a new `online` kwarg to `@module.example` decorator [[#1555][]]
   * Example tests that require an Internet connection may be marked with
     `online=True` to indicate this fact (the default is `False`)
-  * This facilitates running only offline-safe module tests, by passing
+  * This facilitates running only offline-safe plugin tests, by passing
     `--offline` to pytest, if an Internet connection is unavailable
   * Outside of the test suite, this parameter has no effect
 * Corrected case-mapping in `tools.Identifier` class [[#1744][]]
