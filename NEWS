@@ -14,7 +14,7 @@ The full, detailed list of changes is below, but you can just read the
 important stuff. All breaking changes (including those planned for the *next*
 release) are explained there.
 
-Module changes
+Plugin changes
 --------------
 
 * The `spellcheck` plugin has been removed to simplify dependencies [[#1675][]]

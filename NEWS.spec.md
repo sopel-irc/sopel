@@ -45,19 +45,21 @@ improvement in the user experience when combined.
 
 ```
 
-Each version's section SHOULD be subdivided into "Module changes", "Core
+Each version's section SHOULD be subdivided into "Plugin changes", "Core
 changes", and "API changes"—in that order. The three subsections MUST be marked
 "up" (get it? because it's Mark*down*) as Setext-style second-level headings
-(underlined using `-`). Each subsection heading SHOULD have one blank line above
-and below. Subsections that remain empty after filling in the changes (see
-below) SHOULD be omitted from the final release section.
+(underlined using `-`). Each subsection heading SHOULD have one blank line
+above and below. Subsections that remain empty after filling in the changes
+(see below) SHOULD be omitted from the final release section. (Entries for
+versions prior to 7.x MAY use "Module changes" in place of "Plugin changes", as
+that was the convention until partway through 7.0's development cycle.)
 
 Within the "changes" subsections, the convention is to present relevant line-
 items from the release's commit log or list of merged pull requests as a
 Markdown bulleted list (items begin with `* `; line continuations are indented
 with two spaces to align with the start of that item's text). The subsection
 names are mostly self-explanatory. Things that concern end users should go in
-"Module" or "Core" changes; things that only affect developers (of modules or of
+"Plugin" or "Core" changes; things that only affect developers (of plugins or of
 Sopel itself) should go in "API changes"—which, again, should appear last.
 
 The change lists MAY have nested levels of bullets to convey additional details.
@@ -74,12 +76,12 @@ Example subsections and placeholder change entries:
 
 ```Markdown
 
-Module changes
+Plugin changes
 --------------
 
-* foo module's `.bar` command won't baz any more
-* eggs module removed
-  * replaced by a new bacon module
+* foo plugin's `.bar` command won't baz any more
+* eggs plugin removed
+  * replaced by a new bacon plugin
 
 Core changes
 ------------
