@@ -636,11 +636,28 @@ class SopelMemory(dict):
         dict.__init__(self, *args)
         self.lock = threading.Lock()
 
+        self._deprecated_keys = {}
+        """Map of deprecated keys to deprecation reason"""
+
+    def __getitem__(self, key):
+        """Get the value for a key."""
+        return dict.__getitem__(self, key)
+
     def __setitem__(self, key, value):
         """Set a key equal to a value.
 
         The dict is locked for other writes while doing so.
         """
+        if key in self._deprecated_keys:
+            try:
+                raise Exception()
+            except Exception:
+                logging.warning(
+                    'Key "%s" is deprecated: %s',
+                    key,
+                    self._deprecated_keys[key],
+                    exc_info=True,
+                )
         self.lock.acquire()
         result = dict.__setitem__(self, key, value)
         self.lock.release()
@@ -661,6 +678,16 @@ class SopelMemory(dict):
     __eq__ = dict.__eq__
     __ne__ = dict.__ne__
     __hash__ = dict.__hash__
+
+    def deprecate_key(self, key_name, reason):
+        """Mark a key as deprecated
+
+        :param str key_name: key to deprecate
+        :param str reason: information to show when key is used
+
+        .. versionadded:: 7.1
+        """
+        self._deprecated_keys[key_name] = reason
 
     @deprecated
     def contains(self, key):
