@@ -39,10 +39,8 @@ and install it manually `from PyPI <https://pypi.org/project/backports.ssl_match
 
 Note: Python 2.x is near end of life. Sopel will drop support in version 8.0.
 
-In the source directory (whether cloned or from the tarball) run
-``setup.py install``. You can then run ``sopel`` to configure and start the
-bot. Alternately, you can just run the ``sopel.py`` file in the source
-directory.
+In the source directory (whether cloned or from the tarball) run ``pip install
+-e .``. You can then run ``sopel`` to configure and start the bot.
 
 Database support
 ----------------
@@ -57,20 +55,19 @@ any packages (system or ``pip``) needed to make your chosen database work.
 **Note:** Plugins not updated since Sopel 7.0 was released *might* have
 problems with database types other than SQLite (but many will work just fine).
 
-Adding modules
+Adding plugins
 --------------
-The easiest place to put new modules is in ``~/.sopel/modules``. Some newer
-modules are installable as packages; `search PyPI
-<https://pypi.org/search/?q=%22sopel_modules%22>`_ for these. Many more modules
+The easiest place to put new plugins is in ``~/.sopel/plugins``. Some newer
+plugins are installable as packages; `search PyPI
+<https://pypi.org/search/?q=%22sopel%22>`_ for these. Many more plugins
 written by other users can be found using your favorite search engine.
 
-Some older, unmaintained modules are available in the
+Some older, unmaintained plugins are available in the
 `sopel-extras <https://github.com/sopel-irc/sopel-extras>`_ repository, but of
-course you can also write your own. A `tutorial <https://sopel.chat/tutorials/part-2-writing-modules/>`_
-for creating new modules is available on Sopel's website.
+course you can also write your own. A `tutorial <https://sopel.chat/tutorials/part-1-writing-plugins/>`_
+for creating new plugins is available on Sopel's website.
 API documentation can be found online at https://sopel.chat/docs/, or
-you can create a local version by running ``make html`` in the ``docs``
-directory.
+you can create a local version by running ``make docs``.
 
 Further documentation
 ---------------------
@@ -85,41 +82,22 @@ Questions?
 
 Join us in `#sopel <irc://irc.freenode.net/#sopel>`_ on Freenode.
 
-Credits
--------
+Financial support
+-----------------
 
-Contributors
-============
+We're thrilled that you want to support the project!
 
-This project exists thanks to all the people who contribute! `Become a contributor`__.
+We have applied for access to organization-level sponsorship from GitHub. In
+the interim, if you wish to contribute sooner, you are welcome to do so
+through `Open Collective <https://opencollective.com/sopel>`_ or sponsor
+Sopel's maintainer, `dgw <https://github.com/sponsors/dgw>`_, individually.
 
-.. image:: https://opencollective.com/sopel/contributors.svg?width=890&button=false
-    :target: https://github.com/sopel-irc/sopel/graphs/contributors
-
-__ Contributor_
-.. _Contributor: https://github.com/sopel-irc/sopel/blob/master/CONTRIBUTING.md
-
-Backers
-=======
-
-Thank you to all our backers! `Become a backer`__.
-
-.. image:: https://opencollective.com/sopel/backers.svg?width=890
-    :target: https://opencollective.com/sopel#backers
-
-__ Backer_
-.. _Backer: https://opencollective.com/sopel#backer
-
-Sponsors
-========
-
-Support Sopel by becoming a sponsor. Your logo will show up here with a link to your website. `Become a sponsor`__.
-
-.. image:: https://opencollective.com/sopel/sponsor/0/avatar.svg
-    :target: https://opencollective.com/sopel/sponsor/0/website
-
-__ Sponsor_
-.. _Sponsor: https://opencollective.com/sopel#sponsor
+Any donations received will be used to cover infrastructure costs, such as our
+domain name and hosting services. Our main project site is easily hosted by
+`Netlify <https://www.netlify.com/>`_, but we are considering building a few
+new features that would require more than static hosting. All project-related
+`expenses <https://opencollective.com/sopel/expenses>`_ are tracked on our
+Open Collective profile, for transparency.
 
 .. |version| image:: https://img.shields.io/pypi/v/sopel.svg
    :target: https://pypi.python.org/pypi/sopel
