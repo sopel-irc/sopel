@@ -180,7 +180,8 @@ class SopelDB(object):
     def connect(self):
         """Get a direct database connection.
 
-        :rtype: proxied DBAPI connection object; see :meth:`sqlalchemy.engine.Engine.raw_connection()`
+        :return: a proxied DBAPI connection object; see
+                 :meth:`sqlalchemy.engine.Engine.raw_connection()`
         """
         return self.engine.raw_connection()
 

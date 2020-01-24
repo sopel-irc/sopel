@@ -118,6 +118,8 @@ Core changes
     use something other than SQLite
   * Migrating an existing database from SQLite to your chosen option is
     probably easy, but we do not offer instructions for doing so
+  * Be aware that plugins written for older versions of Sopel might not work
+    properly with non-SQLite databases
 * The `db_filename` config setting (for SQLite) is now interpreted as relative
   to the config's `homedir` setting [[#1574][]]
   * `homedir` itself has a default value that will be used if not set

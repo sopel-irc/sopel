@@ -44,7 +44,7 @@ In the source directory (whether cloned or from the tarball) run
 bot. Alternately, you can just run the ``sopel.py`` file in the source
 directory.
 
-Database Support
+Database support
 ----------------
 Sopel leverages SQLAlchemy to support the following database types: SQLite,
 MySQL, PostgreSQL, MSSQL, Oracle, Firebird, and Sybase. By default Sopel will
@@ -53,6 +53,9 @@ databases can be configured with the following config options: ``db_type``,
 ``db_filename`` (SQLite only), ``db_driver``, ``db_user``, ``db_pass``,
 ``db_host``, ``db_port``, and ``db_name``. You will need to manually install
 any packages (system or ``pip``) needed to make your chosen database work.
+
+**Note:** Plugins not updated since Sopel 7.0 was released *might* have
+problems with database types other than SQLite (but many will work just fine).
 
 Adding modules
 --------------
