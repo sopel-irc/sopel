@@ -180,9 +180,16 @@ class SopelDB(object):
     def connect(self):
         """Get a direct database connection.
 
-        :rtype: :class:`sqlalchemy.engine.Connection`
+        :rtype: proxied DBAPI connection object; see :meth:`sqlalchemy.engine.Engine.raw_connection()`
         """
-        return self.engine.connect()
+        return self.engine.raw_connection()
+
+    def session(self):
+        """Get a SQLAlchemy Session object.
+
+        :rtype: :class:`sqlalchemy.orm.session.Session`
+        """
+        return self.ssession()
 
     def execute(self, *args, **kwargs):
         """Execute an arbitrary SQL query against the database.
