@@ -204,7 +204,9 @@ class SopelDB(object):
             # `session()`, it indicates the plugin was written before Sopel 7.0
             # and might not work right when connected to non-sqlite DBs
             LOGGER.info(
-                "Raw connection requested when db_type is not sqlite\n%s",
+                "Raw connection requested when 'db_type' is not 'sqlite':\n"
+                "Consider using 'db.session()' to get a SQLAlchemy session "
+                "instead here:\n%s",
                 traceback.format_list(traceback.extract_stack()[:-1])[-1][:-1])
         return self.engine.raw_connection()
 
