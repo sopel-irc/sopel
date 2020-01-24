@@ -182,6 +182,16 @@ class SopelDB(object):
 
         :return: a proxied DBAPI connection object; see
                  :meth:`sqlalchemy.engine.Engine.raw_connection()`
+
+        .. important::
+
+           The :attr:`database backend <sopel.config.core_section.db_type>` in
+           use can change how the raw connection object behaves. Unless you're
+           writing (or updating) a plugin that needs to be compatible with
+           Sopel versions older than 7.0, or can get away with supporting only
+           one type of database, you probably want to use :meth:`session` and
+           build (or convert) your plugin to use the SQLAlchemy ORM.
+
         """
         return self.engine.raw_connection()
 
@@ -189,6 +199,15 @@ class SopelDB(object):
         """Get a SQLAlchemy Session object.
 
         :rtype: :class:`sqlalchemy.orm.session.Session`
+
+        .. versionadded:: 7.0
+
+        .. note::
+
+           If your plugin needs to run on Sopel versions prior to 7.0, you can
+           use :meth:`connect` to get a raw connection. See its documentation
+           for relevant warnings and compatibility caveats.
+
         """
         return self.ssession()
 
