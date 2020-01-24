@@ -3,8 +3,10 @@ from __future__ import unicode_literals, absolute_import, print_function, divisi
 
 import errno
 import json
+import logging
 import os.path
 import sys
+import traceback
 
 from sopel.tools import Identifier
 
@@ -17,6 +19,9 @@ from sqlalchemy.orm import scoped_session, sessionmaker
 if sys.version_info.major >= 3:
     unicode = str
     basestring = str
+
+
+LOGGER = logging.getLogger(__name__)
 
 
 def _deserialize(value):
@@ -109,10 +114,10 @@ class SopelDB(object):
     def __init__(self, config):
         # MySQL - mysql://username:password@localhost/db
         # SQLite - sqlite:////home/sopel/.sopel/default.db
-        db_type = config.core.db_type
+        self.type = config.core.db_type
 
         # Handle SQLite explicitly as a default
-        if db_type == 'sqlite':
+        if self.type == 'sqlite':
             path = config.core.db_filename
             if path is None:
                 path = os.path.join(config.core.homedir, config.basename + '.db')
@@ -132,18 +137,18 @@ class SopelDB(object):
         # Otherwise, handle all other database engines
         else:
             query = {}
-            if db_type == 'mysql':
+            if self.type == 'mysql':
                 drivername = config.core.db_driver or 'mysql'
                 query = {'charset': 'utf8mb4'}
-            elif db_type == 'postgres':
+            elif self.type == 'postgres':
                 drivername = config.core.db_driver or 'postgresql'
-            elif db_type == 'oracle':
+            elif self.type == 'oracle':
                 drivername = config.core.db_driver or 'oracle'
-            elif db_type == 'mssql':
+            elif self.type == 'mssql':
                 drivername = config.core.db_driver or 'mssql+pymssql'
-            elif db_type == 'firebird':
+            elif self.type == 'firebird':
                 drivername = config.core.db_driver or 'firebird+fdb'
-            elif db_type == 'sybase':
+            elif self.type == 'sybase':
                 drivername = config.core.db_driver or 'sybase+pysybase'
             else:
                 raise Exception('Unknown db_type')
@@ -193,6 +198,14 @@ class SopelDB(object):
            build (or convert) your plugin to use the SQLAlchemy ORM.
 
         """
+        if self.type != 'sqlite':
+            # log non-sqlite uses of raw connections for troubleshooting, since
+            # unless the developer had a good reason to use this instead of
+            # `session()`, it indicates the plugin was written before Sopel 7.0
+            # and might not work right when connected to non-sqlite DBs
+            LOGGER.info(
+                "Raw connection requested when db_type is not sqlite\n%s",
+                traceback.format_list(traceback.extract_stack()[:-1])[-1][:-1])
         return self.engine.raw_connection()
 
     def session(self):
