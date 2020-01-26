@@ -401,6 +401,12 @@ install them.
    supports multiple types of databases. The configuration options required for
    these new types have been added at the same time.
 
+.. important::
+
+   Plugins originally written for Sopel 6.x and older might not work properly
+   with non-``sqlite`` databases. If a plugin you want to use with Sopel 7+ has
+   not been updated, feel free to test it and tell its author(s) the results.
+
 
 Commands & Plugins
 ==================

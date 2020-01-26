@@ -261,6 +261,11 @@ class CoreSection(StaticSection):
         Refer to :ref:`SQLAlchemy's documentation <dialect_toplevel>` for more
         information about the different dialects it supports.
 
+    .. note::
+
+        Plugins originally written for Sopel 6.x and older *might* not work
+        correctly with ``db_type``\\s other than ``sqlite``.
+
     """
 
     db_user = ValidatedAttribute('db_user')
