@@ -233,7 +233,8 @@ class Sopel(irc.AbstractBot):
         """Reload a plugin.
 
         :param str name: name of the plugin to reload
-        :raise PluginNotRegistered: when there is no ``name`` plugin registered
+        :raise plugins.exceptions.PluginNotRegistered: when there is no
+            ``name`` plugin registered
 
         This function runs the plugin's shutdown routine and unregisters the
         plugin from the bot. Then this function reloads the plugin, runs its
@@ -351,7 +352,8 @@ class Sopel(irc.AbstractBot):
         :return: the plugin's metadata
                  (see :meth:`~.plugins.handlers.AbstractPluginHandler.get_meta_description`)
         :rtype: :class:`dict`
-        :raise PluginNotRegistered: when there is no ``name`` plugin registered
+        :raise plugins.exceptions.PluginNotRegistered: when there is no
+            ``name`` plugin registered
         """
         if not self.has_plugin(name):
             raise plugins.exceptions.PluginNotRegistered(name)

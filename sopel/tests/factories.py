@@ -26,9 +26,9 @@ class BotFactory(object):
         :rtype: :class:`sopel.bot.Sopel`
 
         This will instantiate a :class:`~sopel.bot.Sopel` object, replace its
-        backend with a :class:`~MockIRCBackend`, and then preload plugins.
-        This will automatically load the ``coretasks`` plugin, and every other
-        plugin from ``preloads``::
+        backend with a :class:`~.mocks.MockIRCBackend`, and then preload
+        plugins. This will automatically load the ``coretasks`` plugin, and
+        every other plugin from ``preloads``::
 
             factory = BotFactory()
             bot = factory.with_autoloads(settings, ['emoticons', 'remind'])

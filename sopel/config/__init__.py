@@ -141,13 +141,13 @@ class Config(object):
         self.define_section('core', core_section.CoreSection,
                             validate=validate)
         self.get = self.parser.get
-        """Shortcut to :meth:`parser.get`."""
+        """Shortcut to :meth:`parser.get <configparser.ConfigParser.get>`."""
 
     @property
     def homedir(self):
         """The config file's home directory.
 
-        If the :meth:`core.homedir <.core_section.CoreSection.homedir>` setting
+        If the :attr:`core.homedir <.core_section.CoreSection.homedir>` setting
         is available, that value is used. Otherwise, the default ``homedir`` is
         the directory portion of the :class:`Config`'s :attr:`filename`.
         """

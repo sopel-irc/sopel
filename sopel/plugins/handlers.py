@@ -110,7 +110,7 @@ class AbstractPluginHandler(object):
         """Tell if the plugin is loaded or not
 
         :return: ``True`` if the plugin is loaded, ``False`` otherwise
-        :rtype: boolean
+        :rtype: bool
 
         This must return ``True`` if the :meth:`load` method has been called
         with success.
@@ -129,7 +129,7 @@ class AbstractPluginHandler(object):
         """Tell if the plugin has a setup action
 
         :return: ``True`` if the plugin has a setup, ``False`` otherwise
-        :rtype: boolean
+        :rtype: bool
         """
         raise NotImplementedError
 
@@ -162,7 +162,7 @@ class AbstractPluginHandler(object):
 
         :return: ``True`` if the plugin has a ``shutdown`` action, ``False``
                  otherwise
-        :rtype: boolean
+        :rtype: bool
         """
         raise NotImplementedError
 
@@ -181,7 +181,7 @@ class AbstractPluginHandler(object):
 
         :return: ``True`` if the plugin has a ``configure`` action, ``False``
                  otherwise
-        :rtype: boolean
+        :rtype: bool
         """
         raise NotImplementedError
 
