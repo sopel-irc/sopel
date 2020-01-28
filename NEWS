@@ -177,8 +177,7 @@ Core changes
   * Variable naming format: `SOPEL_SECTION_OPTION`
   * Underscores in `SECTION` and `OPTION` names are preserved, e.g.
     `SOPEL_CORE_AUTH_PASSWORD`
-* Example service unit files now include a multi-instance template for systemd
-  [[#1059][]]
+* Example multi-instance systemd template is now available [[#1059][]]
 * Example systemd unit files wait until networking is connected before starting
   Sopel [[#1511][]]
 * Running Sopel on an unknown OS platform will output a warning encouraging the
@@ -230,7 +229,7 @@ API changes
 * [API documentation][api-docs] has been almost entirely overhauled [[#1563][],
   [#1566][], [#1646][], [#1668][], [#1669][], [#1680][], [#1719][], [#1727][],
   [#1735][], [#1750][], [#1766][], [#1770][], [#1771][], [#1772][], [#1775][],
-  [#1776][], [#1778][], [#1782][]]
+  [#1776][], [#1778][], [#1782][], [#1813][]]
   * Nearly every file, both for the public API and Sopel's internals, was
     reviewed in its entirety to make these improvements globally:
     * More consistent style
@@ -575,6 +574,7 @@ API changes
 [#1807]: https://github.com/sopel-irc/sopel/pull/1807
 [#1808]: https://github.com/sopel-irc/sopel/pull/1808
 [#1811]: https://github.com/sopel-irc/sopel/pull/1811
+[#1813]: https://github.com/sopel-irc/sopel/pull/1813
 
 [api-docs]: https://sopel.chat/docs/
 [auth-config-docs]: https://sopel.chat/docs/configure.html#Authentication

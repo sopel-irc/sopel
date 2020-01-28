@@ -190,12 +190,20 @@ class SopelDB(object):
 
         .. important::
 
-           The :attr:`database backend <sopel.config.core_section.db_type>` in
-           use can change how the raw connection object behaves. Unless you're
-           writing (or updating) a plugin that needs to be compatible with
-           Sopel versions older than 7.0, or can get away with supporting only
-           one type of database, you probably want to use :meth:`session` and
-           build (or convert) your plugin to use the SQLAlchemy ORM.
+           The :attr:`~sopel.config.core_section.CoreSection.db_type` in use
+           can change how the raw connection object behaves. You probably want
+           to use :meth:`session` and the SQLAlchemy ORM in new plugins, and
+           officially support only Sopel 7.0+.
+
+           Note that :meth:`session` is not available in Sopel versions prior
+           to 7.0. If your plugin needs to be compatible with older Sopel
+           releases, your code *should* use SQLAlchemy via :meth:`session` if
+           it is available (Sopel 7.0+) and fall back to direct SQLite access
+           via :meth:`connect` if it is not (Sopel 6.x).
+
+           We discourage *publishing* plugins that don't work with all
+           supported databases, but you're obviously welcome to take shortcuts
+           and support only the engine(s) you need in *private* plugins.
 
         """
         if self.type != 'sqlite':
@@ -219,9 +227,9 @@ class SopelDB(object):
 
         .. note::
 
-           If your plugin needs to run on Sopel versions prior to 7.0, you can
-           use :meth:`connect` to get a raw connection. See its documentation
-           for relevant warnings and compatibility caveats.
+           If your plugin needs to remain compatible with Sopel versions prior
+           to 7.0, you can use :meth:`connect` to get a raw connection. See
+           its documentation for relevant warnings and compatibility caveats.
 
         """
         return self.ssession()

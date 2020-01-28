@@ -108,9 +108,9 @@ class BaseValidated(object):
     """The base type for a setting descriptor in a :class:`StaticSection`.
 
     :param str name: the attribute name to use in the config file
-    :param default: the value to be returned if the setting has no value;
-                    if not specified, defaults to :obj:`None`
-    :type default: str, optional
+    :param default: the value to be returned if the setting has no value
+                    (optional; defaults to :obj:`None`)
+    :type default: str
 
     ``default`` also can be set to :const:`sopel.config.types.NO_DEFAULT`, if
     the value *must* be configured by the user (i.e. there is no suitable
@@ -200,13 +200,13 @@ class ValidatedAttribute(BaseValidated):
 
     :param str name: the attribute name to use in the config file
     :param parse: a function to be used to read the string and create the
-                  appropriate object; the string value will be returned
-                  as-is if not set
-    :type parse: :term:`function`, optional
+                  appropriate object (optional; the string value will be
+                  returned as-is if not set)
+    :type parse: :term:`function`
     :param serialize: a function that, given an object, should return a string
-                      that can be written to the config file safely; defaults
-                      to :class:`str`
-    :type serialize: :term:`function`, optional
+                      that can be written to the config file safely (optional;
+                      defaults to :class:`str`)
+    :type serialize: :term:`function`
     """
     def __init__(self, name, parse=None, serialize=None, default=None):
         super(ValidatedAttribute, self).__init__(name, default=default)
@@ -248,14 +248,14 @@ class ListAttribute(BaseValidated):
     """A config attribute containing a list of string values.
 
     :param str name: the attribute name to use in the config file
-    :param strip: whether to strip whitespace from around each value (applies
-                  only to legacy comma-separated lists; multi-line lists are
-                  always stripped)
-    :type strip: bool, optional
+    :param strip: whether to strip whitespace from around each value
+                  (optional; applies only to legacy comma-separated lists;
+                  multi-line lists are always stripped)
+    :type strip: bool
     :param default: the default value if the config file does not define a
                     value for this option; to require explicit configuration,
-                    use :const:`sopel.config.types.NO_DEFAULT`
-    :type default: list, optional
+                    use :const:`sopel.config.types.NO_DEFAULT` (optional)
+    :type default: list
 
     From this :class:`StaticSection`::
 
@@ -436,8 +436,8 @@ class ChoiceAttribute(BaseValidated):
     :type choices: list or tuple
     :param default: which choice to use if none is set in the config file; to
                     require explicit configuration, use
-                    :const:`sopel.config.types.NO_DEFAULT`
-    :type default: str, optional
+                    :const:`sopel.config.types.NO_DEFAULT` (optional)
+    :type default: str
     """
     def __init__(self, name, choices, default=None):
         super(ChoiceAttribute, self).__init__(name, default=default)
@@ -475,15 +475,16 @@ class FilenameAttribute(BaseValidated):
 
     :param str name: the attribute name to use in the config file
     :param relative: whether the path should be relative to the location of
-                     the config file (absolute paths will still be absolute)
-    :type relative: bool, optional
+                     the config file (optional; note that absolute paths will
+                     always be interpreted as absolute)
+    :type relative: bool
     :param directory: whether the path should indicate a directory, rather
-                      than a file
-    :type directory: bool, optional
+                      than a file (optional)
+    :type directory: bool
     :param default: the value to use if none is defined in the config file; to
                     require explicit configuration, use
-                    :const:`sopel.config.types.NO_DEFAULT`
-    :type default: str, optional
+                    :const:`sopel.config.types.NO_DEFAULT` (optional)
+    :type default: str
     """
     def __init__(self, name, relative=True, directory=False, default=None):
         super(FilenameAttribute, self).__init__(name, default=default)

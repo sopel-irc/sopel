@@ -25,7 +25,7 @@ class AbstractIRCBackend(object):
     def send_command(self, *args, **kwargs):
         """Send a command through the IRC connection.
 
-        :param * args: IRC command to send with its argument(s)
+        :param args: IRC command to send with its argument(s)
         :param str text: the text to send (optional keyword argument)
 
         Example::

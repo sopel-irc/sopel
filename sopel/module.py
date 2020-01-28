@@ -527,7 +527,7 @@ def require_account(message=None, reply=False):  # lgtm [py/similar-function]
     .. seealso::
 
         The value of the :class:`trigger<.trigger.Trigger>`'s
-        :meth:`account<.trigger.Trigger.account>` property determines whether
+        :attr:`account <.trigger.Trigger.account>` property determines whether
         this requirement is satisfied, and the property's documentation
         includes up-to-date details on what features a network must
         support to allow Sopel to fetch account information.
@@ -736,14 +736,18 @@ class example(object):
     :param bool user_help: whether this example should be included in
                            user-facing help output such as `.help command`
                            (optional; default ``False``; see below)
-    :param bool online: if ``True``, :mod:`pytest` will mark this example as
-                        "online" (optional; default ``False``; see below)
+    :param bool online: if ``True``, |pytest|_ will mark this
+                        example as "online" (optional; default ``False``; see
+                        below)
 
-    ``msg`` must use the default :attr:`~sopel.config.core_section.help_prefix`
-    if it is a prefixed command, for compatibility with the built-in help
-    plugin. Other command types should give example invocations that work with
-    Sopel on its default settings, especially if using the "example test"
-    functionality to automatically generate a test(s) for the function.
+    .. |pytest| replace:: ``pytest``
+    .. _pytest: https://pypi.org/project/pytest/
+
+    For compatibility with the built-in help plugin, ``msg`` must use the
+    default :attr:`~sopel.config.core_section.CoreSection.help_prefix` if it
+    is a prefixed command. Other command types should give example invocations
+    that work with Sopel's default settings, especially if using the "example
+    test" functionality to automatically generate a test(s) for the function.
 
     The presence of a ``result`` will generate tests automatically when Sopel's
     test suite is run, using ``msg`` as input. The exact behavior of the tests

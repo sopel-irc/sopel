@@ -39,6 +39,19 @@ intersphinx_mapping = {
     'sqlalchemy': ('https://docs.sqlalchemy.org/en/13/', None),
 }
 
+# Make Sphinx warn for references (methods, functions, etc.) it can't find
+nitpicky = True
+# Except for certain not-actually-reference things that aren't published in the
+# docs or don't actually exist except as shorthand for the reader
+nitpick_ignore = [
+    ('py:class', 'callable'),
+    ('py:class', 'depends on subclass'),
+    ('py:class', 'mixed'),
+    ('py:class', 'sopel.tools.jobs.Job'),
+    ('py:class', 'sopel.tools.jobs.JobScheduler'),
+    ('py:exc', 'plugins.exceptions.PluginNotRegistered'),
+]
+
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
 

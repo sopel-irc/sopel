@@ -135,7 +135,7 @@ def get_example_test(tested_func, msg, results, privmsg, admin,
     """Get a function that calls ``tested_func`` with fake wrapper and trigger.
 
     :param callable tested_func: a Sopel callable that accepts a
-                                 ``SopelWrapper`` and a ``Trigger``
+        :class:`~.bot.SopelWrapper` and a :class:`~.trigger.Trigger`
     :param str msg: message that is supposed to trigger the command
     :param list results: expected output from the callable
     :param bool privmsg: if ``True``, make the message appear to have arrived
@@ -148,7 +148,7 @@ def get_example_test(tested_func, msg, results, privmsg, admin,
     :param bool use_regexp: pass ``True`` if ``results`` are in regexp format
     :param list ignore: strings to ignore
     :return: a test function for ``tested_func``
-    :rtype: ``callable``
+    :rtype: :term:`function`
     """
     def test(configfactory, botfactory, ircfactory):
         test_config = TEST_CONFIG.format(

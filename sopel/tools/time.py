@@ -10,7 +10,7 @@ import pytz
 def validate_timezone(zone):
     """Return an IETF timezone from the given IETF zone or common abbreviation.
 
-    :param string zone: in a strict or a human-friendly format
+    :param str zone: in a strict or a human-friendly format
     :return: the valid IETF timezone properly formatted
     :raise ValueError: when ``zone`` is not a valid timezone
 
@@ -41,7 +41,7 @@ def validate_timezone(zone):
 def validate_format(tformat):
     """Validate a time format string.
 
-    :param string tformat: the format string to validate
+    :param str tformat: the format string to validate
     :return: the format string, if valid
     :raise ValueError: when ``tformat`` is not a valid time format string
     """

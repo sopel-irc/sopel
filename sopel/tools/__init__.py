@@ -66,7 +66,7 @@ def compile_rule(nick, pattern, alias_nicks):
                              instead of ``nick``
     :return: the compiled regex ``pattern``, with placeholders for ``$nick`` and
              ``$nickname`` filled in
-    :rtype: :py:class:`re.Pattern`
+    :rtype: :ref:`re.Pattern <python:re-objects>`
 
     Will not recompile an already compiled pattern.
     """
@@ -96,7 +96,7 @@ def get_command_regexp(prefix, command):
     :param str prefix: the command prefix (interpreted as regex)
     :param str command: the name of the command
     :return: a compiled regexp object that implements the command
-    :rtype: :py:class:`re.Pattern`
+    :rtype: :ref:`re.Pattern <python:re-objects>`
     """
     # Escape all whitespace with a single backslash. This ensures that regexp
     # in the prefix is treated as it was before the actual regexp was changed
@@ -144,7 +144,7 @@ def get_nickname_command_regexp(nick, command, alias_nicks):
     :param list alias_nicks: a list of alternatives that should also be accepted
                              instead of ``nick``
     :return: a compiled regex pattern that implements the given nickname command
-    :rtype: :py:class:`re.Pattern`
+    :rtype: :ref:`re.Pattern <python:re-objects>`
     """
     if isinstance(alias_nicks, unicode):
         alias_nicks = [alias_nicks]
@@ -183,7 +183,7 @@ def get_action_command_regexp(command):
 
     :param str command: the name of the command
     :return: a compiled regexp object that implements the command
-    :rtype: :py:class:`re.Pattern`
+    :rtype: :ref:`re.Pattern <python:re-objects>`
     """
     pattern = get_action_command_pattern(command)
     return re.compile(pattern, re.IGNORECASE | re.VERBOSE)
@@ -587,7 +587,7 @@ def get_hostmask_regex(mask):
 
     :param str mask: the hostmask that the pattern should match
     :return: a compiled regex pattern matching the given ``mask``
-    :rtype: :py:class:`re.Pattern`
+    :rtype: :ref:`re.Pattern <python:re-objects>`
     """
     mask = re.escape(mask)
     mask = mask.replace(r'\*', '.*')

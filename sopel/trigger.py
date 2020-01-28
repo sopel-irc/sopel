@@ -236,7 +236,7 @@ class Trigger(unicode):
     hostmask = property(lambda self: self._pretrigger.hostmask)
     """Hostmask of the person who sent the message as ``<nick>!<user>@<host>``.
 
-    :type: str:
+    :type: str
     """
     user = property(lambda self: self._pretrigger.user)
     """Local username of the person who sent the message.
