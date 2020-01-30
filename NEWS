@@ -19,7 +19,7 @@ Plugin changes
 
 * The `spellcheck` plugin has been removed to simplify dependencies [[#1675][]]
   * An updated version with added features and tweaks, based on `aspell`, is
-    installable separately [from PyPI][spellcheck-pypi] [[#1164][] & [#1545][]]
+    installable separately [from PyPI][spellcheck-pypi] [[#1164][], [#1545][]]
   * See [#1142][] & [#1642][] for background on why we decided to separate
     `spellcheck` into a separate package (tl;dr: dependency hell)
 * Similarly, the `ipython` plugin is now an external package, eliminating from
@@ -113,7 +113,7 @@ Core changes
 * Brought back support for non-SQLite databases by switching to SQLAlchemy
   [[#1446][], [#1652][], [#1729][], [#1755][], [#1774][], [#1777][], [#1783][]]
   * For details on using non-SQLite databases, see the [README][readme-db] or
-    [installation instructions][install-guide-db]
+    [configuration instructions][db-config-docs]
   * You will probably need to install additional dependencies if you wish to
     use something other than SQLite
   * Migrating an existing database from SQLite to your chosen option is
@@ -127,7 +127,7 @@ Core changes
   * See [authentication configuration docs][auth-config-docs]
 * Added `commands_on_connect` setting to send a list of commands automatically
   when Sopel's IRC connection is successfully established [[#1528][]]
-* Log files have become *much* more configurable [[#1678][], [[#1714][]]]
+* Log files have become *much* more configurable [[#1678][], [#1714][]]
   * Logs are named based on the config name
   * Many, many new settings added to customize logging
   * The default log format includes timestamp, source package, & level (which
@@ -464,6 +464,7 @@ API changes
 [#1633]: https://github.com/sopel-irc/sopel/pull/1633
 [#1635]: https://github.com/sopel-irc/sopel/pull/1635
 [#1638]: https://github.com/sopel-irc/sopel/pull/1638
+[#1642]: https://github.com/sopel-irc/sopel/issues/1642
 [#1646]: https://github.com/sopel-irc/sopel/pull/1646
 [#1651]: https://github.com/sopel-irc/sopel/pull/1651
 [#1652]: https://github.com/sopel-irc/sopel/pull/1652
@@ -577,15 +578,15 @@ API changes
 [#1813]: https://github.com/sopel-irc/sopel/pull/1813
 
 [api-docs]: https://sopel.chat/docs/
-[auth-config-docs]: https://sopel.chat/docs/configure.html#Authentication
+[auth-config-docs]: https://sopel.chat/docs/configure.html#authentication
+[db-config-docs]: https://sopel.chat/docs/configuration.html#database
 [docs-cli-config]: https://sopel.chat/docs/cli.html#the-sopel-config-command
 [docs-cli-plugins]: https://sopel.chat/docs/cli.html#the-sopel-plugins-command
 [docs-isupport]: https://sopel.chat/docs/irc.html#module-sopel.irc.isupport
 [docs-listattr]: https://sopel.chat/docs/config.html#sopel.config.types.ListAttribute
 [docs-myinfo]: https://sopel.chat/docs/irc.html#sopel.irc.utils.MyInfo
 [entry-point-plugin]: https://sopel.chat/docs/plugin.html#sopel.plugins.handlers.EntryPointPlugin
-[install-guide-db]: https://sopel.chat/usage/installing/#configuring-the-database-optional
-[logging-config-docs]: https://sopel.chat/docs/configure.html#Logging
+[logging-config-docs]: https://sopel.chat/docs/configure.html#logging
 [per-channel-conf]: https://sopel.chat/usage/per-channel-configuration/
 [readme-db]: https://github.com/sopel-irc/sopel/blob/v7.0.0/README.rst#database-support
 [sopel-7-migration]: https://sopel.chat/usage/installing/upgrading-to-sopel-7/
