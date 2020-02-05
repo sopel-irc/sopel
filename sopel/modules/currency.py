@@ -106,7 +106,7 @@ def update_rates(bot):
 
 
 def get_rate(base, target):
-    base = base.upper()
+    base = base.upper().replace(',', '')
     target = target.upper()
 
     if base not in rates:
