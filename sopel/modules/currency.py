@@ -23,7 +23,7 @@ FIAT_URL = 'https://api.exchangeratesapi.io/latest?base=EUR'
 FIXER_URL = 'http://data.fixer.io/api/latest?base=EUR&access_key={}'
 CRYPTO_URL = 'https://api.coingecko.com/api/v3/exchange_rates'
 EXCHANGE_REGEX = re.compile(r'''
-    ^(\d+(?:\.\d+)?)                                            # Decimal number
+    ^[+-]?[0-9]{1,3}(?:,?[0-9]{1})*(?:\.[0-9]{2})?             # Decimal number
     \s*([a-zA-Z]{3})                                            # 3-letter currency code
     \s+(?:in|as|of|to)\s+                                       # preposition
     (([a-zA-Z]{3}$)|([a-zA-Z]{3})\s)+$                          # one or more 3-letter currency code
@@ -106,7 +106,7 @@ def update_rates(bot):
 
 
 def get_rate(base, target):
-    base = base.upper().replace(',', '')
+    base = base.upper()
     target = target.upper()
 
     if base not in rates:
@@ -142,7 +142,7 @@ def exchange(bot, match):
     query = match.string
 
     targets = query.split()
-    amount = targets.pop(0)
+    amount = targets.pop(0).replace(',', '')
     base = targets.pop(0)
     targets.pop(0)
 
