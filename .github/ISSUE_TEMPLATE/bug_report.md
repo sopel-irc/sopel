@@ -34,6 +34,7 @@ configuration.
 ### Environment
 - Sopel `.version`: [e.g. 7.0.0 or d416e19]
 - Sopel installed via: [apt, pip, `setup.py install`, source, ?]
+- Python version: [e.g. 3.6.9]
 - Operating system: [e.g. Debian 10]
 - IRCd `/version`: [e.g. InspIRCd 3.0.1]
 - Relevant plugins: [adminchannel, weather, custom\_thing.py, ?]
