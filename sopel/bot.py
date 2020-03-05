@@ -1,4 +1,5 @@
 # coding=utf-8
+"""Main bot object implementation for Sopel."""
 # Copyright 2008, Sean B. Palmer, inamidst.com
 # Copyright © 2012, Elad Alfassa <elad@fedoraproject.org>
 # Copyright 2012-2015, Elsie Powell, http://embolalia.com
@@ -40,6 +41,8 @@ else:
 
 
 class Sopel(irc.AbstractBot):
+    """The main bot object."""
+
     def __init__(self, config, daemon=False):
         super(Sopel, self).__init__(config)
         self._daemon = daemon  # Used for iPython. TODO something saner here
@@ -138,7 +141,8 @@ class Sopel(irc.AbstractBot):
 
     @property
     def hostmask(self):
-        """The current hostmask for the bot :class:`sopel.tools.target.User`.
+        """
+        The current hostmask for the bot :class:`sopel.tools.target.User`.
 
         :return: the bot's current hostmask
         :rtype: str
@@ -151,7 +155,8 @@ class Sopel(irc.AbstractBot):
         return self.users.get(self.nick).hostmask
 
     def setup(self):
-        """Set up Sopel bot before it can run.
+        """
+        Set up Sopel bot before it can run.
 
         The setup phase is in charge of:
 
@@ -230,7 +235,8 @@ class Sopel(irc.AbstractBot):
             LOGGER.warning("Warning: Couldn't load any plugins")
 
     def reload_plugin(self, name):
-        """Reload a plugin.
+        """
+        Reload a plugin.
 
         :param str name: name of the plugin to reload
         :raise plugins.exceptions.PluginNotRegistered: when there is no
@@ -257,7 +263,8 @@ class Sopel(irc.AbstractBot):
                     meta['type'], name, meta['source'])
 
     def reload_plugins(self):
-        """Reload all registered plugins.
+        """
+        Reload all registered plugins.
 
         First, this function runs all plugin shutdown routines and unregisters
         all plugins. Then it reloads all plugins, runs their setup routines, and
@@ -280,7 +287,8 @@ class Sopel(irc.AbstractBot):
                         meta['type'], name, meta['source'])
 
     def add_plugin(self, plugin, callables, jobs, shutdowns, urls):
-        """Add a loaded plugin to the bot's registry.
+        """
+        Add a loaded plugin to the bot's registry.
 
         :param plugin: loaded plugin to add
         :type plugin: :class:`sopel.plugins.handlers.AbstractPluginHandler`
@@ -300,7 +308,8 @@ class Sopel(irc.AbstractBot):
         self.register(callables, jobs, shutdowns, urls)
 
     def remove_plugin(self, plugin, callables, jobs, shutdowns, urls):
-        """Remove a loaded plugin from the bot's registry.
+        """
+        Remove a loaded plugin from the bot's registry.
 
         :param plugin: loaded plugin to remove
         :type plugin: :class:`sopel.plugins.handlers.AbstractPluginHandler`
@@ -337,7 +346,8 @@ class Sopel(irc.AbstractBot):
         del self._plugins[name]
 
     def has_plugin(self, name):
-        """Check if the bot has registered a plugin of the specified name.
+        """
+        Check if the bot has registered a plugin of the specified name.
 
         :param str name: name of the plugin to check for
         :return: whether the bot has a plugin named ``name`` registered
@@ -346,7 +356,8 @@ class Sopel(irc.AbstractBot):
         return name in self._plugins
 
     def get_plugin_meta(self, name):
-        """Get info about a registered plugin by its name.
+        """
+        Get info about a registered plugin by its name.
 
         :param str name: name of the plugin about which to get info
         :return: the plugin's metadata
@@ -361,7 +372,8 @@ class Sopel(irc.AbstractBot):
         return self._plugins[name].get_meta_description()
 
     def unregister(self, obj):
-        """Unregister a callable.
+        """
+        Unregister a callable.
 
         :param obj: the callable to unregister
         :type obj: :term:`object`
@@ -389,7 +401,8 @@ class Sopel(irc.AbstractBot):
             self.shutdown_methods.remove(obj)
 
     def register(self, callables, jobs, shutdowns, urls):
-        """Register rules, jobs, shutdown methods, and URL callbacks.
+        """
+        Register rules, jobs, shutdown methods, and URL callbacks.
 
         :param callables: an iterable of callables to register
         :type callables: :term:`iterable`
@@ -503,7 +516,8 @@ class Sopel(irc.AbstractBot):
         version='6.0',
         removed_in='8.0')
     def msg(self, recipient, text, max_messages=1):
-        """Old way to make the bot say something on IRC.
+        """
+        Old way to make the bot say something on IRC.
 
         :param str recipient: nickname or channel to which to send message
         :param str text: message to send
@@ -516,7 +530,8 @@ class Sopel(irc.AbstractBot):
         self.say(text, recipient, max_messages)
 
     def call(self, func, sopel, trigger):
-        """Call a function, applying any rate limits or other restrictions.
+        """
+        Call a function, applying any rate limits or other restrictions.
 
         :param func: the function to call
         :type func: :term:`function`
@@ -599,7 +614,8 @@ class Sopel(irc.AbstractBot):
                 self._times[trigger.sender][func] = current_time
 
     def get_triggered_callables(self, priority, pretrigger, blocked):
-        """Get triggered callables by priority.
+        """
+        Get triggered callables by priority.
 
         :param str priority: priority to retrieve callables
         :param pretrigger: Sopel pretrigger object
@@ -690,7 +706,8 @@ class Sopel(irc.AbstractBot):
         return (nick_blocked, host_blocked)
 
     def dispatch(self, pretrigger):
-        """Dispatch a parsed message to any registered callables.
+        """
+        Dispatch a parsed message to any registered callables.
 
         :param pretrigger: a parsed message from the server
         :type pretrigger: :class:`~sopel.trigger.PreTrigger`
@@ -761,7 +778,8 @@ class Sopel(irc.AbstractBot):
 
     @property
     def running_triggers(self):
-        """Current active threads for triggers.
+        """
+        Current active threads for triggers.
 
         :return: the running thread(s) currently processing trigger(s)
         :rtype: :term:`iterable`
@@ -772,7 +790,8 @@ class Sopel(irc.AbstractBot):
             return [t for t in self._running_triggers if t.is_alive()]
 
     def _update_running_triggers(self, running_triggers):
-        """Update list of running triggers.
+        """
+        Update list of running triggers.
 
         :param list running_triggers: newly started threads
 
@@ -791,7 +810,8 @@ class Sopel(irc.AbstractBot):
                 t for t in running_triggers if t.is_alive()]
 
     def on_scheduler_error(self, scheduler, exc):
-        """Called when the Job Scheduler fails.
+        """
+        Called when the Job Scheduler fails.
 
         :param scheduler: the JobScheduler that errored
         :type scheduler: :class:`sopel.tools.jobs.JobScheduler`
@@ -804,7 +824,8 @@ class Sopel(irc.AbstractBot):
         self.error(exception=exc)
 
     def on_job_error(self, scheduler, job, exc):
-        """Called when a job from the Job Scheduler fails.
+        """
+        Called when a job from the Job Scheduler fails.
 
         :param scheduler: the JobScheduler responsible for the errored ``job``
         :type scheduler: :class:`sopel.tools.jobs.JobScheduler`
@@ -819,7 +840,8 @@ class Sopel(irc.AbstractBot):
         self.error(exception=exc)
 
     def error(self, trigger=None, exception=None):
-        """Called internally when a plugin causes an error.
+        """
+        Called internally when a plugin causes an error.
 
         :param trigger: the ``Trigger``\\ing line (if available)
         :type trigger: :class:`sopel.trigger.Trigger`
@@ -841,7 +863,8 @@ class Sopel(irc.AbstractBot):
             self.say(message, trigger.sender)
 
     def _host_blocked(self, host):
-        """Check if a hostname is blocked.
+        """
+        Check if a hostname is blocked.
 
         :param str host: the hostname to check
         """
@@ -856,7 +879,8 @@ class Sopel(irc.AbstractBot):
         return False
 
     def _nick_blocked(self, nick):
-        """Check if a nickname is blocked.
+        """
+        Check if a nickname is blocked.
 
         :param str nick: the nickname to check
         """
@@ -903,7 +927,8 @@ class Sopel(irc.AbstractBot):
         self.shutdown_methods = []
 
     def register_url_callback(self, pattern, callback):
-        """Register a ``callback`` for URLs matching the regex ``pattern``.
+        """
+        Register a ``callback`` for URLs matching the regex ``pattern``.
 
         :param pattern: compiled regex pattern to register
         :type pattern: :ref:`re.Pattern <python:re-objects>`
@@ -938,7 +963,8 @@ class Sopel(irc.AbstractBot):
         self.memory['url_callbacks'][pattern] = callback
 
     def unregister_url_callback(self, pattern, callback):
-        """Unregister the callback for URLs matching the regex ``pattern``.
+        """
+        Unregister the callback for URLs matching the regex ``pattern``.
 
         :param pattern: compiled regex pattern to unregister callback
         :type pattern: :ref:`re.Pattern <python:re-objects>`
@@ -977,7 +1003,8 @@ class Sopel(irc.AbstractBot):
             pass
 
     def search_url_callbacks(self, url):
-        """Yield callbacks whose regex pattern matches the ``url``.
+        """
+        Yield callbacks whose regex pattern matches the ``url``.
 
         :param str url: URL found in a trigger
         :return: yield 2-value tuples of ``(callback, match)``
@@ -1010,7 +1037,8 @@ class Sopel(irc.AbstractBot):
                 yield function, match
 
     def restart(self, message):
-        """Disconnect from IRC and restart the bot.
+        """
+        Disconnect from IRC and restart the bot.
 
         :param str message: QUIT message to send (e.g. "Be right back!")
         """
@@ -1019,7 +1047,8 @@ class Sopel(irc.AbstractBot):
 
 
 class SopelWrapper(object):
-    """Wrapper around a Sopel instance and a Trigger.
+    """
+    Wrapper around a Sopel instance and a Trigger.
 
     :param sopel: Sopel instance
     :type sopel: :class:`~sopel.bot.Sopel`
@@ -1033,6 +1062,7 @@ class SopelWrapper(object):
     to the sender (either a channel or in a private message) and even to
     :meth:`reply to someone<reply>` in a channel.
     """
+
     def __init__(self, sopel, trigger, output_prefix=''):
         if not output_prefix:
             # Just in case someone passes in False, None, etc.
@@ -1056,7 +1086,8 @@ class SopelWrapper(object):
         return setattr(self._bot, attr, value)
 
     def say(self, message, destination=None, max_messages=1):
-        """Override ``Sopel.say`` to use trigger source by default.
+        """
+        Override ``Sopel.say`` to use trigger source by default.
 
         :param str message: message to say
         :param str destination: channel or nickname; defaults to
@@ -1076,7 +1107,8 @@ class SopelWrapper(object):
         self._bot.say(self._out_pfx + message, destination, max_messages)
 
     def action(self, message, destination=None):
-        """Override ``Sopel.action`` to use trigger source by default.
+        """
+        Override ``Sopel.action`` to use trigger source by default.
 
         :param str message: action message
         :param str destination: channel or nickname; defaults to
@@ -1094,7 +1126,8 @@ class SopelWrapper(object):
         self._bot.action(message, destination)
 
     def notice(self, message, destination=None):
-        """Override ``Sopel.notice`` to use trigger source by default.
+        """
+        Override ``Sopel.notice`` to use trigger source by default.
 
         :param str message: notice message
         :param str destination: channel or nickname; defaults to
@@ -1112,7 +1145,8 @@ class SopelWrapper(object):
         self._bot.notice(self._out_pfx + message, destination)
 
     def reply(self, message, destination=None, reply_to=None, notice=False):
-        """Override ``Sopel.reply`` to ``reply_to`` sender by default.
+        """
+        Override ``Sopel.reply`` to ``reply_to`` sender by default.
 
         :param str message: reply message
         :param str destination: channel or nickname; defaults to
@@ -1137,7 +1171,8 @@ class SopelWrapper(object):
         self._bot.reply(message, destination, reply_to, notice)
 
     def kick(self, nick, channel=None, message=None):
-        """Override ``Sopel.kick`` to kick in a channel
+        """
+        Override ``Sopel.kick`` to kick in a channel.
 
         :param str nick: nick to kick out of the ``channel``
         :param str channel: optional channel to kick ``nick`` from

@@ -1,5 +1,6 @@
 # coding=utf-8
-"""The formatting module includes functions to apply IRC formatting to text.
+"""
+The formatting module includes functions to apply IRC formatting to text.
 
 *Availability: 4.5+*
 """
@@ -63,6 +64,8 @@ CONTROL_REVERSE = '\x16'
 
 # TODO when we can move to 3.3+ completely, make this an Enum.
 class colors:
+    """Convenience mapping of color names to their numeric codes."""
+
     WHITE = '00'
     BLACK = '01'
     BLUE = '02'
@@ -118,7 +121,8 @@ def _get_color(color):
 
 
 def color(text, fg=None, bg=None):
-    """Return the text, with the given colors applied in IRC formatting.
+    """
+    Return the text, with the given colors applied in IRC formatting.
 
     :param str text: the text to format
     :param mixed fg: the foreground color
@@ -161,7 +165,8 @@ def _get_hex_color(color):
 
 
 def hex_color(text, fg=None, bg=None):
-    """Return the text, with the given colors applied in IRC formatting.
+    """
+    Return the text, with the given colors applied in IRC formatting.
 
     :param str text: the text to format
     :param str fg: the foreground color
@@ -190,7 +195,8 @@ def hex_color(text, fg=None, bg=None):
 
 
 def bold(text):
-    """Return the text, with bold IRC formatting.
+    """
+    Return the text, with bold IRC formatting.
 
     :param str text: the text to format
     """
@@ -198,7 +204,8 @@ def bold(text):
 
 
 def italic(text):
-    """Return the text, with italic IRC formatting.
+    """
+    Return the text, with italic IRC formatting.
 
     :param str text: the text to format
     """
@@ -206,7 +213,8 @@ def italic(text):
 
 
 def underline(text):
-    """Return the text, with underline IRC formatting.
+    """
+    Return the text, with underline IRC formatting.
 
     :param str text: the text to format
     """
@@ -214,7 +222,8 @@ def underline(text):
 
 
 def strikethrough(text):
-    """Return the text, with strikethrough IRC formatting.
+    """
+    Return the text, with strikethrough IRC formatting.
 
     :param str text: the text to format
 
@@ -226,7 +235,8 @@ def strikethrough(text):
 
 
 def monospace(text):
-    """Return the text, with monospace IRC formatting.
+    """
+    Return the text, with monospace IRC formatting.
 
     :param str text: the text to format
 
@@ -238,7 +248,8 @@ def monospace(text):
 
 
 def reverse(text):
-    """Return the text, with reverse-color IRC formatting.
+    """
+    Return the text, with reverse-color IRC formatting.
 
     :param str text: the text to format
 

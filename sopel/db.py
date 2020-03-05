@@ -1,4 +1,5 @@
 # coding=utf-8
+"""Database module for Sopel."""
 from __future__ import unicode_literals, absolute_import, print_function, division
 
 import errno
@@ -47,12 +48,14 @@ MYSQL_TABLE_ARGS = {'mysql_engine': 'InnoDB',
 
 class NickIDs(BASE):
     """Nick IDs table SQLAlchemy class."""
+
     __tablename__ = 'nick_ids'
     nick_id = Column(Integer, primary_key=True)
 
 
 class Nicknames(BASE):
     """Nicknames table SQLAlchemy class."""
+
     __tablename__ = 'nicknames'
     __table_args__ = MYSQL_TABLE_ARGS
     nick_id = Column(Integer, ForeignKey('nick_ids.nick_id'), primary_key=True)
@@ -62,6 +65,7 @@ class Nicknames(BASE):
 
 class NickValues(BASE):
     """Nick values table SQLAlchemy class."""
+
     __tablename__ = 'nick_values'
     __table_args__ = MYSQL_TABLE_ARGS
     nick_id = Column(Integer, ForeignKey('nick_ids.nick_id'), primary_key=True)
@@ -71,6 +75,7 @@ class NickValues(BASE):
 
 class ChannelValues(BASE):
     """Channel values table SQLAlchemy class."""
+
     __tablename__ = 'channel_values'
     __table_args__ = MYSQL_TABLE_ARGS
     channel = Column(String(255), primary_key=True)
@@ -80,6 +85,7 @@ class ChannelValues(BASE):
 
 class PluginValues(BASE):
     """Plugin values table SQLAlchemy class."""
+
     __tablename__ = 'plugin_values'
     __table_args__ = MYSQL_TABLE_ARGS
     plugin = Column(String(255), primary_key=True)
@@ -88,7 +94,8 @@ class PluginValues(BASE):
 
 
 class SopelDB(object):
-    """Database object class.
+    """
+    Database object class.
 
     :param config: Sopel's configuration settings
     :type config: :class:`sopel.config.Config`
@@ -183,7 +190,8 @@ class SopelDB(object):
         self.ssession = scoped_session(sessionmaker(bind=self.engine))
 
     def connect(self):
-        """Get a direct database connection.
+        """
+        Get a direct database connection.
 
         :return: a proxied DBAPI connection object; see
                  :meth:`sqlalchemy.engine.Engine.raw_connection()`
@@ -219,7 +227,8 @@ class SopelDB(object):
         return self.engine.raw_connection()
 
     def session(self):
-        """Get a SQLAlchemy Session object.
+        """
+        Get a SQLAlchemy Session object.
 
         :rtype: :class:`sqlalchemy.orm.session.Session`
 
@@ -235,7 +244,8 @@ class SopelDB(object):
         return self.ssession()
 
     def execute(self, *args, **kwargs):
-        """Execute an arbitrary SQL query against the database.
+        """
+        Execute an arbitrary SQL query against the database.
 
         :return: the query results
         :rtype: :class:`sqlalchemy.engine.ResultProxy`
@@ -246,7 +256,8 @@ class SopelDB(object):
         return self.engine.execute(*args, **kwargs)
 
     def get_uri(self):
-        """Return a direct URL for the database.
+        """
+        Return a direct URL for the database.
 
         :return: the database connection URI
         :rtype: str
@@ -259,7 +270,8 @@ class SopelDB(object):
     # NICK FUNCTIONS
 
     def get_nick_id(self, nick, create=True):
-        """Return the internal identifier for a given nick.
+        """
+        Return the internal identifier for a given nick.
 
         :param nick: the nickname for which to fetch an ID
         :type nick: :class:`~sopel.tools.Identifier`
@@ -315,7 +327,8 @@ class SopelDB(object):
             self.ssession.remove()
 
     def alias_nick(self, nick, alias):
-        """Create an alias for a nick.
+        """
+        Create an alias for a nick.
 
         :param str nick: an existing nickname
         :param str alias: an alias by which ``nick`` should also be known
@@ -351,7 +364,8 @@ class SopelDB(object):
             self.ssession.remove()
 
     def set_nick_value(self, nick, key, value):
-        """Set or update a value in the key-value store for ``nick``.
+        """
+        Set or update a value in the key-value store for ``nick``.
 
         :param str nick: the nickname with which to associate the ``value``
         :param str key: the name by which this ``value`` may be accessed later
@@ -396,7 +410,8 @@ class SopelDB(object):
             self.ssession.remove()
 
     def delete_nick_value(self, nick, key):
-        """Delete a value from the key-value store for ``nick``.
+        """
+        Delete a value from the key-value store for ``nick``.
 
         :param str nick: the nickname whose values to modify
         :param str key: the name of the value to delete
@@ -429,7 +444,8 @@ class SopelDB(object):
             self.ssession.remove()
 
     def get_nick_value(self, nick, key, default=None):
-        """Get a value from the key-value store for ``nick``.
+        """
+        Get a value from the key-value store for ``nick``.
 
         :param str nick: the nickname whose values to access
         :param str key: the name by which the desired value was saved
@@ -466,7 +482,8 @@ class SopelDB(object):
             self.ssession.remove()
 
     def unalias_nick(self, alias):
-        """Remove an alias.
+        """
+        Remove an alias.
 
         :param str alias: an alias with at least one other nick in its group
         :raise ValueError: if there is not at least one other nick in the group
@@ -497,7 +514,8 @@ class SopelDB(object):
             self.ssession.remove()
 
     def delete_nick_group(self, nick):
-        """Remove a nickname, all of its aliases, and all of its stored values.
+        """
+        Remove a nickname, all of its aliases, and all of its stored values.
 
         :param str nick: one of the nicknames in the group to be deleted
         :raise ~sqlalchemy.exc.SQLAlchemyError: if there is a database error
@@ -522,7 +540,8 @@ class SopelDB(object):
             self.ssession.remove()
 
     def merge_nick_groups(self, first_nick, second_nick):
-        """Merge two nick groups.
+        """
+        Merge two nick groups.
 
         :param str first_nick: one nick in the first group to merge
         :param str second_nick: one nick in the second group to merge
@@ -569,7 +588,8 @@ class SopelDB(object):
     # CHANNEL FUNCTIONS
 
     def get_channel_slug(self, chan):
-        """Return the case-normalized representation of ``channel``.
+        """
+        Return the case-normalized representation of ``channel``.
 
         :param str channel: the channel name to normalize, with prefix
                             (required)
@@ -607,7 +627,8 @@ class SopelDB(object):
             self.ssession.remove()
 
     def set_channel_value(self, channel, key, value):
-        """Set or update a value in the key-value store for ``channel``.
+        """
+        Set or update a value in the key-value store for ``channel``.
 
         :param str channel: the channel with which to associate the ``value``
         :param str key: the name by which this ``value`` may be accessed later
@@ -651,7 +672,8 @@ class SopelDB(object):
             self.ssession.remove()
 
     def delete_channel_value(self, channel, key):
-        """Delete a value from the key-value store for ``channel``.
+        """
+        Delete a value from the key-value store for ``channel``.
 
         :param str channel: the channel whose values to modify
         :param str key: the name of the value to delete
@@ -683,7 +705,8 @@ class SopelDB(object):
             self.ssession.remove()
 
     def get_channel_value(self, channel, key, default=None):
-        """Get a value from the key-value store for ``channel``.
+        """
+        Get a value from the key-value store for ``channel``.
 
         :param str channel: the channel whose values to access
         :param str key: the name by which the desired value was saved
@@ -721,7 +744,8 @@ class SopelDB(object):
     # PLUGIN FUNCTIONS
 
     def set_plugin_value(self, plugin, key, value):
-        """Set or update a value in the key-value store for ``plugin``.
+        """
+        Set or update a value in the key-value store for ``plugin``.
 
         :param str plugin: the plugin name with which to associate the ``value``
         :param str key: the name by which this ``value`` may be accessed later
@@ -765,7 +789,8 @@ class SopelDB(object):
             self.ssession.remove()
 
     def delete_plugin_value(self, plugin, key):
-        """Delete a value from the key-value store for ``plugin``.
+        """
+        Delete a value from the key-value store for ``plugin``.
 
         :param str plugin: the plugin name whose values to modify
         :param str key: the name of the value to delete
@@ -797,7 +822,8 @@ class SopelDB(object):
             self.ssession.remove()
 
     def get_plugin_value(self, plugin, key, default=None):
-        """Get a value from the key-value store for ``plugin``.
+        """
+        Get a value from the key-value store for ``plugin``.
 
         :param str plugin: the plugin name whose values to access
         :param str key: the name by which the desired value was saved
@@ -835,7 +861,8 @@ class SopelDB(object):
     # NICK AND CHANNEL FUNCTIONS
 
     def get_nick_or_channel_value(self, name, key, default=None):
-        """Get a value from the key-value store for ``name``.
+        """
+        Get a value from the key-value store for ``name``.
 
         :param str name: nick or channel whose values to access
         :param str key: the name by which the desired value was saved
@@ -862,7 +889,8 @@ class SopelDB(object):
             return self.get_channel_value(name, key, default)
 
     def get_preferred_value(self, names, key):
-        """Get a value for the first name which has it set.
+        """
+        Get a value for the first name which has it set.
 
         :param list names: a list of channel names and/or nicknames
         :param str key: the name by which the desired value was saved

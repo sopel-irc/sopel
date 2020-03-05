@@ -1,5 +1,6 @@
 # coding=utf-8
-"""Tasks that allow the bot to run, but aren't user-facing functionality
+"""
+Tasks that allow the bot to run, but aren't user-facing functionality.
 
 This is written as a module to make it easier to extend to support more
 responses to standard IRC codes without having to shove them all into the
@@ -39,6 +40,7 @@ who_reqs = {}  # Keeps track of reqs coming from this module, rather than others
 
 
 def setup(bot):
+    """Set up the core tasks needed for Sopel to function."""
     bot.memory['join_events_queue'] = collections.deque()
 
     # Manage JOIN flood protection
@@ -54,6 +56,7 @@ def setup(bot):
 
 
 def shutdown(bot):
+    """Clean up when the bot exits, reconnects, or restarts."""
     try:
         bot.memory['join_events_queue'].clear()
     except KeyError:
@@ -61,7 +64,8 @@ def shutdown(bot):
 
 
 def _join_event_processing(bot):
-    """Process a batch of JOIN event from the ``join_events_queue`` queue.
+    """
+    Process a batch of JOIN event from the ``join_events_queue`` queue.
 
     Every time this function is executed, it processes at most
     ``throttle_join`` JOIN events. For each JOIN, it sends a WHO request to
@@ -79,7 +83,7 @@ def _join_event_processing(bot):
 
 
 def auth_after_register(bot):
-    """Do NickServ/AuthServ auth"""
+    """Do NickServ/AuthServ authentication."""
     if bot.config.core.auth_method:
         auth_method = bot.config.core.auth_method
         auth_username = bot.config.core.auth_username
@@ -131,7 +135,8 @@ def execute_perform(bot, trigger):
 @module.thread(False)
 @module.unblockable
 def startup(bot, trigger):
-    """Do tasks related to connecting to the network.
+    """
+    Do tasks related to connecting to the network.
 
     001 RPL_WELCOME is from RFC2812 and is the first message that is sent after
     the connection has been registered on the network.
@@ -231,6 +236,7 @@ def parse_reply_myinfo(bot, trigger):
 @module.require_owner()
 @module.commands('useserviceauth')
 def enable_service_auth(bot, trigger):
+    """Switch to using network services to authenticate Sopel's owner."""
     if bot.config.core.owner_account:
         return
     if 'account-tag' not in bot.enabled_capabilities:
@@ -250,7 +256,8 @@ def enable_service_auth(bot, trigger):
 @module.event(events.ERR_NOCHANMODES)
 @module.priority('high')
 def retry_join(bot, trigger):
-    """Give NickServ enough time to identify on a +R channel.
+    """
+    Give NickServ enough time to identify on a +R channel.
 
     Give NickServ enough time to identify, and retry rejoining an
     identified-only (+R) channel. Maximum of ten rejoin attempts.
@@ -455,6 +462,7 @@ def track_nicks(bot, trigger):
 @module.thread(False)
 @module.unblockable
 def track_part(bot, trigger):
+    """Keep track of users when they PART channels Sopel has joined."""
     nick = trigger.nick
     channel = trigger.sender
     _remove_from_channel(bot, nick, channel)
@@ -465,6 +473,7 @@ def track_part(bot, trigger):
 @module.thread(False)
 @module.unblockable
 def track_kick(bot, trigger):
+    """Keep track of users who get KICKed from channels Sopel has joined."""
     nick = Identifier(trigger.args[1])
     channel = trigger.sender
     _remove_from_channel(bot, nick, channel)
@@ -551,6 +560,7 @@ def _periodic_send_who(bot):
 @module.thread(False)
 @module.unblockable
 def track_join(bot, trigger):
+    """Keep track of users who JOIN channels Sopel has joined."""
     channel = trigger.sender
 
     # is it a new channel?
@@ -588,6 +598,7 @@ def track_join(bot, trigger):
 @module.thread(False)
 @module.unblockable
 def track_quit(bot, trigger):
+    """Keep track of users Sopel knows about who QUIT from IRC."""
     for chanprivs in bot.privileges.values():
         chanprivs.pop(trigger.nick, None)
     for channel in bot.channels.values():
@@ -600,6 +611,7 @@ def track_quit(bot, trigger):
 @module.priority('high')
 @module.unblockable
 def receive_cap_list(bot, trigger):
+    """Handle CAP list from the IRC server."""
     cap = trigger.strip('-=~')
     # Server is listing capabilities
     if trigger.args[1] == 'LS':
@@ -651,6 +663,7 @@ def receive_cap_list(bot, trigger):
 
 
 def receive_cap_ls_reply(bot, trigger):
+    """Special handling for CAP LS reply from the IRC server."""
     if bot.server_capabilities:
         # We've already seen the results, so someone sent CAP LS from a module.
         # We're too late to do SASL, and we don't want to send CAP END before
@@ -728,6 +741,7 @@ def receive_cap_ls_reply(bot, trigger):
 
 
 def receive_cap_ack_sasl(bot):
+    """Handle CAP ACK for the 'sasl' capability."""
     # Presumably we're only here if we said we actually *want* sasl, but still
     # check anyway.
     password = None
@@ -745,7 +759,8 @@ def receive_cap_ack_sasl(bot):
 
 
 def send_authenticate(bot, token):
-    """Send ``AUTHENTICATE`` command to server with the given ``token``.
+    """
+    Send ``AUTHENTICATE`` command to server with the given ``token``.
 
     :param bot: instance of IRC bot that must authenticate
     :param str token: authentication token
@@ -777,6 +792,7 @@ def send_authenticate(bot, token):
 
 @module.event('AUTHENTICATE')
 def auth_proceed(bot, trigger):
+    """Proceed with authentication when sent an AUTHENTICATE event."""
     if trigger.args[0] != '+':
         # How did we get here? I am not good with computer.
         return
@@ -796,6 +812,7 @@ def auth_proceed(bot, trigger):
 
 @module.event(events.RPL_SASLSUCCESS)
 def sasl_success(bot, trigger):
+    """Finish CAP negotiation after SASL authentication succeeds."""
     bot.write(('CAP', 'END'))
 
 
@@ -807,11 +824,10 @@ def sasl_success(bot, trigger):
 @module.thread(False)
 @module.unblockable
 @module.require_admin
-def blocks(bot, trigger):
+def blocks(bot, trigger):  # noqa: D200
     """
     Manage Sopel's blocking features.\
     See [ignore system documentation]({% link _usage/ignoring-people.md %}).
-
     """
     STRINGS = {
         "success_del": "Successfully deleted block: %s",
@@ -887,6 +903,7 @@ def blocks(bot, trigger):
 
 @module.event('ACCOUNT')
 def account_notify(bot, trigger):
+    """Handle ACCOUNT notifications from the IRC server."""
     if trigger.nick not in bot.users:
         bot.users[trigger.nick] = target.User(
             trigger.nick, trigger.user, trigger.host)
@@ -900,6 +917,7 @@ def account_notify(bot, trigger):
 @module.priority('high')
 @module.unblockable
 def recv_whox(bot, trigger):
+    """Handle WHOX replies from the IRC server."""
     if len(trigger.args) < 2 or trigger.args[1] not in who_reqs:
         # Ignored, some module probably called WHO
         return
@@ -954,6 +972,7 @@ def _record_who(bot, channel, user, host, nick, account=None, away=None, modes=N
 @module.priority('high')
 @module.unblockable
 def recv_who(bot, trigger):
+    """Handle WHO replies from the IRC server."""
     channel, user, host, _, nick, status = trigger.args[1:7]
     away = 'G' in status
     modes = ''.join([c for c in status if c in '~&@%+!'])
@@ -964,6 +983,7 @@ def recv_who(bot, trigger):
 @module.priority('high')
 @module.unblockable
 def end_who(bot, trigger):
+    """Handle the end of a WHO reply batch."""
     if _whox_enabled(bot):
         who_reqs.pop(trigger.args[1], None)
 
@@ -973,6 +993,7 @@ def end_who(bot, trigger):
 @module.thread(False)
 @module.unblockable
 def track_notify(bot, trigger):
+    """Handle AWAY notifications from the IRC server."""
     if trigger.nick not in bot.users:
         bot.users[trigger.nick] = target.User(
             trigger.nick, trigger.user, trigger.host)
@@ -986,6 +1007,7 @@ def track_notify(bot, trigger):
 @module.thread(False)
 @module.unblockable
 def track_topic(bot, trigger):
+    """Keep track of channel topics when they change."""
     if trigger.event != 'TOPIC':
         channel = trigger.args[1]
     else:
@@ -997,7 +1019,8 @@ def track_topic(bot, trigger):
 
 @module.rule(r'(?u).*(.+://\S+).*')
 def handle_url_callbacks(bot, trigger):
-    """Dispatch callbacks on URLs
+    """
+    Dispatch callbacks on URLs.
 
     For each URL found in the trigger, trigger the URL callback registered by
     the ``@url`` decorator.

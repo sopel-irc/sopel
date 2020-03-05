@@ -4,6 +4,8 @@
 # file, so in order to undo Python's ridiculous fucking idiocy, we have to have
 # our own check.
 
+"""Sopel module root (mostly makes ``import sopel`` work)."""
+
 # Copyright 2008, Sean B. Palmer, inamidst.com
 # Copyright 2012, Elsie Powell, http://embolalia.com
 # Copyright 2012, Elad Alfassa <elad@fedoraproject.org>

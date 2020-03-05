@@ -1,4 +1,6 @@
 # coding=utf-8
+"""Everything needed to load Sopel plugins."""
+
 from __future__ import unicode_literals, absolute_import, print_function, division
 
 import re
@@ -16,7 +18,7 @@ if sys.version_info.major >= 3:
 
 
 def trim_docstring(doc):
-    """Get the docstring as a series of lines that can be sent"""
+    """Get the docstring as a series of lines that can be sent."""
     if not doc:
         return []
     lines = doc.expandtabs().splitlines()
@@ -37,8 +39,12 @@ def trim_docstring(doc):
 
 
 def clean_callable(func, config):
-    """Compiles the regexes, moves commands into func.rule, fixes up docs and
-    puts them in func._docs, and sets defaults"""
+    """
+    Ensure loaded callables have all the right attributes.
+
+    Compiles the regexes, moves commands into ``func.rule``, sets defaults,
+    and fixes up docs & puts them in ``func._docs``.
+    """
     nick = config.core.nick
     alias_nicks = config.core.alias_nicks
     prefix = config.core.prefix
@@ -117,7 +123,8 @@ def clean_callable(func, config):
 
 
 def is_triggerable(obj):
-    """Check if ``obj`` can handle the bot's triggers.
+    """
+    Check if ``obj`` can handle the bot's triggers.
 
     :param obj: any :term:`function` to check
     :return: ``True`` if ``obj`` can handle the bot's triggers
@@ -152,6 +159,7 @@ def is_triggerable(obj):
 
 
 def clean_module(module, config):
+    """Go through a (plugin) module and process its members."""
     callables = []
     shutdowns = []
     jobs = []

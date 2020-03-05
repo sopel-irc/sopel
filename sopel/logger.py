@@ -1,4 +1,6 @@
 # coding=utf-8
+"""Sopel's logging tools."""
+
 from __future__ import unicode_literals, absolute_import, print_function, division
 
 import logging
@@ -9,7 +11,8 @@ from sopel import tools
 
 
 class IrcLoggingHandler(logging.Handler):
-    """Logging handler for output to an IRC channel.
+    """
+    Logging handler for output to an IRC channel.
 
     :param bot: a Sopel instance
     :type bot: :class:`sopel.bot.Sopel`
@@ -18,13 +21,15 @@ class IrcLoggingHandler(logging.Handler):
 
     Implementation of a :class:`logging.Handler`.
     """
+
     def __init__(self, bot, level):
         super(IrcLoggingHandler, self).__init__(level)
         self._bot = bot
         self._channel = bot.config.core.logging_channel
 
     def emit(self, record):
-        """Emit a log ``record`` to the IRC channel.
+        """
+        Emit a log ``record`` to the IRC channel.
 
         :param record: the log record to output
         :type record: :class:`logging.LogRecord`
@@ -39,7 +44,8 @@ class IrcLoggingHandler(logging.Handler):
 
 
 class ChannelOutputFormatter(logging.Formatter):
-    """Output formatter for log messages destined for an IRC channel.
+    """
+    Output formatter for log messages destined for an IRC channel.
 
     :param fmt: log line format
     :type fmt: :ref:`format string <formatstrings>`
@@ -48,11 +54,13 @@ class ChannelOutputFormatter(logging.Formatter):
 
     Implementation of a :class:`logging.Formatter`.
     """
+
     def __init__(self, fmt='[%(filename)s] %(message)s', datefmt=None):
         super(ChannelOutputFormatter, self).__init__(fmt=fmt, datefmt=datefmt)
 
     def formatException(self, exc_info):
-        """Format the exception info as a string for output.
+        """
+        Format the exception info as a string for output.
 
         :param tuple exc_info: standard exception information returned by
                                :func:`~sys.exc_info`
@@ -63,7 +71,8 @@ class ChannelOutputFormatter(logging.Formatter):
 
 
 def setup_logging(settings):
-    """Set up logging based on the bot's configuration ``settings``.
+    """
+    Set up logging based on the bot's configuration ``settings``.
 
     :param settings: configuration settings object
     :type settings: :class:`sopel.config.Config`
@@ -153,7 +162,8 @@ def setup_logging(settings):
 
 
 def get_logger(name=None):
-    """Return a logger for a module, if the name is given.
+    """
+    Return a logger for a module, if the name is given.
 
     .. deprecated:: 7.0
 

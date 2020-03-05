@@ -1,11 +1,12 @@
 # coding=utf-8
-"""This contains decorators and other tools for creating Sopel plugins."""
+"""Contains decorators and other tools for creating Sopel plugins."""
 # Copyright 2013, Ari Koivula, <ari@koivu.la>
 # Copyright © 2013, Elad Alfassa <elad@fedoraproject.org>
 # Copyright 2013, Lior Ramati <firerogue517@gmail.com>
 # Copyright 2019, deathbybandaid, deathbybandaid.net
 # Copyright 2019, dgw, technobabbl.es
 # Copyright 2019, Florian Strzelecki <florian.strzelecki@gmail.com>
+#
 # Licensed under the Eiffel Forum License 2.
 
 from __future__ import unicode_literals, absolute_import, print_function, division
@@ -92,7 +93,8 @@ store any user's OPER status.
 
 
 def unblockable(function):
-    """Decorate a function to exempt it from the ignore/blocks system.
+    """
+    Decorate a function to exempt it from the ignore/blocks system.
 
     For example, this can be used to ensure that important events such as
     ``JOIN`` are always recorded::
@@ -117,7 +119,8 @@ def unblockable(function):
 
 
 def interval(*intervals):
-    """Decorate a function to be called by the bot every *n* seconds.
+    """
+    Decorate a function to be called by the bot every *n* seconds.
 
     :param int intervals: one or more duration(s), in seconds
 
@@ -155,7 +158,8 @@ def interval(*intervals):
 
 
 def rule(*patterns):
-    """Decorate a function to be called when a line matches the given pattern.
+    """
+    Decorate a function to be called when a line matches the given pattern.
 
     :param str patterns: one or more regular expression(s)
 
@@ -201,7 +205,8 @@ def rule(*patterns):
 
 
 def thread(value):
-    """Decorate a function to specify if it should be run in a separate thread.
+    """
+    Decorate a function to specify if it should be run in a separate thread.
 
     :param bool value: if ``True``, the function is called in a separate thread;
                        otherwise, from the bot's main thread
@@ -221,7 +226,8 @@ def thread(value):
 
 
 def echo(function=None):
-    """Decorate a function to specify that it should receive echo messages.
+    """
+    Decorate a function to specify that it should receive echo messages.
 
     This decorator can be used to listen in on the messages that Sopel is
     sending and react accordingly.
@@ -237,7 +243,8 @@ def echo(function=None):
 
 
 def commands(*command_list):
-    """Decorate a function to set one or more commands that should trigger it.
+    """
+    Decorate a function to set one or more commands that should trigger it.
 
     :param str command_list: one or more command name(s) to match
                              (can be regular expressions)
@@ -269,7 +276,8 @@ def commands(*command_list):
 
 
 def nickname_commands(*command_list):
-    """Decorate a function to trigger on lines starting with "$nickname: command".
+    """
+    Decorate a function to trigger on lines starting with "$nickname: command".
 
     :param str command_list: one or more command name(s) to match
                              (can be regular expressions)
@@ -303,7 +311,8 @@ def nickname_commands(*command_list):
 
 
 def action_commands(*command_list):
-    """Decorate a function to trigger on CTCP ACTION lines.
+    """
+    Decorate a function to trigger on CTCP ACTION lines.
 
     :param str command_list: one or more command name(s) to match
                              (can be regular expressions)
@@ -343,7 +352,8 @@ def action_commands(*command_list):
 
 
 def priority(value):
-    """Decorate a function to be executed with higher or lower priority.
+    """
+    Decorate a function to be executed with higher or lower priority.
 
     :param str value: one of ``high``, ``medium``, or ``low``;
                       defaults to ``medium``
@@ -358,7 +368,8 @@ def priority(value):
 
 
 def event(*event_list):
-    """Decorate a function to be triggered on specific IRC events.
+    """
+    Decorate a function to be triggered on specific IRC events.
 
     :param str event_list: one or more event name(s) on which to trigger
 
@@ -385,7 +396,8 @@ def event(*event_list):
 
 
 def intent(*intent_list):
-    """Decorate a callable to trigger on a message with any of the given intents.
+    """
+    Decorate a callable to trigger on a message with any of the given intents.
 
     :param str intent_list: one or more intent(s) on which to trigger (really,
                             the only useful value is ``action``)
@@ -409,7 +421,8 @@ def intent(*intent_list):
 
 
 def rate(user=0, channel=0, server=0):
-    """Decorate a function to be rate-limited.
+    """
+    Decorate a function to be rate-limited.
 
     :param int user: seconds between permitted calls of this function by the
                      same user
@@ -438,7 +451,8 @@ def rate(user=0, channel=0, server=0):
 
 
 def require_privmsg(message=None, reply=False):
-    """Decorate a function to only be triggerable from a private message.
+    """
+    Decorate a function to only be triggerable from a private message.
 
     :param str message: optional message said if triggered in a channel
     :param bool reply: use :meth:`~sopel.bot.Sopel.reply` instead of
@@ -473,7 +487,8 @@ def require_privmsg(message=None, reply=False):
 
 
 def require_chanmsg(message=None, reply=False):
-    """Decorate a function to only be triggerable from a channel message.
+    """
+    Decorate a function to only be triggerable from a channel message.
 
     :param str message: optional message said if triggered in private message
     :param bool reply: use :meth:`~.bot.Sopel.reply` instead of
@@ -508,7 +523,8 @@ def require_chanmsg(message=None, reply=False):
 
 
 def require_account(message=None, reply=False):  # lgtm [py/similar-function]
-    """Decorate a function to require services/NickServ authentication.
+    """
+    Decorate a function to require services/NickServ authentication.
 
     :param str message: optional message to say if a user without
                         authentication tries to trigger this function
@@ -554,7 +570,8 @@ def require_account(message=None, reply=False):  # lgtm [py/similar-function]
 
 
 def require_privilege(level, message=None, reply=False):
-    """Decorate a function to require at least the given channel permission.
+    """
+    Decorate a function to require at least the given channel permission.
 
     :param int level: required privilege level to use this command
     :param str message: optional message said to insufficiently privileged user
@@ -594,7 +611,8 @@ def require_privilege(level, message=None, reply=False):
 
 
 def require_admin(message=None, reply=False):  # lgtm [py/similar-function]
-    """Decorate a function to require the triggering user to be a bot admin.
+    """
+    Decorate a function to require the triggering user to be a bot admin.
 
     :param str message: optional message said to non-admin user
     :param bool reply: use :meth:`~.bot.Sopel.reply` instead of
@@ -630,7 +648,8 @@ def require_admin(message=None, reply=False):  # lgtm [py/similar-function]
 
 
 def require_owner(message=None, reply=False):  # lgtm [py/similar-function]
-    """Decorate a function to require the triggering user to be the bot owner.
+    """
+    Decorate a function to require the triggering user to be the bot owner.
 
     :param str message: optional message said to non-owner user
     :param bool reply: use :meth:`~.bot.Sopel.reply` instead of
@@ -665,7 +684,8 @@ def require_owner(message=None, reply=False):  # lgtm [py/similar-function]
 
 
 def url(*url_rules):
-    """Decorate a function to handle URLs.
+    """
+    Decorate a function to handle URLs.
 
     :param str url_rules: one or more regex pattern(s) to match URLs
 
@@ -715,7 +735,8 @@ def url(*url_rules):
 
 
 class example(object):
-    """Decorate a function with an example, and optionally test output.
+    """
+    Decorate a function with an example, and optionally test output.
 
     :param str msg: the example command (required; see below)
     :param str result: the command's expected output (optional; see below)
@@ -770,6 +791,7 @@ class example(object):
     Sopel's test suite is run in offline mode, which is mostly useful to make
     life easier for other developers working on Sopel without Internet access.
     """
+
     def __init__(self, msg, result=None, privmsg=False, admin=False,
                  owner=False, repeat=1, re=False, ignore=None,
                  user_help=False, online=False):
@@ -797,7 +819,7 @@ class example(object):
 
         self.user_help = user_help
 
-    def __call__(self, func):
+    def __call__(self, func):  # noqa: D102
         if not hasattr(func, "example"):
             func.example = []
 
@@ -839,7 +861,8 @@ class example(object):
 
 
 def output_prefix(prefix):
-    """Decorate a function to add a prefix on its output.
+    """
+    Decorate a function to add a prefix on its output.
 
     :param str prefix: the prefix to add (must include trailing whitespace if
                        desired; Sopel does not assume it should add anything)

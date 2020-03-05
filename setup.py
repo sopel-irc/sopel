@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # coding=utf-8
+"""Setup routines for Sopel."""
 from __future__ import unicode_literals, absolute_import, print_function, division
 
 import sys
@@ -53,6 +54,7 @@ if sys.version_info.major == 2:
 
 
 def read_reqs(path):
+    """Read requirement specifiers from the given file."""
     with open(path, 'r') as fil:
         return list(fil.readlines())
 

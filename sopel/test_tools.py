@@ -1,5 +1,5 @@
 # coding=utf-8
-"""This module has classes and functions that can help in writing tests."""
+"""Classes and functions that can help in writing tests."""
 # Copyright 2013, Ari Koivula, <ari@koivu.la>
 # Copyright 2019, Florian Strzelecki <florian.strzelecki@gmail.com>
 # Licensed under the Eiffel Forum License 2.
@@ -39,6 +39,8 @@ if sys.version_info.major >= 3:
 
 
 class MockConfig(sopel.config.Config):
+    """Mock wrapper for Config object type. Deprecated."""
+
     @sopel.tools.deprecated('use configfactory fixture instead', '7.0', '8.0')
     def __init__(self):
         self.filename = tempfile.mkstemp()[1]
@@ -49,12 +51,15 @@ class MockConfig(sopel.config.Config):
         self.get = self.parser.get
 
     def define_section(self, name, cls_):
+        """Override method in "real" class."""
         if not self.parser.has_section(name):
             self.parser.add_section(name)
         setattr(self, name, cls_(self, name))
 
 
 class MockSopel(object):
+    """Mock Sopel object for use in tests. Deprecated."""
+
     @sopel.tools.deprecated('use botfactory fixture instead', '7.0', '8.0')
     def __init__(self, nick, admin=False, owner=False):
         self.nick = nick
@@ -95,12 +100,14 @@ class MockSopel(object):
         cfg.parser.set('core', 'homedir', home_dir)
 
     def register_url_callback(self, pattern, callback):
+        """Override method in the "real" class."""
         if isinstance(pattern, basestring):
             pattern = re.compile(pattern)
 
         self.memory['url_callbacks'][pattern] = callback
 
     def unregister_url_callback(self, pattern, callback):
+        """Override method in the "real" class."""
         if isinstance(pattern, basestring):
             pattern = re.compile(pattern)
 
@@ -110,6 +117,7 @@ class MockSopel(object):
             pass
 
     def search_url_callbacks(self, url):
+        """Override method in the "real" class."""
         for regex, function in sopel.tools.iteritems(self.memory['url_callbacks']):
             match = regex.search(url)
             if match:
@@ -117,6 +125,8 @@ class MockSopel(object):
 
 
 class MockSopelWrapper(SopelWrapper):
+    """Mock type for use in tests. Deprecated."""
+
     @sopel.tools.deprecated('use sopel.bot.SopelWrapper instead', '7.0', '8.0')
     def __init__(self, *args, **kwargs):
         super(MockSopelWrapper, self).__init__(*args, **kwargs)
@@ -132,7 +142,8 @@ admin = {admin}
 
 def get_example_test(tested_func, msg, results, privmsg, admin,
                      owner, repeat, use_regexp, ignore=[]):
-    """Get a function that calls ``tested_func`` with fake wrapper and trigger.
+    """
+    Get a function that calls ``tested_func`` with fake wrapper and trigger.
 
     :param callable tested_func: a Sopel callable that accepts a
         :class:`~.bot.SopelWrapper` and a :class:`~.trigger.Trigger`
@@ -222,6 +233,7 @@ def get_example_test(tested_func, msg, results, privmsg, admin,
 
 
 def get_disable_setup():
+    """Monkey-patch plugin setup functions for tests."""
     import pytest
     import py
 
@@ -247,6 +259,7 @@ def insert_into_module(func, module_name, base_name, prefix):
 
 
 def run_example_tests(filename, tb='native', multithread=False, verbose=False):
+    """Run tests defined by plugins' example decorators."""
     # These are only required when running tests, so import them here rather
     # than at the module level.
     import pytest

@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # coding=utf-8
+"""Run Sopel."""
 from __future__ import unicode_literals, absolute_import, print_function, division
 import sys
 # Different from setuptools script, because we want the one in this dir.

@@ -20,7 +20,8 @@ if sys.version_info.major >= 3:
 
 
 class PreTrigger(object):
-    """A parsed raw message from the server.
+    """
+    A parsed raw message from the server.
 
     :param str own_nick: the bot's own IRC nickname
     :param str line: the full line from the server
@@ -92,6 +93,7 @@ class PreTrigger(object):
         The sender's local username.
 
     """
+
     component_regex = re.compile(r'([^!]*)!?([^@]*)@?(.*)')
     intent_regex = re.compile('\x01(\\S+) ?(.*)\x01')
 
@@ -177,7 +179,8 @@ class PreTrigger(object):
 
 
 class Trigger(unicode):
-    """A line from the server, which has matched a callable's rules.
+    """
+    A line from the server, which has matched a callable's rules.
 
     :param config: Sopel's current configuration settings object
     :type config: :class:`~sopel.config.Config`
@@ -201,8 +204,10 @@ class Trigger(unicode):
     the command (e.g. ``ACTION``) placed mapped to the ``'intent'`` key in
     :attr:`Trigger.tags`.
     """
+
     sender = property(lambda self: self._pretrigger.sender)
-    """Where the message arrived from.
+    """
+    Where the message arrived from.
 
     :type: :class:`~.tools.Identifier`
 
@@ -210,7 +215,8 @@ class Trigger(unicode):
     that sent a private message.
     """
     time = property(lambda self: self._pretrigger.time)
-    """When the message was received.
+    """
+    When the message was received.
 
     :type: :class:`~datetime.datetime` object
 
@@ -219,14 +225,16 @@ class Trigger(unicode):
     received by Sopel.
     """
     raw = property(lambda self: self._pretrigger.line)
-    """The entire raw IRC message, as sent from the server.
+    """
+    The entire raw IRC message, as sent from the server.
 
     :type: str
 
     This includes the CTCP ``\\x01`` bytes and command, if they were included.
     """
     is_privmsg = property(lambda self: self._is_privmsg)
-    """Whether the message was triggered in a private message.
+    """
+    Whether the message was triggered in a private message.
 
     :type: bool
 
@@ -234,27 +242,32 @@ class Trigger(unicode):
     came from a channel.
     """
     hostmask = property(lambda self: self._pretrigger.hostmask)
-    """Hostmask of the person who sent the message as ``<nick>!<user>@<host>``.
+    """
+    Hostmask of the person who sent the message as ``<nick>!<user>@<host>``.
 
     :type: str
     """
     user = property(lambda self: self._pretrigger.user)
-    """Local username of the person who sent the message.
+    """
+    Local username of the person who sent the message.
 
     :type: str
     """
     nick = property(lambda self: self._pretrigger.nick)
-    """The nickname who sent the message.
+    """
+    The nickname who sent the message.
 
     :type: :class:`~.tools.Identifier`
     """
     host = property(lambda self: self._pretrigger.host)
-    """The hostname of the person who sent the message.
+    """
+    The hostname of the person who sent the message.
 
     :type: str
     """
     event = property(lambda self: self._pretrigger.event)
-    """The IRC event which triggered the message.
+    """
+    The IRC event which triggered the message.
 
     :type: str
 
@@ -263,12 +276,14 @@ class Trigger(unicode):
     ``KICK``, etc. must be requested using :func:`.module.event`.
     """
     match = property(lambda self: self._match)
-    """The :ref:`Match object <match-objects>` for the triggering line.
+    """
+    The :ref:`Match object <match-objects>` for the triggering line.
 
     :type: :ref:`Match object <match-objects>`
     """
     group = property(lambda self: self._match.group)
-    """The ``group()`` function of the :attr:`match` attribute.
+    """
+    The ``group()`` function of the :attr:`match` attribute.
 
     :type: :term:`method`
     :rtype: str
@@ -291,7 +306,8 @@ class Trigger(unicode):
 
     """
     groups = property(lambda self: self._match.groups)
-    """The ``groups()`` function of the :attr:`match` attribute.
+    """
+    The ``groups()`` function of the :attr:`match` attribute.
 
     :type: :term:`method`
     :rtype: tuple
@@ -299,7 +315,8 @@ class Trigger(unicode):
     See Python's :meth:`re.Match.groups` documentation for details.
     """
     groupdict = property(lambda self: self._match.groupdict)
-    """The ``groupdict()`` function of the :attr:`match` attribute.
+    """
+    The ``groupdict()`` function of the :attr:`match` attribute.
 
     :type: :term:`method`
     :rtype: dict
@@ -307,7 +324,8 @@ class Trigger(unicode):
     See Python's :meth:`re.Match.groupdict` documentation for details.
     """
     args = property(lambda self: self._pretrigger.args)
-    """A tuple containing each of the arguments to an event.
+    """
+    A tuple containing each of the arguments to an event.
 
     :type: tuple
 
@@ -321,7 +339,8 @@ class Trigger(unicode):
     :type: dict
     """
     admin = property(lambda self: self._admin)
-    """Whether the triggering :attr:`nick` is one of the bot's admins.
+    """
+    Whether the triggering :attr:`nick` is one of the bot's admins.
 
     :type: bool
 
@@ -331,14 +350,16 @@ class Trigger(unicode):
     considered to be an admin.
     """
     owner = property(lambda self: self._owner)
-    """Whether the :attr:`nick` which triggered the command is the bot's owner.
+    """
+    Whether the :attr:`nick` which triggered the command is the bot's owner.
 
     :type: bool
 
     ``True`` if the triggering :attr:`nick` is Sopel's owner; ``False`` if not.
     """
     account = property(lambda self: self.tags.get('account') or self._account)
-    """The services account name of the user sending the message.
+    """
+    The services account name of the user sending the message.
 
     :type: str or None
 
@@ -348,7 +369,7 @@ class Trigger(unicode):
     the message isn't logged in to services, this property will be ``None``.
     """
 
-    def __new__(cls, config, message, match, account=None):
+    def __new__(cls, config, message, match, account=None):  # noqa: D102
         self = unicode.__new__(cls, message.args[-1] if message.args else '')
         self._account = account
         self._pretrigger = message
