@@ -104,7 +104,7 @@ def image_info(bot, trigger, match):
     except IndexError:
         # Fail silently if the image link can't be mapped to a submission
         return NOLIMIT
-    return say_post_info(bot, trigger, oldest.id, False)
+    return say_post_info(bot, trigger, oldest.id, False, True)
 
 
 @url(video_url)
@@ -114,7 +114,8 @@ def video_info(bot, trigger, match):
         'https://www.reddit.com/video/{}'.format(match.group(1)),
         timeout=(10.0, 4.0)).headers['Location']
     try:
-        return say_post_info(bot, trigger, re.match(post_url, url).group(1), False)
+        return say_post_info(
+            bot, trigger, re.match(post_url, url).group(1), False, True)
     except AttributeError:
         # Fail silently if we can't map the video link to a submission
         return NOLIMIT
@@ -127,13 +128,13 @@ def rpost_info(bot, trigger, match):
     return say_post_info(bot, trigger, match.group(1))
 
 
-def say_post_info(bot, trigger, id_, show_link=True):
+def say_post_info(bot, trigger, id_, show_link=True, show_comments_link=False):
     try:
         s = bot.memory['reddit_praw'].submission(id=id_)
 
         message = ('[REDDIT] {title} {link}{nsfw} | {points} points ({percent}) | '
                    '{comments} comments | Posted by {author} | '
-                   'Created at {created}')
+                   'Created at {created}{comments_link}')
 
         subreddit = s.subreddit.display_name
         if not show_link:
@@ -179,10 +180,19 @@ def say_post_info(bot, trigger, id_, show_link=True):
 
         percent = color(unicode(s.upvote_ratio * 100) + '%', point_color)
 
+        comments_link = ''
+        if show_comments_link:
+            try:
+                comments_link = ' | ' + s.shortlink
+            except AttributeError:
+                # the value assigned earlier will be used
+                pass
+
         title = unescape(s.title)
         message = message.format(
             title=title, link=link, nsfw=nsfw, points=s.score, percent=percent,
-            comments=s.num_comments, author=author, created=created)
+            comments=s.num_comments, author=author, created=created,
+            comments_link=comments_link)
 
         bot.say(message)
     except prawcore.exceptions.NotFound:
