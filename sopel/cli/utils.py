@@ -217,18 +217,19 @@ def find_config(config_dir, name, extension='.cfg'):
 
     Example::
 
-        >>> from sopel import run_script
+        >>> from sopel.cli import utils
+        >>> from sopel import config
         >>> os.listdir()
         ['local.cfg', 'extra.ini']
         >>> os.listdir(config.DEFAULT_HOMEDIR)
         ['config.cfg', 'extra.ini', 'plugin.cfg', 'README']
-        >>> run_script.find_config(config.DEFAULT_HOMEDIR, 'local.cfg')
+        >>> utils.find_config(config.DEFAULT_HOMEDIR, 'local.cfg')
         'local.cfg'
-        >>> run_script.find_config(config.DEFAULT_HOMEDIR, 'local')
+        >>> utils.find_config(config.DEFAULT_HOMEDIR, 'local')
         '/home/username/.sopel/local'
-        >>> run_script.find_config(config.DEFAULT_HOMEDIR, 'config')
+        >>> utils.find_config(config.DEFAULT_HOMEDIR, 'config')
         '/home/username/.sopel/config.cfg'
-        >>> run_script.find_config(config.DEFAULT_HOMEDIR, 'extra', '.ini')
+        >>> utils.find_config(config.DEFAULT_HOMEDIR, 'extra', '.ini')
         '/home/username/.sopel/extra.ini'
 
     """
