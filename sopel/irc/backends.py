@@ -14,6 +14,7 @@ import logging
 import os
 import socket
 import sys
+from threading import current_thread
 
 from sopel.tools.jobs import JobScheduler, Job
 from .abstract_backends import AbstractIRCBackend
@@ -127,7 +128,8 @@ class AsynchatBackend(AbstractIRCBackend, asynchat.async_chat):
     def handle_close(self):
         """Called when the socket is closed."""
         self.timeout_scheduler.stop()
-        self.timeout_scheduler.join(timeout=15)
+        if current_thread() is not self.timeout_scheduler:
+            self.timeout_scheduler.join(timeout=15)
 
         LOGGER.info('Connection closed...')
         try:
