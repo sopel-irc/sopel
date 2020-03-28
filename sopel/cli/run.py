@@ -53,6 +53,8 @@ def run(settings, pid_file, daemon=False):
 
     # Acts as a welcome message, showing the program and platform version at start
     print_version()
+    # Also show the location of the config file used to load settings
+    print("\nLoaded config file: {}".format(settings.filename))
 
     if not settings.core.ca_certs:
         tools.stderr(
