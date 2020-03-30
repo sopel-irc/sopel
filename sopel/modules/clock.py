@@ -222,7 +222,7 @@ def get_user_format(bot, trigger):
 
 @module.commands('setchanneltz', 'setctz')
 @module.example('.setctz America/New_York')
-@module.require_privilege(module.OP)
+@module.require_privilege(module.OP, message='Changing the channel timezone requires OP privileges.')
 def update_channel(bot, trigger):
     """Set the preferred timezone for the channel."""
     argument = trigger.group(2)
