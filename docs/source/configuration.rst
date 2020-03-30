@@ -488,7 +488,7 @@ logs with the following arguments:
 
 .. __: https://docs.python.org/3/library/logging.html#logging-levels
 
-Example of configuration for logging:
+Example of configuration for logging::
 
     [core]
     logging_level = INFO
