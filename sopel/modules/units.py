@@ -174,8 +174,8 @@ def mass(bot, trigger):
     pound = int(ounce) // 16
     ounce = ounce - (pound * 16)
 
-    if pound > 1:
-        stupid_part = '{} pounds'.format(pound)
+    if pound >= 1:
+        stupid_part = '{} {}'.format(pound, 'pound' if pound == 1 else 'pounds')
         if ounce > 0.01:
             stupid_part += ' {:.2f} ounces'.format(ounce)
     else:
