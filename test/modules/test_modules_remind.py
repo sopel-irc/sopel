@@ -384,6 +384,23 @@ def test_load_database_weirdo(tmpdir):
     assert ('#sopel', 'Admin', weird_message) in result[523549810]
 
 
+def test_load_database_irc_formatting(tmpdir):
+    tmpfile = tmpdir.join('remind.db')
+    formatted_message = (
+        'This message has italics, bold, underline, '
+        'strikethrough, and monospace.')
+    tmpfile.write_text(
+        '523549810.0\t#sopel\tAdmin\t%s\n' % formatted_message,
+        encoding='utf-8')
+
+    result = remind.load_database(tmpfile.strpath)
+    assert len(result.keys()) == 1
+    # first timestamp
+    assert 523549810 in result
+    assert len(result[523549810]) == 1
+    assert ('#sopel', 'Admin', formatted_message) in result[523549810]
+
+
 def test_load_multiple_reminders_same_timestamp(tmpdir):
     tmpfile = tmpdir.join('remind.db')
     tmpfile.write(
