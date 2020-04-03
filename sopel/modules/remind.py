@@ -9,9 +9,9 @@ https://sopel.chat
 """
 from __future__ import unicode_literals, absolute_import, print_function, division
 
-import codecs
 import collections
 from datetime import datetime
+import io  # don't use `codecs` for loading the DB; it will split lines on some IRC formatting
 import logging
 import os
 import re
@@ -70,7 +70,7 @@ def load_database(filename):
         return {}
 
     data = {}
-    with codecs.open(filename, 'r', encoding='utf-8') as database:
+    with io.open(filename, 'r', encoding='utf-8') as database:
         for line in database:
             unixtime, channel, nick, message = line.split('\t', 3)
             message = message.rstrip('\n')
@@ -94,7 +94,7 @@ def dump_database(filename, data):
 
     If the file does not exist, it is created.
     """
-    with codecs.open(filename, 'w', encoding='utf-8') as database:
+    with io.open(filename, 'w', encoding='utf-8') as database:
         for unixtime, reminders in tools.iteritems(data):
             for channel, nick, message in reminders:
                 line = '%s\t%s\t%s\t%s\n' % (unixtime, channel, nick, message)

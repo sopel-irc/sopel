@@ -9,7 +9,7 @@ https://sopel.chat
 """
 from __future__ import unicode_literals, absolute_import, print_function, division
 
-import io
+import io  # don't use `codecs` for loading the DB; it will split lines on some IRC formatting
 import logging
 import os
 import time
