@@ -96,7 +96,7 @@ def duck_api(query):
 # the last example (in source line order) is what .help displays
 @example(
     '.duck sopel.chat irc bot',
-    r'https?:\/\/sopel\.chat\/?',
+    r'https?:\/\/(sopel\.chat\/?|github\.com\/sopel-irc\/sopel)',
     re=True,
     online=True)
 def duck(bot, trigger):
