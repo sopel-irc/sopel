@@ -335,7 +335,9 @@ def test_load_database(tmpdir):
         '523549810.0\t#sopel\tAdmin\tmessage\n'
         '839169010.0\t#sopel\tAdmin\tanother message\n')
     result = remind.load_database(tmpfile.strpath)
-    assert len(result.keys()) == 2
+    assert len(result.keys()) == 2, (
+        'There should be only two keys: 523549810, 839169010; found %s'
+        % (', '.join(result.keys())))
 
     # first timestamp
     assert 523549810 in result
@@ -354,7 +356,9 @@ def test_load_database_tabs(tmpdir):
         '523549810.0\t#sopel\tAdmin\tmessage\n'
         '839169010.0\t#sopel\tAdmin\tmessage\textra\n')
     result = remind.load_database(tmpfile.strpath)
-    assert len(result.keys()) == 2
+    assert len(result.keys()) == 2, (
+        'There should be only two keys: 523549810, 839169010; found %s'
+        % (', '.join(result.keys())))
     # first timestamp
     assert 523549810 in result
     assert len(result[523549810]) == 1
@@ -377,11 +381,34 @@ def test_load_database_weirdo(tmpdir):
         encoding='utf-8')
 
     result = remind.load_database(tmpfile.strpath)
-    assert len(result.keys()) == 1
+    assert len(result.keys()) == 1, (
+        'There should be only one key: 523549810; found %s'
+        % (', '.join(result.keys())))
     # first timestamp
     assert 523549810 in result
     assert len(result[523549810]) == 1
     assert ('#sopel', 'Admin', weird_message) in result[523549810]
+
+
+def test_load_database_irc_formatting(tmpdir):
+    tmpfile = tmpdir.join('remind.db')
+    formatted_message = (
+        'This message has \x0301,04colored text\x03, \x0400ff00hex-colored '
+        'text\x04, \x02bold\x02, \x1ditalics\x1d, \x1funderline\x1f, '
+        '\x11monospace\x11, \x16reverse\x16, \x1estrikethrough or\x0f '
+        'strikethrough and normal text.')
+    tmpfile.write_text(
+        '523549810.0\t#sopel\tAdmin\t%s\n' % formatted_message,
+        encoding='utf-8')
+
+    result = remind.load_database(tmpfile.strpath)
+    assert len(result.keys()) == 1, (
+        'There should be only one key: 523549810; found %s'
+        % (', '.join(result.keys())))
+    # first timestamp
+    assert 523549810 in result
+    assert len(result[523549810]) == 1
+    assert ('#sopel', 'Admin', formatted_message) in result[523549810]
 
 
 def test_load_multiple_reminders_same_timestamp(tmpdir):
