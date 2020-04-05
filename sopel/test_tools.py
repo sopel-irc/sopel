@@ -1,5 +1,14 @@
 # coding=utf-8
-"""This module has classes and functions that can help in writing tests."""
+"""This module has classes and functions that can help in writing tests.
+
+.. note::
+
+   This module formerly contained mock classes for bot, bot wrapper, and config
+   objects. Those are deprecated, and will be removed in Sopel 8.0. New code
+   should use the new :mod:`.mocks`, :mod:`.factories`, and
+   :mod:`.pytest_plugin` added in Sopel 7.0.
+
+"""
 # Copyright 2013, Ari Koivula, <ari@koivu.la>
 # Copyright 2019, Florian Strzelecki <florian.strzelecki@gmail.com>
 # Licensed under the Eiffel Forum License 2.

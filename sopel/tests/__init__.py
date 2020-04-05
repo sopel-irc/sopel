@@ -1,5 +1,8 @@
 # coding=utf-8
-"""Tests tools, factories, pytest fixtures, and mocks."""
+"""Test tools, factories, pytest fixtures, and mocks.
+
+.. versionadded:: 7.0
+"""
 from __future__ import unicode_literals, absolute_import, print_function, division
 
 

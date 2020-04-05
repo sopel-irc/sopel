@@ -1,5 +1,8 @@
 # coding=utf-8
-"""Pytest plugin for Sopel."""
+"""Pytest plugin for Sopel.
+
+.. versionadded:: 7.0
+"""
 from __future__ import unicode_literals, absolute_import, print_function, division
 
 import pytest

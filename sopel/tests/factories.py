@@ -1,5 +1,8 @@
 # coding=utf-8
-"""Test factories: they create objects for testing purposes."""
+"""Test factories: they create objects for testing purposes.
+
+.. versionadded:: 7.0
+"""
 from __future__ import unicode_literals, absolute_import, print_function, division
 
 import re

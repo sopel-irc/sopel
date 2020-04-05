@@ -1,5 +1,8 @@
 # coding=utf-8
-"""Test mocks: they fake objects for testing."""
+"""Test mocks: they fake objects for testing.
+
+.. versionadded:: 7.0
+"""
 from __future__ import unicode_literals, absolute_import, print_function, division
 
 
