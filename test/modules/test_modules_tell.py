@@ -23,7 +23,7 @@ def test_load_reminders_one_tellee(tmpdir):
     verb = 'tell'
     timenow = '1569488444'
     msg_1 = 'You forgot an S in "élèves".'
-    msg_2 = 'You forgot another S  in "garçons".'
+    msg_2 = 'You forgot another S in "garçons".'
     tmpfile = tmpdir.join('tell.db')
 
     reminders = [
@@ -31,7 +31,7 @@ def test_load_reminders_one_tellee(tmpdir):
         [tellee, teller, verb, timenow, msg_2],
     ]
     tmpfile.write_text(
-        '\n'.join('\t'.join(items) for items in reminders),
+        '\n'.join('\t'.join(item) for item in reminders),
         encoding='utf-8')
     result = tell.load_reminders(tmpfile.strpath)
 
@@ -65,7 +65,7 @@ def test_load_reminders_multiple_tellees(tmpdir):
         [tellee_2, teller, verb, timenow, msg],
     ]
     tmpfile.write_text(
-        '\n'.join('\t'.join(items) for items in reminders),
+        '\n'.join('\t'.join(item) for item in reminders),
         encoding='utf-8')
     result = tell.load_reminders(tmpfile.strpath)
 
@@ -87,6 +87,40 @@ def test_load_reminders_multiple_tellees(tmpdir):
     reminder_2 = result[tellee_2][0]
     assert reminder_1 == (teller, verb, timenow, msg)
     assert reminder_2 == (teller, verb, timenow, msg)
+
+
+def test_load_reminders_irc_formatting(tmpdir):
+    tellee = 'Exirel'
+    teller = 'dgw'
+    verb = 'tell'
+    timenow = '1569488444'
+    formatted_message = (
+        'This message has \x0301,04colored text\x03, \x0400ff00hex-colored '
+        'text\x04, \x02bold\x02, \x1ditalics\x1d, \x1funderline\x1f, '
+        '\x11monospace\x11, \x16reverse\x16, \x1estrikethrough or\x0f '
+        'strikethrough and normal text.')
+    tmpfile = tmpdir.join('tell.db')
+
+    reminders = [
+        [tellee, teller, verb, timenow, formatted_message],
+    ]
+    tmpfile.write_text(
+        '\n'.join('\t'.join(item) for item in reminders),
+        encoding='utf-8')
+    result = tell.load_reminders(tmpfile.strpath)
+
+    assert len(result.keys()) == 1, (
+        'There should be one and only one key, found these instead: %s'
+        % ', '.join(result.keys())
+    )
+    assert 'Exirel' in result, (
+        'Tellee not found, found %s instead' % result.keys()[0])
+    assert len(result['Exirel']) == 1, (
+        'There should be one reminder, found %d instead'
+        % len(result['Exirel'])
+    )
+    reminder = result['Exirel'][0]
+    assert reminder == (teller, verb, timenow, formatted_message)
 
 
 def test_dump_reminders_empty(tmpdir):
