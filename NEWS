@@ -2,6 +2,42 @@ This file is used to auto-generate the "Changelog" section of Sopel's website.
 When adding new entries, follow the style guide in NEWS.spec.md to avoid
 causing problems with the site build.
 
+Changes between 7.0.0 and 7.0.1
+===============================
+
+Sopel 7.0.1 contains small fixes and tweaks for core code, core plugins, and
+documentation. As this is a maintenance release, there are no new API features
+or deprecations to report—but stay tuned for a few new things in version 7.1.0.
+
+Plugin changes
+--------------
+
+* The `reddit` plugin now displays when a redditor is an admin [[#1764][]]
+* When triggered by a native media link, `reddit` plugin output will include a
+  link to the submission page (comments view) [[#1814][]]
+* Fixed `reddit` plugin not matching links with encoded characters [[#1827][]]
+* `clock` plugin's `.setchanneltz` command now emits an error message if an
+  unprivileged user attempts to use it [[#1828][]]
+* Fixed the `units` plugin's handling of 16 ounces / 1 pound [[#1829][]]
+* Fixed loading `remind` database with reminder(s) containing certain IRC
+  formatting characters [[#1831][]]
+
+Core changes
+------------
+
+* Hotfixed a crash that could occur if the connection was lost [[#1820][]]
+* Sopel now prints the used config file path at startup [[#1822][]]
+
+[#1764]: https://github.com/sopel-irc/sopel-pull/1764
+[#1814]: https://github.com/sopel-irc/sopel-pull/1814
+[#1820]: https://github.com/sopel-irc/sopel-pull/1820
+[#1822]: https://github.com/sopel-irc/sopel-pull/1822
+[#1827]: https://github.com/sopel-irc/sopel-pull/1827
+[#1828]: https://github.com/sopel-irc/sopel-pull/1828
+[#1829]: https://github.com/sopel-irc/sopel-pull/1829
+[#1831]: https://github.com/sopel-irc/sopel-pull/1831
+
+
 Changes between 6.6.9 and 7.0.0
 ===============================
 
