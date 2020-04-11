@@ -46,7 +46,7 @@ __version__ = pkg_resources.get_distribution('sopel').version
 
 def _version_info(version=__version__):
     regex = re.compile(r'(\d+)\.(\d+)\.(\d+)(?:(a|b|rc)(\d+))?.*')
-    version_groups = regex.match(__version__).groups()
+    version_groups = regex.match(version).groups()
     major, minor, micro = (int(piece) for piece in version_groups[0:3])
     level = version_groups[3]
     serial = int(version_groups[4] or 0)
