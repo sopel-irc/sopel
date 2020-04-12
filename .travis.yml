@@ -1,21 +1,23 @@
-dist: xenial  # required for newer (>= 3.7) Python versions
+dist: bionic  # most recent base image by default
 language: python
 matrix:
   include:
-    - name: "Python 2.7 on Xenial"
+    - name: "Python 2.7 on Bionic"
       python: 2.7
     - name: "Python 3.3 on Trusty"
       python: 3.3
-      dist: trusty  # xenial does not support py3.3
+      dist: trusty  # trusty is the last image to officially support py3.3
     - name: "Python 3.4 on Xenial"
       python: 3.4
+      dist: xenial  # xenial is the last image to officially support py3.4
     - name: "Python 3.5 on Xenial"
       python: 3.5
-    - name: "Python 3.6 on Xenial"
+      dist: xenial  # xenial is the last image to officially support py3.5
+    - name: "Python 3.6 on Bionic"
       python: 3.6
-    - name: "Python 3.7 on Xenial"
+    - name: "Python 3.7 on Bionic"
       python: 3.7
-    - name: "Python 3.8 on Xenial"
+    - name: "Python 3.8 on Bionic"
       python: 3.8
 git:
   submodules: false
