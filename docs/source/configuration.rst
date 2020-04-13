@@ -183,7 +183,7 @@ join is configured by :attr:`~CoreSection.channels`::
     [core]
     channels =
         "#sopel"
-        "#sopelunkers"
+        "#sopelunkers isP@ssw0rded"
 
 It is possible to slow down the initial joining of channels using
 :attr:`~CoreSection.throttle_join` and :attr:`~CoreSection.throttle_wait`, for
@@ -193,7 +193,7 @@ quickly::
     [core]
     channels =
         "#sopel"
-        "#sopelunkers"
+        "#sopelunkers isP@ssw0rded"
         # ... too many channels ...
         "#justonemore"
     throttle_join = 4

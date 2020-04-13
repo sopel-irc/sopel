@@ -164,7 +164,11 @@ class CoreSection(StaticSection):
     """
 
     channels = ListAttribute('channels')
-    """List of channels for the bot to join when it connects."""
+    """List of channels for the bot to join when it connects.
+
+    If a channel key needs to be provided, separate it from the channel name
+    with a space, e.g. ``"#channel password"``.
+    """
 
     commands_on_connect = ListAttribute('commands_on_connect')
     """A list of commands to send upon successful connection to the IRC server.
