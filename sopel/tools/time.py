@@ -208,7 +208,9 @@ def seconds_to_human(secs):
     Inspiration for function structure from:
     https://gist.github.com/Highstaker/280a09591df4a5fb1363b0bbaf858f0d
 
-    Example outputs are::
+    Example outputs are:
+
+    .. code-block:: text
 
         2 years, 1 month ago
         in 4 hours, 45 minutes
