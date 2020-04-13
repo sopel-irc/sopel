@@ -226,30 +226,35 @@ def seconds_to_human(secs):
     secs = int(secs)
     secs = abs(secs)
 
-    years = secs // 31536000
-    months = (secs - years * 31536000) // 2635200
-    days = (secs - years * 31536000 - months * 2635200) // 86400
-    hours = (secs - years * 31536000 - months * 2635200 - days * 86400) // 3600
-    minutes = (secs - years * 31536000 - months * 2635200 - days * 86400 - hours * 3600) // 60
-    seconds = secs - years * 31536000 - months * 2635200 - days * 86400 - hours * 3600 - minutes * 60
+    if secs == 0:
+        # zero is a special case that the algorithm below won't handle correctly (#1841)
+        result = "0 seconds"
+    else:
+        years = secs // 31536000
+        months = (secs - years * 31536000) // 2635200
+        days = (secs - years * 31536000 - months * 2635200) // 86400
+        hours = (secs - years * 31536000 - months * 2635200 - days * 86400) // 3600
+        minutes = (secs - years * 31536000 - months * 2635200 - days * 86400 - hours * 3600) // 60
+        seconds = secs - years * 31536000 - months * 2635200 - days * 86400 - hours * 3600 - minutes * 60
 
-    years_text = "year{}".format("s" if years != 1 else "")
-    months_text = "month{}".format("s" if months != 1 else "")
-    days_text = "day{}".format("s" if days != 1 else "")
-    hours_text = "hour{}".format("s" if hours != 1 else "")
-    minutes_text = "minute{}".format("s" if minutes != 1 else "")
-    seconds_text = "second{}".format("s" if seconds != 1 else "")
+        years_text = "year{}".format("s" if years != 1 else "")
+        months_text = "month{}".format("s" if months != 1 else "")
+        days_text = "day{}".format("s" if days != 1 else "")
+        hours_text = "hour{}".format("s" if hours != 1 else "")
+        minutes_text = "minute{}".format("s" if minutes != 1 else "")
+        seconds_text = "second{}".format("s" if seconds != 1 else "")
 
-    result = ", ".join(filter(lambda x: bool(x), [
-        "{0} {1}".format(years, years_text) if years else "",
-        "{0} {1}".format(months, months_text) if months else "",
-        "{0} {1}".format(days, days_text) if days else "",
-        "{0} {1}".format(hours, hours_text) if hours else "",
-        "{0} {1}".format(minutes, minutes_text) if minutes else "",
-        "{0} {1}".format(seconds, seconds_text) if seconds else ""
-    ]))
-    # Granularity
-    result = ", ".join(result.split(", ")[:2])
+        result = ", ".join(filter(lambda x: bool(x), [
+            "{0} {1}".format(years, years_text) if years else "",
+            "{0} {1}".format(months, months_text) if months else "",
+            "{0} {1}".format(days, days_text) if days else "",
+            "{0} {1}".format(hours, hours_text) if hours else "",
+            "{0} {1}".format(minutes, minutes_text) if minutes else "",
+            "{0} {1}".format(seconds, seconds_text) if seconds else ""
+        ]))
+        # Granularity
+        result = ", ".join(result.split(", ")[:2])
+
     if future is False:
         result += " ago"
     else:
