@@ -567,6 +567,10 @@ class Sopel(irc.AbstractBot):
         # if channel has its own config section, check for excluded plugins/plugin methods
         if trigger.sender in self.config:
             channel_config = self.config[trigger.sender]
+            LOGGER.debug(
+                "Evaluating configuration for %s.%s in channel %s",
+                func.plugin_name, func.__name__, trigger.sender
+            )
 
             # disable listed plugins completely on provided channel
             if 'disable_plugins' in channel_config:

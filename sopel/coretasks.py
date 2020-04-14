@@ -17,6 +17,7 @@ from __future__ import unicode_literals, absolute_import, print_function, divisi
 import base64
 import collections
 import datetime
+import functools
 import logging
 import re
 import sys
@@ -1009,4 +1010,9 @@ def handle_url_callbacks(bot, trigger):
         for function, match in bot.search_url_callbacks(url):
             # trigger callback defined by the `@url` decorator
             if hasattr(function, 'url_regex'):
-                function(bot, trigger, match=match)
+                # bake the `match` argument in before passing the callback on
+                @functools.wraps(function)
+                def decorated(bot, trigger):
+                    return function(bot, trigger, match=match)
+
+                bot.call(decorated, bot, trigger)
