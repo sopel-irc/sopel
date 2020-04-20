@@ -132,8 +132,8 @@ def say_post_info(bot, trigger, id_, show_link=True, show_comments_link=False):
     try:
         s = bot.memory['reddit_praw'].submission(id=id_)
 
-        message = ('[REDDIT] {title} {link}{nsfw} | {points} points ({percent}) | '
-                   '{comments} comments | Posted by {author} | '
+        message = ('[REDDIT] {title} {link}{nsfw} | {points} {points_text} '
+                   '({percent}) | {comments} comments | Posted by {author} | '
                    'Created at {created}{comments_link}')
 
         subreddit = s.subreddit.display_name
@@ -178,6 +178,8 @@ def say_post_info(bot, trigger, id_, show_link=True, show_comments_link=False):
         else:
             point_color = colors.RED
 
+        points_text = 'point' if s.score == 1 else 'points'
+
         percent = color(unicode(s.upvote_ratio * 100) + '%', point_color)
 
         comments_link = ''
@@ -190,8 +192,8 @@ def say_post_info(bot, trigger, id_, show_link=True, show_comments_link=False):
 
         title = unescape(s.title)
         message = message.format(
-            title=title, link=link, nsfw=nsfw, points=s.score, percent=percent,
-            comments=s.num_comments, author=author, created=created,
+            title=title, link=link, nsfw=nsfw, points=s.score, points_text=points_text,
+            percent=percent, comments=s.num_comments, author=author, created=created,
             comments_link=comments_link)
 
         bot.say(message)
@@ -209,13 +211,15 @@ def comment_info(bot, trigger, match):
         bot.say('No such comment.')
         return NOLIMIT
 
-    message = ('[REDDIT] Comment by {author} | {points} points | '
+    message = ('[REDDIT] Comment by {author} | {points} {points_text} | '
                'Posted at {posted} | {comment}')
 
     if c.author:
         author = c.author.name
     else:
         author = '[deleted]'
+
+    points_text = 'point' if c.score == 1 else 'points'
 
     posted = get_time_created(bot, trigger, c.created_utc)
 
@@ -226,7 +230,8 @@ def comment_info(bot, trigger, match):
         short += ' […]'
 
     message = message.format(
-        author=author, points=c.score, posted=posted, comment=short)
+        author=author, points=c.score, points_text=points_text,
+        posted=posted, comment=short)
 
     bot.say(message)
 
