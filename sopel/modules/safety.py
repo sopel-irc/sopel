@@ -163,17 +163,20 @@ def url_handler(bot, trigger):
                 r.raise_for_status()
                 result = r.json()
                 fetched = time.time()
-                data = {'positives': result['positives'],
-                        'total': result['total'],
-                        'fetched': fetched}
-                bot.memory['safety_cache'][trigger] = data
-                if len(bot.memory['safety_cache']) >= (2 * cache_limit):
-                    _clean_cache(bot)
+                if all(k in result for k in ['positives', 'total']):
+                    # cache result only if it contains a scan report
+                    # TODO: handle checking back for results from queued scans
+                    data = {'positives': result['positives'],
+                            'total': result['total'],
+                            'fetched': fetched}
+                    bot.memory['safety_cache'][trigger] = data
+                    if len(bot.memory['safety_cache']) >= (2 * cache_limit):
+                        _clean_cache(bot)
             else:
                 print('using cache')
                 result = bot.memory['safety_cache'][trigger]
-            positives = result['positives']
-            total = result['total']
+            positives = result.get('positives', 0)
+            total = result.get('total', 0)
     except requests.exceptions.RequestException:
         # Ignoring exceptions with VT so MalwareDomains will always work
         LOGGER.debug('[VirusTotal] Error obtaining response.', exc_info=True)
