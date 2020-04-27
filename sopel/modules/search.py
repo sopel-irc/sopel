@@ -18,6 +18,11 @@ from sopel.module import commands, example
 from sopel.tools import web
 
 
+header_spoof = {
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.87 Safari/537.36'
+}
+
+
 def formatnumber(n):
     """Format a number with beautiful commas."""
     parts = list(str(n))
@@ -26,7 +31,7 @@ def formatnumber(n):
     return ''.join(parts)
 
 
-r_bing = re.compile(r'<h2(?: class=" b_topTitle")?><a href="([^"]+)"')
+r_bing = re.compile(r'<ol id="b_results"><li(?: class="b_algo")?><h2><a href="([^"]+)"')
 
 
 def bing_search(query, lang='en-US'):
@@ -35,7 +40,7 @@ def bing_search(query, lang='en-US'):
         'mkt': lang,
         'q': query,
     }
-    response = requests.get(base, parameters)
+    response = requests.get(base, parameters, headers=header_spoof)
     m = r_bing.search(response.text)
     if m:
         return m.group(1)
@@ -51,10 +56,7 @@ def duck_search(query):
         'kl': 'us-en',
         'q': query,
     }
-    headers = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.87 Safari/537.36'
-    }
-    bytes = requests.get(base, parameters, headers=headers).text
+    bytes = requests.get(base, parameters, headers=header_spoof).text
     if 'web-result' in bytes:  # filter out the adds on top of the page
         bytes = bytes.split('web-result')[1]
     m = r_duck.search(bytes)
@@ -128,7 +130,11 @@ def duck(bot, trigger):
 
 
 @commands('bing')
-@example('.bing sopel irc bot')
+@example(
+    '.bing sopel.chat irc bot',
+    r'https?:\/\/(sopel\.chat\/?|github\.com\/sopel-irc\/sopel)',
+    re=True,
+    online=True)
 def bing(bot, trigger):
     """Queries Bing for the specified input."""
     if not trigger.group(2):
