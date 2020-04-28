@@ -96,7 +96,7 @@ def xkcd(bot, trigger):
     say_result(bot, requested)
 
 
-def numbered_result(bot, query, latest):
+def numbered_result(bot, query, latest, commanded=True):
     max_int = latest['num']
     if query > max_int:
         bot.say(("Sorry, comic #{} hasn't been posted yet. "
@@ -117,16 +117,18 @@ def numbered_result(bot, query, latest):
         # Negative: go back that many from current
         requested = get_info(max_int + query)
 
-    say_result(bot, requested)
+    say_result(bot, requested, commanded)
 
 
-def say_result(bot, result):
-    message = '{} | {} | Alt-text: {}'.format(result['url'], result['title'],
-                                              result['alt'])
+def say_result(bot, result, commanded=True):
+    message = '{}{} | Alt-text: {}'.format(
+        result['url'] + ' | ' if commanded else '',
+        result['title'], result['alt']
+    )
     bot.say(message)
 
 
 @url(r'xkcd.com/(\d+)')
 def get_url(bot, trigger, match):
     latest = get_info()
-    numbered_result(bot, int(match.group(1)), latest)
+    numbered_result(bot, int(match.group(1)), latest, commanded=False)
