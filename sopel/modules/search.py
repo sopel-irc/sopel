@@ -130,11 +130,7 @@ def duck(bot, trigger):
 
 
 @commands('bing')
-@example(
-    '.bing sopel.chat irc bot',
-    r'https?:\/\/(sopel\.chat\/?|github\.com\/sopel-irc\/sopel)',
-    re=True,
-    online=True)
+@example('.bing sopel.chat irc bot')
 def bing(bot, trigger):
     """Queries Bing for the specified input."""
     if not trigger.group(2):
