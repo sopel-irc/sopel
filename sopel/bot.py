@@ -567,6 +567,10 @@ class Sopel(irc.AbstractBot):
         # if channel has its own config section, check for excluded plugins/plugin methods
         if trigger.sender in self.config:
             channel_config = self.config[trigger.sender]
+            LOGGER.debug(
+                "Evaluating configuration for %s.%s in channel %s",
+                func.plugin_name, func.__name__, trigger.sender
+            )
 
             # disable listed plugins completely on provided channel
             if 'disable_plugins' in channel_config:
@@ -574,16 +578,28 @@ class Sopel(irc.AbstractBot):
 
                 # if "*" is used, we are disabling all plugins on provided channel
                 if '*' in disabled_plugins:
+                    LOGGER.debug(
+                        "All plugins disabled in %s; skipping execution of %s.%s",
+                        trigger.sender, func.plugin_name, func.__name__
+                    )
                     return
-                if func.__module__ in disabled_plugins:
+                if func.plugin_name in disabled_plugins:
+                    LOGGER.debug(
+                        "Plugin %s is disabled in %s; skipping execution of %s",
+                        func.plugin_name, trigger.sender, func.__name__
+                    )
                     return
 
             # disable chosen methods from plugins
             if 'disable_commands' in channel_config:
                 disabled_commands = literal_eval(channel_config.disable_commands)
 
-                if func.__module__ in disabled_commands:
-                    if func.__name__ in disabled_commands[func.__module__]:
+                if func.plugin_name in disabled_commands:
+                    if func.__name__ in disabled_commands[func.plugin_name]:
+                        LOGGER.debug(
+                            "Skipping execution of %s.%s in %s: disabled_commands matched",
+                            func.plugin_name, func.__name__, trigger.sender
+                        )
                         return
 
         try:

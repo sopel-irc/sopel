@@ -36,6 +36,7 @@ from __future__ import unicode_literals, absolute_import, print_function, divisi
 import inspect
 import imp
 import importlib
+import itertools
 import os
 
 from sopel import loader
@@ -259,6 +260,10 @@ class PyModulePlugin(AbstractPluginHandler):
 
     def register(self, bot):
         relevant_parts = loader.clean_module(self._module, bot.config)
+        for part in itertools.chain(*relevant_parts):
+            # annotate all callables in relevant_parts with `plugin_name`
+            # attribute to make per-channel config work; see #1839
+            setattr(part, 'plugin_name', self.name)
         bot.add_plugin(self, *relevant_parts)
 
     def unregister(self, bot):

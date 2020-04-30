@@ -2,6 +2,46 @@ This file is used to auto-generate the "Changelog" section of Sopel's website.
 When adding new entries, follow the style guide in NEWS.spec.md to avoid
 causing problems with the site build.
 
+Changes between 7.0.1 and 7.0.2
+===============================
+
+Plugin changes
+--------------
+
+* Fix version comparison in `find_updates` plugin [[#1832][]]
+* Suppress link when `xkcd` plugin is triggered by a URL [[#1848][]]
+* Fix `reddit` grammar when post/comment only has 1 point [[#1849][]]
+* Handle missing data when `safety` plugin uses VirusTotal [[#1851][]]
+* Update `search` plugin for changed Bing SERPs [[#1852][]]
+  * Also fixes `xkcd` plugin's find-comic-by-keywords functionality
+
+Core changes
+------------
+
+* Fixed that per-channel configuration didn't work as documented for some
+  plugin types [[#1840][]]
+* Show how to use channel key (password) in configuration examples [[#1844][]]
+* Fixed URL callbacks bypassing user/channel restrictions [[#1845][]]
+* Capped `urllib3` (transitive dependency from `requests`) version on Python
+  3.3 to avoid a recent release breaking things
+* Meta: Fixed incorrect links in changelog entry for 7.0.1
+
+API changes
+-----------
+
+* Handle 0 seconds properly in `tools.time.seconds_to_human()` [[#1843][]]
+
+[#1832]: https://github.com/sopel-irc/sopel/pull/1832
+[#1840]: https://github.com/sopel-irc/sopel/pull/1840
+[#1843]: https://github.com/sopel-irc/sopel/pull/1843
+[#1844]: https://github.com/sopel-irc/sopel/pull/1844
+[#1845]: https://github.com/sopel-irc/sopel/pull/1845
+[#1848]: https://github.com/sopel-irc/sopel/pull/1848
+[#1849]: https://github.com/sopel-irc/sopel/pull/1849
+[#1851]: https://github.com/sopel-irc/sopel/pull/1851
+[#1852]: https://github.com/sopel-irc/sopel/pull/1852
+
+
 Changes between 7.0.0 and 7.0.1
 ===============================
 
@@ -28,14 +68,14 @@ Core changes
 * Hotfixed a crash that could occur if the connection was lost [[#1820][]]
 * Sopel now prints the used config file path at startup [[#1822][]]
 
-[#1764]: https://github.com/sopel-irc/sopel-pull/1764
-[#1814]: https://github.com/sopel-irc/sopel-pull/1814
-[#1820]: https://github.com/sopel-irc/sopel-pull/1820
-[#1822]: https://github.com/sopel-irc/sopel-pull/1822
-[#1827]: https://github.com/sopel-irc/sopel-pull/1827
-[#1828]: https://github.com/sopel-irc/sopel-pull/1828
-[#1829]: https://github.com/sopel-irc/sopel-pull/1829
-[#1831]: https://github.com/sopel-irc/sopel-pull/1831
+[#1764]: https://github.com/sopel-irc/sopel/pull/1764
+[#1814]: https://github.com/sopel-irc/sopel/pull/1814
+[#1820]: https://github.com/sopel-irc/sopel/pull/1820
+[#1822]: https://github.com/sopel-irc/sopel/pull/1822
+[#1827]: https://github.com/sopel-irc/sopel/pull/1827
+[#1828]: https://github.com/sopel-irc/sopel/pull/1828
+[#1829]: https://github.com/sopel-irc/sopel/pull/1829
+[#1831]: https://github.com/sopel-irc/sopel/pull/1831
 
 
 Changes between 6.6.9 and 7.0.0
