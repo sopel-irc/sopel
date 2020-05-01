@@ -31,7 +31,7 @@ def formatnumber(n):
     return ''.join(parts)
 
 
-r_bing = re.compile(r'<ol id="b_results"><li(?: class="b_algo")?><h2><a href="([^"]+)"')
+r_bing = re.compile(r'<li(?: class="b_algo")?><h2><a href="([^"]+)"')
 
 
 def bing_search(query, lang='en-US'):
