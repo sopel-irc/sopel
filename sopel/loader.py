@@ -49,18 +49,21 @@ def clean_callable(func, config):
 
     func.thread = getattr(func, 'thread', True)
 
+    if is_limitable(func):
+        # These attributes are a waste of memory on callables that don't pass
+        # through Sopel's rate-limiting machinery
+        func.rate = getattr(func, 'rate', 0)
+        func.channel_rate = getattr(func, 'channel_rate', 0)
+        func.global_rate = getattr(func, 'global_rate', 0)
+        func.unblockable = getattr(func, 'unblockable', False)
+
     if not is_triggerable(func):
-        # Rate-limiting, priority, etc. doesn't apply to non-triggerable functions.
-        # Adding the default attributes below is a waste of memory, as well as
-        # potentially confusing to other code.
+        # Adding the remaining default attributes below is potentially confusing
+        # to other code (and a waste of memory) for non-triggerable functions.
         return
 
-    func.unblockable = getattr(func, 'unblockable', False)
     func.echo = getattr(func, 'echo', False)
     func.priority = getattr(func, 'priority', 'medium')
-    func.rate = getattr(func, 'rate', 0)
-    func.channel_rate = getattr(func, 'channel_rate', 0)
-    func.global_rate = getattr(func, 'global_rate', 0)
     func.output_prefix = getattr(func, 'output_prefix', '')
 
     if not hasattr(func, 'event'):
@@ -116,6 +119,35 @@ def clean_callable(func, config):
         ]
 
 
+def is_limitable(obj):
+    """Check if ``obj`` needs to carry attributes related to limits.
+
+    :param obj: any :term:`function` to check
+    :return: ``True`` if ``obj`` must have limit-related attributes
+
+    Limitable callables aren't necessarily triggerable directly, but they all
+    must pass through Sopel's rate-limiting machinery during dispatching.
+    Therefore, they must have the attributes checked by that machinery.
+    """
+    forbidden_attrs = (
+        'interval',
+    )
+    forbidden = any(hasattr(obj, attr) for attr in forbidden_attrs)
+
+    allowed_attrs = (
+        'rule',
+        'event',
+        'intents',
+        'commands',
+        'nickname_commands',
+        'action_commands',
+        'url_regex',
+    )
+    allowed = any(hasattr(obj, attr) for attr in allowed_attrs)
+
+    return allowed and not forbidden
+
+
 def is_triggerable(obj):
     """Check if ``obj`` can handle the bot's triggers.
 
@@ -167,5 +199,6 @@ def clean_module(module, config):
                 clean_callable(obj, config)
                 jobs.append(obj)
             elif hasattr(obj, 'url_regex'):
+                clean_callable(obj, config)
                 urls.append(obj)
     return callables, jobs, shutdowns, urls
