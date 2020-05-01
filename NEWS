@@ -2,6 +2,23 @@ This file is used to auto-generate the "Changelog" section of Sopel's website.
 When adding new entries, follow the style guide in NEWS.spec.md to avoid
 causing problems with the site build.
 
+Changes between 7.0.2 and 7.0.3
+===============================
+
+Plugin changes
+--------------
+
+* Tweak Bing result matching in `search` plugin again [[#1854][]]
+
+Core changes
+------------
+
+* Fix URL callbacks missing required attributes [[#1855][]]
+
+[#1854]: https://github.com/sopel-irc/sopel/pull/1854
+[#1855]: https://github.com/sopel-irc/sopel/pull/1855
+
+
 Changes between 7.0.1 and 7.0.2
 ===============================
 

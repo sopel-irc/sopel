@@ -3,6 +3,7 @@
 from __future__ import unicode_literals, absolute_import, print_function, division
 
 import inspect
+import re
 
 import pytest
 
@@ -83,6 +84,22 @@ def testplugin(tmpdir):
     return plugins.handlers.PyFilePlugin(mod_file.strpath)
 
 
+def test_is_limitable(testplugin):
+    """Test is_limitable behavior before clean_module is called."""
+    testplugin.load()
+    test_mod = testplugin._module
+
+    assert loader.is_limitable(test_mod.first_command)
+    assert loader.is_limitable(test_mod.second_command)
+    assert loader.is_limitable(test_mod.on_topic_command)
+
+    assert not loader.is_limitable(test_mod.interval5s)
+    assert not loader.is_limitable(test_mod.interval10s)
+    assert not loader.is_limitable(test_mod.shutdown)
+
+    assert loader.is_limitable(test_mod.example_url)
+
+
 def test_is_triggerable(testplugin):
     """Test is_triggerable behavior before clean_module is called."""
     testplugin.load()
@@ -156,7 +173,7 @@ def test_clean_module_idempotency(testplugin, tmpconfig):
     assert new_callables == callables
     assert new_jobs == jobs
     assert new_shutdowns == shutdowns
-    assert new_urls == new_urls
+    assert new_urls == urls
 
     # assert is_triggerable behavior
     assert loader.is_triggerable(test_mod.first_command)
@@ -674,6 +691,36 @@ def test_clean_callable_intents(tmpconfig, func):
 
     assert func.unblockable is False
     assert func.priority == 'medium'
+    assert func.thread is True
+    assert func.rate == 0
+    assert func.channel_rate == 0
+    assert func.global_rate == 0
+
+
+def test_clean_callable_url(tmpconfig, func):
+    setattr(func, 'url_regex', [re.compile('.*')])
+    loader.clean_callable(func, tmpconfig)
+
+    assert hasattr(func, 'url_regex')
+    assert len(func.url_regex) == 1
+
+    # Don't test the regex; that's handled in a different module
+    # Default values
+    assert hasattr(func, 'unblockable')
+    assert func.unblockable is False
+    assert hasattr(func, 'thread')
+    assert func.thread is True
+    assert hasattr(func, 'rate')
+    assert func.rate == 0
+    assert hasattr(func, 'channel_rate')
+    assert func.channel_rate == 0
+    assert hasattr(func, 'global_rate')
+    assert func.global_rate == 0
+
+    # idempotency
+    loader.clean_callable(func, tmpconfig)
+    assert len(func.url_regex) == 1
+    assert func.unblockable is False
     assert func.thread is True
     assert func.rate == 0
     assert func.channel_rate == 0
