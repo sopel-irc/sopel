@@ -134,7 +134,7 @@ def get_url(bot, trigger, match):
     numbered_result(bot, int(match.group(1)), latest, commanded=False)
 
 
-@url(r'xkcd.com/?$')
+@url(r'https?://xkcd\.com/?$')
 def xkcd_main_page(bot, trigger, match):
     latest = get_info()
     numbered_result(bot, 0, latest, commanded=False)
