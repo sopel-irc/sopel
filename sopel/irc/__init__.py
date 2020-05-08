@@ -92,7 +92,10 @@ class AbstractBot(object):
 
     @property
     def nick(self):
-        """Sopel's current ``Identifier``."""
+        """Sopel's current nick.
+
+        Changing this while Sopel is running is unsupported.
+        """
         return self._nick
 
     @property
@@ -102,7 +105,7 @@ class AbstractBot(object):
 
     @property
     def name(self):
-        """Sopel's "real name", to be displayed in WHOIS responses."""
+        """Sopel's "real name", as used for WHOIS responses."""
         return self._name
 
     @property
