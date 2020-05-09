@@ -25,6 +25,7 @@ import sys
 import time
 
 from sopel import loader, module, plugin
+from sopel.config import ConfigurationError
 from sopel.irc import isupport
 from sopel.irc.utils import CapReq, MyInfo
 from sopel.tools import events, Identifier, iteritems, target, web
@@ -773,7 +774,17 @@ def receive_cap_ack_sasl(bot):
         mech = bot.config.core.server_auth_sasl_mech
     if not password:
         return
+
     mech = mech or 'PLAIN'
+    available_mechs = bot.server_capabilities.get('sasl', '')
+    available_mechs = available_mechs.split(',') if available_mechs else []
+
+    if available_mechs and mech not in available_mechs:
+        # fail if configured to use an unsupported mechanism,
+        # but only if the server actually advertised supported mechanisms
+        raise ConfigurationError(
+            "SASL mechanism '{}' is not advertised by this server.".format(mech))
+
     bot.write(('AUTHENTICATE', mech))
 
 
