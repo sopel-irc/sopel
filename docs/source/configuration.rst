@@ -101,6 +101,22 @@ The same instance can have multiple admins. Similarly, it can be configured
 by :attr:`~CoreSection.admin_accounts` or by :attr:`~CoreSection.admins`. If
 ``admin_accounts`` is set, ``admins`` will be ignored.
 
+Example owner & admin configurations::
+
+    # Using nickname matching
+    [core]
+    owner = dgw
+    admins =
+            Exirel
+            HumorBaby
+
+    # Using account matching
+    [core]
+    owner_account = dgw
+    admin_accounts =
+            Exirel
+            HumorBaby
+
 Both ``owner_account`` and ``admin_accounts`` are safer to use than
 nick-based matching, but the IRC server must support accounts.
 (Most, sadly, do not as of late 2019.)
