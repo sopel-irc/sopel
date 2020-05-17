@@ -22,8 +22,6 @@ except ImportError:
     from HTMLParser import HTMLParser
 
 REDIRECT = re.compile(r'^REDIRECT (.*)')
-WIKIPEDIA_REGEX = r'.*\/([a-z]+\.wikipedia\.org)\/wiki\/((?!File\:)[^ #]+)#?([^ ]*).*'
-# Matches a wikipedia page (excluding spaces and #, but not /File: links), with a separate optional field for the section
 
 
 class WikiParser(HTMLParser):
@@ -177,12 +175,12 @@ def say_section(bot, trigger, server, query, section):
 
 def mw_section(server, query, section):
     """
-    Retrives a snippet from the specified section from the given page
+    Retrieves a snippet from the specified section from the given page
     on the given server.
     """
     sections_url = ('https://{0}/w/api.php?format=json&redirects'
-                    '&action=parse&prop=sections&page={1}')\
-                    .format(server, query)
+                    '&action=parse&prop=sections&page={1}'
+                    .format(server, query))
     sections = get(sections_url).json()
 
     section_number = None
@@ -217,11 +215,10 @@ def mw_section(server, query, section):
     return text
 
 
-@url(WIKIPEDIA_REGEX)
+# Matches a wikipedia page (excluding spaces and #, but not /File: links), with a separate optional field for the section
+@url(r'https?:\/\/([a-z]+\.wikipedia\.org)\/wiki\/((?!File\:)[^ #]+)#?([^ ]*)')
 def mw_info(bot, trigger, match=None):
-    """
-    Retrieves and outputs a snippet of the linked page.
-    """
+    """Retrieves and outputs a snippet of the linked page."""
     if match.group(3):
         if match.group(3).startswith('cite_note-'):  # Don't bother trying to retrieve a snippet when cite-note is linked
             say_snippet(bot, trigger, match.group(1), unquote(match.group(2)), show_url=False)
