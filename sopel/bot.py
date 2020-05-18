@@ -470,7 +470,7 @@ class Sopel(irc.AbstractBot):
                         callable_name)
 
             if commands:
-                plugin_name = callbl.__module__.rsplit('.', 1)[-1]
+                plugin_name = callbl.plugin_name
                 # TODO doc and make decorator for this. Not sure if this is how
                 # it should work yet, so not making it public for 6.0.
                 category = getattr(callbl, 'category', plugin_name)
