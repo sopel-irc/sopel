@@ -331,19 +331,27 @@ class Sopel(irc.AbstractBot):
 
         # remove URL callback handlers
         for func in urls:
+            callable_name = getattr(func, "__name__", "UNKNOWN")
             regexes = func.url_regex
             for regex in regexes:
-                if func in self._url_callbacks.get(regex, []):  # can .get ever fail?
+                if func in self._url_callbacks.get(regex, []):
                     self.unregister_url_callback(regex, func)
-                    LOGGER.debug('URL Callback unregistered: %r', regex)
+                    LOGGER.debug(
+                        'URL Callback unregistered: "%s" for %s', callable_name, regex
+                    )
         # and the old way, until 8.0
         if "url_callbacks" in self.memory:
             for func in urls:
                 regexes = func.url_regex
                 for regex in regexes:
                     if func == self.memory['url_callbacks'].get(regex):
+                        callable_name = getattr(func, "__name__", "UNKNOWN")
                         self.unregister_url_callback(regex, func)
-                        LOGGER.warning('Legacy URL Callback unregistered: %r', regex)
+                        LOGGER.warning(
+                            'Legacy URL Callback unregistered: "%s" for %s',
+                            callable_name,
+                            regex,
+                        )
 
         # remove plugin from registry
         del self._plugins[name]
@@ -1000,10 +1008,10 @@ class Sopel(irc.AbstractBot):
             # nothing to unregister
             return
 
-        try:
-            self._url_callbacks[pattern].remove(callback)
-        except ValueError:  # callback not present
-            pass
+        # New list for thread safety
+        self._url_callbacks[pattern] = [
+            c for c in self._url_callbacks[pattern] if c != callback
+        ]
 
     def search_url_callbacks(self, url):
         """Yield callbacks whose regex pattern matches the ``url``.
@@ -1029,7 +1037,6 @@ class Sopel(irc.AbstractBot):
         .. __: https://docs.python.org/3.6/library/re.html#match-objects
 
         """
-
         for regex, functions in tools.iteritems(self._url_callbacks):
             match = regex.search(url)
             if match:
