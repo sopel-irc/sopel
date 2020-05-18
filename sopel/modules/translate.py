@@ -7,7 +7,7 @@ Licensed under the Eiffel Forum License 2.
 
 https://sopel.chat
 """
-from __future__ import unicode_literals, absolute_import, print_function, division
+from __future__ import absolute_import, division, print_function, unicode_literals
 
 import json
 import random
@@ -15,8 +15,8 @@ import sys
 
 import requests
 
-from sopel.module import rule, commands, priority, example, unblockable
-from sopel.tools import web, SopelMemory
+from sopel.module import commands, example, priority, rule, unblockable
+from sopel.tools import SopelMemory, web
 
 if sys.version_info.major >= 3:
     unicode = str

@@ -1,6 +1,6 @@
 # coding=utf-8
 """Tests for sopel.cli.utils"""
-from __future__ import unicode_literals, absolute_import, print_function, division
+from __future__ import absolute_import, division, print_function, unicode_literals
 
 import argparse
 from contextlib import contextmanager

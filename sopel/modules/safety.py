@@ -6,7 +6,7 @@ Licensed under the Eiffel Forum License 2.
 
 This module uses virustotal.com
 """
-from __future__ import unicode_literals, absolute_import, print_function, division
+from __future__ import absolute_import, division, print_function, unicode_literals
 
 import logging
 import os.path
@@ -17,8 +17,8 @@ import time
 
 import requests
 
-from sopel.config.types import StaticSection, ValidatedAttribute, ListAttribute
-from sopel.formatting import color, bold
+from sopel.config.types import ListAttribute, StaticSection, ValidatedAttribute
+from sopel.formatting import bold, color
 from sopel.module import OP
 import sopel.tools
 

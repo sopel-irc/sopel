@@ -6,14 +6,14 @@ Licensed under the Eiffel Forum License 2.
 
 https://sopel.chat
 """
-from __future__ import unicode_literals, absolute_import, print_function, division
+from __future__ import absolute_import, division, print_function, unicode_literals
 
 import re
 
 from requests import get
 
 from sopel.config.types import StaticSection, ValidatedAttribute
-from sopel.module import NOLIMIT, commands, example, url
+from sopel.module import commands, example, NOLIMIT, url
 from sopel.tools.web import quote, unquote
 
 try:  # TODO: Remove fallback when dropping py2

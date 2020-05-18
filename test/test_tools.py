@@ -1,9 +1,9 @@
 # coding=utf-8
 """Tests sopel.tools"""
-from __future__ import unicode_literals, absolute_import, print_function, division
-
+from __future__ import absolute_import, division, print_function, unicode_literals
 
 from datetime import timedelta
+
 from sopel import tools
 from sopel.tools.time import seconds_to_human
 

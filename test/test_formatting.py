@@ -1,10 +1,10 @@
 # coding=utf-8
 """Tests for message formatting"""
-from __future__ import unicode_literals, absolute_import, print_function, division
+from __future__ import absolute_import, division, print_function, unicode_literals
 
 import pytest
 
-from sopel.formatting import colors, color, hex_color, bold, italic, underline, strikethrough, monospace, reverse
+from sopel.formatting import bold, color, colors, hex_color, italic, monospace, reverse, strikethrough, underline
 
 
 def test_color():

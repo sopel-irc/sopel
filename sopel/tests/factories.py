@@ -3,12 +3,12 @@
 
 .. versionadded:: 7.0
 """
-from __future__ import unicode_literals, absolute_import, print_function, division
+from __future__ import absolute_import, division, print_function, unicode_literals
 
 import re
 
 from sopel import bot, config, plugins, trigger
-from .mocks import MockIRCServer, MockUser, MockIRCBackend
+from .mocks import MockIRCBackend, MockIRCServer, MockUser
 
 
 class BotFactory(object):

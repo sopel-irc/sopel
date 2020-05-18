@@ -12,22 +12,22 @@ dispatch function in bot.py and making it easier to maintain.
 # Copyright 2019, Florian Strzelecki <florian.strzelecki@gmail.com>
 #
 # Licensed under the Eiffel Forum License 2.
-from __future__ import unicode_literals, absolute_import, print_function, division
+from __future__ import absolute_import, division, print_function, unicode_literals
 
 import base64
 import collections
 import datetime
 import functools
 import logging
+from random import randint
 import re
 import sys
 import time
-from random import randint
 
 from sopel import loader, module
 from sopel.irc import isupport
 from sopel.irc.utils import CapReq, MyInfo
-from sopel.tools import Identifier, events, iteritems, jobs, target, web
+from sopel.tools import events, Identifier, iteritems, jobs, target, web
 
 
 if sys.version_info.major >= 3:

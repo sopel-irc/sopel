@@ -12,9 +12,10 @@
 
 # https://sopel.chat
 
-from __future__ import unicode_literals, absolute_import, print_function, division
+from __future__ import absolute_import, division, print_function, unicode_literals
 
 import codecs
+from collections import defaultdict
 import functools
 import logging
 import os
@@ -22,7 +23,6 @@ import re
 import sys
 import threading
 import traceback
-from collections import defaultdict
 
 from sopel.tools._events import events  # NOQA
 

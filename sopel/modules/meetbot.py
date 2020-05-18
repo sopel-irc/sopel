@@ -13,8 +13,8 @@ import codecs
 import collections
 import os
 import re
-import time
 from string import punctuation, whitespace
+import time
 
 from sopel import formatting, module, tools
 from sopel.config.types import (FilenameAttribute, StaticSection,

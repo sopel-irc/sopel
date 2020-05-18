@@ -1,10 +1,10 @@
 # coding=utf-8
 """Triggers are how Sopel tells callables about their runtime context."""
-from __future__ import unicode_literals, absolute_import, print_function, division
+from __future__ import absolute_import, division, print_function, unicode_literals
 
+import datetime
 import re
 import sys
-import datetime
 
 from sopel import tools
 

@@ -6,7 +6,7 @@
 #
 # Licensed under the Eiffel Forum License 2.
 
-from __future__ import unicode_literals, absolute_import, print_function, division
+from __future__ import absolute_import, division, print_function, unicode_literals
 
 from ast import literal_eval
 import collections
@@ -20,11 +20,11 @@ import time
 
 from sopel import irc, logger, plugins, tools
 from sopel.db import SopelDB
-from sopel.tools import Identifier, deprecated
+import sopel.loader
+from sopel.module import NOLIMIT
+from sopel.tools import deprecated, Identifier
 import sopel.tools.jobs
 from sopel.trigger import Trigger
-from sopel.module import NOLIMIT
-import sopel.loader
 
 
 __all__ = ['Sopel', 'SopelWrapper']

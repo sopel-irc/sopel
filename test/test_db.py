@@ -4,7 +4,7 @@
 TODO: Most of these tests assume functionality tested in other tests. This is
 enough to get everything working (and is better than nothing), but best
 practice would probably be not to do that."""
-from __future__ import unicode_literals, absolute_import, print_function, division
+from __future__ import absolute_import, division, print_function, unicode_literals
 
 import json
 import os
@@ -13,7 +13,7 @@ import tempfile
 
 import pytest
 
-from sopel.db import ChannelValues, PluginValues, Nicknames, NickValues, SopelDB
+from sopel.db import ChannelValues, Nicknames, NickValues, PluginValues, SopelDB
 from sopel.tools import Identifier
 
 db_filename = tempfile.mkstemp()[1]

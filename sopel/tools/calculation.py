@@ -1,11 +1,11 @@
 # coding=utf-8
 """Tools to help safely do calculations from user input"""
-from __future__ import unicode_literals, absolute_import, print_function, division
+from __future__ import absolute_import, division, print_function, unicode_literals
 
-import time
+import ast
 import numbers
 import operator
-import ast
+import time
 
 __all__ = ['eval_equation']
 
