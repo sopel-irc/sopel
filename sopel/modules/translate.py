@@ -115,11 +115,13 @@ def tr(bot, trigger):
 @commands('translate', 'tr')
 @example('.tr :en :fr my dog',
          '"mon chien" (en to fr, translate.google.com)',
-         online=True)
-@example('.tr מחשב', '"computer" (iw to en, translate.google.com)', online=True)
+         online=True, vcr=True)
+@example('.tr מחשב',
+         '"computer" (iw to en, translate.google.com)',
+         online=True, vcr=True)
 @example('.tr mon chien',
          '"my dog" (fr to en, translate.google.com)',
-         online=True)
+         online=True, vcr=True)
 def tr2(bot, trigger):
     """Translates a phrase, with an optional language hint."""
     command = trigger.group(2)

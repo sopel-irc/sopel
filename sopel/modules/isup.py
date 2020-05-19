@@ -77,6 +77,9 @@ def isup_insecure(bot, trigger):
 
 
 @module.commands('isup')
+@module.example('.isup google.com',
+                'http://google.com looks fine to me.',
+                online=True, vcr=True)
 def isup(bot, trigger):
     """Check if a website is up or not."""
     handle_isup(bot, trigger, secure=True)

@@ -49,7 +49,7 @@ def setup(bot):
 
 @module.commands('py')
 @module.output_prefix('[py] ')
-@module.example('.py len([1,2,3])', '3', online=True)
+@module.example('.py len([1,2,3])', '3', online=True, vcr=True)
 def py(bot, trigger):
     """Evaluate a Python expression."""
     if not trigger.group(2):
