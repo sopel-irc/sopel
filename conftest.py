@@ -36,3 +36,10 @@ def vcr_cassette_dir(request):
         # We know it's part of Sopel...
         parts = parts[1:]
     return os.path.join('test', 'vcr', *parts)
+
+
+@pytest.fixture
+def vcr_cassette_path(request, vcr_cassette_name):
+    # pytest-vcr 0.3.0 looks for this fixture name
+    # remove when killing off Python 3.3 support
+    return os.path.join(vcr_cassette_dir(request), vcr_cassette_name)
