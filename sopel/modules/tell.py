@@ -7,19 +7,19 @@ Licensed under the Eiffel Forum License 2.
 
 https://sopel.chat
 """
-from __future__ import unicode_literals, absolute_import, print_function, division
+from __future__ import absolute_import, division, print_function, unicode_literals
 
+from collections import defaultdict
 import io  # don't use `codecs` for loading the DB; it will split lines on some IRC formatting
 import logging
 import os
-import time
 import threading
-from collections import defaultdict
+import time
 
-from sopel.config.types import StaticSection, ValidatedAttribute
 from sopel import module
+from sopel.config.types import StaticSection, ValidatedAttribute
 from sopel.tools import Identifier
-from sopel.tools.time import get_timezone, format_time
+from sopel.tools.time import format_time, get_timezone
 
 
 LOGGER = logging.getLogger(__name__)

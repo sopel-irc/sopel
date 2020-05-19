@@ -23,12 +23,14 @@ who should worry about :class:`sopel.bot.Sopel` only.
 # Copyright 2019, Florian Strzelecki <florian.strzelecki@gmail.com>
 #
 # Licensed under the Eiffel Forum License 2.
-from __future__ import unicode_literals, absolute_import, print_function, division
+from __future__ import absolute_import, division, print_function, unicode_literals
 
-import sys
-import time
-import os
+from datetime import datetime
 import logging
+import os
+import sys
+import threading
+import time
 
 try:
     import ssl
@@ -43,15 +45,11 @@ except ImportError:
     # no SSL support
     has_ssl = False
 
-import threading
-from datetime import datetime
-
 from sopel import tools
 from sopel.trigger import PreTrigger
-
 from .backends import AsynchatBackend, SSLAsynchatBackend
 from .isupport import ISupport
-from .utils import safe, CapReq
+from .utils import CapReq, safe
 
 if sys.version_info.major >= 3:
     unicode = str

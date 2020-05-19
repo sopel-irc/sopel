@@ -1,11 +1,11 @@
 # coding=utf-8
 """Tests for message formatting"""
-from __future__ import unicode_literals, absolute_import, print_function, division
+from __future__ import absolute_import, division, print_function, unicode_literals
 
 import pytest
 
-from sopel.trigger import PreTrigger, Trigger
 from sopel import module, tools
+from sopel.trigger import PreTrigger, Trigger
 
 
 TMP_CONFIG = """

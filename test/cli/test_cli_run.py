@@ -1,6 +1,6 @@
 # coding=utf-8
 """Tests for command handling"""
-from __future__ import unicode_literals, absolute_import, print_function, division
+from __future__ import absolute_import, division, print_function, unicode_literals
 
 import argparse
 from contextlib import contextmanager
@@ -13,7 +13,7 @@ from sopel.cli.run import (
     build_parser,
     get_configuration,
     get_pid_filename,
-    get_running_pid
+    get_running_pid,
 )
 
 

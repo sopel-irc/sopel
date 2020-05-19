@@ -1,13 +1,13 @@
 # coding=utf-8
 """coretasks.py tests"""
-from __future__ import unicode_literals, absolute_import, print_function, division
+from __future__ import absolute_import, division, print_function, unicode_literals
 
 import pytest
 
 from sopel import coretasks
-from sopel.module import VOICE, HALFOP, OP, ADMIN, OWNER
-from sopel.tools import Identifier
+from sopel.module import ADMIN, HALFOP, OP, OWNER, VOICE
 from sopel.tests import rawlist
+from sopel.tools import Identifier
 
 
 TMP_CONFIG = """

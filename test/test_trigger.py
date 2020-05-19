@@ -1,13 +1,14 @@
 # coding=utf-8
 """Tests for message parsing"""
-from __future__ import unicode_literals, absolute_import, print_function, division
+from __future__ import absolute_import, division, print_function, unicode_literals
 
-import re
-import pytest
 import datetime
+import re
 
-from sopel.trigger import PreTrigger, Trigger
+import pytest
+
 from sopel.tools import Identifier
+from sopel.trigger import PreTrigger, Trigger
 
 
 TMP_CONFIG = """

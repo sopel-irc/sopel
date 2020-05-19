@@ -8,7 +8,7 @@ Licensed under the Eiffel Forum License 2.
 
 https://sopel.chat
 """
-from __future__ import unicode_literals, absolute_import, print_function, division
+from __future__ import absolute_import, division, print_function, unicode_literals
 
 import datetime as dt
 import re
@@ -20,7 +20,7 @@ import prawcore
 import requests
 
 from sopel.formatting import bold, color, colors
-from sopel.module import commands, example, require_chanmsg, rule, url, NOLIMIT, OP
+from sopel.module import commands, example, NOLIMIT, OP, require_chanmsg, rule, url
 from sopel.tools import time
 from sopel.tools.web import USER_AGENT
 

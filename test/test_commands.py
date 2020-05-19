@@ -1,9 +1,10 @@
 # coding=utf-8
 """Tests for command handling"""
-from __future__ import unicode_literals, absolute_import, print_function, division
+from __future__ import absolute_import, division, print_function, unicode_literals
+
+import re
 
 import pytest
-import re
 
 from sopel.tools import get_command_regexp, get_nickname_command_regexp
 

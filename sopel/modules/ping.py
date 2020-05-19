@@ -5,11 +5,11 @@ Copyright 2008 (?), Sean B. Palmer, inamidst.com
 
 https://sopel.chat
 """
-from __future__ import unicode_literals, absolute_import, print_function, division
+from __future__ import absolute_import, division, print_function, unicode_literals
 
 import random
 
-from sopel.module import rule, priority, thread
+from sopel.module import priority, rule, thread
 
 
 @rule(r'(?i)(hi|hello|hey),? $nickname[ \t]*$')

@@ -24,11 +24,12 @@ As an example, if one wanted to define the ``[spam]`` section as having an
     ValueError: ListAttribute value must be a list.
 """
 
-from __future__ import unicode_literals, absolute_import, print_function, division
+from __future__ import absolute_import, division, print_function, unicode_literals
 
 import os.path
 import re
 import sys
+
 from sopel.tools import get_input
 
 if sys.version_info.major >= 3:

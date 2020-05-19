@@ -1,5 +1,5 @@
 # coding=utf-8
-from __future__ import unicode_literals, absolute_import, print_function, division
+from __future__ import absolute_import, division, print_function, unicode_literals
 
 import errno
 import json
@@ -8,13 +8,13 @@ import os.path
 import sys
 import traceback
 
-from sopel.tools import Identifier
-
-from sqlalchemy import create_engine, Column, ForeignKey, Integer, String
+from sqlalchemy import Column, create_engine, ForeignKey, Integer, String
 from sqlalchemy.engine.url import URL
 from sqlalchemy.exc import OperationalError, SQLAlchemyError
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import scoped_session, sessionmaker
+
+from sopel.tools import Identifier
 
 if sys.version_info.major >= 3:
     unicode = str
