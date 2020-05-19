@@ -92,8 +92,9 @@ def duck_api(query):
 @commands('duck', 'ddg', 'g')
 # test for bad Unicode handling in py2
 @example(
-    '.duck grandorder.wiki chulainn alter',
-    r'https://grandorder.wiki/C%C3%BA_Chulainn_(Alter)',
+    '.duck site:grandorder.wiki chulainn alter',
+    r'https?:\/\/grandorder\.wiki\/C%C3%BA_Chulainn.*',
+    re=True,
     online=True)
 # the last example (in source line order) is what .help displays
 @example(
