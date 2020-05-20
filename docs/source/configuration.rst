@@ -30,7 +30,21 @@ This file can be generated with ``sopel configure``.
 
 .. seealso::
 
-    The :doc:`cli` chapter for ``sopel``'s subcommands.
+    The :doc:`cli` chapter for ``sopel configure`` subcommand.
+
+.. note::
+
+    In this document, when a config option is a "list", it means you can
+    provide more than one value, each on its own line, like this::
+
+        [core]
+        single_option = only one value
+        multi_option =
+            first value
+            second value
+            "# escape value starting with # using double quotes"
+            # this is a comment and won't be used as value
+            yet another value
 
 
 .. contents::
