@@ -74,8 +74,8 @@ class CoreSection(StaticSection):
 
     .. note::
 
-        You can use the ``sopel configure`` to generate a config file with
-        the minimal required options.
+        You can use the command ``sopel configure`` to generate a config file
+        with the minimal required options.
 
     """
 
@@ -189,7 +189,8 @@ class CoreSection(StaticSection):
     Used by the URL callbacks feature to call plugins when links are posted in
     chat; see the :func:`sopel.module.url` decorator.
 
-    This is equivalent to the default values:
+    The default value allows ``http``, ``https``, and ``ftp``. It is equivalent
+    to this configuration example:
 
     .. code-block:: ini
 
@@ -242,9 +243,10 @@ class CoreSection(StaticSection):
 
     .. important::
 
-        When you edit the config file manually, make sure to escape each line
-        starting with a ``#`` with double quotes (as shown in the example
-        above), otherwise Python will ignore them, thinking they are comments.
+        If you edit the config file manually, make sure to wrap each line
+        starting with a ``#`` in double quotes, as shown in the example above.
+        An unquoted ``#`` denotes a comment, which will be ignored by Sopel's
+        configuration parser.
 
     """
 
@@ -252,7 +254,7 @@ class CoreSection(StaticSection):
     """A list of commands to send upon successful connection to the IRC server.
 
     Each line is a message that will be sent to the server once connected,
-    in that order:
+    in the order they are defined:
 
     .. code-block:: ini
 
@@ -394,7 +396,7 @@ class CoreSection(StaticSection):
 
     Used when plugins format times with :func:`sopel.tools.time.format_time`.
 
-    Example with the British time::
+    For example, to make Sopel fall back on British time::
 
         default_timezone = Europe/London
 
@@ -417,7 +419,7 @@ class CoreSection(StaticSection):
             xkcd
             help
 
-    In that case, only ``url``, ``xkcd``, and the ``help`` plugins will be
+    In that case, only the ``url``, ``xkcd``, and ``help`` plugins will be
     enabled and loaded by Sopel.
 
     To load *all* available plugins, clear this setting by removing it, or
@@ -883,7 +885,7 @@ class CoreSection(StaticSection):
     It is a regular expression (so the default, ``\\.``, means commands start
     with a period), though using capturing groups will create problems.
 
-    With the default value, user will invoke commands like this::
+    With the default value, users will invoke commands like this::
 
         <nick> .help
 
@@ -895,7 +897,7 @@ class CoreSection(StaticSection):
             prefix = \\?
             help_prefix = ?
 
-        In that example, user will invoke commands like this::
+        In that example, users will invoke commands like this::
 
             <nick> ?help
     """
@@ -992,10 +994,11 @@ class CoreSection(StaticSection):
 
     :default: ``120``
 
-    You can increase the timout (for example up to 200s) like this:
+    You can change the timeout like this:
 
     .. code-block:: ini
 
+        # increase to 200 seconds
         timeout = 200
 
     """
