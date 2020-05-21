@@ -76,7 +76,7 @@ def wikt(word):
             # make sure those are not excluded (see e.g., abecedarian).
             if ('id="' in line) and ('<li>' not in line):
                 mode = None
-            elif (mode == 'etmyology') and ('<p>' in line):
+            elif (mode == 'etymology') and ('<p>' in line):
                 etymology = text(line)
             elif (mode is not None) and ('<li>' in line):
                 definitions.setdefault(mode, []).append(text(line))
@@ -100,7 +100,7 @@ def format(result, definitions, number=2):
 
 
 @commands('wt', 'define', 'dict')
-@example('.wt bailiwick')
+@example('.wt bailiwick', "bailiwick — noun: 1. The district within which a bailie or bailiff has jurisdiction, 2. A person's concern or sphere of operations, their area of skill or authority")
 def wiktionary(bot, trigger):
     """Look up a word on Wiktionary."""
     word = trigger.group(2)
@@ -124,4 +124,25 @@ def wiktionary(bot, trigger):
 
     if len(result) > 300:
         result = result[:295] + '[…]'
+    bot.say(result)
+
+
+@commands('ety')
+@example('.ety bailiwick', "bailiwick: From bailie (“bailiff”) and wick (“dwelling”), from Old English wīc.")
+def wiktionary_ety(bot, trigger):
+    """Look up a word's etymology on Wiktionary."""
+    word = trigger.group(2)
+    if word is None:
+        bot.reply('You must give me a word!')
+        return
+
+    etymology, _definitions = wikt(word)
+    if not etymology:
+        bot.say("Couldn't get the etymology for %s." % word)
+        return
+
+    result = "{}: {}".format(word, etymology)
+
+    if len(result) > 300:
+        result = result[:295] + '[...]'
     bot.say(result)
