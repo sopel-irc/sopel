@@ -224,7 +224,7 @@ class CoreSection(StaticSection):
         ca_certs = /etc/ssl/certs/ca-certificates.crt
 
     If not specified, Sopel will try to find the certificate trust store
-    itself.
+    itself from a set of known locations.
     """
 
     channels = ListAttribute('channels')
@@ -578,16 +578,19 @@ class CoreSection(StaticSection):
     """A list of hostnames which Sopel should ignore.
 
     Messages from any user whose connection hostname matches one of these
-    values will be ignored. :ref:`Regular expression syntax <re-syntax>` is
-    supported:
+    values will be ignored. Both :ref:`regular expression syntax <re-syntax>`
+    and exact match are supported:
 
     .. code-block:: ini
 
         host_blocks =
-            domain\\.com
-            .*\\.domain\\.com
+            exact-match.com
+            .*\\.regex-domain\\.com
 
-    Also see the :attr:`nick_blocks` list.
+    .. seealso::
+
+        The :attr:`nick_blocks` list can be used to block users by their nick.
+
     """
 
     log_raw = ValidatedAttribute('log_raw', bool, default=False)
@@ -813,9 +816,19 @@ class CoreSection(StaticSection):
     """A list of nicks which Sopel should ignore.
 
     Messages from any user whose nickname matches one of these values will be
-    ignored. :ref:`Regular expression syntax <re-syntax>` is supported.
+    ignored. Both :ref:`regular expression syntax <re-syntax>` and exact match
+    are supported:
 
-    Also see the :attr:`host_blocks` list.
+    .. code-block:: ini
+
+        nick_blocks =
+            ExactNick
+            _*RegexMatch_*
+
+    .. seealso::
+
+        The :attr:`host_blocks` list can be used to block users by their host.
+
     """
 
     not_configured = ValidatedAttribute('not_configured', bool, default=False)
@@ -872,7 +885,7 @@ class CoreSection(StaticSection):
     """
 
     prefix = ValidatedAttribute('prefix', default='\\.')
-    """The prefix to add to the beginning of commands.
+    """The prefix to add to the beginning of commands as a regular expression.
 
     :default: ``\\.``
 
@@ -882,24 +895,38 @@ class CoreSection(StaticSection):
 
         prefix = \\.
 
-    It is a regular expression (so the default, ``\\.``, means commands start
-    with a period), though using capturing groups will create problems.
+    With the default value, users will invoke commands like this:
 
-    With the default value, users will invoke commands like this::
+    .. code-block:: irc
 
         <nick> .help
 
+    Since it's a regular expression, you can use multiple prefixes::
+
+        prefix = \\.|\\?
+
+    .. important::
+
+        As the prefix is a regular expression, don't forget to escape it when
+        necessary. It is not recommended to use capturing groups, as it
+        **will** create problems with argument parsing for commands.
+
     .. note::
 
-        Remember to change the :attr:`help_prefix` value if you change this
-        one, for example::
+        Remember to change the :attr:`help_prefix` value accordingly::
 
             prefix = \\?
             help_prefix = ?
 
-        In that example, users will invoke commands like this::
+        In that example, users will invoke commands like this:
 
-            <nick> ?help
+        .. code-block:: irc
+
+            <nick> ?help xkcd
+            <Sopel> ?xkcd - Finds an xkcd comic strip
+            <Sopel> Takes one of 3 inputs:
+            [...]
+
     """
 
     reply_errors = ValidatedAttribute('reply_errors', bool, default=True)
