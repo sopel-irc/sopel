@@ -21,17 +21,8 @@ from sopel.tools import web
 header_spoof = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.87 Safari/537.36'
 }
-
-
-def formatnumber(n):
-    """Format a number with beautiful commas."""
-    parts = list(str(n))
-    for i in range((len(parts) - 3), 0, -3):
-        parts.insert(i, ',')
-    return ''.join(parts)
-
-
 r_bing = re.compile(r'<li(?: class="b_algo")?><h2><a href="([^"]+)"')
+r_duck = re.compile(r'nofollow" class="[^"]+" href="(?!(?:https?:\/\/r\.search\.yahoo)|(?:https?:\/\/duckduckgo\.com\/y\.js)(?:\/l\/\?kh=-1&amp;uddg=))(.*?)">')
 
 
 def bing_search(query, lang='en-US'):
@@ -44,9 +35,6 @@ def bing_search(query, lang='en-US'):
     m = r_bing.search(response.text)
     if m:
         return m.group(1)
-
-
-r_duck = re.compile(r'nofollow" class="[^"]+" href="(?!(?:https?:\/\/r\.search\.yahoo)|(?:https?:\/\/duckduckgo\.com\/y\.js)(?:\/l\/\?kh=-1&amp;uddg=))(.*?)">')
 
 
 def duck_search(query):
@@ -62,10 +50,6 @@ def duck_search(query):
     m = r_duck.search(bytes)
     if m:
         return web.decode(m.group(1))
-
-
-# Alias google_search to duck_search
-google_search = duck_search
 
 
 def duck_api(query):
