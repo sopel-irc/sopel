@@ -2,6 +2,22 @@ This file is used to auto-generate the "Changelog" section of Sopel's website.
 When adding new entries, follow the style guide in NEWS.spec.md to avoid
 causing problems with the site build.
 
+Changes between 7.0.3 and 7.0.4
+===============================
+
+Plugin changes
+--------------
+
+* Relax DuckDuckGo test in `search` plugin that was causing CI issues
+
+Core changes
+------------
+
+* Fix plugin name in bot's internal command-group tracking [[#1863][]]
+
+[#1863]: https://github.com/sopel-irc/sopel/pull/1863
+
+
 Changes between 7.0.2 and 7.0.3
 ===============================
 
