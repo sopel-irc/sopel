@@ -43,6 +43,108 @@ _channel_prefixes = ('#', '&', '+', '!')
 _regex_type = type(re.compile(''))
 
 
+def deprecated(reason=None, version=None, removed_in=None, func=None):
+    """Decorator to mark deprecated functions in Sopel's API
+
+    :param str reason: optional text added to the deprecation warning
+    :param str version: optional version number when the decorated function
+                        is deprecated
+    :param str removed_in: optional version number when the deprecated function
+                           will be removed
+    :param callable func: deprecated function
+    :return: a callable that depends on how the decorator is called; either
+             the decorated function, or a decorator with the appropriate
+             parameters
+
+    Any time the decorated ``func`` is called, a deprecation warning will be
+    printed to ``sys.stderr``, with the last frame of the traceback.
+
+    It can be used with or without arguments::
+
+        from sopel import tools
+
+        @tools.deprecated
+        def func1():
+            print('func 1')
+
+        @tools.deprecated()
+        def func2():
+            print('func 2')
+
+        @tools.deprecated(reason='obsolete', version='7.0', removed_in='8.0')
+        def func3():
+            print('func 3')
+
+    which will output the following in a console::
+
+        >>> func1()
+        Deprecated: func1
+        File "<stdin>", line 1, in <module>
+        func 1
+        >>> func2()
+        Deprecated: func2
+        File "<stdin>", line 1, in <module>
+        func 2
+        >>> func3()
+        Deprecated since 7.0, will be removed in 8.0: obsolete
+        File "<stdin>", line 1, in <module>
+        func 3
+
+    .. note::
+
+        There is nothing that prevents this decorator to be used on a class's
+        method, or on any existing callable.
+
+    .. versionadded:: 7.0
+        Parameters ``reason``, ``version``, and ``removed_in``.
+    """
+    if not any([reason, version, removed_in, func]):
+        # common usage: @deprecated()
+        return deprecated
+
+    if callable(reason):
+        # common usage: @deprecated
+        return deprecated(func=reason)
+
+    if func is None:
+        # common usage: @deprecated(message, version, removed_in)
+        def decorator(func):
+            return deprecated(reason, version, removed_in, func)
+        return decorator
+
+    # now, we have everything we need to have:
+    # - message is not a callable (could be None)
+    # - func is not None
+    # - version and removed_in can be None but that's OK
+    # so now we can return the actual decorated function
+
+    message = reason or getattr(func, '__name__', '<anonymous-function>')
+
+    template = 'Deprecated: {message}'
+    if version and removed_in:
+        template = (
+            'Deprecated since {version}, '
+            'will be removed in {removed_in}: '
+            '{message}')
+    elif version:
+        template = 'Deprecated since {version}: {message}'
+    elif removed_in:
+        template = 'Deprecated, will be removed in {removed_in}: {message}'
+
+    text = template.format(
+        message=message, version=version, removed_in=removed_in)
+
+    @functools.wraps(func)
+    def deprecated_func(*args, **kwargs):
+        stderr(text)
+        # Only display the last frame
+        trace = traceback.extract_stack()
+        stderr(traceback.format_list(trace[:-1])[-1][:-1])
+        return func(*args, **kwargs)
+
+    return deprecated_func
+
+
 def get_input(prompt):
     """Get decoded input from the terminal (equivalent to Python 3's ``input``).
 
@@ -250,108 +352,6 @@ def get_sendable_message(text, max_length=400):
             text = text[:last_space]
 
     return text, excess.lstrip()
-
-
-def deprecated(reason=None, version=None, removed_in=None, func=None):
-    """Decorator to mark deprecated functions in Sopel's API
-
-    :param str reason: optional text added to the deprecation warning
-    :param str version: optional version number when the decorated function
-                        is deprecated
-    :param str removed_in: optional version number when the deprecated function
-                           will be removed
-    :param callable func: deprecated function
-    :return: a callable that depends on how the decorator is called; either
-             the decorated function, or a decorator with the appropriate
-             parameters
-
-    Any time the decorated ``func`` is called, a deprecation warning will be
-    printed to ``sys.stderr``, with the last frame of the traceback.
-
-    It can be used with or without arguments::
-
-        from sopel import tools
-
-        @tools.deprecated
-        def func1():
-            print('func 1')
-
-        @tools.deprecated()
-        def func2():
-            print('func 2')
-
-        @tools.deprecated(reason='obsolete', version='7.0', removed_in='8.0')
-        def func3():
-            print('func 3')
-
-    which will output the following in a console::
-
-        >>> func1()
-        Deprecated: func1
-        File "<stdin>", line 1, in <module>
-        func 1
-        >>> func2()
-        Deprecated: func2
-        File "<stdin>", line 1, in <module>
-        func 2
-        >>> func3()
-        Deprecated since 7.0, will be removed in 8.0: obsolete
-        File "<stdin>", line 1, in <module>
-        func 3
-
-    .. note::
-
-        There is nothing that prevents this decorator to be used on a class's
-        method, or on any existing callable.
-
-    .. versionadded:: 7.0
-        Parameters ``reason``, ``version``, and ``removed_in``.
-    """
-    if not any([reason, version, removed_in, func]):
-        # common usage: @deprecated()
-        return deprecated
-
-    if callable(reason):
-        # common usage: @deprecated
-        return deprecated(func=reason)
-
-    if func is None:
-        # common usage: @deprecated(message, version, removed_in)
-        def decorator(func):
-            return deprecated(reason, version, removed_in, func)
-        return decorator
-
-    # now, we have everything we need to have:
-    # - message is not a callable (could be None)
-    # - func is not None
-    # - version and removed_in can be None but that's OK
-    # so now we can return the actual decorated function
-
-    message = reason or getattr(func, '__name__', '<anonymous-function>')
-
-    template = 'Deprecated: {message}'
-    if version and removed_in:
-        template = (
-            'Deprecated since {version}, '
-            'will be removed in {removed_in}: '
-            '{message}')
-    elif version:
-        template = 'Deprecated since {version}: {message}'
-    elif removed_in:
-        template = 'Deprecated, will be removed in {removed_in}: {message}'
-
-    text = template.format(
-        message=message, version=version, removed_in=removed_in)
-
-    @functools.wraps(func)
-    def deprecated_func(*args, **kwargs):
-        stderr(text)
-        # Only display the last frame
-        trace = traceback.extract_stack()
-        stderr(traceback.format_list(trace[:-1])[-1][:-1])
-        return func(*args, **kwargs)
-
-    return deprecated_func
 
 
 # This class was useful before Python 2.5, when ``defaultdict`` was added
