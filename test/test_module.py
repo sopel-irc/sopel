@@ -257,6 +257,13 @@ def test_action_commands_multiple():
     assert mock.intents == ['ACTION']
 
 
+def test_label():
+    @module.label('hello')
+    def mock(bot, trigger):
+        return True
+    assert mock.rule_label == 'hello'
+
+
 def test_priority():
     @module.priority('high')
     def mock(bot, trigger, match):
