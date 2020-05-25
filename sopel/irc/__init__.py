@@ -46,6 +46,7 @@ except ImportError:
     has_ssl = False
 
 from sopel import tools
+from sopel.tools import events
 from sopel.trigger import PreTrigger
 from .backends import AsynchatBackend, SSLAsynchatBackend
 from .isupport import ISupport
@@ -219,7 +220,7 @@ class AbstractBot(object):
             if self.hasquit:
                 # TODO: refactor direct interface with asynchat
                 self.backend.close_when_done()
-        elif pretrigger.event == '433':
+        elif pretrigger.event == events.ERR_NICKNAMEINUSE:
             LOGGER.error('Nickname already in use!')
             # TODO: refactor direct interface with asynchat
             self.backend.handle_close()
