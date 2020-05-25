@@ -342,6 +342,20 @@ def action_commands(*command_list):
     return add_attribute
 
 
+def label(value):
+    """Decorate a function to add a rule label.
+
+    :param str value: a label for the rule
+
+    The rule label allows the documentation and the logging system to refer
+    to this function by its label. A function can have one and only one label.
+    """
+    def add_attribute(function):
+        function.rule_label = value
+        return function
+    return add_attribute
+
+
 def priority(value):
     """Decorate a function to be executed with higher or lower priority.
 

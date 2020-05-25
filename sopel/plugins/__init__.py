@@ -37,7 +37,7 @@ import os
 
 import pkg_resources
 
-from . import exceptions, handlers  # noqa
+from . import exceptions, handlers, rules  # noqa
 
 
 def _list_plugin_filenames(directory):
