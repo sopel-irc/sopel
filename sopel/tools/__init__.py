@@ -24,6 +24,9 @@ import sys
 import threading
 import traceback
 
+from pkg_resources import parse_version
+
+from sopel import __version__
 from sopel.tools._events import events  # NOQA
 
 if sys.version_info.major >= 3:
@@ -43,7 +46,13 @@ _channel_prefixes = ('#', '&', '+', '!')
 _regex_type = type(re.compile(''))
 
 
-def deprecated(reason=None, version=None, removed_in=None, func=None):
+def deprecated(
+    reason=None,
+    version=None,
+    removed_in=None,
+    warning_in=None,
+    func=None,
+):
     """Decorator to mark deprecated functions in Sopel's API
 
     :param str reason: optional text added to the deprecation warning
@@ -51,15 +60,19 @@ def deprecated(reason=None, version=None, removed_in=None, func=None):
                         is deprecated
     :param str removed_in: optional version number when the deprecated function
                            will be removed
+    :param str warning_in: optional version number when the decorated function
+                           should start emitting a warning when called
     :param callable func: deprecated function
     :return: a callable that depends on how the decorator is called; either
              the decorated function, or a decorator with the appropriate
              parameters
 
     Any time the decorated ``func`` is called, a deprecation warning will be
-    printed to ``sys.stderr``, with the last frame of the traceback.
+    printed to ``sys.stderr``, with the last frame of the traceback. The
+    optional ``warning_in`` argument suppresses the warning on Sopel versions
+    older than that, allowing for multi-stage deprecation timelines.
 
-    It can be used with or without arguments::
+    The decorator can be used with or without arguments::
 
         from sopel import tools
 
@@ -97,8 +110,11 @@ def deprecated(reason=None, version=None, removed_in=None, func=None):
 
     .. versionadded:: 7.0
         Parameters ``reason``, ``version``, and ``removed_in``.
+
+    .. versionadded:: 7.1
+        The ``warning_in`` parameter.
     """
-    if not any([reason, version, removed_in, func]):
+    if not any([reason, version, removed_in, warning_in, func]):
         # common usage: @deprecated()
         return deprecated
 
@@ -109,7 +125,7 @@ def deprecated(reason=None, version=None, removed_in=None, func=None):
     if func is None:
         # common usage: @deprecated(message, version, removed_in)
         def decorator(func):
-            return deprecated(reason, version, removed_in, func)
+            return deprecated(reason, version, removed_in, warning_in, func)
         return decorator
 
     # now, we have everything we need to have:
@@ -136,10 +152,12 @@ def deprecated(reason=None, version=None, removed_in=None, func=None):
 
     @functools.wraps(func)
     def deprecated_func(*args, **kwargs):
-        stderr(text)
-        # Only display the last frame
-        trace = traceback.extract_stack()
-        stderr(traceback.format_list(trace[:-1])[-1][:-1])
+        if not (warning_in and
+                parse_version(warning_in) >= parse_version(__version__)):
+            stderr(text)
+            # Only display the last frame
+            trace = traceback.extract_stack()
+            stderr(traceback.format_list(trace[:-1])[-1][:-1])
         return func(*args, **kwargs)
 
     return deprecated_func
