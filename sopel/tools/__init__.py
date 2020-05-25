@@ -163,12 +163,23 @@ def deprecated(
     return deprecated_func
 
 
+@deprecated('Shim for Python 2 cross-compatibility, no longer needed. '
+            'Use built-in `input()` instead.',
+            version='7.1',
+            warning_in='8.0',
+            removed_in='8.1')
 def get_input(prompt):
     """Get decoded input from the terminal (equivalent to Python 3's ``input``).
 
     :param str prompt: what to display as a prompt on the terminal
     :return: the user's input
     :rtype: str
+
+    .. deprecated:: 7.1
+
+        Use of this function will become a warning when Python 2 support is
+        dropped in Sopel 8.0. The function will be removed in Sopel 8.1.
+
     """
     if sys.version_info.major >= 3:
         return input(prompt)
