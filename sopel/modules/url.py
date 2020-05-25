@@ -17,7 +17,7 @@ import re
 import dns.resolver
 import requests
 
-from sopel import __version__, module, tools
+from sopel import module, tools
 from sopel.config.types import ListAttribute, StaticSection, ValidatedAttribute
 from sopel.tools import web
 
@@ -27,19 +27,27 @@ try:
 except ImportError:
     from urlparse import urlparse
 
-USER_AGENT = 'Sopel/{} (https://sopel.chat)'.format(__version__)
-default_headers = {'User-Agent': USER_AGENT}
+USER_AGENT = (
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
+    'AppleWebKit/537.36 (KHTML, like Gecko) '
+    'Chrome/78.0.3904.108 Safari/537.36'
+)
+DEFAULT_HEADERS = {
+    'User-Agent': USER_AGENT,
+    'Accept': 'text/html, application/xhtml+xml, application/xml;q=0.9, */*;q=0.8',
+    'Accept-Language': 'en,en-US;q=0,5',
+}
 # These are used to clean up the title tag before actually parsing it. Not the
 # world's best way to do this, but it'll do for now.
-title_tag_data = re.compile('<(/?)title( [^>]+)?>', re.IGNORECASE)
-quoted_title = re.compile('[\'"]<title>[\'"]', re.IGNORECASE)
+TITLE_TAG_DATA = re.compile('<(/?)title( [^>]+)?>', re.IGNORECASE)
+QUOTED_TITLE = re.compile('[\'"]<title>[\'"]', re.IGNORECASE)
 # This is another regex that presumably does something important.
-re_dcc = re.compile(r'(?i)dcc\ssend')
+RE_DCC = re.compile(r'(?i)dcc\ssend')
 # This sets the maximum number of bytes that should be read in order to find
 # the title. We don't want it too high, or a link to a big file/stream will
 # just keep downloading until there's no more memory. 640k ought to be enough
-# for anybody.
-max_bytes = 655360
+# for anybody, but the modern web begs to differ.
+MAX_BYTES = 655360 * 2
 
 
 class UrlSection(StaticSection):
@@ -278,11 +286,11 @@ def find_title(url, verify=True):
     """Return the title for the given URL."""
     try:
         response = requests.get(url, stream=True, verify=verify,
-                                headers=default_headers)
+                                headers=DEFAULT_HEADERS)
         content = b''
         for byte in response.iter_content(chunk_size=512):
             content += byte
-            if b'</title>' in content or len(content) > max_bytes:
+            if b'</title>' in content or len(content) > MAX_BYTES:
                 break
         content = content.decode('utf-8', errors='ignore')
         # Need to close the connection because we have not read all
@@ -297,8 +305,8 @@ def find_title(url, verify=True):
 
     # Some cleanup that I don't really grok, but was in the original, so
     # we'll keep it (with the compiled regexes made global) for now.
-    content = title_tag_data.sub(r'<\1title>', content)
-    content = quoted_title.sub('', content)
+    content = TITLE_TAG_DATA.sub(r'<\1title>', content)
+    content = QUOTED_TITLE.sub('', content)
 
     start = content.rfind('<title>')
     end = content.rfind('</title>')
@@ -310,7 +318,7 @@ def find_title(url, verify=True):
     title = ' '.join(title.split())  # cleanly remove multiple spaces
 
     # More cryptic regex substitutions. This one looks to be myano's invention.
-    title = re_dcc.sub('', title)
+    title = RE_DCC.sub('', title)
 
     return title or None
 
