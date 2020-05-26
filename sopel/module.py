@@ -108,8 +108,7 @@ def unblockable(function):
 
     .. seealso::
 
-        Sopel's :meth:`~sopel.bot.Sopel.dispatch` and
-        :meth:`~sopel.bot.Sopel.get_triggered_callables` methods.
+        Sopel's :meth:`~sopel.bot.Sopel.dispatch`.
 
     """
     function.unblockable = True
