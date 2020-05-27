@@ -9,8 +9,8 @@
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 from ast import literal_eval
-import collections
 from datetime import datetime
+import itertools
 import logging
 import re
 import sys
@@ -63,9 +63,6 @@ class Sopel(irc.AbstractBot):
             Use the first item in each callable's commands list as the key,
             instead of the function name as declared in the source code.
         """
-
-        self._command_groups = collections.defaultdict(list)
-        """A mapping of plugin names to lists of their commands."""
 
         self._times = {}
         """
@@ -130,7 +127,20 @@ class Sopel(irc.AbstractBot):
     def command_groups(self):
         """A mapping of plugin names to lists of their commands."""
         # This was supposed to be deprecated, but the built-in help plugin needs it
-        return self._command_groups
+        # TODO: create a new, better, doc interface to remove it
+        plugin_commands = itertools.chain(
+            self._rules_manager.get_all_commands(),
+            self._rules_manager.get_all_nick_commands()
+        )
+        result = {}
+
+        for plugin, commands in plugin_commands:
+            if plugin not in result:
+                result[plugin] = list(commands.keys())
+            else:
+                result[plugin].extend(commands.keys())
+
+        return result
 
     @property
     def hostmask(self):
@@ -436,13 +446,6 @@ class Sopel(irc.AbstractBot):
                 callbl.rule = [match_any]
                 self._rules_manager.register(
                     plugin_rules.Rule.from_callable(self.settings, callbl))
-
-            if commands:
-                plugin_name = callbl.plugin_name
-                # TODO doc and make decorator for this. Not sure if this is how
-                # it should work yet, so not making it public for 6.0.
-                category = getattr(callbl, 'category', plugin_name)
-                self._command_groups[category].append(commands[0])
 
             for command, docs in callbl._docs.items():
                 self.doc[command] = docs

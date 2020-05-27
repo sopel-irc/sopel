@@ -254,6 +254,16 @@ class Manager(object):
         return _has_named_rule(
             self._action_commands, name, follow_alias, plugin)
 
+    def get_all_commands(self):
+        """Retrieve all the register commands, by plugin."""
+        # expose a copy of the registered commands
+        return self._commands.items()
+
+    def get_all_nick_commands(self):
+        """Retrieve all the register nick commands, by plugin."""
+        # expose a copy of the registered commands
+        return self._nick_commands.items()
+
     def get_triggered_rules(self, bot, pretrigger):
         """Get triggered rules with their match object, sorted by priorities.
 

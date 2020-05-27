@@ -80,6 +80,11 @@ def test_manager_command(mockbot):
     assert result_match.group(0) == '.hello'
     assert result_match.group(1) == 'hello'
 
+    assert list(manager.get_all_commands()) == [
+        ('testplugin', {'hello': command}),
+    ]
+    assert list(manager.get_all_nick_commands()) == []
+
 
 def test_manager_nick_command(mockbot):
     command = rules.NickCommand('Bot', 'hello', plugin='testplugin')
@@ -98,6 +103,11 @@ def test_manager_nick_command(mockbot):
     assert result_rule == command
     assert result_match.group(0) == 'Bot: hello'
     assert result_match.group(1) == 'hello'
+
+    assert list(manager.get_all_commands()) == []
+    assert list(manager.get_all_nick_commands()) == [
+        ('testplugin', {'hello': command}),
+    ]
 
 
 def test_manager_action_command(mockbot):
@@ -118,6 +128,9 @@ def test_manager_action_command(mockbot):
     assert result_match.group(0) == 'hello'
     assert result_match.group(1) == 'hello'
 
+    assert list(manager.get_all_commands()) == []
+    assert list(manager.get_all_nick_commands()) == []
+
 
 def test_manager_rule_and_command(mockbot):
     regex = re.compile('.*')
@@ -136,6 +149,11 @@ def test_manager_rule_and_command(mockbot):
 
     assert rule_result[0] == rule, 'First match must be the anonymous rule'
     assert command_result[0] == command, 'Second match must be the command'
+
+    assert list(manager.get_all_commands()) == [
+        ('testplugin', {'hello': command}),
+    ]
+    assert list(manager.get_all_nick_commands()) == []
 
 
 def test_manager_unregister_plugin(mockbot):
