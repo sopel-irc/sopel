@@ -341,11 +341,15 @@ def test_register_callables(tmpconfig):
         pass
 
     @module.commands('do')
+    @module.example('.do nothing')
     def command_do(bot, trigger):
+        """The do command do nothing."""
         pass
 
     @module.nickname_commands('info')
+    @module.example('$nickname: info about this')
     def nick_command_info(bot, trigger):
+        """Ask Sopel to get some info about nothing."""
         pass
 
     @module.action_commands('tell')
@@ -418,6 +422,17 @@ def test_register_callables(tmpconfig):
     # check documentation
     assert sopel.command_groups == {
         'testplugin': ['do', 'info']
+    }
+
+    assert sopel.doc == {
+        'do': (
+            ['The do command do nothing.'],
+            ['.do nothing']
+        ),
+        'info': (
+            ['Ask Sopel to get some info about nothing.'],
+            ['TestBot: info about this']
+        ),
     }
 
 

@@ -842,6 +842,10 @@ class NamedRuleMixin(object):
     def name(self):
         return self._name
 
+    @property
+    def aliases(self):
+        return self._aliases
+
     def get_rule_label(self):
         """Get the rule's label.
 
