@@ -19,6 +19,7 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 
 import datetime
+import inspect
 import itertools
 import logging
 import re
@@ -26,6 +27,8 @@ import threading
 
 
 from sopel import tools
+from sopel.config.core_section import (
+    COMMAND_DEFAULT_HELP_PREFIX, COMMAND_DEFAULT_PREFIX)
 
 
 __all__ = ['Manager', 'Rule', 'Command', 'NickCommand', 'ActionCommand']
@@ -62,6 +65,29 @@ def _has_named_rule(registry, name, follow_alias=False, plugin=None):
     )
 
     return has_name or (follow_alias and any(aliases))
+
+
+def _clean_callable_examples(examples):
+    valid_keys = [
+        # message
+        'example',
+        'result',
+        # flags
+        'is_private_message',
+        'is_help',
+        'is_pattern',
+        'is_admin',
+        'is_owner',
+    ]
+
+    return tuple(
+        dict(
+            (key, value)
+            for key, value in example.items()
+            if key in valid_keys
+        )
+        for example in examples
+    )
 
 
 class Manager(object):
@@ -279,6 +305,7 @@ class AbstractRule(object):
     * plugin name
     * priority
     * label
+    * doc, usages, and tests
     * output prefix
     * matching patterns, events, and intents
     * allow echo-message
@@ -345,6 +372,42 @@ class AbstractRule(object):
         same way a plugin can be identified by its name. This label can be used
         to select, register, unregister, and manipulate the rule based on its
         own label. Note that the label has no effect on the rule's execution.
+        """
+        raise NotImplementedError
+
+    def get_usages(self):
+        """Get the rule's usage examples.
+
+        :rtype: tuple
+
+        A rule can have usage examples, i.e. a list of example that shows how
+        the rule can be used, or in what context it can be triggered.
+        """
+        raise NotImplementedError
+
+    def get_test_parameters(self):
+        """Get parameters for automated tests.
+
+        :rtype: tuple
+
+        A rule can have automated tests attached to it, and this method must
+        return the test parameters:
+
+        * the expected IRC line
+        * the expected line of results, as said by the bot
+        * if the user should be an admin or not
+        * if the results should be used as regex expression
+        """
+        raise NotImplementedError
+
+    def get_doc(self):
+        """Get the rule's documentation.
+
+        :rtype: str
+
+        A rule documentation is a short text that can be displayed to a user
+        on IRC upon asking for help about this rule. The equivalent of Python
+        docstrings, but for IRC rules.
         """
         raise NotImplementedError
 
@@ -501,6 +564,19 @@ class Rule(AbstractRule):
     """
     @classmethod
     def kwargs_from_callable(cls, handler):
+        # manage examples:
+        # - usages are for documentation only
+        # - tests are examples that can be run and tested
+        examples = _clean_callable_examples(
+            getattr(handler, 'example', None) or tuple())
+
+        usages = tuple(
+            example
+            for example in examples
+            if example.get('is_help')
+        ) or examples and (examples[0],)
+        tests = tuple(example for example in examples if example.get('result'))
+
         return {
             'plugin': getattr(handler, 'plugin_name', None),
             'label': getattr(handler, 'rule_label', None),
@@ -514,6 +590,9 @@ class Rule(AbstractRule):
             'rate_limit': getattr(handler, 'rate', 0),
             'channel_rate_limit': getattr(handler, 'channel_rate', 0),
             'global_rate_limit': getattr(handler, 'global_rate', 0),
+            'usages': usages or tuple(),
+            'tests': tests,
+            'doc': inspect.getdoc(handler),
         }
 
     @classmethod
@@ -538,7 +617,10 @@ class Rule(AbstractRule):
                  unblockable=False,
                  rate_limit=0,
                  channel_rate_limit=0,
-                 global_rate_limit=0):
+                 global_rate_limit=0,
+                 usages=None,
+                 tests=None,
+                 doc=None):
         # core
         self._regexes = regexes
         self._plugin_name = plugin
@@ -565,6 +647,11 @@ class Rule(AbstractRule):
         self._metrics_nick = {}
         self._metrics_sender = {}
         self._metrics_global = None
+
+        # docs & tests
+        self._usages = usages or tuple()
+        self._tests = tests or tuple()
+        self._doc = doc or ''
 
     def __str__(self):
         try:
@@ -596,6 +683,26 @@ class Rule(AbstractRule):
             return self._handler.__name__
 
         raise RuntimeError('Undefined rule label')
+
+    def get_usages(self):
+        return tuple(
+            {
+                'text': usage['example'],
+                'result': usage.get('result', None),
+                'is_pattern': bool(usage.get('is_pattern')),
+                'is_admin': bool(usage.get('is_admin')),
+                'is_owner': bool(usage.get('is_owner')),
+                'is_private_message': bool(usage.get('is_private_message')),
+            }
+            for usage in self._usages
+            if usage.get('example')
+        )
+
+    def get_test_parameters(self):
+        return self._tests or tuple()
+
+    def get_doc(self):
+        return self._doc
 
     def get_priority(self):
         return self._priority
@@ -764,6 +871,7 @@ class Command(NamedRuleMixin, Rule):
     @classmethod
     def from_callable(cls, settings, handler):
         prefix = settings.core.prefix
+        help_prefix = settings.core.help_prefix
         commands = getattr(handler, 'commands', [])
         if not commands:
             raise RuntimeError('Invalid command callable: %s' % handler)
@@ -774,16 +882,23 @@ class Command(NamedRuleMixin, Rule):
         kwargs.update({
             'name': name,
             'prefix': prefix,
+            'help_prefix': help_prefix,
             'aliases': aliases,
             'handler': handler,
         })
 
         return cls(**kwargs)
 
-    def __init__(self, name, prefix, aliases=None, **kwargs):
+    def __init__(self,
+                 name,
+                 prefix=COMMAND_DEFAULT_PREFIX,
+                 help_prefix=COMMAND_DEFAULT_HELP_PREFIX,
+                 aliases=None,
+                 **kwargs):
         super(Command, self).__init__([], **kwargs)
         self._name = name
         self._prefix = prefix
+        self._help_prefix = help_prefix
         self._aliases = tuple(aliases) if aliases is not None else tuple()
         self._regexes = (self.get_rule_regex(),)
 
@@ -793,6 +908,30 @@ class Command(NamedRuleMixin, Rule):
         aliases = '|'.join(self._aliases)
 
         return '<Command %s.%s [%s]>' % (plugin, label, aliases)
+
+    def get_usages(self):
+        usages = []
+
+        for usage in self._usages:
+            text = usage.get('example')
+            if not text:
+                continue
+
+            if text[0] != self._help_prefix:
+                text = text.replace(
+                    COMMAND_DEFAULT_HELP_PREFIX, self._help_prefix, 1)
+
+            new_usage = {
+                'text': text,
+                'result': usage.get('result', None),
+                'is_pattern': bool(usage.get('is_pattern')),
+                'is_admin': bool(usage.get('is_admin')),
+                'is_owner': bool(usage.get('is_owner')),
+                'is_private_message': bool(usage.get('is_private_message')),
+            }
+            usages.append(new_usage)
+
+        return tuple(usages)
 
     def get_rule_regex(self):
         """Make the rule regex for this command.
@@ -876,6 +1015,26 @@ class NickCommand(NamedRuleMixin, Rule):
 
         return '<NickCommand %s.%s [%s] (%s [%s])>' % (
             plugin, label, aliases, nick, nick_aliases)
+
+    def get_usages(self):
+        usages = []
+
+        for usage in self._usages:
+            text = usage.get('example')
+            if not text:
+                continue
+
+            new_usage = {
+                'text': text.replace('$nickname', self._nick),
+                'result': usage.get('result', None),
+                'is_pattern': bool(usage.get('is_pattern')),
+                'is_admin': bool(usage.get('is_admin')),
+                'is_owner': bool(usage.get('is_owner')),
+                'is_private_message': bool(usage.get('is_private_message')),
+            }
+            usages.append(new_usage)
+
+        return tuple(usages)
 
     def get_rule_regex(self):
         """Make the rule regex for this nick command.

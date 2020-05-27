@@ -4,7 +4,7 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 import re
 import sys
 
-from sopel.config import core_section
+from sopel.config.core_section import COMMAND_DEFAULT_HELP_PREFIX
 from sopel.tools import (
     compile_rule,
     get_action_command_regexp,
@@ -13,8 +13,6 @@ from sopel.tools import (
     itervalues,
 )
 
-default_prefix = core_section.CoreSection.help_prefix.default
-del core_section
 
 if sys.version_info.major >= 3:
     basestring = (str, bytes)
@@ -104,7 +102,8 @@ def clean_callable(func, config):
             for i, example in enumerate(examples):
                 example = example.replace('$nickname', nick)
                 if example[0] != help_prefix and not example.startswith(nick):
-                    example = example.replace(default_prefix, help_prefix, 1)
+                    example = example.replace(
+                        COMMAND_DEFAULT_HELP_PREFIX, help_prefix, 1)
                 examples[i] = example
         if doc or examples:
             cmds = []

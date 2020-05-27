@@ -324,7 +324,7 @@ def test_rule_get_rule_label_handler(mockbot):
     assert rule.get_rule_label() == 'the_handler_rule'
 
 
-def test_rule_get_plugin_name(mockbot):
+def test_rule_get_plugin_name():
     regex = re.compile('.*')
 
     rule = rules.Rule([regex])
@@ -334,7 +334,58 @@ def test_rule_get_plugin_name(mockbot):
     assert rule.get_plugin_name() == 'testplugin'
 
 
-def test_rule_get_priority(mockbot):
+def test_rule_get_usages():
+    usages = (
+        {
+            'example': 'hello',
+            'result': ['Hi!'],
+            'is_pattern': False,
+            'is_help': True,
+            'is_private_message': False,
+            'is_admin': False,
+            'is_owner': False,
+        },
+    )
+    regex = re.compile('.*')
+    rule = rules.Rule([regex], usages=usages)
+
+    assert rule.get_usages() == (
+        {
+            'text': 'hello',
+            'result': ['Hi!'],
+            'is_pattern': False,
+            'is_owner': False,
+            'is_admin': False,
+            'is_private_message': False,
+        },
+    )
+
+
+def test_rule_get_test_parameters():
+    test_parameters = (
+        {
+            'admin': False,
+            'example': 'hello',
+            'help': True,
+            'privmsg': False,
+            'result': 'hi!',
+        },
+    )
+    regex = re.compile('.*')
+    rule = rules.Rule([regex], tests=test_parameters)
+
+    assert rule.get_test_parameters() == test_parameters
+
+
+def test_rule_get_doc():
+    doc = 'This is the doc you are looking for.'
+    regex = re.compile('.*')
+    rule = rules.Rule([regex], doc=doc)
+
+    assert rule.get_doc() == doc
+
+
+def test_rule_get_priority():
     regex = re.compile('.*')
 
     rule = rules.Rule([regex])
@@ -344,7 +395,7 @@ def test_rule_get_priority(mockbot):
     assert rule.get_priority() == rules.PRIORITY_LOW
 
 
-def test_rule_get_output_prefix(mockbot):
+def test_rule_get_output_prefix():
     regex = re.compile('.*')
 
     rule = rules.Rule([regex])
@@ -625,6 +676,9 @@ def test_kwargs_from_callable(mockbot):
     assert 'threaded' in kwargs
     assert 'output_prefix' in kwargs
     assert 'unblockable' in kwargs
+    assert 'usages' in kwargs
+    assert 'tests' in kwargs
+    assert 'doc' in kwargs
 
     assert kwargs['plugin'] == 'testplugin'
     assert kwargs['label'] is None
@@ -635,6 +689,9 @@ def test_kwargs_from_callable(mockbot):
     assert kwargs['threaded'] is True
     assert kwargs['output_prefix'] == ''
     assert kwargs['unblockable'] is False
+    assert kwargs['usages'] == tuple()
+    assert kwargs['tests'] == tuple()
+    assert kwargs['doc'] is None
 
 
 def test_kwargs_from_callable_label(mockbot):
@@ -761,6 +818,195 @@ def test_kwargs_from_callable_rate_limit(mockbot):
     assert kwargs['global_rate_limit'] == 40
 
 
+def test_kwargs_from_callable_examples(mockbot):
+    # prepare callable
+    @module.rule(r'hello', r'hi', r'hey', r'hello|hi')
+    @module.example('hello')
+    def handler(wrapped, trigger):
+        """This is the doc you are looking for."""
+        wrapped.reply('Hi!')
+
+    loader.clean_callable(handler, mockbot.settings)
+
+    # get kwargs
+    kwargs = rules.Rule.kwargs_from_callable(handler)
+
+    # asserts
+    expected = {
+        'example': 'hello',
+        'result': None,
+        'is_pattern': False,
+        'is_help': False,
+        'is_owner': False,
+        'is_admin': False,
+        'is_private_message': False,
+    }
+
+    assert 'usages' in kwargs
+    assert 'tests' in kwargs
+    assert 'doc' in kwargs
+    assert kwargs['usages'] == (expected,)
+    assert kwargs['tests'] == tuple(), 'There must be no test'
+    assert kwargs['doc'] == 'This is the doc you are looking for.'
+
+
+def test_kwargs_from_callable_examples_test(mockbot):
+    # prepare callable
+    @module.rule(r'hello', r'hi', r'hey', r'hello|hi')
+    @module.example('hi', 'Hi!')
+    @module.example('hello', 'Hi!')
+    def handler(wrapped, trigger):
+        wrapped.reply('Hi!')
+
+    loader.clean_callable(handler, mockbot.settings)
+
+    # get kwargs
+    kwargs = rules.Rule.kwargs_from_callable(handler)
+
+    # asserts
+    expected = {
+        'example': 'hello',
+        'result': ['Hi!'],
+        'is_pattern': False,
+        'is_help': False,
+        'is_owner': False,
+        'is_admin': False,
+        'is_private_message': False,
+    }
+    expected_tests = (
+        {
+            'example': 'hello',
+            'result': ['Hi!'],
+            'is_pattern': False,
+            'is_help': False,
+            'is_owner': False,
+            'is_admin': False,
+            'is_private_message': False,
+        },
+        {
+            'example': 'hi',
+            'result': ['Hi!'],
+            'is_pattern': False,
+            'is_help': False,
+            'is_owner': False,
+            'is_admin': False,
+            'is_private_message': False,
+        },
+    )
+
+    assert 'usages' in kwargs
+    assert 'tests' in kwargs
+    assert 'doc' in kwargs
+    assert kwargs['usages'] == (expected,), 'The first example must be used'
+    assert kwargs['tests'] == expected_tests
+    assert kwargs['doc'] is None
+
+
+def test_kwargs_from_callable_examples_help(mockbot):
+    # prepare callable
+    @module.rule(r'hello', r'hi', r'hey', r'hello|hi')
+    @module.example('hi', user_help=True)
+    @module.example('hey', 'Hi!')
+    @module.example('hello', 'Hi!', user_help=True)
+    def handler(wrapped, trigger):
+        wrapped.reply('Hi!')
+
+    loader.clean_callable(handler, mockbot.settings)
+
+    # get kwargs
+    kwargs = rules.Rule.kwargs_from_callable(handler)
+
+    # asserts
+    expected_usages = (
+        {
+            'example': 'hello',
+            'result': ['Hi!'],
+            'is_pattern': False,
+            'is_help': True,
+            'is_owner': False,
+            'is_admin': False,
+            'is_private_message': False,
+        },
+        {
+            'example': 'hi',
+            'result': None,
+            'is_pattern': False,
+            'is_help': True,
+            'is_owner': False,
+            'is_admin': False,
+            'is_private_message': False,
+        },
+    )
+    expected_tests = (
+        {
+            'example': 'hello',
+            'result': ['Hi!'],
+            'is_pattern': False,
+            'is_help': True,
+            'is_owner': False,
+            'is_admin': False,
+            'is_private_message': False,
+        },
+        {
+            'example': 'hey',
+            'result': ['Hi!'],
+            'is_pattern': False,
+            'is_help': False,
+            'is_owner': False,
+            'is_admin': False,
+            'is_private_message': False,
+        },
+    )
+
+    assert 'usages' in kwargs
+    assert 'tests' in kwargs
+    assert 'doc' in kwargs
+    assert kwargs['usages'] == expected_usages
+    assert kwargs['tests'] == expected_tests
+    assert kwargs['doc'] is None
+
+
+def test_kwargs_from_callable_examples_doc(mockbot):
+    # prepare callable
+    @module.rule(r'hello', r'hi', r'hey', r'hello|hi')
+    @module.example('hello')
+    def handler(wrapped, trigger):
+        """This is the doc you are looking for.
+
+        And now with extended text, for testing purpose only.
+        """
+        wrapped.reply('Hi!')
+
+    loader.clean_callable(handler, mockbot.settings)
+
+    # get kwargs
+    kwargs = rules.Rule.kwargs_from_callable(handler)
+
+    # asserts
+    expected_usages = (
+        {
+            'example': 'hello',
+            'result': None,
+            'is_pattern': False,
+            'is_help': False,
+            'is_owner': False,
+            'is_admin': False,
+            'is_private_message': False,
+        },
+    )
+
+    assert 'usages' in kwargs
+    assert 'tests' in kwargs
+    assert 'doc' in kwargs
+    assert kwargs['usages'] == expected_usages
+    assert kwargs['tests'] == tuple(), 'There must be no test'
+    assert kwargs['doc'] == (
+        'This is the doc you are looking for.\n'
+        '\n'
+        'And now with extended text, for testing purpose only.'
+    ), 'The docstring must have been cleaned.'
+
+
 # -----------------------------------------------------------------------------
 # test of rate-limit features
 
@@ -868,6 +1114,71 @@ def test_command_str_alias():
 def test_command_get_rule_label(mockbot):
     rule = rules.Command('hello', r'\.')
     assert rule.get_rule_label() == 'hello'
+
+
+def test_command_get_usages():
+    usages = (
+        {
+            'example': '.hello',  # using default prefix
+            'result': ['Hi!'],
+            'is_pattern': False,
+            'is_help': True,
+            'is_owner': False,
+            'is_admin': False,
+            'is_private_message': False,
+        },
+        {
+            'example': ';hi',  # using help-prefix
+            'result': None,
+            'is_pattern': False,
+            'is_help': True,
+            'is_owner': False,
+            'is_admin': False,
+            'is_private_message': False,
+        },
+        {
+            'not_example': 'This will be ignored because no example key',
+            'result': None,
+            'is_pattern': False,
+            'is_help': True,
+            'is_owner': False,
+            'is_admin': False,
+            'is_private_message': False,
+        },
+    )
+
+    rule = rules.Command(
+        'hello', r';',
+        help_prefix=';',
+        aliases=['hi'],
+        usages=usages,
+    )
+
+    assert rule.get_usages() == (
+        {
+            'text': ';hello',
+            'result': ['Hi!'],
+            'is_pattern': False,
+            'is_owner': False,
+            'is_admin': False,
+            'is_private_message': False,
+        },
+        {
+            'text': ';hi',
+            'result': None,
+            'is_pattern': False,
+            'is_owner': False,
+            'is_admin': False,
+            'is_private_message': False,
+        },
+    )
+
+
+def test_command_get_doc():
+    doc = 'This is the doc you are looking for.'
+    rule = rules.Command('hello', r'\.', doc=doc)
+
+    assert rule.get_doc() == doc
 
 
 def test_command_has_alias(mockbot):
@@ -1040,6 +1351,49 @@ def test_nick_command_str_alias_and_nick_alias():
 def test_nick_command_get_rule_label(mockbot):
     rule = rules.NickCommand('TestBot', 'hello')
     assert rule.get_rule_label() == 'hello'
+
+
+def test_nick_command_get_usages():
+    usages = (
+        {
+            'example': '$nickname: hello',
+            'result': ['Hi!'],
+            'is_pattern': False,
+            'is_help': True,
+            'is_owner': False,
+            'is_admin': False,
+            'is_private_message': False,
+        },
+        {
+            'not_example': 'This will be ignored because no example key',
+            'result': None,
+            'is_pattern': False,
+            'is_help': True,
+            'is_owner': False,
+            'is_admin': False,
+            'is_private_message': False,
+        },
+    )
+
+    rule = rules.NickCommand('TestBot', 'hello', usages=usages)
+
+    assert rule.get_usages() == (
+        {
+            'text': 'TestBot: hello',
+            'result': ['Hi!'],
+            'is_pattern': False,
+            'is_owner': False,
+            'is_admin': False,
+            'is_private_message': False,
+        },
+    )
+
+
+def test_nick_command_get_doc():
+    doc = 'This is the doc you are looking for.'
+    rule = rules.NickCommand('TestBot', 'hello', doc=doc)
+
+    assert rule.get_doc() == doc
 
 
 def test_nick_command_match(mockbot):
