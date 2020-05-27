@@ -620,6 +620,7 @@ def test_rule_execute(mockbot):
 
     def handler(wrapped, trigger):
         wrapped.say('Hi!')
+        return 'The return value'
 
     rule = rules.Rule([regex], handler=handler)
     matches = list(rule.match(mockbot, pretrigger))
@@ -627,9 +628,10 @@ def test_rule_execute(mockbot):
     match_trigger = trigger.Trigger(
         mockbot.settings, pretrigger, match, account=None)
     wrapped = bot.SopelWrapper(mockbot, match_trigger)
-    rule.execute(wrapped, match_trigger)
+    result = rule.execute(wrapped, match_trigger)
 
     assert mockbot.backend.message_sent == rawlist('PRIVMSG #sopel :Hi!')
+    assert result == 'The return value'
 
 
 def test_rule_from_callable(mockbot):
