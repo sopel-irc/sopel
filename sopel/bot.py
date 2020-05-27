@@ -53,17 +53,6 @@ class Sopel(irc.AbstractBot):
         self._plugins = {}
         self._rules_manager = plugin_rules.Manager()
 
-        self.doc = {}
-        """A dictionary of command names to their documentation.
-
-        Each command is mapped to its docstring and any available examples, if
-        declared in the plugin's code.
-
-        .. versionchanged:: 3.2
-            Use the first item in each callable's commands list as the key,
-            instead of the function name as declared in the source code.
-        """
-
         self._times = {}
         """
         A dictionary mapping lowercased nicks to dictionaries which map
@@ -125,7 +114,12 @@ class Sopel(irc.AbstractBot):
 
     @property
     def command_groups(self):
-        """A mapping of plugin names to lists of their commands."""
+        """A mapping of plugin names to lists of their commands.
+
+        .. versionchanged:: 7.1
+            This attribute is now generated on the fly from the registered list
+            of commands and nickname commands.
+        """
         # This was supposed to be deprecated, but the built-in help plugin needs it
         # TODO: create a new, better, doc interface to remove it
         plugin_commands = itertools.chain(
@@ -141,6 +135,38 @@ class Sopel(irc.AbstractBot):
                 result[plugin].extend(commands.keys())
 
         return result
+
+    @property
+    def doc(self):
+        """A dictionary of command names to their documentation.
+
+        Each command is mapped to its docstring and any available examples, if
+        declared in the plugin's code.
+
+        .. versionchanged:: 3.2
+            Use the first item in each callable's commands list as the key,
+            instead of the function name as declared in the source code.
+
+        .. versionchanged:: 7.1
+            This attribute is now generated on the fly from the registered list
+            of commands and nickname commands.
+        """
+        # TODO: create a new, better, doc interface to remove it
+        plugin_commands = itertools.chain(
+            self._rules_manager.get_all_commands(),
+            self._rules_manager.get_all_nick_commands()
+        )
+        commands = (
+            (command, command.get_doc(), command.get_usages())
+            for plugin, commands in plugin_commands
+            for command in commands.values()
+        )
+
+        return dict(
+            (name, (doc.splitlines(), [u['text'] for u in usages]))
+            for command, doc, usages in commands
+            for name in ((command.name,) + command.aliases)
+        )
 
     @property
     def hostmask(self):
@@ -446,9 +472,6 @@ class Sopel(irc.AbstractBot):
                 callbl.rule = [match_any]
                 self._rules_manager.register(
                     plugin_rules.Rule.from_callable(self.settings, callbl))
-
-            for command, docs in callbl._docs.items():
-                self.doc[command] = docs
 
     def register_jobs(self, jobs):
         for func in jobs:
