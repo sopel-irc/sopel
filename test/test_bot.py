@@ -415,6 +415,11 @@ def test_register_callables(tmpconfig):
     assert len(matches) == 1
     assert matches[0][0].get_rule_label() == 'handle_join_event'
 
+    # check documentation
+    assert sopel.command_groups == {
+        'testplugin': ['do', 'info']
+    }
+
 
 # -----------------------------------------------------------------------------
 # call_rule
