@@ -15,6 +15,12 @@ from sopel.config.types import (
 from sopel.tools import Identifier
 
 
+COMMAND_DEFAULT_PREFIX = r'\.'
+"""Default prefix used for commands."""
+COMMAND_DEFAULT_HELP_PREFIX = '.'
+"""Default help prefix used in command's usages."""
+
+
 def _find_certs():
     """Find the TLS root CA store.
 
@@ -365,7 +371,8 @@ class CoreSection(StaticSection):
     .. versionadded:: 7.0
     """
 
-    help_prefix = ValidatedAttribute('help_prefix', default='.')
+    help_prefix = ValidatedAttribute('help_prefix',
+                                     default=COMMAND_DEFAULT_HELP_PREFIX)
     """The prefix to use in help output.
 
     :default: ``.``
@@ -623,7 +630,7 @@ class CoreSection(StaticSection):
     **Required.**
     """
 
-    prefix = ValidatedAttribute('prefix', default='\\.')
+    prefix = ValidatedAttribute('prefix', default=COMMAND_DEFAULT_PREFIX)
     """The prefix to add to the beginning of commands.
 
     :default: ``\\.``
