@@ -36,7 +36,7 @@ A Sopel plugin consists of a Python module containing one or more
 
         from sopel import module
 
-        @module.command('hello')
+        @module.commands('hello')
         def say_hello(bot, trigger):
             """Reply hello to you."""
             bot.reply('Hello!')
