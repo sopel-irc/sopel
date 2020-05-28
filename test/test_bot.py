@@ -457,7 +457,7 @@ def test_register_callables(tmpconfig):
 
     # check documentation
     assert sopel.command_groups == {
-        'testplugin': ['do', 'main sub', 'main other', 'info']
+        'testplugin': ['do', 'info', 'main other', 'main sub'],
     }
 
     assert sopel.doc == {

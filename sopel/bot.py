@@ -130,9 +130,10 @@ class Sopel(irc.AbstractBot):
 
         for plugin, commands in plugin_commands:
             if plugin not in result:
-                result[plugin] = list(commands.keys())
+                result[plugin] = list(sorted(commands.keys()))
             else:
                 result[plugin].extend(commands.keys())
+                result[plugin] = list(sorted(result[plugin]))
 
         return result
 
