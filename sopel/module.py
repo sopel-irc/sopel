@@ -239,7 +239,6 @@ def commands(*command_list):
     """Decorate a function to set one or more commands that should trigger it.
 
     :param str command_list: one or more command name(s) to match
-                             (can be regular expressions)
 
     This decorator can be used to add multiple commands to one callable in a
     single line. The resulting match object will have the command as the first
@@ -304,6 +303,20 @@ def commands(*command_list):
 
         .. __: https://docs.python.org/3/reference/compound_stmts.html#function-definitions
 
+    .. note::
+
+        You can use a regular expression for the command name(s), but this is
+        **not recommended** since version 7.1. For backward compatibility
+        reason, this behavior will be kept until version 8.0.
+
+        Regex pattern are confusing for your user, please don't use them for
+        command name!
+
+        If you still want to use a regex pattern, please use the :func:`rule`
+        decorator instead. For extra argument and subcommands based on a regex
+        pattern, you should handle these inside your decorated function, by
+        using the ``trigger`` object.
+
     """
     def add_attribute(function):
         if not hasattr(function, "commands"):
@@ -319,7 +332,6 @@ def nickname_commands(*command_list):
     """Decorate a function to trigger on lines starting with "$nickname: command".
 
     :param str command_list: one or more command name(s) to match
-                             (can be regular expressions)
 
     This decorator can be used to add multiple commands to one callable in a
     single line. The resulting match object will have the command as the first
@@ -333,10 +345,22 @@ def nickname_commands(*command_list):
             # "$nickname hello!", "$nickname hello! parameter1" and
             # "$nickname hello! p1 p2 p3 p4 p5 p6 p7 p8 p9".
 
-        @nickname_commands(".*")
-            # Would trigger on anything starting with "$nickname[:,]? ",
-            # and would never have any additional parameters, as the
-            # command would match the rest of the line.
+    .. note::
+
+        You can use a regular expression for the command name(s), but this is
+        **not recommended** since version 7.1. For backward compatibility
+        reason, this behavior will be kept until version 8.0.
+
+        Regex pattern are confusing for your user, please don't use them for
+        command name!
+
+        If you need to use a regex pattern, please use the :func:`rule`
+        decorator instead, with the ``$nick`` variable::
+
+            @rule(r'$nick .*')
+                # Would trigger on anything starting with "$nickname[:,]? ",
+                # and would never have any additional parameters, as the
+                # command would match the rest of the line.
 
     """
     def add_attribute(function):
@@ -353,7 +377,6 @@ def action_commands(*command_list):
     """Decorate a function to trigger on CTCP ACTION lines.
 
     :param str command_list: one or more command name(s) to match
-                             (can be regular expressions)
 
     This decorator can be used to add multiple commands to one callable in a
     single line. The resulting match object will have the command as the first
@@ -376,6 +399,22 @@ def action_commands(*command_list):
         decorated wrappers.
 
         Hopefully, a future version of Sopel will remove this limitation.
+
+    .. note::
+
+        You can use a regular expression for the command name(s), but this is
+        **not recommended** since version 7.1. For backward compatibility
+        reason, this behavior will be kept until version 8.0.
+
+        Regex pattern are confusing for your user, please don't use them for
+        command name!
+
+        If you need to use a regex pattern, please use the :func:`rule`
+        decorator instead, with the :func:`intent` decorator::
+
+            @rule(r'hello!?')
+            @intent('ACTION')
+                # Would trigger on "/me hello!" and "/me hello"
 
     """
     def add_attribute(function):

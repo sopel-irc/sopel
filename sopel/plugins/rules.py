@@ -864,6 +864,41 @@ class NamedRuleMixin(object):
         """
         return name in self._aliases
 
+    def escape_name(self, name):
+        """Escape the provided name if needed.
+
+        .. note::
+
+            Until now, Sopel has allowed command name to be regex pattern.
+            It was mentionned in the documentation without much details, and
+            there was no tests about it.
+
+            In order to ensure backward compatibility with previous version of
+            Sopel, we make sure to escape command name only when it's needed.
+
+            **It is not recommended to use a regex pattern for your command
+            name. This feature will be removed in Sopel 8.0.**
+
+        """
+        if set('.^$*+?{}[]\\|()') & set(name):
+            # the name contains a regex pattern special character
+            # we assume the user knows what they are doing
+            try:
+                # make sure it compiles properly
+                # (nobody knows what they are doing)
+                re.compile(name)
+            except re.error as error:
+                original_name = name
+                name = re.escape(name)
+                LOGGER.warning(
+                    'Command name "%s" is an invalid regular expression '
+                    'and will be replaced by "%s": %s',
+                    original_name, name, error)
+        else:
+            name = re.escape(name)
+
+        return name
+
 
 class Command(NamedRuleMixin, Rule):
     """Command rule definition.
@@ -955,14 +990,14 @@ class Command(NamedRuleMixin, Rule):
         The command regex factors in:
 
         * the prefix regular expression,
-        * the rule's name (escaped for regex),
-        * all of its aliases (escaped for regex),
+        * the rule's name (escaped for regex **if needed**),
+        * all of its aliases (escaped for regex **if needed**),
 
         and everything is then given to :func:`sopel.tools.get_command_regexp`,
         which creates a compiled regex to return.
         """
-        name = [re.escape(self._name)]
-        aliases = [re.escape(alias) for alias in self._aliases]
+        name = [self.escape_name(self._name)]
+        aliases = [self.escape_name(alias) for alias in self._aliases]
         pattern = r'|'.join(name + aliases)
         return tools.get_command_regexp(self._prefix, pattern)
 
@@ -1065,8 +1100,8 @@ class NickCommand(NamedRuleMixin, Rule):
         :func:`sopel.tools.get_nickname_command_regexp`, which creates a
         compiled regex to return.
         """
-        name = [re.escape(self._name)]
-        aliases = [re.escape(alias) for alias in self._aliases]
+        name = [self.escape_name(self._name)]
+        aliases = [self.escape_name(alias) for alias in self._aliases]
         pattern = r'|'.join(name + aliases)
         return tools.get_nickname_command_regexp(
             self._nick, pattern, self._nick_aliases)
@@ -1129,15 +1164,15 @@ class ActionCommand(NamedRuleMixin, Rule):
 
         The command regex factors in:
 
-        * the rule's name (escaped for regex),
-        * all of its aliases (escaped for regex),
+        * the rule's name (escaped for regex **if needed**),
+        * all of its aliases (escaped for regex **if needed**),
 
         and everything is then given to
         :func:`sopel.tools.get_action_command_regexp`, which creates a compiled
         regex to return.
         """
-        name = [re.escape(self._name)]
-        aliases = [re.escape(alias) for alias in self._aliases]
+        name = [self.escape_name(self._name)]
+        aliases = [self.escape_name(alias) for alias in self._aliases]
         pattern = r'|'.join(name + aliases)
         return tools.get_action_command_regexp(pattern)
 

@@ -1500,6 +1500,37 @@ def test_command_from_callable_subcommand_aliases(mockbot):
     assert result.group(1) == 'reverse'
 
 
+def test_command_from_callable_regex_pattern(mockbot):
+    # TODO: this test must FAIL for Sopel 8.0
+    # Command name as regex pattern will be removed in Sopel 8.0
+
+    # prepare callable
+    @module.commands('main .*')
+    def handler(wrapped, trigger):
+        wrapped.reply('Hi!')
+
+    loader.clean_callable(handler, mockbot.settings)
+
+    # create rule from a clean callable
+    rule = rules.Command.from_callable(mockbot.settings, handler)
+
+    # match on ".main anything"
+    line = ':Foo!foo@example.com PRIVMSG #sopel :.main anything'
+    pretrigger = trigger.PreTrigger(mockbot.nick, line)
+    results = list(rule.match(mockbot, pretrigger))
+
+    assert len(results) == 1, (
+        'Exactly 1 command must match; MUST fail for Sopel 8.0')
+    result = results[0]
+    assert result.group(0) == '.main anything'
+    assert result.group(1) == 'main anything'
+    assert result.group(2) is None
+    assert result.group(3) is None
+    assert result.group(4) is None
+    assert result.group(5) is None
+    assert result.group(6) is None
+
+
 def test_command_from_callable_invalid(mockbot):
     # prepare callable
     @module.rule(r'.*')
@@ -1745,6 +1776,37 @@ def test_nick_command_from_callable(mockbot):
     assert not results
 
 
+def test_nick_command_from_callable_regex_pattern(mockbot):
+    # TODO: this test must FAIL for Sopel 8.0
+    # Command name as regex pattern will be removed in Sopel 8.0
+
+    # prepare callable
+    @module.nickname_commands('do .*')
+    def handler(wrapped, trigger):
+        wrapped.reply('Hi!')
+
+    loader.clean_callable(handler, mockbot.settings)
+
+    # create rule from a clean callable
+    rule = rules.NickCommand.from_callable(mockbot.settings, handler)
+
+    # match on ".main anything"
+    line = ':Foo!foo@example.com PRIVMSG #sopel :TestBot: do anything'
+    pretrigger = trigger.PreTrigger(mockbot.nick, line)
+    results = list(rule.match(mockbot, pretrigger))
+
+    assert len(results) == 1, (
+        'Exactly 1 command must match; MUST fail for Sopel 8.0')
+    result = results[0]
+    assert result.group(0) == 'TestBot: do anything'
+    assert result.group(1) == 'do anything'
+    assert result.group(2) is None
+    assert result.group(3) is None
+    assert result.group(4) is None
+    assert result.group(5) is None
+    assert result.group(6) is None
+
+
 # -----------------------------------------------------------------------------
 # test for :class:`sopel.plugins.rules.ActionCommand`
 
@@ -1890,3 +1952,34 @@ def test_action_command_from_callable(mockbot):
     pretrigger = trigger.PreTrigger(mockbot.nick, line)
     results = list(rule.match(mockbot, pretrigger))
     assert not results
+
+
+def test_action_command_from_callable_regex_pattern(mockbot):
+    # TODO: this test must FAIL for Sopel 8.0
+    # Command name as regex pattern will be removed in Sopel 8.0
+
+    # prepare callable
+    @module.action_commands('do .*')
+    def handler(wrapped, trigger):
+        wrapped.reply('Hi!')
+
+    loader.clean_callable(handler, mockbot.settings)
+
+    # create rule from a clean callable
+    rule = rules.ActionCommand.from_callable(mockbot.settings, handler)
+
+    # match on ".main anything"
+    line = ':Foo!foo@example.com PRIVMSG #sopel :\x01ACTION do anything\x01'
+    pretrigger = trigger.PreTrigger(mockbot.nick, line)
+    results = list(rule.match(mockbot, pretrigger))
+
+    assert len(results) == 1, (
+        'Exactly 1 command must match; MUST fail for Sopel 8.0')
+    result = results[0]
+    assert result.group(0) == 'do anything'
+    assert result.group(1) == 'do anything'
+    assert result.group(2) is None
+    assert result.group(3) is None
+    assert result.group(4) is None
+    assert result.group(5) is None
+    assert result.group(6) is None
