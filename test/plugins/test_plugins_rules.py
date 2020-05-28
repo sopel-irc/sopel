@@ -672,6 +672,71 @@ def test_rule_from_callable(mockbot):
     assert results[0].group(0) == 'hey'
 
 
+def test_rule_from_callable_nick_placeholder(mockbot):
+    # prepare callable
+    # note: yes, the $nick variable is super confusing
+    # it should probably accept \s* instead of \s+
+    # so a pattern like "$nick hello" would be way easier to read
+    @module.rule(r'$nickhello')
+    def handler(wrapped, trigger):
+        wrapped.reply('Hi!')
+
+    loader.clean_callable(handler, mockbot.settings)
+    handler.plugin_name = 'testplugin'
+
+    # create rule from a clean callable
+    rule = rules.Rule.from_callable(mockbot.settings, handler)
+
+    # match on "TestBot: hello" with a ":"
+    line = ':Foo!foo@example.com PRIVMSG #sopel :TestBot: hello'
+    pretrigger = trigger.PreTrigger(mockbot.nick, line)
+    results = list(rule.match(mockbot, pretrigger))
+
+    assert len(results) == 1, 'Exactly 1 command must match'
+    result = results[0]
+    assert result.group(0) == 'TestBot: hello'
+
+    with pytest.raises(IndexError):
+        result.group(1)
+
+    # match on "TestBot: hello" with a ":"
+    line = ':Foo!foo@example.com PRIVMSG #sopel :TestBot, hello'
+    pretrigger = trigger.PreTrigger(mockbot.nick, line)
+    results = list(rule.match(mockbot, pretrigger))
+
+    assert len(results) == 1, 'Exactly 1 command must match'
+    result = results[0]
+    assert result.group(0) == 'TestBot, hello'
+
+    with pytest.raises(IndexError):
+        result.group(1)
+
+
+def test_rule_from_callable_nickname_placeholder(mockbot):
+    # prepare callable
+    @module.rule(r'$nickname hello')
+    def handler(wrapped, trigger):
+        wrapped.reply('Hi!')
+
+    loader.clean_callable(handler, mockbot.settings)
+    handler.plugin_name = 'testplugin'
+
+    # create rule from a clean callable
+    rule = rules.Rule.from_callable(mockbot.settings, handler)
+
+    # match on "TestBot: hello" with a ":"
+    line = ':Foo!foo@example.com PRIVMSG #sopel :TestBot hello'
+    pretrigger = trigger.PreTrigger(mockbot.nick, line)
+    results = list(rule.match(mockbot, pretrigger))
+
+    assert len(results) == 1, 'Exactly 1 command must match'
+    result = results[0]
+    assert result.group(0) == 'TestBot hello'
+
+    with pytest.raises(IndexError):
+        result.group(1)
+
+
 # -----------------------------------------------------------------------------
 # test classmethod :meth:`Rule.kwargs_from_callable`
 
