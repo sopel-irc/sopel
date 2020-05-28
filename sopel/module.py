@@ -256,6 +256,54 @@ def commands(*command_list):
             # If the command prefix is "\\.", this would trigger on lines
             # starting with either ".j" or ".join".
 
+    You can use a space in the command name to implement subcommands::
+
+        @commands('main sub1', 'main sub2')
+            # For ".main sub1", trigger.group(1) will return "main sub1"
+            # For ".main sub2", trigger.group(1) will return "main sub2"
+            # For ".main", trigger.group(1) will return "main"
+
+    But in that case, be careful with the order of the names: if a more generic
+    pattern is defined first, it will have priority over less generic patterns.
+    So for instance, to have ``.main`` and ``.main sub`` working properly, you
+    need to declare them like this::
+
+        @commands('main sub', 'main')
+            # This command will react properly to ".main sub" and ".main"
+
+    Then, you can check ``trigger.group(1)`` to know if it was used as
+    ``main sub`` or just ``main`` in your callable. If you declare them in the
+    wrong order, ``.main`` will have priority and you won't be able to take
+    advantage of that.
+
+    Another option is to declare command with subscommands only, like this::
+
+        @commands('main sub1)
+            # this command will be triggered on .main sub1
+
+        @commands('main sub2')
+            # this other command will be triggered on .main sub2
+
+    In that case, ``.main`` won't trigger anything, and you won't have to
+    inspect the trigger's groups to know which subcommand is triggered.
+
+    .. note::
+
+        If you use this decorator multiple times, remember that the decorators
+        are invoked in the reverse order of appearance::
+
+            @commands('hi')
+            @commands('hello')
+
+        This example is equivalent to this::
+
+            @commands('hello', 'hi')
+
+        See also the `Function Definitions`__ chapter from the Python
+        documentation for more information about functions and decorators.
+
+        .. __: https://docs.python.org/3/reference/compound_stmts.html#function-definitions
+
     """
     def add_attribute(function):
         if not hasattr(function, "commands"):
