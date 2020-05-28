@@ -346,6 +346,18 @@ def test_register_callables(tmpconfig):
         """The do command do nothing."""
         pass
 
+    @module.commands('main sub')
+    @module.example('.main sub')
+    def command_main_sub(bot, trigger):
+        """A command with subcommand sub."""
+        pass
+
+    @module.commands('main other')
+    @module.example('.main other')
+    def command_main_other(bot, trigger):
+        """A command with subcommand other."""
+        pass
+
     @module.nickname_commands('info')
     @module.example('$nickname: info about this')
     def nick_command_info(bot, trigger):
@@ -364,6 +376,8 @@ def test_register_callables(tmpconfig):
     # prepare callables to be registered
     loader.clean_callable(rule_hello, tmpconfig)
     loader.clean_callable(command_do, tmpconfig)
+    loader.clean_callable(command_main_sub, tmpconfig)
+    loader.clean_callable(command_main_other, tmpconfig)
     loader.clean_callable(nick_command_info, tmpconfig)
     loader.clean_callable(action_command_tell, tmpconfig)
     loader.clean_callable(on_join, tmpconfig)
@@ -371,6 +385,8 @@ def test_register_callables(tmpconfig):
     callables = [
         rule_hello,
         command_do,
+        command_main_sub,
+        command_main_other,
         nick_command_info,
         action_command_tell,
         on_join,
@@ -383,7 +399,7 @@ def test_register_callables(tmpconfig):
     # register callables
     sopel.register_callables(callables)
 
-    # trigger rules
+    # trigger rule "hello"
     line = ':Foo!foo@example.com PRIVMSG #sopel :hello'
     pretrigger = trigger.PreTrigger(sopel.nick, line)
 
@@ -391,6 +407,7 @@ def test_register_callables(tmpconfig):
     assert len(matches) == 1
     assert matches[0][0].get_rule_label() == 'rule_hello'
 
+    # trigger command "do"
     line = ':Foo!foo@example.com PRIVMSG #sopel :.do'
     pretrigger = trigger.PreTrigger(sopel.nick, line)
 
@@ -398,6 +415,23 @@ def test_register_callables(tmpconfig):
     assert len(matches) == 1
     assert matches[0][0].get_rule_label() == 'do'
 
+    # trigger command with subcommand "main-sub"
+    line = ':Foo!foo@example.com PRIVMSG #sopel :.main sub'
+    pretrigger = trigger.PreTrigger(sopel.nick, line)
+
+    matches = sopel.rules.get_triggered_rules(sopel, pretrigger)
+    assert len(matches) == 1
+    assert matches[0][0].get_rule_label() == 'main-sub'
+
+    # trigger command with the other subcommand "main-other"
+    line = ':Foo!foo@example.com PRIVMSG #sopel :.main other'
+    pretrigger = trigger.PreTrigger(sopel.nick, line)
+
+    matches = sopel.rules.get_triggered_rules(sopel, pretrigger)
+    assert len(matches) == 1
+    assert matches[0][0].get_rule_label() == 'main-other'
+
+    # trigger nick command "info"
     line = ':Foo!foo@example.com PRIVMSG #sopel :TestBot: info'
     pretrigger = trigger.PreTrigger(sopel.nick, line)
 
@@ -405,6 +439,7 @@ def test_register_callables(tmpconfig):
     assert len(matches) == 1
     assert matches[0][0].get_rule_label() == 'info'
 
+    # trigger action command "tell"
     line = ':Foo!foo@example.com PRIVMSG #sopel :\x01ACTION tell\x01'
     pretrigger = trigger.PreTrigger(sopel.nick, line)
 
@@ -412,6 +447,7 @@ def test_register_callables(tmpconfig):
     assert len(matches) == 1
     assert matches[0][0].get_rule_label() == 'tell'
 
+    # trigger rules with event
     line = ':Foo!foo@example.com JOIN #Sopel'
     pretrigger = trigger.PreTrigger(sopel.nick, line)
 
@@ -421,17 +457,25 @@ def test_register_callables(tmpconfig):
 
     # check documentation
     assert sopel.command_groups == {
-        'testplugin': ['do', 'info']
+        'testplugin': ['do', 'main sub', 'main other', 'info']
     }
 
     assert sopel.doc == {
         'do': (
             ['The do command do nothing.'],
-            ['.do nothing']
+            ['.do nothing'],
         ),
         'info': (
             ['Ask Sopel to get some info about nothing.'],
-            ['TestBot: info about this']
+            ['TestBot: info about this'],
+        ),
+        'main sub': (
+            ['A command with subcommand sub.'],
+            ['.main sub'],
+        ),
+        'main other': (
+            ['A command with subcommand other.'],
+            ['.main other'],
         ),
     }
 

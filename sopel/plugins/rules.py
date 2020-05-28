@@ -853,7 +853,7 @@ class NamedRuleMixin(object):
 
         A named rule's label is it's name.
         """
-        return self._name
+        return self._name.replace(' ', '-')
 
     def has_alias(self, name):
         """Tell when ``name`` is one of the rule's aliases.

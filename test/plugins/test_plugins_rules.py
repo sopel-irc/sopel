@@ -1117,6 +1117,11 @@ def test_command_str():
     assert str(rule) == '<Command testplugin.hello []>'
 
 
+def test_command_str_subcommand():
+    rule = rules.Command('main sub', r'\.', plugin='testplugin')
+    assert str(rule) == '<Command testplugin.main-sub []>'
+
+
 def test_command_str_no_plugin():
     rule = rules.Command('hello', r'\.')
     assert str(rule) == '<Command (no-plugin).hello []>'
@@ -1134,6 +1139,11 @@ def test_command_str_alias():
 def test_command_get_rule_label(mockbot):
     rule = rules.Command('hello', r'\.')
     assert rule.get_rule_label() == 'hello'
+
+
+def test_command_get_rule_label_subcommand(mockbot):
+    rule = rules.Command('main sub', r'\.')
+    assert rule.get_rule_label() == 'main-sub'
 
 
 def test_command_get_usages():
@@ -1245,6 +1255,114 @@ def test_command_match_aliases(mockbot):
     assert not list(rule.match(mockbot, pretrigger))
 
 
+def test_command_match_subcommand(mockbot):
+    line = ':Foo!foo@example.com PRIVMSG #sopel :.main sub'
+    pretrigger = trigger.PreTrigger(mockbot.nick, line)
+
+    rule = rules.Command('main sub', r'\.')
+    matches = list(rule.match(mockbot, pretrigger))
+    assert len(matches) == 1, 'Exactly one match must be found'
+
+    match = matches[0]
+    assert match.group(0) == '.main sub'
+    assert match.group(1) == 'main sub'
+    assert match.group(2) is None
+    assert match.group(3) is None
+    assert match.group(4) is None
+    assert match.group(5) is None
+    assert match.group(6) is None
+
+
+def test_command_match_subcommand_args(mockbot):
+    line = (
+        ':Foo!foo@example.com PRIVMSG #sopel :'
+        '.main sub arg1 arg2 arg3 arg4 arg5'
+    )
+    pretrigger = trigger.PreTrigger(mockbot.nick, line)
+
+    rule = rules.Command('main sub', r'\.')
+    matches = list(rule.match(mockbot, pretrigger))
+    assert len(matches) == 1, 'Exactly one match must be found'
+
+    match = matches[0]
+    assert match.group(0) == '.main sub arg1 arg2 arg3 arg4 arg5'
+    assert match.group(1) == 'main sub', (
+        'The command match must include the subcommand')
+    assert match.group(2) == 'arg1 arg2 arg3 arg4 arg5', (
+        'The global arg list must include everything else')
+    # group 3-6 must match the 4 first arguments
+    assert match.group(3) == 'arg1'
+    assert match.group(4) == 'arg2'
+    assert match.group(5) == 'arg3'
+    assert match.group(6) == 'arg4'
+
+    # command regex doesn't match more than 4 extra args
+    with pytest.raises(IndexError):
+        match.group(7)
+
+
+def test_command_match_subcommand_aliases(mockbot):
+    line = ':Foo!foo@example.com PRIVMSG #sopel :.main sub arg1'
+    pretrigger = trigger.PreTrigger(mockbot.nick, line)
+
+    rule = rules.Command('main', r'\.', aliases=['main sub', 'main other'])
+    matches = list(rule.match(mockbot, pretrigger))
+    assert len(matches) == 1, 'Exactly one match must be found'
+
+    match = matches[0]
+    assert match.group(0) == '.main sub arg1'
+    assert match.group(1) == 'main', (
+        'Because the name is `main`, it has priority')
+    assert match.group(2) == 'sub arg1'
+    assert match.group(3) == 'sub'
+    assert match.group(4) == 'arg1'
+    assert match.group(5) is None
+    assert match.group(6) is None
+
+    # still, no more than 4 extra args
+    with pytest.raises(IndexError):
+        match.group(7)
+
+    # reverse order
+    rule = rules.Command('main sub', r'\.', aliases=['main', 'main other'])
+    matches = list(rule.match(mockbot, pretrigger))
+    assert len(matches) == 1, 'Exactly one match must be found'
+
+    match = matches[0]
+    assert match.group(0) == '.main sub arg1'
+    assert match.group(1) == 'main sub', (
+        'Because the name is now `main sub`, it has priority')
+    assert match.group(2) == 'arg1'
+    assert match.group(3) == 'arg1'
+    assert match.group(4) is None
+    assert match.group(5) is None
+    assert match.group(6) is None
+
+    # still, no more than 4 extra args
+    with pytest.raises(IndexError):
+        match.group(7)
+
+    # check the "main other", defined as the *last* alias
+    line = ':Foo!foo@example.com PRIVMSG #sopel :.main other arg1'
+    pretrigger = trigger.PreTrigger(mockbot.nick, line)
+    matches = list(rule.match(mockbot, pretrigger))
+    assert len(matches) == 1, 'Exactly one match must be found'
+
+    match = matches[0]
+    assert match.group(0) == '.main other arg1'
+    assert match.group(1) == 'main', (
+        'Because the alias `other` is last, alias `main` has priority')
+    assert match.group(2) == 'other arg1'
+    assert match.group(3) == 'other'
+    assert match.group(4) == 'arg1'
+    assert match.group(5) is None
+    assert match.group(6) is None
+
+    # still, no more than 4 extra args
+    with pytest.raises(IndexError):
+        match.group(7)
+
+
 def test_command_from_callable(mockbot):
     # prepare callable
     @module.commands('hello', 'hi', 'hey')
@@ -1297,6 +1415,89 @@ def test_command_from_callable(mockbot):
     pretrigger = trigger.PreTrigger(mockbot.nick, line)
     results = list(rule.match(mockbot, pretrigger))
     assert not results
+
+
+def test_command_from_callable_subcommand(mockbot):
+    # prepare callable
+    @module.commands('main sub')
+    def handler(wrapped, trigger):
+        wrapped.reply('Hi!')
+
+    loader.clean_callable(handler, mockbot.settings)
+
+    # create rule from a clean callable
+    rule = rules.Command.from_callable(mockbot.settings, handler)
+
+    # match on ".main sub"
+    line = ':Foo!foo@example.com PRIVMSG #sopel :.main sub'
+    pretrigger = trigger.PreTrigger(mockbot.nick, line)
+    results = list(rule.match(mockbot, pretrigger))
+
+    assert len(results) == 1, 'Exactly 1 command must match'
+    result = results[0]
+    assert result.group(0) == '.main sub'
+    assert result.group(1) == 'main sub'
+
+    # does not match on ".main"
+    line = ':Foo!foo@example.com PRIVMSG #sopel :.main'
+    pretrigger = trigger.PreTrigger(mockbot.nick, line)
+    results = list(rule.match(mockbot, pretrigger))
+    assert not results
+
+
+def test_command_from_callable_subcommand_aliases(mockbot):
+    # prepare callable
+    @module.commands('main', 'main sub')
+    @module.commands('reverse sub', 'reverse')
+    def handler(wrapped, trigger):
+        wrapped.reply('Hi!')
+
+    loader.clean_callable(handler, mockbot.settings)
+
+    # create rule from a clean callable
+    rule = rules.Command.from_callable(mockbot.settings, handler)
+
+    # match on ".main sub": .main matches first
+    line = ':Foo!foo@example.com PRIVMSG #sopel :.main sub'
+    pretrigger = trigger.PreTrigger(mockbot.nick, line)
+    results = list(rule.match(mockbot, pretrigger))
+
+    assert len(results) == 1, 'Exactly 1 command must match'
+    result = results[0]
+    assert result.group(0) == '.main sub'
+    assert result.group(1) == 'main', (
+        'Because "main" is declared first, it must match first')
+
+    # match on ".main"
+    line = ':Foo!foo@example.com PRIVMSG #sopel :.main'
+    pretrigger = trigger.PreTrigger(mockbot.nick, line)
+    results = list(rule.match(mockbot, pretrigger))
+
+    assert len(results) == 1, 'Exactly 1 command must match'
+    result = results[0]
+    assert result.group(0) == '.main'
+    assert result.group(1) == 'main'
+
+    # match on ".reverse sub": as declared first, it'll take priority
+    line = ':Foo!foo@example.com PRIVMSG #sopel :.reverse sub'
+    pretrigger = trigger.PreTrigger(mockbot.nick, line)
+    results = list(rule.match(mockbot, pretrigger))
+
+    assert len(results) == 1, 'Exactly 1 command must match'
+    result = results[0]
+    assert result.group(0) == '.reverse sub'
+    assert result.group(1) == 'reverse sub', (
+        'Because "reverse sub" is declared first, it must match first')
+
+    # match on ".main"
+    line = ':Foo!foo@example.com PRIVMSG #sopel :.reverse'
+    pretrigger = trigger.PreTrigger(mockbot.nick, line)
+    results = list(rule.match(mockbot, pretrigger))
+
+    assert len(results) == 1, 'Exactly 1 command must match'
+    result = results[0]
+    assert result.group(0) == '.reverse'
+    assert result.group(1) == 'reverse'
 
 
 def test_command_from_callable_invalid(mockbot):
