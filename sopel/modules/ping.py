@@ -9,7 +9,7 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 import random
 
-from sopel.module import priority, rule, thread
+from sopel.module import commands, priority, rule, thread
 
 
 @rule(r'(?i)(hi|hello|hey),? $nickname[ \t]*$')
@@ -29,3 +29,9 @@ def rude(bot, trigger):
 @thread(False)
 def interjection(bot, trigger):
     bot.say(trigger.nick + '!')
+
+
+@commands('ping')
+def ping(bot, trigger):
+    """Reply to ping command."""
+    bot.reply('Pong!')
