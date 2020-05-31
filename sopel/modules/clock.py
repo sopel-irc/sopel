@@ -196,9 +196,11 @@ def update_user_format(bot, trigger):
         # New format doesn't work. Revert save in database.
         bot.db.set_nick_value(trigger.nick, 'time_format', old_format)
         return
+
+    set_command = '%ssettz' % bot.settings.core.help_prefix
     bot.reply("Got it. Your time will now appear as %s. (If the "
-              "timezone is wrong, you might try the settz command)"
-              % timef)
+              "timezone is wrong, you might try the %s command)"
+              % (timef, set_command))
 
 
 @module.commands('gettimeformat', 'gettf')
@@ -299,10 +301,14 @@ def update_channel_format(bot, trigger):
         bot.db.set_channel_value(trigger.sender, 'time_format', old_format)
         return
     bot.db.set_channel_value(trigger.sender, 'time_format', tformat)
+
+    help_prefix = bot.settings.core.help_prefix
+    set_command = '%ssettz' % help_prefix
+    channel_command = '%schanneltz' % help_prefix
     bot.reply("Got it. Times in this channel  will now appear as %s "
               "unless a user has their own format set. (If the timezone"
-              " is wrong, you might try the settz and channeltz "
-              "commands)" % timef)
+              " is wrong, you might try the %s and %s "
+              "commands)" % (timef, set_command, channel_command))
 
 
 @module.commands('getchanneltimeformat', 'getctf')
