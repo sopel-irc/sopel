@@ -1,6 +1,6 @@
 # coding=utf-8
-"""
-clock.py - Sopel Clock Module
+"""clock.py - Sopel Clock Plugin
+
 Copyright 2008-9, Sean B. Palmer, inamidst.com
 Copyright 2012, Elsie Powell, embolalia.com
 Licensed under the Eiffel Forum License 2.
@@ -20,9 +20,10 @@ from sopel.tools.time import (
 
 
 @module.commands('t', 'time')
-@module.example('.t America/New_York')
-@module.example('.t Exirel')
-@module.example('.t #sopel')
+@module.example('.t America/New_York', user_help=True)
+@module.example('.t Exirel', user_help=True)
+@module.example('.t #sopel', user_help=True)
+@module.example('.t', user_help=True)
 def f_time(bot, trigger):
     """Return the current time.
 
@@ -33,11 +34,7 @@ def f_time(bot, trigger):
     it will complain. If nothing can be found, it'll complain that the argument
     is not a valid timezone.
 
-    .. seealso::
-
-        Function :func:`~sopel.tools.time.format_time` is used to format
-        the current datetime according to the timezone (if found).
-
+    The format used can be set with the ``settf`` or ``setctf`` commands.
     """
     argument = trigger.group(2)
 
@@ -98,7 +95,7 @@ def f_time(bot, trigger):
 def f_time_zone(bot, trigger):
     """Return the current time in a timezone.
 
-    Unlike the ``.t`` command, it requires an argument, and that argument
+    Unlike the ``time`` command, it requires an argument, and that argument
     must be a valid timezone.
     """
     argument = trigger.group(2)
@@ -151,9 +148,13 @@ def update_user(bot, trigger):
 
 
 @module.commands('gettz', 'gettimezone')
-@module.example('.gettz [nick]')
+@module.example('.gettz Exirel', user_help=True)
+@module.example('.gettz', user_help=True)
 def get_user_tz(bot, trigger):
-    """Gets a user's preferred time zone; will show yours if no user specified."""
+    """Gets a user's preferred time zone.
+
+    It will show yours if no user specified.
+    """
     nick = trigger.group(2)
     if not nick:
         nick = trigger.nick
@@ -170,9 +171,10 @@ def get_user_tz(bot, trigger):
 @module.commands('settimeformat', 'settf')
 @module.example('.settf %Y-%m-%dT%T%z')
 def update_user_format(bot, trigger):
-    """
-    Sets your preferred format for time. Uses the standard strftime format. You
-    can use <http://strftime.net> or your favorite search engine to learn more.
+    """Sets your preferred format for time.
+
+    Uses the standard strftime format. You can use <http://strftime.net> or
+    your favorite search engine to learn more.
     """
     tformat = trigger.group(2)
     if not tformat:
@@ -204,9 +206,13 @@ def update_user_format(bot, trigger):
 
 
 @module.commands('gettimeformat', 'gettf')
-@module.example('.gettf [nick]')
+@module.example('.gettf Exirel', user_help=True)
+@module.example('.gettf', user_help=True)
 def get_user_format(bot, trigger):
-    """Gets a user's preferred time format; will show yours if no user specified."""
+    """Gets a user's preferred time format.
+
+    It will show yours if no user specified.
+    """
     nick = trigger.group(2)
     if not nick:
         nick = trigger.nick
@@ -226,7 +232,7 @@ def get_user_format(bot, trigger):
 @module.example('.setctz America/New_York')
 @module.require_privilege(module.OP, message='Changing the channel timezone requires OP privileges.')
 def update_channel(bot, trigger):
-    """Set the preferred timezone for the channel."""
+    """Set the preferred timezone for the current channel."""
     argument = trigger.group(2)
     if not argument:
         bot.reply("What timezone do you want to set? Try one from "
@@ -252,11 +258,12 @@ def update_channel(bot, trigger):
 
 
 @module.commands('getchanneltz', 'getctz')
-@module.example('.getctz [channel]')
+@module.example('.getctz #sopel', user_help=True)
+@module.example('.getctz', user_help=True)
 def get_channel_tz(bot, trigger):
-    """
-    Gets the channel's preferred timezone; returns the current channel's
-    if no channel name is given.
+    """Gets the channel's preferred timezone.
+
+    It returns the current channel's if no channel name is given.
     """
     channel = trigger.group(2)
     if not channel:
@@ -275,9 +282,10 @@ def get_channel_tz(bot, trigger):
 @module.example('.setctf %Y-%m-%dT%T%z')
 @module.require_privilege(module.OP)
 def update_channel_format(bot, trigger):
-    """
-    Sets your preferred format for time. Uses the standard strftime format. You
-    can use <http://strftime.net> or your favorite search engine to learn more.
+    """Sets your preferred format for time.
+
+    Uses the standard strftime format. You can use <http://strftime.net> or
+    your favorite search engine to learn more.
     """
     tformat = trigger.group(2)
     if not tformat:
@@ -312,13 +320,13 @@ def update_channel_format(bot, trigger):
 
 
 @module.commands('getchanneltimeformat', 'getctf')
-@module.example('.getctf [channel]')
+@module.example('.getctf #sopel', user_help=True)
+@module.example('.getctf', user_help=True)
 def get_channel_format(bot, trigger):
-    """
-    Gets the channel's preferred time format; will return current channel's if
-    no channel name is given.
-    """
+    """Gets the channel's preferred time format
 
+    It returns the current channel's if no channel name is given.
+    """
     channel = trigger.group(2)
     if not channel:
         channel = trigger.sender
