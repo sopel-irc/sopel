@@ -241,10 +241,8 @@ def hold_ground(bot, trigger):
     WARNING: This may not be needed and could cause problems if Sopel becomes
     annoying. Please use this with caution.
     """
-    if bot.config.admin.hold_ground:
-        channel = trigger.sender
-        if trigger.args[1] == bot.nick:
-            bot.join(channel)
+    if bot.config.admin.hold_ground and bot.nick == trigger.args[1]:
+        bot.join(trigger.sender)
 
 
 @sopel.module.require_privmsg
