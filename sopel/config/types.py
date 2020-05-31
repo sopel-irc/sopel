@@ -26,6 +26,7 @@ As an example, if one wanted to define the ``[spam]`` section as having an
 
 from __future__ import absolute_import, division, print_function, unicode_literals
 
+import getpass
 import os.path
 import re
 import sys
@@ -83,7 +84,7 @@ class StaticSection(object):
         not the attribute's default.
         """
         clazz = getattr(self.__class__, name)
-        if default is NO_DEFAULT:
+        if default is NO_DEFAULT and not clazz.is_secret:
             try:
                 default = getattr(self, name)
             except AttributeError:
@@ -111,27 +112,60 @@ class BaseValidated(object):
     :param str name: the attribute name to use in the config file
     :param default: the value to be returned if the setting has no value
                     (optional; defaults to :obj:`None`)
-    :type default: str
+    :type default: mixed
+    :param bool is_secret: tell if the attribute is secret/a password
+                           (optional; defaults to ``False``)
 
     ``default`` also can be set to :const:`sopel.config.types.NO_DEFAULT`, if
     the value *must* be configured by the user (i.e. there is no suitable
     default value). Trying to read an empty ``NO_DEFAULT`` value will raise
     :class:`AttributeError`.
     """
-    def __init__(self, name, default=None):
+    def __init__(self, name, default=None, is_secret=False):
         self.name = name
+        """Name of the attribute."""
         self.default = default
+        """Default value for this attribute.
+
+        If not specified, the attribute's default value will be ``None``.
+        """
+        self.is_secret = bool(is_secret)
+        """Tell if the attribute is secret/a password.
+
+        The default value is ``False`` (not secret).
+
+        Sopel's configuration can contain passwords, secret keys, and other
+        private information that must be treated as sensitive data. Such
+        options should be marked as "secret" with this attribute.
+        """
 
     def configure(self, prompt, default, parent, section_name):
-        """
-        With the ``prompt`` and ``default``, parse and return a value from
-        terminal.
+        """Parse and return a value from user's input.
+
+        :param str prompt: text to show the user
+        :param mixed default: default value used if no input given
+        :param parent: usually the parent Config object
+        :type parent: :class:`~sopel.config.Config`
+        :param str section_name: the name of the containing section
+
+        This method displays the ``prompt`` and waits for user's input on the
+        terminal. If no input is provided (i.e. the user just presses "Enter"),
+        the ``default`` value is returned instead.
+
+        If :attr:`.is_secret` is ``True``, the input will be hidden, using the
+        built-in :func:`~getpass.getpass` function.
         """
         if default is not NO_DEFAULT and default is not None:
             prompt = '{} [{}]'.format(prompt, default)
-        value = get_input(prompt + ' ')
+
+        if self.is_secret:
+            value = getpass.getpass(prompt + ' (hidden input) ')
+        else:
+            value = get_input(prompt + ' ')
+
         if not value and default is NO_DEFAULT:
             raise ValueError("You must provide a value for this option.")
+
         value = value or default
         return self.parse(value)
 
@@ -208,9 +242,17 @@ class ValidatedAttribute(BaseValidated):
                       that can be written to the config file safely (optional;
                       defaults to :class:`str`)
     :type serialize: :term:`function`
+    :param bool is_secret: ``True`` when the attribute should be considered
+                           a secret, like a password (default to ``False``)
     """
-    def __init__(self, name, parse=None, serialize=None, default=None):
-        super(ValidatedAttribute, self).__init__(name, default=default)
+    def __init__(self,
+                 name,
+                 parse=None,
+                 serialize=None,
+                 default=None,
+                 is_secret=False):
+        super(ValidatedAttribute, self).__init__(
+            name, default=default, is_secret=is_secret)
         if parse == bool:
             parse = _parse_boolean
             if not serialize or serialize == bool:
@@ -235,14 +277,26 @@ class ValidatedAttribute(BaseValidated):
         return value
 
     def configure(self, prompt, default, parent, section_name):
-        """
-        With the ``prompt`` and ``default``, parse and return a value from
-        terminal.
-        """
         if self.parse == _parse_boolean:
             prompt += ' (y/n)'
             default = 'y' if default else 'n'
         return super(ValidatedAttribute, self).configure(prompt, default, parent, section_name)
+
+
+class SecretAttribute(ValidatedAttribute):
+    """A config attribute containing a value which must be kept secret.
+
+    This attribute is always considered to be secret/sensitive data, but
+    otherwise behaves like other any option.
+    """
+    def __init__(self, name, parse=None, serialize=None, default=None):
+        super(SecretAttribute, self).__init__(
+            name,
+            parse=parse,
+            serialize=serialize,
+            default=default,
+            is_secret=True,
+        )
 
 
 class ListAttribute(BaseValidated):
