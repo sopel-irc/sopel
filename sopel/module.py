@@ -22,6 +22,7 @@ __all__ = [
     'echo',
     'event',
     'example',
+    'find',
     'intent',
     'interval',
     'nickname_commands',
@@ -178,8 +179,8 @@ def rule(*patterns):
 
     .. note::
 
-        A regex rule can match only once per line. A future version of Sopel
-        will (hopefully) remove this limitation.
+        A regex rule can match only once per line. Use the :func:`find`
+        decorator to match multiple times.
 
     .. note::
 
@@ -194,6 +195,56 @@ def rule(*patterns):
         for value in patterns:
             if value not in function.rule:
                 function.rule.append(value)
+        return function
+
+    return add_attribute
+
+
+def find(*patterns):
+    """Decorate a function to be called each time patterns is found in a line.
+
+    :param str patterns: one or more regular expression(s)
+
+    Each argument is a regular expression which will trigger the function::
+
+        @find('hello', 'here')
+            # will trigger once on "hello you"
+            # will trigger twice on "hello here"
+            # will trigger once on "I'm right here!"
+
+    This decorator can be used multiple times to add more rules::
+
+        @find('here')
+        @find('hello')
+            # will trigger once on "hello you"
+            # will trigger twice on "hello here"
+            # will trigger once on "I'm right here!"
+
+    If the Sopel instance is in a channel, or sent a ``PRIVMSG``, the function
+    will execute for each time in a string said matches the expression.
+
+    Inside the regular expression, some special directives can be used.
+    ``$nick`` will be replaced with the nick of the bot and ``,`` or ``:,`` and
+    ``$nickname`` will be replaced with the nick of the bot::
+
+        @find('$nickname')
+            # will trigger for each time the bot's nick is in a trigger
+
+    .. versionadded:: 7.1
+
+    .. note::
+
+        The regex rule will match for each non-overlapping matches, from left
+        to right, and the function will execute for each of these matches. To
+        match only once per line, use the :func:`rule` decorator instead.
+
+    """
+    def add_attribute(function):
+        if not hasattr(function, "find_rules"):
+            function.find_rules = []
+        for value in patterns:
+            if value not in function.find_rules:
+                function.find_rules.append(value)
         return function
 
     return add_attribute

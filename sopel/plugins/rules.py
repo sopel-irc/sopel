@@ -31,7 +31,14 @@ from sopel.config.core_section import (
     COMMAND_DEFAULT_HELP_PREFIX, COMMAND_DEFAULT_PREFIX)
 
 
-__all__ = ['Manager', 'Rule', 'Command', 'NickCommand', 'ActionCommand']
+__all__ = [
+    'Manager',
+    'Rule',
+    'FindRule',
+    'Command',
+    'NickCommand',
+    'ActionCommand',
+]
 
 LOGGER = logging.getLogger(__name__)
 
@@ -699,7 +706,8 @@ class Rule(AbstractRule):
 
         plugin = self.get_plugin_name() or '(no-plugin)'
 
-        return '<Rule %s.%s (%d)>' % (plugin, label, len(self._regexes))
+        return '<%s %s.%s (%d)>' % (
+            self.__class__.__name__, plugin, label, len(self._regexes))
 
     def get_plugin_name(self):
         return self._plugin_name
@@ -1213,3 +1221,41 @@ class ActionCommand(NamedRuleMixin, Rule):
         :rtype: bool
         """
         return bool(intent and self.INTENT_REGEX.match(intent))
+
+
+class FindRule(Rule):
+    """Anonymous find rule definition.
+
+    A find rule is like other anonymous rule with a twist: instead of maching
+    only once per IRC line, a find rule will execute for each non-overlapping
+    match for each of its regular expressions.
+
+    For example, to match for each word starting with the h letter in a line,
+    you can use the pattern ``h\\w+``:
+
+    .. code-block:: irc
+
+        <user> hello here
+        <Bot> Found the word "hello"
+        <Bot> Found the word "here"
+        <user> sopelunker, how are you?
+        <Bot> Found the word "how"
+
+    .. seealso::
+
+        This rule uses :func:`re.finditer`. To know more about how it works,
+        see the official Python documentation.
+
+    """
+    @classmethod
+    def from_callable(cls, settings, handler):
+        regexes = tuple(handler.find_rules)
+        kwargs = cls.kwargs_from_callable(handler)
+        kwargs['handler'] = handler
+
+        return cls(regexes, **kwargs)
+
+    def parse(self, text):
+        for regex in self._regexes:
+            for match in regex.finditer(text):
+                yield match

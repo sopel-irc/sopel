@@ -82,7 +82,16 @@ def clean_callable(func, config):
     if hasattr(func, 'rule'):
         if isinstance(func.rule, basestring):
             func.rule = [func.rule]
-        func.rule = [compile_rule(nick, rule, alias_nicks) for rule in func.rule]
+        func.rule = [
+            compile_rule(nick, rule, alias_nicks)
+            for rule in func.rule
+        ]
+
+    if hasattr(func, 'find_rules'):
+        func.find_rules = [
+            compile_rule(nick, rule, alias_nicks)
+            for rule in func.find_rules
+        ]
 
     if any(hasattr(func, attr) for attr in ['commands', 'nickname_commands', 'action_commands']):
         if hasattr(func, 'example'):
@@ -129,6 +138,7 @@ def is_limitable(obj):
 
     allowed_attrs = (
         'rule',
+        'find_rules',
         'event',
         'intents',
         'commands',
@@ -165,6 +175,7 @@ def is_triggerable(obj):
 
     allowed_attrs = (
         'rule',
+        'find_rules',
         'event',
         'intents',
         'commands',
