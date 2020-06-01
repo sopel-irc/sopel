@@ -203,6 +203,7 @@ def test_clean_callable_default(tmpconfig, func):
     assert not hasattr(func, 'event')
     assert not hasattr(func, 'rule')
     assert not hasattr(func, 'find_rules')
+    assert not hasattr(func, 'search_rules')
     assert not hasattr(func, 'commands')
     assert not hasattr(func, 'nickname_commands')
     assert not hasattr(func, 'action_commands')
@@ -407,6 +408,50 @@ def test_clean_callable_find_rules(tmpconfig, func):
     assert hasattr(func, 'find_rules')
     assert len(func.find_rules) == 1
     assert regex in func.find_rules
+    assert not hasattr(func, 'rule')
+
+    assert func.unblockable is False
+    assert func.priority == 'medium'
+    assert func.thread is True
+    assert func.rate == 0
+    assert func.channel_rate == 0
+    assert func.global_rate == 0
+
+
+def test_clean_callable_search_rules(tmpconfig, func):
+    setattr(func, 'search_rules', [r'abc'])
+    loader.clean_callable(func, tmpconfig)
+
+    assert hasattr(func, 'search_rules')
+    assert len(func.search_rules) == 1
+    assert not hasattr(func, 'rule')
+
+    # Test the regex is compiled properly
+    regex = func.search_rules[0]
+    assert regex.search('abc')
+    assert regex.search('xyzabc')
+    assert regex.search('abcd')
+    assert not regex.search('adbc')
+
+    # Default values
+    assert hasattr(func, 'unblockable')
+    assert func.unblockable is False
+    assert hasattr(func, 'priority')
+    assert func.priority == 'medium'
+    assert hasattr(func, 'thread')
+    assert func.thread is True
+    assert hasattr(func, 'rate')
+    assert func.rate == 0
+    assert hasattr(func, 'channel_rate')
+    assert func.channel_rate == 0
+    assert hasattr(func, 'global_rate')
+    assert func.global_rate == 0
+
+    # idempotency
+    loader.clean_callable(func, tmpconfig)
+    assert hasattr(func, 'search_rules')
+    assert len(func.search_rules) == 1
+    assert regex in func.search_rules
     assert not hasattr(func, 'rule')
 
     assert func.unblockable is False

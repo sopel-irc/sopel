@@ -146,6 +146,29 @@ def test_find_multiple():
     assert mock.find_rules == [r'\w+', '.*', r'\d+']
 
 
+def test_search():
+    @module.search('.*')
+    def mock(bot, trigger, match):
+        return True
+    assert mock.search_rules == ['.*']
+
+
+def test_search_args():
+    @module.search('.*', r'\d+')
+    def mock(bot, trigger, match):
+        return True
+    assert mock.search_rules == ['.*', r'\d+']
+
+
+def test_search_multiple():
+    @module.search('.*', r'\d+')
+    @module.search('.*')
+    @module.search(r'\w+')
+    def mock(bot, trigger, match):
+        return True
+    assert mock.search_rules == [r'\w+', '.*', r'\d+']
+
+
 def test_thread():
     @module.thread(True)
     def mock(bot, trigger, match):

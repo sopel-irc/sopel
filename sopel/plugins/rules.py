@@ -35,6 +35,7 @@ __all__ = [
     'Manager',
     'Rule',
     'FindRule',
+    'SearchRule',
     'Command',
     'NickCommand',
     'ActionCommand',
@@ -1258,4 +1259,45 @@ class FindRule(Rule):
     def parse(self, text):
         for regex in self._regexes:
             for match in regex.finditer(text):
+                yield match
+
+
+class SearchRule(Rule):
+    """Anonymous search rule definition.
+
+    An anonymous search rule (or simply "a search rule") is like anonymous
+    rules with a twist: it will execute exactly once per regular expression
+    that match any part of a line, not just from the start.
+
+    For example, to search if any word starts with the ``h`` letter in a line,
+    you can use the pattern ``h\\w+``:
+
+    .. code-block:: irc
+
+        <user> hello here
+        <Bot> Found the word "hello"
+        <user> sopelunker, how are you?
+        <Bot> Found the word "how"
+
+    The match object it returns contains the first element that matches the
+    expression in the line.
+
+    .. seealso::
+
+        This rule uses :func:`re.search`. To know more about how it works,
+        see the official Python documentation.
+
+    """
+    @classmethod
+    def from_callable(cls, settings, handler):
+        regexes = tuple(handler.search_rules)
+        kwargs = cls.kwargs_from_callable(handler)
+        kwargs['handler'] = handler
+
+        return cls(regexes, **kwargs)
+
+    def parse(self, text):
+        for regex in self._regexes:
+            match = regex.search(text)
+            if match:
                 yield match

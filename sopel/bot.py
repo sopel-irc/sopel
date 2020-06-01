@@ -448,10 +448,11 @@ class Sopel(irc.AbstractBot):
         for callbl in callables:
             rules = getattr(callbl, 'rule', [])
             find_rules = getattr(callbl, 'find_rules', [])
+            search_rules = getattr(callbl, 'search_rules', [])
             commands = getattr(callbl, 'commands', [])
             nick_commands = getattr(callbl, 'nickname_commands', [])
             action_commands = getattr(callbl, 'action_commands', [])
-            is_rule = any([rules, find_rules])
+            is_rule = any([rules, find_rules, search_rules])
             is_command = any([commands, nick_commands, action_commands])
 
             if rules:
@@ -460,6 +461,10 @@ class Sopel(irc.AbstractBot):
 
             if find_rules:
                 rule = plugin_rules.FindRule.from_callable(settings, callbl)
+                self._rules_manager.register(rule)
+
+            if search_rules:
+                rule = plugin_rules.SearchRule.from_callable(settings, callbl)
                 self._rules_manager.register(rule)
 
             if commands:

@@ -93,6 +93,12 @@ def clean_callable(func, config):
             for rule in func.find_rules
         ]
 
+    if hasattr(func, 'search_rules'):
+        func.search_rules = [
+            compile_rule(nick, rule, alias_nicks)
+            for rule in func.search_rules
+        ]
+
     if any(hasattr(func, attr) for attr in ['commands', 'nickname_commands', 'action_commands']):
         if hasattr(func, 'example'):
             # If no examples are flagged as user-facing, just show the first one like Sopel<7.0 did
@@ -139,6 +145,7 @@ def is_limitable(obj):
     allowed_attrs = (
         'rule',
         'find_rules',
+        'search_rules',
         'event',
         'intents',
         'commands',
@@ -176,6 +183,7 @@ def is_triggerable(obj):
     allowed_attrs = (
         'rule',
         'find_rules',
+        'search_rules',
         'event',
         'intents',
         'commands',
