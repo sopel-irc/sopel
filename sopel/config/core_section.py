@@ -578,18 +578,24 @@ class CoreSection(StaticSection):
     """A list of hostnames which Sopel should ignore.
 
     Messages from any user whose connection hostname matches one of these
-    values will be ignored. Both :ref:`regular expression syntax <re-syntax>`
-    and exact match are supported:
+    values will be ignored. :ref:`Regular expression syntax <re-syntax>`
+    is supported, so remember to escape special characters:
 
     .. code-block:: ini
 
         host_blocks =
-            exact-match.com
-            .*\\.regex-domain\\.com
+            (.+\\.)*domain\\.com
 
     .. seealso::
 
         The :attr:`nick_blocks` list can be used to block users by their nick.
+
+    .. note::
+
+        We are working on a better block system; see `issue #1355`__ for more
+        information and update.
+
+    .. __: https://github.com/sopel-irc/sopel/issues/1355
 
     """
 
@@ -816,8 +822,8 @@ class CoreSection(StaticSection):
     """A list of nicks which Sopel should ignore.
 
     Messages from any user whose nickname matches one of these values will be
-    ignored. Both :ref:`regular expression syntax <re-syntax>` and exact match
-    are supported:
+    ignored. :ref:`Regular expression syntax <re-syntax>` is supported, so
+    remember to escape special characters:
 
     .. code-block:: ini
 
@@ -828,6 +834,13 @@ class CoreSection(StaticSection):
     .. seealso::
 
         The :attr:`host_blocks` list can be used to block users by their host.
+
+    .. note::
+
+        We are working on a better block system; see `issue #1355`__ for more
+        information and update.
+
+    .. __: https://github.com/sopel-irc/sopel/issues/1355
 
     """
 
