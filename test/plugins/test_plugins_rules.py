@@ -1628,6 +1628,21 @@ def test_command_from_callable_invalid(mockbot):
         rules.Command.from_callable(mockbot.settings, handler)
 
 
+def test_command_escape_name():
+    rule = rules.Command('hello', r'\.', plugin='testplugin')
+
+    assert rule.escape_name('hello') == 'hello'
+    assert rule.escape_name('hello world') == r'hello\ world'
+    assert rule.escape_name(r'hello\ world') == r'hello\ world', (
+        'Valid pattern must not be escaped')
+    assert rule.escape_name(r'.*') == r'.*', (
+        'Valid pattern must not be escaped')
+    assert rule.escape_name(r'a[bc]d') == r'a[bc]d', (
+        'Valid pattern must not be escaped')
+    assert rule.escape_name(r'hello(') == r'hello\(', (
+        'Invalid pattern must be escaped')
+
+
 # -----------------------------------------------------------------------------
 # test for :class:`sopel.plugins.rules.NickCommand`
 
