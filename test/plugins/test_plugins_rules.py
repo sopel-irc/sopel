@@ -176,7 +176,8 @@ def test_manager_unregister_plugin(mockbot):
     assert len(items) == 4, 'All 4 rules must match'
     assert manager.has_command('hello')
 
-    manager.unregister_plugin('plugin_a')
+    result = manager.unregister_plugin('plugin_a')
+    assert result == 2
     assert manager.has_rule('the_rule')
     assert not manager.has_rule('the_rule', plugin='plugin_a')
     assert manager.has_command('hello')
@@ -186,6 +187,24 @@ def test_manager_unregister_plugin(mockbot):
     assert len(items) == 2, 'Only 2 must match by now'
     assert b_rule in items[0]
     assert b_command in items[1]
+
+
+def test_manager_unregister_plugin_unknown():
+    regex = re.compile('.*')
+    a_rule = rules.Rule([regex], plugin='plugin_a', label='the_rule')
+    a_command = rules.Command('hello', prefix=r'\.', plugin='plugin_a')
+
+    manager = rules.Manager()
+    manager.register(a_rule)
+    manager.register_command(a_command)
+
+    # remove an unknown plugin
+    result = manager.unregister_plugin('unknown')
+
+    # everything is fine
+    assert result == 0
+    assert manager.has_command('hello')
+    assert manager.has_command('hello', plugin='plugin_a')
 
 
 def test_manager_rule_trigger_on_event(mockbot):

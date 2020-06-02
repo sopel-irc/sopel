@@ -118,6 +118,8 @@ class Manager(object):
         """Unregister all the rules from a plugin.
 
         :param str plugin_name: Name of the plugin to remove
+        :return: The number of rules unregistered for this plugin
+        :rtype: int
 
         All rules, commands, nick commands, and action commands of that plugin
         will be removed from the manager.
@@ -132,16 +134,16 @@ class Manager(object):
         unregistered_rules = 0
         with self._register_lock:
             for registry in registries:
-                try:
-                    del registry[plugin_name]
-                    unregistered_rules = unregistered_rules + 1
-                except KeyError:
-                    pass
+                rules_count = len(registry[plugin_name])
+                del registry[plugin_name]
+                unregistered_rules = unregistered_rules + rules_count
 
         LOGGER.debug(
             '[%s] Successfully unregistered %d rules',
             plugin_name,
             unregistered_rules)
+
+        return unregistered_rules
 
     def register(self, rule):
         """Register a plugin rule.
