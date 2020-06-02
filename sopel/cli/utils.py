@@ -266,6 +266,9 @@ def add_common_arguments(parser):
     ``config`` and ``configdir`` options that can be used to find and load
     Sopel's settings.
 
+    The default value for ``config`` is either the value of the environment
+    variable ``SOPEL_CONFIG``, or the string ``default``.
+
     .. seealso::
 
         The :func:`sopel.cli.utils.load_settings` function uses an ``options``
@@ -274,15 +277,17 @@ def add_common_arguments(parser):
     """
     parser.add_argument(
         '-c', '--config',
-        default='default',
+        default=os.environ.get('SOPEL_CONFIG') or 'default',
         metavar='filename',
         dest='config',
         help=inspect.cleandoc("""
             Use a specific configuration file.
             A config name can be given and the configuration file will be
-            found in Sopel\'s homedir (defaults to ``~/.sopel/default.cfg``).
+            found in Sopel's homedir (defaults to ``~/.sopel/default.cfg``).
             An absolute pathname can be provided instead to use an
             arbitrary location.
+            When the ``SOPEL_CONFIG`` environment variable is set and not
+            empty, it is used as the default value.
         """))
     parser.add_argument(
         '--config-dir',
@@ -302,14 +307,14 @@ def load_settings(options):
     :raise sopel.config.ConfigurationError: raised when configuration is
                                             invalid
 
-    This function loads Sopel's settings from one of these sources:
+    This function loads Sopel's settings from ``options.config``. This option's
+    value should be from one of these sources:
 
-    * value of ``options.config``, if given,
-    * ``SOPEL_CONFIG`` environment variable, if no option is given,
-    * otherwise the ``default`` configuration is loaded,
+    * given by the command line argument,
+    * ``SOPEL_CONFIG`` environment variable, if the argument is not used,
+    * otherwise it should default to ``default``,
 
-    then loads the settings and returns it as a :class:`~sopel.config.Config`
-    object.
+    then it returns it as a :class:`~sopel.config.Config` object.
 
     If the configuration file can not be found, a
     :exc:`sopel.config.ConfigurationNotFound` error will be raised.
@@ -320,17 +325,11 @@ def load_settings(options):
         ``config`` and ``configdir``.
 
         The :func:`sopel.cli.utils.add_common_arguments` function should be
-        used to add these options to the argument parser.
+        used to add these options to the argument parser. This function is also
+        responsible for using the environment variable or the default value.
 
     """
-    # Default if no options.config or no env var or if they are empty
-    name = 'default'
-    if options.config:
-        name = options.config
-    elif 'SOPEL_CONFIG' in os.environ:
-        name = os.environ['SOPEL_CONFIG'] or name  # use default if empty
-
-    filename = find_config(options.configdir, name)
+    filename = find_config(options.configdir, options.config)
 
     if not os.path.isfile(filename):
         raise config.ConfigurationNotFound(filename=filename)
