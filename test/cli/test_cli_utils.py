@@ -14,6 +14,9 @@ from sopel.cli.utils import (
     enumerate_configs,
     find_config,
     get_many_text,
+    green,
+    red,
+    yellow,
 )
 
 
@@ -39,6 +42,21 @@ def config_dir(tmpdir):
     return test_dir
 
 
+def test_green():
+    assert green('hello') == '\x1b[32mhello\x1b[0m'
+    assert green('hello', reset=False) == '\x1b[32mhello'
+
+
+def test_red():
+    assert red('hello') == '\x1b[31mhello\x1b[0m'
+    assert red('hello', reset=False) == '\x1b[31mhello'
+
+
+def test_yellow():
+    assert yellow('hello') == '\x1b[33mhello\x1b[0m'
+    assert yellow('hello', reset=False) == '\x1b[33mhello'
+
+
 def test_enumerate_configs(config_dir):
     """Assert function retrieves only .cfg files by default"""
     results = list(enumerate_configs(config_dir.strpath))
@@ -48,6 +66,11 @@ def test_enumerate_configs(config_dir):
     assert 'extra.ini' not in results
     assert 'README' not in results
     assert len(results) == 2
+
+
+def test_enumerate_configs_not_a_directory():
+    results = list(enumerate_configs('not_a_folder_that_exist'))
+    assert results == []
 
 
 def test_enumerate_configs_extension(config_dir):
