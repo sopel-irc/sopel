@@ -43,7 +43,7 @@ PRIORITY_MEDIUM = 'medium'
 """Medium rule priority."""
 PRIORITY_LOW = 'low'
 """Lowest rule priority."""
-PRIORITIY_SCALES = {
+PRIORITY_SCALES = {
     PRIORITY_HIGH: 0,
     PRIORITY_MEDIUM: 100,
     PRIORITY_LOW: 1000,
@@ -364,8 +364,8 @@ class AbstractRule(object):
         priority_key = self.get_priority()
 
         return (
-            PRIORITIY_SCALES.get(priority_key) or
-            PRIORITIY_SCALES[PRIORITY_MEDIUM]
+            PRIORITY_SCALES.get(priority_key) or
+            PRIORITY_SCALES[PRIORITY_MEDIUM]
         )
 
     def get_plugin_name(self):
@@ -417,6 +417,7 @@ class AbstractRule(object):
         .. seealso::
 
             :meth:`sopel.module.example` for more about test parameters.
+
         """
         raise NotImplementedError
 
@@ -445,6 +446,7 @@ class AbstractRule(object):
             The :attr:`AbstractRule.priority_scale` property uses this method
             to look up the numeric priority value, which is used to sort rules
             by priority.
+
         """
         raise NotImplementedError
 

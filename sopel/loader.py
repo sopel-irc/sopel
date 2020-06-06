@@ -42,8 +42,8 @@ def clean_callable(func, config):
     :type config: :class:`sopel.config.Config`
 
     This function will set all the default attributes expected for a Sopel
-    callable, i.e. properties related to threading, docs, examples, limit
-    rating, commands, rules, and other features.
+    callable, i.e. properties related to threading, docs, examples, rate
+    limiting, commands, rules, and other features.
     """
     nick = config.core.nick
     alias_nicks = config.core.alias_nicks

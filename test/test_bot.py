@@ -391,7 +391,7 @@ def test_register_callables(tmpconfig):
     ]
 
     # clean callables and set plugin name by hand
-    # since the plugin's handler is supposed to do it
+    # since the loader and plugin handlers are excluded here
     for handler in callables:
         loader.clean_callable(handler, tmpconfig)
         handler.plugin_name = 'testplugin'
