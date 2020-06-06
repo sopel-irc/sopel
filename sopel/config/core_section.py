@@ -18,7 +18,7 @@ from sopel.tools import Identifier
 COMMAND_DEFAULT_PREFIX = r'\.'
 """Default prefix used for commands."""
 COMMAND_DEFAULT_HELP_PREFIX = '.'
-"""Default help prefix used in command's usages."""
+"""Default help prefix used in commands' usage messages."""
 
 
 def _find_certs():

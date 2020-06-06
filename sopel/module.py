@@ -108,7 +108,7 @@ def unblockable(function):
 
     .. seealso::
 
-        Sopel's :meth:`~sopel.bot.Sopel.dispatch`.
+        Sopel's :meth:`~sopel.bot.Sopel.dispatch` method.
 
     """
     function.unblockable = True
@@ -260,7 +260,6 @@ def commands(*command_list):
         @commands('main sub1', 'main sub2')
             # For ".main sub1", trigger.group(1) will return "main sub1"
             # For ".main sub2", trigger.group(1) will return "main sub2"
-            # For ".main", trigger.group(1) will return "main"
 
     But in that case, be careful with the order of the names: if a more generic
     pattern is defined first, it will have priority over less generic patterns.
@@ -306,14 +305,14 @@ def commands(*command_list):
     .. note::
 
         You can use a regular expression for the command name(s), but this is
-        **not recommended** since version 7.1. For backward compatibility
-        reason, this behavior will be kept until version 8.0.
+        **not recommended** since version 7.1. For backward compatibility,
+        this behavior will be kept until version 8.0.
 
-        Regex pattern are confusing for your user, please don't use them for
-        command name!
+        Regex patterns are confusing for your users; please don't use them in
+        command names!
 
         If you still want to use a regex pattern, please use the :func:`rule`
-        decorator instead. For extra argument and subcommands based on a regex
+        decorator instead. For extra arguments and subcommands based on a regex
         pattern, you should handle these inside your decorated function, by
         using the ``trigger`` object.
 
@@ -348,11 +347,11 @@ def nickname_commands(*command_list):
     .. note::
 
         You can use a regular expression for the command name(s), but this is
-        **not recommended** since version 7.1. For backward compatibility
-        reason, this behavior will be kept until version 8.0.
+        **not recommended** since version 7.1. For backward compatibility,
+        this behavior will be kept until version 8.0.
 
-        Regex pattern are confusing for your user, please don't use them for
-        command name!
+        Regex patterns are confusing for your users; please don't use them in
+        command names!
 
         If you need to use a regex pattern, please use the :func:`rule`
         decorator instead, with the ``$nick`` variable::
@@ -403,11 +402,11 @@ def action_commands(*command_list):
     .. note::
 
         You can use a regular expression for the command name(s), but this is
-        **not recommended** since version 7.1. For backward compatibility
-        reason, this behavior will be kept until version 8.0.
+        **not recommended** since version 7.1. For backward compatibility,
+        this behavior will be kept until version 8.0.
 
-        Regex pattern are confusing for your user, please don't use them for
-        command name!
+        Regex patterns are confusing for your users; please don't use them in
+        command names!
 
         If you need to use a regex pattern, please use the :func:`rule`
         decorator instead, with the :func:`intent` decorator::

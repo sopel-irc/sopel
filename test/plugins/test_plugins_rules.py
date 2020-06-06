@@ -2,12 +2,9 @@
 """Tests for the ``sopel.plugins.rules`` module."""
 from __future__ import absolute_import, division, print_function, unicode_literals
 
-
 import re
 
-
 import pytest
-
 
 from sopel import bot, loader, module, trigger
 from sopel.plugins import rules
@@ -36,7 +33,7 @@ def mockbot(tmpconfig, botfactory):
 
 
 # -----------------------------------------------------------------------------
-# test for :class:`Manager`
+# tests for :class:`Manager`
 
 def test_manager_rule(mockbot):
     regex = re.compile('.*')
@@ -225,7 +222,7 @@ def test_manager_rule_trigger_on_event(mockbot):
     items = manager.get_triggered_rules(mockbot, pretrigger)
     assert len(items) == 2, 'Exactly two rules must match'
 
-    # rules are match in their registration order
+    # rules are matched in their registration order
     assert rule_default in items[0]
     assert rule_events in items[1]
 
@@ -305,7 +302,7 @@ def test_manager_has_action_command_aliases():
 
 
 # -----------------------------------------------------------------------------
-# test for :class:`Rule`
+# tests for :class:`Rule`
 
 
 def test_rule_str():
@@ -329,7 +326,7 @@ def test_rule_str_no_label():
     assert str(rule) == '<Rule testplugin.(anonymous) (1)>'
 
 
-def test_rule_str_no_plugin_label():
+def test_rule_str_no_plugin_no_label():
     regex = re.compile(r'.*')
     rule = rules.Rule([regex])
 
@@ -662,7 +659,7 @@ def test_rule_from_callable(mockbot):
     loader.clean_callable(handler, mockbot.settings)
     handler.plugin_name = 'testplugin'
 
-    # create rule from a clean callable
+    # create rule from a cleaned callable
     rule = rules.Rule.from_callable(mockbot.settings, handler)
     assert str(rule) == '<Rule testplugin.handler (4)>'
 
@@ -682,7 +679,7 @@ def test_rule_from_callable(mockbot):
     assert len(results) == 2, 'Exactly 2 rules must match'
     assert all(result.group(0) == 'hi' for result in results)
 
-    # match on "hey" twice
+    # match on "hey" only once
     line = ':Foo!foo@example.com PRIVMSG #sopel :hey how are you doing?'
     pretrigger = trigger.PreTrigger(mockbot.nick, line)
     results = list(rule.match(mockbot, pretrigger))
@@ -703,7 +700,7 @@ def test_rule_from_callable_nick_placeholder(mockbot):
     loader.clean_callable(handler, mockbot.settings)
     handler.plugin_name = 'testplugin'
 
-    # create rule from a clean callable
+    # create rule from a cleaned callable
     rule = rules.Rule.from_callable(mockbot.settings, handler)
 
     # match on "TestBot: hello" with a ":"
@@ -718,7 +715,7 @@ def test_rule_from_callable_nick_placeholder(mockbot):
     with pytest.raises(IndexError):
         result.group(1)
 
-    # match on "TestBot: hello" with a ":"
+    # match on "TestBot: hello" with a ","
     line = ':Foo!foo@example.com PRIVMSG #sopel :TestBot, hello'
     pretrigger = trigger.PreTrigger(mockbot.nick, line)
     results = list(rule.match(mockbot, pretrigger))
@@ -740,7 +737,7 @@ def test_rule_from_callable_nickname_placeholder(mockbot):
     loader.clean_callable(handler, mockbot.settings)
     handler.plugin_name = 'testplugin'
 
-    # create rule from a clean callable
+    # create rule from a cleaned callable
     rule = rules.Rule.from_callable(mockbot.settings, handler)
 
     # match on "TestBot: hello" with a ":"
@@ -766,7 +763,7 @@ def test_kwargs_from_callable(mockbot):
         wrapped.reply('Hi!')
 
     loader.clean_callable(handler, mockbot.settings)
-    handler.plugin_name = 'testplugin'  # added by the Plugin handler manually
+    handler.plugin_name = 'testplugin'  # normally added by the Plugin handler
 
     # get kwargs
     kwargs = rules.Rule.kwargs_from_callable(handler)
@@ -935,7 +932,7 @@ def test_kwargs_from_callable_examples(mockbot):
     # get kwargs
     kwargs = rules.Rule.kwargs_from_callable(handler)
 
-    # asserts
+    # expectations
     expected = {
         'example': 'hello',
         'result': None,
@@ -946,6 +943,7 @@ def test_kwargs_from_callable_examples(mockbot):
         'is_private_message': False,
     }
 
+    # reality
     assert 'usages' in kwargs
     assert 'tests' in kwargs
     assert 'doc' in kwargs
@@ -967,7 +965,7 @@ def test_kwargs_from_callable_examples_test(mockbot):
     # get kwargs
     kwargs = rules.Rule.kwargs_from_callable(handler)
 
-    # asserts
+    # expectations
     expected = {
         'example': 'hello',
         'result': ['Hi!'],
@@ -998,6 +996,7 @@ def test_kwargs_from_callable_examples_test(mockbot):
         },
     )
 
+    # reality
     assert 'usages' in kwargs
     assert 'tests' in kwargs
     assert 'doc' in kwargs
@@ -1020,7 +1019,7 @@ def test_kwargs_from_callable_examples_help(mockbot):
     # get kwargs
     kwargs = rules.Rule.kwargs_from_callable(handler)
 
-    # asserts
+    # expectations
     expected_usages = (
         {
             'example': 'hello',
@@ -1062,6 +1061,7 @@ def test_kwargs_from_callable_examples_help(mockbot):
         },
     )
 
+    # reality
     assert 'usages' in kwargs
     assert 'tests' in kwargs
     assert 'doc' in kwargs
@@ -1086,7 +1086,7 @@ def test_kwargs_from_callable_examples_doc(mockbot):
     # get kwargs
     kwargs = rules.Rule.kwargs_from_callable(handler)
 
-    # asserts
+    # expectations
     expected_usages = (
         {
             'example': 'hello',
@@ -1099,6 +1099,7 @@ def test_kwargs_from_callable_examples_doc(mockbot):
         },
     )
 
+    # reality
     assert 'usages' in kwargs
     assert 'tests' in kwargs
     assert 'doc' in kwargs
@@ -1112,7 +1113,7 @@ def test_kwargs_from_callable_examples_doc(mockbot):
 
 
 # -----------------------------------------------------------------------------
-# test of rate-limit features
+# tests for rate-limiting features
 
 def test_rule_rate_limit(mockbot, triggerfactory):
     def handler(bot, trigger):
@@ -1193,7 +1194,7 @@ def test_rule_rate_limit_ignore_rate_limit(mockbot, triggerfactory):
 
 
 # -----------------------------------------------------------------------------
-# test for :class:`sopel.plugins.rules.Command`
+# tests for :class:`sopel.plugins.rules.Command`
 
 
 def test_command_str():
@@ -1455,7 +1456,7 @@ def test_command_from_callable(mockbot):
 
     loader.clean_callable(handler, mockbot.settings)
 
-    # create rule from a clean callable
+    # create rule from a cleaned callable
     rule = rules.Command.from_callable(mockbot.settings, handler)
 
     # match on ".hello"
@@ -1509,7 +1510,7 @@ def test_command_from_callable_subcommand(mockbot):
 
     loader.clean_callable(handler, mockbot.settings)
 
-    # create rule from a clean callable
+    # create rule from a cleaned callable
     rule = rules.Command.from_callable(mockbot.settings, handler)
 
     # match on ".main sub"
@@ -1538,7 +1539,7 @@ def test_command_from_callable_subcommand_aliases(mockbot):
 
     loader.clean_callable(handler, mockbot.settings)
 
-    # create rule from a clean callable
+    # create rule from a cleaned callable
     rule = rules.Command.from_callable(mockbot.settings, handler)
 
     # match on ".main sub": .main matches first
@@ -1562,7 +1563,7 @@ def test_command_from_callable_subcommand_aliases(mockbot):
     assert result.group(0) == '.main'
     assert result.group(1) == 'main'
 
-    # match on ".reverse sub": as declared first, it'll take priority
+    # match on ".reverse sub": as it's declared first, it'll take priority
     line = ':Foo!foo@example.com PRIVMSG #sopel :.reverse sub'
     pretrigger = trigger.PreTrigger(mockbot.nick, line)
     results = list(rule.match(mockbot, pretrigger))
@@ -1595,7 +1596,7 @@ def test_command_from_callable_regex_pattern(mockbot):
 
     loader.clean_callable(handler, mockbot.settings)
 
-    # create rule from a clean callable
+    # create rule from a cleaned callable
     rule = rules.Command.from_callable(mockbot.settings, handler)
 
     # match on ".main anything"
@@ -1623,7 +1624,7 @@ def test_command_from_callable_invalid(mockbot):
 
     loader.clean_callable(handler, mockbot.settings)
 
-    # create rule from a clean callable
+    # create rule from a cleaned callable
     with pytest.raises(RuntimeError):
         rules.Command.from_callable(mockbot.settings, handler)
 
@@ -1644,7 +1645,7 @@ def test_command_escape_name():
 
 
 # -----------------------------------------------------------------------------
-# test for :class:`sopel.plugins.rules.NickCommand`
+# tests for :class:`sopel.plugins.rules.NickCommand`
 
 
 def test_nick_command_str():
@@ -1780,7 +1781,7 @@ def test_nick_command_from_callable_invalid(mockbot):
 
     loader.clean_callable(handler, mockbot.settings)
 
-    # create rule from a clean callable
+    # create rule from a cleaned callable
     with pytest.raises(RuntimeError):
         rules.NickCommand.from_callable(mockbot.settings, handler)
 
@@ -1793,7 +1794,7 @@ def test_nick_command_from_callable(mockbot):
 
     loader.clean_callable(handler, mockbot.settings)
 
-    # create rule from a clean callable
+    # create rule from a cleaned callable
     rule = rules.NickCommand.from_callable(mockbot.settings, handler)
 
     # match on "$nick: hello"
@@ -1886,7 +1887,7 @@ def test_nick_command_from_callable_regex_pattern(mockbot):
 
     loader.clean_callable(handler, mockbot.settings)
 
-    # create rule from a clean callable
+    # create rule from a cleaned callable
     rule = rules.NickCommand.from_callable(mockbot.settings, handler)
 
     # match on ".main anything"
@@ -1907,7 +1908,7 @@ def test_nick_command_from_callable_regex_pattern(mockbot):
 
 
 # -----------------------------------------------------------------------------
-# test for :class:`sopel.plugins.rules.ActionCommand`
+# tests for :class:`sopel.plugins.rules.ActionCommand`
 
 def test_action_command_str():
     rule = rules.ActionCommand('hello', plugin='testplugin')
@@ -1982,7 +1983,7 @@ def test_action_command_from_callable_invalid(mockbot):
 
     loader.clean_callable(handler, mockbot.settings)
 
-    # create rule from a clean callable
+    # create rule from a cleaned callable
     with pytest.raises(RuntimeError):
         rules.ActionCommand.from_callable(mockbot.settings, handler)
 
@@ -1995,7 +1996,7 @@ def test_action_command_from_callable(mockbot):
 
     loader.clean_callable(handler, mockbot.settings)
 
-    # create rule from a clean callable
+    # create rule from a cleaned callable
     rule = rules.ActionCommand.from_callable(mockbot.settings, handler)
 
     # match on "ACTION hello"
@@ -2064,7 +2065,7 @@ def test_action_command_from_callable_regex_pattern(mockbot):
 
     loader.clean_callable(handler, mockbot.settings)
 
-    # create rule from a clean callable
+    # create rule from a cleaned callable
     rule = rules.ActionCommand.from_callable(mockbot.settings, handler)
 
     # match on ".main anything"

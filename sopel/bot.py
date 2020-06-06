@@ -40,10 +40,6 @@ else:
 
 
 class Sopel(irc.AbstractBot):
-    @property
-    def rules(self):
-        return self._rules_manager
-
     def __init__(self, config, daemon=False):
         super(Sopel, self).__init__(config)
         self._daemon = daemon  # Used for iPython. TODO something saner here
@@ -113,6 +109,10 @@ class Sopel(irc.AbstractBot):
         """Job Scheduler. See :func:`sopel.module.interval`."""
 
     @property
+    def rules(self):
+        return self._rules_manager
+
+    @property
     def command_groups(self):
         """A mapping of plugin names to lists of their commands.
 
@@ -124,7 +124,7 @@ class Sopel(irc.AbstractBot):
         # TODO: create a new, better, doc interface to remove it
         plugin_commands = itertools.chain(
             self._rules_manager.get_all_commands(),
-            self._rules_manager.get_all_nick_commands()
+            self._rules_manager.get_all_nick_commands(),
         )
         result = {}
 
@@ -155,7 +155,7 @@ class Sopel(irc.AbstractBot):
         # TODO: create a new, better, doc interface to remove it
         plugin_commands = itertools.chain(
             self._rules_manager.get_all_commands(),
-            self._rules_manager.get_all_nick_commands()
+            self._rules_manager.get_all_nick_commands(),
         )
         commands = (
             (command, command.get_doc(), command.get_usages())
@@ -392,11 +392,11 @@ class Sopel(irc.AbstractBot):
     @deprecated(
         reason="Replaced by specific `unregister_*` methods.",
         version='7.1',
-        removed_in='7.2')
+        removed_in='8.0')
     def unregister(self, obj):
-        """Unregister a callable job or shutdown method.
+        """Unregister a job or a shutdown method.
 
-        :param obj: the callable to unregister
+        :param obj: the job or shutdown method to unregister
         :type obj: :term:`object`
         """
         callable_name = getattr(obj, "__name__", 'UNKNOWN')
@@ -410,7 +410,7 @@ class Sopel(irc.AbstractBot):
     @deprecated(
         reason="Replaced by specific `register_*` methods.",
         version='7.1',
-        removed_in='7.2')
+        removed_in='8.0')
     def register(self, callables, jobs, shutdowns, urls):
         """Register rules, jobs, shutdown methods, and URL callbacks.
 
@@ -701,6 +701,7 @@ class Sopel(irc.AbstractBot):
 
             The pattern matching is done by the
             :class:`Rules Manager<sopel.plugins.rules.Manager>`.
+
         """
         # list of commands running in separate threads for this dispatch
         running_triggers = []
@@ -708,11 +709,12 @@ class Sopel(irc.AbstractBot):
         nick_blocked, host_blocked = self._is_pretrigger_blocked(pretrigger)
         blocked = bool(nick_blocked or host_blocked)
         list_of_blocked_rules = set()
+        # account info
+        nick = pretrigger.nick
+        user_obj = self.users.get(nick)
+        account = user_obj.account if user_obj else None
 
         for rule, match in self._rules_manager.get_triggered_rules(self, pretrigger):
-            nick = pretrigger.nick
-            user_obj = self.users.get(nick)
-            account = user_obj.account if user_obj else None
             trigger = Trigger(self.settings, pretrigger, match, account)
 
             is_unblockable = trigger.admin or rule.is_unblockable()

@@ -6,13 +6,13 @@
 .. important::
 
     This is all fresh and new. Its usage and documentation is for Sopel core
-    developement and advanced developers. It is subject to rapid changes
-    between versions without much warning.
+    development and advanced developers. It is subject to rapid changes
+    between versions without much (or any) warning.
 
     Do **not** build your plugin based on what is here, you do **not** need to.
 
 """
-# Copyright 2019, Florian Strzelecki <florian.strzelecki@gmail.com>
+# Copyright 2020, Florian Strzelecki <florian.strzelecki@gmail.com>
 #
 # Licensed under the Eiffel Forum License 2.
 from __future__ import absolute_import, division, print_function, unicode_literals
@@ -36,7 +36,7 @@ __all__ = ['Manager', 'Rule', 'Command', 'NickCommand', 'ActionCommand']
 LOGGER = logging.getLogger(__name__)
 
 IGNORE_RATE_LIMIT = 1  # equivalent to sopel.module.NOLIMIT
-"""Return value used to signify to ignore rate-limiting for once."""
+"""Return value used to indicate that rate-limiting should be ignored."""
 PRIORITY_HIGH = 'high'
 """Highest rule priority."""
 PRIORITY_MEDIUM = 'medium'
@@ -117,8 +117,8 @@ class Manager(object):
     def unregister_plugin(self, plugin_name):
         """Unregister all the rules from a plugin.
 
-        :param str plugin_name: Name of the plugin to remove
-        :return: The number of rules unregistered for this plugin
+        :param str plugin_name: the name of the plugin to remove
+        :return: the number of rules unregistered for this plugin
         :rtype: int
 
         All rules, commands, nick commands, and action commands of that plugin
@@ -148,7 +148,7 @@ class Manager(object):
     def register(self, rule):
         """Register a plugin rule.
 
-        :param rule: Rule to register
+        :param rule: the rule to register
         :type rule: :class:`Rule`
         """
         with self._register_lock:
@@ -158,8 +158,8 @@ class Manager(object):
     def register_command(self, command):
         """Register a plugin command.
 
-        :param command: Command to register
-        :type rule: :class:`Command`
+        :param command: the command to register
+        :type command: :class:`Command`
         """
         with self._register_lock:
             plugin = command.get_plugin_name()
@@ -169,8 +169,8 @@ class Manager(object):
     def register_nick_command(self, command):
         """Register a plugin nick command.
 
-        :param command: Nick command to register
-        :type rule: :class:`NickCommand`
+        :param command: the nick command to register
+        :type command: :class:`NickCommand`
         """
         with self._register_lock:
             plugin = command.get_plugin_name()
@@ -180,8 +180,8 @@ class Manager(object):
     def register_action_command(self, command):
         """Register a plugin action command.
 
-        :param command: Action command to register
-        :type rule: :class:`ActionCommand`
+        :param command: the action command to register
+        :type command: :class:`ActionCommand`
         """
         with self._register_lock:
             plugin = command.get_plugin_name()
@@ -191,12 +191,13 @@ class Manager(object):
     def has_rule(self, label, plugin=None):
         """Tell if the manager knows a rule with this ``label``.
 
-        :param str label: Label of the rule to look for
-        :param str plugin: Optional filter on the plugin name
+        :param str label: the label of the rule to look for
+        :param str plugin: optional filter on the plugin name
         :return: ``True`` if the rule exists, ``False`` otherwise
+        :rtype: bool
 
         The optional parameter ``plugin`` can be provided to limit the rules
-        to the ones of said plugin.
+        to only those from that plugin.
         """
         rules = (
             itertools.chain(*self._rules.values())
@@ -208,10 +209,11 @@ class Manager(object):
     def has_command(self, name, follow_alias=False, plugin=None):
         """Tell if the manager knows a command with this ``name``.
 
-        :param str label: Label of the rule to look for
-        :param bool follow_alias: Optional filter to follow alias or not
-        :param str plugin: Optional filter on the plugin name
+        :param str label: the label of the rule to look for
+        :param bool follow_alias: optional flag to include aliases
+        :param str plugin: optional filter on the plugin name
         :return: ``True`` if the command exists, ``False`` otherwise
+        :rtype: bool
 
         By default, this method doesn't search commands by their aliases. If
         the optional parameter ``follow_alias`` is ``True``, then it will
@@ -234,10 +236,11 @@ class Manager(object):
     def has_nick_command(self, name, follow_alias=False, plugin=None):
         """Tell if the manager knows a nick command with this ``name``.
 
-        :param str label: Label of the rule to look for
-        :param bool follow_alias: Optional filter to follow alias or not
-        :param str plugin: Optional filter on the plugin name
+        :param str label: the label of the rule to look for
+        :param bool follow_alias: optional flag to include aliases
+        :param str plugin: optional filter on the plugin name
         :return: ``True`` if the command exists, ``False`` otherwise
+        :rtype: bool
 
         This method works like :meth:`has_command`, but with nick commands.
         """
@@ -246,10 +249,11 @@ class Manager(object):
     def has_action_command(self, name, follow_alias=False, plugin=None):
         """Tell if the manager knows an action command with this ``name``.
 
-        :param str label: Label of the rule to look for
-        :param bool follow_alias: Optional filter to follow alias or not
-        :param str plugin: Optional filter on the plugin name
+        :param str label: the label of the rule to look for
+        :param bool follow_alias: optional flag to include aliases
+        :param str plugin: optional filter on the plugin name
         :return: ``True`` if the command exists, ``False`` otherwise
+        :rtype: bool
 
         This method works like :meth:`has_command`, but with action commands.
         """
@@ -257,17 +261,17 @@ class Manager(object):
             self._action_commands, name, follow_alias, plugin)
 
     def get_all_commands(self):
-        """Retrieve all the register commands, by plugin."""
+        """Retrieve all the registered commands, by plugin."""
         # expose a copy of the registered commands
         return self._commands.items()
 
     def get_all_nick_commands(self):
-        """Retrieve all the register nick commands, by plugin."""
+        """Retrieve all the registered nick commands, by plugin."""
         # expose a copy of the registered commands
         return self._nick_commands.items()
 
     def get_triggered_rules(self, bot, pretrigger):
-        """Get triggered rules with their match object, sorted by priorities.
+        """Get triggered rules with their match objects, sorted by priorities.
 
         :param bot: Sopel instance
         :type bot: :class:`sopel.bot.Sopel`
@@ -298,13 +302,13 @@ class Manager(object):
             for rule in rules
             for match in rule.match(bot, pretrigger)
         )
-        # returning a tuple instead of a sorted object ensure that
-        # 1. it's not a lazy object
-        # 2. it's an immutable iterable
-        # we can't accept lazy evaluation or yield results, it has to be a
-        # static list of (rule/match) otherwise, Python will raise an error
-        # if any rule execution tries to alter the list of registered rules
-        # making it immutable is the cherry on top
+        # Returning a tuple instead of a sorted object ensures that:
+        #   1. it's not a lazy object
+        #   2. it's an immutable iterable
+        # We can't accept lazy evaluation or yield results; it has to be a
+        # static list of (rule/match), otherwise Python will raise an error
+        # if any rule execution tries to alter the list of registered rules.
+        # Making it immutable is the cherry on top.
         return tuple(sorted(matches, key=lambda x: x[0].priority_scale))
 
 
@@ -333,17 +337,17 @@ class AbstractRule(object):
 
         :param settings: Sopel's settings
         :type settings: :class:`sopel.config.Config`
-        :param callable handler: Function-based rule handler
-        :return: An instance of this class created from the ``handler``
+        :param callable handler: a function-based rule handler
+        :return: an instance of this class created from the ``handler``
         :rtype: :class:`AbstractRule`
 
         Sopel's function-based rule handlers are simple callables, decorated
         with :mod:`sopel.module`'s decorators to add attributes, such as rate
         limit, threaded execution, output prefix, priority, and so on. In order
-        to load these functions as rule object, this class method can be used:
-        it takes the bot's ``settings`` and a clean ``handler``.
+        to load these functions as rule objects, this class method can be used;
+        it takes the bot's ``settings`` and a cleaned ``handler``.
 
-        A "clean handler" is a function, decorated appropriatly, and passed
+        A "cleaned handler" is a function, decorated appropriately, and passed
         through the filter of the
         :func:`loader's clean<sopel.loader.clean_callable>` function.
         """
@@ -354,7 +358,7 @@ class AbstractRule(object):
         """Rule's priority on a numeric scale.
 
         This attribute can be used to sort rules between each other, the
-        highest priority rules comming first. The default priority for a rule
+        highest priority rules coming first. The default priority for a rule
         is "medium".
         """
         priority_key = self.get_priority()
@@ -392,7 +396,7 @@ class AbstractRule(object):
 
         :rtype: tuple
 
-        A rule can have usage examples, i.e. a list of example that shows how
+        A rule can have usage examples, i.e. a list of examples showing how
         the rule can be used, or in what context it can be triggered.
         """
         raise NotImplementedError
@@ -408,7 +412,11 @@ class AbstractRule(object):
         * the expected IRC line
         * the expected line of results, as said by the bot
         * if the user should be an admin or not
-        * if the results should be used as regex expression
+        * if the results should be used as regex pattern
+
+        .. seealso::
+
+            :meth:`sopel.module.example` for more about test parameters.
         """
         raise NotImplementedError
 
@@ -417,7 +425,7 @@ class AbstractRule(object):
 
         :rtype: str
 
-        A rule documentation is a short text that can be displayed to a user
+        A rule's documentation is a short text that can be displayed to a user
         on IRC upon asking for help about this rule. The equivalent of Python
         docstrings, but for IRC rules.
         """
@@ -428,14 +436,15 @@ class AbstractRule(object):
 
         :rtype: str
 
-        A rule can have a priority, based on the 3 pre-defined priorities used
-        by Sopel: ``PRIORITY_HIGH``, ``PRIORITY_MEDIUM``, and ``PRIORITY_LOW``.
+        A rule can have a priority, based on the three pre-defined priorities
+        used by Sopel: ``PRIORITY_HIGH``, ``PRIORITY_MEDIUM``, and
+        ``PRIORITY_LOW``.
 
         .. seealso::
 
-            The :attr:`AbstractRule.priority_scale` property attribute uses
-            this method to return the priority scale, which is used to sort
-            rules by priority.
+            The :attr:`AbstractRule.priority_scale` property uses this method
+            to look up the numeric priority value, which is used to sort rules
+            by priority.
         """
         raise NotImplementedError
 
@@ -459,7 +468,7 @@ class AbstractRule(object):
         :param pretrigger: Line to match
         :type pretrigger: :class:`sopel.trigger.PreTrigger`
 
-        This method must return a list of `match object`__.
+        This method must return a list of `match objects`__.
 
         .. __: https://docs.python.org/3.6/library/re.html#match-objects
         """
@@ -484,7 +493,7 @@ class AbstractRule(object):
         raise NotImplementedError
 
     def allow_echo(self):
-        """Tell when the rule allows for echo messages.
+        """Tell if the rule should match echo messages.
 
         :return: ``True`` when the rule allows echo messages,
                  ``False`` otherwise
@@ -493,16 +502,16 @@ class AbstractRule(object):
         raise NotImplementedError
 
     def is_threaded(self):
-        """Tell when the rule's execution can be in a thread.
+        """Tell if the rule's execution should be in a thread.
 
-        :return: ``True`` when the execution can be in a thread,
+        :return: ``True`` if the execution should be in a thread,
                  ``False`` otherwise
         :rtype: bool
         """
         raise NotImplementedError
 
     def is_unblockable(self):
-        """Tell when the rule is unblockable.
+        """Tell if the rule is unblockable.
 
         :return: ``True`` when the rule is unblockable, ``False`` otherwise
         :rtype: bool
@@ -536,7 +545,7 @@ class AbstractRule(object):
     def parse(self, text):
         """Parse ``text`` and yield matches.
 
-        :param str text: A text to parse by the rule
+        :param str text: text to parse by the rule
         :return: yield a list of match object
         :rtype: generator of `re.match`__
 
@@ -549,7 +558,7 @@ class AbstractRule(object):
 
         :param bot: Sopel wrapper
         :type bot: :class:`sopel.bot.SopelWrapper`
-        :param trigger: IRC Trigger line
+        :param trigger: IRC line
         :type trigger: :class:`sopel.trigger.Trigger`
 
         This is the method called by the bot when a rule matches a ``trigger``.
@@ -684,8 +693,8 @@ class Rule(AbstractRule):
         :rtype: str
         :raise RuntimeError: when the label is undefined
 
-        Return its label if it has one, or the value of it's ``handler``'s
-        ``__name__``, if it has a handler. If both method fail, a
+        Return its label if it has one, or the value of its ``handler``'s
+        ``__name__``, if it has a handler. If both methods fail, a
         :exc:`RuntimeError` is raised because the rule has an undefined label.
         """
         if self._label:
@@ -834,11 +843,11 @@ class Rule(AbstractRule):
 class NamedRuleMixin(object):
     """Mixin for named rules.
 
-    A named rules is invoked by using a specific word, and is usually known
+    A named rule is invoked by using a specific word, and is usually known
     as a "command". For example, the command "hello" is triggered by using
     the word "hello" with some sort of prefix or context.
 
-    A named rules can be invoked by using one of its aliases.
+    A named rule can be invoked by using one of its aliases, also.
     """
     @property
     def name(self):
@@ -853,7 +862,7 @@ class NamedRuleMixin(object):
 
         :rtype: str
 
-        A named rule's label is it's name.
+        A named rule's label is its name.
         """
         return self._name.replace(' ', '-')
 
@@ -872,10 +881,10 @@ class NamedRuleMixin(object):
         .. note::
 
             Until now, Sopel has allowed command name to be regex pattern.
-            It was mentionned in the documentation without much details, and
-            there was no tests about it.
+            It was mentioned in the documentation without much details, and
+            there were no tests for it.
 
-            In order to ensure backward compatibility with previous version of
+            In order to ensure backward compatibility with previous versions of
             Sopel, we make sure to escape command name only when it's needed.
 
             **It is not recommended to use a regex pattern for your command
@@ -992,8 +1001,8 @@ class Command(NamedRuleMixin, Rule):
         The command regex factors in:
 
         * the prefix regular expression,
-        * the rule's name (escaped for regex **if needed**),
-        * all of its aliases (escaped for regex **if needed**),
+        * the rule's name (escaped for regex if needed),
+        * all of its aliases (escaped for regex if needed),
 
         and everything is then given to :func:`sopel.tools.get_command_regexp`,
         which creates a compiled regex to return.
@@ -1166,8 +1175,8 @@ class ActionCommand(NamedRuleMixin, Rule):
 
         The command regex factors in:
 
-        * the rule's name (escaped for regex **if needed**),
-        * all of its aliases (escaped for regex **if needed**),
+        * the rule's name (escaped for regex if needed),
+        * all of its aliases (escaped for regex if needed),
 
         and everything is then given to
         :func:`sopel.tools.get_action_command_regexp`, which creates a compiled

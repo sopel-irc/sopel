@@ -31,8 +31,8 @@ away from the rest of the application.
 .. important::
 
     This is all relatively new. Its usage and documentation is for Sopel core
-    developement and advanced developers. It is subject to rapid changes
-    between versions without much warning.
+    development and advanced developers. It is subject to rapid changes
+    between versions without much (or any) warning.
 
     Do **not** build your plugin based on what is here, you do **not** need to.
 

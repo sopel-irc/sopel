@@ -343,7 +343,7 @@ def test_register_callables(tmpconfig):
     @module.commands('do')
     @module.example('.do nothing')
     def command_do(bot, trigger):
-        """The do command do nothing."""
+        """The do command does nothing."""
         pass
 
     @module.commands('main sub')
@@ -392,7 +392,7 @@ def test_register_callables(tmpconfig):
         on_join,
     ]
 
-    # set plugin name by hand, because plugins are supposed to do it
+    # set plugin name by hand, since the plugin's handler is supposed to do it
     for handler in callables:
         handler.plugin_name = 'testplugin'
 
@@ -462,7 +462,7 @@ def test_register_callables(tmpconfig):
 
     assert sopel.doc == {
         'do': (
-            ['The do command do nothing.'],
+            ['The do command does nothing.'],
             ['.do nothing'],
         ),
         'info': (
