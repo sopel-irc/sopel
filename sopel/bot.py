@@ -451,28 +451,28 @@ class Sopel(irc.AbstractBot):
             nick_commands = getattr(callbl, 'nickname_commands', [])
             action_commands = getattr(callbl, 'action_commands', [])
             is_command = any([commands, nick_commands, action_commands])
-            is_rule_only = any(rules) and not is_command
 
             if rules:
-                if is_rule_only:
-                    rule = plugin_rules.Rule.from_callable(settings, callbl)
-                    self._rules_manager.register(rule)
-                if commands:
-                    rule = plugin_rules.Command.from_callable(settings, callbl)
-                    self._rules_manager.register_command(rule)
-                if nick_commands:
-                    rule = plugin_rules.NickCommand.from_callable(
-                        settings, callbl)
-                    self._rules_manager.register_nick_command(rule)
-                if action_commands:
-                    rule = plugin_rules.ActionCommand.from_callable(
-                        settings, callbl)
-                    self._rules_manager.register_action_command(rule)
-
-            else:
+                rule = plugin_rules.Rule.from_callable(settings, callbl)
+                self._rules_manager.register(rule)
+            elif not is_command:
                 callbl.rule = [match_any]
                 self._rules_manager.register(
                     plugin_rules.Rule.from_callable(self.settings, callbl))
+
+            if commands:
+                rule = plugin_rules.Command.from_callable(settings, callbl)
+                self._rules_manager.register_command(rule)
+
+            if nick_commands:
+                rule = plugin_rules.NickCommand.from_callable(
+                    settings, callbl)
+                self._rules_manager.register_nick_command(rule)
+
+            if action_commands:
+                rule = plugin_rules.ActionCommand.from_callable(
+                    settings, callbl)
+                self._rules_manager.register_action_command(rule)
 
     def register_jobs(self, jobs):
         for func in jobs:

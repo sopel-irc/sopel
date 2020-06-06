@@ -227,8 +227,7 @@ def test_clean_callable_command(tmpconfig, func):
     assert func.global_rate == 0
     assert hasattr(func, 'event')
     assert func.event == ['PRIVMSG']
-    assert hasattr(func, 'rule')
-    assert len(func.rule) == 1
+    assert not hasattr(func, 'rule')
 
 
 def test_clean_callable_event(tmpconfig, func):
@@ -381,14 +380,7 @@ def test_clean_callable_nickname_command(tmpconfig, func):
     assert hasattr(func, 'nickname_commands')
     assert len(func.nickname_commands) == 1
     assert func.nickname_commands == ['hello!']
-    assert hasattr(func, 'rule')
-    assert len(func.rule) == 1
-
-    regex = func.rule[0]
-    assert regex.match('TestBot hello!')
-    assert regex.match('TestBot, hello!')
-    assert regex.match('TestBot: hello!')
-    assert not regex.match('TestBot not hello')
+    assert not hasattr(func, 'rule')
 
     # Default values
     assert hasattr(func, 'unblockable')
@@ -406,9 +398,7 @@ def test_clean_callable_nickname_command(tmpconfig, func):
 
     # idempotency
     loader.clean_callable(func, tmpconfig)
-    assert len(func.rule) == 1
-    assert regex in func.rule
-
+    assert not hasattr(func, 'rule')
     assert func.unblockable is False
     assert func.priority == 'medium'
     assert func.thread is True
@@ -424,17 +414,12 @@ def test_clean_callable_action_command(tmpconfig, func):
     assert hasattr(func, 'action_commands')
     assert len(func.action_commands) == 1
     assert func.action_commands == ['bots']
-    assert hasattr(func, 'rule')
-    assert len(func.rule) == 1
-
-    regex = func.rule[0]
-    assert regex.match('bots bottingly')
-    assert not regex.match('spams spammingly')
+    assert not hasattr(func, 'rule')
 
     # idempotency
     loader.clean_callable(func, tmpconfig)
-    assert len(func.rule) == 1
-    assert regex in func.rule
+    assert not hasattr(func, 'rule')
+    assert func.action_commands == ['bots']
 
 
 def test_clean_callable_events(tmpconfig, func):

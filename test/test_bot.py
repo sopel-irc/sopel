@@ -368,20 +368,17 @@ def test_register_callables(tmpconfig):
     def action_command_tell(bot, trigger):
         pass
 
+    @module.commands('mixed')
+    @module.rule('mixing')
+    def mixed_rule_command(bot, trigger):
+        pass
+
     @module.event('JOIN')
     @module.label('handle_join_event')
     def on_join(bot, trigger):
         pass
 
     # prepare callables to be registered
-    loader.clean_callable(rule_hello, tmpconfig)
-    loader.clean_callable(command_do, tmpconfig)
-    loader.clean_callable(command_main_sub, tmpconfig)
-    loader.clean_callable(command_main_other, tmpconfig)
-    loader.clean_callable(nick_command_info, tmpconfig)
-    loader.clean_callable(action_command_tell, tmpconfig)
-    loader.clean_callable(on_join, tmpconfig)
-
     callables = [
         rule_hello,
         command_do,
@@ -389,11 +386,14 @@ def test_register_callables(tmpconfig):
         command_main_other,
         nick_command_info,
         action_command_tell,
+        mixed_rule_command,
         on_join,
     ]
 
-    # set plugin name by hand, since the plugin's handler is supposed to do it
+    # clean callables and set plugin name by hand
+    # since the plugin's handler is supposed to do it
     for handler in callables:
+        loader.clean_callable(handler, tmpconfig)
         handler.plugin_name = 'testplugin'
 
     # register callables
@@ -455,9 +455,25 @@ def test_register_callables(tmpconfig):
     assert len(matches) == 1
     assert matches[0][0].get_rule_label() == 'handle_join_event'
 
+    # trigger command "mixed"
+    line = ':Foo!foo@example.com PRIVMSG #sopel :.mixed'
+    pretrigger = trigger.PreTrigger(sopel.nick, line)
+
+    matches = sopel.rules.get_triggered_rules(sopel, pretrigger)
+    assert len(matches) == 1
+    assert matches[0][0].get_rule_label() == 'mixed'
+
+    # trigger rule "mixed_rule_command"
+    line = ':Foo!foo@example.com PRIVMSG #sopel :mixing'
+    pretrigger = trigger.PreTrigger(sopel.nick, line)
+
+    matches = sopel.rules.get_triggered_rules(sopel, pretrigger)
+    assert len(matches) == 1
+    assert matches[0][0].get_rule_label() == 'mixed_rule_command'
+
     # check documentation
     assert sopel.command_groups == {
-        'testplugin': ['do', 'info', 'main other', 'main sub'],
+        'testplugin': ['do', 'info', 'main other', 'main sub', 'mixed'],
     }
 
     assert sopel.doc == {
@@ -477,6 +493,10 @@ def test_register_callables(tmpconfig):
             ['A command with subcommand other.'],
             ['.main other'],
         ),
+        'mixed': (
+            [],
+            [],
+        )
     }
 
 

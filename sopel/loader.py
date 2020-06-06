@@ -5,13 +5,7 @@ import re
 import sys
 
 from sopel.config.core_section import COMMAND_DEFAULT_HELP_PREFIX
-from sopel.tools import (
-    compile_rule,
-    get_action_command_regexp,
-    get_command_regexp,
-    get_nickname_command_regexp,
-    itervalues,
-)
+from sopel.tools import compile_rule, itervalues
 
 
 if sys.version_info.major >= 3:
@@ -40,11 +34,19 @@ def trim_docstring(doc):
 
 
 def clean_callable(func, config):
-    """Compiles the regexes, moves commands into func.rule, fixes up docs and
-    puts them in func._docs, and sets defaults"""
+    """Clean the callable. (compile regexes, fix docs, set defaults)
+
+    :param func: the callable to clean
+    :type func: callable
+    :param config: Sopel's settings
+    :type config: :class:`sopel.config.Config`
+
+    This function will set all the default attributes expected for a Sopel
+    callable, i.e. properties related to threading, docs, examples, limit
+    rating, commands, rules, and other features.
+    """
     nick = config.core.nick
     alias_nicks = config.core.alias_nicks
-    prefix = config.core.prefix
     help_prefix = config.core.help_prefix
     func._docs = {}
     doc = trim_docstring(func.__doc__)
@@ -83,19 +85,6 @@ def clean_callable(func, config):
         func.rule = [compile_rule(nick, rule, alias_nicks) for rule in func.rule]
 
     if any(hasattr(func, attr) for attr in ['commands', 'nickname_commands', 'action_commands']):
-        func.rule = getattr(func, 'rule', [])
-        for command in getattr(func, 'commands', []):
-            regexp = get_command_regexp(prefix, command)
-            if regexp not in func.rule:
-                func.rule.append(regexp)
-        for command in getattr(func, 'nickname_commands', []):
-            regexp = get_nickname_command_regexp(nick, command, alias_nicks)
-            if regexp not in func.rule:
-                func.rule.append(regexp)
-        for command in getattr(func, 'action_commands', []):
-            regexp = get_action_command_regexp(command)
-            if regexp not in func.rule:
-                func.rule.append(regexp)
         if hasattr(func, 'example'):
             # If no examples are flagged as user-facing, just show the first one like Sopel<7.0 did
             examples = [rec["example"] for rec in func.example if rec["help"]] or [func.example[0]["example"]]
