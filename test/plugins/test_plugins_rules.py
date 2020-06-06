@@ -251,9 +251,9 @@ def test_manager_has_command_aliases():
     manager.register_command(command)
 
     assert manager.has_command('hello')
-    assert not manager.has_command('hi')
-    assert manager.has_command('hi', follow_alias=True)
-    assert not manager.has_command('unknown', follow_alias=True)
+    assert manager.has_command('hi')
+    assert not manager.has_command('hi', follow_alias=False)
+    assert not manager.has_command('unknown')
 
 
 def test_manager_has_nick_command():
@@ -273,10 +273,10 @@ def test_manager_has_nick_command_aliases():
     manager.register_nick_command(command)
 
     assert manager.has_nick_command('hello')
-    assert not manager.has_nick_command('hi')
-    assert manager.has_nick_command('hello', follow_alias=True)
-    assert manager.has_nick_command('hi', follow_alias=True)
-    assert not manager.has_nick_command('unknown', follow_alias=True)
+    assert manager.has_nick_command('hi')
+    assert manager.has_nick_command('hello', follow_alias=False)
+    assert not manager.has_nick_command('hi', follow_alias=False)
+    assert not manager.has_nick_command('unknown')
 
 
 def test_manager_has_action_command():
@@ -295,10 +295,10 @@ def test_manager_has_action_command_aliases():
     manager.register_action_command(command)
 
     assert manager.has_action_command('hello')
-    assert not manager.has_action_command('hi')
-    assert manager.has_action_command('hello', follow_alias=True)
-    assert manager.has_action_command('hi', follow_alias=True)
-    assert not manager.has_action_command('unknown', follow_alias=True)
+    assert manager.has_action_command('hi')
+    assert manager.has_action_command('hello', follow_alias=False)
+    assert not manager.has_action_command('hi', follow_alias=False)
+    assert not manager.has_action_command('unknown')
 
 
 # -----------------------------------------------------------------------------

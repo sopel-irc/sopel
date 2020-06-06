@@ -206,7 +206,7 @@ class Manager(object):
         )
         return any(rule.get_rule_label() == label for rule in rules)
 
-    def has_command(self, name, follow_alias=False, plugin=None):
+    def has_command(self, name, follow_alias=True, plugin=None):
         """Tell if the manager knows a command with this ``name``.
 
         :param str label: the label of the rule to look for
@@ -215,25 +215,25 @@ class Manager(object):
         :return: ``True`` if the command exists, ``False`` otherwise
         :rtype: bool
 
-        By default, this method doesn't search commands by their aliases. If
-        the optional parameter ``follow_alias`` is ``True``, then it will
-        detect commands by their aliases too::
+        By default, this method follows aliases to search commands. If the
+        optional parameter ``follow_alias`` is ``False``, then it won't find
+        commands by their aliases::
 
             >>> command = Command('hi', prefix='"', aliases=['hey'])
             >>> manager.register_command(command)
             >>> manager.has_command('hi')
             True
             >>> manager.has_command('hey')
-            False
-            >>> manager.has_command('hey', follow_alias=True)
             True
+            >>> manager.has_command('hey', follow_alias=False)
+            False
 
         The optional parameter ``plugin`` can be provided to limit the commands
         to the ones of said plugin.
         """
         return _has_named_rule(self._commands, name, follow_alias, plugin)
 
-    def has_nick_command(self, name, follow_alias=False, plugin=None):
+    def has_nick_command(self, name, follow_alias=True, plugin=None):
         """Tell if the manager knows a nick command with this ``name``.
 
         :param str label: the label of the rule to look for
@@ -246,7 +246,7 @@ class Manager(object):
         """
         return _has_named_rule(self._nick_commands, name, follow_alias, plugin)
 
-    def has_action_command(self, name, follow_alias=False, plugin=None):
+    def has_action_command(self, name, follow_alias=True, plugin=None):
         """Tell if the manager knows an action command with this ``name``.
 
         :param str label: the label of the rule to look for
