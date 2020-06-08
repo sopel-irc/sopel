@@ -17,6 +17,14 @@ from sopel.cli.run import (
 )
 
 
+TMP_CONFIG = """
+[core]
+owner = testnick
+nick = TestBot
+enable = coretasks
+"""
+
+
 @contextmanager
 def cd(newdir):
     prevdir = os.getcwd()
@@ -366,41 +374,30 @@ def test_get_configuration(tmpdir):
         assert result.core.owner == 'TestName'
 
 
-def test_get_pid_filename_default():
+def test_get_pid_filename_default(configfactory):
     """Assert function returns the default filename from given ``pid_dir``"""
     pid_dir = '/pid'
-    parser = build_parser()
-    options = parser.parse_args(['legacy'])
+    settings = configfactory('default.cfg', TMP_CONFIG)
 
-    result = get_pid_filename(options, pid_dir)
+    result = get_pid_filename(settings, pid_dir)
     assert result == pid_dir + '/sopel.pid'
 
 
-def test_get_pid_filename_named():
+def test_get_pid_filename_named(configfactory):
     """Assert function returns a specific filename when config (with extension) is set"""
     pid_dir = '/pid'
-    parser = build_parser()
+    settings = configfactory('test.cfg', TMP_CONFIG)
 
-    # With extension
-    options = parser.parse_args(['legacy', '-c', 'test.cfg'])
-
-    result = get_pid_filename(options, pid_dir)
-    assert result == pid_dir + '/sopel-test.pid'
-
-    # Without extension
-    options = parser.parse_args(['legacy', '-c', 'test'])
-
-    result = get_pid_filename(options, pid_dir)
+    result = get_pid_filename(settings, pid_dir)
     assert result == pid_dir + '/sopel-test.pid'
 
 
-def test_get_pid_filename_ext_not_cfg():
+def test_get_pid_filename_ext_not_cfg(configfactory):
     """Assert function keeps the config file extension when it is not cfg"""
     pid_dir = '/pid'
-    parser = build_parser()
-    options = parser.parse_args(['legacy', '-c', 'test.ini'])
+    settings = configfactory('test.ini', TMP_CONFIG)
 
-    result = get_pid_filename(options, pid_dir)
+    result = get_pid_filename(settings, pid_dir)
     assert result == pid_dir + '/sopel-test.ini.pid'
 
 

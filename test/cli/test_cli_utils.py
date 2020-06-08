@@ -14,7 +14,19 @@ from sopel.cli.utils import (
     enumerate_configs,
     find_config,
     get_many_text,
+    green,
+    load_settings,
+    red,
+    yellow,
 )
+
+
+TMP_CONFIG = """
+[core]
+owner = testnick
+nick = TestBot
+enable = coretasks
+"""
 
 
 @contextmanager
@@ -39,6 +51,21 @@ def config_dir(tmpdir):
     return test_dir
 
 
+def test_green():
+    assert green('hello') == '\x1b[32mhello\x1b[0m'
+    assert green('hello', reset=False) == '\x1b[32mhello'
+
+
+def test_red():
+    assert red('hello') == '\x1b[31mhello\x1b[0m'
+    assert red('hello', reset=False) == '\x1b[31mhello'
+
+
+def test_yellow():
+    assert yellow('hello') == '\x1b[33mhello\x1b[0m'
+    assert yellow('hello', reset=False) == '\x1b[33mhello'
+
+
 def test_enumerate_configs(config_dir):
     """Assert function retrieves only .cfg files by default"""
     results = list(enumerate_configs(config_dir.strpath))
@@ -48,6 +75,11 @@ def test_enumerate_configs(config_dir):
     assert 'extra.ini' not in results
     assert 'README' not in results
     assert len(results) == 2
+
+
+def test_enumerate_configs_not_a_directory():
+    results = list(enumerate_configs('not_a_folder_that_exist'))
+    assert results == []
 
 
 def test_enumerate_configs_extension(config_dir):
@@ -183,3 +215,84 @@ def test_get_many_text(items, expected):
         'elements {first} and {second}',
         'elements {left}, and {last}')
     assert result == expected
+
+
+def test_load_settings(config_dir):
+    config_dir.join('config.cfg').write(TMP_CONFIG)
+    parser = argparse.ArgumentParser()
+    add_common_arguments(parser)
+
+    options = parser.parse_args([
+        '--config-dir', config_dir.strpath,
+        '-c', 'config.cfg',
+    ])
+
+    settings = load_settings(options)
+    assert isinstance(settings, config.Config)
+    assert settings.basename == 'config'
+
+
+def test_load_settings_arg_priority_over_env(monkeypatch, config_dir):
+    monkeypatch.setenv('SOPEL_CONFIG', 'fromenv')
+
+    config_dir.join('fromenv.cfg').write(TMP_CONFIG)
+    config_dir.join('fromarg.cfg').write(TMP_CONFIG)
+    parser = argparse.ArgumentParser()
+    add_common_arguments(parser)
+
+    options = parser.parse_args([
+        '--config-dir', config_dir.strpath,
+        '-c', 'fromarg',
+    ])
+
+    settings = load_settings(options)
+    assert isinstance(settings, config.Config)
+    assert settings.basename == 'fromarg'
+
+
+def test_load_settings_default(config_dir):
+    config_dir.join('default.cfg').write(TMP_CONFIG)
+    parser = argparse.ArgumentParser()
+    add_common_arguments(parser)
+
+    options = parser.parse_args(['--config-dir', config_dir.strpath])
+
+    settings = load_settings(options)
+    assert isinstance(settings, config.Config)
+
+
+def test_load_settings_default_env_var(monkeypatch, config_dir):
+    monkeypatch.setenv('SOPEL_CONFIG', 'config')
+
+    config_dir.join('config.cfg').write(TMP_CONFIG)
+    parser = argparse.ArgumentParser()
+    add_common_arguments(parser)
+
+    options = parser.parse_args(['--config-dir', config_dir.strpath])
+
+    settings = load_settings(options)
+    assert isinstance(settings, config.Config)
+    assert settings.basename == 'config'
+
+
+def test_load_settings_default_not_found(config_dir):
+    parser = argparse.ArgumentParser()
+    add_common_arguments(parser)
+
+    options = parser.parse_args(['--config-dir', config_dir.strpath])
+
+    with pytest.raises(config.ConfigurationNotFound):
+        load_settings(options)
+
+
+def test_load_settings_invalid(config_dir):
+    parser = argparse.ArgumentParser()
+    add_common_arguments(parser)
+
+    options = parser.parse_args([
+        '--config-dir', config_dir.strpath,
+        '-c', 'config.cfg',
+    ])
+
+    with pytest.raises(ValueError):  # no [core] section
+        load_settings(options)

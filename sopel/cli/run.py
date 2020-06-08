@@ -356,22 +356,24 @@ def get_configuration(options):
     return settings
 
 
-def get_pid_filename(options, pid_dir):
-    """Get the pid file name in ``pid_dir`` from the given ``options``.
+def get_pid_filename(settings, pid_dir):
+    """Get the pid file name in ``pid_dir`` from the given ``settings``.
 
-    :param options: command line options
+    :param settings: Sopel config
+    :type settings: :class:`sopel.config.Config`
     :param str pid_dir: path to the pid directory
     :return: absolute filename of the pid file
 
-    By default, it's ``sopel.pid``, but if a configuration filename is given
-    in the ``options``, its basename is used to generate the filename, as:
+    By default, it's ``sopel.pid``, but if the configuration's basename is not
+    ``default`` then it will be used to generate the pid file name as
     ``sopel-{basename}.pid`` instead.
     """
     name = 'sopel.pid'
-    if options.config and options.config != 'default':
-        basename = os.path.basename(options.config)
-        if basename.endswith('.cfg'):
-            basename = basename[:-4]
+    if settings.basename != 'default':
+        filename = os.path.basename(settings.filename)
+        basename, ext = os.path.splitext(filename)
+        if ext != '.cfg':
+            basename = filename
         name = 'sopel-%s.pid' % basename
 
     return os.path.abspath(os.path.join(pid_dir, name))
@@ -402,18 +404,18 @@ def command_start(opts):
     """Start a Sopel instance"""
     # Step One: Get the configuration file and prepare to run
     try:
-        config_module = get_configuration(opts)
+        settings = get_configuration(opts)
     except config.ConfigurationError as e:
         tools.stderr(e)
         return ERR_CODE_NO_RESTART
 
-    if config_module.core.not_configured:
+    if settings.core.not_configured:
         tools.stderr('Bot is not configured, can\'t start')
         return ERR_CODE_NO_RESTART
 
     # Step Two: Handle process-lifecycle options and manage the PID file
-    pid_dir = config_module.core.pid_dir
-    pid_file_path = get_pid_filename(opts, pid_dir)
+    pid_dir = settings.core.pid_dir
+    pid_file_path = get_pid_filename(settings, pid_dir)
     pid = get_running_pid(pid_file_path)
 
     if pid is not None and tools.check_pid(pid):
@@ -432,7 +434,7 @@ def command_start(opts):
         pid_file.write(str(os.getpid()))
 
     # Step Three: Run Sopel
-    ret = run(config_module, pid_file_path)
+    ret = run(settings, pid_file_path)
 
     # Step Four: Shutdown Clean-Up
     os.unlink(pid_file_path)
@@ -471,7 +473,7 @@ def command_stop(opts):
     logger.setup_logging(settings)
 
     # Get Sopel's PID
-    filename = get_pid_filename(opts, settings.core.pid_dir)
+    filename = get_pid_filename(settings, settings.core.pid_dir)
     pid = get_running_pid(filename)
 
     if pid is None or not tools.check_pid(pid):
@@ -510,7 +512,7 @@ def command_restart(opts):
     logger.setup_logging(settings)
 
     # Get Sopel's PID
-    filename = get_pid_filename(opts, settings.core.pid_dir)
+    filename = get_pid_filename(settings, settings.core.pid_dir)
     pid = get_running_pid(filename)
 
     if pid is None or not tools.check_pid(pid):
@@ -585,18 +587,18 @@ def command_legacy(opts):
 
     # Step Two: Get the configuration file and prepare to run
     try:
-        config_module = get_configuration(opts)
+        settings = get_configuration(opts)
     except config.ConfigurationError as e:
         tools.stderr(e)
         return ERR_CODE_NO_RESTART
 
-    if config_module.core.not_configured:
+    if settings.core.not_configured:
         tools.stderr('Bot is not configured, can\'t start')
         return ERR_CODE_NO_RESTART
 
     # Step Three: Handle process-lifecycle options and manage the PID file
-    pid_dir = config_module.core.pid_dir
-    pid_file_path = get_pid_filename(opts, pid_dir)
+    pid_dir = settings.core.pid_dir
+    pid_file_path = get_pid_filename(settings, pid_dir)
     old_pid = get_running_pid(pid_file_path)
 
     if old_pid is not None and tools.check_pid(old_pid):
@@ -649,7 +651,7 @@ def command_legacy(opts):
         pid_file.write(str(os.getpid()))
 
     # Step Four: Initialize and run Sopel
-    ret = run(config_module, pid_file_path)
+    ret = run(settings, pid_file_path)
     os.unlink(pid_file_path)
     if ret == -1:
         os.execv(sys.executable, ['python'] + sys.argv)
