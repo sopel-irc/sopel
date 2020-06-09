@@ -433,7 +433,19 @@ def label(value):
     :param str value: a label for the rule
 
     The rule label allows the documentation and the logging system to refer
-    to this function by its label. A function can have one and only one label.
+    to this function by its label. A function can have one and only one label::
+
+        @label('on_hello')
+        @rule('hello')
+            # will trigger on hello, and be labelled as "on_hello"
+
+    .. note::
+
+        By default, the "label" of a callable will be its function name, which
+        can be confusing for end-users: the goal of the ``label`` decorator is
+        to make generic rules as user-friendly as commands are, by giving them
+        some name that isn't tied to an identifier in the source code.
+
     """
     def add_attribute(function):
         function.rule_label = value

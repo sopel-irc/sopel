@@ -141,10 +141,10 @@ def test_manager_rule_and_command(mockbot):
     pretrigger = trigger.PreTrigger(mockbot.nick, line)
 
     items = manager.get_triggered_rules(mockbot, pretrigger)
-    assert len(items) == 2, 'Both rules (anonymous rule & command) must match'
+    assert len(items) == 2, 'Both rules (generic rule & command) must match'
     rule_result, command_result = items
 
-    assert rule_result[0] == rule, 'First match must be the anonymous rule'
+    assert rule_result[0] == rule, 'First match must be the generic rule'
     assert command_result[0] == command, 'Second match must be the command'
 
     assert list(manager.get_all_commands()) == [
@@ -323,14 +323,14 @@ def test_rule_str_no_label():
     regex = re.compile(r'.*')
     rule = rules.Rule([regex], plugin='testplugin')
 
-    assert str(rule) == '<Rule testplugin.(anonymous) (1)>'
+    assert str(rule) == '<Rule testplugin.(generic) (1)>'
 
 
 def test_rule_str_no_plugin_no_label():
     regex = re.compile(r'.*')
     rule = rules.Rule([regex])
 
-    assert str(rule) == '<Rule (no-plugin).(anonymous) (1)>'
+    assert str(rule) == '<Rule (no-plugin).(generic) (1)>'
 
 
 def test_rule_get_rule_label(mockbot):

@@ -98,7 +98,7 @@ class Manager(object):
 
     To register a rule:
 
-    * :meth:`register` for anonymous rules
+    * :meth:`register` for generic rules
     * :meth:`register_command` for named rules with a prefix
     * :meth:`register_nick_command` for named rules based on nick calling
     * :meth:`register_action_command` for named rules based on ``ACTION``
@@ -280,7 +280,7 @@ class Manager(object):
         :return: a tuple of ``(rule, match)``, sorted by priorities
         :rtype: tuple
         """
-        anonymous_rules = self._rules.values()
+        generic_rules = self._rules.values()
         command_rules = (
             rules_dict.values()
             for rules_dict in self._commands.values())
@@ -292,7 +292,7 @@ class Manager(object):
             for rules_dict in self._action_commands.values())
 
         rules = itertools.chain(
-            itertools.chain(*anonymous_rules),
+            itertools.chain(*generic_rules),
             itertools.chain(*command_rules),
             itertools.chain(*nick_rules),
             itertools.chain(*action_rules),
@@ -569,9 +569,9 @@ class AbstractRule(object):
 
 
 class Rule(AbstractRule):
-    """Anonymous rule definition.
+    """Generic rule definition.
 
-    An anonymous rule (or simply "a rule") uses regular expressions to match
+    A generic rule (or simply "a rule") uses regular expressions to match
     at most once per IRC line per regular expression, i.e. you can trigger
     between 0 and the number of regex the rule has per IRC line.
 
@@ -584,9 +584,24 @@ class Rule(AbstractRule):
         <user> hello sopelunkers
         <Bot> You triggered a rule, saying hello to "sopelunkers"
 
+    Generic rules are not triggered by any specific name, unlike commands which
+    have names and aliases.
     """
     @classmethod
     def kwargs_from_callable(cls, handler):
+        """Generate the keyword arguments to create a new instance.
+
+        :param callable handler: callable used to generate keyword arguments
+        :return: a map of keyword arguments
+        :rtype: dict
+
+        This classmethod takes the ``handler``'s attributes to generate a map
+        of keyword arguments for the class. This can be used by the
+        :meth:`from_callable` classmethod to instantiate a new rule object.
+
+        The expected attributes are the ones set by decorators from the
+        :mod:`sopel.module` module.
+        """
         # manage examples:
         # - usages are for documentation only
         # - tests are examples that can be run and tested
@@ -680,7 +695,7 @@ class Rule(AbstractRule):
         try:
             label = self.get_rule_label()
         except RuntimeError:
-            label = '(anonymous)'
+            label = '(generic)'
 
         plugin = self.get_plugin_name() or '(no-plugin)'
 
@@ -918,7 +933,7 @@ class Command(NamedRuleMixin, Rule):
 
     A command rule (or simply "a command") is a named rule, i.e. it has a known
     name and must be invoked using that name (or one of its aliases, if any).
-    Apart from that, it behaves exactly like an :class:`anonymous rule<Rule>`.
+    Apart from that, it behaves exactly like a :class:`generic rule <Rule>`.
 
     Here is an example with the ``dummy`` command:
 
@@ -1035,7 +1050,7 @@ class NickCommand(NamedRuleMixin, Rule):
         <user> AliasBotName: dummy-alias
         <Bot> You just invoked the nick command 'dummy' (as 'dummy-alias')
 
-    Apart from that, it behaves exactly like an :class:`anonymous rule<Rule>`.
+    Apart from that, it behaves exactly like a :class:`generic rule <Rule>`.
     """
     @classmethod
     def from_callable(cls, settings, handler):
@@ -1136,7 +1151,7 @@ class ActionCommand(NamedRuleMixin, Rule):
         > user dummy-alias
         <Bot> You just invoked the action command 'dummy' (as 'dummy-alias')
 
-    Apart from that, it behaves exactly like an :class:`anonymous rule<Rule>`.
+    Apart from that, it behaves exactly like a :class:`generic rule <Rule>`.
     """
     INTENT_REGEX = re.compile(r'ACTION', re.IGNORECASE)
 
