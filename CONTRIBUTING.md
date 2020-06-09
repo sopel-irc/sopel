@@ -9,7 +9,7 @@ that you do the following:
 2. Give Sopel the `.version` command, and include the output in your issue.
 3. Note the OS you're running Sopel on, and how you installed Sopel (via your
    package manager, pip, `setup.py install`, or running straight from source)
-4. Include relevant output from the log files in `~/.sopel/logs.`
+4. Include relevant output from the log files in `~/.sopel/logs/`.
 
 Committing Code
 ---------------
@@ -43,8 +43,8 @@ include your changes.
   running `make uninstall-hooks`,  in your root `sopel` folder.
 * Make your commit messages clear and explicative. Our convention is to place
   the name of the thing you're changing in at the beginning of the message,
-  followed by a colon: the module name for modules, docs for documentation
-  files, coretasks for coretasks.py, db for the database feature, and so on.
+  followed by a colon: the plugin name for plugins, "docs" for documentation
+  files, "coretasks" for `coretasks.py`, "db" for the database feature, etc.
 * Python files should always have `# coding=utf-8` as the first line (or the
   second, if the first is `#!/usr/bin/env python`), and `from __future__ import
   unicode_literals, absolute_import, print_function, division` as the first
@@ -58,28 +58,28 @@ guidelines for writing docstrings. Let's start with an example:
 
 ```
 def scramble_eggs(eggs, bacon=None, spam=False):
-"""Scramble eggs, with optional bacon and/or SPAM.
+    """Scramble eggs, with optional bacon and/or SPAM.
 
-:param int eggs: how many eggs to scramble
-:param bacon: optional bacon to put in the ``eggs``
-:type bacon: :class:`sopel.tools.breakfast.Bacon`
-:param bool spam: whether to put SPAM in the scrambled ``eggs``
-:return: the scrambled eggs
-:rtype: :term:`iterable` of :class:`sopel.tools.breakfast.Egg`
+    :param int eggs: how many eggs to scramble
+    :param bacon: optional bacon to put in the ``eggs``
+    :type bacon: :class:`sopel.tools.breakfast.Bacon`
+    :param bool spam: whether to put SPAM in the scrambled ``eggs``
+    :return: the scrambled eggs
+    :rtype: :term:`iterable` of :class:`sopel.tools.breakfast.Egg`
 
-You should create and customize your own :class:`~sopel.tools.bacon.Bacon`
-object to pass in. See that class's documentation to learn how to make the
-bacon extra crispy, chopped, diced, etc.
+    You should create and customize your own :class:`~sopel.tools.bacon.Bacon`
+    object to pass in. See that class's documentation to learn how to make the
+    bacon extra crispy, chopped, diced, etc.
 
-This function will generate SPAM as needed, since it is not customizable.
+    This function will generate SPAM as needed, since it is not customizable.
 
-.. versionadded:: 7.1
-.. seealso::
+    .. versionadded:: 7.1
+    .. seealso::
 
-   To make an omelet, use :func:`make_omelet`.
+       To make an omelet, use :func:`make_omelet`.
 
-"""
-# <function body>
+    """
+    # <function code>
 ```
 
 The basic components of the ideal Sopel function docstring are:
