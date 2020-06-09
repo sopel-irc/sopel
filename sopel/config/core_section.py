@@ -69,11 +69,28 @@ class CoreSection(StaticSection):
     """The config section used for configuring the bot itself.
 
     .. important::
+
         All **Required** values must be specified, or Sopel will fail to start.
+
+    .. note::
+
+        You can use the command ``sopel configure`` to generate a config file
+        with the minimal required options.
+
     """
 
     admins = ListAttribute('admins')
-    """The list of people (other than the owner) who can administer the bot."""
+    """The list of people (other than the owner) who can administer the bot.
+
+    Example:
+
+    .. code-block:: ini
+
+        admin =
+            YourFavAdmin
+            TheOtherAdmin
+            YetAnotherRockstarAdmin
+    """
 
     admin_accounts = ListAttribute('admin_accounts')
     """The list of admin accounts other than the owner's.
@@ -81,9 +98,20 @@ class CoreSection(StaticSection):
     Each account is allowed to administer the bot and can perform commands
     that are restricted to admins.
 
+    Example:
+
+    .. code-block:: ini
+
+        admin_accounts =
+            favadmin
+            otheradm
+            yetanotherone
+
     .. important::
+
         This should not be set for networks that do not support IRCv3 account
-        capabilities.
+        capabilities. In that case, use :attr:`admins` instead.
+
     """
 
     alias_nicks = ListAttribute('alias_nicks')
@@ -92,9 +120,18 @@ class CoreSection(StaticSection):
     These aliases are used along with the bot's nick for ``$nick`` and
     ``$nickname`` regex substitutions.
 
-    For example, a bot named "William" (its :attr:`nick`) could have aliases
-    "Bill", "Will", and "Liam". This would then allow both "William: Hi!" and
-    "Bill: Hi!" to work with :func:`~sopel.module.nickname_commands`.
+    For example, a bot named "William" (its :attr:`nick`) could have these
+    aliases:
+
+    .. code-block:: ini
+
+        alias_nicks =
+            Bill
+            Will
+            Liam
+
+    This would then allow both "William: Hi!" and "Bill: Hi!" to work with
+    :func:`~sopel.module.nickname_commands`.
     """
 
     auth_method = ChoiceAttribute('auth_method', choices=[
@@ -152,33 +189,74 @@ class CoreSection(StaticSection):
     Used by the URL callbacks feature to call plugins when links are posted in
     chat; see the :func:`sopel.module.url` decorator.
 
-    The default value allows ``http``, ``https``, and ``ftp``.
+    The default value allows ``http``, ``https``, and ``ftp``. It is equivalent
+    to this configuration example:
+
+    .. code-block:: ini
+
+        auto_url_schemes =
+            http
+            https
+            ftp
+
     """
 
     bind_host = ValidatedAttribute('bind_host')
     """Bind the connection to a specific IP.
 
     :default: ``0.0.0.0`` (all interfaces)
+
+    This is equivalent to the default value:
+
+    .. code-block:: ini
+
+        bind_host = 0.0.0.0
+
     """
 
     ca_certs = FilenameAttribute('ca_certs', default=_find_certs())
     """The path to the CA certs ``.pem`` file.
 
-    If not specified, Sopel will try to find the certificate trust store itself.
+    Example:
+
+    .. code-block:: ini
+
+        ca_certs = /etc/ssl/certs/ca-certificates.crt
+
+    If not specified, Sopel will try to find the certificate trust store
+    itself from a set of known locations.
     """
 
     channels = ListAttribute('channels')
     """List of channels for the bot to join when it connects.
 
     If a channel key needs to be provided, separate it from the channel name
-    with a space, e.g. ``"#channel password"``.
+    with a space:
+
+    .. code-block:: ini
+
+        channels =
+            "#channel"
+            "#logs"
+            &rare_prefix_channel
+            "#private password"
+
+    .. important::
+
+        If you edit the config file manually, make sure to wrap each line
+        starting with a ``#`` in double quotes, as shown in the example above.
+        An unquoted ``#`` denotes a comment, which will be ignored by Sopel's
+        configuration parser.
+
     """
 
     commands_on_connect = ListAttribute('commands_on_connect')
     """A list of commands to send upon successful connection to the IRC server.
 
-    Each line is a message that will be sent to the server once connected.
-    Example::
+    Each line is a message that will be sent to the server once connected,
+    in the order they are defined:
+
+    .. code-block:: ini
 
         commands_on_connect =
             PRIVMSG Q@CServe.quakenet.org :AUTH my_username MyPassword,@#$%!
@@ -264,6 +342,12 @@ class CoreSection(StaticSection):
     mssql
       ``pip install pymssql``
 
+    This is equivalent to the default value:
+
+    .. code-block:: ini
+
+        db_type = sqlite
+
     .. seealso::
 
         Refer to :ref:`SQLAlchemy's documentation <dialect_toplevel>` for more
@@ -290,6 +374,12 @@ class CoreSection(StaticSection):
 
     Used when plugins format times with :func:`sopel.tools.time.format_time`.
 
+    This is equivalent to the default value:
+
+    .. code-block:: ini
+
+        default_time_format = %Y-%m-%d - %T%Z
+
     .. seealso::
 
         Time format reference is available in the documentation for Python's
@@ -302,37 +392,91 @@ class CoreSection(StaticSection):
 
     :default: ``UTC``
 
+    .. highlight:: ini
+
     Used when plugins format times with :func:`sopel.tools.time.format_time`.
+
+    For example, to make Sopel fall back on British time::
+
+        default_timezone = Europe/London
+
+    And this is equivalent to the default value::
+
+        default_timezone = UTC
+
     """
 
     enable = ListAttribute('enable')
     """A list of the only plugins you want to enable.
 
-    If set, Sopel will *only* load the plugins named here. All other available
-    plugins will be ignored.
+    .. highlight:: ini
 
-    To load *all* available plugins, clear this setting.
+    If set, Sopel will *only* load the plugins named here. All other available
+    plugins will be ignored::
+
+        enable =
+            url
+            xkcd
+            help
+
+    In that case, only the ``url``, ``xkcd``, and ``help`` plugins will be
+    enabled and loaded by Sopel.
+
+    To load *all* available plugins, clear this setting by removing it, or
+    by making it empty::
+
+        enable =
 
     To disable only a few plugins, see :attr:`exclude`.
 
-    See :ref:`Plugins` for an overview of all plugin-related settings.
+    .. seealso::
+
+        The :ref:`Plugins` chapter for an overview of all plugin-related
+        settings.
+
     """
 
     exclude = ListAttribute('exclude')
     """A list of plugins which should not be loaded.
 
-    If set, Sopel will load all available plugins *except* those named here.
+    .. highlight:: ini
+
+    If set, Sopel will load all available plugins *except* those named here::
+
+        exclude =
+            url
+            calc
+            meetbot
+
+    In that case, ``url``, ``calc``, and ``meetbot`` will be excluded, and they
+    won't be loaded by Sopel.
 
     A plugin named both here and in :attr:`enable` **will not** be loaded;
     :attr:`exclude` takes priority.
 
-    See :ref:`Plugins` for an overview of all plugin-related settings.
+    .. seealso::
+
+        The :ref:`Plugins` chapter for an overview of all plugin-related
+        settings.
+
     """
 
     extra = ListAttribute('extra')
     """A list of other directories in which to search for plugin files.
 
-    See :ref:`Plugins` for an overview of all plugin-related settings.
+    Example:
+
+    .. code-block:: ini
+
+        extra =
+            /home/myuser/custom-sopel-plugins/
+            /usr/local/lib/ad-hoc-plugins/
+
+    .. seealso::
+
+        The :ref:`Plugins` chapter for an overview of all plugin-related
+        settings.
+
     """
 
     flood_burst_lines = ValidatedAttribute('flood_burst_lines', int, default=4)
@@ -340,7 +484,16 @@ class CoreSection(StaticSection):
 
     :default: ``4``
 
-    See :ref:`Flood Prevention` to learn what each flood-related setting does.
+    This is equivalent to the default value:
+
+    .. code-block:: ini
+
+        flood_burst_lines = 4
+
+    .. seealso::
+
+        The :ref:`Flood Prevention` chapter to learn what each flood-related
+        setting does.
 
     .. versionadded:: 7.0
     """
@@ -350,7 +503,16 @@ class CoreSection(StaticSection):
 
     :default: ``0.7``
 
-    See :ref:`Flood Prevention` to learn what each flood-related setting does.
+    This is equivalent to the default value:
+
+    .. code-block:: ini
+
+        flood_empty_wait = 0.7
+
+    .. seealso::
+
+        The :ref:`Flood Prevention` chapter to learn what each flood-related
+        setting does.
 
     .. versionadded:: 7.0
     """
@@ -360,7 +522,16 @@ class CoreSection(StaticSection):
 
     :default: ``1``
 
-    See :ref:`Flood Prevention` to learn what each flood-related setting does.
+    This is equivalent to the default value:
+
+    .. code-block:: ini
+
+        flood_refill_rate = 1
+
+    .. seealso::
+
+        The :ref:`Flood Prevention` chapter to learn what each flood-related
+        setting does.
 
     .. versionadded:: 7.0
     """
@@ -369,6 +540,12 @@ class CoreSection(StaticSection):
     """The prefix to use in help output.
 
     :default: ``.``
+
+    This is equivalent to the default value:
+
+    .. code-block:: ini
+
+        help_prefix = .
 
     If :attr:`prefix` is changed from the default, this setting **must** be
     updated to reflect the prefix your bot will actually respond to, or the
@@ -389,34 +566,70 @@ class CoreSection(StaticSection):
 
     :default: ``chat.freenode.net``
 
-    **Required.**
+    **Required**:
+
+    .. code-block:: ini
+
+        host = chat.freenode.net
+
     """
 
     host_blocks = ListAttribute('host_blocks')
     """A list of hostnames which Sopel should ignore.
 
-    Messages from any user whose connection hostname matches one of these values
-    will be ignored. :ref:`Regular expression syntax <re-syntax>` is supported.
+    Messages from any user whose connection hostname matches one of these
+    values will be ignored. :ref:`Regular expression syntax <re-syntax>`
+    is supported, so remember to escape special characters:
 
-    Also see the :attr:`nick_blocks` list.
+    .. code-block:: ini
+
+        host_blocks =
+            (.+\\.)*domain\\.com
+
+    .. seealso::
+
+        The :attr:`nick_blocks` list can be used to block users by their nick.
+
+    .. note::
+
+        We are working on a better block system; see `issue #1355`__ for more
+        information and update.
+
+    .. __: https://github.com/sopel-irc/sopel/issues/1355
+
     """
 
     log_raw = ValidatedAttribute('log_raw', bool, default=False)
     """Whether a log of raw lines as sent and received should be kept.
 
-    See :ref:`Raw Logs`.
+    To enable this logging:
+
+    .. code-block:: ini
+
+        log_raw = yes
+
+    .. seealso::
+
+        The :ref:`Raw Logs` chapter.
+
     """
 
     logdir = FilenameAttribute('logdir', directory=True, default='logs')
     """Directory in which to place logs.
 
-    See :ref:`Logging`.
+    .. seealso::
+
+        The :ref:`Logging` chapter.
+
     """
 
     logging_channel = ValidatedAttribute('logging_channel', Identifier)
     """The channel to send logging messages to.
 
-    See :ref:`Log to a Channel`.
+    .. seealso::
+
+        The :ref:`Log to a Channel` chapter.
+
     """
 
     logging_channel_datefmt = ValidatedAttribute('logging_channel_datefmt')
@@ -424,14 +637,14 @@ class CoreSection(StaticSection):
 
     If not specified, this falls back to using :attr:`logging_datefmt`.
 
-    See :ref:`Log to a Channel`.
-
-    .. versionadded:: 7.0
     .. seealso::
 
         Time format reference is available in the documentation for Python's
         :func:`time.strftime` function.
 
+        For more information about logging, see :ref:`Log to a Channel`.
+
+    .. versionadded:: 7.0
     """
 
     logging_channel_format = ValidatedAttribute('logging_channel_format')
@@ -439,7 +652,9 @@ class CoreSection(StaticSection):
 
     If not specified, this falls back to using :attr:`logging_format`.
 
-    See :ref:`Log to a Channel`.
+    .. seealso::
+
+        The :ref:`Log to a Channel` chapter.
 
     .. versionadded:: 7.0
     """
@@ -452,7 +667,9 @@ class CoreSection(StaticSection):
 
     If not specified, this falls back to using :attr:`logging_level`.
 
-    See :ref:`Log to a Channel`.
+    .. seealso::
+
+        The :ref:`Log to a Channel` chapter.
 
     .. versionadded:: 7.0
     """
@@ -463,12 +680,12 @@ class CoreSection(StaticSection):
     If not set, the ``datefmt`` argument is not provided, and :mod:`logging`
     will use the Python default.
 
-    .. versionadded:: 7.0
     .. seealso::
 
         Time format reference is available in the documentation for Python's
         :func:`time.strftime` function.
 
+    .. versionadded:: 7.0
     """
 
     logging_format = ValidatedAttribute(
@@ -484,9 +701,17 @@ class CoreSection(StaticSection):
 
         [2019-10-21 12:47:44,272] sopel.irc            INFO     - Connected.
 
-    .. versionadded:: 7.0
+    This is equivalent to the default value:
+
+    .. code-block:: ini
+
+       logging_format = [%(asctime)s] %(name)-20s %(levelname)-8s - %(message)s
+
     .. seealso::
+
         Python's logging format documentation: :ref:`logrecord-attributes`
+
+    .. versionadded:: 7.0
     """
 
     logging_level = ChoiceAttribute('logging_level',
@@ -504,6 +729,13 @@ class CoreSection(StaticSection):
     * ``WARNING``
     * ``INFO``
     * ``DEBUG``
+
+    For example to log only at WARNING level and above:
+
+    .. code-block:: ini
+
+        logging_level = WARNING
+
     """
 
     modes = ValidatedAttribute('modes', default='B')
@@ -526,7 +758,12 @@ class CoreSection(StaticSection):
 
     :default: ``Sopel``
 
-    **Required.**
+    **Required**:
+
+    .. code-block:: ini
+
+        nick = Sopel
+
     """
 
     nick_auth_method = ChoiceAttribute('nick_auth_method', choices=[
@@ -535,7 +772,9 @@ class CoreSection(StaticSection):
 
     Can be one of ``nickserv``, ``authserv``, ``Q``, or ``userserv``.
 
-    See :ref:`Authentication` for more details.
+    .. seealso::
+
+        The :ref:`Authentication` chapter for more details.
 
     .. versionadded:: 7.0
     """
@@ -543,7 +782,9 @@ class CoreSection(StaticSection):
     nick_auth_password = ValidatedAttribute('nick_auth_password')
     """The password to use to authenticate the bot's nick.
 
-    See :ref:`Authentication` for more details.
+    .. seealso::
+
+        The :ref:`Authentication` chapter for more details.
 
     .. versionadded:: 7.0
     """
@@ -554,8 +795,11 @@ class CoreSection(StaticSection):
     :default: ``NickServ`` for ``nickserv`` authentication; ``UserServ`` for
               ``userserv`` authentication
 
-    May not apply, depending on the chosen :attr:`nick_auth_method`. See
-    :ref:`Authentication` for more details.
+    May not apply, depending on the chosen :attr:`nick_auth_method`.
+
+    .. seealso::
+
+        The :ref:`Authentication` chapter for more details.
 
     .. versionadded:: 7.0
     """
@@ -565,8 +809,11 @@ class CoreSection(StaticSection):
 
     :default: the value of :attr:`nick`
 
-    May not apply, depending on the chosen :attr:`nick_auth_method`. See
-    :ref:`Authentication` for more details.
+    May not apply, depending on the chosen :attr:`nick_auth_method`.
+
+    .. seealso::
+
+        The :ref:`Authentication` chapter for more details.
 
     .. versionadded:: 7.0
     """
@@ -575,9 +822,26 @@ class CoreSection(StaticSection):
     """A list of nicks which Sopel should ignore.
 
     Messages from any user whose nickname matches one of these values will be
-    ignored. :ref:`Regular expression syntax <re-syntax>` is supported.
+    ignored. :ref:`Regular expression syntax <re-syntax>` is supported, so
+    remember to escape special characters:
 
-    Also see the :attr:`host_blocks` list.
+    .. code-block:: ini
+
+        nick_blocks =
+            ExactNick
+            _*RegexMatch_*
+
+    .. seealso::
+
+        The :attr:`host_blocks` list can be used to block users by their host.
+
+    .. note::
+
+        We are working on a better block system; see `issue #1355`__ for more
+        information and update.
+
+    .. __: https://github.com/sopel-irc/sopel/issues/1355
+
     """
 
     not_configured = ValidatedAttribute('not_configured', bool, default=False)
@@ -586,8 +850,8 @@ class CoreSection(StaticSection):
     :default: ``False``
 
     This allows software packages to install a default config file, with this
-    option set to ``True``, so that the bot will not run until it has been
-    properly configured.
+    option set to ``True``, so that commands to start, stop, or restart the bot
+    won't work until the bot has been properly configured.
     """
 
     owner = ValidatedAttribute('owner', default=NO_DEFAULT)
@@ -620,18 +884,62 @@ class CoreSection(StaticSection):
 
     :default: ``6667`` normally; ``6697`` if :attr:`use_ssl` is ``True``
 
-    **Required.**
+    .. highlight:: ini
+
+    **Required**::
+
+        port = 6667
+
+    And usually when SSL is enabled::
+
+        port = 6697
+        use_ssl = yes
+
     """
 
     prefix = ValidatedAttribute('prefix', default='\\.')
-    """The prefix to add to the beginning of commands.
+    """The prefix to add to the beginning of commands as a regular expression.
 
     :default: ``\\.``
 
-    **Required.**
+    .. highlight:: ini
 
-    It is a regular expression (so the default, ``\\.``, means commands start
-    with a period), though using capturing groups will create problems.
+    **Required**::
+
+        prefix = \\.
+
+    With the default value, users will invoke commands like this:
+
+    .. code-block:: irc
+
+        <nick> .help
+
+    Since it's a regular expression, you can use multiple prefixes::
+
+        prefix = \\.|\\?
+
+    .. important::
+
+        As the prefix is a regular expression, don't forget to escape it when
+        necessary. It is not recommended to use capturing groups, as it
+        **will** create problems with argument parsing for commands.
+
+    .. note::
+
+        Remember to change the :attr:`help_prefix` value accordingly::
+
+            prefix = \\?
+            help_prefix = ?
+
+        In that example, users will invoke commands like this:
+
+        .. code-block:: irc
+
+            <nick> ?help xkcd
+            <Sopel> ?xkcd - Finds an xkcd comic strip
+            <Sopel> Takes one of 3 inputs:
+            [...]
+
     """
 
     reply_errors = ValidatedAttribute('reply_errors', bool, default=True)
@@ -642,11 +950,12 @@ class CoreSection(StaticSection):
     If ``True``, Sopel will send information about the triggered exception to
     the sender of the message that caused the error.
 
-    If ``False``, Sopel will only log the error and will appear to fail silently
-    from the triggering IRC user's perspective.
+    If ``False``, Sopel will only log the error and will appear to fail
+    silently from the triggering IRC user's perspective.
     """
 
-    server_auth_method = ChoiceAttribute('server_auth_method', choices=['sasl', 'server'])
+    server_auth_method = ChoiceAttribute('server_auth_method',
+                                         choices=['sasl', 'server'])
     """The server authentication method.
 
     Can be ``sasl`` or ``server``.
@@ -685,6 +994,12 @@ class CoreSection(StaticSection):
 
     If not set, or set to 0, Sopel won't slow down the initial join.
 
+    In this example, Sopel will try to join 4 channels at a time:
+
+    .. code-block:: ini
+
+        throttle_join = 4
+
     .. seealso::
 
         :attr:`throttle_wait` controls Sopel's waiting time between joining
@@ -697,8 +1012,14 @@ class CoreSection(StaticSection):
 
     :default: ``1``
 
-    For example, with ``throttle_join = 2`` and ``throttle_wait = 5`` it will
-    wait 5s every 2 channels it joins.
+    In this example:
+
+    .. code-block:: ini
+
+        throttle_wait = 5
+        throttle_join = 2
+
+    Sopel will join 2 channels every 5s.
 
     If :attr:`throttle_join` is ``0``, this setting has no effect.
 
@@ -712,12 +1033,27 @@ class CoreSection(StaticSection):
     """The number of seconds acceptable between pings before timing out.
 
     :default: ``120``
+
+    You can change the timeout like this:
+
+    .. code-block:: ini
+
+        # increase to 200 seconds
+        timeout = 200
+
     """
 
     use_ssl = ValidatedAttribute('use_ssl', bool, default=False)
     """Whether to use a SSL/TLS encrypted connection.
 
     :default: ``False``
+
+    Example with SSL on:
+
+    .. code-block:: ini
+
+        use_ssl = yes
+
     """
 
     user = ValidatedAttribute('user', default='sopel')
@@ -725,11 +1061,24 @@ class CoreSection(StaticSection):
 
     :default: ``sopel``
 
-    **Required.**
+    **Required**:
+
+    .. code-block:: ini
+
+        user = sopel
+
     """
 
     verify_ssl = ValidatedAttribute('verify_ssl', bool, default=True)
     """Whether to require a trusted certificate for encrypted connections.
 
     :default: ``True``
+
+    Example with SSL on:
+
+    .. code-block:: ini
+
+        use_ssl = yes
+        verify_ssl = yes
+
     """

@@ -30,12 +30,44 @@ This file can be generated with ``sopel configure``.
 
 .. seealso::
 
-    The :doc:`cli` chapter for ``sopel``'s subcommands.
-
+    The :doc:`cli` chapter for ``sopel configure`` subcommand.
 
 .. contents::
     :local:
     :depth: 2
+
+
+INI file structure
+==================
+
+Sopel uses an INI file structure, and uses `Python's ConfigParser`__ for that
+purpose. Note that the exact behavior of the parser depends on the version of
+Python you are running your instance of Sopel with (indentation and comments
+in particular are handled differently between Python 2.7 and Python 3+).
+
+On top of that, Sopel uses its own configuration class to handle certain types
+of options, such as choice, integer, float, list, and boolean.
+
+In this document, when a config option is a "list", it means you can provide
+more than one value, each on its own line, like this::
+
+    [core]
+    single_option = only one value
+    multi_option =
+        first value
+        second value
+        "# escape value starting with # using double quotes"
+        # this is a comment and won't be used as value
+        yet another value
+
+When a config option is a boolean, it means you can provide one of these
+case-insensitive values as "true": ``1``, ``yes``, ``y``, ``true``, ``on``. Any
+other value will be considered as "false".
+
+When a config option is a choice, it means you can provide only one of the
+values defined as valid for this option, or Sopel will complain about it.
+
+.. __: https://docs.python.org/3/library/configparser.html#supported-ini-file-structure
 
 
 Identity & Admins
