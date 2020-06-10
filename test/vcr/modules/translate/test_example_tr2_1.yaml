@@ -1,0 +1,33 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept: ['*/*']
+      Accept-Encoding: ['gzip, deflate']
+      Connection: [keep-alive]
+      User-Agent: [Mozilla/5.0(X11; U; Linux i686)Gecko/20071127 Firefox/2.0.0.11]
+    method: GET
+    uri: https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=en&dt=t&q=%D7%9E%D7%97%D7%A9%D7%91
+  response:
+    body: {string: "[[[\"computer\",\"\u05DE\u05D7\u05E9\u05D1\",null,null,2]\n]\n,null,\"iw\",null,null,null,1.0,[]\n,[[\"iw\"]\n,null,[1.0]\n,[\"iw\"]\n]\n]\n"}
+    headers:
+      Accept-Ranges: [none]
+      Access-Control-Allow-Origin: ['*']
+      Alt-Svc: ['h3-27=":443"; ma=2592000,h3-25=":443"; ma=2592000,h3-T050=":443";
+          ma=2592000,h3-Q050=":443"; ma=2592000,h3-Q049=":443"; ma=2592000,h3-Q048=":443";
+          ma=2592000,h3-Q046=":443"; ma=2592000,h3-Q043=":443"; ma=2592000,quic=":443";
+          ma=2592000; v="46,43"']
+      Cache-Control: ['no-cache, no-store, max-age=0, must-revalidate']
+      Content-Disposition: [attachment; filename="json.txt"; filename*=UTF-8''json.txt]
+      Content-Type: [application/json; charset=utf-8]
+      Date: ['Tue, 19 May 2020 22:12:43 GMT']
+      Expires: ['Mon, 01 Jan 1990 00:00:00 GMT']
+      Pragma: [no-cache]
+      Server: [ESF]
+      Transfer-Encoding: [chunked]
+      Vary: [Accept-Encoding]
+      X-Content-Type-Options: [nosniff]
+      X-Frame-Options: [SAMEORIGIN]
+      X-XSS-Protection: ['0']
+    status: {code: 200, message: OK}
+version: 1

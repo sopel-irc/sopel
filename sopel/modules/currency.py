@@ -192,10 +192,10 @@ def exchange(bot, match):
 @commands('cur', 'currency', 'exchange')
 @example('.cur 100 usd in btc cad eur',
          r'100\.0 USD is [\d\.]+ BTC, [\d\.]+ CAD, [\d\.]+ EUR',
-         re=True)
+         re=True, online=True)
 @example('.cur 100 usd in btc cad eur can aux',
          r'100\.0 USD is [\d\.]+ BTC, [\d\.]+ CAD, [\d\.]+ EUR, \(unsupported: CAN, AUX\)',
-         re=True)
+         re=True, online=True)
 def exchange_cmd(bot, trigger):
     if not trigger.group(2):
         return bot.reply("No search term. Usage: {}cur 100 usd in btc cad eur"

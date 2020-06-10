@@ -146,7 +146,7 @@ def shutdown(bot):
 @module.example(
     '.title https://www.google.com',
     '[ Google ] - www.google.com',
-    online=True)
+    online=True, vcr=True)
 def title_command(bot, trigger):
     """
     Show the title or URL information for the given URL, or the last URL seen

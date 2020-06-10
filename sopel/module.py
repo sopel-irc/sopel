@@ -736,9 +736,11 @@ class example(object):
     :param bool user_help: whether this example should be included in
                            user-facing help output such as `.help command`
                            (optional; default ``False``; see below)
-    :param bool online: if ``True``, |pytest|_ will mark this
-                        example as "online" (optional; default ``False``; see
-                        below)
+    :param bool online: if ``True``, |pytest|_ will mark this example as
+                        "online" (optional; default ``False``; see below)
+    :param bool vcr: if ``True``, this example's HTTP requests & responses will
+                     be recorded for later reuse (optional; default ``False``;
+                     see below)
 
     .. |pytest| replace:: ``pytest``
     .. _pytest: https://pypi.org/project/pytest/
@@ -766,13 +768,21 @@ class example(object):
     can override this choice or include multiple examples by passing
     ``user_help=True`` to one or more ``example`` decorator(s).
 
-    Finally, passing ``online=True`` makes that particular example skippable if
-    Sopel's test suite is run in offline mode, which is mostly useful to make
-    life easier for other developers working on Sopel without Internet access.
+    Passing ``online=True`` makes that particular example skippable if Sopel's
+    test suite is run in offline mode, which is mostly useful to make life
+    easier for other developers working on Sopel without Internet access.
+
+    Finally, ``vcr=True`` records the example's HTTP requests and responses for
+    replaying during later test runs. It can be an alternative (or complement)
+    to ``online``, and is especially useful for testing plugin code that calls
+    on inconsistent or flaky remote APIs. The recorded "cassettes" of responses
+    can be committed alongside the code for use by CI services, etc. (See
+    `VCR.py <https://github.com/kevin1024/vcrpy>`_ & `pytest-vcr
+    <https://github.com/ktosiek/pytest-vcr>`_)
     """
     def __init__(self, msg, result=None, privmsg=False, admin=False,
                  owner=False, repeat=1, re=False, ignore=None,
-                 user_help=False, online=False):
+                 user_help=False, online=False, vcr=False):
         # Wrap result into a list for get_example_test
         if isinstance(result, list):
             self.result = result
@@ -787,6 +797,7 @@ class example(object):
         self.owner = owner
         self.repeat = repeat
         self.online = online
+        self.vcr = vcr
 
         if isinstance(ignore, list):
             self.ignore = ignore
@@ -819,6 +830,9 @@ class example(object):
 
             if self.online:
                 test = pytest.mark.online(test)
+
+            if self.vcr:
+                test = pytest.mark.vcr(test)
 
             sopel.test_tools.insert_into_module(
                 test, func.__module__, func.__name__, 'test_example'

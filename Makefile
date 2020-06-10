@@ -6,6 +6,9 @@ quality:
 test:
 	coverage run -m py.test -v .
 
+test_novcr:
+	coverage run -m py.test -v . --vcr-record=none
+
 coverage_report:
 	coverage report
 
@@ -16,7 +19,7 @@ coverages: coverage_report coverage_html
 
 qa: quality test coverages
 
-travis: quality test coverage_report
+travis: quality test_novcr coverage_report
 
 clean_docs:
 	$(MAKE) -C docs clean

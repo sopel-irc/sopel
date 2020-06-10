@@ -1,3 +1,5 @@
+import os
+
 import pytest
 
 # This file lists files which should be ignored by pytest
@@ -24,3 +26,20 @@ def pytest_configure(config):
         'markers',
         'online: for tests that require online access. '
         'Use --offline to skip them.')
+
+
+@pytest.fixture(scope='module')
+def vcr_cassette_dir(request):
+    # Override VCR.py cassette save location, to keep them out of code folders
+    parts = request.module.__name__.split('.')
+    if parts[0] == 'sopel':
+        # We know it's part of Sopel...
+        parts = parts[1:]
+    return os.path.join('test', 'vcr', *parts)
+
+
+@pytest.fixture
+def vcr_cassette_path(request, vcr_cassette_name):
+    # pytest-vcr 0.3.0 looks for this fixture name
+    # remove when killing off Python 3.3 support
+    return os.path.join(vcr_cassette_dir(request), vcr_cassette_name)

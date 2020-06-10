@@ -1,5 +1,3 @@
-pytest<3.3; python_version == '3.3'
-pytest>=4.6,<4.7; python_version != '3.3'
 coveralls
 flake8<3.6.0; python_version == '3.3'
 flake8>=3.7.0,<3.8.0; python_version != '3.3'
@@ -7,6 +5,16 @@ flake8-coding
 flake8-future-import<0.4.6
 flake8-import-order; python_version > '3.3'
 flake8-import-order<=1.18.1; python_version <= '3.3'
+pytest<3.3; python_version == '3.3'
+pytest>=4.6,<4.7; python_version != '3.3'
+pytest-vcr==1.0.2; python_version != '3.3'
+pytest-vcr==0.3.0; python_version == '3.3'
+PyYAML<5.1; python_version == '3.3'
+PyYAML<5.3; python_version == '3.4'
 setuptools<40.0; python_version == '3.3'
 sphinx
 sphinxcontrib-autoprogram
+vcrpy==2.1.1; python_version == '2.7'
+vcrpy<1.12.0; python_version == '3.3'
+vcrpy<2.1.0; python_version == '3.4'
+vcrpy<3.0.0; python_version >= '3.5'

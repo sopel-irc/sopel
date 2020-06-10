@@ -79,13 +79,15 @@ def duck_api(query):
     '.duck site:grandorder.wiki chulainn alter',
     r'https?:\/\/grandorder\.wiki\/C%C3%BA_Chulainn.*',
     re=True,
-    online=True)
+    online=True,
+    vcr=True)
 # the last example (in source line order) is what .help displays
 @example(
     '.duck sopel.chat irc bot',
     r'https?:\/\/(sopel\.chat\/?|github\.com\/sopel-irc\/sopel)',
     re=True,
-    online=True)
+    online=True,
+    vcr=True)
 def duck(bot, trigger):
     """Queries DuckDuckGo for the specified input."""
     query = trigger.group(2)
