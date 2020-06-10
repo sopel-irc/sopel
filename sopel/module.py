@@ -274,7 +274,7 @@ def commands(*command_list):
     wrong order, ``.main`` will have priority and you won't be able to take
     advantage of that.
 
-    Another option is to declare command with subscommands only, like this::
+    Another option is to declare command with subcommands only, like this::
 
         @commands('main sub1)
             # this command will be triggered on .main sub1
@@ -290,11 +290,11 @@ def commands(*command_list):
         If you use this decorator multiple times, remember that the decorators
         are invoked in the reverse order of appearance::
 
+            # These two decorators...
             @commands('hi')
             @commands('hello')
 
-        This example is equivalent to this::
-
+            # ...are equivalent to this single decorator
             @commands('hello', 'hi')
 
         See also the `Function Definitions`__ chapter from the Python
