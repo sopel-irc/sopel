@@ -14,7 +14,7 @@ import logging
 import os
 import socket
 import sys
-from threading import current_thread
+import threading
 
 from sopel.tools.jobs import Job, JobScheduler
 from .abstract_backends import AbstractIRCBackend
@@ -41,7 +41,7 @@ LOGGER = logging.getLogger(__name__)
 
 
 def _send_ping(backend):
-    if not backend.connected:
+    if not backend.is_connected():
         return
     time_passed = (datetime.datetime.utcnow() - backend.last_event_at).seconds
     if time_passed > backend.ping_timeout:
@@ -52,13 +52,13 @@ def _send_ping(backend):
 
 
 def _check_timeout(backend):
-    if not backend.connected:
+    if not backend.is_connected():
         return
     time_passed = (datetime.datetime.utcnow() - backend.last_event_at).seconds
     if time_passed > backend.server_timeout:
         LOGGER.error(
             'Server timeout detected after %ss; closing.', time_passed)
-        backend.handle_close()
+        backend.close_when_done()
 
 
 _send_ping.thread = False
@@ -76,6 +76,7 @@ class AsynchatBackend(AbstractIRCBackend, asynchat.async_chat):
     def __init__(self, bot, server_timeout=None, ping_timeout=None, **kwargs):
         AbstractIRCBackend.__init__(self, bot)
         asynchat.async_chat.__init__(self)
+        self.writing_lock = threading.RLock()
         self.set_terminator(b'\n')
         self.buffer = ''
         self.server_timeout = server_timeout or 120
@@ -91,6 +92,20 @@ class AsynchatBackend(AbstractIRCBackend, asynchat.async_chat):
         self.timeout_scheduler = JobScheduler(self)
         self.timeout_scheduler.add_job(ping_job)
         self.timeout_scheduler.add_job(timeout_job)
+
+    def is_connected(self):
+        return self.connected
+
+    def irc_send(self, data):
+        """Send an IRC line as raw ``data`` to the socket connection.
+
+        :param bytes data: raw line to send
+
+        This uses :meth:`asynchat.async_chat.send` method to send ``data``
+        directly. This method is thread-safe.
+        """
+        with self.writing_lock:
+            self.send(data)
 
     def run_forever(self):
         """Run forever."""
@@ -127,18 +142,11 @@ class AsynchatBackend(AbstractIRCBackend, asynchat.async_chat):
 
     def handle_close(self):
         """Called when the socket is closed."""
+        LOGGER.debug('Stopping timeout watchdog')
         self.timeout_scheduler.stop()
-        if current_thread() is not self.timeout_scheduler:
-            self.timeout_scheduler.join(timeout=15)
-
-        LOGGER.info('Connection closed...')
-        try:
-            self.bot.on_close()
-        finally:
-            if self.socket:
-                LOGGER.debug('Closing socket')
-                self.close()
-                LOGGER.info('Closed!')
+        LOGGER.info('Closing connection')
+        self.close()
+        self.bot.on_close()
 
     def handle_error(self):
         """Called when an exception is raised and not otherwise handled."""

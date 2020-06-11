@@ -880,6 +880,7 @@ class Sopel(irc.AbstractBot):
 
     def _shutdown(self):
         """Internal bot shutdown method."""
+        LOGGER.info('Shutting down')
         # Stop Job Scheduler
         LOGGER.info('Stopping the Job Scheduler.')
         self.scheduler.stop()

@@ -4,8 +4,6 @@
 # Licensed under the Eiffel Forum License 2.
 from __future__ import absolute_import, division, print_function, unicode_literals
 
-import threading
-
 from .utils import safe
 
 
@@ -20,7 +18,20 @@ class AbstractIRCBackend(object):
     """
     def __init__(self, bot):
         self.bot = bot
-        self.writing_lock = threading.RLock()
+
+    def is_connected(self):
+        """Tell if the backend is connected or not.
+
+        :rtype: bool
+        """
+        raise NotImplementedError
+
+    def irc_send(self, data):
+        """Send an IRC line as raw ``data``.
+
+        :param bytes data: raw line to send
+        """
+        raise NotImplementedError
 
     def send_command(self, *args, **kwargs):
         """Send a command through the IRC connection.
@@ -43,8 +54,7 @@ class AbstractIRCBackend(object):
             callback on the bot instance with the raw message sent.
         """
         raw_command = self.prepare_command(*args, text=kwargs.get('text'))
-        with self.writing_lock:
-            self.send(raw_command.encode('utf-8'))
+        self.irc_send(raw_command.encode('utf-8'))
         self.bot.on_message_sent(raw_command)
 
     def prepare_command(self, *args, **kwargs):
@@ -158,7 +168,7 @@ class AbstractIRCBackend(object):
 
         This won't send anything if the backend isn't connected.
         """
-        if self.connected:  # TODO: refactor for a method instead of attribute
+        if self.is_connected():
             self.send_command('QUIT', text=reason)
 
     def send_kick(self, channel, nick, reason=None):
