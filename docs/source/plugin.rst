@@ -1,5 +1,13 @@
+================
 Plugin structure
 ================
+
+.. contents::
+   :local:
+   :depth: 1
+
+Anatomy of a plugin
+===================
 
 A Sopel plugin consists of a Python module containing one or more
 ``callable``\s. It may optionally also contain ``configure``, ``setup``, and
@@ -24,7 +32,15 @@ A Sopel plugin consists of a Python module containing one or more
     applied for that call.
 
     Note that the name can, and should, be anything - it doesn't need to be
-    called "callable".
+    called "callable"::
+
+        from sopel import module
+
+        @module.commands('hello')
+        def say_hello(bot, trigger):
+            """Reply hello to you."""
+            bot.reply('Hello!')
+
 
 .. py:function:: setup(bot)
 
@@ -80,10 +96,26 @@ A Sopel plugin consists of a Python module containing one or more
 
     .. versionadded:: 3.0
 
-sopel.module
-------------
+
+Callable decorators
+===================
+
 .. automodule:: sopel.module
    :members:
+
+
+Internal machinery
+==================
+
+.. important::
+
+   This section contains modules and classes used by Sopel internally. They are
+   subject to rapid changes between versions. They are documented here for
+   completeness, and for the aid of Sopel’s core development.
+
+.. contents::
+   :local:
+
 
 sopel.plugins
 -------------
@@ -93,4 +125,28 @@ sopel.plugins
 sopel.plugins.handlers
 ----------------------
 .. automodule:: sopel.plugins.handlers
+   :members:
+
+sopel.plugins.exceptions
+------------------------
+.. automodule:: sopel.plugins.exceptions
+   :members:
+
+sopel.plugins.rules
+-------------------
+.. automodule:: sopel.plugins.rules
+   :members:
+   :show-inheritance:
+
+   .. autoclass:: AbstractRule
+      :members:
+      :undoc-members:
+
+   .. autoclass:: NamedRuleMixin
+      :members:
+      :undoc-members:
+
+sopel.loader
+------------
+.. automodule:: sopel.loader
    :members:

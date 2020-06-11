@@ -279,7 +279,7 @@ def get_nickname_command_regexp(nick, command, alias_nicks):
     """
     if isinstance(alias_nicks, unicode):
         alias_nicks = [alias_nicks]
-    elif not isinstance(alias_nicks, list):
+    elif not isinstance(alias_nicks, (list, tuple)):
         raise ValueError('A list or string is required.')
 
     return compile_rule(nick, get_nickname_command_pattern(command), alias_nicks)

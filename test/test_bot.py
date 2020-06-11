@@ -6,9 +6,10 @@ import re
 
 import pytest
 
-from sopel import bot, plugins
+from sopel import bot, loader, module, plugins, trigger
+from sopel.plugins import rules
 from sopel.tests import rawlist
-from sopel.tools import SopelMemory
+from sopel.tools import Identifier, SopelMemory
 
 
 TMP_CONFIG = """
@@ -16,6 +17,59 @@ TMP_CONFIG = """
 owner = testnick
 nick = TestBot
 enable = coretasks
+"""
+
+MOCK_MODULE_CONTENT = """# coding=utf-8
+import sopel.module
+
+
+@sopel.module.commands("do")
+def command_do(bot, trigger):
+    pass
+
+
+@sopel.module.nickname_commands("info")
+def nick_command_info(bot, trigger):
+    pass
+
+
+@sopel.module.action_commands("tell")
+def action_command_tell(bot, trigger):
+    pass
+
+
+@sopel.module.interval(5)
+def interval5s(bot):
+    pass
+
+
+@sopel.module.interval(10)
+def interval10s(bot):
+    pass
+
+
+@sopel.module.url(r'(.+\\.)?example\\.com')
+def example_url(bot):
+    pass
+
+
+@sopel.module.rule(r'Hello \\w+')
+def rule_hello(bot):
+    pass
+
+
+@sopel.module.event('TOPIC')
+def rule_on_topic(bot):
+    pass
+
+
+def shutdown():
+    pass
+
+
+def ignored():
+    pass
+
 """
 
 
@@ -28,6 +82,18 @@ def tmpconfig(configfactory):
 def mockbot(tmpconfig, botfactory):
     return botfactory(tmpconfig)
 
+
+@pytest.fixture
+def mockplugin(tmpdir):
+    root = tmpdir.mkdir('loader_mods')
+    mod_file = root.join('mockplugin.py')
+    mod_file.write(MOCK_MODULE_CONTENT)
+
+    return plugins.handlers.PyFilePlugin(mod_file.strpath)
+
+
+# -----------------------------------------------------------------------------
+# sopel.bot.SopelWrapper
 
 def test_wrapper_say(mockbot, triggerfactory):
     wrapper = triggerfactory.wrapper(
@@ -187,23 +253,41 @@ def test_wrapper_kick_override_destination_message(mockbot, triggerfactory):
     )
 
 
-def test_register_unregister_plugin(tmpconfig):
+# -----------------------------------------------------------------------------
+# Register/Unregister plugins
+
+def test_register_plugin(tmpconfig, mockplugin):
+    sopel = bot.Sopel(tmpconfig)
+    assert not sopel.has_plugin('mockplugin')
+
+    mockplugin.load()
+    mockplugin.setup(sopel)
+    mockplugin.register(sopel)
+
+    assert sopel.has_plugin('mockplugin')
+    assert sopel.rules.has_command('do')
+    assert sopel.rules.has_command('do', plugin='mockplugin')
+    assert sopel.rules.has_nick_command('info')
+    assert sopel.rules.has_nick_command('info', plugin='mockplugin')
+    assert sopel.rules.has_action_command('tell')
+    assert sopel.rules.has_action_command('tell', plugin='mockplugin')
+    assert list(sopel.search_url_callbacks('example.com'))
+
+
+def test_register_unregister_plugin(tmpconfig, mockplugin):
     sopel = bot.Sopel(tmpconfig, daemon=False)
 
-    # since `setup` hasn't been run, there is no registered plugin
-    assert not sopel.has_plugin('coretasks')
-
     # register the plugin
-    plugin = plugins.handlers.PyModulePlugin('coretasks', 'sopel')
-    plugin.load()
-    plugin.register(sopel)
-
-    # and now there is!
-    assert sopel.has_plugin('coretasks')
+    mockplugin.load()
+    mockplugin.register(sopel)
+    assert sopel.has_plugin('mockplugin'), 'The mockplugin must be registered!'
 
     # unregister it
-    plugin.unregister(sopel)
-    assert not sopel.has_plugin('coretasks')
+    mockplugin.unregister(sopel)
+    assert not sopel.has_plugin('mockplugin')
+    assert not sopel.rules.has_command('do')
+    assert not sopel.rules.has_nick_command('info')
+    assert not sopel.rules.has_action_command('tell')
 
 
 def test_remove_plugin_unknown_plugin(tmpconfig):
@@ -245,6 +329,383 @@ def test_reload_plugin_unregistered_plugin(tmpconfig):
     with pytest.raises(plugins.exceptions.PluginNotRegistered):
         sopel.reload_plugin(plugin.name)
 
+
+# -----------------------------------------------------------------------------
+# register callables, jobs, shutdown, urls
+
+def test_register_callables(tmpconfig):
+    sopel = bot.Sopel(tmpconfig)
+
+    @module.rule(r'(hi|hello|hey|sup)')
+    def rule_hello(bot, trigger):
+        pass
+
+    @module.commands('do')
+    @module.example('.do nothing')
+    def command_do(bot, trigger):
+        """The do command does nothing."""
+        pass
+
+    @module.commands('main sub')
+    @module.example('.main sub')
+    def command_main_sub(bot, trigger):
+        """A command with subcommand sub."""
+        pass
+
+    @module.commands('main other')
+    @module.example('.main other')
+    def command_main_other(bot, trigger):
+        """A command with subcommand other."""
+        pass
+
+    @module.nickname_commands('info')
+    @module.example('$nickname: info about this')
+    def nick_command_info(bot, trigger):
+        """Ask Sopel to get some info about nothing."""
+        pass
+
+    @module.action_commands('tell')
+    def action_command_tell(bot, trigger):
+        pass
+
+    @module.commands('mixed')
+    @module.rule('mixing')
+    def mixed_rule_command(bot, trigger):
+        pass
+
+    @module.event('JOIN')
+    @module.label('handle_join_event')
+    def on_join(bot, trigger):
+        pass
+
+    # prepare callables to be registered
+    callables = [
+        rule_hello,
+        command_do,
+        command_main_sub,
+        command_main_other,
+        nick_command_info,
+        action_command_tell,
+        mixed_rule_command,
+        on_join,
+    ]
+
+    # clean callables and set plugin name by hand
+    # since the loader and plugin handlers are excluded here
+    for handler in callables:
+        loader.clean_callable(handler, tmpconfig)
+        handler.plugin_name = 'testplugin'
+
+    # register callables
+    sopel.register_callables(callables)
+
+    # trigger rule "hello"
+    line = ':Foo!foo@example.com PRIVMSG #sopel :hello'
+    pretrigger = trigger.PreTrigger(sopel.nick, line)
+
+    matches = sopel.rules.get_triggered_rules(sopel, pretrigger)
+    assert len(matches) == 1
+    assert matches[0][0].get_rule_label() == 'rule_hello'
+
+    # trigger command "do"
+    line = ':Foo!foo@example.com PRIVMSG #sopel :.do'
+    pretrigger = trigger.PreTrigger(sopel.nick, line)
+
+    matches = sopel.rules.get_triggered_rules(sopel, pretrigger)
+    assert len(matches) == 1
+    assert matches[0][0].get_rule_label() == 'do'
+
+    # trigger command with subcommand "main-sub"
+    line = ':Foo!foo@example.com PRIVMSG #sopel :.main sub'
+    pretrigger = trigger.PreTrigger(sopel.nick, line)
+
+    matches = sopel.rules.get_triggered_rules(sopel, pretrigger)
+    assert len(matches) == 1
+    assert matches[0][0].get_rule_label() == 'main-sub'
+
+    # trigger command with the other subcommand "main-other"
+    line = ':Foo!foo@example.com PRIVMSG #sopel :.main other'
+    pretrigger = trigger.PreTrigger(sopel.nick, line)
+
+    matches = sopel.rules.get_triggered_rules(sopel, pretrigger)
+    assert len(matches) == 1
+    assert matches[0][0].get_rule_label() == 'main-other'
+
+    # trigger nick command "info"
+    line = ':Foo!foo@example.com PRIVMSG #sopel :TestBot: info'
+    pretrigger = trigger.PreTrigger(sopel.nick, line)
+
+    matches = sopel.rules.get_triggered_rules(sopel, pretrigger)
+    assert len(matches) == 1
+    assert matches[0][0].get_rule_label() == 'info'
+
+    # trigger action command "tell"
+    line = ':Foo!foo@example.com PRIVMSG #sopel :\x01ACTION tell\x01'
+    pretrigger = trigger.PreTrigger(sopel.nick, line)
+
+    matches = sopel.rules.get_triggered_rules(sopel, pretrigger)
+    assert len(matches) == 1
+    assert matches[0][0].get_rule_label() == 'tell'
+
+    # trigger rules with event
+    line = ':Foo!foo@example.com JOIN #Sopel'
+    pretrigger = trigger.PreTrigger(sopel.nick, line)
+
+    matches = sopel.rules.get_triggered_rules(sopel, pretrigger)
+    assert len(matches) == 1
+    assert matches[0][0].get_rule_label() == 'handle_join_event'
+
+    # trigger command "mixed"
+    line = ':Foo!foo@example.com PRIVMSG #sopel :.mixed'
+    pretrigger = trigger.PreTrigger(sopel.nick, line)
+
+    matches = sopel.rules.get_triggered_rules(sopel, pretrigger)
+    assert len(matches) == 1
+    assert matches[0][0].get_rule_label() == 'mixed'
+
+    # trigger rule "mixed_rule_command"
+    line = ':Foo!foo@example.com PRIVMSG #sopel :mixing'
+    pretrigger = trigger.PreTrigger(sopel.nick, line)
+
+    matches = sopel.rules.get_triggered_rules(sopel, pretrigger)
+    assert len(matches) == 1
+    assert matches[0][0].get_rule_label() == 'mixed_rule_command'
+
+    # check documentation
+    assert sopel.command_groups == {
+        'testplugin': ['do', 'info', 'main other', 'main sub', 'mixed'],
+    }
+
+    assert sopel.doc == {
+        'do': (
+            ['The do command does nothing.'],
+            ['.do nothing'],
+        ),
+        'info': (
+            ['Ask Sopel to get some info about nothing.'],
+            ['TestBot: info about this'],
+        ),
+        'main sub': (
+            ['A command with subcommand sub.'],
+            ['.main sub'],
+        ),
+        'main other': (
+            ['A command with subcommand other.'],
+            ['.main other'],
+        ),
+        'mixed': (
+            [],
+            [],
+        )
+    }
+
+
+# -----------------------------------------------------------------------------
+# call_rule
+
+def test_call_rule(mockbot):
+    # setup
+    items = []
+
+    def testrule(bot, trigger):
+        bot.say('hi')
+        items.append(1)
+        return "Return Value"
+
+    rule_hello = rules.Rule(
+        [re.compile(r'(hi|hello|hey|sup)')],
+        plugin='testplugin',
+        label='testrule',
+        handler=testrule)
+
+    # trigger
+    line = ':Test!test@example.com PRIVMSG #channel :hello'
+    pretrigger = trigger.PreTrigger(mockbot.nick, line)
+
+    # match
+    matches = list(rule_hello.match(mockbot, pretrigger))
+    assert len(matches) == 1
+    match = matches[0]
+
+    # trigger and wrapper
+    rule_trigger = trigger.Trigger(
+        mockbot.settings, pretrigger, match, account=None)
+    wrapper = bot.SopelWrapper(mockbot, rule_trigger)
+
+    # call rule
+    mockbot.call_rule(rule_hello, wrapper, rule_trigger)
+
+    # assert the rule has been executed
+    assert mockbot.backend.message_sent == rawlist(
+        'PRIVMSG #channel :hi'
+    )
+    assert items == [1]
+
+    # assert the rule is not rate limited
+    assert not rule_hello.is_rate_limited(Identifier('Test'))
+    assert not rule_hello.is_channel_rate_limited('#channel')
+    assert not rule_hello.is_global_rate_limited()
+
+    # call rule again
+    mockbot.call_rule(rule_hello, wrapper, rule_trigger)
+
+    # assert the rule has been executed twice now
+    assert mockbot.backend.message_sent == rawlist(
+        'PRIVMSG #channel :hi',
+        'PRIVMSG #channel :hi',
+    )
+    assert items == [1, 1]
+
+
+def test_call_rule_rate_limited_user(mockbot):
+    items = []
+
+    # setup
+    def testrule(bot, trigger):
+        bot.say('hi')
+        items.append(1)
+        return "Return Value"
+
+    rule_hello = rules.Rule(
+        [re.compile(r'(hi|hello|hey|sup)')],
+        plugin='testplugin',
+        label='testrule',
+        handler=testrule,
+        rate_limit=100)
+
+    # trigger
+    line = ':Test!test@example.com PRIVMSG #channel :hello'
+    pretrigger = trigger.PreTrigger(mockbot.nick, line)
+
+    # match
+    matches = list(rule_hello.match(mockbot, pretrigger))
+    match = matches[0]
+
+    # trigger and wrapper
+    rule_trigger = trigger.Trigger(
+        mockbot.settings, pretrigger, match, account=None)
+    wrapper = bot.SopelWrapper(mockbot, rule_trigger)
+
+    # call rule
+    mockbot.call_rule(rule_hello, wrapper, rule_trigger)
+
+    # assert the rule has been executed
+    assert mockbot.backend.message_sent == rawlist(
+        'PRIVMSG #channel :hi'
+    )
+    assert items == [1]
+
+    # assert the rule is now rate limited
+    assert rule_hello.is_rate_limited(Identifier('Test'))
+    assert not rule_hello.is_channel_rate_limited('#channel')
+    assert not rule_hello.is_global_rate_limited()
+
+    # call rule again
+    mockbot.call_rule(rule_hello, wrapper, rule_trigger)
+
+    # assert no new message
+    assert mockbot.backend.message_sent == rawlist(
+        'PRIVMSG #channel :hi'
+    ), 'There must not be any new message sent'
+    assert items == [1], 'There must not be any new item'
+
+
+def test_call_rule_rate_limited_channel(mockbot):
+    items = []
+
+    # setup
+    def testrule(bot, trigger):
+        bot.say('hi')
+        items.append(1)
+        return "Return Value"
+
+    rule_hello = rules.Rule(
+        [re.compile(r'(hi|hello|hey|sup)')],
+        plugin='testplugin',
+        label='testrule',
+        handler=testrule,
+        channel_rate_limit=100)
+
+    # trigger
+    line = ':Test!test@example.com PRIVMSG #channel :hello'
+    pretrigger = trigger.PreTrigger(mockbot.nick, line)
+
+    # match
+    matches = list(rule_hello.match(mockbot, pretrigger))
+    match = matches[0]
+
+    # trigger and wrapper
+    rule_trigger = trigger.Trigger(
+        mockbot.settings, pretrigger, match, account=None)
+    wrapper = bot.SopelWrapper(mockbot, rule_trigger)
+
+    # call rule
+    mockbot.call_rule(rule_hello, wrapper, rule_trigger)
+
+    # assert the rule is now rate limited
+    assert not rule_hello.is_rate_limited(Identifier('Test'))
+    assert rule_hello.is_channel_rate_limited('#channel')
+    assert not rule_hello.is_global_rate_limited()
+
+    # call rule again
+    mockbot.call_rule(rule_hello, wrapper, rule_trigger)
+
+    # assert no new message
+    assert mockbot.backend.message_sent == rawlist(
+        'PRIVMSG #channel :hi'
+    ), 'There must not be any new message sent'
+    assert items == [1], 'There must not be any new item'
+
+
+def test_call_rule_rate_limited_global(mockbot):
+    items = []
+
+    # setup
+    def testrule(bot, trigger):
+        bot.say('hi')
+        items.append(1)
+        return "Return Value"
+
+    rule_hello = rules.Rule(
+        [re.compile(r'(hi|hello|hey|sup)')],
+        plugin='testplugin',
+        label='testrule',
+        handler=testrule,
+        global_rate_limit=100)
+
+    # trigger
+    line = ':Test!test@example.com PRIVMSG #channel :hello'
+    pretrigger = trigger.PreTrigger(mockbot.nick, line)
+
+    # match
+    matches = list(rule_hello.match(mockbot, pretrigger))
+    match = matches[0]
+
+    # trigger and wrapper
+    rule_trigger = trigger.Trigger(
+        mockbot.settings, pretrigger, match, account=None)
+    wrapper = bot.SopelWrapper(mockbot, rule_trigger)
+
+    # call rule
+    mockbot.call_rule(rule_hello, wrapper, rule_trigger)
+
+    # assert the rule is now rate limited
+    assert not rule_hello.is_rate_limited(Identifier('Test'))
+    assert not rule_hello.is_channel_rate_limited('#channel')
+    assert rule_hello.is_global_rate_limited()
+
+    # call rule again
+    mockbot.call_rule(rule_hello, wrapper, rule_trigger)
+
+    # assert no new message
+    assert mockbot.backend.message_sent == rawlist(
+        'PRIVMSG #channel :hi'
+    ), 'There must not be any new message sent'
+    assert items == [1], 'There must not be any new item'
+
+
+# -----------------------------------------------------------------------------
+# URL Callbacks
 
 def test_search_url_callbacks(tmpconfig):
     """Test search_url_callbacks for a registered URL."""

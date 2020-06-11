@@ -27,6 +27,15 @@ At the moment, only two types of plugin are handled:
 
 Both expose the same interface and thereby abstract the internal implementation
 away from the rest of the application.
+
+.. important::
+
+    This is all relatively new. Its usage and documentation is for Sopel core
+    development and advanced developers. It is subject to rapid changes
+    between versions without much (or any) warning.
+
+    Do **not** build your plugin based on what is here, you do **not** need to.
+
 """
 # Copyright 2019, Florian Strzelecki <florian.strzelecki@gmail.com>
 #

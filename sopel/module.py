@@ -108,8 +108,7 @@ def unblockable(function):
 
     .. seealso::
 
-        Sopel's :meth:`~sopel.bot.Sopel.dispatch` and
-        :meth:`~sopel.bot.Sopel.get_triggered_callables` methods.
+        Sopel's :meth:`~sopel.bot.Sopel.dispatch` method.
 
     """
     function.unblockable = True
@@ -240,7 +239,6 @@ def commands(*command_list):
     """Decorate a function to set one or more commands that should trigger it.
 
     :param str command_list: one or more command name(s) to match
-                             (can be regular expressions)
 
     This decorator can be used to add multiple commands to one callable in a
     single line. The resulting match object will have the command as the first
@@ -257,6 +255,67 @@ def commands(*command_list):
             # If the command prefix is "\\.", this would trigger on lines
             # starting with either ".j" or ".join".
 
+    You can use a space in the command name to implement subcommands::
+
+        @commands('main sub1', 'main sub2')
+            # For ".main sub1", trigger.group(1) will return "main sub1"
+            # For ".main sub2", trigger.group(1) will return "main sub2"
+
+    But in that case, be careful with the order of the names: if a more generic
+    pattern is defined first, it will have priority over less generic patterns.
+    So for instance, to have ``.main`` and ``.main sub`` working properly, you
+    need to declare them like this::
+
+        @commands('main sub', 'main')
+            # This command will react properly to ".main sub" and ".main"
+
+    Then, you can check ``trigger.group(1)`` to know if it was used as
+    ``main sub`` or just ``main`` in your callable. If you declare them in the
+    wrong order, ``.main`` will have priority and you won't be able to take
+    advantage of that.
+
+    Another option is to declare command with subcommands only, like this::
+
+        @commands('main sub1)
+            # this command will be triggered on .main sub1
+
+        @commands('main sub2')
+            # this other command will be triggered on .main sub2
+
+    In that case, ``.main`` won't trigger anything, and you won't have to
+    inspect the trigger's groups to know which subcommand is triggered.
+
+    .. note::
+
+        If you use this decorator multiple times, remember that the decorators
+        are invoked in the reverse order of appearance::
+
+            # These two decorators...
+            @commands('hi')
+            @commands('hello')
+
+            # ...are equivalent to this single decorator
+            @commands('hello', 'hi')
+
+        See also the `Function Definitions`__ chapter from the Python
+        documentation for more information about functions and decorators.
+
+        .. __: https://docs.python.org/3/reference/compound_stmts.html#function-definitions
+
+    .. note::
+
+        You can use a regular expression for the command name(s), but this is
+        **not recommended** since version 7.1. For backward compatibility,
+        this behavior will be kept until version 8.0.
+
+        Regex patterns are confusing for your users; please don't use them in
+        command names!
+
+        If you still want to use a regex pattern, please use the :func:`rule`
+        decorator instead. For extra arguments and subcommands based on a regex
+        pattern, you should handle these inside your decorated function, by
+        using the ``trigger`` object.
+
     """
     def add_attribute(function):
         if not hasattr(function, "commands"):
@@ -272,7 +331,6 @@ def nickname_commands(*command_list):
     """Decorate a function to trigger on lines starting with "$nickname: command".
 
     :param str command_list: one or more command name(s) to match
-                             (can be regular expressions)
 
     This decorator can be used to add multiple commands to one callable in a
     single line. The resulting match object will have the command as the first
@@ -286,10 +344,22 @@ def nickname_commands(*command_list):
             # "$nickname hello!", "$nickname hello! parameter1" and
             # "$nickname hello! p1 p2 p3 p4 p5 p6 p7 p8 p9".
 
-        @nickname_commands(".*")
-            # Would trigger on anything starting with "$nickname[:,]? ",
-            # and would never have any additional parameters, as the
-            # command would match the rest of the line.
+    .. note::
+
+        You can use a regular expression for the command name(s), but this is
+        **not recommended** since version 7.1. For backward compatibility,
+        this behavior will be kept until version 8.0.
+
+        Regex patterns are confusing for your users; please don't use them in
+        command names!
+
+        If you need to use a regex pattern, please use the :func:`rule`
+        decorator instead, with the ``$nick`` variable::
+
+            @rule(r'$nick .*')
+                # Would trigger on anything starting with "$nickname[:,]? ",
+                # and would never have any additional parameters, as the
+                # command would match the rest of the line.
 
     """
     def add_attribute(function):
@@ -306,7 +376,6 @@ def action_commands(*command_list):
     """Decorate a function to trigger on CTCP ACTION lines.
 
     :param str command_list: one or more command name(s) to match
-                             (can be regular expressions)
 
     This decorator can be used to add multiple commands to one callable in a
     single line. The resulting match object will have the command as the first
@@ -330,6 +399,22 @@ def action_commands(*command_list):
 
         Hopefully, a future version of Sopel will remove this limitation.
 
+    .. note::
+
+        You can use a regular expression for the command name(s), but this is
+        **not recommended** since version 7.1. For backward compatibility,
+        this behavior will be kept until version 8.0.
+
+        Regex patterns are confusing for your users; please don't use them in
+        command names!
+
+        If you need to use a regex pattern, please use the :func:`rule`
+        decorator instead, with the :func:`intent` decorator::
+
+            @rule(r'hello!?')
+            @intent('ACTION')
+                # Would trigger on "/me hello!" and "/me hello"
+
     """
     def add_attribute(function):
         function.intents = ['ACTION']
@@ -338,6 +423,32 @@ def action_commands(*command_list):
         for cmd in command_list:
             if cmd not in function.action_commands:
                 function.action_commands.append(cmd)
+        return function
+    return add_attribute
+
+
+def label(value):
+    """Decorate a function to add a rule label.
+
+    :param str value: a label for the rule
+
+    The rule label allows the documentation and the logging system to refer
+    to this function by its label. A function can have one and only one label::
+
+        @label('on_hello')
+        @rule('hello')
+            # will trigger on hello, and be labelled as "on_hello"
+
+    .. note::
+
+        By default, the "label" of a callable will be its function name, which
+        can be confusing for end-users: the goal of the ``label`` decorator is
+        to make generic rules as user-friendly as commands are, by giving them
+        some name that isn't tied to an identifier in the source code.
+
+    """
+    def add_attribute(function):
+        function.rule_label = value
         return function
     return add_attribute
 
@@ -844,6 +955,14 @@ class example(object):
         record = {
             "example": self.msg,
             "result": self.result,
+            # flags
+            "is_private_message": self.privmsg,
+            "is_help": self.user_help,
+            "is_pattern": self.use_re,
+            "is_admin": self.admin,
+            "is_owner": self.owner,
+            # old-style flags
+            # TODO: to be removed in Sopel 8.0
             "privmsg": self.privmsg,
             "admin": self.admin,
             "help": self.user_help,
