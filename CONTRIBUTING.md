@@ -1,17 +1,19 @@
 Submitting Issues
 -----------------
+
 When submitting issues to our
 [issue tracker](https://github.com/sopel-irc/sopel/issues), it's important
 that you do the following:
 
 1. Describe your issue clearly and concisely.
-2. Give Sopel the .version command, and include the output in your issue.
+2. Give Sopel the `.version` command, and include the output in your issue.
 3. Note the OS you're running Sopel on, and how you installed Sopel (via your
-package manager, pip, setup.py install, or running straight from source)
-4. Include relevant output from the log files in ~/.sopel/logs.
+   package manager, pip, `setup.py install`, or running straight from source)
+4. Include relevant output from the log files in `~/.sopel/logs/`.
 
 Committing Code
 ---------------
+
 We prefer code to be submitted through GitHub pull requests. We do require that
 code submitted to the project be licensed under the Eiffel Forum License v2,
 the text of which was distributed with the source code.
@@ -24,29 +26,73 @@ below will make our lives easier, and by extension make us more likely to
 include your changes.
 
 * Commits should focus on one thing at a time. Do include whatever you need to
-  make your change work, but avoid putting unrelated changes in the same commit.
-  Preferably, one change in functionality should be in exactly one commit.
+  make your change work, but avoid putting unrelated changes in the same
+  commit. Preferably, one change in functionality should be in exactly one
+  commit—and commits should be atomic (i.e. try not to commit broken or
+  intermediate states of the code).
 * pep8ify your code before you commit. We don't worry about line length much
   (though it's good if you do keep lines short), but you should try to follow
   the rest of the rules.
 * Test your code before you commit. We don't have a formal testing plan in
-  place, but you should make sure your code works as promised before you commit.
+  place, but you should make sure your code works as promised before you
+  commit.
 * If you have cloned the repository to your personal computer, you can use our
   provided git hooks to automatically check whether your code style is up to
   Sopel's requirements and that tests still pass, before committing your code.
   The git hooks can be enabled by running `make install-hooks`, and disabled by
   running `make uninstall-hooks`,  in your root `sopel` folder.
 * Make your commit messages clear and explicative. Our convention is to place
-  the name of the thing you're changing in at the beginning of the
-  message, followed by a colon: the module name for modules, docs for documentation files,
-  coretasks for coretasks.py, db for the database feature, and so on.
+  the name of the thing you're changing in at the beginning of the message,
+  followed by a colon: the plugin name for plugins, "docs" for documentation
+  files, "coretasks" for `coretasks.py`, "db" for the database feature, etc.
 * Python files should always have `# coding=utf-8` as the first line (or the
-  second, if the first is `#!/usr/bin/env python`), and
-  `from __future__ import unicode_literals, absolute_import, print_function, division` as the first line after the module
-  docstring.
+  second, if the first is `#!/usr/bin/env python`), and `from __future__ import
+  unicode_literals, absolute_import, print_function, division` as the first
+  line after the module docstring.
+
+Documenting Code
+----------------
+
+Hopefully you're documenting new code as you write it. We like to use these
+guidelines for writing docstrings. Let's start with an example:
+
+```
+def scramble_eggs(eggs, bacon=None, spam=False):
+    """Scramble eggs, with optional bacon and/or SPAM.
+
+    :param int eggs: how many eggs to scramble
+    :param bacon: optional bacon to put in the ``eggs``
+    :type bacon: :class:`sopel.tools.breakfast.Bacon`
+    :param bool spam: whether to put SPAM in the scrambled ``eggs``
+    :return: the scrambled eggs
+    :rtype: :term:`iterable` of :class:`sopel.tools.breakfast.Egg`
+
+    You should create and customize your own :class:`~sopel.tools.bacon.Bacon`
+    object to pass in. See that class's documentation to learn how to make the
+    bacon extra crispy, chopped, diced, etc.
+
+    This function will generate SPAM as needed, since it is not customizable.
+
+    .. versionadded:: 7.1
+    .. seealso::
+
+       To make an omelet, use :func:`make_omelet`.
+
+    """
+    # <function code>
+```
+
+The basic components of the ideal Sopel function docstring are:
+
+* A one-line description, as an imperative sentence (ending in a period)
+* Function parameters, described in brief, with type annotations
+* Description and type of return value
+* Longer notes on function parameters and behavior, if needed
+* Sphinx annotations and cross-references
 
 Issue Tags
 ----------
+
 If you're looking to hack on some code, you should consider fixing one of the
 issues that has been reported to the GitHub issue tracker. Here's a quick guide
 to the tags we use:
@@ -67,10 +113,11 @@ to the tags we use:
 * Medium Priority   - Things that need to be done soon
 * High Priority     - Things that should've been done yesterday
 * Tests             - Issues regarding the testing unit in tests/
-* Windows           - Windows-specific bugs are labelled as such
+* Windows           - Windows-specific bugs are labeled as such
 
 Conduct
 -------
+
 Sopel is an inclusive project. The fact that it even exists today is thanks to
 a diverse cast of contributors from around the world. Indeed, we would not be
 here if not for the hard work and dedication of many people who, elsewhere,
