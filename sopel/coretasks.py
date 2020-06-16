@@ -27,7 +27,7 @@ import time
 from sopel import loader, module
 from sopel.irc import isupport
 from sopel.irc.utils import CapReq, MyInfo
-from sopel.tools import events, Identifier, iteritems, jobs, target, web
+from sopel.tools import events, Identifier, iteritems, target, web
 
 
 if sys.version_info.major >= 3:
@@ -47,11 +47,14 @@ def setup(bot):
         wait_interval = max(bot.settings.core.throttle_wait, 1)
 
         @module.interval(wait_interval)
+        @module.label('throttle_join')
         def processing_job(bot):
             _join_event_processing(bot)
 
         loader.clean_callable(processing_job, bot.settings)
-        bot.scheduler.add_job(jobs.Job(wait_interval, processing_job))
+        processing_job.plugin_name = 'coretasks'
+
+        bot.register_jobs([processing_job])
 
 
 def shutdown(bot):

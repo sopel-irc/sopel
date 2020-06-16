@@ -46,6 +46,11 @@ sopel.tools.events
    :members:
    :undoc-members:
 
+sopel.tools.jobs
+----------------
+.. automodule:: sopel.tools.jobs
+   :members:
+
 sopel.formatting
 ----------------
 .. automodule:: sopel.formatting

@@ -22,7 +22,7 @@ from sopel import irc, logger, plugins, tools
 from sopel.db import SopelDB
 import sopel.loader
 from sopel.module import NOLIMIT
-from sopel.plugins import rules as plugin_rules
+from sopel.plugins import jobs as plugin_jobs, rules as plugin_rules
 from sopel.tools import deprecated, Identifier
 import sopel.tools.jobs
 from sopel.trigger import Trigger
@@ -61,6 +61,7 @@ class Sopel(irc.AbstractBot):
         self._running_triggers_lock = threading.Lock()
         self._plugins = {}
         self._rules_manager = plugin_rules.Manager()
+        self._scheduler = plugin_jobs.Scheduler(self)
 
         self._times = {}
         """
@@ -118,12 +119,15 @@ class Sopel(irc.AbstractBot):
         self.shutdown_methods = []
         """List of methods to call on shutdown."""
 
-        self.scheduler = sopel.tools.jobs.JobScheduler(self)
-        """Job Scheduler. See :func:`sopel.module.interval`."""
-
     @property
     def rules(self):
+        """Rules manager."""
         return self._rules_manager
+
+    @property
+    def scheduler(self):
+        """Job Scheduler. See :func:`sopel.module.interval`."""
+        return self._scheduler
 
     @property
     def command_groups(self):
@@ -250,7 +254,7 @@ class Sopel(irc.AbstractBot):
         """
         self.setup_logging()
         self.setup_plugins()
-        self.scheduler.start()
+        self._scheduler.start()
 
     def setup_logging(self):
         """Set up logging based on config options."""
@@ -414,7 +418,7 @@ class Sopel(irc.AbstractBot):
 
         # remove plugin rules, jobs, shutdown functions, and url callbacks
         self._rules_manager.unregister_plugin(name)
-        self.unregister_jobs(jobs)
+        self._scheduler.unregister_plugin(name)
         self.unregister_shutdowns(shutdowns)
         self.unregister_urls(urls)
 
@@ -450,10 +454,14 @@ class Sopel(irc.AbstractBot):
         version='7.1',
         removed_in='8.0')
     def unregister(self, obj):
-        """Unregister a job or a shutdown method.
+        """Unregister a shutdown method.
 
-        :param obj: the job or shutdown method to unregister
+        :param obj: the shutdown method to unregister
         :type obj: :term:`object`
+
+        This method was used to unregister anything (rules, commands, urls,
+        jobs, and shutdown methods), but since everything can be done by other
+        means, there is no use for it anymore.
         """
         callable_name = getattr(obj, "__name__", 'UNKNOWN')
 
@@ -544,20 +552,12 @@ class Sopel(irc.AbstractBot):
 
     def register_jobs(self, jobs):
         for func in jobs:
-            for interval in func.interval:
-                job = sopel.tools.jobs.Job(interval, func)
-                self.scheduler.add_job(job)
-                callable_name = getattr(func, "__name__", 'UNKNOWN')
-                LOGGER.debug(
-                    'Job added "%s", will run every %d seconds',
-                    callable_name,
-                    interval)
+            job = sopel.tools.jobs.Job.from_callable(self.settings, func)
+            self._scheduler.register(job)
 
     def unregister_jobs(self, jobs):
         for job in jobs:
-            callable_name = getattr(job, "__name__", 'UNKNOWN')
-            self.scheduler.remove_callable_job(job)
-            LOGGER.debug('Job callable removed: %s', callable_name)
+            self._scheduler.remove_callable_job(job)
 
     def register_shutdowns(self, shutdowns):
         # Append plugin's shutdown function to the bot's list of functions to
@@ -857,8 +857,8 @@ class Sopel(irc.AbstractBot):
     def on_scheduler_error(self, scheduler, exc):
         """Called when the Job Scheduler fails.
 
-        :param scheduler: the JobScheduler that errored
-        :type scheduler: :class:`sopel.tools.jobs.JobScheduler`
+        :param scheduler: the job scheduler that errored
+        :type scheduler: :class:`sopel.plugins.jobs.Scheduler`
         :param Exception exc: the raised exception
 
         .. seealso::
@@ -870,8 +870,8 @@ class Sopel(irc.AbstractBot):
     def on_job_error(self, scheduler, job, exc):
         """Called when a job from the Job Scheduler fails.
 
-        :param scheduler: the JobScheduler responsible for the errored ``job``
-        :type scheduler: :class:`sopel.tools.jobs.JobScheduler`
+        :param scheduler: the job scheduler responsible for the errored ``job``
+        :type scheduler: :class:`sopel.plugins.jobs.Scheduler`
         :param job: the Job that errored
         :type job: :class:`sopel.tools.jobs.Job`
         :param Exception exc: the raised exception
@@ -939,16 +939,16 @@ class Sopel(irc.AbstractBot):
         LOGGER.info('Shutting down')
         # Stop Job Scheduler
         LOGGER.info('Stopping the Job Scheduler.')
-        self.scheduler.stop()
+        self._scheduler.stop()
 
         try:
-            self.scheduler.join(timeout=15)
+            self._scheduler.join(timeout=15)
         except RuntimeError:
             LOGGER.exception('Unable to stop the Job Scheduler.')
         else:
             LOGGER.info('Job Scheduler stopped.')
 
-        self.scheduler.clear_jobs()
+        self._scheduler.clear_jobs()
 
         # Shutdown plugins
         LOGGER.info(

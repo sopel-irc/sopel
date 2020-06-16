@@ -16,7 +16,8 @@ import socket
 import sys
 import threading
 
-from sopel.tools.jobs import Job, JobScheduler
+from sopel import loader, module
+from sopel.tools import jobs
 from .abstract_backends import AbstractIRCBackend
 from .utils import get_cnames
 
@@ -40,6 +41,7 @@ if sys.version_info.major >= 3:
 LOGGER = logging.getLogger(__name__)
 
 
+@module.thread(False)
 def _send_ping(backend):
     if not backend.is_connected():
         return
@@ -51,6 +53,7 @@ def _send_ping(backend):
             LOGGER.exception('Socket error on PING')
 
 
+@module.thread(False)
 def _check_timeout(backend):
     if not backend.is_connected():
         return
@@ -59,10 +62,6 @@ def _check_timeout(backend):
         LOGGER.error(
             'Server timeout detected after %ss; closing.', time_passed)
         backend.close_when_done()
-
-
-_send_ping.thread = False
-_check_timeout.thread = False
 
 
 class AsynchatBackend(AbstractIRCBackend, asynchat.async_chat):
@@ -85,13 +84,17 @@ class AsynchatBackend(AbstractIRCBackend, asynchat.async_chat):
         self.host = None
         self.port = None
         self.source_address = None
+        self.timeout_scheduler = jobs.Scheduler(self)
 
-        ping_job = Job(self.ping_timeout, _send_ping)
-        timeout_job = Job(self.server_timeout, _check_timeout)
+        # prepare interval decorator
+        ping_interval = module.interval(self.ping_timeout)
+        timeout_interval = module.interval(self.server_timeout)
 
-        self.timeout_scheduler = JobScheduler(self)
-        self.timeout_scheduler.add_job(ping_job)
-        self.timeout_scheduler.add_job(timeout_job)
+        # register timeout jobs
+        self.register_timeout_jobs([
+            ping_interval(_send_ping),
+            timeout_interval(_check_timeout),
+        ])
 
     def is_connected(self):
         return self.connected
@@ -109,7 +112,16 @@ class AsynchatBackend(AbstractIRCBackend, asynchat.async_chat):
 
     def run_forever(self):
         """Run forever."""
+        LOGGER.debug('Running forever.')
         asyncore.loop()
+
+    def register_timeout_jobs(self, handlers):
+        """Register the timeout handlers for the timeout scheduler."""
+        for handler in handlers:
+            loader.clean_callable(handler, self.bot.settings)
+            job = jobs.Job.from_callable(self.bot.settings, handler)
+            self.timeout_scheduler.register(job)
+            LOGGER.debug('Timeout Job registered: %s', str(job))
 
     def initiate_connect(self, host, port, source_address):
         """Initiate IRC connection.
