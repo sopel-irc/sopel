@@ -2139,7 +2139,7 @@ def test_action_command_from_callable_regex_pattern(mockbot):
 
 
 # -----------------------------------------------------------------------------
-# test for :class:`sopel.plugins.rules.FindRule`
+# tests for :class:`sopel.plugins.rules.FindRule`
 
 def test_find_rule_str():
     regex = re.compile(r'.*')
@@ -2189,7 +2189,7 @@ def test_find_rule_from_callable(mockbot):
     loader.clean_callable(handler, mockbot.settings)
     handler.plugin_name = 'testplugin'
 
-    # create rule from a clean callable
+    # create rule from a cleaned callable
     rule = rules.FindRule.from_callable(mockbot.settings, handler)
     assert str(rule) == '<FindRule testplugin.handler (4)>'
 
@@ -2227,7 +2227,7 @@ def test_find_rule_from_callable(mockbot):
 
 
 # -----------------------------------------------------------------------------
-# test for :class:`sopel.plugins.rules.SearchRule`
+# tests for :class:`sopel.plugins.rules.SearchRule`
 
 def test_search_rule_str():
     regex = re.compile(r'.*')
@@ -2276,7 +2276,7 @@ def test_search_rule_from_callable(mockbot):
     loader.clean_callable(handler, mockbot.settings)
     handler.plugin_name = 'testplugin'
 
-    # create rule from a clean callable
+    # create rule from a cleaned callable
     rule = rules.SearchRule.from_callable(mockbot.settings, handler)
     assert str(rule) == '<SearchRule testplugin.handler (4)>'
 

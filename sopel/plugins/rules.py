@@ -1227,11 +1227,11 @@ class ActionCommand(NamedRuleMixin, Rule):
 class FindRule(Rule):
     """Anonymous find rule definition.
 
-    A find rule is like other anonymous rule with a twist: instead of maching
+    A find rule is like an anonymous rule with a twist: instead of matching
     only once per IRC line, a find rule will execute for each non-overlapping
     match for each of its regular expressions.
 
-    For example, to match for each word starting with the h letter in a line,
+    For example, to match for each word starting with the letter ``h`` in a line,
     you can use the pattern ``h\\w+``:
 
     .. code-block:: irc
@@ -1265,11 +1265,11 @@ class FindRule(Rule):
 class SearchRule(Rule):
     """Anonymous search rule definition.
 
-    An anonymous search rule (or simply "a search rule") is like anonymous
-    rules with a twist: it will execute exactly once per regular expression
-    that match any part of a line, not just from the start.
+    A search rule is like an anonymous rule with a twist: it will execute
+    exactly once per regular expression that matches anywhere in a line, not
+    just from the start.
 
-    For example, to search if any word starts with the ``h`` letter in a line,
+    For example, to search if any word starts with the letter ``h`` in a line,
     you can use the pattern ``h\\w+``:
 
     .. code-block:: irc

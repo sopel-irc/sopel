@@ -193,7 +193,7 @@ def rule(*patterns):
         The regex rule will match only once per line, starting at the beginning
         of the line only.
 
-        To match for each time the expression is found, use the :func:`find`
+        To match for each time an expression is found, use the :func:`find`
         decorator instead. To match only once from anywhere in the line,
         use the :func:`search` decorator instead.
 
@@ -210,7 +210,7 @@ def rule(*patterns):
 
 
 def find(*patterns):
-    """Decorate a function to be called each time patterns is found in a line.
+    """Decorate a function to be called for each time a pattern is found in a line.
 
     :param str patterns: one or more regular expression(s)
 
@@ -230,8 +230,8 @@ def find(*patterns):
             # will trigger once on "I'm right here!"
 
     If the Sopel instance is in a channel, or sent a ``PRIVMSG``, the function
-    will execute for each time in a string said matches the expression. Each
-    match will also contains the position of the instance it found.
+    will execute for each time a received message matches an expression. Each
+    match will also contain the position of the instance it found.
 
     Inside the regular expression, some special directives can be used.
     ``$nick`` will be replaced with the nick of the bot and ``,`` or ``:``, and
@@ -244,7 +244,7 @@ def find(*patterns):
 
     .. note::
 
-        The regex rule will match for each non-overlapping matches, from left
+        The regex rule will match once for each non-overlapping match, from left
         to right, and the function will execute for each of these matches.
 
         To match only once from anywhere in the line, use the :func:`search`
@@ -264,7 +264,7 @@ def find(*patterns):
 
 
 def search(*patterns):
-    """Decorate a function to be called when a pattern is found in a line.
+    """Decorate a function to be called when a pattern matches anywhere in a line.
 
     :param str patterns: one or more regular expression(s)
 
@@ -286,7 +286,7 @@ def search(*patterns):
     If the Sopel instance is in a channel, or sent a PRIVMSG, where a part
     of a string matching this expression is said, the function will execute.
     Note that captured groups here will be retrievable through the
-    :class:`~sopel.trigger.Trigger` object later. The match will also contains
+    :class:`~sopel.trigger.Trigger` object later. The match will also contain
     the position of the first instance found.
 
     Inside the regular expression, some special directives can be used.
@@ -304,7 +304,7 @@ def search(*patterns):
         the left of the line, and the function will execute only once per
         regular expression.
 
-        To match for each time the expression is found, use the :func:`find`
+        To match for each time an expression is found, use the :func:`find`
         decorator instead. To match only once from the start of the line,
         use the :func:`rule` decorator instead.
 
