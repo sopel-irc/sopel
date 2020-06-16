@@ -123,6 +123,52 @@ def test_rule_multiple():
     assert mock.rule == [r'\w+', '.*', r'\d+']
 
 
+def test_find():
+    @module.find('.*')
+    def mock(bot, trigger, match):
+        return True
+    assert mock.find_rules == ['.*']
+
+
+def test_find_args():
+    @module.find('.*', r'\d+')
+    def mock(bot, trigger, match):
+        return True
+    assert mock.find_rules == ['.*', r'\d+']
+
+
+def test_find_multiple():
+    @module.find('.*', r'\d+')
+    @module.find('.*')
+    @module.find(r'\w+')
+    def mock(bot, trigger, match):
+        return True
+    assert mock.find_rules == [r'\w+', '.*', r'\d+']
+
+
+def test_search():
+    @module.search('.*')
+    def mock(bot, trigger, match):
+        return True
+    assert mock.search_rules == ['.*']
+
+
+def test_search_args():
+    @module.search('.*', r'\d+')
+    def mock(bot, trigger, match):
+        return True
+    assert mock.search_rules == ['.*', r'\d+']
+
+
+def test_search_multiple():
+    @module.search('.*', r'\d+')
+    @module.search('.*')
+    @module.search(r'\w+')
+    def mock(bot, trigger, match):
+        return True
+    assert mock.search_rules == [r'\w+', '.*', r'\d+']
+
+
 def test_thread():
     @module.thread(True)
     def mock(bot, trigger, match):

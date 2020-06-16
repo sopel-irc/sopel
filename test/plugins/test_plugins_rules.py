@@ -59,6 +59,59 @@ def test_manager_rule(mockbot):
     assert result_match.group(0) == 'Hello, world'
 
 
+def test_manager_find(mockbot):
+    regex = re.compile(r'\w+')
+    rule = rules.FindRule([regex], plugin='testplugin', label='testrule')
+    manager = rules.Manager()
+    manager.register(rule)
+
+    assert manager.has_rule('testrule')
+    assert manager.has_rule('testrule', plugin='testplugin')
+    assert not manager.has_rule('testrule', plugin='not-plugin')
+
+    line = ':Foo!foo@example.com PRIVMSG #sopel :Hello, world'
+    pretrigger = trigger.PreTrigger(mockbot.nick, line)
+
+    items = manager.get_triggered_rules(mockbot, pretrigger)
+    assert len(items) == 2, 'Exactly two rules must match'
+    assert len(items[0]) == 2, (
+        'First result must contain two items: (rule, match)')
+    assert len(items[1]) == 2, (
+        'Second result must contain two items: (rule, match)')
+
+    # first result
+    result_rule, result_match = items[0]
+    assert result_rule == rule
+    assert result_match.group(0) == 'Hello', 'The first must match on "Hello"'
+
+    # second result
+    result_rule, result_match = items[1]
+    assert result_rule == rule
+    assert result_match.group(0) == 'world', 'The second must match on "world"'
+
+
+def test_manager_search(mockbot):
+    regex = re.compile(r'\w+')
+    rule = rules.SearchRule([regex], plugin='testplugin', label='testrule')
+    manager = rules.Manager()
+    manager.register(rule)
+
+    assert manager.has_rule('testrule')
+    assert manager.has_rule('testrule', plugin='testplugin')
+    assert not manager.has_rule('testrule', plugin='not-plugin')
+
+    line = ':Foo!foo@example.com PRIVMSG #sopel :Hello, world'
+    pretrigger = trigger.PreTrigger(mockbot.nick, line)
+
+    items = manager.get_triggered_rules(mockbot, pretrigger)
+    assert len(items) == 1, 'Exactly one rule must match'
+
+    # first result
+    result_rule, result_match = items[0]
+    assert result_rule == rule
+    assert result_match.group(0) == 'Hello'
+
+
 def test_manager_command(mockbot):
     command = rules.Command('hello', prefix=r'\.', plugin='testplugin')
     manager = rules.Manager()
@@ -2083,3 +2136,178 @@ def test_action_command_from_callable_regex_pattern(mockbot):
     assert result.group(4) is None
     assert result.group(5) is None
     assert result.group(6) is None
+
+
+# -----------------------------------------------------------------------------
+# tests for :class:`sopel.plugins.rules.FindRule`
+
+def test_find_rule_str():
+    regex = re.compile(r'.*')
+    rule = rules.FindRule([regex], plugin='testplugin', label='testrule')
+
+    assert str(rule) == '<FindRule testplugin.testrule (1)>'
+
+
+def test_find_rule_str_no_plugin():
+    regex = re.compile(r'.*')
+    rule = rules.FindRule([regex], label='testrule')
+
+    assert str(rule) == '<FindRule (no-plugin).testrule (1)>'
+
+
+def test_find_str_no_label():
+    regex = re.compile(r'.*')
+    rule = rules.FindRule([regex], plugin='testplugin')
+
+    assert str(rule) == '<FindRule testplugin.(generic) (1)>'
+
+
+def test_find_str_no_plugin_label():
+    regex = re.compile(r'.*')
+    rule = rules.FindRule([regex])
+
+    assert str(rule) == '<FindRule (no-plugin).(generic) (1)>'
+
+
+def test_find_rule_parse_pattern():
+    # playing with regex
+    regex = re.compile(r'\w+')
+
+    rule = rules.FindRule([regex])
+    results = list(rule.parse('Hello, world!'))
+    assert len(results) == 2, 'Find rule on word must match twice'
+    assert results[0].group(0) == 'Hello'
+    assert results[1].group(0) == 'world'
+
+
+def test_find_rule_from_callable(mockbot):
+    # prepare callable
+    @module.find(r'hello', r'hi', r'hey', r'hello|hi')
+    def handler(wrapped, trigger):
+        wrapped.reply('Hi!')
+
+    loader.clean_callable(handler, mockbot.settings)
+    handler.plugin_name = 'testplugin'
+
+    # create rule from a cleaned callable
+    rule = rules.FindRule.from_callable(mockbot.settings, handler)
+    assert str(rule) == '<FindRule testplugin.handler (4)>'
+
+    # match on "Hello" twice
+    line = ':Foo!foo@example.com PRIVMSG #sopel :Hello, world'
+    pretrigger = trigger.PreTrigger(mockbot.nick, line)
+    results = list(rule.match(mockbot, pretrigger))
+
+    assert len(results) == 2, 'Exactly 2 rules must match'
+    assert all(result.group(0) == 'Hello' for result in results)
+
+    # match on "hi" twice
+    line = ':Foo!foo@example.com PRIVMSG #sopel :hi!'
+    pretrigger = trigger.PreTrigger(mockbot.nick, line)
+    results = list(rule.match(mockbot, pretrigger))
+
+    assert len(results) == 2, 'Exactly 2 rules must match'
+    assert all(result.group(0) == 'hi' for result in results)
+
+    # match on "hey" twice
+    line = ':Foo!foo@example.com PRIVMSG #sopel :hey how are you doing?'
+    pretrigger = trigger.PreTrigger(mockbot.nick, line)
+    results = list(rule.match(mockbot, pretrigger))
+
+    assert len(results) == 1, 'Exactly 1 rule must match'
+    assert results[0].group(0) == 'hey'
+
+    # match on "hey" twice because it's twice in the line
+    line = ':Foo!foo@example.com PRIVMSG #sopel :I say hey, can you say hey?'
+    pretrigger = trigger.PreTrigger(mockbot.nick, line)
+    results = list(rule.match(mockbot, pretrigger))
+
+    assert len(results) == 2, 'Exactly 2 rules must match'
+    assert all(result.group(0) == 'hey' for result in results)
+
+
+# -----------------------------------------------------------------------------
+# tests for :class:`sopel.plugins.rules.SearchRule`
+
+def test_search_rule_str():
+    regex = re.compile(r'.*')
+    rule = rules.SearchRule([regex], plugin='testplugin', label='testrule')
+
+    assert str(rule) == '<SearchRule testplugin.testrule (1)>'
+
+
+def test_search_rule_str_no_plugin():
+    regex = re.compile(r'.*')
+    rule = rules.SearchRule([regex], label='testrule')
+
+    assert str(rule) == '<SearchRule (no-plugin).testrule (1)>'
+
+
+def test_search_str_no_label():
+    regex = re.compile(r'.*')
+    rule = rules.SearchRule([regex], plugin='testplugin')
+
+    assert str(rule) == '<SearchRule testplugin.(generic) (1)>'
+
+
+def test_search_str_no_plugin_label():
+    regex = re.compile(r'.*')
+    rule = rules.SearchRule([regex])
+
+    assert str(rule) == '<SearchRule (no-plugin).(generic) (1)>'
+
+
+def test_search_rule_parse_pattern():
+    # playing with regex
+    regex = re.compile(r'\w+')
+
+    rule = rules.SearchRule([regex])
+    results = list(rule.parse('Hello, world!'))
+    assert len(results) == 1, 'Search rule on word must match only once'
+    assert results[0].group(0) == 'Hello'
+
+
+def test_search_rule_from_callable(mockbot):
+    # prepare callable
+    @module.search(r'hello', r'hi', r'hey', r'hello|hi')
+    def handler(wrapped, trigger):
+        wrapped.reply('Hi!')
+
+    loader.clean_callable(handler, mockbot.settings)
+    handler.plugin_name = 'testplugin'
+
+    # create rule from a cleaned callable
+    rule = rules.SearchRule.from_callable(mockbot.settings, handler)
+    assert str(rule) == '<SearchRule testplugin.handler (4)>'
+
+    # match on "Hello" twice
+    line = ':Foo!foo@example.com PRIVMSG #sopel :Hello, world'
+    pretrigger = trigger.PreTrigger(mockbot.nick, line)
+    results = list(rule.match(mockbot, pretrigger))
+
+    assert len(results) == 2, 'Exactly 2 rules must match'
+    assert all(result.group(0) == 'Hello' for result in results)
+
+    # match on "hi" twice
+    line = ':Foo!foo@example.com PRIVMSG #sopel :hi!'
+    pretrigger = trigger.PreTrigger(mockbot.nick, line)
+    results = list(rule.match(mockbot, pretrigger))
+
+    assert len(results) == 2, 'Exactly 2 rules must match'
+    assert all(result.group(0) == 'hi' for result in results)
+
+    # match on "hey" once
+    line = ':Foo!foo@example.com PRIVMSG #sopel :hey how are you doing?'
+    pretrigger = trigger.PreTrigger(mockbot.nick, line)
+    results = list(rule.match(mockbot, pretrigger))
+
+    assert len(results) == 1, 'Exactly 1 rule must match'
+    assert results[0].group(0) == 'hey'
+
+    # match on "hey" once even if not at the beginning of the line
+    line = ':Foo!foo@example.com PRIVMSG #sopel :I say hey, can you say hey?'
+    pretrigger = trigger.PreTrigger(mockbot.nick, line)
+    results = list(rule.match(mockbot, pretrigger))
+
+    assert len(results) == 1, 'The rule must match once from anywhere'
+    assert results[0].group(0) == 'hey'

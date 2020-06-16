@@ -22,6 +22,7 @@ __all__ = [
     'echo',
     'event',
     'example',
+    'find',
     'intent',
     'interval',
     'nickname_commands',
@@ -35,6 +36,7 @@ __all__ = [
     'require_privilege',
     'require_privmsg',
     'rule',
+    'search',
     'thread',
     'unblockable',
     'url',
@@ -158,17 +160,27 @@ def rule(*patterns):
 
     :param str patterns: one or more regular expression(s)
 
-    Each argument is a regular expression which will trigger the function.
+    Each argument is a regular expression which will trigger the function::
 
-    This decorator can be used multiple times to add more rules.
+        @rule('hello', 'how')
+            # will trigger once on "how are you?"
+            # will trigger once on "hello, what's up?"
 
-    If the Sopel instance is in a channel, or sent a PRIVMSG, where a string
-    matching this expression is said, the function will execute. Note that
-    captured groups here will be retrievable through the Trigger object later.
+    This decorator can be used multiple times to add more rules::
 
-    Inside the regular expression, some special directives can be used. $nick
-    will be replaced with the nick of the bot and , or :, and $nickname will be
-    replaced with the nick of the bot.
+        @rule('how')
+        @rule('hello')
+            # will trigger once on "how are you?"
+            # will trigger once on "hello, what's up?"
+
+    If the Sopel instance is in a channel, or sent a ``PRIVMSG``, where a
+    string matching this expression is said, the function will execute. Note
+    that captured groups here will be retrievable through the
+    :class:`~sopel.trigger.Trigger` object later.
+
+    Inside the regular expression, some special directives can be used.
+    ``$nick`` will be replaced with the nick of the bot and ``,`` or ``:``, and
+    ``$nickname`` will be replaced with the nick of the bot.
 
     .. versionchanged:: 7.0
 
@@ -178,14 +190,12 @@ def rule(*patterns):
 
     .. note::
 
-        A regex rule can match only once per line. A future version of Sopel
-        will (hopefully) remove this limitation.
+        The regex rule will match only once per line, starting at the beginning
+        of the line only.
 
-    .. note::
-
-        The regex match must start at the beginning of the line. To match
-        anywhere in a line, surround the actual pattern with ``.*``. A future
-        version of Sopel may remove this requirement.
+        To match for each time an expression is found, use the :func:`find`
+        decorator instead. To match only once from anywhere in the line,
+        use the :func:`search` decorator instead.
 
     """
     def add_attribute(function):
@@ -194,6 +204,117 @@ def rule(*patterns):
         for value in patterns:
             if value not in function.rule:
                 function.rule.append(value)
+        return function
+
+    return add_attribute
+
+
+def find(*patterns):
+    """Decorate a function to be called for each time a pattern is found in a line.
+
+    :param str patterns: one or more regular expression(s)
+
+    Each argument is a regular expression which will trigger the function::
+
+        @find('hello', 'here')
+            # will trigger once on "hello you"
+            # will trigger twice on "hello here"
+            # will trigger once on "I'm right here!"
+
+    This decorator can be used multiple times to add more rules::
+
+        @find('here')
+        @find('hello')
+            # will trigger once on "hello you"
+            # will trigger twice on "hello here"
+            # will trigger once on "I'm right here!"
+
+    If the Sopel instance is in a channel, or sent a ``PRIVMSG``, the function
+    will execute for each time a received message matches an expression. Each
+    match will also contain the position of the instance it found.
+
+    Inside the regular expression, some special directives can be used.
+    ``$nick`` will be replaced with the nick of the bot and ``,`` or ``:``, and
+    ``$nickname`` will be replaced with the nick of the bot::
+
+        @find('$nickname')
+            # will trigger for each time the bot's nick is in a trigger
+
+    .. versionadded:: 7.1
+
+    .. note::
+
+        The regex rule will match once for each non-overlapping match, from left
+        to right, and the function will execute for each of these matches.
+
+        To match only once from anywhere in the line, use the :func:`search`
+        decorator instead. To match only once from the start of the line,
+        use the :func:`rule` decorator instead.
+
+    """
+    def add_attribute(function):
+        if not hasattr(function, "find_rules"):
+            function.find_rules = []
+        for value in patterns:
+            if value not in function.find_rules:
+                function.find_rules.append(value)
+        return function
+
+    return add_attribute
+
+
+def search(*patterns):
+    """Decorate a function to be called when a pattern matches anywhere in a line.
+
+    :param str patterns: one or more regular expression(s)
+
+    Each argument is a regular expression which will trigger the function::
+
+        @search('hello', 'here')
+            # will trigger once on "hello you"
+            # will trigger twice on "hello here"
+            # will trigger once on "I'm right here!"
+
+    This decorator can be used multiple times to add more search rules::
+
+        @search('here')
+        @search('hello')
+            # will trigger once on "hello you"
+            # will trigger twice on "hello here" (once per expression)
+            # will trigger once on "I'm right here!"
+
+    If the Sopel instance is in a channel, or sent a PRIVMSG, where a part
+    of a string matching this expression is said, the function will execute.
+    Note that captured groups here will be retrievable through the
+    :class:`~sopel.trigger.Trigger` object later. The match will also contain
+    the position of the first instance found.
+
+    Inside the regular expression, some special directives can be used.
+    ``$nick`` will be replaced with the nick of the bot and ``,`` or ``:``, and
+    ``$nickname`` will be replaced with the nick of the bot::
+
+        @search('$nickname')
+            # will trigger once when the bot's nick is in a trigger
+
+    .. versionadded:: 7.1
+
+    .. note::
+
+        The regex rule will match for the first instance only, starting from
+        the left of the line, and the function will execute only once per
+        regular expression.
+
+        To match for each time an expression is found, use the :func:`find`
+        decorator instead. To match only once from the start of the line,
+        use the :func:`rule` decorator instead.
+
+    """
+    def add_attribute(function):
+        if not hasattr(function, "search_rules"):
+            function.search_rules = []
+        for value in patterns:
+            if value not in function.search_rules:
+                function.search_rules.append(value)
         return function
 
     return add_attribute

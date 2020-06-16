@@ -31,7 +31,15 @@ from sopel.config.core_section import (
     COMMAND_DEFAULT_HELP_PREFIX, COMMAND_DEFAULT_PREFIX)
 
 
-__all__ = ['Manager', 'Rule', 'Command', 'NickCommand', 'ActionCommand']
+__all__ = [
+    'Manager',
+    'Rule',
+    'FindRule',
+    'SearchRule',
+    'Command',
+    'NickCommand',
+    'ActionCommand',
+]
 
 LOGGER = logging.getLogger(__name__)
 
@@ -699,7 +707,8 @@ class Rule(AbstractRule):
 
         plugin = self.get_plugin_name() or '(no-plugin)'
 
-        return '<Rule %s.%s (%d)>' % (plugin, label, len(self._regexes))
+        return '<%s %s.%s (%d)>' % (
+            self.__class__.__name__, plugin, label, len(self._regexes))
 
     def get_plugin_name(self):
         return self._plugin_name
@@ -1213,3 +1222,82 @@ class ActionCommand(NamedRuleMixin, Rule):
         :rtype: bool
         """
         return bool(intent and self.INTENT_REGEX.match(intent))
+
+
+class FindRule(Rule):
+    """Anonymous find rule definition.
+
+    A find rule is like an anonymous rule with a twist: instead of matching
+    only once per IRC line, a find rule will execute for each non-overlapping
+    match for each of its regular expressions.
+
+    For example, to match for each word starting with the letter ``h`` in a line,
+    you can use the pattern ``h\\w+``:
+
+    .. code-block:: irc
+
+        <user> hello here
+        <Bot> Found the word "hello"
+        <Bot> Found the word "here"
+        <user> sopelunker, how are you?
+        <Bot> Found the word "how"
+
+    .. seealso::
+
+        This rule uses :func:`re.finditer`. To know more about how it works,
+        see the official Python documentation.
+
+    """
+    @classmethod
+    def from_callable(cls, settings, handler):
+        regexes = tuple(handler.find_rules)
+        kwargs = cls.kwargs_from_callable(handler)
+        kwargs['handler'] = handler
+
+        return cls(regexes, **kwargs)
+
+    def parse(self, text):
+        for regex in self._regexes:
+            for match in regex.finditer(text):
+                yield match
+
+
+class SearchRule(Rule):
+    """Anonymous search rule definition.
+
+    A search rule is like an anonymous rule with a twist: it will execute
+    exactly once per regular expression that matches anywhere in a line, not
+    just from the start.
+
+    For example, to search if any word starts with the letter ``h`` in a line,
+    you can use the pattern ``h\\w+``:
+
+    .. code-block:: irc
+
+        <user> hello here
+        <Bot> Found the word "hello"
+        <user> sopelunker, how are you?
+        <Bot> Found the word "how"
+
+    The match object it returns contains the first element that matches the
+    expression in the line.
+
+    .. seealso::
+
+        This rule uses :func:`re.search`. To know more about how it works,
+        see the official Python documentation.
+
+    """
+    @classmethod
+    def from_callable(cls, settings, handler):
+        regexes = tuple(handler.search_rules)
+        kwargs = cls.kwargs_from_callable(handler)
+        kwargs['handler'] = handler
+
+        return cls(regexes, **kwargs)
+
+    def parse(self, text):
+        for regex in self._regexes:
+            match = regex.search(text)
+            if match:
+                yield match

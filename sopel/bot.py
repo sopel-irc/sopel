@@ -447,18 +447,25 @@ class Sopel(irc.AbstractBot):
 
         for callbl in callables:
             rules = getattr(callbl, 'rule', [])
+            find_rules = getattr(callbl, 'find_rules', [])
+            search_rules = getattr(callbl, 'search_rules', [])
             commands = getattr(callbl, 'commands', [])
             nick_commands = getattr(callbl, 'nickname_commands', [])
             action_commands = getattr(callbl, 'action_commands', [])
+            is_rule = any([rules, find_rules, search_rules])
             is_command = any([commands, nick_commands, action_commands])
 
             if rules:
                 rule = plugin_rules.Rule.from_callable(settings, callbl)
                 self._rules_manager.register(rule)
-            elif not is_command:
-                callbl.rule = [match_any]
-                self._rules_manager.register(
-                    plugin_rules.Rule.from_callable(self.settings, callbl))
+
+            if find_rules:
+                rule = plugin_rules.FindRule.from_callable(settings, callbl)
+                self._rules_manager.register(rule)
+
+            if search_rules:
+                rule = plugin_rules.SearchRule.from_callable(settings, callbl)
+                self._rules_manager.register(rule)
 
             if commands:
                 rule = plugin_rules.Command.from_callable(settings, callbl)
@@ -473,6 +480,11 @@ class Sopel(irc.AbstractBot):
                 rule = plugin_rules.ActionCommand.from_callable(
                     settings, callbl)
                 self._rules_manager.register_action_command(rule)
+
+            if not is_command and not is_rule:
+                callbl.rule = [match_any]
+                self._rules_manager.register(
+                    plugin_rules.Rule.from_callable(self.settings, callbl))
 
     def register_jobs(self, jobs):
         for func in jobs:
