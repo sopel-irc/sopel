@@ -455,10 +455,6 @@ class ListAttribute(BaseValidated):
         return item
 
     def configure(self, prompt, default, parent, section_name):
-        """
-        With the ``prompt`` and ``default``, parse and return a value from
-        terminal.
-        """
         each_prompt = '?'
         if isinstance(prompt, tuple):
             each_prompt = prompt[1]
@@ -574,10 +570,6 @@ class FilenameAttribute(BaseValidated):
         instance._parser.set(instance._section_name, self.name, value)
 
     def configure(self, prompt, default, parent, section_name):
-        """
-        With the ``prompt`` and ``default``, parse and return a value from
-        terminal.
-        """
         if default is not NO_DEFAULT and default is not None:
             prompt = '{} [{}]'.format(prompt, default)
         value = get_input(prompt + ' ')

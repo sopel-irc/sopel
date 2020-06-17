@@ -325,12 +325,22 @@ def set_config(bot, trigger):
         bot.say(exc.args[1])
         return
 
+    # Get a descriptor class for the option if it's a static section
+    descriptor = getattr(section.__class__, option) if static_sec else None
+
     # Display current value if no value is given
     if not value:
-        if option.endswith("password") or option.endswith("pass"):
+        value = getattr(section, option)
+
+        if descriptor is not None:
+            if getattr(descriptor, 'is_secret', False):
+                # Keep secret option as secret
+                value = "(secret value censored)"
+        elif option.endswith("password") or option.endswith("pass"):
+            # Fallback to guessing if secret, for backward compatiblity
+            # TODO: consider a deprecation warning when loading settings
             value = "(password censored)"
-        else:
-            value = getattr(section, option)
+
         bot.reply("%s.%s = %s (%s)" % (section_name, option, value, type(value).__name__))
         return
 
@@ -342,8 +352,7 @@ def set_config(bot, trigger):
         return
 
     # Otherwise, set the value to one given
-    if static_sec:
-        descriptor = getattr(section.__class__, option)
+    if descriptor is not None:
         try:
             if isinstance(descriptor, FilenameAttribute):
                 value = descriptor.parse(value, bot.config, descriptor)
