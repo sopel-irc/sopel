@@ -60,14 +60,6 @@ def run(settings, pid_file, daemon=False):
         tools.stderr(
             'Could not open CA certificates file. SSL will not work properly!')
 
-    def signal_handler(sig, frame):
-        if sig == signal.SIGUSR1 or sig == signal.SIGTERM or sig == signal.SIGINT:
-            LOGGER.warning('Got quit signal, shutting down.')
-            p.quit('Closing')
-        elif sig == signal.SIGUSR2 or sig == signal.SIGILL:
-            LOGGER.warning('Got restart signal, shutting down and restarting.')
-            p.restart('Restarting')
-
     # Define empty variable `p` for bot
     p = None
     while True:
@@ -75,18 +67,10 @@ def run(settings, pid_file, daemon=False):
             break
         try:
             p = bot.Sopel(settings, daemon=daemon)
-            if hasattr(signal, 'SIGUSR1'):
-                signal.signal(signal.SIGUSR1, signal_handler)
-            if hasattr(signal, 'SIGTERM'):
-                signal.signal(signal.SIGTERM, signal_handler)
-            if hasattr(signal, 'SIGINT'):
-                signal.signal(signal.SIGINT, signal_handler)
-            if hasattr(signal, 'SIGUSR2'):
-                signal.signal(signal.SIGUSR2, signal_handler)
-            if hasattr(signal, 'SIGILL'):
-                signal.signal(signal.SIGILL, signal_handler)
             p.setup()
+            p.set_signal_handlers()
         except KeyboardInterrupt:
+            tools.stderr('Bot setup interrupted')
             break
         except Exception:
             # In that case, there is nothing we can do.
