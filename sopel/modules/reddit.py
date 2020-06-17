@@ -436,9 +436,9 @@ def reddit_slash_info(bot, trigger):
     searchtype = trigger.group('prefix').lower()
     match = trigger.group('id')
     if searchtype == "r":
-        return subreddit_info(bot, trigger, match, commanded=True)
+        return subreddit_info(bot, trigger, match, commanded=False)
     elif searchtype == "u":
-        return redditor_info(bot, trigger, match, commanded=True)
+        return redditor_info(bot, trigger, match, commanded=False)
 
 
 @commands('subreddit')
