@@ -19,8 +19,13 @@ class MockIRCBackend(AbstractIRCBackend):
         super(MockIRCBackend, self).__init__(*args, **kwargs)
         self.message_sent = []
         """List of raw messages sent by the bot."""
+        self.connected = False
+        """Convenient status flag."""
 
-    def send(self, data):
+    def is_connected(self):
+        return self.connected
+
+    def irc_send(self, data):
         """Store ``data`` into :attr:`message_sent`."""
         self.message_sent.append(data)
 

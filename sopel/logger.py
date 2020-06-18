@@ -21,7 +21,7 @@ class IrcLoggingHandler(logging.Handler):
     def __init__(self, bot, level):
         super(IrcLoggingHandler, self).__init__(level)
         self._bot = bot
-        self._channel = bot.config.core.logging_channel
+        self._channel = bot.settings.core.logging_channel
 
     def emit(self, record):
         """Emit a log ``record`` to the IRC channel.
@@ -29,6 +29,10 @@ class IrcLoggingHandler(logging.Handler):
         :param record: the log record to output
         :type record: :class:`logging.LogRecord`
         """
+        if not self._bot.backend.is_connected():
+            # Don't emit logs when the bot is not connected.
+            return
+
         try:
             msg = self.format(record)
             self._bot.say(msg, self._channel)
