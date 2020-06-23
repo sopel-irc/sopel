@@ -1,0 +1,154 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.24.0
+    method: GET
+    uri: https://api.coingecko.com/api/v3/exchange_rates
+  response:
+    body:
+      string: !!binary |
+        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
+    headers:
+      Access-Control-Allow-Headers:
+      - Origin, X-Requested-With, Content-Type, Accept, Authorization
+      Access-Control-Allow-Methods:
+      - POST, PUT, DELETE, GET, OPTIONS
+      Access-Control-Allow-Origin:
+      - '*'
+      Access-Control-Expose-Headers:
+      - link, per-page, total
+      Access-Control-Request-Method:
+      - '*'
+      Alternate-Protocol:
+      - 443:npn-spdy/2
+      CF-Cache-Status:
+      - EXPIRED
+      CF-RAY:
+      - 5a7cd7942c505ecf-OMA
+      Cache-Control:
+      - max-age=60, public, must-revalidate, s-maxage=60
+      Connection:
+      - keep-alive
+      Content-Encoding:
+      - gzip
+      Content-Type:
+      - application/json; charset=utf-8
+      Date:
+      - Tue, 23 Jun 2020 08:29:35 GMT
+      ETag:
+      - W/"3b0100a48f38cce0bfa3e645413b0c0c"
+      Expect-CT:
+      - max-age=604800, report-uri="https://report-uri.cloudflare.com/cdn-cgi/beacon/expect-ct"
+      Server:
+      - cloudflare
+      Set-Cookie:
+      - __cfduid=d32d00fcc13d5a7cc1309efd9a68203861592900974; expires=Thu, 23-Jul-20
+        08:29:34 GMT; path=/; domain=.coingecko.com; HttpOnly; SameSite=Lax
+      Transfer-Encoding:
+      - chunked
+      Vary:
+      - Accept-Encoding, Origin
+      X-Request-Id:
+      - cd435240-49ef-4633-8ea0-d63b6e2ac115
+      X-Runtime:
+      - '0.012103'
+      cf-request-id:
+      - 0381e5109600005ecfaf843200000001
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.24.0
+    method: GET
+    uri: https://api.exchangeratesapi.io/latest?base=EUR
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAAyVRSXLCMBD8y5ydKXmk0eIbZjMxMZSMK4EbqfCBkBvF39Mytxm1epMe9Hv9u92p
+        edBysaKmZpW6oq7HHNknIxXtxh6AKgM4dkdq1DOOVz2OAzt1FoRpQ411nn1FywsAwRhBWEyzqpcE
+        Sj4M1DiOTrCM6yJrWFUUJqtcTFKEa/EcsEZl0QiwzXu4chIXITK18A0cQ0owznMKTQLn9+MZInXi
+        COTUtSUShxKp25QUxquD8fZV1FvcOu7nSM4ltGi3Q0GSKnxO+VyUfRRcWw7zkmxJMBxeyUMq4YbL
+        LBcs5suitEisJoSKpnFGaqmh/fEFbUEjW7bdfkQ4jj6g7LbFoxpOxgrU+/wJlvU1F9Y5l3ioGp4V
+        fV/vN2poPWWq6Acfh0WMmDfj30To+Q+oCncIzgEAAA==
+    headers:
+      Access-Control-Allow-Credentials:
+      - 'true'
+      Access-Control-Allow-Methods:
+      - GET
+      Access-Control-Allow-Origin:
+      - '*'
+      Age:
+      - '2947'
+      CF-Cache-Status:
+      - HIT
+      CF-RAY:
+      - 5a7cd7984da55f05-OMA
+      Cache-Control:
+      - max-age=1800
+      Connection:
+      - keep-alive
+      Content-Encoding:
+      - gzip
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 23 Jun 2020 08:29:35 GMT
+      Expect-CT:
+      - max-age=604800, report-uri="https://report-uri.cloudflare.com/cdn-cgi/beacon/expect-ct"
+      Server:
+      - cloudflare
+      Set-Cookie:
+      - __cfduid=dfe2db8636aa5a6bcace4860e921afa921592900975; expires=Thu, 23-Jul-20
+        08:29:35 GMT; path=/; domain=.exchangeratesapi.io; HttpOnly; SameSite=Lax
+      Transfer-Encoding:
+      - chunked
+      Vary:
+      - Accept-Encoding
+      cf-request-id:
+      - 0381e5133100005f05690ba200000001
+    status:
+      code: 200
+      message: OK
+version: 1

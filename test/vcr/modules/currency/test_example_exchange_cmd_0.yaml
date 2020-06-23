@@ -1,0 +1,103 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept: ['*/*']
+      Accept-Encoding: ['gzip, deflate']
+      Connection: [keep-alive]
+      User-Agent: [python-requests/2.23.0]
+    method: GET
+    uri: https://api.coingecko.com/api/v3/exchange_rates
+  response:
+    body:
+      string: !!binary |
+        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
+    headers:
+      Access-Control-Allow-Headers: ['Origin, X-Requested-With, Content-Type, Accept,
+          Authorization']
+      Access-Control-Allow-Methods: ['POST, PUT, DELETE, GET, OPTIONS']
+      Access-Control-Allow-Origin: ['*']
+      Access-Control-Expose-Headers: ['link, per-page, total']
+      Access-Control-Request-Method: ['*']
+      Alternate-Protocol: ['443:npn-spdy/2']
+      CF-Cache-Status: [EXPIRED]
+      CF-RAY: [5a7c8fa19e495f2f-OMA]
+      Cache-Control: ['max-age=60, public, must-revalidate, s-maxage=60']
+      Connection: [keep-alive]
+      Content-Encoding: [gzip]
+      Content-Type: [application/json; charset=utf-8]
+      Date: ['Tue, 23 Jun 2020 07:40:28 GMT']
+      ETag: [W/"9f64ea5f6567086e2912a7be9e6325c9"]
+      Expect-CT: ['max-age=604800, report-uri="https://report-uri.cloudflare.com/cdn-cgi/beacon/expect-ct"']
+      Server: [cloudflare]
+      Set-Cookie: ['__cfduid=d715ab43cb4becaf490c0714d812dac361592898027; expires=Thu,
+          23-Jul-20 07:40:27 GMT; path=/; domain=.coingecko.com; HttpOnly; SameSite=Lax']
+      Transfer-Encoding: [chunked]
+      Vary: ['Accept-Encoding, Origin']
+      X-Request-Id: [83a0c8de-1424-4b3c-8394-1ba210b8397d]
+      X-Runtime: ['0.110496']
+      cf-request-id: [0381b818fc00005f2f81316200000001]
+    status: {code: 200, message: OK}
+- request:
+    body: null
+    headers:
+      Accept: ['*/*']
+      Accept-Encoding: ['gzip, deflate']
+      Connection: [keep-alive]
+      User-Agent: [python-requests/2.23.0]
+    method: GET
+    uri: https://api.exchangeratesapi.io/latest?base=EUR
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAAyVRSXLCMBD8y5ydKXmk0eIbZjMxMZSMK4EbqfCBkBvF39Mytxm1epMe9Hv9u92p
+        edBysaKmZpW6oq7HHNknIxXtxh6AKgM4dkdq1DOOVz2OAzt1FoRpQ411nn1FywsAwRhBWEyzqpcE
+        Sj4M1DiOTrCM6yJrWFUUJqtcTFKEa/EcsEZl0QiwzXu4chIXITK18A0cQ0owznMKTQLn9+MZInXi
+        COTUtSUShxKp25QUxquD8fZV1FvcOu7nSM4ltGi3Q0GSKnxO+VyUfRRcWw7zkmxJMBxeyUMq4YbL
+        LBcs5suitEisJoSKpnFGaqmh/fEFbUEjW7bdfkQ4jj6g7LbFoxpOxgrU+/wJlvU1F9Y5l3ioGp4V
+        fV/vN2poPWWq6Acfh0WMmDfj30To+Q+oCncIzgEAAA==
+    headers:
+      Access-Control-Allow-Credentials: ['true']
+      Access-Control-Allow-Methods: [GET]
+      Access-Control-Allow-Origin: ['*']
+      CF-Cache-Status: [HIT]
+      CF-RAY: [5a7c8fa58adc5edb-OMA]
+      Cache-Control: [max-age=1800]
+      Connection: [keep-alive]
+      Content-Encoding: [gzip]
+      Content-Type: [application/json]
+      Date: ['Tue, 23 Jun 2020 07:40:28 GMT']
+      Expect-CT: ['max-age=604800, report-uri="https://report-uri.cloudflare.com/cdn-cgi/beacon/expect-ct"']
+      Server: [cloudflare]
+      Set-Cookie: ['__cfduid=dd64386ff981d0314cc065d6e06ca54201592898028; expires=Thu,
+          23-Jul-20 07:40:28 GMT; path=/; domain=.exchangeratesapi.io; HttpOnly; SameSite=Lax']
+      Transfer-Encoding: [chunked]
+      Vary: [Accept-Encoding]
+      cf-request-id: [0381b81b7500005edb3da2c200000001]
+    status: {code: 200, message: OK}
+version: 1
