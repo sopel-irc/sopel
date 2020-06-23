@@ -503,3 +503,62 @@ def remind_at(bot, trigger):
         bot.reply('Okay, will remind at %s' % human_time)
     else:
         bot.reply('Okay, will remind in %s secs' % duration)
+
+
+@plugin.command('reminders')
+@plugin.example('.reminders forget *', user_help=True)
+@plugin.example('.reminders count #channel', user_help=True)
+@plugin.example('.reminders count', user_help=True)
+def manage_reminders(bot, trigger):
+    """Count or forget your reminders in the current channel.
+
+    Use a subcommand "count" (default) or "forget". The second argument is
+    optional and can be either a channel name, your nick, or * (for all).
+    """
+    owner = trigger.nick
+    action = trigger.group(3) or 'count'
+    target = trigger.group(4) or trigger.sender
+
+    if action == 'count':
+        tpl = 'You have {count} reminders for all channels.'
+        nick_reminders = (
+            (timestamp, channel, nick, message)
+            for timestamp, reminders in bot.rdb.items()
+            for channel, nick, message in reminders
+            if nick == owner
+        )
+        if target and target != '*':
+            tpl = 'You have {count} reminders in {target}.'
+            nick_reminders = (
+                (timestamp, channel, nick, message)
+                for timestamp, channel, nick, message in nick_reminders
+                if channel == target
+            )
+
+        count = sum(1 for __ in nick_reminders)
+
+        if target == owner:
+            target = 'private'
+
+        bot.reply(tpl.format(count=count, target=target))
+
+    elif action == 'forget':
+        bot.rdb = {
+            timestamp: [
+                (channel, nick, message)
+                for channel, nick, message in reminders
+                if not (
+                    nick == owner
+                    and (target == '*' or target == channel)
+                )
+            ]
+            for timestamp, reminders in bot.rdb.items()
+        }
+        dump_database(bot.rfn, bot.rdb)
+
+        if not target or target == '*':
+            bot.reply('I forgot all your reminders.')
+        elif target == owner:
+            bot.reply('I forgot your private reminders.')
+        else:
+            bot.reply('I forgot your reminders in %s' % target)
