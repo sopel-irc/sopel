@@ -101,7 +101,7 @@ class AsynchatBackend(AbstractIRCBackend, asynchat.async_chat):
 
         :param bytes data: raw line to send
 
-        This uses :meth:`asynchat.async_chat.send` method to send ``data``
+        This uses :meth:`asyncore.dispatcher.send` method to send ``data``
         directly. This method is thread-safe.
         """
         with self.writing_lock:

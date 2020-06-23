@@ -179,28 +179,32 @@ class AbstractBot(object):
         try:
             self.backend.run_forever()
         except KeyboardInterrupt:
+            # raised only when the bot is not connected
             LOGGER.warning('Keyboard Interrupt')
-            self.quit('KeyboardInterrupt')
-
-    # Connection Events
+            raise
 
     def on_connect(self):
         """Handle successful establishment of IRC connection."""
+        LOGGER.info('Connected, initiating setup sequence')
+
         # Request list of server capabilities. IRCv3 servers will respond with
         # CAP * LS (which we handle in coretasks). v2 servers will respond with
         # 421 Unknown command, which we'll ignore
+        LOGGER.debug('Sending CAP request')
         self.backend.send_command('CAP', 'LS', '302')
 
         # authenticate account if needed
         if self.settings.core.auth_method == 'server':
+            LOGGER.debug('Sending server auth')
             self.backend.send_pass(self.settings.core.auth_password)
         elif self.settings.core.server_auth_method == 'server':
+            LOGGER.debug('Sending server auth')
             self.backend.send_pass(self.settings.core.server_auth_password)
 
+        LOGGER.debug('Sending nick "%s"', self.nick)
         self.backend.send_nick(self.nick)
+        LOGGER.debug('Sending user "%s" (name: "%s")', self.user, self.name)
         self.backend.send_user(self.user, '+iw', self.nick, self.name)
-
-        LOGGER.info('Connected.')
 
     def on_message(self, message):
         """Handle an incoming IRC message.

@@ -13,6 +13,7 @@ from datetime import datetime
 import itertools
 import logging
 import re
+import signal
 import sys
 import threading
 import time
@@ -30,6 +31,18 @@ from sopel.trigger import Trigger
 __all__ = ['Sopel', 'SopelWrapper']
 
 LOGGER = logging.getLogger(__name__)
+QUIT_SIGNALS = [
+    getattr(signal, name)
+    for name in ['SIGUSR1', 'SIGTERM', 'SIGINT']
+    if hasattr(signal, name)
+]
+RESTART_SIGNALS = [
+    getattr(signal, name)
+    for name in ['SIGUSR2', 'SIGILL']
+    if hasattr(signal, name)
+]
+SIGNALS = QUIT_SIGNALS + RESTART_SIGNALS
+
 
 if sys.version_info.major >= 3:
     unicode = str
@@ -182,6 +195,49 @@ class Sopel(irc.AbstractBot):
             raise KeyError("'hostmask' not available: bot must be connected and in at least one channel.")
 
         return self.users.get(self.nick).hostmask
+
+    # signal handlers
+
+    def set_signal_handlers(self):
+        """Set signal handlers for the bot.
+
+        Before running the bot, this method can be called from the main thread
+        to setup signals. If the bot is connected, upon receiving a signal it
+        will send a ``QUIT`` message. Otherwise, it raises a
+        :exc:`KeyboardInterrupt` error.
+
+        .. note::
+
+            Per the Python documentation of :func:`signal.signal`:
+
+                When threads are enabled, this function can only be called from
+                the main thread; attempting to call it from other threads will
+                cause a :exc:`ValueError` exception to be raised.
+
+        """
+        for obj in SIGNALS:
+            signal.signal(obj, self._signal_handler)
+
+    def _signal_handler(self, sig, frame):
+        if sig in QUIT_SIGNALS:
+            if self.backend.is_connected():
+                LOGGER.warning('Got quit signal, sending QUIT to server.')
+                self.quit('Closing')
+            else:
+                self.hasquit = True  # mark the bot as "want to quit"
+                LOGGER.warning('Got quit signal.')
+                raise KeyboardInterrupt
+        elif sig in RESTART_SIGNALS:
+            if self.backend.is_connected():
+                LOGGER.warning('Got restart signal, sending QUIT to server.')
+                self.restart('Restarting')
+            else:
+                LOGGER.warning('Got restart signal.')
+                self.wantsrestart = True  # mark the bot as "want to restart"
+                self.hasquit = True  # mark the bot as "want to quit"
+                raise KeyboardInterrupt
+
+    # setup
 
     def setup(self):
         """Set up Sopel bot before it can run.
