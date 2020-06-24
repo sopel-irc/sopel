@@ -8,104 +8,108 @@ https://sopel.chat
 """
 from __future__ import absolute_import, division, print_function, unicode_literals
 
-from sopel.module import commands, example
+from sopel import module
 
 
-@commands('shrug')
-@example('.shrug', r'¯\_(ツ)_/¯')
+@module.commands('shrug')
+@module.action_commands('shrugs')
+@module.example('.shrug', r'¯\_(ツ)_/¯')
 def shrug(bot, trigger):
     bot.say('¯\\_(ツ)_/¯')
 
 
-@commands('happy')
-@example('.happy', 'ᕕ( ᐛ )ᕗ')
+@module.commands('happy')
+@module.example('.happy', 'ᕕ( ᐛ )ᕗ')
 def happy(bot, trigger):
     bot.say('ᕕ( ᐛ )ᕗ')
 
 
-@commands('tableflip', 'tflip')
-@example('.tableflip', '(╯°□°）╯︵ ┻━┻')
-@example('.tflip', '(╯°□°）╯︵ ┻━┻')
+@module.commands('tableflip', 'tflip')
+@module.action_commands('flips table', 'flips a table', 'flips the table')
+@module.example('.tableflip', '(╯°□°）╯︵ ┻━┻')
+@module.example('.tflip', '(╯°□°）╯︵ ┻━┻')
 def tableflip(bot, trigger):
     bot.say('(╯°□°）╯︵ ┻━┻')
 
 
-@commands('unflip')
-@example('.unflip', '┬┬ ﻿ノ( ゜-゜ノ)')
+@module.commands('unflip')
+@module.action_commands('unflips table', 'unflips the table')
+@module.example('.unflip', '┬┬ ﻿ノ( ゜-゜ノ)')
 def unflip(bot, trigger):
     bot.say('┬┬ ﻿ノ( ゜-゜ノ)')
 
 
-@commands('lenny')
-@example('.lenny', '( ͡° ͜ʖ ͡°)')
+@module.commands('lenny')
+@module.example('.lenny', '( ͡° ͜ʖ ͡°)')
 def lenny(bot, trigger):
     bot.say('( ͡° ͜ʖ ͡°)')
 
 
-@commands('rage', 'anger')
-@example('.rage', 'щ(ಠ益ಠщ)')
-@example('.anger', 'щ(ಠ益ಠщ)')
+@module.commands('rage', 'anger')
+@module.example('.rage', 'щ(ಠ益ಠщ)')
+@module.example('.anger', 'щ(ಠ益ಠщ)')
 def anger(bot, trigger):
     bot.say('щ(ಠ益ಠщ)')
 
 
-@commands('cry')
-@example('.cry', '( p′︵‵。)')
+@module.commands('cry')
+@module.action_commands('cries')
+@module.example('.cry', '( p′︵‵。)')
 def cry(bot, trigger):
     bot.say('( p′︵‵。)')
 
 
-@commands('love')
-@example('.love', '(●♡∀♡)')
+@module.commands('love')
+@module.example('.love', '(●♡∀♡)')
 def love(bot, trigger):
     bot.say('(●♡∀♡)')
 
 
-@commands('success', 'winner')
-@example('.success', '٩( ᐛ )و')
-@example('.winner', '٩( ᐛ )و')
+@module.commands('success', 'winner')
+@module.example('.success', '٩( ᐛ )و')
+@module.example('.winner', '٩( ᐛ )و')
 def success(bot, trigger):
     bot.say('٩( ᐛ )و')
 
 
-@commands('confused', 'wat')
-@example('.confused', '(●__●)???')
-@example('.wat', '(●__●)???')
+@module.commands('confused', 'wat')
+@module.example('.confused', '(●__●)???')
+@module.example('.wat', '(●__●)???')
 def wat(bot, trigger):
     bot.say('(●__●)???')
 
 
-@commands('crazy')
-@example('.crazy', '⊙_ʘ')
+@module.commands('crazy')
+@module.example('.crazy', '⊙_ʘ')
 def crazy(bot, trigger):
     bot.say('⊙_ʘ')
 
 
-@commands('hungry')
-@example('.hungry', 'ლ(´ڡ`ლ)')
+@module.commands('hungry')
+@module.example('.hungry', 'ლ(´ڡ`ლ)')
 def hungry(bot, trigger):
     bot.say('ლ(´ڡ`ლ)')
 
 
-@commands('surprised')
-@example('.surprised', '(((( ;°Д°))))')
+@module.commands('surprised')
+@module.example('.surprised', '(((( ;°Д°))))')
 def surprised(bot, trigger):
     bot.say('(((( ;°Д°))))')
 
 
-@commands('sick')
-@example('.sick', '(-﹏-。)')
+@module.commands('sick')
+@module.example('.sick', '(-﹏-。)')
 def sick(bot, trigger):
     bot.say('(-﹏-。)')
 
 
-@commands('afraid')
-@example('.afraid', '(　〇□〇）')
+@module.commands('afraid')
+@module.example('.afraid', '(　〇□〇）')
 def afraid(bot, trigger):
     bot.say('(　〇□〇）')
 
 
-@commands('worried')
-@example('.worried', '(　ﾟдﾟ)')
+@module.commands('worried')
+@module.example('.worried', '(　ﾟдﾟ)')
 def worried(bot, trigger):
     bot.say('(　ﾟдﾟ)')

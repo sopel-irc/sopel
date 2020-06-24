@@ -538,7 +538,6 @@ def action_commands(*command_list):
 
     """
     def add_attribute(function):
-        function.intents = ['ACTION']
         if not hasattr(function, 'action_commands'):
             function.action_commands = []
         for cmd in command_list:
