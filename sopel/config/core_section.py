@@ -9,6 +9,7 @@ from sopel.config.types import (
     FilenameAttribute,
     ListAttribute,
     NO_DEFAULT,
+    SecretAttribute,
     StaticSection,
     ValidatedAttribute,
 )
@@ -158,7 +159,7 @@ class CoreSection(StaticSection):
         value will override :attr:`server_auth_method`.
     """
 
-    auth_password = ValidatedAttribute('auth_password')
+    auth_password = SecretAttribute('auth_password')
     """The password to use to authenticate with the :attr:`auth_method`.
 
     See :ref:`Authentication`.
@@ -306,7 +307,7 @@ class CoreSection(StaticSection):
     Ignored when using SQLite.
     """
 
-    db_pass = ValidatedAttribute('db_pass')
+    db_pass = SecretAttribute('db_pass')
     """The password for Sopel's database.
 
     Ignored when using SQLite.
@@ -786,7 +787,7 @@ class CoreSection(StaticSection):
     .. versionadded:: 7.0
     """
 
-    nick_auth_password = ValidatedAttribute('nick_auth_password')
+    nick_auth_password = SecretAttribute('nick_auth_password')
     """The password to use to authenticate the bot's nick.
 
     .. seealso::
@@ -970,7 +971,7 @@ class CoreSection(StaticSection):
     .. versionadded:: 7.0
     """
 
-    server_auth_password = ValidatedAttribute('server_auth_password')
+    server_auth_password = SecretAttribute('server_auth_password')
     """The password to use to authenticate with the server.
 
     .. versionadded:: 7.0
