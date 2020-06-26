@@ -146,6 +146,12 @@ sopel.plugins.rules
       :members:
       :undoc-members:
 
+sopel.plugins.jobs
+------------------
+.. automodule:: sopel.plugins.jobs
+   :members:
+   :show-inheritance:
+
 sopel.loader
 ------------
 .. automodule:: sopel.loader
