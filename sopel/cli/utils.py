@@ -291,9 +291,14 @@ def add_common_arguments(parser):
         """))
     parser.add_argument(
         '--config-dir',
-        default=config.DEFAULT_HOMEDIR,
+        default=os.environ.get('SOPEL_CONFIG_DIR') or config.DEFAULT_HOMEDIR,
         dest='configdir',
-        help='Look for configuration files in this directory.')
+        help=inspect.cleandoc("""
+            Look for configuration files in this directory.
+            By default, Sopel will search in ``~/.sopel``.
+            When the ``SOPEL_CONFIG_DIR`` environment variable is set and not
+            empty, it is used as the default value.
+        """))
 
 
 def load_settings(options):
