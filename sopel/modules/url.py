@@ -51,6 +51,9 @@ MAX_BYTES = 655360 * 2
 
 
 class UrlSection(StaticSection):
+    enable_auto_title = ValidatedAttribute(
+        'enable_auto_title', bool, default=True)
+    """Enable auto-title (enabled by default)"""
     # TODO some validation rules maybe?
     exclude = ListAttribute('exclude')
     """A list of regular expressions to match URLs for which the title should not be shown."""
@@ -71,6 +74,7 @@ def configure(config):
     """
     | name | example | purpose |
     | ---- | ------- | ------- |
+    | enable_auto_title | yes | Enable auto-title. |
     | exclude | https?://git\\\\.io/.* | A list of regular expressions for URLs for which the title should not be shown. |
     | exclusion\\_char | ! | A character (or string) which, when immediately preceding a URL, will stop the URL's title from being shown. |
     | shorten\\_url\\_length | 72 | If greater than 0, the title fetcher will include a TinyURL version of links longer than this many characters. |
@@ -78,6 +82,10 @@ def configure(config):
     | enable\\_dns\\_resolution | False | Enable DNS resolution for all domains to validate if there are RFC1918 resolutions. |
     """
     config.define_section('url', UrlSection)
+    config.url.configure_setting(
+        'enable_auto_title',
+        'Enable auto-title?'
+    )
     config.url.configure_setting(
         'exclude',
         'Enter regular expressions for each URL you would like to exclude.'
@@ -181,6 +189,11 @@ def title_auto(bot, trigger):
     where the URL redirects to and show the title for that (or call a function
     from another module to give more information).
     """
+    # Enabled or disabled by feature flag
+    if not bot.settings.url.enable_auto_title:
+        return
+
+    # Avoid fetching links from the "title" command
     if re.match(bot.config.core.prefix + 'title', trigger):
         return
 
