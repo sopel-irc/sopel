@@ -24,6 +24,13 @@ def happy(bot, trigger):
     bot.say('ᕕ( ᐛ )ᕗ')
 
 
+@module.commands('smirk')
+@module.action_commands('smirks')
+@module.example('.smirk', '(¬‿¬)')
+def smirk(bot, trigger):
+    bot.say('(¬‿¬)')
+
+
 @module.commands('tableflip', 'tflip')
 @module.action_commands('flips table', 'flips a table', 'flips the table')
 @module.example('.tableflip', '(╯°□°）╯︵ ┻━┻')
