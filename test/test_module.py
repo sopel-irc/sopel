@@ -1,5 +1,12 @@
 # coding=utf-8
-"""Tests for message formatting"""
+"""Tests for sopel.module decorators
+
+.. important::
+
+    These tests are kept here as a proof that ``sopel.module`` is backward
+    compatible up to Sopel 9, when it will be removed.
+
+"""
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 import pytest
@@ -121,52 +128,6 @@ def test_rule_multiple():
     def mock(bot, trigger, match):
         return True
     assert mock.rule == [r'\w+', '.*', r'\d+']
-
-
-def test_find():
-    @module.find('.*')
-    def mock(bot, trigger, match):
-        return True
-    assert mock.find_rules == ['.*']
-
-
-def test_find_args():
-    @module.find('.*', r'\d+')
-    def mock(bot, trigger, match):
-        return True
-    assert mock.find_rules == ['.*', r'\d+']
-
-
-def test_find_multiple():
-    @module.find('.*', r'\d+')
-    @module.find('.*')
-    @module.find(r'\w+')
-    def mock(bot, trigger, match):
-        return True
-    assert mock.find_rules == [r'\w+', '.*', r'\d+']
-
-
-def test_search():
-    @module.search('.*')
-    def mock(bot, trigger, match):
-        return True
-    assert mock.search_rules == ['.*']
-
-
-def test_search_args():
-    @module.search('.*', r'\d+')
-    def mock(bot, trigger, match):
-        return True
-    assert mock.search_rules == ['.*', r'\d+']
-
-
-def test_search_multiple():
-    @module.search('.*', r'\d+')
-    @module.search('.*')
-    @module.search(r'\w+')
-    def mock(bot, trigger, match):
-        return True
-    assert mock.search_rules == [r'\w+', '.*', r'\d+']
 
 
 def test_thread():
@@ -324,13 +285,6 @@ def test_all_commands():
     assert mock.nickname_commands == ['name_sopel']
     assert not hasattr(mock, 'intents')
     assert not hasattr(mock, 'rule')
-
-
-def test_label():
-    @module.label('hello')
-    def mock(bot, trigger):
-        return True
-    assert mock.rule_label == 'hello'
 
 
 def test_priority():

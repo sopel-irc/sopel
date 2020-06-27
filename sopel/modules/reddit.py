@@ -20,7 +20,8 @@ import prawcore
 import requests
 
 from sopel.formatting import bold, color, colors
-from sopel.module import commands, example, find, NOLIMIT, OP, require_chanmsg, url
+from sopel.module import commands, example, NOLIMIT, OP, require_chanmsg, url
+from sopel.plugin import find
 from sopel.tools import time
 from sopel.tools.web import USER_AGENT
 

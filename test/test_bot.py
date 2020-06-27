@@ -6,7 +6,7 @@ import re
 
 import pytest
 
-from sopel import bot, loader, module, plugins, trigger
+from sopel import bot, loader, module, plugin, plugins, trigger
 from sopel.plugins import rules
 from sopel.tests import rawlist
 from sopel.tools import Identifier, SopelMemory
@@ -293,41 +293,41 @@ def test_register_unregister_plugin(tmpconfig, mockplugin):
 def test_remove_plugin_unknown_plugin(tmpconfig):
     sopel = bot.Sopel(tmpconfig, daemon=False)
 
-    plugin = plugins.handlers.PyModulePlugin('admin', 'sopel.modules')
+    handler = plugins.handlers.PyModulePlugin('admin', 'sopel.modules')
     with pytest.raises(plugins.exceptions.PluginNotRegistered):
-        sopel.remove_plugin(plugin, [], [], [], [])
+        sopel.remove_plugin(handler, [], [], [], [])
 
 
 def test_remove_plugin_unregistered_plugin(tmpconfig):
     sopel = bot.Sopel(tmpconfig, daemon=False)
 
     # register the plugin
-    plugin = plugins.handlers.PyModulePlugin('coretasks', 'sopel')
-    plugin.load()
-    plugin.register(sopel)
+    handler = plugins.handlers.PyModulePlugin('coretasks', 'sopel')
+    handler.load()
+    handler.register(sopel)
 
     # Unregister the plugin
-    plugin.unregister(sopel)
+    handler.unregister(sopel)
 
     # And now it must raise an exception
     with pytest.raises(plugins.exceptions.PluginNotRegistered):
-        sopel.remove_plugin(plugin, [], [], [], [])
+        sopel.remove_plugin(handler, [], [], [], [])
 
 
 def test_reload_plugin_unregistered_plugin(tmpconfig):
     sopel = bot.Sopel(tmpconfig, daemon=False)
 
     # register the plugin
-    plugin = plugins.handlers.PyModulePlugin('coretasks', 'sopel')
-    plugin.load()
-    plugin.register(sopel)
+    handler = plugins.handlers.PyModulePlugin('coretasks', 'sopel')
+    handler.load()
+    handler.register(sopel)
 
     # Unregister the plugin
-    plugin.unregister(sopel)
+    handler.unregister(sopel)
 
     # And now it must raise an exception
     with pytest.raises(plugins.exceptions.PluginNotRegistered):
-        sopel.reload_plugin(plugin.name)
+        sopel.reload_plugin(handler.name)
 
 
 # -----------------------------------------------------------------------------
@@ -340,11 +340,11 @@ def test_register_callables(tmpconfig):
     def rule_hello(bot, trigger):
         pass
 
-    @module.find(r'(hi|hello|hey|sup)')
+    @plugin.find(r'(hi|hello|hey|sup)')
     def rule_find_hello(bot, trigger):
         pass
 
-    @module.search(r'(hi|hello|hey|sup)')
+    @plugin.search(r'(hi|hello|hey|sup)')
     def rule_search_hello(bot, trigger):
         pass
 
@@ -382,7 +382,7 @@ def test_register_callables(tmpconfig):
         pass
 
     @module.event('JOIN')
-    @module.label('handle_join_event')
+    @plugin.label('handle_join_event')
     def on_join(bot, trigger):
         pass
 

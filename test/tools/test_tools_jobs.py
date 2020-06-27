@@ -6,7 +6,7 @@ import time
 
 import pytest
 
-from sopel import loader, module
+from sopel import loader, module, plugin
 from sopel.tools import jobs
 
 
@@ -201,7 +201,7 @@ def test_job_next_many():
 
 def test_job_from_callable(mockconfig):
     @module.interval(5)
-    @module.label('testjob')
+    @plugin.label('testjob')
     def handler(manager):
         """The job's docstring."""
         return 'tested'
