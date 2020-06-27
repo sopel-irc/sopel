@@ -1,5 +1,5 @@
 # coding=utf-8
-"""Useful miscellaneous tools and shortcuts for Sopel modules
+"""Useful miscellaneous tools and shortcuts for Sopel plugins
 
 *Availability: 3+*
 """
@@ -259,7 +259,7 @@ def get_command_pattern(prefix, command):
         (?:\s+(\S+))?
         (?:\s+(\S+))?
         .*                  # Accept anything after the parameters.
-                            # Leave it up to the module to parse
+                            # Leave it up to the plugin to parse
                             # the line.
         ))?                 # Group 2 must be None, if there are no
                             # parameters.
@@ -303,7 +303,7 @@ def get_nickname_command_pattern(command):
         (?:\s+(\S+))?
         (?:\s+(\S+))?
         .*             # Accept anything after the parameters. Leave it up to
-                       # the module to parse the line.
+                       # the plugin to parse the line.
         ))?            # Group 1 must be None, if there are no parameters.
         $              # EoL, so there are no partial matches.
         """.format(command=command)
@@ -340,7 +340,7 @@ def get_action_command_pattern(command):
         (?:\s+(\S+))?
         (?:\s+(\S+))?
         .*                  # Accept anything after the parameters.
-                            # Leave it up to the module to parse
+                            # Leave it up to the plugin to parse
                             # the line.
         ))?                 # Group 2 must be None, if there are no
                             # parameters.

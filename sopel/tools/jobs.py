@@ -157,7 +157,7 @@ class Scheduler(threading.Thread):
                 raise
             except Exception as error:  # TODO: Be specific
                 LOGGER.error('Error in job scheduler: %s', error)
-                # Modules exceptions are caught earlier, so this is a bit
+                # Plugins exceptions are caught earlier, so this is a bit
                 # more serious. Options are to either stop the main thread
                 # or continue this thread and hope that it won't happen
                 # again.
@@ -185,7 +185,7 @@ class Scheduler(threading.Thread):
             self._call(job)
 
     def _call(self, job):
-        """Wrapper for collecting errors from modules."""
+        """Wrapper for collecting errors from plugins."""
         try:
             job.execute(self.manager)
         except KeyboardInterrupt:

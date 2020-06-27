@@ -100,10 +100,10 @@ def unblockable(function):
     For example, this can be used to ensure that important events such as
     ``JOIN`` are always recorded::
 
-        from sopel import module
+        from sopel import plugin
 
-        @module.event('JOIN')
-        @module.unblockable
+        @plugin.event('JOIN')
+        @plugin.unblockable
         def on_join_callable(bot, trigger):
             # do something when a user JOIN a channel
             # a blocked nickname or hostname *will* trigger this
@@ -137,9 +137,9 @@ def interval(*intervals):
 
     Example::
 
-        from sopel import module
+        from sopel import plugin
 
-        @module.interval(5)
+        @plugin.interval(5)
         def spam_every_5s(bot):
             if "#here" in bot.channels:
                 bot.say("It has been five seconds!", "#here")
@@ -906,10 +906,10 @@ def url(*url_rules):
     must take a third argument ``match``, which is the regular expression match
     of the URL::
 
-        from sopel import module
+        from sopel import plugin
 
-        @module.url(r'https://example.com/bugs/([a-z0-9]+)')
-        @module.url(r'https://short.com/([a-z0-9]+)')
+        @plugin.url(r'https://example.com/bugs/([a-z0-9]+)')
+        @plugin.url(r'https://short.com/([a-z0-9]+)')
         def handle_example_bugs(bot, trigger, match):
             bot.reply('Found bug ID #%s' % match.group(1))
 
