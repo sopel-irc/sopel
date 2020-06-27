@@ -12,6 +12,7 @@ https://sopel.chat
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 import ipaddress
+import logging
 import re
 
 import dns.resolver
@@ -27,6 +28,7 @@ try:
 except ImportError:
     from urlparse import urlparse
 
+LOGGER = logging.getLogger(__name__)
 USER_AGENT = (
     'Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
     'AppleWebKit/537.36 (KHTML, like Gecko) '
@@ -239,6 +241,7 @@ def process_urls(bot, trigger, urls):
             # Check if it's an address like http://192.168.1.1
             try:
                 if ipaddress.ip_address(parsed.hostname).is_private or ipaddress.ip_address(parsed.hostname).is_loopback:
+                    LOGGER.debug('Ignoring private URL: %s', url)
                     continue
             except ValueError:
                 pass
@@ -251,12 +254,14 @@ def process_urls(bot, trigger, urls):
                         private = True
                         break
                 if private:
+                    LOGGER.debug('Ignoring private URL: %s', url)
                     continue
 
         # Call the URL to get a title, if possible
         title = find_title(url)
         if not title:
             # No title found: don't handle this URL
+            LOGGER.warning('No title found; ignoring URL: %s', url)
             continue
 
         # If the URL is over bot.config.url.shorten_url_length, shorten the URL
@@ -309,11 +314,14 @@ def find_title(url, verify=True):
         # Need to close the connection because we have not read all
         # the data
         response.close()
+    except requests.exceptions.ConnectionError:
+        LOGGER.exception('Unable to reach URL: %s', url)
+        return None
     except (
-        requests.exceptions.ConnectionError,
         requests.exceptions.InvalidURL,  # e.g. http:///
         UnicodeError,  # e.g. http://.example.com
     ):
+        LOGGER.debug('Invalid URL: %s', url)
         return None
 
     # Some cleanup that I don't really grok, but was in the original, so
