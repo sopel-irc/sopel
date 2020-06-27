@@ -1,7 +1,7 @@
 # coding=utf-8
 """
-find.py - Sopel Spelling Correction Module
-This module will fix spelling errors if someone corrects them
+find.py - Sopel Spelling Correction Plugin
+This plugin will fix spelling errors if someone corrects them
 using the sed notation (s///) commonly found in vi/vim.
 
 Copyright 2011, Michael Yanovich, yanovich.net

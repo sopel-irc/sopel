@@ -1,6 +1,6 @@
 # coding=utf-8
 """
-wikipedia.py - Sopel Wikipedia Module
+wikipedia.py - Sopel Wikipedia Plugin
 Copyright 2013 Elsie Powell - embolalia.com
 Licensed under the Eiffel Forum License 2.
 

@@ -1,6 +1,6 @@
 # coding=utf-8
 """
-uptime.py - Sopel Uptime Module
+uptime.py - Sopel Uptime Plugin
 Copyright 2014, Fabian Neundorf
 Licensed under the Eiffel Forum License 2.
 

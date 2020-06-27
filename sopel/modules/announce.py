@@ -1,6 +1,6 @@
 # coding=utf-8
 """
-announce.py - Sopel Announcement Module
+announce.py - Sopel Announcement Plugin
 Sends announcements to all channels the bot has joined.
 Copyright © 2013, Elad Alfassa, <elad@fedoraproject.org>
 Licensed under the Eiffel Forum License 2.

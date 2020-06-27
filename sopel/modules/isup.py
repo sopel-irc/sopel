@@ -1,6 +1,6 @@
 # coding=utf-8
 """
-isup.py - Sopel Website Status Check Module
+isup.py - Sopel Website Status Check Plugin
 Copyright 2011, Elsie Powell http://embolalia.com
 Licensed under the Eiffel Forum License 2.
 

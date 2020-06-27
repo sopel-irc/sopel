@@ -1,6 +1,6 @@
 # coding=utf-8
 """
-url.py - Sopel URL Title Module
+url.py - Sopel URL Title Plugin
 Copyright 2010-2011, Michael Yanovich (yanovich.net) & Kenneth Sham
 Copyright 2012-2013, Elsie Powell
 Copyright 2013, Lior Ramati <firerogue517@gmail.com>
@@ -121,7 +121,7 @@ def setup(bot):
         regexes = []
 
     # We're keeping these in their own list, rather than putting then in the
-    # callbacks list because 1, it's easier to deal with modules that are still
+    # callbacks list because 1, it's easier to deal with plugins that are still
     # using this list, and not the newer callbacks list and 2, having a lambda
     # just to pass is kinda ugly.
     if 'url_exclude' not in bot.memory:
@@ -189,7 +189,7 @@ def title_auto(bot, trigger):
     """
     Automatically show titles for URLs. For shortened URLs/redirects, find
     where the URL redirects to and show the title for that (or call a function
-    from another module to give more information).
+    from another plugin to give more information).
     """
     # Enabled or disabled by feature flag
     if not bot.settings.url.enable_auto_title:
@@ -219,11 +219,11 @@ def title_auto(bot, trigger):
 
 def process_urls(bot, trigger, urls):
     """
-    For each URL in the list, ensure that it isn't handled by another module.
+    For each URL in the list, ensure that it isn't handled by another plugin.
     If not, find where it redirects to, if anywhere. If that redirected URL
-    should be handled by another module, dispatch the callback for it.
+    should be handled by another plugin, dispatch the callback for it.
     Return a list of (title, hostname) tuples for each URL which is not handled
-    by another module.
+    by another plugin.
     """
     shorten_url_length = bot.config.url.shorten_url_length
     for url in urls:

@@ -1,6 +1,6 @@
 # coding=utf-8
 """
-admin.py - Sopel Admin Module
+admin.py - Sopel Admin Plugin
 Copyright 2010-2011, Sean B. Palmer (inamidst.com) and Michael Yanovich
 (yanovich.net)
 Copyright © 2012, Elad Alfassa, <elad@fedoraproject.org>

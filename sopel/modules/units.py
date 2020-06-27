@@ -1,6 +1,6 @@
 # coding=utf-8
 """
-units.py - Unit conversion module for Sopel
+units.py - Sopel Unit Conversion Plugin
 Copyright © 2013, Elad Alfassa, <elad@fedoraproject.org>
 Copyright © 2013, Dimitri Molenaars, <tyrope@tyrope.nl>
 Licensed under the Eiffel Forum License 2.

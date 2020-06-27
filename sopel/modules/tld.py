@@ -1,6 +1,6 @@
 # coding=utf-8
 """
-tld.py - Sopel TLD Module
+tld.py - Sopel TLD Plugin
 Copyright 2009-10, Michael Yanovich, yanovich.net
 Licensed under the Eiffel Forum License 2.
 

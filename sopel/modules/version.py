@@ -1,6 +1,6 @@
 # coding=utf-8
 """
-version.py - Sopel Version Module
+version.py - Sopel Version Plugin
 Copyright 2009, Silas Baronda
 Copyright 2014, Dimitri Molenaars <tyrope@tyrope.nl>
 Licensed under the Eiffel Forum License 2.

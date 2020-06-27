@@ -1,6 +1,6 @@
 # coding=utf-8
 """
-wiktionary.py - Sopel Wiktionary Module
+wiktionary.py - Sopel Wiktionary Plugin
 Copyright 2009, Sean B. Palmer, inamidst.com
 Licensed under the Eiffel Forum License 2.
 

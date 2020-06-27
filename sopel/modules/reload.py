@@ -1,6 +1,6 @@
 # coding=utf-8
 """
-reload.py - Sopel Module Reloader Module
+reload.py - Sopel Plugin Reloader Plugin
 Copyright 2008, Sean B. Palmer, inamidst.com
 Licensed under the Eiffel Forum License 2.
 
@@ -35,7 +35,7 @@ def _load(bot, plugin):
 @sopel.module.thread(False)
 @sopel.module.require_admin
 def f_reload(bot, trigger):
-    """Reloads a module (for use by admins only)."""
+    """Reloads a plugin (for use by admins only)."""
     name = trigger.group(2)
 
     if not name or name == '*' or name.upper() == 'ALL THE THINGS':
@@ -54,7 +54,7 @@ def f_reload(bot, trigger):
 @sopel.module.nickname_commands('update')
 @sopel.module.require_admin
 def f_update(bot, trigger):
-    """Pulls the latest versions of all modules from Git (for use by admins only)."""
+    """Pulls the latest versions of all plugins from Git (for use by admins only)."""
     proc = subprocess.Popen('/usr/bin/git pull',
                             stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE, shell=True)
@@ -68,7 +68,7 @@ def f_update(bot, trigger):
 @sopel.module.thread(False)
 @sopel.module.require_admin
 def f_load(bot, trigger):
-    """Loads a module (for use by admins only)."""
+    """Loads a plugin (for use by admins only)."""
     name = trigger.group(2)
     if not name:
         return bot.reply('Load what?')

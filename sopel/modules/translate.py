@@ -1,6 +1,6 @@
 # coding=utf-8
 """
-translate.py - Sopel Translation Module
+translate.py - Sopel Translation Plugin
 Copyright 2008, Sean B. Palmer, inamidst.com
 Copyright 2013-2014, Elad Alfassa <elad@fedoraproject.org>
 Licensed under the Eiffel Forum License 2.
