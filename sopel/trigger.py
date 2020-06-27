@@ -260,7 +260,7 @@ class Trigger(unicode):
 
     Most plugin :func:`callables <callable>` primarily need to deal with
     ``PRIVMSG``. Other event types like ``NOTICE``, ``NICK``, ``TOPIC``,
-    ``KICK``, etc. must be requested using :func:`.module.event`.
+    ``KICK``, etc. must be requested using :func:`.plugin.event`.
     """
     match = property(lambda self: self._match)
     """The :ref:`Match object <match-objects>` for the triggering line.
@@ -273,7 +273,7 @@ class Trigger(unicode):
     :type: :term:`method`
     :rtype: str
 
-    Any regular-expression :func:`rules <.module.rule>` attached to the
+    Any regular-expression :func:`rules <.plugin.rule>` attached to the
     triggered :func:`callable` may define numbered or named groups that can be
     retrieved through this property.
 
@@ -283,8 +283,8 @@ class Trigger(unicode):
     .. seealso::
 
        For more information on predefined numbered match groups in commands,
-       see :func:`.module.commands`, :func:`.module.action_commands`, and
-       :func:`.module.nickname_commands`.
+       see :func:`.plugin.commands`, :func:`.plugin.action_commands`, and
+       :func:`.plugin.nickname_commands`.
 
        Also see Python's :meth:`re.Match.group` documentation for details
        about this method's behavior.

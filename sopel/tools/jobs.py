@@ -268,7 +268,7 @@ class Job(object):
         :meth:`from_callable` classmethod to instantiate a new rule object.
 
         The expected attributes are the ones set by decorators from the
-        :mod:`sopel.module` module.
+        :mod:`sopel.plugin` module.
         """
 
         return {

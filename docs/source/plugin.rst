@@ -43,12 +43,12 @@ However, sometimes multiple words are needed for clarity or disambiguation;
     A callable is any function which takes as its arguments a
     :class:`sopel.bot.SopelWrapper` object and a :class:`sopel.trigger.Trigger`
     object, and is wrapped with appropriate decorators from
-    :mod:`sopel.module`. The ``bot`` provides the ability to send messages to
+    :mod:`sopel.plugin`. The ``bot`` provides the ability to send messages to
     the network and check the state of the bot. The ``trigger`` provides
     information about the line which triggered this function to be called.
 
     The return value of these function is ignored, unless it is
-    :const:`sopel.module.NOLIMIT`, in which case rate limiting will not be
+    :const:`sopel.plugin.NOLIMIT`, in which case rate limiting will not be
     applied for that call.
 
     Note that the name can, and should, be anything - it doesn't need to be
@@ -119,6 +119,17 @@ However, sometimes multiple words are needed for clarity or disambiguation;
 
 Callable decorators
 ===================
+
+.. automodule:: sopel.plugin
+   :members:
+
+About ``sopel.module``
+----------------------
+
+Before Sopel 7.1, ``sopel.module`` was the preferred and only way to decorate
+callables for plugins. However, since the term ``module`` can be confusing
+(mostly because it already has a special meaning in Python), it has been
+replaced by ``plugin`` in most cases related to add-ons for Sopel.
 
 .. automodule:: sopel.module
    :members:
