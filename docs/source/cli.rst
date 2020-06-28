@@ -138,3 +138,13 @@ Sopel would take the nickname ``EnvVarNick`` when connecting to IRC (still at
 ``plugin_name`` plugin would use the API key ``1337c0ffee9001``, instead.
 
 .. versionadded:: 7.0
+
+.. note::
+
+   Any ``_`` character in the section or setting name also appears in the
+   environment variable name. It's therefore *theoretically* possible for two
+   plugins to have section and setting name pairs that both resolve to the same
+   environment variable name, but in practice this is highly unlikely.
+
+   However, should such a collision occur, please notify the main Sopel project
+   *and* both plugin authors via any relevant communication channel(s).

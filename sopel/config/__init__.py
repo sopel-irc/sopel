@@ -194,6 +194,20 @@ class Config(object):
             :meth:`define_section` and a child class of
             :class:`~.types.StaticSection`.
 
+        .. important::
+
+            The section's ``name`` SHOULD follow *snake_case* naming rules:
+
+              * use only lowercase letters, digits, and underscore (``_``)
+              * SHOULD NOT start with a digit
+
+            Deviations from *snake_case* can break the following operations:
+
+              * :ref:`accessing the section <sopel.config>` from Python code using
+                the :class:`~.Config` object's attributes
+              * :ref:`overriding the section's values <Overriding individual
+                settings>` using environment variables
+
         """
         try:
             return self.parser.add_section(name)
@@ -216,6 +230,21 @@ class Config(object):
         raised if they are invalid. This is desirable in a plugin's
         :func:`setup` function, for example, but might not be in the
         :func:`configure` function.
+
+        .. important::
+
+            The section's ``name`` SHOULD follow *snake_case* naming rules:
+
+              * use only lowercase letters, digits, and underscore (``_``)
+              * SHOULD NOT start with a digit
+
+            Deviations from *snake_case* can break the following operations:
+
+              * :ref:`accessing the section <sopel.config>` from Python code using
+                the :class:`~.Config` object's attributes
+              * :ref:`overriding the section's values <Overriding individual
+                settings>` using environment variables
+
         """
         if not issubclass(cls_, types.StaticSection):
             raise ValueError("Class must be a subclass of StaticSection.")
