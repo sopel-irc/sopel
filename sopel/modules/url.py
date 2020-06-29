@@ -12,6 +12,7 @@ https://sopel.chat
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 import ipaddress
+import logging
 import re
 
 import dns.resolver
@@ -27,6 +28,7 @@ try:
 except ImportError:
     from urlparse import urlparse
 
+LOGGER = logging.getLogger(__name__)
 USER_AGENT = (
     'Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
     'AppleWebKit/537.36 (KHTML, like Gecko) '
@@ -51,6 +53,9 @@ MAX_BYTES = 655360 * 2
 
 
 class UrlSection(StaticSection):
+    enable_auto_title = ValidatedAttribute(
+        'enable_auto_title', bool, default=True)
+    """Enable auto-title (enabled by default)"""
     # TODO some validation rules maybe?
     exclude = ListAttribute('exclude')
     """A list of regular expressions to match URLs for which the title should not be shown."""
@@ -71,6 +76,7 @@ def configure(config):
     """
     | name | example | purpose |
     | ---- | ------- | ------- |
+    | enable_auto_title | yes | Enable auto-title. |
     | exclude | https?://git\\\\.io/.* | A list of regular expressions for URLs for which the title should not be shown. |
     | exclusion\\_char | ! | A character (or string) which, when immediately preceding a URL, will stop the URL's title from being shown. |
     | shorten\\_url\\_length | 72 | If greater than 0, the title fetcher will include a TinyURL version of links longer than this many characters. |
@@ -78,6 +84,10 @@ def configure(config):
     | enable\\_dns\\_resolution | False | Enable DNS resolution for all domains to validate if there are RFC1918 resolutions. |
     """
     config.define_section('url', UrlSection)
+    config.url.configure_setting(
+        'enable_auto_title',
+        'Enable auto-title?'
+    )
     config.url.configure_setting(
         'exclude',
         'Enter regular expressions for each URL you would like to exclude.'
@@ -181,6 +191,11 @@ def title_auto(bot, trigger):
     where the URL redirects to and show the title for that (or call a function
     from another module to give more information).
     """
+    # Enabled or disabled by feature flag
+    if not bot.settings.url.enable_auto_title:
+        return
+
+    # Avoid fetching links from the "title" command
     if re.match(bot.config.core.prefix + 'title', trigger):
         return
 
@@ -226,6 +241,7 @@ def process_urls(bot, trigger, urls):
             # Check if it's an address like http://192.168.1.1
             try:
                 if ipaddress.ip_address(parsed.hostname).is_private or ipaddress.ip_address(parsed.hostname).is_loopback:
+                    LOGGER.debug('Ignoring private URL: %s', url)
                     continue
             except ValueError:
                 pass
@@ -238,12 +254,14 @@ def process_urls(bot, trigger, urls):
                         private = True
                         break
                 if private:
+                    LOGGER.debug('Ignoring private URL: %s', url)
                     continue
 
         # Call the URL to get a title, if possible
         title = find_title(url)
         if not title:
             # No title found: don't handle this URL
+            LOGGER.warning('No title found; ignoring URL: %s', url)
             continue
 
         # If the URL is over bot.config.url.shorten_url_length, shorten the URL
@@ -296,11 +314,14 @@ def find_title(url, verify=True):
         # Need to close the connection because we have not read all
         # the data
         response.close()
+    except requests.exceptions.ConnectionError:
+        LOGGER.exception('Unable to reach URL: %s', url)
+        return None
     except (
-        requests.exceptions.ConnectionError,
         requests.exceptions.InvalidURL,  # e.g. http:///
         UnicodeError,  # e.g. http://.example.com
     ):
+        LOGGER.debug('Invalid URL: %s', url)
         return None
 
     # Some cleanup that I don't really grok, but was in the original, so
