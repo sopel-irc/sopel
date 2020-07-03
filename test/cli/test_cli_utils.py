@@ -51,6 +51,15 @@ def config_dir(tmpdir):
     return test_dir
 
 
+@pytest.fixture
+def env_dir(tmpdir):
+    """Pytest fixture used to generate an extra (external) config directory"""
+    test_dir = tmpdir.mkdir("fromenv")
+    test_dir.join('fromenv.cfg').write('')
+
+    return test_dir
+
+
 def test_green():
     assert green('hello') == '\x1b[32mhello\x1b[0m'
     assert green('hello', reset=False) == '\x1b[32mhello'
@@ -232,8 +241,9 @@ def test_load_settings(config_dir):
     assert settings.basename == 'config'
 
 
-def test_load_settings_arg_priority_over_env(monkeypatch, config_dir):
+def test_load_settings_arg_priority_over_env(monkeypatch, config_dir, env_dir):
     monkeypatch.setenv('SOPEL_CONFIG', 'fromenv')
+    monkeypatch.setenv('SOPEL_CONFIG_DIR', env_dir.strpath)
 
     config_dir.join('fromenv.cfg').write(TMP_CONFIG)
     config_dir.join('fromarg.cfg').write(TMP_CONFIG)
@@ -248,6 +258,7 @@ def test_load_settings_arg_priority_over_env(monkeypatch, config_dir):
     settings = load_settings(options)
     assert isinstance(settings, config.Config)
     assert settings.basename == 'fromarg'
+    assert os.path.dirname(settings.filename) == config_dir.strpath
 
 
 def test_load_settings_default(config_dir):
@@ -261,18 +272,21 @@ def test_load_settings_default(config_dir):
     assert isinstance(settings, config.Config)
 
 
-def test_load_settings_default_env_var(monkeypatch, config_dir):
-    monkeypatch.setenv('SOPEL_CONFIG', 'config')
+def test_load_settings_default_env_var(monkeypatch, config_dir, env_dir):
+    monkeypatch.setenv('SOPEL_CONFIG', 'fromenv')
+    monkeypatch.setenv('SOPEL_CONFIG_DIR', env_dir.strpath)
 
     config_dir.join('config.cfg').write(TMP_CONFIG)
+    env_dir.join('fromenv.cfg').write(TMP_CONFIG)
     parser = argparse.ArgumentParser()
     add_common_arguments(parser)
 
-    options = parser.parse_args(['--config-dir', config_dir.strpath])
+    options = parser.parse_args([])
 
     settings = load_settings(options)
     assert isinstance(settings, config.Config)
-    assert settings.basename == 'config'
+    assert settings.basename == 'fromenv'
+    assert os.path.dirname(settings.filename) == env_dir.strpath
 
 
 def test_load_settings_default_not_found(config_dir):
