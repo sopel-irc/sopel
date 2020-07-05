@@ -50,9 +50,14 @@ class StaticSection(object):
 
     .. note::
 
-        Subclasses of ``StaticSection`` are named ``PluginnameSection`` by
-        convention—i.e. the plugin's name in strict CamelCase, with the suffix
-        ``Section``. However, any desired class name should work just fine.
+        By convention, subclasses of ``StaticSection`` are named with the
+        plugin's name in CamelCase, plus the suffix ``Section``. For example, a
+        plugin named ``editor`` might name its subclass ``EditorSection``; a
+        ``do_stuff`` plugin might name its subclass ``DoStuffSection`` (its
+        name converted from ``snake_case`` to ``CamelCase``).
+
+        However, this is *only* a convention. Any class name that is legal in
+        Python will work just fine.
 
     """
     def __init__(self, config, section_name, validate=True):
