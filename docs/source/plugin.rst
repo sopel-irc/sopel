@@ -13,6 +13,26 @@ A Sopel plugin consists of a Python module containing one or more
 ``callable``\s. It may optionally also contain ``configure``, ``setup``, and
 ``shutdown`` hooks.
 
+Sopel plugins conventionally have all-lowercase names, usually one word.
+However, sometimes multiple words are needed for clarity or disambiguation;
+``snake_case`` is normally used for these.
+
+.. note::
+
+    How Sopel determines a plugin's name depends on what kind of plugin it is:
+
+    Single file
+      The file's basename (e.g. ``plugin`` in ``plugin.py``)
+
+    Folder
+      The folder name (e.g. ``plugin`` in ``~/.sopel/plugins/plugin/__init__.py``)
+
+    Namespace package
+      The submodule name (e.g. ``plugin`` in ``sopel_modules.plugin``)
+
+    Entry point
+      The entry point name (e.g. ``plugin`` in ``plugin = my_plugin.module.path``)
+
 .. py:function:: callable(bot, trigger)
 
     :param bot: the bot's instance
