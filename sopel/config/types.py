@@ -47,6 +47,18 @@ class StaticSection(object):
 
     This class is intended to be subclassed and customized with added
     attributes containing :class:`BaseValidated`-based objects.
+
+    .. note::
+
+        By convention, subclasses of ``StaticSection`` are named with the
+        plugin's name in CamelCase, plus the suffix ``Section``. For example, a
+        plugin named ``editor`` might name its subclass ``EditorSection``; a
+        ``do_stuff`` plugin might name its subclass ``DoStuffSection`` (its
+        name converted from ``snake_case`` to ``CamelCase``).
+
+        However, this is *only* a convention. Any class name that is legal in
+        Python will work just fine.
+
     """
     def __init__(self, config, section_name, validate=True):
         if not config.parser.has_section(section_name):
@@ -120,6 +132,21 @@ class BaseValidated(object):
     the value *must* be configured by the user (i.e. there is no suitable
     default value). Trying to read an empty ``NO_DEFAULT`` value will raise
     :class:`AttributeError`.
+
+    .. important::
+
+        Setting names SHOULD follow *snake_case* naming rules:
+
+          * use only lowercase letters, digits, and underscore (``_``)
+          * SHOULD NOT start with a digit
+
+        Deviations from *snake_case* can break the following operations:
+
+          * :ref:`accessing the setting <sopel.config>` from Python code using
+            the :class:`~.Config` object's attributes
+          * :ref:`overriding the setting's value <Overriding individual
+            settings>` using environment variables
+
     """
     def __init__(self, name, default=None, is_secret=False):
         self.name = name
