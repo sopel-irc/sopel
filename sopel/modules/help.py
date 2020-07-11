@@ -1,6 +1,6 @@
 # coding=utf-8
 """
-help.py - Sopel Help Module
+help.py - Sopel Help Plugin
 Copyright 2008, Sean B. Palmer, inamidst.com
 Copyright © 2013, Elad Alfassa, <elad@fedoraproject.org>
 Copyright © 2018, Adam Erdman, pandorah.org
@@ -30,8 +30,8 @@ LOGGER = logging.getLogger(__name__)
 
 # Settings that should require the help listing to be regenerated, or
 # re-POSTed to paste, if they are changed during runtime.
-# Keys are module names, and values are lists of setting names
-# specific to that module.
+# Keys are plugin names, and values are lists of setting names
+# specific to that plugin.
 TRACKED_SETTINGS = {
     'help': [
         'output',
@@ -174,7 +174,7 @@ REPLY_METHODS = [
 
 
 class HelpSection(StaticSection):
-    """Configuration section for this module."""
+    """Configuration section for this plugin."""
     output = ChoiceAttribute('output',
                              list(PASTEBIN_PROVIDERS),
                              default='clbin')

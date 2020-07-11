@@ -85,7 +85,7 @@ class Sopel(irc.AbstractBot):
         The value associated with each channel is a dictionary of
         :class:`sopel.tools.Identifier`\\s to a bitwise integer value,
         determined by combining the appropriate constants from
-        :mod:`sopel.module`.
+        :mod:`sopel.plugin`.
 
         .. deprecated:: 6.2.0
             Use :attr:`channels` instead. Will be removed in Sopel 8.
@@ -126,7 +126,7 @@ class Sopel(irc.AbstractBot):
 
     @property
     def scheduler(self):
-        """Job Scheduler. See :func:`sopel.module.interval`."""
+        """Job Scheduler. See :func:`sopel.plugin.interval`."""
         return self._scheduler
 
     @property
@@ -992,7 +992,7 @@ class Sopel(irc.AbstractBot):
                 bot.register_url_callback(regex, callback)
 
         It's recommended you completely avoid manual management of URL
-        callbacks through the use of :func:`sopel.module.url`.
+        callbacks through the use of :func:`sopel.plugin.url`.
         """
         if 'url_callbacks' not in self.memory:
             self.memory['url_callbacks'] = tools.SopelMemory()
@@ -1027,7 +1027,7 @@ class Sopel(irc.AbstractBot):
                 bot.unregister_url_callback(regex, callback)
 
         It's recommended you completely avoid manual management of URL
-        callbacks through the use of :func:`sopel.module.url`.
+        callbacks through the use of :func:`sopel.plugin.url`.
         """
         if 'url_callbacks' not in self.memory:
             # nothing to unregister

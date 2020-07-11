@@ -1,6 +1,6 @@
 # coding=utf-8
 """
-invite.py - Sopel invite module
+invite.py - Sopel Invite Plugin
 Copyright © 2016, João Vanzuita, https://github.com/converge
 Copyright © 2019, dgw, https://github.com/dgw
 Licensed under the Eiffel Forum License 2.

@@ -27,7 +27,8 @@ __all__ = [
     'irc',
     'loader',
     'logger',
-    'module',
+    'module',  # deprecated in 7.1, removed in 9.0
+    'plugin',
     'tools',
     'trigger',
     'version_info',

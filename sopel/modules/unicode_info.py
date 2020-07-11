@@ -1,6 +1,6 @@
 # coding=utf-8
 """
-unicode_info.py - Sopel Codepoints Module
+unicode_info.py - Sopel Codepoints Plugin
 Copyright 2013, Elsie Powell, embolalia.com
 Copyright 2008, Sean B. Palmer, inamidst.com
 Licensed under the Eiffel Forum License 2.

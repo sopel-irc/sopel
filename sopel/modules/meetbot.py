@@ -1,7 +1,7 @@
 # coding=utf-8
 """
-meetbot.py - Sopel Meeting Logger Module
-This module is an attempt to implement some of the functionality of Debian's meetbot
+meetbot.py - Sopel Meeting Logger Plugin
+This plugin is an attempt to implement some of the functionality of Debian's meetbot
 Copyright © 2012, Elad Alfassa, <elad@fedoraproject.org>
 Licensed under the Eiffel Forum License 2.
 
@@ -193,7 +193,7 @@ def is_chair(nick, channel):
 def startmeeting(bot, trigger):
     """
     Start a meeting.\
-    See [meetbot module usage]({% link _usage/meetbot-module.md %})
+    See [meetbot plugin usage]({% link _usage/meetbot-plugin.md %})
     """
     if is_meeting_running(trigger.sender):
         bot.say("There is already an active meeting here!")
@@ -254,7 +254,7 @@ def startmeeting(bot, trigger):
 def meetingsubject(bot, trigger):
     """
     Change the meeting subject.\
-    See [meetbot module usage]({% link _usage/meetbot-module.md %})
+    See [meetbot plugin usage]({% link _usage/meetbot-plugin.md %})
     """
     if not is_meeting_running(trigger.sender):
         bot.say("There is no active meeting")
@@ -285,7 +285,7 @@ def meetingsubject(bot, trigger):
 def endmeeting(bot, trigger):
     """
     End a meeting.\
-    See [meetbot module usage]({% link _usage/meetbot-module.md %})
+    See [meetbot plugin usage]({% link _usage/meetbot-plugin.md %})
     """
     if not is_meeting_running(trigger.sender):
         bot.say("There is no active meeting")
@@ -318,7 +318,7 @@ def endmeeting(bot, trigger):
 def chairs(bot, trigger):
     """
     Set the meeting chairs.\
-    See [meetbot module usage]({% link _usage/meetbot-module.md %})
+    See [meetbot plugin usage]({% link _usage/meetbot-plugin.md %})
     """
     if not is_meeting_running(trigger.sender):
         bot.say("There is no active meeting")
@@ -350,7 +350,7 @@ def chairs(bot, trigger):
 def meetingaction(bot, trigger):
     """
     Log an action in the meeting log.\
-    See [meetbot module usage]({% link _usage/meetbot-module.md %})
+    See [meetbot plugin usage]({% link _usage/meetbot-plugin.md %})
     """
     if not is_meeting_running(trigger.sender):
         bot.say("There is no active meeting")
@@ -388,7 +388,7 @@ def listactions(bot, trigger):
 def meetingagreed(bot, trigger):
     """
     Log an agreement in the meeting log.\
-    See [meetbot module usage]({% link _usage/meetbot-module.md %})
+    See [meetbot plugin usage]({% link _usage/meetbot-plugin.md %})
     """
     if not is_meeting_running(trigger.sender):
         bot.say("There is no active meeting")
@@ -413,7 +413,7 @@ def meetingagreed(bot, trigger):
 def meetinglink(bot, trigger):
     """
     Log a link in the meeing log.\
-    See [meetbot module usage]({% link _usage/meetbot-module.md %})
+    See [meetbot plugin usage]({% link _usage/meetbot-plugin.md %})
     """
     if not is_meeting_running(trigger.sender):
         bot.say("There is no active meeting")
@@ -446,7 +446,7 @@ def meetinglink(bot, trigger):
 def meetinginfo(bot, trigger):
     """
     Log an informational item in the meeting log.\
-    See [meetbot module usage]({% link _usage/meetbot-module.md %})
+    See [meetbot plugin usage]({% link _usage/meetbot-plugin.md %})
     """
     if not is_meeting_running(trigger.sender):
         bot.say("There is no active meeting")
@@ -510,7 +510,7 @@ def take_comment(bot, trigger):
 
     Used in private message only, as `.comment <#channel> <comment to add>`
 
-    See [meetbot module usage]({% link _usage/meetbot-module.md %})
+    See [meetbot plugin usage]({% link _usage/meetbot-plugin.md %})
     """
     if not trigger.group(4):  # <2 arguments were given
         bot.say(
@@ -540,7 +540,7 @@ def show_comments(bot, trigger):
     """
     Show the comments that have been logged for this meeting with .comment.
 
-    See [meetbot module usage]({% link _usage/meetbot-module.md %})
+    See [meetbot plugin usage]({% link _usage/meetbot-plugin.md %})
     """
     if not is_meeting_running(trigger.sender):
         return

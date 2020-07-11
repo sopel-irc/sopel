@@ -47,7 +47,7 @@ class Scheduler(jobs.Scheduler):
     .. important::
 
         This is an internal tool used by Sopel to manage its jobs. To register
-        a job, plugin authors should use :func:`sopel.module.interval`.
+        a job, plugin authors should use :func:`sopel.plugin.interval`.
 
     """
     def __init__(self, manager):

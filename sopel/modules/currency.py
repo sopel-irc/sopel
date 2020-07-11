@@ -1,6 +1,6 @@
 # coding=utf-8
 """
-currency.py - Sopel Currency Conversion Module
+currency.py - Sopel Currency Conversion Plugin
 Copyright 2013, Elsie Powell, embolalia.com
 Copyright 2019, Mikkel Jeppesen
 Licensed under the Eiffel Forum License 2.

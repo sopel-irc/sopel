@@ -171,7 +171,7 @@ def is_triggerable(obj):
 
     .. seealso::
 
-        Many of the decorators defined in :mod:`sopel.module` make the
+        Many of the decorators defined in :mod:`sopel.plugin` make the
         decorated function a triggerable object.
     """
     forbidden_attrs = (

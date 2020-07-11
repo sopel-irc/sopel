@@ -16,7 +16,7 @@ import socket
 import sys
 import threading
 
-from sopel import loader, module
+from sopel import loader, plugin
 from sopel.tools import jobs
 from .abstract_backends import AbstractIRCBackend
 from .utils import get_cnames
@@ -41,7 +41,7 @@ if sys.version_info.major >= 3:
 LOGGER = logging.getLogger(__name__)
 
 
-@module.thread(False)
+@plugin.thread(False)
 def _send_ping(backend):
     if not backend.is_connected():
         return
@@ -53,7 +53,7 @@ def _send_ping(backend):
             LOGGER.exception('Socket error on PING')
 
 
-@module.thread(False)
+@plugin.thread(False)
 def _check_timeout(backend):
     if not backend.is_connected():
         return
@@ -87,8 +87,8 @@ class AsynchatBackend(AbstractIRCBackend, asynchat.async_chat):
         self.timeout_scheduler = jobs.Scheduler(self)
 
         # prepare interval decorator
-        ping_interval = module.interval(self.ping_timeout)
-        timeout_interval = module.interval(self.server_timeout)
+        ping_interval = plugin.interval(self.ping_timeout)
+        timeout_interval = plugin.interval(self.server_timeout)
 
         # register timeout jobs
         self.register_timeout_jobs([

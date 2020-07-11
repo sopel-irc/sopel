@@ -138,7 +138,7 @@ class CoreSection(StaticSection):
             Liam
 
     This would then allow both "William: Hi!" and "Bill: Hi!" to work with
-    :func:`~sopel.module.nickname_commands`.
+    :func:`~sopel.plugin.nickname_commands`.
     """
 
     auth_method = ChoiceAttribute('auth_method', choices=[
@@ -194,7 +194,7 @@ class CoreSection(StaticSection):
     :default: ``['http', 'https', 'ftp']``
 
     Used by the URL callbacks feature to call plugins when links are posted in
-    chat; see the :func:`sopel.module.url` decorator.
+    chat; see the :func:`sopel.plugin.url` decorator.
 
     The default value allows ``http``, ``https``, and ``ftp``. It is equivalent
     to this configuration example:

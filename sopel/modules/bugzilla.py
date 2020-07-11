@@ -1,6 +1,6 @@
 # coding=utf-8
 """
-bugzilla.py - Sopel Bugzilla Module
+bugzilla.py - Sopel Bugzilla Plugin
 Copyright 2013-2015, Embolalia, embolalia.com
 Licensed under the Eiffel Forum License 2.
 

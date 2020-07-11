@@ -4,7 +4,7 @@ safety.py - Alerts about malicious URLs
 Copyright © 2014, Elad Alfassa, <elad@fedoraproject.org>
 Licensed under the Eiffel Forum License 2.
 
-This module uses virustotal.com
+This plugin uses virustotal.com
 """
 from __future__ import absolute_import, division, print_function, unicode_literals
 

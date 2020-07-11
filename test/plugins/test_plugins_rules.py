@@ -6,7 +6,7 @@ import re
 
 import pytest
 
-from sopel import bot, loader, module, trigger
+from sopel import bot, loader, module, plugin, trigger
 from sopel.plugins import rules
 from sopel.tests import rawlist
 
@@ -851,7 +851,7 @@ def test_kwargs_from_callable(mockbot):
 def test_kwargs_from_callable_label(mockbot):
     # prepare callable
     @module.rule(r'hello', r'hi', r'hey', r'hello|hi')
-    @module.label('hello_rule')
+    @plugin.label('hello_rule')
     def handler(wrapped, trigger):
         wrapped.reply('Hi!')
 
@@ -2182,7 +2182,7 @@ def test_find_rule_parse_pattern():
 
 def test_find_rule_from_callable(mockbot):
     # prepare callable
-    @module.find(r'hello', r'hi', r'hey', r'hello|hi')
+    @plugin.find(r'hello', r'hi', r'hey', r'hello|hi')
     def handler(wrapped, trigger):
         wrapped.reply('Hi!')
 
@@ -2269,7 +2269,7 @@ def test_search_rule_parse_pattern():
 
 def test_search_rule_from_callable(mockbot):
     # prepare callable
-    @module.search(r'hello', r'hi', r'hey', r'hello|hi')
+    @plugin.search(r'hello', r'hi', r'hey', r'hello|hi')
     def handler(wrapped, trigger):
         wrapped.reply('Hi!')
 

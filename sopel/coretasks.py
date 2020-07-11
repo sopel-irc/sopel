@@ -656,9 +656,9 @@ def receive_cap_list(bot, trigger):
 
 def receive_cap_ls_reply(bot, trigger):
     if bot.server_capabilities:
-        # We've already seen the results, so someone sent CAP LS from a module.
+        # We've already seen the results, so someone sent CAP LS from a plugin.
         # We're too late to do SASL, and we don't want to send CAP END before
-        # the module has done what it needs to, so just return
+        # the plugin has done what it needs to, so just return
         return
 
     for cap in trigger.split():
@@ -674,8 +674,8 @@ def receive_cap_ls_reply(bot, trigger):
 
     bot.server_capabilities = batched_caps
 
-    # If some other module requests it, we don't need to add another request.
-    # If some other module prohibits it, we shouldn't request it.
+    # If some other plugin requests it, we don't need to add another request.
+    # If some other plugin prohibits it, we shouldn't request it.
     core_caps = [
         'echo-message',
         'multi-prefix',
@@ -689,7 +689,7 @@ def receive_cap_ls_reply(bot, trigger):
 
     def acct_warn(bot, cap):
         LOGGER.info('Server does not support %s, or it conflicts with a custom '
-                    'module. User account validation unavailable or limited.',
+                    'plugin. User account validation unavailable or limited.',
                     cap[1:])
         if bot.config.core.owner_account or bot.config.core.admin_accounts:
             LOGGER.warning(
@@ -905,7 +905,7 @@ def account_notify(bot, trigger):
 @module.unblockable
 def recv_whox(bot, trigger):
     if len(trigger.args) < 2 or trigger.args[1] not in who_reqs:
-        # Ignored, some module probably called WHO
+        # Ignored, some plugin probably called WHO
         return
     if len(trigger.args) != 8:
         return LOGGER.warning('While populating `bot.accounts` a WHO response was malformed.')

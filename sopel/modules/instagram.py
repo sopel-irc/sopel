@@ -1,6 +1,6 @@
 # coding=utf-8
 """
-instagram.py - Sopel Instagram Module
+instagram.py - Sopel Instagram Plugin
 Copyright 2018, Sopel contributors
 Licensed under the Eiffel Forum License 2.
 

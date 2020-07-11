@@ -1,6 +1,6 @@
 # coding=utf-8
 """
-tell.py - Sopel Tell and Ask Module
+tell.py - Sopel Tell and Ask Plugin
 Copyright 2008, Sean B. Palmer, inamidst.com
 Copyright 2019, dgw, technobabbl.es
 Licensed under the Eiffel Forum License 2.

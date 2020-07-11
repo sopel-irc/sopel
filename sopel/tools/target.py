@@ -74,7 +74,7 @@ class Channel(object):
 
         This maps nickname :class:`~sopel.tools.Identifier`\\s to bitwise
         integer values. This can be compared to appropriate constants from
-        :mod:`sopel.module`.
+        :mod:`sopel.plugin`.
         """
         self.topic = ''
         """The topic of the channel."""
@@ -101,7 +101,7 @@ class Channel(object):
         :param user: the new user to add
         :type user: :class:`User`
         :param int privs: privilege bitmask (see constants in
-                          :mod:`sopel.module`)
+                          :mod:`sopel.plugin`)
 
         Called when a new user JOINs the channel.
         """

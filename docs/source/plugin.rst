@@ -43,20 +43,20 @@ However, sometimes multiple words are needed for clarity or disambiguation;
     A callable is any function which takes as its arguments a
     :class:`sopel.bot.SopelWrapper` object and a :class:`sopel.trigger.Trigger`
     object, and is wrapped with appropriate decorators from
-    :mod:`sopel.module`. The ``bot`` provides the ability to send messages to
+    :mod:`sopel.plugin`. The ``bot`` provides the ability to send messages to
     the network and check the state of the bot. The ``trigger`` provides
     information about the line which triggered this function to be called.
 
     The return value of these function is ignored, unless it is
-    :const:`sopel.module.NOLIMIT`, in which case rate limiting will not be
+    :const:`sopel.plugin.NOLIMIT`, in which case rate limiting will not be
     applied for that call.
 
     Note that the name can, and should, be anything - it doesn't need to be
     called "callable"::
 
-        from sopel import module
+        from sopel import plugin
 
-        @module.commands('hello')
+        @plugin.commands('hello')
         def say_hello(bot, trigger):
             """Reply hello to you."""
             bot.reply('Hello!')
@@ -68,8 +68,8 @@ However, sometimes multiple words are needed for clarity or disambiguation;
     :type bot: :class:`sopel.bot.Sopel`
 
     This is an optional function of a plugin, which will be called while the
-    module is being loaded. The purpose of this function is to perform whatever
-    actions are needed to allow a module to function properly (e.g, ensuring
+    plugin is being loaded. The purpose of this function is to perform whatever
+    actions are needed to allow a plugin to function properly (e.g, ensuring
     that the appropriate configuration variables exist and are set). Note that
     this normally occurs prior to connection to the server, so the behavior of
     the messaging functions on the :class:`sopel.bot.Sopel` object it's passed
@@ -77,11 +77,11 @@ However, sometimes multiple words are needed for clarity or disambiguation;
 
     Throwing an exception from this function (such as a
     :exc:`sopel.config.ConfigurationError`) will prevent any callables in the
-    module from being registered, and provide an error message to the user.
+    plugin from being registered, and provide an error message to the user.
     This is useful when requiring the presence of configuration values or
     making other environmental requirements.
 
-    The bot will not continue loading modules or connecting during the
+    The bot will not continue loading plugins or connecting during the
     execution of this function. As such, an infinite loop (such as an
     unthreaded polling loop) will cause the bot to hang.
 
@@ -90,15 +90,15 @@ However, sometimes multiple words are needed for clarity or disambiguation;
     :param bot: the bot's instance
     :type bot: :class:`sopel.bot.Sopel`
 
-    This is an optional function of a module, which will be called while the
+    This is an optional function of a plugin, which will be called while the
     bot is quitting. Note that this normally occurs after closing connection
     to the server, so the behavior of the messaging functions on the
     :class:`sopel.bot.Sopel` object it's passed is undefined. The purpose of
-    this function is to perform whatever actions are needed to allow a module
+    this function is to perform whatever actions are needed to allow a plugin
     to properly clean up (e.g, ensuring that any temporary cache files are
     deleted).
 
-    The bot will not continue notifying other modules or continue quitting
+    The bot will not continue notifying other plugins or continue quitting
     during the execution of this function. As such, an infinite loop (such as
     an unthreaded polling loop) will cause the bot to hang.
 
@@ -109,7 +109,7 @@ However, sometimes multiple words are needed for clarity or disambiguation;
     :param bot: the bot's configuration object
     :type bot: :class:`sopel.config.Config`
 
-    This is an optional function of a module, which will be called during the
+    This is an optional function of a plugin, which will be called during the
     user's setup of the bot. It's intended purpose is to use the methods of the
     passed :class:`sopel.config.Config` object in order to create the
     configuration variables it needs to function properly.
@@ -119,6 +119,17 @@ However, sometimes multiple words are needed for clarity or disambiguation;
 
 Callable decorators
 ===================
+
+.. automodule:: sopel.plugin
+   :members:
+
+About ``sopel.module``
+----------------------
+
+Before Sopel 7.1, ``sopel.module`` was the preferred and only way to decorate
+callables for plugins. However, since the term ``module`` can be confusing
+(mostly because it already has a special meaning in Python), it has been
+replaced by ``plugin`` in most cases related to add-ons for Sopel.
 
 .. automodule:: sopel.module
    :members:

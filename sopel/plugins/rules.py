@@ -43,7 +43,7 @@ __all__ = [
 
 LOGGER = logging.getLogger(__name__)
 
-IGNORE_RATE_LIMIT = 1  # equivalent to sopel.module.NOLIMIT
+IGNORE_RATE_LIMIT = 1  # equivalent to sopel.plugin.NOLIMIT
 """Return value used to indicate that rate-limiting should be ignored."""
 PRIORITY_HIGH = 'high'
 """Highest rule priority."""
@@ -350,7 +350,7 @@ class AbstractRule(object):
         :rtype: :class:`AbstractRule`
 
         Sopel's function-based rule handlers are simple callables, decorated
-        with :mod:`sopel.module`'s decorators to add attributes, such as rate
+        with :mod:`sopel.plugin`'s decorators to add attributes, such as rate
         limit, threaded execution, output prefix, priority, and so on. In order
         to load these functions as rule objects, this class method can be used;
         it takes the bot's ``settings`` and a cleaned ``handler``.
@@ -424,7 +424,7 @@ class AbstractRule(object):
 
         .. seealso::
 
-            :meth:`sopel.module.example` for more about test parameters.
+            :meth:`sopel.plugin.example` for more about test parameters.
 
         """
         raise NotImplementedError
@@ -608,7 +608,7 @@ class Rule(AbstractRule):
         :meth:`from_callable` classmethod to instantiate a new rule object.
 
         The expected attributes are the ones set by decorators from the
-        :mod:`sopel.module` module.
+        :mod:`sopel.plugin` module.
         """
         # manage examples:
         # - usages are for documentation only
