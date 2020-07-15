@@ -16,3 +16,12 @@ class PluginNotRegistered(PluginError):
         message = 'Plugin "%s" not registered' % name
         self.plugin_name = name
         super(PluginNotRegistered, self).__init__(message)
+
+
+class PluginSettingsError(PluginError):
+    """Exception raised when a plugin is not properly configured.
+
+    This can be used in any place where a plugin requires a specific config,
+    for example in its ``setup`` function, in any of its rules or commands,
+    and in the loader function for the :func:`sopel.plugin.url_lazy` decorator.
+    """

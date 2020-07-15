@@ -14,11 +14,9 @@ import re
 import requests
 import xmltodict
 
+from sopel import plugin, plugins
 from sopel.config.types import ListAttribute, StaticSection
-from sopel.module import rule
 
-
-regex = None
 LOGGER = logging.getLogger(__name__)
 
 
@@ -42,45 +40,44 @@ def configure(config):
 
 
 def setup(bot):
-    global regex
     bot.config.define_section('bugzilla', BugzillaSection)
 
-    if not bot.config.bugzilla.domains:
-        return
 
-    domains = '|'.join(bot.config.bugzilla.domains)
-    regex = re.compile((r'https?://(%s)'
-                        r'(/show_bug.cgi\?\S*?)'
-                        r'(id=\d+)')
-                       % domains)
-    bot.register_url_callback(regex, show_bug)
+def _bugzilla_loader(settings):
+    if not settings.bugzilla.domains:
+        raise plugins.exceptions.PluginSettingsError(
+            'Bugzilla URL callback requires '
+            '"bugzilla.domains" to be configured; check your config file.')
+
+    domain_pattern = '|'.join(
+        re.escape(domain)
+        for domain in settings.bugzilla.domains)
+
+    pattern = (
+        r'https?://(%s)'
+        r'(/show_bug.cgi\?\S*?)'
+        r'(id=\d+).*'
+    ) % domain_pattern
+
+    return [re.compile(pattern)]
 
 
-def shutdown(bot):
-    bot.unregister_url_callback(regex, show_bug)
-
-
-@rule(r'.*https?://(\S+?)'
-      r'(/show_bug.cgi\?\S*?)'
-      r'(id=\d+).*')
+@plugin.url_lazy(_bugzilla_loader)
+@plugin.output_prefix('[BUGZILLA] ')
 def show_bug(bot, trigger, match=None):
     """Show information about a Bugzilla bug."""
-    match = match or trigger
-    domain = match.group(1)
-    if domain not in bot.config.bugzilla.domains:
-        return
-    url = 'https://%s%sctype=xml&%s' % match.groups()
+    url = 'https://%s%sctype=xml&%s' % trigger.groups()
     data = requests.get(url).content
     bug = xmltodict.parse(data).get('bugzilla').get('bug')
     error = bug.get('@error', None)  # error="NotPermitted"
 
     if error:
         LOGGER.warning('Bugzilla error: %s' % error)
-        bot.say('[BUGZILLA] Unable to get information for '
+        bot.say('Unable to get information for '
                 'linked bug (%s)' % error)
         return
 
-    message = ('[BUGZILLA] %s | Product: %s | Component: %s | Version: %s | ' +
+    message = ('%s | Product: %s | Component: %s | Version: %s | ' +
                'Importance: %s |  Status: %s | Assigned to: %s | ' +
                'Reported: %s | Modified: %s')
 
