@@ -24,7 +24,7 @@ import re
 import sys
 import time
 
-from sopel import loader, module
+from sopel import loader, module, plugin
 from sopel.irc import isupport
 from sopel.irc.utils import CapReq, MyInfo
 from sopel.tools import events, Identifier, iteritems, target, web
@@ -47,7 +47,7 @@ def setup(bot):
         wait_interval = max(bot.settings.core.throttle_wait, 1)
 
         @module.interval(wait_interval)
-        @module.label('throttle_join')
+        @plugin.label('throttle_join')
         def processing_job(bot):
             _join_event_processing(bot)
 
