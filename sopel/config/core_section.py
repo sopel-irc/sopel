@@ -20,6 +20,8 @@ COMMAND_DEFAULT_PREFIX = r'\.'
 """Default prefix used for commands."""
 COMMAND_DEFAULT_HELP_PREFIX = '.'
 """Default help prefix used in commands' usage messages."""
+URL_DEFAULT_SCHEMES = ['http', 'https', 'ftp']
+"""Default URL schemes allowed for URLs."""
 
 
 def _find_certs():
@@ -188,7 +190,7 @@ class CoreSection(StaticSection):
     auto_url_schemes = ListAttribute(
         'auto_url_schemes',
         strip=True,
-        default=['http', 'https', 'ftp'])
+        default=URL_DEFAULT_SCHEMES)
     """List of URL schemes that will trigger URL callbacks.
 
     :default: ``['http', 'https', 'ftp']``

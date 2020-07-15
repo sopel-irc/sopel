@@ -93,9 +93,10 @@ class TriggerFactory(object):
         return bot.SopelWrapper(mockbot, trigger)
 
     def __call__(self, mockbot, raw, pattern=None):
+        url_schemes = mockbot.settings.core.auto_url_schemes
         return trigger.Trigger(
             mockbot.settings,
-            trigger.PreTrigger(mockbot.nick, raw),
+            trigger.PreTrigger(mockbot.nick, raw, url_schemes=url_schemes),
             re.match(pattern or r'.*', raw))
 
 

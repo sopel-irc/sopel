@@ -7,6 +7,7 @@ import re
 import sys
 
 from sopel import tools
+from sopel.tools import web
 
 
 __all__ = [
@@ -24,6 +25,7 @@ class PreTrigger(object):
 
     :param str own_nick: the bot's own IRC nickname
     :param str line: the full line from the server
+    :param tuple url_schemes: allowed schemes for URL detection
 
     At the :class:`PreTrigger` stage, the line has not been matched against any
     rules yet. This is what Sopel uses to perform matching.
@@ -80,6 +82,14 @@ class PreTrigger(object):
         For lines that do *not* contain ``:``, :attr:`text` will be the last
         argument in :attr:`args` instead.
 
+    .. py:attribute:: urls
+        :type: tuple
+
+        List of URLs found in the :attr:`text`.
+
+        This is for ``PRIVMSG`` and ``NOTICE`` messages only. For other
+        messages, this will be an empty ``tuple``.
+
     .. py:attribute:: time
 
         The time when the message was received.
@@ -95,9 +105,10 @@ class PreTrigger(object):
     component_regex = re.compile(r'([^!]*)!?([^@]*)@?(.*)')
     intent_regex = re.compile('\x01(\\S+) ?(.*)\x01')
 
-    def __init__(self, own_nick, line):
+    def __init__(self, own_nick, line, url_schemes=None):
         line = line.strip('\r\n')
         self.line = line
+        self.urls = tuple()
 
         # Break off IRCv3 message tags, if present
         self.tags = {}
@@ -169,6 +180,10 @@ class PreTrigger(object):
                 intent, message = intent_match.groups()
                 self.tags['intent'] = intent
                 self.args[-1] = message or ''
+
+            # Search URLs after CTCP parsing
+            self.urls = tuple(
+                web.search_urls(self.args[-1], schemes=url_schemes))
 
         # Populate account from extended-join messages
         if self.event == 'JOIN' and len(self.args) == 3:
@@ -314,6 +329,14 @@ class Trigger(unicode):
     These are the strings passed between the event name and the colon. For
     example, when setting ``mode -m`` on the channel ``#example``, args would
     be ``('#example', '-m')``
+    """
+    urls = property(lambda self: self._pretrigger.urls)
+    """A tuple containing all URLs found in the text.
+
+    :type: tuple
+
+    URLs are listed only for ``PRIVMSG`` or a ``NOTICE``, otherwise this is
+    an empty tuple.
     """
     tags = property(lambda self: self._pretrigger.tags)
     """A map of the IRCv3 message tags on the message.
