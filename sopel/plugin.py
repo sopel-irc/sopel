@@ -41,6 +41,7 @@ __all__ = [
     'thread',
     'unblockable',
     'url',
+    'url_lazy',
 ]
 
 
@@ -913,11 +914,14 @@ def url(*url_rules):
         def handle_example_bugs(bot, trigger, match):
             bot.reply('Found bug ID #%s' % match.group(1))
 
-    This should be used rather than the matching in ``trigger``, in order to
-    support e.g. the ``.title`` command.
+    Both ``trigger`` and ``match`` represent the same match on the URL. The
+    ``match`` object is a Python built-in :ref:`match object <match-objects>`, while
+    ``trigger`` is an usual :class:`~sopel.trigger.Trigger` object.
 
-    Under the hood, when Sopel collects the decorated handler it uses
-    :meth:`sopel.bot.Sopel.register_url_callback` to register the handler.
+    Under the hood, when Sopel collects the decorated handler it uses an
+    instance of :class:`sopel.plugins.rules.URLCallback` to register it to its
+    :attr:`rules manager <sopel.bot.Sopel.rules>` and its
+    :meth:`~sopel.plugins.rules.Manager.register_url_callback` method.
 
     .. versionchanged:: 7.0
 
@@ -927,6 +931,12 @@ def url(*url_rules):
     .. versionchanged:: 7.0
 
         More than one pattern can be provided as positional argument at once.
+
+    .. versionchanged:: 7.1
+
+        The ``trigger`` parameter now represents the same match as the
+        ``match`` parameter, making ``match`` an obsolete parameter, kept
+        for backward compatibility.
 
     .. seealso::
 
@@ -944,6 +954,54 @@ def url(*url_rules):
                 function.url_regex.append(url_regex)
         return function
     return actual_decorator
+
+
+def url_lazy(loader):
+    """Decorate a function to handle URL, using lazy-loading for its regex.
+
+    :param loader: a callable to generate a list of regexes when the bot is
+                   loading this URL callback
+    :type loader: :term:`function`
+
+    The ``loader`` function must accept a ``settings`` parameter and return a
+    list (or tuple) of compiled regular expressions::
+
+        import re
+
+        def loader(settings):
+            return [re.compile(r'<your_url_pattern>')]
+
+    It will be called by Sopel when the bot parses the plugin to register URL
+    callbacks to get its regexes. The ``settings`` argument will be the bot's
+    :class:`sopel.config.Config` object.
+
+    If the ``loader`` function raises an
+    :exc:`~sopel.plugins.exceptions.ImproperlyConfigured` exception, the URL
+    callback will be ignored. This exception can be used with a message that
+    will be logged as an error; it will not fail the plugin's loading.
+
+    The decorated function will behave like any other :func:`callable`::
+
+        from sopel import plugin
+
+        @plugin.url_lazy(loader)
+        def my_url_handler(bot, trigger):
+            bot.say('URL found: %s' % trigger.group(0))
+
+    .. versionadded:: 7.1
+
+    .. important::
+
+        There are few differences with the :func:`url` decorator:
+
+        * the decorated callable does **not** have a ``match`` parameter
+        * the decorated callable accepts **one and only one** ``loader``
+
+    """
+    def decorator(function):
+        function.url_lazy_loader = loader
+        return function
+    return decorator
 
 
 class example(object):

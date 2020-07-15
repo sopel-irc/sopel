@@ -56,3 +56,15 @@ def test_search_multiple():
     def mock(bot, trigger, match):
         return True
     assert mock.search_rules == [r'\w+', '.*', r'\d+']
+
+
+def test_url_lazy():
+    def loader(settings):
+        return [r'\w+', '.*', r'\d+']
+
+    @plugin.url_lazy(loader)
+    def mock(bot, trigger, match):
+        return True
+
+    assert mock.url_lazy_loader == loader
+    assert not hasattr(mock, 'url_regex')

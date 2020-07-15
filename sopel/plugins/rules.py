@@ -19,6 +19,7 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 
 import datetime
+import functools
 import inspect
 import itertools
 import logging
@@ -28,7 +29,14 @@ import threading
 
 from sopel import tools
 from sopel.config.core_section import (
-    COMMAND_DEFAULT_HELP_PREFIX, COMMAND_DEFAULT_PREFIX)
+    COMMAND_DEFAULT_HELP_PREFIX, COMMAND_DEFAULT_PREFIX, URL_DEFAULT_SCHEMES)
+
+
+try:
+    from urllib.parse import urlparse
+except ImportError:
+    # TODO: remove when dropping Python 2.7
+    from urlparse import urlparse
 
 
 __all__ = [
@@ -39,6 +47,7 @@ __all__ = [
     'Command',
     'NickCommand',
     'ActionCommand',
+    'URLCallback',
 ]
 
 LOGGER = logging.getLogger(__name__)
@@ -57,6 +66,15 @@ PRIORITY_SCALES = {
     PRIORITY_LOW: 1000,
 }
 """Mapping of priority label to priority scale."""
+
+
+def _has_labeled_rule(registry, label, plugin=None):
+    rules = (
+        itertools.chain(*registry.values())
+        if plugin is None
+        else registry.get(plugin, [])
+    )
+    return any(rule.get_rule_label() == label for rule in rules)
 
 
 def _has_named_rule(registry, name, follow_alias=False, plugin=None):
@@ -110,6 +128,7 @@ class Manager(object):
     * :meth:`register_command` for named rules with a prefix
     * :meth:`register_nick_command` for named rules based on nick calling
     * :meth:`register_action_command` for named rules based on ``ACTION``
+    * :meth:`register_url_callback` for URL callback rules
 
     Then to match the rules against a ``trigger``, see the
     :meth:`get_triggered_rules`, which returns a list of ``(rule, match)``,
@@ -120,6 +139,7 @@ class Manager(object):
         self._commands = tools.SopelMemoryWithDefault(dict)
         self._nick_commands = tools.SopelMemoryWithDefault(dict)
         self._action_commands = tools.SopelMemoryWithDefault(dict)
+        self._url_callbacks = tools.SopelMemoryWithDefault(list)
         self._register_lock = threading.Lock()
 
     def unregister_plugin(self, plugin_name):
@@ -137,6 +157,7 @@ class Manager(object):
             self._commands,
             self._nick_commands,
             self._action_commands,
+            self._url_callbacks,
         ]
 
         unregistered_rules = 0
@@ -196,6 +217,17 @@ class Manager(object):
             self._action_commands[plugin][command.name] = command
         LOGGER.debug('Action Command registered: %s', str(command))
 
+    def register_url_callback(self, url_callback):
+        """Register a plugin URL callback.
+
+        :param url_callback: the URL callback to register
+        :type url_callback: :class:`URLCallback`
+        """
+        with self._register_lock:
+            plugin = url_callback.get_plugin_name()
+            self._url_callbacks[plugin].append(url_callback)
+        LOGGER.debug('URL callback registered: %s', str(url_callback))
+
     def has_rule(self, label, plugin=None):
         """Tell if the manager knows a rule with this ``label``.
 
@@ -207,12 +239,7 @@ class Manager(object):
         The optional parameter ``plugin`` can be provided to limit the rules
         to only those from that plugin.
         """
-        rules = (
-            itertools.chain(*self._rules.values())
-            if plugin is None
-            else self._rules.get(plugin, [])
-        )
-        return any(rule.get_rule_label() == label for rule in rules)
+        return _has_labeled_rule(self._rules, label, plugin)
 
     def has_command(self, name, follow_alias=True, plugin=None):
         """Tell if the manager knows a command with this ``name``.
@@ -268,6 +295,19 @@ class Manager(object):
         return _has_named_rule(
             self._action_commands, name, follow_alias, plugin)
 
+    def has_url_callback(self, label, plugin=None):
+        """Tell if the manager knows a URL callback with this ``label``.
+
+        :param str label: the label of the URL callback to look for
+        :param str plugin: optional filter on the plugin name
+        :return: ``True`` if the URL callback exists, ``False`` otherwise
+        :rtype: bool
+
+        The optional parameter ``plugin`` can be provided to limit the URL
+        callbacks to only those from that plugin.
+        """
+        return _has_labeled_rule(self._url_callbacks, label, plugin)
+
     def get_all_commands(self):
         """Retrieve all the registered commands, by plugin."""
         # expose a copy of the registered commands
@@ -298,12 +338,14 @@ class Manager(object):
         action_rules = (
             rules_dict.values()
             for rules_dict in self._action_commands.values())
+        url_callback_rules = self._url_callbacks.values()
 
         rules = itertools.chain(
             itertools.chain(*generic_rules),
             itertools.chain(*command_rules),
             itertools.chain(*nick_rules),
             itertools.chain(*action_rules),
+            itertools.chain(*url_callback_rules),
         )
         matches = (
             (rule, match)
@@ -318,6 +360,22 @@ class Manager(object):
         # if any rule execution tries to alter the list of registered rules.
         # Making it immutable is the cherry on top.
         return tuple(sorted(matches, key=lambda x: x[0].priority_scale))
+
+    def check_url_callback(self, bot, url):
+        """Tell if the ``url`` matches any of the registered URL callbacks.
+
+        :param bot: Sopel instance
+        :type bot: :class:`sopel.bot.Sopel`
+        :param str url: URL to check
+        :return: ``True`` when ``url`` matches any URL callbacks,
+                 ``False`` otherwise
+        :rtype: bool
+        """
+        return any(
+            any(rule.parse(url))
+            for plugin_rules in self._url_callbacks.values()
+            for rule in plugin_rules
+        )
 
 
 class AbstractRule(object):
@@ -760,6 +818,14 @@ class Rule(AbstractRule):
     def match(self, bot, pretrigger):
         args = pretrigger.args
         text = args[-1] if args else ''
+
+        if not self.match_preconditions(bot, pretrigger):
+            return []
+
+        # parse text
+        return self.parse(text)
+
+    def match_preconditions(self, bot, pretrigger):
         event = pretrigger.event
         intent = pretrigger.tags.get('intent')
         nick = pretrigger.nick
@@ -768,20 +834,11 @@ class Rule(AbstractRule):
             event in ["PRIVMSG", "NOTICE"]
         )
 
-        # check event
-        if not self.match_event(event):
-            return []
-
-        # check intent
-        if not self.match_intent(intent):
-            return []
-
-        # check echo
-        if is_echo_message and not self.allow_echo():
-            return []
-
-        # parse text
-        return self.parse(text)
+        return (
+            self.match_event(event) and
+            self.match_intent(intent) and
+            (not is_echo_message or self.allow_echo())
+        )
 
     def parse(self, text):
         for regex in self._regexes:
@@ -1301,3 +1358,140 @@ class SearchRule(Rule):
             match = regex.search(text)
             if match:
                 yield match
+
+
+class URLCallback(Rule):
+    """URL callback rule definition.
+
+    A URL callback rule (or simply "a URL rule") detects URLs in a trigger
+    then it uses regular expressions to match at most once per URL per regular
+    expression, i.e. you can trigger between 0 and the number of regex the URL
+    callback has per URL in the IRC line.
+
+    Here is an example with a URL rule with the pattern
+    ``r'https://example\\.com/(.*)'``:
+
+    .. code-block:: irc
+
+        <user> https://example.com/test
+        <Bot> You triggered a URL callback, with the "/test" path
+        <user> and this URL is https://example.com/other can you get it?
+        <Bot> You triggered a URL callback, with the "/other" path
+
+    Like generic rules, URL callback rules are not triggered by any specific
+    name and they don't have aliases.
+
+    .. note::
+
+        Unlike generic rules and commands, the :func:`~sopel.plugin.url`
+        decorator expects its decorated function to have the bot and the
+        trigger with a third parameter: the ``match`` parameter.
+
+        To use this class with an existing URL callback handler, the
+        :meth:`from_callable` classmethod **must** be used: it will wrap the
+        handler to work as intended. In that case, the ``trigger`` and the
+        ``match`` arguments will be the same when the rule executes.
+
+        This behavior makes the ``match`` parameter obsolete.
+
+    """
+    @classmethod
+    def from_callable(cls, settings, handler):
+        url_regexes = getattr(handler, 'url_regex', []) or []
+        if not url_regexes:
+            raise RuntimeError(
+                'Invalid URL callback: %s' % handler)
+
+        kwargs = cls.kwargs_from_callable(handler)
+
+        @functools.wraps(handler)
+        def execute_handler(bot, trigger):
+            return handler(bot, trigger, match=trigger)
+
+        kwargs.update({
+            'handler': execute_handler,
+            'schemes': settings.core.auto_url_schemes,
+        })
+
+        return cls(url_regexes, **kwargs)
+
+    @classmethod
+    def from_callable_lazy(cls, settings, handler):
+        """Instantiate a rule object from a handler with lazy-loaded regexes.
+
+        :param settings: Sopel's settings
+        :type settings: :class:`sopel.config.Config`
+        :param callable handler: a function-based rule handler with a
+                                 lazy-loader for the regexes
+        :return: an instance of this class created from the ``handler``
+        :rtype: :class:`AbstractRule`
+
+        Similar to the :meth:`from_callable` classmethod, it requires a rule
+        handlers decorated with :mod:`sopel.plugin`'s decorators.
+
+        Unlike the :meth:`from_callable` classmethod, the regexes are not
+        already attached to the handler: its loader function will be used to
+        get the rule's regexes. See the :func:`sopel.plugin.url_lazy` decorator
+        for more information about the handler and its loader signatures.
+        """
+        url_lazy_loader = getattr(handler, 'url_lazy_loader', [])
+        if not url_lazy_loader:
+            raise RuntimeError(
+                'Invalid lazy loader URL callback: %s' % handler)
+
+        regexes = tuple(url_lazy_loader(settings))
+        kwargs = cls.kwargs_from_callable(handler)
+        kwargs.update({
+            'handler': handler,
+            'schemes': settings.core.auto_url_schemes,
+        })
+
+        return cls(regexes, **kwargs)
+
+    def __init__(self,
+                 regexes,
+                 schemes=None,
+                 **kwargs):
+        super(URLCallback, self).__init__(regexes, **kwargs)
+        # prevent mutability of registered schemes
+        self._schemes = tuple(schemes or URL_DEFAULT_SCHEMES)
+
+    def match(self, bot, pretrigger):
+        """Match URL(s) in a pretrigger according to the rule.
+
+        :param bot: Sopel instance
+        :type bot: :class:`sopel.bot.Sopel`
+        :param pretrigger: Line to match
+        :type pretrigger: :class:`sopel.trigger.PreTrigger`
+
+        This method looks for :attr:`URLs in the IRC line
+        <sopel.trigger.PreTrigger.urls>`, and for each it yields
+        :ref:`match objects <match-objects>` using its regexes.
+
+        .. seealso::
+
+            To detect URLs, this method uses the
+            :attr:`core.auto_url_schemes
+            <sopel.config.core_section.CoreSection.auto_url_schemes>` option.
+
+        """
+        if not self.match_preconditions(bot, pretrigger):
+            return
+
+        urls = (
+            url
+            for url in pretrigger.urls
+            if urlparse(url).scheme in self._schemes
+        )
+
+        # Parse URL for each found
+        for url in urls:
+            # TODO: convert to 'yield from' when dropping Python 2.7
+            for result in self.parse(url):
+                yield result
+
+    def parse(self, text):
+        for regex in self._regexes:
+            result = regex.search(text)
+            if result:
+                yield result
