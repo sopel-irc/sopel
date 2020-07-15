@@ -115,7 +115,7 @@ def _find_geoip_db(bot):
 
 @commands('iplookup', 'ip')
 @example('.ip 8.8.8.8',
-         r'\[IP\/Host Lookup\] Hostname: \S*dns\S*\.google\S* \| Location: United States \| ISP: AS15169 \S+',
+         r'\[IP\/Host Lookup\] Hostname: \S*dns\S*\.google\S*( \| .+?: .+?)+ \| ISP: AS15169 \S+',
          re=True,
          ignore='Downloading GeoIP database, please wait...',
          online=True)
