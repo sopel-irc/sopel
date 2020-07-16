@@ -96,7 +96,7 @@ class AbstractPluginHandler(object):
         :return: A human readable label for display purpose
         :rtype: str
 
-        This method should, at least, return ``module_name + S + "module"``.
+        This method should, at least, return ``module_name + S + "plugin"``.
         """
         raise NotImplementedError
 
@@ -234,7 +234,7 @@ class PyModulePlugin(AbstractPluginHandler):
         self._module = None
 
     def get_label(self):
-        default_label = '%s module' % self.name
+        default_label = '%s plugin' % self.name
         module_doc = getattr(self._module, '__doc__', None)
 
         if not self.is_loaded() or not module_doc:

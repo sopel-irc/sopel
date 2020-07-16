@@ -12,7 +12,7 @@ from sopel.plugins import handlers
 
 
 MOCK_MODULE_CONTENT = """# coding=utf-8
-\"\"\"module label
+\"\"\"plugin label
 \"\"\"
 """
 
@@ -36,7 +36,7 @@ def test_get_label_pymodule():
     assert 'source' in meta
 
     assert meta['name'] == 'coretasks'
-    assert meta['label'] == 'coretasks module', 'Expecting default label'
+    assert meta['label'] == 'coretasks plugin', 'Expecting default label'
     assert meta['type'] == handlers.PyModulePlugin.PLUGIN_TYPE
     assert meta['source'] == 'sopel.coretasks'
 
@@ -46,7 +46,7 @@ def test_get_label_pyfile(plugin_tmpfile):
     meta = plugin.get_meta_description()
 
     assert meta['name'] == 'file_mod'
-    assert meta['label'] == 'file_mod module', 'Expecting default label'
+    assert meta['label'] == 'file_mod plugin', 'Expecting default label'
     assert meta['type'] == handlers.PyFilePlugin.PLUGIN_TYPE
     assert meta['source'] == plugin_tmpfile.strpath
 
@@ -57,7 +57,7 @@ def test_get_label_pyfile_loaded(plugin_tmpfile):
     meta = plugin.get_meta_description()
 
     assert meta['name'] == 'file_mod'
-    assert meta['label'] == 'module label'
+    assert meta['label'] == 'plugin label'
     assert meta['type'] == handlers.PyFilePlugin.PLUGIN_TYPE
     assert meta['source'] == plugin_tmpfile.strpath
 
@@ -79,6 +79,6 @@ def test_get_label_entrypoint(plugin_tmpfile):
 
     meta = plugin.get_meta_description()
     assert meta['name'] == 'test_plugin'
-    assert meta['label'] == 'module label'
+    assert meta['label'] == 'plugin label'
     assert meta['type'] == handlers.EntryPointPlugin.PLUGIN_TYPE
     assert meta['source'] == 'test_plugin = file_mod'
