@@ -222,8 +222,13 @@ def get_example_test(tested_func, msg, results, privmsg, admin,
             # output content
             for expected, output in zip(results, outputs):
                 if use_regexp:
+                    message = (
+                        "Output does not match the regex:\n"
+                        "Pattern: %s\n"
+                        "Output: %s"
+                    ) % (expected, output)
                     if not re.match(expected, output):
-                        assert expected == output
+                        raise AssertionError(message)
                 else:
                     assert expected == output
 
