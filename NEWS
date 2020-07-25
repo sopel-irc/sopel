@@ -2,6 +2,20 @@ This file is used to auto-generate the "Changelog" section of Sopel's website.
 When adding new entries, follow the style guide in NEWS.spec.md to avoid
 causing problems with the site build.
 
+Changes between 7.0.4 and 7.0.5
+===============================
+
+Core changes
+------------
+
+* Update `ip` plugin's requirements to prevent install problems on older
+  versions of Python [[#1909][]]
+  * Also includes a tweak to one of DuckDuckGo's tests in the `search` plugin,
+    and a backported update to the `ip` plugin's tests.
+
+[#1909]: https://github.com/sopel-irc/sopel/pull/1909
+
+
 Changes between 7.0.3 and 7.0.4
 ===============================
 
