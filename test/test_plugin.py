@@ -66,5 +66,36 @@ def test_url_lazy():
     def mock(bot, trigger, match):
         return True
 
-    assert mock.url_lazy_loader == loader
+    assert mock.url_lazy_loaders == [loader]
+    assert not hasattr(mock, 'url_regex')
+
+
+def test_url_lazy_args():
+    def loader_1(settings):
+        return [r'\w+', '.*', r'\d+']
+
+    def loader_2(settings):
+        return [r'[a-z]+']
+
+    @plugin.url_lazy(loader_1, loader_2)
+    def mock(bot, trigger, match):
+        return True
+
+    assert mock.url_lazy_loaders == [loader_1, loader_2]
+    assert not hasattr(mock, 'url_regex')
+
+
+def test_url_lazy_multiple():
+    def loader_1(settings):
+        return [r'\w+', '.*', r'\d+']
+
+    def loader_2(settings):
+        return [r'[a-z]+']
+
+    @plugin.url_lazy(loader_2)
+    @plugin.url_lazy(loader_1)
+    def mock(bot, trigger, match):
+        return True
+
+    assert mock.url_lazy_loaders == [loader_1, loader_2]
     assert not hasattr(mock, 'url_regex')

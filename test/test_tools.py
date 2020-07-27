@@ -10,6 +10,13 @@ import pytest
 from sopel import tools
 from sopel.tools.time import seconds_to_human
 
+TMP_CONFIG = """
+[core]
+owner = testnick
+nick = TestBot
+enable = coretasks
+"""
+
 
 @pytest.fixture
 def nick():
@@ -192,3 +199,22 @@ def test_time_timedelta_formatter():
 
     payload = timedelta(hours=-4)
     assert seconds_to_human(payload) == 'in 4 hours'
+
+
+def test_chain_loaders(configfactory):
+    re_numeric = re.compile(r'\d+')
+    re_text = re.compile(r'\w+')
+    settings = configfactory('test.cfg', TMP_CONFIG)
+
+    def loader_numeric(settings):
+        return [re_numeric]
+
+    def loader_text(settings):
+        return [re_text]
+
+    loader = tools.chain_loaders(loader_numeric, loader_text)
+
+    assert callable(loader)
+    results = loader(settings)
+
+    assert results == [re_numeric, re_text]

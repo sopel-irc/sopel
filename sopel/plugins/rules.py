@@ -1430,16 +1430,28 @@ class URLCallback(Rule):
         handlers decorated with :mod:`sopel.plugin`'s decorators.
 
         Unlike the :meth:`from_callable` classmethod, the regexes are not
-        already attached to the handler: its loader function will be used to
+        already attached to the handler: its loader functions will be used to
         get the rule's regexes. See the :func:`sopel.plugin.url_lazy` decorator
-        for more information about the handler and its loader signatures.
+        for more information about the handler and the loaders' signatures.
+
+        .. seealso::
+
+            The handler can have more than one loader attached. In that case,
+            these loaders are chained with :func:`sopel.tools.chain_loaders`.
+
         """
-        url_lazy_loader = getattr(handler, 'url_lazy_loader', [])
-        if not url_lazy_loader:
+        url_lazy_loaders = getattr(handler, 'url_lazy_loaders', [])
+        if not url_lazy_loaders:
             raise RuntimeError(
                 'Invalid lazy loader URL callback: %s' % handler)
 
-        regexes = tuple(url_lazy_loader(settings))
+        loader = tools.chain_loaders(*url_lazy_loaders)
+        regexes = loader(settings)
+
+        if not regexes:
+            raise RuntimeError(
+                'Invalid lazy loader URL callback: %s' % handler)
+
         kwargs = cls.kwargs_from_callable(handler)
         kwargs.update({
             'handler': handler,

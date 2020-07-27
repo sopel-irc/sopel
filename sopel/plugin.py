@@ -956,15 +956,15 @@ def url(*url_rules):
     return actual_decorator
 
 
-def url_lazy(loader):
+def url_lazy(*loaders):
     """Decorate a function to handle URL, using lazy-loading for its regex.
 
-    :param loader: a callable to generate a list of regexes when the bot is
-                   loading this URL callback
-    :type loader: :term:`function`
+    :param loaders: one or more functions to generate a list of **compiled**
+                    regexes to match URLs.
+    :type loaders: :term:`function`
 
-    The ``loader`` function must accept a ``settings`` parameter and return a
-    list (or tuple) of compiled regular expressions::
+    Each ``loader`` function must accept a ``settings`` parameter and return a
+    list (or tuple) of **compiled** regular expressions::
 
         import re
 
@@ -975,10 +975,9 @@ def url_lazy(loader):
     callbacks to get its regexes. The ``settings`` argument will be the bot's
     :class:`sopel.config.Config` object.
 
-    If the ``loader`` function raises an
-    :exc:`~sopel.plugins.exceptions.ImproperlyConfigured` exception, the URL
-    callback will be ignored. This exception can be used with a message that
-    will be logged as an error; it will not fail the plugin's loading.
+    If any of the ``loader`` functions raises a
+    :exc:`~sopel.plugins.exceptions.PluginError` exception, the URL callback
+    will be ignored; it will not fail the plugin's loading.
 
     The decorated function will behave like any other :func:`callable`::
 
@@ -988,18 +987,21 @@ def url_lazy(loader):
         def my_url_handler(bot, trigger):
             bot.say('URL found: %s' % trigger.group(0))
 
+    Unlike the :func:`url` decorator, the handler does not have a ``match``
+    parameter.
+
     .. versionadded:: 7.1
 
-    .. important::
+    .. seealso::
 
-        There are few differences with the :func:`url` decorator:
-
-        * the decorated callable does **not** have a ``match`` parameter
-        * the decorated callable accepts **one and only one** ``loader``
+        When more than one loader is provided, they will be chained together
+        with the :func:`sopel.tools.chain_loaders` function.
 
     """
     def decorator(function):
-        function.url_lazy_loader = loader
+        if not hasattr(function, 'url_lazy_loaders'):
+            function.url_lazy_loaders = []
+        function.url_lazy_loaders.extend(loaders)
         return function
     return decorator
 

@@ -152,7 +152,7 @@ def is_limitable(obj):
         'nickname_commands',
         'action_commands',
         'url_regex',
-        'url_lazy_loader',
+        'url_lazy_loaders',
     )
     allowed = any(hasattr(obj, attr) for attr in allowed_attrs)
 
@@ -179,7 +179,7 @@ def is_triggerable(obj):
     forbidden_attrs = (
         'interval',
         'url_regex',
-        'url_lazy_loader',
+        'url_lazy_loaders',
     )
     forbidden = any(hasattr(obj, attr) for attr in forbidden_attrs)
 
@@ -220,7 +220,7 @@ def is_url_callback(obj):
 
     allowed_attrs = (
         'url_regex',
-        'url_lazy_loader',
+        'url_lazy_loaders',
     )
     allowed = any(hasattr(obj, attr) for attr in allowed_attrs)
 

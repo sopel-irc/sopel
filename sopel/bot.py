@@ -573,14 +573,14 @@ class Sopel(irc.AbstractBot):
     def register_urls(self, urls):
         for func in urls:
             url_regex = getattr(func, 'url_regex', [])
-            url_lazy_loader = getattr(func, 'url_lazy_loader', None)
+            url_lazy_loaders = getattr(func, 'url_lazy_loaders', None)
 
             if url_regex:
                 rule = plugin_rules.URLCallback.from_callable(
                     self.settings, func)
                 self._rules_manager.register_url_callback(rule)
 
-            if url_lazy_loader:
+            if url_lazy_loaders:
                 try:
                     rule = plugin_rules.URLCallback.from_callable_lazy(
                         self.settings, func)
