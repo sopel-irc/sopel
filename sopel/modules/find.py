@@ -6,13 +6,15 @@ using the sed notation (s///) commonly found in vi/vim.
 
 Copyright 2011, Michael Yanovich, yanovich.net
 Copyright 2013, Elsie Powell, embolalia.com
-Includes contributions from: dgw, Matt Meinwald, and Morgan Goose
+Copyright 2020, dgw, technobabbl.es
+Includes contributions from: Matt Meinwald, and Morgan Goose
 Licensed under the Eiffel Forum License 2.
 
 https://sopel.chat
 """
 from __future__ import absolute_import, division, print_function, unicode_literals
 
+from collections import deque
 import re
 
 from sopel import module
@@ -43,20 +45,19 @@ def collectlines(bot, trigger):
     if trigger.sender not in bot.memory['find_lines']:
         bot.memory['find_lines'][trigger.sender] = SopelMemory()
     if trigger.nick not in bot.memory['find_lines'][trigger.sender]:
-        bot.memory['find_lines'][trigger.sender][trigger.nick] = list()
+        bot.memory['find_lines'][trigger.sender][trigger.nick] = deque(maxlen=10)
 
     # Update in-memory list of the user's lines in the channel
     line_list = bot.memory['find_lines'][trigger.sender][trigger.nick]
     line = trigger.group()
     if line.startswith("s/"):  # Don't remember substitutions
         return
+    # store messages in reverse order (most recent first)
     elif line.startswith("\x01ACTION"):  # For /me messages
         line = line[:-1]
-        line_list.append(line)
+        line_list.appendleft(line)
     else:
-        line_list.append(line)
-
-    del line_list[:-10]  # Keep the log to 10 lines per person
+        line_list.appendleft(line)
 
 
 def _cleanup_channel(bot, channel):
@@ -136,7 +137,7 @@ def findandreplace(bot, trigger):
     rnick = Identifier(trigger.group(1) or trigger.nick)
 
     # only do something if there is conversation to work with
-    history = bot.memory['find_lines'].get(trigger.sender, {}).get(rnick, [])
+    history = bot.memory['find_lines'].get(trigger.sender, {}).get(rnick, None)
     if not history:
         return
 
@@ -165,7 +166,7 @@ def findandreplace(bot, trigger):
     # Look back through the user's lines in the channel until you find a line
     # where the replacement works
     new_phrase = None
-    for line in reversed(history):
+    for line in history:
         if line.startswith("\x01ACTION"):
             me = True  # /me command
             line = line[8:]
@@ -180,8 +181,7 @@ def findandreplace(bot, trigger):
 
     # Save the new "edited" message.
     action = (me and '\x01ACTION ') or ''  # If /me message, prepend \x01ACTION
-    history.append(action + new_phrase)
-    del history[:-10]
+    history.appendleft(action + new_phrase)  # history is in most-recent-first order
 
     # output
     if not me:
