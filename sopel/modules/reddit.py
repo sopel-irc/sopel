@@ -46,6 +46,7 @@ user_url = r'%s/u(?:ser)?/([\w-]+)' % domain
 comment_url = r'%s/r/\S+?/comments/\S+?/\S+?/([\w-]+)' % domain
 image_url = r'https?://i\.redd\.it/\S+'
 video_url = r'https?://v\.redd\.it/([\w-]+)'
+gallery_url = r'https?://(?:www\.)?reddit\.com/gallery/([\w-]+)'
 
 
 def setup(bot):
@@ -127,6 +128,12 @@ def video_info(bot, trigger, match):
 def rpost_info(bot, trigger, match):
     match = match or trigger
     return say_post_info(bot, trigger, match.group(1))
+
+
+@url(gallery_url)
+def rgallery_info(bot, trigger, match):
+    match = match or trigger
+    return say_post_info(bot, trigger, match.group(1), False)
 
 
 def say_post_info(bot, trigger, id_, show_link=True, show_comments_link=False):
