@@ -407,3 +407,4 @@ def unset_config(bot, trigger):
 def save_config(bot, trigger):
     """Save state of Sopel's config object to the configuration file."""
     bot.config.save()
+    bot.reply('Configuration file saved.')
