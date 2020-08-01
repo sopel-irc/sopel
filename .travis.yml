@@ -1,6 +1,8 @@
+version: ~> 1.0
+os: linux  # we'll extend to other platforms Eventually™
 dist: bionic  # most recent base image by default
 language: python
-matrix:
+jobs:
   include:
     - name: "Python 2.7 on Bionic"
       python: 2.7
@@ -27,7 +29,6 @@ branches:
     - /^\d+\.\d+\.x$/  # allows building maintenance branches
     - /^v?\d+\.\d+(\.\d+)?(-\S*)?$/  # allows building version tags
     - /^travis-.+$/  # allows branch names intended to test Travis changes/problems
-sudo: false  # Enables running on faster infrastructure.
 cache:
   directories:
     - $HOME/.cache/pip
