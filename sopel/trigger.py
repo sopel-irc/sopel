@@ -6,7 +6,7 @@ import datetime
 import re
 import sys
 
-from sopel import tools
+from sopel import formatting, tools
 from sopel.tools import web
 
 
@@ -90,6 +90,10 @@ class PreTrigger(object):
         This is for ``PRIVMSG`` and ``NOTICE`` messages only. For other
         messages, this will be an empty ``tuple``.
 
+    .. py:attribute:: plain
+
+        The last argument of the IRC command with control codes stripped.
+
     .. py:attribute:: time
 
         The time when the message was received.
@@ -109,6 +113,7 @@ class PreTrigger(object):
         line = line.strip('\r\n')
         self.line = line
         self.urls = tuple()
+        self.plain = ''
 
         # Break off IRCv3 message tags, if present
         self.tags = {}
@@ -189,6 +194,10 @@ class PreTrigger(object):
         if self.event == 'JOIN' and len(self.args) == 3:
             # Account is the second arg `...JOIN #Sopel account :realname`
             self.tags['account'] = self.args[1]
+
+        # get plain text message
+        if self.args:
+            self.plain = formatting.plain(self.args[-1])
 
 
 class Trigger(unicode):
@@ -337,6 +346,13 @@ class Trigger(unicode):
 
     URLs are listed only for ``PRIVMSG`` or a ``NOTICE``, otherwise this is
     an empty tuple.
+    """
+    plain = property(lambda self: self._pretrigger.plain)
+    """The text without formatting control codes.
+
+    :type: str
+
+    This is the text of the trigger object without formatting control codes.
     """
     tags = property(lambda self: self._pretrigger.tags)
     """A map of the IRCv3 message tags on the message.
