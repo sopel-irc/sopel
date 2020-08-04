@@ -903,20 +903,17 @@ def url(*url_rules):
     :param str url_rules: one or more regex pattern(s) to match URLs
 
     This decorator takes a regex string that will be matched against URLs in a
-    message. The function it decorates, in addition to the bot and trigger,
-    must take a third argument ``match``, which is the regular expression match
-    of the URL::
+    message. The function it decorates is like any other callable::
 
         from sopel import plugin
 
         @plugin.url(r'https://example.com/bugs/([a-z0-9]+)')
         @plugin.url(r'https://short.com/([a-z0-9]+)')
-        def handle_example_bugs(bot, trigger, match):
-            bot.reply('Found bug ID #%s' % match.group(1))
+        def handle_example_bugs(bot, trigger):
+            bot.reply('Found bug ID #%s' % trigger.group(1))
 
-    Both ``trigger`` and ``match`` represent the same match on the URL. The
-    ``match`` object is a Python built-in :ref:`match object <match-objects>`, while
-    ``trigger`` is an usual :class:`~sopel.trigger.Trigger` object.
+    The ``bot`` is an instance of :class:`~sopel.bot.SopelWrapper`, and
+    ``trigger`` is the usual :class:`~sopel.trigger.Trigger` object.
 
     Under the hood, when Sopel collects the decorated handler it uses an
     instance of :class:`sopel.plugins.rules.URLCallback` to register it to its
@@ -934,9 +931,11 @@ def url(*url_rules):
 
     .. versionchanged:: 7.1
 
-        The ``trigger`` parameter now represents the same match as the
-        ``match`` parameter, making ``match`` an obsolete parameter, kept
-        for backward compatibility.
+        The ``match`` parameter is obsolete and can be omitted. When present
+        however, it represents the same match as the ``trigger`` argument.
+
+        This behavior will be kept for backward compatibility and will be
+        removed in Sopel 9.
 
     .. seealso::
 
@@ -986,9 +985,6 @@ def url_lazy(*loaders):
         @plugin.url_lazy(loader)
         def my_url_handler(bot, trigger):
             bot.say('URL found: %s' % trigger.group(0))
-
-    Unlike the :func:`url` decorator, the handler does not have a ``match``
-    parameter.
 
     .. versionadded:: 7.1
 

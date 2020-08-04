@@ -38,6 +38,12 @@ except ImportError:
     # TODO: remove when dropping Python 2.7
     from urlparse import urlparse
 
+try:
+    from inspect import getfullargspec as inspect_getargspec
+except ImportError:
+    # TODO: remove when dropping Python 2.7
+    from inspect import getargspec as inspect_getargspec
+
 
 __all__ = [
     'Manager',
@@ -1392,11 +1398,13 @@ class URLCallback(Rule):
         handler to work as intended. In that case, the ``trigger`` and the
         ``match`` arguments will be the same when the rule executes.
 
-        This behavior makes the ``match`` parameter obsolete.
+        This behavior makes the ``match`` parameter obsolete, which will be
+        removed in Sopel 9.
 
     """
     @classmethod
     def from_callable(cls, settings, handler):
+        execute_handler = handler
         url_regexes = getattr(handler, 'url_regex', []) or []
         if not url_regexes:
             raise RuntimeError(
@@ -1404,9 +1412,20 @@ class URLCallback(Rule):
 
         kwargs = cls.kwargs_from_callable(handler)
 
-        @functools.wraps(handler)
-        def execute_handler(bot, trigger):
-            return handler(bot, trigger, match=trigger)
+        # do we need to handle the match parameter?
+        # old style URL callback: callable(bot, trigger, match)
+        # new style: callable(bot, trigger)
+        match_count = 3
+        if inspect.ismethod(handler):
+            # account for the 'self' parameter when the handler is a method
+            match_count = 4
+
+        argspec = inspect_getargspec(handler)
+
+        if len(argspec.args) >= match_count:
+            @functools.wraps(handler)
+            def execute_handler(bot, trigger):
+                return handler(bot, trigger, match=trigger)
 
         kwargs.update({
             'handler': execute_handler,

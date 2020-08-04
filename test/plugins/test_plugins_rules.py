@@ -2565,6 +2565,37 @@ def test_url_callback_from_callable(mockbot):
     assert not any(rule.match(mockbot, pretrigger))
 
 
+def test_url_callback_from_callable_no_match_parameter(mockbot):
+    base = ':Foo!foo@example.com PRIVMSG #sopel'
+    link = 'https://example.com/test'
+
+    # prepare callable
+    @module.url(re.escape('https://example.com/') + r'(\w+)')
+    def handler(wrapped, trigger):
+        wrapped.say('Hi!')
+        return 'The return value: %s' % trigger.group(0)
+
+    loader.clean_callable(handler, mockbot.settings)
+    handler.plugin_name = 'testplugin'
+
+    # create rule from a cleaned callable
+    rule = rules.URLCallback.from_callable(mockbot.settings, handler)
+    assert str(rule) == '<URLCallback testplugin.handler (1)>'
+
+    # execute based on the match
+    line = '%s :before text %s and after text' % (base, link)
+    pretrigger = trigger.PreTrigger(mockbot.nick, line)
+    results = list(rule.match(mockbot, pretrigger))
+
+    match_trigger = trigger.Trigger(
+        mockbot.settings, pretrigger, results[0], account=None)
+    wrapped = bot.SopelWrapper(mockbot, match_trigger)
+    result = rule.execute(wrapped, match_trigger)
+
+    assert mockbot.backend.message_sent == rawlist('PRIVMSG #sopel :Hi!')
+    assert result == 'The return value: https://example.com/test'
+
+
 def test_url_callback_from_callable_lazy(mockbot):
     base = ':Foo!foo@example.com PRIVMSG #sopel'
     link_1 = 'https://example.com/test'
