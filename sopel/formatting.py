@@ -8,6 +8,7 @@
 # Licensed under the Eiffel Forum License 2.
 from __future__ import absolute_import, division, print_function, unicode_literals
 
+import re
 import string
 import sys
 
@@ -32,6 +33,7 @@ __all__ = [
     'strikethrough',
     'monospace',
     'reverse',
+    'plain',
     # utility class
     'colors',
 ]
@@ -59,6 +61,31 @@ CONTROL_MONOSPACE = '\x11'
 """The control code to start or end monospace formatting."""
 CONTROL_REVERSE = '\x16'
 """The control code to start or end reverse-color formatting."""
+
+# Regex to detect Control Pattern
+
+COLOR_PATTERN = re.escape(CONTROL_COLOR) + r'((\d{1,2},\d{2})|\d{2})?'
+HEX_COLOR_PATTERN = '%s(%s)?' % (
+    re.escape(CONTROL_HEX_COLOR),
+    '|'.join([
+        '(' + ','.join([r'[a-fA-F0-9]{6}', r'[a-fA-F0-9]{6}']) + ')',
+        r'[a-fA-F0-9]{6}'
+    ])
+)
+
+PLAIN_PATTERN = '|'.join([
+    # strip color code
+    '(' + COLOR_PATTERN + ')',
+    '(' + HEX_COLOR_PATTERN + ')',
+    '(' + re.escape(CONTROL_BOLD) + ')',
+    '(' + re.escape(CONTROL_ITALIC) + ')',
+    '(' + re.escape(CONTROL_UNDERLINE) + ')',
+    '(' + re.escape(CONTROL_STRIKETHROUGH) + ')',
+    '(' + re.escape(CONTROL_MONOSPACE) + ')',
+    '(' + re.escape(CONTROL_REVERSE) + ')',
+    '(' + re.escape(CONTROL_NORMAL) + ')',
+])
+PLAIN_REGEX = re.compile(PLAIN_PATTERN)
 
 
 # TODO when we can move to 3.3+ completely, make this an Enum.
@@ -247,3 +274,12 @@ def reverse(text):
         that understand it (e.g. mIRC) can be unpredictable. Use it carefully.
     """
     return ''.join([CONTROL_REVERSE, text, CONTROL_REVERSE])
+
+
+def plain(text):
+    """Return the text without any IRC formatting.
+
+    :param str text: text with potential IRC formatting control code(s)
+    :rtype: str
+    """
+    return PLAIN_REGEX.sub('', text)

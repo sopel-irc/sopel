@@ -4,7 +4,19 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 import pytest
 
-from sopel.formatting import bold, color, colors, hex_color, italic, monospace, reverse, strikethrough, underline
+from sopel.formatting import (
+    bold,
+    color,
+    colors,
+    CONTROL_NORMAL,
+    hex_color,
+    italic,
+    monospace,
+    plain,
+    reverse,
+    strikethrough,
+    underline,
+)
 
 
 def test_color():
@@ -54,3 +66,55 @@ def test_monospace():
 def test_reverse():
     text = 'Hello World'
     assert reverse(text) == '\x16' + text + '\x16'
+
+
+def test_plain_color():
+    text = 'some text'
+    assert plain(color(text, colors.PINK)) == text
+    assert plain(color(text, colors.PINK, colors.TEAL)) == text
+
+
+def test_plain_hex_color():
+    text = 'some text'
+    assert plain(hex_color(text, 'ff0098')) == text
+    assert plain(hex_color(text, 'ff0098', '00b571')) == text
+
+
+def test_plain_bold():
+    text = 'some text'
+    assert plain(bold(text)) == text
+
+
+def test_plain_italic():
+    text = 'some text'
+    assert plain(italic(text)) == text
+
+
+def test_plain_underline():
+    text = 'some text'
+    assert plain(underline(text)) == text
+
+
+def test_plain_strikethrough():
+    text = 'some text'
+    assert plain(strikethrough(text)) == text
+
+
+def test_plain_monospace():
+    text = 'some text'
+    assert plain(monospace(text)) == text
+
+
+def test_plain_reverse():
+    text = 'some text'
+    assert plain(reverse(text)) == text
+
+
+def test_plain_reset():
+    text = 'some%s text' % CONTROL_NORMAL
+    assert plain(text) == 'some text'
+
+
+def test_plain_unknown():
+    text = 'some \x99text'
+    assert plain(text) == text, 'An unknown control code must not be stripped'
