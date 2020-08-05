@@ -131,7 +131,7 @@ def ip(bot, trigger):
         query = trigger.group(2).strip()
     else:
         # Need to get the host for the username
-        username = trigger.group(2).strip()
+        username = trigger.group(2).strip().lower()
         user_in_botdb = bot.users.get(username)
         if user_in_botdb is not None:
             query = user_in_botdb.host
