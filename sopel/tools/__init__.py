@@ -214,9 +214,11 @@ def compile_rule(nick, pattern, alias_nicks):
         nick = re.escape(nick)
 
     pattern = pattern.replace('$nickname', nick)
-    pattern = pattern.replace('$nick', r'{}[,:]\s+'.format(nick))
+    pattern = pattern.replace('$nick ', r'{}[,:]\s*'.format(nick))  # @rule('$nick hi')
+    pattern = pattern.replace('$nick', r'{}[,:]\s+'.format(nick))  # @rule('$nickhi')
     flags = re.IGNORECASE
     if '\n' in pattern:
+        # See https://docs.python.org/3/library/re.html#re.VERBOSE
         flags |= re.VERBOSE
     return re.compile(pattern, flags)
 
