@@ -49,6 +49,13 @@ encounters such an error case.
 
 
 def run(settings, pid_file, daemon=False):
+    """Run the bot with these ``settings``.
+
+    :param settings: settings with which to run the bot
+    :type settings: :class:`sopel.config.Config`
+    :param str pid_file: path to the bot's PID file
+    :param bool daemon: tell if the bot should be run as a daemon
+    """
     delay = 20
 
     # Acts as a welcome message, showing the program and platform version at start
@@ -114,6 +121,11 @@ def run(settings, pid_file, daemon=False):
 
 
 def add_legacy_options(parser):
+    """Add legacy options to the argument parser.
+
+    :param parser: argument parser
+    :type parser: :class:`argparse.ArgumentParser`
+    """
     # TL;DR: option -d/--fork is not deprecated.
     # When the legacy action is replaced in Sopel 8, 'start' will become the
     # new default action, with its arguments.
@@ -170,7 +182,11 @@ def add_legacy_options(parser):
 
 
 def build_parser():
-    """Build an ``argparse.ArgumentParser`` for the bot"""
+    """Build an argument parser for the bot.
+
+    :return: the argument parser
+    :rtype: :class:`argparse.ArgumentParser`
+    """
     parser = argparse.ArgumentParser(description='Sopel IRC Bot',
                                      usage='%(prog)s [options]')
     add_legacy_options(parser)
@@ -313,7 +329,7 @@ def get_configuration(options):
     """Get or create a configuration object from ``options``.
 
     :param options: argument parser's options
-    :type options: ``argparse.Namespace``
+    :type options: :class:`argparse.Namespace`
     :return: a configuration object
     :rtype: :class:`sopel.config.Config`
 
@@ -385,7 +401,11 @@ def get_running_pid(filename):
 
 
 def command_start(opts):
-    """Start a Sopel instance"""
+    """Start a Sopel instance.
+
+    :param opts: parsed arguments
+    :type opts: :class:`argparse.Namespace`
+    """
     # Step One: Get the configuration file and prepare to run
     try:
         settings = get_configuration(opts)
@@ -432,7 +452,11 @@ def command_start(opts):
 
 
 def command_configure(opts):
-    """Sopel Configuration Wizard"""
+    """Sopel Configuration Wizard.
+
+    :param opts: parsed arguments
+    :type opts: :class:`argparse.Namespace`
+    """
     configpath = utils.find_config(opts.configdir, opts.config)
     if opts.plugins:
         utils.plugins_wizard(configpath)
@@ -441,7 +465,11 @@ def command_configure(opts):
 
 
 def command_stop(opts):
-    """Stop a running Sopel instance"""
+    """Stop a running Sopel instance.
+
+    :param opts: parsed arguments
+    :type opts: :class:`argparse.Namespace`
+    """
     # Get Configuration
     try:
         settings = utils.load_settings(opts)
@@ -480,7 +508,11 @@ def command_stop(opts):
 
 
 def command_restart(opts):
-    """Restart a running Sopel instance"""
+    """Restart a running Sopel instance.
+
+    :param opts: parsed arguments
+    :type opts: :class:`argparse.Namespace`
+    """
     # Get Configuration
     try:
         settings = utils.load_settings(opts)
@@ -513,7 +545,10 @@ def command_restart(opts):
 
 
 def command_legacy(opts):
-    """Legacy Sopel run script
+    """Legacy Sopel run script.
+
+    :param opts: parsed arguments
+    :type opts: :class:`argparse.Namespace`
 
     The ``legacy`` command manages the old-style ``sopel`` command line tool.
     Most of its features are replaced by the following commands:
@@ -644,7 +679,10 @@ def command_legacy(opts):
 
 
 def main(argv=None):
-    """Sopel run script entry point"""
+    """Sopel run script entry point.
+
+    :param list argv: command line arguments
+    """
     try:
         # Step One: Parse The Command Line
         parser = build_parser()

@@ -39,7 +39,7 @@ def _colored(text, color, reset=True):
 
 
 def green(text, reset=True):
-    """Add ANSI escape sequences to make the text green in term
+    """Add ANSI escape sequences to make the text green in terminal.
 
     :param str text: text to colorized in green
     :param bool reset: if the text color must be reset after (default ``True``)
@@ -50,7 +50,7 @@ def green(text, reset=True):
 
 
 def yellow(text, reset=True):
-    """Add ANSI escape sequences to make the text yellow in term
+    """Add ANSI escape sequences to make the text yellow in terminal.
 
     :param str text: text to colorized in yellow
     :param bool reset: if the text color must be reset after (default ``True``)
@@ -61,7 +61,7 @@ def yellow(text, reset=True):
 
 
 def red(text, reset=True):
-    """Add ANSI escape sequences to make the text red in term
+    """Add ANSI escape sequences to make the text red in terminal.
 
     :param str text: text to colorized in red
     :param bool reset: if the text color must be reset after (default ``True``)
@@ -72,7 +72,7 @@ def red(text, reset=True):
 
 
 def wizard(filename):
-    """Global Configuration Wizard
+    """Global Configuration Wizard.
 
     :param str filename: name of the new file to be created
     :return: the created configuration object
@@ -127,7 +127,7 @@ def wizard(filename):
 
 
 def plugins_wizard(filename):
-    """Plugins Configuration Wizard
+    """Plugins Configuration Wizard.
 
     :param str filename: path to an existing Sopel configuration
     :return: the configuration object
@@ -173,7 +173,7 @@ def _plugin_wizard(settings, plugin):
 
 
 def enumerate_configs(config_dir, extension='.cfg'):
-    """List configuration files from ``config_dir`` with ``extension``
+    """List configuration files from ``config_dir`` with ``extension``.
 
     :param str config_dir: path to the configuration directory
     :param str extension: configuration file's extension (default to ``.cfg``)
@@ -201,7 +201,7 @@ def enumerate_configs(config_dir, extension='.cfg'):
 
 
 def find_config(config_dir, name, extension='.cfg'):
-    """Build the absolute path for the given configuration file ``name``
+    """Build the absolute path for the given configuration file ``name``.
 
     :param str config_dir: path to the configuration directory
     :param str name: configuration file ``name``
