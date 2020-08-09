@@ -8,6 +8,7 @@ from sopel.formatting import (
     bold,
     color,
     colors,
+    CONTROL_NON_PRINTING,
     CONTROL_NORMAL,
     hex_color,
     italic,
@@ -112,6 +113,12 @@ def test_plain_reverse():
 
 def test_plain_reset():
     text = 'some%s text' % CONTROL_NORMAL
+    assert plain(text) == 'some text'
+
+
+@pytest.mark.parametrize('code', CONTROL_NON_PRINTING)
+def test_plain_non_printing(code):
+    text = 'some%s text' % code
     assert plain(text) == 'some text'
 
 
