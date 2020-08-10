@@ -277,11 +277,11 @@ def check_callbacks(bot, url):
 
     :param bot: Sopel instance
     :param str url: URL to check
-    :return: True if ``url`` is excluded or matches any URL Callback pattern
+    :return: True if ``url`` is excluded or matches any URL callback pattern
 
     This function looks at the ``bot.memory`` for ``url_exclude`` patterns and
     it returns ``True`` if any matches the given ``url``. Otherwise, it looks
-    at the ``bot``'s URL Callback patterns, and it returns ``True`` if any
+    at the ``bot``'s URL callback patterns, and it returns ``True`` if any
     matches, ``False`` otherwise.
 
     .. seealso::
@@ -297,7 +297,11 @@ def check_callbacks(bot, url):
     """
     # Check if it matches the exclusion list first
     matched = any(regex.search(url) for regex in bot.memory['url_exclude'])
-    return matched or any(bot.search_url_callbacks(url))
+    return (
+        matched or
+        any(bot.search_url_callbacks(url)) or
+        bot.rules.check_url_callback(bot, url)
+    )
 
 
 def find_title(url, verify=True):

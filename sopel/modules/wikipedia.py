@@ -13,7 +13,7 @@ import re
 from requests import get
 
 from sopel.config.types import StaticSection, ValidatedAttribute
-from sopel.module import commands, example, NOLIMIT, url
+from sopel.module import commands, example, NOLIMIT, output_prefix, url
 from sopel.tools.web import quote, unquote
 
 try:  # TODO: Remove fallback when dropping py2
@@ -133,9 +133,9 @@ def say_snippet(bot, trigger, server, query, show_url=True):
         snippet = mw_snippet(server, query)
     except KeyError:
         if show_url:
-            bot.say("[WIKIPEDIA] Error fetching snippet for \"{}\".".format(page_name))
+            bot.say("Error fetching snippet for \"{}\".".format(page_name))
         return
-    msg = '[WIKIPEDIA] {} | "{}"'.format(page_name, snippet)
+    msg = '{} | "{}"'.format(page_name, snippet)
     msg_url = msg + ' | https://{}/wiki/{}'.format(server, query)
     if msg_url == trigger:  # prevents triggering on another instance of Sopel
         return
@@ -166,10 +166,10 @@ def say_section(bot, trigger, server, query, section):
 
     snippet = mw_section(server, query, section)
     if not snippet:
-        bot.say("[WIKIPEDIA] Error fetching section \"{}\" for page \"{}\".".format(section, page_name))
+        bot.say("Error fetching section \"{}\" for page \"{}\".".format(section, page_name))
         return
 
-    msg = '[WIKIPEDIA] {} - {} | "{}"'.format(page_name, section.replace('_', ' '), snippet)
+    msg = '{} - {} | "{}"'.format(page_name, section.replace('_', ' '), snippet)
     bot.say(msg)
 
 
@@ -217,6 +217,7 @@ def mw_section(server, query, section):
 
 # Matches a wikipedia page (excluding spaces and #, but not /File: links), with a separate optional field for the section
 @url(r'https?:\/\/([a-z]+\.wikipedia\.org)\/wiki\/((?!File\:)[^ #]+)#?([^ ]*)')
+@output_prefix('[WIKIPEDIA] ')
 def mw_info(bot, trigger, match=None):
     """Retrieves and outputs a snippet of the linked page."""
     if match.group(3):
@@ -230,6 +231,7 @@ def mw_info(bot, trigger, match=None):
 
 @commands('w', 'wiki', 'wik')
 @example('.w San Francisco')
+@output_prefix('[WIKIPEDIA] ')
 def wikipedia(bot, trigger):
     lang = bot.config.wikipedia.default_lang
 

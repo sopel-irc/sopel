@@ -206,6 +206,34 @@ def test_manager_rule_and_command(mockbot):
     assert list(manager.get_all_nick_commands()) == []
 
 
+def test_manager_url_callback(mockbot):
+    regex = re.compile(r'https://example\.com/.*')
+    rule = rules.URLCallback([regex], plugin='testplugin', label='testrule')
+    manager = rules.Manager()
+    manager.register_url_callback(rule)
+
+    assert manager.has_url_callback('testrule')
+    assert manager.has_url_callback('testrule', plugin='testplugin')
+    assert not manager.has_url_callback('testrule', plugin='not-plugin')
+
+    line = ':Foo!foo@example.com PRIVMSG #sopel :https://example.com/'
+    pretrigger = trigger.PreTrigger(mockbot.nick, line)
+
+    items = manager.get_triggered_rules(mockbot, pretrigger)
+    assert len(items) == 1, 'Exactly one rule must match'
+
+    result = items[0]
+    assert len(result) == 2, 'Result must contain two items: (rule, match)'
+
+    result_rule, result_match = items[0]
+    assert result_rule == rule
+    assert result_match.group(0) == 'https://example.com/'
+
+    assert manager.check_url_callback(mockbot, 'https://example.com/')
+    assert manager.check_url_callback(mockbot, 'https://example.com/test')
+    assert not manager.check_url_callback(mockbot, 'https://not-example.com/')
+
+
 def test_manager_unregister_plugin(mockbot):
     regex = re.compile('.*')
     a_rule = rules.Rule([regex], plugin='plugin_a', label='the_rule')
@@ -237,6 +265,40 @@ def test_manager_unregister_plugin(mockbot):
     assert len(items) == 2, 'Only 2 must match by now'
     assert b_rule in items[0]
     assert b_command in items[1]
+
+
+def test_manager_unregister_plugin_url_callbacks(mockbot):
+    regex = re.compile('.*')
+    a_rule = rules.Rule([regex], plugin='plugin_a', label='the_rule')
+    b_rule = rules.Rule([regex], plugin='plugin_b', label='the_rule')
+    a_callback = rules.URLCallback([regex], plugin='plugin_a', label='the_url')
+    b_callback = rules.URLCallback([regex], plugin='plugin_b', label='the_url')
+
+    manager = rules.Manager()
+    manager.register(a_rule)
+    manager.register_url_callback(a_callback)
+    manager.register(b_rule)
+    manager.register_url_callback(b_callback)
+
+    line = ':Foo!foo@example.com PRIVMSG #sopel :https://example.com/test'
+    pretrigger = trigger.PreTrigger(mockbot.nick, line)
+
+    items = manager.get_triggered_rules(mockbot, pretrigger)
+    assert len(items) == 4, 'All 4 rules must match'
+    assert manager.has_rule('the_rule')
+    assert manager.has_url_callback('the_url')
+
+    result = manager.unregister_plugin('plugin_a')
+    assert result == 2
+    assert manager.has_rule('the_rule')
+    assert not manager.has_rule('the_rule', plugin='plugin_a')
+    assert manager.has_url_callback('the_url')
+    assert not manager.has_url_callback('the_url', plugin='plugin_a')
+
+    items = manager.get_triggered_rules(mockbot, pretrigger)
+    assert len(items) == 2, 'Only 2 must match by now'
+    assert b_rule in items[0]
+    assert b_callback in items[1]
 
 
 def test_manager_unregister_plugin_unknown():
@@ -2311,3 +2373,303 @@ def test_search_rule_from_callable(mockbot):
 
     assert len(results) == 1, 'The rule must match once from anywhere'
     assert results[0].group(0) == 'hey'
+
+
+# -----------------------------------------------------------------------------
+# tests for :class:`sopel.plugins.rules.URLCallback`
+
+
+def test_url_callback_str():
+    regex = re.compile(r'.*')
+    rule = rules.URLCallback([regex], plugin='testplugin', label='testrule')
+
+    assert str(rule) == '<URLCallback testplugin.testrule (1)>'
+
+
+def test_url_callback_str_no_plugin():
+    regex = re.compile(r'.*')
+    rule = rules.URLCallback([regex], label='testrule')
+
+    assert str(rule) == '<URLCallback (no-plugin).testrule (1)>'
+
+
+def test_url_callback_str_no_label():
+    regex = re.compile(r'.*')
+    rule = rules.URLCallback([regex], plugin='testplugin')
+
+    assert str(rule) == '<URLCallback testplugin.(generic) (1)>'
+
+
+def test_url_callback_str_no_plugin_label():
+    regex = re.compile(r'.*')
+    rule = rules.URLCallback([regex])
+
+    assert str(rule) == '<URLCallback (no-plugin).(generic) (1)>'
+
+
+def test_url_callback_parse():
+    # playing with regex
+    regex = re.compile(
+        re.escape('https://wikipedia.com/') + r'(\w+)'
+    )
+
+    rule = rules.SearchRule([regex])
+    results = list(rule.parse('https://wikipedia.com/something'))
+    assert len(results) == 1, 'URLCallback on word must match only once'
+    assert results[0].group(0) == 'https://wikipedia.com/something'
+    assert results[0].group(1) == 'something'
+
+
+def test_url_callback_execute(mockbot):
+    regex = re.compile(r'.*')
+    rule = rules.URLCallback([regex])
+
+    line = (
+        ':Foo!foo@example.com PRIVMSG #sopel :'
+        'some link https://example.com/test in your line'
+    )
+    pretrigger = trigger.PreTrigger(mockbot.nick, line)
+    matches = list(rule.match(mockbot, pretrigger))
+    match = matches[0]
+    match_trigger = trigger.Trigger(
+        mockbot.settings, pretrigger, match, account=None)
+
+    with pytest.raises(RuntimeError):
+        rule.execute(mockbot, match_trigger)
+
+    def handler(wrapped, trigger):
+        wrapped.say('Hi!')
+        return 'The return value: %s' % trigger.group(0)
+
+    rule = rules.URLCallback([regex], handler=handler)
+    matches = list(rule.match(mockbot, pretrigger))
+    match = matches[0]
+    match_trigger = trigger.Trigger(
+        mockbot.settings, pretrigger, match, account=None)
+    wrapped = bot.SopelWrapper(mockbot, match_trigger)
+    result = rule.execute(wrapped, match_trigger)
+
+    assert mockbot.backend.message_sent == rawlist('PRIVMSG #sopel :Hi!')
+    assert result == 'The return value: https://example.com/test'
+
+
+def test_url_callback_match_filter_intent(mockbot):
+    test_url = 'https://example.com/test'
+    line = (
+        ':Foo!foo@example.com PRIVMSG #sopel :'
+        '\x01ACTION reads %s\x01' % test_url
+    )
+    pretrigger = trigger.PreTrigger(mockbot.nick, line)
+    regex = re.compile(re.escape('https://example.com/') + r'(.*)')
+
+    rule = rules.URLCallback([regex])
+    matches = list(rule.match(mockbot, pretrigger))
+    assert len(matches) == 1, 'Exactly one match must be found'
+
+    match = matches[0]
+    assert match.group(0) == 'https://example.com/test'
+    assert match.group(1) == 'test'
+
+    rule = rules.URLCallback([regex], intents=[re.compile(r'ACTION')])
+    matches = list(rule.match(mockbot, pretrigger))
+    assert len(matches) == 1, 'Exactly one match must be found'
+
+    match = matches[0]
+    assert match.group(0) == 'https://example.com/test'
+    assert match.group(1) == 'test'
+
+    rule = rules.URLCallback([regex], intents=[re.compile(r'VERSION')])
+    assert not list(rule.match(mockbot, pretrigger))
+
+
+def test_url_callback_from_callable(mockbot):
+    base = ':Foo!foo@example.com PRIVMSG #sopel'
+    link_1 = 'https://example.com/test'
+    link_2 = 'https://example.com/other'
+    link_3 = 'https://not-example.com/test'
+
+    # prepare callable
+    @module.url(re.escape('https://example.com/') + r'(\w+)')
+    def handler(wrapped, trigger, match):
+        wrapped.say('Hi!')
+        return 'The return value: %s' % match.group(0)
+
+    loader.clean_callable(handler, mockbot.settings)
+    handler.plugin_name = 'testplugin'
+
+    # create rule from a cleaned callable
+    rule = rules.URLCallback.from_callable(mockbot.settings, handler)
+    assert str(rule) == '<URLCallback testplugin.handler (1)>'
+
+    # match on a single link
+    line = '%s :%s' % (base, link_1)
+    pretrigger = trigger.PreTrigger(mockbot.nick, line)
+    results = list(rule.match(mockbot, pretrigger))
+
+    assert len(results) == 1, 'Exactly 1 rule must match'
+    assert all(result.group(0) == link_1 for result in results)
+
+    # match on a two link
+    line = '%s :%s %s' % (base, link_1, link_2)
+    pretrigger = trigger.PreTrigger(mockbot.nick, line)
+    results = list(rule.match(mockbot, pretrigger))
+
+    assert len(results) == 2, 'Exactly 2 rules must match'
+    assert results[0].group(0) == link_1
+    assert results[1].group(0) == link_2
+
+    # match only once per unique link
+    line = '%s :%s %s' % (base, link_1, link_1)
+    pretrigger = trigger.PreTrigger(mockbot.nick, line)
+    results = list(rule.match(mockbot, pretrigger))
+
+    assert len(results) == 1, 'Exactly 1 rule must match'
+    assert all(result.group(0) == link_1 for result in results)
+
+    # match on a single link with pre-text
+    line = '%s :there is some pre-text: %s' % (base, link_1)
+    pretrigger = trigger.PreTrigger(mockbot.nick, line)
+    results = list(rule.match(mockbot, pretrigger))
+
+    assert len(results) == 1, 'Exactly 1 rule must match'
+    assert all(result.group(0) == link_1 for result in results)
+
+    # match on a single link with post-text
+    line = '%s :%s and with post-text this time' % (base, link_1)
+    pretrigger = trigger.PreTrigger(mockbot.nick, line)
+    results = list(rule.match(mockbot, pretrigger))
+
+    assert len(results) == 1, 'Exactly 1 rule must match'
+    assert all(result.group(0) == link_1 for result in results)
+
+    # match on a single link with surrounding text
+    line = '%s :before text %s and after text' % (base, link_1)
+    pretrigger = trigger.PreTrigger(mockbot.nick, line)
+    results = list(rule.match(mockbot, pretrigger))
+
+    assert len(results) == 1, 'Exactly 1 rule must match'
+    assert all(result.group(0) == link_1 for result in results)
+
+    # execute based on the match
+    match_trigger = trigger.Trigger(
+        mockbot.settings, pretrigger, results[0], account=None)
+    wrapped = bot.SopelWrapper(mockbot, match_trigger)
+    result = rule.execute(wrapped, match_trigger)
+
+    assert mockbot.backend.message_sent == rawlist('PRIVMSG #sopel :Hi!')
+    assert result == 'The return value: https://example.com/test'
+
+    # does not match an invalid link
+    line = '%s :%s' % (base, link_3)
+    pretrigger = trigger.PreTrigger(mockbot.nick, line)
+    assert not any(rule.match(mockbot, pretrigger))
+
+
+def test_url_callback_from_callable_no_match_parameter(mockbot):
+    base = ':Foo!foo@example.com PRIVMSG #sopel'
+    link = 'https://example.com/test'
+
+    # prepare callable
+    @module.url(re.escape('https://example.com/') + r'(\w+)')
+    def handler(wrapped, trigger):
+        wrapped.say('Hi!')
+        return 'The return value: %s' % trigger.group(0)
+
+    loader.clean_callable(handler, mockbot.settings)
+    handler.plugin_name = 'testplugin'
+
+    # create rule from a cleaned callable
+    rule = rules.URLCallback.from_callable(mockbot.settings, handler)
+    assert str(rule) == '<URLCallback testplugin.handler (1)>'
+
+    # execute based on the match
+    line = '%s :before text %s and after text' % (base, link)
+    pretrigger = trigger.PreTrigger(mockbot.nick, line)
+    results = list(rule.match(mockbot, pretrigger))
+
+    match_trigger = trigger.Trigger(
+        mockbot.settings, pretrigger, results[0], account=None)
+    wrapped = bot.SopelWrapper(mockbot, match_trigger)
+    result = rule.execute(wrapped, match_trigger)
+
+    assert mockbot.backend.message_sent == rawlist('PRIVMSG #sopel :Hi!')
+    assert result == 'The return value: https://example.com/test'
+
+
+def test_url_callback_from_callable_lazy(mockbot):
+    base = ':Foo!foo@example.com PRIVMSG #sopel'
+    link_1 = 'https://example.com/test'
+    link_2 = 'https://help.example.com/other'
+    link_3 = 'https://not-example.com/test'
+
+    def lazy_loader(settings):
+        return [
+            re.compile(re.escape('https://example.com/') + r'(\w+)'),
+            re.compile(re.escape('https://help.example.com/') + r'(\w+)'),
+        ]
+
+    # prepare callable
+    @plugin.url_lazy(lazy_loader)
+    def handler(wrapped, trigger):
+        wrapped.say('Hi!')
+        return 'The return value: %s' % trigger.group(0)
+
+    loader.clean_callable(handler, mockbot.settings)
+    handler.plugin_name = 'testplugin'
+
+    # create rule from a cleaned callable
+    rule = rules.URLCallback.from_callable_lazy(mockbot.settings, handler)
+    assert str(rule) == '<URLCallback testplugin.handler (2)>'
+
+    # match on the example.com link
+    line = '%s :%s' % (base, link_1)
+    pretrigger = trigger.PreTrigger(mockbot.nick, line)
+    results = list(rule.match(mockbot, pretrigger))
+
+    assert len(results) == 1, 'Exactly 1 rule must match'
+    print(list(result.group(0) for result in results))
+    assert all(result.group(0) == link_1 for result in results)
+
+    # match on the help.example.com link
+    line = '%s :%s' % (base, link_2)
+    pretrigger = trigger.PreTrigger(mockbot.nick, line)
+    results = list(rule.match(mockbot, pretrigger))
+
+    assert len(results) == 1, 'Exactly 1 rule must match'
+    assert all(result.group(0) == link_2 for result in results)
+
+    # does not match an invalid link
+    line = '%s :%s' % (base, link_3)
+    pretrigger = trigger.PreTrigger(mockbot.nick, line)
+    assert not any(rule.match(mockbot, pretrigger))
+
+
+def test_url_callback_from_callable_invalid(mockbot):
+    def url_loader(settings):
+        return [
+            re.compile(re.escape('https://example.com/') + r'(\w+)'),
+        ]
+
+    # prepare callable
+    @plugin.url_lazy(url_loader)
+    def handler(wrapped, trigger, match=None):
+        wrapped.reply('Hi!')
+
+    loader.clean_callable(handler, mockbot.settings)
+
+    # create rule from a cleaned callable
+    with pytest.raises(RuntimeError):
+        rules.URLCallback.from_callable(mockbot.settings, handler)
+
+
+def test_url_callback_from_callable_lazy_invalid(mockbot):
+    # prepare callable
+    @module.url(r'.*')
+    def handler(wrapped, trigger, match=None):
+        wrapped.reply('Hi!')
+
+    loader.clean_callable(handler, mockbot.settings)
+
+    # create rule from a cleaned callable
+    with pytest.raises(RuntimeError):
+        rules.URLCallback.from_callable_lazy(mockbot.settings, handler)

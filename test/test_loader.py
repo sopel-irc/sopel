@@ -11,7 +11,10 @@ from sopel import loader, module, plugins
 
 
 MOCK_MODULE_CONTENT = """# coding=utf-8
+import re
+
 import sopel.module
+import sopel.plugin
 
 
 @sopel.module.commands("first")
@@ -35,7 +38,16 @@ def interval10s(bot):
 
 
 @sopel.module.url(r'.\\.example\\.com')
-def example_url(bot):
+def example_url(bot, trigger, match=None):
+    pass
+
+
+def loader(settings):
+    return [re.compile(r'.+\\.example\\.com')]
+
+
+@sopel.plugin.url_lazy(loader)
+def example_url_lazy(bot, trigger):
     pass
 
 
@@ -98,6 +110,7 @@ def test_is_limitable(testplugin):
     assert not loader.is_limitable(test_mod.shutdown)
 
     assert loader.is_limitable(test_mod.example_url)
+    assert loader.is_limitable(test_mod.example_url_lazy)
 
 
 def test_is_triggerable(testplugin):
@@ -114,6 +127,25 @@ def test_is_triggerable(testplugin):
 
     assert not loader.is_triggerable(test_mod.shutdown)
     assert not loader.is_triggerable(test_mod.example_url)
+    assert not loader.is_triggerable(test_mod.example_url_lazy)
+
+
+def test_is_url_callback(testplugin):
+    """Test is_triggerable behavior before clean_module is called."""
+    testplugin.load()
+    test_mod = testplugin._module
+
+    assert not loader.is_url_callback(test_mod.first_command)
+    assert not loader.is_url_callback(test_mod.second_command)
+    assert not loader.is_url_callback(test_mod.on_topic_command)
+
+    assert not loader.is_url_callback(test_mod.interval5s)
+    assert not loader.is_url_callback(test_mod.interval10s)
+
+    assert not loader.is_url_callback(test_mod.shutdown)
+
+    assert loader.is_url_callback(test_mod.example_url)
+    assert loader.is_url_callback(test_mod.example_url_lazy)
 
 
 def test_clean_module(testplugin, tmpconfig):
@@ -132,8 +164,9 @@ def test_clean_module(testplugin, tmpconfig):
     assert test_mod.interval10s in jobs
     assert len(shutdowns)
     assert test_mod.shutdown in shutdowns
-    assert len(urls) == 1
+    assert len(urls) == 2
     assert test_mod.example_url in urls
+    assert test_mod.example_url_lazy in urls
 
     # assert is_triggerable behavior *after* clean_module has been called
     assert loader.is_triggerable(test_mod.first_command)
@@ -145,6 +178,7 @@ def test_clean_module(testplugin, tmpconfig):
 
     assert not loader.is_triggerable(test_mod.shutdown)
     assert not loader.is_triggerable(test_mod.example_url)
+    assert not loader.is_triggerable(test_mod.example_url_lazy)
 
     # ignored function is ignored
     assert test_mod.ignored not in callables
@@ -164,7 +198,7 @@ def test_clean_module_idempotency(testplugin, tmpconfig):
     assert len(callables) == 3
     assert len(jobs) == 2
     assert len(shutdowns) == 1
-    assert len(urls) == 1
+    assert len(urls) == 2
 
     # recall clean_module, we should have the same result
     new_callables, new_jobs, new_shutdowns, new_urls = loader.clean_module(

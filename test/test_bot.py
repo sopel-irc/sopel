@@ -271,7 +271,8 @@ def test_register_plugin(tmpconfig, mockplugin):
     assert sopel.rules.has_nick_command('info', plugin='mockplugin')
     assert sopel.rules.has_action_command('tell')
     assert sopel.rules.has_action_command('tell', plugin='mockplugin')
-    assert list(sopel.search_url_callbacks('example.com'))
+    assert sopel.rules.has_url_callback('example_url')
+    assert sopel.rules.has_url_callback('example_url', plugin='mockplugin')
 
 
 def test_register_unregister_plugin(tmpconfig, mockplugin):
@@ -510,6 +511,51 @@ def test_register_callables(tmpconfig):
             [],
         )
     }
+
+
+def test_register_urls(tmpconfig):
+    sopel = bot.Sopel(tmpconfig)
+
+    @module.url(r'https://(\S+)/(.+)?')
+    @plugin.label('handle_urls_https')
+    def url_callback_https(bot, trigger, match):
+        pass
+
+    @module.url(r'http://(\S+)/(.+)?')
+    @plugin.label('handle_urls_http')
+    def url_callback_http(bot, trigger, match):
+        pass
+
+    # prepare callables to be registered
+    callables = [
+        url_callback_https,
+        url_callback_http,
+    ]
+
+    # clean callables and set plugin name by hand
+    # since the loader and plugin handlers are excluded here
+    for handler in callables:
+        loader.clean_callable(handler, tmpconfig)
+        handler.plugin_name = 'testplugin'
+
+    # register callables
+    sopel.register_urls(callables)
+
+    # trigger URL callback "handle_urls_https"
+    line = ':Foo!foo@example.com PRIVMSG #sopel :https://example.com/test'
+    pretrigger = trigger.PreTrigger(sopel.nick, line)
+
+    matches = sopel.rules.get_triggered_rules(sopel, pretrigger)
+    assert len(matches) == 1
+    assert matches[0][0].get_rule_label() == 'handle_urls_https'
+
+    # trigger URL callback "handle_urls_https"
+    line = ':Foo!foo@example.com PRIVMSG #sopel :http://example.com/test'
+    pretrigger = trigger.PreTrigger(sopel.nick, line)
+
+    matches = sopel.rules.get_triggered_rules(sopel, pretrigger)
+    assert len(matches) == 1
+    assert matches[0][0].get_rule_label() == 'handle_urls_http'
 
 
 # -----------------------------------------------------------------------------

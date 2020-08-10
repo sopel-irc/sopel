@@ -213,7 +213,11 @@ class AbstractBot(object):
         """
         self.last_raw_line = message
 
-        pretrigger = PreTrigger(self.nick, message)
+        pretrigger = PreTrigger(
+            self.nick,
+            message,
+            url_schemes=self.settings.core.auto_url_schemes,
+        )
         if all(cap not in self.enabled_capabilities for cap in ['account-tag', 'extended-join']):
             pretrigger.tags.pop('account', None)
 
@@ -262,7 +266,8 @@ class AbstractBot(object):
 
             pretrigger = PreTrigger(
                 self.nick,
-                ":{0}!{1}@{2} {3}".format(self.nick, self.user, host, raw)
+                ":{0}!{1}@{2} {3}".format(self.nick, self.user, host, raw),
+                url_schemes=self.settings.core.auto_url_schemes,
             )
             self.dispatch(pretrigger)
 

@@ -420,7 +420,6 @@ class Sopel(irc.AbstractBot):
         self._rules_manager.unregister_plugin(name)
         self._scheduler.unregister_plugin(name)
         self.unregister_shutdowns(shutdowns)
-        self.unregister_urls(urls)
 
         # remove plugin from registry
         del self._plugins[name]
@@ -573,22 +572,21 @@ class Sopel(irc.AbstractBot):
 
     def register_urls(self, urls):
         for func in urls:
-            for regex in func.url_regex:
-                self.register_url_callback(regex, func)
-                callable_name = getattr(func, "__name__", 'UNKNOWN')
-                LOGGER.debug(
-                    'URL Callback added "%s" for URL pattern "%s"',
-                    callable_name,
-                    regex)
+            url_regex = getattr(func, 'url_regex', [])
+            url_lazy_loaders = getattr(func, 'url_lazy_loaders', None)
 
-    def unregister_urls(self, urls):
-        if "url_callbacks" in self.memory:
-            for func in urls:
-                regexes = func.url_regex
-                for regex in regexes:
-                    if func == self.memory['url_callbacks'].get(regex):
-                        self.unregister_url_callback(regex, func)
-                        LOGGER.debug('URL Callback unregistered: %r', regex)
+            if url_regex:
+                rule = plugin_rules.URLCallback.from_callable(
+                    self.settings, func)
+                self._rules_manager.register_url_callback(rule)
+
+            if url_lazy_loaders:
+                try:
+                    rule = plugin_rules.URLCallback.from_callable_lazy(
+                        self.settings, func)
+                    self._rules_manager.register_url_callback(rule)
+                except plugins.exceptions.PluginError as err:
+                    LOGGER.error('Cannot register URL callback: %s', err)
 
     @deprecated(
         reason="Replaced by `say` method.",

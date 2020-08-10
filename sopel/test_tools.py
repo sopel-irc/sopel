@@ -166,6 +166,7 @@ def get_example_test(tested_func, msg, results, privmsg, admin,
             owner=owner,
         )
         settings = configfactory('default.cfg', test_config)
+        url_schemes = settings.core.auto_url_schemes
         bot = botfactory(settings)
         server = ircfactory(bot)
         server.channel_joined('#Sopel')
@@ -184,7 +185,8 @@ def get_example_test(tested_func, msg, results, privmsg, admin,
 
         # TODO enable message tags
         full_message = ':{} PRIVMSG {} :{}'.format(hostmask, sender, msg)
-        pretrigger = sopel.trigger.PreTrigger(bot.nick, full_message)
+        pretrigger = sopel.trigger.PreTrigger(
+            bot.nick, full_message, url_schemes=url_schemes)
         trigger = sopel.trigger.Trigger(bot.settings, pretrigger, match)
         pattern = re.compile(r'^%s: ' % re.escape(bot.nick))
 
@@ -206,7 +208,8 @@ def get_example_test(tested_func, msg, results, privmsg, admin,
             tested_func(wrapper, trigger)
 
             output_triggers = (
-                sopel.trigger.PreTrigger(bot.nick, message.decode('utf-8'))
+                sopel.trigger.PreTrigger(
+                    bot.nick, message.decode('utf-8'), url_schemes=url_schemes)
                 for message in wrapper.backend.message_sent
             )
             output_texts = (

@@ -62,9 +62,9 @@ def clean_callable(func, config):
         func.global_rate = getattr(func, 'global_rate', 0)
         func.unblockable = getattr(func, 'unblockable', False)
 
-    if not is_triggerable(func):
-        # Adding the remaining default attributes below is potentially confusing
-        # to other code (and a waste of memory) for non-triggerable functions.
+    if not is_triggerable(func) and not is_url_callback(func):
+        # Adding the remaining default attributes below is potentially
+        # confusing to other code (and a waste of memory) for jobs.
         return
 
     func.echo = getattr(func, 'echo', False)
@@ -152,6 +152,7 @@ def is_limitable(obj):
         'nickname_commands',
         'action_commands',
         'url_regex',
+        'url_lazy_loaders',
     )
     allowed = any(hasattr(obj, attr) for attr in allowed_attrs)
 
@@ -173,10 +174,12 @@ def is_triggerable(obj):
 
         Many of the decorators defined in :mod:`sopel.plugin` make the
         decorated function a triggerable object.
+
     """
     forbidden_attrs = (
         'interval',
         'url_regex',
+        'url_lazy_loaders',
     )
     forbidden = any(hasattr(obj, attr) for attr in forbidden_attrs)
 
@@ -189,6 +192,35 @@ def is_triggerable(obj):
         'commands',
         'nickname_commands',
         'action_commands',
+    )
+    allowed = any(hasattr(obj, attr) for attr in allowed_attrs)
+
+    return allowed and not forbidden
+
+
+def is_url_callback(obj):
+    """Check if ``obj`` can handle a URL callback.
+
+    :param obj: any :term:`function` to check
+    :return: ``True`` if ``obj`` can handle a URL callback
+
+    A URL callback handler is a callable that will be used by the bot to
+    handle a particular URL in an IRC message.
+
+    .. seealso::
+
+        Both :func:`sopel.plugin.url` :func:`sopel.plugin.url_lazy` make the
+        decorated function a URL callback handler.
+
+    """
+    forbidden_attrs = (
+        'interval',
+    )
+    forbidden = any(hasattr(obj, attr) for attr in forbidden_attrs)
+
+    allowed_attrs = (
+        'url_regex',
+        'url_lazy_loaders',
     )
     allowed = any(hasattr(obj, attr) for attr in allowed_attrs)
 
@@ -210,7 +242,7 @@ def clean_module(module, config):
             elif hasattr(obj, 'interval'):
                 clean_callable(obj, config)
                 jobs.append(obj)
-            elif hasattr(obj, 'url_regex'):
+            elif is_url_callback(obj):
                 clean_callable(obj, config)
                 urls.append(obj)
     return callables, jobs, shutdowns, urls
