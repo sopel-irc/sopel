@@ -12,8 +12,8 @@ import re
 
 from requests import get
 
+from sopel import module
 from sopel.config.types import StaticSection, ValidatedAttribute
-from sopel.module import commands, example, NOLIMIT, OP, output_prefix, require_chanmsg, url
 from sopel.tools.web import quote, unquote
 
 try:  # TODO: Remove fallback when dropping py2
@@ -238,8 +238,8 @@ def mw_section(server, query, section):
 
 
 # Matches a wikipedia page (excluding spaces and #, but not /File: links), with a separate optional field for the section
-@url(r'https?:\/\/([a-z]+\.wikipedia\.org)\/wiki\/((?!File\:)[^ #]+)#?([^ ]*)')
-@output_prefix('[WIKIPEDIA] ')
+@module.url(r'https?:\/\/([a-z]+\.wikipedia\.org)\/wiki\/((?!File\:)[^ #]+)#?([^ ]*)')
+@module.output_prefix('[WIKIPEDIA] ')
 def mw_info(bot, trigger, match=None):
     """Retrieves and outputs a snippet of the linked page."""
     if match.group(3):
@@ -251,13 +251,13 @@ def mw_info(bot, trigger, match=None):
         say_snippet(bot, trigger, match.group(1), unquote(match.group(2)), show_url=False)
 
 
-@commands('w', 'wiki', 'wik')
-@example('.w San Francisco')
-@output_prefix('[WIKIPEDIA] ')
+@module.commands('w', 'wiki', 'wik')
+@module.example('.w San Francisco')
+@module.output_prefix('[WIKIPEDIA] ')
 def wikipedia(bot, trigger):
     if trigger.group(2) is None:
         bot.reply("What do you want me to look up?")
-        return NOLIMIT
+        return module.NOLIMIT
 
     lang = choose_lang(bot, trigger)
     query = trigger.group(2)
@@ -268,19 +268,19 @@ def wikipedia(bot, trigger):
 
     if not query:
         bot.reply('What do you want me to look up?')
-        return NOLIMIT
+        return module.NOLIMIT
     server = lang + '.wikipedia.org'
     query = mw_search(server, query, 1)
     if not query:
         bot.reply("I can't find any results for that.")
-        return NOLIMIT
+        return module.NOLIMIT
     else:
         query = query[0]
     say_snippet(bot, trigger, server, query)
 
 
-@commands('wplang')
-@example('.wplang pl')
+@module.commands('wplang')
+@module.example('.wplang pl')
 def wplang(bot, trigger):
     if not trigger.group(3):
         bot.reply(
@@ -299,13 +299,13 @@ def wplang(bot, trigger):
         )
 
 
-@commands('wpclang')
-@example('.wpclang ja')
-@require_chanmsg()
+@module.commands('wpclang')
+@module.example('.wpclang ja')
+@module.require_chanmsg()
 def wpclang(bot, trigger):
-    if not (trigger.admin or bot.channels[trigger.sender.lower()].privileges[trigger.nick.lower()] >= OP):
+    if not (trigger.admin or bot.channels[trigger.sender.lower()].privileges[trigger.nick.lower()] >= module.OP):
         bot.reply("You don't have permission to change this channel's Wikipedia language setting.")
-        return NOLIMIT
+        return module.NOLIMIT
     if not trigger.group(3):
         bot.say(
             "{}'s current Wikipedia language is: {}"
