@@ -1,0 +1,33 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept: ['*/*']
+      Accept-Encoding: ['gzip, deflate']
+      Connection: [keep-alive]
+      User-Agent: [python-requests/2.24.0]
+    method: GET
+    uri: https://suggestqueries.google.com/complete/search?output=toolbar&hl=en&q=lkashdfiauwgaef
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAC/7Oxr8jNUShLLSrOzM+zVTLUM1Cyt7MpyS/ISS1LzbGz0YczAYEc0EoqAAAA
+    headers:
+      Alt-Svc: ['h3-29=":443"; ma=2592000,h3-27=":443"; ma=2592000,h3-T050=":443";
+          ma=2592000,h3-Q050=":443"; ma=2592000,h3-Q046=":443"; ma=2592000,h3-Q043=":443";
+          ma=2592000,quic=":443"; ma=2592000; v="46,43"']
+      Cache-Control: ['private, max-age=3600']
+      Content-Encoding: [gzip]
+      Content-Type: [text/xml; charset=ISO-8859-1]
+      Date: ['Tue, 11 Aug 2020 18:08:12 GMT']
+      Expires: ['Tue, 11 Aug 2020 18:08:12 GMT']
+      P3P: [CP="This is not a P3P policy! See g.co/p3phelp for more info."]
+      Server: [gws]
+      Set-Cookie: ['1P_JAR=2020-08-11-18; expires=Thu, 10-Sep-2020 18:08:12 GMT; path=/;
+          domain=.google.com; Secure', 'NID=204=EpFh-HmCOSVND_NbOVT5571DsJHS9D470F0fLYr6WkHRuo0wGiptJmCnSv4yLVBS8_2Yq5XfDZiDGiI2UI4uX3RbzXv9-RUqksYXPTOhjI46CXdMJqbIUQ1Cub_RjgYOqaBwF8MX_Y--gXqfwQjH76Ly1-13TajPaA2reaf_vAA;
+          expires=Wed, 10-Feb-2021 18:08:12 GMT; path=/; domain=.google.com; HttpOnly']
+      Transfer-Encoding: [chunked]
+      X-Frame-Options: [SAMEORIGIN]
+      X-XSS-Protection: ['0']
+    status: {code: 200, message: OK}
+version: 1

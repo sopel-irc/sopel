@@ -1,0 +1,36 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept: ['*/*']
+      Accept-Encoding: ['gzip, deflate']
+      Connection: [keep-alive]
+      User-Agent: [python-requests/2.24.0]
+    method: GET
+    uri: https://suggestqueries.google.com/complete/search?output=toolbar&hl=en&q=wikip
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAC/62TMQ7CMAxFrxLlABT2NB04AiewGhNFjePKSUuPTyVQJxgQ3t5gP/0vy27YKJsV
+        pSYuvb2cznbwrvGcccXs3ZVpx4a3JUasbR/yrh5sAjTo7SNNacaQwEQgtJ133ae9H10HaQkFSmAy
+        IC2NWS3my6pnG9WSjSxcYE2yVC1l5sharjsvJaD8r6N3WyIuak0DyGSIw/drdMeXPAFVV7xARQMA
+        AA==
+    headers:
+      Alt-Svc: ['h3-29=":443"; ma=2592000,h3-27=":443"; ma=2592000,h3-T050=":443";
+          ma=2592000,h3-Q050=":443"; ma=2592000,h3-Q046=":443"; ma=2592000,h3-Q043=":443";
+          ma=2592000,quic=":443"; ma=2592000; v="46,43"']
+      Cache-Control: ['private, max-age=3600']
+      Content-Encoding: [gzip]
+      Content-Type: [text/xml; charset=ISO-8859-1]
+      Date: ['Tue, 11 Aug 2020 18:08:13 GMT']
+      Expires: ['Tue, 11 Aug 2020 18:08:13 GMT']
+      P3P: [CP="This is not a P3P policy! See g.co/p3phelp for more info."]
+      Server: [gws]
+      Set-Cookie: ['1P_JAR=2020-08-11-18; expires=Thu, 10-Sep-2020 18:08:13 GMT; path=/;
+          domain=.google.com; Secure', 'NID=204=GI3eAC2y0475AAx7cW9tGyLoSOohGDHI7HLMwkoMWjecKa4YYQLRBhYlxgsxqOLwB-kqZ1Mi-kop9f_bfSWV_GqO2EhAcPZbY8tg3BkeXN78NqkvGlyzOEoJ49hotXGdqqPVaR6tuXBUq7KsymIDXkPjTQzE1lEuLwccUAyncG0;
+          expires=Wed, 10-Feb-2021 18:08:13 GMT; path=/; domain=.google.com; HttpOnly']
+      Transfer-Encoding: [chunked]
+      X-Frame-Options: [SAMEORIGIN]
+      X-XSS-Protection: ['0']
+    status: {code: 200, message: OK}
+version: 1

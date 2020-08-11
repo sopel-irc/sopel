@@ -153,9 +153,9 @@ def search(bot, trigger):
 
 
 @commands('suggest')
-@example('.suggest wikip', 'wikipedia', online=True)
-@example('.suggest ', 'No query term.', online=True)
-@example('.suggest lkashdfiauwgeaef', 'Sorry, no result.', online=True)
+@example('.suggest wikip', 'wikipedia game', online=True, vcr=True)
+@example('.suggest', 'No query term.')
+@example('.suggest lkashdfiauwgaef', 'Sorry, no result.', online=True, vcr=True)
 def suggest(bot, trigger):
     """Suggests terms starting with given input"""
     if not trigger.group(2):
