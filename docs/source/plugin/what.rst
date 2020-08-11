@@ -4,9 +4,9 @@ What is a Plugin?
 
 Before writing your first plugin, you may want to know what is a plugin, how is
 it made, and what are the best solutions for your need. In this chapter we'll
-cover what is a Plugin, what you can do with them, and some vocabulary.
+cover what is a plugin, what you can do with them, and some vocabulary.
 
-You may want to skip ahead to :doc:`anatomy` if you already know what a Plugin
+You may want to skip ahead to :doc:`anatomy` if you already know what a plugin
 is and what types of plugin there are.
 
 .. contents::
@@ -24,7 +24,7 @@ Single file
 -----------
 
 A **Single file** plugin is the most basic form a Sopel plugin can take. It is
-composed of a single file available to Sopel from its plugin's directory (or
+composed of a single file available to Sopel from its plugins directory (or
 from one of its
 :attr:`extra directories <sopel.config.core_section.CoreSection.extra>`). You
 should write a single file plugin when:
@@ -40,15 +40,15 @@ Folder
 ------
 
 A **Folder** plugin is a folder that contains a ``__init__.py`` file. It is
-available to Sopel the same way a :ref:`Single file` plugin is, and share the
-same limitation. Everything that is not available in this ``__init__.py`` file
+available to Sopel the same way a :ref:`Single file` plugin is, and shares the
+same limitation: Everything that is not available in this ``__init__.py`` file
 won't be visible to Sopel.
 
 By default, Sopel's plugin directories are **not** available in ``sys.path``,
 so it is not possible to do ``from my_plugin_dir import some_module`` without
 a specific configuration from the bot's owner.
 
-When a Plugin author wants to split code into different files, and/or share it
+When a plugin author wants to split code into different files, and/or share it
 between multiple plugins, the best option is to use an :ref:`Entry point`
 plugin instead.
 
@@ -56,20 +56,22 @@ Namespace package
 -----------------
 
 A **Namespace package** plugin is a Python :term:`namespace package`, using
-the namespace ``sopel_modules``. It must installed in the Python's environement
+the namespace ``sopel_modules``. It must be installed in the Python environment
 to be used by Sopel, and can require Python dependencies.
 
 Given a ``sopel_modules.plugin`` plugin, Sopel will load everything that is
-available from ``sopel_modules/plugin/__init__.py`` file.
+available from the ``sopel_modules/plugin/__init__.py`` file.
 
 It is the initial version of Sopel's packaged plugins: it can be packaged and
 uploaded to `PyPI`_ then installed using ``pip install``.
 
-When a Plugin author wants to distribute a Sopel plugin, the best option is to
+When a plugin author wants to distribute a Sopel plugin, the best option is to
 use an :ref:`Entry point` plugin instead.
 
 Entry point
 -----------
+
+.. versionadded:: 7.0.0
 
 An **Entry point** plugin is a Python module or package distributed via a
 ``setup.py`` script, and it is available to Sopel via Sopel's ``sopel.plugins``
@@ -90,12 +92,12 @@ You should write an entry point plugin when:
 
 * you want to distribute your plugin on `PyPI`_
 * you want to split the code in multiple files
-* you have dependencies other than Sopel and the Python's built-in library
+* you have dependencies beyond Sopel and Python's standard library
 * you want a modern and reliable way to package your Sopel plugin
 * you want to distribute more than one Sopel plugin per distributed package
 
-An entry point plugin is the best way to package and distribute clean and easy
-to update Sopel plugin.
+An entry point plugin is the best way to package and distribute a Sopel plugin
+or collection of plugins in a clean and easy-to-update manner.
 
 Note that a single Python distributed package can expose more than one Sopel
 entry point plugin, which is great to bundle multiple plugins at once.
@@ -108,8 +110,8 @@ entry point plugin, which is great to bundle multiple plugins at once.
 .. __: `Entry points specification`_
 
 
-Plugin's Name
-=============
+Naming plugins
+==============
 
 Sopel plugins conventionally have all-lowercase names, usually one word.
 However, sometimes multiple words are needed for clarity or disambiguation;

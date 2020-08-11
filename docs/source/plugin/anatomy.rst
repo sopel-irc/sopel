@@ -6,85 +6,342 @@ A Sopel plugin consists of a Python module containing one or more
 ``callable``\s. It may optionally also contain ``configure``, ``setup``, and
 ``shutdown`` hooks.
 
-.. py:function:: callable(bot, trigger)
+.. contents::
+   :local:
+   :depth: 2
 
-    :param bot: the bot's instance
-    :type bot: :class:`sopel.bot.SopelWrapper`
-    :param trigger: the object that triggered the call
-    :type trigger: :class:`sopel.trigger.Trigger`
 
-    A callable is any function which takes as its arguments a
-    :class:`sopel.bot.SopelWrapper` object and a :class:`sopel.trigger.Trigger`
-    object, and is wrapped with appropriate decorators from
-    :mod:`sopel.plugin`. The ``bot`` provides the ability to send messages to
-    the network and check the state of the bot. The ``trigger`` provides
-    information about the line which triggered this function to be called.
+Defining rules
+==============
 
-    The return value of these function is ignored, unless it is
-    :const:`sopel.plugin.NOLIMIT`, in which case rate limiting will not be
-    applied for that call.
+The main goal of a Sopel plugin is to react to IRC messages. For that, Sopel
+uses a :term:`Rule system`: plugins define rules, Sopel loads them and triggers
+them when a message matches.
 
-    Note that the name can, and should, be anything - it doesn't need to be
-    called "callable"::
+Sopel identifies a callable as a rule when it has been decorated with any of
+these :mod:`sopel.plugin`'s decorators:
 
-        from sopel import plugin
+* :term:`Generic rule`:: :func:`~sopel.plugin.rule`,
+  :func:`~sopel.plugin.find`, and :func:`~sopel.plugin.search`
+* :term:`Named rule`: :func:`~sopel.plugin.commands`, 
+  :func:`~sopel.plugin.action_commands`, and
+  :func:`~sopel.plugin.nickname_commands`
+* :term:`URL callback`: :func:`~sopel.plugin.url` and
+  :func:`~sopel.plugin.url_lazy`
 
-        @plugin.commands('hello')
-        def say_hello(bot, trigger):
-            """Reply hello to you."""
-            bot.reply('Hello!')
+Additionally, Sopel identifies a callable as a generic rule when these
+decorators are used alone:
 
+* event based rule: :func:`~sopel.plugin.event`
+* intent/CTCP based rule: :func:`~sopel.plugin.intent`
+
+In that case, it will use a match-all regex (`r'.*'`)::
+
+   from sopel import plugin
+
+   @plugin.event('JOIN')
+   def on_join_2(bot, trigger):
+      pass
+
+   # this is equivalent to this:
+   @plugin.rule(r'.*')
+   @plugin.event('JOIN')
+   def on_join(bot, trigger):
+      pass
+
+Channel vs. private messages
+----------------------------
+
+By default, :term:`rules <Rule>` can be triggered from a channel or a private
+message. It is possible to limit that to either one of these options:
+
+* channel only: :func:`sopel.plugin.require_chanmsg`
+* private message only: :func:`sopel.plugin.require_privmsg`
+
+Access right requirements
+-------------------------
+
+By default anyone can trigger a :term:`rule <Rule>`, and for some it might be
+better to limit who can trigger them. There are decorators for that:
+
+* :func:`sopel.plugin.require_account`: requires services/NickServ
+  authentication; works only if the server implements modern IRC authentication
+* :func:`sopel.plugin.require_privilege`: requires a specific level of
+  privileges in the channel; works only for channel messages, not private
+  messages, and you probably want to use it with
+  :func:`~sopel.plugin.require_chanmsg`
+* :func:`sopel.plugin.require_admin`: only the bot's owner and its admins can
+  trigger the rule
+* :func:`sopel.plugin.require_owner`: only the bot's owner can trigger the rule
+
+Rate limiting
+-------------
+
+All :term:`rules <Rule>` can have rate limiting with the
+:func:`sopel.plugin.rate` decorator. Rate limiting means how often a rule can
+be triggered. This is different from the flood protection logic, which is how
+often Sopel can send messages to the network. By default, a rule doesn't have
+any rate limiting.
+
+There are three types of rate limiting:
+
+* per-user: how often a rule triggers for each user
+* per-channel: how often a rule triggers for a given channel
+* globally: how often a rule triggers accross the whole network
+
+Example::
+
+   from sopel import plugin
+
+   @plugin.rule(r'Ah[!?.]?')
+   @plugin.rate(user=2)
+   def you_said_ah(bot, trigger):
+      bot.reply('Ha AH!')
+
+Rule labels
+-----------
+
+A rule has a label: it will be used for logging, documentation, and internal
+manipulation. There are two cases to consider:
+
+* :term:`Generic rules <Generic rule>` and :term:`URL callbacks <URL callback>`
+  use their :term:`callable <Plugin callable>`'s name by default (i.e. the
+  function's ``__name__``). This can be overridden with the
+  :func:`sopel.plugin.label` decorator.
+* A :term:`Named rule` is already named (by definition), so it uses its name
+  directly as rule label. This can't be overridden by a decorator.
+
+This label is particulary useful for bot owners who want to disable a rule in
+a specific channel. In the following example, the ``say_hello`` rule from the
+``hello`` plugin is disabled in the ``#rude`` channel:
+
+.. code-block:: ini
+
+   [#rude]
+   disable_commands = {'hello': ['say_hello']}
+
+The rule in question is defined by the ``hello`` plugin like so::
+
+   @plugin.rule(r'hello!?', r'hi!?', r'hey!?')
+   @plugin.label('say_hello')
+   def handler_hello(bot, trigger):
+      bot.reply('Ha AH!')
+
+
+Plugin callables
+================
+
+When a message from the IRC server matches a :term:`Rule`, Sopel will execute
+its attached :term:`callable <Plugin callable>`. All plugin callables follow
+the same interface:
+
+.. py:function:: plugin_callable(bot, trigger)
+
+   :param bot: wrapped bot instance
+   :type bot: :class:`sopel.bot.SopelWrapper`
+   :param trigger: the object that triggered the call
+   :type trigger: :class:`sopel.trigger.Trigger`
+
+A callable must accept two positional arguments: a
+:class:`bot <sopel.bot.SopelWrapper>` object, and a
+:class:`trigger <sopel.trigger.Trigger>` object. Both are objects tied to the
+message that matches the rule.
+
+The ``bot`` provides the ability to send messages to the network (to say
+something or to send a specific command such as ``JOIN``), and to check the
+state of the bot such as its settings, memory, or database. It is a context
+aware wrapper around the :class:`~sopel.bot.Sopel` instance.
+
+The ``trigger`` provides information about the line which triggered the rule
+and this callable to be executed.
+
+The return value of a callable is ignored unless it is
+:const:`sopel.plugin.NOLIMIT`, in which case
+:term:`rate limiting <Rate limiting>` will not be applied for that call.
+(See :func:`sopel.plugin.rate`.)
+
+.. note::
+
+   Note that the name can, and should, be anything, and it doesn't have to be
+   called ``plugin_callable``. At least, it should not be called ``callable``,
+   since that is a :func:`Python built-in function <callable>`::
+
+      from sopel import plugin
+
+      @plugin.commands('hello')
+      def say_hello(bot, trigger):
+         """Reply hello to you."""
+         bot.reply('Hello!')
+
+
+Plugin jobs
+===========
+
+Another feature available to plugins is the ability to define
+:term:`jobs <Plugin job>`. It is a Python callable decorated with
+:func:`sopel.plugin.interval` and that executes every period of time.
+
+A job follows this interface:
+
+.. py:function:: plugin_job(bot)
+
+   :param bot: the bot instance
+   :type bot: :class:`sopel.bot.Sopel`
+
+.. note::
+
+   Note that the name can be anything, and it doesn't have to be called
+   ``plugin_job``::
+
+      from sopel import plugin
+
+      @plugin.interval(5)
+      def spam_every_5s(bot):
+          if "#here" in bot.channels:
+              bot.say("It has been five seconds!", "#here")
+
+
+.. important::
+
+   A job may execute while the ``bot`` is **not** connected, and it must not
+   assume any network access.
+
+
+Plugin setup & shutdown
+=======================
+
+When loading and unloading plugins, a plugin can perform setup and shutdown
+actions. For that purpose, a plugin can define optional functions named
+``setup`` and ``shutdown``. There can be one and only one function with each
+name for a plugin.
+
+Setup
+-----
+
+The ``setup`` function must follow this interface:
 
 .. py:function:: setup(bot)
 
-    :param bot: the bot's instance
-    :type bot: :class:`sopel.bot.Sopel`
+   :param bot: the bot instance
+   :type bot: :class:`sopel.bot.Sopel`
 
-    This is an optional function of a plugin, which will be called while the
-    plugin is being loaded. The purpose of this function is to perform whatever
-    actions are needed to allow a plugin to function properly (e.g, ensuring
-    that the appropriate configuration variables exist and are set). Note that
-    this normally occurs prior to connection to the server, so the behavior of
-    the messaging functions on the :class:`sopel.bot.Sopel` object it's passed
-    is undefined.
+This function is optional. If it exists, it will be called while the plugin is
+being loaded. The purpose of this function is to perform whatever actions are
+needed to allow a plugin to function properly (e.g, ensuring that the
+appropriate configuration variables exist and are set). Note that this normally
+occurs prior to connection to the server, so the behavior of the messaging
+functions on the :class:`sopel.bot.Sopel` object it's passed is undefined and
+they are likely to fail.
 
-    Throwing an exception from this function (such as a
-    :exc:`sopel.config.ConfigurationError`) will prevent any callables in the
-    plugin from being registered, and provide an error message to the user.
-    This is useful when requiring the presence of configuration values or
-    making other environmental requirements.
+Throwing an exception from this function will stop Sopel from loading the
+plugin, and none of its :term:`rules <Rule>` or :term:`jobs <Plugin job>` will
+be registered. The exception will be caught, an error message logged, and Sopel
+will try to load the next plugin.
 
-    The bot will not continue loading plugins or connecting during the
-    execution of this function. As such, an infinite loop (such as an
-    unthreaded polling loop) will cause the bot to hang.
+This is useful when requiring the presence of configuration values (by raising
+a :exc:`~sopel.config.ConfigurationError` error) or making other environmental
+requirements (dependencies, file/folder access rights, and so on).
+
+The bot will not continue loading plugins or connecting during the execution of
+this function. As such, an infinite loop (such as an unthreaded polling loop)
+will cause the bot to hang.
+
+Shutdown
+--------
+
+The ``shutdown`` function must follow this interface:
 
 .. py:function:: shutdown(bot)
 
-    :param bot: the bot's instance
-    :type bot: :class:`sopel.bot.Sopel`
+   :param bot: the bot instance
+   :type bot: :class:`sopel.bot.Sopel`
 
-    This is an optional function of a plugin, which will be called while the
-    bot is quitting. Note that this normally occurs after closing connection
-    to the server, so the behavior of the messaging functions on the
-    :class:`sopel.bot.Sopel` object it's passed is undefined. The purpose of
-    this function is to perform whatever actions are needed to allow a plugin
-    to properly clean up (e.g, ensuring that any temporary cache files are
-    deleted).
+This function is optional. If it exists, it will be called while the bot
+is shutting down. Note that this normally occurs after closing connection
+to the server, so the behavior of the messaging functions on the
+:class:`bot <sopel.bot.Sopel>` object it's passed is undefined and they are
+likely to fail.
 
-    The bot will not continue notifying other plugins or continue quitting
-    during the execution of this function. As such, an infinite loop (such as
-    an unthreaded polling loop) will cause the bot to hang.
+The purpose of this function is to perform whatever actions are needed to allow
+a plugin to properly clean up (e.g. ensuring that any temporary cache files are
+deleted).
 
-    .. versionadded:: 4.1
+The bot will not continue notifying other plugins or continue quitting during
+the execution of this function. As such, an infinite loop (such as an
+unthreaded polling loop) will cause the bot to hang.
 
-.. py:function:: configure(config)
+.. versionadded:: 4.1
 
-    :param bot: the bot's configuration object
-    :type bot: :class:`sopel.config.Config`
 
-    This is an optional function of a plugin, which will be called during the
-    user's setup of the bot. It's intended purpose is to use the methods of the
-    passed :class:`sopel.config.Config` object in order to create the
-    configuration variables it needs to function properly.
+Plugin configuration
+====================
 
-    .. versionadded:: 3.0
+A plugin can define and use a configuration section. By subclassing
+:class:`sopel.config.types.StaticSection`, it can define the options it uses
+and may require. Then, it should add this section to the bot's settings::
+
+   from sopel.config import types
+
+   class FooSection(types.StaticSection):
+       bar = types.ListAttribute('bar')
+       fizz = ValidatedAttribute('fizz', bool, default=False)
+
+   def setup(bot):
+      bot.settings.define_section('foo', FooSection)
+
+This will allow the bot to properly load this part of the configuration file:
+
+.. code-block:: ini
+
+   [foo]
+   bar =
+      spam
+      eggs
+      bacon
+   fizz = yes
+
+.. seealso::
+
+   The :meth:`~sopel.config.Config.define_section` method to define a new
+   section so the bot can parse it properly.
+
+Configuration wizard
+--------------------
+
+When the owner sets up the bot, Sopel provides a configuration wizard. When a
+plugin defines a ``configure`` function, the user will be asked if they want
+to configure said plugin, and if yes, this function will execute.
+
+The ``configure`` function must follow this interface:
+
+.. py:function:: configure(settings)
+
+   :param settings: the bot's configuration object
+   :type settings: :class:`sopel.config.Config`
+
+Its intended purpose is to use the methods of the passed
+:class:`sopel.config.Config` object in order to create the configuration
+variables it needs to function properly.
+
+.. versionadded:: 3.0
+
+Example::
+
+   def configure(config):
+      config.define_section('foo', FooSection)
+      config.foo.configure_setting('bar', 'What do you want?')
+      config.foo.configure_setting('fizz', 'Do you fizz?')
+
+.. note::
+
+   The ``configure`` function is called only from the command line, and
+   network access must not be assumed.
+
+   This process doesn't call the bot's ``setup`` or ``shutdown`` functions, so
+   this function **must** define the configuration section it wants to use.
+
+.. seealso::
+
+   The :meth:`~sopel.config.Config.define_section` method to define a new
+   section, and the :meth:`~sopel.config.types.StaticSection.configure_setting`
+   method to prompt the user to set an option.
