@@ -95,10 +95,10 @@ CONTROL_NON_PRINTING = [
     # '\x1d', CONTROL_ITALIC
     # '\x1e', CONTROL_STRIKETHROUGH
     # '\x1f', CONTROL_UNDERLINE
+    '\x7f',
 ]
 
 # Regex to detect Control Pattern
-
 COLOR_PATTERN = re.escape(CONTROL_COLOR) + r'((\d{1,2},\d{2})|\d{2})?'
 HEX_COLOR_PATTERN = '%s(%s)?' % (
     re.escape(CONTROL_HEX_COLOR),
