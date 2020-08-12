@@ -74,11 +74,21 @@ def test_plain_color():
     assert plain(color(text, colors.PINK)) == text
     assert plain(color(text, colors.PINK, colors.TEAL)) == text
 
+    tpl = 'b %s a'
+    expected = tpl % text
+    assert plain(tpl % color(text, colors.PINK)) == expected
+    assert plain(tpl % color(text, colors.PINK, colors.TEAL)) == expected
+
 
 def test_plain_hex_color():
     text = 'some text'
     assert plain(hex_color(text, 'ff0098')) == text
     assert plain(hex_color(text, 'ff0098', '00b571')) == text
+
+    tpl = 'b %s a'
+    expected = tpl % text
+    assert plain(tpl % hex_color(text, 'ff0098')) == expected
+    assert plain(tpl % hex_color(text, 'ff0098', '00b571')) == expected
 
 
 def test_plain_bold():
@@ -125,3 +135,8 @@ def test_plain_non_printing(code):
 def test_plain_unknown():
     text = 'some \x99text'
     assert plain(text) == text, 'An unknown control code must not be stripped'
+
+
+def test_plain_emoji():
+    text = 'some emoji 💪 in here'
+    assert plain(text) == text

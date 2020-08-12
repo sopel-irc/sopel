@@ -65,9 +65,9 @@ CONTROL_REVERSE = '\x16'
 CONTROL_NON_PRINTING = [
     '\x00',
     '\x01',
-    # '\x02', CONTROL_BOLD
-    # '\x03', CONTROL_COLOR
-    # '\x04', CONTROL_HEX_COLOR
+    '\x02',  # CONTROL_BOLD
+    '\x03',  # CONTROL_COLOR
+    '\x04',  # CONTROL_HEX_COLOR
     '\x05',
     '\x06',
     '\x07',
@@ -78,23 +78,23 @@ CONTROL_NON_PRINTING = [
     '\x0c',
     '\x0d',
     '\x0e',
-    # '\x0f', CONTROL_NORMAL
+    '\x0f',  # CONTROL_NORMAL
     '\x10',
-    # '\x11', CONTROL_MONOSPACE
+    '\x11',  # CONTROL_MONOSPACE
     '\x12',
     '\x13',
     '\x14',
     '\x15',
-    # '\x16', CONTROL_REVERSE
+    '\x16',  # CONTROL_REVERSE
     '\x17',
     '\x18',
     '\x19',
     '\x1a',
     '\x1b',
     '\x1c',
-    # '\x1d', CONTROL_ITALIC
-    # '\x1e', CONTROL_STRIKETHROUGH
-    # '\x1f', CONTROL_UNDERLINE
+    '\x1d',  # CONTROL_ITALIC
+    '\x1e',  # CONTROL_STRIKETHROUGH
+    '\x1f',  # CONTROL_UNDERLINE
     '\x7f',
 ]
 
@@ -109,18 +109,9 @@ HEX_COLOR_PATTERN = '%s(%s)?' % (
 )
 
 PLAIN_PATTERN = '|'.join([
-    # strip color code
     '(' + COLOR_PATTERN + ')',
     '(' + HEX_COLOR_PATTERN + ')',
-    # strip other known codes
-    '(' + re.escape(CONTROL_BOLD) + ')',
-    '(' + re.escape(CONTROL_ITALIC) + ')',
-    '(' + re.escape(CONTROL_UNDERLINE) + ')',
-    '(' + re.escape(CONTROL_STRIKETHROUGH) + ')',
-    '(' + re.escape(CONTROL_MONOSPACE) + ')',
-    '(' + re.escape(CONTROL_REVERSE) + ')',
-    '(' + re.escape(CONTROL_NORMAL) + ')',
-] + [re.escape(code) for code in CONTROL_NON_PRINTING])
+])
 PLAIN_REGEX = re.compile(PLAIN_PATTERN)
 
 
@@ -318,4 +309,6 @@ def plain(text):
     :param str text: text with potential IRC formatting control code(s)
     :rtype: str
     """
-    return PLAIN_REGEX.sub('', text)
+    if '\x03' in text or '\x04' in text:
+        text = PLAIN_REGEX.sub('', text)
+    return ''.join(c for c in text if ord(c) >= 0x20 and c != '\x7F')
