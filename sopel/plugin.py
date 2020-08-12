@@ -17,8 +17,8 @@ __all__ = [
     # constants
     'NOLIMIT', 'VOICE', 'HALFOP', 'OP', 'ADMIN', 'OWNER', 'OPER',
     # decorators
-    'action_commands',
-    'commands',
+    'action_command',
+    'command',
     'echo',
     'event',
     'example',
@@ -26,7 +26,7 @@ __all__ = [
     'intent',
     'interval',
     'label',
-    'nickname_commands',
+    'nickname_command',
     'output_prefix',
     'priority',
     'rate',
@@ -358,7 +358,7 @@ def echo(function=None):
     return add_attribute
 
 
-def commands(*command_list):
+def command(*command_list):
     """Decorate a function to set one or more commands that should trigger it.
 
     :param str command_list: one or more command name(s) to match
@@ -450,7 +450,7 @@ def commands(*command_list):
     return add_attribute
 
 
-def nickname_commands(*command_list):
+def nickname_command(*command_list):
     """Decorate a function to trigger on lines starting with "$nickname: command".
 
     :param str command_list: one or more command name(s) to match
@@ -495,7 +495,7 @@ def nickname_commands(*command_list):
     return add_attribute
 
 
-def action_commands(*command_list):
+def action_command(*command_list):
     """Decorate a function to trigger on CTCP ACTION lines.
 
     :param str command_list: one or more command name(s) to match

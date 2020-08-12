@@ -298,8 +298,8 @@ class Trigger(unicode):
     .. seealso::
 
        For more information on predefined numbered match groups in commands,
-       see :func:`.plugin.commands`, :func:`.plugin.action_commands`, and
-       :func:`.plugin.nickname_commands`.
+       see :func:`.plugin.command`, :func:`.plugin.action_command`, and
+       :func:`.plugin.nickname_command`.
 
        Also see Python's :meth:`re.Match.group` documentation for details
        about this method's behavior.
