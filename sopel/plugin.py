@@ -370,17 +370,17 @@ def command(*command_list):
 
     Example::
 
-        @commands("hello")
+        @command("hello")
             # If the command prefix is "\\.", this would trigger on lines
             # starting with ".hello".
 
-        @commands('j', 'join')
+        @command('j', 'join')
             # If the command prefix is "\\.", this would trigger on lines
             # starting with either ".j" or ".join".
 
     You can use a space in the command name to implement subcommands::
 
-        @commands('main sub1', 'main sub2')
+        @command('main sub1', 'main sub2')
             # For ".main sub1", trigger.group(1) will return "main sub1"
             # For ".main sub2", trigger.group(1) will return "main sub2"
 
@@ -389,7 +389,7 @@ def command(*command_list):
     So for instance, to have ``.main`` and ``.main sub`` working properly, you
     need to declare them like this::
 
-        @commands('main sub', 'main')
+        @command('main sub', 'main')
             # This command will react properly to ".main sub" and ".main"
 
     Then, you can check ``trigger.group(1)`` to know if it was used as
@@ -399,10 +399,10 @@ def command(*command_list):
 
     Another option is to declare command with subcommands only, like this::
 
-        @commands('main sub1)
+        @command('main sub1)
             # this command will be triggered on .main sub1
 
-        @commands('main sub2')
+        @command('main sub2')
             # this other command will be triggered on .main sub2
 
     In that case, ``.main`` won't trigger anything, and you won't have to
@@ -414,11 +414,11 @@ def command(*command_list):
         are invoked in the reverse order of appearance::
 
             # These two decorators...
-            @commands('hi')
-            @commands('hello')
+            @command('hi')
+            @command('hello')
 
             # ...are equivalent to this single decorator
-            @commands('hello', 'hi')
+            @command('hello', 'hi')
 
         See also the `Function Definitions`__ chapter from the Python
         documentation for more information about functions and decorators.
@@ -462,7 +462,7 @@ def nickname_command(*command_list):
 
     Example::
 
-        @nickname_commands("hello!")
+        @nickname_command("hello!")
             # Would trigger on "$nickname: hello!", "$nickname,   hello!",
             # "$nickname hello!", "$nickname hello! parameter1" and
             # "$nickname hello! p1 p2 p3 p4 p5 p6 p7 p8 p9".
@@ -507,7 +507,7 @@ def action_command(*command_list):
 
     Example::
 
-        @action_commands("hello!")
+        @action_command("hello!")
             # Would trigger on "/me hello!"
 
     .. versionadded:: 7.0

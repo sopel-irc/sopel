@@ -56,7 +56,7 @@ However, sometimes multiple words are needed for clarity or disambiguation;
 
         from sopel import plugin
 
-        @plugin.commands('hello')
+        @plugin.command('hello')
         def say_hello(bot, trigger):
             """Reply hello to you."""
             bot.reply('Hello!')
