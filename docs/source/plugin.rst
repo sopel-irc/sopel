@@ -7,6 +7,7 @@ Plugins: Developer Overview
 
    plugin/what
    plugin/anatomy
+   plugin/bot
    plugin/decorators
    plugin/internals
 
