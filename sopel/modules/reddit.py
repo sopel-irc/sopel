@@ -276,8 +276,17 @@ def subreddit_info(bot, trigger, match, commanded=False):
         s = r.subreddit(match)
         s.subreddit_type
     except prawcore.exceptions.Forbidden:
-        bot.say("r/" + match + " appears to be a private subreddit!")
-        return NOLIMIT
+        # Frustratingly, it's not possible to check if a subreddit is
+        # quarantined or just private. So we have to try to opt in.
+        try:
+            s.quaran.opt_in()
+            s.subreddit_type
+        except prawcore.exceptions.Forbidden:
+            # if still forbidden, it's private
+            bot.say("r/" + match + " appears to be a private subreddit!")
+            return NOLIMIT
+        else:
+            subscribers = "Quarantined"
     except prawcore.exceptions.NotFound:
         bot.say("r/" + match + " appears to be a banned subreddit!")
         return NOLIMIT
@@ -286,8 +295,8 @@ def subreddit_info(bot, trigger, match, commanded=False):
 
     created = get_time_created(bot, trigger, s.created_utc)
 
-    message = ('[REDDIT] {link}{nsfw} | {subscribers} subscribers | '
-               'Created at {created} | {public_description}')
+    message = ('[REDDIT] {link}{nsfw} | {subscribers} subscribers{quarantined}'
+               ' | Created at {created} | {public_description}')
 
     nsfw = ''
     if s.over18:
@@ -303,7 +312,8 @@ def subreddit_info(bot, trigger, match, commanded=False):
 
     message = message.format(
         link=link, nsfw=nsfw, subscribers='{:,}'.format(s.subscribers),
-        created=created, public_description=s.public_description)
+        created=created, public_description=s.public_description,
+        quarantined=' (quarantined)' if s.quarantine else '')
     bot.say(message)
 
 
