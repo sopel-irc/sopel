@@ -185,12 +185,10 @@ class Scheduler(threading.Thread):
             self._call(job)
 
     def _call(self, job):
-        """Wrapper for collecting errors from plugins."""
+        """Wrap the job's execution to handle its state and errors."""
         try:
-            job.execute(self.manager)
-        except KeyboardInterrupt:
-            # Do not block on KeyboardInterrupt
-            raise
+            with job:
+                job.execute(self.manager)
         except Exception as error:  # TODO: Be specific
             LOGGER.error('Error while processing job: %s', error)
             self.manager.on_job_error(self, job, error)
@@ -448,36 +446,18 @@ class Job(object):
         return self
 
     def execute(self, manager):
-        """Execute the job's handler and mark itself as running.
+        """Execute the job's handler and return its result.
 
         :param object manager: used as argument to the job's handler
         :return: the return value from the handler's execution
 
-        This method executes the job's handler, and while doing so it will
-        update its running state accordingly:
+        This method executes the job's handler. It doesn't change its running
+        state, as this must be done by the caller::
 
-        1. mark the job as running (set :attr:`is_running`) if not already set
-        2. execute the handler
-        3. if it wasn't already running before, update the next time the
-           job can run (:meth:`next`), then mark it as not running anymore
-           (clear :attr:`is_running`)
-
-        Then it returns the handler's return value.
-
-        .. note::
-
-            This method can be safely used with a ``with`` statement, as it
-            sets/clears the :attr:`is_running` event only if not previously set
-            by the caller.
+            with job:  # mark as running
+                # before execution
+                job.execute(manager)
+                # after execution
 
         """
-        was_running = self.is_running.is_set()
-        try:
-            self.is_running.set()
-            result = self._handler(manager)
-        finally:
-            if not was_running:
-                self.next(time.time())
-                self.is_running.clear()
-
-        return result
+        return self._handler(manager)
