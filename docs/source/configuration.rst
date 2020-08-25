@@ -253,14 +253,25 @@ Flood Prevention
 ----------------
 
 In order to avoid flooding the server, Sopel has a built-in flood prevention
-mechanism. It can be controlled with several directives:
+mechanism. The flood burst limit can be controlled with these directives:
 
 * :attr:`~CoreSection.flood_burst_lines`: the number of messages
   that can be sent before triggering the throttle mechanism.
-* :attr:`~CoreSection.flood_empty_wait`: time to wait once burst limit has been
-  reached before sending a new message.
 * :attr:`~CoreSection.flood_refill_rate`: how much time (in seconds) must be
   spent before recovering flood limit.
+
+The wait time when the flood limit is reached can be controlled with these:
+
+* :attr:`~CoreSection.flood_empty_wait`: time to wait once burst limit has been
+  reached before sending a new message.
+* :attr:`~CoreSection.flood_max_wait`: absolute maximum time to wait before
+  sending a new message once the burst limit has been reached.
+
+And the extra wait penalty for longer messages can be controlled with these:
+
+* :attr:`~CoreSection.flood_text_length`: maximum size of messages before they
+  start getting an extra wait penalty.
+* :attr:`~CoreSection.flood_penalty_ratio`: ratio used to compute said penalty.
 
 For example this configuration::
 
@@ -273,15 +284,50 @@ will allow 10 messages at once before triggering the throttle mechanism, then
 it'll wait 0.5s before sending a new message, and refill the burst limit every
 2 seconds.
 
+The wait time **cannot be longer** than :attr:`~CoreSection.flood_max_wait` (2s
+by default). This maximum wait time includes any potential extra penalty for
+longer messages.
+
+Messages that are longer than :attr:`~CoreSection.flood_text_length` get an
+extra wait penalty. The penalty is computed using a penalty ratio (controlled
+by :attr:`~CoreSection.flood_penalty_ratio`, which is 1.4 by default)::
+
+    length_overflow = max(0, (len(text) - flood_text_length))
+    extra_penalty = length_overflow / (flood_text_length * flood_penalty_ratio)
+
+For example with a message of 80 characters, the added extra penalty will be::
+
+    length_overflow = max(0, 80 - 50)  # == 30
+    extra_penalty = 30 / (50 * 1.4)  # == 0.428s (approximately)
+
+With the default configuration, it means a minimum wait time of 0.928s before
+sending any new message (0.5s + 0.428s).
+
+You can **deactivate** this extra wait penalty by setting
+:attr:`~CoreSection.flood_penalty_ratio` to 0.
+
 The default configuration works fine with most tested networks, but individual
 bots' owners are invited to tweak as necessary to respect their network's flood
 policy.
 
 .. versionadded:: 7.0
 
-   Flood prevention has been modified in Sopel 7.0 and these configuration
-   options have been added: ``flood_burst_lines``, ``flood_empty_wait``, and
-   ``flood_refill_rate``.
+    Additional configuration options: ``flood_burst_lines``, ``flood_empty_wait``,
+    and ``flood_refill_rate``.
+
+.. versionadded:: 7.1
+
+    Even more additional configuration options: ``flood_max_wait``,
+    ``flood_text_length``, and ``flood_penalty_ratio``.
+
+    It is now possible to deactivate the extra penalty for longer messages by
+    setting ``flood_penalty_ratio`` to 0.
+
+.. note::
+
+    ``@dgw`` said once about Sopel's flood protection logic:
+
+        *"It's some arcane magic from AT LEAST a decade ago."*
 
 Perform commands on connect
 ---------------------------

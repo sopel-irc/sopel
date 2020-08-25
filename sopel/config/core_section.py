@@ -526,6 +526,57 @@ class CoreSection(StaticSection):
     .. versionadded:: 7.0
     """
 
+    flood_max_wait = ValidatedAttribute('flood_max_wait', float, default=2)
+    """How much time to wait at most when flood protection kicks in.
+
+    :default: ``2``
+
+    This is equivalent to the default value:
+
+    .. code-block:: ini
+
+        flood_max_wait = 2
+
+    .. seealso::
+
+        The :ref:`Flood Prevention` chapter to learn what each flood-related
+        setting does.
+
+    .. versionadded:: 7.1
+    """
+
+    flood_penalty_ratio = ValidatedAttribute('flood_penalty_ratio',
+                                             float,
+                                             default=1.4)
+    """Ratio of the message length used to compute the added wait penalty.
+
+    :default: ``1.4``
+
+    Messages longer than :attr:`flood_text_length` will get an added
+    wait penalty (in seconds) that will be computed like this::
+
+        overflow = max(0, (len(text) - flood_text_length))
+        rate = flood_text_length * flood_penalty_ratio
+        penalty = overflow / rate
+
+    .. note::
+
+        If the penalty ratio is 0, this penalty will be disabled.
+
+    This is equivalent to the default value:
+
+    .. code-block:: ini
+
+        flood_penalty_ratio = 1.4
+
+    .. seealso::
+
+        The :ref:`Flood Prevention` chapter to learn what each flood-related
+        setting does.
+
+    .. versionadded:: 7.1
+    """
+
     flood_refill_rate = ValidatedAttribute('flood_refill_rate', int, default=1)
     """How quickly burst mode recovers, in messages per second.
 
@@ -543,6 +594,28 @@ class CoreSection(StaticSection):
         setting does.
 
     .. versionadded:: 7.0
+    """
+
+    flood_text_length = ValidatedAttribute('flood_text_length', int, default=50)
+    """Length of text at which an extra wait penalty is added.
+
+    :default: ``50``
+
+    Messages longer than this (in bytes) get an added wait penalty if the
+    flood protection limit is reached.
+
+    This is equivalent to the default value:
+
+    .. code-block:: ini
+
+        flood_text_length = 50
+
+    .. seealso::
+
+        The :ref:`Flood Prevention` chapter to learn what each flood-related
+        setting does.
+
+    .. versionadded:: 7.1
     """
 
     help_prefix = ValidatedAttribute('help_prefix',

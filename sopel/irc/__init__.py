@@ -566,11 +566,19 @@ class AbstractBot(object):
             # Manage multi-line only when needed
             text, excess = tools.get_sendable_message(text)
 
+        flood_max_wait = self.settings.core.flood_max_wait
+        flood_burst_lines = self.settings.core.flood_burst_lines
+        flood_refill_rate = self.settings.core.flood_refill_rate
+        flood_empty_wait = self.settings.core.flood_empty_wait
+
+        flood_text_length = self.settings.core.flood_text_length
+        flood_penalty_ratio = self.settings.core.flood_penalty_ratio
+
         with self.sending:
             recipient_id = tools.Identifier(recipient)
             recipient_stack = self.stack.setdefault(recipient_id, {
                 'messages': [],
-                'flood_left': self.config.core.flood_burst_lines,
+                'flood_left': flood_burst_lines,
             })
 
             if recipient_stack['messages']:
@@ -584,15 +592,36 @@ class AbstractBot(object):
             # based on how long it's been since our last message to recipient
             if not recipient_stack['flood_left']:
                 recipient_stack['flood_left'] = min(
-                    self.config.core.flood_burst_lines,
-                    int(elapsed) * self.config.core.flood_refill_rate)
+                    flood_burst_lines,
+                    int(elapsed) * flood_refill_rate)
 
             # If it's too soon to send another message, wait
             if not recipient_stack['flood_left']:
-                penalty = float(max(0, len(text) - 50)) / 70
-                wait = min(self.config.core.flood_empty_wait + penalty, 2)  # Maximum wait time is 2 sec
+                penalty = 0
+
+                if flood_penalty_ratio > 0:
+                    penalty_ratio = flood_text_length * flood_penalty_ratio
+                    text_length_overflow = float(
+                        max(0, len(text) - flood_text_length))
+                    penalty = text_length_overflow / penalty_ratio
+
+                # Maximum wait time is 2 sec by default
+                initial_wait_time = flood_empty_wait + penalty
+                wait = min(initial_wait_time, flood_max_wait)
                 if elapsed < wait:
-                    time.sleep(wait - elapsed)
+                    sleep_time = wait - elapsed
+                    LOGGER.debug(
+                        'Flood protection wait time: %.3fs; '
+                        'elapsed time: %.3fs; '
+                        'initial wait time (limited to %.3fs): %.3fs '
+                        '(including %.3fs of penalty).',
+                        sleep_time,
+                        elapsed,
+                        flood_max_wait,
+                        initial_wait_time,
+                        penalty,
+                    )
+                    time.sleep(sleep_time)
 
             # Loop detection
             messages = [m[1] for m in recipient_stack['messages'][-8:]]
