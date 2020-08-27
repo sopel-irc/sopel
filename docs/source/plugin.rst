@@ -70,6 +70,11 @@ Plugin glossary
       A command is a :term:`Named rule` that reacts to a :term:`Command prefix`
       and a name.
 
+   Command prefix
+      The command prefix is a regular expression joined to a :term:`Command`'s
+      name as its prefix. It is defined by configuration using
+      :attr:`core.prefix <sopel.config.core_section.CoreSection.prefix>`.
+
    Action command
       An action command is a :term:`Named rule` that reacts to a name in a
       message sent with the ``ACTION`` intent/CTCP.
@@ -77,11 +82,6 @@ Plugin glossary
    Nick command
       A nick command (or nickname command) is a :term:`Named rule` that reacts
       to a name prefixed by the bot's nickname in a message.
-
-   Command prefix
-      The command prefix is a regular expression joined to a :term:`Command`'s
-      name as its prefix. It is defined by configuration using
-      :attr:`core.prefix <sopel.config.core_section.CoreSection.prefix>`.
 
    URL callback
       A URL callback is a rule that triggers for every URL in a message.

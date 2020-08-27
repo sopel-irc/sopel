@@ -41,7 +41,7 @@ rule is triggered, you can use the bot's settings::
 
 .. note::
 
-    The ``say`` methods sends a ``PRIVMSG`` command to the IRC server. To send
+    The ``say`` method sends a ``PRIVMSG`` command to the IRC server. To send
     a ``NOTICE`` command instead, you need to use the
     :meth:`~sopel.bot.SopelWrapper.notice` method instead.
 
@@ -59,7 +59,7 @@ shortcut for that::
 
     bot.reply('ping!')
 
-As for the ``say`` method seen above, the :meth:`~sopel.bot.SopelWrapper.reply`
+As with the ``say`` method seen above, the :meth:`~sopel.bot.SopelWrapper.reply`
 method can send your message to another destination::
 
     bot.reply('ping!', '#another-channel')
@@ -75,7 +75,7 @@ bot's owner.
 .. note::
 
     By default the ``reply`` method sends its message using a ``PRIVMSG``
-    command. You can set ``notice=True`` as argument to make it uses a
+    command. You can set ``notice=True`` as argument to make it use a
     ``NOTICE`` command instead::
 
         bot.reply('ping!', notice=True)
@@ -84,16 +84,16 @@ bot's owner.
 Make it act
 ===========
 
-Beside talking, the bot can also **act**:
+Besides talking, the bot can also **act**:
 
 * to :meth:`~sopel.bot.Sopel.join` a channel,
 * or to :meth:`~sopel.bot.Sopel.part` from it,
 * and even to :meth:`~sopel.bot.Sopel.quit` the server,
 
-Oh, and let's not forget about ``/me something something``, which can be done
-with the :meth:`~sopel.bot.SopelWrapper.action` method::
+Oh, and let's not forget about ``/me does something``, which can be done with
+the :meth:`~sopel.bot.SopelWrapper.action` method::
 
-    bot.action('something something')
+    bot.action('does something')
 
 
 Channels & users
@@ -108,7 +108,7 @@ the bot is in::
         # do something with the name and the channel
 
 With the ``trigger`` object, you can also access the channel object directly
-(granted the message comes from a channel, which you should check first)::
+(assuming the message comes from a channel, which you should check first)::
 
     channel = bot.channels[trigger.sender]
 
@@ -120,13 +120,13 @@ which provides the following information:
 * its :attr:`~sopel.tools.target.Channel.users`
 * and its users' :attr:`~sopel.tools.target.Channel.privileges`
 
-Using ``trigger.nick``, you can get the nick's profile and privileges in a
+Using ``trigger.nick``, you can get the nick's privileges and profile in a
 channel like this::
 
     user_privileges = channel.privileges[trigger.nick]
-    user = channels.users[trigger.nick]
+    user = channel.users[trigger.nick]
 
-Then you can check if the user is voiced (mode +v) or not::
+Then, for example, you can check if the user is voiced (mode +v) or not::
 
     from sopel import plugin
 

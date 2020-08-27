@@ -3,7 +3,7 @@ What is a Plugin?
 =================
 
 Before writing your first plugin, you may want to know what is a plugin, how is
-it made, and what are the best solutions for your need. In this chapter we'll
+it made, and what are the best solutions for your needs. In this chapter we'll
 cover what is a plugin, what you can do with them, and some vocabulary.
 
 You may want to skip ahead to :doc:`anatomy` if you already know what a plugin
@@ -30,11 +30,11 @@ from one of its
 should write a single file plugin when:
 
 * everything is in a single file
-* you don't have any dependencies other than Sopel and the Python's built-in
-  library
+* you don't have any dependencies other than Sopel and Python's built-in library,
+  or your plugin is a "one-off" for your use only (not intended to be shared)
 
-This type of plugin is easy to install and share: copy its file into the right
-location, and Sopel will load it on startup.
+This type of plugin is easy to install: copy its file into the right location,
+and Sopel will load it on startup.
 
 Folder
 ------
@@ -71,7 +71,7 @@ use an :ref:`Entry point` plugin instead.
 Entry point
 -----------
 
-.. versionadded:: 7.0.0
+.. versionadded:: 7.0
 
 An **Entry point** plugin is a Python module or package distributed via a
 ``setup.py`` script, and it is available to Sopel via Sopel's ``sopel.plugins``
@@ -96,8 +96,8 @@ You should write an entry point plugin when:
 * you want a modern and reliable way to package your Sopel plugin
 * you want to distribute more than one Sopel plugin per distributed package
 
-An entry point plugin is the best way to package and distribute a Sopel plugin
-or collection of plugins in a clean and easy-to-update manner.
+An entry point plugin is the best, most flexible way to package and distribute
+a Sopel plugin (or collection of plugins) in a clean, easy-to-update manner.
 
 Note that a single Python distributed package can expose more than one Sopel
 entry point plugin, which is great to bundle multiple plugins at once.

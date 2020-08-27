@@ -19,9 +19,9 @@ uses a :term:`Rule system`: plugins define rules, Sopel loads them and triggers
 them when a message matches.
 
 Sopel identifies a callable as a rule when it has been decorated with any of
-these :mod:`sopel.plugin`'s decorators:
+these decorators from :mod:`sopel.plugin`:
 
-* :term:`Generic rule`:: :func:`~sopel.plugin.rule`,
+* :term:`Generic rule`: :func:`~sopel.plugin.rule`,
   :func:`~sopel.plugin.find`, and :func:`~sopel.plugin.search`
 * :term:`Named rule`: :func:`~sopel.plugin.commands`, 
   :func:`~sopel.plugin.action_commands`, and
@@ -35,7 +35,7 @@ decorators are used alone:
 * event based rule: :func:`~sopel.plugin.event`
 * intent/CTCP based rule: :func:`~sopel.plugin.intent`
 
-In that case, it will use a match-all regex (`r'.*'`)::
+In that case, it will use a match-all regex (``r'.*'``)::
 
    from sopel import plugin
 
@@ -66,6 +66,8 @@ better to limit who can trigger them. There are decorators for that:
 
 * :func:`sopel.plugin.require_account`: requires services/NickServ
   authentication; works only if the server implements modern IRC authentication
+  (see also :attr:`Trigger.account <sopel.trigger.Trigger.account>` and
+  the `account-tag`__ specification for more information)
 * :func:`sopel.plugin.require_privilege`: requires a specific level of
   privileges in the channel; works only for channel messages, not private
   messages, and you probably want to use it with
@@ -73,6 +75,8 @@ better to limit who can trigger them. There are decorators for that:
 * :func:`sopel.plugin.require_admin`: only the bot's owner and its admins can
   trigger the rule
 * :func:`sopel.plugin.require_owner`: only the bot's owner can trigger the rule
+
+.. __: https://ircv3.net/specs/extensions/account-tag-3.2
 
 Rate limiting
 -------------
@@ -97,6 +101,9 @@ Example::
    @plugin.rate(user=2)
    def you_said_ah(bot, trigger):
       bot.reply('Ha AH!')
+
+A rule with rate-limiting can return :const:`sopel.plugin.NOLIMIT` to let the
+user try again after a failed command, e.g. if a required argument is missing.
 
 Rule labels
 -----------
@@ -144,13 +151,13 @@ the same interface:
 
 A callable must accept two positional arguments: a
 :class:`bot <sopel.bot.SopelWrapper>` object, and a
-:class:`trigger <sopel.trigger.Trigger>` object. Both are objects tied to the
+:class:`trigger <sopel.trigger.Trigger>` object. Both are tied to the specific
 message that matches the rule.
 
 The ``bot`` provides the ability to send messages to the network (to say
 something or to send a specific command such as ``JOIN``), and to check the
 state of the bot such as its settings, memory, or database. It is a context
-aware wrapper around the :class:`~sopel.bot.Sopel` instance.
+aware wrapper around the running :class:`~sopel.bot.Sopel` instance.
 
 The ``trigger`` provides information about the line which triggered the rule
 and this callable to be executed.
@@ -178,8 +185,9 @@ Plugin jobs
 ===========
 
 Another feature available to plugins is the ability to define
-:term:`jobs <Plugin job>`. It is a Python callable decorated with
-:func:`sopel.plugin.interval` and that executes every period of time.
+:term:`jobs <Plugin job>`. A job is a Python callable decorated with
+:func:`sopel.plugin.interval`, which executes the callable
+periodically on a schedule.
 
 A job follows this interface:
 
@@ -227,7 +235,7 @@ The ``setup`` function must follow this interface:
 
 This function is optional. If it exists, it will be called while the plugin is
 being loaded. The purpose of this function is to perform whatever actions are
-needed to allow a plugin to function properly (e.g, ensuring that the
+needed to allow a plugin to do its work properly (e.g, ensuring that the
 appropriate configuration variables exist and are set). Note that this normally
 occurs prior to connection to the server, so the behavior of the messaging
 functions on the :class:`sopel.bot.Sopel` object it's passed is undefined and
@@ -263,8 +271,8 @@ to the server, so the behavior of the messaging functions on the
 likely to fail.
 
 The purpose of this function is to perform whatever actions are needed to allow
-a plugin to properly clean up (e.g. ensuring that any temporary cache files are
-deleted).
+a plugin to properly clean up after itself (e.g. ensuring that any temporary
+cache files are deleted).
 
 The bot will not continue notifying other plugins or continue quitting during
 the execution of this function. As such, an infinite loop (such as an
@@ -284,7 +292,7 @@ and may require. Then, it should add this section to the bot's settings::
 
    class FooSection(types.StaticSection):
        bar = types.ListAttribute('bar')
-       fizz = ValidatedAttribute('fizz', bool, default=False)
+       fizz = types.ValidatedAttribute('fizz', bool, default=False)
 
    def setup(bot):
       bot.settings.define_section('foo', FooSection)
@@ -321,7 +329,7 @@ The ``configure`` function must follow this interface:
 
 Its intended purpose is to use the methods of the passed
 :class:`sopel.config.Config` object in order to create the configuration
-variables it needs to function properly.
+variables it needs to work properly.
 
 .. versionadded:: 3.0
 
