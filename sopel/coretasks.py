@@ -98,8 +98,17 @@ def auth_after_register(bot):
     else:
         return
 
+    # nickserv-based auth method needs to check for current nick
     if auth_method == 'nickserv':
-        bot.say('IDENTIFY %s' % auth_password, auth_target or 'NickServ')
+        if bot.nick != bot.settings.core.nick:
+            LOGGER.warning('Sending nickserv GHOST command.')
+            bot.say(
+                'GHOST %s %s' % (bot.settings.core.nick, auth_password),
+                auth_target or 'NickServ')
+        else:
+            bot.say('IDENTIFY %s' % auth_password, auth_target or 'NickServ')
+
+    # other methods use account instead of nick
     elif auth_method == 'authserv':
         bot.write(('AUTHSERV auth', auth_username + ' ' + auth_password))
     elif auth_method == 'Q':
@@ -120,6 +129,21 @@ def _execute_perform(bot):
         command = command.replace('$nickname', bot.config.core.nick)
         LOGGER.debug(command)
         bot.write((command,))
+
+
+@plugin.event(events.ERR_NICKNAMEINUSE)
+@plugin.thread(False)
+@plugin.priority('high')
+@plugin.unblockable
+def on_nickname_in_use(bot, trigger):
+    LOGGER.error(
+        'Nickname already in use! '
+        '(Nick: %s; Sender: %s; Args: %r)',
+        trigger.nick,
+        trigger.sender,
+        trigger.args,
+    )
+    bot.change_current_nick(bot.nick + '_')
 
 
 @module.require_privmsg("This command only works as a private message.")
@@ -597,6 +621,11 @@ def track_quit(bot, trigger):
     for channel in bot.channels.values():
         channel.clear_user(trigger.nick)
     bot.users.pop(trigger.nick, None)
+
+    if trigger.nick == bot.settings.core.nick and trigger.nick != bot.nick:
+        # old nick is now available, let's change nick again
+        bot.change_current_nick(bot.settings.core.nick)
+        auth_after_register(bot)
 
 
 @module.event('CAP')

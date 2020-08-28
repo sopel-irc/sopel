@@ -46,7 +46,6 @@ except ImportError:
     has_ssl = False
 
 from sopel import tools
-from sopel.tools import events
 from sopel.trigger import PreTrigger
 from .backends import AsynchatBackend, SSLAsynchatBackend
 from .isupport import ISupport
@@ -294,6 +293,15 @@ class AbstractBot(object):
 
         self.last_error_timestamp = datetime.now()
         self.error_count = self.error_count + 1
+
+    def change_current_nick(self, new_nick):
+        """Change the current nick without configuration modification.
+
+        :param str new_nick: new nick to be used by the bot
+        """
+        self._nick = tools.Identifier(new_nick)
+        LOGGER.debug('Sending nick "%s"', self.nick)
+        self.backend.send_nick(self.nick)
 
     def on_close(self):
         """Call shutdown methods."""
