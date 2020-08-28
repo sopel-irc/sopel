@@ -225,13 +225,7 @@ class AbstractBot(object):
             self.backend.send_pong(pretrigger.args[-1])
         elif pretrigger.event == 'ERROR':
             LOGGER.error("ERROR received from server: %s", pretrigger.args[-1])
-            if self.hasquit:
-                # TODO: refactor direct interface with asynchat
-                self.backend.close_when_done()
-        elif pretrigger.event == events.ERR_NICKNAMEINUSE:
-            LOGGER.error('Nickname already in use!')
-            # TODO: refactor direct interface with asynchat
-            self.backend.handle_close()
+            self.backend.on_irc_error(pretrigger)
 
         self.dispatch(pretrigger)
 
