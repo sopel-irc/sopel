@@ -140,7 +140,7 @@ class CoreSection(StaticSection):
             Liam
 
     This would then allow both "William: Hi!" and "Bill: Hi!" to work with
-    :func:`~sopel.plugin.nickname_commands`.
+    :func:`~sopel.plugin.nickname_command`.
     """
 
     auth_method = ChoiceAttribute('auth_method', choices=[
