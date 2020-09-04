@@ -95,19 +95,20 @@ class StaticSection(object):
         passed, the current value of the setting will be ignored, even if it is
         not the attribute's default.
         """
-        clazz = getattr(self.__class__, name)
-        if default is NO_DEFAULT and not clazz.is_secret:
+        attribute = getattr(self.__class__, name)
+        if default is NO_DEFAULT and not attribute.is_secret:
             try:
                 default = getattr(self, name)
             except AttributeError:
                 pass
             except ValueError:
                 print('The configured value for this option was invalid.')
-                if clazz.default is not NO_DEFAULT:
-                    default = clazz.default
+                if attribute.default is not NO_DEFAULT:
+                    default = attribute.default
         while True:
             try:
-                value = clazz.configure(prompt, default, self._parent, self._section_name)
+                value = attribute.configure(
+                    prompt, default, self._parent, self._section_name)
             except ValueError as exc:
                 print(exc)
             else:
@@ -194,7 +195,9 @@ class BaseValidated(object):
             raise ValueError("You must provide a value for this option.")
 
         value = value or default
-        return self.parse(value)
+        section = getattr(parent, section_name)
+
+        return self._parse(value, parent, section)
 
     def serialize(self, value, *args, **kwargs):
         """Take some object, and return the string to be saved to the file.
@@ -212,25 +215,32 @@ class BaseValidated(object):
     def __get__(self, instance, owner=None):
         if instance is None:
             # If instance is None, we're getting from a section class, not an
-            # instance of a session class. It makes the wizard code simpler
+            # instance of a section class. It makes the wizard code simpler
             # (and is really just more intuitive) to return the descriptor
             # instance here.
             return self
 
+        value = None
         env_name = 'SOPEL_%s_%s' % (instance._section_name.upper(), self.name.upper())
         if env_name in os.environ:
             value = os.environ.get(env_name)
         elif instance._parser.has_option(instance._section_name, self.name):
             value = instance._parser.get(instance._section_name, self.name)
-        else:
-            if self.default is not NO_DEFAULT:
-                return self.default
-            raise AttributeError(
-                "Missing required value for {}.{}".format(
-                    instance._section_name, self.name
-                )
+
+        settings = instance._parent
+        section = getattr(settings, instance._section_name)
+        return self._parse(value, settings, section)
+
+    def _parse(self, value, settings, section):
+        if value is not None:
+            return self.parse(value)
+        if self.default is not NO_DEFAULT:
+            return self.default
+        raise AttributeError(
+            "Missing required value for {}.{}".format(
+                section._section_name, self.name
             )
-        return self.parse(value)
+        )
 
     def __set__(self, instance, value):
         if value is None:
@@ -238,8 +248,14 @@ class BaseValidated(object):
                 raise ValueError('Cannot unset an option with a required value.')
             instance._parser.remove_option(instance._section_name, self.name)
             return
-        value = self.serialize(value)
+
+        settings = instance._parent
+        section = getattr(settings, instance._section_name)
+        value = self._serialize(value, settings, section)
         instance._parser.set(instance._section_name, self.name, value)
+
+    def _serialize(self, value, settings, section):
+        return self.serialize(value)
 
     def __delete__(self, instance):
         instance._parser.remove_option(instance._section_name, self.name)
@@ -503,7 +519,10 @@ class ListAttribute(BaseValidated):
             else:
                 values.append(value)
             value = get_input(each_prompt + ' ')
-        return self.parse(self.serialize(values))
+
+        section = getattr(parent, section_name)
+        values = self._serialize(values, parent, section)
+        return self._parse(values, parent, section)
 
 
 class ChoiceAttribute(BaseValidated):
@@ -569,62 +588,55 @@ class FilenameAttribute(BaseValidated):
         self.relative = relative
         self.directory = directory
 
-    def __get__(self, instance, owner=None):
-        if instance is None:
-            return self
-        env_name = 'SOPEL_%s_%s' % (instance._section_name.upper(), self.name.upper())
-        if env_name in os.environ:
-            value = os.environ.get(env_name)
-        elif instance._parser.has_option(instance._section_name, self.name):
-            value = instance._parser.get(instance._section_name, self.name)
-        else:
-            if self.default is not NO_DEFAULT:
-                value = self.default
-            else:
+    def _parse(self, value, settings, section):
+        if value is None:
+            if self.default == NO_DEFAULT:
                 raise AttributeError(
                     "Missing required value for {}.{}".format(
-                        instance._section_name, self.name
+                        section._section_name, self.name
                     )
                 )
-        main_config = instance._parent
-        this_section = getattr(main_config, instance._section_name)
-        return self.parse(value, main_config, this_section)
+            value = self.default
 
-    def __set__(self, instance, value):
-        main_config = instance._parent
-        this_section = getattr(main_config, instance._section_name)
-        value = self.serialize(value, main_config, this_section)
-        instance._parser.set(instance._section_name, self.name, value)
+        if not value:
+            return self.parse(value)
 
-    def configure(self, prompt, default, parent, section_name):
-        if default is not NO_DEFAULT and default is not None:
-            prompt = '{} [{}]'.format(prompt, default)
-        value = get_input(prompt + ' ')
-        if not value and default is NO_DEFAULT:
-            raise ValueError("You must provide a value for this option.")
-        value = value or default
-        return self.parse(value, parent, section_name)
+        result = os.path.expanduser(value)
+        if not os.path.isabs(result):
+            if not self.relative:
+                raise ValueError("Value must be an absolute path.")
+            result = os.path.join(settings.homedir, result)
 
-    def parse(self, value, main_config, this_section):
-        """Used to validate ``value`` when loading the config.
+        return self.parse(result)
 
-        :param main_config: the config object which contains this attribute
-        :type main_config: :class:`~sopel.config.Config`
-        :param this_section: the config section which contains this attribute
-        :type this_section: :class:`~StaticSection`
+    def _serialize(self, value, settings, section):
+        """Used to validate ``value`` when it is changed at runtime.
+
+        :param settings: the config object which contains this attribute
+        :type settings: :class:`~sopel.config.Config`
+        :param section: the config section which contains this attribute
+        :type section: :class:`~StaticSection`
         :return: the ``value``, if it is valid
         :rtype: str
         :raise ValueError: if the ``value`` is not valid
         """
-        if value is None:
-            return
+        self._parse(value, settings, section)
+        return self.serialize(value)
 
-        value = os.path.expanduser(value)
+    def parse(self, value):
+        """Parse ``value`` as a path on the filesystem to check.
 
-        if not os.path.isabs(value):
-            if not self.relative:
-                raise ValueError("Value must be an absolute path.")
-            value = os.path.join(main_config.homedir, value)
+        :param str value: the path to check
+        :rtype: str
+        :raise ValueError: if the directory or file doesn't exist and cannot
+                           be created
+
+        If there is no ``value``, then this returns ``None``. Otherwise, it'll
+        check if the directory or file exists. If it doesn't, it'll try to
+        create it.
+        """
+        if not value:
+            return None
 
         if self.directory and not os.path.isdir(value):
             try:
@@ -639,16 +651,15 @@ class FilenameAttribute(BaseValidated):
                 raise ValueError("Value must be an existing or creatable file.")
         return value
 
-    def serialize(self, value, main_config, this_section):
-        """Used to validate ``value`` when it is changed at runtime.
+    def serialize(self, value):
+        """Directly return the ``value`` without modification.
 
-        :param main_config: the config object which contains this attribute
-        :type main_config: :class:`~sopel.config.Config`
-        :param this_section: the config section which contains this attribute
-        :type this_section: :class:`~StaticSection`
-        :return: the ``value``, if it is valid
+        :param str value: the value needing to be saved
+        :return: the unaltered ``value``, if it is valid
         :rtype: str
-        :raise ValueError: if the ``value`` is not valid
+
+        Managing the filename is done by other methods (:meth:`parse`), and
+        this method is a no-op: this way it ensures that relative paths won't
+        be replaced by absolute ones.
         """
-        self.parse(value, main_config, this_section)
         return value  # So that it's still relative

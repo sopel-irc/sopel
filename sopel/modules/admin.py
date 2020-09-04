@@ -352,10 +352,7 @@ def set_config(bot, trigger):
     # Otherwise, set the value to one given
     if descriptor is not None:
         try:
-            if isinstance(descriptor, types.FilenameAttribute):
-                value = descriptor.parse(value, bot.config, descriptor)
-            else:
-                value = descriptor.parse(value)
+            value = descriptor._parse(value, bot.config, section)
         except ValueError as exc:
             bot.say("Can't set attribute: " + str(exc))
             return
