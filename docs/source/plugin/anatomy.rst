@@ -23,9 +23,9 @@ these decorators from :mod:`sopel.plugin`:
 
 * :term:`Generic rule`: :func:`~sopel.plugin.rule`,
   :func:`~sopel.plugin.find`, and :func:`~sopel.plugin.search`
-* :term:`Named rule`: :func:`~sopel.plugin.commands`, 
-  :func:`~sopel.plugin.action_commands`, and
-  :func:`~sopel.plugin.nickname_commands`
+* :term:`Named rule`: :func:`~sopel.plugin.command`,
+  :func:`~sopel.plugin.action_command`, and
+  :func:`~sopel.plugin.nickname_command`
 * :term:`URL callback`: :func:`~sopel.plugin.url` and
   :func:`~sopel.plugin.url_lazy`
 
@@ -175,7 +175,7 @@ The return value of a callable is ignored unless it is
 
       from sopel import plugin
 
-      @plugin.commands('hello')
+      @plugin.command('hello')
       def say_hello(bot, trigger):
          """Reply hello to you."""
          bot.reply('Hello!')
