@@ -27,22 +27,35 @@ A **Single file** plugin is the most basic form a Sopel plugin can take. It is
 composed of a single file available to Sopel from its plugins directory (or
 from one of its
 :attr:`extra directories <sopel.config.core_section.CoreSection.extra>`). You
-should write a single file plugin when:
+can write a single file plugin when:
 
 * everything is in a single file
-* you don't have any dependencies other than Sopel and Python's built-in library,
-  or your plugin is a "one-off" for your use only (not intended to be shared)
+* if possible, dependencies should be limited to Sopel and Python's built-in
+  library, or your plugin is a "one-off" for your use only (not intended to be
+  shared)
 
 This type of plugin is easy to install: copy its file into the right location,
 and Sopel will load it on startup.
+
+.. note::
+
+   You can still use a single file plugin with extra dependencies: bot owners
+   will have to install them themselves, so you should probably document them,
+   and possibly list them in a ``requirements.txt`` file to be used with
+   ``pip install -r`` if you want to simplify the installation process.
 
 Folder
 ------
 
 A **Folder** plugin is a folder that contains a ``__init__.py`` file. It is
 available to Sopel the same way a :ref:`Single file` plugin is, and shares the
-same limitation: Everything that is not available in this ``__init__.py`` file
-won't be visible to Sopel.
+same limitation:
+
+* everything that is not available in this ``__init__.py`` file won't be
+  visible to Sopel
+* if possible, dependencies should be limited to Sopel and Python's built-in
+  library, or your plugin is a "one-off" for your use only (not intended to be
+  shared)
 
 By default, Sopel's plugin directories are **not** available in ``sys.path``,
 so it is not possible to do ``from my_plugin_dir import some_module`` without
@@ -51,6 +64,12 @@ a specific configuration from the bot's owner.
 When a plugin author wants to split code into different files, and/or share it
 between multiple plugins, the best option is to use an :ref:`Entry point`
 plugin instead.
+
+.. note::
+
+   As per the single file plugin, you can still use a folder plugin  with extra
+   dependencies, and you can follow the same advices about ``requirements.txt``
+   and ``pip``.
 
 Namespace package
 -----------------
