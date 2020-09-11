@@ -9,14 +9,15 @@ https://sopel.chat
 """
 from __future__ import absolute_import, division, print_function, unicode_literals
 
-from sopel.module import commands, example, require_admin
+from sopel import plugin
 
 
-@commands('announce')
-@example('.announce Some important message here')
-@require_admin('Sorry, I can\'t let you do that', reply=True)
+@plugin.command('announce')
+@plugin.example('.announce Some important message here')
+@plugin.require_admin('Sorry, I can\'t let you do that', reply=True)
+@plugin.output_prefix('[ANNOUNCEMENT] ')
 def announce(bot, trigger):
     """Send an announcement to all channels the bot is in"""
     for channel in bot.channels:
-        bot.say('[ANNOUNCEMENT] %s' % trigger.group(2), channel)
+        bot.say(trigger.group(2), channel)
     bot.reply('Announce complete.')
