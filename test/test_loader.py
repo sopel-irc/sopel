@@ -63,6 +63,25 @@ def shutdown():
 def ignored():
     pass
 
+
+@sopel.module.rate(10)
+def ignored_rate():
+    pass
+
+
+class Ignored:
+    def __init__(self):
+        self.rule = [r'.*']
+
+    def __call__(self, bot, trigger):
+        pass
+
+ignored_obj = Ignored()
+
+def ignored_trickster():
+    pass
+
+ignored_trickster._sopel_callable = True
 """
 
 
@@ -185,6 +204,23 @@ def test_clean_module(testplugin, tmpconfig):
     assert test_mod.ignored not in jobs
     assert test_mod.ignored not in shutdowns
     assert test_mod.ignored not in urls
+    # @rate doesn't create a callable and is ignored
+    assert test_mod.ignored_rate not in callables
+    assert test_mod.ignored_rate not in jobs
+    assert test_mod.ignored_rate not in shutdowns
+    assert test_mod.ignored_rate not in urls
+    # object with a triggerable attribute are ignored by default
+    assert loader.is_triggerable(test_mod.ignored_obj)
+    assert test_mod.ignored_obj not in callables
+    assert test_mod.ignored_obj not in jobs
+    assert test_mod.ignored_obj not in shutdowns
+    assert test_mod.ignored_obj not in urls
+    # trickster function is ignored: it's still not a proper plugin callable
+    assert not loader.is_triggerable(test_mod.ignored_trickster)
+    assert test_mod.ignored_trickster not in callables
+    assert test_mod.ignored_trickster not in jobs
+    assert test_mod.ignored_trickster not in shutdowns
+    assert test_mod.ignored_trickster not in urls
 
 
 def test_clean_module_idempotency(testplugin, tmpconfig):

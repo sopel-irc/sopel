@@ -147,6 +147,7 @@ def interval(*intervals):
 
     """
     def add_attribute(function):
+        function._sopel_callable = True
         if not hasattr(function, "interval"):
             function.interval = []
         for arg in intervals:
@@ -201,6 +202,7 @@ def rule(*patterns):
 
     """
     def add_attribute(function):
+        function._sopel_callable = True
         if not hasattr(function, "rule"):
             function.rule = []
         for value in patterns:
@@ -255,6 +257,7 @@ def find(*patterns):
 
     """
     def add_attribute(function):
+        function._sopel_callable = True
         if not hasattr(function, "find_rules"):
             function.find_rules = []
         for value in patterns:
@@ -312,6 +315,7 @@ def search(*patterns):
 
     """
     def add_attribute(function):
+        function._sopel_callable = True
         if not hasattr(function, "search_rules"):
             function.search_rules = []
         for value in patterns:
@@ -441,6 +445,7 @@ def command(*command_list):
 
     """
     def add_attribute(function):
+        function._sopel_callable = True
         if not hasattr(function, "commands"):
             function.commands = []
         for command in command_list:
@@ -486,6 +491,7 @@ def nickname_command(*command_list):
 
     """
     def add_attribute(function):
+        function._sopel_callable = True
         if not hasattr(function, 'nickname_commands'):
             function.nickname_commands = []
         for cmd in command_list:
@@ -540,6 +546,7 @@ def action_command(*command_list):
 
     """
     def add_attribute(function):
+        function._sopel_callable = True
         if not hasattr(function, 'action_commands'):
             function.action_commands = []
         for cmd in command_list:
@@ -608,6 +615,7 @@ def event(*event_list):
 
     """
     def add_attribute(function):
+        function._sopel_callable = True
         if not hasattr(function, "event"):
             function.event = []
         for name in event_list:
@@ -632,6 +640,7 @@ def intent(*intent_list):
 
     """
     def add_attribute(function):
+        function._sopel_callable = True
         if not hasattr(function, "intents"):
             function.intents = []
         for name in intent_list:
@@ -945,6 +954,7 @@ def url(*url_rules):
 
     """
     def actual_decorator(function):
+        function._sopel_callable = True
         if not hasattr(function, 'url_regex'):
             function.url_regex = []
         for url_rule in url_rules:
@@ -995,6 +1005,7 @@ def url_lazy(*loaders):
 
     """
     def decorator(function):
+        function._sopel_callable = True
         if not hasattr(function, 'url_lazy_loaders'):
             function.url_lazy_loaders = []
         function.url_lazy_loaders.extend(loaders)
