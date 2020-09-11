@@ -30,17 +30,17 @@ from one of its
 can write a single file plugin when:
 
 * everything is in a single file
-* if possible, dependencies should be limited to Sopel and Python's built-in
-  library, or your plugin is a "one-off" for your use only (not intended to be
-  shared)
+* either:
+   * dependencies are limited to Sopel and Python's built-in library; or
+   * your plugin is a "one-off" for your use only (not intended to be shared)
 
 This type of plugin is easy to install: copy its file into the right location,
 and Sopel will load it on startup.
 
 .. note::
 
-   You can still use a single file plugin with extra dependencies: bot owners
-   will have to install them themselves, so you should probably document them,
+   You *can* still use extra dependencies with a single file plugin. Bot owners
+   will have to install them manually, so you should probably document them,
    and possibly list them in a ``requirements.txt`` file to be used with
    ``pip install -r`` if you want to simplify the installation process.
 
@@ -49,13 +49,14 @@ Folder
 
 A **Folder** plugin is a folder that contains a ``__init__.py`` file. It is
 available to Sopel the same way a :ref:`Single file` plugin is, and shares the
-same limitation:
+same warnings/advice:
 
 * everything that is not available in this ``__init__.py`` file won't be
   visible to Sopel
-* if possible, dependencies should be limited to Sopel and Python's built-in
-  library, or your plugin is a "one-off" for your use only (not intended to be
-  shared)
+* either:
+   * dependencies should be limited to Sopel and Python's built-in library,
+     for ease of installation; or
+   * the plugin is a "one-off", not intended to be shared
 
 By default, Sopel's plugin directories are **not** available in ``sys.path``,
 so it is not possible to do ``from my_plugin_dir import some_module`` without
@@ -67,9 +68,8 @@ plugin instead.
 
 .. note::
 
-   As per the single file plugin, you can still use a folder plugin  with extra
-   dependencies, and you can follow the same advices about ``requirements.txt``
-   and ``pip``.
+   Just like single file plugins, you *can* use extra dependencies with folder
+   plugins; the same advice about ``requirements.txt`` and ``pip`` applies.
 
 Namespace package
 -----------------
@@ -123,8 +123,8 @@ entry point plugin, which is great to bundle multiple plugins at once.
 
 .. seealso::
 
-   The PyPA specification explains in its `Entry points specification`_ what
-   entry points are and how to use them.
+   The Python Packaging Authority explains how entry points work and how to
+   use them in its `Entry points specification`_.
 
 .. __: `Entry points specification`_
 

@@ -25,9 +25,9 @@ the default destination for your message::
 If you want to send the message to another destination, you can pass it as the
 second argument::
 
-    bot.say('The bot is now talking!, '#private-channel')
+    bot.say('The bot is now talking!', '#private-channel')
 
-Instead of a string, you can use a instance of :class:`sopel.tools.Identifier`.
+Instead of a string, you can use an instance of :class:`sopel.tools.Identifier`.
 
 If you want to reply to a user in a private message, you can use the trigger's
 :attr:`~sopel.trigger.Trigger.nick` attribute as destination::
@@ -132,7 +132,7 @@ Then, for example, you can check if the user is voiced (mode +v) or not::
 
     if user_privileges & plugin.VOICED:
         # user is voiced
-    elif user_privileges >= plugin.VOICED:
+    elif user_privileges > plugin.VOICED:
         # not voiced, but higher privileges
         # like plugin.HALFOP or plugin.OP
     else:

@@ -93,12 +93,13 @@ Plugin glossary
    Plugin callable
       A plugin callable is a Python callable, that handles a specific message
       from the IRC server matching a :term:`Rule`. See also the
-      :doc:`plugin/anatomy` chapter for the plugin callable signature.
+      :ref:`Plugin Anatomy: callables <plugin-anatomy-callables>` section for
+      the plugin callable signature.
 
    Plugin job
       A plugin job is a Python callable, that executes periodically on a
-      schedule. See also the :doc:`plugin/anatomy` chapter for the plugin
-      job signature.
+      schedule. See also the :ref:`Plugin Anatomy: jobs <plugin-anatomy-jobs>`
+      section for the plugin job signature.
 
    Single file plugin
       A :term:`Sopel plugin` composed of a single Python file. Can be loaded by

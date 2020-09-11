@@ -12,10 +12,22 @@ Internal machinery
    :local:
 
 
+sopel.loader
+============
+
+.. automodule:: sopel.loader
+   :members:
+
 sopel.plugins
 =============
 
 .. automodule:: sopel.plugins
+   :members:
+
+sopel.plugins.exceptions
+========================
+
+.. automodule:: sopel.plugins.exceptions
    :members:
 
 sopel.plugins.handlers
@@ -24,11 +36,12 @@ sopel.plugins.handlers
 .. automodule:: sopel.plugins.handlers
    :members:
 
-sopel.plugins.exceptions
-========================
+sopel.plugins.jobs
+==================
 
-.. automodule:: sopel.plugins.exceptions
+.. automodule:: sopel.plugins.jobs
    :members:
+   :show-inheritance:
 
 sopel.plugins.rules
 ===================
@@ -44,16 +57,3 @@ sopel.plugins.rules
    .. autoclass:: NamedRuleMixin
       :members:
       :undoc-members:
-
-sopel.plugins.jobs
-==================
-
-.. automodule:: sopel.plugins.jobs
-   :members:
-   :show-inheritance:
-
-sopel.loader
-============
-
-.. automodule:: sopel.loader
-   :members:

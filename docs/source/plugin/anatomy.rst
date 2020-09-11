@@ -1,3 +1,5 @@
+.. _plugin-anatomy:
+
 ===================
 Anatomy of a plugin
 ===================
@@ -11,12 +13,14 @@ A Sopel plugin consists of a Python module containing one or more
    :depth: 2
 
 
+.. _plugin-anatomy-rules:
+
 Defining rules
 ==============
 
 The main goal of a Sopel plugin is to react to IRC messages. For that, Sopel
-uses a :term:`Rule system`: plugins define rules, Sopel loads them and triggers
-them when a message matches.
+uses a :term:`Rule system`: plugins define rules, which Sopel loads, and then
+Sopel triggers any matching rules for each message it receives.
 
 Sopel identifies a callable as a rule when it has been decorated with any of
 these decorators from :mod:`sopel.plugin`:
@@ -40,10 +44,10 @@ In that case, it will use a match-all regex (``r'.*'``)::
    from sopel import plugin
 
    @plugin.event('JOIN')
-   def on_join_2(bot, trigger):
+   def on_join(bot, trigger):
       pass
 
-   # this is equivalent to this:
+   # the above is equivalent to this:
    @plugin.rule(r'.*')
    @plugin.event('JOIN')
    def on_join(bot, trigger):
@@ -135,6 +139,8 @@ The rule in question is defined by the ``hello`` plugin like so::
       bot.reply('Ha AH!')
 
 
+.. _plugin-anatomy-callables:
+
 Plugin callables
 ================
 
@@ -181,6 +187,8 @@ The return value of a callable is ignored unless it is
          bot.reply('Hello!')
 
 
+.. _plugin-anatomy-jobs:
+
 Plugin jobs
 ===========
 
@@ -214,6 +222,9 @@ A job follows this interface:
    A job may execute while the ``bot`` is **not** connected, and it must not
    assume any network access.
 
+
+
+.. _plugin-anatomy-setup-shutdown:
 
 Plugin setup & shutdown
 =======================
@@ -280,6 +291,8 @@ unthreaded polling loop) will cause the bot to hang.
 
 .. versionadded:: 4.1
 
+
+.. _plugin-anatomy-config:
 
 Plugin configuration
 ====================
