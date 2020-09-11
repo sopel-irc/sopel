@@ -9,7 +9,7 @@ https://sopel.chat
 """
 from __future__ import absolute_import, division, print_function, unicode_literals
 
-from sopel import module, tools
+from sopel import plugin, tools
 from sopel.tools.time import (
     format_time,
     get_channel_timezone,
@@ -18,12 +18,27 @@ from sopel.tools.time import (
     validate_timezone
 )
 
+PLUGIN_OUTPUT_PREFIX = '[clock] '
+ERROR_NO_TIMEZONE = (
+    'What timezone do you want to use? '
+    'Try one from https://sopel.chat/tz')
+ERROR_NO_FORMAT = (
+    'What format do you want me to use? '
+    'Try using http://strftime.net to make one.')
+ERROR_INVALID_TIMEZONE = (
+    'Could not find timezone "%s".'
+    'Try one from https://sopel.chat/tz')
+ERROR_INVALID_FORMAT = (
+    "That format doesn't work. Try using "
+    "http://strftime.net to make one.")
 
-@module.commands('t', 'time')
-@module.example('.t America/New_York', user_help=True)
-@module.example('.t Exirel', user_help=True)
-@module.example('.t #sopel', user_help=True)
-@module.example('.t', user_help=True)
+
+@plugin.command('t', 'time')
+@plugin.example('.t America/New_York', user_help=True)
+@plugin.example('.t Exirel', user_help=True)
+@plugin.example('.t #sopel', user_help=True)
+@plugin.example('.t', user_help=True)
+@plugin.output_prefix(PLUGIN_OUTPUT_PREFIX)
 def f_time(bot, trigger):
     """Return the current time.
 
@@ -56,12 +71,12 @@ def f_time(bot, trigger):
                 # zone not found for a known nick: error case
                 set_command = '%ssettz <zone>' % help_prefix
                 if channel_or_nick != trigger.nick:
-                    bot.say(
+                    bot.reply(
                         'Could not find a timezone for this nick. '
                         '%s can set a timezone with `%s`'
                         % (argument, set_command))
                 else:
-                    bot.say(
+                    bot.reply(
                         'Could not find a timezone for you. '
                         'You can set your timezone with `%s`'
                         % set_command)
@@ -71,7 +86,7 @@ def f_time(bot, trigger):
             if zone is None and channel_or_nick in bot.channels:
                 # zone not found for an existing channel: error case
                 set_command = '%ssetctz <zone>' % help_prefix
-                bot.say(
+                bot.reply(
                     'Could not find timezone for channel %s. '
                     'It can be set with `%s`. (requires OP privileges)'
                     % (argument, set_command))
@@ -83,15 +98,16 @@ def f_time(bot, trigger):
             try:
                 zone = validate_timezone(argument)
             except ValueError:
-                bot.say('Could not find timezone "%s".' % argument)
+                bot.reply(ERROR_INVALID_TIMEZONE % argument)
                 return
 
     time = format_time(bot.db, bot.config, zone, trigger.nick, trigger.sender)
     bot.say(time)
 
 
-@module.commands('tz', 'timez')
-@module.example('.tz America/New_York')
+@plugin.command('tz', 'timez')
+@plugin.example('.tz America/New_York')
+@plugin.output_prefix(PLUGIN_OUTPUT_PREFIX)
 def f_time_zone(bot, trigger):
     """Return the current time in a timezone.
 
@@ -100,7 +116,7 @@ def f_time_zone(bot, trigger):
     """
     argument = trigger.group(2)
     if not argument:
-        bot.say('Please provide a timezone.')
+        bot.reply(ERROR_NO_TIMEZONE)
         return
 
     zone = None
@@ -108,16 +124,15 @@ def f_time_zone(bot, trigger):
     try:
         zone = validate_timezone(argument)
     except ValueError:
-        bot.say(
-            'Cannot display time: "%s" is not a valid timezone.' % argument)
+        bot.reply(ERROR_INVALID_TIMEZONE % argument)
         return
 
     time = format_time(bot.db, bot.config, zone, trigger.nick, trigger.sender)
     bot.say(time)
 
 
-@module.commands('settz', 'settimezone')
-@module.example('.settz America/New_York')
+@plugin.command('settz', 'settimezone')
+@plugin.example('.settz America/New_York')
 def update_user(bot, trigger):
     """Set your preferred timezone.
 
@@ -126,30 +141,29 @@ def update_user(bot, trigger):
     """
     argument = trigger.group(2)
     if not argument:
-        bot.reply("What timezone do you want to set? Try one from "
-                  "https://sopel.chat/tz")
+        bot.reply(ERROR_NO_TIMEZONE)
         return
 
     try:
         zone = validate_timezone(argument)
     except ValueError:
-        bot.say(
-            'I don\'t know that timezone. Try one from https://sopel.chat/tz')
+        bot.reply(ERROR_INVALID_TIMEZONE % argument)
         return
 
     bot.db.set_nick_value(trigger.nick, 'timezone', zone)
 
     if len(zone) < 4:
-        bot.say(
-            'Okay, %s, but you should use one from https://sopel.chat/tz '
-            'if you use DST.' % trigger.nick)
+        bot.reply(
+            'Okay, but you should use one from https://sopel.chat/tz '
+            'if you use DST.')
     else:
         bot.reply('I now have you in the %s timezone.' % zone)
 
 
-@module.commands('gettz', 'gettimezone')
-@module.example('.gettz Exirel', user_help=True)
-@module.example('.gettz', user_help=True)
+@plugin.command('gettz', 'gettimezone')
+@plugin.example('.gettz Exirel', user_help=True)
+@plugin.example('.gettz', user_help=True)
+@plugin.output_prefix(PLUGIN_OUTPUT_PREFIX)
 def get_user_tz(bot, trigger):
     """Gets a user's preferred time zone.
 
@@ -168,8 +182,8 @@ def get_user_tz(bot, trigger):
         bot.say('%s has not set their time zone' % nick)
 
 
-@module.commands('settimeformat', 'settf')
-@module.example('.settf %Y-%m-%dT%T%z')
+@plugin.command('settimeformat', 'settf')
+@plugin.example('.settf %Y-%m-%dT%T%z')
 def update_user_format(bot, trigger):
     """Sets your preferred format for time.
 
@@ -178,8 +192,7 @@ def update_user_format(bot, trigger):
     """
     tformat = trigger.group(2)
     if not tformat:
-        bot.reply("What format do you want me to use? Try using "
-                  "http://strftime.net to make one.")
+        bot.reply(ERROR_NO_FORMAT)
         return
 
     tz = get_timezone(bot.db, bot.config, None, trigger.nick, trigger.sender)
@@ -193,21 +206,21 @@ def update_user_format(bot, trigger):
     try:
         timef = format_time(db=bot.db, zone=tz, nick=trigger.nick)
     except Exception:  # TODO: Be specific
-        bot.reply("That format doesn't work. Try using "
-                  "http://strftime.net to make one.")
+        bot.reply(ERROR_INVALID_FORMAT)
         # New format doesn't work. Revert save in database.
         bot.db.set_nick_value(trigger.nick, 'time_format', old_format)
         return
 
     set_command = '%ssettz' % bot.settings.core.help_prefix
-    bot.reply("Got it. Your time will now appear as %s. (If the "
-              "timezone is wrong, you might try the %s command)"
+    bot.reply('Your time will now appear as %s. '
+              '(If the timezone is wrong, you might try the %s command)'
               % (timef, set_command))
 
 
-@module.commands('gettimeformat', 'gettf')
-@module.example('.gettf Exirel', user_help=True)
-@module.example('.gettf', user_help=True)
+@plugin.command('gettimeformat', 'gettf')
+@plugin.example('.gettf Exirel', user_help=True)
+@plugin.example('.gettf', user_help=True)
+@plugin.output_prefix(PLUGIN_OUTPUT_PREFIX)
 def get_user_format(bot, trigger):
     """Gets a user's preferred time format.
 
@@ -228,38 +241,38 @@ def get_user_format(bot, trigger):
         bot.say("%s hasn't set a custom time format" % nick)
 
 
-@module.commands('setchanneltz', 'setctz')
-@module.example('.setctz America/New_York')
-@module.require_privilege(module.OP, message='Changing the channel timezone requires OP privileges.')
+@plugin.command('setchanneltz', 'setctz')
+@plugin.example('.setctz America/New_York')
+@plugin.require_chanmsg
+@plugin.require_privilege(plugin.OP, message='Changing the channel timezone requires OP privileges.')
 def update_channel(bot, trigger):
     """Set the preferred timezone for the current channel."""
     argument = trigger.group(2)
     if not argument:
-        bot.reply("What timezone do you want to set? Try one from "
-                  "https://sopel.chat/tz")
+        bot.reply(ERROR_NO_TIMEZONE)
         return
 
     try:
         zone = validate_timezone(argument)
     except ValueError:
-        bot.say(
-            'I don\'t know that timezone. Try one from https://sopel.chat/tz')
+        bot.reply(ERROR_INVALID_TIMEZONE % argument)
         return
 
     channel = trigger.sender
     bot.db.set_channel_value(channel, 'timezone', zone)
 
     if len(zone) < 4:
-        bot.say(
-            'Okay, %s, but you should use one from https://sopel.chat/tz '
-            'if you use DST.' % trigger.nick)
+        bot.reply(
+            'Okay, but you should use one from https://sopel.chat/tz '
+            'if you use DST.')
     else:
         bot.reply('I now have %s in the %s timezone.' % (channel, zone))
 
 
-@module.commands('getchanneltz', 'getctz')
-@module.example('.getctz #sopel', user_help=True)
-@module.example('.getctz', user_help=True)
+@plugin.command('getchanneltz', 'getctz')
+@plugin.example('.getctz #sopel', user_help=True)
+@plugin.example('.getctz', user_help=True)
+@plugin.output_prefix(PLUGIN_OUTPUT_PREFIX)
 def get_channel_tz(bot, trigger):
     """Gets the channel's preferred timezone.
 
@@ -278,9 +291,11 @@ def get_channel_tz(bot, trigger):
         bot.say('%s has no preferred timezone' % channel)
 
 
-@module.commands('setchanneltimeformat', 'setctf')
-@module.example('.setctf %Y-%m-%dT%T%z')
-@module.require_privilege(module.OP)
+@plugin.command('setchanneltimeformat', 'setctf')
+@plugin.example('.setctf %Y-%m-%dT%T%z')
+@plugin.require_chanmsg
+@plugin.require_privilege(plugin.OP)
+@plugin.output_prefix(PLUGIN_OUTPUT_PREFIX)
 def update_channel_format(bot, trigger):
     """Sets your preferred format for time.
 
@@ -289,8 +304,8 @@ def update_channel_format(bot, trigger):
     """
     tformat = trigger.group(2)
     if not tformat:
-        bot.reply("What format do you want me to use? Try using "
-                  "http://strftime.net to make one.")
+        bot.reply(ERROR_NO_FORMAT)
+        return
 
     tz = get_timezone(bot.db, bot.config, None, None, trigger.sender)
 
@@ -303,8 +318,7 @@ def update_channel_format(bot, trigger):
     try:
         timef = format_time(db=bot.db, zone=tz, channel=trigger.sender)
     except Exception:  # TODO: Be specific
-        bot.reply("That format doesn't work. Try using"
-                  " http://strftime.net to make one.")
+        bot.reply(ERROR_INVALID_FORMAT)
         # New format doesn't work. Revert save in database.
         bot.db.set_channel_value(trigger.sender, 'time_format', old_format)
         return
@@ -313,15 +327,16 @@ def update_channel_format(bot, trigger):
     help_prefix = bot.settings.core.help_prefix
     set_command = '%ssettz' % help_prefix
     channel_command = '%schanneltz' % help_prefix
-    bot.reply("Got it. Times in this channel  will now appear as %s "
-              "unless a user has their own format set. (If the timezone"
-              " is wrong, you might try the %s and %s "
-              "commands)" % (timef, set_command, channel_command))
+    bot.say("Times in this channel will now appear as %s "
+            "unless a user has their own format set. (If the timezone"
+            " is wrong, you might try the %s and %s "
+            "commands)" % (timef, set_command, channel_command))
 
 
-@module.commands('getchanneltimeformat', 'getctf')
-@module.example('.getctf #sopel', user_help=True)
-@module.example('.getctf', user_help=True)
+@plugin.command('getchanneltimeformat', 'getctf')
+@plugin.example('.getctf #sopel', user_help=True)
+@plugin.example('.getctf', user_help=True)
+@plugin.output_prefix(PLUGIN_OUTPUT_PREFIX)
 def get_channel_format(bot, trigger):
     """Gets the channel's preferred time format
 
