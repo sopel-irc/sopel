@@ -8,7 +8,7 @@ https://sopel.chat
 """
 from __future__ import absolute_import, division, print_function, unicode_literals
 
-from sopel.module import commands, example
+from sopel import plugin
 
 
 # Copied from pronoun.is, leaving a *lot* out. If
@@ -30,8 +30,8 @@ KNOWN_SETS = {
 }
 
 
-@commands('pronouns')
-@example('.pronouns Embolalia')
+@plugin.command('pronouns')
+@plugin.example('.pronouns Embolalia')
 def pronouns(bot, trigger):
     if not trigger.group(3):
         pronouns = bot.db.get_nick_value(trigger.nick, 'pronouns')
@@ -52,9 +52,9 @@ def pronouns(bot, trigger):
                 "See https://pronoun.is/it for examples."
             )
         else:
-            bot.say("I don't know {}'s pronouns. They can set them with "
-                    "{}setpronouns".format(trigger.group(3),
-                                           bot.config.core.help_prefix))
+            bot.reply("I don't know {}'s pronouns. They can set them with "
+                      "{}setpronouns".format(trigger.group(3),
+                                             bot.config.core.help_prefix))
 
 
 def say_pronouns(bot, nick, pronouns):
@@ -67,8 +67,8 @@ def say_pronouns(bot, nick, pronouns):
             "examples.".format(nick, pronouns, short))
 
 
-@commands('setpronouns')
-@example('.setpronouns they/them/their/theirs/themselves')
+@plugin.command('setpronouns')
+@plugin.example('.setpronouns they/them/their/theirs/themselves')
 def set_pronouns(bot, trigger):
     if trigger.group(2):
         pronouns = trigger.group(2)
@@ -82,9 +82,9 @@ def set_pronouns(bot, trigger):
         elif len(pronouns.split('/')) != 5:
             pronouns = KNOWN_SETS.get(pronouns)
             if not pronouns:
-                bot.say(
-                    "I'm sorry, I don't know those pronouns. You can give me a set "
-                    "I don't know by formatting it "
+                bot.reply(
+                    "I'm sorry, I don't know those pronouns. "
+                    "You can give me a set I don't know by formatting it "
                     "subject/object/possessive-determiner/possessive-pronoun/"
                     "reflexive, as in: they/them/their/theirs/themselves"
                 )
