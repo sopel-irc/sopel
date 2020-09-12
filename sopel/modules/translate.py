@@ -15,16 +15,18 @@ import sys
 
 import requests
 
-from sopel.module import commands, example, priority, rule, unblockable
-from sopel.tools import SopelMemory, web
+from sopel import plugin, tools
+from sopel.tools import web
 
 if sys.version_info.major >= 3:
     unicode = str
 
+PLUGIN_OUTPUT_PREFIX = '[translate] '
+
 
 def setup(bot):
     if 'mangle_lines' not in bot.memory:
-        bot.memory['mangle_lines'] = SopelMemory()
+        bot.memory['mangle_lines'] = tools.SopelMemory()
 
 
 def shutdown(bot):
@@ -79,55 +81,67 @@ def translate(text, in_lang='auto', out_lang='en'):
     return ''.join(x[0] for x in data[0]), language
 
 
-@rule(r'$nickname[,:]\s+(?:([a-z]{2}) +)?(?:([a-z]{2}|en-raw) +)?["“](.+?)["”]\? *$')
-@example('$nickname: "mon chien"? or $nickname: fr "mon chien"?')
-@priority('low')
+@plugin.rule(r'$nickname[,:]\s+(?:([a-z]{2}) +)?(?:([a-z]{2}|en-raw) +)?["“](.+?)["”]\? *$')
+@plugin.example('$nickname: "mon chien"? or $nickname: fr "mon chien"?')
+@plugin.priority('low')
+@plugin.output_prefix(PLUGIN_OUTPUT_PREFIX)
 def tr(bot, trigger):
     """Translates a phrase, with an optional language hint."""
     in_lang, out_lang, phrase = trigger.groups()
 
     if (len(phrase) > 350) and (not trigger.admin):
-        return bot.reply('Phrase must be under 350 characters.')
+        bot.reply('Phrase must be under 350 characters.')
+        return
 
     if phrase.strip() == '':
-        return bot.reply('You need to specify a string for me to translate!')
+        bot.reply('You need to specify a string for me to translate!')
+        return
 
     in_lang = in_lang or 'auto'
     out_lang = out_lang or 'en'
 
-    if in_lang != out_lang:
-        msg, in_lang = translate(phrase, in_lang, out_lang)
-        if not in_lang:
-            return bot.say("Translation failed, probably because of a rate-limit.")
-        if sys.version_info.major < 3 and isinstance(msg, str):
-            msg = msg.decode('utf-8')
-        if msg:
-            msg = web.decode(msg)
-            msg = '"%s" (%s to %s, translate.google.com)' % (msg, in_lang, out_lang)
-        else:
-            msg = 'The %s to %s translation failed, are you sure you specified valid language abbreviations?' % (in_lang, out_lang)
-
-        bot.reply(msg)
-    else:
+    if in_lang == out_lang:
         bot.reply('Language guessing failed, so try suggesting one!')
+        return
+
+    msg, in_lang = translate(phrase, in_lang, out_lang)
+    if not in_lang:
+        bot.reply("Translation failed, probably because of a rate-limit.")
+        return
+
+    if not msg:
+        bot.reply(
+            'The %s to %s translation failed; are you sure you specified '
+            'valid language abbreviations?' % (in_lang, out_lang)
+        )
+        return
+
+    if sys.version_info.major < 3 and isinstance(msg, str):
+        msg = msg.decode('utf-8')
+
+    msg = web.decode(msg)
+    msg = '"%s" (%s to %s, translate.google.com)' % (msg, in_lang, out_lang)
+    bot.say(msg)
 
 
-@commands('translate', 'tr')
-@example('.tr :en :fr my dog',
-         '"mon chien" (en to fr, translate.google.com)',
-         online=True, vcr=True)
-@example('.tr מחשב',
-         '"computer" (iw to en, translate.google.com)',
-         online=True, vcr=True)
-@example('.tr mon chien',
-         '"my dog" (fr to en, translate.google.com)',
-         online=True, vcr=True)
+@plugin.command('translate', 'tr')
+@plugin.example('.tr :en :fr my dog',
+                '"mon chien" (en to fr, translate.google.com)',
+                online=True, vcr=True)
+@plugin.example('.tr מחשב',
+                '"computer" (iw to en, translate.google.com)',
+                online=True, vcr=True)
+@plugin.example('.tr mon chien',
+                '"my dog" (fr to en, translate.google.com)',
+                online=True, vcr=True)
+@plugin.output_prefix(PLUGIN_OUTPUT_PREFIX)
 def tr2(bot, trigger):
     """Translates a phrase, with an optional language hint."""
     command = trigger.group(2)
 
     if not command:
-        return bot.reply('You did not give me anything to translate')
+        bot.reply('You did not give me anything to translate.')
+        return
 
     def langcode(p):
         return p.startswith(':') and (2 < len(p) < 10) and p[1:].isalpha()
@@ -141,30 +155,40 @@ def tr2(bot, trigger):
         if langcode(prefix):
             args[i] = prefix[1:]
             command = cmd
-    phrase = command
 
+    phrase = command
     if (len(phrase) > 350) and (not trigger.admin):
-        return bot.reply('Phrase must be under 350 characters.')
+        bot.reply('Phrase must be under 350 characters.')
+        return
 
     if phrase.strip() == '':
-        return bot.reply('You need to specify a string for me to translate!')
+        bot.reply('You need to specify a string for me to translate!')
+        return
 
     src, dest = args
-    if src != dest:
-        msg, src = translate(phrase, src, dest)
-        if not src:
-            return bot.say("Translation failed, probably because of a rate-limit.")
-        if sys.version_info.major < 3 and isinstance(msg, str):
-            msg = msg.decode('utf-8')
-        if msg:
-            msg = web.decode(msg)  # msg.replace('&#39;', "'")
-            msg = '"%s" (%s to %s, translate.google.com)' % (msg, src, dest)
-        else:
-            msg = 'The %s to %s translation failed, are you sure you specified valid language abbreviations?' % (src, dest)
 
-        bot.reply(msg)
-    else:
+    if src == dest:
         bot.reply('Language guessing failed, so try suggesting one!')
+        return
+
+    msg, src = translate(phrase, src, dest)
+    if not src:
+        return bot.say("Translation failed, probably because of a rate-limit.")
+
+    if not msg:
+        bot.reply(
+            'The %s to %s translation failed; '
+            'are you sure you specified valid language abbreviations?'
+            % (src, dest))
+        return
+
+    if sys.version_info.major < 3 and isinstance(msg, str):
+        msg = msg.decode('utf-8')
+
+    msg = web.decode(msg)  # msg.replace('&#39;', "'")
+    msg = '"%s" (%s to %s, translate.google.com)' % (msg, src, dest)
+
+    bot.say(msg)
 
 
 def get_random_lang(long_list, short_list):
@@ -177,7 +201,8 @@ def get_random_lang(long_list, short_list):
     return short_list
 
 
-@commands('mangle', 'mangle2')
+@plugin.command('mangle', 'mangle2')
+@plugin.output_prefix(PLUGIN_OUTPUT_PREFIX)
 def mangle(bot, trigger):
     """Repeatedly translate the input until it makes absolutely no sense."""
     long_lang_list = ['fr', 'de', 'es', 'it', 'no', 'he', 'la', 'ja', 'cy', 'ar', 'yi', 'zh', 'nl', 'ru', 'fi', 'hi', 'af', 'jw', 'mr', 'ceb', 'cs', 'ga', 'sv', 'eo', 'el', 'ms', 'lv']
@@ -215,16 +240,15 @@ def mangle(bot, trigger):
         if not phrase:
             phrase = backup
             break
-    bot.reply(phrase[0])
+
+    bot.say(phrase[0])
 
 
-@rule('(.*)')
-@priority('low')
-@unblockable
+@plugin.rule('(.*)')
+@plugin.priority('low')
+@plugin.unblockable
 def collect_mangle_lines(bot, trigger):
-    bot.memory['mangle_lines'][trigger.sender.lower()] = "%s said '%s'" % (trigger.nick, (trigger.group(0).strip()))
-
-
-if __name__ == "__main__":
-    from sopel.test_tools import run_example_tests
-    run_example_tests(__file__)
+    bot.memory['mangle_lines'][trigger.sender.lower()] = "%s said '%s'" % (
+        trigger.nick,
+        trigger.group(0).strip(),
+    )
