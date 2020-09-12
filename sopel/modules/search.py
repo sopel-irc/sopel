@@ -14,9 +14,10 @@ import re
 import requests
 import xmltodict
 
-from sopel.module import commands, example
+from sopel import plugin
 from sopel.tools import web
 
+PLUGIN_OUTPUT_PREFIX = '[search] '
 
 header_spoof = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.87 Safari/537.36'
@@ -73,38 +74,43 @@ def duck_api(query):
         return None
 
 
-@commands('duck', 'ddg', 'g')
+@plugin.command('duck', 'ddg', 'g')
 # test for bad Unicode handling in py2
-@example(
+@plugin.example(
     '.duck site:grandorder.wiki chulainn alter',
     r'https?:\/\/grandorder\.wiki\/C%C3%BA_Chulainn.*',
     re=True,
     online=True,
     vcr=True)
 # the last example (in source line order) is what .help displays
-@example(
+@plugin.example(
     '.duck sopel.chat irc bot',
     r'https?:\/\/.*sopel.*',
     re=True,
     online=True,
     vcr=True)
+@plugin.output_prefix(PLUGIN_OUTPUT_PREFIX)
 def duck(bot, trigger):
     """Queries DuckDuckGo for the specified input."""
     query = trigger.group(2)
     if not query:
-        return bot.reply('.ddg what?')
+        bot.reply('{prefix}{command} what?'.format(
+            prefix=bot.settings.core.help_prefix,
+            command=trigger.group(1),
+        ))
+        return
 
     # If the API gives us something, say it and stop
     result = duck_api(query)
     if result:
-        bot.reply(result)
+        bot.say(result)
         return
 
     # Otherwise, look it up on the HTML version
     uri = duck_search(query)
 
     if uri:
-        bot.reply(uri)
+        bot.say(uri)
         if 'last_seen_url' in bot.memory:
             bot.memory['last_seen_url'][trigger.sender] = uri
     else:
@@ -116,12 +122,14 @@ def duck(bot, trigger):
         bot.reply(msg)
 
 
-@commands('bing')
-@example('.bing sopel.chat irc bot')
+@plugin.command('bing')
+@plugin.example('.bing sopel.chat irc bot')
+@plugin.output_prefix(PLUGIN_OUTPUT_PREFIX)
 def bing(bot, trigger):
     """Queries Bing for the specified input."""
     if not trigger.group(2):
-        return bot.reply('.bing what?')
+        bot.reply('{}bing what?'.format(bot.settings.core.help_prefix))
+        return
     query = trigger.group(2)
     result = bing_search(query)
     if result:
@@ -130,12 +138,14 @@ def bing(bot, trigger):
         bot.reply("No results found for '%s'." % query)
 
 
-@commands('search')
-@example('.search sopel irc bot')
+@plugin.command('search')
+@plugin.example('.search sopel irc bot')
+@plugin.output_prefix(PLUGIN_OUTPUT_PREFIX)
 def search(bot, trigger):
     """Searches both Bing and DuckDuckGo."""
     if not trigger.group(2):
-        return bot.reply('.search for what?')
+        bot.reply('{}search for what?'.format(bot.settings.core.help_prefix))
+        return
     query = trigger.group(2)
     bu = bing_search(query) or '-'
     du = duck_search(query) or '-'
@@ -149,17 +159,19 @@ def search(bot, trigger):
             du = '(extremely long link)'
         result = '%s (b), %s (d)' % (bu, du)
 
-    bot.reply(result)
+    bot.say(result)
 
 
-@commands('suggest')
-@example('.suggest wikip', 'wikipedia game', online=True, vcr=True)
-@example('.suggest', 'No query term.')
-@example('.suggest lkashdfiauwgaef', 'Sorry, no result.', online=True, vcr=True)
+@plugin.command('suggest')
+@plugin.example('.suggest wikip', 'wikipedia game', online=True, vcr=True)
+@plugin.example('.suggest', '.suggest what?')
+@plugin.example('.suggest lkashdfiauwgaef', 'Sorry, no result.', online=True, vcr=True)
+@plugin.output_prefix(PLUGIN_OUTPUT_PREFIX)
 def suggest(bot, trigger):
     """Suggests terms starting with given input"""
     if not trigger.group(2):
-        return bot.reply("No query term.")
+        bot.reply('{}suggest what?'.format(bot.settings.core.help_prefix))
+        return
     query = trigger.group(2)
     # Using Google isn't necessarily ideal, but at most they'll be able to build
     # a composite profile of all users on a given instance, not a profile of any
