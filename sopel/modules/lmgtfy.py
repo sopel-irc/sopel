@@ -8,16 +8,23 @@ https://sopel.chat/
 """
 from __future__ import absolute_import, division, print_function, unicode_literals
 
-from sopel.module import commands, example
-from sopel.tools.web import quote
+from sopel import plugin
+
+try:
+    from urllib.parse import urlencode
+except ImportError:
+    from urllib import urlencode
 
 
-@commands('lmgtfy', 'lmgify', 'gify', 'gtfy')
-@example('.lmgtfy sopel', 'https://lmgtfy.com/?q=sopel')
-@example('.lmgtfy sopel bot', 'https://lmgtfy.com/?q=sopel+bot', user_help=True)
-@example('.lmgtfy', 'https://www.google.com/', user_help=True)
+@plugin.command('lmgtfy', 'lmgify', 'gify', 'gtfy')
+@plugin.example('.lmgtfy sopel', 'https://lmgtfy.com/?q=sopel')
+@plugin.example('.lmgtfy sopel bot', 'https://lmgtfy.com/?q=sopel+bot', user_help=True)
+@plugin.example('.lmgtfy', 'https://www.google.com/', user_help=True)
 def googleit(bot, trigger):
     """Let me just… Google that for you."""
     if not trigger.group(2):  # No input
         return bot.say('https://www.google.com/')
-    bot.say('https://lmgtfy.com/?q=' + quote(trigger.group(2).replace(' ', '+'), '+'))
+    qs = urlencode({
+        'q': trigger.group(2),
+    })
+    bot.say('https://lmgtfy.com/?%s' % qs)
