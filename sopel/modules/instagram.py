@@ -13,7 +13,7 @@ import logging
 
 from requests import get
 
-from sopel import module
+from sopel import plugin
 
 try:
     from ujson import loads
@@ -31,7 +31,15 @@ class ParseError(Exception):
     pass
 
 
-@module.url(INSTAGRAM_REGEX)
+def _format_counter(number, zero, one, more):
+    return {
+        0: zero,
+        1: one,
+    }.get(number, more).format(number=number)
+
+
+@plugin.url(INSTAGRAM_REGEX)
+@plugin.output_prefix('[insta] ')
 def instaparse(bot, trigger, match):
     instagram_url = match.group(1)
     # Get the embedded JSON
@@ -97,9 +105,9 @@ def parse_insta_json(json):
 
     # Title
     if needed.get('is_video'):
-        title = "[insta] Video by "
+        title = "Video by "
     else:
-        title = "[insta] Photo by "
+        title = "Photo by "
 
     # Author
     iuser = owner.get('username')
@@ -134,14 +142,18 @@ def parse_insta_json(json):
         parts.append('%sx%s' % (iwidth, iheight))
 
     # Likes
-    ilikes = needed.get('edge_media_preview_like', {}).get('count')
-    if ilikes:
-        parts.append('Likes: {:,}'.format(ilikes))
+    ilikes = str(needed.get('edge_media_preview_like', {}).get('count'))
+    if ilikes and ilikes.isdigit():
+        parts.append(
+            _format_counter(int(ilikes), 'No ♥s yet', '1 ♥', '{number} ♥s'))
 
     # Comments
-    icomms = needed.get('edge_media_to_parent_comment', {}).get('count')
-    if icomms:
-        parts.append('Comments: {:,}'.format(icomms))
+    icomms = str(needed.get('edge_media_to_parent_comment', {}).get('count'))
+    if icomms and icomms.isdigit():
+        parts.append(_format_counter(int(icomms),
+                                     'No comments',
+                                     '1 comment',
+                                     '{number} comments'))
 
     # Publishing date
     idate = needed.get('taken_at_timestamp')
@@ -157,7 +169,7 @@ def parse_insta_json(json):
 def parse_oembed_json(json):
     if not json:
         raise ParseError("No valid JSON returned")
-    return "[insta] Post by {} | {}".format(
+    return "Post by {} | {}".format(
         json['author_name'],
         json['title']
     )
