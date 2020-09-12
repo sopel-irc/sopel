@@ -15,9 +15,10 @@ import re
 
 import requests
 
-from sopel.module import commands, url
+from sopel import plugin
 from sopel.modules.search import bing_search
 
+PLUGIN_OUTPUT_PREFIX = '[xkcd] '
 
 ignored_sites = [
     # For searching the web
@@ -53,9 +54,12 @@ def web_search(query):
         return match.group(1)
 
 
-@commands('xkcd')
+@plugin.command('xkcd')
+@plugin.example(".xkcd 1782", user_help=True)
+@plugin.example(".xkcd", user_help=True)
+@plugin.output_prefix(PLUGIN_OUTPUT_PREFIX)
 def xkcd(bot, trigger):
-    """.xkcd - Finds an xkcd comic strip.
+    """Finds an xkcd comic strip.
 
     Takes one of 3 inputs:
 
@@ -89,7 +93,7 @@ def xkcd(bot, trigger):
             else:
                 number = web_search(query)
                 if not number:
-                    bot.say('Could not find any comics for that query.')
+                    bot.reply('Could not find any comics for that query.')
                     return
                 requested = get_info(number)
 
@@ -99,12 +103,12 @@ def xkcd(bot, trigger):
 def numbered_result(bot, query, latest, commanded=True):
     max_int = latest['num']
     if query > max_int:
-        bot.say(("Sorry, comic #{} hasn't been posted yet. "
-                 "The last comic was #{}").format(query, max_int))
+        bot.reply(("Sorry, comic #{} hasn't been posted yet. "
+                   "The last comic was #{}").format(query, max_int))
         return
     elif query <= -max_int:
-        bot.say(("Sorry, but there were only {} comics "
-                 "released yet so far").format(max_int))
+        bot.reply(("Sorry, but there were only {} comics "
+                   "released yet so far").format(max_int))
         return
     elif abs(query) == 0:
         requested = latest
@@ -121,20 +125,26 @@ def numbered_result(bot, query, latest, commanded=True):
 
 
 def say_result(bot, result, commanded=True):
-    message = '{}{} | Alt-text: {}'.format(
-        result['url'] + ' | ' if commanded else '',
-        result['title'], result['alt']
-    )
-    bot.say(message)
+    parts = [
+        result['title'],
+        'Alt-text: ' + result['alt'],
+    ]
+
+    if commanded:
+        parts.append(result['url'])
+
+    bot.say(' | '.join(parts))
 
 
-@url(r'xkcd.com/(\d+)')
+@plugin.url(r'xkcd.com/(\d+)')
+@plugin.output_prefix(PLUGIN_OUTPUT_PREFIX)
 def get_url(bot, trigger, match):
     latest = get_info()
     numbered_result(bot, int(match.group(1)), latest, commanded=False)
 
 
-@url(r'https?://xkcd\.com/?$')
+@plugin.url(r'https?://xkcd\.com/?$')
+@plugin.output_prefix(PLUGIN_OUTPUT_PREFIX)
 def xkcd_main_page(bot, trigger, match):
     latest = get_info()
     numbered_result(bot, 0, latest, commanded=False)
