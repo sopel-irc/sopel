@@ -9,29 +9,29 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 import random
 
-from sopel.module import commands, priority, rule, thread
+from sopel import plugin
 
 
-@rule(r'(?i)(hi|hello|hey),? $nickname[ \t]*$')
+@plugin.rule(r'(?i)(hi|hello|hey),? $nickname[ \t]*$')
 def hello(bot, trigger):
     greeting = random.choice(('Hi', 'Hey', 'Hello'))
     punctuation = random.choice(('', '.', '…', '!'))
     bot.say(greeting + ' ' + trigger.nick + punctuation)
 
 
-@rule(r'(?i)(Fuck|Screw) you,? $nickname[ \t]*$')
+@plugin.rule(r'(?i)(Fuck|Screw) you,? $nickname[ \t]*$')
 def rude(bot, trigger):
     bot.say('Watch your mouth, ' + trigger.nick + ', or I\'ll tell your mother!')
 
 
-@rule('$nickname!')
-@priority('high')
-@thread(False)
+@plugin.rule('$nickname!')
+@plugin.priority('high')
+@plugin.thread(False)
 def interjection(bot, trigger):
     bot.say(trigger.nick + '!')
 
 
-@commands('ping')
+@plugin.command('ping')
 def ping(bot, trigger):
     """Reply to ping command."""
     bot.reply('Pong!')
