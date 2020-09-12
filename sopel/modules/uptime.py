@@ -10,7 +10,7 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 import datetime
 
-from sopel.module import commands
+from sopel import plugin
 
 
 def setup(bot):
@@ -18,9 +18,11 @@ def setup(bot):
         bot.memory["start_time"] = datetime.datetime.utcnow()
 
 
-@commands('uptime')
+@plugin.command('uptime')
+@plugin.example('.uptime', user_help=True)
+@plugin.output_prefix('[uptime] ')
 def uptime(bot, trigger):
-    """.uptime - Returns the uptime of Sopel."""
+    """Return the uptime of Sopel."""
     delta = datetime.timedelta(seconds=round((datetime.datetime.utcnow() -
                                               bot.memory["start_time"])
                                              .total_seconds()))
