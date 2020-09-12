@@ -16,20 +16,19 @@ import os
 import threading
 import time
 
-from sopel import module
-from sopel.config.types import StaticSection, ValidatedAttribute
-from sopel.tools import Identifier
+from sopel import plugin, tools
+from sopel.config import types
 from sopel.tools.time import format_time, get_timezone
 
 
 LOGGER = logging.getLogger(__name__)
 
 
-class TellSection(StaticSection):
-    use_private_reminder = ValidatedAttribute(
+class TellSection(types.StaticSection):
+    use_private_reminder = types.ValidatedAttribute(
         'use_private_reminder', parse=bool, default=False)
     """When set to ``true``, Sopel will send reminder as private message."""
-    maximum_public = ValidatedAttribute(
+    maximum_public = types.ValidatedAttribute(
         'maximum_public', parse=int, default=4)
     """How many Sopel can send in public before using private message."""
 
@@ -131,9 +130,9 @@ def shutdown(bot):
             pass
 
 
-@module.commands('tell', 'ask')
-@module.nickname_commands('tell', 'ask')
-@module.example('$nickname, tell dgw he broke something again.')
+@plugin.command('tell', 'ask')
+@plugin.nickname_command('tell', 'ask')
+@plugin.example('$nickname, tell dgw he broke something again.')
 def f_remind(bot, trigger):
     """Give someone a message the next time they're seen"""
     teller = trigger.nick
@@ -150,17 +149,20 @@ def f_remind(bot, trigger):
         bot.reply("%s %s what?" % (verb, tellee))
         return
 
-    tellee = Identifier(tellee)
+    tellee = tools.Identifier(tellee)
 
     if not os.path.exists(bot.tell_filename):
         return
 
     if len(tellee) > 30:  # TODO: use server NICKLEN here when available
-        return bot.reply('That nickname is too long.')
-    if tellee == bot.nick:
-        return bot.reply("I'm here now; you can tell me whatever you want!")
+        bot.reply('That nickname is too long.')
+        return
 
-    if tellee not in (Identifier(teller), bot.nick, 'me'):
+    if tellee == bot.nick:
+        bot.reply("I'm here now; you can tell me whatever you want!")
+        return
+
+    if tellee not in (tools.Identifier(teller), bot.nick, 'me'):
         tz = get_timezone(bot.db, bot.config, None, tellee)
         timenow = format_time(bot.db, bot.config, tz, tellee)
         with bot.memory['tell_lock']:
@@ -173,10 +175,10 @@ def f_remind(bot, trigger):
 
         response = "I'll pass that on when %s is around." % tellee
         bot.reply(response)
-    elif Identifier(teller) == tellee:
-        bot.say('You can %s yourself that.' % verb)
+    elif tools.Identifier(teller) == tellee:
+        bot.reply('You can %s yourself that.' % verb)
     else:
-        bot.say("Hey, I'm not as stupid as Monty you know!")
+        bot.reply("Hey, I'm not as stupid as Monty you know!")
 
 
 def get_nick_reminders(reminders, nick):
@@ -224,9 +226,10 @@ def nick_match_tellee(nick, tellee):
     return nick.lower() == tellee.lower()
 
 
-@module.rule('(.*)')
-@module.priority('low')
-@module.unblockable
+@plugin.rule('(.*)')
+@plugin.priority('low')
+@plugin.unblockable
+@plugin.output_prefix('[tell] ')
 def message(bot, trigger):
     nick = trigger.nick
 
@@ -268,7 +271,7 @@ def message(bot, trigger):
 
         # send other reminders directly to nick as private message
         if reminders[max_public:]:
-            bot.say('Further messages sent privately')
+            bot.reply('Further messages sent privately')
             for line in reminders[max_public:]:
                 bot.say(line, nick)
 
