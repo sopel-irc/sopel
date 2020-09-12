@@ -18,8 +18,8 @@ import re
 import dns.resolver
 import requests
 
-from sopel import module, tools
-from sopel.config.types import ListAttribute, StaticSection, ValidatedAttribute
+from sopel import plugin, tools
+from sopel.config import types
 from sopel.tools import web
 
 # Python3 vs Python2
@@ -52,22 +52,22 @@ RE_DCC = re.compile(r'(?i)dcc\ssend')
 MAX_BYTES = 655360 * 2
 
 
-class UrlSection(StaticSection):
-    enable_auto_title = ValidatedAttribute(
+class UrlSection(types.StaticSection):
+    enable_auto_title = types.ValidatedAttribute(
         'enable_auto_title', bool, default=True)
     """Enable auto-title (enabled by default)"""
     # TODO some validation rules maybe?
-    exclude = ListAttribute('exclude')
+    exclude = types.ListAttribute('exclude')
     """A list of regular expressions to match URLs for which the title should not be shown."""
-    exclusion_char = ValidatedAttribute('exclusion_char', default='!')
+    exclusion_char = types.ValidatedAttribute('exclusion_char', default='!')
     """A character (or string) which, when immediately preceding a URL, will stop that URL's title from being shown."""
-    shorten_url_length = ValidatedAttribute(
+    shorten_url_length = types.ValidatedAttribute(
         'shorten_url_length', int, default=0)
     """If greater than 0, the title fetcher will include a TinyURL version of links longer than this many characters."""
-    enable_private_resolution = ValidatedAttribute(
+    enable_private_resolution = types.ValidatedAttribute(
         'enable_private_resolution', bool, default=False)
     """Enable URL lookups for RFC1918 addresses"""
-    enable_dns_resolution = ValidatedAttribute(
+    enable_dns_resolution = types.ValidatedAttribute(
         'enable_dns_resolution', bool, default=False)
     """Enable DNS resolution for all domains to validate if there are RFC1918 resolutions"""
 
@@ -152,11 +152,12 @@ def shutdown(bot):
             pass
 
 
-@module.commands('title')
-@module.example(
+@plugin.command('title')
+@plugin.example(
     '.title https://www.google.com',
-    '[ Google ] - www.google.com',
+    'Google | www.google.com',
     online=True, vcr=True)
+@plugin.output_prefix('[url] ')
 def title_command(bot, trigger):
     """
     Show the title or URL information for the given URL, or the last URL seen
@@ -177,14 +178,15 @@ def title_command(bot, trigger):
             exclusion_char=bot.config.url.exclusion_char)
 
     for url, title, domain, tinyurl in process_urls(bot, trigger, urls):
-        message = '[ %s ] - %s' % (title, domain)
+        message = '%s | %s' % (title, domain)
         if tinyurl:
             message += ' ( %s )' % tinyurl
         bot.reply(message)
         bot.memory['last_seen_url'][trigger.sender] = url
 
 
-@module.rule(r'(?u).*(https?://\S+).*')
+@plugin.rule(r'(?u).*(https?://\S+).*')
+@plugin.output_prefix('[url] ')
 def title_auto(bot, trigger):
     """
     Automatically show titles for URLs. For shortened URLs/redirects, find
@@ -208,7 +210,7 @@ def title_auto(bot, trigger):
         trigger, exclusion_char=bot.config.url.exclusion_char, clean=True)
 
     for url, title, domain, tinyurl in process_urls(bot, trigger, urls):
-        message = '[ %s ] - %s' % (title, domain)
+        message = '%s | %s' % (title, domain)
         if tinyurl:
             message += ' ( %s )' % tinyurl
         # Guard against responding to other instances of this bot.
@@ -395,8 +397,3 @@ def get_tinyurl(url):
     # Replace text output with https instead of http to make the
     # result an HTTPS link.
     return res.text.replace("http://", "https://")
-
-
-if __name__ == "__main__":
-    from sopel.test_tools import run_example_tests
-    run_example_tests(__file__)
