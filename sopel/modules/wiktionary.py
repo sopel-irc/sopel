@@ -12,9 +12,10 @@ import re
 
 import requests
 
-from sopel.module import commands, example
+from sopel import plugin
 from sopel.tools import web
 
+PLUGIN_OUTPUT_PREFIX = '[wiktionary] '
 
 uri = 'https://en.wiktionary.org/w/index.php?title=%s&printable=yes'
 r_sup = re.compile(r'<sup[^>]+>.+</sup>')  # Superscripts that are references only, not ordinal indicators, etc...
@@ -99,8 +100,9 @@ def format(result, definitions, number=2):
     return result.strip(' .,')
 
 
-@commands('wt', 'define', 'dict')
-@example('.wt bailiwick', "bailiwick — noun: 1. The district within which a bailie or bailiff has jurisdiction, 2. A person's concern or sphere of operations, their area of skill or authority")
+@plugin.command('wt', 'define', 'dict')
+@plugin.example('.wt bailiwick', "bailiwick — noun: 1. The district within which a bailie or bailiff has jurisdiction, 2. A person's concern or sphere of operations, their area of skill or authority")
+@plugin.output_prefix(PLUGIN_OUTPUT_PREFIX)
 def wiktionary(bot, trigger):
     """Look up a word on Wiktionary."""
     word = trigger.group(2)
@@ -113,7 +115,7 @@ def wiktionary(bot, trigger):
         # Cast word to lower to check in case of mismatched user input
         _etymology, definitions = wikt(word.lower())
         if not definitions:
-            bot.say("Couldn't get any definitions for %s." % word)
+            bot.reply("Couldn't get any definitions for %s." % word)
             return
 
     result = format(word, definitions)
@@ -127,8 +129,9 @@ def wiktionary(bot, trigger):
     bot.say(result)
 
 
-@commands('ety')
-@example('.ety bailiwick', "bailiwick: From bailie (“bailiff”) and wick (“dwelling”), from Old English wīc.")
+@plugin.command('ety')
+@plugin.example('.ety bailiwick', "bailiwick: From bailie (“bailiff”) and wick (“dwelling”), from Old English wīc.")
+@plugin.output_prefix(PLUGIN_OUTPUT_PREFIX)
 def wiktionary_ety(bot, trigger):
     """Look up a word's etymology on Wiktionary."""
     word = trigger.group(2)
@@ -138,7 +141,7 @@ def wiktionary_ety(bot, trigger):
 
     etymology, _definitions = wikt(word)
     if not etymology:
-        bot.say("Couldn't get the etymology for %s." % word)
+        bot.reply("Couldn't get the etymology for %s." % word)
         return
 
     result = "{}: {}".format(word, etymology)
