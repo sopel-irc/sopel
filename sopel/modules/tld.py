@@ -13,7 +13,7 @@ import sys
 
 import requests
 
-from sopel.module import commands, example
+from sopel import plugin
 from sopel.tools import web
 
 if sys.version_info.major >= 3:
@@ -24,8 +24,9 @@ uri = 'https://en.wikipedia.org/wiki/List_of_Internet_top-level_domains'
 r_tag = re.compile(r'<(?!!)[^>]+>')
 
 
-@commands('tld')
-@example('.tld ru')
+@plugin.command('tld')
+@plugin.example('.tld ru')
+@plugin.output_prefix('[tld] ')
 def gettld(bot, trigger):
     """Show information about the given Top Level Domain."""
     page = requests.get(uri).text
@@ -76,4 +77,4 @@ def gettld(bot, trigger):
             reply = "No matches found for TLD: {0}".format(unicode(tld))
     # Final touches + output
     reply = web.decode(reply)
-    bot.reply(reply)
+    bot.say(reply)
