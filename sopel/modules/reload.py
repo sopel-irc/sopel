@@ -11,11 +11,11 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 import logging
 import subprocess
 
-from sopel import plugins
-import sopel.module
+from sopel import plugin, plugins
 
 
 LOGGER = logging.getLogger(__name__)
+PLUGIN_OUTPUT_PREFIX = '[reload] '
 
 
 def _load(bot, plugin):
@@ -30,29 +30,36 @@ def _load(bot, plugin):
         raise
 
 
-@sopel.module.nickname_commands("reload")
-@sopel.module.priority("low")
-@sopel.module.thread(False)
-@sopel.module.require_admin
+@plugin.nickname_command("reload")
+@plugin.priority("low")
+@plugin.thread(False)
+@plugin.require_admin
+@plugin.output_prefix(PLUGIN_OUTPUT_PREFIX)
 def f_reload(bot, trigger):
     """Reloads a plugin (for use by admins only)."""
     name = trigger.group(2)
 
     if not name or name == '*' or name.upper() == 'ALL THE THINGS':
         bot.reload_plugins()
-        return bot.reply('done')
+        bot.say('done')
+        return
 
     if not bot.has_plugin(name):
-        return bot.reply('"%s" not loaded, try the `load` command' % name)
+        bot.reply('"%s" not loaded; try the `load` command.' % name)
+        return
 
     bot.reload_plugin(name)
     plugin_meta = bot.get_plugin_meta(name)
-    return bot.reply('done: %s reloaded (%s from %s)' %
-                     (name, plugin_meta['type'], plugin_meta['source']))
+    bot.say('done: %s reloaded (%s from %s)' % (
+        name,
+        plugin_meta['type'],
+        plugin_meta['source'],
+    ))
 
 
-@sopel.module.nickname_commands('update')
-@sopel.module.require_admin
+@plugin.nickname_command('update')
+@plugin.require_admin
+@plugin.output_prefix(PLUGIN_OUTPUT_PREFIX)
 def f_update(bot, trigger):
     """Pulls the latest versions of all plugins from Git (for use by admins only)."""
     proc = subprocess.Popen('/usr/bin/git pull',
@@ -63,18 +70,21 @@ def f_update(bot, trigger):
     f_reload(bot, trigger)
 
 
-@sopel.module.nickname_commands("load")
-@sopel.module.priority("low")
-@sopel.module.thread(False)
-@sopel.module.require_admin
+@plugin.nickname_command("load")
+@plugin.priority("low")
+@plugin.thread(False)
+@plugin.require_admin
+@plugin.output_prefix(PLUGIN_OUTPUT_PREFIX)
 def f_load(bot, trigger):
     """Loads a plugin (for use by admins only)."""
     name = trigger.group(2)
     if not name:
-        return bot.reply('Load what?')
+        bot.reply('Load what?')
+        return
 
     if bot.has_plugin(name):
-        return bot.reply('Plugin already loaded, use reload')
+        bot.reply('Plugin already loaded; use the `reload` command.')
+        return
 
     usable_plugins = plugins.get_usable_plugins(bot.config)
     if name not in usable_plugins:
@@ -92,31 +102,37 @@ def f_load(bot, trigger):
         bot.reply('Could not load plugin %s: %s' % (name, error))
     else:
         meta = bot.get_plugin_meta(name)
-        bot.reply('Plugin %s loaded (%s from %s)' %
-                  (name, meta['type'], meta['source']))
+        bot.say('Plugin %s loaded (%s from %s)' % (
+            name,
+            meta['type'],
+            meta['source'],
+        ))
 
 
 # Catch private messages
-@sopel.module.commands("reload")
-@sopel.module.priority("low")
-@sopel.module.thread(False)
+@plugin.command("reload")
+@plugin.priority("low")
+@plugin.thread(False)
+@plugin.require_privmsg
+@plugin.output_prefix(PLUGIN_OUTPUT_PREFIX)
 def pm_f_reload(bot, trigger):
     """Wrapper for allowing delivery of .reload command via PM"""
-    if trigger.is_privmsg:
-        f_reload(bot, trigger)
+    f_reload(bot, trigger)
 
 
-@sopel.module.commands('update')
+@plugin.command('update')
+@plugin.require_privmsg
+@plugin.output_prefix(PLUGIN_OUTPUT_PREFIX)
 def pm_f_update(bot, trigger):
     """Wrapper for allowing delivery of .update command via PM"""
-    if trigger.is_privmsg:
-        f_update(bot, trigger)
+    f_update(bot, trigger)
 
 
-@sopel.module.commands("load")
-@sopel.module.priority("low")
-@sopel.module.thread(False)
+@plugin.command("load")
+@plugin.priority("low")
+@plugin.thread(False)
+@plugin.require_privmsg
+@plugin.output_prefix(PLUGIN_OUTPUT_PREFIX)
 def pm_f_load(bot, trigger):
     """Wrapper for allowing delivery of .load command via PM"""
-    if trigger.is_privmsg:
-        f_load(bot, trigger)
+    f_load(bot, trigger)
