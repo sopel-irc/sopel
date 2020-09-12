@@ -20,9 +20,8 @@ import textwrap
 
 import requests
 
-from sopel.config.types import ChoiceAttribute, StaticSection, ValidatedAttribute
-from sopel.module import commands, example, priority, rule
-from sopel.tools import SopelMemory
+from sopel import plugin, tools
+from sopel.config import types
 
 
 SETTING_CACHE_NAMESPACE = 'help-setting-cache'  # Set top-level memory key name
@@ -173,17 +172,19 @@ REPLY_METHODS = [
 ]
 
 
-class HelpSection(StaticSection):
+class HelpSection(types.StaticSection):
     """Configuration section for this plugin."""
-    output = ChoiceAttribute('output',
-                             list(PASTEBIN_PROVIDERS),
-                             default='clbin')
+    output = types.ChoiceAttribute('output',
+                                   list(PASTEBIN_PROVIDERS),
+                                   default='clbin')
     """The pastebin provider to use for help output."""
-    reply_method = ChoiceAttribute('reply_method',
-                                   REPLY_METHODS,
-                                   default='channel')
+    reply_method = types.ChoiceAttribute('reply_method',
+                                         REPLY_METHODS,
+                                         default='channel')
     """Where/how to reply to help commands (public/private)."""
-    show_server_host = ValidatedAttribute('show_server_host', bool, default=True)
+    show_server_host = types.ValidatedAttribute('show_server_host',
+                                                bool,
+                                                default=True)
     """Show the IRC server's hostname/IP in the first line of the help listing?"""
 
 
@@ -217,12 +218,12 @@ def setup(bot):
 
     # Initialize memory
     if SETTING_CACHE_NAMESPACE not in bot.memory:
-        bot.memory[SETTING_CACHE_NAMESPACE] = SopelMemory()
+        bot.memory[SETTING_CACHE_NAMESPACE] = tools.SopelMemory()
 
     # Initialize settings cache
     for section in TRACKED_SETTINGS:
         if section not in bot.memory[SETTING_CACHE_NAMESPACE]:
-            bot.memory[SETTING_CACHE_NAMESPACE][section] = SopelMemory()
+            bot.memory[SETTING_CACHE_NAMESPACE][section] = tools.SopelMemory()
 
     update_cache(bot)  # Populate cache
 
@@ -243,10 +244,10 @@ def is_cache_valid(bot):
     return True
 
 
-@rule('$nick' r'(?i)(help|doc) +([A-Za-z]+)(?:\?+)?$')
-@example('.help tell')
-@commands('help', 'commands')
-@priority('low')
+@plugin.rule('$nick' r'(?i)(help|doc) +([A-Za-z]+)(?:\?+)?$')
+@plugin.example('.help tell')
+@plugin.command('help', 'commands')
+@plugin.priority('low')
 def help(bot, trigger):
     """Shows a command's documentation, and an example if available. With no arguments, lists all commands."""
     if bot.config.help.reply_method == 'query':
@@ -340,8 +341,8 @@ def create_list(bot, msg):
     return result
 
 
-@rule('$nick' r'(?i)help(?:[?!]+)?$')
-@priority('low')
+@plugin.rule('$nick' r'(?i)help(?:[?!]+)?$')
+@plugin.priority('low')
 def help2(bot, trigger):
     response = (
         "Hi, I'm a bot. Say {1}commands to me in private for a list "
