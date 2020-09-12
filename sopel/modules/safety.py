@@ -17,10 +17,8 @@ import time
 
 import requests
 
-from sopel.config.types import ListAttribute, StaticSection, ValidatedAttribute
-from sopel.formatting import bold, color
-from sopel.module import OP
-import sopel.tools
+from sopel import formatting, plugin, tools
+from sopel.config import types
 
 try:
     # This is done separately from the below version if/else because JSONDecodeError
@@ -40,6 +38,7 @@ else:
 
 
 LOGGER = logging.getLogger(__name__)
+PLUGIN_OUTPUT_PREFIX = '[safety] '
 
 vt_base_api_url = 'https://www.virustotal.com/vtapi/v2/url/'
 malware_domains = set()
@@ -47,12 +46,14 @@ known_good = []
 cache_limit = 512
 
 
-class SafetySection(StaticSection):
-    enabled_by_default = ValidatedAttribute('enabled_by_default', bool, default=True)
+class SafetySection(types.StaticSection):
+    enabled_by_default = types.ValidatedAttribute('enabled_by_default',
+                                                  bool,
+                                                  default=True)
     """Whether to enable URL safety in all channels where it isn't explicitly disabled."""
-    known_good = ListAttribute('known_good')
+    known_good = types.ListAttribute('known_good')
     """List of "known good" domains to ignore."""
-    vt_api_key = ValidatedAttribute('vt_api_key')
+    vt_api_key = types.ValidatedAttribute('vt_api_key')
     """Optional VirusTotal API key (improves malicious URL detection)."""
 
 
@@ -84,7 +85,7 @@ def setup(bot):
     bot.config.define_section('safety', SafetySection)
 
     if 'safety_cache' not in bot.memory:
-        bot.memory['safety_cache'] = sopel.tools.SopelMemory()
+        bot.memory['safety_cache'] = tools.SopelMemory()
     if 'safety_cache_lock' not in bot.memory:
         bot.memory['safety_cache_lock'] = threading.Lock()
     for item in bot.config.safety.known_good:
@@ -115,8 +116,9 @@ def _download_malwaredomains_db(path):
     urlretrieve(url, path)
 
 
-@sopel.module.rule(r'(?u).*(https?://\S+).*')
-@sopel.module.priority('high')
+@plugin.rule(r'(?u).*(https?://\S+).*')
+@plugin.priority('high')
+@plugin.output_prefix(PLUGIN_OUTPUT_PREFIX)
 def url_handler(bot, trigger):
     """Checks for malicious URLs"""
     check = True    # Enable URL checking
@@ -173,7 +175,7 @@ def url_handler(bot, trigger):
                     if len(bot.memory['safety_cache']) >= (2 * cache_limit):
                         _clean_cache(bot)
             else:
-                print('using cache')
+                LOGGER.debug('using cache')
                 result = bot.memory['safety_cache'][trigger]
             positives = result.get('positives', 0)
             total = result.get('total', 0)
@@ -193,17 +195,22 @@ def url_handler(bot, trigger):
     if positives > 1:
         # Possibly malicious URL detected!
         confidence = '{}%'.format(round((positives / total) * 100))
-        msg = 'link posted by %s is possibly malicious ' % bold(trigger.nick)
+        msg = (
+            'link posted by %s is possibly malicious '
+            % formatting.bold(trigger.nick)
+        )
         msg += '(confidence %s - %s/%s)' % (confidence, positives, total)
-        bot.say('[' + bold(color('WARNING', 'red')) + '] ' + msg)
+        warning = formatting.bold(formatting.color('WARNING:', 'red'))
+        bot.say(warning + ' ' + msg)
         if strict:
             bot.kick(trigger.nick, trigger.sender, 'Posted a malicious link')
 
 
-@sopel.module.commands('safety')
+@plugin.command('safety')
+@plugin.output_prefix(PLUGIN_OUTPUT_PREFIX)
 def toggle_safety(bot, trigger):
     """Set safety setting for channel"""
-    if not trigger.admin and bot.channels[trigger.sender].privileges[trigger.nick] < OP:
+    if not trigger.admin and bot.channels[trigger.sender].privileges[trigger.nick] < plugin.OP:
         bot.reply('Only channel operators can change safety settings')
         return
     allowed_states = ['strict', 'on', 'off', 'local', 'local strict']
@@ -214,12 +221,12 @@ def toggle_safety(bot, trigger):
 
     channel = trigger.sender.lower()
     bot.db.set_channel_value(channel, 'safety', trigger.group(2).lower())
-    bot.reply('Safety is now set to "%s" on this channel' % trigger.group(2))
+    bot.say('Safety is now set to "%s" on this channel' % trigger.group(2))
 
 
 # Clean the cache every day
 # Code above also calls this if there are too many cache entries
-@sopel.module.interval(24 * 60 * 60)
+@plugin.interval(24 * 60 * 60)
 def _clean_cache(bot):
     """Cleans up old entries in URL safety cache."""
     if bot.memory['safety_cache_lock'].acquire(False):
@@ -228,7 +235,7 @@ def _clean_cache(bot):
             # clean up by age first
             cutoff = time.time() - (7 * 24 * 60 * 60)  # 7 days ago
             old_keys = []
-            for key, data in sopel.tools.iteritems(bot.memory['safety_cache']):
+            for key, data in tools.iteritems(bot.memory['safety_cache']):
                 if data['fetched'] <= cutoff:
                     old_keys.append(key)
             for key in old_keys:
