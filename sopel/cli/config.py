@@ -10,7 +10,11 @@ from . import utils
 
 
 def build_parser():
-    """Configure an argument parser for ``sopel-config``"""
+    """Build and configure an argument parser for ``sopel-config``.
+
+    :return: the argument parser
+    :rtype: :class:`argparse.ArgumentParser`
+    """
     parser = argparse.ArgumentParser(
         description='Sopel configuration tool')
 
@@ -65,7 +69,8 @@ def handle_list(options):
     """Display a list of configurations available in Sopel's config directory.
 
     :param options: parsed arguments
-    :type options: ``argparse.Namespace``
+    :type options: :class:`argparse.Namespace`
+    :return: 0 if everything went fine
 
     This command displays an unordered list of config names from Sopel's
     config directory, without their extensions::
@@ -99,10 +104,12 @@ def handle_list(options):
 
 
 def handle_init(options):
-    """Use config wizard to initialize a new configuration file for the bot
+    """Use config wizard to initialize a new configuration file for the bot.
 
     :param options: parsed arguments
-    :type options: ``argparse.Namespace``
+    :type options: :class:`argparse.Namespace`
+    :return: 0 if everything went fine;
+             1 if the file is invalid or if it already exists
 
     .. note::
 
@@ -129,7 +136,14 @@ def handle_init(options):
 
 
 def handle_get(options):
-    """Read the settings to display the value of <section> <key>"""
+    """Read the settings to display the value of ``<section> <key>``.
+
+    :param options: parsed arguments
+    :type options: :class:`argparse.Namespace`
+    :return: 0 if everything went fine;
+             1 if the section and/or key does not exist;
+             2 if the settings can't be loaded
+    """
     try:
         settings = utils.load_settings(options)
     except Exception as error:
@@ -154,7 +168,7 @@ def handle_get(options):
 
 
 def main():
-    """Console entry point for ``sopel-config``"""
+    """Console entry point for ``sopel-config``."""
     parser = build_parser()
     options = parser.parse_args()
     action = options.action
