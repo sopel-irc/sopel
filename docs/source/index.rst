@@ -21,8 +21,9 @@ Documentation
 -------------
 
 .. toctree::
-    :titlesonly:
+    :maxdepth: 2
 
     run
+    plugin
     package
     tests

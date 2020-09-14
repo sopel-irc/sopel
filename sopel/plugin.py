@@ -512,16 +512,6 @@ def action_command(*command_list):
 
     .. versionadded:: 7.0
 
-    .. important::
-
-        This decorator will prevent the other command types from working on
-        the same callable. Normally only one command type is used per
-        function, but if you need to trigger the same command with e.g. both
-        action and nickname commands, use a main function called from
-        decorated wrappers.
-
-        Hopefully, a future version of Sopel will remove this limitation.
-
     .. note::
 
         You can use a regular expression for the command name(s), but this is
