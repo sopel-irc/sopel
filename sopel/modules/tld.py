@@ -17,7 +17,7 @@ import sys
 
 import requests
 
-from sopel import plugin, tools
+from sopel import formatting, plugin, tools
 
 if sys.version_info.major >= 3:
     unicode = str
@@ -88,6 +88,7 @@ class WikipediaTLDListParser(HTMLParser):
         self.current_cell = ''
         self.rows = []
         self.tables = []
+        self.finished = False
 
     def handle_starttag(self, tag, attrs):
         if tag == 'td' or tag == 'th':
@@ -99,16 +100,30 @@ class WikipediaTLDListParser(HTMLParser):
             for name, value in attrs:
                 if name == 'class' and 'wikitable' in value:
                     self.skipping = False
+        elif tag in ['b', 'strong'] and self.in_cell:
+            self.current_cell += '<[bold]>'
+        elif tag in ['i', 'em'] and self.in_cell:
+            self.current_cell += '<[italic]>'
 
     def handle_endtag(self, tag):
         if tag == 'td' or tag == 'th':
             self.in_cell = False
             if not self.skipping:
-                self.current_row.append(self.current_cell)
+                cell = self.current_cell.strip()
+                # Python's built-in `strip()` method for strings will remove
+                # some control codes we want to keep as IRC formatting. So the
+                # parser inserts placeholders, and now it's time to replace
+                # them with the real control codes.
+                for placeholder in [
+                    ('<[bold]>', formatting.CONTROL_BOLD),
+                    ('<[italic]>', formatting.CONTROL_ITALIC),
+                ]:
+                    cell = cell.replace(*placeholder)
+                self.current_row.append(cell)
             self.current_cell = ''
         elif tag == 'tr':
             if not self.skipping:
-                self.rows.append(tuple([cell.strip() for cell in self.current_row]))
+                self.rows.append(tuple(self.current_row))
             self.current_row = []
         elif tag == 'table':
             if not self.skipping:
@@ -118,53 +133,66 @@ class WikipediaTLDListParser(HTMLParser):
             self.in_cell = False
         elif tag == 'sup' and self.in_cell:
             self.skipping = False
+        elif tag in ['b', 'strong'] and self.in_cell:
+            self.current_cell += '<[bold]>'
+        elif tag in ['i', 'em'] and self.in_cell:
+            self.current_cell += '<[italic]>'
 
     def handle_data(self, data):
         if self.in_cell and not self.skipping:
             self.current_cell += data
 
+    def get_processed_data(self):
+        LOGGER.debug("Processed TLD data requested.")
+        if self.finished:
+            LOGGER.debug("Returning stored previously-processed data.")
+            return self.tables
 
-def process_parser_result(parser):
-    tables = parser.tables
-    tld_list = {}
+        LOGGER.debug("Ensuring all buffered data has been parsed.")
+        self.close()
 
-    for table in tables:
-        headings = table[0]
-        for row in table[1:]:
-            key = None
-            idn_key = None
-            for cell in row:
-                tld = r_tld.match(cell)
-                if tld:
-                    key = tld.group(1).lower()
-                idn = r_idn.match(cell)
-                if idn:
-                    idn_key = idn.group(1).lower()
-            if not any([key, idn_key]):
-                LOGGER.warning(
-                    "Skipping row %s; could not find string to use as lookup key.",
-                    str(row),
-                )
-                continue
+        LOGGER.debug("Processing tables.")
+        tld_list = {}
+        for table in self.tables:
+            headings = table[0]
+            for row in table[1:]:
+                key = None
+                idn_key = None
+                for cell in row:
+                    tld = r_tld.match(cell)
+                    if tld and not key:
+                        key = tld.group(1).lower()
+                    idn = r_idn.match(cell)
+                    if idn and not idn_key:
+                        idn_key = idn.group(1).lower()
+                if not any([key, idn_key]):
+                    LOGGER.warning(
+                        "Skipping row %s; could not find string to use as lookup key.",
+                        str(row),
+                    )
+                    continue
 
-            # Some cleanup happens directly in the dict comprehension here.
-            # Empty values (actually falsy, but only empty strings are possible)
-            # and values consisting only of a dash (indicating the absence of
-            # information or restrictions) get left out of the final data.
-            # When the data is presented later, these empty fields are just
-            # clutter taking up limited space in the IRC line.
-            zipped = {
-                field: value
-                for field, value
-                in dict(zip(headings, row)).items()
-                if value and value != '—'
-            }
-            if key:
-                tld_list[key] = zipped
-            if idn_key:
-                tld_list[idn_key] = zipped
+                # Some cleanup happens directly in the dict comprehension here.
+                # Empty values (actually falsy, but only empty strings are possible)
+                # and values consisting only of a dash (indicating the absence of
+                # information or restrictions) get left out of the final data.
+                # When the data is presented later, these empty fields are just
+                # clutter taking up limited space in the IRC line.
+                zipped = {
+                    field: value
+                    for field, value
+                    in dict(zip(headings, row)).items()
+                    if value and value != '—'
+                }
+                if key:
+                    tld_list[key] = zipped
+                if idn_key:
+                    tld_list[idn_key] = zipped
 
-    return tld_list
+        LOGGER.debug("Finished processing TLD data; returning it.")
+        self.tables = tld_list
+        self.finished = True
+        return self.tables
 
 
 def _update_tld_data(bot, which):
@@ -216,7 +244,7 @@ def _update_tld_data(bot, which):
 
         parser = WikipediaTLDListParser()
         parser.feed(tld_data)
-        tld_data = process_parser_result(parser)
+        tld_data = parser.get_processed_data()
 
         bot.memory['tld_data_cache'] = tld_data
         bot.memory['tld_data_cache_updated'] = now
@@ -268,15 +296,10 @@ def gettld(bot, trigger):
         )
         return
 
-    # Build the order in which to output available data fields
+    # Get the current order of available data fields
     fields = list(record.keys())
     # This trick moves matching keys to the end of the list
     fields.sort(key=lambda s: s.startswith('Notes') or s.startswith('Comments'))
-    # This column depends on HTML formatting to make sense; skip it for now
-    try:
-        fields.remove('Explanation')
-    except ValueError:
-        pass
 
     items = []
     for field in fields:
