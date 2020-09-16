@@ -17,7 +17,7 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 from collections import deque
 import re
 
-from sopel import module
+from sopel import plugin
 from sopel.formatting import bold
 from sopel.tools import Identifier, SopelMemory
 
@@ -34,11 +34,11 @@ def shutdown(bot):
         pass
 
 
-@module.echo
-@module.rule('.*')
-@module.priority('low')
-@module.require_chanmsg
-@module.unblockable
+@plugin.echo
+@plugin.rule('.*')
+@plugin.priority('low')
+@plugin.require_chanmsg
+@plugin.unblockable
 def collectlines(bot, trigger):
     """Create a temporary log of what people say"""
     # Add a log for the channel and nick, if there isn't already one
@@ -72,10 +72,10 @@ def _cleanup_nickname(bot, nick, channel=None):
             bot.memory['find_lines'][channel].pop(nick, None)
 
 
-@module.echo
-@module.event('PART')
-@module.priority('low')
-@module.unblockable
+@plugin.echo
+@plugin.event('PART')
+@plugin.priority('low')
+@plugin.unblockable
 def part_cleanup(bot, trigger):
     """Clean up cached data when a user leaves a channel."""
     if trigger.nick == bot.nick:
@@ -86,20 +86,20 @@ def part_cleanup(bot, trigger):
         _cleanup_nickname(bot, trigger.nick, trigger.sender)
 
 
-@module.echo
-@module.event('QUIT')
-@module.priority('low')
-@module.unblockable
+@plugin.echo
+@plugin.event('QUIT')
+@plugin.priority('low')
+@plugin.unblockable
 def quit_cleanup(bot, trigger):
     """Clean up cached data after a user quits IRC."""
     # If Sopel itself quits, shutdown() will handle the cleanup.
     _cleanup_nickname(bot, trigger.nick)
 
 
-@module.echo
-@module.event('KICK')
-@module.priority('low')
-@module.unblockable
+@plugin.echo
+@plugin.event('KICK')
+@plugin.priority('low')
+@plugin.unblockable
 def kick_cleanup(bot, trigger):
     """Clean up cached data when a user is kicked from a channel."""
     nick = Identifier(trigger.args[1])
@@ -116,7 +116,7 @@ def kick_cleanup(bot, trigger):
 # slash is ignored, you can escape slashes with backslashes, and if you want to
 # search for an actual backslash followed by an actual slash, you're shit out of
 # luck because this is the fucking regex of death as it is.
-@module.rule(r"""(?:
+@plugin.rule(r"""(?:
             (\S+)           # Catch a nick in group 1
           [:,]\s+)?         # Followed by colon/comma and whitespace, if given
           s/                # The literal s/
@@ -127,7 +127,7 @@ def kick_cleanup(bot, trigger):
           )
           (?:/(\S+))?       # Optional slash, followed by group 4 (flags)
           """)
-@module.priority('high')
+@plugin.priority('high')
 def findandreplace(bot, trigger):
     # Don't bother in PM
     if trigger.is_privmsg:

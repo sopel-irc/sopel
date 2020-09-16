@@ -10,7 +10,10 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 import requests
 
-from sopel import module
+from sopel import plugin
+
+
+PLUGIN_OUTPUT_PREFIX = '[isup] '
 
 
 def get_site_url(site):
@@ -70,16 +73,18 @@ def handle_isup(bot, trigger, secure=True):
             bot.say(site + ' is down from here.')
 
 
-@module.commands('isupinsecure')
+@plugin.command('isupinsecure')
+@plugin.output_prefix(PLUGIN_OUTPUT_PREFIX)
 def isup_insecure(bot, trigger):
     """Check if a website is up (without verifying HTTPS)."""
     handle_isup(bot, trigger, secure=False)
 
 
-@module.commands('isup')
-@module.example('.isup google.com',
+@plugin.command('isup')
+@plugin.example('.isup google.com',
                 'http://google.com looks fine to me.',
                 online=True, vcr=True)
+@plugin.output_prefix(PLUGIN_OUTPUT_PREFIX)
 def isup(bot, trigger):
     """Check if a website is up or not."""
     handle_isup(bot, trigger, secure=True)

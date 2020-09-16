@@ -15,13 +15,13 @@ import requests
 import xmltodict
 
 from sopel import plugin, plugins
-from sopel.config.types import ListAttribute, StaticSection
+from sopel.config import types
 
 LOGGER = logging.getLogger(__name__)
 
 
-class BugzillaSection(StaticSection):
-    domains = ListAttribute('domains')
+class BugzillaSection(types.StaticSection):
+    domains = types.ListAttribute('domains')
     """A list of Bugzilla issue tracker domains from which to get information."""
 
 

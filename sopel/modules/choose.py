@@ -13,26 +13,28 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 import random
 
-from sopel import module
+from sopel import plugin
 
 
-@module.commands("choice")
-@module.commands("ch")
-@module.commands("choose")
-@module.priority("medium")
-@module.example(".choose a, b, c", r'Your options: a, b, c. My choice: (a|b|c)', re=True)
-@module.example(".choose a | b | c", r'Your options: a, b, c. My choice: (a|b|c)', re=True)
-@module.example(".choose a,b,c", r'Your options: a, b, c. My choice: (a|b|c)', re=True)
-@module.example(".choose a|b|c", r'Your options: a, b, c. My choice: (a|b|c)', re=True)
-@module.example(".choose a b c", r'Your options: a, b, c. My choice: (a|b|c)', re=True)
-@module.example(".choose a, b | just a",
+@plugin.command('choose', 'choice', 'ch')
+@plugin.priority("medium")
+@plugin.example(".choose a, b, c", r'Your options: a, b, c. My choice: (a|b|c)', re=True)
+@plugin.example(".choose a | b | c", r'Your options: a, b, c. My choice: (a|b|c)', re=True)
+@plugin.example(".choose a,b,c", r'Your options: a, b, c. My choice: (a|b|c)', re=True)
+@plugin.example(".choose a|b|c", r'Your options: a, b, c. My choice: (a|b|c)', re=True)
+@plugin.example(".choose a b c", r'Your options: a, b, c. My choice: (a|b|c)', re=True)
+@plugin.example(".choose a, b | just a",
                 r'Your options: "a, b", just a. My choice: ((a, b)|(just a))',
                 re=True)
-@module.example(".choose a", 'Your options: a. My choice: a')
+@plugin.example(".choose a", 'Your options: a. My choice: a')
+@plugin.example(".choose a | b | c", user_help=True)
+@plugin.example(".choose a, b, c", user_help=True)
 def choose(bot, trigger):
-    """.choice option1|option2|option3 - Makes a difficult choice easy."""
+    """Makes a difficult choice easy."""
     if not trigger.group(2):
-        return bot.reply('I\'d choose an option, but you didn\'t give me any.')
+        bot.reply("I'd choose an option, but you didn't give me any.")
+        return
+
     choices = [trigger.group(2)]
     for delim in '|\\/, ':
         choices = trigger.group(2).split(delim)
@@ -46,9 +48,4 @@ def choose(bot, trigger):
         choice if ',' not in choice else '"%s"' % choice
         for choice in choices
     )
-    return bot.reply('Your options: %s. My choice: %s' % (display_options, pick))
-
-
-if __name__ == "__main__":
-    from sopel.test_tools import run_example_tests
-    run_example_tests(__file__)
+    bot.reply('Your options: %s. My choice: %s' % (display_options, pick))

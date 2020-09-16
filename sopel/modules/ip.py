@@ -17,8 +17,8 @@ import tarfile
 
 import geoip2.database
 
-from sopel.config.types import FilenameAttribute, StaticSection
-from sopel.module import commands, example
+from sopel import plugin
+from sopel.config import types
 from sopel.tools import web
 
 urlretrieve = None
@@ -37,8 +37,8 @@ except ImportError:
 LOGGER = logging.getLogger(__name__)
 
 
-class GeoipSection(StaticSection):
-    GeoIP_db_path = FilenameAttribute('GeoIP_db_path', directory=True)
+class GeoipSection(types.StaticSection):
+    GeoIP_db_path = types.FilenameAttribute('GeoIP_db_path', directory=True)
     """Path of the directory containing the GeoIP database files."""
 
 
@@ -113,17 +113,22 @@ def _find_geoip_db(bot):
         return False
 
 
-@commands('iplookup', 'ip')
-@example('.ip 8.8.8.8',
-         r'\[IP\/Host Lookup\] Hostname: \S*dns\S*\.google\S*( \| .+?: .+?)+ \| ISP: AS15169 \S+',
-         re=True,
-         ignore='Downloading GeoIP database, please wait...',
-         online=True)
+@plugin.command('iplookup', 'ip')
+@plugin.example(
+    '.ip 8.8.8.8',
+    r'Hostname: \S*dns\S*\.google\S*( \| .+?: .+?)+ \| ISP: AS15169 \S+',
+    re=True,
+    ignore='Downloading GeoIP database, please wait...',
+    online=True)
+@plugin.output_prefix('[IP/Host Lookup] ')
 def ip(bot, trigger):
     """IP Lookup tool"""
     # Check if there is input at all
     if not trigger.group(2):
-        return bot.reply("No search term.")
+        bot.reply("No search term.")
+        return
+
+    parts = []
     # Check whether the input is an IP or hostmask or a nickname
     decide = ['.', ':']
     if any(x in trigger.group(2) for x in decide):
@@ -138,21 +143,24 @@ def ip(bot, trigger):
 
             # Sanity check - sometimes user information isn't populated yet
             if query is None:
-                return bot.say("I don't know that user's host.")
+                bot.reply("I don't know that user's host.")
+                return
         else:
-            return bot.say("I\'m not aware of this user.")
+            bot.reply("I\'m not aware of this user.")
+            return
 
     db_path = _find_geoip_db(bot)
     if db_path is False:
         LOGGER.error('Can\'t find (or download) usable GeoIP database.')
-        bot.say('Sorry, I don\'t have a GeoIP database to use for this lookup.')
-        return False
+        bot.reply('Sorry, I don\'t have a GeoIP database to use for this lookup.')
+        return
 
     if ':' in query:
         try:
             socket.inet_pton(socket.AF_INET6, query)
         except (OSError, socket.error):  # Python 2/3 compatibility
-            return bot.say("[IP/Host Lookup] Unable to resolve IP/Hostname")
+            bot.reply("Unable to resolve IP/Hostname")
+            return
     elif '.' in query:
         try:
             socket.inet_pton(socket.AF_INET, query)
@@ -160,9 +168,11 @@ def ip(bot, trigger):
             try:
                 query = socket.getaddrinfo(query, None)[0][4][0]
             except socket.gaierror:
-                return bot.say("[IP/Host Lookup] Unable to resolve IP/Hostname")
+                bot.reply("Unable to resolve IP/Hostname")
+                return
     else:
-        return bot.say("[IP/Host Lookup] Unable to resolve IP/Hostname")
+        bot.reply("Unable to resolve IP/Hostname")
+        return
 
     city = geoip2.database.Reader(os.path.join(db_path, 'GeoLite2-City.mmdb'))
     asn = geoip2.database.Reader(os.path.join(db_path, 'GeoLite2-ASN.mmdb'))
@@ -171,24 +181,25 @@ def ip(bot, trigger):
         city_response = city.city(query)
         asn_response = asn.asn(query)
     except geoip2.errors.AddressNotFoundError:
-        return bot.say("[IP/Host Lookup] The address is not in the database.")
+        bot.reply("The address is not in the database.")
+        return
 
-    response = "[IP/Host Lookup] Hostname: %s" % host
+    parts.append("Hostname: %s" % host)
     try:
-        response += " | Location: %s" % city_response.country.name
+        parts.append("Location: %s" % city_response.country.name)
     except AttributeError:
-        response += ' | Location: Unknown'
+        parts.append('Location: Unknown')
 
     region = city_response.subdivisions.most_specific.name
-    response += " | Region: %s" % region if region else ""
+    if region:
+        parts.append("Region: %s" % region)
+
     city = city_response.city.name
-    response += " | City: %s" % city if city else ""
-    isp = "AS" + str(asn_response.autonomous_system_number) + \
+    if city:
+        parts.append("City: %s" % city)
+
+    isp = "ISP: AS" + str(asn_response.autonomous_system_number) + \
           " " + asn_response.autonomous_system_organization
-    response += " | ISP: %s" % isp if isp else ""
-    bot.say(response)
+    parts.append(isp)
 
-
-if __name__ == "__main__":
-    from sopel.test_tools import run_example_tests
-    run_example_tests(__file__)
+    bot.say(' | '.join(parts))

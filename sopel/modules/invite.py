@@ -9,10 +9,10 @@ https://sopel.chat
 """
 from __future__ import absolute_import, division, print_function, unicode_literals
 
-from sopel import module, tools
+from sopel import plugin, tools
 
 
-MIN_PRIV = module.HALFOP
+MIN_PRIV = plugin.HALFOP
 
 
 def invite_handler(bot, sender, user, channel):
@@ -31,30 +31,34 @@ def invite_handler(bot, sender, user, channel):
 
     # Sopel must be in the target channel
     if channel not in bot.channels or bot.nick not in bot.channels[channel].privileges:
-        return bot.reply("I'm not in {}!".format(channel))
+        bot.reply("I'm not in {}!".format(channel))
+        return
 
     privs = bot.channels[channel].privileges
 
     # Sopel must have sufficient privileges in the target channel to send invites
     if privs[bot.nick] < MIN_PRIV:
-        return bot.reply("I don't have permission to invite anyone into {}.".format(channel))
+        bot.reply("I don't have permission to invite anyone into {}.".format(channel))
+        return
 
     # The sender must be in the target channel
     if sender not in privs:
-        return bot.reply("You're not in {}.".format(channel))
+        bot.reply("You're not in {}.".format(channel))
+        return
 
     # The sender must have sufficient privileges in the target channel to send invites
     if privs[sender] < MIN_PRIV:
-        return bot.reply("You don't have permission to invite anyone into {}.".format(channel))
+        bot.reply("You don't have permission to invite anyone into {}.".format(channel))
+        return
 
     # Sopel and the sender both passed permission checks.
     # DDDDOOOO IIIITTTT
     bot.write(['INVITE', user, channel])
 
 
-@module.commands('invite')
-@module.example('.invite jenny', user_help=True)
-@module.example('.invite converge #sopel', user_help=True)
+@plugin.command('invite')
+@plugin.example('.invite jenny', user_help=True)
+@plugin.example('.invite converge #sopel', user_help=True)
 def invite(bot, trigger):
     """
     Invite the given user to the current channel, or (with optional

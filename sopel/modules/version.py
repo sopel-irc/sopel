@@ -9,58 +9,61 @@ https://sopel.chat
 """
 from __future__ import absolute_import, division, print_function, unicode_literals
 
-from datetime import datetime
-from os import path
+import datetime
+import os
 import platform
 
-from sopel import __version__ as release
-from sopel.module import commands, intent, rate
+from sopel import __version__ as release, plugin
+
+
+PROJECT_DIR = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+GIT_DIR = os.path.join(PROJECT_DIR, '.git')
 
 
 def git_info():
-    repo = path.join(path.dirname(path.dirname(path.dirname(__file__))), '.git')
-    head = path.join(repo, 'HEAD')
-    if path.isfile(head):
+    head = os.path.join(GIT_DIR, 'HEAD')
+    if os.path.isfile(head):
         with open(head) as h:
             head_loc = h.readline()[5:-1]  # strip ref: and \n
-        head_file = path.join(repo, head_loc)
-        if path.isfile(head_file):
+        head_file = os.path.join(GIT_DIR, head_loc)
+        if os.path.isfile(head_file):
             with open(head_file) as h:
                 sha = h.readline()
                 if sha:
                     return sha
 
 
-@commands('version')
+@plugin.command('version')
+@plugin.output_prefix('[version] ')
 def version(bot, trigger):
     """Display the latest commit version, if Sopel is running in a git repo."""
+    parts = [
+        'Sopel v%s' % release,
+        'Python: %s' % platform.python_version()
+    ]
     sha = git_info()
-    if not sha:
-        msg = 'Sopel v' + release + ' (Python {})'.format(platform.python_version())
-        if release[-4:] == '-git':
-            msg += ' at unknown commit.'
-        bot.reply(msg)
-        return
+    if sha:
+        parts.append('Commit: %s' % sha)
 
-    bot.reply("Sopel v{} (Python {}) at commit: {}".format(release, platform.python_version(), sha))
+    bot.say(' | '.join(parts))
 
 
-@intent('VERSION')
-@rate(20)
+@plugin.intent('VERSION')
+@plugin.rate(20)
 def ctcp_version(bot, trigger):
     bot.write(('NOTICE', trigger.nick),
               '\x01VERSION Sopel IRC Bot version %s\x01' % release)
 
 
-@intent('SOURCE')
-@rate(20)
+@plugin.intent('SOURCE')
+@plugin.rate(20)
 def ctcp_source(bot, trigger):
     bot.write(('NOTICE', trigger.nick),
-              '\x01SOURCE https://github.com/sopel-irc/sopel/\x01')
+              '\x01SOURCE https://github.com/sopel-irc/sopel\x01')
 
 
-@intent('PING')
-@rate(10)
+@plugin.intent('PING')
+@plugin.rate(10)
 def ctcp_ping(bot, trigger):
     text = trigger.group()
     text = text.replace("PING ", "")
@@ -69,10 +72,10 @@ def ctcp_ping(bot, trigger):
               '\x01PING {0}\x01'.format(text))
 
 
-@intent('TIME')
-@rate(20)
+@plugin.intent('TIME')
+@plugin.rate(20)
 def ctcp_time(bot, trigger):
-    dt = datetime.now()
+    dt = datetime.datetime.now()
     current_time = dt.strftime("%A, %d. %B %Y %I:%M%p")
     bot.write(('NOTICE', trigger.nick),
               '\x01TIME {0}\x01'.format(current_time))

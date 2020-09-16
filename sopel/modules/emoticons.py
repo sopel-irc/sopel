@@ -8,115 +8,115 @@ https://sopel.chat
 """
 from __future__ import absolute_import, division, print_function, unicode_literals
 
-from sopel import module
+from sopel import plugin
 
 
-@module.commands('shrug')
-@module.action_commands('shrugs')
-@module.example('.shrug', r'¯\_(ツ)_/¯')
+@plugin.command('shrug')
+@plugin.action_command('shrugs')
+@plugin.example('.shrug', r'¯\_(ツ)_/¯')
 def shrug(bot, trigger):
     bot.say('¯\\_(ツ)_/¯')
 
 
-@module.commands('happy')
-@module.example('.happy', 'ᕕ( ᐛ )ᕗ')
+@plugin.command('happy')
+@plugin.example('.happy', 'ᕕ( ᐛ )ᕗ')
 def happy(bot, trigger):
     bot.say('ᕕ( ᐛ )ᕗ')
 
 
-@module.commands('smirk')
-@module.action_commands('smirks')
-@module.example('.smirk', '(¬‿¬)')
+@plugin.command('smirk')
+@plugin.action_command('smirks')
+@plugin.example('.smirk', '(¬‿¬)')
 def smirk(bot, trigger):
     bot.say('(¬‿¬)')
 
 
-@module.commands('tableflip', 'tflip')
-@module.action_commands('flips table', 'flips a table', 'flips the table')
-@module.example('.tableflip', '(╯°□°）╯︵ ┻━┻')
-@module.example('.tflip', '(╯°□°）╯︵ ┻━┻')
+@plugin.command('tableflip', 'tflip')
+@plugin.action_command('flips table', 'flips a table', 'flips the table')
+@plugin.example('.tableflip', '(╯°□°）╯︵ ┻━┻')
+@plugin.example('.tflip', '(╯°□°）╯︵ ┻━┻')
 def tableflip(bot, trigger):
     bot.say('(╯°□°）╯︵ ┻━┻')
 
 
-@module.commands('unflip')
-@module.action_commands('unflips table', 'unflips the table')
-@module.example('.unflip', '┬┬ ﻿ノ( ゜-゜ノ)')
+@plugin.command('unflip')
+@plugin.action_command('unflips table', 'unflips the table')
+@plugin.example('.unflip', '┬┬ ﻿ノ( ゜-゜ノ)')
 def unflip(bot, trigger):
     bot.say('┬┬ ﻿ノ( ゜-゜ノ)')
 
 
-@module.commands('lenny')
-@module.example('.lenny', '( ͡° ͜ʖ ͡°)')
+@plugin.command('lenny')
+@plugin.example('.lenny', '( ͡° ͜ʖ ͡°)')
 def lenny(bot, trigger):
     bot.say('( ͡° ͜ʖ ͡°)')
 
 
-@module.commands('rage', 'anger')
-@module.example('.rage', 'щ(ಠ益ಠщ)')
-@module.example('.anger', 'щ(ಠ益ಠщ)')
+@plugin.command('rage', 'anger')
+@plugin.example('.rage', 'щ(ಠ益ಠщ)')
+@plugin.example('.anger', 'щ(ಠ益ಠщ)')
 def anger(bot, trigger):
     bot.say('щ(ಠ益ಠщ)')
 
 
-@module.commands('cry')
-@module.action_commands('cries')
-@module.example('.cry', '( p′︵‵。)')
+@plugin.command('cry')
+@plugin.action_command('cries')
+@plugin.example('.cry', '( p′︵‵。)')
 def cry(bot, trigger):
     bot.say('( p′︵‵。)')
 
 
-@module.commands('love')
-@module.example('.love', '(●♡∀♡)')
+@plugin.command('love')
+@plugin.example('.love', '(●♡∀♡)')
 def love(bot, trigger):
     bot.say('(●♡∀♡)')
 
 
-@module.commands('success', 'winner')
-@module.example('.success', '٩( ᐛ )و')
-@module.example('.winner', '٩( ᐛ )و')
+@plugin.command('success', 'winner')
+@plugin.example('.success', '٩( ᐛ )و')
+@plugin.example('.winner', '٩( ᐛ )و')
 def success(bot, trigger):
     bot.say('٩( ᐛ )و')
 
 
-@module.commands('confused', 'wat')
-@module.example('.confused', '(●__●)???')
-@module.example('.wat', '(●__●)???')
+@plugin.command('confused', 'wat')
+@plugin.example('.confused', '(●__●)???')
+@plugin.example('.wat', '(●__●)???')
 def wat(bot, trigger):
     bot.say('(●__●)???')
 
 
-@module.commands('crazy')
-@module.example('.crazy', '⊙_ʘ')
+@plugin.command('crazy')
+@plugin.example('.crazy', '⊙_ʘ')
 def crazy(bot, trigger):
     bot.say('⊙_ʘ')
 
 
-@module.commands('hungry')
-@module.example('.hungry', 'ლ(´ڡ`ლ)')
+@plugin.command('hungry')
+@plugin.example('.hungry', 'ლ(´ڡ`ლ)')
 def hungry(bot, trigger):
     bot.say('ლ(´ڡ`ლ)')
 
 
-@module.commands('surprised')
-@module.example('.surprised', '(((( ;°Д°))))')
+@plugin.command('surprised')
+@plugin.example('.surprised', '(((( ;°Д°))))')
 def surprised(bot, trigger):
     bot.say('(((( ;°Д°))))')
 
 
-@module.commands('sick')
-@module.example('.sick', '(-﹏-。)')
+@plugin.command('sick')
+@plugin.example('.sick', '(-﹏-。)')
 def sick(bot, trigger):
     bot.say('(-﹏-。)')
 
 
-@module.commands('afraid')
-@module.example('.afraid', '(　〇□〇）')
+@plugin.command('afraid')
+@plugin.example('.afraid', '(　〇□〇）')
 def afraid(bot, trigger):
     bot.say('(　〇□〇）')
 
 
-@module.commands('worried')
-@module.example('.worried', '(　ﾟдﾟ)')
+@plugin.command('worried')
+@plugin.example('.worried', '(　ﾟдﾟ)')
 def worried(bot, trigger):
     bot.say('(　ﾟдﾟ)')

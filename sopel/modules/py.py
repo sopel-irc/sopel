@@ -10,14 +10,15 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 from requests import get
 
-from sopel import module
-from sopel.config.types import StaticSection, ValidatedAttribute
+from sopel import plugin
+from sopel.config import types
 from sopel.tools.web import quote
 
 
-class PySection(StaticSection):
-    oblique_instance = ValidatedAttribute('oblique_instance',
-                                          default='https://oblique.sopel.chat/')
+class PySection(types.StaticSection):
+    oblique_instance = types.ValidatedAttribute(
+        'oblique_instance',
+        default='https://oblique.sopel.chat/')
     """The Oblique instance to use when evaluating Python expressions"""
 
 
@@ -47,9 +48,9 @@ def setup(bot):
         bot.config.py.oblique_instance += '/'
 
 
-@module.commands('py')
-@module.output_prefix('[py] ')
-@module.example('.py len([1,2,3])', '3', online=True, vcr=True)
+@plugin.command('py')
+@plugin.output_prefix('[py] ')
+@plugin.example('.py len([1,2,3])', '3', online=True, vcr=True)
 def py(bot, trigger):
     """Evaluate a Python expression."""
     if not trigger.group(2):
@@ -62,8 +63,3 @@ def py(bot, trigger):
         bot.say(answer)
     else:
         bot.reply('Sorry, no result.')
-
-
-if __name__ == "__main__":
-    from sopel.test_tools import run_example_tests
-    run_example_tests(__file__)

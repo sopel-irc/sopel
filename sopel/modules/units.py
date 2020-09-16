@@ -11,8 +11,10 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 import re
 
-from sopel.module import commands, example, NOLIMIT
+from sopel import plugin
 
+
+PLUGIN_OUTPUT_PREFIX = '[units] '
 
 find_temp = re.compile(r'(-?[0-9]*\.?[0-9]*)[ °]*(K|C|F)', re.IGNORECASE)
 find_length = re.compile(r'([0-9]*\.?[0-9]*)[ ]*(mile[s]?|mi|inch|in|foot|feet|ft|yard[s]?|yd|(?:milli|centi|kilo|)meter[s]?|[mkc]?m|ly|light-year[s]?|au|astronomical unit[s]?|parsec[s]?|pc)', re.IGNORECASE)
@@ -35,17 +37,18 @@ def k_to_c(temp):
     return temp - 273.15
 
 
-@commands('temp')
-@example('.temp 100F', '37.78°C = 100.00°F = 310.93K')
-@example('.temp 100C', '100.00°C = 212.00°F = 373.15K')
-@example('.temp 100K', '-173.15°C = -279.67°F = 100.00K')
+@plugin.command('temp')
+@plugin.example('.temp 100F', '37.78°C = 100.00°F = 310.93K')
+@plugin.example('.temp 100C', '100.00°C = 212.00°F = 373.15K')
+@plugin.example('.temp 100K', '-173.15°C = -279.67°F = 100.00K')
+@plugin.output_prefix(PLUGIN_OUTPUT_PREFIX)
 def temperature(bot, trigger):
     """Convert temperatures"""
     try:
         source = find_temp.match(trigger.group(2)).groups()
     except (AttributeError, TypeError):
         bot.reply("That's not a valid temperature.")
-        return NOLIMIT
+        return plugin.NOLIMIT
     unit = source[1].upper()
     numeric = float(source[0])
     celsius = 0
@@ -59,30 +62,36 @@ def temperature(bot, trigger):
     kelvin = c_to_k(celsius)
     fahrenheit = c_to_f(celsius)
 
-    if kelvin >= 0:
-        bot.reply("{:.2f}°C = {:.2f}°F = {:.2f}K".format(celsius, fahrenheit, kelvin))
-    else:
+    if kelvin <= 0:
         bot.reply("Physically impossible temperature.")
+        return
+
+    bot.say("{:.2f}°C = {:.2f}°F = {:.2f}K".format(
+        celsius,
+        fahrenheit,
+        kelvin,
+    ))
 
 
-@commands('length', 'distance')
-@example('.distance 3m', '3.00m = 9 feet, 10.11 inches')
-@example('.distance 3km', '3.00km = 1.86 miles')
-@example('.distance 3 miles', '4.83km = 3.00 miles')
-@example('.distance 3 inch', '7.62cm = 3.00 inches')
-@example('.distance 3 feet', '91.44cm = 3 feet, 0.00 inches')
-@example('.distance 3 yards', '2.74m = 9 feet, 0.00 inches')
-@example('.distance 155cm', '1.55m = 5 feet, 1.02 inches')
-@example('.length 3 ly', '28382191417742.40km = 17635876112814.77 miles')
-@example('.length 3 au', '448793612.10km = 278867421.71 miles')
-@example('.length 3 parsec', '92570329129020.20km = 57520535754731.61 miles')
+@plugin.command('length', 'distance')
+@plugin.example('.distance 3m', '3.00m = 9 feet, 10.11 inches')
+@plugin.example('.distance 3km', '3.00km = 1.86 miles')
+@plugin.example('.distance 3 miles', '4.83km = 3.00 miles')
+@plugin.example('.distance 3 inch', '7.62cm = 3.00 inches')
+@plugin.example('.distance 3 feet', '91.44cm = 3 feet, 0.00 inches')
+@plugin.example('.distance 3 yards', '2.74m = 9 feet, 0.00 inches')
+@plugin.example('.distance 155cm', '1.55m = 5 feet, 1.02 inches')
+@plugin.example('.length 3 ly', '28382191417742.40km = 17635876112814.77 miles')
+@plugin.example('.length 3 au', '448793612.10km = 278867421.71 miles')
+@plugin.example('.length 3 parsec', '92570329129020.20km = 57520535754731.61 miles')
+@plugin.output_prefix(PLUGIN_OUTPUT_PREFIX)
 def distance(bot, trigger):
     """Convert distances"""
     try:
         source = find_length.match(trigger.group(2)).groups()
     except (AttributeError, TypeError):
         bot.reply("That's not a valid length unit.")
-        return NOLIMIT
+        return plugin.NOLIMIT
     unit = source[1].lower()
     numeric = float(source[0])
     meter = 0
@@ -142,17 +151,18 @@ def distance(bot, trigger):
 
         stupid_part = ', '.join(parts)
 
-    bot.reply('{} = {}'.format(metric_part, stupid_part))
+    bot.say('{} = {}'.format(metric_part, stupid_part))
 
 
-@commands('weight', 'mass')
+@plugin.command('weight', 'mass')
+@plugin.output_prefix(PLUGIN_OUTPUT_PREFIX)
 def mass(bot, trigger):
     """Convert mass"""
     try:
         source = find_mass.match(trigger.group(2)).groups()
     except (AttributeError, TypeError):
         bot.reply("That's not a valid mass unit.")
-        return NOLIMIT
+        return plugin.NOLIMIT
     unit = source[1].lower()
     numeric = float(source[0])
     metric = 0
@@ -181,9 +191,4 @@ def mass(bot, trigger):
     else:
         stupid_part = '{:.2f} oz'.format(ounce)
 
-    bot.reply('{} = {}'.format(metric_part, stupid_part))
-
-
-if __name__ == "__main__":
-    from sopel.test_tools import run_example_tests
-    run_example_tests(__file__)
+    bot.say('{} = {}'.format(metric_part, stupid_part))

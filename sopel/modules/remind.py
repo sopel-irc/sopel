@@ -19,7 +19,7 @@ import time
 
 import pytz
 
-from sopel import module, tools
+from sopel import plugin, tools
 from sopel.tools.time import format_time, get_timezone, validate_timezone
 
 
@@ -158,7 +158,7 @@ def shutdown(bot):
     del bot.rdb
 
 
-@module.interval(2.5)
+@plugin.interval(2.5)
 def remind_monitoring(bot):
     """Check for reminder"""
     now = int(time.time())
@@ -217,16 +217,16 @@ SCALING = collections.OrderedDict([
 PERIODS = '|'.join(SCALING.keys())
 
 
-@module.commands('in')
-@module.example('.in 3h45m Go to class')
+@plugin.command('in')
+@plugin.example('.in 3h45m Go to class')
 def remind_in(bot, trigger):
     """Gives you a reminder in the given amount of time."""
     if not trigger.group(2):
         bot.reply("Missing arguments for reminder command.")
-        return module.NOLIMIT
+        return plugin.NOLIMIT
     if trigger.group(3) and not trigger.group(4):
         bot.reply("No message given for reminder.")
-        return module.NOLIMIT
+        return plugin.NOLIMIT
     duration = 0
     message = filter(None, re.split(r'(\d+(?:\.\d+)? ?(?:(?i)' + PERIODS + ')) ?',
                                     trigger.group(2))[1:])
@@ -242,7 +242,8 @@ def remind_in(bot, trigger):
             reminder = reminder + piece
             stop = True
     if duration == 0:
-        return bot.reply("Sorry, didn't understand the input.")
+        bot.reply("Sorry, didn't understand the input.")
+        return plugin.NOLIMIT
 
     if duration % 1:
         duration = int(duration) + 1
@@ -446,11 +447,11 @@ def parse_regex_match(match, default_timezone=None):
     )
 
 
-@module.commands('at')
-@module.example('.at 13:47 Do your homework!', user_help=True)
-@module.example('.at 03:14:07 2038-01-19 End of signed 32-bit int timestamp',
+@plugin.command('at')
+@plugin.example('.at 13:47 Do your homework!', user_help=True)
+@plugin.example('.at 03:14:07 2038-01-19 End of signed 32-bit int timestamp',
                 user_help=True)
-@module.example('.at 00:01 25/12 Open your gift!', user_help=True)
+@plugin.example('.at 00:01 25/12 Open your gift!', user_help=True)
 def remind_at(bot, trigger):
     """Gives you a reminder at the given time.
 
@@ -466,15 +467,15 @@ def remind_at(bot, trigger):
     """
     if not trigger.group(2):
         bot.reply("No arguments given for reminder command.")
-        return module.NOLIMIT
+        return plugin.NOLIMIT
     if trigger.group(3) and not trigger.group(4):
         bot.reply("No message given for reminder.")
-        return module.NOLIMIT
+        return plugin.NOLIMIT
 
     match = REGEX_AT.match(trigger.group(2))
     if not match:
         bot.reply("Sorry, but I didn't understand your input.")
-        return module.NOLIMIT
+        return plugin.NOLIMIT
 
     default_timezone = get_timezone(bot.db, bot.config, None,
                                     trigger.nick, trigger.sender)
@@ -486,7 +487,7 @@ def remind_at(bot, trigger):
     except ValueError as error:
         bot.reply(
             "Sorry, but I didn't understand your input: %s" % str(error))
-        return module.NOLIMIT
+        return plugin.NOLIMIT
 
     # save reminder
     timestamp = create_reminder(bot, trigger, duration, reminder.message)

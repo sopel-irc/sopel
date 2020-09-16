@@ -12,8 +12,8 @@ import re
 
 from requests import get
 
-from sopel import module
-from sopel.config.types import StaticSection, ValidatedAttribute
+from sopel import plugin
+from sopel.config import types
 from sopel.tools.web import quote, unquote
 
 try:  # TODO: Remove fallback when dropping py2
@@ -22,6 +22,7 @@ except ImportError:
     from HTMLParser import HTMLParser
 
 REDIRECT = re.compile(r'^REDIRECT (.*)')
+PLUGIN_OUTPUT_PREFIX = '[wikipedia] '
 
 
 class WikiParser(HTMLParser):
@@ -84,10 +85,10 @@ class WikiParser(HTMLParser):
         return self.result
 
 
-class WikipediaSection(StaticSection):
-    default_lang = ValidatedAttribute('default_lang', default='en')
+class WikipediaSection(types.StaticSection):
+    default_lang = types.ValidatedAttribute('default_lang', default='en')
     """The default language to find articles from (same as Wikipedia language subdomain)."""
-    lang_per_channel = ValidatedAttribute('lang_per_channel')
+    lang_per_channel = types.ValidatedAttribute('lang_per_channel')
     """List of ``#channel:langcode`` pairs to define Wikipedia language per channel.
 
     Deprecated: Will be removed in Sopel 8. Use ``.wpclang`` to manage per-channel language settings.
@@ -155,7 +156,7 @@ def say_snippet(bot, trigger, server, query, show_url=True):
         snippet = mw_snippet(server, query)
     except KeyError:
         if show_url:
-            bot.say("Error fetching snippet for \"{}\".".format(page_name))
+            bot.reply("Error fetching snippet for \"{}\".".format(page_name))
         return
     msg = '{} | "{}"'.format(page_name, snippet)
     msg_url = msg + ' | https://{}/wiki/{}'.format(server, query)
@@ -188,7 +189,7 @@ def say_section(bot, trigger, server, query, section):
 
     snippet = mw_section(server, query, section)
     if not snippet:
-        bot.say("Error fetching section \"{}\" for page \"{}\".".format(section, page_name))
+        bot.reply("Error fetching section \"{}\" for page \"{}\".".format(section, page_name))
         return
 
     msg = '{} - {} | "{}"'.format(page_name, section.replace('_', ' '), snippet)
@@ -238,8 +239,8 @@ def mw_section(server, query, section):
 
 
 # Matches a wikipedia page (excluding spaces and #, but not /File: links), with a separate optional field for the section
-@module.url(r'https?:\/\/([a-z]+\.wikipedia\.org)\/wiki\/((?!File\:)[^ #]+)#?([^ ]*)')
-@module.output_prefix('[WIKIPEDIA] ')
+@plugin.url(r'https?:\/\/([a-z]+\.wikipedia\.org)\/wiki\/((?!File\:)[^ #]+)#?([^ ]*)')
+@plugin.output_prefix(PLUGIN_OUTPUT_PREFIX)
 def mw_info(bot, trigger, match=None):
     """Retrieves and outputs a snippet of the linked page."""
     if match.group(3):
@@ -251,13 +252,13 @@ def mw_info(bot, trigger, match=None):
         say_snippet(bot, trigger, match.group(1), unquote(match.group(2)), show_url=False)
 
 
-@module.commands('w', 'wiki', 'wik')
-@module.example('.w San Francisco')
-@module.output_prefix('[WIKIPEDIA] ')
+@plugin.command('w', 'wiki', 'wik')
+@plugin.example('.w San Francisco')
+@plugin.output_prefix('[wikipedia] ')
 def wikipedia(bot, trigger):
     if trigger.group(2) is None:
         bot.reply("What do you want me to look up?")
-        return module.NOLIMIT
+        return plugin.NOLIMIT
 
     lang = choose_lang(bot, trigger)
     query = trigger.group(2)
@@ -268,19 +269,19 @@ def wikipedia(bot, trigger):
 
     if not query:
         bot.reply('What do you want me to look up?')
-        return module.NOLIMIT
+        return plugin.NOLIMIT
     server = lang + '.wikipedia.org'
     query = mw_search(server, query, 1)
     if not query:
         bot.reply("I can't find any results for that.")
-        return module.NOLIMIT
+        return plugin.NOLIMIT
     else:
         query = query[0]
     say_snippet(bot, trigger, server, query)
 
 
-@module.commands('wplang')
-@module.example('.wplang pl')
+@plugin.command('wplang')
+@plugin.example('.wplang pl')
 def wplang(bot, trigger):
     if not trigger.group(3):
         bot.reply(
@@ -299,13 +300,14 @@ def wplang(bot, trigger):
         )
 
 
-@module.commands('wpclang')
-@module.example('.wpclang ja')
-@module.require_chanmsg()
+@plugin.command('wpclang')
+@plugin.example('.wpclang ja')
+@plugin.require_chanmsg()
+@plugin.output_prefix(PLUGIN_OUTPUT_PREFIX)
 def wpclang(bot, trigger):
-    if not (trigger.admin or bot.channels[trigger.sender.lower()].privileges[trigger.nick.lower()] >= module.OP):
+    if not (trigger.admin or bot.channels[trigger.sender.lower()].privileges[trigger.nick.lower()] >= plugin.OP):
         bot.reply("You don't have permission to change this channel's Wikipedia language setting.")
-        return module.NOLIMIT
+        return plugin.NOLIMIT
     if not trigger.group(3):
         bot.say(
             "{}'s current Wikipedia language is: {}"
@@ -318,7 +320,7 @@ def wpclang(bot, trigger):
         )
     else:
         bot.db.set_channel_value(trigger.sender, 'wikipedia_lang', trigger.group(3))
-        bot.reply(
+        bot.say(
             "Set {}'s Wikipedia language to: {}"
             .format(trigger.sender, trigger.group(3))
         )

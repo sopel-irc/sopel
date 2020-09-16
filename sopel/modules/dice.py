@@ -13,7 +13,7 @@ import operator
 import random
 import re
 
-import sopel.module
+from sopel import plugin
 from sopel.tools.calculation import eval_equation
 
 
@@ -165,20 +165,24 @@ def _roll_dice(bot, dice_expression):
     return dice
 
 
-@sopel.module.commands("roll")
-@sopel.module.commands("dice")
-@sopel.module.commands("d")
-@sopel.module.priority("medium")
-@sopel.module.example(".roll 3d1+1", 'You roll 3d1+1: (1+1+1)+1 = 4')
-@sopel.module.example(".roll 3d1v2+1", 'You roll 3d1v2+1: (1[+1+1])+1 = 2')
-@sopel.module.example(".roll 2d4", r'You roll 2d4: \(\d\+\d\) = \d', re=True, user_help=True)
-@sopel.module.example(".roll 100d1", r'[^:]*: \(100x1\) = 100', re=True)
-@sopel.module.example(".roll 1001d1", 'I only have 1000 dice. =(')
-@sopel.module.example(".roll 1d1 + 1d1", 'You roll 1d1 + 1d1: (1) + (1) = 2')
-@sopel.module.example(".roll 1d1+1d1", 'You roll 1d1+1d1: (1)+(1) = 2')
-@sopel.module.example(".roll 1d6 # initiative", r'You roll 1d6: \(\d\) = \d', re=True)
+@plugin.command('roll', 'dice', 'd')
+@plugin.priority("medium")
+@plugin.example(".roll 3d1+1", '3d1+1: (1+1+1)+1 = 4')
+@plugin.example(".roll 3d1v2+1", '3d1v2+1: (1[+1+1])+1 = 2')
+@plugin.example(".roll 2d4", r'2d4: \(\d\+\d\) = \d', re=True)
+@plugin.example(".roll 100d1", r'[^:]*: \(100x1\) = 100', re=True)
+@plugin.example(".roll 1001d1", 'I only have 1000 dice. =(')
+@plugin.example(".roll 1d1 + 1d1", '1d1 + 1d1: (1) + (1) = 2')
+@plugin.example(".roll 1d1+1d1", '1d1+1d1: (1)+(1) = 2')
+@plugin.example(".roll 1d6 # initiative", r'1d6: \(\d\) = \d', re=True)
+@plugin.example(".roll 2d20v1+2 # roll with advantage", user_help=True)
+@plugin.example(".roll 2d10+3", user_help=True)
+@plugin.example(".roll 1d6", user_help=True)
+@plugin.output_prefix('[dice] ')
 def roll(bot, trigger):
-    """.dice XdY[vZ][+N][#COMMENT], rolls dice and reports the result.
+    """Rolls dice and reports the result.
+
+    The dice roll follows this format: XdY[vZ][+N][#COMMENT]
 
     X is the number of dice. Y is the number of faces in the dice. Z is the
     number of lowest dice to be dropped from the result. N is the constant to
@@ -192,16 +196,14 @@ def roll(bot, trigger):
     # expressions in the original string with the results. Replacing is done
     # using string formatting, so %-characters must be escaped.
     if not trigger.group(2):
-        return bot.reply("No dice to roll.")
+        bot.reply("No dice to roll.")
+        return
     arg_str_raw = trigger.group(2).split("#", 1)[0].strip()
     dice_expressions = re.findall(dice_regexp, arg_str_raw)
     arg_str = arg_str_raw.replace("%", "%%")
     arg_str = re.sub(dice_regexp, "%s", arg_str)
 
-    def f(dice_expr):
-        return _roll_dice(bot, dice_expr)
-
-    dice = list(map(f, dice_expressions))
+    dice = [_roll_dice(bot, dice_expr) for dice_expr in dice_expressions]
 
     if None in dice:
         # Stop computing roll if there was a problem rolling dice.
@@ -241,10 +243,4 @@ def roll(bot, trigger):
         )
         return
 
-    bot.reply("You roll %s: %s = %d" % (
-        arg_str_raw, pretty_str, result))
-
-
-if __name__ == "__main__":
-    from sopel.test_tools import run_example_tests
-    run_example_tests(__file__)
+    bot.say("%s: %s = %d" % (arg_str_raw, pretty_str, result))

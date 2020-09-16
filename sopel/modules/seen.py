@@ -13,55 +13,61 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 import datetime
 import time
 
-from sopel.module import commands, priority, rule, thread, unblockable
-from sopel.tools import Identifier
+from sopel import plugin, tools
 from sopel.tools.time import seconds_to_human
 
 
-@commands('seen')
+@plugin.command('seen')
+@plugin.output_prefix('[seen] ')
 def seen(bot, trigger):
     """Reports when and where the user was last seen."""
     if not trigger.group(2):
-        bot.say(".seen <nick> - Reports when <nick> was last seen.")
+        bot.reply(
+            "Use `%sseen <nick>` to know when <nick> was last seen."
+            % bot.settings.core.help_prefix)
         return
+
     nick = trigger.group(2).strip()
     if nick == bot.nick:
         bot.reply("I'm right here!")
         return
+
     timestamp = bot.db.get_nick_value(nick, 'seen_timestamp')
-    if timestamp:
-        channel = bot.db.get_nick_value(nick, 'seen_channel')
-        message = bot.db.get_nick_value(nick, 'seen_message')
-        action = bot.db.get_nick_value(nick, 'seen_action')
+    if not timestamp:
+        bot.reply("Sorry, I haven't seen {nick} around.".format(nick=nick))
+        return
 
-        saw = datetime.datetime.utcfromtimestamp(timestamp)
-        delta = seconds_to_human((trigger.time - saw).total_seconds())
+    channel = bot.db.get_nick_value(nick, 'seen_channel')
+    message = bot.db.get_nick_value(nick, 'seen_message')
+    action = bot.db.get_nick_value(nick, 'seen_action')
 
-        msg = "I last saw " + nick
-        if Identifier(channel) == trigger.sender:
-            if action:
-                msg += " in here {since}, doing: {nick} {action}".format(
-                    since=delta,
-                    nick=nick,
-                    action=message)
-            else:
-                msg += " in here {since}, saying: {message}".format(
-                    since=delta,
-                    message=message)
+    saw = datetime.datetime.utcfromtimestamp(timestamp)
+    delta = seconds_to_human((trigger.time - saw).total_seconds())
+
+    msg = "I last saw " + nick
+    if tools.Identifier(channel) == trigger.sender:
+        if action:
+            msg += " in here {since}, doing: {nick} {action}".format(
+                since=delta,
+                nick=nick,
+                action=message)
         else:
-            msg += " in another channel {since}.".format(since=delta)
-        bot.reply(msg)
+            msg += " in here {since}, saying: {message}".format(
+                since=delta,
+                message=message)
     else:
-        bot.say("Sorry, I haven't seen {nick} around.".format(nick=nick))
+        msg += " in another channel {since}.".format(since=delta)
+    bot.say(msg)
 
 
-@thread(False)
-@rule('(.*)')
-@priority('low')
-@unblockable
+@plugin.thread(False)
+@plugin.rule('(.*)')
+@plugin.priority('low')
+@plugin.unblockable
+@plugin.require_chanmsg
 def note(bot, trigger):
-    if not trigger.is_privmsg:
-        bot.db.set_nick_value(trigger.nick, 'seen_timestamp', time.time())
-        bot.db.set_nick_value(trigger.nick, 'seen_channel', trigger.sender)
-        bot.db.set_nick_value(trigger.nick, 'seen_message', trigger)
-        bot.db.set_nick_value(trigger.nick, 'seen_action', 'intent' in trigger.tags)
+    nick = trigger.nick
+    bot.db.set_nick_value(nick, 'seen_timestamp', time.time())
+    bot.db.set_nick_value(nick, 'seen_channel', trigger.sender)
+    bot.db.set_nick_value(nick, 'seen_message', trigger)
+    bot.db.set_nick_value(nick, 'seen_action', 'intent' in trigger.tags)

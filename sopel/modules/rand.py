@@ -11,15 +11,16 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 import random
 import sys
 
-from sopel.module import commands, example
+from sopel import plugin
 
 
-@commands('rand')
-@example('.rand 2', r'random\(0, 2\) = (0|1|2)', re=True, repeat=10)
-@example('.rand -1 -1', 'random(-1, -1) = -1')
-@example('.rand', r'random\(0, \d+\) = \d+', re=True)
-@example('.rand 99 10', r'random\(10, 99\) = \d\d', re=True, repeat=10)
-@example('.rand 10 99', r'random\(10, 99\) = \d\d', re=True, repeat=10)
+@plugin.command('rand')
+@plugin.example('.rand 2', r'random\(0, 2\): (0|1|2)', re=True, repeat=10)
+@plugin.example('.rand -1 -1', 'random(-1, -1): -1')
+@plugin.example('.rand', r'random\(0, \d+\): \d+', re=True)
+@plugin.example('.rand 99 10', r'random\(10, 99\): \d\d', re=True, repeat=10)
+@plugin.example('.rand 10 99', r'random\(10, 99\): \d\d', re=True, repeat=10)
+@plugin.output_prefix('[rand] ')
 def rand(bot, trigger):
     """Replies with a random number between first and second argument."""
     arg1 = trigger.group(3)
@@ -42,9 +43,4 @@ def rand(bot, trigger):
         low, high = high, low
 
     number = random.randint(low, high)
-    bot.reply("random(%d, %d) = %d" % (low, high, number))
-
-
-if __name__ == "__main__":
-    from sopel.test_tools import run_example_tests
-    run_example_tests(__file__)
+    bot.say("random(%d, %d): %d" % (low, high, number))
