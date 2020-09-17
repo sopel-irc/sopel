@@ -57,7 +57,9 @@ def handle_isup(bot, trigger, secure=True):
     """
     try:
         site = get_site_url(trigger.group(2))
-        response = requests.head(site, verify=secure).headers
+        response = requests.head(site, verify=secure)
+        response.raise_for_status()
+        response = response.headers
     except ValueError as error:
         bot.reply(str(error))
     except requests.exceptions.SSLError:
