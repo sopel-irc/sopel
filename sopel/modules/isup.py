@@ -27,7 +27,7 @@ def get_site_url(site):
     or a :exc:`ValueError` is raised.
 
     If the ``site`` does not have a scheme, ``http`` is used. If it doesn't
-    have a TLD, ``.com`` is used.
+    have a TLD, a :exc:`ValueError` is raised.
     """
     site = site.strip() if site else ''
     if not site:
@@ -41,7 +41,9 @@ def get_site_url(site):
         site = 'http://' + site
 
     if '.' not in site:
-        site += ".com"
+        # TODO: Make this more robust against e.g.
+        # .isup lanpeer/path/to/some/IoT.service
+        raise ValueError('I need a fully qualified domain name (with a dot).')
 
     return site
 

@@ -8,8 +8,6 @@ from sopel.modules import isup
 
 
 VALID_SITE_URLS = (
-    # no TLD, no scheme
-    ('example', 'http://example.com'),
     # no scheme
     ('www.example.com', 'http://www.example.com'),
     # with scheme
@@ -37,6 +35,7 @@ INVALID_SITE_URLS = (
     '      ',  # empty once stripped
     'steam://browsemedia',  # invalid protocol
     '://',  # invalid protocol (that's a weird one)
+    'example',  # no TLD, no scheme
 )
 
 
