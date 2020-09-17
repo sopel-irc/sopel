@@ -33,7 +33,7 @@ def get_site_url(site):
     if not site:
         raise ValueError('What site do you want to check?')
 
-    if site[:7] != 'http://' and site[:8] != 'https://':
+    if not site.startswith(('http://', 'https://')):
         if '://' in site:
             protocol = site.split('://')[0] + '://'
             raise ValueError('Try it again without the %s' % protocol)
