@@ -40,10 +40,11 @@ def get_site_url(site):
 
         site = 'http://' + site
 
-    if '.' not in site:
-        # TODO: Make this more robust against e.g.
-        # .isup lanpeer/path/to/some/IoT.service
+    domain = site.split('/')[2].split(':')[0]
+    if '.' not in domain:
         raise ValueError('I need a fully qualified domain name (with a dot).')
+    if domain.endswith(('.local', '.example', '.test', '.invalid', '.localhost')):
+        raise ValueError("I can't check LAN-local or invalid domains.")
 
     return site
 

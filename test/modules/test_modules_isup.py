@@ -36,6 +36,10 @@ INVALID_SITE_URLS = (
     'steam://browsemedia',  # invalid protocol
     '://',  # invalid protocol (that's a weird one)
     'example',  # no TLD, no scheme
+    'something.local',  # LAN-local address
+    'something.local:8080',  # LAN-local address with explicit port
+    'lanmachine/path/to/iot.device',  # unqualified name with dot in path
+    'lanmachine:8080/path/to/iot.device',  # unqualified name with explicit port & dot in path
 )
 
 
