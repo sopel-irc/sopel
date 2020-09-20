@@ -60,22 +60,36 @@ def handle_isup(bot, trigger, secure=True):
     """
     try:
         site = get_site_url(trigger.group(2))
-        response = requests.head(site, verify=secure)
+        response = requests.head(site, verify=secure, timeout=(10.0, 5.0))
         response.raise_for_status()
         response = response.headers
     except ValueError as error:
         bot.reply(str(error))
     except requests.exceptions.SSLError:
         bot.say(
-            '%s looks down from here. Try using %sisupinsecure'
-            % (site, bot.config.core.help_prefix))
-    except requests.RequestException:
-        bot.say('%s looks down from here.' % site)
+            '{} looks down to me (SSL error). Try using `{}isupinsecure`.'
+            .format(site, bot.config.core.help_prefix))
+    except requests.HTTPError:
+        bot.say(
+            '{} looks down to me (HTTP {} "{}").'
+            .format(site, response.status_code, response.reason))
+    except requests.ConnectTimeout:
+        bot.say(
+            '{} looks down to me (timed out while connecting).'
+            .format(site))
+    except requests.ReadTimeout:
+        bot.say(
+            '{} looks down to me (timed out waiting for reply).'
+            .format(site))
+    except requests.ConnectionError:
+        bot.say(
+            '{} looks down to me (connection error).'
+            .format(site))
     else:
         if response:
             bot.say(site + ' looks fine to me.')
-        else:
-            bot.say(site + ' is down from here.')
+        else:  # TODO: Is it even possible to get here any more?
+            bot.say(site + ' looks down to me.')
 
 
 @plugin.command('isupinsecure')
