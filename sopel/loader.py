@@ -234,8 +234,11 @@ def clean_module(module, config):
     urls = []
     for obj in itervalues(vars(module)):
         if callable(obj):
+            is_sopel_callable = getattr(obj, '_sopel_callable', False) is True
             if getattr(obj, '__name__', None) == 'shutdown':
                 shutdowns.append(obj)
+            elif not is_sopel_callable:
+                continue
             elif is_triggerable(obj):
                 clean_callable(obj, config)
                 callables.append(obj)
