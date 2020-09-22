@@ -300,6 +300,10 @@ class Sopel(irc.AbstractBot):
             except Exception as e:
                 load_error = load_error + 1
                 LOGGER.exception('Error loading %s: %s', name, e)
+            except SystemExit:
+                load_error = load_error + 1
+                LOGGER.exception(
+                    'Error loading %s (plugin tried to exit)', name)
             else:
                 try:
                     if plugin.has_setup():
