@@ -165,7 +165,12 @@ class AsynchatBackend(AbstractIRCBackend, asynchat.async_chat):
         self.bot.on_close()
 
     def handle_error(self):
-        """Called when an exception is raised and not otherwise handled."""
+        """Called when an exception is raised and not otherwise handled.
+
+        This method is an override of :meth:`asyncore.dispatcher.handle_error`,
+        the :class:`asynchat.async_chat` being a subclass of
+        :class:`asyncore.dispatcher`.
+        """
         LOGGER.info('Connection error...')
         self.bot.on_error()
 

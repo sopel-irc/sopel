@@ -45,8 +45,7 @@ except ImportError:
     # no SSL support
     has_ssl = False
 
-from sopel import tools
-from sopel.trigger import PreTrigger
+from sopel import tools, trigger
 from .backends import AsynchatBackend, SSLAsynchatBackend
 from .isupport import ISupport
 from .utils import CapReq, safe
@@ -212,7 +211,7 @@ class AbstractBot(object):
         """
         self.last_raw_line = message
 
-        pretrigger = PreTrigger(
+        pretrigger = trigger.PreTrigger(
             self.nick,
             message,
             url_schemes=self.settings.core.auto_url_schemes,
@@ -257,7 +256,7 @@ class AbstractBot(object):
                 except KeyError:
                     pass  # we tried, and that's good enough
 
-            pretrigger = PreTrigger(
+            pretrigger = trigger.PreTrigger(
                 self.nick,
                 ":{0}!{1}@{2} {3}".format(self.nick, self.user, host, raw),
                 url_schemes=self.settings.core.auto_url_schemes,
@@ -265,12 +264,7 @@ class AbstractBot(object):
             self.dispatch(pretrigger)
 
     def on_error(self):
-        """Handle any uncaptured error in the bot itself.
-
-        This method is an override of :meth:`asyncore.dispatcher.handle_error`,
-        the :class:`asynchat.async_chat` being a subclass of
-        :class:`asyncore.dispatcher`.
-        """
+        """Handle any uncaptured error in the bot itself."""
         LOGGER.error('Fatal error in core, please review exceptions log.')
 
         err_log = logging.getLogger('sopel.exceptions')
