@@ -101,9 +101,9 @@ def auth_after_register(bot):
     if auth_method == 'nickserv':
         bot.say('IDENTIFY %s' % auth_password, auth_target or 'NickServ')
     elif auth_method == 'authserv':
-        bot.write(('AUTHSERV auth', auth_username + ' ' + auth_password))
+        bot.write(('AUTHSERV', 'auth', auth_username, auth_password))
     elif auth_method == 'Q':
-        bot.write(('AUTH', auth_username + ' ' + auth_password))
+        bot.write(('AUTH', auth_username, auth_password))
     elif auth_method == 'userserv':
         bot.say("LOGIN %s %s" % (auth_username, auth_password),
                 auth_target or 'UserServ')
