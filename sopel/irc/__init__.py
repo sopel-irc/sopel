@@ -203,7 +203,7 @@ class AbstractBot(object):
         LOGGER.debug('Sending nick "%s"', self.nick)
         self.backend.send_nick(self.nick)
         LOGGER.debug('Sending user "%s" (name: "%s")', self.user, self.name)
-        self.backend.send_user(self.user, '+iw', self.nick, self.name)
+        self.backend.send_user(self.user, '0', '*', self.name)
 
     def on_message(self, message):
         """Handle an incoming IRC message.

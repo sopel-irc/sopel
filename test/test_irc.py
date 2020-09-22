@@ -34,7 +34,7 @@ def test_on_connect(bot):
     assert bot.backend.message_sent == rawlist(
         'CAP LS 302',
         'NICK Sopel',
-        'USER sopel +iw Sopel :Sopel (https://sopel.chat)'
+        'USER sopel 0 * :Sopel (https://sopel.chat)'
     )
 
 
@@ -47,7 +47,7 @@ def test_on_connect_auth_password(bot):
         'CAP LS 302',
         'PASS auth_secret',
         'NICK Sopel',
-        'USER sopel +iw Sopel :Sopel (https://sopel.chat)'
+        'USER sopel 0 * :Sopel (https://sopel.chat)'
     )
 
 
@@ -60,7 +60,7 @@ def test_on_connect_server_auth_password(bot):
         'CAP LS 302',
         'PASS server_secret',
         'NICK Sopel',
-        'USER sopel +iw Sopel :Sopel (https://sopel.chat)'
+        'USER sopel 0 * :Sopel (https://sopel.chat)'
     )
 
 
@@ -75,7 +75,7 @@ def test_on_connect_auth_password_override_server_auth(bot):
         'CAP LS 302',
         'PASS auth_secret',
         'NICK Sopel',
-        'USER sopel +iw Sopel :Sopel (https://sopel.chat)'
+        'USER sopel 0 * :Sopel (https://sopel.chat)'
     )
 
 
