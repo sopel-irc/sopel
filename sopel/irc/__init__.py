@@ -45,9 +45,7 @@ except ImportError:
     # no SSL support
     has_ssl = False
 
-from sopel import tools
-from sopel.tools import events
-from sopel.trigger import PreTrigger
+from sopel import tools, trigger
 from .backends import AsynchatBackend, SSLAsynchatBackend
 from .isupport import ISupport
 from .utils import CapReq, safe
@@ -204,7 +202,7 @@ class AbstractBot(object):
         LOGGER.debug('Sending nick "%s"', self.nick)
         self.backend.send_nick(self.nick)
         LOGGER.debug('Sending user "%s" (name: "%s")', self.user, self.name)
-        self.backend.send_user(self.user, '+iw', self.nick, self.name)
+        self.backend.send_user(self.user, '0', '*', self.name)
 
     def on_message(self, message):
         """Handle an incoming IRC message.
@@ -213,7 +211,7 @@ class AbstractBot(object):
         """
         self.last_raw_line = message
 
-        pretrigger = PreTrigger(
+        pretrigger = trigger.PreTrigger(
             self.nick,
             message,
             url_schemes=self.settings.core.auto_url_schemes,
@@ -225,13 +223,7 @@ class AbstractBot(object):
             self.backend.send_pong(pretrigger.args[-1])
         elif pretrigger.event == 'ERROR':
             LOGGER.error("ERROR received from server: %s", pretrigger.args[-1])
-            if self.hasquit:
-                # TODO: refactor direct interface with asynchat
-                self.backend.close_when_done()
-        elif pretrigger.event == events.ERR_NICKNAMEINUSE:
-            LOGGER.error('Nickname already in use!')
-            # TODO: refactor direct interface with asynchat
-            self.backend.handle_close()
+            self.backend.on_irc_error(pretrigger)
 
         self.dispatch(pretrigger)
 
@@ -264,7 +256,7 @@ class AbstractBot(object):
                 except KeyError:
                     pass  # we tried, and that's good enough
 
-            pretrigger = PreTrigger(
+            pretrigger = trigger.PreTrigger(
                 self.nick,
                 ":{0}!{1}@{2} {3}".format(self.nick, self.user, host, raw),
                 url_schemes=self.settings.core.auto_url_schemes,
@@ -272,12 +264,7 @@ class AbstractBot(object):
             self.dispatch(pretrigger)
 
     def on_error(self):
-        """Handle any uncaptured error in the bot itself.
-
-        This method is an override of :meth:`asyncore.dispatcher.handle_error`,
-        the :class:`asynchat.async_chat` being a subclass of
-        :class:`asyncore.dispatcher`.
-        """
+        """Handle any uncaptured error in the bot itself."""
         LOGGER.error('Fatal error in core, please review exceptions log.')
 
         err_log = logging.getLogger('sopel.exceptions')
@@ -300,6 +287,15 @@ class AbstractBot(object):
 
         self.last_error_timestamp = datetime.now()
         self.error_count = self.error_count + 1
+
+    def change_current_nick(self, new_nick):
+        """Change the current nick without configuration modification.
+
+        :param str new_nick: new nick to be used by the bot
+        """
+        self._nick = tools.Identifier(new_nick)
+        LOGGER.debug('Sending nick "%s"', self.nick)
+        self.backend.send_nick(self.nick)
 
     def on_close(self):
         """Call shutdown methods."""

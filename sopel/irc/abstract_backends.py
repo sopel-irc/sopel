@@ -26,6 +26,17 @@ class AbstractIRCBackend(object):
         """
         raise NotImplementedError
 
+    def on_irc_error(self, pretrigger):
+        """Action to perform when the server sends an error event.
+
+        :param pretrigger: PreTrigger object with the error event
+        :type pretrigger: :class:`sopel.trigger.PreTrigger`
+
+        On IRC error, if ``bot.hasquit`` is set, the backend should close the
+        connection so the bot can quit or reconnect as required.
+        """
+        raise NotImplementedError
+
     def irc_send(self, data):
         """Send an IRC line as raw ``data``.
 

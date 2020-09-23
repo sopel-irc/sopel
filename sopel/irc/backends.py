@@ -99,6 +99,10 @@ class AsynchatBackend(AbstractIRCBackend, asynchat.async_chat):
     def is_connected(self):
         return self.connected
 
+    def on_irc_error(self, pretrigger):
+        if self.bot.hasquit:
+            self.close_when_done()
+
     def irc_send(self, data):
         """Send an IRC line as raw ``data`` to the socket connection.
 
@@ -161,7 +165,12 @@ class AsynchatBackend(AbstractIRCBackend, asynchat.async_chat):
         self.bot.on_close()
 
     def handle_error(self):
-        """Called when an exception is raised and not otherwise handled."""
+        """Called when an exception is raised and not otherwise handled.
+
+        This method is an override of :meth:`asyncore.dispatcher.handle_error`,
+        the :class:`asynchat.async_chat` being a subclass of
+        :class:`asyncore.dispatcher`.
+        """
         LOGGER.info('Connection error...')
         self.bot.on_error()
 
