@@ -218,3 +218,37 @@ def test_chain_loaders(configfactory):
     results = loader(settings)
 
     assert results == [re_numeric, re_text]
+
+
+def test_sopel_identifier_memory_str():
+    user = tools.Identifier('Exirel')
+    memory = tools.SopelIdentifierMemory()
+    test_value = 'king'
+
+    memory['Exirel'] = test_value
+    assert user in memory
+    assert 'Exirel' in memory
+    assert 'exirel' in memory
+    assert 'exi' not in memory
+    assert '#channel' not in memory
+
+    assert memory[user] == test_value
+    assert memory['Exirel'] == test_value
+    assert memory['exirel'] == test_value
+
+
+def test_sopel_identifier_memory_id():
+    user = tools.Identifier('Exirel')
+    memory = tools.SopelIdentifierMemory()
+    test_value = 'king'
+
+    memory[user] = test_value
+    assert user in memory
+    assert 'Exirel' in memory
+    assert 'exirel' in memory
+    assert 'exi' not in memory
+    assert '#channel' not in memory
+
+    assert memory[user] == test_value
+    assert memory['Exirel'] == test_value
+    assert memory['exirel'] == test_value

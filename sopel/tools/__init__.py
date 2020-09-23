@@ -751,6 +751,46 @@ class SopelMemoryWithDefault(defaultdict):
         return self.__contains__(key)
 
 
+class SopelIdentifierMemory(SopelMemory):
+    """Special Sopel memory that stores ``Identifier`` as key.
+
+    This is a convenient subclass of :class:`SopelMemory` that always casts its
+    keys as instances of :class:`Identifier`::
+
+        >>> from sopel import tools
+        >>> memory = tools.SopelIdentifierMemory()
+        >>> memory['Exirel'] = 'king'
+        >>> list(memory.items())
+        [(Identifier('Exirel'), 'king')]
+        >>> tools.Identifier('exirel') in memory
+        True
+        >>> 'exirel' in memory
+        True
+
+    As seen in the example above, it is possible to perform various operations
+    with both ``Identifier`` and :class:`str` objects, taking advantage of the
+    case-insensitive behavior of ``Identifier``.
+
+    .. note::
+
+        Internally, it will try to do ``key = tools.Identifier(key)``, which
+        will raise an exception if it cannot instantiate the key properly::
+
+            >>> memory[1] = 'error'
+            AttributeError: 'int' object has no attribute 'lower'
+
+    .. versionadded:: 7.1
+    """
+    def __getitem__(self, key):
+        return super(SopelIdentifierMemory, self).__getitem__(Identifier(key))
+
+    def __contains__(self, key):
+        return super(SopelIdentifierMemory, self).__contains__(Identifier(key))
+
+    def __setitem__(self, key, value):
+        super(SopelIdentifierMemory, self).__setitem__(Identifier(key), value)
+
+
 @deprecated(version='7.0', removed_in='8.0')
 def get_raising_file_and_line(tb=None):
     """Get the file and line number where an exception happened.

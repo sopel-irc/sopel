@@ -91,7 +91,7 @@ class Sopel(irc.AbstractBot):
             Use :attr:`channels` instead. Will be removed in Sopel 8.
         """
 
-        self.channels = tools.SopelMemory()  # name to chan obj
+        self.channels = tools.SopelIdentifierMemory()
         """A map of the channels that Sopel is in.
 
         The keys are :class:`sopel.tools.Identifier`\\s of the channel names,
@@ -99,7 +99,7 @@ class Sopel(irc.AbstractBot):
         the users in the channel and their permissions.
         """
 
-        self.users = tools.SopelMemory()  # name to user obj
+        self.users = tools.SopelIdentifierMemory()
         """A map of the users that Sopel is aware of.
 
         The keys are :class:`sopel.tools.Identifier`\\s of the nicknames, and

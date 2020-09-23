@@ -70,10 +70,10 @@ class MockSopel(object):
         self.user = "sopel"
 
         channel = sopel.tools.Identifier("#Sopel")
-        self.channels = sopel.tools.SopelMemory()
+        self.channels = sopel.tools.SopelIdentifierMemory()
         self.channels[channel] = sopel.tools.target.Channel(channel)
 
-        self.users = sopel.tools.SopelMemory()
+        self.users = sopel.tools.SopelIdentifierMemory()
         self.privileges = sopel.tools.SopelMemory()
 
         self.memory = sopel.tools.SopelMemory()
