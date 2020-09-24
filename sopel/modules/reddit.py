@@ -249,9 +249,52 @@ def comment_info(bot, trigger, match):
     bot.say(message)
 
 
+def subreddit_sorting(bot, trigger, s, sorting):
+    if sorting == 'new':
+        submissions = list(s.new(limit=10))
+    elif sorting == 'top':
+        submissions = list(s.top(limit=10))
+    elif sorting == 'hot':
+        submissions = list(s.hot(limit=10))
+    elif sorting == 'controversial':
+        submissions = list(s.controversial(limit=10))
+    elif sorting == 'gilded':
+        submissions = list(s.gilded(limit=10))
+    elif sorting == 'rising':
+        submissions = list(s.rising(limit=10))
+    elif sorting == 'sticky':
+        try:
+            submissions = [s.sticky()]
+        except prawcore.exceptions.NotFound:
+            bot.say("r/" + s.display_name + " appears not to have a stickied post!")
+            return
+    elif sorting == 'random':
+        submissions = [s.random()] or []
+    else:
+        raise ValueError("Unknown sorting type '%s'" % sorting)
+
+    if not len(submissions):
+        bot.say("r/" + s.display_name + ' ' + sorting + " appears to have no items!")
+        return plugin.NOLIMIT
+
+    if sorting != 'sticky':
+        submissions = [item for item in submissions if not item.stickied]
+    submission = submissions[0]
+
+    say_post_info(bot, trigger, submission.id, True, True)
+
+
 def subreddit_info(bot, trigger, match, commanded=False):
     """Shows information about the given subreddit"""
     match_lower = match.lower()
+    if trigger.startswith("r/"):
+        sorting = trigger.split("r/" + match)[-1] or ' '
+        sorting = sorting.split(' ')[1] or None
+    else:
+        sorting = trigger.group(4)
+    if sorting:
+        sorting = sorting.lower()
+
     if match_lower in ['all', 'popular']:
         message = ('[REDDIT] {link}{nsfw} | {public_description}')
         nsfw = ' ' + bold(color('[Possible NSFW]', colors.ORANGE))
@@ -263,10 +306,11 @@ def subreddit_info(bot, trigger, match, commanded=False):
         elif match_lower == 'popular':
             public_description = ('The top trending content from some of '
                                   'Reddit\'s most popular communities')
-        message = message.format(
-            link=link, nsfw=nsfw, public_description=public_description)
-        bot.say(message)
-        return plugin.NOLIMIT
+        if not sorting:
+            message = message.format(
+                link=link, nsfw=nsfw, public_description=public_description)
+            bot.say(message)
+            return plugin.NOLIMIT
 
     r = bot.memory['reddit_praw']
     try:
@@ -279,13 +323,17 @@ def subreddit_info(bot, trigger, match, commanded=False):
 
     try:
         s = r.subreddit(match)
-        s.subreddit_type
+        if match_lower not in ['all', 'popular']:
+            s.subreddit_type
     except prawcore.exceptions.Forbidden:
         bot.reply("r/" + match + " appears to be a private subreddit!")
         return plugin.NOLIMIT
     except prawcore.exceptions.NotFound:
         bot.reply("r/" + match + " appears to be a banned subreddit!")
         return plugin.NOLIMIT
+
+    if sorting in ['hot', 'new', 'top', 'controversial', 'gilded', 'rising', 'sticky', 'random']:
+        return subreddit_sorting(bot, trigger, s, sorting)
 
     link = "https://reddit.com/r/" + s.display_name
 
