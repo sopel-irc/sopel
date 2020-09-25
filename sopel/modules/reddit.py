@@ -253,7 +253,7 @@ def subreddit_info(bot, trigger, match, commanded=False):
     """Shows information about the given subreddit"""
     match_lower = match.lower()
     if match_lower in ['all', 'popular']:
-        message = ('[REDDIT] {link}{nsfw} | {public_description}')
+        message = '{link}{nsfw} | {public_description}'
         nsfw = ' ' + bold(color('[Possible NSFW]', colors.ORANGE))
         link = "https://reddit.com/r/" + match_lower
         public_description = ''
