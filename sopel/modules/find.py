@@ -19,12 +19,12 @@ import re
 
 from sopel import plugin
 from sopel.formatting import bold
-from sopel.tools import Identifier, SopelMemory
+from sopel.tools import Identifier, SopelIdentifierMemory
 
 
 def setup(bot):
     if 'find_lines' not in bot.memory:
-        bot.memory['find_lines'] = SopelMemory()
+        bot.memory['find_lines'] = SopelIdentifierMemory()
 
 
 def shutdown(bot):
@@ -43,7 +43,7 @@ def collectlines(bot, trigger):
     """Create a temporary log of what people say"""
     # Add a log for the channel and nick, if there isn't already one
     if trigger.sender not in bot.memory['find_lines']:
-        bot.memory['find_lines'][trigger.sender] = SopelMemory()
+        bot.memory['find_lines'][trigger.sender] = SopelIdentifierMemory()
     if trigger.nick not in bot.memory['find_lines'][trigger.sender]:
         bot.memory['find_lines'][trigger.sender][trigger.nick] = deque(maxlen=10)
 

@@ -26,7 +26,7 @@ PLUGIN_OUTPUT_PREFIX = '[translate] '
 
 def setup(bot):
     if 'mangle_lines' not in bot.memory:
-        bot.memory['mangle_lines'] = tools.SopelMemory()
+        bot.memory['mangle_lines'] = tools.SopelIdentifierMemory()
 
 
 def shutdown(bot):
@@ -212,7 +212,7 @@ def mangle(bot, trigger):
     random.shuffle(lang_list)
     if trigger.group(2) is None:
         try:
-            phrase = (bot.memory['mangle_lines'][trigger.sender.lower()], '')
+            phrase = (bot.memory['mangle_lines'][trigger.sender], '')
         except KeyError:
             bot.reply("What do you want me to mangle?")
             return
@@ -248,7 +248,7 @@ def mangle(bot, trigger):
 @plugin.priority('low')
 @plugin.unblockable
 def collect_mangle_lines(bot, trigger):
-    bot.memory['mangle_lines'][trigger.sender.lower()] = "%s said '%s'" % (
+    bot.memory['mangle_lines'][trigger.sender] = "%s said '%s'" % (
         trigger.nick,
         trigger.group(0).strip(),
     )
