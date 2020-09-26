@@ -27,21 +27,24 @@ def get_site_url(site):
     or a :exc:`ValueError` is raised.
 
     If the ``site`` does not have a scheme, ``http`` is used. If it doesn't
-    have a TLD, ``.com`` is used.
+    have a TLD, a :exc:`ValueError` is raised.
     """
     site = site.strip() if site else ''
     if not site:
         raise ValueError('What site do you want to check?')
 
-    if site[:7] != 'http://' and site[:8] != 'https://':
+    if not site.startswith(('http://', 'https://')):
         if '://' in site:
             protocol = site.split('://')[0] + '://'
             raise ValueError('Try it again without the %s' % protocol)
 
         site = 'http://' + site
 
-    if '.' not in site:
-        site += ".com"
+    domain = site.split('/')[2].split(':')[0]
+    if '.' not in domain:
+        raise ValueError('I need a fully qualified domain name (with a dot).')
+    if domain.endswith(('.local', '.example', '.test', '.invalid', '.localhost')):
+        raise ValueError("I can't check LAN-local or invalid domains.")
 
     return site
 
@@ -57,7 +60,9 @@ def handle_isup(bot, trigger, secure=True):
     """
     try:
         site = get_site_url(trigger.group(2))
-        response = requests.head(site, verify=secure).headers
+        response = requests.head(site, verify=secure)
+        response.raise_for_status()
+        response = response.headers
     except ValueError as error:
         bot.reply(str(error))
     except requests.exceptions.SSLError:
