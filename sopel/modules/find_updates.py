@@ -23,7 +23,6 @@ from sopel import (
 
 
 wait_time = 24 * 60 * 60  # check once per day
-startup_check_run = False
 version_url = 'https://sopel.chat/latest.json'
 message = (
     'A new Sopel version, {}, is available. I am running {}. Please update '
@@ -33,9 +32,8 @@ message = (
 
 @plugin.event(tools.events.RPL_LUSERCLIENT)
 def startup_version_check(bot, trigger):
-    global startup_check_run
-    if not startup_check_run:
-        startup_check_run = True
+    if not bot.memory.get('update_startup_check_run', False):
+        bot.memory['update_startup_check_run'] = True
         check_version(bot)
 
 
