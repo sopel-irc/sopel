@@ -24,9 +24,13 @@ from sopel import (
 
 wait_time = 24 * 60 * 60  # check once per day
 version_url = 'https://sopel.chat/latest.json'
-message = (
-    'A new Sopel version, {}, is available. I am running {}. Please update '
+stable_message = (
+    'A new Sopel version, {}, is available; I am running {}. Please update '
     'me. Full release notes at {}'
+)
+unstable_message = (
+    'A new pre-release version, {}, is available; I am running {}. Please '
+    'update me.{}'
 )
 
 
@@ -81,13 +85,15 @@ def check_version(bot):
     if version.releaselevel == 'final':
         latest = info['version']
         notes = info['release_notes']
+        message = stable_message
     else:
         latest = info['unstable']
         notes = info.get('unstable_notes', '')
         if notes:
-            notes = 'Full release notes at ' + notes
+            notes = ' Full release notes at ' + notes
+        message = unstable_message
     latest_version = _version_info(latest)
-    msg = message.format(latest, current_version, notes)
 
     if version < latest_version:
+        msg = message.format(latest, current_version, notes)
         bot.say('[update] ' + msg, bot.config.core.owner)
