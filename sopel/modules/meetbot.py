@@ -29,6 +29,7 @@ class MeetbotSection(types.StaticSection):
 
     meeting_log_path = types.FilenameAttribute(
         "meeting_log_path",
+        relative=False,
         directory=True,
         default="~/www/meetings")
     """Path to meeting logs storage directory.
