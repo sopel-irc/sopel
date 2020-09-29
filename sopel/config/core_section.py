@@ -234,6 +234,9 @@ class CoreSection(StaticSection):
 
     If not specified, Sopel will try to find the certificate trust store
     itself from a set of known locations.
+
+    If the given value is not an absolute path, it will be interpreted relative
+    to the directory containing the config file with which Sopel was started.
     """
 
     channels = ListAttribute('channels')
@@ -685,6 +688,8 @@ class CoreSection(StaticSection):
     log_raw = ValidatedAttribute('log_raw', bool, default=False)
     """Whether a log of raw lines as sent and received should be kept.
 
+    :default: ``no``
+
     To enable this logging:
 
     .. code-block:: ini
@@ -699,6 +704,11 @@ class CoreSection(StaticSection):
 
     logdir = FilenameAttribute('logdir', directory=True, default='logs')
     """Directory in which to place logs.
+
+    :default: ``logs``
+
+    If the given value is not an absolute path, it will be interpreted relative
+    to the directory containing the config file with which Sopel was started.
 
     .. seealso::
 
