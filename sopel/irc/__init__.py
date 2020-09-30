@@ -545,9 +545,10 @@ class AbstractBot(object):
         message. If the text is too long for the server, it may be truncated.
 
         If ``max_messages`` is given, the ``text`` will be split into at most
-        that many messages, each no more than 400 bytes. The split is made at
-        the last space character before the 400th byte, or at the 400th byte
-        if no such space exists.
+        that many messages. The split is made at the last space character
+        before the "safe length" (which is calculated based on the bot's
+        nickname and hostmask), or exactly at the "safe length" if no such
+        space character exists.
 
         If the ``text`` is too long to fit into the specified number of
         messages using the above splitting, the final message will contain the
@@ -560,7 +561,32 @@ class AbstractBot(object):
 
         if max_messages > 1:
             # Manage multi-line only when needed
-            text, excess = tools.get_sendable_message(text)
+            try:
+                hostmask_length = len(self.hostmask)
+            except KeyError:
+                # calculate maximum possible length, given current nick/username
+                hostmask_length = (
+                    len(self.nick)  # own nick length
+                    + 1  # (! separator)
+                    + 1  # (for the optional ~ in user)
+                    + min(  # own ident length, capped to ISUPPORT or RFC maximum
+                        len(self.user),
+                        getattr(self.isupport, 'USERLEN', 9))
+                    + 1  # (@ separator)
+                    + 63  # <hostname> has a maximum length of 63 characters.
+                )
+            safe_length = (
+                512  # maximum IRC line length in bytes, per RFC
+                - 1  # leading colon
+                - hostmask_length  # calculated/maximum length of own hostmask prefix
+                - 1  # space between prefix & command
+                - 7  # PRIVMSG command
+                - 1  # space before recipient
+                - len(recipient)  # target channel/nick
+                - 2  # space after recipient, colon before text
+                - 2  # trailing CRLF
+            )
+            text, excess = tools.get_sendable_message(text, safe_length)
 
         flood_max_wait = self.settings.core.flood_max_wait
         flood_burst_lines = self.settings.core.flood_burst_lines
@@ -636,6 +662,6 @@ class AbstractBot(object):
             recipient_stack['messages'] = recipient_stack['messages'][-10:]
 
         # Now that we've sent the first part, we need to send the rest. Doing
-        # this recursively seems easier to me than iteratively
+        # this recursively seems simpler than iteratively.
         if excess:
             self.say(excess, recipient, max_messages - 1)

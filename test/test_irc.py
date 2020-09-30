@@ -241,7 +241,9 @@ def test_say_long_extra(bot):
 
 def test_say_long_extra_multi_message(bot):
     """Test a long message that doesn't fit, with split allowed."""
-    text = 'a' * 400
+    prefix_length = 1 + len(bot.nick) + 1 + 1 + len(bot.user) + 1 + 63 + 1
+    # ':', nick, '!', '~', ident/username, '@', maximum hostname length, <0x20>
+    text = 'a' * (512 - prefix_length - len('PRIVMSG #sopel :\r\n'))
     bot.say(text + 'b', '#sopel', max_messages=2)
 
     assert bot.backend.message_sent == rawlist(
