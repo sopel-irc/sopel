@@ -11,8 +11,7 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 import re
 
-from sopel import formatting, plugin
-from sopel.tools import Identifier
+from sopel import formatting, plugin, tools
 
 
 ERROR_MESSAGE_NOT_OP = "I'm not a channel operator!"
@@ -113,7 +112,7 @@ def kick(bot, trigger):
     argc = len(text)
     if argc < 2:
         return
-    opt = Identifier(text[1])
+    opt = tools.Identifier(text[1])
     nick = opt
     channel = trigger.sender
     reasonidx = 2
@@ -169,7 +168,7 @@ def ban(bot, trigger):
     argc = len(text)
     if argc < 2:
         return
-    opt = Identifier(text[1])
+    opt = tools.Identifier(text[1])
     banmask = opt
     channel = trigger.sender
     if not opt.is_nick():
@@ -198,7 +197,7 @@ def unban(bot, trigger):
     argc = len(text)
     if argc < 2:
         return
-    opt = Identifier(text[1])
+    opt = tools.Identifier(text[1])
     banmask = opt
     channel = trigger.sender
     if not opt.is_nick():
@@ -227,7 +226,7 @@ def quiet(bot, trigger):
     argc = len(text)
     if argc < 2:
         return
-    opt = Identifier(text[1])
+    opt = tools.Identifier(text[1])
     quietmask = opt
     channel = trigger.sender
     if not opt.is_nick():
@@ -256,7 +255,7 @@ def unquiet(bot, trigger):
     argc = len(text)
     if argc < 2:
         return
-    opt = Identifier(text[1])
+    opt = tools.Identifier(text[1])
     quietmask = opt
     channel = trigger.sender
     if not opt.is_nick():
@@ -287,7 +286,7 @@ def kickban(bot, trigger):
     argc = len(text)
     if argc < 4:
         return
-    opt = Identifier(text[1])
+    opt = tools.Identifier(text[1])
     nick = opt
     mask = text[2]
     channel = trigger.sender
@@ -334,7 +333,7 @@ def topic(bot, trigger):
         args = top.split('~', narg)
 
     if len(args) != narg:
-        message = "Not enough arguments. You gave {}, it requires {}.".format(
+        message = "Not enough arguments. You gave {}; it requires {}.".format(
             len(args), narg)
         bot.reply(message)
         return
