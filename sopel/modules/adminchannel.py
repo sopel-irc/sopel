@@ -339,6 +339,16 @@ def topic(bot, trigger):
         return
     topic = mask.format(*args)
 
+    topiclen = getattr(bot.isupport, 'TOPICLEN', None)
+    if topiclen is not None:
+        my_len = len(topic.encode('utf-8'))
+        if my_len > topiclen:
+            bot.reply(
+                "Formatted topic is too long ({} bytes); "
+                "the server limit is {} bytes."
+                .format(my_len, topiclen))
+            return
+
     bot.write(('TOPIC', channel + ' :' + topic))
 
 
