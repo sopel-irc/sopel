@@ -36,7 +36,11 @@ def git_info():
 @plugin.command('version')
 @plugin.output_prefix('[version] ')
 def version(bot, trigger):
-    """Display the latest commit version, if Sopel is running in a git repo."""
+    """Display the installed version of Sopel.
+
+    Includes the version of Python Sopel is installed on.
+    Includes the commit hash if Sopel is installed from source.
+    """
     parts = [
         'Sopel v%s' % release,
         'Python: %s' % platform.python_version()
