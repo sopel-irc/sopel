@@ -62,7 +62,6 @@ def handle_isup(bot, trigger, secure=True):
         site = get_site_url(trigger.group(2))
         response = requests.head(site, verify=secure, timeout=(10.0, 5.0))
         response.raise_for_status()
-        response = response.headers
     except ValueError as error:
         bot.reply(str(error))
     except requests.exceptions.SSLError:
@@ -85,11 +84,9 @@ def handle_isup(bot, trigger, secure=True):
         bot.say(
             '{} looks down to me (connection error).'
             .format(site))
-    else:
-        if response:
-            bot.say(site + ' looks fine to me.')
-        else:  # TODO: Is it even possible to get here any more?
-            bot.say(site + ' looks down to me.')
+
+    # If no exception happened, the request succeeded.
+    bot.say(site + ' looks fine to me.')
 
 
 @plugin.command('isupinsecure')
