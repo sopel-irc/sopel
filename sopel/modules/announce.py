@@ -29,7 +29,11 @@ def _chunks(items, size):
 @plugin.require_admin('Sorry, I can\'t let you do that', reply=True)
 @plugin.output_prefix('[ANNOUNCEMENT] ')
 def announce(bot, trigger):
-    """Send an announcement to all channels the bot is in"""
+    """Send an announcement to all channels the bot is in."""
+    if trigger.group(2) is None:
+        bot.reply('Announce what? I need a message to say.')
+        return
+
     size = bot.isupport.get('TARGMAX', {}).get('PRIVMSG', 1)
     channels = _chunks(bot.channels.keys(), size)
     for cgroup in channels:
