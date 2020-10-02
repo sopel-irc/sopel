@@ -225,6 +225,7 @@ def compile_rule(nick, pattern, alias_nicks):
     return re.compile(pattern, flags)
 
 
+@deprecated('command regexp tools are now private', '7.1', '8.0')
 def get_command_regexp(prefix, command):
     """Get a compiled regexp object that implements the command.
 
@@ -242,6 +243,7 @@ def get_command_regexp(prefix, command):
     return re.compile(pattern, re.IGNORECASE | re.VERBOSE)
 
 
+@deprecated('command regexp tools are now private', '7.1', '8.0')
 def get_command_pattern(prefix, command):
     """Get the uncompiled regex pattern for standard commands.
 
@@ -271,6 +273,7 @@ def get_command_pattern(prefix, command):
         """.format(prefix=prefix, command=command)
 
 
+@deprecated('command regexp tools are now private', '7.1', '8.0')
 def get_nickname_command_regexp(nick, command, alias_nicks):
     """Get a compiled regexp object that implements the nickname command.
 
@@ -289,6 +292,7 @@ def get_nickname_command_regexp(nick, command, alias_nicks):
     return compile_rule(nick, get_nickname_command_pattern(command), alias_nicks)
 
 
+@deprecated('command regexp tools are now private', '7.1', '8.0')
 def get_nickname_command_pattern(command):
     """Get the uncompiled regex pattern for a nickname command.
 
@@ -313,6 +317,7 @@ def get_nickname_command_pattern(command):
         """.format(command=command)
 
 
+@deprecated('command regexp tools are now private', '7.1', '8.0')
 def get_action_command_regexp(command):
     """Get a compiled regexp object that implements the command.
 
@@ -324,6 +329,7 @@ def get_action_command_regexp(command):
     return re.compile(pattern, re.IGNORECASE | re.VERBOSE)
 
 
+@deprecated('command regexp tools are now private', '7.1', '8.0')
 def get_action_command_pattern(command):
     """Get the uncompiled regex pattern for action commands.
 
