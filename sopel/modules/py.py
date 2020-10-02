@@ -53,10 +53,11 @@ def setup(bot):
 @plugin.example('.py len([1,2,3])', '3', online=True, vcr=True)
 def py(bot, trigger):
     """Evaluate a Python expression."""
-    if not trigger.group(2):
-        return bot.reply('I need an expression to evaluate.')
-
     query = trigger.group(2)
+    if not query:
+        bot.reply('What expression do you want me to evaluate?')
+        return
+
     uri = bot.config.py.oblique_instance + 'py/'
     answer = get(uri + quote(query)).content.decode('utf-8')
     if answer:
