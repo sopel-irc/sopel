@@ -27,7 +27,9 @@ import traceback
 from pkg_resources import parse_version
 
 from sopel import __version__
-from sopel.tools._events import events  # NOQA
+
+from ._events import events  # NOQA
+from . import time, web  # NOQA
 
 if sys.version_info.major >= 3:
     raw_input = input
