@@ -5,7 +5,7 @@ interactions:
       Accept: ['*/*']
       Accept-Encoding: ['gzip, deflate']
       Connection: [keep-alive]
-      User-Agent: [python-requests/2.23.0]
+      User-Agent: [python-requests/2.24.0]
     method: GET
     uri: https://oblique.sopel.chat/py/len%28%5B1%2C2%2C3%5D%29
   response:
@@ -16,8 +16,8 @@ interactions:
       Cache-Control: [no-cache]
       Content-Length: ['2']
       Content-Type: [text/plain]
-      Date: ['Tue, 19 May 2020 22:12:26 GMT']
+      Date: ['Fri, 09 Oct 2020 04:40:29 GMT']
       Server: [Google Frontend]
-      X-Cloud-Trace-Context: [ed0f69d3ecb92a108aa223368b6282b1;o=1]
+      X-Cloud-Trace-Context: [ca53ebf0dbb861ffcceed76af746c923;o=1]
     status: {code: 200, message: OK}
 version: 1

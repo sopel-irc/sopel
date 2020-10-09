@@ -13,14 +13,14 @@ interactions:
     headers:
       Accept-Ranges: [none]
       Access-Control-Allow-Origin: ['*']
-      Alt-Svc: ['h3-27=":443"; ma=2592000,h3-25=":443"; ma=2592000,h3-T050=":443";
-          ma=2592000,h3-Q050=":443"; ma=2592000,h3-Q049=":443"; ma=2592000,h3-Q048=":443";
-          ma=2592000,h3-Q046=":443"; ma=2592000,h3-Q043=":443"; ma=2592000,quic=":443";
-          ma=2592000; v="46,43"']
+      Alt-Svc: ['h3-Q050=":443"; ma=2592000,h3-29=":443"; ma=2592000,h3-27=":443";
+          ma=2592000,h3-T051=":443"; ma=2592000,h3-T050=":443"; ma=2592000,h3-Q046=":443";
+          ma=2592000,h3-Q043=":443"; ma=2592000,quic=":443"; ma=2592000; v="46,43"']
       Cache-Control: ['no-cache, no-store, max-age=0, must-revalidate']
       Content-Disposition: [attachment; filename="json.txt"; filename*=UTF-8''json.txt]
       Content-Type: [application/json; charset=utf-8]
-      Date: ['Tue, 19 May 2020 22:12:43 GMT']
+      Cross-Origin-Resource-Policy: [cross-origin]
+      Date: ['Fri, 09 Oct 2020 04:40:45 GMT']
       Expires: ['Mon, 01 Jan 1990 00:00:00 GMT']
       Pragma: [no-cache]
       Server: [ESF]
