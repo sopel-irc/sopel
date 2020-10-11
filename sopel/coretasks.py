@@ -763,7 +763,7 @@ def receive_cap_ls_reply(bot, trigger):
 
 def receive_cap_ack_sasl(bot):
     # Presumably we're only here if we said we actually *want* sasl, but still
-    # check anyway.
+    # check anyway in case the server glitched.
     password = None
     mech = None
     if bot.config.core.auth_method == 'sasl':
@@ -780,8 +780,15 @@ def receive_cap_ack_sasl(bot):
     available_mechs = available_mechs.split(',') if available_mechs else []
 
     if available_mechs and mech not in available_mechs:
-        # fail if configured to use an unsupported mechanism,
-        # but only if the server actually advertised supported mechanisms
+        """
+        Raise an error if configured to use an unsupported SASL mechanism,
+        but only if the server actually advertised supported mechanisms,
+        i.e. this network supports SASL 3.2
+
+        SASL 3.1 failure is handled (when possible) by the sasl_mechs() function
+
+        See https://github.com/sopel-irc/sopel/issues/1780 for background
+        """
         raise ConfigurationError(
             "SASL mechanism '{}' is not advertised by this server.".format(mech))
 
@@ -841,6 +848,46 @@ def auth_proceed(bot, trigger):
 @module.event(events.RPL_SASLSUCCESS)
 def sasl_success(bot, trigger):
     bot.write(('CAP', 'END'))
+
+
+@module.event(events.RPL_SASLMECHS)
+def sasl_mechs(bot, trigger):
+    # Presumably we're only here if we said we actually *want* sasl, but still
+    # check anyway in case the server glitched.
+    password = None
+    mech = None
+    if bot.config.core.auth_method == 'sasl':
+        password = bot.config.core.auth_password
+        mech = bot.config.core.auth_target
+    elif bot.config.core.server_auth_method == 'sasl':
+        password = bot.config.core.server_auth_password
+        mech = bot.config.core.server_auth_sasl_mech
+    if not password:
+        return
+
+    supported_mechs = trigger.args[1].split(',')
+    if mech not in supported_mechs:
+        """
+        How we get here:
+
+        1. Sopel connects to a network advertising SASL 3.1
+        2. SASL 3.1 doesn't advertise supported mechanisms up front, so Sopel
+           blindly goes ahead with whatever SASL config it's set to use
+        3. The server doesn't support the mechanism Sopel used, and is a good
+           IRC citizen, so it sends this optional numeric, 908 RPL_SASLMECHS
+
+        Note that misconfigured SASL 3.1 will just silently fail when connected
+        to an IRC server NOT implementing the optional 908 reply.
+
+        A network with SASL 3.2 should theoretically never get this far because
+        Sopel should catch the unadvertised mechanism in receive_cap_ack_sasl().
+
+        See https://github.com/sopel-irc/sopel/issues/1780 for background
+        """
+        raise ConfigurationError(
+            "Configured SASL mechanism '{}' is not advertised by this server. "
+            "Advertised values: {}"
+            .format(mech, ', '.join(supported_mechs)))
 
 
 # Live blocklist editing
