@@ -764,14 +764,7 @@ def receive_cap_ls_reply(bot, trigger):
 def receive_cap_ack_sasl(bot):
     # Presumably we're only here if we said we actually *want* sasl, but still
     # check anyway in case the server glitched.
-    password = None
-    mech = None
-    if bot.config.core.auth_method == 'sasl':
-        password = bot.config.core.auth_password
-        mech = bot.config.core.auth_target
-    elif bot.config.core.server_auth_method == 'sasl':
-        password = bot.config.core.server_auth_password
-        mech = bot.config.core.server_auth_sasl_mech
+    password, mech = _get_sasl_pass_and_mech(bot)
     if not password:
         return
 
@@ -854,14 +847,7 @@ def sasl_success(bot, trigger):
 def sasl_mechs(bot, trigger):
     # Presumably we're only here if we said we actually *want* sasl, but still
     # check anyway in case the server glitched.
-    password = None
-    mech = None
-    if bot.config.core.auth_method == 'sasl':
-        password = bot.config.core.auth_password
-        mech = bot.config.core.auth_target
-    elif bot.config.core.server_auth_method == 'sasl':
-        password = bot.config.core.server_auth_password
-        mech = bot.config.core.server_auth_sasl_mech
+    password, mech = _get_sasl_pass_and_mech(bot)
     if not password:
         return
 
@@ -888,6 +874,18 @@ def sasl_mechs(bot, trigger):
             "Configured SASL mechanism '{}' is not advertised by this server. "
             "Advertised values: {}"
             .format(mech, ', '.join(supported_mechs)))
+
+
+def _get_sasl_pass_and_mech(bot):
+    password = None
+    mech = None
+    if bot.config.core.auth_method == 'sasl':
+        password = bot.config.core.auth_password
+        mech = bot.config.core.auth_target
+    elif bot.config.core.server_auth_method == 'sasl':
+        password = bot.config.core.server_auth_password
+        mech = bot.config.core.server_auth_sasl_mech
+    return password, mech
 
 
 # Live blocklist editing
