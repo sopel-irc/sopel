@@ -234,13 +234,10 @@ def get_command_regexp(prefix, command):
     :return: a compiled regexp object that implements the command
     :rtype: :ref:`re.Pattern <python:re-objects>`
     """
-    # Escape all whitespace with a single backslash. This ensures that regexp
-    # in the prefix is treated as it was before the actual regexp was changed
-    # to use the verbose syntax.
-    prefix = re.sub(r"(\s)", r"\\\1", prefix)
-
-    pattern = get_command_pattern(prefix, command)
-    return re.compile(pattern, re.IGNORECASE | re.VERBOSE)
+    # Must defer import to avoid cyclic dependency
+    from sopel.plugins.rules import Command
+    rule = Command(name=command, prefix=prefix)
+    return rule.get_rule_regex()
 
 
 @deprecated('command regexp tools are now private', '7.1', '8.0')
@@ -252,25 +249,9 @@ def get_command_pattern(prefix, command):
     :return: a regex pattern that will match the given command
     :rtype: str
     """
-    # This regexp matches equivalently and produces the same
-    # groups 1 and 2 as the old regexp: r'^%s(%s)(?: +(.*))?$'
-    # The only differences should be handling all whitespace
-    # like spaces and the addition of groups 3-6.
-    return r"""
-        (?:{prefix})({command}) # Command as group 1.
-        (?:\s+              # Whitespace to end command.
-        (                   # Rest of the line as group 2.
-        (?:(\S+))?          # Parameters 1-4 as groups 3-6.
-        (?:\s+(\S+))?
-        (?:\s+(\S+))?
-        (?:\s+(\S+))?
-        .*                  # Accept anything after the parameters.
-                            # Leave it up to the plugin to parse
-                            # the line.
-        ))?                 # Group 2 must be None, if there are no
-                            # parameters.
-        $                   # EoL, so there are no partial matches.
-        """.format(prefix=prefix, command=command)
+    # Must defer import to avoid cyclic dependency
+    from sopel.plugins.rules import Command
+    return Command.PATTERN_TEMPLATE.format(prefix=prefix, command=command)
 
 
 @deprecated('command regexp tools are now private', '7.1', '8.0')
@@ -284,12 +265,16 @@ def get_nickname_command_regexp(nick, command, alias_nicks):
     :return: a compiled regex pattern that implements the given nickname command
     :rtype: :ref:`re.Pattern <python:re-objects>`
     """
+    # Must defer import to avoid cyclic dependency
+    from sopel.plugins.rules import NickCommand
+
     if isinstance(alias_nicks, unicode):
         alias_nicks = [alias_nicks]
     elif not isinstance(alias_nicks, (list, tuple)):
         raise ValueError('A list or string is required.')
 
-    return compile_rule(nick, get_nickname_command_pattern(command), alias_nicks)
+    rule = NickCommand(nick=nick, name=command, nick_aliases=alias_nicks)
+    return rule.get_rule_regex()
 
 
 @deprecated('command regexp tools are now private', '7.1', '8.0')
@@ -300,21 +285,9 @@ def get_nickname_command_pattern(command):
     :return: a regex pattern that will match the given nickname command
     :rtype: str
     """
-    return r"""
-        ^
-        $nickname[:,]? # Nickname.
-        \s+({command}) # Command as group 1.
-        (?:\s+         # Whitespace to end command.
-        (              # Rest of the line as group 2.
-        (?:(\S+))?     # Parameters 1-4 as groups 3-6.
-        (?:\s+(\S+))?
-        (?:\s+(\S+))?
-        (?:\s+(\S+))?
-        .*             # Accept anything after the parameters. Leave it up to
-                       # the plugin to parse the line.
-        ))?            # Group 1 must be None, if there are no parameters.
-        $              # EoL, so there are no partial matches.
-        """.format(command=command)
+    # Must defer import to avoid cyclic dependency
+    from sopel.plugins.rules import NickCommand
+    return NickCommand.PATTERN_TEMPLATE.format(command=command)
 
 
 @deprecated('command regexp tools are now private', '7.1', '8.0')
@@ -325,8 +298,10 @@ def get_action_command_regexp(command):
     :return: a compiled regexp object that implements the command
     :rtype: :ref:`re.Pattern <python:re-objects>`
     """
-    pattern = get_action_command_pattern(command)
-    return re.compile(pattern, re.IGNORECASE | re.VERBOSE)
+    # Must defer import to avoid cyclic dependency
+    from sopel.plugins.rules import ActionCommand
+    rule = ActionCommand(name=command)
+    return rule.get_rule_regex()
 
 
 @deprecated('command regexp tools are now private', '7.1', '8.0')
@@ -337,25 +312,9 @@ def get_action_command_pattern(command):
     :return: a regex pattern that will match the given command
     :rtype: str
     """
-    # This regexp matches equivalently and produces the same
-    # groups 1 and 2 as the old regexp: r'^%s(%s)(?: +(.*))?$'
-    # The only differences should be handling all whitespace
-    # like spaces and the addition of groups 3-6.
-    return r"""
-        ({command}) # Command as group 1.
-        (?:\s+              # Whitespace to end command.
-        (                   # Rest of the line as group 2.
-        (?:(\S+))?          # Parameters 1-4 as groups 3-6.
-        (?:\s+(\S+))?
-        (?:\s+(\S+))?
-        (?:\s+(\S+))?
-        .*                  # Accept anything after the parameters.
-                            # Leave it up to the plugin to parse
-                            # the line.
-        ))?                 # Group 2 must be None, if there are no
-                            # parameters.
-        $                   # EoL, so there are no partial matches.
-        """.format(command=command)
+    # Must defer import to avoid cyclic dependency
+    from sopel.plugins.rules import ActionCommand
+    return ActionCommand.PATTERN_TEMPLATE.format(command=command)
 
 
 def get_sendable_message(text, max_length=400):
