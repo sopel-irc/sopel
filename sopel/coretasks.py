@@ -841,7 +841,7 @@ def auth_proceed(bot, trigger):
     else:
         return
     sasl_username = sasl_username or bot.nick
-    sasl_token = '\0'.join((sasl_username, sasl_username, sasl_password))
+    sasl_token = r'\0'.join((sasl_username, sasl_username, sasl_password))
     send_authenticate(bot, sasl_token)
 
 
@@ -902,7 +902,6 @@ def blocks(bot, trigger):
     """
     Manage Sopel's blocking features.\
     See [ignore system documentation]({% link _usage/ignoring-people.md %}).
-
     """
     STRINGS = {
         "success_del": "Successfully deleted block: %s",
