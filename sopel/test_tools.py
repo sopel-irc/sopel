@@ -260,7 +260,7 @@ def insert_into_module(func, module_name, base_name, prefix):
     setattr(module, func.__name__, func)
 
 
-@tools.deprecated('py.test run tests from @example directly', '7.1', '8.0')
+@tools.deprecated('pytest now runs @plugin.example tests directly', '7.1', '8.0')
 def run_example_tests(filename, tb='native', multithread=False, verbose=False):
     # These are only required when running tests, so import them here rather
     # than at the module level.
