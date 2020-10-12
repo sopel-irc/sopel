@@ -1881,6 +1881,33 @@ def test_nick_command_match(mockbot):
     assert match.group(6) is None
 
 
+def test_nick_command_match_args(mockbot):
+    line = (
+        ':Foo!foo@example.com PRIVMSG #sopel :'
+        'TestBot: hello arg1 arg2 arg3 arg4 arg5'
+    )
+    pretrigger = trigger.PreTrigger(mockbot.nick, line)
+
+    rule = rules.NickCommand('TestBot', 'hello')
+    matches = list(rule.match(mockbot, pretrigger))
+    assert len(matches) == 1, 'Exactly one match must be found'
+
+    match = matches[0]
+    assert match.group(0) == 'TestBot: hello arg1 arg2 arg3 arg4 arg5'
+    assert match.group(1) == 'hello'
+    assert match.group(2) == 'arg1 arg2 arg3 arg4 arg5', (
+        'The global arg list must include everything else')
+    # group 3-6 must match the 4 first arguments
+    assert match.group(3) == 'arg1'
+    assert match.group(4) == 'arg2'
+    assert match.group(5) == 'arg3'
+    assert match.group(6) == 'arg4'
+
+    # command regex doesn't match more than 4 extra args
+    with pytest.raises(IndexError):
+        match.group(7)
+
+
 def test_nick_command_has_alias(mockbot):
     rule = rules.NickCommand('TestBot', 'hello', aliases=['hi'])
     assert rule.has_alias('hi')
@@ -2066,6 +2093,33 @@ def test_action_command_match(mockbot):
     assert match.group(4) is None
     assert match.group(5) is None
     assert match.group(6) is None
+
+
+def test_action_command_match_args(mockbot):
+    line = (
+        ':Foo!foo@example.com PRIVMSG #sopel :'
+        '\x01ACTION hello arg1 arg2 arg3 arg4 arg5\x01'
+    )
+    pretrigger = trigger.PreTrigger(mockbot.nick, line)
+
+    rule = rules.ActionCommand('hello')
+    matches = list(rule.match(mockbot, pretrigger))
+    assert len(matches) == 1, 'Exactly one match must be found'
+
+    match = matches[0]
+    assert match.group(0) == 'hello arg1 arg2 arg3 arg4 arg5'
+    assert match.group(1) == 'hello'
+    assert match.group(2) == 'arg1 arg2 arg3 arg4 arg5', (
+        'The global arg list must include everything else')
+    # group 3-6 must match the 4 first arguments
+    assert match.group(3) == 'arg1'
+    assert match.group(4) == 'arg2'
+    assert match.group(5) == 'arg3'
+    assert match.group(6) == 'arg4'
+
+    # command regex doesn't match more than 4 extra args
+    with pytest.raises(IndexError):
+        match.group(7)
 
 
 def test_action_command_has_alias(mockbot):
