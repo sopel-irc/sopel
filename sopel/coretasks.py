@@ -820,6 +820,7 @@ def send_authenticate(bot, token):
 
 
 @module.event('AUTHENTICATE')
+@module.unblockable
 def auth_proceed(bot, trigger):
     if trigger.args[0] != '+':
         # How did we get here? I am not good with computer.
@@ -839,11 +840,13 @@ def auth_proceed(bot, trigger):
 
 
 @module.event(events.RPL_SASLSUCCESS)
+@module.unblockable
 def sasl_success(bot, trigger):
     bot.write(('CAP', 'END'))
 
 
 @module.event(events.RPL_SASLMECHS)
+@module.unblockable
 def sasl_mechs(bot, trigger):
     # Presumably we're only here if we said we actually *want* sasl, but still
     # check anyway in case the server glitched.
