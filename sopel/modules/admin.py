@@ -154,6 +154,19 @@ def temporary_part(bot, trigger):
 
 
 @plugin.require_privmsg
+@plugin.require_admin
+@plugin.command('chanlist', 'channels')
+@plugin.priority('low')
+def channel_list(bot, trigger):
+    """Show channels Sopel is in."""
+    channels = ', '.join(sorted(bot.channels.keys()))
+
+    # conservative assumption about how much room we have in the line to make
+    # sure `max_messages` won't actually truncate anything
+    bot.say(channels, max_messages=1 + len(channels) // 400)
+
+
+@plugin.require_privmsg
 @plugin.require_owner
 @plugin.command('restart')
 @plugin.priority('low')
