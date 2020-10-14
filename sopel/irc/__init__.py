@@ -592,7 +592,7 @@ class AbstractBot(object):
                 - 1  # space between prefix & command
                 - 7  # PRIVMSG command
                 - 1  # space before recipient
-                - len(recipient)  # target channel/nick
+                - len(recipient.encode('utf-8'))  # target channel/nick (can contain Unicode)
                 - 2  # space after recipient, colon before text
                 - 2  # trailing CRLF
             )

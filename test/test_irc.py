@@ -255,6 +255,18 @@ def test_say_long_extra_multi_message(bot):
     )
 
 
+def test_say_long_extra_multi_message_multibyte_recipient(bot):
+    """Test a split-allowed message sent to recipient with multi-byte char."""
+    text = 'a' * (
+        512 - prefix_length(bot) - len('PRIVMSG #sopel² :\r\n'.encode('utf-8')))
+    bot.say(text + 'b', '#sopel²', max_messages=2)
+
+    assert bot.backend.message_sent == rawlist(
+        'PRIVMSG #sopel² :%s' % text,  # the 'b' is split from message
+        'PRIVMSG #sopel² :b',
+    )
+
+
 def test_say_long_trailing_fit(bot):
     """Test optional truncation indicator with message that fits in one line."""
     text = 'a' * (512 - prefix_length(bot) - len('PRIVMSG #sopel :\r\n') - 3)
