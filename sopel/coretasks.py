@@ -24,7 +24,7 @@ import re
 import sys
 import time
 
-from sopel import loader, module, plugin
+from sopel import loader, module, plugin, tools
 from sopel.config import ConfigurationError
 from sopel.irc import isupport
 from sopel.irc.utils import CapReq, MyInfo
@@ -168,7 +168,6 @@ def startup(bot, trigger):
     251 RPL_LUSERCLIENT is a mandatory message that is sent after client
     connects to the server in rfc1459. RFC2812 does not require it and all
     networks might not send it. We support both.
-
     """
     if bot.connection_registered:
         return
@@ -243,6 +242,11 @@ def handle_isupport(bot, trigger):
             LOGGER.warning('Unable to parse ISUPPORT parameter: %r', arg)
 
     bot._isupport = bot._isupport.apply(**parameters)
+
+    # If CHANTYPES is advertised, substitute it for the default RFC set used
+    # when checking `Identifier.is_nick()`.
+    if hasattr(bot.isupport, 'CHANTYPES'):
+        tools._update_channel_prefixes(bot.isupport.CHANTYPES)
 
 
 @module.priority('high')

@@ -409,6 +409,29 @@ class Ddict(dict):
         return dict.__getitem__(self, key)
 
 
+def _update_channel_prefixes(seq):
+    """Override the default set of channel prefixes.
+
+    :param seq: the current server's supported channel prefixes
+    :type seq: any iterable sequence type
+
+    It's useful to do this way because it leaves the well-entrenched
+    :class:`Identifier` type alone and we don't need to worry about deprecating
+    or changing any existing API functionality.
+
+    .. versionadded:: 7.1
+    """
+    global _channel_prefixes
+
+    try:
+        t = tuple(seq)
+    except TypeError:
+        # non-iterable won't work, but don't automatically fix it
+        raise
+
+    _channel_prefixes = t
+
+
 class Identifier(unicode):
     """A `unicode` subclass which acts appropriately for IRC identifiers.
 
