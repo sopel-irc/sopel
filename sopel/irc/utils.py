@@ -49,8 +49,9 @@ def safe(string):
 class CapReq(object):
     """Represents a pending CAP REQ request.
 
-    :param str prefix: either ``=`` (must be enabled)
-                       or ``-`` (must **not** be enabled)
+    :param str prefix: either ``=`` (must be enabled),
+                       ``-`` (must **not** be enabled),
+                       or empty string (desired but optional)
     :param str module: the requesting package/module name
     :param failure: function to call if this capability request fails
     :type failure: :term:`function`
