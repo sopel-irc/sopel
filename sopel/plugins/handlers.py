@@ -339,7 +339,7 @@ class PyFilePlugin(PyModulePlugin):
 
     def _load(self):
         # The current implementation uses `imp.load_module` to perform the
-        # load action, which also reload the module. However, `imp` is
+        # load action, which also reloads the module. However, `imp` is
         # deprecated in Python 3, so that might need to be changed when the
         # support for Python 2 is dropped.
         #
@@ -422,7 +422,7 @@ class EntryPointPlugin(PyModulePlugin):
 
     In this example, the plugin ``custom`` is loaded from an entry point.
     Unlike the :class:`~.PyModulePlugin`, the name is not derived from the
-    actual python module, but from its entry point's name.
+    actual Python module, but from its entry point's name.
 
     .. seealso::
 
