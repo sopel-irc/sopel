@@ -1149,11 +1149,13 @@ class example(object):
         return func
 
 
-def output_prefix(prefix):
+def output_prefix(prefix, all_lines=False):
     """Decorate a function to add a prefix on its output.
 
     :param str prefix: the prefix to add (must include trailing whitespace if
                        desired; Sopel does not assume it should add anything)
+    :param bool all_lines: whether to prefix all lines when messages are split
+                           due to ``max_messages``
 
     Prefix will be added to text sent through:
 
@@ -1163,5 +1165,6 @@ def output_prefix(prefix):
     """
     def add_attribute(function):
         function.output_prefix = prefix
+        function.prefix_all_lines = bool(all_lines)
         return function
     return add_attribute

@@ -534,6 +534,18 @@ class AbstractRule(object):
         """
         raise NotImplementedError
 
+    def prefix_all_lines(self):
+        """See if the rule wants all output lines prefixed.
+
+        :rtype: bool
+
+        .. seealso::
+
+            See the :class:`sopel.bot.SopelWrapper` class for more information
+            about how the output prefix works.
+        """
+        raise NotImplementedError
+
     def match(self, bot, pretrigger):
         """Match a pretrigger according to the rule.
 
@@ -696,6 +708,7 @@ class Rule(AbstractRule):
             'allow_echo': getattr(handler, 'echo', False),
             'threaded': getattr(handler, 'thread', True),
             'output_prefix': getattr(handler, 'output_prefix', ''),
+            'prefix_all_lines': getattr(handler, 'prefix_all_lines', False),
             'unblockable': getattr(handler, 'unblockable', False),
             'rate_limit': getattr(handler, 'rate', 0),
             'channel_rate_limit': getattr(handler, 'channel_rate', 0),
@@ -724,6 +737,7 @@ class Rule(AbstractRule):
                  allow_echo=False,
                  threaded=True,
                  output_prefix=None,
+                 prefix_all_lines=False,
                  unblockable=False,
                  rate_limit=0,
                  channel_rate_limit=0,
@@ -746,6 +760,7 @@ class Rule(AbstractRule):
         # execution
         self._threaded = bool(threaded)
         self._output_prefix = output_prefix or ''
+        self._prefix_all_lines = prefix_all_lines or False
 
         # rate limiting
         self._unblockable = bool(unblockable)
@@ -820,6 +835,9 @@ class Rule(AbstractRule):
 
     def get_output_prefix(self):
         return self._output_prefix
+
+    def prefix_all_lines(self):
+        return self._prefix_all_lines
 
     def match(self, bot, pretrigger):
         args = pretrigger.args

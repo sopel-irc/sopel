@@ -789,7 +789,11 @@ class Sopel(irc.AbstractBot):
                 continue
 
             wrapper = SopelWrapper(
-                self, trigger, output_prefix=rule.get_output_prefix())
+                self,
+                trigger,
+                output_prefix=rule.get_output_prefix(),
+                prefix_all_lines=rule.prefix_all_lines(),
+            )
 
             if rule.is_threaded():
                 # run in a separate thread
@@ -1090,13 +1094,16 @@ class SopelWrapper(object):
     :type trigger: :class:`~sopel.trigger.Trigger`
     :param str output_prefix: prefix for messages sent through this wrapper
                               (e.g. plugin tag)
+    :param bool prefix_all_lines: whether ``output_prefix`` should be added
+                                  to all lines if ``max_messages`` splitting
+                                  applies, or only the first line
 
     This wrapper will be used to call Sopel's triggered commands and rules as
     their ``bot`` argument. It acts as a proxy to :meth:`send messages<say>`
     to the sender (either a channel or in a private message) and even to
     :meth:`reply to someone<reply>` in a channel.
     """
-    def __init__(self, sopel, trigger, output_prefix=''):
+    def __init__(self, sopel, trigger, output_prefix='', prefix_all_lines=False):
         if not output_prefix:
             # Just in case someone passes in False, None, etc.
             output_prefix = ''
@@ -1106,6 +1113,7 @@ class SopelWrapper(object):
         object.__setattr__(self, '_bot', sopel)
         object.__setattr__(self, '_trigger', trigger)
         object.__setattr__(self, '_out_pfx', output_prefix)
+        object.__setattr__(self, '_pfx_all', prefix_all_lines)
 
     def __dir__(self):
         classattrs = [attr for attr in self.__class__.__dict__
