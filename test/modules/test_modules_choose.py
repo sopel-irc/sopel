@@ -103,6 +103,12 @@ def test_format_safe_control():
         )) == ''
 
 
+def test_format_safe_invalid_arg():
+    """Test for correct exception if non-string is passed."""
+    with pytest.raises(TypeError):
+        choose._format_safe(None)
+
+
 @pytest.mark.parametrize('text, cleaned', SAFE_PAIRS)
 def test_format_safe_pairs(text, cleaned):
     """Test expected formatting-safe string sanitization."""

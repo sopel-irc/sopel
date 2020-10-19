@@ -16,16 +16,29 @@ import unicodedata
 
 from sopel import formatting, plugin
 
+# Remove when dropping py2 support
+try:
+    str = unicode
+except NameError:
+    pass
+
 
 def _format_safe(text):
     """Remove excess whitespace and terminate IRC formatting.
 
     :param str text: text to clean of whitespace
     :rtype: str
+    :raises TypeError: if the passed ``text`` is not a string
 
     Our own take on ``str.strip()`` that skips stripping off IRC formatting
     and makes sure any formatting codes are closed if necessary.
     """
+    if not isinstance(text, str):
+        raise TypeError("A string is required.")
+    elif not text:
+        # unnecessary optimization
+        return ''
+
     start = end = 0
 
     # strip left
