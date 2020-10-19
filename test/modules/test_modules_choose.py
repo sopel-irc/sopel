@@ -4,8 +4,29 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 import pytest
 
+from sopel import formatting
 from sopel.modules import choose
 
+
+UNICODE_ZS_CATEGORY = [
+    '\u0020',  # SPACE
+    '\u00A0',  # NO-BREAK SPACE
+    '\u1680',  # OGHAM SPACE MARK
+    '\u2000',  # EN QUAD
+    '\u2001',  # EM QUAD
+    '\u2002',  # EN SPACE
+    '\u2003',  # EM SPACE
+    '\u2004',  # THREE-PER-EM SPACE
+    '\u2005',  # FOUR-PER-EM SPACE
+    '\u2006',  # SIX-PER-EM SPACE
+    '\u2007',  # FIGURE SPACE
+    '\u2008',  # PUNCTUATION SPACE
+    '\u2009',  # THIN SPACE
+    '\u200A',  # HAIR SPACE
+    '\u202F',  # NARROW NO-BREAK SPACE
+    '\u205F',  # MEDIUM MATHEMATICAL SPACE
+    '\u3000',  # IDEOGRAPHIC SPACE
+]
 
 SAFE_PAIRS = (
     # regression checks vs. old string.strip()
@@ -59,8 +80,31 @@ SAFE_PAIRS = (
 )
 
 
+def test_format_safe_basic():
+    """Test handling of basic whitespace."""
+    assert choose._format_safe(
+        ''.join(UNICODE_ZS_CATEGORY)) == ''
+
+
+def test_format_safe_control():
+    """Test handling of non-printing control characters."""
+    all_formatting = ''.join(formatting.CONTROL_FORMATTING)
+
+    # no formatting chars should be stripped,
+    # but a reset should be added to the end
+    assert choose._format_safe(all_formatting) == all_formatting + '\x0f'
+
+    # control characters not recognized as formatting should be stripped
+    assert choose._format_safe(
+        ''.join(
+            c
+            for c in formatting.CONTROL_NON_PRINTING
+            if c not in formatting.CONTROL_FORMATTING
+        )) == ''
+
+
 @pytest.mark.parametrize('text, cleaned', SAFE_PAIRS)
-def test_format_safe(text, cleaned):
+def test_format_safe_pairs(text, cleaned):
     """Test expected formatting-safe string sanitization."""
     assert choose._format_safe(text) == cleaned
 
