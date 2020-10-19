@@ -62,6 +62,19 @@ CONTROL_MONOSPACE = '\x11'
 CONTROL_REVERSE = '\x16'
 """The control code to start or end reverse-color formatting."""
 
+CONTROL_FORMATTING = [
+    CONTROL_NORMAL,
+    CONTROL_COLOR,
+    CONTROL_HEX_COLOR,
+    CONTROL_BOLD,
+    CONTROL_ITALIC,
+    CONTROL_UNDERLINE,
+    CONTROL_STRIKETHROUGH,
+    CONTROL_MONOSPACE,
+    CONTROL_REVERSE,
+]
+"""A list of all control characters expected to appear as formatting."""
+
 CONTROL_NON_PRINTING = [
     '\x00',
     '\x01',
