@@ -28,6 +28,7 @@ def _format_safe(text):
     """
     start = end = 0
 
+    # strip left
     pos = 0
     while pos < len(text):
         is_whitespace = unicodedata.category(text[pos]) == 'Zs'
@@ -40,6 +41,7 @@ def _format_safe(text):
             break
         pos += 1
 
+    # strip right
     pos = len(text) - 1
     while pos >= 0:
         is_whitespace = unicodedata.category(text[pos]) == 'Zs'
@@ -52,8 +54,10 @@ def _format_safe(text):
             break
         pos -= 1
 
+    # build the final string
     safe = text[start:end]
     if any(c in safe for c in formatting.CONTROL_FORMATTING):
+        # if it includes IRC formatting, append reset character just in case
         safe += formatting.CONTROL_NORMAL
 
     return safe
