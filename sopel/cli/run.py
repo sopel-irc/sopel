@@ -30,11 +30,9 @@ if sys.version_info < (2, 7) or (
     tools.stderr('Error: Sopel requires Python 2.7+ or 3.3+.')
     sys.exit(1)
 if sys.version_info.major == 2:
-    now = time.time()
-    state = 'has reached end of life'
-    if now >= 1588291200:  # 2020-05-01 00:00:00 UTC
-        state += ' and will receive no further updates'
-    tools.stderr('Warning: Python 2.x %s. Sopel 8.0 will drop support for it.' % state)
+    tools.stderr(
+        'Warning: Python 2.x has reached end of life and will receive '
+        'no further updates. Sopel 8.0 will drop support for it.')
 
 LOGGER = logging.getLogger(__name__)
 
