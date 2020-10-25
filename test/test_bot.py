@@ -3,6 +3,7 @@
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 import re
+import warnings
 
 import pytest
 
@@ -1059,7 +1060,7 @@ def test_unregister_url_callback_no_memory(tmpconfig):
 
 
 # Remove once manual callback management is gone (8.0)
-def test_register_url_callback_manual_warning(tmpconfig, caplog):
+def test_register_url_callback_manual_warning(tmpconfig):
     """Test that manually registering a callback produces a deprecation warning"""
     test_pattern = r'https://(www\.)?example\.com'
 
@@ -1067,23 +1068,28 @@ def test_register_url_callback_manual_warning(tmpconfig, caplog):
         return None
 
     sopel = bot.Sopel(tmpconfig, daemon=False)
-    sopel.memory["url_callbacks"] = SopelMemory()
+
+    with warnings.catch_warnings(record=True) as w:
+        sopel.memory["url_callbacks"] = SopelMemory()
+
+        assert len(w) == 1
+        assert issubclass(w[-1].category, DeprecationWarning)
+        assert '@url' in str(w[-1].message)
 
     # register a callback manually
     sopel.memory["url_callbacks"][re.compile(test_pattern)] = url_handler
     results = list(sopel.search_url_callbacks("https://www.example.com"))
     assert results[0][0] == url_handler, "Callback must be present"
 
-    if isinstance(caplog.records, list):
-        records = caplog.records
-    else:
-        # python 3.3
-        records = caplog.records()
-    for record in records:
-        if "url_callbacks" in record.message and "deprecated" in record.message:
-            # success
-            return
-    raise Exception("No deprecation warning was found")
+
+def test_memory_no_warning_if_key_not_deprecated(tmpconfig):
+    """Test that setting a memory key that isn't deprecated doesn't produce a warning"""
+    sopel = bot.Sopel(tmpconfig, daemon=False)
+
+    with warnings.catch_warnings(record=True) as w:
+        sopel.memory["something_borrowed"] = "something_blue"
+
+        assert len(w) == 0
 
 
 # Remove once manual callback management is deprecated (8.0)
