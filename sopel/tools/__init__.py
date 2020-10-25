@@ -23,6 +23,7 @@ import re
 import sys
 import threading
 import traceback
+import warnings
 
 from pkg_resources import parse_version
 
@@ -649,15 +650,14 @@ class SopelMemory(dict):
         The dict is locked for other writes while doing so.
         """
         if key in self._deprecated_keys:
-            try:
-                raise Exception()
-            except Exception:
-                logging.warning(
-                    'Key "%s" is deprecated: %s',
+            warnings.warn(
+                'Key "{}" is deprecated: {}'.format(
                     key,
                     self._deprecated_keys[key],
-                    exc_info=True,
-                )
+                ),
+                DeprecationWarning,
+                stacklevel=2,
+            )
         self.lock.acquire()
         result = dict.__setitem__(self, key, value)
         self.lock.release()

@@ -4,6 +4,7 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 import logging
 from logging.config import dictConfig
 import os
+import warnings
 
 from sopel import tools
 
@@ -77,6 +78,9 @@ def setup_logging(settings):
     base_format = settings.core.logging_format
     base_datefmt = settings.core.logging_datefmt
 
+    warnings.filterwarnings('always', module='^sopel.*')
+    logging.captureWarnings(capture=True)
+
     logging_config = {
         'version': 1,
         'formatters': {
@@ -94,6 +98,12 @@ def setup_logging(settings):
             'sopel': {
                 'level': base_level,
                 'handlers': ['console', 'logfile', 'errorfile'],
+            },
+            # warnings from the `warnings` module
+            'py.warnings': {
+                'level': 'WARNING',
+                'propagate': False,
+                'handlers': ['console', 'logfile'],
             },
             # raw IRC log
             'sopel.raw': {
