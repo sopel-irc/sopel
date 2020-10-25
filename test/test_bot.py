@@ -3,7 +3,6 @@
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 import re
-import warnings
 
 import pytest
 
@@ -1069,12 +1068,12 @@ def test_register_url_callback_manual_warning(tmpconfig):
 
     sopel = bot.Sopel(tmpconfig, daemon=False)
 
-    with warnings.catch_warnings(record=True) as w:
+    with pytest.warns(DeprecationWarning) as w:
         sopel.memory["url_callbacks"] = SopelMemory()
 
-        assert len(w) == 1
-        assert issubclass(w[-1].category, DeprecationWarning)
-        assert '@url' in str(w[-1].message)
+    assert len(w) == 1
+    assert issubclass(w[-1].category, DeprecationWarning)
+    assert '@url' in str(w[-1].message)
 
     # register a callback manually
     sopel.memory["url_callbacks"][re.compile(test_pattern)] = url_handler
@@ -1086,10 +1085,10 @@ def test_memory_no_warning_if_key_not_deprecated(tmpconfig):
     """Test that setting a memory key that isn't deprecated doesn't produce a warning"""
     sopel = bot.Sopel(tmpconfig, daemon=False)
 
-    with warnings.catch_warnings(record=True) as w:
+    with pytest.warns(None) as w:
         sopel.memory["something_borrowed"] = "something_blue"
 
-        assert len(w) == 0
+    assert len(w) == 0
 
 
 # Remove once manual callback management is deprecated (8.0)
