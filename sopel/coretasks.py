@@ -845,6 +845,19 @@ def sasl_success(bot, trigger):
     bot.write(('CAP', 'END'))
 
 
+@plugin.event(events.ERR_SASLFAIL)
+@plugin.event(events.ERR_SASLTOOLONG)
+@plugin.event(events.ERR_SASLABORTED)
+@plugin.event(events.ERR_NICKLOCKED)
+@plugin.unblockable
+@plugin.thread(False)
+def sasl_fail(bot, trigger):
+    """SASL Auth Failed: log the error and quit."""
+    LOGGER.error(
+        'SASL Auth Failed; check your configuration: %s', str(trigger))
+    bot.quit('SASL Auth Failed')
+
+
 @module.event(events.RPL_SASLMECHS)
 @module.unblockable
 def sasl_mechs(bot, trigger):
