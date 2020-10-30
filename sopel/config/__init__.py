@@ -159,6 +159,30 @@ class Config(object):
         else:
             return os.path.dirname(self.filename)
 
+    def get_defined_sections(self):
+        """Retrieve all defined static sections of this configuration.
+
+        :return: all instances of :class:`~sopel.config.types.StaticSection`
+                 defined for this configuration file
+        :rtype: list
+
+        When a plugin defines a section (using :meth:`define_section`), it
+        associates a :class:`~sopel.config.types.StaticSection` for the section.
+        This method allows to retrieve these instances of ``StaticSection``,
+        and only these.
+
+        .. versionadded:: 7.1
+        """
+        sections = (
+            (name, getattr(self, name))
+            for name in self.parser.sections()
+        )
+        return [
+            (name, section)
+            for name, section in sections
+            if isinstance(section, types.StaticSection)
+        ]
+
     def save(self):
         """Write all changes to the config file.
 
