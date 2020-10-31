@@ -260,7 +260,7 @@ def test_configparser_multi_lines(multi_fakeconfig):
 
 
 def test_save_unmodified_config(multi_fakeconfig):
-    """Assert type attributes are kept as they should be"""
+    """Assert type attributes are kept as they should be."""
     multi_fakeconfig.save()
     saved_config = config.Config(multi_fakeconfig.filename)
     saved_config.define_section('fake', FakeConfigSection)
@@ -300,7 +300,7 @@ def test_save_unmodified_config(multi_fakeconfig):
 
 
 def test_save_modified_config(multi_fakeconfig):
-    """Assert modified values are restored properly"""
+    """Assert modified values are restored properly."""
     multi_fakeconfig.fake.choiceattr = 'spam'
     multi_fakeconfig.spam.eggs = [
         'one',

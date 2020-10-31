@@ -3,11 +3,12 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 
 class events(object):
-    """An enumeration of all the standardized and notable IRC numeric events
+    """An enumeration of all the standardized and notable IRC numeric events.
 
     This allows you to do, for example, ``@plugin.event(events.RPL_WELCOME)``
     rather than ``@plugin.event('001')``
     """
+
     # ###################################################### Non-RFC / Non-IRCv3
     # Only add things here if they're actually in common use across multiple
     # ircds.

@@ -1,5 +1,5 @@
 # coding=utf-8
-"""Sopel's plugin handlers
+"""Sopel's plugin handlers.
 
 .. versionadded:: 7.0
 
@@ -74,8 +74,9 @@ class AbstractPluginHandler(object):
     (commands, jobs, etc.), configuring it, and running any required actions
     on shutdown (either upon exiting Sopel or unloading that plugin).
     """
+
     def load(self):
-        """Load the plugin
+        """Load the plugin.
 
         This method must be called first, in order to setup, register, shutdown,
         or configure the plugin later.
@@ -83,7 +84,7 @@ class AbstractPluginHandler(object):
         raise NotImplementedError
 
     def reload(self):
-        """Reload the plugin
+        """Reload the plugin.
 
         This method can be called once the plugin is already loaded. It will
         take care of reloading the plugin from its source.
@@ -91,7 +92,7 @@ class AbstractPluginHandler(object):
         raise NotImplementedError
 
     def get_label(self):
-        """Retrieve a display label for the plugin
+        """Retrieve a display label for the plugin.
 
         :return: A human readable label for display purpose
         :rtype: str
@@ -101,7 +102,7 @@ class AbstractPluginHandler(object):
         raise NotImplementedError
 
     def get_meta_description(self):
-        """Retrieve a meta description for the plugin
+        """Retrieve a meta description for the plugin.
 
         :return: meta description information
         :rtype: :class:`dict`
@@ -117,7 +118,7 @@ class AbstractPluginHandler(object):
         raise NotImplementedError
 
     def is_loaded(self):
-        """Tell if the plugin is loaded or not
+        """Tell if the plugin is loaded or not.
 
         :return: ``True`` if the plugin is loaded, ``False`` otherwise
         :rtype: bool
@@ -128,7 +129,7 @@ class AbstractPluginHandler(object):
         raise NotImplementedError
 
     def setup(self, bot):
-        """Setup the plugin with the ``bot``
+        """Set up the plugin with the ``bot``.
 
         :param bot: instance of Sopel
         :type bot: :class:`sopel.bot.Sopel`
@@ -136,7 +137,7 @@ class AbstractPluginHandler(object):
         raise NotImplementedError
 
     def has_setup(self):
-        """Tell if the plugin has a setup action
+        """Tell if the plugin has a setup action.
 
         :return: ``True`` if the plugin has a setup, ``False`` otherwise
         :rtype: bool
@@ -144,7 +145,7 @@ class AbstractPluginHandler(object):
         raise NotImplementedError
 
     def register(self, bot):
-        """Register the plugin with the ``bot``
+        """Register the plugin with the ``bot``.
 
         :param bot: instance of Sopel
         :type bot: :class:`sopel.bot.Sopel`
@@ -152,7 +153,7 @@ class AbstractPluginHandler(object):
         raise NotImplementedError
 
     def unregister(self, bot):
-        """Unregister the plugin from the ``bot``
+        """Unregister the plugin from the ``bot``.
 
         :param bot: instance of Sopel
         :type bot: :class:`sopel.bot.Sopel`
@@ -160,7 +161,7 @@ class AbstractPluginHandler(object):
         raise NotImplementedError
 
     def shutdown(self, bot):
-        """Take action on bot's shutdown
+        """Take action on bot's shutdown.
 
         :param bot: instance of Sopel
         :type bot: :class:`sopel.bot.Sopel`
@@ -168,7 +169,7 @@ class AbstractPluginHandler(object):
         raise NotImplementedError
 
     def has_shutdown(self):
-        """Tell if the plugin has a shutdown action
+        """Tell if the plugin has a shutdown action.
 
         :return: ``True`` if the plugin has a ``shutdown`` action, ``False``
                  otherwise
@@ -177,7 +178,7 @@ class AbstractPluginHandler(object):
         raise NotImplementedError
 
     def configure(self, settings):
-        """Configure Sopel's ``settings`` for this plugin
+        """Configure Sopel's ``settings`` for this plugin.
 
         :param settings: Sopel's configuration
         :type settings: :class:`sopel.config.Config`
@@ -187,7 +188,7 @@ class AbstractPluginHandler(object):
         raise NotImplementedError
 
     def has_configure(self):
-        """Tell if the plugin has a configure action
+        """Tell if the plugin has a configure action.
 
         :return: ``True`` if the plugin has a ``configure`` action, ``False``
                  otherwise
@@ -197,7 +198,7 @@ class AbstractPluginHandler(object):
 
 
 class PyModulePlugin(AbstractPluginHandler):
-    """Sopel plugin loaded from a Python module or package
+    """Sopel plugin loaded from a Python module or package.
 
     A :class:`PyModulePlugin` represents a Sopel plugin that is a Python
     module (or package) that can be imported directly.
@@ -221,6 +222,7 @@ class PyModulePlugin(AbstractPluginHandler):
         True
 
     """
+
     PLUGIN_TYPE = 'python-module'
 
     def __init__(self, name, package=None):
@@ -295,7 +297,7 @@ class PyModulePlugin(AbstractPluginHandler):
 
 
 class PyFilePlugin(PyModulePlugin):
-    """Sopel plugin loaded from the filesystem outside of the Python path
+    """Sopel plugin loaded from the filesystem outside of the Python path.
 
     This plugin handler can be used to load a Sopel plugin from the
     filesystem, either a Python ``.py`` file or a directory containing an
@@ -310,6 +312,7 @@ class PyFilePlugin(PyModulePlugin):
     In this example, the plugin ``custom`` is loaded from its filename despite
     not being in the Python path.
     """
+
     PLUGIN_TYPE = 'python-file'
 
     def __init__(self, filename):
@@ -375,7 +378,7 @@ class PyFilePlugin(PyModulePlugin):
         self._module = self._load()
 
     def reload(self):
-        """Reload the plugin
+        """Reload the plugin.
 
         Unlike :class:`PyModulePlugin`, it is not possible to use the
         ``reload`` function (either from `imp` or `importlib`), because the
@@ -385,7 +388,7 @@ class PyFilePlugin(PyModulePlugin):
 
 
 class EntryPointPlugin(PyModulePlugin):
-    """Sopel plugin loaded from a ``setuptools`` entry point
+    """Sopel plugin loaded from a ``setuptools`` entry point.
 
     :param entry_point: a ``setuptools`` entry point object
 
@@ -435,6 +438,7 @@ class EntryPointPlugin(PyModulePlugin):
         .. __: https://setuptools.readthedocs.io/en/stable/setuptools.html#dynamic-discovery-of-services-and-plugins
 
     """
+
     PLUGIN_TYPE = 'setup-entrypoint'
 
     def __init__(self, entry_point):

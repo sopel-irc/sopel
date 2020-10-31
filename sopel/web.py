@@ -152,7 +152,8 @@ def post(uri, query, limit_bytes=None, timeout=20, verify_ssl=True, return_heade
 
 # solely for use by get_urllib_object()
 class MockHttpResponse(httplib.HTTPResponse):
-    "Mock HTTPResponse with data that comes from requests."
+    """Mock HTTPResponse with data that comes from requests."""
+
     def __init__(self, response):
         self.headers = response.headers
         self.status = response.status_code

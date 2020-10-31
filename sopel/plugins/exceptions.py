@@ -12,6 +12,7 @@ class PluginError(Exception):
 
 class PluginNotRegistered(PluginError):
     """Exception raised when a plugin is not registered."""
+
     def __init__(self, name):
         message = 'Plugin "%s" not registered' % name
         self.plugin_name = name

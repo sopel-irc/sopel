@@ -1,5 +1,5 @@
 # coding=utf-8
-"""Tools to help safely do calculations from user input"""
+"""Tools to help safely do calculations from user input."""
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 import ast
@@ -22,7 +22,8 @@ class ExpressionEvaluator:
     """
 
     class Error(Exception):
-        """Internal exception type for :class:`ExpressionEvaluator`\\s."""
+        r"""Internal exception type for :class:`ExpressionEvaluator`\s."""
+
         pass
 
     def __init__(self, bin_ops=None, unary_ops=None):

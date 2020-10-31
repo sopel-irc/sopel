@@ -1,6 +1,6 @@
 # coding=utf-8
-"""
-pronouns.py - Sopel Pronouns Plugin
+"""pronouns.py - Sopel Pronouns Plugin.
+
 Copyright © 2016, Elsie Powell
 Licensed under the Eiffel Forum License 2.
 

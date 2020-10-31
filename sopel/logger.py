@@ -18,6 +18,7 @@ class IrcLoggingHandler(logging.Handler):
 
     Implementation of a :class:`logging.Handler`.
     """
+
     def __init__(self, bot, level):
         super(IrcLoggingHandler, self).__init__(level)
         self._bot = bot
@@ -52,6 +53,7 @@ class ChannelOutputFormatter(logging.Formatter):
 
     Implementation of a :class:`logging.Formatter`.
     """
+
     def __init__(self, fmt='[%(filename)s] %(message)s', datefmt=None):
         super(ChannelOutputFormatter, self).__init__(fmt=fmt, datefmt=datefmt)
 

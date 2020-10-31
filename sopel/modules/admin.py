@@ -1,6 +1,6 @@
 # coding=utf-8
-"""
-admin.py - Sopel Admin Plugin
+"""admin.py - Sopel Admin Plugin.
+
 Copyright 2010-2011, Sean B. Palmer (inamidst.com) and Michael Yanovich
 (yanovich.net)
 Copyright © 2012, Elad Alfassa, <elad@fedoraproject.org>
@@ -25,11 +25,11 @@ class AdminSection(types.StaticSection):
 
 
 def configure(config):
-    """
+    r"""
     | name | example | purpose |
     | ---- | ------- | ------- |
-    | hold\\_ground | False | Auto-rejoin the channel after being kicked. |
-    | auto\\_accept\\_invite | True | Auto-join channels when invited. |
+    | hold\_ground | False | Auto-rejoin the channel after being kicked. |
+    | auto\_accept\_invite | True | Auto-join channels when invited. |
     """
     config.define_section('admin', AdminSection)
     config.admin.configure_setting('hold_ground',

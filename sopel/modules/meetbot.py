@@ -1,6 +1,6 @@
 # coding=utf-8
-"""
-meetbot.py - Sopel Meeting Logger Plugin
+"""meetbot.py - Sopel Meeting Logger Plugin.
+
 This plugin is an attempt to implement some of the functionality of Debian's meetbot
 Copyright © 2012, Elad Alfassa, <elad@fedoraproject.org>
 Licensed under the Eiffel Forum License 2.
@@ -25,7 +25,7 @@ UNTITLED_MEETING = "Untitled meeting"
 
 
 class MeetbotSection(types.StaticSection):
-    """Configuration file section definition"""
+    """Configuration file section definition."""
 
     meeting_log_path = types.FilenameAttribute(
         "meeting_log_path",
@@ -43,11 +43,11 @@ class MeetbotSection(types.StaticSection):
 
 
 def configure(config):
-    """
+    r"""
     | name | example | purpose |
     | ---- | ------- | ------- |
-    | meeting\\_log\\_path | /home/sopel/www/meetings | Path to meeting logs storage directory (should be an absolute path, accessible on a webserver) |
-    | meeting\\_log\\_baseurl | http://example.com/~sopel/meetings | Base URL for the meeting logs directory |
+    | meeting\_log\_path | /home/sopel/www/meetings | Path to meeting logs storage directory (should be an absolute path, accessible on a webserver) |
+    | meeting\_log\_baseurl | http://example.com/~sopel/meetings | Base URL for the meeting logs directory |
     """
     config.define_section("meetbot", MeetbotSection)
     config.meetbot.configure_setting(
@@ -192,8 +192,8 @@ def is_chair(nick, channel):
 @plugin.example(".startmeeting Meeting Title", user_help=True)
 @plugin.require_chanmsg("Meetings can only be started in channels")
 def startmeeting(bot, trigger):
-    """
-    Start a meeting.\
+    """Start a meeting.
+
     See [meetbot plugin usage]({% link _usage/meetbot-plugin.md %})
     """
     if is_meeting_running(trigger.sender):
@@ -253,8 +253,8 @@ def startmeeting(bot, trigger):
 @plugin.command("subject")
 @plugin.example(".subject roll call")
 def meetingsubject(bot, trigger):
-    """
-    Change the meeting subject.\
+    """Change the meeting subject.
+
     See [meetbot plugin usage]({% link _usage/meetbot-plugin.md %})
     """
     if not is_meeting_running(trigger.sender):
@@ -284,8 +284,8 @@ def meetingsubject(bot, trigger):
 @plugin.command("endmeeting")
 @plugin.example(".endmeeting")
 def endmeeting(bot, trigger):
-    """
-    End a meeting.\
+    """End a meeting.
+
     See [meetbot plugin usage]({% link _usage/meetbot-plugin.md %})
     """
     if not is_meeting_running(trigger.sender):
@@ -317,8 +317,8 @@ def endmeeting(bot, trigger):
 @plugin.command("chairs")
 @plugin.example(".chairs Tyrope Jason elad")
 def chairs(bot, trigger):
-    """
-    Set the meeting chairs.\
+    """Set the meeting chairs.
+
     See [meetbot plugin usage]({% link _usage/meetbot-plugin.md %})
     """
     if not is_meeting_running(trigger.sender):
@@ -349,8 +349,8 @@ def chairs(bot, trigger):
 @plugin.command("action")
 @plugin.example(".action elad will develop a meetbot")
 def meetingaction(bot, trigger):
-    """
-    Log an action in the meeting log.\
+    """Log an action in the meeting log.
+
     See [meetbot plugin usage]({% link _usage/meetbot-plugin.md %})
     """
     if not is_meeting_running(trigger.sender):
@@ -387,8 +387,8 @@ def listactions(bot, trigger):
 @plugin.command("agreed")
 @plugin.example(".agreed Bowties are cool")
 def meetingagreed(bot, trigger):
-    """
-    Log an agreement in the meeting log.\
+    """Log an agreement in the meeting log.
+
     See [meetbot plugin usage]({% link _usage/meetbot-plugin.md %})
     """
     if not is_meeting_running(trigger.sender):
@@ -412,8 +412,8 @@ def meetingagreed(bot, trigger):
 @plugin.command("link")
 @plugin.example(".link http://example.com")
 def meetinglink(bot, trigger):
-    """
-    Log a link in the meeing log.\
+    """Log a link in the meeing log.
+
     See [meetbot plugin usage]({% link _usage/meetbot-plugin.md %})
     """
     if not is_meeting_running(trigger.sender):
@@ -445,8 +445,8 @@ def meetinglink(bot, trigger):
 @plugin.command("info")
 @plugin.example(".info all board members present")
 def meetinginfo(bot, trigger):
-    """
-    Log an informational item in the meeting log.\
+    """Log an informational item in the meeting log.
+
     See [meetbot plugin usage]({% link _usage/meetbot-plugin.md %})
     """
     if not is_meeting_running(trigger.sender):
@@ -538,8 +538,7 @@ def take_comment(bot, trigger):
 
 @plugin.command("comments")
 def show_comments(bot, trigger):
-    """
-    Show the comments that have been logged for this meeting with .comment.
+    """Show the comments that have been logged for this meeting with .comment.
 
     See [meetbot plugin usage]({% link _usage/meetbot-plugin.md %})
     """

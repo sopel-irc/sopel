@@ -1,6 +1,6 @@
 # coding=utf-8
-"""
-calc.py - Sopel Calculator Plugin
+"""calc.py - Sopel Calculator Plugin.
+
 Copyright 2008, Sean B. Palmer, inamidst.com
 Licensed under the Eiffel Forum License 2.
 

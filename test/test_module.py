@@ -1,5 +1,5 @@
 # coding=utf-8
-"""Tests for sopel.module decorators
+"""Tests for sopel.module decorators.
 
 .. important::
 

@@ -7,7 +7,7 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 
 def rawlist(*args):
-    """Build a list of raw IRC messages from the lines given as ``*args``.
+    r"""Build a list of raw IRC messages from the lines given as ``*args``.
 
     :return: a list of raw IRC messages as seen by the bot
     :rtype: list
@@ -16,6 +16,6 @@ def rawlist(*args):
     care about encoding or this pesky carriage return::
 
         >>> rawlist('PRIVMSG :Hello!')
-        [b'PRIVMSG :Hello!\\r\\n']
+        [b'PRIVMSG :Hello!\r\n']
     """
     return ['{0}\r\n'.format(arg).encode('utf-8') for arg in args]

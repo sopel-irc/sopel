@@ -19,6 +19,7 @@ class BotFactory(object):
         The :func:`~sopel.tests.pytest_plugin.botfactory` fixture can be used
         to instantiate this factory.
     """
+
     def preloaded(self, settings, preloads=None):
         """Create a bot and preload its plugins.
 
@@ -71,6 +72,7 @@ class ConfigFactory(object):
         The :func:`~sopel.tests.pytest_plugin.configfactory` fixture can be
         used to instantiate this factory.
     """
+
     def __init__(self, tmpdir):
         self.tmpdir = tmpdir
 
@@ -88,6 +90,7 @@ class TriggerFactory(object):
         The :func:`~sopel.tests.pytest_plugin.triggerfactory` fixture can be
         used to instantiate this factory.
     """
+
     def wrapper(self, mockbot, raw, pattern=None):
         trigger = self(mockbot, raw, pattern=pattern)
         return bot.SopelWrapper(mockbot, trigger)
@@ -108,6 +111,7 @@ class IRCFactory(object):
         The :func:`~sopel.tests.pytest_plugin.ircfactory` fixture can be used
         to create this factory.
     """
+
     def __call__(self, mockbot):
         return MockIRCServer(mockbot)
 
@@ -120,5 +124,6 @@ class UserFactory(object):
         The :func:`~sopel.tests.pytest_plugin.userfactory` fixture can be used
         to create this factory.
     """
+
     def __call__(self, nick=None, user=None, host=None):
         return MockUser(nick, user, host)

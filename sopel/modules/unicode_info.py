@@ -1,6 +1,6 @@
 # coding=utf-8
-"""
-unicode_info.py - Sopel Codepoints Plugin
+"""unicode_info.py - Sopel Codepoints Plugin.
+
 Copyright 2013, Elsie Powell, embolalia.com
 Copyright 2008, Sean B. Palmer, inamidst.com
 Licensed under the Eiffel Forum License 2.
@@ -26,7 +26,7 @@ if sys.version_info.major >= 3:
 
 
 def get_codepoint_name(char):
-    """Retrieve the code point (and name, if possible) for a given character"""
+    """Retrieve the code point (and name, if possible) for a given character."""
     # Get the hex value for the code point, and drop the 0x from the front
     point = unicode(hex(ord(char)))[2:]
 

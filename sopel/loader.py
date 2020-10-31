@@ -13,7 +13,7 @@ if sys.version_info.major >= 3:
 
 
 def trim_docstring(doc):
-    """Get the docstring as a series of lines that can be sent"""
+    """Get the docstring as a series of lines that can be sent."""
     if not doc:
         return []
     lines = doc.expandtabs().splitlines()
@@ -34,7 +34,7 @@ def trim_docstring(doc):
 
 
 def clean_callable(func, config):
-    """Clean the callable. (compile regexes, fix docs, set defaults)
+    """Clean the callable. (compile regexes, fix docs, set defaults).
 
     :param func: the callable to clean
     :type func: callable

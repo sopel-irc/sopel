@@ -1,5 +1,5 @@
 # coding=utf-8
-"""Tasks that allow the bot to run, but aren't user-facing functionality
+"""Tasks that allow the bot to run, but aren't user-facing functionality.
 
 This is written as a module to make it easier to extend to support more
 responses to standard IRC codes without having to shove them all into the
@@ -84,7 +84,7 @@ def _join_event_processing(bot):
 
 
 def auth_after_register(bot):
-    """Do NickServ/AuthServ auth"""
+    """Do NickServ/AuthServ auth."""
     if bot.config.core.auth_method:
         auth_method = bot.config.core.auth_method
         auth_username = bot.config.core.auth_username
@@ -900,8 +900,8 @@ def _get_sasl_pass_and_mech(bot):
 @module.unblockable
 @module.require_admin
 def blocks(bot, trigger):
-    """
-    Manage Sopel's blocking features.\
+    """Manage Sopel's blocking features.
+
     See [ignore system documentation]({% link _usage/ignoring-people.md %}).
     """
     STRINGS = {
@@ -1088,7 +1088,7 @@ def track_topic(bot, trigger):
 
 @module.rule(r'(?u).*(.+://\S+).*')
 def handle_url_callbacks(bot, trigger):
-    """Dispatch callbacks on URLs
+    """Dispatch callbacks on URLs.
 
     For each URL found in the trigger, trigger the URL callback registered by
     the ``@url`` decorator.

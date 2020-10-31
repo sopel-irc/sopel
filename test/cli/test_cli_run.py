@@ -1,5 +1,5 @@
 # coding=utf-8
-"""Tests for command handling"""
+"""Tests for command handling."""
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 import argparse
@@ -37,7 +37,7 @@ def cd(newdir):
 
 @pytest.fixture
 def config_dir(tmpdir):
-    """Pytest fixture used to generate a temporary configuration directory"""
+    """Pytest fixture used to generate a temporary configuration directory."""
     test_dir = tmpdir.mkdir("config")
     test_dir.join('config.cfg').write('')
     test_dir.join('extra.ini').write('')
@@ -48,7 +48,7 @@ def config_dir(tmpdir):
 
 
 def test_build_parser_legacy():
-    """Assert parser's namespace exposes legacy's options (default values)"""
+    """Assert parser's namespace exposes legacy's options (default values)."""
     parser = build_parser()
     options = parser.parse_args(['legacy'])
 
@@ -178,7 +178,7 @@ def test_build_parser_legacy_list_config():
 
 
 def test_build_parser_start():
-    """Assert parser's namespace exposes start's options (default values)"""
+    """Assert parser's namespace exposes start's options (default values)."""
     parser = build_parser()
     options = parser.parse_args(['start'])
 
@@ -229,7 +229,7 @@ def test_build_parser_start_quiet():
 
 
 def test_build_parser_stop():
-    """Assert parser's namespace exposes stop's options (default values)"""
+    """Assert parser's namespace exposes stop's options (default values)."""
     parser = build_parser()
     options = parser.parse_args(['stop'])
 
@@ -280,7 +280,7 @@ def test_build_parser_stop_quiet():
 
 
 def test_build_parser_restart():
-    """Assert parser's namespace exposes restart's options (default values)"""
+    """Assert parser's namespace exposes restart's options (default values)."""
     parser = build_parser()
     options = parser.parse_args(['restart'])
 
@@ -319,7 +319,7 @@ def test_build_parser_restart_quiet():
 
 
 def test_build_parser_configure():
-    """Assert parser's namespace exposes configure's options (default values)"""
+    """Assert parser's namespace exposes configure's options (default values)."""
     parser = build_parser()
     options = parser.parse_args(['configure'])
 
@@ -358,7 +358,7 @@ def test_build_parser_configure_modules():
 
 
 def test_get_configuration(tmpdir):
-    """Assert function returns a Sopel ``Config`` object"""
+    """Assert function returns a Sopel ``Config`` object."""
     working_dir = tmpdir.mkdir("working")
     working_dir.join('default.cfg').write('\n'.join([
         '[core]',
@@ -375,7 +375,7 @@ def test_get_configuration(tmpdir):
 
 
 def test_get_pid_filename_default(configfactory):
-    """Assert function returns the default filename from given ``pid_dir``"""
+    """Assert function returns the default filename from given ``pid_dir``."""
     pid_dir = '/pid'
     settings = configfactory('default.cfg', TMP_CONFIG)
 
@@ -384,7 +384,7 @@ def test_get_pid_filename_default(configfactory):
 
 
 def test_get_pid_filename_named(configfactory):
-    """Assert function returns a specific filename when config (with extension) is set"""
+    """Assert function returns a specific filename when config (with extension) is set."""
     pid_dir = '/pid'
     settings = configfactory('test.cfg', TMP_CONFIG)
 
@@ -393,7 +393,7 @@ def test_get_pid_filename_named(configfactory):
 
 
 def test_get_pid_filename_ext_not_cfg(configfactory):
-    """Assert function keeps the config file extension when it is not cfg"""
+    """Assert function keeps the config file extension when it is not cfg."""
     pid_dir = '/pid'
     settings = configfactory('test.ini', TMP_CONFIG)
 
@@ -402,7 +402,7 @@ def test_get_pid_filename_ext_not_cfg(configfactory):
 
 
 def test_get_running_pid(tmpdir):
-    """Assert function retrieves an integer from a given filename"""
+    """Assert function retrieves an integer from a given filename."""
     pid_file = tmpdir.join('sopel.pid')
     pid_file.write('7814')
 
@@ -411,7 +411,7 @@ def test_get_running_pid(tmpdir):
 
 
 def test_get_running_pid_not_integer(tmpdir):
-    """Assert function returns None when the content is not an Integer"""
+    """Assert function returns None when the content is not an Integer."""
     pid_file = tmpdir.join('sopel.pid')
     pid_file.write('')
 
@@ -425,7 +425,7 @@ def test_get_running_pid_not_integer(tmpdir):
 
 
 def test_get_running_pid_no_file(tmpdir):
-    """Assert function returns None when there is no such file"""
+    """Assert function returns None when there is no such file."""
     pid_file = tmpdir.join('sopel.pid')
 
     result = get_running_pid(pid_file.strpath)

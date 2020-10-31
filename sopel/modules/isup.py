@@ -1,6 +1,6 @@
 # coding=utf-8
-"""
-isup.py - Sopel Website Status Check Plugin
+"""isup.py - Sopel Website Status Check Plugin.
+
 Copyright 2011, Elsie Powell http://embolalia.com
 Licensed under the Eiffel Forum License 2.
 
@@ -17,7 +17,7 @@ PLUGIN_OUTPUT_PREFIX = '[isup] '
 
 
 def get_site_url(site):
-    """Get a ``site`` URL
+    """Get a ``site`` URL.
 
     :param str site: the site to get URL for
     :return: a valid site URL
@@ -50,7 +50,7 @@ def get_site_url(site):
 
 
 def handle_isup(bot, trigger, secure=True):
-    """Handle the ``bot`` command from ``trigger``
+    """Handle the ``bot`` command from ``trigger``.
 
     :param bot: Sopel instance
     :type bot: :class:`sopel.bot.SopelWrapper`

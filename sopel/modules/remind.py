@@ -1,6 +1,6 @@
 # coding=utf-8
-"""
-remind.py - Sopel Reminder Plugin
+"""remind.py - Sopel Reminder Plugin.
+
 Copyright 2011, Sean B. Palmer, inamidst.com
 Copyright 2019, dgw, technobabbl.es
 Licensed under the Eiffel Forum License 2.
@@ -27,7 +27,7 @@ LOGGER = logging.getLogger(__name__)
 
 
 def get_filename(bot):
-    """Get the remind database's filename
+    """Get the remind database's filename.
 
     :param bot: instance of Sopel
     :type bot: :class:`sopel.bot.Sopel`
@@ -42,7 +42,7 @@ def get_filename(bot):
 
 
 def load_database(filename):
-    """Load the remind database from a file
+    """Load the remind database from a file.
 
     :param str filename: absolute path to the remind database file
     :return: a :class:`dict` of reminders stored by timestamp
@@ -84,7 +84,7 @@ def load_database(filename):
 
 
 def dump_database(filename, data):
-    """Dump the remind database into a file
+    """Dump the remind database into a file.
 
     :param str filename: absolute path to the remind database file
     :param dict data: remind database to dump
@@ -102,7 +102,7 @@ def dump_database(filename, data):
 
 
 def create_reminder(bot, trigger, duration, message):
-    """Create a reminder into the ``bot``'s database and reply to the sender
+    """Create a reminder into the ``bot``'s database and reply to the sender.
 
     :param bot: the bot's instance
     :type bot: :class:`~sopel.bot.SopelWrapper`
@@ -126,7 +126,7 @@ def create_reminder(bot, trigger, duration, message):
 
 
 def setup(bot):
-    """Load the remind database"""
+    """Load the remind database."""
     bot.rfn = get_filename(bot)
 
     # Pre-7.0 migration logic. Remove in 8.0 or 9.0.
@@ -151,7 +151,7 @@ def setup(bot):
 
 
 def shutdown(bot):
-    """Dump the remind database before shutdown"""
+    """Dump the remind database before shutdown."""
     dump_database(bot.rfn, bot.rdb)
     bot.rdb = {}
     del bot.rfn
@@ -160,7 +160,7 @@ def shutdown(bot):
 
 @plugin.interval(2.5)
 def remind_monitoring(bot):
-    """Check for reminder"""
+    """Check for reminder."""
     now = int(time.time())
     unixtimes = [int(key) for key in bot.rdb]
     oldtimes = [t for t in unixtimes if t <= now]
@@ -290,7 +290,8 @@ REGEX_AT = re.compile(
 
 
 class TimeReminder(object):
-    """Time reminder for the ``at`` command"""
+    """Time reminder for the ``at`` command."""
+
     def __init__(self,
                  hour,
                  minute,
@@ -374,7 +375,7 @@ class TimeReminder(object):
     __hash__ = None
 
     def get_duration(self, today=None):
-        """Get the duration between the reminder and ``today``
+        """Get the duration between the reminder and ``today``.
 
         :param today: aware datetime to compare to; defaults to current time
         :type today: aware :class:`datetime.datetime`
@@ -420,7 +421,7 @@ class TimeReminder(object):
 
 
 def parse_regex_match(match, default_timezone=None):
-    """Parse a time reminder from ``match``
+    """Parse a time reminder from ``match``.
 
     :param match: :obj:`~.REGEX_AT`'s matching result
     :param default_timezone: timezone used when ``match`` doesn't have one;

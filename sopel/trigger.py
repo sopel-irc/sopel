@@ -106,6 +106,7 @@ class PreTrigger(object):
         The sender's local username.
 
     """
+
     component_regex = re.compile(r'([^!]*)!?([^@]*)@?(.*)')
     intent_regex = re.compile('\x01(\\S+) ?(.*)\x01')
 
@@ -201,7 +202,7 @@ class PreTrigger(object):
 
 
 class Trigger(unicode):
-    """A line from the server, which has matched a callable's rules.
+    r"""A line from the server, which has matched a callable's rules.
 
     :param config: Sopel's current configuration settings object
     :type config: :class:`~sopel.config.Config`
@@ -220,11 +221,12 @@ class Trigger(unicode):
     command decorators auto-generate rules containing specific numbered groups
     that are documented separately. (See :attr:`group` below.)
 
-    Note that CTCP messages (``PRIVMSG``\\es and ``NOTICE``\\es which start
-    and end with ``'\\x01'``) will have the ``'\\x01'`` bytes stripped, and
+    Note that CTCP messages (``PRIVMSG``\es and ``NOTICE``\es which start
+    and end with ``'\x01'``) will have the ``'\x01'`` bytes stripped, and
     the command (e.g. ``ACTION``) placed mapped to the ``'intent'`` key in
     :attr:`Trigger.tags`.
     """
+
     sender = property(lambda self: self._pretrigger.sender)
     """Where the message arrived from.
 

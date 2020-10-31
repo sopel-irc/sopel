@@ -46,7 +46,7 @@ __all__ = [
 
 
 NOLIMIT = 1
-"""Return value for ``callable``\\s, which suppresses rate limiting.
+r"""Return value for ``callable``\s, which suppresses rate limiting.
 
 Returning this value means the triggering user will not be prevented from
 triggering the same callable again within the rate limit. This can be used,
@@ -363,7 +363,7 @@ def echo(function=None):
 
 
 def command(*command_list):
-    """Decorate a function to set one or more commands that should trigger it.
+    r"""Decorate a function to set one or more commands that should trigger it.
 
     :param str command_list: one or more command name(s) to match
 
@@ -375,11 +375,11 @@ def command(*command_list):
     Example::
 
         @command("hello")
-            # If the command prefix is "\\.", this would trigger on lines
+            # If the command prefix is "\.", this would trigger on lines
             # starting with ".hello".
 
         @command('j', 'join')
-            # If the command prefix is "\\.", this would trigger on lines
+            # If the command prefix is "\.", this would trigger on lines
             # starting with either ".j" or ".join".
 
     You can use a space in the command name to implement subcommands::
@@ -1004,7 +1004,7 @@ def url_lazy(*loaders):
 
 
 class example(object):
-    """Decorate a function with an example, and optionally test output.
+    r"""Decorate a function with an example, and optionally test output.
 
     :param str msg: the example command (required; see below)
     :param str result: the command's expected output (optional; see below)
@@ -1044,7 +1044,7 @@ class example(object):
     test suite is run, using ``msg`` as input. The exact behavior of the tests
     depends on the remaining optional ``example`` arguments.
 
-    Passing ``re=True``, in particular, is useful for matching ``result``\\s
+    Passing ``re=True``, in particular, is useful for matching ``result``\s
     that are random and/or dependent on an external API. This way, an example
     test can check the format of the result without caring about the exact data.
 
@@ -1069,6 +1069,7 @@ class example(object):
     `VCR.py <https://github.com/kevin1024/vcrpy>`_ & `pytest-vcr
     <https://github.com/ktosiek/pytest-vcr>`_)
     """
+
     def __init__(self, msg, result=None, privmsg=False, admin=False,
                  owner=False, repeat=1, re=False, ignore=None,
                  user_help=False, online=False, vcr=False):

@@ -1,6 +1,6 @@
 # coding=utf-8
-"""
-search.py - Sopel Search Engine Plugin
+"""search.py - Sopel Search Engine Plugin.
+
 Copyright 2008-9, Sean B. Palmer, inamidst.com
 Copyright 2012, Elsie Powell, embolalia.com
 Licensed under the Eiffel Forum License 2.

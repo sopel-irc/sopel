@@ -60,6 +60,7 @@ class StaticSection(object):
         Python will work just fine.
 
     """
+
     def __init__(self, config, section_name, validate=True):
         if not config.parser.has_section(section_name):
             config.parser.add_section(section_name)
@@ -149,6 +150,7 @@ class BaseValidated(object):
             settings>` using environment variables
 
     """
+
     def __init__(self, name, default=None, is_secret=False):
         self.name = name
         """Name of the attribute."""
@@ -209,7 +211,8 @@ class BaseValidated(object):
     def parse(self, value, *args, **kwargs):
         """Take a string from the file, and return the appropriate object.
 
-        Must be implemented in subclasses."""
+        Must be implemented in subclasses.
+        """
         raise NotImplementedError("Parse method must be implemented in subclass")
 
     def __get__(self, instance, owner=None):
@@ -288,6 +291,7 @@ class ValidatedAttribute(BaseValidated):
     :param bool is_secret: ``True`` when the attribute should be considered
                            a secret, like a password (default to ``False``)
     """
+
     def __init__(self,
                  name,
                  parse=None,
@@ -332,6 +336,7 @@ class SecretAttribute(ValidatedAttribute):
     This attribute is always considered to be secret/sensitive data, but
     otherwise behaves like other any option.
     """
+
     def __init__(self, name, parse=None, serialize=None, default=None):
         super(SecretAttribute, self).__init__(
             name,
@@ -403,6 +408,7 @@ class ListAttribute(BaseValidated):
         The comma delimiter fallback does not support commas within items in
         the list.
     """
+
     DELIMITER = ','
     QUOTE_REGEX = re.compile(r'^"(?P<value>#.*)"$')
     """Regex pattern to match value that requires quotation marks.
@@ -536,6 +542,7 @@ class ChoiceAttribute(BaseValidated):
                     :const:`sopel.config.types.NO_DEFAULT` (optional)
     :type default: str
     """
+
     def __init__(self, name, choices, default=None):
         super(ChoiceAttribute, self).__init__(name, default=default)
         self.choices = choices
@@ -583,6 +590,7 @@ class FilenameAttribute(BaseValidated):
                     :const:`sopel.config.types.NO_DEFAULT` (optional)
     :type default: str
     """
+
     def __init__(self, name, relative=True, directory=False, default=None):
         super(FilenameAttribute, self).__init__(name, default=default)
         self.relative = relative

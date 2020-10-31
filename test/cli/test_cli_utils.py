@@ -41,7 +41,7 @@ def cd(newdir):
 
 @pytest.fixture
 def config_dir(tmpdir):
-    """Pytest fixture used to generate a temporary configuration directory"""
+    """Pytest fixture used to generate a temporary configuration directory."""
     test_dir = tmpdir.mkdir("config")
     test_dir.join('config.cfg').write('')
     test_dir.join('extra.ini').write('')
@@ -53,7 +53,7 @@ def config_dir(tmpdir):
 
 @pytest.fixture
 def env_dir(tmpdir):
-    """Pytest fixture used to generate an extra (external) config directory"""
+    """Pytest fixture used to generate an extra (external) config directory."""
     test_dir = tmpdir.mkdir("fromenv")
     test_dir.join('fromenv.cfg').write('')
 
@@ -76,7 +76,7 @@ def test_yellow():
 
 
 def test_enumerate_configs(config_dir):
-    """Assert function retrieves only .cfg files by default"""
+    """Assert function retrieves only .cfg files by default."""
     results = list(enumerate_configs(config_dir.strpath))
 
     assert 'config.cfg' in results
@@ -92,7 +92,7 @@ def test_enumerate_configs_not_a_directory():
 
 
 def test_enumerate_configs_extension(config_dir):
-    """Assert function retrieves only files with the given extension"""
+    """Assert function retrieves only files with the given extension."""
     results = list(enumerate_configs(config_dir.strpath, '.ini'))
 
     assert 'config.cfg' not in results
@@ -103,7 +103,7 @@ def test_enumerate_configs_extension(config_dir):
 
 
 def test_find_config_local(tmpdir, config_dir):
-    """Assert function retrieves configuration file from working dir first"""
+    """Assert function retrieves configuration file from working dir first."""
     working_dir = tmpdir.mkdir("working")
     working_dir.join('local.cfg').write('')
 
@@ -116,7 +116,7 @@ def test_find_config_local(tmpdir, config_dir):
 
 
 def test_find_config_default(tmpdir, config_dir):
-    """Assert function retrieves configuration file from given config dir"""
+    """Assert function retrieves configuration file from given config dir."""
     working_dir = tmpdir.mkdir("working")
     working_dir.join('local.cfg').write('')
 
@@ -129,7 +129,7 @@ def test_find_config_default(tmpdir, config_dir):
 
 
 def test_find_config_extension(tmpdir, config_dir):
-    """Assert function retrieves configuration file with the given extension"""
+    """Assert function retrieves configuration file with the given extension."""
     working_dir = tmpdir.mkdir("working")
     working_dir.join('local.cfg').write('')
 
@@ -140,8 +140,7 @@ def test_find_config_extension(tmpdir, config_dir):
 
 
 def test_add_common_arguments():
-    """Assert function adds the ``-c``/``--config`` and ``--configdir`` options
-    """
+    """Assert function adds the ``-c``/``--config`` and ``--configdir`` options."""
     parser = argparse.ArgumentParser()
     add_common_arguments(parser)
 

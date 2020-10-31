@@ -1,5 +1,5 @@
 # coding=utf-8
-"""Useful miscellaneous tools and shortcuts for Sopel plugins
+"""Useful miscellaneous tools and shortcuts for Sopel plugins.
 
 *Availability: 3+*
 """
@@ -391,14 +391,15 @@ def get_sendable_message(text, max_length=400):
 # to the built-in ``collections`` module.
 # It is now deprecated.
 class Ddict(dict):
-    """A default dict implementation available for Python 2.x support.
+    r"""A default dict implementation available for Python 2.x support.
 
-    It was used to make multi-dimensional ``dict``\\s easy to use when the
+    It was used to make multi-dimensional ``dict``\s easy to use when the
     bot worked with Python version < 2.5.
 
     .. deprecated:: 7.0
         Use :class:`collections.defaultdict` instead.
     """
+
     @deprecated('use "collections.defaultdict" instead', '7.0', '8.0')
     def __init__(self, default=None):
         self.default = default
@@ -410,14 +411,15 @@ class Ddict(dict):
 
 
 class Identifier(unicode):
-    """A `unicode` subclass which acts appropriately for IRC identifiers.
+    r"""A `unicode` subclass which acts appropriately for IRC identifiers.
 
     When used as normal `unicode` objects, case will be preserved.
     However, when comparing two Identifier objects, or comparing a Identifier
     object with a `unicode` object, the comparison will be case insensitive.
     This case insensitivity includes the case convention conventions regarding
-    ``[]``, ``{}``, ``|``, ``\\``, ``^`` and ``~`` described in RFC 2812.
+    ``[]``, ``{}``, ``|``, ``\``, ``^`` and ``~`` described in RFC 2812.
     """
+
     # May want to tweak this and update documentation accordingly when dropping
     # Python 2 support, since in py3 plain str is Unicode and a "unicode" type
     # no longer exists. Probably lots of code will need tweaking, tbh.
@@ -459,14 +461,14 @@ class Identifier(unicode):
 
     @staticmethod
     def _lower_swapped(identifier):
-        """Backward-compatible version of :meth:`_lower`.
+        r"""Backward-compatible version of :meth:`_lower`.
 
         :param str identifier: the identifier (nickname or channel) to convert
         :return: RFC 2812-non-compliant lowercase version of ``identifier``
         :rtype: str
 
         This is what the old :meth:`_lower` function did before Sopel 7.0. It maps
-        ``{}``, ``[]``, ``|``, ``\\``, ``^``, and ``~`` incorrectly.
+        ``{}``, ``[]``, ``|``, ``\``, ``^``, and ``~`` incorrectly.
 
         You shouldn't use this unless you need to migrate stored values from the
         previous, incorrect "lowercase" representation to the correct one.
@@ -515,7 +517,7 @@ class Identifier(unicode):
         return not (self == other)
 
     def is_nick(self):
-        """Check if the Identifier is a nickname (i.e. not a channel)
+        """Check if the Identifier is a nickname (i.e. not a channel).
 
         :return: ``True`` if this :py:class:`Identifier` is a nickname;
                  ``False`` if it appears to be a channel
@@ -616,7 +618,7 @@ def check_pid(pid):
 
 
 def get_hostmask_regex(mask):
-    """Get a compiled regex pattern for an IRC hostmask
+    """Get a compiled regex pattern for an IRC hostmask.
 
     :param str mask: the hostmask that the pattern should match
     :return: a compiled regex pattern matching the given ``mask``
@@ -665,6 +667,7 @@ class SopelMemory(dict):
     .. versionchanged:: 6.0
         Renamed from ``WillieMemory`` to ``SopelMemory``
     """
+
     def __init__(self, *args):
         dict.__init__(self, *args)
         self.lock = threading.Lock()
@@ -697,7 +700,7 @@ class SopelMemory(dict):
 
     @deprecated
     def contains(self, key):
-        """Check if ``key`` is in the memory
+        """Check if ``key`` is in the memory.
 
         :param str key: key to check for
 
@@ -716,6 +719,7 @@ class SopelMemoryWithDefault(defaultdict):
     .. versionchanged:: 6.0
         Renamed to ``SopelMemoryWithDefault``
     """
+
     def __init__(self, *args):
         defaultdict.__init__(self, *args)
         self.lock = threading.Lock()
@@ -742,7 +746,7 @@ class SopelMemoryWithDefault(defaultdict):
 
     @deprecated
     def contains(self, key):
-        """Check if ``key`` is in the memory
+        """Check if ``key`` is in the memory.
 
         :param str key: key to check for
 
@@ -783,6 +787,7 @@ class SopelIdentifierMemory(SopelMemory):
 
     .. versionadded:: 7.1
     """
+
     def __getitem__(self, key):
         return super(SopelIdentifierMemory, self).__getitem__(Identifier(key))
 

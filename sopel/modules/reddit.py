@@ -1,6 +1,6 @@
 # coding=utf-8
-"""
-reddit.py - Sopel Reddit Plugin
+"""reddit.py - Sopel Reddit Plugin.
+
 Copyright 2012, Elsie Powell, embolalia.com
 Copyright 2019, dgw, technobabbl.es
 Copyright 2019, deathbybandaid, deathbybandaid.net

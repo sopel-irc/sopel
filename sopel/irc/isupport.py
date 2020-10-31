@@ -172,6 +172,7 @@ class ISupport(object):
 
     .. __: https://modern.ircdocs.horse/#rplisupport-parameters
     """
+
     def __init__(self, **kwargs):
         self.__isupport = dict(
             (key.upper(), value)

@@ -60,6 +60,7 @@ LOGGER = logging.getLogger(__name__)
 
 class AbstractBot(object):
     """Abstract definition of Sopel's interface."""
+
     def __init__(self, settings):
         # private properties: access as read-only properties
         self._nick = tools.Identifier(settings.core.nick)
@@ -414,7 +415,7 @@ class AbstractBot(object):
             self._cap_reqs[cap] = entry
 
     def write(self, args, text=None):
-        """Send a command to the server.
+        r"""Send a command to the server.
 
         :param args: an iterable of strings, which will be joined by spaces
         :type args: :term:`iterable`
@@ -431,7 +432,7 @@ class AbstractBot(object):
         and ``sopel.write(('PRIVMSG', ':Hello, world!'))`` will send
         ``PRIVMSG :Hello, world!`` to the server.
 
-        Newlines and carriage returns (``'\\n'`` and ``'\\r'``) are removed
+        Newlines and carriage returns (``'\n'`` and ``'\r'``) are removed
         before sending. Additionally, if the message (after joining) is longer
         than than 510 characters, any remaining characters will not be sent.
 

@@ -1,6 +1,6 @@
 # coding=utf-8
-"""
-units.py - Sopel Unit Conversion Plugin
+"""units.py - Sopel Unit Conversion Plugin.
+
 Copyright © 2013, Elad Alfassa, <elad@fedoraproject.org>
 Copyright © 2013, Dimitri Molenaars, <tyrope@tyrope.nl>
 Licensed under the Eiffel Forum License 2.
@@ -43,7 +43,7 @@ def k_to_c(temp):
 @plugin.example('.temp 100K', '-173.15°C = -279.67°F = 100.00K')
 @plugin.output_prefix(PLUGIN_OUTPUT_PREFIX)
 def temperature(bot, trigger):
-    """Convert temperatures"""
+    """Convert temperatures."""
     try:
         source = find_temp.match(trigger.group(2)).groups()
     except (AttributeError, TypeError):
@@ -86,7 +86,7 @@ def temperature(bot, trigger):
 @plugin.example('.length 3 parsec', '92570329129020.20km = 57520535754731.61 miles')
 @plugin.output_prefix(PLUGIN_OUTPUT_PREFIX)
 def distance(bot, trigger):
-    """Convert distances"""
+    """Convert distances."""
     try:
         source = find_length.match(trigger.group(2)).groups()
     except (AttributeError, TypeError):
@@ -157,7 +157,7 @@ def distance(bot, trigger):
 @plugin.command('weight', 'mass')
 @plugin.output_prefix(PLUGIN_OUTPUT_PREFIX)
 def mass(bot, trigger):
-    """Convert mass"""
+    """Convert mass."""
     try:
         source = find_mass.match(trigger.group(2)).groups()
     except (AttributeError, TypeError):

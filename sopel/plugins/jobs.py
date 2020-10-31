@@ -27,7 +27,7 @@ LOGGER = logging.getLogger(__name__)
 
 
 class Scheduler(jobs.Scheduler):
-    """Plugins's Job Scheduler
+    """Plugins's Job Scheduler.
 
     :param manager: bot instance passed to jobs as argument
     :type manager: :class:`sopel.bot.Sopel`
@@ -50,6 +50,7 @@ class Scheduler(jobs.Scheduler):
         a job, plugin authors should use :func:`sopel.plugin.interval`.
 
     """
+
     def __init__(self, manager):
         super(Scheduler, self).__init__(manager)
         self._jobs = tools.SopelMemoryWithDefault(list)

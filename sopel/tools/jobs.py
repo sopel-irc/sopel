@@ -64,6 +64,7 @@ class Scheduler(threading.Thread):
         rapid changes between versions without much (or any) warning.
 
     """
+
     def __init__(self, manager):
         threading.Thread.__init__(self)
         self.manager = manager
@@ -252,6 +253,7 @@ class Job(object):
         generic job scheduler.
 
     """
+
     @classmethod
     def kwargs_from_callable(cls, handler):
         """Generate the keyword arguments to create a new instance.
@@ -268,7 +270,6 @@ class Job(object):
         The expected attributes are the ones set by decorators from the
         :mod:`sopel.plugin` module.
         """
-
         return {
             'plugin': getattr(handler, 'plugin_name', None),
             'label': getattr(handler, 'rule_label', None),

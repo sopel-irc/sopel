@@ -1096,6 +1096,7 @@ class SopelWrapper(object):
     to the sender (either a channel or in a private message) and even to
     :meth:`reply to someone<reply>` in a channel.
     """
+
     def __init__(self, sopel, trigger, output_prefix=''):
         if not output_prefix:
             # Just in case someone passes in False, None, etc.
@@ -1200,7 +1201,7 @@ class SopelWrapper(object):
         self._bot.reply(message, destination, reply_to, notice)
 
     def kick(self, nick, channel=None, message=None):
-        """Override ``Sopel.kick`` to kick in a channel
+        """Override ``Sopel.kick`` to kick in a channel.
 
         :param str nick: nick to kick out of the ``channel``
         :param str channel: optional channel to kick ``nick`` from

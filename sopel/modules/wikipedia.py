@@ -1,6 +1,6 @@
 # coding=utf-8
-"""
-wikipedia.py - Sopel Wikipedia Plugin
+"""wikipedia.py - Sopel Wikipedia Plugin.
+
 Copyright 2013 Elsie Powell - embolalia.com
 Licensed under the Eiffel Forum License 2.
 
@@ -100,10 +100,10 @@ def setup(bot):
 
 
 def configure(config):
-    """
+    r"""
     | name | example | purpose |
     | ---- | ------- | ------- |
-    | default\\_lang | en | The default language to find articles from (same as Wikipedia language subdomain) |
+    | default\_lang | en | The default language to find articles from (same as Wikipedia language subdomain) |
     """
     config.define_section('wikipedia', WikipediaSection)
     config.wikipedia.configure_setting(
@@ -133,7 +133,7 @@ def choose_lang(bot, trigger):
 
 
 def mw_search(server, query, num):
-    """Search a MediaWiki site
+    """Search a MediaWiki site.
 
     Searches the specified MediaWiki server for the given query, and returns
     the specified number of results.

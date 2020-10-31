@@ -1,6 +1,6 @@
 # coding=utf-8
-"""
-choose.py - Sopel Choice Plugin
+"""choose.py - Sopel Choice Plugin.
+
 Copyright 2010-2013, Dimitri "Tyrope" Molenaars, TyRope.nl
 Copyright 2013, Ari Koivula, <ari@koivu.la>
 Copyright 2018, Florian Strzelecki, <florian.strzelecki@gmail.com>

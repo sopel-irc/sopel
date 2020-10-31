@@ -1,6 +1,6 @@
 # coding=utf-8
-"""
-tell.py - Sopel Tell and Ask Plugin
+"""tell.py - Sopel Tell and Ask Plugin.
+
 Copyright 2008, Sean B. Palmer, inamidst.com
 Copyright 2019, dgw, technobabbl.es
 Licensed under the Eiffel Forum License 2.
@@ -134,7 +134,7 @@ def shutdown(bot):
 @plugin.nickname_command('tell', 'ask')
 @plugin.example('$nickname, tell dgw he broke something again.')
 def f_remind(bot, trigger):
-    """Give someone a message the next time they're seen"""
+    """Give someone a message the next time they're seen."""
     teller = trigger.nick
     verb = trigger.group(1)
 

@@ -80,6 +80,7 @@ class ConfigurationError(Exception):
 
     :param str value: a description of the error that has occurred
     """
+
     def __init__(self, value):
         self.value = value
 
@@ -92,6 +93,7 @@ class ConfigurationNotFound(ConfigurationError):
 
     :param str filename: file path that could not be found
     """
+
     def __init__(self, filename):
         super(ConfigurationNotFound, self).__init__(None)
         self.filename = filename
@@ -118,6 +120,7 @@ class Config(object):
     Sopel to run. All other sections must be defined later, by the code that
     needs them, using :meth:`define_section`.
     """
+
     def __init__(self, filename, validate=True):
         self.filename = filename
         """The config object's associated file."""
@@ -215,11 +218,11 @@ class Config(object):
             return False
 
     def define_section(self, name, cls_, validate=True):
-        """Define the available settings in a section.
+        r"""Define the available settings in a section.
 
         :param str name: name of the new section
-        :param cls\\_: :term:`class` defining the settings within the section
-        :type cls\\_: subclass of :class:`~.types.StaticSection`
+        :param cls\_: :term:`class` defining the settings within the section
+        :type cls\_: subclass of :class:`~.types.StaticSection`
         :param bool validate: whether to validate the section's values
                               (optional; defaults to ``True``)
         :raise ValueError: if the section ``name`` has been defined already with
@@ -260,16 +263,17 @@ class Config(object):
         setattr(self, name, cls_(self, name, validate=validate))
 
     class ConfigSection(object):
-        """Represents a section of the config file.
+        r"""Represents a section of the config file.
 
         :param str name: name of this section
         :param items: key-value pairs
-        :type items: :term:`iterable` of two-item :class:`tuple`\\s
+        :type items: :term:`iterable` of two-item :class:`tuple`\s
         :param parent: this section's containing object
         :type parent: :class:`Config`
 
         Contains all keys in the section as attributes.
         """
+
         def __init__(self, name, items, parent):
             object.__setattr__(self, '_name', name)
             object.__setattr__(self, '_parent', parent)

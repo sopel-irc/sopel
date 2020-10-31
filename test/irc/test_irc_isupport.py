@@ -1,5 +1,5 @@
 # coding=utf-8
-"""Tests for core ``sopel.irc.isupport``"""
+"""Tests for core ``sopel.irc.isupport``."""
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 import pytest

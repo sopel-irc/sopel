@@ -1,6 +1,6 @@
 # coding=utf-8
-"""
-safety.py - Alerts about malicious URLs
+"""safety.py - Alerts about malicious URLs.
+
 Copyright © 2014, Elad Alfassa, <elad@fedoraproject.org>
 Licensed under the Eiffel Forum License 2.
 
@@ -58,12 +58,12 @@ class SafetySection(types.StaticSection):
 
 
 def configure(config):
-    """
+    r"""
     | name | example | purpose |
     | ---- | ------- | ------- |
-    | enabled\\_by\\_default | True | Enable URL safety in all channels where it isn't explicitly disabled. |
-    | known\\_good | sopel.chat,dftba.net | List of "known good" domains to ignore. |
-    | vt\\_api\\_key | 0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef | Optional VirusTotal API key to improve malicious URL detection |
+    | enabled\_by\_default | True | Enable URL safety in all channels where it isn't explicitly disabled. |
+    | known\_good | sopel.chat,dftba.net | List of "known good" domains to ignore. |
+    | vt\_api\_key | 0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef | Optional VirusTotal API key to improve malicious URL detection |
     """
     config.define_section('safety', SafetySection)
     config.safety.configure_setting(
@@ -209,7 +209,7 @@ def url_handler(bot, trigger):
 @plugin.command('safety')
 @plugin.output_prefix(PLUGIN_OUTPUT_PREFIX)
 def toggle_safety(bot, trigger):
-    """Set safety setting for channel"""
+    """Set safety setting for channel."""
     if not trigger.admin and bot.channels[trigger.sender].privileges[trigger.nick] < plugin.OP:
         bot.reply('Only channel operators can change safety settings')
         return

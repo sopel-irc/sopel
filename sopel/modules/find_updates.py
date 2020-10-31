@@ -1,6 +1,6 @@
 # coding=utf-8
-"""
-find_updates.py - Sopel Update Check Plugin
+"""find_updates.py - Sopel Update Check Plugin.
+
 This is separated from version.py, so that it can be easily overridden by
 distribution packagers, and they can check their repositories rather than the
 Sopel website.

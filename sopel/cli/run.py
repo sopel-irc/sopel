@@ -1,7 +1,7 @@
 #!/usr/bin/env python2.7
 # coding=utf-8
-"""
-Sopel - An IRC Bot
+"""Sopel - An IRC Bot.
+
 Copyright 2008, Sean B. Palmer, inamidst.com
 Copyright © 2012-2014, Elad Alfassa <elad@fedoraproject.org>
 Licensed under the Eiffel Forum License 2.

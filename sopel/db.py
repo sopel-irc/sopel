@@ -47,12 +47,14 @@ MYSQL_TABLE_ARGS = {'mysql_engine': 'InnoDB',
 
 class NickIDs(BASE):
     """Nick IDs table SQLAlchemy class."""
+
     __tablename__ = 'nick_ids'
     nick_id = Column(Integer, primary_key=True)
 
 
 class Nicknames(BASE):
     """Nicknames table SQLAlchemy class."""
+
     __tablename__ = 'nicknames'
     __table_args__ = MYSQL_TABLE_ARGS
     nick_id = Column(Integer, ForeignKey('nick_ids.nick_id'), primary_key=True)
@@ -62,6 +64,7 @@ class Nicknames(BASE):
 
 class NickValues(BASE):
     """Nick values table SQLAlchemy class."""
+
     __tablename__ = 'nick_values'
     __table_args__ = MYSQL_TABLE_ARGS
     nick_id = Column(Integer, ForeignKey('nick_ids.nick_id'), primary_key=True)
@@ -71,6 +74,7 @@ class NickValues(BASE):
 
 class ChannelValues(BASE):
     """Channel values table SQLAlchemy class."""
+
     __tablename__ = 'channel_values'
     __table_args__ = MYSQL_TABLE_ARGS
     channel = Column(String(255), primary_key=True)
@@ -80,6 +84,7 @@ class ChannelValues(BASE):
 
 class PluginValues(BASE):
     """Plugin values table SQLAlchemy class."""
+
     __tablename__ = 'plugin_values'
     __table_args__ = MYSQL_TABLE_ARGS
     plugin = Column(String(255), primary_key=True)
@@ -862,7 +867,7 @@ class SopelDB(object):
             return self.get_channel_value(name, key, default)
 
     def get_preferred_value(self, names, key):
-        """Get a value for the first name which has it set.
+        r"""Get a value for the first name which has it set.
 
         :param list names: a list of channel names and/or nicknames
         :param str key: the name by which the desired value was saved
@@ -878,7 +883,7 @@ class SopelDB(object):
         .. note::
 
             This is the only ``get_*_value()`` method that does not support
-            passing a ``default``. Try to avoid using it on ``key``\\s which
+            passing a ``default``. Try to avoid using it on ``key``\s which
             might have ``None`` as a valid value, to avoid ambiguous logic.
 
         """

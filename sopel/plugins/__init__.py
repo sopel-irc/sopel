@@ -1,5 +1,5 @@
 # coding=utf-8
-"""Sopel's plugins interface
+"""Sopel's plugins interface.
 
 .. versionadded:: 7.0
 
@@ -57,7 +57,7 @@ def _list_plugin_filenames(directory):
 
 
 def find_internal_plugins():
-    """List internal plugins
+    """List internal plugins.
 
     :return: Yield instance of :class:`~.handlers.PyModulePlugin`
              configured for ``sopel.modules.*``
@@ -72,7 +72,7 @@ def find_internal_plugins():
 
 
 def find_sopel_modules_plugins():
-    """List plugins from ``sopel_modules.*``
+    """List plugins from ``sopel_modules.*``.
 
     :return: Yield instance of :class:`~.handlers.PyModulePlugin`
              configured for ``sopel_modules.*``
@@ -88,7 +88,7 @@ def find_sopel_modules_plugins():
 
 
 def find_entry_point_plugins(group='sopel.plugins'):
-    """List plugins from a setuptools entry point group
+    """List plugins from a setuptools entry point group.
 
     :param str group: setuptools entry point group to look for
                       (defaults to ``sopel.plugins``)
@@ -100,7 +100,7 @@ def find_entry_point_plugins(group='sopel.plugins'):
 
 
 def find_directory_plugins(directory):
-    """List plugins from a ``directory``
+    """List plugins from a ``directory``.
 
     :param str directory: Directory path to search
     :return: Yield instance of :class:`~.handlers.PyFilePlugin`
@@ -111,7 +111,7 @@ def find_directory_plugins(directory):
 
 
 def enumerate_plugins(settings):
-    """Yield Sopel's plugins
+    """Yield Sopel's plugins.
 
     :param settings: Sopel's configuration
     :type settings: :class:`sopel.config.Config`
@@ -181,7 +181,7 @@ def enumerate_plugins(settings):
 
 
 def get_usable_plugins(settings):
-    """Get usable plugins, unique per name
+    """Get usable plugins, unique per name.
 
     :param settings: Sopel's configuration
     :type settings: :class:`sopel.config.Config`

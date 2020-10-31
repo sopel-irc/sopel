@@ -1,5 +1,5 @@
 # coding=utf-8
-"""Tests for Sopel's ``tell`` plugin"""
+"""Tests for Sopel's ``tell`` plugin."""
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 import datetime

@@ -15,6 +15,7 @@ class User(object):
     :param str user: the user's local username ("user" in `user@host.name`)
     :param str host: the user's hostname ("host.name" in `user@host.name`)
     """
+
     def __init__(self, nick, user, host):
         assert isinstance(nick, Identifier)
         self.nick = nick
@@ -59,6 +60,7 @@ class Channel(object):
     :param name: the channel name
     :type name: :class:`~.tools.Identifier`
     """
+
     def __init__(self, name):
         assert isinstance(name, Identifier)
         self.name = name

@@ -1,5 +1,5 @@
 # coding=utf-8
-"""coretasks.py tests"""
+"""coretasks.py tests."""
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 import pytest

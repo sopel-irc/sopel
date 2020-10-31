@@ -1,5 +1,5 @@
 # coding=utf-8
-"""Tests for core ``sopel.bot`` module"""
+"""Tests for core ``sopel.bot`` module."""
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 import re
@@ -874,7 +874,7 @@ def test_unregister_url_callback(tmpconfig):
 
 
 def test_unregister_url_callback_no_memory(tmpconfig):
-    """Test unregister_url_callback behavior when bot.memory empty"""
+    """Test unregister_url_callback behavior when bot.memory empty."""
     test_pattern = r'https://(www\.)?example\.com'
 
     def url_handler(*args, **kwargs):
@@ -887,7 +887,7 @@ def test_unregister_url_callback_no_memory(tmpconfig):
 
 # Remove once manual callback management is deprecated (8.0)
 def test_unregister_url_callback_manual(tmpconfig):
-    """Test unregister_url_callback removes a specific callback that was added manually"""
+    """Test unregister_url_callback removes a specific callback that was added manually."""
     test_pattern = r'https://(www\.)?example\.com'
 
     def url_handler(*args, **kwargs):

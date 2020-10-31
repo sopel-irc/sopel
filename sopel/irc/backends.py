@@ -72,6 +72,7 @@ class AsynchatBackend(AbstractIRCBackend, asynchat.async_chat):
     :param int server_timeout: connection timeout in seconds
     :param int ping_timeout: ping timeout in seconds
     """
+
     def __init__(self, bot, server_timeout=None, ping_timeout=None, **kwargs):
         AbstractIRCBackend.__init__(self, bot)
         asynchat.async_chat.__init__(self)
@@ -230,6 +231,7 @@ class SSLAsynchatBackend(AsynchatBackend):
     :param str ca_certs: filesystem path to a CA Certs file containing trusted
                          root certificates
     """
+
     def __init__(self, bot, verify_ssl=True, ca_certs=None, **kwargs):
         AsynchatBackend.__init__(self, bot, **kwargs)
         self.verify_ssl = verify_ssl

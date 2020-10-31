@@ -1,6 +1,6 @@
 # coding=utf-8
-"""
-adminchannel.py - Sopel Channel Admin Plugin
+"""adminchannel.py - Sopel Channel Admin Plugin.
+
 Copyright 2010-2011, Michael Yanovich, Alek Rollyson, and Elsie Powell
 Copyright © 2012, Elad Alfassa <elad@fedoraproject.org>
 Licensed under the Eiffel Forum License 2.
@@ -158,7 +158,7 @@ def configureHostMask(mask):
 @plugin.command('ban')
 @plugin.priority('high')
 def ban(bot, trigger):
-    """Ban a user from the channel
+    """Ban a user from the channel.
 
     The bot must be a channel operator for this command to work.
     """
@@ -187,7 +187,7 @@ def ban(bot, trigger):
 @plugin.require_privilege(plugin.OP, ERROR_MESSAGE_NO_PRIV)
 @plugin.command('unban')
 def unban(bot, trigger):
-    """Unban a user from the channel
+    """Unban a user from the channel.
 
     The bot must be a channel operator for this command to work.
     """
@@ -216,7 +216,7 @@ def unban(bot, trigger):
 @plugin.require_privilege(plugin.OP, ERROR_MESSAGE_NO_PRIV)
 @plugin.command('quiet')
 def quiet(bot, trigger):
-    """Quiet a user
+    """Quiet a user.
 
     The bot must be a channel operator for this command to work.
     """
@@ -245,7 +245,7 @@ def quiet(bot, trigger):
 @plugin.require_privilege(plugin.OP, ERROR_MESSAGE_NO_PRIV)
 @plugin.command('unquiet')
 def unquiet(bot, trigger):
-    """Unquiet a user
+    """Unquiet a user.
 
     The bot must be a channel operator for this command to work.
     """
@@ -276,7 +276,7 @@ def unquiet(bot, trigger):
 @plugin.example('.kickban [#chan] user1 user!*@* get out of here')
 @plugin.priority('high')
 def kickban(bot, trigger):
-    """Kick and ban a user from the channel
+    """Kick and ban a user from the channel.
 
     The bot must be a channel operator for this command to work.
     """
@@ -311,7 +311,7 @@ def kickban(bot, trigger):
 @plugin.require_privilege(plugin.OP, ERROR_MESSAGE_NO_PRIV)
 @plugin.command('topic')
 def topic(bot, trigger):
-    """Change the channel topic
+    """Change the channel topic.
 
     The bot must be a channel operator for this command to work.
     """
@@ -347,7 +347,7 @@ def topic(bot, trigger):
 @plugin.require_privilege(plugin.OP, ERROR_MESSAGE_NO_PRIV)
 @plugin.command('tmask')
 def set_mask(bot, trigger):
-    """Set the topic mask to use for the current channel
+    """Set the topic mask to use for the current channel.
 
     Within the topic mask, {} is used to allow substituting in chunks of text.
 

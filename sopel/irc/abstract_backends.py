@@ -16,6 +16,7 @@ class AbstractIRCBackend(object):
     Some methods of this class **MUST** be overridden by a subclass, or the
     backend implementation will not function correctly.
     """
+
     def __init__(self, bot):
         self.bot = bot
 

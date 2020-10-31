@@ -1,6 +1,6 @@
 # coding=utf-8
-"""
-find.py - Sopel Spelling Correction Plugin
+"""find.py - Sopel Spelling Correction Plugin.
+
 This plugin will fix spelling errors if someone corrects them
 using the sed notation (s///) commonly found in vi/vim.
 
@@ -40,7 +40,7 @@ def shutdown(bot):
 @plugin.require_chanmsg
 @plugin.unblockable
 def collectlines(bot, trigger):
-    """Create a temporary log of what people say"""
+    """Create a temporary log of what people say."""
     # Add a log for the channel and nick, if there isn't already one
     if trigger.sender not in bot.memory['find_lines']:
         bot.memory['find_lines'][trigger.sender] = SopelIdentifierMemory()

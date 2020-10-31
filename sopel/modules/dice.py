@@ -1,6 +1,6 @@
 # coding=utf-8
-"""
-dice.py - Sopel Dice Plugin
+"""dice.py - Sopel Dice Plugin.
+
 Copyright 2010-2013, Dimitri "Tyrope" Molenaars, TyRope.nl
 Copyright 2013, Ari Koivula, <ari@koivu.la>
 Licensed under the Eiffel Forum License 2.
@@ -50,7 +50,6 @@ class DicePouch:
         Args:
             n: the number of dice to drop.
         """
-
         sorted_x = sorted(self.dice.items(), key=operator.itemgetter(0))
 
         for i, count in sorted_x:

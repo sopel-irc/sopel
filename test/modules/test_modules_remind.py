@@ -1,5 +1,5 @@
 # coding=utf-8
-"""Tests for Sopel's ``remind`` plugin"""
+"""Tests for Sopel's ``remind`` plugin."""
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 from datetime import datetime
@@ -235,7 +235,7 @@ def test_timereminder_get_duration(tz_name,
                                    date1, date2, date3,
                                    expected1,
                                    expected2):
-    """Assert result of ``get_duration`` from reminder
+    """Assert result of ``get_duration`` from reminder.
 
     :param str tz_name: the timezone used to generate aware today & reminder
     :param str date1: numeric value given for date1 of reminder

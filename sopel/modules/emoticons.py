@@ -1,6 +1,6 @@
 # coding=utf-8
-"""
-emoticons.py - Sopel Emoticons Plugin
+"""emoticons.py - Sopel Emoticons Plugin.
+
 Copyright 2018, brasstax
 Licensed under the Eiffel Forum License 2
 

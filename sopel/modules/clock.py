@@ -1,5 +1,5 @@
 # coding=utf-8
-"""clock.py - Sopel Clock Plugin
+"""clock.py - Sopel Clock Plugin.
 
 Copyright 2008-9, Sean B. Palmer, inamidst.com
 Copyright 2012, Elsie Powell, embolalia.com

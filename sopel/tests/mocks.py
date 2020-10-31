@@ -15,6 +15,7 @@ class MockIRCBackend(AbstractIRCBackend):
     This backend doesn't require an actual connection. Instead, it stores every
     message sent in the :attr:`message_sent` list.
     """
+
     def __init__(self, *args, **kwargs):
         super(MockIRCBackend, self).__init__(*args, **kwargs)
         self.message_sent = []
@@ -43,6 +44,7 @@ class MockIRCServer(object):
     create such mock object, either directly or by using ``py.test`` and the
     :func:`~sopel.tests.pytest_plugin.ircfactory` fixture.
     """
+
     def __init__(self, bot):
         self.bot = bot
 
@@ -103,7 +105,7 @@ class MockIRCServer(object):
         self.bot.on_message(message)
 
     def mode_set(self, channel, flags, users):
-        """Send a MODE event for a ``channel``
+        """Send a MODE event for a ``channel``.
 
         :param str channel: channel receiving the MODE event
         :param str flags: MODE flags set
@@ -196,6 +198,7 @@ class MockUser(object):
     create such mock object, either directly or by using ``py.test`` and the
     :func:`~sopel.tests.pytest_plugin.userfactory` fixture.
     """
+
     def __init__(self, nick=None, user=None, host=None):
         self.nick = nick or 'Test'
         self.user = user or self.nick.lower()

@@ -1,6 +1,6 @@
 # coding=utf-8
-"""
-url.py - Sopel URL Title Plugin
+"""url.py - Sopel URL Title Plugin.
+
 Copyright 2010-2011, Michael Yanovich (yanovich.net) & Kenneth Sham
 Copyright 2012-2013, Elsie Powell
 Copyright 2013, Lior Ramati <firerogue517@gmail.com>
@@ -73,15 +73,15 @@ class UrlSection(types.StaticSection):
 
 
 def configure(config):
-    """
+    r"""
     | name | example | purpose |
     | ---- | ------- | ------- |
     | enable_auto_title | yes | Enable auto-title. |
-    | exclude | https?://git\\\\.io/.* | A list of regular expressions for URLs for which the title should not be shown. |
-    | exclusion\\_char | ! | A character (or string) which, when immediately preceding a URL, will stop the URL's title from being shown. |
-    | shorten\\_url\\_length | 72 | If greater than 0, the title fetcher will include a TinyURL version of links longer than this many characters. |
-    | enable\\_private\\_resolution | False | Enable URL lookups for RFC1918 addresses. |
-    | enable\\_dns\\_resolution | False | Enable DNS resolution for all domains to validate if there are RFC1918 resolutions. |
+    | exclude | https?://git\\.io/.* | A list of regular expressions for URLs for which the title should not be shown. |
+    | exclusion\_char | ! | A character (or string) which, when immediately preceding a URL, will stop the URL's title from being shown. |
+    | shorten\_url\_length | 72 | If greater than 0, the title fetcher will include a TinyURL version of links longer than this many characters. |
+    | enable\_private\_resolution | False | Enable URL lookups for RFC1918 addresses. |
+    | enable\_dns\_resolution | False | Enable DNS resolution for all domains to validate if there are RFC1918 resolutions. |
     """
     config.define_section('url', UrlSection)
     config.url.configure_setting(
@@ -364,7 +364,7 @@ def get_hostname(url):
 
 
 def get_or_create_shorturl(bot, url):
-    """Get or create a short URL for ``url``
+    """Get or create a short URL for ``url``.
 
     :param bot: Sopel instance
     :param str url: URL to get or create a short URL for
@@ -386,7 +386,7 @@ def get_or_create_shorturl(bot, url):
 
 
 def get_tinyurl(url):
-    """Returns a shortened tinyURL link of the URL"""
+    """Returns a shortened tinyURL link of the URL."""
     base_url = "https://tinyurl.com/api-create.php"
     tinyurl = "%s?%s" % (base_url, web.urlencode({'url': url}))
     try:

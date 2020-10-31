@@ -1,6 +1,6 @@
 # coding=utf-8
-"""
-currency.py - Sopel Currency Conversion Plugin
+"""currency.py - Sopel Currency Conversion Plugin.
+
 Copyright 2013, Elsie Powell, embolalia.com
 Copyright 2019, Mikkel Jeppesen
 Licensed under the Eiffel Forum License 2.
@@ -47,11 +47,11 @@ class CurrencySection(types.StaticSection):
 
 
 def configure(config):
-    """
+    r"""
     | name | example | purpose |
     | ---- | ------- | ------- |
-    | auto\\_convert | False | Whether to convert currencies without an explicit command |
-    | fixer\\_io\\_key | 0123456789abcdef0123456789abcdef | Optional API key for Fixer.io (increases currency support) |
+    | auto\_convert | False | Whether to convert currencies without an explicit command |
+    | fixer\_io\_key | 0123456789abcdef0123456789abcdef | Optional API key for Fixer.io (increases currency support) |
     """
     config.define_section('currency', CurrencySection, validate=False)
     config.currency.configure_setting('fixer_io_key', 'Optional API key for Fixer.io (leave blank to use exchangeratesapi.io):')
@@ -86,7 +86,7 @@ def build_reply(amount, base, target, out_string):
 
 
 def exchange(bot, match):
-    """Show the exchange rate between two currencies"""
+    """Show the exchange rate between two currencies."""
     if not match:
         bot.reply(UNRECOGNIZED_INPUT)
         return

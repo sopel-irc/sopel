@@ -140,6 +140,7 @@ class Manager(object):
     :meth:`get_triggered_rules`, which returns a list of ``(rule, match)``,
     sorted by priorities (high first, medium second, and low last).
     """
+
     def __init__(self):
         self._rules = tools.SopelMemoryWithDefault(list)
         self._commands = tools.SopelMemoryWithDefault(dict)
@@ -403,6 +404,7 @@ class AbstractRule(object):
     * and finally, trigger execution (i.e. actually doing something)
 
     """
+
     @classmethod
     def from_callable(cls, settings, handler):
         """Instantiate a rule object from ``settings`` and ``handler``.
@@ -641,13 +643,13 @@ class AbstractRule(object):
 
 
 class Rule(AbstractRule):
-    """Generic rule definition.
+    r"""Generic rule definition.
 
     A generic rule (or simply "a rule") uses regular expressions to match
     at most once per IRC line per regular expression, i.e. you can trigger
     between 0 and the number of regex the rule has per IRC line.
 
-    Here is an example with a rule with the pattern ``r'hello (\\w+)'``:
+    Here is an example with a rule with the pattern ``r'hello (\w+)'``:
 
     .. code-block:: irc
 
@@ -659,6 +661,7 @@ class Rule(AbstractRule):
     Generic rules are not triggered by any specific name, unlike commands which
     have names and aliases.
     """
+
     @classmethod
     def kwargs_from_callable(cls, handler):
         """Generate the keyword arguments to create a new instance.
@@ -938,6 +941,7 @@ class NamedRuleMixin(object):
 
     A named rule can be invoked by using one of its aliases, also.
     """
+
     @property
     def name(self):
         return self._name
@@ -1017,6 +1021,7 @@ class Command(NamedRuleMixin, Rule):
         <Bot> You just invoked the command 'dummy' (as 'dummy-alias')
 
     """
+
     @classmethod
     def from_callable(cls, settings, handler):
         prefix = settings.core.prefix
@@ -1124,6 +1129,7 @@ class NickCommand(NamedRuleMixin, Rule):
 
     Apart from that, it behaves exactly like a :class:`generic rule <Rule>`.
     """
+
     @classmethod
     def from_callable(cls, settings, handler):
         nick = settings.core.nick
@@ -1225,6 +1231,7 @@ class ActionCommand(NamedRuleMixin, Rule):
 
     Apart from that, it behaves exactly like a :class:`generic rule <Rule>`.
     """
+
     INTENT_REGEX = re.compile(r'ACTION', re.IGNORECASE)
 
     @classmethod
@@ -1288,14 +1295,14 @@ class ActionCommand(NamedRuleMixin, Rule):
 
 
 class FindRule(Rule):
-    """Anonymous find rule definition.
+    r"""Anonymous find rule definition.
 
     A find rule is like an anonymous rule with a twist: instead of matching
     only once per IRC line, a find rule will execute for each non-overlapping
     match for each of its regular expressions.
 
     For example, to match for each word starting with the letter ``h`` in a line,
-    you can use the pattern ``h\\w+``:
+    you can use the pattern ``h\w+``:
 
     .. code-block:: irc
 
@@ -1311,6 +1318,7 @@ class FindRule(Rule):
         see the official Python documentation.
 
     """
+
     @classmethod
     def from_callable(cls, settings, handler):
         regexes = tuple(handler.find_rules)
@@ -1326,14 +1334,14 @@ class FindRule(Rule):
 
 
 class SearchRule(Rule):
-    """Anonymous search rule definition.
+    r"""Anonymous search rule definition.
 
     A search rule is like an anonymous rule with a twist: it will execute
     exactly once per regular expression that matches anywhere in a line, not
     just from the start.
 
     For example, to search if any word starts with the letter ``h`` in a line,
-    you can use the pattern ``h\\w+``:
+    you can use the pattern ``h\w+``:
 
     .. code-block:: irc
 
@@ -1351,6 +1359,7 @@ class SearchRule(Rule):
         see the official Python documentation.
 
     """
+
     @classmethod
     def from_callable(cls, settings, handler):
         regexes = tuple(handler.search_rules)
@@ -1367,7 +1376,7 @@ class SearchRule(Rule):
 
 
 class URLCallback(Rule):
-    """URL callback rule definition.
+    r"""URL callback rule definition.
 
     A URL callback rule (or simply "a URL rule") detects URLs in a trigger
     then it uses regular expressions to match at most once per URL per regular
@@ -1375,7 +1384,7 @@ class URLCallback(Rule):
     callback has per URL in the IRC line.
 
     Here is an example with a URL rule with the pattern
-    ``r'https://example\\.com/(.*)'``:
+    ``r'https://example\.com/(.*)'``:
 
     .. code-block:: irc
 
@@ -1402,6 +1411,7 @@ class URLCallback(Rule):
         removed in Sopel 9.
 
     """
+
     @classmethod
     def from_callable(cls, settings, handler):
         execute_handler = handler

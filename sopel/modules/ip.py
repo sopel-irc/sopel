@@ -1,6 +1,6 @@
 # coding=utf-8
-"""
-ip.py - Sopel GeoIP Lookup Plugin
+"""ip.py - Sopel GeoIP Lookup Plugin.
+
 Copyright 2011, Dimitri Molenaars, TyRope.nl,
 Copyright © 2013, Elad Alfassa <elad@fedoraproject.org>
 Licensed under the Eiffel Forum License 2.
@@ -43,10 +43,10 @@ class GeoipSection(types.StaticSection):
 
 
 def configure(config):
-    """
+    r"""
     | name | example | purpose |
     | ---- | ------- | ------- |
-    | GeoIP\\_db\\_path | /home/sopel/GeoIP/ | Path to the GeoIP database files |
+    | GeoIP\_db\_path | /home/sopel/GeoIP/ | Path to the GeoIP database files |
     """
     config.define_section('ip', GeoipSection)
     config.ip.configure_setting('GeoIP_db_path',
@@ -58,7 +58,7 @@ def setup(bot):
 
 
 def _decompress(source, target, delete_after_decompression=True):
-    """Decompress just the database from the archive"""
+    """Decompress just the database from the archive."""
     # https://stackoverflow.com/a/16452962
     tar = tarfile.open(source)
     for member in tar.getmembers():
@@ -70,7 +70,7 @@ def _decompress(source, target, delete_after_decompression=True):
 
 
 def _find_geoip_db(bot):
-    """Find the GeoIP database"""
+    """Find the GeoIP database."""
     config = bot.config
     if config.ip.GeoIP_db_path:
         cities_db = os.path.join(config.ip.GeoIP_db_path, 'GeoLite2-City.mmdb')
@@ -122,7 +122,7 @@ def _find_geoip_db(bot):
     online=True)
 @plugin.output_prefix('[IP/Host Lookup] ')
 def ip(bot, trigger):
-    """IP Lookup tool"""
+    """IP Lookup tool."""
     # Check if there is input at all
     if not trigger.group(2):
         bot.reply("No search term.")

@@ -1,6 +1,6 @@
 # coding=utf-8
-"""
-py.py - Sopel Python Eval Plugin
+"""py.py - Sopel Python Eval Plugin.
+
 Copyright 2008, Sean B. Palmer, inamidst.com
 Licensed under the Eiffel Forum License 2.
 

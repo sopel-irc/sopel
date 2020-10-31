@@ -87,7 +87,7 @@ ignored_trickster._sopel_callable = True
 
 @pytest.fixture
 def func():
-    """Pytest fixture to get a function that will return True all the time"""
+    """Pytest fixture to get a function that will return True all the time."""
     def bot_command():
         """Test callable defined as a pytest fixture."""
         return True
