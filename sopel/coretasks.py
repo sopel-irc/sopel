@@ -835,7 +835,7 @@ def auth_proceed(bot, trigger):
     else:
         return
     sasl_username = sasl_username or bot.nick
-    sasl_token = r'\0'.join((sasl_username, sasl_username, sasl_password))
+    sasl_token = '\x00'.join((sasl_username, sasl_username, sasl_password))
     send_authenticate(bot, sasl_token)
 
 
