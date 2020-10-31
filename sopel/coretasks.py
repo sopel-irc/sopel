@@ -681,7 +681,11 @@ def receive_cap_list(bot, trigger):
                 if req.success:
                     req.success(bot, req.prefix + trigger)
             if cap == 'sasl':  # TODO why is this not done with bot.cap_req?
-                receive_cap_ack_sasl(bot)
+                try:
+                    receive_cap_ack_sasl(bot)
+                except ConfigurationError as error:
+                    LOGGER.error(str(error))
+                    bot.quit('Wrong SASL configuration.')
 
 
 def receive_cap_ls_reply(bot, trigger):
@@ -886,10 +890,13 @@ def sasl_mechs(bot, trigger):
 
         See https://github.com/sopel-irc/sopel/issues/1780 for background
         """
-        raise ConfigurationError(
-            "Configured SASL mechanism '{}' is not advertised by this server. "
-            "Advertised values: {}"
-            .format(mech, ', '.join(supported_mechs)))
+        LOGGER.error(
+            "Configured SASL mechanism '%s' is not advertised by this server. "
+            "Advertised values: %s",
+            mech,
+            ', '.join(supported_mechs),
+        )
+        bot.quit('Wrong SASL configuration.')
 
 
 def _get_sasl_pass_and_mech(bot):
