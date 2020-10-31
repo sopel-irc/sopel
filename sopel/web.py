@@ -171,10 +171,11 @@ class MockHttpResponse(httplib.HTTPResponse):
 # input URI is UTF-8
 @deprecated
 def get_urllib_object(uri, timeout, headers=None, verify_ssl=True, data=None):  # pragma: no cover
-    """Return an HTTPResponse object for `uri` and `timeout` and `headers`. Deprecated
+    """Perform a HTTP request.
 
+    Deprecated.
+    Returns a HTTPResponse object.
     """
-
     if headers is None:
         headers = default_headers
     else:

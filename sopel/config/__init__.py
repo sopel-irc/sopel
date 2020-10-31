@@ -148,7 +148,7 @@ class Config(object):
 
     @property
     def homedir(self):
-        """The config file's home directory.
+        """Home directory for config file.
 
         If the :attr:`core.homedir <.core_section.CoreSection.homedir>` setting
         is available, that value is used. Otherwise, the default ``homedir`` is

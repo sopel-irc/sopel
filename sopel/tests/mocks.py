@@ -50,7 +50,7 @@ class MockIRCServer(object):
 
     @property
     def chanserv(self):
-        """ChanServ's message prefix."""
+        """Message prefix for ChanServ."""
         return 'ChanServ!ChanServ@services.'
 
     def channel_joined(self, channel, users=None):

@@ -197,10 +197,7 @@ def say_section(bot, trigger, server, query, section):
 
 
 def mw_section(server, query, section):
-    """
-    Retrieves a snippet from the specified section from the given page
-    on the given server.
-    """
+    """Retrieve a snippet of a section section of a page."""
     sections_url = ('https://{0}/w/api.php?format=json&redirects'
                     '&action=parse&prop=sections&page={1}'
                     .format(server, query))

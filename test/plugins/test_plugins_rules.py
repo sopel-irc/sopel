@@ -527,7 +527,7 @@ def test_rule_get_test_parameters():
 
 
 def test_rule_get_doc():
-    doc = 'This is the doc you are looking for.'
+    doc = 'Docstring example to look for.'
     regex = re.compile('.*')
     rule = rules.Rule([regex], doc=doc)
 
@@ -1039,7 +1039,7 @@ def test_kwargs_from_callable_examples(mockbot):
     @module.rule(r'hello', r'hi', r'hey', r'hello|hi')
     @module.example('hello')
     def handler(wrapped, trigger):
-        """This is the doc you are looking for."""
+        """Docstring example to look for."""
         wrapped.reply('Hi!')
 
     loader.clean_callable(handler, mockbot.settings)
@@ -1064,7 +1064,7 @@ def test_kwargs_from_callable_examples(mockbot):
     assert 'doc' in kwargs
     assert kwargs['usages'] == (expected,)
     assert kwargs['tests'] == tuple(), 'There must be no test'
-    assert kwargs['doc'] == 'This is the doc you are looking for.'
+    assert kwargs['doc'] == 'Docstring example to look for.'
 
 
 def test_kwargs_from_callable_examples_test(mockbot):
@@ -1190,7 +1190,7 @@ def test_kwargs_from_callable_examples_doc(mockbot):
     @module.rule(r'hello', r'hi', r'hey', r'hello|hi')
     @module.example('hello')
     def handler(wrapped, trigger):
-        """This is the doc you are looking for.
+        """Docstring example to look for.
 
         And now with extended text, for testing purpose only.
         """
@@ -1221,7 +1221,7 @@ def test_kwargs_from_callable_examples_doc(mockbot):
     assert kwargs['usages'] == expected_usages
     assert kwargs['tests'] == tuple(), 'There must be no test'
     assert kwargs['doc'] == (
-        'This is the doc you are looking for.\n'
+        'Docstring example to look for.\n'
         '\n'
         'And now with extended text, for testing purpose only.'
     ), 'The docstring must have been cleaned.'
@@ -1405,7 +1405,7 @@ def test_command_get_usages():
 
 
 def test_command_get_doc():
-    doc = 'This is the doc you are looking for.'
+    doc = 'Docstring example to look for.'
     rule = rules.Command('hello', r'\.', doc=doc)
 
     assert rule.get_doc() == doc
@@ -1857,7 +1857,7 @@ def test_nick_command_get_usages():
 
 
 def test_nick_command_get_doc():
-    doc = 'This is the doc you are looking for.'
+    doc = 'Docstring example to look for.'
     rule = rules.NickCommand('TestBot', 'hello', doc=doc)
 
     assert rule.get_doc() == doc

@@ -32,9 +32,9 @@ def default_mask(trigger):
 @plugin.require_privilege(plugin.OP, ERROR_MESSAGE_NO_PRIV)
 @plugin.command('op')
 def op(bot, trigger):
-    """
-    Command to op users in a room. If no nick is given,
-    Sopel will op the nick who sent the command
+    """Op users in a room.
+
+    If no nick is given, Sopel will op the nick who sent the command.
     """
     if bot.channels[trigger.sender].privileges[bot.nick] < plugin.OP:
         bot.reply(ERROR_MESSAGE_NOT_OP)
@@ -50,9 +50,9 @@ def op(bot, trigger):
 @plugin.require_privilege(plugin.OP, ERROR_MESSAGE_NO_PRIV)
 @plugin.command('deop')
 def deop(bot, trigger):
-    """
-    Command to deop users in a room. If no nick is given,
-    Sopel will deop the nick who sent the command
+    """Deop users in a room.
+
+    If no nick is given, Sopel will deop the nick who sent the command.
     """
     if bot.channels[trigger.sender].privileges[bot.nick] < plugin.OP:
         bot.reply(ERROR_MESSAGE_NOT_OP)
@@ -68,9 +68,9 @@ def deop(bot, trigger):
 @plugin.require_privilege(plugin.OP, ERROR_MESSAGE_NO_PRIV)
 @plugin.command('voice')
 def voice(bot, trigger):
-    """
-    Command to voice users in a room. If no nick is given,
-    Sopel will voice the nick who sent the command
+    """Voice users in a room.
+
+    If no nick is given, Sopel will voice the nick who sent the command.
     """
     if bot.channels[trigger.sender].privileges[bot.nick] < plugin.HALFOP:
         bot.reply(ERROR_MESSAGE_NOT_OP)
@@ -86,9 +86,9 @@ def voice(bot, trigger):
 @plugin.require_privilege(plugin.OP, ERROR_MESSAGE_NO_PRIV)
 @plugin.command('devoice')
 def devoice(bot, trigger):
-    """
-    Command to devoice users in a room. If no nick is given,
-    Sopel will devoice the nick who sent the command
+    """Devoice users in a room.
+
+    If no nick is given, Sopel will devoice the nick who sent the command
     """
     if bot.channels[trigger.sender].privileges[bot.nick] < plugin.HALFOP:
         bot.reply(ERROR_MESSAGE_NOT_OP)

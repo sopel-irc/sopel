@@ -504,8 +504,9 @@ def log_meeting(bot, trigger):
 @plugin.command("comment")
 @plugin.require_privmsg()
 def take_comment(bot, trigger):
-    """
-    Log a comment, to be shown with other comments when a chair uses .comments.
+    """Log a comment.
+
+    Comments will be shown with others when a chair uses .comments.
     Intended to allow commentary from those outside the primary group of people
     in the meeting.
 

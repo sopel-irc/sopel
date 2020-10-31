@@ -129,7 +129,7 @@ class AsynchatBackend(AbstractIRCBackend, asynchat.async_chat):
             LOGGER.debug('Timeout Job registered: %s', str(job))
 
     def initiate_connect(self, host, port, source_address):
-        """Initiate IRC connection.
+        """Set up the IRC connection.
 
         :param str host: IRC server hostname
         :param int port: IRC server port
@@ -152,13 +152,13 @@ class AsynchatBackend(AbstractIRCBackend, asynchat.async_chat):
             self.handle_close()
 
     def handle_connect(self):
-        """Called when the active opener's socket actually makes a connection."""
+        """Handle active opener's new accepted connection."""
         LOGGER.info('Connection accepted by the server...')
         self.timeout_scheduler.start()
         self.bot.on_connect()
 
     def handle_close(self):
-        """Called when the socket is closed."""
+        """Handle closed socket."""
         LOGGER.debug('Stopping timeout watchdog')
         self.timeout_scheduler.stop()
         LOGGER.info('Closing connection')
@@ -166,7 +166,7 @@ class AsynchatBackend(AbstractIRCBackend, asynchat.async_chat):
         self.bot.on_close()
 
     def handle_error(self):
-        """Called when an exception is raised and not otherwise handled.
+        """Handle unhandled exceptions.
 
         This method is an override of :meth:`asyncore.dispatcher.handle_error`,
         the :class:`asynchat.async_chat` being a subclass of
@@ -211,12 +211,12 @@ class AsynchatBackend(AbstractIRCBackend, asynchat.async_chat):
         self.bot.on_message(line)
 
     def on_scheduler_error(self, scheduler, exc):
-        """Called when the Job Scheduler fails."""
+        """Handle Job Scheduler failures."""
         LOGGER.exception('Error with the timeout scheduler: %s', exc)
         self.handle_close()
 
     def on_job_error(self, scheduler, job, exc):
-        """Called when a job from the Job Scheduler fails."""
+        """Handle failures of a job from the Job Scheduler."""
         LOGGER.exception('Error with the timeout scheduler: %s', exc)
         self.handle_close()
 

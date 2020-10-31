@@ -55,7 +55,7 @@ def deprecated(
     warning_in=None,
     func=None,
 ):
-    """Decorator to mark deprecated functions in Sopel's API
+    """Mark deprecated functions in Sopel's API. Decorator.
 
     :param str reason: optional text added to the deprecation warning
     :param str version: optional version number when the decorated function

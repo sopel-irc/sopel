@@ -159,10 +159,7 @@ def shutdown(bot):
     online=True, vcr=True)
 @plugin.output_prefix('[url] ')
 def title_command(bot, trigger):
-    """
-    Show the title or URL information for the given URL, or the last URL seen
-    in this channel.
-    """
+    """Show title or URL info for a given URL or the last URL in the channel."""
     if not trigger.group(2):
         if trigger.sender not in bot.memory['last_seen_url']:
             return
@@ -188,10 +185,10 @@ def title_command(bot, trigger):
 @plugin.rule(r'(?u).*(https?://\S+).*')
 @plugin.output_prefix('[url] ')
 def title_auto(bot, trigger):
-    """
-    Automatically show titles for URLs. For shortened URLs/redirects, find
-    where the URL redirects to and show the title for that (or call a function
-    from another plugin to give more information).
+    """Automatically show titles for URLs.
+
+    For shortened URLs/redirects, find where the URL redirects to and show the title
+    for that (or call a function from another plugin to give more information).
     """
     # Enabled or disabled by feature flag
     if not bot.settings.url.enable_auto_title:

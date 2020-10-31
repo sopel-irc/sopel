@@ -352,19 +352,19 @@ def test_register_callables(tmpconfig):
     @module.commands('do')
     @module.example('.do nothing')
     def command_do(bot, trigger):
-        """The do command does nothing."""
+        """Do nothing."""
         pass
 
     @module.commands('main sub')
     @module.example('.main sub')
     def command_main_sub(bot, trigger):
-        """A command with subcommand sub."""
+        """Do nothing, but with a subcommand."""
         pass
 
     @module.commands('main other')
     @module.example('.main other')
     def command_main_other(bot, trigger):
-        """A command with subcommand other."""
+        """Do nothing, but with a different subcommand."""
         pass
 
     @module.nickname_commands('info')
@@ -491,7 +491,7 @@ def test_register_callables(tmpconfig):
 
     assert sopel.doc == {
         'do': (
-            ['The do command does nothing.'],
+            ['Do nothing.'],
             ['.do nothing'],
         ),
         'info': (
@@ -499,11 +499,11 @@ def test_register_callables(tmpconfig):
             ['TestBot: info about this'],
         ),
         'main sub': (
-            ['A command with subcommand sub.'],
+            ['Do nothing, but with a subcommand.'],
             ['.main sub'],
         ),
         'main other': (
-            ['A command with subcommand other.'],
+            ['Do nothing, but with a different subcommand.'],
             ['.main other'],
         ),
         'mixed': (

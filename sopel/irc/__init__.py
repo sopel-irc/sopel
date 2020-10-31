@@ -108,7 +108,7 @@ class AbstractBot(object):
 
     @property
     def config(self):
-        """The :class:`sopel.config.Config` for the current Sopel instance."""
+        """Get the :class:`sopel.config.Config` for the current Sopel instance."""
         # TODO: Deprecate config, replaced by settings
         return self.settings
 

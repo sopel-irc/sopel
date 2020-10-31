@@ -232,9 +232,7 @@ def invite_join(bot, trigger):
 @plugin.event('KICK')
 @plugin.priority('low')
 def hold_ground(bot, trigger):
-    """
-    This function monitors all kicks across all channels Sopel is in. If it
-    detects that it is the one kicked it'll automatically join that channel.
+    """Monitor KICK messages to rejoin if kicked.
 
     WARNING: This may not be needed and could cause problems if Sopel becomes
     annoying. Please use this with caution.

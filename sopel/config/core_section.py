@@ -637,7 +637,7 @@ class CoreSection(StaticSection):
 
     @property
     def homedir(self):
-        """The directory in which various files are stored at runtime.
+        """Directory where Sopel's data is stored.
 
         By default, this is the same directory as the config file. It cannot be
         changed at runtime.

@@ -116,7 +116,7 @@ def f_load(bot, trigger):
 @plugin.require_privmsg
 @plugin.output_prefix(PLUGIN_OUTPUT_PREFIX)
 def pm_f_reload(bot, trigger):
-    """Wrapper for allowing delivery of .reload command via PM"""
+    """Allow .reload command via PM."""
     f_reload(bot, trigger)
 
 
@@ -124,7 +124,7 @@ def pm_f_reload(bot, trigger):
 @plugin.require_privmsg
 @plugin.output_prefix(PLUGIN_OUTPUT_PREFIX)
 def pm_f_update(bot, trigger):
-    """Wrapper for allowing delivery of .update command via PM"""
+    """Allow .update command via PM."""
     f_update(bot, trigger)
 
 
@@ -134,5 +134,5 @@ def pm_f_update(bot, trigger):
 @plugin.require_privmsg
 @plugin.output_prefix(PLUGIN_OUTPUT_PREFIX)
 def pm_f_load(bot, trigger):
-    """Wrapper for allowing delivery of .load command via PM"""
+    """Allow .load command via PM."""
     f_load(bot, trigger)

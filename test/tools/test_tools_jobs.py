@@ -203,7 +203,7 @@ def test_job_from_callable(mockconfig):
     @module.interval(5)
     @plugin.label('testjob')
     def handler(manager):
-        """The job's docstring."""
+        """Test job handler docstring."""
         return 'tested'
 
     loader.clean_callable(handler, mockconfig)
@@ -218,7 +218,7 @@ def test_job_from_callable(mockconfig):
     assert job.execute(None) == 'tested'
     assert job.get_job_label() == 'testjob'
     assert job.get_plugin_name() == 'testplugin'
-    assert job.get_doc() == "The job's docstring."
+    assert job.get_doc() == "Test job handler docstring."
     assert str(job) == '<Job testplugin.testjob [5s]>'
 
 

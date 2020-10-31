@@ -618,7 +618,7 @@ class FilenameAttribute(BaseValidated):
         return self.parse(result)
 
     def _serialize(self, value, settings, section):
-        """Used to validate ``value`` when it is changed at runtime.
+        """Validate ``value`` when it is changed at runtime.
 
         :param settings: the config object which contains this attribute
         :type settings: :class:`~sopel.config.Config`

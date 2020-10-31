@@ -28,7 +28,7 @@ class AbstractIRCBackend(object):
         raise NotImplementedError
 
     def on_irc_error(self, pretrigger):
-        """Action to perform when the server sends an error event.
+        """Perform action when the server sends an error event.
 
         :param pretrigger: PreTrigger object with the error event
         :type pretrigger: :class:`sopel.trigger.PreTrigger`

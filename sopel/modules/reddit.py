@@ -361,9 +361,9 @@ def auto_subreddit_info(bot, trigger, match):
 @plugin.example('.setsfw false')
 @plugin.output_prefix(PLUGIN_OUTPUT_PREFIX)
 def set_channel_sfw(bot, trigger):
-    """
-    Sets the Safe for Work status (true or false) for the current
-    channel. Defaults to false.
+    """Set the Safe for Work status for the current channel.
+
+    Defaults to false.
     """
     param = 'true'
     if trigger.group(2) and trigger.group(3):
@@ -380,9 +380,9 @@ def set_channel_sfw(bot, trigger):
 @plugin.example('.getsfw [channel]')
 @plugin.output_prefix(PLUGIN_OUTPUT_PREFIX)
 def get_channel_sfw(bot, trigger):
-    """
-    Gets the preferred channel's Safe for Work status, or the current
-    channel's status if no channel given.
+    """Get the preferred channel's Safe for Work status.
+
+    Checks current channel if none is specified.
     """
     channel = trigger.group(2)
     if not channel:
@@ -408,8 +408,8 @@ def get_channel_sfw(bot, trigger):
 @plugin.example('.setspoilfree false')
 @plugin.output_prefix(PLUGIN_OUTPUT_PREFIX)
 def set_channel_spoiler_free(bot, trigger):
-    """
-    Sets the Spoiler-Free status (true or false) for the current channel.
+    """Set the Spoiler-Free status for the current channel.
+
     Defaults to false.
     """
     param = 'true'
@@ -427,9 +427,9 @@ def set_channel_spoiler_free(bot, trigger):
 @plugin.example('.getspoilfree [channel]')
 @plugin.output_prefix(PLUGIN_OUTPUT_PREFIX)
 def get_channel_spoiler_free(bot, trigger):
-    """
-    Gets the channel's Spoiler-Free status, or the current channel's
-    status if no channel given.
+    """Get a channel's Spoiler-Free status.
+
+    Checks current channel if none is specified.
     """
     channel = trigger.group(2)
     if not channel:
