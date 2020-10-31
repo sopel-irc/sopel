@@ -19,7 +19,7 @@ from sopel.plugin import (  # noqa
     event,
     example,
     HALFOP,
-    intent,
+    ctcp as _future_ctcp,
     interval,
     nickname_commands,
     NOLIMIT,
@@ -41,3 +41,21 @@ from sopel.plugin import (  # noqa
     url,
     VOICE,
 )
+
+
+def intent(*intent_list):
+    """Decorate a callable to trigger on intent messages.
+
+    :param str intent_list: one or more intent(s) on which to trigger (really,
+                            the only useful value is ``ACTION``)
+
+    .. versionadded:: 5.2.0
+
+    .. deprecated:: 7.1
+
+    .. important::
+
+        This will be removed in Sopel 9, as the IRCv3 intent specification is
+        long dead. You can use :func:`@ctcp <sopel.plugin.ctcp>` instead.
+    """
+    return _future_ctcp(*intent_list)
