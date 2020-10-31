@@ -835,8 +835,12 @@ def auth_proceed(bot, trigger):
     else:
         return
     sasl_username = sasl_username or bot.nick
-    sasl_token = '\x00'.join((sasl_username, sasl_username, sasl_password))
+    sasl_token = _make_sasl_plain_token(sasl_username, sasl_password)
     send_authenticate(bot, sasl_token)
+
+
+def _make_sasl_plain_token(account, password):
+    return '\x00'.join((account, account, password))
 
 
 @module.event(events.RPL_SASLSUCCESS)

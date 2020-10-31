@@ -247,3 +247,10 @@ def test_handle_rpl_myinfo(mockbot):
     assert mockbot.myinfo.client == 'TestName'
     assert mockbot.myinfo.servername == 'irc.example.net'
     assert mockbot.myinfo.version == 'example-1.2.3'
+
+
+def test_sasl_plain_token_generation():
+    """Make sure SASL PLAIN tokens match the expected format."""
+    assert (
+        coretasks._make_sasl_plain_token('sopel', 'sasliscool') ==
+        'sopel\x00sopel\x00sasliscool')
