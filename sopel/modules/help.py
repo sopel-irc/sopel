@@ -251,7 +251,7 @@ def is_cache_valid(bot):
 @plugin.command('help', 'commands')
 @plugin.priority('low')
 def help(bot, trigger):
-    """Shows a command's documentation, and an example if available. With no arguments, lists all commands."""
+    """Show a command's documentation, and an example if available. With no arguments, lists all commands."""
     if bot.config.help.reply_method == 'query':
         def respond(text):
             bot.say(text, trigger.nick)
@@ -325,7 +325,7 @@ def help(bot, trigger):
 
 
 def create_list(bot, msg):
-    """Creates & uploads the command list.
+    """Create and upload the command list.
 
     Returns the URL from the chosen pastebin provider.
     """

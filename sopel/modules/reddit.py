@@ -217,7 +217,7 @@ def say_post_info(bot, trigger, id_, show_link=True, show_comments_link=False):
 @plugin.url(comment_url)
 @plugin.output_prefix(PLUGIN_OUTPUT_PREFIX)
 def comment_info(bot, trigger, match):
-    """Shows information about the linked comment"""
+    """Show information about the linked comment."""
     try:
         c = bot.memory['reddit_praw'].comment(match.group(1))
     except prawcore.exceptions.NotFound:
@@ -250,7 +250,7 @@ def comment_info(bot, trigger, match):
 
 
 def subreddit_info(bot, trigger, match, commanded=False):
-    """Shows information about the given subreddit"""
+    """Show information about the given subreddit."""
     match_lower = match.lower()
     if match_lower in ['all', 'popular']:
         message = ('[REDDIT] {link}{nsfw} | {public_description}')
@@ -313,7 +313,7 @@ def subreddit_info(bot, trigger, match, commanded=False):
 
 
 def redditor_info(bot, trigger, match, commanded=False):
-    """Shows information about the given Redditor"""
+    """Show information about the given Redditor."""
     try:
         u = bot.memory['reddit_praw'].redditor(match)
         u.id  # shortcut to check if the user exists or not

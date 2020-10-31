@@ -220,7 +220,7 @@ PERIODS = '|'.join(SCALING.keys())
 @plugin.command('in')
 @plugin.example('.in 3h45m Go to class')
 def remind_in(bot, trigger):
-    """Gives you a reminder in the given amount of time."""
+    """Give you a reminder in the given amount of time."""
     if not trigger.group(2):
         bot.reply("Missing arguments for reminder command.")
         return plugin.NOLIMIT
@@ -454,7 +454,7 @@ def parse_regex_match(match, default_timezone=None):
                 user_help=True)
 @plugin.example('.at 00:01 25/12 Open your gift!', user_help=True)
 def remind_at(bot, trigger):
-    """Gives you a reminder at the given time.
+    """Give you a reminder at the given time.
 
     Takes ``hh:mm:ssTimezone Date message`` where seconds, Timezone, and Date
     are optional.

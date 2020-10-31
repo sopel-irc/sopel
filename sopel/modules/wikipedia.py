@@ -168,7 +168,7 @@ def say_snippet(bot, trigger, server, query, show_url=True):
 
 
 def mw_snippet(server, query):
-    """Retrieves a snippet of the given page from the given MediaWiki server."""
+    """Retrieve a snippet of the given page from the given MediaWiki server."""
     snippet_url = ('https://' + server + '/w/api.php?format=json'
                    '&action=query&prop=extracts&exintro&explaintext'
                    '&exchars=300&redirects&titles=')
@@ -242,7 +242,7 @@ def mw_section(server, query, section):
 @plugin.url(r'https?:\/\/([a-z]+\.wikipedia\.org)\/wiki\/((?!File\:)[^ #]+)#?([^ ]*)')
 @plugin.output_prefix(PLUGIN_OUTPUT_PREFIX)
 def mw_info(bot, trigger, match=None):
-    """Retrieves and outputs a snippet of the linked page."""
+    """Retrieve and outputs a snippet of the linked page."""
     if match.group(3):
         if match.group(3).startswith('cite_note-'):  # Don't bother trying to retrieve a snippet when cite-note is linked
             say_snippet(bot, trigger, match.group(1), unquote(match.group(2)), show_url=False)

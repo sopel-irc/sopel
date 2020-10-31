@@ -91,7 +91,7 @@ def duck_api(query):
     vcr=True)
 @plugin.output_prefix(PLUGIN_OUTPUT_PREFIX)
 def duck(bot, trigger):
-    """Queries DuckDuckGo for the specified input."""
+    """Query DuckDuckGo for the specified input."""
     query = trigger.group(2)
     if not query:
         bot.reply('{prefix}{command} what?'.format(
@@ -126,7 +126,7 @@ def duck(bot, trigger):
 @plugin.example('.bing sopel.chat irc bot')
 @plugin.output_prefix(PLUGIN_OUTPUT_PREFIX)
 def bing(bot, trigger):
-    """Queries Bing for the specified input."""
+    """Query Bing for the specified input."""
     if not trigger.group(2):
         bot.reply('{}bing what?'.format(bot.settings.core.help_prefix))
         return
@@ -142,7 +142,7 @@ def bing(bot, trigger):
 @plugin.example('.search sopel irc bot')
 @plugin.output_prefix(PLUGIN_OUTPUT_PREFIX)
 def search(bot, trigger):
-    """Searches both Bing and DuckDuckGo."""
+    """Search both Bing and DuckDuckGo."""
     if not trigger.group(2):
         bot.reply('{}search for what?'.format(bot.settings.core.help_prefix))
         return
@@ -168,7 +168,7 @@ def search(bot, trigger):
 @plugin.example('.suggest lkashdfiauwgaef', 'Sorry, no result.', online=True, vcr=True)
 @plugin.output_prefix(PLUGIN_OUTPUT_PREFIX)
 def suggest(bot, trigger):
-    """Suggests terms starting with given input"""
+    """Suggest terms starting with given input."""
     if not trigger.group(2):
         bot.reply('{}suggest what?'.format(bot.settings.core.help_prefix))
         return

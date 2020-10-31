@@ -165,7 +165,7 @@ def update_user(bot, trigger):
 @plugin.example('.gettz', user_help=True)
 @plugin.output_prefix(PLUGIN_OUTPUT_PREFIX)
 def get_user_tz(bot, trigger):
-    """Gets a user's preferred time zone.
+    """Get a user's preferred time zone.
 
     It will show yours if no user specified.
     """
@@ -185,7 +185,7 @@ def get_user_tz(bot, trigger):
 @plugin.command('settimeformat', 'settf')
 @plugin.example('.settf %Y-%m-%dT%T%z')
 def update_user_format(bot, trigger):
-    """Sets your preferred format for time.
+    """Set your preferred format for time.
 
     Uses the standard strftime format. You can use <http://strftime.net> or
     your favorite search engine to learn more.
@@ -222,7 +222,7 @@ def update_user_format(bot, trigger):
 @plugin.example('.gettf', user_help=True)
 @plugin.output_prefix(PLUGIN_OUTPUT_PREFIX)
 def get_user_format(bot, trigger):
-    """Gets a user's preferred time format.
+    """Get a user's preferred time format.
 
     It will show yours if no user specified.
     """
@@ -274,7 +274,7 @@ def update_channel(bot, trigger):
 @plugin.example('.getctz', user_help=True)
 @plugin.output_prefix(PLUGIN_OUTPUT_PREFIX)
 def get_channel_tz(bot, trigger):
-    """Gets the channel's preferred timezone.
+    """Get the channel's preferred timezone.
 
     It returns the current channel's if no channel name is given.
     """
@@ -297,7 +297,7 @@ def get_channel_tz(bot, trigger):
 @plugin.require_privilege(plugin.OP)
 @plugin.output_prefix(PLUGIN_OUTPUT_PREFIX)
 def update_channel_format(bot, trigger):
-    """Sets your preferred format for time.
+    """Set your preferred format for time.
 
     Uses the standard strftime format. You can use <http://strftime.net> or
     your favorite search engine to learn more.
@@ -338,7 +338,7 @@ def update_channel_format(bot, trigger):
 @plugin.example('.getctf', user_help=True)
 @plugin.output_prefix(PLUGIN_OUTPUT_PREFIX)
 def get_channel_format(bot, trigger):
-    """Gets the channel's preferred time format
+    """Get the channel's preferred time format.
 
     It returns the current channel's if no channel name is given.
     """

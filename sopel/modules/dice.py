@@ -113,7 +113,7 @@ class DicePouch:
         return result
 
     def get_number_of_faces(self):
-        """Returns sum of different faces for dropped and not dropped dice
+        """Return sum of different faces for dropped and not dropped dice.
 
         This can be used to estimate, whether the result can be shown in
         compressed form in a reasonable amount of space.
@@ -179,7 +179,7 @@ def _roll_dice(bot, dice_expression):
 @plugin.example(".roll 1d6", user_help=True)
 @plugin.output_prefix('[dice] ')
 def roll(bot, trigger):
-    """Rolls dice and reports the result.
+    """Roll dice and reports the result.
 
     The dice roll follows this format: XdY[vZ][+N][#COMMENT]
 

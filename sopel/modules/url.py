@@ -386,7 +386,7 @@ def get_or_create_shorturl(bot, url):
 
 
 def get_tinyurl(url):
-    """Returns a shortened tinyURL link of the URL."""
+    """Return a shortened tinyURL link of the URL."""
     base_url = "https://tinyurl.com/api-create.php"
     tinyurl = "%s?%s" % (base_url, web.urlencode({'url': url}))
     try:

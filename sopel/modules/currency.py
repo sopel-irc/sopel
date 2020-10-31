@@ -63,13 +63,15 @@ def setup(bot):
 
 
 class FixerError(Exception):
-    """A Fixer.io API Error Exception"""
+    """Fixer.io API Error Exception."""
+
     def __init__(self, status):
         super(FixerError, self).__init__("FixerError: {}".format(status))
 
 
 class UnsupportedCurrencyError(Exception):
-    """A currency is currently not supported by the API"""
+    """Currency is currently not supported by the API."""
+
     def __init__(self, currency):
         super(UnsupportedCurrencyError, self).__init__(currency)
 

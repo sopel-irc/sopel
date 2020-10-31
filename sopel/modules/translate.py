@@ -86,7 +86,7 @@ def translate(text, in_lang='auto', out_lang='en'):
 @plugin.priority('low')
 @plugin.output_prefix(PLUGIN_OUTPUT_PREFIX)
 def tr(bot, trigger):
-    """Translates a phrase, with an optional language hint."""
+    """Translate a phrase, with an optional language hint."""
     in_lang, out_lang, phrase = trigger.groups()
 
     if (len(phrase) > 350) and (not trigger.admin):
@@ -136,7 +136,7 @@ def tr(bot, trigger):
                 online=True, vcr=True)
 @plugin.output_prefix(PLUGIN_OUTPUT_PREFIX)
 def tr2(bot, trigger):
-    """Translates a phrase, with an optional language hint."""
+    """Translate a phrase, with an optional language hint."""
     command = trigger.group(2)
 
     if not command:

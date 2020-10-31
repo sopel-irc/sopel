@@ -185,9 +185,9 @@ def quit(bot, trigger):
 @plugin.priority('low')
 @plugin.example('.say #YourPants Does anyone else smell neurotoxin?')
 def say(bot, trigger):
-    """
-    Send a message to a given channel or nick. Can only be done in privmsg by
-    an admin.
+    """Send a message to a given channel or nick.
+
+    Can only be done in privmsg by an admin.
     """
     if trigger.group(2) is None:
         return
@@ -205,9 +205,9 @@ def say(bot, trigger):
 @plugin.command('me')
 @plugin.priority('low')
 def me(bot, trigger):
-    """
-    Send an ACTION (/me) to a given channel or nick. Can only be done in
-    privmsg by an admin.
+    """Send an ACTION (/me) to a given channel or nick.
+
+    Can only be done in privmsg by an admin.
     """
     if trigger.group(2) is None:
         return

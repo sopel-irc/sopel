@@ -30,7 +30,7 @@ from sopel import plugin
 @plugin.example(".choose a | b | c", user_help=True)
 @plugin.example(".choose a, b, c", user_help=True)
 def choose(bot, trigger):
-    """Makes a difficult choice easy."""
+    """Make a difficult choice easy."""
     if not trigger.group(2):
         bot.reply("I'd choose an option, but you didn't give me any.")
         return

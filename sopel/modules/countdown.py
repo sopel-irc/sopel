@@ -17,7 +17,7 @@ from sopel import plugin
 @plugin.example('.countdown 2078 09 14')
 @plugin.output_prefix('[countdown] ')
 def generic_countdown(bot, trigger):
-    """Displays a countdown to a given date."""
+    """Display a countdown to a given date."""
     text = trigger.group(2)
     if not text:
         bot.reply("Please use correct format: {}countdown 2012 12 21"

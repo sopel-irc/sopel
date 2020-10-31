@@ -59,7 +59,7 @@ def web_search(query):
 @plugin.example(".xkcd", user_help=True)
 @plugin.output_prefix(PLUGIN_OUTPUT_PREFIX)
 def xkcd(bot, trigger):
-    """Finds an xkcd comic strip.
+    """Find an xkcd comic strip.
 
     Takes one of 3 inputs:
 

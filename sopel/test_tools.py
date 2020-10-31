@@ -1,5 +1,5 @@
 # coding=utf-8
-"""This module has classes and functions that can help in writing tests.
+"""Classes and functions that can help in writing tests.
 
 .. note::
 

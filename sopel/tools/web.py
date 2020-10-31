@@ -148,7 +148,7 @@ def quote(string, safe='/'):
 
 # six-like shim for Unicode safety
 def unquote(string):
-    """Decodes a URL-encoded string.
+    """Decode a URL-encoded string.
 
     :param str string: the string to decode
     :return str: the decoded ``string``
@@ -185,7 +185,7 @@ def urlencode_non_ascii(b):
 
 
 def iri_to_uri(iri):
-    """Decodes an internationalized domain name (IDN)."""
+    """Decode an internationalized domain name (IDN)."""
     parts = urlparse(iri)
     parts_seq = (part.encode('idna') if parti == 1 else urlencode_non_ascii(part.encode('utf-8')) for parti, part in enumerate(parts))
     if sys.version_info.major > 2:
@@ -207,7 +207,7 @@ else:
 # Functions for URL detection
 
 def trim_url(url):
-    """Removes extra punctuation from URLs found in text.
+    """Remove extra punctuation from URLs found in text.
 
     :param str url: the raw URL match
     :return str: the cleaned URL
@@ -234,7 +234,7 @@ def trim_url(url):
 
 
 def search_urls(text, exclusion_char=None, clean=False, schemes=None):
-    """Extracts all URLs in ``text``.
+    """Extract all URLs in ``text``.
 
     :param str text: the text to search for URLs
     :param str exclusion_char: optional character that, if placed before a URL

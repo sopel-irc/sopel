@@ -120,7 +120,7 @@ def _download_malwaredomains_db(path):
 @plugin.priority('high')
 @plugin.output_prefix(PLUGIN_OUTPUT_PREFIX)
 def url_handler(bot, trigger):
-    """Checks for malicious URLs"""
+    """Check for malicious URLs."""
     check = True    # Enable URL checking
     strict = False  # Strict mode: kick on malicious URL
     positives = 0   # Number of engines saying it's malicious
@@ -228,7 +228,7 @@ def toggle_safety(bot, trigger):
 # Code above also calls this if there are too many cache entries
 @plugin.interval(24 * 60 * 60)
 def _clean_cache(bot):
-    """Cleans up old entries in URL safety cache."""
+    """Clean up old entries in URL safety cache."""
     if bot.memory['safety_cache_lock'].acquire(False):
         LOGGER.info('Starting safety cache cleanup...')
         try:
