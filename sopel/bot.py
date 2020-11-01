@@ -200,6 +200,28 @@ class Sopel(irc.AbstractBot):
 
         return self.users.get(self.nick).hostmask
 
+    def has_channel_privilege(self, channel, privilege):
+        """Tell if the bot has a ``privilege`` level or above in a ``channel``.
+
+        :param str channel: a channel the bot is in
+        :param int privilege: privilege level to check
+        :raise RuntimeError: when the channel is unknown
+
+        This method checks the bot's privilege level in a channel, i.e. if it
+        has this level or higher privileges::
+
+            >>> bot.channels['#chan'].privileges[bot.nick] = plugin.OP
+            >>> bot.has_channel_privilege('#chan', plugin.VOICE)
+            True
+
+        The ``channel`` argument can be either a :class:`str` or a
+        :class:`sopel.tools.Identifier`, as long as Sopel joined said channel.
+        """
+        if channel not in self.channels:
+            raise RuntimeError('Unknown channel %s' % channel)
+
+        return self.channels[channel].privileges[self.nick] >= privilege
+
     # signal handlers
 
     def set_signal_handlers(self):

@@ -763,6 +763,179 @@ def test_call_rule_rate_limited_global(mockbot):
 
 
 # -----------------------------------------------------------------------------
+# Channel privileges
+
+
+def test_has_channel_privilege_no_privilege(ircfactory, botfactory, tmpconfig):
+    sopel = botfactory.preloaded(tmpconfig)
+    server = ircfactory(sopel)
+    name = Identifier('#adminchannel')
+
+    # unknown channel
+    with pytest.raises(RuntimeError):
+        sopel.has_channel_privilege('#adminchannel', plugin.VOICE)
+
+    # join channel
+    server.channel_joined('#adminchannel')
+
+    # check privileges
+    assert not sopel.has_channel_privilege(name, plugin.VOICE)
+    assert not sopel.has_channel_privilege('#adminchannel', plugin.VOICE)
+    assert not sopel.has_channel_privilege(name, plugin.HALFOP)
+    assert not sopel.has_channel_privilege('#adminchannel', plugin.HALFOP)
+    assert not sopel.has_channel_privilege(name, plugin.OP)
+    assert not sopel.has_channel_privilege('#adminchannel', plugin.OP)
+    assert not sopel.has_channel_privilege(name, plugin.ADMIN)
+    assert not sopel.has_channel_privilege('#adminchannel', plugin.ADMIN)
+    assert not sopel.has_channel_privilege(name, plugin.OWNER)
+    assert not sopel.has_channel_privilege('#adminchannel', plugin.OWNER)
+    assert not sopel.has_channel_privilege(name, plugin.OPER)
+    assert not sopel.has_channel_privilege('#adminchannel', plugin.OPER)
+
+    # unknown channel
+    with pytest.raises(RuntimeError):
+        sopel.has_channel_privilege('#anotherchannel', plugin.VOICE)
+
+
+def test_has_channel_privilege_voice(ircfactory, botfactory, tmpconfig):
+    sopel = botfactory.preloaded(tmpconfig)
+    server = ircfactory(sopel)
+    name = Identifier('#adminchannel')
+
+    # join channel
+    server.channel_joined('#adminchannel')
+    server.mode_set('#adminchannel', '+v', [sopel.nick])
+
+    assert sopel.has_channel_privilege(name, plugin.VOICE)
+    assert sopel.has_channel_privilege('#adminchannel', plugin.VOICE)
+    assert not sopel.has_channel_privilege(name, plugin.HALFOP)
+    assert not sopel.has_channel_privilege('#adminchannel', plugin.HALFOP)
+    assert not sopel.has_channel_privilege(name, plugin.OP)
+    assert not sopel.has_channel_privilege('#adminchannel', plugin.OP)
+    assert not sopel.has_channel_privilege(name, plugin.ADMIN)
+    assert not sopel.has_channel_privilege('#adminchannel', plugin.ADMIN)
+    assert not sopel.has_channel_privilege(name, plugin.OWNER)
+    assert not sopel.has_channel_privilege('#adminchannel', plugin.OWNER)
+    assert not sopel.has_channel_privilege(name, plugin.OPER)
+    assert not sopel.has_channel_privilege('#adminchannel', plugin.OPER)
+
+
+def test_has_channel_privilege_halfop(ircfactory, botfactory, tmpconfig):
+    sopel = botfactory.preloaded(tmpconfig)
+    server = ircfactory(sopel)
+    name = Identifier('#adminchannel')
+
+    # join channel
+    server.channel_joined('#adminchannel')
+    server.mode_set('#adminchannel', '+h', [sopel.nick])
+
+    assert sopel.has_channel_privilege(name, plugin.VOICE)
+    assert sopel.has_channel_privilege('#adminchannel', plugin.VOICE)
+    assert sopel.has_channel_privilege(name, plugin.HALFOP)
+    assert sopel.has_channel_privilege('#adminchannel', plugin.HALFOP)
+    assert not sopel.has_channel_privilege(name, plugin.OP)
+    assert not sopel.has_channel_privilege('#adminchannel', plugin.OP)
+    assert not sopel.has_channel_privilege(name, plugin.ADMIN)
+    assert not sopel.has_channel_privilege('#adminchannel', plugin.ADMIN)
+    assert not sopel.has_channel_privilege(name, plugin.OWNER)
+    assert not sopel.has_channel_privilege('#adminchannel', plugin.OWNER)
+    assert not sopel.has_channel_privilege(name, plugin.OPER)
+    assert not sopel.has_channel_privilege('#adminchannel', plugin.OPER)
+
+
+def test_has_channel_privilege_op(ircfactory, botfactory, tmpconfig):
+    sopel = botfactory.preloaded(tmpconfig)
+    server = ircfactory(sopel)
+    name = Identifier('#adminchannel')
+
+    # join channel
+    server.channel_joined('#adminchannel')
+    server.mode_set('#adminchannel', '+o', [sopel.nick])
+
+    assert sopel.has_channel_privilege(name, plugin.VOICE)
+    assert sopel.has_channel_privilege('#adminchannel', plugin.VOICE)
+    assert sopel.has_channel_privilege(name, plugin.HALFOP)
+    assert sopel.has_channel_privilege('#adminchannel', plugin.HALFOP)
+    assert sopel.has_channel_privilege(name, plugin.OP)
+    assert sopel.has_channel_privilege('#adminchannel', plugin.OP)
+    assert not sopel.has_channel_privilege(name, plugin.ADMIN)
+    assert not sopel.has_channel_privilege('#adminchannel', plugin.ADMIN)
+    assert not sopel.has_channel_privilege(name, plugin.OWNER)
+    assert not sopel.has_channel_privilege('#adminchannel', plugin.OWNER)
+    assert not sopel.has_channel_privilege(name, plugin.OPER)
+    assert not sopel.has_channel_privilege('#adminchannel', plugin.OPER)
+
+
+def test_has_channel_privilege_admin(ircfactory, botfactory, tmpconfig):
+    sopel = botfactory.preloaded(tmpconfig)
+    server = ircfactory(sopel)
+    name = Identifier('#adminchannel')
+
+    # join channel
+    server.channel_joined('#adminchannel')
+    server.mode_set('#adminchannel', '+a', [sopel.nick])
+
+    assert sopel.has_channel_privilege(name, plugin.VOICE)
+    assert sopel.has_channel_privilege('#adminchannel', plugin.VOICE)
+    assert sopel.has_channel_privilege(name, plugin.HALFOP)
+    assert sopel.has_channel_privilege('#adminchannel', plugin.HALFOP)
+    assert sopel.has_channel_privilege(name, plugin.OP)
+    assert sopel.has_channel_privilege('#adminchannel', plugin.OP)
+    assert sopel.has_channel_privilege(name, plugin.ADMIN)
+    assert sopel.has_channel_privilege('#adminchannel', plugin.ADMIN)
+    assert not sopel.has_channel_privilege(name, plugin.OWNER)
+    assert not sopel.has_channel_privilege('#adminchannel', plugin.OWNER)
+    assert not sopel.has_channel_privilege(name, plugin.OPER)
+    assert not sopel.has_channel_privilege('#adminchannel', plugin.OPER)
+
+
+def test_has_channel_privilege_owner(ircfactory, botfactory, tmpconfig):
+    sopel = botfactory.preloaded(tmpconfig)
+    server = ircfactory(sopel)
+    name = Identifier('#adminchannel')
+
+    # join channel
+    server.channel_joined('#adminchannel')
+    server.mode_set('#adminchannel', '+q', [sopel.nick])
+
+    assert sopel.has_channel_privilege(name, plugin.VOICE)
+    assert sopel.has_channel_privilege('#adminchannel', plugin.VOICE)
+    assert sopel.has_channel_privilege(name, plugin.HALFOP)
+    assert sopel.has_channel_privilege('#adminchannel', plugin.HALFOP)
+    assert sopel.has_channel_privilege(name, plugin.OP)
+    assert sopel.has_channel_privilege('#adminchannel', plugin.OP)
+    assert sopel.has_channel_privilege(name, plugin.ADMIN)
+    assert sopel.has_channel_privilege('#adminchannel', plugin.ADMIN)
+    assert sopel.has_channel_privilege(name, plugin.OWNER)
+    assert sopel.has_channel_privilege('#adminchannel', plugin.OWNER)
+    assert not sopel.has_channel_privilege(name, plugin.OPER)
+    assert not sopel.has_channel_privilege('#adminchannel', plugin.OPER)
+
+
+def test_has_channel_privilege_operator(ircfactory, botfactory, tmpconfig):
+    sopel = botfactory.preloaded(tmpconfig)
+    server = ircfactory(sopel)
+    name = Identifier('#adminchannel')
+
+    # join channel
+    server.channel_joined('#adminchannel')
+    server.mode_set('#adminchannel', '+y', [sopel.nick])
+
+    assert sopel.has_channel_privilege(name, plugin.VOICE)
+    assert sopel.has_channel_privilege('#adminchannel', plugin.VOICE)
+    assert sopel.has_channel_privilege(name, plugin.HALFOP)
+    assert sopel.has_channel_privilege('#adminchannel', plugin.HALFOP)
+    assert sopel.has_channel_privilege(name, plugin.OP)
+    assert sopel.has_channel_privilege('#adminchannel', plugin.OP)
+    assert sopel.has_channel_privilege(name, plugin.ADMIN)
+    assert sopel.has_channel_privilege('#adminchannel', plugin.ADMIN)
+    assert sopel.has_channel_privilege(name, plugin.OWNER)
+    assert sopel.has_channel_privilege('#adminchannel', plugin.OWNER)
+    assert sopel.has_channel_privilege(name, plugin.OPER)
+    assert sopel.has_channel_privilege('#adminchannel', plugin.OPER)
+
+
+# -----------------------------------------------------------------------------
 # URL Callbacks
 
 def test_search_url_callbacks(tmpconfig):

@@ -254,3 +254,20 @@ def test_sopel_identifier_memory_id():
     assert memory[user] == test_value
     assert memory['Exirel'] == test_value
     assert memory['exirel'] == test_value
+
+
+def test_sopel_identifier_memory_channel_str():
+    channel = tools.Identifier('#adminchannel')
+    memory = tools.SopelIdentifierMemory()
+    test_value = 'perfect'
+
+    memory['#adminchannel'] = test_value
+    assert channel in memory
+    assert '#adminchannel' in memory
+    assert '#AdminChannel' in memory
+    assert 'adminchannel' not in memory
+    assert 'Exirel' not in memory
+
+    assert memory[channel] == test_value
+    assert memory['#adminchannel'] == test_value
+    assert memory['#AdminChannel'] == test_value
