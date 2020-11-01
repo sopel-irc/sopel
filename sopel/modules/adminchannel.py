@@ -287,15 +287,18 @@ def kickban(bot, trigger):
 
 
 @plugin.require_chanmsg
-@plugin.require_privilege(plugin.OP, ERROR_MESSAGE_NO_PRIV)
 @plugin.command('topic')
 def topic(bot, trigger):
     """Change the channel topic
 
-    The bot must be a channel operator for this command to work.
+    The bot must be a channel operator for this command to work in +t channels.
     """
-    if bot.channels[trigger.sender].privileges[bot.nick] < plugin.HALFOP:
+    mode_t = bot.channels[trigger.sender].modes.get("t", False)
+    if mode_t and not bot.has_channel_privilege(trigger.sender, plugin.HALFOP):
         bot.reply(ERROR_MESSAGE_NOT_OP)
+        return
+    if mode_t and bot.channels[trigger.sender].privileges[trigger.nick] < plugin.HALFOP:
+        bot.reply(ERROR_MESSAGE_NO_PRIV)
         return
     if not trigger.group(2):
         return
