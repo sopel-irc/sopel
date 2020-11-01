@@ -35,6 +35,7 @@ __all__ = [
     'rate',
     'require_account',
     'require_admin',
+    'require_bot_privilege',
     'require_chanmsg',
     'require_owner',
     'require_privilege',
@@ -924,6 +925,45 @@ def require_owner(message=None, reply=False):  # lgtm [py/similar-function]
     # Hack to allow decorator without parens
     if callable(message):
         return actual_decorator(message)
+    return actual_decorator
+
+
+def require_bot_privilege(level, message=None, reply=False):
+    """Decorate a function to require a minimum channel privilege for the bot.
+
+    :param int level: minimum channel privilege the bot needs for this function
+    :param str message: optional message said if the bot's channel privilege
+                        level is insufficient
+    :param bool reply: use :meth:`~.bot.Sopel.reply` instead of
+                       :meth:`~.bot.Sopel.say` when ``True``; defaults to
+                       ``False``
+
+    ``level`` can be one of the privilege level constants defined in this
+    module. If the bot does not have the privilege, the bot will say
+    ``message`` if given. By default, it uses :meth:`bot.say()
+    <.bot.Sopel.say>`, but when ``reply`` is true, then it uses
+    :meth:`bot.reply() <.bot.Sopel.reply>` instead.
+
+    Privilege requirements are ignored in private messages.
+
+    .. versionadded:: 7.1
+    """
+    def actual_decorator(function):
+        @functools.wraps(function)
+        def guarded(bot, trigger, *args, **kwargs):
+            # If this is a privmsg, ignore privilege requirements
+            if trigger.is_privmsg:
+                return function(bot, trigger, *args, **kwargs)
+
+            if not bot.has_channel_privilege(trigger.sender, level):
+                if message and not callable(message):
+                    if reply:
+                        bot.reply(message)
+                    else:
+                        bot.say(message)
+            else:
+                return function(bot, trigger, *args, **kwargs)
+        return guarded
     return actual_decorator
 
 

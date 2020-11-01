@@ -80,6 +80,18 @@ better to limit who can trigger them. There are decorators for that:
   trigger the rule
 * :func:`sopel.plugin.require_owner`: only the bot's owner can trigger the rule
 
+Sometimes it's not the channel privilege level of the user who triggers a
+command that matters, but the **bot's** privilege level. For that, there are
+two options:
+
+* :func:`sopel.plugin.require_bot_privilege`: this decorator is similar to
+  the ``require_privilege`` decorator, but it checks the bot's privilege level
+  instead of the user's; works only for channel messages, not private messages;
+  and you probably want to use it with the ``require_chanmsg`` decorator.
+* :meth:`bot.has_channel_privilege() <sopel.bot.Sopel.has_channel_privilege>`
+  is a method that can be used to check the bot's privilege level in a channel,
+  which can be used in any callable.
+
 .. __: https://ircv3.net/specs/extensions/account-tag-3.2
 
 Rate limiting
