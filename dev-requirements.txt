@@ -1,7 +1,7 @@
 coveralls<2.0; python_version < '3.5'
 coveralls>=2.0; python_version >= '3.5'
 flake8<3.6.0; python_version == '3.3'
-flake8>=3.7.0,<3.8.0; python_version != '3.3'
+flake8>=3.8.0,<3.9.0; python_version != '3.3'
 flake8-coding
 flake8-future-import<0.4.6
 flake8-import-order; python_version > '3.3'
