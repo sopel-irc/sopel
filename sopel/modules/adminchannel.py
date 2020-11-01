@@ -28,16 +28,14 @@ def default_mask(trigger):
 
 
 @plugin.require_chanmsg
-@plugin.require_privilege(plugin.OP, ERROR_MESSAGE_NO_PRIV)
+@plugin.require_privilege(plugin.OP, ERROR_MESSAGE_NO_PRIV, reply=True)
+@plugin.require_bot_privilege(plugin.OP, ERROR_MESSAGE_NOT_OP, reply=True)
 @plugin.command('op')
 def op(bot, trigger):
     """
     Command to op users in a room. If no nick is given,
     Sopel will op the nick who sent the command
     """
-    if bot.channels[trigger.sender].privileges[bot.nick] < plugin.OP:
-        bot.reply(ERROR_MESSAGE_NOT_OP)
-        return
     nick = trigger.group(2)
     channel = trigger.sender
     if not nick:
@@ -46,16 +44,14 @@ def op(bot, trigger):
 
 
 @plugin.require_chanmsg
-@plugin.require_privilege(plugin.OP, ERROR_MESSAGE_NO_PRIV)
+@plugin.require_privilege(plugin.OP, ERROR_MESSAGE_NO_PRIV, reply=True)
+@plugin.require_bot_privilege(plugin.OP, ERROR_MESSAGE_NOT_OP, reply=True)
 @plugin.command('deop')
 def deop(bot, trigger):
     """
     Command to deop users in a room. If no nick is given,
     Sopel will deop the nick who sent the command
     """
-    if bot.channels[trigger.sender].privileges[bot.nick] < plugin.OP:
-        bot.reply(ERROR_MESSAGE_NOT_OP)
-        return
     nick = trigger.group(2)
     channel = trigger.sender
     if not nick:
@@ -64,16 +60,14 @@ def deop(bot, trigger):
 
 
 @plugin.require_chanmsg
-@plugin.require_privilege(plugin.OP, ERROR_MESSAGE_NO_PRIV)
+@plugin.require_privilege(plugin.OP, ERROR_MESSAGE_NO_PRIV, reply=True)
+@plugin.require_bot_privilege(plugin.HALFOP, ERROR_MESSAGE_NOT_OP, reply=True)
 @plugin.command('voice')
 def voice(bot, trigger):
     """
     Command to voice users in a room. If no nick is given,
     Sopel will voice the nick who sent the command
     """
-    if bot.channels[trigger.sender].privileges[bot.nick] < plugin.HALFOP:
-        bot.reply(ERROR_MESSAGE_NOT_OP)
-        return
     nick = trigger.group(2)
     channel = trigger.sender
     if not nick:
@@ -82,16 +76,14 @@ def voice(bot, trigger):
 
 
 @plugin.require_chanmsg
-@plugin.require_privilege(plugin.OP, ERROR_MESSAGE_NO_PRIV)
+@plugin.require_privilege(plugin.OP, ERROR_MESSAGE_NO_PRIV, reply=True)
+@plugin.require_bot_privilege(plugin.HALFOP, ERROR_MESSAGE_NOT_OP, reply=True)
 @plugin.command('devoice')
 def devoice(bot, trigger):
     """
     Command to devoice users in a room. If no nick is given,
     Sopel will devoice the nick who sent the command
     """
-    if bot.channels[trigger.sender].privileges[bot.nick] < plugin.HALFOP:
-        bot.reply(ERROR_MESSAGE_NOT_OP)
-        return
     nick = trigger.group(2)
     channel = trigger.sender
     if not nick:
@@ -100,14 +92,12 @@ def devoice(bot, trigger):
 
 
 @plugin.require_chanmsg
-@plugin.require_privilege(plugin.OP, ERROR_MESSAGE_NO_PRIV)
+@plugin.require_privilege(plugin.OP, ERROR_MESSAGE_NO_PRIV, reply=True)
+@plugin.require_bot_privilege(plugin.HALFOP, ERROR_MESSAGE_NOT_OP, reply=True)
 @plugin.command('kick')
 @plugin.priority('high')
 def kick(bot, trigger):
     """Kick a user from the channel."""
-    if bot.channels[trigger.sender].privileges[bot.nick] < plugin.HALFOP:
-        bot.reply(ERROR_MESSAGE_NOT_OP)
-        return
     text = trigger.group().split()
     argc = len(text)
     if argc < 2:
@@ -153,7 +143,8 @@ def configureHostMask(mask):
 
 
 @plugin.require_chanmsg
-@plugin.require_privilege(plugin.OP, ERROR_MESSAGE_NO_PRIV)
+@plugin.require_privilege(plugin.OP, ERROR_MESSAGE_NO_PRIV, reply=True)
+@plugin.require_bot_privilege(plugin.HALFOP, ERROR_MESSAGE_NOT_OP, reply=True)
 @plugin.command('ban')
 @plugin.priority('high')
 def ban(bot, trigger):
@@ -161,9 +152,6 @@ def ban(bot, trigger):
 
     The bot must be a channel operator for this command to work.
     """
-    if bot.channels[trigger.sender].privileges[bot.nick] < plugin.HALFOP:
-        bot.reply(ERROR_MESSAGE_NOT_OP)
-        return
     text = trigger.group().split()
     argc = len(text)
     if argc < 2:
@@ -183,16 +171,14 @@ def ban(bot, trigger):
 
 
 @plugin.require_chanmsg
-@plugin.require_privilege(plugin.OP, ERROR_MESSAGE_NO_PRIV)
+@plugin.require_privilege(plugin.OP, ERROR_MESSAGE_NO_PRIV, reply=True)
+@plugin.require_bot_privilege(plugin.HALFOP, ERROR_MESSAGE_NOT_OP, reply=True)
 @plugin.command('unban')
 def unban(bot, trigger):
     """Unban a user from the channel
 
     The bot must be a channel operator for this command to work.
     """
-    if bot.channels[trigger.sender].privileges[bot.nick] < plugin.HALFOP:
-        bot.reply(ERROR_MESSAGE_NOT_OP)
-        return
     text = trigger.group().split()
     argc = len(text)
     if argc < 2:
@@ -212,16 +198,14 @@ def unban(bot, trigger):
 
 
 @plugin.require_chanmsg
-@plugin.require_privilege(plugin.OP, ERROR_MESSAGE_NO_PRIV)
+@plugin.require_privilege(plugin.OP, ERROR_MESSAGE_NO_PRIV, reply=True)
+@plugin.require_bot_privilege(plugin.OP, ERROR_MESSAGE_NOT_OP, reply=True)
 @plugin.command('quiet')
 def quiet(bot, trigger):
     """Quiet a user
 
     The bot must be a channel operator for this command to work.
     """
-    if bot.channels[trigger.sender].privileges[bot.nick] < plugin.OP:
-        bot.reply(ERROR_MESSAGE_NOT_OP)
-        return
     text = trigger.group().split()
     argc = len(text)
     if argc < 2:
@@ -241,16 +225,14 @@ def quiet(bot, trigger):
 
 
 @plugin.require_chanmsg
-@plugin.require_privilege(plugin.OP, ERROR_MESSAGE_NO_PRIV)
+@plugin.require_privilege(plugin.OP, ERROR_MESSAGE_NO_PRIV, reply=True)
+@plugin.require_bot_privilege(plugin.OP, ERROR_MESSAGE_NOT_OP, reply=True)
 @plugin.command('unquiet')
 def unquiet(bot, trigger):
     """Unquiet a user
 
     The bot must be a channel operator for this command to work.
     """
-    if bot.channels[trigger.sender].privileges[bot.nick] < plugin.OP:
-        bot.reply(ERROR_MESSAGE_NOT_OP)
-        return
     text = trigger.group().split()
     argc = len(text)
     if argc < 2:
@@ -270,7 +252,8 @@ def unquiet(bot, trigger):
 
 
 @plugin.require_chanmsg
-@plugin.require_privilege(plugin.OP, ERROR_MESSAGE_NO_PRIV)
+@plugin.require_privilege(plugin.OP, ERROR_MESSAGE_NO_PRIV, reply=True)
+@plugin.require_bot_privilege(plugin.OP, ERROR_MESSAGE_NOT_OP, reply=True)
 @plugin.command('kickban', 'kb')
 @plugin.example('.kickban [#chan] user1 user!*@* get out of here')
 @plugin.priority('high')
@@ -279,9 +262,6 @@ def kickban(bot, trigger):
 
     The bot must be a channel operator for this command to work.
     """
-    if bot.channels[trigger.sender].privileges[bot.nick] < plugin.HALFOP:
-        bot.reply(ERROR_MESSAGE_NOT_OP)
-        return
     text = trigger.group().split()
     argc = len(text)
     if argc < 4:
