@@ -614,6 +614,8 @@ def get_logger(plugin_name):
     external plugins can't benefit from it with ``logging.getLogger(__name__)``
     as they won't be in the same namespace. This function uses the
     ``plugin_name`` with a prefix inside this namespace.
+
+    .. versionadded:: 7.0
     """
     return logging.getLogger('sopel.externals.%s' % plugin_name)
 
