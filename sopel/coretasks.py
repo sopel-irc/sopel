@@ -178,7 +178,11 @@ def startup(bot, trigger):
     auth_after_register(bot)
 
     modes = bot.config.core.modes
-    bot.write(('MODE', '%s +%s' % (bot.nick, modes)))
+    if modes:
+        if not modes.startswith(('+', '-')):
+            # Assume "+" by default.
+            modes = '+' + modes
+        bot.write(('MODE', bot.nick, modes))
 
     bot.memory['retry_join'] = dict()
 
