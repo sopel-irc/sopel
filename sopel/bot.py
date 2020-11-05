@@ -220,7 +220,7 @@ class Sopel(irc.AbstractBot):
         if channel not in self.channels:
             raise RuntimeError('Unknown channel %s' % channel)
 
-        return self.channels[channel].privileges[self.nick] >= privilege
+        return self.channels[channel].has_privilege(self.nick, privilege)
 
     # signal handlers
 
