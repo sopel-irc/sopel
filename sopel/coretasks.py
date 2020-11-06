@@ -360,13 +360,21 @@ def handle_names(bot, trigger):
 @module.unblockable
 def track_modes(bot, trigger):
     """Track usermode changes and keep our lists of ops up to date."""
-    # Mode message format: <channel> *( ( "-" / "+" ) *<modes> *<modeparams> )
+    channel = Identifier(trigger.args[0])
+    if channel.is_nick():
+        # We can just ignore MODE messages that appear to be for a user/nick.
+        # TODO: `Identifier.is_nick()` doesn't handle CHANTYPES from ISUPPORT
+        # numeric (005); it still uses a hard-coded list of channel prefixes.
+        return
+
+    # Relevant format: MODE <channel> *( ( "-" / "+" ) *<modes> *<modeparams> )
     if len(trigger.args) < 3:
-        # We need at least [channel, mode, nickname] to do anything useful
-        # MODE messages with fewer args won't help us
+        # If the MODE message appears to be for a channel, we need at least
+        # [channel, mode, nickname] to do anything useful.
         LOGGER.debug("Received an apparently useless MODE message: {}"
                      .format(trigger.raw))
         return
+
     # Our old MODE parsing code checked if any of the args was empty.
     # Somewhere around here would be a good place to re-implement that if it's
     # actually necessary to guard against some non-compliant IRCd. But for now
@@ -377,15 +385,6 @@ def track_modes(bot, trigger):
 
     # From here on, we will make a (possibly dangerous) assumption that the
     # received MODE message is more-or-less compliant
-    channel = Identifier(trigger.args[0])
-    # If the first character of where the mode is being set isn't a #
-    # then it's a user mode, not a channel mode, so we'll ignore it.
-    # TODO: Handle CHANTYPES from ISUPPORT numeric (005)
-    # (Actually, most of this function should be rewritten again when we parse
-    # ISUPPORT...)
-    if channel.is_nick():
-        return
-
     modestring = trigger.args[1]
     nicks = [Identifier(nick) for nick in trigger.args[2:]]
 
