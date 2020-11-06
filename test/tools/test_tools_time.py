@@ -31,3 +31,15 @@ def test_validate_timezone_invalid():
 
     with pytest.raises(ValueError):
         time.validate_timezone('Paris,Europe')
+
+
+def test_validate_format():
+    assert time.validate_format('%Y') == '%Y'
+    assert time.validate_format('%Y%m%d') == '%Y%m%d'
+    assert time.validate_format('%b %d %Y %H:%M:%S') == '%b %d %Y %H:%M:%S'
+    assert time.validate_format('some text') == 'some text'
+
+
+def test_validate_format_none():
+    with pytest.raises(ValueError):
+        time.validate_format(None)
