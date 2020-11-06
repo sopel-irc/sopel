@@ -2,13 +2,12 @@
 """Tests sopel.tools"""
 from __future__ import absolute_import, division, print_function, unicode_literals
 
-from datetime import timedelta
 import re
 
 import pytest
 
 from sopel import tools
-from sopel.tools.time import seconds_to_human
+
 
 TMP_CONFIG = """
 [core]
@@ -202,20 +201,6 @@ def test_get_sendable_message_two_bytes():
     text, excess = tools.get_sendable_message('ααα α', 4)
     assert text == 'αα'
     assert excess == 'α α'
-
-
-def test_time_timedelta_formatter():
-    payload = 10000
-    assert seconds_to_human(payload) == '2 hours, 46 minutes ago'
-
-    payload = -2938124
-    assert seconds_to_human(payload) == 'in 1 month, 3 days'
-
-    payload = timedelta(hours=4)
-    assert seconds_to_human(payload) == '4 hours ago'
-
-    payload = timedelta(hours=-4)
-    assert seconds_to_human(payload) == 'in 4 hours'
 
 
 def test_chain_loaders(configfactory):
