@@ -35,7 +35,30 @@ def get_cnames(domain):
 
 
 def safe(string):
-    """Remove newlines from a string."""
+    """Remove newlines from a string.
+
+    :param str string: input text to process
+    :return: the string without newlines
+    :rtype: str
+    :raises TypeError: when ``string`` is ``None``
+
+    This function removes newlines from a string and always returns a unicode
+    string (as in ``str`` on Python 3 and ``unicode`` on Python 2), but doesn't
+    strip or alter it in any other way::
+
+        >>> safe('some text\\r\\n')
+        'some text'
+
+    This is useful to ensure a string can be used in a IRC message.
+
+    .. versionchanged:: 7.1
+
+        This function now raises a :exc:`TypeError` instead of an unpredictable
+        behaviour when given ``None``.
+
+    """
+    if string is None:
+        raise TypeError('safe function requires a string, not NoneType')
     if sys.version_info.major >= 3 and isinstance(string, bytes):
         string = string.decode("utf8")
     elif sys.version_info.major < 3:
