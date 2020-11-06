@@ -63,6 +63,11 @@ def nickname_command_line(nick, command, groups):
     return "{}: {} {}".format(nick, command, ' '.join(groups.values()))
 
 
+@pytest.fixture
+def action_command_line(command, groups):
+    return "{} {}".format(command, ' '.join(groups.values()))
+
+
 def test_command_groups(prefix, command, groups, command_line):
     regex = tools.get_command_regexp(prefix, command)
     match = re.match(regex, command_line)
@@ -92,6 +97,18 @@ def test_nickname_command_aliased(command, nick, alias_nicks, groups, nickname_c
     regex = tools.get_nickname_command_regexp(nick, command, alias_nicks)
     match = re.match(regex, aliased_command_line)
     assert match.group(0) == aliased_command_line
+    assert match.group(1) == command
+    assert match.group(2) == ' '.join(groups.values())
+    assert match.group(3) == groups[3]
+    assert match.group(4) == groups[4]
+    assert match.group(5) == groups[5]
+    assert match.group(6) == groups[6]
+
+
+def test_action_command_groups(command, groups, action_command_line):
+    regex = tools.get_action_command_regexp(command)
+    match = re.match(regex, action_command_line)
+    assert match.group(0) == action_command_line
     assert match.group(1) == command
     assert match.group(2) == ' '.join(groups.values())
     assert match.group(3) == groups[3]

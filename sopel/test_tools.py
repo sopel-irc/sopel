@@ -24,13 +24,7 @@ try:
 except ImportError:
     import configparser as ConfigParser
 
-from sopel.bot import SopelWrapper
-import sopel.config
-import sopel.config.core_section
-import sopel.plugins
-import sopel.tools
-import sopel.tools.target
-import sopel.trigger
+from sopel import bot, config, loader, plugins, tools, trigger
 
 
 __all__ = [
@@ -47,14 +41,14 @@ if sys.version_info.major >= 3:
     basestring = str
 
 
-class MockConfig(sopel.config.Config):
-    @sopel.tools.deprecated('use configfactory fixture instead', '7.0', '8.0')
+class MockConfig(config.Config):
+    @tools.deprecated('use configfactory fixture instead', '7.0', '8.0')
     def __init__(self):
         self.filename = tempfile.mkstemp()[1]
         self.parser = ConfigParser.RawConfigParser(allow_no_value=True)
         self.parser.add_section('core')
         self.parser.set('core', 'owner', 'Embolalia')
-        self.define_section('core', sopel.config.core_section.CoreSection)
+        self.define_section('core', config.core_section.CoreSection)
         self.get = self.parser.get
 
     def define_section(self, name, cls_):
@@ -64,20 +58,20 @@ class MockConfig(sopel.config.Config):
 
 
 class MockSopel(object):
-    @sopel.tools.deprecated('use botfactory fixture instead', '7.0', '8.0')
+    @tools.deprecated('use botfactory fixture instead', '7.0', '8.0')
     def __init__(self, nick, admin=False, owner=False):
         self.nick = nick
         self.user = "sopel"
 
-        channel = sopel.tools.Identifier("#Sopel")
-        self.channels = sopel.tools.SopelIdentifierMemory()
-        self.channels[channel] = sopel.tools.target.Channel(channel)
+        channel = tools.Identifier("#Sopel")
+        self.channels = tools.SopelIdentifierMemory()
+        self.channels[channel] = tools.target.Channel(channel)
 
-        self.users = sopel.tools.SopelIdentifierMemory()
-        self.privileges = sopel.tools.SopelMemory()
+        self.users = tools.SopelIdentifierMemory()
+        self.privileges = tools.SopelMemory()
 
-        self.memory = sopel.tools.SopelMemory()
-        self.memory['url_callbacks'] = sopel.tools.SopelMemory()
+        self.memory = tools.SopelMemory()
+        self.memory['url_callbacks'] = tools.SopelMemory()
 
         self.config = MockConfig()
         self._init_config()
@@ -119,14 +113,14 @@ class MockSopel(object):
             pass
 
     def search_url_callbacks(self, url):
-        for regex, function in sopel.tools.iteritems(self.memory['url_callbacks']):
+        for regex, function in tools.iteritems(self.memory['url_callbacks']):
             match = regex.search(url)
             if match:
                 yield function, match
 
 
-class MockSopelWrapper(SopelWrapper):
-    @sopel.tools.deprecated('use sopel.bot.SopelWrapper instead', '7.0', '8.0')
+class MockSopelWrapper(bot.SopelWrapper):
+    @tools.deprecated('use sopel.bot.SopelWrapper instead', '7.0', '8.0')
     def __init__(self, *args, **kwargs):
         super(MockSopelWrapper, self).__init__(*args, **kwargs)
 
@@ -167,33 +161,33 @@ def get_example_test(tested_func, msg, results, privmsg, admin,
         )
         settings = configfactory('default.cfg', test_config)
         url_schemes = settings.core.auto_url_schemes
-        bot = botfactory(settings)
-        server = ircfactory(bot)
+        mockbot = botfactory(settings)
+        server = ircfactory(mockbot)
         server.channel_joined('#Sopel')
 
-        match = None
-        if hasattr(tested_func, "commands"):
-            for command in tested_func.commands:
-                regexp = sopel.tools.get_command_regexp(".", command)
-                match = regexp.match(msg)
-                if match:
-                    break
-        assert match, "Example did not match any command."
+        if not hasattr(tested_func, 'commands'):
+            raise AssertionError('Function is not a command.')
 
-        sender = bot.nick if privmsg else "#channel"
-        hostmask = "%s!%s@%s" % (bot.nick, "UserName", "example.com")
+        loader.clean_callable(tested_func, settings)
+        test_rule = plugins.rules.Command.from_callable(settings, tested_func)
+        parse_results = list(test_rule.parse(msg))
+        assert parse_results, "Example did not match any command."
+
+        match = parse_results[0]
+        sender = mockbot.nick if privmsg else "#channel"
+        hostmask = "%s!%s@%s" % (mockbot.nick, "UserName", "example.com")
 
         # TODO enable message tags
         full_message = ':{} PRIVMSG {} :{}'.format(hostmask, sender, msg)
-        pretrigger = sopel.trigger.PreTrigger(
-            bot.nick, full_message, url_schemes=url_schemes)
-        trigger = sopel.trigger.Trigger(bot.settings, pretrigger, match)
-        pattern = re.compile(r'^%s: ' % re.escape(bot.nick))
+        pretrigger = trigger.PreTrigger(
+            mockbot.nick, full_message, url_schemes=url_schemes)
+        test_trigger = trigger.Trigger(mockbot.settings, pretrigger, match)
+        pattern = re.compile(r'^%s: ' % re.escape(mockbot.nick))
 
         # setup module
         module = sys.modules[tested_func.__module__]
         if hasattr(module, 'setup'):
-            module.setup(bot)
+            module.setup(mockbot)
 
         def isnt_ignored(value):
             """Return True if value doesn't match any re in ignore list."""
@@ -204,12 +198,15 @@ def get_example_test(tested_func, msg, results, privmsg, admin,
         expected_output_count = 0
         for _i in range(repeat):
             expected_output_count += len(results)
-            wrapper = SopelWrapper(bot, trigger)
-            tested_func(wrapper, trigger)
+            wrapper = bot.SopelWrapper(mockbot, test_trigger)
+            tested_func(wrapper, test_trigger)
 
             output_triggers = (
-                sopel.trigger.PreTrigger(
-                    bot.nick, message.decode('utf-8'), url_schemes=url_schemes)
+                trigger.PreTrigger(
+                    mockbot.nick,
+                    message.decode('utf-8'),
+                    url_schemes=url_schemes,
+                )
                 for message in wrapper.backend.message_sent
             )
             output_texts = (
@@ -263,6 +260,7 @@ def insert_into_module(func, module_name, base_name, prefix):
     setattr(module, func.__name__, func)
 
 
+@tools.deprecated('pytest now runs @plugin.example tests directly', '7.1', '8.0')
 def run_example_tests(filename, tb='native', multithread=False, verbose=False):
     # These are only required when running tests, so import them here rather
     # than at the module level.

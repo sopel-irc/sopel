@@ -56,6 +56,7 @@ __all__ = [
     'URLCallback',
 ]
 
+
 LOGGER = logging.getLogger(__name__)
 
 IGNORE_RATE_LIMIT = 1  # equivalent to sopel.plugin.NOLIMIT
@@ -1017,6 +1018,24 @@ class Command(NamedRuleMixin, Rule):
         <Bot> You just invoked the command 'dummy' (as 'dummy-alias')
 
     """
+    # This regexp matches equivalently and produces the same
+    # groups 1 and 2 as the old regexp: r'^%s(%s)(?: +(.*))?$'
+    # The only differences should be handling all whitespace
+    # like spaces and the addition of groups 3-6.
+    PATTERN_TEMPLATE = r"""
+        (?:{prefix})({command}) # Command as group 1.
+        (?:\s+              # Whitespace to end command.
+        (                   # Rest of the line as group 2.
+        (?:(\S+))?          # Parameters 1-4 as groups 3-6.
+        (?:\s+(\S+))?
+        (?:\s+(\S+))?
+        (?:\s+(\S+))?
+        .*                  # Accept anything after the parameters.
+                            # Leave it up to the plugin to parse the line.
+        ))?                 # Group 2 must be None, if there are no parameters.
+        $                   # EoL, so there are no partial matches.
+    """
+
     @classmethod
     def from_callable(cls, settings, handler):
         prefix = settings.core.prefix
@@ -1093,13 +1112,18 @@ class Command(NamedRuleMixin, Rule):
         * the rule's name (escaped for regex if needed),
         * all of its aliases (escaped for regex if needed),
 
-        and everything is then given to :func:`sopel.tools.get_command_regexp`,
-        which creates a compiled regex to return.
+        to create a compiled regex to return.
         """
         name = [self.escape_name(self._name)]
         aliases = [self.escape_name(alias) for alias in self._aliases]
         pattern = r'|'.join(name + aliases)
-        return tools.get_command_regexp(self._prefix, pattern)
+
+        # Escape all whitespace with a single backslash.
+        # This ensures that regexp in the prefix is treated as it was before
+        # the actual regexp was changed to use the verbose syntax.
+        prefix = re.sub(r"(\s)", r"\\\1", self._prefix)
+        pattern = self.PATTERN_TEMPLATE.format(prefix=prefix, command=pattern)
+        return re.compile(pattern, re.IGNORECASE | re.VERBOSE)
 
 
 class NickCommand(NamedRuleMixin, Rule):
@@ -1124,6 +1148,22 @@ class NickCommand(NamedRuleMixin, Rule):
 
     Apart from that, it behaves exactly like a :class:`generic rule <Rule>`.
     """
+    PATTERN_TEMPLATE = r"""
+        ^
+        $nickname[:,]? # Nickname.
+        \s+({command}) # Command as group 1.
+        (?:\s+         # Whitespace to end command.
+        (              # Rest of the line as group 2.
+        (?:(\S+))?     # Parameters 1-4 as groups 3-6.
+        (?:\s+(\S+))?
+        (?:\s+(\S+))?
+        (?:\s+(\S+))?
+        .*             # Accept anything after the parameters. Leave it up to
+                       # the plugin to parse the line.
+        ))?            # Group 1 must be None, if there are no parameters.
+        $              # EoL, so there are no partial matches.
+    """
+
     @classmethod
     def from_callable(cls, settings, handler):
         nick = settings.core.nick
@@ -1196,15 +1236,15 @@ class NickCommand(NamedRuleMixin, Rule):
         * the rule's name (escaped for regex),
         * all of its aliases (escaped for regex),
 
-        and everything is then given to
-        :func:`sopel.tools.get_nickname_command_regexp`, which creates a
-        compiled regex to return.
+        to create a compiled regex to return.
         """
         name = [self.escape_name(self._name)]
         aliases = [self.escape_name(alias) for alias in self._aliases]
         pattern = r'|'.join(name + aliases)
-        return tools.get_nickname_command_regexp(
-            self._nick, pattern, self._nick_aliases)
+        return tools.compile_rule(
+            self._nick,
+            self.PATTERN_TEMPLATE.format(command=pattern),
+            self._nick_aliases)
 
 
 class ActionCommand(NamedRuleMixin, Rule):
@@ -1226,6 +1266,21 @@ class ActionCommand(NamedRuleMixin, Rule):
     Apart from that, it behaves exactly like a :class:`generic rule <Rule>`.
     """
     INTENT_REGEX = re.compile(r'ACTION', re.IGNORECASE)
+    PATTERN_TEMPLATE = r"""
+        ({command})         # Command as group 1.
+        (?:\s+              # Whitespace to end command.
+        (                   # Rest of the line as group 2.
+        (?:(\S+))?          # Parameters 1-4 as groups 3-6.
+        (?:\s+(\S+))?
+        (?:\s+(\S+))?
+        (?:\s+(\S+))?
+        .*                  # Accept anything after the parameters.
+                            # Leave it up to the plugin to parse
+                            # the line.
+        ))?                 # Group 2 must be None, if there are no
+                            # parameters.
+        $                   # EoL, so there are no partial matches.
+    """
 
     @classmethod
     def from_callable(cls, settings, handler):
@@ -1267,14 +1322,13 @@ class ActionCommand(NamedRuleMixin, Rule):
         * the rule's name (escaped for regex if needed),
         * all of its aliases (escaped for regex if needed),
 
-        and everything is then given to
-        :func:`sopel.tools.get_action_command_regexp`, which creates a compiled
-        regex to return.
+        to create a compiled regex to return.
         """
         name = [self.escape_name(self._name)]
         aliases = [self.escape_name(alias) for alias in self._aliases]
         pattern = r'|'.join(name + aliases)
-        return tools.get_action_command_regexp(pattern)
+        pattern = self.PATTERN_TEMPLATE.format(command=pattern)
+        return re.compile(pattern, re.IGNORECASE | re.VERBOSE)
 
     def match_intent(self, intent):
         """Tell if ``intent`` is an ``ACTION``.
