@@ -15,6 +15,7 @@ import logging
 import re
 import sys
 
+import pytz
 import requests
 
 from sopel import formatting, plugin, tools
@@ -29,7 +30,8 @@ else:
 LOGGER = logging.getLogger(__name__)
 
 
-DATE_FORMAT = '%Y-%m-%d %H:%M:%S'
+DATE_FORMAT = '%Y-%m-%d %H:%M:%S %z'
+DEFAULT_CACHE_TIME = '2000-01-01 00:00:00 +0000'
 IANA_LIST_URI = 'https://data.iana.org/TLD/tlds-alpha-by-domain.txt'
 WIKI_PAGE_URI = 'https://en.wikipedia.org/wiki/List_of_Internet_top-level_domains'
 r_tld = re.compile(r'^\.(\S+)')
@@ -40,11 +42,11 @@ def setup(bot):
     bot.memory['tld_list_cache'] = bot.db.get_plugin_value(
         'tld', 'tld_list_cache', [])
     bot.memory['tld_list_cache_updated'] = bot.db.get_plugin_value(
-        'tld', 'tld_list_cache_updated', '2000-01-01 00:00:00')
+        'tld', 'tld_list_cache_updated', DEFAULT_CACHE_TIME)
     bot.memory['tld_data_cache'] = bot.db.get_plugin_value(
         'tld', 'tld_data_cache', {})
     bot.memory['tld_data_cache_updated'] = bot.db.get_plugin_value(
-        'tld', 'tld_data_cache_updated', '2000-01-01 00:00:00')
+        'tld', 'tld_data_cache_updated', DEFAULT_CACHE_TIME)
 
     # restore datetime objects from string format
     bot.memory['tld_list_cache_updated'] = datetime.strptime(
@@ -54,13 +56,13 @@ def setup(bot):
 
 
 def shutdown(bot):
-    if bot.memory['tld_list_cache']:
+    if bot.memory.get('tld_list_cache'):
         bot.db.set_plugin_value(
             'tld', 'tld_list_cache', bot.memory['tld_list_cache'])
         bot.db.set_plugin_value(
             'tld', 'tld_list_cache_updated',
             bot.memory['tld_list_cache_updated'].strftime(DATE_FORMAT))
-    if bot.memory['tld_data_cache']:
+    if bot.memory.get('tld_data_cache'):
         bot.db.set_plugin_value(
             'tld', 'tld_data_cache', bot.memory['tld_data_cache'])
         bot.db.set_plugin_value(
@@ -195,7 +197,7 @@ class WikipediaTLDListParser(HTMLParser):
         return self.tables
 
 
-def _update_tld_data(bot, which):
+def _update_tld_data(bot, which, force=False):
     if which == 'list':
         then = bot.memory['tld_list_cache_updated']
     elif which == 'data':
@@ -204,13 +206,13 @@ def _update_tld_data(bot, which):
         LOGGER.error("Asked to update unknown cache type '%s'.", which)
         return
 
-    now = datetime.now()
+    now = datetime.now(tz=pytz.utc)
     since = now - then
-    if since.days < 7:
+    if not force and since.days < 7:
         LOGGER.debug(
-            "Skipping TLD %s cache update; the cache is only %d days old.",
+            "Skipping TLD %s cache update; the cache is only %s old.",
             which,
-            since.days,
+            '1 day' if since.days == 1 else ('%d days' % since.days),
         )
         return
 
@@ -253,9 +255,9 @@ def _update_tld_data(bot, which):
 
 
 @plugin.interval(60 * 60)
-def update_caches(bot):
-    _update_tld_data(bot, 'list')
-    _update_tld_data(bot, 'data')
+def update_caches(bot, force=False):
+    _update_tld_data(bot, 'list', force)
+    _update_tld_data(bot, 'data', force)
 
 
 @plugin.command('tld')
@@ -269,7 +271,7 @@ def gettld(bot, trigger):
         return  # Stop if no tld argument is provided
     tld = tld.strip('.').lower()
 
-    if not bot.memory['tld_list_cache']:
+    if not bot.memory.get('tld_list_cache'):
         _update_tld_data(bot, 'list')
     tld_list = bot.memory['tld_list_cache']
 
@@ -283,7 +285,7 @@ def gettld(bot, trigger):
             .format(tld))
         return
 
-    if not bot.memory['tld_data_cache']:
+    if not bot.memory.get('tld_data_cache'):
         _update_tld_data(bot, 'data')
     tld_data = bot.memory['tld_data_cache']
 
@@ -313,3 +315,56 @@ def gettld(bot, trigger):
         message = usable + ' […]'
 
     bot.say(message)
+
+
+@plugin.command('tldcache')
+@plugin.example('.tldcache clear', user_help=True)
+@plugin.example('.tldcache update', user_help=True)
+@plugin.example('.tldcache', user_help=True)
+@plugin.require_admin
+def tld_cache_command(bot, trigger):
+    subcommand = trigger.group(2)
+    if subcommand is None:
+        times = {}
+        for kind in ['list', 'data']:
+            time = bot.memory.get('tld_' + kind + '_cache_updated')
+
+            if time is None or time == datetime.strptime(DEFAULT_CACHE_TIME, DATE_FORMAT):
+                times[kind] = '(not cached)'
+                continue
+
+            times[kind] = tools.time.format_time(
+                db=bot.db,
+                config=bot.config,
+                nick=trigger.nick,
+                channel=trigger.sender if not trigger.sender.is_nick() else None,
+                time=time,
+            )
+
+        bot.reply(
+            "IANA list updated at {}; Wikipedia data last fetched at {}."
+            .format(times['list'], times['data']))
+        return
+
+    subcommand = subcommand.lower()
+    if subcommand == 'update':
+        bot.reply("Requesting updated IANA list and Wikipedia data.")
+        update_caches(bot, force=True)
+    elif subcommand == 'clear':
+        for key in [
+            'tld_list_cache',
+            'tld_list_cache_updated',
+            'tld_data_cache',
+            'tld_data_cache_updated',
+        ]:
+            bot.db.delete_plugin_value('tld', key)
+            try:
+                del bot.memory[key]
+            except KeyError:
+                pass
+        bot.reply("Cleared all cached TLD data.")
+    else:
+        bot.reply(
+            "Unknown subcommand '{}'; recognized values are 'update' and 'clear'."
+            .format(subcommand)
+        )
