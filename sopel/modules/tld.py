@@ -30,10 +30,18 @@ else:
 LOGGER = logging.getLogger(__name__)
 
 
-DATE_FORMAT = '%Y-%m-%d %H:%M:%S %z'
-DEFAULT_CACHE_TIME = '2000-01-01 00:00:00 +0000'
+def _strptime_as_utc(time_string):
+    return datetime.strptime(
+        time_string, DATE_FORMAT).replace(tzinfo=pytz.utc)
+
+
+DATE_FORMAT = '%Y-%m-%d %H:%M:%S'
+DEFAULT_CACHE_TIME = '2000-01-01 00:00:00'
+DEFAULT_CACHE_DATETIME = _strptime_as_utc(DEFAULT_CACHE_TIME)
+
 IANA_LIST_URI = 'https://data.iana.org/TLD/tlds-alpha-by-domain.txt'
 WIKI_PAGE_URI = 'https://en.wikipedia.org/wiki/List_of_Internet_top-level_domains'
+
 r_tld = re.compile(r'^\.(\S+)')
 r_idn = re.compile(r'^(xn--[A-Za-z0-9]+)')
 
@@ -48,11 +56,18 @@ def setup(bot):
     bot.memory['tld_data_cache_updated'] = bot.db.get_plugin_value(
         'tld', 'tld_data_cache_updated', DEFAULT_CACHE_TIME)
 
-    # restore datetime objects from string format
-    bot.memory['tld_list_cache_updated'] = datetime.strptime(
-        bot.memory['tld_list_cache_updated'], DATE_FORMAT)
-    bot.memory['tld_data_cache_updated'] = datetime.strptime(
-        bot.memory['tld_data_cache_updated'], DATE_FORMAT)
+    # Restore datetime objects from string format. If parsing fails, consider
+    # that cache obsolete so it will be updated at the next age check.
+    try:
+        bot.memory['tld_list_cache_updated'] = _strptime_as_utc(
+            bot.memory['tld_list_cache_updated'])
+    except ValueError:
+        bot.memory['tld_list_cache_updated'] = DEFAULT_CACHE_DATETIME
+    try:
+        bot.memory['tld_data_cache_updated'] = _strptime_as_utc(
+            bot.memory['tld_data_cache_updated'])
+    except ValueError:
+        bot.memory['tld_data_cache_updated'] = DEFAULT_CACHE_DATETIME
 
 
 def shutdown(bot):
@@ -329,7 +344,7 @@ def tld_cache_command(bot, trigger):
         for kind in ['list', 'data']:
             time = bot.memory.get('tld_' + kind + '_cache_updated')
 
-            if time is None or time == datetime.strptime(DEFAULT_CACHE_TIME, DATE_FORMAT):
+            if time is None or time == DEFAULT_CACHE_DATETIME:
                 times[kind] = '(not cached)'
                 continue
 
