@@ -70,4 +70,4 @@ def note(bot, trigger):
     bot.db.set_nick_value(nick, 'seen_timestamp', time.time())
     bot.db.set_nick_value(nick, 'seen_channel', trigger.sender)
     bot.db.set_nick_value(nick, 'seen_message', trigger)
-    bot.db.set_nick_value(nick, 'seen_action', 'intent' in trigger.tags)
+    bot.db.set_nick_value(nick, 'seen_action', trigger.ctcp is not None)
