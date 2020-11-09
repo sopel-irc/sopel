@@ -6,6 +6,7 @@ import argparse
 import os
 
 from sopel import tools
+from sopel.config import types
 from . import utils
 
 
@@ -196,29 +197,49 @@ def handle_set(options):
     :return: 0 if everything went fine;
              1 if the section and/or key does not exist;
              2 if the settings can't be loaded
+             3 if the input was not valid
     """
     try:
         settings = utils.load_settings(options)
     except Exception as error:
-        tools.stderr(error)
+        tools.stderr('Cannot load settings: ' + str(error))
         return 2
 
-    section = options.section
-    option = options.option
+    section_name = options.section
+    option_name = options.option
     value = options.value
 
     # Make sure the section exists
-    if not settings.parser.has_section(section):
+    section = getattr(settings, section_name, False)
+    if not section:
+        tools.stderr(
+            'Section "%s" does not exist' % section_name)
+        return 1
+
+    # Make sure option exists, if section is static
+    # TODO: With current (7.1-dev) settings loader, only `core` will ever be
+    # a StaticSection, meaning plugin sections' values won't be validated.
+    static_sec = isinstance(section, types.StaticSection)
+    if static_sec and not hasattr(section, option_name):
+        tools.stderr(
+            'Section "%s" does not have an option "%s"'
+            % (section_name, option_name))
+        return 1
+
+    # Validate value if possible
+    descriptor = getattr(section.__class__, option_name) if static_sec else None
+    if descriptor is not None:
         try:
-            settings.parser.add_section(section)
-        except (TypeError, ValueError):
-            tools.stderr('Invalid section name "%s"' % section)
-            return 1
+            value = descriptor._parse(value, settings, section)
+        except ValueError as e:
+            tools.stderr(
+                'Cannot set "{}.{}": {}'.format(section_name, option_name, str(e)))
+            return 3
 
     # Update the option & save config file
-    settings.parser.set(section, option, value)
+    setattr(section, option_name, value)
     settings.save()
-    print('Updated option "{}.{}"'.format(section, option))
+    print('Updated option "{}.{}"'.format(section_name, option_name))
     return 0  # successful operation
 
 
