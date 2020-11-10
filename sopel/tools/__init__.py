@@ -650,14 +650,42 @@ class SopelMemory(dict):
         The dict is locked for other writes while doing so.
         """
         if key in self._deprecated_keys:
+            # Key is marked as deprecated, dead or not
+
+            version = self._deprecated_keys[key].get("version")
+            removed_in = self._deprecated_keys[key].get("removed_in")
+
+            if (
+                removed_in and
+                parse_version(__version__) >= parse_version(removed_in)
+            ):
+                # He's dead, Jim
+                raise ValueError(
+                    'Key "{}" support was removed in {}: {}'.format(
+                        key,
+                        removed_in,
+                        self._deprecated_keys[key]["reason"] + __version__,
+                    )
+                )
+
+            template = 'Key "{key}" is deprecated'
+            if version:
+                template += " since {version}"
+            if removed_in:
+                template += " and will stop working in {removed_in}"
+            template += ": {reason}"
+
             warnings.warn(
-                'Key "{}" is deprecated: {}'.format(
-                    key,
-                    self._deprecated_keys[key],
+                template.format(
+                    key=key,
+                    version=version,
+                    removed_in=removed_in,
+                    reason=self._deprecated_keys[key]["reason"],
                 ),
                 DeprecationWarning,
                 stacklevel=2,
             )
+
         self.lock.acquire()
         result = dict.__setitem__(self, key, value)
         self.lock.release()
@@ -679,15 +707,22 @@ class SopelMemory(dict):
     __ne__ = dict.__ne__
     __hash__ = dict.__hash__
 
-    def deprecate_key(self, key_name, reason):
+    def deprecate_key(self, key_name, reason, version=None, removed_in=None):
         """Mark a key as deprecated
 
         :param str key_name: key to deprecate
         :param str reason: information to show when key is used
+        :param str version: optional version number when the key is deprecated
+        :param str removed_in: optional version number when the deprecated key
+                               will stop working
 
         .. versionadded:: 7.1
         """
-        self._deprecated_keys[key_name] = reason
+        self._deprecated_keys[key_name] = {
+            "reason": reason,
+            "version": version,
+            "removed_in": removed_in,
+        }
 
     @deprecated
     def contains(self, key):

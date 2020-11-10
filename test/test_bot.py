@@ -1059,6 +1059,7 @@ def test_unregister_url_callback_no_memory(tmpconfig):
 
 
 # Remove once manual callback management is gone (8.0)
+@pytest.mark.filterwarnings("ignore::DeprecationWarning")
 def test_register_url_callback_manual_warning(tmpconfig):
     """Test that manually registering a callback produces a deprecation warning"""
     test_pattern = r'https://(www\.)?example\.com'
@@ -1081,6 +1082,58 @@ def test_register_url_callback_manual_warning(tmpconfig):
     assert results[0][0] == url_handler, "Callback must be present"
 
 
+@pytest.mark.filterwarnings("ignore::DeprecationWarning")
+def test_memory_deprecated_warning(tmpconfig):
+    """Test that setting a deprecated key produces a deprecation warning"""
+
+    message = "is deprecated"
+    version_message = message + " since"
+    removed_message = "will stop working in"
+
+    memory = SopelMemory()
+    memory.deprecate_key("vague_key", "Vague reason")
+    memory.deprecate_key("version_key", "Version reason", version="1000.0")
+    memory.deprecate_key("removed_key", "Removal reason", removed_in="1010.0")
+    memory.deprecate_key("both_key", "Both reason", version="1000.0", removed_in="1010.0")
+
+    with pytest.warns(DeprecationWarning) as w:
+        memory["vague_key"] = "Vague value"
+    assert len(w) == 1
+    assert issubclass(w[-1].category, DeprecationWarning)
+    assert message in str(w[-1].message)
+
+    with pytest.warns(DeprecationWarning) as w:
+        memory["version_key"] = "Version value"
+    assert len(w) == 1
+    assert issubclass(w[-1].category, DeprecationWarning)
+    assert version_message in str(w[-1].message)
+
+    with pytest.warns(DeprecationWarning) as w:
+        memory["removed_key"] = "Removed value"
+    assert len(w) == 1
+    assert issubclass(w[-1].category, DeprecationWarning)
+    assert removed_message in str(w[-1].message)
+
+    with pytest.warns(DeprecationWarning) as w:
+        memory["both_key"] = "Both value"
+    assert len(w) == 1
+    assert issubclass(w[-1].category, DeprecationWarning)
+    assert version_message in str(w[-1].message)
+    assert removed_message in str(w[-1].message)
+
+
+def test_memory_deprecated_exception(tmpconfig):
+    """Test that setting a removed key produces an exception"""
+
+    memory = SopelMemory()
+    memory.deprecate_key("deprecated_key", "Reasony reason", removed_in="3.0")
+
+    with pytest.raises(ValueError) as e:
+        memory["deprecated_key"] = "hello"
+
+    assert "was removed in" in str(e.value)
+
+
 def test_memory_no_warning_if_key_not_deprecated(tmpconfig):
     """Test that setting a memory key that isn't deprecated doesn't produce a warning"""
     sopel = bot.Sopel(tmpconfig, daemon=False)
@@ -1092,6 +1145,7 @@ def test_memory_no_warning_if_key_not_deprecated(tmpconfig):
 
 
 # Remove once manual callback management is deprecated (8.0)
+@pytest.mark.filterwarnings("ignore::DeprecationWarning")
 def test_unregister_url_callback_manual(tmpconfig):
     """Test unregister_url_callback removes a specific callback that was added manually"""
     test_pattern = r'https://(www\.)?example\.com'
