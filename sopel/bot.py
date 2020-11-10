@@ -121,6 +121,8 @@ class Sopel(irc.AbstractBot):
                 "Manual management of URL callbacks has been replaced with "
                 "@url and the register_url_callback() functions"
             ),
+            version="7.0",
+            removed_in="8.0",
         )
 
         self.shutdown_methods = []
