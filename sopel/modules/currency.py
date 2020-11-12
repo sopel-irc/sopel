@@ -97,10 +97,17 @@ def build_reply(amount, base, target, out_string):
     rate = float(rate_raw)
     result = float(rate * amount)
 
-    if target == 'BTC':
-        return out_string + ' {:.5f} {},'.format(result, target)
+    digits = 0
+    # up to 10 (8+2) digits precision when result is less than 1
+    # as smaller results need more precision
+    while digits < 8 and 1 / 10**digits > result:
+        digits += 1
 
-    return out_string + ' {:.2f} {},'.format(result, target)
+    digits += 2
+
+    out_string += ' {value:,.{precision}f} {currency},'.format(value=result, precision=digits, currency=target)
+
+    return out_string
 
 
 def exchange(bot, match):
