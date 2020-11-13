@@ -11,7 +11,11 @@ geoip2>=4.0,<5.0; python_version >= '3.6'
 maxminddb<2.0; python_version < '3.6'
 ipaddress<2.0; python_version < '3.3'
 requests>=2.0.0,<3.0.0
+# transitive dependency of requests
+# 2.0 will drop EOL Python 2.7 & 3.5, just like Sopel 8 plans to
+urllib3<1.27; python_version != '3.3' and python_version != '3.4'
 urllib3<1.23; python_version == '3.3'
+urllib3<1.25; python_version == '3.4'
 dnspython<2.0; python_version == '2.7'
 dnspython<1.16.0; python_version == '3.3'
 dnspython<3.0; python_version >= '3.4'
