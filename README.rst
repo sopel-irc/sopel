@@ -83,15 +83,13 @@ Questions?
 
 Join us in `#sopel <irc://irc.freenode.net/#sopel>`_ on Freenode.
 
-Financial support
------------------
+Donations
+---------
 
 We're thrilled that you want to support the project!
 
-We have applied for access to organization-level sponsorship from GitHub. In
-the interim, if you wish to contribute sooner, you are welcome to do so
-through `Open Collective <https://opencollective.com/sopel>`_ or sponsor
-Sopel's maintainer, `dgw <https://github.com/sponsors/dgw>`_, individually.
+You can `sponsor Sopel <https://github.com/sponsors/sopel-irc>`_ here on
+GitHub or donate through `Open Collective <https://opencollective.com/sopel>`_.
 
 Any donations received will be used to cover infrastructure costs, such as our
 domain name and hosting services. Our main project site is easily hosted by
