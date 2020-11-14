@@ -167,7 +167,7 @@ def search(bot, trigger):
 
 
 @commands('suggest')
-@example('.suggest wikip', 'wikipedia game', online=True)
+@example('.suggest wikip', 'wikipedia.*', re=True, online=True)
 @example('.suggest ', 'No query term.', online=True)
 @example('.suggest lkashdfiauwgeaef', 'Sorry, no result.', online=True)
 def suggest(bot, trigger):
