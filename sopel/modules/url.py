@@ -16,6 +16,7 @@ import re
 import dns.resolver
 import ipaddress
 import requests
+from urllib3.exceptions import LocationValueError
 
 from sopel import __version__, module, tools
 from sopel.config.types import ListAttribute, StaticSection, ValidatedAttribute
@@ -291,7 +292,8 @@ def find_title(url, verify=True):
     except (
         requests.exceptions.ConnectionError,
         requests.exceptions.InvalidURL,  # e.g. http:///
-        UnicodeError,  # e.g. http://.example.com
+        UnicodeError,  # e.g. http://.example.com (urllib3<1.26)
+        LocationValueError,  # e.g. http://.example.com (urllib3>=1.26)
     ):
         return None
 
