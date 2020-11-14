@@ -2,6 +2,18 @@ This file is used to auto-generate the "Changelog" section of Sopel's website.
 When adding new entries, follow the style guide in NEWS.spec.md to avoid
 causing problems with the site build.
 
+Changes between 7.0.6 and 7.0.7
+===============================
+
+Core changes
+------------
+
+* Make sure Sopel continues to install smoothly on all of its supported Python
+  versions after November 2020 changes in `urllib3` 1.26
+* Updated a few spots in tests and documentation to keep our 7.0.x maintenance
+  branch in tip-top shape
+
+
 Changes between 7.0.5 and 7.0.6
 ===============================
 
