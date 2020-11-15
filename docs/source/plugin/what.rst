@@ -9,10 +9,6 @@ cover what is a plugin, what you can do with them, and some vocabulary.
 You may want to skip ahead to :doc:`anatomy` if you already know what a plugin
 is and what types of plugin there are.
 
-.. contents::
-    :local:
-    :depth: 2
-
 Plugin Types
 ============
 

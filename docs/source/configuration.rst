@@ -32,10 +32,6 @@ This file can be generated with ``sopel configure``.
 
     The :doc:`cli` chapter for ``sopel configure`` subcommand.
 
-.. contents::
-    :local:
-    :depth: 2
-
 
 INI file structure
 ==================

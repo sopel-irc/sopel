@@ -6,10 +6,6 @@ Once a :term:`Rule` has been triggered, it's time to do whatever the plugin is
 supposed to do. Thanks to the ``bot`` parameter, you can make the bot talk:
 say something in a channel, reply to someone, send a notice, or join a channel.
 
-.. contents::
-   :local:
-   :depth: 2
-
 
 Make it talk
 ============

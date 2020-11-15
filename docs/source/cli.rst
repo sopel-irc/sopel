@@ -20,10 +20,6 @@ Certain command-line options can be passed via environment variables. Also see
 the :ref:`section on environment variables <Supported environment variables>`
 for more possibilities.
 
-.. contents::
-    :local:
-    :depth: 1
-
 
 The ``sopel`` command
 =====================

@@ -27,3 +27,16 @@ Documentation
     plugin
     package
     tests
+
+.. toctree::
+    :caption: Donate
+    :hidden:
+
+    GitHub Sponsors <https://github.com/sponsors/sopel-irc>
+    Open Collective <https://opencollective.com/sopel>
+
+.. toctree::
+    :caption: Escape
+    :hidden:
+
+    Back to main site <https://sopel.chat/>

@@ -1,5 +1,22 @@
-.section dl.py:not(:first-of-type) {
-    margin-top: 1.5em;
+img.sidebar-logo.only-dark {
+  /* Furo sets 0.8 opacity on color-foreground-primary for dark mode,
+     but there's no variable for it. */
+  opacity: 0.8;
+}
+::-webkit-scrollbar {
+  width: 11px;
+}
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-foreground-muted) transparent;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background-color: var(--color-foreground-muted) ;
+  border-radius: 6px;
+  border: 3px solid var(--color-background-primary);
 }
 
 .underline {
