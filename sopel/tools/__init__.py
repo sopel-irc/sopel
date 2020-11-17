@@ -600,8 +600,8 @@ def get_logger(plugin_name):
 
     This::
 
-        from sopel import plugins
-        LOGGER = plugins.get_logger('my_custom_plugin')
+        from sopel import tools
+        LOGGER = tools.get_logger('my_custom_plugin')
 
     is equivalent to this::
 
