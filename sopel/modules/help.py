@@ -246,7 +246,7 @@ def is_cache_valid(bot):
 
 @plugin.rule('$nick' r'(?i)(help|doc) +([A-Za-z]+)(?:\?+)?$')
 @plugin.example('.help tell')
-@plugin.command('help', 'commands')
+@plugin.command('help', 'commands', 'h')
 @plugin.priority('low')
 def help(bot, trigger):
     """Shows a command's documentation, and an example if available. With no arguments, lists all commands."""
