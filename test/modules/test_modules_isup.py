@@ -31,6 +31,7 @@ def test_get_site_url(site, expected):
 
 
 INVALID_SITE_URLS = (
+    None,  # missing
     '',  # empty
     '      ',  # empty once stripped
     'steam://browsemedia',  # invalid protocol
