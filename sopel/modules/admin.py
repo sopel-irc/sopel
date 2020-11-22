@@ -12,8 +12,19 @@ https://sopel.chat
 """
 from __future__ import absolute_import, division, print_function, unicode_literals
 
+import logging
+
 from sopel import plugin
 from sopel.config import types
+
+LOGGER = logging.getLogger(__name__)
+
+ERROR_JOIN_NO_CHANNEL = 'Which channel should I join?'
+"""Error message when channel is missing from command arguments."""
+ERROR_PART_NO_CHANNEL = 'Which channel should I quit?'
+"""Error message when channel is missing from command arguments."""
+ERROR_NOTHING_TO_SAY = 'I need a channel and a message to talk.'
+"""Error message when channel and/or message are missing."""
 
 
 class AdminSection(types.StaticSection):
@@ -87,6 +98,7 @@ def _join(bot, channel, key=None, save=True):
         if channel not in channels or channels[channel] != key:
             channels[channel] = key
             _set_config_channels(bot, channels)
+            LOGGER.info('Added "%s" to core.channels.', channel)
 
 
 def _part(bot, channel, msg=None, save=True):
@@ -97,6 +109,7 @@ def _part(bot, channel, msg=None, save=True):
         if channel in channels:
             del channels[channel]
             _set_config_channels(bot, channels)
+            LOGGER.info('Removed "%s" from core.channels.', channel)
 
 
 @plugin.require_privmsg
@@ -108,6 +121,10 @@ def _part(bot, channel, msg=None, save=True):
 def join(bot, trigger):
     """Join the specified channel. This is an admin-only command."""
     channel, key = trigger.group(3), trigger.group(4)
+    if not channel:
+        bot.reply(ERROR_JOIN_NO_CHANNEL)
+        return
+
     _join(bot, channel, key)
 
 
@@ -124,6 +141,10 @@ def temporary_join(bot, trigger):
     restarting the bot.
     """
     channel, key = trigger.group(3), trigger.group(4)
+    if not channel:
+        bot.reply(ERROR_JOIN_NO_CHANNEL)
+        return
+
     _join(bot, channel, key, save=False)
 
 
@@ -135,6 +156,10 @@ def temporary_join(bot, trigger):
 def part(bot, trigger):
     """Part the specified channel. This is an admin-only command."""
     channel, _sep, part_msg = trigger.group(2).partition(' ')
+    if not channel:
+        bot.reply(ERROR_PART_NO_CHANNEL)
+        return
+
     _part(bot, channel, part_msg)
 
 
@@ -150,6 +175,10 @@ def temporary_part(bot, trigger):
     restarting the bot.
     """
     channel, _sep, part_msg = trigger.group(2).partition(' ')
+    if not channel:
+        bot.reply(ERROR_PART_NO_CHANNEL)
+        return
+
     _part(bot, channel, part_msg, save=False)
 
 
@@ -160,9 +189,11 @@ def temporary_part(bot, trigger):
 def restart(bot, trigger):
     """Restart the bot. This is an owner-only command."""
     quit_message = trigger.group(2)
+    default_message = 'Restarting on command from %s.' % trigger.nick
     if not quit_message:
-        quit_message = 'Restart on command from %s' % trigger.nick
+        quit_message = default_message
 
+    LOGGER.info(default_message)
     bot.restart(quit_message)
 
 
@@ -173,9 +204,11 @@ def restart(bot, trigger):
 def quit(bot, trigger):
     """Quit from the server. This is an owner-only command."""
     quit_message = trigger.group(2)
+    default_message = 'Quitting on command from %s.' % trigger.nick
     if not quit_message:
-        quit_message = 'Quitting on command from %s' % trigger.nick
+        quit_message = default_message
 
+    LOGGER.info(default_message)
     bot.quit(quit_message)
 
 
@@ -190,11 +223,13 @@ def say(bot, trigger):
     an admin.
     """
     if trigger.group(2) is None:
+        bot.reply(ERROR_NOTHING_TO_SAY)
         return
 
     channel, _sep, message = trigger.group(2).partition(' ')
     message = message.strip()
     if not channel or not message:
+        bot.reply(ERROR_NOTHING_TO_SAY)
         return
 
     bot.say(message, channel)
@@ -210,11 +245,13 @@ def me(bot, trigger):
     privmsg by an admin.
     """
     if trigger.group(2) is None:
+        bot.reply(ERROR_NOTHING_TO_SAY)
         return
 
     channel, _sep, action = trigger.group(2).partition(' ')
     action = action.strip()
     if not channel or not action:
+        bot.reply(ERROR_NOTHING_TO_SAY)
         return
 
     bot.action(action, channel)
@@ -224,9 +261,18 @@ def me(bot, trigger):
 @plugin.priority('low')
 def invite_join(bot, trigger):
     """Join a channel Sopel is invited to, if the inviter is an admin."""
-    if trigger.admin or bot.config.admin.auto_accept_invite:
-        bot.join(trigger.args[1])
-        return
+    channel = trigger.args[1]
+    if trigger.admin:
+        LOGGER.info(
+            'Got invited to "%s" by an admin.', channel)
+        bot.join(channel)
+    elif bot.config.admin.auto_accept_invite:
+        LOGGER.info(
+            'Got invited to "%s"; admin.auto_accept_invite is on', channel)
+        bot.join(channel)
+    else:
+        LOGGER.info(
+            'Got invited to "%s"; admin.auto_accept_invite is off.', channel)
 
 
 @plugin.event('KICK')
@@ -239,8 +285,16 @@ def hold_ground(bot, trigger):
     WARNING: This may not be needed and could cause problems if Sopel becomes
     annoying. Please use this with caution.
     """
-    if bot.config.admin.hold_ground and bot.nick == trigger.args[1]:
-        bot.join(trigger.sender)
+    if bot.nick != trigger.args[1]:
+        # not the bot; ignore
+        return
+
+    channel = trigger.sender
+    if bot.config.admin.hold_ground:
+        LOGGER.info('Got kicked from "%s"; admin.hold_ground is on.', channel)
+        bot.join(channel)
+    else:
+        LOGGER.info('Got kicked from "%s"; admin.hold_ground is off.', channel)
 
 
 @plugin.require_privmsg
@@ -250,6 +304,9 @@ def hold_ground(bot, trigger):
 def mode(bot, trigger):
     """Set a user mode on Sopel. Can only be done in privmsg by an admin."""
     mode = trigger.group(3)
+    if not mode:
+        bot.reply('What mode should I set?')
+
     bot.write(('MODE', bot.nick, mode))
 
 
@@ -357,6 +414,7 @@ def set_config(bot, trigger):
             bot.say("Can't set attribute: " + str(exc))
             return
     setattr(section, option, value)
+    LOGGER.info('%s.%s set successfully.', section_name, option)
     bot.say("OK. Set '{}.{}' successfully.".format(section_name, option))
 
 
@@ -390,6 +448,7 @@ def unset_config(bot, trigger):
 
     try:
         setattr(section, option, None)
+        LOGGER.info('%s.%s unset.', section_name, option)
         bot.say("Unset '{}.{}' successfully.".format(section_name, option))
     except ValueError:
         bot.say('Cannot unset {}.{}; it is a required option.'.format(section_name, option))
@@ -402,4 +461,5 @@ def unset_config(bot, trigger):
 def save_config(bot, trigger):
     """Save state of Sopel's config object to the configuration file."""
     bot.config.save()
+    LOGGER.info('Configuration file saved.')
     bot.say('Configuration file saved.')
