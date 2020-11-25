@@ -50,10 +50,11 @@ def collectlines(bot, trigger):
     # Update in-memory list of the user's lines in the channel
     line_list = bot.memory['find_lines'][trigger.sender][trigger.nick]
     line = trigger.group()
-    if line.startswith("s/"):  # Don't remember substitutions
+    if line.startswith('s/') or line.startswith('s|'):
+        # Don't remember substitutions
         return
     # store messages in reverse order (most recent first)
-    elif line.startswith("\x01ACTION"):  # For /me messages
+    elif line.startswith('\x01ACTION'):  # For /me messages
         line = line[:-1]
         line_list.appendleft(line)
     else:
@@ -113,20 +114,39 @@ def kick_cleanup(bot, trigger):
 
 # Match nick, s/find/replace/flags. Flags and nick are optional, nick can be
 # followed by comma or colon, anything after the first space after the third
-# slash is ignored, you can escape slashes with backslashes, and if you want to
-# search for an actual backslash followed by an actual slash, you're shit out of
-# luck because this is the fucking regex of death as it is.
+# slash is ignored, and you can use either a slash or a pipe.
+# If you want to search for an actual slash AND a pipe in the same message,
+# you can escape your separator, in old and/or new.
 @plugin.rule(r"""(?:
-            (\S+)           # Catch a nick in group 1
-          [:,]\s+)?         # Followed by colon/comma and whitespace, if given
-          s/                # The literal s/
-          (                 # Group 2 is the thing to find
-            (?:\\/ | [^/])+ # One or more non-slashes or escaped slashes
-          )/(               # Group 3 is what to replace with
-            (?:\\/ | [^/])* # One or more non-slashes or escaped slashes
-          )
-          (?:/(\S+))?       # Optional slash, followed by group 4 (flags)
-          """)
+             (?P<nick>\S+)    # Catch a nick in group 1
+             [:,]\s+)?        # Followed by optional colon/comma and whitespace
+             s(?P<sep>/)      # The literal s and a separator / as group 2
+             (?P<old>         # Group 3 is the thing to find
+               (?:\\/|[^/])+  # One or more non-slashes or escaped slashes
+             )
+             /                # The separator again
+             (?P<new>         # Group 4 is what to replace with
+               (?:\\/|[^/])*  # One or more non-slashes or escaped slashes
+             )
+             (?:/             # Optional separator followed by group 5 (flags)
+                (?P<flags>\S+)
+             )?
+            """)
+@plugin.rule(r"""(?:
+             (?P<nick>\S+)    # Catch a nick in group 1
+             [:,]\s+)?        # Followed by optional colon/comma and whitespace
+             s(?P<sep>\|)     # The literal s and a separator | as group 2
+             (?P<old>         # Group 3 is the thing to find
+               (?:\\\||[^|])+  # One or more non-pipe or escaped pipe
+             )
+             \|               # The separator again
+             (?P<new>         # Group 4 is what to replace with
+               (?:\\\||[^|])* # One or more non-pipe or escaped pipe
+             )
+             (?:|             # Optional separator followed by group 5 (flags)
+                (?P<flags>\S+)
+             )?
+            """)
 @plugin.priority('high')
 def findandreplace(bot, trigger):
     # Don't bother in PM
@@ -134,17 +154,18 @@ def findandreplace(bot, trigger):
         return
 
     # Correcting other person vs self.
-    rnick = Identifier(trigger.group(1) or trigger.nick)
+    rnick = Identifier(trigger.group('nick') or trigger.nick)
 
     # only do something if there is conversation to work with
     history = bot.memory['find_lines'].get(trigger.sender, {}).get(rnick, None)
     if not history:
         return
 
-    old = trigger.group(2).replace(r'\/', '/')
-    new = trigger.group(3).replace(r'\/', '/')
+    sep = trigger.group('sep')
+    old = trigger.group('old').replace('\\%s' % sep, sep)
+    new = trigger.group('new').replace('\\%s' % sep, sep)
     me = False  # /me command
-    flags = (trigger.group(4) or '')
+    flags = trigger.group('flags') or ''
 
     # If g flag is given, replace all. Otherwise, replace once.
     if 'g' in flags:
