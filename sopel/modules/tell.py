@@ -158,6 +158,9 @@ def f_remind(bot, trigger):
         bot.reply('That nickname is too long.')
         return
 
+    if tellee[0] == '@':
+        tellee = tellee[1:]
+
     if tellee == bot.nick:
         bot.reply("I'm here now; you can tell me whatever you want!")
         return
