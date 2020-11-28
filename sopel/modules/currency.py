@@ -22,7 +22,7 @@ from sopel.config import types
 PLUGIN_OUTPUT_PREFIX = '[currency] '
 FIAT_PROVIDERS = {
     'exchangerate.host': 'https://api.exchangerate.host/latest?base=EUR',
-    'fixer.io': 'https://data.fixer.io/api/latest?base=EUR&access_key={}',
+    'fixer.io': 'http://data.fixer.io/api/latest?base=EUR&access_key={}',
     'ratesapi.io': 'https://api.ratesapi.io/api/latest?base=EUR',
 }
 CRYPTO_URL = 'https://api.coingecko.com/api/v3/exchange_rates'
