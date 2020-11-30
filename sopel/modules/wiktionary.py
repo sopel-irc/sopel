@@ -119,9 +119,9 @@ def wiktionary(bot, trigger):
             return
 
     result = format(word, definitions)
-    if len(result) < 150:
+    if len(result) < 300:
         result = format(word, definitions, 3)
-    if len(result) < 150:
+    if len(result) < 300:
         result = format(word, definitions, 5)
 
     bot.say(result, trailing=' […]')
