@@ -193,7 +193,7 @@ def say_section(bot, trigger, server, query, section):
         return
 
     msg = '{} - {} | "{}"'.format(page_name, section.replace('_', ' '), snippet)
-    bot.say(msg)
+    bot.say(msg, trailing=' […]"')
 
 
 def mw_section(server, query, section):
@@ -225,15 +225,7 @@ def mw_section(server, query, section):
     parser = WikiParser(section.replace('_', ' '))
     parser.feed(data['parse']['text']['*'])
     text = parser.get_result()
-    text = ' '.join(text.split())   # collapse multiple whitespace chars
-
-    trimmed = False
-
-    while len(text) > (420 - len(query) - len(section) - 18):
-        text = text.rsplit(None, 1)[0]
-        trimmed = True
-    if trimmed:
-        text += '...'
+    text = ' '.join(text.split())  # collapse multiple whitespace chars
 
     return text
 
