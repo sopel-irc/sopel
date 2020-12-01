@@ -67,6 +67,13 @@ other value will be considered as "false".
 When a config option is a choice, it means you can provide only one of the
 values defined as valid for this option, or Sopel will complain about it.
 
+.. note::
+
+   The INI file structure Sopel uses does **not** require quoting of values,
+   except for specific cases such as the escaped list value shown above.
+   Quoting a value unnecessarily can lead to unexpected behavior such as an
+   absolute pathname being interpreted as relative to Sopel's home directory.
+
 .. __: https://docs.python.org/3/library/configparser.html#supported-ini-file-structure
 
 
@@ -190,7 +197,7 @@ you need to set :attr:`~CoreSection.use_ssl` to true::
     [core]
     use_ssl = yes
     verify_ssl = yes
-    ca_certs = path/to/sopel/ca_certs.pem
+    ca_certs = /path/to/sopel/ca_certs.pem
 
 In that case:
 
@@ -400,7 +407,7 @@ and the required credentials:
     (``UserServ`` by default)
 
 Multi-stage
--------------
+-----------
 
 In some cases, an IRC bot needs to use both server-based and
 nick-based authentication.
@@ -588,6 +595,7 @@ Example of configuration for logging::
     logging_level = INFO
     logging_format = [%(asctime)s] %(levelname)s - %(message)s
     logging_datefmt = %Y-%m-%d %H:%M:%S
+    logdir = /path/to/logs
 
 .. versionadded:: 7.0
 
@@ -631,7 +639,10 @@ Raw Logs
 --------
 
 It is possible to store raw logs of what Sopel receives and sends by setting
-the flag :attr:`~CoreSection.log_raw` to true.
+the flag :attr:`~CoreSection.log_raw` to true::
+
+    [core]
+    log_raw = on
 
 In that case, IRC messages received and sent are stored into a file named
 ``<base>.raw.log``, located in the log directory.
