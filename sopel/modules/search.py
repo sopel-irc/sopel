@@ -163,7 +163,7 @@ def search(bot, trigger):
 
 
 @plugin.command('suggest')
-@plugin.example('.suggest wikip', 'wikipedia game', online=True, vcr=True)
+@plugin.example('.suggest wikip', 'wikipedia', online=True, vcr=True)
 @plugin.example('.suggest', '.suggest what?')
 @plugin.example('.suggest lkashdfiauwgaef', 'Sorry, no result.', online=True, vcr=True)
 @plugin.output_prefix(PLUGIN_OUTPUT_PREFIX)
