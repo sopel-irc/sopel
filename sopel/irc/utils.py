@@ -9,6 +9,8 @@ import sys
 
 from dns import rdtypes, resolver
 
+from sopel.tools import deprecated
+
 if sys.version_info.major >= 3:
     unicode = str
 
@@ -49,9 +51,10 @@ def safe(string):
 class CapReq(object):
     """Represents a pending CAP REQ request.
 
-    :param str prefix: either ``=`` (must be enabled)
-                       or ``-`` (must **not** be enabled)
-    :param str module: the requesting package/module name
+    :param str prefix: either ``=`` (must be enabled),
+                       ``-`` (must **not** be enabled),
+                       or empty string (desired but optional)
+    :param str plugin: the requesting plugin's name
     :param failure: function to call if this capability request fails
     :type failure: :term:`function`
     :param str arg: optional capability value; the request will fail if
@@ -67,15 +70,24 @@ class CapReq(object):
         For more information on how capability requests work, see the
         documentation for :meth:`sopel.irc.AbstractBot.cap_req`.
     """
-    def __init__(self, prefix, module, failure=None, arg=None, success=None):
+    def __init__(self, prefix, plugin, failure=None, arg=None, success=None):
         def nop(bot, cap):
             pass
         # TODO at some point, reorder those args to be sane
         self.prefix = prefix
-        self.module = module
+        self.plugin = plugin
         self.arg = arg
         self.failure = failure or nop
         self.success = success or nop
+
+    @property
+    @deprecated(
+        reason='use the `plugin` property instead',
+        version='7.1',
+        removed_in='8.0',
+    )
+    def module(self):
+        return self.plugin
 
 
 class MyInfo(collections.namedtuple('MyInfo', MYINFO_ARGS)):

@@ -3,9 +3,9 @@
 
 .. versionadded:: 7.0
 
-Sopel uses plugins (also called "modules") and uses what are called
-Plugin Handlers as an interface between the bot and its plugins. This interface
-is defined by the :class:`~.handlers.AbstractPluginHandler` abstract class.
+Sopel uses what are called Plugin Handlers as an interface between the bot and
+its plugins (formerly called "modules"). This interface is defined by the
+:class:`~.handlers.AbstractPluginHandler` abstract class.
 
 Plugins that can be used by Sopel are provided by :func:`~.get_usable_plugins`
 in an :class:`ordered dict<collections.OrderedDict>`. This dict contains one

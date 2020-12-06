@@ -334,11 +334,11 @@ class AbstractBot(object):
         logger = logging.getLogger('sopel.raw')
         logger.info('\t'.join([prefix, line.strip()]))
 
-    def cap_req(self, module_name, capability, arg=None, failure_callback=None,
+    def cap_req(self, plugin_name, capability, arg=None, failure_callback=None,
                 success_callback=None):
         """Tell Sopel to request a capability when it starts.
 
-        :param str module_name: the module requesting the capability
+        :param str plugin_name: the plugin requesting the capability
         :param str capability: the capability requested, optionally prefixed
                                with ``-`` or ``=``
         :param str arg: arguments for the capability request
@@ -352,16 +352,16 @@ class AbstractBot(object):
         By prefixing the capability with ``-``, it will be ensured that the
         capability is not enabled. Similarly, by prefixing the capability with
         ``=``, it will be ensured that the capability is enabled. Requiring and
-        disabling is "first come, first served"; if one module requires a
+        disabling is "first come, first served"; if one plugin requires a
         capability, and another prohibits it, this function will raise an
-        exception in whichever module loads second. An exception will also be
-        raised if the module is being loaded after the bot has already started,
+        exception in whichever plugin loads second. An exception will also be
+        raised if the plugin is being loaded after the bot has already started,
         and the request would change the set of enabled capabilities.
 
-        If the capability is not prefixed, and no other module prohibits it, it
+        If the capability is not prefixed, and no other plugin prohibits it, it
         will be requested. Otherwise, it will not be requested. Since
         capability requests that are not mandatory may be rejected by the
-        server, as well as by other modules, a module which makes such a
+        server, as well as by other plugins, a plugin which makes such a
         request should account for that possibility.
 
         The actual capability request to the server is handled after the
@@ -377,7 +377,7 @@ class AbstractBot(object):
         capability negotiation, or later.
 
         If ``arg`` is given, and does not exactly match what the server
-        provides or what other modules have requested for that capability, it is
+        provides or what other plugins have requested for that capability, it is
         considered a conflict.
         """
         # TODO raise better exceptions
@@ -394,7 +394,7 @@ class AbstractBot(object):
                                 'connection has been completed.')
             if any((ent.prefix != '-' for ent in entry)):
                 raise Exception('Capability conflict')
-            entry.append(CapReq(prefix, module_name, failure_callback, arg,
+            entry.append(CapReq(prefix, plugin_name, failure_callback, arg,
                                 success_callback))
             self._cap_reqs[cap] = entry
         else:
@@ -409,7 +409,7 @@ class AbstractBot(object):
             # rejected it.
             if any((ent.prefix == '-' for ent in entry)) and prefix == '=':
                 raise Exception('Capability conflict')
-            entry.append(CapReq(prefix, module_name, failure_callback, arg,
+            entry.append(CapReq(prefix, plugin_name, failure_callback, arg,
                                 success_callback))
             self._cap_reqs[cap] = entry
 

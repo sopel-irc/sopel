@@ -1,7 +1,7 @@
 # coding=utf-8
 """Tasks that allow the bot to run, but aren't user-facing functionality
 
-This is written as a module to make it easier to extend to support more
+This is written as a plugin to make it easier to extend to support more
 responses to standard IRC codes without having to shove them all into the
 dispatch function in bot.py and making it easier to maintain.
 """
@@ -37,7 +37,7 @@ if sys.version_info.major >= 3:
 LOGGER = logging.getLogger(__name__)
 
 batched_caps = {}
-who_reqs = {}  # Keeps track of reqs coming from this module, rather than others
+who_reqs = {}  # Keeps track of reqs coming from this plugin, rather than others
 
 
 def setup(bot):

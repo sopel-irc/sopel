@@ -156,6 +156,12 @@ def setup_logging(settings):
     dictConfig(logging_config)
 
 
+@tools.deprecated(
+    reason='use sopel.tools.get_logger instead',
+    version='7.0',
+    warning_in='8.0',
+    removed_in='9.0',
+)
 def get_logger(name=None):
     """Return a logger for a module, if the name is given.
 
