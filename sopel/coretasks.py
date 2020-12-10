@@ -237,6 +237,10 @@ def startup(bot, trigger):
 @module.rule('are supported by this server')
 def handle_isupport(bot, trigger):
     """Handle ``RPL_ISUPPORT`` events."""
+    # remember if NAMESX is known to be supported, before parsing RPL_ISUPPORT
+    namesx_support = 'NAMESX' in bot.isupport
+
+    # parse ISUPPORT message from server
     parameters = {}
     for arg in trigger.args:
         try:
@@ -247,6 +251,14 @@ def handle_isupport(bot, trigger):
             LOGGER.warning('Unable to parse ISUPPORT parameter: %r', arg)
 
     bot._isupport = bot._isupport.apply(**parameters)
+
+    # was NAMESX support status updated?
+    if not namesx_support and 'NAMESX' in bot.isupport:
+        # yes it was!
+        if 'multi-prefix' not in bot.server_capabilities:
+            # and the server doesn't have the multi-prefix capability
+            # so we can ask the server to use the NAMESX feature
+            bot.write(('PROTOCTL', 'NAMESX'))
 
 
 @module.priority('high')
