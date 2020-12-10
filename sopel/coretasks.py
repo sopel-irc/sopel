@@ -524,18 +524,10 @@ def _remove_from_channel(bot, nick, channel):
                 bot.users.pop(nick, None)
 
 
-def _whox_enabled(bot):
-    # Either privilege tracking or away notification. For simplicity, both
-    # account notify and extended join must be there for account tracking.
-    return (('account-notify' in bot.enabled_capabilities and
-             'extended-join' in bot.enabled_capabilities) or
-            'away-notify' in bot.enabled_capabilities)
-
-
 def _send_who(bot, channel):
-    if _whox_enabled(bot):
+    if 'WHOX' in bot.isupport:
         # WHOX syntax, see http://faerion.sourceforge.net/doc/irc/whox.var
-        # Needed for accounts in who replies. The random integer is a param
+        # Needed for accounts in WHO replies. The random integer is a param
         # to identify the reply as one from this command, because if someone
         # else sent it, we have no fucking way to know what the format is.
         rand = str(randint(0, 999))
@@ -1062,7 +1054,7 @@ def recv_who(bot, trigger):
 @module.priority('high')
 @module.unblockable
 def end_who(bot, trigger):
-    if _whox_enabled(bot):
+    if 'WHOX' in bot.isupport:
         who_reqs.pop(trigger.args[1], None)
 
 
