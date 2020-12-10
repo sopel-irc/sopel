@@ -12,8 +12,68 @@ https://sopel.chat
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 import random
+import unicodedata
 
-from sopel import plugin
+from sopel import formatting, plugin
+
+# Remove when dropping py2 support
+try:
+    str = unicode
+except NameError:
+    pass
+
+
+def _format_safe(text):
+    """Remove excess whitespace and terminate IRC formatting.
+
+    :param str text: text to clean of whitespace
+    :rtype: str
+    :raises TypeError: if the passed ``text`` is not a string
+
+    Our own take on ``str.strip()`` that skips stripping off IRC formatting
+    and makes sure any formatting codes are closed if necessary.
+    """
+    if not isinstance(text, str):
+        raise TypeError("A string is required.")
+    elif not text:
+        # unnecessary optimization
+        return ''
+
+    start = end = 0
+
+    # strip left
+    pos = 0
+    while pos < len(text):
+        is_whitespace = unicodedata.category(text[pos]) == 'Zs'
+        is_non_printing = (
+            text[pos] in formatting.CONTROL_NON_PRINTING and
+            text[pos] not in formatting.CONTROL_FORMATTING
+        )
+        if not is_whitespace and not is_non_printing:
+            start = pos
+            break
+        pos += 1
+
+    # strip right
+    pos = len(text) - 1
+    while pos >= 0:
+        is_whitespace = unicodedata.category(text[pos]) == 'Zs'
+        is_non_printing = (
+            text[pos] in formatting.CONTROL_NON_PRINTING and
+            text[pos] not in formatting.CONTROL_FORMATTING
+        )
+        if not is_whitespace and not is_non_printing:
+            end = pos + 1
+            break
+        pos -= 1
+
+    # build the final string
+    safe = text[start:end]
+    if any(c in safe for c in formatting.CONTROL_FORMATTING):
+        # if it includes IRC formatting, append reset character just in case
+        safe += formatting.CONTROL_NORMAL
+
+    return safe
 
 
 @plugin.command('choose', 'choice', 'ch')
@@ -40,7 +100,7 @@ def choose(bot, trigger):
         choices = trigger.group(2).split(delim)
         if len(choices) > 1:
             break
-    choices = [choice.strip() for choice in choices]
+    choices = [_format_safe(choice) for choice in choices]
     pick = random.choice(choices)
 
     # Always use a comma in the output
