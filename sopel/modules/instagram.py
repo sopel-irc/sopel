@@ -47,24 +47,11 @@ def instaparse(bot, trigger, match):
     try:
         bot.say(parse_insta_json(json))
     except ParseError:
-        try:
-            json = get_oembed_json(instagram_url)
-            bot.say(parse_oembed_json(json))
-        except ParseError:
-            LOGGER.exception(
-                "Unable to find Instagram's payload for URL %s", instagram_url)
-            bot.say(
-                "Unable to parse this Instagram URL. "
-                "It's probably a temporary error; try again in a bit.")
-        else:
-            LOGGER.info(
-                "Used fallback to oEmbed metadata; "
-                "Sopel's IP may be blocked by Instagram.")
-
-
-def get_oembed_json(url):
-    response = get("https://api.instagram.com/oembed/?url={}".format(url))
-    return response.json()
+        LOGGER.exception(
+            "Unable to find Instagram's payload for URL %s", instagram_url)
+        bot.say(
+            "Unable to fetch info about this Instagram URL. "
+            "Instagram is probably blocking my IP address. :(")
 
 
 def get_insta_json(url):
@@ -164,12 +151,3 @@ def parse_insta_json(json):
 
     # Build the message
     return ' | '.join(parts)
-
-
-def parse_oembed_json(json):
-    if not json:
-        raise ParseError("No valid JSON returned")
-    return "Post by {} | {}".format(
-        json['author_name'],
-        json['title']
-    )
