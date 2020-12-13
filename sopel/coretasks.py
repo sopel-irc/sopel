@@ -1,9 +1,18 @@
 # coding=utf-8
-"""Tasks that allow the bot to run, but aren't user-facing functionality
+"""Core Sopel plugin that handles IRC protocol functions.
+
+This plugin allows the bot to run without user-facing functionality:
+
+* it handles client capability negotiation
+* it handles client auth (both nick auth and server auth)
+* it handles connection registration (RPL_WELCOME, RPL_LUSERCLIENT), dealing
+  with error cases such as nick already in use
+* it tracks known channels & users (join, quit, nick change and other events)
+* it manages blocked (ignored) users
 
 This is written as a plugin to make it easier to extend to support more
 responses to standard IRC codes without having to shove them all into the
-dispatch function in bot.py and making it easier to maintain.
+dispatch function in :class:`sopel.bot.Sopel` and making it easier to maintain.
 """
 # Copyright 2008-2011, Sean B. Palmer (inamidst.com) and Michael Yanovich
 # (yanovich.net)
@@ -41,6 +50,11 @@ who_reqs = {}  # Keeps track of reqs coming from this plugin, rather than others
 
 
 def setup(bot):
+    """Set up the coretasks plugin.
+
+    The setup phase is used to activate the throttle feature to prevent a flood
+    of JOIN commands when there are too many channels to join.
+    """
     bot.memory['join_events_queue'] = collections.deque()
 
     # Manage JOIN flood protection
@@ -59,6 +73,7 @@ def setup(bot):
 
 
 def shutdown(bot):
+    """Clean up coretasks-related values in the bot's memory."""
     try:
         bot.memory['join_events_queue'].clear()
     except KeyError:
@@ -84,7 +99,25 @@ def _join_event_processing(bot):
 
 
 def auth_after_register(bot):
-    """Do NickServ/AuthServ auth"""
+    """Do NickServ/AuthServ auth.
+
+    :param bot: a connected Sopel instance
+    :type bot: :class:`sopel.bot.Sopel`
+
+    This function can be used, **after** the bot is connected, to handle one of
+    these auth methods:
+
+    * ``nickserv``: send a private message to the NickServ service
+    * ``authserv``: send an ``AUTHSERV`` command
+    * ``Q``: send an ``AUTH`` command
+    * ``userserv``: send a private message to the UserServ service
+
+    .. important::
+
+        If ``core.auth_method`` is set, then ``core.nick_auth_method`` will be
+        ignored. If none is set, then this function does nothing.
+
+    """
     if bot.config.core.auth_method:
         auth_method = bot.config.core.auth_method
         auth_username = bot.config.core.auth_username
@@ -120,7 +153,12 @@ def auth_after_register(bot):
 
 
 def _execute_perform(bot):
-    """Execute commands specified to perform on IRC server connect."""
+    """Execute commands specified to perform on IRC server connect.
+
+    This function executes the list of commands that can be found in the
+    ``core.commands_on_connect`` setting. It automatically replaces any
+    ``$nickname`` placeholder in the command with the bot's configured nick.
+    """
     if not bot.connection_registered:
         # How did you even get this command, bot?
         raise Exception('Bot must be connected to server to perform commands.')
@@ -137,6 +175,16 @@ def _execute_perform(bot):
 @plugin.priority('high')
 @plugin.unblockable
 def on_nickname_in_use(bot, trigger):
+    """Change the bot's nick when the current one is already in use.
+
+    This can be triggered when the bot disconnects then reconnects before the
+    server can notice a client timeout. Other reasons include mischief,
+    trolling, and obviously, PEBKAC.
+
+    This will change the current nick by adding a trailing ``_``. If the bot
+    sees that a user with its configured nick disconnects (see ``QUIT`` event
+    handling), the bot will try to regain it.
+    """
     LOGGER.error(
         'Nickname already in use! '
         '(Nick: %s; Sender: %s; Args: %r)',
@@ -151,7 +199,11 @@ def on_nickname_in_use(bot, trigger):
 @module.require_admin("This command requires admin privileges.")
 @module.commands('execute')
 def execute_perform(bot, trigger):
-    """Execute commands specified to perform on IRC server connect."""
+    """Execute commands specified to perform on IRC server connect.
+
+    This allows a bot owner or admin to force the execution of commands
+    that are automatically performed when the bot connects.
+    """
     _execute_perform(bot)
 
 
@@ -162,21 +214,33 @@ def execute_perform(bot, trigger):
 def startup(bot, trigger):
     """Do tasks related to connecting to the network.
 
-    001 RPL_WELCOME is from RFC2812 and is the first message that is sent after
-    the connection has been registered on the network.
+    ``001 RPL_WELCOME`` is from RFC2812 and is the first message that is sent
+    after the connection has been registered on the network.
 
-    251 RPL_LUSERCLIENT is a mandatory message that is sent after client
-    connects to the server in rfc1459. RFC2812 does not require it and all
-    networks might not send it. We support both.
+    ``251 RPL_LUSERCLIENT`` is a mandatory message that is sent after the
+    client connects to the server in RFC1459. RFC2812 does not require it and
+    all networks might not send it. We support both.
 
+    If ``sopel.irc.AbstractBot.connection_registered`` is set, this function
+    does nothing and returns immediately. Otherwise, the flag is set and the
+    function proceeds normally to:
+
+    1. trigger auth method
+    2. set bot's ``MODE`` (from ``core.modes``)
+    3. join channels (or queue them to join later)
+    4. check for security when the ``account-tag`` capability is enabled
+    5. execute custom commands
     """
     if bot.connection_registered:
         return
 
+    # set flag
     bot.connection_registered = True
 
+    # handle auth method
     auth_after_register(bot)
 
+    # set bot's MODE
     modes = bot.config.core.modes
     if modes:
         if not modes.startswith(('+', '-')):
@@ -184,6 +248,7 @@ def startup(bot, trigger):
             modes = '+' + modes
         bot.write(('MODE', bot.nick, modes))
 
+    # join channels
     bot.memory['retry_join'] = dict()
 
     channels = bot.config.core.channels
@@ -216,6 +281,7 @@ def startup(bot, trigger):
         for channel in bot.config.core.channels:
             bot.join(channel)
 
+    # warn for insecure auth method if necessary
     if (not bot.config.core.owner_account and
             'account-tag' in bot.enabled_capabilities and
             '@' not in bot.config.core.owner):
@@ -227,6 +293,7 @@ def startup(bot, trigger):
         ).format(bot.config.core.help_prefix)
         bot.say(msg, bot.config.core.owner)
 
+    # execute custom commands
     _execute_perform(bot)
 
 
@@ -276,6 +343,14 @@ def parse_reply_myinfo(bot, trigger):
 @module.require_owner()
 @module.commands('useserviceauth')
 def enable_service_auth(bot, trigger):
+    """Set owner's account from an authenticated owner.
+
+    This command can be used to automatically configure ``core.owner_account``
+    when the owner is known and has a registered account, but the bot doesn't
+    have ``core.owner_account`` configured.
+
+    This doesn't work if the ``account-tag`` capability is not available.
+    """
     if bot.config.core.owner_account:
         return
     if 'account-tag' not in bot.enabled_capabilities:
@@ -321,7 +396,10 @@ def retry_join(bot, trigger):
 @module.thread(False)
 @module.unblockable
 def handle_names(bot, trigger):
-    """Handle NAMES response, happens when joining to channels."""
+    """Handle NAMES responses.
+
+    This function keeps track of users' privileges when Sopel joins channels.
+    """
     names = trigger.split()
 
     # TODO specific to one channel type. See issue 281.
@@ -499,6 +577,7 @@ def track_nicks(bot, trigger):
 @module.thread(False)
 @module.unblockable
 def track_part(bot, trigger):
+    """Track users leaving channels."""
     nick = trigger.nick
     channel = trigger.sender
     _remove_from_channel(bot, nick, channel)
@@ -509,6 +588,7 @@ def track_part(bot, trigger):
 @module.thread(False)
 @module.unblockable
 def track_kick(bot, trigger):
+    """Track users kicked from channels."""
     nick = Identifier(trigger.args[1])
     channel = trigger.sender
     _remove_from_channel(bot, nick, channel)
@@ -587,6 +667,11 @@ def _periodic_send_who(bot):
 @module.thread(False)
 @module.unblockable
 def track_join(bot, trigger):
+    """Track users joining channels.
+
+    When a user joins a channel, the bot will send (or queue) a ``WHO`` command
+    to know more about said user (privileges, modes, etc.).
+    """
     channel = trigger.sender
 
     # is it a new channel?
@@ -624,6 +709,7 @@ def track_join(bot, trigger):
 @module.thread(False)
 @module.unblockable
 def track_quit(bot, trigger):
+    """Track when users quit channels."""
     for chanprivs in bot.privileges.values():
         chanprivs.pop(trigger.nick, None)
     for channel in bot.channels.values():
@@ -641,6 +727,7 @@ def track_quit(bot, trigger):
 @module.priority('high')
 @module.unblockable
 def receive_cap_list(bot, trigger):
+    """Handle client capability negotiation."""
     cap = trigger.strip('-=~')
     # Server is listing capabilities
     if trigger.args[1] == 'LS':
@@ -833,6 +920,18 @@ def send_authenticate(bot, token):
 @module.event('AUTHENTICATE')
 @module.unblockable
 def auth_proceed(bot, trigger):
+    """Handle client-initiated SASL auth.
+
+    If the chosen mechanism is client-first, the server sends an empty
+    response (``AUTHENTICATE +``). In that case, Sopel will handle SASL auth
+    that uses a token.
+
+    .. important::
+
+        If ``core.auth_method`` is set, then ``core.server_auth_method`` will
+        be ignored. If none is set, then this function does nothing.
+
+    """
     if trigger.args[0] != '+':
         # How did we get here? I am not good with computer.
         return
@@ -857,6 +956,13 @@ def _make_sasl_plain_token(account, password):
 @module.event(events.RPL_SASLSUCCESS)
 @module.unblockable
 def sasl_success(bot, trigger):
+    """End CAP request on successful SASL auth.
+
+    If SASL is configured, then the bot won't send ``CAP END`` once it gets
+    all the capability responses; it will wait for SASL auth result.
+
+    In this case, the SASL auth is a success, so we can close the negotiation.
+    """
     bot.write(('CAP', 'END'))
 
 
@@ -1009,6 +1115,7 @@ def blocks(bot, trigger):
 
 @module.event('ACCOUNT')
 def account_notify(bot, trigger):
+    """Track users' accounts."""
     if trigger.nick not in bot.users:
         bot.users[trigger.nick] = target.User(
             trigger.nick, trigger.user, trigger.host)
@@ -1022,6 +1129,7 @@ def account_notify(bot, trigger):
 @module.priority('high')
 @module.unblockable
 def recv_whox(bot, trigger):
+    """Track ``WHO`` responses when ``WHOX`` is enabled."""
     if len(trigger.args) < 2 or trigger.args[1] not in who_reqs:
         # Ignored, some plugin probably called WHO
         return
@@ -1076,6 +1184,7 @@ def _record_who(bot, channel, user, host, nick, account=None, away=None, modes=N
 @module.priority('high')
 @module.unblockable
 def recv_who(bot, trigger):
+    """Track ``WHO`` responses when ``WHOX`` is not enabled."""
     channel, user, host, _, nick, status = trigger.args[1:7]
     away = 'G' in status
     modes = ''.join([c for c in status if c in '~&@%+!'])
@@ -1086,6 +1195,7 @@ def recv_who(bot, trigger):
 @module.priority('high')
 @module.unblockable
 def end_who(bot, trigger):
+    """Handle the end of a response to a ``WHO`` command (if needed)."""
     if 'WHOX' in bot.isupport:
         who_reqs.pop(trigger.args[1], None)
 
@@ -1095,6 +1205,7 @@ def end_who(bot, trigger):
 @module.thread(False)
 @module.unblockable
 def track_notify(bot, trigger):
+    """Track users going away or coming back."""
     if trigger.nick not in bot.users:
         bot.users[trigger.nick] = target.User(
             trigger.nick, trigger.user, trigger.host)
@@ -1108,6 +1219,7 @@ def track_notify(bot, trigger):
 @module.thread(False)
 @module.unblockable
 def track_topic(bot, trigger):
+    """Track channels' topics."""
     if trigger.event != 'TOPIC':
         channel = trigger.args[1]
     else:
