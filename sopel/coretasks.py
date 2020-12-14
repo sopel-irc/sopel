@@ -163,10 +163,18 @@ def _execute_perform(bot):
         # How did you even get this command, bot?
         raise Exception('Bot must be connected to server to perform commands.')
 
-    LOGGER.debug('{} commands to execute:'.format(len(bot.config.core.commands_on_connect)))
-    for i, command in enumerate(bot.config.core.commands_on_connect):
+    commands = bot.config.core.commands_on_connect
+    count = len(commands)
+
+    if not count:
+        LOGGER.info('No custom command to execute.')
+        return
+
+    LOGGER.info('Executing %d custom commands.', count)
+    for i, command in enumerate(commands, 1):
         command = command.replace('$nickname', bot.config.core.nick)
-        LOGGER.debug(command)
+        LOGGER.debug(
+            'Executing custom command [%d/%d]: %s', i, count, command)
         bot.write((command,))
 
 
