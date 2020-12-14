@@ -1134,16 +1134,16 @@ class example(object):
 
         import sys
 
-        import sopel.test_tools  # TODO: fix circular import with sopel.bot and sopel.test_tools
-
         # only inject test-related stuff if we're running tests
         # see https://stackoverflow.com/a/44595269/5991
         if 'pytest' in sys.modules and self.result:
+            from sopel.tests import pytest_plugin
+
             # avoids doing `import pytest` and causing errors when
             # dev-dependencies aren't installed
             pytest = sys.modules['pytest']
 
-            test = sopel.test_tools.get_example_test(
+            test = pytest_plugin.get_example_test(
                 func, self.msg, self.result, self.privmsg, self.admin,
                 self.owner, self.repeat, self.use_re, self.ignore
             )
@@ -1154,11 +1154,14 @@ class example(object):
             if self.vcr:
                 test = pytest.mark.vcr(test)
 
-            sopel.test_tools.insert_into_module(
+            pytest_plugin.insert_into_module(
                 test, func.__module__, func.__name__, 'test_example'
             )
-            sopel.test_tools.insert_into_module(
-                sopel.test_tools.get_disable_setup(), func.__module__, func.__name__, 'disable_setup'
+            pytest_plugin.insert_into_module(
+                pytest_plugin.get_disable_setup(),
+                func.__module__,
+                func.__name__,
+                'disable_setup',
             )
 
         record = {
