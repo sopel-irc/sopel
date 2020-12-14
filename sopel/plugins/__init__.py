@@ -1,5 +1,5 @@
 # coding=utf-8
-"""Sopel's plugins interface
+"""Sopel's plugins interface.
 
 .. versionadded:: 7.0
 
@@ -57,10 +57,13 @@ def _list_plugin_filenames(directory):
 
 
 def find_internal_plugins():
-    """List internal plugins
+    """List internal plugins.
 
-    :return: Yield instance of :class:`~.handlers.PyModulePlugin`
+    :return: yield instances of :class:`~.handlers.PyModulePlugin`
              configured for ``sopel.modules.*``
+
+    Internal plugins can be found under ``sopel.modules``. This list does not
+    include the ``coretasks`` plugin.
     """
     plugin_dir = imp.find_module(
         'modules',
@@ -72,10 +75,14 @@ def find_internal_plugins():
 
 
 def find_sopel_modules_plugins():
-    """List plugins from ``sopel_modules.*``
+    """List plugins from ``sopel_modules.*``.
 
-    :return: Yield instance of :class:`~.handlers.PyModulePlugin`
+    :return: yield instances of :class:`~.handlers.PyModulePlugin`
              configured for ``sopel_modules.*``
+
+    Before entry point plugins, the only way to package a plugin was to follow
+    :pep:`382` by using the ``sopel_modules`` namespace. This function is
+    responsible to load such plugins.
     """
     try:
         import sopel_modules
@@ -88,30 +95,35 @@ def find_sopel_modules_plugins():
 
 
 def find_entry_point_plugins(group='sopel.plugins'):
-    """List plugins from a setuptools entry point group
+    """List plugins from a setuptools entry point group.
 
     :param str group: setuptools entry point group to look for
                       (defaults to ``sopel.plugins``)
-    :return: Yield instance of :class:`~.handlers.EntryPointPlugin`
+    :return: yield instances of :class:`~.handlers.EntryPointPlugin`
              created from setuptools entry point given ``group``
+
+    This function finds plugins declared under a setuptools entry point; by
+    default it uses the ``sopel.plugins`` entry point.
     """
     for entry_point in pkg_resources.iter_entry_points(group):
         yield handlers.EntryPointPlugin(entry_point)
 
 
 def find_directory_plugins(directory):
-    """List plugins from a ``directory``
+    """List plugins from a ``directory``.
 
-    :param str directory: Directory path to search
-    :return: Yield instance of :class:`~.handlers.PyFilePlugin`
+    :param str directory: directory path to search
+    :return: yield instances of :class:`~.handlers.PyFilePlugin`
              found in ``directory``
+
+    This function looks for single file and folder plugins in a directory.
     """
     for _, abspath in _list_plugin_filenames(directory):
         yield handlers.PyFilePlugin(abspath)
 
 
 def enumerate_plugins(settings):
-    """Yield Sopel's plugins
+    """Yield Sopel's plugins.
 
     :param settings: Sopel's configuration
     :type settings: :class:`sopel.config.Config`
@@ -181,7 +193,7 @@ def enumerate_plugins(settings):
 
 
 def get_usable_plugins(settings):
-    """Get usable plugins, unique per name
+    """Get usable plugins, unique per name.
 
     :param settings: Sopel's configuration
     :type settings: :class:`sopel.config.Config`
