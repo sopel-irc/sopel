@@ -8,7 +8,6 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 import re
 import sys
 
-import py
 import pytest
 
 from sopel import bot, loader, plugins, trigger
@@ -34,7 +33,7 @@ def get_disable_setup():
     def disable_setup(request, monkeypatch):
         setup = getattr(request.module, "setup", None)
         isfixture = hasattr(setup, "_pytestfixturefunction")
-        if setup is not None and not isfixture and py.builtin.callable(setup):
+        if setup is not None and not isfixture and callable(setup):
             monkeypatch.setattr(
                 setup,
                 "_pytestfixturefunction",
