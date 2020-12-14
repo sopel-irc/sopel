@@ -18,7 +18,9 @@ __all__ = [
     'NOLIMIT', 'VOICE', 'HALFOP', 'OP', 'ADMIN', 'OWNER', 'OPER',
     # decorators
     'action_command',
+    'action_commands',
     'command',
+    'commands',
     'echo',
     'event',
     'example',
@@ -27,6 +29,7 @@ __all__ = [
     'interval',
     'label',
     'nickname_command',
+    'nickname_commands',
     'output_prefix',
     'priority',
     'rate',
@@ -455,6 +458,10 @@ def command(*command_list):
     return add_attribute
 
 
+commands = command
+"""Alias to :func:`command`."""
+
+
 def nickname_command(*command_list):
     """Decorate a function to trigger on lines starting with "$nickname: command".
 
@@ -501,6 +508,10 @@ def nickname_command(*command_list):
     return add_attribute
 
 
+nickname_commands = nickname_command
+"""Alias to :func:`nickname_command`."""
+
+
 def action_command(*command_list):
     """Decorate a function to trigger on CTCP ACTION lines.
 
@@ -544,6 +555,10 @@ def action_command(*command_list):
                 function.action_commands.append(cmd)
         return function
     return add_attribute
+
+
+action_commands = action_command
+"""Alias to :func:`action_command`."""
 
 
 def label(value):

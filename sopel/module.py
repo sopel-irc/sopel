@@ -13,15 +13,15 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 # Therefore, don't add anything to this import list. Ever.
 from sopel.plugin import (  # noqa
     ADMIN,
-    action_command as action_commands,
-    command as commands,
+    action_commands,
+    commands,
     echo,
     event,
     example,
     HALFOP,
     intent,
     interval,
-    nickname_command as nickname_commands,
+    nickname_commands,
     NOLIMIT,
     OP,
     OPER,
