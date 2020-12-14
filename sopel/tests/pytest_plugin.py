@@ -160,6 +160,11 @@ def insert_into_module(func, module_name, base_name, prefix):
         func.__name__ = str("%s_%s_%s" % (prefix, base_name, i))
         if not hasattr(module, func.__name__):
             break
+    else:
+        # 1000 variations of this function's name already exist
+        raise RuntimeError('Unable to insert function %s into module %s' % (
+            func.__name__, func.__module__
+        ))
     setattr(module, func.__name__, func)
 
 
