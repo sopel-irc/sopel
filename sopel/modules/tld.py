@@ -95,7 +95,7 @@ class WikipediaTLDListParser(HTMLParser):
     def handle_starttag(self, tag, attrs):
         if tag == 'td' or tag == 'th':
             self.in_cell = True
-        elif tag == 'sup':
+        elif tag == 'sup' and self.in_cell:
             # ignore superscripts; they're almost exclusively footnotes
             self.skipping = True
         elif tag == 'table':
