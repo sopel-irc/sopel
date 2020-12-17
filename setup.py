@@ -3,7 +3,6 @@
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 import sys
-import time
 
 try:
     from setuptools import setup, __version__ as setuptools_version
@@ -42,12 +41,9 @@ if sys.version_info < (2, 7) or (
     raise ImportError('Sopel requires Python 2.7+ or 3.3+.')
 # Py2 EOL: https://www.python.org/dev/peps/pep-0373/#maintenance-releases
 if sys.version_info.major == 2:
-    now = time.time()
-    state = "has reached end of life"
-    if now >= 1588291200:  # 2020-05-01 00:00:00 UTC
-        state += " and will receive no further updates"
     print(
-        "Warning: Python 2 %s. Sopel 8.0 will drop support for it." % state,
+        'Warning: Python 2.x has reached end of life and will receive '
+        'no further updates. Sopel 8.0 will drop support for it.',
         file=sys.stderr,
     )
 
