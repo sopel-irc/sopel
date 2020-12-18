@@ -16,6 +16,11 @@ requests>=2.0.0,<3.0.0
 urllib3<1.27; python_version != '3.3' and python_version != '3.4'
 urllib3<1.23; python_version == '3.3'
 urllib3<1.25; python_version == '3.4'
+# transitive dependency of requests, and geoip2 (via aiohttp)
+# requests 2.25.1 allows chardet 4.0.0;
+# aiohttp 3.7.3 has not updated
+# note: pip's 2020 resolver (as of 20.3.3) handles the conflict just fine
+chardet<4
 dnspython<2.0; python_version == '2.7'
 dnspython<1.16.0; python_version == '3.3'
 dnspython<3.0; python_version >= '3.4'
