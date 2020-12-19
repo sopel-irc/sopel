@@ -280,12 +280,15 @@ class AbstractBot(object):
 
         if self.error_count > 10:
             # quit if too many errors
-            if (datetime.now() - self.last_error_timestamp).seconds < 5:
+            dt = datetime.utcnow() - self.last_error_timestamp
+            dt_seconds = dt.total_seconds()
+            if dt_seconds < 5:
                 LOGGER.error('Too many errors, can\'t continue')
                 os._exit(1)
-            # TODO: should we reset error_count?
+            # remove 1 error per full 5s that passed since last error
+            self.error_count = max(0, self.error_count - dt_seconds // 5)
 
-        self.last_error_timestamp = datetime.now()
+        self.last_error_timestamp = datetime.utcnow()
         self.error_count = self.error_count + 1
 
     def change_current_nick(self, new_nick):
