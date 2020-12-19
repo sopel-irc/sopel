@@ -205,7 +205,7 @@ class Sopel(irc.AbstractBot):
 
         :param str channel: a channel the bot is in
         :param int privilege: privilege level to check
-        :raise RuntimeError: when the channel is unknown
+        :raise ValueError: when the channel is unknown
 
         This method checks the bot's privilege level in a channel, i.e. if it
         has this level or higher privileges::
@@ -216,9 +216,10 @@ class Sopel(irc.AbstractBot):
 
         The ``channel`` argument can be either a :class:`str` or a
         :class:`sopel.tools.Identifier`, as long as Sopel joined said channel.
+        If the channel is unknown, a :exc:`ValueError` will be raised.
         """
         if channel not in self.channels:
-            raise RuntimeError('Unknown channel %s' % channel)
+            raise ValueError('Unknown channel %s' % channel)
 
         return self.channels[channel].has_privilege(self.nick, privilege)
 

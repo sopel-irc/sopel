@@ -772,7 +772,7 @@ def test_has_channel_privilege_no_privilege(ircfactory, botfactory, tmpconfig):
     name = Identifier('#adminchannel')
 
     # unknown channel
-    with pytest.raises(RuntimeError):
+    with pytest.raises(ValueError):
         sopel.has_channel_privilege('#adminchannel', plugin.VOICE)
 
     # join channel
@@ -793,7 +793,7 @@ def test_has_channel_privilege_no_privilege(ircfactory, botfactory, tmpconfig):
     assert not sopel.has_channel_privilege('#adminchannel', plugin.OPER)
 
     # unknown channel
-    with pytest.raises(RuntimeError):
+    with pytest.raises(ValueError):
         sopel.has_channel_privilege('#anotherchannel', plugin.VOICE)
 
 
