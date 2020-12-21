@@ -406,6 +406,23 @@ and the required credentials:
   * ``userserv``: the service's nickame to send credentials to
     (``UserServ`` by default)
 
+Example of nick-based authentication with NickServ service::
+
+    [core]
+    auth_method = nickserv         # select nick-based auth
+    # auth_username is not required for nickserv
+    auth_password = SopelIsGreat!  # your bot's password
+    auth_target = NickServ         # default value
+
+And here is an example of server-based authentication using SASL::
+
+    [core]
+    auth_method = sasl             # select server-based auth
+    auth_username = BotAccount     # your bot's username
+    auth_password = SopelIsGreat!  # your bot's password
+    auth_target = PLAIN            # default sasl mechanism
+
+
 Multi-stage
 -----------
 
@@ -413,14 +430,12 @@ In some cases, an IRC bot needs to use both server-based and
 nick-based authentication.
 
 * :attr:`~CoreSection.server_auth_method`: defines the server-based
-  authentication method to use (``sasl`` or ``server``)
+  authentication method to use (``sasl`` or ``server``); it will
+  be used only if :attr:`~CoreSection.auth_method` does not define a
+  server-based authentication method
 * :attr:`~CoreSection.nick_auth_method`: defines the nick-based authentication
-  method to use ( ``nickserv``, ``authserv``, ``Q``, or ``userserv``)
-
-.. important::
-
-   If ``auth_method`` is defined then ``nick_auth_method`` (and its options)
-   will be ignored.
+  method to use ( ``nickserv``, ``authserv``, ``Q``, or ``userserv``); it will
+  be used only if :attr:`~CoreSection.auth_method` is not set
 
 .. versionadded:: 7.0
 
@@ -430,13 +445,33 @@ nick-based authentication.
 Server-based
 ............
 
-When :attr:`~CoreSection.server_auth_method` is defined, the settings
-used are:
+When :attr:`~CoreSection.server_auth_method` is defined the settings used are:
 
 * :attr:`~CoreSection.server_auth_username`: account's username
 * :attr:`~CoreSection.server_auth_password`: account's password
 * :attr:`~CoreSection.server_auth_sasl_mech`: the SASL mechanism to use
   (defaults to ``PLAIN``)
+
+For example, this will use NickServ ``IDENTIFY`` command and SASL mechanism::
+
+    [core]
+    # nick-based auth
+    auth_method = nickserv         # select nick-based auth
+    # auth_username is not required for nickserv
+    auth_password = SopelIsGreat!  # your bot's password
+    auth_target = NickServ         # default value
+
+    # server-based auth
+    server_auth_method = sasl             # select server-based auth
+    server_auth_username = BotAccount     # your bot's username
+    server_auth_password = SopelIsGreat!  # your bot's password
+    server_auth_target = PLAIN            # default sasl mechanism
+
+.. important::
+
+    If :attr:`~CoreSection.auth_method` is already set to ``sasl`` or
+    ``server`` then :attr:`~CoreSection.server_auth_method` (and its options)
+    will be ignored.
 
 Nick-based
 ..........
@@ -450,6 +485,26 @@ used are:
 * :attr:`~CoreSection.nick_auth_target`: the target used to send authentication
   credentials; may be optional for some authentication methods; defaults to
   ``NickServ`` for ``nickserv``, and to ``UserServ`` for ``userserv``.
+
+For example, this will use NickServ ``IDENTIFY`` command and SASL mechanism::
+
+    [core]
+    # nick-based auth
+    nick_auth_method = nickserv         # select nick-based auth
+    # nick_auth_username is not required for nickserv
+    nick_auth_password = SopelIsGreat!  # your bot's password
+    nick_auth_target = NickServ         # default value
+
+    # server-based auth
+    server_auth_method = sasl             # select server-based auth
+    server_auth_username = BotAccount     # your bot's username
+    server_auth_password = SopelIsGreat!  # your bot's password
+    server_auth_target = PLAIN            # default sasl mechanism
+
+.. important::
+
+    If :attr:`~CoreSection.auth_method` is already set then
+    :attr:`~CoreSection.nick_auth_method` (and its options) will be ignored.
 
 
 Database
