@@ -33,7 +33,7 @@ LOGGER = logging.getLogger(__name__)
 DATE_FORMAT = '%Y-%m-%d %H:%M:%S %z'
 DEFAULT_CACHE_TIME = '2000-01-01 00:00:00 +0000'
 IANA_LIST_URI = 'https://data.iana.org/TLD/tlds-alpha-by-domain.txt'
-WIKI_PAGE_URI = 'https://en.wikipedia.org/wiki/List_of_Internet_top-level_domains'
+WIKI_PAGE_NAME = 'List_of_Internet_top-level_domains'
 r_tld = re.compile(r'^\.(\S+)')
 r_idn = re.compile(r'^(xn--[A-Za-z0-9]+)')
 
@@ -236,8 +236,21 @@ def _update_tld_data(bot, which, force=False):
         bot.memory['tld_list_cache_updated'] = now
     elif which == 'data':
         try:
-            tld_data = requests.get(WIKI_PAGE_URI).text
-        except requests.exceptions.RequestException:
+            # https://www.mediawiki.org/wiki/Special:MyLanguage/API:Get_the_contents_of_a_page
+            tld_response = requests.get(
+                "https://en.wikipedia.org/w/api.php",
+                params={
+                    "action": "parse",
+                    "format": "json",
+                    "prop": "text",
+                    "utf8": 1,
+                    "formatversion": 2,
+                    "page": WIKI_PAGE_NAME,
+                },
+            ).json()
+            tld_data = tld_response["parse"]["text"]
+        # py <3.5 needs ValueError instead of more specific json.decoder.JSONDecodeError
+        except (requests.exceptions.RequestException, ValueError, KeyError):
             # Log error and continue life; it'll be fine
             LOGGER.warning(
                 "Error fetching TLD data from Wikipedia; will try again later.",
