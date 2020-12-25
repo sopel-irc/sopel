@@ -254,7 +254,7 @@ class Sopel(irc.AbstractBot):
         """
         self.setup_logging()
         self.setup_plugins()
-        self._scheduler.start()
+        self.post_setup()
 
     def setup_logging(self):
         """Set up logging based on config options."""
@@ -325,6 +325,34 @@ class Sopel(irc.AbstractBot):
                 load_disabled)
         else:
             LOGGER.warning("Warning: Couldn't load any plugins")
+
+    # post setup
+
+    def post_setup(self):
+        """Perform post-setup actions.
+
+        This method handles everything that should happen after all the plugins
+        are loaded, and before the bot can connect to the IRC server.
+
+        At the moment, this method checks for undefined configuration options,
+        and starts the job scheduler.
+
+        .. versionadded:: 7.1
+        """
+        settings = self.settings
+        for section_name, section in settings.get_defined_sections():
+            for option_name in settings.parser.options(section_name):
+                if not hasattr(section, option_name):
+                    LOGGER.warning(
+                        'Config option `%s.%s` is not defined by its section '
+                        'and may not be recognized by Sopel.',
+                        section_name,
+                        option_name,
+                    )
+
+        self._scheduler.start()
+
+    # plugins management
 
     def reload_plugin(self, name):
         """Reload a plugin.
@@ -451,6 +479,8 @@ class Sopel(irc.AbstractBot):
             raise plugins.exceptions.PluginNotRegistered(name)
 
         return self._plugins[name].get_meta_description()
+
+    # callable management
 
     @deprecated(
         reason="Replaced by specific `unregister_*` methods.",
@@ -608,6 +638,8 @@ class Sopel(irc.AbstractBot):
             Use :meth:`say` instead. Will be removed in Sopel 8.
         """
         self.say(text, recipient, max_messages)
+
+    # message dispatch
 
     def call_rule(self, rule, sopel, trigger):
         # rate limiting
@@ -856,6 +888,8 @@ class Sopel(irc.AbstractBot):
             self._running_triggers = [
                 t for t in running_triggers if t.is_alive()]
 
+    # event handlers
+
     def on_scheduler_error(self, scheduler, exc):
         """Called when the Job Scheduler fails.
 
@@ -968,6 +1002,8 @@ class Sopel(irc.AbstractBot):
 
         # Avoid calling shutdown methods if we already have.
         self.shutdown_methods = []
+
+    # URL callbacks management
 
     def register_url_callback(self, pattern, callback):
         """Register a ``callback`` for URLs matching the regex ``pattern``.

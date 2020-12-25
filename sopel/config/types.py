@@ -66,20 +66,23 @@ class StaticSection(object):
         self._parent = config
         self._parser = config.parser
         self._section_name = section_name
+
         for value in dir(self):
+            if value in ('_parent', '_parser', '_section_name'):
+                # ignore internal attributes
+                continue
+
             try:
                 getattr(self, value)
             except ValueError as e:
                 raise ValueError(
-                    'Invalid value for {}.{}: {}'.format(section_name, value,
-                                                         str(e))
-                )
+                    'Invalid value for {}.{}: {}'.format(
+                        section_name, value, str(e)))
             except AttributeError:
                 if validate:
                     raise ValueError(
-                        'Missing required value for {}.{}'.format(section_name,
-                                                                  value)
-                    )
+                        'Missing required value for {}.{}'.format(
+                            section_name, value))
 
     def configure_setting(self, name, prompt, default=NO_DEFAULT):
         """Return a validated value for this attribute from the terminal.

@@ -36,6 +36,9 @@ channels =
     "#startquote
     &endquote"
     "&quoted"
+
+[somesection]
+is_defined = no
 """  # noqa (trailing whitespaces are intended)
 
 TEST_CHANNELS = [
@@ -343,3 +346,21 @@ def test_save_modified_config(multi_fakeconfig):
         '&endquote"',
         '"&quoted"',  # doesn't start with a # so it isn't escaped
     ]
+
+
+def test_get_defined_sections(multi_fakeconfig):
+    assert multi_fakeconfig.parser.has_section('core')
+    assert multi_fakeconfig.parser.has_section('fake')
+    assert multi_fakeconfig.parser.has_section('spam')
+    assert multi_fakeconfig.parser.has_section('somesection')
+
+    results = multi_fakeconfig.get_defined_sections()
+
+    assert len(results) == 3, 'There should be 3 defined sections'
+
+    items = dict(results)
+    assert 'core' in items, 'core must be always defined'
+    assert 'fake' in items
+    assert 'spam' in items
+    assert 'somesection' not in items, (
+        'somesection was not defined and should not appear as such')
