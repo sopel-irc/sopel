@@ -191,6 +191,35 @@ def test_ctcp_action_pretrigger(nick):
     assert pretrigger.sender == '#Sopel'
 
 
+def test_ctcp_action_trigger(nick, configfactory):
+    line = ':Foo!bar@example.com PRIVMSG #Sopel :\x01ACTION Hello, world\x01'
+    pretrigger = PreTrigger(nick, line)
+
+    config = configfactory('default.cfg', TMP_CONFIG)
+    fakematch = re.match('.*', line)
+
+    trigger = Trigger(config, pretrigger, fakematch)
+    assert trigger.sender == '#Sopel'
+    assert trigger.raw == line
+    assert trigger.is_privmsg is False
+    assert trigger.hostmask == 'Foo!bar@example.com'
+    assert trigger.user == 'bar'
+    assert trigger.nick == Identifier('Foo')
+    assert trigger.host == 'example.com'
+    assert trigger.event == 'PRIVMSG'
+    assert trigger.match == fakematch
+    assert trigger.group == fakematch.group
+    assert trigger.groups == fakematch.groups
+    assert trigger.groupdict == fakematch.groupdict
+    assert trigger.args == ['#Sopel', 'Hello, world']
+    assert trigger.plain == 'Hello, world'
+    assert trigger.tags == {'intent': 'ACTION'}
+    assert trigger.ctcp == 'ACTION'
+    assert trigger.account is None
+    assert trigger.admin is True
+    assert trigger.owner is True
+
+
 def test_ircv3_extended_join_pretrigger(nick):
     line = ':Foo!foo@example.com JOIN #Sopel bar :Real Name'
     pretrigger = PreTrigger(nick, line)
@@ -231,6 +260,7 @@ def test_ircv3_extended_join_trigger(nick, configfactory):
     assert trigger.plain == 'Real Name'
     assert trigger.account == 'bar'
     assert trigger.tags == {'account': 'bar'}
+    assert trigger.ctcp is None
     assert trigger.owner is True
     assert trigger.admin is True
 
@@ -258,6 +288,7 @@ def test_ircv3_intents_trigger(nick, configfactory):
     assert trigger.args == ['#Sopel', 'Hello, world']
     assert trigger.plain == 'Hello, world'
     assert trigger.tags == {'intent': 'ACTION'}
+    assert trigger.ctcp == 'ACTION'
     assert trigger.account is None
     assert trigger.admin is True
     assert trigger.owner is True

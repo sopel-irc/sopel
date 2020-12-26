@@ -286,6 +286,22 @@ class Trigger(unicode):
     ``PRIVMSG``. Other event types like ``NOTICE``, ``NICK``, ``TOPIC``,
     ``KICK``, etc. must be requested using :func:`.plugin.event`.
     """
+    ctcp = property(lambda self: self.tags.get('intent', None))
+    """The CTCP command (if any).
+
+    :type: str
+
+    Common CTCP commands are ``ACTION``, ``VERSION``, and ``TIME``. Other
+    commands include ``USERINFO``, ``PING``, and various ``DCC`` operations.
+
+    .. versionadded:: 7.1
+
+    .. important::
+
+        Use this attribute instead of the ``intent`` tag in :attr:`tags`.
+        Message intents never made it past the IRCv3 draft stage, and Sopel will
+        drop support for them in a future release.
+    """
     match = property(lambda self: self._match)
     """The :ref:`Match object <match-objects>` for the triggering line.
 

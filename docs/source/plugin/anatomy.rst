@@ -37,7 +37,7 @@ Additionally, Sopel identifies a callable as a generic rule when these
 decorators are used alone:
 
 * event based rule: :func:`~sopel.plugin.event`
-* intent/CTCP based rule: :func:`~sopel.plugin.intent`
+* CTCP based rule: :func:`~sopel.plugin.ctcp`
 
 In that case, it will use a match-all regex (``r'.*'``)::
 

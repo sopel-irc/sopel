@@ -77,7 +77,7 @@ Plugin glossary
 
    Action command
       An action command is a :term:`Named rule` that reacts to a name in a
-      message sent with the ``ACTION`` intent/CTCP.
+      message sent with the ``ACTION`` CTCP command.
 
    Nick command
       A nick command (or nickname command) is a :term:`Named rule` that reacts

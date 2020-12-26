@@ -21,11 +21,11 @@ __all__ = [
     'action_commands',
     'command',
     'commands',
+    'ctcp',
     'echo',
     'event',
     'example',
     'find',
-    'intent',
     'interval',
     'label',
     'nickname_command',
@@ -539,10 +539,10 @@ def action_command(*command_list):
         command names!
 
         If you need to use a regex pattern, please use the :func:`rule`
-        decorator instead, with the :func:`intent` decorator::
+        decorator instead, with the :func:`ctcp` decorator::
 
             @rule(r'hello!?')
-            @intent('ACTION')
+            @ctcp('ACTION')
                 # Would trigger on "/me hello!" and "/me hello"
 
     """
@@ -630,25 +630,41 @@ def event(*event_list):
     return add_attribute
 
 
-def intent(*intent_list):
-    """Decorate a callable to trigger on a message with any of the given intents.
+def ctcp(function=None, *command_list):
+    """Decorate a callable to trigger on CTCP commands (mostly, ``ACTION``).
 
-    :param str intent_list: one or more intent(s) on which to trigger (really,
-                            the only useful value is ``action``)
+    :param str command_list: one or more CTCP command(s) on which to trigger
 
-    .. versionadded:: 5.2.0
+    .. versionadded:: 7.1
+
+        This is now ``ctcp`` instead of ``intent``, and it can be called
+        without argument, in which case it will assume ``ACTION``.
 
     .. note::
 
-        This system will be replaced and marked deprecated in or before Sopel
-        8.0, then removed in Sopel 9.0, as the IRCv3 spec for intents is dead.
+        This used to be ``@intent``, for a long dead feature in the IRCv3 spec.
+        It is now replaced by ``@ctcp``, which can be used without arguments.
+        In that case, Sopel will assume it should trigger on ``ACTION``.
 
+        As ``sopel.module`` will be removed in Sopel 9, so will ``@intent``.
     """
+    default_commands = ('ACTION',) + command_list
+    if function is None:
+        return ctcp(*default_commands)  # called as ``@ctcp()``
+    elif callable(function):
+        # called as ``@ctcp`` or ``@ctcp(function)``
+        # or even ``@ctcp(function, 'ACTION', ...)``
+        return ctcp(*default_commands)(function)
+
+    # function is not None, and it is not a callable
+    # called as ``@ctcp('ACTION', ...)``
+    ctcp_commands = (function,) + command_list
+
     def add_attribute(function):
         function._sopel_callable = True
         if not hasattr(function, "intents"):
             function.intents = []
-        for name in intent_list:
+        for name in ctcp_commands:
             if name not in function.intents:
                 function.intents.append(name)
         return function

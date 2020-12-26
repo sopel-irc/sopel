@@ -99,3 +99,24 @@ def test_url_lazy_multiple():
 
     assert mock.url_lazy_loaders == [loader_1, loader_2]
     assert not hasattr(mock, 'url_regex')
+
+
+def test_ctcp():
+    @plugin.ctcp('ACTION')
+    def mock(bot, trigger, match):
+        return True
+    assert mock.intents == ['ACTION']
+
+
+def test_ctcp_empty():
+    @plugin.ctcp()
+    def mock(bot, trigger, match):
+        return True
+    assert mock.intents == ['ACTION']
+
+
+def test_ctcp_direct():
+    @plugin.ctcp
+    def mock(bot, trigger, match):
+        return True
+    assert mock.intents == ['ACTION']
