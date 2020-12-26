@@ -135,6 +135,12 @@ class Channel(object):
             user, such as :meth:`is_oper`, :meth:`is_owner`, :meth:`is_admin`,
             :meth:`is_op`, :meth:`is_halfop`, and :meth:`is_voiced`.
 
+        .. important::
+
+            Not all IRC networks support all privilege levels. If you intend
+            for your plugin to run on any network, it is safest to rely only
+            on the presence of standard modes: ``+v`` (voice) and ``+o`` (op).
+
         """
         return self.privileges.get(Identifier(nick), 0) >= privilege
 
@@ -160,6 +166,12 @@ class Channel(object):
             True
             >>> channel.is_voiced(some_user.nick)
             True
+
+        .. important::
+
+            Not all IRC networks support this privilege mode. If you are
+            writing a plugin for public distribution, ensure your code behaves
+            sensibly if only ``+v`` (voice) and ``+o`` (op) modes exist.
 
         """
         return self.privileges.get(Identifier(nick), 0) & plugin.OPER
@@ -187,6 +199,12 @@ class Channel(object):
             >>> channel.is_voiced(some_user.nick)
             True
 
+        .. important::
+
+            Not all IRC networks support this privilege mode. If you are
+            writing a plugin for public distribution, ensure your code behaves
+            sensibly if only ``+v`` (voice) and ``+o`` (op) modes exist.
+
         """
         return self.privileges.get(Identifier(nick), 0) & plugin.OWNER
 
@@ -212,6 +230,12 @@ class Channel(object):
             True
             >>> channel.is_voiced(some_user.nick)
             True
+
+        .. important::
+
+            Not all IRC networks support this privilege mode. If you are
+            writing a plugin for public distribution, ensure your code behaves
+            sensibly if only ``+v`` (voice) and ``+o`` (op) modes exist.
 
         """
         return self.privileges.get(Identifier(nick), 0) & plugin.ADMIN
@@ -264,6 +288,12 @@ class Channel(object):
             True
             >>> channel.is_voiced(some_user.nick)
             True
+
+        .. important::
+
+            Not all IRC networks support this privilege mode. If you are
+            writing a plugin for public distribution, ensure your code behaves
+            sensibly if only ``+v`` (voice) and ``+o`` (op) modes exist.
 
         """
         return self.privileges.get(Identifier(nick), 0) & plugin.HALFOP
