@@ -69,6 +69,13 @@ HALFOP = 2
 """Privilege level for the +h channel permission
 
 .. versionadded:: 4.1
+
+.. important::
+
+    Not all IRC networks support this privilege mode. If you are writing a
+    plugin for public distribution, ensure your code behaves sensibly if only
+    ``+v`` (voice) and ``+o`` (op) modes exist.
+
 """
 
 OP = 4
@@ -81,12 +88,26 @@ ADMIN = 8
 """Privilege level for the +a channel permission
 
 .. versionadded:: 4.1
+
+.. important::
+
+    Not all IRC networks support this privilege mode. If you are writing a
+    plugin for public distribution, ensure your code behaves sensibly if only
+    ``+v`` (voice) and ``+o`` (op) modes exist.
+
 """
 
 OWNER = 16
 """Privilege level for the +q channel permission
 
 .. versionadded:: 4.1
+
+.. important::
+
+    Not all IRC networks support this privilege mode. If you are writing a
+    plugin for public distribution, ensure your code behaves sensibly if only
+    ``+v`` (voice) and ``+o`` (op) modes exist.
+
 """
 
 OPER = 32
@@ -96,6 +117,13 @@ Note: Except for these (non-standard) channel modes, Sopel does not monitor or
 store any user's OPER status.
 
 .. versionadded:: 7.0.0
+
+.. important::
+
+    Not all IRC networks support this privilege mode. If you are writing a
+    plugin for public distribution, ensure your code behaves sensibly if only
+    ``+v`` (voice) and ``+o`` (op) modes exist.
+
 """
 
 
