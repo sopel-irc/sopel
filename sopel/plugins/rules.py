@@ -316,14 +316,54 @@ class Manager(object):
         return _has_labeled_rule(self._url_callbacks, label, plugin)
 
     def get_all_commands(self):
-        """Retrieve all the registered commands, by plugin."""
+        """Retrieve all the registered commands, by plugin.
+
+        :return: a list of 2-value tuples as ``(key, value)``, where each key
+                 is a plugin name, and the value is a ``dict`` of its
+                 :term:`commands <Command>`
+        """
         # expose a copy of the registered commands
         return self._commands.items()
 
     def get_all_nick_commands(self):
-        """Retrieve all the registered nick commands, by plugin."""
+        """Retrieve all the registered nick commands, by plugin.
+
+        :return: a list of 2-value tuples as ``(key, value)``, where each key
+                 is a plugin name, and the value is a ``dict`` of its
+                 :term:`nick commands <Nick command>`
+        """
         # expose a copy of the registered commands
         return self._nick_commands.items()
+
+    def get_all_action_commands(self):
+        """Retrieve all the registered action commands, by plugin.
+
+        :return: a list of 2-value tuples as ``(key, value)``, where each key
+                 is a plugin name, and the value is a ``dict`` of its
+                 :term:`action commands <Action command>`
+        """
+        # expose a copy of the registered action commands
+        return self._action_commands.items()
+
+    def get_all_generic_rules(self):
+        """Retrieve all the registered generic rules, by plugin.
+
+        :return: a list of 2-value tuples as ``(key, value)``, where each key
+                 is a plugin name, and the value is a ``list`` of its
+                 :term:`generic rules <Generic rule>`
+        """
+        # expose a copy of the registered generic rules
+        return self._rules.items()
+
+    def get_all_url_callbacks(self):
+        """Retrieve all the registered URL callbacks, by plugin.
+
+        :return: a list of 2-value tuples as ``(key, value)``, where each key
+                 is a plugin name, and the value is a ``list`` of its
+                 :term:`URL callbacks <URL callback>`
+        """
+        # expose a copy of the registered generic rules
+        return self._url_callbacks.items()
 
     def get_triggered_rules(self, bot, pretrigger):
         """Get triggered rules with their match objects, sorted by priorities.
