@@ -192,7 +192,7 @@ def say_post_info(bot, trigger, id_, show_link=True, show_comments_link=False):
 
         points_text = 'point' if s.score == 1 else 'points'
 
-        percent = color(unicode(s.upvote_ratio * 100) + '%', point_color)
+        percent = color('{:.1%}'.format(s.upvote_ratio), point_color)
 
         comments_link = ''
         if show_comments_link:
