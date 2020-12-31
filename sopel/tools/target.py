@@ -3,6 +3,7 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 import functools
 
+from sopel import plugin
 from sopel.tools import Identifier
 
 
@@ -107,8 +108,222 @@ class Channel(object):
         """
         assert isinstance(user, User)
         self.users[user.nick] = user
-        self.privileges[user.nick] = privs
+        self.privileges[user.nick] = privs or 0
         user.channels[self.name] = self
+
+    def has_privilege(self, nick, privilege):
+        """Tell if a user has a ``privilege`` level or above in this channel.
+
+        :param str nick: a user's nick in this channel
+        :param int privilege: privilege level to check
+        :rtype: bool
+
+        This method checks the user's privilege level in this channel, i.e. if
+        it has this level or higher privileges::
+
+            >>> channel.add_user(some_user, plugin.OP)
+            >>> channel.has_privilege(some_user.nick, plugin.VOICE)
+            True
+
+        The ``nick`` argument can be either a :class:`str` or a
+        :class:`sopel.tools.Identifier`. If the user is not in this channel,
+        it will be considered as not having any privilege.
+
+        .. seealso::
+
+            There are other methods to check the exact privilege level of a
+            user, such as :meth:`is_oper`, :meth:`is_owner`, :meth:`is_admin`,
+            :meth:`is_op`, :meth:`is_halfop`, and :meth:`is_voiced`.
+
+        .. important::
+
+            Not all IRC networks support all privilege levels. If you intend
+            for your plugin to run on any network, it is safest to rely only
+            on the presence of standard modes: ``+v`` (voice) and ``+o`` (op).
+
+        """
+        return self.privileges.get(Identifier(nick), 0) >= privilege
+
+    def is_oper(self, nick):
+        """Tell if a user has the OPER (operator) privilege level.
+
+        :param str nick: a user's nick in this channel
+        :rtype: bool
+
+        Unlike :meth:`has_privilege`, this method checks if the user has been
+        explicitly granted the OPER privilege level::
+
+            >>> channel.add_user(some_user, plugin.OPER)
+            >>> channel.is_oper(some_user.nick)
+            True
+            >>> channel.is_voiced(some_user.nick)
+            False
+
+        Note that you can always have more than one privilege level::
+
+            >>> channel.add_user(some_user, plugin.OPER | plugin.VOICE)
+            >>> channel.is_oper(some_user.nick)
+            True
+            >>> channel.is_voiced(some_user.nick)
+            True
+
+        .. important::
+
+            Not all IRC networks support this privilege mode. If you are
+            writing a plugin for public distribution, ensure your code behaves
+            sensibly if only ``+v`` (voice) and ``+o`` (op) modes exist.
+
+        """
+        return self.privileges.get(Identifier(nick), 0) & plugin.OPER
+
+    def is_owner(self, nick):
+        """Tell if a user has the OWNER privilege level.
+
+        :param str nick: a user's nick in this channel
+        :rtype: bool
+
+        Unlike :meth:`has_privilege`, this method checks if the user has been
+        explicitly granted the OWNER privilege level::
+
+            >>> channel.add_user(some_user, plugin.OWNER)
+            >>> channel.is_owner(some_user.nick)
+            True
+            >>> channel.is_voiced(some_user.nick)
+            False
+
+        Note that you can always have more than one privilege level::
+
+            >>> channel.add_user(some_user, plugin.OWNER | plugin.VOICE)
+            >>> channel.is_owner(some_user.nick)
+            True
+            >>> channel.is_voiced(some_user.nick)
+            True
+
+        .. important::
+
+            Not all IRC networks support this privilege mode. If you are
+            writing a plugin for public distribution, ensure your code behaves
+            sensibly if only ``+v`` (voice) and ``+o`` (op) modes exist.
+
+        """
+        return self.privileges.get(Identifier(nick), 0) & plugin.OWNER
+
+    def is_admin(self, nick):
+        """Tell if a user has the ADMIN privilege level.
+
+        :param str nick: a user's nick in this channel
+        :rtype: bool
+
+        Unlike :meth:`has_privilege`, this method checks if the user has been
+        explicitly granted the ADMIN privilege level::
+
+            >>> channel.add_user(some_user, plugin.ADMIN)
+            >>> channel.is_admin(some_user.nick)
+            True
+            >>> channel.is_voiced(some_user.nick)
+            False
+
+        Note that you can always have more than one privilege level::
+
+            >>> channel.add_user(some_user, plugin.ADMIN | plugin.VOICE)
+            >>> channel.is_admin(some_user.nick)
+            True
+            >>> channel.is_voiced(some_user.nick)
+            True
+
+        .. important::
+
+            Not all IRC networks support this privilege mode. If you are
+            writing a plugin for public distribution, ensure your code behaves
+            sensibly if only ``+v`` (voice) and ``+o`` (op) modes exist.
+
+        """
+        return self.privileges.get(Identifier(nick), 0) & plugin.ADMIN
+
+    def is_op(self, nick):
+        """Tell if a user has the OP privilege level.
+
+        :param str nick: a user's nick in this channel
+        :rtype: bool
+
+        Unlike :meth:`has_privilege`, this method checks if the user has been
+        explicitly granted the OP privilege level::
+
+            >>> channel.add_user(some_user, plugin.OP)
+            >>> channel.is_op(some_user.nick)
+            True
+            >>> channel.is_voiced(some_user.nick)
+            False
+
+        Note that you can always have more than one privilege level::
+
+            >>> channel.add_user(some_user, plugin.OP | plugin.VOICE)
+            >>> channel.is_op(some_user.nick)
+            True
+            >>> channel.is_voiced(some_user.nick)
+            True
+
+        """
+        return self.privileges.get(Identifier(nick), 0) & plugin.OP
+
+    def is_halfop(self, nick):
+        """Tell if a user has the HALFOP privilege level.
+
+        :param str nick: a user's nick in this channel
+        :rtype: bool
+
+        Unlike :meth:`has_privilege`, this method checks if the user has been
+        explicitly granted the HALFOP privilege level::
+
+            >>> channel.add_user(some_user, plugin.HALFOP)
+            >>> channel.is_halfop(some_user.nick)
+            True
+            >>> channel.is_voiced(some_user.nick)
+            False
+
+        Note that you can always have more than one privilege level::
+
+            >>> channel.add_user(some_user, plugin.HALFOP | plugin.VOICE)
+            >>> channel.is_halfop(some_user.nick)
+            True
+            >>> channel.is_voiced(some_user.nick)
+            True
+
+        .. important::
+
+            Not all IRC networks support this privilege mode. If you are
+            writing a plugin for public distribution, ensure your code behaves
+            sensibly if only ``+v`` (voice) and ``+o`` (op) modes exist.
+
+        """
+        return self.privileges.get(Identifier(nick), 0) & plugin.HALFOP
+
+    def is_voiced(self, nick):
+        """Tell if a user has the VOICE privilege level.
+
+        :param str nick: a user's nick in this channel
+        :rtype: bool
+
+        Unlike :meth:`has_privilege`, this method checks if the user has been
+        explicitly granted the VOICE privilege level::
+
+            >>> channel.add_user(some_user, plugin.VOICE)
+            >>> channel.is_voiced(some_user.nick)
+            True
+            >>> channel.add_user(some_user, plugin.OP)
+            >>> channel.is_voiced(some_user.nick)
+            False
+
+        Note that you can always have more than one privilege level::
+
+            >>> channel.add_user(some_user, plugin.VOICE | plugin.OP)
+            >>> channel.is_voiced(some_user.nick)
+            True
+            >>> channel.is_op(some_user.nick)
+            True
+
+        """
+        return self.privileges.get(Identifier(nick), 0) & plugin.VOICE
 
     def rename_user(self, old, new):
         """Rename a user.
