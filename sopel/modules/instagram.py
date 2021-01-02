@@ -45,11 +45,11 @@ def instaparse(bot, trigger, match):
     # Get the embedded JSON
     json = get_insta_json(instagram_url)
     try:
-        bot.say(parse_insta_json(json))
+        bot.say(parse_insta_json(json), trailing='…')
     except ParseError:
         try:
             json = get_oembed_json(instagram_url)
-            bot.say(parse_oembed_json(json))
+            bot.say(parse_oembed_json(json), trailing='…')
         except ParseError:
             LOGGER.exception(
                 "Unable to find Instagram's payload for URL %s", instagram_url)
@@ -121,19 +121,6 @@ def parse_insta_json(json):
     else:
         parts.append('%s unknown user' % title)
 
-    # Media caption
-    try:
-        icap = needed['edge_media_to_caption']['edges'][0]['node']['text']
-        # Strip newlines
-        icap = icap.replace('\n', ' ')
-        # Truncate caption
-        icap = (icap[:256] + '…') if len(icap) > 256 else icap
-    except (KeyError, IndexError):
-        icap = None
-
-    if icap:
-        parts.append(icap)
-
     # Media width and height
     iwidth = dimensions.get('width') or None
     iheight = dimensions.get('height') or None
@@ -161,6 +148,19 @@ def parse_insta_json(json):
         dateformat = '%Y-%m-%d %H:%M:%S'
         pubdate = datetime.utcfromtimestamp(idate).strftime(dateformat)
         parts.append('Uploaded: %s' % pubdate)
+
+    # Media caption
+    # Goes last so Sopel can take care of truncating it automatically
+    # instead of hard-coding an arbitrary maximum length.
+    try:
+        icap = needed['edge_media_to_caption']['edges'][0]['node']['text']
+        # Strip newlines
+        icap = icap.replace('\n', ' ')
+    except (KeyError, IndexError):
+        icap = None
+    finally:
+        if icap:
+            parts.append(icap)
 
     # Build the message
     return ' | '.join(parts)

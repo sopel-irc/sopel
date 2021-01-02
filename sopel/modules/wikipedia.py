@@ -152,26 +152,33 @@ def mw_search(server, query, num):
 def say_snippet(bot, trigger, server, query, show_url=True):
     page_name = query.replace('_', ' ')
     query = quote(query.replace(' ', '_'))
+    url = 'https://{}/wiki/{}'.format(server, query)
+
+    # If the trigger looks like another instance of this plugin, assume it is
+    if trigger.startswith(PLUGIN_OUTPUT_PREFIX) and trigger.endswith(' | ' + url):
+        return
+
     try:
         snippet = mw_snippet(server, query)
     except KeyError:
         if show_url:
             bot.reply("Error fetching snippet for \"{}\".".format(page_name))
         return
-    msg = '{} | "{}"'.format(page_name, snippet)
-    msg_url = msg + ' | https://{}/wiki/{}'.format(server, query)
-    if msg_url == trigger:  # prevents triggering on another instance of Sopel
-        return
+
+    msg = '{} | "{}'.format(page_name, snippet)
+
+    trailing = '"'
     if show_url:
-        msg = msg_url
-    bot.say(msg)
+        trailing += ' | ' + url
+
+    bot.say(msg, trailing=' […]' + trailing)
 
 
 def mw_snippet(server, query):
     """Retrieves a snippet of the given page from the given MediaWiki server."""
     snippet_url = ('https://' + server + '/w/api.php?format=json'
                    '&action=query&prop=extracts&exintro&explaintext'
-                   '&exchars=300&redirects&titles=')
+                   '&exchars=500&redirects&titles=')
     snippet_url += query
     snippet = get(snippet_url).json()
     snippet = snippet['query']['pages']
@@ -193,7 +200,7 @@ def say_section(bot, trigger, server, query, section):
         return
 
     msg = '{} - {} | "{}"'.format(page_name, section.replace('_', ' '), snippet)
-    bot.say(msg)
+    bot.say(msg, trailing=' […]"')
 
 
 def mw_section(server, query, section):
@@ -225,15 +232,7 @@ def mw_section(server, query, section):
     parser = WikiParser(section.replace('_', ' '))
     parser.feed(data['parse']['text']['*'])
     text = parser.get_result()
-    text = ' '.join(text.split())   # collapse multiple whitespace chars
-
-    trimmed = False
-
-    while len(text) > (420 - len(query) - len(section) - 18):
-        text = text.rsplit(None, 1)[0]
-        trimmed = True
-    if trimmed:
-        text += '...'
+    text = ' '.join(text.split())  # collapse multiple whitespace chars
 
     return text
 

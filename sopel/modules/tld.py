@@ -338,11 +338,8 @@ def gettld(bot, trigger):
             items.append('{}: {}'.format(field, value))
 
     message = ' | '.join(items)
-    usable, excess = tools.get_sendable_message(message)
-    if excess:
-        message = usable + ' […]'
 
-    bot.say(message)
+    bot.say(message, trailing=' […]')
 
 
 @plugin.command('tldcache')

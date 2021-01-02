@@ -13,7 +13,6 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 import datetime as dt
 import re
 import sys
-import textwrap
 
 import praw
 import prawcore
@@ -238,15 +237,12 @@ def comment_info(bot, trigger, match):
 
     # stolen from the function I (dgw) wrote for our github plugin
     lines = [line for line in c.body.splitlines() if line and line[0] != '>']
-    short = textwrap.wrap(lines[0], 250)[0]
-    if len(lines) > 1 or short != lines[0]:
-        short += ' […]'
 
     message = message.format(
         author=author, points=c.score, points_text=points_text,
-        posted=posted, comment=short)
+        posted=posted, comment=' '.join(lines))
 
-    bot.say(message)
+    bot.say(message, trailing=' […]')
 
 
 def subreddit_info(bot, trigger, match, commanded=False):
@@ -309,7 +305,8 @@ def subreddit_info(bot, trigger, match, commanded=False):
     message = message.format(
         link=link, nsfw=nsfw, subscribers='{:,}'.format(s.subscribers),
         created=created, public_description=s.public_description)
-    bot.say(message)
+
+    bot.say(message, trailing=' […]')
 
 
 def redditor_info(bot, trigger, match, commanded=False):
