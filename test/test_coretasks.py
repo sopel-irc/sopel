@@ -188,6 +188,7 @@ def test_handle_isupport(mockbot):
 
     # not yet advertised
     assert 'CHARSET' not in mockbot.isupport
+    assert 'NAMESX' not in mockbot.isupport
 
     # update
     mockbot.on_message(
@@ -211,6 +212,9 @@ def test_handle_isupport(mockbot):
     assert 'WHOX' in mockbot.isupport
     assert 'KNOCK' in mockbot.isupport
 
+    # but namesx still isn't!
+    assert 'NAMESX' not in mockbot.isupport
+
     mockbot.on_message(
         ':irc.example.com 005 Sopel '
         'SAFELIST ELIST=CTU CPRIVMSG CNOTICE '
@@ -220,6 +224,49 @@ def test_handle_isupport(mockbot):
     assert 'ELIST' in mockbot.isupport
     assert 'CPRIVMSG' in mockbot.isupport
     assert 'CNOTICE' in mockbot.isupport
+
+
+def test_handle_isupport_namesx(mockbot):
+    mockbot.on_message(
+        ':irc.example.com 005 Sopel '
+        'SAFELIST ELIST=CTU CPRIVMSG CNOTICE '
+        ':are supported by this server')
+
+    assert 'NAMESX' not in mockbot.isupport
+    assert mockbot.backend.message_sent == []
+    assert 'multi-prefix' not in mockbot.server_capabilities
+
+    mockbot.on_message(
+        ':irc.example.com 005 Sopel '
+        'NAMESX '
+        ':are supported by this server')
+
+    assert 'NAMESX' in mockbot.isupport
+    assert mockbot.backend.message_sent == rawlist('PROTOCTL NAMESX')
+
+    mockbot.on_message(
+        ':irc.example.com 005 Sopel '
+        'NAMESX '
+        ':are supported by this server')
+
+    assert len(mockbot.backend.message_sent) == 1, 'No need to resend!'
+
+
+def test_handle_isupport_namesx_with_multi_prefix(mockbot):
+    # set multi-prefix
+    mockbot.server_capabilities['multi-prefix'] = None
+
+    # send NAMESX in ISUPPORT
+    mockbot.on_message(
+        ':irc.example.com 005 Sopel '
+        'NAMESX '
+        ':are supported by this server')
+
+    assert 'NAMESX' in mockbot.isupport
+    assert mockbot.backend.message_sent == [], (
+        'Sopel must not send PROTOCTL NAMESX '
+        'when multi-prefix capability is available'
+    )
 
 
 def test_handle_rpl_myinfo(mockbot):
