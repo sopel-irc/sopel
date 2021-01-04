@@ -77,7 +77,7 @@ def configure(config):
     config.safety.configure_setting(
         'vt_api_key',
         "Optionally, enter a VirusTotal API key to improve malicious URL "
-        "protection.\nOtherwise, only the Malwarebytes DB will be used."
+        "protection.\nOtherwise, only the StevenBlack list will be used."
     )
 
 
@@ -91,18 +91,40 @@ def setup(bot):
     for item in bot.config.safety.known_good:
         known_good.append(re.compile(item, re.I))
 
-    loc = os.path.join(bot.config.homedir, 'malwaredomains.txt')
+    old_file = os.path.join(bot.config.homedir, 'malwaredomains.txt')
+    if os.path.exists(old_file) and os.path.isfile(old_file):
+        LOGGER.info('Removing old malwaredomains file from %s', old_file)
+        try:
+            os.remove(old_file)
+        except Exception as err:
+            # for lack of a more specific error type...
+            # Python on Windows throws an exception if the file is in use
+            LOGGER.info('Could not delete %s: %s', old_file, str(err))
+
+    loc = os.path.join(bot.config.homedir, 'unsafedomains.txt')
     if os.path.isfile(loc):
-        if os.path.getmtime(loc) < time.time() - 24 * 60 * 60 * 7:
-            # File exists but older than one week — update it
-            _download_malwaredomains_db(loc)
+        if os.path.getmtime(loc) < time.time() - 24 * 60 * 60:
+            # File exists but older than one day — update it
+            _download_domain_list(loc)
     else:
-        _download_malwaredomains_db(loc)
+        _download_domain_list(loc)
     with open(loc, 'r') as f:
         for line in f:
             clean_line = unicode(line).strip().lower()
-            if clean_line != '':
-                malware_domains.add(clean_line)
+            if not clean_line or clean_line[0] == '#':
+                # blank line or comment
+                continue
+
+            parts = clean_line.split(' ', 1)
+            try:
+                domain = parts[1]
+            except IndexError:
+                # line does not contain a hosts entry; skip it
+                continue
+
+            if '.' in domain:
+                # only publicly routable domains matter; skip loopback/link-local stuff
+                malware_domains.add(domain)
 
 
 def shutdown(bot):
@@ -110,9 +132,9 @@ def shutdown(bot):
     bot.memory.pop('safety_cache_lock', None)
 
 
-def _download_malwaredomains_db(path):
-    url = 'https://mirror1.malwaredomains.com/files/justdomains'
-    LOGGER.info('Downloading malwaredomains db from %s', url)
+def _download_domain_list(path):
+    url = 'https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts'
+    LOGGER.info('Downloading malicious domain list from %s', url)
     urlretrieve(url, path)
 
 
@@ -180,19 +202,17 @@ def url_handler(bot, trigger):
             positives = result.get('positives', 0)
             total = result.get('total', 0)
     except requests.exceptions.RequestException:
-        # Ignoring exceptions with VT so MalwareDomains will always work
+        # Ignoring exceptions with VT so domain list will always work
         LOGGER.debug('[VirusTotal] Error obtaining response.', exc_info=True)
     except InvalidJSONResponse:
-        # Ignoring exceptions with VT so MalwareDomains will always work
+        # Ignoring exceptions with VT so domain list will always work
         LOGGER.debug('[VirusTotal] Malformed response (invalid JSON).', exc_info=True)
 
     if unicode(netloc).lower() in malware_domains:
-        # malwaredomains is more trustworthy than some VT engines
-        # therefore it gets a weight of 10 engines when calculating confidence
-        positives += 10
-        total += 10
+        positives += 1
+        total += 1
 
-    if positives > 1:
+    if positives >= 1:
         # Possibly malicious URL detected!
         confidence = '{}%'.format(round((positives / total) * 100))
         msg = (
