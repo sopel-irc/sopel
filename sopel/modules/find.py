@@ -142,7 +142,7 @@ def findandreplace(bot, trigger):
         return
 
     old = trigger.group(2).replace(r'\/', '/')
-    new = trigger.group(3).replace(r'\/', '/')
+    new = bold(trigger.group(3)).replace(r'\/', '/')
     me = False  # /me command
     flags = (trigger.group(4) or '')
 
@@ -185,7 +185,7 @@ def findandreplace(bot, trigger):
 
     # output
     if not me:
-        new_phrase = '%s to say: %s' % (bold('meant'), new_phrase)
+        new_phrase = 'meant to say: %s' % new_phrase
     if trigger.group(1):
         phrase = '%s thinks %s %s' % (trigger.nick, rnick, new_phrase)
     else:
