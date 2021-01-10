@@ -172,11 +172,12 @@ def findandreplace(bot, trigger):
             line = line[8:]
         else:
             me = False
-        new_phrase = repl(line)
-        if new_phrase != line:  # we are done
+        replaced = repl(line)
+        if replaced != line:  # we are done
+            new_phrase = replaced
             break
 
-    if not new_phrase or new_phrase == line:
+    if not new_phrase:
         return  # Didn't find anything
 
     # Save the new "edited" message.
