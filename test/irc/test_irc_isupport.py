@@ -162,10 +162,8 @@ def test_isupport_chanmodes():
 def test_isupport_chanmodes_undefined():
     instance = isupport.ISupport()
 
-    assert not hasattr(instance, 'CHANMODES')
-
-    with pytest.raises(AttributeError):
-        instance.CHANMODES
+    assert set(instance.CHANMODES.keys()) == set("ABCD")
+    assert set(instance.CHANMODES.values()) == {""}
 
 
 def test_isupport_maxlist():
