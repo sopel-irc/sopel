@@ -1,4 +1,15 @@
 # coding=utf-8
+"""Utility functions to manage plugin callables from a Python module.
+
+.. important::
+
+    Its usage and documentation is for Sopel core development and advanced
+    developers. It is subject to rapid changes between versions without much
+    (or any) warning.
+
+    Do **not** build your plugin based on what is here, you do **not** need to.
+
+"""
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 import re
@@ -13,7 +24,15 @@ if sys.version_info.major >= 3:
 
 
 def trim_docstring(doc):
-    """Get the docstring as a series of lines that can be sent"""
+    """Get the docstring as a series of lines that can be sent.
+
+    :param str doc: a callable's docstring to trim
+    :return: a list of trimmed lines
+    :rtype: list
+
+    This function acts like :func:`inspect.cleandoc` but doesn't replace tabs,
+    and instead of a :class:`str` it returns a :class:`list`.
+    """
     if not doc:
         return []
     lines = doc.expandtabs().splitlines()
@@ -228,6 +247,26 @@ def is_url_callback(obj):
 
 
 def clean_module(module, config):
+    """Clean a module and return its command, rule, job, etc. callables.
+
+    :param module: the module to clean
+    :type module: :term:`module`
+    :param config: Sopel's settings
+    :type config: :class:`sopel.config.Config`
+    :return: a tuple with triggerable, job, shutdown, and url functions
+    :rtype: tuple
+
+    This function will parse the ``module`` looking for callables:
+
+    * shutdown actions
+    * triggerables (commands, rules, etc.)
+    * jobs
+    * URL callbacks
+
+    This function will set all the default attributes expected for a Sopel
+    callable, i.e. properties related to threading, docs, examples, rate
+    limiting, commands, rules, and other features.
+    """
     callables = []
     shutdowns = []
     jobs = []
