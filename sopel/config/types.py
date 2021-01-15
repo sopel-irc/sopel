@@ -477,7 +477,7 @@ class ListAttribute(BaseValidated):
         """
         if not isinstance(value, (list, set)):
             raise ValueError('ListAttribute value must be a list.')
-        elif not value:
+        if not value:
             # return an empty string when there is no value
             return ''
 

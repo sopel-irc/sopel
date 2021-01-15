@@ -1280,8 +1280,7 @@ class SopelWrapper(object):
         if channel is None:
             if self._trigger.is_privmsg:
                 raise RuntimeError('Error: KICK requires a channel.')
-            else:
-                channel = self._trigger.sender
+            channel = self._trigger.sender
         if nick is None:
             raise RuntimeError('Error: KICK requires a nick.')
         self._bot.kick(nick, channel, message)
