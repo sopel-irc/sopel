@@ -180,7 +180,7 @@ def findandreplace(bot, trigger):
         return  # Didn't find anything
 
     # Save the new "edited" message.
-    action = (me and '\x01ACTION ') or ''  # If /me message, prepend \x01ACTION
+    action = '\x01ACTION ' if me else ''  # If /me message, prepend \x01ACTION
     history.appendleft(action + new_phrase)  # history is in most-recent-first order
 
     # output
