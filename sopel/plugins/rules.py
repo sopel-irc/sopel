@@ -679,7 +679,7 @@ class Rule(AbstractRule):
         # - usages are for documentation only
         # - tests are examples that can be run and tested
         examples = _clean_callable_examples(
-            getattr(handler, 'example', None) or tuple())
+            getattr(handler, 'example', None) or ())
 
         usages = tuple(
             example
@@ -701,7 +701,7 @@ class Rule(AbstractRule):
             'rate_limit': getattr(handler, 'rate', 0),
             'channel_rate_limit': getattr(handler, 'channel_rate', 0),
             'global_rate_limit': getattr(handler, 'global_rate', 0),
-            'usages': usages or tuple(),
+            'usages': usages or (),
             'tests': tests,
             'doc': inspect.getdoc(handler),
         }
@@ -760,8 +760,8 @@ class Rule(AbstractRule):
         self._metrics_global = None
 
         # docs & tests
-        self._usages = usages or tuple()
-        self._tests = tests or tuple()
+        self._usages = usages or ()
+        self._tests = tests or ()
         self._doc = doc or ''
 
     def __str__(self):
@@ -811,7 +811,7 @@ class Rule(AbstractRule):
         )
 
     def get_test_parameters(self):
-        return self._tests or tuple()
+        return self._tests or ()
 
     def get_doc(self):
         return self._doc
@@ -1067,7 +1067,7 @@ class Command(NamedRuleMixin, Rule):
         self._name = name
         self._prefix = prefix
         self._help_prefix = help_prefix
-        self._aliases = tuple(aliases) if aliases is not None else tuple()
+        self._aliases = tuple(aliases) if aliases is not None else ()
         self._regexes = (self.get_rule_regex(),)
 
     def __str__(self):
@@ -1191,8 +1191,8 @@ class NickCommand(NamedRuleMixin, Rule):
         self._name = name
         self._nick_aliases = (tuple(nick_aliases)
                               if nick_aliases is not None
-                              else tuple())
-        self._aliases = tuple(aliases) if aliases is not None else tuple()
+                              else ())
+        self._aliases = tuple(aliases) if aliases is not None else ()
         self._regexes = (self.get_rule_regex(),)
 
     def __str__(self):
@@ -1302,7 +1302,7 @@ class ActionCommand(NamedRuleMixin, Rule):
     def __init__(self, name, aliases=None, **kwargs):
         super(ActionCommand, self).__init__([], **kwargs)
         self._name = name
-        self._aliases = tuple(aliases) if aliases is not None else tuple()
+        self._aliases = tuple(aliases) if aliases is not None else ()
         self._regexes = (self.get_rule_regex(),)
 
     def __str__(self):

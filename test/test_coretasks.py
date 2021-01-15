@@ -174,7 +174,7 @@ def test_handle_isupport(mockbot):
     assert mockbot.isupport['EXCEPTS'] == 'e'
     assert mockbot.isupport['INVEX'] == 'I'
     assert mockbot.isupport['CHANMODES'] == (
-        'eIbq', 'k', 'flj', 'CFLMPQScgimnprstz', tuple())
+        'eIbq', 'k', 'flj', 'CFLMPQScgimnprstz', ())
     assert hasattr(mockbot.isupport, 'CHANMODES')
     assert mockbot.isupport.CHANMODES == {
         'A': 'eIbq',

@@ -79,7 +79,7 @@ class Sopel(irc.AbstractBot):
         For servers that do not support IRCv3, this will be an empty set.
         """
 
-        self.privileges = dict()
+        self.privileges = {}
         """A dictionary of channels to their users and privilege levels.
 
         The value associated with each channel is a dictionary of
@@ -714,11 +714,11 @@ class Sopel(irc.AbstractBot):
         nick = trigger.nick
         current_time = time.time()
         if nick not in self._times:
-            self._times[nick] = dict()
+            self._times[nick] = {}
         if self.nick not in self._times:
-            self._times[self.nick] = dict()
+            self._times[self.nick] = {}
         if not trigger.is_privmsg and trigger.sender not in self._times:
-            self._times[trigger.sender] = dict()
+            self._times[trigger.sender] = {}
 
         if not trigger.admin and not func.unblockable:
             if func in self._times[nick]:

@@ -148,7 +148,7 @@ def test_isupport_chanlimit_undefined():
 
 
 def test_isupport_chanmodes():
-    instance = isupport.ISupport(chanmodes=('b', 'k', 'l', 'imnpst', tuple()))
+    instance = isupport.ISupport(chanmodes=('b', 'k', 'l', 'imnpst', ()))
 
     assert 'A' in instance.CHANMODES
     assert 'B' in instance.CHANMODES
@@ -374,7 +374,7 @@ def test_parse_parameter_chanmode():
     key, value = isupport.parse_parameter('CHANMODES=b,k,l,imnpst')
 
     assert key == 'CHANMODES'
-    assert value == ('b', 'k', 'l', 'imnpst', tuple())
+    assert value == ('b', 'k', 'l', 'imnpst', ())
 
 
 def test_parse_parameter_chanmode_extra():
