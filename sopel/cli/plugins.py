@@ -538,11 +538,11 @@ def main():
 
     if action == 'list':
         return handle_list(options)
-    elif action == 'show':
+    if action == 'show':
         return handle_show(options)
-    elif action == 'configure':
+    if action == 'configure':
         return handle_configure(options)
-    elif action == 'disable':
+    if action == 'disable':
         return handle_disable(options)
-    elif action == 'enable':
+    if action == 'enable':
         return handle_enable(options)

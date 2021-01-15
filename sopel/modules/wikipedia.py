@@ -274,8 +274,7 @@ def wikipedia(bot, trigger):
     if not query:
         bot.reply("I can't find any results for that.")
         return plugin.NOLIMIT
-    else:
-        query = query[0]
+    query = query[0]
     say_snippet(bot, trigger, server, query)
 
 

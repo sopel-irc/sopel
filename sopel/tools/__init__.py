@@ -185,8 +185,7 @@ def get_input(prompt):
     """
     if sys.version_info.major >= 3:
         return input(prompt)
-    else:
-        return raw_input(prompt).decode('utf8')
+    return raw_input(prompt).decode('utf8')
 
 
 def compile_rule(nick, pattern, alias_nicks):

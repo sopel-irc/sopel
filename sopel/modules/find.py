@@ -53,7 +53,7 @@ def collectlines(bot, trigger):
     if line.startswith("s/"):  # Don't remember substitutions
         return
     # store messages in reverse order (most recent first)
-    elif line.startswith("\x01ACTION"):  # For /me messages
+    if line.startswith("\x01ACTION"):  # For /me messages
         line = line[:-1]
         line_list.appendleft(line)
     else:

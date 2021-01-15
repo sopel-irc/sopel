@@ -452,7 +452,7 @@ def reddit_slash_info(bot, trigger):
     match = trigger.group('id')
     if searchtype == "r":
         return subreddit_info(bot, trigger, match, commanded=False)
-    elif searchtype == "u":
+    if searchtype == "u":
         return redditor_info(bot, trigger, match, commanded=False)
 
 

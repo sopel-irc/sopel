@@ -215,10 +215,9 @@ def roll(bot, trigger):
     def _get_pretty_str(dice):
         if dice.num <= 10:
             return dice.get_simple_string()
-        elif dice.get_number_of_faces() <= 10:
+        if dice.get_number_of_faces() <= 10:
             return dice.get_compressed_string()
-        else:
-            return "(...)"
+        return "(...)"
 
     eval_str = arg_str % (tuple(map(_get_eval_str, dice)))
     pretty_str = arg_str % (tuple(map(_get_pretty_str, dice)))

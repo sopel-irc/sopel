@@ -191,12 +191,11 @@ def format_time(db=None, config=None, zone=None, nick=None, channel=None,
 
     if not zone:
         return time.strftime(tformat)
-    else:
-        if not time.tzinfo:
-            utc = pytz.timezone('UTC')
-            time = utc.localize(time)
-        zone = pytz.timezone(zone)
-        return time.astimezone(zone).strftime(tformat)
+    if not time.tzinfo:
+        utc = pytz.timezone('UTC')
+        time = utc.localize(time)
+    zone = pytz.timezone(zone)
+    return time.astimezone(zone).strftime(tformat)
 
 
 def seconds_to_human(secs):

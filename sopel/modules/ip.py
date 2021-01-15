@@ -81,17 +81,16 @@ def _find_geoip_db(bot):
         ipasnum_db = os.path.join(config.ip.GeoIP_db_path, 'GeoLite2-ASN.mmdb')
         if (os.path.isfile(cities_db) and os.path.isfile(ipasnum_db)):
             return config.ip.GeoIP_db_path
-        else:
-            LOGGER.warning(
-                'GeoIP path configured but DB not found in configured path')
+        LOGGER.warning(
+            'GeoIP path configured but DB not found in configured path')
 
     if (os.path.isfile(os.path.join(config.core.homedir, 'GeoLite2-City.mmdb')) and
             os.path.isfile(os.path.join(config.core.homedir, 'GeoLite2-ASN.mmdb'))):
         return config.core.homedir
-    elif (os.path.isfile(os.path.join('/usr/share/GeoIP', 'GeoLite2-City.mmdb')) and
+    if (os.path.isfile(os.path.join('/usr/share/GeoIP', 'GeoLite2-City.mmdb')) and
             os.path.isfile(os.path.join('/usr/share/GeoIP', 'GeoLite2-ASN.mmdb'))):
         return '/usr/share/GeoIP'
-    elif urlretrieve:
+    if urlretrieve:
         LOGGER.info('Downloading GeoIP database')
         bot.say('Downloading GeoIP database, please wait...')
 
@@ -113,8 +112,7 @@ def _find_geoip_db(bot):
             urlretrieve(url, full_path)
             _decompress(full_path, config.core.homedir)
         return bot.config.core.homedir
-    else:
-        return False
+    return False
 
 
 @plugin.command('iplookup', 'ip')

@@ -61,7 +61,7 @@ class ExpressionEvaluator:
         if isinstance(node, ast.Num):
             return node.n
 
-        elif (isinstance(node, ast.BinOp) and
+        if (isinstance(node, ast.BinOp) and
                 type(node.op) in self.binary_ops):
             left = self._eval_node(node.left, timeout)
             right = self._eval_node(node.right, timeout)
@@ -70,7 +70,7 @@ class ExpressionEvaluator:
                     "Time for evaluating expression ran out.")
             return self.binary_ops[type(node.op)](left, right)
 
-        elif (isinstance(node, ast.UnaryOp) and
+        if (isinstance(node, ast.UnaryOp) and
                 type(node.op) in self.unary_ops):
             operand = self._eval_node(node.operand, timeout)
             if time.time() > timeout:
@@ -170,11 +170,10 @@ def pow_complexity(num, exp):
     """
     if num in (0, 1) or exp in (0, 1):
         return 0
-    elif (num & (num - 1)) == 0:
+    if (num & (num - 1)) == 0:
         # For powers of 2 the scaling is a bit different.
         return exp ** 1.092 * num.bit_length() ** 1.65 / 623212911.121
-    else:
-        return exp ** 1.590 * num.bit_length() ** 1.73 / 36864057619.3
+    return exp ** 1.590 * num.bit_length() ** 1.73 / 36864057619.3
 
 
 def guarded_pow(num, exp):

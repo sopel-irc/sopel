@@ -572,7 +572,7 @@ def command_legacy(opts):
     if opts.version:
         print_version()
         return
-    elif opts.version_legacy:
+    if opts.version_legacy:
         tools.stderr(
             'WARNING: option -v is deprecated; '
             'use `sopel -V/--version` instead')
@@ -625,14 +625,14 @@ def command_legacy(opts):
             tools.stderr(
                 'Try using either the `sopel stop` command or the `sopel restart` command')
             return ERR_CODE
-        elif opts.kill:
+        if opts.kill:
             tools.stderr(
                 'WARNING: option -k/--kill is deprecated; '
                 'use `sopel stop --kill` instead')
             tools.stderr('Killing the Sopel')
             os.kill(old_pid, signal.SIGKILL)
             return
-        elif opts.quit:
+        if opts.quit:
             tools.stderr(
                 'WARNING: options -q/--quit is deprecated; '
                 'use `sopel stop` instead')
@@ -644,7 +644,7 @@ def command_legacy(opts):
                 # https://docs.microsoft.com/en-us/cpp/c-runtime-library/reference/signal
                 os.kill(old_pid, signal.SIGTERM)
             return
-        elif opts.restart:
+        if opts.restart:
             tools.stderr(
                 'WARNING: options --restart is deprecated; '
                 'use `sopel restart` instead')

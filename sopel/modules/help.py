@@ -78,9 +78,8 @@ def post_to_clbin(msg):
         # find/replace just in case the site tries to be sneaky and save on SSL overhead,
         # though it will probably send us an HTTPS link without any tricks.
         return result.replace('http://', 'https://', 1)
-    else:
-        LOGGER.error("Invalid result %s", result)
-        raise PostingException('clbin result did not contain expected URL base.')
+    LOGGER.error("Invalid result %s", result)
+    raise PostingException('clbin result did not contain expected URL base.')
 
 
 def post_to_0x0(msg):
@@ -94,9 +93,8 @@ def post_to_0x0(msg):
         # find/replace just in case the site tries to be sneaky and save on SSL overhead,
         # though it will probably send us an HTTPS link without any tricks.
         return result.replace('http://', 'https://', 1)
-    else:
-        LOGGER.error('Invalid result %s', result)
-        raise PostingException('0x0.st result did not contain expected URL base.')
+    LOGGER.error('Invalid result %s', result)
+    raise PostingException('0x0.st result did not contain expected URL base.')
 
 
 def post_to_hastebin(msg):

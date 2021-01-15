@@ -70,8 +70,7 @@ def duck_api(query):
         return None
     if results['Redirect']:
         return results['Redirect']
-    else:
-        return None
+    return None
 
 
 @plugin.command('duck', 'ddg', 'g')

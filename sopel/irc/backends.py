@@ -315,8 +315,7 @@ class SSLAsynchatBackend(AsynchatBackend):
                           asyncore.ESHUTDOWN):
                 self.handle_close()
                 return ''
-            elif why[0] == errno.ENOENT:
+            if why[0] == errno.ENOENT:
                 # Required in order to keep it non-blocking
                 return b''
-            else:
-                raise
+            raise
