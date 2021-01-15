@@ -156,8 +156,7 @@ class Config(object):
             configured = self.parser.get('core', 'homedir')
         if configured:
             return configured
-        else:
-            return os.path.dirname(self.filename)
+        return os.path.dirname(self.filename)
 
     def get_defined_sections(self):
         """Retrieve all defined static sections of this configuration.
@@ -345,9 +344,8 @@ class Config(object):
             section = self.ConfigSection(name, items, self)  # Return a section
             setattr(self, name, section)
             return section
-        else:
-            raise AttributeError("%r object has no attribute %r"
-                                 % (type(self).__name__, name))
+        raise AttributeError("%r object has no attribute %r"
+                             % (type(self).__name__, name))
 
     def __getitem__(self, name):
         return self.__getattr__(name)

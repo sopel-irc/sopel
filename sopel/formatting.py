@@ -221,10 +221,9 @@ def _get_hex_color(color):
 
     if len(color) == 3:
         return ''.join([c * 2 for c in color])
-    elif len(color) == 6:
+    if len(color) == 6:
         return color
-    else:  # invalid length
-        raise ValueError('Hexadecimal color value must have either 3 or 6 digits.')
+    raise ValueError('Hexadecimal color value must have either 3 or 6 digits.')
 
 
 def hex_color(text, fg=None, bg=None):

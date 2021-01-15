@@ -684,7 +684,7 @@ class Sopel(irc.AbstractBot):
 
                 if '*' in disabled_plugins:
                     return
-                elif rule.get_plugin_name() in disabled_plugins:
+                if rule.get_plugin_name() in disabled_plugins:
                     return
 
             # disable chosen methods from plugins

@@ -123,7 +123,7 @@ def handle_init(options):
     if ext and ext != '.cfg':
         tools.stderr('Configuration wizard accepts .cfg files only')
         return 1
-    elif not ext:
+    if not ext:
         config_filename = config_name + '.cfg'
 
     if os.path.isfile(config_filename):
@@ -180,7 +180,7 @@ def main():
     # init command does not require existing settings
     if action == 'list':
         return handle_list(options)
-    elif action == 'init':
+    if action == 'init':
         return handle_init(options)
-    elif action == 'get':
+    if action == 'get':
         return handle_get(options)

@@ -108,9 +108,9 @@ def entity(match):
     value = match.group(1).lower()
     if value.startswith('#x'):
         return unichr(int(value[2:], 16))
-    elif value.startswith('#'):
+    if value.startswith('#'):
         return unichr(int(value[1:]))
-    elif value in name2codepoint:
+    if value in name2codepoint:
         return unichr(name2codepoint[value])
     return '[' + value + ']'
 
@@ -159,8 +159,7 @@ def unquote(string):
     """
     if sys.version_info.major < 3:
         return urllib.unquote(string.encode('utf-8')).decode('utf-8')
-    else:
-        return urllib.parse.unquote(string)
+    return urllib.parse.unquote(string)
 
 
 def quote_query(string):
@@ -194,8 +193,7 @@ def iri_to_uri(iri):
     parsed = urlunparse(parts_seq)
     if sys.version_info.major > 2:
         return parsed.decode()
-    else:
-        return parsed
+    return parsed
 
 
 if sys.version_info.major < 3:

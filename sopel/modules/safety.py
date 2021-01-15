@@ -135,7 +135,7 @@ def url_handler(bot, trigger):
     if setting is not None:
         if setting == 'off':
             return  # Not checking
-        elif setting in ['on', 'strict', 'local', 'local strict']:
+        if setting in ['on', 'strict', 'local', 'local strict']:
             check = True
         if setting == 'strict' or setting == 'local strict':
             strict = True

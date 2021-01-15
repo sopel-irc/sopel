@@ -171,8 +171,7 @@ def title_command(bot, trigger):
             bot, bot.memory['last_seen_url'][trigger.sender])
         if matched:
             return
-        else:
-            urls = [bot.memory['last_seen_url'][trigger.sender]]
+        urls = [bot.memory['last_seen_url'][trigger.sender]]
     else:
         urls = web.search_urls(
             trigger,

@@ -96,9 +96,8 @@ def get(uri, timeout=20, headers=None, return_headers=False,
         bytes = u.text
     if not return_headers:
         return bytes
-    else:
-        headers['_http_status'] = u.status_code
-        return (bytes, headers)
+    headers['_http_status'] = u.status_code
+    return (bytes, headers)
 
 
 # Get HTTP headers
@@ -145,9 +144,8 @@ def post(uri, query, limit_bytes=None, timeout=20, verify_ssl=True, return_heade
     u.close()
     if not return_headers:
         return bytes
-    else:
-        headers['_http_status'] = u.status_code
-        return (bytes, headers)
+    headers['_http_status'] = u.status_code
+    return (bytes, headers)
 
 
 # solely for use by get_urllib_object()

@@ -680,7 +680,7 @@ def ctcp(function=None, *command_list):
     default_commands = ('ACTION',) + command_list
     if function is None:
         return ctcp(*default_commands)  # called as ``@ctcp()``
-    elif callable(function):
+    if callable(function):
         # called as ``@ctcp`` or ``@ctcp(function)``
         # or even ``@ctcp(function, 'ACTION', ...)``
         return ctcp(*default_commands)(function)
@@ -750,12 +750,11 @@ def require_privmsg(message=None, reply=False):
         def guarded(bot, trigger, *args, **kwargs):
             if trigger.is_privmsg:
                 return function(bot, trigger, *args, **kwargs)
-            else:
-                if message and not callable(message):
-                    if reply:
-                        bot.reply(message)
-                    else:
-                        bot.say(message)
+            if message and not callable(message):
+                if reply:
+                    bot.reply(message)
+                else:
+                    bot.say(message)
         return guarded
 
     # Hack to allow decorator without parens
@@ -785,12 +784,11 @@ def require_chanmsg(message=None, reply=False):
         def guarded(bot, trigger, *args, **kwargs):
             if not trigger.is_privmsg:
                 return function(bot, trigger, *args, **kwargs)
-            else:
-                if message and not callable(message):
-                    if reply:
-                        bot.reply(message)
-                    else:
-                        bot.say(message)
+            if message and not callable(message):
+                if reply:
+                    bot.reply(message)
+                else:
+                    bot.say(message)
         return guarded
 
     # Hack to allow decorator without parens

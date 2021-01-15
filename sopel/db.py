@@ -858,8 +858,7 @@ class SopelDB(object):
         name = Identifier(name)
         if name.is_nick():
             return self.get_nick_value(name, key, default)
-        else:
-            return self.get_channel_value(name, key, default)
+        return self.get_channel_value(name, key, default)
 
     def get_preferred_value(self, names, key):
         """Get a value for the first name which has it set.

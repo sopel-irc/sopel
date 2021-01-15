@@ -86,16 +86,15 @@ def xkcd(bot, trigger):
             if numbered.group(1) == "-":
                 query = -query
             return numbered_result(bot, query, latest)
+        # Non-number: search the web.
+        if (query.lower() == "latest" or query.lower() == "newest"):
+            requested = latest
         else:
-            # Non-number: search the web.
-            if (query.lower() == "latest" or query.lower() == "newest"):
-                requested = latest
-            else:
-                number = web_search(query)
-                if not number:
-                    bot.reply('Could not find any comics for that query.')
-                    return
-                requested = get_info(number)
+            number = web_search(query)
+            if not number:
+                bot.reply('Could not find any comics for that query.')
+                return
+            requested = get_info(number)
 
     say_result(bot, requested)
 
@@ -106,11 +105,11 @@ def numbered_result(bot, query, latest, commanded=True):
         bot.reply(("Sorry, comic #{} hasn't been posted yet. "
                    "The last comic was #{}").format(query, max_int))
         return
-    elif query <= -max_int:
+    if query <= -max_int:
         bot.reply(("Sorry, but there were only {} comics "
                    "released yet so far").format(max_int))
         return
-    elif abs(query) == 0:
+    if abs(query) == 0:
         requested = latest
     elif query == 404 or max_int + query == 404:
         bot.say("404 - Not Found")  # don't error on that one
