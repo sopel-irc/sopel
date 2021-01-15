@@ -57,14 +57,13 @@ class DicePouch:
             count = self.dice[i]
             if n == 0:
                 break
-            elif n < count:
+            if n < count:
                 self.dice[i] = count - n
                 self.dropped[i] = n
                 break
-            else:
-                self.dice[i] = 0
-                self.dropped[i] = count
-                n = n - count
+            self.dice[i] = 0
+            self.dropped[i] = count
+            n = n - count
 
         for i, count in self.dropped.items():
             if self.dice[i] == 0:
