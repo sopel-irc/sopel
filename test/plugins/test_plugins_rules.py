@@ -905,8 +905,8 @@ def test_kwargs_from_callable(mockbot):
     assert kwargs['threaded'] is True
     assert kwargs['output_prefix'] == ''
     assert kwargs['unblockable'] is False
-    assert kwargs['usages'] == tuple()
-    assert kwargs['tests'] == tuple()
+    assert kwargs['usages'] == ()
+    assert kwargs['tests'] == ()
     assert kwargs['doc'] is None
 
 
@@ -1063,7 +1063,7 @@ def test_kwargs_from_callable_examples(mockbot):
     assert 'tests' in kwargs
     assert 'doc' in kwargs
     assert kwargs['usages'] == (expected,)
-    assert kwargs['tests'] == tuple(), 'There must be no test'
+    assert kwargs['tests'] == (), 'There must be no test'
     assert kwargs['doc'] == 'This is the doc you are looking for.'
 
 
@@ -1219,7 +1219,7 @@ def test_kwargs_from_callable_examples_doc(mockbot):
     assert 'tests' in kwargs
     assert 'doc' in kwargs
     assert kwargs['usages'] == expected_usages
-    assert kwargs['tests'] == tuple(), 'There must be no test'
+    assert kwargs['tests'] == (), 'There must be no test'
     assert kwargs['doc'] == (
         'This is the doc you are looking for.\n'
         '\n'

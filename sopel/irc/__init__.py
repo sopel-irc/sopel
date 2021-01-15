@@ -76,7 +76,7 @@ class AbstractBot(object):
         """Bot settings."""
         self.enabled_capabilities = set()
         """A set containing the IRCv3 capabilities that the bot has enabled."""
-        self._cap_reqs = dict()
+        self._cap_reqs = {}
         """A dictionary of capability names to a list of requests."""
 
         # internal machinery

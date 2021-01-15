@@ -112,7 +112,7 @@ class PreTrigger(object):
     def __init__(self, own_nick, line, url_schemes=None):
         line = line.strip('\r\n')
         self.line = line
-        self.urls = tuple()
+        self.urls = ()
         self.plain = ''
 
         # Break off IRCv3 message tags, if present
