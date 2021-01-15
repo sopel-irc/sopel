@@ -275,7 +275,7 @@ class Config(object):
         current_name = str(current.__class__)
         new_name = str(cls_)
         if (current is not None and not isinstance(current, self.ConfigSection) and
-                not current_name == new_name):
+                current_name != new_name):
             raise ValueError(
                 "Can not re-define class for section from {} to {}.".format(
                     current_name, new_name)
