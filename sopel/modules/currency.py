@@ -70,8 +70,6 @@ class FixerError(Exception):
 
 class UnsupportedCurrencyError(Exception):
     """A currency is currently not supported by the API"""
-    def __init__(self, currency):
-        super(UnsupportedCurrencyError, self).__init__(currency)
 
 
 def build_reply(amount, base, target, out_string):
