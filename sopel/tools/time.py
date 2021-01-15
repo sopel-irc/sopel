@@ -245,7 +245,7 @@ def seconds_to_human(secs):
         minutes_text = "minute{}".format("s" if minutes != 1 else "")
         seconds_text = "second{}".format("s" if seconds != 1 else "")
 
-        result = ", ".join(filter(lambda x: bool(x), [
+        result = ", ".join(filter(bool, [
             "{0} {1}".format(years, years_text) if years else "",
             "{0} {1}".format(months, months_text) if months else "",
             "{0} {1}".format(days, days_text) if days else "",
