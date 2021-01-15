@@ -35,7 +35,7 @@ def _format_safe(text):
     """
     if not isinstance(text, str):
         raise TypeError("A string is required.")
-    elif not text:
+    if not text:
         # unnecessary optimization
         return ''
 
