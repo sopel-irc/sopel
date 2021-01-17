@@ -267,7 +267,7 @@ class ISupport(object):
 
     @property
     def CHANMODES(self):
-        """Expose ``CHANMODES`` as a dict, if advertised by the server.
+        """Expose ``CHANMODES`` as a dict.
 
         This exposes information about 4 types of channel modes::
 
@@ -279,9 +279,7 @@ class ISupport(object):
                 'D': 'imnpst',
             }
 
-        This attribute is not available if the server does not provide the
-        right information, and accessing it will raise an
-        :exc:`AttributeError`.
+        The values are empty if the server does not provide this information.
 
         .. seealso::
 
@@ -289,7 +287,7 @@ class ISupport(object):
 
         """
         if 'CHANMODES' not in self:
-            raise AttributeError('CHANMODES')
+            return {"A": "", "B": "", "C": "", "D": ""}
 
         return dict(zip('ABCD', self['CHANMODES'][:4]))
 
