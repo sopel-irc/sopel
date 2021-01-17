@@ -1,5 +1,5 @@
 # coding=utf-8
-"""Sopel's plugin handlers
+"""Sopel's plugin handlers.
 
 .. versionadded:: 7.0
 
@@ -17,15 +17,17 @@ From the :class:`~sopel.bot.Sopel` class, a plugin must be:
 Each subclass of :class:`AbstractPluginHandler` must implement its methods in
 order to be used in the application.
 
-At the moment, only two types of plugin are handled:
+At the moment, three types of plugin are handled:
 
 * :class:`PyModulePlugin`: manage plugins that can be imported as Python
   module from a Python package, i.e. where ``from package import name`` works
 * :class:`PyFilePlugin`: manage plugins that are Python files on the filesystem
   or Python directory (with an ``__init__.py`` file inside), that cannot be
   directly imported and extra steps are necessary
+* :class:`EntryPointPlugin`: manage plugins that are declared by a setuptools
+  entry point; other than that, it behaves like a :class:`PyModulePlugin`
 
-Both expose the same interface and thereby abstract the internal implementation
+All expose the same interface and thereby abstract the internal implementation
 away from the rest of the application.
 
 .. important::
@@ -75,7 +77,7 @@ class AbstractPluginHandler(object):
     on shutdown (either upon exiting Sopel or unloading that plugin).
     """
     def load(self):
-        """Load the plugin
+        """Load the plugin.
 
         This method must be called first, in order to setup, register, shutdown,
         or configure the plugin later.
@@ -83,7 +85,7 @@ class AbstractPluginHandler(object):
         raise NotImplementedError
 
     def reload(self):
-        """Reload the plugin
+        """Reload the plugin.
 
         This method can be called once the plugin is already loaded. It will
         take care of reloading the plugin from its source.
@@ -91,17 +93,17 @@ class AbstractPluginHandler(object):
         raise NotImplementedError
 
     def get_label(self):
-        """Retrieve a display label for the plugin
+        """Retrieve a display label for the plugin.
 
-        :return: A human readable label for display purpose
+        :return: a human readable label for display purpose
         :rtype: str
 
-        This method should, at least, return ``module_name + S + "plugin"``.
+        This method should, at least, return ``<module_name> plugin``.
         """
         raise NotImplementedError
 
     def get_meta_description(self):
-        """Retrieve a meta description for the plugin
+        """Retrieve a meta description for the plugin.
 
         :return: meta description information
         :rtype: :class:`dict`
@@ -117,7 +119,7 @@ class AbstractPluginHandler(object):
         raise NotImplementedError
 
     def is_loaded(self):
-        """Tell if the plugin is loaded or not
+        """Tell if the plugin is loaded or not.
 
         :return: ``True`` if the plugin is loaded, ``False`` otherwise
         :rtype: bool
@@ -128,7 +130,7 @@ class AbstractPluginHandler(object):
         raise NotImplementedError
 
     def setup(self, bot):
-        """Setup the plugin with the ``bot``
+        """Run the plugin's setup action.
 
         :param bot: instance of Sopel
         :type bot: :class:`sopel.bot.Sopel`
@@ -136,7 +138,7 @@ class AbstractPluginHandler(object):
         raise NotImplementedError
 
     def has_setup(self):
-        """Tell if the plugin has a setup action
+        """Tell if the plugin has a setup action.
 
         :return: ``True`` if the plugin has a setup, ``False`` otherwise
         :rtype: bool
@@ -144,7 +146,7 @@ class AbstractPluginHandler(object):
         raise NotImplementedError
 
     def register(self, bot):
-        """Register the plugin with the ``bot``
+        """Register the plugin with the ``bot``.
 
         :param bot: instance of Sopel
         :type bot: :class:`sopel.bot.Sopel`
@@ -152,7 +154,7 @@ class AbstractPluginHandler(object):
         raise NotImplementedError
 
     def unregister(self, bot):
-        """Unregister the plugin from the ``bot``
+        """Unregister the plugin from the ``bot``.
 
         :param bot: instance of Sopel
         :type bot: :class:`sopel.bot.Sopel`
@@ -160,7 +162,7 @@ class AbstractPluginHandler(object):
         raise NotImplementedError
 
     def shutdown(self, bot):
-        """Take action on bot's shutdown
+        """Run the plugin's shutdown action.
 
         :param bot: instance of Sopel
         :type bot: :class:`sopel.bot.Sopel`
@@ -168,7 +170,7 @@ class AbstractPluginHandler(object):
         raise NotImplementedError
 
     def has_shutdown(self):
-        """Tell if the plugin has a shutdown action
+        """Tell if the plugin has a shutdown action.
 
         :return: ``True`` if the plugin has a ``shutdown`` action, ``False``
                  otherwise
@@ -177,7 +179,7 @@ class AbstractPluginHandler(object):
         raise NotImplementedError
 
     def configure(self, settings):
-        """Configure Sopel's ``settings`` for this plugin
+        """Configure Sopel's ``settings`` for this plugin.
 
         :param settings: Sopel's configuration
         :type settings: :class:`sopel.config.Config`
@@ -187,7 +189,7 @@ class AbstractPluginHandler(object):
         raise NotImplementedError
 
     def has_configure(self):
-        """Tell if the plugin has a configure action
+        """Tell if the plugin has a configure action.
 
         :return: ``True`` if the plugin has a ``configure`` action, ``False``
                  otherwise
@@ -197,7 +199,7 @@ class AbstractPluginHandler(object):
 
 
 class PyModulePlugin(AbstractPluginHandler):
-    """Sopel plugin loaded from a Python module or package
+    """Sopel plugin loaded from a Python module or package.
 
     A :class:`PyModulePlugin` represents a Sopel plugin that is a Python
     module (or package) that can be imported directly.
@@ -221,7 +223,13 @@ class PyModulePlugin(AbstractPluginHandler):
         True
 
     """
+
     PLUGIN_TYPE = 'python-module'
+    """The plugin's type.
+
+    Metadata for the plugin; this should be considered to be a constant and
+    should not be modified at runtime.
+    """
 
     def __init__(self, name, package=None):
         self.name = name
@@ -234,6 +242,14 @@ class PyModulePlugin(AbstractPluginHandler):
         self._module = None
 
     def get_label(self):
+        """Retrieve a display label for the plugin.
+
+        :return: a human readable label for display purpose
+        :rtype: str
+
+        By default, this is ``<name> plugin``. If the plugin's module has a
+        docstring, its first line is used as the plugin's label.
+        """
         default_label = '%s plugin' % self.name
         module_doc = getattr(self._module, '__doc__', None)
 
@@ -244,6 +260,28 @@ class PyModulePlugin(AbstractPluginHandler):
         return default_label if not lines else lines[0]
 
     def get_meta_description(self):
+        """Retrieve a meta description for the plugin.
+
+        :return: meta description information
+        :rtype: :class:`dict`
+
+        The keys are:
+
+        * name: the plugin's name
+        * label: see :meth:`~sopel.plugins.handlers.PyModulePlugin.get_label`
+        * type: see :attr:`PLUGIN_TYPE`
+        * source: the name of the plugin's module
+
+        Example::
+
+            {
+                'name': 'example',
+                'type: 'python-module',
+                'label: 'example plugin',
+                'source': 'sopel_modules.example',
+            }
+
+        """
         return {
             'label': self.get_label(),
             'type': self.PLUGIN_TYPE,
@@ -252,9 +290,17 @@ class PyModulePlugin(AbstractPluginHandler):
         }
 
     def load(self):
+        """Load the plugin's module using :func:`importlib.import_module`.
+
+        This method assumes the module is available through ``sys.path``.
+        """
         self._module = importlib.import_module(self.module_name)
 
     def reload(self):
+        """Reload the plugin's module using :func:`importlib.reload`.
+
+        This method assumes the plugin is already loaded.
+        """
         self._module = reload(self._module)
 
     def is_loaded(self):
@@ -265,6 +311,14 @@ class PyModulePlugin(AbstractPluginHandler):
             self._module.setup(bot)
 
     def has_setup(self):
+        """Tell if the plugin has a setup action.
+
+        :return: ``True`` if the plugin has a setup, ``False`` otherwise
+        :rtype: bool
+
+        The plugin has a setup action if its module has a ``setup`` attribute.
+        This attribute is expected to be a callable.
+        """
         return hasattr(self._module, 'setup')
 
     def register(self, bot):
@@ -284,6 +338,15 @@ class PyModulePlugin(AbstractPluginHandler):
             self._module.shutdown(bot)
 
     def has_shutdown(self):
+        """Tell if the plugin has a shutdown action.
+
+        :return: ``True`` if the plugin has a ``shutdown`` action, ``False``
+                 otherwise
+        :rtype: bool
+
+        The plugin has a shutdown action if its module has a ``shutdown``
+        attribute. This attribute is expected to be a callable.
+        """
         return hasattr(self._module, 'shutdown')
 
     def configure(self, settings):
@@ -291,11 +354,20 @@ class PyModulePlugin(AbstractPluginHandler):
             self._module.configure(settings)
 
     def has_configure(self):
+        """Tell if the plugin has a configure action.
+
+        :return: ``True`` if the plugin has a ``configure`` action, ``False``
+                 otherwise
+        :rtype: bool
+
+        The plugin has a configure action if its module has a ``configure``
+        attribute. This attribute is expected to be a callable.
+        """
         return hasattr(self._module, 'configure')
 
 
 class PyFilePlugin(PyModulePlugin):
-    """Sopel plugin loaded from the filesystem outside of the Python path
+    """Sopel plugin loaded from the filesystem outside of the Python path.
 
     This plugin handler can be used to load a Sopel plugin from the
     filesystem, either a Python ``.py`` file or a directory containing an
@@ -310,7 +382,13 @@ class PyFilePlugin(PyModulePlugin):
     In this example, the plugin ``custom`` is loaded from its filename despite
     not being in the Python path.
     """
+
     PLUGIN_TYPE = 'python-file'
+    """The plugin's type.
+
+    Metadata for the plugin; this should be considered to be a constant and
+    should not be modified at runtime.
+    """
 
     def __init__(self, filename):
         good_file = (
@@ -365,6 +443,24 @@ class PyFilePlugin(PyModulePlugin):
         return mod
 
     def get_meta_description(self):
+        """Retrieve a meta description for the plugin.
+
+        :return: meta description information
+        :rtype: :class:`dict`
+
+        This returns the same keys as
+        :meth:`PyModulePlugin.get_meta_description`; the ``source`` key is
+        modified to contain the source file's path instead of its Python module
+        dotted path::
+
+            {
+                'name': 'example',
+                'type: 'python-file',
+                'label: 'example plugin',
+                'source': '/home/username/.sopel/plugins/example.py',
+            }
+
+        """
         data = super(PyFilePlugin, self).get_meta_description()
         data.update({
             'source': self.path,
@@ -375,7 +471,7 @@ class PyFilePlugin(PyModulePlugin):
         self._module = self._load()
 
     def reload(self):
-        """Reload the plugin
+        """Reload the plugin.
 
         Unlike :class:`PyModulePlugin`, it is not possible to use the
         ``reload`` function (either from `imp` or `importlib`), because the
@@ -385,7 +481,7 @@ class PyFilePlugin(PyModulePlugin):
 
 
 class EntryPointPlugin(PyModulePlugin):
-    """Sopel plugin loaded from a ``setuptools`` entry point
+    """Sopel plugin loaded from a ``setuptools`` entry point.
 
     :param entry_point: a ``setuptools`` entry point object
 
@@ -435,7 +531,13 @@ class EntryPointPlugin(PyModulePlugin):
         .. __: https://setuptools.readthedocs.io/en/stable/setuptools.html#dynamic-discovery-of-services-and-plugins
 
     """
+
     PLUGIN_TYPE = 'setup-entrypoint'
+    """The plugin's type.
+
+    Metadata for the plugin; this should be considered to be a constant and
+    should not be modified at runtime.
+    """
 
     def __init__(self, entry_point):
         self.entry_point = entry_point
@@ -445,6 +547,23 @@ class EntryPointPlugin(PyModulePlugin):
         self._module = self.entry_point.load()
 
     def get_meta_description(self):
+        """Retrieve a meta description for the plugin.
+
+        :return: meta description information
+        :rtype: :class:`dict`
+
+        This returns the same keys as
+        :meth:`PyModulePlugin.get_meta_description`; the ``source`` key is
+        modified to contain the setuptools entry point::
+
+            {
+                'name': 'example',
+                'type: 'setup-entrypoint',
+                'label: 'example plugin',
+                'source': 'example = my_plugin.example',
+            }
+
+        """
         data = super(EntryPointPlugin, self).get_meta_description()
         data.update({
             'source': str(self.entry_point),

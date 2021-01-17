@@ -540,7 +540,7 @@ class AbstractRule(object):
 
         :param bot: Sopel instance
         :type bot: :class:`sopel.bot.Sopel`
-        :param pretrigger: Line to match
+        :param pretrigger: line to match
         :type pretrigger: :class:`sopel.trigger.PreTrigger`
 
         This method must return a list of `match objects`__.
@@ -1546,7 +1546,7 @@ class URLCallback(Rule):
 
         :param bot: Sopel instance
         :type bot: :class:`sopel.bot.Sopel`
-        :param pretrigger: Line to match
+        :param pretrigger: line to match
         :type pretrigger: :class:`sopel.trigger.PreTrigger`
 
         This method looks for :attr:`URLs in the IRC line

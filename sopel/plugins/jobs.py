@@ -27,7 +27,7 @@ LOGGER = logging.getLogger(__name__)
 
 
 class Scheduler(jobs.Scheduler):
-    """Plugins's Job Scheduler
+    """Plugin job scheduler.
 
     :param manager: bot instance passed to jobs as argument
     :type manager: :class:`sopel.bot.Sopel`
