@@ -181,8 +181,8 @@ def _execute_perform(bot):
 
 @plugin.event(events.ERR_NICKNAMEINUSE)
 @plugin.thread(False)
-@plugin.priority('high')
 @plugin.unblockable
+@plugin.priority('medium')
 def on_nickname_in_use(bot, trigger):
     """Change the bot's nick when the current one is already in use.
 
@@ -216,10 +216,10 @@ def execute_perform(bot, trigger):
     _execute_perform(bot)
 
 
-@module.priority('high')
 @module.event(events.RPL_WELCOME, events.RPL_LUSERCLIENT)
 @module.thread(False)
 @module.unblockable
+@plugin.priority('medium')
 def startup(bot, trigger):
     """Do tasks related to connecting to the network.
 
@@ -306,11 +306,11 @@ def startup(bot, trigger):
     _execute_perform(bot)
 
 
-@module.priority('high')
 @module.event(events.RPL_ISUPPORT)
 @module.thread(False)
 @module.unblockable
 @module.rule('are supported by this server')
+@plugin.priority('medium')
 def handle_isupport(bot, trigger):
     """Handle ``RPL_ISUPPORT`` events."""
     # remember if NAMESX is known to be supported, before parsing RPL_ISUPPORT
@@ -337,10 +337,10 @@ def handle_isupport(bot, trigger):
             bot.write(('PROTOCTL', 'NAMESX'))
 
 
-@module.priority('high')
 @module.event(events.RPL_MYINFO)
 @module.thread(False)
 @module.unblockable
+@plugin.priority('medium')
 def parse_reply_myinfo(bot, trigger):
     """Handle ``RPL_MYINFO`` events."""
     # keep <client> <servername> <version> only
@@ -377,7 +377,7 @@ def enable_service_auth(bot, trigger):
 
 
 @module.event(events.ERR_NOCHANMODES)
-@module.priority('high')
+@plugin.priority('medium')
 def retry_join(bot, trigger):
     """Give NickServ enough time to identify on a +R channel.
 
@@ -401,9 +401,9 @@ def retry_join(bot, trigger):
 
 @module.rule('(.*)')
 @module.event(events.RPL_NAMREPLY)
-@module.priority('high')
 @module.thread(False)
 @module.unblockable
+@plugin.priority('medium')
 def handle_names(bot, trigger):
     """Handle NAMES responses.
 
@@ -454,9 +454,9 @@ def handle_names(bot, trigger):
 
 @module.rule('(.*)')
 @module.event('MODE')
-@module.priority('high')
 @module.thread(False)
 @module.unblockable
+@plugin.priority('medium')
 def track_modes(bot, trigger):
     """Track changes from received MODE commands."""
     _parse_modes(bot, trigger.args)
@@ -583,9 +583,9 @@ def _parse_modes(bot, args):
 
 
 @module.event('NICK')
-@module.priority('high')
 @module.thread(False)
 @module.unblockable
+@plugin.priority('medium')
 def track_nicks(bot, trigger):
     """Track nickname changes and maintain our chanops list accordingly."""
     old = trigger.nick
@@ -622,9 +622,9 @@ def track_nicks(bot, trigger):
 
 @module.rule('(.*)')
 @module.event('PART')
-@module.priority('high')
 @module.thread(False)
 @module.unblockable
+@plugin.priority('medium')
 def track_part(bot, trigger):
     """Track users leaving channels."""
     nick = trigger.nick
@@ -633,9 +633,9 @@ def track_part(bot, trigger):
 
 
 @module.event('KICK')
-@module.priority('high')
 @module.thread(False)
 @module.unblockable
+@plugin.priority('medium')
 def track_kick(bot, trigger):
     """Track users kicked from channels."""
     nick = Identifier(trigger.args[1])
@@ -712,9 +712,9 @@ def _periodic_send_who(bot):
 
 
 @module.event('JOIN')
-@module.priority('high')
 @module.thread(False)
 @module.unblockable
+@plugin.priority('medium')
 def track_join(bot, trigger):
     """Track users joining channels.
 
@@ -755,9 +755,9 @@ def track_join(bot, trigger):
 
 
 @module.event('QUIT')
-@module.priority('high')
 @module.thread(False)
 @module.unblockable
+@plugin.priority('medium')
 def track_quit(bot, trigger):
     """Track when users quit channels."""
     for chanprivs in bot.privileges.values():
@@ -774,8 +774,8 @@ def track_quit(bot, trigger):
 
 @module.event('CAP')
 @module.thread(False)
-@module.priority('high')
 @module.unblockable
+@plugin.priority('medium')
 def receive_cap_list(bot, trigger):
     """Handle client capability negotiation."""
     cap = trigger.strip('-=~')
@@ -968,7 +968,9 @@ def send_authenticate(bot, token):
 
 
 @module.event('AUTHENTICATE')
+@plugin.thread(False)
 @module.unblockable
+@plugin.priority('medium')
 def auth_proceed(bot, trigger):
     """Handle client-initiated SASL auth.
 
@@ -1004,7 +1006,9 @@ def _make_sasl_plain_token(account, password):
 
 
 @module.event(events.RPL_SASLSUCCESS)
+@plugin.thread(False)
 @module.unblockable
+@plugin.priority('medium')
 def sasl_success(bot, trigger):
     """End CAP request on successful SASL auth.
 
@@ -1020,8 +1024,9 @@ def sasl_success(bot, trigger):
 @plugin.event(events.ERR_SASLTOOLONG)
 @plugin.event(events.ERR_SASLABORTED)
 @plugin.event(events.ERR_NICKLOCKED)
-@plugin.unblockable
 @plugin.thread(False)
+@plugin.unblockable
+@plugin.priority('medium')
 def sasl_fail(bot, trigger):
     """SASL Auth Failed: log the error and quit."""
     LOGGER.error(
@@ -1030,7 +1035,9 @@ def sasl_fail(bot, trigger):
 
 
 @module.event(events.RPL_SASLMECHS)
+@plugin.thread(False)
 @module.unblockable
+@plugin.priority('low')
 def sasl_mechs(bot, trigger):
     # Presumably we're only here if we said we actually *want* sasl, but still
     # check anyway in case the server glitched.
@@ -1082,9 +1089,9 @@ def _get_sasl_pass_and_mech(bot):
 
 
 @module.commands('blocks')
-@module.priority('low')
 @module.thread(False)
 @module.unblockable
+@module.priority('low')
 @module.require_admin
 def blocks(bot, trigger):
     """
@@ -1164,6 +1171,9 @@ def blocks(bot, trigger):
 
 
 @module.event('ACCOUNT')
+@plugin.thread(False)
+@plugin.unblockable
+@plugin.priority('medium')
 def account_notify(bot, trigger):
     """Track users' accounts."""
     if trigger.nick not in bot.users:
@@ -1176,8 +1186,9 @@ def account_notify(bot, trigger):
 
 
 @module.event(events.RPL_WHOSPCRPL)
-@module.priority('high')
+@plugin.thread(False)
 @module.unblockable
+@plugin.priority('medium')
 def recv_whox(bot, trigger):
     """Track ``WHO`` responses when ``WHOX`` is enabled."""
     if len(trigger.args) < 2 or trigger.args[1] not in who_reqs:
@@ -1231,8 +1242,9 @@ def _record_who(bot, channel, user, host, nick, account=None, away=None, modes=N
 
 
 @module.event(events.RPL_WHOREPLY)
-@module.priority('high')
+@plugin.thread(False)
 @module.unblockable
+@plugin.priority('medium')
 def recv_who(bot, trigger):
     """Track ``WHO`` responses when ``WHOX`` is not enabled."""
     channel, user, host, _, nick, status = trigger.args[1:7]
@@ -1242,8 +1254,9 @@ def recv_who(bot, trigger):
 
 
 @module.event(events.RPL_ENDOFWHO)
-@module.priority('high')
+@plugin.thread(False)
 @module.unblockable
+@plugin.priority('medium')
 def end_who(bot, trigger):
     """Handle the end of a response to a ``WHO`` command (if needed)."""
     if 'WHOX' in bot.isupport:
@@ -1251,9 +1264,9 @@ def end_who(bot, trigger):
 
 
 @module.event('AWAY')
-@module.priority('high')
 @module.thread(False)
 @module.unblockable
+@plugin.priority('medium')
 def track_notify(bot, trigger):
     """Track users going away or coming back."""
     if trigger.nick not in bot.users:
@@ -1265,9 +1278,9 @@ def track_notify(bot, trigger):
 
 @module.event('TOPIC')
 @module.event(events.RPL_TOPIC)
-@module.priority('high')
 @module.thread(False)
 @module.unblockable
+@plugin.priority('medium')
 def track_topic(bot, trigger):
     """Track channels' topics."""
     if trigger.event != 'TOPIC':
