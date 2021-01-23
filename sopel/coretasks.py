@@ -94,7 +94,8 @@ def _join_event_processing(bot):
             channel = bot.memory['join_events_queue'].popleft()
         except IndexError:
             break
-        LOGGER.debug('Sending WHO after channel JOIN: %s', channel)
+        LOGGER.debug("Sending MODE and WHO after channel JOIN: %s", channel)
+        bot.write(["MODE", channel])
         _send_who(bot, channel)
 
 
@@ -457,34 +458,36 @@ def handle_names(bot, trigger):
 @module.thread(False)
 @module.unblockable
 def track_modes(bot, trigger):
-    """Track usermode changes and keep our lists of ops up to date."""
-    channel = Identifier(trigger.args[0])
-    if channel.is_nick():
-        # We can just ignore MODE messages that appear to be for a user/nick.
-        # TODO: `Identifier.is_nick()` doesn't handle CHANTYPES from ISUPPORT
-        # numeric (005); it still uses a hard-coded list of channel prefixes.
+    """Track changes from received MODE commands."""
+    _parse_modes(bot, trigger.args)
+
+
+@module.priority('high')
+@module.event(events.RPL_CHANNELMODEIS)
+@module.thread(False)
+@module.unblockable
+def initial_modes(bot, trigger):
+    """Populate channel modes from response to MODE request sent after JOIN."""
+    args = trigger.args[1:]
+    _parse_modes(bot, args)
+
+
+def _parse_modes(bot, args):
+    """Parse MODE message and apply changes to internal state."""
+    channel_name = Identifier(args[0])
+    if channel_name.is_nick():
+        # We don't do anything with user modes
         return
+    channel = bot.channels[channel_name]
+    # Our old MODE parsing code checked for empty args. This would be a good
+    # place to re-implement that if necessary for a non-compliant IRCd, but for
+    # now just log malformed lines. After this we'll make a (possibly dangerous)
+    # assumption that the MODE message is more-or-less compliant.
+    if len(args) < 2 or not all(args):
+        LOGGER.debug("The server sent a possibly malformed MODE message: %r", args)
 
-    # Relevant format: MODE <channel> *( ( "-" / "+" ) *<modes> *<modeparams> )
-    if len(trigger.args) < 3:
-        # If the MODE message appears to be for a channel, we need at least
-        # [channel, mode, nickname] to do anything useful.
-        LOGGER.debug("Received an apparently useless MODE message: {}"
-                     .format(trigger.raw))
-        return
-
-    # Our old MODE parsing code checked if any of the args was empty.
-    # Somewhere around here would be a good place to re-implement that if it's
-    # actually necessary to guard against some non-compliant IRCd. But for now
-    # let's just log malformed lines to the debug log.
-    if not all(trigger.args):
-        LOGGER.debug("The server sent a possibly malformed MODE message: {}"
-                     .format(trigger.raw))
-
-    # From here on, we will make a (possibly dangerous) assumption that the
-    # received MODE message is more-or-less compliant
-    modestring = trigger.args[1]
-    nicks = [Identifier(nick) for nick in trigger.args[2:]]
+    modestring = args[1]
+    params = args[2:]
 
     mapping = {
         "v": module.VOICE,
@@ -496,49 +499,87 @@ def track_modes(bot, trigger):
         "Y": module.OPER,
     }
 
-    # Parse modes before doing anything else
-    modes = []
-    sign = ''
+    # Process modes
+    sign = ""
+    param_idx = 0
+    chanmodes = bot.isupport.CHANMODES
     for char in modestring:
-        # There was a comment claiming IRC allows e.g. MODE +aB-c foo, but it
-        # doesn't seem to appear in any RFCs. But modern.ircdocs.horse shows
-        # it, so we'll leave in the extra parsing for now.
-        if char in '+-':
+        # Are we setting or unsetting
+        if char in "+-":
             sign = char
-        elif char in mapping:
-            # Filter out unexpected modes and hope they don't have parameters
-            modes.append(sign + char)
+            continue
 
-    # Try to map modes to arguments, after sanity-checking
-    if len(modes) != len(nicks) or not all([nick.is_nick() for nick in nicks]):
-        # Something fucky happening, like unusual batching of non-privilege
-        # modes together with the ones we expect. Way easier to just re-WHO
-        # than try to account for non-standard parameter-taking modes.
-        LOGGER.debug('Sending WHO for channel: %s', channel)
-        _send_who(bot, channel)
-        return
-
-    for (mode, nick) in zip(modes, nicks):
-        priv = bot.channels[channel].privileges.get(nick, 0)
-        # Log a warning if the two privilege-tracking data structures
-        # get out of sync. That should never happen.
-        # This is a good place to verify that bot.channels is doing
-        # what it's supposed to do before ultimately removing the old,
-        # deprecated bot.privileges structure completely.
-        ppriv = bot.privileges[channel].get(nick, 0)
-        if priv != ppriv:
-            LOGGER.warning("Privilege data error! Please share Sopel's"
-                           "raw log with the developers, if enabled. "
-                           "(Expected {} == {} for {} in {}.)"
-                           .format(priv, ppriv, nick, channel))
-        value = mapping.get(mode[1])
-        if value is not None:
-            if mode[0] == '+':
-                priv = priv | value
-            else:
-                priv = priv & ~value
-            bot.privileges[channel][nick] = priv
-            bot.channels[channel].privileges[nick] = priv
+        if char in chanmodes["A"]:
+            # Type A (beI, etc) have a nick or address param to add/remove
+            if char not in channel.modes:
+                channel.modes[char] = set()
+            if sign == "+":
+                channel.modes[char].add(params[param_idx])
+            elif params[param_idx] in channel.modes[char]:
+                channel.modes[char].remove(params[param_idx])
+            param_idx += 1
+        elif char in chanmodes["B"]:
+            # Type B (k, etc) always have a param
+            if sign == "+":
+                channel.modes[char] = params[param_idx]
+            elif char in channel.modes:
+                channel.modes.pop(char)
+            param_idx += 1
+        elif char in chanmodes["C"]:
+            # Type C (l, etc) have a param only when setting
+            if sign == "+":
+                channel.modes[char] = params[param_idx]
+                param_idx += 1
+            elif char in channel.modes:
+                channel.modes.pop(char)
+        elif char in chanmodes["D"]:
+            # Type D (aciLmMnOpqrRst, etc) have no params
+            if sign == "+":
+                channel.modes[char] = True
+            elif char in channel.modes:
+                channel.modes.pop(char)
+        elif char in mapping and (
+            "PREFIX" not in bot.isupport or char in bot.isupport.PREFIX
+        ):
+            # User privs modes, always have a param
+            nick = Identifier(params[param_idx])
+            priv = channel.privileges.get(nick, 0)
+            # Log a warning if the two privilege-tracking data structures
+            # get out of sync. That should never happen.
+            # This is a good place to verify that bot.channels is doing
+            # what it's supposed to do before ultimately removing the old,
+            # deprecated bot.privileges structure completely.
+            ppriv = bot.privileges[channel_name].get(nick, 0)
+            if priv != ppriv:
+                LOGGER.warning(
+                    (
+                        "Privilege data error! Please share Sopel's "
+                        "raw log with the developers, if enabled. "
+                        "(Expected %s == %s for %r in %r)"
+                    ),
+                    priv,
+                    ppriv,
+                    nick,
+                    channel,
+                )
+            value = mapping.get(char)
+            if value is not None:
+                if sign == "+":
+                    priv = priv | value
+                else:
+                    priv = priv & ~value
+                bot.privileges[channel_name][nick] = priv
+                channel.privileges[nick] = priv
+            param_idx += 1
+        else:
+            # Might be in a mode block past A/B/C/D, but we don't speak those.
+            # Send a WHO to ensure no user priv modes we're skipping are lost.
+            LOGGER.warning(
+                "Unknown MODE message, sending WHO. Message was: %r",
+                args,
+            )
+            _send_who(bot, channel_name)
+            return
 
 
 @module.event('NICK')
@@ -694,7 +735,8 @@ def track_join(bot, trigger):
             LOGGER.debug('JOIN event added to queue for channel: %s', channel)
             bot.memory['join_events_queue'].append(channel)
         else:
-            LOGGER.debug('Send direct WHO for channel: %s', channel)
+            LOGGER.debug("Send MODE and direct WHO for channel: %s", channel)
+            bot.write(["MODE", channel])
             _send_who(bot, channel)
 
     # set initial values

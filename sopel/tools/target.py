@@ -80,6 +80,19 @@ class Channel(object):
         self.topic = ''
         """The topic of the channel."""
 
+        self.modes = {}
+        """The channel's modes.
+
+        For type A modes (nick/address list), the value is a set. For type B
+        (parameter) or C (parameter when setting), the value is a string. For
+        type D, the value is ``True``.
+
+        .. note::
+
+            Type A modes may only contain changes the bot has observed. Sopel
+            does not automatically populate all modes and lists.
+        """
+
         self.last_who = None
         """The last time a WHO was requested for the channel."""
 
