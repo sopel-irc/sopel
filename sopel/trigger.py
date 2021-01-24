@@ -236,11 +236,11 @@ class Trigger(unicode):
     time = property(lambda self: self._pretrigger.time)
     """When the message was received.
 
-    :type: :class:`~datetime.datetime` object
+    :type: naïve :class:`~datetime.datetime` object (no timezone)
 
     If the IRC server supports ``server-time``, :attr:`time` will give that
     value. Otherwise, :attr:`time` will use the time when the message was
-    received by Sopel.
+    received by Sopel. In both cases, this time is in UTC.
     """
     raw = property(lambda self: self._pretrigger.line)
     """The entire raw IRC message, as sent from the server.

@@ -45,7 +45,8 @@ LOGGER = logging.getLogger(__name__)
 def _send_ping(backend):
     if not backend.is_connected():
         return
-    time_passed = (datetime.datetime.utcnow() - backend.last_event_at).seconds
+    dt = datetime.datetime.utcnow() - backend.last_event_at
+    time_passed = dt.total_seconds()
     if time_passed > backend.ping_timeout:
         try:
             backend.send_ping(backend.host)
@@ -57,7 +58,8 @@ def _send_ping(backend):
 def _check_timeout(backend):
     if not backend.is_connected():
         return
-    time_passed = (datetime.datetime.utcnow() - backend.last_event_at).seconds
+    dt = datetime.datetime.utcnow() - backend.last_event_at
+    time_passed = dt.total_seconds()
     if time_passed > backend.server_timeout:
         LOGGER.error(
             'Server timeout detected after %ss; closing.', time_passed)

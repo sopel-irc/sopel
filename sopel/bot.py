@@ -955,7 +955,7 @@ class Sopel(irc.AbstractBot):
 
         if trigger:
             message = '{} from {} at {}. Message was: {}'.format(
-                message, trigger.nick, str(datetime.now()), trigger.group(0)
+                message, trigger.nick, str(datetime.utcnow()), trigger.group(0)
             )
 
         LOGGER.exception(message)
