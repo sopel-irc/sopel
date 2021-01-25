@@ -37,7 +37,7 @@ from sopel import loader, module, plugin
 from sopel.config import ConfigurationError
 from sopel.irc import isupport
 from sopel.irc.utils import CapReq, MyInfo
-from sopel.tools import events, Identifier, iteritems, target, web
+from sopel.tools import events, Identifier, iteritems, SopelMemory, target, web
 
 
 if sys.version_info.major >= 3:
@@ -258,7 +258,7 @@ def startup(bot, trigger):
         bot.write(('MODE', bot.nick, modes))
 
     # join channels
-    bot.memory['retry_join'] = dict()
+    bot.memory['retry_join'] = SopelMemory()
 
     channels = bot.config.core.channels
     if not channels:
@@ -417,7 +417,7 @@ def handle_names(bot, trigger):
         return
     channel = Identifier(channels.group(1))
     if channel not in bot.privileges:
-        bot.privileges[channel] = dict()
+        bot.privileges[channel] = {}
     if channel not in bot.channels:
         bot.channels[channel] = target.Channel(channel)
 
@@ -726,7 +726,7 @@ def track_join(bot, trigger):
     # is it a new channel?
     if channel not in bot.channels:
         LOGGER.info('Channel joined: %s', channel)
-        bot.privileges[channel] = dict()
+        bot.privileges[channel] = {}
         bot.channels[channel] = target.Channel(channel)
 
     # did *we* just join?
@@ -1226,7 +1226,7 @@ def _record_who(bot, channel, user, host, nick, account=None, away=None, modes=N
         bot.channels[channel] = target.Channel(channel)
     bot.channels[channel].add_user(usr, privs=priv)
     if channel not in bot.privileges:
-        bot.privileges[channel] = dict()
+        bot.privileges[channel] = {}
     bot.privileges[channel][nick] = priv
 
 
