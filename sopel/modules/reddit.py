@@ -143,9 +143,10 @@ def say_post_info(bot, trigger, id_, show_link=True, show_comments_link=False):
     try:
         s = bot.memory['reddit_praw'].submission(id=id_)
 
-        message = ('{title} {link}{nsfw} | {points} {points_text} '
-                   '({percent}) | {comments} comments | Posted by {author} | '
-                   'Created at {created}{comments_link}')
+        message = (
+            '{title} {link}{nsfw} | {points} {points_text} ({percent}) | '
+            '{comments} {comments_text} | Posted by {author} | '
+            'Created at {created}{comments_link}')
 
         subreddit = s.subreddit.display_name
         if not show_link:
@@ -193,6 +194,8 @@ def say_post_info(bot, trigger, id_, show_link=True, show_comments_link=False):
 
         percent = color('{:.1%}'.format(s.upvote_ratio), point_color)
 
+        comments_text = 'comment' if s.num_comments == 1 else 'comments'
+
         comments_link = ''
         if show_comments_link:
             try:
@@ -204,8 +207,8 @@ def say_post_info(bot, trigger, id_, show_link=True, show_comments_link=False):
         title = unescape(s.title)
         message = message.format(
             title=title, link=link, nsfw=nsfw, points=s.score, points_text=points_text,
-            percent=percent, comments=s.num_comments, author=author, created=created,
-            comments_link=comments_link)
+            percent=percent, comments=s.num_comments, comments_text=comments_text,
+            author=author, created=created, comments_link=comments_link)
 
         bot.say(message)
     except prawcore.exceptions.NotFound:
