@@ -516,8 +516,13 @@ def manage_reminders(bot, trigger):
     optional and can be either a channel name, your nick, or * (for all).
     """
     owner = trigger.nick
-    action = trigger.group(3) or 'count'
-    target = trigger.group(4) or trigger.sender
+    action = trigger.group(3) or trigger.sender
+    target = trigger.group(4)
+
+    if action not in ['count', 'forget'] and not target:
+        # assume `.reminders` or `.reminders #channel`
+        # in that case, invalid action will just count 0 reminder
+        action, target = 'count', action
 
     if action == 'count':
         tpl = 'You have {count} reminders for all channels.'
@@ -562,3 +567,9 @@ def manage_reminders(bot, trigger):
             bot.reply('I forgot your private reminders.')
         else:
             bot.reply('I forgot your reminders in %s' % target)
+
+    else:
+        bot.reply(
+            'Unrecognized action. '
+            'Usage: {}reminders [count|forget [nickname|channel|*]]'
+            .format(bot.config.core.help_prefix))
