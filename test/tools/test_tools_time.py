@@ -74,3 +74,62 @@ def test_time_timedelta_formatter():
 
     payload = datetime.timedelta(days=365, seconds=5)
     assert time.seconds_to_human(payload) == '1 year, 5 seconds ago'
+
+
+def test_seconds_to_split():
+    assert time.seconds_to_split(364465915) == (11, 6, 20, 8, 31, 55)
+    assert time.seconds_to_split(15) == (0, 0, 0, 0, 0, 15)
+    assert time.seconds_to_split(120) == (0, 0, 0, 0, 2, 0)
+    assert time.seconds_to_split(7800) == (0, 0, 0, 2, 10, 0)
+    assert time.seconds_to_split(143659) == (0, 0, 1, 15, 54, 19)
+    assert time.seconds_to_split(128000) == (0, 0, 1, 11, 33, 20)
+    assert time.seconds_to_split(3000000) == (0, 1, 4, 5, 20, 0)
+
+
+def test_get_time_unit():
+    assert time.get_time_unit(days=1, hours=15, minutes=54, seconds=19) == (
+        (0, 'years'),
+        (0, 'months'),
+        (1, 'day'),
+        (15, 'hours'),
+        (54, 'minutes'),
+        (19, 'seconds'),
+    )
+    assert time.get_time_unit(years=1) == (
+        (1, 'year'),
+        (0, 'months'),
+        (0, 'days'),
+        (0, 'hours'),
+        (0, 'minutes'),
+        (0, 'seconds'),
+    )
+    assert time.get_time_unit(
+        years=1,
+        months=1,
+        days=1,
+        hours=1,
+        minutes=1,
+        seconds=1
+    ) == (
+        (1, 'year'),
+        (1, 'month'),
+        (1, 'day'),
+        (1, 'hour'),
+        (1, 'minute'),
+        (1, 'second'),
+    )
+    assert time.get_time_unit(
+        years=10,
+        months=10,
+        days=10,
+        hours=10,
+        minutes=10,
+        seconds=10
+    ) == (
+        (10, 'years'),
+        (10, 'months'),
+        (10, 'days'),
+        (10, 'hours'),
+        (10, 'minutes'),
+        (10, 'seconds'),
+    )
