@@ -153,6 +153,96 @@ def shutdown(bot):
             pass
 
 
+@plugin.command('urlexclude', 'urlpexclude', 'urlban', 'urlpban')
+@plugin.example('.urlpexclude example\\.com/\\w+', user_help=True)
+@plugin.example('.urlexclude example.com/path', user_help=True)
+@plugin.output_prefix('[url] ')
+def url_ban(bot, trigger):
+    """Exclude a URL from auto title.
+
+    Use ``urlpexclude`` to exclude a pattern instead of a URL.
+    """
+    url = trigger.group(2)
+
+    if not url:
+        bot.reply('This command requires a URL to exclude.')
+        return
+
+    if trigger.group(1) in ['urlpexclude', 'urlpban']:
+        # validate regex pattern
+        try:
+            re.compile(url)
+        except re.error as err:
+            bot.reply('Invalid regex pattern: %s' % err)
+            return
+    else:
+        # escape the URL to ensure a valid pattern
+        url = re.escape(url)
+
+    patterns = bot.settings.url.exclude
+
+    if url in patterns:
+        bot.reply('This URL is already excluded from auto title.')
+        return
+
+    # update settings
+    patterns.append(url)
+    bot.settings.url.exclude = patterns  # set the config option
+    bot.settings.save()
+    LOGGER.info('%s excluded the URL pattern "%s"', trigger.nick, url)
+
+    # re-compile
+    bot.memory['url_exclude'] = [re.compile(s) for s in patterns]
+
+    # tell the user
+    bot.reply('This URL is now excluded from auto title.')
+
+
+@plugin.command('urlallow', 'urlpallow', 'urlunban', 'urlpunban')
+@plugin.example('.urlpallow example\\.com/\\w+', user_help=True)
+@plugin.example('.urlallow example.com/path', user_help=True)
+@plugin.output_prefix('[url] ')
+def url_unban(bot, trigger):
+    """Allow a URL for auto title.
+
+    Use ``urlpallow`` to allow a pattern instead of a URL.
+    """
+    url = trigger.group(2)
+
+    if not url:
+        bot.reply('This command requires a URL to allow.')
+        return
+
+    if trigger.group(1) in ['urlpallow', 'urlpunban']:
+        # validate regex pattern
+        try:
+            re.compile(url)
+        except re.error as err:
+            bot.reply('Invalid regex pattern: %s' % err)
+            return
+    else:
+        # escape the URL to ensure a valid pattern
+        url = re.escape(url)
+
+    patterns = bot.settings.url.exclude
+
+    if url not in patterns:
+        bot.reply('This URL was not excluded from auto title.')
+        return
+
+    # update settings
+    patterns.remove(url)
+    bot.settings.url.exclude = patterns  # set the config option
+    bot.settings.save()
+    LOGGER.info('%s allowed the URL pattern "%s"', trigger.nick, url)
+
+    # re-compile
+    bot.memory['url_exclude'] = [re.compile(s) for s in patterns]
+
+    # tell the user
+    bot.reply('This URL is not excluded from auto title anymore.')
+
+
 @plugin.command('title')
 @plugin.example(
     '.title https://www.google.com',
