@@ -47,13 +47,18 @@ def test_validate_format_none():
         time.validate_format(None)
 
 
-def test_time_timedelta_formatter():
+def test_seconds_to_human():
+    payload = 0
+    assert time.seconds_to_human(payload) == '0 seconds ago'
+
     payload = 10000
     assert time.seconds_to_human(payload) == '2 hours, 46 minutes ago'
 
     payload = -2938124
     assert time.seconds_to_human(payload) == 'in 1 month, 3 days'
 
+
+def test_seconds_to_human_timedelta():
     payload = datetime.timedelta(hours=4)
     assert time.seconds_to_human(payload) == '4 hours ago'
 
@@ -74,6 +79,16 @@ def test_time_timedelta_formatter():
 
     payload = datetime.timedelta(days=365, seconds=5)
     assert time.seconds_to_human(payload) == '1 year, 5 seconds ago'
+
+
+def test_seconds_to_human_granularity():
+    assert time.seconds_to_human(3672) == '1 hour, 1 minute ago'
+    assert time.seconds_to_human(3672, 3) == '1 hour, 1 minute, 12 seconds ago'
+    assert time.seconds_to_human(3672, 1) == '1 hour ago'
+
+    assert time.seconds_to_human(-3672) == 'in 1 hour, 1 minute'
+    assert time.seconds_to_human(-3672, 3) == 'in 1 hour, 1 minute, 12 seconds'
+    assert time.seconds_to_human(-3672, 1) == 'in 1 hour'
 
 
 def test_seconds_to_split():

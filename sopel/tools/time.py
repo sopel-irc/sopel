@@ -7,7 +7,7 @@ import datetime
 import pytz
 
 
-# various time unit in seconds, approximation for months and years
+# various time units measured in seconds; approximated for months and years
 SECONDS = 1
 MINUTES = 60 * SECONDS
 HOURS = 60 * MINUTES
@@ -267,7 +267,7 @@ def get_time_unit(years=0, months=0, days=0, hours=0, minutes=0, seconds=0):
 
     .. note::
 
-        This function always return a tuple with **all** time units, even when
+        This function always returns a tuple with **all** time units, even when
         their amount is 0 (which is their default value).
 
     """
@@ -288,23 +288,41 @@ def get_time_unit(years=0, months=0, days=0, hours=0, minutes=0, seconds=0):
     )
 
 
-def seconds_to_human(secs):
+def seconds_to_human(secs, granularity=2):
     """Format :class:`~datetime.timedelta` as a human-readable relative time.
 
     :param secs: time difference to format
     :type secs: :class:`~datetime.timedelta` or integer
+    :param int granularity: number of time units to return (default to 2)
 
     Inspiration for function structure from:
     https://gist.github.com/Highstaker/280a09591df4a5fb1363b0bbaf858f0d
 
-    Example outputs are:
+    Examples::
 
-    .. code-block:: text
+        >>> seconds_to_human(65707200)
+        '2 years, 1 month ago'
+        >>> seconds_to_human(-17100)  # negative amount
+        'in 4 hours, 45 minutes'
+        >>> seconds_to_human(-709200)
+        'in 8 days, 5 hours'
+        >>> seconds_to_human(39441600, 1)  # 1 year + 3 months
+        '1 year ago'
 
-        2 years, 1 month ago
-        in 4 hours, 45 minutes
-        in 8 days, 5 hours
-        1 year ago
+    This function can be used with a :class:`~datetime.timedelta`::
+
+        >>> from datetime import timedelta
+        >>> seconds_to_human(timedelta(days=42, seconds=278))
+        '1 month, 11 days ago'
+
+    The ``granularity`` argument controls how detailed the result is::
+
+        >>> seconds_to_human(3672)  # 2 by default
+        '1 hour, 1 minute ago'
+        >>> seconds_to_human(3672, granularity=3)
+        '1 hour, 1 minute, 12 seconds ago'
+        >>> seconds_to_human(3672, granularity=1)
+        '1 hour ago'
 
     """
     if isinstance(secs, datetime.timedelta):
@@ -325,7 +343,7 @@ def seconds_to_human(secs):
             "%s %s" % (value, unit)
             for value, unit in get_time_unit(*seconds_to_split(secs))
             if value
-        ][:2])  # keep at most 2 values for granularity
+        ][:granularity])
 
     if future is False:
         result += " ago"
