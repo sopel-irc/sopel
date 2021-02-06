@@ -355,7 +355,7 @@ def test_clean_callable_rule(tmpconfig, func):
     assert len(func.rule) == 1
 
     # Test the regex is compiled properly
-    regex = func.rule[0]
+    regex = re.compile(func.rule[0])
     assert regex.match('abc')
     assert regex.match('abcd')
     assert not regex.match('efg')
@@ -377,7 +377,8 @@ def test_clean_callable_rule(tmpconfig, func):
     # idempotency
     loader.clean_callable(func, tmpconfig)
     assert len(func.rule) == 1
-    assert regex in func.rule
+    assert regex not in func.rule
+    assert r'abc' in func.rule
 
     assert func.unblockable is False
     assert func.priority == 'medium'
@@ -395,54 +396,46 @@ def test_clean_callable_rule_string(tmpconfig, func):
     assert len(func.rule) == 1
 
     # Test the regex is compiled properly
-    regex = func.rule[0]
-    assert regex.match('abc')
-    assert regex.match('abcd')
-    assert not regex.match('efg')
+    assert func.rule[0] == r'abc'
 
     # idempotency
     loader.clean_callable(func, tmpconfig)
     assert len(func.rule) == 1
-    assert regex in func.rule
+    assert func.rule[0] == r'abc'
 
 
 def test_clean_callable_rule_nick(tmpconfig, func):
-    """Assert ``$nick`` in a rule will match ``TestBot: `` or ``TestBot, ``."""
+    """Assert ``$nick`` in a rule is not replaced (deprecated feature)."""
     setattr(func, 'rule', [r'$nickhello'])
     loader.clean_callable(func, tmpconfig)
 
     assert hasattr(func, 'rule')
     assert len(func.rule) == 1
 
-    # Test the regex is compiled properly
-    regex = func.rule[0]
-    assert regex.match('TestBot: hello')
-    assert regex.match('TestBot, hello')
-    assert not regex.match('TestBot not hello')
+    # Test the regex is not compiled
+    assert func.rule[0] == r'$nickhello'
 
     # idempotency
     loader.clean_callable(func, tmpconfig)
     assert len(func.rule) == 1
-    assert regex in func.rule
+    assert func.rule[0] == r'$nickhello'
 
 
 def test_clean_callable_rule_nickname(tmpconfig, func):
-    """Assert ``$nick`` in a rule will match ``TestBot``."""
+    """Assert ``$nickname`` in a rule is not replaced (deprecated feature)."""
     setattr(func, 'rule', [r'$nickname\s+hello'])
     loader.clean_callable(func, tmpconfig)
 
     assert hasattr(func, 'rule')
     assert len(func.rule) == 1
 
-    # Test the regex is compiled properly
-    regex = func.rule[0]
-    assert regex.match('TestBot hello')
-    assert not regex.match('TestBot not hello')
+    # Test the regex is not compiled
+    assert func.rule[0] == r'$nickname\s+hello'
 
     # idempotency
     loader.clean_callable(func, tmpconfig)
     assert len(func.rule) == 1
-    assert regex in func.rule
+    assert func.rule[0] == r'$nickname\s+hello'
 
 
 def test_clean_callable_find_rules(tmpconfig, func):
@@ -454,7 +447,7 @@ def test_clean_callable_find_rules(tmpconfig, func):
     assert not hasattr(func, 'rule')
 
     # Test the regex is compiled properly
-    regex = func.find_rules[0]
+    regex = re.compile(func.find_rules[0])
     assert regex.findall('abc')
     assert regex.findall('abcd')
     assert not regex.findall('adbc')
@@ -477,7 +470,8 @@ def test_clean_callable_find_rules(tmpconfig, func):
     loader.clean_callable(func, tmpconfig)
     assert hasattr(func, 'find_rules')
     assert len(func.find_rules) == 1
-    assert regex in func.find_rules
+    assert regex not in func.find_rules
+    assert r'abc' in func.find_rules
     assert not hasattr(func, 'rule')
 
     assert func.unblockable is False
@@ -497,7 +491,7 @@ def test_clean_callable_search_rules(tmpconfig, func):
     assert not hasattr(func, 'rule')
 
     # Test the regex is compiled properly
-    regex = func.search_rules[0]
+    regex = re.compile(func.search_rules[0])
     assert regex.search('abc')
     assert regex.search('xyzabc')
     assert regex.search('abcd')
@@ -521,7 +515,8 @@ def test_clean_callable_search_rules(tmpconfig, func):
     loader.clean_callable(func, tmpconfig)
     assert hasattr(func, 'search_rules')
     assert len(func.search_rules) == 1
-    assert regex in func.search_rules
+    assert regex not in func.search_rules
+    assert func.search_rules[0] == r'abc'
     assert not hasattr(func, 'rule')
 
     assert func.unblockable is False

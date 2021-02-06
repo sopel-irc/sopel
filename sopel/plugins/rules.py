@@ -74,6 +74,37 @@ PRIORITY_SCALES = {
 }
 """Mapping of priority label to priority scale."""
 
+# Can be implementation-dependent
+_regex_type = type(re.compile(''))
+
+
+def _clean_rules(rules, nick, aliases):
+    for pattern in rules:
+        if isinstance(pattern, _regex_type):
+            # already a compiled regex
+            yield pattern
+        else:
+            yield _compile_pattern(pattern, nick, aliases)
+
+
+def _compile_pattern(pattern, nick, aliases=None):
+    if aliases:
+        nicks = list(aliases)  # alias_nicks.copy() doesn't work in py2
+        nicks.append(nick)
+        nicks = map(re.escape, nicks)
+        nick = '(?:%s)' % '|'.join(nicks)
+    else:
+        nick = re.escape(nick)
+
+    pattern = pattern.replace('$nickname', nick)
+    pattern = pattern.replace('$nick ', r'{}[,:]\s*'.format(nick))  # @rule('$nick hi')
+    pattern = pattern.replace('$nick', r'{}[,:]\s+'.format(nick))  # @rule('$nickhi')
+    flags = re.IGNORECASE
+    if '\n' in pattern:
+        # See https://docs.python.org/3/library/re.html#re.VERBOSE
+        flags |= re.VERBOSE
+    return re.compile(pattern, flags)
+
 
 def _has_labeled_rule(registry, label, plugin=None):
     rules = (
@@ -708,7 +739,11 @@ class Rule(AbstractRule):
 
     @classmethod
     def from_callable(cls, settings, handler):
-        regexes = tuple(handler.rule)
+        regexes = tuple(_clean_rules(
+            handler.rule,
+            settings.core.nick,
+            settings.core.alias_nicks,
+        ))
         kwargs = cls.kwargs_from_callable(handler)
         kwargs['handler'] = handler
 
@@ -1367,7 +1402,11 @@ class FindRule(Rule):
     """
     @classmethod
     def from_callable(cls, settings, handler):
-        regexes = tuple(handler.find_rules)
+        regexes = tuple(_clean_rules(
+            handler.find_rules,
+            settings.core.nick,
+            settings.core.alias_nicks,
+        ))
         kwargs = cls.kwargs_from_callable(handler)
         kwargs['handler'] = handler
 
@@ -1407,7 +1446,11 @@ class SearchRule(Rule):
     """
     @classmethod
     def from_callable(cls, settings, handler):
-        regexes = tuple(handler.search_rules)
+        regexes = tuple(_clean_rules(
+            handler.search_rules,
+            settings.core.nick,
+            settings.core.alias_nicks,
+        ))
         kwargs = cls.kwargs_from_callable(handler)
         kwargs['handler'] = handler
 
