@@ -12,6 +12,7 @@
 """
 from __future__ import absolute_import, division, print_function, unicode_literals
 
+import logging
 import re
 import sys
 
@@ -21,6 +22,9 @@ from sopel.tools import itervalues
 
 if sys.version_info.major >= 3:
     basestring = (str, bytes)
+
+
+LOGGER = logging.getLogger(__name__)
 
 
 def trim_docstring(doc):
@@ -97,7 +101,16 @@ def clean_callable(func, config):
         else:
             func.event = [event.upper() for event in func.event]
 
+    # TODO: remove in Sopel 8
+    # Stay compatible with old Phenny/Jenni "modules" (plugins)
+    # that set the attribute directly
     if hasattr(func, 'rule') and isinstance(func.rule, basestring):
+        LOGGER.warning(
+            'The `rule` attribute of %s.%s should be a list, not a string; '
+            'this behavior is deprecated in Sopel 7.1 '
+            'and will be removed in Sopel 8. '
+            'To prevent this problem always use `sopel.plugin.rule(%r)`.',
+            func.__module__, func.__name__, func.rule)
         func.rule = [func.rule]
 
     if any(hasattr(func, attr) for attr in ['commands', 'nickname_commands', 'action_commands']):
