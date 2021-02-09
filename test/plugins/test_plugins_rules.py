@@ -58,6 +58,14 @@ def test_manager_rule(mockbot):
     assert result_rule == rule
     assert result_match.group(0) == 'Hello, world'
 
+    assert list(manager.get_all_commands()) == []
+    assert list(manager.get_all_nick_commands()) == []
+    assert list(manager.get_all_action_commands()) == []
+    assert list(manager.get_all_generic_rules()) == [
+        ('testplugin', [rule]),
+    ]
+    assert list(manager.get_all_url_callbacks()) == []
+
 
 def test_manager_find(mockbot):
     regex = re.compile(r'\w+')
@@ -89,6 +97,14 @@ def test_manager_find(mockbot):
     assert result_rule == rule
     assert result_match.group(0) == 'world', 'The second must match on "world"'
 
+    assert list(manager.get_all_commands()) == []
+    assert list(manager.get_all_nick_commands()) == []
+    assert list(manager.get_all_action_commands()) == []
+    assert list(manager.get_all_generic_rules()) == [
+        ('testplugin', [rule]),
+    ]
+    assert list(manager.get_all_url_callbacks()) == []
+
 
 def test_manager_search(mockbot):
     regex = re.compile(r'\w+')
@@ -110,6 +126,14 @@ def test_manager_search(mockbot):
     result_rule, result_match = items[0]
     assert result_rule == rule
     assert result_match.group(0) == 'Hello'
+
+    assert list(manager.get_all_commands()) == []
+    assert list(manager.get_all_nick_commands()) == []
+    assert list(manager.get_all_action_commands()) == []
+    assert list(manager.get_all_generic_rules()) == [
+        ('testplugin', [rule]),
+    ]
+    assert list(manager.get_all_url_callbacks()) == []
 
 
 def test_manager_command(mockbot):
@@ -134,6 +158,9 @@ def test_manager_command(mockbot):
         ('testplugin', {'hello': command}),
     ]
     assert list(manager.get_all_nick_commands()) == []
+    assert list(manager.get_all_action_commands()) == []
+    assert list(manager.get_all_generic_rules()) == []
+    assert list(manager.get_all_url_callbacks()) == []
 
 
 def test_manager_nick_command(mockbot):
@@ -158,6 +185,9 @@ def test_manager_nick_command(mockbot):
     assert list(manager.get_all_nick_commands()) == [
         ('testplugin', {'hello': command}),
     ]
+    assert list(manager.get_all_action_commands()) == []
+    assert list(manager.get_all_generic_rules()) == []
+    assert list(manager.get_all_url_callbacks()) == []
 
 
 def test_manager_action_command(mockbot):
@@ -180,6 +210,11 @@ def test_manager_action_command(mockbot):
 
     assert list(manager.get_all_commands()) == []
     assert list(manager.get_all_nick_commands()) == []
+    assert list(manager.get_all_action_commands()) == [
+        ('testplugin', {'hello': command}),
+    ]
+    assert list(manager.get_all_generic_rules()) == []
+    assert list(manager.get_all_url_callbacks()) == []
 
 
 def test_manager_rule_and_command(mockbot):
@@ -204,6 +239,11 @@ def test_manager_rule_and_command(mockbot):
         ('testplugin', {'hello': command}),
     ]
     assert list(manager.get_all_nick_commands()) == []
+    assert list(manager.get_all_action_commands()) == []
+    assert list(manager.get_all_generic_rules()) == [
+        ('testplugin', [rule]),
+    ]
+    assert list(manager.get_all_url_callbacks()) == []
 
 
 def test_manager_url_callback(mockbot):
@@ -232,6 +272,14 @@ def test_manager_url_callback(mockbot):
     assert manager.check_url_callback(mockbot, 'https://example.com/')
     assert manager.check_url_callback(mockbot, 'https://example.com/test')
     assert not manager.check_url_callback(mockbot, 'https://not-example.com/')
+
+    assert list(manager.get_all_commands()) == []
+    assert list(manager.get_all_nick_commands()) == []
+    assert list(manager.get_all_action_commands()) == []
+    assert list(manager.get_all_generic_rules()) == []
+    assert list(manager.get_all_url_callbacks()) == [
+        ('testplugin', [rule]),
+    ]
 
 
 def test_manager_unregister_plugin(mockbot):
