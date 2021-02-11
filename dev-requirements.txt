@@ -14,7 +14,12 @@ PyYAML<5.1; python_version == '3.3'
 PyYAML<5.3; python_version == '3.4'
 setuptools<40.0; python_version == '3.3'
 sphinx
-sphinxcontrib-autoprogram
+# autoprogram extension added type annotations in 0.1.6
+# such annotations require Python 3.5
+sphinxcontrib-autoprogram<0.1.6; python_version < '3.5'
+# further constrain autoprogram version because the new (in 2021) maintainer
+# already demonstrated a willingness to make major changes in patch versions
+sphinxcontrib-autoprogram<=0.1.7; python_version >= '3.5'
 vcrpy==2.1.1; python_version == '2.7'
 vcrpy<1.12.0; python_version == '3.3'
 vcrpy<2.1.0; python_version == '3.4'
