@@ -163,7 +163,7 @@ def findandreplace(bot, trigger):
 
     sep = trigger.group('sep')
     old = trigger.group('old').replace('\\%s' % sep, sep)
-    new = trigger.group('new').replace('\\%s' % sep, sep)
+    new = bold(trigger.group('new')).replace('\\%s' % sep, sep)
     me = False  # /me command
     flags = trigger.group('flags') or ''
 
@@ -193,11 +193,12 @@ def findandreplace(bot, trigger):
             line = line[8:]
         else:
             me = False
-        new_phrase = repl(line)
-        if new_phrase != line:  # we are done
+        replaced = repl(line)
+        if replaced != line:  # we are done
+            new_phrase = replaced
             break
 
-    if not new_phrase or new_phrase == line:
+    if not new_phrase:
         return  # Didn't find anything
 
     # Save the new "edited" message.
@@ -206,7 +207,7 @@ def findandreplace(bot, trigger):
 
     # output
     if not me:
-        new_phrase = '%s to say: %s' % (bold('meant'), new_phrase)
+        new_phrase = 'meant to say: %s' % new_phrase
     if trigger.group(1):
         phrase = '%s thinks %s %s' % (trigger.nick, rnick, new_phrase)
     else:
