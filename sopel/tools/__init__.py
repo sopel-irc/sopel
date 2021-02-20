@@ -637,7 +637,7 @@ class SopelMemory(dict):
         dict.__init__(self, *args)
         self.lock = threading.Lock()
 
-        self._deprecated_keys = {}
+        self._deprecated = False
         """Map of deprecated keys to deprecation reason"""
 
     def __getitem__(self, key):
@@ -649,11 +649,11 @@ class SopelMemory(dict):
 
         The dict is locked for other writes while doing so.
         """
-        if key in self._deprecated_keys:
-            # Key is marked as deprecated, dead or not
+        if self._deprecated:
+            # Marked as deprecated, dead or not
 
-            version = self._deprecated_keys[key].get("version")
-            removed_in = self._deprecated_keys[key].get("removed_in")
+            version = self._deprecated_version
+            removed_in = self._deprecated_removed_in
 
             if (
                 removed_in and
@@ -661,14 +661,14 @@ class SopelMemory(dict):
             ):
                 # He's dead, Jim
                 raise ValueError(
-                    'Key "{}" support was removed in {}: {}'.format(
-                        key,
+                    "{} was removed in {}: {}".format(
+                        self._deprecated_name,
                         removed_in,
-                        self._deprecated_keys[key]["reason"] + __version__,
+                        self._deprecated_reason + __version__,
                     )
                 )
 
-            template = 'Key "{key}" is deprecated'
+            template = "{name} is deprecated"
             if version:
                 template += " since {version}"
             if removed_in:
@@ -677,10 +677,10 @@ class SopelMemory(dict):
 
             warnings.warn(
                 template.format(
-                    key=key,
+                    name=self._deprecated_name,
                     version=version,
                     removed_in=removed_in,
-                    reason=self._deprecated_keys[key]["reason"],
+                    reason=self._deprecated_reason,
                 ),
                 DeprecationWarning,
                 stacklevel=2,
@@ -707,22 +707,22 @@ class SopelMemory(dict):
     __ne__ = dict.__ne__
     __hash__ = dict.__hash__
 
-    def deprecate_key(self, key_name, reason, version=None, removed_in=None):
-        """Mark a key as deprecated
+    def deprecate(self, name, reason, version=None, removed_in=None):
+        """Mark as deprecated
 
-        :param str key_name: key to deprecate
-        :param str reason: information to show when key is used
-        :param str version: optional version number when the key is deprecated
-        :param str removed_in: optional version number when the deprecated key
-                               will stop working
+        :param str name: name of this object to show when used
+        :param str reason: information to show when used
+        :param str version: optional version number when object is deprecated
+        :param str removed_in: optional version number when the deprecated
+                               object will stop working
 
         .. versionadded:: 7.1
         """
-        self._deprecated_keys[key_name] = {
-            "reason": reason,
-            "version": version,
-            "removed_in": removed_in,
-        }
+        self._deprecated = True
+        self._deprecated_name = name
+        self._deprecated_reason = reason
+        self._deprecated_version = version
+        self._deprecated_removed_in = removed_in
 
     @deprecated
     def contains(self, key):

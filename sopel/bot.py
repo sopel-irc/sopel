@@ -115,7 +115,8 @@ class Sopel(irc.AbstractBot):
         A thread-safe dict for storage of runtime data to be shared between
         plugins. See :class:`sopel.tools.SopelMemory`.
         """
-        self.memory.deprecate_key(
+        self.memory["url_callbacks"] = tools.SopelMemory()
+        self.memory["url_callbacks"].deprecate(
             "url_callbacks",
             (
                 "Manual management of URL callbacks has been replaced with "

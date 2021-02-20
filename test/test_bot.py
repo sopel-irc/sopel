@@ -1070,31 +1070,27 @@ def test_register_url_callback_manual_warning(tmpconfig):
     sopel = bot.Sopel(tmpconfig, daemon=False)
 
     with pytest.warns(DeprecationWarning) as w:
-        sopel.memory["url_callbacks"] = SopelMemory()
+        sopel.memory["url_callbacks"][re.compile(test_pattern)] = url_handler
 
     assert len(w) == 1
     assert issubclass(w[-1].category, DeprecationWarning)
     assert '@url' in str(w[-1].message)
 
-    # register a callback manually
-    sopel.memory["url_callbacks"][re.compile(test_pattern)] = url_handler
+    # should have raised warning, but shouldn't have inhibited anything
     results = list(sopel.search_url_callbacks("https://www.example.com"))
     assert results[0][0] == url_handler, "Callback must be present"
 
 
 @pytest.mark.filterwarnings("ignore::DeprecationWarning")
 def test_memory_deprecated_warning(tmpconfig):
-    """Test that setting a deprecated key produces a deprecation warning"""
+    """Test that setting a key in a deprecated SopelMemory produces a deprecation warning"""
 
     message = "is deprecated"
     version_message = message + " since"
     removed_message = "will stop working in"
 
     memory = SopelMemory()
-    memory.deprecate_key("vague_key", "Vague reason")
-    memory.deprecate_key("version_key", "Version reason", version="1000.0")
-    memory.deprecate_key("removed_key", "Removal reason", removed_in="1010.0")
-    memory.deprecate_key("both_key", "Both reason", version="1000.0", removed_in="1010.0")
+    memory.deprecate("vague_memory", "Vague reason")
 
     with pytest.warns(DeprecationWarning) as w:
         memory["vague_key"] = "Vague value"
@@ -1102,17 +1098,26 @@ def test_memory_deprecated_warning(tmpconfig):
     assert issubclass(w[-1].category, DeprecationWarning)
     assert message in str(w[-1].message)
 
+    memory = SopelMemory()
+    memory.deprecate("version_memory", "Version reason", version="1000.0")
+
     with pytest.warns(DeprecationWarning) as w:
         memory["version_key"] = "Version value"
     assert len(w) == 1
     assert issubclass(w[-1].category, DeprecationWarning)
     assert version_message in str(w[-1].message)
 
+    memory = SopelMemory()
+    memory.deprecate("removed_memory", "Removal reason", removed_in="1010.0")
+
     with pytest.warns(DeprecationWarning) as w:
         memory["removed_key"] = "Removed value"
     assert len(w) == 1
     assert issubclass(w[-1].category, DeprecationWarning)
     assert removed_message in str(w[-1].message)
+
+    memory = SopelMemory()
+    memory.deprecate("both_memory", "Both reason", version="1000.0", removed_in="1010.0")
 
     with pytest.warns(DeprecationWarning) as w:
         memory["both_key"] = "Both value"
@@ -1123,13 +1128,13 @@ def test_memory_deprecated_warning(tmpconfig):
 
 
 def test_memory_deprecated_exception(tmpconfig):
-    """Test that setting a removed key produces an exception"""
+    """Test that setting a key in a removed SopelMemory produces an exception"""
 
     memory = SopelMemory()
-    memory.deprecate_key("deprecated_key", "Reasony reason", removed_in="3.0")
+    memory.deprecate("deprecated_memory", "Reasony reason", removed_in="3.0")
 
     with pytest.raises(ValueError) as e:
-        memory["deprecated_key"] = "hello"
+        memory["test_key"] = "hello"
 
     assert "was removed in" in str(e.value)
 
