@@ -288,8 +288,8 @@ def title_auto(bot, trigger):
     if not bot.settings.url.enable_auto_title:
         return
 
-    # Avoid fetching links from the "title" command
-    if re.match(bot.config.core.prefix + 'title', trigger):
+    # Avoid fetching links from another command
+    if re.match(bot.config.core.prefix + r'\S+', trigger):
         return
 
     # Avoid fetching known malicious links
