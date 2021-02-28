@@ -12,15 +12,19 @@
 """
 from __future__ import absolute_import, division, print_function, unicode_literals
 
+import logging
 import re
 import sys
 
 from sopel.config.core_section import COMMAND_DEFAULT_HELP_PREFIX
-from sopel.tools import compile_rule, itervalues
+from sopel.tools import itervalues
 
 
 if sys.version_info.major >= 3:
     basestring = (str, bytes)
+
+
+LOGGER = logging.getLogger(__name__)
 
 
 def trim_docstring(doc):
@@ -65,7 +69,6 @@ def clean_callable(func, config):
     limiting, commands, rules, and other features.
     """
     nick = config.core.nick
-    alias_nicks = config.core.alias_nicks
     help_prefix = config.core.help_prefix
     func._docs = {}
     doc = trim_docstring(func.__doc__)
@@ -98,25 +101,17 @@ def clean_callable(func, config):
         else:
             func.event = [event.upper() for event in func.event]
 
-    if hasattr(func, 'rule'):
-        if isinstance(func.rule, basestring):
-            func.rule = [func.rule]
-        func.rule = [
-            compile_rule(nick, rule, alias_nicks)
-            for rule in func.rule
-        ]
-
-    if hasattr(func, 'find_rules'):
-        func.find_rules = [
-            compile_rule(nick, rule, alias_nicks)
-            for rule in func.find_rules
-        ]
-
-    if hasattr(func, 'search_rules'):
-        func.search_rules = [
-            compile_rule(nick, rule, alias_nicks)
-            for rule in func.search_rules
-        ]
+    # TODO: remove in Sopel 8
+    # Stay compatible with old Phenny/Jenni "modules" (plugins)
+    # that set the attribute directly
+    if hasattr(func, 'rule') and isinstance(func.rule, basestring):
+        LOGGER.warning(
+            'The `rule` attribute of %s.%s should be a list, not a string; '
+            'this behavior is deprecated in Sopel 7.1 '
+            'and will be removed in Sopel 8. '
+            'To prevent this problem always use `sopel.plugin.rule(%r)`.',
+            func.__module__, func.__name__, func.rule)
+        func.rule = [func.rule]
 
     if any(hasattr(func, attr) for attr in ['commands', 'nickname_commands', 'action_commands']):
         if hasattr(func, 'example'):

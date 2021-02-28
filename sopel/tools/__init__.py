@@ -189,6 +189,7 @@ def get_input(prompt):
         return raw_input(prompt).decode('utf8')
 
 
+@deprecated('rule compilation tools are now private', '7.1', '8.0')
 def compile_rule(nick, pattern, alias_nicks):
     """Compile a rule regex and fill in nickname placeholders.
 
@@ -202,27 +203,19 @@ def compile_rule(nick, pattern, alias_nicks):
     :rtype: :ref:`re.Pattern <python:re-objects>`
 
     Will not recompile an already compiled pattern.
+
+    .. deprecated:: 7.1
+
+        Rule regexp tools are now part of the internal machinery. This function
+        is deprecated and will be removed in Sopel 8.
+
     """
     # Not sure why this happens on reloads, but it shouldn't cause problems…
     if isinstance(pattern, _regex_type):
         return pattern
 
-    if alias_nicks:
-        nicks = list(alias_nicks)  # alias_nicks.copy() doesn't work in py2
-        nicks.append(nick)
-        nicks = map(re.escape, nicks)
-        nick = '(?:%s)' % '|'.join(nicks)
-    else:
-        nick = re.escape(nick)
-
-    pattern = pattern.replace('$nickname', nick)
-    pattern = pattern.replace('$nick ', r'{}[,:]\s*'.format(nick))  # @rule('$nick hi')
-    pattern = pattern.replace('$nick', r'{}[,:]\s+'.format(nick))  # @rule('$nickhi')
-    flags = re.IGNORECASE
-    if '\n' in pattern:
-        # See https://docs.python.org/3/library/re.html#re.VERBOSE
-        flags |= re.VERBOSE
-    return re.compile(pattern, flags)
+    from sopel.plugins.rules import _compile_pattern
+    return _compile_pattern(pattern, nick, aliases=alias_nicks)
 
 
 @deprecated('command regexp tools are now private', '7.1', '8.0')
@@ -233,6 +226,12 @@ def get_command_regexp(prefix, command):
     :param str command: the name of the command
     :return: a compiled regexp object that implements the command
     :rtype: :ref:`re.Pattern <python:re-objects>`
+
+    .. deprecated:: 7.1
+
+        Command regexp tools are now part of the internal machinery. This
+        function is deprecated and will be removed in Sopel 8.
+
     """
     # Must defer import to avoid cyclic dependency
     from sopel.plugins.rules import Command
@@ -248,6 +247,12 @@ def get_command_pattern(prefix, command):
     :param str command: the command name
     :return: a regex pattern that will match the given command
     :rtype: str
+
+    .. deprecated:: 7.1
+
+        Command regexp tools are now part of the internal machinery. This
+        function is deprecated and will be removed in Sopel 8.
+
     """
     # Must defer import to avoid cyclic dependency
     from sopel.plugins.rules import Command
@@ -264,6 +269,12 @@ def get_nickname_command_regexp(nick, command, alias_nicks):
                              instead of ``nick``
     :return: a compiled regex pattern that implements the given nickname command
     :rtype: :ref:`re.Pattern <python:re-objects>`
+
+    .. deprecated:: 7.1
+
+        Command regexp tools are now part of the internal machinery. This
+        function is deprecated and will be removed in Sopel 8.
+
     """
     # Must defer import to avoid cyclic dependency
     from sopel.plugins.rules import NickCommand
@@ -284,6 +295,12 @@ def get_nickname_command_pattern(command):
     :param str command: the command name
     :return: a regex pattern that will match the given nickname command
     :rtype: str
+
+    .. deprecated:: 7.1
+
+        Command regexp tools are now part of the internal machinery. This
+        function is deprecated and will be removed in Sopel 8.
+
     """
     # Must defer import to avoid cyclic dependency
     from sopel.plugins.rules import NickCommand
@@ -297,6 +314,12 @@ def get_action_command_regexp(command):
     :param str command: the name of the command
     :return: a compiled regexp object that implements the command
     :rtype: :ref:`re.Pattern <python:re-objects>`
+
+    .. deprecated:: 7.1
+
+        Command regexp tools are now part of the internal machinery. This
+        function is deprecated and will be removed in Sopel 8.
+
     """
     # Must defer import to avoid cyclic dependency
     from sopel.plugins.rules import ActionCommand
@@ -311,6 +334,12 @@ def get_action_command_pattern(command):
     :param str command: the command name
     :return: a regex pattern that will match the given command
     :rtype: str
+
+    .. deprecated:: 7.1
+
+        Command regexp tools are now part of the internal machinery. This
+        function is deprecated and will be removed in Sopel 8.
+
     """
     # Must defer import to avoid cyclic dependency
     from sopel.plugins.rules import ActionCommand
