@@ -331,6 +331,8 @@ class Sopel(irc.AbstractBot):
                 try:
                     if plugin.has_setup():
                         plugin.setup(self)
+                        # TODO: remove in Sopel 8
+                        self.__setup_plugins_check_manual_url_callbacks(name)
                     plugin.register(self)
                 except Exception as e:
                     load_error = load_error + 1
@@ -348,6 +350,29 @@ class Sopel(irc.AbstractBot):
                 load_disabled)
         else:
             LOGGER.warning("Warning: Couldn't load any plugins")
+
+    def __setup_plugins_check_manual_url_callbacks(self, name):
+        # check if a plugin modified bot.memory['url_callbacks'] manually
+        # TODO: remove in Sopel 8
+        if 'url_callbacks' not in self.memory:
+            # nothing to check
+            return
+
+        for key, callback in tools.iteritems(self.memory['url_callbacks']):
+            is_checked = getattr(
+                callback, '_sopel_url_callbacks_checked', False)
+            if is_checked:
+                # already checked; move on to next callback
+                continue
+
+            # deprecation warning
+            LOGGER.warning(
+                "Plugin `%s` uses `bot.memory['url_callbacks']`; "
+                'this key is deprecated and will be removed in Sopel 8. '
+                'Use `@url` or `@url_lazy` instead. Callback was: %s',
+                name, callback.__name__)
+            # mark callback as checked
+            setattr(callback, '_sopel_url_callbacks_checked', True)
 
     # post setup
 
@@ -1061,6 +1086,9 @@ class Sopel(irc.AbstractBot):
         if isinstance(pattern, basestring):
             pattern = re.compile(pattern)
 
+        # Mark the callback as checked: using this method is safe.
+        # TODO: remove in Sopel 8
+        setattr(callback, '_sopel_url_callbacks_checked', True)
         self.memory['url_callbacks'][pattern] = callback
 
     def unregister_url_callback(self, pattern, callback):
