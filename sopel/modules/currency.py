@@ -212,6 +212,7 @@ def update_rates(bot):
                 re=True, online=True, vcr=True)
 @plugin.output_prefix(PLUGIN_OUTPUT_PREFIX)
 def exchange_cmd(bot, trigger):
+    """Show the exchange rate between two currencies."""
     if not trigger.group(2):
         bot.reply("No search term. Usage: {}cur 100 usd in btc cad eur"
                   .format(bot.config.core.help_prefix))
