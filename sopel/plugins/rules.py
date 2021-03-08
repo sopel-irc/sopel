@@ -1502,17 +1502,7 @@ class FindRule(Rule):
         see the official Python documentation.
 
     """
-    @classmethod
-    def from_callable(cls, settings, handler):
-        regexes = tuple(_clean_rules(
-            handler.find_rules,
-            settings.core.nick,
-            settings.core.alias_nicks,
-        ))
-        kwargs = cls.kwargs_from_callable(handler)
-        kwargs['handler'] = handler
-
-        return cls(regexes, **kwargs)
+    REGEX_ATTRIBUTE = 'find_rules'
 
     def parse(self, text):
         for regex in self._regexes:
@@ -1546,17 +1536,7 @@ class SearchRule(Rule):
         see the official Python documentation.
 
     """
-    @classmethod
-    def from_callable(cls, settings, handler):
-        regexes = tuple(_clean_rules(
-            handler.search_rules,
-            settings.core.nick,
-            settings.core.alias_nicks,
-        ))
-        kwargs = cls.kwargs_from_callable(handler)
-        kwargs['handler'] = handler
-
-        return cls(regexes, **kwargs)
+    REGEX_ATTRIBUTE = 'search_rules'
 
     def parse(self, text):
         for regex in self._regexes:
