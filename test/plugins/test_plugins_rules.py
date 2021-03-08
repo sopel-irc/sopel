@@ -916,6 +916,100 @@ def test_rule_from_callable_nickname_placeholder(mockbot):
         result.group(1)
 
 
+def test_rule_from_callable_lazy(mockbot):
+    def lazy_loader(settings):
+        return [
+            re.compile(r'hello', re.IGNORECASE),
+            re.compile(r'hi', re.IGNORECASE),
+            re.compile(r'hey', re.IGNORECASE),
+            re.compile(r'hello|hi', re.IGNORECASE),
+        ]
+
+    # prepare callable
+    @plugin.rule_lazy(lazy_loader)
+    def handler(wrapped, trigger):
+        wrapped.say('Hi!')
+        return 'The return value: %s' % trigger.group(0)
+
+    loader.clean_callable(handler, mockbot.settings)
+    handler.plugin_name = 'testplugin'
+
+    # create rule from a cleaned callable
+    rule = rules.Rule.from_callable_lazy(mockbot.settings, handler)
+    assert str(rule) == '<Rule testplugin.handler (4)>'
+
+    # match on "Hello" twice
+    line = ':Foo!foo@example.com PRIVMSG #sopel :Hello, world'
+    pretrigger = trigger.PreTrigger(mockbot.nick, line)
+    results = list(rule.match(mockbot, pretrigger))
+
+    assert len(results) == 2, 'Exactly 2 rules must match'
+    assert all(result.group(0) == 'Hello' for result in results)
+
+    # match on "hi" twice
+    line = ':Foo!foo@example.com PRIVMSG #sopel :hi!'
+    pretrigger = trigger.PreTrigger(mockbot.nick, line)
+    results = list(rule.match(mockbot, pretrigger))
+
+    assert len(results) == 2, 'Exactly 2 rules must match'
+    assert all(result.group(0) == 'hi' for result in results)
+
+    # match on "hey" only once
+    line = ':Foo!foo@example.com PRIVMSG #sopel :hey how are you doing?'
+    pretrigger = trigger.PreTrigger(mockbot.nick, line)
+    results = list(rule.match(mockbot, pretrigger))
+
+    assert len(results) == 1, 'Exactly 1 rule must match'
+    assert results[0].group(0) == 'hey'
+
+
+def test_rule_from_callable_invalid(mockbot):
+    def lazy_loader(settings):
+        return [
+            re.compile(re.escape('https://example.com/') + r'(\w+)'),
+        ]
+
+    # prepare callable
+    @plugin.rule_lazy(lazy_loader)
+    def handler(wrapped, trigger):
+        wrapped.reply('Hi!')
+
+    loader.clean_callable(handler, mockbot.settings)
+    handler.plugin_name = 'testplugin'
+
+    # create rule from a cleaned callable
+    with pytest.raises(RuntimeError):
+        rules.Rule.from_callable(mockbot.settings, handler)
+
+
+def test_rule_from_callable_lazy_invalid(mockbot):
+    # prepare callable
+    @module.rule(r'.*')
+    def handler(wrapped, trigger, match=None):
+        wrapped.reply('Hi!')
+
+    loader.clean_callable(handler, mockbot.settings)
+    handler.plugin_name = 'testplugin'
+
+    # create rule from a cleaned callable
+    with pytest.raises(RuntimeError):
+        rules.Rule.from_callable_lazy(mockbot.settings, handler)
+
+
+def test_rule_from_callable_lazy_invalid_no_regex(mockbot):
+    # prepare callable
+    @plugin.rule_lazy(lambda *args: [])
+    def handler(wrapped, trigger, match=None):
+        wrapped.reply('Hi!')
+
+    loader.clean_callable(handler, mockbot.settings)
+    handler.plugin_name = 'testplugin'
+
+    # create rule from a cleaned callable
+    with pytest.raises(RuntimeError):
+        rules.Rule.from_callable_lazy(mockbot.settings, handler)
+
+
 # -----------------------------------------------------------------------------
 # test classmethod :meth:`Rule.kwargs_from_callable`
 

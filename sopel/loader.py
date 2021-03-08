@@ -158,6 +158,7 @@ def is_limitable(obj):
 
     allowed_attrs = (
         'rule',
+        'rule_lazy_loaders',
         'find_rules',
         'search_rules',
         'event',
@@ -199,6 +200,7 @@ def is_triggerable(obj):
 
     allowed_attrs = (
         'rule',
+        'rule_lazy_loaders',
         'find_rules',
         'search_rules',
         'event',
