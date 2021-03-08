@@ -357,6 +357,10 @@ def test_register_callables(tmpconfig):
     def rule_search_hello(bot, trigger):
         pass
 
+    @plugin.search_lazy(lambda *args: [re.compile(r'what')])
+    def rule_search_what(bot, trigger):
+        pass
+
     @module.commands('do')
     @module.example('.do nothing')
     def command_do(bot, trigger):
@@ -402,6 +406,7 @@ def test_register_callables(tmpconfig):
         rule_find_hello,
         rule_find_what,
         rule_search_hello,
+        rule_search_what,
         command_do,
         command_main_sub,
         command_main_other,
@@ -435,9 +440,10 @@ def test_register_callables(tmpconfig):
     pretrigger = trigger.PreTrigger(sopel.nick, line)
 
     matches = sopel.rules.get_triggered_rules(sopel, pretrigger)
-    assert len(matches) == 2
+    assert len(matches) == 3
     assert matches[0][0].get_rule_label() == 'rule_say_what'
     assert matches[1][0].get_rule_label() == 'rule_find_what'
+    assert matches[2][0].get_rule_label() == 'rule_search_what'
 
     # trigger command "do"
     line = ':Foo!foo@example.com PRIVMSG #sopel :.do'

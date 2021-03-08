@@ -1538,6 +1538,7 @@ class SearchRule(Rule):
 
     """
     REGEX_ATTRIBUTE = 'search_rules'
+    LAZY_ATTRIBUTE = 'search_rules_lazy_loaders'
 
     def parse(self, text):
         for regex in self._regexes:
