@@ -1503,6 +1503,7 @@ class FindRule(Rule):
 
     """
     REGEX_ATTRIBUTE = 'find_rules'
+    LAZY_ATTRIBUTE = 'find_rules_lazy_loaders'
 
     def parse(self, text):
         for regex in self._regexes:
