@@ -566,6 +566,11 @@ class AbstractBot(object):
         value of 1) will be truncated slightly to fit the ``trailing`` string.
         Note that the ``trailing`` parameter must include leading whitespace
         if you desire any between it and the truncated text.
+
+        .. versionadded:: 7.1
+
+            The ``trailing`` parameter.
+
         """
         excess = ''
         if not isinstance(text, unicode):
