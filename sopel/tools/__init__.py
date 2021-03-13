@@ -361,6 +361,8 @@ def get_sendable_message(text, max_length=400):
     The ``max_length`` is the max length of text in **bytes**, but we take
     care of Unicode 2-byte characters by working on the Unicode string,
     then making sure the bytes version is smaller than the max length.
+
+    .. versionadded:: 6.6.2
     """
     unicode_max_length = max_length
     excess = ''
