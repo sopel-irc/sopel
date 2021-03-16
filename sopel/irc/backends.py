@@ -63,6 +63,11 @@ def _check_timeout(backend):
     if time_passed > backend.server_timeout:
         LOGGER.error(
             'Server timeout detected after %ss; closing.', time_passed)
+        # discard buffers: no need to read/write anything more, just quit
+        LOGGER.debug('Discard current buffers.')
+        backend.discard_buffers()
+        LOGGER.debug('Waiting on asynchat to close connection.')
+        # close once done
         backend.close_when_done()
 
 
@@ -103,6 +108,9 @@ class AsynchatBackend(AbstractIRCBackend, asynchat.async_chat):
 
     def on_irc_error(self, pretrigger):
         if self.bot.hasquit:
+            # discard buffers: no need to read/write anything more, just quit
+            self.discard_buffers()
+            # close when done
             self.close_when_done()
 
     def irc_send(self, data):
