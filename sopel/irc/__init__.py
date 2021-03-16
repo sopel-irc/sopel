@@ -141,7 +141,7 @@ class AbstractBot(object):
                 :class:`~sopel.irc.abstract_backends.AbstractIRCBackend`
         """
         timeout = int(self.settings.core.timeout)
-        ping_timeout = timeout / 2
+        ping_timeout = int(self.settings.core.timeout_ping_interval)
         backend_class = AsynchatBackend
         backend_args = [self]
         backend_kwargs = {

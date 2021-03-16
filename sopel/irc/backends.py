@@ -42,19 +42,39 @@ LOGGER = logging.getLogger(__name__)
 
 
 @plugin.thread(False)
+@plugin.interval(5)
 def _send_ping(backend):
     if not backend.is_connected():
         return
-    dt = datetime.datetime.utcnow() - backend.last_event_at
-    time_passed = dt.total_seconds()
-    if time_passed > backend.ping_timeout:
+
+    events = []
+    need_ping = True
+
+    # Ensure we have a time to check first
+    if backend.last_event_at:
+        events.append(backend.last_event_at)
+
+    if backend.last_ping_at:
+        events.append(backend.last_ping_at)
+
+    # At least a PING was sent, or a message was received
+    if events:
+        last_event = max(events)
+        dt = datetime.datetime.utcnow() - last_event
+        time_passed = dt.total_seconds()
+        need_ping = time_passed > backend.ping_timeout
+
+    # Send PING only if needed
+    if need_ping:
         try:
             backend.send_ping(backend.host)
+            backend.last_ping_at = datetime.datetime.utcnow()
         except socket.error:
             LOGGER.exception('Socket error on PING')
 
 
 @plugin.thread(False)
+@plugin.interval(10)
 def _check_timeout(backend):
     if not backend.is_connected():
         return
@@ -86,21 +106,18 @@ class AsynchatBackend(AbstractIRCBackend, asynchat.async_chat):
         self.set_terminator(b'\n')
         self.buffer = ''
         self.server_timeout = server_timeout or 120
-        self.ping_timeout = ping_timeout or (self.server_timeout / 2)
+        self.ping_timeout = ping_timeout or (self.server_timeout / 2.4)
         self.last_event_at = None
+        self.last_ping_at = None
         self.host = None
         self.port = None
         self.source_address = None
         self.timeout_scheduler = jobs.Scheduler(self)
 
-        # prepare interval decorator
-        ping_interval = plugin.interval(self.ping_timeout)
-        timeout_interval = plugin.interval(self.server_timeout)
-
         # register timeout jobs
         self.register_timeout_jobs([
-            ping_interval(_send_ping),
-            timeout_interval(_check_timeout),
+            _send_ping,
+            _check_timeout,
         ])
 
     def is_connected(self):
