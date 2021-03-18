@@ -144,8 +144,8 @@ def plugins_wizard(filename):
     try:
         settings.save()
     except Exception:  # TODO: Be specific
-        tools.stderr("Encountered an error while writing the config file. "
-                     "This shouldn't happen. Check permissions.")
+        tools.stderr("We've encountered an error while writing the configuration file."
+                     "This shouldn't happen. Check your permissions settings to make sure nothing is wrong.")
         raise
 
     return settings
