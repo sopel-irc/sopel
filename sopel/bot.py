@@ -404,14 +404,40 @@ class Sopel(irc.AbstractBot):
         LOGGER.info('Reloaded %s plugin %s from %s',
                     meta['type'], name, meta['source'])
 
-    def reload_plugins(self):
+    def reload_plugins(self, plugin_types=[]):
         """Reload all registered plugins.
+
+        :param list plugin_types: optional list of plugin types to filter by
 
         First, this function runs all plugin shutdown routines and unregisters
         all plugins. Then it reloads all plugins, runs their setup routines, and
         registers them again.
+
+        If ``plugin_types`` is given, only plugins whose handlers match one of
+        the listed types will be reloaded. Each list item is a :class:`str`
+        matching the ``PLUGIN_TYPE`` attribute of the desired plugin type's
+        :mod:`handler<sopel.plugins.handlers>` class.
+
+        .. versionadded:: 7.1
+
+            The ``plugin_types`` parameter.
+
         """
         registered = list(self._plugins.items())
+        # filter plugins by type, if requested
+        if plugin_types:
+            LOGGER.info(
+                'Reloading only plugins of type(s): %s',
+                ', '.join(plugin_types))
+            filtered = []
+            for name, plugin in registered:
+                meta = plugin.get_meta_description()
+                if meta['type'] in plugin_types:
+                    filtered.append((name, plugin))
+            registered = filtered
+        else:
+            LOGGER.info('Reloading all plugins')
+
         # tear down all plugins
         for name, plugin in registered:
             plugin.shutdown(self)

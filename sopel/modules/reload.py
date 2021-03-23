@@ -40,8 +40,8 @@ def f_reload(bot, trigger):
     name = trigger.group(2)
 
     if not name or name == '*' or name.upper() == 'ALL THE THINGS':
-        bot.reload_plugins()
-        bot.say('done')
+        bot.reload_plugins(plugin_types=['python-file'])
+        bot.say("done: Reloaded all 'python-file' plugins.")
         return
 
     if not bot.has_plugin(name):
