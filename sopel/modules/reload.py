@@ -48,6 +48,14 @@ def f_reload(bot, trigger):
         bot.reply('"%s" not loaded; try the `load` command.' % name)
         return
 
+    plugin_meta = bot.get_plugin_meta(name)
+
+    if plugin_meta['type'] != 'python-file':
+        bot.reply(
+            "Reloading '%s' plugins is likely to cause glitches. "
+            "Please restart me instead." % plugin_meta['type'])
+        return
+
     bot.reload_plugin(name)
     plugin_meta = bot.get_plugin_meta(name)
     bot.say('done: %s reloaded (%s from %s)' % (
