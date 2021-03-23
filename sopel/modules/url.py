@@ -264,16 +264,30 @@ def title_command(bot, trigger):
         else:
             urls = [bot.memory['last_seen_url'][trigger.sender]]
     else:
-        urls = web.search_urls(
-            trigger,
-            exclusion_char=bot.config.url.exclusion_char)
+        urls = list(  # needs to be a list so len() can be checked later
+            web.search_urls(
+                trigger,
+                exclusion_char=bot.config.url.exclusion_char
+            )
+        )
 
+    result_count = 0
     for url, title, domain, tinyurl in process_urls(bot, trigger, urls):
         message = '%s | %s' % (title, domain)
         if tinyurl:
             message += ' ( %s )' % tinyurl
         bot.reply(message)
         bot.memory['last_seen_url'][trigger.sender] = url
+        result_count += 1
+
+    expected_count = len(urls)
+    if result_count < expected_count:
+        if expected_count == 1:
+            bot.reply("Sorry, fetching that title failed. Make sure the site is working.")
+        elif result_count == 0:
+            bot.reply("Sorry, I couldn't fetch titles for any of those.")
+        else:
+            bot.reply("I couldn't get all of the titles, but I fetched what I could!")
 
 
 @plugin.rule(r'(?u).*(https?://\S+).*')
