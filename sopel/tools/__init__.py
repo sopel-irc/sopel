@@ -53,6 +53,7 @@ def deprecated(
     version=None,
     removed_in=None,
     warning_in=None,
+    stack_frame=-1,
     func=None,
 ):
     """Decorator to mark deprecated functions in Sopel's API
@@ -127,7 +128,8 @@ def deprecated(
     if func is None:
         # common usage: @deprecated(message, version, removed_in)
         def decorator(func):
-            return deprecated(reason, version, removed_in, warning_in, func)
+            return deprecated(
+                reason, version, removed_in, warning_in, stack_frame, func)
         return decorator
 
     # now, we have everything we need to have:
@@ -159,7 +161,7 @@ def deprecated(
             stderr(text)
             # Only display the last frame
             trace = traceback.extract_stack()
-            stderr(traceback.format_list(trace[:-1])[-1][:-1])
+            stderr(traceback.format_list(trace[:-1])[stack_frame][:-1])
         return func(*args, **kwargs)
 
     return deprecated_func
