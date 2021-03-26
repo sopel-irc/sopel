@@ -86,9 +86,8 @@ def _check_timeout(backend):
         # discard buffers: no need to read/write anything more, just quit
         LOGGER.debug('Discard current buffers.')
         backend.discard_buffers()
-        LOGGER.debug('Waiting on asynchat to close connection.')
-        # close once done
-        backend.close_when_done()
+        # close now
+        backend.handle_close()
 
 
 class AsynchatBackend(AbstractIRCBackend, asynchat.async_chat):
@@ -126,9 +125,10 @@ class AsynchatBackend(AbstractIRCBackend, asynchat.async_chat):
     def on_irc_error(self, pretrigger):
         if self.bot.hasquit:
             # discard buffers: no need to read/write anything more, just quit
+            LOGGER.debug('Discard current buffers.')
             self.discard_buffers()
-            # close when done
-            self.close_when_done()
+            # close now
+            self.handle_close()
 
     def irc_send(self, data):
         """Send an IRC line as raw ``data`` to the socket connection.
@@ -184,7 +184,7 @@ class AsynchatBackend(AbstractIRCBackend, asynchat.async_chat):
         self.bot.on_connect()
 
     def handle_close(self):
-        """Called when the socket is closed."""
+        """Called when the connection must be closed."""
         LOGGER.debug('Stopping timeout watchdog')
         self.timeout_scheduler.stop()
         LOGGER.info('Closing connection')
