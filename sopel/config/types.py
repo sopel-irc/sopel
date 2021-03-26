@@ -30,8 +30,9 @@ import getpass
 import os.path
 import re
 import sys
+import traceback
 
-from sopel.tools import get_input
+from sopel.tools import get_input, stderr
 
 if sys.version_info.major >= 3:
     unicode = str
@@ -299,10 +300,24 @@ class ValidatedAttribute(BaseValidated):
                  is_secret=False):
         super(ValidatedAttribute, self).__init__(
             name, default=default, is_secret=is_secret)
+
         if parse == bool:
             parse = _parse_boolean
             if not serialize or serialize == bool:
                 serialize = _serialize_boolean
+
+            # deprecation warning
+            # can't use tools.deprecated in this case, unfortunately
+            # we need this to be conditional
+            msg = (
+                'Deprecated since 7.1, '
+                'will be removed in 9.0: '
+                'Use BooleanAttribute instead of ValidatedAttribute with parse=bool')
+            stderr(msg)
+            # Only display the last stack frame
+            trace = traceback.extract_stack()
+            stderr(traceback.format_list(trace[:-1])[-1][:-1])
+
         self.parse = parse or self.parse
         self.serialize = serialize or self.serialize
 
