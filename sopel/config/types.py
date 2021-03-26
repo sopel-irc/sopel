@@ -30,9 +30,8 @@ import getpass
 import os.path
 import re
 import sys
-import traceback
 
-from sopel.tools import get_input, stderr
+from sopel.tools import deprecated, get_input
 
 if sys.version_info.major >= 3:
     unicode = str
@@ -277,6 +276,19 @@ def _serialize_boolean(value):
     return 'true' if _parse_boolean(value) else 'false'
 
 
+@deprecated(
+    reason='Use BooleanAttribute instead of ValidatedAttribute with parse=bool',
+    version='7.1',
+    removed_in='9.0',
+    stack_frame=-2,
+)
+def _deprecated_special_bool_handling(serialize):
+    if not serialize or serialize == bool:
+        serialize = _serialize_boolean
+
+    return _parse_boolean, serialize
+
+
 class ValidatedAttribute(BaseValidated):
     """A descriptor for settings in a :class:`StaticSection`.
 
@@ -302,21 +314,7 @@ class ValidatedAttribute(BaseValidated):
             name, default=default, is_secret=is_secret)
 
         if parse == bool:
-            parse = _parse_boolean
-            if not serialize or serialize == bool:
-                serialize = _serialize_boolean
-
-            # deprecation warning
-            # can't use tools.deprecated in this case, unfortunately
-            # we need this to be conditional
-            msg = (
-                'Deprecated since 7.1, '
-                'will be removed in 9.0: '
-                'Use BooleanAttribute instead of ValidatedAttribute with parse=bool')
-            stderr(msg)
-            # Only display the last stack frame
-            trace = traceback.extract_stack()
-            stderr(traceback.format_list(trace[:-1])[-1][:-1])
+            parse, serialize = _deprecated_special_bool_handling(serialize)
 
         self.parse = parse or self.parse
         self.serialize = serialize or self.serialize
