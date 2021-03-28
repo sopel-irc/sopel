@@ -204,6 +204,16 @@ class ISupport(object):
         elif name not in self.__dict__:
             raise AttributeError('Unknown attribute')
 
+    def get(self, name, default=None):
+        """Retrieve value for the feature ``name``.
+
+        :param str name: feature to retrieve
+        :param default: default value if the feature is not advertised
+                        (defaults to ``None``)
+        :return: the value for that feature, if advertised, or ``default``
+        """
+        return self[name] if name in self else default
+
     def apply(self, **kwargs):
         """Build a new instance of :class:`ISupport`.
 
