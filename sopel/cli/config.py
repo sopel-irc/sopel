@@ -131,7 +131,12 @@ def handle_init(options):
         return 1
 
     print('Starting Sopel config wizard for: %s' % config_filename)
-    utils.wizard(config_name)
+    try:
+        utils.wizard(config_name)
+    except KeyboardInterrupt:
+        tools.stderr('\nOperation cancelled, no file has been created.')
+        return 1  # cancelled operation
+
     return 0  # successful operation
 
 
@@ -177,10 +182,14 @@ def main():
         parser.print_help()
         return
 
-    # init command does not require existing settings
-    if action == 'list':
-        return handle_list(options)
-    elif action == 'init':
-        return handle_init(options)
-    elif action == 'get':
-        return handle_get(options)
+    try:
+        # init command does not require existing settings
+        if action == 'list':
+            return handle_list(options)
+        elif action == 'init':
+            return handle_init(options)
+        elif action == 'get':
+            return handle_get(options)
+    except KeyboardInterrupt:
+        # ctrl+c was used, nothing to report here
+        pass
