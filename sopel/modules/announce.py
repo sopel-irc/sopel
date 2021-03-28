@@ -34,8 +34,14 @@ def announce(bot, trigger):
         bot.reply('Announce what? I need a message to say.')
         return
 
-    size = bot.isupport.get('TARGMAX', {}).get('PRIVMSG', 1)
+    size = 1
+    try:
+        size = bot.isupport.TARGMAX.get('PRIVMSG', size)
+    except AttributeError:
+        pass
+
     channels = _chunks(bot.channels.keys(), size)
     for cgroup in channels:
         bot.say(trigger.group(2), ','.join(cgroup))
+
     bot.reply('Announce complete.')
