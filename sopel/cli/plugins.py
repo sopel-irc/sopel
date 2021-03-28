@@ -6,8 +6,12 @@ import argparse
 import inspect
 import operator
 
-from sopel import plugins, tools
+from sopel import config, plugins, tools
 from . import utils
+
+
+ERR_CODE = 1
+"""Error code: program exited with an error"""
 
 
 def build_parser():
@@ -249,7 +253,7 @@ def handle_show(options):
     # plugin does not exist
     if plugin_name not in usable_plugins:
         tools.stderr('No plugin named %s' % plugin_name)
-        return 1
+        return ERR_CODE
 
     plugin, is_enabled = usable_plugins[plugin_name]
     description = {
@@ -281,7 +285,7 @@ def handle_show(options):
 
     if not loaded:
         print('Loading failed')
-        return 1
+        return ERR_CODE
 
     print('Loaded successfully')
     print('Setup:', 'yes' if plugin.has_setup() else 'no')
@@ -305,21 +309,27 @@ def handle_configure(options):
     # plugin does not exist
     if plugin_name not in usable_plugins:
         tools.stderr('No plugin named %s' % plugin_name)
-        return 1
+        return ERR_CODE
 
     plugin, is_enabled = usable_plugins[plugin_name]
     try:
         plugin.load()
     except Exception as error:
         tools.stderr('Cannot load plugin %s: %s' % (plugin_name, error))
-        return 1
+        return ERR_CODE
 
     if not plugin.has_configure():
         tools.stderr('Nothing to configure for plugin %s' % plugin_name)
         return 0  # nothing to configure is not exactly an error case
 
     print('Configure %s' % plugin.get_label())
-    plugin.configure(settings)
+    try:
+        plugin.configure(settings)
+    except KeyboardInterrupt:
+        tools.stderr(
+            '\nOperation cancelled; the config file has not been modified.')
+        return ERR_CODE  # cancelled operation
+
     settings.save()
 
     if not is_enabled:
@@ -392,7 +402,7 @@ def handle_disable(options):
     # coretasks is sacred
     if 'coretasks' in plugin_names:
         tools.stderr('Plugin coretasks cannot be disabled.')
-        return 1  # do nothing and return an error code
+        return ERR_CODE  # do nothing and return an error code
 
     unknown_plugins = [
         name
@@ -401,7 +411,7 @@ def handle_disable(options):
     ]
     if unknown_plugins:
         display_unknown_plugins(unknown_plugins)
-        return 1  # do nothing and return an error code
+        return ERR_CODE  # do nothing and return an error code
 
     # remove from enabled if asked
     if ensure_remove:
@@ -502,7 +512,7 @@ def handle_enable(options):
     ]
     if unknown_plugins:
         display_unknown_plugins(unknown_plugins)
-        return 1  # do nothing and return an error code
+        return ERR_CODE  # do nothing and return an error code
 
     actually_enabled = tuple(
         name
@@ -534,15 +544,23 @@ def main():
 
     if not action:
         parser.print_help()
-        return
+        return ERR_CODE
 
-    if action == 'list':
-        return handle_list(options)
-    elif action == 'show':
-        return handle_show(options)
-    elif action == 'configure':
-        return handle_configure(options)
-    elif action == 'disable':
-        return handle_disable(options)
-    elif action == 'enable':
-        return handle_enable(options)
+    try:
+        if action == 'list':
+            return handle_list(options)
+        elif action == 'show':
+            return handle_show(options)
+        elif action == 'configure':
+            return handle_configure(options)
+        elif action == 'disable':
+            return handle_disable(options)
+        elif action == 'enable':
+            return handle_enable(options)
+    except KeyboardInterrupt:
+        tools.stderr('Bye!')
+        return ERR_CODE
+    except config.ConfigurationNotFound as err:
+        tools.stderr(err)
+        tools.stderr('Use `sopel-config init` to create a new config file.')
+        return ERR_CODE
