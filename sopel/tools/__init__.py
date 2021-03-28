@@ -53,6 +53,7 @@ def deprecated(
     version=None,
     removed_in=None,
     warning_in=None,
+    stack_frame=-1,
     func=None,
 ):
     """Decorator to mark deprecated functions in Sopel's API
@@ -64,6 +65,8 @@ def deprecated(
                            will be removed
     :param str warning_in: optional version number when the decorated function
                            should start emitting a warning when called
+    :param int stack_frame: optional stack frame to output; defaults to
+                            ``-1``; should almost always be negative
     :param callable func: deprecated function
     :return: a callable that depends on how the decorator is called; either
              the decorated function, or a decorator with the appropriate
@@ -105,6 +108,13 @@ def deprecated(
         File "<stdin>", line 1, in <module>
         func 3
 
+    The ``stack_frame`` argument can be used to choose which stack frame is
+    printed along with the message text. By default, this decorator prints the
+    most recent stack frame (the last entry in the list, ``-1``),
+    corresponding to where the decorated function itself was called. However,
+    in certain cases such as deprecating conditional behavior within an object
+    constructor, it can be useful to show a less recent stack frame instead.
+
     .. note::
 
         There is nothing that prevents this decorator to be used on a class's
@@ -114,7 +124,8 @@ def deprecated(
         Parameters ``reason``, ``version``, and ``removed_in``.
 
     .. versionadded:: 7.1
-        The ``warning_in`` parameter.
+        The ``warning_in`` and ``stack_frame`` parameters.
+
     """
     if not any([reason, version, removed_in, warning_in, func]):
         # common usage: @deprecated()
@@ -127,7 +138,8 @@ def deprecated(
     if func is None:
         # common usage: @deprecated(message, version, removed_in)
         def decorator(func):
-            return deprecated(reason, version, removed_in, warning_in, func)
+            return deprecated(
+                reason, version, removed_in, warning_in, stack_frame, func)
         return decorator
 
     # now, we have everything we need to have:
@@ -159,7 +171,7 @@ def deprecated(
             stderr(text)
             # Only display the last frame
             trace = traceback.extract_stack()
-            stderr(traceback.format_list(trace[:-1])[-1][:-1])
+            stderr(traceback.format_list(trace[:-1])[stack_frame][:-1])
         return func(*args, **kwargs)
 
     return deprecated_func
