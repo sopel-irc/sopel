@@ -316,6 +316,31 @@ def test_say_long_trailing_extra_multi_message_multibyte(bot):
     )
 
 
+def test_say_finial(bot):
+    """Test optional finial string."""
+    text = '"This is a test quote.'
+    bot.say(text, '#sopel', finial='"')
+
+    assert bot.backend.message_sent == rawlist(
+        # combined
+        'PRIVMSG #sopel :%s' % text + '"'
+    )
+
+
+def test_say_long_trailing_finial(bot):
+    """Test optional truncation indicator AND finial string together."""
+    msg1 = 'a' * (512 - prefix_length(bot) - len('PRIVMSG #sopel :\r\n'))
+    msg2 = msg1[:-4] + 'bbbc'
+    bot.say(msg1 + msg2 + 'd', '#sopel', max_messages=2, trailing='…', finial='q')
+
+    assert bot.backend.message_sent == rawlist(
+        # split as expected
+        'PRIVMSG #sopel :%s' % msg1,
+        # 'd' is truncated; 'bbb' is replaced by `trailing`; 'c' is replaced by `finial`
+        'PRIVMSG #sopel :%s' % msg2.replace('bbb', '…').replace('c', 'q')
+    )
+
+
 def test_say_no_repeat_protection(bot):
     # five is fine
     bot.say('hello', '#sopel')
