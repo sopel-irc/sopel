@@ -596,8 +596,7 @@ class Sopel(irc.AbstractBot):
             find_rules = getattr(callbl, 'find_rules', [])
             lazy_find_rules = getattr(callbl, 'find_rules_lazy_loaders', [])
             search_rules = getattr(callbl, 'search_rules', [])
-            lazy_search_rules = getattr(
-                callbl, 'search_rules_lazy_loaders', [])
+            lazy_search_rules = getattr(callbl, 'search_rules_lazy_loaders', [])
             commands = getattr(callbl, 'commands', [])
             nick_commands = getattr(callbl, 'nickname_commands', [])
             action_commands = getattr(callbl, 'action_commands', [])
