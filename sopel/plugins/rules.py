@@ -830,7 +830,7 @@ class Rule(AbstractRule):
         :rtype: :class:`AbstractRule`
 
         Similar to the :meth:`from_callable` classmethod, it requires a rule
-        handlers decorated with :mod:`sopel.plugin`'s decorators.
+        handler decorated with :mod:`sopel.plugin`'s decorators.
 
         Unlike the :meth:`from_callable` classmethod, the regexes are not
         already attached to the handler: its loader functions will be used to

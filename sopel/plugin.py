@@ -252,7 +252,7 @@ def rule_lazy(*loaders):
     """Decorate a callable as a rule with lazy loading.
 
     :param loaders: one or more functions to generate a list of **compiled**
-                    regexes to match URLs.
+                    regexes to match URLs
     :type loaders: :term:`function`
 
     Each ``loader`` function must accept a ``settings`` parameter and return a
@@ -355,7 +355,7 @@ def find_lazy(*loaders):
     """Decorate a callable as a find rule with lazy loading.
 
     :param loaders: one or more functions to generate a list of **compiled**
-                    regexes to match patterns in a line.
+                    regexes to match patterns in a line
     :type loaders: :term:`function`
 
     Each ``loader`` function must accept a ``settings`` parameter and return a
@@ -461,7 +461,7 @@ def search_lazy(*loaders):
     """Decorate a callable as a search rule with lazy loading.
 
     :param loaders: one or more functions to generate a list of **compiled**
-                    regexes to match patterns in a line.
+                    regexes to match patterns in a line
     :type loaders: :term:`function`
 
     Each ``loader`` function must accept a ``settings`` parameter and return a
