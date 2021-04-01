@@ -1316,9 +1316,10 @@ class NickCommand(NamedRuleMixin, Rule):
         name = [self.escape_name(self._name)]
         aliases = [self.escape_name(alias) for alias in self._aliases]
         pattern = r'|'.join(name + aliases)
-        return tools.compile_rule(
-            self._nick,
+
+        return _compile_pattern(
             self.PATTERN_TEMPLATE.format(command=pattern),
+            self._nick,
             self._nick_aliases)
 
 
