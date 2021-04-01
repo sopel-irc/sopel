@@ -62,7 +62,7 @@ def _send_ping(backend):
         last_event = max(events)
         dt = datetime.datetime.utcnow() - last_event
         time_passed = dt.total_seconds()
-        need_ping = time_passed > backend.ping_timeout
+        need_ping = time_passed > backend.ping_interval
 
     # Send PING only if needed
     if need_ping:
@@ -96,16 +96,16 @@ class AsynchatBackend(AbstractIRCBackend, asynchat.async_chat):
     :param bot: a Sopel instance
     :type bot: :class:`sopel.bot.Sopel`
     :param int server_timeout: connection timeout in seconds
-    :param int ping_timeout: ping timeout in seconds
+    :param int ping_interval: ping interval in seconds
     """
-    def __init__(self, bot, server_timeout=None, ping_timeout=None, **kwargs):
+    def __init__(self, bot, server_timeout=None, ping_interval=None, **kwargs):
         AbstractIRCBackend.__init__(self, bot)
         asynchat.async_chat.__init__(self)
         self.writing_lock = threading.RLock()
         self.set_terminator(b'\n')
         self.buffer = ''
         self.server_timeout = server_timeout or 120
-        self.ping_timeout = ping_timeout or (self.server_timeout / 2.4)
+        self.ping_interval = ping_interval or (self.server_timeout / 2.4)
         self.last_event_at = None
         self.last_ping_at = None
         self.host = None
