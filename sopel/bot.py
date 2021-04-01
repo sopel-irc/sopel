@@ -248,18 +248,18 @@ class Sopel(irc.AbstractBot):
     def _signal_handler(self, sig, frame):
         if sig in QUIT_SIGNALS:
             if self.backend.is_connected():
-                LOGGER.warning('Got quit signal, sending QUIT to server.')
+                LOGGER.warning("Got quit signal, sending QUIT to server.")
                 self.quit('Closing')
             else:
                 self.hasquit = True  # mark the bot as "want to quit"
-                LOGGER.warning('Got quit signal.')
+                LOGGER.warning("Got quit signal.")
                 raise KeyboardInterrupt
         elif sig in RESTART_SIGNALS:
             if self.backend.is_connected():
-                LOGGER.warning('Got restart signal, sending QUIT to server.')
+                LOGGER.warning("Got restart signal, sending QUIT to server.")
                 self.restart('Restarting')
             else:
-                LOGGER.warning('Got restart signal.')
+                LOGGER.warning("Got restart signal.")
                 self.wantsrestart = True  # mark the bot as "want to restart"
                 self.hasquit = True  # mark the bot as "want to quit"
                 raise KeyboardInterrupt
@@ -310,7 +310,7 @@ class Sopel(irc.AbstractBot):
         load_error = 0
         load_disabled = 0
 
-        LOGGER.info('Loading plugins...')
+        LOGGER.info("Loading plugins...")
         usable_plugins = plugins.get_usable_plugins(self.settings)
         for name, info in usable_plugins.items():
             plugin, is_enabled = info
@@ -322,11 +322,11 @@ class Sopel(irc.AbstractBot):
                 plugin.load()
             except Exception as e:
                 load_error = load_error + 1
-                LOGGER.exception('Error loading %s: %s', name, e)
+                LOGGER.exception("Error loading %s: %s", name, e)
             except SystemExit:
                 load_error = load_error + 1
                 LOGGER.exception(
-                    'Error loading %s (plugin tried to exit)', name)
+                    "Error loading %s (plugin tried to exit)", name)
             else:
                 try:
                     if plugin.has_setup():
@@ -336,15 +336,15 @@ class Sopel(irc.AbstractBot):
                     plugin.register(self)
                 except Exception as e:
                     load_error = load_error + 1
-                    LOGGER.exception('Error in %s setup: %s', name, e)
+                    LOGGER.exception("Error in %s setup: %s", name, e)
                 else:
                     load_success = load_success + 1
-                    LOGGER.info('Plugin loaded: %s', name)
+                    LOGGER.info("Plugin loaded: %s", name)
 
         total = sum([load_success, load_error, load_disabled])
         if total and load_success:
             LOGGER.info(
-                'Registered %d plugins, %d failed, %d disabled',
+                "Registered %d plugins, %d failed, %d disabled",
                 (load_success - 1),
                 load_error,
                 load_disabled)
@@ -392,8 +392,8 @@ class Sopel(irc.AbstractBot):
             for option_name in settings.parser.options(section_name):
                 if not hasattr(section, option_name):
                     LOGGER.warning(
-                        'Config option `%s.%s` is not defined by its section '
-                        'and may not be recognized by Sopel.',
+                        "Config option `%s.%s` is not defined by its section "
+                        "and may not be recognized by Sopel.",
                         section_name,
                         option_name,
                     )
@@ -420,13 +420,13 @@ class Sopel(irc.AbstractBot):
         # tear down
         plugin.shutdown(self)
         plugin.unregister(self)
-        LOGGER.info('Unloaded plugin %s', name)
+        LOGGER.info("Unloaded plugin %s", name)
         # reload & setup
         plugin.reload()
         plugin.setup(self)
         plugin.register(self)
         meta = plugin.get_meta_description()
-        LOGGER.info('Reloaded %s plugin %s from %s',
+        LOGGER.info("Reloaded %s plugin %s from %s",
                     meta['type'], name, meta['source'])
 
     def reload_plugins(self):
@@ -441,7 +441,7 @@ class Sopel(irc.AbstractBot):
         for name, plugin in registered:
             plugin.shutdown(self)
             plugin.unregister(self)
-            LOGGER.info('Unloaded plugin %s', name)
+            LOGGER.info("Unloaded plugin %s", name)
 
         # reload & setup all plugins
         for name, plugin in registered:
@@ -449,7 +449,7 @@ class Sopel(irc.AbstractBot):
             plugin.setup(self)
             plugin.register(self)
             meta = plugin.get_meta_description()
-            LOGGER.info('Reloaded %s plugin %s from %s',
+            LOGGER.info("Reloaded %s plugin %s from %s",
                         meta['type'], name, meta['source'])
 
     def add_plugin(self, plugin, callables, jobs, shutdowns, urls):
@@ -668,7 +668,7 @@ class Sopel(irc.AbstractBot):
                         self.settings, func)
                     self._rules_manager.register_url_callback(rule)
                 except plugins.exceptions.PluginError as err:
-                    LOGGER.error('Cannot register URL callback: %s', err)
+                    LOGGER.error("Cannot register URL callback: %s", err)
 
     @deprecated(
         reason="Replaced by `say` method.",
@@ -1020,33 +1020,33 @@ class Sopel(irc.AbstractBot):
 
     def _shutdown(self):
         """Internal bot shutdown method."""
-        LOGGER.info('Shutting down')
+        LOGGER.info("Shutting down")
         # Stop Job Scheduler
-        LOGGER.info('Stopping the Job Scheduler.')
+        LOGGER.info("Stopping the Job Scheduler.")
         self._scheduler.stop()
 
         try:
             self._scheduler.join(timeout=15)
         except RuntimeError:
-            LOGGER.exception('Unable to stop the Job Scheduler.')
+            LOGGER.exception("Unable to stop the Job Scheduler.")
         else:
-            LOGGER.info('Job Scheduler stopped.')
+            LOGGER.info("Job Scheduler stopped.")
 
         self._scheduler.clear_jobs()
 
         # Shutdown plugins
         LOGGER.info(
-            'Calling shutdown for %d plugins.', len(self.shutdown_methods))
+            "Calling shutdown for %d plugins.", len(self.shutdown_methods))
 
         for shutdown_method in self.shutdown_methods:
             try:
                 LOGGER.debug(
-                    'Calling %s.%s',
+                    "Calling %s.%s",
                     shutdown_method.__module__,
                     shutdown_method.__name__)
                 shutdown_method(self)
             except Exception as e:
-                LOGGER.exception('Error calling shutdown method: %s', e)
+                LOGGER.exception("Error calling shutdown method: %s", e)
 
         # Avoid calling shutdown methods if we already have.
         self.shutdown_methods = []
