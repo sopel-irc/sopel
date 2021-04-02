@@ -167,11 +167,11 @@ def say_snippet(bot, trigger, server, query, show_url=True):
 
     msg = '{} | "{}'.format(page_name, snippet)
 
-    trailing = '"'
+    finial = '"'
     if show_url:
-        trailing += ' | ' + url
+        finial += ' | ' + url
 
-    bot.say(msg, trailing=' […]' + trailing)
+    bot.say(msg, trailing=' […]', finial=finial)
 
 
 def mw_snippet(server, query):
