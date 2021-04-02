@@ -1209,7 +1209,7 @@ class SopelWrapper(object):
     def __setattr__(self, attr, value):
         return setattr(self._bot, attr, value)
 
-    def say(self, message, destination=None, max_messages=1, trailing=''):
+    def say(self, message, destination=None, max_messages=1, trailing='', finial=''):
         """Override ``Sopel.say`` to use trigger source by default.
 
         :param str message: message to say
@@ -1227,7 +1227,7 @@ class SopelWrapper(object):
         """
         if destination is None:
             destination = self._trigger.sender
-        self._bot.say(self._out_pfx + message, destination, max_messages, trailing)
+        self._bot.say(self._out_pfx + message, destination, max_messages, trailing, finial)
 
     def action(self, message, destination=None):
         """Override ``Sopel.action`` to use trigger source by default.
