@@ -1215,15 +1215,22 @@ class SopelWrapper(object):
         :param str message: message to say
         :param str destination: channel or nickname; defaults to
             :attr:`trigger.sender <sopel.trigger.Trigger.sender>`
-        :param int max_messages: split ``text`` into at most this many messages
-                                 if it is too long to fit in one (optional)
+        :param int max_messages: split ``message`` into at most this many
+                                 messages if it is too long to fit into one
+                                 line (optional)
+        :param str trailing: string to indicate that the ``message`` was
+                             truncated (optional)
+        :param str finial: string that should always appear at the end of
+                           ``message`` (optional)
 
         The ``destination`` will default to the channel in which the
         trigger happened (or nickname, if received in a private message).
 
         .. seealso::
 
-            :meth:`sopel.bot.Sopel.say`
+            For more details about the optional arguments to this wrapper
+            method, consult the documentation for :meth:`sopel.bot.Sopel.say`.
+
         """
         if destination is None:
             destination = self._trigger.sender
