@@ -1209,7 +1209,7 @@ class SopelWrapper(object):
     def __setattr__(self, attr, value):
         return setattr(self._bot, attr, value)
 
-    def say(self, message, destination=None, max_messages=1, trailing='', finial=''):
+    def say(self, message, destination=None, max_messages=1, truncation='', trailing=''):
         """Override ``Sopel.say`` to use trigger source by default.
 
         :param str message: message to say
@@ -1218,10 +1218,10 @@ class SopelWrapper(object):
         :param int max_messages: split ``message`` into at most this many
                                  messages if it is too long to fit into one
                                  line (optional)
-        :param str trailing: string to indicate that the ``message`` was
-                             truncated (optional)
-        :param str finial: string that should always appear at the end of
-                           ``message`` (optional)
+        :param str truncation: string to indicate that the ``message`` was
+                               truncated (optional)
+        :param str trailing: string that should always appear at the end of
+                             ``message`` (optional)
 
         The ``destination`` will default to the channel in which the
         trigger happened (or nickname, if received in a private message).
@@ -1234,7 +1234,7 @@ class SopelWrapper(object):
         """
         if destination is None:
             destination = self._trigger.sender
-        self._bot.say(self._out_pfx + message, destination, max_messages, trailing, finial)
+        self._bot.say(self._out_pfx + message, destination, max_messages, truncation, trailing)
 
     def action(self, message, destination=None):
         """Override ``Sopel.action`` to use trigger source by default.

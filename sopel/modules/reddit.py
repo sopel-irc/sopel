@@ -245,7 +245,7 @@ def comment_info(bot, trigger, match):
         author=author, points=c.score, points_text=points_text,
         posted=posted, comment=' '.join(lines))
 
-    bot.say(message, trailing=' […]')
+    bot.say(message, truncation=' […]')
 
 
 def subreddit_info(bot, trigger, match, commanded=False):
@@ -309,7 +309,7 @@ def subreddit_info(bot, trigger, match, commanded=False):
         link=link, nsfw=nsfw, subscribers='{:,}'.format(s.subscribers),
         created=created, public_description=s.public_description)
 
-    bot.say(message, trailing=' […]')
+    bot.say(message, truncation=' […]')
 
 
 def redditor_info(bot, trigger, match, commanded=False):

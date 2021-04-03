@@ -339,7 +339,7 @@ def gettld(bot, trigger):
 
     message = ' | '.join(items)
 
-    bot.say(message, trailing=' […]')
+    bot.say(message, truncation=' […]')
 
 
 @plugin.command('tldcache')

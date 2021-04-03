@@ -536,18 +536,18 @@ class AbstractBot(object):
         else:
             self.say(text, dest)
 
-    def say(self, text, recipient, max_messages=1, trailing='', finial=''):
+    def say(self, text, recipient, max_messages=1, truncation='', trailing=''):
         """Send a PRIVMSG to a user or channel.
 
         :param str text: the text to send
         :param str recipient: the message recipient
         :param int max_messages: split ``text`` into at most this many messages
                                  if it is too long to fit in one (optional)
-        :param str trailing: string to append if ``text`` is too long to fit in
-                             a single message, or into the last message if
-                             ``max_messages`` is greater than 1 (optional)
-        :param str finial: string to append after ``text`` and (if used)
-                           ``trailing`` (optional)
+        :param str truncation: string to append if ``text`` is too long to fit
+                               in a single message, or into the last message if
+                               ``max_messages`` is greater than 1 (optional)
+        :param str trailing: string to append after ``text`` and (if used)
+                             ``truncation`` (optional)
 
         By default, this will attempt to send the entire ``text`` in one
         message. If the text is too long for the server, it may be truncated.
@@ -561,43 +561,44 @@ class AbstractBot(object):
         If the ``text`` is too long to fit into the specified number of messages
         using the above splitting, the final message will contain the entire
         remainder, which may be truncated by the server. You can specify
-        ``trailing`` to tell Sopel how it should indicate that the remaining
-        ``text`` was cut off. Note that the ``trailing`` parameter must include
-        leading whitespace if you desire any between it and the truncated text.
+        ``truncation`` to tell Sopel how it should indicate that the remaining
+        ``text`` was cut off. Note that the ``truncation`` parameter must
+        include leading whitespace if you desire any between it and the
+        truncated text.
 
-        The ``finial`` parameter is *always* appended to ``text``, after the
-        point where ``trailing`` would be inserted if necessary. It's useful for
-        making sure e.g. a link is always included, even if the summary your
+        The ``trailing`` parameter is *always* appended to ``text``, after the
+        point where ``truncation`` would be inserted if necessary. It's useful
+        for making sure e.g. a link is always included, even if the summary your
         plugin fetches is too long to fit.
 
-        Here are some examples of how the ``trailing`` and ``finial`` parameters
-        work, using an artificially low maximum line length::
+        Here are some examples of how the ``truncation`` and ``trailing``
+        parameters work, using an artificially low maximum line length::
 
-            # bot.say() outputs <text> + <trailing?> + <finial>
-            #                   always    if needed       always
+            # bot.say() outputs <text> + <truncation?> + <trailing>
+            #                   always     if needed       always
 
             bot.say(
                 '"This is a short quote.',
-                trailing=' […]',
-                finial='"')
+                truncation=' […]',
+                trailing='"')
             # Sopel says: "This is a short quote."
 
             bot.say(
                 '"This quote is very long and will not fit on a line.',
-                trailing=' […]',
-                finial='"')
+                truncation=' […]',
+                trailing='"')
             # Sopel says: "This quote is very long […]"
 
             bot.say(
                 # note the " included at the end this time
                 '"This quote is very long and will not fit on a line."',
-                trailing=' […]')
+                truncation=' […]')
             # Sopel says: "This quote is very long […]
             # The ending " goes missing
 
         .. versionadded:: 7.1
 
-            The ``trailing`` and ``finial`` parameters.
+            The ``truncation`` and ``trailing`` parameters.
 
         """
         excess = ''
@@ -605,7 +606,7 @@ class AbstractBot(object):
             # Make sure we are dealing with a Unicode string
             text = text.decode('utf-8')
 
-        if max_messages > 1 or trailing or finial:
+        if max_messages > 1 or truncation or trailing:
             # Handle message splitting/truncation only if needed
             try:
                 hostmask_length = len(self.hostmask)
@@ -633,20 +634,20 @@ class AbstractBot(object):
                 - 2  # trailing CRLF
             )
 
-            if max_messages == 1 and finial:
-                safe_length -= len(finial.encode('utf-8'))
+            if max_messages == 1 and trailing:
+                safe_length -= len(trailing.encode('utf-8'))
             text, excess = tools.get_sendable_message(text, safe_length)
 
         if max_messages == 1:
-            if excess and trailing:
-                # only append `trailing` if this is the last message AND it's still too long
-                safe_length -= len(trailing.encode('utf-8'))
+            if excess and truncation:
+                # only append `truncation` if this is the last message AND it's still too long
+                safe_length -= len(truncation.encode('utf-8'))
                 text, excess = tools.get_sendable_message(text, safe_length)
-                text += trailing
+                text += truncation
 
-            # ALWAYS append `finial`;
+            # ALWAYS append `trailing`;
             # its length is included when determining if truncation happened above
-            text += finial
+            text += trailing
 
         flood_max_wait = self.settings.core.flood_max_wait
         flood_burst_lines = self.settings.core.flood_burst_lines
@@ -724,4 +725,4 @@ class AbstractBot(object):
         # Now that we've sent the first part, we need to send the rest if
         # requested. Doing so recursively seems simpler than iteratively.
         if max_messages > 1 and excess:
-            self.say(excess, recipient, max_messages - 1, trailing, finial)
+            self.say(excess, recipient, max_messages - 1, truncation, trailing)
