@@ -67,8 +67,14 @@ def check_version(bot):
     except ValueError:
         # TODO: use JSONDecodeError when dropping Pythons < 3.5
         _check_failed(bot)
+        success = False
 
-    if not success and bot.memory.get('update_failures', 0) > 4:
+    if not success:
+        if bot.memory.get('update_failures', 0) <= 4:
+            # not enough failures to worry; silently ignore this one
+            return
+
+        # too many failures to ignore; notify owner
         bot.say(
             "[update] I haven't been able to check for updates in a while. "
             "Please verify that {} is working and I can reach it."
