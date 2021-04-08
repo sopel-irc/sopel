@@ -97,9 +97,11 @@ def exchange(bot, match):
         bot.reply("Something went wrong while I was getting the exchange rate.")
         LOGGER.error("Error in GET request: {}".format(err))
         return
-    except ValueError:
-        bot.reply("Error: Got malformed data.")
-        LOGGER.error("Invalid json on update_rates")
+    except (KeyError, ValueError) as err:
+        bot.reply("Error: Could not update exchange rates. Try again later.")
+        LOGGER.error("{} on update_rates".format(
+            'Invalid JSON' if type(err).__name__ == 'ValueError' else 'Missing JSON value',
+        ))
         return
     except FixerError as err:
         bot.reply('Sorry, something went wrong with Fixer')
