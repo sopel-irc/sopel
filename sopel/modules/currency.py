@@ -193,7 +193,6 @@ def update_rates(bot):
 
     response.raise_for_status()
     rates_fiat = response.json()
-    rates_updated = time.time()
 
     rates = rates_fiat['rates']
     rates['EUR'] = 1.0  # Put this here to make logic easier
@@ -203,6 +202,10 @@ def update_rates(bot):
     for rate in rates_crypto['rates']:
         if rate.upper() not in rates:
             rates[rate.upper()] = rates_crypto['rates'][rate]['value'] * eur_btc_rate
+
+    # if an error aborted the operation prematurely, we want the next call to retry updating rates
+    # therefore we'll update the stored timestamp at the last possible moment
+    rates_updated = time.time()
 
 
 @plugin.command('cur', 'currency', 'exchange')
