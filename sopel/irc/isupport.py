@@ -123,7 +123,7 @@ ISUPPORT_PARSERS = {
     'SAFELIST': _no_value,
     'SILENCE': _optional(int),
     'STATUSMSG': _optional(tuple),
-    'TARGMAX': _optional(_map_items(int)),
+    'TARGMAX': _optional(_map_items(int), default=tuple()),
     'TOPICLEN': int,
     'USERLEN': int,
 }
@@ -371,10 +371,15 @@ class ISupport(object):
                 'PRIVMSG': 3,
                 'WHOIS': 1,
             }
+            >>> isupport['TARGMAX']  # internal representation
+            (('JOIN', None), ('PRIVMSG', 3), ('WHOIS', 1))
 
         This attribute is not available if the server does not provide the
         right information, and accessing it will raise an
         :exc:`AttributeError`.
+
+        The internal representation of ``TARGMAX`` is a tuple of 2-value
+        tuples as seen above.
 
         .. seealso::
 
@@ -384,9 +389,5 @@ class ISupport(object):
         if 'TARGMAX' not in self:
             raise AttributeError('TARGMAX')
 
-        targmax = self['TARGMAX']
-
-        if targmax is None:
-            return {}
-
+        # always return a dict if None or empty tuple
         return dict(self['TARGMAX'] or [])

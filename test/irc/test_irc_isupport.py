@@ -508,6 +508,13 @@ def test_parse_parameter_targmax():
     assert value == (('PRIVMSG', 3),)
 
 
+def test_parse_parameter_targmax_optional():
+    key, value = isupport.parse_parameter('TARGMAX=')
+
+    assert key == 'TARGMAX'
+    assert value == tuple()
+
+
 def test_parse_parameter_targmax_many():
     key, value = isupport.parse_parameter('TARGMAX=PRIVMSG:3,WHOIS:1')
 
