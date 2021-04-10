@@ -97,6 +97,10 @@ class AsynchatBackend(AbstractIRCBackend, asynchat.async_chat):
     :type bot: :class:`sopel.bot.Sopel`
     :param int server_timeout: connection timeout in seconds
     :param int ping_interval: ping interval in seconds
+
+    The ``server_timeout`` option defaults to ``120`` seconds if not provided.
+
+    The ``ping_interval`` defaults to ``server_timeout * 0.45`` if not specified.
     """
     def __init__(self, bot, server_timeout=None, ping_interval=None, **kwargs):
         AbstractIRCBackend.__init__(self, bot)
@@ -105,7 +109,7 @@ class AsynchatBackend(AbstractIRCBackend, asynchat.async_chat):
         self.set_terminator(b'\n')
         self.buffer = ''
         self.server_timeout = server_timeout or 120
-        self.ping_interval = ping_interval or (self.server_timeout / 2.4)
+        self.ping_interval = ping_interval or (self.server_timeout * 0.45)
         self.last_event_at = None
         self.last_ping_at = None
         self.host = None
