@@ -255,6 +255,7 @@ def mw_info(bot, trigger, match=None):
 @plugin.example('.w San Francisco')
 @plugin.output_prefix('[wikipedia] ')
 def wikipedia(bot, trigger):
+    """Search Wikipedia."""
     if trigger.group(2) is None:
         bot.reply("What do you want me to look up?")
         return plugin.NOLIMIT

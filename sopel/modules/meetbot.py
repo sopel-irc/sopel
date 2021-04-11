@@ -377,6 +377,7 @@ def meetingaction(bot, trigger):
 @plugin.command("listactions")
 @plugin.example(".listactions")
 def listactions(bot, trigger):
+    """List all the actions in the meeting summary."""
     if not is_meeting_running(trigger.sender):
         bot.say("There is no active meeting")
         return

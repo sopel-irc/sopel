@@ -33,6 +33,7 @@ KNOWN_SETS = {
 @plugin.command('pronouns')
 @plugin.example('.pronouns Embolalia')
 def pronouns(bot, trigger):
+    """Show the pronouns for a given user, defaulting to the current user if left blank."""
     if not trigger.group(3):
         pronouns = bot.db.get_nick_value(trigger.nick, 'pronouns')
         if pronouns:
@@ -71,6 +72,7 @@ def say_pronouns(bot, nick, pronouns):
 @plugin.example('.setpronouns they/them/their/theirs/themselves')
 def set_pronouns(bot, trigger):
     pronouns = trigger.group(2)
+    """Set your pronouns."""
     if not pronouns:
         bot.reply('What pronouns do you use?')
         return
