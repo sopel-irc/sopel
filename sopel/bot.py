@@ -1053,6 +1053,12 @@ class Sopel(irc.AbstractBot):
 
     # URL callbacks management
 
+    @deprecated(
+        reason='Issues with @url decorator have been fixed. Simply use that.',
+        version='7.1',
+        warning_in='8.0',
+        removed_in='9.0',
+    )
     def register_url_callback(self, pattern, callback):
         """Register a ``callback`` for URLs matching the regex ``pattern``.
 
@@ -1079,6 +1085,12 @@ class Sopel(irc.AbstractBot):
 
         It's recommended you completely avoid manual management of URL
         callbacks through the use of :func:`sopel.plugin.url`.
+
+        .. deprecated:: 7.1
+
+            Made obsolete by fixes to the behavior of
+            :func:`sopel.plugin.url`. Will be removed in Sopel 9.
+
         """
         if 'url_callbacks' not in self.memory:
             self.memory['url_callbacks'] = tools.SopelMemory()
@@ -1091,6 +1103,12 @@ class Sopel(irc.AbstractBot):
         setattr(callback, '_sopel_url_callbacks_checked', True)
         self.memory['url_callbacks'][pattern] = callback
 
+    @deprecated(
+        reason='Issues with @url decorator have been fixed. Simply use that.',
+        version='7.1',
+        warning_in='8.0',
+        removed_in='9.0',
+    )
     def unregister_url_callback(self, pattern, callback):
         """Unregister the callback for URLs matching the regex ``pattern``.
 
@@ -1117,6 +1135,12 @@ class Sopel(irc.AbstractBot):
 
         It's recommended you completely avoid manual management of URL
         callbacks through the use of :func:`sopel.plugin.url`.
+
+        .. deprecated:: 7.1
+
+            Made obsolete by fixes to the behavior of
+            :func:`sopel.plugin.url`. Will be removed in Sopel 9.
+
         """
         if 'url_callbacks' not in self.memory:
             # nothing to unregister
