@@ -174,6 +174,72 @@ def test_validated_serialize_bool_custom():
     assert option.serialize('enabled') == 'fixed value'
 
 
+def test_boolean_attribute():
+    option = types.BooleanAttribute('foo')
+    assert option.name == 'foo'
+    assert option.default is False
+
+
+def test_boolean_parse():
+    option = types.BooleanAttribute('foo')
+    assert option.parse('string') is False
+    assert option.parse('1') is True
+    assert option.parse('') is False
+    assert option.parse(1) is True
+
+    # true-ish values
+    assert option.parse('yes') is True
+    assert option.parse('YES') is True
+    assert option.parse('yES') is True
+    assert option.parse('y') is True
+    assert option.parse('Y') is True
+    assert option.parse('true') is True
+    assert option.parse('True') is True
+    assert option.parse('TRUE') is True
+    assert option.parse('trUE') is True
+    assert option.parse('on') is True
+    assert option.parse('ON') is True
+    assert option.parse('On') is True
+    assert option.parse('enable') is True
+    assert option.parse('enabled') is True
+
+    # everything else
+    assert option.parse('no') is False
+    assert option.parse('off') is False
+    assert option.parse('disable') is False
+    assert option.parse('disabled') is False
+
+
+def test_boolean_serialize():
+    option = types.BooleanAttribute('foo')
+    assert option.serialize(True) == 'true'
+    assert option.serialize('string') == 'false'
+    assert option.serialize('1') == 'true'
+    assert option.serialize('') == 'false'
+    assert option.serialize(1) == 'true'
+
+    # true-ish values
+    assert option.serialize('yes') == 'true'
+    assert option.serialize('YES') == 'true'
+    assert option.serialize('yES') == 'true'
+    assert option.serialize('y') == 'true'
+    assert option.serialize('Y') == 'true'
+    assert option.serialize('true') == 'true'
+    assert option.serialize('True') == 'true'
+    assert option.serialize('TRUE') == 'true'
+    assert option.serialize('trUE') == 'true'
+    assert option.serialize('on') == 'true'
+    assert option.serialize('ON') == 'true'
+    assert option.serialize('On') == 'true'
+    assert option.serialize('enable') == 'true'
+    assert option.serialize('enabled') == 'true'
+
+    # everything else
+    assert option.serialize('no') == 'false'
+    assert option.serialize('disable') == 'false'
+    assert option.serialize('disabled') == 'false'
+
+
 def test_secret_attribute():
     option = types.SecretAttribute('foo')
     assert option.name == 'foo'

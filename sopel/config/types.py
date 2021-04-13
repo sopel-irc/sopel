@@ -31,7 +31,7 @@ import os.path
 import re
 import sys
 
-from sopel.tools import get_input
+from sopel.tools import deprecated, get_input
 
 if sys.version_info.major >= 3:
     unicode = str
@@ -276,6 +276,19 @@ def _serialize_boolean(value):
     return 'true' if _parse_boolean(value) else 'false'
 
 
+@deprecated(
+    reason='Use BooleanAttribute instead of ValidatedAttribute with parse=bool',
+    version='7.1',
+    removed_in='9.0',
+    stack_frame=-2,
+)
+def _deprecated_special_bool_handling(serialize):
+    if not serialize or serialize == bool:
+        serialize = _serialize_boolean
+
+    return _parse_boolean, serialize
+
+
 class ValidatedAttribute(BaseValidated):
     """A descriptor for settings in a :class:`StaticSection`.
 
@@ -299,10 +312,10 @@ class ValidatedAttribute(BaseValidated):
                  is_secret=False):
         super(ValidatedAttribute, self).__init__(
             name, default=default, is_secret=is_secret)
+
         if parse == bool:
-            parse = _parse_boolean
-            if not serialize or serialize == bool:
-                serialize = _serialize_boolean
+            parse, serialize = _deprecated_special_bool_handling(serialize)
+
         self.parse = parse or self.parse
         self.serialize = serialize or self.serialize
 
@@ -327,6 +340,82 @@ class ValidatedAttribute(BaseValidated):
             prompt += ' (y/n)'
             default = 'y' if default else 'n'
         return super(ValidatedAttribute, self).configure(prompt, default, parent, section_name)
+
+
+class BooleanAttribute(BaseValidated):
+    """A descriptor for Boolean settings in a :class:`StaticSection`.
+
+    :param str name: the attribute name to use in the config file
+    :param bool default: the default value to use if this setting is not
+                         present in the config file
+
+    If the ``default`` value is not specified, it will be ``False``.
+    """
+    def __init__(self, name, default=False):
+        super(BooleanAttribute, self).__init__(
+            name, default=default, is_secret=False)
+
+    def configure(self, prompt, default, parent, section_name):
+        """Parse and return a value from user's input.
+
+        :param str prompt: text to show the user
+        :param bool default: default value used if no input given
+        :param parent: usually the parent Config object
+        :type parent: :class:`~sopel.config.Config`
+        :param str section_name: the name of the containing section
+
+        This method displays the ``prompt`` and waits for user's input on the
+        terminal. If no input is provided (i.e. the user just presses "Enter"),
+        the ``default`` value is returned instead.
+        """
+        prompt = '{} ({})'.format(prompt, 'Y/n' if default else 'y/N')
+        value = get_input(prompt + ' ') or default
+        section = getattr(parent, section_name)
+        return self._parse(value, parent, section)
+
+    def serialize(self, value):
+        """Convert a Boolean value to a string for saving to the config file.
+
+        :param bool value: the value to serialize
+        """
+        return 'true' if self.parse(value) else 'false'
+
+    def parse(self, value):
+        """Parse a limited set of values/objects into Boolean representations.
+
+        :param mixed value: the value to parse
+
+        The literal values ``True`` or ``1`` will be parsed as ``True``. The
+        strings ``'1'``, ``'yes'``, ``'y'``, ``'true'``, ``'enable'``,
+        ``'enabled'``, and ``'on'`` will also be parsed as ``True``,
+        regardless of case. All other values will be parsed as ``False``.
+        """
+        if value is True or value == 1:
+            return True
+        if isinstance(value, basestring):
+            return value.lower() in [
+                '1',
+                'enable',
+                'enabled',
+                'on',
+                'true',
+                'y',
+                'yes',
+            ]
+        return bool(value)
+
+    def _parse(self, value, settings, section):
+        return self.parse(value)
+
+    def __set__(self, instance, value):
+        if value is None:
+            instance._parser.remove_option(instance._section_name, self.name)
+            return
+
+        settings = instance._parent
+        section = getattr(settings, instance._section_name)
+        value = self._serialize(value, settings, section)
+        instance._parser.set(instance._section_name, self.name, value)
 
 
 class SecretAttribute(ValidatedAttribute):
