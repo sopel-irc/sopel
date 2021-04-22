@@ -123,7 +123,7 @@ ISUPPORT_PARSERS = {
     'SAFELIST': _no_value,
     'SILENCE': _optional(int),
     'STATUSMSG': _optional(tuple),
-    'TARGMAX': _optional(_map_items(int)),
+    'TARGMAX': _optional(_map_items(int), default=tuple()),
     'TOPICLEN': int,
     'USERLEN': int,
 }
@@ -203,6 +203,16 @@ class ISupport(object):
             raise AttributeError("Can't set value for %r" % name)
         elif name not in self.__dict__:
             raise AttributeError('Unknown attribute')
+
+    def get(self, name, default=None):
+        """Retrieve value for the feature ``name``.
+
+        :param str name: feature to retrieve
+        :param default: default value if the feature is not advertised
+                        (defaults to ``None``)
+        :return: the value for that feature, if advertised, or ``default``
+        """
+        return self[name] if name in self else default
 
     def apply(self, **kwargs):
         """Build a new instance of :class:`ISupport`.
@@ -361,10 +371,15 @@ class ISupport(object):
                 'PRIVMSG': 3,
                 'WHOIS': 1,
             }
+            >>> isupport['TARGMAX']  # internal representation
+            (('JOIN', None), ('PRIVMSG', 3), ('WHOIS', 1))
 
         This attribute is not available if the server does not provide the
         right information, and accessing it will raise an
         :exc:`AttributeError`.
+
+        The internal representation of ``TARGMAX`` is a tuple of 2-value
+        tuples as seen above.
 
         .. seealso::
 
@@ -374,9 +389,5 @@ class ISupport(object):
         if 'TARGMAX' not in self:
             raise AttributeError('TARGMAX')
 
-        targmax = self['TARGMAX']
-
-        if targmax is None:
-            return {}
-
+        # always return a dict if None or empty tuple
         return dict(self['TARGMAX'] or [])

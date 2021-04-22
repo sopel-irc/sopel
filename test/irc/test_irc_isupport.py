@@ -76,6 +76,22 @@ def test_isupport_removed_parameter():
     assert '-AWAYLEN' not in instance
 
 
+def test_isupport_get():
+    """Test parameter access through the ``get`` method."""
+    instance = isupport.ISupport(AWAYLEN=50)
+
+    assert instance.get('AWAYLEN') == 50
+    assert instance.get('AWAYLEN', 20) == 50, (
+        'Default must be ignored if name exists')
+    assert instance.get('AWAYLEN', default=10) == 50, (
+        'Default must be ignored if name exists')
+    assert instance.get('UNKNOWN') is None
+    assert instance.get('UNKNOWN', 20) == 20, (
+        'Default must be used if name does not exist')
+    assert instance.get('UNKNOWN', default=10) == 10, (
+        'Default must be used if name does not exist')
+
+
 def test_isupport_getitem():
     """Test basic parameter access."""
     instance = isupport.ISupport(AWAYLEN=50)
@@ -490,6 +506,13 @@ def test_parse_parameter_targmax():
 
     assert key == 'TARGMAX'
     assert value == (('PRIVMSG', 3),)
+
+
+def test_parse_parameter_targmax_optional():
+    key, value = isupport.parse_parameter('TARGMAX=')
+
+    assert key == 'TARGMAX'
+    assert value == tuple()
 
 
 def test_parse_parameter_targmax_many():
