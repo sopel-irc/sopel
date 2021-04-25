@@ -51,6 +51,21 @@ def example_url_lazy(bot, trigger):
     pass
 
 
+@sopel.plugin.rule_lazy(loader)
+def example_rule_lazy(bot, trigger):
+    pass
+
+
+@sopel.plugin.find_lazy(loader)
+def example_find_lazy(bot, trigger):
+    pass
+
+
+@sopel.plugin.search_lazy(loader)
+def example_search_lazy(bot, trigger):
+    pass
+
+
 @sopel.module.event('TOPIC')
 def on_topic_command(bot):
     pass
@@ -131,6 +146,10 @@ def test_is_limitable(testplugin):
     assert loader.is_limitable(test_mod.example_url)
     assert loader.is_limitable(test_mod.example_url_lazy)
 
+    assert loader.is_limitable(test_mod.example_rule_lazy)
+    assert loader.is_limitable(test_mod.example_find_lazy)
+    assert loader.is_limitable(test_mod.example_search_lazy)
+
 
 def test_is_triggerable(testplugin):
     """Test is_triggerable behavior before clean_module is called."""
@@ -147,6 +166,10 @@ def test_is_triggerable(testplugin):
     assert not loader.is_triggerable(test_mod.shutdown)
     assert not loader.is_triggerable(test_mod.example_url)
     assert not loader.is_triggerable(test_mod.example_url_lazy)
+
+    assert loader.is_triggerable(test_mod.example_rule_lazy)
+    assert loader.is_triggerable(test_mod.example_find_lazy)
+    assert loader.is_triggerable(test_mod.example_search_lazy)
 
 
 def test_is_url_callback(testplugin):
@@ -166,6 +189,10 @@ def test_is_url_callback(testplugin):
     assert loader.is_url_callback(test_mod.example_url)
     assert loader.is_url_callback(test_mod.example_url_lazy)
 
+    assert not loader.is_url_callback(test_mod.example_rule_lazy)
+    assert not loader.is_url_callback(test_mod.example_find_lazy)
+    assert not loader.is_url_callback(test_mod.example_search_lazy)
+
 
 def test_clean_module(testplugin, tmpconfig):
     testplugin.load()
@@ -174,10 +201,13 @@ def test_clean_module(testplugin, tmpconfig):
     callables, jobs, shutdowns, urls = loader.clean_module(
         test_mod, tmpconfig)
 
-    assert len(callables) == 3
+    assert len(callables) == 6
     assert test_mod.first_command in callables
     assert test_mod.second_command in callables
     assert test_mod.on_topic_command in callables
+    assert test_mod.example_rule_lazy in callables
+    assert test_mod.example_find_lazy in callables
+    assert test_mod.example_search_lazy in callables
     assert len(jobs) == 2
     assert test_mod.interval5s in jobs
     assert test_mod.interval10s in jobs
@@ -191,6 +221,9 @@ def test_clean_module(testplugin, tmpconfig):
     assert loader.is_triggerable(test_mod.first_command)
     assert loader.is_triggerable(test_mod.second_command)
     assert loader.is_triggerable(test_mod.on_topic_command)
+    assert loader.is_triggerable(test_mod.example_rule_lazy)
+    assert loader.is_triggerable(test_mod.example_find_lazy)
+    assert loader.is_triggerable(test_mod.example_search_lazy)
 
     assert not loader.is_triggerable(test_mod.interval5s)
     assert not loader.is_triggerable(test_mod.interval10s)
@@ -231,7 +264,7 @@ def test_clean_module_idempotency(testplugin, tmpconfig):
         test_mod, tmpconfig)
 
     # sanity assertions: check test_clean_module if any of these fails
-    assert len(callables) == 3
+    assert len(callables) == 6
     assert len(jobs) == 2
     assert len(shutdowns) == 1
     assert len(urls) == 2
@@ -249,6 +282,9 @@ def test_clean_module_idempotency(testplugin, tmpconfig):
     assert loader.is_triggerable(test_mod.first_command)
     assert loader.is_triggerable(test_mod.second_command)
     assert loader.is_triggerable(test_mod.on_topic_command)
+    assert loader.is_triggerable(test_mod.example_rule_lazy)
+    assert loader.is_triggerable(test_mod.example_find_lazy)
+    assert loader.is_triggerable(test_mod.example_search_lazy)
 
     assert not loader.is_triggerable(test_mod.interval5s)
     assert not loader.is_triggerable(test_mod.interval10s)
@@ -274,6 +310,9 @@ def test_clean_callable_default(tmpconfig, func):
     assert not hasattr(func, 'rule')
     assert not hasattr(func, 'find_rules')
     assert not hasattr(func, 'search_rules')
+    assert not hasattr(func, 'rule_lazy_loaders')
+    assert not hasattr(func, 'find_rules_lazy_loaders')
+    assert not hasattr(func, 'search_rules_lazy_loaders')
     assert not hasattr(func, 'commands')
     assert not hasattr(func, 'nickname_commands')
     assert not hasattr(func, 'action_commands')

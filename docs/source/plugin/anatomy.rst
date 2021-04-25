@@ -26,12 +26,14 @@ Sopel identifies a callable as a rule when it has been decorated with any of
 these decorators from :mod:`sopel.plugin`:
 
 * :term:`Generic rule`: :func:`~sopel.plugin.rule`,
-  :func:`~sopel.plugin.find`, and :func:`~sopel.plugin.search`
+  :func:`~sopel.plugin.find`, and :func:`~sopel.plugin.search` (and their lazy
+  versions: :func:`~sopel.plugin.rule_lazy`, :func:`~sopel.plugin.find_lazy`,
+  and :func:`~sopel.plugin.search_lazy`)
 * :term:`Named rule`: :func:`~sopel.plugin.command`,
   :func:`~sopel.plugin.action_command`, and
   :func:`~sopel.plugin.nickname_command`
-* :term:`URL callback`: :func:`~sopel.plugin.url` and
-  :func:`~sopel.plugin.url_lazy`
+* :term:`URL callback`: :func:`~sopel.plugin.url` (and its lazy version,
+  :func:`~sopel.plugin.url_lazy`)
 
 Additionally, Sopel identifies a callable as a generic rule when these
 decorators are used alone:

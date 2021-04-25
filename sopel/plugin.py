@@ -26,6 +26,7 @@ __all__ = [
     'event',
     'example',
     'find',
+    'find_lazy',
     'interval',
     'label',
     'nickname_command',
@@ -41,7 +42,9 @@ __all__ = [
     'require_privilege',
     'require_privmsg',
     'rule',
+    'rule_lazy',
     'search',
+    'search_lazy',
     'thread',
     'unblockable',
     'url',
@@ -245,6 +248,54 @@ def rule(*patterns):
     return add_attribute
 
 
+def rule_lazy(*loaders):
+    """Decorate a callable as a rule with lazy loading.
+
+    :param loaders: one or more functions to generate a list of **compiled**
+                    regexes to match URLs
+    :type loaders: :term:`function`
+
+    Each ``loader`` function must accept a ``settings`` parameter and return a
+    list (or tuple) of **compiled** regular expressions::
+
+        import re
+
+        def loader(settings):
+            return [re.compile(r'<your_rule_pattern>')]
+
+    It will be called by Sopel when the bot parses the plugin to register rules
+    to get its regexes. The ``settings`` argument will be the bot's
+    :class:`sopel.config.Config` object.
+
+    If any of the ``loader`` functions raises a
+    :exc:`~sopel.plugins.exceptions.PluginError` exception, the rule will be
+    ignored; it will not fail the plugin's loading.
+
+    The decorated function will behave like any other :func:`callable`::
+
+        from sopel import plugin
+
+        @plugin.rule_lazy(loader)
+        def my_rule_handler(bot, trigger):
+            bot.say('Rule triggered by: %s' % trigger.group(0))
+
+    .. versionadded:: 7.1
+
+    .. seealso::
+
+        When more than one loader is provided, they will be chained together
+        with the :func:`sopel.tools.chain_loaders` function.
+
+    """
+    def decorator(function):
+        function._sopel_callable = True
+        if not hasattr(function, 'rule_lazy_loaders'):
+            function.rule_lazy_loaders = []
+        function.rule_lazy_loaders.extend(loaders)
+        return function
+    return decorator
+
+
 def find(*patterns):
     """Decorate a function to be called for each time a pattern is found in a line.
 
@@ -298,6 +349,54 @@ def find(*patterns):
         return function
 
     return add_attribute
+
+
+def find_lazy(*loaders):
+    """Decorate a callable as a find rule with lazy loading.
+
+    :param loaders: one or more functions to generate a list of **compiled**
+                    regexes to match patterns in a line
+    :type loaders: :term:`function`
+
+    Each ``loader`` function must accept a ``settings`` parameter and return a
+    list (or tuple) of **compiled** regular expressions::
+
+        import re
+
+        def loader(settings):
+            return [re.compile(r'<your_rule_pattern>')]
+
+    It will be called by Sopel when the bot parses the plugin to register the
+    find rules to get its regexes. The ``settings`` argument will be the bot's
+    :class:`sopel.config.Config` object.
+
+    If any of the ``loader`` functions raises a
+    :exc:`~sopel.plugins.exceptions.PluginError` exception, the find rule will
+    be ignored; it will not fail the plugin's loading.
+
+    The decorated function will behave like any other :func:`callable`::
+
+        from sopel import plugin
+
+        @plugin.find_lazy(loader)
+        def my_find_rule_handler(bot, trigger):
+            bot.say('Rule triggered by: %s' % trigger.group(0))
+
+    .. versionadded:: 7.1
+
+    .. seealso::
+
+        When more than one loader is provided, they will be chained together
+        with the :func:`sopel.tools.chain_loaders` function.
+
+    """
+    def decorator(function):
+        function._sopel_callable = True
+        if not hasattr(function, 'find_rules_lazy_loaders'):
+            function.find_rules_lazy_loaders = []
+        function.find_rules_lazy_loaders.extend(loaders)
+        return function
+    return decorator
 
 
 def search(*patterns):
@@ -356,6 +455,54 @@ def search(*patterns):
         return function
 
     return add_attribute
+
+
+def search_lazy(*loaders):
+    """Decorate a callable as a search rule with lazy loading.
+
+    :param loaders: one or more functions to generate a list of **compiled**
+                    regexes to match patterns in a line
+    :type loaders: :term:`function`
+
+    Each ``loader`` function must accept a ``settings`` parameter and return a
+    list (or tuple) of **compiled** regular expressions::
+
+        import re
+
+        def loader(settings):
+            return [re.compile(r'<your_rule_pattern>')]
+
+    It will be called by Sopel when the bot parses the plugin to register the
+    search rules to get its regexes. The ``settings`` argument will be the
+    bot's :class:`sopel.config.Config` object.
+
+    If any of the ``loader`` functions raises a
+    :exc:`~sopel.plugins.exceptions.PluginError` exception, the find rule will
+    be ignored; it will not fail the plugin's loading.
+
+    The decorated function will behave like any other :func:`callable`::
+
+        from sopel import plugin
+
+        @plugin.search_lazy(loader)
+        def my_search_rule_handler(bot, trigger):
+            bot.say('Rule triggered by: %s' % trigger.group(0))
+
+    .. versionadded:: 7.1
+
+    .. seealso::
+
+        When more than one loader is provided, they will be chained together
+        with the :func:`sopel.tools.chain_loaders` function.
+
+    """
+    def decorator(function):
+        function._sopel_callable = True
+        if not hasattr(function, 'search_rules_lazy_loaders'):
+            function.search_rules_lazy_loaders = []
+        function.search_rules_lazy_loaders.extend(loaders)
+        return function
+    return decorator
 
 
 def thread(value):

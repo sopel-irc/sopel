@@ -731,6 +731,10 @@ class Rule(AbstractRule):
     Generic rules are not triggered by any specific name, unlike commands which
     have names and aliases.
     """
+
+    REGEX_ATTRIBUTE = 'rule'
+    LAZY_ATTRIBUTE = 'rule_lazy_loaders'
+
     @classmethod
     def kwargs_from_callable(cls, handler):
         """Generate the keyword arguments to create a new instance.
@@ -778,12 +782,69 @@ class Rule(AbstractRule):
         }
 
     @classmethod
-    def from_callable(cls, settings, handler):
-        regexes = tuple(_clean_rules(
-            handler.rule,
+    def regex_from_callable(cls, settings, handler):
+        regexes = getattr(handler, cls.REGEX_ATTRIBUTE, []) or []
+        if not regexes:
+            raise RuntimeError(
+                'Invalid rule handler: %s' % handler)
+
+        return tuple(_clean_rules(
+            regexes,
             settings.core.nick,
             settings.core.alias_nicks,
         ))
+
+    @classmethod
+    def regex_from_callable_lazy(cls, settings, handler):
+        lazy_loaders = getattr(handler, cls.LAZY_ATTRIBUTE, [])
+        if not lazy_loaders:
+            raise RuntimeError(
+                'Invalid lazy rule: %s' % handler)
+
+        loader = tools.chain_loaders(*lazy_loaders)
+        regexes = loader(settings)
+
+        if not regexes:
+            raise RuntimeError(
+                'Invalid lazy loader: %s' % handler)
+
+        return regexes
+
+    @classmethod
+    def from_callable(cls, settings, handler):
+        regexes = cls.regex_from_callable(settings, handler)
+        kwargs = cls.kwargs_from_callable(handler)
+        kwargs['handler'] = handler
+
+        return cls(regexes, **kwargs)
+
+    @classmethod
+    def from_callable_lazy(cls, settings, handler):
+        """Instantiate a rule object from a handler with lazy-loaded regexes.
+
+        :param settings: Sopel's settings
+        :type settings: :class:`sopel.config.Config`
+        :param callable handler: a function-based rule handler with a
+                                 lazy-loader for the regexes
+        :return: an instance of this class created from the ``handler``
+        :rtype: :class:`AbstractRule`
+
+        Similar to the :meth:`from_callable` classmethod, it requires a rule
+        handler decorated with :mod:`sopel.plugin`'s decorators.
+
+        Unlike the :meth:`from_callable` classmethod, the regexes are not
+        already attached to the handler: its loader functions will be used to
+        get the rule's regexes. See the :func:`sopel.plugin.rule_lazy`
+        decorator for more information about the handler and the loaders'
+        signatures.
+
+        .. seealso::
+
+            The handler can have more than one loader attached. In that case,
+            these loaders are chained with :func:`sopel.tools.chain_loaders`.
+
+        """
+        regexes = cls.regex_from_callable_lazy(settings, handler)
         kwargs = cls.kwargs_from_callable(handler)
         kwargs['handler'] = handler
 
@@ -1441,17 +1502,8 @@ class FindRule(Rule):
         see the official Python documentation.
 
     """
-    @classmethod
-    def from_callable(cls, settings, handler):
-        regexes = tuple(_clean_rules(
-            handler.find_rules,
-            settings.core.nick,
-            settings.core.alias_nicks,
-        ))
-        kwargs = cls.kwargs_from_callable(handler)
-        kwargs['handler'] = handler
-
-        return cls(regexes, **kwargs)
+    REGEX_ATTRIBUTE = 'find_rules'
+    LAZY_ATTRIBUTE = 'find_rules_lazy_loaders'
 
     def parse(self, text):
         for regex in self._regexes:
@@ -1485,17 +1537,8 @@ class SearchRule(Rule):
         see the official Python documentation.
 
     """
-    @classmethod
-    def from_callable(cls, settings, handler):
-        regexes = tuple(_clean_rules(
-            handler.search_rules,
-            settings.core.nick,
-            settings.core.alias_nicks,
-        ))
-        kwargs = cls.kwargs_from_callable(handler)
-        kwargs['handler'] = handler
-
-        return cls(regexes, **kwargs)
+    REGEX_ATTRIBUTE = 'search_rules'
+    LAZY_ATTRIBUTE = 'search_rules_lazy_loaders'
 
     def parse(self, text):
         for regex in self._regexes:
@@ -1540,14 +1583,13 @@ class URLCallback(Rule):
         removed in Sopel 9.
 
     """
+    REGEX_ATTRIBUTE = 'url_regex'
+    LAZY_ATTRIBUTE = 'url_lazy_loaders'
+
     @classmethod
     def from_callable(cls, settings, handler):
         execute_handler = handler
-        url_regexes = getattr(handler, 'url_regex', []) or []
-        if not url_regexes:
-            raise RuntimeError(
-                'Invalid URL callback: %s' % handler)
-
+        regexes = cls.regex_from_callable(settings, handler)
         kwargs = cls.kwargs_from_callable(handler)
 
         # do we need to handle the match parameter?
@@ -1570,7 +1612,7 @@ class URLCallback(Rule):
             'schemes': settings.core.auto_url_schemes,
         })
 
-        return cls(url_regexes, **kwargs)
+        return cls(regexes, **kwargs)
 
     @classmethod
     def from_callable_lazy(cls, settings, handler):
@@ -1597,18 +1639,7 @@ class URLCallback(Rule):
             these loaders are chained with :func:`sopel.tools.chain_loaders`.
 
         """
-        url_lazy_loaders = getattr(handler, 'url_lazy_loaders', [])
-        if not url_lazy_loaders:
-            raise RuntimeError(
-                'Invalid lazy loader URL callback: %s' % handler)
-
-        loader = tools.chain_loaders(*url_lazy_loaders)
-        regexes = loader(settings)
-
-        if not regexes:
-            raise RuntimeError(
-                'Invalid lazy loader URL callback: %s' % handler)
-
+        regexes = cls.regex_from_callable_lazy(settings, handler)
         kwargs = cls.kwargs_from_callable(handler)
         kwargs.update({
             'handler': handler,
