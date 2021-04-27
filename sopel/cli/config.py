@@ -93,12 +93,18 @@ def handle_list(options):
         extension = '.' + extension
     configs = utils.enumerate_configs(configdir, extension)
 
+    found = False
     for config_filename in configs:
+        found = True
         if display_path:
             print(os.path.join(configdir, config_filename))
         else:
             name, _ = os.path.splitext(config_filename)
             print(name)
+
+    if not found:
+        tools.stderr('No config file found at this location: %s' % configdir)
+        tools.stderr('Use `sopel-config init` to create a new config file.')
 
     return 0  # successful operation
 
@@ -131,7 +137,12 @@ def handle_init(options):
         return 1
 
     print('Starting Sopel config wizard for: %s' % config_filename)
-    utils.wizard(config_name)
+    try:
+        utils.wizard(config_name)
+    except KeyboardInterrupt:
+        tools.stderr('\nOperation cancelled; no file has been created.')
+        return 1  # cancelled operation
+
     return 0  # successful operation
 
 
@@ -177,10 +188,14 @@ def main():
         parser.print_help()
         return
 
-    # init command does not require existing settings
-    if action == 'list':
-        return handle_list(options)
-    elif action == 'init':
-        return handle_init(options)
-    elif action == 'get':
-        return handle_get(options)
+    try:
+        # init command does not require existing settings
+        if action == 'list':
+            return handle_list(options)
+        elif action == 'init':
+            return handle_init(options)
+        elif action == 'get':
+            return handle_get(options)
+    except KeyboardInterrupt:
+        # ctrl+c was used, nothing to report here
+        pass
