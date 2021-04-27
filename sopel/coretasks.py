@@ -136,7 +136,7 @@ def auth_after_register(bot):
     # nickserv-based auth method needs to check for current nick
     if auth_method == 'nickserv':
         if bot.nick != bot.settings.core.nick:
-            LOGGER.warning('Sending nickserv GHOST command.')
+            LOGGER.warning("Sending nickserv GHOST command.")
             bot.say(
                 'GHOST %s %s' % (bot.settings.core.nick, auth_password),
                 auth_target or 'NickServ')
@@ -168,14 +168,13 @@ def _execute_perform(bot):
     count = len(commands)
 
     if not count:
-        LOGGER.info('No custom command to execute.')
+        LOGGER.info("No custom command to execute.")
         return
 
-    LOGGER.info('Executing %d custom commands.', count)
+    LOGGER.info("Executing %d custom commands.", count)
     for i, command in enumerate(commands, 1):
         command = command.replace('$nickname', bot.config.core.nick)
-        LOGGER.debug(
-            'Executing custom command [%d/%d]: %s', i, count, command)
+        LOGGER.debug("Executing custom command [%d/%d]: %s", i, count, command)
         bot.write((command,))
 
 
@@ -195,8 +194,7 @@ def on_nickname_in_use(bot, trigger):
     handling), the bot will try to regain it.
     """
     LOGGER.error(
-        'Nickname already in use! '
-        '(Nick: %s; Sender: %s; Args: %r)',
+        "Nickname already in use! (Nick: %s; Sender: %s; Args: %r)",
         trigger.nick,
         trigger.sender,
         trigger.args,
@@ -262,29 +260,29 @@ def startup(bot, trigger):
 
     channels = bot.config.core.channels
     if not channels:
-        LOGGER.info('No initial channels to JOIN.')
+        LOGGER.info("No initial channels to JOIN.")
     elif bot.config.core.throttle_join:
         throttle_rate = int(bot.config.core.throttle_join)
         throttle_wait = max(bot.config.core.throttle_wait, 1)
         channels_joined = 0
 
         LOGGER.info(
-            'Joining %d channels (with JOIN throttle ON); '
-            'this may take a moment.',
+            "Joining %d channels (with JOIN throttle ON); "
+            "this may take a moment.",
             len(channels))
 
         for channel in channels:
             channels_joined += 1
             if not channels_joined % throttle_rate:
                 LOGGER.debug(
-                    'Waiting %ds before next JOIN batch.',
+                    "Waiting %ds before next JOIN batch.",
                     throttle_wait)
                 time.sleep(throttle_wait)
             bot.join(channel)
     else:
         LOGGER.info(
-            'Joining %d channels (with JOIN throttle OFF); '
-            'this may take a moment.',
+            "Joining %d channels (with JOIN throttle OFF); "
+            "this may take a moment.",
             len(channels))
 
         for channel in bot.config.core.channels:
@@ -324,7 +322,7 @@ def handle_isupport(bot, trigger):
             parameters[key] = value
         except ValueError:
             # ignore malformed parameter: log a warning and continue
-            LOGGER.warning('Unable to parse ISUPPORT parameter: %r', arg)
+            LOGGER.warning("Unable to parse ISUPPORT parameter: %r", arg)
 
     bot._isupport = bot._isupport.apply(**parameters)
 
@@ -346,6 +344,13 @@ def parse_reply_myinfo(bot, trigger):
     # keep <client> <servername> <version> only
     # the trailing parameters (mode types) should be read from ISUPPORT
     bot._myinfo = MyInfo(*trigger.args[0:3])
+
+    LOGGER.info(
+        "Received RPL_MYINFO from server: %s, %s, %s",
+        bot._myinfo.client,
+        bot._myinfo.servername,
+        bot._myinfo.version,
+    )
 
 
 @module.require_privmsg()
@@ -374,6 +379,11 @@ def enable_service_auth(bot, trigger):
     bot.config.save()
     bot.say('Success! I will now use network services to identify you as my '
             'owner.')
+    LOGGER.info(
+        "User %s set %s as owner account.",
+        trigger.nick,
+        trigger.account,
+    )
 
 
 @module.event(events.ERR_NOCHANMODES)
@@ -388,14 +398,19 @@ def retry_join(bot, trigger):
     if channel in bot.memory['retry_join'].keys():
         bot.memory['retry_join'][channel] += 1
         if bot.memory['retry_join'][channel] > 10:
-            LOGGER.warning('Failed to join %s after 10 attempts.', channel)
+            LOGGER.warning("Failed to join %s after 10 attempts.", channel)
             return
+        LOGGER.info(
+            "Rejoining channel %r failed, will retry in 6s.",
+            str(channel))
+        time.sleep(6)
     else:
         bot.memory['retry_join'][channel] = 0
-        bot.join(channel)
-        return
 
-    time.sleep(6)
+    attempt = bot.memory['retry_join'][channel] + 1
+    LOGGER.info(
+        "Trying to rejoin channel %r (attempt %d/10)",
+        str(channel), attempt)
     bot.join(channel)
 
 
@@ -477,14 +492,17 @@ def _parse_modes(bot, args):
     channel_name = Identifier(args[0])
     if channel_name.is_nick():
         # We don't do anything with user modes
+        LOGGER.debug("Ignoring user modes: %r", args)
         return
+
     channel = bot.channels[channel_name]
     # Our old MODE parsing code checked for empty args. This would be a good
     # place to re-implement that if necessary for a non-compliant IRCd, but for
     # now just log malformed lines. After this we'll make a (possibly dangerous)
     # assumption that the MODE message is more-or-less compliant.
     if len(args) < 2 or not all(args):
-        LOGGER.debug("The server sent a possibly malformed MODE message: %r", args)
+        LOGGER.debug(
+            "The server sent a possibly malformed MODE message: %r", args)
 
     modestring = args[1]
     params = args[2:]
@@ -581,6 +599,9 @@ def _parse_modes(bot, args):
             _send_who(bot, channel_name)
             return
 
+    LOGGER.info("Updated mode for channel: %s", channel.name)
+    LOGGER.debug("Channel %r mode: %r", str(channel.name), channel.modes)
+
 
 @module.event('NICK')
 @module.thread(False)
@@ -619,6 +640,8 @@ def track_nicks(bot, trigger):
     if old in bot.users:
         bot.users[new] = bot.users.pop(old)
 
+    LOGGER.info("User named %r is now known as %r.", old, str(new))
+
 
 @module.rule('(.*)')
 @module.event('PART')
@@ -630,6 +653,7 @@ def track_part(bot, trigger):
     nick = trigger.nick
     channel = trigger.sender
     _remove_from_channel(bot, nick, channel)
+    LOGGER.info("User %r left a channel: %s", str(nick), channel)
 
 
 @module.event('KICK')
@@ -641,6 +665,12 @@ def track_kick(bot, trigger):
     nick = Identifier(trigger.args[1])
     channel = trigger.sender
     _remove_from_channel(bot, nick, channel)
+    LOGGER.info(
+        "User %r got kicked by %r from a channel: %s",
+        str(nick),
+        str(trigger.nick),
+        channel,
+    )
 
 
 def _remove_from_channel(bot, nick, channel):
@@ -707,7 +737,7 @@ def _periodic_send_who(bot):
 
     if selected_channel is not None:
         # selected_channel's last who is either none or the oldest valid
-        LOGGER.debug('Sending WHO for channel: %s', selected_channel)
+        LOGGER.debug("Sending WHO for channel: %s", selected_channel)
         _send_who(bot, selected_channel)
 
 
@@ -725,19 +755,23 @@ def track_join(bot, trigger):
 
     # is it a new channel?
     if channel not in bot.channels:
-        LOGGER.info('Channel joined: %s', channel)
         bot.privileges[channel] = {}
         bot.channels[channel] = target.Channel(channel)
 
     # did *we* just join?
     if trigger.nick == bot.nick:
+        LOGGER.info("Channel joined: %s", channel)
         if bot.settings.core.throttle_join:
-            LOGGER.debug('JOIN event added to queue for channel: %s', channel)
+            LOGGER.debug("JOIN event added to queue for channel: %s", channel)
             bot.memory['join_events_queue'].append(channel)
         else:
             LOGGER.debug("Send MODE and direct WHO for channel: %s", channel)
             bot.write(["MODE", channel])
             _send_who(bot, channel)
+    else:
+        LOGGER.info(
+            "Channel %r joined by user: %s",
+            str(channel), trigger.nick)
 
     # set initial values
     bot.privileges[channel][trigger.nick] = 0
@@ -765,6 +799,8 @@ def track_quit(bot, trigger):
     for channel in bot.channels.values():
         channel.clear_user(trigger.nick)
     bot.users.pop(trigger.nick, None)
+
+    LOGGER.info("User quit: %s", trigger.nick)
 
     if trigger.nick == bot.settings.core.nick and trigger.nick != bot.nick:
         # old nick is now available, let's change nick again
@@ -850,6 +886,10 @@ def receive_cap_ls_reply(bot, trigger):
     if trigger.args[2] == '*':
         return
 
+    LOGGER.info(
+        "Client capability negotiation list: %s",
+        ', '.join(batched_caps.keys()),
+    )
     bot.server_capabilities = batched_caps
 
     # If some other plugin requests it, we don't need to add another request.
@@ -866,13 +906,13 @@ def receive_cap_ls_reply(bot, trigger):
             bot._cap_reqs[cap] = [CapReq('', 'coretasks')]
 
     def acct_warn(bot, cap):
-        LOGGER.info('Server does not support %s, or it conflicts with a custom '
-                    'plugin. User account validation unavailable or limited.',
+        LOGGER.info("Server does not support %s, or it conflicts with a custom "
+                    "plugin. User account validation unavailable or limited.",
                     cap[1:])
         if bot.config.core.owner_account or bot.config.core.admin_accounts:
             LOGGER.warning(
-                'Owner or admin accounts are configured, but %s is not '
-                'supported by the server. This may cause unexpected behavior.',
+                "Owner or admin accounts are configured, but %s is not "
+                "supported by the server. This may cause unexpected behavior.",
                 cap[1:])
     auth_caps = ['account-notify', 'extended-join', 'account-tag']
     for cap in auth_caps:
@@ -907,6 +947,7 @@ def receive_cap_ls_reply(bot, trigger):
         bot.write(('CAP', 'REQ', 'sasl'))
     else:
         bot.write(('CAP', 'END'))
+        LOGGER.info("End of client capability negotiation requests.")
 
 
 def receive_cap_ack_sasl(bot):
@@ -998,6 +1039,7 @@ def auth_proceed(bot, trigger):
         return
     sasl_username = sasl_username or bot.nick
     sasl_token = _make_sasl_plain_token(sasl_username, sasl_password)
+    LOGGER.info("Sending SASL Auth token.")
     send_authenticate(bot, sasl_token)
 
 
@@ -1017,7 +1059,9 @@ def sasl_success(bot, trigger):
 
     In this case, the SASL auth is a success, so we can close the negotiation.
     """
+    LOGGER.info("Successful SASL Auth.")
     bot.write(('CAP', 'END'))
+    LOGGER.info("End of client capability negotiation requests.")
 
 
 @plugin.event(events.ERR_SASLFAIL)
@@ -1030,7 +1074,8 @@ def sasl_success(bot, trigger):
 def sasl_fail(bot, trigger):
     """SASL Auth Failed: log the error and quit."""
     LOGGER.error(
-        'SASL Auth Failed; check your configuration: %s', str(trigger))
+        "SASL Auth Failed; check your configuration: %s",
+        str(trigger))
     bot.quit('SASL Auth Failed')
 
 
@@ -1071,6 +1116,12 @@ def sasl_mechs(bot, trigger):
             ', '.join(supported_mechs),
         )
         bot.quit('Wrong SASL configuration.')
+    else:
+        LOGGER.info(
+            "Selected SASL mechanism is %s, advertised: %s",
+            mech,
+            ', '.join(supported_mechs),
+        )
 
 
 def _get_sasl_pass_and_mech(bot):
@@ -1183,6 +1234,7 @@ def account_notify(bot, trigger):
     if account == '*':
         account = None
     bot.users[trigger.nick].account = account
+    LOGGER.info("Update account for nick %r: %s", trigger.nick, account)
 
 
 @module.event(events.RPL_WHOSPCRPL)
@@ -1195,7 +1247,9 @@ def recv_whox(bot, trigger):
         # Ignored, some plugin probably called WHO
         return
     if len(trigger.args) != 8:
-        return LOGGER.warning('While populating `bot.accounts` a WHO response was malformed.')
+        LOGGER.warning(
+            "While populating `bot.accounts` a WHO response was malformed.")
+        return
     _, _, channel, user, host, nick, status, account = trigger.args
     away = 'G' in status
     modes = ''.join([c for c in status if c in '~&@%+!'])
@@ -1274,6 +1328,8 @@ def track_notify(bot, trigger):
             trigger.nick, trigger.user, trigger.host)
     user = bot.users[trigger.nick]
     user.away = bool(trigger.args)
+    state_change = 'went away' if user.away else 'came back'
+    LOGGER.info("User %s: %s", state_change, trigger.nick)
 
 
 @module.event('TOPIC')
@@ -1290,6 +1346,7 @@ def track_topic(bot, trigger):
     if channel not in bot.channels:
         return
     bot.channels[channel].topic = trigger.args[-1]
+    LOGGER.info("Channel's topic updated: %s", channel)
 
 
 @module.rule(r'(?u).*(.+://\S+).*')

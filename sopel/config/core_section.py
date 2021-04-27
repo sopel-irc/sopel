@@ -1123,7 +1123,7 @@ class CoreSection(StaticSection):
     """
 
     timeout = ValidatedAttribute('timeout', int, default=120)
-    """The number of seconds acceptable between pings before timing out.
+    """The number of seconds acceptable since the last message before timing out.
 
     :default: ``120``
 
@@ -1133,6 +1133,44 @@ class CoreSection(StaticSection):
 
         # increase to 200 seconds
         timeout = 200
+
+    """
+
+    timeout_ping_interval = ValidatedAttribute('timeout_ping_interval',
+                                               int,
+                                               default=0)
+    """The number of seconds before sending a PING command to the server.
+
+    :default: (auto)
+
+    The default value is made to send at least 2 PINGs before the bot thinks
+    there is a timeout, given that :attr:`timeout` is 120s by default:
+
+    * t+54s: first PING
+    * t+108s: second PING
+    * t+120s: if no response, then a timeout is detected
+
+    This makes the timeout detection more lenient and forgiving, by allowing a
+    12s window for the server to send something that will prevent a timeout.
+
+    You can change the PING interval like this:
+
+    .. code-block:: ini
+
+        # timeout up to 250s
+        timeout = 250
+        # PING every 80s (about 3 times every 240s + 10s window)
+        timeout_ping_interval = 80
+
+    .. note::
+
+        Internally, the default value is 0 and the value used will be
+        automatically calculated as 45% of the :attr:`timeout`::
+
+            ping_interval = timeout * 0.45
+
+        So for a timeout of 120s it's a PING every 54s. For a timeout of 250s
+        it's a PING every 112.5s.
 
     """
 

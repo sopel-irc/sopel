@@ -188,6 +188,13 @@ By default, if Sopel doesn't get a PING from the server every 120s, it will
 consider that the connection has timed out. This amount of time can be modified
 with the :attr:`~CoreSection.timeout` directive.
 
+Internally, Sopel will try to send a ``PING`` either:
+
+* every 50s
+* or 50s after the last message was received by the bot
+
+This value can be modified with the :attr:`~CoreSection.timeout_ping_interval`.
+
 SSL Connection
 --------------
 
