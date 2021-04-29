@@ -267,52 +267,77 @@ def test_say_long_extra_multi_message_multibyte_recipient(bot):
     )
 
 
-def test_say_long_trailing_fit(bot):
+def test_say_long_truncation_fit(bot):
     """Test optional truncation indicator with message that fits in one line."""
     text = 'a' * (512 - prefix_length(bot) - len('PRIVMSG #sopel :\r\n') - 3)
-    bot.say(text + 'ttt', '#sopel', trailing='...')
+    bot.say(text + 'ttt', '#sopel', truncation='...')
 
     assert bot.backend.message_sent == rawlist(
         'PRIVMSG #sopel :%s' % text + 'ttt',  # nothing is truncated or replaced
     )
 
 
-def test_say_long_trailing_extra(bot):
+def test_say_long_truncation_extra(bot):
     """Test optional truncation indicator with message that is too long."""
     text = 'a' * (512 - prefix_length(bot) - len('PRIVMSG #sopel :\r\n') - 3)
-    bot.say(text + 'ttt' + 'b', '#sopel', trailing='...')
+    bot.say(text + 'ttt' + 'b', '#sopel', truncation='...')
 
     assert bot.backend.message_sent == rawlist(
-        # 'b' is truncated; 'ttt' is replaced by `trailing`
+        # 'b' is truncated; 'ttt' is replaced by `truncation`
         'PRIVMSG #sopel :%s' % text + '...',
     )
 
 
-def test_say_long_trailing_extra_multi_message(bot):
+def test_say_long_truncation_extra_multi_message(bot):
     """Test optional truncation indicator with message splitting."""
     msg1 = 'a' * (512 - prefix_length(bot) - len('PRIVMSG #sopel :\r\n'))
     msg2 = msg1[:-3] + 'ttt'
-    bot.say(msg1 + msg2 + 'b', '#sopel', max_messages=2, trailing='...')
+    bot.say(msg1 + msg2 + 'b', '#sopel', max_messages=2, truncation='...')
 
     assert bot.backend.message_sent == rawlist(
         # split as expected
         'PRIVMSG #sopel :%s' % msg1,
-        # 'b' is truncated; 'ttt' is replaced by `trailing`
+        # 'b' is truncated; 'ttt' is replaced by `truncation`
         'PRIVMSG #sopel :%s' % msg2.replace('ttt', '...'),
     )
 
 
-def test_say_long_trailing_extra_multi_message_multibyte(bot):
+def test_say_long_truncation_extra_multi_message_multibyte(bot):
     """Test optional truncation indicator with message splitting."""
     msg1 = 'a' * (512 - prefix_length(bot) - len('PRIVMSG #sopel :\r\n'))
     msg2 = msg1[:-3] + 'ttt'
-    bot.say(msg1 + msg2 + 'b', '#sopel', max_messages=2, trailing='…')
+    bot.say(msg1 + msg2 + 'b', '#sopel', max_messages=2, truncation='…')
 
     assert bot.backend.message_sent == rawlist(
         # split as expected
         'PRIVMSG #sopel :%s' % msg1,
-        # 'b' is truncated; 'ttt' is replaced by `trailing`
+        # 'b' is truncated; 'ttt' is replaced by `truncation`
         'PRIVMSG #sopel :%s' % msg2.replace('ttt', '…'),
+    )
+
+
+def test_say_trailing(bot):
+    """Test optional trailing string."""
+    text = '"This is a test quote.'
+    bot.say(text, '#sopel', trailing='"')
+
+    assert bot.backend.message_sent == rawlist(
+        # combined
+        'PRIVMSG #sopel :%s' % text + '"'
+    )
+
+
+def test_say_long_truncation_trailing(bot):
+    """Test optional truncation indicator AND trailing string together."""
+    msg1 = 'a' * (512 - prefix_length(bot) - len('PRIVMSG #sopel :\r\n'))
+    msg2 = msg1[:-4] + 'bbbc'
+    bot.say(msg1 + msg2 + 'd', '#sopel', max_messages=2, truncation='…', trailing='q')
+
+    assert bot.backend.message_sent == rawlist(
+        # split as expected
+        'PRIVMSG #sopel :%s' % msg1,
+        # 'd' is truncated; 'bbb' is replaced by `truncation`; 'c' is replaced by `trailing`
+        'PRIVMSG #sopel :%s' % msg2.replace('bbb', '…').replace('c', 'q')
     )
 
 

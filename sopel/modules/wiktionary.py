@@ -124,7 +124,7 @@ def wiktionary(bot, trigger):
     if len(result) < 300:
         result = format(word, definitions, 5)
 
-    bot.say(result, trailing=' […]')
+    bot.say(result, truncation=' […]')
 
 
 @plugin.command('ety')
@@ -144,4 +144,4 @@ def wiktionary_ety(bot, trigger):
 
     result = "{}: {}".format(word, etymology)
 
-    bot.say(result, trailing=' […]')
+    bot.say(result, truncation=' […]')

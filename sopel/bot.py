@@ -1267,25 +1267,32 @@ class SopelWrapper(object):
     def __setattr__(self, attr, value):
         return setattr(self._bot, attr, value)
 
-    def say(self, message, destination=None, max_messages=1, trailing=''):
+    def say(self, message, destination=None, max_messages=1, truncation='', trailing=''):
         """Override ``Sopel.say`` to use trigger source by default.
 
         :param str message: message to say
         :param str destination: channel or nickname; defaults to
             :attr:`trigger.sender <sopel.trigger.Trigger.sender>`
-        :param int max_messages: split ``text`` into at most this many messages
-                                 if it is too long to fit in one (optional)
+        :param int max_messages: split ``message`` into at most this many
+                                 messages if it is too long to fit into one
+                                 line (optional)
+        :param str truncation: string to indicate that the ``message`` was
+                               truncated (optional)
+        :param str trailing: string that should always appear at the end of
+                             ``message`` (optional)
 
         The ``destination`` will default to the channel in which the
         trigger happened (or nickname, if received in a private message).
 
         .. seealso::
 
-            :meth:`sopel.bot.Sopel.say`
+            For more details about the optional arguments to this wrapper
+            method, consult the documentation for :meth:`sopel.bot.Sopel.say`.
+
         """
         if destination is None:
             destination = self._trigger.sender
-        self._bot.say(self._out_pfx + message, destination, max_messages, trailing)
+        self._bot.say(self._out_pfx + message, destination, max_messages, truncation, trailing)
 
     def action(self, message, destination=None):
         """Override ``Sopel.action`` to use trigger source by default.
