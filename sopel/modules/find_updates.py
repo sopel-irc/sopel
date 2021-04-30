@@ -23,6 +23,7 @@ from sopel import (
 
 
 wait_time = 24 * 60 * 60  # check once per day
+max_failures = 4
 version_url = 'https://sopel.chat/latest.json'
 stable_message = (
     'A new Sopel version, {}, is available; I am running {}. Please update '
@@ -70,7 +71,7 @@ def check_version(bot):
         success = False
 
     if not success:
-        if bot.memory.get('update_failures', 0) <= 4:
+        if bot.memory.get('update_failures', 0) <= max_failures:
             # not enough failures to worry; silently ignore this one
             return
 
