@@ -25,8 +25,8 @@ LOGGER = logging.getLogger(__name__)
 
 
 class TellSection(types.StaticSection):
-    use_private_reminder = types.ValidatedAttribute(
-        'use_private_reminder', parse=bool, default=False)
+    use_private_reminder = types.BooleanAttribute(
+        'use_private_reminder', default=False)
     """When set to ``true``, Sopel will send reminder as private message."""
     maximum_public = types.ValidatedAttribute(
         'maximum_public', parse=int, default=4)
