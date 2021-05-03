@@ -28,10 +28,9 @@ ERROR_NOTHING_TO_SAY = 'I need a channel and a message to talk.'
 
 
 class AdminSection(types.StaticSection):
-    hold_ground = types.ValidatedAttribute('hold_ground', bool, default=False)
+    hold_ground = types.BooleanAttribute('hold_ground', default=False)
     """Auto re-join on kick"""
-    auto_accept_invite = types.ValidatedAttribute('auto_accept_invite', bool,
-                                                  default=True)
+    auto_accept_invite = types.BooleanAttribute('auto_accept_invite', default=True)
     """Auto-join channels when invited"""
 
 
