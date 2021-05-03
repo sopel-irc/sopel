@@ -5,6 +5,7 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 import os.path
 
 from sopel.config.types import (
+    BooleanAttribute,
     ChoiceAttribute,
     FilenameAttribute,
     ListAttribute,
@@ -685,7 +686,7 @@ class CoreSection(StaticSection):
 
     """
 
-    log_raw = ValidatedAttribute('log_raw', bool, default=False)
+    log_raw = BooleanAttribute('log_raw', default=False)
     """Whether a log of raw lines as sent and received should be kept.
 
     :default: ``no``
@@ -937,7 +938,7 @@ class CoreSection(StaticSection):
 
     """
 
-    not_configured = ValidatedAttribute('not_configured', bool, default=False)
+    not_configured = BooleanAttribute('not_configured', default=False)
     """For package maintainers. Not used in normal configurations.
 
     :default: ``False``
@@ -1035,7 +1036,7 @@ class CoreSection(StaticSection):
 
     """
 
-    reply_errors = ValidatedAttribute('reply_errors', bool, default=True)
+    reply_errors = BooleanAttribute('reply_errors', default=True)
     """Whether to reply to the sender of a message that triggered an error.
 
     :default: ``True``
@@ -1174,7 +1175,7 @@ class CoreSection(StaticSection):
 
     """
 
-    use_ssl = ValidatedAttribute('use_ssl', bool, default=False)
+    use_ssl = BooleanAttribute('use_ssl', default=False)
     """Whether to use a SSL/TLS encrypted connection.
 
     :default: ``False``
@@ -1200,7 +1201,7 @@ class CoreSection(StaticSection):
 
     """
 
-    verify_ssl = ValidatedAttribute('verify_ssl', bool, default=True)
+    verify_ssl = BooleanAttribute('verify_ssl', default=True)
     """Whether to require a trusted certificate for encrypted connections.
 
     :default: ``True``
