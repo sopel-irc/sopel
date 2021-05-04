@@ -20,7 +20,7 @@ from sopel.config import types
 
 
 PLUGIN_OUTPUT_PREFIX = '[currency] '
-FIAT_URL = 'https://api.exchangeratesapi.io/latest?base=EUR'
+FIAT_URL = 'https://api.ratesapi.io/api/latest?base=EUR'
 FIXER_URL = 'https://data.fixer.io/api/latest?base=EUR&access_key={}'
 CRYPTO_URL = 'https://api.coingecko.com/api/v3/exchange_rates'
 EXCHANGE_REGEX = re.compile(r'''
