@@ -64,28 +64,34 @@ def handle_isup(bot, trigger, secure=True):
         response.raise_for_status()
     except ValueError as error:
         bot.reply(str(error))
+        return
     except requests.exceptions.SSLError:
         bot.say(
             '{} looks down to me (SSL error). Try using `{}isupinsecure`.'
             .format(site, bot.config.core.help_prefix))
+        return
     except requests.HTTPError:
         bot.say(
             '{} looks down to me (HTTP {} "{}").'
             .format(site, response.status_code, response.reason))
+        return
     except requests.ConnectTimeout:
         bot.say(
             '{} looks down to me (timed out while connecting).'
             .format(site))
+        return
     except requests.ReadTimeout:
         bot.say(
             '{} looks down to me (timed out waiting for reply).'
             .format(site))
+        return
     except requests.ConnectionError:
         bot.say(
             '{} looks down to me (connection error).'
             .format(site))
+        return
 
-    # If no exception happened, the request succeeded.
+    # If no exception happened, the request must have succeeded.
     bot.say(site + ' looks fine to me.')
 
 
