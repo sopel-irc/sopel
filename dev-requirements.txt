@@ -12,6 +12,7 @@ pytest-vcr==1.0.2; python_version != '3.3'
 pytest-vcr==0.3.0; python_version == '3.3'
 PyYAML<5.1; python_version == '3.3'
 PyYAML<5.3; python_version == '3.4'
+requests-mock==1.9.1
 setuptools<40.0; python_version == '3.3'
 sphinx
 # autoprogram extension added type annotations in 0.1.6
