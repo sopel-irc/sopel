@@ -28,7 +28,6 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 from datetime import datetime
 import logging
 import os
-import sys
 import threading
 import time
 
@@ -37,8 +36,6 @@ from .backends import AsynchatBackend, SSLAsynchatBackend
 from .isupport import ISupport
 from .utils import CapReq, safe
 
-if sys.version_info.major >= 3:
-    unicode = str
 
 __all__ = ['abstract_backends', 'backends', 'utils']
 
@@ -584,7 +581,7 @@ class AbstractBot(object):
 
         """
         excess = ''
-        if not isinstance(text, unicode):
+        if not isinstance(text, str):
             # Make sure we are dealing with a Unicode string
             text = text.decode('utf-8')
 

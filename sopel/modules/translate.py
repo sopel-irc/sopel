@@ -18,8 +18,6 @@ import requests
 from sopel import plugin, tools
 from sopel.tools import web
 
-if sys.version_info.major >= 3:
-    unicode = str
 
 PLUGIN_OUTPUT_PREFIX = '[translate] '
 
@@ -38,7 +36,7 @@ def shutdown(bot):
 
 def translate(text, in_lang='auto', out_lang='en'):
     raw = False
-    if unicode(out_lang).endswith('-raw'):
+    if str(out_lang).endswith('-raw'):
         out_lang = out_lang[:-4]
         raw = True
 

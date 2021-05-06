@@ -29,13 +29,8 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 import getpass
 import os.path
 import re
-import sys
 
 from sopel.tools import deprecated, get_input
-
-if sys.version_info.major >= 3:
-    unicode = str
-    basestring = (str, bytes)
 
 
 class NO_DEFAULT(object):
@@ -267,7 +262,7 @@ class BaseValidated(object):
 def _parse_boolean(value):
     if value is True or value == 1:
         return value
-    if isinstance(value, basestring):
+    if isinstance(value, str):
         return value.lower() in ['1', 'yes', 'y', 'true', 'on']
     return bool(value)
 
@@ -325,7 +320,7 @@ class ValidatedAttribute(BaseValidated):
         :param value: the option value
         :rtype: str
         """
-        return unicode(value)
+        return str(value)
 
     def parse(self, value):
         """No-op: simply returns the given ``value``, unchanged.
@@ -392,7 +387,7 @@ class BooleanAttribute(BaseValidated):
         """
         if value is True or value == 1:
             return True
-        if isinstance(value, basestring):
+        if isinstance(value, str):
             return value.lower() in [
                 '1',
                 'enable',

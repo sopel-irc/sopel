@@ -14,16 +14,12 @@ import logging
 import os
 import socket
 import ssl
-import sys
 import threading
 
 from sopel import loader, plugin
 from sopel.tools import jobs
 from .abstract_backends import AbstractIRCBackend
 from .utils import get_cnames
-
-if sys.version_info.major >= 3:
-    unicode = str
 
 
 LOGGER = logging.getLogger(__name__)
@@ -203,15 +199,15 @@ class AsynchatBackend(AbstractIRCBackend, asynchat.async_chat):
         """
         # We can't trust clients to pass valid Unicode.
         try:
-            data = unicode(data, encoding='utf-8')
+            data = str(data, encoding='utf-8')
         except UnicodeDecodeError:
             # not Unicode; let's try CP-1252
             try:
-                data = unicode(data, encoding='cp1252')
+                data = str(data, encoding='cp1252')
             except UnicodeDecodeError:
                 # Okay, let's try ISO 8859-1
                 try:
-                    data = unicode(data, encoding='iso8859-1')
+                    data = str(data, encoding='iso8859-1')
                 except UnicodeDecodeError:
                     # Discard line if encoding is unknown
                     return

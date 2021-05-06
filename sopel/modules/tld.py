@@ -21,9 +21,6 @@ import requests
 from sopel import formatting, plugin, tools
 
 
-unicode = str
-
-
 LOGGER = logging.getLogger(__name__)
 
 

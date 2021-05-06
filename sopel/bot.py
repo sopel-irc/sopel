@@ -14,7 +14,6 @@ import itertools
 import logging
 import re
 import signal
-import sys
 import threading
 import time
 
@@ -42,14 +41,6 @@ RESTART_SIGNALS = [
     if hasattr(signal, name)
 ]
 SIGNALS = QUIT_SIGNALS + RESTART_SIGNALS
-
-
-if sys.version_info.major >= 3:
-    unicode = str
-    basestring = str
-    py3 = True
-else:
-    py3 = False
 
 
 class Sopel(irc.AbstractBot):
@@ -1129,7 +1120,7 @@ class Sopel(irc.AbstractBot):
         if 'url_callbacks' not in self.memory:
             self.memory['url_callbacks'] = tools.SopelMemory()
 
-        if isinstance(pattern, basestring):
+        if isinstance(pattern, str):
             pattern = re.compile(pattern)
 
         # Mark the callback as checked: using this method is safe.
@@ -1180,7 +1171,7 @@ class Sopel(irc.AbstractBot):
             # nothing to unregister
             return
 
-        if isinstance(pattern, basestring):
+        if isinstance(pattern, str):
             pattern = re.compile(pattern)
 
         try:

@@ -32,16 +32,11 @@ from sopel import __version__
 from ._events import events  # NOQA
 from . import time, web  # NOQA
 
-if sys.version_info.major >= 3:
-    raw_input = input
-    unicode = str
-    iteritems = dict.items
-    itervalues = dict.values
-    iterkeys = dict.keys
-else:
-    iteritems = dict.iteritems
-    itervalues = dict.itervalues
-    iterkeys = dict.iterkeys
+
+raw_input = input
+iteritems = dict.items
+itervalues = dict.values
+iterkeys = dict.keys
 
 _channel_prefixes = ('#', '&', '+', '!')
 
@@ -317,7 +312,7 @@ def get_nickname_command_regexp(nick, command, alias_nicks):
     # Must defer import to avoid cyclic dependency
     from sopel.plugins.rules import NickCommand
 
-    if isinstance(alias_nicks, unicode):
+    if isinstance(alias_nicks, str):
         alias_nicks = [alias_nicks]
     elif not isinstance(alias_nicks, (list, tuple)):
         raise ValueError('A list or string is required.')
@@ -443,26 +438,22 @@ class Ddict(dict):
         return dict.__getitem__(self, key)
 
 
-class Identifier(unicode):
-    """A `unicode` subclass which acts appropriately for IRC identifiers.
+class Identifier(str):
+    """A ``str`` subclass which acts appropriately for IRC identifiers.
 
-    When used as normal `unicode` objects, case will be preserved.
+    When used as normal ``str`` objects, case will be preserved.
     However, when comparing two Identifier objects, or comparing a Identifier
-    object with a `unicode` object, the comparison will be case insensitive.
+    object with a ``str`` object, the comparison will be case insensitive.
     This case insensitivity includes the case convention conventions regarding
     ``[]``, ``{}``, ``|``, ``\\``, ``^`` and ``~`` described in RFC 2812.
     """
-    # May want to tweak this and update documentation accordingly when dropping
-    # Python 2 support, since in py3 plain str is Unicode and a "unicode" type
-    # no longer exists. Probably lots of code will need tweaking, tbh.
-
     def __new__(cls, identifier):
         # According to RFC2812, identifiers have to be in the ASCII range.
         # However, I think it's best to let the IRCd determine that, and we'll
         # just assume unicode. It won't hurt anything, and is more internally
         # consistent. And who knows, maybe there's another use case for this
         # weird case convention.
-        s = unicode.__new__(cls, identifier)
+        s = str.__new__(cls, identifier)
         s._lowered = Identifier._lower(identifier)
         return s
 
@@ -521,29 +512,29 @@ class Identifier(unicode):
         return self._lowered.__hash__()
 
     def __lt__(self, other):
-        if isinstance(other, unicode):
+        if isinstance(other, str):
             other = Identifier._lower(other)
-        return unicode.__lt__(self._lowered, other)
+        return str.__lt__(self._lowered, other)
 
     def __le__(self, other):
-        if isinstance(other, unicode):
+        if isinstance(other, str):
             other = Identifier._lower(other)
-        return unicode.__le__(self._lowered, other)
+        return str.__le__(self._lowered, other)
 
     def __gt__(self, other):
-        if isinstance(other, unicode):
+        if isinstance(other, str):
             other = Identifier._lower(other)
-        return unicode.__gt__(self._lowered, other)
+        return str.__gt__(self._lowered, other)
 
     def __ge__(self, other):
-        if isinstance(other, unicode):
+        if isinstance(other, str):
             other = Identifier._lower(other)
-        return unicode.__ge__(self._lowered, other)
+        return str.__ge__(self._lowered, other)
 
     def __eq__(self, other):
-        if isinstance(other, unicode):
+        if isinstance(other, str):
             other = Identifier._lower(other)
-        return unicode.__eq__(self._lowered, other)
+        return str.__eq__(self._lowered, other)
 
     def __ne__(self, other):
         return not (self == other)
@@ -610,7 +601,7 @@ class OutputRedirect(object):
                 logfile.write(string)
             except UnicodeDecodeError:
                 # we got an invalid string, safely encode it to utf-8
-                logfile.write(unicode(string, 'utf8', errors="replace"))
+                logfile.write(str(string, 'utf8', errors="replace"))
 
     def flush(self):
         """Flush the file writing buffer."""

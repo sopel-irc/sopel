@@ -29,7 +29,6 @@ import datetime
 import functools
 import logging
 import re
-import sys
 import time
 
 from sopel import loader, module, plugin
@@ -38,9 +37,6 @@ from sopel.irc import isupport
 from sopel.irc.utils import CapReq, MyInfo
 from sopel.tools import events, Identifier, iteritems, SopelMemory, target, web
 
-
-if sys.version_info.major >= 3:
-    unicode = str
 
 LOGGER = logging.getLogger(__name__)
 
@@ -1187,13 +1183,13 @@ def blocks(bot, trigger):
     if len(text) == 3 and text[1] == "list":
         if text[2] == "hostmask":
             if len(masks) > 0:
-                blocked = ', '.join(unicode(mask) for mask in masks)
+                blocked = ', '.join(str(mask) for mask in masks)
                 bot.say("Blocked hostmasks: {}".format(blocked))
             else:
                 bot.reply(STRINGS['nonelisted'] % ('hostmasks'))
         elif text[2] == "nick":
             if len(nicks) > 0:
-                blocked = ', '.join(unicode(nick) for nick in nicks)
+                blocked = ', '.join(str(nick) for nick in nicks)
                 bot.say("Blocked nicks: {}".format(blocked))
             else:
                 bot.reply(STRINGS['nonelisted'] % ('nicks'))
@@ -1220,7 +1216,7 @@ def blocks(bot, trigger):
                 bot.reply(STRINGS['no_nick'] % (text[3]))
                 return
             nicks.remove(Identifier(text[3]))
-            bot.config.core.nick_blocks = [unicode(n) for n in nicks]
+            bot.config.core.nick_blocks = [str(n) for n in nicks]
             bot.config.save()
             bot.reply(STRINGS['success_del'] % (text[3]))
         elif text[2] == "hostmask":
@@ -1229,7 +1225,7 @@ def blocks(bot, trigger):
                 bot.reply(STRINGS['no_host'] % (text[3]))
                 return
             masks.remove(mask)
-            bot.config.core.host_blocks = [unicode(m) for m in masks]
+            bot.config.core.host_blocks = [str(m) for m in masks]
             bot.config.save()
             bot.reply(STRINGS['success_del'] % (text[3]))
         else:

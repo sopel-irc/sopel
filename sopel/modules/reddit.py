@@ -24,8 +24,6 @@ from sopel.tools import time
 from sopel.tools.web import USER_AGENT
 
 
-unicode = str
-
 PLUGIN_OUTPUT_PREFIX = '[reddit] '
 
 domain = r'https?://(?:www\.|old\.|pay\.|ssl\.|[a-z]{2}\.)?reddit\.com'

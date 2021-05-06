@@ -16,12 +16,6 @@ import unicodedata
 
 from sopel import formatting, plugin
 
-# Remove when dropping py2 support
-try:
-    str = unicode
-except NameError:
-    pass
-
 
 def _format_safe(text):
     """Remove excess whitespace and terminate IRC formatting.

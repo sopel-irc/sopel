@@ -23,7 +23,6 @@ import requests
 from sopel import formatting, plugin, tools
 from sopel.config import types
 
-unicode = str
 
 LOGGER = logging.getLogger(__name__)
 PLUGIN_OUTPUT_PREFIX = '[safety] '
@@ -96,7 +95,7 @@ def setup(bot):
         _download_domain_list(loc)
     with open(loc, 'r') as f:
         for line in f:
-            clean_line = unicode(line).strip().lower()
+            clean_line = str(line).strip().lower()
             if not clean_line or clean_line[0] == '#':
                 # blank line or comment
                 continue
@@ -164,7 +163,7 @@ def url_handler(bot, trigger):
     apikey = bot.config.safety.vt_api_key
     try:
         if apikey is not None and use_vt:
-            payload = {'resource': unicode(trigger),
+            payload = {'resource': str(trigger),
                        'apikey': apikey,
                        'scan': '1'}
 
@@ -194,7 +193,7 @@ def url_handler(bot, trigger):
         # Ignoring exceptions with VT so domain list will always work
         LOGGER.debug('[VirusTotal] Malformed response (invalid JSON).', exc_info=True)
 
-    if unicode(netloc).lower() in malware_domains:
+    if str(netloc).lower() in malware_domains:
         positives += 1
         total += 1
 

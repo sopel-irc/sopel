@@ -4,7 +4,6 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 import datetime
 import re
-import sys
 
 from sopel import formatting, tools
 from sopel.tools import web
@@ -14,10 +13,6 @@ __all__ = [
     'PreTrigger',
     'Trigger',
 ]
-
-if sys.version_info.major >= 3:
-    unicode = str
-    basestring = str
 
 
 class PreTrigger(object):
@@ -200,7 +195,7 @@ class PreTrigger(object):
             self.plain = formatting.plain(self.args[-1])
 
 
-class Trigger(unicode):
+class Trigger(str):
     """A line from the server, which has matched a callable's rules.
 
     :param config: Sopel's current configuration settings object
@@ -412,7 +407,7 @@ class Trigger(unicode):
     """
 
     def __new__(cls, config, message, match, account=None):
-        self = unicode.__new__(cls, message.args[-1] if message.args else '')
+        self = str.__new__(cls, message.args[-1] if message.args else '')
         self._account = account
         self._pretrigger = message
         self._match = match

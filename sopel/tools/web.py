@@ -28,10 +28,6 @@ from urllib.parse import urlparse, urlunparse
 from sopel import __version__
 
 
-unichr = chr
-unicode = str
-
-
 __all__ = [
     'USER_AGENT',
     'DEFAULT_HEADERS',
@@ -105,11 +101,11 @@ def entity(match):
     """
     value = match.group(1).lower()
     if value.startswith('#x'):
-        return unichr(int(value[2:], 16))
+        return chr(int(value[2:], 16))
     elif value.startswith('#'):
-        return unichr(int(value[1:]))
+        return chr(int(value[1:]))
     elif value in name2codepoint:
-        return unichr(name2codepoint[value])
+        return chr(name2codepoint[value])
     return '[' + value + ']'
 
 
@@ -122,7 +118,6 @@ def decode(html):
     return r_entity.sub(entity, html)
 
 
-# Identical to urllib2.quote
 def quote(string, safe='/'):
     """Safely encodes a string for use in a URL.
 
@@ -135,13 +130,8 @@ def quote(string, safe='/'):
         This is a shim to make writing cross-compatible plugins for both
         Python 2 and Python 3 easier.
     """
-    if sys.version_info.major < 3:
-        if isinstance(string, unicode):
-            string = string.encode('utf8')
-        string = urllib.quote(string, safe.encode('utf8'))
-    else:
-        string = urllib.parse.quote(str(string), safe)
-    return string
+    # TODO deprecated?
+    return urllib.parse.quote(str(string), safe)
 
 
 # six-like shim for Unicode safety
