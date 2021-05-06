@@ -13,6 +13,7 @@ import errno
 import logging
 import os
 import socket
+import ssl
 import sys
 import threading
 
@@ -20,19 +21,6 @@ from sopel import loader, plugin
 from sopel.tools import jobs
 from .abstract_backends import AbstractIRCBackend
 from .utils import get_cnames
-
-try:
-    import ssl
-    if not hasattr(ssl, 'match_hostname'):
-        # Attempt to import ssl_match_hostname from python-backports
-        # TODO: Remove when dropping Python 2 support
-        import backports.ssl_match_hostname
-        ssl.match_hostname = backports.ssl_match_hostname.match_hostname
-        ssl.CertificateError = backports.ssl_match_hostname.CertificateError
-    has_ssl = True
-except ImportError:
-    # no SSL support
-    has_ssl = False
 
 if sys.version_info.major >= 3:
     unicode = str

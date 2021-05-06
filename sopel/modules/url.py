@@ -14,6 +14,7 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 import ipaddress
 import logging
 import re
+from urllib.parse import urlparse
 
 import dns.resolver
 import requests
@@ -23,11 +24,6 @@ from sopel import plugin, tools
 from sopel.config import types
 from sopel.tools import web
 
-# Python3 vs Python2
-try:
-    from urllib.parse import urlparse
-except ImportError:
-    from urlparse import urlparse
 
 LOGGER = logging.getLogger(__name__)
 USER_AGENT = (

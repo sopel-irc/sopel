@@ -50,17 +50,14 @@ the :class:`Config` object is instantiated; it uses
 
 from __future__ import absolute_import, division, print_function, unicode_literals
 
+import configparser
 import os
-import sys
 
 from sopel import tools
 from . import core_section, types
 
-if sys.version_info.major < 3:
-    import ConfigParser
-else:
-    basestring = str
-    import configparser as ConfigParser
+
+basestring = str
 
 
 __all__ = [
@@ -131,7 +128,7 @@ class Config(object):
         The config's ``basename`` is useful as a component :ref:`of log file
         names <logging-basename>`, for example.
         """
-        self.parser = ConfigParser.RawConfigParser(allow_no_value=True)
+        self.parser = configparser.RawConfigParser(allow_no_value=True)
         """The configuration parser object that does the heavy lifting.
 
         .. seealso::
@@ -238,7 +235,7 @@ class Config(object):
         """
         try:
             return self.parser.add_section(name)
-        except ConfigParser.DuplicateSectionError:
+        except configparser.DuplicateSectionError:
             return False
 
     def define_section(self, name, cls_, validate=True):

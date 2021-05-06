@@ -11,20 +11,17 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 from datetime import datetime
 from encodings import idna
+from html.parser import HTMLParser
 import logging
 import re
-import sys
 
 import pytz
 import requests
 
 from sopel import formatting, plugin, tools
 
-if sys.version_info.major >= 3:
-    unicode = str
-    from html.parser import HTMLParser
-else:
-    from HTMLParser import HTMLParser
+
+unicode = str
 
 
 LOGGER = logging.getLogger(__name__)

@@ -32,19 +32,6 @@ import sys
 import threading
 import time
 
-try:
-    import ssl
-    if not hasattr(ssl, 'match_hostname'):
-        # Attempt to import ssl_match_hostname from python-backports
-        # TODO: Remove when dropping Python 2 support
-        import backports.ssl_match_hostname
-        ssl.match_hostname = backports.ssl_match_hostname.match_hostname
-        ssl.CertificateError = backports.ssl_match_hostname.CertificateError
-    has_ssl = True
-except ImportError:
-    # no SSL support
-    has_ssl = False
-
 from sopel import tools, trigger
 from .backends import AsynchatBackend, SSLAsynchatBackend
 from .isupport import ISupport
@@ -150,16 +137,11 @@ class AbstractBot(object):
         }
 
         if self.settings.core.use_ssl:
-            if has_ssl:
-                backend_class = SSLAsynchatBackend
-                backend_kwargs.update({
-                    'verify_ssl': self.settings.core.verify_ssl,
-                    'ca_certs': self.settings.core.ca_certs,
-                })
-            else:
-                LOGGER.warning(
-                    'SSL is not available on your system; '
-                    'attempting connection without it')
+            backend_class = SSLAsynchatBackend
+            backend_kwargs.update({
+                'verify_ssl': self.settings.core.verify_ssl,
+                'ca_certs': self.settings.core.ca_certs,
+            })
 
         return backend_class(*backend_args, **backend_kwargs)
 

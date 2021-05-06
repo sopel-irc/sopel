@@ -8,34 +8,22 @@ This plugin uses virustotal.com
 """
 from __future__ import absolute_import, division, print_function, unicode_literals
 
+import json
 import logging
 import os.path
 import re
-import sys
 import threading
 import time
+from urllib.parse import urlparse
+from urllib.request import urlretrieve
+
 
 import requests
 
 from sopel import formatting, plugin, tools
 from sopel.config import types
 
-try:
-    # This is done separately from the below version if/else because JSONDecodeError
-    # didn't appear until Python 3.5, but Sopel claims support for 3.3+
-    # Redo this whole block of nonsense when dropping py2/old py3 support
-    from json import JSONDecodeError as InvalidJSONResponse
-except ImportError:
-    InvalidJSONResponse = ValueError
-
-if sys.version_info.major > 2:
-    unicode = str
-    from urllib.request import urlretrieve
-    from urllib.parse import urlparse
-else:
-    from urllib import urlretrieve
-    from urlparse import urlparse
-
+unicode = str
 
 LOGGER = logging.getLogger(__name__)
 PLUGIN_OUTPUT_PREFIX = '[safety] '
@@ -202,7 +190,7 @@ def url_handler(bot, trigger):
     except requests.exceptions.RequestException:
         # Ignoring exceptions with VT so domain list will always work
         LOGGER.debug('[VirusTotal] Error obtaining response.', exc_info=True)
-    except InvalidJSONResponse:
+    except json.JSONDecodeError:
         # Ignoring exceptions with VT so domain list will always work
         LOGGER.debug('[VirusTotal] Malformed response (invalid JSON).', exc_info=True)
 

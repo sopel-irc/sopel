@@ -8,6 +8,7 @@ https://sopel.chat
 """
 from __future__ import absolute_import, division, print_function, unicode_literals
 
+from html.parser import HTMLParser
 import re
 
 from requests import get
@@ -16,10 +17,6 @@ from sopel import plugin
 from sopel.config import types
 from sopel.tools.web import quote, unquote
 
-try:  # TODO: Remove fallback when dropping py2
-    from html.parser import HTMLParser
-except ImportError:
-    from HTMLParser import HTMLParser
 
 REDIRECT = re.compile(r'^REDIRECT (.*)')
 PLUGIN_OUTPUT_PREFIX = '[wikipedia] '

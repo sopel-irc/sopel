@@ -19,20 +19,18 @@ applications, APIs, or websites in your plugins.
 
 from __future__ import absolute_import, division, print_function, unicode_literals
 
+from html.entities import name2codepoint
 import re
 import sys
 import urllib
+from urllib.parse import urlparse, urlunparse
 
 from sopel import __version__
 
-if sys.version_info.major < 3:
-    from htmlentitydefs import name2codepoint
-    from urlparse import urlparse, urlunparse
-else:
-    from html.entities import name2codepoint
-    from urllib.parse import urlparse, urlunparse
-    unichr = chr
-    unicode = str
+
+unichr = chr
+unicode = str
+
 
 __all__ = [
     'USER_AGENT',

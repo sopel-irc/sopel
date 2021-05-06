@@ -8,12 +8,9 @@ https://sopel.chat/
 """
 from __future__ import absolute_import, division, print_function, unicode_literals
 
-from sopel import plugin
+from urllib.parse import urlencode
 
-try:
-    from urllib.parse import urlencode
-except ImportError:
-    from urllib import urlencode
+from sopel import plugin
 
 
 @plugin.command('lmgtfy', 'lmgify', 'gify', 'gtfy')
