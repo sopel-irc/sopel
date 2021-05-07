@@ -54,8 +54,8 @@ MAX_BYTES = 655360 * 2
 
 
 class UrlSection(types.StaticSection):
-    enable_auto_title = types.ValidatedAttribute(
-        'enable_auto_title', bool, default=True)
+    enable_auto_title = types.BooleanAttribute(
+        'enable_auto_title', default=True)
     """Enable auto-title (enabled by default)"""
     # TODO some validation rules maybe?
     exclude = types.ListAttribute('exclude')
@@ -65,11 +65,11 @@ class UrlSection(types.StaticSection):
     shorten_url_length = types.ValidatedAttribute(
         'shorten_url_length', int, default=0)
     """If greater than 0, the title fetcher will include a TinyURL version of links longer than this many characters."""
-    enable_private_resolution = types.ValidatedAttribute(
-        'enable_private_resolution', bool, default=False)
+    enable_private_resolution = types.BooleanAttribute(
+        'enable_private_resolution', default=False)
     """Enable URL lookups for RFC1918 addresses"""
-    enable_dns_resolution = types.ValidatedAttribute(
-        'enable_dns_resolution', bool, default=False)
+    enable_dns_resolution = types.BooleanAttribute(
+        'enable_dns_resolution', default=False)
     """Enable DNS resolution for all domains to validate if there are RFC1918 resolutions"""
 
 

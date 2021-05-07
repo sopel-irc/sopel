@@ -182,9 +182,8 @@ class HelpSection(types.StaticSection):
                                          REPLY_METHODS,
                                          default='channel')
     """Where/how to reply to help commands (public/private)."""
-    show_server_host = types.ValidatedAttribute('show_server_host',
-                                                bool,
-                                                default=True)
+    show_server_host = types.BooleanAttribute('show_server_host',
+                                              default=True)
     """Show the IRC server's hostname/IP in the first line of the help listing?"""
 
 

@@ -47,9 +47,7 @@ cache_limit = 512
 
 
 class SafetySection(types.StaticSection):
-    enabled_by_default = types.ValidatedAttribute('enabled_by_default',
-                                                  bool,
-                                                  default=True)
+    enabled_by_default = types.BooleanAttribute('enabled_by_default', default=True)
     """Whether to enable URL safety in all channels where it isn't explicitly disabled."""
     known_good = types.ListAttribute('known_good')
     """List of "known good" domains to ignore."""

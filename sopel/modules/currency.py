@@ -40,9 +40,7 @@ rates_updated = 0.0
 class CurrencySection(types.StaticSection):
     fixer_io_key = types.ValidatedAttribute('fixer_io_key', default=None)
     """Optional API key for Fixer.io (increases currency support)"""
-    auto_convert = types.ValidatedAttribute('auto_convert',
-                                            parse=bool,
-                                            default=False)
+    auto_convert = types.BooleanAttribute('auto_convert', default=False)
     """Whether to convert currencies without an explicit command"""
 
 
