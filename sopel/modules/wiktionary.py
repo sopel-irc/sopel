@@ -18,7 +18,7 @@ from sopel.tools import web
 PLUGIN_OUTPUT_PREFIX = '[wiktionary] '
 
 uri = 'https://en.wiktionary.org/w/index.php?title=%s&printable=yes'
-r_sup = re.compile(r'<sup[^>]+>.+</sup>')  # Superscripts that are references only, not ordinal indicators, etc...
+r_sup = re.compile(r'<sup[^>]+>.+?</sup>')  # Superscripts that are references only, not ordinal indicators, etc...
 r_tag = re.compile(r'<[^>]+>')
 r_ul = re.compile(r'(?ims)<ul>.*?</ul>')
 
