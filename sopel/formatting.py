@@ -6,7 +6,7 @@
 # Copyright 2014, Elsie Powell, embolalia.com
 # Copyright 2019, dgw, technobabbl.es
 # Licensed under the Eiffel Forum License 2.
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import generator_stop
 
 import re
 import string

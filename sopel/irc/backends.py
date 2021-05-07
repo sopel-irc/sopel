@@ -4,7 +4,7 @@
 # Licensed under the Eiffel Forum License 2.
 # When working on core IRC protocol related features, consult protocol
 # documentation at http://www.irchelp.org/irchelp/rfc/
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import generator_stop
 
 import asynchat
 import asyncore

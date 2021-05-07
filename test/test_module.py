@@ -7,7 +7,7 @@
     compatible up to Sopel 9, when it will be removed.
 
 """
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import generator_stop
 
 import pytest
 

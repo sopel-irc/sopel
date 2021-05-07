@@ -17,7 +17,7 @@ applications, APIs, or websites in your plugins.
 # Copyright © 2019, dgw, technobabbl.es
 # Licensed under the Eiffel Forum License 2.
 
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import generator_stop
 
 from html.entities import name2codepoint
 import re
