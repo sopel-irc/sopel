@@ -33,6 +33,8 @@ from ._events import events  # NOQA
 from . import time, web  # NOQA
 
 
+# Kept for backward compatibility
+# TODO: consider removing that
 raw_input = input
 iteritems = dict.items
 itervalues = dict.values

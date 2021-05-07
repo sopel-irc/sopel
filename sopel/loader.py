@@ -18,7 +18,7 @@ import re
 import sys
 
 from sopel.config.core_section import COMMAND_DEFAULT_HELP_PREFIX
-from sopel.tools import deprecated, itervalues
+from sopel.tools import deprecated
 
 
 LOGGER = logging.getLogger(__name__)
@@ -278,7 +278,7 @@ def clean_module(module, config):
     shutdowns = []
     jobs = []
     urls = []
-    for obj in itervalues(vars(module)):
+    for obj in vars(module).values():
         if callable(obj):
             is_sopel_callable = getattr(obj, '_sopel_callable', False) is True
             if getattr(obj, '__name__', None) == 'shutdown':

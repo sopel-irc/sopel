@@ -240,7 +240,7 @@ def _clean_cache(bot):
             # clean up by age first
             cutoff = time.time() - (7 * 24 * 60 * 60)  # 7 days ago
             old_keys = []
-            for key, data in tools.iteritems(bot.memory['safety_cache']):
+            for key, data in bot.memory['safety_cache'].items():
                 if data['fetched'] <= cutoff:
                     old_keys.append(key)
             for key in old_keys:

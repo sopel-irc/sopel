@@ -35,7 +35,7 @@ from sopel import loader, module, plugin
 from sopel.config import ConfigurationError
 from sopel.irc import isupport
 from sopel.irc.utils import CapReq, MyInfo
-from sopel.tools import events, Identifier, iteritems, SopelMemory, target, web
+from sopel.tools import events, Identifier, SopelMemory, target, web
 
 
 LOGGER = logging.getLogger(__name__)
@@ -451,7 +451,7 @@ def handle_names(bot, trigger):
 
     for name in names:
         priv = 0
-        for prefix, value in iteritems(mapping):
+        for prefix, value in mapping.items():
             if prefix in name:
                 priv = priv | value
         nick = Identifier(name.lstrip(''.join(mapping.keys())))
@@ -933,7 +933,7 @@ def receive_cap_ls_reply(bot, trigger):
         if cap not in bot._cap_reqs:
             bot._cap_reqs[cap] = [CapReq('', 'coretasks', acct_warn)]
 
-    for cap, reqs in iteritems(bot._cap_reqs):
+    for cap, reqs in bot._cap_reqs.items():
         # At this point, we know mandatory and prohibited don't co-exist, but
         # we need to call back for optionals if they're also prohibited
         prefix = ''

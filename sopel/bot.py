@@ -349,7 +349,7 @@ class Sopel(irc.AbstractBot):
             # nothing to check
             return
 
-        for key, callback in tools.iteritems(self.memory['url_callbacks']):
+        for key, callback in self.memory['url_callbacks'].items():
             is_checked = getattr(
                 callback, '_sopel_url_callbacks_checked', False)
             if is_checked:
@@ -1207,7 +1207,7 @@ class Sopel(irc.AbstractBot):
             # nothing to search
             return
 
-        for regex, function in tools.iteritems(self.memory['url_callbacks']):
+        for regex, function in self.memory['url_callbacks'].items():
             match = regex.search(url)
             if match:
                 yield function, match

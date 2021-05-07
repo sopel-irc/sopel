@@ -114,7 +114,7 @@ class MockSopel(object):
             pass
 
     def search_url_callbacks(self, url):
-        for regex, function in tools.iteritems(self.memory['url_callbacks']):
+        for regex, function in self.memory['url_callbacks'].items():
             match = regex.search(url)
             if match:
                 yield function, match
