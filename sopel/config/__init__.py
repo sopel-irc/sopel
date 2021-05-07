@@ -57,9 +57,6 @@ from sopel import tools
 from . import core_section, types
 
 
-basestring = str
-
-
 __all__ = [
     'core_section',
     'types',
@@ -333,7 +330,7 @@ class Config(object):
             value = getattr(self, name)
             if not value:
                 return []
-            if isinstance(value, basestring):
+            if isinstance(value, str):
                 value = value.split(',')
                 # Keep the split value, so we don't have to keep doing this
                 setattr(self, name, value)

@@ -11,7 +11,6 @@ from __future__ import generator_stop
 
 import json
 import random
-import sys
 
 import requests
 
@@ -114,9 +113,6 @@ def tr(bot, trigger):
         )
         return
 
-    if sys.version_info.major < 3 and isinstance(msg, str):
-        msg = msg.decode('utf-8')
-
     msg = web.decode(msg)
     msg = '"%s" (%s to %s, translate.google.com)' % (msg, in_lang, out_lang)
     bot.say(msg)
@@ -179,9 +175,6 @@ def tr2(bot, trigger):
             'are you sure you specified valid language abbreviations?'
             % (src, dest))
         return
-
-    if sys.version_info.major < 3 and isinstance(msg, str):
-        msg = msg.decode('utf-8')
 
     msg = web.decode(msg)  # msg.replace('&#39;', "'")
     msg = '"%s" (%s to %s, translate.google.com)' % (msg, src, dest)

@@ -14,16 +14,12 @@ functions are available in a new package, ``sopel.tools.web``.
 
 from __future__ import generator_stop
 
-import sys
+import http.client as httplib
 
 import requests
 
 from .tools import deprecated
 
-if sys.version_info.major < 3:
-    import httplib
-else:
-    import http.client as httplib
 
 # Imports to facilitate transition from sopel.web to sopel.tools.web
 from .tools.web import (  # noqa

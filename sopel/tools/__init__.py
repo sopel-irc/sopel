@@ -216,10 +216,7 @@ def get_input(prompt):
         dropped in Sopel 8.0. The function will be removed in Sopel 8.1.
 
     """
-    if sys.version_info.major >= 3:
-        return input(prompt)
-    else:
-        return raw_input(prompt).decode('utf8')
+    return input(prompt)
 
 
 @deprecated('rule compilation tools are now private', '7.1', '8.0')

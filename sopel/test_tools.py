@@ -21,7 +21,6 @@ from __future__ import generator_stop
 
 import os
 import re
-import sys
 import tempfile
 
 try:
@@ -41,9 +40,6 @@ __all__ = [
     'insert_into_module',
     'run_example_tests',
 ]
-
-if sys.version_info.major >= 3:
-    basestring = str
 
 
 class MockConfig(config.Config):
@@ -103,13 +99,13 @@ class MockSopel(object):
         cfg.parser.set('core', 'homedir', home_dir)
 
     def register_url_callback(self, pattern, callback):
-        if isinstance(pattern, basestring):
+        if isinstance(pattern, str):
             pattern = re.compile(pattern)
 
         self.memory['url_callbacks'][pattern] = callback
 
     def unregister_url_callback(self, pattern, callback):
-        if isinstance(pattern, basestring):
+        if isinstance(pattern, str):
             pattern = re.compile(pattern)
 
         try:

@@ -35,12 +35,11 @@ __all__ = [
 ]
 
 loc = locale.getlocale()
-if sys.version_info.major > 2:
-    if not loc[1] or 'UTF-8' not in loc[1]:
-        print('WARNING!!! You are running with a non-UTF8 locale environment '
-              'variables (e.g. LC_ALL is set to "C"), which makes Python 3 do '
-              'stupid things. If you get strange errors, please set it to '
-              'something like "en_US.UTF-8".', file=sys.stderr)
+if not loc[1] or 'UTF-8' not in loc[1]:
+    print('WARNING!!! You are running with a non-UTF8 locale environment '
+          'variables (e.g. LC_ALL is set to "C"), which makes Python 3 do '
+          'stupid things. If you get strange errors, please set it to '
+          'something like "en_US.UTF-8".', file=sys.stderr)
 
 
 __version__ = pkg_resources.get_distribution('sopel').version

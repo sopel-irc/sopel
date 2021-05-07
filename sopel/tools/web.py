@@ -21,7 +21,6 @@ from __future__ import generator_stop
 
 from html.entities import name2codepoint
 import re
-import sys
 import urllib
 from urllib.parse import urlparse, urlunparse
 
@@ -142,13 +141,10 @@ def unquote(string):
     :return str: the decoded ``string``
 
     .. note::
-        This is a shim to make writing cross-compatible plugins for both
-        Python 2 and Python 3 easier.
+
+        This is a convenient shortcut for ``urllib.parse.unquote``.
     """
-    if sys.version_info.major < 3:
-        return urllib.unquote(string.encode('utf-8')).decode('utf-8')
-    else:
-        return urllib.parse.unquote(string)
+    return urllib.parse.unquote(string)
 
 
 def quote_query(string):
@@ -166,30 +162,24 @@ def quote_query(string):
 
 def urlencode_non_ascii(b):
     """Safely encodes non-ASCII characters in a URL."""
-    regex = '[\x80-\xFF]'
-    if sys.version_info.major > 2:
-        regex = b'[\x80-\xFF]'
-    return re.sub(regex, lambda c: '%%%02x' % ord(c.group(0)), b)
+    return re.sub(b'[\x80-\xFF]', lambda c: '%%%02x' % ord(c.group(0)), b)
 
 
 def iri_to_uri(iri):
     """Decodes an internationalized domain name (IDN)."""
     parts = urlparse(iri)
-    parts_seq = (part.encode('idna') if parti == 1 else urlencode_non_ascii(part.encode('utf-8')) for parti, part in enumerate(parts))
-    if sys.version_info.major > 2:
-        parts_seq = list(parts_seq)
-
+    parts_seq = list(
+        part.encode('idna')
+        if parti == 1 else urlencode_non_ascii(part.encode('utf-8'))
+        for parti, part in enumerate(parts)
+    )
     parsed = urlunparse(parts_seq)
-    if sys.version_info.major > 2:
-        return parsed.decode()
-    else:
-        return parsed
+    return parsed.decode()
 
 
-if sys.version_info.major < 3:
-    urlencode = urllib.urlencode
-else:
-    urlencode = urllib.parse.urlencode
+# direct shortcut kept for backward compatibility reasons
+# TODO consider removing this
+urlencode = urllib.parse.urlencode
 
 
 # Functions for URL detection

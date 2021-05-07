@@ -22,9 +22,7 @@ from . import utils
 # This is in case someone somehow manages to install Sopel on an old version
 # of pip (<9.0.0), which doesn't know about `python_requires`, or tries to run
 # from source on an unsupported version of Python.
-if sys.version_info < (2, 7) or (
-    sys.version_info.major >= 3 and sys.version_info < (3, 3)
-):
+if sys.version_info < (3, 6):
     tools.stderr('Error: Sopel requires Python 3.6+.')
     sys.exit(1)
 
