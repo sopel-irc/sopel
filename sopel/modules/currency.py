@@ -20,8 +20,11 @@ from sopel.config import types
 
 
 PLUGIN_OUTPUT_PREFIX = '[currency] '
-FIAT_URL = 'https://api.exchangeratesapi.io/latest?base=EUR'
-FIXER_URL = 'https://data.fixer.io/api/latest?base=EUR&access_key={}'
+FIAT_PROVIDERS = {
+    'exchangerate.host': 'https://api.exchangerate.host/latest?base=EUR',
+    'fixer.io': 'https://data.fixer.io/api/latest?base=EUR&access_key={}',
+    'ratesapi.io': 'https://api.ratesapi.io/api/latest?base=EUR',
+}
 CRYPTO_URL = 'https://api.coingecko.com/api/v3/exchange_rates'
 EXCHANGE_REGEX = re.compile(r'''
     ^(\d+(?:\.\d+)?)                                            # Decimal number
@@ -38,8 +41,12 @@ rates_updated = 0.0
 
 
 class CurrencySection(types.StaticSection):
+    fiat_provider = types.ChoiceAttribute('fiat_provider',
+                                          list(FIAT_PROVIDERS.keys()),
+                                          default='ratesapi.io')
+    """Which data provider to use (some of which require no API key)"""
     fixer_io_key = types.ValidatedAttribute('fixer_io_key', default=None)
-    """Optional API key for Fixer.io (increases currency support)"""
+    """API key for Fixer.io (widest currency support)"""
     auto_convert = types.BooleanAttribute('auto_convert', default=False)
     """Whether to convert currencies without an explicit command"""
 
@@ -49,11 +56,24 @@ def configure(config):
     | name | example | purpose |
     | ---- | ------- | ------- |
     | auto\\_convert | False | Whether to convert currencies without an explicit command |
-    | fixer\\_io\\_key | 0123456789abcdef0123456789abcdef | Optional API key for Fixer.io (increases currency support) |
+    | fiat\\_provider | ratesapi.io | Which data provider to use (some of which require no API key) |
+    | fixer\\_io\\_key | 0123456789abcdef0123456789abcdef | API key for Fixer.io (widest currency support) |
     """
     config.define_section('currency', CurrencySection, validate=False)
-    config.currency.configure_setting('fixer_io_key', 'Optional API key for Fixer.io (leave blank to use exchangeratesapi.io):')
-    config.currency.configure_setting('auto_convert', 'Whether to convert currencies without an explicit command?')
+    config.currency.configure_setting(
+        'fiat_provider',
+        'Which exchange rate provider do you want to use?\n'
+        'Available choices: {}'.format(
+            ', '.join(FIAT_PROVIDERS.keys())
+        ))
+    if config.currency.fiat_provider == 'fixer.io':
+        config.currency.configure_setting('fixer_io_key', 'API key for Fixer.io:')
+    elif config.currency.fixer_io_key is not None:
+        # Must be unset or it will override the chosen fiat_provider
+        # TODO: this is temporary for Sopel 7.x; see below
+        print('Chosen provider is {}; clearing Fixer.io API key.'.format(config.currency.fiat_provider))
+        config.currency.fixer_io_key = None
+    config.currency.configure_setting('auto_convert', 'Convert currencies without an explicit command?')
 
 
 def setup(bot):
@@ -174,20 +194,32 @@ def update_rates(bot):
 
     # If we have data that is less than 24h old, return
     if time.time() - rates_updated < 24 * 60 * 60:
+        LOGGER.debug('Skipping rate update; cache is less than 24h old')
         return
 
     # Update crypto rates
+    LOGGER.debug('Updating crypto rates from %s', CRYPTO_URL)
     response = requests.get(CRYPTO_URL)
     response.raise_for_status()
     rates_crypto = response.json()
 
     # Update fiat rates
     if bot.config.currency.fixer_io_key is not None:
-        response = requests.get(FIXER_URL.format(bot.config.currency.fixer_io_key))
+        LOGGER.debug('Updating fiat rates from Fixer.io')
+        if bot.config.currency.fiat_provider != 'fixer.io':
+            # Warning about future behavior change
+            LOGGER.warning(
+                'fiat_provider is set to %s, but Fixer.io API key is present; '
+                'using Fixer anyway. In Sopel 8, fiat_provider will take precedence.',
+                bot.config.currency.fiat_provider)
+
+        response = requests.get(FIAT_PROVIDERS['fixer.io'].format(bot.config.currency.fixer_io_key))
+
         if not response.json()['success']:
             raise FixerError('Fixer.io request failed with error: {}'.format(response.json()['error']))
     else:
-        response = requests.get(FIAT_URL)
+        LOGGER.debug('Updating fiat rates from %s', bot.config.currency.fiat_provider)
+        response = requests.get(FIAT_PROVIDERS[bot.config.currency.fiat_provider])
 
     response.raise_for_status()
     rates_fiat = response.json()
@@ -204,6 +236,7 @@ def update_rates(bot):
     # if an error aborted the operation prematurely, we want the next call to retry updating rates
     # therefore we'll update the stored timestamp at the last possible moment
     rates_updated = time.time()
+    LOGGER.debug('Rate update completed')
 
 
 @plugin.command('cur', 'currency', 'exchange')
