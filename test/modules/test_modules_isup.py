@@ -87,10 +87,6 @@ def test_isup_command_ok(irc, bot, user, requests_mock):
 
     irc.pm(user, '.isup example.com')
 
-    for t in bot.running_triggers:
-        # TODO: remove when botfactory can force everything to be unthreaded
-        t.join()
-
     assert len(bot.backend.message_sent) == 1, (
         '.isup command should output exactly one line')
     assert bot.backend.message_sent == rawlist(
@@ -108,10 +104,6 @@ def test_isup_command_http_error(irc, bot, user, requests_mock):
 
     irc.pm(user, '.isup example.com')
 
-    for t in bot.running_triggers:
-        # TODO: remove when botfactory can force everything to be unthreaded
-        t.join()
-
     assert len(bot.backend.message_sent) == 1, (
         '.isup command should output exactly one line')
     assert bot.backend.message_sent == rawlist(
@@ -127,10 +119,6 @@ def test_isup_command_unparseable(irc, bot, user, requests_mock):
     )
 
     irc.pm(user, '.isup .foo')
-
-    for t in bot.running_triggers:
-        # TODO: remove when botfactory can force everything to be unthreaded
-        t.join()
 
     assert len(bot.backend.message_sent) == 1, (
         '.isup command should output exactly one line')
@@ -170,10 +158,6 @@ def test_isup_command_requests_error(irc, bot, user, requests_mock, exc, result)
 
     irc.pm(user, '.isup {}'.format(url))
 
-    for t in bot.running_triggers:
-        # TODO: remove when botfactory can force everything to be unthreaded
-        t.join()
-
     assert len(bot.backend.message_sent) == 1, (
         '.isup command should output exactly one line')
     assert bot.backend.message_sent == rawlist(
@@ -188,10 +172,6 @@ def test_isupinsecure_command(irc, bot, user, requests_mock):
     )
 
     irc.pm(user, '.isupinsecure https://example.com')
-
-    for t in bot.running_triggers:
-        # TODO: remove when botfactory can force everything to be unthreaded
-        t.join()
 
     assert len(bot.backend.message_sent) == 1, (
         '.isupinsecure command should output exactly one line')
