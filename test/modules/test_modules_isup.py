@@ -2,8 +2,6 @@
 """Tests for Sopel's ``isup`` plugin"""
 from __future__ import absolute_import, division, print_function, unicode_literals
 
-import time
-
 import pytest
 import requests.exceptions
 
@@ -89,9 +87,9 @@ def test_isup_command_ok(irc, bot, user, requests_mock):
 
     irc.pm(user, '.isup example.com')
 
-    while bot.running_triggers:
+    for t in bot.running_triggers:
         # TODO: remove when botfactory can force everything to be unthreaded
-        time.sleep(0.1)
+        t.join()
 
     assert len(bot.backend.message_sent) == 1, (
         '.isup command should output exactly one line')
@@ -110,9 +108,9 @@ def test_isup_command_http_error(irc, bot, user, requests_mock):
 
     irc.pm(user, '.isup example.com')
 
-    while bot.running_triggers:
+    for t in bot.running_triggers:
         # TODO: remove when botfactory can force everything to be unthreaded
-        time.sleep(0.1)
+        t.join()
 
     assert len(bot.backend.message_sent) == 1, (
         '.isup command should output exactly one line')
@@ -130,9 +128,9 @@ def test_isup_command_unparseable(irc, bot, user, requests_mock):
 
     irc.pm(user, '.isup .foo')
 
-    while bot.running_triggers:
+    for t in bot.running_triggers:
         # TODO: remove when botfactory can force everything to be unthreaded
-        time.sleep(0.1)
+        t.join()
 
     assert len(bot.backend.message_sent) == 1, (
         '.isup command should output exactly one line')
@@ -172,9 +170,9 @@ def test_isup_command_requests_error(irc, bot, user, requests_mock, exc, result)
 
     irc.pm(user, '.isup {}'.format(url))
 
-    while bot.running_triggers:
+    for t in bot.running_triggers:
         # TODO: remove when botfactory can force everything to be unthreaded
-        time.sleep(0.1)
+        t.join()
 
     assert len(bot.backend.message_sent) == 1, (
         '.isup command should output exactly one line')
@@ -191,9 +189,9 @@ def test_isupinsecure_command(irc, bot, user, requests_mock):
 
     irc.pm(user, '.isupinsecure https://example.com')
 
-    while bot.running_triggers:
+    for t in bot.running_triggers:
         # TODO: remove when botfactory can force everything to be unthreaded
-        time.sleep(0.1)
+        t.join()
 
     assert len(bot.backend.message_sent) == 1, (
         '.isupinsecure command should output exactly one line')
