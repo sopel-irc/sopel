@@ -64,17 +64,28 @@ host = chat.freenode.net
 """
 
 
-def test_isup_command_ok(botfactory, configfactory, ircfactory, userfactory, requests_mock):
+@pytest.fixture
+def bot(botfactory, configfactory):
+    settings = configfactory('default.ini', TMP_CONFIG)
+    return botfactory.preloaded(settings, ['isup'])
+
+
+@pytest.fixture
+def irc(bot, ircfactory):
+    return ircfactory(bot)
+
+
+@pytest.fixture
+def user(userfactory):
+    return userfactory('User')
+
+
+def test_isup_command_ok(irc, bot, user, requests_mock):
     """Test working URL."""
     requests_mock.head(
         'http://example.com',
         status_code=301,
     )
-
-    settings = configfactory('default.ini', TMP_CONFIG)
-    bot = botfactory.preloaded(settings, ['isup'])
-    irc = ircfactory(bot)
-    user = userfactory('User')
 
     irc.pm(user, '.isup example.com')
 
@@ -89,18 +100,13 @@ def test_isup_command_ok(botfactory, configfactory, ircfactory, userfactory, req
     )
 
 
-def test_isup_command_http_error(botfactory, configfactory, ircfactory, userfactory, requests_mock):
+def test_isup_command_http_error(irc, bot, user, requests_mock):
     """Test URL that returns an HTTP error code."""
     requests_mock.head(
         'http://example.com',
         status_code=503,
         reason='Service Unavailable',
     )
-
-    settings = configfactory('default.ini', TMP_CONFIG)
-    bot = botfactory.preloaded(settings, ['isup'])
-    irc = ircfactory(bot)
-    user = userfactory('User')
 
     irc.pm(user, '.isup example.com')
 
@@ -115,17 +121,12 @@ def test_isup_command_http_error(botfactory, configfactory, ircfactory, userfact
     )
 
 
-def test_isup_command_unparseable(botfactory, configfactory, ircfactory, userfactory, requests_mock):
+def test_isup_command_unparseable(irc, bot, user, requests_mock):
     """Test URL that can't be parsed."""
     requests_mock.head(
         'http://.foo',
         exc=ValueError("Failed to parse: '.foo', label empty or too long"),
     )
-
-    settings = configfactory('default.ini', TMP_CONFIG)
-    bot = botfactory.preloaded(settings, ['isup'])
-    irc = ircfactory(bot)
-    user = userfactory('User')
 
     irc.pm(user, '.isup .foo')
 
@@ -161,20 +162,13 @@ ISUP_EXCEPTIONS = (
 
 
 @pytest.mark.parametrize('exc, result', ISUP_EXCEPTIONS)
-def test_isup_command_requests_error(
-    exc, result, botfactory, configfactory, ircfactory, userfactory, requests_mock
-):
+def test_isup_command_requests_error(irc, bot, user, requests_mock, exc, result):
     """Test various error cases."""
     url = result.split()[0]
     requests_mock.head(
         url,
         exc=exc,
     )
-
-    settings = configfactory('default.ini', TMP_CONFIG)
-    bot = botfactory.preloaded(settings, ['isup'])
-    irc = ircfactory(bot)
-    user = userfactory('User')
 
     irc.pm(user, '.isup {}'.format(url))
 
@@ -189,16 +183,11 @@ def test_isup_command_requests_error(
     )
 
 
-def test_isupinsecure_command(botfactory, configfactory, ircfactory, userfactory, requests_mock):
+def test_isupinsecure_command(irc, bot, user, requests_mock):
     """Test working URL."""
     requests_mock.head(
         'https://example.com',
     )
-
-    settings = configfactory('default.ini', TMP_CONFIG)
-    bot = botfactory.preloaded(settings, ['isup'])
-    irc = ircfactory(bot)
-    user = userfactory('User')
 
     irc.pm(user, '.isupinsecure https://example.com')
 
