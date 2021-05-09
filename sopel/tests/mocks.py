@@ -35,16 +35,30 @@ class MockIRCServer(object):
 
     :param bot: test bot instance to send messages to
     :type bot: :class:`sopel.bot.Sopel`
+    :param bool join_threads: whether message functions should join running
+                              threads before returning (default: ``True``)
 
     This mock object helps developers when they want to simulate an IRC server
     sending messages to the bot.
 
+    The default ``join_threads`` behavior is suitable for testing most common
+    plugin callables, and ensures that all callables dispatched by the ``bot``
+    in response to messages sent via this ``MockIRCServer`` are finished
+    running before execution can continue. This parameter exists only in case
+    some advanced plugin design requires the automatic management of triggered
+    threads to be disabled for successful testing.
+
     The :class:`~sopel.tests.factories.IRCFactory` factory can be used to
     create such mock object, either directly or by using ``py.test`` and the
     :func:`~sopel.tests.pytest_plugin.ircfactory` fixture.
+
+    .. versionadded:: 7.1
+
+        The ``join_threads`` parameter.
     """
-    def __init__(self, bot):
+    def __init__(self, bot, join_threads=True):
         self.bot = bot
+        self.join_threads = join_threads
 
     @property
     def chanserv(self):
@@ -102,6 +116,10 @@ class MockIRCServer(object):
         )
         self.bot.on_message(message)
 
+        if self.join_threads:
+            for t in self.bot.running_triggers:
+                t.join()
+
     def mode_set(self, channel, flags, users):
         """Send a MODE event for a ``channel``
 
@@ -125,6 +143,10 @@ class MockIRCServer(object):
         )
         self.bot.on_message(message)
 
+        if self.join_threads:
+            for t in self.bot.running_triggers:
+                t.join()
+
     def join(self, user, channel):
         """Send a ``channel`` JOIN event from ``user``.
 
@@ -143,6 +165,10 @@ class MockIRCServer(object):
             the user factory's :meth:`~MockUser.join` method.
         """
         self.bot.on_message(user.join(channel))
+
+        if self.join_threads:
+            for t in self.bot.running_triggers:
+                t.join()
 
     def say(self, user, channel, text):
         """Send a ``PRIVMSG`` to ``channel`` by ``user``.
@@ -164,6 +190,10 @@ class MockIRCServer(object):
         """
         self.bot.on_message(user.privmsg(channel, text))
 
+        if self.join_threads:
+            for t in self.bot.running_triggers:
+                t.join()
+
     def pm(self, user, text):
         """Send a ``PRIVMSG`` to the bot by a ``user``.
 
@@ -183,6 +213,10 @@ class MockIRCServer(object):
             bot's nick as recipient.
         """
         self.bot.on_message(user.privmsg(self.bot.nick, text))
+
+        if self.join_threads:
+            for t in self.bot.running_triggers:
+                t.join()
 
 
 class MockUser(object):
