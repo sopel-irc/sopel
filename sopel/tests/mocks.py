@@ -75,7 +75,7 @@ class MockIRCServer(object):
         of users automatically, and you **should not** pass it in the ``users``
         parameter.
 
-        This is particulary useful to populate the bot's memory of who is in
+        This is particularly useful to populate the bot's memory of who is in
         a channel.
 
         .. note::

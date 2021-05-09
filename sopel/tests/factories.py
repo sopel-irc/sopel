@@ -34,7 +34,7 @@ class BotFactory(object):
         every other plugin from ``preloads``::
 
             factory = BotFactory()
-            bot = factory.with_autoloads(settings, ['emoticons', 'remind'])
+            bot = factory.preloaded(settings, ['emoticons', 'remind'])
 
         .. note::
 
