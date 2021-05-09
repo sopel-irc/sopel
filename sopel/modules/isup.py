@@ -97,9 +97,7 @@ def isup_insecure(bot, trigger):
 
 
 @plugin.command('isup')
-@plugin.example('.isup google.com',
-                'http://google.com looks fine to me.',
-                online=True, vcr=True)
+@plugin.example('.isup google.com')
 @plugin.output_prefix(PLUGIN_OUTPUT_PREFIX)
 def isup(bot, trigger):
     """Check if a website is up or not."""
