@@ -17,12 +17,13 @@ import requests
 
 from sopel import plugin
 from sopel.config import types
+from sopel.tools import web
 
 
 PLUGIN_OUTPUT_PREFIX = '[currency] '
 FIAT_PROVIDERS = {
     'exchangerate.host': 'https://api.exchangerate.host/latest?base=EUR',
-    'fixer.io': 'http://data.fixer.io/api/latest?base=EUR&access_key={}',
+    'fixer.io': '//data.fixer.io/api/latest?base=EUR&access_key={}',
     'ratesapi.io': 'https://api.ratesapi.io/api/latest?base=EUR',
 }
 CRYPTO_URL = 'https://api.coingecko.com/api/v3/exchange_rates'
@@ -47,6 +48,8 @@ class CurrencySection(types.StaticSection):
     """Which data provider to use (some of which require no API key)"""
     fixer_io_key = types.ValidatedAttribute('fixer_io_key', default=None)
     """API key for Fixer.io (widest currency support)"""
+    fixer_use_ssl = types.BooleanAttribute('fixer_use_ssl', default=False)
+    """Whether to use SSL (HTTPS) for Fixer API"""
     auto_convert = types.BooleanAttribute('auto_convert', default=False)
     """Whether to convert currencies without an explicit command"""
 
@@ -58,6 +61,7 @@ def configure(config):
     | auto\\_convert | False | Whether to convert currencies without an explicit command |
     | fiat\\_provider | ratesapi.io | Which data provider to use (some of which require no API key) |
     | fixer\\_io\\_key | 0123456789abcdef0123456789abcdef | API key for Fixer.io (widest currency support) |
+    | fixer\\_use\\_ssl | False | Whether to use SSL (HTTPS) for Fixer API (requires paid API access) |
     """
     config.define_section('currency', CurrencySection, validate=False)
     config.currency.configure_setting(
@@ -68,6 +72,7 @@ def configure(config):
         ))
     if config.currency.fiat_provider == 'fixer.io':
         config.currency.configure_setting('fixer_io_key', 'API key for Fixer.io:')
+        config.currency.configure_setting('fixer_use_ssl', 'Use SSL (paid plans only) for Fixer.io?')
     elif config.currency.fixer_io_key is not None:
         # Must be unset or it will override the chosen fiat_provider
         # TODO: this is temporary for Sopel 7.x; see below
@@ -220,7 +225,13 @@ def update_rates(bot):
                 'using Fixer anyway. In Sopel 8, fiat_provider will take precedence.',
                 bot.config.currency.fiat_provider)
 
-        response = requests.get(FIAT_PROVIDERS['fixer.io'].format(bot.config.currency.fixer_io_key))
+        proto = 'https:' if bot.config.currency.fixer_use_ssl else 'http:'
+        response = requests.get(
+            proto +
+            FIAT_PROVIDERS['fixer.io'].format(
+                web.quote(bot.config.currency.fixer_io_key)
+            )
+        )
 
         if not response.json()['success']:
             raise FixerError('Fixer.io request failed with error: {}'.format(response.json()['error']))
