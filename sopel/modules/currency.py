@@ -141,7 +141,7 @@ def exchange(bot, match):
     query = match.string
 
     targets = query.split()
-    amount = targets.pop(0)
+    amount_in = targets.pop(0)
     base = targets.pop(0)
     targets.pop(0)
 
@@ -149,7 +149,7 @@ def exchange(bot, match):
     # amount, base, _, *targets = query.split()
 
     try:
-        amount = float(amount)
+        amount = float(amount_in)
     except ValueError:
         bot.reply(UNRECOGNIZED_INPUT)
         return
@@ -161,7 +161,7 @@ def exchange(bot, match):
         bot.reply("Zero is zero, no matter what country you're in.")
         return
 
-    out_string = '{} {} is'.format(amount, base.upper())
+    out_string = '{} {} is'.format(amount_in, base.upper())
 
     unsupported_currencies = []
     for target in targets:
@@ -259,10 +259,10 @@ def update_rates(bot):
 
 @plugin.command('cur', 'currency', 'exchange')
 @plugin.example('.cur 100 usd in btc cad eur',
-                r'100\.0 USD is [\d\.]+ BTC, [\d\.]+ CAD, [\d\.]+ EUR',
+                r'100 USD is [\d\.]+ BTC, [\d\.]+ CAD, [\d\.]+ EUR',
                 re=True, online=True, vcr=True)
 @plugin.example('.cur 100 usd in btc cad eur can aux',
-                r'100\.0 USD is [\d\.]+ BTC, [\d\.]+ CAD, [\d\.]+ EUR, \(unsupported: CAN, AUX\)',
+                r'100 USD is [\d\.]+ BTC, [\d\.]+ CAD, [\d\.]+ EUR, \(unsupported: CAN, AUX\)',
                 re=True, online=True, vcr=True)
 @plugin.output_prefix(PLUGIN_OUTPUT_PREFIX)
 def exchange_cmd(bot, trigger):
