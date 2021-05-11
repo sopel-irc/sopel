@@ -84,9 +84,9 @@ def handle_isup(bot, trigger, secure=True):
         bot.say(
             '{} looks down to me (connection error).'
             .format(site))
-
-    # If no exception happened, the request succeeded.
-    bot.say(site + ' looks fine to me.')
+    else:
+        # If no exception happened, the request must have succeeded.
+        bot.say(site + ' looks fine to me.')
 
 
 @plugin.command('isupinsecure')
@@ -97,9 +97,7 @@ def isup_insecure(bot, trigger):
 
 
 @plugin.command('isup')
-@plugin.example('.isup google.com',
-                'http://google.com looks fine to me.',
-                online=True, vcr=True)
+@plugin.example('.isup google.com')
 @plugin.output_prefix(PLUGIN_OUTPUT_PREFIX)
 def isup(bot, trigger):
     """Check if a website is up or not."""
