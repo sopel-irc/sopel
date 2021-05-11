@@ -17,6 +17,7 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 import codecs
 from collections import defaultdict
 import functools
+import inspect
 import logging
 import os
 import re
@@ -168,10 +169,35 @@ def deprecated(
     def deprecated_func(*args, **kwargs):
         if not (warning_in and
                 parse_version(warning_in) >= parse_version(__version__)):
-            stderr(text)
-            # Only display the last frame
+            original_frame = inspect.stack()[-stack_frame]
+            mod = inspect.getmodule(original_frame[0])
+            module_name = None
+            if mod:
+                module_name = mod.__name__
+            if module_name:
+                if module_name.startswith('sopel.'):
+                    # core, or core plugin
+                    logger = logging.getLogger(module_name)
+                else:
+                    # probably a plugin; use Sopel's public API for getting the
+                    # logger for a plugin
+                    if module_name.startswith('sopel_modules.'):
+                        # namespace package plugins have a prefix, obviously
+                        # TODO: use str.removeprefix() when we drop Python<3.9
+                        module_name = module_name.replace('sopel_modules.', '', 1)
+                    logger = get_logger(module_name)
+            else:
+                # don't know the module/plugin name, but we want to make sure
+                # the log line is still output, so just get *something*
+                logger = logging.getLogger(__name__)
+
+            # Format only the desired stack frame
             trace = traceback.extract_stack()
-            stderr(traceback.format_list(trace[:-1])[stack_frame][:-1])
+            trace_frame = traceback.format_list(trace[:-1])[stack_frame][:-1]
+
+            # Warn the user
+            logger.warning(text + "\n" + trace_frame)
+
         return func(*args, **kwargs)
 
     return deprecated_func
