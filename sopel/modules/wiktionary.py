@@ -18,7 +18,7 @@ from sopel.tools import web
 PLUGIN_OUTPUT_PREFIX = '[wiktionary] '
 
 uri = 'https://en.wiktionary.org/w/index.php?title=%s&printable=yes'
-r_sup = re.compile(r'<sup[^>]+>.+</sup>')  # Superscripts that are references only, not ordinal indicators, etc...
+r_sup = re.compile(r'<sup[^>]+>.+?</sup>')  # Superscripts that are references only, not ordinal indicators, etc...
 r_tag = re.compile(r'<[^>]+>')
 r_ul = re.compile(r'(?ims)<ul>.*?</ul>')
 
@@ -73,12 +73,12 @@ def wikt(word):
                     break
 
         if not is_new_mode:
+            if (mode == 'etymology') and ('<p>' in line):
+                etymology = text(line)
             # 'id="' can occur in definition lines <li> when <sup> tag is used for references;
             # make sure those are not excluded (see e.g., abecedarian).
-            if ('id="' in line) and ('<li>' not in line):
+            elif ('id="' in line) and ('<li>' not in line):
                 mode = None
-            elif (mode == 'etymology') and ('<p>' in line):
-                etymology = text(line)
             elif (mode is not None) and ('<li>' in line):
                 definitions.setdefault(mode, []).append(text(line))
 
