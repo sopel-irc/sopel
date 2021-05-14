@@ -163,9 +163,13 @@ def findandreplace(bot, trigger):
 
     sep = trigger.group('sep')
     old = trigger.group('old').replace('\\%s' % sep, sep)
-    new = bold(trigger.group('new')).replace('\\%s' % sep, sep)
+    new = trigger.group('new')
     me = False  # /me command
     flags = trigger.group('flags') or ''
+
+    # only clean/format the new string if it's non-empty
+    if new:
+        new = bold(new.replace('\\%s' % sep, sep))
 
     # If g flag is given, replace all. Otherwise, replace once.
     if 'g' in flags:
