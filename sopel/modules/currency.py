@@ -17,12 +17,13 @@ import requests
 
 from sopel import plugin
 from sopel.config import types
+from sopel.tools import web
 
 
 PLUGIN_OUTPUT_PREFIX = '[currency] '
 FIAT_PROVIDERS = {
     'exchangerate.host': 'https://api.exchangerate.host/latest?base=EUR',
-    'fixer.io': 'https://data.fixer.io/api/latest?base=EUR&access_key={}',
+    'fixer.io': '//data.fixer.io/api/latest?base=EUR&access_key={}',
     'ratesapi.io': 'https://api.ratesapi.io/api/latest?base=EUR',
 }
 CRYPTO_URL = 'https://api.coingecko.com/api/v3/exchange_rates'
@@ -47,6 +48,8 @@ class CurrencySection(types.StaticSection):
     """Which data provider to use (some of which require no API key)"""
     fixer_io_key = types.ValidatedAttribute('fixer_io_key', default=None)
     """API key for Fixer.io (widest currency support)"""
+    fixer_use_ssl = types.BooleanAttribute('fixer_use_ssl', default=False)
+    """Whether to use SSL (HTTPS) for Fixer API"""
     auto_convert = types.BooleanAttribute('auto_convert', default=False)
     """Whether to convert currencies without an explicit command"""
 
@@ -58,6 +61,7 @@ def configure(config):
     | auto\\_convert | False | Whether to convert currencies without an explicit command |
     | fiat\\_provider | ratesapi.io | Which data provider to use (some of which require no API key) |
     | fixer\\_io\\_key | 0123456789abcdef0123456789abcdef | API key for Fixer.io (widest currency support) |
+    | fixer\\_use\\_ssl | False | Whether to use SSL (HTTPS) for Fixer API (requires paid API access) |
     """
     config.define_section('currency', CurrencySection, validate=False)
     config.currency.configure_setting(
@@ -68,6 +72,7 @@ def configure(config):
         ))
     if config.currency.fiat_provider == 'fixer.io':
         config.currency.configure_setting('fixer_io_key', 'API key for Fixer.io:')
+        config.currency.configure_setting('fixer_use_ssl', 'Use SSL (paid plans only) for Fixer.io?')
     elif config.currency.fixer_io_key is not None:
         # Must be unset or it will override the chosen fiat_provider
         # TODO: this is temporary for Sopel 7.x; see below
@@ -97,10 +102,17 @@ def build_reply(amount, base, target, out_string):
     rate = float(rate_raw)
     result = float(rate * amount)
 
-    if target == 'BTC':
-        return out_string + ' {:.5f} {},'.format(result, target)
+    digits = 0
+    # up to 10 (8+2) digits precision when result is less than 1
+    # as smaller results need more precision
+    while digits < 8 and 1 / 10**digits > result:
+        digits += 1
 
-    return out_string + ' {:.2f} {},'.format(result, target)
+    digits += 2
+
+    out_string += ' {value:,.{precision}f} {currency},'.format(value=result, precision=digits, currency=target)
+
+    return out_string
 
 
 def exchange(bot, match):
@@ -129,7 +141,7 @@ def exchange(bot, match):
     query = match.string
 
     targets = query.split()
-    amount = targets.pop(0)
+    amount_in = targets.pop(0)
     base = targets.pop(0)
     targets.pop(0)
 
@@ -137,7 +149,7 @@ def exchange(bot, match):
     # amount, base, _, *targets = query.split()
 
     try:
-        amount = float(amount)
+        amount = float(amount_in)
     except ValueError:
         bot.reply(UNRECOGNIZED_INPUT)
         return
@@ -149,7 +161,7 @@ def exchange(bot, match):
         bot.reply("Zero is zero, no matter what country you're in.")
         return
 
-    out_string = '{} {} is'.format(amount, base.upper())
+    out_string = '{} {} is'.format(amount_in, base.upper())
 
     unsupported_currencies = []
     for target in targets:
@@ -213,7 +225,13 @@ def update_rates(bot):
                 'using Fixer anyway. In Sopel 8, fiat_provider will take precedence.',
                 bot.config.currency.fiat_provider)
 
-        response = requests.get(FIAT_PROVIDERS['fixer.io'].format(bot.config.currency.fixer_io_key))
+        proto = 'https:' if bot.config.currency.fixer_use_ssl else 'http:'
+        response = requests.get(
+            proto +
+            FIAT_PROVIDERS['fixer.io'].format(
+                web.quote(bot.config.currency.fixer_io_key)
+            )
+        )
 
         if not response.json()['success']:
             raise FixerError('Fixer.io request failed with error: {}'.format(response.json()['error']))
@@ -241,10 +259,10 @@ def update_rates(bot):
 
 @plugin.command('cur', 'currency', 'exchange')
 @plugin.example('.cur 100 usd in btc cad eur',
-                r'100\.0 USD is [\d\.]+ BTC, [\d\.]+ CAD, [\d\.]+ EUR',
+                r'100 USD is [\d\.]+ BTC, [\d\.]+ CAD, [\d\.]+ EUR',
                 re=True, online=True, vcr=True)
 @plugin.example('.cur 100 usd in btc cad eur can aux',
-                r'100\.0 USD is [\d\.]+ BTC, [\d\.]+ CAD, [\d\.]+ EUR, \(unsupported: CAN, AUX\)',
+                r'100 USD is [\d\.]+ BTC, [\d\.]+ CAD, [\d\.]+ EUR, \(unsupported: CAN, AUX\)',
                 re=True, online=True, vcr=True)
 @plugin.output_prefix(PLUGIN_OUTPUT_PREFIX)
 def exchange_cmd(bot, trigger):
