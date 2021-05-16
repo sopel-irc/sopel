@@ -228,7 +228,7 @@ def ircfactory():
             irc = ircfactory(bot)
             user = userfactory('User')
 
-            irc.say(user, '#test', '.mycommand'))
+            irc.say(user, '#test', '.mycommand')
 
             assert bot.backend.message_sent == rawlist(
                 'PRIVMSG #test :My plugin replied this.'

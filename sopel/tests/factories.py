@@ -34,7 +34,7 @@ class BotFactory(object):
         every other plugin from ``preloads``::
 
             factory = BotFactory()
-            bot = factory.with_autoloads(settings, ['emoticons', 'remind'])
+            bot = factory.preloaded(settings, ['emoticons', 'remind'])
 
         .. note::
 
@@ -108,8 +108,8 @@ class IRCFactory(object):
         The :func:`~sopel.tests.pytest_plugin.ircfactory` fixture can be used
         to create this factory.
     """
-    def __call__(self, mockbot):
-        return MockIRCServer(mockbot)
+    def __call__(self, mockbot, join_threads=True):
+        return MockIRCServer(mockbot, join_threads)
 
 
 class UserFactory(object):

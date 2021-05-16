@@ -35,28 +35,50 @@ class MockIRCServer(object):
 
     :param bot: test bot instance to send messages to
     :type bot: :class:`sopel.bot.Sopel`
+    :param bool join_threads: whether message functions should join running
+                              threads before returning (default: ``True``)
 
     This mock object helps developers when they want to simulate an IRC server
     sending messages to the bot.
 
+    The default ``join_threads`` behavior is suitable for testing most common
+    plugin callables, and ensures that all callables dispatched by the ``bot``
+    in response to messages sent via this ``MockIRCServer`` are finished
+    running before execution can continue. If set to ``False``, the mock
+    server will not wait for the bot to finish processing threaded
+    :term:`callables <Plugin callable>` before returning.
+
+    .. note::
+
+        You can override ``join_threads`` on a per-method-call basis with the
+        ``blocking`` arguments to the instance methods below.
+
     The :class:`~sopel.tests.factories.IRCFactory` factory can be used to
     create such mock object, either directly or by using ``py.test`` and the
     :func:`~sopel.tests.pytest_plugin.ircfactory` fixture.
+
+    .. versionadded:: 7.1
+
+        The ``join_threads`` parameter.
     """
-    def __init__(self, bot):
+    def __init__(self, bot, join_threads=True):
         self.bot = bot
+        self.join_threads = join_threads
+        # TODO: `blocking` method args below should be made kwarg-ONLY in py3
 
     @property
     def chanserv(self):
         """ChanServ's message prefix."""
         return 'ChanServ!ChanServ@services.'
 
-    def channel_joined(self, channel, users=None):
+    def channel_joined(self, channel, users=None, blocking=None):
         """Send events as if the bot just joined a channel.
 
         :param str channel: channel to send message for
         :param list users: list (or tuple) of nicknames that will be present
                            in the ``RPL_NAMREPLY`` event
+        :param bool blocking: whether to block until all triggered threads
+                              have finished (optional)
 
         This will send 2 messages to the bot:
 
@@ -75,8 +97,21 @@ class MockIRCServer(object):
         of users automatically, and you **should not** pass it in the ``users``
         parameter.
 
-        This is particulary useful to populate the bot's memory of who is in
+        This is particularly useful to populate the bot's memory of who is in
         a channel.
+
+        If ``blocking`` is ``True``, this method will wait to join all running
+        triggers' threads before returning. Setting it to ``False`` will skip
+        this step. If not specified, this :class:`MockIRCServer` instance's
+        ``join_threads`` argument will be obeyed.
+
+        .. versionadded:: 7.1
+
+            The ``blocking`` parameter.
+
+        .. seealso::
+
+            The ``join_threads`` argument to :class:`MockIRCServer`.
 
         .. note::
 
@@ -102,18 +137,37 @@ class MockIRCServer(object):
         )
         self.bot.on_message(message)
 
-    def mode_set(self, channel, flags, users):
+        if (blocking is None and self.join_threads) or blocking:
+            for t in self.bot.running_triggers:
+                t.join()
+
+    def mode_set(self, channel, flags, users, blocking=None):
         """Send a MODE event for a ``channel``
 
         :param str channel: channel receiving the MODE event
         :param str flags: MODE flags set
         :param list users: users getting the MODE flags
+        :param bool blocking: whether to block until all triggered threads
+                              have finished (optional)
 
         This will send a MODE message as if ``ChanServ`` added/removed channel
         modes for a set of ``users``. This method assumes the ``flags``
         parameter follows the `IRC specification for MODE`__::
 
             factory.mode_set('#test', '+vo-v', ['UserV', UserOP', 'UserAnon'])
+
+        If ``blocking`` is ``True``, this method will wait to join all running
+        triggers' threads before returning. Setting it to ``False`` will skip
+        this step. If not specified, this :class:`MockIRCServer` instance's
+        ``join_threads`` argument will be obeyed.
+
+        .. versionadded:: 7.1
+
+            The ``blocking`` parameter.
+
+        .. seealso::
+
+            The ``join_threads`` argument to :class:`MockIRCServer`.
 
         .. __: https://tools.ietf.org/html/rfc1459#section-4.2.3
         """
@@ -125,17 +179,36 @@ class MockIRCServer(object):
         )
         self.bot.on_message(message)
 
-    def join(self, user, channel):
+        if (blocking is None and self.join_threads) or blocking:
+            for t in self.bot.running_triggers:
+                t.join()
+
+    def join(self, user, channel, blocking=None):
         """Send a ``channel`` JOIN event from ``user``.
 
         :param user: factory for the user who joins the ``channel``
         :type user: :class:`MockUser`
         :param str channel: channel the ``user`` joined
+        :param bool blocking: whether to block until all triggered threads
+                              have finished (optional)
 
         This will send a ``JOIN`` message as if ``user`` just joined the
         channel::
 
             factory.join(MockUser('NewUser'), '#test')
+
+        If ``blocking`` is ``True``, this method will wait to join all running
+        triggers' threads before returning. Setting it to ``False`` will skip
+        this step. If not specified, this :class:`MockIRCServer` instance's
+        ``join_threads`` argument will be obeyed.
+
+        .. versionadded:: 7.1
+
+            The ``blocking`` parameter.
+
+        .. seealso::
+
+            The ``join_threads`` argument to :class:`MockIRCServer`.
 
         .. seealso::
 
@@ -144,18 +217,37 @@ class MockIRCServer(object):
         """
         self.bot.on_message(user.join(channel))
 
-    def say(self, user, channel, text):
+        if (blocking is None and self.join_threads) or blocking:
+            for t in self.bot.running_triggers:
+                t.join()
+
+    def say(self, user, channel, text, blocking=None):
         """Send a ``PRIVMSG`` to ``channel`` by ``user``.
 
         :param user: factory for the user who sends a message to ``channel``
         :type user: :class:`MockUser`
         :param str channel: recipient of the ``user``'s ``PRIVMSG``
         :param str text: content of the message sent to the ``channel``
+        :param bool blocking: whether to block until all triggered threads
+                              have finished (optional)
 
         This will send a ``PRIVMSG`` message as if ``user`` sent it to the
         ``channel``, and the server forwarded it to its clients::
 
             factory.say(MockUser('NewUser'), '#test', '.shrug')
+
+        If ``blocking`` is ``True``, this method will wait to join all running
+        triggers' threads before returning. Setting it to ``False`` will skip
+        this step. If not specified, this :class:`MockIRCServer` instance's
+        ``join_threads`` argument will be obeyed.
+
+        .. versionadded:: 7.1
+
+            The ``blocking`` parameter.
+
+        .. seealso::
+
+            The ``join_threads`` argument to :class:`MockIRCServer`.
 
         .. seealso::
 
@@ -164,17 +256,36 @@ class MockIRCServer(object):
         """
         self.bot.on_message(user.privmsg(channel, text))
 
-    def pm(self, user, text):
+        if (blocking is None and self.join_threads) or blocking:
+            for t in self.bot.running_triggers:
+                t.join()
+
+    def pm(self, user, text, blocking=None):
         """Send a ``PRIVMSG`` to the bot by a ``user``.
 
         :param user: factory for the user object who sends a message
         :type user: :class:`MockUser`
         :param str text: content of the message sent to the bot
+        :param bool blocking: whether to block until all triggered threads
+                              have finished (optional)
 
         This will send a ``PRIVMSG`` message as forwarded by the server for
         a ``user`` sending it to the bot::
 
             factory.pm(MockUser('NewUser'), 'A private word.')
+
+        If ``blocking`` is ``True``, this method will wait to join all running
+        triggers' threads before returning. Setting it to ``False`` will skip
+        this step. If not specified, this :class:`MockIRCServer` instance's
+        ``join_threads`` argument will be obeyed.
+
+        .. versionadded:: 7.1
+
+            The ``blocking`` parameter.
+
+        .. seealso::
+
+            The ``join_threads`` argument to :class:`MockIRCServer`.
 
         .. seealso::
 
@@ -183,6 +294,10 @@ class MockIRCServer(object):
             bot's nick as recipient.
         """
         self.bot.on_message(user.privmsg(self.bot.nick, text))
+
+        if (blocking is None and self.join_threads) or blocking:
+            for t in self.bot.running_triggers:
+                t.join()
 
 
 class MockUser(object):
