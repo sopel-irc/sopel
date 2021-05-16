@@ -276,6 +276,9 @@ bot is already in it::
         # user joins #channel after
         irc.join(user, '#channel')
 
+        # clear messages on join
+        bot.backend.clear_message_sent()
+
         # user talks into a channel
         irc.say(user, '.mycommand arg')
 
@@ -287,9 +290,12 @@ You can automate this setup within your fixture::
 
     @pytest.fixture
     def irc(bot, user, owner, ircfactory):
-        irc = ircfactory(bot)
-        irc.channel_join('#channel', users=[owner, user])
-        return irc
+        test_server = ircfactory(bot)
+        # auto-join channels
+        test_server.channel_join('#channel', users=[owner, user])
+        # clear messages on join
+        bot.backend.clear_message_sent()
+        return test_server
 
 And now you are all set up to test your plugin's commands and rules!
 
