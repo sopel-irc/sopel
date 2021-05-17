@@ -19,14 +19,21 @@ KNOWN_SETS = {
     'ze/hir': 'ze/hir/hir/hirs/hirself',
     'ze/zir': 'ze/zir/zir/zirs/zirself',
     'they': 'they/them/their/theirs/themselves',
+    'they/them': 'they/them/their/theirs/themselves',
     'they/.../themselves': 'they/them/their/theirs/themselves',
     'they/.../themself': 'they/them/their/theirs/themself',
     'she': 'she/her/her/hers/herself',
+    'she/her': 'she/her/her/hers/herself',
     'he': 'he/him/his/his/himself',
+    'he/him': 'he/him/his/his/himself',
     'xey': 'xey/xem/xyr/xyrs/xemself',
+    'xey/xem': 'xey/xem/xyr/xyrs/xemself',
     'sie': 'sie/hir/hir/hirs/hirself',
+    'sie/hir': 'sie/hir/hir/hirs/hirself',
     'it': 'it/it/its/its/itself',
-    'ey': 'ey/em/eir/eirs/eirslef',
+    'it/it': 'it/it/its/its/itself',
+    'ey': 'ey/em/eir/eirs/eirself',
+    'ey/em': 'ey/em/eir/eirs/eirself',
 }
 
 
@@ -71,8 +78,8 @@ def say_pronouns(bot, nick, pronouns):
 @plugin.command('setpronouns')
 @plugin.example('.setpronouns they/them/their/theirs/themselves')
 def set_pronouns(bot, trigger):
-    pronouns = trigger.group(2)
     """Set your pronouns."""
+    pronouns = trigger.group(2)
     if not pronouns:
         bot.reply('What pronouns do you use?')
         return
