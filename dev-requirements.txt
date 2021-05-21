@@ -6,6 +6,9 @@ flake8-coding
 flake8-future-import<0.4.6
 flake8-import-order; python_version > '3.3'
 flake8-import-order<=1.18.1; python_version <= '3.3'
+# transitive dependency of Sphinx
+# added f-strings in 2.x, but it's not worth doing a whole suite of version markers
+MarkupSafe<2.0
 pytest<3.3; python_version == '3.3'
 pytest>=4.6,<4.7; python_version != '3.3'
 pytest-vcr==1.0.2; python_version != '3.3'
@@ -14,7 +17,8 @@ PyYAML<5.1; python_version == '3.3'
 PyYAML<5.3; python_version == '3.4'
 requests-mock==1.9.1
 setuptools<40.0; python_version == '3.3'
-sphinx
+# use Sphinx 3.x until dev begins on Sopel 8 and we drop the dead snakes
+sphinx<4.0
 # autoprogram extension added type annotations in 0.1.6
 # such annotations require Python 3.5
 sphinxcontrib-autoprogram<0.1.6; python_version < '3.5'
