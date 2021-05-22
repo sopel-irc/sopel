@@ -81,7 +81,7 @@ and other `usage information <https://sopel.chat/usage/>`_.
 Questions?
 ----------
 
-Join us in `#sopel <irc://irc.freenode.net/#sopel>`_ on Freenode.
+Join us in `#sopel <irc://irc.libera.chat/#sopel>`_ on Libera Chat.
 
 Donations
 ---------

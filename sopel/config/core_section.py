@@ -648,16 +648,16 @@ class CoreSection(StaticSection):
         """
         return self._parent.homedir
 
-    host = ValidatedAttribute('host', default='chat.freenode.net')
+    host = ValidatedAttribute('host', default='irc.libera.chat')
     """The IRC server to connect to.
 
-    :default: ``chat.freenode.net``
+    :default: ``irc.libera.chat``
 
     **Required**:
 
     .. code-block:: ini
 
-        host = chat.freenode.net
+        host = irc.libera.chat
 
     """
 

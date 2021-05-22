@@ -148,9 +148,9 @@ class PreTrigger(object):
         #             print(text)    # 'foo bar!'
         #             print(argstr)  # ':nick!ident@domain PRIVMSG #sopel'
         #             print(args)    # [':nick!ident@domain', 'PRIVMSG', '#sopel', 'foo bar!']
-        # Example 2:  line = 'irc.freenode.net MODE Sopel +i'
+        # Example 2:  line = 'irc.libera.chat MODE Sopel +i'
         #             print(text)    # '+i'
-        #             print(args)    # ['irc.freenode.net', 'MODE', 'Sopel', '+i']
+        #             print(args)    # ['irc.libera.chat', 'MODE', 'Sopel', '+i']
         if ' :' in line:
             argstr, self.text = line.split(' :', 1)
             self.args = argstr.split(' ')

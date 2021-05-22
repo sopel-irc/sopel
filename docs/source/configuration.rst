@@ -10,7 +10,7 @@ A typical configuration file looks like this::
 
     [core]
     nick = Sopel
-    host = chat.freenode.net
+    host = irc.libera.chat
     use_ssl = true
     port = 6697
     owner = dgw
@@ -122,10 +122,10 @@ on the IRC server the bot connects to.
    The list of available modes depends on the implementation of the IRC server,
    and its configuration.
 
-   For example, the `user modes on freenode`__ is different from the list of
-   available `user modes on an UnrealIRCd server`__.
+   For example, the `user modes on Libera Chat`__ are different from the list
+   of available `user modes on an UnrealIRCd server`__.
 
-   .. __: https://freenode.net/kb/answer/usermodes
+   .. __: https://libera.chat/guides/usermodes
    .. __: https://www.unrealircd.org/docs/User_modes
 
 Owner & Admins
@@ -167,14 +167,14 @@ IRC Server
 To connect to a server, your bot needs these directives:
 
 * :attr:`~CoreSection.host`: the server's hostname. Can be a domain name
-  (like ``chat.freenode.net``) or an IP address.
+  (like ``irc.libera.chat``) or an IP address.
 * :attr:`~CoreSection.port`: optional, the port to connect to. Usually 6697 for
   SSL connection and 6667 for unsecure connection, the default value the bot
   will use to connect to the server.
 * :attr:`~CoreSection.use_ssl`: connect using SSL (see below)::
 
     [core]
-    host = chat.freenode.net
+    host = irc.libera.chat
     port = 6697
     use_ssl = true
 

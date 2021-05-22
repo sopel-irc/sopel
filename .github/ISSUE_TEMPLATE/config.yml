@@ -1,5 +1,5 @@
 blank_issues_enabled: true
 contact_links:
   - name: Sopel's IRC channel
-    url: https://webchat.freenode.net/#sopel
-    about: "For more interactive help, ask in #sopel on freenode. We're usually there daily."
+    url: https://kiwiirc.com/client/irc.libera.chat/#sopel
+    about: "For more interactive help, ask in #sopel on Libera Chat. We're usually there daily."

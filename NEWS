@@ -967,8 +967,8 @@ Now that Sopel 6.6.0 is released, the focus will shift from preparing the new
 release to migrating the website and documentation off of Embolalia's personal
 infrastructure. Once this migration is complete, Sopel's [documentation][docs]
 will be updated to reflect the changes/additions listed below. Questions about
-the new (and old) API methods are welcome in [#sopel][] on Freenode, of course,
-as always. Thank you for bearing with this transitional period!
+the new (and old) API methods are welcome in [#sopel][] on Libera Chat, of
+course, as always. Thank you for bearing with this transitional period!
 
 Importantly, a couple of broken modules have been removed in this release. For
 easy reference, they and their PyPI-installable replacements are listed near
@@ -1026,7 +1026,7 @@ journey at [#1446][] for the time being.
 
 
   [docs]: https://sopel.chat/docs/
-  [#sopel]: irc://chat.freenode.net/sopel
+  [#sopel]: irc://irc.libera.chat/sopel
   [GitHub milestones]: https://github.com/sopel-irc/sopel/milestones
   [#1200]: https://github.com/sopel-irc/sopel/issues/1200
   [#1291]: https://github.com/sopel-irc/sopel/issues/1291

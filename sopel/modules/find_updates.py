@@ -82,7 +82,7 @@ def check_version(bot):
             .format(version_url), bot.config.core.owner)
         bot.say(
             "[update] If this issue persists, please alert the Sopel dev team "
-            "in #sopel on freenode, or open a GitHub issue: "
+            "in #sopel on Libera Chat, or open a GitHub issue: "
             "https://github.com/sopel-irc/sopel/issues",
             bot.config.core.owner)
         return
