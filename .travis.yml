@@ -4,17 +4,6 @@ dist: bionic  # most recent base image by default
 language: python
 jobs:
   include:
-    - name: "Python 2.7 on Bionic"
-      python: 2.7
-    - name: "Python 3.3 on Trusty"
-      python: 3.3
-      dist: trusty  # trusty is the last image to officially support py3.3
-    - name: "Python 3.4 on Xenial"
-      python: 3.4
-      dist: xenial  # xenial is the last image to officially support py3.4
-    - name: "Python 3.5 on Xenial"
-      python: 3.5
-      dist: xenial  # xenial is the last image to officially support py3.5
     - name: "Python 3.6 on Bionic"
       python: 3.6
     - name: "Python 3.7 on Bionic"
@@ -35,8 +24,6 @@ cache:
   directories:
     - $HOME/.cache/pip
 install:
-  # setuptools should be left alone once we drop Python 3.3 support
-  - pip install --upgrade "setuptools<=39.2.0; python_version < '3.9'"
   - pip install --upgrade -r requirements.txt -r dev-requirements.txt
   - python setup.py develop
 script:
