@@ -12,15 +12,49 @@ from sopel.irc.abstract_backends import AbstractIRCBackend
 class MockIRCBackend(AbstractIRCBackend):
     """Fake IRC connection backend for testing purpose.
 
+    :param bot: a Sopel instance
+    :type bot: :class:`sopel.bot.Sopel`
+
     This backend doesn't require an actual connection. Instead, it stores every
     message sent in the :attr:`message_sent` list.
+
+    You can use the :func:`~sopel.tests.rawlist` function to compare the
+    messages easily, and the :meth:`clear_message_sent` method to clear
+    previous messages::
+
+        >>> from sopel.tests import rawlist, mocks
+        >>> backend = mocks.MockIRCBackend(bot=None)
+        >>> backend.irc_send(b'PRIVMSG #channel :Hi!\\r\\n')
+        >>> backend.message_sent == rawlist('PRIVMSG #channel :Hi!')
+        True
+        >>> backend.clear_message_sent()
+        [b'PRIVMSG #channel :Hi!\\r\\n']
+        >>> backend.message_sent
+        []
+
+    .. seealso::
+
+        The
+        :class:`parent class <sopel.irc.abstract_backends.AbstractIRCBackend>`
+        contains all the methods that can be used on this test backend.
+
     """
     def __init__(self, *args, **kwargs):
         super(MockIRCBackend, self).__init__(*args, **kwargs)
         self.message_sent = []
-        """List of raw messages sent by the bot."""
+        """List of raw messages sent by the bot.
+
+        This list will be populated each time the :meth:`irc_send` method is
+        used: it will contain the raw IRC lines the bot wanted to send.
+
+        You can clear this list with the :meth:`clear_message_sent` method, or
+        use the :func:`~sopel.tests.rawlist` function to compare it.
+        """
         self.connected = False
-        """Convenient status flag."""
+        """Convenient status flag.
+
+        Set to ``True`` to make the bot think it is connected.
+        """
 
     def is_connected(self):
         return self.connected
@@ -28,6 +62,20 @@ class MockIRCBackend(AbstractIRCBackend):
     def irc_send(self, data):
         """Store ``data`` into :attr:`message_sent`."""
         self.message_sent.append(data)
+
+    def clear_message_sent(self):
+        """Clear and return previous messages sent.
+
+        :return: a copy of the cleared messages sent
+        :rtype: :class:`list`
+
+        .. versionadded:: 7.1
+        """
+        # make a copy
+        sent = list(self.message_sent)
+        # clear the message sent
+        self.message_sent = []
+        return sent
 
 
 class MockIRCServer(object):

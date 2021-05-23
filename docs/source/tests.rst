@@ -6,6 +6,12 @@ Testing tools
     :local:
     :depth: 2
 
+Common tools
+============
+
+.. automodule:: sopel.tests
+   :members:
+
 Fixtures with py.test
 =====================
 
@@ -23,7 +29,6 @@ Mocks
 
 .. automodule:: sopel.tests.mocks
    :members:
-
 
 Old testing tools
 =================

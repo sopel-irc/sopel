@@ -9,6 +9,7 @@ Plugins: Developer Overview
    plugin/anatomy
    plugin/bot
    plugin/decorators
+   plugin/test
    plugin/advanced
    plugin/internals
 
