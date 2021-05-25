@@ -437,6 +437,10 @@ class SopelDB(object):
                               set (optional)
         :raise ~sqlalchemy.exc.SQLAlchemyError: if there is a database error
 
+        .. versionadded:: 7.0
+
+            The ``default`` parameter.
+
         .. seealso::
 
             To set a value for later retrieval with this method, use
@@ -691,6 +695,10 @@ class SopelDB(object):
                               set (optional)
         :raise ~sqlalchemy.exc.SQLAlchemyError: if there is a database error
 
+        .. versionadded:: 7.0
+
+            The ``default`` parameter.
+
         .. seealso::
 
             To set a value for later retrieval with this method, use
@@ -805,6 +813,10 @@ class SopelDB(object):
                               set (optional)
         :raise ~sqlalchemy.exc.SQLAlchemyError: if there is a database error
 
+        .. versionadded:: 7.0
+
+            The ``default`` parameter.
+
         .. seealso::
 
             To set a value for later retrieval with this method, use
@@ -842,6 +854,10 @@ class SopelDB(object):
         :param mixed default: value to return if ``key`` does not have a value
                               set (optional)
         :raise ~sqlalchemy.exc.SQLAlchemyError: if there is a database error
+
+        .. versionadded:: 7.0
+
+            The ``default`` parameter.
 
         This is useful for common logic that is shared between both users and
         channels, as it will fetch the appropriate value based on what type of
