@@ -12,12 +12,13 @@
 """
 from __future__ import absolute_import, division, print_function, unicode_literals
 
+import inspect
 import logging
 import re
 import sys
 
 from sopel.config.core_section import COMMAND_DEFAULT_HELP_PREFIX
-from sopel.tools import itervalues
+from sopel.tools import deprecated, itervalues
 
 
 if sys.version_info.major >= 3:
@@ -27,6 +28,11 @@ if sys.version_info.major >= 3:
 LOGGER = logging.getLogger(__name__)
 
 
+@deprecated(
+    reason="Replaced by simple logic using inspect.getdoc()",
+    version='7.1',
+    removed_in='8.0',
+)
 def trim_docstring(doc):
     """Get the docstring as a series of lines that can be sent.
 
@@ -71,8 +77,12 @@ def clean_callable(func, config):
     nick = config.core.nick
     help_prefix = config.core.help_prefix
     func._docs = {}
-    doc = trim_docstring(func.__doc__)
+    doc = []
     examples = []
+
+    docstring = inspect.getdoc(func)
+    if docstring:
+        doc = docstring.splitlines()
 
     func.thread = getattr(func, 'thread', True)
 
