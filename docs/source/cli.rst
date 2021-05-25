@@ -117,13 +117,13 @@ For example, take this stripped-down config file:
 
     [core]
     nick = ConfigFileNick
-    host = chat.freenode.net
+    host = irc.libera.chat
 
     [plugin_name]
     api_key = abad1dea
 
 Sopel would take the nickname ``ConfigFileNick`` when connecting to IRC at
-``chat.freenode.net``, and the ``plugin_name`` plugin would use the API key
+``irc.libera.chat``, and the ``plugin_name`` plugin would use the API key
 ``abad1dea`` when communicating with its remote service.
 
 However, by setting the environment variables:
@@ -134,7 +134,7 @@ However, by setting the environment variables:
     SOPEL_PLUGIN_NAME_API_KEY=1337c0ffee9001
 
 Sopel would take the nickname ``EnvVarNick`` when connecting to IRC (still at
-``chat.freenode.net``; that value isn't overridden or lost), and the
+``irc.libera.chat``; that value isn't overridden or lost), and the
 ``plugin_name`` plugin would use the API key ``1337c0ffee9001``, instead.
 
 .. versionadded:: 7.0

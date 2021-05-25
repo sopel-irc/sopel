@@ -19,7 +19,7 @@ The configuration file being:
 
     [core]
     nick = Sopel
-    host = irc.freenode.org
+    host = irc.libera.chat
     use_ssl = true
     port = 6697
     owner = dgw
@@ -125,8 +125,8 @@ class Config(object):
         self.basename = basename
         """The config's base filename, i.e. the filename without the extension.
 
-        If the filename is ``freenode.config.cfg``, then the ``basename`` will
-        be ``freenode.config``.
+        If the filename is ``libera.config.cfg``, then the ``basename`` will
+        be ``libera.config``.
         """
         self.parser = ConfigParser.RawConfigParser(allow_no_value=True)
         """The configuration parser object that does the heavy lifting.
