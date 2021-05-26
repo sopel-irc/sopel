@@ -24,7 +24,6 @@ PLUGIN_OUTPUT_PREFIX = '[currency] '
 FIAT_PROVIDERS = {
     'exchangerate.host': 'https://api.exchangerate.host/latest?base=EUR',
     'fixer.io': '//data.fixer.io/api/latest?base=EUR&access_key={}',
-    'ratesapi.io': 'https://api.ratesapi.io/api/latest?base=EUR',
 }
 CRYPTO_URL = 'https://api.coingecko.com/api/v3/exchange_rates'
 EXCHANGE_REGEX = re.compile(r'''
@@ -44,7 +43,7 @@ rates_updated = 0.0
 class CurrencySection(types.StaticSection):
     fiat_provider = types.ChoiceAttribute('fiat_provider',
                                           list(FIAT_PROVIDERS.keys()),
-                                          default='ratesapi.io')
+                                          default='exchangerate.host')
     """Which data provider to use (some of which require no API key)"""
     fixer_io_key = types.ValidatedAttribute('fixer_io_key', default=None)
     """API key for Fixer.io (widest currency support)"""
