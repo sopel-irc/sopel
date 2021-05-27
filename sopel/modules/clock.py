@@ -26,7 +26,7 @@ ERROR_NO_FORMAT = (
     'What format do you want me to use? '
     'Try using http://strftime.net to make one.')
 ERROR_INVALID_TIMEZONE = (
-    'Could not find timezone "%s".'
+    'Could not find timezone "%s". '
     'Try one from https://sopel.chat/tz')
 ERROR_INVALID_FORMAT = (
     "That format doesn't work. Try using "
