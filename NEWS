@@ -2,6 +2,351 @@ This file is used to auto-generate the "Changelog" section of Sopel's website.
 When adding new entries, follow the style guide in NEWS.spec.md to avoid
 causing problems with the site build.
 
+Changes between 7.0.7 and 7.1.0
+===============================
+
+Admittedly a few _months_ later than originally intended, Sopel 7.1.0 is ready
+to go. We've focused on polish this time around, both in documentation and
+features. Lots of little fixes add up to make something good—over 140 pull
+requests were merged for this release.
+
+We will now begin work on Sopel 8.0, focusing primarily on
+modernization—dropping the end-of-life Python versions that 7.x still
+supports—and on unbundling the core plugins so they can be updated separately.
+None of these plans are new, but we figured a reminder was in order as it's
+been some months since they last came up in Sopel 7.0's release notes!
+
+As always, you can keep up with development and give us feedback on
+[GitHub][sopel-github], [IRC][sopel-irc], or [Twitter][sopel-twitter].
+
+**Important note:** Sopel's IRC channel has moved from freenode to Libera Chat
+([#2072][]). You will find us in `#sopel` as always, but at a new network
+address: `irc.libera.chat`. At least some of the old guard will remain on
+freenode for the foreseeable future, to guide anyone running an older Sopel
+version to the new channel (and encourage them to update Sopel, too).
+
+Plugin changes
+--------------
+
+* Removed `instagram` plugin, as it was not possible to fix after changes to
+  the site [[#2000][]]
+* Merged `etymology` plugin functionality into `wiktionary` plugin [[#1178][],
+  [#2064][]]
+* admin:
+  * reply on save [[#1913][]]
+  * add `.chanlist` command to show Sopel's channel memberships [[#1961][]]
+* adminchannel:
+  * use `TOPICLEN` if server advertises it [[#1956][]]
+  * allow non-op `.topic` in channels without mode `+t` [[#1981][]]
+* announce: speed up by sending to multiple channels if the server supports it
+  [[#1859][], [#2048][]]
+* choose: safely handle formatted choices [[#1965][]]
+* currency:
+  * added thousands separator & better handling of small numbers [[#1988][]]
+  * improved error handling [[#2053][]]
+  * updated API endpoints [[#1988][], [#2060][], [#2074][]]
+* emoticons: added `.smirk` command & action responses [[#1899][]]
+* find: accept either `/` or `|` as delimiter, and format replacement text as
+  **bold** so it's easier to see the correction [[#1993][], [#2014][],
+  [#2066][]]
+* find_updates:
+  * prepare to handle unstable releases again [[#1955][]]
+  * improve error handling [[#2052][], [#2056][]]
+* ip: querying by nickname is no longer case-sensitive [[#1915][]]
+* isup: be more specific about what's wrong if the site looks down [[#1940][],
+  [#1950][], [#2063][]]
+* meetbot: tweaked handling of path settings [[#1959][]]
+* ping: added `.ping` command [[#1875][]]
+* pronouns: now understands two-word aliases for the full pronoun groups
+  [[#2069][]]
+* reddit:
+  * added handling for `r/all` and `r/popular` [[#1763][]]
+  * fixed incorrect behavior in `r/` and `u/` handling [[#1889][]]
+  * added basic handling for gallery view [[#1914][]]
+  * fixed a floating-point issue [[#1987][]]
+  * fixed grammar [[#2025][]]
+* remind: added commands to count/forget reminders [[#2007][]]
+* safety: switched away from obsolete list source [[#2012][]]
+* tell: strip `@` from the start of nicknames [[#1994][]]
+* tld: rewritten to be more robust [[#1939][], [#1949][], [#1968][],
+  [#1970][], [#1985][], [#2076][]]
+* url:
+  * tweaked to improve reliability of title fetching [[#1871][]]
+  * added a setting to control automatic titles [[#1897][]]
+  * adapted to upstream dependency changes [[#1989][]]
+  * add `.urlexclude`/`.urlallow` commands [[#2028][]]
+  * auto-title now ignores URLs in _any_ other command [[#2028][]]
+  * fixed showing an error when appropriate [[#2029][]]
+* wikipedia:
+  * can now fetch section snippets [[#1163][]]
+  * language preferences per-channel and per-nick are now stored in the
+    database, and manageable with commands [[#1916][]]
+* xkcd: show latest comic when base URL is linked [[#1858][]]
+* Built-in plugins' output formats were checked for consistency [[#1937][]]
+* Improved plugin documentation/help [[#1878][], [#1952][], [#1954][],
+  [#2002][], [#2035][]]
+* Updated some plugins to use new API features [[#1879][], [#1892][],
+  [#1894][], [#1995][]]
+* Minor code style fixes and cleanup [[#1856][], [#1880][], [#1910][],
+  [#1953][], [#1960][]]
+
+Core changes
+------------
+
+* Sopel's outbound flooding protection is now configurable [[#1929][]]
+* `core.modes` setting now only assumes `+` if no sign is included in its
+  value [[#1941][]]
+* Improved documentation of core configuration settings [[#1861][], [#1866][],
+  [#2006][]]
+* Documented use of environment variables to override parts of Sopel's
+  configuration [[#1901][]]
+  * Also fixed some broken functionality related to this feature [[#1882][],
+    [#1900][]]
+* Improved command-line error messages [[#2047][]]
+* Unexpected settings in config files will now generate warnings [[#1973][]]
+* Improved SASL handling [[#1928][], [#1971][], [#1976][], [#1977][]]
+* Change/recover in-use nick; fix `USER` syntax [[#1930][]]
+* Improved channel mode tracking [[#1980][]]
+* Improved channel member tracking [[#1997][]]
+* Reduced log spam from core `MODE` handling logic [[#1951][]]
+* Refactored the Rule system [[#1873][], [#1894][], [#1904][], [#2011][]]
+* Reworked IRC connection timeout management [[#2041][]]
+* Fixed loading callables that should be ignored from plugins [[#1936][]]
+* Streamlined how the bot generates help text for plugin commands [[#2071][]]
+* Fixed signal handling (e.g. `^C`) if bot is not connected [[#1893][]]
+* Fixed crash if a plugin tries to `sys.exit()` [[#1943][]]
+* Fixed crash if IRC backend is uninitialized and logging to a channel is
+  enabled [[#2020][]]
+* Improved scheduled job handling [[#1891][], [#1927][]]
+* Improved test coverage [[#1983][], [#1984][]]
+* Improved test infrastructure [[#1905][]]
+* Minor code style fixes and refactoring [[#1864][], [#1890][], [#1933][],
+  [#1942][], [#1969][], [#1998][], [#2005][], [#2023][]]
+
+API changes
+-----------
+
+* Moved plugin decorators to `sopel.plugin`; `sopel.module` is now deprecated
+  [[#1898][], [#1906][], [#1924][], [#1967][]]
+  * Decorators that are new in Sopel 7.1 or later will appear only in
+    `sopel.plugin`; `sopel.module` contains only a snapshot of what was
+    available in Sopel 7.0 and will not be updated
+  * The old `sopel.module` imports will be removed in Sopel 9.0
+* The `intent` decorator is replaced by `ctcp`, and `trigger` objects now have
+  a `ctcp` property [[#1975][]]
+  * "Intents" were an IRCv3 spec idea that never took off, and the draft specs
+    for them are now long abandoned
+  * See [#1683][] for the full deprecation and removal plan
+* `sopel.tools` functions related to command patterns/regex are now deprecated
+  [[#1944][], [#2027][], [#2034][]]
+* `tools.get_input` is now deprecated [[#1872][]]
+* `bot.(un)register_url_callback` functions are deprecated [[#2049][]]
+  * These are simply no longer necessary after the Rule system rewrite
+* `test_tools` submodule is now deprecated [[#2003][]]
+  * Sopel now provides a `pytest` plugin; use that instead
+* The use of whitespace after `$nick` placeholders in plugin rules is now less
+  confusing [[#1920][]]
+* Sopel now explicitly supports running plugins' event handlers before/after
+  core has processed the event [[#2018][]]
+* Added more tools related to `tools.time.seconds_to_human` [[#2026][]]
+* Added a warning when plugins use `bot.memory['url_callbacks']` [[#2033][]]
+* Added `SopelIdentifierMemory` class to `tools` [[#1938][]]
+  * This offers a less error-prone alternative to using a plain `SopelMemory`,
+    which often requires manually casting user input to the `Identifier` type
+* New `plugin.require_bot_privilege` decorator and `bot.has_channel_privilege`
+  method [[#1982][]]
+* Added `plugin.find` and `plugin.search` decorators [[#1881][]]
+* Added `plugin.rule_lazy`, `plugin.find_lazy`, and `plugin.search_lazy`
+  decorators [[#2037][]]
+  * These are for plugins to define rules that depend on the contents of
+    Sopel's settings object (`bot.config`)
+* `bot.say` now allows even more control over variable-length content via
+  optional `truncation` and `trailing` parameters [[#1958][], [#2050][]]
+* `bot.trigger` now has a `plain` attribute, containing the received line with
+  formatting stripped [[#1918][]]
+* `Channel` objects now contain information about channel modes [[#1980][]]
+* Added a `BooleanAttribute` setting type [[#2044][], [#2059][]]
+  * Use of `ValidatedAttribute` with `parse=bool` is now considered deprecated
+    so we can remove the monkey-patching in a future release, and will raise a
+    warning if used
+* Added a `SecretAttribute` setting type, and `is_secret` parameter to
+  `ValidatedAttribute` [[#1879][]]
+* `plugin.example` now supports running plugin tests with [VCR.py][pypi-vcrpy]
+  support [[#1853][]]
+* `bot.isupport` will return an empty `CHANMODES` if unadvertised [[#2015][]]
+* Make `tools.time` and `tools.web` submodules available with just `from sopel
+  import tools` [[#1948][]]
+* Added new optional `warning_in` and `stack_frame` parameters to the
+  `tools.deprecated` decorator, which now outputs its warning via logging
+  [[#1872][], [#2046][], [#2058][]]
+* `MockIRCServer` methods now block by default [[#2065][]]
+* Improved documentation for writing & testing plugins [[#1923][], [#1964][],
+  [#2013][], [#2067][]]
+* Improved documentation of various Sopel components:
+  * `bot` [[#1857][]]
+  * `cli` [[#1922][]]
+  * `coretasks` [[#2001][]]
+  * `loader` [[#2004][]]
+  * `plugins` [[#1902][]]
+* Tweaked documentation styles for easier readability [[#1932][]]
+  * Note: We plan to change the documentation theme entirely for Sopel 8, to
+    something much more modern
+
+[#1163]: https://github.com/sopel-irc/sopel/pull/1163
+[#1178]: https://github.com/sopel-irc/sopel/pull/1178
+[#1763]: https://github.com/sopel-irc/sopel/pull/1763
+[#1853]: https://github.com/sopel-irc/sopel/pull/1853
+[#1856]: https://github.com/sopel-irc/sopel/pull/1856
+[#1857]: https://github.com/sopel-irc/sopel/pull/1857
+[#1858]: https://github.com/sopel-irc/sopel/pull/1858
+[#1859]: https://github.com/sopel-irc/sopel/pull/1859
+[#1861]: https://github.com/sopel-irc/sopel/pull/1861
+[#1864]: https://github.com/sopel-irc/sopel/pull/1864
+[#1866]: https://github.com/sopel-irc/sopel/pull/1866
+[#1871]: https://github.com/sopel-irc/sopel/pull/1871
+[#1872]: https://github.com/sopel-irc/sopel/pull/1872
+[#1873]: https://github.com/sopel-irc/sopel/pull/1873
+[#1875]: https://github.com/sopel-irc/sopel/pull/1875
+[#1878]: https://github.com/sopel-irc/sopel/pull/1878
+[#1879]: https://github.com/sopel-irc/sopel/pull/1879
+[#1880]: https://github.com/sopel-irc/sopel/pull/1880
+[#1881]: https://github.com/sopel-irc/sopel/pull/1881
+[#1882]: https://github.com/sopel-irc/sopel/pull/1882
+[#1889]: https://github.com/sopel-irc/sopel/pull/1889
+[#1890]: https://github.com/sopel-irc/sopel/pull/1890
+[#1891]: https://github.com/sopel-irc/sopel/pull/1891
+[#1892]: https://github.com/sopel-irc/sopel/pull/1892
+[#1893]: https://github.com/sopel-irc/sopel/pull/1893
+[#1894]: https://github.com/sopel-irc/sopel/pull/1894
+[#1897]: https://github.com/sopel-irc/sopel/pull/1897
+[#1898]: https://github.com/sopel-irc/sopel/pull/1898
+[#1899]: https://github.com/sopel-irc/sopel/pull/1899
+[#1900]: https://github.com/sopel-irc/sopel/pull/1900
+[#1901]: https://github.com/sopel-irc/sopel/pull/1901
+[#1902]: https://github.com/sopel-irc/sopel/pull/1902
+[#1904]: https://github.com/sopel-irc/sopel/pull/1904
+[#1905]: https://github.com/sopel-irc/sopel/pull/1905
+[#1906]: https://github.com/sopel-irc/sopel/pull/1906
+[#1910]: https://github.com/sopel-irc/sopel/pull/1910
+[#1913]: https://github.com/sopel-irc/sopel/pull/1913
+[#1914]: https://github.com/sopel-irc/sopel/pull/1914
+[#1915]: https://github.com/sopel-irc/sopel/pull/1915
+[#1916]: https://github.com/sopel-irc/sopel/pull/1916
+[#1918]: https://github.com/sopel-irc/sopel/pull/1918
+[#1920]: https://github.com/sopel-irc/sopel/pull/1920
+[#1922]: https://github.com/sopel-irc/sopel/pull/1922
+[#1923]: https://github.com/sopel-irc/sopel/pull/1923
+[#1924]: https://github.com/sopel-irc/sopel/pull/1924
+[#1927]: https://github.com/sopel-irc/sopel/pull/1927
+[#1928]: https://github.com/sopel-irc/sopel/pull/1928
+[#1929]: https://github.com/sopel-irc/sopel/pull/1929
+[#1930]: https://github.com/sopel-irc/sopel/pull/1930
+[#1932]: https://github.com/sopel-irc/sopel/pull/1932
+[#1933]: https://github.com/sopel-irc/sopel/pull/1933
+[#1936]: https://github.com/sopel-irc/sopel/pull/1936
+[#1937]: https://github.com/sopel-irc/sopel/pull/1937
+[#1938]: https://github.com/sopel-irc/sopel/pull/1938
+[#1939]: https://github.com/sopel-irc/sopel/pull/1939
+[#1940]: https://github.com/sopel-irc/sopel/pull/1940
+[#1941]: https://github.com/sopel-irc/sopel/pull/1941
+[#1942]: https://github.com/sopel-irc/sopel/pull/1942
+[#1943]: https://github.com/sopel-irc/sopel/pull/1943
+[#1944]: https://github.com/sopel-irc/sopel/pull/1944
+[#1948]: https://github.com/sopel-irc/sopel/pull/1948
+[#1949]: https://github.com/sopel-irc/sopel/pull/1949
+[#1950]: https://github.com/sopel-irc/sopel/pull/1950
+[#1951]: https://github.com/sopel-irc/sopel/pull/1951
+[#1952]: https://github.com/sopel-irc/sopel/pull/1952
+[#1953]: https://github.com/sopel-irc/sopel/pull/1953
+[#1954]: https://github.com/sopel-irc/sopel/pull/1954
+[#1955]: https://github.com/sopel-irc/sopel/pull/1955
+[#1956]: https://github.com/sopel-irc/sopel/pull/1956
+[#1958]: https://github.com/sopel-irc/sopel/pull/1958
+[#1959]: https://github.com/sopel-irc/sopel/pull/1959
+[#1960]: https://github.com/sopel-irc/sopel/pull/1960
+[#1961]: https://github.com/sopel-irc/sopel/pull/1961
+[#1964]: https://github.com/sopel-irc/sopel/pull/1964
+[#1965]: https://github.com/sopel-irc/sopel/pull/1965
+[#1967]: https://github.com/sopel-irc/sopel/pull/1967
+[#1968]: https://github.com/sopel-irc/sopel/pull/1968
+[#1969]: https://github.com/sopel-irc/sopel/pull/1969
+[#1970]: https://github.com/sopel-irc/sopel/pull/1970
+[#1971]: https://github.com/sopel-irc/sopel/pull/1971
+[#1973]: https://github.com/sopel-irc/sopel/pull/1973
+[#1975]: https://github.com/sopel-irc/sopel/pull/1975
+[#1976]: https://github.com/sopel-irc/sopel/pull/1976
+[#1977]: https://github.com/sopel-irc/sopel/pull/1977
+[#1980]: https://github.com/sopel-irc/sopel/pull/1980
+[#1981]: https://github.com/sopel-irc/sopel/pull/1981
+[#1982]: https://github.com/sopel-irc/sopel/pull/1982
+[#1983]: https://github.com/sopel-irc/sopel/pull/1983
+[#1984]: https://github.com/sopel-irc/sopel/pull/1984
+[#1985]: https://github.com/sopel-irc/sopel/pull/1985
+[#1987]: https://github.com/sopel-irc/sopel/pull/1987
+[#1988]: https://github.com/sopel-irc/sopel/pull/1988
+[#1989]: https://github.com/sopel-irc/sopel/pull/1989
+[#1993]: https://github.com/sopel-irc/sopel/pull/1993
+[#1994]: https://github.com/sopel-irc/sopel/pull/1994
+[#1995]: https://github.com/sopel-irc/sopel/pull/1995
+[#1997]: https://github.com/sopel-irc/sopel/pull/1997
+[#1998]: https://github.com/sopel-irc/sopel/pull/1998
+[#2000]: https://github.com/sopel-irc/sopel/pull/2000
+[#2001]: https://github.com/sopel-irc/sopel/pull/2001
+[#2002]: https://github.com/sopel-irc/sopel/pull/2002
+[#2003]: https://github.com/sopel-irc/sopel/pull/2003
+[#2004]: https://github.com/sopel-irc/sopel/pull/2004
+[#2005]: https://github.com/sopel-irc/sopel/pull/2005
+[#2006]: https://github.com/sopel-irc/sopel/pull/2006
+[#2007]: https://github.com/sopel-irc/sopel/pull/2007
+[#2011]: https://github.com/sopel-irc/sopel/pull/2011
+[#2012]: https://github.com/sopel-irc/sopel/pull/2012
+[#2013]: https://github.com/sopel-irc/sopel/pull/2013
+[#2014]: https://github.com/sopel-irc/sopel/pull/2014
+[#2015]: https://github.com/sopel-irc/sopel/pull/2015
+[#2018]: https://github.com/sopel-irc/sopel/pull/2018
+[#2020]: https://github.com/sopel-irc/sopel/pull/2020
+[#2023]: https://github.com/sopel-irc/sopel/pull/2023
+[#2025]: https://github.com/sopel-irc/sopel/pull/2025
+[#2026]: https://github.com/sopel-irc/sopel/pull/2026
+[#2027]: https://github.com/sopel-irc/sopel/pull/2027
+[#2028]: https://github.com/sopel-irc/sopel/pull/2028
+[#2029]: https://github.com/sopel-irc/sopel/pull/2029
+[#2033]: https://github.com/sopel-irc/sopel/pull/2033
+[#2034]: https://github.com/sopel-irc/sopel/pull/2034
+[#2035]: https://github.com/sopel-irc/sopel/pull/2035
+[#2037]: https://github.com/sopel-irc/sopel/pull/2037
+[#2041]: https://github.com/sopel-irc/sopel/pull/2041
+[#2044]: https://github.com/sopel-irc/sopel/pull/2044
+[#2046]: https://github.com/sopel-irc/sopel/pull/2046
+[#2047]: https://github.com/sopel-irc/sopel/pull/2047
+[#2048]: https://github.com/sopel-irc/sopel/pull/2048
+[#2049]: https://github.com/sopel-irc/sopel/pull/2049
+[#2050]: https://github.com/sopel-irc/sopel/pull/2050
+[#2052]: https://github.com/sopel-irc/sopel/pull/2052
+[#2053]: https://github.com/sopel-irc/sopel/pull/2053
+[#2056]: https://github.com/sopel-irc/sopel/pull/2056
+[#2058]: https://github.com/sopel-irc/sopel/pull/2058
+[#2059]: https://github.com/sopel-irc/sopel/pull/2059
+[#2060]: https://github.com/sopel-irc/sopel/pull/2060
+[#2063]: https://github.com/sopel-irc/sopel/pull/2063
+[#2064]: https://github.com/sopel-irc/sopel/pull/2064
+[#2065]: https://github.com/sopel-irc/sopel/pull/2065
+[#2066]: https://github.com/sopel-irc/sopel/pull/2066
+[#2067]: https://github.com/sopel-irc/sopel/pull/2067
+[#2069]: https://github.com/sopel-irc/sopel/pull/2069
+[#2071]: https://github.com/sopel-irc/sopel/pull/2071
+[#2072]: https://github.com/sopel-irc/sopel/pull/2072
+[#2074]: https://github.com/sopel-irc/sopel/pull/2074
+[#2076]: https://github.com/sopel-irc/sopel/pull/2076
+
+[#1683]: https://github.com/sopel-irc/sopel/issues/1683
+
+[pypi-vcrpy]: https://pypi.org/project/vcrpy/
+[sopel-github]: https://github.com/sopel-irc/sopel
+[sopel-irc]: ircs://irc.libera.chat/sopel
+[sopel-twitter]: https://twitter.com/SopelIRC
+
+
 Changes between 7.0.6 and 7.0.7
 ===============================
 
