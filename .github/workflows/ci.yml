@@ -14,6 +14,7 @@ on:
 
 jobs:
   tests:
+    if: ${{ github.repository_owner == 'sopel-irc' }}
     name: Test suite
     runs-on: ubuntu-latest
     strategy:
@@ -47,6 +48,7 @@ jobs:
           COVERALLS_PARALLEL: true
 
   coveralls:
+    if: ${{ github.repository_owner == 'sopel-irc' }}
     # Would be very nice to find an alternative implementation that doesn't
     # pollute the list of checks on PRs someday, but this seems unlikely.
     name: Finalize job on coveralls.io
