@@ -1,4 +1,4 @@
-.PHONY: quality test coverage_html coverage_report travis clean_doc build_doc install-hooks uninstall-hooks
+.PHONY: quality test test_norecord test_novcr vcr_rerecord qa clean_docs build_docs docs cleandoc install-hooks uninstall-hooks
 
 quality:
 	./checkstyle.sh
@@ -19,17 +19,7 @@ vcr_rerecord:
 	rm -rf ./test/vcr/*
 	coverage run -m py.test -v . --vcr-record=all
 
-coverage_report:
-	coverage report
-
-coverage_html:
-	coverage html
-
-coverages: coverage_report coverage_html
-
-qa: quality test coverages
-
-travis: quality test_norecord coverage_report
+qa: quality test
 
 clean_docs:
 	$(MAKE) -C docs clean
