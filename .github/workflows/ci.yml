@@ -6,7 +6,7 @@ on:
     branches:
       - master
       - v[0-9]+.[0-9]+.x
-      - gha-.+
+      - gha-*
   pull_request:
     branches:
       - master
