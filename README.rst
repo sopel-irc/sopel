@@ -100,8 +100,8 @@ Open Collective profile, for transparency.
 
 .. |version| image:: https://img.shields.io/pypi/v/sopel.svg
    :target: https://pypi.python.org/pypi/sopel
-.. |build| image:: https://travis-ci.org/sopel-irc/sopel.svg?branch=master
-   :target: https://travis-ci.org/sopel-irc/sopel
+.. |build| image:: https://github.com/sopel-irc/sopel/actions/workflows/ci.yml/badge.svg?branch=master&event=push
+   :target: https://github.com/sopel-irc/sopel/actions/workflows/ci.yml?query=branch%3Amaster+event%3Apush
 .. |issues| image:: https://img.shields.io/github/issues/sopel-irc/sopel.svg
    :target: https://github.com/sopel-irc/sopel/issues
 .. |alerts| image:: https://img.shields.io/lgtm/alerts/g/sopel-irc/sopel.svg
