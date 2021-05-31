@@ -382,17 +382,15 @@ def tld_cache_command(bot, trigger):
         bot.reply("Requesting updated IANA list and Wikipedia data.")
         update_caches(bot, force=True)
     elif subcommand == 'clear':
-        for key in [
-            'tld_list_cache',
-            'tld_list_cache_updated',
-            'tld_data_cache',
-            'tld_data_cache_updated',
-        ]:
-            bot.db.delete_plugin_value('tld', key)
-            try:
-                del bot.memory[key]
-            except KeyError:
-                pass
+        bot.db.delete_plugin_value('tld', 'tld_data_cache')
+        bot.memory['tld_data_cache'] = {}
+        bot.db.delete_plugin_value('tld', 'tld_list_cache')
+        bot.memory['tld_list_cache'] = []
+        bot.db.delete_plugin_value('tld', 'tld_data_cache_updated')
+        bot.memory['tld_data_cache_updated'] = DEFAULT_CACHE_DATETIME
+        bot.db.delete_plugin_value('tld', 'tld_list_cache_updated')
+        bot.memory['tld_list_cache_updated'] = DEFAULT_CACHE_DATETIME
+
         bot.reply("Cleared all cached TLD data.")
     else:
         bot.reply(
