@@ -404,9 +404,6 @@ class BooleanAttribute(BaseValidated):
             ]
         return bool(value)
 
-    def _parse(self, value, settings, section):
-        return self.parse(value)
-
     def __set__(self, instance, value):
         if value is None:
             instance._parser.remove_option(instance._section_name, self.name)
