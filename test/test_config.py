@@ -72,6 +72,8 @@ class FakeConfigSection(types.StaticSection):
     valattr = types.ValidatedAttribute('valattr')
     listattr = types.ListAttribute('listattr')
     choiceattr = types.ChoiceAttribute('choiceattr', ['spam', 'egg', 'bacon'])
+    booleanattr = types.BooleanAttribute('booleanattr')
+    booleanattr_true = types.BooleanAttribute('booleanattr', default=True)
     af_fileattr = types.FilenameAttribute('af_fileattr', relative=False, directory=False)
     ad_fileattr = types.FilenameAttribute('ad_fileattr', relative=False, directory=True)
     rf_fileattr = types.FilenameAttribute('rf_fileattr', relative=True, directory=False)
@@ -202,6 +204,11 @@ def test_choiceattribute_when_not_in_set(fakeconfig):
 def test_choiceattribute_when_valid(fakeconfig):
     fakeconfig.fake.choiceattr = 'bacon'
     assert fakeconfig.fake.choiceattr == 'bacon'
+
+
+def test_booleanattribute_default(fakeconfig):
+    assert fakeconfig.fake.booleanattr is False
+    assert fakeconfig.fake.booleanattr_true is True
 
 
 def test_fileattribute_valid_absolute_file_path(fakeconfig):
