@@ -2609,7 +2609,7 @@ def test_url_callback_parse():
         re.escape('https://wikipedia.com/') + r'(\w+)'
     )
 
-    rule = rules.SearchRule([regex])
+    rule = rules.URLCallback([regex])
     results = list(rule.parse('https://wikipedia.com/something'))
     assert len(results) == 1, 'URLCallback on word must match only once'
     assert results[0].group(0) == 'https://wikipedia.com/something'
