@@ -2616,6 +2616,20 @@ def test_url_callback_parse():
     assert results[0].group(1) == 'something'
 
 
+def test_url_callback_match(mockbot):
+    regex = re.compile(r'.*')
+    rule = rules.URLCallback([regex])
+
+    line = (
+        ':Foo!foo@example.com PRIVMSG #sopel :'
+        'two links http://example.com one invalid https://[dfdsdfsdf'
+    )
+    pretrigger = trigger.PreTrigger(mockbot.nick, line)
+    matches = list(rule.match(mockbot, pretrigger))
+    assert len(matches) == 1, 'URLCallback must ignore invalid URLs'
+    assert matches[0].group(0) == 'http://example.com'
+
+
 def test_url_callback_execute(mockbot):
     regex = re.compile(r'.*')
     rule = rules.URLCallback([regex])

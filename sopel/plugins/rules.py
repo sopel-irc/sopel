@@ -1678,11 +1678,16 @@ class URLCallback(Rule):
         if not self.match_preconditions(bot, pretrigger):
             return
 
-        urls = (
-            url
-            for url in pretrigger.urls
-            if urlparse(url).scheme in self._schemes
-        )
+        urls = []
+        for url in pretrigger.urls:
+            try:
+                scheme = urlparse(url).scheme
+            except ValueError:
+                # skip invalid URLs
+                # we could use a comprehension if not for this...
+                continue
+            if scheme in self._schemes:
+                urls.append(url)
 
         # Parse URL for each found
         for url in urls:
