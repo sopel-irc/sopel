@@ -1,4 +1,3 @@
-# coding=utf-8
 """Core Sopel plugin that handles IRC protocol functions.
 
 This plugin allows the bot to run without user-facing functionality:

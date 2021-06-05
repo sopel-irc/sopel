@@ -1,4 +1,3 @@
-# coding=utf-8
 """Test tools, factories, pytest fixtures, and mocks.
 
 .. versionadded:: 7.0

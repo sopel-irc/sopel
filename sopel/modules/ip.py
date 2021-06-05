@@ -1,4 +1,3 @@
-# coding=utf-8
 """
 ip.py - Sopel GeoIP Lookup Plugin
 Copyright 2011, Dimitri Molenaars, TyRope.nl,

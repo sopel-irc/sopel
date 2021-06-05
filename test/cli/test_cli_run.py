@@ -1,4 +1,3 @@
-# coding=utf-8
 """Tests for command handling"""
 from __future__ import generator_stop
 

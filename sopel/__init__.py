@@ -1,4 +1,3 @@
-# coding=utf-8
 # ASCII ONLY IN THIS FILE THOUGH!!!!!!!
 # Python does some stupid bullshit of respecting LC_ALL over the encoding on the
 # file, so in order to undo Python's ridiculous fucking idiocy, we have to have

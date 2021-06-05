@@ -1,4 +1,3 @@
-# coding=utf-8
 """
 url.py - Sopel URL Title Plugin
 Copyright 2010-2011, Michael Yanovich (yanovich.net) & Kenneth Sham

@@ -1,4 +1,3 @@
-# coding=utf-8
 """
 The ``tools.web`` package contains utility functions for interaction with web
 applications, APIs, or websites in your plugins.

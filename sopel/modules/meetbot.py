@@ -1,4 +1,3 @@
-# coding=utf-8
 """
 meetbot.py - Sopel Meeting Logger Plugin
 This plugin is an attempt to implement some of the functionality of Debian's meetbot

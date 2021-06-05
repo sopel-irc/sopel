@@ -1,4 +1,3 @@
-# coding=utf-8
 """Tests for the ``sopel.plugins.rules`` module."""
 from __future__ import generator_stop
 

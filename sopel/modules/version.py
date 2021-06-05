@@ -1,4 +1,3 @@
-# coding=utf-8
 """
 version.py - Sopel Version Plugin
 Copyright 2009, Silas Baronda

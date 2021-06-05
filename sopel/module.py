@@ -1,4 +1,3 @@
-# coding=utf-8
 """The :mod:`sopel.module` sub-module is replaced by :mod:`sopel.plugin`.
 
 .. deprecated:: 7.1

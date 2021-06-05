@@ -1,4 +1,3 @@
-# coding=utf-8
 """:mod:`sopel.irc` is the core IRC module for Sopel.
 
 This sub-package contains everything that is related to the IRC protocol

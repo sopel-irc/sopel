@@ -1,4 +1,3 @@
-# coding=utf-8
 """Tests for core ``sopel.irc.backends``"""
 from __future__ import generator_stop
 

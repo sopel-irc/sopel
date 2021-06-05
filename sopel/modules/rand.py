@@ -1,4 +1,3 @@
-# coding=utf-8
 """
 rand.py - Rand Plugin
 Copyright 2013, Ari Koivula, <ari@koivu.la>

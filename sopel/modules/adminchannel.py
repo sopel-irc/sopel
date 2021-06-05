@@ -1,4 +1,3 @@
-# coding=utf-8
 """
 adminchannel.py - Sopel Channel Admin Plugin
 Copyright 2010-2011, Michael Yanovich, Alek Rollyson, and Elsie Powell

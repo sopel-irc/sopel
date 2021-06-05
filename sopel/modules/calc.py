@@ -1,4 +1,3 @@
-# coding=utf-8
 """
 calc.py - Sopel Calculator Plugin
 Copyright 2008, Sean B. Palmer, inamidst.com

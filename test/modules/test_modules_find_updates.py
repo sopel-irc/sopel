@@ -1,4 +1,3 @@
-# coding=utf-8
 """Tests for Sopel's ``find_updates`` plugin"""
 from __future__ import generator_stop
 

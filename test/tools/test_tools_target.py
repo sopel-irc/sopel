@@ -1,4 +1,3 @@
-# coding=utf-8
 """Tests for targets: Channel & User"""
 from __future__ import generator_stop
 

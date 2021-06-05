@@ -1,4 +1,3 @@
-# coding=utf-8
 """Sopel's plugin jobs management.
 
 .. versionadded:: 7.1

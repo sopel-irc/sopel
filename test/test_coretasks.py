@@ -1,4 +1,3 @@
-# coding=utf-8
 """coretasks.py tests"""
 from __future__ import generator_stop
 

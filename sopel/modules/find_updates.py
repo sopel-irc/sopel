@@ -1,4 +1,3 @@
-# coding=utf-8
 """
 find_updates.py - Sopel Update Check Plugin
 This is separated from version.py, so that it can be easily overridden by

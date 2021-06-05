@@ -1,4 +1,3 @@
-# coding=utf-8
 """
 seen.py - Sopel Seen Plugin
 Copyright 2008, Sean B. Palmer, inamidst.com

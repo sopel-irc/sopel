@@ -1,4 +1,3 @@
-# coding=utf-8
 """This module provided tools that helped to write tests.
 
 .. deprecated:: 7.1

@@ -1,4 +1,3 @@
-# coding=utf-8
 """
 reddit.py - Sopel Reddit Plugin
 Copyright 2012, Elsie Powell, embolalia.com

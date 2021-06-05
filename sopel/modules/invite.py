@@ -1,4 +1,3 @@
-# coding=utf-8
 """
 invite.py - Sopel Invite Plugin
 Copyright © 2016, João Vanzuita, https://github.com/converge

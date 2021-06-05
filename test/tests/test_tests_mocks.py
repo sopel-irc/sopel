@@ -1,4 +1,3 @@
-# coding=utf-8
 """Tests for ``sopel.tests.mocks`` module"""
 from __future__ import generator_stop
 

@@ -1,4 +1,3 @@
-# coding=utf-8
 """Sopel's plugins interface.
 
 .. versionadded:: 7.0

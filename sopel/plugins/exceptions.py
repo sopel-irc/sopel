@@ -1,4 +1,3 @@
-# coding=utf-8
 """Sopel's plugins exceptions."""
 # Copyright 2019, Florian Strzelecki <florian.strzelecki@gmail.com>
 #

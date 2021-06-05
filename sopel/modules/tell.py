@@ -1,4 +1,3 @@
-# coding=utf-8
 """
 tell.py - Sopel Tell and Ask Plugin
 Copyright 2008, Sean B. Palmer, inamidst.com

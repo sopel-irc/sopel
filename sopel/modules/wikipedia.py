@@ -1,4 +1,3 @@
-# coding=utf-8
 """
 wikipedia.py - Sopel Wikipedia Plugin
 Copyright 2013 Elsie Powell - embolalia.com

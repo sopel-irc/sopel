@@ -1,4 +1,3 @@
-# coding=utf-8
 """
 *Availability: 3+, deprecated in 6.2.0*
 

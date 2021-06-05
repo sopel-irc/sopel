@@ -1,4 +1,3 @@
-# coding=utf-8
 """
 lmgtfy.py - Sopel Let Me Google That For You Plugin
 Copyright 2013, Dimitri Molenaars http://tyrope.nl/

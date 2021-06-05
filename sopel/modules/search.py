@@ -1,4 +1,3 @@
-# coding=utf-8
 """
 search.py - Sopel Search Engine Plugin
 Copyright 2008-9, Sean B. Palmer, inamidst.com

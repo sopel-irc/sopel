@@ -1,4 +1,3 @@
-# coding=utf-8
 """
 unicode_info.py - Sopel Codepoints Plugin
 Copyright 2013, Elsie Powell, embolalia.com

@@ -1,4 +1,3 @@
-# coding=utf-8
 """
 admin.py - Sopel Admin Plugin
 Copyright 2010-2011, Sean B. Palmer (inamidst.com) and Michael Yanovich

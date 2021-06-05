@@ -1,4 +1,3 @@
-# coding=utf-8
 """
 ping.py - Sopel Ping Plugin
 Copyright 2008 (?), Sean B. Palmer, inamidst.com

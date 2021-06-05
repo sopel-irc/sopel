@@ -1,4 +1,3 @@
-# coding=utf-8
 """
 help.py - Sopel Help Plugin
 Copyright 2008, Sean B. Palmer, inamidst.com

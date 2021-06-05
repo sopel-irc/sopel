@@ -1,4 +1,3 @@
-# coding=utf-8
 """
 countdown.py - Sopel Countdown Plugin
 Copyright 2011, Michael Yanovich, yanovich.net

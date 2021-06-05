@@ -1,4 +1,3 @@
-# coding=utf-8
 """Sopel's configuration module.
 
 The :class:`~sopel.config.Config` object provides an interface to access Sopel's

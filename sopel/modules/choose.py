@@ -1,4 +1,3 @@
-# coding=utf-8
 """
 choose.py - Sopel Choice Plugin
 Copyright 2010-2013, Dimitri "Tyrope" Molenaars, TyRope.nl

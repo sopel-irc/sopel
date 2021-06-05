@@ -1,4 +1,3 @@
-# coding=utf-8
 """Test mocks: they fake objects for testing.
 
 .. versionadded:: 7.0

@@ -1,4 +1,3 @@
-# coding=utf-8
 """
 units.py - Sopel Unit Conversion Plugin
 Copyright © 2013, Elad Alfassa, <elad@fedoraproject.org>

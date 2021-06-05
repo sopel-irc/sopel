@@ -1,4 +1,3 @@
-# coding=utf-8
 """
 translate.py - Sopel Translation Plugin
 Copyright 2008, Sean B. Palmer, inamidst.com

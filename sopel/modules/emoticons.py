@@ -1,4 +1,3 @@
-# coding=utf-8
 """
 emoticons.py - Sopel Emoticons Plugin
 Copyright 2018, brasstax

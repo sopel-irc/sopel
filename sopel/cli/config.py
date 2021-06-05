@@ -1,4 +1,3 @@
-# coding=utf-8
 """Sopel Config Command Line Interface (CLI): ``sopel-config``"""
 from __future__ import generator_stop
 

@@ -1,4 +1,3 @@
-# coding=utf-8
 """Test factories: they create objects for testing purposes.
 
 .. versionadded:: 7.0

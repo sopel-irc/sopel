@@ -1,4 +1,3 @@
-# coding=utf-8
 """
 wiktionary.py - Sopel Wiktionary Plugin
 Copyright 2009, Sean B. Palmer, inamidst.com

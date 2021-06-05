@@ -1,4 +1,3 @@
-# coding=utf-8
 """Sopel's Job Scheduler: internal tool for job management.
 
 .. important::

@@ -1,4 +1,3 @@
-# coding=utf-8
 """Pytest plugin for Sopel.
 
 .. versionadded:: 7.0

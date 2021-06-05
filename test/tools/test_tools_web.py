@@ -1,4 +1,3 @@
-# coding=utf-8
 """Tests Sopel's web tools"""
 from __future__ import generator_stop
 

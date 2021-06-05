@@ -1,4 +1,3 @@
-# coding=utf-8
 """Useful miscellaneous tools and shortcuts for Sopel plugins
 
 *Availability: 3+*

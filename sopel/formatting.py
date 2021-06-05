@@ -1,4 +1,3 @@
-# coding=utf-8
 """The formatting module includes functions to apply IRC formatting to text.
 
 *Availability: 4.5+*

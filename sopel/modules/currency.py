@@ -1,4 +1,3 @@
-# coding=utf-8
 """
 currency.py - Sopel Currency Conversion Plugin
 Copyright 2013, Elsie Powell, embolalia.com

@@ -1,4 +1,3 @@
-# coding=utf-8
 """
 remind.py - Sopel Reminder Plugin
 Copyright 2011, Sean B. Palmer, inamidst.com

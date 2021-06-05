@@ -1,4 +1,3 @@
-# coding=utf-8
 """This contains decorators and other tools for creating Sopel plugins."""
 # Copyright 2013, Ari Koivula, <ari@koivu.la>
 # Copyright © 2013, Elad Alfassa <elad@fedoraproject.org>

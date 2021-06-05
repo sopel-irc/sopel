@@ -1,4 +1,3 @@
-# coding=utf-8
 """
 reload.py - Sopel Plugin Reloader Plugin
 Copyright 2008, Sean B. Palmer, inamidst.com

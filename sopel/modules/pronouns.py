@@ -1,4 +1,3 @@
-# coding=utf-8
 """
 pronouns.py - Sopel Pronouns Plugin
 Copyright © 2016, Elsie Powell

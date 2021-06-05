@@ -1,4 +1,3 @@
-# coding=utf-8
 """
 announce.py - Sopel Announcement Plugin
 Sends announcements to all channels the bot has joined.

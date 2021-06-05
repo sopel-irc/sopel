@@ -1,4 +1,3 @@
-# coding=utf-8
 """
 bugzilla.py - Sopel Bugzilla Plugin
 Copyright 2013-2015, Embolalia, embolalia.com

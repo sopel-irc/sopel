@@ -1,4 +1,3 @@
-# coding=utf-8
 """Tools to help safely do calculations from user input"""
 from __future__ import generator_stop
 

@@ -1,4 +1,3 @@
-# coding=utf-8
 """
 safety.py - Alerts about malicious URLs
 Copyright © 2014, Elad Alfassa, <elad@fedoraproject.org>

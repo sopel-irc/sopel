@@ -1,4 +1,3 @@
-# coding=utf-8
 """IRC Tools for ISUPPORT management.
 
 When a server wants to advertise its features and settings, it can use the

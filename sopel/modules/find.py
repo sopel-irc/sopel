@@ -1,4 +1,3 @@
-# coding=utf-8
 """
 find.py - Sopel Spelling Correction Plugin
 This plugin will fix spelling errors if someone corrects them

@@ -1,4 +1,3 @@
-# coding=utf-8
 """Utility functions to manage plugin callables from a Python module.
 
 .. important::

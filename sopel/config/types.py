@@ -1,4 +1,3 @@
-# coding=utf-8
 """Types for creating section definitions.
 
 A section definition consists of a subclass of :class:`StaticSection`, on which

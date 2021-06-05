@@ -1,4 +1,3 @@
-# coding=utf-8
 """
 uptime.py - Sopel Uptime Plugin
 Copyright 2014, Fabian Neundorf
