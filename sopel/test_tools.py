@@ -19,14 +19,10 @@
 # Licensed under the Eiffel Forum License 2.
 from __future__ import generator_stop
 
+import configparser
 import os
 import re
 import tempfile
-
-try:
-    import ConfigParser
-except ImportError:
-    import configparser as ConfigParser
 
 from sopel import bot, config, tools
 
@@ -46,7 +42,7 @@ class MockConfig(config.Config):
     @tools.deprecated('use configfactory fixture instead', '7.0', '8.0')
     def __init__(self):
         self.filename = tempfile.mkstemp()[1]
-        self.parser = ConfigParser.RawConfigParser(allow_no_value=True)
+        self.parser = configparser.RawConfigParser(allow_no_value=True)
         self.parser.add_section('core')
         self.parser.set('core', 'owner', 'Embolalia')
         self.define_section('core', config.core_section.CoreSection)
