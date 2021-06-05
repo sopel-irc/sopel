@@ -144,6 +144,7 @@ def unquote(string):
 
         This is a convenient shortcut for ``urllib.parse.unquote``.
     """
+    # TODO deprecated?
     return urllib.parse.unquote(string)
 
 

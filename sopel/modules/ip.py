@@ -14,9 +14,6 @@ import logging
 import os
 import socket
 import tarfile
-# urlretrieve has been put under urllib.request in Python 3.
-# It's also deprecated so this should probably be replaced with
-# urllib2.
 from urllib.request import urlretrieve
 
 import geoip2.database
