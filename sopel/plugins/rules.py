@@ -959,6 +959,13 @@ class Rule(AbstractRule):
         event = pretrigger.event
         intent = pretrigger.tags.get('intent')
         nick = pretrigger.nick
+        is_bot_message = (
+            (
+                'draft/bot' in pretrigger.tags or  # can be removed...someday
+                'bot' in pretrigger.tags
+            ) and
+            event in ["PRIVMSG", "NOTICE"]
+        )
         is_echo_message = (
             nick.lower() == bot.nick.lower() and
             event in ["PRIVMSG", "NOTICE"]
@@ -967,6 +974,7 @@ class Rule(AbstractRule):
         return (
             self.match_event(event) and
             self.match_intent(intent) and
+            (not is_bot_message or (is_echo_message and self.allow_echo())) and
             (not is_echo_message or self.allow_echo())
         )
 
