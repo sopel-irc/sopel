@@ -215,7 +215,9 @@ def test_get_configuration(tmpdir):
     ]))
 
     parser = build_parser()
-    options = parser.parse_args(['start', '-c', 'default.cfg'])
+    options = parser.parse_args(
+        ['start', '-c', str(working_dir.join('default.cfg'))]
+    )
 
     with cd(working_dir.strpath):
         result = get_configuration(options)

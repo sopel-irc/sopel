@@ -219,18 +219,17 @@ def get_configuration(options):
     .. seealso::
 
        The configuration file is loaded by
-       :func:`~sopel.cli.run.utils.load_settings` or created using the
-       configuration wizard.
+       :func:`~sopel.cli.run.utils.load_settings`
 
     """
     try:
         settings = utils.load_settings(options)
     except config.ConfigurationNotFound as error:
-        print(
-            "Welcome to Sopel!\n"
-            "I can't seem to find the configuration file, "
-            "so let's generate it!\n")
-        settings = utils.wizard(error.filename)
+        raise config.ConfigurationError(
+            "%s\n"
+            "If you're just setting up Sopel, welcome! "
+            "You can use `sopel configure` to get started easily." % error
+        )
 
     settings._is_daemonized = options.daemonize
     return settings
