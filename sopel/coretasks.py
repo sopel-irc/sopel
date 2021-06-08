@@ -28,7 +28,6 @@ import collections
 import datetime
 import functools
 import logging
-from random import randint
 import re
 import sys
 import time
@@ -45,8 +44,13 @@ if sys.version_info.major >= 3:
 
 LOGGER = logging.getLogger(__name__)
 
+CORE_QUERYTYPE = '999'
+"""WHOX querytype to indicate requests/responses from coretasks.
+
+Other plugins should use a different querytype.
+"""
+
 batched_caps = {}
-who_reqs = {}  # Keeps track of reqs coming from this plugin, rather than others
 
 
 def setup(bot):
@@ -698,14 +702,12 @@ def _remove_from_channel(bot, nick, channel):
 def _send_who(bot, channel):
     if 'WHOX' in bot.isupport:
         # WHOX syntax, see http://faerion.sourceforge.net/doc/irc/whox.var
-        # Needed for accounts in WHO replies. The random integer is a param
-        # to identify the reply as one from this command, because if someone
-        # else sent it, we have no fucking way to know what the format is.
-        rand = str(randint(0, 999))
-        while rand in who_reqs:
-            rand = str(randint(0, 999))
-        who_reqs[rand] = channel
-        bot.write(['WHO', channel, 'a%nuachtf,' + rand])
+        # Needed for accounts in WHO replies. The `CORE_QUERYTYPE` parameter
+        # for WHO is used to identify the reply from the server and confirm
+        # that it has the requested format. WHO replies with different
+        # querytypes in the response were initiated elsewhere and will be
+        # ignored.
+        bot.write(['WHO', channel, 'a%nuachtf,' + CORE_QUERYTYPE])
     else:
         # We might be on an old network, but we still care about keeping our
         # user list updated
@@ -1243,8 +1245,9 @@ def account_notify(bot, trigger):
 @plugin.priority('medium')
 def recv_whox(bot, trigger):
     """Track ``WHO`` responses when ``WHOX`` is enabled."""
-    if len(trigger.args) < 2 or trigger.args[1] not in who_reqs:
+    if len(trigger.args) < 2 or trigger.args[1] != CORE_QUERYTYPE:
         # Ignored, some plugin probably called WHO
+        LOGGER.debug("Ignoring WHO reply for channel '%s'; not queried by coretasks", trigger.args[1])
         return
     if len(trigger.args) != 8:
         LOGGER.warning(
@@ -1305,16 +1308,6 @@ def recv_who(bot, trigger):
     away = 'G' in status
     modes = ''.join([c for c in status if c in '~&@%+!'])
     _record_who(bot, channel, user, host, nick, away=away, modes=modes)
-
-
-@module.event(events.RPL_ENDOFWHO)
-@plugin.thread(False)
-@module.unblockable
-@plugin.priority('medium')
-def end_who(bot, trigger):
-    """Handle the end of a response to a ``WHO`` command (if needed)."""
-    if 'WHOX' in bot.isupport:
-        who_reqs.pop(trigger.args[1], None)
 
 
 @module.event('AWAY')
