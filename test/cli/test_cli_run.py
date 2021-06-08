@@ -47,6 +47,13 @@ def config_dir(tmpdir):
     return test_dir
 
 
+@pytest.fixture(autouse=True)
+def default_empty_config_env(monkeypatch):
+    """Pytest fixture used to ensure dev ENV does not bleed into tests"""
+    monkeypatch.delenv("SOPEL_CONFIG", raising=False)
+    monkeypatch.delenv("SOPEL_CONFIG_DIR", raising=False)
+
+
 def test_build_parser_legacy():
     """Assert parser's namespace exposes legacy's options (default values)"""
     parser = build_parser()
