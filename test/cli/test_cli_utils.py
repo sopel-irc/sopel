@@ -112,7 +112,10 @@ def test_find_config_local(tmpdir, config_dir):
         assert found_config == working_dir.join('local.cfg').strpath
 
         found_config = find_config(config_dir.strpath, 'local')
-        assert found_config == config_dir.join('local').strpath
+        assert found_config == working_dir.join('local.cfg').strpath
+
+        found_config = find_config(config_dir.strpath, 'config')
+        assert found_config == config_dir.join('config.cfg').strpath
 
 
 def test_find_config_default(tmpdir, config_dir):

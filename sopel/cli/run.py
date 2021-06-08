@@ -344,11 +344,9 @@ def get_configuration(options):
     try:
         settings = utils.load_settings(options)
     except config.ConfigurationNotFound as error:
-        print(
-            "Welcome to Sopel!\n"
-            "I can't seem to find the configuration file, "
-            "so let's generate it!\n")
-        settings = utils.wizard(error.filename)
+        print("Welcome to Sopel!")
+        error.hint = "To start the configuration wizard, use `sopel configure`"
+        raise error
 
     settings._is_daemonized = options.daemonize
     return settings

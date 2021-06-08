@@ -91,14 +91,20 @@ class ConfigurationNotFound(ConfigurationError):
     """Exception type for use when the configuration file cannot be found.
 
     :param str filename: file path that could not be found
+    :param str hint: supplemental information to show the user
     """
-    def __init__(self, filename):
+    def __init__(self, filename, hint=None):
         super(ConfigurationNotFound, self).__init__(None)
         self.filename = filename
         """Path to the configuration file that could not be found."""
+        self.hint = hint
+        """Supplemental information to show the user."""
 
     def __str__(self):
-        return 'Unable to find the configuration file %s' % self.filename
+        ret = 'Unable to find the configuration file %s' % self.filename
+        if self.hint:
+            ret += "\n" + self.hint
+        return ret
 
 
 class Config(object):

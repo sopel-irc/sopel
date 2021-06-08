@@ -236,6 +236,8 @@ def find_config(config_dir, name, extension='.cfg'):
     if os.path.isfile(name):
         return os.path.abspath(name)
     name_ext = name + extension
+    if os.path.isfile(name_ext):
+        return os.path.abspath(name_ext)
     for filename in enumerate_configs(config_dir, extension):
         if name_ext == filename:
             return os.path.join(config_dir, name_ext)
