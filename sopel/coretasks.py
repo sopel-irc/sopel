@@ -483,11 +483,10 @@ def track_modes(bot, trigger):
 @module.unblockable
 def initial_modes(bot, trigger):
     """Populate channel modes from response to MODE request sent after JOIN."""
-    args = trigger.args[1:]
-    _parse_modes(bot, args)
+    _parse_modes(bot, trigger.args[1:], clear=True)
 
 
-def _parse_modes(bot, args):
+def _parse_modes(bot, args, clear=False):
     """Parse MODE message and apply changes to internal state."""
     channel_name = Identifier(args[0])
     if channel_name.is_nick():
@@ -517,6 +516,11 @@ def _parse_modes(bot, args):
         "Y": module.OPER,
     }
 
+    modes = {}
+    if not clear:
+        # Work on a copy for some thread safety
+        modes.update(channel.modes)
+
     # Process modes
     sign = ""
     param_idx = 0
@@ -529,33 +533,33 @@ def _parse_modes(bot, args):
 
         if char in chanmodes["A"]:
             # Type A (beI, etc) have a nick or address param to add/remove
-            if char not in channel.modes:
-                channel.modes[char] = set()
+            if char not in modes:
+                modes[char] = set()
             if sign == "+":
-                channel.modes[char].add(params[param_idx])
-            elif params[param_idx] in channel.modes[char]:
-                channel.modes[char].remove(params[param_idx])
+                modes[char].add(params[param_idx])
+            elif params[param_idx] in modes[char]:
+                modes[char].remove(params[param_idx])
             param_idx += 1
         elif char in chanmodes["B"]:
             # Type B (k, etc) always have a param
             if sign == "+":
-                channel.modes[char] = params[param_idx]
-            elif char in channel.modes:
-                channel.modes.pop(char)
+                modes[char] = params[param_idx]
+            elif char in modes:
+                modes.pop(char)
             param_idx += 1
         elif char in chanmodes["C"]:
             # Type C (l, etc) have a param only when setting
             if sign == "+":
-                channel.modes[char] = params[param_idx]
+                modes[char] = params[param_idx]
                 param_idx += 1
-            elif char in channel.modes:
-                channel.modes.pop(char)
+            elif char in modes:
+                modes.pop(char)
         elif char in chanmodes["D"]:
             # Type D (aciLmMnOpqrRst, etc) have no params
             if sign == "+":
-                channel.modes[char] = True
-            elif char in channel.modes:
-                channel.modes.pop(char)
+                modes[char] = True
+            elif char in modes:
+                modes.pop(char)
         elif char in mapping and (
             "PREFIX" not in bot.isupport or char in bot.isupport.PREFIX
         ):
@@ -598,6 +602,8 @@ def _parse_modes(bot, args):
             )
             _send_who(bot, channel_name)
             return
+
+    channel.modes = modes
 
     LOGGER.info("Updated mode for channel: %s", channel.name)
     LOGGER.debug("Channel %r mode: %r", str(channel.name), channel.modes)

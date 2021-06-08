@@ -156,6 +156,22 @@ def test_handle_rpl_channelmodeis(mockbot, ircfactory):
     assert mockbot.channels["#test"].modes["t"]
 
 
+def test_handle_rpl_channelmodeis_clear(mockbot, ircfactory):
+    """Test RPL_CHANNELMODEIS events clearing previous modes"""
+    irc = ircfactory(mockbot)
+    irc.bot._isupport = isupport.ISupport(chanmodes=("b", "k", "l", "mnt", tuple()))
+    irc.channel_joined("#test", ["Alex", "Bob", "Cheryl"])
+
+    rpl_base = ":mercury.libera.chat 324 TestName #test {modes}"
+    mockbot.on_message(rpl_base.format(modes="+knlt hunter2 :1"))
+    mockbot.on_message(rpl_base.format(modes="+kl hunter2 :1"))
+
+    assert mockbot.channels["#test"].modes["k"] == "hunter2"
+    assert "n" not in mockbot.channels["#test"].modes
+    assert mockbot.channels["#test"].modes["l"] == "1"
+    assert "t" not in mockbot.channels["#test"].modes
+
+
 def test_mode_colon(mockbot, ircfactory):
     """Ensure mode messages with colons are parsed properly."""
     irc = ircfactory(mockbot)
