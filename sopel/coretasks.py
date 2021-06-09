@@ -424,8 +424,6 @@ def handle_names(bot, trigger):
 
     This function keeps track of users' privileges when Sopel joins channels.
     """
-    names = trigger.split()
-
     # TODO specific to one channel type. See issue 281.
     channels = re.search(r'(#\S*)', trigger.raw)
     if not channels:
@@ -449,20 +447,28 @@ def handle_names(bot, trigger):
         "!": module.OPER,
     }
 
+    names = trigger.split()
     for name in names:
+        if 'userhost-in-names' in bot.enabled_capabilities:
+            name, mask = name.rsplit('!', 1)
+            username, hostname = mask.split('@', 1)
+        else:
+            username = hostname = None
+
         priv = 0
         for prefix, value in iteritems(mapping):
             if prefix in name:
                 priv = priv | value
+
         nick = Identifier(name.lstrip(''.join(mapping.keys())))
         bot.privileges[channel][nick] = priv
         user = bot.users.get(nick)
         if user is None:
-            # It's not possible to set the username/hostname from info received
-            # in a NAMES reply, unfortunately.
+            # The username/hostname will be included in a NAMES reply only if
+            # userhost-in-names is available. We can use them if present.
             # Fortunately, the user should already exist in bot.users by the
             # time this code runs, so this is 99.9% ass-covering.
-            user = target.User(nick, None, None)
+            user = target.User(nick, username, hostname)
             bot.users[nick] = user
         bot.channels[channel].add_user(user, privs=priv)
 
@@ -900,6 +906,7 @@ def receive_cap_ls_reply(bot, trigger):
         'away-notify',
         'cap-notify',
         'server-time',
+        'userhost-in-names',
     ]
     for cap in core_caps:
         if cap not in bot._cap_reqs:
