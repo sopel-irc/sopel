@@ -120,28 +120,29 @@ class SopelDB(object):
             # affect anything, since the only thing it's ever used for is
             # checking whether the configured database is 'sqlite'.
             self.type = self.url.drivername.split('+', 1)[0]
+        elif config.core.db_type == 'sqlite':
+            self.type = 'sqlite'
+            drivername = config.core.db_driver or 'sqlite'
+            path = config.core.db_filename
+            if path is None:
+                path = os.path.join(config.core.homedir, config.basename + '.db')
+            path = os.path.expanduser(path)
+            if not os.path.isabs(path):
+                path = os.path.normpath(os.path.join(config.core.homedir, path))
+            if not os.path.isdir(os.path.dirname(path)):
+                raise OSError(
+                    errno.ENOENT,
+                    'Cannot create database file. '
+                    'No such directory: "{}". Check that configuration setting '
+                    'core.db_filename is valid'.format(os.path.dirname(path)),
+                    path
+                )
+            self.url = make_url('sqlite:///' + path)
         else:
             self.type = config.core.db_type
 
             query = {}
-            if self.type == 'sqlite':
-                drivername = config.core.db_driver or 'sqlite'
-                path = config.core.db_filename
-                if path is None:
-                    path = os.path.join(config.core.homedir, config.basename + '.db')
-                path = os.path.expanduser(path)
-                if not os.path.isabs(path):
-                    path = os.path.normpath(os.path.join(config.core.homedir, path))
-                if not os.path.isdir(os.path.dirname(path)):
-                    raise OSError(
-                        errno.ENOENT,
-                        'Cannot create database file. '
-                        'No such directory: "{}". Check that configuration setting '
-                        'core.db_filename is valid'.format(os.path.dirname(path)),
-                        path
-                    )
-                self.filename = path
-            elif self.type == 'mysql':
+            if self.type == 'mysql':
                 drivername = config.core.db_driver or 'mysql'
                 query = {'charset': 'utf8mb4'}
             elif self.type == 'postgres':
@@ -161,14 +162,10 @@ class SopelDB(object):
             db_pass = config.core.db_pass  # Sometimes empty
             db_host = config.core.db_host  # Sometimes empty
             db_port = config.core.db_port  # Optional
-            db_name = getattr(self, 'filename', None) or config.core.db_name
+            db_name = config.core.db_name  # Sometimes optional
 
             # Ensure we have all our variables defined
-            if self.type != 'sqlite' and (
-                db_user is None or
-                db_pass is None or
-                db_host is None
-            ):
+            if db_user is None or db_pass is None or db_host is None:
                 raise Exception('Please make sure the following core '
                                 'configuration values are defined: '
                                 'db_user, db_pass, db_host')
