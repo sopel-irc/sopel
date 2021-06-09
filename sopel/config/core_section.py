@@ -379,8 +379,6 @@ class CoreSection(StaticSection):
     If this option is present, Sopel will ignore **all** other ``db_*``
     settings and use this option's value only.
 
-    Any supported database type *other than SQLite* can be used this way.
-
     .. note::
 
         Specifying this option via the ``SOPEL_CORE_DB_URL`` :ref:`environment
