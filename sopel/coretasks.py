@@ -313,6 +313,7 @@ def handle_isupport(bot, trigger):
     """Handle ``RPL_ISUPPORT`` events."""
     # remember if NAMESX is known to be supported, before parsing RPL_ISUPPORT
     namesx_support = 'NAMESX' in bot.isupport
+    uhnames_support = 'UHNAMES' in bot.isupport
 
     # parse ISUPPORT message from server
     parameters = {}
@@ -333,6 +334,13 @@ def handle_isupport(bot, trigger):
             # and the server doesn't have the multi-prefix capability
             # so we can ask the server to use the NAMESX feature
             bot.write(('PROTOCTL', 'NAMESX'))
+    # was UHNAMES support status updated?
+    if not uhnames_support and 'UHNAMES' in bot.isupport:
+        # yes it was!
+        if 'userhost-in-names' not in bot.server_capabilities:
+            # and the server doesn't have the userhost-in-names capability
+            # so we should ask for UHNAMES instead
+            bot.write(('PROTOCTL', 'UHNAMES'))
 
 
 @module.event(events.RPL_MYINFO)
@@ -447,9 +455,12 @@ def handle_names(bot, trigger):
         "!": module.OPER,
     }
 
+    uhnames = 'UHNAMES' in bot.isupport
+    userhost_in_names = 'userhost-in-names' in bot.enabled_capabilities
+
     names = trigger.split()
     for name in names:
-        if 'userhost-in-names' in bot.enabled_capabilities:
+        if uhnames or userhost_in_names:
             name, mask = name.rsplit('!', 1)
             username, hostname = mask.split('@', 1)
         else:

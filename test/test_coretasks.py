@@ -304,6 +304,32 @@ def test_handle_isupport_namesx(mockbot):
     assert len(mockbot.backend.message_sent) == 1, 'No need to resend!'
 
 
+def test_handle_isupport_uhnames(mockbot):
+    mockbot.on_message(
+        ':irc.example.com 005 Sopel '
+        'SAFELIST ELIST=CTU CPRIVMSG CNOTICE '
+        ':are supported by this server')
+
+    assert 'UHNAMES' not in mockbot.isupport
+    assert mockbot.backend.message_sent == []
+    assert 'userhost-in-names' not in mockbot.server_capabilities
+
+    mockbot.on_message(
+        ':irc.example.com 005 Sopel '
+        'UHNAMES '
+        ':are supported by this server')
+
+    assert 'UHNAMES' in mockbot.isupport
+    assert mockbot.backend.message_sent == rawlist('PROTOCTL UHNAMES')
+
+    mockbot.on_message(
+        ':irc.example.com 005 Sopel '
+        'UHNAMES '
+        ':are supported by this server')
+
+    assert len(mockbot.backend.message_sent) == 1, 'No need to resend!'
+
+
 def test_handle_isupport_namesx_with_multi_prefix(mockbot):
     # set multi-prefix
     mockbot.server_capabilities['multi-prefix'] = None
