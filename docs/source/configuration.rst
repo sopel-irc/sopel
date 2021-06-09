@@ -429,6 +429,15 @@ And here is an example of server-based authentication using SASL::
     auth_password = SopelIsGreat!  # your bot's password
     auth_target = PLAIN            # default sasl mechanism
 
+Finally, here is how to enable CertFP once you have a certificate that meets
+your IRC network's requirements::
+
+    [core]
+    client_cert_file = /path/to/cert.pem  # your bot's client certificate
+    # some networks require SASL EXTERNAL for CertFP to work
+    auth_method = sasl                    # if required
+    auth_target = EXTERNAL                # if required
+
 
 Multi-stage
 -----------
@@ -457,7 +466,7 @@ When :attr:`~CoreSection.server_auth_method` is defined the settings used are:
 * :attr:`~CoreSection.server_auth_username`: account's username
 * :attr:`~CoreSection.server_auth_password`: account's password
 * :attr:`~CoreSection.server_auth_sasl_mech`: the SASL mechanism to use
-  (defaults to ``PLAIN``)
+  (defaults to ``PLAIN``; ``EXTERNAL`` is also available)
 
 For example, this will use NickServ ``IDENTIFY`` command and SASL mechanism::
 
@@ -468,7 +477,7 @@ For example, this will use NickServ ``IDENTIFY`` command and SASL mechanism::
     auth_password = SopelIsGreat!  # your bot's password
     auth_target = NickServ         # default value
 
-    # server-based auth
+    # SASL auth
     server_auth_method = sasl             # select server-based auth
     server_auth_username = BotAccount     # your bot's username
     server_auth_password = SopelIsGreat!  # your bot's password

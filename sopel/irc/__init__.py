@@ -153,6 +153,8 @@ class AbstractBot(object):
             if has_ssl:
                 backend_class = SSLAsynchatBackend
                 backend_kwargs.update({
+                    'certfile': self.settings.core.client_cert_file,
+                    'keyfile': self.settings.core.client_cert_file,
                     'verify_ssl': self.settings.core.verify_ssl,
                     'ca_certs': self.settings.core.ca_certs,
                 })
