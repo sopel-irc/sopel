@@ -372,7 +372,7 @@ class AbstractBot(object):
         request, the ``failure_callback`` function will be called, if provided.
         The arguments will be a :class:`~sopel.bot.Sopel` object, and the
         capability which was rejected. This can be used to disable callables
-        which rely on the capability. It will be be called either if the server
+        which rely on the capability. It will be called either if the server
         NAKs the request, or if the server enabled it and later DELs it.
 
         The ``success_callback`` function will be called upon acknowledgment

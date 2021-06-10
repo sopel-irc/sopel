@@ -76,7 +76,7 @@ class Sopel(irc.AbstractBot):
         it will be here as ``{"sasl": "EXTERNAL"}``. Capabilities specified
         without any options will have ``None`` as the value.
 
-        For servers that do not support IRCv3, this will be an empty set.
+        For servers that do not support IRCv3, this will be an empty dict.
         """
 
         self.privileges = dict()
