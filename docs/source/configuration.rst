@@ -399,11 +399,13 @@ And for **nick-based** methods:
 * ``Q``
 * ``userserv``
 
-These additional options can be used to configure the authentication method
-and the required credentials:
+Several additional options can be used to configure the authentication method
+and the required credentials. You can follow the link for each to find more
+details:
 
-* :attr:`~CoreSection.auth_username`: account's username, if required
-* :attr:`~CoreSection.auth_password`: account's password
+* :attr:`~CoreSection.auth_username`: account's username, if used by
+  the ``auth_method``
+* :attr:`~CoreSection.auth_password`: password for authentication
 * :attr:`~CoreSection.auth_target`: authentication method's target, if required
   by the ``auth_method``:
 
@@ -428,6 +430,16 @@ And here is an example of server-based authentication using SASL::
     auth_username = BotAccount     # your bot's username
     auth_password = SopelIsGreat!  # your bot's password
     auth_target = PLAIN            # default sasl mechanism
+
+Example of authentication to a ZNC bouncer::
+
+    [core]
+    auth_method = server           # select server-based auth
+    # auth_username is not used with server authentication, so instead
+    # we combine the ZNC username, network name, and password here:
+    auth_password = Sopel/libera:SopelIsGreat!
+
+Don't forget to configure your ZNC to log in to the real network!
 
 
 Multi-stage

@@ -173,11 +173,12 @@ class CoreSection(StaticSection):
 
     :default:
         * ``NickServ`` if using the ``nickserv`` :attr:`auth_method`
+        * ``UserServ`` if using the ``userserv`` :attr:`auth_method`
         * ``PLAIN`` if using the ``sasl`` :attr:`auth_method`
 
-    The nickname of the NickServ service, or the name of the desired SASL
-    mechanism, if :attr:`auth_method` is set to one of these methods. This value
-    is otherwise ignored.
+    The nickname of the NickServ or UserServ service, or the name of the
+    desired SASL mechanism, if :attr:`auth_method` is set to one of these
+    methods. This value is otherwise ignored.
 
     See :ref:`Authentication`.
     """
@@ -185,7 +186,10 @@ class CoreSection(StaticSection):
     auth_username = ValidatedAttribute('auth_username')
     """The user/account name to use when authenticating.
 
-    May not apply, depending on :attr:`auth_method`. See :ref:`Authentication`.
+    Required for an :attr:`auth_method` of ``authserv``, ``Q``, or
+    ``userserv`` — otherwise ignored.
+
+    See :ref:`Authentication`.
     """
 
     auto_url_schemes = ListAttribute(
