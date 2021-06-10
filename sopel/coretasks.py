@@ -831,8 +831,11 @@ def receive_cap_list(bot, trigger):
                     req.failure(bot, req.prefix + cap)
     # Server is removing a capability
     elif trigger.args[1] == 'DEL':
+        # Remove from known CAPs
+        bot.enabled_capabilities.discard(cap)
+        bot.server_capabilities.pop(cap, None)
+        # If this CAP was requested with bot.cap_req
         entry = bot._cap_reqs.get(cap, None)
-        # If it was requested with bot.cap_req
         if entry:
             for req in entry:
                 # And that request wasn't prohibit, and a callback was
@@ -842,8 +845,14 @@ def receive_cap_list(bot, trigger):
                     req.failure(bot, req.prefix + cap)
     # Server is adding new capability
     elif trigger.args[1] == 'NEW':
+        # Add to known CAPs
+        split = cap.split('=')
+        if len(split) == 2:
+            bot.server_capabilities[split[0]] = split[1]
+        else:
+            bot.server_capabilities[split[0]] = None
+        # If this CAP was requested with bot.cap_req
         entry = bot._cap_reqs.get(cap, None)
-        # If it was requested with bot.cap_req
         if entry:
             for req in entry:
                 # And that request wasn't prohibit
