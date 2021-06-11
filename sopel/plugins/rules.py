@@ -1678,14 +1678,16 @@ class URLCallback(Rule):
         if not self.match_preconditions(bot, pretrigger):
             return
 
-        urls = (
-            url
-            for url in pretrigger.urls
-            if urlparse(url).scheme in self._schemes
-        )
+        # Parse only valid URLs with wanted schemes
+        for url in pretrigger.urls:
+            try:
+                if urlparse(url).scheme not in self._schemes:
+                    # skip URLs with unwanted scheme
+                    continue
+            except ValueError:
+                # skip invalid URLs
+                continue
 
-        # Parse URL for each found
-        for url in urls:
             # TODO: convert to 'yield from' when dropping Python 2.7
             for result in self.parse(url):
                 yield result
