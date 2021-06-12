@@ -635,13 +635,17 @@ To ignore users based on their hosts and/or nicks, you can use these options:
 Logging
 =======
 
-Sopel's outputs are redirected to a file named ``<base>.stdio.log``, located in
-the **log directory**, which is configured by :attr:`~CoreSection.logdir`.
+Sopel writes logs of its activities to its **log directory**, which is
+configured by :attr:`~CoreSection.logdir`. Depending on the enabled options,
+there may be as many as four log files per config:
 
-The ``<base>`` prefix refers to the configuration's
-:attr:`~sopel.config.Config.basename` attribute.
+* ``<configname>.sopel.log``: standard logging output
+* ``<configname>.error.log``: errors only
+* ``<configname>.exceptions.log``: exceptions and accompanying tracebacks
+* ``<configname>.raw.log``: raw traffic between Sopel and the IRC server, if
+  enabled (see :ref:`below <Raw Logs>`)
 
-It uses the built-in :func:`logging.basicConfig` function to configure its
+Sopel uses the built-in :func:`logging.basicConfig` function to configure its
 logs with the following arguments:
 
 * ``format``: set to :attr:`~CoreSection.logging_format` if configured
@@ -659,6 +663,12 @@ Example of configuration for logging::
     logging_datefmt = %Y-%m-%d %H:%M:%S
     logdir = /path/to/logs
 
+.. _logging-basename:
+.. note::
+
+    The ``<configname>`` prefix in logging filenames refers to the
+    configuration's :attr:`~sopel.config.Config.basename` attribute.
+
 .. versionadded:: 7.0
 
    Configuration options ``logging_format`` and ``logging_datefmt`` have been
@@ -666,8 +676,9 @@ Example of configuration for logging::
 
 .. versionchanged:: 7.0
 
-   The log filename has been renamed from ``stdio.log`` to ``<base>.stdio.log``
-   to prevent conflicts when running more than one instance of Sopel.
+   The log filename has been renamed from ``stdio.log`` to
+   ``<configname>.sopel.log`` to disambiguate its purpose and prevent
+   conflicts when running more than one instance of Sopel.
 
 Log to a Channel
 ----------------
@@ -707,15 +718,13 @@ the flag :attr:`~CoreSection.log_raw` to true::
     log_raw = on
 
 In that case, IRC messages received and sent are stored into a file named
-``<base>.raw.log``, located in the log directory.
-
-The ``<base>`` prefix refers to the configuration's
-:attr:`~sopel.config.Config.basename` attribute.
+``<configname>.raw.log``, located in the log directory.
 
 .. versionchanged:: 7.0
 
-   The log filename has been renamed from ``raw.log`` to ``<base>.raw.log``
-   to prevent conflicts when running more than one instance of Sopel.
+   The log filename has been renamed from ``raw.log`` to
+   ``<configname>.raw.log`` to prevent conflicts when running more than one
+   instance of Sopel.
 
 
 Other
