@@ -127,6 +127,9 @@ class Config(object):
 
         If the filename is ``libera.config.cfg``, then the ``basename`` will
         be ``libera.config``.
+
+        The config's ``basename`` is useful as a component :ref:`of log file
+        names <logging-basename>`, for example.
         """
         self.parser = ConfigParser.RawConfigParser(allow_no_value=True)
         """The configuration parser object that does the heavy lifting.
