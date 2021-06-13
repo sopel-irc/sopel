@@ -246,6 +246,11 @@ def test_fileattribute_given_file_when_dir(fakeconfig):
         fakeconfig.fake.ad_fileattr = testfile
 
 
+def test_configparser_env_priority_over_file(monkeypatch, fakeconfig):
+    monkeypatch.setenv('SOPEL_CORE_OWNER', 'not_dgw')
+    assert fakeconfig.core.owner == 'not_dgw'
+
+
 def test_configparser_multi_lines(multi_fakeconfig):
     # spam
     assert multi_fakeconfig.spam.eggs == [
@@ -267,6 +272,45 @@ def test_configparser_multi_lines(multi_fakeconfig):
     ]
 
     assert multi_fakeconfig.spam.channels == TEST_CHANNELS
+
+
+def test_configparser_multi_env(monkeypatch, multi_fakeconfig):
+    monkeypatch.setenv('SOPEL_SPAM_EGGS', 'five, six, seven, eight, and a half')
+    monkeypatch.setenv('SOPEL_SPAM_BACONS', 'microwaved\nfreeze in,\n, dry, thin, and disgusting')
+    monkeypatch.setenv('SOPEL_SPAM_CHEESES', ' swiss\n  sbrinz\ncottage')
+    # Comments not allowed when passing channels via ENV
+    monkeypatch.setenv(
+        'SOPEL_SPAM_CHANNELS',
+        '"#sopel"\n&strange\n*someZnc\n"#public"\n"#frontquote\n&backquote"\n"&bothquoted"\n"*starchan"'
+    )
+
+    assert multi_fakeconfig.spam.eggs == [
+        'five',
+        'six',
+        'seven',
+        'eight',
+        'and a half',  # no-newline + comma
+    ]
+    assert multi_fakeconfig.spam.bacons == [
+        'microwaved',
+        'freeze in',
+        'dry, thin, and disgusting',
+    ]
+    assert multi_fakeconfig.spam.cheeses == [
+        'swiss',
+        'sbrinz',
+        'cottage',
+    ]
+    assert multi_fakeconfig.spam.channels == [
+        '#sopel',
+        '&strange',
+        '*someZnc',
+        '#public',
+        '"#frontquote',
+        '&backquote"',
+        '"&bothquoted"',
+        '"*starchan"'
+    ]
 
 
 def test_save_unmodified_config(multi_fakeconfig):
