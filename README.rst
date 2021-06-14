@@ -31,14 +31,7 @@ First, either clone the repository with ``git clone
 git://github.com/sopel-irc/sopel.git`` or download a tarball `from GitHub
 <https://github.com/sopel-irc/sopel/releases/latest>`_.
 
-Note: Sopel requires Python 2.7.x or Python 3.3+ to run. On Python 2.7,
-Sopel requires ``backports.ssl_match_hostname`` to be installed. Use
-``pip install backports.ssl_match_hostname`` or
-``yum install python-backports.ssl_match_hostname`` to install it, or download
-and install it manually `from PyPI <https://pypi.org/project/backports.ssl_match_hostname>`_.
-
-Important: Sopel 8.0 will drop support for many old Python versions,
-including Python 2.7!
+Note: Sopel requires Python 3.6+ to run.
 
 In the source directory (whether cloned or from the tarball) run ``pip install
 -e .``. You can then run ``sopel`` to configure and start the bot.
