@@ -134,6 +134,19 @@ def test_bot_unknown_priv_mode(mockbot, ircfactory):
     ), "The bot must treat mapped but non-PREFIX modes as unknown."
 
 
+def test_bot_extra_mode_args(mockbot, ircfactory, caplog):
+    """Test warning on extraneous MODE args."""
+    irc = ircfactory(mockbot)
+    irc.bot._isupport = isupport.ISupport(chanmodes=("b", "k", "l", "mnt", tuple()))
+    irc.channel_joined("#test", ["Alex", "Bob", "Cheryl"])
+
+    mode_msg = ":Sopel!bot@bot MODE #test +m nonsense"
+    mockbot.on_message(mode_msg)
+
+    assert mockbot.channels["#test"].modes["m"]
+    assert "Too many arguments received for MODE" in caplog.text
+
+
 def test_handle_rpl_channelmodeis(mockbot, ircfactory):
     """Test handling RPL_CHANNELMODEIS events, response to MODE query."""
     rpl_channelmodeis = " ".join([
