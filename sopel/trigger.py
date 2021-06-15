@@ -347,13 +347,13 @@ class Trigger(unicode):
     See Python's :meth:`re.Match.groupdict` documentation for details.
     """
     args = property(lambda self: self._pretrigger.args)
-    """A tuple containing each of the arguments to an event.
+    """A list containing each of the arguments to an event.
 
-    :type: tuple
+    :type: list[str]
 
     These are the strings passed between the event name and the colon. For
     example, when setting ``mode -m`` on the channel ``#example``, args would
-    be ``('#example', '-m')``
+    be ``['#example', '-m']``
     """
     urls = property(lambda self: self._pretrigger.urls)
     """A tuple containing all URLs found in the text.
