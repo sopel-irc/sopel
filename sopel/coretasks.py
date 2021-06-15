@@ -500,10 +500,13 @@ def _parse_modes(bot, args):
         return
 
     channel = bot.channels[channel_name]
-    # Our old MODE parsing code checked for empty args. This would be a good
-    # place to re-implement that if necessary for a non-compliant IRCd, but for
-    # now just log malformed lines. After this we'll make a (possibly dangerous)
-    # assumption that the MODE message is more-or-less compliant.
+
+    # Unreal 3 sometimes sends an extraneous trailing space. If we're short an
+    # arg, we'll find out later.
+    if args[-1] == "":
+        args.pop()
+    # If any args are still empty, that's something we may not be prepared for,
+    # but let's continue anyway hoping they're trailing / not important.
     if len(args) < 2 or not all(args):
         LOGGER.debug(
             "The server sent a possibly malformed MODE message: %r", args)
@@ -602,6 +605,13 @@ def _parse_modes(bot, args):
             )
             _send_who(bot, channel_name)
             return
+
+    if param_idx != len(params):
+        LOGGER.warning(
+            "Too many arguments received for MODE: args=%r chanmodes=%r",
+            args,
+            chanmodes,
+        )
 
     LOGGER.info("Updated mode for channel: %s", channel.name)
     LOGGER.debug("Channel %r mode: %r", str(channel.name), channel.modes)
