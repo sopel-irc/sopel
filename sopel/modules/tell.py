@@ -162,7 +162,7 @@ def f_remind(bot, trigger):
         tellee = tellee[1:]
 
     if tellee == bot.nick:
-        bot.reply("I'm here now; you can tell me whatever you want!")
+        bot.reply("I'm here now; you can %s me whatever you want!" % verb)
         return
 
     if tellee not in (tools.Identifier(teller), bot.nick, 'me'):
