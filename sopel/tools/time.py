@@ -182,7 +182,7 @@ def format_time(db=None, config=None, zone=None, nick=None, channel=None,
     4. ISO-8601
 
     If ``db`` is not given or is not set up, steps 1 and 2 are skipped. If
-    config is not given, step 3 will be skipped.
+    ``config`` is not given, step 3 will be skipped.
     """
     tformat = None
     if db:
