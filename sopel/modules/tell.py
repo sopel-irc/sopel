@@ -154,7 +154,7 @@ def f_remind(bot, trigger):
     if not os.path.exists(bot.tell_filename):
         return
 
-    if len(tellee) > 30:  # TODO: use server NICKLEN here when available
+    if len(tellee) > bot.isupport.get('NICKLEN', 30):
         bot.reply('That nickname is too long.')
         return
 
