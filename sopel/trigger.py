@@ -232,6 +232,14 @@ class Trigger(unicode):
 
     This will be a channel name for "regular" (channel) messages, or the nick
     that sent a private message.
+
+    You can check if the trigger comes from a channel or a nick with its
+    :meth:`~sopel.tools.Identifier.is_nick` method::
+
+        if trigger.sender.is_nick():
+            # message sent from a private message
+        else:
+            # message sent from a channel
     """
     time = property(lambda self: self._pretrigger.time)
     """When the message was received.
