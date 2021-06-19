@@ -108,7 +108,13 @@ def setup(bot):
         _download_domain_list(loc)
     with open(loc, 'r') as f:
         for line in f:
-            clean_line = unicode(line).strip().lower()
+            if sys.version_info.major < 3:
+                line = unicode(line, 'utf-8')
+            else:
+                line = unicode(line)
+
+            clean_line = line.strip().lower()
+
             if not clean_line or clean_line[0] == '#':
                 # blank line or comment
                 continue
