@@ -553,6 +553,17 @@ class Identifier(unicode):
 
         :return: ``True`` if this :py:class:`Identifier` is a nickname;
                  ``False`` if it appears to be a channel
+
+        ::
+
+            >>> from sopel import tools
+            >>> ident = tools.Identifier('Sopel')
+            >>> ident.is_nick()
+            True
+            >>> ident = tools.Identifier('#sopel')
+            >>> ident.is_nick()
+            False
+
         """
         return self and not self.startswith(_channel_prefixes)
 
