@@ -220,18 +220,32 @@ Channels & users
 
 Knowing how to talk is good for a bot, but you may be wondering what the bot
 knows about the channels and their users. For that, you can use the bot's
-:attr:`~sopel.bot.Sopel.channels` attribute. For example, to list all channels
-the bot is in::
+:attr:`~sopel.bot.Sopel.channels` attribute.
+
+For example, to list all channels the bot is in::
 
     for name, channel in bot.channels.items():
         # do something with the name and the channel
+
+.. note::
+
+    Sopel doesn't know about channels it didn't join first, and it forgets
+    everything about a channel when it leaves.
+
+Getting a channel's information
+-------------------------------
+
+To get a channel's information, you need to know its name, with its channel
+prefix (usually ``#``), such as this::
+
+    channel = bot.channels['#channel_name']
 
 With the ``trigger`` object, you can also access the channel object directly
 (assuming the message comes from a channel, which you should check first)::
 
     channel = bot.channels[trigger.sender]
 
-The ``channel`` object is an instance of :class:`sopel.tools.target.Channel`,
+The ``channel`` object is an instance of :class:`~sopel.tools.target.Channel`,
 which provides the following information:
 
 * its :attr:`~sopel.tools.target.Channel.name`
@@ -239,13 +253,51 @@ which provides the following information:
 * its :attr:`~sopel.tools.target.Channel.users`
 * and its users' :attr:`~sopel.tools.target.Channel.privileges`
 
-Using ``trigger.nick``, you can get the nick's privileges and profile in a
-channel like this::
+.. note::
 
-    user_privileges = channel.privileges[trigger.nick]
+    To check if a message comes from a channel, you have two options:
+
+    1. use the :func:`~sopel.plugin.require_chanmsg` decorator on your plugin
+       callable
+    2. use an ``if`` block in your function to check
+       :attr:`trigger.sender <sopel.trigger.Trigger.sender>`::
+
+           if not trigger.sender.is_nick():
+               # this trigger is from a channel
+
+       See :meth:`Identifier.is_nick() <sopel.tools.Identifier.is_nick>` for
+       more information.
+
+Getting users in a channel
+--------------------------
+
+To get a list of users in a **channel**, you can use its
+:attr:`~sopel.tools.target.Channel.users` attribute: this is a map of users you
+can iterate over to get all the users::
+
+    for nick, user in channel.users.items():
+        # do something with the nick and the user
+
+You can access one user in a channel with its nick::
+
+    user = channel.users['Nickname']
+
+With the ``trigger`` object, you can also access the user object directly::
+
     user = channel.users[trigger.nick]
 
-Then, for example, you can check if the user is voiced (mode +v) or not::
+Getting user privileges in a channel
+------------------------------------
+
+Once you have a user's nick (either from the trigger or directly) and a
+channel, you can get that user's privileges through the **channel**'s
+:attr:`~sopel.tools.target.Channel.privileges` attribute::
+
+    user_privileges = channel.privileges['Nickname']
+    user_privileges = channel.privileges[trigger.nick]
+
+You can check the user's privileges manually using bitwise operators. Here
+for example, we check if the user is voiced (+v) or above::
 
     from sopel import plugin
 
@@ -256,3 +308,34 @@ Then, for example, you can check if the user is voiced (mode +v) or not::
         # like plugin.HALFOP or plugin.OP
     else:
         # no privilege
+
+Another option is to use dedicated methods from the ``channel`` object::
+
+    if channel.is_voiced('Nickname'):
+        # user is voiced
+    elif channel.has_privileges('Nickname', plugin.VOICED):
+        # not voiced, but higher privileges
+        # like plugin.HALFOP or plugin.OP
+    else:
+        # no privilege
+
+You can also iterate over the list of users and filter them by privileges::
+
+    # get users with the OP privilege
+    op_users = [
+        user
+        for nick, user in channel.users
+        if channel.is_op(nick, plugin.OP)
+    ]
+
+    # get users with OP privilege or above
+    op_or_higher_users = [
+        user
+        for nick, user in channel.users
+        if channel.has_privileges(nick, plugin.OP)
+    ]
+
+.. seealso::
+
+    Read about the :class:`~sopel.tools.target.Channel` and
+    :class:`~sopel.tools.target.User` classes for more details.

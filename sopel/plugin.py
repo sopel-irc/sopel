@@ -919,6 +919,16 @@ def require_chanmsg(message=None, reply=False):
                        :meth:`~.bot.Sopel.say` when ``True``; defaults to
                        ``False``
 
+    A decorated plugin callable will be triggered only by messages from a
+    channel::
+
+        from sopel import plugin
+
+        @plugin.command('.mycommand')
+        @plugin.require_chanmsg('Channel only command.')
+        def manage_topic(bot, trigger):
+            # trigger on channel messages only
+
     If the decorated function is triggered by a private message, ``message``
     will be said if given. By default, it uses :meth:`bot.say()
     <.bot.Sopel.say>`, but when ``reply`` is true, then it uses
