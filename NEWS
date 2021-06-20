@@ -2,6 +2,42 @@ This file is used to auto-generate the "Changelog" section of Sopel's website.
 When adding new entries, follow the style guide in NEWS.spec.md to avoid
 causing problems with the site build.
 
+Changes between 7.1.0 and 7.1.1
+===============================
+
+Plugin changes
+--------------
+
+* safety: fixed loading bad-domains list on py2 [[#2103][]]
+* tell: fixed hard-coded verb when trying to `.ask` the bot [[#2106][]]
+* tld: fixed `.tldcache clear` command corrupting internal state [[#2077][]]
+
+Core changes
+------------
+
+* Fixed `BooleanAttribute` with `default=True` [[#2084][]]
+* Ignore invalid URLs when triggering URL callbacks [[#2086][]]
+* Fixed infinite loop in WHO tracking on certain networks [[#2091][]]
+* Ignore problematic environment variables in tests [[#2094][]]
+* Improved MODE tracking even more [[#2097][], [#2098][]]
+* Updated, clarified, and expanded even more documentation [[#2090][],
+  [#2096][], [#2105][], [#2108][]]
+
+[#2077]: https://github.com/sopel-irc/sopel/pull/2077
+[#2084]: https://github.com/sopel-irc/sopel/pull/2084
+[#2086]: https://github.com/sopel-irc/sopel/pull/2086
+[#2090]: https://github.com/sopel-irc/sopel/pull/2090
+[#2091]: https://github.com/sopel-irc/sopel/pull/2091
+[#2094]: https://github.com/sopel-irc/sopel/pull/2094
+[#2096]: https://github.com/sopel-irc/sopel/pull/2096
+[#2097]: https://github.com/sopel-irc/sopel/pull/2097
+[#2098]: https://github.com/sopel-irc/sopel/pull/2098
+[#2103]: https://github.com/sopel-irc/sopel/pull/2103
+[#2105]: https://github.com/sopel-irc/sopel/pull/2105
+[#2106]: https://github.com/sopel-irc/sopel/pull/2106
+[#2108]: https://github.com/sopel-irc/sopel/pull/2108
+
+
 Changes between 7.0.7 and 7.1.0
 ===============================
 
