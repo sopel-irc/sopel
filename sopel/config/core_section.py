@@ -9,7 +9,6 @@ from sopel.config.types import (
     ChoiceAttribute,
     FilenameAttribute,
     ListAttribute,
-    NO_DEFAULT,
     SecretAttribute,
     StaticSection,
     ValidatedAttribute,
@@ -88,6 +87,17 @@ class CoreSection(StaticSection):
         with the minimal required options.
 
     """
+    def __init__(self, config, section_name, validate=True):
+        super().__init__(config, section_name, validate)
+
+        if validate:
+            # `owner` is required UNLESS `owner_account` is set
+            owner = getattr(self, 'owner', None)
+            owner_account = getattr(self, 'owner_account', None)
+            if not any([owner, owner_account]):
+                raise ValueError(
+                    'Either {sect}.owner or {sect}.owner_account is required'
+                    .format(sect=section_name))
 
     admins = ListAttribute('admins')
     """The list of people (other than the owner) who can administer the bot.
@@ -952,10 +962,10 @@ class CoreSection(StaticSection):
     won't work until the bot has been properly configured.
     """
 
-    owner = ValidatedAttribute('owner', default=NO_DEFAULT)
+    owner = ValidatedAttribute('owner')
     """The IRC name of the owner of the bot.
 
-    **Required** even if :attr:`owner_account` is set.
+    Ignored if :attr:`owner_account` is set.
     """
 
     owner_account = ValidatedAttribute('owner_account')
