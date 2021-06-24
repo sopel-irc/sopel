@@ -73,7 +73,7 @@ def test_bot_mixed_mode_removal(mockbot, ircfactory):
     irc.mode_set('#test', '-o+o-qa+v', [
         'Uvoice', 'Uop', 'Uvoice', 'Uvoice', 'Uvoice'])
     assert mockbot.channels["#test"].privileges[Identifier("Uop")] == OP, (
-        'OP got +o only')
+        'Uop got +o only')
     assert mockbot.channels["#test"].privileges[Identifier("Uvoice")] == VOICE, (
         'Uvoice got -o, -q, -a, then +v')
 
@@ -382,3 +382,14 @@ def test_sasl_plain_token_generation():
     assert (
         coretasks._make_sasl_plain_token('sopel', 'sasliscool') ==
         'sopel\x00sopel\x00sasliscool')
+
+
+def test_recv_chghost(mockbot, ircfactory):
+    """Ensure that CHGHOST messages are correctly handled."""
+    irc = ircfactory(mockbot)
+    irc.channel_joined("#test", ["Alex", "Bob", "Cheryl"])
+
+    mockbot.on_message(":Alex!~alex@test.local CHGHOST alex identd.confirmed")
+
+    assert mockbot.users[Identifier('Alex')].user == 'alex'
+    assert mockbot.users[Identifier('Alex')].host == 'identd.confirmed'
