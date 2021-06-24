@@ -1254,7 +1254,9 @@ def recv_chghost(bot, trigger):
         new_user, new_host = trigger.args
     except ValueError:
         LOGGER.warning(
-            "Ignoring CHGHOST command: too many arguments %r", trigger.args)
+            "Ignoring CHGHOST command with %s arguments: %r",
+            'extra' if len(trigger.args) > 2 else 'insufficient',
+            trigger.args)
         return
 
     bot.users[trigger.nick].user = new_user

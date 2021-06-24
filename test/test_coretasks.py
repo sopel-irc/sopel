@@ -393,3 +393,38 @@ def test_recv_chghost(mockbot, ircfactory):
 
     assert mockbot.users[Identifier('Alex')].user == 'alex'
     assert mockbot.users[Identifier('Alex')].host == 'identd.confirmed'
+
+
+def test_recv_chghost_invalid(mockbot, ircfactory, caplog):
+    """Ensure that malformed CHGHOST messages are ignored and logged."""
+    irc = ircfactory(mockbot)
+    irc.channel_joined("#test", ["Alex", "Bob", "Cheryl"])
+    alex = Identifier('Alex')
+    bob = Identifier('Bob')
+    cheryl = Identifier('Cheryl')
+
+    # Mock bot + mock IRC server doesn't populate these on its own
+    assert mockbot.users[alex].user is None
+    assert mockbot.users[alex].host is None
+    assert mockbot.users[bob].user is None
+    assert mockbot.users[bob].host is None
+    assert mockbot.users[cheryl].user is None
+    assert mockbot.users[cheryl].host is None
+
+    mockbot.on_message(":Alex!~alex@test.local CHGHOST alex is a boss")
+    mockbot.on_message(":Bob!bob@grills.burgers CHGHOST rarely")
+    mockbot.on_message(":Cheryl!~carol@danger.zone CHGHOST")
+
+    # These should be unchanged
+    assert mockbot.users[alex].user is None
+    assert mockbot.users[alex].host is None
+    assert mockbot.users[bob].user is None
+    assert mockbot.users[bob].host is None
+    assert mockbot.users[cheryl].user is None
+    assert mockbot.users[cheryl].host is None
+
+    # Meanwhile, the malformed input should have generated log lines
+    assert len(caplog.messages) == 3
+    assert 'extra arguments' in caplog.messages[0]
+    assert 'insufficient arguments' in caplog.messages[1]
+    assert 'insufficient arguments' in caplog.messages[2]
