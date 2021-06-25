@@ -6,7 +6,7 @@ import re
 
 import pytest
 
-from sopel import bot, loader, module, plugin, trigger
+from sopel import bot, loader, plugin, trigger
 from sopel.plugins import rules
 from sopel.tests import rawlist
 
@@ -815,7 +815,7 @@ def test_rule_execute(mockbot):
 
 def test_rule_from_callable(mockbot):
     # prepare callable
-    @module.rule(r'hello', r'hi', r'hey', r'hello|hi')
+    @plugin.rule(r'hello', r'hi', r'hey', r'hello|hi')
     def handler(wrapped, trigger):
         wrapped.reply('Hi!')
 
@@ -856,7 +856,7 @@ def test_rule_from_callable_nick_placeholder(mockbot):
     # note: yes, the $nick variable is super confusing
     # it should probably accept \s* instead of \s+
     # so a pattern like "$nick hello" would be way easier to read
-    @module.rule(r'$nickhello')
+    @plugin.rule(r'$nickhello')
     def handler(wrapped, trigger):
         wrapped.reply('Hi!')
 
@@ -893,7 +893,7 @@ def test_rule_from_callable_nick_placeholder(mockbot):
 
 def test_rule_from_callable_nickname_placeholder(mockbot):
     # prepare callable
-    @module.rule(r'$nickname hello')
+    @plugin.rule(r'$nickname hello')
     def handler(wrapped, trigger):
         wrapped.reply('Hi!')
 
@@ -984,7 +984,7 @@ def test_rule_from_callable_invalid(mockbot):
 
 def test_rule_from_callable_lazy_invalid(mockbot):
     # prepare callable
-    @module.rule(r'.*')
+    @plugin.rule(r'.*')
     def handler(wrapped, trigger, match=None):
         wrapped.reply('Hi!')
 
@@ -1015,7 +1015,7 @@ def test_rule_from_callable_lazy_invalid_no_regex(mockbot):
 
 def test_kwargs_from_callable(mockbot):
     # prepare callable
-    @module.rule(r'hello', r'hi', r'hey', r'hello|hi')
+    @plugin.rule(r'hello', r'hi', r'hey', r'hello|hi')
     def handler(wrapped, trigger):
         wrapped.reply('Hi!')
 
@@ -1054,7 +1054,7 @@ def test_kwargs_from_callable(mockbot):
 
 def test_kwargs_from_callable_label(mockbot):
     # prepare callable
-    @module.rule(r'hello', r'hi', r'hey', r'hello|hi')
+    @plugin.rule(r'hello', r'hi', r'hey', r'hello|hi')
     @plugin.label('hello_rule')
     def handler(wrapped, trigger):
         wrapped.reply('Hi!')
@@ -1069,8 +1069,8 @@ def test_kwargs_from_callable_label(mockbot):
 
 def test_kwargs_from_callable_priority(mockbot):
     # prepare callable
-    @module.rule(r'hello', r'hi', r'hey', r'hello|hi')
-    @module.priority(rules.PRIORITY_LOW)
+    @plugin.rule(r'hello', r'hi', r'hey', r'hello|hi')
+    @plugin.priority(rules.PRIORITY_LOW)
     def handler(wrapped, trigger):
         wrapped.reply('Hi!')
 
@@ -1084,8 +1084,8 @@ def test_kwargs_from_callable_priority(mockbot):
 
 def test_kwargs_from_callable_event(mockbot):
     # prepare callable
-    @module.rule(r'hello', r'hi', r'hey', r'hello|hi')
-    @module.event('PRIVMSG', 'NOTICE')
+    @plugin.rule(r'hello', r'hi', r'hey', r'hello|hi')
+    @plugin.event('PRIVMSG', 'NOTICE')
     def handler(wrapped, trigger):
         wrapped.reply('Hi!')
 
@@ -1097,10 +1097,10 @@ def test_kwargs_from_callable_event(mockbot):
     assert kwargs['events'] == ['PRIVMSG', 'NOTICE']
 
 
-def test_kwargs_from_callable_intent(mockbot):
+def test_kwargs_from_callable_ctcp_intent(mockbot):
     # prepare callable
-    @module.rule(r'hello', r'hi', r'hey', r'hello|hi')
-    @module.intent('ACTION')
+    @plugin.rule(r'hello', r'hi', r'hey', r'hello|hi')
+    @plugin.ctcp('ACTION')
     def handler(wrapped, trigger):
         wrapped.reply('Hi!')
 
@@ -1114,8 +1114,8 @@ def test_kwargs_from_callable_intent(mockbot):
 
 def test_kwargs_from_callable_allow_echo(mockbot):
     # prepare callable
-    @module.rule(r'hello', r'hi', r'hey', r'hello|hi')
-    @module.echo
+    @plugin.rule(r'hello', r'hi', r'hey', r'hello|hi')
+    @plugin.echo
     def handler(wrapped, trigger):
         wrapped.reply('Hi!')
 
@@ -1129,8 +1129,8 @@ def test_kwargs_from_callable_allow_echo(mockbot):
 
 def test_kwargs_from_callable_threaded(mockbot):
     # prepare callable
-    @module.rule(r'hello', r'hi', r'hey', r'hello|hi')
-    @module.thread(False)
+    @plugin.rule(r'hello', r'hi', r'hey', r'hello|hi')
+    @plugin.thread(False)
     def handler(wrapped, trigger):
         wrapped.reply('Hi!')
 
@@ -1144,8 +1144,8 @@ def test_kwargs_from_callable_threaded(mockbot):
 
 def test_kwargs_from_callable_unblockable(mockbot):
     # prepare callable
-    @module.rule(r'hello', r'hi', r'hey', r'hello|hi')
-    @module.unblockable
+    @plugin.rule(r'hello', r'hi', r'hey', r'hello|hi')
+    @plugin.unblockable
     def handler(wrapped, trigger):
         wrapped.reply('Hi!')
 
@@ -1159,8 +1159,8 @@ def test_kwargs_from_callable_unblockable(mockbot):
 
 def test_kwargs_from_callable_rate_limit(mockbot):
     # prepare callable
-    @module.rule(r'hello', r'hi', r'hey', r'hello|hi')
-    @module.rate(user=20, channel=30, server=40)
+    @plugin.rule(r'hello', r'hi', r'hey', r'hello|hi')
+    @plugin.rate(user=20, channel=30, server=40)
     def handler(wrapped, trigger):
         wrapped.reply('Hi!')
 
@@ -1178,8 +1178,8 @@ def test_kwargs_from_callable_rate_limit(mockbot):
 
 def test_kwargs_from_callable_examples(mockbot):
     # prepare callable
-    @module.rule(r'hello', r'hi', r'hey', r'hello|hi')
-    @module.example('hello')
+    @plugin.rule(r'hello', r'hi', r'hey', r'hello|hi')
+    @plugin.example('hello')
     def handler(wrapped, trigger):
         """This is the doc you are looking for."""
         wrapped.reply('Hi!')
@@ -1211,9 +1211,9 @@ def test_kwargs_from_callable_examples(mockbot):
 
 def test_kwargs_from_callable_examples_test(mockbot):
     # prepare callable
-    @module.rule(r'hello', r'hi', r'hey', r'hello|hi')
-    @module.example('hi', 'Hi!')
-    @module.example('hello', 'Hi!')
+    @plugin.rule(r'hello', r'hi', r'hey', r'hello|hi')
+    @plugin.example('hi', 'Hi!')
+    @plugin.example('hello', 'Hi!')
     def handler(wrapped, trigger):
         wrapped.reply('Hi!')
 
@@ -1264,10 +1264,10 @@ def test_kwargs_from_callable_examples_test(mockbot):
 
 def test_kwargs_from_callable_examples_help(mockbot):
     # prepare callable
-    @module.rule(r'hello', r'hi', r'hey', r'hello|hi')
-    @module.example('hi', user_help=True)
-    @module.example('hey', 'Hi!')
-    @module.example('hello', 'Hi!', user_help=True)
+    @plugin.rule(r'hello', r'hi', r'hey', r'hello|hi')
+    @plugin.example('hi', user_help=True)
+    @plugin.example('hey', 'Hi!')
+    @plugin.example('hello', 'Hi!', user_help=True)
     def handler(wrapped, trigger):
         wrapped.reply('Hi!')
 
@@ -1329,8 +1329,8 @@ def test_kwargs_from_callable_examples_help(mockbot):
 
 def test_kwargs_from_callable_examples_doc(mockbot):
     # prepare callable
-    @module.rule(r'hello', r'hi', r'hey', r'hello|hi')
-    @module.example('hello')
+    @plugin.rule(r'hello', r'hi', r'hey', r'hello|hi')
+    @plugin.example('hello')
     def handler(wrapped, trigger):
         """This is the doc you are looking for.
 
@@ -1707,7 +1707,7 @@ def test_command_match_subcommand_aliases(mockbot):
 
 def test_command_from_callable(mockbot):
     # prepare callable
-    @module.commands('hello', 'hi', 'hey')
+    @plugin.commands('hello', 'hi', 'hey')
     def handler(wrapped, trigger):
         wrapped.reply('Hi!')
 
@@ -1761,7 +1761,7 @@ def test_command_from_callable(mockbot):
 
 def test_command_from_callable_subcommand(mockbot):
     # prepare callable
-    @module.commands('main sub')
+    @plugin.commands('main sub')
     def handler(wrapped, trigger):
         wrapped.reply('Hi!')
 
@@ -1789,8 +1789,8 @@ def test_command_from_callable_subcommand(mockbot):
 
 def test_command_from_callable_subcommand_aliases(mockbot):
     # prepare callable
-    @module.commands('main', 'main sub')
-    @module.commands('reverse sub', 'reverse')
+    @plugin.commands('main', 'main sub')
+    @plugin.commands('reverse sub', 'reverse')
     def handler(wrapped, trigger):
         wrapped.reply('Hi!')
 
@@ -1847,7 +1847,7 @@ def test_command_from_callable_regex_pattern(mockbot):
     # Command name as regex pattern will be removed in Sopel 8.0
 
     # prepare callable
-    @module.commands('main .*')
+    @plugin.commands('main .*')
     def handler(wrapped, trigger):
         wrapped.reply('Hi!')
 
@@ -1875,7 +1875,7 @@ def test_command_from_callable_regex_pattern(mockbot):
 
 def test_command_from_callable_invalid(mockbot):
     # prepare callable
-    @module.rule(r'.*')
+    @plugin.rule(r'.*')
     def handler(wrapped, trigger):
         wrapped.reply('Hi!')
 
@@ -2059,7 +2059,7 @@ def test_nick_command_has_alias(mockbot):
 
 def test_nick_command_from_callable_invalid(mockbot):
     # prepare callable
-    @module.rule(r'.*')
+    @plugin.rule(r'.*')
     def handler(wrapped, trigger):
         wrapped.reply('Hi!')
 
@@ -2072,7 +2072,7 @@ def test_nick_command_from_callable_invalid(mockbot):
 
 def test_nick_command_from_callable(mockbot):
     # prepare callable
-    @module.nickname_commands('hello', 'hi', 'hey')
+    @plugin.nickname_commands('hello', 'hi', 'hey')
     def handler(wrapped, trigger):
         wrapped.reply('Hi!')
 
@@ -2165,7 +2165,7 @@ def test_nick_command_from_callable_regex_pattern(mockbot):
     # Command name as regex pattern will be removed in Sopel 8.0
 
     # prepare callable
-    @module.nickname_commands('do .*')
+    @plugin.nickname_commands('do .*')
     def handler(wrapped, trigger):
         wrapped.reply('Hi!')
 
@@ -2288,7 +2288,7 @@ def test_action_command_match_intent(mockbot):
 
 def test_action_command_from_callable_invalid(mockbot):
     # prepare callable
-    @module.rule(r'.*')
+    @plugin.rule(r'.*')
     def handler(wrapped, trigger):
         wrapped.reply('Hi!')
 
@@ -2301,7 +2301,7 @@ def test_action_command_from_callable_invalid(mockbot):
 
 def test_action_command_from_callable(mockbot):
     # prepare callable
-    @module.action_commands('hello', 'hi', 'hey')
+    @plugin.action_commands('hello', 'hi', 'hey')
     def handler(wrapped, trigger):
         wrapped.reply('Hi!')
 
@@ -2370,7 +2370,7 @@ def test_action_command_from_callable_regex_pattern(mockbot):
     # Command name as regex pattern will be removed in Sopel 8.0
 
     # prepare callable
-    @module.action_commands('do .*')
+    @plugin.action_commands('do .*')
     def handler(wrapped, trigger):
         wrapped.reply('Hi!')
 
@@ -2699,7 +2699,7 @@ def test_url_callback_from_callable(mockbot):
     link_3 = 'https://not-example.com/test'
 
     # prepare callable
-    @module.url(re.escape('https://example.com/') + r'(\w+)')
+    @plugin.url(re.escape('https://example.com/') + r'(\w+)')
     def handler(wrapped, trigger, match):
         wrapped.say('Hi!')
         return 'The return value: %s' % match.group(0)
@@ -2780,7 +2780,7 @@ def test_url_callback_from_callable_no_match_parameter(mockbot):
     link = 'https://example.com/test'
 
     # prepare callable
-    @module.url(re.escape('https://example.com/') + r'(\w+)')
+    @plugin.url(re.escape('https://example.com/') + r'(\w+)')
     def handler(wrapped, trigger):
         wrapped.say('Hi!')
         return 'The return value: %s' % trigger.group(0)
@@ -2874,7 +2874,7 @@ def test_url_callback_from_callable_invalid(mockbot):
 
 def test_url_callback_from_callable_lazy_invalid(mockbot):
     # prepare callable
-    @module.url(r'.*')
+    @plugin.url(r'.*')
     def handler(wrapped, trigger, match=None):
         wrapped.reply('Hi!')
 
