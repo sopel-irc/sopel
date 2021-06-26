@@ -273,8 +273,8 @@ def help(bot, trigger):
                     bot.reply('The documentation for this command is too long; '
                               'I\'m sending it to you in a private message.')
 
-                def msgfun(l):
-                    bot.say(l, trigger.nick)
+                def msgfun(message):
+                    bot.say(message, trigger.nick)
             else:
                 msgfun = respond
 
