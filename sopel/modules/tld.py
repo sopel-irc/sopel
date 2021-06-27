@@ -1,4 +1,3 @@
-# coding=utf-8
 """
 tld.py - Sopel TLD Plugin
 Copyright 2009-10, Michael Yanovich, yanovich.net
@@ -7,24 +6,18 @@ Licensed under the Eiffel Forum License 2.
 
 https://sopel.chat
 """
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import generator_stop
 
 from datetime import datetime
 from encodings import idna
+from html.parser import HTMLParser
 import logging
 import re
-import sys
 
 import pytz
 import requests
 
 from sopel import formatting, plugin, tools
-
-if sys.version_info.major >= 3:
-    unicode = str
-    from html.parser import HTMLParser
-else:
-    from HTMLParser import HTMLParser
 
 
 LOGGER = logging.getLogger(__name__)

@@ -1,4 +1,3 @@
-# coding=utf-8
 """:mod:`sopel.irc` is the core IRC module for Sopel.
 
 This sub-package contains everything that is related to the IRC protocol
@@ -23,35 +22,19 @@ who should worry about :class:`sopel.bot.Sopel` only.
 # Copyright 2019, Florian Strzelecki <florian.strzelecki@gmail.com>
 #
 # Licensed under the Eiffel Forum License 2.
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import generator_stop
 
 from datetime import datetime
 import logging
 import os
-import sys
 import threading
 import time
-
-try:
-    import ssl
-    if not hasattr(ssl, 'match_hostname'):
-        # Attempt to import ssl_match_hostname from python-backports
-        # TODO: Remove when dropping Python 2 support
-        import backports.ssl_match_hostname
-        ssl.match_hostname = backports.ssl_match_hostname.match_hostname
-        ssl.CertificateError = backports.ssl_match_hostname.CertificateError
-    has_ssl = True
-except ImportError:
-    # no SSL support
-    has_ssl = False
 
 from sopel import tools, trigger
 from .backends import AsynchatBackend, SSLAsynchatBackend
 from .isupport import ISupport
 from .utils import CapReq, safe
 
-if sys.version_info.major >= 3:
-    unicode = str
 
 __all__ = ['abstract_backends', 'backends', 'utils']
 
@@ -150,16 +133,11 @@ class AbstractBot(object):
         }
 
         if self.settings.core.use_ssl:
-            if has_ssl:
-                backend_class = SSLAsynchatBackend
-                backend_kwargs.update({
-                    'verify_ssl': self.settings.core.verify_ssl,
-                    'ca_certs': self.settings.core.ca_certs,
-                })
-            else:
-                LOGGER.warning(
-                    'SSL is not available on your system; '
-                    'attempting connection without it')
+            backend_class = SSLAsynchatBackend
+            backend_kwargs.update({
+                'verify_ssl': self.settings.core.verify_ssl,
+                'ca_certs': self.settings.core.ca_certs,
+            })
 
         return backend_class(*backend_args, **backend_kwargs)
 
@@ -602,7 +580,7 @@ class AbstractBot(object):
 
         """
         excess = ''
-        if not isinstance(text, unicode):
+        if not isinstance(text, str):
             # Make sure we are dealing with a Unicode string
             text = text.decode('utf-8')
 

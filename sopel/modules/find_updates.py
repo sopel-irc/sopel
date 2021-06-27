@@ -1,4 +1,3 @@
-# coding=utf-8
 """
 find_updates.py - Sopel Update Check Plugin
 This is separated from version.py, so that it can be easily overridden by
@@ -9,7 +8,7 @@ Licensed under the Eiffel Forum License 2.
 
 https://sopel.chat
 """
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import generator_stop
 
 import requests
 

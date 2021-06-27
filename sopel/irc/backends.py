@@ -1,10 +1,9 @@
-# coding=utf-8
 # Copyright 2019, Florian Strzelecki <florian.strzelecki@gmail.com>
 #
 # Licensed under the Eiffel Forum License 2.
 # When working on core IRC protocol related features, consult protocol
 # documentation at http://www.irchelp.org/irchelp/rfc/
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import generator_stop
 
 import asynchat
 import asyncore
@@ -13,29 +12,13 @@ import errno
 import logging
 import os
 import socket
-import sys
+import ssl
 import threading
 
 from sopel import loader, plugin
 from sopel.tools import jobs
 from .abstract_backends import AbstractIRCBackend
 from .utils import get_cnames
-
-try:
-    import ssl
-    if not hasattr(ssl, 'match_hostname'):
-        # Attempt to import ssl_match_hostname from python-backports
-        # TODO: Remove when dropping Python 2 support
-        import backports.ssl_match_hostname
-        ssl.match_hostname = backports.ssl_match_hostname.match_hostname
-        ssl.CertificateError = backports.ssl_match_hostname.CertificateError
-    has_ssl = True
-except ImportError:
-    # no SSL support
-    has_ssl = False
-
-if sys.version_info.major >= 3:
-    unicode = str
 
 
 LOGGER = logging.getLogger(__name__)
@@ -215,15 +198,15 @@ class AsynchatBackend(AbstractIRCBackend, asynchat.async_chat):
         """
         # We can't trust clients to pass valid Unicode.
         try:
-            data = unicode(data, encoding='utf-8')
+            data = str(data, encoding='utf-8')
         except UnicodeDecodeError:
             # not Unicode; let's try CP-1252
             try:
-                data = unicode(data, encoding='cp1252')
+                data = str(data, encoding='cp1252')
             except UnicodeDecodeError:
                 # Okay, let's try ISO 8859-1
                 try:
-                    data = unicode(data, encoding='iso8859-1')
+                    data = str(data, encoding='iso8859-1')
                 except UnicodeDecodeError:
                     # Discard line if encoding is unknown
                     return

@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.7
-# coding=utf-8
 """
 Sopel - An IRC Bot
 Copyright 2008, Sean B. Palmer, inamidst.com
@@ -8,7 +6,7 @@ Licensed under the Eiffel Forum License 2.
 
 https://sopel.chat
 """
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import generator_stop
 
 import argparse
 import logging
@@ -24,15 +22,19 @@ from . import utils
 # This is in case someone somehow manages to install Sopel on an old version
 # of pip (<9.0.0), which doesn't know about `python_requires`, or tries to run
 # from source on an unsupported version of Python.
-if sys.version_info < (2, 7) or (
-    sys.version_info.major >= 3 and sys.version_info < (3, 3)
-):
-    tools.stderr('Error: Sopel requires Python 2.7+ or 3.3+.')
+if sys.version_info < (3, 6):
+    tools.stderr('Error: Sopel requires Python 3.6+.')
     sys.exit(1)
-if sys.version_info.major == 2:
-    tools.stderr(
-        'Warning: Python 2.x has reached end of life and will receive '
-        'no further updates. Sopel 8.0 will drop support for it.')
+
+# Py3.6 EOL: https://www.python.org/dev/peps/pep-0494/#lifespan
+if sys.version_info < (3, 7):
+    # TODO check this warning before releasing Sopel 8.0
+    print(
+        'Warning: Python 3.6 will reach end of life by the end of 2021 '
+        'and will receive no further updates. '
+        'Sopel 9.0 will drop support for it.',
+        file=sys.stderr,
+    )
 
 LOGGER = logging.getLogger(__name__)
 

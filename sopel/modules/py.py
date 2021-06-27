@@ -1,4 +1,3 @@
-# coding=utf-8
 """
 py.py - Sopel Python Eval Plugin
 Copyright 2008, Sean B. Palmer, inamidst.com
@@ -6,7 +5,7 @@ Licensed under the Eiffel Forum License 2.
 
 https://sopel.chat
 """
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import generator_stop
 
 from requests import get
 

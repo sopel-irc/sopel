@@ -1,4 +1,3 @@
-# coding=utf-8
 """Core Sopel plugin that handles IRC protocol functions.
 
 This plugin allows the bot to run without user-facing functionality:
@@ -21,7 +20,7 @@ dispatch function in :class:`sopel.bot.Sopel` and making it easier to maintain.
 # Copyright 2019, Florian Strzelecki <florian.strzelecki@gmail.com>
 #
 # Licensed under the Eiffel Forum License 2.
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import generator_stop
 
 import base64
 import collections
@@ -29,18 +28,14 @@ import datetime
 import functools
 import logging
 import re
-import sys
 import time
 
 from sopel import loader, module, plugin
 from sopel.config import ConfigurationError
 from sopel.irc import isupport
 from sopel.irc.utils import CapReq, MyInfo
-from sopel.tools import events, Identifier, iteritems, SopelMemory, target, web
+from sopel.tools import events, Identifier, SopelMemory, target, web
 
-
-if sys.version_info.major >= 3:
-    unicode = str
 
 LOGGER = logging.getLogger(__name__)
 
@@ -455,7 +450,7 @@ def handle_names(bot, trigger):
 
     for name in names:
         priv = 0
-        for prefix, value in iteritems(mapping):
+        for prefix, value in mapping.items():
             if prefix in name:
                 priv = priv | value
         nick = Identifier(name.lstrip(''.join(mapping.keys())))
@@ -937,7 +932,7 @@ def receive_cap_ls_reply(bot, trigger):
         if cap not in bot._cap_reqs:
             bot._cap_reqs[cap] = [CapReq('', 'coretasks', acct_warn)]
 
-    for cap, reqs in iteritems(bot._cap_reqs):
+    for cap, reqs in bot._cap_reqs.items():
         # At this point, we know mandatory and prohibited don't co-exist, but
         # we need to call back for optionals if they're also prohibited
         prefix = ''
@@ -1187,13 +1182,13 @@ def blocks(bot, trigger):
     if len(text) == 3 and text[1] == "list":
         if text[2] == "hostmask":
             if len(masks) > 0:
-                blocked = ', '.join(unicode(mask) for mask in masks)
+                blocked = ', '.join(str(mask) for mask in masks)
                 bot.say("Blocked hostmasks: {}".format(blocked))
             else:
                 bot.reply(STRINGS['nonelisted'] % ('hostmasks'))
         elif text[2] == "nick":
             if len(nicks) > 0:
-                blocked = ', '.join(unicode(nick) for nick in nicks)
+                blocked = ', '.join(str(nick) for nick in nicks)
                 bot.say("Blocked nicks: {}".format(blocked))
             else:
                 bot.reply(STRINGS['nonelisted'] % ('nicks'))
@@ -1220,7 +1215,7 @@ def blocks(bot, trigger):
                 bot.reply(STRINGS['no_nick'] % (text[3]))
                 return
             nicks.remove(Identifier(text[3]))
-            bot.config.core.nick_blocks = [unicode(n) for n in nicks]
+            bot.config.core.nick_blocks = [str(n) for n in nicks]
             bot.config.save()
             bot.reply(STRINGS['success_del'] % (text[3]))
         elif text[2] == "hostmask":
@@ -1229,7 +1224,7 @@ def blocks(bot, trigger):
                 bot.reply(STRINGS['no_host'] % (text[3]))
                 return
             masks.remove(mask)
-            bot.config.core.host_blocks = [unicode(m) for m in masks]
+            bot.config.core.host_blocks = [str(m) for m in masks]
             bot.config.save()
             bot.reply(STRINGS['success_del'] % (text[3]))
         else:

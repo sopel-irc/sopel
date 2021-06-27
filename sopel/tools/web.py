@@ -1,4 +1,3 @@
-# coding=utf-8
 """
 The ``tools.web`` package contains utility functions for interaction with web
 applications, APIs, or websites in your plugins.
@@ -17,22 +16,15 @@ applications, APIs, or websites in your plugins.
 # Copyright © 2019, dgw, technobabbl.es
 # Licensed under the Eiffel Forum License 2.
 
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import generator_stop
 
+from html.entities import name2codepoint
 import re
-import sys
 import urllib
+from urllib.parse import urlparse, urlunparse
 
 from sopel import __version__
 
-if sys.version_info.major < 3:
-    from htmlentitydefs import name2codepoint
-    from urlparse import urlparse, urlunparse
-else:
-    from html.entities import name2codepoint
-    from urllib.parse import urlparse, urlunparse
-    unichr = chr
-    unicode = str
 
 __all__ = [
     'USER_AGENT',
@@ -107,11 +99,11 @@ def entity(match):
     """
     value = match.group(1).lower()
     if value.startswith('#x'):
-        return unichr(int(value[2:], 16))
+        return chr(int(value[2:], 16))
     elif value.startswith('#'):
-        return unichr(int(value[1:]))
+        return chr(int(value[1:]))
     elif value in name2codepoint:
-        return unichr(name2codepoint[value])
+        return chr(name2codepoint[value])
     return '[' + value + ']'
 
 
@@ -124,7 +116,6 @@ def decode(html):
     return r_entity.sub(entity, html)
 
 
-# Identical to urllib2.quote
 def quote(string, safe='/'):
     """Safely encodes a string for use in a URL.
 
@@ -137,13 +128,8 @@ def quote(string, safe='/'):
         This is a shim to make writing cross-compatible plugins for both
         Python 2 and Python 3 easier.
     """
-    if sys.version_info.major < 3:
-        if isinstance(string, unicode):
-            string = string.encode('utf8')
-        string = urllib.quote(string, safe.encode('utf8'))
-    else:
-        string = urllib.parse.quote(str(string), safe)
-    return string
+    # TODO deprecated?
+    return urllib.parse.quote(str(string), safe)
 
 
 # six-like shim for Unicode safety
@@ -154,13 +140,11 @@ def unquote(string):
     :return str: the decoded ``string``
 
     .. note::
-        This is a shim to make writing cross-compatible plugins for both
-        Python 2 and Python 3 easier.
+
+        This is a convenient shortcut for ``urllib.parse.unquote``.
     """
-    if sys.version_info.major < 3:
-        return urllib.unquote(string.encode('utf-8')).decode('utf-8')
-    else:
-        return urllib.parse.unquote(string)
+    # TODO deprecated?
+    return urllib.parse.unquote(string)
 
 
 def quote_query(string):
@@ -178,30 +162,24 @@ def quote_query(string):
 
 def urlencode_non_ascii(b):
     """Safely encodes non-ASCII characters in a URL."""
-    regex = '[\x80-\xFF]'
-    if sys.version_info.major > 2:
-        regex = b'[\x80-\xFF]'
-    return re.sub(regex, lambda c: '%%%02x' % ord(c.group(0)), b)
+    return re.sub(b'[\x80-\xFF]', lambda c: '%%%02x' % ord(c.group(0)), b)
 
 
 def iri_to_uri(iri):
     """Decodes an internationalized domain name (IDN)."""
     parts = urlparse(iri)
-    parts_seq = (part.encode('idna') if parti == 1 else urlencode_non_ascii(part.encode('utf-8')) for parti, part in enumerate(parts))
-    if sys.version_info.major > 2:
-        parts_seq = list(parts_seq)
-
+    parts_seq = list(
+        part.encode('idna')
+        if parti == 1 else urlencode_non_ascii(part.encode('utf-8'))
+        for parti, part in enumerate(parts)
+    )
     parsed = urlunparse(parts_seq)
-    if sys.version_info.major > 2:
-        return parsed.decode()
-    else:
-        return parsed
+    return parsed.decode()
 
 
-if sys.version_info.major < 3:
-    urlencode = urllib.urlencode
-else:
-    urlencode = urllib.parse.urlencode
+# direct shortcut kept for backward compatibility reasons
+# TODO consider removing this
+urlencode = urllib.parse.urlencode
 
 
 # Functions for URL detection

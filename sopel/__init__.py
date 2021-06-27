@@ -1,4 +1,3 @@
-# coding=utf-8
 # ASCII ONLY IN THIS FILE THOUGH!!!!!!!
 # Python does some stupid bullshit of respecting LC_ALL over the encoding on the
 # file, so in order to undo Python's ridiculous fucking idiocy, we have to have
@@ -10,7 +9,7 @@
 #
 # Licensed under the Eiffel Forum License 2.
 
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import generator_stop
 
 from collections import namedtuple
 import locale
@@ -35,12 +34,11 @@ __all__ = [
 ]
 
 loc = locale.getlocale()
-if sys.version_info.major > 2:
-    if not loc[1] or 'UTF-8' not in loc[1]:
-        print('WARNING!!! You are running with a non-UTF8 locale environment '
-              'variables (e.g. LC_ALL is set to "C"), which makes Python 3 do '
-              'stupid things. If you get strange errors, please set it to '
-              'something like "en_US.UTF-8".', file=sys.stderr)
+if not loc[1] or 'UTF-8' not in loc[1]:
+    print('WARNING!!! You are running with a non-UTF8 locale environment '
+          'variable (e.g. LC_ALL is set to "C"), which makes Python 3 do '
+          'stupid things. If you get strange errors, please set it to '
+          'something like "en_US.UTF-8".', file=sys.stderr)
 
 
 __version__ = pkg_resources.get_distribution('sopel').version

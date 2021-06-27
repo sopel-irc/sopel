@@ -1,5 +1,4 @@
-# -*- coding: utf-8 -*-
-#
+from __future__ import generator_stop
 # Sopel IRC Bot documentation build configuration file, created by
 # sphinx-quickstart on Mon Jul 16 23:45:29 2012.
 #

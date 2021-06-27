@@ -1,4 +1,3 @@
-# coding=utf-8
 """
 pronouns.py - Sopel Pronouns Plugin
 Copyright © 2016, Elsie Powell
@@ -6,7 +5,7 @@ Licensed under the Eiffel Forum License 2.
 
 https://sopel.chat
 """
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import generator_stop
 
 from sopel import plugin
 

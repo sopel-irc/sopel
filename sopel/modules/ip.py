@@ -1,4 +1,3 @@
-# coding=utf-8
 """
 ip.py - Sopel GeoIP Lookup Plugin
 Copyright 2011, Dimitri Molenaars, TyRope.nl,
@@ -8,30 +7,19 @@ Licensed under the Eiffel Forum License 2.
 https://sopel.chat
 """
 
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import generator_stop
 
 import logging
 import os
 import socket
 import tarfile
+from urllib.request import urlretrieve
 
 import geoip2.database
 
 from sopel import plugin
 from sopel.config import types
 from sopel.tools import web
-
-urlretrieve = None
-try:
-    from urllib import urlretrieve
-except ImportError:
-    try:
-        # urlretrieve has been put under urllib.request in Python 3.
-        # It's also deprecated so this should probably be replaced with
-        # urllib2.
-        from urllib.request import urlretrieve
-    except ImportError:
-        pass
 
 
 LOGGER = logging.getLogger(__name__)

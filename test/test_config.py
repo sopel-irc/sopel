@@ -1,8 +1,6 @@
-# coding=utf-8
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import generator_stop
 
 import os
-import sys
 
 import pytest
 
@@ -49,23 +47,6 @@ TEST_CHANNELS = [
     '&endquote"',
     '"&quoted"',  # quoted, but no #: quotes kept
 ]
-
-if sys.version_info.major < 3:
-    # Python 2.7's ConfigParser interprets as comment
-    # a line that starts with # or ;.
-    # Python 3, on the other hand, allows comments to be indented.
-    # As a result, the same config file will result in a different
-    # config object depending on the Python version used.
-    # TODO: Deprecated with Python 2.7.
-    TEST_CHANNELS = [
-        '#sopel',
-        '&peculiar',
-        '# python 3 only comment',  # indented lines cannot be comments in Py2
-        '#private',
-        '"#startquote',
-        '&endquote"',
-        '"&quoted"',
-    ]
 
 
 class FakeConfigSection(types.StaticSection):

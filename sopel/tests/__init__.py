@@ -1,9 +1,8 @@
-# coding=utf-8
 """Test tools, factories, pytest fixtures, and mocks.
 
 .. versionadded:: 7.0
 """
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import generator_stop
 
 
 def rawlist(*args):

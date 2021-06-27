@@ -1,6 +1,5 @@
-# coding=utf-8
 """Tools to help safely do calculations from user input"""
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import generator_stop
 
 import ast
 import numbers

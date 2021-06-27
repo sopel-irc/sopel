@@ -1,4 +1,3 @@
-# coding=utf-8
 """
 remind.py - Sopel Reminder Plugin
 Copyright 2011, Sean B. Palmer, inamidst.com
@@ -7,7 +6,7 @@ Licensed under the Eiffel Forum License 2.
 
 https://sopel.chat
 """
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import generator_stop
 
 import collections
 from datetime import datetime
@@ -19,7 +18,7 @@ import time
 
 import pytz
 
-from sopel import plugin, tools
+from sopel import plugin
 from sopel.tools.time import format_time, get_timezone, validate_timezone
 
 
@@ -95,7 +94,7 @@ def dump_database(filename, data):
     If the file does not exist, it is created.
     """
     with io.open(filename, 'w', encoding='utf-8') as database:
-        for unixtime, reminders in tools.iteritems(data):
+        for unixtime, reminders in data.items():
             for channel, nick, message in reminders:
                 line = '%s\t%s\t%s\t%s\n' % (unixtime, channel, nick, message)
                 database.write(line)

@@ -1,4 +1,3 @@
-# coding=utf-8
 """Utility functions to manage plugin callables from a Python module.
 
 .. important::
@@ -10,7 +9,7 @@
     Do **not** build your plugin based on what is here, you do **not** need to.
 
 """
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import generator_stop
 
 import inspect
 import logging
@@ -18,11 +17,7 @@ import re
 import sys
 
 from sopel.config.core_section import COMMAND_DEFAULT_HELP_PREFIX
-from sopel.tools import deprecated, itervalues
-
-
-if sys.version_info.major >= 3:
-    basestring = (str, bytes)
+from sopel.tools import deprecated
 
 
 LOGGER = logging.getLogger(__name__)
@@ -106,7 +101,7 @@ def clean_callable(func, config):
     if not hasattr(func, 'event'):
         func.event = ['PRIVMSG']
     else:
-        if isinstance(func.event, basestring):
+        if isinstance(func.event, (str, bytes)):
             func.event = [func.event.upper()]
         else:
             func.event = [event.upper() for event in func.event]
@@ -114,7 +109,7 @@ def clean_callable(func, config):
     # TODO: remove in Sopel 8
     # Stay compatible with old Phenny/Jenni "modules" (plugins)
     # that set the attribute directly
-    if hasattr(func, 'rule') and isinstance(func.rule, basestring):
+    if hasattr(func, 'rule') and isinstance(func.rule, (str, bytes)):
         LOGGER.warning(
             'The `rule` attribute of %s.%s should be a list, not a string; '
             'this behavior is deprecated in Sopel 7.1 '
@@ -282,7 +277,7 @@ def clean_module(module, config):
     shutdowns = []
     jobs = []
     urls = []
-    for obj in itervalues(vars(module)):
+    for obj in vars(module).values():
         if callable(obj):
             is_sopel_callable = getattr(obj, '_sopel_callable', False) is True
             if getattr(obj, '__name__', None) == 'shutdown':

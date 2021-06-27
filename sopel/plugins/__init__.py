@@ -1,4 +1,3 @@
-# coding=utf-8
 """Sopel's plugins interface.
 
 .. versionadded:: 7.0
@@ -28,7 +27,7 @@ exist for each type of plugin.
 # Copyright 2019, Florian Strzelecki <florian.strzelecki@gmail.com>
 #
 # Licensed under the Eiffel Forum License 2.
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import generator_stop
 
 import collections
 import imp

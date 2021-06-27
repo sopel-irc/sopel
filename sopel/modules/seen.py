@@ -1,4 +1,3 @@
-# coding=utf-8
 """
 seen.py - Sopel Seen Plugin
 Copyright 2008, Sean B. Palmer, inamidst.com
@@ -8,7 +7,7 @@ Licensed under the Eiffel Forum License 2.
 
 https://sopel.chat
 """
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import generator_stop
 
 import datetime
 import time

@@ -1,14 +1,12 @@
-# coding=utf-8
 """Tests for the new database functionality.
 
 TODO: Most of these tests assume functionality tested in other tests. This is
 enough to get everything working (and is better than nothing), but best
 practice would probably be not to do that."""
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import generator_stop
 
 import json
 import os
-import sys
 import tempfile
 
 import pytest
@@ -16,17 +14,8 @@ import pytest
 from sopel.db import ChannelValues, Nicknames, NickValues, PluginValues, SopelDB
 from sopel.tools import Identifier
 
+
 db_filename = tempfile.mkstemp()[1]
-if sys.version_info.major >= 3:
-    unicode = str
-    basestring = str
-    iteritems = dict.items
-    itervalues = dict.values
-    iterkeys = dict.keys
-else:
-    iteritems = dict.iteritems
-    itervalues = dict.itervalues
-    iterkeys = dict.iterkeys
 
 
 TMP_CONFIG = """
@@ -116,15 +105,15 @@ def test_set_nick_value(db):
     }
 
     def check():
-        for key, value in iteritems(data):
+        for key, value in data.items():
             db.set_nick_value(nick, key, value)
 
-        for key, value in iteritems(data):
+        for key, value in data.items():
             found_value = session.query(NickValues.value) \
                                  .filter(NickValues.nick_id == nick_id) \
                                  .filter(NickValues.key == key) \
                                  .scalar()
-            assert json.loads(unicode(found_value)) == value
+            assert json.loads(str(found_value)) == value
     check()
 
     # Test updates
@@ -144,12 +133,12 @@ def test_get_nick_value(db):
         'unicode': 'EmbölaliÅ',
     }
 
-    for key, value in iteritems(data):
+    for key, value in data.items():
         nv = NickValues(nick_id=nick_id, key=key, value=json.dumps(value, ensure_ascii=False))
         session.add(nv)
         session.commit()
 
-    for key, value in iteritems(data):
+    for key, value in data.items():
         found_value = db.get_nick_value(nick, key)
         assert found_value == value
     session.close()
@@ -243,7 +232,7 @@ def test_merge_nick_groups(db):
                        .filter(NickValues.nick_id == nick_id) \
                        .filter(NickValues.key == key) \
                        .scalar()
-        assert json.loads(unicode(found)) == value
+        assert json.loads(str(found)) == value
     session.close()
 
 

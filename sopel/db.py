@@ -1,11 +1,9 @@
-# coding=utf-8
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import generator_stop
 
 import errno
 import json
 import logging
 import os.path
-import sys
 import traceback
 
 from sqlalchemy import Column, create_engine, ForeignKey, Integer, String
@@ -16,10 +14,6 @@ from sqlalchemy.orm import scoped_session, sessionmaker
 
 from sopel.tools import Identifier
 
-if sys.version_info.major >= 3:
-    unicode = str
-    basestring = str
-
 
 LOGGER = logging.getLogger(__name__)
 
@@ -29,7 +23,7 @@ def _deserialize(value):
         return None
     # sqlite likes to return ints for strings that look like ints, even though
     # the column type is string. That's how you do dynamic typing wrong.
-    value = unicode(value)
+    value = str(value)
     # Just in case someone's mucking with the DB in a way we can't account for,
     # ignore json parsing errors
     try:

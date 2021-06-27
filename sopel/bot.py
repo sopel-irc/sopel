@@ -1,4 +1,3 @@
-# coding=utf-8
 # Copyright 2008, Sean B. Palmer, inamidst.com
 # Copyright © 2012, Elad Alfassa <elad@fedoraproject.org>
 # Copyright 2012-2015, Elsie Powell, http://embolalia.com
@@ -6,7 +5,7 @@
 #
 # Licensed under the Eiffel Forum License 2.
 
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import generator_stop
 
 from ast import literal_eval
 from datetime import datetime
@@ -14,7 +13,6 @@ import itertools
 import logging
 import re
 import signal
-import sys
 import threading
 import time
 
@@ -42,14 +40,6 @@ RESTART_SIGNALS = [
     if hasattr(signal, name)
 ]
 SIGNALS = QUIT_SIGNALS + RESTART_SIGNALS
-
-
-if sys.version_info.major >= 3:
-    unicode = str
-    basestring = str
-    py3 = True
-else:
-    py3 = False
 
 
 class Sopel(irc.AbstractBot):
@@ -358,7 +348,7 @@ class Sopel(irc.AbstractBot):
             # nothing to check
             return
 
-        for key, callback in tools.iteritems(self.memory['url_callbacks']):
+        for key, callback in self.memory['url_callbacks'].items():
             is_checked = getattr(
                 callback, '_sopel_url_callbacks_checked', False)
             if is_checked:
@@ -1129,7 +1119,7 @@ class Sopel(irc.AbstractBot):
         if 'url_callbacks' not in self.memory:
             self.memory['url_callbacks'] = tools.SopelMemory()
 
-        if isinstance(pattern, basestring):
+        if isinstance(pattern, str):
             pattern = re.compile(pattern)
 
         # Mark the callback as checked: using this method is safe.
@@ -1180,7 +1170,7 @@ class Sopel(irc.AbstractBot):
             # nothing to unregister
             return
 
-        if isinstance(pattern, basestring):
+        if isinstance(pattern, str):
             pattern = re.compile(pattern)
 
         try:
@@ -1216,7 +1206,7 @@ class Sopel(irc.AbstractBot):
             # nothing to search
             return
 
-        for regex, function in tools.iteritems(self.memory['url_callbacks']):
+        for regex, function in self.memory['url_callbacks'].items():
             match = regex.search(url)
             if match:
                 yield function, match

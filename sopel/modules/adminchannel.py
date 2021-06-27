@@ -1,4 +1,3 @@
-# coding=utf-8
 """
 adminchannel.py - Sopel Channel Admin Plugin
 Copyright 2010-2011, Michael Yanovich, Alek Rollyson, and Elsie Powell
@@ -7,7 +6,7 @@ Licensed under the Eiffel Forum License 2.
 
 https://sopel.chat
 """
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import generator_stop
 
 import re
 

@@ -1,4 +1,3 @@
-# coding=utf-8
 """
 translate.py - Sopel Translation Plugin
 Copyright 2008, Sean B. Palmer, inamidst.com
@@ -7,19 +6,16 @@ Licensed under the Eiffel Forum License 2.
 
 https://sopel.chat
 """
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import generator_stop
 
 import json
 import random
-import sys
 
 import requests
 
 from sopel import plugin, tools
 from sopel.tools import web
 
-if sys.version_info.major >= 3:
-    unicode = str
 
 PLUGIN_OUTPUT_PREFIX = '[translate] '
 
@@ -38,7 +34,7 @@ def shutdown(bot):
 
 def translate(text, in_lang='auto', out_lang='en'):
     raw = False
-    if unicode(out_lang).endswith('-raw'):
+    if str(out_lang).endswith('-raw'):
         out_lang = out_lang[:-4]
         raw = True
 
@@ -116,9 +112,6 @@ def tr(bot, trigger):
         )
         return
 
-    if sys.version_info.major < 3 and isinstance(msg, str):
-        msg = msg.decode('utf-8')
-
     msg = web.decode(msg)
     msg = '"%s" (%s to %s, translate.google.com)' % (msg, in_lang, out_lang)
     bot.say(msg)
@@ -181,9 +174,6 @@ def tr2(bot, trigger):
             'are you sure you specified valid language abbreviations?'
             % (src, dest))
         return
-
-    if sys.version_info.major < 3 and isinstance(msg, str):
-        msg = msg.decode('utf-8')
 
     msg = web.decode(msg)  # msg.replace('&#39;', "'")
     msg = '"%s" (%s to %s, translate.google.com)' % (msg, src, dest)

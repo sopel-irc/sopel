@@ -1,4 +1,3 @@
-# coding=utf-8
 """
 help.py - Sopel Help Plugin
 Copyright 2008, Sean B. Palmer, inamidst.com
@@ -10,7 +9,7 @@ Licensed under the Eiffel Forum License 2.
 
 https://sopel.chat
 """
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import generator_stop
 
 import collections
 import logging
@@ -274,8 +273,8 @@ def help(bot, trigger):
                     bot.reply('The documentation for this command is too long; '
                               'I\'m sending it to you in a private message.')
 
-                def msgfun(l):
-                    bot.say(l, trigger.nick)
+                def msgfun(message):
+                    bot.say(message, trigger.nick)
             else:
                 msgfun = respond
 

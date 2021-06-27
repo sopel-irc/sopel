@@ -1,4 +1,3 @@
-# coding=utf-8
 """
 url.py - Sopel URL Title Plugin
 Copyright 2010-2011, Michael Yanovich (yanovich.net) & Kenneth Sham
@@ -9,11 +8,12 @@ Licensed under the Eiffel Forum License 2.
 
 https://sopel.chat
 """
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import generator_stop
 
 import ipaddress
 import logging
 import re
+from urllib.parse import urlparse
 
 import dns.resolver
 import requests
@@ -23,11 +23,6 @@ from sopel import plugin, tools
 from sopel.config import types
 from sopel.tools import web
 
-# Python3 vs Python2
-try:
-    from urllib.parse import urlparse
-except ImportError:
-    from urlparse import urlparse
 
 LOGGER = logging.getLogger(__name__)
 USER_AGENT = (

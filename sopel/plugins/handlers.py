@@ -1,4 +1,3 @@
-# coding=utf-8
 """Sopel's plugin handlers.
 
 .. versionadded:: 7.0
@@ -42,7 +41,7 @@ away from the rest of the application.
 # Copyright 2019, Florian Strzelecki <florian.strzelecki@gmail.com>
 #
 # Licensed under the Eiffel Forum License 2.
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import generator_stop
 
 import imp
 import importlib

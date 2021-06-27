@@ -1,6 +1,5 @@
-# coding=utf-8
 """Test for the ``sopel.plugins`` module."""
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import generator_stop
 
 import sys
 
@@ -10,7 +9,7 @@ import pytest
 from sopel import plugins
 
 
-MOCK_MODULE_CONTENT = """# coding=utf-8
+MOCK_MODULE_CONTENT = """from __future__ import generator_stop
 import sopel.module
 
 

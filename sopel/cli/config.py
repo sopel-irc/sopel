@@ -1,6 +1,5 @@
-# coding=utf-8
 """Sopel Config Command Line Interface (CLI): ``sopel-config``"""
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import generator_stop
 
 import argparse
 import os

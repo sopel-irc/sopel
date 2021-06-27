@@ -1,4 +1,3 @@
-# coding=utf-8
 """Sopel's plugin rules management.
 
 .. versionadded:: 7.1
@@ -15,7 +14,7 @@
 # Copyright 2020, Florian Strzelecki <florian.strzelecki@gmail.com>
 #
 # Licensed under the Eiffel Forum License 2.
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import generator_stop
 
 
 import datetime
@@ -25,24 +24,12 @@ import itertools
 import logging
 import re
 import threading
+from urllib.parse import urlparse
 
 
 from sopel import tools
 from sopel.config.core_section import (
     COMMAND_DEFAULT_HELP_PREFIX, COMMAND_DEFAULT_PREFIX, URL_DEFAULT_SCHEMES)
-
-
-try:
-    from urllib.parse import urlparse
-except ImportError:
-    # TODO: remove when dropping Python 2.7
-    from urlparse import urlparse
-
-try:
-    from inspect import getfullargspec as inspect_getargspec
-except ImportError:
-    # TODO: remove when dropping Python 2.7
-    from inspect import getargspec as inspect_getargspec
 
 
 __all__ = [
@@ -1600,7 +1587,7 @@ class URLCallback(Rule):
             # account for the 'self' parameter when the handler is a method
             match_count = 4
 
-        argspec = inspect_getargspec(handler)
+        argspec = inspect.getfullargspec(handler)
 
         if len(argspec.args) >= match_count:
             @functools.wraps(handler)

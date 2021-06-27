@@ -1,4 +1,3 @@
-# coding=utf-8
 """Sopel's Job Scheduler: internal tool for job management.
 
 .. important::
@@ -12,7 +11,7 @@
 # Copyright 2019, Florian Strzelecki <florian.strzelecki@gmail.com>
 #
 # Licensed under the Eiffel Forum License 2.
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import generator_stop
 
 import inspect
 import logging

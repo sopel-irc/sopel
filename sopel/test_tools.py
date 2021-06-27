@@ -1,4 +1,3 @@
-# coding=utf-8
 """This module provided tools that helped to write tests.
 
 .. deprecated:: 7.1
@@ -17,17 +16,12 @@
 # Copyright 2013, Ari Koivula, <ari@koivu.la>
 # Copyright 2019, Florian Strzelecki <florian.strzelecki@gmail.com>
 # Licensed under the Eiffel Forum License 2.
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import generator_stop
 
+import configparser
 import os
 import re
-import sys
 import tempfile
-
-try:
-    import ConfigParser
-except ImportError:
-    import configparser as ConfigParser
 
 from sopel import bot, config, tools
 
@@ -42,15 +36,12 @@ __all__ = [
     'run_example_tests',
 ]
 
-if sys.version_info.major >= 3:
-    basestring = str
-
 
 class MockConfig(config.Config):
     @tools.deprecated('use configfactory fixture instead', '7.0', '8.0')
     def __init__(self):
         self.filename = tempfile.mkstemp()[1]
-        self.parser = ConfigParser.RawConfigParser(allow_no_value=True)
+        self.parser = configparser.RawConfigParser(allow_no_value=True)
         self.parser.add_section('core')
         self.parser.set('core', 'owner', 'Embolalia')
         self.define_section('core', config.core_section.CoreSection)
@@ -103,13 +94,13 @@ class MockSopel(object):
         cfg.parser.set('core', 'homedir', home_dir)
 
     def register_url_callback(self, pattern, callback):
-        if isinstance(pattern, basestring):
+        if isinstance(pattern, str):
             pattern = re.compile(pattern)
 
         self.memory['url_callbacks'][pattern] = callback
 
     def unregister_url_callback(self, pattern, callback):
-        if isinstance(pattern, basestring):
+        if isinstance(pattern, str):
             pattern = re.compile(pattern)
 
         try:
@@ -118,7 +109,7 @@ class MockSopel(object):
             pass
 
     def search_url_callbacks(self, url):
-        for regex, function in tools.iteritems(self.memory['url_callbacks']):
+        for regex, function in self.memory['url_callbacks'].items():
             match = regex.search(url)
             if match:
                 yield function, match

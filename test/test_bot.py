@@ -1,6 +1,5 @@
-# coding=utf-8
 """Tests for core ``sopel.bot`` module"""
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import generator_stop
 
 import re
 
@@ -19,7 +18,7 @@ nick = TestBot
 enable = coretasks
 """
 
-MOCK_MODULE_CONTENT = """# coding=utf-8
+MOCK_MODULE_CONTENT = """from __future__ import generator_stop
 import sopel.module
 
 
