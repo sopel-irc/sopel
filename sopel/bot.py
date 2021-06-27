@@ -53,6 +53,15 @@ class Sopel(irc.AbstractBot):
         self._rules_manager = plugin_rules.Manager()
         self._scheduler = plugin_jobs.Scheduler(self)
 
+        self._url_callbacks = tools.SopelMemory()
+        """Tracking of manually registered URL callbacks.
+
+        Should be manipulated only by use of :meth:`register_url_callback` and
+        :meth:`unregister_url_callback` methods, which are deprecated.
+
+        Remove in Sopel 9, along with the above related methods.
+        """
+
         self._times = {}
         """
         A dictionary mapping lowercased nicks to dictionaries which map
@@ -1090,14 +1099,16 @@ class Sopel(irc.AbstractBot):
             Made obsolete by fixes to the behavior of
             :func:`sopel.plugin.url`. Will be removed in Sopel 9.
 
-        """
-        if 'url_callbacks' not in self.memory:
-            self.memory['url_callbacks'] = tools.SopelMemory()
+        .. versionchanged:: 8.0
 
+            Stores registered callbacks in an internal property instead of
+            ``bot.memory['url_callbacks']``.
+
+        """
         if isinstance(pattern, str):
             pattern = re.compile(pattern)
 
-        self.memory['url_callbacks'][pattern] = callback
+        self._url_callbacks[pattern] = callback
 
     @deprecated(
         reason='Issues with @url decorator have been fixed. Simply use that.',
@@ -1137,16 +1148,17 @@ class Sopel(irc.AbstractBot):
             Made obsolete by fixes to the behavior of
             :func:`sopel.plugin.url`. Will be removed in Sopel 9.
 
-        """
-        if 'url_callbacks' not in self.memory:
-            # nothing to unregister
-            return
+        .. versionchanged:: 8.0
 
+            Deletes registered callbacks from an internal property instead of
+            ``bot.memory['url_callbacks']``.
+
+        """
         if isinstance(pattern, str):
             pattern = re.compile(pattern)
 
         try:
-            del self.memory['url_callbacks'][pattern]
+            del self._url_callbacks[pattern]
         except KeyError:
             pass
 
@@ -1165,6 +1177,11 @@ class Sopel(irc.AbstractBot):
 
         .. versionadded:: 7.0
 
+        .. versionchanged:: 8.0
+
+            Searches for registered callbacks in an internal property instead
+            of ``bot.memory['url_callbacks']``.
+
         .. seealso::
 
             The Python documentation for the `re.search`__ function and
@@ -1174,11 +1191,7 @@ class Sopel(irc.AbstractBot):
         .. __: https://docs.python.org/3.6/library/re.html#match-objects
 
         """
-        if 'url_callbacks' not in self.memory:
-            # nothing to search
-            return
-
-        for regex, function in self.memory['url_callbacks'].items():
+        for regex, function in self._url_callbacks.items():
             match = regex.search(url)
             if match:
                 yield function, match
