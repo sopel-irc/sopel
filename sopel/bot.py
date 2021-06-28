@@ -1162,6 +1162,11 @@ class Sopel(irc.AbstractBot):
         except KeyError:
             pass
 
+    @deprecated(
+        reason='Issues with @url decorator have been fixed. Simply use that.',
+        version='8.0',
+        removed_in='9.0',
+    )
     def search_url_callbacks(self, url):
         """Yield callbacks whose regex pattern matches the ``url``.
 
@@ -1181,6 +1186,11 @@ class Sopel(irc.AbstractBot):
 
             Searches for registered callbacks in an internal property instead
             of ``bot.memory['url_callbacks']``.
+
+        .. deprecated:: 8.0
+
+            Made obsolete by fixes to the behavior of
+            :func:`sopel.plugin.url`. Will be removed in Sopel 9.
 
         .. seealso::
 
