@@ -144,15 +144,18 @@ Example owner & admin configurations::
 
     # Using nickname matching
     [core]
-    owner = dgw        # used for alerts and ownership verification
+    # Will be used for alerts and ownership verification
+    owner = dgw
     admins =
             Exirel
             HumorBaby
 
     # Using account matching
     [core]
-    owner = dgw                   # used for alerts only
-    owner_account = dgws_account  # used for ownership verification
+    # Will be used for alerts only
+    owner = dgw
+    # Will be used for ownership verification
+    owner_account = dgws_account
     admin_accounts =
             Exirel
             HumorBaby
@@ -426,23 +429,30 @@ details:
 Example of nick-based authentication with NickServ service::
 
     [core]
-    auth_method = nickserv         # select nick-based auth
+    # select nick-based authentication
+    auth_method = nickserv
     # auth_username is not required for nickserv
-    auth_password = SopelIsGreat!  # your bot's password
-    auth_target = NickServ         # default value
+    # your bot's login password
+    auth_password = SopelIsGreat!
+    # default value
+    auth_target = NickServ
 
 And here is an example of server-based authentication using SASL::
 
     [core]
-    auth_method = sasl             # select server-based auth
-    auth_username = BotAccount     # your bot's username
-    auth_password = SopelIsGreat!  # your bot's password
-    auth_target = PLAIN            # default sasl mechanism
+    # select SASL authentication
+    auth_method = sasl
+    # your bot's login username and password
+    auth_username = BotAccount
+    auth_password = SopelIsGreat!
+    # default SASL mechanism
+    auth_target = PLAIN
 
 Example of authentication to a ZNC bouncer::
 
     [core]
-    auth_method = server           # select server-based auth
+    # select server-based authentication
+    auth_method = server
     # auth_username is not used with server authentication, so instead
     # we combine the ZNC username, network name, and password here:
     auth_password = Sopel/libera:SopelIsGreat!
@@ -482,17 +492,21 @@ When :attr:`~CoreSection.server_auth_method` is defined the settings used are:
 For example, this will use NickServ ``IDENTIFY`` command and SASL mechanism::
 
     [core]
-    # nick-based auth
-    auth_method = nickserv         # select nick-based auth
+    # select nick-based authentication
+    auth_method = nickserv
     # auth_username is not required for nickserv
-    auth_password = SopelIsGreat!  # your bot's password
-    auth_target = NickServ         # default value
+    # your bot's login password
+    auth_password = SopelIsGreat!
+    # default value
+    auth_target = NickServ
 
-    # server-based auth
-    server_auth_method = sasl             # select server-based auth
-    server_auth_username = BotAccount     # your bot's username
-    server_auth_password = SopelIsGreat!  # your bot's password
-    server_auth_target = PLAIN            # default sasl mechanism
+    # select SASL authentication
+    server_auth_method = sasl
+    # your bot's login username and password
+    server_auth_username = BotAccount
+    server_auth_password = SopelIsGreat!
+    # default SASL mechanism
+    server_auth_target = PLAIN
 
 .. important::
 
@@ -516,17 +530,21 @@ used are:
 For example, this will use NickServ ``IDENTIFY`` command and SASL mechanism::
 
     [core]
-    # nick-based auth
-    nick_auth_method = nickserv         # select nick-based auth
+    # select nick-based authentication
+    nick_auth_method = nickserv
     # nick_auth_username is not required for nickserv
-    nick_auth_password = SopelIsGreat!  # your bot's password
-    nick_auth_target = NickServ         # default value
+    # your bot's login password
+    nick_auth_password = SopelIsGreat!
+    # default value
+    nick_auth_target = NickServ
 
-    # server-based auth
-    server_auth_method = sasl             # select server-based auth
-    server_auth_username = BotAccount     # your bot's username
-    server_auth_password = SopelIsGreat!  # your bot's password
-    server_auth_target = PLAIN            # default sasl mechanism
+    # select SASL auth
+    server_auth_method = sasl
+    # your bot's login username and password
+    server_auth_username = BotAccount
+    server_auth_password = SopelIsGreat!
+    # default SASL mechanism
+    server_auth_target = PLAIN
 
 .. important::
 
