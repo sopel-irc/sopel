@@ -136,6 +136,13 @@ A Sopel instance must have exactly one owner. This is configured either by
 or by :attr:`~CoreSection.owner`. If ``owner_account`` is set, ``owner`` will
 be ignored.
 
+.. important::
+
+    Even if ``owner_account`` is set, ``owner`` **must** still have a value.
+
+    This is silly, we know. The plan for Sopel 8 is to require only one value
+    or the other.
+
 The same instance can have multiple admins. Similarly, it can be configured
 by :attr:`~CoreSection.admin_accounts` or by :attr:`~CoreSection.admins`. If
 ``admin_accounts`` is set, ``admins`` will be ignored.
@@ -155,6 +162,9 @@ Example owner & admin configurations::
     admin_accounts =
             Exirel
             HumorBaby
+    # ignored when owner_account is set,
+    # but MUST NOT be empty
+    owner = dgw
 
 Both ``owner_account`` and ``admin_accounts`` are safer to use than
 nick-based matching, but the IRC server must support accounts.
