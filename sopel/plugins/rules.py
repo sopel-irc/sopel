@@ -1675,9 +1675,7 @@ class URLCallback(Rule):
                 # skip invalid URLs
                 continue
 
-            # TODO: convert to 'yield from' when dropping Python 2.7
-            for result in self.parse(url):
-                yield result
+            yield from self.parse(url)
 
     def parse(self, text):
         for regex in self._regexes:
