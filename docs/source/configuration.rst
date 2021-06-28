@@ -131,17 +131,10 @@ on the IRC server the bot connects to.
 Owner & Admins
 --------------
 
-A Sopel instance must have exactly one owner. This is configured either by
-:attr:`~CoreSection.owner_account` if the IRC server supports IRCv3 accounts,
-or by :attr:`~CoreSection.owner`. If ``owner_account`` is set, ``owner`` will
-be ignored.
-
-.. important::
-
-    Even if ``owner_account`` is set, ``owner`` **must** still have a value.
-
-    This is silly, we know. The plan for Sopel 8 is to require only one value
-    or the other.
+A Sopel instance must have exactly one owner. This is configured by the
+:attr:`~CoreSection.owner` setting. If the IRC server supports IRCv3 accounts,
+Sopel can use :attr:`~CoreSection.owner_account` to increase the security of
+ownership verification.
 
 The same instance can have multiple admins. Similarly, it can be configured
 by :attr:`~CoreSection.admin_accounts` or by :attr:`~CoreSection.admins`. If
@@ -151,24 +144,29 @@ Example owner & admin configurations::
 
     # Using nickname matching
     [core]
-    owner = dgw
+    owner = dgw        # used for alerts and ownership verification
     admins =
             Exirel
             HumorBaby
 
     # Using account matching
     [core]
-    owner_account = dgw
+    owner = dgw                   # used for alerts only
+    owner_account = dgws_account  # used for ownership verification
     admin_accounts =
             Exirel
             HumorBaby
-    # ignored when owner_account is set,
-    # but MUST NOT be empty
-    owner = dgw
 
 Both ``owner_account`` and ``admin_accounts`` are safer to use than
 nick-based matching, but the IRC server must support accounts.
 (Most, sadly, do not as of late 2019.)
+
+.. important::
+
+    The :attr:`~CoreSection.owner` setting should **always** contain the bot
+    owner's nickname, even when using :attr:`~CoreSection.owner_account`. Both
+    Sopel and plugins may send important messages or notices to the owner
+    using ``bot.config.core.owner`` as the recipient.
 
 
 IRC Server
