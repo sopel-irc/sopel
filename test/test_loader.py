@@ -373,18 +373,6 @@ def test_clean_callable_event(tmpconfig, func):
     assert func.global_rate == 0
 
 
-def test_clean_callable_event_string(tmpconfig, func):
-    setattr(func, 'event', 'some')
-    loader.clean_callable(func, tmpconfig)
-
-    assert hasattr(func, 'event')
-    assert func.event == ['SOME']
-
-    # idempotency
-    loader.clean_callable(func, tmpconfig)
-    assert func.event == ['SOME']
-
-
 def test_clean_callable_rule(tmpconfig, func):
     setattr(func, 'rule', [r'abc'])
     loader.clean_callable(func, tmpconfig)
@@ -424,22 +412,6 @@ def test_clean_callable_rule(tmpconfig, func):
     assert func.rate == 0
     assert func.channel_rate == 0
     assert func.global_rate == 0
-
-
-def test_clean_callable_rule_string(tmpconfig, func):
-    setattr(func, 'rule', r'abc')
-    loader.clean_callable(func, tmpconfig)
-
-    assert hasattr(func, 'rule')
-    assert len(func.rule) == 1
-
-    # Test the regex is compiled properly
-    assert func.rule[0] == r'abc'
-
-    # idempotency
-    loader.clean_callable(func, tmpconfig)
-    assert len(func.rule) == 1
-    assert func.rule[0] == r'abc'
 
 
 def test_clean_callable_rule_nick(tmpconfig, func):
@@ -632,20 +604,6 @@ def test_clean_callable_events(tmpconfig, func):
 
     assert hasattr(func, 'event')
     assert func.event == ['TOPIC', 'JOIN', 'NICK']
-
-
-def test_clean_callable_events_basestring(tmpconfig, func):
-    setattr(func, 'event', 'topic')
-    loader.clean_callable(func, tmpconfig)
-
-    assert hasattr(func, 'event')
-    assert func.event == ['TOPIC']
-
-    setattr(func, 'event', 'JOIN')
-    loader.clean_callable(func, tmpconfig)
-
-    assert hasattr(func, 'event')
-    assert func.event == ['JOIN']
 
 
 def test_clean_callable_example(tmpconfig, func):
