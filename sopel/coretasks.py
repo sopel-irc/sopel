@@ -430,8 +430,6 @@ def handle_names(bot, trigger):
     if not channels:
         return
     channel = Identifier(channels.group(1))
-    if channel not in bot.privileges:
-        bot.privileges[channel] = {}
     if channel not in bot.channels:
         bot.channels[channel] = target.Channel(channel)
 
@@ -454,7 +452,6 @@ def handle_names(bot, trigger):
             if prefix in name:
                 priv = priv | value
         nick = Identifier(name.lstrip(''.join(mapping.keys())))
-        bot.privileges[channel][nick] = priv
         user = bot.users.get(nick)
         if user is None:
             # It's not possible to set the username/hostname from info received
@@ -568,31 +565,12 @@ def _parse_modes(bot, args, clear=False):
             # User privs modes, always have a param
             nick = Identifier(params[param_idx])
             priv = channel.privileges.get(nick, 0)
-            # Log a warning if the two privilege-tracking data structures
-            # get out of sync. That should never happen.
-            # This is a good place to verify that bot.channels is doing
-            # what it's supposed to do before ultimately removing the old,
-            # deprecated bot.privileges structure completely.
-            ppriv = bot.privileges[channel_name].get(nick, 0)
-            if priv != ppriv:
-                LOGGER.warning(
-                    (
-                        "Privilege data error! Please share Sopel's "
-                        "raw log with the developers, if enabled. "
-                        "(Expected %s == %s for %r in %r)"
-                    ),
-                    priv,
-                    ppriv,
-                    nick,
-                    channel,
-                )
             value = mapping.get(char)
             if value is not None:
                 if sign == "+":
                     priv = priv | value
                 else:
                     priv = priv & ~value
-                bot.privileges[channel_name][nick] = priv
                 channel.privileges[nick] = priv
             param_idx += 1
         else:
@@ -627,7 +605,7 @@ def track_nicks(bot, trigger):
     old = trigger.nick
     new = Identifier(trigger)
 
-    # Give debug mssage, and PM the owner, if the bot's own nick changes.
+    # Give debug message, and PM the owner, if the bot's own nick changes.
     if old == bot.nick and new != bot.nick:
         privmsg = (
             "Hi, I'm your bot, %s. Something has made my nick change. This "
@@ -643,12 +621,6 @@ def track_nicks(bot, trigger):
         LOGGER.critical(debug_msg)
         bot.say(privmsg, bot.config.core.owner)
         return
-
-    for channel in bot.privileges:
-        channel = Identifier(channel)
-        if old in bot.privileges[channel]:
-            value = bot.privileges[channel].pop(old)
-            bot.privileges[channel][new] = value
 
     for channel in bot.channels.values():
         channel.rename_user(old, new)
@@ -690,7 +662,6 @@ def track_kick(bot, trigger):
 
 def _remove_from_channel(bot, nick, channel):
     if nick == bot.nick:
-        bot.privileges.pop(channel, None)
         bot.channels.pop(channel, None)
 
         lost_users = []
@@ -701,8 +672,6 @@ def _remove_from_channel(bot, nick, channel):
         for nick_ in lost_users:
             bot.users.pop(nick_, None)
     else:
-        bot.privileges[channel].pop(nick, None)
-
         user = bot.users.get(nick)
         if user and channel in user.channels:
             bot.channels[channel].clear_user(nick)
@@ -768,7 +737,6 @@ def track_join(bot, trigger):
 
     # is it a new channel?
     if channel not in bot.channels:
-        bot.privileges[channel] = {}
         bot.channels[channel] = target.Channel(channel)
 
     # did *we* just join?
@@ -787,8 +755,6 @@ def track_join(bot, trigger):
             str(channel), trigger.nick)
 
     # set initial values
-    bot.privileges[channel][trigger.nick] = 0
-
     user = bot.users.get(trigger.nick)
     if user is None:
         user = target.User(trigger.nick, trigger.user, trigger.host)
@@ -807,8 +773,6 @@ def track_join(bot, trigger):
 @plugin.priority('medium')
 def track_quit(bot, trigger):
     """Track when users quit channels."""
-    for chanprivs in bot.privileges.values():
-        chanprivs.pop(trigger.nick, None)
     for channel in bot.channels.values():
         channel.clear_user(trigger.nick)
     bot.users.pop(trigger.nick, None)
@@ -1304,9 +1268,6 @@ def _record_who(bot, channel, user, host, nick, account=None, away=None, modes=N
     if channel not in bot.channels:
         bot.channels[channel] = target.Channel(channel)
     bot.channels[channel].add_user(usr, privs=priv)
-    if channel not in bot.privileges:
-        bot.privileges[channel] = {}
-    bot.privileges[channel][nick] = priv
 
 
 @module.event(events.RPL_WHOREPLY)
