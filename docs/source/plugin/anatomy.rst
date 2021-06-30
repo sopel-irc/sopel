@@ -136,7 +136,7 @@ manipulation. There are two cases to consider:
 * A :term:`Named rule` is already named (by definition), so it uses its name
   directly as rule label. This can't be overridden by a decorator.
 
-This label is particulary useful for bot owners who want to disable a rule in
+This label is particularly useful for bot owners who want to disable a rule in
 a specific channel. In the following example, the ``say_hello`` rule from the
 ``hello`` plugin is disabled in the ``#rude`` channel:
 
