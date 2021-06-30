@@ -7,25 +7,58 @@ https://sopel.chat
 """
 from __future__ import generator_stop
 
+import logging
+
+import requests
+
 from sopel import plugin
 
 
-# Copied from pronoun.is, leaving a *lot* out. If
-# https://github.com/witch-house/pronoun.is/pull/96 gets merged, using that
-# would be a lot easier.
-# If ambiguous, the earlier one will be used.
-KNOWN_SETS = {
-    "ze/hir": "ze/hir/hir/hirs/hirself",
-    "ze/zir": "ze/zir/zir/zirs/zirself",
-    "they/.../themselves": "they/them/their/theirs/themselves",
-    "they/.../themself": "they/them/their/theirs/themself",
-    "she/her": "she/her/her/hers/herself",
-    "he/him": "he/him/his/his/himself",
-    "xey/xem": "xey/xem/xyr/xyrs/xemself",
-    "sie/hir": "sie/hir/hir/hirs/hirself",
-    "it/it": "it/it/its/its/itself",
-    "ey/em": "ey/em/eir/eirs/eirself",
-}
+LOGGER = logging.getLogger(__name__)
+
+
+def setup(bot):
+    # Copied from pronoun.is, leaving a *lot* out.
+    # If ambiguous, the earlier one will be used.
+    # This basic set is hard-coded to guarantee that the ten most(ish) common sets
+    # will work, even if fetching the current pronoun.is set from GitHub fails.
+    bot.memory['pronoun_sets'] = {
+        'ze/hir': 'ze/hir/hir/hirs/hirself',
+        'ze/zir': 'ze/zir/zir/zirs/zirself',
+        'they/.../themselves': 'they/them/their/theirs/themselves',
+        'they/.../themself': 'they/them/their/theirs/themself',
+        'she/her': 'she/her/her/hers/herself',
+        'he/him': 'he/him/his/his/himself',
+        'xey/xem': 'xey/xem/xyr/xyrs/xemself',
+        'sie/hir': 'sie/hir/hir/hirs/hirself',
+        'it/it': 'it/it/its/its/itself',
+        'ey/em': 'ey/em/eir/eirs/eirself',
+    }
+
+    # and now try to get the current one
+    # who needs an API that might never exist?
+    # (https://github.com/witch-house/pronoun.is/pull/96)
+    try:
+        r = requests.get(
+            'https://github.com/witch-house/pronoun.is/raw/master/resources/pronouns.tab')
+        r.raise_for_status()
+    except requests.exceptions.RequestException:
+        # don't do anything, just log the failure and use the hard-coded set
+        LOGGER.exception("Couldn't fetch full pronouns list; using default set.")
+        return
+
+    fetched_sets = {}
+    try:
+        for line in r.text.splitlines():
+            split_set = line.split('\t')
+            short = '{}/.../{}'.format(split_set[0], split_set[-1])
+            fetched_sets[short] = '/'.join(split_set)
+    except Exception:
+        # don't care what failed, honestly, since we aren't trying to fix it
+        LOGGER.exception("Couldn't parse fetched pronouns; using default set.")
+        return
+
+    bot.memory['pronoun_sets'] = fetched_sets
 
 
 @plugin.command('pronouns')
@@ -57,7 +90,7 @@ def pronouns(bot, trigger):
 
 
 def say_pronouns(bot, nick, pronouns):
-    for short, set_ in KNOWN_SETS.items():
+    for short, set_ in bot.memory['pronoun_sets'].items():
         if pronouns == set_:
             break
         short = pronouns
@@ -72,36 +105,36 @@ def say_pronouns(bot, nick, pronouns):
 @plugin.example('.setpronouns they/them')
 def set_pronouns(bot, trigger):
     """Set your pronouns."""
-    pronouns = trigger.group(2)
-    if not pronouns:
+    requested_pronouns = trigger.group(2)
+    if not requested_pronouns:
         bot.reply('What pronouns do you use?')
         return
 
     disambig = ''
-    requested_pronoun_split = pronouns.split("/")
-    if len(requested_pronoun_split) < 5:
+    requested_pronouns_split = requested_pronouns.split("/")
+    if len(requested_pronouns_split) < 5:
         matching = []
-        for known_pronoun_set in KNOWN_SETS.values():
-            known_pronoun_split = known_pronoun_set.split("/")
-            if known_pronoun_set.startswith(pronouns + "/") or (
-                len(requested_pronoun_split) == 3
+        for known_pronoun_set in bot.memory['pronoun_sets'].values():
+            known_split_set = known_pronoun_set.split("/")
+            if known_pronoun_set.startswith(requested_pronouns + "/") or (
+                len(requested_pronouns_split) == 3
                 and (
                     (
                         # "they/.../themself"
-                        requested_pronoun_split[1] == "..."
-                        and requested_pronoun_split[0] == known_pronoun_split[0]
-                        and requested_pronoun_split[2] == known_pronoun_split[4]
+                        requested_pronouns_split[1] == "..."
+                        and requested_pronouns_split[0] == known_split_set[0]
+                        and requested_pronouns_split[2] == known_split_set[4]
                     )
                     or (
                         # "they/them/theirs"
-                        requested_pronoun_split[0:2] == known_pronoun_split[0:2]
-                        and requested_pronoun_split[2] == known_pronoun_split[3]
+                        requested_pronouns_split[:2] == known_split_set[:2]
+                        and requested_pronouns_split[2] == known_split_set[3]
                     )
                 )
             ):
                 matching.append(known_pronoun_set)
 
-        if len(matching) == 0:
+        if not matching:
             bot.reply(
                 "I'm sorry, I don't know those pronouns. "
                 "You can give me a set I don't know by formatting it "
@@ -110,13 +143,13 @@ def set_pronouns(bot, trigger):
             )
             return
 
-        pronouns = matching[0]
-        if len(matching) > 1:
+        requested_pronouns = matching.pop(0)
+        if matching:
             disambig = " Or, if you meant one of these, please tell me: {}".format(
-                ", ".join(matching[1:])
+                ", ".join(matching)
             )
 
-    bot.db.set_nick_value(trigger.nick, 'pronouns', pronouns)
+    bot.db.set_nick_value(trigger.nick, 'pronouns', requested_pronouns)
     bot.reply(
-        "Thanks for telling me! I'll remember you use {}.{}".format(pronouns, disambig)
+        "Thanks for telling me! I'll remember you use {}.{}".format(requested_pronouns, disambig)
     )
