@@ -15,18 +15,18 @@ from sopel import plugin
 # https://github.com/witch-house/pronoun.is/pull/96 gets merged, using that
 # would be a lot easier.
 # If ambiguous, the earlier one will be used.
-KNOWN_SETS = [
-    "ze/hir/hir/hirs/hirself",
-    "ze/zir/zir/zirs/zirself",
-    "they/them/their/theirs/themselves",
-    "they/them/their/theirs/themself",
-    "she/her/her/hers/herself",
-    "he/him/his/his/himself",
-    "xey/xem/xyr/xyrs/xemself",
-    "sie/hir/hir/hirs/hirself",
-    "it/it/its/its/itself",
-    "ey/em/eir/eirs/eirself",
-]
+KNOWN_SETS = {
+    "ze/hir": "ze/hir/hir/hirs/hirself",
+    "ze/zir": "ze/zir/zir/zirs/zirself",
+    "they/.../themselves": "they/them/their/theirs/themselves",
+    "they/.../themself": "they/them/their/theirs/themself",
+    "she/her": "she/her/her/hers/herself",
+    "he/him": "he/him/his/his/himself",
+    "xey/xem": "xey/xem/xyr/xyrs/xemself",
+    "sie/hir": "sie/hir/hir/hirs/hirself",
+    "it/it": "it/it/its/its/itself",
+    "ey/em": "ey/em/eir/eirs/eirself",
+}
 
 
 @plugin.command('pronouns')
@@ -82,7 +82,7 @@ def set_pronouns(bot, trigger):
     requested_pronoun_split = pronouns.split("/")
     if len(requested_pronoun_split) < 5:
         matching = []
-        for known_pronoun_set in KNOWN_SETS:
+        for known_pronoun_set in KNOWN_SETS.values():
             known_pronoun_split = known_pronoun_set.split("/")
             if known_pronoun_set.startswith(pronouns + "/") or (
                 len(requested_pronoun_split) == 3
