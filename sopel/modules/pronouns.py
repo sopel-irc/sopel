@@ -12,12 +12,32 @@ import logging
 import requests
 
 from sopel import plugin
+from sopel.config import types
 
 
 LOGGER = logging.getLogger(__name__)
 
 
+class PronounsSection(types.StaticSection):
+    fetch_complete_list = types.BooleanAttribute('fetch_complete_list', default=True)
+    """Whether to attempt fetching the complete list pronoun.is uses, at bot startup."""
+
+
+def configure(settings):
+    """
+    | name | example | purpose |
+    | ---- | ------- | ------- |
+    | fetch_complete_list | True | Whether to attempt fetching the complete pronoun list from pronoun.is at startup. |
+    """
+    settings.define_section('pronouns', PronounsSection)
+    settings.pronouns.configure_setting(
+        'fetch_complete_list',
+        'Fetch the current pronoun.is list at startup?')
+
+
 def setup(bot):
+    bot.config.define_section('pronouns', PronounsSection)
+
     # Copied from pronoun.is, leaving a *lot* out.
     # If ambiguous, the earlier one will be used.
     # This basic set is hard-coded to guarantee that the ten most(ish) common sets
@@ -34,6 +54,9 @@ def setup(bot):
         'it/it': 'it/it/its/its/itself',
         'ey/em': 'ey/em/eir/eirs/eirself',
     }
+
+    if not bot.config.pronouns.fetch_complete_list:
+        return
 
     # and now try to get the current one
     # who needs an API that might never exist?
