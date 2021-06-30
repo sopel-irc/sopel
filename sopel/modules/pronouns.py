@@ -13,26 +13,18 @@ from sopel import plugin
 # Copied from pronoun.is, leaving a *lot* out. If
 # https://github.com/witch-house/pronoun.is/pull/96 gets merged, using that
 # would be a lot easier.
+# If ambiguous, the earlier one will be used.
 KNOWN_SETS = {
-    'ze': 'ze/hir/hir/hirs/hirself',
-    'ze/hir': 'ze/hir/hir/hirs/hirself',
-    'ze/zir': 'ze/zir/zir/zirs/zirself',
-    'they': 'they/them/their/theirs/themselves',
-    'they/them': 'they/them/their/theirs/themselves',
-    'they/.../themselves': 'they/them/their/theirs/themselves',
-    'they/.../themself': 'they/them/their/theirs/themself',
-    'she': 'she/her/her/hers/herself',
-    'she/her': 'she/her/her/hers/herself',
-    'he': 'he/him/his/his/himself',
-    'he/him': 'he/him/his/his/himself',
-    'xey': 'xey/xem/xyr/xyrs/xemself',
-    'xey/xem': 'xey/xem/xyr/xyrs/xemself',
-    'sie': 'sie/hir/hir/hirs/hirself',
-    'sie/hir': 'sie/hir/hir/hirs/hirself',
-    'it': 'it/it/its/its/itself',
-    'it/it': 'it/it/its/its/itself',
-    'ey': 'ey/em/eir/eirs/eirself',
-    'ey/em': 'ey/em/eir/eirs/eirself',
+    "ze/hir": "ze/hir/hir/hirs/hirself",
+    "ze/zir": "ze/zir/zir/zirs/zirself",
+    "they/.../themselves": "they/them/their/theirs/themselves",
+    "they/.../themself": "they/them/their/theirs/themself",
+    "she/her": "she/her/her/hers/herself",
+    "he/him": "he/him/his/his/himself",
+    "xey/xem": "xey/xem/xyr/xyrs/xemself",
+    "sie/hir": "sie/hir/hir/hirs/hirself",
+    "it/it": "it/it/its/its/itself",
+    "ey/em": "ey/em/eir/eirs/eirself",
 }
 
 
@@ -75,7 +67,9 @@ def say_pronouns(bot, nick, pronouns):
 
 
 @plugin.command('setpronouns')
-@plugin.example('.setpronouns they/them/their/theirs/themselves')
+@plugin.example('.setpronouns fae/faer/faer/faers/faerself')
+@plugin.example('.setpronouns they/them/theirs')
+@plugin.example('.setpronouns they/them')
 def set_pronouns(bot, trigger):
     """Set your pronouns."""
     pronouns = trigger.group(2)
@@ -84,15 +78,30 @@ def set_pronouns(bot, trigger):
         return
 
     disambig = ''
-    if pronouns == 'they':
-        disambig = ' You can also use they/.../themself, if you prefer.'
-        pronouns = KNOWN_SETS.get(pronouns)
-    elif pronouns == 'ze':
-        disambig = ' I have ze/hir. If you meant ze/zir, you can use that instead.'
-        pronouns = KNOWN_SETS.get(pronouns)
-    elif len(pronouns.split('/')) != 5:
-        pronouns = KNOWN_SETS.get(pronouns)
-        if not pronouns:
+    requested_pronoun_split = pronouns.split("/")
+    if len(requested_pronoun_split) < 5:
+        matching = []
+        for known_pronoun_set in KNOWN_SETS.values():
+            known_pronoun_split = known_pronoun_set.split("/")
+            if known_pronoun_set.startswith(pronouns + "/") or (
+                len(requested_pronoun_split) == 3
+                and (
+                    (
+                        # "they/.../themself"
+                        requested_pronoun_split[1] == "..."
+                        and requested_pronoun_split[0] == known_pronoun_split[0]
+                        and requested_pronoun_split[2] == known_pronoun_split[4]
+                    )
+                    or (
+                        # "they/them/theirs"
+                        requested_pronoun_split[0:2] == known_pronoun_split[0:2]
+                        and requested_pronoun_split[2] == known_pronoun_split[3]
+                    )
+                )
+            ):
+                matching.append(known_pronoun_set)
+
+        if len(matching) == 0:
             bot.reply(
                 "I'm sorry, I don't know those pronouns. "
                 "You can give me a set I don't know by formatting it "
@@ -100,5 +109,14 @@ def set_pronouns(bot, trigger):
                 "reflexive, as in: they/them/their/theirs/themselves"
             )
             return
+
+        pronouns = matching[0]
+        if len(matching) > 1:
+            disambig = " Or, if you meant one of these, please tell me: {}".format(
+                ", ".join(matching[1:])
+            )
+
     bot.db.set_nick_value(trigger.nick, 'pronouns', pronouns)
-    bot.reply("Thanks for telling me!" + disambig)
+    bot.reply(
+        "Thanks for telling me! I'll remember you use {}.{}".format(pronouns, disambig)
+    )
