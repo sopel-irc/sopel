@@ -247,8 +247,8 @@ def mw_info(bot, trigger, match=None):
         say_snippet(bot, trigger, match.group(1), unquote(match.group(2)), show_url=False)
 
 
-@plugin.command('w', 'wiki', 'wik')
-@plugin.example('.w San Francisco')
+@plugin.command('wikipedia', 'wp')
+@plugin.example('.wp San Francisco')
 @plugin.output_prefix('[wikipedia] ')
 def wikipedia(bot, trigger):
     """Search Wikipedia."""
