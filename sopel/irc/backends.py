@@ -243,12 +243,17 @@ class SSLAsynchatBackend(AsynchatBackend):
                             (default ``True``, for good reason)
     :param str ca_certs: filesystem path to a CA Certs file containing trusted
                          root certificates
+    :param str certfile: filesystem path to a certificate for SSL/TLS client
+                         authentication (CertFP)
+    :param str keyfile: filesystem path to the private key for ``certfile``
     """
-    def __init__(self, bot, verify_ssl=True, ca_certs=None, **kwargs):
+    def __init__(self, bot, verify_ssl=True, ca_certs=None, certfile=None, keyfile=None, **kwargs):
         AsynchatBackend.__init__(self, bot, **kwargs)
         self.verify_ssl = verify_ssl
         self.ssl = None
         self.ca_certs = ca_certs
+        self.certfile = certfile
+        self.keyfile = keyfile
 
     def handle_connect(self):
         """Handle potential TLS connection."""
@@ -261,10 +266,14 @@ class SSLAsynchatBackend(AsynchatBackend):
         # version(s) it supports.
         if not self.verify_ssl:
             self.ssl = ssl.wrap_socket(self.socket,  # lgtm [py/insecure-default-protocol]
+                                       certfile=self.certfile,
+                                       keyfile=self.keyfile,
                                        do_handshake_on_connect=True,
                                        suppress_ragged_eofs=True)
         else:
             self.ssl = ssl.wrap_socket(self.socket,  # lgtm [py/insecure-default-protocol]
+                                       certfile=self.certfile,
+                                       keyfile=self.keyfile,
                                        do_handshake_on_connect=True,
                                        suppress_ragged_eofs=True,
                                        cert_reqs=ssl.CERT_REQUIRED,

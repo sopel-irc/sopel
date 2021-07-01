@@ -996,7 +996,6 @@ def receive_cap_ack_sasl(bot):
     if not password:
         return
 
-    mech = mech or 'PLAIN'
     available_mechs = bot.server_capabilities.get('sasl', '')
     available_mechs = available_mechs.split(',') if available_mechs else []
 
@@ -1064,10 +1063,23 @@ def auth_proceed(bot, trigger):
         be ignored. If none is set, then this function does nothing.
 
     """
-    if trigger.args[0] != '+':
-        # How did we get here? I am not good with computer.
+    if bot.config.core.auth_method == 'sasl':
+        mech = bot.config.core.auth_target or 'PLAIN'
+    elif bot.config.core.server_auth_method == 'sasl':
+        mech = bot.config.core.server_auth_sasl_mech or 'PLAIN'
+    else:
         return
-    # Is this right?
+
+    if mech == 'EXTERNAL':
+        if trigger.args[0] != '+':
+            # not an expected response from the server; abort SASL
+            token = '*'
+        else:
+            token = '+'
+
+        bot.write(('AUTHENTICATE', token))
+        return
+
     if bot.config.core.auth_method == 'sasl':
         sasl_username = bot.config.core.auth_username
         sasl_password = bot.config.core.auth_password
@@ -1075,11 +1087,22 @@ def auth_proceed(bot, trigger):
         sasl_username = bot.config.core.server_auth_username
         sasl_password = bot.config.core.server_auth_password
     else:
+        # How did we get here? I am not good with computer
         return
+
     sasl_username = sasl_username or bot.nick
-    sasl_token = _make_sasl_plain_token(sasl_username, sasl_password)
-    LOGGER.info("Sending SASL Auth token.")
-    send_authenticate(bot, sasl_token)
+
+    if mech == 'PLAIN':
+        if trigger.args[0] != '+':
+            # not an expected response from the server; abort SASL
+            token = '*'
+        else:
+            sasl_token = _make_sasl_plain_token(sasl_username, sasl_password)
+            LOGGER.info("Sending SASL Auth token.")
+            send_authenticate(bot, sasl_token)
+        return
+
+    # TODO: Implement SCRAM challenges
 
 
 def _make_sasl_plain_token(account, password):
@@ -1166,12 +1189,16 @@ def sasl_mechs(bot, trigger):
 def _get_sasl_pass_and_mech(bot):
     password = None
     mech = None
+
     if bot.config.core.auth_method == 'sasl':
         password = bot.config.core.auth_password
         mech = bot.config.core.auth_target
     elif bot.config.core.server_auth_method == 'sasl':
         password = bot.config.core.server_auth_password
         mech = bot.config.core.server_auth_sasl_mech
+
+    mech = 'PLAIN' if mech is None else mech.upper()
+
     return password, mech
 
 

@@ -459,6 +459,15 @@ Example of authentication to a ZNC bouncer::
 
 Don't forget to configure your ZNC to log in to the real network!
 
+Finally, here is how to enable CertFP once you have a certificate that meets
+your IRC network's requirements::
+
+    [core]
+    client_cert_file = /path/to/cert.pem  # your bot's client certificate
+    # some networks require SASL EXTERNAL for CertFP to work
+    auth_method = sasl                    # if required
+    auth_target = EXTERNAL                # if required
+
 
 Multi-stage
 -----------
@@ -487,7 +496,7 @@ When :attr:`~CoreSection.server_auth_method` is defined the settings used are:
 * :attr:`~CoreSection.server_auth_username`: account's username
 * :attr:`~CoreSection.server_auth_password`: account's password
 * :attr:`~CoreSection.server_auth_sasl_mech`: the SASL mechanism to use
-  (defaults to ``PLAIN``)
+  (defaults to ``PLAIN``; ``EXTERNAL`` is also available)
 
 For example, this will use NickServ ``IDENTIFY`` command and SASL mechanism::
 

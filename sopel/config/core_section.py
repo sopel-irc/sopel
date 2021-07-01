@@ -176,7 +176,9 @@ class CoreSection(StaticSection):
 
     The nickname of the NickServ or UserServ service, or the name of the
     desired SASL mechanism, if :attr:`auth_method` is set to one of these
-    methods. This value is otherwise ignored.
+    methods. For SASL, the ``EXTERNAL`` option is available in case the IRC
+    network requires it (e.g. for CertFP using :attr:`client_cert_file`). This
+    value is otherwise ignored.
 
     See :ref:`Authentication`.
     """
@@ -263,6 +265,18 @@ class CoreSection(StaticSection):
         An unquoted ``#`` denotes a comment, which will be ignored by Sopel's
         configuration parser.
 
+    """
+
+    client_cert_file = FilenameAttribute('client_cert_file')
+    """Filesystem path to a certificate file for CertFP.
+
+    This is expected to be a ``.pem`` file containing both the certificate and
+    private key. Most networks that support CertFP will give instructions for
+    generating this, typically using OpenSSL.
+
+    Some networks may refer to this authentication method as SASL EXTERNAL.
+
+    .. versionadded:: 8.0
     """
 
     commands_on_connect = ListAttribute('commands_on_connect')
@@ -1070,7 +1084,12 @@ class CoreSection(StaticSection):
 
     :default: ``PLAIN``
 
+    ``EXTERNAL`` is also supported, e.g. for using :attr:`client_cert_file` to
+    authenticate via CertFP.
+
     .. versionadded:: 7.0
+    .. versionchanged:: 8.0
+        Added support for SASL EXTERNAL mechanism.
     """
 
     server_auth_username = ValidatedAttribute('server_auth_username')
