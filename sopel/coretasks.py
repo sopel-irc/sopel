@@ -310,7 +310,9 @@ def startup(bot, trigger):
 @plugin.priority('medium')
 def handle_isupport(bot, trigger):
     """Handle ``RPL_ISUPPORT`` events."""
-    # remember if NAMESX is known to be supported, before parsing RPL_ISUPPORT
+    # remember if certain actionable tokens are known to be supported,
+    # before parsing RPL_ISUPPORT
+    botmode_support = 'BOT' in bot.isupport
     namesx_support = 'NAMESX' in bot.isupport
 
     # parse ISUPPORT message from server
@@ -325,6 +327,12 @@ def handle_isupport(bot, trigger):
 
     bot._isupport = bot._isupport.apply(**parameters)
 
+    # was BOT mode support status updated?
+    if not botmode_support and 'BOT' in bot.isupport:
+        # yes it was! set our mode unless the config overrides it
+        botmode = bot.isupport['BOT']
+        if botmode not in bot.config.core.modes:
+            bot.write(('MODE', bot.nick, '+' + botmode))
     # was NAMESX support status updated?
     if not namesx_support and 'NAMESX' in bot.isupport:
         # yes it was!
