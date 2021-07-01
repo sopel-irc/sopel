@@ -314,6 +314,7 @@ def handle_isupport(bot, trigger):
     # before parsing RPL_ISUPPORT
     botmode_support = 'BOT' in bot.isupport
     namesx_support = 'NAMESX' in bot.isupport
+    uhnames_support = 'UHNAMES' in bot.isupport
 
     # parse ISUPPORT message from server
     parameters = {}
@@ -340,6 +341,13 @@ def handle_isupport(bot, trigger):
             # and the server doesn't have the multi-prefix capability
             # so we can ask the server to use the NAMESX feature
             bot.write(('PROTOCTL', 'NAMESX'))
+    # was UHNAMES support status updated?
+    if not uhnames_support and 'UHNAMES' in bot.isupport:
+        # yes it was!
+        if 'userhost-in-names' not in bot.server_capabilities:
+            # and the server doesn't have the userhost-in-names capability
+            # so we should ask for UHNAMES instead
+            bot.write(('PROTOCTL', 'UHNAMES'))
 
 
 @module.event(events.RPL_MYINFO)
@@ -431,8 +439,6 @@ def handle_names(bot, trigger):
 
     This function keeps track of users' privileges when Sopel joins channels.
     """
-    names = trigger.split()
-
     # TODO specific to one channel type. See issue 281.
     channels = re.search(r'(#\S*)', trigger.raw)
     if not channels:
@@ -456,20 +462,31 @@ def handle_names(bot, trigger):
         "!": module.OPER,
     }
 
+    uhnames = 'UHNAMES' in bot.isupport
+    userhost_in_names = 'userhost-in-names' in bot.enabled_capabilities
+
+    names = trigger.split()
     for name in names:
+        if uhnames or userhost_in_names:
+            name, mask = name.rsplit('!', 1)
+            username, hostname = mask.split('@', 1)
+        else:
+            username = hostname = None
+
         priv = 0
         for prefix, value in mapping.items():
             if prefix in name:
                 priv = priv | value
+
         nick = Identifier(name.lstrip(''.join(mapping.keys())))
         bot.privileges[channel][nick] = priv
         user = bot.users.get(nick)
         if user is None:
-            # It's not possible to set the username/hostname from info received
-            # in a NAMES reply, unfortunately.
+            # The username/hostname will be included in a NAMES reply only if
+            # userhost-in-names is available. We can use them if present.
             # Fortunately, the user should already exist in bot.users by the
             # time this code runs, so this is 99.9% ass-covering.
-            user = target.User(nick, None, None)
+            user = target.User(nick, username, hostname)
             bot.users[nick] = user
         bot.channels[channel].add_user(user, privs=priv)
 
@@ -921,6 +938,7 @@ def receive_cap_ls_reply(bot, trigger):
         'away-notify',
         'cap-notify',
         'server-time',
+        'userhost-in-names',
     ]
     for cap in core_caps:
         if cap not in bot._cap_reqs:
