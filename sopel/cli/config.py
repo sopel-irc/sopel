@@ -57,8 +57,14 @@ def build_parser():
         help="Get a configuration option's value",
         description="Get a configuration option's value",
     )
-    get_parser.add_argument('section')
-    get_parser.add_argument('option')
+    get_parser.add_argument(
+        'section',
+        help='The name of the section to look in',
+    )
+    get_parser.add_argument(
+        'option',
+        help='The name of the option to retrieve',
+    )
     utils.add_common_arguments(get_parser)
 
     return parser
