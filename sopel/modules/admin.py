@@ -24,6 +24,8 @@ ERROR_PART_NO_CHANNEL = 'Which channel should I quit?'
 """Error message when channel is missing from command arguments."""
 ERROR_NOTHING_TO_SAY = 'I need a channel and a message to talk.'
 """Error message when channel and/or message are missing."""
+ERROR_NOTHING_TO_RAW = 'I need an IRC message to send.'
+"""Error message when no raw IRC message was given."""
 
 
 class AdminSection(types.StaticSection):
@@ -221,6 +223,23 @@ def quit(bot, trigger):
 
     LOGGER.info(default_message)
     bot.quit(quit_message)
+
+
+@plugin.require_privmsg
+@plugin.require_owner
+@plugin.command('raw')
+@plugin.priority('low')
+@plugin.example('.raw PRIVMSG NickServ :CERT ADD')
+def raw(bot, trigger):
+    """
+    Send a raw IRC message. Can only be done in privmsg by the bot owner.
+    This is mostly useful for debugging.
+    """
+    if trigger.group(2) is None:
+        bot.reply(ERROR_NOTHING_TO_RAW)
+        return
+
+    bot.write([trigger.group(2)])
 
 
 @plugin.require_privmsg
