@@ -25,6 +25,7 @@ As an example, if one wanted to define the ``[spam]`` section as having an
 
 from __future__ import generator_stop
 
+import abc
 import getpass
 import os.path
 import re
@@ -113,10 +114,7 @@ class StaticSection:
         setattr(self, name, value)
 
 
-# TODO: Make this a proper abstract class when dropping Python 2 support.
-# Abstract classes are much simpler to deal with once we only need to worry
-# about Python 3.4 or newer. (https://stackoverflow.com/a/13646263/5991)
-class BaseValidated(object):
+class BaseValidated(abc.ABC):
     """The base type for a setting descriptor in a :class:`StaticSection`.
 
     :param str name: the attribute name to use in the config file
@@ -196,18 +194,13 @@ class BaseValidated(object):
 
         return self._parse(value, parent, section)
 
+    @abc.abstractmethod
     def serialize(self, value, *args, **kwargs):
-        """Take some object, and return the string to be saved to the file.
+        """Take some object, and return the string to be saved to the file."""
 
-        Must be implemented in subclasses.
-        """
-        raise NotImplementedError("Serialize method must be implemented in subclass")
-
+    @abc.abstractmethod
     def parse(self, value, *args, **kwargs):
-        """Take a string from the file, and return the appropriate object.
-
-        Must be implemented in subclasses."""
-        raise NotImplementedError("Parse method must be implemented in subclass")
+        """Take a string from the file, and return the appropriate object."""
 
     def __get__(self, instance, owner=None):
         if instance is None:

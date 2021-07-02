@@ -43,6 +43,7 @@ away from the rest of the application.
 # Licensed under the Eiffel Forum License 2.
 from __future__ import generator_stop
 
+import abc
 import imp
 import importlib
 import inspect
@@ -60,7 +61,7 @@ except AttributeError:
     reload = imp.reload
 
 
-class AbstractPluginHandler(object):
+class AbstractPluginHandler(abc.ABC):
     """Base class for plugin handlers.
 
     This abstract class defines the interface Sopel uses to
@@ -75,23 +76,25 @@ class AbstractPluginHandler(object):
     (commands, jobs, etc.), configuring it, and running any required actions
     on shutdown (either upon exiting Sopel or unloading that plugin).
     """
+
+    @abc.abstractmethod
     def load(self):
         """Load the plugin.
 
         This method must be called first, in order to setup, register, shutdown,
         or configure the plugin later.
         """
-        raise NotImplementedError
 
+    @abc.abstractmethod
     def reload(self):
         """Reload the plugin.
 
         This method can be called once the plugin is already loaded. It will
         take care of reloading the plugin from its source.
         """
-        raise NotImplementedError
 
-    def get_label(self):
+    @abc.abstractmethod
+    def get_label(self) -> str:
         """Retrieve a display label for the plugin.
 
         :return: a human readable label for display purpose
@@ -99,9 +102,9 @@ class AbstractPluginHandler(object):
 
         This method should, at least, return ``<module_name> plugin``.
         """
-        raise NotImplementedError
 
-    def get_meta_description(self):
+    @abc.abstractmethod
+    def get_meta_description(self) -> dict:
         """Retrieve a meta description for the plugin.
 
         :return: meta description information
@@ -115,9 +118,10 @@ class AbstractPluginHandler(object):
         * source: the plugin's source
           (filesystem path, python import path, etc.)
         """
-        raise NotImplementedError
+        # TODO: change return type to a TypedDict when dropping py3.7
 
-    def is_loaded(self):
+    @abc.abstractmethod
+    def is_loaded(self) -> bool:
         """Tell if the plugin is loaded or not.
 
         :return: ``True`` if the plugin is loaded, ``False`` otherwise
@@ -126,57 +130,57 @@ class AbstractPluginHandler(object):
         This must return ``True`` if the :meth:`load` method has been called
         with success.
         """
-        raise NotImplementedError
 
+    @abc.abstractmethod
     def setup(self, bot):
         """Run the plugin's setup action.
 
         :param bot: instance of Sopel
         :type bot: :class:`sopel.bot.Sopel`
         """
-        raise NotImplementedError
 
-    def has_setup(self):
+    @abc.abstractmethod
+    def has_setup(self) -> bool:
         """Tell if the plugin has a setup action.
 
         :return: ``True`` if the plugin has a setup, ``False`` otherwise
         :rtype: bool
         """
-        raise NotImplementedError
 
+    @abc.abstractmethod
     def register(self, bot):
         """Register the plugin with the ``bot``.
 
         :param bot: instance of Sopel
         :type bot: :class:`sopel.bot.Sopel`
         """
-        raise NotImplementedError
 
+    @abc.abstractmethod
     def unregister(self, bot):
         """Unregister the plugin from the ``bot``.
 
         :param bot: instance of Sopel
         :type bot: :class:`sopel.bot.Sopel`
         """
-        raise NotImplementedError
 
+    @abc.abstractmethod
     def shutdown(self, bot):
         """Run the plugin's shutdown action.
 
         :param bot: instance of Sopel
         :type bot: :class:`sopel.bot.Sopel`
         """
-        raise NotImplementedError
 
-    def has_shutdown(self):
+    @abc.abstractmethod
+    def has_shutdown(self) -> bool:
         """Tell if the plugin has a shutdown action.
 
         :return: ``True`` if the plugin has a ``shutdown`` action, ``False``
                  otherwise
         :rtype: bool
         """
-        raise NotImplementedError
 
+    @abc.abstractmethod
     def configure(self, settings):
         """Configure Sopel's ``settings`` for this plugin.
 
@@ -185,16 +189,15 @@ class AbstractPluginHandler(object):
 
         This method will be called by Sopel's configuration wizard.
         """
-        raise NotImplementedError
 
-    def has_configure(self):
+    @abc.abstractmethod
+    def has_configure(self) -> bool:
         """Tell if the plugin has a configure action.
 
         :return: ``True`` if the plugin has a ``configure`` action, ``False``
                  otherwise
         :rtype: bool
         """
-        raise NotImplementedError
 
 
 class PyModulePlugin(AbstractPluginHandler):

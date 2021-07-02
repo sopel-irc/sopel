@@ -2,7 +2,6 @@
 from __future__ import generator_stop
 
 
-from sopel.irc.abstract_backends import AbstractIRCBackend
 from sopel.tests.mocks import MockIRCBackend
 
 
@@ -15,7 +14,7 @@ class BotCollector:
 
 
 def test_prepare_command():
-    backend = AbstractIRCBackend(BotCollector())
+    backend = MockIRCBackend(BotCollector())
 
     result = backend.prepare_command('INFO')
     assert result == 'INFO\r\n'
@@ -25,7 +24,7 @@ def test_prepare_command():
 
 
 def test_prepare_command_text():
-    backend = AbstractIRCBackend(BotCollector())
+    backend = MockIRCBackend(BotCollector())
 
     result = backend.prepare_command('PRIVMSG', '#sopel', text='Hello world!')
     assert result == 'PRIVMSG #sopel :Hello world!\r\n'
@@ -38,7 +37,7 @@ def test_prepare_command_text():
 
 
 def test_prepare_command_text_too_long():
-    backend = AbstractIRCBackend(BotCollector())
+    backend = MockIRCBackend(BotCollector())
 
     max_length = 510 - len('PRIVMSG #sopel :')
     text = '-' * (max_length + 1)  # going above max length by one

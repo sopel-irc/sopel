@@ -76,6 +76,10 @@ class MockIRCBackend(AbstractIRCBackend):
         self.message_sent = []
         return sent
 
+    def on_irc_error(self, pretrigger):
+        # implement abstract method
+        pass
+
 
 class MockIRCServer:
     """Fake IRC Server that can send messages to a test bot.
