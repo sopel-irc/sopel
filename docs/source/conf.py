@@ -64,8 +64,8 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'Sopel'
-copyright = u'2012-2019, Sopel contributors'
+project = 'Sopel'
+copyright = '2012-2021, Sopel contributors'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -222,8 +222,8 @@ latex_elements = {
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
-  ('index', 'sopel.tex', u'Sopel IRC Bot Documentation',
-   u'Sopel contributors', 'manual'),
+  ('index', 'sopel.tex', 'Sopel IRC Bot Documentation',
+   'Sopel contributors', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -261,12 +261,12 @@ latex_documents = [
 # 7: Overview, conventions, and miscellaneous
 # 8: System management commands
 man_pages = [
-    ('cli', 'sopel', u'Sopel IRC Bot Command Line',
-     [u'Sopel contributors'], 1),
-    ('package', 'sopel', u'Sopel IRC Bot Documentation',
-     [u'Sopel contributors'], 3),
-    ('configuration', 'sopel', u'Sopel IRC Bot Configuration',
-     [u'Sopel contributors'], 5),
+    ('cli', 'sopel', 'Sopel IRC Bot Command Line',
+     ['Sopel contributors'], 1),
+    ('package', 'sopel', 'Sopel IRC Bot Documentation',
+     ['Sopel contributors'], 3),
+    ('configuration', 'sopel', 'Sopel IRC Bot Configuration',
+     ['Sopel contributors'], 5),
 ]
 
 # If true, show URL addresses after external links.
@@ -279,8 +279,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-  ('index', 'sopel', u'Sopel IRC Bot Documentation',
-   u'Sopel contributors', 'SopelIRCBot', 'Simple, extendible IRC bot.',
+  ('index', 'sopel', 'Sopel IRC Bot Documentation',
+   'Sopel contributors', 'SopelIRCBot', 'Simple, extendible IRC bot.',
    'Miscellaneous'),
 ]
 
