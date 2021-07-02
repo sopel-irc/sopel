@@ -117,6 +117,7 @@ class AbstractPluginHandler(abc.ABC):
         * type: the plugin's type
         * source: the plugin's source
           (filesystem path, python import path, etc.)
+        * version: the plugin's version string if available, otherwise ``None``
         """
         # TODO: change return type to a TypedDict when dropping py3.7
 
@@ -273,6 +274,7 @@ class PyModulePlugin(AbstractPluginHandler):
         * label: see :meth:`~sopel.plugins.handlers.PyModulePlugin.get_label`
         * type: see :attr:`PLUGIN_TYPE`
         * source: the name of the plugin's module
+        * version: the version string of the plugin if available, otherwise ``None``
 
         Example::
 
@@ -281,6 +283,7 @@ class PyModulePlugin(AbstractPluginHandler):
                 'type: 'python-module',
                 'label: 'example plugin',
                 'source': 'sopel_modules.example',
+                'version': '3.1.2',
             }
 
         """
@@ -289,6 +292,7 @@ class PyModulePlugin(AbstractPluginHandler):
             'type': self.PLUGIN_TYPE,
             'name': self.name,
             'source': self.module_name,
+            'version': getattr(self._module, "__version__", None),
         }
 
     def load(self):
@@ -460,6 +464,7 @@ class PyFilePlugin(PyModulePlugin):
                 'type: 'python-file',
                 'label: 'example plugin',
                 'source': '/home/username/.sopel/plugins/example.py',
+                'version': '3.1.2',
             }
 
         """
@@ -563,6 +568,7 @@ class EntryPointPlugin(PyModulePlugin):
                 'type: 'setup-entrypoint',
                 'label: 'example plugin',
                 'source': 'example = my_plugin.example',
+                'version': '3.1.2',
             }
 
         """
