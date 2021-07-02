@@ -24,11 +24,13 @@ who should worry about :class:`sopel.bot.Sopel` only.
 # Licensed under the Eiffel Forum License 2.
 from __future__ import generator_stop
 
+import abc
 from datetime import datetime
 import logging
 import os
 import threading
 import time
+from typing import Optional
 
 from sopel import tools, trigger
 from .backends import AsynchatBackend, SSLAsynchatBackend
@@ -41,7 +43,7 @@ __all__ = ['abstract_backends', 'backends', 'utils']
 LOGGER = logging.getLogger(__name__)
 
 
-class AbstractBot(object):
+class AbstractBot(abc.ABC):
     """Abstract definition of Sopel's interface."""
     def __init__(self, settings):
         # private properties: access as read-only properties
@@ -113,6 +115,63 @@ class AbstractBot(object):
         if self._myinfo is None:
             raise AttributeError('myinfo')
         return self._myinfo
+
+    @property
+    @abc.abstractmethod
+    def hostmask(self) -> Optional[str]:
+        """Bot's hostmask."""
+
+    # Utility
+
+    def safe_text_length(self, recipient: str) -> int:
+        """Estimate a safe text length for an IRC message.
+
+        :return: the maximum length possible for a message to a recipient
+
+        When the bot sends a message to a recipient (channel or nick), it has
+        512 bytes minus the command, arguments, various separators and trailing
+        CRLF for its text. However, this is not what other users will see from
+        the server: these messages will follow this format::
+
+            :nick!~user@hostname PRIVMSG #channel :text
+
+        Which takes more bytes, reducing the maximum length available for a
+        single line of text. This method compute a safe length of text that
+        can be send using ``PRIVMSG`` or ``NOTICE`` by substracting the size
+        required by the server to convay the bot's message.
+
+        .. seealso::
+
+            This method is useful when :meth:`sending a message <say>` and can
+            be used with :func:`sopel.tools.get_sendable_message`.
+
+        """
+        if self.hostmask is not None:
+            hostmask_length = len(self.hostmask)
+        else:
+            # calculate maximum possible length, given current nick/username
+            hostmask_length = (
+                len(self.nick)  # own nick length
+                + 1  # (! separator)
+                + 1  # (for the optional ~ in user)
+                + min(  # own ident length, capped to ISUPPORT or RFC maximum
+                    len(self.user),
+                    getattr(self.isupport, 'USERLEN', 9))
+                + 1  # (@ separator)
+                + 63  # <hostname> has a maximum length of 63 characters.
+            )
+
+        return (
+            512  # maximum IRC line length in bytes, per RFC
+            - 1  # leading colon
+            - hostmask_length  # calculated/maximum length of own hostmask prefix
+            - 1  # space between prefix & command
+            - 7  # PRIVMSG command
+            - 1  # space before recipient
+            - len(recipient.encode('utf-8'))  # target channel/nick (can contain Unicode)
+            - 2  # space after recipient, colon before text
+            - 2  # trailing CRLF
+        )
 
     # Connection
 
@@ -293,18 +352,16 @@ class AbstractBot(object):
 
     # Features
 
+    @abc.abstractmethod
     def dispatch(self, pretrigger):
         """Handle running the appropriate callables for an incoming message.
 
         :param pretrigger: Sopel PreTrigger object
         :type pretrigger: :class:`sopel.trigger.PreTrigger`
-        :raise NotImplementedError: if the subclass does not implement this
-                                    required method
 
         .. important::
             This method **MUST** be implemented by concrete subclasses.
         """
-        raise NotImplementedError
 
     def log_raw(self, line, prefix):
         """Log raw line to the raw log.
@@ -582,38 +639,13 @@ class AbstractBot(object):
 
         """
         excess = ''
+        safe_length = self.safe_text_length(recipient)
+
         if not isinstance(text, str):
             # Make sure we are dealing with a Unicode string
             text = text.decode('utf-8')
 
         if max_messages > 1 or truncation or trailing:
-            # Handle message splitting/truncation only if needed
-            try:
-                hostmask_length = len(self.hostmask)
-            except KeyError:
-                # calculate maximum possible length, given current nick/username
-                hostmask_length = (
-                    len(self.nick)  # own nick length
-                    + 1  # (! separator)
-                    + 1  # (for the optional ~ in user)
-                    + min(  # own ident length, capped to ISUPPORT or RFC maximum
-                        len(self.user),
-                        getattr(self.isupport, 'USERLEN', 9))
-                    + 1  # (@ separator)
-                    + 63  # <hostname> has a maximum length of 63 characters.
-                )
-            safe_length = (
-                512  # maximum IRC line length in bytes, per RFC
-                - 1  # leading colon
-                - hostmask_length  # calculated/maximum length of own hostmask prefix
-                - 1  # space between prefix & command
-                - 7  # PRIVMSG command
-                - 1  # space before recipient
-                - len(recipient.encode('utf-8'))  # target channel/nick (can contain Unicode)
-                - 2  # space after recipient, colon before text
-                - 2  # trailing CRLF
-            )
-
             if max_messages == 1 and trailing:
                 safe_length -= len(trailing.encode('utf-8'))
             text, excess = tools.get_sendable_message(text, safe_length)
