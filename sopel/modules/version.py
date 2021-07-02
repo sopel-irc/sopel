@@ -33,13 +33,34 @@ def git_info():
 
 
 @plugin.command('version')
+@plugin.example('.version [plugin_name]')
 @plugin.output_prefix('[version] ')
 def version(bot, trigger):
-    """Display the installed version of Sopel.
+    """Display the installed version of Sopel or a plugin.
 
     Includes the version of Python Sopel is installed on.
     Includes the commit hash if Sopel is installed from source.
     """
+    plugin = trigger.group(3)
+    if plugin and plugin.lower() != "sopel":
+        # Plugin version
+        if not bot.has_plugin(plugin):
+            bot.say("I don't have a plugin named %r loaded." % plugin)
+            return
+
+        meta = bot.get_plugin_meta(plugin)
+        if meta["version"] is None:
+            version = "(unknown)"
+        else:
+            version = "v" + str(meta["version"])
+
+        if meta["source"].startswith("sopel."):
+            version += " (built in)"
+
+        bot.say(plugin + " " + version)
+        return
+
+    # Sopel version
     parts = [
         'Sopel v%s' % release,
         'Python: %s' % platform.python_version()
