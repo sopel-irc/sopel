@@ -55,13 +55,13 @@ def setup(bot):
 
 class InvalidSection(Exception):
     def __init__(self, section):
-        super(InvalidSection, self).__init__(self, 'Section [{}] does not exist.'.format(section))
+        super().__init__(self, 'Section [{}] does not exist.'.format(section))
         self.section = section
 
 
 class InvalidSectionOption(Exception):
     def __init__(self, section, option):
-        super(InvalidSectionOption, self).__init__(self, 'Section [{}] does not have option \'{}\'.'.format(section, option))
+        super().__init__(self, 'Section [{}] does not have option \'{}\'.'.format(section, option))
         self.section = section
         self.option = option
 

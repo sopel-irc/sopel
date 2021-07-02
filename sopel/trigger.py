@@ -14,7 +14,7 @@ __all__ = [
 ]
 
 
-class PreTrigger(object):
+class PreTrigger:
     """A parsed raw message from the server.
 
     :param str own_nick: the bot's own IRC nickname

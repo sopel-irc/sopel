@@ -141,7 +141,7 @@ def _clean_callable_examples(examples):
     )
 
 
-class Manager(object):
+class Manager:
     """Manager of plugin rules.
 
     This manager stores plugin rules and can then provide the matching rules
@@ -1053,7 +1053,7 @@ class Rule(AbstractRule):
         return exit_code
 
 
-class NamedRuleMixin(object):
+class NamedRuleMixin:
     """Mixin for named rules.
 
     A named rule is invoked by using a specific word, and is usually known
@@ -1186,7 +1186,7 @@ class Command(NamedRuleMixin, Rule):
                  help_prefix=COMMAND_DEFAULT_HELP_PREFIX,
                  aliases=None,
                  **kwargs):
-        super(Command, self).__init__([], **kwargs)
+        super().__init__([], **kwargs)
         self._name = name
         self._prefix = prefix
         self._help_prefix = help_prefix
@@ -1309,7 +1309,7 @@ class NickCommand(NamedRuleMixin, Rule):
         return cls(**kwargs)
 
     def __init__(self, nick, name, nick_aliases=None, aliases=None, **kwargs):
-        super(NickCommand, self).__init__([], **kwargs)
+        super().__init__([], **kwargs)
         self._nick = nick
         self._name = name
         self._nick_aliases = (tuple(nick_aliases)
@@ -1424,7 +1424,7 @@ class ActionCommand(NamedRuleMixin, Rule):
         return cls(**kwargs)
 
     def __init__(self, name, aliases=None, **kwargs):
-        super(ActionCommand, self).__init__([], **kwargs)
+        super().__init__([], **kwargs)
         self._name = name
         self._aliases = tuple(aliases) if aliases is not None else tuple()
         self._regexes = (self.get_rule_regex(),)
@@ -1639,7 +1639,7 @@ class URLCallback(Rule):
                  regexes,
                  schemes=None,
                  **kwargs):
-        super(URLCallback, self).__init__(regexes, **kwargs)
+        super().__init__(regexes, **kwargs)
         # prevent mutability of registered schemes
         self._schemes = tuple(schemes or URL_DEFAULT_SCHEMES)
 

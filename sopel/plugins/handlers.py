@@ -412,7 +412,7 @@ class PyFilePlugin(PyModulePlugin):
         self.path = filename
         self.module_type = module_type
 
-        super(PyFilePlugin, self).__init__(name)
+        super().__init__(name)
 
     def _load(self):
         # The current implementation uses `imp.load_module` to perform the
@@ -460,7 +460,7 @@ class PyFilePlugin(PyModulePlugin):
             }
 
         """
-        data = super(PyFilePlugin, self).get_meta_description()
+        data = super().get_meta_description()
         data.update({
             'source': self.path,
         })
@@ -540,7 +540,7 @@ class EntryPointPlugin(PyModulePlugin):
 
     def __init__(self, entry_point):
         self.entry_point = entry_point
-        super(EntryPointPlugin, self).__init__(entry_point.name)
+        super().__init__(entry_point.name)
 
     def load(self):
         self._module = self.entry_point.load()
@@ -563,7 +563,7 @@ class EntryPointPlugin(PyModulePlugin):
             }
 
         """
-        data = super(EntryPointPlugin, self).get_meta_description()
+        data = super().get_meta_description()
         data.update({
             'source': str(self.entry_point),
         })

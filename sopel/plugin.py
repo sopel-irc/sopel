@@ -1258,7 +1258,7 @@ def url_lazy(*loaders):
     return decorator
 
 
-class example(object):
+class example:
     """Decorate a function with an example, and optionally test output.
 
     :param str msg: the example command (required; see below)

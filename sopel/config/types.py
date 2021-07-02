@@ -32,11 +32,11 @@ import re
 from sopel.tools import deprecated, get_input
 
 
-class NO_DEFAULT(object):
+class NO_DEFAULT:
     """A special value to indicate that there should be no default."""
 
 
-class StaticSection(object):
+class StaticSection:
     """A configuration section with parsed and validated settings.
 
     This class is intended to be subclassed and customized with added
@@ -305,8 +305,7 @@ class ValidatedAttribute(BaseValidated):
                  serialize=None,
                  default=None,
                  is_secret=False):
-        super(ValidatedAttribute, self).__init__(
-            name, default=default, is_secret=is_secret)
+        super().__init__(name, default=default, is_secret=is_secret)
 
         if parse == bool:
             parse, serialize = _deprecated_special_bool_handling(serialize)
@@ -334,7 +333,7 @@ class ValidatedAttribute(BaseValidated):
         if self.parse == _parse_boolean:
             prompt += ' (y/n)'
             default = 'y' if default else 'n'
-        return super(ValidatedAttribute, self).configure(prompt, default, parent, section_name)
+        return super().configure(prompt, default, parent, section_name)
 
 
 class BooleanAttribute(BaseValidated):
@@ -347,8 +346,7 @@ class BooleanAttribute(BaseValidated):
     If the ``default`` value is not specified, it will be ``False``.
     """
     def __init__(self, name, default=False):
-        super(BooleanAttribute, self).__init__(
-            name, default=default, is_secret=False)
+        super().__init__(name, default=default, is_secret=False)
 
     def configure(self, prompt, default, parent, section_name):
         """Parse and return a value from user's input.
@@ -417,7 +415,7 @@ class SecretAttribute(ValidatedAttribute):
     otherwise behaves like other any option.
     """
     def __init__(self, name, parse=None, serialize=None, default=None):
-        super(SecretAttribute, self).__init__(
+        super().__init__(
             name,
             parse=parse,
             serialize=serialize,
@@ -498,7 +496,7 @@ class ListAttribute(BaseValidated):
 
     def __init__(self, name, strip=True, default=None):
         default = default or []
-        super(ListAttribute, self).__init__(name, default=default)
+        super().__init__(name, default=default)
         self.strip = strip
 
     def parse(self, value):
@@ -621,7 +619,7 @@ class ChoiceAttribute(BaseValidated):
     :type default: str
     """
     def __init__(self, name, choices, default=None):
-        super(ChoiceAttribute, self).__init__(name, default=default)
+        super().__init__(name, default=default)
         self.choices = choices
 
     def parse(self, value):
@@ -668,7 +666,7 @@ class FilenameAttribute(BaseValidated):
     :type default: str
     """
     def __init__(self, name, relative=True, directory=False, default=None):
-        super(FilenameAttribute, self).__init__(name, default=default)
+        super().__init__(name, default=default)
         self.relative = relative
         self.directory = directory
 

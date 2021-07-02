@@ -86,7 +86,7 @@ class ConfigurationNotFound(ConfigurationError):
     :param str filename: file path that could not be found
     """
     def __init__(self, filename):
-        super(ConfigurationNotFound, self).__init__(None)
+        super().__init__(None)
         self.filename = filename
         """Path to the configuration file that could not be found."""
 
@@ -94,7 +94,7 @@ class ConfigurationNotFound(ConfigurationError):
         return 'Unable to find the configuration file %s' % self.filename
 
 
-class Config(object):
+class Config:
     """The bot's configuration.
 
     :param str filename: the configuration file to load and use to populate this
@@ -279,7 +279,7 @@ class Config(object):
             )
         setattr(self, name, cls_(self, name, validate=validate))
 
-    class ConfigSection(object):
+    class ConfigSection:
         """Represents a section of the config file.
 
         :param str name: name of this section

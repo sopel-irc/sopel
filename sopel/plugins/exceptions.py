@@ -14,7 +14,7 @@ class PluginNotRegistered(PluginError):
     def __init__(self, name):
         message = 'Plugin "%s" not registered' % name
         self.plugin_name = name
-        super(PluginNotRegistered, self).__init__(message)
+        super().__init__(message)
 
 
 class PluginSettingsError(PluginError):
