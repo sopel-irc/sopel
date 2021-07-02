@@ -89,7 +89,7 @@ class AsynchatBackend(AbstractIRCBackend, asynchat.async_chat):
         AbstractIRCBackend.__init__(self, bot)
         asynchat.async_chat.__init__(self)
         self.writing_lock = threading.RLock()
-        self.set_terminator(b'\n')
+        self.set_terminator(b'\r\n')
         self.buffer = ''
         self.server_timeout = server_timeout or 120
         self.ping_interval = ping_interval or (self.server_timeout * 0.45)
@@ -196,6 +196,8 @@ class AsynchatBackend(AbstractIRCBackend, asynchat.async_chat):
         The incoming line is discarded (and thus ignored) if guessing the text
         encoding and decoding it fails.
         """
+        data += self.get_terminator()
+
         # We can't trust clients to pass valid Unicode.
         try:
             data = str(data, encoding='utf-8')
@@ -208,8 +210,13 @@ class AsynchatBackend(AbstractIRCBackend, asynchat.async_chat):
                 try:
                     data = str(data, encoding='iso8859-1')
                 except UnicodeDecodeError:
-                    # Discard line if encoding is unknown
+                    self.bot.log_raw(data, '<<!')
+                    LOGGER.warning(
+                        "Couldn't guess character encoding of message, ignoring: %r",
+                        data,
+                    )
                     return
+
         if data:
             self.bot.log_raw(data, '<<')
         self.buffer += data
@@ -218,8 +225,6 @@ class AsynchatBackend(AbstractIRCBackend, asynchat.async_chat):
     def found_terminator(self):
         """Handle the end of an incoming message."""
         line = self.buffer
-        if line.endswith('\r'):
-            line = line[:-1]
         self.buffer = ''
         self.bot.on_message(line)
 

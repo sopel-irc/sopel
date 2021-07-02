@@ -315,7 +315,7 @@ class AbstractBot(object):
         if not self.settings.core.log_raw:
             return
         logger = logging.getLogger('sopel.raw')
-        logger.info('\t'.join([prefix, line.strip()]))
+        logger.info("%s\t%r", prefix, line)
 
     def cap_req(self, plugin_name, capability, arg=None, failure_callback=None,
                 success_callback=None):
