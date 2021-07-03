@@ -5,7 +5,7 @@ import re
 
 import pytest
 
-from sopel import bot, loader, module, plugin, plugins, trigger
+from sopel import bot, loader, plugin, plugins, trigger
 from sopel.modules import url
 
 
@@ -35,12 +35,12 @@ def mockbot(configfactory):
     url_plugin.setup(sopel)
     url_plugin.register(sopel)
 
-    @module.url(re.escape('https://example.com/') + r'(.+)')
+    @plugin.url(re.escape('https://example.com/') + r'(.+)')
     @plugin.label('handle_urls_https')
     def url_callback_https(bot, trigger, match):
         pass
 
-    @module.url(re.escape('http://example.com/') + r'(.+)')
+    @plugin.url(re.escape('http://example.com/') + r'(.+)')
     @plugin.label('handle_urls_http')
     def url_callback_http(bot, trigger, match):
         pass

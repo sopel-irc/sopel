@@ -10,35 +10,35 @@ from sopel import plugins
 
 
 MOCK_MODULE_CONTENT = """from __future__ import generator_stop
-import sopel.module
+from sopel import plugin
 
 
-@sopel.module.commands("first")
+@plugin.commands("first")
 def first_command(bot, trigger):
     pass
 
 
-@sopel.module.commands("second")
+@plugin.commands("second")
 def second_command(bot, trigger):
     pass
 
 
-@sopel.module.interval(5)
+@plugin.interval(5)
 def interval5s(bot):
     pass
 
 
-@sopel.module.interval(10)
+@plugin.interval(10)
 def interval10s(bot):
     pass
 
 
-@sopel.module.url(r'.\\.example\\.com')
+@plugin.url(r'.\\.example\\.com')
 def example_url(bot):
     pass
 
 
-@sopel.module.event('TOPIC')
+@plugin.event('TOPIC')
 def on_topic_command(bot):
     pass
 

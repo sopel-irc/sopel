@@ -6,37 +6,36 @@ import re
 
 import pytest
 
-from sopel import loader, module, plugins
+from sopel import loader, plugin, plugins
 
 
 MOCK_MODULE_CONTENT = """from __future__ import generator_stop
 import re
 
-import sopel.module
-import sopel.plugin
+from sopel import plugin
 
 
-@sopel.module.commands("first")
+@plugin.commands("first")
 def first_command(bot, trigger):
     pass
 
 
-@sopel.module.commands("second")
+@plugin.commands("second")
 def second_command(bot, trigger):
     pass
 
 
-@sopel.module.interval(5)
+@plugin.interval(5)
 def interval5s(bot):
     pass
 
 
-@sopel.module.interval(10)
+@plugin.interval(10)
 def interval10s(bot):
     pass
 
 
-@sopel.module.url(r'.\\.example\\.com')
+@plugin.url(r'.\\.example\\.com')
 def example_url(bot, trigger, match=None):
     pass
 
@@ -45,27 +44,27 @@ def loader(settings):
     return [re.compile(r'.+\\.example\\.com')]
 
 
-@sopel.plugin.url_lazy(loader)
+@plugin.url_lazy(loader)
 def example_url_lazy(bot, trigger):
     pass
 
 
-@sopel.plugin.rule_lazy(loader)
+@plugin.rule_lazy(loader)
 def example_rule_lazy(bot, trigger):
     pass
 
 
-@sopel.plugin.find_lazy(loader)
+@plugin.find_lazy(loader)
 def example_find_lazy(bot, trigger):
     pass
 
 
-@sopel.plugin.search_lazy(loader)
+@plugin.search_lazy(loader)
 def example_search_lazy(bot, trigger):
     pass
 
 
-@sopel.module.event('TOPIC')
+@plugin.event('TOPIC')
 def on_topic_command(bot):
     pass
 
@@ -78,7 +77,7 @@ def ignored():
     pass
 
 
-@sopel.module.rate(10)
+@plugin.rate(10)
 def ignored_rate():
     pass
 
@@ -649,8 +648,8 @@ def test_clean_callable_events_basestring(tmpconfig, func):
 
 
 def test_clean_callable_example(tmpconfig, func):
-    module.commands('test')(func)
-    module.example('.test hello')(func)
+    plugin.commands('test')(func)
+    plugin.example('.test hello')(func)
 
     loader.clean_callable(func, tmpconfig)
 
@@ -665,7 +664,7 @@ def test_clean_callable_example(tmpconfig, func):
 
 
 def test_clean_callable_example_not_set(tmpconfig, func):
-    module.commands('test')(func)
+    plugin.commands('test')(func)
 
     loader.clean_callable(func, tmpconfig)
 
@@ -680,9 +679,9 @@ def test_clean_callable_example_not_set(tmpconfig, func):
 
 
 def test_clean_callable_example_multi_commands(tmpconfig, func):
-    module.commands('test')(func)
-    module.commands('unit')(func)
-    module.example('.test hello')(func)
+    plugin.commands('test')(func)
+    plugin.commands('unit')(func)
+    plugin.example('.test hello')(func)
 
     loader.clean_callable(func, tmpconfig)
 
@@ -701,9 +700,9 @@ def test_clean_callable_example_multi_commands(tmpconfig, func):
 
 
 def test_clean_callable_example_first_only(tmpconfig, func):
-    module.commands('test')(func)
-    module.example('.test hello')(func)
-    module.example('.test bonjour')(func)
+    plugin.commands('test')(func)
+    plugin.example('.test hello')(func)
+    plugin.example('.test bonjour')(func)
 
     loader.clean_callable(func, tmpconfig)
 
@@ -717,10 +716,10 @@ def test_clean_callable_example_first_only(tmpconfig, func):
 
 
 def test_clean_callable_example_first_only_multi_commands(tmpconfig, func):
-    module.commands('test')(func)
-    module.commands('unit')(func)
-    module.example('.test hello')(func)
-    module.example('.test bonjour')(func)
+    plugin.commands('test')(func)
+    plugin.commands('unit')(func)
+    plugin.example('.test hello')(func)
+    plugin.example('.test bonjour')(func)
 
     loader.clean_callable(func, tmpconfig)
 
@@ -739,8 +738,8 @@ def test_clean_callable_example_first_only_multi_commands(tmpconfig, func):
 
 
 def test_clean_callable_example_user_help(tmpconfig, func):
-    module.commands('test')(func)
-    module.example('.test hello', user_help=True)(func)
+    plugin.commands('test')(func)
+    plugin.example('.test hello', user_help=True)(func)
 
     loader.clean_callable(func, tmpconfig)
 
@@ -754,9 +753,9 @@ def test_clean_callable_example_user_help(tmpconfig, func):
 
 
 def test_clean_callable_example_user_help_multi(tmpconfig, func):
-    module.commands('test')(func)
-    module.example('.test hello', user_help=True)(func)
-    module.example('.test bonjour', user_help=True)(func)
+    plugin.commands('test')(func)
+    plugin.example('.test hello', user_help=True)(func)
+    plugin.example('.test bonjour', user_help=True)(func)
 
     loader.clean_callable(func, tmpconfig)
 
@@ -770,9 +769,9 @@ def test_clean_callable_example_user_help_multi(tmpconfig, func):
 
 
 def test_clean_callable_example_user_help_mixed(tmpconfig, func):
-    module.commands('test')(func)
-    module.example('.test hello')(func)
-    module.example('.test bonjour', user_help=True)(func)
+    plugin.commands('test')(func)
+    plugin.example('.test hello')(func)
+    plugin.example('.test bonjour', user_help=True)(func)
 
     loader.clean_callable(func, tmpconfig)
 
@@ -786,8 +785,8 @@ def test_clean_callable_example_user_help_mixed(tmpconfig, func):
 
 
 def test_clean_callable_example_default_prefix(tmpconfig, func):
-    module.commands('test')(func)
-    module.example('.test hello')(func)
+    plugin.commands('test')(func)
+    plugin.example('.test hello')(func)
 
     tmpconfig.core.help_prefix = '!'
     loader.clean_callable(func, tmpconfig)
@@ -802,8 +801,8 @@ def test_clean_callable_example_default_prefix(tmpconfig, func):
 
 
 def test_clean_callable_example_nickname(tmpconfig, func):
-    module.commands('test')(func)
-    module.example('$nickname: hello')(func)
+    plugin.commands('test')(func)
+    plugin.example('$nickname: hello')(func)
 
     loader.clean_callable(func, tmpconfig)
 
@@ -817,8 +816,8 @@ def test_clean_callable_example_nickname(tmpconfig, func):
 
 
 def test_clean_callable_example_nickname_custom_prefix(tmpconfig, func):
-    module.commands('test')(func)
-    module.example('$nickname: hello')(func)
+    plugin.commands('test')(func)
+    plugin.example('$nickname: hello')(func)
 
     tmpconfig.core.help_prefix = '!'
     loader.clean_callable(func, tmpconfig)
