@@ -84,11 +84,6 @@ class WikiParser(HTMLParser):
 class WikipediaSection(types.StaticSection):
     default_lang = types.ValidatedAttribute('default_lang', default='en')
     """The default language to find articles from (same as Wikipedia language subdomain)."""
-    lang_per_channel = types.ValidatedAttribute('lang_per_channel')
-    """List of ``#channel:langcode`` pairs to define Wikipedia language per channel.
-
-    Deprecated: Will be removed in Sopel 8. Use ``.wpclang`` to manage per-channel language settings.
-    """
 
 
 def setup(bot):
@@ -118,12 +113,6 @@ def choose_lang(bot, trigger):
         channel_lang = bot.db.get_channel_value(trigger.sender, 'wikipedia_lang')
         if channel_lang:
             return channel_lang
-
-    if bot.config.wikipedia.lang_per_channel:
-        customlang = re.search('(' + trigger.sender + r'):(\w+)',
-                               bot.config.wikipedia.lang_per_channel)
-        if customlang is not None:
-            return customlang.group(2)
 
     return bot.config.wikipedia.default_lang
 
@@ -288,12 +277,13 @@ def wplang(bot, trigger):
                     bot.config.wikipedia.default_lang)
             )
         )
-    else:
-        bot.db.set_nick_value(trigger.nick, 'wikipedia_lang', trigger.group(3))
-        bot.reply(
-            "Set your Wikipedia language to: {}"
-            .format(trigger.group(3))
-        )
+        return
+
+    bot.db.set_nick_value(trigger.nick, 'wikipedia_lang', trigger.group(3))
+    bot.reply(
+        "Set your Wikipedia language to: {}"
+        .format(trigger.group(3))
+    )
 
 
 @plugin.command('wpclang')
@@ -304,6 +294,7 @@ def wpclang(bot, trigger):
     if not (trigger.admin or bot.channels[trigger.sender.lower()].privileges[trigger.nick.lower()] >= plugin.OP):
         bot.reply("You don't have permission to change this channel's Wikipedia language setting.")
         return plugin.NOLIMIT
+
     if not trigger.group(3):
         bot.say(
             "{}'s current Wikipedia language is: {}"
@@ -314,9 +305,10 @@ def wpclang(bot, trigger):
                     bot.config.wikipedia.default_lang)
             )
         )
-    else:
-        bot.db.set_channel_value(trigger.sender, 'wikipedia_lang', trigger.group(3))
-        bot.say(
-            "Set {}'s Wikipedia language to: {}"
-            .format(trigger.sender, trigger.group(3))
-        )
+        return
+
+    bot.db.set_channel_value(trigger.sender, 'wikipedia_lang', trigger.group(3))
+    bot.say(
+        "Set {}'s Wikipedia language to: {}"
+        .format(trigger.sender, trigger.group(3))
+    )
