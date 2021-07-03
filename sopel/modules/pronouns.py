@@ -120,3 +120,11 @@ def set_pronouns(bot, trigger):
     bot.reply(
         "Thanks for telling me! I'll remember you use {}.{}".format(pronouns, disambig)
     )
+    
+    
+@plugin.command('clearpronouns')
+def unset_pronouns(bot, trigger):
+        bot.db.delete_nick_value(trigger.nick, 'pronouns')   
+        bot.reply(
+            "I'll forget your pronouns."
+        )
