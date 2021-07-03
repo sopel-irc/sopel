@@ -72,7 +72,7 @@ def test_bot_mixed_mode_removal(mockbot, ircfactory):
     irc.mode_set('#test', '-o+o-qa+v', [
         'Uvoice', 'Uop', 'Uvoice', 'Uvoice', 'Uvoice'])
     assert mockbot.channels["#test"].privileges[Identifier("Uop")] == OP, (
-        'OP got +o only')
+        'Uop got +o only')
     assert mockbot.channels["#test"].privileges[Identifier("Uvoice")] == VOICE, (
         'Uvoice got -o, -q, -a, then +v')
 
@@ -452,3 +452,49 @@ def test_sasl_plain_token_generation():
     assert (
         coretasks._make_sasl_plain_token('sopel', 'sasliscool') ==
         'sopel\x00sopel\x00sasliscool')
+
+
+def test_recv_chghost(mockbot, ircfactory):
+    """Ensure that CHGHOST messages are correctly handled."""
+    irc = ircfactory(mockbot)
+    irc.channel_joined("#test", ["Alex", "Bob", "Cheryl"])
+
+    mockbot.on_message(":Alex!~alex@test.local CHGHOST alex identd.confirmed")
+
+    assert mockbot.users[Identifier('Alex')].user == 'alex'
+    assert mockbot.users[Identifier('Alex')].host == 'identd.confirmed'
+
+
+def test_recv_chghost_invalid(mockbot, ircfactory, caplog):
+    """Ensure that malformed CHGHOST messages are ignored and logged."""
+    irc = ircfactory(mockbot)
+    irc.channel_joined("#test", ["Alex", "Bob", "Cheryl"])
+    alex = Identifier('Alex')
+    bob = Identifier('Bob')
+    cheryl = Identifier('Cheryl')
+
+    # Mock bot + mock IRC server doesn't populate these on its own
+    assert mockbot.users[alex].user is None
+    assert mockbot.users[alex].host is None
+    assert mockbot.users[bob].user is None
+    assert mockbot.users[bob].host is None
+    assert mockbot.users[cheryl].user is None
+    assert mockbot.users[cheryl].host is None
+
+    mockbot.on_message(":Alex!~alex@test.local CHGHOST alex is a boss")
+    mockbot.on_message(":Bob!bob@grills.burgers CHGHOST rarely")
+    mockbot.on_message(":Cheryl!~carol@danger.zone CHGHOST")
+
+    # These should be unchanged
+    assert mockbot.users[alex].user is None
+    assert mockbot.users[alex].host is None
+    assert mockbot.users[bob].user is None
+    assert mockbot.users[bob].host is None
+    assert mockbot.users[cheryl].user is None
+    assert mockbot.users[cheryl].host is None
+
+    # Meanwhile, the malformed input should have generated log lines
+    assert len(caplog.messages) == 3
+    assert 'extra arguments' in caplog.messages[0]
+    assert 'insufficient arguments' in caplog.messages[1]
+    assert 'insufficient arguments' in caplog.messages[2]

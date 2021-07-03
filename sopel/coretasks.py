@@ -936,6 +936,7 @@ def receive_cap_ls_reply(bot, trigger):
         'echo-message',
         'multi-prefix',
         'away-notify',
+        'chghost',
         'cap-notify',
         'server-time',
         'userhost-in-names',
@@ -1285,6 +1286,32 @@ def blocks(bot, trigger):
             return
     else:
         bot.reply(STRINGS['huh'])
+
+
+@plugin.event('CHGHOST')
+@plugin.thread(False)
+@plugin.unblockable
+@plugin.priority('medium')
+def recv_chghost(bot, trigger):
+    """Track user/host changes."""
+    if trigger.nick not in bot.users:
+        bot.users[trigger.nick] = target.User(
+            trigger.nick, trigger.user, trigger.host)
+
+    try:
+        new_user, new_host = trigger.args
+    except ValueError:
+        LOGGER.warning(
+            "Ignoring CHGHOST command with %s arguments: %r",
+            'extra' if len(trigger.args) > 2 else 'insufficient',
+            trigger.args)
+        return
+
+    bot.users[trigger.nick].user = new_user
+    bot.users[trigger.nick].host = new_host
+    LOGGER.info(
+        "Update user@host for nick %r: %s@%s",
+        trigger.nick, new_user, new_host)
 
 
 @module.event('ACCOUNT')
