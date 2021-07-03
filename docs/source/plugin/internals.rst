@@ -8,9 +8,6 @@ Internal machinery
    subject to rapid changes between versions. They are documented here for
    completeness, and for the aid of Sopel’s core development.
 
-.. contents::
-   :local:
-
 
 sopel.loader
 ============

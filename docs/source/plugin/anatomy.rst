@@ -8,10 +8,6 @@ A Sopel plugin consists of a Python module containing one or more
 ``callable``\s. It may optionally also contain ``configure``, ``setup``, and
 ``shutdown`` hooks.
 
-.. contents::
-   :local:
-   :depth: 2
-
 
 .. _plugin-anatomy-rules:
 

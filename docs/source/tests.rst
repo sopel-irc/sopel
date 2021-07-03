@@ -2,9 +2,6 @@
 Testing tools
 =============
 
-.. contents::
-    :local:
-    :depth: 2
 
 Common tools
 ============
@@ -18,11 +15,13 @@ Fixtures with py.test
 .. automodule:: sopel.tests.pytest_plugin
    :members:
 
+
 Factories
 =========
 
 .. automodule:: sopel.tests.factories
    :members:
+
 
 Mocks
 =====

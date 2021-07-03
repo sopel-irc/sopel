@@ -3,11 +3,12 @@ flake8
 flake8-coding
 flake8-future-import
 flake8-import-order
+furo==2021.6.24b37  # Sphinx theme
 pytest>=4.6,<4.7
 pytest-vcr==1.0.2
 requests-mock==1.9.1
-sphinx
-# further constrain autoprogram version because the new (in 2021) maintainer
-# already demonstrated a willingness to make major changes in patch versions
-sphinxcontrib-autoprogram<=0.1.7
+sphinx>=4,<5
+# specify exact autoprogram version because the new (in 2021) maintainer
+# showed that they will indeed make major changes in patch versions
+sphinxcontrib-autoprogram==0.1.7
 vcrpy<3.0.0

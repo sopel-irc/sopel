@@ -64,8 +64,8 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'Sopel'
-copyright = u'2012-2019, Sopel contributors'
+project = 'Sopel'
+copyright = '2012-2021, Sopel contributors'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -115,21 +115,27 @@ pygments_style = 'sphinx'
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
-html_theme = 'alabaster'
+html_theme = 'furo'
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
 # documentation.
 html_theme_options = {
-    'logo': 'sopel.png',
-    'logo_name': True,
-    'logo_text_align': 'center',
-    'description': 'A Python IRC bot framework.',
-    'donate_url': 'https://opencollective.com/sopel',
-    'extra_nav_links': {
-        'Back to main site': 'https://sopel.chat/',
+    'navigation_with_keys': True,
+    'light_logo': 'sopel-black.png',
+    'dark_logo': 'sopel-white.png',
+    'light_css_variables': {
+        'sidebar-tree-space-above': '1em',
     }
 }
+
+# Extra CSS files to include, relative to html_static_path.
+html_css_files = [
+    'custom.css',
+]
+
+# Extra JavaScript files to include, relative to html_static_path.
+#html_js_files = []
 
 # Add any paths that contain custom themes here, relative to this directory.
 #html_theme_path = []
@@ -216,8 +222,8 @@ latex_elements = {
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
-  ('index', 'sopel.tex', u'Sopel IRC Bot Documentation',
-   u'Sopel contributors', 'manual'),
+  ('index', 'sopel.tex', 'Sopel IRC Bot Documentation',
+   'Sopel contributors', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -255,12 +261,12 @@ latex_documents = [
 # 7: Overview, conventions, and miscellaneous
 # 8: System management commands
 man_pages = [
-    ('cli', 'sopel', u'Sopel IRC Bot Command Line',
-     [u'Sopel contributors'], 1),
-    ('package', 'sopel', u'Sopel IRC Bot Documentation',
-     [u'Sopel contributors'], 3),
-    ('configuration', 'sopel', u'Sopel IRC Bot Configuration',
-     [u'Sopel contributors'], 5),
+    ('cli', 'sopel', 'Sopel IRC Bot Command Line',
+     ['Sopel contributors'], 1),
+    ('package', 'sopel', 'Sopel IRC Bot Documentation',
+     ['Sopel contributors'], 3),
+    ('configuration', 'sopel', 'Sopel IRC Bot Configuration',
+     ['Sopel contributors'], 5),
 ]
 
 # If true, show URL addresses after external links.
@@ -273,8 +279,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-  ('index', 'sopel', u'Sopel IRC Bot Documentation',
-   u'Sopel contributors', 'SopelIRCBot', 'Simple, extendible IRC bot.',
+  ('index', 'sopel', 'Sopel IRC Bot Documentation',
+   'Sopel contributors', 'SopelIRCBot', 'Simple, extendible IRC bot.',
    'Miscellaneous'),
 ]
 

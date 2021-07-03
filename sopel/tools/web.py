@@ -193,8 +193,8 @@ def trim_url(url):
     This function removes trailing punctuation that looks like it was not
     intended to be part of the URL:
 
-        * trailing sentence- or clause-ending marks like ``.``, ``;``, etc.
-        * unmatched trailing brackets/braces like ``}``, ``)``, etc.
+    * trailing sentence- or clause-ending marks like ``.``, ``;``, etc.
+    * unmatched trailing brackets/braces like ``}``, ``)``, etc.
 
     It is intended for use with the output of :py:func:`~.search_urls`, which
     may include trailing punctuation when used on input from chat.
