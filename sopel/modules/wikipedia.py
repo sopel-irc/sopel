@@ -8,6 +8,7 @@ https://sopel.chat
 """
 from __future__ import absolute_import, division, print_function, unicode_literals
 
+import logging
 import re
 
 from requests import get
@@ -21,6 +22,7 @@ try:  # TODO: Remove fallback when dropping py2
 except ImportError:
     from HTMLParser import HTMLParser
 
+LOGGER = logging.getLogger(__name__)
 REDIRECT = re.compile(r'^REDIRECT (.*)')
 PLUGIN_OUTPUT_PREFIX = '[wikipedia] '
 
@@ -127,6 +129,11 @@ def choose_lang(bot, trigger):
         customlang = re.search('(' + trigger.sender + r'):(\w+)',
                                bot.config.wikipedia.lang_per_channel)
         if customlang is not None:
+            LOGGER.warning(
+                'Language for %s loaded from the deprecated config setting, '
+                'wikipedia.lang_per_channel',
+                trigger.sender,
+            )
             return customlang.group(2)
 
     return bot.config.wikipedia.default_lang
