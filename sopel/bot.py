@@ -53,6 +53,15 @@ class Sopel(irc.AbstractBot):
         self._rules_manager = plugin_rules.Manager()
         self._scheduler = plugin_jobs.Scheduler(self)
 
+        self._url_callbacks = tools.SopelMemory()
+        """Tracking of manually registered URL callbacks.
+
+        Should be manipulated only by use of :meth:`register_url_callback` and
+        :meth:`unregister_url_callback` methods, which are deprecated.
+
+        Remove in Sopel 9, along with the above related methods.
+        """
+
         self._times = {}
         """
         A dictionary mapping lowercased nicks to dictionaries which map
@@ -321,8 +330,6 @@ class Sopel(irc.AbstractBot):
                 try:
                     if plugin.has_setup():
                         plugin.setup(self)
-                        # TODO: remove in Sopel 8
-                        self.__setup_plugins_check_manual_url_callbacks(name)
                     plugin.register(self)
                 except Exception as e:
                     load_error = load_error + 1
@@ -340,29 +347,6 @@ class Sopel(irc.AbstractBot):
                 load_disabled)
         else:
             LOGGER.warning("Warning: Couldn't load any plugins")
-
-    def __setup_plugins_check_manual_url_callbacks(self, name):
-        # check if a plugin modified bot.memory['url_callbacks'] manually
-        # TODO: remove in Sopel 8
-        if 'url_callbacks' not in self.memory:
-            # nothing to check
-            return
-
-        for key, callback in self.memory['url_callbacks'].items():
-            is_checked = getattr(
-                callback, '_sopel_url_callbacks_checked', False)
-            if is_checked:
-                # already checked; move on to next callback
-                continue
-
-            # deprecation warning
-            LOGGER.warning(
-                "Plugin `%s` uses `bot.memory['url_callbacks']`; "
-                'this key is deprecated and will be removed in Sopel 8. '
-                'Use `@url` or `@url_lazy` instead. Callback was: %s',
-                name, callback.__name__)
-            # mark callback as checked
-            setattr(callback, '_sopel_url_callbacks_checked', True)
 
     # post setup
 
@@ -1115,17 +1099,16 @@ class Sopel(irc.AbstractBot):
             Made obsolete by fixes to the behavior of
             :func:`sopel.plugin.url`. Will be removed in Sopel 9.
 
-        """
-        if 'url_callbacks' not in self.memory:
-            self.memory['url_callbacks'] = tools.SopelMemory()
+        .. versionchanged:: 8.0
 
+            Stores registered callbacks in an internal property instead of
+            ``bot.memory['url_callbacks']``.
+
+        """
         if isinstance(pattern, str):
             pattern = re.compile(pattern)
 
-        # Mark the callback as checked: using this method is safe.
-        # TODO: remove in Sopel 8
-        setattr(callback, '_sopel_url_callbacks_checked', True)
-        self.memory['url_callbacks'][pattern] = callback
+        self._url_callbacks[pattern] = callback
 
     @deprecated(
         reason='Issues with @url decorator have been fixed. Simply use that.',
@@ -1165,19 +1148,25 @@ class Sopel(irc.AbstractBot):
             Made obsolete by fixes to the behavior of
             :func:`sopel.plugin.url`. Will be removed in Sopel 9.
 
-        """
-        if 'url_callbacks' not in self.memory:
-            # nothing to unregister
-            return
+        .. versionchanged:: 8.0
 
+            Deletes registered callbacks from an internal property instead of
+            ``bot.memory['url_callbacks']``.
+
+        """
         if isinstance(pattern, str):
             pattern = re.compile(pattern)
 
         try:
-            del self.memory['url_callbacks'][pattern]
+            del self._url_callbacks[pattern]
         except KeyError:
             pass
 
+    @deprecated(
+        reason='Issues with @url decorator have been fixed. Simply use that.',
+        version='8.0',
+        removed_in='9.0',
+    )
     def search_url_callbacks(self, url):
         """Yield callbacks whose regex pattern matches the ``url``.
 
@@ -1193,6 +1182,16 @@ class Sopel(irc.AbstractBot):
 
         .. versionadded:: 7.0
 
+        .. versionchanged:: 8.0
+
+            Searches for registered callbacks in an internal property instead
+            of ``bot.memory['url_callbacks']``.
+
+        .. deprecated:: 8.0
+
+            Made obsolete by fixes to the behavior of
+            :func:`sopel.plugin.url`. Will be removed in Sopel 9.
+
         .. seealso::
 
             The Python documentation for the `re.search`__ function and
@@ -1202,11 +1201,7 @@ class Sopel(irc.AbstractBot):
         .. __: https://docs.python.org/3.6/library/re.html#match-objects
 
         """
-        if 'url_callbacks' not in self.memory:
-            # nothing to search
-            return
-
-        for regex, function in self.memory['url_callbacks'].items():
+        for regex, function in self._url_callbacks.items():
             match = regex.search(url)
             if match:
                 yield function, match

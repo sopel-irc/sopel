@@ -1082,29 +1082,6 @@ def test_unregister_url_callback_no_memory(tmpconfig):
     # no exception implies success
 
 
-# Remove once manual callback management is deprecated (8.0)
-def test_unregister_url_callback_manual(tmpconfig):
-    """Test unregister_url_callback removes a specific callback that was added manually"""
-    test_pattern = r'https://(www\.)?example\.com'
-
-    def url_handler(*args, **kwargs):
-        return None
-
-    sopel = bot.Sopel(tmpconfig, daemon=False)
-    sopel.memory["url_callbacks"] = SopelMemory()
-
-    # register a callback manually
-    sopel.memory["url_callbacks"][re.compile(test_pattern)] = url_handler
-    results = list(sopel.search_url_callbacks("https://www.example.com"))
-    assert results[0][0] == url_handler, "Callback must be present"
-
-    # unregister it
-    sopel.unregister_url_callback(test_pattern, url_handler)
-
-    results = list(sopel.search_url_callbacks("https://www.example.com"))
-    assert not results, "Callback should have been removed"
-
-
 def test_unregister_url_callback_unknown_pattern(tmpconfig):
     """Test unregister_url_callback pass when pattern is unknown."""
     test_pattern = r'https://(www\.)?example\.com'
@@ -1173,3 +1150,22 @@ def test_multiple_url_callback(tmpconfig):
     results = list(sopel.search_url_callbacks('https://example.com'))
     assert len(results) == 1, 'Exactly one handler must remain'
     assert url_handler_global in results[0], 'Wrong remaining handler'
+
+
+# Added for Sopel 8; can be removed in Sopel 9
+def test_manual_url_callback_not_found(tmpconfig):
+    """Test that the bot now ignores manually registered URL callbacks."""
+    # Sopel 8.0 no longer supports `bot.memory['url_callbacks'], and this test
+    # is to make sure that it *really* no longer works.
+    test_pattern = r'https://(www\.)?example\.com'
+
+    def url_handler(*args, **kwargs):
+        return None
+
+    sopel = bot.Sopel(tmpconfig, daemon=False)
+    sopel.memory['url_callbacks'] = SopelMemory()
+
+    # register a callback manually
+    sopel.memory['url_callbacks'][re.compile(test_pattern)] = url_handler
+    results = list(sopel.search_url_callbacks("https://www.example.com"))
+    assert not results, "Manually registered callback must not be found"
