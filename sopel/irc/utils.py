@@ -7,8 +7,6 @@ import collections
 
 from dns import rdtypes, resolver
 
-from sopel.tools import deprecated
-
 
 MYINFO_ARGS = ['client', 'servername', 'version']
 
@@ -93,15 +91,6 @@ class CapReq(object):
         self.arg = arg
         self.failure = failure or nop
         self.success = success or nop
-
-    @property
-    @deprecated(
-        reason='use the `plugin` property instead',
-        version='7.1',
-        removed_in='8.0',
-    )
-    def module(self):
-        return self.plugin
 
 
 class MyInfo(collections.namedtuple('MyInfo', MYINFO_ARGS)):
