@@ -373,7 +373,7 @@ class PyFilePlugin(PyModulePlugin):
     ``__init__.py`` file, and behaves like a :class:`PyModulePlugin`::
 
         >>> from sopel.plugins.handlers import PyFilePlugin
-        >>> plugin = PyFilePlugin('/home/sopel/.sopel/modules/custom.py')
+        >>> plugin = PyFilePlugin('/home/sopel/.sopel/plugins/custom.py')
         >>> plugin.load()
         >>> plugin.name
         'custom'

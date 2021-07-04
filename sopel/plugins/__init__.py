@@ -12,7 +12,6 @@ and only one plugin per unique name, using a specific order:
 
 * extra directories defined in the settings
 * homedir's ``plugins`` directory
-* homedir's ``modules`` directory
 * ``sopel.plugins`` setuptools entry points
 * ``sopel_modules``'s subpackages
 * ``sopel.modules``'s core plugins
@@ -136,21 +135,19 @@ def enumerate_plugins(settings):
 
     .. seealso::
 
-       The find functions used are:
+        The find functions used are:
 
-       * :func:`find_internal_plugins` for internal plugins
-       * :func:`find_sopel_modules_plugins` for ``sopel_modules.*`` plugins
-       * :func:`find_entry_point_plugins` for plugins exposed by setuptools
-         entry points
-       * :func:`find_directory_plugins` for plugins in ``$homedir/modules``,
-         ``$homedir/plugins``, and in extra directories, as defined by
-         ``settings.core.extra``
+        * :func:`find_internal_plugins` for internal plugins
+        * :func:`find_sopel_modules_plugins` for ``sopel_modules.*`` plugins
+        * :func:`find_entry_point_plugins` for plugins exposed by setuptools
+          entry points
+        * :func:`find_directory_plugins` for plugins in ``$homedir/plugins``,
+          and in extra directories as defined by ``settings.core.extra``
 
-    .. versionchanged:: 7.0
+    .. versionchanged:: 8.0
 
-       Previously, plugins were called "modules", so this would load plugins
-       from the ``$homedir/modules`` directory. Now it also loads plugins
-       from the ``$homedir/plugins`` directory.
+        Looks in ``$homedir/plugins`` instead of the ``$homedir/modules``
+        directory, reflecting Sopel's shift away from calling them "modules".
 
     """
     from_internals = find_internal_plugins()
@@ -158,11 +155,10 @@ def enumerate_plugins(settings):
     from_entry_points = find_entry_point_plugins()
     # load from directories
     source_dirs = [
-        os.path.join(settings.homedir, 'modules'),
         os.path.join(settings.homedir, 'plugins'),
     ]
     if settings.core.extra:
-        source_dirs = source_dirs + list(settings.core.extra)
+        source_dirs = source_dirs + settings.core.extra
 
     from_directories = [
         find_directory_plugins(source_dir)
@@ -204,7 +200,7 @@ def get_usable_plugins(settings):
     contains one and only one plugin per unique name, using a specific order:
 
     * extra directories defined in the settings
-    * homedir's ``modules`` directory
+    * homedir's ``plugins`` directory
     * ``sopel.plugins`` setuptools entry points
     * ``sopel_modules``'s subpackages
     * ``sopel.modules``'s core plugins
