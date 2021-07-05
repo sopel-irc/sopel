@@ -10,9 +10,6 @@ from dns import rdtypes, resolver
 from sopel.tools import deprecated
 
 
-MYINFO_ARGS = ['client', 'servername', 'version']
-
-
 def get_cnames(domain):
     """Determine the CNAMEs for a given domain.
 
