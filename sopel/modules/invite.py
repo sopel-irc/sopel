@@ -76,4 +76,7 @@ def invite(bot, trigger):
                 .format(bot.config.core.help_prefix))
         channel = trigger.sender
 
-    invite_handler(bot, trigger.nick, user, channel)
+    try:
+        invite_handler(bot, trigger.nick, user, channel)
+    except ValueError as err:
+        bot.reply('%s' % err)
