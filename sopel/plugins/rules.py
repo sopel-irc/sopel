@@ -24,7 +24,7 @@ import itertools
 import logging
 import re
 import threading
-from typing import Type, TypeVar
+from typing import Generator, Iterable, Type, TypeVar
 from urllib.parse import urlparse
 
 
@@ -596,7 +596,7 @@ class AbstractRule(abc.ABC):
         """
 
     @abc.abstractmethod
-    def match(self, bot, pretrigger):
+    def match(self, bot, pretrigger) -> Iterable:
         """Match a pretrigger according to the rule.
 
         :param bot: Sopel instance
@@ -678,7 +678,7 @@ class AbstractRule(abc.ABC):
         """
 
     @abc.abstractmethod
-    def parse(self, text):
+    def parse(self, text) -> Generator:
         """Parse ``text`` and yield matches.
 
         :param str text: text to parse by the rule
