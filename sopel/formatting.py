@@ -7,6 +7,7 @@
 # Licensed under the Eiffel Forum License 2.
 from __future__ import generator_stop
 
+from enum import Enum
 import re
 import string
 
@@ -32,7 +33,7 @@ __all__ = [
     'monospace',
     'reverse',
     'plain',
-    # utility class
+    # utility enum
     'colors',
 ]
 
@@ -123,37 +124,39 @@ PLAIN_PATTERN = '|'.join([
 PLAIN_REGEX = re.compile(PLAIN_PATTERN)
 
 
-# TODO when we can move to 3.3+ completely, make this an Enum.
-class colors:
+class colors(str, Enum):
+    # Mostly aligned with https://modern.ircdocs.horse/formatting.html#colors
+    # which are likely based on mIRC's color names (https://www.mirc.com/colors.html)
     WHITE = '00'
     BLACK = '01'
     BLUE = '02'
-    NAVY = BLUE
     GREEN = '03'
-    RED = '04'
+    LIGHT_RED = '04'
     BROWN = '05'
-    MAROON = BROWN
     PURPLE = '06'
     ORANGE = '07'
-    OLIVE = ORANGE
     YELLOW = '08'
     LIGHT_GREEN = '09'
-    LIME = LIGHT_GREEN
-    TEAL = '10'
+    TEAL = '10'  # TODO: should be called 'CYAN'
     LIGHT_CYAN = '11'
-    CYAN = LIGHT_CYAN
     LIGHT_BLUE = '12'
-    ROYAL = LIGHT_BLUE
     PINK = '13'
-    LIGHT_PURPLE = PINK
-    FUCHSIA = PINK
     GREY = '14'
     LIGHT_GREY = '15'
-    SILVER = LIGHT_GREY
 
     # Create aliases.
+    NAVY = BLUE
+    RED = LIGHT_RED
+    MAROON = BROWN
+    OLIVE = ORANGE  # TODO: held over from antiquity; does anyone actually think this?
+    LIME = LIGHT_GREEN
+    CYAN = LIGHT_CYAN  # TODO: should be what is called 'TEAL' above
+    ROYAL = LIGHT_BLUE
+    LIGHT_PURPLE = PINK
+    FUCHSIA = PINK
     GRAY = GREY
     LIGHT_GRAY = LIGHT_GREY
+    SILVER = LIGHT_GREY
 
 
 def _get_color(color):
