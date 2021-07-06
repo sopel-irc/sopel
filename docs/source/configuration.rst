@@ -571,6 +571,13 @@ type of database, set :attr:`~CoreSection.db_type` to one of these values:
 * ``firebird``
 * ``sybase``
 
+.. note::
+
+    In certain environments, specifying the :attr:`~CoreSection.db_url`
+    setting via :ref:`environment variable <Overriding individual settings>`
+    may be more convenient. Doing so will supersede all of the other options
+    described in this section.
+
 SQLite
 ------
 

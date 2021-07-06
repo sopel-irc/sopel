@@ -389,6 +389,23 @@ class CoreSection(StaticSection):
 
     """
 
+    db_url = ValidatedAttribute('db_url')
+    """A raw database URL.
+
+    If this option is present, Sopel will ignore **all** other ``db_*``
+    settings and use this option's value only.
+
+    .. note::
+
+        Specifying this option via the ``SOPEL_CORE_DB_URL`` :ref:`environment
+        variable <Overriding individual settings>` may prove especially useful
+        in certain cloud environments, avoiding the need to split a database
+        URI provided by the platform at runtime into its components with a
+        startup script.
+
+    .. versionadded:: 8.0
+    """
+
     db_user = ValidatedAttribute('db_user')
     """The user for Sopel's database.
 

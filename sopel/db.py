@@ -7,7 +7,7 @@ import os.path
 import traceback
 
 from sqlalchemy import Column, create_engine, ForeignKey, Integer, String
-from sqlalchemy.engine.url import URL
+from sqlalchemy.engine.url import make_url, URL
 from sqlalchemy.exc import OperationalError, SQLAlchemyError
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import scoped_session, sessionmaker
@@ -106,12 +106,17 @@ class SopelDB(object):
     """
 
     def __init__(self, config):
-        # MySQL - mysql://username:password@localhost/db
-        # SQLite - sqlite:////home/sopel/.sopel/default.db
-        self.type = config.core.db_type
+        if config.core.db_url is not None:
+            self.url = make_url(config.core.db_url)
 
-        # Handle SQLite explicitly as a default
-        if self.type == 'sqlite':
+            # TODO: there's no way to get `config.core.db_type.choices`, but
+            # it would be nice to validate this type name somehow. Shouldn't
+            # affect anything, since the only thing it's ever used for is
+            # checking whether the configured database is 'sqlite'.
+            self.type = self.url.drivername.split('+', 1)[0]
+        elif config.core.db_type == 'sqlite':
+            self.type = 'sqlite'
+            drivername = config.core.db_driver or 'sqlite'
             path = config.core.db_filename
             if path is None:
                 path = os.path.join(config.core.homedir, config.basename + '.db')
@@ -126,10 +131,10 @@ class SopelDB(object):
                     'core.db_filename is valid'.format(os.path.dirname(path)),
                     path
                 )
-            self.filename = path
-            self.url = 'sqlite:///%s' % path
-        # Otherwise, handle all other database engines
+            self.url = make_url('sqlite:///' + path)
         else:
+            self.type = config.core.db_type
+
             query = {}
             if self.type == 'mysql':
                 drivername = config.core.db_driver or 'mysql'
@@ -147,11 +152,11 @@ class SopelDB(object):
             else:
                 raise Exception('Unknown db_type')
 
-            db_user = config.core.db_user
-            db_pass = config.core.db_pass
-            db_host = config.core.db_host
+            db_user = config.core.db_user  # Sometimes empty
+            db_pass = config.core.db_pass  # Sometimes empty
+            db_host = config.core.db_host  # Sometimes empty
             db_port = config.core.db_port  # Optional
-            db_name = config.core.db_name  # Optional, depending on DB
+            db_name = config.core.db_name  # Sometimes optional
 
             # Ensure we have all our variables defined
             if db_user is None or db_pass is None or db_host is None:
