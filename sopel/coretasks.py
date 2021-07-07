@@ -558,6 +558,9 @@ def _parse_modes(bot, args, clear=False):
                 modes[mode].add(param)
             elif param in modes[mode]:
                 modes[mode].remove(param)
+                # remove mode if empty
+                if not modes[mode]:
+                    modes.pop(mode)
         elif letter == 'B':
             if is_added:
                 modes[mode] = param
