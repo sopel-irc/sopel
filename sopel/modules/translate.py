@@ -10,6 +10,7 @@ https://sopel.chat
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 import json
+import logging
 import random
 import sys
 
@@ -21,6 +22,7 @@ from sopel.tools import web
 if sys.version_info.major >= 3:
     unicode = str
 
+LOGGER = logging.getLogger(__name__)
 PLUGIN_OUTPUT_PREFIX = '[translate] '
 
 
@@ -68,6 +70,9 @@ def translate(text, in_lang='auto', out_lang='en'):
     try:
         data = json.loads(result)
     except ValueError:
+        LOGGER.error(
+            'Error parsing JSON response from translate API (%s to %s: "%s")',
+            in_lang, out_lang, text)
         return None, None
 
     if raw:
@@ -104,7 +109,21 @@ def tr(bot, trigger):
         bot.reply('Language guessing failed, so try suggesting one!')
         return
 
-    msg, in_lang = translate(phrase, in_lang, out_lang)
+    try:
+        msg, in_lang = translate(phrase, in_lang, out_lang)
+    except requests.Timeout:
+        bot.reply("Translation service unavailable (timeout).")
+        LOGGER.error(
+            'Translate API error (%s to %s: "%s"): timeout.',
+            in_lang, out_lang, phrase)
+        return
+    except requests.RequestException as http_error:
+        bot.reply("Translation request failed.")
+        LOGGER.exception(
+            'Translate API error (%s to %s: "%s"): %s.',
+            in_lang, out_lang, phrase, http_error)
+        return
+
     if not in_lang:
         bot.reply("Translation failed, probably because of a rate-limit.")
         return
@@ -171,7 +190,21 @@ def tr2(bot, trigger):
         bot.reply('Language guessing failed, so try suggesting one!')
         return
 
-    msg, src = translate(phrase, src, dest)
+    try:
+        msg, src = translate(phrase, src, dest)
+    except requests.Timeout:
+        bot.reply("Translation service unavailable (timeout).")
+        LOGGER.error(
+            'Translate API error (%s to %s: "%s"): timeout.',
+            src, dest, phrase)
+        return
+    except requests.RequestException as http_error:
+        bot.reply("Translation request failed.")
+        LOGGER.exception(
+            'Translate API error (%s to %s: "%s"): %s.',
+            src, dest, phrase, http_error)
+        return
+
     if not src:
         return bot.say("Translation failed, probably because of a rate-limit.")
 
