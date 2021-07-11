@@ -2,6 +2,29 @@ This file is used to auto-generate the "Changelog" section of Sopel's website.
 When adding new entries, follow the style guide in NEWS.spec.md to avoid
 causing problems with the site build.
 
+Changes between 7.1.1 and 7.1.2
+===============================
+
+Plugin changes
+--------------
+
+* invite: handle invalid arguments better [[#2151][]]
+* translate: handle failed API requests better [[#2153][]]
+* wikipedia: warn if deprecated `lang_per_channel` setting is used [[#2143][]]
+
+Core changes
+------------
+
+* Clarified documentation about `owner` and `owner_account` settings in core
+  config section [[#2112][], [#2125][]]
+
+[#2112]: https://github.com/sopel-irc/sopel/pull/2112
+[#2125]: https://github.com/sopel-irc/sopel/pull/2125
+[#2143]: https://github.com/sopel-irc/sopel/pull/2143
+[#2151]: https://github.com/sopel-irc/sopel/pull/2151
+[#2153]: https://github.com/sopel-irc/sopel/pull/2153
+
+
 Changes between 7.1.0 and 7.1.1
 ===============================
 
