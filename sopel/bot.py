@@ -1150,11 +1150,6 @@ class Sopel(irc.AbstractBot):
         except KeyError:
             pass
 
-    @deprecated(
-        reason='Issues with @url decorator have been fixed. Simply use that.',
-        version='8.0',
-        removed_in='9.0',
-    )
     def search_url_callbacks(self, url):
         """Yield callbacks whose regex pattern matches the ``url``.
 
