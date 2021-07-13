@@ -1,4 +1,3 @@
-# coding=utf-8
 """This contains decorators and other tools for creating Sopel plugins."""
 # Copyright 2013, Ari Koivula, <ari@koivu.la>
 # Copyright © 2013, Elad Alfassa <elad@fedoraproject.org>
@@ -8,7 +7,7 @@
 # Copyright 2019, Florian Strzelecki <florian.strzelecki@gmail.com>
 # Licensed under the Eiffel Forum License 2.
 
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import generator_stop
 
 import functools
 import re
@@ -918,6 +917,16 @@ def require_chanmsg(message=None, reply=False):
     :param bool reply: use :meth:`~.bot.Sopel.reply` instead of
                        :meth:`~.bot.Sopel.say` when ``True``; defaults to
                        ``False``
+
+    A decorated plugin callable will be triggered only by messages from a
+    channel::
+
+        from sopel import plugin
+
+        @plugin.command('.mycommand')
+        @plugin.require_chanmsg('Channel only command.')
+        def manage_topic(bot, trigger):
+            # trigger on channel messages only
 
     If the decorated function is triggered by a private message, ``message``
     will be said if given. By default, it uses :meth:`bot.say()

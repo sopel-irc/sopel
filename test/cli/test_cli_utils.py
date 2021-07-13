@@ -1,6 +1,5 @@
-# coding=utf-8
 """Tests for sopel.cli.utils"""
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import generator_stop
 
 import argparse
 from contextlib import contextmanager
@@ -49,6 +48,13 @@ def config_dir(tmpdir):
     test_dir.join('README').write('')
 
     return test_dir
+
+
+@pytest.fixture(autouse=True)
+def default_empty_config_env(monkeypatch):
+    """Pytest fixture used to ensure dev ENV does not bleed into tests"""
+    monkeypatch.delenv("SOPEL_CONFIG", raising=False)
+    monkeypatch.delenv("SOPEL_CONFIG_DIR", raising=False)
 
 
 @pytest.fixture

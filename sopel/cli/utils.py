@@ -1,5 +1,4 @@
-# coding=utf-8
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import generator_stop
 
 import inspect
 import logging
@@ -249,7 +248,7 @@ def add_common_arguments(parser):
     :param parser: Argument parser (or subparser)
     :type parser: argparse.ArgumentParser
 
-    This functions adds the common arguments for Sopel's command line tools.
+    This function adds the common arguments for Sopel's command line tools.
     It adds the following arguments:
 
     * ``-c``/``--config``: the name of the Sopel config, or its absolute path

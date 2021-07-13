@@ -1,18 +1,13 @@
-# coding=utf-8
 # Copyright 2019, Florian Strzelecki <florian.strzelecki@gmail.com>
 #
 # Licensed under the Eiffel Forum License 2.
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import generator_stop
 
 import collections
-import sys
 
 from dns import rdtypes, resolver
 
 from sopel.tools import deprecated
-
-if sys.version_info.major >= 3:
-    unicode = str
 
 
 MYINFO_ARGS = ['client', 'servername', 'version']
@@ -45,8 +40,7 @@ def safe(string):
     :raises TypeError: when ``string`` is ``None``
 
     This function removes newlines from a string and always returns a unicode
-    string (as in ``str`` on Python 3 and ``unicode`` on Python 2), but doesn't
-    strip or alter it in any other way::
+    string (``str``), but doesn't strip or alter it in any other way::
 
         >>> safe('some text\\r\\n')
         'some text'
@@ -61,11 +55,8 @@ def safe(string):
     """
     if string is None:
         raise TypeError('safe function requires a string, not NoneType')
-    if sys.version_info.major >= 3 and isinstance(string, bytes):
+    if isinstance(string, bytes):
         string = string.decode("utf8")
-    elif sys.version_info.major < 3:
-        if not isinstance(string, unicode):
-            string = unicode(string, encoding='utf8')
     string = string.replace('\n', '')
     string = string.replace('\r', '')
     return string

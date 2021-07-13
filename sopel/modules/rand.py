@@ -1,4 +1,3 @@
-# coding=utf-8
 """
 rand.py - Rand Plugin
 Copyright 2013, Ari Koivula, <ari@koivu.la>
@@ -6,7 +5,7 @@ Licensed under the Eiffel Forum License 2.
 
 https://sopel.chat
 """
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import generator_stop
 
 import random
 import sys

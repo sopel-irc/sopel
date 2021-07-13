@@ -20,10 +20,6 @@ Certain command-line options can be passed via environment variables. Also see
 the :ref:`section on environment variables <Supported environment variables>`
 for more possibilities.
 
-.. contents::
-    :local:
-    :depth: 1
-
 
 The ``sopel`` command
 =====================
@@ -106,10 +102,10 @@ overrides the value from Sopel's config file.
 
 The variable name Sopel looks for is structured as follows:
 
-  * ``SOPEL_`` prefix (to prevent collisions with other programs)
-  * The section name in UPPERCASE, e.g. ``CORE`` or ``PLUGIN_NAME``
-  * ``_`` as separator
-  * The setting name in UPPERCASE, e.g. ``NICK`` or ``API_KEY``
+* ``SOPEL_`` prefix (to prevent collisions with other programs)
+* The section name in UPPERCASE, e.g. ``CORE`` or ``PLUGIN_NAME``
+* ``_`` as separator
+* The setting name in UPPERCASE, e.g. ``NICK`` or ``API_KEY``
 
 For example, take this stripped-down config file:
 

@@ -1,4 +1,3 @@
-# coding=utf-8
 """
 reddit.py - Sopel Reddit Plugin
 Copyright 2012, Elsie Powell, embolalia.com
@@ -8,11 +7,11 @@ Licensed under the Eiffel Forum License 2.
 
 https://sopel.chat
 """
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import generator_stop
 
 import datetime as dt
+import html
 import re
-import sys
 
 import praw
 import prawcore
@@ -23,17 +22,6 @@ from sopel.formatting import bold, color, colors
 from sopel.tools import time
 from sopel.tools.web import USER_AGENT
 
-# clean up all of this when dropping py2/old py3 versions
-if sys.version_info.major >= 3:
-    unicode = str
-    if sys.version_info.minor >= 4:
-        from html import unescape
-    else:
-        from html.parser import HTMLParser
-        unescape = HTMLParser().unescape
-else:
-    from HTMLParser import HTMLParser
-    unescape = HTMLParser().unescape
 
 PLUGIN_OUTPUT_PREFIX = '[reddit] '
 
@@ -204,7 +192,7 @@ def say_post_info(bot, trigger, id_, show_link=True, show_comments_link=False):
                 # the value assigned earlier will be used
                 pass
 
-        title = unescape(s.title)
+        title = html.unescape(s.title)
         message = message.format(
             title=title, link=link, nsfw=nsfw, points=s.score, points_text=points_text,
             percent=percent, comments=s.num_comments, comments_text=comments_text,

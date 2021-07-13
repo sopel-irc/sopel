@@ -1,4 +1,3 @@
-# coding=utf-8
 """
 lmgtfy.py - Sopel Let Me Google That For You Plugin
 Copyright 2013, Dimitri Molenaars http://tyrope.nl/
@@ -6,14 +5,11 @@ Licensed under the Eiffel Forum License 2.
 
 https://sopel.chat/
 """
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import generator_stop
+
+from urllib.parse import urlencode
 
 from sopel import plugin
-
-try:
-    from urllib.parse import urlencode
-except ImportError:
-    from urllib import urlencode
 
 
 @plugin.command('lmgtfy', 'lmgify', 'gify', 'gtfy')

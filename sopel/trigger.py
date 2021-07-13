@@ -1,10 +1,8 @@
-# coding=utf-8
 """Triggers are how Sopel tells callables about their runtime context."""
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import generator_stop
 
 import datetime
 import re
-import sys
 
 from sopel import formatting, tools
 from sopel.tools import web
@@ -14,10 +12,6 @@ __all__ = [
     'PreTrigger',
     'Trigger',
 ]
-
-if sys.version_info.major >= 3:
-    unicode = str
-    basestring = str
 
 
 class PreTrigger(object):
@@ -200,7 +194,7 @@ class PreTrigger(object):
             self.plain = formatting.plain(self.args[-1])
 
 
-class Trigger(unicode):
+class Trigger(str):
     """A line from the server, which has matched a callable's rules.
 
     :param config: Sopel's current configuration settings object
@@ -232,6 +226,14 @@ class Trigger(unicode):
 
     This will be a channel name for "regular" (channel) messages, or the nick
     that sent a private message.
+
+    You can check if the trigger comes from a channel or a nick with its
+    :meth:`~sopel.tools.Identifier.is_nick` method::
+
+        if trigger.sender.is_nick():
+            # message sent from a private message
+        else:
+            # message sent from a channel
     """
     time = property(lambda self: self._pretrigger.time)
     """When the message was received.
@@ -347,13 +349,13 @@ class Trigger(unicode):
     See Python's :meth:`re.Match.groupdict` documentation for details.
     """
     args = property(lambda self: self._pretrigger.args)
-    """A tuple containing each of the arguments to an event.
+    """A list containing each of the arguments to an event.
 
-    :type: tuple
+    :type: list[str]
 
     These are the strings passed between the event name and the colon. For
     example, when setting ``mode -m`` on the channel ``#example``, args would
-    be ``('#example', '-m')``
+    be ``['#example', '-m']``
     """
     urls = property(lambda self: self._pretrigger.urls)
     """A tuple containing all URLs found in the text.
@@ -404,7 +406,7 @@ class Trigger(unicode):
     """
 
     def __new__(cls, config, message, match, account=None):
-        self = unicode.__new__(cls, message.args[-1] if message.args else '')
+        self = str.__new__(cls, message.args[-1] if message.args else '')
         self._account = account
         self._pretrigger = message
         self._match = match

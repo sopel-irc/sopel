@@ -1,4 +1,3 @@
-# coding=utf-8
 """Sopel's configuration module.
 
 The :class:`~sopel.config.Config` object provides an interface to access Sopel's
@@ -48,19 +47,13 @@ the :class:`Config` object is instantiated; it uses
 # Copyright © 2012, Elad Alfassa <elad@fedoraproject.org>
 # Licensed under the Eiffel Forum License 2.
 
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import generator_stop
 
+import configparser
 import os
-import sys
 
 from sopel import tools
 from . import core_section, types
-
-if sys.version_info.major < 3:
-    import ConfigParser
-else:
-    basestring = str
-    import configparser as ConfigParser
 
 
 __all__ = [
@@ -127,8 +120,11 @@ class Config(object):
 
         If the filename is ``libera.config.cfg``, then the ``basename`` will
         be ``libera.config``.
+
+        The config's ``basename`` is useful as a component :ref:`of log file
+        names <logging-basename>`, for example.
         """
-        self.parser = ConfigParser.RawConfigParser(allow_no_value=True)
+        self.parser = configparser.RawConfigParser(allow_no_value=True)
         """The configuration parser object that does the heavy lifting.
 
         .. seealso::
@@ -222,20 +218,20 @@ class Config(object):
 
             The section's ``name`` SHOULD follow *snake_case* naming rules:
 
-              * use only lowercase letters, digits, and underscore (``_``)
-              * SHOULD NOT start with a digit
+            * use only lowercase letters, digits, and underscore (``_``)
+            * SHOULD NOT start with a digit
 
             Deviations from *snake_case* can break the following operations:
 
-              * :ref:`accessing the section <sopel.config>` from Python code using
-                the :class:`~.Config` object's attributes
-              * :ref:`overriding the section's values <Overriding individual
-                settings>` using environment variables
+            * :ref:`accessing the section <sopel.config>` from Python code
+              using the :class:`~.Config` object's attributes
+            * :ref:`overriding the section's values <Overriding individual
+              settings>` using environment variables
 
         """
         try:
             return self.parser.add_section(name)
-        except ConfigParser.DuplicateSectionError:
+        except configparser.DuplicateSectionError:
             return False
 
     def define_section(self, name, cls_, validate=True):
@@ -259,15 +255,15 @@ class Config(object):
 
             The section's ``name`` SHOULD follow *snake_case* naming rules:
 
-              * use only lowercase letters, digits, and underscore (``_``)
-              * SHOULD NOT start with a digit
+            * use only lowercase letters, digits, and underscore (``_``)
+            * SHOULD NOT start with a digit
 
             Deviations from *snake_case* can break the following operations:
 
-              * :ref:`accessing the section <sopel.config>` from Python code using
-                the :class:`~.Config` object's attributes
-              * :ref:`overriding the section's values <Overriding individual
-                settings>` using environment variables
+            * :ref:`accessing the section <sopel.config>` from Python code
+              using the :class:`~.Config` object's attributes
+            * :ref:`overriding the section's values <Overriding individual
+              settings>` using environment variables
 
         """
         if not issubclass(cls_, types.StaticSection):
@@ -333,7 +329,7 @@ class Config(object):
             value = getattr(self, name)
             if not value:
                 return []
-            if isinstance(value, basestring):
+            if isinstance(value, str):
                 value = value.split(',')
                 # Keep the split value, so we don't have to keep doing this
                 setattr(self, name, value)

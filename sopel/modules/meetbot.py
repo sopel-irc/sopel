@@ -1,4 +1,3 @@
-# coding=utf-8
 """
 meetbot.py - Sopel Meeting Logger Plugin
 This plugin is an attempt to implement some of the functionality of Debian's meetbot
@@ -7,7 +6,7 @@ Licensed under the Eiffel Forum License 2.
 
 https://sopel.chat
 """
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import generator_stop
 
 import codecs
 import collections

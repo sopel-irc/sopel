@@ -2,9 +2,6 @@
 Configuration functionality
 ===========================
 
-.. contents::
-   :local:
-
 
 sopel.config
 ============

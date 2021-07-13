@@ -1,6 +1,5 @@
-# coding=utf-8
 """Tests for targets: Channel & User"""
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import generator_stop
 
 from sopel import plugin
 from sopel.tools import Identifier, target

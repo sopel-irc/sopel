@@ -1,4 +1,3 @@
-# coding=utf-8
 """
 choose.py - Sopel Choice Plugin
 Copyright 2010-2013, Dimitri "Tyrope" Molenaars, TyRope.nl
@@ -9,18 +8,12 @@ Licensed under the Eiffel Forum License 2.
 
 https://sopel.chat
 """
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import generator_stop
 
 import random
 import unicodedata
 
 from sopel import formatting, plugin
-
-# Remove when dropping py2 support
-try:
-    str = unicode
-except NameError:
-    pass
 
 
 def _format_safe(text):

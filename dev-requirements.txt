@@ -1,31 +1,14 @@
-coveralls<2.0; python_version < '3.5'
-coveralls>=2.0; python_version >= '3.5'
-flake8<3.6.0; python_version == '3.3'
-flake8>=3.7.0,<3.8.0; python_version != '3.3'
+coveralls>=2.0
+flake8
 flake8-coding
-flake8-future-import<0.4.6
-flake8-import-order; python_version > '3.3'
-flake8-import-order<=1.18.1; python_version <= '3.3'
-# transitive dependency of Sphinx
-# added f-strings in 2.x, but it's not worth doing a whole suite of version markers
-MarkupSafe<2.0
-pytest<3.3; python_version == '3.3'
-pytest>=4.6,<4.7; python_version != '3.3'
-pytest-vcr==1.0.2; python_version != '3.3'
-pytest-vcr==0.3.0; python_version == '3.3'
-PyYAML<5.1; python_version == '3.3'
-PyYAML<5.3; python_version == '3.4'
+flake8-future-import
+flake8-import-order
+furo==2021.6.24b37  # Sphinx theme
+pytest>=4.6,<4.7
+pytest-vcr==1.0.2
 requests-mock==1.9.1
-setuptools<40.0; python_version == '3.3'
-# use Sphinx 3.x until dev begins on Sopel 8 and we drop the dead snakes
-sphinx<4.0
-# autoprogram extension added type annotations in 0.1.6
-# such annotations require Python 3.5
-sphinxcontrib-autoprogram<0.1.6; python_version < '3.5'
-# further constrain autoprogram version because the new (in 2021) maintainer
-# already demonstrated a willingness to make major changes in patch versions
-sphinxcontrib-autoprogram<=0.1.7; python_version >= '3.5'
-vcrpy==2.1.1; python_version == '2.7'
-vcrpy<1.12.0; python_version == '3.3'
-vcrpy<2.1.0; python_version == '3.4'
-vcrpy<3.0.0; python_version >= '3.5'
+sphinx>=4,<5
+# specify exact autoprogram version because the new (in 2021) maintainer
+# showed that they will indeed make major changes in patch versions
+sphinxcontrib-autoprogram==0.1.7
+vcrpy<3.0.0

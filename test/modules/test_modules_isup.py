@@ -1,6 +1,5 @@
-# coding=utf-8
 """Tests for Sopel's ``isup`` plugin"""
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import generator_stop
 
 import pytest
 import requests.exceptions

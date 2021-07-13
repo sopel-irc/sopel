@@ -1,4 +1,3 @@
-# coding=utf-8
 """
 search.py - Sopel Search Engine Plugin
 Copyright 2008-9, Sean B. Palmer, inamidst.com
@@ -7,7 +6,7 @@ Licensed under the Eiffel Forum License 2.
 
 https://sopel.chat
 """
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import generator_stop
 
 import re
 

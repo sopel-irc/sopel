@@ -1,8 +1,6 @@
-# coding=utf-8
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import generator_stop
 
 import os
-import sys
 
 import pytest
 
@@ -50,28 +48,13 @@ TEST_CHANNELS = [
     '"&quoted"',  # quoted, but no #: quotes kept
 ]
 
-if sys.version_info.major < 3:
-    # Python 2.7's ConfigParser interprets as comment
-    # a line that starts with # or ;.
-    # Python 3, on the other hand, allows comments to be indented.
-    # As a result, the same config file will result in a different
-    # config object depending on the Python version used.
-    # TODO: Deprecated with Python 2.7.
-    TEST_CHANNELS = [
-        '#sopel',
-        '&peculiar',
-        '# python 3 only comment',  # indented lines cannot be comments in Py2
-        '#private',
-        '"#startquote',
-        '&endquote"',
-        '"&quoted"',
-    ]
-
 
 class FakeConfigSection(types.StaticSection):
     valattr = types.ValidatedAttribute('valattr')
     listattr = types.ListAttribute('listattr')
     choiceattr = types.ChoiceAttribute('choiceattr', ['spam', 'egg', 'bacon'])
+    booleanattr = types.BooleanAttribute('booleanattr')
+    booleanattr_true = types.BooleanAttribute('booleanattr', default=True)
     af_fileattr = types.FilenameAttribute('af_fileattr', relative=False, directory=False)
     ad_fileattr = types.FilenameAttribute('ad_fileattr', relative=False, directory=True)
     rf_fileattr = types.FilenameAttribute('rf_fileattr', relative=True, directory=False)
@@ -204,6 +187,11 @@ def test_choiceattribute_when_valid(fakeconfig):
     assert fakeconfig.fake.choiceattr == 'bacon'
 
 
+def test_booleanattribute_default(fakeconfig):
+    assert fakeconfig.fake.booleanattr is False
+    assert fakeconfig.fake.booleanattr_true is True
+
+
 def test_fileattribute_valid_absolute_file_path(fakeconfig):
     testfile = os.path.join(fakeconfig.core.homedir, 'test.tmp')
     fakeconfig.fake.af_fileattr = testfile
@@ -239,6 +227,11 @@ def test_fileattribute_given_file_when_dir(fakeconfig):
         fakeconfig.fake.ad_fileattr = testfile
 
 
+def test_configparser_env_priority_over_file(monkeypatch, fakeconfig):
+    monkeypatch.setenv('SOPEL_CORE_OWNER', 'not_dgw')
+    assert fakeconfig.core.owner == 'not_dgw'
+
+
 def test_configparser_multi_lines(multi_fakeconfig):
     # spam
     assert multi_fakeconfig.spam.eggs == [
@@ -260,6 +253,45 @@ def test_configparser_multi_lines(multi_fakeconfig):
     ]
 
     assert multi_fakeconfig.spam.channels == TEST_CHANNELS
+
+
+def test_configparser_multi_env(monkeypatch, multi_fakeconfig):
+    monkeypatch.setenv('SOPEL_SPAM_EGGS', 'five, six, seven, eight, and a half')
+    monkeypatch.setenv('SOPEL_SPAM_BACONS', 'microwaved\nfreeze in,\n, dry, thin, and disgusting')
+    monkeypatch.setenv('SOPEL_SPAM_CHEESES', ' swiss\n  sbrinz\ncottage')
+    # Comments not allowed when passing channels via ENV
+    monkeypatch.setenv(
+        'SOPEL_SPAM_CHANNELS',
+        '"#sopel"\n&strange\n*someZnc\n"#public"\n"#frontquote\n&backquote"\n"&bothquoted"\n"*starchan"'
+    )
+
+    assert multi_fakeconfig.spam.eggs == [
+        'five',
+        'six',
+        'seven',
+        'eight',
+        'and a half',  # no-newline + comma
+    ]
+    assert multi_fakeconfig.spam.bacons == [
+        'microwaved',
+        'freeze in',
+        'dry, thin, and disgusting',
+    ]
+    assert multi_fakeconfig.spam.cheeses == [
+        'swiss',
+        'sbrinz',
+        'cottage',
+    ]
+    assert multi_fakeconfig.spam.channels == [
+        '#sopel',
+        '&strange',
+        '*someZnc',
+        '#public',
+        '"#frontquote',
+        '&backquote"',
+        '"&bothquoted"',
+        '"*starchan"'
+    ]
 
 
 def test_save_unmodified_config(multi_fakeconfig):

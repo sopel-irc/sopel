@@ -1,4 +1,3 @@
-# coding=utf-8
 """
 safety.py - Alerts about malicious URLs
 Copyright © 2014, Elad Alfassa, <elad@fedoraproject.org>
@@ -6,35 +5,22 @@ Licensed under the Eiffel Forum License 2.
 
 This plugin uses virustotal.com
 """
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import generator_stop
 
+import json
 import logging
 import os.path
 import re
-import sys
 import threading
 import time
+from urllib.parse import urlparse
+from urllib.request import urlretrieve
+
 
 import requests
 
 from sopel import formatting, plugin, tools
 from sopel.config import types
-
-try:
-    # This is done separately from the below version if/else because JSONDecodeError
-    # didn't appear until Python 3.5, but Sopel claims support for 3.3+
-    # Redo this whole block of nonsense when dropping py2/old py3 support
-    from json import JSONDecodeError as InvalidJSONResponse
-except ImportError:
-    InvalidJSONResponse = ValueError
-
-if sys.version_info.major > 2:
-    unicode = str
-    from urllib.request import urlretrieve
-    from urllib.parse import urlparse
-else:
-    from urllib import urlretrieve
-    from urlparse import urlparse
 
 
 LOGGER = logging.getLogger(__name__)
@@ -108,7 +94,7 @@ def setup(bot):
         _download_domain_list(loc)
     with open(loc, 'r') as f:
         for line in f:
-            clean_line = unicode(line).strip().lower()
+            clean_line = str(line).strip().lower()
             if not clean_line or clean_line[0] == '#':
                 # blank line or comment
                 continue
@@ -176,7 +162,7 @@ def url_handler(bot, trigger):
     apikey = bot.config.safety.vt_api_key
     try:
         if apikey is not None and use_vt:
-            payload = {'resource': unicode(trigger),
+            payload = {'resource': str(trigger),
                        'apikey': apikey,
                        'scan': '1'}
 
@@ -202,11 +188,11 @@ def url_handler(bot, trigger):
     except requests.exceptions.RequestException:
         # Ignoring exceptions with VT so domain list will always work
         LOGGER.debug('[VirusTotal] Error obtaining response.', exc_info=True)
-    except InvalidJSONResponse:
+    except json.JSONDecodeError:
         # Ignoring exceptions with VT so domain list will always work
         LOGGER.debug('[VirusTotal] Malformed response (invalid JSON).', exc_info=True)
 
-    if unicode(netloc).lower() in malware_domains:
+    if str(netloc).lower() in malware_domains:
         positives += 1
         total += 1
 
@@ -253,7 +239,7 @@ def _clean_cache(bot):
             # clean up by age first
             cutoff = time.time() - (7 * 24 * 60 * 60)  # 7 days ago
             old_keys = []
-            for key, data in tools.iteritems(bot.memory['safety_cache']):
+            for key, data in bot.memory['safety_cache'].items():
                 if data['fetched'] <= cutoff:
                     old_keys.append(key)
             for key in old_keys:

@@ -1,12 +1,11 @@
-# coding=utf-8
 """Tests for core ``sopel.bot`` module"""
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import generator_stop
 
 import re
 
 import pytest
 
-from sopel import bot, loader, module, plugin, plugins, trigger
+from sopel import bot, loader, plugin, plugins, trigger
 from sopel.plugins import rules
 from sopel.tests import rawlist
 from sopel.tools import Identifier, SopelMemory
@@ -19,46 +18,46 @@ nick = TestBot
 enable = coretasks
 """
 
-MOCK_MODULE_CONTENT = """# coding=utf-8
-import sopel.module
+MOCK_MODULE_CONTENT = """from __future__ import generator_stop
+from sopel import plugin
 
 
-@sopel.module.commands("do")
+@plugin.commands("do")
 def command_do(bot, trigger):
     pass
 
 
-@sopel.module.nickname_commands("info")
+@plugin.nickname_commands("info")
 def nick_command_info(bot, trigger):
     pass
 
 
-@sopel.module.action_commands("tell")
+@plugin.action_commands("tell")
 def action_command_tell(bot, trigger):
     pass
 
 
-@sopel.module.interval(5)
+@plugin.interval(5)
 def interval5s(bot):
     pass
 
 
-@sopel.module.interval(10)
+@plugin.interval(10)
 def interval10s(bot):
     pass
 
 
-@sopel.module.url(r'(.+\\.)?example\\.com')
+@plugin.url(r'(.+\\.)?example\\.com')
 def example_url(bot):
     pass
 
 
-@sopel.module.rule(r'Hello \\w+')
+@plugin.rule(r'Hello \\w+')
 def rule_hello(bot):
     pass
 
 
-@sopel.module.event('TOPIC')
+@plugin.event('TOPIC')
 def rule_on_topic(bot):
     pass
 
@@ -337,7 +336,7 @@ def test_reload_plugin_unregistered_plugin(tmpconfig):
 def test_register_callables(tmpconfig):
     sopel = bot.Sopel(tmpconfig)
 
-    @module.rule(r'(hi|hello|hey|sup)')
+    @plugin.rule(r'(hi|hello|hey|sup)')
     def rule_hello(bot, trigger):
         pass
 
@@ -361,40 +360,40 @@ def test_register_callables(tmpconfig):
     def rule_search_what(bot, trigger):
         pass
 
-    @module.commands('do')
-    @module.example('.do nothing')
+    @plugin.commands('do')
+    @plugin.example('.do nothing')
     def command_do(bot, trigger):
         """The do command does nothing."""
         pass
 
-    @module.commands('main sub')
-    @module.example('.main sub')
+    @plugin.commands('main sub')
+    @plugin.example('.main sub')
     def command_main_sub(bot, trigger):
         """A command with subcommand sub."""
         pass
 
-    @module.commands('main other')
-    @module.example('.main other')
+    @plugin.commands('main other')
+    @plugin.example('.main other')
     def command_main_other(bot, trigger):
         """A command with subcommand other."""
         pass
 
-    @module.nickname_commands('info')
-    @module.example('$nickname: info about this')
+    @plugin.nickname_commands('info')
+    @plugin.example('$nickname: info about this')
     def nick_command_info(bot, trigger):
         """Ask Sopel to get some info about nothing."""
         pass
 
-    @module.action_commands('tell')
+    @plugin.action_commands('tell')
     def action_command_tell(bot, trigger):
         pass
 
-    @module.commands('mixed')
-    @module.rule('mixing')
+    @plugin.commands('mixed')
+    @plugin.rule('mixing')
     def mixed_rule_command(bot, trigger):
         pass
 
-    @module.event('JOIN')
+    @plugin.event('JOIN')
     @plugin.label('handle_join_event')
     def on_join(bot, trigger):
         pass
@@ -541,12 +540,12 @@ def test_register_callables(tmpconfig):
 def test_register_urls(tmpconfig):
     sopel = bot.Sopel(tmpconfig)
 
-    @module.url(r'https://(\S+)/(.+)?')
+    @plugin.url(r'https://(\S+)/(.+)?')
     @plugin.label('handle_urls_https')
     def url_callback_https(bot, trigger, match):
         pass
 
-    @module.url(r'http://(\S+)/(.+)?')
+    @plugin.url(r'http://(\S+)/(.+)?')
     @plugin.label('handle_urls_http')
     def url_callback_http(bot, trigger, match):
         pass
@@ -1083,29 +1082,6 @@ def test_unregister_url_callback_no_memory(tmpconfig):
     # no exception implies success
 
 
-# Remove once manual callback management is deprecated (8.0)
-def test_unregister_url_callback_manual(tmpconfig):
-    """Test unregister_url_callback removes a specific callback that was added manually"""
-    test_pattern = r'https://(www\.)?example\.com'
-
-    def url_handler(*args, **kwargs):
-        return None
-
-    sopel = bot.Sopel(tmpconfig, daemon=False)
-    sopel.memory["url_callbacks"] = SopelMemory()
-
-    # register a callback manually
-    sopel.memory["url_callbacks"][re.compile(test_pattern)] = url_handler
-    results = list(sopel.search_url_callbacks("https://www.example.com"))
-    assert results[0][0] == url_handler, "Callback must be present"
-
-    # unregister it
-    sopel.unregister_url_callback(test_pattern, url_handler)
-
-    results = list(sopel.search_url_callbacks("https://www.example.com"))
-    assert not results, "Callback should have been removed"
-
-
 def test_unregister_url_callback_unknown_pattern(tmpconfig):
     """Test unregister_url_callback pass when pattern is unknown."""
     test_pattern = r'https://(www\.)?example\.com'
@@ -1174,3 +1150,22 @@ def test_multiple_url_callback(tmpconfig):
     results = list(sopel.search_url_callbacks('https://example.com'))
     assert len(results) == 1, 'Exactly one handler must remain'
     assert url_handler_global in results[0], 'Wrong remaining handler'
+
+
+# Added for Sopel 8; can be removed in Sopel 9
+def test_manual_url_callback_not_found(tmpconfig):
+    """Test that the bot now ignores manually registered URL callbacks."""
+    # Sopel 8.0 no longer supports `bot.memory['url_callbacks'], and this test
+    # is to make sure that it *really* no longer works.
+    test_pattern = r'https://(www\.)?example\.com'
+
+    def url_handler(*args, **kwargs):
+        return None
+
+    sopel = bot.Sopel(tmpconfig, daemon=False)
+    sopel.memory['url_callbacks'] = SopelMemory()
+
+    # register a callback manually
+    sopel.memory['url_callbacks'][re.compile(test_pattern)] = url_handler
+    results = list(sopel.search_url_callbacks("https://www.example.com"))
+    assert not results, "Manually registered callback must not be found"

@@ -6,11 +6,6 @@ IRC Backends
     :no-members:
 
 
-.. contents::
-    :local:
-    :depth: 2
-
-
 Bot Interface
 =============
 

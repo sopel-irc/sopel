@@ -1,6 +1,5 @@
-# coding=utf-8
 """coretasks.py tests"""
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import generator_stop
 
 import pytest
 
@@ -73,7 +72,7 @@ def test_bot_mixed_mode_removal(mockbot, ircfactory):
     irc.mode_set('#test', '-o+o-qa+v', [
         'Uvoice', 'Uop', 'Uvoice', 'Uvoice', 'Uvoice'])
     assert mockbot.channels["#test"].privileges[Identifier("Uop")] == OP, (
-        'OP got +o only')
+        'Uop got +o only')
     assert mockbot.channels["#test"].privileges[Identifier("Uvoice")] == VOICE, (
         'Uvoice got -o, -q, -a, then +v')
 
@@ -134,6 +133,19 @@ def test_bot_unknown_priv_mode(mockbot, ircfactory):
     ), "The bot must treat mapped but non-PREFIX modes as unknown."
 
 
+def test_bot_extra_mode_args(mockbot, ircfactory, caplog):
+    """Test warning on extraneous MODE args."""
+    irc = ircfactory(mockbot)
+    irc.bot._isupport = isupport.ISupport(chanmodes=("b", "k", "l", "mnt", tuple()))
+    irc.channel_joined("#test", ["Alex", "Bob", "Cheryl"])
+
+    mode_msg = ":Sopel!bot@bot MODE #test +m nonsense"
+    mockbot.on_message(mode_msg)
+
+    assert mockbot.channels["#test"].modes["m"]
+    assert "Too many arguments received for MODE" in caplog.text
+
+
 def test_handle_rpl_channelmodeis(mockbot, ircfactory):
     """Test handling RPL_CHANNELMODEIS events, response to MODE query."""
     rpl_channelmodeis = " ".join([
@@ -154,6 +166,22 @@ def test_handle_rpl_channelmodeis(mockbot, ircfactory):
     assert mockbot.channels["#test"].modes["n"]
     assert mockbot.channels["#test"].modes["l"] == "1"
     assert mockbot.channels["#test"].modes["t"]
+
+
+def test_handle_rpl_channelmodeis_clear(mockbot, ircfactory):
+    """Test RPL_CHANNELMODEIS events clearing previous modes"""
+    irc = ircfactory(mockbot)
+    irc.bot._isupport = isupport.ISupport(chanmodes=("b", "k", "l", "mnt", tuple()))
+    irc.channel_joined("#test", ["Alex", "Bob", "Cheryl"])
+
+    rpl_base = ":mercury.libera.chat 324 TestName #test {modes}"
+    mockbot.on_message(rpl_base.format(modes="+knlt hunter2 :1"))
+    mockbot.on_message(rpl_base.format(modes="+kl hunter2 :1"))
+
+    assert mockbot.channels["#test"].modes["k"] == "hunter2"
+    assert "n" not in mockbot.channels["#test"].modes
+    assert mockbot.channels["#test"].modes["l"] == "1"
+    assert "t" not in mockbot.channels["#test"].modes
 
 
 def test_mode_colon(mockbot, ircfactory):
@@ -278,6 +306,51 @@ def test_handle_isupport(mockbot):
     assert 'CNOTICE' in mockbot.isupport
 
 
+@pytest.mark.parametrize('modes', ['', 'Rw'])
+def test_handle_isupport_bot_mode(mockbot, modes):
+    mockbot.config.core.modes = modes
+
+    mockbot.on_message(
+        ':irc.example.com 005 Sopel '
+        'SAFELIST ELIST=CTU CPRIVMSG CNOTICE '
+        ':are supported by this server')
+
+    assert 'BOT' not in mockbot.isupport
+    assert mockbot.backend.message_sent == []
+
+    mockbot.on_message(
+        ':irc.example.com 005 Sopel '
+        'BOT=B '
+        ':are supported by this server')
+
+    assert 'BOT' in mockbot.isupport
+    assert mockbot.isupport['BOT'] == 'B'
+    assert mockbot.backend.message_sent == rawlist('MODE TestBot +B')
+
+    mockbot.on_message(
+        ':irc.example.com 005 Sopel '
+        'BOT=B '
+        ':are supported by this server')
+
+    assert len(mockbot.backend.message_sent) == 1, 'No need to resend!'
+
+
+@pytest.mark.parametrize('modes', ['B', 'RBw'])
+def test_handle_isupport_bot_mode_override(mockbot, modes):
+    mockbot.config.core.modes = modes
+
+    mockbot.on_message(
+        ':irc.example.com 005 Sopel '
+        'BOT=B '
+        ':are supported by this server')
+
+    assert 'BOT' in mockbot.isupport
+    assert mockbot.isupport['BOT'] == 'B'
+    assert mockbot.backend.message_sent == [], (
+        'Bot should not set mode overridden by config setting'
+    )
+
+
 def test_handle_isupport_namesx(mockbot):
     mockbot.on_message(
         ':irc.example.com 005 Sopel '
@@ -299,6 +372,32 @@ def test_handle_isupport_namesx(mockbot):
     mockbot.on_message(
         ':irc.example.com 005 Sopel '
         'NAMESX '
+        ':are supported by this server')
+
+    assert len(mockbot.backend.message_sent) == 1, 'No need to resend!'
+
+
+def test_handle_isupport_uhnames(mockbot):
+    mockbot.on_message(
+        ':irc.example.com 005 Sopel '
+        'SAFELIST ELIST=CTU CPRIVMSG CNOTICE '
+        ':are supported by this server')
+
+    assert 'UHNAMES' not in mockbot.isupport
+    assert mockbot.backend.message_sent == []
+    assert 'userhost-in-names' not in mockbot.server_capabilities
+
+    mockbot.on_message(
+        ':irc.example.com 005 Sopel '
+        'UHNAMES '
+        ':are supported by this server')
+
+    assert 'UHNAMES' in mockbot.isupport
+    assert mockbot.backend.message_sent == rawlist('PROTOCTL UHNAMES')
+
+    mockbot.on_message(
+        ':irc.example.com 005 Sopel '
+        'UHNAMES '
         ':are supported by this server')
 
     assert len(mockbot.backend.message_sent) == 1, 'No need to resend!'
@@ -353,3 +452,49 @@ def test_sasl_plain_token_generation():
     assert (
         coretasks._make_sasl_plain_token('sopel', 'sasliscool') ==
         'sopel\x00sopel\x00sasliscool')
+
+
+def test_recv_chghost(mockbot, ircfactory):
+    """Ensure that CHGHOST messages are correctly handled."""
+    irc = ircfactory(mockbot)
+    irc.channel_joined("#test", ["Alex", "Bob", "Cheryl"])
+
+    mockbot.on_message(":Alex!~alex@test.local CHGHOST alex identd.confirmed")
+
+    assert mockbot.users[Identifier('Alex')].user == 'alex'
+    assert mockbot.users[Identifier('Alex')].host == 'identd.confirmed'
+
+
+def test_recv_chghost_invalid(mockbot, ircfactory, caplog):
+    """Ensure that malformed CHGHOST messages are ignored and logged."""
+    irc = ircfactory(mockbot)
+    irc.channel_joined("#test", ["Alex", "Bob", "Cheryl"])
+    alex = Identifier('Alex')
+    bob = Identifier('Bob')
+    cheryl = Identifier('Cheryl')
+
+    # Mock bot + mock IRC server doesn't populate these on its own
+    assert mockbot.users[alex].user is None
+    assert mockbot.users[alex].host is None
+    assert mockbot.users[bob].user is None
+    assert mockbot.users[bob].host is None
+    assert mockbot.users[cheryl].user is None
+    assert mockbot.users[cheryl].host is None
+
+    mockbot.on_message(":Alex!~alex@test.local CHGHOST alex is a boss")
+    mockbot.on_message(":Bob!bob@grills.burgers CHGHOST rarely")
+    mockbot.on_message(":Cheryl!~carol@danger.zone CHGHOST")
+
+    # These should be unchanged
+    assert mockbot.users[alex].user is None
+    assert mockbot.users[alex].host is None
+    assert mockbot.users[bob].user is None
+    assert mockbot.users[bob].host is None
+    assert mockbot.users[cheryl].user is None
+    assert mockbot.users[cheryl].host is None
+
+    # Meanwhile, the malformed input should have generated log lines
+    assert len(caplog.messages) == 3
+    assert 'extra arguments' in caplog.messages[0]
+    assert 'insufficient arguments' in caplog.messages[1]
+    assert 'insufficient arguments' in caplog.messages[2]

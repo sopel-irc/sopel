@@ -1,4 +1,3 @@
-# coding=utf-8
 """
 announce.py - Sopel Announcement Plugin
 Sends announcements to all channels the bot has joined.
@@ -7,7 +6,7 @@ Licensed under the Eiffel Forum License 2.
 
 https://sopel.chat
 """
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import generator_stop
 
 from sopel import plugin
 

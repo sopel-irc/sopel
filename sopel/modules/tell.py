@@ -1,4 +1,3 @@
-# coding=utf-8
 """
 tell.py - Sopel Tell and Ask Plugin
 Copyright 2008, Sean B. Palmer, inamidst.com
@@ -7,7 +6,7 @@ Licensed under the Eiffel Forum License 2.
 
 https://sopel.chat
 """
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import generator_stop
 
 from collections import defaultdict
 import io  # don't use `codecs` for loading the DB; it will split lines on some IRC formatting
@@ -154,7 +153,7 @@ def f_remind(bot, trigger):
     if not os.path.exists(bot.tell_filename):
         return
 
-    if len(tellee) > 30:  # TODO: use server NICKLEN here when available
+    if len(tellee) > bot.isupport.get('NICKLEN', 30):
         bot.reply('That nickname is too long.')
         return
 
@@ -162,7 +161,7 @@ def f_remind(bot, trigger):
         tellee = tellee[1:]
 
     if tellee == bot.nick:
-        bot.reply("I'm here now; you can tell me whatever you want!")
+        bot.reply("I'm here now; you can %s me whatever you want!" % verb)
         return
 
     if tellee not in (tools.Identifier(teller), bot.nick, 'me'):

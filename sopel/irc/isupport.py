@@ -1,4 +1,3 @@
-# coding=utf-8
 """IRC Tools for ISUPPORT management.
 
 When a server wants to advertise its features and settings, it can use the
@@ -12,7 +11,7 @@ When a server wants to advertise its features and settings, it can use the
 # Copyright 2019, Florian Strzelecki <florian.strzelecki@gmail.com>
 #
 # Licensed under the Eiffel Forum License 2.
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import generator_stop
 
 import functools
 import itertools

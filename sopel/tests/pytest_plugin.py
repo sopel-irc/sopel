@@ -1,9 +1,8 @@
-# coding=utf-8
 """Pytest plugin for Sopel.
 
 .. versionadded:: 7.0
 """
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import generator_stop
 
 import re
 import sys

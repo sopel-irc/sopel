@@ -1,4 +1,3 @@
-# coding=utf-8
 """
 invite.py - Sopel Invite Plugin
 Copyright © 2016, João Vanzuita, https://github.com/converge
@@ -7,7 +6,7 @@ Licensed under the Eiffel Forum License 2.
 
 https://sopel.chat
 """
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import generator_stop
 
 from sopel import plugin, tools
 
@@ -77,4 +76,7 @@ def invite(bot, trigger):
                 .format(bot.config.core.help_prefix))
         channel = trigger.sender
 
-    invite_handler(bot, trigger.nick, user, channel)
+    try:
+        invite_handler(bot, trigger.nick, user, channel)
+    except ValueError as err:
+        bot.reply('%s' % err)

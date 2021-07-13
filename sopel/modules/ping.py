@@ -1,11 +1,10 @@
-# coding=utf-8
 """
 ping.py - Sopel Ping Plugin
 Copyright 2008 (?), Sean B. Palmer, inamidst.com
 
 https://sopel.chat
 """
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import generator_stop
 
 import random
 
