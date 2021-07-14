@@ -46,6 +46,19 @@ CORE_QUERYTYPE = '999'
 Other plugins should use a different querytype.
 """
 
+MODE_PREFIX_PRIVILEGES = {
+    "v": plugin.VOICE,
+    "h": plugin.HALFOP,
+    "o": plugin.OP,
+    "a": plugin.ADMIN,
+    "q": plugin.OWNER,
+    "y": plugin.OPER,
+    "Y": plugin.OPER,
+}
+
+MODE_PREFIXES = set(MODE_PREFIX_PRIVILEGES.keys())
+
+
 batched_caps = {}
 
 
@@ -528,23 +541,13 @@ def _parse_modes(bot, args, clear=False):
         LOGGER.debug(
             "The server sent a possibly malformed MODE message: %r", args)
 
-    mapping = {
-        "v": plugin.VOICE,
-        "h": plugin.HALFOP,
-        "o": plugin.OP,
-        "a": plugin.ADMIN,
-        "q": plugin.OWNER,
-        "y": plugin.OPER,
-        "Y": plugin.OPER,
-    }
-
-    privileges = mapping.keys()
+    privileges = MODE_PREFIXES
     if 'PREFIX' in bot.isupport:
-        privileges = bot.isupport.PREFIX.keys()
+        privileges = set(bot.isupport.PREFIX.keys())
 
     modemessage = ircmodes.ModeParser(
         bot.isupport.CHANMODES,
-        privileges=set(privileges),
+        privileges=privileges,
     )
     modeinfo = modemessage.parse_modestring(args[1], tuple(args[2:]))
 
@@ -585,7 +588,7 @@ def _parse_modes(bot, args, clear=False):
         # User privs modes, always have a param
         nick = Identifier(param)
         priv = channel.privileges.get(nick, 0)
-        value = mapping[privilege]
+        value = MODE_PREFIX_PRIVILEGES[privilege]
         if is_added:
             priv = priv | value
         else:
