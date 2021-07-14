@@ -6,10 +6,7 @@ from sopel.irc.modes import (
     ModeParser,
     ModeTypeImproperlyConfigured,
     ModeTypeUnknown,
-    PARAM_ADDED,
-    PARAM_ALWAYS,
-    PARAM_NEVER,
-    PARAM_REMOVED,
+    ParamRequired,
 )
 
 ADDED = True
@@ -111,10 +108,10 @@ def test_modemessage_get_mode_info(mode, is_added, result):
         'Z': tuple('ij'),
         'T': tuple('klm'),
     }, {
-        'X': PARAM_ALWAYS,
-        'Y': PARAM_ADDED,
-        'Z': PARAM_REMOVED,
-        'T': PARAM_NEVER,
+        'X': ParamRequired.ALWAYS,
+        'Y': ParamRequired.ADDED,
+        'Z': ParamRequired.REMOVED,
+        'T': ParamRequired.NEVER,
     })
 
     assert modemessage.get_mode_info(mode, is_added) == result
@@ -184,10 +181,10 @@ def test_modemessage_parse_modestring_single_mode():
         'Z': tuple('ij'),
         'T': tuple('klm'),
     }, {
-        'X': PARAM_ALWAYS,
-        'Y': PARAM_ADDED,
-        'Z': PARAM_REMOVED,
-        'T': PARAM_NEVER,
+        'X': ParamRequired.ALWAYS,
+        'Y': ParamRequired.ADDED,
+        'Z': ParamRequired.REMOVED,
+        'T': ParamRequired.NEVER,
     })
 
     # X: always a parameter
@@ -263,10 +260,10 @@ def test_modemessage_parse_modestring_multi_mode_add_only():
         'Z': tuple('ij'),
         'T': tuple('klm'),
     }, {
-        'X': PARAM_ALWAYS,
-        'Y': PARAM_ADDED,
-        'Z': PARAM_REMOVED,
-        'T': PARAM_NEVER,
+        'X': ParamRequired.ALWAYS,
+        'Y': ParamRequired.ADDED,
+        'Z': ParamRequired.REMOVED,
+        'T': ParamRequired.NEVER,
     })
 
     # modes only
@@ -315,10 +312,10 @@ def test_modemessage_parse_modestring_multi_mode_remove_only():
         'Z': tuple('ij'),
         'T': tuple('klm'),
     }, {
-        'X': PARAM_ALWAYS,
-        'Y': PARAM_ADDED,
-        'Z': PARAM_REMOVED,
-        'T': PARAM_NEVER,
+        'X': ParamRequired.ALWAYS,
+        'Y': ParamRequired.ADDED,
+        'Z': ParamRequired.REMOVED,
+        'T': ParamRequired.NEVER,
     })
 
     # modes only
@@ -367,10 +364,10 @@ def test_modemessage_parse_modestring_multi_mode_mixed_add_remove():
         'Z': tuple('ij'),
         'T': tuple('klm'),
     }, {
-        'X': PARAM_ALWAYS,
-        'Y': PARAM_ADDED,
-        'Z': PARAM_REMOVED,
-        'T': PARAM_NEVER,
+        'X': ParamRequired.ALWAYS,
+        'Y': ParamRequired.ADDED,
+        'Z': ParamRequired.REMOVED,
+        'T': ParamRequired.NEVER,
     })
 
     # added first
@@ -441,10 +438,10 @@ def test_modemessage_parse_modestring_leftover_params():
         'Z': tuple('ij'),
         'T': tuple('klm'),
     }, {
-        'X': PARAM_ALWAYS,
-        'Y': PARAM_ADDED,
-        'Z': PARAM_REMOVED,
-        'T': PARAM_NEVER,
+        'X': ParamRequired.ALWAYS,
+        'Y': ParamRequired.ADDED,
+        'Z': ParamRequired.REMOVED,
+        'T': ParamRequired.NEVER,
     })
 
     # Single mode
@@ -491,10 +488,10 @@ def test_modemessage_parse_modestring_ignored_modes():
         'Z': tuple('ij'),
         'T': tuple('klm'),
     }, {
-        'X': PARAM_ALWAYS,
-        'Y': PARAM_ADDED,
-        'Z': PARAM_REMOVED,
-        'T': PARAM_NEVER,
+        'X': ParamRequired.ALWAYS,
+        'Y': ParamRequired.ADDED,
+        'Z': ParamRequired.REMOVED,
+        'T': ParamRequired.NEVER,
     })
 
     # Single mode
@@ -527,10 +524,10 @@ def test_modemessage_parse_modestring_no_params():
         'Z': tuple('ij'),
         'T': tuple('klm'),
     }, {
-        'X': PARAM_ALWAYS,
-        'Y': PARAM_ADDED,
-        'Z': PARAM_REMOVED,
-        'T': PARAM_NEVER,
+        'X': ParamRequired.ALWAYS,
+        'Y': ParamRequired.ADDED,
+        'Z': ParamRequired.REMOVED,
+        'T': ParamRequired.NEVER,
     })
 
     # Single mode
@@ -574,10 +571,10 @@ def test_modemessage_parse_modestring_missing_params():
         'Z': tuple('ij'),
         'T': tuple('klm'),
     }, {
-        'X': PARAM_ALWAYS,
-        'Y': PARAM_ADDED,
-        'Z': PARAM_REMOVED,
-        'T': PARAM_NEVER,
+        'X': ParamRequired.ALWAYS,
+        'Y': ParamRequired.ADDED,
+        'Z': ParamRequired.REMOVED,
+        'T': ParamRequired.NEVER,
     })
 
     # Modes only

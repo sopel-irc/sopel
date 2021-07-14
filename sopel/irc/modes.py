@@ -9,21 +9,31 @@
 from __future__ import generator_stop
 
 from collections import namedtuple
+import enum
 import logging
 from typing import Dict, Generator, List, Optional, Set, Tuple
 
 
 LOGGER = logging.getLogger(__name__)
 
-PARAM_ALWAYS = 'always'
-PARAM_ADDED = 'added'
-PARAM_REMOVED = 'removed'
-PARAM_NEVER = 'never'
+
+class ParamRequired(enum.Enum):
+    """Enum of param requirement for mode types."""
+    ALWAYS = 'always'
+    """The mode type always requires a parameter."""
+    ADDED = 'added'
+    """The mode type requires a parameter only when the mode is added."""
+    REMOVED = 'removed'
+    """The mode type requires a parameter only when the mode is removed."""
+    NEVER = 'never'
+    """The mode type never requires a parameter."""
+
+
 DEFAULT_MODETYPE_PARAM_CONFIG = {
-    'A': PARAM_ALWAYS,
-    'B': PARAM_ALWAYS,
-    'C': PARAM_ADDED,
-    'D': PARAM_NEVER,
+    'A': ParamRequired.ALWAYS,
+    'B': ParamRequired.ALWAYS,
+    'C': ParamRequired.ADDED,
+    'D': ParamRequired.NEVER,
 }
 """Default parameter requirements for mode types."""
 
@@ -81,7 +91,7 @@ class ModeParser:
     def __init__(
         self,
         chanmodes: Dict[str, Tuple[str, ...]],
-        type_params: Dict[str, str] = DEFAULT_MODETYPE_PARAM_CONFIG,
+        type_params: Dict[str, ParamRequired] = DEFAULT_MODETYPE_PARAM_CONFIG,
         privileges: Set[str] = PRIVILEGES,
     ) -> None:
         self.chanmodes: Dict[str, Tuple[str, ...]] = chanmodes
@@ -147,7 +157,10 @@ class ModeParser:
         ::
 
             >>> chanmodes = {'A': tuple('beI'), 'B': tuple('k')}
-            >>> t_params = {'A': PARAM_ALWAYS, 'B': PARAM_ADDED}
+            >>> t_params = {
+            ...     'A': ParamRequired.ALWAYS,
+            ...     'B': ParamRequired.ADDED,
+            ... }
             >>> mm = ModeParser(chanmodes, t_params)
             >>> mm.get_mode_info('e', False)
             ('A', True, False)
@@ -175,10 +188,10 @@ class ModeParser:
             raise ModeTypeImproperlyConfigured(mode, letter)
 
         type_param = self.type_params[letter]
-        return letter, not type_param == PARAM_NEVER and (
-            type_param == PARAM_ALWAYS
-            or type_param == PARAM_ADDED and is_added
-            or type_param == PARAM_REMOVED and not is_added
+        return letter, not type_param == ParamRequired.NEVER and (
+            type_param == ParamRequired.ALWAYS
+            or type_param == ParamRequired.ADDED and is_added
+            or type_param == ParamRequired.REMOVED and not is_added
         ), False
 
     def parse_modestring(
