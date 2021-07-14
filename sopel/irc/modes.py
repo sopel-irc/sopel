@@ -117,9 +117,17 @@ class ModeParser:
     }
     """Set of user privileges used by default."""
 
+    CHANMODES = {
+        'A': tuple('beI'),
+        'B': tuple('k'),
+        'C': tuple('l'),
+        'D': tuple('Oaimnqpsrt'),
+    }
+    """Default CHANMODES per :rfc:`2811`."""
+
     def __init__(
         self,
-        chanmodes: Dict[str, Tuple[str, ...]],
+        chanmodes: Dict[str, Tuple[str, ...]] = CHANMODES,
         type_params: Dict[str, ParamRequired] = DEFAULT_MODETYPE_PARAM_CONFIG,
         privileges: Set[str] = PRIVILEGES,
     ) -> None:
