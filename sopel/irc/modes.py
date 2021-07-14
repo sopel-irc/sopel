@@ -8,10 +8,9 @@
 """
 from __future__ import generator_stop
 
-from collections import namedtuple
 import enum
 import logging
-from typing import Dict, Generator, List, Optional, Set, Tuple
+from typing import Dict, Generator, List, NamedTuple, Optional, Set, Tuple
 
 
 LOGGER = logging.getLogger(__name__)
@@ -67,12 +66,42 @@ def _parse_modestring(
         yield (char, is_added)
 
 
-ModeMessage = namedtuple('ModeMessage', [
-    'modes',
-    'privileges',
-    'ignored_modes',
-    'leftover_params',
-])
+class ModeMessage(NamedTuple):
+    """Mode message with modes and privileges."""
+    modes: Tuple[Tuple[str, str, bool, Optional[str]], ...]
+    """Tuple of added and removed modes.
+
+    Each item follows the same structure::
+
+        (type, mode, is_added, param)
+
+    Where ``type`` is the mode type (such as A, B, C, D); ``mode`` is the mode
+    letter; ``is_added`` tells if the mode should be added or removed; and
+    ``param`` is an optional parameter value for that mode only when necessary.
+    """
+    privileges: Tuple[Tuple[str, bool, str], ...]
+    """Tuple of added and removed privileges.
+
+    Each item follows the same structure::
+
+        (privilege, is_added, target)
+
+    Where ``privilege`` is the privilege letter; ``is_added`` tells if the
+    privilege should be added or removed; and ``target`` is the target for that
+    privilege.
+    """
+    ignored_modes: Tuple[Tuple[str, bool], ...]
+    """Ignored modes when they are unknown or there is a missing parameter.
+
+    Each item follows the same structure::
+
+        (mode, is_added)
+
+    Where ``mode`` is the mode or privilege letter and ``is_added`` tells if
+    the mode or privilege wants to be added or removed.
+    """
+    leftover_params: Tuple[str, ...]
+    """Parameters not used by any valid mode or privilege."""
 
 
 class ModeParser:
