@@ -64,6 +64,7 @@ def test_bot_mixed_mode_removal(mockbot, ircfactory):
     """
     irc = ircfactory(mockbot)
     irc.bot._isupport = isupport.ISupport(chanmodes=("b", "", "", "m", tuple()))
+    irc.bot.modeparser.chanmodes = irc.bot.isupport.CHANMODES
     irc.channel_joined('#test', ['Uvoice', 'Uop'])
 
     irc.mode_set('#test', '+qao', ['Uvoice', 'Uvoice', 'Uvoice'])
@@ -90,6 +91,7 @@ def test_bot_mixed_mode_types(mockbot, ircfactory):
     """
     irc = ircfactory(mockbot)
     irc.bot._isupport = isupport.ISupport(chanmodes=("be", "", "", "mn", tuple()))
+    irc.bot.modeparser.chanmodes = irc.bot.isupport.CHANMODES
     irc.channel_joined('#test', [
         'Uvoice', 'Uop', 'Uadmin', 'Uvoice2', 'Uop2', 'Uadmin2'])
     irc.mode_set('#test', '+amovn', ['Uadmin', 'Uop', 'Uvoice'])
@@ -113,6 +115,7 @@ def test_bot_unknown_mode(mockbot, ircfactory):
     """Ensure modes not in PREFIX or CHANMODES trigger a WHO."""
     irc = ircfactory(mockbot)
     irc.bot._isupport = isupport.ISupport(chanmodes=("b", "", "", "mnt", tuple()))
+    irc.bot.modeparser.chanmodes = irc.bot.isupport.CHANMODES
     irc.channel_joined("#test", ["Alex", "Bob", "Cheryl"])
     irc.mode_set("#test", "+te", ["Alex"])
 
@@ -126,6 +129,7 @@ def test_bot_unknown_priv_mode(mockbot, ircfactory):
     """Ensure modes in `mapping` but not PREFIX are treated as unknown."""
     irc = ircfactory(mockbot)
     irc.bot._isupport = isupport.ISupport(prefix={"o": "@", "v": "+"})
+    irc.bot.modeparser.privileges = set(irc.bot.isupport.PREFIX.keys())
     irc.channel_joined("#test", ["Alex", "Bob", "Cheryl"])
     irc.mode_set("#test", "+oh", ["Alex", "Bob"])
 
@@ -139,6 +143,7 @@ def test_bot_extra_mode_args(mockbot, ircfactory, caplog):
     """Test warning on extraneous MODE args."""
     irc = ircfactory(mockbot)
     irc.bot._isupport = isupport.ISupport(chanmodes=("b", "k", "l", "mnt", tuple()))
+    irc.bot.modeparser.chanmodes = irc.bot.isupport.CHANMODES
     irc.channel_joined("#test", ["Alex", "Bob", "Cheryl"])
 
     mode_msg = ":Sopel!bot@bot MODE #test +m nonsense"
@@ -161,6 +166,7 @@ def test_handle_rpl_channelmodeis(mockbot, ircfactory):
     ])
     irc = ircfactory(mockbot)
     irc.bot._isupport = isupport.ISupport(chanmodes=("b", "k", "l", "mnt", tuple()))
+    irc.bot.modeparser.chanmodes = irc.bot.isupport.CHANMODES
     irc.channel_joined("#test", ["Alex", "Bob", "Cheryl"])
     mockbot.on_message(rpl_channelmodeis)
 
@@ -174,6 +180,7 @@ def test_handle_rpl_channelmodeis_clear(mockbot, ircfactory):
     """Test RPL_CHANNELMODEIS events clearing previous modes"""
     irc = ircfactory(mockbot)
     irc.bot._isupport = isupport.ISupport(chanmodes=("b", "k", "l", "mnt", tuple()))
+    irc.bot.modeparser.chanmodes = irc.bot.isupport.CHANMODES
     irc.channel_joined("#test", ["Alex", "Bob", "Cheryl"])
 
     rpl_base = ":mercury.libera.chat 324 TestName #test {modes}"

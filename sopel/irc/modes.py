@@ -121,9 +121,21 @@ class ModeParser:
         'A': tuple('beI'),
         'B': tuple('k'),
         'C': tuple('l'),
-        'D': tuple('Oaimnqpsrt'),
+        'D': tuple('Oimnpsrt'),
     }
-    """Default CHANMODES per :rfc:`2811`."""
+    """Default CHANMODES per :rfc:`2811`.
+
+    .. note::
+
+        Mode ``a`` has been removed from the default list, as it appears
+        to be a relic of the past and is more commonly used as a privilege.
+
+        Mode ``q`` has been removed too, as it is commonly used as a privilege.
+
+        If a server is unhappy with these defaults, they should advertise
+        ``CHANMODES`` and ``PREFIX`` properly.
+
+    """
 
     def __init__(
         self,
@@ -131,18 +143,18 @@ class ModeParser:
         type_params: Dict[str, ParamRequired] = DEFAULT_MODETYPE_PARAM_CONFIG,
         privileges: Set[str] = PRIVILEGES,
     ) -> None:
-        self.chanmodes: Dict[str, Tuple[str, ...]] = chanmodes
+        self.chanmodes: Dict[str, Tuple[str, ...]] = dict(chanmodes)
         """Map of mode types (``str``) to their lists of modes (``tuple``).
 
         This map should come from ``ISUPPORT``, usually through
         :attr:`bot.isupport.CHANMODES <sopel.irc.isupport.ISupport.CHANMODES>`.
         """
-        self.type_params = type_params
+        self.type_params = dict(type_params)
         """Map of mode types (``str``) with their param requirements.
 
         This map defaults to :data:`DEFAULT_MODETYPE_PARAM_CONFIG`.
         """
-        self.privileges = privileges
+        self.privileges = set(privileges)
         """Set of valid user privileges.
 
         This set should come from ``ISUPPORT``, usually through

@@ -20,6 +20,7 @@ from typing import Optional
 
 from sopel import irc, logger, plugins, tools
 from sopel.db import SopelDB
+from sopel.irc import modes
 import sopel.loader
 from sopel.plugin import NOLIMIT
 from sopel.plugins import jobs as plugin_jobs, rules as plugin_rules
@@ -79,6 +80,9 @@ class Sopel(irc.AbstractBot):
 
         For servers that do not support IRCv3, this will be an empty set.
         """
+
+        self.modeparser = modes.ModeParser()
+        """A mode parser used to parse ``MODE`` messages and modestrings."""
 
         self.channels = tools.SopelIdentifierMemory()
         """A map of the channels that Sopel is in.

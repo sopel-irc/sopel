@@ -177,15 +177,13 @@ def test_modemessage_get_mode_info_custom_privileges():
 def test_modemessage_parse_modestring_default():
     modeparser = ModeParser()
     result = modeparser.parse_modestring(
-        '+Oaimn-qpsrt+lk-beI' + '+Z',
+        '+Oimn-psrt+lk-beI' + '+Z',
         tuple('abcdef'))
     assert result.modes == (
         ('D', 'O', ADDED, None),
-        ('D', 'a', ADDED, None),
         ('D', 'i', ADDED, None),
         ('D', 'm', ADDED, None),
         ('D', 'n', ADDED, None),
-        ('D', 'q', REMOVED, None),
         ('D', 'p', REMOVED, None),
         ('D', 's', REMOVED, None),
         ('D', 'r', REMOVED, None),

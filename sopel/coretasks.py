@@ -33,7 +33,7 @@ import time
 
 from sopel import loader, plugin
 from sopel.config import ConfigurationError
-from sopel.irc import isupport, modes as ircmodes
+from sopel.irc import isupport
 from sopel.irc.utils import CapReq, MyInfo
 from sopel.tools import events, Identifier, SopelMemory, target, web
 
@@ -55,8 +55,6 @@ MODE_PREFIX_PRIVILEGES = {
     "y": plugin.OPER,
     "Y": plugin.OPER,
 }
-
-MODE_PREFIXES = set(MODE_PREFIX_PRIVILEGES.keys())
 
 
 batched_caps = {}
@@ -342,6 +340,13 @@ def handle_isupport(bot, trigger):
 
     bot._isupport = bot._isupport.apply(**parameters)
 
+    # update bot's mode parser
+    if 'CHANMODES' in bot.isupport:
+        bot.modeparser.chanmodes = bot.isupport.CHANMODES
+
+    if 'PREFIX' in bot.isupport:
+        bot.modeparser.privileges = set(bot.isupport.PREFIX.keys())
+
     # was BOT mode support status updated?
     if not botmode_support and 'BOT' in bot.isupport:
         # yes it was! set our mode unless the config overrides it
@@ -541,15 +546,7 @@ def _parse_modes(bot, args, clear=False):
         LOGGER.debug(
             "The server sent a possibly malformed MODE message: %r", args)
 
-    privileges = MODE_PREFIXES
-    if 'PREFIX' in bot.isupport:
-        privileges = set(bot.isupport.PREFIX.keys())
-
-    modemessage = ircmodes.ModeParser(
-        bot.isupport.CHANMODES,
-        privileges=privileges,
-    )
-    modeinfo = modemessage.parse_modestring(args[1], tuple(args[2:]))
+    modeinfo = bot.modeparser.parse_modestring(args[1], tuple(args[2:]))
 
     # set or update channel's modes
     modes = {} if clear else copy.deepcopy(channel.modes)
@@ -608,7 +605,7 @@ def _parse_modes(bot, args, clear=False):
         LOGGER.warning(
             "Too many arguments received for MODE: args=%r chanmodes=%r",
             args,
-            modemessage.chanmodes,
+            bot.modeparser.chanmodes,
         )
 
     LOGGER.info("Updated mode for channel: %s", channel.name)
