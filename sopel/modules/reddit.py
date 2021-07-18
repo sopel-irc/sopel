@@ -27,7 +27,7 @@ PLUGIN_OUTPUT_PREFIX = '[reddit] '
 
 domain = r'https?://(?:www\.|old\.|pay\.|ssl\.|[a-z]{2}\.)?reddit\.com'
 subreddit_url = r'%s/r/([\w-]+)/?$' % domain
-post_url = r'%s/r/\S+?/comments/([\w-]+)(?:/[\w%%]+)?/?$' % domain
+post_url = r'%s/r/\S+?/comments/([\w-]+)(?:/[\w%%]+)?/?' % domain
 short_post_url = r'https?://redd\.it/([\w-]+)'
 user_url = r'%s/u(?:ser)?/([\w-]+)' % domain
 comment_url = r'%s/r/\S+?/comments/\S+?/\S+?/([\w-]+)' % domain
