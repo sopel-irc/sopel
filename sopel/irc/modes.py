@@ -1,5 +1,22 @@
 """Mode management for IRC channels.
 
+The :class:`ModeParser` class is used internally by the bot to parse ``MODE``
+messages for channels. User modes are not parsed (yet), as the bot doesn't
+manage them.
+
+The goal of the parser is to return a :class:`ModeMessage` containing the
+actions represented by the raw message:
+
+* channel modes added/removed (including their parameters, if any)
+* privileges added/removed for user(s) in a channel
+
+Errors (ignored modes and unused parameters) are also included, mostly for
+detecting when an IRC server is not conforming to specifications.
+
+This is mostly for internal use only as plugin developers should be more
+interested in :attr:`privileges<sopel.tools.target.Channel.privileges>` rather
+than how Sopel knows about them.
+
 .. seealso::
 
     https://modern.ircdocs.horse/#mode-message
@@ -10,8 +27,16 @@ from __future__ import generator_stop
 
 import enum
 import logging
-from typing import Dict, Generator, List, NamedTuple, Optional, Set, Tuple
+from typing import Dict, Iterator, List, NamedTuple, Optional, Set, Tuple
 
+ModeTuple = Tuple[str, bool]
+"""Tuple of mode information: ``(mode, is_added)``.
+
+This type alias represents the basic information for each mode found when
+parsing a modestring like ``+abc-efg``. In that example mode ``a`` and mode
+``f`` would be represented as these tuples: ``('a', True)`` and
+``('f', False)``.
+"""
 
 LOGGER = logging.getLogger(__name__)
 
@@ -39,7 +64,6 @@ DEFAULT_MODETYPE_PARAM_CONFIG = {
 
 class ModeException(Exception):
     """Base exception class for mode management."""
-    pass
 
 
 class ModeTypeUnknown(ModeException):
@@ -55,9 +79,8 @@ class ModeTypeImproperlyConfigured(ModeException):
         super().__init__(message.format(mode=mode, letter=letter))
 
 
-def _parse_modestring(
-    modestring: str,
-) -> Generator[Tuple[str, bool], None, None]:
+def parse_modestring(modestring: str) -> Iterator[ModeTuple]:
+    """Parse a modestring like ``+abc-def`` and yield :class:`ModeTuple`."""
     is_added = True
     for char in modestring:
         if char in '+-':
@@ -67,7 +90,7 @@ def _parse_modestring(
 
 
 class ModeMessage(NamedTuple):
-    """Mode message with modes and privileges."""
+    """Mode message with channel's modes and channel's privileges."""
     modes: Tuple[Tuple[str, str, bool, Optional[str]], ...]
     """Tuple of added and removed modes.
 
@@ -252,7 +275,7 @@ class ModeParser:
 
         :return: the parsed and validated information for that ``modestring``
         """
-        imodes = iter(_parse_modestring(modestring))
+        imodes = iter(parse_modestring(modestring))
         iparams = iter(params)
         modes: List = []
         privileges: List = []

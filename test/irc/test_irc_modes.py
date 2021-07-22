@@ -7,6 +7,7 @@ from sopel.irc.modes import (
     ModeTypeImproperlyConfigured,
     ModeTypeUnknown,
     ParamRequired,
+    parse_modestring,
 )
 
 ADDED = True
@@ -15,6 +16,19 @@ REQUIRED = True
 NOT_REQUIRED = False
 PREFIX = True
 NOT_PREFIX = False
+
+
+@pytest.mark.parametrize('modestring, result', (
+    ('a', (('a', ADDED),)),
+    ('+a', (('a', ADDED),)),
+    ('-a', (('a', REMOVED),)),
+    ('+a-b', (('a', ADDED), ('b', REMOVED))),
+    ('-a+b', (('a', REMOVED), ('b', ADDED))),
+    ('+ab-cd', (('a', ADDED), ('b', ADDED), ('c', REMOVED), ('d', REMOVED))),
+    ('+a-b+c-d', (('a', ADDED), ('b', REMOVED), ('c', ADDED), ('d', REMOVED))),
+))
+def test_parse_modestring(modestring, result):
+    assert tuple(parse_modestring(modestring)) == result
 
 
 @pytest.mark.parametrize('mode, letter', (
