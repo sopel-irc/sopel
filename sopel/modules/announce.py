@@ -17,10 +17,18 @@ def _chunks(items, size):
     :param items: the collection of items to chunk
     :type items: :term:`iterable`
     :param int size: the size of each chunk
+    :return: a :term:`generator` of chunks
+    :rtype: :term:`generator` of :class:`tuple`
     """
+    # Need to convert non-subscriptable types like `dict_keys` objects
+    try:
+        items[0]
+    except TypeError:
+        items = tuple(items)
+
     # from https://stackoverflow.com/a/312464/5991 with modified names for readability
     for delim in range(0, len(items), size):
-        yield items[delim:delim + size]
+        yield tuple(items[delim:delim + size])
 
 
 @plugin.command('announce')
