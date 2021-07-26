@@ -168,8 +168,8 @@ def format_time(db=None, config=None, zone=None, nick=None, channel=None,
 
     ``time``, if given, should be a ``datetime.datetime`` object, and will be
     treated as being in the UTC timezone if it is :ref:`naïve
-    <aware-and-naive-objects>`. If ``time`` is not given, the current time
-    will be used.
+    <datetime-naive-aware>`. If ``time`` is not given, the current time will
+    be used.
 
     If ``zone`` is given it must be present in the IANA Time Zone Database;
     ``get_timezone`` can be helpful for this. If ``zone`` is not given, UTC
