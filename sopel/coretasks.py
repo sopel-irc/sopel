@@ -767,6 +767,7 @@ def track_join(bot, trigger):
     # did *we* just join?
     if trigger.nick == bot.nick:
         LOGGER.info("Channel joined: %s", channel)
+        bot.channels[channel].join_time = trigger.time
         if bot.settings.core.throttle_join:
             LOGGER.debug("JOIN event added to queue for channel: %s", channel)
             bot.memory['join_events_queue'].append(channel)

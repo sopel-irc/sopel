@@ -1,6 +1,8 @@
 """coretasks.py tests"""
 from __future__ import generator_stop
 
+from datetime import datetime, timezone
+
 import pytest
 
 from sopel import coretasks
@@ -498,3 +500,13 @@ def test_recv_chghost_invalid(mockbot, ircfactory, caplog):
     assert 'extra arguments' in caplog.messages[0]
     assert 'insufficient arguments' in caplog.messages[1]
     assert 'insufficient arguments' in caplog.messages[2]
+
+
+def test_join_time(mockbot):
+    """Make sure channel.join_time is set from JOIN echo time tag"""
+    mockbot.on_message(
+        "@time=2021-01-01T12:00:00.015Z :TestBot!bot@bot JOIN #test * :bot"
+    )
+    assert mockbot.channels["#test"].join_time == datetime(
+        2021, 1, 1, 12, 0, 0, 15000, tzinfo=timezone.utc
+    )

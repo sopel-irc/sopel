@@ -95,6 +95,13 @@ class Channel:
         self.last_who = None
         """The last time a WHO was requested for the channel."""
 
+        self.join_time = None
+        """The time the server acknowledged our JOIN message.
+
+        Based on server-reported time if the ``server-time`` IRCv3 capability
+        is available, otherwise the time Sopel received it.
+        """
+
     def clear_user(self, nick):
         """Remove ``nick`` from this channel.
 
