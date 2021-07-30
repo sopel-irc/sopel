@@ -40,8 +40,23 @@ from sopel.plugin import (  # noqa
     url,
     VOICE,
 )
+from sopel.tools import deprecated
 
 
+deprecated(
+    'sopel.module has been replaced by sopel.plugin',
+    version='8.0',
+    removed_in='9.0',
+    func=lambda *args: ...,
+)()
+
+
+@deprecated(
+    '`@intent` is replaced by `sopel.plugin.ctcp`',
+    version='7.1',
+    removed_in='9.0',
+    warning_in='8.0',
+)
 def intent(*intent_list):
     """Decorate a callable to trigger on intent messages.
 

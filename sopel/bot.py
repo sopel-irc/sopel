@@ -19,7 +19,7 @@ import time
 from sopel import irc, logger, plugins, tools
 from sopel.db import SopelDB
 import sopel.loader
-from sopel.module import NOLIMIT
+from sopel.plugin import NOLIMIT
 from sopel.plugins import jobs as plugin_jobs, rules as plugin_rules
 from sopel.tools import deprecated, Identifier
 import sopel.tools.jobs
