@@ -95,6 +95,9 @@ class PreTrigger:
         If the IRC server sent a message tag indicating when *it* received the
         message, that is used instead of the time when Sopel received it.
 
+        .. versionchanged:: 8.0
+            Now a timezone-aware ``datetime`` object.
+
     .. py:attribute:: user
 
         The sender's local username.
@@ -120,10 +123,15 @@ class PreTrigger:
                 else:
                     self.tags[tag[0]] = None
 
-        self.time = datetime.datetime.utcnow()
+        self.time = datetime.datetime.utcnow().replace(
+            tzinfo=datetime.timezone.utc
+        )
         if 'time' in self.tags:
             try:
-                self.time = datetime.datetime.strptime(self.tags['time'], '%Y-%m-%dT%H:%M:%S.%fZ')
+                self.time = datetime.datetime.strptime(
+                    self.tags['time'],
+                    "%Y-%m-%dT%H:%M:%S.%fZ",
+                ).replace(tzinfo=datetime.timezone.utc)
             except ValueError:
                 pass  # Server isn't conforming to spec, ignore the server-time
 
