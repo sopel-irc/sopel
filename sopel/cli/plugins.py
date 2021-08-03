@@ -211,12 +211,15 @@ def handle_list(options):
                 else:
                     description['name'] = utils.red(name)
         except Exception as error:
-            label = ('%s' % error) or 'unknown loading exception'
+            description.update(plugin.get_meta_description())
+
+            meta_label = description.get('label') or '(error)'
+            error_label = ('%s' % error) or 'unknown loading exception'
+            label = '%s (error: %s)' % (meta_label, error_label)
             error_status = 'error'
+
             description.update({
-                'label': 'Error: %s' % label,
-                'type': 'unknown',
-                'source': 'unknown',
+                'label': label,
                 'status': error_status,
             })
             if not no_color:
@@ -267,12 +270,15 @@ def handle_show(options):
         description.update(plugin.get_meta_description())
         loaded = True
     except Exception as error:
-        label = ('%s' % error) or 'unknown loading exception'
+        description.update(plugin.get_meta_description())
+
+        meta_label = description.get('label') or '(error)'
+        error_label = ('%s' % error) or 'unknown loading exception'
+        label = '%s (error: %s)' % (meta_label, error_label)
         error_status = 'error'
+
         description.update({
-            'label': 'Error: %s' % label,
-            'type': 'unknown',
-            'source': 'unknown',
+            'label': label,
             'status': error_status,
         })
 
