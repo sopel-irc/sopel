@@ -160,17 +160,20 @@ def format_time(db=None, config=None, zone=None, nick=None, channel=None,
     :type db: :class:`~.db.SopelDB`
     :param config: bot config object (optional)
     :type config: :class:`~.config.Config`
-    :param str zone: name of timezone to use (optional)
+    :param str zone: name of timezone to use for output (optional)
     :param str nick: nick whose time format to use, if set (optional)
     :param str channel: channel whose time format to use, if set (optional)
     :param time: the time value to format (optional)
     :type time: :class:`~datetime.datetime`
 
-    ``time``, if given, should be a naive ``datetime.datetime`` object and will
-    be treated as being in the UTC timezone. If it is not given, the current
-    time will be used. If ``zone`` is given it must be present in the IANA Time
-    Zone Database; ``get_timezone`` can be helpful for this. If ``zone`` is not
-    given, UTC will be assumed.
+    ``time``, if given, should be a ``datetime.datetime`` object, and will be
+    treated as being in the UTC timezone if it is :ref:`naïve
+    <datetime-naive-aware>`. If ``time`` is not given, the current time will
+    be used.
+
+    If ``zone`` is given it must be present in the IANA Time Zone Database;
+    ``get_timezone`` can be helpful for this. If ``zone`` is not given, UTC
+    will be assumed.
 
     The format for the string is chosen in the following order:
 
@@ -183,6 +186,7 @@ def format_time(db=None, config=None, zone=None, nick=None, channel=None,
     If ``db`` is not given or is not set up, steps 1 and 2 are skipped. If
     ``config`` is not given, step 3 will be skipped.
     """
+    utc = pytz.timezone('UTC')
     tformat = None
     if db:
         if nick:
@@ -192,19 +196,19 @@ def format_time(db=None, config=None, zone=None, nick=None, channel=None,
     if not tformat and config and config.core.default_time_format:
         tformat = config.core.default_time_format
     if not tformat:
-        tformat = '%Y-%m-%d - %T%Z'
+        tformat = '%Y-%m-%d - %T %z'
 
     if not time:
-        time = datetime.datetime.utcnow()
+        time = datetime.datetime.now(tz=utc)
+    elif not time.tzinfo:
+        time = utc.localize(time)
 
     if not zone:
-        return time.strftime(tformat)
+        zone = utc
     else:
-        if not time.tzinfo:
-            utc = pytz.timezone('UTC')
-            time = utc.localize(time)
         zone = pytz.timezone(zone)
-        return time.astimezone(zone).strftime(tformat)
+
+    return time.astimezone(zone).strftime(tformat)
 
 
 def seconds_to_split(seconds):

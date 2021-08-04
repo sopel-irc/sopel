@@ -4,6 +4,7 @@ from __future__ import generator_stop
 import datetime
 
 import pytest
+import pytz
 
 from sopel.tools import time
 
@@ -44,6 +45,42 @@ def test_validate_format():
 def test_validate_format_none():
     with pytest.raises(ValueError):
         time.validate_format(None)
+
+
+UTC = pytz.timezone('UTC')
+PARIS = pytz.timezone('Europe/Paris')
+
+TIME_FORMAT_PAIRS = [
+    (
+        # Naïve
+        datetime.datetime(
+            2021, 7, 4, 17, 7, 6,
+            tzinfo=None,
+        ),
+        '2021-07-04 - 17:07:06 +0000',
+    ),
+    (
+        # Aware, UTC
+        datetime.datetime(
+            2021, 7, 4, 17, 7, 6,
+            tzinfo=UTC,
+        ),
+        '2021-07-04 - 17:07:06 +0000',
+    ),
+    (
+        # Aware, non-UTC
+        datetime.datetime(
+            2021, 7, 4, 17, 7, 6,
+            tzinfo=UTC,
+        ).astimezone(PARIS),
+        '2021-07-04 - 17:07:06 +0000',
+    ),
+]
+
+
+@pytest.mark.parametrize('time_arg, result', TIME_FORMAT_PAIRS)
+def test_format_time(time_arg, result):
+    assert time.format_time(time=time_arg) == result
 
 
 def test_seconds_to_human():

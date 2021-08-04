@@ -3,14 +3,11 @@
 # Licensed under the Eiffel Forum License 2.
 from __future__ import generator_stop
 
-import collections
+from typing import NamedTuple
 
 from dns import rdtypes, resolver
 
 from sopel.tools import deprecated
-
-
-MYINFO_ARGS = ['client', 'servername', 'version']
 
 
 def get_cnames(domain):
@@ -104,7 +101,7 @@ class CapReq(object):
         return self.plugin
 
 
-class MyInfo(collections.namedtuple('MyInfo', MYINFO_ARGS)):
+class MyInfo(NamedTuple):
     """Store client, servername, and version from ``RPL_MYINFO`` events.
 
     .. seealso::
@@ -112,5 +109,6 @@ class MyInfo(collections.namedtuple('MyInfo', MYINFO_ARGS)):
         https://modern.ircdocs.horse/#rplmyinfo-004
 
     """
-    # TODO: replace by a class using typing.NamedTuple (new in Python 3.5+)
-    # probably in Sopel 8.0 (due to drop most old Python versions)
+    client: str
+    servername: str
+    version: str
