@@ -230,9 +230,11 @@ def mangle(bot, trigger):
     """Repeatedly translate the input until it makes absolutely no sense."""
     long_lang_list = ['fr', 'de', 'es', 'it', 'no', 'he', 'la', 'ja', 'cy', 'ar', 'yi', 'zh', 'nl', 'ru', 'fi', 'hi', 'af', 'jw', 'mr', 'ceb', 'cs', 'ga', 'sv', 'eo', 'el', 'ms', 'lv']
     lang_list = []
+
     for __ in range(0, 8):
         lang_list = get_random_lang(long_lang_list, lang_list)
     random.shuffle(lang_list)
+
     if trigger.group(2) is None:
         try:
             phrase = (bot.memory['mangle_lines'][trigger.sender], '')
@@ -241,9 +243,11 @@ def mangle(bot, trigger):
             return
     else:
         phrase = (trigger.group(2).strip(), '')
+
     if phrase[0] == '':
         bot.reply("What do you want me to mangle?")
         return
+
     for lang in lang_list:
         backup = phrase
         try:
@@ -263,6 +267,12 @@ def mangle(bot, trigger):
         if not phrase:
             phrase = backup
             break
+
+    if phrase[0] is None:
+        # translate() returns (None, None) if an error happens,
+        # usually because the bot has exceeded a rate limit
+        bot.reply("Translation rate limit reached. Try again later.")
+        return
 
     bot.say(phrase[0])
 
