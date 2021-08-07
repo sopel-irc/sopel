@@ -14,8 +14,9 @@ import logging
 import os
 import threading
 import time
+import unicodedata
 
-from sopel import plugin, tools
+from sopel import formatting, plugin, tools
 from sopel.config import types
 from sopel.tools.time import format_time, get_timezone
 
@@ -129,6 +130,43 @@ def shutdown(bot):
             pass
 
 
+def _format_safe_lstrip(text):
+    """``str.lstrip()`` but without eating IRC formatting.
+
+    :param str text: text to clean
+    :rtype: str
+    :raises TypeError: if the passed ``text`` is not a string
+
+    Stolen and tweaked from the ``choose`` plugin's ``_format_safe()``
+    function by the person who wrote it.
+    """
+    if not isinstance(text, str):
+        raise TypeError("A string is required.")
+    elif not text:
+        # unnecessary optimization
+        return ''
+
+    start = 0
+
+    # strip left
+    pos = 0
+    while pos < len(text):
+        is_whitespace = unicodedata.category(text[pos]) == 'Zs'
+        is_non_printing = (
+            text[pos] in formatting.CONTROL_NON_PRINTING and
+            text[pos] not in formatting.CONTROL_FORMATTING
+        )
+        if not is_whitespace and not is_non_printing:
+            start = pos
+            break
+        pos += 1
+    else:
+        # skipped everything; string is all whitespace
+        return ''
+
+    return text[start:]
+
+
 @plugin.command('tell', 'ask')
 @plugin.nickname_command('tell', 'ask')
 @plugin.example('$nickname, tell dgw he broke something again.')
@@ -142,7 +180,7 @@ def f_remind(bot, trigger):
         return
 
     tellee = trigger.group(3).rstrip('.,:;')
-    msg = trigger.group(2).lstrip(tellee).lstrip()
+    msg = _format_safe_lstrip(trigger.group(2).split(' ', 1)[1])
 
     if not msg:
         bot.reply("%s %s what?" % (verb, tellee))

@@ -5,6 +5,9 @@ import datetime
 import io
 import os
 
+import pytest
+
+from sopel import formatting
 from sopel.modules import tell
 
 
@@ -228,3 +231,102 @@ def test_get_reminders():
         'Exirel: '
         '%s - 14:35:55UTC '
         '<HumorBaby> tell Exirel Thanks for the review.' % today)
+
+
+# Test custom lstrip implementation
+
+UNICODE_ZS_CATEGORY = [
+    '\u0020',  # SPACE
+    '\u00A0',  # NO-BREAK SPACE
+    '\u1680',  # OGHAM SPACE MARK
+    '\u2000',  # EN QUAD
+    '\u2001',  # EM QUAD
+    '\u2002',  # EN SPACE
+    '\u2003',  # EM SPACE
+    '\u2004',  # THREE-PER-EM SPACE
+    '\u2005',  # FOUR-PER-EM SPACE
+    '\u2006',  # SIX-PER-EM SPACE
+    '\u2007',  # FIGURE SPACE
+    '\u2008',  # PUNCTUATION SPACE
+    '\u2009',  # THIN SPACE
+    '\u200A',  # HAIR SPACE
+    '\u202F',  # NARROW NO-BREAK SPACE
+    '\u205F',  # MEDIUM MATHEMATICAL SPACE
+    '\u3000',  # IDEOGRAPHIC SPACE
+]
+
+SAFE_PAIRS = (
+    # regression checks vs. old string.lstrip()
+    ('',
+     ''),
+    ('a',  # one iteration of this code returned '' for one-char strings
+     'a'),
+    ('aa',
+     'aa'),
+    # basic whitespace
+    ('  leading space',  # removed
+     'leading space'),
+    ('trailing space ',  # kept
+     'trailing space '),
+    (' leading AND trailing space  ',  # removed AND kept
+     'leading AND trailing space  '),
+    # advanced whitespace
+    ('\tleading tab',  # removed
+     'leading tab'),
+    ('trailing tab\t',  # kept
+     'trailing tab\t'),
+    # whitespace inside formatting (kept)
+    ('\x02  leading space inside formatting\x02',
+     '\x02  leading space inside formatting\x02'),
+    ('\x02trailing space inside formatting  \x02',
+     '\x02trailing space inside formatting  \x02'),
+    ('\x02  leading AND trailing inside formatting  \x02',
+     '\x02  leading AND trailing inside formatting  \x02'),
+    # whitespace outside formatting
+    ('  \x02leading space outside formatting\x02',  # removed
+     '\x02leading space outside formatting\x02'),
+    ('\x02trailing space outside formatting\x02  ',  # kept
+     '\x02trailing space outside formatting\x02  '),
+    # whitespace both inside and outside formatting
+    ('  \x02  leading space inside AND outside\x02',  # outside removed
+     '\x02  leading space inside AND outside\x02'),
+    ('\x02trailing space inside AND outside  \x02  ',  # left alone
+     '\x02trailing space inside AND outside  \x02  '),
+    ('  \x02  leading AND trailing inside AND outside  \x02  ',  # only leading removed
+     '\x02  leading AND trailing inside AND outside  \x02  '),
+)
+
+
+def test_format_safe_lstrip_basic():
+    """Test handling of basic whitespace."""
+    assert tell._format_safe_lstrip(
+        ''.join(UNICODE_ZS_CATEGORY)) == ''
+
+
+def test_format_safe_lstrip_control():
+    """Test handling of non-printing control characters."""
+    all_formatting = ''.join(formatting.CONTROL_FORMATTING)
+
+    # no formatting chars should be stripped,
+    # but a reset should be added to the end
+    assert tell._format_safe_lstrip(all_formatting) == all_formatting
+
+    # control characters not recognized as formatting should be stripped
+    assert tell._format_safe_lstrip(
+        ''.join(
+            c
+            for c in formatting.CONTROL_NON_PRINTING
+            if c not in formatting.CONTROL_FORMATTING
+        )) == ''
+
+
+def test_format_safe_lstrip_invalid_arg():
+    """Test for correct exception if non-string is passed."""
+    with pytest.raises(TypeError):
+        tell._format_safe_lstrip(None)
+
+
+@pytest.mark.parametrize('text, cleaned', SAFE_PAIRS)
+def test_format_safe_lstrip_pairs(text, cleaned):
+    """Test expected formatting-safe string sanitization."""
+    assert tell._format_safe_lstrip(text) == cleaned
