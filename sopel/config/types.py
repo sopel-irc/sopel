@@ -273,6 +273,7 @@ def _serialize_boolean(value):
 @deprecated(
     reason='Use BooleanAttribute instead of ValidatedAttribute with parse=bool',
     version='7.1',
+    warning_in='8.0',
     removed_in='9.0',
     stack_frame=-2,
 )
