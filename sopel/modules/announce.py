@@ -8,6 +8,8 @@ https://sopel.chat
 """
 from __future__ import generator_stop
 
+import itertools
+
 from sopel import plugin
 
 
@@ -17,10 +19,18 @@ def _chunks(items, size):
     :param items: the collection of items to chunk
     :type items: :term:`iterable`
     :param int size: the size of each chunk
+    :return: a :term:`generator` of chunks
+    :rtype: :term:`generator` of :class:`tuple`
     """
-    # from https://stackoverflow.com/a/312464/5991 with modified names for readability
-    for delim in range(0, len(items), size):
-        yield items[delim:delim + size]
+    # This approach is safer than slicing with non-subscriptable types,
+    # for example `dict_keys` objects
+    iterator = iter(items)
+    # TODO: Simplify to assignment expression (`while cond := expr`)
+    # when dropping Python 3.7
+    chunk = tuple(itertools.islice(iterator, size))
+    while chunk:
+        yield chunk
+        chunk = tuple(itertools.islice(iterator, size))
 
 
 @plugin.command('announce')
