@@ -238,6 +238,11 @@ def mw_section(server, query, section):
     for entry in sections['parse']['sections']:
         if entry['anchor'] == section:
             section_number = entry['index']
+            # Needed to handle sections from transcluded pages properly
+            # e.g. template documentation (usually pulled in from /doc subpage).
+            # One might expect this prop to be nullable because in most cases it
+            # will simply repeat the requested page title, but it's always set.
+            fetch_title = quote(entry['fromtitle'])
             break
 
     if not section_number:
@@ -245,7 +250,7 @@ def mw_section(server, query, section):
 
     snippet_url = ('https://{0}/w/api.php?format=json&redirects'
                    '&action=parse&page={1}&prop=text'
-                   '&section={2}').format(server, query, section_number)
+                   '&section={2}').format(server, fetch_title, section_number)
 
     data = get(snippet_url).json()
 
