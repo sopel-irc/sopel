@@ -35,6 +35,7 @@ class WikiParser(HTMLParser):
         self.section_name = section_name
 
         self.citations = False
+        self.messagebox = False
         self.span_depth = 0
         self.div_depth = 0
 
@@ -55,13 +56,34 @@ class WikiParser(HTMLParser):
                     if attr[0] == 'class' and 'edit' in attr[1]:
                         self.span_depth += 1
 
-        elif tag == 'div':  # We want to skip thumbnail text and the inexplicable table of contents, and as such also need to track div depth
+        elif tag == 'div':
+            # We want to skip thumbnail text and the inexplicable table of contents,
+            # and as such also need to track div depth
             if self.div_depth:
                 self.div_depth += 1
             else:
                 for attr in attrs:
                     if attr[0] == 'class' and ('thumb' in attr[1] or attr[1] == 'toc'):
                         self.div_depth += 1
+
+        elif tag == 'table':
+            # Message box templates are what we want to ignore here
+            for attr in attrs:
+                if (
+                    attr[0] == 'class'
+                    and any(classname in attr[1].lower() for classname in [
+                        # Most of list from https://en.wikipedia.org/wiki/Template:Mbox_templates_see_also
+                        'ambox',  # messageboxes on article pages
+                        'cmbox',  # messageboxes on category pages
+                        'imbox',  # messageboxes on file (image) pages
+                        'tmbox',  # messageboxes on talk pages
+                        'fmbox',  # header and footer messageboxes
+                        'ombox',  # messageboxes on other types of page
+                        'mbox',  # for messageboxes that are used in different namespaces and change their presentation accordingly
+                        'dmbox',  # for disambiguation messageboxes
+                    ])
+                ):
+                    self.messagebox = True
 
         elif tag == 'ol':
             for attr in attrs:
@@ -77,9 +99,11 @@ class WikiParser(HTMLParser):
             self.span_depth -= 1
         if self.div_depth and tag == 'div':
             self.div_depth -= 1
+        if self.messagebox and tag == 'table':
+            self.messagebox = False
 
     def handle_data(self, data):
-        if self.consume and not any([self.citations, self.span_depth, self.div_depth]):
+        if self.consume and not any([self.citations, self.messagebox, self.span_depth, self.div_depth]):
             if not (self.is_header and data == self.section_name):  # Skip the initial header info only
                 self.result += data
 
@@ -225,6 +249,11 @@ def mw_section(server, query, section):
     for entry in sections['parse']['sections']:
         if entry['anchor'] == section:
             section_number = entry['index']
+            # Needed to handle sections from transcluded pages properly
+            # e.g. template documentation (usually pulled in from /doc subpage).
+            # One might expect this prop to be nullable because in most cases it
+            # will simply repeat the requested page title, but it's always set.
+            fetch_title = quote(entry['fromtitle'])
             break
 
     if not section_number:
@@ -232,7 +261,7 @@ def mw_section(server, query, section):
 
     snippet_url = ('https://{0}/w/api.php?format=json&redirects'
                    '&action=parse&page={1}&prop=text'
-                   '&section={2}').format(server, query, section_number)
+                   '&section={2}').format(server, fetch_title, section_number)
 
     data = get(snippet_url).json()
 
