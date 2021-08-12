@@ -55,6 +55,7 @@ def setup(bot):
             user_agent=USER_AGENT,
             client_id='6EiphT6SSQq7FQ',
             client_secret=None,
+            check_for_updates=False,
         )
 
 
