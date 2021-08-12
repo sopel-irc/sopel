@@ -13,6 +13,7 @@ from collections import defaultdict
 import io  # don't use `codecs` for loading the DB; it will split lines on some IRC formatting
 import logging
 import os
+import sys
 import threading
 import time
 import unicodedata
@@ -20,6 +21,10 @@ import unicodedata
 from sopel import formatting, plugin, tools
 from sopel.config import types
 from sopel.tools.time import format_time, get_timezone
+
+
+if sys.version_info.major >= 3:
+    unicode = str
 
 
 LOGGER = logging.getLogger(__name__)
@@ -141,7 +146,7 @@ def _format_safe_lstrip(text):
     Stolen and tweaked from the ``choose`` plugin's ``_format_safe()``
     function by the person who wrote it.
     """
-    if not isinstance(text, str):
+    if not isinstance(text, unicode):
         raise TypeError("A string is required.")
     elif not text:
         # unnecessary optimization

@@ -5,11 +5,16 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 import datetime
 import io
 import os
+import sys
 
 import pytest
 
 from sopel import formatting
 from sopel.modules import tell
+
+
+if sys.version_info.major >= 3:
+    unicode = str
 
 
 def test_load_reminders_empty(tmpdir):
