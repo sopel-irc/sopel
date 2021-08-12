@@ -17,13 +17,13 @@ import signal
 import threading
 import time
 from types import MappingProxyType
-from typing import Mapping, Optional
+from typing import Any, Dict, Iterable, Mapping, Optional, Tuple, Union
 
 from sopel import db, irc, logger, plugin, plugins, tools
 from sopel.irc import modes
 from sopel.plugins import jobs as plugin_jobs, rules as plugin_rules
 from sopel.tools import deprecated, Identifier, jobs as tools_jobs
-from sopel.trigger import Trigger
+from sopel.trigger import PreTrigger, Trigger
 
 
 __all__ = ['Sopel', 'SopelWrapper']
@@ -49,7 +49,7 @@ class Sopel(irc.AbstractBot):
         self.wantsrestart = False
         self._running_triggers = []
         self._running_triggers_lock = threading.Lock()
-        self._plugins = {}
+        self._plugins: Dict[str, Any] = {}
         self._rules_manager = plugin_rules.Manager()
         self._scheduler = plugin_jobs.Scheduler(self)
 
@@ -110,17 +110,17 @@ class Sopel(irc.AbstractBot):
         """List of methods to call on shutdown."""
 
     @property
-    def rules(self):
+    def rules(self) -> plugin_rules.Manager:
         """Rules manager."""
         return self._rules_manager
 
     @property
-    def scheduler(self):
+    def scheduler(self) -> plugin_jobs.Scheduler:
         """Job Scheduler. See :func:`sopel.plugin.interval`."""
         return self._scheduler
 
     @property
-    def command_groups(self):
+    def command_groups(self) -> Dict[str, list]:
         """A mapping of plugin names to lists of their commands.
 
         .. versionchanged:: 7.1
@@ -145,7 +145,7 @@ class Sopel(irc.AbstractBot):
         return result
 
     @property
-    def doc(self):
+    def doc(self) -> Dict[str, tuple]:
         """A dictionary of command names to their documentation.
 
         Each command is mapped to its docstring and any available examples, if
@@ -198,7 +198,7 @@ class Sopel(irc.AbstractBot):
         """
         return MappingProxyType(self._plugins)
 
-    def has_channel_privilege(self, channel, privilege):
+    def has_channel_privilege(self, channel, privilege) -> bool:
         """Tell if the bot has a ``privilege`` level or above in a ``channel``.
 
         :param str channel: a channel the bot is in
@@ -223,7 +223,7 @@ class Sopel(irc.AbstractBot):
 
     # signal handlers
 
-    def set_signal_handlers(self):
+    def set_signal_handlers(self) -> None:
         """Set signal handlers for the bot.
 
         Before running the bot, this method can be called from the main thread
@@ -243,7 +243,7 @@ class Sopel(irc.AbstractBot):
         for obj in SIGNALS:
             signal.signal(obj, self._signal_handler)
 
-    def _signal_handler(self, sig, frame):
+    def _signal_handler(self, sig, frame) -> None:
         if sig in QUIT_SIGNALS:
             if self.backend.is_connected():
                 LOGGER.warning("Got quit signal, sending QUIT to server.")
@@ -264,7 +264,7 @@ class Sopel(irc.AbstractBot):
 
     # setup
 
-    def setup(self):
+    def setup(self) -> None:
         """Set up Sopel bot before it can run.
 
         The setup phase is in charge of:
@@ -277,7 +277,7 @@ class Sopel(irc.AbstractBot):
         self.setup_plugins()
         self.post_setup()
 
-    def setup_logging(self):
+    def setup_logging(self) -> None:
         """Set up logging based on config options."""
         logger.setup_logging(self.settings)
         base_level = self.settings.core.logging_level or 'INFO'
@@ -302,7 +302,7 @@ class Sopel(irc.AbstractBot):
             LOGGER = logging.getLogger('sopel')
             LOGGER.addHandler(handler)
 
-    def setup_plugins(self):
+    def setup_plugins(self) -> None:
         """Load plugins into the bot."""
         load_success = 0
         load_error = 0
@@ -349,7 +349,7 @@ class Sopel(irc.AbstractBot):
 
     # post setup
 
-    def post_setup(self):
+    def post_setup(self) -> None:
         """Perform post-setup actions.
 
         This method handles everything that should happen after all the plugins
@@ -380,7 +380,7 @@ class Sopel(irc.AbstractBot):
 
     # plugins management
 
-    def reload_plugin(self, name):
+    def reload_plugin(self, name) -> None:
         """Reload a plugin.
 
         :param str name: name of the plugin to reload
@@ -407,7 +407,7 @@ class Sopel(irc.AbstractBot):
         LOGGER.info("Reloaded %s plugin %s from %s",
                     meta['type'], name, meta['source'])
 
-    def reload_plugins(self):
+    def reload_plugins(self) -> None:
         """Reload all registered plugins.
 
         First, this function runs all plugin shutdown routines and unregisters
@@ -430,7 +430,7 @@ class Sopel(irc.AbstractBot):
             LOGGER.info("Reloaded %s plugin %s from %s",
                         meta['type'], name, meta['source'])
 
-    def add_plugin(self, plugin, callables, jobs, shutdowns, urls):
+    def add_plugin(self, plugin, callables, jobs, shutdowns, urls) -> None:
         """Add a loaded plugin to the bot's registry.
 
         :param plugin: loaded plugin to add
@@ -453,7 +453,7 @@ class Sopel(irc.AbstractBot):
         self.register_shutdowns(shutdowns)
         self.register_urls(urls)
 
-    def remove_plugin(self, plugin, callables, jobs, shutdowns, urls):
+    def remove_plugin(self, plugin, callables, jobs, shutdowns, urls) -> None:
         """Remove a loaded plugin from the bot's registry.
 
         :param plugin: loaded plugin to remove
@@ -482,7 +482,7 @@ class Sopel(irc.AbstractBot):
         # remove plugin from registry
         del self._plugins[name]
 
-    def has_plugin(self, name):
+    def has_plugin(self, name: str) -> bool:
         """Check if the bot has registered a plugin of the specified name.
 
         :param str name: name of the plugin to check for
@@ -491,7 +491,7 @@ class Sopel(irc.AbstractBot):
         """
         return name in self._plugins
 
-    def get_plugin_meta(self, name):
+    def get_plugin_meta(self, name: str) -> dict:
         """Get info about a registered plugin by its name.
 
         :param str name: name of the plugin about which to get info
@@ -508,7 +508,7 @@ class Sopel(irc.AbstractBot):
 
     # callable management
 
-    def register_callables(self, callables):
+    def register_callables(self, callables: Iterable) -> None:
         match_any = re.compile(r'.*')
         settings = self.settings
 
@@ -587,28 +587,28 @@ class Sopel(irc.AbstractBot):
                 self._rules_manager.register(
                     plugin_rules.Rule.from_callable(self.settings, callbl))
 
-    def register_jobs(self, jobs):
+    def register_jobs(self, jobs: Iterable) -> None:
         for func in jobs:
             job = tools_jobs.Job.from_callable(self.settings, func)
             self._scheduler.register(job)
 
-    def unregister_jobs(self, jobs):
+    def unregister_jobs(self, jobs: Iterable) -> None:
         for job in jobs:
             self._scheduler.remove_callable_job(job)
 
-    def register_shutdowns(self, shutdowns):
+    def register_shutdowns(self, shutdowns: Iterable) -> None:
         # Append plugin's shutdown function to the bot's list of functions to
         # call on shutdown
         self.shutdown_methods = self.shutdown_methods + list(shutdowns)
 
-    def unregister_shutdowns(self, shutdowns):
+    def unregister_shutdowns(self, shutdowns: Iterable) -> None:
         self.shutdown_methods = [
             shutdown
             for shutdown in self.shutdown_methods
             if shutdown not in shutdowns
         ]
 
-    def register_urls(self, urls):
+    def register_urls(self, urls: Iterable) -> None:
         for func in urls:
             url_regex = getattr(func, 'url_regex', [])
             url_lazy_loaders = getattr(func, 'url_lazy_loaders', None)
@@ -628,7 +628,12 @@ class Sopel(irc.AbstractBot):
 
     # message dispatch
 
-    def call_rule(self, rule, sopel, trigger):
+    def call_rule(
+        self,
+        rule: plugin_rules.AbstractRule,
+        sopel: 'SopelWrapper',
+        trigger: Trigger,
+    ) -> None:
         # rate limiting
         if not trigger.admin and not rule.is_unblockable():
             if rule.is_rate_limited(trigger.nick):
@@ -665,7 +670,12 @@ class Sopel(irc.AbstractBot):
         except Exception as error:
             self.error(trigger, exception=error)
 
-    def call(self, func, sopel, trigger):
+    def call(
+        self,
+        func: Any,
+        sopel: 'SopelWrapper',
+        trigger: Trigger,
+    ) -> None:
         """Call a function, applying any rate limits or other restrictions.
 
         :param func: the function to call
@@ -764,16 +774,19 @@ class Sopel(irc.AbstractBot):
             if not trigger.is_privmsg:
                 self._times[trigger.sender][func] = current_time
 
-    def _is_pretrigger_blocked(self, pretrigger):
+    def _is_pretrigger_blocked(
+        self,
+        pretrigger: PreTrigger,
+    ) -> Union[Tuple[bool, bool], Tuple[None, None]]:
         if self.settings.core.nick_blocks or self.settings.core.host_blocks:
             nick_blocked = self._nick_blocked(pretrigger.nick)
             host_blocked = self._host_blocked(pretrigger.host)
         else:
-            nick_blocked = host_blocked = None
+            return (None, None)
 
         return (nick_blocked, host_blocked)
 
-    def dispatch(self, pretrigger):
+    def dispatch(self, pretrigger: PreTrigger) -> None:
         """Dispatch a parsed message to any registered callables.
 
         :param pretrigger: a parsed message from the server
@@ -851,7 +864,7 @@ class Sopel(irc.AbstractBot):
             )
 
     @property
-    def running_triggers(self):
+    def running_triggers(self) -> list:
         """Current active threads for triggers.
 
         :return: the running thread(s) currently processing trigger(s)
@@ -862,7 +875,7 @@ class Sopel(irc.AbstractBot):
         with self._running_triggers_lock:
             return [t for t in self._running_triggers if t.is_alive()]
 
-    def _update_running_triggers(self, running_triggers):
+    def _update_running_triggers(self, running_triggers: list) -> None:
         """Update list of running triggers.
 
         :param list running_triggers: newly started threads
@@ -883,7 +896,11 @@ class Sopel(irc.AbstractBot):
 
     # event handlers
 
-    def on_scheduler_error(self, scheduler, exc):
+    def on_scheduler_error(
+        self,
+        scheduler: plugin_jobs.Scheduler,
+        exc: BaseException,
+    ):
         """Called when the Job Scheduler fails.
 
         :param scheduler: the job scheduler that errored
@@ -896,7 +913,12 @@ class Sopel(irc.AbstractBot):
         """
         self.error(exception=exc)
 
-    def on_job_error(self, scheduler, job, exc):
+    def on_job_error(
+        self,
+        scheduler: plugin_jobs.Scheduler,
+        job: tools_jobs.Job,
+        exc: BaseException,
+    ):
         """Called when a job from the Job Scheduler fails.
 
         :param scheduler: the job scheduler responsible for the errored ``job``
@@ -911,7 +933,11 @@ class Sopel(irc.AbstractBot):
         """
         self.error(exception=exc)
 
-    def error(self, trigger=None, exception=None):
+    def error(
+        self,
+        trigger: Optional[Trigger] = None,
+        exception: BaseException = None,
+    ):
         """Called internally when a plugin causes an error.
 
         :param trigger: the ``Trigger``\\ing line (if available)
@@ -933,7 +959,7 @@ class Sopel(irc.AbstractBot):
         if trigger and self.settings.core.reply_errors and trigger.sender is not None:
             self.say(message, trigger.sender)
 
-    def _host_blocked(self, host):
+    def _host_blocked(self, host: str) -> bool:
         """Check if a hostname is blocked.
 
         :param str host: the hostname to check
@@ -948,7 +974,7 @@ class Sopel(irc.AbstractBot):
                 return True
         return False
 
-    def _nick_blocked(self, nick):
+    def _nick_blocked(self, nick: str) -> bool:
         """Check if a nickname is blocked.
 
         :param str nick: the nickname to check
@@ -963,7 +989,7 @@ class Sopel(irc.AbstractBot):
                 return True
         return False
 
-    def _shutdown(self):
+    def _shutdown(self) -> None:
         """Internal bot shutdown method."""
         LOGGER.info("Shutting down")
         # Stop Job Scheduler
@@ -1138,7 +1164,7 @@ class Sopel(irc.AbstractBot):
             if match:
                 yield function, match
 
-    def restart(self, message):
+    def restart(self, message: str) -> None:
         """Disconnect from IRC and restart the bot.
 
         :param str message: QUIT message to send (e.g. "Be right back!")
