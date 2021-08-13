@@ -12,6 +12,10 @@ from __future__ import generator_stop
 import functools
 import re
 
+# import and expose privileges as shortcut
+from sopel.privileges import ADMIN, HALFOP, OP, OPER, OWNER, VOICE
+
+
 __all__ = [
     # constants
     'NOLIMIT', 'VOICE', 'HALFOP', 'OP', 'ADMIN', 'OWNER', 'OPER',
@@ -59,73 +63,6 @@ triggering the same callable again within the rate limit. This can be used,
 for example, to allow a user to retry a failed command immediately.
 
 .. versionadded:: 4.0
-"""
-
-VOICE = 1
-"""Privilege level for the +v channel permission
-
-.. versionadded:: 4.1
-"""
-
-HALFOP = 2
-"""Privilege level for the +h channel permission
-
-.. versionadded:: 4.1
-
-.. important::
-
-    Not all IRC networks support this privilege mode. If you are writing a
-    plugin for public distribution, ensure your code behaves sensibly if only
-    ``+v`` (voice) and ``+o`` (op) modes exist.
-
-"""
-
-OP = 4
-"""Privilege level for the +o channel permission
-
-.. versionadded:: 4.1
-"""
-
-ADMIN = 8
-"""Privilege level for the +a channel permission
-
-.. versionadded:: 4.1
-
-.. important::
-
-    Not all IRC networks support this privilege mode. If you are writing a
-    plugin for public distribution, ensure your code behaves sensibly if only
-    ``+v`` (voice) and ``+o`` (op) modes exist.
-
-"""
-
-OWNER = 16
-"""Privilege level for the +q channel permission
-
-.. versionadded:: 4.1
-
-.. important::
-
-    Not all IRC networks support this privilege mode. If you are writing a
-    plugin for public distribution, ensure your code behaves sensibly if only
-    ``+v`` (voice) and ``+o`` (op) modes exist.
-
-"""
-
-OPER = 32
-"""Privilege level for the +y/+Y channel permissions
-
-Note: Except for these (non-standard) channel modes, Sopel does not monitor or
-store any user's OPER status.
-
-.. versionadded:: 7.0.0
-
-.. important::
-
-    Not all IRC networks support this privilege mode. If you are writing a
-    plugin for public distribution, ensure your code behaves sensibly if only
-    ``+v`` (voice) and ``+o`` (op) modes exist.
-
 """
 
 

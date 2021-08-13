@@ -92,6 +92,11 @@ two options:
 
 .. __: https://ircv3.net/specs/extensions/account-tag-3.2
 
+.. seealso::
+
+   Read the :doc:`privileges` chapter for more information on how to manage
+   privileges and access management in a plugin.
+
 Rate limiting
 -------------
 
