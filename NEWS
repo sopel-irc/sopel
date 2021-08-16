@@ -2,6 +2,42 @@ This file is used to auto-generate the "Changelog" section of Sopel's website.
 When adding new entries, follow the style guide in NEWS.spec.md to avoid
 causing problems with the site build.
 
+Changes between 7.1.2 and 7.1.3
+===============================
+
+Plugin changes
+--------------
+
+* announce: fix Python 3 compatibility [[#2166][]]
+* reddit: fix handling post links with parameters, e.g. sorting [[#2163][]]
+* reddit: silence PRAW update notices [[#2171][]]
+* tell: don't strip IRC formatting at message start [[#2162][]]
+* translate: better error handling in `.mangle` [[#2160][]]
+* wikipedia: skip messagebox template contents for cleaner snippets [[#2159][]]
+* wikipedia: improve handling of links to transcluded sections [[#2168][]]
+
+Core changes
+------------
+
+* Fixed showing plugin information in `sopel-plugins` CLI tool even if loading
+  the plugin fails [[#2135][]]
+* Stop warning about `parse == bool` configuration settings in 7.x [[#2164][]]
+  * This warning will return in Sopel 8.0, a major release which will be a
+    more natural time for plugin maintainers to release compatibility updates.
+* Fixed `requests` requirement on Python 3.3 [[#2172][]]
+
+[#2135]: https://github.com/sopel-irc/sopel/pull/2135
+[#2159]: https://github.com/sopel-irc/sopel/pull/2159
+[#2160]: https://github.com/sopel-irc/sopel/pull/2160
+[#2162]: https://github.com/sopel-irc/sopel/pull/2162
+[#2163]: https://github.com/sopel-irc/sopel/pull/2163
+[#2164]: https://github.com/sopel-irc/sopel/pull/2164
+[#2166]: https://github.com/sopel-irc/sopel/pull/2166
+[#2168]: https://github.com/sopel-irc/sopel/pull/2168
+[#2171]: https://github.com/sopel-irc/sopel/pull/2171
+[#2172]: https://github.com/sopel-irc/sopel/pull/2172
+
+
 Changes between 7.1.1 and 7.1.2
 ===============================
 
