@@ -15,6 +15,7 @@ import re
 import signal
 import threading
 import time
+from typing import Optional
 
 from sopel import irc, logger, plugins, tools
 from sopel.db import SopelDB
@@ -174,16 +175,16 @@ class Sopel(irc.AbstractBot):
         )
 
     @property
-    def hostmask(self):
-        """The current hostmask for the bot :class:`sopel.tools.target.User`.
+    def hostmask(self) -> Optional[str]:
+        """The current hostmask for the bot :class:`~sopel.tools.target.User`.
 
-        :return: the bot's current hostmask
-        :rtype: str
-
-        Bot must be connected and in at least one channel.
+        :return: the bot's current hostmask if the bot is connected and in
+                 a least one channel; ``None`` otherwise
+        :rtype: Optional[str]
         """
         if not self.users or self.nick not in self.users:
-            raise KeyError("'hostmask' not available: bot must be connected and in at least one channel.")
+            # bot must be connected and in at least one channel
+            return None
 
         return self.users.get(self.nick).hostmask
 

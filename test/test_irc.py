@@ -4,6 +4,8 @@ from __future__ import generator_stop
 import pytest
 
 from sopel.tests import rawlist
+from sopel.tools import Identifier
+from sopel.tools.target import User
 
 
 TMP_CONFIG = """
@@ -30,6 +32,17 @@ def bot(tmpconfig, botfactory):
 def prefix_length(bot):
     # ':', nick, '!', '~', ident/username, '@', maximum hostname length, <0x20>
     return 1 + len(bot.nick) + 1 + 1 + len(bot.user) + 1 + 63 + 1
+
+
+def test_safe_text_length_hostmask_unknown(bot):
+    assert bot.hostmask is None
+    assert bot.safe_text_length('#channel') == 414
+
+
+def test_safe_text_length(bot):
+    bot.users[Identifier(bot.nick)] = User(bot.nick, bot.user, 'hostname')
+    assert bot.hostmask is not None
+    assert bot.safe_text_length('#channel') == 470
 
 
 def test_on_connect(bot):
