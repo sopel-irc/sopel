@@ -220,163 +220,6 @@ def get_input(prompt):
     return input(prompt)
 
 
-@deprecated('rule compilation tools are now private', '7.1', '8.0')
-def compile_rule(nick, pattern, alias_nicks):
-    """Compile a rule regex and fill in nickname placeholders.
-
-    :param str nick: the nickname to use when replacing ``$nick`` and
-                     ``$nickname`` placeholders in the ``pattern``
-    :param str pattern: the rule regex pattern
-    :param list alias_nicks: a list of alternatives that should also be accepted
-                             instead of ``nick``
-    :return: the compiled regex ``pattern``, with placeholders for ``$nick`` and
-             ``$nickname`` filled in
-    :rtype: :ref:`re.Pattern <python:re-objects>`
-
-    Will not recompile an already compiled pattern.
-
-    .. deprecated:: 7.1
-
-        Rule regexp tools are now part of the internal machinery. This function
-        is deprecated and will be removed in Sopel 8.
-
-    """
-    # Not sure why this happens on reloads, but it shouldn't cause problems…
-    if isinstance(pattern, _regex_type):
-        return pattern
-
-    from sopel.plugins.rules import _compile_pattern
-    return _compile_pattern(pattern, nick, aliases=alias_nicks)
-
-
-@deprecated('command regexp tools are now private', '7.1', '8.0')
-def get_command_regexp(prefix, command):
-    """Get a compiled regexp object that implements the command.
-
-    :param str prefix: the command prefix (interpreted as regex)
-    :param str command: the name of the command
-    :return: a compiled regexp object that implements the command
-    :rtype: :ref:`re.Pattern <python:re-objects>`
-
-    .. deprecated:: 7.1
-
-        Command regexp tools are now part of the internal machinery. This
-        function is deprecated and will be removed in Sopel 8.
-
-    """
-    # Must defer import to avoid cyclic dependency
-    from sopel.plugins.rules import Command
-    rule = Command(name=command, prefix=prefix)
-    return rule.get_rule_regex()
-
-
-@deprecated('command regexp tools are now private', '7.1', '8.0')
-def get_command_pattern(prefix, command):
-    """Get the uncompiled regex pattern for standard commands.
-
-    :param str prefix: the command prefix (interpreted as regex)
-    :param str command: the command name
-    :return: a regex pattern that will match the given command
-    :rtype: str
-
-    .. deprecated:: 7.1
-
-        Command regexp tools are now part of the internal machinery. This
-        function is deprecated and will be removed in Sopel 8.
-
-    """
-    # Must defer import to avoid cyclic dependency
-    from sopel.plugins.rules import Command
-    return Command.PATTERN_TEMPLATE.format(prefix=prefix, command=command)
-
-
-@deprecated('command regexp tools are now private', '7.1', '8.0')
-def get_nickname_command_regexp(nick, command, alias_nicks):
-    """Get a compiled regexp object that implements the nickname command.
-
-    :param str nick: the bot's nickname
-    :param str command: the command name
-    :param list alias_nicks: a list of alternatives that should also be accepted
-                             instead of ``nick``
-    :return: a compiled regex pattern that implements the given nickname command
-    :rtype: :ref:`re.Pattern <python:re-objects>`
-
-    .. deprecated:: 7.1
-
-        Command regexp tools are now part of the internal machinery. This
-        function is deprecated and will be removed in Sopel 8.
-
-    """
-    # Must defer import to avoid cyclic dependency
-    from sopel.plugins.rules import NickCommand
-
-    if isinstance(alias_nicks, str):
-        alias_nicks = [alias_nicks]
-    elif not isinstance(alias_nicks, (list, tuple)):
-        raise ValueError('A list or string is required.')
-
-    rule = NickCommand(nick=nick, name=command, nick_aliases=alias_nicks)
-    return rule.get_rule_regex()
-
-
-@deprecated('command regexp tools are now private', '7.1', '8.0')
-def get_nickname_command_pattern(command):
-    """Get the uncompiled regex pattern for a nickname command.
-
-    :param str command: the command name
-    :return: a regex pattern that will match the given nickname command
-    :rtype: str
-
-    .. deprecated:: 7.1
-
-        Command regexp tools are now part of the internal machinery. This
-        function is deprecated and will be removed in Sopel 8.
-
-    """
-    # Must defer import to avoid cyclic dependency
-    from sopel.plugins.rules import NickCommand
-    return NickCommand.PATTERN_TEMPLATE.format(command=command)
-
-
-@deprecated('command regexp tools are now private', '7.1', '8.0')
-def get_action_command_regexp(command):
-    """Get a compiled regexp object that implements the command.
-
-    :param str command: the name of the command
-    :return: a compiled regexp object that implements the command
-    :rtype: :ref:`re.Pattern <python:re-objects>`
-
-    .. deprecated:: 7.1
-
-        Command regexp tools are now part of the internal machinery. This
-        function is deprecated and will be removed in Sopel 8.
-
-    """
-    # Must defer import to avoid cyclic dependency
-    from sopel.plugins.rules import ActionCommand
-    rule = ActionCommand(name=command)
-    return rule.get_rule_regex()
-
-
-@deprecated('command regexp tools are now private', '7.1', '8.0')
-def get_action_command_pattern(command):
-    """Get the uncompiled regex pattern for action commands.
-
-    :param str command: the command name
-    :return: a regex pattern that will match the given command
-    :rtype: str
-
-    .. deprecated:: 7.1
-
-        Command regexp tools are now part of the internal machinery. This
-        function is deprecated and will be removed in Sopel 8.
-
-    """
-    # Must defer import to avoid cyclic dependency
-    from sopel.plugins.rules import ActionCommand
-    return ActionCommand.PATTERN_TEMPLATE.format(command=command)
-
-
 def get_sendable_message(text, max_length=400):
     """Get a sendable ``text`` message, with its excess when needed.
 
@@ -412,28 +255,6 @@ def get_sendable_message(text, max_length=400):
             text = text[:last_space]
 
     return text, excess.lstrip()
-
-
-# This class was useful before Python 2.5, when ``defaultdict`` was added
-# to the built-in ``collections`` module.
-# It is now deprecated.
-class Ddict(dict):
-    """A default dict implementation available for Python 2.x support.
-
-    It was used to make multi-dimensional ``dict``\\s easy to use when the
-    bot worked with Python version < 2.5.
-
-    .. deprecated:: 7.0
-        Use :class:`collections.defaultdict` instead.
-    """
-    @deprecated('use "collections.defaultdict" instead', '7.0', '8.0')
-    def __init__(self, default=None):
-        self.default = default
-
-    def __getitem__(self, key):
-        if key not in self:
-            self[key] = self.default()
-        return dict.__getitem__(self, key)
 
 
 class Identifier(str):
@@ -609,14 +430,6 @@ class OutputRedirect(object):
             sys.__stdout__.flush()
 
 
-# These seems to trace back to when we thought we needed a try/except on prints,
-# because it looked like that was why we were having problems.
-# We'll drop it in Sopel 8.0 because it has been here for far too long already.
-@deprecated('Use `print()` instead of sopel.tools.stdout', removed_in='8.0')
-def stdout(string):
-    print(string)
-
-
 def stderr(string):
     """Print the given ``string`` to stderr.
 
@@ -692,7 +505,7 @@ class SopelMemory(dict):
 
     In order to prevent exceptions when iterating over the values and changing
     them at the same time from different threads, we use a blocking lock in
-    ``__setitem__`` and ``contains``.
+    ``__setitem__`` and ``__contains__``.
 
     .. versionadded:: 3.1
         As ``Willie.WillieMemory``
@@ -731,18 +544,6 @@ class SopelMemory(dict):
     __ne__ = dict.__ne__
     __hash__ = dict.__hash__
 
-    @deprecated
-    def contains(self, key):
-        """Check if ``key`` is in the memory
-
-        :param str key: key to check for
-
-        .. deprecated:: 7.0
-            Will be removed in Sopel 8. If you aren't already using the ``in``
-            operator, you should be.
-        """
-        return self.__contains__(key)
-
 
 class SopelMemoryWithDefault(defaultdict):
     """Same as SopelMemory, but subclasses from collections.defaultdict.
@@ -775,18 +576,6 @@ class SopelMemoryWithDefault(defaultdict):
         result = defaultdict.__contains__(self, key)
         self.lock.release()
         return result
-
-    @deprecated
-    def contains(self, key):
-        """Check if ``key`` is in the memory
-
-        :param str key: key to check for
-
-        .. deprecated:: 7.0
-            Will be removed in Sopel 8. If you aren't already using the ``in``
-            operator, you should be.
-        """
-        return self.__contains__(key)
 
 
 class SopelIdentifierMemory(SopelMemory):
@@ -827,28 +616,6 @@ class SopelIdentifierMemory(SopelMemory):
 
     def __setitem__(self, key, value):
         super(SopelIdentifierMemory, self).__setitem__(Identifier(key), value)
-
-
-@deprecated(version='7.0', removed_in='8.0')
-def get_raising_file_and_line(tb=None):
-    """Get the file and line number where an exception happened.
-
-    :param tb: the traceback (uses the most recent exception if not given)
-    :return: a tuple of the filename and line number
-    :rtype: (str, int)
-
-    .. deprecated:: 7.0
-
-        Use Python's built-in logging system, with the ``logger.exception``
-        method. This method makes sure to log the exception with the traceback
-        and the relevant information (filename, line number, etc.).
-    """
-    if not tb:
-        tb = sys.exc_info()[2]
-
-    filename, lineno, _context, _line = traceback.extract_tb(tb)[-1]
-
-    return filename, lineno
 
 
 def chain_loaders(*lazy_loaders):
