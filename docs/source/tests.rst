@@ -28,9 +28,3 @@ Mocks
 
 .. automodule:: sopel.tests.mocks
    :members:
-
-Old testing tools
-=================
-
-.. automodule:: sopel.test_tools
-   :members:
