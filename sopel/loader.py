@@ -14,47 +14,11 @@ from __future__ import generator_stop
 import inspect
 import logging
 import re
-import sys
 
 from sopel.config.core_section import COMMAND_DEFAULT_HELP_PREFIX
-from sopel.tools import deprecated
 
 
 LOGGER = logging.getLogger(__name__)
-
-
-@deprecated(
-    reason="Replaced by simple logic using inspect.getdoc()",
-    version='7.1',
-    removed_in='8.0',
-)
-def trim_docstring(doc):
-    """Get the docstring as a series of lines that can be sent.
-
-    :param str doc: a callable's docstring to trim
-    :return: a list of trimmed lines
-    :rtype: list
-
-    This function acts like :func:`inspect.cleandoc` but doesn't replace tabs,
-    and instead of a :class:`str` it returns a :class:`list`.
-    """
-    if not doc:
-        return []
-    lines = doc.expandtabs().splitlines()
-    indent = sys.maxsize
-    for line in lines[1:]:
-        stripped = line.lstrip()
-        if stripped:
-            indent = min(indent, len(line) - len(stripped))
-    trimmed = [lines[0].strip()]
-    if indent < sys.maxsize:
-        for line in lines[1:]:
-            trimmed.append(line[:].rstrip())
-    while trimmed and not trimmed[-1]:
-        trimmed.pop()
-    while trimmed and not trimmed[0]:
-        trimmed.pop(0)
-    return trimmed
 
 
 def clean_callable(func, config):
