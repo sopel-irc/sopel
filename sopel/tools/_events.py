@@ -33,6 +33,8 @@ class events(str, Enum):
     RPL_STARTTLS = '670'
     ERR_STARTTLS = '691'
     # ## 3.2
+    # Bot Mode
+    RPL_WHOISBOT = '335'
     # Metadata
     RPL_WHOISKEYVALUE = '760'
     RPL_KEYVALUE = '761'
