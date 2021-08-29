@@ -31,11 +31,11 @@ import logging
 import re
 import time
 
-from sopel import loader, plugin
+from sopel import plugin
 from sopel.config import ConfigurationError
 from sopel.irc import isupport
 from sopel.irc.utils import CapReq, MyInfo
-from sopel.tools import events, Identifier, SopelMemory, target, web
+from sopel.tools import events, Identifier, jobs, SopelMemory, target, web
 
 
 LOGGER = logging.getLogger(__name__)
@@ -71,16 +71,15 @@ def setup(bot):
     # Manage JOIN flood protection
     if bot.settings.core.throttle_join:
         wait_interval = max(bot.settings.core.throttle_wait, 1)
-
-        @plugin.interval(wait_interval)
-        @plugin.label('throttle_join')
-        def processing_job(bot):
-            _join_event_processing(bot)
-
-        loader.clean_callable(processing_job, bot.settings)
-        processing_job.plugin_name = 'coretasks'
-
-        bot.register_jobs([processing_job])
+        job = jobs.Job(
+            [wait_interval],
+            plugin='coretasks',
+            label='throttle_join',
+            handler=_join_event_processing,
+            threaded=True,
+            doc=None,
+        )
+        bot.scheduler.register(job)
 
 
 def shutdown(bot):
