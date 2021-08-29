@@ -19,14 +19,10 @@ import time
 from types import MappingProxyType
 from typing import Mapping, Optional
 
-from sopel import irc, logger, plugins, tools
-from sopel.db import SopelDB
+from sopel import db, irc, logger, plugin, plugins, tools
 from sopel.irc import modes
-import sopel.loader
-from sopel.plugin import NOLIMIT
 from sopel.plugins import jobs as plugin_jobs, rules as plugin_rules
-from sopel.tools import deprecated, Identifier
-import sopel.tools.jobs
+from sopel.tools import deprecated, Identifier, jobs as tools_jobs
 from sopel.trigger import Trigger
 
 
@@ -101,7 +97,7 @@ class Sopel(irc.AbstractBot):
         to be aware of a user, it must share at least one mutual channel.
         """
 
-        self.db = SopelDB(config)
+        self.db = db.SopelDB(config)
         """The bot's database, as a :class:`sopel.db.SopelDB` instance."""
 
         self.memory = tools.SopelMemory()
@@ -139,12 +135,12 @@ class Sopel(irc.AbstractBot):
         )
         result = {}
 
-        for plugin, commands in plugin_commands:
-            if plugin not in result:
-                result[plugin] = list(sorted(commands.keys()))
+        for plugin_name, commands in plugin_commands:
+            if plugin_name not in result:
+                result[plugin_name] = list(sorted(commands.keys()))
             else:
-                result[plugin].extend(commands.keys())
-                result[plugin] = list(sorted(result[plugin]))
+                result[plugin_name].extend(commands.keys())
+                result[plugin_name] = list(sorted(result[plugin_name]))
 
         return result
 
@@ -170,7 +166,7 @@ class Sopel(irc.AbstractBot):
         )
         commands = (
             (command, command.get_doc(), command.get_usages())
-            for plugin, commands in plugin_commands
+            for plugin_name, commands in plugin_commands
             for command in commands.values()
         )
 
@@ -315,13 +311,13 @@ class Sopel(irc.AbstractBot):
         LOGGER.info("Loading plugins...")
         usable_plugins = plugins.get_usable_plugins(self.settings)
         for name, info in usable_plugins.items():
-            plugin, is_enabled = info
+            handler, is_enabled = info
             if not is_enabled:
                 load_disabled = load_disabled + 1
                 continue
 
             try:
-                plugin.load()
+                handler.load()
             except Exception as e:
                 load_error = load_error + 1
                 LOGGER.exception("Error loading %s: %s", name, e)
@@ -331,9 +327,9 @@ class Sopel(irc.AbstractBot):
                     "Error loading %s (plugin tried to exit)", name)
             else:
                 try:
-                    if plugin.has_setup():
-                        plugin.setup(self)
-                    plugin.register(self)
+                    if handler.has_setup():
+                        handler.setup(self)
+                    handler.register(self)
                 except Exception as e:
                     load_error = load_error + 1
                     LOGGER.exception("Error in %s setup: %s", name, e)
@@ -398,16 +394,16 @@ class Sopel(irc.AbstractBot):
         if not self.has_plugin(name):
             raise plugins.exceptions.PluginNotRegistered(name)
 
-        plugin = self._plugins[name]
+        handler = self._plugins[name]
         # tear down
-        plugin.shutdown(self)
-        plugin.unregister(self)
+        handler.shutdown(self)
+        handler.unregister(self)
         LOGGER.info("Unloaded plugin %s", name)
         # reload & setup
-        plugin.reload()
-        plugin.setup(self)
-        plugin.register(self)
-        meta = plugin.get_meta_description()
+        handler.reload()
+        handler.setup(self)
+        handler.register(self)
+        meta = handler.get_meta_description()
         LOGGER.info("Reloaded %s plugin %s from %s",
                     meta['type'], name, meta['source'])
 
@@ -420,17 +416,17 @@ class Sopel(irc.AbstractBot):
         """
         registered = list(self._plugins.items())
         # tear down all plugins
-        for name, plugin in registered:
-            plugin.shutdown(self)
-            plugin.unregister(self)
+        for name, handler in registered:
+            handler.shutdown(self)
+            handler.unregister(self)
             LOGGER.info("Unloaded plugin %s", name)
 
         # reload & setup all plugins
-        for name, plugin in registered:
-            plugin.reload()
-            plugin.setup(self)
-            plugin.register(self)
-            meta = plugin.get_meta_description()
+        for name, handler in registered:
+            handler.reload()
+            handler.setup(self)
+            handler.register(self)
+            meta = handler.get_meta_description()
             LOGGER.info("Reloaded %s plugin %s from %s",
                         meta['type'], name, meta['source'])
 
@@ -593,7 +589,7 @@ class Sopel(irc.AbstractBot):
 
     def register_jobs(self, jobs):
         for func in jobs:
-            job = sopel.tools.jobs.Job.from_callable(self.settings, func)
+            job = tools_jobs.Job.from_callable(self.settings, func)
             self._scheduler.register(job)
 
     def unregister_jobs(self, jobs):
@@ -762,7 +758,7 @@ class Sopel(irc.AbstractBot):
             exit_code = None
             self.error(trigger, exception=error)
 
-        if exit_code != NOLIMIT:
+        if exit_code != plugin.NOLIMIT:
             self._times[nick][func] = current_time
             self._times[self.nick][func] = current_time
             if not trigger.is_privmsg:
