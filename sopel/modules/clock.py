@@ -159,6 +159,14 @@ def update_user(bot, trigger):
         bot.reply('I now have you in the %s timezone.' % zone)
 
 
+@plugin.command('unsettz', 'unsettimezone')
+@plugin.example('.unsettz')
+def unset_user_tz(bot, trigger):
+    """Unset your preferred timezone."""
+    bot.db.delete_nick_value(trigger.nick, 'timezone')
+    bot.reply('Successfully unset timezone')
+
+
 @plugin.command('gettz', 'gettimezone')
 @plugin.example('.gettz Exirel', user_help=True)
 @plugin.example('.gettz', user_help=True)
@@ -216,6 +224,14 @@ def update_user_format(bot, trigger):
               % (timef, set_command))
 
 
+@plugin.command('unsettimeformat', 'unsettf')
+@plugin.example('.unsettf')
+def unset_user_format(bot, trigger):
+    """Unsets your preferred format for time."""
+    bot.db.delete_nick_value(trigger.nick, 'time_format')
+    bot.reply('Successfully unset time format')
+
+
 @plugin.command('gettimeformat', 'gettf')
 @plugin.example('.gettf Exirel', user_help=True)
 @plugin.example('.gettf', user_help=True)
@@ -266,6 +282,17 @@ def update_channel(bot, trigger):
             'if you use DST.')
     else:
         bot.reply('I now have %s in the %s timezone.' % (channel, zone))
+
+
+@plugin.command('unsetchanneltz', 'unsetctz')
+@plugin.example('.unsetctz')
+@plugin.require_chanmsg
+@plugin.require_privilege(plugin.OP, message='Changing the channel timezone requires OP privileges.')
+def unset_channel(bot, trigger):
+    """Unset the preferred timezone for the current channel."""
+    channel = trigger.sender
+    bot.db.delete_channel_value(channel, 'timezone')
+    bot.reply('Successfully unset channel timezone')
 
 
 @plugin.command('getchanneltz', 'getctz')
@@ -330,6 +357,17 @@ def update_channel_format(bot, trigger):
             "unless a user has their own format set. (If the timezone"
             " is wrong, you might try the %s and %s "
             "commands)" % (timef, set_command, channel_command))
+
+
+@plugin.command('unsetchanneltimeformat', 'unsetctf')
+@plugin.example('.unsetctf')
+@plugin.require_chanmsg
+@plugin.require_privilege(plugin.OP, message='Changing the channel time format requires OP privileges.')
+def unset_channel_format(bot, trigger):
+    """Unset the preferred time format for the current channel."""
+    channel = trigger.sender
+    bot.db.delete_channel_value(channel, 'time_format')
+    bot.reply('Successfully unset channel time format')
 
 
 @plugin.command('getchanneltimeformat', 'getctf')
