@@ -27,10 +27,13 @@ PLUGIN_OUTPUT_PREFIX = '[reddit] '
 
 domain = r'https?://(?:www\.|old\.|pay\.|ssl\.|[a-z]{2}\.)?reddit\.com'
 subreddit_url = r'%s/r/([\w-]+)/?$' % domain
-post_url = r'%s/r/\S+?/comments/([\w-]+)(?:/[\w%%]+)?/?' % domain
+post_or_comment_url = (
+    domain +
+    r'/r/\S+?/comments/(?P<submission>[\w-]+)'
+    r'(?:/?(?:[\w%]+/(?P<comment>[\w-]+))?)'
+)
 short_post_url = r'https?://redd\.it/([\w-]+)'
 user_url = r'%s/u(?:ser)?/([\w-]+)' % domain
-comment_url = r'%s/r/\S+?/comments/\S+?/\S+?/([\w-]+)' % domain
 image_url = r'https?://i\.redd\.it/\S+'
 video_url = r'https?://v\.redd\.it/([\w-]+)'
 gallery_url = r'https?://(?:www\.)?reddit\.com/gallery/([\w-]+)'
@@ -107,18 +110,25 @@ def video_info(bot, trigger, match):
         timeout=(10.0, 4.0)).headers['Location']
     try:
         return say_post_info(
-            bot, trigger, re.match(post_url, url).group(1), False, True)
+            bot, trigger, re.match(post_or_comment_url, url).group('submission'), False, True
+        )
     except AttributeError:
         # Fail silently if we can't map the video link to a submission
         return plugin.NOLIMIT
 
 
-@plugin.url(post_url)
+@plugin.url(post_or_comment_url)
 @plugin.url(short_post_url)
 @plugin.output_prefix(PLUGIN_OUTPUT_PREFIX)
-def rpost_info(bot, trigger, match):
+def post_or_comment_info(bot, trigger, match):
     match = match or trigger
-    return say_post_info(bot, trigger, match.group(1))
+    comment = match.group('comment')
+
+    if comment:
+        say_comment_info(bot, trigger, comment)
+        return
+
+    say_post_info(bot, trigger, match.group('submission'))
 
 
 @plugin.url(gallery_url)
@@ -205,12 +215,9 @@ def say_post_info(bot, trigger, id_, show_link=True, show_comments_link=False):
         return plugin.NOLIMIT
 
 
-@plugin.url(comment_url)
-@plugin.output_prefix(PLUGIN_OUTPUT_PREFIX)
-def comment_info(bot, trigger, match):
-    """Shows information about the linked comment"""
+def say_comment_info(bot, trigger, id_):
     try:
-        c = bot.memory['reddit_praw'].comment(match.group(1))
+        c = bot.memory['reddit_praw'].comment(id_)
     except prawcore.exceptions.NotFound:
         bot.reply('No such comment.')
         return plugin.NOLIMIT
