@@ -2,6 +2,17 @@ This file is used to auto-generate the "Changelog" section of Sopel's website.
 When adding new entries, follow the style guide in NEWS.spec.md to avoid
 causing problems with the site build.
 
+Changes between 7.1.3 and 7.1.4
+===============================
+
+Plugin changes
+--------------
+
+* reddit: prevent comment links from also displaying post info [[#2176][]]
+
+[#2176]: https://github.com/sopel-irc/sopel/pull/2176
+
+
 Changes between 7.1.2 and 7.1.3
 ===============================
 
