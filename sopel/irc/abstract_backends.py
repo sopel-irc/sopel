@@ -3,10 +3,12 @@
 # Licensed under the Eiffel Forum License 2.
 from __future__ import generator_stop
 
+import abc
+
 from .utils import safe
 
 
-class AbstractIRCBackend(object):
+class AbstractIRCBackend(abc.ABC):
     """Abstract class defining the interface and basic logic of an IRC backend.
 
     :param bot: a Sopel instance
@@ -18,13 +20,14 @@ class AbstractIRCBackend(object):
     def __init__(self, bot):
         self.bot = bot
 
+    @abc.abstractmethod
     def is_connected(self):
         """Tell if the backend is connected or not.
 
         :rtype: bool
         """
-        raise NotImplementedError
 
+    @abc.abstractmethod
     def on_irc_error(self, pretrigger):
         """Action to perform when the server sends an error event.
 
@@ -34,14 +37,13 @@ class AbstractIRCBackend(object):
         On IRC error, if ``bot.hasquit`` is set, the backend should close the
         connection so the bot can quit or reconnect as required.
         """
-        raise NotImplementedError
 
+    @abc.abstractmethod
     def irc_send(self, data):
         """Send an IRC line as raw ``data``.
 
         :param bytes data: raw line to send
         """
-        raise NotImplementedError
 
     def send_command(self, *args, **kwargs):
         """Send a command through the IRC connection.

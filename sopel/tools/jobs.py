@@ -193,7 +193,7 @@ class Scheduler(threading.Thread):
             self.manager.on_job_error(self, job, error)
 
 
-class Job(object):
+class Job:
     """Holds information about when a function should be called next.
 
     :param intervals: set of intervals; each is a number of seconds between

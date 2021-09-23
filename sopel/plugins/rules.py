@@ -16,7 +16,7 @@
 # Licensed under the Eiffel Forum License 2.
 from __future__ import generator_stop
 
-
+import abc
 import datetime
 import functools
 import inspect
@@ -24,6 +24,7 @@ import itertools
 import logging
 import re
 import threading
+from typing import Generator, Iterable, Type, TypeVar
 from urllib.parse import urlparse
 
 
@@ -43,6 +44,7 @@ __all__ = [
     'URLCallback',
 ]
 
+TypedRule = TypeVar('TypedRule', bound='AbstractRule')
 
 LOGGER = logging.getLogger(__name__)
 
@@ -141,7 +143,7 @@ def _clean_callable_examples(examples):
     )
 
 
-class Manager(object):
+class Manager:
     """Manager of plugin rules.
 
     This manager stores plugin rules and can then provide the matching rules
@@ -443,7 +445,7 @@ class Manager(object):
         )
 
 
-class AbstractRule(object):
+class AbstractRule(abc.ABC):
     """Abstract definition of a plugin's rule.
 
     Any rule class must be an implementation of this abstract class, as it
@@ -463,7 +465,8 @@ class AbstractRule(object):
 
     """
     @classmethod
-    def from_callable(cls, settings, handler):
+    @abc.abstractclassmethod
+    def from_callable(cls: Type[TypedRule], settings, handler) -> TypedRule:
         """Instantiate a rule object from ``settings`` and ``handler``.
 
         :param settings: Sopel's settings
@@ -482,7 +485,6 @@ class AbstractRule(object):
         through the filter of the
         :func:`loader's clean<sopel.loader.clean_callable>` function.
         """
-        raise NotImplementedError
 
     @property
     def priority_scale(self):
@@ -499,7 +501,8 @@ class AbstractRule(object):
             PRIORITY_SCALES[PRIORITY_MEDIUM]
         )
 
-    def get_plugin_name(self):
+    @abc.abstractmethod
+    def get_plugin_name(self) -> str:
         """Get the rule's plugin name.
 
         :rtype: str
@@ -508,9 +511,9 @@ class AbstractRule(object):
         register, unregister, and manipulate the rule based on its plugin,
         which is referenced by its name.
         """
-        raise NotImplementedError
 
-    def get_rule_label(self):
+    @abc.abstractmethod
+    def get_rule_label(self) -> str:
         """Get the rule's label.
 
         :rtype: str
@@ -520,9 +523,9 @@ class AbstractRule(object):
         to select, register, unregister, and manipulate the rule based on its
         own label. Note that the label has no effect on the rule's execution.
         """
-        raise NotImplementedError
 
-    def get_usages(self):
+    @abc.abstractmethod
+    def get_usages(self) -> tuple:
         """Get the rule's usage examples.
 
         :rtype: tuple
@@ -530,9 +533,9 @@ class AbstractRule(object):
         A rule can have usage examples, i.e. a list of examples showing how
         the rule can be used, or in what context it can be triggered.
         """
-        raise NotImplementedError
 
-    def get_test_parameters(self):
+    @abc.abstractmethod
+    def get_test_parameters(self) -> tuple:
         """Get parameters for automated tests.
 
         :rtype: tuple
@@ -550,9 +553,9 @@ class AbstractRule(object):
             :meth:`sopel.plugin.example` for more about test parameters.
 
         """
-        raise NotImplementedError
 
-    def get_doc(self):
+    @abc.abstractmethod
+    def get_doc(self) -> str:
         """Get the rule's documentation.
 
         :rtype: str
@@ -561,9 +564,9 @@ class AbstractRule(object):
         on IRC upon asking for help about this rule. The equivalent of Python
         docstrings, but for IRC rules.
         """
-        raise NotImplementedError
 
-    def get_priority(self):
+    @abc.abstractmethod
+    def get_priority(self) -> str:
         """Get the rule's priority.
 
         :rtype: str
@@ -579,9 +582,9 @@ class AbstractRule(object):
             by priority.
 
         """
-        raise NotImplementedError
 
-    def get_output_prefix(self):
+    @abc.abstractmethod
+    def get_output_prefix(self) -> str:
         """Get the rule's output prefix.
 
         :rtype: str
@@ -591,9 +594,9 @@ class AbstractRule(object):
             See the :class:`sopel.bot.SopelWrapper` class for more information
             on how the output prefix can be used.
         """
-        raise NotImplementedError
 
-    def match(self, bot, pretrigger):
+    @abc.abstractmethod
+    def match(self, bot, pretrigger) -> Iterable:
         """Match a pretrigger according to the rule.
 
         :param bot: Sopel instance
@@ -605,77 +608,77 @@ class AbstractRule(object):
 
         .. __: https://docs.python.org/3.6/library/re.html#match-objects
         """
-        raise NotImplementedError
 
-    def match_event(self, event):
+    @abc.abstractmethod
+    def match_event(self, event) -> bool:
         """Tell if the rule matches this ``event``.
 
         :param str event: potential matching event
         :return: ``True`` when ``event`` matches the rule, ``False`` otherwise
         :rtype: bool
         """
-        raise NotImplementedError
 
-    def match_intent(self, intent):
+    @abc.abstractmethod
+    def match_intent(self, intent) -> bool:
         """Tell if the rule matches this ``intent``.
 
         :param str intent: potential matching intent
         :return: ``True`` when ``intent`` matches the rule, ``False`` otherwise
         :rtype: bool
         """
-        raise NotImplementedError
 
-    def allow_echo(self):
+    @abc.abstractmethod
+    def allow_echo(self) -> bool:
         """Tell if the rule should match echo messages.
 
         :return: ``True`` when the rule allows echo messages,
                  ``False`` otherwise
         :rtype: bool
         """
-        raise NotImplementedError
 
-    def is_threaded(self):
+    @abc.abstractmethod
+    def is_threaded(self) -> bool:
         """Tell if the rule's execution should be in a thread.
 
         :return: ``True`` if the execution should be in a thread,
                  ``False`` otherwise
         :rtype: bool
         """
-        raise NotImplementedError
 
-    def is_unblockable(self):
+    @abc.abstractmethod
+    def is_unblockable(self) -> bool:
         """Tell if the rule is unblockable.
 
         :return: ``True`` when the rule is unblockable, ``False`` otherwise
         :rtype: bool
         """
-        raise NotImplementedError
 
-    def is_rate_limited(self, nick):
+    @abc.abstractmethod
+    def is_rate_limited(self, nick) -> bool:
         """Tell when the rule reached the ``nick``'s rate limit.
 
         :return: ``True`` when the rule reached the limit, ``False`` otherwise
         :rtype: bool
         """
-        raise NotImplementedError
 
-    def is_channel_rate_limited(self, channel):
+    @abc.abstractmethod
+    def is_channel_rate_limited(self, channel) -> bool:
         """Tell when the rule reached the ``channel``'s rate limit.
 
         :return: ``True`` when the rule reached the limit, ``False`` otherwise
         :rtype: bool
         """
-        raise NotImplementedError
 
-    def is_global_rate_limited(self):
+    @abc.abstractmethod
+    def is_global_rate_limited(self) -> bool:
         """Tell when the rule reached the server's rate limit.
 
         :return: ``True`` when the rule reached the limit, ``False`` otherwise
         :rtype: bool
         """
-        raise NotImplementedError
 
-    def parse(self, text):
+    @abc.abstractmethod
+    def parse(self, text) -> Generator:
         """Parse ``text`` and yield matches.
 
         :param str text: text to parse by the rule
@@ -684,8 +687,8 @@ class AbstractRule(object):
 
         .. __: https://docs.python.org/3.6/library/re.html#match-objects
         """
-        raise NotImplementedError
 
+    @abc.abstractmethod
     def execute(self, bot, trigger):
         """Execute the triggered rule.
 
@@ -696,7 +699,6 @@ class AbstractRule(object):
 
         This is the method called by the bot when a rule matches a ``trigger``.
         """
-        raise NotImplementedError
 
 
 class Rule(AbstractRule):
@@ -1061,7 +1063,7 @@ class Rule(AbstractRule):
         return exit_code
 
 
-class NamedRuleMixin(object):
+class NamedRuleMixin:
     """Mixin for named rules.
 
     A named rule is invoked by using a specific word, and is usually known
@@ -1194,7 +1196,7 @@ class Command(NamedRuleMixin, Rule):
                  help_prefix=COMMAND_DEFAULT_HELP_PREFIX,
                  aliases=None,
                  **kwargs):
-        super(Command, self).__init__([], **kwargs)
+        super().__init__([], **kwargs)
         self._name = name
         self._prefix = prefix
         self._help_prefix = help_prefix
@@ -1317,7 +1319,7 @@ class NickCommand(NamedRuleMixin, Rule):
         return cls(**kwargs)
 
     def __init__(self, nick, name, nick_aliases=None, aliases=None, **kwargs):
-        super(NickCommand, self).__init__([], **kwargs)
+        super().__init__([], **kwargs)
         self._nick = nick
         self._name = name
         self._nick_aliases = (tuple(nick_aliases)
@@ -1432,7 +1434,7 @@ class ActionCommand(NamedRuleMixin, Rule):
         return cls(**kwargs)
 
     def __init__(self, name, aliases=None, **kwargs):
-        super(ActionCommand, self).__init__([], **kwargs)
+        super().__init__([], **kwargs)
         self._name = name
         self._aliases = tuple(aliases) if aliases is not None else tuple()
         self._regexes = (self.get_rule_regex(),)
@@ -1647,7 +1649,7 @@ class URLCallback(Rule):
                  regexes,
                  schemes=None,
                  **kwargs):
-        super(URLCallback, self).__init__(regexes, **kwargs)
+        super().__init__(regexes, **kwargs)
         # prevent mutability of registered schemes
         self._schemes = tuple(schemes or URL_DEFAULT_SCHEMES)
 

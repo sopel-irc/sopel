@@ -59,7 +59,7 @@ def safe(string):
     return string
 
 
-class CapReq(object):
+class CapReq:
     """Represents a pending CAP REQ request.
 
     :param str prefix: either ``=`` (must be enabled),

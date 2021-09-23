@@ -378,7 +378,7 @@ class Identifier(str):
         return self and not self.startswith(_channel_prefixes)
 
 
-class OutputRedirect(object):
+class OutputRedirect:
     """Redirect the output to the terminal and a log file.
 
     A simplified object used to write to both the terminal and a log file.
@@ -609,13 +609,13 @@ class SopelIdentifierMemory(SopelMemory):
     .. versionadded:: 7.1
     """
     def __getitem__(self, key):
-        return super(SopelIdentifierMemory, self).__getitem__(Identifier(key))
+        return super().__getitem__(Identifier(key))
 
     def __contains__(self, key):
-        return super(SopelIdentifierMemory, self).__contains__(Identifier(key))
+        return super().__contains__(Identifier(key))
 
     def __setitem__(self, key, value):
-        super(SopelIdentifierMemory, self).__setitem__(Identifier(key), value)
+        super().__setitem__(Identifier(key), value)
 
 
 def chain_loaders(*lazy_loaders):

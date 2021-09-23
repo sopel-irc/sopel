@@ -143,7 +143,7 @@ def parse_parameter(arg):
     return (key, parser(value))
 
 
-class ISupport(object):
+class ISupport:
     """Storage class for IRC's ``ISUPPORT`` feature.
 
     An instance of ``ISupport`` can be used as a read-only dict, to store
@@ -196,7 +196,7 @@ class ISupport(object):
         # make sure you can't set the value of any ISUPPORT attribute yourself
         if name == '_ISupport__isupport':
             # allow to set self.__isupport inside of the class
-            super(ISupport, self).__setattr__(name, value)
+            super().__setattr__(name, value)
         elif name in self.__isupport:
             # reject any modification of __isupport
             raise AttributeError("Can't set value for %r" % name)

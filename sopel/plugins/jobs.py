@@ -50,7 +50,7 @@ class Scheduler(jobs.Scheduler):
 
     """
     def __init__(self, manager):
-        super(Scheduler, self).__init__(manager)
+        super().__init__(manager)
         self._jobs = tools.SopelMemoryWithDefault(list)
 
     def register(self, job):

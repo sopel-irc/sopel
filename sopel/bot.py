@@ -45,7 +45,7 @@ SIGNALS = QUIT_SIGNALS + RESTART_SIGNALS
 
 class Sopel(irc.AbstractBot):
     def __init__(self, config, daemon=False):
-        super(Sopel, self).__init__(config)
+        super().__init__(config)
         self._daemon = daemon  # Used for iPython. TODO something saner here
         self.wantsrestart = False
         self._running_triggers = []
@@ -1199,7 +1199,7 @@ class Sopel(irc.AbstractBot):
         self.quit(message)
 
 
-class SopelWrapper(object):
+class SopelWrapper:
     """Wrapper around a Sopel instance and a Trigger.
 
     :param sopel: Sopel instance

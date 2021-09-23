@@ -288,7 +288,7 @@ REGEX_AT = re.compile(
 )
 
 
-class TimeReminder(object):
+class TimeReminder:
     """Time reminder for the ``at`` command"""
     def __init__(self,
                  hour,

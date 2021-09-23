@@ -7,7 +7,7 @@ from sopel.tools import Identifier
 
 
 @functools.total_ordering
-class User(object):
+class User:
     """A representation of a user Sopel is aware of.
 
     :param nick: the user's nickname
@@ -53,7 +53,7 @@ class User(object):
 
 
 @functools.total_ordering
-class Channel(object):
+class Channel:
     """A representation of a channel Sopel is in.
 
     :param name: the channel name

@@ -10,7 +10,7 @@ from sopel import bot, config, plugins, trigger
 from .mocks import MockIRCBackend, MockIRCServer, MockUser
 
 
-class BotFactory(object):
+class BotFactory:
     """Factory to create bot.
 
     .. seealso::
@@ -62,7 +62,7 @@ class BotFactory(object):
         return obj
 
 
-class ConfigFactory(object):
+class ConfigFactory:
     """Factory to create settings.
 
     .. seealso::
@@ -79,7 +79,7 @@ class ConfigFactory(object):
         return config.Config(tmpfile.strpath)
 
 
-class TriggerFactory(object):
+class TriggerFactory:
     """Factory to create trigger.
 
     .. seealso::
@@ -99,7 +99,7 @@ class TriggerFactory(object):
             re.match(pattern or r'.*', raw))
 
 
-class IRCFactory(object):
+class IRCFactory:
     """Factory to create mock IRC server.
 
     .. seealso::
@@ -111,7 +111,7 @@ class IRCFactory(object):
         return MockIRCServer(mockbot, join_threads)
 
 
-class UserFactory(object):
+class UserFactory:
     """Factory to create mock user.
 
     .. seealso::

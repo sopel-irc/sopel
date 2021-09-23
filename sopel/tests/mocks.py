@@ -39,7 +39,7 @@ class MockIRCBackend(AbstractIRCBackend):
 
     """
     def __init__(self, *args, **kwargs):
-        super(MockIRCBackend, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.message_sent = []
         """List of raw messages sent by the bot.
 
@@ -76,8 +76,12 @@ class MockIRCBackend(AbstractIRCBackend):
         self.message_sent = []
         return sent
 
+    def on_irc_error(self, pretrigger):
+        # implement abstract method
+        pass
 
-class MockIRCServer(object):
+
+class MockIRCServer:
     """Fake IRC Server that can send messages to a test bot.
 
     :param bot: test bot instance to send messages to
@@ -347,7 +351,7 @@ class MockIRCServer(object):
                 t.join()
 
 
-class MockUser(object):
+class MockUser:
     """Fake user that can generate messages to send to a bot.
 
     :param str nick: nickname

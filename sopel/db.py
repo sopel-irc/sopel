@@ -81,7 +81,7 @@ class PluginValues(BASE):
     value = Column(String(255))
 
 
-class SopelDB(object):
+class SopelDB:
     """Database object class.
 
     :param config: Sopel's configuration settings

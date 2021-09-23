@@ -25,6 +25,7 @@ As an example, if one wanted to define the ``[spam]`` section as having an
 
 from __future__ import generator_stop
 
+import abc
 import getpass
 import os.path
 import re
@@ -32,11 +33,11 @@ import re
 from sopel.tools import deprecated, get_input
 
 
-class NO_DEFAULT(object):
+class NO_DEFAULT:
     """A special value to indicate that there should be no default."""
 
 
-class StaticSection(object):
+class StaticSection:
     """A configuration section with parsed and validated settings.
 
     This class is intended to be subclassed and customized with added
@@ -113,10 +114,7 @@ class StaticSection(object):
         setattr(self, name, value)
 
 
-# TODO: Make this a proper abstract class when dropping Python 2 support.
-# Abstract classes are much simpler to deal with once we only need to worry
-# about Python 3.4 or newer. (https://stackoverflow.com/a/13646263/5991)
-class BaseValidated(object):
+class BaseValidated(abc.ABC):
     """The base type for a setting descriptor in a :class:`StaticSection`.
 
     :param str name: the attribute name to use in the config file
@@ -196,18 +194,13 @@ class BaseValidated(object):
 
         return self._parse(value, parent, section)
 
+    @abc.abstractmethod
     def serialize(self, value, *args, **kwargs):
-        """Take some object, and return the string to be saved to the file.
+        """Take some object, and return the string to be saved to the file."""
 
-        Must be implemented in subclasses.
-        """
-        raise NotImplementedError("Serialize method must be implemented in subclass")
-
+    @abc.abstractmethod
     def parse(self, value, *args, **kwargs):
-        """Take a string from the file, and return the appropriate object.
-
-        Must be implemented in subclasses."""
-        raise NotImplementedError("Parse method must be implemented in subclass")
+        """Take a string from the file, and return the appropriate object."""
 
     def __get__(self, instance, owner=None):
         if instance is None:
@@ -305,8 +298,7 @@ class ValidatedAttribute(BaseValidated):
                  serialize=None,
                  default=None,
                  is_secret=False):
-        super(ValidatedAttribute, self).__init__(
-            name, default=default, is_secret=is_secret)
+        super().__init__(name, default=default, is_secret=is_secret)
 
         if parse == bool:
             parse, serialize = _deprecated_special_bool_handling(serialize)
@@ -334,7 +326,7 @@ class ValidatedAttribute(BaseValidated):
         if self.parse == _parse_boolean:
             prompt += ' (y/n)'
             default = 'y' if default else 'n'
-        return super(ValidatedAttribute, self).configure(prompt, default, parent, section_name)
+        return super().configure(prompt, default, parent, section_name)
 
 
 class BooleanAttribute(BaseValidated):
@@ -347,8 +339,7 @@ class BooleanAttribute(BaseValidated):
     If the ``default`` value is not specified, it will be ``False``.
     """
     def __init__(self, name, default=False):
-        super(BooleanAttribute, self).__init__(
-            name, default=default, is_secret=False)
+        super().__init__(name, default=default, is_secret=False)
 
     def configure(self, prompt, default, parent, section_name):
         """Parse and return a value from user's input.
@@ -417,7 +408,7 @@ class SecretAttribute(ValidatedAttribute):
     otherwise behaves like other any option.
     """
     def __init__(self, name, parse=None, serialize=None, default=None):
-        super(SecretAttribute, self).__init__(
+        super().__init__(
             name,
             parse=parse,
             serialize=serialize,
@@ -498,7 +489,7 @@ class ListAttribute(BaseValidated):
 
     def __init__(self, name, strip=True, default=None):
         default = default or []
-        super(ListAttribute, self).__init__(name, default=default)
+        super().__init__(name, default=default)
         self.strip = strip
 
     def parse(self, value):
@@ -621,7 +612,7 @@ class ChoiceAttribute(BaseValidated):
     :type default: str
     """
     def __init__(self, name, choices, default=None):
-        super(ChoiceAttribute, self).__init__(name, default=default)
+        super().__init__(name, default=default)
         self.choices = choices
 
     def parse(self, value):
@@ -668,7 +659,7 @@ class FilenameAttribute(BaseValidated):
     :type default: str
     """
     def __init__(self, name, relative=True, directory=False, default=None):
-        super(FilenameAttribute, self).__init__(name, default=default)
+        super().__init__(name, default=default)
         self.relative = relative
         self.directory = directory
 
