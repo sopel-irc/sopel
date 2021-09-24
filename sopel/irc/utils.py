@@ -7,8 +7,6 @@ from typing import NamedTuple
 
 from dns import rdtypes, resolver
 
-from sopel.tools import deprecated
-
 
 def get_cnames(domain):
     """Determine the CNAMEs for a given domain.
@@ -90,15 +88,6 @@ class CapReq:
         self.arg = arg
         self.failure = failure or nop
         self.success = success or nop
-
-    @property
-    @deprecated(
-        reason='use the `plugin` property instead',
-        version='7.1',
-        removed_in='8.0',
-    )
-    def module(self):
-        return self.plugin
 
 
 class MyInfo(NamedTuple):
