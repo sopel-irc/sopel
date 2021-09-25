@@ -3,7 +3,6 @@ from __future__ import generator_stop
 import inspect
 import logging
 import os
-import sys
 
 from sopel import config, plugins, tools
 
@@ -13,7 +12,6 @@ __all__ = [
     'find_config',
     'add_common_arguments',
     'load_settings',
-    'redirect_outputs',
     'wizard',
     'plugins_wizard',
     # colors
@@ -339,30 +337,6 @@ def load_settings(options):
         raise config.ConfigurationNotFound(filename=filename)
 
     return config.Config(filename)
-
-
-@tools.deprecated(reason='Obsoleted by modernized logging.',
-                  version='7.0',
-                  removed_in='8.0')
-def redirect_outputs(settings, is_quiet=False):
-    """Redirect ``sys``'s outputs using Sopel's settings.
-
-    :param settings: Sopel's configuration
-    :type settings: :class:`sopel.config.Config`
-    :param bool is_quiet: Optional, set to True to make Sopel's outputs quiet
-
-    Both ``sys.stderr`` and ``sys.stdout`` are redirected to a logfile.
-
-    .. deprecated:: 7.0
-
-        Sopel now uses the built-in logging system for its output, and this
-        function is now deprecated.
-
-    """
-    logfile = os.path.os.path.join(
-        settings.core.logdir, settings.basename + '.stdio.log')
-    sys.stderr = tools.OutputRedirect(logfile, True, is_quiet)
-    sys.stdout = tools.OutputRedirect(logfile, False, is_quiet)
 
 
 def get_many_text(items, one, two, many):
