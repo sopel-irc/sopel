@@ -493,62 +493,6 @@ class Sopel(irc.AbstractBot):
 
     # callable management
 
-    @deprecated(
-        reason="Replaced by specific `unregister_*` methods.",
-        version='7.1',
-        removed_in='8.0')
-    def unregister(self, obj):
-        """Unregister a shutdown method.
-
-        :param obj: the shutdown method to unregister
-        :type obj: :term:`object`
-
-        This method was used to unregister anything (rules, commands, urls,
-        jobs, and shutdown methods), but since everything can be done by other
-        means, there is no use for it anymore.
-        """
-        callable_name = getattr(obj, "__name__", 'UNKNOWN')
-
-        if hasattr(obj, 'interval'):
-            self.unregister_jobs([obj])
-
-        if callable_name == "shutdown" and obj in self.shutdown_methods:
-            self.unregister_shutdowns([obj])
-
-    @deprecated(
-        reason="Replaced by specific `register_*` methods.",
-        version='7.1',
-        removed_in='8.0')
-    def register(self, callables, jobs, shutdowns, urls):
-        """Register rules, jobs, shutdown methods, and URL callbacks.
-
-        :param callables: an iterable of callables to register
-        :type callables: :term:`iterable`
-        :param jobs: an iterable of functions to periodically invoke
-        :type jobs: :term:`iterable`
-        :param shutdowns: an iterable of functions to call on shutdown
-        :type shutdowns: :term:`iterable`
-        :param urls: an iterable of functions to call when matched against a URL
-        :type urls: :term:`iterable`
-
-        The ``callables`` argument contains a list of "callable objects", i.e.
-        objects for which :func:`callable` will return ``True``. They can be:
-
-        * a callable with rules (will match triggers with a regex pattern)
-        * a callable without rules (will match any triggers, such as events)
-        * a callable with commands
-        * a callable with nick commands
-        * a callable with action commands
-
-        It is possible to have a callable with rules, commands, and nick
-        commands configured. It should not be possible to have a callable with
-        commands or nick commands but without rules.
-        """
-        self.register_callables(callables)
-        self.register_jobs(jobs)
-        self.register_shutdowns(shutdowns)
-        self.register_urls(urls)
-
     def register_callables(self, callables):
         match_any = re.compile(r'.*')
         settings = self.settings
@@ -666,23 +610,6 @@ class Sopel(irc.AbstractBot):
                     self._rules_manager.register_url_callback(rule)
                 except plugins.exceptions.PluginError as err:
                     LOGGER.error("Cannot register URL callback: %s", err)
-
-    @deprecated(
-        reason="Replaced by `say` method.",
-        version='6.0',
-        removed_in='8.0')
-    def msg(self, recipient, text, max_messages=1):
-        """Old way to make the bot say something on IRC.
-
-        :param str recipient: nickname or channel to which to send message
-        :param str text: message to send
-        :param int max_messages: split ``text`` into at most this many messages
-                                 if it is too long to fit in one (optional)
-
-        .. deprecated:: 6.0
-            Use :meth:`say` instead. Will be removed in Sopel 8.
-        """
-        self.say(text, recipient, max_messages)
 
     # message dispatch
 
