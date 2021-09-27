@@ -1059,14 +1059,17 @@ def auth_proceed(bot, trigger):
     sasl_username = sasl_username or bot.nick
 
     if mech == 'PLAIN':
-        if trigger.args[0] != '+':
-            # not an expected response from the server; abort SASL
-            token = '*'
-        else:
+        if trigger.args[0] == '+':
             sasl_token = _make_sasl_plain_token(sasl_username, sasl_password)
             LOGGER.info("Sending SASL Auth token.")
             send_authenticate(bot, sasl_token)
-        return
+            return
+        else:
+            # Not an expected response from the server
+            # Send `authenticate-abort` command
+            # See https://ircv3.net/specs/extensions/sasl-3.1#the-authenticate-command
+            bot.write(('AUTHENTICATE', '*'))
+            return
 
     # TODO: Implement SCRAM challenges
 
