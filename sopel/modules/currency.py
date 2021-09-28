@@ -11,6 +11,7 @@ from __future__ import generator_stop
 import logging
 import re
 import time
+from typing import Dict
 
 import requests
 
@@ -35,7 +36,7 @@ LOGGER = logging.getLogger(__name__)
 UNSUPPORTED_CURRENCY = "Sorry, {} isn't currently supported."
 UNRECOGNIZED_INPUT = "Sorry, I didn't understand the input."
 
-rates = {}
+rates: Dict[str, float] = {}
 rates_updated = 0.0
 
 
