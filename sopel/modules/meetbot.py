@@ -14,6 +14,7 @@ import os
 import re
 from string import punctuation, whitespace
 import time
+from typing import Dict
 
 from sopel import formatting, plugin, tools
 from sopel.config import types
@@ -62,7 +63,7 @@ def setup(bot):
     bot.config.define_section("meetbot", MeetbotSection)
 
 
-meetings_dict = collections.defaultdict(dict)  # Saves metadata about currently running meetings
+meetings_dict: Dict[str, dict] = collections.defaultdict(dict)  # Saves metadata about currently running meetings
 """
 meetings_dict is a 2D dict.
 
