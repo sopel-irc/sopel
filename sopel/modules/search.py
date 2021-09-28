@@ -11,7 +11,7 @@ from __future__ import generator_stop
 import re
 
 import requests
-import xmltodict
+import xmltodict  # type: ignore
 
 from sopel import plugin
 from sopel.tools import web
