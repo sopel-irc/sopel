@@ -1045,6 +1045,10 @@ def auth_proceed(bot, trigger):
     """
     if trigger.args[0] != '+':
         # How did we get here? I am not good with computer.
+        LOGGER.warning("Aborting SASL: unexpected server reply '%s'" % trigger)
+        # Send `authenticate-abort` command
+        # See https://ircv3.net/specs/extensions/sasl-3.1#the-authenticate-command
+        bot.write(('AUTHENTICATE', '*'))
         return
     # Is this right?
     if bot.config.core.auth_method == 'sasl':
