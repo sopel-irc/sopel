@@ -1066,6 +1066,7 @@ def auth_proceed(bot, trigger):
             return
         else:
             # Not an expected response from the server
+            LOGGER.warning("Aborting SASL: unexpected server reply '%s'" % trigger)
             # Send `authenticate-abort` command
             # See https://ircv3.net/specs/extensions/sasl-3.1#the-authenticate-command
             bot.write(('AUTHENTICATE', '*'))
