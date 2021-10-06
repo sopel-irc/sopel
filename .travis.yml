@@ -39,6 +39,18 @@ install:
   - pip install --upgrade "setuptools<=39.2.0; python_version < '3.9'"
   - pip install --upgrade -r requirements.txt -r dev-requirements.txt
   - python setup.py develop
+before_script:
+  # deal with Let's Encrypt's ISRG Root CA X1 being cross-signed by an expired root
+  # only needed on trusty - mark the bad cert disabled in conf, update ca-certificates
+  # bundle, then tell python-requests to use the system bundle instead of certifi's
+  # (as of 2021-10-05, certifi still stubbornly bundles the expired root;
+  # see https://github.com/certifi/python-certifi/pull/162
+  # and https://bugzilla.mozilla.org/show_bug.cgi?id=1733560 for updates)
+  - if [ "$TRAVIS_DIST" == "trusty" ]; then
+      sudo sed -re 's#^(mozilla/DST_Root_CA_X3.crt)$#!\1#' -i /etc/ca-certificates.conf;
+      sudo update-ca-certificates;
+      export REQUESTS_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt;
+    fi
 script:
   - make travis
 env:
