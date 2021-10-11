@@ -9,6 +9,7 @@ from __future__ import generator_stop
 
 from ast import literal_eval
 from datetime import datetime
+import inspect
 import itertools
 import logging
 import re
@@ -352,8 +353,13 @@ class Sopel(irc.AbstractBot):
         """
         settings = self.settings
         for section_name, section in settings.get_defined_sections():
+            defined_options = {
+                settings.parser.optionxform(opt)
+                for opt, _ in inspect.getmembers(section)
+                if not opt.startswith('_')
+            }
             for option_name in settings.parser.options(section_name):
-                if not hasattr(section, option_name):
+                if option_name not in defined_options:
                     LOGGER.warning(
                         "Config option `%s.%s` is not defined by its section "
                         "and may not be recognized by Sopel.",
