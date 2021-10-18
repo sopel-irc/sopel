@@ -312,7 +312,9 @@ def test_ircv3_server_time_trigger(nick, configfactory):
     fakematch = re.match('.*', line)
 
     trigger = Trigger(config, pretrigger, fakematch)
-    assert trigger.time == datetime.datetime(2016, 1, 9, 3, 15, 42, 0)
+    assert trigger.time == datetime.datetime(
+        2016, 1, 9, 3, 15, 42, 0, tzinfo=datetime.timezone.utc
+    )
 
     # Spec-breaking string
     line = '@time=2016-01-09T04:20 :Foo!foo@example.com PRIVMSG #Sopel :Hello, world'

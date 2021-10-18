@@ -794,6 +794,12 @@ class Sopel(irc.AbstractBot):
         user_obj = self.users.get(nick)
         account = user_obj.account if user_obj else None
 
+        # skip processing replayed messages
+        if "time" in pretrigger.tags and pretrigger.sender in self.channels:
+            join_time = self.channels[pretrigger.sender].join_time
+            if join_time is not None and pretrigger.time < join_time:
+                return
+
         for rule, match in self._rules_manager.get_triggered_rules(self, pretrigger):
             trigger = Trigger(self.settings, pretrigger, match, account)
 
