@@ -582,7 +582,7 @@ def command(*command_list):
 
     Another option is to declare command with subcommands only, like this::
 
-        @command('main sub1)
+        @command('main sub1')
             # this command will be triggered on .main sub1
 
         @command('main sub2')
