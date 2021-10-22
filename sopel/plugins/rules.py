@@ -465,7 +465,7 @@ class AbstractRule(abc.ABC):
 
     """
     @classmethod
-    @abc.abstractclassmethod
+    @abc.abstractmethod
     def from_callable(cls: Type[TypedRule], settings, handler) -> TypedRule:
         """Instantiate a rule object from ``settings`` and ``handler``.
 
