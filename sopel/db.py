@@ -116,7 +116,6 @@ class SopelDB:
             self.type = self.url.drivername.split('+', 1)[0]
         elif config.core.db_type == 'sqlite':
             self.type = 'sqlite'
-            drivername = config.core.db_driver or 'sqlite'
             path = config.core.db_filename
             if path is None:
                 path = os.path.join(config.core.homedir, config.basename + '.db')
