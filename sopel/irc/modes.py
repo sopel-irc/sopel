@@ -32,11 +32,29 @@ from typing import Dict, Iterator, List, NamedTuple, Optional, Set, Tuple
 ModeTuple = Tuple[str, bool]
 """Tuple of mode information: ``(mode, is_added)``.
 
+Where ``mode`` is the mode or privilege letter and ``is_added`` tells if
+the mode or privilege wants to be added or removed.
+
 This type alias represents the basic information for each mode found when
 parsing a modestring like ``+abc-efg``. In that example mode ``a`` and mode
 ``f`` would be represented as these tuples: ``('a', True)`` and
 ``('f', False)``.
 """
+ModeDetails = Tuple[str, str, bool, Optional[str]]
+"""Tuple of mode details as ``(letter, mode, is_added, param)``.
+
+Where ``type`` is the mode type (such as A, B, C, D); ``mode`` is the mode
+letter; ``is_added`` tells if the mode should be added or removed; and
+``param`` is an optional parameter value for that mode only when necessary.
+"""
+PrivilegeDetails = Tuple[str, bool, str]
+"""Tuple of privilege details as ``(mode, is_added, param)``
+
+Where ``privilege`` is the privilege letter; ``is_added`` tells if the
+privilege should be added or removed; and ``target`` is the target for that
+privilege.
+"""
+
 
 LOGGER = logging.getLogger(__name__)
 
@@ -91,37 +109,20 @@ def parse_modestring(modestring: str) -> Iterator[ModeTuple]:
 
 class ModeMessage(NamedTuple):
     """Mode message with channel's modes and channel's privileges."""
-    modes: Tuple[Tuple[str, str, bool, Optional[str]], ...]
+    modes: Tuple[ModeDetails, ...]
     """Tuple of added and removed modes.
 
-    Each item follows the same structure::
-
-        (type, mode, is_added, param)
-
-    Where ``type`` is the mode type (such as A, B, C, D); ``mode`` is the mode
-    letter; ``is_added`` tells if the mode should be added or removed; and
-    ``param`` is an optional parameter value for that mode only when necessary.
+    Each item is a :class:`ModeDetails`.
     """
-    privileges: Tuple[Tuple[str, bool, str], ...]
+    privileges: Tuple[PrivilegeDetails, ...]
     """Tuple of added and removed privileges.
 
-    Each item follows the same structure::
-
-        (privilege, is_added, target)
-
-    Where ``privilege`` is the privilege letter; ``is_added`` tells if the
-    privilege should be added or removed; and ``target`` is the target for that
-    privilege.
+    Each item is a :class:`PrivilegeDetails`.
     """
-    ignored_modes: Tuple[Tuple[str, bool], ...]
+    ignored_modes: Tuple[ModeTuple, ...]
     """Ignored modes when they are unknown or there is a missing parameter.
 
-    Each item follows the same structure::
-
-        (mode, is_added)
-
-    Where ``mode`` is the mode or privilege letter and ``is_added`` tells if
-    the mode or privilege wants to be added or removed.
+    Each item is a :class:`ModeTuple`.
     """
     leftover_params: Tuple[str, ...]
     """Parameters not used by any valid mode or privilege."""
@@ -210,21 +211,16 @@ class ModeParser:
                 return letter
         raise ModeTypeUnknown(mode)
 
-    def get_mode_info(
-        self,
-        mode: str,
-        is_added: bool,
-    ) -> Tuple[Optional[str], bool, bool]:
+    def get_mode_info(self, mode: str, is_added: bool) -> Tuple[str, bool]:
         """Retrieve ``mode``'s information when added or removed.
 
-        :raise ModeTypeUnknown: when the mode's type is unknown and isn't a
-                                user privilege
+        :raise ModeTypeUnknown: when the mode's type is unknown
         :raise ModeTypeImproperlyConfigured: when the mode's type is known but
                                              there is no information for
                                              parameters (if and when they are
                                              required by the mode)
-        :return: a tuple with three values: the mode type, if it requires a
-                 parameter, and if it's a channel mode or a user privilege
+        :return: a tuple with two values: the mode type and if it requires
+                 a parameter
 
         ::
 
@@ -235,25 +231,20 @@ class ModeParser:
             ... }
             >>> mm = ModeParser(chanmodes, t_params)
             >>> mm.get_mode_info('e', False)
-            ('A', True, False)
+            ('A', True)
             >>> mm.get_mode_info('k', False)
-            ('B', False, False)
-            >>> mm.get_mode_info('v', True)
-            (None, True, True)
+            ('B', False)
+            >>> mm.get_mode_info('e', True)
+            ('A', True)
+            >>> mm.get_mode_info('k', True)
+            ('B', True)
 
         .. note::
 
-            A user privilege ``mode`` doesn't have a type so the first value
-            returned will be ``None`` in that case.
+            A user privilege ``mode`` doesn't have a type and will trigger
+            a :exc:`ModeTypeUnknown` exception.
         """
-        try:
-            letter = self.get_mode_type(mode)
-        except ModeTypeUnknown:
-            if mode in self.privileges:
-                # a user privilege doesn't have a type
-                return None, True, True
-            # not a user privilege: re-raise error
-            raise
+        letter = self.get_mode_type(mode)
 
         if letter not in self.type_params:
             # we don't know how to handle this type of mode
@@ -264,36 +255,76 @@ class ModeParser:
             type_param == ParamRequired.ALWAYS
             or type_param == ParamRequired.ADDED and is_added
             or type_param == ParamRequired.REMOVED and not is_added
-        ), False
+        )
 
-    def parse_modestring(
-        self,
-        modestring: str,
-        params: Tuple[str, ...]
-    ) -> ModeMessage:
+    def parse(self, modestring: str, params: Tuple[str, ...]) -> ModeMessage:
         """Parse a ``modestring`` for a channel with its ``params``.
 
+        :param modestring: suite of modes with +/- sign, such as ``+b-v``
+        :param params: tuple of parameters as given by the MODE message
         :return: the parsed and validated information for that ``modestring``
+
+        This method parses a modestring, i.e. a suite of modes and privileges
+        with + and - signs. The result is a :class:`ModeMessage` with:
+
+        * parsed modes, with their parameters when required
+        * parsed privileges, with their parameters
+        * ignore modes (unknown and invalid modes)
+        * leftover parameters (parameter unused)
+
+        For example this message:
+
+        .. code-block:: irc
+
+            :irc.example.com MODE #foobar -o+vi mario luigi bowser
+
+        Should be parsed like this::
+
+            >>> modestring = '-o+vi'
+            >>> params = ('mario', 'luigi', 'bowser')
+            >>> modes = modeparser.parse(modestring, params)
+            >>> modes.modes
+            (('D', 'i', True, None),)
+            >>> modes.privileges
+            (('o', False, 'mario'), ('v', True, 'luigi'))
+            >>> modes.leftover_params
+            ('bowser',)
+
+        The modestring ``-o+vi`` means::
+
+        * remove ``o`` privileges to user ``mario``
+        * add ``v`` privileges to user ``luigi``
+        * set ``i`` mode on channel ``#foobar`` (no parameter required)
+
+        Which means that ``bowser`` shouldn't be here, and can be retrieved
+        through the ``leftover_params`` attribute.
         """
         imodes = iter(parse_modestring(modestring))
         iparams = iter(params)
-        modes: List = []
-        privileges: List = []
+        modes: List[ModeDetails] = []
+        privileges: List[PrivilegeDetails] = []
+
         for mode, is_added in imodes:
-            param = None
+            required = False
+
             try:
-                letter, required, is_priv = self.get_mode_info(mode, is_added)
-                if required:
-                    try:
-                        param = next(iparams)
-                    except StopIteration:
-                        # Not enough parameters: we have to stop here
-                        return ModeMessage(
-                            tuple(modes),
-                            tuple(privileges),
-                            ((mode, is_added),) + tuple(imodes),
-                            tuple(),
-                        )
+                if mode in self.privileges:
+                    priv_param: str = next(iparams)
+                    privileges.append((mode, is_added, priv_param))
+                else:
+                    mode_param: Optional[str] = None
+                    letter, required = self.get_mode_info(mode, is_added)
+                    if required:
+                        mode_param = next(iparams)
+                    modes.append((letter, mode, is_added, mode_param))
+            except StopIteration:
+                # Not enough parameters: we have to stop here
+                return ModeMessage(
+                    tuple(modes),
+                    tuple(privileges),
+                    ((mode, is_added),) + tuple(imodes),
+                    tuple(),
+                )
             except ModeException as modeerror:
                 LOGGER.debug(
                     'Invalid modestring: %r; error: %s',
@@ -306,11 +337,6 @@ class ModeParser:
                     ((mode, is_added),) + tuple(imodes),
                     tuple(iparams),
                 )
-
-            if is_priv:
-                privileges.append((mode, is_added, param))
-            else:
-                modes.append((letter, mode, is_added, param))
 
         return ModeMessage(
             tuple(modes),

@@ -546,7 +546,7 @@ def _parse_modes(bot, args, clear=False):
         LOGGER.debug(
             "The server sent a possibly malformed MODE message: %r", args)
 
-    modeinfo = bot.modeparser.parse_modestring(args[1], tuple(args[2:]))
+    modeinfo = bot.modeparser.parse(args[1], tuple(args[2:]))
 
     # set or update channel's modes
     modes = {} if clear else copy.deepcopy(channel.modes)
