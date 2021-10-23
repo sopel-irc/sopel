@@ -527,7 +527,18 @@ def initial_modes(bot, trigger):
 
 
 def _parse_modes(bot, args, clear=False):
-    """Parse MODE message and apply changes to internal state."""
+    """Parse MODE message and apply changes to internal state.
+
+    Sopel, by default, doesn't know how to parse other types than A, B, C, and
+    D, and only a preset of privileges.
+
+    .. seealso::
+
+        Parsing mode messages can be tricky and complicated to understand. In
+        any case it is better to read the IRC specifications about channel
+        modes at https://modern.ircdocs.horse/#channel-mode
+
+    """
     channel_name = Identifier(args[0])
     if channel_name.is_nick():
         # We don't do anything with user modes
@@ -546,12 +557,16 @@ def _parse_modes(bot, args, clear=False):
         LOGGER.debug(
             "The server sent a possibly malformed MODE message: %r", args)
 
+    # parse the modestring with the parameters
     modeinfo = bot.modeparser.parse(args[1], tuple(args[2:]))
 
-    # set or update channel's modes
+    # set, unset, or update channel's modes based on the mode type
+    # modeinfo.modes contains only the valid parsed modes
+    # coretask can handle type A, B, C, and D only
     modes = {} if clear else copy.deepcopy(channel.modes)
     for letter, mode, is_added, param in modeinfo.modes:
         if letter == 'A':
+            # type A is a multi-value mode and always requires a parameter
             if mode not in modes:
                 modes[mode] = set()
             if is_added:
@@ -562,16 +577,19 @@ def _parse_modes(bot, args, clear=False):
                 if not modes[mode]:
                     modes.pop(mode)
         elif letter == 'B':
+            # type B is a single-value mode and always requires a parameter
             if is_added:
                 modes[mode] = param
             elif mode in modes:
                 modes.pop(mode)
         elif letter == 'C':
+            # type C is a single-value mode and requires a parameter when added
             if is_added:
                 modes[mode] = param
             elif mode in modes:
                 modes.pop(mode)
         elif letter == 'D':
+            # type D is a flag (True or False) and doesn't have a parameter
             if is_added:
                 modes[mode] = True
             elif mode in modes:
@@ -581,6 +599,7 @@ def _parse_modes(bot, args, clear=False):
     channel.modes = modes
 
     # update user privileges in channel
+    # modeinfo.privileges contains only the valid parsed privileges
     for privilege, is_added, param in modeinfo.privileges:
         # User privs modes, always have a param
         nick = Identifier(param)
@@ -598,6 +617,7 @@ def _parse_modes(bot, args, clear=False):
             "Unknown MODE message, sending WHO. Message was: %r",
             args,
         )
+        # send a WHO message to ensure we didn't miss anything
         _send_who(bot, channel_name)
 
     # log leftover parameters (too many arguments)
