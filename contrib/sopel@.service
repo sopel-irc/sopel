@@ -7,8 +7,8 @@ DefaultInstance=sopel
 [Service]
 Type=simple
 User=sopel
-PIDFile=/run/sopel/sopel-%i.pid
-ExecStart=/usr/bin/sopel -c /etc/sopel/%i.cfg
+PIDFile=/run/sopel/sopel-%I.pid
+ExecStart=/usr/bin/sopel -c /etc/sopel/%I.cfg
 Restart=on-failure
 RestartPreventExitStatus=2
 RestartSec=30
