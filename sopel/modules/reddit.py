@@ -44,7 +44,7 @@ post_or_comment_url = (
     r'/r/\S+?/comments/(?P<submission>[\w-]+)'
     r'(?:/?(?:[\w%]+/(?P<comment>[\w-]+))?)'
 )
-short_post_url = r'https?://redd\.it/([\w-]+)'
+short_post_url = r'https?://(redd\.it|reddit\.com)/(?P<submission>[\w-]+)'
 user_url = r'%s/u(?:ser)?/([\w-]+)' % domain
 image_url = r'https?://i\.redd\.it/\S+'
 video_url = r'https?://v\.redd\.it/([\w-]+)'
@@ -134,13 +134,13 @@ def video_info(bot, trigger, match):
 @plugin.output_prefix(PLUGIN_OUTPUT_PREFIX)
 def post_or_comment_info(bot, trigger, match):
     match = match or trigger
-    comment = match.group('comment')
+    groups = match.groupdict()
 
-    if comment:
-        say_comment_info(bot, trigger, comment)
+    if groups.get("comment"):
+        say_comment_info(bot, trigger, groups["comment"])
         return
 
-    say_post_info(bot, trigger, match.group('submission'))
+    say_post_info(bot, trigger, groups["submission"])
 
 
 @plugin.url(gallery_url)
