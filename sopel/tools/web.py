@@ -18,12 +18,13 @@ applications, APIs, or websites in your plugins.
 
 from __future__ import generator_stop
 
+import html
 from html.entities import name2codepoint
 import re
 import urllib
 from urllib.parse import urlparse, urlunparse
 
-from sopel import __version__
+from sopel import __version__, tools
 
 
 __all__ = [
@@ -85,9 +86,17 @@ Use it like this::
 
 
 r_entity = re.compile(r'&([^;\s]+);')
-"""Regular expression to match HTML entities."""
+"""Regular expression to match HTML entities.
+
+Will be removed in Sopel 9, along with :func:`entity`.
+"""
 
 
+@tools.deprecated(
+    version='8.0',
+    removed_in='9.0',
+    reason="No longer needed now that Python 3.4+ has `html.unescape()`",
+)
 def entity(match):
     """Convert an entity reference to the appropriate character.
 
@@ -96,6 +105,12 @@ def entity(match):
     :return str: the Unicode character corresponding to the given ``match``
         string, or a fallback representation if the reference cannot be
         resolved to a character
+
+    .. deprecated:: 8.0
+
+        Will be removed in Sopel 9. Use :func:`decode` directly or migrate to
+        Python's standard-library equivalent, :func:`html.unescape`.
+
     """
     value = match.group(1).lower()
     if value.startswith('#x'):
@@ -107,13 +122,20 @@ def entity(match):
     return '[' + value + ']'
 
 
-def decode(html):
+def decode(text):
     """Decode HTML entities into Unicode text.
 
-    :param str html: the HTML page or snippet to process
-    :return str: ``html`` with all entity references replaced
+    :param str text: the HTML page or snippet to process
+    :return str: ``text`` with all entity references replaced
+
+    .. versionchanged:: 8.0
+
+        Renamed ``html`` parameter to ``text``. (Python gained a standard
+        library module named :mod:`html` in version 3.4.)
+
     """
-    return r_entity.sub(entity, html)
+    # TODO deprecated?
+    return html.unescape(text)
 
 
 def quote(string, safe='/'):
