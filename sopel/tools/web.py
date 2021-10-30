@@ -3,11 +3,6 @@ The ``tools.web`` package contains utility functions for interaction with web
 applications, APIs, or websites in your plugins.
 
 .. versionadded:: 7.0
-
-.. note::
-    Some parts of this module will remain accessible through ``sopel.web`` as
-    well until its final removal in Sopel 8. This is for backward
-    compatibility only; please update old code as soon as possible.
 """
 # Copyright © 2008, Sean B. Palmer, inamidst.com
 # Copyright © 2009, Michael Yanovich <yanovich.1@osu.edu>
