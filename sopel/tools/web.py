@@ -83,7 +83,9 @@ Use it like this::
 r_entity = re.compile(r'&([^;\s]+);')
 """Regular expression to match HTML entities.
 
-Will be removed in Sopel 9, along with :func:`entity`.
+.. deprecated:: 8.0
+
+    Will be removed in Sopel 9, along with :func:`entity`.
 """
 
 
