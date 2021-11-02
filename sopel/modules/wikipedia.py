@@ -274,7 +274,7 @@ def mw_section(server, query, section):
 
 
 # Matches a wikipedia page (excluding spaces and #, but not /File: links), with a separate optional field for the section
-@plugin.url(r'https?:\/\/([a-z]+\.wikipedia\.org)\/wiki\/((?!File\:)[^ #]+)#?([^ ]*)')
+@plugin.url(r'https?:\/\/([a-z]+(?:\.m)?\.wikipedia\.org)\/wiki\/((?!File\:)[^ #]+)#?([^ ]*)')
 @plugin.output_prefix(PLUGIN_OUTPUT_PREFIX)
 def mw_info(bot, trigger, match=None):
     """Retrieves and outputs a snippet of the linked page."""
