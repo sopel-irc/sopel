@@ -2,6 +2,36 @@ This file is used to auto-generate the "Changelog" section of Sopel's website.
 When adding new entries, follow the style guide in NEWS.spec.md to avoid
 causing problems with the site build.
 
+Changes between 7.1.5 and 7.1.6
+===============================
+
+Plugin changes
+--------------
+
+* reddit: fix regression in shortlink (`redd.it/<postID>`) handling [[#2201][]]
+* url: fix tripping on HTML character entities like `&apos;` if running on
+  Python 3.4+ [[#2204][]]
+* wikipedia: add mobile links to URL handling [[#2201][]]
+
+Core changes
+------------
+
+* Detect UTF-8 locale on Windows [[#2174][]]
+
+API changes
+-----------
+
+* `web.decode()`: use Python's built-in HTML character entity decoder if
+  available [[#2204][]]
+* Fix minor documentation error [[#2196][]]
+
+[#2174]: https://github.com/sopel-irc/sopel/pull/2174
+[#2196]: https://github.com/sopel-irc/sopel/pull/2196
+[#2201]: https://github.com/sopel-irc/sopel/pull/2201
+[#2202]: https://github.com/sopel-irc/sopel/pull/2202
+[#2204]: https://github.com/sopel-irc/sopel/pull/2204
+
+
 Changes between 7.1.4 and 7.1.5
 ===============================
 
