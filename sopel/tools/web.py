@@ -34,6 +34,11 @@ else:
     unichr = chr
     unicode = str
 
+try:
+    import html as HTMLLib
+except ImportError:
+    HTMLLib = None
+
 __all__ = [
     'USER_AGENT',
     'DEFAULT_HEADERS',
@@ -121,6 +126,16 @@ def decode(html):
     :param str html: the HTML page or snippet to process
     :return str: ``html`` with all entity references replaced
     """
+    if HTMLLib is not None:
+        # Python's stdlib has our back in 3.4+
+        # TODO: This should be the only implementation in Sopel 8
+        try:
+            return HTMLLib.unescape(html)
+        except AttributeError:
+            # Must be py3.3; fall through to our half-assed version.
+            pass
+
+    # Not on py3.4+ yet? Then you get to deal with the jankiness.
     return r_entity.sub(entity, html)
 
 
