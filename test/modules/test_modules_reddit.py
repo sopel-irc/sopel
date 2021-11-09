@@ -33,8 +33,14 @@ MATCHING_URLS = (
     'https://reddit.com/r/subname/',
     'https://www.reddit.com/r/subname',
     'https://www.reddit.com/r/subname/',
+    'https://reddit.com/comments/123456',
+    'https://reddit.com/comments/123456/',
+    'https://www.reddit.com/comments/123456',
+    'https://www.reddit.com/comments/123456/',
     'https://reddit.com/r/subname/comments/123456',
     'https://reddit.com/r/subname/comments/123456/',
+    'https://www.reddit.com/comments/123456?param=value',
+    'https://www.reddit.com/comments/123456/?param=value',
     'https://reddit.com/r/subname/comments/123456?param=value',
     'https://reddit.com/r/subname/comments/123456/?param=value',
     'https://www.reddit.com/r/subname/comments/123456',
@@ -54,9 +60,6 @@ NON_MATCHING_URLS = (
     'https://reddit.com/r/subname/?param=value',
     'https://www.reddit.com/r/subname?param=value',
     'https://www.reddit.com/r/subname/?param=value',
-    # "shortlink" style allegedly seen in the wild, but not currently recognized
-    'https://reddit.com/comments/123456',
-    'https://reddit.com/comments/123456/',
 )
 
 
