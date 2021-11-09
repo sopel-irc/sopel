@@ -120,7 +120,7 @@ def run(settings, pid_file, daemon=False):
     os._exit(0)
 
 
-def add_legacy_options(parser):
+def add_legacy_options(parser, prefix=''):
     """Add legacy options to the argument parser.
 
     :param parser: argument parser
@@ -132,52 +132,56 @@ def add_legacy_options(parser):
     # The option -d/--fork is used by both actions (start and legacy),
     # and it has the same meaning and behavior, therefore it is not deprecated.
     parser.add_argument("-d", '--fork', action="store_true",
-                        dest="daemonize",
+                        dest="%sdaemonize" % prefix,
                         help="Daemonize Sopel.")
-    parser.add_argument("-q", '--quit', action="store_true", dest="quit",
+    parser.add_argument("-q", '--quit', action="store_true",
+                        dest="%squit" % prefix,
                         help=(
                             "Gracefully quit Sopel "
                             "(deprecated, and will be removed in Sopel 8; "
                             "use ``sopel stop`` instead)"))
-    parser.add_argument("-k", '--kill', action="store_true", dest="kill",
+    parser.add_argument("-k", '--kill', action="store_true",
+                        dest="%skill" % prefix,
                         help=(
                             "Kill Sopel "
                             "(deprecated, and will be removed in Sopel 8; "
                             "use ``sopel stop --kill`` instead)"))
-    parser.add_argument("-r", '--restart', action="store_true", dest="restart",
+    parser.add_argument("-r", '--restart', action="store_true",
+                        dest="%srestart" % prefix,
                         help=(
                             "Restart Sopel "
                             "(deprecated, and will be removed in Sopel 8; "
                             "use `sopel restart` instead)"))
     parser.add_argument("-l", '--list', action="store_true",
-                        dest="list_configs",
+                        dest="%slist_configs" % prefix,
                         help=(
                             "List all config files found"
                             "(deprecated, and will be removed in Sopel 8; "
                             "use ``sopel-config list`` instead)"))
-    parser.add_argument('--quiet', action="store_true", dest="quiet",
+    parser.add_argument('--quiet', action="store_true",
+                        dest="%squiet" % prefix,
                         help="Suppress all output")
     parser.add_argument('-w', '--configure-all', action='store_true',
-                        dest='wizard',
+                        dest='%swizard' % prefix,
                         help=(
                             "Run the configuration wizard "
                             "(deprecated, and will be removed in Sopel 8; "
                             "use `sopel configure` instead)"))
     parser.add_argument('--configure-modules', action='store_true',
-                        dest='mod_wizard',
+                        dest='%smod_wizard' % prefix,
                         help=(
                             "Run the configuration wizard, but only for the "
                             "plugin configuration options "
                             "(deprecated, and will be removed in Sopel 8; "
                             "use ``sopel configure --plugins`` instead)"))
     parser.add_argument('-v', action="store_true",
-                        dest='version_legacy',
+                        dest='%sversion_legacy' % prefix,
                         help=(
                             "Show version number and exit "
                             "(deprecated, and will be removed in Sopel 8; "
                             "use ``-V/--version`` instead)"))
     parser.add_argument('-V', '--version', action='store_true',
-                        dest='version',
+                        dest='%sversion' % prefix,
                         help='Show version number and exit')
 
 
@@ -189,7 +193,12 @@ def build_parser():
     """
     parser = argparse.ArgumentParser(description='Sopel IRC Bot',
                                      usage='%(prog)s [options]')
-    add_legacy_options(parser)
+    # prefix default_ to prevent shadowing subparser legacy options
+    # this is to support Python 3.9.8 which, for some reason, decided to "fix"
+    # a "bug" that introduce a breaking change between two patch version
+    # of Python. The hack works because these legacy options are not actually
+    # used by the subparser, they are used to "trick" user help only.
+    add_legacy_options(parser, 'default_')
     utils.add_common_arguments(parser)
 
     subparsers = parser.add_subparsers(
