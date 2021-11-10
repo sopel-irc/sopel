@@ -199,7 +199,7 @@ def build_parser():
     # of Python. The hack works because these legacy options are not actually
     # used by the subparser, they are used to "trick" user help only.
     add_legacy_options(parser, 'default_')
-    utils.add_common_arguments(parser)
+    utils.add_common_arguments(parser, 'default_')
 
     subparsers = parser.add_subparsers(
         title='subcommands',

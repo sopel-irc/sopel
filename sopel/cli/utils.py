@@ -240,11 +240,13 @@ def find_config(config_dir, name, extension='.cfg'):
     return os.path.join(config_dir, name)
 
 
-def add_common_arguments(parser):
+def add_common_arguments(parser, prefix=''):
     """Add common and configuration-related arguments to a ``parser``.
 
     :param parser: Argument parser (or subparser)
     :type parser: argparse.ArgumentParser
+    :param str prefix: Destination prefix to prevent conflict in argparse
+                       namespaces for Python 3.9.8
 
     This function adds the common arguments for Sopel's command line tools.
     It adds the following arguments:
@@ -276,7 +278,7 @@ def add_common_arguments(parser):
         '-c', '--config',
         default=os.environ.get('SOPEL_CONFIG') or 'default',
         metavar='filename',
-        dest='config',
+        dest='%sconfig' % prefix,
         help=inspect.cleandoc("""
             Use a specific configuration file.
             A config name can be given and the configuration file will be
@@ -289,7 +291,7 @@ def add_common_arguments(parser):
     parser.add_argument(
         '--config-dir',
         default=os.environ.get('SOPEL_CONFIG_DIR') or config.DEFAULT_HOMEDIR,
-        dest='configdir',
+        dest='%sconfigdir' % prefix,
         help=inspect.cleandoc("""
             Look for configuration files in this directory.
             By default, Sopel will search in ``~/.sopel``.
