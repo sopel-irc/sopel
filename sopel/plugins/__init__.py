@@ -222,9 +222,6 @@ def get_usable_plugins(settings):
         (plugin.name, (plugin, is_enabled))
         for plugin, is_enabled in enumerate_plugins(settings))
     # reset coretasks's position at the end of the loading queue
-    # Python 2's OrderedDict does not have a `move_to_end` method
-    # TODO: replace by plugins_info.move_to_end('coretasks') for Python 3
-    core_info = plugins_info.pop('coretasks')
-    plugins_info['coretasks'] = core_info
+    plugins_info.move_to_end('coretasks')
 
     return plugins_info
