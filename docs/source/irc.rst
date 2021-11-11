@@ -38,6 +38,13 @@ Backends
     :show-inheritance:
 
 
+Mode Messages
+=============
+
+.. automodule:: sopel.irc.modes
+    :members:
+
+
 ISUPPORT
 ========
 

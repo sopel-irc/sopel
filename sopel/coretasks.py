@@ -24,6 +24,7 @@ from __future__ import generator_stop
 
 import base64
 import collections
+import copy
 import datetime
 import functools
 import logging
@@ -44,6 +45,17 @@ CORE_QUERYTYPE = '999'
 
 Other plugins should use a different querytype.
 """
+
+MODE_PREFIX_PRIVILEGES = {
+    "v": plugin.VOICE,
+    "h": plugin.HALFOP,
+    "o": plugin.OP,
+    "a": plugin.ADMIN,
+    "q": plugin.OWNER,
+    "y": plugin.OPER,
+    "Y": plugin.OPER,
+}
+
 
 batched_caps = {}
 
@@ -328,6 +340,13 @@ def handle_isupport(bot, trigger):
 
     bot._isupport = bot._isupport.apply(**parameters)
 
+    # update bot's mode parser
+    if 'CHANMODES' in bot.isupport:
+        bot.modeparser.chanmodes = bot.isupport.CHANMODES
+
+    if 'PREFIX' in bot.isupport:
+        bot.modeparser.privileges = set(bot.isupport.PREFIX.keys())
+
     # was BOT mode support status updated?
     if not botmode_support and 'BOT' in bot.isupport:
         # yes it was! set our mode unless the config overrides it
@@ -508,7 +527,18 @@ def initial_modes(bot, trigger):
 
 
 def _parse_modes(bot, args, clear=False):
-    """Parse MODE message and apply changes to internal state."""
+    """Parse MODE message and apply changes to internal state.
+
+    Sopel, by default, doesn't know how to parse other types than A, B, C, and
+    D, and only a preset of privileges.
+
+    .. seealso::
+
+        Parsing mode messages can be tricky and complicated to understand. In
+        any case it is better to read the IRC specifications about channel
+        modes at https://modern.ircdocs.horse/#channel-mode
+
+    """
     channel_name = Identifier(args[0])
     if channel_name.is_nick():
         # We don't do anything with user modes
@@ -527,95 +557,76 @@ def _parse_modes(bot, args, clear=False):
         LOGGER.debug(
             "The server sent a possibly malformed MODE message: %r", args)
 
-    modestring = args[1]
-    params = args[2:]
+    # parse the modestring with the parameters
+    modeinfo = bot.modeparser.parse(args[1], tuple(args[2:]))
 
-    mapping = {
-        "v": plugin.VOICE,
-        "h": plugin.HALFOP,
-        "o": plugin.OP,
-        "a": plugin.ADMIN,
-        "q": plugin.OWNER,
-        "y": plugin.OPER,
-        "Y": plugin.OPER,
-    }
+    # set, unset, or update channel's modes based on the mode type
+    # modeinfo.modes contains only the valid parsed modes
+    # coretask can handle type A, B, C, and D only
+    modes = {} if clear else copy.deepcopy(channel.modes)
+    for letter, mode, is_added, param in modeinfo.modes:
+        if letter == 'A':
+            # type A is a multi-value mode and always requires a parameter
+            if mode not in modes:
+                modes[mode] = set()
+            if is_added:
+                modes[mode].add(param)
+            elif param in modes[mode]:
+                modes[mode].remove(param)
+                # remove mode if empty
+                if not modes[mode]:
+                    modes.pop(mode)
+        elif letter == 'B':
+            # type B is a single-value mode and always requires a parameter
+            if is_added:
+                modes[mode] = param
+            elif mode in modes:
+                modes.pop(mode)
+        elif letter == 'C':
+            # type C is a single-value mode and requires a parameter when added
+            if is_added:
+                modes[mode] = param
+            elif mode in modes:
+                modes.pop(mode)
+        elif letter == 'D':
+            # type D is a flag (True or False) and doesn't have a parameter
+            if is_added:
+                modes[mode] = True
+            elif mode in modes:
+                modes.pop(mode)
 
-    modes = {}
-    if not clear:
-        # Work on a copy for some thread safety
-        modes.update(channel.modes)
+    # atomic change of channel's modes
+    channel.modes = modes
 
-    # Process modes
-    sign = ""
-    param_idx = 0
-    chanmodes = bot.isupport.CHANMODES
-    for char in modestring:
-        # Are we setting or unsetting
-        if char in "+-":
-            sign = char
-            continue
-
-        if char in chanmodes["A"]:
-            # Type A (beI, etc) have a nick or address param to add/remove
-            if char not in modes:
-                modes[char] = set()
-            if sign == "+":
-                modes[char].add(params[param_idx])
-            elif params[param_idx] in modes[char]:
-                modes[char].remove(params[param_idx])
-            param_idx += 1
-        elif char in chanmodes["B"]:
-            # Type B (k, etc) always have a param
-            if sign == "+":
-                modes[char] = params[param_idx]
-            elif char in modes:
-                modes.pop(char)
-            param_idx += 1
-        elif char in chanmodes["C"]:
-            # Type C (l, etc) have a param only when setting
-            if sign == "+":
-                modes[char] = params[param_idx]
-                param_idx += 1
-            elif char in modes:
-                modes.pop(char)
-        elif char in chanmodes["D"]:
-            # Type D (aciLmMnOpqrRst, etc) have no params
-            if sign == "+":
-                modes[char] = True
-            elif char in modes:
-                modes.pop(char)
-        elif char in mapping and (
-            "PREFIX" not in bot.isupport or char in bot.isupport.PREFIX
-        ):
-            # User privs modes, always have a param
-            nick = Identifier(params[param_idx])
-            priv = channel.privileges.get(nick, 0)
-            value = mapping.get(char)
-            if value is not None:
-                if sign == "+":
-                    priv = priv | value
-                else:
-                    priv = priv & ~value
-                channel.privileges[nick] = priv
-            param_idx += 1
+    # update user privileges in channel
+    # modeinfo.privileges contains only the valid parsed privileges
+    for privilege, is_added, param in modeinfo.privileges:
+        # User privs modes, always have a param
+        nick = Identifier(param)
+        priv = channel.privileges.get(nick, 0)
+        value = MODE_PREFIX_PRIVILEGES[privilege]
+        if is_added:
+            priv = priv | value
         else:
-            # Might be in a mode block past A/B/C/D, but we don't speak those.
-            # Send a WHO to ensure no user priv modes we're skipping are lost.
-            LOGGER.warning(
-                "Unknown MODE message, sending WHO. Message was: %r",
-                args,
-            )
-            _send_who(bot, channel_name)
-            return
+            priv = priv & ~value
+        channel.privileges[nick] = priv
 
-    if param_idx != len(params):
+    # log ignored modes (modes Sopel doesn't know how to handle)
+    if modeinfo.ignored_modes:
+        LOGGER.warning(
+            "Unknown MODE message, sending WHO. Message was: %r",
+            args,
+        )
+        # send a WHO message to ensure we didn't miss anything
+        _send_who(bot, channel_name)
+
+    # log leftover parameters (too many arguments)
+    if modeinfo.leftover_params:
         LOGGER.warning(
             "Too many arguments received for MODE: args=%r chanmodes=%r",
             args,
-            chanmodes,
+            bot.modeparser.chanmodes,
         )
-
-    channel.modes = modes
 
     LOGGER.info("Updated mode for channel: %s", channel.name)
     LOGGER.debug("Channel %r mode: %r", str(channel.name), channel.modes)
