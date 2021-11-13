@@ -311,13 +311,13 @@ class Sopel(irc.AbstractBot):
         LOGGER.info("Loading plugins...")
         usable_plugins = plugins.get_usable_plugins(self.settings)
         for name, info in usable_plugins.items():
-            handler, is_enabled = info
+            plugin_handler, is_enabled = info
             if not is_enabled:
                 load_disabled = load_disabled + 1
                 continue
 
             try:
-                handler.load()
+                plugin_handler.load()
             except Exception as e:
                 load_error = load_error + 1
                 LOGGER.exception("Error loading %s: %s", name, e)
@@ -327,9 +327,9 @@ class Sopel(irc.AbstractBot):
                     "Error loading %s (plugin tried to exit)", name)
             else:
                 try:
-                    if handler.has_setup():
-                        handler.setup(self)
-                    handler.register(self)
+                    if plugin_handler.has_setup():
+                        plugin_handler.setup(self)
+                    plugin_handler.register(self)
                 except Exception as e:
                     load_error = load_error + 1
                     LOGGER.exception("Error in %s setup: %s", name, e)
@@ -394,16 +394,16 @@ class Sopel(irc.AbstractBot):
         if not self.has_plugin(name):
             raise plugins.exceptions.PluginNotRegistered(name)
 
-        handler = self._plugins[name]
+        plugin_handler = self._plugins[name]
         # tear down
-        handler.shutdown(self)
-        handler.unregister(self)
+        plugin_handler.shutdown(self)
+        plugin_handler.unregister(self)
         LOGGER.info("Unloaded plugin %s", name)
         # reload & setup
-        handler.reload()
-        handler.setup(self)
-        handler.register(self)
-        meta = handler.get_meta_description()
+        plugin_handler.reload()
+        plugin_handler.setup(self)
+        plugin_handler.register(self)
+        meta = plugin_handler.get_meta_description()
         LOGGER.info("Reloaded %s plugin %s from %s",
                     meta['type'], name, meta['source'])
 
