@@ -13,9 +13,11 @@ When a server wants to advertise its features and settings, it can use the
 # Licensed under the Eiffel Forum License 2.
 from __future__ import generator_stop
 
+from collections import OrderedDict
 import functools
 import itertools
 import re
+from typing import Dict
 
 
 def _optional(parser, default=None):
@@ -97,7 +99,7 @@ def _parse_prefix(value):
     if len(modes) != len(prefixes):
         raise ValueError('Mode list does not match for PREFIX: %r' % value)
 
-    return tuple(sorted(zip(modes, prefixes)))
+    return tuple(zip(modes, prefixes))
 
 
 ISUPPORT_PARSERS = {
@@ -328,7 +330,7 @@ class ISupport:
         return dict(self['MAXLIST'])
 
     @property
-    def PREFIX(self):
+    def PREFIX(self) -> Dict[str, str]:
         """Expose ``PREFIX`` as a dict, if advertised by the server.
 
         This exposes information about the modes and nick prefixes used for
@@ -343,6 +345,8 @@ class ISupport:
                 'v': '+',
             }
 
+        Entries are in order of descending privilege.
+
         This attribute is not available if the server does not provide the
         right information, and accessing it will raise an
         :exc:`AttributeError`.
@@ -355,7 +359,10 @@ class ISupport:
         if 'PREFIX' not in self:
             raise AttributeError('PREFIX')
 
-        return dict(self['PREFIX'])
+        # This can use a normal dict once we drop python 3.6, as 3.7 promises
+        # `dict` maintains insertion order. Since `OrderedDict` subclasses
+        # `dict`, we'll not promise to always return the former.
+        return OrderedDict(self['PREFIX'])
 
     @property
     def TARGMAX(self):
