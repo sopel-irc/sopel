@@ -245,6 +245,29 @@ def startup(bot, trigger):
     if bot.connection_registered:
         return
 
+    # nick shenanigans are serious business, but fortunately RPL_WELCOME
+    # includes the actual nick used by the server after truncation, removal
+    # of invalid characters, etc. so we can check for such shenanigans
+    if trigger.event == events.RPL_WELCOME:
+        if bot.nick != trigger.args[0]:
+            # setting modes below is just one of the things that won't work
+            # as expected if the conditions for running this block are met
+            privmsg = (
+                "Hi, I'm your bot, %s. The IRC server didn't assign me the "
+                "nick you configured. This can cause problems for me, and "
+                "make me do weird things. You'll probably want to stop me, "
+                "figure out why my nick isn't acceptable, and fix that before "
+                "starting me again." % bot.nick
+            )
+            debug_msg = (
+                "RPL_WELCOME indicated the server did not accept the bot's "
+                "configured nickname. Requested '%s'; got '%s'. This can "
+                "cause unexpected behavior. Please modify the configuration "
+                "and restart the bot." % (bot.nick, trigger.args[0])
+            )
+            LOGGER.critical(debug_msg)
+            bot.say(privmsg, bot.config.core.owner)
+
     # set flag
     bot.connection_registered = True
 
