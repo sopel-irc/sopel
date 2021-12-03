@@ -28,7 +28,7 @@ for installing from the latest source below.
 Latest source
 =============
 First, either clone the repository with ``git clone
-git://github.com/sopel-irc/sopel.git`` or download a tarball `from GitHub
+git://github.com/sopel-irc/sopel.git`` or download a tarball from `GitHub
 <https://github.com/sopel-irc/sopel/releases/latest>`_.
 
 Note: Sopel requires Python 3.6+ to run.
