@@ -41,7 +41,7 @@ domain = r'https?://(?:www\.|old\.|pay\.|ssl\.|[a-z]{2}\.)?reddit\.com'
 subreddit_url = r'%s/r/([\w-]+)/?$' % domain
 post_or_comment_url = (
     domain +
-    r'/r/\S+?/comments/(?P<submission>[\w-]+)'
+    r'(?:/r/\S+?)?/comments/(?P<submission>[\w-]+)'
     r'(?:/?(?:[\w%]+/(?P<comment>[\w-]+))?)'
 )
 short_post_url = r'https?://(redd\.it|reddit\.com)/(?P<submission>[\w-]+)/?$'
