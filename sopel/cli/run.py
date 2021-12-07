@@ -471,8 +471,20 @@ def main(argv=None):
 
     :param list argv: command line arguments
     """
-    # Step One: Parse The Command Line
+    # Build parser and handle default command
+    global_options = ['-h', '--help', '-V', '--version']
     parser = build_parser()
+
+    argv = argv or sys.argv[1:]
+    if not argv:
+        # No argument: assume start sub-command
+        argv = ['start']
+
+    elif argv[0].startswith('-') and argv[0] not in global_options:
+        # No sub-command and no global option
+        argv = ['start'] + argv
+
+    # Step One: Parse The Command Line
     opts = parser.parse_args(argv)
 
     # Handle "-V/--version" option
@@ -499,6 +511,7 @@ def main(argv=None):
         return command(opts)
     except KeyError:
         parser.print_usage()
+        return ERR_CODE
     except KeyboardInterrupt:
         print("\n\nInterrupted")
         return ERR_CODE
