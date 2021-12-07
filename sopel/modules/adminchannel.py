@@ -118,25 +118,27 @@ def kick(bot, trigger):
 
 def configureHostMask(mask):
     # shortcut for nick!*@*
-    if re.match('^[^.@!/]+$', mask) is not None:
+    if re.match(r'^[^.@!/\s]+$', mask) is not None:
         return '%s!*@*' % mask
 
-    # shortcut for *!*@host (only works for hosts containing dot)
-    if re.match('^[^@!]+$', mask) is not None:
+    # shortcut for *!*@host
+    # won't work for local names w/o dot, but does support cloaks/with/slashes
+    if re.match(r'^[^@!\s]+$', mask) is not None:
         return '*!*@%s' % mask
 
-    # shortcut for *!user@* (must give 'user@' as input)
-    m = re.match('^([^!@]+)@$', mask)
+    # shortcut for *!user@*
+    # requires trailing @ to be recognized as a username instead of a nick
+    m = re.match(r'^([^!@\s]+)@$', mask)
     if m is not None:
         return '*!%s@*' % m.group(1)
 
     # shortcut for *!user@host
-    m = re.match('^([^!@]+)@([^@!]+)$', mask)
+    m = re.match(r'^([^!@\s]+)@([^@!\s]+)$', mask)
     if m is not None:
         return '*!%s@%s' % (m.group(1), m.group(2))
 
     # shortcut for nick!user@*
-    m = re.match('^([^!@]+)!([^!@]+)@?$', mask)
+    m = re.match(r'^([^!@\s]+)!([^!@\s]+)@?$', mask)
     if m is not None:
         return '%s!%s@*' % (m.group(1), m.group(2))
 
