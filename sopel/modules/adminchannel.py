@@ -144,8 +144,8 @@ def configureHostMask(mask):
     if re.match(r'^[^!@\s]+![^!@\s]+@[^!@\s]+$', mask) is not None:
         return mask
 
-    # invalid format... empty-string is used as a sentinel value
-    return ''
+    # not a shortcut nor a valid hostmask
+    raise ValueError('Invalid hostmask format or unsupported shorthand')
 
 
 @plugin.require_chanmsg
@@ -170,9 +170,12 @@ def ban(bot, trigger):
             return
         channel = opt
         banmask = text[2]
-    banmask = configureHostMask(banmask)
-    if banmask == '':
+
+    try:
+        banmask = configureHostMask(banmask)
+    except ValueError:
         return
+
     bot.write(['MODE', channel, '+b', banmask])
 
 
@@ -197,9 +200,12 @@ def unban(bot, trigger):
             return
         channel = opt
         banmask = text[2]
-    banmask = configureHostMask(banmask)
-    if banmask == '':
+
+    try:
+        banmask = configureHostMask(banmask)
+    except ValueError:
         return
+
     bot.write(['MODE', channel, '-b', banmask])
 
 
@@ -224,9 +230,12 @@ def quiet(bot, trigger):
             return
         quietmask = text[2]
         channel = opt
-    quietmask = configureHostMask(quietmask)
-    if quietmask == '':
+
+    try:
+        quietmask = configureHostMask(quietmask)
+    except ValueError:
         return
+
     bot.write(['MODE', channel, '+q', quietmask])
 
 
@@ -251,9 +260,12 @@ def unquiet(bot, trigger):
             return
         quietmask = text[2]
         channel = opt
-    quietmask = configureHostMask(quietmask)
-    if quietmask == '':
+
+    try:
+        quietmask = configureHostMask(quietmask)
+    except ValueError:
         return
+
     bot.write(['MODE', channel, '-q', quietmask])
 
 
@@ -285,9 +297,12 @@ def kickban(bot, trigger):
         mask = text[3]
         reasonidx = 4
     reason = ' '.join(text[reasonidx:])
-    mask = configureHostMask(mask)
-    if mask == '':
+
+    try:
+        mask = configureHostMask(mask)
+    except ValueError:
         return
+
     bot.write(['MODE', channel, '+b', mask])
     bot.kick(nick, channel, reason)
 
