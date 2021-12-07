@@ -117,27 +117,34 @@ def kick(bot, trigger):
 
 
 def configureHostMask(mask):
-    if mask == '*!*@*':
-        return mask
+    # shortcut for nick!*@*
     if re.match('^[^.@!/]+$', mask) is not None:
         return '%s!*@*' % mask
+
+    # shortcut for *!*@host (only works for hosts containing dot)
     if re.match('^[^@!]+$', mask) is not None:
         return '*!*@%s' % mask
 
+    # shortcut for *!user@* (must give 'user@' as input)
     m = re.match('^([^!@]+)@$', mask)
     if m is not None:
         return '*!%s@*' % m.group(1)
 
+    # shortcut for *!user@host
     m = re.match('^([^!@]+)@([^@!]+)$', mask)
     if m is not None:
         return '*!%s@%s' % (m.group(1), m.group(2))
 
-    m = re.match('^([^!@]+)!(^[!@]+)@?$', mask)
+    # shortcut for nick!user@*
+    m = re.match('^([^!@]+)!([^!@]+)@?$', mask)
     if m is not None:
         return '%s!%s@*' % (m.group(1), m.group(2))
 
-    if re.match(r'^\S+[!]\S+[@]\S+$', mask) is not None:
+    # not a shortcut; validate full NUH format
+    if re.match(r'^[^!@\s]+![^!@\s]+@[^!@\s]+$', mask) is not None:
         return mask
+
+    # invalid format... empty-string is used as a sentinel value
     return ''
 
 
