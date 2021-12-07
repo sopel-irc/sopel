@@ -484,7 +484,7 @@ def main(argv=None):
         # No sub-command and no global option
         argv = ['start'] + argv
 
-    # Step One: Parse The Command Line
+    # Parse The Command Line
     opts = parser.parse_args(argv)
 
     # Handle "-V/--version" option
@@ -493,14 +493,10 @@ def main(argv=None):
         return
 
     try:
-        # Step Two: "Do not run as root" checks
-        try:
-            check_not_root()
-        except RuntimeError as err:
-            tools.stderr('%s' % err)
-            return ERR_CODE
+        # Check "Do not run as root"
+        check_not_root()
 
-        # Step Three: Handle command
+        # Select command
         action = getattr(opts, 'action', None)
         command = {
             'start': command_start,
@@ -508,12 +504,17 @@ def main(argv=None):
             'stop': command_stop,
             'restart': command_restart,
         }[action]
+
+        # Run command
         return command(opts)
     except KeyError:
         parser.print_usage()
         return ERR_CODE
     except KeyboardInterrupt:
         print("\n\nInterrupted")
+        return ERR_CODE
+    except RuntimeError as err:
+        tools.stderr(str(err))
         return ERR_CODE
 
 
