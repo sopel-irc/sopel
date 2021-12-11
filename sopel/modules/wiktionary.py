@@ -50,7 +50,7 @@ def text(html):
     text = text.replace('(intransitive', '(intr.')
     text = text.replace('(transitive', '(trans.')
     text = web.decode(text)
-    return text
+    return text.strip()
 
 
 def wikt(word):
@@ -74,9 +74,13 @@ def wikt(word):
 
         if not is_new_mode:
             if (mode == 'etymology') and ('<p>' in line):
-                etymology = text(line)
+                if etymology is not None:
+                    # multi-line etymologies do exist (e.g. see "mayhem")
+                    etymology += ' ' + text(line)
+                else:
+                    etymology = text(line)
             # 'id="' can occur in definition lines <li> when <sup> tag is used for references;
-            # make sure those are not excluded (see e.g., abecedarian).
+            # make sure those are not excluded (e.g. see "abecedarian").
             elif ('id="' in line) and ('<li>' not in line):
                 mode = None
             elif (mode is not None) and ('<li>' in line):
