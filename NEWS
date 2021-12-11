@@ -2,6 +2,32 @@ This file is used to auto-generate the "Changelog" section of Sopel's website.
 When adding new entries, follow the style guide in NEWS.spec.md to avoid
 causing problems with the site build.
 
+Changes between 7.1.6 and 7.1.7
+===============================
+
+Plugin changes
+--------------
+
+* adminchannel: fix a very old bug in NUH (hostmask) handling [[#2221][]]
+* reddit:
+  * add flair text to submission output [[#2209][]]
+  * further improve link matching [[#2208][], [#2216][]]
+* wiktionary: correctly handle multi-paragraph etymologies [[#2214][]]
+
+Core changes
+------------
+
+* Added an alert if the IRC server registers the bot as a client using a
+  different nickname than what's set in `core.nick` [[#2215][]]
+
+[#2208]: https://github.com/sopel-irc/sopel/pull/2208
+[#2209]: https://github.com/sopel-irc/sopel/pull/2209
+[#2214]: https://github.com/sopel-irc/sopel/pull/2214
+[#2215]: https://github.com/sopel-irc/sopel/pull/2215
+[#2216]: https://github.com/sopel-irc/sopel/pull/2216
+[#2221]: https://github.com/sopel-irc/sopel/pull/2221
+
+
 Changes between 7.1.5 and 7.1.6
 ===============================
 
