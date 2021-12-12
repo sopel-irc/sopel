@@ -16,7 +16,8 @@ import re
 import signal
 import threading
 import time
-from typing import Optional
+from types import MappingProxyType
+from typing import Mapping, Optional
 
 from sopel import irc, logger, plugins, tools
 from sopel.db import SopelDB
@@ -192,6 +193,14 @@ class Sopel(irc.AbstractBot):
             return None
 
         return self.users.get(self.nick).hostmask
+
+    @property
+    def plugins(self) -> Mapping[str, plugins.handlers.AbstractPluginHandler]:
+        """A dict of the bot's currently loaded plugins.
+
+        :return: an immutable map of plugin name to plugin object
+        """
+        return MappingProxyType(self._plugins)
 
     def has_channel_privilege(self, channel, privilege):
         """Tell if the bot has a ``privilege`` level or above in a ``channel``.
