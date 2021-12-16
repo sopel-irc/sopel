@@ -11,4 +11,6 @@ sphinx>=4,<5
 # specify exact autoprogram version because the new (in 2021) maintainer
 # showed that they will indeed make major changes in patch versions
 sphinxcontrib-autoprogram==0.1.7
+# necessary for things like plugins.rules.TypedRule (a TypeVar) to work properly
+sphinx_autodoc_typehints==1.12.0
 vcrpy<3.0.0

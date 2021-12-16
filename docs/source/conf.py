@@ -29,6 +29,7 @@ from sopel import __version__
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
 extensions = [
     'sphinx.ext.autodoc',
+    'sphinx_autodoc_typehints',
     'sphinx.ext.autosectionlabel',
     'sphinx.ext.intersphinx',
     'sphinxcontrib.autoprogram',
