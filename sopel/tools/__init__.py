@@ -29,7 +29,6 @@ from pkg_resources import parse_version
 from sopel import __version__
 
 from ._events import events  # NOQA
-from . import time, web  # NOQA
 
 
 # Kept for backward compatibility
@@ -197,6 +196,13 @@ def deprecated(
         return func(*args, **kwargs)
 
     return deprecated_func
+
+
+# This has to be *after* the definition of `deprecated()` or we
+# get "AttributeError: partially initialized module 'sopel.tools' has no
+# attribute 'deprecated' (most likely due to a circular import)" when trying
+# to use the decorator in submodules.
+from . import time, web  # NOQA
 
 
 @deprecated('Shim for Python 2 cross-compatibility, no longer needed. '
