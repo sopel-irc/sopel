@@ -734,7 +734,8 @@ class Rule(AbstractRule):
 
         This classmethod takes the ``handler``'s attributes to generate a map
         of keyword arguments for the class. This can be used by the
-        :meth:`from_callable` classmethod to instantiate a new rule object.
+        classmethod :meth:`~AbstractRule.from_callable` to instantiate a new
+        rule object.
 
         The expected attributes are the ones set by decorators from the
         :mod:`sopel.plugin` module.
@@ -818,12 +819,12 @@ class Rule(AbstractRule):
         :return: an instance of this class created from the ``handler``
         :rtype: :class:`AbstractRule`
 
-        Similar to the :meth:`from_callable` classmethod, it requires a rule
-        handler decorated with :mod:`sopel.plugin`'s decorators.
+        Similar to the :meth:`~AbstractRule.from_callable` classmethod, it
+        requires a rule handler decorated with :mod:`sopel.plugin`'s decorators.
 
-        Unlike the :meth:`from_callable` classmethod, the regexes are not
-        already attached to the handler: its loader functions will be used to
-        get the rule's regexes. See the :func:`sopel.plugin.rule_lazy`
+        Unlike the :meth:`~AbstractRule.from_callable` classmethod, the regexes
+        are not already attached to the handler: its loader functions will be
+        used to get the rule's regexes. See the :func:`sopel.plugin.rule_lazy`
         decorator for more information about the handler and the loaders'
         signatures.
 
@@ -1572,9 +1573,9 @@ class URLCallback(Rule):
         trigger with a third parameter: the ``match`` parameter.
 
         To use this class with an existing URL callback handler, the
-        :meth:`from_callable` classmethod **must** be used: it will wrap the
-        handler to work as intended. In that case, the ``trigger`` and the
-        ``match`` arguments will be the same when the rule executes.
+        :meth:`~AbstractRule.from_callable` classmethod **must** be used: it
+        will wrap the handler to work as intended. In that case, the ``trigger``
+        and the ``match`` arguments will be the same when the rule executes.
 
         This behavior makes the ``match`` parameter obsolete, which will be
         removed in Sopel 9.
@@ -1622,13 +1623,15 @@ class URLCallback(Rule):
         :return: an instance of this class created from the ``handler``
         :rtype: :class:`AbstractRule`
 
-        Similar to the :meth:`from_callable` classmethod, it requires a rule
-        handlers decorated with :mod:`sopel.plugin`'s decorators.
+        Similar to the :meth:`~AbstractRule.from_callable` classmethod, it
+        requires a rule handlers decorated with :mod:`sopel.plugin`'s
+        decorators.
 
-        Unlike the :meth:`from_callable` classmethod, the regexes are not
-        already attached to the handler: its loader functions will be used to
-        get the rule's regexes. See the :func:`sopel.plugin.url_lazy` decorator
-        for more information about the handler and the loaders' signatures.
+        Unlike the :meth:`~AbstractRule.from_callable` classmethod, the regexes
+        are not already attached to the handler: its loader functions will be
+        used to get the rule's regexes. See the :func:`sopel.plugin.url_lazy`
+        decorator for more information about the handler and the loaders'
+        signatures.
 
         .. seealso::
 
