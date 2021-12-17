@@ -120,88 +120,23 @@ def run(settings, pid_file, daemon=False):
     os._exit(0)
 
 
-def add_legacy_options(parser):
-    """Add legacy options to the argument parser.
-
-    :param parser: argument parser
-    :type parser: :class:`argparse.ArgumentParser`
-    """
-    # TL;DR: option -d/--fork is not deprecated.
-    # When the legacy action is replaced in Sopel 8, 'start' will become the
-    # new default action, with its arguments.
-    # The option -d/--fork is used by both actions (start and legacy),
-    # and it has the same meaning and behavior, therefore it is not deprecated.
-    parser.add_argument("-d", '--fork', action="store_true",
-                        dest="daemonize",
-                        help="Daemonize Sopel.")
-    parser.add_argument("-q", '--quit', action="store_true", dest="quit",
-                        help=(
-                            "Gracefully quit Sopel "
-                            "(deprecated, and will be removed in Sopel 8; "
-                            "use ``sopel stop`` instead)"))
-    parser.add_argument("-k", '--kill', action="store_true", dest="kill",
-                        help=(
-                            "Kill Sopel "
-                            "(deprecated, and will be removed in Sopel 8; "
-                            "use ``sopel stop --kill`` instead)"))
-    parser.add_argument("-r", '--restart', action="store_true", dest="restart",
-                        help=(
-                            "Restart Sopel "
-                            "(deprecated, and will be removed in Sopel 8; "
-                            "use `sopel restart` instead)"))
-    parser.add_argument("-l", '--list', action="store_true",
-                        dest="list_configs",
-                        help=(
-                            "List all config files found"
-                            "(deprecated, and will be removed in Sopel 8; "
-                            "use ``sopel-config list`` instead)"))
-    parser.add_argument('--quiet', action="store_true", dest="quiet",
-                        help="Suppress all output")
-    parser.add_argument('-w', '--configure-all', action='store_true',
-                        dest='wizard',
-                        help=(
-                            "Run the configuration wizard "
-                            "(deprecated, and will be removed in Sopel 8; "
-                            "use `sopel configure` instead)"))
-    parser.add_argument('--configure-modules', action='store_true',
-                        dest='mod_wizard',
-                        help=(
-                            "Run the configuration wizard, but only for the "
-                            "plugin configuration options "
-                            "(deprecated, and will be removed in Sopel 8; "
-                            "use ``sopel configure --plugins`` instead)"))
-    parser.add_argument('-v', action="store_true",
-                        dest='version_legacy',
-                        help=(
-                            "Show version number and exit "
-                            "(deprecated, and will be removed in Sopel 8; "
-                            "use ``-V/--version`` instead)"))
-    parser.add_argument('-V', '--version', action='store_true',
-                        dest='version',
-                        help='Show version number and exit')
-
-
 def build_parser():
     """Build an argument parser for the bot.
 
     :return: the argument parser
     :rtype: :class:`argparse.ArgumentParser`
     """
-    parser = argparse.ArgumentParser(description='Sopel IRC Bot',
-                                     usage='%(prog)s [options]')
-    add_legacy_options(parser)
-    utils.add_common_arguments(parser)
+    parser = argparse.ArgumentParser(description='Sopel IRC Bot')
+
+    parser.add_argument('-V', '--version', action='store_true',
+                        dest='version',
+                        help='Show version number and exit')
 
     subparsers = parser.add_subparsers(
         title='subcommands',
         description='List of Sopel\'s subcommands',
         dest='action',
         metavar='{start,configure,stop,restart}')
-
-    # manage `legacy` subcommand
-    parser_legacy = subparsers.add_parser('legacy')
-    add_legacy_options(parser_legacy)
-    utils.add_common_arguments(parser_legacy)
 
     # manage `start` subcommand
     parser_start = subparsers.add_parser(
@@ -310,19 +245,6 @@ def print_version():
                            sys.version_info.micro)
     print('Sopel %s (running on Python %s)' % (__version__, py_ver))
     print('https://sopel.chat/')
-
-
-def print_config(configdir):
-    """Print list of available configurations from config directory."""
-    configs = utils.enumerate_configs(configdir)
-    print('Config files in %s:' % configdir)
-    configfile = None
-    for configfile in configs:
-        print('\t%s' % configfile)
-    if not configfile:
-        print('\tNone found')
-
-    print('-------------------------')
 
 
 def get_configuration(options):
@@ -544,178 +466,55 @@ def command_restart(opts):
         os.kill(pid, signal.SIGILL)
 
 
-def command_legacy(opts):
-    """Legacy Sopel run script.
-
-    :param opts: parsed arguments
-    :type opts: :class:`argparse.Namespace`
-
-    The ``legacy`` command manages the old-style ``sopel`` command line tool.
-    Most of its features are replaced by the following commands:
-
-    * ``sopel start`` replaces the default behavior (run the bot)
-    * ``sopel stop`` replaces the ``--quit/--kill`` options
-    * ``sopel restart`` replaces the ``--restart`` option
-    * ``sopel configure`` replaces the
-      ``-w/--configure-all/--configure-modules`` options
-
-    The ``-v`` option for "version" is deprecated, ``-V/--version`` should be
-    used instead.
-
-    .. seealso::
-
-       The github issue `#1471`__ tracks various changes requested for future
-       versions of Sopel, some of them related to this legacy command.
-
-       .. __: https://github.com/sopel-irc/sopel/issues/1471
-
-    """
-    # Step One: Handle "No config needed" options
-    if opts.version:
-        print_version()
-        return
-    elif opts.version_legacy:
-        tools.stderr(
-            'WARNING: option -v is deprecated; '
-            'use `sopel -V/--version` instead')
-        print_version()
-        return
-
-    configpath = utils.find_config(opts.configdir, opts.config)
-
-    if opts.wizard:
-        tools.stderr(
-            'WARNING: option -w/--configure-all is deprecated; '
-            'use `sopel configure` instead')
-        utils.wizard(configpath)
-        return
-
-    if opts.mod_wizard:
-        tools.stderr(
-            'WARNING: option --configure-modules is deprecated; '
-            'use `sopel configure --plugins` instead')
-        utils.plugins_wizard(configpath)
-        return
-
-    if opts.list_configs:
-        tools.stderr(
-            'WARNING: option --list is deprecated; '
-            'use `sopel-config list` instead')
-        print_config(opts.configdir)
-        return
-
-    # Step Two: Get the configuration file and prepare to run
-    try:
-        settings = get_configuration(opts)
-    except config.ConfigurationError as e:
-        tools.stderr(e)
-        return ERR_CODE_NO_RESTART
-
-    if settings.core.not_configured:
-        tools.stderr('Bot is not configured, can\'t start')
-        return ERR_CODE_NO_RESTART
-
-    # Step Three: Handle process-lifecycle options and manage the PID file
-    pid_dir = settings.core.pid_dir
-    pid_file_path = get_pid_filename(settings, pid_dir)
-    old_pid = get_running_pid(pid_file_path)
-
-    if old_pid is not None and tools.check_pid(old_pid):
-        if not opts.quit and not opts.kill and not opts.restart:
-            tools.stderr(
-                'There\'s already a Sopel instance running with this config file')
-            tools.stderr(
-                'Try using either the `sopel stop` command or the `sopel restart` command')
-            return ERR_CODE
-        elif opts.kill:
-            tools.stderr(
-                'WARNING: option -k/--kill is deprecated; '
-                'use `sopel stop --kill` instead')
-            tools.stderr('Killing the Sopel')
-            os.kill(old_pid, signal.SIGKILL)
-            return
-        elif opts.quit:
-            tools.stderr(
-                'WARNING: options -q/--quit is deprecated; '
-                'use `sopel stop` instead')
-            tools.stderr('Signaling Sopel to stop gracefully')
-            if hasattr(signal, 'SIGUSR1'):
-                os.kill(old_pid, signal.SIGUSR1)
-            else:
-                # Windows will not generate SIGTERM itself
-                # https://docs.microsoft.com/en-us/cpp/c-runtime-library/reference/signal
-                os.kill(old_pid, signal.SIGTERM)
-            return
-        elif opts.restart:
-            tools.stderr(
-                'WARNING: options --restart is deprecated; '
-                'use `sopel restart` instead')
-            tools.stderr('Asking Sopel to restart')
-            if hasattr(signal, 'SIGUSR2'):
-                os.kill(old_pid, signal.SIGUSR2)
-            else:
-                # Windows will not generate SIGILL itself
-                # https://docs.microsoft.com/en-us/cpp/c-runtime-library/reference/signal
-                os.kill(old_pid, signal.SIGILL)
-            return
-    elif opts.kill or opts.quit or opts.restart:
-        tools.stderr('Sopel is not running!')
-        return ERR_CODE
-
-    if opts.daemonize:
-        child_pid = os.fork()
-        if child_pid != 0:
-            return
-    with open(pid_file_path, 'w') as pid_file:
-        pid_file.write(str(os.getpid()))
-
-    # Step Four: Initialize and run Sopel
-    ret = run(settings, pid_file_path)
-    os.unlink(pid_file_path)
-    if ret == -1:
-        os.execv(sys.executable, ['python'] + sys.argv)
-    else:
-        return ret
-
-
 def main(argv=None):
     """Sopel run script entry point.
 
     :param list argv: command line arguments
     """
+    # Build parser and handle default command
+    global_options = ['-h', '--help', '-V', '--version']
+    parser = build_parser()
+
+    argv = argv or sys.argv[1:]
+    if not argv:
+        # No argument: assume start sub-command
+        argv = ['start']
+
+    elif argv[0].startswith('-') and argv[0] not in global_options:
+        # No sub-command and no global option
+        argv = ['start'] + argv
+
+    # Parse The Command Line
+    opts = parser.parse_args(argv)
+
+    # Handle "-V/--version" option
+    if opts.version:
+        print_version()
+        return
+
     try:
-        # Step One: Parse The Command Line
-        parser = build_parser()
+        # Check "Do not run as root"
+        check_not_root()
 
-        # make sure to have an action first (`legacy` by default)
-        # TODO: `start` should be the default in Sopel 8
-        argv = argv or sys.argv[1:]
-        if not argv:
-            argv = ['legacy']
-        elif argv[0].startswith('-') and argv[0] not in ['-h', '--help']:
-            argv = ['legacy'] + argv
-
-        opts = parser.parse_args(argv)
-
-        # Step Two: "Do not run as root" checks
-        try:
-            check_not_root()
-        except RuntimeError as err:
-            tools.stderr('%s' % err)
-            return ERR_CODE
-
-        # Step Three: Handle command
-        action = getattr(opts, 'action', 'legacy')
+        # Select command
+        action = getattr(opts, 'action', None)
         command = {
-            'legacy': command_legacy,
             'start': command_start,
             'configure': command_configure,
             'stop': command_stop,
             'restart': command_restart,
-        }.get(action)
+        }[action]
+
+        # Run command
         return command(opts)
+    except KeyError:
+        parser.print_usage()
+        return ERR_CODE
     except KeyboardInterrupt:
         print("\n\nInterrupted")
+        return ERR_CODE
+    except RuntimeError as err:
+        tools.stderr(str(err))
         return ERR_CODE
 
 
