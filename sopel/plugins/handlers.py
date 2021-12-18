@@ -49,8 +49,9 @@ import importlib
 import inspect
 import itertools
 import os
+from typing import Optional
 
-from sopel import loader
+from sopel import __version__ as release, loader
 from . import exceptions
 
 try:
@@ -117,8 +118,18 @@ class AbstractPluginHandler(abc.ABC):
         * type: the plugin's type
         * source: the plugin's source
           (filesystem path, python import path, etc.)
+        * version: the plugin's version string if available, otherwise ``None``
         """
         # TODO: change return type to a TypedDict when dropping py3.7
+
+    @abc.abstractmethod
+    def get_version(self):
+        """Retrieve the plugin's version.
+
+        :return: the plugin's version string
+        :rtype: str
+        """
+        raise NotImplementedError
 
     @abc.abstractmethod
     def is_loaded(self) -> bool:
@@ -273,6 +284,7 @@ class PyModulePlugin(AbstractPluginHandler):
         * label: see :meth:`~sopel.plugins.handlers.PyModulePlugin.get_label`
         * type: see :attr:`PLUGIN_TYPE`
         * source: the name of the plugin's module
+        * version: the version string of the plugin if available, otherwise ``None``
 
         Example::
 
@@ -281,6 +293,7 @@ class PyModulePlugin(AbstractPluginHandler):
                 'type: 'python-module',
                 'label: 'example plugin',
                 'source': 'sopel_modules.example',
+                'version': '3.1.2',
             }
 
         """
@@ -289,7 +302,19 @@ class PyModulePlugin(AbstractPluginHandler):
             'type': self.PLUGIN_TYPE,
             'name': self.name,
             'source': self.module_name,
+            'version': self.get_version(),
         }
+
+    def get_version(self) -> Optional[str]:
+        """Retrieve the plugin's version.
+
+        :return: the plugin's version string
+        :rtype: Optional[str]
+        """
+        if hasattr(self._module, "__version__"):
+            return str(self._module.__version__)
+        if self.module_name.startswith("sopel."):
+            return release
 
     def load(self):
         """Load the plugin's module using :func:`importlib.import_module`.
@@ -460,6 +485,7 @@ class PyFilePlugin(PyModulePlugin):
                 'type: 'python-file',
                 'label: 'example plugin',
                 'source': '/home/username/.sopel/plugins/example.py',
+                'version': '3.1.2',
             }
 
         """
@@ -563,6 +589,7 @@ class EntryPointPlugin(PyModulePlugin):
                 'type: 'setup-entrypoint',
                 'label: 'example plugin',
                 'source': 'example = my_plugin.example',
+                'version': '3.1.2',
             }
 
         """
