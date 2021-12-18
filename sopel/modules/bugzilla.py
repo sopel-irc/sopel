@@ -11,7 +11,7 @@ import logging
 import re
 
 import requests
-import xmltodict  # type: ignore
+import xmltodict  # type: ignore[import]
 
 from sopel import plugin, plugins
 from sopel.config import types

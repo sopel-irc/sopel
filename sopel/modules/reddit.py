@@ -13,8 +13,8 @@ import datetime as dt
 import html
 import re
 
-import praw  # type: ignore
-import prawcore  # type: ignore
+import praw  # type: ignore[import]
+import prawcore  # type: ignore[import]
 import requests
 
 from sopel import plugin
