@@ -778,12 +778,14 @@ class Sopel(irc.AbstractBot):
         self,
         pretrigger: PreTrigger,
     ) -> Union[Tuple[bool, bool], Tuple[None, None]]:
-        if self.settings.core.nick_blocks or self.settings.core.host_blocks:
-            nick_blocked = self._nick_blocked(pretrigger.nick)
-            host_blocked = self._host_blocked(pretrigger.host)
-        else:
+        if not (
+            self.settings.core.nick_blocks
+            or self.settings.core.host_blocks
+        ):
             return (None, None)
 
+        nick_blocked = self._nick_blocked(pretrigger.nick)
+        host_blocked = self._host_blocked(pretrigger.host)
         return (nick_blocked, host_blocked)
 
     def dispatch(self, pretrigger: PreTrigger) -> None:
