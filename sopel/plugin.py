@@ -289,7 +289,7 @@ def find(*patterns: typing.Union[str, typing.Pattern]) -> typing.Callable:
     return add_attribute
 
 
-def find_lazy(*loaders) -> typing.Callable:
+def find_lazy(*loaders: typing.Callable) -> typing.Callable:
     """Decorate a callable as a find rule with lazy loading.
 
     :param loaders: one or more functions to generate a list of **compiled**
@@ -395,7 +395,7 @@ def search(*patterns: typing.Union[str, typing.Pattern]) -> typing.Callable:
     return add_attribute
 
 
-def search_lazy(*loaders) -> typing.Callable:
+def search_lazy(*loaders: typing.Callable) -> typing.Callable:
     """Decorate a callable as a search rule with lazy loading.
 
     :param loaders: one or more functions to generate a list of **compiled**
@@ -481,7 +481,7 @@ def echo(
     return add_attribute
 
 
-def command(*command_list) -> typing.Callable:
+def command(*command_list: str) -> typing.Callable:
     """Decorate a function to set one or more commands that should trigger it.
 
     :param str command_list: one or more command name(s) to match
@@ -578,7 +578,7 @@ commands = command
 """Alias to :func:`command`."""
 
 
-def nickname_command(*command_list) -> typing.Callable:
+def nickname_command(*command_list: str) -> typing.Callable:
     """Decorate a function to trigger on lines starting with "$nickname: command".
 
     :param str command_list: one or more command name(s) to match
@@ -628,7 +628,7 @@ nickname_commands = nickname_command
 """Alias to :func:`nickname_command`."""
 
 
-def action_command(*command_list) -> typing.Callable:
+def action_command(*command_list: str) -> typing.Callable:
     """Decorate a function to trigger on CTCP ACTION lines.
 
     :param str command_list: one or more command name(s) to match
@@ -718,7 +718,7 @@ def priority(value: str) -> typing.Callable:
     return add_attribute
 
 
-def event(*event_list) -> typing.Callable:
+def event(*event_list: str) -> typing.Callable:
     """Decorate a function to be triggered on specific IRC events.
 
     :param str event_list: one or more event name(s) on which to trigger
@@ -748,7 +748,7 @@ def event(*event_list) -> typing.Callable:
 
 def ctcp(
     function: typing.Any = None,
-    *command_list,
+    *command_list: str,
 ) -> typing.Union[typing.Any, typing.Callable]:
     """Decorate a callable to trigger on CTCP commands (mostly, ``ACTION``).
 
@@ -1118,7 +1118,7 @@ def require_bot_privilege(
     return actual_decorator
 
 
-def url(*url_rules) -> typing.Callable:
+def url(*url_rules: str) -> typing.Callable:
     """Decorate a function to handle URLs.
 
     :param str url_rules: one or more regex pattern(s) to match URLs
@@ -1177,7 +1177,7 @@ def url(*url_rules) -> typing.Callable:
     return actual_decorator
 
 
-def url_lazy(*loaders) -> typing.Callable:
+def url_lazy(*loaders: typing.Callable) -> typing.Callable:
     """Decorate a function to handle URL, using lazy-loading for its regex.
 
     :param loaders: one or more functions to generate a list of **compiled**
