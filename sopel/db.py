@@ -724,6 +724,28 @@ class SopelDB:
         finally:
             self.ssession.remove()
 
+    def forget_channel(self, channel):
+        """Remove all of a channel's stored values.
+
+        :param str channel: the name of the channel for which to delete values
+        :raise ~sqlalchemy.exc.SQLAlchemyError: if there is a database error
+
+        .. important::
+
+            This is a Nuclear Option. Be *very* sure that you want to do it.
+
+        """
+        channel = self.get_channel_slug(channel)
+        session = self.ssession()
+        try:
+            session.query(ChannelValues).filter(ChannelValues.channel == channel).delete()
+            session.commit()
+        except SQLAlchemyError:
+            session.rollback()
+            raise
+        finally:
+            self.ssession.remove()
+
     # PLUGIN FUNCTIONS
 
     def set_plugin_value(self, plugin, key, value):
@@ -836,6 +858,28 @@ class SopelDB:
             elif default is not None:
                 result = default
             return _deserialize(result)
+        except SQLAlchemyError:
+            session.rollback()
+            raise
+        finally:
+            self.ssession.remove()
+
+    def forget_plugin(self, plugin):
+        """Remove all of a plugin's stored values.
+
+        :param str plugin: the name of the plugin for which to delete values
+        :raise ~sqlalchemy.exc.SQLAlchemyError: if there is a database error
+
+        .. important::
+
+            This is a Nuclear Option. Be *very* sure that you want to do it.
+
+        """
+        plugin = plugin.lower()
+        session = self.ssession()
+        try:
+            session.query(PluginValues).filter(PluginValues.plugin == plugin).delete()
+            session.commit()
         except SQLAlchemyError:
             session.rollback()
             raise
