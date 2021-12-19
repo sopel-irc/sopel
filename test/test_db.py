@@ -183,7 +183,7 @@ def test_unalias_nick(db):
     session.close()
 
 
-def test_delete_nick_group(db):
+def test_forget_nick_group(db):
     session = db.ssession()
     aliases = ['Embolalia', 'Embo']
     nick_id = 42
@@ -195,7 +195,7 @@ def test_delete_nick_group(db):
     db.set_nick_value(aliases[0], 'foo', 'bar')
     db.set_nick_value(aliases[1], 'spam', 'eggs')
 
-    db.delete_nick_group(aliases[0])
+    db.forget_nick_group(aliases[0])
 
     # Nothing else has created values, so we know the tables are empty
     nicks = session.query(Nicknames).all()
