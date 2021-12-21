@@ -9,13 +9,13 @@ import asynchat
 import asyncore
 import datetime
 import errno
+import inspect
 import logging
 import os
 import socket
 import ssl
 import threading
 
-from sopel import loader, plugin
 from sopel.tools import jobs
 from .abstract_backends import AbstractIRCBackend
 from .utils import get_cnames
@@ -24,8 +24,6 @@ from .utils import get_cnames
 LOGGER = logging.getLogger(__name__)
 
 
-@plugin.thread(False)
-@plugin.interval(5)
 def _send_ping(backend):
     if not backend.is_connected():
         return
@@ -56,8 +54,6 @@ def _send_ping(backend):
             LOGGER.exception('Socket error on PING')
 
 
-@plugin.thread(False)
-@plugin.interval(10)
 def _check_timeout(backend):
     if not backend.is_connected():
         return
@@ -102,8 +98,8 @@ class AsynchatBackend(AbstractIRCBackend, asynchat.async_chat):
 
         # register timeout jobs
         self.register_timeout_jobs([
-            _send_ping,
-            _check_timeout,
+            (5, _send_ping),
+            (10, _check_timeout),
         ])
 
     def is_connected(self):
@@ -135,9 +131,13 @@ class AsynchatBackend(AbstractIRCBackend, asynchat.async_chat):
 
     def register_timeout_jobs(self, handlers):
         """Register the timeout handlers for the timeout scheduler."""
-        for handler in handlers:
-            loader.clean_callable(handler, self.bot.settings)
-            job = jobs.Job.from_callable(self.bot.settings, handler)
+        for timer, handler in handlers:
+            job = jobs.Job(
+                intervals=[timer],
+                handler=handler,
+                threaded=False,
+                doc=inspect.getdoc(handler),
+            )
             self.timeout_scheduler.register(job)
             LOGGER.debug('Timeout Job registered: %s', str(job))
 

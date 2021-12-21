@@ -2,7 +2,7 @@ from __future__ import generator_stop
 
 import functools
 
-from sopel import plugin
+from sopel import privileges
 from sopel.tools import Identifier
 
 
@@ -193,7 +193,7 @@ class Channel:
             sensibly if only ``+v`` (voice) and ``+o`` (op) modes exist.
 
         """
-        return self.privileges.get(Identifier(nick), 0) & plugin.OPER
+        return self.privileges.get(Identifier(nick), 0) & privileges.OPER
 
     def is_owner(self, nick):
         """Tell if a user has the OWNER privilege level.
@@ -225,7 +225,7 @@ class Channel:
             sensibly if only ``+v`` (voice) and ``+o`` (op) modes exist.
 
         """
-        return self.privileges.get(Identifier(nick), 0) & plugin.OWNER
+        return self.privileges.get(Identifier(nick), 0) & privileges.OWNER
 
     def is_admin(self, nick):
         """Tell if a user has the ADMIN privilege level.
@@ -257,7 +257,7 @@ class Channel:
             sensibly if only ``+v`` (voice) and ``+o`` (op) modes exist.
 
         """
-        return self.privileges.get(Identifier(nick), 0) & plugin.ADMIN
+        return self.privileges.get(Identifier(nick), 0) & privileges.ADMIN
 
     def is_op(self, nick):
         """Tell if a user has the OP privilege level.
@@ -283,7 +283,7 @@ class Channel:
             True
 
         """
-        return self.privileges.get(Identifier(nick), 0) & plugin.OP
+        return self.privileges.get(Identifier(nick), 0) & privileges.OP
 
     def is_halfop(self, nick):
         """Tell if a user has the HALFOP privilege level.
@@ -315,7 +315,7 @@ class Channel:
             sensibly if only ``+v`` (voice) and ``+o`` (op) modes exist.
 
         """
-        return self.privileges.get(Identifier(nick), 0) & plugin.HALFOP
+        return self.privileges.get(Identifier(nick), 0) & privileges.HALFOP
 
     def is_voiced(self, nick):
         """Tell if a user has the VOICE privilege level.
@@ -342,7 +342,7 @@ class Channel:
             True
 
         """
-        return self.privileges.get(Identifier(nick), 0) & plugin.VOICE
+        return self.privileges.get(Identifier(nick), 0) & privileges.VOICE
 
     def rename_user(self, old, new):
         """Rename a user.

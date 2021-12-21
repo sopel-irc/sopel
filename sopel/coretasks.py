@@ -31,11 +31,9 @@ import logging
 import re
 import time
 
-from sopel import loader, plugin
-from sopel.config import ConfigurationError
-from sopel.irc import isupport
-from sopel.irc.utils import CapReq, MyInfo
-from sopel.tools import events, Identifier, SopelMemory, target, web
+from sopel import config, plugin
+from sopel.irc import isupport, utils
+from sopel.tools import events, Identifier, jobs, SopelMemory, target
 
 
 LOGGER = logging.getLogger(__name__)
@@ -71,16 +69,15 @@ def setup(bot):
     # Manage JOIN flood protection
     if bot.settings.core.throttle_join:
         wait_interval = max(bot.settings.core.throttle_wait, 1)
-
-        @plugin.interval(wait_interval)
-        @plugin.label('throttle_join')
-        def processing_job(bot):
-            _join_event_processing(bot)
-
-        loader.clean_callable(processing_job, bot.settings)
-        processing_job.plugin_name = 'coretasks'
-
-        bot.register_jobs([processing_job])
+        job = jobs.Job(
+            [wait_interval],
+            plugin='coretasks',
+            label='throttle_join',
+            handler=_join_event_processing,
+            threaded=True,
+            doc=None,
+        )
+        bot.scheduler.register(job)
 
 
 def shutdown(bot):
@@ -400,7 +397,7 @@ def parse_reply_myinfo(bot, trigger):
     """Handle ``RPL_MYINFO`` events."""
     # keep <client> <servername> <version> only
     # the trailing parameters (mode types) should be read from ISUPPORT
-    bot._myinfo = MyInfo(*trigger.args[0:3])
+    bot._myinfo = utils.MyInfo(*trigger.args[0:3])
 
     LOGGER.info(
         "Received RPL_MYINFO from server: %s, %s, %s",
@@ -900,7 +897,7 @@ def receive_cap_list(bot, trigger):
             if cap == 'sasl':  # TODO why is this not done with bot.cap_req?
                 try:
                     receive_cap_ack_sasl(bot)
-                except ConfigurationError as error:
+                except config.ConfigurationError as error:
                     LOGGER.error(str(error))
                     bot.quit('Wrong SASL configuration.')
 
@@ -943,7 +940,7 @@ def receive_cap_ls_reply(bot, trigger):
     ]
     for cap in core_caps:
         if cap not in bot._cap_reqs:
-            bot._cap_reqs[cap] = [CapReq('', 'coretasks')]
+            bot._cap_reqs[cap] = [utils.CapReq('', 'coretasks')]
 
     def acct_warn(bot, cap):
         LOGGER.info("Server does not support %s, or it conflicts with a custom "
@@ -957,7 +954,7 @@ def receive_cap_ls_reply(bot, trigger):
     auth_caps = ['account-notify', 'extended-join', 'account-tag']
     for cap in auth_caps:
         if cap not in bot._cap_reqs:
-            bot._cap_reqs[cap] = [CapReq('', 'coretasks', acct_warn)]
+            bot._cap_reqs[cap] = [utils.CapReq('', 'coretasks', acct_warn)]
 
     for cap, reqs in bot._cap_reqs.items():
         # At this point, we know mandatory and prohibited don't co-exist, but
@@ -1010,7 +1007,7 @@ def receive_cap_ack_sasl(bot):
 
         See https://github.com/sopel-irc/sopel/issues/1780 for background
         """
-        raise ConfigurationError(
+        raise config.ConfigurationError(
             "SASL mechanism '{}' is not advertised by this server.".format(mech))
 
     bot.write(('AUTHENTICATE', mech))
@@ -1441,9 +1438,8 @@ def handle_url_callbacks(bot, trigger):
     For each URL found in the trigger, trigger the URL callback registered by
     the ``@url`` decorator.
     """
-    schemes = bot.config.core.auto_url_schemes
     # find URLs in the trigger
-    for url in web.search_urls(trigger, schemes=schemes):
+    for url in trigger.urls:
         # find callbacks for said URL
         for function, match in bot.search_url_callbacks(url):
             # trigger callback defined by the `@url` decorator
