@@ -17,7 +17,7 @@ from urllib.parse import urlparse
 
 import dns.resolver
 import requests
-from urllib3.exceptions import LocationValueError
+from urllib3.exceptions import LocationValueError  # type: ignore[import]
 
 from sopel import plugin, tools
 from sopel.config import types

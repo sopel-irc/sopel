@@ -1,9 +1,12 @@
 .PHONY: qa
 qa: quality test coverages
 
-.PHONY: quality
+.PHONY: quality mypy
 quality:
 	./checkstyle.sh
+
+mypy:
+	mypy sopel
 
 .PHONY: test test_norecord test_novcr vcr_rerecord
 test:

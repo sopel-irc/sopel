@@ -83,7 +83,7 @@ def find_sopel_modules_plugins():
     responsible to load such plugins.
     """
     try:
-        import sopel_modules
+        import sopel_modules  # type: ignore[import]
     except ImportError:
         return
 
