@@ -31,7 +31,7 @@ First, either clone the repository with ``git clone
 git://github.com/sopel-irc/sopel.git`` or download a tarball `from GitHub
 <https://github.com/sopel-irc/sopel/releases/latest>`_.
 
-Note: Sopel requires Python 3.6+ to run.
+Note: Sopel requires Python 3.7+ to run.
 
 In the source directory (whether cloned or from the tarball) run ``pip install
 -e .``. You can then run ``sopel`` to configure and start the bot.

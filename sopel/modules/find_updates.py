@@ -10,6 +10,8 @@ https://sopel.chat
 """
 from __future__ import generator_stop
 
+import json
+
 import requests
 
 from sopel import (
@@ -64,8 +66,7 @@ def check_version(bot):
     try:
         if success:
             info = r.json()
-    except ValueError:
-        # TODO: use JSONDecodeError when dropping Pythons < 3.5
+    except json.JSONDecodeError:
         _check_failed(bot)
         success = False
 
