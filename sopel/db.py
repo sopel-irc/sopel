@@ -12,7 +12,7 @@ from sqlalchemy.exc import OperationalError, SQLAlchemyError
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import scoped_session, sessionmaker
 
-from sopel.tools import Identifier
+from sopel.tools import deprecated, Identifier
 
 
 LOGGER = logging.getLogger(__name__)
@@ -273,7 +273,7 @@ class SopelDB:
 
             Alias/group management functions: :meth:`alias_nick`,
             :meth:`unalias_nick`, :meth:`merge_nick_groups`, and
-            :meth:`delete_nick_group`.
+            :meth:`forget_nick_group`.
 
         """
         session = self.ssession()
@@ -476,7 +476,7 @@ class SopelDB:
 
         .. seealso::
 
-            To delete an entire group, use :meth:`delete_nick_group`.
+            To delete an entire group, use :meth:`forget_nick_group`.
 
             To *add* an alias for a nick, use :meth:`alias_nick`.
 
@@ -498,7 +498,7 @@ class SopelDB:
         finally:
             self.ssession.remove()
 
-    def delete_nick_group(self, nick):
+    def forget_nick_group(self, nick):
         """Remove a nickname, all of its aliases, and all of its stored values.
 
         :param str nick: one of the nicknames in the group to be deleted
@@ -522,6 +522,14 @@ class SopelDB:
             raise
         finally:
             self.ssession.remove()
+
+    @deprecated(
+        version='8.0',
+        removed_in='9.0',
+        reason="Renamed to `forget_nick_group`",
+    )
+    def delete_nick_group(self, nick):  # pragma: nocover
+        self.forget_nick_group(nick)
 
     def merge_nick_groups(self, first_nick, second_nick):
         """Merge two nick groups.
@@ -724,6 +732,28 @@ class SopelDB:
         finally:
             self.ssession.remove()
 
+    def forget_channel(self, channel):
+        """Remove all of a channel's stored values.
+
+        :param str channel: the name of the channel for which to delete values
+        :raise ~sqlalchemy.exc.SQLAlchemyError: if there is a database error
+
+        .. important::
+
+            This is a Nuclear Option. Be *very* sure that you want to do it.
+
+        """
+        channel = self.get_channel_slug(channel)
+        session = self.ssession()
+        try:
+            session.query(ChannelValues).filter(ChannelValues.channel == channel).delete()
+            session.commit()
+        except SQLAlchemyError:
+            session.rollback()
+            raise
+        finally:
+            self.ssession.remove()
+
     # PLUGIN FUNCTIONS
 
     def set_plugin_value(self, plugin, key, value):
@@ -836,6 +866,28 @@ class SopelDB:
             elif default is not None:
                 result = default
             return _deserialize(result)
+        except SQLAlchemyError:
+            session.rollback()
+            raise
+        finally:
+            self.ssession.remove()
+
+    def forget_plugin(self, plugin):
+        """Remove all of a plugin's stored values.
+
+        :param str plugin: the name of the plugin for which to delete values
+        :raise ~sqlalchemy.exc.SQLAlchemyError: if there is a database error
+
+        .. important::
+
+            This is a Nuclear Option. Be *very* sure that you want to do it.
+
+        """
+        plugin = plugin.lower()
+        session = self.ssession()
+        try:
+            session.query(PluginValues).filter(PluginValues.plugin == plugin).delete()
+            session.commit()
         except SQLAlchemyError:
             session.rollback()
             raise

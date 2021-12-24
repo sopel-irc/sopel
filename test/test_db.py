@@ -183,7 +183,7 @@ def test_unalias_nick(db):
     session.close()
 
 
-def test_delete_nick_group(db):
+def test_forget_nick_group(db):
     session = db.ssession()
     aliases = ['Embolalia', 'Embo']
     nick_id = 42
@@ -195,7 +195,7 @@ def test_delete_nick_group(db):
     db.set_nick_value(aliases[0], 'foo', 'bar')
     db.set_nick_value(aliases[1], 'spam', 'eggs')
 
-    db.delete_nick_group(aliases[0])
+    db.forget_nick_group(aliases[0])
 
     # Nothing else has created values, so we know the tables are empty
     nicks = session.query(Nicknames).all()
@@ -266,6 +266,16 @@ def test_get_channel_value(db):
     session.close()
 
 
+def test_forget_channel(db):
+    db.set_channel_value('#testchan', 'wasd', 'uldr')
+    db.set_channel_value('#testchan', 'asdf', 'hjkl')
+    assert db.get_channel_value('#testchan', 'wasd') == 'uldr'
+    assert db.get_channel_value('#testchan', 'asdf') == 'hjkl'
+    db.forget_channel('#testchan')
+    assert db.get_channel_value('#testchan', 'wasd') is None
+    assert db.get_channel_value('#testchan', 'asdf') is None
+
+
 def test_get_channel_value_default(db):
     assert db.get_channel_value("TestChan", "DoesntExist") is None
     assert db.get_channel_value("TestChan", "DoesntExist", "MyDefault") == "MyDefault"
@@ -325,3 +335,13 @@ def test_delete_plugin_value(db):
     assert db.get_plugin_value('plugin', 'wasd') == 'uldr'
     db.delete_plugin_value('plugin', 'wasd')
     assert db.get_plugin_value('plugin', 'wasd') is None
+
+
+def test_forget_plugin(db):
+    db.set_plugin_value('plugin', 'wasd', 'uldr')
+    db.set_plugin_value('plugin', 'asdf', 'hjkl')
+    assert db.get_plugin_value('plugin', 'wasd') == 'uldr'
+    assert db.get_plugin_value('plugin', 'asdf') == 'hjkl'
+    db.forget_plugin('plugin')
+    assert db.get_plugin_value('plugin', 'wasd') is None
+    assert db.get_plugin_value('plugin', 'asdf') is None
