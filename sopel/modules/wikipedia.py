@@ -28,9 +28,17 @@ PLUGIN_OUTPUT_PREFIX = '[wikipedia] '
 
 
 class WikiParser(HTMLParser):
+    NO_CONSUME_TAGS = ('sup', 'style')
+    """Tags whose contents should always be ignored.
+
+    These are used in things like inline citations or section "hatnotes", none
+    of which are useful output for IRC.
+    """
+
     def __init__(self, section_name):
         HTMLParser.__init__(self)
         self.consume = True
+        self.no_consume_depth = 0
         self.is_header = False
         self.section_name = section_name
 
@@ -42,8 +50,9 @@ class WikiParser(HTMLParser):
         self.result = ''
 
     def handle_starttag(self, tag, attrs):
-        if tag == 'sup':    # don't consume anything in superscript (citation-related tags)
+        if tag in self.NO_CONSUME_TAGS:
             self.consume = False
+            self.no_consume_depth += 1
 
         elif re.match(r'^h\d$', tag):
             self.is_header = True
@@ -57,14 +66,17 @@ class WikiParser(HTMLParser):
                         self.span_depth += 1
 
         elif tag == 'div':
-            # We want to skip thumbnail text and the inexplicable table of contents,
-            # and as such also need to track div depth
+            # We want to skip thumbnail text, the table of contents, and section "hatnotes".
+            # This also requires tracking div nesting level.
             if self.div_depth:
                 self.div_depth += 1
             else:
                 for attr in attrs:
-                    if attr[0] == 'class' and ('thumb' in attr[1] or attr[1] == 'toc'):
+                    if attr[0] == 'class' and (
+                        'thumb' in attr[1] or 'hatnote' in attr[1] or attr[1] == 'toc'
+                    ):
                         self.div_depth += 1
+                        break
 
         elif tag == 'table':
             # Message box templates are what we want to ignore here
@@ -91,8 +103,11 @@ class WikiParser(HTMLParser):
                     self.citations = True   # once we hit citations, we can stop
 
     def handle_endtag(self, tag):
-        if not self.consume and tag == 'sup':
-            self.consume = True
+        if not self.consume and tag in self.NO_CONSUME_TAGS:
+            if self.no_consume_depth:
+                self.no_consume_depth -= 1
+            if not self.no_consume_depth:
+                self.consume = True
         if self.is_header and re.match(r'^h\d$', tag):
             self.is_header = False
         if self.span_depth and tag == 'span':
