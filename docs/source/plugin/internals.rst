@@ -51,6 +51,6 @@ sopel.plugins.rules
       :members:
       :undoc-members:
 
-   .. autoclass:: NamedRuleMixin
+   .. autoclass:: AbstractNamedRule
       :members:
       :undoc-members:

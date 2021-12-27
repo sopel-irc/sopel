@@ -465,7 +465,7 @@ class AbstractRule(abc.ABC):
 
     """
     @classmethod
-    @abc.abstractclassmethod
+    @abc.abstractmethod
     def from_callable(cls: Type[TypedRule], settings, handler) -> TypedRule:
         """Instantiate a rule object from ``settings`` and ``handler``.
 
@@ -1063,8 +1063,8 @@ class Rule(AbstractRule):
         return exit_code
 
 
-class NamedRuleMixin:
-    """Mixin for named rules.
+class AbstractNamedRule(Rule):
+    """Abstract base class for named rules.
 
     A named rule is invoked by using a specific word, and is usually known
     as a "command". For example, the command "hello" is triggered by using
@@ -1072,6 +1072,11 @@ class NamedRuleMixin:
 
     A named rule can be invoked by using one of its aliases, also.
     """
+    def __init__(self, name, aliases=None, **kwargs):
+        super().__init__([], **kwargs)
+        self._name = name
+        self._aliases = tuple(aliases) if aliases is not None else tuple()
+
     @property
     def name(self):
         return self._name
@@ -1133,8 +1138,15 @@ class NamedRuleMixin:
 
         return name
 
+    @abc.abstractmethod
+    def get_rule_regex(self):
+        """Make the rule regex for this named rule.
 
-class Command(NamedRuleMixin, Rule):
+        :return: a compiled regex for this named rule and its aliases
+        """
+
+
+class Command(AbstractNamedRule):
     """Command rule definition.
 
     A command rule (or simply "a command") is a named rule, i.e. it has a known
@@ -1196,11 +1208,9 @@ class Command(NamedRuleMixin, Rule):
                  help_prefix=COMMAND_DEFAULT_HELP_PREFIX,
                  aliases=None,
                  **kwargs):
-        super().__init__([], **kwargs)
-        self._name = name
+        super().__init__(name, aliases=aliases, **kwargs)
         self._prefix = prefix
         self._help_prefix = help_prefix
-        self._aliases = tuple(aliases) if aliases is not None else tuple()
         self._regexes = (self.get_rule_regex(),)
 
     def __str__(self):
@@ -1259,7 +1269,7 @@ class Command(NamedRuleMixin, Rule):
         return re.compile(pattern, re.IGNORECASE | re.VERBOSE)
 
 
-class NickCommand(NamedRuleMixin, Rule):
+class NickCommand(AbstractNamedRule):
     """Nickname Command rule definition.
 
     A nickname command rule is a named rule with a twist: instead of a prefix,
@@ -1319,13 +1329,11 @@ class NickCommand(NamedRuleMixin, Rule):
         return cls(**kwargs)
 
     def __init__(self, nick, name, nick_aliases=None, aliases=None, **kwargs):
-        super().__init__([], **kwargs)
+        super().__init__(name, aliases=aliases, **kwargs)
         self._nick = nick
-        self._name = name
         self._nick_aliases = (tuple(nick_aliases)
                               if nick_aliases is not None
                               else tuple())
-        self._aliases = tuple(aliases) if aliases is not None else tuple()
         self._regexes = (self.get_rule_regex(),)
 
     def __str__(self):
@@ -1381,7 +1389,7 @@ class NickCommand(NamedRuleMixin, Rule):
             self._nick_aliases)
 
 
-class ActionCommand(NamedRuleMixin, Rule):
+class ActionCommand(AbstractNamedRule):
     """Action Command rule definition.
 
     An action command rule is a named rule that can be triggered only when the
@@ -1434,9 +1442,7 @@ class ActionCommand(NamedRuleMixin, Rule):
         return cls(**kwargs)
 
     def __init__(self, name, aliases=None, **kwargs):
-        super().__init__([], **kwargs)
-        self._name = name
-        self._aliases = tuple(aliases) if aliases is not None else tuple()
+        super().__init__(name, aliases=aliases, **kwargs)
         self._regexes = (self.get_rule_regex(),)
 
     def __str__(self):
