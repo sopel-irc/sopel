@@ -5,6 +5,7 @@ import json
 import logging
 import os.path
 import traceback
+import typing
 
 from sqlalchemy import Column, create_engine, ForeignKey, Integer, String
 from sqlalchemy.engine.url import make_url, URL
@@ -256,13 +257,12 @@ class SopelDB:
 
     # NICK FUNCTIONS
 
-    def get_nick_id(self, nick, create=False):
+    def get_nick_id(self, nick: str, create: bool = False):
         """Return the internal identifier for a given nick.
 
         :param nick: the nickname for which to fetch an ID
-        :type nick: :class:`~sopel.tools.Identifier`
-        :param bool create: whether to create an ID if one does not exist
-                            (set to ``False`` by default)
+        :param create: whether to create an ID if one does not exist
+                       (set to ``False`` by default)
         :raise ValueError: if no ID exists for the given ``nick`` and ``create``
                            is set to ``False``
         :raise ~sqlalchemy.exc.SQLAlchemyError: if there is a database error
@@ -282,7 +282,7 @@ class SopelDB:
 
         """
         session = self.ssession()
-        slug = nick.lower()
+        slug = Identifier._lower(nick)
         try:
             nickname = session.query(Nicknames) \
                 .filter(Nicknames.slug == slug) \
@@ -317,7 +317,7 @@ class SopelDB:
         finally:
             self.ssession.remove()
 
-    def alias_nick(self, nick, alias):
+    def alias_nick(self, nick: str, alias: str):
         """Create an alias for a nick.
 
         :param str nick: an existing nickname
@@ -333,18 +333,17 @@ class SopelDB:
             :meth:`unalias_nick`.
 
         """
-        nick = Identifier(nick)
-        alias = Identifier(alias)
+        alias_lower = Identifier._lower(alias)
         nick_id = self.get_nick_id(nick, create=True)
         session = self.ssession()
         try:
             result = session.query(Nicknames) \
-                .filter(Nicknames.slug == alias.lower()) \
+                .filter(Nicknames.slug == alias_lower) \
                 .filter(Nicknames.canonical == alias) \
                 .one_or_none()
             if result:
                 raise ValueError('Alias already exists.')
-            nickname = Nicknames(nick_id=nick_id, slug=alias.lower(), canonical=alias)
+            nickname = Nicknames(nick_id=nick_id, slug=alias_lower, canonical=alias)
             session.add(nickname)
             session.commit()
         except SQLAlchemyError:
@@ -353,11 +352,11 @@ class SopelDB:
         finally:
             self.ssession.remove()
 
-    def set_nick_value(self, nick, key, value):
+    def set_nick_value(self, nick: str, key: str, value: typing.Any):
         """Set or update a value in the key-value store for ``nick``.
 
-        :param str nick: the nickname with which to associate the ``value``
-        :param str key: the name by which this ``value`` may be accessed later
+        :param nick: the nickname with which to associate the ``value``
+        :param key: the name by which this ``value`` may be accessed later
         :param mixed value: the value to set for this ``key`` under ``nick``
         :raise ~sqlalchemy.exc.SQLAlchemyError: if there is a database error
 
@@ -374,7 +373,6 @@ class SopelDB:
             :meth:`delete_nick_value`.
 
         """
-        nick = Identifier(nick)
         value = json.dumps(value, ensure_ascii=False)
         nick_id = self.get_nick_id(nick, create=True)
         session = self.ssession()
@@ -398,7 +396,7 @@ class SopelDB:
         finally:
             self.ssession.remove()
 
-    def delete_nick_value(self, nick, key):
+    def delete_nick_value(self, nick: str, key: str):
         """Delete a value from the key-value store for ``nick``.
 
         :param str nick: the nickname whose values to modify
@@ -413,8 +411,6 @@ class SopelDB:
             :meth:`get_nick_value`.
 
         """
-        nick = Identifier(nick)
-
         try:
             nick_id = self.get_nick_id(nick)
         except ValueError:
@@ -437,11 +433,16 @@ class SopelDB:
         finally:
             self.ssession.remove()
 
-    def get_nick_value(self, nick, key, default=None):
+    def get_nick_value(
+        self,
+        nick: str,
+        key: str,
+        default: typing.Optional[typing.Any] = None
+    ):
         """Get a value from the key-value store for ``nick``.
 
-        :param str nick: the nickname whose values to access
-        :param str key: the name by which the desired value was saved
+        :param nick: the nickname whose values to access
+        :param key: the name by which the desired value was saved
         :param mixed default: value to return if ``key`` does not have a value
                               set (optional)
         :raise ~sqlalchemy.exc.SQLAlchemyError: if there is a database error
@@ -459,12 +460,12 @@ class SopelDB:
             :meth:`delete_nick_value`.
 
         """
-        nick = Identifier(nick)
+        slug = Identifier._lower(nick)
         session = self.ssession()
         try:
             result = session.query(NickValues) \
                 .filter(Nicknames.nick_id == NickValues.nick_id) \
-                .filter(Nicknames.slug == nick.lower()) \
+                .filter(Nicknames.slug == slug) \
                 .filter(NickValues.key == key) \
                 .one_or_none()
             if result is not None:
@@ -493,7 +494,7 @@ class SopelDB:
             To *add* an alias for a nick, use :meth:`alias_nick`.
 
         """
-        alias = Identifier(alias)
+        alias_slug = Identifier._lower(alias)
         nick_id = self.get_nick_id(alias)
         session = self.ssession()
         try:
@@ -502,7 +503,7 @@ class SopelDB:
                 .count()
             if count <= 1:
                 raise ValueError('Given alias is the only entry in its group.')
-            session.query(Nicknames).filter(Nicknames.slug == alias.lower()).delete()
+            session.query(Nicknames).filter(Nicknames.slug == alias_slug).delete()
             session.commit()
         except SQLAlchemyError:
             session.rollback()
@@ -523,7 +524,6 @@ class SopelDB:
             you want to do this.
 
         """
-        nick = Identifier(nick)
         nick_id = self.get_nick_id(nick)
         session = self.ssession()
         try:
@@ -564,8 +564,8 @@ class SopelDB:
         Plugins which define their own tables relying on the nick table will
         need to handle their own merging separately.
         """
-        first_id = self.get_nick_id(Identifier(first_nick), create=True)
-        second_id = self.get_nick_id(Identifier(second_nick), create=True)
+        first_id = self.get_nick_id(first_nick, create=True)
+        second_id = self.get_nick_id(second_nick, create=True)
         session = self.ssession()
         try:
             # Get second_id's values
@@ -591,7 +591,7 @@ class SopelDB:
 
     # CHANNEL FUNCTIONS
 
-    def get_channel_slug(self, chan):
+    def get_channel_slug(self, chan: str):
         """Return the case-normalized representation of ``channel``.
 
         :param str channel: the channel name to normalize, with prefix
@@ -604,8 +604,7 @@ class SopelDB:
         databases/files, without regard for variation in case between
         different clients and/or servers on the network.
         """
-        chan = Identifier(chan)
-        slug = chan.lower()
+        slug = Identifier._lower(chan)
         session = self.ssession()
         try:
             count = session.query(ChannelValues) \
@@ -909,7 +908,12 @@ class SopelDB:
 
     # NICK AND CHANNEL FUNCTIONS
 
-    def get_nick_or_channel_value(self, name, key, default=None):
+    def get_nick_or_channel_value(
+        self,
+        name: Identifier,
+        key: str,
+        default=None
+    ):
         """Get a value from the key-value store for ``name``.
 
         :param str name: nick or channel whose values to access
@@ -934,7 +938,13 @@ class SopelDB:
             :meth:`get_channel_value`.
 
         """
-        name = Identifier(name)
+        if not isinstance(name, Identifier):
+            # TODO: log warning/debug?
+            # The goal is to call this method with an existing Identifier
+            # and not a simple string. This is a convenient/shortcut method
+            # and should probably not be used with a simple string anyway.
+            name = Identifier(name)
+
         if name.is_nick():
             return self.get_nick_value(name, key, default)
         else:

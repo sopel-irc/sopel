@@ -38,41 +38,33 @@ def teardown_function(function):
     os.remove(db_filename)
 
 
-def test_get_nick_id(db):
+@pytest.mark.parametrize('name, slug, variant', (
+    # Check case insensitive with ASCII only
+    ('Embolalia', 'embolalia', 'eMBOLALIA'),
+    # Ensures case conversion is handled properly
+    ('[][]', '{}{}', '[}{]'),
+    # Unicode, just in case
+    ('EmbölaliÅ', 'embölaliÅ', 'EMBöLALIÅ'),
+))
+def test_get_nick_id(db, name, slug, variant):
     session = db.ssession()
-    tests = [
-        [None, 'embolalia', Identifier('Embolalia')],
-        # Ensures case conversion is handled properly
-        [None, '{}{}', Identifier('[]{}')],
-        # Unicode, just in case
-        [None, 'embölaliå', Identifier('EmbölaliÅ')],
-    ]
+    nick = Identifier(name)
+    # Create the NickID
+    nick_id = db.get_nick_id(nick, create=True)
 
-    for test in tests:
-        test[0] = db.get_nick_id(test[2], create=True)
-        nick_id, slug, nick = test
-        registered = session.query(Nicknames) \
-                            .filter(Nicknames.canonical == nick) \
-                            .all()
-        assert len(registered) == 1
-        assert registered[0].slug == slug and registered[0].canonical == nick
-
-    # Check that each nick ended up with a different id
-    assert len(set(test[0] for test in tests)) == len(tests)
+    registered = session.query(Nicknames) \
+                        .filter(Nicknames.canonical == name) \
+                        .all()
+    assert len(registered) == 1
+    assert registered[0].slug == slug
+    assert registered[0].canonical == name
 
     # Check that the retrieval actually is idempotent
-    for test in tests:
-        nick_id = test[0]
-        # no `create` this time, since the ID should already exist
-        new_id = db.get_nick_id(test[2])
-        assert nick_id == new_id
+    assert nick_id == db.get_nick_id(name)
 
     # Even if the case is different
-    for test in tests:
-        nick_id = test[0]
-        # still no `create`, because the nick ID should already exist now
-        new_id = db.get_nick_id(Identifier(test[2].upper()))
-        assert nick_id == new_id
+    assert nick_id == db.get_nick_id(variant)
+
     session.close()
 
 

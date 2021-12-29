@@ -29,9 +29,8 @@ from pkg_resources import parse_version
 from sopel import __version__
 
 from ._events import events  # NOQA
+from .identifiers import Identifier
 
-
-_channel_prefixes = ('#', '&', '+', '!')
 
 # Can be implementation-dependent
 _regex_type = type(re.compile(''))
@@ -277,127 +276,6 @@ def get_sendable_message(text, max_length=400):
             text = text[:last_space]
 
     return text, excess.lstrip()
-
-
-class Identifier(str):
-    """A ``str`` subclass which acts appropriately for IRC identifiers.
-
-    When used as normal ``str`` objects, case will be preserved.
-    However, when comparing two Identifier objects, or comparing a Identifier
-    object with a ``str`` object, the comparison will be case insensitive.
-    This case insensitivity includes the case convention conventions regarding
-    ``[]``, ``{}``, ``|``, ``\\``, ``^`` and ``~`` described in RFC 2812.
-    """
-    def __new__(cls, identifier):
-        # According to RFC2812, identifiers have to be in the ASCII range.
-        # However, I think it's best to let the IRCd determine that, and we'll
-        # just assume unicode. It won't hurt anything, and is more internally
-        # consistent. And who knows, maybe there's another use case for this
-        # weird case convention.
-        s = str.__new__(cls, identifier)
-        s._lowered = Identifier._lower(identifier)
-        return s
-
-    def lower(self):
-        """Get the RFC 2812-compliant lowercase version of this identifier.
-
-        :return: RFC 2812-compliant lowercase version of the
-                 :py:class:`Identifier` instance
-        :rtype: str
-        """
-        return self._lowered
-
-    @staticmethod
-    def _lower(identifier):
-        """Convert an identifier to lowercase per RFC 2812.
-
-        :param str identifier: the identifier (nickname or channel) to convert
-        :return: RFC 2812-compliant lowercase version of ``identifier``
-        :rtype: str
-        """
-        if isinstance(identifier, Identifier):
-            return identifier._lowered
-        # The tilde replacement isn't needed for identifiers, but is for
-        # channels, which may be useful at some point in the future.
-        low = identifier.lower().replace('[', '{').replace(']', '}')
-        low = low.replace('\\', '|').replace('~', '^')
-        return low
-
-    @staticmethod
-    def _lower_swapped(identifier):
-        """Backward-compatible version of :meth:`_lower`.
-
-        :param str identifier: the identifier (nickname or channel) to convert
-        :return: RFC 2812-non-compliant lowercase version of ``identifier``
-        :rtype: str
-
-        This is what the old :meth:`_lower` function did before Sopel 7.0. It maps
-        ``{}``, ``[]``, ``|``, ``\\``, ``^``, and ``~`` incorrectly.
-
-        You shouldn't use this unless you need to migrate stored values from the
-        previous, incorrect "lowercase" representation to the correct one.
-        """
-        # The tilde replacement isn't needed for identifiers, but is for
-        # channels, which may be useful at some point in the future.
-        low = identifier.lower().replace('{', '[').replace('}', ']')
-        low = low.replace('|', '\\').replace('^', '~')
-        return low
-
-    def __repr__(self):
-        return "%s(%r)" % (
-            self.__class__.__name__,
-            self.__str__()
-        )
-
-    def __hash__(self):
-        return self._lowered.__hash__()
-
-    def __lt__(self, other):
-        if isinstance(other, str):
-            other = Identifier._lower(other)
-        return str.__lt__(self._lowered, other)
-
-    def __le__(self, other):
-        if isinstance(other, str):
-            other = Identifier._lower(other)
-        return str.__le__(self._lowered, other)
-
-    def __gt__(self, other):
-        if isinstance(other, str):
-            other = Identifier._lower(other)
-        return str.__gt__(self._lowered, other)
-
-    def __ge__(self, other):
-        if isinstance(other, str):
-            other = Identifier._lower(other)
-        return str.__ge__(self._lowered, other)
-
-    def __eq__(self, other):
-        if isinstance(other, str):
-            other = Identifier._lower(other)
-        return str.__eq__(self._lowered, other)
-
-    def __ne__(self, other):
-        return not (self == other)
-
-    def is_nick(self):
-        """Check if the Identifier is a nickname (i.e. not a channel)
-
-        :return: ``True`` if this :py:class:`Identifier` is a nickname;
-                 ``False`` if it appears to be a channel
-
-        ::
-
-            >>> from sopel import tools
-            >>> ident = tools.Identifier('Sopel')
-            >>> ident.is_nick()
-            True
-            >>> ident = tools.Identifier('#sopel')
-            >>> ident.is_nick()
-            False
-
-        """
-        return self and not self.startswith(_channel_prefixes)
 
 
 class OutputRedirect:
