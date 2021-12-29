@@ -31,13 +31,6 @@ from sopel import __version__
 from ._events import events  # NOQA
 
 
-# Kept for backward compatibility
-# TODO: consider removing that
-raw_input = input
-iteritems = dict.items
-itervalues = dict.values
-iterkeys = dict.keys
-
 _channel_prefixes = ('#', '&', '+', '!')
 
 # Can be implementation-dependent
@@ -203,6 +196,29 @@ def deprecated(
 # attribute 'deprecated' (most likely due to a circular import)" when trying
 # to use the decorator in submodules.
 from . import time, web  # NOQA
+
+
+# Long kept for Python compatibility, but it's time we let these go.
+raw_input = deprecated(  # pragma: no cover
+    'Use the `input` function directly.',
+    version='8.0',
+    removed_in='8.1',
+    func=input)
+iteritems = deprecated(  # pragma: no cover
+    "Use the dict object's `.items()` method directly.",
+    version='8.0',
+    removed_in='8.1',
+    func=dict.items)
+itervalues = deprecated(  # pragma: no cover
+    "Use the dict object's `.values()` method directly.",
+    version='8.0',
+    removed_in='8.1',
+    func=dict.values)
+iterkeys = deprecated(  # pragma: no cover
+    "Use the dict object's `.keys()` method directly.",
+    version='8.0',
+    removed_in='8.1',
+    func=dict.keys)
 
 
 @deprecated('Shim for Python 2 cross-compatibility, no longer needed. '
