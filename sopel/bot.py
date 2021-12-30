@@ -22,7 +22,7 @@ from typing import Any, Dict, Iterable, Mapping, Optional, Tuple, Union
 from sopel import db, irc, logger, plugin, plugins, tools
 from sopel.irc import modes
 from sopel.plugins import jobs as plugin_jobs, rules as plugin_rules
-from sopel.tools import deprecated, Identifier, jobs as tools_jobs
+from sopel.tools import deprecated, jobs as tools_jobs
 from sopel.trigger import PreTrigger, Trigger
 
 
@@ -989,7 +989,7 @@ class Sopel(irc.AbstractBot):
             if not bad_nick:
                 continue
             if (re.match(bad_nick + '$', nick, re.IGNORECASE) or
-                    Identifier(bad_nick) == nick):
+                    self.make_identifier(bad_nick) == nick):
                 return True
         return False
 

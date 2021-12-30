@@ -18,7 +18,7 @@ import re
 
 from sopel import plugin
 from sopel.formatting import bold
-from sopel.tools import Identifier, SopelIdentifierMemory
+from sopel.tools import SopelIdentifierMemory
 
 
 def setup(bot):
@@ -102,7 +102,7 @@ def quit_cleanup(bot, trigger):
 @plugin.unblockable
 def kick_cleanup(bot, trigger):
     """Clean up cached data when a user is kicked from a channel."""
-    nick = Identifier(trigger.args[1])
+    nick = bot.make_identifier(trigger.args[1])
     if nick == bot.nick:
         # We got kicked! Nuke the whole channel.
         _cleanup_channel(bot, trigger.sender)
@@ -153,7 +153,7 @@ def findandreplace(bot, trigger):
         return
 
     # Correcting other person vs self.
-    rnick = Identifier(trigger.group('nick') or trigger.nick)
+    rnick = bot.make_identifier(trigger.group('nick') or trigger.nick)
 
     # only do something if there is conversation to work with
     history = bot.memory['find_lines'].get(trigger.sender, {}).get(rnick, None)

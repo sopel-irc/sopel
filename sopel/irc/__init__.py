@@ -47,7 +47,7 @@ class AbstractBot(abc.ABC):
     """Abstract definition of Sopel's interface."""
     def __init__(self, settings):
         # private properties: access as read-only properties
-        self._nick = tools.Identifier(settings.core.nick)
+        self._nick = self.make_identifier(settings.core.nick)
         self._user = settings.core.user
         self._name = settings.core.name
         self._isupport = ISupport()
@@ -122,6 +122,11 @@ class AbstractBot(abc.ABC):
         """Bot's hostmask."""
 
     # Utility
+
+    def make_identifier(self, name: str) -> tools.Identifier:
+        """Instantiate an Identifier using the bot's context."""
+        # TODO: have a way to tell the Identifier which CASEMAPPING to use
+        return tools.Identifier(name)
 
     def safe_text_length(self, recipient: str) -> int:
         """Estimate a safe text length for an IRC message.
@@ -335,7 +340,7 @@ class AbstractBot(abc.ABC):
 
         :param str new_nick: new nick to be used by the bot
         """
-        self._nick = tools.Identifier(new_nick)
+        self._nick = self.make_identifier(new_nick)
         LOGGER.debug('Sending nick "%s"', self.nick)
         self.backend.send_nick(self.nick)
 
@@ -670,7 +675,7 @@ class AbstractBot(abc.ABC):
         flood_penalty_ratio = self.settings.core.flood_penalty_ratio
 
         with self.sending:
-            recipient_id = tools.Identifier(recipient)
+            recipient_id = self.make_identifier(recipient)
             recipient_stack = self.stack.setdefault(recipient_id, {
                 'messages': [],
                 'flood_left': flood_burst_lines,

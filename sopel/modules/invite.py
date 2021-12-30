@@ -8,7 +8,7 @@ https://sopel.chat
 """
 from __future__ import generator_stop
 
-from sopel import plugin, tools
+from sopel import plugin
 
 
 MIN_PRIV = plugin.HALFOP
@@ -16,9 +16,9 @@ MIN_PRIV = plugin.HALFOP
 
 def invite_handler(bot, sender, user, channel):
     """Common control logic for invite commands received from anywhere."""
-    sender = tools.Identifier(sender)
-    user = tools.Identifier(user)
-    channel = tools.Identifier(channel)
+    sender = bot.make_identifier(sender)
+    user = bot.make_identifier(user)
+    channel = bot.make_identifier(channel)
 
     # Sanity checks, in case someone reuses this function from outside the plugin
     if not sender.is_nick():
