@@ -347,6 +347,7 @@ def handle_isupport(bot, trigger):
     botmode_support = 'BOT' in bot.isupport
     namesx_support = 'NAMESX' in bot.isupport
     uhnames_support = 'UHNAMES' in bot.isupport
+    casemapping_support = 'CASEMAPPING' in bot.isupport
 
     # parse ISUPPORT message from server
     parameters = {}
@@ -366,6 +367,11 @@ def handle_isupport(bot, trigger):
 
     if 'PREFIX' in bot.isupport:
         bot.modeparser.privileges = set(bot.isupport.PREFIX.keys())
+
+    # was CASEMAPPING support status updated?
+    if not casemapping_support and 'CASEMAPPING' in bot.isupport:
+        # Re-create the bot's nick with the proper identifier+casemapping
+        bot.rebuild_nick()
 
     # was BOT mode support status updated?
     if not botmode_support and 'BOT' in bot.isupport:

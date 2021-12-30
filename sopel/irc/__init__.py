@@ -33,6 +33,7 @@ import time
 from typing import Optional
 
 from sopel import tools, trigger
+from sopel.tools import identifiers
 from .backends import AsynchatBackend, SSLAsynchatBackend
 from .isupport import ISupport
 from .utils import CapReq, safe
@@ -47,11 +48,11 @@ class AbstractBot(abc.ABC):
     """Abstract definition of Sopel's interface."""
     def __init__(self, settings):
         # private properties: access as read-only properties
-        self._nick = self.make_identifier(settings.core.nick)
         self._user = settings.core.user
         self._name = settings.core.name
         self._isupport = ISupport()
         self._myinfo = None
+        self._nick = self.make_identifier(settings.core.nick)
 
         self.backend = None
         """IRC Connection Backend."""
@@ -123,10 +124,18 @@ class AbstractBot(abc.ABC):
 
     # Utility
 
-    def make_identifier(self, name: str) -> tools.Identifier:
+    def make_identifier(self, name: str) -> identifiers.Identifier:
         """Instantiate an Identifier using the bot's context."""
-        # TODO: have a way to tell the Identifier which CASEMAPPING to use
-        return tools.Identifier(name)
+        casemapping = identifiers.rfc1459_lower
+
+        if 'CASEMAPPING' in self.isupport:
+            casemapping = {
+                'ascii': identifiers.ascii_lower,
+                'rfc1459': identifiers.rfc1459_lower,
+                'rfc1459-strict': identifiers.rfc1459_strict_lower,
+            }.get(self.isupport['CASEMAPPING'], casemapping)
+
+        return identifiers.Identifier(name, casemapping=casemapping)
 
     def safe_text_length(self, recipient: str) -> int:
         """Estimate a safe text length for an IRC message.
@@ -337,7 +346,16 @@ class AbstractBot(abc.ABC):
         self.last_error_timestamp = datetime.utcnow()
         self.error_count = self.error_count + 1
 
-    def change_current_nick(self, new_nick):
+    def rebuild_nick(self) -> None:
+        """Rebuild nick as a new identifier.
+
+        This method exists to update the casemapping rules for the
+        :class:`~sopel.tools.identifiers.Identifier` that represents the bot's
+        nick, e.g. after ISUPPORT info is received.
+        """
+        self._nick = self.make_identifier(str(self._nick))
+
+    def change_current_nick(self, new_nick: str) -> None:
         """Change the current nick without configuration modification.
 
         :param str new_nick: new nick to be used by the bot
