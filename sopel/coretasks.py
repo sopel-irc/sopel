@@ -484,7 +484,10 @@ def handle_names(bot, trigger):
         return
     channel = bot.make_identifier(channels.group(1))
     if channel not in bot.channels:
-        bot.channels[channel] = target.Channel(channel)
+        bot.channels[channel] = target.Channel(
+            channel,
+            identifier_factory=bot.make_identifier,
+        )
 
     # This could probably be made flexible in the future, but I don't think
     # it'd be worth it.
@@ -795,7 +798,10 @@ def track_join(bot, trigger):
 
     # is it a new channel?
     if channel not in bot.channels:
-        bot.channels[channel] = target.Channel(channel)
+        bot.channels[channel] = target.Channel(
+            channel,
+            identifier_factory=bot.make_identifier,
+        )
 
     # did *we* just join?
     if trigger.nick == bot.nick:
@@ -1386,7 +1392,11 @@ def _record_who(bot, channel, user, host, nick, account=None, away=None, modes=N
         for c in modes:
             priv = priv | mapping[c]
     if channel not in bot.channels:
-        bot.channels[channel] = target.Channel(channel)
+        bot.channels[channel] = target.Channel(
+            channel,
+            identifier_factory=bot.make_identifier,
+        )
+
     bot.channels[channel].add_user(usr, privs=priv)
 
 
