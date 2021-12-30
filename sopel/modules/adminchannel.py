@@ -112,7 +112,7 @@ def kick(bot, trigger):
         channel = opt
         reasonidx = 3
     reason = ' '.join(text[reasonidx:])
-    if nick != bot.config.core.nick:
+    if nick != bot.make_identifier(bot.config.core.nick):
         bot.kick(nick, channel, reason)
 
 

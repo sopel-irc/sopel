@@ -143,7 +143,7 @@ def auth_after_register(bot):
 
     # nickserv-based auth method needs to check for current nick
     if auth_method == 'nickserv':
-        if bot.nick != bot.settings.core.nick:
+        if bot.nick != bot.make_identifier(bot.settings.core.nick):
             LOGGER.warning("Sending nickserv GHOST command.")
             bot.say(
                 'GHOST %s %s' % (bot.settings.core.nick, auth_password),
@@ -844,7 +844,8 @@ def track_quit(bot, trigger):
 
     LOGGER.info("User quit: %s", trigger.nick)
 
-    if trigger.nick == bot.settings.core.nick and trigger.nick != bot.nick:
+    configured_nick = bot.make_identifier(bot.settings.core.nick)
+    if trigger.nick == configured_nick and trigger.nick != bot.nick:
         # old nick is now available, let's change nick again
         bot.change_current_nick(bot.settings.core.nick)
         auth_after_register(bot)
