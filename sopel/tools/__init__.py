@@ -23,6 +23,7 @@ import re
 import sys
 import threading
 import traceback
+from typing import Callable
 
 from pkg_resources import parse_version
 
@@ -31,6 +32,8 @@ from sopel import __version__
 from ._events import events  # NOQA
 from .identifiers import Identifier
 
+
+IdentifierFactory = Callable[[str], Identifier]
 
 # Can be implementation-dependent
 _regex_type = type(re.compile(''))
@@ -508,14 +511,22 @@ class SopelIdentifierMemory(SopelMemory):
 
     .. versionadded:: 7.1
     """
+    def __init__(
+        self,
+        *args,
+        identifier_factory: IdentifierFactory = Identifier,
+    ) -> None:
+        super().__init__(*args)
+        self.make_identifier = identifier_factory
+
     def __getitem__(self, key):
-        return super().__getitem__(Identifier(key))
+        return super().__getitem__(self.make_identifier(key))
 
     def __contains__(self, key):
-        return super().__contains__(Identifier(key))
+        return super().__contains__(self.make_identifier(key))
 
     def __setitem__(self, key, value):
-        super().__setitem__(Identifier(key), value)
+        super().__setitem__(self.make_identifier(key), value)
 
 
 def chain_loaders(*lazy_loaders):
