@@ -11,7 +11,7 @@ class User:
     """A representation of a user Sopel is aware of.
 
     :param nick: the user's nickname
-    :type nick: :class:`~.tools.Identifier`
+    :type nick: :class:`sopel.tools.identifiers.Identifier`
     :param str user: the user's local username ("user" in `user@host.name`)
     :param str host: the user's hostname ("host.name" in `user@host.name`)
     """
@@ -30,8 +30,8 @@ class User:
         self.channels = {}
         """The channels the user is in.
 
-        This maps channel name :class:`~sopel.tools.Identifier`\\s to
-        :class:`Channel` objects.
+        This maps channel name :class:`~sopel.tools.identifiers.Identifier`\\s
+        to :class:`Channel` objects.
         """
         self.account = None
         """The IRC services account of the user.
@@ -61,7 +61,7 @@ class Channel:
     """A representation of a channel Sopel is in.
 
     :param name: the channel name
-    :type name: :class:`~.tools.Identifier`
+    :type name: :class:`~sopel.tools.identifiers.Identifier`
     """
     __slots__ = (
         'name', 'users', 'privileges', 'topic', 'modes', 'last_who', 'join_time',
@@ -74,15 +74,15 @@ class Channel:
         self.users = {}
         """The users in the channel.
 
-        This maps nickname :class:`~sopel.tools.Identifier`\\s to :class:`User`
-        objects.
+        This maps nickname :class:`~sopel.tools.identifiers.Identifier`\\s to
+        :class:`User` objects.
         """
         self.privileges = {}
         """The permissions of the users in the channel.
 
-        This maps nickname :class:`~sopel.tools.Identifier`\\s to bitwise
-        integer values. This can be compared to appropriate constants from
-        :mod:`sopel.plugin`.
+        This maps nickname :class:`~sopel.tools.identifiers.Identifier`\\s to
+        bitwise integer values. This can be compared to appropriate constants
+        from :mod:`sopel.plugin`.
         """
         self.topic = ''
         """The topic of the channel."""
@@ -114,7 +114,7 @@ class Channel:
         """Remove ``nick`` from this channel.
 
         :param nick: the nickname of the user to remove
-        :type nick: :class:`~.tools.Identifier`
+        :type nick: :class:`~sopel.tools.identifiers.Identifier`
 
         Called after a user leaves the channel via PART, KICK, QUIT, etc.
         """
@@ -153,7 +153,7 @@ class Channel:
             True
 
         The ``nick`` argument can be either a :class:`str` or a
-        :class:`sopel.tools.Identifier`. If the user is not in this channel,
+        :class:`sopel.tools.identifiers.Identifier`. If the user is not in this channel,
         it will be considered as not having any privilege.
 
         .. seealso::
@@ -356,9 +356,9 @@ class Channel:
         """Rename a user.
 
         :param old: the user's old nickname
-        :type old: :class:`~.tools.Identifier`
+        :type old: :class:`~sopel.tools.identifiers.Identifier`
         :param new: the user's new nickname
-        :type new: :class:`~.tools.Identifier`
+        :type new: :class:`~sopel.tools.identifiers.Identifier`
 
         Called on NICK events.
         """

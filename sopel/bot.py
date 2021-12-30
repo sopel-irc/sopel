@@ -84,17 +84,18 @@ class Sopel(irc.AbstractBot):
         self.channels = tools.SopelIdentifierMemory()
         """A map of the channels that Sopel is in.
 
-        The keys are :class:`sopel.tools.Identifier`\\s of the channel names,
-        and map to :class:`sopel.tools.target.Channel` objects which contain
-        the users in the channel and their permissions.
+        The keys are :class:`~sopel.tools.identifiers.Identifier`\\s of the
+        channel names, and map to :class:`~sopel.tools.target.Channel` objects
+        which contain the users in the channel and their permissions.
         """
 
         self.users = tools.SopelIdentifierMemory()
         """A map of the users that Sopel is aware of.
 
-        The keys are :class:`sopel.tools.Identifier`\\s of the nicknames, and
-        map to :class:`sopel.tools.target.User` instances. In order for Sopel
-        to be aware of a user, it must share at least one mutual channel.
+        The keys are :class:`~sopel.tools.identifiers.Identifier`\\s of the
+        nicknames, and map to :class:`~sopel.tools.target.User` instances. In
+        order for Sopel to be aware of a user, it must share at least one
+        mutual channel.
         """
 
         self.db = db.SopelDB(config)
@@ -212,9 +213,10 @@ class Sopel(irc.AbstractBot):
             >>> bot.has_channel_privilege('#chan', plugin.VOICE)
             True
 
-        The ``channel`` argument can be either a :class:`str` or a
-        :class:`sopel.tools.Identifier`, as long as Sopel joined said channel.
-        If the channel is unknown, a :exc:`ValueError` will be raised.
+        The ``channel`` argument can be either a :class:`str` or an
+        :class:`~sopel.tools.identifiers.Identifier`, as long as Sopel joined
+        said channel. If the channel is unknown, a :exc:`ValueError` will be
+        raised.
         """
         if channel not in self.channels:
             raise ValueError('Unknown channel %s' % channel)

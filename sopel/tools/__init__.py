@@ -482,7 +482,7 @@ class SopelIdentifierMemory(SopelMemory):
     """Special Sopel memory that stores ``Identifier`` as key.
 
     This is a convenient subclass of :class:`SopelMemory` that always casts its
-    keys as instances of :class:`Identifier`::
+    keys as instances of :class:`~.identifiers.Identifier`::
 
         >>> from sopel import tools
         >>> memory = tools.SopelIdentifierMemory()

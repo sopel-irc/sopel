@@ -230,13 +230,13 @@ class Trigger(str):
     sender = property(lambda self: self._pretrigger.sender)
     """Where the message arrived from.
 
-    :type: :class:`~.tools.Identifier`
+    :type: :class:`~sopel.tools.identifiers.Identifier`
 
     This will be a channel name for "regular" (channel) messages, or the nick
     that sent a private message.
 
     You can check if the trigger comes from a channel or a nick with its
-    :meth:`~sopel.tools.Identifier.is_nick` method::
+    :meth:`~sopel.tools.identifiers.Identifier.is_nick` method::
 
         if trigger.sender.is_nick():
             # message sent from a private message
@@ -280,7 +280,7 @@ class Trigger(str):
     nick = property(lambda self: self._pretrigger.nick)
     """The nickname who sent the message.
 
-    :type: :class:`~.tools.Identifier`
+    :type: :class:`~sopel.tools.identifiers.Identifier`
     """
     host = property(lambda self: self._pretrigger.host)
     """The hostname of the person who sent the message.
