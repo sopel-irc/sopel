@@ -3,15 +3,19 @@ from __future__ import generator_stop
 
 import datetime
 import re
+from typing import Callable, cast, Dict, Match, Optional, Sequence, Tuple
 
-from sopel import formatting, tools
-from sopel.tools import web
+from sopel import config, formatting, tools
+from sopel.tools import identifiers, web
 
 
 __all__ = [
     'PreTrigger',
     'Trigger',
 ]
+
+
+IdentifierFactory = Callable[[str], identifiers.Identifier]
 
 
 class PreTrigger:
@@ -106,30 +110,40 @@ class PreTrigger:
     component_regex = re.compile(r'([^!]*)!?([^@]*)@?(.*)')
     intent_regex = re.compile('\x01(\\S+) ?(.*)\x01')
 
-    def __init__(self, own_nick, line, url_schemes=None):
+    def __init__(
+        self,
+        own_nick: identifiers.Identifier,
+        line: str,
+        url_schemes: Optional[Sequence] = None,
+        identifier_factory: IdentifierFactory = identifiers.Identifier,
+    ):
+        self.make_identifier = identifier_factory
         line = line.strip('\r\n')
         self.line = line
-        self.urls = tuple()
+        self.urls: Tuple[str, ...] = tuple()
         self.plain = ''
 
         # Break off IRCv3 message tags, if present
-        self.tags = {}
+        self.tags: Dict[str, Optional[str]] = {}
         if line.startswith('@'):
             tagstring, line = line.split(' ', 1)
-            for tag in tagstring[1:].split(';'):
-                tag = tag.split('=', 1)
+            for raw_tag in tagstring[1:].split(';'):
+                tag = raw_tag.split('=', 1)
                 if len(tag) > 1:
                     self.tags[tag[0]] = tag[1]
                 else:
                     self.tags[tag[0]] = None
 
+        # Client time or server time
         self.time = datetime.datetime.utcnow().replace(
             tzinfo=datetime.timezone.utc
         )
         if 'time' in self.tags:
+            # ensure "time" is a string (typecheck)
+            tag_time = self.tags['time'] or ''
             try:
                 self.time = datetime.datetime.strptime(
-                    self.tags['time'],
+                    tag_time,
                     "%Y-%m-%dT%H:%M:%S.%fZ",
                 ).replace(tzinfo=datetime.timezone.utc)
             except ValueError:
@@ -139,6 +153,7 @@ class PreTrigger:
         # Example: line = ':Sopel!foo@bar PRIVMSG #sopel :foobar!'
         #          print(hostmask)  # Sopel!foo@bar
         # All lines start with ":" except PING.
+        self.hostmask: Optional[str]
         if line.startswith(':'):
             self.hostmask, line = line[1:].split(' ', 1)
         else:
@@ -163,21 +178,25 @@ class PreTrigger:
 
         self.event = self.args[0]
         self.args = self.args[1:]
-        components = PreTrigger.component_regex.match(self.hostmask or '').groups()
-        self.nick, self.user, self.host = components
-        self.nick = tools.Identifier(self.nick)
+
+        # The regex will always match any string, even an empty one
+        components_match = cast(
+            Match, PreTrigger.component_regex.match(self.hostmask or ''))
+        nick, self.user, self.host = components_match.groups()
+        self.nick: identifiers.Identifier = self.make_identifier(nick)
 
         # If we have arguments, the first one is the sender
         # Unless it's a QUIT event
-        if self.args and self.event != 'QUIT':
-            target = tools.Identifier(self.args[0])
-        else:
-            target = None
+        target: Optional[identifiers.Identifier] = None
 
-        # Unless we're messaging the bot directly, in which case that second
-        # arg will be our bot's name.
-        if target and target.lower() == own_nick.lower():
-            target = self.nick
+        if self.args and self.event != 'QUIT':
+            target = self.make_identifier(self.args[0])
+
+            # Unless we're messaging the bot directly, in which case that
+            # second arg will be our bot's name.
+            if target.lower() == own_nick.lower():
+                target = self.nick
+
         self.sender = target
 
         # Parse CTCP into a form consistent with IRCv3 intents
@@ -413,8 +432,22 @@ class Trigger(str):
     the message isn't logged in to services, this property will be ``None``.
     """
 
-    def __new__(cls, config, message, match, account=None):
-        self = str.__new__(cls, message.args[-1] if message.args else '')
+    def __new__(
+        cls,
+        settings: config.Config,
+        message: PreTrigger,
+        match: Match,
+        account: Optional[str] = None,
+    ) -> 'Trigger':
+        return str.__new__(cls, message.args[-1] if message.args else '')
+
+    def __init__(
+        self,
+        settings: config.Config,
+        message: PreTrigger,
+        match: Match,
+        account: Optional[str] = None,
+    ) -> None:
         self._account = account
         self._pretrigger = message
         self._match = match
@@ -427,14 +460,12 @@ class Trigger(str):
                 pattern.match('@'.join((self.nick, self.host)))
             )
 
-        if config.core.owner_account:
-            self._owner = config.core.owner_account == self.account
+        if settings.core.owner_account:
+            self._owner = settings.core.owner_account == self.account
         else:
-            self._owner = match_host_or_nick(config.core.owner)
+            self._owner = match_host_or_nick(settings.core.owner)
         self._admin = (
             self._owner or
-            self.account in config.core.admin_accounts or
-            any(match_host_or_nick(item) for item in config.core.admins)
+            self.account in settings.core.admin_accounts or
+            any(match_host_or_nick(item) for item in settings.core.admins)
         )
-
-        return self

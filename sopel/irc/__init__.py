@@ -259,6 +259,7 @@ class AbstractBot(abc.ABC):
             self.nick,
             message,
             url_schemes=self.settings.core.auto_url_schemes,
+            identifier_factory=self.make_identifier,
         )
         if all(cap not in self.enabled_capabilities for cap in ['account-tag', 'extended-join']):
             pretrigger.tags.pop('account', None)
@@ -304,6 +305,7 @@ class AbstractBot(abc.ABC):
                 self.nick,
                 ":{0}!{1}@{2} {3}".format(self.nick, self.user, host, raw),
                 url_schemes=self.settings.core.auto_url_schemes,
+                identifier_factory=self.make_identifier,
             )
             self.dispatch(pretrigger)
 
