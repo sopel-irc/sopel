@@ -6,7 +6,7 @@ import pytest
 from sopel.tools import identifiers
 
 
-@pytest.mark.parametrize('name, slug', (
+ASCII_PARAMS = (
     ('abcd', 'abcd'),
     ('ABCD', 'abcd'),
     ('abc[]d', 'abc[]d'),
@@ -14,12 +14,8 @@ from sopel.tools import identifiers
     ('abc~d', 'abc~d'),
     ('[A]B\\C~D', '[a]b\\c~d'),
     ('ÙNÏÇÔDÉ', 'ÙnÏÇÔdÉ'),
-))
-def test_ascii_lower(name: str, slug: str):
-    assert identifiers.ascii_lower(name) == slug
-
-
-@pytest.mark.parametrize('name, slug', (
+)
+RFC1459_PARAMS = (
     ('abcd', 'abcd'),
     ('ABCD', 'abcd'),
     ('abc[]d', 'abc{}d'),
@@ -27,12 +23,8 @@ def test_ascii_lower(name: str, slug: str):
     ('abc~d', 'abc^d'),
     ('[A]B\\C~D', '{a}b|c^d'),
     ('ÙNÏÇÔDÉ', 'ÙnÏÇÔdÉ'),
-))
-def test_rfc1459_lower(name: str, slug: str):
-    assert identifiers.rfc1459_lower(name) == slug
-
-
-@pytest.mark.parametrize('name, slug', (
+)
+RFC1459_STRICT_PARAMS = (
     ('abcd', 'abcd'),
     ('ABCD', 'abcd'),
     ('abc[]d', 'abc{}d'),
@@ -40,7 +32,20 @@ def test_rfc1459_lower(name: str, slug: str):
     ('abc~d', 'abc~d'),
     ('[A]B\\C~D', '{a}b|c~d'),
     ('ÙNÏÇÔDÉ', 'ÙnÏÇÔdÉ'),
-))
+)
+
+
+@pytest.mark.parametrize('name, slug', ASCII_PARAMS)
+def test_ascii_lower(name: str, slug: str):
+    assert identifiers.ascii_lower(name) == slug
+
+
+@pytest.mark.parametrize('name, slug', RFC1459_PARAMS)
+def test_rfc1459_lower(name: str, slug: str):
+    assert identifiers.rfc1459_lower(name) == slug
+
+
+@pytest.mark.parametrize('name, slug', RFC1459_STRICT_PARAMS)
 def test_rfc1459_strict_lower(name: str, slug: str):
     assert identifiers.rfc1459_strict_lower(name) == slug
 
@@ -60,6 +65,8 @@ def test_identifier_repr():
 def test_identifier_default_casemapping(name, slug, gt, lt):
     identifier = identifiers.Identifier(name)
     assert slug == identifier.lower()
+    assert slug == identifiers.Identifier._lower(name)
+    assert slug == identifiers.Identifier._lower(identifier)
     assert hash(slug) == hash(identifier)
 
     # eq
@@ -89,6 +96,51 @@ def test_identifier_default_casemapping(name, slug, gt, lt):
     assert identifier < gt
     assert identifier <= identifiers.Identifier(gt)
     assert identifier < identifiers.Identifier(gt)
+
+
+@pytest.mark.parametrize('name, slug', ASCII_PARAMS)
+def test_identifier_ascii_casemapping(name, slug):
+    identifier = identifiers.Identifier(
+        name,
+        casemapping=identifiers.ascii_lower,
+    )
+    assert identifier.lower() == slug
+    assert hash(identifier) == hash(slug)
+    assert identifier == name
+    assert identifier == slug
+    assert slug == identifiers.Identifier._lower(identifier), (
+        'Always use identifier.lower()',
+    )
+
+
+@pytest.mark.parametrize('name, slug', RFC1459_PARAMS)
+def test_identifier_rfc1459_casemapping(name, slug):
+    identifier = identifiers.Identifier(
+        name,
+        casemapping=identifiers.rfc1459_lower,
+    )
+    assert identifier.lower() == slug
+    assert hash(identifier) == hash(slug)
+    assert identifier == name
+    assert identifier == slug
+    assert slug == identifiers.Identifier._lower(identifier), (
+        'Always use identifier.lower()',
+    )
+
+
+@pytest.mark.parametrize('name, slug', RFC1459_STRICT_PARAMS)
+def test_identifier_rfc1459_strict_casemapping(name, slug):
+    identifier = identifiers.Identifier(
+        name,
+        casemapping=identifiers.rfc1459_strict_lower,
+    )
+    assert identifier.lower() == slug
+    assert hash(identifier) == hash(slug)
+    assert identifier == name
+    assert identifier == slug
+    assert slug == identifiers.Identifier._lower(identifier), (
+        'Always use identifier.lower()',
+    )
 
 
 @pytest.mark.parametrize('wrong_type', (

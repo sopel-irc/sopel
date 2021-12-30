@@ -2,7 +2,9 @@
 from __future__ import annotations
 
 import string
+from typing import Callable
 
+Casemapping = Callable[[str], str]
 
 ASCII_TABLE = str.maketrans(string.ascii_uppercase, string.ascii_lowercase)
 RFC1459_TABLE = str.maketrans(
@@ -57,14 +59,19 @@ class Identifier(str):
     This case insensitivity includes the case convention conventions regarding
     ``[]``, ``{}``, ``|``, ``\\``, ``^`` and ``~`` described in RFC 2812.
     """
-    def __init__(self, identifier) -> None:
+    def __new__(cls, *args, **kwargs) -> 'Identifier':
+        return str.__new__(cls, *args)
+
+    def __init__(
+        self,
+        identifier: str,
+        *,
+        casemapping: Casemapping = rfc1459_lower,
+    ) -> None:
         super().__init__()
-        # According to RFC2812, identifiers have to be in the ASCII range.
-        # However, I think it's best to let the IRCd determine that, and we'll
-        # just assume unicode. It won't hurt anything, and is more internally
-        # consistent. And who knows, maybe there's another use case for this
-        # weird case convention.
-        self._lowered = Identifier._lower(identifier)
+        self.casemapping: Casemapping = casemapping
+        """Casemapping function to lower the identifier."""
+        self._lowered = self.casemapping(identifier)
 
     def lower(self):
         """Get the RFC 2812-compliant lowercase version of this identifier.
@@ -73,7 +80,7 @@ class Identifier(str):
                  :py:class:`Identifier` instance
         :rtype: str
         """
-        return self._lowered
+        return self.casemapping(self)
 
     @staticmethod
     def _lower(identifier: str):
@@ -84,11 +91,7 @@ class Identifier(str):
         :rtype: str
         """
         if isinstance(identifier, Identifier):
-            return identifier._lowered
-        # The tilde replacement isn't needed for identifiers, but is for
-        # channels, which may be useful at some point in the future.
-        low = identifier.lower().replace('[', '{').replace(']', '}')
-        low = low.replace('\\', '|').replace('~', '^')
+            return identifier.lower()
         return rfc1459_lower(identifier)
 
     @staticmethod
@@ -122,27 +125,27 @@ class Identifier(str):
 
     def __lt__(self, other):
         if isinstance(other, str):
-            other = Identifier._lower(other)
+            other = self.casemapping(other)
         return str.__lt__(self._lowered, other)
 
     def __le__(self, other):
         if isinstance(other, str):
-            other = Identifier._lower(other)
+            other = self.casemapping(other)
         return str.__le__(self._lowered, other)
 
     def __gt__(self, other):
         if isinstance(other, str):
-            other = Identifier._lower(other)
+            other = self.casemapping(other)
         return str.__gt__(self._lowered, other)
 
     def __ge__(self, other):
         if isinstance(other, str):
-            other = Identifier._lower(other)
+            other = self.casemapping(other)
         return str.__ge__(self._lowered, other)
 
     def __eq__(self, other):
         if isinstance(other, str):
-            other = Identifier._lower(other)
+            other = self.casemapping(other)
         return str.__eq__(self._lowered, other)
 
     def __ne__(self, other):
