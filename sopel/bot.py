@@ -102,7 +102,7 @@ class Sopel(irc.AbstractBot):
         mutual channel.
         """
 
-        self.db = db.SopelDB(config)
+        self.db = db.SopelDB(config, identifier_factory=self.make_identifier)
         """The bot's database, as a :class:`sopel.db.SopelDB` instance."""
 
         self.memory = tools.SopelMemory()

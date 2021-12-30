@@ -13,10 +13,12 @@ from sqlalchemy.exc import OperationalError, SQLAlchemyError
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import scoped_session, sessionmaker
 
-from sopel.tools import deprecated, Identifier
+from sopel.tools import deprecated
+from sopel.tools.identifiers import Identifier
 
 
 LOGGER = logging.getLogger(__name__)
+IdentifierFactory = typing.Callable[[str], Identifier]
 
 
 def _deserialize(value):
@@ -87,6 +89,8 @@ class SopelDB:
 
     :param config: Sopel's configuration settings
     :type config: :class:`sopel.config.Config`
+    :param identifier_factory: factory for
+                               :class:`~sopel.tools.identifiers.Identifier`
 
     This defines a simplified interface for basic, common operations on the
     bot's database. Direct access to the database is also available, to serve
@@ -106,7 +110,13 @@ class SopelDB:
 
     """
 
-    def __init__(self, config):
+    def __init__(
+        self,
+        config,
+        identifier_factory: IdentifierFactory = Identifier,
+    ) -> None:
+        self.make_identifier = identifier_factory
+
         if config.core.db_url is not None:
             self.url = make_url(config.core.db_url)
 
@@ -282,7 +292,7 @@ class SopelDB:
 
         """
         session = self.ssession()
-        slug = Identifier._lower(nick)
+        slug = self.make_identifier(nick).lower()
         try:
             nickname = session.query(Nicknames) \
                 .filter(Nicknames.slug == slug) \
@@ -333,17 +343,17 @@ class SopelDB:
             :meth:`unalias_nick`.
 
         """
-        alias_lower = Identifier._lower(alias)
+        slug = self.make_identifier(alias).lower()
         nick_id = self.get_nick_id(nick, create=True)
         session = self.ssession()
         try:
             result = session.query(Nicknames) \
-                .filter(Nicknames.slug == alias_lower) \
+                .filter(Nicknames.slug == slug) \
                 .filter(Nicknames.canonical == alias) \
                 .one_or_none()
             if result:
                 raise ValueError('Alias already exists.')
-            nickname = Nicknames(nick_id=nick_id, slug=alias_lower, canonical=alias)
+            nickname = Nicknames(nick_id=nick_id, slug=slug, canonical=alias)
             session.add(nickname)
             session.commit()
         except SQLAlchemyError:
@@ -460,7 +470,7 @@ class SopelDB:
             :meth:`delete_nick_value`.
 
         """
-        slug = Identifier._lower(nick)
+        slug = self.make_identifier(nick).lower()
         session = self.ssession()
         try:
             result = session.query(NickValues) \
@@ -494,7 +504,7 @@ class SopelDB:
             To *add* an alias for a nick, use :meth:`alias_nick`.
 
         """
-        alias_slug = Identifier._lower(alias)
+        slug = self.make_identifier(alias).lower()
         nick_id = self.get_nick_id(alias)
         session = self.ssession()
         try:
@@ -503,7 +513,7 @@ class SopelDB:
                 .count()
             if count <= 1:
                 raise ValueError('Given alias is the only entry in its group.')
-            session.query(Nicknames).filter(Nicknames.slug == alias_slug).delete()
+            session.query(Nicknames).filter(Nicknames.slug == slug).delete()
             session.commit()
         except SQLAlchemyError:
             session.rollback()
@@ -604,7 +614,7 @@ class SopelDB:
         databases/files, without regard for variation in case between
         different clients and/or servers on the network.
         """
-        slug = Identifier._lower(chan)
+        slug = self.make_identifier(chan).lower()
         session = self.ssession()
         try:
             count = session.query(ChannelValues) \
@@ -943,7 +953,7 @@ class SopelDB:
             # The goal is to call this method with an existing Identifier
             # and not a simple string. This is a convenient/shortcut method
             # and should probably not be used with a simple string anyway.
-            name = Identifier(name)
+            name = self.make_identifier(name)
 
         if name.is_nick():
             return self.get_nick_value(name, key, default)
