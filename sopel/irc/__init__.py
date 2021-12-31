@@ -126,14 +126,11 @@ class AbstractBot(abc.ABC):
 
     def make_identifier(self, name: str) -> identifiers.Identifier:
         """Instantiate an Identifier using the bot's context."""
-        casemapping = identifiers.rfc1459_lower
-
-        if 'CASEMAPPING' in self.isupport:
-            casemapping = {
-                'ascii': identifiers.ascii_lower,
-                'rfc1459': identifiers.rfc1459_lower,
-                'rfc1459-strict': identifiers.rfc1459_strict_lower,
-            }.get(self.isupport['CASEMAPPING'], casemapping)
+        casemapping = {
+            'ascii': identifiers.ascii_lower,
+            'rfc1459': identifiers.rfc1459_lower,
+            'rfc1459-strict': identifiers.rfc1459_strict_lower,
+        }.get(self.isupport.get('CASEMAPPING'), identifiers.rfc1459_lower)
 
         return identifiers.Identifier(name, casemapping=casemapping)
 
