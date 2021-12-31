@@ -7,6 +7,7 @@
 """
 from __future__ import annotations
 
+from sopel.lifecycle import deprecated
 # Import everything from sopel.plugin at the time of replacement.
 # Everything new from this point on must *not* leak here.
 # Therefore, don't add anything to this import list. Ever.
@@ -40,7 +41,6 @@ from sopel.plugin import (  # noqa
     url,
     VOICE,
 )
-from sopel.tools import deprecated
 
 
 deprecated(

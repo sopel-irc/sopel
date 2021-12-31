@@ -21,8 +21,9 @@ from typing import Any, Dict, Iterable, Mapping, Optional, Tuple, Union
 
 from sopel import db, irc, logger, plugin, plugins, tools
 from sopel.irc import modes
+from sopel.lifecycle import deprecated
 from sopel.plugins import jobs as plugin_jobs, rules as plugin_rules
-from sopel.tools import deprecated, jobs as tools_jobs
+from sopel.tools import jobs as tools_jobs
 from sopel.trigger import PreTrigger, Trigger
 
 

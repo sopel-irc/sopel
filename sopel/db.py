@@ -13,7 +13,7 @@ from sqlalchemy.exc import OperationalError, SQLAlchemyError
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import scoped_session, sessionmaker
 
-from sopel.tools import deprecated
+from sopel.lifecycle import deprecated
 from sopel.tools.identifiers import Identifier
 
 

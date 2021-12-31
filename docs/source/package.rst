@@ -1,4 +1,4 @@
-
+=================
 Sopel Package API
 =================
 
@@ -11,3 +11,4 @@ Sopel Package API
     db
     api
     irc
+    lifecycle
