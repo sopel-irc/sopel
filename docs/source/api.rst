@@ -17,7 +17,6 @@ sopel.tools.identifiers
 
 .. automodule:: sopel.tools.identifiers
    :members:
-   :private-members: Identifier._lower, Identifier._lower_swapped
 
 
 sopel.tools.web
