@@ -256,18 +256,23 @@ class SopelDB:
 
     # NICK FUNCTIONS
 
-    def get_nick_id(self, nick, create=True):
+    def get_nick_id(self, nick, create=False):
         """Return the internal identifier for a given nick.
 
         :param nick: the nickname for which to fetch an ID
         :type nick: :class:`~sopel.tools.Identifier`
         :param bool create: whether to create an ID if one does not exist
+                            (set to ``False`` by default)
         :raise ValueError: if no ID exists for the given ``nick`` and ``create``
                            is set to ``False``
         :raise ~sqlalchemy.exc.SQLAlchemyError: if there is a database error
 
         The nick ID is shared across all of a user's aliases, assuming their
         nicks have been grouped together.
+
+        .. versionchanged:: 8.0
+
+            The ``create`` parameter is now ``False`` by default.
 
         .. seealso::
 
@@ -330,7 +335,7 @@ class SopelDB:
         """
         nick = Identifier(nick)
         alias = Identifier(alias)
-        nick_id = self.get_nick_id(nick)
+        nick_id = self.get_nick_id(nick, create=True)
         session = self.ssession()
         try:
             result = session.query(Nicknames) \
@@ -371,7 +376,7 @@ class SopelDB:
         """
         nick = Identifier(nick)
         value = json.dumps(value, ensure_ascii=False)
-        nick_id = self.get_nick_id(nick)
+        nick_id = self.get_nick_id(nick, create=True)
         session = self.ssession()
         try:
             result = session.query(NickValues) \
@@ -398,6 +403,7 @@ class SopelDB:
 
         :param str nick: the nickname whose values to modify
         :param str key: the name of the value to delete
+        :raise ValueError: if the ``nick`` does not exist
         :raise ~sqlalchemy.exc.SQLAlchemyError: if there is a database error
 
         .. seealso::
@@ -409,7 +415,13 @@ class SopelDB:
 
         """
         nick = Identifier(nick)
-        nick_id = self.get_nick_id(nick)
+
+        try:
+            nick_id = self.get_nick_id(nick)
+        except ValueError:
+            # there's nothing to do if the nick doesn't exist
+            return
+
         session = self.ssession()
         try:
             result = session.query(NickValues) \
@@ -471,7 +483,8 @@ class SopelDB:
         """Remove an alias.
 
         :param str alias: an alias with at least one other nick in its group
-        :raise ValueError: if there is not at least one other nick in the group
+        :raise ValueError: if there is not at least one other nick in the
+                           group, or the ``alias`` is not known
         :raise ~sqlalchemy.exc.SQLAlchemyError: if there is a database error
 
         .. seealso::
@@ -482,7 +495,7 @@ class SopelDB:
 
         """
         alias = Identifier(alias)
-        nick_id = self.get_nick_id(alias, False)
+        nick_id = self.get_nick_id(alias)
         session = self.ssession()
         try:
             count = session.query(Nicknames) \
@@ -502,6 +515,7 @@ class SopelDB:
         """Remove a nickname, all of its aliases, and all of its stored values.
 
         :param str nick: one of the nicknames in the group to be deleted
+        :raise ValueError: if the ``nick`` does not exist in the database
         :raise ~sqlalchemy.exc.SQLAlchemyError: if there is a database error
 
         .. important::
@@ -511,7 +525,7 @@ class SopelDB:
 
         """
         nick = Identifier(nick)
-        nick_id = self.get_nick_id(nick, False)
+        nick_id = self.get_nick_id(nick)
         session = self.ssession()
         try:
             session.query(Nicknames).filter(Nicknames.nick_id == nick_id).delete()
@@ -536,6 +550,8 @@ class SopelDB:
 
         :param str first_nick: one nick in the first group to merge
         :param str second_nick: one nick in the second group to merge
+        :raise ValueError: if either ``first_nick`` or ``second_nick`` does
+                           not exist in the database
         :raise ~sqlalchemy.exc.SQLAlchemyError: if there is a database error
 
         Takes two nicks, which may or may not be registered. Unregistered nicks
