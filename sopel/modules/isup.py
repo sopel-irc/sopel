@@ -60,10 +60,13 @@ def handle_isup(bot, trigger, secure=True):
     """
     try:
         site = get_site_url(trigger.group(2))
-        response = requests.head(site, verify=secure, timeout=(10.0, 5.0))
-        response.raise_for_status()
     except ValueError as error:
         bot.reply(str(error))
+        return
+
+    try:
+        response = requests.head(site, verify=secure, timeout=(10.0, 5.0))
+        response.raise_for_status()
     except requests.exceptions.SSLError:
         bot.say(
             '{} looks down to me (SSL error). Try using `{}isupinsecure`.'
@@ -84,6 +87,8 @@ def handle_isup(bot, trigger, secure=True):
         bot.say(
             '{} looks down to me (connection error).'
             .format(site))
+    except ValueError:
+        bot.reply('"{}" is not a valid URL.'.format(site))
     else:
         # If no exception happened, the request must have succeeded.
         bot.say(site + ' looks fine to me.')

@@ -10,9 +10,9 @@ geoip2>=4.0,<5.0; python_version >= '3.6'
 # transitive dependency of geoip2; v2 dropped py2.7 & py3 < 3.6
 maxminddb<2.0; python_version < '3.6'
 ipaddress<2.0; python_version < '3.3'
-requests>=2.0.0,<3.0.0; python_version != '3.3'
+requests>=2.24.0,<3.0.0; python_version != '3.3'
 # py3.3 doesn't work with the chardet/charset-normalizer detection added in 2.26
-requests>=2.0.0,<2.26; python_version == '3.3'
+requests>=2.24.0,<2.26; python_version == '3.3'
 # transitive dependency of requests
 # 2.0 will drop EOL Python 2.7 & 3.5, just like Sopel 8 plans to
 urllib3<1.27; python_version != '3.3' and python_version != '3.4'

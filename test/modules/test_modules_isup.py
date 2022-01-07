@@ -115,7 +115,7 @@ def test_isup_command_unparseable(irc, bot, user, requests_mock):
     """Test URL that can't be parsed."""
     requests_mock.head(
         'http://.foo',
-        exc=ValueError("Failed to parse: '.foo', label empty or too long"),
+        exc=ValueError("Invalid URL"),
     )
 
     irc.pm(user, '.isup .foo')
@@ -123,7 +123,7 @@ def test_isup_command_unparseable(irc, bot, user, requests_mock):
     assert len(bot.backend.message_sent) == 1, (
         '.isup command should output exactly one line')
     assert bot.backend.message_sent == rawlist(
-        'PRIVMSG User :User: Failed to parse: \'.foo\', label empty or too long'
+        'PRIVMSG User :User: "http://.foo" is not a valid URL.'
     )
 
 
