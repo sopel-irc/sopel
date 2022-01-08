@@ -247,14 +247,6 @@ def test_merge_nick_groups(db):
                        .filter(NickValues.key == key) \
                        .scalar()
         assert json.loads(str(found)) == value
-
-    with pytest.raises(ValueError):
-        db.merge_nick_groups(aliases[0], 'Mister_Bradshaw')
-    with pytest.raises(ValueError):
-        db.merge_nick_groups('Mister_Bradshaw', aliases[1])
-    with pytest.raises(ValueError):
-        db.merge_nick_groups('Mister_Bradshaw', 'Mister_Nesbitt')
-
     session.close()
 
 

@@ -403,7 +403,6 @@ class SopelDB:
 
         :param str nick: the nickname whose values to modify
         :param str key: the name of the value to delete
-        :raise ValueError: if the ``nick`` does not exist
         :raise ~sqlalchemy.exc.SQLAlchemyError: if there is a database error
 
         .. seealso::
@@ -550,8 +549,6 @@ class SopelDB:
 
         :param str first_nick: one nick in the first group to merge
         :param str second_nick: one nick in the second group to merge
-        :raise ValueError: if either ``first_nick`` or ``second_nick`` does
-                           not exist in the database
         :raise ~sqlalchemy.exc.SQLAlchemyError: if there is a database error
 
         Takes two nicks, which may or may not be registered. Unregistered nicks
@@ -567,8 +564,8 @@ class SopelDB:
         Plugins which define their own tables relying on the nick table will
         need to handle their own merging separately.
         """
-        first_id = self.get_nick_id(Identifier(first_nick))
-        second_id = self.get_nick_id(Identifier(second_nick))
+        first_id = self.get_nick_id(Identifier(first_nick), create=True)
+        second_id = self.get_nick_id(Identifier(second_nick), create=True)
         session = self.ssession()
         try:
             # Get second_id's values
