@@ -4,13 +4,13 @@ About time
 
 Your plugin may want to display dates and times in messages. For that, you can
 always count on the :mod:`datetime` built-in module. However, what if you would
-like to respect the date-format for a given user or a given channel? Various
-functions of :mod:`Sopel<sopel.tools.time>` can help you with that:
+like to respect the date-format for a given user or a given channel? Functions
+of :mod:`sopel.tools.time` can help you with that:
 
 * :func:`~sopel.tools.time.get_timezone` will fetch the right timezone for you
 * :func:`~sopel.tools.time.format_time` will format your aware datetime for you
 
-Here is a full example of that::
+Here is a full example of that, adapted from the built-in ``.t`` command::
 
     import datetime
 
@@ -146,3 +146,66 @@ Then you have arrived at the last step of your journey, thanks to the
 
 And voilà! You now have a string formatted aware datetime that uses the format
 defined for a user/channel/the bot, and can now rest and enjoy your own time.
+
+Best practices
+==============
+
+So far, you have learned how to get a time formatted with the preferred timezone
+and format of a user: this is perfect for a command like ``.time`` that
+displays the time for a specific user in mind. However, other commands, like
+URL previews, are not related to users, and they should use a different
+strategy to figure out the right timezone and format.
+
+User specific time
+------------------
+
+A user specific time is when the time is displayed for a specific user: a
+direct message, a reminder, the user's time, etc.
+
+In that case, the recommended order to select the appropriate timezone and time
+format is:
+
+* user's preferred ones
+* channel's preferred ones
+* bot's timezone and format (from configuration)
+* default timezone and format
+
+This can be done with :func:`~sopel.tools.time.get_timezone` and
+:func:`~sopel.tools.time.format_time`::
+
+    >>> custom_tz = get_timezone(
+    ...     bot.db, bot.settings, zone=None,
+    ...     nick=nick_name, channel=channel_name,
+    ... )
+    >>> display_time = format_time(
+    ...     bot.db, bot.settings, zone=custom_tz,
+    ...     nick=nick_name, channel=channel_name, time=user_time,
+    ... )
+
+Other times
+-----------
+
+When displaying a time that is not for a specific user, it doesn't make sense
+to display time with the user's preferred format. For example, a URL preview
+plugin is not displaying a user specific time.
+
+In that case, the recommended order to select the appropriate timezone and time
+format is:
+
+* channel's preferred ones
+* bot's timezone and format (from configuration)
+* default timezone and format
+
+This can be done with :func:`~sopel.tools.time.get_timezone` and
+:func:`~sopel.tools.time.format_time`::
+
+    >>> custom_tz = get_timezone(
+    ...     bot.db, bot.settings, zone=None,
+    ...     channel=channel_name,
+    ... )
+    >>> display_time = plugin_defined_format or format_time(
+    ...     bot.db, bot.settings, zone=custom_tz,
+    ...     channel=channel_name, time=plugin_time,
+    ... )
+
+Note the absence of the ``nick`` parameter in that snippet.
