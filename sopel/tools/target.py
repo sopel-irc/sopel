@@ -15,6 +15,10 @@ class User:
     :param str user: the user's local username ("user" in `user@host.name`)
     :param str host: the user's hostname ("host.name" in `user@host.name`)
     """
+    __slots__ = (
+        'nick', 'user', 'host', 'channels', 'account', 'away',
+    )
+
     def __init__(self, nick, user, host):
         assert isinstance(nick, Identifier)
         self.nick = nick
@@ -59,6 +63,10 @@ class Channel:
     :param name: the channel name
     :type name: :class:`~.tools.Identifier`
     """
+    __slots__ = (
+        'name', 'users', 'privileges', 'topic', 'modes', 'last_who', 'join_time',
+    )
+
     def __init__(self, name):
         assert isinstance(name, Identifier)
         self.name = name
