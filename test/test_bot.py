@@ -1,5 +1,5 @@
 """Tests for core ``sopel.bot`` module"""
-from __future__ import generator_stop
+from __future__ import annotations
 
 from datetime import datetime, timezone
 import re
@@ -19,7 +19,7 @@ nick = TestBot
 enable = coretasks
 """
 
-MOCK_MODULE_CONTENT = """from __future__ import generator_stop
+MOCK_MODULE_CONTENT = """from __future__ import annotations
 from sopel import plugin
 
 

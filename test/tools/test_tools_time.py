@@ -1,5 +1,5 @@
 """Tools for getting and displaying the time."""
-from __future__ import generator_stop
+from __future__ import annotations
 
 import datetime
 

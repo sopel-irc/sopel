@@ -1,5 +1,5 @@
 """Sopel Plugins Command Line Interface (CLI): ``sopel-plugins``"""
-from __future__ import generator_stop
+from __future__ import annotations
 
 import argparse
 import inspect

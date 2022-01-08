@@ -1,5 +1,5 @@
 """Tests for core ``sopel.irc.isupport``"""
-from __future__ import generator_stop
+from __future__ import annotations
 
 from collections import OrderedDict
 

@@ -53,7 +53,7 @@ This allows to use comparators and bitwise operators to compare privileges::
 
 In that case, ``priv`` contains both VOICE and OP privileges, but not HALFOP.
 """
-from __future__ import generator_stop
+from __future__ import annotations
 
 
 VOICE = 1

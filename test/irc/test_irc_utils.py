@@ -1,5 +1,5 @@
 """Tests for core ``sopel.irc.utils``"""
-from __future__ import generator_stop
+from __future__ import annotations
 
 import pytest
 

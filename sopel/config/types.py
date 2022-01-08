@@ -23,7 +23,7 @@ As an example, if one wanted to define the ``[spam]`` section as having an
     ValueError: ListAttribute value must be a list.
 """
 
-from __future__ import generator_stop
+from __future__ import annotations
 
 import abc
 import getpass

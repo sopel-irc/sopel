@@ -2,7 +2,7 @@
 
 .. versionadded:: 7.0
 """
-from __future__ import generator_stop
+from __future__ import annotations
 
 
 from sopel.irc.abstract_backends import AbstractIRCBackend

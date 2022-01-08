@@ -3,7 +3,7 @@
 TODO: Most of these tests assume functionality tested in other tests. This is
 enough to get everything working (and is better than nothing), but best
 practice would probably be not to do that."""
-from __future__ import generator_stop
+from __future__ import annotations
 
 import json
 import os

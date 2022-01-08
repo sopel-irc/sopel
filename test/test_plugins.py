@@ -1,5 +1,5 @@
 """Test for the ``sopel.plugins`` module."""
-from __future__ import generator_stop
+from __future__ import annotations
 
 import sys
 
@@ -9,7 +9,7 @@ import pytest
 from sopel import plugins
 
 
-MOCK_MODULE_CONTENT = """from __future__ import generator_stop
+MOCK_MODULE_CONTENT = """from __future__ import annotations
 from sopel import plugin
 
 

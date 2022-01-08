@@ -1,5 +1,5 @@
 """Tests for message parsing"""
-from __future__ import generator_stop
+from __future__ import annotations
 
 import datetime
 import re

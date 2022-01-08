@@ -5,7 +5,7 @@
 # Copyright 2014, Elsie Powell, embolalia.com
 # Copyright 2019, dgw, technobabbl.es
 # Licensed under the Eiffel Forum License 2.
-from __future__ import generator_stop
+from __future__ import annotations
 
 from enum import Enum
 import re

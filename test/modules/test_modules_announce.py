@@ -1,5 +1,5 @@
 """Tests for Sopel's ``announce`` plugin"""
-from __future__ import generator_stop
+from __future__ import annotations
 
 from sopel.modules import announce
 

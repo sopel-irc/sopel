@@ -1,5 +1,5 @@
 """Tests for the ``sopel.plugins.rules`` module."""
-from __future__ import generator_stop
+from __future__ import annotations
 
 import re
 

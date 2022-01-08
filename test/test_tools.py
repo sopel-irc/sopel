@@ -1,5 +1,5 @@
 """Tests sopel.tools"""
-from __future__ import generator_stop
+from __future__ import annotations
 
 import re
 

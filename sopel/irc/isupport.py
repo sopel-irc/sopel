@@ -11,7 +11,7 @@ When a server wants to advertise its features and settings, it can use the
 # Copyright 2019, Florian Strzelecki <florian.strzelecki@gmail.com>
 #
 # Licensed under the Eiffel Forum License 2.
-from __future__ import generator_stop
+from __future__ import annotations
 
 from collections import OrderedDict
 import functools

@@ -1,5 +1,5 @@
 """Tests for targets: Channel & User"""
-from __future__ import generator_stop
+from __future__ import annotations
 
 from sopel import plugin
 from sopel.tools import Identifier, target

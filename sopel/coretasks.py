@@ -20,7 +20,7 @@ dispatch function in :class:`sopel.bot.Sopel` and making it easier to maintain.
 # Copyright 2019, Florian Strzelecki <florian.strzelecki@gmail.com>
 #
 # Licensed under the Eiffel Forum License 2.
-from __future__ import generator_stop
+from __future__ import annotations
 
 import base64
 import collections

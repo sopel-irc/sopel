@@ -23,7 +23,7 @@ than how Sopel knows about them.
 
 .. versionadded:: 8.0
 """
-from __future__ import generator_stop
+from __future__ import annotations
 
 import enum
 import logging

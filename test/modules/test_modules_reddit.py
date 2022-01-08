@@ -1,5 +1,5 @@
 """Tests for Sopel's ``reddit`` plugin"""
-from __future__ import generator_stop
+from __future__ import annotations
 
 import pytest
 

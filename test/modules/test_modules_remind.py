@@ -1,5 +1,5 @@
 """Tests for Sopel's ``remind`` plugin"""
-from __future__ import generator_stop
+from __future__ import annotations
 
 from datetime import datetime
 import os

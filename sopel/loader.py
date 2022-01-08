@@ -9,7 +9,7 @@
     Do **not** build your plugin based on what is here, you do **not** need to.
 
 """
-from __future__ import generator_stop
+from __future__ import annotations
 
 import inspect
 import logging

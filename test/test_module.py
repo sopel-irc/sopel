@@ -6,7 +6,7 @@
     compatible up to Sopel 9, when it will be removed.
 
 """
-from __future__ import generator_stop
+from __future__ import annotations
 
 import pytest
 
