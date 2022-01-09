@@ -49,7 +49,7 @@ def test_get_nick_id(db):
     ]
 
     for test in tests:
-        test[0] = db.get_nick_id(test[2])
+        test[0] = db.get_nick_id(test[2], create=True)
         nick_id, slug, nick = test
         registered = session.query(Nicknames) \
                             .filter(Nicknames.canonical == nick) \
@@ -63,12 +63,14 @@ def test_get_nick_id(db):
     # Check that the retrieval actually is idempotent
     for test in tests:
         nick_id = test[0]
+        # no `create` this time, since the ID should already exist
         new_id = db.get_nick_id(test[2])
         assert nick_id == new_id
 
     # Even if the case is different
     for test in tests:
         nick_id = test[0]
+        # still no `create`, because the nick ID should already exist now
         new_id = db.get_nick_id(Identifier(test[2].upper()))
         assert nick_id == new_id
     session.close()
@@ -78,7 +80,7 @@ def test_alias_nick(db):
     nick = 'Embolalia'
     aliases = ['EmbölaliÅ', 'Embo`work', 'Embo']
 
-    nick_id = db.get_nick_id(nick)
+    nick_id = db.get_nick_id(nick, create=True)
     for alias in aliases:
         db.alias_nick(nick, alias)
 
@@ -97,7 +99,6 @@ def test_alias_nick(db):
 def test_set_nick_value(db):
     session = db.ssession()
     nick = 'Embolalia'
-    nick_id = db.get_nick_id(nick)
     data = {
         'key': 'value',
         'number_key': 1234,
@@ -108,25 +109,31 @@ def test_set_nick_value(db):
         for key, value in data.items():
             db.set_nick_value(nick, key, value)
 
+        # no `create` because that should be handled in `set_nick_value()`
+        nick_id = db.get_nick_id(nick)
+
         for key, value in data.items():
             found_value = session.query(NickValues.value) \
                                  .filter(NickValues.nick_id == nick_id) \
                                  .filter(NickValues.key == key) \
                                  .scalar()
             assert json.loads(str(found_value)) == value
-    check()
+
+        return nick_id
+
+    nid = check()
 
     # Test updates
     data['number_key'] = 'not a number anymore!'
     data['unicode'] = 'This is different toö!'
-    check()
+    assert nid == check()
     session.close()
 
 
 def test_get_nick_value(db):
     session = db.ssession()
     nick = 'Embolalia'
-    nick_id = db.get_nick_id(nick)
+    nick_id = db.get_nick_id(nick, create=True)
     data = {
         'key': 'value',
         'number_key': 1234,
@@ -180,6 +187,10 @@ def test_unalias_nick(db):
                        .filter(Nicknames.nick_id == nick_id) \
                        .all()
         assert len(found) == 1
+
+    with pytest.raises(ValueError):
+        db.unalias_nick('Mister_Bradshaw')
+
     session.close()
 
 
@@ -196,6 +207,9 @@ def test_forget_nick_group(db):
     db.set_nick_value(aliases[1], 'spam', 'eggs')
 
     db.forget_nick_group(aliases[0])
+
+    with pytest.raises(ValueError):
+        db.forget_nick_group('Mister_Bradshaw')
 
     # Nothing else has created values, so we know the tables are empty
     nicks = session.query(Nicknames).all()
