@@ -501,15 +501,33 @@ class SopelIdentifierMemory(SopelMemory):
     with both ``Identifier`` and :class:`str` objects, taking advantage of the
     case-insensitive behavior of ``Identifier``.
 
+    As it works with :class:`~.identifiers.Identifier`, it accepts an
+    identifier factory. This factory usually comes from a bot instance (see
+    :meth:`bot.make_identifier()<sopel.irc.AbstractBot.make_identifier>`), like
+    in the example of a plugin setup function::
+
+        def setup(bot):
+            bot.memory['my_plugin_storage'] = SopelIdentifierMemory(
+                identifier_factory=bot.make_identifier,
+            )
+
     .. note::
 
-        Internally, it will try to do ``key = tools.Identifier(key)``, which
-        will raise an exception if it cannot instantiate the key properly::
+        Internally, it will try to do ``key = self.make_identifier(key)``,
+        which will raise an exception if it cannot instantiate the key
+        properly::
 
             >>> memory[1] = 'error'
-            AttributeError: 'int' object has no attribute 'lower'
+            AttributeError: 'int' object has no attribute 'translate'
 
     .. versionadded:: 7.1
+
+    .. versionchanged:: 8.0
+
+        The parameter ``identifier_factory`` has been added to properly
+        transform ``str`` into :class:`~.identifiers.Identifier`. This factory
+        is stored and accessible through :attr:`make_identifier`.
+
     """
     def __init__(
         self,
@@ -518,6 +536,7 @@ class SopelIdentifierMemory(SopelMemory):
     ) -> None:
         super().__init__(*args)
         self.make_identifier = identifier_factory
+        """A factory to transform keys into identifiers."""
 
     def __getitem__(self, key):
         return super().__getitem__(self.make_identifier(key))
