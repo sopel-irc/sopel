@@ -49,6 +49,7 @@ RFC1459_STRICT_TABLE = str.maketrans(
     string.ascii_uppercase + '[]\\',
     string.ascii_lowercase + '{}|',
 )
+DEFAULT_CHANTYPES = ('#', '&', '+', '!')
 
 
 def ascii_lower(text: str) -> str:
@@ -93,9 +94,6 @@ def rfc1459_strict_lower(text: str) -> str:
     return text.translate(RFC1459_STRICT_TABLE)
 
 
-_channel_prefixes = ('#', '&', '+', '!')
-
-
 class Identifier(str):
     """A ``str`` subclass which acts appropriately for IRC identifiers.
 
@@ -120,7 +118,7 @@ class Identifier(str):
 
     .. versionchanged:: 8.0
 
-        The ``casemapping`` parameter has been added.
+        The ``casemapping`` and ``chantypes`` parameters have been added.
 
     .. __: https://modern.ircdocs.horse/index.html#casemapping-parameter
     """
@@ -129,6 +127,7 @@ class Identifier(str):
         identifier: str,
         *,
         casemapping: Casemapping = rfc1459_lower,
+        chantypes: tuple = DEFAULT_CHANTYPES,
     ) -> 'Identifier':
         return str.__new__(cls, identifier)
 
@@ -137,10 +136,13 @@ class Identifier(str):
         identifier: str,
         *,
         casemapping: Casemapping = rfc1459_lower,
+        chantypes: tuple = DEFAULT_CHANTYPES,
     ) -> None:
         super().__init__()
         self.casemapping: Casemapping = casemapping
         """Casemapping function to lower the identifier."""
+        self.chantypes = chantypes
+        """Tuple of prefixes used for channels."""
         self._lowered = self.casemapping(identifier)
 
     def lower(self) -> str:
@@ -266,5 +268,15 @@ class Identifier(str):
             >>> ident.is_nick()
             False
 
+        To detect channels, :attr:`chantypes` is used::
+
+            >>> from sopel import tools
+            >>> ident = tools.Identifier('!sopel', chantypes=('#', '&'))
+            >>> ident.is_nick()
+            True
+            >>> ident.chantypes = ('#', '&', '!')
+            >>> ident.is_nick()
+            False
+
         """
-        return bool(self) and not self.startswith(_channel_prefixes)
+        return bool(self) and not self.startswith(self.chantypes)
