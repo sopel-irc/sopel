@@ -131,8 +131,14 @@ class AbstractBot(abc.ABC):
             'rfc1459': identifiers.rfc1459_lower,
             'rfc1459-strict': identifiers.rfc1459_strict_lower,
         }.get(self.isupport.get('CASEMAPPING'), identifiers.rfc1459_lower)
+        chantypes = (
+            self.isupport.get('CHANTYPES', identifiers.DEFAULT_CHANTYPES))
 
-        return identifiers.Identifier(name, casemapping=casemapping)
+        return identifiers.Identifier(
+            name,
+            casemapping=casemapping,
+            chantypes=chantypes,
+        )
 
     def safe_text_length(self, recipient: str) -> int:
         """Estimate a safe text length for an IRC message.
