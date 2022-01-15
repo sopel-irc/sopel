@@ -18,6 +18,11 @@ sopel.tools.identifiers
 .. automodule:: sopel.tools.identifiers
    :members:
 
+sopel.tools.memories
+--------------------
+
+.. automodule:: sopel.tools.memories
+   :members:
 
 sopel.tools.web
 ---------------
