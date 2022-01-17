@@ -7,9 +7,10 @@ identifiers must be processed to be compared properly. This process depends on
 which RFC and how that RFC is implemented by the server: IRC being an old
 protocol, different RFCs have differents version of that process:
 
-* :rfc:`1549#section-2.2`: ASCII characters, and ``[]\\`` are mapped to ``{}|``
-* :rfc:`2812#section-2.2`: same as in the previous RFC, adding ``~`` mapped to
-  ``^``
+* :rfc:`RFC 1459 § 2.2<1459#section-2.2>`: ASCII characters, and ``[]\\`` are
+  mapped to ``{}|``
+* :rfc:`RFC 2812 § 2.2<2812#section-2.2>`: same as in the previous RFC, adding
+  ``~`` mapped to ``^``
 
 Then when ISUPPORT was added, the `CASEMAPPING parameter`__ was defined so the
 server can say which process to apply:
@@ -63,7 +64,7 @@ def rfc1459_lower(text: str) -> str:
     """Lower ``text`` according to :rfc:`2812`.
 
     Similar to :func:`rfc1459_strict_lower`, but also maps ``~`` to ``^``, as
-    per :rfc:`2812#section-2.2`:
+    per :rfc:`RFC 2812 § 2.2<2812#section-2.2>`:
 
         Because of IRC's Scandinavian origin, the characters ``{}|^`` are
         considered to be the lower case equivalents of the characters
@@ -83,7 +84,7 @@ def rfc1459_lower(text: str) -> str:
 def rfc1459_strict_lower(text: str) -> str:
     """Lower ``text`` according to :rfc:`1459` (strict version).
 
-    As per :rfc:`1459#section-2.2`:
+    As per :rfc:`RFC 1459 § 2.2<1459#section-2.2>`:
 
         Because of IRC's scandanavian origin, the characters ``{}|`` are
         considered to be the lower case equivalents of the characters ``[]\\``.
@@ -108,7 +109,8 @@ class Identifier(str):
 
     This case insensitivity uses the provided ``casemapping`` function,
     following the rules for the `CASEMAPPING parameter`__ from ISUPPORT. By
-    default, it uses :func:`rfc1459_lower`, following :rfc:`2812#section-2.2`.
+    default, it uses :func:`rfc1459_lower`, following
+    :rfc:`RFC 2812 § 2.2<2812#section-2.2>`.
 
     .. note::
 
@@ -153,7 +155,8 @@ class Identifier(str):
 
         .. versionchanged:: 8.0
 
-            Now use the :attr:`casemapping` function to lower the identifier.
+            Now uses the :attr:`casemapping` function to lower the identifier.
+
         """
         return self.casemapping(self)
 
@@ -201,6 +204,7 @@ class Identifier(str):
 
             This method was added to ensure migration of improperly lowercased
             data: it reverts the data back to the previous lowercase rules.
+
         """
         # The tilde replacement isn't needed for identifiers, but is for
         # channels, which may be useful at some point in the future.
