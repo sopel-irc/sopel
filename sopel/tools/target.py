@@ -228,8 +228,8 @@ class Channel:
             sensibly if only ``+v`` (voice) and ``+o`` (op) modes exist.
 
         """
-        nick_id = self.make_identifier(nick)
-        return bool(self.privileges.get(nick_id, 0) & privileges.OPER)
+        identifier = self.make_identifier(nick)
+        return bool(self.privileges.get(identifier, 0) & privileges.OPER)
 
     def is_owner(self, nick: str) -> bool:
         """Tell if a user has the OWNER privilege level.
@@ -260,8 +260,8 @@ class Channel:
             sensibly if only ``+v`` (voice) and ``+o`` (op) modes exist.
 
         """
-        nick_id = self.make_identifier(nick)
-        return bool(self.privileges.get(nick_id, 0) & privileges.OWNER)
+        identifier = self.make_identifier(nick)
+        return bool(self.privileges.get(identifier, 0) & privileges.OWNER)
 
     def is_admin(self, nick: str) -> bool:
         """Tell if a user has the ADMIN privilege level.
@@ -292,8 +292,8 @@ class Channel:
             sensibly if only ``+v`` (voice) and ``+o`` (op) modes exist.
 
         """
-        nick_id = self.make_identifier(nick)
-        return bool(self.privileges.get(nick_id, 0) & privileges.ADMIN)
+        identifier = self.make_identifier(nick)
+        return bool(self.privileges.get(identifier, 0) & privileges.ADMIN)
 
     def is_op(self, nick: str) -> bool:
         """Tell if a user has the OP privilege level.
@@ -318,8 +318,8 @@ class Channel:
             True
 
         """
-        nick_id = self.make_identifier(nick)
-        return bool(self.privileges.get(nick_id, 0) & privileges.OP)
+        identifier = self.make_identifier(nick)
+        return bool(self.privileges.get(identifier, 0) & privileges.OP)
 
     def is_halfop(self, nick: str) -> bool:
         """Tell if a user has the HALFOP privilege level.
@@ -350,8 +350,8 @@ class Channel:
             sensibly if only ``+v`` (voice) and ``+o`` (op) modes exist.
 
         """
-        nick_id = self.make_identifier(nick)
-        return bool(self.privileges.get(nick_id, 0) & privileges.HALFOP)
+        identifier = self.make_identifier(nick)
+        return bool(self.privileges.get(identifier, 0) & privileges.HALFOP)
 
     def is_voiced(self, nick: str) -> bool:
         """Tell if a user has the VOICE privilege level.
@@ -377,8 +377,8 @@ class Channel:
             True
 
         """
-        nick_id = self.make_identifier(nick)
-        return bool(self.privileges.get(nick_id, 0) & privileges.VOICE)
+        identifier = self.make_identifier(nick)
+        return bool(self.privileges.get(identifier, 0) & privileges.VOICE)
 
     def rename_user(
         self,
