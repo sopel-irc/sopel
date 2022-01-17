@@ -11,7 +11,14 @@ import tempfile
 
 import pytest
 
-from sopel.db import ChannelValues, Nicknames, NickValues, PluginValues, SopelDB
+from sopel.db import (
+    ChannelValues,
+    NickIDs,
+    Nicknames,
+    NickValues,
+    PluginValues,
+    SopelDB,
+)
 from sopel.tools import Identifier
 
 
@@ -38,6 +45,28 @@ def teardown_function(function):
     os.remove(db_filename)
 
 
+def test_get_nick_id(db):
+    """Test get_nick_id does not create NickID by default."""
+    nick = Identifier('Exirel')
+    session = db.session()
+
+    # Attempt to get nick ID: it is not created by default
+    with pytest.raises(ValueError):
+        db.get_nick_id(nick)
+
+    # Create the nick ID
+    nick_id = db.get_nick_id(nick, create=True)
+
+    # Check that one and only one nickname exists with that ID
+    nickname = session.query(Nicknames).filter(
+        Nicknames.nick_id == nick_id,
+    ).one()  # will raise if not one and exactly one
+    assert nickname.canonical == 'Exirel'
+    assert nickname.slug == nick.lower()
+
+    session.close()
+
+
 @pytest.mark.parametrize('name, slug, variant', (
     # Check case insensitive with ASCII only
     ('Embolalia', 'embolalia', 'eMBOLALIA'),
@@ -46,10 +75,12 @@ def teardown_function(function):
     # Unicode, just in case
     ('EmbölaliÅ', 'embölaliÅ', 'EMBöLALIÅ'),
 ))
-def test_get_nick_id(db, name, slug, variant):
-    session = db.ssession()
+def test_get_nick_id_casemapping(db, name, slug, variant):
+    """Test get_nick_id is case-insensitive through an Identifier."""
+    session = db.session()
     nick = Identifier(name)
-    # Create the NickID
+
+    # Create the nick ID
     nick_id = db.get_nick_id(nick, create=True)
 
     registered = session.query(Nicknames) \
@@ -64,6 +95,16 @@ def test_get_nick_id(db, name, slug, variant):
 
     # Even if the case is different
     assert nick_id == db.get_nick_id(variant)
+
+    # And no other nick IDs are created (even with create=True)
+    assert nick_id == db.get_nick_id(name, create=True)
+    assert nick_id == db.get_nick_id(variant, create=True)
+    assert 1 == session.query(NickIDs).count()
+
+    # But a truly different name means a new nick ID
+    new_nick_id = db.get_nick_id(name + '_test', create=True)
+    assert new_nick_id != nick_id
+    assert 2 == session.query(NickIDs).count()
 
     session.close()
 
