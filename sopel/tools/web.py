@@ -11,7 +11,7 @@ applications, APIs, or websites in your plugins.
 # Copyright © 2019, dgw, technobabbl.es
 # Licensed under the Eiffel Forum License 2.
 
-from __future__ import generator_stop
+from __future__ import annotations
 
 import html
 from html.entities import name2codepoint

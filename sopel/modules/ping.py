@@ -4,7 +4,7 @@ Copyright 2008 (?), Sean B. Palmer, inamidst.com
 
 https://sopel.chat
 """
-from __future__ import generator_stop
+from __future__ import annotations
 
 import random
 

@@ -3,7 +3,7 @@
 # Licensed under the Eiffel Forum License 2.
 # When working on core IRC protocol related features, consult protocol
 # documentation at http://www.irchelp.org/irchelp/rfc/
-from __future__ import generator_stop
+from __future__ import annotations
 
 import asynchat
 import asyncore

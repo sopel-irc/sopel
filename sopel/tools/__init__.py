@@ -11,7 +11,7 @@
 
 # https://sopel.chat
 
-from __future__ import generator_stop
+from __future__ import annotations
 
 import codecs
 from collections import defaultdict

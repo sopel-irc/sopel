@@ -6,7 +6,7 @@ Licensed under the Eiffel Forum License 2.
 
 https://sopel.chat
 """
-from __future__ import generator_stop
+from __future__ import annotations
 
 from collections import defaultdict
 import io  # don't use `codecs` for loading the DB; it will split lines on some IRC formatting

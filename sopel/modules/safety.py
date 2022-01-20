@@ -5,7 +5,7 @@ Licensed under the Eiffel Forum License 2.
 
 This plugin uses virustotal.com
 """
-from __future__ import generator_stop
+from __future__ import annotations
 
 import json
 import logging

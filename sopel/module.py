@@ -5,7 +5,7 @@
     Use :mod:`sopel.plugin` instead. This will be removed in Sopel 9.
 
 """
-from __future__ import generator_stop
+from __future__ import annotations
 
 # Import everything from sopel.plugin at the time of replacement.
 # Everything new from this point on must *not* leak here.

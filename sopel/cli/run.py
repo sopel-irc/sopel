@@ -6,7 +6,7 @@ Licensed under the Eiffel Forum License 2.
 
 https://sopel.chat
 """
-from __future__ import generator_stop
+from __future__ import annotations
 
 import argparse
 import logging
@@ -22,15 +22,15 @@ from . import utils
 # This is in case someone somehow manages to install Sopel on an old version
 # of pip (<9.0.0), which doesn't know about `python_requires`, or tries to run
 # from source on an unsupported version of Python.
-if sys.version_info < (3, 6):
-    tools.stderr('Error: Sopel requires Python 3.6+.')
+if sys.version_info < (3, 7):
+    tools.stderr('Error: Sopel requires Python 3.7+.')
     sys.exit(1)
 
-# Py3.6 EOL: https://www.python.org/dev/peps/pep-0494/#lifespan
-if sys.version_info < (3, 7):
+# Py3.7 EOL: https://www.python.org/dev/peps/pep-0537/#and-beyond-schedule
+if sys.version_info < (3, 8):
     # TODO check this warning before releasing Sopel 8.0
     print(
-        'Warning: Python 3.6 will reach end of life by the end of 2021 '
+        'Warning: Python 3.7 will reach end of life by June 2022 '
         'and will receive no further updates. '
         'Sopel 9.0 will drop support for it.',
         file=sys.stderr,

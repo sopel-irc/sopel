@@ -22,7 +22,7 @@ who should worry about :class:`sopel.bot.Sopel` only.
 # Copyright 2019, Florian Strzelecki <florian.strzelecki@gmail.com>
 #
 # Licensed under the Eiffel Forum License 2.
-from __future__ import generator_stop
+from __future__ import annotations
 
 import abc
 from datetime import datetime

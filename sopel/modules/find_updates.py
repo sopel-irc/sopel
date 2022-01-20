@@ -8,7 +8,9 @@ Licensed under the Eiffel Forum License 2.
 
 https://sopel.chat
 """
-from __future__ import generator_stop
+from __future__ import annotations
+
+import json
 
 import requests
 
@@ -64,8 +66,7 @@ def check_version(bot):
     try:
         if success:
             info = r.json()
-    except ValueError:
-        # TODO: use JSONDecodeError when dropping Pythons < 3.5
+    except json.JSONDecodeError:
         _check_failed(bot)
         success = False
 

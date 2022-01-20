@@ -1,5 +1,5 @@
 """Tools to help safely do calculations from user input"""
-from __future__ import generator_stop
+from __future__ import annotations
 
 import ast
 import numbers

@@ -47,7 +47,7 @@ the :class:`Config` object is instantiated; it uses
 # Copyright © 2012, Elad Alfassa <elad@fedoraproject.org>
 # Licensed under the Eiffel Forum License 2.
 
-from __future__ import generator_stop
+from __future__ import annotations
 
 import configparser
 import os

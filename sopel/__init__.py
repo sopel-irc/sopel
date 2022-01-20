@@ -9,7 +9,7 @@
 #
 # Licensed under the Eiffel Forum License 2.
 
-from __future__ import generator_stop
+from __future__ import annotations
 
 from collections import namedtuple
 import locale
