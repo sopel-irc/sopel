@@ -672,19 +672,32 @@ def track_nicks(bot, trigger):
 
     # Give debug message, and PM the owner, if the bot's own nick changes.
     if old == bot.nick and new != bot.nick:
-        privmsg = (
-            "Hi, I'm your bot, %s. Something has made my nick change. This "
-            "can cause some problems for me, and make me do weird things. "
-            "You'll probably want to restart me, and figure out what made "
-            "that happen so you can stop it happening again. (Usually, it "
-            "means you tried to give me a nick that's protected by NickServ.)"
-        ) % bot.nick
-        debug_msg = (
-            "Nick changed by server. This can cause unexpected behavior. "
-            "Please restart the bot."
-        )
-        LOGGER.critical(debug_msg)
-        bot.say(privmsg, bot.config.core.owner)
+        # Is this the original nick being regained?
+        # e.g. by ZNC's keepnick module running in front of Sopel
+        if old != bot.config.core.nick and new == bot.config.core.nick:
+            LOGGER.info(
+                "Regained configured nick. Restarting is still recommended.")
+        else:
+            privmsg = (
+                "Hi, I'm your bot, %s. Something has made my nick change. This "
+                "can cause some problems for me, and make me do weird things. "
+                "You'll probably want to restart me, and figure out what made "
+                "that happen so you can stop it happening again. (Usually, it "
+                "means you tried to give me a nick that's protected by NickServ.)"
+            ) % bot.config.core.nick
+            debug_msg = (
+                "Nick changed by server. This can cause unexpected behavior. "
+                "Please restart the bot."
+            )
+            LOGGER.critical(debug_msg)
+            bot.say(privmsg, bot.config.core.owner)
+
+        # Always update bot.nick anyway so Sopel doesn't lose its self-identity.
+        # This should cut down the number of "weird things" that happen while
+        # the active nick doesn't match the config, but it's not a substitute
+        # for regaining the expected nickname.
+        LOGGER.info("Updating bot.nick property with server-changed nick.")
+        bot._nick = new
         return
 
     for channel in bot.channels.values():
