@@ -200,6 +200,15 @@ def on_nickname_in_use(bot, trigger):
     This will change the current nick by adding a trailing ``_``. If the bot
     sees that a user with its configured nick disconnects (see ``QUIT`` event
     handling), the bot will try to regain it.
+
+    .. seealso::
+
+        :func:`on_erroneous_nickname` handles the case where the bot tries to
+        use a nick that is not allowed by the server.
+
+        :func:`on_unavailable_resource` handles the case where the bot tries to
+        use a nick that is blocked by a server-imposed delay mechanism.
+
     """
     LOGGER.error(
         "Nickname already in use! (Nick: %s; Sender: %s; Args: %r)",
@@ -208,6 +217,104 @@ def on_nickname_in_use(bot, trigger):
         trigger.args,
     )
     bot.change_current_nick(bot.nick + '_')
+
+
+def _revert_change_current_nickname(bot):
+    old_nick = bot.config.core.nick
+    if bot._previous_nick is not None:
+        old_nick = bot._previous_nick
+    bot.set_current_nick(old_nick)
+    bot._previous_nick = None
+
+
+@plugin.event(events.ERR_ERRONEOUSNICKNAME)
+@plugin.thread(False)
+@plugin.unblockable
+@plugin.priority('medium')
+def on_erroneous_nickname(bot, trigger):
+    """Handle a nickname the server does not allow.
+
+    During initial connection, this aborts startup with an error (bad config).
+
+    At runtime, this is a safeguard against leaving Sopel's self-knowledge in
+    an inconsistent state after :meth:`~AbstractBot.change_current_nickname` is
+    called. That method must proactively update the bot's current nick due to
+    the IRC protocol's lack of any requirement that servers reply to ``NICK``
+    commands unless there is an error, so this function exists to set it back
+    in case of failure.
+
+    .. seealso::
+
+        :func:`on_nickname_in_use` handles the case where the bot tries to use
+        a nick that is already in use by another user on the network.
+
+        :func:`on_unavailable_resource` handles the case where the bot tries to
+        use a nick that is blocked by a server-imposed delay mechanism.
+
+    """
+    if not bot.connection_registered:
+        # abort startup - the configured nick is invalid
+        LOGGER.critical(
+            'Configured nickname "%s" is not allowed by the IRC network. '
+            'Please fix the configuration and restart the bot.',
+            bot.config.core.nick)
+        bot.quit()
+        return
+
+    # someone tried to bot.change_current_nickname() with an invalid nick
+    # revert state changes
+    LOGGER.info(
+        'Server blocked changing to new nick "%s": %s',
+        trigger.args[0],
+        trigger.args[-1],
+    )
+    _revert_change_current_nickname(bot)
+
+
+@plugin.event(events.ERR_UNAVAILRESOURCE)
+@plugin.thread(False)
+@plugin.unblockable
+@plugin.priority('medium')
+def on_unavailable_resource(bot, trigger):
+    """Handle trying to use a nickname that is locked by the server.
+
+    An IRC server may temporarily lock certain nicknames for its own reasons.
+    Sopel must be able to handle this case during both connection and runtime.
+
+    .. seealso::
+
+        :func:`on_nickname_in_use` handles the case where the bot tries to use
+        a nick that is already in use by another user on the network.
+
+        :func:`on_erroneous_nickname` handles the case where the bot tries to
+        use a nick that is not allowed by the server.
+
+    """
+    target = bot.make_identifier(trigger.args[0])
+
+    if not target.is_nick():
+        # channels can be unavailable too; we don't currently handle those
+        return
+
+    if not bot.connection_registered:
+        # We aren't connected yet, so just pretend this is an ERR_NICKNAMEINUSE
+        LOGGER.error(
+            "Nickname is unavailable. (Nick: %s; Sender: %s; Args: %r)",
+            trigger.nick,
+            trigger.sender,
+            trigger.args,
+        )
+        bot.change_current_nick(bot.nick + '_')
+        return
+
+    # someone tried to bot.change_current_nickname() with an invalid nick
+    # revert state changes
+    LOGGER.info(
+        'Server blocked changing to new nick "%s": %s',
+        trigger.args[0],
+        trigger.args[-1],
+    )
+    _revert_change_current_nickname(bot)
 
 
 @plugin.require_privmsg("This command only works as a private message.")
@@ -673,7 +780,8 @@ def track_nicks(bot, trigger):
     # Give debug message, and PM the owner, if the bot's own nick changes.
     if old == bot.nick and new != bot.nick:
         # Is this the original nick being regained?
-        # e.g. by ZNC's keepnick module running in front of Sopel
+        # e.g. by ZNC's keepnick module running in front of Sopel, or our own
+        # QUIT handler spotting Sopel's configured nick leaving the network
         if old != bot.config.core.nick and new == bot.config.core.nick:
             LOGGER.info(
                 "Regained configured nick. Restarting is still recommended.")
@@ -697,7 +805,7 @@ def track_nicks(bot, trigger):
         # the active nick doesn't match the config, but it's not a substitute
         # for regaining the expected nickname.
         LOGGER.info("Updating bot.nick property with server-changed nick.")
-        bot._nick = new
+        bot.set_current_nick(new)
         return
 
     for channel in bot.channels.values():
