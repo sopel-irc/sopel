@@ -53,6 +53,7 @@ class AbstractBot(abc.ABC):
         self._isupport = ISupport()
         self._myinfo = None
         self._nick = self.make_identifier(settings.core.nick)
+        self._previous_nick = None
 
         self.backend = None
         """IRC Connection Backend."""
@@ -343,21 +344,38 @@ class AbstractBot(abc.ABC):
         self.last_error_timestamp = datetime.utcnow()
         self.error_count = self.error_count + 1
 
+    def set_current_nick(self, new_nick: str) -> None:
+        """Inform the bot of a change to its nickname.
+
+        :param new_nick: the bot's new nick
+
+        This method should be called if e.g. the IRC server has forcibly changed
+        the bot's nickname (often happens after netsplits).
+
+        .. versionadded:: 8.0
+        """
+        self._nick = self.make_identifier(new_nick)
+
     def rebuild_nick(self) -> None:
         """Rebuild nick as a new identifier.
 
         This method exists to update the casemapping rules for the
         :class:`~sopel.tools.identifiers.Identifier` that represents the bot's
         nick, e.g. after ISUPPORT info is received.
+
+        .. versionadded:: 8.0
         """
         self._nick = self.make_identifier(str(self._nick))
 
     def change_current_nick(self, new_nick: str) -> None:
         """Change the current nick without configuration modification.
 
-        :param str new_nick: new nick to be used by the bot
+        :param new_nick: new nick to be used by the bot
+
+        .. versionadded:: 7.1
         """
-        self._nick = self.make_identifier(new_nick)
+        self._previous_nick = self.nick
+        self.set_current_nick(new_nick)
         LOGGER.debug('Sending nick "%s"', self.nick)
         self.backend.send_nick(self.nick)
 
