@@ -22,7 +22,7 @@ from typing import Any, Dict, Iterable, Mapping, Optional, Tuple, Union
 from sopel import db, irc, logger, plugin, plugins, tools
 from sopel.irc import modes
 from sopel.plugins import jobs as plugin_jobs, rules as plugin_rules
-from sopel.tools import deprecated, Identifier, jobs as tools_jobs
+from sopel.tools import deprecated, jobs as tools_jobs
 from sopel.trigger import PreTrigger, Trigger
 
 
@@ -81,23 +81,28 @@ class Sopel(irc.AbstractBot):
         self.modeparser = modes.ModeParser()
         """A mode parser used to parse ``MODE`` messages and modestrings."""
 
-        self.channels = tools.SopelIdentifierMemory()
+        self.channels = tools.SopelIdentifierMemory(
+            identifier_factory=self.make_identifier,
+        )
         """A map of the channels that Sopel is in.
 
-        The keys are :class:`sopel.tools.Identifier`\\s of the channel names,
-        and map to :class:`sopel.tools.target.Channel` objects which contain
-        the users in the channel and their permissions.
+        The keys are :class:`~sopel.tools.identifiers.Identifier`\\s of the
+        channel names, and map to :class:`~sopel.tools.target.Channel` objects
+        which contain the users in the channel and their permissions.
         """
 
-        self.users = tools.SopelIdentifierMemory()
+        self.users = tools.SopelIdentifierMemory(
+            identifier_factory=self.make_identifier,
+        )
         """A map of the users that Sopel is aware of.
 
-        The keys are :class:`sopel.tools.Identifier`\\s of the nicknames, and
-        map to :class:`sopel.tools.target.User` instances. In order for Sopel
-        to be aware of a user, it must share at least one mutual channel.
+        The keys are :class:`~sopel.tools.identifiers.Identifier`\\s of the
+        nicknames, and map to :class:`~sopel.tools.target.User` instances. In
+        order for Sopel to be aware of a user, it must share at least one
+        mutual channel.
         """
 
-        self.db = db.SopelDB(config)
+        self.db = db.SopelDB(config, identifier_factory=self.make_identifier)
         """The bot's database, as a :class:`sopel.db.SopelDB` instance."""
 
         self.memory = tools.SopelMemory()
@@ -212,9 +217,10 @@ class Sopel(irc.AbstractBot):
             >>> bot.has_channel_privilege('#chan', plugin.VOICE)
             True
 
-        The ``channel`` argument can be either a :class:`str` or a
-        :class:`sopel.tools.Identifier`, as long as Sopel joined said channel.
-        If the channel is unknown, a :exc:`ValueError` will be raised.
+        The ``channel`` argument can be either a :class:`str` or an
+        :class:`~sopel.tools.identifiers.Identifier`, as long as Sopel joined
+        said channel. If the channel is unknown, a :exc:`ValueError` will be
+        raised.
         """
         if channel not in self.channels:
             raise ValueError('Unknown channel %s' % channel)
@@ -987,7 +993,7 @@ class Sopel(irc.AbstractBot):
             if not bad_nick:
                 continue
             if (re.match(bad_nick + '$', nick, re.IGNORECASE) or
-                    Identifier(bad_nick) == nick):
+                    self.make_identifier(bad_nick) == nick):
                 return True
         return False
 

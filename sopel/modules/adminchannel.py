@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import re
 
-from sopel import formatting, plugin, tools
+from sopel import formatting, plugin
 
 
 ERROR_MESSAGE_NOT_OP = "I'm not a channel operator!"
@@ -101,7 +101,7 @@ def kick(bot, trigger):
     argc = len(text)
     if argc < 2:
         return
-    opt = tools.Identifier(text[1])
+    opt = bot.make_identifier(text[1])
     nick = opt
     channel = trigger.sender
     reasonidx = 2
@@ -112,7 +112,7 @@ def kick(bot, trigger):
         channel = opt
         reasonidx = 3
     reason = ' '.join(text[reasonidx:])
-    if nick != bot.config.core.nick:
+    if nick != bot.make_identifier(bot.config.core.nick):
         bot.kick(nick, channel, reason)
 
 
@@ -164,7 +164,7 @@ def ban(bot, trigger):
     argc = len(text)
     if argc < 2:
         return
-    opt = tools.Identifier(text[1])
+    opt = bot.make_identifier(text[1])
     banmask = opt
     channel = trigger.sender
     if not opt.is_nick():
@@ -194,7 +194,7 @@ def unban(bot, trigger):
     argc = len(text)
     if argc < 2:
         return
-    opt = tools.Identifier(text[1])
+    opt = bot.make_identifier(text[1])
     banmask = opt
     channel = trigger.sender
     if not opt.is_nick():
@@ -224,7 +224,7 @@ def quiet(bot, trigger):
     argc = len(text)
     if argc < 2:
         return
-    opt = tools.Identifier(text[1])
+    opt = bot.make_identifier(text[1])
     quietmask = opt
     channel = trigger.sender
     if not opt.is_nick():
@@ -254,7 +254,7 @@ def unquiet(bot, trigger):
     argc = len(text)
     if argc < 2:
         return
-    opt = tools.Identifier(text[1])
+    opt = bot.make_identifier(text[1])
     quietmask = opt
     channel = trigger.sender
     if not opt.is_nick():
@@ -286,7 +286,7 @@ def kickban(bot, trigger):
     argc = len(text)
     if argc < 4:
         return
-    opt = tools.Identifier(text[1])
+    opt = bot.make_identifier(text[1])
     nick = opt
     mask = text[2]
     channel = trigger.sender

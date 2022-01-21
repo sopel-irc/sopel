@@ -16,7 +16,7 @@ import threading
 import time
 import unicodedata
 
-from sopel import formatting, plugin, tools
+from sopel import formatting, plugin
 from sopel.config import types
 from sopel.tools.time import format_time, get_timezone
 
@@ -186,7 +186,7 @@ def f_remind(bot, trigger):
         bot.reply("%s %s what?" % (verb, tellee))
         return
 
-    tellee = tools.Identifier(tellee)
+    tellee = bot.make_identifier(tellee)
 
     if not os.path.exists(bot.tell_filename):
         return
@@ -202,7 +202,7 @@ def f_remind(bot, trigger):
         bot.reply("I'm here now; you can %s me whatever you want!" % verb)
         return
 
-    if tellee not in (tools.Identifier(teller), bot.nick, 'me'):
+    if tellee not in (bot.make_identifier(teller), bot.nick, 'me'):
         tz = get_timezone(bot.db, bot.config, None, tellee)
         timenow = format_time(bot.db, bot.config, tz, tellee)
         with bot.memory['tell_lock']:
@@ -215,7 +215,7 @@ def f_remind(bot, trigger):
 
         response = "I'll pass that on when %s is around." % tellee
         bot.reply(response)
-    elif tools.Identifier(teller) == tellee:
+    elif bot.make_identifier(teller) == tellee:
         bot.reply('You can %s yourself that.' % verb)
     else:
         bot.reply("Hey, I'm not as stupid as Monty you know!")

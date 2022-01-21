@@ -23,7 +23,8 @@ second argument::
 
     bot.say('The bot is now talking!', '#private-channel')
 
-Instead of a string, you can use an instance of :class:`sopel.tools.Identifier`.
+Instead of a string, you can use an instance of
+:class:`~sopel.tools.identifiers.Identifier`.
 
 If you want to reply to a user in a private message, you can use the trigger's
 :attr:`~sopel.trigger.Trigger.nick` attribute as destination::
@@ -261,8 +262,8 @@ which provides the following information:
            if not trigger.sender.is_nick():
                # this trigger is from a channel
 
-       See :meth:`Identifier.is_nick() <sopel.tools.Identifier.is_nick>` for
-       more information.
+       See :meth:`Identifier.is_nick() <sopel.tools.identifiers.Identifier.is_nick>`
+       for more information.
 
 Getting users in a channel
 --------------------------

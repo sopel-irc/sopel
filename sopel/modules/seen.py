@@ -12,7 +12,7 @@ from __future__ import annotations
 import datetime
 import time
 
-from sopel import plugin, tools
+from sopel import plugin
 from sopel.tools.time import seconds_to_human
 
 
@@ -44,7 +44,7 @@ def seen(bot, trigger):
     delta = seconds_to_human((trigger.time - saw).total_seconds())
 
     msg = "I last saw " + nick
-    if tools.Identifier(channel) == trigger.sender:
+    if bot.make_identifier(channel) == trigger.sender:
         if action:
             msg += " in here {since}, doing: {nick} {action}".format(
                 since=delta,

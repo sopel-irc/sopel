@@ -524,7 +524,7 @@ def take_comment(bot, trigger):
         return
 
     target, message = trigger.group(2).split(None, 1)
-    target = tools.Identifier(target)
+    target = bot.make_identifier(target)
     if not is_meeting_running(target):
         bot.say("There is no active meeting in that channel.")
     else:

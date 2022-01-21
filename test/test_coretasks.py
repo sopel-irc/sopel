@@ -315,6 +315,26 @@ def test_handle_isupport(mockbot):
     assert 'CNOTICE' in mockbot.isupport
 
 
+def test_handle_isupport_casemapping(mockbot):
+    # Set bot's nick to something that needs casemapping
+    mockbot.settings.core.nick = 'Test[a]'
+    mockbot._nick = mockbot.make_identifier(mockbot.settings.core.nick)
+
+    # check default behavior (`rfc1459` casemapping)
+    assert mockbot.nick.lower() == 'test{a}'
+    assert str(mockbot.nick) == 'Test[a]'
+
+    # now the bot "connects" to a server using `CASEMAPPING=ascii`
+    mockbot.on_message(
+        ':irc.example.com 005 Sopel '
+        'CHANTYPES=# EXCEPTS INVEX CHANMODES=eIbq,k,flj,CFLMPQScgimnprstz '
+        'CHANLIMIT=#:120 PREFIX=(ov)@+ MAXLIST=bqeI:100 MODES=4 '
+        'NETWORK=example STATUSMSG=@+ CALLERID=g CASEMAPPING=ascii '
+        ':are supported by this server')
+
+    assert mockbot.nick.lower() == 'test[a]'
+
+
 @pytest.mark.parametrize('modes', ['', 'Rw'])
 def test_handle_isupport_bot_mode(mockbot, modes):
     mockbot.config.core.modes = modes

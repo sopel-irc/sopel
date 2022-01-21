@@ -23,15 +23,17 @@ import re
 import sys
 import threading
 import traceback
+from typing import Callable
 
 from pkg_resources import parse_version
 
 from sopel import __version__
 
 from ._events import events  # NOQA
+from .identifiers import Identifier
 
 
-_channel_prefixes = ('#', '&', '+', '!')
+IdentifierFactory = Callable[[str], Identifier]
 
 # Can be implementation-dependent
 _regex_type = type(re.compile(''))
@@ -279,127 +281,6 @@ def get_sendable_message(text, max_length=400):
     return text, excess.lstrip()
 
 
-class Identifier(str):
-    """A ``str`` subclass which acts appropriately for IRC identifiers.
-
-    When used as normal ``str`` objects, case will be preserved.
-    However, when comparing two Identifier objects, or comparing a Identifier
-    object with a ``str`` object, the comparison will be case insensitive.
-    This case insensitivity includes the case convention conventions regarding
-    ``[]``, ``{}``, ``|``, ``\\``, ``^`` and ``~`` described in RFC 2812.
-    """
-    def __new__(cls, identifier):
-        # According to RFC2812, identifiers have to be in the ASCII range.
-        # However, I think it's best to let the IRCd determine that, and we'll
-        # just assume unicode. It won't hurt anything, and is more internally
-        # consistent. And who knows, maybe there's another use case for this
-        # weird case convention.
-        s = str.__new__(cls, identifier)
-        s._lowered = Identifier._lower(identifier)
-        return s
-
-    def lower(self):
-        """Get the RFC 2812-compliant lowercase version of this identifier.
-
-        :return: RFC 2812-compliant lowercase version of the
-                 :py:class:`Identifier` instance
-        :rtype: str
-        """
-        return self._lowered
-
-    @staticmethod
-    def _lower(identifier):
-        """Convert an identifier to lowercase per RFC 2812.
-
-        :param str identifier: the identifier (nickname or channel) to convert
-        :return: RFC 2812-compliant lowercase version of ``identifier``
-        :rtype: str
-        """
-        if isinstance(identifier, Identifier):
-            return identifier._lowered
-        # The tilde replacement isn't needed for identifiers, but is for
-        # channels, which may be useful at some point in the future.
-        low = identifier.lower().replace('[', '{').replace(']', '}')
-        low = low.replace('\\', '|').replace('~', '^')
-        return low
-
-    @staticmethod
-    def _lower_swapped(identifier):
-        """Backward-compatible version of :meth:`_lower`.
-
-        :param str identifier: the identifier (nickname or channel) to convert
-        :return: RFC 2812-non-compliant lowercase version of ``identifier``
-        :rtype: str
-
-        This is what the old :meth:`_lower` function did before Sopel 7.0. It maps
-        ``{}``, ``[]``, ``|``, ``\\``, ``^``, and ``~`` incorrectly.
-
-        You shouldn't use this unless you need to migrate stored values from the
-        previous, incorrect "lowercase" representation to the correct one.
-        """
-        # The tilde replacement isn't needed for identifiers, but is for
-        # channels, which may be useful at some point in the future.
-        low = identifier.lower().replace('{', '[').replace('}', ']')
-        low = low.replace('|', '\\').replace('^', '~')
-        return low
-
-    def __repr__(self):
-        return "%s(%r)" % (
-            self.__class__.__name__,
-            self.__str__()
-        )
-
-    def __hash__(self):
-        return self._lowered.__hash__()
-
-    def __lt__(self, other):
-        if isinstance(other, str):
-            other = Identifier._lower(other)
-        return str.__lt__(self._lowered, other)
-
-    def __le__(self, other):
-        if isinstance(other, str):
-            other = Identifier._lower(other)
-        return str.__le__(self._lowered, other)
-
-    def __gt__(self, other):
-        if isinstance(other, str):
-            other = Identifier._lower(other)
-        return str.__gt__(self._lowered, other)
-
-    def __ge__(self, other):
-        if isinstance(other, str):
-            other = Identifier._lower(other)
-        return str.__ge__(self._lowered, other)
-
-    def __eq__(self, other):
-        if isinstance(other, str):
-            other = Identifier._lower(other)
-        return str.__eq__(self._lowered, other)
-
-    def __ne__(self, other):
-        return not (self == other)
-
-    def is_nick(self):
-        """Check if the Identifier is a nickname (i.e. not a channel)
-
-        :return: ``True`` if this :py:class:`Identifier` is a nickname;
-                 ``False`` if it appears to be a channel
-
-        ::
-
-            >>> from sopel import tools
-            >>> ident = tools.Identifier('Sopel')
-            >>> ident.is_nick()
-            True
-            >>> ident = tools.Identifier('#sopel')
-            >>> ident.is_nick()
-            False
-
-        """
-        return self and not self.startswith(_channel_prefixes)
-
-
 class OutputRedirect:
     """Redirect the output to the terminal and a log file.
 
@@ -604,7 +485,7 @@ class SopelIdentifierMemory(SopelMemory):
     """Special Sopel memory that stores ``Identifier`` as key.
 
     This is a convenient subclass of :class:`SopelMemory` that always casts its
-    keys as instances of :class:`Identifier`::
+    keys as instances of :class:`~.identifiers.Identifier`::
 
         >>> from sopel import tools
         >>> memory = tools.SopelIdentifierMemory()
@@ -620,24 +501,51 @@ class SopelIdentifierMemory(SopelMemory):
     with both ``Identifier`` and :class:`str` objects, taking advantage of the
     case-insensitive behavior of ``Identifier``.
 
+    As it works with :class:`~.identifiers.Identifier`, it accepts an
+    identifier factory. This factory usually comes from a bot instance (see
+    :meth:`bot.make_identifier()<sopel.irc.AbstractBot.make_identifier>`), like
+    in the example of a plugin setup function::
+
+        def setup(bot):
+            bot.memory['my_plugin_storage'] = SopelIdentifierMemory(
+                identifier_factory=bot.make_identifier,
+            )
+
     .. note::
 
-        Internally, it will try to do ``key = tools.Identifier(key)``, which
-        will raise an exception if it cannot instantiate the key properly::
+        Internally, it will try to do ``key = self.make_identifier(key)``,
+        which will raise an exception if it cannot instantiate the key
+        properly::
 
             >>> memory[1] = 'error'
-            AttributeError: 'int' object has no attribute 'lower'
+            AttributeError: 'int' object has no attribute 'translate'
 
     .. versionadded:: 7.1
+
+    .. versionchanged:: 8.0
+
+        The parameter ``identifier_factory`` has been added to properly
+        transform ``str`` into :class:`~.identifiers.Identifier`. This factory
+        is stored and accessible through :attr:`make_identifier`.
+
     """
+    def __init__(
+        self,
+        *args,
+        identifier_factory: IdentifierFactory = Identifier,
+    ) -> None:
+        super().__init__(*args)
+        self.make_identifier = identifier_factory
+        """A factory to transform keys into identifiers."""
+
     def __getitem__(self, key):
-        return super().__getitem__(Identifier(key))
+        return super().__getitem__(self.make_identifier(key))
 
     def __contains__(self, key):
-        return super().__contains__(Identifier(key))
+        return super().__contains__(self.make_identifier(key))
 
     def __setitem__(self, key, value):
-        super().__setitem__(Identifier(key), value)
+        super().__setitem__(self.make_identifier(key), value)
 
 
 def chain_loaders(*lazy_loaders):

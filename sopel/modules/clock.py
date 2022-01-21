@@ -8,7 +8,7 @@ https://sopel.chat
 """
 from __future__ import annotations
 
-from sopel import plugin, tools
+from sopel import plugin
 from sopel.tools.time import (
     format_time,
     get_channel_timezone,
@@ -60,7 +60,7 @@ def f_time(bot, trigger):
         # guess if the argument is a nick, a channel, or a timezone
         zone = None
         argument = argument.strip()
-        channel_or_nick = tools.Identifier(argument)
+        channel_or_nick = bot.make_identifier(argument)
 
         # first, try to get nick or channel's timezone
         help_prefix = bot.config.core.help_prefix

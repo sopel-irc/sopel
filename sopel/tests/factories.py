@@ -5,6 +5,7 @@
 from __future__ import annotations
 
 import re
+from typing import Iterable, Optional
 
 from sopel import bot, config, plugins, trigger
 from .mocks import MockIRCBackend, MockIRCServer, MockUser
@@ -18,7 +19,11 @@ class BotFactory:
         The :func:`~sopel.tests.pytest_plugin.botfactory` fixture can be used
         to instantiate this factory.
     """
-    def preloaded(self, settings, preloads=None):
+    def preloaded(
+        self,
+        settings: config.Config,
+        preloads: Optional[Iterable[str]] = None,
+    ) -> bot.Sopel:
         """Create a bot and preload its plugins.
 
         :param settings: Sopel's configuration for testing purposes
@@ -56,7 +61,7 @@ class BotFactory:
 
         return mockbot
 
-    def __call__(self, settings):
+    def __call__(self, settings: config.Config) -> bot.Sopel:
         obj = bot.Sopel(settings, daemon=False)
         obj.backend = MockIRCBackend(obj)
         return obj
@@ -73,7 +78,7 @@ class ConfigFactory:
     def __init__(self, tmpdir):
         self.tmpdir = tmpdir
 
-    def __call__(self, name, data):
+    def __call__(self, name: str, data: str) -> config.Config:
         tmpfile = self.tmpdir.join(name)
         tmpfile.write(data)
         return config.Config(tmpfile.strpath)
@@ -87,16 +92,34 @@ class TriggerFactory:
         The :func:`~sopel.tests.pytest_plugin.triggerfactory` fixture can be
         used to instantiate this factory.
     """
-    def wrapper(self, mockbot, raw, pattern=None):
+    def wrapper(
+        self,
+        mockbot: bot.Sopel,
+        raw: str,
+        pattern: Optional[str] = None,
+    ) -> bot.SopelWrapper:
         trigger = self(mockbot, raw, pattern=pattern)
         return bot.SopelWrapper(mockbot, trigger)
 
-    def __call__(self, mockbot, raw, pattern=None):
+    def __call__(
+        self,
+        mockbot: bot.Sopel,
+        raw: str,
+        pattern: Optional[str] = None,
+    ) -> trigger.Trigger:
+        match = re.match(pattern or r'.*', raw)
+        if match is None:
+            raise ValueError(
+                'Cannot create a Trigger without a matching pattern')
+
         url_schemes = mockbot.settings.core.auto_url_schemes
-        return trigger.Trigger(
-            mockbot.settings,
-            trigger.PreTrigger(mockbot.nick, raw, url_schemes=url_schemes),
-            re.match(pattern or r'.*', raw))
+        pretrigger = trigger.PreTrigger(
+            mockbot.nick,
+            raw,
+            url_schemes=url_schemes,
+            identifier_factory=mockbot.make_identifier,
+        )
+        return trigger.Trigger(mockbot.settings, pretrigger, match)
 
 
 class IRCFactory:
@@ -107,7 +130,11 @@ class IRCFactory:
         The :func:`~sopel.tests.pytest_plugin.ircfactory` fixture can be used
         to create this factory.
     """
-    def __call__(self, mockbot, join_threads=True):
+    def __call__(
+        self,
+        mockbot: bot.Sopel,
+        join_threads: bool = True,
+    ) -> MockIRCServer:
         return MockIRCServer(mockbot, join_threads)
 
 
@@ -119,5 +146,10 @@ class UserFactory:
         The :func:`~sopel.tests.pytest_plugin.userfactory` fixture can be used
         to create this factory.
     """
-    def __call__(self, nick=None, user=None, host=None):
+    def __call__(
+        self,
+        nick: Optional[str] = None,
+        user: Optional[str] = None,
+        host: Optional[str] = None,
+    ) -> MockUser:
         return MockUser(nick, user, host)

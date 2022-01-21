@@ -18,12 +18,14 @@ import re
 
 from sopel import plugin
 from sopel.formatting import bold
-from sopel.tools import Identifier, SopelIdentifierMemory
+from sopel.tools import SopelIdentifierMemory
 
 
 def setup(bot):
     if 'find_lines' not in bot.memory:
-        bot.memory['find_lines'] = SopelIdentifierMemory()
+        bot.memory['find_lines'] = SopelIdentifierMemory(
+            identifier_factory=bot.make_identifier,
+        )
 
 
 def shutdown(bot):
@@ -42,7 +44,9 @@ def collectlines(bot, trigger):
     """Create a temporary log of what people say"""
     # Add a log for the channel and nick, if there isn't already one
     if trigger.sender not in bot.memory['find_lines']:
-        bot.memory['find_lines'][trigger.sender] = SopelIdentifierMemory()
+        bot.memory['find_lines'][trigger.sender] = SopelIdentifierMemory(
+            identifier_factory=bot.make_identifier,
+        )
     if trigger.nick not in bot.memory['find_lines'][trigger.sender]:
         bot.memory['find_lines'][trigger.sender][trigger.nick] = deque(maxlen=10)
 
@@ -102,7 +106,7 @@ def quit_cleanup(bot, trigger):
 @plugin.unblockable
 def kick_cleanup(bot, trigger):
     """Clean up cached data when a user is kicked from a channel."""
-    nick = Identifier(trigger.args[1])
+    nick = bot.make_identifier(trigger.args[1])
     if nick == bot.nick:
         # We got kicked! Nuke the whole channel.
         _cleanup_channel(bot, trigger.sender)
@@ -153,7 +157,7 @@ def findandreplace(bot, trigger):
         return
 
     # Correcting other person vs self.
-    rnick = Identifier(trigger.group('nick') or trigger.nick)
+    rnick = bot.make_identifier(trigger.group('nick') or trigger.nick)
 
     # only do something if there is conversation to work with
     history = bot.memory['find_lines'].get(trigger.sender, {}).get(rnick, None)

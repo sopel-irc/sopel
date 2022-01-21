@@ -33,7 +33,7 @@ import time
 
 from sopel import config, plugin
 from sopel.irc import isupport, utils
-from sopel.tools import events, Identifier, jobs, SopelMemory, target
+from sopel.tools import events, jobs, SopelMemory, target
 
 
 LOGGER = logging.getLogger(__name__)
@@ -143,7 +143,7 @@ def auth_after_register(bot):
 
     # nickserv-based auth method needs to check for current nick
     if auth_method == 'nickserv':
-        if bot.nick != bot.settings.core.nick:
+        if bot.nick != bot.make_identifier(bot.settings.core.nick):
             LOGGER.warning("Sending nickserv GHOST command.")
             bot.say(
                 'GHOST %s %s' % (bot.settings.core.nick, auth_password),
@@ -347,6 +347,7 @@ def handle_isupport(bot, trigger):
     botmode_support = 'BOT' in bot.isupport
     namesx_support = 'NAMESX' in bot.isupport
     uhnames_support = 'UHNAMES' in bot.isupport
+    casemapping_support = 'CASEMAPPING' in bot.isupport
 
     # parse ISUPPORT message from server
     parameters = {}
@@ -366,6 +367,11 @@ def handle_isupport(bot, trigger):
 
     if 'PREFIX' in bot.isupport:
         bot.modeparser.privileges = set(bot.isupport.PREFIX.keys())
+
+    # was CASEMAPPING support status updated?
+    if not casemapping_support and 'CASEMAPPING' in bot.isupport:
+        # Re-create the bot's nick with the proper identifier+casemapping
+        bot.rebuild_nick()
 
     # was BOT mode support status updated?
     if not botmode_support and 'BOT' in bot.isupport:
@@ -482,9 +488,12 @@ def handle_names(bot, trigger):
     channels = re.search(r'(#\S*)', trigger.raw)
     if not channels:
         return
-    channel = Identifier(channels.group(1))
+    channel = bot.make_identifier(channels.group(1))
     if channel not in bot.channels:
-        bot.channels[channel] = target.Channel(channel)
+        bot.channels[channel] = target.Channel(
+            channel,
+            identifier_factory=bot.make_identifier,
+        )
 
     # This could probably be made flexible in the future, but I don't think
     # it'd be worth it.
@@ -515,7 +524,7 @@ def handle_names(bot, trigger):
             if prefix in name:
                 priv = priv | value
 
-        nick = Identifier(name.lstrip(''.join(mapping.keys())))
+        nick = bot.make_identifier(name.lstrip(''.join(mapping.keys())))
         user = bot.users.get(nick)
         if user is None:
             # The username/hostname will be included in a NAMES reply only if
@@ -559,7 +568,7 @@ def _parse_modes(bot, args, clear=False):
         modes at https://modern.ircdocs.horse/#channel-mode
 
     """
-    channel_name = Identifier(args[0])
+    channel_name = bot.make_identifier(args[0])
     if channel_name.is_nick():
         # We don't do anything with user modes
         LOGGER.debug("Ignoring user modes: %r", args)
@@ -622,7 +631,7 @@ def _parse_modes(bot, args, clear=False):
     # modeinfo.privileges contains only the valid parsed privileges
     for privilege, is_added, param in modeinfo.privileges:
         # User privs modes, always have a param
-        nick = Identifier(param)
+        nick = bot.make_identifier(param)
         priv = channel.privileges.get(nick, 0)
         value = MODE_PREFIX_PRIVILEGES[privilege]
         if is_added:
@@ -659,7 +668,7 @@ def _parse_modes(bot, args, clear=False):
 def track_nicks(bot, trigger):
     """Track nickname changes and maintain our chanops list accordingly."""
     old = trigger.nick
-    new = Identifier(trigger)
+    new = bot.make_identifier(trigger)
 
     # Give debug message, and PM the owner, if the bot's own nick changes.
     if old == bot.nick and new != bot.nick:
@@ -705,7 +714,7 @@ def track_part(bot, trigger):
 @plugin.priority('medium')
 def track_kick(bot, trigger):
     """Track users kicked from channels."""
-    nick = Identifier(trigger.args[1])
+    nick = bot.make_identifier(trigger.args[1])
     channel = trigger.sender
     _remove_from_channel(bot, nick, channel)
     LOGGER.info(
@@ -748,7 +757,9 @@ def _send_who(bot, channel):
         # We might be on an old network, but we still care about keeping our
         # user list updated
         bot.write(['WHO', channel])
-    bot.channels[Identifier(channel)].last_who = datetime.datetime.utcnow()
+
+    channel_id = bot.make_identifier(channel)
+    bot.channels[channel_id].last_who = datetime.datetime.utcnow()
 
 
 @plugin.interval(30)
@@ -793,7 +804,10 @@ def track_join(bot, trigger):
 
     # is it a new channel?
     if channel not in bot.channels:
-        bot.channels[channel] = target.Channel(channel)
+        bot.channels[channel] = target.Channel(
+            channel,
+            identifier_factory=bot.make_identifier,
+        )
 
     # did *we* just join?
     if trigger.nick == bot.nick:
@@ -836,7 +850,8 @@ def track_quit(bot, trigger):
 
     LOGGER.info("User quit: %s", trigger.nick)
 
-    if trigger.nick == bot.settings.core.nick and trigger.nick != bot.nick:
+    configured_nick = bot.make_identifier(bot.settings.core.nick)
+    if trigger.nick == configured_nick and trigger.nick != bot.nick:
         # old nick is now available, let's change nick again
         bot.change_current_nick(bot.settings.core.nick)
         auth_after_register(bot)
@@ -1229,7 +1244,7 @@ def blocks(bot, trigger):
     }
 
     masks = set(s for s in bot.config.core.host_blocks if s != '')
-    nicks = set(Identifier(nick)
+    nicks = set(bot.make_identifier(nick)
                 for nick in bot.config.core.nick_blocks
                 if nick != '')
     text = trigger.group().split()
@@ -1266,10 +1281,11 @@ def blocks(bot, trigger):
 
     elif len(text) == 4 and text[1] == "del":
         if text[2] == "nick":
-            if Identifier(text[3]) not in nicks:
+            nick = bot.make_identifier(text[3])
+            if nick not in nicks:
                 bot.reply(STRINGS['no_nick'] % (text[3]))
                 return
-            nicks.remove(Identifier(text[3]))
+            nicks.remove(nick)
             bot.config.core.nick_blocks = [str(n) for n in nicks]
             bot.config.save()
             bot.reply(STRINGS['success_del'] % (text[3]))
@@ -1352,8 +1368,8 @@ def recv_whox(bot, trigger):
 
 
 def _record_who(bot, channel, user, host, nick, account=None, away=None, modes=None):
-    nick = Identifier(nick)
-    channel = Identifier(channel)
+    nick = bot.make_identifier(nick)
+    channel = bot.make_identifier(channel)
     if nick not in bot.users:
         usr = target.User(nick, user, host)
         bot.users[nick] = usr
@@ -1383,7 +1399,11 @@ def _record_who(bot, channel, user, host, nick, account=None, away=None, modes=N
         for c in modes:
             priv = priv | mapping[c]
     if channel not in bot.channels:
-        bot.channels[channel] = target.Channel(channel)
+        bot.channels[channel] = target.Channel(
+            channel,
+            identifier_factory=bot.make_identifier,
+        )
+
     bot.channels[channel].add_user(usr, privs=priv)
 
 

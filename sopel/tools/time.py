@@ -67,7 +67,7 @@ def get_nick_timezone(db, nick):
     :param db: Bot's database handler (usually ``bot.db``)
     :type db: :class:`~sopel.db.SopelDB`
     :param nick: IRC nickname
-    :type nick: :class:`~sopel.tools.Identifier`
+    :type nick: :class:`~sopel.tools.identifiers.Identifier`
     :return: the timezone associated with the ``nick``
 
     If a timezone cannot be found for ``nick``, or if it is invalid, ``None``
@@ -85,7 +85,7 @@ def get_channel_timezone(db, channel):
     :param db: Bot's database handler (usually ``bot.db``)
     :type db: :class:`~sopel.db.SopelDB`
     :param channel: IRC channel name
-    :type channel: :class:`~sopel.tools.Identifier`
+    :type channel: :class:`~sopel.tools.identifiers.Identifier`
     :return: the timezone associated with the ``channel``
 
     If a timezone cannot be found for ``channel``, or if it is invalid,
@@ -141,8 +141,7 @@ def get_timezone(db=None, config=None, zone=None, nick=None, channel=None):
     if zone:
         tz = _check(zone)
         if not tz:
-            tz = _check(
-                db.get_nick_or_channel_value(zone, 'timezone'))
+            tz = _check(db.get_nick_or_channel_value(zone, 'timezone'))
     if not tz and nick:
         tz = _check(db.get_nick_value(nick, 'timezone'))
     if not tz and channel:

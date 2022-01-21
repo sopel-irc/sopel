@@ -10,7 +10,14 @@ sopel.tools
 .. automodule:: sopel.tools
    :members:
    :exclude-members: iteritems, iterkeys, itervalues, raw_input
-   :private-members: Identifier._lower, Identifier._lower_swapped
+
+
+sopel.tools.identifiers
+-----------------------
+
+.. automodule:: sopel.tools.identifiers
+   :members:
+
 
 sopel.tools.web
 ---------------

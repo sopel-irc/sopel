@@ -24,7 +24,9 @@ PLUGIN_OUTPUT_PREFIX = '[translate] '
 
 def setup(bot):
     if 'mangle_lines' not in bot.memory:
-        bot.memory['mangle_lines'] = tools.SopelIdentifierMemory()
+        bot.memory['mangle_lines'] = tools.SopelIdentifierMemory(
+            identifier_factory=bot.make_identifier,
+        )
 
 
 def shutdown(bot):
