@@ -311,10 +311,13 @@ class PyModulePlugin(AbstractPluginHandler):
         :return: the plugin's version string
         :rtype: Optional[str]
         """
+        version: Optional[str] = None
         if hasattr(self._module, "__version__"):
-            return str(self._module.__version__)
-        if self.module_name.startswith("sopel."):
-            return release
+            version = str(self._module.__version__)
+        elif self.module_name.startswith("sopel."):
+            version = release
+
+        return version
 
     def load(self):
         """Load the plugin's module using :func:`importlib.import_module`.
