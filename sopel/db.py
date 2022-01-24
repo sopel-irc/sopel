@@ -254,10 +254,10 @@ class SopelDB:
         """Execute an arbitrary SQL query against the database.
 
         :return: the query results
-        :rtype: :class:`sqlalchemy.engine.ResultProxy`
+        :rtype: :class:`sqlalchemy.engine.Result`
 
-        The ``ResultProxy`` object returned is a wrapper around a ``Cursor``
-        object as specified by PEP 249.
+        The ``Result`` object returned is a wrapper around a ``Cursor`` object
+        as specified by :pep:`249`.
         """
         return self.engine.execute(*args, **kwargs)
 
