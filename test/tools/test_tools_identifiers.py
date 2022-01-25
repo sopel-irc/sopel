@@ -166,13 +166,28 @@ def test_identifier_compare_invalid(wrong_type):
         identifier < wrong_type
 
 
-def test_identifier_is_nick():
-    assert identifiers.Identifier('Exirel').is_nick()
+@pytest.mark.parametrize('name, chantypes', (
+    ('Exirel', identifiers.DEFAULT_CHANTYPES),
+    ('@Exirel', identifiers.DEFAULT_CHANTYPES),
+    ('+Exirel', ('#',)),
+    ('!Exirel', ('#',)),
+    ('&Exirel', ('#',)),
+))
+def test_identifier_is_nick(name, chantypes):
+    assert identifiers.Identifier(name, chantypes=chantypes).is_nick()
 
 
-def test_identifier_is_nick_channel():
-    assert not identifiers.Identifier('#exirel').is_nick()
+@pytest.mark.parametrize('name, chantypes', (
+    ('#Exirel', identifiers.DEFAULT_CHANTYPES),
+    ('+Exirel', identifiers.DEFAULT_CHANTYPES),
+    ('!Exirel', identifiers.DEFAULT_CHANTYPES),
+    ('&Exirel', identifiers.DEFAULT_CHANTYPES),
+    ('@Exirel', ('#', '@')),
+))
+def test_identifier_is_nick_channel(name, chantypes):
+    assert not identifiers.Identifier(name, chantypes=chantypes).is_nick()
 
 
 def test_identifier_is_nick_empty():
     assert not identifiers.Identifier('').is_nick()
+    assert not identifiers.Identifier('', chantypes=('',)).is_nick()

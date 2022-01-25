@@ -348,6 +348,7 @@ def handle_isupport(bot, trigger):
     namesx_support = 'NAMESX' in bot.isupport
     uhnames_support = 'UHNAMES' in bot.isupport
     casemapping_support = 'CASEMAPPING' in bot.isupport
+    chantypes_support = 'CHANTYPES' in bot.isupport
 
     # parse ISUPPORT message from server
     parameters = {}
@@ -368,9 +369,15 @@ def handle_isupport(bot, trigger):
     if 'PREFIX' in bot.isupport:
         bot.modeparser.privileges = set(bot.isupport.PREFIX.keys())
 
-    # was CASEMAPPING support status updated?
-    if not casemapping_support and 'CASEMAPPING' in bot.isupport:
-        # Re-create the bot's nick with the proper identifier+casemapping
+    # rebuild nick when CASEMAPPING and/or CHANTYPES are set
+    if any((
+        # was CASEMAPPING support status updated?
+        not casemapping_support and 'CASEMAPPING' in bot.isupport,
+        # was CHANTYPES support status updated?
+        not chantypes_support and 'CHANTYPES' in bot.isupport,
+    )):
+        # these parameters change how the bot makes Identifiers
+        # since bot.nick is an Identifier, it must be rebuilt
         bot.rebuild_nick()
 
     # was BOT mode support status updated?
