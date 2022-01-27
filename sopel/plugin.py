@@ -493,6 +493,13 @@ def echo(
 
     This decorator can be used to listen in on the messages that Sopel is
     sending and react accordingly.
+
+    .. important::
+
+        The decorated callable will receive *all* matching messages that Sopel
+        sends, including output from the same callable. Take care to avoid
+        creating feedback loops when using this feature.
+
     """
     def add_attribute(function):
         function.echo = True
