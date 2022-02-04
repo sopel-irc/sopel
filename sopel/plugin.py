@@ -24,6 +24,7 @@ __all__ = [
     # decorators
     'action_command',
     'action_commands',
+    'allow_bots',
     'command',
     'commands',
     'ctcp',
@@ -463,6 +464,28 @@ def thread(value: bool) -> typing.Callable:
     return add_attribute
 
 
+def allow_bots(
+    function: typing.Optional[typing.Any] = None,
+) -> typing.Union[typing.Any, typing.Callable]:
+    """Decorate a function to specify that it should receive events from bots.
+
+    On networks implementing the `Bot Mode specification`__, messages and
+    other events from other clients that have identified themselves as bots
+    will be tagged as such, and Sopel will ignore them by default. This
+    decorator allows a function to opt into receiving these events.
+
+    .. __: https://ircv3.net/specs/extensions/bot-mode
+    """
+    def add_attribute(function):
+        function.allow_bots = True
+        return function
+
+    # hack to allow both @allow_bots and @allow_bots() to work
+    if callable(function):
+        return add_attribute(function)
+    return add_attribute
+
+
 def echo(
     function: typing.Optional[typing.Any] = None,
 ) -> typing.Union[typing.Any, typing.Callable]:
@@ -470,6 +493,13 @@ def echo(
 
     This decorator can be used to listen in on the messages that Sopel is
     sending and react accordingly.
+
+    .. important::
+
+        The decorated callable will receive *all* matching messages that Sopel
+        sends, including output from the same callable. Take care to avoid
+        creating feedback loops when using this feature.
+
     """
     def add_attribute(function):
         function.echo = True

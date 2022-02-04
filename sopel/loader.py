@@ -58,6 +58,7 @@ def clean_callable(func, config):
         # confusing to other code (and a waste of memory) for jobs.
         return
 
+    func.allow_bots = getattr(func, 'allow_bots', False)
     func.echo = getattr(func, 'echo', False)
     func.priority = getattr(func, 'priority', 'medium')
     func.output_prefix = getattr(func, 'output_prefix', '')

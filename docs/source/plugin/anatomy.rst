@@ -124,6 +124,32 @@ Example::
 A rule with rate-limiting can return :const:`sopel.plugin.NOLIMIT` to let the
 user try again after a failed command, e.g. if a required argument is missing.
 
+Bypassing restrictions
+----------------------
+
+By default, a :term:`Rule` will not trigger on messages from Sopel itself,
+other users that are flagged as bots, or users who are
+:ref:`ignored <Ignore User>` or :ref:`rate-limited <Rate limiting>`. In
+certain cases, it might be desirable to bypass these defaults using one or
+more of these decorators:
+
+* :func:`sopel.plugin.allow_bots`: the rule will accept events from other
+  users who are flagged as bots (like Sopel itself)
+* :func:`sopel.plugin.echo`: the rule will accept Sopel's own output (e.g.
+  from calls to :func:`bot.say() <sopel.bot.Sopel.say>`)
+* :func:`sopel.plugin.unblockable`: the rule will ignore rate-limiting or
+  nick/host blocks and always process the event
+
+For example, Sopel itself uses the :func:`sopel.plugin.unblockable` decorator
+to track joins/parts from everyone, always, so plugins can *always* access
+data about any user in any channel.
+
+.. important::
+
+   The :func:`sopel.plugin.echo` decorator will send *anything* Sopel says
+   (that matches the rule) to the decorated callable, *including output from
+   the decorated callable*. Be careful not to create a feedback loop.
+
 Rule labels
 -----------
 
