@@ -8,7 +8,7 @@ import logging
 import signal
 import ssl
 import threading
-from typing import Dict, Optional, Tuple, TYPE_CHECKING
+from typing import Dict, List, Optional, Tuple, TYPE_CHECKING
 
 from .abstract_backends import AbstractIRCBackend
 
@@ -54,6 +54,8 @@ class AsyncioBackend(AbstractIRCBackend):
                        ``use_ssl`` is not ``True``
     :param ca_certs: optional location to the CA certificates; ignored if
                     ``verify_ssl`` is ``False``
+    :param ssl_ciphers: the OpenSSL cipher suites to use
+    :param ssl_minimum_version: the lowest SSL/TLS version to accept
     """
     def __init__(
         self,
@@ -68,6 +70,8 @@ class AsyncioBackend(AbstractIRCBackend):
         keyfile: Optional[str] = None,
         verify_ssl: bool = True,
         ca_certs: Optional[str] = None,
+        ssl_ciphers: Optional[List[str]] = None,
+        ssl_minimum_version: Optional[ssl.TLSVersion] = None,
         **kwargs,
     ):
         super().__init__(bot)
@@ -80,6 +84,8 @@ class AsyncioBackend(AbstractIRCBackend):
         self._keyfile: Optional[str] = keyfile
         self._verify_ssl: bool = verify_ssl
         self._ca_certs: Optional[str] = ca_certs
+        self._ssl_ciphers: str = ":".join(ssl_ciphers)
+        self._ssl_minimum_version: ssl.TLSVersion = ssl_minimum_version
 
         # timeout configuration
         self._server_timeout: float = float(server_timeout or 120)
@@ -263,6 +269,8 @@ class AsyncioBackend(AbstractIRCBackend):
 
         if self._use_ssl:
             ssl_context = ssl.create_default_context(ssl.Purpose.SERVER_AUTH)
+            ssl_context.minimum_version = self._ssl_minimum_version
+            ssl_context.set_ciphers(self._ssl_ciphers)
             if self._certfile is not None:
                 # load_cert_chain requires a certfile (cannot be None)
                 ssl_context.load_cert_chain(
