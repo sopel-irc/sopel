@@ -12,6 +12,7 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 import json
 import logging
 import random
+import re
 import sys
 
 import requests
@@ -163,7 +164,16 @@ def tr2(bot, trigger):
         return
 
     def langcode(p):
-        return p.startswith(':') and (2 < len(p) < 10) and p[1:].isalpha()
+        # TODO: We'd be much better off just using the langcodes PyPI package
+        # also TODO: it'd be nice not to require the : prefix, which using
+        # langcodes would make easier in lieu of adding an API key to fetch
+        # the list of supported languages
+        prefixed = p.startswith(':')
+        # the longest codes Google uses (ca. Jan 2022) are zh-CN and zh-TW
+        short_enough = (2 < len(p) < 8)
+        # pesky - in Chinese codes forced a switch from .isalpha(); see #2241
+        fits_pattern = re.match(r':[a-z\-]+', p.lower())
+        return all((prefixed, short_enough, fits_pattern))
 
     args = ['auto', 'en']
 
