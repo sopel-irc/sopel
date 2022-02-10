@@ -49,7 +49,7 @@ def web_search(query):
     url = bing_search(query + sites_query)
     if not url:
         return None
-    match = re.match(r'(?:https?://)?xkcd.com/(\d+)/?', url)
+    match = re.match(r'(?:https?://)?(?:m\.)?xkcd\.com/(\d+)/?', url)
     if match:
         return match.group(1)
 
