@@ -979,7 +979,7 @@ class Rule(AbstractRule):
 
     def match_preconditions(self, bot, pretrigger):
         event = pretrigger.event
-        ctcp_command = pretrigger.tags.get('intent')
+        ctcp_command = pretrigger.ctcp
         nick = pretrigger.nick
         is_bot_message = (
             'bot' in pretrigger.tags and

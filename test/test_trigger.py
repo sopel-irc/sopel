@@ -118,6 +118,7 @@ def test_intents_pretrigger(nick):
     line = '@intent=ACTION :Foo!foo@example.com PRIVMSG #Sopel :Hello, world'
     pretrigger = PreTrigger(nick, line)
     assert pretrigger.tags == {'intent': 'ACTION'}
+    assert pretrigger.ctcp is None
     assert pretrigger.hostmask == 'Foo!foo@example.com'
     assert pretrigger.line == line
     assert pretrigger.args == ['#Sopel', 'Hello, world']
@@ -134,6 +135,7 @@ def test_unusual_pretrigger(nick):
     line = 'PING'
     pretrigger = PreTrigger(nick, line)
     assert pretrigger.tags == {}
+    assert pretrigger.ctcp is None
     assert pretrigger.hostmask is None
     assert pretrigger.line == line
     assert pretrigger.args == []
@@ -145,7 +147,8 @@ def test_unusual_pretrigger(nick):
 def test_ctcp_intent_pretrigger(nick):
     line = ':Foo!foo@example.com PRIVMSG Sopel :\x01VERSION\x01'
     pretrigger = PreTrigger(nick, line)
-    assert pretrigger.tags == {'intent': 'VERSION'}
+    assert pretrigger.tags == {}
+    assert pretrigger.ctcp == 'VERSION'
     assert pretrigger.hostmask == 'Foo!foo@example.com'
     assert pretrigger.line == line
     assert pretrigger.args == ['Sopel', '']
@@ -161,7 +164,8 @@ def test_ctcp_intent_pretrigger(nick):
 def test_ctcp_data_pretrigger(nick):
     line = ':Foo!foo@example.com PRIVMSG Sopel :\x01PING 1123321\x01'
     pretrigger = PreTrigger(nick, line)
-    assert pretrigger.tags == {'intent': 'PING'}
+    assert pretrigger.tags == {}
+    assert pretrigger.ctcp == 'PING'
     assert pretrigger.hostmask == 'Foo!foo@example.com'
     assert pretrigger.line == line
     assert pretrigger.args == ['Sopel', '1123321']
@@ -177,7 +181,8 @@ def test_ctcp_data_pretrigger(nick):
 def test_ctcp_action_pretrigger(nick):
     line = ':Foo!foo@example.com PRIVMSG #Sopel :\x01ACTION Hello, world\x01'
     pretrigger = PreTrigger(nick, line)
-    assert pretrigger.tags == {'intent': 'ACTION'}
+    assert pretrigger.tags == {}
+    assert pretrigger.ctcp == 'ACTION'
     assert pretrigger.hostmask == 'Foo!foo@example.com'
     assert pretrigger.line == line
     assert pretrigger.args == ['#Sopel', 'Hello, world']
@@ -212,7 +217,7 @@ def test_ctcp_action_trigger(nick, configfactory):
     assert trigger.groupdict == fakematch.groupdict
     assert trigger.args == ['#Sopel', 'Hello, world']
     assert trigger.plain == 'Hello, world'
-    assert trigger.tags == {'intent': 'ACTION'}
+    assert trigger.tags == {}
     assert trigger.ctcp == 'ACTION'
     assert trigger.account is None
     assert trigger.admin is True
@@ -287,7 +292,7 @@ def test_ircv3_intents_trigger(nick, configfactory):
     assert trigger.args == ['#Sopel', 'Hello, world']
     assert trigger.plain == 'Hello, world'
     assert trigger.tags == {'intent': 'ACTION'}
-    assert trigger.ctcp == 'ACTION'
+    assert trigger.ctcp is None
     assert trigger.account is None
     assert trigger.admin is True
     assert trigger.owner is True
