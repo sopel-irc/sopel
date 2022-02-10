@@ -811,11 +811,11 @@ def ctcp(
 
     def add_attribute(function):
         function._sopel_callable = True
-        if not hasattr(function, "intents"):
-            function.intents = []
+        if not hasattr(function, "ctcp"):
+            function.ctcp = []
         for name in ctcp_commands:
-            if name not in function.intents:
-                function.intents.append(name)
+            if name not in function.ctcp:
+                function.ctcp.append(name)
         return function
     return add_attribute
 

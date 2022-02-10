@@ -269,21 +269,21 @@ def test_ctcp():
     @plugin.ctcp('ACTION')
     def mock(bot, trigger, match):
         return True
-    assert mock.intents == ['ACTION']
+    assert mock.ctcp == ['ACTION']
 
 
 def test_ctcp_empty():
     @plugin.ctcp()
     def mock(bot, trigger, match):
         return True
-    assert mock.intents == ['ACTION']
+    assert mock.ctcp == ['ACTION']
 
 
 def test_ctcp_direct():
     @plugin.ctcp
     def mock(bot, trigger, match):
         return True
-    assert mock.intents == ['ACTION']
+    assert mock.ctcp == ['ACTION']
 
 
 BAN_MESSAGE = ':Foo!foo@example.com PRIVMSG #chan :.ban ExiClone'

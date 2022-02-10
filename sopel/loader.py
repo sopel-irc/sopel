@@ -85,14 +85,14 @@ def clean_callable(func, config):
             for command in cmds:
                 func._docs[command] = (doc, examples)
 
-    if hasattr(func, 'intents'):
+    if hasattr(func, 'ctcp'):
         # Can be implementation-dependent
         _regex_type = type(re.compile(''))
-        func.intents = [
-            (intent
-                if isinstance(intent, _regex_type)
-                else re.compile(intent, re.IGNORECASE))
-            for intent in func.intents
+        func.ctcp = [
+            (ctcp_pattern
+                if isinstance(ctcp_pattern, _regex_type)
+                else re.compile(ctcp_pattern, re.IGNORECASE))
+            for ctcp_pattern in func.ctcp
         ]
 
 
@@ -119,7 +119,7 @@ def is_limitable(obj):
         'search_rules',
         'search_rules_lazy_loaders',
         'event',
-        'intents',
+        'ctcp',
         'commands',
         'nickname_commands',
         'action_commands',
@@ -139,8 +139,8 @@ def is_triggerable(obj):
 
     A triggerable is a callable that will be used by the bot to handle a
     particular trigger (i.e. an IRC message): it can be a regex rule, an
-    event, an intent, a command, a nickname command, or an action command.
-    However, it must not be a job or a URL callback.
+    event, a CTCP command, a command, a nickname command, or an action
+    command. However, it must not be a job or a URL callback.
 
     .. seealso::
 
@@ -163,7 +163,7 @@ def is_triggerable(obj):
         'search_rules',
         'search_rules_lazy_loaders',
         'event',
-        'intents',
+        'ctcp',
         'commands',
         'nickname_commands',
         'action_commands',

@@ -456,7 +456,7 @@ class AbstractRule(abc.ABC):
     * label
     * doc, usages, and tests
     * output prefix
-    * matching patterns, events, and intents
+    * matching patterns, events, and CTCP commands
     * allow echo-message
     * threaded execution or not
     * rate limiting feature
@@ -774,7 +774,7 @@ class Rule(AbstractRule):
             'label': getattr(handler, 'rule_label', None),
             'priority': getattr(handler, 'priority', PRIORITY_MEDIUM),
             'events': getattr(handler, 'event', []),
-            'ctcp': getattr(handler, 'intents', []),
+            'ctcp': getattr(handler, 'ctcp', []),
             'allow_bots': getattr(handler, 'allow_bots', False),
             'allow_echo': getattr(handler, 'echo', False),
             'threaded': getattr(handler, 'thread', True),
@@ -979,7 +979,7 @@ class Rule(AbstractRule):
 
     def match_preconditions(self, bot, pretrigger):
         event = pretrigger.event
-        intent = pretrigger.tags.get('intent')
+        ctcp_command = pretrigger.tags.get('intent')
         nick = pretrigger.nick
         is_bot_message = (
             'bot' in pretrigger.tags and
@@ -992,7 +992,7 @@ class Rule(AbstractRule):
 
         return (
             self.match_event(event) and
-            self.match_ctcp(intent) and
+            self.match_ctcp(ctcp_command) and
             (
                 (not is_bot_message or self.allow_bots()) or
                 (is_echo_message and self.allow_echo())
@@ -1415,7 +1415,7 @@ class ActionCommand(AbstractNamedRule):
     """Action Command rule definition.
 
     An action command rule is a named rule that can be triggered only when the
-    trigger's intent is an ``ACTION``. Like the :class:`Command` rule, it
+    trigger's CTCP command is an ``ACTION``. Like the :class:`Command` rule, it
     allows command aliases.
 
     Here is an example with the ``dummy`` action command:
@@ -1429,7 +1429,7 @@ class ActionCommand(AbstractNamedRule):
 
     Apart from that, it behaves exactly like a :class:`generic rule <Rule>`.
     """
-    INTENT_REGEX = re.compile(r'ACTION', re.IGNORECASE)
+    CTCP_REGEX = re.compile(r'ACTION', re.IGNORECASE)
     PATTERN_TEMPLATE = r"""
         ({command})         # Command as group 1.
         (?:\s+              # Whitespace to end command.
@@ -1499,7 +1499,7 @@ class ActionCommand(AbstractNamedRule):
         :return: ``True`` when ``command`` matches ``ACTION``,
                  ``False`` otherwise
         """
-        return bool(command and self.INTENT_REGEX.match(command))
+        return bool(command and self.CTCP_REGEX.match(command))
 
 
 class FindRule(Rule):
