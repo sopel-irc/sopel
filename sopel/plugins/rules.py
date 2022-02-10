@@ -24,7 +24,7 @@ import itertools
 import logging
 import re
 import threading
-from typing import Generator, Iterable, Type, TypeVar
+from typing import Generator, Iterable, Optional, Type, TypeVar
 from urllib.parse import urlparse
 
 
@@ -619,12 +619,12 @@ class AbstractRule(abc.ABC):
         """
 
     @abc.abstractmethod
-    def match_intent(self, intent) -> bool:
-        """Tell if the rule matches this ``intent``.
+    def match_ctcp(self, command: Optional[str]) -> bool:
+        """Tell if the rule matches this CTCP ``command``.
 
-        :param str intent: potential matching intent
-        :return: ``True`` when ``intent`` matches the rule, ``False`` otherwise
-        :rtype: bool
+        :param command: potential matching CTCP command
+        :return: ``True`` when ``command`` matches the rule,
+                 ``False`` otherwise
         """
 
     @abc.abstractmethod
@@ -774,7 +774,7 @@ class Rule(AbstractRule):
             'label': getattr(handler, 'rule_label', None),
             'priority': getattr(handler, 'priority', PRIORITY_MEDIUM),
             'events': getattr(handler, 'event', []),
-            'intents': getattr(handler, 'intents', []),
+            'ctcp': getattr(handler, 'intents', []),
             'allow_bots': getattr(handler, 'allow_bots', False),
             'allow_echo': getattr(handler, 'echo', False),
             'threaded': getattr(handler, 'thread', True),
@@ -864,7 +864,7 @@ class Rule(AbstractRule):
                  priority=PRIORITY_MEDIUM,
                  handler=None,
                  events=None,
-                 intents=None,
+                 ctcp=None,
                  allow_bots=False,
                  allow_echo=False,
                  threaded=True,
@@ -885,7 +885,7 @@ class Rule(AbstractRule):
 
         # filters
         self._events = events or ['PRIVMSG']
-        self._intents = intents or []
+        self._ctcp = ctcp or []
         self._allow_bots = bool(allow_bots)
         self._allow_echo = bool(allow_echo)
 
@@ -992,7 +992,7 @@ class Rule(AbstractRule):
 
         return (
             self.match_event(event) and
-            self.match_intent(intent) and
+            self.match_ctcp(intent) and
             (
                 (not is_bot_message or self.allow_bots()) or
                 (is_echo_message and self.allow_echo())
@@ -1008,13 +1008,13 @@ class Rule(AbstractRule):
     def match_event(self, event):
         return bool(event and event in self._events)
 
-    def match_intent(self, intent):
-        if not self._intents:
+    def match_ctcp(self, command: Optional[str]) -> bool:
+        if not self._ctcp:
             return True
 
-        return bool(intent and any(
-            regex.match(intent)
-            for regex in self._intents
+        return bool(command and any(
+            regex.match(command)
+            for regex in self._ctcp
         ))
 
     def allow_bots(self):
@@ -1492,15 +1492,14 @@ class ActionCommand(AbstractNamedRule):
         pattern = self.PATTERN_TEMPLATE.format(command=pattern)
         return re.compile(pattern, re.IGNORECASE | re.VERBOSE)
 
-    def match_intent(self, intent):
-        """Tell if ``intent`` is an ``ACTION``.
+    def match_ctcp(self, command: Optional[str]) -> bool:
+        """Tell if ``command`` is an ``ACTION``.
 
-        :param str intent: potential matching intent
-        :return: ``True`` when ``intent`` matches ``ACTION``,
+        :param command: potential matching CTCP command
+        :return: ``True`` when ``command`` matches ``ACTION``,
                  ``False`` otherwise
-        :rtype: bool
         """
-        return bool(intent and self.INTENT_REGEX.match(intent))
+        return bool(command and self.INTENT_REGEX.match(command))
 
 
 class FindRule(Rule):
