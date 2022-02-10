@@ -46,7 +46,7 @@ post_or_comment_url = (
 )
 short_post_url = r'https?://(redd\.it|reddit\.com)/(?P<submission>[\w-]+)/?$'
 user_url = r'%s/u(?:ser)?/([\w-]+)' % domain
-image_url = r'https?://i\.redd\.it/\S+'
+image_url = r'https?://(?P<subdomain>i|preview)\.redd\.it/(?P<image>[^?\s]+)'
 video_url = r'https?://v\.redd\.it/([\w-]+)'
 gallery_url = r'https?://(?:www\.)?reddit\.com/gallery/([\w-]+)'
 
@@ -100,6 +100,9 @@ def get_is_cakeday(entrytime):
 @plugin.output_prefix(PLUGIN_OUTPUT_PREFIX)
 def image_info(bot, trigger, match):
     url = match.group(0)
+    preview = match.group("subdomain") == "preview"
+    if preview:
+        url = "https://i.redd.it/{}".format(match.group("image"))
     results = list(
         bot.memory['reddit_praw']
         .subreddit('all')
@@ -110,7 +113,7 @@ def image_info(bot, trigger, match):
     except IndexError:
         # Fail silently if the image link can't be mapped to a submission
         return plugin.NOLIMIT
-    return say_post_info(bot, trigger, oldest.id, False, True)
+    return say_post_info(bot, trigger, oldest.id, preview, True)
 
 
 @plugin.url(video_url)
