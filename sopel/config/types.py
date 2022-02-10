@@ -27,11 +27,15 @@ from __future__ import annotations
 
 import abc
 import getpass
+import logging
 import os.path
 import re
 
 from sopel.lifecycle import deprecated
 from sopel.tools import get_input
+
+
+LOGGER = logging.getLogger(__name__)
 
 
 class NO_DEFAULT:
@@ -423,8 +427,8 @@ class ListAttribute(BaseValidated):
 
     :param str name: the attribute name to use in the config file
     :param strip: whether to strip whitespace from around each value
-                  (optional; applies only to legacy comma-separated lists;
-                  multi-line lists are always stripped)
+                  (optional, deprecated; applies only to legacy comma-separated
+                  lists; multi-line lists are always stripped)
     :type strip: bool
     :param default: the default value if the config file does not define a
                     value for this option; to require explicit configuration,
@@ -468,18 +472,20 @@ class ListAttribute(BaseValidated):
 
         **About:** backward compatibility with comma-separated values.
 
-        A :class:`ListAttribute` option allows to write, on a single line,
-        the values separated by commas. As of Sopel 7.x this behavior is
-        discouraged. It will be deprecated in Sopel 8.x, then removed in
-        Sopel 9.x.
+        A :class:`ListAttribute` option used to allow to write, on a single
+        line, the values separated by commas. It is still technically possible
+        while raising a deprecation warning.
 
-        Bot owners are encouraged to update their configurations to use
-        newlines instead of commas.
+        In Sopel 7.x this behavior was discouraged; as of Sopel 8.x it is now
+        deprecated with warnings, and it will be removed in Sopel 9.x.
+
+        Bot owners should update their configurations to use newlines instead
+        of commas.
 
         The comma delimiter fallback does not support commas within items in
         the list.
     """
-    DELIMITER = ','
+    DELIMITER = ','  # Deprecated, will be removed in Sopel 9
     QUOTE_REGEX = re.compile(r'^"(?P<value>#.*)"$')
     """Regex pattern to match value that requires quotation marks.
 
@@ -491,7 +497,7 @@ class ListAttribute(BaseValidated):
     def __init__(self, name, strip=True, default=None):
         default = default or []
         super().__init__(name, default=default)
-        self.strip = strip
+        self.strip = strip  # Warn in Sopel 9.x and remove in Sopel 10.x
 
     def parse(self, value):
         """Parse ``value`` into a list.
@@ -507,6 +513,12 @@ class ListAttribute(BaseValidated):
 
             When modified and saved to a file, items will be stored as a
             multi-line string (see :meth:`serialize`).
+
+        .. versionchanged:: 8.0
+
+            When the value contains a delimiter without newline, it warns the
+            user to switch to a multi-line value, without a delimiter.
+
         """
         if "\n" in value:
             items = (
@@ -515,11 +527,18 @@ class ListAttribute(BaseValidated):
                 item.strip(self.DELIMITER).strip()
                 for item in value.splitlines())
         else:
-            # this behavior will be:
-            # - Discouraged in Sopel 7.x (in the documentation)
-            # - Deprecated in Sopel 8.x
-            # - Removed from Sopel 9.x
+            # this behavior was discouraged in Sopel 7.x (in the documentation)
+            # this behavior is now deprecated in Sopel 8.x
+            # this behavior will be removed from Sopel 9.x
             items = value.split(self.DELIMITER)
+            if self.DELIMITER in value:
+                # trigger for "one, two" and "first line,"
+                # a single line without the delimiter is fine
+                LOGGER.warning(
+                    'Using "%s" as item delimiter in option "%s" '
+                    'is deprecated and will be removed in Sopel 9; '
+                    'use multi-line instead',
+                    self.DELIMITER, self.name)
 
         items = (self.parse_item(item) for item in items if item)
         if self.strip:
