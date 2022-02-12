@@ -34,7 +34,7 @@ class IrcLoggingHandler(logging.Handler):
             return
 
         try:
-            msg = self.format(record)
+            msg = self.format(record).replace('\n', ' ')
             self._bot.say(msg, self._channel)
         except (KeyboardInterrupt, SystemExit):
             raise
