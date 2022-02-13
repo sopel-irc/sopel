@@ -4,9 +4,9 @@ This sub-package contains everything that is related to the IRC protocol
 (connection, commands, abstract client, etc.) and that can be used to implement
 the Sopel bot.
 
-In particular, it defines the interface for the
-:class:`IRC backend<sopel.irc.abstract_backends.AbstractIRCBackend>`, and the
-interface for the :class:`bot itself<sopel.irc.AbstractBot>`. This is all
+In particular, it defines the interface for the IRC backend
+(:class:`~sopel.irc.abstract_backends.AbstractIRCBackend`), and the
+interface for the bot itself (:class:`~sopel.irc.AbstractBot`). This is all
 internal code that isn't supposed to be used directly by a plugin developer,
 who should worry about :class:`sopel.bot.Sopel` only.
 
@@ -55,9 +55,9 @@ class AbstractBot(abc.ABC):
         self._nick = self.make_identifier(settings.core.nick)
 
         self.backend = None
-        """IRC Connection Backend."""
+        """IRC connection backend."""
         self.connection_registered = False
-        """Is the IRC Connection registered yet?"""
+        """Flag stating whether the IRC Connection is registered yet."""
         self.settings = settings
         """Bot settings."""
         self.enabled_capabilities = set()
@@ -77,7 +77,8 @@ class AbstractBot(abc.ABC):
     def nick(self):
         """Sopel's current nick.
 
-        Changing this while Sopel is running is unsupported.
+        Changing this while Sopel is running is unsupported and can result in
+        undefined behavior.
         """
         return self._nick
 
@@ -120,7 +121,7 @@ class AbstractBot(abc.ABC):
     @property
     @abc.abstractmethod
     def hostmask(self) -> Optional[str]:
-        """Bot's hostmask."""
+        """The bot's hostmask."""
 
     # Utility
 
@@ -143,24 +144,25 @@ class AbstractBot(abc.ABC):
     def safe_text_length(self, recipient: str) -> int:
         """Estimate a safe text length for an IRC message.
 
-        :return: the maximum length possible for a message to a recipient
+        :return: the maximum possible length of a message to ``recipient``
 
         When the bot sends a message to a recipient (channel or nick), it has
         512 bytes minus the command, arguments, various separators and trailing
         CRLF for its text. However, this is not what other users will see from
-        the server: these messages will follow this format::
+        the server; the message forwarded to other clients will be sent using
+        this format::
 
             :nick!~user@hostname PRIVMSG #channel :text
 
         Which takes more bytes, reducing the maximum length available for a
-        single line of text. This method compute a safe length of text that
-        can be send using ``PRIVMSG`` or ``NOTICE`` by substracting the size
-        required by the server to convay the bot's message.
+        single line of text. This method computes a safe length of text that
+        can be sent using ``PRIVMSG`` or ``NOTICE`` by subtracting the size
+        required by the server to convey the bot's message.
 
         .. seealso::
 
-            This method is useful when :meth:`sending a message <say>` and can
-            be used with :func:`sopel.tools.get_sendable_message`.
+            This method is useful when sending a message using :meth:`say`,
+            and can be used with :func:`sopel.tools.get_sendable_message`.
 
         """
         if self.hostmask is not None:
@@ -392,10 +394,13 @@ class AbstractBot(abc.ABC):
         """
 
     def log_raw(self, line, prefix):
-        """Log raw line to the raw log.
+        """Log a raw line to the raw log.
 
         :param str line: the raw line
         :param str prefix: additional information to prepend to the log line
+
+        The ``prefix`` is usually either ``>>`` for an outgoing ``line`` or
+        ``<<`` for a received one.
         """
         if not self.settings.core.log_raw:
             return
@@ -445,8 +450,8 @@ class AbstractBot(abc.ABC):
         capability negotiation, or later.
 
         If ``arg`` is given, and does not exactly match what the server
-        provides or what other plugins have requested for that capability, it is
-        considered a conflict.
+        provides or what other plugins have requested for that capability, it
+        is considered a conflict.
         """
         # TODO raise better exceptions
         cap = capability[1:]
@@ -547,7 +552,7 @@ class AbstractBot(abc.ABC):
         :param str channel: channel to kick ``nick`` from
         :param str text: optional text for the kick
 
-        The bot must be operator in the specified channel for this to work.
+        The bot must be an operator in the specified channel for this to work.
 
         .. versionadded:: 7.0
         """
@@ -562,7 +567,7 @@ class AbstractBot(abc.ABC):
         self.backend.send_notice(dest, text)
 
     def part(self, channel, msg=None):
-        """Leave a channel.
+        """Leave a ``channel``.
 
         :param str channel: the channel to leave
         :param str msg: the message to display when leaving a channel
@@ -582,11 +587,11 @@ class AbstractBot(abc.ABC):
         # something before the main thread quits.
 
     def reply(self, text, dest, reply_to, notice=False):
-        """Send a PRIVMSG to a user or channel, prepended with ``reply_to``.
+        """Send a PRIVMSG to a user or channel, prepended with a nickname.
 
         :param str text: the text of the reply
         :param str dest: the destination of the reply
-        :param str reply_to: the nickname that the reply will be prepended with
+        :param str reply_to: the nickname that will be prepended to ``text``
         :param bool notice: whether to send the reply as a NOTICE or not,
                             defaults to ``False``
 
