@@ -55,6 +55,14 @@ class MockIRCBackend(AbstractIRCBackend):
         Set to ``True`` to make the bot think it is connected.
         """
 
+    def initiate_connect(self, host, port, source_address):
+        self.host = host
+        self.port = port
+        self.source_address = source_address
+
+    def run_forever(self):
+        raise RuntimeError('MockIRCBackend cannot be used to run the client.')
+
     def is_connected(self):
         return self.connected
 

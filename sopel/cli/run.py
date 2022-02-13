@@ -75,7 +75,6 @@ def run(settings, pid_file, daemon=False):
         try:
             p = bot.Sopel(settings, daemon=daemon)
             p.setup()
-            p.set_signal_handlers()
         except KeyboardInterrupt:
             tools.stderr('Bot setup interrupted')
             break
@@ -97,27 +96,15 @@ def run(settings, pid_file, daemon=False):
             err_log = logging.getLogger('sopel.exceptions')
             err_log.exception('Critical exception in core')
             err_log.error('----------------------------------------')
-            # TODO: This should be handled by command_start
-            # All we should need here is a return value, but replacing the
-            # os._exit() call below (at the end) broke ^C.
-            # This one is much harder to test, so until that one's sorted it
-            # isn't worth the risk of trying to remove this one.
-            os.unlink(pid_file)
-            os._exit(1)
+            return ERR_CODE
 
-        if not isinstance(delay, int):
-            break
         if p.wantsrestart:
             return -1
         if p.hasquit:
-            break
+            return 0
+
         LOGGER.warning('Disconnected. Reconnecting in %s seconds...', delay)
         time.sleep(delay)
-    # TODO: This should be handled by command_start
-    # All we should need here is a return value, but making this
-    # a return makes Sopel hang on ^C after it says "Closed!"
-    os.unlink(pid_file)
-    os._exit(0)
 
 
 def build_parser():
@@ -359,11 +346,12 @@ def command_start(opts):
     with open(pid_file_path, 'w') as pid_file:
         pid_file.write(str(os.getpid()))
 
-    # Step Three: Run Sopel
-    ret = run(settings, pid_file_path)
-
-    # Step Four: Shutdown Clean-Up
-    os.unlink(pid_file_path)
+    try:
+        # Step Three: Run Sopel
+        ret = run(settings, pid_file_path)
+    finally:
+        # Step Four: Shutdown Clean-Up
+        os.unlink(pid_file_path)
 
     if ret == -1:
         # Restart

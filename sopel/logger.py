@@ -107,6 +107,11 @@ def setup_logging(settings):
                 'propagate': False,
                 'handlers': ['exceptionfile'],
             },
+            # asyncio logging
+            'asyncio': {
+                'level': 'DEBUG',
+                'handlers': ['console'],
+            },
         },
         'handlers': {
             # output on stderr

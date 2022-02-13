@@ -30,51 +30,59 @@ import logging
 import os
 import threading
 import time
-from typing import Optional
+from typing import Any, Callable, Dict, Iterable, List, Optional, Set, Tuple, TYPE_CHECKING
 
 from sopel import tools, trigger
 from sopel.tools import identifiers
-from .backends import AsynchatBackend, SSLAsynchatBackend
+from .abstract_backends import AbstractIRCBackend
+from .backends import AsyncioBackend
 from .isupport import ISupport
-from .utils import CapReq, safe
+from .utils import CapReq, MyInfo, safe
+
+
+if TYPE_CHECKING:
+    from sopel.config import Config
 
 
 __all__ = ['abstract_backends', 'backends', 'utils']
 
 LOGGER = logging.getLogger(__name__)
+ERR_BACKEND_NOT_INITIALIZED = 'Backend not initialized; is the bot running?'
 
 
 class AbstractBot(abc.ABC):
     """Abstract definition of Sopel's interface."""
-    def __init__(self, settings):
+    def __init__(self, settings: Config):
         # private properties: access as read-only properties
-        self._user = settings.core.user
-        self._name = settings.core.name
+        self._user: str = settings.core.user
+        self._name: str = settings.core.name
         self._isupport = ISupport()
-        self._myinfo = None
-        self._nick = self.make_identifier(settings.core.nick)
+        self._myinfo: Optional[MyInfo] = None
+        self._nick: identifiers.Identifier = self.make_identifier(
+            settings.core.nick)
 
-        self.backend = None
-        """IRC connection backend."""
+        self.backend: Optional[AbstractIRCBackend] = None
+        """IRC Connection Backend."""
         self.connection_registered = False
         """Flag stating whether the IRC Connection is registered yet."""
         self.settings = settings
         """Bot settings."""
-        self.enabled_capabilities = set()
+        self.enabled_capabilities: Set[str] = set()
         """A set containing the IRCv3 capabilities that the bot has enabled."""
-        self._cap_reqs = dict()
+        self._cap_reqs: Dict[str, List[CapReq]] = dict()
         """A dictionary of capability names to a list of requests."""
 
         # internal machinery
         self.sending = threading.RLock()
-        self.last_error_timestamp = None
+        self.last_error_timestamp: Optional[datetime] = None
         self.error_count = 0
-        self.stack = {}
+        self.stack: Dict[identifiers.Identifier, Dict[str, Any]] = {}
         self.hasquit = False
+        self.wantsrestart = False
         self.last_raw_line = ''  # last raw line received
 
     @property
-    def nick(self):
+    def nick(self) -> identifiers.Identifier:
         """Sopel's current nick.
 
         Changing this while Sopel is running is unsupported and can result in
@@ -83,23 +91,23 @@ class AbstractBot(abc.ABC):
         return self._nick
 
     @property
-    def user(self):
+    def user(self) -> str:
         """Sopel's user/ident."""
         return self._user
 
     @property
-    def name(self):
+    def name(self) -> str:
         """Sopel's "real name", as used for WHOIS responses."""
         return self._name
 
     @property
-    def config(self):
+    def config(self) -> Config:
         """The :class:`sopel.config.Config` for the current Sopel instance."""
         # TODO: Deprecate config, replaced by settings
         return self.settings
 
     @property
-    def isupport(self):
+    def isupport(self) -> ISupport:
         """Features advertised by the server.
 
         :type: :class:`~.isupport.ISupport` instance
@@ -107,7 +115,7 @@ class AbstractBot(abc.ABC):
         return self._isupport
 
     @property
-    def myinfo(self):
+    def myinfo(self) -> MyInfo:
         """Server/network information.
 
         :type: :class:`~.utils.MyInfo` instance
@@ -194,7 +202,12 @@ class AbstractBot(abc.ABC):
 
     # Connection
 
-    def get_irc_backend(self):
+    def get_irc_backend(
+        self,
+        host: str,
+        port: int,
+        source_address: Optional[Tuple[str, int]],
+    ) -> AbstractIRCBackend:
         """Set up the IRC backend based on the bot's settings.
 
         :return: the initialized IRC backend object
@@ -203,25 +216,24 @@ class AbstractBot(abc.ABC):
         """
         timeout = int(self.settings.core.timeout)
         ping_interval = int(self.settings.core.timeout_ping_interval)
-        backend_class = AsynchatBackend
-        backend_args = [self]
-        backend_kwargs = {
-            'server_timeout': timeout,
-            'ping_interval': ping_interval,
-        }
+        return AsyncioBackend(
+            self,
+            # connection
+            host=host,
+            port=port,
+            source_address=source_address,
+            # timeout
+            server_timeout=timeout,
+            ping_interval=ping_interval,
+            # ssl
+            use_ssl=self.settings.core.use_ssl,
+            certfile=self.settings.core.client_cert_file,
+            keyfile=self.settings.core.client_cert_file,
+            verify_ssl=self.settings.core.verify_ssl,
+            ca_certs=self.settings.core.ca_certs,
+        )
 
-        if self.settings.core.use_ssl:
-            backend_class = SSLAsynchatBackend
-            backend_kwargs.update({
-                'certfile': self.settings.core.client_cert_file,
-                'keyfile': self.settings.core.client_cert_file,
-                'verify_ssl': self.settings.core.verify_ssl,
-                'ca_certs': self.settings.core.ca_certs,
-            })
-
-        return backend_class(*backend_args, **backend_kwargs)
-
-    def run(self, host, port=6667):
+    def run(self, host: str, port: int = 6667) -> None:
         """Connect to IRC server and run the bot forever.
 
         :param str host: the IRC server hostname
@@ -230,8 +242,7 @@ class AbstractBot(abc.ABC):
         source_address = ((self.settings.core.bind_host, 0)
                           if self.settings.core.bind_host else None)
 
-        self.backend = self.get_irc_backend()
-        self.backend.initiate_connect(host, port, source_address)
+        self.backend = self.get_irc_backend(host, port, source_address)
         try:
             self.backend.run_forever()
         except KeyboardInterrupt:
@@ -239,8 +250,11 @@ class AbstractBot(abc.ABC):
             LOGGER.warning('Keyboard Interrupt')
             raise
 
-    def on_connect(self):
+    def on_connect(self) -> None:
         """Handle successful establishment of IRC connection."""
+        if self.backend is None:
+            raise RuntimeError(ERR_BACKEND_NOT_INITIALIZED)
+
         LOGGER.info('Connected, initiating setup sequence')
 
         # Request list of server capabilities. IRCv3 servers will respond with
@@ -262,11 +276,14 @@ class AbstractBot(abc.ABC):
         LOGGER.debug('Sending user "%s" (name: "%s")', self.user, self.name)
         self.backend.send_user(self.user, '0', '*', self.name)
 
-    def on_message(self, message):
+    def on_message(self, message: str) -> None:
         """Handle an incoming IRC message.
 
         :param str message: the received raw IRC message
         """
+        if self.backend is None:
+            raise RuntimeError(ERR_BACKEND_NOT_INITIALIZED)
+
         self.last_raw_line = message
 
         pretrigger = trigger.PreTrigger(
@@ -275,7 +292,10 @@ class AbstractBot(abc.ABC):
             url_schemes=self.settings.core.auto_url_schemes,
             identifier_factory=self.make_identifier,
         )
-        if all(cap not in self.enabled_capabilities for cap in ['account-tag', 'extended-join']):
+        if all(
+            cap not in self.enabled_capabilities
+            for cap in ['account-tag', 'extended-join']
+        ):
             pretrigger.tags.pop('account', None)
 
         if pretrigger.event == 'PING':
@@ -286,7 +306,7 @@ class AbstractBot(abc.ABC):
 
         self.dispatch(pretrigger)
 
-    def on_message_sent(self, raw):
+    def on_message_sent(self, raw: str) -> None:
         """Handle any message sent through the connection.
 
         :param str raw: raw text message sent through the connection
@@ -311,7 +331,7 @@ class AbstractBot(abc.ABC):
                 host = self.settings.core.bind_host
             else:
                 try:
-                    host = self.hostmask
+                    host = self.hostmask or host
                 except KeyError:
                     pass  # we tried, and that's good enough
 
@@ -323,16 +343,14 @@ class AbstractBot(abc.ABC):
             )
             self.dispatch(pretrigger)
 
-    def on_error(self):
+    def on_error(self) -> None:
         """Handle any uncaptured error in the bot itself."""
         LOGGER.error('Fatal error in core, please review exceptions log.')
 
         err_log = logging.getLogger('sopel.exceptions')
         err_log.error(
             'Fatal error in core, handle_error() was called.\n'
-            'Buffer:\n%s\n'
             'Last Line:\n%s',
-            self.backend.buffer,  # TODO: refactor without self.backend
             self.last_raw_line,
         )
         err_log.exception('Fatal error traceback')
@@ -340,13 +358,16 @@ class AbstractBot(abc.ABC):
 
         if self.error_count > 10:
             # quit if too many errors
-            dt = datetime.utcnow() - self.last_error_timestamp
-            dt_seconds = dt.total_seconds()
+            dt_seconds: float = 0.0
+            if self.last_error_timestamp is not None:
+                dt = datetime.utcnow() - self.last_error_timestamp
+                dt_seconds = dt.total_seconds()
+
             if dt_seconds < 5:
                 LOGGER.error('Too many errors, can\'t continue')
                 os._exit(1)
             # remove 1 error per full 5s that passed since last error
-            self.error_count = max(0, self.error_count - dt_seconds // 5)
+            self.error_count = int(max(0, self.error_count - dt_seconds // 5))
 
         self.last_error_timestamp = datetime.utcnow()
         self.error_count = self.error_count + 1
@@ -365,25 +386,27 @@ class AbstractBot(abc.ABC):
 
         :param str new_nick: new nick to be used by the bot
         """
+        if self.backend is None:
+            raise RuntimeError(ERR_BACKEND_NOT_INITIALIZED)
+
         self._nick = self.make_identifier(new_nick)
         LOGGER.debug('Sending nick "%s"', self.nick)
         self.backend.send_nick(self.nick)
 
-    def on_close(self):
+    def on_close(self) -> None:
         """Call shutdown methods."""
         self._shutdown()
 
-    def _shutdown(self):
+    def _shutdown(self) -> None:
         """Handle shutdown tasks.
 
         Must be overridden by subclasses to do anything useful.
         """
-        pass
 
     # Features
 
     @abc.abstractmethod
-    def dispatch(self, pretrigger):
+    def dispatch(self, pretrigger: trigger.PreTrigger):
         """Handle running the appropriate callables for an incoming message.
 
         :param pretrigger: Sopel PreTrigger object
@@ -393,8 +416,8 @@ class AbstractBot(abc.ABC):
             This method **MUST** be implemented by concrete subclasses.
         """
 
-    def log_raw(self, line, prefix):
-        """Log a raw line to the raw log.
+    def log_raw(self, line: str, prefix: str) -> None:
+        """Log raw line to the raw log.
 
         :param str line: the raw line
         :param str prefix: additional information to prepend to the log line
@@ -407,20 +430,24 @@ class AbstractBot(abc.ABC):
         logger = logging.getLogger('sopel.raw')
         logger.info("%s\t%r", prefix, line)
 
-    def cap_req(self, plugin_name, capability, arg=None, failure_callback=None,
-                success_callback=None):
+    def cap_req(
+        self,
+        plugin_name: str,
+        capability: str,
+        arg: Optional[str] = None,
+        failure_callback: Optional[Callable] = None,
+        success_callback: Optional[Callable] = None,
+    ) -> None:
         """Tell Sopel to request a capability when it starts.
 
-        :param str plugin_name: the plugin requesting the capability
-        :param str capability: the capability requested, optionally prefixed
-                               with ``-`` or ``=``
-        :param str arg: arguments for the capability request
+        :param plugin_name: the plugin requesting the capability
+        :param capability: the capability requested, optionally prefixed with
+                           ``-`` or ``=``
+        :param arg: arguments for the capability request
         :param failure_callback: a function that will be called if the
                                  capability request fails
-        :type failure_callback: :term:`function`
         :param success_callback: a function that will be called if the
                                  capability is successfully requested
-        :type success_callback: :term:`function`
 
         By prefixing the capability with ``-``, it will be ensured that the
         capability is not enabled. Similarly, by prefixing the capability with
@@ -486,13 +513,12 @@ class AbstractBot(abc.ABC):
                                 success_callback))
             self._cap_reqs[cap] = entry
 
-    def write(self, args, text=None):
+    def write(self, args: Iterable[str], text: Optional[str] = None) -> None:
         """Send a command to the server.
 
         :param args: an iterable of strings, which will be joined by spaces
-        :type args: :term:`iterable`
-        :param str text: a string that will be prepended with a ``:`` and added
-                         to the end of the command
+        :param text: a string that will be prepended with a ``:`` and added to
+                     the end of the command
 
         ``args`` is an iterable of strings, which are joined by spaces.
         ``text`` is treated as though it were the final item in ``args``, but
@@ -516,12 +542,15 @@ class AbstractBot(abc.ABC):
             method for more information.
 
         """
+        if self.backend is None:
+            raise RuntimeError(ERR_BACKEND_NOT_INITIALIZED)
+
         args = [safe(arg) for arg in args]
         self.backend.send_command(*args, text=text)
 
     # IRC Commands
 
-    def action(self, text, dest):
+    def action(self, text: str, dest: str) -> None:
         """Send a CTCP ACTION PRIVMSG to a user or channel.
 
         :param str text: the text to send in the CTCP ACTION
@@ -532,7 +561,7 @@ class AbstractBot(abc.ABC):
         """
         self.say('\001ACTION {}\001'.format(text), dest)
 
-    def join(self, channel, password=None):
+    def join(self, channel: str, password: Optional[str] = None) -> None:
         """Join a ``channel``.
 
         :param str channel: the channel to join
@@ -543,39 +572,62 @@ class AbstractBot(abc.ABC):
         password. ``channel`` should not contain a space if ``password``
         is given.
         """
+        if self.backend is None:
+            raise RuntimeError(ERR_BACKEND_NOT_INITIALIZED)
+
         self.backend.send_join(channel, password=password)
 
-    def kick(self, nick, channel, text=None):
+    def kick(
+        self,
+        nick: str,
+        channel: str,
+        text: Optional[str] = None,
+    ) -> None:
         """Kick a ``nick`` from a ``channel``.
 
-        :param str nick: nick to kick out of the ``channel``
-        :param str channel: channel to kick ``nick`` from
-        :param str text: optional text for the kick
+        :param nick: nick to kick out of the ``channel``
+        :param channel: channel to kick ``nick`` from
+        :param text: optional text for the kick
 
         The bot must be an operator in the specified channel for this to work.
 
         .. versionadded:: 7.0
         """
+        if self.backend is None:
+            raise RuntimeError(ERR_BACKEND_NOT_INITIALIZED)
+
         self.backend.send_kick(channel, nick, reason=text)
 
-    def notice(self, text, dest):
+    def notice(self, text: str, dest: str) -> None:
         """Send an IRC NOTICE to a user or channel (``dest``).
 
-        :param str text: the text to send in the NOTICE
-        :param str dest: the destination of the NOTICE
+        :param text: the text to send in the NOTICE
+        :param dest: the destination of the NOTICE
         """
+        if self.backend is None:
+            raise RuntimeError(ERR_BACKEND_NOT_INITIALIZED)
+
         self.backend.send_notice(dest, text)
 
-    def part(self, channel, msg=None):
-        """Leave a ``channel``.
+    def part(self, channel: str, msg: Optional[str] = None) -> None:
+        """Leave a channel.
 
-        :param str channel: the channel to leave
-        :param str msg: the message to display when leaving a channel
+        :param channel: the channel to leave
+        :param msg: the message to display when leaving a channel
         """
+        if self.backend is None:
+            raise RuntimeError(ERR_BACKEND_NOT_INITIALIZED)
+
         self.backend.send_part(channel, reason=msg)
 
-    def quit(self, message):
-        """Disconnect from IRC and close the bot."""
+    def quit(self, message: Optional[str] = None) -> None:
+        """Disconnect from IRC and close the bot.
+
+        :param message: optional QUIT message to send (e.g. "Bye!")
+        """
+        if self.backend is None:
+            raise RuntimeError(ERR_BACKEND_NOT_INITIALIZED)
+
         self.backend.send_quit(reason=message)
         self.hasquit = True
         # Wait for acknowledgment from the server. Per RFC 2812 it should be
@@ -586,16 +638,30 @@ class AbstractBot(abc.ABC):
         # problematic because whomever called quit might still want to do
         # something before the main thread quits.
 
-    def reply(self, text, dest, reply_to, notice=False):
-        """Send a PRIVMSG to a user or channel, prepended with a nickname.
+    def restart(self, message: Optional[str] = None) -> None:
+        """Disconnect from IRC and restart the bot.
 
-        :param str text: the text of the reply
-        :param str dest: the destination of the reply
-        :param str reply_to: the nickname that will be prepended to ``text``
-        :param bool notice: whether to send the reply as a NOTICE or not,
-                            defaults to ``False``
+        :param message: optional QUIT message to send (e.g. "Be right back!")
+        """
+        self.wantsrestart = True
+        self.quit(message)
 
-        If ``notice`` is ``True``, send a NOTICE rather than a PRIVMSG.
+    def reply(
+        self,
+        text: str,
+        dest: str,
+        reply_to: str,
+        notice: bool = False,
+    ) -> None:
+        """Send a PRIVMSG to a user or channel, prepended with ``reply_to``.
+
+        :param text: the text of the reply
+        :param dest: the destination of the reply
+        :param reply_to: the nickname that the reply will be prepended with
+        :param notice: whether to send the reply as a ``NOTICE`` or not,
+                       defaults to ``False``
+
+        If ``notice`` is ``True``, send a ``NOTICE`` rather than a ``PRIVMSG``.
 
         The same loop detection and length restrictions apply as with
         :meth:`say`, though automatic message splitting is not available.
@@ -606,18 +672,25 @@ class AbstractBot(abc.ABC):
         else:
             self.say(text, dest)
 
-    def say(self, text, recipient, max_messages=1, truncation='', trailing=''):
-        """Send a PRIVMSG to a user or channel.
+    def say(
+        self,
+        text: str,
+        recipient: str,
+        max_messages: int = 1,
+        truncation: str = '',
+        trailing: str = '',
+    ) -> None:
+        """Send a ``PRIVMSG`` to a user or channel.
 
-        :param str text: the text to send
-        :param str recipient: the message recipient
-        :param int max_messages: split ``text`` into at most this many messages
-                                 if it is too long to fit in one (optional)
-        :param str truncation: string to append if ``text`` is too long to fit
-                               in a single message, or into the last message if
-                               ``max_messages`` is greater than 1 (optional)
-        :param str trailing: string to append after ``text`` and (if used)
-                             ``truncation`` (optional)
+        :param text: the text to send
+        :param recipient: the message recipient
+        :param max_messages: split ``text`` into at most this many messages
+                             if it is too long to fit in one (optional)
+        :param truncation: string to append if ``text`` is too long to fit in
+                           a single message, or into the last message if
+                           ``max_messages`` is greater than 1 (optional)
+        :param trailing: string to append after ``text`` and (if used)
+                         ``truncation`` (optional)
 
         By default, this will attempt to send the entire ``text`` in one
         message. If the text is too long for the server, it may be truncated.
@@ -671,6 +744,9 @@ class AbstractBot(abc.ABC):
             The ``truncation`` and ``trailing`` parameters.
 
         """
+        if self.backend is None:
+            raise RuntimeError(ERR_BACKEND_NOT_INITIALIZED)
+
         excess = ''
         safe_length = self.safe_text_length(recipient)
 
