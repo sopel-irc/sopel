@@ -9,6 +9,9 @@ Sopel Package API
     package/trigger
     package/config
     package/db
-    package/api
+    package/tools
+    package/formatting
+    package/logger
     package/irc
+    package/plugins
     package/lifecycle

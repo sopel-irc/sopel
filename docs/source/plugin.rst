@@ -13,7 +13,6 @@ Plugins: Developer Overview
    plugin/decorators
    plugin/test
    plugin/advanced
-   plugin/internals
 
 Plugin glossary
 ===============
