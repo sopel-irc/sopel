@@ -10,10 +10,6 @@ human mistakes. To help automate testing, Sopel provides a
 such as :mod:`factories <sopel.tests.factories>` and
 :mod:`mock objects <sopel.tests.mocks>`.
 
-.. contents::
-   :local:
-   :depth: 2
-
 The pytest plugin
 =================
 

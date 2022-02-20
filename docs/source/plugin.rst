@@ -8,6 +8,7 @@ Plugins: Developer Overview
    plugin/what
    plugin/anatomy
    plugin/bot
+   plugin/time
    plugin/privileges
    plugin/decorators
    plugin/test
