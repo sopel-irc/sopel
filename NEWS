@@ -2,6 +2,47 @@ This file is used to auto-generate the "Changelog" section of Sopel's website.
 When adding new entries, follow the style guide in NEWS.spec.md to avoid
 causing problems with the site build.
 
+Changes between 7.1.7 and 7.1.8
+===============================
+
+Plugin changes
+--------------
+
+* isup: ensure compatibility with newer `requests` versions [[#2235][]]
+* reddit: handle image preview links [[#2245][]]
+* search: per tests of both back-ends, warn more consistently about multiple
+  `site:` operators [[#2254][]]
+* translate: fix accepting language hints for Chinese [[#2242][]]
+* url:
+  * bump user-agent [[#2218][]]
+  * tweak logging levels to better reflect severity [[#2249][]]
+* wikipedia: refine handling of sections with "hatnote" templates [[#2225][]]
+* xkcd: improve reliability of comic search [[#2247][]]
+
+Core changes
+------------
+
+* Formatting tweaks in IRC logging output [[#2250][]]
+* Requirement tweaks to make sure installing on Python 3.4 still works
+  (but if you're still using that, *please* update your Python)
+
+API changes
+-----------
+
+* Fix/improve more documentation [[#2251][]]
+
+[#2218]: https://github.com/sopel-irc/sopel/pull/2218
+[#2225]: https://github.com/sopel-irc/sopel/pull/2225
+[#2235]: https://github.com/sopel-irc/sopel/pull/2235
+[#2242]: https://github.com/sopel-irc/sopel/pull/2242
+[#2245]: https://github.com/sopel-irc/sopel/pull/2245
+[#2247]: https://github.com/sopel-irc/sopel/pull/2247
+[#2249]: https://github.com/sopel-irc/sopel/pull/2249
+[#2250]: https://github.com/sopel-irc/sopel/pull/2250
+[#2251]: https://github.com/sopel-irc/sopel/pull/2251
+[#2254]: https://github.com/sopel-irc/sopel/pull/2254
+
+
 Changes between 7.1.6 and 7.1.7
 ===============================
 
