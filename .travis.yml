@@ -68,5 +68,5 @@ deploy:
     secure: U9XLRA5fYRmII/pyJGDIT0BQ4p0zP8yZJtxUSUO9arFKozgYZu0ldvoLjKnzPMPQNCGs+q4f0hNuXgN+u/FgfRPF/Q3wtUj58uIC4JFnn7u2D2pv7RqzZkGi9Hr8+SS7dChlx9bVbhC1Y0md0XlrsT6rbNKKW457Jei05+vpjvg=
   on:
     tags: true
-    python: "3.6"
+    python: "3.8"
   allow_failure: true
