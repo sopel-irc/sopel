@@ -19,7 +19,8 @@ import re
 import urllib
 from urllib.parse import urlparse, urlunparse
 
-from sopel import __version__, tools
+from sopel import __version__
+from sopel.lifecycle import deprecated
 
 
 __all__ = [
@@ -89,7 +90,7 @@ r_entity = re.compile(r'&([^;\s]+);')
 """
 
 
-@tools.deprecated(
+@deprecated(
     version='8.0',
     removed_in='9.0',
     reason="No longer needed now that Python 3.4+ has `html.unescape()`",

@@ -30,7 +30,8 @@ import getpass
 import os.path
 import re
 
-from sopel.tools import deprecated, get_input
+from sopel.lifecycle import deprecated
+from sopel.tools import get_input
 
 
 class NO_DEFAULT:

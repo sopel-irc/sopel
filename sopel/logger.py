@@ -5,6 +5,7 @@ from logging.config import dictConfig
 import os
 
 from sopel import tools
+from sopel.lifecycle import deprecated
 
 
 class IrcLoggingHandler(logging.Handler):
@@ -155,7 +156,7 @@ def setup_logging(settings):
     dictConfig(logging_config)
 
 
-@tools.deprecated(
+@deprecated(
     reason='use sopel.tools.get_logger instead',
     version='7.0',
     warning_in='8.0',
