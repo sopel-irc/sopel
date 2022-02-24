@@ -5,7 +5,7 @@ import functools
 from typing import Any, Callable, Dict, Optional, Set, Union
 
 from sopel import privileges
-from sopel.tools import identifiers
+from sopel.tools import identifiers, memories
 
 
 IdentifierFactory = Callable[[str], identifiers.Identifier]
@@ -94,13 +94,32 @@ class Channel:
         assert isinstance(name, identifiers.Identifier)
         self.name = name
         """The name of the channel."""
-        self.users: Dict[identifiers.Identifier, User] = {}
+
+        self.make_identifier: IdentifierFactory = identifier_factory
+        """Factory to create :class:`~sopel.tools.identifiers.Identifier`.
+
+        ``Identifier`` is used for :class:`User`'s nick, and the channel
+        needs to translate nicks from string to ``Identifier`` when
+        manipulating data associated to a user by its nickname.
+        """
+
+        self.users: Dict[
+            identifiers.Identifier,
+            User,
+        ] = memories.SopelIdentifierMemory(
+            identifier_factory=self.make_identifier,
+        )
         """The users in the channel.
 
         This maps nickname :class:`~sopel.tools.identifiers.Identifier`\\s to
         :class:`User` objects.
         """
-        self.privileges: Dict[identifiers.Identifier, int] = {}
+        self.privileges: Dict[
+            identifiers.Identifier,
+            int,
+        ] = memories.SopelIdentifierMemory(
+            identifier_factory=self.make_identifier,
+        )
         """The permissions of the users in the channel.
 
         This maps nickname :class:`~sopel.tools.identifiers.Identifier`\\s to
@@ -131,14 +150,6 @@ class Channel:
 
         Based on server-reported time if the ``server-time`` IRCv3 capability
         is available, otherwise the time Sopel received it.
-        """
-
-        self.make_identifier: IdentifierFactory = identifier_factory
-        """Factory to create :class:`~sopel.tools.identifiers.Identifier`.
-
-        ``Identifier`` is used for :class:`User`'s nick, and the channel
-        needs to translate nicks from string to ``Identifier`` when
-        manipulating data associated to a user by its nickname.
         """
 
     def clear_user(self, nick: identifiers.Identifier) -> None:

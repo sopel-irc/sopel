@@ -109,7 +109,7 @@ class Sopel(irc.AbstractBot):
         self.memory = tools.SopelMemory()
         """
         A thread-safe dict for storage of runtime data to be shared between
-        plugins. See :class:`sopel.tools.SopelMemory`.
+        plugins. See :class:`sopel.tools.memories.SopelMemory`.
         """
 
         self.shutdown_methods = []
