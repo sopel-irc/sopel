@@ -33,7 +33,12 @@ import imp
 import itertools
 import os
 
-import pkg_resources
+try:
+    import importlib_metadata
+except ImportError:
+    # TODO: use stdlib only when possible, after dropping py3.9
+    # stdlib does not support `entry_points(group='filter')` until py3.10
+    import importlib.metadata as importlib_metadata
 
 from . import exceptions, handlers, rules  # noqa
 
@@ -103,7 +108,7 @@ def find_entry_point_plugins(group='sopel.plugins'):
     This function finds plugins declared under a setuptools entry point; by
     default it uses the ``sopel.plugins`` entry point.
     """
-    for entry_point in pkg_resources.iter_entry_points(group):
+    for entry_point in importlib_metadata.entry_points(group=group):
         yield handlers.EntryPointPlugin(entry_point)
 
 
