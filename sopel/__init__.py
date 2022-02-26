@@ -16,7 +16,11 @@ import locale
 import re
 import sys
 
-import pkg_resources
+try:
+    import importlib.metadata as importlib_metadata
+except ImportError:
+    # TODO: remove fallback when dropping py3.7
+    import importlib_metadata
 
 __all__ = [
     'bot',
@@ -41,7 +45,7 @@ if not loc[1] or ('UTF-8' not in loc[1] and 'utf8' not in loc[1]):
           'something like "en_US.UTF-8".', file=sys.stderr)
 
 
-__version__ = pkg_resources.get_distribution('sopel').version
+__version__ = importlib_metadata.version('sopel')
 
 
 def _version_info(version=__version__):
