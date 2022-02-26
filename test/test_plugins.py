@@ -3,8 +3,13 @@ from __future__ import annotations
 
 import sys
 
-import pkg_resources
 import pytest
+
+try:
+    import importlib.metadata as importlib_metadata
+except ImportError:
+    # TODO: remove fallback when dropping py3.9
+    import importlib_metadata
 
 from sopel import plugins
 
@@ -132,14 +137,13 @@ def test_plugin_load_entry_point(tmpdir):
     mod_file = root.join('file_mod.py')
     mod_file.write(MOCK_MODULE_CONTENT)
 
-    # generate setuptools Distribution object
-    distrib = pkg_resources.Distribution(root.strpath)
+    # set up for manual load/import
     sys.path.append(root.strpath)
 
     # load the entry point
     try:
-        entry_point = pkg_resources.EntryPoint(
-            'test_plugin', 'file_mod', dist=distrib)
+        entry_point = importlib_metadata.EntryPoint(
+            'test_plugin', 'file_mod', 'sopel.plugins')
         plugin = plugins.handlers.EntryPointPlugin(entry_point)
         plugin.load()
     finally:

@@ -537,11 +537,11 @@ class EntryPointPlugin(PyModulePlugin):
 
     And this plugin can be loaded with::
 
-        >>> from pkg_resources import iter_entry_points
+        >>> from importlib_metadata import entry_points
         >>> from sopel.plugins.handlers import EntryPointPlugin
         >>> plugin = [
         ...     EntryPointPlugin(ep)
-        ...     for ep in iter_entry_points('sopel.plugins', 'custom')
+        ...     for ep in entry_points(group='sopel.plugins', name='custom')
         ... ][0]
         >>> plugin.load()
         >>> plugin.name
@@ -558,6 +558,9 @@ class EntryPointPlugin(PyModulePlugin):
 
         Entry point is a `standard feature of setuptools`__ for Python, used
         by other applications (like ``pytest``) for their plugins.
+
+        The ``importlib_metadata`` backport package is used on Python versions
+        older than 3.10, but its API is the same as :mod:`importlib.metadata`.
 
         .. __: https://setuptools.readthedocs.io/en/stable/setuptools.html#dynamic-discovery-of-services-and-plugins
 
@@ -598,6 +601,6 @@ class EntryPointPlugin(PyModulePlugin):
         """
         data = super().get_meta_description()
         data.update({
-            'source': str(self.entry_point),
+            'source': self.entry_point.name + ' = ' + self.entry_point.value,
         })
         return data
