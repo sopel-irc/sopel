@@ -18,13 +18,13 @@ order to be used in the application.
 
 At the moment, three types of plugin are handled:
 
-* :class:`PyModulePlugin`: manage plugins that can be imported as Python
+* :class:`PyModulePlugin`: manages plugins that can be imported as Python
   module from a Python package, i.e. where ``from package import name`` works
-* :class:`PyFilePlugin`: manage plugins that are Python files on the filesystem
+* :class:`PyFilePlugin`: manages plugins that are Python files on the filesystem
   or Python directory (with an ``__init__.py`` file inside), that cannot be
   directly imported and extra steps are necessary
-* :class:`EntryPointPlugin`: manage plugins that are declared by a setuptools
-  entry point; other than that, it behaves like a :class:`PyModulePlugin`
+* :class:`EntryPointPlugin`: manages plugins that are declared by an entry
+  point; it otherwise behaves like a :class:`PyModulePlugin`
 
 All expose the same interface and thereby abstract the internal implementation
 away from the rest of the application.
@@ -512,17 +512,17 @@ class PyFilePlugin(PyModulePlugin):
 
 
 class EntryPointPlugin(PyModulePlugin):
-    """Sopel plugin loaded from a ``setuptools`` entry point.
+    """Sopel plugin loaded from an entry point.
 
-    :param entry_point: a ``setuptools`` entry point object
+    :param entry_point: an entry point object
 
-    This handler loads a Sopel plugin exposed by a ``setuptools`` entry point.
-    It expects to be able to load a module object from the entry point, and to
+    This handler loads a Sopel plugin exposed by a package's entry point. It
+    expects to be able to load a module object from the entry point, and to
     work as a :class:`~.PyModulePlugin` from that module.
 
-    By default, Sopel uses the entry point ``sopel.plugins``. To use that for
-    their plugin, developers must define an entry point either in their
-    ``setup.py`` file or their ``setup.cfg`` file::
+    By default, Sopel searches within the entry point group ``sopel.plugins``.
+    To use that for their own plugins, developers must define an entry point
+    either in their ``setup.py`` file or their ``setup.cfg`` file::
 
         # in setup.py file
         setup(
@@ -556,13 +556,13 @@ class EntryPointPlugin(PyModulePlugin):
         Sopel uses the :func:`~sopel.plugins.find_entry_point_plugins` function
         internally to search entry points.
 
-        Entry point is a `standard feature of setuptools`__ for Python, used
-        by other applications (like ``pytest``) for their plugins.
+        Entry points are a `standard packaging mechanism`__ for Python, used by
+        other applications (such as ``pytest``) for their plugins.
 
         The ``importlib_metadata`` backport package is used on Python versions
         older than 3.10, but its API is the same as :mod:`importlib.metadata`.
 
-        .. __: https://setuptools.readthedocs.io/en/stable/setuptools.html#dynamic-discovery-of-services-and-plugins
+        .. __: https://packaging.python.org/en/latest/specifications/entry-points/
 
     """
 
@@ -586,9 +586,8 @@ class EntryPointPlugin(PyModulePlugin):
         :return: meta description information
         :rtype: :class:`dict`
 
-        This returns the same keys as
-        :meth:`PyModulePlugin.get_meta_description`; the ``source`` key is
-        modified to contain the setuptools entry point::
+        This returns the output of :meth:`PyModulePlugin.get_meta_description`
+        but with the ``source`` key modified to reference the entry point::
 
             {
                 'name': 'example',
