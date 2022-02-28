@@ -12,7 +12,7 @@ and only one plugin per unique name, using a specific order:
 
 * extra directories defined in the settings
 * homedir's ``plugins`` directory
-* ``sopel.plugins`` setuptools entry points
+* ``sopel.plugins`` entry point group
 * ``sopel_modules``'s subpackages
 * ``sopel.modules``'s core plugins
 
@@ -98,15 +98,15 @@ def find_sopel_modules_plugins():
 
 
 def find_entry_point_plugins(group='sopel.plugins'):
-    """List plugins from a setuptools entry point group.
+    """List plugins from an entry point group.
 
-    :param str group: setuptools entry point group to look for
-                      (defaults to ``sopel.plugins``)
+    :param str group: entry point group to search in (defaults to
+                      ``sopel.plugins``)
     :return: yield instances of :class:`~.handlers.EntryPointPlugin`
-             created from setuptools entry point given ``group``
+             created from each entry point in the ``group``
 
-    This function finds plugins declared under a setuptools entry point; by
-    default it uses the ``sopel.plugins`` entry point.
+    This function finds plugins declared under an entry point group; by
+    default it looks in the ``sopel.plugins`` group.
     """
     for entry_point in importlib_metadata.entry_points(group=group):
         yield handlers.EntryPointPlugin(entry_point)
@@ -144,7 +144,7 @@ def enumerate_plugins(settings):
 
         * :func:`find_internal_plugins` for internal plugins
         * :func:`find_sopel_modules_plugins` for ``sopel_modules.*`` plugins
-        * :func:`find_entry_point_plugins` for plugins exposed by setuptools
+        * :func:`find_entry_point_plugins` for plugins exposed via packages'
           entry points
         * :func:`find_directory_plugins` for plugins in ``$homedir/plugins``,
           and in extra directories as defined by ``settings.core.extra``
@@ -206,7 +206,7 @@ def get_usable_plugins(settings):
 
     * extra directories defined in the settings
     * homedir's ``plugins`` directory
-    * ``sopel.plugins`` setuptools entry points
+    * ``sopel.plugins`` entry point group
     * ``sopel_modules``'s subpackages
     * ``sopel.modules``'s core plugins
 
