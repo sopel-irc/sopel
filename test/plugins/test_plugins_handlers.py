@@ -4,8 +4,13 @@ from __future__ import annotations
 import os
 import sys
 
-import pkg_resources
 import pytest
+
+try:
+    import importlib.metadata as importlib_metadata
+except ImportError:
+    # TODO: remove fallback when dropping py3.9
+    import importlib_metadata
 
 from sopel.plugins import handlers
 
@@ -62,15 +67,14 @@ def test_get_label_pyfile_loaded(plugin_tmpfile):
 
 
 def test_get_label_entrypoint(plugin_tmpfile):
-    # generate setuptools Distribution object
+    # set up for manual load/import
     distrib_dir = os.path.dirname(plugin_tmpfile.strpath)
-    distrib = pkg_resources.Distribution(distrib_dir)
     sys.path.append(distrib_dir)
 
     # load the entry point
     try:
-        entry_point = pkg_resources.EntryPoint(
-            'test_plugin', 'file_mod', dist=distrib)
+        entry_point = importlib_metadata.EntryPoint(
+            'test_plugin', 'file_mod', 'sopel.plugins')
         plugin = handlers.EntryPointPlugin(entry_point)
         plugin.load()
     finally:

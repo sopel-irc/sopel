@@ -125,7 +125,7 @@ Plugin glossary
 
    Entry point plugin
       A plugin that is an installed Python package and exposed through the
-      ``sopel.plugins`` setuptools entry point.
+      ``sopel.plugins`` entry point group.
 
    Sopelunking
       Action performed by a :term:`Sopelunker`.

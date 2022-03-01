@@ -15,7 +15,7 @@ import logging
 import traceback
 from typing import Callable, Optional
 
-from pkg_resources import parse_version
+from packaging.version import parse as parse_version
 
 from sopel import __version__
 
