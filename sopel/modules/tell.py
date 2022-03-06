@@ -180,6 +180,13 @@ def f_remind(bot, trigger):
         return
 
     tellee = trigger.group(3).rstrip('.,:;')
+
+    # all we care about is having at least one non-whitespace
+    # character after the name
+    if not trigger.group(4):
+        bot.reply("%s %s what?" % (verb, tellee))
+        return
+
     msg = _format_safe_lstrip(trigger.group(2).split(' ', 1)[1])
 
     if not msg:
