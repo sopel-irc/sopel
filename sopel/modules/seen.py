@@ -9,8 +9,6 @@ https://sopel.chat
 """
 from __future__ import annotations
 
-import time
-
 from sopel import plugin
 from sopel.tools.time import seconds_to_human
 
@@ -65,7 +63,9 @@ def seen(bot, trigger):
 @plugin.require_chanmsg
 def note(bot, trigger):
     nick = trigger.nick
-    bot.db.set_nick_value(nick, 'seen_timestamp', time.time())
+    # as of Sopel 8, `trigger.time` is Aware, meaning we should store its value
+    # for timezone safety when comparing it later
+    bot.db.set_nick_value(nick, 'seen_timestamp', trigger.time.timestamp())
     bot.db.set_nick_value(nick, 'seen_channel', trigger.sender)
     bot.db.set_nick_value(nick, 'seen_message', trigger)
     bot.db.set_nick_value(nick, 'seen_action', trigger.ctcp is not None)
