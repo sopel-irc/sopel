@@ -304,6 +304,9 @@ def test_clean_callable_default(tmpconfig, func):
     assert not hasattr(func, 'rate')
     assert not hasattr(func, 'channel_rate')
     assert not hasattr(func, 'global_rate')
+    assert not hasattr(func, 'echo')
+    assert not hasattr(func, 'allow_bots')
+    assert not hasattr(func, 'output_prefix')
     assert not hasattr(func, 'event')
     assert not hasattr(func, 'rule')
     assert not hasattr(func, 'find_rules')
@@ -321,6 +324,9 @@ def test_clean_callable_command(tmpconfig, func):
     setattr(func, 'commands', ['test'])
     loader.clean_callable(func, tmpconfig)
 
+    assert hasattr(func, 'commands')
+    assert func.commands == ['test']
+
     # Default values
     assert hasattr(func, 'unblockable')
     assert func.unblockable is False
@@ -334,9 +340,30 @@ def test_clean_callable_command(tmpconfig, func):
     assert func.channel_rate == 0
     assert hasattr(func, 'global_rate')
     assert func.global_rate == 0
+    assert hasattr(func, 'echo')
+    assert func.echo is False
+    assert hasattr(func, 'allow_bots')
+    assert func.allow_bots is False
+    assert hasattr(func, 'output_prefix')
+    assert func.output_prefix == ''
     assert hasattr(func, 'event')
     assert func.event == ['PRIVMSG']
     assert not hasattr(func, 'rule')
+
+    # idempotency
+    loader.clean_callable(func, tmpconfig)
+    assert func.commands == ['test']
+
+    assert func.unblockable is False
+    assert func.priority == 'medium'
+    assert func.thread is True
+    assert func.rate == 0
+    assert func.channel_rate == 0
+    assert func.global_rate == 0
+    assert func.echo is False
+    assert func.allow_bots is False
+    assert func.output_prefix == ''
+    assert func.event == ['PRIVMSG']
 
 
 def test_clean_callable_event(tmpconfig, func):
@@ -359,6 +386,12 @@ def test_clean_callable_event(tmpconfig, func):
     assert func.channel_rate == 0
     assert hasattr(func, 'global_rate')
     assert func.global_rate == 0
+    assert hasattr(func, 'echo')
+    assert func.echo is False
+    assert hasattr(func, 'allow_bots')
+    assert func.allow_bots is False
+    assert hasattr(func, 'output_prefix')
+    assert func.output_prefix == ''
 
     # idempotency
     loader.clean_callable(func, tmpconfig)
@@ -370,6 +403,9 @@ def test_clean_callable_event(tmpconfig, func):
     assert func.rate == 0
     assert func.channel_rate == 0
     assert func.global_rate == 0
+    assert func.echo is False
+    assert func.allow_bots is False
+    assert func.output_prefix == ''
 
 
 def test_clean_callable_rule(tmpconfig, func):
@@ -398,6 +434,12 @@ def test_clean_callable_rule(tmpconfig, func):
     assert func.channel_rate == 0
     assert hasattr(func, 'global_rate')
     assert func.global_rate == 0
+    assert hasattr(func, 'echo')
+    assert func.echo is False
+    assert hasattr(func, 'allow_bots')
+    assert func.allow_bots is False
+    assert hasattr(func, 'output_prefix')
+    assert func.output_prefix == ''
 
     # idempotency
     loader.clean_callable(func, tmpconfig)
@@ -411,6 +453,9 @@ def test_clean_callable_rule(tmpconfig, func):
     assert func.rate == 0
     assert func.channel_rate == 0
     assert func.global_rate == 0
+    assert func.echo is False
+    assert func.allow_bots is False
+    assert func.output_prefix == ''
 
 
 def test_clean_callable_rule_nick(tmpconfig, func):
@@ -474,6 +519,12 @@ def test_clean_callable_find_rules(tmpconfig, func):
     assert func.channel_rate == 0
     assert hasattr(func, 'global_rate')
     assert func.global_rate == 0
+    assert hasattr(func, 'echo')
+    assert func.echo is False
+    assert hasattr(func, 'allow_bots')
+    assert func.allow_bots is False
+    assert hasattr(func, 'output_prefix')
+    assert func.output_prefix == ''
 
     # idempotency
     loader.clean_callable(func, tmpconfig)
@@ -489,6 +540,9 @@ def test_clean_callable_find_rules(tmpconfig, func):
     assert func.rate == 0
     assert func.channel_rate == 0
     assert func.global_rate == 0
+    assert func.echo is False
+    assert func.allow_bots is False
+    assert func.output_prefix == ''
 
 
 def test_clean_callable_search_rules(tmpconfig, func):
@@ -519,6 +573,12 @@ def test_clean_callable_search_rules(tmpconfig, func):
     assert func.channel_rate == 0
     assert hasattr(func, 'global_rate')
     assert func.global_rate == 0
+    assert hasattr(func, 'echo')
+    assert func.echo is False
+    assert hasattr(func, 'allow_bots')
+    assert func.allow_bots is False
+    assert hasattr(func, 'output_prefix')
+    assert func.output_prefix == ''
 
     # idempotency
     loader.clean_callable(func, tmpconfig)
@@ -534,6 +594,9 @@ def test_clean_callable_search_rules(tmpconfig, func):
     assert func.rate == 0
     assert func.channel_rate == 0
     assert func.global_rate == 0
+    assert func.echo is False
+    assert func.allow_bots is False
+    assert func.output_prefix == ''
 
 
 def test_clean_callable_nickname_command(tmpconfig, func):
@@ -558,6 +621,12 @@ def test_clean_callable_nickname_command(tmpconfig, func):
     assert func.channel_rate == 0
     assert hasattr(func, 'global_rate')
     assert func.global_rate == 0
+    assert hasattr(func, 'echo')
+    assert func.echo is False
+    assert hasattr(func, 'allow_bots')
+    assert func.allow_bots is False
+    assert hasattr(func, 'output_prefix')
+    assert func.output_prefix == ''
 
     # idempotency
     loader.clean_callable(func, tmpconfig)
@@ -568,6 +637,9 @@ def test_clean_callable_nickname_command(tmpconfig, func):
     assert func.rate == 0
     assert func.channel_rate == 0
     assert func.global_rate == 0
+    assert func.echo is False
+    assert func.allow_bots is False
+    assert func.output_prefix == ''
 
 
 def test_clean_callable_action_command(tmpconfig, func):
@@ -817,6 +889,12 @@ def test_clean_callable_intents(tmpconfig, func):
     assert func.channel_rate == 0
     assert hasattr(func, 'global_rate')
     assert func.global_rate == 0
+    assert hasattr(func, 'echo')
+    assert func.echo is False
+    assert hasattr(func, 'allow_bots')
+    assert func.allow_bots is False
+    assert hasattr(func, 'output_prefix')
+    assert func.output_prefix == ''
 
     # idempotency
     loader.clean_callable(func, tmpconfig)
@@ -829,6 +907,9 @@ def test_clean_callable_intents(tmpconfig, func):
     assert func.rate == 0
     assert func.channel_rate == 0
     assert func.global_rate == 0
+    assert func.echo is False
+    assert func.allow_bots is False
+    assert func.output_prefix == ''
 
 
 def test_clean_callable_url(tmpconfig, func):
@@ -850,6 +931,12 @@ def test_clean_callable_url(tmpconfig, func):
     assert func.channel_rate == 0
     assert hasattr(func, 'global_rate')
     assert func.global_rate == 0
+    assert hasattr(func, 'echo')
+    assert func.echo is False
+    assert hasattr(func, 'allow_bots')
+    assert func.allow_bots is False
+    assert hasattr(func, 'output_prefix')
+    assert func.output_prefix == ''
 
     # idempotency
     loader.clean_callable(func, tmpconfig)
@@ -859,3 +946,6 @@ def test_clean_callable_url(tmpconfig, func):
     assert func.rate == 0
     assert func.channel_rate == 0
     assert func.global_rate == 0
+    assert func.echo is False
+    assert func.allow_bots is False
+    assert func.output_prefix == ''
