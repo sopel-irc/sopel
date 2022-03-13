@@ -42,6 +42,11 @@ def shutdown(bot):
 @plugin.unblockable
 def collectlines(bot, trigger):
     """Create a temporary log of what people say"""
+    line = trigger.group()
+    if line.startswith('s/') or line.startswith('s|'):
+        # Don't remember substitutions
+        return
+
     # Add a log for the channel and nick, if there isn't already one
     if trigger.sender not in bot.memory['find_lines']:
         bot.memory['find_lines'][trigger.sender] = SopelIdentifierMemory(
@@ -52,14 +57,10 @@ def collectlines(bot, trigger):
 
     # Update in-memory list of the user's lines in the channel
     line_list = bot.memory['find_lines'][trigger.sender][trigger.nick]
-    line = trigger.group()
-    if line.startswith('s/') or line.startswith('s|'):
-        # Don't remember substitutions
-        return
-    # store messages in reverse order (most recent first)
-    elif line.startswith('\x01ACTION'):  # For /me messages
-        line = line[:-1]
-        line_list.appendleft(line)
+
+    # Messages are stored in reverse order (most recent first)
+    if line.startswith('\x01ACTION'):
+        line_list.appendleft(line[:-1])
     else:
         line_list.appendleft(line)
 
