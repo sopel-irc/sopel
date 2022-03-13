@@ -559,8 +559,10 @@ class EntryPointPlugin(PyModulePlugin):
         Entry points are a `standard packaging mechanism`__ for Python, used by
         other applications (such as ``pytest``) for their plugins.
 
-        The ``importlib_metadata`` backport package is used on Python versions
-        older than 3.10, but its API is the same as :mod:`importlib.metadata`.
+        The ``importlib_metadata`` backport package is used for consistency
+        across all of Sopel's supported Python versions. Its API matches that
+        of :mod:`importlib.metadata` from Python 3.10 and up; Sopel will drop
+        this external requirement when practical.
 
         .. __: https://packaging.python.org/en/latest/specifications/entry-points/
 

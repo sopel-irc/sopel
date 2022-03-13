@@ -3,13 +3,9 @@ from __future__ import annotations
 
 import sys
 
+# TODO: switch to stdlib importlib.metdata when dropping py3.9
+import importlib_metadata
 import pytest
-
-try:
-    import importlib.metadata as importlib_metadata
-except ImportError:
-    # TODO: remove fallback when dropping py3.9
-    import importlib_metadata
 
 from sopel import plugins
 
