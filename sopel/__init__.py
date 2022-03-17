@@ -16,11 +16,9 @@ import locale
 import re
 import sys
 
-try:
-    import importlib.metadata as importlib_metadata
-except ImportError:
-    # TODO: remove fallback when dropping py3.7
-    import importlib_metadata
+# TODO: replace with stdlib importlib.metadata when dropping py3.7
+# version info used in this module works from py3.8+
+import importlib_metadata
 
 __all__ = [
     'bot',

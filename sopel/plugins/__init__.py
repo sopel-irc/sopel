@@ -33,12 +33,11 @@ import imp
 import itertools
 import os
 
-try:
-    import importlib_metadata
-except ImportError:
-    # TODO: use stdlib only when possible, after dropping py3.9
-    # stdlib does not support `entry_points(group='filter')` until py3.10
-    import importlib.metadata as importlib_metadata
+# TODO: use stdlib importlib.metadata when possible, after dropping py3.9.
+# Stdlib does not support `entry_points(group='filter')` until py3.10, but
+# fallback logic is more trouble than it's worth when e.g. clean Ubuntu
+# py3.10 envs include old versions of this backport.
+import importlib_metadata
 
 from . import exceptions, handlers, rules  # noqa
 
