@@ -175,7 +175,9 @@ def _format_safe_lstrip(text):
 
 @plugin.command('tell', 'ask')
 @plugin.nickname_command('tell', 'ask')
-@plugin.example('$nickname, tell dgw he broke something again.')
+@plugin.example('$nickname, tell dgw he broke it again.', user_help=True)
+@plugin.example('.tell ', 'tell whom?')
+@plugin.example('.ask Exirel ', 'ask Exirel what?')
 def f_remind(bot, trigger):
     """Give someone a message the next time they're seen"""
     teller = trigger.nick
@@ -186,6 +188,13 @@ def f_remind(bot, trigger):
         return
 
     tellee = trigger.group(3).rstrip('.,:;')
+
+    # all we care about is having at least one non-whitespace
+    # character after the name
+    if not trigger.group(4):
+        bot.reply("%s %s what?" % (verb, tellee))
+        return
+
     msg = _format_safe_lstrip(trigger.group(2).split(' ', 1)[1])
 
     if not msg:
