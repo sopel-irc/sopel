@@ -29,3 +29,6 @@ vcrpy==2.1.1; python_version == '2.7'
 vcrpy<1.12.0; python_version == '3.3'
 vcrpy<2.1.0; python_version == '3.4'
 vcrpy<3.0.0; python_version >= '3.5'
+# transitive dependency of vcrpy
+# broken on Python 3.3 by use of newer stdlib/internals in 1.14.0
+wrapt<1.14; python_version == '3.3'
