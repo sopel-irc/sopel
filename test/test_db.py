@@ -24,7 +24,7 @@ from sopel.tools import Identifier
 
 TMP_CONFIG = """
 [core]
-owner = Embolalia
+owner = Pepperpots
 db_filename = {db_filename}
 """
 
@@ -57,7 +57,7 @@ def test_execute(db: SopelDB):
 
 def test_connect(db: SopelDB):
     """Test it's possible to get a raw connection and to use it properly."""
-    nick_id = db.get_nick_id('Exirel', create=True)
+    nick_id = db.get_nick_id('MrEricPraline', create=True)
     connection = db.connect()
 
     try:
@@ -65,7 +65,7 @@ def test_connect(db: SopelDB):
         cursor_obj.execute("SELECT nick_id, canonical, slug FROM nicknames")
         results = cursor_obj.fetchall()
         cursor_obj.close()
-        assert results == [(nick_id, 'Exirel', 'exirel')]
+        assert results == [(nick_id, 'MrEricPraline', 'mrericpraline')]
     finally:
         connection.close()
 
@@ -80,7 +80,7 @@ def test_get_uri(db: SopelDB, tmpconfig):
 
 def test_get_nick_id(db: SopelDB):
     """Test get_nick_id does not create NickID by default."""
-    nick = Identifier('Exirel')
+    nick = Identifier('MrEricPraline')
 
     # Attempt to get nick ID: it is not created by default
     with pytest.raises(ValueError):
@@ -94,17 +94,17 @@ def test_get_nick_id(db: SopelDB):
         nickname = session.execute(
             select(Nicknames).where(Nicknames.nick_id == nick_id)
         ).scalar_one()  # will raise if not one and exactly one
-    assert nickname.canonical == 'Exirel'
+    assert nickname.canonical == 'MrEricPraline'
     assert nickname.slug == nick.lower()
 
 
 @pytest.mark.parametrize('name, slug, variant', (
     # Check case insensitive with ASCII only
-    ('Embolalia', 'embolalia', 'eMBOLALIA'),
+    ('MrEricPraline', 'mrericpraline', 'mRErICPraLINE'),
     # Ensures case conversion is handled properly
     ('[][]', '{}{}', '[}{]'),
     # Unicode, just in case
-    ('EmbölaliÅ', 'embölaliÅ', 'EMBöLALIÅ'),
+    ('MrÉrïcPrâliné', 'mrÉrïcprâliné', 'MRÉRïCPRâLINé'),
 ))
 def test_get_nick_id_casemapping(db: SopelDB, name, slug, variant):
     """Test get_nick_id is case-insensitive through an Identifier."""
@@ -181,8 +181,8 @@ def test_get_nick_id_migration(db: SopelDB):
 
 
 def test_alias_nick(db: SopelDB):
-    nick = 'Embolalia'
-    aliases = ['EmbölaliÅ', 'Embo`work', 'Embo']
+    nick = 'MrEricPraline'
+    aliases = ['MrÉrïcPrâliné', 'John`Cleese', 'DeadParrot']
 
     nick_id = db.get_nick_id(nick, create=True)
     for alias in aliases:
@@ -207,7 +207,7 @@ def test_alias_nick(db: SopelDB):
     ['structured', 'value'],
 ))
 def test_set_nick_value(db: SopelDB, value):
-    nick = 'TestNick'
+    nick = 'Pepperpots'
     db.set_nick_value(nick, 'testkey', value)
     assert db.get_nick_value(nick, 'testkey') == value, (
         'The value retrieved must be exactly what was stored.')
@@ -215,26 +215,26 @@ def test_set_nick_value(db: SopelDB, value):
 
 def test_set_nick_value_update(db: SopelDB):
     """Test set_nick_value can update an existing value."""
-    db.set_nick_value('TestNick', 'testkey', 'first-value')
-    db.set_nick_value('TestNick', 'otherkey', 'other-value')
-    db.set_nick_value('OtherNick', 'testkey', 'other-nick-value')
+    db.set_nick_value('Pepperpots', 'testkey', 'first-value')
+    db.set_nick_value('Pepperpots', 'otherkey', 'other-value')
+    db.set_nick_value('Vikings', 'testkey', 'other-nick-value')
 
     # sanity check: ensure every (nick, key, value) is correct
-    assert db.get_nick_value('TestNick', 'testkey') == 'first-value'
-    assert db.get_nick_value('TestNick', 'otherkey') == 'other-value'
-    assert db.get_nick_value('OtherNick', 'testkey') == 'other-nick-value'
+    assert db.get_nick_value('Pepperpots', 'testkey') == 'first-value'
+    assert db.get_nick_value('Pepperpots', 'otherkey') == 'other-value'
+    assert db.get_nick_value('Vikings', 'testkey') == 'other-nick-value'
 
     # update only one key
-    db.set_nick_value('TestNick', 'testkey', 'new-value')
+    db.set_nick_value('Pepperpots', 'testkey', 'new-value')
 
     # check new value while old values are still the same
-    assert db.get_nick_value('TestNick', 'testkey') == 'new-value'
-    assert db.get_nick_value('TestNick', 'otherkey') == 'other-value'
-    assert db.get_nick_value('OtherNick', 'testkey') == 'other-nick-value'
+    assert db.get_nick_value('Pepperpots', 'testkey') == 'new-value'
+    assert db.get_nick_value('Pepperpots', 'otherkey') == 'other-value'
+    assert db.get_nick_value('Vikings', 'testkey') == 'other-nick-value'
 
 
 def test_delete_nick_value(db: SopelDB):
-    nick = 'TestUser'
+    nick = 'TerryGilliam'
     db.set_nick_value(nick, 'testkey', 'test-value')
 
     # sanity check
@@ -248,7 +248,7 @@ def test_delete_nick_value(db: SopelDB):
 
 def test_delete_nick_value_none(db: SopelDB):
     """Test method doesn't raise an error when there is nothing to delete."""
-    nick = 'TestUser'
+    nick = 'TerryGilliam'
 
     # this user doesn't even exist
     db.delete_nick_value(nick, 'testkey')
@@ -275,7 +275,7 @@ def test_delete_nick_value_none(db: SopelDB):
     ['structured', 'value'],
 ))
 def test_get_nick_value(db: SopelDB, value):
-    nick = 'TestUser'
+    nick = 'TerryGilliam'
     nick_id = db.get_nick_id(nick, create=True)
 
     with db.session() as session:
@@ -290,12 +290,12 @@ def test_get_nick_value(db: SopelDB, value):
     assert db.get_nick_value(nick, 'testkey') == value
     assert db.get_nick_value(nick, 'otherkey') is None
     assert db.get_nick_value('NotTestUser', 'testkey') is None, (
-        'This key must be defined for TestUser only.')
+        'This key must be defined for TerryGilliam only.')
 
 
 def test_get_nick_value_default(db: SopelDB):
-    assert db.get_nick_value("TestUser", "nokey") is None
-    assert db.get_nick_value("TestUser", "nokey", "default") == "default"
+    assert db.get_nick_value("TerryGilliam", "nokey") is None
+    assert db.get_nick_value("TerryGilliam", "nokey", "default") == "default"
 
 
 def test_unalias_nick(db: SopelDB):
@@ -336,20 +336,20 @@ def test_unalias_nick(db: SopelDB):
 
 def test_unalias_nick_one_or_none(db: SopelDB):
     # this will create the first version of the nick
-    db.get_nick_id('Exirel', create=True)
+    db.get_nick_id('MrEricPraline', create=True)
 
     # assert you can't unalias a unique nick
     with pytest.raises(ValueError):
-        db.unalias_nick('Exirel')
+        db.unalias_nick('MrEricPraline')
 
     # and you can't either with a non-existing nick
     with pytest.raises(ValueError):
-        db.unalias_nick('xnaas')
+        db.unalias_nick('gumbys')
 
 
 def test_forget_nick_group(db: SopelDB):
     session = db.ssession()
-    aliases = ['Embolalia', 'Embo']
+    aliases = ['MrEricPraline', 'Praline']
     nick_id = 42
     for alias in aliases:
         nn = Nicknames(nick_id=nick_id, slug=Identifier(alias).lower(), canonical=alias)
@@ -374,7 +374,7 @@ def test_forget_nick_group(db: SopelDB):
 
 def test_merge_nick_groups(db: SopelDB):
     session = db.ssession()
-    aliases = ['Embolalia', 'Embo']
+    aliases = ['MrEricPraline', 'Praline']
     for nick_id, alias in enumerate(aliases):
         nn = Nicknames(nick_id=nick_id, slug=Identifier(alias).lower(), canonical=alias)
         session.add(nn)
