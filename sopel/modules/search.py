@@ -19,7 +19,7 @@ from sopel.tools import web
 PLUGIN_OUTPUT_PREFIX = '[search] '
 
 header_spoof = {
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.87 Safari/537.36'
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.87 Safari/537.36',
 }
 r_bing = re.compile(r'<li(?: class="b_algo")?><h2><a href="([^"]+)"')
 r_duck = re.compile(r'nofollow" class="[^"]+" href="(?!(?:https?:\/\/r\.search\.yahoo)|(?:https?:\/\/duckduckgo\.com\/y\.js)(?:\/l\/\?kh=-1&amp;uddg=))(.*?)">')
@@ -32,9 +32,11 @@ def bing_search(query, lang='en-US'):
         'q': query,
     }
     response = requests.get(base, parameters, headers=header_spoof)
-    m = r_bing.search(response.text)
-    if m:
-        return m.group(1)
+
+    match = r_bing.search(response.text)
+
+    if match:
+        return web.decode(match.group(1))
 
 
 def duck_search(query):
@@ -44,12 +46,15 @@ def duck_search(query):
         'kl': 'us-en',
         'q': query,
     }
-    bytes = requests.get(base, parameters, headers=header_spoof).text
-    if 'web-result' in bytes:  # filter out the adds on top of the page
-        bytes = bytes.split('web-result')[1]
-    m = r_duck.search(bytes)
-    if m:
-        return web.decode(m.group(1))
+    content = requests.get(base, parameters, headers=header_spoof).text
+
+    if 'web-result' in content:  # filter out the ads on top of the page
+        content = content.split('web-result')[1]
+
+    match = r_duck.search(content)
+
+    if match:
+        return web.decode(match.group(1))
 
 
 def duck_api(query):
@@ -129,8 +134,10 @@ def bing(bot, trigger):
     if not trigger.group(2):
         bot.reply('{}bing what?'.format(bot.settings.core.help_prefix))
         return
+
     query = trigger.group(2)
     result = bing_search(query)
+
     if result:
         bot.say(result)
     else:
@@ -150,6 +157,7 @@ def search(bot, trigger):
     if not trigger.group(2):
         bot.reply('{}search for what?'.format(bot.settings.core.help_prefix))
         return
+
     query = trigger.group(2)
     bu = bing_search(query) or '-'
     du = duck_search(query) or '-'
@@ -184,7 +192,9 @@ def suggest(bot, trigger):
     if not trigger.group(2):
         bot.reply('{}suggest what?'.format(bot.settings.core.help_prefix))
         return
+
     query = trigger.group(2)
+
     # Using Google isn't necessarily ideal, but at most they'll be able to build
     # a composite profile of all users on a given instance, not a profile of any
     # single user. This can be switched out as soon as someone finds (or builds)
@@ -195,8 +205,10 @@ def suggest(bot, trigger):
         'hl': 'en',
         'q': query,
     }
+
     response = requests.get(base, parameters)
     answer = xmltodict.parse(response.text)['toplevel']
+
     try:
         answer = answer['CompleteSuggestion'][0]['suggestion']['@data']
     except TypeError:
