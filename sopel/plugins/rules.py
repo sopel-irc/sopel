@@ -982,10 +982,7 @@ class Rule(AbstractRule):
         intent = pretrigger.tags.get('intent')
         nick = pretrigger.nick
         is_bot_message = (
-            (
-                'draft/bot' in pretrigger.tags or  # can be removed...someday
-                'bot' in pretrigger.tags
-            ) and
+            'bot' in pretrigger.tags and
             event in ["PRIVMSG", "NOTICE"]
         )
         is_echo_message = (
