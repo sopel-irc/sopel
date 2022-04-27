@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import datetime
 import time
+import pytz
 
 from sopel import plugin
 from sopel.tools.time import seconds_to_human
@@ -40,7 +41,7 @@ def seen(bot, trigger):
     message = bot.db.get_nick_value(nick, 'seen_message')
     action = bot.db.get_nick_value(nick, 'seen_action')
 
-    saw = datetime.datetime.utcfromtimestamp(timestamp)
+    saw = datetime.datetime.fromtimestamp(timestamp, pytz.utc)
     delta = seconds_to_human((trigger.time - saw).total_seconds())
 
     msg = "I last saw " + nick
