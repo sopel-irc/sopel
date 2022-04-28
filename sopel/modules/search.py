@@ -118,7 +118,7 @@ def duck(bot, trigger):
             # This check exists because of issue #1415.
             # The shortcut link will take the user there.
             msg += " Try again with at most one 'site:' operator."
-            msg += " See https://sopel.chat/site-op for why."
+            msg += " See https://sopel.chat/i/1415 for why."
         bot.reply(msg)
 
 
@@ -140,7 +140,7 @@ def bing(bot, trigger):
             # This check exists because of issue #1415.
             # The shortcut link will take the user there.
             msg += " Try again with at most one 'site:' operator."
-            msg += " See https://sopel.chat/site-op for why."
+            msg += " See https://sopel.chat/i/1415 for why."
         bot.reply(msg)
 
 
@@ -162,7 +162,7 @@ def search(bot, trigger):
             # This check exists because of issue #1415.
             # The shortcut link will take the user there.
             msg += " Try again with at most one 'site:' operator."
-            msg += " See https://sopel.chat/site-op for why."
+            msg += " See https://sopel.chat/i/1415 for why."
         bot.reply(msg)
         return
     elif bu == du:
