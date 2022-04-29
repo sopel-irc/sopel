@@ -116,9 +116,10 @@ def duck(bot, trigger):
     else:
         msg = "No results found for '%s'." % query
         if query.count('site:') >= 2:
-            # This check exists because of issue #1415. The git.io link will take the user there.
-            # (Better a sopel.chat link, but it's not set up to do that. This is shorter anyway.)
-            msg += " Try again with at most one 'site:' operator. See https://git.io/fpKtP for why."
+            # This check exists because of issue #1415.
+            # The shortcut link will take the user there.
+            msg += " Try again with at most one 'site:' operator."
+            msg += " See https://sopel.chat/i/1415 for why."
         bot.reply(msg)
 
 
@@ -137,9 +138,10 @@ def bing(bot, trigger):
     else:
         msg = "No results found for '%s'." % query
         if query.count('site:') >= 2:
-            # This check exists because of issue #1415. The git.io link will take the user there.
-            # (Better a sopel.chat link, but it's not set up to do that. This is shorter anyway.)
-            msg += " Try again with at most one 'site:' operator. See https://git.io/fpKtP for why."
+            # This check exists because of issue #1415.
+            # The shortcut link will take the user there.
+            msg += " Try again with at most one 'site:' operator."
+            msg += " See https://sopel.chat/i/1415 for why."
         bot.reply(msg)
 
 
@@ -158,9 +160,10 @@ def search(bot, trigger):
     if bu == '-' and du == '-':
         msg = "No results found for '%s'." % query
         if query.count('site:') >= 2:
-            # This check exists because of issue #1415. The git.io link will take the user there.
-            # (Better a sopel.chat link, but it's not set up to do that. This is shorter anyway.)
-            msg += " Try again with at most one 'site:' operator. See https://git.io/fpKtP for why."
+            # This check exists because of issue #1415.
+            # The shortcut link will take the user there.
+            msg += " Try again with at most one 'site:' operator."
+            msg += " See https://sopel.chat/i/1415 for why."
         bot.reply(msg)
         return
     elif bu == du:
