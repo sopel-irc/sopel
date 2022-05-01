@@ -2,6 +2,19 @@ This file is used to auto-generate the "Changelog" section of Sopel's website.
 When adding new entries, follow the style guide in NEWS.spec.md to avoid
 causing problems with the site build.
 
+Changes between 7.1.8 and 7.1.9
+===============================
+
+Plugin changes
+--------------
+
+* search: replace deprecated git.io link in messaging [[#2271][]]
+* tell: fix exception when message is missing [[#2264][]]
+
+[#2264]: https://github.com/sopel-irc/sopel/pull/2264
+[#2271]: https://github.com/sopel-irc/sopel/pull/2271
+
+
 Changes between 7.1.7 and 7.1.8
 ===============================
 
