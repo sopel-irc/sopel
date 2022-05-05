@@ -9,9 +9,6 @@ https://sopel.chat
 """
 from __future__ import annotations
 
-import datetime
-import time
-
 from sopel import plugin
 from sopel.tools.time import seconds_to_human
 
@@ -31,8 +28,8 @@ def seen(bot, trigger):
         bot.reply("I'm right here!")
         return
 
-    timestamp = bot.db.get_nick_value(nick, 'seen_timestamp')
-    if not timestamp:
+    saw = bot.db.get_nick_value(nick, 'seen_timestamp')
+    if not saw:
         bot.reply("Sorry, I haven't seen {nick} around.".format(nick=nick))
         return
 
@@ -40,8 +37,8 @@ def seen(bot, trigger):
     message = bot.db.get_nick_value(nick, 'seen_message')
     action = bot.db.get_nick_value(nick, 'seen_action')
 
-    saw = datetime.datetime.utcfromtimestamp(timestamp)
-    delta = seconds_to_human((trigger.time - saw).total_seconds())
+    # as of Sopel 8, trigger.time is an aware datetime
+    delta = seconds_to_human(trigger.time.timestamp() - saw)
 
     msg = "I last saw " + nick
     if bot.make_identifier(channel) == trigger.sender:
@@ -66,7 +63,9 @@ def seen(bot, trigger):
 @plugin.require_chanmsg
 def note(bot, trigger):
     nick = trigger.nick
-    bot.db.set_nick_value(nick, 'seen_timestamp', time.time())
+    # as of Sopel 8, `trigger.time` is Aware, meaning we should store its value
+    # for timezone safety when comparing it later
+    bot.db.set_nick_value(nick, 'seen_timestamp', trigger.time.timestamp())
     bot.db.set_nick_value(nick, 'seen_channel', trigger.sender)
     bot.db.set_nick_value(nick, 'seen_message', trigger)
     bot.db.set_nick_value(nick, 'seen_action', trigger.ctcp is not None)
