@@ -77,7 +77,7 @@ class AbstractIRCBackend(abc.ABC):
         :return: the raw message to send through the connection
         :rtype: str
 
-        From :rfc:`2812` Internet Relay Chat: Client Protocol, Section 2.3:
+        From the IRC Client Protocol specification, :rfc:`2812#section-2.3`:
 
             IRC messages are always lines of characters terminated with a
             CR-LF (Carriage Return - Line Feed) pair, and these messages SHALL

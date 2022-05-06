@@ -32,6 +32,7 @@ extensions = [
     'sphinx.ext.autosectionlabel',
     'sphinx.ext.intersphinx',
     'sphinxcontrib.autoprogram',
+    'sphinx_rfcsection',
 ]
 intersphinx_mapping = {
     'python': ('https://docs.python.org/3/', None),
