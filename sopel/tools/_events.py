@@ -14,6 +14,8 @@ class events(str, Enum):
     # ircds.
     RPL_ISUPPORT = '005'
     RPL_WHOSPCRPL = '354'
+    RPL_INVITELIST = '336'
+    RPL_ENDOFINVITELIST = '337'
 
     # ################################################################### IRC v3
     # ## 3.1
@@ -183,8 +185,8 @@ class events(str, Enum):
     RPL_MYINFO = '004'
     RPL_BOUNCE = '005'
     RPL_UNIQOPIS = '325'
-    RPL_INVITELIST = '346'
-    RPL_ENDOFINVITELIST = '347'
+    RPL_INVEXLIST = '346'
+    RPL_ENDOFINVEXLIST = '347'
     RPL_EXCEPTLIST = '348'
     RPL_ENDOFEXCEPTLIST = '349'
     RPL_YOURESERVICE = '383'
