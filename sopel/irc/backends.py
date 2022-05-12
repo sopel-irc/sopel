@@ -238,10 +238,21 @@ class AsyncioBackend(AbstractIRCBackend):
                 LOGGER.debug('No data received.')
                 continue
 
+            # decode content to unicode
+            try:
+                data: str = self.decode_line(line)
+            except ValueError:
+                LOGGER.error('Unable to decode line from IRC server: %r', line)
+                continue
+
             # use bot's callbacks
-            data = self.decode_line(line)
-            self.bot.log_raw(data, '<<')
-            self.bot.on_message(data)
+            try:
+                self.bot.log_raw(data, '<<')
+                self.bot.on_message(data)
+            except Exception:
+                LOGGER.exception('Unexpected exception on message handling.')
+                LOGGER.warning('Stopping the backend after error.')
+                break
 
         # cancel timeout tasks when reading loop ends
         self._cancel_timeout_tasks()

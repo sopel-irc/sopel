@@ -76,7 +76,7 @@ class AbstractIRCBackend(abc.ABC):
                 try:
                     data = str(line, encoding='iso8859-1')
                 except UnicodeDecodeError:
-                    raise RuntimeError('Unable to decode data from server.')
+                    raise ValueError('Unable to decode data from server.')
 
         return data
 
