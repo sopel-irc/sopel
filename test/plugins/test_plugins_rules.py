@@ -658,16 +658,10 @@ def test_rule_match_privmsg_bot_tag(mockbot):
     regex = re.compile(r'.*')
     rule = rules.Rule([regex])
 
-    line = '@draft/bot :TestBot!sopel@example.com PRIVMSG #sopel :Hi!'
-    pretrigger = trigger.PreTrigger(mockbot.nick, line)
-    assert not list(rule.match(mockbot, pretrigger)), (
-        'Line with `draft/bot` tag must be ignored'
-    )
-
     line = '@bot :TestBot!sopel@example.com PRIVMSG #sopel :Hi!'
     pretrigger = trigger.PreTrigger(mockbot.nick, line)
     assert not list(rule.match(mockbot, pretrigger)), (
-        'Line with final/ratified `bot` tag must be ignored'
+        'Line with `bot` tag must be ignored'
     )
 
 
