@@ -2,10 +2,7 @@
 The bot and its state
 =====================
 
-.. autoclass:: sopel.bot.Sopel
+.. automodule:: sopel.bot
    :members:
    :inherited-members:
    :show-inheritance:
-
-.. autoclass:: sopel.bot.SopelWrapper
-   :members:

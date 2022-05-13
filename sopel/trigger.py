@@ -1,4 +1,12 @@
-"""Triggers are how Sopel tells callables about their runtime context."""
+"""Triggers are how Sopel tells callables about their runtime context.
+
+A :class:`~.trigger.Trigger` is the main type of user input plugins will see.
+
+Sopel uses :class:`~.trigger.PreTrigger`\\s internally while processing
+incoming IRC messages. Plugin authors can reasonably expect that their code
+will never receive one. They are documented here for completeness, and for the
+aid of Sopel's core development.
+"""
 from __future__ import annotations
 
 import datetime
