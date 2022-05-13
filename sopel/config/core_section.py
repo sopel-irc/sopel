@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-import os.path
-
 from sopel.config.types import (
     BooleanAttribute,
     ChoiceAttribute,
@@ -21,29 +19,6 @@ COMMAND_DEFAULT_HELP_PREFIX = '.'
 """Default help prefix used in commands' usage messages."""
 URL_DEFAULT_SCHEMES = ['http', 'https', 'ftp']
 """Default URL schemes allowed for URLs."""
-
-
-def _find_certs():
-    """Find the TLS root CA store.
-
-    :returns: path to CA store file
-    :rtype: str
-    """
-    # check if the root CA store is at a known location
-    locations = [
-        '/etc/pki/tls/cert.pem',  # best first guess
-        '/etc/ssl/certs/ca-certificates.crt',  # Debian
-        '/etc/ssl/cert.pem',  # FreeBSD base OpenSSL
-        '/usr/local/openssl/cert.pem',  # FreeBSD userland OpenSSL
-        '/etc/pki/tls/certs/ca-bundle.crt',  # RHEL 6 / Fedora
-        '/etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem',  # RHEL 7 / CentOS
-        '/etc/pki/tls/cacert.pem',  # OpenELEC
-        '/etc/ssl/ca-bundle.pem',  # OpenSUSE
-    ]
-    for certs in locations:
-        if os.path.isfile(certs):
-            return certs
-    return None
 
 
 def configure(config):
@@ -228,8 +203,8 @@ class CoreSection(StaticSection):
 
     """
 
-    ca_certs = FilenameAttribute('ca_certs', default=_find_certs())
-    """The path to the CA certs ``.pem`` file.
+    ca_certs = FilenameAttribute('ca_certs')
+    """The path to the CA certs ``PEM`` file.
 
     Example:
 
@@ -237,8 +212,7 @@ class CoreSection(StaticSection):
 
         ca_certs = /etc/ssl/certs/ca-certificates.crt
 
-    If not specified, Sopel will try to find the certificate trust store
-    itself from a set of known locations.
+    If not specified, the system default will be used.
 
     If the given value is not an absolute path, it will be interpreted relative
     to the directory containing the config file with which Sopel was started.
