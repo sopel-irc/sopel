@@ -1006,21 +1006,21 @@ class CoreSection(StaticSection):
     ``systemd`` or similar.
     """
 
-    port = ValidatedAttribute('port', int, default=6667)
+    port = ValidatedAttribute('port', int, default=6697)
     """The port to connect on.
 
-    :default: ``6667`` normally; ``6697`` if :attr:`use_ssl` is ``True``
+    :default: ``6697``
 
     .. highlight:: ini
 
     **Required**::
 
-        port = 6667
-
-    And usually when SSL is enabled::
-
         port = 6697
-        use_ssl = yes
+
+    Or if SSL is disabled::
+
+        port = 6667
+        use_ssl = false
 
     """
 
@@ -1213,16 +1213,16 @@ class CoreSection(StaticSection):
 
     """
 
-    use_ssl = BooleanAttribute('use_ssl', default=False)
+    use_ssl = BooleanAttribute('use_ssl', default=True)
     """Whether to use a SSL/TLS encrypted connection.
 
-    :default: ``False``
+    :default: ``True``
 
-    Example with SSL on:
+    Example with SSL off:
 
     .. code-block:: ini
 
-        use_ssl = yes
+        use_ssl = false
 
     """
 
@@ -1248,7 +1248,7 @@ class CoreSection(StaticSection):
 
     .. code-block:: ini
 
-        use_ssl = yes
-        verify_ssl = yes
+        use_ssl = true
+        verify_ssl = true
 
     """
