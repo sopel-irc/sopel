@@ -13,7 +13,7 @@ who should worry about :class:`sopel.bot.Sopel` only.
 .. important::
 
     When working on core IRC protocol related features, consult protocol
-    documentation at https://www.irchelp.org/protocol/rfc/
+    documentation at https://modern.ircdocs.horse/
 
 """
 # Copyright 2008, Sean B. Palmer, inamidst.com
