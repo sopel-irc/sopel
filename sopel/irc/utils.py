@@ -5,26 +5,6 @@ from __future__ import annotations
 
 from typing import NamedTuple
 
-from dns import rdtypes, resolver
-
-
-def get_cnames(domain):
-    """Determine the CNAMEs for a given domain.
-
-    :param str domain: domain to check
-    :return: list (of str)
-    """
-    try:
-        answer = resolver.query(domain, "CNAME")
-    except resolver.NoAnswer:
-        return []
-
-    return [
-        data.to_text()[:-1]
-        for data in answer
-        if isinstance(data, rdtypes.ANY.CNAME.CNAME)
-    ]
-
 
 def safe(string):
     """Remove newlines from a string.
