@@ -297,13 +297,19 @@ def title_auto(bot: SopelWrapper, trigger: Trigger):
     if re.match(bot.config.core.prefix + r'\S+', trigger):
         return
 
-    # Avoid fetching known malicious links
-    if 'safety_cache' in bot.memory and trigger in bot.memory['safety_cache']:
-        if bot.memory['safety_cache'][trigger]['positives'] > 1:
-            return
-
-    urls = web.search_urls(
+    unchecked_urls = web.search_urls(
         trigger, exclusion_char=bot.config.url.exclusion_char, clean=True)
+
+    urls = []
+    for url in unchecked_urls:
+        # Avoid fetching known malicious links
+        if url in bot.memory.get("safety_cache", {}):
+            if bot.memory["safety_cache"][url]["positives"] > 0:
+                continue
+        netloc = urlparse(url).netloc.lower()
+        if netloc in bot.memory.get("safety_cache_local", {}):
+            continue
+        urls.append(url)
 
     for url, title, domain, tinyurl, dispatched in process_urls(bot, trigger, urls):
         if not dispatched:
@@ -313,7 +319,7 @@ def title_auto(bot: SopelWrapper, trigger: Trigger):
             # Guard against responding to other instances of this bot.
             if message != trigger:
                 bot.say(message)
-        bot.memory["last_seen_url"][trigger.sender] = url
+        bot.memory['last_seen_url'][trigger.sender] = url
 
 
 def process_urls(
