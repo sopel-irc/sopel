@@ -13,7 +13,6 @@ import inspect
 import itertools
 import logging
 import re
-import signal
 import threading
 import time
 from types import MappingProxyType
@@ -30,24 +29,12 @@ from sopel.trigger import PreTrigger, Trigger
 __all__ = ['Sopel', 'SopelWrapper']
 
 LOGGER = logging.getLogger(__name__)
-QUIT_SIGNALS = [
-    getattr(signal, name)
-    for name in ['SIGUSR1', 'SIGTERM', 'SIGINT']
-    if hasattr(signal, name)
-]
-RESTART_SIGNALS = [
-    getattr(signal, name)
-    for name in ['SIGUSR2', 'SIGILL']
-    if hasattr(signal, name)
-]
-SIGNALS = QUIT_SIGNALS + RESTART_SIGNALS
 
 
 class Sopel(irc.AbstractBot):
     def __init__(self, config, daemon=False):
         super().__init__(config)
         self._daemon = daemon  # Used for iPython. TODO something saner here
-        self.wantsrestart = False
         self._running_triggers = []
         self._running_triggers_lock = threading.Lock()
         self._plugins: Dict[str, Any] = {}
@@ -227,47 +214,6 @@ class Sopel(irc.AbstractBot):
             raise ValueError('Unknown channel %s' % channel)
 
         return self.channels[channel].has_privilege(self.nick, privilege)
-
-    # signal handlers
-
-    def set_signal_handlers(self) -> None:
-        """Set signal handlers for the bot.
-
-        Before running the bot, this method can be called from the main thread
-        to setup signals. If the bot is connected, upon receiving a signal it
-        will send a ``QUIT`` message. Otherwise, it raises a
-        :exc:`KeyboardInterrupt` error.
-
-        .. note::
-
-            Per the Python documentation of :func:`signal.signal`:
-
-                When threads are enabled, this function can only be called from
-                the main thread; attempting to call it from other threads will
-                cause a :exc:`ValueError` exception to be raised.
-
-        """
-        for obj in SIGNALS:
-            signal.signal(obj, self._signal_handler)
-
-    def _signal_handler(self, sig, frame) -> None:
-        if sig in QUIT_SIGNALS:
-            if self.backend.is_connected():
-                LOGGER.warning("Got quit signal, sending QUIT to server.")
-                self.quit('Closing')
-            else:
-                self.hasquit = True  # mark the bot as "want to quit"
-                LOGGER.warning("Got quit signal.")
-                raise KeyboardInterrupt
-        elif sig in RESTART_SIGNALS:
-            if self.backend.is_connected():
-                LOGGER.warning("Got restart signal, sending QUIT to server.")
-                self.restart('Restarting')
-            else:
-                LOGGER.warning("Got restart signal.")
-                self.wantsrestart = True  # mark the bot as "want to restart"
-                self.hasquit = True  # mark the bot as "want to quit"
-                raise KeyboardInterrupt
 
     # setup
 
@@ -1172,14 +1118,6 @@ class Sopel(irc.AbstractBot):
             match = regex.search(url)
             if match:
                 yield function, match
-
-    def restart(self, message: str) -> None:
-        """Disconnect from IRC and restart the bot.
-
-        :param str message: QUIT message to send (e.g. "Be right back!")
-        """
-        self.wantsrestart = True
-        self.quit(message)
 
 
 class SopelWrapper:

@@ -1,350 +1,335 @@
 # Copyright 2019, Florian Strzelecki <florian.strzelecki@gmail.com>
 #
 # Licensed under the Eiffel Forum License 2.
-# When working on core IRC protocol related features, consult protocol
-# documentation at http://www.irchelp.org/irchelp/rfc/
 from __future__ import annotations
 
-import asynchat
-import asyncore
-import datetime
-import errno
-import inspect
+import asyncio
 import logging
-import os
-import socket
+import signal
 import ssl
 import threading
+from typing import Dict, Optional, Tuple, TYPE_CHECKING
 
-from sopel.tools import jobs
 from .abstract_backends import AbstractIRCBackend
-from .utils import get_cnames
+
+
+if TYPE_CHECKING:
+    from sopel.irc import AbstractBot
+    from sopel.trigger import PreTrigger
 
 
 LOGGER = logging.getLogger(__name__)
+QUIT_SIGNALS = [
+    getattr(signal, name)
+    for name in ['SIGUSR1', 'SIGTERM', 'SIGINT']
+    if hasattr(signal, name)
+]
+RESTART_SIGNALS = [
+    getattr(signal, name)
+    for name in ['SIGUSR2', 'SIGILL']
+    if hasattr(signal, name)
+]
 
 
-def _send_ping(backend):
-    if not backend.is_connected():
-        return
+class AsyncioBackend(AbstractIRCBackend):
+    """IRC Backend implementation using :mod:`asyncio`.
 
-    events = []
-    need_ping = True
-
-    # Ensure we have a time to check first
-    if backend.last_event_at:
-        events.append(backend.last_event_at)
-
-    if backend.last_ping_at:
-        events.append(backend.last_ping_at)
-
-    # At least a PING was sent, or a message was received
-    if events:
-        last_event = max(events)
-        dt = datetime.datetime.utcnow() - last_event
-        time_passed = dt.total_seconds()
-        need_ping = time_passed > backend.ping_interval
-
-    # Send PING only if needed
-    if need_ping:
-        try:
-            backend.send_ping(backend.host)
-            backend.last_ping_at = datetime.datetime.utcnow()
-        except socket.error:
-            LOGGER.exception('Socket error on PING')
-
-
-def _check_timeout(backend):
-    if not backend.is_connected():
-        return
-    dt = datetime.datetime.utcnow() - backend.last_event_at
-    time_passed = dt.total_seconds()
-    if time_passed > backend.server_timeout:
-        LOGGER.error(
-            'Server timeout detected after %ss; closing.', time_passed)
-        # discard buffers: no need to read/write anything more, just quit
-        LOGGER.debug('Discard current buffers.')
-        backend.discard_buffers()
-        # close now
-        backend.handle_close()
-
-
-class AsynchatBackend(AbstractIRCBackend, asynchat.async_chat):
-    """IRC backend implementation using :mod:`asynchat` (:mod:`asyncore`).
-
-    :param bot: a Sopel instance
-    :type bot: :class:`sopel.bot.Sopel`
-    :param int server_timeout: connection timeout in seconds
-    :param int ping_interval: ping interval in seconds
-
-    The ``server_timeout`` option defaults to ``120`` seconds if not provided.
-
-    The ``ping_interval`` defaults to ``server_timeout * 0.45`` if not specified.
+    :param bot: an instance of a bot that uses the backend
+    :param host: hostname/IP to connect to
+    :param port: port to connect to
+    :param source_address: optional source address as a tuple of
+                           ``(host, port)``
+    :param server_timeout: optional time (in seconds) before the backend reach
+                           a timeout (defaults to 120s)
+    :param ping_interval: optional ping interval (in seconds) between
+                          last message received and sending a PING to the
+                          server (defaults to ``server_timeout * 0.45``)
+    :param use_ssl: if the connection must use SSL/TLS or not
+    :param certfile: optional location of the certificates; used when
+                     ``use_ssl`` is ``True``
+    :param keyfile: optional location to the key file for certificates; used
+                    when ``use_ssl`` is ``True`` and ``certfile`` is not
+                    ``None``
+    :param verify_ssl: if the certificates must be verified; ignored if
+                       ``use_ssl`` is not ``True``
+    :param ca_certs: optional location to the CA certificates; ignored if
+                    ``verify_ssl`` is ``False``
     """
-    def __init__(self, bot, server_timeout=None, ping_interval=None, **kwargs):
-        AbstractIRCBackend.__init__(self, bot)
-        asynchat.async_chat.__init__(self)
-        self.writing_lock = threading.RLock()
-        self.set_terminator(b'\r\n')
-        self.buffer = ''
-        self.server_timeout = server_timeout or 120
-        self.ping_interval = ping_interval or (self.server_timeout * 0.45)
-        self.last_event_at = None
-        self.last_ping_at = None
-        self.host = None
-        self.port = None
-        self.source_address = None
-        self.timeout_scheduler = jobs.Scheduler(self)
+    def __init__(
+        self,
+        bot: AbstractBot,
+        host: str,
+        port: int,
+        source_address: Optional[Tuple[str, int]],
+        server_timeout: Optional[int] = None,
+        ping_interval: Optional[int] = None,
+        use_ssl: bool = False,
+        certfile: Optional[str] = None,
+        keyfile: Optional[str] = None,
+        verify_ssl: bool = True,
+        ca_certs: Optional[str] = None,
+        **kwargs,
+    ):
+        super().__init__(bot)
+        # connection parameters
+        self._host: str = host
+        self._port: int = port
+        self._source_address: Optional[Tuple[str, int]] = source_address
+        self._use_ssl: bool = use_ssl
+        self._certfile: Optional[str] = certfile
+        self._keyfile: Optional[str] = keyfile
+        self._verify_ssl: bool = verify_ssl
+        self._ca_certs: Optional[str] = ca_certs
 
-        # register timeout jobs
-        self.register_timeout_jobs([
-            (5, _send_ping),
-            (10, _check_timeout),
-        ])
+        # timeout configuration
+        self._server_timeout: float = float(server_timeout or 120)
+        self._ping_interval: float = float(
+            ping_interval or (self._server_timeout * 0.45)
+        )
 
-    def is_connected(self):
-        return self.connected
+        # connection flags
+        self._connected: bool = False
+        self._loop: Optional[asyncio.AbstractEventLoop] = None
 
-    def on_irc_error(self, pretrigger):
-        if self.bot.hasquit:
-            # discard buffers: no need to read/write anything more, just quit
-            LOGGER.debug('Discard current buffers.')
-            self.discard_buffers()
-            # close now
-            self.handle_close()
+        # connection writer & reader
+        self._writer: Optional[asyncio.StreamWriter] = None
+        self._reader: Optional[asyncio.StreamReader] = None
 
-    def irc_send(self, data):
-        """Send an IRC line as raw ``data`` to the socket connection.
+        # connection tasks
+        self._read_task: Optional[asyncio.Task] = None
+        self._ping_task: Optional[asyncio.TimerHandle] = None
+        self._timeout_task: Optional[asyncio.TimerHandle] = None
 
-        :param bytes data: raw line to send
+    # signal handlers
 
-        This uses :meth:`asyncore.dispatcher.send` method to send ``data``
-        directly. This method is thread-safe.
+    def _signal_quit(self) -> None:
+        LOGGER.info('Receiving QUIT signal.')
+        self.bot.quit('Quit')
+
+    def _signal_restart(self) -> None:
+        LOGGER.info('Receiving RESTART signal.')
+        self.bot.restart('Restarting')
+
+    # timeout management
+
+    def _ping_callback(self) -> None:
+        # simply send a PING
+        LOGGER.debug(
+            'Sending PING after %0.1fs of inactivity.', self._ping_interval)
+        self.send_ping(self._host)
+
+    def _timeout_callback(self) -> None:
+        # cancel other tasks
+        for task in [self._ping_task, self._read_task]:
+            if task is not None:
+                task.cancel()
+        self._ping_task = None
+        self._read_task = None
+        # log a warning
+        LOGGER.warning(
+            'Reached timeout (%0.1fs); closing connection.',
+            self._server_timeout,
+        )
+
+    def _cancel_timeout_tasks(self) -> None:
+        # cancel every timeout tasks (PING & Server Timeout)
+        for task in [self._ping_task, self._timeout_task]:
+            if task is not None:
+                task.cancel()
+        self._ping_task = None
+        self._timeout_task = None
+
+    def _reset_timeout_tasks(self) -> None:
+        # cancel first
+        self._cancel_timeout_tasks()
+        # then schedule again
+        loop = asyncio.get_running_loop()
+        self._ping_task = loop.call_later(
+            self._ping_interval, self._ping_callback,
+        )
+        self._timeout_task = loop.call_later(
+            self._server_timeout, self._timeout_callback,
+        )
+
+    # backend interface
+
+    def is_connected(self) -> bool:
+        return self._connected
+
+    def on_irc_error(self, pretrigger: PreTrigger) -> None:
+        LOGGER.warning('Error received from server: %s', pretrigger.text)
+
+    def irc_send(self, data: bytes) -> None:
+        if self._loop is None:
+            raise RuntimeError('EventLoop not initialized.')
+
+        if threading.current_thread() is threading.main_thread():
+            self._loop.create_task(self.send(data))
+        else:
+            asyncio.run_coroutine_threadsafe(self.send(data), self._loop)
+
+    # read/write
+
+    async def send(self, data: bytes) -> None:
+        """Send ``data`` through the writer."""
+        if self._writer is None:
+            raise RuntimeError(
+                'Writer not initialized. '
+                'Are you sure the backend is running?')
+
+        try:
+            self._writer.write(data)
+            await self._writer.drain()
+        except asyncio.CancelledError:
+            LOGGER.debug('Writer was cancelled')
+
+    async def read_forever(self) -> None:
+        """Main reading loop of the backend.
+
+        This listens to the reader for an incoming IRC line, decodes the data,
+        and passes it to
+        :meth:`bot.on_message(data) <sopel.irc.AbstractBot.on_message>`, until
+        the reader reaches the EOF (i.e. connection closed).
+
+        It manages connection timeouts by scheduling two tasks:
+
+        * a PING task, that will send a PING to the server as defined by
+          the ping interval (from the configuration)
+        * a Timeout task, that will stop the bot if it reaches the timeout
+
+        Whenever a message is received, both tasks are cancelled and
+        rescheduled.
+
+        When the connection is closed, the reader will reach EOF, and return
+        an empty string, which in turn will end the coroutine.
+
+        .. seealso::
+
+            The :meth:`~.decode_line` method is used to decode the IRC line
+            from :class:`bytes` to :class:`str`.
+
         """
-        with self.writing_lock:
-            self.send(data)
+        if self._reader is None:
+            raise RuntimeError(
+                'Reader not initialized. '
+                'Are you sure the backend is running?')
 
-    def run_forever(self):
+        # cancel timeout tasks
+        self._cancel_timeout_tasks()
+
+        # loop forever until EOF
+        while not self._reader.at_eof():
+            try:
+                line: bytes = await self._reader.readuntil(separator=b'\r\n')
+            except asyncio.exceptions.IncompleteReadError as e:
+                LOGGER.warning('Receiving partial message from IRC.')
+                line = e.partial
+            except asyncio.exceptions.LimitOverrunError:
+                LOGGER.exception('Unable to read from IRC server.')
+                break
+
+            # connection is active: reset timeout tasks
+            self._reset_timeout_tasks()
+
+            # check content
+            if not line:
+                LOGGER.debug('No data received.')
+                continue
+
+            # decode content to unicode
+            try:
+                data: str = self.decode_line(line)
+            except ValueError:
+                LOGGER.error('Unable to decode line from IRC server: %r', line)
+                continue
+
+            # use bot's callbacks
+            try:
+                self.bot.log_raw(data, '<<')
+                self.bot.on_message(data)
+            except Exception:
+                LOGGER.exception('Unexpected exception on message handling.')
+                LOGGER.warning('Stopping the backend after error.')
+                break
+
+        # cancel timeout tasks when reading loop ends
+        self._cancel_timeout_tasks()
+
+    # run & connection
+
+    def get_connection_kwargs(self) -> Dict:
+        """Return the keyword arguments required to initiate connection."""
+        ssl_context: Optional[ssl.SSLContext] = None
+
+        if self._use_ssl:
+            ssl_context = ssl.create_default_context(ssl.Purpose.SERVER_AUTH)
+            if self._certfile is not None:
+                # load_cert_chain requires a certfile (cannot be None)
+                ssl_context.load_cert_chain(
+                    certfile=self._certfile,
+                    keyfile=self._keyfile,
+                )
+
+            if self._verify_ssl and self._ca_certs is not None:
+                ssl_context.load_verify_locations(self._ca_certs)
+            elif not self._verify_ssl:
+                # deactivate SSL verification for hostname & certificate
+                ssl_context.check_hostname = False
+                ssl_context.verify_mode = ssl.CERT_NONE
+
+        return {
+            'host': self._host,
+            'port': self._port,
+            'ssl': ssl_context,
+            'local_addr': self._source_address,
+        }
+
+    async def _run_forever(self) -> None:
+        self._loop = asyncio.get_running_loop()
+
+        # register signal handlers
+        for quit_signal in QUIT_SIGNALS:
+            self._loop.add_signal_handler(quit_signal, self._signal_quit)
+        for restart_signal in RESTART_SIGNALS:
+            self._loop.add_signal_handler(restart_signal, self._signal_restart)
+
+        # open connection
+        try:
+            self._reader, self._writer = await asyncio.open_connection(
+                **self.get_connection_kwargs(),
+            )
+        except ssl.SSLError:
+            LOGGER.exception('Unable to connect due to SSL error.')
+            return
+
+        self._connected = True
+
+        LOGGER.debug('Connection registered.')
+        self.bot.on_connect()
+
+        LOGGER.debug('Waiting for messages...')
+        self._read_task = asyncio.create_task(self.read_forever())
+        try:
+            await self._read_task
+        except asyncio.CancelledError:
+            LOGGER.debug('Read task was cancelled.')
+        else:
+            LOGGER.debug('Reader received EOF.')
+
+        self._connected = False
+
+        # cancel timeout tasks
+        self._cancel_timeout_tasks()
+
+        # nothing to read anymore
+        LOGGER.debug('Shutting down writer.')
+        self._writer.close()
+        await self._writer.wait_closed()
+        LOGGER.debug('All clear, exiting now.')
+
+    def run_forever(self) -> None:
         """Run forever."""
         LOGGER.debug('Running forever.')
-        asyncore.loop()
-
-    def register_timeout_jobs(self, handlers):
-        """Register the timeout handlers for the timeout scheduler."""
-        for timer, handler in handlers:
-            job = jobs.Job(
-                intervals=[timer],
-                handler=handler,
-                threaded=False,
-                doc=inspect.getdoc(handler),
-            )
-            self.timeout_scheduler.register(job)
-            LOGGER.debug('Timeout Job registered: %s', str(job))
-
-    def initiate_connect(self, host, port, source_address):
-        """Initiate IRC connection.
-
-        :param str host: IRC server hostname
-        :param int port: IRC server port
-        :param str source_address: the source address from which to initiate
-                                   the connection attempt
-        """
-        self.host = host
-        self.port = port
-        self.source_address = source_address
-
-        LOGGER.info('Connecting to %s:%s...', host, port)
-        try:
-            LOGGER.debug('Set socket')
-            self.set_socket(socket.create_connection((host, port),
-                            source_address=source_address))
-            LOGGER.debug('Connection attempt')
-            self.connect((host, port))
-        except socket.error as e:
-            LOGGER.exception('Connection error: %s', e)
-            self.handle_close()
-
-    def handle_connect(self):
-        """Called when the active opener's socket actually makes a connection."""
-        LOGGER.info('Connection accepted by the server...')
-        self.timeout_scheduler.start()
-        self.bot.on_connect()
-
-    def handle_close(self):
-        """Called when the connection must be closed."""
-        LOGGER.debug('Stopping timeout watchdog')
-        self.timeout_scheduler.stop()
-        LOGGER.info('Closing connection')
-        self.close()
+        asyncio.run(self._run_forever())
+        LOGGER.info('Connection backend stopped.')
         self.bot.on_close()
-
-    def handle_error(self):
-        """Called when an exception is raised and not otherwise handled.
-
-        This method is an override of :meth:`asyncore.dispatcher.handle_error`,
-        the :class:`asynchat.async_chat` being a subclass of
-        :class:`asyncore.dispatcher`.
-        """
-        LOGGER.info('Connection error...')
-        self.bot.on_error()
-
-    def collect_incoming_data(self, data):
-        """Try to make sense of incoming data as Unicode.
-
-        :param bytes data: the incoming raw bytes
-
-        The incoming line is discarded (and thus ignored) if guessing the text
-        encoding and decoding it fails.
-        """
-        data += self.get_terminator()
-
-        # We can't trust clients to pass valid Unicode.
-        try:
-            data = str(data, encoding='utf-8')
-        except UnicodeDecodeError:
-            # not Unicode; let's try CP-1252
-            try:
-                data = str(data, encoding='cp1252')
-            except UnicodeDecodeError:
-                # Okay, let's try ISO 8859-1
-                try:
-                    data = str(data, encoding='iso8859-1')
-                except UnicodeDecodeError:
-                    self.bot.log_raw(data, '<<!')
-                    LOGGER.warning(
-                        "Couldn't guess character encoding of message, ignoring: %r",
-                        data,
-                    )
-                    return
-
-        if data:
-            self.bot.log_raw(data, '<<')
-        self.buffer += data
-        self.last_event_at = datetime.datetime.utcnow()
-
-    def found_terminator(self):
-        """Handle the end of an incoming message."""
-        line = self.buffer
-        self.buffer = ''
-        self.bot.on_message(line)
-
-    def on_scheduler_error(self, scheduler, exc):
-        """Called when the Job Scheduler fails."""
-        LOGGER.exception('Error with the timeout scheduler: %s', exc)
-        self.handle_close()
-
-    def on_job_error(self, scheduler, job, exc):
-        """Called when a job from the Job Scheduler fails."""
-        LOGGER.exception('Error with the timeout scheduler: %s', exc)
-        self.handle_close()
-
-
-class SSLAsynchatBackend(AsynchatBackend):
-    """SSL-aware extension of :class:`AsynchatBackend`.
-
-    :param bot: a Sopel instance
-    :type bot: :class:`sopel.bot.Sopel`
-    :param bool verify_ssl: whether to validate the IRC server's certificate
-                            (default ``True``, for good reason)
-    :param str ca_certs: filesystem path to a CA Certs file containing trusted
-                         root certificates
-    :param str certfile: filesystem path to a certificate for SSL/TLS client
-                         authentication (CertFP)
-    :param str keyfile: filesystem path to the private key for ``certfile``
-    """
-    def __init__(self, bot, verify_ssl=True, ca_certs=None, certfile=None, keyfile=None, **kwargs):
-        AsynchatBackend.__init__(self, bot, **kwargs)
-        self.verify_ssl = verify_ssl
-        self.ssl = None
-        self.ca_certs = ca_certs
-        self.certfile = certfile
-        self.keyfile = keyfile
-
-    def handle_connect(self):
-        """Handle potential TLS connection."""
-        # TODO: Refactor to use SSLContext and an appropriate PROTOCOL_* constant
-        # See https://lgtm.com/rules/1507225275976/
-        # These warnings are ignored for now, because we can't easily fix them
-        # while maintaining compatibility with py2.7 AND 3.3+, but in Sopel 8
-        # the supported range should narrow sufficiently to fix these for real.
-        # Each Python version still generally selects the most secure protocol
-        # version(s) it supports.
-        if not self.verify_ssl:
-            self.ssl = ssl.wrap_socket(self.socket,  # lgtm [py/insecure-default-protocol]
-                                       certfile=self.certfile,
-                                       keyfile=self.keyfile,
-                                       do_handshake_on_connect=True,
-                                       suppress_ragged_eofs=True)
-        else:
-            self.ssl = ssl.wrap_socket(self.socket,  # lgtm [py/insecure-default-protocol]
-                                       certfile=self.certfile,
-                                       keyfile=self.keyfile,
-                                       do_handshake_on_connect=True,
-                                       suppress_ragged_eofs=True,
-                                       cert_reqs=ssl.CERT_REQUIRED,
-                                       ca_certs=self.ca_certs)
-            # connect to host specified in config first
-            try:
-                ssl.match_hostname(self.ssl.getpeercert(), self.host)
-            except ssl.CertificateError:
-                # the host in config and certificate don't match
-                LOGGER.error("hostname mismatch between configuration and certificate")
-                # check (via exception) if a CNAME matches as a fallback
-                has_matched = False
-                for hostname in get_cnames(self.host):
-                    try:
-                        ssl.match_hostname(self.ssl.getpeercert(), hostname)
-                        LOGGER.warning(
-                            "using {0} instead of {1} for TLS connection"
-                            .format(hostname, self.host))
-                        has_matched = True
-                        break
-                    except ssl.CertificateError:
-                        pass
-
-                if not has_matched:
-                    # everything is broken
-                    LOGGER.error("Invalid certificate, no hostname matches.")
-                    # TODO: refactor access to bot's settings
-                    if hasattr(self.bot.settings.core, 'pid_file_path'):
-                        # TODO: refactor to quit properly (no "os._exit")
-                        os.unlink(self.bot.settings.core.pid_file_path)
-                        os._exit(1)
-        self.set_socket(self.ssl)
-        LOGGER.info('Connection accepted by the server...')
-        LOGGER.debug('Starting job scheduler for connection timeout...')
-        self.timeout_scheduler.start()
-        self.bot.on_connect()
-
-    def send(self, data):
-        """SSL-aware override for :meth:`~asyncore.dispatcher.send`."""
-        try:
-            result = self.socket.send(data)
-            return result
-        except ssl.SSLError as why:
-            if why[0] in (asyncore.EWOULDBLOCK, errno.ESRCH):
-                return 0
-            raise why
-
-    def recv(self, buffer_size):
-        """SSL-aware override for :meth:`~asyncore.dispatcher.recv`.
-
-        From a (now deleted) blog post by Evan "K7FOS" Fosmark:
-        https://k7fos.com/2010/09/ssl-support-in-asynchatasync_chat
-        """
-        try:
-            data = self.socket.read(buffer_size)
-            if not data:
-                self.handle_close()
-                return b''
-            return data
-        except ssl.SSLError as why:
-            if why[0] in (asyncore.ECONNRESET, asyncore.ENOTCONN,
-                          asyncore.ESHUTDOWN):
-                self.handle_close()
-                return ''
-            elif why[0] == errno.ENOENT:
-                # Required in order to keep it non-blocking
-                return b''
-            else:
-                raise
