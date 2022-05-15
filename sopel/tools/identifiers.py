@@ -5,21 +5,20 @@ names are used to differentiate users from each others, channels from each
 others. To ensure that two channels or two users are the same, their
 identifiers must be processed to be compared properly. This process depends on
 which RFC and how that RFC is implemented by the server: IRC being an old
-protocol, different RFCs have differents version of that process:
+protocol, different RFCs have different versions of that process:
 
-* :rfc:`RFC 1459 § 2.2<1459#section-2.2>`: ASCII characters, and ``[]\\`` are
-  mapped to ``{}|``
-* :rfc:`RFC 2812 § 2.2<2812#section-2.2>`: same as in the previous RFC, adding
-  ``~`` mapped to ``^``
+* :rfc:`1459#section-2.2`: ASCII characters, and ``[]\\`` are mapped to ``{}|``
+* :rfc:`2812#section-2.2`: same as in the previous RFC, adding ``~`` mapped to
+  ``^``
 
 Then when ISUPPORT was added, the `CASEMAPPING parameter`__ was defined so the
 server can say which process to apply:
 
 * ``ascii``: only ``[A-Z]`` must be mapped to ``[a-z]`` (implemented by
   :func:`ascii_lower`)
-* ``rfc1459``: follow :rfc:`2812`; because of how it was implemented in most
-  server (implemented by :func:`rfc1459_lower`)
-* A strict version of :rfc:`1459` also exist but it is not recommended
+* ``rfc1459``: follows :rfc:`2812`, because of how it was implemented in most
+  servers (implemented by :func:`rfc1459_lower`)
+* A strict version of :rfc:`1459` also exists but it is not recommended
   (implemented by :func:`rfc1459_strict_lower`)
 
 As a result, the :class:`Identifier` class requires a casemapping function,
@@ -65,7 +64,7 @@ def rfc1459_lower(text: str) -> str:
     """Lower ``text`` according to :rfc:`2812`.
 
     Similar to :func:`rfc1459_strict_lower`, but also maps ``~`` to ``^``, as
-    per :rfc:`RFC 2812 § 2.2<2812#section-2.2>`:
+    per :rfc:`2812#section-2.2`:
 
         Because of IRC's Scandinavian origin, the characters ``{}|^`` are
         considered to be the lower case equivalents of the characters
@@ -85,7 +84,7 @@ def rfc1459_lower(text: str) -> str:
 def rfc1459_strict_lower(text: str) -> str:
     """Lower ``text`` according to :rfc:`1459` (strict version).
 
-    As per :rfc:`RFC 1459 § 2.2<1459#section-2.2>`:
+    As per :rfc:`1459#section-2.2`:
 
         Because of IRC's scandanavian origin, the characters ``{}|`` are
         considered to be the lower case equivalents of the characters ``[]\\``.
@@ -107,8 +106,7 @@ class Identifier(str):
 
     This case insensitivity uses the provided ``casemapping`` function,
     following the rules for the `CASEMAPPING parameter`__ from ISUPPORT. By
-    default, it uses :func:`rfc1459_lower`, following
-    :rfc:`RFC 2812 § 2.2<2812#section-2.2>`.
+    default, it uses :func:`rfc1459_lower`, following :rfc:`2812#section-2.2`.
 
     .. note::
 
