@@ -21,7 +21,7 @@ from urllib.parse import urlparse, urlunparse
 import requests
 
 from sopel import plugin, tools
-from sopel.bot import Sopel
+from sopel.bot import Sopel, SopelWrapper
 from sopel.config import Config, types
 from sopel.formatting import bold, color, colors
 from sopel.trigger import Trigger
@@ -203,7 +203,7 @@ def shutdown(bot: Sopel):
 @plugin.rule(r'(?u).*(https?://\S+).*')
 @plugin.priority('high')
 @plugin.output_prefix(PLUGIN_OUTPUT_PREFIX)
-def url_handler(bot: Sopel, trigger: Trigger):
+def url_handler(bot: SopelWrapper, trigger: Trigger):
     """Checks for malicious URLs"""
     mode = bot.db.get_channel_value(
         trigger.sender,
@@ -263,7 +263,7 @@ def url_handler(bot: Sopel, trigger: Trigger):
 
 
 def virustotal_lookup(
-    bot: Sopel,
+    bot: SopelWrapper,
     url: str,
     local_only: bool = False,
     max_cache_age: Optional[timedelta] = None,
@@ -357,7 +357,7 @@ def virustotal_lookup(
 @plugin.example(".virustotal https://malware.wicar.org/")
 @plugin.example(".virustotal hxxps://malware.wicar.org/")
 @plugin.output_prefix("[safety][VirusTotal] ")
-def vt_command(bot: Sopel, trigger: Trigger):
+def vt_command(bot: SopelWrapper, trigger: Trigger):
     """Look up VT results on demand"""
     if not bot.settings.safety.vt_api_key:
         bot.reply("Sorry, I don't have a VirusTotal API key configured.")
@@ -413,7 +413,7 @@ def vt_command(bot: Sopel, trigger: Trigger):
 @plugin.command('safety')
 @plugin.example(".safety on")
 @plugin.output_prefix(PLUGIN_OUTPUT_PREFIX)
-def toggle_safety(bot: Sopel, trigger: Trigger):
+def toggle_safety(bot: SopelWrapper, trigger: Trigger):
     """Set safety setting for channel"""
     if not trigger.admin and bot.channels[trigger.sender].privileges[trigger.nick] < plugin.OP:
         bot.reply('Only channel operators can change safety settings')
