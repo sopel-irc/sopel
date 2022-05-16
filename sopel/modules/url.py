@@ -306,8 +306,8 @@ def title_auto(bot: SopelWrapper, trigger: Trigger):
         if url in bot.memory.get("safety_cache", {}):
             if bot.memory["safety_cache"][url]["positives"] > 0:
                 continue
-        netloc = urlparse(url).netloc.lower()
-        if netloc in bot.memory.get("safety_cache_local", {}):
+        hostname = urlparse(url).hostname.lower()
+        if hostname in bot.memory.get("safety_cache_local", {}):
             continue
         urls.append(url)
 
