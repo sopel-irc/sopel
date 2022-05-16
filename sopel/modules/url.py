@@ -422,8 +422,8 @@ def find_title(url, verify=True):
         # Need to close the connection because we have not read all
         # the data
         response.close()
-    except requests.exceptions.ConnectionError:
-        LOGGER.debug('Unable to reach URL: %s', url, exc_info=True)
+    except requests.exceptions.ConnectionError as e:
+        LOGGER.debug("Unable to reach URL: %r: %s", url, e)
         return None
     except (
         requests.exceptions.InvalidURL,  # e.g. http:///
