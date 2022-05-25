@@ -15,17 +15,21 @@ import os.path
 import re
 import threading
 from time import sleep
-from typing import Dict, Optional
+from typing import TYPE_CHECKING
 from urllib.parse import urlparse, urlunparse
 
 import requests
 
 from sopel import plugin, tools
-from sopel.bot import Sopel, SopelWrapper
-from sopel.config import Config, types
+from sopel.config import types
 from sopel.formatting import bold, color, colors
-from sopel.trigger import Trigger
 
+if TYPE_CHECKING:
+    from typing import Dict, Optional
+
+    from sopel.bot import Sopel, SopelWrapper
+    from sopel.config import Config
+    from sopel.trigger import Trigger
 
 LOGGER = logging.getLogger(__name__)
 PLUGIN_OUTPUT_PREFIX = '[safety] '
