@@ -38,7 +38,7 @@ def tableflip(bot, trigger):
     bot.say('(╯°□°）╯︵ ┻━┻')
 
 
-@plugin.command('unflip')
+@plugin.command('unflip', 'tback')
 @plugin.action_command('unflips table', 'unflips the table')
 @plugin.example('.unflip', '┳━┳ ﻿ノ( ゜-゜ノ)')
 def unflip(bot, trigger):
