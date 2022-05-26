@@ -40,9 +40,9 @@ def tableflip(bot, trigger):
 
 @plugin.command('unflip')
 @plugin.action_command('unflips table', 'unflips the table')
-@plugin.example('.unflip', '┬┬ ﻿ノ( ゜-゜ノ)')
+@plugin.example('.unflip', '┳━┳ ﻿ノ( ゜-゜ノ)')
 def unflip(bot, trigger):
-    bot.say('┬┬ ﻿ノ( ゜-゜ノ)')
+    bot.say('┳━┳ ﻿ノ( ゜-゜ノ)')
 
 
 @plugin.command('lenny')
