@@ -184,6 +184,9 @@ def say_snippet(bot, trigger, server, query, show_url=True):
 
     try:
         snippet = mw_snippet(server, query)
+        # Coalesce repeated whitespace to avoid problems with <math> on MediaWiki
+        # see https://github.com/sopel-irc/sopel/issues/2259
+        snippet = re.sub(r"\s+", " ", snippet)
     except KeyError:
         if show_url:
             bot.reply("Error fetching snippet for \"{}\".".format(page_name))
