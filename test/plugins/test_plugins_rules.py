@@ -6,7 +6,7 @@ import re
 
 import pytest
 
-from sopel import bot, loader, plugin, trigger
+from sopel import bot, formatting, loader, plugin, trigger
 from sopel.plugins import rules
 from sopel.tests import rawlist
 
@@ -824,8 +824,10 @@ def test_rule_parse_wildcard():
     regex = re.compile(r'.*')
 
     rule = rules.Rule([regex])
-    assert list(rule.parse('')), 'Wildcard rule must parse empty text'
-    assert list(rule.parse('Hello, world!'))
+    text = plain = ''
+    assert list(rule.parse(text, plain)), 'Wildcard rule must parse empty text'
+    text = plain = 'Hello, world!'
+    assert list(rule.parse(text, plain))
 
 
 def test_rule_parse_starts_with():
@@ -833,8 +835,12 @@ def test_rule_parse_starts_with():
     regex = re.compile(r'Hello')
 
     rule = rules.Rule([regex])
-    assert list(rule.parse('Hello, world!')), 'Partial match must work'
-    assert not list(rule.parse('World, Hello!')), (
+
+    text = plain = 'Hello, world!'
+    assert list(rule.parse(text, plain)), 'Partial match must work'
+
+    text = plain = 'World, Hello!'
+    assert not list(rule.parse(text, plain)), (
         'Partial match works only from the start of the text to match')
 
 
@@ -843,18 +849,56 @@ def test_rule_parse_pattern():
     regex = re.compile(r'(\w+),? world!$')
 
     rule = rules.Rule([regex])
-    results = list(rule.parse('Hello, world!'))
+
+    text = plain = 'Hello, world!'
+    results = list(rule.parse(text, plain))
     assert len(results) == 1, 'Exactly one parse result must be found.'
 
     result = results[0]
     assert result.group(0) == 'Hello, world!'
     assert result.group(1) == 'Hello'
 
-    results = list(rule.parse('Hello world!'))
+    text = plain = 'Hello world!'
+    results = list(rule.parse(text, plain))
     assert len(results) == 1, 'Exactly one parse result must be found.'
 
     result = results[0]
     assert result.group(0) == 'Hello world!'
+    assert result.group(1) == 'Hello'
+
+
+def test_rule_parse_match_raw_and_plain_text():
+    regex = re.compile(r'(\w+)')
+    text = formatting.bold('Hello')
+    plain = formatting.plain(text)
+
+    rule = rules.Rule([regex], rule_mode=plugin.MatchType.RAW)
+    assert not list(rule.parse(text, plain)), (
+        'Raw text with formatting control code must not match.')
+
+    rule = rules.Rule([regex], rule_mode=plugin.MatchType.PLAIN)
+    results = list(rule.parse(text, plain))
+    assert len(results) == 1, 'Exactly one parse result must be found.'
+
+    result = results[0]
+    assert result.group(0) == 'Hello'
+    assert result.group(1) == 'Hello'
+
+    rule = rules.Rule([regex], rule_mode=plugin.MatchType.BOTH)
+    results = list(rule.parse(text, plain))
+    assert len(results) == 1, 'Exactly one parse result must be found.'
+
+    result = results[0]
+    assert result.group(0) == 'Hello'
+    assert result.group(1) == 'Hello'
+
+    # check non-formatted text (match only once)
+    rule = rules.Rule([regex], rule_mode=plugin.MatchType.BOTH)
+    results = list(rule.parse('Hello, world!', 'Hello, world!'))
+    assert len(results) == 1, 'Exactly one parse result must be found.'
+
+    result = results[0]
+    assert result.group(0) == 'Hello'
     assert result.group(1) == 'Hello'
 
 
@@ -1108,6 +1152,7 @@ def test_kwargs_from_callable(mockbot):
     assert 'allow_echo' in kwargs
     assert 'threaded' in kwargs
     assert 'output_prefix' in kwargs
+    assert 'rule_mode' in kwargs
     assert 'unblockable' in kwargs
     assert 'usages' in kwargs
     assert 'tests' in kwargs
@@ -1121,6 +1166,7 @@ def test_kwargs_from_callable(mockbot):
     assert kwargs['allow_echo'] is False
     assert kwargs['threaded'] is True
     assert kwargs['output_prefix'] == ''
+    assert kwargs['rule_mode'] == plugin.MatchType.RAW
     assert kwargs['unblockable'] is False
     assert kwargs['usages'] == tuple()
     assert kwargs['tests'] == tuple()
@@ -1215,6 +1261,21 @@ def test_kwargs_from_callable_threaded(mockbot):
     kwargs = rules.Rule.kwargs_from_callable(handler)
     assert 'threaded' in kwargs
     assert kwargs['threaded'] is False
+
+
+def test_kwargs_from_callable_match_mode(mockbot):
+    # prepare callable
+    @plugin.rule(r'hello', r'hi', r'hey', r'hello|hi')
+    @plugin.match_mode(plugin.MatchType.PLAIN)
+    def handler(wrapped, trigger):
+        wrapped.reply('Hi!')
+
+    loader.clean_callable(handler, mockbot.settings)
+
+    # get kwargs
+    kwargs = rules.Rule.kwargs_from_callable(handler)
+    assert 'rule_mode' in kwargs
+    assert kwargs['rule_mode'] == plugin.MatchType.PLAIN
 
 
 def test_kwargs_from_callable_unblockable(mockbot):
@@ -2508,10 +2569,43 @@ def test_find_rule_parse_pattern():
     regex = re.compile(r'\w+')
 
     rule = rules.FindRule([regex])
-    results = list(rule.parse('Hello, world!'))
+
+    text = plain = 'Hello, world!'
+    results = list(rule.parse(text, plain))
     assert len(results) == 2, 'Find rule on word must match twice'
     assert results[0].group(0) == 'Hello'
     assert results[1].group(0) == 'world'
+
+
+def test_find_rule_parse_match_raw_and_plain_text():
+    regex = re.compile(r'hell')
+    text = 'This is %sll!' % formatting.bold('he')
+    plain = formatting.plain(text)
+
+    rule = rules.FindRule([regex], rule_mode=plugin.MatchType.RAW)
+    assert not list(rule.parse(text, plain))
+
+    rule = rules.FindRule([regex], rule_mode=plugin.MatchType.PLAIN)
+    results = list(rule.parse(text, plain))
+    assert len(results) == 1, 'Exactly one parse result must be found.'
+
+    result = results[0]
+    assert result.group(0) == 'hell'
+
+    rule = rules.FindRule([regex], rule_mode=plugin.MatchType.BOTH)
+    results = list(rule.parse(text, plain))
+    assert len(results) == 1, 'Exactly one parse result must be found.'
+
+    result = results[0]
+    assert result.group(0) == 'hell'
+
+    # check non-formatted text (match only once)
+    rule = rules.FindRule([regex], rule_mode=plugin.MatchType.BOTH)
+    results = list(rule.parse('This is hell!', 'This is hell!'))
+    assert len(results) == 1, 'Exactly one parse result must be found.'
+
+    result = results[0]
+    assert result.group(0) == 'hell'
 
 
 def test_find_rule_from_callable(mockbot):
@@ -2596,9 +2690,43 @@ def test_search_rule_parse_pattern():
     regex = re.compile(r'\w+')
 
     rule = rules.SearchRule([regex])
-    results = list(rule.parse('Hello, world!'))
+
+    text = plain = 'Hello, world!'
+    results = list(rule.parse(text, plain))
     assert len(results) == 1, 'Search rule on word must match only once'
     assert results[0].group(0) == 'Hello'
+
+
+def test_search_rule_parse_match_raw_and_plain_text():
+    regex = re.compile(r'(\d{4})')
+    text = 'Did you read the book %s84?' % formatting.bold('19')
+    plain = formatting.plain(text)
+
+    rule = rules.SearchRule([regex], rule_mode=plugin.MatchType.RAW)
+    assert not list(rule.parse(text, plain)), (
+        'Raw text with formatting control code must not match.')
+
+    rule = rules.SearchRule([regex], rule_mode=plugin.MatchType.PLAIN)
+    results = list(rule.parse(text, plain))
+    assert len(results) == 1, 'Exactly one parse result must be found.'
+
+    result = results[0]
+    assert result.group(0) == '1984'
+
+    rule = rules.SearchRule([regex], rule_mode=plugin.MatchType.BOTH)
+    results = list(rule.parse(text, plain))
+    assert len(results) == 1, 'Exactly one parse result must be found.'
+
+    result = results[0]
+    assert result.group(0) == '1984'
+
+    # check non-formatted text (match only once)
+    rule = rules.SearchRule([regex], rule_mode=plugin.MatchType.BOTH)
+    results = list(rule.parse('The book is 1984.', 'The book is 1984.'))
+    assert len(results) == 1, 'Exactly one parse result must be found.'
+
+    result = results[0]
+    assert result.group(0) == '1984'
 
 
 def test_search_rule_from_callable(mockbot):

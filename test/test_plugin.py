@@ -34,6 +34,41 @@ def test_allow_bots():
     assert not hasattr(mock, 'allow_bots')
 
 
+def test_match_mode_default():
+    @plugin.match_mode()
+    def mock(bot, trigger):
+        return True
+    assert mock.rule_mode == plugin.MatchType.RAW
+
+
+def test_match_mode_raw():
+    @plugin.match_mode(plugin.MatchType.RAW)
+    def mock(bot, trigger):
+        return True
+    assert mock.rule_mode == plugin.MatchType.RAW
+
+
+def test_match_mode_match_mode():
+    @plugin.match_mode(plugin.MatchType.PLAIN)
+    def mock(bot, trigger):
+        return True
+    assert mock.rule_mode == plugin.MatchType.PLAIN
+
+
+def test_match_mode_both():
+    @plugin.match_mode(plugin.MatchType.BOTH)
+    def mock(bot, trigger):
+        return True
+    assert mock.rule_mode == plugin.MatchType.BOTH
+
+
+def test_match_mode_union():
+    @plugin.match_mode(plugin.MatchType.PLAIN | plugin.MatchType.RAW)
+    def mock(bot, trigger):
+        return True
+    assert mock.rule_mode == plugin.MatchType.BOTH
+
+
 def test_find():
     @plugin.find('.*')
     def mock(bot, trigger, match):

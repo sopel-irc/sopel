@@ -9,7 +9,7 @@ import sys
 
 import pytest
 
-from sopel import bot, loader, plugins, trigger
+from sopel import bot, formatting, loader, plugins, trigger
 from .factories import BotFactory, ConfigFactory, IRCFactory, TriggerFactory, UserFactory
 
 
@@ -80,7 +80,7 @@ def get_example_test(tested_func, msg, results, privmsg, admin,
 
         loader.clean_callable(tested_func, settings)
         test_rule = plugins.rules.Command.from_callable(settings, tested_func)
-        parse_results = list(test_rule.parse(msg))
+        parse_results = list(test_rule.parse(msg, formatting.plain(msg)))
         assert parse_results, "Example did not match any command."
 
         match = parse_results[0]

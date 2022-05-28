@@ -9,10 +9,10 @@
 
 from __future__ import annotations
 
+import enum
 import functools
 import re
 import typing
-
 
 # import and expose privileges as shortcut
 from sopel.privileges import ADMIN, HALFOP, OP, OPER, OWNER, VOICE
@@ -21,6 +21,8 @@ from sopel.privileges import ADMIN, HALFOP, OP, OPER, OWNER, VOICE
 __all__ = [
     # constants
     'NOLIMIT', 'VOICE', 'HALFOP', 'OP', 'ADMIN', 'OWNER', 'OPER',
+    # enum
+    'MatchType',
     # decorators
     'action_command',
     'action_commands',
@@ -38,6 +40,7 @@ __all__ = [
     'nickname_command',
     'nickname_commands',
     'output_prefix',
+    'match_mode',
     'priority',
     'rate',
     'require_account',
@@ -67,6 +70,33 @@ for example, to allow a user to retry a failed command immediately.
 
 .. versionadded:: 4.0
 """
+
+
+class MatchType(enum.Flag):
+    """Enum of flags to match on plain text or raw text.
+
+    This enum should be used with the :func:`~sopel.plugin.match_mode`
+    decorator to match on either plain text, raw text, or both.
+
+    These flags can be combined and used in bitwise operations and there is
+    even an alias for that::
+
+        >>> from sopel.plugin import MatchType
+        >>> MatchType.BOTH == MatchType.PLAIN | MatchType.RAW
+        True
+
+    """
+    PLAIN = enum.auto()
+    """Rule will be matched against the plain text version of the message."""
+    RAW = enum.auto()
+    """Rule will be matched against the raw version of the message."""
+    BOTH = PLAIN | RAW
+    """Rule will be matched against either version of the message.
+
+    .. note::
+
+        This is an alias for ``PLAIN | RAW``.
+    """
 
 
 def unblockable(function: typing.Any) -> typing.Any:
@@ -127,6 +157,45 @@ def interval(*intervals: typing.Union[int, float]) -> typing.Callable:
         for arg in intervals:
             if arg not in function.interval:
                 function.interval.append(arg)
+        return function
+
+    return add_attribute
+
+
+def match_mode(match: MatchType = MatchType.RAW) -> typing.Callable:
+    """Decorate a function to control how it matches on text.
+
+    :param match: match text flag (plain, raw, or both)
+
+    Use to control how the plugin callable will be match against the message:
+
+    * :attr:`MatchType.PLAIN <sopel.plugin.MatchType.PLAIN>` to match the
+      plain text version of the message
+    * :attr:`MatchType.RAW <sopel.plugin.MatchType.RAW>` to match the raw
+      version of the message
+    * or a combination of the two, to match on either version (you can use
+      :attr:`MatchType.BOTH <sopel.plugin.MatchType.BOTH>` for that)
+
+    Example::
+
+        from sopel import plugin
+
+        @plugin.rule('my complex pattern')
+        @plugin.match_mode(plugin.MatchType.PLAIN)
+            # will match the plain text message, skipping control codes
+
+        @plugin.rule('my other pattern')
+        @plugin.match_mode(plugin.MatchType.RAW)
+            # will match the raw message, keeping control codes
+
+        @plugin.rule('my last pattern')
+        @plugin.match_mode(plugin.MatchType.BOTH)
+            # will match on any version of the message
+
+    """
+    def add_attribute(function):
+        function._sopel_callable = True
+        function.rule_mode = match
         return function
 
     return add_attribute

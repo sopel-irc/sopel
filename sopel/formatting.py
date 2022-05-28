@@ -7,7 +7,7 @@
 # Licensed under the Eiffel Forum License 2.
 from __future__ import annotations
 
-from enum import Enum
+import enum
 import re
 import string
 
@@ -124,7 +124,7 @@ PLAIN_PATTERN = '|'.join([
 PLAIN_REGEX = re.compile(PLAIN_PATTERN)
 
 
-class colors(str, Enum):
+class colors(str, enum.Enum):
     """Mapping of color names to mIRC code values."""
     # Mostly aligned with https://modern.ircdocs.horse/formatting.html#colors
     # which are likely based on mIRC's color names (https://www.mirc.com/colors.html)

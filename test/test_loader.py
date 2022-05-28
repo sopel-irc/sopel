@@ -307,6 +307,7 @@ def test_clean_callable_default(tmpconfig, func):
     assert not hasattr(func, 'echo')
     assert not hasattr(func, 'allow_bots')
     assert not hasattr(func, 'output_prefix')
+    assert not hasattr(func, 'rule_mode')
     assert not hasattr(func, 'event')
     assert not hasattr(func, 'rule')
     assert not hasattr(func, 'find_rules')
@@ -346,6 +347,8 @@ def test_clean_callable_command(tmpconfig, func):
     assert func.allow_bots is False
     assert hasattr(func, 'output_prefix')
     assert func.output_prefix == ''
+    assert hasattr(func, 'rule_mode')
+    assert func.rule_mode == plugin.MatchType.RAW
     assert hasattr(func, 'event')
     assert func.event == ['PRIVMSG']
     assert not hasattr(func, 'rule')
@@ -363,6 +366,7 @@ def test_clean_callable_command(tmpconfig, func):
     assert func.echo is False
     assert func.allow_bots is False
     assert func.output_prefix == ''
+    assert func.rule_mode == plugin.MatchType.RAW
     assert func.event == ['PRIVMSG']
 
 
@@ -392,6 +396,8 @@ def test_clean_callable_event(tmpconfig, func):
     assert func.allow_bots is False
     assert hasattr(func, 'output_prefix')
     assert func.output_prefix == ''
+    assert hasattr(func, 'rule_mode')
+    assert func.rule_mode == plugin.MatchType.RAW
 
     # idempotency
     loader.clean_callable(func, tmpconfig)
@@ -406,6 +412,7 @@ def test_clean_callable_event(tmpconfig, func):
     assert func.echo is False
     assert func.allow_bots is False
     assert func.output_prefix == ''
+    assert func.rule_mode == plugin.MatchType.RAW
 
 
 def test_clean_callable_rule(tmpconfig, func):
@@ -440,6 +447,8 @@ def test_clean_callable_rule(tmpconfig, func):
     assert func.allow_bots is False
     assert hasattr(func, 'output_prefix')
     assert func.output_prefix == ''
+    assert hasattr(func, 'rule_mode')
+    assert func.rule_mode == plugin.MatchType.RAW
 
     # idempotency
     loader.clean_callable(func, tmpconfig)
@@ -456,6 +465,7 @@ def test_clean_callable_rule(tmpconfig, func):
     assert func.echo is False
     assert func.allow_bots is False
     assert func.output_prefix == ''
+    assert func.rule_mode == plugin.MatchType.RAW
 
 
 def test_clean_callable_rule_nick(tmpconfig, func):
@@ -525,6 +535,8 @@ def test_clean_callable_find_rules(tmpconfig, func):
     assert func.allow_bots is False
     assert hasattr(func, 'output_prefix')
     assert func.output_prefix == ''
+    assert hasattr(func, 'rule_mode')
+    assert func.rule_mode == plugin.MatchType.RAW
 
     # idempotency
     loader.clean_callable(func, tmpconfig)
@@ -543,6 +555,7 @@ def test_clean_callable_find_rules(tmpconfig, func):
     assert func.echo is False
     assert func.allow_bots is False
     assert func.output_prefix == ''
+    assert func.rule_mode == plugin.MatchType.RAW
 
 
 def test_clean_callable_search_rules(tmpconfig, func):
@@ -579,6 +592,10 @@ def test_clean_callable_search_rules(tmpconfig, func):
     assert func.allow_bots is False
     assert hasattr(func, 'output_prefix')
     assert func.output_prefix == ''
+    assert hasattr(func, 'output_prefix')
+    assert func.output_prefix == ''
+    assert hasattr(func, 'rule_mode')
+    assert func.rule_mode == plugin.MatchType.RAW
 
     # idempotency
     loader.clean_callable(func, tmpconfig)
@@ -597,6 +614,7 @@ def test_clean_callable_search_rules(tmpconfig, func):
     assert func.echo is False
     assert func.allow_bots is False
     assert func.output_prefix == ''
+    assert func.rule_mode == plugin.MatchType.RAW
 
 
 def test_clean_callable_nickname_command(tmpconfig, func):
@@ -627,6 +645,8 @@ def test_clean_callable_nickname_command(tmpconfig, func):
     assert func.allow_bots is False
     assert hasattr(func, 'output_prefix')
     assert func.output_prefix == ''
+    assert hasattr(func, 'rule_mode')
+    assert func.rule_mode == plugin.MatchType.RAW
 
     # idempotency
     loader.clean_callable(func, tmpconfig)
@@ -640,6 +660,7 @@ def test_clean_callable_nickname_command(tmpconfig, func):
     assert func.echo is False
     assert func.allow_bots is False
     assert func.output_prefix == ''
+    assert func.rule_mode == plugin.MatchType.RAW
 
 
 def test_clean_callable_action_command(tmpconfig, func):
@@ -895,6 +916,8 @@ def test_clean_callable_ctcp(tmpconfig, func):
     assert func.allow_bots is False
     assert hasattr(func, 'output_prefix')
     assert func.output_prefix == ''
+    assert hasattr(func, 'rule_mode')
+    assert func.rule_mode == plugin.MatchType.RAW
 
     # idempotency
     loader.clean_callable(func, tmpconfig)
@@ -910,6 +933,7 @@ def test_clean_callable_ctcp(tmpconfig, func):
     assert func.echo is False
     assert func.allow_bots is False
     assert func.output_prefix == ''
+    assert func.rule_mode == plugin.MatchType.RAW
 
 
 def test_clean_callable_url(tmpconfig, func):
@@ -937,6 +961,8 @@ def test_clean_callable_url(tmpconfig, func):
     assert func.allow_bots is False
     assert hasattr(func, 'output_prefix')
     assert func.output_prefix == ''
+    assert hasattr(func, 'rule_mode')
+    assert func.rule_mode == plugin.MatchType.RAW
 
     # idempotency
     loader.clean_callable(func, tmpconfig)
@@ -949,3 +975,4 @@ def test_clean_callable_url(tmpconfig, func):
     assert func.echo is False
     assert func.allow_bots is False
     assert func.output_prefix == ''
+    assert func.rule_mode == plugin.MatchType.RAW

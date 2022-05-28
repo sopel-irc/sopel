@@ -28,13 +28,15 @@ import typing
 from urllib.parse import urlparse
 
 
-from sopel import tools
+from sopel import plugin, tools
 from sopel.config.core_section import (
     COMMAND_DEFAULT_HELP_PREFIX, COMMAND_DEFAULT_PREFIX, URL_DEFAULT_SCHEMES)
 
 
 if typing.TYPE_CHECKING:
-    from typing import Any, Dict, Generator, Iterable, Optional, Type
+    from typing import (
+        Any, Callable, Dict, Generator, Iterable, List, Match, Optional,
+        Pattern, Type)
 
     from sopel.tools.identifiers import Identifier
 
@@ -752,10 +754,11 @@ class AbstractRule(abc.ABC):
         """
 
     @abc.abstractmethod
-    def parse(self, text) -> Generator:
-        """Parse ``text`` and yield matches.
+    def parse(self, text: str, plain: str) -> Generator:
+        """Parse raw ``text`` or ``plain`` text and yield matches.
 
-        :param str text: text to parse by the rule
+        :param text: raw text to parse by the rule
+        :param plain: plain text to parse by the rule
         :return: yield a list of match object
         :rtype: generator of `re.match`__
 
@@ -836,6 +839,8 @@ class Rule(AbstractRule):
             'allow_echo': getattr(handler, 'echo', False),
             'threaded': getattr(handler, 'thread', True),
             'output_prefix': getattr(handler, 'output_prefix', ''),
+            'rule_mode': getattr(
+                handler, 'rule_mode', plugin.MatchType.RAW),
             'unblockable': getattr(handler, 'unblockable', False),
             'rate_limit': getattr(handler, 'rate', 0),
             'channel_rate_limit': getattr(handler, 'channel_rate', 0),
@@ -926,6 +931,7 @@ class Rule(AbstractRule):
                  allow_echo=False,
                  threaded=True,
                  output_prefix=None,
+                 rule_mode=plugin.MatchType.RAW,
                  unblockable=False,
                  rate_limit=0,
                  channel_rate_limit=0,
@@ -939,6 +945,7 @@ class Rule(AbstractRule):
         self._label = label
         self._priority = priority or PRIORITY_MEDIUM
         self._handler = handler
+        self._match_text = rule_mode or plugin.MatchType.RAW
 
         # filters
         self._events = events or ['PRIVMSG']
@@ -1032,7 +1039,7 @@ class Rule(AbstractRule):
             return []
 
         # parse text
-        return self.parse(text)
+        return self.parse(text, pretrigger.plain)
 
     def match_preconditions(self, bot, pretrigger):
         event = pretrigger.event
@@ -1056,9 +1063,31 @@ class Rule(AbstractRule):
             ) and (not is_echo_message or self.allow_echo())
         )
 
-    def parse(self, text):
+    def _make_parse_function(
+        self, text: str, plain: str
+    ) -> Callable[[Pattern], Optional[Match]]:
+        # create a parse function based on ``_match_text``
+
+        if self._match_text == plugin.MatchType.BOTH:
+            # if both are requested
+            def parse_fn(regex: Pattern) -> Optional[Match]:
+                return regex.match(text) or regex.match(plain)
+        elif self._match_text & plugin.MatchType.PLAIN:
+            # if plain is requested
+            def parse_fn(regex: Pattern) -> Optional[Match]:
+                return regex.match(plain)
+        else:
+            # default to always parse raw
+            def parse_fn(regex: Pattern) -> Optional[Match]:
+                return regex.match(text)
+
+        return parse_fn
+
+    def parse(self, text, plain):
+        parse_fn = self._make_parse_function(text, plain)
+
         for regex in self._regexes:
-            result = regex.match(text)
+            result = parse_fn(regex)
             if result:
                 yield result
 
@@ -1567,9 +1596,35 @@ class FindRule(Rule):
     REGEX_ATTRIBUTE = 'find_rules'
     LAZY_ATTRIBUTE = 'find_rules_lazy_loaders'
 
-    def parse(self, text):
+    def _make_parse_iter_function(
+        self, text: str, plain: str
+    ) -> Callable[[Pattern], List[Match]]:
+        # create a parse function based on ``_match_text``
+
+        if self._match_text == plugin.MatchType.BOTH:
+            # if both are requested
+            def parse_fn(regex: Pattern) -> List[Match]:
+                found = list(regex.finditer(text))
+                if not found:
+                    return list(regex.finditer(plain))
+                return found
+
+        elif self._match_text & plugin.MatchType.PLAIN:
+            # if plain is requested
+            def parse_fn(regex: Pattern) -> List[Match]:
+                return list(regex.finditer(plain))
+
+        else:
+            # default to always parse raw
+            def parse_fn(regex: Pattern) -> List[Match]:
+                return list(regex.finditer(text))
+
+        return parse_fn
+
+    def parse(self, text, plain):
+        parse_iter_fn = self._make_parse_iter_function(text, plain)
         for regex in self._regexes:
-            for match in regex.finditer(text):
+            for match in parse_iter_fn(regex):
                 yield match
 
 
@@ -1602,11 +1657,33 @@ class SearchRule(Rule):
     REGEX_ATTRIBUTE = 'search_rules'
     LAZY_ATTRIBUTE = 'search_rules_lazy_loaders'
 
-    def parse(self, text):
+    def _make_parse_function(
+        self, text: str, plain: str
+    ) -> Callable[[Pattern], Optional[Match]]:
+        # create a parse function based on ``_match_text``
+
+        if self._match_text == plugin.MatchType.BOTH:
+            # if both are requested
+            def parse_fn(regex: Pattern) -> Optional[Match]:
+                return regex.search(text) or regex.search(plain)
+        elif self._match_text & plugin.MatchType.PLAIN:
+            # if plain is requested
+            def parse_fn(regex: Pattern) -> Optional[Match]:
+                return regex.search(plain)
+        else:
+            # default to always parse raw
+            def parse_fn(regex: Pattern) -> Optional[Match]:
+                return regex.search(text)
+
+        return parse_fn
+
+    def parse(self, text, plain):
+        parse_fn = self._make_parse_function(text, plain)
+
         for regex in self._regexes:
-            match = regex.search(text)
-            if match:
-                yield match
+            result = parse_fn(regex)
+            if result:
+                yield result
 
 
 class URLCallback(Rule):
@@ -1752,7 +1829,7 @@ class URLCallback(Rule):
 
             yield from self.parse(url)
 
-    def parse(self, text):
+    def parse(self, text, plain=None):
         for regex in self._regexes:
             result = regex.search(text)
             if result:

@@ -51,6 +51,15 @@ In that case, it will use a match-all regex (``r'.*'``)::
    def on_join(bot, trigger):
       pass
 
+.. note::
+
+   By default, Sopel's rules match on the raw text version of the message, i.e.
+   the message with all its control codes such as bold, italics, or colors.
+
+   You can use the :func:`~sopel.plugin.rules_match` decorator to change that
+   behavior to match on plain text instead, i.e. the message stripped of its
+   control codes.
+
 Channel vs. private messages
 ----------------------------
 

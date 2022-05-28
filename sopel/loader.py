@@ -16,6 +16,7 @@ import logging
 import re
 
 from sopel.config.core_section import COMMAND_DEFAULT_HELP_PREFIX
+from sopel.plugin import MatchType
 
 
 LOGGER = logging.getLogger(__name__)
@@ -62,6 +63,7 @@ def clean_callable(func, config):
     func.echo = getattr(func, 'echo', False)
     func.priority = getattr(func, 'priority', 'medium')
     func.output_prefix = getattr(func, 'output_prefix', '')
+    func.rule_mode = getattr(func, 'rule_mode', MatchType.RAW)
 
     if not hasattr(func, 'event'):
         func.event = ['PRIVMSG']
