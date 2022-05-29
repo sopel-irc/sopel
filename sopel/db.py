@@ -7,7 +7,7 @@ import os.path
 import traceback
 import typing
 
-from sqlalchemy import Column, create_engine, ForeignKey, Integer, String
+from sqlalchemy import Column, create_engine, ForeignKey, Integer, String, Text
 from sqlalchemy.engine.url import make_url, URL
 from sqlalchemy.exc import OperationalError, SQLAlchemyError
 from sqlalchemy.ext.declarative import declarative_base
@@ -63,7 +63,7 @@ class NickValues(BASE):
     __table_args__ = MYSQL_TABLE_ARGS
     nick_id = Column(Integer, ForeignKey('nick_ids.nick_id'), primary_key=True)
     key = Column(String(255), primary_key=True)
-    value = Column(String(255))
+    value = Column(Text)
 
 
 class ChannelValues(BASE):
@@ -72,7 +72,7 @@ class ChannelValues(BASE):
     __table_args__ = MYSQL_TABLE_ARGS
     channel = Column(String(255), primary_key=True)
     key = Column(String(255), primary_key=True)
-    value = Column(String(255))
+    value = Column(Text)
 
 
 class PluginValues(BASE):
@@ -81,7 +81,7 @@ class PluginValues(BASE):
     __table_args__ = MYSQL_TABLE_ARGS
     plugin = Column(String(255), primary_key=True)
     key = Column(String(255), primary_key=True)
-    value = Column(String(255))
+    value = Column(Text)
 
 
 class SopelDB:
